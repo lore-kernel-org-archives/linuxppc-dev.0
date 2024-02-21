@@ -4,64 +4,146 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D573C48BEB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 22:08:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5E63C48BEB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 22:11:18 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=cirrus.com header.i=@cirrus.com header.a=rsa-sha256 header.s=PODMain02222019 header.b=mzF8kEVj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=motorola.com header.i=@motorola.com header.a=rsa-sha256 header.s=DKIM202306 header.b=YRjAyTGp;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tg9QD0jLLz3dV9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 09:08:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tg9Td2pyfz3vb8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 09:11:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=cirrus.com header.i=@cirrus.com header.a=rsa-sha256 header.s=PODMain02222019 header.b=mzF8kEVj;
+	dkim=pass (2048-bit key; unprotected) header.d=motorola.com header.i=@motorola.com header.a=rsa-sha256 header.s=DKIM202306 header.b=YRjAyTGp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=opensource.cirrus.com (client-ip=67.231.149.25; helo=mx0b-001ae601.pphosted.com; envelope-from=prvs=97814b2c7f=rf@opensource.cirrus.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1630 seconds by postgrey-1.37 at boromir; Thu, 22 Feb 2024 00:04:36 AEDT
-Received: from mx0b-001ae601.pphosted.com (mx0a-001ae601.pphosted.com [67.231.149.25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=motorola.com (client-ip=148.163.152.46; helo=mx0b-00823401.pphosted.com; envelope-from=mbland@motorola.com; receiver=lists.ozlabs.org)
+Received: from mx0b-00823401.pphosted.com (mx0b-00823401.pphosted.com [148.163.152.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TfxLr1kpqz2xFq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2024 00:04:34 +1100 (AEDT)
-Received: from pps.filterd (m0077473.ppops.net [127.0.0.1])
-	by mx0a-001ae601.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 41LCULT3002539;
-	Wed, 21 Feb 2024 06:37:12 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cirrus.com; h=
-	from:to:cc:subject:date:message-id:mime-version
-	:content-transfer-encoding:content-type; s=PODMain02222019; bh=p
-	8gAJKbo8NE3otTnGNSU2ViudpzVeoRdpYMa/IBxcXg=; b=mzF8kEVjFlYchlsvH
-	CWdHSP3rY9tb2NBYpXekcYSQzzzT1wjqvT92iQnjDby8TCsZ/T2Jd5294DZdcr6S
-	NM32Xi9OLYRHeGQY+L2Xx8JCS/g5+JhqUxuFtfrE0UqTXYriDMhDS7+kMVvmHq44
-	FDantb/WLmTqrjRgofwM6oK+Jokztr7008E7OxKxHm3lLhp4txhBa+rlYuDGES4l
-	1ozSA/FFUlrFKOMS9wqMoiw4XtFnwC4REBNbK3uoDQd/wPZX3PaB5oHb7dN+dJxi
-	UhlOuOk1nDEbYbbMsmC41iNoUQr1QZvHGcrWGHQ8yJdkZV8S8Eqsem5HDlUc3AiK
-	Ke+Bg==
-Received: from ediex01.ad.cirrus.com ([84.19.233.68])
-	by mx0a-001ae601.pphosted.com (PPS) with ESMTPS id 3wd207gxtx-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tg31l4g2rz3bt2
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2024 04:20:09 +1100 (AEDT)
+Received: from pps.filterd (m0355091.ppops.net [127.0.0.1])
+	by mx0b-00823401.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 41LH8G9C020266;
+	Wed, 21 Feb 2024 17:19:58 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=motorola.com; h=
+	from:to:cc:subject:date:message-id:references:in-reply-to
+	:content-type:content-transfer-encoding:mime-version; s=
+	DKIM202306; bh=A16FWm2ylqNOU3f2uziRcCTYLkAP3hC2xgtH7xfVk8I=; b=Y
+	RjAyTGpsGwyX3fpP8bUDCsUI8bv4ri+bS5BcTOBybcl5tenQb8HLkcKoSJlkqOsZ
+	0pYOTQ1SqZ13qF57AJufRAIUGh1zYUopComy7lWHm+pT2SYqww1PkIw5EV40HwIn
+	cqM6xTp6QrxGFsn8iPo8fYIVsVFF4kqER0j+tZyPACtIO4iGaN2nZfi8WvgZITQW
+	PilrzR4QqepLyDhPFdt7uClYVcIrMTkK0TnrdH6U8mQPcDQW4KmieZnLU3FdsaEe
+	0P1LYkiJ+DMzyWgE5Sj7m9ZTlZpfPCZImJTxVZ+vHxJE8NtME+c/M7zECIr4Ka48
+	mljeLn0mLU9JCB7mjU2ng==
+Received: from apc01-sg2-obe.outbound.protection.outlook.com (mail-sgaapc01lp2105.outbound.protection.outlook.com [104.47.26.105])
+	by mx0b-00823401.pphosted.com (PPS) with ESMTPS id 3wda6dt1tu-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 Feb 2024 06:37:12 -0600 (CST)
-Received: from ediex01.ad.cirrus.com (198.61.84.80) by ediex01.ad.cirrus.com
- (198.61.84.80) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1118.40; Wed, 21 Feb
- 2024 12:37:10 +0000
-Received: from ediswmail9.ad.cirrus.com (198.61.86.93) by
- ediex01.ad.cirrus.com (198.61.84.80) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40 via Frontend Transport; Wed, 21 Feb 2024 12:37:10 +0000
-Received: from ediswws06.ad.cirrus.com (ediswws06.ad.cirrus.com [198.90.208.18])
-	by ediswmail9.ad.cirrus.com (Postfix) with ESMTP id 24720820241;
-	Wed, 21 Feb 2024 12:37:10 +0000 (UTC)
-From: Richard Fitzgerald <rf@opensource.cirrus.com>
-To: <broonie@kernel.org>, <shengjiu.wang@gmail.com>, <Xiubo.Lee@gmail.com>
-Subject: [PATCH] ASoC: soc-card: Fix missing locking in snd_soc_card_get_kcontrol()
-Date: Wed, 21 Feb 2024 12:37:10 +0000
-Message-ID: <20240221123710.690224-1-rf@opensource.cirrus.com>
-X-Mailer: git-send-email 2.30.2
+	Wed, 21 Feb 2024 17:19:57 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=W6KWxvvHlU0jWj2vbiDwmEfEaFfZRsKV9SZcAAA/oaQFwTXKGX5YAXpH1kikXwDKZi46NF3Cb8siyLfT+agJWylkT23iCls2CVSZmgORiCOqsP8U8ueAOO1v/i+WjJxr9PYirjWjgW+zcQvd/e1W3cJmkzwMSTV2L40DpiBAdWAGhLDmjXAgntmLOwzb8d9A6wF5McbqxR6utG2COo2aVuWMFSzTesHrkIlBzl0lkNb5cY0DTIT2m9763Cx8FLe+0LNA/zmg+Y+AuRdvjKkIl+H8YZEXFZ3atyOSVx3EX4++acGcymlnvNekcTedR42wlpcLlHZYd0QMNXwCASnmWQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=A16FWm2ylqNOU3f2uziRcCTYLkAP3hC2xgtH7xfVk8I=;
+ b=MGTcODYIFmAuCAI49fvDrL4NXE0Ie+i7tOMKoWFATIXd8slCTzRQnj+tTMp69quoqr6TpkwqgkdaW4mOmKDY229XP86B75nj/dofZ54cYkt/9sLVGREYTutUM9eA2k7jwbQ4bz7m2kHzwRCUUpGyWK4IQOIUwRTDHUBhQP5kqKbcm40OVuk6lk4cRpDtwGMgsYUnn8FY3P0v85pHQopRmgR0d2P/kWszyG6oEL1kqWXQ5G6JtTTMpX+DbQnfogxfTffWE6IeSwV29VAnIhxSHu+ixFyJBgG/6+tDzuIYvSw/We3m9Wv+2ZHpeUIhASG3aKR4lqegCHhf9pGA4baHhw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=motorola.com; dmarc=pass action=none header.from=motorola.com;
+ dkim=pass header.d=motorola.com; arc=none
+Received: from SEZPR03MB6786.apcprd03.prod.outlook.com (2603:1096:101:66::5)
+ by SI6PR03MB9032.apcprd03.prod.outlook.com (2603:1096:4:23a::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7292.39; Wed, 21 Feb
+ 2024 17:19:53 +0000
+Received: from SEZPR03MB6786.apcprd03.prod.outlook.com
+ ([fe80::dbc8:b80e:efaf:2d74]) by SEZPR03MB6786.apcprd03.prod.outlook.com
+ ([fe80::dbc8:b80e:efaf:2d74%6]) with mapi id 15.20.7292.036; Wed, 21 Feb 2024
+ 17:19:53 +0000
+From: Maxwell Bland <mbland@motorola.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 1/4] mm/vmalloc: allow arch-specific vmalloc_node
+ overrides
+Thread-Topic: [PATCH 1/4] mm/vmalloc: allow arch-specific vmalloc_node
+ overrides
+Thread-Index: AQHaZOovDm6xvxRBMUiuzkOVo5kMqw==
+Date: Wed, 21 Feb 2024 17:19:53 +0000
+Message-ID:  <SEZPR03MB67867ACC0D9AAD3A3AB19EBAB4572@SEZPR03MB6786.apcprd03.prod.outlook.com>
+References: <20240220203256.31153-1-mbland@motorola.com>
+ <20240220203256.31153-2-mbland@motorola.com>
+ <4026e0f4-f0f3-4386-b9e9-62834c823fc9@csgroup.eu>
+In-Reply-To: <4026e0f4-f0f3-4386-b9e9-62834c823fc9@csgroup.eu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SEZPR03MB6786:EE_|SI6PR03MB9032:EE_
+x-ms-office365-filtering-correlation-id: 93a026fc-7063-4f6b-da50-08dc330151a6
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  jNK41NW185C9Av48J6JIwOOAcGYr1P7xl/03poGw09xEkYOlInmAhZA2h1ZyikrYsnZUl/MTbtoCkOvAcA4U+/4zLDeur5RC91agxgm8/w08HH1XAaNFuiGz0vkWJKw7gUohL6InCSSr4RliC86cQiPkgFAFVWUO8++Ziv8OgwiSF4/rypBMu0PBcoRN6MGp48ZAWxIVz9+GeevU3ZERXuDEWUiy7cUJAoP4IhNlY/f91AjBbMYHHUyGT+DIa16mDz4nIXX/adGsShcTS30Xx0EHTA1aJ/Xp+SHvcSxlczFCeCObwG34tkYIL7Hzeq8x87nvl8NIvNL8c3ZnxrieXOuc7H0/uoWQv0N8dPGjrnTxQhYpHCrVp22W+XuRxrdcO+XfTAluKF+qJcM7PU9FdCnrZ6NV014YA7U9Qa0faQnhNLPC1F+r4NmAqcuZqxWNDdcyBY9yeB+Jjza0vGecBWDZgSof1Dul3B/1izDnlW4UqQyzPjak8edYUTro2y/kYapUtWYP9w7VsiEbVI5G7f4zvp46u6gQZycMTK2H3C8BQg+7tZtbHQVFKhGMB5Z3n26fKhS6lZ76SyhpRlFIR6yiboCn5ixyydobYcZqKrb1G1LuQ14xodrQbkaerdRH
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR03MB6786.apcprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(38070700009);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?MStISkhsOVo1YmpraXFUaDFmdHZXV1RUMUdyUXZ3WTRmbHhjMW5jVnBER2hq?=
+ =?utf-8?B?cFhBK0doTUcyYUZvcXJWRWlPNVZ4QU1NQ0xDc1VucEhlaGNlTVFCcDFxb0lq?=
+ =?utf-8?B?R1VhODFvNzRRQUZnaWFjc1J4VUFBdkJTMVBrZzN2Mnp0QngzNno3SU5qN2pW?=
+ =?utf-8?B?ZWpuUlNiMXU0SDNuNDhBUGwwTWo4ZXB6WmZ6REV1eG5BQUJvNVpubW0zT2Rm?=
+ =?utf-8?B?dC9LTzFFS3RScE16eGU3QUQvdzNYbEZUTE1mdlRLQnFzQm12TDVjMXc4Tklr?=
+ =?utf-8?B?Vzd2aFBlTytoVGhlZkN0SG81MkVCN3Z5YzZabFVEMUhzUWxIZzRQcmVub0N3?=
+ =?utf-8?B?OTRtQzZFbE1VYzBSU2thNjRMbnl6MzhDT1RFbUJqSVhBa1ZyNzJ0cFdJSjho?=
+ =?utf-8?B?UEIvRm9Ca3RiMTdFNFpEcjNIMUpjSTdTV09HL1pLTERnTFBpQmxxdDdFVkpZ?=
+ =?utf-8?B?ZFFQRlFMTTV1U2J0Q1VWNVRXT3Vzb29vMlFycjMxNDhYcGhDODFVdHYwZ2M1?=
+ =?utf-8?B?ejdtQXN3Q1ZCTUN4eE5sS01YQzlSbWkrOGFxRHNSREIwQlFCMHpRUXZiZHhR?=
+ =?utf-8?B?Z0VYVHV3SWRxMXhRNFlzY0tHYTFpOTBNZFRTRDBBcWc4OWJVL1VmZDMyT2Fr?=
+ =?utf-8?B?RHVkSWxKSW1lbzJscUFBMEE5Z016YjRGV2I4YTRrZldDUVBwd3FuM1FaZUht?=
+ =?utf-8?B?aUpZcUR1NHU4UmQwVVF5UzZVYmQvSjRwaTFCTzkyN0VucHQ1V0ZhRXNUUXBF?=
+ =?utf-8?B?VDBXSGsrTFRVYTdYQVAzZ2czOXpLNXNWcUMzU0luYkp4ZXNsb1VVT01ZbG0y?=
+ =?utf-8?B?STZ6RDQwYXFJWE5oVXhicklBSEVGVG9LenhVd1JYV3E3VmhXeDdSckdZQ3B5?=
+ =?utf-8?B?LzNHWkJQT1lHYWlkTEluaGpYU3dDMlRJYXpnQkgzOWtweW56eCszQ3ZzcDFJ?=
+ =?utf-8?B?T3lHM2R6S1dPWUVsM2dWZi9EVGZ3UW4ybUNobzFqZE4xc29rVFdUQllpakFT?=
+ =?utf-8?B?cUkrb2xaMnhHTTJ5azRzbW5VSjJMR0cvNzFlT2FsS21HelcwcjA1MmxJZEE4?=
+ =?utf-8?B?VGtocVNUeG9KOERFYXVnRjV6QlZSaVQvejFsNXpoVEN4VVoyVE9YQkg2dlJV?=
+ =?utf-8?B?VUN6SXRNYUI3NHE5R1hQSXZ3VVI2c213bkZHelFBZWRxRjJMSFBxSWtLSkJp?=
+ =?utf-8?B?d3lVWnB2ZkNFcHJWczlnM2EreG8rWURDQnV6Z2s0WkZTSXRLQnJRS3NwQVpK?=
+ =?utf-8?B?Z25YUy9CcUJELzlLNkhRVGVsMi9uQThqNHlMcFZ6RjhKYVRReWplRXhCeXlu?=
+ =?utf-8?B?c0c3SjZ6TzRyeU5IRnNLZ3pXSHZwdDNZRFVjT1gyS3pxdGdFSHU2WFhneWxV?=
+ =?utf-8?B?K3BXaU1FYVM2cCtWL0Nwait5V3NhOHBiUGJJY0gwZE8wSVBGQmM0bjh0dVVS?=
+ =?utf-8?B?djlXczAzMHh2YS8rV1ptM3BmVURFbWxxQUdKV1dNZFJhOW1PaklYWC9pUVNQ?=
+ =?utf-8?B?L2pGOTYvNVdSd3N1UWt6b2k1S1Q5QzRUU1VkZGtITUxURFhGdFlFKzJTdVBE?=
+ =?utf-8?B?RVJHRDJTVnNHUUI0VWI5eUlpWGhLb0lNbEQwV2xHN1pEMUNBMUpkQVVnN21T?=
+ =?utf-8?B?WThNOU45S2VKQkIrcjAxU0VmNGt3WmVTTjNhQmhldjdTYVk5QkhwTit1MXc4?=
+ =?utf-8?B?MHF3cjNlc1ZJekhTQXNXUWkveHAvb3ZIMC9vSVpHcGpQODkwUFkrdUtRM3Mr?=
+ =?utf-8?B?a0xQOWQ4Um4wUVZoM2l2TFh5bWVYUS9iNTVRYkFpaE5Xeldwa3lxc3Jzcmpp?=
+ =?utf-8?B?UlFrVEpua25vVmR0QUdLbDNBUnhsWkh3WS9LVW9FRzdLcENpQU9EaHVMRVpG?=
+ =?utf-8?B?UDhSTEdQekh4NWh4QURTZ1BEaWQxbU44NXZrNGxUU056OEx5TVF0NXo1c0xJ?=
+ =?utf-8?B?K1AySGM4c1l5ME1IY2VPTnpYVFROV2xYaE5BdGJDbmF3UENtcHBwQlFGNjhB?=
+ =?utf-8?B?cDdDUExTZ2VpMThZYWFKNEowY29GSVR4dG1oazRVZlBKQnpneDYra2lwMGgr?=
+ =?utf-8?B?eVpaQXZTODlnRlJUaHczTnNxd1gwK0N1VVpSTmJnZE53TlB4azNVUFU1ZERv?=
+ =?utf-8?Q?eW+Q=3D?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Proofpoint-GUID: i7brLjb8Ucmc36s854s1B2eW7kb5tHjW
-X-Proofpoint-ORIG-GUID: i7brLjb8Ucmc36s854s1B2eW7kb5tHjW
-X-Proofpoint-Spam-Reason: safe
+X-OriginatorOrg: motorola.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SEZPR03MB6786.apcprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 93a026fc-7063-4f6b-da50-08dc330151a6
+X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Feb 2024 17:19:53.7262
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 5c7d0b28-bdf8-410c-aa93-4df372b16203
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 72jIbILg8ZqP+TZn2CsrTBc3gBzdYzltZg5je2/0ag/Zwdz4+hXoD0wAqB33nEOinpWX1M0nk6VwDjXNVVJRxQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI6PR03MB9032
+X-Proofpoint-GUID: Anrb8UwrX8w3BZK-gnzrdoMgiKxQTAsp
+X-Proofpoint-ORIG-GUID: Anrb8UwrX8w3BZK-gnzrdoMgiKxQTAsp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-21_04,2024-02-21_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ suspectscore=0 phishscore=0 spamscore=0 clxscore=1015 bulkscore=0
+ mlxscore=0 priorityscore=1501 adultscore=0 impostorscore=0 mlxlogscore=924
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2402120000 definitions=main-2402210134
 X-Mailman-Approved-At: Thu, 22 Feb 2024 09:07:37 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,225 +156,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, patches@opensource.cirrus.com, linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org, Richard Fitzgerald <rf@opensource.cirrus.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "david@redhat.com" <david@redhat.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>, "ast@kernel.org" <ast@kernel.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "ryabinin.a.a@gmail.com" <ryabinin.a.a@gmail.com>, "glider@google.com" <glider@google.com>, "sdf@google.com" <sdf@google.com>, "yonghong.song@linux.dev" <yonghong.song@linux.dev>, "wuqiang.matt@bytedance.com" <wuqiang.matt@bytedance.com>, "agordeev@linux.ibm.com" <agordeev@linux.ibm.com>, "vincenzo.frascino@arm.com" <vincenzo.frascino@arm.com>, "will@kernel.org" <will@kernel.org>, "ardb@kernel.org" <ardb@kernel.org>, "michael.christie@oracle.com" <michael.christie@oracle.com>, "quic_nprakash@quicinc.com" <quic_nprakash@quicinc.com>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "hch@infrade
+ ad.org" <hch@infradead.org>, "arnd@arndb.de" <arnd@arndb.de>, "daniel@iogearbox.net" <daniel@iogearbox.net>, "mst@redhat.com" <mst@redhat.com>, "john.fastabend@gmail.com" <john.fastabend@gmail.com>, "andrii@kernel.org" <andrii@kernel.org>, "kasan-dev@googlegroups.com" <kasan-dev@googlegroups.com>, "aneesh.kumar@kernel.org" <aneesh.kumar@kernel.org>, "urezki@gmail.com" <urezki@gmail.com>, "samitolvanen@google.com" <samitolvanen@google.com>, "zlim.lnx@gmail.com" <zlim.lnx@gmail.com>, "naveen.n.rao@linux.ibm.com" <naveen.n.rao@linux.ibm.com>, "dennis@kernel.org" <dennis@kernel.org>, "borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, "cl@linux.com" <cl@linux.com>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, "ryan.roberts@arm.com" <ryan.roberts@arm.com>, "gor@linux.ibm.com" <gor@linux.ibm.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "hca@linux.ibm.com" <hca@linux.ibm.com>, "npiggin@gmail.com" <npiggin@gmail.com>, "kpsingh@kernel.org" <kpsingh@kernel.org>, "
+ meted@linux.ibm.com" <meted@linux.ibm.com>, "quic_pkondeti@quicinc.com" <quic_pkondeti@quicinc.com>, "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>, "surenb@google.com" <surenb@google.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "dvyukov@google.com" <dvyukov@google.com>, "andreyknvl@gmail.com" <andreyknvl@gmail.com>, "haoluo@google.com" <haoluo@google.com>, "brauner@kernel.org" <brauner@kernel.org>, "mjguzik@gmail.com" <mjguzik@gmail.com>, "lstoakes@gmail.com" <lstoakes@gmail.com>, "song@kernel.org" <song@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "muchun.song@linux.dev" <muchun.song@linux.dev>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andrew Wheeler <awheeler@motorola.com>, "martin.lau@linux.dev" <martin.lau@linux.dev>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "palmer@dabbelt.com" <palmer@dabbelt.com>, "svens@linux.ibm.com" <svens@linux.ibm.com>, "jolsa@kernel.org" <jolsa@kernel.
+ org>, "tj@kernel.org" <tj@kernel.org>, "guoren@kernel.org" <guoren@kernel.org>, "bpf@vger.kernel.org" <bpf@vger.kernel.org>, "rick.p.edgecombe@intel.com" <rick.p.edgecombe@intel.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-snd_soc_card_get_kcontrol() must be holding a read lock on
-card->controls_rwsem while walking the controls list.
-
-Compare with snd_ctl_find_numid().
-
-The existing function is renamed snd_soc_card_get_kcontrol_locked()
-so that it can be called from contexts that are already holding
-card->controls_rwsem (for example, control get/put functions).
-
-There are few direct or indirect callers of
-snd_soc_card_get_kcontrol(), and most are safe. Three require
-changes, which have been included in this patch:
-
-codecs/cs35l45.c:
-  cs35l45_activate_ctl() is called from a control put() function so
-  is changed to call snd_soc_card_get_kcontrol_locked().
-
-codecs/cs35l56.c:
-  cs35l56_sync_asp1_mixer_widgets_with_firmware() is called from
-  control get()/put() functions so is changed to call
-  snd_soc_card_get_kcontrol_locked().
-
-fsl/fsl_xcvr.c:
-  fsl_xcvr_activate_ctl() is called from three places, one of which
-  already holds card->controls_rwsem:
-  1. fsl_xcvr_mode_put(), a control put function, which will
-     already be holding card->controls_rwsem.
-  2. fsl_xcvr_startup(), a DAI startup function.
-  3. fsl_xcvr_shutdown(), a DAI shutdown function.
-
-  To fix this, fsl_xcvr_activate_ctl() has been changed to call
-  snd_soc_card_get_kcontrol_locked() so that it is safe to call
-  directly from fsl_xcvr_mode_put().
-  The fsl_xcvr_startup() and fsl_xcvr_shutdown() functions have been
-  changed to take a read lock on card->controls_rsem() around calls
-  to fsl_xcvr_activate_ctl(). While this is not very elegant, it
-  keeps the change small, to avoid this patch creating a large
-  collateral churn in fsl/fsl_xcvr.c.
-
-Analysis of other callers of snd_soc_card_get_kcontrol() is that
-they do not need any changes, they are not holding card->controls_rwsem
-when they call snd_soc_card_get_kcontrol().
-
-Direct callers of snd_soc_card_get_kcontrol():
-  fsl/fsl_spdif.c: fsl_spdif_dai_probe() - DAI probe function
-  fsl/fsl_micfil.c: voice_detected_fn() - IRQ handler
-
-Indirect callers via soc_component_notify_control():
-  codecs/cs42l43: cs42l43_mic_shutter() - IRQ handler
-  codecs/cs42l43: cs42l43_spk_shutter() - IRQ handler
-  codecs/ak4118.c: ak4118_irq_handler() - IRQ handler
-  codecs/wm_adsp.c: wm_adsp_write_ctl() - not currently used
-
-Indirect callers via snd_soc_limit_volume():
-  qcom/sc8280xp.c: sc8280xp_snd_init() - DAIlink init function
-  ti/rx51.c: rx51_aic34_init() - DAI init function
-
-I don't have hardware to test the fsl/*, qcom/sc828xp.c, ti/rx51.c
-and ak4118.c changes.
-
-Backport note:
-The fsl/, qcom/, cs35l45, cs35l56 and cs42l43 callers were added
-since the Fixes commit so won't all be present on older kernels.
-
-Signed-off-by: Richard Fitzgerald <rf@opensource.cirrus.com>
-Fixes: 209c6cdfd283 ("ASoC: soc-card: move snd_soc_card_get_kcontrol() to soc-card")
----
-It would be great if people could test the fsl/, qcom/, ti/rx51 and ak4418
-drivers.
----
- include/sound/soc-card.h   |  2 ++
- sound/soc/codecs/cs35l45.c |  2 +-
- sound/soc/codecs/cs35l56.c |  2 +-
- sound/soc/fsl/fsl_xcvr.c   | 12 +++++++++++-
- sound/soc/soc-card.c       | 24 ++++++++++++++++++++++--
- 5 files changed, 37 insertions(+), 5 deletions(-)
-
-diff --git a/include/sound/soc-card.h b/include/sound/soc-card.h
-index ecc02e955279..1f4c39922d82 100644
---- a/include/sound/soc-card.h
-+++ b/include/sound/soc-card.h
-@@ -30,6 +30,8 @@ static inline void snd_soc_card_mutex_unlock(struct snd_soc_card *card)
- 
- struct snd_kcontrol *snd_soc_card_get_kcontrol(struct snd_soc_card *soc_card,
- 					       const char *name);
-+struct snd_kcontrol *snd_soc_card_get_kcontrol_locked(struct snd_soc_card *soc_card,
-+						      const char *name);
- int snd_soc_card_jack_new(struct snd_soc_card *card, const char *id, int type,
- 			  struct snd_soc_jack *jack);
- int snd_soc_card_jack_new_pins(struct snd_soc_card *card, const char *id,
-diff --git a/sound/soc/codecs/cs35l45.c b/sound/soc/codecs/cs35l45.c
-index 44c221745c3b..2392c6effed8 100644
---- a/sound/soc/codecs/cs35l45.c
-+++ b/sound/soc/codecs/cs35l45.c
-@@ -184,7 +184,7 @@ static int cs35l45_activate_ctl(struct snd_soc_component *component,
- 	else
- 		snprintf(name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", ctl_name);
- 
--	kcontrol = snd_soc_card_get_kcontrol(component->card, name);
-+	kcontrol = snd_soc_card_get_kcontrol_locked(component->card, name);
- 	if (!kcontrol) {
- 		dev_err(component->dev, "Can't find kcontrol %s\n", name);
- 		return -EINVAL;
-diff --git a/sound/soc/codecs/cs35l56.c b/sound/soc/codecs/cs35l56.c
-index 2c1313e34cce..6dd0319bc843 100644
---- a/sound/soc/codecs/cs35l56.c
-+++ b/sound/soc/codecs/cs35l56.c
-@@ -114,7 +114,7 @@ static int cs35l56_sync_asp1_mixer_widgets_with_firmware(struct cs35l56_private
- 			name = full_name;
- 		}
- 
--		kcontrol = snd_soc_card_get_kcontrol(dapm->card, name);
-+		kcontrol = snd_soc_card_get_kcontrol_locked(dapm->card, name);
- 		if (!kcontrol) {
- 			dev_warn(cs35l56->base.dev, "Could not find control %s\n", name);
- 			continue;
-diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
-index f0fb33d719c2..c46f64557a7f 100644
---- a/sound/soc/fsl/fsl_xcvr.c
-+++ b/sound/soc/fsl/fsl_xcvr.c
-@@ -174,7 +174,9 @@ static int fsl_xcvr_activate_ctl(struct snd_soc_dai *dai, const char *name,
- 	struct snd_kcontrol *kctl;
- 	bool enabled;
- 
--	kctl = snd_soc_card_get_kcontrol(card, name);
-+	lockdep_assert_held(&card->snd_card->controls_rwsem);
-+
-+	kctl = snd_soc_card_get_kcontrol_locked(card, name);
- 	if (kctl == NULL)
- 		return -ENOENT;
- 
-@@ -576,10 +578,14 @@ static int fsl_xcvr_startup(struct snd_pcm_substream *substream,
- 	xcvr->streams |= BIT(substream->stream);
- 
- 	if (!xcvr->soc_data->spdif_only) {
-+		struct snd_soc_card *card = dai->component->card;
-+
- 		/* Disable XCVR controls if there is stream started */
-+		down_read(&card->snd_card->controls_rwsem);
- 		fsl_xcvr_activate_ctl(dai, fsl_xcvr_mode_kctl.name, false);
- 		fsl_xcvr_activate_ctl(dai, fsl_xcvr_arc_mode_kctl.name, false);
- 		fsl_xcvr_activate_ctl(dai, fsl_xcvr_earc_capds_kctl.name, false);
-+		up_read(&card->snd_card->controls_rwsem);
- 	}
- 
- 	return 0;
-@@ -598,11 +604,15 @@ static void fsl_xcvr_shutdown(struct snd_pcm_substream *substream,
- 	/* Enable XCVR controls if there is no stream started */
- 	if (!xcvr->streams) {
- 		if (!xcvr->soc_data->spdif_only) {
-+			struct snd_soc_card *card = dai->component->card;
-+
-+			down_read(&card->snd_card->controls_rwsem);
- 			fsl_xcvr_activate_ctl(dai, fsl_xcvr_mode_kctl.name, true);
- 			fsl_xcvr_activate_ctl(dai, fsl_xcvr_arc_mode_kctl.name,
- 						(xcvr->mode == FSL_XCVR_MODE_ARC));
- 			fsl_xcvr_activate_ctl(dai, fsl_xcvr_earc_capds_kctl.name,
- 						(xcvr->mode == FSL_XCVR_MODE_EARC));
-+			up_read(&card->snd_card->controls_rwsem);
- 		}
- 		ret = regmap_update_bits(xcvr->regmap, FSL_XCVR_EXT_IER0,
- 					 FSL_XCVR_IRQ_EARC_ALL, 0);
-diff --git a/sound/soc/soc-card.c b/sound/soc/soc-card.c
-index 285ab4c9c716..8a2f163da6bc 100644
---- a/sound/soc/soc-card.c
-+++ b/sound/soc/soc-card.c
-@@ -5,6 +5,9 @@
- // Copyright (C) 2019 Renesas Electronics Corp.
- // Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
- //
-+
-+#include <linux/lockdep.h>
-+#include <linux/rwsem.h>
- #include <sound/soc.h>
- #include <sound/jack.h>
- 
-@@ -26,12 +29,15 @@ static inline int _soc_card_ret(struct snd_soc_card *card,
- 	return ret;
- }
- 
--struct snd_kcontrol *snd_soc_card_get_kcontrol(struct snd_soc_card *soc_card,
--					       const char *name)
-+struct snd_kcontrol *snd_soc_card_get_kcontrol_locked(struct snd_soc_card *soc_card,
-+						      const char *name)
- {
- 	struct snd_card *card = soc_card->snd_card;
- 	struct snd_kcontrol *kctl;
- 
-+	/* must be held read or write */
-+	lockdep_assert_held(&card->controls_rwsem);
-+
- 	if (unlikely(!name))
- 		return NULL;
- 
-@@ -40,6 +46,20 @@ struct snd_kcontrol *snd_soc_card_get_kcontrol(struct snd_soc_card *soc_card,
- 			return kctl;
- 	return NULL;
- }
-+EXPORT_SYMBOL_GPL(snd_soc_card_get_kcontrol_locked);
-+
-+struct snd_kcontrol *snd_soc_card_get_kcontrol(struct snd_soc_card *soc_card,
-+					       const char *name)
-+{
-+	struct snd_card *card = soc_card->snd_card;
-+	struct snd_kcontrol *kctl;
-+
-+	down_read(&card->controls_rwsem);
-+	kctl = snd_soc_card_get_kcontrol_locked(soc_card, name);
-+	up_read(&card->controls_rwsem);
-+
-+	return kctl;
-+}
- EXPORT_SYMBOL_GPL(snd_soc_card_get_kcontrol);
- 
- static int jack_new(struct snd_soc_card *card, const char *id, int type,
--- 
-2.30.2
-
+PiBPbiBXZWRuZXNkYXksIEZlYnJ1YXJ5IDIxLCAyMDI0IDEyOjU5IEFNLCBDaHJpc3RvcGhlIExl
+cm95IHdyb3RlOg0KPiANCj4gSW4gdGhlIGNvZGUgeW91IGFkZCBfX3dlYWsgZm9yIHRoYXQuIEJ1
+dCB5b3UgYWxzbyBhZGQgdGhlIGZsYWdzIHRvIHRoZQ0KPiBwYXJhbWV0ZXJzIGFuZCBJIGNhbid0
+IHVuZGVyc3RhbmQgd2h5IHdoZW4gcmVhZGluZyB0aGUgYWJvdmUgZGVzY3JpcHRpb24uDQoNClRo
+aXMgIGNoYW5nZSB3YXMgbWFkZSB0byBhbGxvdyBtb3N0IGtlcm5lbCBpbnRlcmZhY2VzIHVzZSB2
+bWFsbG9jX25vZGUgYW5kDQplbmFibGUgdGhlIG92ZXJyaWRlcyB0byB3b3JrLiBJdCBhbHNvIHJl
+ZHVjZXMgdGhlIG51bWJlciBvZiBrZXJuZWwgbG9jYXRpb25zDQp3aGljaCB3b3VsZCBuZWVkIHRv
+IGJlIGNoYW5nZSBpZiB0aGVyZSB3YXMgZXZlciBhIGNoYW5nZSB0byB0aGUNCnZtYWxsb2Nfbm9k
+ZV9yYW5nZSBpbnRlcmZhY2UuDQoNCkhvd2V2ZXIsIHRoZXJlIGlzIGEgcHVzaGJhY2sgdG8gb3Zl
+cnJpZGluZyB0aGUgdm1hbGxvYyBpbnRlcmZhY2UsIHNvIHRoaXMgY2hhbmdlDQp3aWxsIGxpa2Vs
+eSBub3Qgc2hvdyB1cCBpbiBteSBmaW5hbCBwYXRjaC4NCg0KUmVnYXJkcywNCk1heHdlbGwNCg0K
