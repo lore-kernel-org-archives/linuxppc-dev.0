@@ -4,72 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1567AC48BF6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 14:31:09 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Y137kzra;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA687C48BC3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 15:41:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TfzGh4ZPBz3dVZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 01:31:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Y137kzra;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tg0qc3t2Vz3vXX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 02:41:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TfzFs0jM1z3cBx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2024 01:30:23 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1708525825; x=1740061825;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=AnVfYPg9QLlMiSY5zHzUg1A2vSHWhrEptn7kKIChBoo=;
-  b=Y137kzrahKjLKTq4+MbZBIu8MZ1+hiwbrH5pi8e0xa+GEBCByKSIcip7
-   3JU3+psrW64C3jhc2fpLNmqfmUK6GBqM2hSyS7g+BdcoMLaTEU9AW6Tas
-   /sRpWhjeTOHh0tX9tsGgew+sKyQ+fWfb1Is9UqmXcF1rVd56CRj198aks
-   w4WCfXf8kmur1vum9Dk5CGGfhBNSV2GMVpCC/nVDgQEtMp9/cX0QSDsvF
-   M0tQf9velw7gh/++K8mx+GCXenWsVocN8JVN2XuyHcQJ7Lw02mYgm/jYf
-   91u8GskpPqNbD9AE7egzeAvQUtLCiEyjwMq9Xhu5utGkdlBlQUiDWR0lY
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10990"; a="2549602"
-X-IronPort-AV: E=Sophos;i="6.06,175,1705392000"; 
-   d="scan'208";a="2549602"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Feb 2024 06:30:20 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10990"; a="913314388"
-X-IronPort-AV: E=Sophos;i="6.06,175,1705392000"; 
-   d="scan'208";a="913314388"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by fmsmga002.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Feb 2024 06:30:15 -0800
-Received: from andy by smile.fi.intel.com with local (Exim 4.97)
-	(envelope-from <andriy.shevchenko@linux.intel.com>)
-	id 1rcnbv-00000006N3D-3zA2;
-	Wed, 21 Feb 2024 16:30:11 +0200
-Date: Wed, 21 Feb 2024 16:30:11 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Herve Codina <herve.codina@bootlin.com>
-Subject: Re: [PATCH v3 RESEND 3/6] bitmap: Make bitmap_onto() available to
- users
-Message-ID: <ZdYI81yKNisoLR7Y@smile.fi.intel.com>
-References: <20240212075646.19114-4-herve.codina@bootlin.com>
- <ZcoOpPb9HfXOYmAr@smile.fi.intel.com>
- <20240212143753.620ddd6e@bootlin.com>
- <ZcokwpMb6SFWhLBB@smile.fi.intel.com>
- <20240212152022.75b10268@bootlin.com>
- <Zcos9F3ZCX5c936p@smile.fi.intel.com>
- <Zcptyd/AWrDD3EAL@yury-ThinkPad>
- <20240215184612.438bd4f2@bootlin.com>
- <Zc5jQ3zR51MDIovB@smile.fi.intel.com>
- <20240221144431.149c3a16@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tg0q40qj4z3cML
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2024 02:40:46 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rcoi4-0003mQ-O6; Wed, 21 Feb 2024 16:40:36 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rcoi4-0024B8-Ad; Wed, 21 Feb 2024 16:40:36 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rcoi4-008uv8-0i;
+	Wed, 21 Feb 2024 16:40:36 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 5/6] powerpc: fsl_msi: Convert to platform remove callback returning void
+Date: Wed, 21 Feb 2024 16:40:19 +0100
+Message-ID: <42d8e3721053dce21ea373a24cb37fb0f59eed26.1708529736.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1708529736.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1708529736.git.u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240221144431.149c3a16@bootlin.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1871; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=6wL4elibviE13Qv+1O6PDAfQtFc//5sf09sSXO5Ik7w=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBl1hllxFPbP6+IIGKKvkk5Ws4Lt7VVSolYdoVHG eN7s2rqluaJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZdYZZQAKCRCPgPtYfRL+ TqbkB/9La74GIZJCNSzzvQ7gCfSrnyvErHtHyXEdSl5q3IbnyyPh9e2hT43VC7/wZThw40qdYlC dU3tSt+hgFMOSMXa7+2jQDOfnYkQOQGKuD8U8UDBounvDQGQN/mIVJ/QqxMT+5mhTMQhh6TB25P a1sBAx5sDsA6EorQlXHuwmoLPLDqyBuNlStFOTgFWcKX1Qp+Nr14Gzjji2PBC0WthYGay+lh+HR 9SIonp1e2UBiuX5AI8uD4S5noZel4hp8Bm57I7qS2kbFaFJnAyZQ7L4TxdV3lvhmFEAkxkrNYwR Ju//dxeuymA47NJ5kUoS4H2iMLViSHxefbG9z42YRZW0ROof
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,45 +58,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, Yury Norov <yury.norov@gmail.com>, netdev@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Mark Brown <broonie@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Rob Herring <robh@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, kernel@pengutronix.de, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 21, 2024 at 02:44:31PM +0100, Herve Codina wrote:
-> On Thu, 15 Feb 2024 21:17:23 +0200
-> Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is ignored (apart
+from emitting a warning) and this typically results in resource leaks.
 
-[...]
+To improve here there is a quest to make the remove callback return
+void. In the first step of this quest all drivers are converted to
+.remove_new(), which already returns void. Eventually after all drivers
+are converted, .remove_new() will be renamed to .remove().
 
-> > > Now what's the plan ?
-> > > Andy, do you want to send a v2 of this patch or may I get the patch, modify it
-> > > according to reviews already present in v1 and integrate it in my current
-> > > series ?  
-> > 
-> > I would like to do that, but under pile of different things.
-> > I would try my best but if you have enough time and motivation feel free
-> > to take over, address the comments and integrate in your series.
-> > 
-> > I dunno what to do with bitmap_onto(), perhaps in a separate patch we can
-> > replace it with bitmap_scatter() (IIUC) with explanation that the former
-> > 1) uses atomic ops while being non-atomic as a whole, and b) having quite
-> > hard to get documentation. At least that's how I see it, I mean that I would
-> > like to leave bitmap_onto() alone and address it separately.
-> 
-> I will take the Andy's bitmap_{scatter,gather}() patch in my next iteration.
-> And use bitmap_{scatter,gather}() in my code.
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
 
-Thank you and sorry that I have no time to finish that. I will be happy to help
-reviewing if you Cc me.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ arch/powerpc/sysdev/fsl_msi.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-> For bitmap_onto() replacement, nothing will be done in my next iteration as
-> it is out of this series scope.
-
-I agree on this. This will be a separate logical change related to NUMA with
-explanation and replacement of all callers at once.
-
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 558ec68d768e..8e6c84df4ca1 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -320,7 +320,7 @@ static irqreturn_t fsl_msi_cascade(int irq, void *data)
+ 	return ret;
+ }
+ 
+-static int fsl_of_msi_remove(struct platform_device *ofdev)
++static void fsl_of_msi_remove(struct platform_device *ofdev)
+ {
+ 	struct fsl_msi *msi = platform_get_drvdata(ofdev);
+ 	int virq, i;
+@@ -343,8 +343,6 @@ static int fsl_of_msi_remove(struct platform_device *ofdev)
+ 	if ((msi->feature & FSL_PIC_IP_MASK) != FSL_PIC_IP_VMPIC)
+ 		iounmap(msi->msi_regs);
+ 	kfree(msi);
+-
+-	return 0;
+ }
+ 
+ static struct lock_class_key fsl_msi_irq_class;
+@@ -603,7 +601,7 @@ static struct platform_driver fsl_of_msi_driver = {
+ 		.of_match_table = fsl_of_msi_ids,
+ 	},
+ 	.probe = fsl_of_msi_probe,
+-	.remove = fsl_of_msi_remove,
++	.remove_new = fsl_of_msi_remove,
+ };
+ 
+ static __init int fsl_of_msi_init(void)
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.43.0
 
