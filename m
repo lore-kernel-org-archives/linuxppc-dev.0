@@ -4,53 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C136BC48BC3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 16:16:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11D30C5478A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 16:57:54 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G6y2XApx;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tg1bv3h0Bz3vc3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 03:16:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tg2X12FL2z3dRs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 03:57:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G6y2XApx;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tg1Z737ZBz3bn8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2024 03:14:39 +1100 (AEDT)
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id A53D42222F;
-	Wed, 21 Feb 2024 16:14:34 +0000 (UTC)
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 0385813A42;
-	Wed, 21 Feb 2024 16:14:33 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([10.150.64.162])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id KMI5O2kh1mVrYwAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Wed, 21 Feb 2024 16:14:33 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: arnd@arndb.de,
-	javierm@redhat.com,
-	deller@gmx.de,
-	suijingfeng@loongson.cn
-Subject: [PATCH 1/3] arch: Select fbdev helpers with CONFIG_VIDEO
-Date: Wed, 21 Feb 2024 17:05:24 +0100
-Message-ID: <20240221161431.8245-2-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240221161431.8245-1-tzimmermann@suse.de>
-References: <20240221161431.8245-1-tzimmermann@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tg2W42pVBz3cCb
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2024 03:57:04 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4A19F6144B;
+	Wed, 21 Feb 2024 16:57:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2284BC433F1;
+	Wed, 21 Feb 2024 16:56:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1708534620;
+	bh=fKXceB0Gk5Qi2BTh8FnrZ+MT+hE3FOYlCf2QUIU2XXQ=;
+	h=From:Date:Subject:To:Cc:From;
+	b=G6y2XApxOSs9SZl79EQohPRj/X5MpyJELyXCc2UtgTxkX488zdh7HWdDR+lyX0unX
+	 CUJ3F7ZZbY3Vx2bdoT0jpYzMKE1H9IUANbSkmtC/wtbJFE8gw5IkjPu/GucJ+ibf6Y
+	 88tDFcattShPJ7M6gdeISV3hDqCuzLs2iKAmubTOYAxlgjmAHL/Ure//BNYZT+JXVD
+	 ugZUI3LvAbt5KssDhcPEKqu2br9DI5l/QW1EVY8L8rhcEEHlMg48HzlCALNApQfYyt
+	 gpH+W9lLfViXuIrXKtO70sqLRd5E8bI/RFu4RbsPzbktT1Gd1Ec0M0V2ZPWQjOfv8F
+	 NCve65P6JPhpA==
+From: Simon Horman <horms@kernel.org>
+Date: Wed, 21 Feb 2024 16:56:47 +0000
+Subject: [PATCH RFC net] ps3/gelic: Fix possible NULL pointer dereference
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Authentication-Results: smtp-out1.suse.de;
-	none
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	 REPLY(-4.00)[]
-X-Rspamd-Queue-Id: A53D42222F
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240221-ps3-gelic-null-deref-v1-1-f4fe159c7cb0@kernel.org>
+X-B4-Tracking: v=1; b=H4sIAE4r1mUC/x2MQQqDMBQFrxL+2g9JWkTcCh7ArXRhk6d+CFESW
+ wri3RtczsDMSRlJkKlVJyV8JcsWC5hKkVunuIDFFyar7VNba3jPD14QxHH8hMAeCTM32ji42jS
+ Tf1NJ9yLld29HGvpORRz0uq4/qOxVpW8AAAA=
+To: Geoff Levand <geoff@infradead.org>, 
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+X-Mailer: b4 0.12.3
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,97 +62,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andreas Larsson <andreas@gaisler.com>, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, netdev@vger.kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Dan Carpenter <dan.carpenter@linaro.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Various Kconfig options selected the per-architecture helpers for
-fbdev. But none of the contained code depends on fbdev. Standardize
-on CONFIG_VIDEO, which will allow to add more general helpers for
-video functionality.
+Fix possible NULL pointer dereference in gelic_card_release_tx_chain()
 
-CONFIG_VIDEO protects each architecture's video/ directory. This
-allows for the use of more fine-grained control for each directory's
-files, such as the use of CONFIG_STI_CORE on parisc.
+The cited commit introduced a netdev variable to
+gelic_card_release_tx_chain() which is set unconditionally on each
+iteration of a for loop.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Andreas Larsson <andreas@gaisler.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: x86@kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>
+It is set to the value of tx_chain->tail->skb->dev.  However, in some
+cases it is assumed that tx_chain->tail->skb may be NULL. And if that
+occurs, setting netdev will cause a NULl pointer dereference.
+
+Given the age of this code I do wonder if this can occur in practice.
+But to be on the safe side this patch assumes that it can and aims to
+avoid the dereference in the case where tx_chain->tail->skb may be NULL.
+
+Flagged by Smatch.
+Compile tested only.
+
+Fixes: 589866f9f1cb ("PS3: gelic: Add support for dual network interface")
+Signed-off-by: Simon Horman <horms@kernel.org>
 ---
- arch/parisc/Makefile      | 2 +-
- arch/sparc/Makefile       | 4 ++--
- arch/sparc/video/Makefile | 2 +-
- arch/x86/Makefile         | 2 +-
- arch/x86/video/Makefile   | 3 ++-
- 5 files changed, 7 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/toshiba/ps3_gelic_net.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/parisc/Makefile b/arch/parisc/Makefile
-index 316f84f1d15c8..21b8166a68839 100644
---- a/arch/parisc/Makefile
-+++ b/arch/parisc/Makefile
-@@ -119,7 +119,7 @@ export LIBGCC
+diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+index d5b75af163d3..f03489799f5d 100644
+--- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
++++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+@@ -549,14 +549,13 @@ static void gelic_card_release_tx_chain(struct gelic_card *card, int stop)
+ {
+ 	struct gelic_descr_chain *tx_chain;
+ 	enum gelic_descr_dma_status status;
+-	struct net_device *netdev;
+ 	int release = 0;
  
- libs-y	+= arch/parisc/lib/ $(LIBGCC)
- 
--drivers-y += arch/parisc/video/
-+drivers-$(CONFIG_VIDEO) += arch/parisc/video/
- 
- boot	:= arch/parisc/boot
- 
-diff --git a/arch/sparc/Makefile b/arch/sparc/Makefile
-index 5f60359361312..757451c3ea1df 100644
---- a/arch/sparc/Makefile
-+++ b/arch/sparc/Makefile
-@@ -59,8 +59,8 @@ endif
- libs-y                 += arch/sparc/prom/
- libs-y                 += arch/sparc/lib/
- 
--drivers-$(CONFIG_PM) += arch/sparc/power/
--drivers-$(CONFIG_FB) += arch/sparc/video/
-+drivers-$(CONFIG_PM)    += arch/sparc/power/
-+drivers-$(CONFIG_VIDEO) += arch/sparc/video/
- 
- boot := arch/sparc/boot
- 
-diff --git a/arch/sparc/video/Makefile b/arch/sparc/video/Makefile
-index 6baddbd58e4db..9dd82880a027a 100644
---- a/arch/sparc/video/Makefile
-+++ b/arch/sparc/video/Makefile
-@@ -1,3 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0-only
- 
--obj-$(CONFIG_FB) += fbdev.o
-+obj-y	+= fbdev.o
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 15a5f4f2ff0aa..c0ea612c62ebe 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -265,7 +265,7 @@ drivers-$(CONFIG_PCI)            += arch/x86/pci/
- # suspend and hibernation support
- drivers-$(CONFIG_PM) += arch/x86/power/
- 
--drivers-$(CONFIG_FB_CORE) += arch/x86/video/
-+drivers-$(CONFIG_VIDEO) += arch/x86/video/
- 
- ####
- # boot loader support. Several targets are kept for legacy purposes
-diff --git a/arch/x86/video/Makefile b/arch/x86/video/Makefile
-index 5ebe48752ffc4..9dd82880a027a 100644
---- a/arch/x86/video/Makefile
-+++ b/arch/x86/video/Makefile
-@@ -1,2 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0-only
--obj-$(CONFIG_FB_CORE)		+= fbdev.o
+ 	for (tx_chain = &card->tx_chain;
+ 	     tx_chain->head != tx_chain->tail && tx_chain->tail;
+ 	     tx_chain->tail = tx_chain->tail->next) {
+ 		status = gelic_descr_get_status(tx_chain->tail);
+-		netdev = tx_chain->tail->skb->dev;
 +
-+obj-y	+= fbdev.o
--- 
-2.43.0
+ 		switch (status) {
+ 		case GELIC_DESCR_DMA_RESPONSE_ERROR:
+ 		case GELIC_DESCR_DMA_PROTECTION_ERROR:
+@@ -566,11 +565,14 @@ static void gelic_card_release_tx_chain(struct gelic_card *card, int stop)
+ 					 "%s: forcing end of tx descriptor " \
+ 					 "with status %x\n",
+ 					 __func__, status);
+-			netdev->stats.tx_dropped++;
++			tx_chain->tail->skb->dev->stats.tx_dropped++;
+ 			break;
+ 
+ 		case GELIC_DESCR_DMA_COMPLETE:
+ 			if (tx_chain->tail->skb) {
++				struct net_device *netdev;
++
++				netdev = tx_chain->tail->skb->dev;
+ 				netdev->stats.tx_packets++;
+ 				netdev->stats.tx_bytes +=
+ 					tx_chain->tail->skb->len;
 
