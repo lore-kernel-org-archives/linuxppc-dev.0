@@ -4,47 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EDDCC48BC3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 04:48:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87F0FC48BC3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 05:46:10 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=GbnN26R+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pDzL0pw8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TfkKx5WP2z3dSj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 15:48:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tflcx1Y4lz3cZD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Feb 2024 16:46:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=GbnN26R+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pDzL0pw8;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TfkJF0zhLz3bx2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2024 15:46:37 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1708490795;
-	bh=v8Rm1u8fU2Rj5MvUP3rCMSv8Lan4BOkATbDS4M86uDU=;
-	h=From:To:Cc:Subject:Date:From;
-	b=GbnN26R+gZospe7EgTzJsgs8AYja+Kf6DCCTOkrF/3K0eCtzt4WLRDHC6kgBRKjpy
-	 F7ZyxgTV51Y4INBNgBUl8ml66BVKhAjTeT4fI9NaOLX4cTJIN4Ndzf8s+JK/9wD3Y4
-	 muHQptjqkRS4XqdxfomKko6Y2wcatoPSOczS6qth4ydpPhRWo1kafymYd3noL0okTO
-	 qKncMJ5pJvsMzq8dTRMbY9D1z2vI2lMpeEwyMoyTbCz+TPOtPYPJHQ8HcYgickWR+N
-	 anebCtrZJRWaDGEUNDJygxmnTXR2K6hE5MBHt7DkrnTlDi9GQUqR+1wt+kvNwg+ock
-	 7jvTMK6CMFbvg==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TfkJC4SWbz4wbr;
-	Wed, 21 Feb 2024 15:46:35 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v4 1/2] powerpc: Add Power11 architected and raw mode
-Date: Wed, 21 Feb 2024 15:46:22 +1100
-Message-ID: <20240221044623.1598642-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.43.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tflc36JpDz3bnL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Feb 2024 16:45:23 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 41L4lBp6000697;
+	Wed, 21 Feb 2024 05:45:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=b4Rc+JJTl0oXXyFyUimmcRSwrR8o6jLizaEBqMxTzFc=;
+ b=pDzL0pw8rbCUMPoiRdCVZyKEnV6ScCiw5RtLJbOPPWJVM6LAN11L5R2EJlD6Ooa0AKiN
+ O9CtaJwifSVi/sC7iQPdknvm9UZk1hCvsPSH8fj7dW5JqMplw+pjSA9EtPmLnycFvlxX
+ gamkIBeZ3eEbqvuuXKYiGxP3G9aVB66z6dHx8d2+7/E9Jh6pCLKcQgOCHPW09zgm/i05
+ w6gkswvr7m5EfyQmrAgs8HIKMuavQoQVaI/IKAQQRoMA97aTek/5NI/VZzvleGpP14Oe
+ 59YYOXf9/0P94kEfukBAbpOmrS74g6CwFp3B/ufyVvu7q2gp4hZ2r0jVQwCVh67lvO9u Kw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wdaeuh2gg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 21 Feb 2024 05:45:10 +0000
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 41L5L576027185;
+	Wed, 21 Feb 2024 05:45:10 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wdaeuh2fu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 21 Feb 2024 05:45:10 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 41L4ZADY003620;
+	Wed, 21 Feb 2024 05:45:08 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3wb74tndg5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 21 Feb 2024 05:45:08 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 41L5j5wm20054726
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 21 Feb 2024 05:45:07 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1EE7220043;
+	Wed, 21 Feb 2024 05:45:05 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DEE3820040;
+	Wed, 21 Feb 2024 05:45:01 +0000 (GMT)
+Received: from [9.203.115.195] (unknown [9.203.115.195])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 21 Feb 2024 05:45:01 +0000 (GMT)
+Message-ID: <559f2595-1477-4ef0-80e4-85ae8b426de7@linux.ibm.com>
+Date: Wed, 21 Feb 2024 11:15:00 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 00/14] Split crash out from kexec and clean up related
+ config items
+Content-Language: en-US
+To: Baoquan He <bhe@redhat.com>
+References: <20240119145241.769622-1-bhe@redhat.com>
+ <9101bb07-70f1-476c-bec9-ec67e9899744@linux.ibm.com>
+ <Zb8D1ASrgX0qVm9z@MiWiFi-R3L-srv>
+From: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <Zb8D1ASrgX0qVm9z@MiWiFi-R3L-srv>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: o0K0_e5Ni1T52UBm7wfmF8Us0d4xjhAq
+X-Proofpoint-ORIG-GUID: JVqEJMNWA1ME-iLPtPQHASXdnQfDLkYD
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-02-20_06,2024-02-20_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501 mlxscore=0
+ lowpriorityscore=0 clxscore=1011 phishscore=0 mlxlogscore=999
+ suspectscore=0 impostorscore=0 spamscore=0 bulkscore=0 malwarescore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2402210041
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,213 +102,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.ibm.com
+Cc: linux-s390@vger.kernel.org, piliu@redhat.com, linux-sh@vger.kernel.org, x86@kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, ebiederm@xmission.com, loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, viro@zeniv.linux.org.uk
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
+Hi Baoquan,
 
-Add CPU table entries for raw and architected mode. Most fields are
-copied from the Power10 table entries.
+On 04/02/24 8:56 am, Baoquan He wrote:
+>>> Hope Hari and Pingfan can help have a look, see if
+>>> it's doable. Now, I make it either have both kexec and crash enabled, or
+>>> disable both of them altogether.
+>>
+>> Sure. I will take a closer look...
+> Thanks a lot. Please feel free to post patches to make that, or I can do
+> it with your support or suggestion.
 
-CPU, MMU and user (ELF_HWCAP) features are unchanged vs P10. However
-userspace can detect P11 because the AT_PLATFORM value changes to
-"power11".
+Tested your changes and on top of these changes, came up with the below
+changes to get it working for powerpc:
 
-The logical PVR value of 0x0F000007, passed to firmware via the
-ibm_arch_vec, indicates the kernel can support a P11 compatible CPU,
-which means at least ISA v3.1 compliant.
+ 
+https://lore.kernel.org/all/20240213113150.1148276-1-hbathini@linux.ibm.com/
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/cputable.h       |  3 ++
- arch/powerpc/include/asm/mmu.h            |  1 +
- arch/powerpc/include/asm/reg.h            |  2 ++
- arch/powerpc/kernel/cpu_specs_book3s_64.h | 34 +++++++++++++++++++++++
- arch/powerpc/kernel/dt_cpu_ftrs.c         | 10 +++++++
- arch/powerpc/kernel/prom_init.c           | 10 ++++++-
- arch/powerpc/kvm/book3s_hv.c              |  1 +
- 7 files changed, 60 insertions(+), 1 deletion(-)
+Please take a look.
 
-v4: mpe: Rename PVR_ARCH_31N to PVR_ARCH_31_P11, to clarify that it indicates
-P11 compatibility. Flesh out change log with some more detail.
-
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 48471ca388dd..07a204d21034 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -454,6 +454,9 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_ARCH_300 | CPU_FTR_ARCH_31 | \
- 	    CPU_FTR_DAWR | CPU_FTR_DAWR1 | \
- 	    CPU_FTR_DEXCR_NPHIE)
-+
-+#define CPU_FTRS_POWER11	CPU_FTRS_POWER10
-+
- #define CPU_FTRS_CELL	(CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index d8b7e246a32f..61ebe5eff2c9 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -133,6 +133,7 @@
- #define MMU_FTRS_POWER8		MMU_FTRS_POWER6
- #define MMU_FTRS_POWER9		MMU_FTRS_POWER6
- #define MMU_FTRS_POWER10	MMU_FTRS_POWER6
-+#define MMU_FTRS_POWER11	MMU_FTRS_POWER6
- #define MMU_FTRS_CELL		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
- 				MMU_FTR_CI_LARGE_PAGE
- #define MMU_FTRS_PA6T		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 7fd09f25452d..58d6348e4ea0 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1364,6 +1364,7 @@
- #define PVR_HX_C2000	0x0066
- #define PVR_POWER9	0x004E
- #define PVR_POWER10	0x0080
-+#define PVR_POWER11	0x0082
- #define PVR_BE		0x0070
- #define PVR_PA6T	0x0090
- 
-@@ -1375,6 +1376,7 @@
- #define PVR_ARCH_207	0x0f000004
- #define PVR_ARCH_300	0x0f000005
- #define PVR_ARCH_31	0x0f000006
-+#define PVR_ARCH_31_P11	0x0f000007
- 
- /* Macros for setting and retrieving special purpose registers */
- #ifndef __ASSEMBLY__
-diff --git a/arch/powerpc/kernel/cpu_specs_book3s_64.h b/arch/powerpc/kernel/cpu_specs_book3s_64.h
-index 3ff9757df4c0..98d4274a1b6b 100644
---- a/arch/powerpc/kernel/cpu_specs_book3s_64.h
-+++ b/arch/powerpc/kernel/cpu_specs_book3s_64.h
-@@ -60,6 +60,9 @@
- 				 PPC_FEATURE2_ISEL | PPC_FEATURE2_TAR | \
- 				 PPC_FEATURE2_VEC_CRYPTO)
- 
-+#define COMMON_USER_POWER11	COMMON_USER_POWER10
-+#define COMMON_USER2_POWER11	COMMON_USER2_POWER10
-+
- static struct cpu_spec cpu_specs[] __initdata = {
- 	{	/* PPC970 */
- 		.pvr_mask		= 0xffff0000,
-@@ -281,6 +284,20 @@ static struct cpu_spec cpu_specs[] __initdata = {
- 		.cpu_restore		= __restore_cpu_power10,
- 		.platform		= "power10",
- 	},
-+	{	/* 3.1-compliant processor, i.e. Power11 "architected" mode */
-+		.pvr_mask		= 0xffffffff,
-+		.pvr_value		= 0x0f000007,
-+		.cpu_name		= "Power11 (architected)",
-+		.cpu_features		= CPU_FTRS_POWER11,
-+		.cpu_user_features	= COMMON_USER_POWER11,
-+		.cpu_user_features2	= COMMON_USER2_POWER11,
-+		.mmu_features		= MMU_FTRS_POWER11,
-+		.icache_bsize		= 128,
-+		.dcache_bsize		= 128,
-+		.cpu_setup		= __setup_cpu_power10,
-+		.cpu_restore		= __restore_cpu_power10,
-+		.platform		= "power11",
-+	},
- 	{	/* Power7 */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x003f0000,
-@@ -451,6 +468,23 @@ static struct cpu_spec cpu_specs[] __initdata = {
- 		.machine_check_early	= __machine_check_early_realmode_p10,
- 		.platform		= "power10",
- 	},
-+	{	/* Power11 */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x00820000,
-+		.cpu_name		= "Power11 (raw)",
-+		.cpu_features		= CPU_FTRS_POWER11,
-+		.cpu_user_features	= COMMON_USER_POWER11,
-+		.cpu_user_features2	= COMMON_USER2_POWER11,
-+		.mmu_features		= MMU_FTRS_POWER11,
-+		.icache_bsize		= 128,
-+		.dcache_bsize		= 128,
-+		.num_pmcs		= 6,
-+		.pmc_type		= PPC_PMC_IBM,
-+		.cpu_setup		= __setup_cpu_power10,
-+		.cpu_restore		= __restore_cpu_power10,
-+		.machine_check_early	= __machine_check_early_realmode_p10,
-+		.platform		= "power11",
-+	},
- 	{	/* Cell Broadband Engine */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x00700000,
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index c3fb9fdf5bd7..af4263594eb2 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -458,6 +458,14 @@ static int __init feat_enable_mce_power10(struct dt_cpu_feature *f)
- 	return 1;
- }
- 
-+static int __init feat_enable_mce_power11(struct dt_cpu_feature *f)
-+{
-+	cur_cpu_spec->platform = "power11";
-+	cur_cpu_spec->machine_check_early = __machine_check_early_realmode_p10;
-+
-+	return 1;
-+}
-+
- static int __init feat_enable_tm(struct dt_cpu_feature *f)
- {
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-@@ -648,8 +656,10 @@ static struct dt_cpu_feature_match __initdata
- 	{"pc-relative-addressing", feat_enable, 0},
- 	{"machine-check-power9", feat_enable_mce_power9, 0},
- 	{"machine-check-power10", feat_enable_mce_power10, 0},
-+	{"machine-check-power11", feat_enable_mce_power11, 0},
- 	{"performance-monitor-power9", feat_enable_pmu_power9, 0},
- 	{"performance-monitor-power10", feat_enable_pmu_power10, 0},
-+	{"performance-monitor-power11", feat_enable_pmu_power10, 0},
- 	{"event-based-branch-v3", feat_enable, 0},
- 	{"random-number-generator", feat_enable, 0},
- 	{"system-call-vectored", feat_disable, 0},
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index e67effdba85c..0ef358285337 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -947,7 +947,7 @@ struct option_vector7 {
- } __packed;
- 
- struct ibm_arch_vec {
--	struct { __be32 mask, val; } pvrs[14];
-+	struct { __be32 mask, val; } pvrs[16];
- 
- 	u8 num_vectors;
- 
-@@ -1007,6 +1007,14 @@ static const struct ibm_arch_vec ibm_architecture_vec_template __initconst = {
- 			.mask = cpu_to_be32(0xffff0000), /* POWER10 */
- 			.val  = cpu_to_be32(0x00800000),
- 		},
-+		{
-+			.mask = cpu_to_be32(0xffff0000), /* POWER11 */
-+			.val  = cpu_to_be32(0x00820000),
-+		},
-+		{
-+			.mask = cpu_to_be32(0xffffffff), /* P11 compliant */
-+			.val  = cpu_to_be32(0x0f000007),
-+		},
- 		{
- 			.mask = cpu_to_be32(0xffffffff), /* all 3.1-compliant */
- 			.val  = cpu_to_be32(0x0f000006),
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 52427fc2a33f..0ee7395caa21 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -427,6 +427,7 @@ static int kvmppc_set_arch_compat(struct kvm_vcpu *vcpu, u32 arch_compat)
- 			cap = H_GUEST_CAP_POWER9;
- 			break;
- 		case PVR_ARCH_31:
-+		case PVR_ARCH_31_P11:
- 			guest_pcr_bit = PCR_ARCH_31;
- 			cap = H_GUEST_CAP_POWER10;
- 			break;
--- 
-2.43.1
-
+Thanks
+Hari
