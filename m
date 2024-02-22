@@ -4,36 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9511CC54788
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 14:24:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7782C48BF8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 14:24:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bkB7s9nP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=oKYbvdUT;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tgb3z0qvgz3vXY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 01:23:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tgb4m2y9hz3vYb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 01:24:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bkB7s9nP;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=oKYbvdUT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::228])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.201; helo=relay8-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [217.70.183.201])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tgb2K5xlnz3cS3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2024 01:22:31 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 1F5181BF20A;
-	Thu, 22 Feb 2024 14:22:26 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tgb2L6nCWz3d4H
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2024 01:22:34 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 3482D1BF213;
+	Thu, 22 Feb 2024 14:22:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1708611748;
+	t=1708611752;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=Zhx1gNduZdrAxbKpizueNk61Hz1DSX29IWeNJrNnfCE=;
-	b=bkB7s9nPVSNwrpQTUYlLCMUPWFqLWWsOmeePeDdlyKL1je+UibdaL0z7bYSPHxJxdl5RWf
-	9HKteaQ8KZS6weJep/vs/4A5JPJhIcJ6YRJtyRXP3/5Dmpw0XS5ZkKm81dDPhRWrMGNP4Q
-	3cm7sHJowVnyykPmQCc9wtFWroiIlGO+oCAsaVIVJPVHcQNgHin9oTBasWEZJY+QptH+ym
-	7z/E6uw/fwdX3eN22cg9iiPhETsg9yaR0nhleF9Jzt0mLBhVvZ56qDejtBSlMinlJFPRUS
-	EZwZCd1PdTehxHeF837cN7DArKwOkzMOPC+XNiOr5kk/kOMBXHiSKjc8C0w2nw==
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=opmB03pxVbtCj6pvCgp5nhczC3sDrqxdKFiEeY7PEsQ=;
+	b=oKYbvdUTtTtpgJ62BTj+M4DjQ3ezGFhDyNQ7x5TE+txi5GALaL8yVOAPG4pPyTtzvnuQ5E
+	eTOAZUdbnuAVcz1DdYo36ikvTFPlKPkJ2prWz2rovgDfED6QUBBkJNtE2fhZT2/8T2qkgQ
+	GESq+BBc+qir7D1z6TXttZNvtCLmY5XtZcGG6SUnkQyewGme+LeL5TU/sYRf9y61bAnVjd
+	JzehvR94BB924pINVS1MR4axB0CquXDicw4t+r8eimWnVbAFYPSXaYXshm6b6vBFAj/iYG
+	ER5lmkTdPch9pAVDIC3P7lGDSANifAr4cLntA5/jk63CxYP/tvNqHIuOQMOcJg==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
 	"David S. Miller" <davem@davemloft.net>,
@@ -44,12 +45,13 @@ To: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
 	Yury Norov <yury.norov@gmail.com>,
 	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Subject: [PATCH v4 0/5] Add support for QMC HDLC
-Date: Thu, 22 Feb 2024 15:22:13 +0100
-Message-ID: <20240222142219.441767-1-herve.codina@bootlin.com>
+Subject: [PATCH v4 2/5] MAINTAINERS: Add the Freescale QMC HDLC driver entry
+Date: Thu, 22 Feb 2024 15:22:15 +0100
+Message-ID: <20240222142219.441767-3-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240222142219.441767-1-herve.codina@bootlin.com>
+References: <20240222142219.441767-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,131 +69,32 @@ Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org, linux-kernel@vger.kern
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+After contributing the driver, add myself as the maintainer for the
+Freescale QMC HDLC driver.
 
-This series introduces the QMC HDLC support.
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+---
+ MAINTAINERS | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Patches were previously sent as part of a full feature series and were
-previously reviewed in that context:
-"Add support for QMC HDLC, framer infrastructure and PEF2256 framer" [1]
-
-In order to ease the merge, the full feature series has been split and
-needed parts were merged in v6.8-rc1:
- - "Prepare the PowerQUICC QMC and TSA for the HDLC QMC driver" [2]
- - "Add support for framer infrastructure and PEF2256 framer" [3]
-
-This series contains patches related to the QMC HDLC part (QMC HDLC
-driver):
- - Introduce the QMC HDLC driver (patches 1 and 2)
- - Add timeslots change support in QMC HDLC (patch 3)
- - Add framer support as a framer consumer in QMC HDLC (patch 4)
-
-Compare to the original full feature series, a modification was done on
-patch 3 in order to use a coherent prefix in the commit title.
-
-I kept the patches unsquashed as they were previously sent and reviewed.
-Of course, I can squash them if needed.
-
-Compared to the previous iteration:
-  https://lore.kernel.org/linux-kernel/20240212075646.19114-1-herve.codina@bootlin.com/
-this v4 series mainly:
-- Introduces and use bitmap_{scatter,gather}().
-
-Best regards,
-Hervé
-
-[1]: https://lore.kernel.org/linux-kernel/20231115144007.478111-1-herve.codina@bootlin.com/
-[2]: https://lore.kernel.org/linux-kernel/20231205152116.122512-1-herve.codina@bootlin.com/
-[3]: https://lore.kernel.org/linux-kernel/20231128132534.258459-1-herve.codina@bootlin.com/
-
-Changes v3 -> v4
-  - Patch 1
-    Remove of.h and of_platform.h includes, add mod_devicetable.h.
-    Add a blank line in the includes list.
-
-  - Path 2
-    No changes.
-
-  - v3 patches 3 and 4 removed
-
-  - Patch 3 (new patch in v4)
-    Introduce bitmap_{scatter,gather}() based on the original patch done
-    by Andy Shevchenko.
-    Address comments already done on the original patch:
-    https://lore.kernel.org/lkml/20230926052007.3917389-3-andriy.shevchenko@linux.intel.com/
-      - Removed the returned values.
-      - Used 'unsigned int' for all indexes.
-      - Added a 'visual' description of the operations in kernel-doc.
-      - Described the relationship between bitmap_scatter() and
-        bitmap_gather().
-      - Moved bitmap_{scatter,gather}() to the bitmap.h file.
-      - Improved bitmap_{scatter,gather}() test.
-      - Reworked the commit log.
-
-  - Patch 4 (v3 patch 5)
-    Use bitmap_{scatter,gather}()
-
-  - Patches 5 (v3 patch 6)
-    No changes.
-
-Changes v2 -> v3
-  - Patch 1
-    Remove 'inline' function specifier from .c file.
-    Fix a bug introduced when added WARN_ONCE(). The warn condition must
-    be desc->skb (descriptor used) instead of !desc->skb.
-    Remove a lock/unlock section locking the entire qmc_hdlc_xmit()
-    function.
-
-  - Patch 5
-    Use bitmap_from_u64() everywhere instead of bitmap_from_arr32() and
-    bitmap_from_arr64().
-
-Changes v1 -> v2
-  - Patch 1
-    Use the same qmc_hdlc initialisation in qmc_hcld_recv_complete()
-    than the one present in qmc_hcld_xmit_complete().
-    Use WARN_ONCE()
-
-  - Patch 3 (new patch in v2)
-    Make bitmap_onto() available to users
-
-  - Patch 4 (new patch in v2)
-    Introduce bitmap_off()
-
-  - Patch 5 (patch 3 in v1)
-    Use bitmap_*() functions
-
-  - Patch 6 (patch 4 in v1)
-    No changes
-
-Changes compare to the full feature series:
-  - Patch 3
-    Use 'net: wan: fsl_qmc_hdlc:' as commit title prefix
-
-Patches extracted:
-  - Patch 1 : full feature series patch 7
-  - Patch 2 : full feature series patch 8
-  - Patch 3 : full feature series patch 20
-  - Patch 4 : full feature series patch 27
-
-Andy Shevchenko (1):
-  lib/bitmap: Introduce bitmap_scatter() and bitmap_gather() helpers
-
-Herve Codina (4):
-  net: wan: Add support for QMC HDLC
-  MAINTAINERS: Add the Freescale QMC HDLC driver entry
-  net: wan: fsl_qmc_hdlc: Add runtime timeslots changes support
-  net: wan: fsl_qmc_hdlc: Add framer support
-
- MAINTAINERS                    |   7 +
- drivers/net/wan/Kconfig        |  12 +
- drivers/net/wan/Makefile       |   1 +
- drivers/net/wan/fsl_qmc_hdlc.c | 807 +++++++++++++++++++++++++++++++++
- include/linux/bitmap.h         | 101 +++++
- lib/test_bitmap.c              |  42 ++
- 6 files changed, 970 insertions(+)
- create mode 100644 drivers/net/wan/fsl_qmc_hdlc.c
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8d1052fa6a69..15cd3a8e5866 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8584,6 +8584,13 @@ F:	Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
+ F:	drivers/soc/fsl/qe/qmc.c
+ F:	include/soc/fsl/qe/qmc.h
+ 
++FREESCALE QUICC ENGINE QMC HDLC DRIVER
++M:	Herve Codina <herve.codina@bootlin.com>
++L:	netdev@vger.kernel.org
++L:	linuxppc-dev@lists.ozlabs.org
++S:	Maintained
++F:	drivers/net/wan/fsl_qmc_hdlc.c
++
+ FREESCALE QUICC ENGINE TSA DRIVER
+ M:	Herve Codina <herve.codina@bootlin.com>
+ L:	linuxppc-dev@lists.ozlabs.org
 -- 
 2.43.0
 
