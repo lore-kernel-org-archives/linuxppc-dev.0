@@ -4,51 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30D8DC5478C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 21:38:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F60AC5478C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 21:46:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=rzeeEd49;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mrBXcDKo;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tgmjh4dKVz3vZy
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 08:38:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tgmty0Sv6z3dfr
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 08:46:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=rzeeEd49;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mrBXcDKo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::b6; helo=out-182.mta1.migadu.com; envelope-from=sean.anderson@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 384 seconds by postgrey-1.37 at boromir; Fri, 23 Feb 2024 04:14:53 AEDT
-Received: from out-182.mta1.migadu.com (out-182.mta1.migadu.com [IPv6:2001:41d0:203:375::b6])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tgfs94l6lz30hQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2024 04:14:53 +1100 (AEDT)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1708621684;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=A9cw43y7Ag2nW/FmjThiF7L/nsZOb2YeI0T4JXqjgN0=;
-	b=rzeeEd49VE0/ALeGOGSSbg143s8OTwaFAvrxCY6yGJTNFwwjFnEicT6dia7ttVnRyvmbnK
-	HyDFt3Yl46a0RnAXHRXJg/oBUW/egxgGR1825W80HSdBCnN6zALR51w2yk6tin+AfQdKwQ
-	QIFIm5ehJbZHhRkiGNuQTCV3GBhhgdo=
-From: Sean Anderson <sean.anderson@linux.dev>
-To: "David S . Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	netdev@vger.kernel.org
-Subject: [RESEND2 PATCH net v4 2/2] soc: fsl: qbman: Use raw spinlock for cgr_lock
-Date: Thu, 22 Feb 2024 12:07:49 -0500
-Message-Id: <20240222170749.2607485-2-sean.anderson@linux.dev>
-In-Reply-To: <20240222170749.2607485-1-sean.anderson@linux.dev>
-References: <20240222170749.2607485-1-sean.anderson@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tgmt62K7Rz3bsw
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2024 08:46:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1708638366;
+	bh=0ZmYCz+SCJ0BgfLpkAxVCmJACnVsDgEoO+/yVn8yWFo=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=mrBXcDKoRMVzrXITn1EEU+aj01MFFwaaItfCmGPweSRFKwRzLcFrm08tgcOcLlWJA
+	 l2eyNdSEkpR2DlS+x9UTf3fBjeLznOezB2H2sPmWkxoHYsvum78te77NTYVGQ72b5Z
+	 CVEEgBK1uLKYtUlWWFHG2X+4hMR3FaWFEKu8p5tfBQBb7WWEHLOLS2NGgBhUWVKimk
+	 LR3hdv5kPUSRvtIZVCVTtelIO8HVofEcPEBj3IMCZwosQgrLhs/uITZSlXENkDNi/v
+	 B6hn+dozf5ysqZeRXb3fVcwulhUZtxq0GTR9KnCjP6wC0bD1Qf5JUl1N3uoA4Wt8Mi
+	 jW8vPcRVGIGrA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tgmt55rTGz4wcC;
+	Fri, 23 Feb 2024 08:46:05 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexander Gordeev <agordeev@linux.ibm.com>, Ingo Molnar
+ <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Juri Lelli
+ <juri.lelli@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v2 RESEND 2/5] sched/vtime: get rid of generic
+ vtime_task_switch() implementation
+In-Reply-To: <5e8f7cfc5b405b892d55c51023e8149dfd83b253.1708612016.git.agordeev@linux.ibm.com>
+References: <cover.1708612016.git.agordeev@linux.ibm.com>
+ <5e8f7cfc5b405b892d55c51023e8149dfd83b253.1708612016.git.agordeev@linux.ibm.com>
+Date: Fri, 23 Feb 2024 08:46:03 +1100
+Message-ID: <87zfvs9nqc.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
-X-Mailman-Approved-At: Fri, 23 Feb 2024 08:37:24 +1100
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,134 +61,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sean Anderson <sean.anderson@linux.dev>, Vladimir Oltean <vladimir.oltean@nxp.com>, Roy Pledge <roy.pledge@nxp.com>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Scott Wood <oss@buserror.net>, Claudiu Manoil <claudiu.manoil@nxp.com>, Camelia Groza <camelia.groza@nxp.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-s390@vger.kernel.org, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, Frederic Weisbecker <frederic@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-cgr_lock may be locked with interrupts already disabled by
-smp_call_function_single. As such, we must use a raw spinlock to avoid
-problems on PREEMPT_RT kernels. Although this bug has existed for a
-while, it was not apparent until commit ef2a8d5478b9 ("net: dpaa: Adjust
-queue depth on rate change") which invokes smp_call_function_single via
-qman_update_cgr_safe every time a link goes up or down.
+Alexander Gordeev <agordeev@linux.ibm.com> writes:
+> The generic vtime_task_switch() implementation gets built only
+> if __ARCH_HAS_VTIME_TASK_SWITCH is not defined, but requires an
+> architecture to implement arch_vtime_task_switch() callback at
+> the same time, which is confusing.
+>
+> Further, arch_vtime_task_switch() is implemented for 32-bit PowerPC
+> architecture only and vtime_task_switch() generic variant is rather
+> superfluous.
+>
+> Simplify the whole vtime_task_switch() wiring by moving the existing
+> generic implementation to PowerPC.
+>
+> Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/cputime.h | 13 -------------
+>  arch/powerpc/kernel/time.c         | 22 ++++++++++++++++++++++
+>  kernel/sched/cputime.c             | 13 -------------
+>  3 files changed, 22 insertions(+), 26 deletions(-)
 
-Fixes: 96f413f47677 ("soc/fsl/qbman: fix issue in qman_delete_cgr_safe()")
-CC: stable@vger.kernel.org
-Reported-by: Vladimir Oltean <vladimir.oltean@nxp.com>
-Closes: https://lore.kernel.org/all/20230323153935.nofnjucqjqnz34ej@skbuf/
-Reported-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
-Closes: https://lore.kernel.org/linux-arm-kernel/87wmsyvclu.fsf@pengutronix.de/
-Signed-off-by: Sean Anderson <sean.anderson@linux.dev>
-Reviewed-by: Camelia Groza <camelia.groza@nxp.com>
-Tested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
----
+cheers
 
-Changes in v4:
-- Add a note about how raw spinlocks aren't quite right
-
-Changes in v3:
-- Change blamed commit to something more appropriate
-
- drivers/soc/fsl/qbman/qman.c | 25 ++++++++++++++-----------
- 1 file changed, 14 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index 1bf1f1ea67f0..7e9074519ad2 100644
---- a/drivers/soc/fsl/qbman/qman.c
-+++ b/drivers/soc/fsl/qbman/qman.c
-@@ -991,7 +991,7 @@ struct qman_portal {
- 	/* linked-list of CSCN handlers. */
- 	struct list_head cgr_cbs;
- 	/* list lock */
--	spinlock_t cgr_lock;
-+	raw_spinlock_t cgr_lock;
- 	struct work_struct congestion_work;
- 	struct work_struct mr_work;
- 	char irqname[MAX_IRQNAME];
-@@ -1281,7 +1281,7 @@ static int qman_create_portal(struct qman_portal *portal,
- 		/* if the given mask is NULL, assume all CGRs can be seen */
- 		qman_cgrs_fill(&portal->cgrs[0]);
- 	INIT_LIST_HEAD(&portal->cgr_cbs);
--	spin_lock_init(&portal->cgr_lock);
-+	raw_spin_lock_init(&portal->cgr_lock);
- 	INIT_WORK(&portal->congestion_work, qm_congestion_task);
- 	INIT_WORK(&portal->mr_work, qm_mr_process_task);
- 	portal->bits = 0;
-@@ -1456,11 +1456,14 @@ static void qm_congestion_task(struct work_struct *work)
- 	union qm_mc_result *mcr;
- 	struct qman_cgr *cgr;
- 
--	spin_lock_irq(&p->cgr_lock);
-+	/*
-+	 * FIXME: QM_MCR_TIMEOUT is 10ms, which is too long for a raw spinlock!
-+	 */
-+	raw_spin_lock_irq(&p->cgr_lock);
- 	qm_mc_start(&p->p);
- 	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCONGESTION);
- 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
--		spin_unlock_irq(&p->cgr_lock);
-+		raw_spin_unlock_irq(&p->cgr_lock);
- 		dev_crit(p->config->dev, "QUERYCONGESTION timeout\n");
- 		qman_p_irqsource_add(p, QM_PIRQ_CSCI);
- 		return;
-@@ -1476,7 +1479,7 @@ static void qm_congestion_task(struct work_struct *work)
- 	list_for_each_entry(cgr, &p->cgr_cbs, node)
- 		if (cgr->cb && qman_cgrs_get(&c, cgr->cgrid))
- 			cgr->cb(p, cgr, qman_cgrs_get(&rr, cgr->cgrid));
--	spin_unlock_irq(&p->cgr_lock);
-+	raw_spin_unlock_irq(&p->cgr_lock);
- 	qman_p_irqsource_add(p, QM_PIRQ_CSCI);
- }
- 
-@@ -2440,7 +2443,7 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
- 	preempt_enable();
- 
- 	cgr->chan = p->config->channel;
--	spin_lock_irq(&p->cgr_lock);
-+	raw_spin_lock_irq(&p->cgr_lock);
- 
- 	if (opts) {
- 		struct qm_mcc_initcgr local_opts = *opts;
-@@ -2477,7 +2480,7 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
- 	    qman_cgrs_get(&p->cgrs[1], cgr->cgrid))
- 		cgr->cb(p, cgr, 1);
- out:
--	spin_unlock_irq(&p->cgr_lock);
-+	raw_spin_unlock_irq(&p->cgr_lock);
- 	put_affine_portal();
- 	return ret;
- }
-@@ -2512,7 +2515,7 @@ int qman_delete_cgr(struct qman_cgr *cgr)
- 		return -EINVAL;
- 
- 	memset(&local_opts, 0, sizeof(struct qm_mcc_initcgr));
--	spin_lock_irqsave(&p->cgr_lock, irqflags);
-+	raw_spin_lock_irqsave(&p->cgr_lock, irqflags);
- 	list_del(&cgr->node);
- 	/*
- 	 * If there are no other CGR objects for this CGRID in the list,
-@@ -2537,7 +2540,7 @@ int qman_delete_cgr(struct qman_cgr *cgr)
- 		/* add back to the list */
- 		list_add(&cgr->node, &p->cgr_cbs);
- release_lock:
--	spin_unlock_irqrestore(&p->cgr_lock, irqflags);
-+	raw_spin_unlock_irqrestore(&p->cgr_lock, irqflags);
- 	put_affine_portal();
- 	return ret;
- }
-@@ -2577,9 +2580,9 @@ static int qman_update_cgr(struct qman_cgr *cgr, struct qm_mcc_initcgr *opts)
- 	if (!p)
- 		return -EINVAL;
- 
--	spin_lock_irqsave(&p->cgr_lock, irqflags);
-+	raw_spin_lock_irqsave(&p->cgr_lock, irqflags);
- 	ret = qm_modify_cgr(cgr, 0, opts);
--	spin_unlock_irqrestore(&p->cgr_lock, irqflags);
-+	raw_spin_unlock_irqrestore(&p->cgr_lock, irqflags);
- 	put_affine_portal();
- 	return ret;
- }
--- 
-2.35.1.1320.gc452695387.dirty
-
+> diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+> index 4961fb38e438..aff858ca99c0 100644
+> --- a/arch/powerpc/include/asm/cputime.h
+> +++ b/arch/powerpc/include/asm/cputime.h
+> @@ -32,23 +32,10 @@
+>  #ifdef CONFIG_PPC64
+>  #define get_accounting(tsk)	(&get_paca()->accounting)
+>  #define raw_get_accounting(tsk)	(&local_paca->accounting)
+> -static inline void arch_vtime_task_switch(struct task_struct *tsk) { }
+>  
+>  #else
+>  #define get_accounting(tsk)	(&task_thread_info(tsk)->accounting)
+>  #define raw_get_accounting(tsk)	get_accounting(tsk)
+> -/*
+> - * Called from the context switch with interrupts disabled, to charge all
+> - * accumulated times to the current process, and to prepare accounting on
+> - * the next process.
+> - */
+> -static inline void arch_vtime_task_switch(struct task_struct *prev)
+> -{
+> -	struct cpu_accounting_data *acct = get_accounting(current);
+> -	struct cpu_accounting_data *acct0 = get_accounting(prev);
+> -
+> -	acct->starttime = acct0->starttime;
+> -}
+>  #endif
+>  
+>  /*
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index df20cf201f74..c0fdc6d94fee 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -354,6 +354,28 @@ void vtime_flush(struct task_struct *tsk)
+>  	acct->hardirq_time = 0;
+>  	acct->softirq_time = 0;
+>  }
+> +
+> +/*
+> + * Called from the context switch with interrupts disabled, to charge all
+> + * accumulated times to the current process, and to prepare accounting on
+> + * the next process.
+> + */
+> +void vtime_task_switch(struct task_struct *prev)
+> +{
+> +	if (is_idle_task(prev))
+> +		vtime_account_idle(prev);
+> +	else
+> +		vtime_account_kernel(prev);
+> +
+> +	vtime_flush(prev);
+> +
+> +	if (!IS_ENABLED(CONFIG_PPC64)) {
+> +		struct cpu_accounting_data *acct = get_accounting(current);
+> +		struct cpu_accounting_data *acct0 = get_accounting(prev);
+> +
+> +		acct->starttime = acct0->starttime;
+> +	}
+> +}
+>  #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+>  
+>  void __no_kcsan __delay(unsigned long loops)
+> diff --git a/kernel/sched/cputime.c b/kernel/sched/cputime.c
+> index af7952f12e6c..aa48b2ec879d 100644
+> --- a/kernel/sched/cputime.c
+> +++ b/kernel/sched/cputime.c
+> @@ -424,19 +424,6 @@ static inline void irqtime_account_process_tick(struct task_struct *p, int user_
+>   */
+>  #ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+>  
+> -# ifndef __ARCH_HAS_VTIME_TASK_SWITCH
+> -void vtime_task_switch(struct task_struct *prev)
+> -{
+> -	if (is_idle_task(prev))
+> -		vtime_account_idle(prev);
+> -	else
+> -		vtime_account_kernel(prev);
+> -
+> -	vtime_flush(prev);
+> -	arch_vtime_task_switch(prev);
+> -}
+> -# endif
+> -
+>  void vtime_account_irq(struct task_struct *tsk, unsigned int offset)
+>  {
+>  	unsigned int pc = irq_count() - offset;
+> -- 
+> 2.40.1
