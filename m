@@ -4,54 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E147FC54791
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 17:51:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16CB5C5478C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 18:15:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=baikalelectronics.ru header.i=@baikalelectronics.ru header.a=rsa-sha256 header.s=post header.b=N4CfgLMK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y5YR/apD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tgggq4KlNz3vXp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 04:51:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TghCH5Thcz3vXy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 05:15:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=baikalelectronics.ru header.i=@baikalelectronics.ru header.a=rsa-sha256 header.s=post header.b=N4CfgLMK;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y5YR/apD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baikalelectronics.ru (client-ip=213.79.110.86; helo=post.baikalelectronics.com; envelope-from=sergey.semin@baikalelectronics.ru; receiver=lists.ozlabs.org)
-Received: from post.baikalelectronics.com (post.baikalelectronics.com [213.79.110.86])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tggf74cx1z2yst
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2024 04:50:23 +1100 (AEDT)
-Received: from post.baikalelectronics.com (localhost.localdomain [127.0.0.1])
-	by post.baikalelectronics.com (Proxmox) with ESMTP id 45F81E0EC2;
-	Thu, 22 Feb 2024 20:44:58 +0300 (MSK)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	baikalelectronics.ru; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:from:from:message-id
-	:mime-version:reply-to:subject:subject:to:to; s=post; bh=ECxaRkn
-	9yfqjrxSfI8sHbBDrza4hdFLYIVczvySlchw=; b=N4CfgLMKNqKY1JTx83U2XNW
-	HLxS2lzaYHex5BfzTb83yqoyLz27fK3KU+zjqSveb1yOUgUQbtykgEw8chgV3XBP
-	pOZkKAjU/65EB0Gb+WUD3ebZ8vJ2fqcvyCjN1Psmq0jNEhILTMAE16xR46a8K/QB
-	Rdq3Fno/FUkxZddqDTfA=
-Received: from mail.baikal.int (mail.baikal.int [192.168.51.25])
-	by post.baikalelectronics.com (Proxmox) with ESMTP id 1530EE0DE6;
-	Thu, 22 Feb 2024 20:44:58 +0300 (MSK)
-Received: from localhost (10.8.30.70) by mail (192.168.51.25) with Microsoft
- SMTP Server (TLS) id 15.0.1395.4; Thu, 22 Feb 2024 20:44:57 +0300
-From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
-	<npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Aneesh
- Kumar K.V <aneesh.kumar@kernel.org>, "Naveen N. Rao"
-	<naveen.n.rao@linux.ibm.com>, Rob Herring <robh+dt@kernel.org>, Frank Rowand
-	<frowand.list@gmail.com>, Krzysztof Kozlowski
-	<krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH RESEND v10 0/1] dt-bindings: usb: Harmonize xHCI/EHCI/OHCI/DWC3 nodes name
-Date: Thu, 22 Feb 2024 20:44:50 +0300
-Message-ID: <20240222174456.25903-1-Sergey.Semin@baikalelectronics.ru>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22b; helo=mail-lj1-x22b.google.com; envelope-from=fancer.lancer@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TghBP3YYbz2yN3
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2024 05:14:51 +1100 (AEDT)
+Received: by mail-lj1-x22b.google.com with SMTP id 38308e7fff4ca-2d228a132acso1160531fa.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Feb 2024 10:14:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1708625688; x=1709230488; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=0nAXuUIOjmGqCty40Smyp4CQdr7UcxvXuJwOvkK+QNc=;
+        b=Y5YR/apDyowftQf1WPza0FNTkYztkz0ibHDMJ1ROJJZpDnAV6slXZ0GKgm2UmW63Wv
+         oQ48f24/INEIMXwV1mh5bfQlF9cUirvM+0qrkxL8/6WbuG/OzgGhxP5afrrHBnwv/QRC
+         toM7fK0L7Ax9DqSEbneOgsD8RLMsC0Rq8PGnrw8uniPiboW837UIyyRLPWDw/pj69m2n
+         LG6aw86ZiiHBX4BMay2/6/wRl7/M8UXTaBiSE+JB128UPbDtk1SywagvytkE6d/Q5WKv
+         GvIO82LfzKTACFM5sk8cyWLKgofCEhoFKzK+4uq6OoB7kTSaPjxzqAhjP3MpqF2P+zdG
+         Rs2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1708625688; x=1709230488;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=0nAXuUIOjmGqCty40Smyp4CQdr7UcxvXuJwOvkK+QNc=;
+        b=hvUgEUsw9HW6KBq4RkvebcYgoK30PmwDRktBLqyf7l+LsOULw7pe25VjrGj9iSzjyn
+         /+y7mDPR9UJJwg9PDf/IussPAuCvlKr6nPF8S3Kii6ubko1gnFZTZQWlm2797RcIlsLg
+         dl/L6et+0dv76Qimu0mGRmGuT6SaFYT8Iz4QLAMOwGG/pPLoBNl9B2c+1eVbfchp2nE0
+         7PQVhtN8eMaysy7h/QJgtpdb1i/B0JdxdvXcoUD7Jqs1ZK6QinelC5oRO1AVGU6O4PbW
+         pe6C+6+oDQSbHinfAYqwJKnsUl0pULyFvdMUHBlCgavPsKS+pkLS80Sjn1w0bPdOT9bs
+         MRww==
+X-Forwarded-Encrypted: i=1; AJvYcCV7TT8/+J7yJr+78gCdHnrS2yGvzSwqDiI1qIMBftVUFb6I6TNWmFwljRo+ExqXDdHFwM5IomsAv2rkq+XbTn/nzplc5D1i1Nwv8tf8oQ==
+X-Gm-Message-State: AOJu0YzMTUOe0inodrB3FZrBK+xrcVpdTTYAGvyTpObB2WZT8OCIC2+U
+	DDuARP3k/iKU0iJIuOGSr2dUtFNlpN4Br9LWIQvAFG/SCJXMNOJf
+X-Google-Smtp-Source: AGHT+IHuWrnLpg4juM7jhgCVO9zVn6Qc74sw3WuVEmtL6YWr4BWGK20vM8RFfEGoQoVZiRd12s1KiA==
+X-Received: by 2002:a2e:a272:0:b0:2d2:4388:63fc with SMTP id k18-20020a2ea272000000b002d2438863fcmr6085862ljm.44.1708625687765;
+        Thu, 22 Feb 2024 10:14:47 -0800 (PST)
+Received: from localhost ([178.176.56.174])
+        by smtp.gmail.com with ESMTPSA id bd7-20020a05651c168700b002d24c720b16sm969025ljb.101.2024.02.22.10.14.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Feb 2024 10:14:47 -0800 (PST)
+From: Serge Semin <fancer.lancer@gmail.com>
+To: Michal Simek <michal.simek@amd.com>,
+	Alexander Stein <alexander.stein@ew.tq-group.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Tony Luck <tony.luck@intel.com>,
+	James Morse <james.morse@arm.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Robert Richter <rric@kernel.org>,
+	Lei Wang <lewan@microsoft.com>,
+	Egor Martovetsky <egor@pasemi.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Subject: [PATCH v5 15/20] EDAC/mc: Re-use generic unique MC index allocation procedure
+Date: Thu, 22 Feb 2024 21:13:00 +0300
+Message-ID: <20240222181324.28242-16-fancer.lancer@gmail.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240222181324.28242-1-fancer.lancer@gmail.com>
+References: <20240222181324.28242-1-fancer.lancer@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.8.30.70]
-X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,150 +92,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Serge Semin <Sergey.Semin@baikalelectronics.ru>, Serge Semin <fancer.lancer@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Serge Semin <fancer.lancer@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Punnaiah Choudary Kalluri <punnaiah.choudary.kalluri@xilinx.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As the subject states this series is an attempt to harmonize the xHCI,
-EHCI, OHCI and DWC USB3 DT nodes with the DT schema introduced in the
-framework of the patchset [1].
+The EDAC drivers locally maintaining a statically defined
+memory-controllers counter don't care much about the MC index assigned as
+long as it's unique so the EDAC core perceives it. Convert these drivers
+to be using the generic MC index allocation procedure recently added to
+the EDAC core.
 
-Firstly as Krzysztof suggested we've deprecated a support of DWC USB3
-controllers with "synopsys,"-vendor prefix compatible string in favor of
-the ones with valid "snps,"-prefix. It's done in all the DTS files,
-which have been unfortunate to define such nodes.
+Signed-off-by: Serge Semin <fancer.lancer@gmail.com>
 
-Secondly we suggest to fix the snps,quirk-frame-length-adjustment property
-declaration in the Amlogic meson-g12-common.dtsi DTS file, since it has
-been erroneously declared as boolean while having uint32 type. Neil said
-it was ok to init that property with 0x20 value.
+---
 
-Thirdly the main part of the patchset concern fixing the xHCI, EHCI/OHCI
-and DWC USB3 DT nodes name as in accordance with their DT schema the
-corresponding node name is suppose to comply with the Generic USB HCD DT
-schema, which requires the USB nodes to have the name acceptable by the
-regexp: "^usb(@.*)?". Such requirement had been applicable even before we
-introduced the new DT schema in [1], but as we can see it hasn't been
-strictly implemented for a lot the DTS files. Since DT schema is now
-available the automated DTS validation shall make sure that the rule isn't
-violated.
-
-Note most of these patches have been a part of the last three patches of
-[1]. But since there is no way to have them merged in in a combined
-manner, I had to move them to the dedicated series and split them up so to
-be accepted by the corresponding subsystem maintainers one-by-one.
-
-[1] Link: https://lore.kernel.org/linux-usb/20201014101402.18271-1-Sergey.Semin@baikalelectronics.ru
-Changelog v1:
-- As Krzysztof suggested I've created a script which checked whether the
-  node names had been also updated in all the depended dts files. As a
-  result I found two more files which should have been also modified:
-  arch/arc/boot/dts/{axc003.dtsi,axc003_idu.dtsi}
-- Correct the USB DWC3 nodes name found in
-  arch/arm64/boot/dts/apm/{apm-storm.dtsi,apm-shadowcat.dtsi} too.
-
-Link: https://lore.kernel.org/linux-usb/20201020115959.2658-1-Sergey.Semin@baikalelectronics.ru
-Changelog v2:
-- Drop the patch:
-  [PATCH 01/29] usb: dwc3: Discard synopsys,dwc3 compatibility string
-  and get back the one which marks the "synopsys,dwc3" compatible string
-  as deprecated into the DT schema related series.
-- Drop the patches:
-  [PATCH 03/29] arm: dts: am437x: Correct DWC USB3 compatible string
-  [PATCH 04/29] arm: dts: exynos: Correct DWC USB3 compatible string
-  [PATCH 07/29] arm: dts: bcm53x: Harmonize EHCI/OHCI DT nodes name
-  [PATCH 08/29] arm: dts: stm32: Harmonize EHCI/OHCI DT nodes name
-  [PATCH 16/29] arm: dts: bcm5301x: Harmonize xHCI DT nodes name
-  [PATCH 19/29] arm: dts: exynos: Harmonize DWC USB3 DT nodes name
-  [PATCH 21/29] arm: dts: ls1021a: Harmonize DWC USB3 DT nodes name
-  [PATCH 22/29] arm: dts: omap5: Harmonize DWC USB3 DT nodes name
-  [PATCH 24/29] arm64: dts: allwinner: h6: Harmonize DWC USB3 DT nodes name
-  [PATCH 26/29] arm64: dts: exynos: Harmonize DWC USB3 DT nodes name
-  [PATCH 27/29] arm64: dts: layerscape: Harmonize DWC USB3 DT nodes name
-  since they have been applied to the corresponding maintainers repos.
-- Fix drivers/usb/dwc3/dwc3-qcom.c to be looking for the "usb@"-prefixed
-  sub-node and falling back to the "dwc3@"-prefixed one on failure.
-
-Link: https://lore.kernel.org/linux-usb/20201111091552.15593-1-Sergey.Semin@baikalelectronics.ru
-Changelog v3:
-- Drop the patches:
-  [PATCH v2 04/18] arm: dts: hisi-x5hd2: Harmonize EHCI/OHCI DT nodes name
-  [PATCH v2 06/18] arm64: dts: hisi: Harmonize EHCI/OHCI DT nodes name
-  [PATCH v2 07/18] mips: dts: jz47x: Harmonize EHCI/OHCI DT nodes name
-  [PATCH v2 08/18] mips: dts: sead3: Harmonize EHCI/OHCI DT nodes name
-  [PATCH v2 09/18] mips: dts: ralink: mt7628a: Harmonize EHCI/OHCI DT nodes name
-  [PATCH v2 11/18] arm64: dts: marvell: cp11x: Harmonize xHCI DT nodes name
-  [PATCH v2 12/18] arm: dts: marvell: armada-375: Harmonize DWC USB3 DT nodes name
-  [PATCH v2 16/18] arm64: dts: hi3660: Harmonize DWC USB3 DT nodes name
-  since they have been applied to the corresponding maintainers repos.
-
-Link: https://lore.kernel.org/linux-usb/20201205155621.3045-1-Sergey.Semin@baikalelectronics.ru
 Changelog v4:
-- Just resend.
+- Initial patch introduction.
+---
+ drivers/edac/dmc520_edac.c | 4 +---
+ drivers/edac/pasemi_edac.c | 5 +----
+ drivers/edac/ppc4xx_edac.c | 5 +----
+ 3 files changed, 3 insertions(+), 11 deletions(-)
 
-Link: https://lore.kernel.org/linux-usb/20201210091756.18057-1-Sergey.Semin@baikalelectronics.ru
-Changelog v5:
-- Drop the patch:
-  [PATCH v4 02/10] arm64: dts: amlogic: meson-g12: Set FL-adj property value
-  since it has been applied to the corresponding maintainers repos.
-- Get back the patch:
-  [PATCH 21/29] arm: dts: ls1021a: Harmonize DWC USB3 DT nodes name
-  as it has been missing in the kernel 5.11-rc7
-- Rebase onto the kernel 5.11-rc7.
-
-Link: https://lore.kernel.org/lkml/20210208135154.6645-1-Sergey.Semin@baikalelectronics.ru
-Changelog v6:
-- Just resend and add linux-usb.vger.kernel.org to the list of Ccecipients.
-
-Link: https://lore.kernel.org/linux-usb/20210210172850.20849-1-Sergey.Semin@baikalelectronics.ru
-Link: https://lore.kernel.org/linux-usb/20210212205521.14280-1-Sergey.Semin@baikalelectronics.ru
-Changelog v7:
-- Replace "of_get_child_by_name(np, "usb") ?: of_get_child_by_name(np, "dwc3");"
-  pattern with using of_get_compatible_child() method in the Qcom DWC3 driver.
-- Drop the patches:
-  [PATCH v6 01/10] arm: dts: ls1021a: Harmonize DWC USB3 DT nodes name
-  [PATCH v6 02/10] arm: dts: keystone: Correct DWC USB3 compatible string
-  [PATCH v6 06/10] arm: dts: keystone: Harmonize DWC USB3 DT nodes name
-  since they have been applied to the corresponding maintainers repos.
-- Cleanup the list of recipients.
-- Rebase onto kernel 5.12-rc4.
-
-Link: https://lore.kernel.org/lkml/20210324204836.29668-1-Sergey.Semin@baikalelectronics.ru
-Changelog v8:
-- Just resend.
-
-Link: https://lore.kernel.org/lkml/20210409113029.7144-1-Sergey.Semin@baikalelectronics.ru
-Changelog v9:
-- Drop the patches:
-  [PATCH RESEND v8 1/8] arm: dts: ls1021a: Harmonize DWC USB3 DT nodes name
-  [PATCH RESEND v8 7/8] usb: dwc3: qcom: Detect DWC3 DT-nodes using compatible string
-  since they have been applied to the corresponding maintainers repos.
-- Rebase onto the kernel 5.19-rcX.
-
-Link: https://lore.kernel.org/lkml/20220624141622.7149-1-Sergey.Semin@baikalelectronics.ru
-Changelog v10:
-- Just resend.
-- Rebase onto the kernel 6.8-rc3.
-- Drop the already merged in patches:
-  [PATCH RESEND v9 1/5] arc: dts: Harmonize EHCI/OHCI DT nodes name
-  [PATCH RESEND v9 2/5] arm: dts: lpc18xx: Harmonize EHCI/OHCI DT nodes name
-  [PATCH RESEND v9 4/5] arm: dts: stih407-family: Harmonize DWC USB3 DT nodes name
-  [PATCH RESEND v9 5/5] arm64: dts: apm: Harmonize DWC USB3 DT nodes name
-
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Rob Herring <robh@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-usb@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-
-Serge Semin (1):
-  powerpc: dts: akebono: Harmonize EHCI/OHCI DT nodes name
-
- arch/powerpc/boot/dts/akebono.dts | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/edac/dmc520_edac.c b/drivers/edac/dmc520_edac.c
+index 4e30b989a1a4..93734a97a67b 100644
+--- a/drivers/edac/dmc520_edac.c
++++ b/drivers/edac/dmc520_edac.c
+@@ -173,8 +173,6 @@ struct dmc520_edac {
+ 	int masks[NUMBER_OF_IRQS];
+ };
+ 
+-static int dmc520_mc_idx;
+-
+ static u32 dmc520_read_reg(struct dmc520_edac *pvt, u32 offset)
+ {
+ 	return readl(pvt->reg_base + offset);
+@@ -517,7 +515,7 @@ static int dmc520_edac_probe(struct platform_device *pdev)
+ 	layers[0].size = dmc520_get_rank_count(reg_base);
+ 	layers[0].is_virt_csrow = true;
+ 
+-	mci = edac_mc_alloc(dmc520_mc_idx++, ARRAY_SIZE(layers), layers, sizeof(*pvt));
++	mci = edac_mc_alloc(EDAC_AUTO_MC_NUM, ARRAY_SIZE(layers), layers, sizeof(*pvt));
+ 	if (!mci) {
+ 		edac_printk(KERN_ERR, EDAC_MOD_NAME,
+ 			    "Failed to allocate memory for mc instance\n");
+diff --git a/drivers/edac/pasemi_edac.c b/drivers/edac/pasemi_edac.c
+index 1a1c3296ccc8..afebfbda1ea0 100644
+--- a/drivers/edac/pasemi_edac.c
++++ b/drivers/edac/pasemi_edac.c
+@@ -57,8 +57,6 @@
+ #define PASEMI_EDAC_ERROR_GRAIN			64
+ 
+ static int last_page_in_mmc;
+-static int system_mmc_id;
+-
+ 
+ static u32 pasemi_edac_get_error_info(struct mem_ctl_info *mci)
+ {
+@@ -203,8 +201,7 @@ static int pasemi_edac_probe(struct pci_dev *pdev,
+ 	layers[1].type = EDAC_MC_LAYER_CHANNEL;
+ 	layers[1].size = PASEMI_EDAC_NR_CHANS;
+ 	layers[1].is_virt_csrow = false;
+-	mci = edac_mc_alloc(system_mmc_id++, ARRAY_SIZE(layers), layers,
+-			    0);
++	mci = edac_mc_alloc(EDAC_AUTO_MC_NUM, ARRAY_SIZE(layers), layers, 0);
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+ 
+diff --git a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
+index 1eea3341a916..06d267d40a6a 100644
+--- a/drivers/edac/ppc4xx_edac.c
++++ b/drivers/edac/ppc4xx_edac.c
+@@ -1214,7 +1214,6 @@ static int ppc4xx_edac_probe(struct platform_device *op)
+ 	const struct device_node *np = op->dev.of_node;
+ 	struct mem_ctl_info *mci = NULL;
+ 	struct edac_mc_layer layers[2];
+-	static int ppc4xx_edac_instance;
+ 
+ 	/*
+ 	 * At this point, we only support the controller realized on
+@@ -1265,7 +1264,7 @@ static int ppc4xx_edac_probe(struct platform_device *op)
+ 	layers[1].type = EDAC_MC_LAYER_CHANNEL;
+ 	layers[1].size = ppc4xx_edac_nr_chans;
+ 	layers[1].is_virt_csrow = false;
+-	mci = edac_mc_alloc(ppc4xx_edac_instance, ARRAY_SIZE(layers), layers,
++	mci = edac_mc_alloc(EDAC_AUTO_MC_NUM, ARRAY_SIZE(layers), layers,
+ 			    sizeof(struct ppc4xx_edac_pdata));
+ 	if (mci == NULL) {
+ 		ppc4xx_edac_printk(KERN_ERR, "%pOF: "
+@@ -1303,8 +1302,6 @@ static int ppc4xx_edac_probe(struct platform_device *op)
+ 			goto fail1;
+ 	}
+ 
+-	ppc4xx_edac_instance++;
+-
+ 	return 0;
+ 
+  fail1:
 -- 
 2.43.0
-
 
