@@ -4,53 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8FB1C5478C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 21:30:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68C2BC47DD9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Feb 2024 21:38:08 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=Hh5Zm4Yv;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=v2hlfZd2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TgmX46LLDz3vXH
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 08:30:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tgmht6c47z3dTg
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 08:38:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=Hh5Zm4Yv;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=v2hlfZd2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.187; helo=out-187.mta1.migadu.com; envelope-from=sean.anderson@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 376 seconds by postgrey-1.37 at boromir; Fri, 23 Feb 2024 04:14:50 AEDT
+Received: from out-187.mta1.migadu.com (out-187.mta1.migadu.com [95.215.58.187])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TgmWC65QJz3bX5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2024 08:29:42 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id E9DCA606DC;
-	Thu, 22 Feb 2024 21:29:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18839C433C7;
-	Thu, 22 Feb 2024 21:29:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1708637377;
-	bh=t85/vLINNj4QjqTdLkHVSWfMx17aHlL+u2dxKq3yYy8=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=Hh5Zm4YvDfOKF5br8tkmh9sJvT791U5KssSAIS8LfOqGSzl3slitWdXs3E1Em8lxo
-	 eW/hjzCE3XTpXQTswpeuaep38I7mm0zb4+bnWgNGgZIUZ8CEoNf8Y2On7Vgpn2ddNO
-	 Q3Fn70VpnIcWdCXFtJ96SSNkluqeWjcO+vqu/Qw4=
-Date: Thu, 22 Feb 2024 13:29:36 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hari Bathini <hbathini@linux.ibm.com>
-Subject: Re: [PATCH v2 00/14] Split crash out from kexec and clean up
- related config items
-Message-Id: <20240222132936.e7dc50acbf5d1b653cb2e02c@linux-foundation.org>
-In-Reply-To: <3393a42f-d9b3-4031-bdef-78bb2ce758f1@linux.ibm.com>
-References: <20240119145241.769622-1-bhe@redhat.com>
-	<9101bb07-70f1-476c-bec9-ec67e9899744@linux.ibm.com>
-	<Zb8D1ASrgX0qVm9z@MiWiFi-R3L-srv>
-	<559f2595-1477-4ef0-80e4-85ae8b426de7@linux.ibm.com>
-	<20240221125752.36fbfe9c307496313198b60f@linux-foundation.org>
-	<3393a42f-d9b3-4031-bdef-78bb2ce758f1@linux.ibm.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tgfs60wYtz30hQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Feb 2024 04:14:49 +1100 (AEDT)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1708621681;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=O7tlgS7MkdA1L6vxpIiDfXudireah7BPJ6Dyc7UeOKw=;
+	b=v2hlfZd2C3xXw8cSD+mG/AWXt4cPww48KC+Yl2NE0ShrDnG7iKAcyA4P/30m+d3Wy1N4l7
+	1OvH3paUYLfUVPW1dT1KiweB4c9jOB3an6HIr+xD2LtIOzS1yXTReMa6UyBxkDxS4UOLMN
+	Cnu4tKGVlc5mx/+HeM4pLas0mCEkWwg=
+From: Sean Anderson <sean.anderson@linux.dev>
+To: "David S . Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	netdev@vger.kernel.org
+Subject: [RESEND2 PATCH net v4 1/2] soc: fsl: qbman: Always disable interrupts when taking cgr_lock
+Date: Thu, 22 Feb 2024 12:07:48 -0500
+Message-Id: <20240222170749.2607485-1-sean.anderson@linux.dev>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Approved-At: Fri, 23 Feb 2024 08:37:24 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,44 +57,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Baoquan He <bhe@redhat.com>, piliu@redhat.com, linux-sh@vger.kernel.org, x86@kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, ebiederm@xmission.com, loongarch@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, viro@zeniv.linux.org.uk
+Cc: Sean Anderson <sean.anderson@linux.dev>, Vladimir Oltean <vladimir.oltean@nxp.com>, Roy Pledge <roy.pledge@nxp.com>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Scott Wood <oss@buserror.net>, Claudiu Manoil <claudiu.manoil@nxp.com>, Camelia Groza <camelia.groza@nxp.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 22 Feb 2024 10:47:29 +0530 Hari Bathini <hbathini@linux.ibm.com> wrote:
+smp_call_function_single disables IRQs when executing the callback. To
+prevent deadlocks, we must disable IRQs when taking cgr_lock elsewhere.
+This is already done by qman_update_cgr and qman_delete_cgr; fix the
+other lockers.
 
-> 
-> 
-> On 22/02/24 2:27 am, Andrew Morton wrote:
-> > On Wed, 21 Feb 2024 11:15:00 +0530 Hari Bathini <hbathini@linux.ibm.com> wrote:
-> > 
-> >> On 04/02/24 8:56 am, Baoquan He wrote:
-> >>>>> Hope Hari and Pingfan can help have a look, see if
-> >>>>> it's doable. Now, I make it either have both kexec and crash enabled, or
-> >>>>> disable both of them altogether.
-> >>>>
-> >>>> Sure. I will take a closer look...
-> >>> Thanks a lot. Please feel free to post patches to make that, or I can do
-> >>> it with your support or suggestion.
-> >>
-> >> Tested your changes and on top of these changes, came up with the below
-> >> changes to get it working for powerpc:
-> >>
-> >>   
-> >> https://lore.kernel.org/all/20240213113150.1148276-1-hbathini@linux.ibm.com/
-> > 
-> > So can we take it that you're OK with Baoquan's series as-is?
-> 
-> Hi Andrew,
-> 
-> If you mean
-> 
-> v3 (https://lore.kernel.org/all/20240124051254.67105-1-bhe@redhat.com/)
-> +
-> follow-up from Baoquan 
-> (https://lore.kernel.org/all/Zb8D1ASrgX0qVm9z@MiWiFi-R3L-srv/)
-> 
-> Yes.
-> 
+Fixes: 96f413f47677 ("soc/fsl/qbman: fix issue in qman_delete_cgr_safe()")
+CC: stable@vger.kernel.org
+Signed-off-by: Sean Anderson <sean.anderson@linux.dev>
+Reviewed-by: Camelia Groza <camelia.groza@nxp.com>
+Tested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+---
+Resent from a non-mangling email.
 
-Can I add your Acked-by: and/or Tested-by: to the patches in this series?
+(no changes since v3)
+
+Changes in v3:
+- Change blamed commit to something more appropriate
+
+Changes in v2:
+- Fix one additional call to spin_unlock
+
+ drivers/soc/fsl/qbman/qman.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
+index 739e4eee6b75..1bf1f1ea67f0 100644
+--- a/drivers/soc/fsl/qbman/qman.c
++++ b/drivers/soc/fsl/qbman/qman.c
+@@ -1456,11 +1456,11 @@ static void qm_congestion_task(struct work_struct *work)
+ 	union qm_mc_result *mcr;
+ 	struct qman_cgr *cgr;
+ 
+-	spin_lock(&p->cgr_lock);
++	spin_lock_irq(&p->cgr_lock);
+ 	qm_mc_start(&p->p);
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCONGESTION);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+-		spin_unlock(&p->cgr_lock);
++		spin_unlock_irq(&p->cgr_lock);
+ 		dev_crit(p->config->dev, "QUERYCONGESTION timeout\n");
+ 		qman_p_irqsource_add(p, QM_PIRQ_CSCI);
+ 		return;
+@@ -1476,7 +1476,7 @@ static void qm_congestion_task(struct work_struct *work)
+ 	list_for_each_entry(cgr, &p->cgr_cbs, node)
+ 		if (cgr->cb && qman_cgrs_get(&c, cgr->cgrid))
+ 			cgr->cb(p, cgr, qman_cgrs_get(&rr, cgr->cgrid));
+-	spin_unlock(&p->cgr_lock);
++	spin_unlock_irq(&p->cgr_lock);
+ 	qman_p_irqsource_add(p, QM_PIRQ_CSCI);
+ }
+ 
+@@ -2440,7 +2440,7 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
+ 	preempt_enable();
+ 
+ 	cgr->chan = p->config->channel;
+-	spin_lock(&p->cgr_lock);
++	spin_lock_irq(&p->cgr_lock);
+ 
+ 	if (opts) {
+ 		struct qm_mcc_initcgr local_opts = *opts;
+@@ -2477,7 +2477,7 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
+ 	    qman_cgrs_get(&p->cgrs[1], cgr->cgrid))
+ 		cgr->cb(p, cgr, 1);
+ out:
+-	spin_unlock(&p->cgr_lock);
++	spin_unlock_irq(&p->cgr_lock);
+ 	put_affine_portal();
+ 	return ret;
+ }
+-- 
+2.35.1.1320.gc452695387.dirty
+
