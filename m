@@ -4,52 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85EA7C54798
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 16:48:30 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a/ldrGtS;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF622C5478C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Feb 2024 17:33:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ThGDF1SNMz3vfV
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Feb 2024 03:48:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a/ldrGtS;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ThHDb1wbpz3vYN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Feb 2024 04:33:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ThGBf6kZVz3vZs
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Feb 2024 03:47:06 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id C4BDE63413;
-	Fri, 23 Feb 2024 16:47:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A36D1C43390;
-	Fri, 23 Feb 2024 16:47:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1708706824;
-	bh=BesFWAtuTprjWylLkXSgMFyYOvsUukjAQwbOy9l/KHM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=a/ldrGtSSfN/5ylfj5KLaM0svgwwTwG7L3iT1TvCMv+me9j8uswywGNPKVtvDO/pv
-	 jvHa9sxagoBw0mc5TWkO3GCU9qxBMj1D5cBTiPNGowEox60TSujga1DTrdunar2KFh
-	 6HjqrLlVB/V7tQqQwBFkTnUZiABawY79VDb0j4FFGN8tj5kH+dgST9txDFV5xag2PJ
-	 c8Kk/SyrNrcFP5S29sD8T/HzhlALn4tcF+scn0J8bHTQq1B2ycE9HBRRpj9GeGQlwk
-	 Rv/BaMwFdAz49QF9s/ys7R2s8i/rPG3mpJfMkNtYfM/qI3iyb5qGtCKPlvrFip0StD
-	 QSWEMbQo16JLA==
-From: Mark Brown <broonie@kernel.org>
-To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, 
- Richard Fitzgerald <rf@opensource.cirrus.com>
-In-Reply-To: <20240221123710.690224-1-rf@opensource.cirrus.com>
-References: <20240221123710.690224-1-rf@opensource.cirrus.com>
-Subject: Re: [PATCH] ASoC: soc-card: Fix missing locking in
- snd_soc_card_get_kcontrol()
-Message-Id: <170870682233.2835191.8056467761867046237.b4-ty@kernel.org>
-Date: Fri, 23 Feb 2024 16:47:02 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ThHD65J8Xz3dRJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Feb 2024 04:33:25 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rdZQH-0000QH-AC; Fri, 23 Feb 2024 18:33:21 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rdZQG-002SzF-I1; Fri, 23 Feb 2024 18:33:20 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rdZQG-00AWsh-1W;
+	Fri, 23 Feb 2024 18:33:20 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Li Yang <leoyang.li@nxp.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 2/2] usb: gadget: fsl: Increase size of name buffer for endpoints
+Date: Fri, 23 Feb 2024 18:33:16 +0100
+Message-ID: <6754df25c56aae04f8110594fad2cd2452b1862a.1708709120.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1708709120.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1708709120.git.u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.13-dev-0438c
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1231; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=xakyIdp3/WlfCuM9RKt0IMFj1L5vtcjFbSIxgwyFtt4=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBl2NbdKQ28w2uPegI4Te7XXRn1TSM6zGLBVjWbW tDcg4LgxMWJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZdjW3QAKCRCPgPtYfRL+ TklACACG42Kp+0YiOERFN4Tv8+EYFpUqhHNrA1cJQuDjg06rU80r8BHHXZRrJpQhbzYMUrRlakI 0P8Zk0pWb/a9GacqwW779bbf430xPBg4R7T7AhVOcjNWEQOS3do07yH7CWywhkVr7RZJhOZmOIS oothLatK1BF3XumzP4AKiuGHoDcgQ2fbZ6opwhx39Vw20iVNK6shuamj8kGjNXcWrmnRAxTINzh +EOVEmG3mex2r3WUE4AkDbVMxO+Uqubk+Repukh5wb6XYGeo0zLPgn7h3purDu4RZc7YQXtLufg Nyjeb1lG41zceYgIKL3yaO0CdnU1hWVahM9Pm/APc/TlvIfS
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,47 +59,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: patches@opensource.cirrus.com, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 21 Feb 2024 12:37:10 +0000, Richard Fitzgerald wrote:
-> snd_soc_card_get_kcontrol() must be holding a read lock on
-> card->controls_rwsem while walking the controls list.
-> 
-> Compare with snd_ctl_find_numid().
-> 
-> The existing function is renamed snd_soc_card_get_kcontrol_locked()
-> so that it can be called from contexts that are already holding
-> card->controls_rwsem (for example, control get/put functions).
-> 
-> [...]
+This fixes a W=1 warning about sprintf writing up to 16 bytes into a
+buffer of size 14. There is no practical relevance because there are not
+more than 32 endpoints.
 
-Applied to
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+Hello,
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+I hesitated to add a Fixes: trailer because the problem is never hit in
+practise. Anyhow, if you think it's a good idea to add one, the commit
+introducing the too small buffer is:
 
-Thanks!
+	b504882da539 ("USB: add Freescale high-speed USB SOC device controller driver")
 
-[1/1] ASoC: soc-card: Fix missing locking in snd_soc_card_get_kcontrol()
-      commit: eba2eb2495f47690400331c722868902784e59de
+Best regards
+Uwe
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+ drivers/usb/gadget/udc/fsl_udc_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
+index 65346a322a77..b7e7ae5e051b 100644
+--- a/drivers/usb/gadget/udc/fsl_udc_core.c
++++ b/drivers/usb/gadget/udc/fsl_udc_core.c
+@@ -2486,7 +2486,7 @@ static int fsl_udc_probe(struct platform_device *pdev)
+ 	/* setup the udc->eps[] for non-control endpoints and link
+ 	 * to gadget.ep_list */
+ 	for (i = 1; i < (int)(udc_controller->max_ep / 2); i++) {
+-		char name[14];
++		char name[16];
+ 
+ 		sprintf(name, "ep%dout", i);
+ 		struct_ep_setup(udc_controller, i * 2, name, 1);
+-- 
+2.43.0
 
