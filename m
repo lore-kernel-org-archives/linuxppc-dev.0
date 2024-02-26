@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A338AC5478C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 06:03:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F12E1C48BF6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 06:03:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tjqm81Tm5z3vX5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 17:03:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TjqmZ50Jsz3vm5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 17:03:26 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tjqkp1KQjz3bwX
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tjqkp1S1lz3bxZ
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2024 17:01:54 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tjqkl03fZz4wcs;
-	Mon, 26 Feb 2024 17:01:50 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tjqkl1pblz4wnr;
+	Mon, 26 Feb 2024 17:01:51 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20231227072405.63751-1-npiggin@gmail.com>
-References: <20231227072405.63751-1-npiggin@gmail.com>
-Subject: Re: [PATCH 0/3] powerpc/ps3: Fixes for lv1 hcall assembly
-Message-Id: <170892700815.3915597.14761384936011707576.b4-ty@ellerman.id.au>
+In-Reply-To: <20240207035220.339726-1-npiggin@gmail.com>
+References: <20240207035220.339726-1-npiggin@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/pseries: Add a clear modifier to ibm,pa/pi-features parser
+Message-Id: <170892700815.3915597.4499374118995867850.b4-ty@ellerman.id.au>
 Date: Mon, 26 Feb 2024 16:56:48 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,28 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geoff Levand <geoff@infradead.org>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 27 Dec 2023 17:24:02 +1000, Nicholas Piggin wrote:
-> This (hopefully) fixes the ELFv2 bug that Geoff reported, with patch
-> 1. And a couple of other possible improvements I noticed.
-> 
-> I don't have a PS3 setup[*] so I have only compile tested these, I'm
-> sorry.
-> 
-> [*] Is RPCS3 usable for this kind of thing?
+On Wed, 07 Feb 2024 13:52:18 +1000, Nicholas Piggin wrote:
+> When a new ibm,pa/pi-features bit is introduced that is intended to
+> apply to existing systems and features, it may have an "inverted"
+> meaning (i.e., bit clear => feature available; bit set => unavailable).
+> Depending on the nature of the feature, this may give the best
+> backward compatibility result where old firmware will continue to
+> have that bit clear and therefore the feature available.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/3] powerpc/ps3: Fix lv1 hcall assembly for ELFv2 calling convention
-      https://git.kernel.org/powerpc/c/6735fef14c1f089ae43fd6d43add818b7ff682a8
-[2/3] powerpc/ps3: lv1 hcall code use symbolic constant for LR save offset
-      https://git.kernel.org/powerpc/c/d901473c4dd0198d2d60553ea483d632175af4ea
-[3/3] powerpc/ps3: Make real stack frames for LV1 hcalls
-      https://git.kernel.org/powerpc/c/28b2ed86750cf5be86d19dd6ff236b23e98b255d
+[1/2] powerpc/pseries: Add a clear modifier to ibm,pa/pi-features parser
+      https://git.kernel.org/powerpc/c/8b338061065b1871fc9ec53bd772321c15363123
+[2/2] powerpc/pseries: Set CPU_FTR_DBELL according to ibm,pi-features
+      https://git.kernel.org/powerpc/c/6e9de2054eb417d6e05561b19c825c29b424b475
 
 cheers
