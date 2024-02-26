@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30268C48BF6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 08:54:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEC3DC48BF6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 08:54:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TjvYy60gJz3vly
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 19:54:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TjvZP2kz1z3w16
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 19:54:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TjvY235BGz2xFl
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TjvY23DHZz3cCK
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2024 19:53:41 +1100 (AEDT)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 25EA0201108;
-	Mon, 26 Feb 2024 09:44:17 +0100 (CET)
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6CC4220014B;
+	Mon, 26 Feb 2024 09:44:26 +0100 (CET)
 Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id AA57020011D;
-	Mon, 26 Feb 2024 09:44:16 +0100 (CET)
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 065A4201103;
+	Mon, 26 Feb 2024 09:44:26 +0100 (CET)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 9DB49183AD16;
-	Mon, 26 Feb 2024 16:44:14 +0800 (+08)
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id ED505183AC0B;
+	Mon, 26 Feb 2024 16:44:23 +0800 (+08)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: hverkuil@xs4all.nl,
 	sakari.ailus@iki.fi,
@@ -42,9 +42,9 @@ To: hverkuil@xs4all.nl,
 	tiwai@suse.com,
 	alsa-devel@alsa-project.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v13 05/16] ASoC: fsl_asrc: register m2m platform device
-Date: Mon, 26 Feb 2024 16:28:18 +0800
-Message-Id: <1708936109-11587-6-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH v13 11/16] media: uapi: Add audio rate controls support
+Date: Mon, 26 Feb 2024 16:28:24 +0800
+Message-Id: <1708936109-11587-12-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1708936109-11587-1-git-send-email-shengjiu.wang@nxp.com>
 References: <1708936109-11587-1-git-send-email-shengjiu.wang@nxp.com>
@@ -63,110 +63,105 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Register m2m platform device, that user can
-use M2M feature.
+Add V4L2_CID_M2M_AUDIO_SOURCE_RATE and V4L2_CID_M2M_AUDIO_DEST_RATE
+new IDs for rate control.
 
-Defined platform data structure and platform
-driver name.
+Add V4L2_CID_M2M_AUDIO_SOURCE_RATE_OFFSET and
+V4L2_CID_M2M_AUDIO_DEST_RATE_OFFSET for clock drift.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Acked-by: Mark Brown <broonie@kernel.org>
 ---
- include/sound/fsl_asrc_common.h | 23 +++++++++++++++++++++++
- sound/soc/fsl/fsl_asrc.c        | 18 ++++++++++++++++++
- 2 files changed, 41 insertions(+)
+ .../media/v4l/ext-ctrls-audio-m2m.rst         | 38 +++++++++++++++++++
+ drivers/media/v4l2-core/v4l2-ctrls-defs.c     |  6 +++
+ include/uapi/linux/v4l2-controls.h            |  5 +++
+ 3 files changed, 49 insertions(+)
 
-diff --git a/include/sound/fsl_asrc_common.h b/include/sound/fsl_asrc_common.h
-index 3b53d366182f..c709b8906929 100644
---- a/include/sound/fsl_asrc_common.h
-+++ b/include/sound/fsl_asrc_common.h
-@@ -71,6 +71,7 @@ struct fsl_asrc_pair {
-  * @dma_params_rx: DMA parameters for receive channel
-  * @dma_params_tx: DMA parameters for transmit channel
-  * @pdev: platform device pointer
-+ * @m2m_pdev: m2m platform device pointer
-  * @regmap: regmap handler
-  * @paddr: physical address to the base address of registers
-  * @mem_clk: clock source to access register
-@@ -103,6 +104,7 @@ struct fsl_asrc {
- 	struct snd_dmaengine_dai_dma_data dma_params_rx;
- 	struct snd_dmaengine_dai_dma_data dma_params_tx;
- 	struct platform_device *pdev;
-+	struct platform_device *m2m_pdev;
- 	struct regmap *regmap;
- 	unsigned long paddr;
- 	struct clk *mem_clk;
-@@ -139,6 +141,27 @@ struct fsl_asrc {
- 	void *private;
- };
- 
-+/**
-+ * struct fsl_asrc_m2m_pdata - platform data
-+ * @asrc: pointer to struct fsl_asrc
-+ * @fmt_in: input sample format
-+ * @fmt_out: output sample format
-+ * @chan_min: minimum channel number
-+ * @chan_max: maximum channel number
-+ * @rate_min: minimum rate
-+ * @rate_max: maximum rete
-+ */
-+struct fsl_asrc_m2m_pdata {
-+	struct fsl_asrc *asrc;
-+	u64 fmt_in;
-+	u64 fmt_out;
-+	int chan_min;
-+	int chan_max;
-+	int rate_min;
-+	int rate_max;
-+};
+diff --git a/Documentation/userspace-api/media/v4l/ext-ctrls-audio-m2m.rst b/Documentation/userspace-api/media/v4l/ext-ctrls-audio-m2m.rst
+index 82d2ecedbfee..b137b7c442e6 100644
+--- a/Documentation/userspace-api/media/v4l/ext-ctrls-audio-m2m.rst
++++ b/Documentation/userspace-api/media/v4l/ext-ctrls-audio-m2m.rst
+@@ -19,3 +19,41 @@ Audio M2M Control IDs
+     The Audio M2M class descriptor. Calling
+     :ref:`VIDIOC_QUERYCTRL` for this control will
+     return a description of this control class.
 +
-+#define M2M_DRV_NAME "fsl_asrc_m2m"
- #define DRV_NAME "fsl-asrc-dai"
- extern struct snd_soc_component_driver fsl_asrc_component;
++.. _v4l2-audio-asrc:
++
++``V4L2_CID_M2M_AUDIO_SOURCE_RATE (integer menu)``
++    This control specifies the audio source sample rate, unit is Hz
++
++``V4L2_CID_M2M_AUDIO_DEST_RATE (integer menu)``
++    This control specifies the audio destination sample rate, unit is Hz
++
++``V4L2_CID_M2M_AUDIO_SOURCE_RATE_OFFSET (fixed point)``
++    This control specifies the offset from the audio source sample rate,
++    unit is Hz.
++
++    The offset compensates for any clock drift. The actual source audio
++    sample rate is the ideal source audio sample rate from
++    ``V4L2_CID_M2M_AUDIO_SOURCE_RATE`` plus this fixed point offset.
++
++    The audio source clock may have some drift. Reducing or increasing the
++    audio sample rate dynamically to ensure that Sample Rate Converter is
++    working on the real sample rate, this feature is for the Asynchronous
++    Sample Rate Converter module.
++    So, userspace would be expected to be monitoring such drift
++    and increasing/decreasing the sample frequency as needed by this control.
++
++``V4L2_CID_M2M_AUDIO_DEST_RATE_OFFSET (fixed point)``
++    This control specifies the offset from the audio destination sample rate,
++    unit is Hz.
++
++    The offset compensates for any clock drift. The actual destination audio
++    sample rate is the ideal source audio sample rate from
++    ``V4L2_CID_M2M_AUDIO_DEST_RATE`` plus this fixed point offset.
++
++    The audio destination clock may have some drift. Reducing or increasing
++    the audio sample rate dynamically to ensure that sample rate converter
++    is working on the real sample rate, this feature is for the Asynchronous
++    Sample Rate Converter module.
++    So, userspace would be expected to be monitoring such drift
++    and increasing/decreasing the sample frequency as needed by this control.
+diff --git a/drivers/media/v4l2-core/v4l2-ctrls-defs.c b/drivers/media/v4l2-core/v4l2-ctrls-defs.c
+index 2a85ea3dc92f..91e1f5348c23 100644
+--- a/drivers/media/v4l2-core/v4l2-ctrls-defs.c
++++ b/drivers/media/v4l2-core/v4l2-ctrls-defs.c
+@@ -1245,6 +1245,8 @@ const char *v4l2_ctrl_get_name(u32 id)
  
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index 7d8643ee0ba0..5ecb5d869607 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -1187,6 +1187,7 @@ static int fsl_asrc_runtime_suspend(struct device *dev);
- static int fsl_asrc_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
-+	struct fsl_asrc_m2m_pdata m2m_pdata;
- 	struct fsl_asrc_priv *asrc_priv;
- 	struct fsl_asrc *asrc;
- 	struct resource *res;
-@@ -1368,6 +1369,18 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 		goto err_pm_get_sync;
+ 	/* Audio M2M controls */
+ 	case V4L2_CID_M2M_AUDIO_CLASS:  return "Audio M2M Controls";
++	case V4L2_CID_M2M_AUDIO_SOURCE_RATE:	return "Audio Source Sample Rate";
++	case V4L2_CID_M2M_AUDIO_DEST_RATE:	return "Audio Destination Sample Rate";
+ 	default:
+ 		return NULL;
  	}
+@@ -1606,6 +1608,10 @@ void v4l2_ctrl_fill(u32 id, const char **name, enum v4l2_ctrl_type *type,
+ 	case V4L2_CID_COLORIMETRY_HDR10_MASTERING_DISPLAY:
+ 		*type = V4L2_CTRL_TYPE_HDR10_MASTERING_DISPLAY;
+ 		break;
++	case V4L2_CID_M2M_AUDIO_SOURCE_RATE:
++	case V4L2_CID_M2M_AUDIO_DEST_RATE:
++		*type = V4L2_CTRL_TYPE_INTEGER_MENU;
++		break;
+ 	default:
+ 		*type = V4L2_CTRL_TYPE_INTEGER;
+ 		break;
+diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4l2-controls.h
+index a8b4b830c757..30129ccdc282 100644
+--- a/include/uapi/linux/v4l2-controls.h
++++ b/include/uapi/linux/v4l2-controls.h
+@@ -3495,6 +3495,11 @@ struct v4l2_ctrl_av1_film_grain {
+ #define V4L2_CID_M2M_AUDIO_CLASS_BASE  (V4L2_CTRL_CLASS_M2M_AUDIO | 0x900)
+ #define V4L2_CID_M2M_AUDIO_CLASS       (V4L2_CTRL_CLASS_M2M_AUDIO | 1)
  
-+	m2m_pdata.asrc = asrc;
-+	m2m_pdata.fmt_in = FSL_ASRC_FORMATS;
-+	m2m_pdata.fmt_out = FSL_ASRC_FORMATS | SNDRV_PCM_FMTBIT_S8;
-+	m2m_pdata.rate_min = 5512;
-+	m2m_pdata.rate_max = 192000;
-+	m2m_pdata.chan_min = 1;
-+	m2m_pdata.chan_max = 10;
-+	asrc->m2m_pdev = platform_device_register_data(&pdev->dev,
-+						       M2M_DRV_NAME,
-+						       PLATFORM_DEVID_AUTO,
-+						       &m2m_pdata,
-+						       sizeof(m2m_pdata));
- 	return 0;
- 
- err_pm_get_sync:
-@@ -1380,6 +1393,11 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 
- static void fsl_asrc_remove(struct platform_device *pdev)
- {
-+	struct fsl_asrc *asrc = dev_get_drvdata(&pdev->dev);
++#define V4L2_CID_M2M_AUDIO_SOURCE_RATE	(V4L2_CID_M2M_AUDIO_CLASS_BASE + 0)
++#define V4L2_CID_M2M_AUDIO_DEST_RATE	(V4L2_CID_M2M_AUDIO_CLASS_BASE + 1)
++#define V4L2_CID_M2M_AUDIO_SOURCE_RATE_OFFSET	(V4L2_CID_M2M_AUDIO_CLASS_BASE + 2)
++#define V4L2_CID_M2M_AUDIO_DEST_RATE_OFFSET	(V4L2_CID_M2M_AUDIO_CLASS_BASE + 3)
 +
-+	if (asrc->m2m_pdev && !IS_ERR(asrc->m2m_pdev))
-+		platform_device_unregister(asrc->m2m_pdev);
-+
- 	pm_runtime_disable(&pdev->dev);
- 	if (!pm_runtime_status_suspended(&pdev->dev))
- 		fsl_asrc_runtime_suspend(&pdev->dev);
+ /* MPEG-compression definitions kept for backwards compatibility */
+ #ifndef __KERNEL__
+ #define V4L2_CTRL_CLASS_MPEG            V4L2_CTRL_CLASS_CODEC
 -- 
 2.34.1
 
