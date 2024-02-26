@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C504C54E49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 08:56:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF4DAC48BF6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 08:56:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tjvbk0RlZz3wCB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 19:56:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tjvc8382hz3wFJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 19:56:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TjvY54t6Sz3cGW
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TjvY5677Rz3cKN
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2024 19:53:45 +1100 (AEDT)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id AD4A72010FE;
-	Mon, 26 Feb 2024 09:44:29 +0100 (CET)
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5BEE1200165;
+	Mon, 26 Feb 2024 09:44:15 +0100 (CET)
 Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 73DCE200B23;
-	Mon, 26 Feb 2024 09:44:29 +0100 (CET)
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 230EA20008E;
+	Mon, 26 Feb 2024 09:44:15 +0100 (CET)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 135DE1820F56;
-	Mon, 26 Feb 2024 16:44:27 +0800 (+08)
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id D4545180222A;
+	Mon, 26 Feb 2024 16:44:12 +0800 (+08)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: hverkuil@xs4all.nl,
 	sakari.ailus@iki.fi,
@@ -42,9 +42,9 @@ To: hverkuil@xs4all.nl,
 	tiwai@suse.com,
 	alsa-devel@alsa-project.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v13 13/16] media: uapi: Add an entity type for audio resampler
-Date: Mon, 26 Feb 2024 16:28:26 +0800
-Message-Id: <1708936109-11587-14-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH v13 04/16] ASoC: fsl_asrc: move fsl_asrc_common.h to include/sound
+Date: Mon, 26 Feb 2024 16:28:17 +0800
+Message-Id: <1708936109-11587-5-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1708936109-11587-1-git-send-email-shengjiu.wang@nxp.com>
 References: <1708936109-11587-1-git-send-email-shengjiu.wang@nxp.com>
@@ -63,51 +63,62 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add and document a media entity type for an audio resampler.
-It is MEDIA_ENT_F_PROC_AUDIO_RESAMPLER.
+Move fsl_asrc_common.h to include/sound that it can be
+included from other drivers.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 ---
- Documentation/userspace-api/media/mediactl/media-types.rst | 6 ++++++
- include/uapi/linux/media.h                                 | 1 +
- 2 files changed, 7 insertions(+)
+ {sound/soc/fsl => include/sound}/fsl_asrc_common.h | 0
+ sound/soc/fsl/fsl_asrc.h                           | 2 +-
+ sound/soc/fsl/fsl_asrc_dma.c                       | 2 +-
+ sound/soc/fsl/fsl_easrc.h                          | 2 +-
+ 4 files changed, 3 insertions(+), 3 deletions(-)
+ rename {sound/soc/fsl => include/sound}/fsl_asrc_common.h (100%)
 
-diff --git a/Documentation/userspace-api/media/mediactl/media-types.rst b/Documentation/userspace-api/media/mediactl/media-types.rst
-index adfb37430f8e..d353f17c3344 100644
---- a/Documentation/userspace-api/media/mediactl/media-types.rst
-+++ b/Documentation/userspace-api/media/mediactl/media-types.rst
-@@ -40,6 +40,7 @@ Types and flags used to represent the media graph elements
- .. _MEDIA-ENT-F-PROC-VIDEO-ENCODER:
- .. _MEDIA-ENT-F-PROC-VIDEO-DECODER:
- .. _MEDIA-ENT-F-PROC-VIDEO-ISP:
-+.. _MEDIA-ENT-F-PROC-AUDIO-RESAMPLER:
- .. _MEDIA-ENT-F-VID-MUX:
- .. _MEDIA-ENT-F-VID-IF-BRIDGE:
- .. _MEDIA-ENT-F-DV-DECODER:
-@@ -208,6 +209,11 @@ Types and flags used to represent the media graph elements
- 	  combination of custom V4L2 controls and IOCTLs, and parameters
- 	  supplied in a metadata buffer.
+diff --git a/sound/soc/fsl/fsl_asrc_common.h b/include/sound/fsl_asrc_common.h
+similarity index 100%
+rename from sound/soc/fsl/fsl_asrc_common.h
+rename to include/sound/fsl_asrc_common.h
+diff --git a/sound/soc/fsl/fsl_asrc.h b/sound/soc/fsl/fsl_asrc.h
+index 1c492eb237f5..66544624de7b 100644
+--- a/sound/soc/fsl/fsl_asrc.h
++++ b/sound/soc/fsl/fsl_asrc.h
+@@ -10,7 +10,7 @@
+ #ifndef _FSL_ASRC_H
+ #define _FSL_ASRC_H
  
-+    *  -  ``MEDIA_ENT_F_PROC_AUDIO_RESAMPLER``
-+       -  An Audio Resampler device. An entity capable of
-+	  resampling an audio stream from one sample rate to another sample
-+	  rate. Must have one sink pad and at least one source pad.
-+
-     *  -  ``MEDIA_ENT_F_VID_MUX``
-        - Video multiplexer. An entity capable of multiplexing must have at
-          least two sink pads and one source pad, and must pass the video
-diff --git a/include/uapi/linux/media.h b/include/uapi/linux/media.h
-index 9ff6dec7393a..a8266eaa8042 100644
---- a/include/uapi/linux/media.h
-+++ b/include/uapi/linux/media.h
-@@ -125,6 +125,7 @@ struct media_device_info {
- #define MEDIA_ENT_F_PROC_VIDEO_ENCODER		(MEDIA_ENT_F_BASE + 0x4007)
- #define MEDIA_ENT_F_PROC_VIDEO_DECODER		(MEDIA_ENT_F_BASE + 0x4008)
- #define MEDIA_ENT_F_PROC_VIDEO_ISP		(MEDIA_ENT_F_BASE + 0x4009)
-+#define MEDIA_ENT_F_PROC_AUDIO_RESAMPLER	(MEDIA_ENT_F_BASE + 0x400a)
+-#include  "fsl_asrc_common.h"
++#include  <sound/fsl_asrc_common.h>
  
- /*
-  * Switch and bridge entity functions
+ #define ASRC_M2M_INPUTFIFO_WML		0x4
+ #define ASRC_M2M_OUTPUTFIFO_WML		0x2
+diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+index f501f47242fb..f067bf1ecea7 100644
+--- a/sound/soc/fsl/fsl_asrc_dma.c
++++ b/sound/soc/fsl/fsl_asrc_dma.c
+@@ -12,7 +12,7 @@
+ #include <sound/dmaengine_pcm.h>
+ #include <sound/pcm_params.h>
+ 
+-#include "fsl_asrc_common.h"
++#include <sound/fsl_asrc_common.h>
+ 
+ #define FSL_ASRC_DMABUF_SIZE	(256 * 1024)
+ 
+diff --git a/sound/soc/fsl/fsl_easrc.h b/sound/soc/fsl/fsl_easrc.h
+index c9f770862662..a24e540876a4 100644
+--- a/sound/soc/fsl/fsl_easrc.h
++++ b/sound/soc/fsl/fsl_easrc.h
+@@ -9,7 +9,7 @@
+ #include <sound/asound.h>
+ #include <linux/dma/imx-dma.h>
+ 
+-#include "fsl_asrc_common.h"
++#include <sound/fsl_asrc_common.h>
+ 
+ /* EASRC Register Map */
+ 
 -- 
 2.34.1
 
