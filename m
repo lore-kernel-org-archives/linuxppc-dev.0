@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CC46C48BF6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 06:02:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E964DC48BF6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 06:02:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TjqlG6mv3z3vZD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 17:02:18 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tjqlj4fkRz3vdC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 17:02:41 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tjqkn5ls9z3bT8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2024 17:01:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tjqkp19hwz3bT8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2024 17:01:54 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tjqkj2kjBz4wcQ;
-	Mon, 26 Feb 2024 17:01:49 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tjqkl4T99z4wcT;
+	Mon, 26 Feb 2024 17:01:51 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>
-In-Reply-To: <cover.1705654669.git.geoff@infradead.org>
-References: <cover.1705654669.git.geoff@infradead.org>
-Subject: Re: [PATCH 0/4] powerpc/ps3 Add ELFv2 support
-Message-Id: <170892700815.3915597.9318219980822974261.b4-ty@ellerman.id.au>
+To: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+In-Reply-To: <cover.1708529736.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1708529736.git.u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH 0/6] powerpc: Convert to platform remove callback returning void
+Message-Id: <170892700817.3915597.5848071453716874860.b4-ty@ellerman.id.au>
 Date: Mon, 26 Feb 2024 16:56:48 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,23 +42,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Rob Herring <robh@kernel.org>, Haoran Liu <liuhaoran14@163.com>, Scott Wood <oss@buserror.net>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, kernel@pengutronix.de, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 19 Jan 2024 10:27:51 +0000, Geoff Levand wrote:
-> The following changes since commit 44a1aad2fe6c10bfe0589d8047057b10a4c18a19:
+On Wed, 21 Feb 2024 16:40:14 +0100, Uwe Kleine-König wrote:
+> this series converts all platform drivers below drivers/powerpc to
+> struct platform_driver::remove_new(). See commit 5c5a7680e67b
+> ("platform: Provide a remove callback that returns no value") for an
+> extended explanation and the eventual goal.
 > 
->   Merge branch 'topic/ppc-kvm' into next (2023-12-29 15:30:45 +1100)
-> 
-> are available in the Git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-merge-elfv2
+> All conversations are trivial, because their .remove() callbacks
+> returned zero unconditionally.
 > 
 > [...]
 
-Patch 4 applied to powerpc/next.
+Applied to powerpc/next.
 
-[4/4] Revert "powerpc/ps3_defconfig: Disable PPC64_BIG_ENDIAN_ELF_ABI_V2"
-      https://git.kernel.org/powerpc/c/914d081ead115f7ba685ab57f977716bdd09c894
+[1/6] powerpc: sgy_cts1000: Convert to platform remove callback returning void
+      https://git.kernel.org/powerpc/c/9d16a8591a52d614507ed76f0b105c7de7b8dbe7
+[2/6] powerpc: gpio_mdio: Convert to platform remove callback returning void
+      https://git.kernel.org/powerpc/c/b1cd248f427607e595c2799044f8166dac1e953b
+[3/6] powerpc: opal-prd: Convert to platform remove callback returning void
+      https://git.kernel.org/powerpc/c/ca899c1221b6beee80ac91977309c08b78c74ad2
+[4/6] powerpc: papr_scm: Convert to platform remove callback returning void
+      https://git.kernel.org/powerpc/c/18a4a2612ba1e54526bbc11980f1fbb31b7aa440
+[5/6] powerpc: fsl_msi: Convert to platform remove callback returning void
+      https://git.kernel.org/powerpc/c/e2064de2f3c89976a4a03f265edb5bc3795fc8ff
+[6/6] powerpc: pmi: Convert to platform remove callback returning void
+      https://git.kernel.org/powerpc/c/a3e1820186b5ed3703e690eb064ad7c6c7477cfb
 
 cheers
