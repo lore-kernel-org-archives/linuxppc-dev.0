@@ -4,102 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63DA1C5478C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 08:48:08 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k6ia9QBU;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6A7FC5478C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 08:51:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TjvQb0l5gz3vZ7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 19:48:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k6ia9QBU;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TjvK016q3z3d3Q
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2024 19:43:16 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4TjvK00j9Tz4wcT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2024 19:43:16 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4TjvK00fjRz4wnr; Mon, 26 Feb 2024 19:43:16 +1100 (AEDT)
-Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k6ia9QBU;
-	dkim-atps=neutral
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TjvTx1nH4z3vcj
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 19:51:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 384 seconds by postgrey-1.37 at boromir; Mon, 26 Feb 2024 19:50:36 AEDT
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4TjvJz4qZrz4wcT
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2024 19:43:15 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 41Q7WtsK028525;
-	Mon, 26 Feb 2024 08:42:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=BJhLfeRHOIcYb4cPMsLQ+ZR0UKqrRFHEorm2J2+sKJk=;
- b=k6ia9QBUt1HxzWskZgdz051VP2fU0AantWmnk+foiWGHhaKoBabYrLDKpIQUnOyHHfF6
- Ry2Ye7BuOKns3dMtRJ+PlDmMfkH7lXImOYlu6cO+syPtX1DZ3akZpV77mAodfI+RZP0h
- keUT8Nz6QEsDmHInkl8o7JSM6BvgHSrTvz2QfDUZ9/WmfWWP0sXKRyJnIZJ1pG6KZcer
- rWfSfpL0mGY+POxUbtf0qjalNS1CFdpSz+4xQ17u9XVCMydk6MabDmBQWfYfZ0F+Xu3h
- 5i4AwhZg8R+3P3cmMW14FXkvDhd4w6wLE7yHQH6oQSPGhLr1XMNjq0Bgh7YNmI/OeIDJ Mg== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wgpbksf2j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 Feb 2024 08:42:49 +0000
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 41Q8dItM010710;
-	Mon, 26 Feb 2024 08:42:48 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wgpbksf27-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 Feb 2024 08:42:48 +0000
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 41Q7p3vS021762;
-	Mon, 26 Feb 2024 08:42:47 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3wfu5yr180-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 Feb 2024 08:42:47 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 41Q8ggka39649578
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 26 Feb 2024 08:42:44 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EC7B020040;
-	Mon, 26 Feb 2024 08:42:41 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 46C7A2004D;
-	Mon, 26 Feb 2024 08:42:34 +0000 (GMT)
-Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.43.72.108])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 26 Feb 2024 08:42:33 +0000 (GMT)
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v17 6/6] powerpc/crash: add crash memory hotplug support
-Date: Mon, 26 Feb 2024 14:11:17 +0530
-Message-ID: <20240226084118.16310-7-sourabhjain@linux.ibm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240226084118.16310-1-sourabhjain@linux.ibm.com>
-References: <20240226084118.16310-1-sourabhjain@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: kWuO7QfZ6vSqDkVY8rISRIVJNbPOth0s
-X-Proofpoint-ORIG-GUID: 363pzevnUjnVNuYs7QQupWJrLRAVeJaS
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-02-26_05,2024-02-23_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 mlxscore=0
- bulkscore=0 mlxlogscore=999 phishscore=0 adultscore=0 lowpriorityscore=0
- spamscore=0 malwarescore=0 clxscore=1015 priorityscore=1501 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311290000
- definitions=main-2402260065
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TjvTS6DXgz2xFl
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2024 19:50:36 +1100 (AEDT)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id F01A31A06F5;
+	Mon, 26 Feb 2024 09:44:27 +0100 (CET)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 8BF4E1A0138;
+	Mon, 26 Feb 2024 09:44:27 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 811F8183AD17;
+	Mon, 26 Feb 2024 16:44:25 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: hverkuil@xs4all.nl,
+	sakari.ailus@iki.fi,
+	tfiga@chromium.org,
+	m.szyprowski@samsung.com,
+	mchehab@kernel.org,
+	linux-media@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v13 12/16] media: uapi: Declare interface types for Audio
+Date: Mon, 26 Feb 2024 16:28:25 +0800
+Message-Id: <1708936109-11587-13-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1708936109-11587-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1708936109-11587-1-git-send-email-shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,385 +61,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Mimi Zohar <zohar@linux.ibm.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Valentin Schneider <vschneid@redhat.com>, Baoquan He <bhe@redhat.com>, x86@kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Laurent Dufour <laurent.dufour@fr.ibm.com>, Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>, Naveen N Rao <naveen@kernel.org>, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Akhil Raj <lf32.dev@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Extend the arch crash hotplug handler, as introduced by the patch title
-("powerpc: add crash CPU hotplug support"), to also support memory
-add/remove events.
+Declare the interface types that will be used by Audio.
+The type is MEDIA_INTF_T_V4L_AUDIO.
 
-Elfcorehdr describes the memory of the crash kernel to capture the
-kernel; hence, it needs to be updated if memory resources change due to
-memory add/remove events. Therefore, arch_crash_handle_hotplug_event()
-is updated to recreate the elfcorehdr and replace it with the previous
-one on memory add/remove events.
-
-The memblock list is used to prepare the elfcorehdr. In the case of
-memory hot remove, the memblock list is updated after the arch crash
-hotplug handler is triggered, as depicted in Figure 1. Thus, the
-hot-removed memory is explicitly removed from the crash memory ranges
-to ensure that the memory ranges added to elfcorehdr do not include the
-hot-removed memory.
-
-    Memory remove
-          |
-          v
-    Offline pages
-          |
-          v
- Initiate memory notify call <----> crash hotplug handler
- chain for MEM_OFFLINE event
-          |
-          v
- Update memblock list
-
- 	Figure 1
-
-There are two system calls, `kexec_file_load` and `kexec_load`, used to
-load the kdump image. A few changes have been made to ensure that the
-kernel can safely update the elfcorehdr component of the kdump image for
-both system calls.
-
-For the kexec_file_load syscall, kdump image is prepared in the kernel.
-To support an increasing number of memory regions, the elfcorehdr is
-built with extra buffer space to ensure that it can accommodate
-additional memory ranges in future.
-
-For the kexec_load syscall, the elfcorehdr is updated only if the
-KEXEC_CRASH_HOTPLUG_SUPPORT kexec flag is passed to the kernel by the
-kexec tool. Passing this flag to the kernel indicates that the
-elfcorehdr is built to accommodate additional memory ranges and the
-elfcorehdr segment is not considered for SHA calculation, making it safe
-to update.
-
-The changes related to this feature are kept under the CRASH_HOTPLUG
-config, and it is enabled by default.
-
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Akhil Raj <lf32.dev@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: Borislav Petkov (AMD) <bp@alien8.de>
-Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Dave Young <dyoung@redhat.com>
-Cc: David Hildenbrand <david@redhat.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Laurent Dufour <laurent.dufour@fr.ibm.com>
-Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mimi Zohar <zohar@linux.ibm.com>
-Cc: Naveen N Rao <naveen@kernel.org>
-Cc: Oscar Salvador <osalvador@suse.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Valentin Schneider <vschneid@redhat.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>
-Cc: kexec@lists.infradead.org
-Cc: x86@kernel.org
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- arch/powerpc/include/asm/kexec.h        |  3 +
- arch/powerpc/include/asm/kexec_ranges.h |  1 +
- arch/powerpc/kexec/crash.c              | 95 ++++++++++++++++++++++++-
- arch/powerpc/kexec/file_load_64.c       | 20 +++++-
- arch/powerpc/kexec/ranges.c             | 85 ++++++++++++++++++++++
- 5 files changed, 202 insertions(+), 2 deletions(-)
+ .../userspace-api/media/mediactl/media-types.rst    |  5 +++++
+ drivers/media/v4l2-core/v4l2-dev.c                  |  4 ++++
+ drivers/media/v4l2-core/v4l2-mem2mem.c              | 13 +++++++++----
+ include/uapi/linux/media.h                          |  1 +
+ 4 files changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index e75970351bcd..95a98b390d62 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -141,6 +141,9 @@ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg);
+diff --git a/Documentation/userspace-api/media/mediactl/media-types.rst b/Documentation/userspace-api/media/mediactl/media-types.rst
+index 6332e8395263..adfb37430f8e 100644
+--- a/Documentation/userspace-api/media/mediactl/media-types.rst
++++ b/Documentation/userspace-api/media/mediactl/media-types.rst
+@@ -265,6 +265,7 @@ Types and flags used to represent the media graph elements
+ .. _MEDIA-INTF-T-V4L-SUBDEV:
+ .. _MEDIA-INTF-T-V4L-SWRADIO:
+ .. _MEDIA-INTF-T-V4L-TOUCH:
++.. _MEDIA-INTF-T-V4L-AUDIO:
+ .. _MEDIA-INTF-T-ALSA-PCM-CAPTURE:
+ .. _MEDIA-INTF-T-ALSA-PCM-PLAYBACK:
+ .. _MEDIA-INTF-T-ALSA-CONTROL:
+@@ -322,6 +323,10 @@ Types and flags used to represent the media graph elements
+        -  Device node interface for Touch device (V4L)
+        -  typically, /dev/v4l-touch?
  
- int arch_crash_hotplug_support(struct kimage *image, unsigned long kexec_flags);
- #define arch_crash_hotplug_support arch_crash_hotplug_support
++    *  -  ``MEDIA_INTF_T_V4L_AUDIO``
++       -  Device node interface for Audio device (V4L)
++       -  typically, /dev/v4l-audio?
 +
-+unsigned int arch_crash_get_elfcorehdr_size(void);
-+#define crash_get_elfcorehdr_size arch_crash_get_elfcorehdr_size
- #endif /* CONFIG_CRASH_HOTPLUG */
- 
- extern int crashing_cpu;
-diff --git a/arch/powerpc/include/asm/kexec_ranges.h b/arch/powerpc/include/asm/kexec_ranges.h
-index 8489e844b447..14055896cbcb 100644
---- a/arch/powerpc/include/asm/kexec_ranges.h
-+++ b/arch/powerpc/include/asm/kexec_ranges.h
-@@ -7,6 +7,7 @@
- void sort_memory_ranges(struct crash_mem *mrngs, bool merge);
- struct crash_mem *realloc_mem_ranges(struct crash_mem **mem_ranges);
- int add_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size);
-+int remove_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size);
- int get_exclude_memory_ranges(struct crash_mem **mem_ranges);
- int get_reserved_memory_ranges(struct crash_mem **mem_ranges);
- int get_crash_memory_ranges(struct crash_mem **mem_ranges);
-diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
-index 8938a19af12f..21b193e938a3 100644
---- a/arch/powerpc/kexec/crash.c
-+++ b/arch/powerpc/kexec/crash.c
-@@ -17,6 +17,7 @@
- #include <linux/irq.h>
- #include <linux/types.h>
- #include <linux/libfdt.h>
-+#include <linux/memory.h>
- 
- #include <asm/processor.h>
- #include <asm/machdep.h>
-@@ -25,6 +26,7 @@
- #include <asm/setjmp.h>
- #include <asm/debug.h>
- #include <asm/interrupt.h>
-+#include <asm/kexec_ranges.h>
- 
- /*
-  * The primary CPU waits a while for all secondary CPUs to enter. This is to
-@@ -398,6 +400,94 @@ void default_machine_crash_shutdown(struct pt_regs *regs)
- #undef pr_fmt
- #define pr_fmt(fmt) "crash hp: " fmt
- 
-+/*
-+ * Advertise preferred elfcorehdr size to userspace via
-+ * /sys/kernel/crash_elfcorehdr_size sysfs interface.
-+ */
-+unsigned int arch_crash_get_elfcorehdr_size(void)
-+{
-+	unsigned long phdr_cnt;
-+
-+	/* A program header for possible CPUs + vmcoreinfo */
-+	phdr_cnt = num_possible_cpus() + 1;
-+	if (IS_ENABLED(CONFIG_MEMORY_HOTPLUG))
-+		phdr_cnt += CONFIG_CRASH_MAX_MEMORY_RANGES;
-+
-+	return sizeof(struct elfhdr) + (phdr_cnt * sizeof(Elf64_Phdr));
-+}
-+
-+/**
-+ * update_crash_elfcorehdr() - Recreate the elfcorehdr and replace it with old
-+ *			       elfcorehdr in the kexec segment array.
-+ * @image: the active struct kimage
-+ * @mn: struct memory_notify data handler
-+ */
-+static void update_crash_elfcorehdr(struct kimage *image, struct memory_notify *mn)
-+{
-+	int ret;
-+	struct crash_mem *cmem = NULL;
-+	struct kexec_segment *ksegment;
-+	void *ptr, *mem, *elfbuf = NULL;
-+	unsigned long elfsz, memsz, base_addr, size;
-+
-+	ksegment = &image->segment[image->elfcorehdr_index];
-+	mem = (void *) ksegment->mem;
-+	memsz = ksegment->memsz;
-+
-+	ret = get_crash_memory_ranges(&cmem);
-+	if (ret) {
-+		pr_err("Failed to get crash mem range\n");
-+		return;
-+	}
-+
-+	/*
-+	 * The hot unplugged memory is part of crash memory ranges,
-+	 * remove it here.
-+	 */
-+	if (image->hp_action == KEXEC_CRASH_HP_REMOVE_MEMORY) {
-+		base_addr = PFN_PHYS(mn->start_pfn);
-+		size = mn->nr_pages * PAGE_SIZE;
-+		ret = remove_mem_range(&cmem, base_addr, size);
-+		if (ret) {
-+			pr_err("Failed to remove hot-unplugged memory from crash memory ranges\n");
-+			goto out;
-+		}
-+	}
-+
-+	ret = crash_prepare_elf64_headers(cmem, false, &elfbuf, &elfsz);
-+	if (ret) {
-+		pr_err("Failed to prepare elf header\n");
-+		goto out;
-+	}
-+
-+	/*
-+	 * It is unlikely that kernel hit this because elfcorehdr kexec
-+	 * segment (memsz) is built with addition space to accommodate growing
-+	 * number of crash memory ranges while loading the kdump kernel. It is
-+	 * Just to avoid any unforeseen case.
-+	 */
-+	if (elfsz > memsz) {
-+		pr_err("Updated crash elfcorehdr elfsz %lu > memsz %lu", elfsz, memsz);
-+		goto out;
-+	}
-+
-+	ptr = __va(mem);
-+	if (ptr) {
-+		/* Temporarily invalidate the crash image while it is replaced */
-+		xchg(&kexec_crash_image, NULL);
-+
-+		/* Replace the old elfcorehdr with newly prepared elfcorehdr */
-+		memcpy((void *)ptr, elfbuf, elfsz);
-+
-+		/* The crash image is now valid once again */
-+		xchg(&kexec_crash_image, image);
-+	}
-+out:
-+	kvfree(cmem);
-+	if (elfbuf)
-+		kvfree(elfbuf);
-+}
-+
- /**
-  * get_fdt_index - Loop through the kexec segment array and find
-  *		   the index of the FDT segment.
-@@ -478,6 +568,8 @@ int arch_crash_hotplug_support(struct kimage *image, unsigned long kexec_flags)
-  */
- void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
- {
-+	struct memory_notify *mn;
-+
- 	switch (image->hp_action) {
- 	case KEXEC_CRASH_HP_REMOVE_CPU:
- 		return;
-@@ -488,7 +580,8 @@ void arch_crash_handle_hotplug_event(struct kimage *image, void *arg)
- 
- 	case KEXEC_CRASH_HP_REMOVE_MEMORY:
- 	case KEXEC_CRASH_HP_ADD_MEMORY:
--		pr_info_once("Crash update is not supported for memory hotplug\n");
-+		mn = (struct memory_notify *)arg;
-+		update_crash_elfcorehdr(image, mn);
- 		return;
+     *  -  ``MEDIA_INTF_T_ALSA_PCM_CAPTURE``
+        -  Device node interface for ALSA PCM Capture
+        -  typically, /dev/snd/pcmC?D?c
+diff --git a/drivers/media/v4l2-core/v4l2-dev.c b/drivers/media/v4l2-core/v4l2-dev.c
+index bac008fcedc6..ca8462a61e1f 100644
+--- a/drivers/media/v4l2-core/v4l2-dev.c
++++ b/drivers/media/v4l2-core/v4l2-dev.c
+@@ -844,6 +844,10 @@ static int video_register_media_controller(struct video_device *vdev)
+ 		intf_type = MEDIA_INTF_T_V4L_SUBDEV;
+ 		/* Entity will be created via v4l2_device_register_subdev() */
+ 		break;
++	case VFL_TYPE_AUDIO:
++		intf_type = MEDIA_INTF_T_V4L_AUDIO;
++		/* Entity will be created via v4l2_device_register_subdev() */
++		break;
  	default:
- 		pr_warn_once("Unknown hotplug action\n");
-diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-index 2640a804fcdf..925a69ad2468 100644
---- a/arch/powerpc/kexec/file_load_64.c
-+++ b/arch/powerpc/kexec/file_load_64.c
-@@ -595,6 +595,23 @@ static void update_backup_region_phdr(struct kimage *image, Elf64_Ehdr *ehdr)
+ 		return 0;
  	}
- }
+diff --git a/drivers/media/v4l2-core/v4l2-mem2mem.c b/drivers/media/v4l2-core/v4l2-mem2mem.c
+index 75517134a5e9..cda5e255305f 100644
+--- a/drivers/media/v4l2-core/v4l2-mem2mem.c
++++ b/drivers/media/v4l2-core/v4l2-mem2mem.c
+@@ -1143,10 +1143,15 @@ int v4l2_m2m_register_media_controller(struct v4l2_m2m_dev *m2m_dev,
+ 	if (ret)
+ 		goto err_rm_links0;
  
-+static unsigned int kdump_extra_elfcorehdr_size(struct crash_mem *cmem)
-+{
-+#if defined(CONFIG_CRASH_HOTPLUG) && defined(CONFIG_MEMORY_HOTPLUG)
-+	unsigned int extra_sz = 0;
-+
-+	if (CONFIG_CRASH_MAX_MEMORY_RANGES > (unsigned int)PN_XNUM)
-+		pr_warn("Number of Phdrs %u exceeds max\n", CONFIG_CRASH_MAX_MEMORY_RANGES);
-+	else if (cmem->nr_ranges >= CONFIG_CRASH_MAX_MEMORY_RANGES)
-+		pr_warn("Configured crash mem ranges may not be enough\n");
+-	/* Create video interface */
+-	m2m_dev->intf_devnode = media_devnode_create(mdev,
+-			MEDIA_INTF_T_V4L_VIDEO, 0,
+-			VIDEO_MAJOR, vdev->minor);
++	if (vdev->vfl_type == VFL_TYPE_AUDIO)
++		m2m_dev->intf_devnode = media_devnode_create(mdev,
++				MEDIA_INTF_T_V4L_AUDIO, 0,
++				VIDEO_MAJOR, vdev->minor);
 +	else
-+		extra_sz = (CONFIG_CRASH_MAX_MEMORY_RANGES - cmem->nr_ranges) * sizeof(Elf64_Phdr);
-+
-+	return extra_sz;
-+#endif
-+	return 0;
-+}
-+
- /**
-  * load_elfcorehdr_segment - Setup crash memory ranges and initialize elfcorehdr
-  *                           segment needed to load kdump kernel.
-@@ -626,7 +643,8 @@ static int load_elfcorehdr_segment(struct kimage *image, struct kexec_buf *kbuf)
++		/* Create video interface */
++		m2m_dev->intf_devnode = media_devnode_create(mdev,
++				MEDIA_INTF_T_V4L_VIDEO, 0,
++				VIDEO_MAJOR, vdev->minor);
+ 	if (!m2m_dev->intf_devnode) {
+ 		ret = -ENOMEM;
+ 		goto err_rm_links1;
+diff --git a/include/uapi/linux/media.h b/include/uapi/linux/media.h
+index 1c80b1d6bbaf..9ff6dec7393a 100644
+--- a/include/uapi/linux/media.h
++++ b/include/uapi/linux/media.h
+@@ -260,6 +260,7 @@ struct media_links_enum {
+ #define MEDIA_INTF_T_V4L_SUBDEV			(MEDIA_INTF_T_V4L_BASE + 3)
+ #define MEDIA_INTF_T_V4L_SWRADIO		(MEDIA_INTF_T_V4L_BASE + 4)
+ #define MEDIA_INTF_T_V4L_TOUCH			(MEDIA_INTF_T_V4L_BASE + 5)
++#define MEDIA_INTF_T_V4L_AUDIO			(MEDIA_INTF_T_V4L_BASE + 6)
  
- 	kbuf->buffer = headers;
- 	kbuf->mem = KEXEC_BUF_MEM_UNKNOWN;
--	kbuf->bufsz = kbuf->memsz = headers_sz;
-+	kbuf->bufsz = headers_sz;
-+	kbuf->memsz = headers_sz + kdump_extra_elfcorehdr_size(cmem);
- 	kbuf->top_down = false;
- 
- 	ret = kexec_add_buffer(kbuf);
-diff --git a/arch/powerpc/kexec/ranges.c b/arch/powerpc/kexec/ranges.c
-index 297b8bc97b9f..00dfd62203bd 100644
---- a/arch/powerpc/kexec/ranges.c
-+++ b/arch/powerpc/kexec/ranges.c
-@@ -618,4 +618,89 @@ int get_crash_memory_ranges(struct crash_mem **mem_ranges)
- 		pr_err("Failed to setup crash memory ranges\n");
- 	return ret;
- }
-+
-+/**
-+ * remove_mem_range - Removes the given memory range from the range list.
-+ * @mem_ranges:    Range list to remove the memory range to.
-+ * @base:          Base address of the range to remove.
-+ * @size:          Size of the memory range to remove.
-+ *
-+ * (Re)allocates memory, if needed.
-+ *
-+ * Returns 0 on success, negative errno on error.
-+ */
-+int remove_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size)
-+{
-+	u64 end;
-+	int ret = 0;
-+	unsigned int i;
-+	u64 mstart, mend;
-+	struct crash_mem *mem_rngs = *mem_ranges;
-+
-+	if (!size)
-+		return 0;
-+
-+	/*
-+	 * Memory range are stored as start and end address, use
-+	 * the same format to do remove operation.
-+	 */
-+	end = base + size - 1;
-+
-+	for (i = 0; i < mem_rngs->nr_ranges; i++) {
-+		mstart = mem_rngs->ranges[i].start;
-+		mend = mem_rngs->ranges[i].end;
-+
-+		/*
-+		 * Memory range to remove is not part of this range entry
-+		 * in the memory range list
-+		 */
-+		if (!(base >= mstart && end <= mend))
-+			continue;
-+
-+		/*
-+		 * Memory range to remove is equivalent to this entry in the
-+		 * memory range list. Remove the range entry from the list.
-+		 */
-+		if (base == mstart && end == mend) {
-+			for (; i < mem_rngs->nr_ranges - 1; i++) {
-+				mem_rngs->ranges[i].start = mem_rngs->ranges[i+1].start;
-+				mem_rngs->ranges[i].end = mem_rngs->ranges[i+1].end;
-+			}
-+			mem_rngs->nr_ranges--;
-+			goto out;
-+		}
-+		/*
-+		 * Start address of the memory range to remove and the
-+		 * current memory range entry in the list is same. Just
-+		 * move the start address of the current memory range
-+		 * entry in the list to end + 1.
-+		 */
-+		else if (base == mstart) {
-+			mem_rngs->ranges[i].start = end + 1;
-+			goto out;
-+		}
-+		/*
-+		 * End address of the memory range to remove and the
-+		 * current memory range entry in the list is same.
-+		 * Just move the end address of the current memory
-+		 * range entry in the list to base - 1.
-+		 */
-+		else if (end == mend)  {
-+			mem_rngs->ranges[i].end = base - 1;
-+			goto out;
-+		}
-+		/*
-+		 * Memory range to remove is not at the edge of current
-+		 * memory range entry. Split the current memory entry into
-+		 * two half.
-+		 */
-+		else {
-+			mem_rngs->ranges[i].end = base - 1;
-+			size = mem_rngs->ranges[i].end - end;
-+			ret = add_mem_range(mem_ranges, end + 1, size);
-+		}
-+	}
-+out:
-+	return ret;
-+}
- #endif /* CONFIG_CRASH_DUMP */
+ #define MEDIA_INTF_T_ALSA_BASE			0x00000300
+ #define MEDIA_INTF_T_ALSA_PCM_CAPTURE		(MEDIA_INTF_T_ALSA_BASE)
 -- 
-2.43.0
+2.34.1
 
