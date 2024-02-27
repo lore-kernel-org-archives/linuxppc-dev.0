@@ -4,129 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11914C5478C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Feb 2024 19:06:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 986FFC5478C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 00:50:40 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=FbbnLLoP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hlb2FLF+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tk97r5Cmzz3vZc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 06:06:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TkJnB6x2Mz3dWP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 11:50:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=FbbnLLoP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hlb2FLF+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f403:261c::701; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-mr2fra01on20701.outbound.protection.outlook.com [IPv6:2a01:111:f403:261c::701])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=guoren@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tk971170Yz3cDR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2024 06:05:31 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=RsOFCUjWUEAFhP1Q7wvKMrdRu9Fykko3hY8PZ953J+foyvKHEy7HDcoGDpA1H1h9gd+IhhfuB517/Z3PRn2PafZp0FTnbBabFmJDwTkz+c00+httLzf+98W8pNDQ2fYh2vRyi7SPDLynDqhNgNh0dnF/LhJFh7VAnIkUnmknDNIYS3EAi7Z8Q+nQax6ZY0AAtZ8bfk9uk/EMuJ74V2PH7DuNPb/oqm/fyCJjeRvz2/+VUEUW7Caw6pfufocJBnnfnP7LjgbK2lwcukqPDZji82rCLpY9v/SoCn2Cqvxd9TbU37RlLtJLSC6/cqjT6UYnGuPkNnIJ77QY99NC0llpLQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=AzxYl6WNRZKHuW7XUwRYfQC3UiKvhpv7hdTT1lHkP/o=;
- b=eYfvlHSQGQgAruIYsP49saooVSrjFP0By4Z7QNEUQ6cDHhhUkFbpEChmexZsihdR5DbCYp8NZchJe3YAbiLdPzHpKxoXxApbQ3K276J39w9D1qHUsquQUGSZBG3KPnF+LRUk/gtxysaDDaHHpeF5OVzmlI3S4/szsnl0fDESopkPkLfjBZc39HxKNz+SsS3P6sqtulqPraGaZLCidpq6JgLI8dWutJIaTEIZgqpBOWoYeUghI8fvagi3IBCtYaH4tDuCWYOUWE6C6xiR//HVtdaFGaS/d94QdW4DWaDzOOJoikMZViQGR10jkmt981tJkZlfnK3pDzn6DLMo/NgZWg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
- dkim=pass header.d=csgroup.eu; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=AzxYl6WNRZKHuW7XUwRYfQC3UiKvhpv7hdTT1lHkP/o=;
- b=FbbnLLoPvkp/zl0d6GCzIuyshSjGrJSzdi1IP8JOeDWFU/m0BMUkf5Z4087eNtokVOYNFLGJT+2W7oS5aA37ViVdNptro+3JzGWGaMAChSexxUtjc1bImB+PKE3qbsda5KOcZT0pjV1GyiPuHBC6s+YNVhlYYV3HiD0lHC77fuMBucBnUfxj4MPKquBUSewi8ec1C8M8HL4mu6x+9umMShlHcq1dHWU1LpMJoHao93IVsz58yULJvdPs9Rg6m1sid292YI25nBqpoycPJLqguVHuDyrLngv8euFYMzSaBgNSfZ1VPf+69WOY3mOU/fa/VCYx/FjOEj8436h9Ww2s7Q==
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
- by MR1P264MB3219.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:3c::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7316.36; Mon, 26 Feb
- 2024 19:05:12 +0000
-Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::c192:d40f:1c33:1f4e]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
- ([fe80::c192:d40f:1c33:1f4e%6]) with mapi id 15.20.7316.035; Mon, 26 Feb 2024
- 19:05:12 +0000
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Arnd Bergmann <arnd@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>, Kees Cook
-	<keescook@chromium.org>, Anna-Maria Behnsen <anna-maria@linutronix.de>
-Subject: Re: [PATCH 2/4] arch: simplify architecture specific page size
- configuration
-Thread-Topic: [PATCH 2/4] arch: simplify architecture specific page size
- configuration
-Thread-Index: AQHaaM7xu3r9QXVYJ0O+Zom/sxgKfbEc+9OA
-Date: Mon, 26 Feb 2024 19:05:12 +0000
-Message-ID: <803facbe-2dfb-44cd-9110-0a27eb31b62f@csgroup.eu>
-References: <20240226161414.2316610-1-arnd@kernel.org>
- <20240226161414.2316610-3-arnd@kernel.org>
-In-Reply-To: <20240226161414.2316610-3-arnd@kernel.org>
-Accept-Language: fr-FR, en-US
-Content-Language: fr-FR
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-user-agent: Mozilla Thunderbird
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=csgroup.eu;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: MRZP264MB2988:EE_|MR1P264MB3219:EE_
-x-ms-office365-filtering-correlation-id: 7ab6c7a7-bfee-404a-1353-08dc36fddbeb
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info:  Lh5b3h0126swEmjmDAooc3NxgDJ7cZNZb2v1XEBaQcvOL2MiJ8Waeo72ti7xlDkyI8SJRFCIFY3pjxg/FMwu1avhvovSpxGq9qsL/tMjIpo7Z4t7REuU2WzN/xzN21DUfi9xkd90ltaR3XwT6h/9CGfyMnKQUsmaBPP2AoBojYtsanJ8dhVZg8RDCcT3ZkH4gTLKTfP4/+RxPecTfnRfis7G5sXB1vRiO3FJPPTp/n7s5v1RVAOupTQHJAd1SmevWOB7C5rV1aaa21Fd0gv6qQ3q4usJaU/ph2QHw5P9r7ILYMvSQtPgJaYnhcX3Lctl8iNHcL7RfmThQGgDsB2Ap4qGTMicZKo9EWJ1/J2Nhz8Fg/NXHEGGx9ujxuFO135Ry7S3sMAlUhN72LIuXz/5a5yeDJV1Kmq/QWzjQj0ii9U/4toy0vUHjw3wfK0dzWU7bzdezly9FQ89F8/GgN8LtVRYBo2l03jYicOali3ZF/tPXyzUWx3MRL4nKW6ip2Gps7pvTMRYj1yeTq4w1F5261HsKVOG3Kzn9B4+cNr5dO4NhPp27cbB6CN9QdEetjLFRWfw9PFwyaJtx7iYyp3mLUX0ANOJvjo6eKh/FFtUv2mXg7tdZxQDCpxRWI8A41R6AFRQ/6ztxyS807Py47lqAcnNk/ORGQiQ70nbXTPBL3PkfmR5YRCQn5/Jb6ljgct0zIxdRU4tQ3ePhPsYkLVVMyRYDKkykYccMcsR7hQtZC8=
-x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230031)(38070700009);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?R1oyS2V3R3hQL2hRZUVURmxKWHJGb1B4d0NQL2VROURXb2UwNUE4dDlhTUtY?=
- =?utf-8?B?MmZsNkFuaXlqRjlTTnBEeWNqZ1puWjdVLytMVGwyZ08rVENodjNjRHBKU3dL?=
- =?utf-8?B?V21OTnhIUjdQdmxhbUhmN2RNRVNoQkhZazh2cHg5ZzRsWFgxaEFrSFpzYmN2?=
- =?utf-8?B?QUNBdkZZUVVSWS90UTJ4WEEzV2RKYTdSakZLZHI4TlNob3FyQ2tDVCtMdllI?=
- =?utf-8?B?NWQwUzZOR015bHZSMUFzSGpNc3pLMUpHR1dIb0tnT0F1YVd5UU9VazEvOTdD?=
- =?utf-8?B?Q2d6bHU5UENkRzltZnlrMzR1clBpRmdibzIzQjZ2b01veTgreFRkUkZqMVJM?=
- =?utf-8?B?ck10OWNoR2dEdWVoNnVOKzdEZ3lkSzhTL3pYK0ZNcGE4Ky93aHkvQk16QVNs?=
- =?utf-8?B?R0FIdlMvY2V0RmxlQkFtcXhVOFN2Z2Q2MFIrSmtFUzR6ZXhDKzNWN0FXWVho?=
- =?utf-8?B?bkh6TXpSM0xGWjIwTkg5T0JFZU02U2FrRFd1elZWNlV0ckVBSDZSVGdKVHhO?=
- =?utf-8?B?bEJGbnNqMnErc1lUKzFNMmUwOFltUlZwd2ZaMGhKT0NvWHNUMVlxL3huMkF0?=
- =?utf-8?B?QnlVcW1iQS9COGgvdEhPVnEzODhFMGR5elZsaVJMcHA2ZDU3c0tGS0J1M21q?=
- =?utf-8?B?dS9GSWJqaXBjWnk2emsxQ05IZkE2cnNZa0RkejhZRnJuNjdPamhPaXdjM0Qr?=
- =?utf-8?B?V1drUmJIem1sdXdRMEU4eUppajZaTXB2c0ROcnlmeExYSXRiRy9tZnBBcVI2?=
- =?utf-8?B?TlFMSXRZdXJ1Q3h5WUUzRWl4ZjhTenNVS1ZrRk5iVjl3VnBjTHVUUDZLeXp4?=
- =?utf-8?B?T2F5SDBSTjZCTk16THpBTmQyUjZYYXZOQ3llYmJUM1dISDZGd0E0SlM4WS9I?=
- =?utf-8?B?NEEzZVJBK2ZDV3RscFBMYUhXWTBQb1hzcTJNMkFMelNheGVVcGhaL0ZmdzA5?=
- =?utf-8?B?WlVJM1JPRU55OGFaSHFnQUxYckw4eFAyNW0zYlB2aDU4TE5mQ2FGRFRyUko2?=
- =?utf-8?B?bndBeXV3Ky9WQ09xc1J1bEJlMnc3NURWaWJ3bkQ0VmNVcmJ3VFhURjNkamF1?=
- =?utf-8?B?ZHM4alVVLzBtTW14ZVlVUCtHZXpmeDRZRTBZcG9RTmlmcFFxcDlrMWdEZFVY?=
- =?utf-8?B?bDNTSXJNZXB6U09QRDFLM0Fya2Jyd2s4c1RwT1R5R0dtUnM0aHdubmROVVNv?=
- =?utf-8?B?aWx2VlM5WWhkZHB5cDNZTUNGUHFRc2lCTS9xSWk2Y3RmSXh1c2JJT2NlLzJl?=
- =?utf-8?B?L0x0dTRPd3VEczBnZ1V0WUFBU0RLY1FhbUJ0cGJYb0hKdU0relkweWhXUk1N?=
- =?utf-8?B?dFZXYU1ObkdRR2F0b0FaMjNPTjV5NHZnSmhkNlVMdnZwQ0RKa294Um9PMUwv?=
- =?utf-8?B?UCtWL2pBMDQvUHh4TXJSMmdOMGl5QmtZTVh6OU5tMUtlbEl2VWFJRXdPdFhQ?=
- =?utf-8?B?NGlNR21sZHp1MTNOQUkwWjQ2aGRkY01QclVIWDFReWtndzNCTnVVelNoOHJG?=
- =?utf-8?B?UFpmU3h0dkxBWVBvdSt4Tlo1M0tIQmdtRVBsNG5YNjFEeGZQbFQ0alYxUmhH?=
- =?utf-8?B?UGlPekV2Zm95a0JQT21zYUg4QUpLSGtpczlWTHBPd1ljcDcwK2ZZREpCMjAy?=
- =?utf-8?B?RSs1WFlYcHRMSC9KdUdjSWJyR1ZYQ1E2bTdEaDZkdmtHWUlvTnptYksrUGh1?=
- =?utf-8?B?NGFhNm5ZV2QxZzZiaEc2eTdvbzBvMUpTWkpTLytFZTgwYm91T2lrNXhvdFhk?=
- =?utf-8?B?ejd2TlBlN1RJK2x6TmVrT3lTc1F2WWhwR0YwZnFHT09tR1QrNjR4alhsZFMy?=
- =?utf-8?B?cytydUI1QTVQTkxqNkc5czNQZ0NxamhxTjA2RzNpelZuUk5sNXdmZkNZQ25Q?=
- =?utf-8?B?aXVubHFpNXVjRThScUk3ZEFMMjNNNXVTMHlUTWNIQnB2V1ZvNWFud041YXg3?=
- =?utf-8?B?T1ZKY1E4TmdXZytueWUwVm5RVTF4TmlzVmpwNmFtZzVEK0lFNVhDaHJ0VW5n?=
- =?utf-8?B?MmRsTUIxYThaYWp0KzVvNnlVdmF4aERDRjdSOHlTTzNtbWtSamtnUWx6bFBt?=
- =?utf-8?B?TDZQY2o0YnBXM1llOHl3V3RRQ0ZKOHVwYUY5ZVpRZkthMlFTeTFMMDVXQ0RP?=
- =?utf-8?B?UWM3aDlsLzRlODZkQ0lnVWFTeXVJZ1M0bVpBa3ZEMjV2T051SVBwUnEyeFA2?=
- =?utf-8?B?ZWc9PQ==?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <B29AC14F512DD343A43755376F1A2F11@FRAP264.PROD.OUTLOOK.COM>
-Content-Transfer-Encoding: base64
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TkJmM6y89z3bnv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2024 11:49:55 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 89D94CE18F6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2024 00:49:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB6C2C43394
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2024 00:49:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1708994992;
+	bh=rccfFAsIXXB1qR3NT1VIdPRPtfwefb4SHiEfUqybo3o=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=hlb2FLF+7oSLe2uaiQD1GRNrdcUcZ76jkMNefv7y9z0d4avyL6FJ+ec7MgIsVWa5P
+	 wvDYvR10b8lFqBOgHmiA20/osMi1ld0TZqLNPYid52p2q5f1QA1scVPKtHhKfIDhrC
+	 q/svMK1Zm8VDLDLUYcDNUcNYAUTAdB82AhjafWTXrSI4iDZBqMRFNL534Smb8NdazI
+	 ymraKhDbxXSVTEhoYUArpoXZ2r5dqvW0+L+n8D1lFNRcYqnhaZWc3vUmQ45go8B2dM
+	 9JaWRnD/n3enlV67RX51LMpQ6+Gmgkk/xvPrcP0vyLUs5JSJ74i3u0JV/RpiWY7fzr
+	 YOZ11VkXCa1NQ==
+Received: by mail-lj1-f181.google.com with SMTP id 38308e7fff4ca-2d28464c554so28202111fa.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Feb 2024 16:49:52 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUGvHxGvCR6gYn+rZxXDfD1kwCfVhLzfk/ZNx4jlgkESGSWVIjhNL8tE2jNiGSxUpm0vlIinJK6cchfv/3Grh9mCsHfrCBYealD5MlUyA==
+X-Gm-Message-State: AOJu0YyvDG0KKoJbKEhVJRswb/Qd2PpeMHXtOXOV/g/bZKJkddywsZCX
+	3ANy3u9qMZKYLuOaFTKQ8Zjf97rpycf1RawF6+eM+Neh+c6czvEMYqIgsfCkyqU01cIQ3RzjBx0
+	PXYjnKJDRpN8oYtwKLm+63MWiYF8=
+X-Google-Smtp-Source: AGHT+IHMbxJ3SiFOofcXhuN9irkVPuqdMkmTsNwCqv7uyX1PBMjHMV5Lrsk8D9faur3ryNh+qAv630nq+LkptA51b9c=
+X-Received: by 2002:a05:6512:10d2:b0:512:cef7:4754 with SMTP id
+ k18-20020a05651210d200b00512cef74754mr6391328lfg.5.1708994969841; Mon, 26 Feb
+ 2024 16:49:29 -0800 (PST)
 MIME-Version: 1.0
-X-OriginatorOrg: csgroup.eu
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7ab6c7a7-bfee-404a-1353-08dc36fddbeb
-X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Feb 2024 19:05:12.3908
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: +9HD62PBvdvrVVjLoC6rvl6xzktuTmAP5jy9CCtXR/suIanyTIWrHcpDneUCZLeebKN8ERfXXb7tGAQ5ZcAFut7hCRiEooRyENpNZYaEjm8=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MR1P264MB3219
+References: <20240226161414.2316610-1-arnd@kernel.org> <20240226161414.2316610-4-arnd@kernel.org>
+In-Reply-To: <20240226161414.2316610-4-arnd@kernel.org>
+From: Guo Ren <guoren@kernel.org>
+Date: Tue, 27 Feb 2024 08:49:18 +0800
+X-Gmail-Original-Message-ID: <CAJF2gTSCdXtCib2Wv_DQQSJ5srhDwHH6B3xgdrr1-SQECUL1VA@mail.gmail.com>
+Message-ID: <CAJF2gTSCdXtCib2Wv_DQQSJ5srhDwHH6B3xgdrr1-SQECUL1VA@mail.gmail.com>
+Subject: Re: [PATCH 3/4] arch: define CONFIG_PAGE_SIZE_*KB on all architectures
+To: Arnd Bergmann <arnd@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -138,194 +69,450 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "x86@kernel.org" <x86@kernel.org>, "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Jan Kiszka <jan.kiszka@siemens.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, "linux-snps-arc@lists.infradead.org" <lin
- ux-snps-arc@lists.infradead.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Kieran Bingham <kbingham@kernel.org>, "linux-um@lists.infradead.org" <linux-um@lists.infradead.org>, "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: x86@kernel.org, loongarch@lists.linux.dev, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Jan Kiszka <jan.kiszka@siemens.com>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, Vincenzo Frascino <vincenzo.frascino@arm.com>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-alpha@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Kieran Bingham <kbingham@kernel.org>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <g
+ laubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, Anna-Maria Behnsen <anna-maria@linutronix.de>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-DQoNCkxlIDI2LzAyLzIwMjQgw6AgMTc6MTQsIEFybmQgQmVyZ21hbm4gYSDDqWNyaXTCoDoNCj4g
-RnJvbTogQXJuZCBCZXJnbWFubiA8YXJuZEBhcm5kYi5kZT4NCj4gDQo+IGFyYywgYXJtNjQsIHBh
-cmlzYyBhbmQgcG93ZXJwYyBhbGwgaGF2ZSB0aGVpciBvd24gS2NvbmZpZyBzeW1ib2xzDQo+IGlu
-IHBsYWNlIG9mIHRoZSBjb21tb24gQ09ORklHX1BBR0VfU0laRV80S0Igc3ltYm9scy4gQ2hhbmdl
-IHRoZXNlDQo+IHNvIHRoZSBjb21tb24gc3ltYm9scyBhcmUgdGhlIG9uZXMgdGhhdCBhcmUgYWN0
-dWFsbHkgdXNlZCwgd2hpbGUNCj4gbGVhdmluZyB0aGUgYXJoY2l0ZWN0dXJlIHNwZWNpZmljIG9u
-ZXMgYXMgdGhlIHVzZXIgdmlzaWJsZQ0KPiBwbGFjZSBmb3IgY29uZmlndXJpbmcgaXQsIHRvIGF2
-b2lkIGJyZWFraW5nIHVzZXIgY29uZmlncy4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEFybmQgQmVy
-Z21hbm4gPGFybmRAYXJuZGIuZGU+DQoNClJldmlld2VkLWJ5OiBDaHJpc3RvcGhlIExlcm95IDxj
-aHJpc3RvcGhlLmxlcm95QGNzZ3JvdXAuZXU+IChwb3dlcnBjMzIpDQoNCj4gLS0tDQo+ICAgYXJj
-aC9hcmMvS2NvbmZpZyAgICAgICAgICAgICAgICAgIHwgIDMgKysrDQo+ICAgYXJjaC9hcmMvaW5j
-bHVkZS91YXBpL2FzbS9wYWdlLmggIHwgIDYgKystLS0tDQo+ICAgYXJjaC9hcm02NC9LY29uZmln
-ICAgICAgICAgICAgICAgIHwgMjkgKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLS0NCj4gICBh
-cmNoL2FybTY0L2luY2x1ZGUvYXNtL3BhZ2UtZGVmLmggfCAgMiArLQ0KPiAgIGFyY2gvcGFyaXNj
-L0tjb25maWcgICAgICAgICAgICAgICB8ICAzICsrKw0KPiAgIGFyY2gvcGFyaXNjL2luY2x1ZGUv
-YXNtL3BhZ2UuaCAgICB8IDEwICstLS0tLS0tLS0NCj4gICBhcmNoL3Bvd2VycGMvS2NvbmZpZyAg
-ICAgICAgICAgICAgfCAzMSArKysrKystLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICAgYXJj
-aC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BhZ2UuaCAgIHwgIDIgKy0NCj4gICBzY3JpcHRzL2dkYi9s
-aW51eC9jb25zdGFudHMucHkuaW4gfCAgMiArLQ0KPiAgIHNjcmlwdHMvZ2RiL2xpbnV4L21tLnB5
-ICAgICAgICAgICB8ICAyICstDQo+ICAgMTAgZmlsZXMgY2hhbmdlZCwgMzIgaW5zZXJ0aW9ucygr
-KSwgNTggZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcmMvS2NvbmZpZyBi
-L2FyY2gvYXJjL0tjb25maWcNCj4gaW5kZXggMWIwNDgzYzUxY2MxLi40MDkyYmVjMTk4YmUgMTAw
-NjQ0DQo+IC0tLSBhL2FyY2gvYXJjL0tjb25maWcNCj4gKysrIGIvYXJjaC9hcmMvS2NvbmZpZw0K
-PiBAQCAtMjg0LDE0ICsyODQsMTcgQEAgY2hvaWNlDQo+ICAgDQo+ICAgY29uZmlnIEFSQ19QQUdF
-X1NJWkVfOEsNCj4gICAJYm9vbCAiOEtCIg0KPiArCXNlbGVjdCBIQVZFX1BBR0VfU0laRV84S0IN
-Cj4gICAJaGVscA0KPiAgIAkgIENob29zZSBiZXR3ZWVuIDhrIHZzIDE2aw0KPiAgIA0KPiAgIGNv
-bmZpZyBBUkNfUEFHRV9TSVpFXzE2Sw0KPiArCXNlbGVjdCBIQVZFX1BBR0VfU0laRV8xNktCDQo+
-ICAgCWJvb2wgIjE2S0IiDQo+ICAgDQo+ICAgY29uZmlnIEFSQ19QQUdFX1NJWkVfNEsNCj4gICAJ
-Ym9vbCAiNEtCIg0KPiArCXNlbGVjdCBIQVZFX1BBR0VfU0laRV80S0INCj4gICAJZGVwZW5kcyBv
-biBBUkNfTU1VX1YzIHx8IEFSQ19NTVVfVjQNCj4gICANCj4gICBlbmRjaG9pY2UNCj4gZGlmZiAt
-LWdpdCBhL2FyY2gvYXJjL2luY2x1ZGUvdWFwaS9hc20vcGFnZS5oIGIvYXJjaC9hcmMvaW5jbHVk
-ZS91YXBpL2FzbS9wYWdlLmgNCj4gaW5kZXggMmE0YWQ2MTlhYmZiLi43ZmQ5ZTc0MWI1MjcgMTAw
-NjQ0DQo+IC0tLSBhL2FyY2gvYXJjL2luY2x1ZGUvdWFwaS9hc20vcGFnZS5oDQo+ICsrKyBiL2Fy
-Y2gvYXJjL2luY2x1ZGUvdWFwaS9hc20vcGFnZS5oDQo+IEBAIC0xMywxMCArMTMsOCBAQA0KPiAg
-ICNpbmNsdWRlIDxsaW51eC9jb25zdC5oPg0KPiAgIA0KPiAgIC8qIFBBR0VfU0hJRlQgZGV0ZXJt
-aW5lcyB0aGUgcGFnZSBzaXplICovDQo+IC0jaWYgZGVmaW5lZChDT05GSUdfQVJDX1BBR0VfU0la
-RV8xNkspDQo+IC0jZGVmaW5lIFBBR0VfU0hJRlQgMTQNCj4gLSNlbGlmIGRlZmluZWQoQ09ORklH
-X0FSQ19QQUdFX1NJWkVfNEspDQo+IC0jZGVmaW5lIFBBR0VfU0hJRlQgMTINCj4gKyNpZmRlZiBf
-X0tFUk5FTF9fDQo+ICsjZGVmaW5lIFBBR0VfU0hJRlQgQ09ORklHX1BBR0VfU0hJRlQNCj4gICAj
-ZWxzZQ0KPiAgIC8qDQo+ICAgICogRGVmYXVsdCA4aw0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02
-NC9LY29uZmlnIGIvYXJjaC9hcm02NC9LY29uZmlnDQo+IGluZGV4IGFhN2MxZDQzNTEzOS4uMjky
-OTBiOGNiMzZkIDEwMDY0NA0KPiAtLS0gYS9hcmNoL2FybTY0L0tjb25maWcNCj4gKysrIGIvYXJj
-aC9hcm02NC9LY29uZmlnDQo+IEBAIC0yNzcsMjcgKzI3NywyMSBAQCBjb25maWcgNjRCSVQNCj4g
-ICBjb25maWcgTU1VDQo+ICAgCWRlZl9ib29sIHkNCj4gICANCj4gLWNvbmZpZyBBUk02NF9QQUdF
-X1NISUZUDQo+IC0JaW50DQo+IC0JZGVmYXVsdCAxNiBpZiBBUk02NF82NEtfUEFHRVMNCj4gLQlk
-ZWZhdWx0IDE0IGlmIEFSTTY0XzE2S19QQUdFUw0KPiAtCWRlZmF1bHQgMTINCj4gLQ0KPiAgIGNv
-bmZpZyBBUk02NF9DT05UX1BURV9TSElGVA0KPiAgIAlpbnQNCj4gLQlkZWZhdWx0IDUgaWYgQVJN
-NjRfNjRLX1BBR0VTDQo+IC0JZGVmYXVsdCA3IGlmIEFSTTY0XzE2S19QQUdFUw0KPiArCWRlZmF1
-bHQgNSBpZiBQQUdFX1NJWkVfNjRLQg0KPiArCWRlZmF1bHQgNyBpZiBQQUdFX1NJWkVfMTZLQg0K
-PiAgIAlkZWZhdWx0IDQNCj4gICANCj4gICBjb25maWcgQVJNNjRfQ09OVF9QTURfU0hJRlQNCj4g
-ICAJaW50DQo+IC0JZGVmYXVsdCA1IGlmIEFSTTY0XzY0S19QQUdFUw0KPiAtCWRlZmF1bHQgNSBp
-ZiBBUk02NF8xNktfUEFHRVMNCj4gKwlkZWZhdWx0IDUgaWYgUEFHRV9TSVpFXzY0S0INCj4gKwlk
-ZWZhdWx0IDUgaWYgUEFHRV9TSVpFXzE2S0INCj4gICAJZGVmYXVsdCA0DQo+ICAgDQo+ICAgY29u
-ZmlnIEFSQ0hfTU1BUF9STkRfQklUU19NSU4NCj4gLQlkZWZhdWx0IDE0IGlmIEFSTTY0XzY0S19Q
-QUdFUw0KPiAtCWRlZmF1bHQgMTYgaWYgQVJNNjRfMTZLX1BBR0VTDQo+ICsJZGVmYXVsdCAxNCBp
-ZiBQQUdFX1NJWkVfNjRLQg0KPiArCWRlZmF1bHQgMTYgaWYgUEFHRV9TSVpFXzE2S0INCj4gICAJ
-ZGVmYXVsdCAxOA0KPiAgIA0KPiAgICMgbWF4IGJpdHMgZGV0ZXJtaW5lZCBieSB0aGUgZm9sbG93
-aW5nIGZvcm11bGE6DQo+IEBAIC0xMjU5LDExICsxMjUzLDEzIEBAIGNob2ljZQ0KPiAgIA0KPiAg
-IGNvbmZpZyBBUk02NF80S19QQUdFUw0KPiAgIAlib29sICI0S0IiDQo+ICsJc2VsZWN0IEhBVkVf
-UEFHRV9TSVpFXzRLQg0KPiAgIAloZWxwDQo+ICAgCSAgVGhpcyBmZWF0dXJlIGVuYWJsZXMgNEtC
-IHBhZ2VzIHN1cHBvcnQuDQo+ICAgDQo+ICAgY29uZmlnIEFSTTY0XzE2S19QQUdFUw0KPiAgIAli
-b29sICIxNktCIg0KPiArCXNlbGVjdCBIQVZFX1BBR0VfU0laRV8xNktCDQo+ICAgCWhlbHANCj4g
-ICAJICBUaGUgc3lzdGVtIHdpbGwgdXNlIDE2S0IgcGFnZXMgc3VwcG9ydC4gQUFyY2gzMiBlbXVs
-YXRpb24NCj4gICAJICByZXF1aXJlcyBhcHBsaWNhdGlvbnMgY29tcGlsZWQgd2l0aCAxNksgKG9y
-IGEgbXVsdGlwbGUgb2YgMTZLKQ0KPiBAQCAtMTI3MSw2ICsxMjY3LDcgQEAgY29uZmlnIEFSTTY0
-XzE2S19QQUdFUw0KPiAgIA0KPiAgIGNvbmZpZyBBUk02NF82NEtfUEFHRVMNCj4gICAJYm9vbCAi
-NjRLQiINCj4gKwlzZWxlY3QgSEFWRV9QQUdFX1NJWkVfNjRLQg0KPiAgIAloZWxwDQo+ICAgCSAg
-VGhpcyBmZWF0dXJlIGVuYWJsZXMgNjRLQiBwYWdlcyBzdXBwb3J0ICg0S0IgYnkgZGVmYXVsdCkN
-Cj4gICAJICBhbGxvd2luZyBvbmx5IHR3byBsZXZlbHMgb2YgcGFnZSB0YWJsZXMgYW5kIGZhc3Rl
-ciBUTEINCj4gQEAgLTEyOTEsMTkgKzEyODgsMTkgQEAgY2hvaWNlDQo+ICAgDQo+ICAgY29uZmln
-IEFSTTY0X1ZBX0JJVFNfMzYNCj4gICAJYm9vbCAiMzYtYml0IiBpZiBFWFBFUlQNCj4gLQlkZXBl
-bmRzIG9uIEFSTTY0XzE2S19QQUdFUw0KPiArCWRlcGVuZHMgb24gUEFHRV9TSVpFXzE2S0INCj4g
-ICANCj4gICBjb25maWcgQVJNNjRfVkFfQklUU18zOQ0KPiAgIAlib29sICIzOS1iaXQiDQo+IC0J
-ZGVwZW5kcyBvbiBBUk02NF80S19QQUdFUw0KPiArCWRlcGVuZHMgb24gUEFHRV9TSVpFXzRLQg0K
-PiAgIA0KPiAgIGNvbmZpZyBBUk02NF9WQV9CSVRTXzQyDQo+ICAgCWJvb2wgIjQyLWJpdCINCj4g
-LQlkZXBlbmRzIG9uIEFSTTY0XzY0S19QQUdFUw0KPiArCWRlcGVuZHMgb24gUEFHRV9TSVpFXzY0
-S0INCj4gICANCj4gICBjb25maWcgQVJNNjRfVkFfQklUU180Nw0KPiAgIAlib29sICI0Ny1iaXQi
-DQo+IC0JZGVwZW5kcyBvbiBBUk02NF8xNktfUEFHRVMNCj4gKwlkZXBlbmRzIG9uIFBBR0VfU0la
-RV8xNktCDQo+ICAgDQo+ICAgY29uZmlnIEFSTTY0X1ZBX0JJVFNfNDgNCj4gICAJYm9vbCAiNDgt
-Yml0Ig0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02NC9pbmNsdWRlL2FzbS9wYWdlLWRlZi5oIGIv
-YXJjaC9hcm02NC9pbmNsdWRlL2FzbS9wYWdlLWRlZi5oDQo+IGluZGV4IDI0MDNmN2I0Y2RiZi4u
-NzkyZTlmZTg4MWRjIDEwMDY0NA0KPiAtLS0gYS9hcmNoL2FybTY0L2luY2x1ZGUvYXNtL3BhZ2Ut
-ZGVmLmgNCj4gKysrIGIvYXJjaC9hcm02NC9pbmNsdWRlL2FzbS9wYWdlLWRlZi5oDQo+IEBAIC0x
-MSw3ICsxMSw3IEBADQo+ICAgI2luY2x1ZGUgPGxpbnV4L2NvbnN0Lmg+DQo+ICAgDQo+ICAgLyog
-UEFHRV9TSElGVCBkZXRlcm1pbmVzIHRoZSBwYWdlIHNpemUgKi8NCj4gLSNkZWZpbmUgUEFHRV9T
-SElGVAkJQ09ORklHX0FSTTY0X1BBR0VfU0hJRlQNCj4gKyNkZWZpbmUgUEFHRV9TSElGVAkJQ09O
-RklHX1BBR0VfU0hJRlQNCj4gICAjZGVmaW5lIFBBR0VfU0laRQkJKF9BQygxLCBVTCkgPDwgUEFH
-RV9TSElGVCkNCj4gICAjZGVmaW5lIFBBR0VfTUFTSwkJKH4oUEFHRV9TSVpFLTEpKQ0KPiAgIA0K
-PiBkaWZmIC0tZ2l0IGEvYXJjaC9wYXJpc2MvS2NvbmZpZyBiL2FyY2gvcGFyaXNjL0tjb25maWcN
-Cj4gaW5kZXggNWM4NDVlOGQ1OWQ5Li5iMTgwZTY4NGZhMGQgMTAwNjQ0DQo+IC0tLSBhL2FyY2gv
-cGFyaXNjL0tjb25maWcNCj4gKysrIGIvYXJjaC9wYXJpc2MvS2NvbmZpZw0KPiBAQCAtMjczLDYg
-KzI3Myw3IEBAIGNob2ljZQ0KPiAgIA0KPiAgIGNvbmZpZyBQQVJJU0NfUEFHRV9TSVpFXzRLQg0K
-PiAgIAlib29sICI0S0IiDQo+ICsJc2VsZWN0IEhBVkVfUEFHRV9TSVpFXzRLQg0KPiAgIAloZWxw
-DQo+ICAgCSAgVGhpcyBsZXRzIHlvdSBzZWxlY3QgdGhlIHBhZ2Ugc2l6ZSBvZiB0aGUga2VybmVs
-LiAgRm9yIGJlc3QNCj4gICAJICBwZXJmb3JtYW5jZSwgYSBwYWdlIHNpemUgb2YgMTZLQiBpcyBy
-ZWNvbW1lbmRlZC4gIEZvciBiZXN0DQo+IEBAIC0yODgsMTAgKzI4OSwxMiBAQCBjb25maWcgUEFS
-SVNDX1BBR0VfU0laRV80S0INCj4gICANCj4gICBjb25maWcgUEFSSVNDX1BBR0VfU0laRV8xNktC
-DQo+ICAgCWJvb2wgIjE2S0IiDQo+ICsJc2VsZWN0IEhBVkVfUEFHRV9TSVpFXzE2S0INCj4gICAJ
-ZGVwZW5kcyBvbiBQQThYMDAgJiYgQlJPS0VOICYmICFLRkVOQ0UNCj4gICANCj4gICBjb25maWcg
-UEFSSVNDX1BBR0VfU0laRV82NEtCDQo+ICAgCWJvb2wgIjY0S0IiDQo+ICsJc2VsZWN0IEhBVkVf
-UEFHRV9TSVpFXzY0S0INCj4gICAJZGVwZW5kcyBvbiBQQThYMDAgJiYgQlJPS0VOICYmICFLRkVO
-Q0UNCj4gICANCj4gICBlbmRjaG9pY2UNCj4gZGlmZiAtLWdpdCBhL2FyY2gvcGFyaXNjL2luY2x1
-ZGUvYXNtL3BhZ2UuaCBiL2FyY2gvcGFyaXNjL2luY2x1ZGUvYXNtL3BhZ2UuaA0KPiBpbmRleCA2
-NjdlNzAzYzBlOGYuLmFkNGUxNWQxMmVkMSAxMDA2NDQNCj4gLS0tIGEvYXJjaC9wYXJpc2MvaW5j
-bHVkZS9hc20vcGFnZS5oDQo+ICsrKyBiL2FyY2gvcGFyaXNjL2luY2x1ZGUvYXNtL3BhZ2UuaA0K
-PiBAQCAtNCwxNSArNCw3IEBADQo+ICAgDQo+ICAgI2luY2x1ZGUgPGxpbnV4L2NvbnN0Lmg+DQo+
-ICAgDQo+IC0jaWYgZGVmaW5lZChDT05GSUdfUEFSSVNDX1BBR0VfU0laRV80S0IpDQo+IC0jIGRl
-ZmluZSBQQUdFX1NISUZUCTEyDQo+IC0jZWxpZiBkZWZpbmVkKENPTkZJR19QQVJJU0NfUEFHRV9T
-SVpFXzE2S0IpDQo+IC0jIGRlZmluZSBQQUdFX1NISUZUCTE0DQo+IC0jZWxpZiBkZWZpbmVkKENP
-TkZJR19QQVJJU0NfUEFHRV9TSVpFXzY0S0IpDQo+IC0jIGRlZmluZSBQQUdFX1NISUZUCTE2DQo+
-IC0jZWxzZQ0KPiAtIyBlcnJvciAidW5rbm93biBkZWZhdWx0IGtlcm5lbCBwYWdlIHNpemUiDQo+
-IC0jZW5kaWYNCj4gKyNkZWZpbmUgUEFHRV9TSElGVAlDT05GSUdfUEFHRV9TSElGVA0KPiAgICNk
-ZWZpbmUgUEFHRV9TSVpFCShfQUMoMSxVTCkgPDwgUEFHRV9TSElGVCkNCj4gICAjZGVmaW5lIFBB
-R0VfTUFTSwkofihQQUdFX1NJWkUtMSkpDQo+ICAgDQo+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2Vy
-cGMvS2NvbmZpZyBiL2FyY2gvcG93ZXJwYy9LY29uZmlnDQo+IGluZGV4IGI5ZmMwNjRkMzhkMi4u
-OGZhZDRlNWQ3YWQ1IDEwMDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvS2NvbmZpZw0KPiArKysg
-Yi9hcmNoL3Bvd2VycGMvS2NvbmZpZw0KPiBAQCAtMjEyLDcgKzIxMiw3IEBAIGNvbmZpZyBQUEMN
-Cj4gICAJc2VsZWN0IEhBVkVfQVJDSF9IVUdFX1ZNQVAJCWlmIFBQQ19SQURJWF9NTVUgfHwgUFBD
-Xzh4eA0KPiAgIAlzZWxlY3QgSEFWRV9BUkNIX0pVTVBfTEFCRUwNCj4gICAJc2VsZWN0IEhBVkVf
-QVJDSF9KVU1QX0xBQkVMX1JFTEFUSVZFDQo+IC0Jc2VsZWN0IEhBVkVfQVJDSF9LQVNBTgkJCWlm
-IFBQQzMyICYmIFBQQ19QQUdFX1NISUZUIDw9IDE0DQo+ICsJc2VsZWN0IEhBVkVfQVJDSF9LQVNB
-TgkJCWlmIFBQQzMyICYmIFBBR0VfU0hJRlQgPD0gMTQNCj4gICAJc2VsZWN0IEhBVkVfQVJDSF9L
-QVNBTgkJCWlmIFBQQ19SQURJWF9NTVUNCj4gICAJc2VsZWN0IEhBVkVfQVJDSF9LQVNBTgkJCWlm
-IFBQQ19CT09LM0VfNjQNCj4gICAJc2VsZWN0IEhBVkVfQVJDSF9LQVNBTl9WTUFMTE9DCQlpZiBI
-QVZFX0FSQ0hfS0FTQU4NCj4gQEAgLTgwOSwxOSArODA5LDIzIEBAIGNob2ljZQ0KPiAgIGNvbmZp
-ZyBQUENfNEtfUEFHRVMNCj4gICAJYm9vbCAiNGsgcGFnZSBzaXplIg0KPiAgIAlzZWxlY3QgSEFW
-RV9BUkNIX1NPRlRfRElSVFkgaWYgUFBDX0JPT0szU182NA0KPiArCXNlbGVjdCBIQVZFX1BBR0Vf
-U0laRV80S0INCj4gICANCj4gICBjb25maWcgUFBDXzE2S19QQUdFUw0KPiAgIAlib29sICIxNmsg
-cGFnZSBzaXplIg0KPiAgIAlkZXBlbmRzIG9uIDQ0eCB8fCBQUENfOHh4DQo+ICsJc2VsZWN0IEhB
-VkVfUEFHRV9TSVpFXzE2S0INCj4gICANCj4gICBjb25maWcgUFBDXzY0S19QQUdFUw0KPiAgIAli
-b29sICI2NGsgcGFnZSBzaXplIg0KPiAgIAlkZXBlbmRzIG9uIDQ0eCB8fCBQUENfQk9PSzNTXzY0
-DQo+ICAgCXNlbGVjdCBIQVZFX0FSQ0hfU09GVF9ESVJUWSBpZiBQUENfQk9PSzNTXzY0DQo+ICsJ
-c2VsZWN0IEhBVkVfUEFHRV9TSVpFXzY0S0INCj4gICANCj4gICBjb25maWcgUFBDXzI1NktfUEFH
-RVMNCj4gICAJYm9vbCAiMjU2ayBwYWdlIHNpemUgKFJlcXVpcmVzIG5vbi1zdGFuZGFyZCBiaW51
-dGlscyBzZXR0aW5ncykiDQo+ICAgCWRlcGVuZHMgb24gNDR4ICYmICFQUENfNDd4DQo+ICsJc2Vs
-ZWN0IEhBVkVfUEFHRV9TSVpFXzI1NktCDQo+ICAgCWhlbHANCj4gICAJICBNYWtlIHRoZSBwYWdl
-IHNpemUgMjU2ay4NCj4gICANCj4gQEAgLTgzMiwyOSArODM2LDYgQEAgY29uZmlnIFBQQ18yNTZL
-X1BBR0VTDQo+ICAgDQo+ICAgZW5kY2hvaWNlDQo+ICAgDQo+IC1jb25maWcgUEFHRV9TSVpFXzRL
-Qg0KPiAtCWRlZl9ib29sIHkNCj4gLQlkZXBlbmRzIG9uIFBQQ180S19QQUdFUw0KPiAtDQo+IC1j
-b25maWcgUEFHRV9TSVpFXzE2S0INCj4gLQlkZWZfYm9vbCB5DQo+IC0JZGVwZW5kcyBvbiBQUENf
-MTZLX1BBR0VTDQo+IC0NCj4gLWNvbmZpZyBQQUdFX1NJWkVfNjRLQg0KPiAtCWRlZl9ib29sIHkN
-Cj4gLQlkZXBlbmRzIG9uIFBQQ182NEtfUEFHRVMNCj4gLQ0KPiAtY29uZmlnIFBBR0VfU0laRV8y
-NTZLQg0KPiAtCWRlZl9ib29sIHkNCj4gLQlkZXBlbmRzIG9uIFBQQ18yNTZLX1BBR0VTDQo+IC0N
-Cj4gLWNvbmZpZyBQUENfUEFHRV9TSElGVA0KPiAtCWludA0KPiAtCWRlZmF1bHQgMTggaWYgUFBD
-XzI1NktfUEFHRVMNCj4gLQlkZWZhdWx0IDE2IGlmIFBQQ182NEtfUEFHRVMNCj4gLQlkZWZhdWx0
-IDE0IGlmIFBQQ18xNktfUEFHRVMNCj4gLQlkZWZhdWx0IDEyDQo+IC0NCj4gICBjb25maWcgVEhS
-RUFEX1NISUZUDQo+ICAgCWludCAiVGhyZWFkIHNoaWZ0IiBpZiBFWFBFUlQNCj4gICAJcmFuZ2Ug
-MTMgMTUNCj4gQEAgLTg5MSw3ICs4NzIsNyBAQCBjb25maWcgREFUQV9TSElGVA0KPiAgIAlkZWZh
-dWx0IDIzIGlmIChERUJVR19QQUdFQUxMT0MgfHwgS0ZFTkNFKSAmJiBQUENfOHh4ICYmIFBJTl9U
-TEJfREFUQQ0KPiAgIAlkZWZhdWx0IDE5IGlmIChERUJVR19QQUdFQUxMT0MgfHwgS0ZFTkNFKSAm
-JiBQUENfOHh4DQo+ICAgCWRlZmF1bHQgMjQgaWYgU1RSSUNUX0tFUk5FTF9SV1ggJiYgUFBDXzg1
-eHgNCj4gLQlkZWZhdWx0IFBQQ19QQUdFX1NISUZUDQo+ICsJZGVmYXVsdCBQQUdFX1NISUZUDQo+
-ICAgCWhlbHANCj4gICAJICBPbiBCb29rM1MgMzIgKDYwMyspLCBEQkFUcyBhcmUgdXNlZCB0byBt
-YXAga2VybmVsIHRleHQgYW5kIHJvZGF0YSBSTy4NCj4gICAJICBTbWFsbGVyIGlzIHRoZSBhbGln
-bm1lbnQsIGdyZWF0ZXIgaXMgdGhlIG51bWJlciBvZiBuZWNlc3NhcnkgREJBVHMuDQo+IGRpZmYg
-LS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGFnZS5oIGIvYXJjaC9wb3dlcnBjL2lu
-Y2x1ZGUvYXNtL3BhZ2UuaA0KPiBpbmRleCBlNWZjYzc5YjViZmIuLmU0MTFlNWE3MGVhMyAxMDA2
-NDQNCj4gLS0tIGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BhZ2UuaA0KPiArKysgYi9hcmNo
-L3Bvd2VycGMvaW5jbHVkZS9hc20vcGFnZS5oDQo+IEBAIC0yMSw3ICsyMSw3IEBADQo+ICAgICog
-cGFnZSBzaXplLiBXaGVuIHVzaW5nIDY0SyBwYWdlcyBob3dldmVyLCB3aGV0aGVyIHdlIGFyZSBy
-ZWFsbHkgc3VwcG9ydGluZw0KPiAgICAqIDY0SyBwYWdlcyBpbiBIVyBvciBub3QgaXMgaXJyZWxl
-dmFudCB0byB0aG9zZSBkZWZpbml0aW9ucy4NCj4gICAgKi8NCj4gLSNkZWZpbmUgUEFHRV9TSElG
-VAkJQ09ORklHX1BQQ19QQUdFX1NISUZUDQo+ICsjZGVmaW5lIFBBR0VfU0hJRlQJCUNPTkZJR19Q
-QUdFX1NISUZUDQo+ICAgI2RlZmluZSBQQUdFX1NJWkUJCShBU01fQ09OU1QoMSkgPDwgUEFHRV9T
-SElGVCkNCj4gICANCj4gICAjaWZuZGVmIF9fQVNTRU1CTFlfXw0KPiBkaWZmIC0tZ2l0IGEvc2Ny
-aXB0cy9nZGIvbGludXgvY29uc3RhbnRzLnB5LmluIGIvc2NyaXB0cy9nZGIvbGludXgvY29uc3Rh
-bnRzLnB5LmluDQo+IGluZGV4IGU4MTBlMGMyN2ZmMS4uMTBmYWRjMjM4NzE5IDEwMDY0NA0KPiAt
-LS0gYS9zY3JpcHRzL2dkYi9saW51eC9jb25zdGFudHMucHkuaW4NCj4gKysrIGIvc2NyaXB0cy9n
-ZGIvbGludXgvY29uc3RhbnRzLnB5LmluDQo+IEBAIC0xMzksNyArMTM5LDcgQEAgTFhfQ09ORklH
-KENPTkZJR19BUk02NF82NEtfUEFHRVMpDQo+ICAgaWYgSVNfQlVJTFRJTihDT05GSUdfQVJNNjQp
-Og0KPiAgICAgICBMWF9WQUxVRShDT05GSUdfQVJNNjRfUEFfQklUUykNCj4gICAgICAgTFhfVkFM
-VUUoQ09ORklHX0FSTTY0X1ZBX0JJVFMpDQo+IC0gICAgTFhfVkFMVUUoQ09ORklHX0FSTTY0X1BB
-R0VfU0hJRlQpDQo+ICsgICAgTFhfVkFMVUUoQ09ORklHX1BBR0VfU0hJRlQpDQo+ICAgICAgIExY
-X1ZBTFVFKENPTkZJR19BUkNIX0ZPUkNFX01BWF9PUkRFUikNCj4gICBMWF9DT05GSUcoQ09ORklH
-X1NQQVJTRU1FTSkNCj4gICBMWF9DT05GSUcoQ09ORklHX1NQQVJTRU1FTV9FWFRSRU1FKQ0KPiBk
-aWZmIC0tZ2l0IGEvc2NyaXB0cy9nZGIvbGludXgvbW0ucHkgYi9zY3JpcHRzL2dkYi9saW51eC9t
-bS5weQ0KPiBpbmRleCBhZDU2NDFkY2IwNjguLjUxNTczMGZkNGM5ZCAxMDA2NDQNCj4gLS0tIGEv
-c2NyaXB0cy9nZGIvbGludXgvbW0ucHkNCj4gKysrIGIvc2NyaXB0cy9nZGIvbGludXgvbW0ucHkN
-Cj4gQEAgLTQxLDcgKzQxLDcgQEAgY2xhc3MgYWFyY2g2NF9wYWdlX29wcygpOg0KPiAgICAgICAg
-ICAgICAgIHNlbGYuU0VDVElPTl9TSVpFX0JJVFMgPSAyNw0KPiAgICAgICAgICAgc2VsZi5NQVhf
-UEhZU01FTV9CSVRTID0gY29uc3RhbnRzLkxYX0NPTkZJR19BUk02NF9WQV9CSVRTDQo+ICAgDQo+
-IC0gICAgICAgIHNlbGYuUEFHRV9TSElGVCA9IGNvbnN0YW50cy5MWF9DT05GSUdfQVJNNjRfUEFH
-RV9TSElGVA0KPiArICAgICAgICBzZWxmLlBBR0VfU0hJRlQgPSBjb25zdGFudHMuTFhfQ09ORklH
-X1BBR0VfU0hJRlQNCj4gICAgICAgICAgIHNlbGYuUEFHRV9TSVpFID0gMSA8PCBzZWxmLlBBR0Vf
-U0hJRlQNCj4gICAgICAgICAgIHNlbGYuUEFHRV9NQVNLID0gKH4oc2VsZi5QQUdFX1NJWkUgLSAx
-KSkgJiAoKDEgPDwgNjQpIC0gMSkNCj4gICANCg==
+On Tue, Feb 27, 2024 at 12:15=E2=80=AFAM Arnd Bergmann <arnd@kernel.org> wr=
+ote:
+>
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> Most architectures only support a single hardcoded page size. In order
+> to ensure that each one of these sets the corresponding Kconfig symbols,
+> change over the PAGE_SHIFT definition to the common one and allow
+> only the hardware page size to be selected.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/alpha/Kconfig                 | 1 +
+>  arch/alpha/include/asm/page.h      | 2 +-
+>  arch/arm/Kconfig                   | 1 +
+>  arch/arm/include/asm/page.h        | 2 +-
+>  arch/csky/Kconfig                  | 1 +
+>  arch/csky/include/asm/page.h       | 2 +-
+>  arch/m68k/Kconfig                  | 3 +++
+>  arch/m68k/Kconfig.cpu              | 2 ++
+>  arch/m68k/include/asm/page.h       | 6 +-----
+>  arch/microblaze/Kconfig            | 1 +
+>  arch/microblaze/include/asm/page.h | 2 +-
+>  arch/nios2/Kconfig                 | 1 +
+>  arch/nios2/include/asm/page.h      | 2 +-
+>  arch/openrisc/Kconfig              | 1 +
+>  arch/openrisc/include/asm/page.h   | 2 +-
+>  arch/riscv/Kconfig                 | 1 +
+>  arch/riscv/include/asm/page.h      | 2 +-
+>  arch/s390/Kconfig                  | 1 +
+>  arch/s390/include/asm/page.h       | 2 +-
+>  arch/sparc/Kconfig                 | 2 ++
+>  arch/sparc/include/asm/page_32.h   | 2 +-
+>  arch/sparc/include/asm/page_64.h   | 3 +--
+>  arch/um/Kconfig                    | 1 +
+>  arch/um/include/asm/page.h         | 2 +-
+>  arch/x86/Kconfig                   | 1 +
+>  arch/x86/include/asm/page_types.h  | 2 +-
+>  arch/xtensa/Kconfig                | 1 +
+>  arch/xtensa/include/asm/page.h     | 2 +-
+>  28 files changed, 32 insertions(+), 19 deletions(-)
+>
+> diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+> index d6968d090d49..4f490250d323 100644
+> --- a/arch/alpha/Kconfig
+> +++ b/arch/alpha/Kconfig
+> @@ -14,6 +14,7 @@ config ALPHA
+>         select PCI_DOMAINS if PCI
+>         select PCI_SYSCALL if PCI
+>         select HAVE_ASM_MODVERSIONS
+> +       select HAVE_PAGE_SIZE_8KB
+>         select HAVE_PCSPKR_PLATFORM
+>         select HAVE_PERF_EVENTS
+>         select NEED_DMA_MAP_STATE
+> diff --git a/arch/alpha/include/asm/page.h b/arch/alpha/include/asm/page.=
+h
+> index 4db1ebc0ed99..70419e6be1a3 100644
+> --- a/arch/alpha/include/asm/page.h
+> +++ b/arch/alpha/include/asm/page.h
+> @@ -6,7 +6,7 @@
+>  #include <asm/pal.h>
+>
+>  /* PAGE_SHIFT determines the page size */
+> -#define PAGE_SHIFT     13
+> +#define PAGE_SHIFT     CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE      (_AC(1,UL) << PAGE_SHIFT)
+>  #define PAGE_MASK      (~(PAGE_SIZE-1))
+>
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 0af6709570d1..9d52ba3a8ad1 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -116,6 +116,7 @@ config ARM
+>         select HAVE_MOD_ARCH_SPECIFIC
+>         select HAVE_NMI
+>         select HAVE_OPTPROBES if !THUMB2_KERNEL
+> +       select HAVE_PAGE_SIZE_4KB
+>         select HAVE_PCI if MMU
+>         select HAVE_PERF_EVENTS
+>         select HAVE_PERF_REGS
+> diff --git a/arch/arm/include/asm/page.h b/arch/arm/include/asm/page.h
+> index 119aa85d1feb..62af9f7f9e96 100644
+> --- a/arch/arm/include/asm/page.h
+> +++ b/arch/arm/include/asm/page.h
+> @@ -8,7 +8,7 @@
+>  #define _ASMARM_PAGE_H
+>
+>  /* PAGE_SHIFT determines the page size */
+> -#define PAGE_SHIFT             12
+> +#define PAGE_SHIFT             CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE              (_AC(1,UL) << PAGE_SHIFT)
+>  #define PAGE_MASK              (~((1 << PAGE_SHIFT) - 1))
+>
+> diff --git a/arch/csky/Kconfig b/arch/csky/Kconfig
+> index cf2a6fd7dff8..9c2723ab1c94 100644
+> --- a/arch/csky/Kconfig
+> +++ b/arch/csky/Kconfig
+> @@ -89,6 +89,7 @@ config CSKY
+>         select HAVE_KPROBES if !CPU_CK610
+>         select HAVE_KPROBES_ON_FTRACE if !CPU_CK610
+>         select HAVE_KRETPROBES if !CPU_CK610
+> +       select HAVE_PAGE_SIZE_4KB
+>         select HAVE_PERF_EVENTS
+>         select HAVE_PERF_REGS
+>         select HAVE_PERF_USER_STACK_DUMP
+> diff --git a/arch/csky/include/asm/page.h b/arch/csky/include/asm/page.h
+> index 4a0502e324a6..f70f37402d75 100644
+> --- a/arch/csky/include/asm/page.h
+> +++ b/arch/csky/include/asm/page.h
+> @@ -10,7 +10,7 @@
+>  /*
+>   * PAGE_SHIFT determines the page size: 4KB
+>   */
+> -#define PAGE_SHIFT     12
+> +#define PAGE_SHIFT     CONFIG_PAGE_SHIFT
+LGTM, thx.
+Acked-by: Guo Ren <guoren@kernel.org>
+
+>  #define PAGE_SIZE      (_AC(1, UL) << PAGE_SHIFT)
+>  #define PAGE_MASK      (~(PAGE_SIZE - 1))
+>  #define THREAD_SIZE    (PAGE_SIZE * 2)
+> diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+> index 4b3e93cac723..7b709453d5e7 100644
+> --- a/arch/m68k/Kconfig
+> +++ b/arch/m68k/Kconfig
+> @@ -84,12 +84,15 @@ config MMU
+>
+>  config MMU_MOTOROLA
+>         bool
+> +       select HAVE_PAGE_SIZE_4KB
+>
+>  config MMU_COLDFIRE
+> +       select HAVE_PAGE_SIZE_8KB
+>         bool
+>
+>  config MMU_SUN3
+>         bool
+> +       select HAVE_PAGE_SIZE_8KB
+>         depends on MMU && !MMU_MOTOROLA && !MMU_COLDFIRE
+>
+>  config ARCH_SUPPORTS_KEXEC
+> diff --git a/arch/m68k/Kconfig.cpu b/arch/m68k/Kconfig.cpu
+> index 9dcf245c9cbf..c777a129768a 100644
+> --- a/arch/m68k/Kconfig.cpu
+> +++ b/arch/m68k/Kconfig.cpu
+> @@ -30,6 +30,7 @@ config COLDFIRE
+>         select GENERIC_CSUM
+>         select GPIOLIB
+>         select HAVE_LEGACY_CLK
+> +       select HAVE_PAGE_SIZE_8KB if !MMU
+>
+>  endchoice
+>
+> @@ -45,6 +46,7 @@ config M68000
+>         select GENERIC_CSUM
+>         select CPU_NO_EFFICIENT_FFS
+>         select HAVE_ARCH_HASH
+> +       select HAVE_PAGE_SIZE_4KB
+>         select LEGACY_TIMER_TICK
+>         help
+>           The Freescale (was Motorola) 68000 CPU is the first generation =
+of
+> diff --git a/arch/m68k/include/asm/page.h b/arch/m68k/include/asm/page.h
+> index a5993ad83ed8..8cfb84b49975 100644
+> --- a/arch/m68k/include/asm/page.h
+> +++ b/arch/m68k/include/asm/page.h
+> @@ -7,11 +7,7 @@
+>  #include <asm/page_offset.h>
+>
+>  /* PAGE_SHIFT determines the page size */
+> -#if defined(CONFIG_SUN3) || defined(CONFIG_COLDFIRE)
+> -#define PAGE_SHIFT     13
+> -#else
+> -#define PAGE_SHIFT     12
+> -#endif
+> +#define PAGE_SHIFT     CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE      (_AC(1, UL) << PAGE_SHIFT)
+>  #define PAGE_MASK      (~(PAGE_SIZE-1))
+>  #define PAGE_OFFSET    (PAGE_OFFSET_RAW)
+> diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+> index 211f338d6235..f18ec02ddeb2 100644
+> --- a/arch/microblaze/Kconfig
+> +++ b/arch/microblaze/Kconfig
+> @@ -31,6 +31,7 @@ config MICROBLAZE
+>         select HAVE_FTRACE_MCOUNT_RECORD
+>         select HAVE_FUNCTION_GRAPH_TRACER
+>         select HAVE_FUNCTION_TRACER
+> +       select HAVE_PAGE_SIZE_4KB
+>         select HAVE_PCI
+>         select IRQ_DOMAIN
+>         select XILINX_INTC
+> diff --git a/arch/microblaze/include/asm/page.h b/arch/microblaze/include=
+/asm/page.h
+> index 86a4ce07c192..8810f4f1c3b0 100644
+> --- a/arch/microblaze/include/asm/page.h
+> +++ b/arch/microblaze/include/asm/page.h
+> @@ -20,7 +20,7 @@
+>  #ifdef __KERNEL__
+>
+>  /* PAGE_SHIFT determines the page size */
+> -#define PAGE_SHIFT             12
+> +#define PAGE_SHIFT     CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE      (ASM_CONST(1) << PAGE_SHIFT)
+>  #define PAGE_MASK      (~(PAGE_SIZE-1))
+>
+> diff --git a/arch/nios2/Kconfig b/arch/nios2/Kconfig
+> index 58d9565dc2c7..79d3039b29f1 100644
+> --- a/arch/nios2/Kconfig
+> +++ b/arch/nios2/Kconfig
+> @@ -15,6 +15,7 @@ config NIOS2
+>         select GENERIC_IRQ_SHOW
+>         select HAVE_ARCH_TRACEHOOK
+>         select HAVE_ARCH_KGDB
+> +       select HAVE_PAGE_SIZE_4KB
+>         select IRQ_DOMAIN
+>         select LOCK_MM_AND_FIND_VMA
+>         select MODULES_USE_ELF_RELA
+> diff --git a/arch/nios2/include/asm/page.h b/arch/nios2/include/asm/page.=
+h
+> index 0ae7d9ce369b..0722f88e63cc 100644
+> --- a/arch/nios2/include/asm/page.h
+> +++ b/arch/nios2/include/asm/page.h
+> @@ -21,7 +21,7 @@
+>  /*
+>   * PAGE_SHIFT determines the page size
+>   */
+> -#define PAGE_SHIFT     12
+> +#define PAGE_SHIFT     CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE      (_AC(1, UL) << PAGE_SHIFT)
+>  #define PAGE_MASK      (~(PAGE_SIZE - 1))
+>
+> diff --git a/arch/openrisc/Kconfig b/arch/openrisc/Kconfig
+> index fd9bb76a610b..3586cda55bde 100644
+> --- a/arch/openrisc/Kconfig
+> +++ b/arch/openrisc/Kconfig
+> @@ -25,6 +25,7 @@ config OPENRISC
+>         select GENERIC_CPU_DEVICES
+>         select HAVE_PCI
+>         select HAVE_UID16
+> +       select HAVE_PAGE_SIZE_8KB
+>         select GENERIC_ATOMIC64
+>         select GENERIC_CLOCKEVENTS_BROADCAST
+>         select GENERIC_SMP_IDLE_THREAD
+> diff --git a/arch/openrisc/include/asm/page.h b/arch/openrisc/include/asm=
+/page.h
+> index 44fc1fd56717..7925ce09ab5a 100644
+> --- a/arch/openrisc/include/asm/page.h
+> +++ b/arch/openrisc/include/asm/page.h
+> @@ -18,7 +18,7 @@
+>
+>  /* PAGE_SHIFT determines the page size */
+>
+> -#define PAGE_SHIFT      13
+> +#define PAGE_SHIFT      CONFIG_PAGE_SHIFT
+>  #ifdef __ASSEMBLY__
+>  #define PAGE_SIZE       (1 << PAGE_SHIFT)
+>  #else
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index bffbd869a068..792a337548f6 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -136,6 +136,7 @@ config RISCV
+>         select HAVE_LD_DEAD_CODE_DATA_ELIMINATION if !LD_IS_LLD
+>         select HAVE_MOVE_PMD
+>         select HAVE_MOVE_PUD
+> +       select HAVE_PAGE_SIZE_4KB
+>         select HAVE_PCI
+>         select HAVE_PERF_EVENTS
+>         select HAVE_PERF_REGS
+> diff --git a/arch/riscv/include/asm/page.h b/arch/riscv/include/asm/page.=
+h
+> index 57e887bfa34c..2947423b5082 100644
+> --- a/arch/riscv/include/asm/page.h
+> +++ b/arch/riscv/include/asm/page.h
+> @@ -12,7 +12,7 @@
+>  #include <linux/pfn.h>
+>  #include <linux/const.h>
+>
+> -#define PAGE_SHIFT     (12)
+> +#define PAGE_SHIFT     CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE      (_AC(1, UL) << PAGE_SHIFT)
+>  #define PAGE_MASK      (~(PAGE_SIZE - 1))
+>
+> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+> index fe565f3a3a91..b61c74c10050 100644
+> --- a/arch/s390/Kconfig
+> +++ b/arch/s390/Kconfig
+> @@ -199,6 +199,7 @@ config S390
+>         select HAVE_MOD_ARCH_SPECIFIC
+>         select HAVE_NMI
+>         select HAVE_NOP_MCOUNT
+> +       select HAVE_PAGE_SIZE_4KB
+>         select HAVE_PCI
+>         select HAVE_PERF_EVENTS
+>         select HAVE_PERF_REGS
+> diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
+> index 73b9c3bf377f..ded9548d11d9 100644
+> --- a/arch/s390/include/asm/page.h
+> +++ b/arch/s390/include/asm/page.h
+> @@ -11,7 +11,7 @@
+>  #include <linux/const.h>
+>  #include <asm/types.h>
+>
+> -#define _PAGE_SHIFT    12
+> +#define _PAGE_SHIFT    CONFIG_PAGE_SHIFT
+>  #define _PAGE_SIZE     (_AC(1, UL) << _PAGE_SHIFT)
+>  #define _PAGE_MASK     (~(_PAGE_SIZE - 1))
+>
+> diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+> index 204c43cb3d43..7e6bc6fff76b 100644
+> --- a/arch/sparc/Kconfig
+> +++ b/arch/sparc/Kconfig
+> @@ -58,6 +58,7 @@ config SPARC32
+>         select DMA_DIRECT_REMAP
+>         select GENERIC_ATOMIC64
+>         select HAVE_UID16
+> +       select HAVE_PAGE_SIZE_4KB
+>         select LOCK_MM_AND_FIND_VMA
+>         select OLD_SIGACTION
+>         select ZONE_DMA
+> @@ -75,6 +76,7 @@ config SPARC64
+>         select HAVE_ARCH_TRANSPARENT_HUGEPAGE
+>         select HAVE_DYNAMIC_FTRACE
+>         select HAVE_FTRACE_MCOUNT_RECORD
+> +       select HAVE_PAGE_SIZE_8KB
+>         select HAVE_SYSCALL_TRACEPOINTS
+>         select HAVE_CONTEXT_TRACKING_USER
+>         select HAVE_TIF_NOHZ
+> diff --git a/arch/sparc/include/asm/page_32.h b/arch/sparc/include/asm/pa=
+ge_32.h
+> index 6be6f683f98f..9977c77374cd 100644
+> --- a/arch/sparc/include/asm/page_32.h
+> +++ b/arch/sparc/include/asm/page_32.h
+> @@ -11,7 +11,7 @@
+>
+>  #include <linux/const.h>
+>
+> -#define PAGE_SHIFT   12
+> +#define PAGE_SHIFT   CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE    (_AC(1, UL) << PAGE_SHIFT)
+>  #define PAGE_MASK    (~(PAGE_SIZE-1))
+>
+> diff --git a/arch/sparc/include/asm/page_64.h b/arch/sparc/include/asm/pa=
+ge_64.h
+> index 254dffd85fb1..e9bd24821c93 100644
+> --- a/arch/sparc/include/asm/page_64.h
+> +++ b/arch/sparc/include/asm/page_64.h
+> @@ -4,8 +4,7 @@
+>
+>  #include <linux/const.h>
+>
+> -#define PAGE_SHIFT   13
+> -
+> +#define PAGE_SHIFT   CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE    (_AC(1,UL) << PAGE_SHIFT)
+>  #define PAGE_MASK    (~(PAGE_SIZE-1))
+>
+> diff --git a/arch/um/Kconfig b/arch/um/Kconfig
+> index b5e179360534..93a5a8999b07 100644
+> --- a/arch/um/Kconfig
+> +++ b/arch/um/Kconfig
+> @@ -20,6 +20,7 @@ config UML
+>         select HAVE_UID16
+>         select HAVE_DEBUG_KMEMLEAK
+>         select HAVE_DEBUG_BUGVERBOSE
+> +       select HAVE_PAGE_SIZE_4KB
+>         select NO_DMA if !UML_DMA_EMULATION
+>         select OF_EARLY_FLATTREE if OF
+>         select GENERIC_IRQ_SHOW
+> diff --git a/arch/um/include/asm/page.h b/arch/um/include/asm/page.h
+> index 84866127d074..9ef9a8aedfa6 100644
+> --- a/arch/um/include/asm/page.h
+> +++ b/arch/um/include/asm/page.h
+> @@ -10,7 +10,7 @@
+>  #include <linux/const.h>
+>
+>  /* PAGE_SHIFT determines the page size */
+> -#define PAGE_SHIFT     12
+> +#define PAGE_SHIFT     CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE      (_AC(1, UL) << PAGE_SHIFT)
+>  #define PAGE_MASK      (~(PAGE_SIZE-1))
+>
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 5edec175b9bf..ba57eb362ec8 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -255,6 +255,7 @@ config X86
+>         select HAVE_NOINSTR_VALIDATION          if HAVE_OBJTOOL
+>         select HAVE_OBJTOOL                     if X86_64
+>         select HAVE_OPTPROBES
+> +       select HAVE_PAGE_SIZE_4KB
+>         select HAVE_PCSPKR_PLATFORM
+>         select HAVE_PERF_EVENTS
+>         select HAVE_PERF_EVENTS_NMI
+> diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/pag=
+e_types.h
+> index 86bd4311daf8..9da9c8a2f1df 100644
+> --- a/arch/x86/include/asm/page_types.h
+> +++ b/arch/x86/include/asm/page_types.h
+> @@ -7,7 +7,7 @@
+>  #include <linux/mem_encrypt.h>
+>
+>  /* PAGE_SHIFT determines the page size */
+> -#define PAGE_SHIFT             12
+> +#define PAGE_SHIFT             CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE              (_AC(1,UL) << PAGE_SHIFT)
+>  #define PAGE_MASK              (~(PAGE_SIZE-1))
+>
+> diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
+> index 6f248d87e496..87ec35b3363b 100644
+> --- a/arch/xtensa/Kconfig
+> +++ b/arch/xtensa/Kconfig
+> @@ -44,6 +44,7 @@ config XTENSA
+>         select HAVE_GCC_PLUGINS if GCC_VERSION >=3D 120000
+>         select HAVE_HW_BREAKPOINT if PERF_EVENTS
+>         select HAVE_IRQ_TIME_ACCOUNTING
+> +       select HAVE_PAGE_SIZE_4KB
+>         select HAVE_PCI
+>         select HAVE_PERF_EVENTS
+>         select HAVE_STACKPROTECTOR
+> diff --git a/arch/xtensa/include/asm/page.h b/arch/xtensa/include/asm/pag=
+e.h
+> index a77d04972eb9..4db56ef052d2 100644
+> --- a/arch/xtensa/include/asm/page.h
+> +++ b/arch/xtensa/include/asm/page.h
+> @@ -22,7 +22,7 @@
+>   * PAGE_SHIFT determines the page size
+>   */
+>
+> -#define PAGE_SHIFT     12
+> +#define PAGE_SHIFT     CONFIG_PAGE_SHIFT
+>  #define PAGE_SIZE      (__XTENSA_UL_CONST(1) << PAGE_SHIFT)
+>  #define PAGE_MASK      (~(PAGE_SIZE-1))
+>
+> --
+> 2.39.2
+>
+
+
+--=20
+Best Regards
+ Guo Ren
