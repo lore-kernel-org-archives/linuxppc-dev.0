@@ -4,69 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E1EFC48BF6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 00:43:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44DB0C5478C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 01:10:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UVzC5YNc;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=FgCAthic;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TkJcv0njJz3vXB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 11:43:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TkKDW6jnkz3vX8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 12:10:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UVzC5YNc;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=FgCAthic;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TkJc46CKmz2yps
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2024 11:42:44 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 7918BCE1000
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2024 00:42:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B6F0CC433C7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2024 00:42:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1708994562;
-	bh=sqZkQQa4LWChJ/SjTmgTjSKjNrIa+gHT1heCoCQvJHg=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=UVzC5YNcpR5dOVE5WwgFWo1sccs+1EjCoEvTZF79TQn+JGtw7pNbFxYzxoqE1fiES
-	 D8O2Z09SxCjy2NqLicrp5w9Jkv909K8UXCqCX1wkXIj2HfeNlWkvS8Kpn7VEGArNfG
-	 1sZmIIsh6kLEancUsbdFRwx4eP9xzHtuXuovlpc6PGeLLrJdXmiGDMSMOOzRCjOjtM
-	 PJEGQQ92jtf+gbbF4RpbKF8cgZ4PXqA7wqbA0hgX641NP/yRw4w5yyEegopUOfv1wf
-	 OoY51ZIU+RP1+7N5mj23IFg8UNkWSsob7f6xmIt0K0uiLJb9WwT7y4Sioq9qNkgrTJ
-	 kZjL01GqZVFEg==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 929A4C4332E; Tue, 27 Feb 2024 00:42:42 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 207129] PowerMac G4 DP (5.6.2 debug kernel + inline KASAN)
- freezes shortly after booting with "do_IRQ: stack overflow: 1760"
-Date: Tue, 27 Feb 2024 00:42:42 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: REOPENED
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: attachments.created
-Message-ID: <bug-207129-206035-o1fQCIkNdL@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-207129-206035@https.bugzilla.kernel.org/>
-References: <bug-207129-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TkKCZ6K44z3bc2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Feb 2024 12:10:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=gwiXT85stAdWTOUd6txuILwVivp2eGJBqmUEFcS5o58=; b=FgCAthicwmPNlQ+DMbEELBmK/I
+	qUAzdjuLcWA2Bys4HwHthcbpwBzlNPwaS/tovAfOoew9JrEZFYjESxt+zGf8GkFapHxP9/SO/esq9
+	bHcF/VwthH48hoKJXxy0LWHTdE9TbOnF3bJGbQkXPrKGnVbI83gQmS7rAZ+UCvS+MTjuKDVqPWq7L
+	6H023rd4HQlenEZ+ZGEIPQvCzTnNks64kjPFKDR1Fk3MSf2LLPo/wY2dO1IMuuj+Ffy/jw98te5qy
+	uxfagMnu+cQOjpgWnSf3CSb/QQb3G83xIV4aotv3un7jMKOheFwwVwCguDPGSOq/EvcNaNR/DoSr6
+	eX/RJ77w==;
+Received: from [50.53.50.0] (helo=[192.168.254.15])
+	by bombadil.infradead.org with esmtpsa (Exim 4.97.1 #2 (Red Hat Linux))
+	id 1relyf-00000003Dq6-1hGA;
+	Tue, 27 Feb 2024 01:09:59 +0000
+Message-ID: <7624c14e-0f5c-435c-9f6e-3d59b4e27aa2@infradead.org>
+Date: Mon, 26 Feb 2024 17:09:49 -0800
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: linux-next: Tree for Feb 26 (drivers/mtd/ubi/nvmem.c)
+Content-Language: en-US
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>
+References: <20240226175509.37fa57da@canb.auug.org.au>
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <20240226175509.37fa57da@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,18 +60,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-mtd@lists.infradead.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D207129
 
---- Comment #9 from Erhard F. (erhard_f@mailbox.org) ---
-Created attachment 305910
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D305910&action=3Dedit
-kernel .config (6.8-rc6, KASAN_INLINE=3Dy, PowerMac G4 DP)
 
---=20
-You may reply to this email to add a comment.
+On 2/25/24 22:55, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20240223:
+> 
 
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+on powerpc32:
+
+In file included from ./arch/powerpc/include/generated/asm/div64.h:1,
+                 from ../include/linux/math.h:6,
+                 from ../include/linux/kernel.h:27,
+                 from ../arch/powerpc/include/asm/page.h:11,
+                 from ../arch/powerpc/include/asm/thread_info.h:13,
+                 from ../include/linux/thread_info.h:60,
+                 from ../arch/powerpc/include/asm/ptrace.h:342,
+                 from ../arch/powerpc/include/asm/hw_irq.h:12,
+                 from ../arch/powerpc/include/asm/irqflags.h:12,
+                 from ../include/linux/irqflags.h:18,
+                 from ../include/asm-generic/cmpxchg-local.h:6,
+                 from ../arch/powerpc/include/asm/cmpxchg.h:755,
+                 from ../arch/powerpc/include/asm/atomic.h:11,
+                 from ../include/linux/atomic.h:7,
+                 from ../include/linux/rcupdate.h:25,
+                 from ../include/linux/rbtree.h:24,
+                 from ../drivers/mtd/ubi/ubi.h:14,
+                 from ../drivers/mtd/ubi/nvmem.c:7:
+../drivers/mtd/ubi/nvmem.c: In function 'ubi_nvmem_reg_read':
+../include/asm-generic/div64.h:222:35: warning: comparison of distinct pointer types lacks a cast
+  222 |         (void)(((typeof((n)) *)0) == ((uint64_t *)0));  \
+      |                                   ^~
+../drivers/mtd/ubi/nvmem.c:34:16: note: in expansion of macro 'do_div'
+   34 |         offs = do_div(lnum, unv->usable_leb_size);
+      |                ^~~~~~
+In file included from ../include/linux/build_bug.h:5,
+                 from ../include/linux/container_of.h:5,
+                 from ../include/linux/list.h:5,
+                 from ../drivers/mtd/ubi/ubi.h:13:
+../include/asm-generic/div64.h:234:32: warning: right shift count >= width of type [-Wshift-count-overflow]
+  234 |         } else if (likely(((n) >> 32) == 0)) {          \
+      |                                ^~
+../include/linux/compiler.h:76:45: note: in definition of macro 'likely'
+   76 | # define likely(x)      __builtin_expect(!!(x), 1)
+      |                                             ^
+../drivers/mtd/ubi/nvmem.c:34:16: note: in expansion of macro 'do_div'
+   34 |         offs = do_div(lnum, unv->usable_leb_size);
+      |                ^~~~~~
+../include/asm-generic/div64.h:238:36: error: passing argument 1 of '__div64_32' from incompatible pointer type [-Werror=incompatible-pointer-types]
+  238 |                 __rem = __div64_32(&(n), __base);       \
+      |                                    ^~~~
+      |                                    |
+      |                                    int *
+../drivers/mtd/ubi/nvmem.c:34:16: note: in expansion of macro 'do_div'
+   34 |         offs = do_div(lnum, unv->usable_leb_size);
+      |                ^~~~~~
+../include/asm-generic/div64.h:213:38: note: expected 'uint64_t *' {aka 'long long unsigned int *'} but argument is of type 'int *'
+  213 | extern uint32_t __div64_32(uint64_t *dividend, uint32_t divisor);
+      |                            ~~~~~~~~~~^~~~~~~~
+
+
+
+
+-- 
+#Randy
