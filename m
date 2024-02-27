@@ -4,117 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4ECB8C54798
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 14:02:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B41D0C54798
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 15:41:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=dfR+9qlz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=Rtc0sWpG;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=JW9+Yjqu;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TkfLf70j8z3vgt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 01:02:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TkhYW1bd0z3cPc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 02:41:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=dfR+9qlz;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=Rtc0sWpG;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=JW9+Yjqu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.17.21; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 360 seconds by postgrey-1.37 at boromir; Wed, 28 Feb 2024 01:01:31 AEDT
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=66.111.4.230; helo=new4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com [66.111.4.230])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TkfKl5r0sz3dRl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 01:01:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-	t=1709042477; x=1709647277; i=deller@gmx.de;
-	bh=HGGO3MU/eeqHbARDqKo9ThxHWt83jFsN9Hq6Lxh3rOs=;
-	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
-	 In-Reply-To;
-	b=dfR+9qlzXwKQ1aX3NKJiy8Cy20B37gXTmwkWctI2QR8G7+i5/c7mFTaoqIF7vWoV
-	 t+z5ndj7xHHURWQGjVqTBQP+GWVHyKQCzril9J7tRHVtHDlOuuWGQKVt0BUt3hdcu
-	 YoUuDlkh2UCdqNb7LXgghaiCzlMNwSAfiAzLwtbaYvRsryWZKIx0Wn76+0qA7Xgkf
-	 MYabMyzehj2PxBQmhRr452smlJDOkyPrS2MR9wpdMgUYf/f9KWLR9L5e6HlvYVUbm
-	 PfalN3ZBz47RmGH2ISrFwb0AxWuoNns5MsgFulQCml7vWbV60MzAtrVyPAbHnZcfY
-	 36poDX9I9qfWj/2uVA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MQvD5-1rI5xY47kt-00NvTX; Tue, 27
- Feb 2024 14:54:00 +0100
-Message-ID: <951c6d29-ef8c-43ce-b91b-fcb905198f80@gmx.de>
-Date: Tue, 27 Feb 2024 14:53:50 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TkhXY3VB4z30PD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 02:41:00 +1100 (AEDT)
+Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
+	by mailnew.nyi.internal (Postfix) with ESMTP id C50BC581673;
+	Tue, 27 Feb 2024 10:40:56 -0500 (EST)
+Received: from imap51 ([10.202.2.101])
+  by compute5.internal (MEProxy); Tue, 27 Feb 2024 10:40:56 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:subject
+	:subject:to:to; s=fm3; t=1709048456; x=1709055656; bh=lT/5Xxdnqx
+	5CMYADxupUohV9DQkUzUShK5fUq//vk/8=; b=Rtc0sWpGwr1a2ypPut3gLf8atr
+	meNXRUSYs2A6Hh4w7+CTYSB6z44OoztdFsDfwmRhAuSRfZs+txW0KNRVDfs+K3n+
+	odTYi2ZQlT7s+E0LFaLC7ar/Z4FD+HK9HhZAJiOw+OgQPbgrBWz8VJ+exLNnlzg+
+	1LS7GuIOq0sceldQ44JsIMlow7bhpI2GxOgAzs3axuijpISknEFSGq7x6bvtwoC+
+	p+hQROmI2qyGkEqbTnYhToPicndBF1DMV0pOJj+WFtfKtWpYwdWnSRNn3VI0XYSw
+	rKIYecBNWF5GYiJ7+9wJ1D3mIc0crUYWjJ9ATjE3f1mVy8Wvhr2QzIYBlkWg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+	fm1; t=1709048456; x=1709055656; bh=lT/5Xxdnqx5CMYADxupUohV9DQkU
+	zUShK5fUq//vk/8=; b=JW9+YjquNnm7o12jdkN5mfx60FJfx8wDhr9OmpbxP3lG
+	9cvvv30icSLXu5LQ2wzCYFyfyb71a46fbn1t+Z0Lu9+GBDCOFSjqELt0zbOxC6LZ
+	0Oeyvvkzv1yTBIDAKFYI7PqcjoiiSe9lBeKab9Hr2IQZf1E7+rdWITwKMv3VJPUX
+	HOIlG6q95Nc7cZjs/HAVbRcvsDMGhIzcU4s1QIiv8t6ivmDQ0zZnnJNBNUH5JMQx
+	Rei8lc492TZG3LNU8wmSjCzIoHONeOUx/0Pws8OKhYkcghtRvGS0r7pTxdDkbIu5
+	HBIHtV8YNK4lNwxjhk9MOg2xf2TnRvLmW0T6J9Bz5A==
+X-ME-Sender: <xms:hgLeZWfF-qbqrdbj0IagYAhSiOEfi5UCEmS_u4yoNDvztXrTURK7_Q>
+    <xme:hgLeZQOzCvuUNg6EuvevTGxYCQO8msOkil0RbDijwSzGYe7psl9pT8BWvheUEhZ7C
+    Pdo_I4MBhOfPArk7QA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvledrgeehgdehhecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhn
+    ugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtth
+    gvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeet
+    ffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrh
+    hnugesrghrnhgusgdruggv
+X-ME-Proxy: <xmx:hgLeZXhChxgS4QEqTAxLAOZKAoZBKHRRZvGb10gAMk9IE2OsKRsW-w>
+    <xmx:hgLeZT-J0pIyrYHvMmgFCCI0MMwJYL79LAConhB9Au0fTd7J2iLO_A>
+    <xmx:hgLeZSvOSg8KjmfvYvE-AbxbFQDQ5C9PhmVFAKv9zOm-h-ZQxjKSYA>
+    <xmx:iALeZfob0-nwdlhgZy11nclfVztI8phtznS1Je_w6icjY0iJt68yOA>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id CBF71B6008D; Tue, 27 Feb 2024 10:40:54 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.11.0-alpha0-153-g7e3bb84806-fm-20240215.007-g7e3bb848
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/4] arch: simplify architecture specific page size
- configuration
-To: Arnd Bergmann <arnd@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>,
- Kees Cook <keescook@chromium.org>,
- Anna-Maria Behnsen <anna-maria@linutronix.de>
+Message-Id: <83450530-c908-4abc-bab7-88c50a3143ff@app.fastmail.com>
+In-Reply-To: <764fafb0-2206-4ab1-84ea-ebb7848c8ff2@sifive.com>
 References: <20240226161414.2316610-1-arnd@kernel.org>
- <20240226161414.2316610-3-arnd@kernel.org>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- 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
-In-Reply-To: <20240226161414.2316610-3-arnd@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:hQzjzd7p5TM5Kw1mzvAh+YheK9ajjziFjVP/rq6z93mOcW5SPOs
- e6zmoNjX63XqeTgBwmmYXz0rXFuKFvd8XC66SD7FfY+WnPNGx2dtMFhb8xJts0RVw6olrzE
- lpJ4rkVeLTnLvlzJf86dorWqoPaHA4gaQfDDMpVHU60xM+wJfVgHYdRp1Vf0oMb26RgCcoV
- x700IvlTmiQiOzHig96HA==
-UI-OutboundReport: notjunk:1;M01:P0:qRJrW0sn3NY=;kOiAQvCS6EHCjoCluB8Zd9nXvD/
- H/P87IeVNKYribbmHYbEAPswNfxSvZodLzHDjFTfXnYcqAM5P2lje27ucNUfszDsaj2xerDb5
- ylssHPUwak0A3ZRqfac8FgjGVY8Rjfr0EOl8DbFPnLTvfhStBzQZ9OdQf5PQj7lL0IIadwz/S
- X0K8VOloVlSn9ofXAiKXpgSFsZpfKj6psgozZC7SlQtbzuSM3Fu7Mxh08dHdBpNK3mNyHJa/U
- 4A72WGJZ40a6iDbvC2d/hJhtaGlyBhRQACyU8ywdx9sktbCOO9wOH5+nR+6czDVwLtOjsrvOA
- ruX/F0plWgY9mNcMhV5G5JidSbE4Qlxr5hq84X3IernyVlSlxeEzm7N0cTvz1Zwl1CGTug7YG
- 3lbU4ft0g3kC+X2rcpBpjoRPftbW/0fN+EXdg0wwBXwYuwfP587d5zDGRgBKVVvhgdl8LnsZf
- Gbp9spRg6vd4cIwQ+Q2lYOI4SnFFeIcMepocv2DgZ4nq3KtnHuyZD4pRx0XSr7YN+gybhbhml
- 6XSDDtZpC4Vr2lgAIH44a8jnp4NmtDFU1IAHn4rP1KjX2yvWp6b6x/+qYCOPw/nq/rmhFE8sP
- TX7NVbK8wjQ6QAt2GhNLIHZ4+A0cx0wohr19F2lQqdRZLugc1Z8PYu81o3b6BFaO5vOtPDEMP
- y59TaYzre6GJWbLY6fj+ry/XhTUll/rK1CcRd0iVcUxh1zcJRhfRW6XxVPwBO33Ie0j4+VbUP
- VwfXFdNyazrPv92UNpeAxI7aWV2CQfSy8tPvc8RUmKiiKwmesfstx/zQAELeGPBPjLC+kZQrt
- 4xG6l7gUkgGWRCAAkJuBoDkoEqktM/5FKp1HrBHmT2XEM=
+ <20240226161414.2316610-2-arnd@kernel.org>
+ <764fafb0-2206-4ab1-84ea-ebb7848c8ff2@sifive.com>
+Date: Tue, 27 Feb 2024 16:40:34 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Samuel Holland" <samuel.holland@sifive.com>,
+ "Arnd Bergmann" <arnd@kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
+ "Vincenzo Frascino" <vincenzo.frascino@arm.com>,
+ "Kees Cook" <keescook@chromium.org>,
+ "Anna-Maria Gleixner" <anna-maria@linutronix.de>
+Subject: Re: [PATCH 1/4] arch: consolidate existing CONFIG_PAGE_SIZE_*KB definitions
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -126,32 +97,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, loongarch@lists.linux.dev, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, Jan Kiszka <jan.kiszka@siemens.com>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Richard Weinberger <richard@nod.at>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-alpha@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Kieran Bingham <kbingham@kernel.org>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-arm-kernel@lists.infradead.org, Brian Cain <bca
- in@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org, loongarch@lists.linux.dev, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, guoren <guoren@kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, Jan Kiszka <jan.kiszka@siemens.com>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-alpha@vger.kernel.org, Kieran Bingham <kbingham@kernel.org>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-arm-kernel@lists.i
+ nfradead.org, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/26/24 17:14, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+On Mon, Feb 26, 2024, at 17:55, Samuel Holland wrote:
+> On 2024-02-26 10:14 AM, Arnd Bergmann wrote:
+>>  
+>> +config HAVE_PAGE_SIZE_4KB
+>> +	bool
+>> +
+>> +config HAVE_PAGE_SIZE_8KB
+>> +	bool
+>> +
+>> +config HAVE_PAGE_SIZE_16KB
+>> +	bool
+>> +
+>> +config HAVE_PAGE_SIZE_32KB
+>> +	bool
+>> +
+>> +config HAVE_PAGE_SIZE_64KB
+>> +	bool
+>> +
+>> +config HAVE_PAGE_SIZE_256KB
+>> +	bool
+>> +
+>> +choice
+>> +	prompt "MMU page size"
 >
-> arc, arm64, parisc and powerpc all have their own Kconfig symbols
-> in place of the common CONFIG_PAGE_SIZE_4KB symbols. Change these
-> so the common symbols are the ones that are actually used, while
-> leaving the arhcitecture specific ones as the user visible
-> place for configuring it, to avoid breaking user configs.
+> Should this have some generic help text (at least a warning about 
+> compatibility)?
+
+Good point. I've added some of this now, based on the mips
+text with some generalizations for other architectures:
+
+config PAGE_SIZE_4KB
+        bool "4KiB pages" 
+        depends on HAVE_PAGE_SIZE_4KB
+        help 
+          This option select the standard 4KiB Linux page size and the only
+          available option on many architectures. Using 4KiB page size will
+          minimize memory consumption and is therefore recommended for low
+          memory systems.
+          Some software that is written for x86 systems makes incorrect
+          assumptions about the page size and only runs on 4KiB pages.
+
+config PAGE_SIZE_8KB
+        bool "8KiB pages"
+        depends on HAVE_PAGE_SIZE_8KB
+        help
+          This option is the only supported page size on a few older
+          processors, and can be slightly faster than 4KiB pages.
+
+config PAGE_SIZE_16KB
+        bool "16KiB pages"
+        depends on HAVE_PAGE_SIZE_16KB
+        help 
+          This option is usually a good compromise between memory
+          consumption and performance for typical desktop and server
+          workloads, often saving a level of page table lookups compared
+          to 4KB pages as well as reducing TLB pressure and overhead of
+          per-page operations in the kernel at the expense of a larger
+          page cache. 
+
+config PAGE_SIZE_32KB
+        bool "32KiB pages"
+        depends on HAVE_PAGE_SIZE_32KB
+          Using 32KiB page size will result in slightly higher performance
+          kernel at the price of higher memory consumption compared to
+          16KiB pages.  This option is available only on cnMIPS cores.
+          Note that you will need a suitable Linux distribution to
+          support this.
+
+config PAGE_SIZE_64KB
+        bool "64KiB pages"
+        depends on HAVE_PAGE_SIZE_64KB
+          Using 64KiB page size will result in slightly higher performance
+          kernel at the price of much higher memory consumption compared to
+          4KiB or 16KiB pages.
+          This is not suitable for general-purpose workloads but the
+          better performance may be worth the cost for certain types of
+          supercomputing or database applications that work mostly with
+          large in-memory data rather than small files.
+
+config PAGE_SIZE_256KB
+        bool "256KiB pages"
+        depends on HAVE_PAGE_SIZE_256KB
+        help
+          256KB pages have little practical value due to their extreme
+          memory usage.
+
+>> diff --git a/arch/hexagon/Kconfig b/arch/hexagon/Kconfig
+>> index a880ee067d2e..aac46ee1a000 100644
+>> --- a/arch/hexagon/Kconfig
+>> +++ b/arch/hexagon/Kconfig
+>> @@ -8,6 +8,11 @@ config HEXAGON
+>>  	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
+>>  	select ARCH_NO_PREEMPT
+>>  	select DMA_GLOBAL_POOL
+>> +	select FRAME_POINTER
 >
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->   arch/arc/Kconfig                  |  3 +++
->   arch/arc/include/uapi/asm/page.h  |  6 ++----
->   arch/arm64/Kconfig                | 29 +++++++++++++----------------
->   arch/arm64/include/asm/page-def.h |  2 +-
->   arch/parisc/Kconfig               |  3 +++
->   arch/parisc/include/asm/page.h    | 10 +---------
+> Looks like a paste error.
+>
 
-Acked-by: Helge Deller <deller@gmx.de> # parisc
+Fixed, thanks! I think that happened during a rebase.
 
-Thanks for the cleanups!
+>>  #ifdef CONFIG_PAGE_SIZE_1MB
+>> -#define PAGE_SHIFT 20
+>>  #define HEXAGON_L1_PTE_SIZE __HVM_PDE_S_1MB
+>>  #endif
+>
+> The corresponding Kconfig option does not exist (and did not exist before this
+> patch).
 
-Helge
+Yes, I noticed that as well. It's clearly harmless.
 
+     Arnd
