@@ -4,88 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6AC9C54798
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 13:57:50 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZJ8s+bI+;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7121DC54798
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Feb 2024 14:01:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TkfFT1Jl1z3vX6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 00:57:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZJ8s+bI+;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TkfKS10rgz3vfD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 01:01:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TkfDg1t4Pz3c5Y
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 00:57:06 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 41RDrPkc029484;
-	Tue, 27 Feb 2024 13:56:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=ku/I6kD09XgVfUmfpi+mf/i9mv58LhPyT2lQKpdjUD0=;
- b=ZJ8s+bI+H2TScuayOD3QUEKsK0CNbNObyjHGAH/IOk4ux9kGgaDQYJ7c7VMjQ1zH17LC
- GmQBo2reT45d4vuwXWj0jwoz++HBh5QUn/kk4kiNaG+kyJJDUNK/hKShQnEWe4ZWXGi5
- cPnhA1mcLc+uyqblPFFyyyl/BqPyXbIzPK+0RqX7cc6exMR+C+CNzXyDMEwxnXuQSEy7
- SqaiaNsfFEWq38wkpNeerrMoS2BhdCmls0PzKRGRPj8NJT4t+EjTIR+SvDLmB+2t5Btf
- S+9u83RUL8nmTonO8nqS6bzWVVNx3p9RLHX33olfAO1NFPpqY0jEb+9kOpNiMK3FL3TA uw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3whh11826h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 27 Feb 2024 13:56:15 +0000
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 41RDuElC005801;
-	Tue, 27 Feb 2024 13:56:14 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3whh11825t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 27 Feb 2024 13:56:14 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 41RC1Kkv008827;
-	Tue, 27 Feb 2024 13:56:13 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3wftstg97s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 27 Feb 2024 13:56:13 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 41R7fJhm33292610
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 27 Feb 2024 07:41:21 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 379CB20063;
-	Tue, 27 Feb 2024 07:41:19 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6F4B32004E;
-	Tue, 27 Feb 2024 07:41:18 +0000 (GMT)
-Received: from osiris (unknown [9.152.212.60])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue, 27 Feb 2024 07:41:18 +0000 (GMT)
-Date: Tue, 27 Feb 2024 08:41:16 +0100
-From: Heiko Carstens <hca@linux.ibm.com>
-To: Arnd Bergmann <arnd@kernel.org>
-Subject: Re: [PATCH 3/4] arch: define CONFIG_PAGE_SIZE_*KB on all
- architectures
-Message-ID: <20240227074116.6127-A-hca@linux.ibm.com>
-References: <20240226161414.2316610-1-arnd@kernel.org>
- <20240226161414.2316610-4-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TkfJw5PGLz3d3Q
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 01:00:46 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rey0V-0008Gl-Vq; Tue, 27 Feb 2024 15:00:31 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rey0U-003DCm-J2; Tue, 27 Feb 2024 15:00:30 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rey0U-00CUXz-1d;
+	Tue, 27 Feb 2024 15:00:30 +0100
+Date: Tue, 27 Feb 2024 15:00:30 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: Increasing build coverage for drivers/spi/spi-ppc4xx.c
+Message-ID: <645ngchmigftlvbvquprqqjcn2frogkihdplbmngnz6hvywefo@rvthwy2epwg3>
+References: <qvuhez7vrcoui7i6s4yohd4ednneuoejcp6tw6iwzeefgpyvd6@fkwwtwozhakf>
+ <6fab09e0-1f21-4ada-b5ae-472bf71a1225@csgroup.eu>
+ <7ah7rzijbwkvr3hmtqfjh7syxave756usevumrypqspn27wgyv@ln42tyqxo5ai>
+ <2fe58bc5-2f1b-4f51-8f01-fa397a1c9291@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="yofmhws4bjeessoi"
 Content-Disposition: inline
-In-Reply-To: <20240226161414.2316610-4-arnd@kernel.org>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 8EV26VP00g7C5ttRo4w8rl1MOueZ0nuz
-X-Proofpoint-GUID: I1XborJoqfSI7vSV5Ul-wUT1vQ1jgFOw
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-02-26_11,2024-02-27_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 suspectscore=0
- lowpriorityscore=0 adultscore=0 spamscore=0 priorityscore=1501 mlxscore=0
- mlxlogscore=660 phishscore=0 malwarescore=0 impostorscore=0 clxscore=1011
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2311290000
- definitions=main-2402270107
+In-Reply-To: <2fe58bc5-2f1b-4f51-8f01-fa397a1c9291@csgroup.eu>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,46 +59,148 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, loongarch@lists.linux.dev, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, Vincenzo Frascino <vincenzo.frascino@arm.com>, Jan Kiszka <jan.kiszka@siemens.com>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-alpha@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Kieran Bingham <kbingham@kernel.org>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>,
-  John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, Anna-Maria Behnsen <anna-maria@linutronix.de>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Mark Brown <broonie@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 26, 2024 at 05:14:13PM +0100, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> Most architectures only support a single hardcoded page size. In order
-> to ensure that each one of these sets the corresponding Kconfig symbols,
-> change over the PAGE_SHIFT definition to the common one and allow
-> only the hardware page size to be selected.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
-...
->  arch/s390/Kconfig                  | 1 +
->  arch/s390/include/asm/page.h       | 2 +-
-...
-> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-> index fe565f3a3a91..b61c74c10050 100644
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -199,6 +199,7 @@ config S390
->  	select HAVE_MOD_ARCH_SPECIFIC
->  	select HAVE_NMI
->  	select HAVE_NOP_MCOUNT
-> +	select HAVE_PAGE_SIZE_4KB
->  	select HAVE_PCI
->  	select HAVE_PERF_EVENTS
->  	select HAVE_PERF_REGS
-> diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
-> index 73b9c3bf377f..ded9548d11d9 100644
-> --- a/arch/s390/include/asm/page.h
-> +++ b/arch/s390/include/asm/page.h
-> @@ -11,7 +11,7 @@
->  #include <linux/const.h>
->  #include <asm/types.h>
->  
-> -#define _PAGE_SHIFT	12
-> +#define _PAGE_SHIFT	CONFIG_PAGE_SHIFT
 
-Acked-by: Heiko Carstens <hca@linux.ibm.com>
+--yofmhws4bjeessoi
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Feb 27, 2024 at 01:52:07PM +0000, Christophe Leroy wrote:
+>=20
+>=20
+> Le 27/02/2024 =E0 11:58, Uwe Kleine-K=F6nig a =E9crit=A0:
+> > Hello Christophe,
+> >=20
+> > On Tue, Feb 27, 2024 at 10:25:15AM +0000, Christophe Leroy wrote:
+> >> Le 27/02/2024 =E0 09:46, Uwe Kleine-K=F6nig a =E9crit=A0:
+> >>> recently the spi-ppc4xx.c driver suffered from build errors and warni=
+ngs
+> >>> that were undetected for longer than I expected. I think it would be
+> >>> very beneficial if this driver was enabled in (at least) a powerpc
+> >>> allmodconfig build.
+> >>>
+> >>> The challenge to do so is that spi-ppc4xx.c uses dcri_clrset() which =
+is
+> >>> only defined for 4xx (as these select PPC_DCR_NATIVE).
+> >>>
+> >>> I wonder if dcri_clrset() could be defined for the PPC_DCR_MMIO case,
+> >>> too. I tried and failed. The best I came up without extensive doc
+> >>> reading is:
+> >>>
+> >>> diff --git a/arch/powerpc/include/asm/dcr-native.h b/arch/powerpc/inc=
+lude/asm/dcr-native.h
+> >>> index a92059964579..159ab7abfe46 100644
+> >>> --- a/arch/powerpc/include/asm/dcr-native.h
+> >>> +++ b/arch/powerpc/include/asm/dcr-native.h
+> >>> @@ -115,15 +115,11 @@ static inline void __dcri_clrset(int base_addr,=
+ int base_data, int reg,
+> >>>    	unsigned int val;
+> >>>   =20
+> >>>    	spin_lock_irqsave(&dcr_ind_lock, flags);
+> >>> -	if (cpu_has_feature(CPU_FTR_INDEXED_DCR)) {
+> >>> -		mtdcrx(base_addr, reg);
+> >>> -		val =3D (mfdcrx(base_data) & ~clr) | set;
+> >>> -		mtdcrx(base_data, val);
+> >>> -	} else {
+> >>> -		__mtdcr(base_addr, reg);
+> >>> -		val =3D (__mfdcr(base_data) & ~clr) | set;
+> >>> -		__mtdcr(base_data, val);
+> >>> -	}
+> >>> +
+> >>> +	mtdcr(base_addr, reg);
+> >>> +	val =3D (mfdcr(base_data) & ~clr) | set;
+> >>> +	mtdcr(base_data, val);
+> >>> +
+> >>>    	spin_unlock_irqrestore(&dcr_ind_lock, flags);
+> >>>    }
+> >>>   =20
+> >>> diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+> >>> index bc7021da2fe9..9a0a5e8c70c8 100644
+> >>> --- a/drivers/spi/Kconfig
+> >>> +++ b/drivers/spi/Kconfig
+> >>> @@ -810,7 +810,8 @@ config SPI_PL022
+> >>>   =20
+> >>>    config SPI_PPC4xx
+> >>>    	tristate "PPC4xx SPI Controller"
+> >>> -	depends on PPC32 && 4xx
+> >>> +	depends on 4xx || COMPILE_TEST
+> >>> +	depends on PPC32 || PPC64
+> >>>    	select SPI_BITBANG
+> >>>    	help
+> >>>    	  This selects a driver for the PPC4xx SPI Controller.
+> >>>
+> >>> While this is a step in the right direction (I think) it's not enough=
+ to
+> >>> make the driver build (but maybe make it easier to define
+> >>> dcri_clrset()?)
+> >>>
+> >>> Could someone with more powerpc knowledge jump in and help (for the
+> >>> benefit of better compile coverage of the spi driver and so less
+> >>> breakage)? (If you do so based on my changes above, you don't need to
+> >>> credit me for my effort, claim it as your's. I'm happy enough if the
+> >>> situation improves.)
+> >>
+> >> What about this ?
+> >>
+> >> diff --git a/arch/powerpc/include/asm/dcr-mmio.h
+> >> b/arch/powerpc/include/asm/dcr-mmio.h
+> >> index fc6d93ef4a13..38b515afbffc 100644
+> >> --- a/arch/powerpc/include/asm/dcr-mmio.h
+> >> +++ b/arch/powerpc/include/asm/dcr-mmio.h
+> >> @@ -38,6 +38,11 @@ static inline void dcr_write_mmio(dcr_host_mmio_t h=
+ost,
+> >>    	out_be32(host.token + ((host.base + dcr_n) * host.stride), value);
+> >>    }
+> >>
+> >> +static inline void __dcri_clrset(int base_addr, int base_data, int re=
+g,
+> >> +				 unsigned clr, unsigned set)
+> >> +{
+> >> +}
+> >> +
+> >=20
+> > The downside of that one is that if we find a matching device where
+> > dcr-mmio is used, the driver claims to work but silently fails. Is this
+> > good enough?
+>=20
+> I don't know the details of DCR, but it looks like this spi-ppc4xx=20
+> driver is really specific to 4xx, which is PPC32.
+>=20
+> Do you really need/want it to be built with allmodconfig ?
+>=20
+> Maybe it would be easier to have it work with ppc32_allmodconfig ?
+>=20
+> Or even easier with ppc44x_defconfig ?
+
+The reason I'd like to see it in allmodconfig is that testing
+allmodconfig on several archs is the check I do for my patch series.
+Also I assume I'm not the only one relying on allmodconfig for this
+purpose. So in my eyes every driver that is built there is a net win.
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--yofmhws4bjeessoi
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmXd6v0ACgkQj4D7WH0S
+/k7yEgf/Tz157az3FVESUBdN2ilY0Teefm0nbWyCzS5sUxh2ppmaB6c9HQmu1nK/
+zy4BS9L2c5chIbzOcwTE8anMvfVAVuqF3MuNSCa+Yau6OKL6pE8qyPMYTV6tWlKJ
+WRP59kwZsQw+BVms96Oo336/knSmapitLLixbYXvNn13eC2FZVM8PR7WvJPSm86G
+PFimEGz+sJoEfSs8yRTSP5a7CBgEGES90yxs3sxoj/WELpGER5xkTMU6axeZdpY5
+tG4LfR3HbSuNiA5+/yY4INKOcPoFbe4nzmi4tjb41S3+clUYvEvKhrMahxPXrJ2P
+2ajDfO+3zjz1dRKEs32WZaqb0GzhWw==
+=bkOz
+-----END PGP SIGNATURE-----
+
+--yofmhws4bjeessoi--
