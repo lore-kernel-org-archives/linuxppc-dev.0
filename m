@@ -4,46 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87F02C5478C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 11:49:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01091C5478C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 11:52:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SlEmAVBK;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=F/H2xG2n;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TlCLW1ZW6z3vX9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 22:49:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TlCQr4KfVz3dW2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 22:52:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SlEmAVBK;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=F/H2xG2n;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.183; helo=out-183.mta1.migadu.com; envelope-from=andrew.jones@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-183.mta1.migadu.com (out-183.mta1.migadu.com [95.215.58.183])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::b4; helo=out-180.mta1.migadu.com; envelope-from=andrew.jones@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 230 seconds by postgrey-1.37 at boromir; Wed, 28 Feb 2024 22:52:09 AEDT
+Received: from out-180.mta1.migadu.com (out-180.mta1.migadu.com [IPv6:2001:41d0:203:375::b4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TlCKg5yTVz30PD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 22:48:23 +1100 (AEDT)
-Date: Wed, 28 Feb 2024 12:47:52 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TlCQ16wDSz30hG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 22:52:09 +1100 (AEDT)
+Date: Wed, 28 Feb 2024 12:51:42 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1709120874;
+	t=1709121105;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Au6hwmd26uHWeon8xSbDYZG4pXatYbizYk+xmJMEcsA=;
-	b=SlEmAVBKKFKRJDwYiU0Un070dqwwQCQ0bIWzjNGbgDc0nhtIdnyfPA9NvcEm5mYYQknXF1
-	ngFKFTYiiJBUgc3i/1Fg6HU8LnJdaklbfb2W6uL0YOgljJGoh5SM0LFtKbRfkDGwM5R6+Y
-	8jyGT86VTQzbB9HrOBvn6p4cv+mIg7Y=
+	bh=jZX06/t/vObxlUd3rjMifnJudTyaWwmVSmqsij++4PU=;
+	b=F/H2xG2n0r3jJlW3sDq2LpzjP4WdPViUuTXqSdCcbnx+WBhS5OA0kRreYiOyJd0iiooxDf
+	NPKmuHxZ/+twtmxBkxnl9oXxVU5jHMMgjf6vB+vWAlIOcHCPteHoIFkEDWPozBz3ZqFIbe
+	ynwSv4Vs2JNRatJJhPalYj+vFYLuxB0=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [kvm-unit-tests PATCH 09/32] scripts: allow machine option to be
- specified in unittests.cfg
-Message-ID: <20240228-386d106a6ef0bc0430edad1a@orel>
+Subject: Re: [kvm-unit-tests PATCH 17/32] arch-run: Fix handling multiple
+ exit status messages
+Message-ID: <20240228-046d6f84483d096b669d1203@orel>
 References: <20240226101218.1472843-1-npiggin@gmail.com>
- <20240226101218.1472843-10-npiggin@gmail.com>
+ <20240226101218.1472843-18-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240226101218.1472843-10-npiggin@gmail.com>
+In-Reply-To: <20240226101218.1472843-18-npiggin@gmail.com>
 X-Migadu-Flow: FLOW_OUT
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -60,22 +61,44 @@ Cc: Laurent Vivier <lvivier@redhat.com>, Thomas Huth <thuth@redhat.com>, kvm@vge
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 26, 2024 at 08:11:55PM +1000, Nicholas Piggin wrote:
-> This allows different machines with different requirements to be
-> supported by run_tests.sh, similarly to how different accelerators
-> are handled.
+On Mon, Feb 26, 2024 at 08:12:03PM +1000, Nicholas Piggin wrote:
+> In SMP tests, it's possible for multiple CPUs to print an exit
+> message if they abort concurrently, confusing the harness:
 > 
-> Acked-by: Thomas Huth <thuth@redhat.com>
+>   EXIT: STATUS=127
+> 
+>   EXIT: STATUS=127
+>   scripts/arch-run.bash: line 85: [: too many arguments
+>   scripts/arch-run.bash: line 93: return: too many arguments
+> 
+> lib/arch code should probably serialise this to prevent it, but
+> at the moment not all do. So make the parser handle this by
+> just looking at the first EXIT.
+> 
+> Cc: Paolo Bonzini <pbonzini@redhat.com>
+> Cc: Thomas Huth <thuth@redhat.com>
+> Cc: Andrew Jones <andrew.jones@linux.dev>
+> Cc: kvm@vger.kernel.org
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  scripts/common.bash  |  8 ++++++--
->  scripts/runtime.bash | 16 ++++++++++++----
->  2 files changed, 18 insertions(+), 6 deletions(-)
+>  scripts/arch-run.bash | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
+> index 5c7e72036..4af670f1c 100644
+> --- a/scripts/arch-run.bash
+> +++ b/scripts/arch-run.bash
+> @@ -79,7 +79,7 @@ run_qemu_status ()
+>  	exec {stdout}>&-
+>  
+>  	if [ $ret -eq 1 ]; then
+> -		testret=$(grep '^EXIT: ' <<<"$lines" | sed 's/.*STATUS=\([0-9][0-9]*\).*/\1/')
+> +		testret=$(grep '^EXIT: ' <<<"$lines" | head -n1 | sed 's/.*STATUS=\([0-9][0-9]*\).*/\1/')
+>  		if [ "$testret" ]; then
+>  			if [ $testret -eq 1 ]; then
+>  				ret=0
+> -- 
+> 2.42.0
+>
 
-Please also update the unittests.cfg documentation. Currently that
-documentation lives in the header of each unittests.cfg file, but
-we could maybe change each file to have a single line which points
-at a single document.
-
-Thanks,
-drew
+Acked-by: Andrew Jones <andrew.jones@linux.dev>
