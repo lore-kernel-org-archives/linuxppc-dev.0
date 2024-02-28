@@ -4,90 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E8B2C47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 17:35:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB5D2C5478C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 21:07:18 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sRvW4T9H;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IxaCg5UT;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TlM1g1Yx2z3dhk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 04:35:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TlRkY03R4z30YS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 08:07:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sRvW4T9H;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IxaCg5UT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=imbrenda@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=shorne@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TlM0r4fJhz3bp1
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Feb 2024 04:34:20 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 41SHRJAv007887;
-	Wed, 28 Feb 2024 17:34:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=pp1;
- bh=5UEo5g8p7zZAhpUVRF+F3cMVGvp5KewyDxvM9D11adI=;
- b=sRvW4T9HMwfszCv7cmirR6GqMaxT14Sjx55SqMGkAszmho4aFGR6n1b1TMIK6NYMFefu
- Ug8eUt8Z1PNoibJ9psc2KOAgGfLm3cQpm/uB7FOCPGq0WuUXneSs53OU2uIi4SMAX9df
- 640O5FZmDmUgVuqBoPBwuIUTrEcBQZL1jhY9Ydpw8+CUETj7lpt944x1HZyoFn7bID9n
- 7fhev/gQnTYEVtCjTTecY66xq9zanU+BWT4cVk2UKCAaTiKbdwXNYrXdKDbQsjxrtOpj
- 2JFnf2bLIuT8eLih+32zlsv3C5rM9LoxupZJDh8UMB7efurHUJxEKGjH2Pn0BgDcPhix xA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wj9870awk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Feb 2024 17:34:09 +0000
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 41SHRMQq008005;
-	Wed, 28 Feb 2024 17:34:08 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wj9870avy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Feb 2024 17:34:08 +0000
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 41SHAhjk021291;
-	Wed, 28 Feb 2024 17:34:07 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3wfusp7tqe-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Feb 2024 17:34:07 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 41SHY1i61704620
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 28 Feb 2024 17:34:03 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 750F820040;
-	Wed, 28 Feb 2024 17:34:01 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 917D42004E;
-	Wed, 28 Feb 2024 17:34:00 +0000 (GMT)
-Received: from p-imbrenda (unknown [9.171.7.158])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Wed, 28 Feb 2024 17:34:00 +0000 (GMT)
-Date: Wed, 28 Feb 2024 18:33:58 +0100
-From: Claudio Imbrenda <imbrenda@linux.ibm.com>
-To: Andrew Jones <andrew.jones@linux.dev>
-Subject: Re: [kvm-unit-tests PATCH 03/13] treewide: lib/stack: Fix backtrace
-Message-ID: <20240228183358.5a72ce73@p-imbrenda>
-In-Reply-To: <20240228150416.248948-18-andrew.jones@linux.dev>
-References: <20240228150416.248948-15-andrew.jones@linux.dev>
-	<20240228150416.248948-18-andrew.jones@linux.dev>
-Organization: IBM
-X-Mailer: Claws Mail 4.2.0 (GTK 3.24.41; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TlRjf1XTyz30YS
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Feb 2024 08:06:28 +1100 (AEDT)
+Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-412a9ea61adso1435975e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 13:06:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1709154383; x=1709759183; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=0a8qBD6vozPIAISnQHJRWdPKOWiVN4p5/6pJZQ2dXnQ=;
+        b=IxaCg5UThptr2IGsuD62PDJNKHHws3pWS0aB4D998moErH3NG2n8nsuqN8zls08rxm
+         gr6dpFFmYnffHTN8k26VkdAs5H1io92FLlTnKa4xTtz0t4rzE2+nEukkmDyOMdfMGGoF
+         PMGp1LpOeF68RvxFeNx2qUfsplpGNWocy83U/ckKW8+wHAe/ACUjpGjs1uJ1Cfzry8V4
+         czlietCES4PTLjjukG/4YXiFITPk2rkT0XZojDCqEWl16cuBYWx1B543Bnxw92WF6PSm
+         0Dv/Ju6AH9TsG2zFSOKFRB4P8ZQnDIghvau6pH892FDNt4tVUyWB2u+8/mTZSTv1AK2z
+         6NJw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1709154383; x=1709759183;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=0a8qBD6vozPIAISnQHJRWdPKOWiVN4p5/6pJZQ2dXnQ=;
+        b=nVjkOzZzm4sZDO2AUnjj1MAMnMSZrjl6Vt2k/oC60c3AWnwXFjfs4tvmjYtJM+JrS/
+         3lorZ2QvjBfLn3kTtqga9n1KAsSXugf+u+sHFUugGGme8oK11bhhvRpyHvLv1ww9aP4t
+         CM9xCyU7M9komaKYFUPsNVIm3qeFloqqVvaO2oOQRs58T3ayXHfWJ2GJVmouUzmCatdM
+         a2sovQuwyVK4fJ1uWLy2V4m9itzmnz/o1KVfN4biX76sbhmO3xdPQ1m0cjvnAZfPghj9
+         SgemGm6xNTAA6mjzdnp2fr/v1KgZpRZlwvtYxPFa9CLCkjEDKXLh8QMrdRBKOjoy+dZj
+         qlvw==
+X-Forwarded-Encrypted: i=1; AJvYcCVQ4nTX4d9Bx8M0XvJKIqhtIzZ6CPaBV+U3MyJSTNZLjC62gw+XxOxcroL8v/9GovAHE+ZCaCtKFuchyeUmqE0bp+frhLU2OBmbqjzW7A==
+X-Gm-Message-State: AOJu0YznYPYx51IvRJgts11uP4lzZCzQfeFaRTczeJ8CzBNkoWew2Qkm
+	xvdZaHgI8javNhjQ+aTsO3X590SaFeENNLgWsVcNzbJitkXfZLt8
+X-Google-Smtp-Source: AGHT+IHczATb7A8ZRTaH383CIQ4ejybI9MzL/yjlqycOyBbx2+IYQRI3gE2POfqlKMAC8LKmr3GeXg==
+X-Received: by 2002:a5d:618d:0:b0:33d:f51f:2da5 with SMTP id j13-20020a5d618d000000b0033df51f2da5mr46406wru.7.1709154383088;
+        Wed, 28 Feb 2024 13:06:23 -0800 (PST)
+Received: from localhost (cpc1-brnt4-2-0-cust862.4-2.cable.virginm.net. [86.9.131.95])
+        by smtp.gmail.com with ESMTPSA id m1-20020adfa3c1000000b0033d67791dc0sm15568132wrb.43.2024.02.28.13.06.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Feb 2024 13:06:21 -0800 (PST)
+Date: Wed, 28 Feb 2024 21:06:21 +0000
+From: Stafford Horne <shorne@gmail.com>
+To: Arnd Bergmann <arnd@kernel.org>
+Subject: Re: [PATCH 3/4] arch: define CONFIG_PAGE_SIZE_*KB on all
+ architectures
+Message-ID: <Zd-gTf6mvVdPEovO@antec>
+References: <20240226161414.2316610-1-arnd@kernel.org>
+ <20240226161414.2316610-4-arnd@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: hLxiySRN2EcEgCzLsB6hSJivtfqmXw7j
-X-Proofpoint-GUID: VqnqFTru1FaCUB_11HvinyVG-RZd9EZ5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-02-28_08,2024-02-27_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 bulkscore=0
- mlxscore=0 priorityscore=1501 suspectscore=0 lowpriorityscore=0
- phishscore=0 mlxlogscore=999 impostorscore=0 clxscore=1011 spamscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2402280138
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240226161414.2316610-4-arnd@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,236 +80,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lvivier@redhat.com, linux-s390@vger.kernel.org, thuth@redhat.com, nrb@linux.ibm.com, frankja@linux.ibm.com, kvm@vger.kernel.org, npiggin@gmail.com, kvm-riscv@lists.infradead.org, kvmarm@lists.linux.dev, pbonzini@redhat.com, linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org, loongarch@lists.linux.dev, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, Vincenzo Frascino <vincenzo.frascino@arm.com>, Jan Kiszka <jan.kiszka@siemens.com>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-alpha@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Kieran Bingham <kbingham@kernel.org>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>,
+  John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Thomas Gleixner <tglx@linutronix.de>, Anna-Maria Behnsen <anna-maria@linutronix.de>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 28 Feb 2024 16:04:19 +0100
-Andrew Jones <andrew.jones@linux.dev> wrote:
-
-> We should never pass the result of __builtin_frame_address(0) to
-> another function since the compiler is within its rights to pop the
-> frame to which it points before making the function call, as may be
-> done for tail calls. Nobody has complained about backtrace(), so
-> likely all compilations have been inlining backtrace_frame(), not
-> dropping the frame on the tail call, or nobody is looking at traces.
-> However, for riscv, when built for EFI, it does drop the frame on the
-> tail call, and it was noticed. Preemptively fix backtrace() for all
-> architectures.
+On Mon, Feb 26, 2024 at 05:14:13PM +0100, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
-> Fixes: 52266791750d ("lib: backtrace printing")
-> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-
-Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
-
+> Most architectures only support a single hardcoded page size. In order
+> to ensure that each one of these sets the corresponding Kconfig symbols,
+> change over the PAGE_SHIFT definition to the common one and allow
+> only the hardware page size to be selected.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > ---
->  lib/arm/stack.c   | 13 +++++--------
->  lib/arm64/stack.c | 12 +++++-------
->  lib/riscv/stack.c | 12 +++++-------
->  lib/s390x/stack.c | 12 +++++-------
->  lib/stack.h       | 24 +++++++++++++++++-------
->  lib/x86/stack.c   | 12 +++++-------
->  6 files changed, 42 insertions(+), 43 deletions(-)
-> 
-> diff --git a/lib/arm/stack.c b/lib/arm/stack.c
-> index 7d081be7c6d0..66d18b47ea53 100644
-> --- a/lib/arm/stack.c
-> +++ b/lib/arm/stack.c
-> @@ -8,13 +8,16 @@
->  #include <libcflat.h>
->  #include <stack.h>
+>  arch/alpha/Kconfig                 | 1 +
+>  arch/alpha/include/asm/page.h      | 2 +-
+>  arch/arm/Kconfig                   | 1 +
+>  arch/arm/include/asm/page.h        | 2 +-
+>  arch/csky/Kconfig                  | 1 +
+>  arch/csky/include/asm/page.h       | 2 +-
+>  arch/m68k/Kconfig                  | 3 +++
+>  arch/m68k/Kconfig.cpu              | 2 ++
+>  arch/m68k/include/asm/page.h       | 6 +-----
+>  arch/microblaze/Kconfig            | 1 +
+>  arch/microblaze/include/asm/page.h | 2 +-
+>  arch/nios2/Kconfig                 | 1 +
+>  arch/nios2/include/asm/page.h      | 2 +-
+>  arch/openrisc/Kconfig              | 1 +
+>  arch/openrisc/include/asm/page.h   | 2 +-
+>  arch/riscv/Kconfig                 | 1 +
+>  arch/riscv/include/asm/page.h      | 2 +-
+>  arch/s390/Kconfig                  | 1 +
+>  arch/s390/include/asm/page.h       | 2 +-
+>  arch/sparc/Kconfig                 | 2 ++
+>  arch/sparc/include/asm/page_32.h   | 2 +-
+>  arch/sparc/include/asm/page_64.h   | 3 +--
+>  arch/um/Kconfig                    | 1 +
+>  arch/um/include/asm/page.h         | 2 +-
+>  arch/x86/Kconfig                   | 1 +
+>  arch/x86/include/asm/page_types.h  | 2 +-
+>  arch/xtensa/Kconfig                | 1 +
+>  arch/xtensa/include/asm/page.h     | 2 +-
+>  28 files changed, 32 insertions(+), 19 deletions(-)
+....
+> diff --git a/arch/openrisc/Kconfig b/arch/openrisc/Kconfig
+> index fd9bb76a610b..3586cda55bde 100644
+> --- a/arch/openrisc/Kconfig
+> +++ b/arch/openrisc/Kconfig
+> @@ -25,6 +25,7 @@ config OPENRISC
+>  	select GENERIC_CPU_DEVICES
+>  	select HAVE_PCI
+>  	select HAVE_UID16
+> +	select HAVE_PAGE_SIZE_8KB
+>  	select GENERIC_ATOMIC64
+>  	select GENERIC_CLOCKEVENTS_BROADCAST
+>  	select GENERIC_SMP_IDLE_THREAD
+> diff --git a/arch/openrisc/include/asm/page.h b/arch/openrisc/include/asm/page.h
+> index 44fc1fd56717..7925ce09ab5a 100644
+> --- a/arch/openrisc/include/asm/page.h
+> +++ b/arch/openrisc/include/asm/page.h
+> @@ -18,7 +18,7 @@
 >  
-> -int backtrace_frame(const void *frame, const void **return_addrs,
-> -		    int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	static int walking;
->  	int depth;
->  	const unsigned long *fp = (unsigned long *)frame;
+>  /* PAGE_SHIFT determines the page size */
 >  
-> +	if (current_frame)
-> +		fp = __builtin_frame_address(0);
-> +
->  	if (walking) {
->  		printf("RECURSIVE STACK WALK!!!\n");
->  		return 0;
-> @@ -33,9 +36,3 @@ int backtrace_frame(const void *frame, const void **return_addrs,
->  	walking = 0;
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0),
-> -			       return_addrs, max_depth);
-> -}
-> diff --git a/lib/arm64/stack.c b/lib/arm64/stack.c
-> index 82611f4b1815..f5eb57fd8892 100644
-> --- a/lib/arm64/stack.c
-> +++ b/lib/arm64/stack.c
-> @@ -8,7 +8,8 @@
->  
->  extern char vector_stub_start, vector_stub_end;
->  
-> -int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	const void *fp = frame;
->  	static bool walking;
-> @@ -17,6 +18,9 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  	bool is_exception = false;
->  	unsigned long addr;
->  
-> +	if (current_frame)
-> +		fp = __builtin_frame_address(0);
-> +
->  	if (walking) {
->  		printf("RECURSIVE STACK WALK!!!\n");
->  		return 0;
-> @@ -54,9 +58,3 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  	walking = false;
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0),
-> -			       return_addrs, max_depth);
-> -}
-> diff --git a/lib/riscv/stack.c b/lib/riscv/stack.c
-> index 712a5478d547..d865594b9671 100644
-> --- a/lib/riscv/stack.c
-> +++ b/lib/riscv/stack.c
-> @@ -2,12 +2,16 @@
->  #include <libcflat.h>
->  #include <stack.h>
->  
-> -int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	static bool walking;
->  	const unsigned long *fp = (unsigned long *)frame;
->  	int depth;
->  
-> +	if (current_frame)
-> +		fp = __builtin_frame_address(0);
-> +
->  	if (walking) {
->  		printf("RECURSIVE STACK WALK!!!\n");
->  		return 0;
-> @@ -24,9 +28,3 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  	walking = false;
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0),
-> -			       return_addrs, max_depth);
-> -}
-> diff --git a/lib/s390x/stack.c b/lib/s390x/stack.c
-> index 9f234a12adf6..d194f654e94d 100644
-> --- a/lib/s390x/stack.c
-> +++ b/lib/s390x/stack.c
-> @@ -14,11 +14,15 @@
->  #include <stack.h>
->  #include <asm/arch_def.h>
->  
-> -int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	int depth = 0;
->  	struct stack_frame *stack = (struct stack_frame *)frame;
->  
-> +	if (current_frame)
-> +		stack = __builtin_frame_address(0);
-> +
->  	for (depth = 0; stack && depth < max_depth; depth++) {
->  		return_addrs[depth] = (void *)stack->grs[8];
->  		stack = stack->back_chain;
-> @@ -28,9 +32,3 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0),
-> -			       return_addrs, max_depth);
-> -}
-> diff --git a/lib/stack.h b/lib/stack.h
-> index 10fc2f793354..6edc84344b51 100644
-> --- a/lib/stack.h
-> +++ b/lib/stack.h
-> @@ -11,17 +11,27 @@
->  #include <asm/stack.h>
->  
->  #ifdef HAVE_ARCH_BACKTRACE_FRAME
-> -extern int backtrace_frame(const void *frame, const void **return_addrs,
-> -			   int max_depth);
-> +extern int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +				int max_depth, bool current_frame);
-> +
-> +static inline int backtrace_frame(const void *frame, const void **return_addrs,
-> +				  int max_depth)
-> +{
-> +	return arch_backtrace_frame(frame, return_addrs, max_depth, false);
-> +}
-> +
-> +static inline int backtrace(const void **return_addrs, int max_depth)
-> +{
-> +	return arch_backtrace_frame(NULL, return_addrs, max_depth, true);
-> +}
+> -#define PAGE_SHIFT      13
+> +#define PAGE_SHIFT      CONFIG_PAGE_SHIFT
+>  #ifdef __ASSEMBLY__
+>  #define PAGE_SIZE       (1 << PAGE_SHIFT)
 >  #else
-> -static inline int
-> -backtrace_frame(const void *frame __unused, const void **return_addrs __unused,
-> -		int max_depth __unused)
-> +extern int backtrace(const void **return_addrs, int max_depth);
-> +
-> +static inline int backtrace_frame(const void *frame, const void **return_addrs,
-> +				  int max_depth)
->  {
->  	return 0;
->  }
->  #endif
->  
-> -extern int backtrace(const void **return_addrs, int max_depth);
-> -
->  #endif
-> diff --git a/lib/x86/stack.c b/lib/x86/stack.c
-> index 5ecd97ce90b9..58ab6c4b293a 100644
-> --- a/lib/x86/stack.c
-> +++ b/lib/x86/stack.c
-> @@ -1,12 +1,16 @@
->  #include <libcflat.h>
->  #include <stack.h>
->  
-> -int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	static int walking;
->  	int depth = 0;
->  	const unsigned long *bp = (unsigned long *) frame;
->  
-> +	if (current_frame)
-> +		bp = __builtin_frame_address(0);
-> +
->  	if (walking) {
->  		printf("RECURSIVE STACK WALK!!!\n");
->  		return 0;
-> @@ -23,9 +27,3 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  	walking = 0;
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0), return_addrs,
-> -			       max_depth);
-> -}
 
+For the openrisc bits,
+
+Acked-by: Stafford Horne <shorne@gmail.com>
