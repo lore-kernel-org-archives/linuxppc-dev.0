@@ -4,69 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8847DC47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 21:45:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 126D9C47DD9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 22:17:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Eg55CQf2;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=tuxayo.net header.i=@tuxayo.net header.a=rsa-sha256 header.s=tuxayo header.b=DGHDY4XR;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TlSZm05fhz3dlY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 08:45:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TlTHK54NQz3vXF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 09:17:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Eg55CQf2;
+	dkim=pass (1024-bit key; unprotected) header.d=tuxayo.net header.i=@tuxayo.net header.a=rsa-sha256 header.s=tuxayo header.b=DGHDY4XR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tuxayo.net (client-ip=37.187.101.17; helo=ub3.linuxw.info; envelope-from=victor@tuxayo.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 564 seconds by postgrey-1.37 at boromir; Wed, 28 Feb 2024 16:33:23 AEDT
+Received: from ub3.linuxw.info (ub3.linuxw.info [37.187.101.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TlSYx43qmz30fp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Feb 2024 08:44:53 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 288C2CE1BB2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 21:44:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 651D6C433F1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 21:44:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1709156690;
-	bh=9btjwjDXQdzK9y/kYmZxO7THmAaeTwf9mBu08Kaot1Q=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=Eg55CQf2DKidt139wzmlk2tH3B7Mkt4CJymHKpfF5qkAUBLiBvXXxf+uwT3IF3HKi
-	 EWMmwuJgxANXQtXzz/pXZeoh6snDE4jfVGwUSQh5Rw1/xiXMBL3SAEeSBgZVrBFCFy
-	 uYMxEQcUzlY88hocNBRBFEFNBOadwyDlB/rIFfKHSip7tHVt2v8wzExMoofeBvuR/R
-	 pX2Pkacrrc8CgZS/pe+UOeGDwipiAzU1cvOIYZLPGQ16ztMTGwwaqCZGdja/ufLsOx
-	 +8dySlKeiIqH+eFIxe/gHhCMu7q3+81fgWPTV7VruGb41EI0iwMzrx5+8ZDUrnyZAv
-	 koYgaiChBbn+g==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 48666C4332E; Wed, 28 Feb 2024 21:44:50 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 207129] PowerMac G4 DP (5.6.2 debug kernel + inline KASAN)
- freezes shortly after booting with "do_IRQ: stack overflow: 1760"
-Date: Wed, 28 Feb 2024 21:44:50 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: CODE_FIX
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status resolution
-Message-ID: <bug-207129-206035-GsfDsOnAGU@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-207129-206035@https.bugzilla.kernel.org/>
-References: <bug-207129-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tl30z3f9nz3bnL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 16:33:23 +1100 (AEDT)
+Received: from [192.168.0.17] (176.170.169.85.rev.sfr.net [85.169.170.176])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by ub3.linuxw.info (Postfix) with ESMTPSA id A6ED380C66;
+	Wed, 28 Feb 2024 06:37:14 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=tuxayo.net; s=tuxayo;
+	t=1709098635; bh=uHE97/j12wyth4skm1HM/hRMXlTxyhxAMqjOXFcKPE8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=DGHDY4XRxG0sDAy5An3iqGiAM4aN2HjHEmRxH6RikRaAYQi/6b4vaKUbaydOHJ0NR
+	 wuddzvp9qdvwNBp5bjAa3uc9kSCKikX/fbPHfcWwypEJZ6IoSK/l+56LK5hdhV6xMc
+	 egz5qA6LSdHeIKmLtdenh2Q5dgctBg0ffDhHahuc=
+Message-ID: <38a3f844-47b7-469a-821e-e0c8df40a7d8@tuxayo.net>
+Date: Wed, 28 Feb 2024 06:23:37 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: Boot failure with ppc64 port on iMacs G5
+To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+References: <fc93d03b-581d-40cd-8ab1-762a9ee2c20c@tuxayo.net>
+ <42e9a15f6733dd48c64cbceeb3ad27349ca8c3e4.camel@physik.fu-berlin.de>
+Content-Language: en-US-large
+From: tuxayo <victor@tuxayo.net>
+Autocrypt: addr=victor@tuxayo.net; keydata=
+ xjMEXswFyBYJKwYBBAHaRw8BAQdAH9lUyHT7PtHU5V2WmRQoXZ3dEnLu7EnvemQTFi9X4CHN
+ KlZpY3RvciBHcm91c3NldC90dXhheW8gPHZpY3RvckB0dXhheW8ubmV0PsKWBBMWCAA+FiEE
+ U/OiUyG3GBQQo7XwAUCso7fYcLsFAl7MBcgCGwMFCQlmAYAFCwkIBwIGFQoJCAsCBBYCAwEC
+ HgECF4AACgkQAUCso7fYcLueywEAopl5guOfAStDU3ZmsFRcF5x5ns3GJPGps8WmNuZBbcsB
+ AOrgXGJWZ8ZOQzlGPU6sALUC+5AUseDwCTUp+b0csn4MzjgEXswFyBIKKwYBBAGXVQEFAQEH
+ QMG1lHXrCFsoJslCJIzd7A42/UrdgUH3QlS3aRTluNMxAwEIB8J+BBgWCAAmFiEEU/OiUyG3
+ GBQQo7XwAUCso7fYcLsFAl7MBcgCGwwFCQlmAYAACgkQAUCso7fYcLtWaQD+Jlgncp/iZ+yO
+ 0acR5QZELz/NS+BE3XU9Qg4MnfgBqFsA+wTaEI5Sb8Zn+0gx9YiLfhF7MkqFza2f0uthMJ0M EV8N
+In-Reply-To: <42e9a15f6733dd48c64cbceeb3ad27349ca8c3e4.camel@physik.fu-berlin.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Thu, 29 Feb 2024 09:16:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,43 +69,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: debian-powerpc@lists.debian.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Claudia Neumann <dr.claudia.neumann@gmx.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D207129
+On 24-02-20 10:16, John Paul Adrian Glaubitz wrote:
+> There seems to be a regression in the kernel which affects PowerPC 970 machines,
+> i.e. PowerMac G5 CPUs. The issue needs to be bisected and reported upstream.
+> 
+> If you have the time, I would really appreciate if you could test the various
+> snapshots and let me know which kernel is the first to not work. I expect that
+> the breakage occurred somewhere around kernel 6.3 or so.
 
-Erhard F. (erhard_f@mailbox.org) changed:
+No problem, I'm going there every week and can do as much testing as 
+necessary even if it takes months. We got a donation of a standard PC so 
+we have now one publicly usable PC at the library.
+So I can take my time to try to make something out of the iMacs.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|REOPENED                    |RESOLVED
-         Resolution|---                         |CODE_FIX
+Results:
+- 2023-06-18: ok
+   - running strings on iso's vmlinuz yields 6.3.7-1 (2023-06-12)
+- 2023-11-16: fail
+   - 6.5.10-1 (2023-11-03)
 
---- Comment #11 from Erhard F. (erhard_f@mailbox.org) ---
-You were correct! I forgot about that...
+As expected, the regression happened during the big gap between 
+snapshots >_<
 
-I shrunk the size by using -Os and disabling some debugging stuff and chang=
-ing
-some statically built-in stuff to 'M' without sacrificing debugging
-capabilities too much until it fit < 32 MiB:
+Anything more I can test?
+(cross compiling old kernels is unfortunately too much over my head)
 
-KASAN_OUTLINE vs.
- # size vmlinux-6.8.0-rc6-PMacG4=20
-   text    data     bss     dec     hex filename
-12367737 6652440 426336 19446513 128baf1 vmlinux-6.8.0-rc6-PMacG4
+It's weird that it seems the regression is about booting the iso. 
+Otherwise, net installs from old iso like what Claudia did wouldn't work 
+after rebooting after install.
 
-KASAN_INLINE
- # size vmlinux-6.8.0-rc6-PMacG4=20
-   text    data     bss     dec     hex filename
-24660169 6652440  426336 31738945 1e44c41 vmlinux-6.8.0-rc6-PMacG4
+Cheers,
 
+-- 
+tuxayo
 
-Apart from that I can confirm inline KASAN runs fine now and I really no lo=
-nger
-get this stack overflow when using it.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are watching the assignee of the bug.=
