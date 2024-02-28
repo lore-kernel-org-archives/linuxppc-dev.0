@@ -4,60 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 126D9C47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 22:17:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C594FC5478C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Feb 2024 22:46:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=tuxayo.net header.i=@tuxayo.net header.a=rsa-sha256 header.s=tuxayo header.b=DGHDY4XR;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=lrR0Guoc;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TlTHK54NQz3vXF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 09:17:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TlTwV6qfhz3dmy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 09:46:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=tuxayo.net header.i=@tuxayo.net header.a=rsa-sha256 header.s=tuxayo header.b=DGHDY4XR;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=lrR0Guoc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tuxayo.net (client-ip=37.187.101.17; helo=ub3.linuxw.info; envelope-from=victor@tuxayo.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 564 seconds by postgrey-1.37 at boromir; Wed, 28 Feb 2024 16:33:23 AEDT
-Received: from ub3.linuxw.info (ub3.linuxw.info [37.187.101.17])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tl30z3f9nz3bnL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 16:33:23 +1100 (AEDT)
-Received: from [192.168.0.17] (176.170.169.85.rev.sfr.net [85.169.170.176])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by ub3.linuxw.info (Postfix) with ESMTPSA id A6ED380C66;
-	Wed, 28 Feb 2024 06:37:14 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=tuxayo.net; s=tuxayo;
-	t=1709098635; bh=uHE97/j12wyth4skm1HM/hRMXlTxyhxAMqjOXFcKPE8=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=DGHDY4XRxG0sDAy5An3iqGiAM4aN2HjHEmRxH6RikRaAYQi/6b4vaKUbaydOHJ0NR
-	 wuddzvp9qdvwNBp5bjAa3uc9kSCKikX/fbPHfcWwypEJZ6IoSK/l+56LK5hdhV6xMc
-	 egz5qA6LSdHeIKmLtdenh2Q5dgctBg0ffDhHahuc=
-Message-ID: <38a3f844-47b7-469a-821e-e0c8df40a7d8@tuxayo.net>
-Date: Wed, 28 Feb 2024 06:23:37 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TlTvW1Ptkz3bqC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Feb 2024 09:45:08 +1100 (AEDT)
+Received: by mail-ej1-x632.google.com with SMTP id a640c23a62f3a-a44360a8b9dso18126266b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 14:45:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1709160302; x=1709765102; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uaIW3mETQDzZhGMK3PRFUOCtdSx2PTiCbd1xUJLaJyo=;
+        b=lrR0Guocd4t6sQe/WbmLpRi8xSN0oe1RfCt2wkBV9Xj38skOBaQY1V+T3JQfknG830
+         ESMLGycHkFGMwKjq7+V2srJFB2cWzG4E4gZL+iaNc2m76OuiJ1O6n+02So1QCSLcviHR
+         jCRQVGxqQ5xoLTM9w1wagGwlRQ8zhkAD4nnhQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1709160302; x=1709765102;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uaIW3mETQDzZhGMK3PRFUOCtdSx2PTiCbd1xUJLaJyo=;
+        b=nBrnBM/M4A+7pjaWOXWxvKOLYQcujg5ue5yr4omYhjovHveNLtRThK85fpn7L/BZCd
+         v/GcZPnAv/4KG39vhBJqdB1SP4ZBHNqSEFDGo2RuS9qt8puZ7s58d6+9REitMzvBKBkL
+         PsgZ79UfHGLuJRCVlUzfjgRQGMOSIwyncrvMAUzmSzUkAL9XqTaVfHNsDySay8lB5usz
+         jEWt5Ug/r/8CwPeviJitV0cu6ALujdHQeUWU1VwZjCU+fVG1TQ7cg8UYJqaclIYfYq/n
+         kvzuqpMggO0frh0uEuqiGy1xc+KMciTMyLTvAbfkrqVIUNnFW4ZXey4Oz9VC9/YY/x5a
+         cIsg==
+X-Forwarded-Encrypted: i=1; AJvYcCXknDQBMnhSb9kCICMSBKeKTKj0g4Lo2KyPHuipQb6LMfAIfi3B0G1KmqmkCj3eQ2tKKDWSVjCRfdBa8VhGAsAtbTZvV/cDwWuCnNSxoA==
+X-Gm-Message-State: AOJu0Yx+rPY7JMOcI3SuLvR10TuXmuXI/Fbc812k9Lx8dMsfj8ZK8WuF
+	aBQ0ar+nfzccMFqqOY9zHvfzM8K7Kv3kIYPRAQqj1gI1cO9cC1LxOfKP/pulShP9VUPG0cbOOaH
+	/wz+d
+X-Google-Smtp-Source: AGHT+IFhT9sYF5O6DdFhKgwTWiIRQ95OegTbKAXaTN069Upo22CHAz6Lyhgx8Io6DNxLaWTmdwnSOQ==
+X-Received: by 2002:a17:906:4152:b0:a3d:2243:29da with SMTP id l18-20020a170906415200b00a3d224329damr167211ejk.36.1709160302337;
+        Wed, 28 Feb 2024 14:45:02 -0800 (PST)
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com. [209.85.128.47])
+        by smtp.gmail.com with ESMTPSA id vk7-20020a170907cbc700b00a3f6466ba85sm2302633ejc.35.2024.02.28.14.45.00
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 28 Feb 2024 14:45:01 -0800 (PST)
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4129a748420so29255e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Feb 2024 14:45:00 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUFLaXGaWs6hFJHA8X/gwy1+i4eRmKyfVYupqDMvD4cdVgQvlDfIFsA15fmDCLXmi7x8p35z1rsn/p50C4EbU+J/J7+tqMsznwSbUoVoA==
+X-Received: by 2002:a05:600c:4e16:b0:412:b66f:3d0a with SMTP id
+ b22-20020a05600c4e1600b00412b66f3d0amr20561wmq.6.1709160300349; Wed, 28 Feb
+ 2024 14:45:00 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: Boot failure with ppc64 port on iMacs G5
-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-References: <fc93d03b-581d-40cd-8ab1-762a9ee2c20c@tuxayo.net>
- <42e9a15f6733dd48c64cbceeb3ad27349ca8c3e4.camel@physik.fu-berlin.de>
-Content-Language: en-US-large
-From: tuxayo <victor@tuxayo.net>
-Autocrypt: addr=victor@tuxayo.net; keydata=
- xjMEXswFyBYJKwYBBAHaRw8BAQdAH9lUyHT7PtHU5V2WmRQoXZ3dEnLu7EnvemQTFi9X4CHN
- KlZpY3RvciBHcm91c3NldC90dXhheW8gPHZpY3RvckB0dXhheW8ubmV0PsKWBBMWCAA+FiEE
- U/OiUyG3GBQQo7XwAUCso7fYcLsFAl7MBcgCGwMFCQlmAYAFCwkIBwIGFQoJCAsCBBYCAwEC
- HgECF4AACgkQAUCso7fYcLueywEAopl5guOfAStDU3ZmsFRcF5x5ns3GJPGps8WmNuZBbcsB
- AOrgXGJWZ8ZOQzlGPU6sALUC+5AUseDwCTUp+b0csn4MzjgEXswFyBIKKwYBBAGXVQEFAQEH
- QMG1lHXrCFsoJslCJIzd7A42/UrdgUH3QlS3aRTluNMxAwEIB8J+BBgWCAAmFiEEU/OiUyG3
- GBQQo7XwAUCso7fYcLsFAl7MBcgCGwwFCQlmAYAACgkQAUCso7fYcLtWaQD+Jlgncp/iZ+yO
- 0acR5QZELz/NS+BE3XU9Qg4MnfgBqFsA+wTaEI5Sb8Zn+0gx9YiLfhF7MkqFza2f0uthMJ0M EV8N
-In-Reply-To: <42e9a15f6733dd48c64cbceeb3ad27349ca8c3e4.camel@physik.fu-berlin.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Thu, 29 Feb 2024 09:16:32 +1100
+References: <20240228072216.95130-1-yaoma@linux.alibaba.com> <20240228072216.95130-3-yaoma@linux.alibaba.com>
+In-Reply-To: <20240228072216.95130-3-yaoma@linux.alibaba.com>
+From: Doug Anderson <dianders@chromium.org>
+Date: Wed, 28 Feb 2024 14:44:44 -0800
+X-Gmail-Original-Message-ID: <CAD=FV=U1b+8atmju_w4eRmVKmSqjj6WCsy5EawYqj31fQ1kvrw@mail.gmail.com>
+Message-ID: <CAD=FV=U1b+8atmju_w4eRmVKmSqjj6WCsy5EawYqj31fQ1kvrw@mail.gmail.com>
+Subject: Re: [PATCHv11 2/4] genirq: Provide a snapshot mechanism for interrupt statistics
+To: Bitao Hu <yaoma@linux.alibaba.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,41 +85,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: debian-powerpc@lists.debian.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Claudia Neumann <dr.claudia.neumann@gmx.de>
+Cc: pmladek@suse.com, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, jan.kiszka@siemens.com, deller@gmx.de, liusong@linux.alibaba.com, kernelfans@gmail.com, linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com, npiggin@gmail.com, tglx@linutronix.de, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 24-02-20 10:16, John Paul Adrian Glaubitz wrote:
-> There seems to be a regression in the kernel which affects PowerPC 970 machines,
-> i.e. PowerMac G5 CPUs. The issue needs to be bisected and reported upstream.
-> 
-> If you have the time, I would really appreciate if you could test the various
-> snapshots and let me know which kernel is the first to not work. I expect that
-> the breakage occurred somewhere around kernel 6.3 or so.
+Hi,
 
-No problem, I'm going there every week and can do as much testing as 
-necessary even if it takes months. We got a donation of a standard PC so 
-we have now one publicly usable PC at the library.
-So I can take my time to try to make something out of the iMacs.
+On Tue, Feb 27, 2024 at 11:22=E2=80=AFPM Bitao Hu <yaoma@linux.alibaba.com>=
+ wrote:
+>
+> The soft lockup detector lacks a mechanism to identify interrupt storms
+> as root cause of a lockup. To enable this the detector needs a
+> mechanism to snapshot the interrupt count statistics on a CPU when the
+> detector observes a potential lockup scenario and compare that against
+> the interrupt count when it warns about the lockup later on. The number
+> of interrupts in that period give a hint whether the lockup might be
+> caused by an interrupt storm.
+>
+> Instead of having extra storage in the lockup detector and accessing
+> the internals of the interrupt descriptor directly, convert the per CPU
+> irq_desc::kstat_irq member to a data structure which contains the
+> counter plus a snapshot member and provide interfaces to take a
+> snapshot of all interrupts on the current CPU and to retrieve the delta
+> of a specific interrupt later on.
+>
+> Originally-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Bitao Hu <yaoma@linux.alibaba.com>
+> Reviewed-by: Liu Song <liusong@linux.alibaba.com>
+> ---
+>  arch/mips/dec/setup.c                |  2 +-
+>  arch/parisc/kernel/smp.c             |  2 +-
+>  arch/powerpc/kvm/book3s_hv_rm_xics.c |  2 +-
+>  include/linux/irqdesc.h              | 14 ++++++++++--
+>  include/linux/kernel_stat.h          |  3 +++
+>  kernel/irq/internals.h               |  2 +-
+>  kernel/irq/irqdesc.c                 | 34 ++++++++++++++++++++++------
+>  kernel/irq/proc.c                    |  5 ++--
+>  scripts/gdb/linux/interrupts.py      |  6 ++---
+>  9 files changed, 51 insertions(+), 19 deletions(-)
 
-Results:
-- 2023-06-18: ok
-   - running strings on iso's vmlinuz yields 6.3.7-1 (2023-06-12)
-- 2023-11-16: fail
-   - 6.5.10-1 (2023-11-03)
+I won't insist on it, but I continue to worry about memory
+implications with large numbers of CPUs. With a 4-byte int, 8192 max
+CPUs, and 100 IRQs the extra "ref" value takes up over 3MB of memory
+(8192 * 4 bytes * 100).
 
-As expected, the regression happened during the big gap between 
-snapshots >_<
+Technically, you could add a new symbol like "config
+NEED_IRQ_SNAPSHOTS". This wouldn't be a symbol selectable by the end
+user but would automatically be selected by "config
+SOFTLOCKUP_DETECTOR_INTR_STORM". If the config wasn't defined then the
+struct wouldn't contain "ref" and the snapshot routines would just be
+static inline stubs.
 
-Anything more I can test?
-(cross compiling old kernels is unfortunately too much over my head)
+Maybe Thomas has an opinion about whether this is something to worry
+about. Worst case it wouldn't be hard to do in a follow-up patch.
 
-It's weird that it seems the regression is about booting the iso. 
-Otherwise, net installs from old iso like what Claudia did wouldn't work 
-after rebooting after install.
+Everything else looks good to me. Given that I'm not insisting on
+adding the extra CONFIG, I'm OK w/:
 
-Cheers,
-
--- 
-tuxayo
-
+Reviewed-by: Douglas Anderson <dianders@chromium.org>
