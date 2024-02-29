@@ -4,48 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4526FC54798
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 11:55:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50A70C54E41
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 12:26:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UKQXxJUY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QLO6sVEW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TlqR11vXrz3vZF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 22:55:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tlr6n5bd5z3vZq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Feb 2024 23:26:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=UKQXxJUY;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QLO6sVEW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.188; helo=out-188.mta1.migadu.com; envelope-from=andrew.jones@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-188.mta1.migadu.com (out-188.mta1.migadu.com [95.215.58.188])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TlqQC507vz3bWy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Feb 2024 22:54:27 +1100 (AEDT)
-Date: Thu, 29 Feb 2024 12:54:02 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1709207648;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=SRQFyPvY8FzfiTI6Lrcxrny9e2wWpcl8DCC9vctNmI8=;
-	b=UKQXxJUYc46ZLK+ZyhJkOcUg7zV8d2domzB+H8mVZ5fSkRQ9UVh4pEC03ilpi6Xb7MFKCt
-	TXem02Z9MWLkn7NyZKKbQKS5wTnaEdARZYCQQcFrDHMafZcQJ8iC3/XWQINP8o8AiqMfy6
-	CmLGcFI9P8Bw9WDCPlaaL6IcbpCzg/w=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [kvm-unit-tests PATCH 04/13] treewide: lib/stack: Make
- base_address arch specific
-Message-ID: <20240229-edee610a9d15912f1f349ea0@orel>
-References: <20240228150416.248948-15-andrew.jones@linux.dev>
- <20240228150416.248948-19-andrew.jones@linux.dev>
- <CZH98WKJY6NT.5D53XGR31X22@wheely>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tlr611Q6Lz3bTt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Feb 2024 23:25:29 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1709209529;
+	bh=14+QqclUsCi4yH6p5bv4Pi+DXwSgycFxCOP9S2+vvoo=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=QLO6sVEWC4XB6PNIQ+3jq21IDOAEbpu/WPyavQpXfyGtA+fvzF3611Cti4E7V5R6U
+	 vYU+e0SlKDJcK9njUr4TStNJd6XBowANg1zAddOQ3vLVOT0ZwV2be0PREkZVPv2h8N
+	 j9lHh8pMEM0jnY3bXGlvSQ9lzpxyWGDwN/QwZ4TnyWtvI2e2HLvOS0RgoN0FGDX4xg
+	 2g7qM/DGvAe+gbVRyqnaPcW3DDwNo8if236PQmytqY+QOasUvnrpbIhpKh0bhmdq4T
+	 epMOwEN85ZjtJ4EEnQUu9E0G9/BZvpwLOj6t8hD5F++ksH+ioE5S39H0VhNlrTW5zr
+	 5kfXbkcLpHvrA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tlr6103QJz4wc9;
+	Thu, 29 Feb 2024 23:25:28 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/5] powerpc/64s: Use .machine power4 around dcbt
+Date: Thu, 29 Feb 2024 23:25:18 +1100
+Message-ID: <20240229122521.762431-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.43.2
+In-Reply-To: <20240229122521.762431-1-mpe@ellerman.id.au>
+References: <20240229122521.762431-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CZH98WKJY6NT.5D53XGR31X22@wheely>
-X-Migadu-Flow: FLOW_OUT
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,33 +58,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lvivier@redhat.com, linux-s390@vger.kernel.org, thuth@redhat.com, nrb@linux.ibm.com, frankja@linux.ibm.com, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, kvmarm@lists.linux.dev, pbonzini@redhat.com, imbrenda@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 29, 2024 at 01:49:58PM +1000, Nicholas Piggin wrote:
-> On Thu Feb 29, 2024 at 1:04 AM AEST, Andrew Jones wrote:
-> > Calculating the offset of an address is image specific, which is
-> > architecture specific. Until now, all architectures and architecture
-> > configurations which select CONFIG_RELOC were able to subtract
-> > _etext, but the EFI configuration of riscv cannot (it must subtract
-> > ImageBase). Make this function architecture specific, since the
-> > architecture's image layout already is.
-> 
-> arch_base_address()?
+There are multiple decodings for the "dcbt" mnemonic, so the assembler
+has to pick one.
 
-Yeah, I should have added that prefix.
+That requires passing -many to the assembler, which is not recommended.
 
-> 
-> How about a default implementation unlesss HAVE_ARCH_BASE_ADDRESS?
+Without -many the clang 14 / binutils 2.38 build fails with:
 
-We have a default implementation for !CONFIG_RELOC, but if an arch
-selects RELOC it must have an implementation of base_address(), so
-I wouldn't introduce a HAVE_ARCH_BASE_ADDRESS type of config since
-it would just always be selected when RELOC is selected. It occurred
-to me after posting that I probably should have just made the current
-base_address() implementation weak and then only introduced the new
-riscv one. I'll do that for v2.
+  arch/powerpc/kernel/exceptions-64s.S:2976: Error: junk at end of line: `0b01010'
+  clang: error: assembler command failed with exit code 1 (use -v to see invocation)
 
-Thanks,
-drew
+Fix it by adding .machine directives around the use of dcbt to specify
+which encoding is desired.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/ppc_asm.h | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 78c7548eac1e..1d1018c1e482 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -508,11 +508,16 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
+  */
+ #define DCBT_BOOK3S_STOP_ALL_STREAM_IDS(scratch)	\
+        lis     scratch,0x60000000@h;			\
+-       dcbt    0,scratch,0b01010
++       .machine push;					\
++       .machine power4;					\
++       dcbt    0,scratch,0b01010;			\
++       .machine pop;
+ 
+ #define DCBT_SETUP_STREAMS(from, from_parms, to, to_parms, scratch)	\
+ 	lis	scratch,0x8000;	/* GO=1 */				\
+ 	clrldi	scratch,scratch,32;					\
++	.machine push;							\
++	.machine power4;						\
+ 	/* setup read stream 0 */					\
+ 	dcbt	0,from,0b01000;		/* addr from */			\
+ 	dcbt	0,from_parms,0b01010;	/* length and depth from */	\
+@@ -520,7 +525,8 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
+ 	dcbtst	0,to,0b01000;		/* addr to */			\
+ 	dcbtst	0,to_parms,0b01010;	/* length and depth to */	\
+ 	eieio;								\
+-	dcbt	0,scratch,0b01010;	/* all streams GO */
++	dcbt	0,scratch,0b01010;	/* all streams GO */		\
++	.machine pop;
+ 
+ /*
+  * toreal/fromreal/tophys/tovirt macros. 32-bit BookE makes them
+-- 
+2.43.2
+
