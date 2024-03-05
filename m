@@ -4,52 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 854B7C54E41
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2024 10:58:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 860F5C54798
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2024 11:03:20 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=HJFmxo8a;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=opIecpBf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TpsxQ1Gsfz3dRl
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2024 21:58:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tpt2v1K3lz3dSr
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2024 22:03:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=HJFmxo8a;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=opIecpBf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.100; helo=out30-100.freemail.mail.aliyun.com; envelope-from=yaoma@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-100.freemail.mail.aliyun.com (out30-100.freemail.mail.aliyun.com [115.124.30.100])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.201; helo=relay8-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [217.70.183.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TpswW4TfBz3dCH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2024 21:57:45 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1709636260; h=Message-ID:Date:MIME-Version:From:Subject:To:Content-Type;
-	bh=j65dJlefD3YD0cqeyDWt8oxBp32fVKAN6EtBWBvh2Tg=;
-	b=HJFmxo8ajD2YrYlW39sSkREIv7ir5cCgng7pRmCqT4kdxUdd3HMe2H5TsaN8S4K7HBup+jjYiSQc3bBbGfCTV/Pd17WW2Bz/xtS82X64mrIaORABGIfKdUFoMk1oNMzv17ZUB40zFZ3aAx/VWQ1fsogtxtW7xbAE5x55CwO6u4c=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R131e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046049;MF=yaoma@linux.alibaba.com;NM=1;PH=DS;RN=16;SR=0;TI=SMTPD_---0W1tyYEr_1709636255;
-Received: from 30.178.67.161(mailfrom:yaoma@linux.alibaba.com fp:SMTPD_---0W1tyYEr_1709636255)
-          by smtp.aliyun-inc.com;
-          Tue, 05 Mar 2024 18:57:37 +0800
-Message-ID: <28a24e4b-c322-4631-ad6d-7259ca3d084d@linux.alibaba.com>
-Date: Tue, 5 Mar 2024 18:57:34 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tpt245CBkz3d2x
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2024 22:02:33 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id B66261BF20B;
+	Tue,  5 Mar 2024 11:02:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1709636549;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=4LVRqDAKoWY5kgiwdLKWwQAoyIirpSfzsC5mBFQI3NA=;
+	b=opIecpBfJERWkETn/8djWi1vWsAznSKrHO2kz1tEPMGpi6juVNQu5EPhw3hKFu1TO6J32R
+	cr4c34e6d+Sbt+TpNfcTqUoifskL0+s+rCzthMikNHZEDZhzatmvo+sVjwGOXvFA/5sPbo
+	FoO461gz24lw+iKiOhkzELnP+95cNj97BgSxT1vQAhq+epdhbg48O0J41csnR4SzUGnprU
+	MeNIjQtQbVXE5OixZSIUd/2hLFZ7X6GXe14Uke8EXhiyykBYCllQ1ygLsR+tv+gcaXf+VP
+	4fwstIjNVDIvwhfbUXKo7jcKEWwZa7owmhCDTXMquoAUqPWHeLZBe5wq2K0o9w==
+Date: Tue, 5 Mar 2024 12:02:26 +0100
+From: Herve Codina <herve.codina@bootlin.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v5 0/5] Add support for QMC HDLC
+Message-ID: <20240305120226.791bfe9a@bootlin.com>
+In-Reply-To: <ZeChdAsAhrC8a75t@smile.fi.intel.com>
+References: <20240229141554.836867-1-herve.codina@bootlin.com>
+	<ZeChdAsAhrC8a75t@smile.fi.intel.com>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.2.0 (GTK 3.24.41; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Bitao Hu <yaoma@linux.alibaba.com>
-Subject: Re: [PATCHv11 2/4] genirq: Provide a snapshot mechanism for interrupt
- statistics
-To: Thomas Gleixner <tglx@linutronix.de>,
- Doug Anderson <dianders@chromium.org>
-References: <20240228072216.95130-1-yaoma@linux.alibaba.com>
- <20240228072216.95130-3-yaoma@linux.alibaba.com>
- <CAD=FV=U1b+8atmju_w4eRmVKmSqjj6WCsy5EawYqj31fQ1kvrw@mail.gmail.com>
- <87plwdwycx.ffs@tglx>
- <3a89fafb-f62e-472f-b40b-8bf97954e9e3@linux.alibaba.com>
- <87wmqiulaw.ffs@tglx>
-Content-Language: en-US
-In-Reply-To: <87wmqiulaw.ffs@tglx>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,72 +60,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: pmladek@suse.com, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, jan.kiszka@siemens.com, deller@gmx.de, liusong@linux.alibaba.com, npiggin@gmail.com, linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com, yaoma@linux.alibaba.com, kernelfans@gmail.com, akpm@linux-foundation.org, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, Yury Norov <yury.norov@gmail.com>, netdev@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Mark Brown <broonie@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Hi Andy,
 
-On 2024/3/4 22:24, Thomas Gleixner wrote:
-> The above is not even configurable by the user. It's only selectable by
-> some other config option.
+On Thu, 29 Feb 2024 17:23:32 +0200
+Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+
+...
+
 > 
->> +# Snapshot for interrupt statistics
->> +config GENERIC_IRQ_STAT_SNAPSHOT
->> +       bool
->> +       help
->> +
->> +         Say Y here to enable the kernel to provide a snapshot mechanism
->> +         for interrupt statistics.
-> 
-> That makes is visible which is pointless because it's only relevant when
-> there is an actual user.
-I guess I may have misunderstood your intentions earlier. Initially, I
-thought you were suggesting that when "SOFTLOCKUP_DETECTOR_INTR_STORM"
-is not enabled, people should be able to choose
-"GENERIC_IRQ_STAT_SNAPSHOT" through menuconfig, so I attempted to make
-"GENERIC_IRQ_STAT_SNAPSHOT" visible to the user. However, after
-analyzing the previous emails, it seems that what you were actually
-proposing was to directly disable "GENERIC_IRQ_STAT_SNAPSHOT" when
-"SOFTLOCKUP_DETECTOR_INTR_STORM" is not enabled, as a way to save
-memory. If my current understanding is correct, then the code for that
-part would look something like the following.
+> I think it's a good series and next version will be final. The only question is
+> possible use of the returned values from bitmap_scatter()/bitmap_gather(), the
+> rest are minors.
 
-Does this align with your expectations?
+I replied about the reason why I didn't return any values from
+bitmap_{scatter,gather}() in that patch 4 discussion.
 
-Best Regards,
-	Bitao Hu
+Are you ok to keep them returning void in this series ?
 
-diff --git a/kernel/irq/Kconfig b/kernel/irq/Kconfig
-index 2531f3496ab6..a28e5ac5fc79 100644
---- a/kernel/irq/Kconfig
-+++ b/kernel/irq/Kconfig
-@@ -108,6 +108,10 @@ config GENERIC_IRQ_MATRIX_ALLOCATOR
-  config GENERIC_IRQ_RESERVATION_MODE
-         bool
+Best regards,
+Hervé
 
-+# Snapshot for interrupt statistics
-+config GENERIC_IRQ_STAT_SNAPSHOT
-+       bool
-+
-  # Support forced irq threading
-  config IRQ_FORCED_THREADING
-         bool
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 49f652674bd8..899b69fcb598 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1032,6 +1032,7 @@ config SOFTLOCKUP_DETECTOR
-  config SOFTLOCKUP_DETECTOR_INTR_STORM
-         bool "Detect Interrupt Storm in Soft Lockups"
-         depends on SOFTLOCKUP_DETECTOR && IRQ_TIME_ACCOUNTING
-+       select GENERIC_IRQ_STAT_SNAPSHOT
-         default y if NR_CPUS <= 128
-         help
-           Say Y here to enable the kernel to detect interrupt storm
-
-
-
-
-
-
+-- 
+Hervé Codina, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
