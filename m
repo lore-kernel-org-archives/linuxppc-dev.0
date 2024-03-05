@@ -4,110 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5F49C54E41
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2024 16:06:49 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=q4R8PY8q;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A32BC54798
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2024 16:28:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tq0n41NqSz3vgs
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 03:06:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=q4R8PY8q;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2417::600; helo=nam12-dm6-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on20600.outbound.protection.outlook.com [IPv6:2a01:111:f403:2417::600])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tq1GF5L9Kz3vnW
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 03:28:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tq0mD0p92z3cL0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2024 03:06:01 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=hzolugL34sovFc+A0BAvSF4osaSiZ1nH9D0eiT1HYx3ZA11URn+eH+YpL9KNPNruewSIhsy2cfhhmVowMIxtRPH45KhO2E0CsR1sPvaqf8ThSRgQHksgqv3mP+8o3cc+KZsB0Opjai9Gj+/YU8YOI/BlQNQX5sD411VBgSUuOeEKk3iT9/OKvStfNslK+U/YMZt11Xq9oAa5ivYoeYC82X87BKYC1TC2rP3VMDs41z6LmrYLaQmcR8w0TWnynLY9bqfeEippIfmWf3zAcGDwWyTUjSxrZz2THykcE+Dw9c+m3myHQ3AQmdypxzc/SwJa+VqJKqgismIAtsAwnQU7/Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=FSh4p77EeOclB4dYcWDQnx8vJQCiB+u0lnIPFcSJrU0=;
- b=XqA8Bq3qIf84LXlX+RR94BSkw5nf1Cuc7i+eJpXcl/Hw8erCO9NyZiZFK7O1JIlYO3G8nOkWzy57dtyhbkCeSilLKeJYKN/VqqidqrI418kYwKZSvcsPHjmjC/Za7olCE5bbZLXLPVZE6489BeECOKpU7luX1MNmZDoBkBOgLhr3PyfERvqwUB9/d/tAP2SzQu3SMn1SSRk41Z17v32/Sy7CM+W1czJcHD2vP6IRONM4K9EwPFdMKQ9Pt1D1D4PBJEcgWWC5PJwLxulq9EpZpPcttxLRrUtAiriLiU3dkcNnusFiAtfO3U/1oyOK/aJdV6PSccg1evay+3bkQhGLcw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FSh4p77EeOclB4dYcWDQnx8vJQCiB+u0lnIPFcSJrU0=;
- b=q4R8PY8qw7EXUZjN1C4XZeHhf0rDRDCIbNAdrlGPxw+1nE67bz+kA3ojID7gV/qCFnnkgwsKk0ftWWnsjk+DgdlbPIWkQGljG5xNkh6JbPtLpjMqKrRO2DH4c0bImRvGZG3Er5Ej4QNo2z/54JC7EiJAKqycSoFLe0w8Hi4O4LkvIuT96OpM+E7xKBfhWuU3n9Ihiq3w42sOVb00IpxlR5aUEjcKtKG3xObapdoTzV/3xfVtrcid706uBWARa/kyRmA71Xf+TV3cFYj60DsiGTOLuMNN16+YvJtalpIyAT+T4SvlDcS05XFfG7kDoRXaGwaRQCN4Win1WYQ09cS3Bw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DM6PR12MB3849.namprd12.prod.outlook.com (2603:10b6:5:1c7::26)
- by BL3PR12MB6450.namprd12.prod.outlook.com (2603:10b6:208:3b9::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7339.38; Tue, 5 Mar
- 2024 16:05:40 +0000
-Received: from DM6PR12MB3849.namprd12.prod.outlook.com
- ([fe80::c33c:18db:c570:33b3]) by DM6PR12MB3849.namprd12.prod.outlook.com
- ([fe80::c33c:18db:c570:33b3%5]) with mapi id 15.20.7339.035; Tue, 5 Mar 2024
- 16:05:40 +0000
-Date: Tue, 5 Mar 2024 12:05:38 -0400
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: peterx@redhat.com
-Subject: Re: [PATCH v3 04/10] mm/x86: Replace pgd_large() with pgd_leaf()
-Message-ID: <20240305160538.GA9179@nvidia.com>
-References: <20240305043750.93762-1-peterx@redhat.com>
- <20240305043750.93762-5-peterx@redhat.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240305043750.93762-5-peterx@redhat.com>
-X-ClientProxiedBy: BL0PR1501CA0017.namprd15.prod.outlook.com
- (2603:10b6:207:17::30) To DM6PR12MB3849.namprd12.prod.outlook.com
- (2603:10b6:5:1c7::26)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tq1FV3w62z3vhw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2024 03:27:58 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rhXdc-0003TG-PY; Tue, 05 Mar 2024 17:27:32 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rhXdb-004aQC-L8; Tue, 05 Mar 2024 17:27:31 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rhXdb-000BLb-1o;
+	Tue, 05 Mar 2024 17:27:31 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Corey Minyard <minyard@acm.org>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 2/6] ipmi: ipmi_powernv: Convert to platform remove callback returning void
+Date: Tue,  5 Mar 2024 17:26:59 +0100
+Message-ID: <22375be2dd616d8ccc2959586a08e49a5ad9e47b.1709655755.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1709655755.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1709655755.git.u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM6PR12MB3849:EE_|BL3PR12MB6450:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9b1c0641-f72a-4fa4-ab9a-08dc3d2e1a3a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	WD8KMZ9dMO/OQGre96F8ajjMC1iYklJfLG0Iw5dDkDOcwI/+jkaSbZNKYMl+i80iIv/2wyd/1qSQ5SK8+1V5oAEVTLyjH93ZFIS0990JuO7aYvMaueqbqhUFwwRtPYyN6eVX6mcKHoKybrC60zDDEstFhlWXBKz94MOLgRQABTmYz/XX1y/Dcr2/4IPlyPgU3eYnnscWmifqx84wNFLiBiHi9GTKmE+MYp3juYWSEyYBMN6jBc6zLMzhgnCwUAfU6BLSSEUcPXwpxwEX5ZHV2Tt7Bk9Gx6PfX1x+1gVF4hLP7/3i36Kka1pZeuovjuBr3ccjBcpWpJZc7GXjsdmd0LArlb5zVNuEMMCvKFokz4ztpsYuLa+OBZBsFqO/HLpPpcSuPyeMjnXX6S4MDbrEkqLNmuNaASOIWIgAS2Ni3oLnn/DgLPgOHDojbCNH14M+h2FzplnrbUAd9Qiu6e6MlZiEE+/znrK2U0Y/8yuRwvjqW7OuBu55UzIDiGu/sPDcD3q3bOkvKRurcZb8TSOXJwysLoWAk58ysWvafJKF2W6rJOa5ru0IHbC8ydHIfWG64K6D71wuVJ0bhqwnAJ67xrBQLp01J6CmAzzGgf9YDg5IYTdAu6nq3mhJNbOKVWmJArWOVBZi/4FEecU3XmYr1ZTPA2jY0rSTL52FSgB0iLQ=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR12MB3849.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376005);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?xJzYa4VP3YCjNDFBq9I9xH/oBIV84c+F/+rv7STWFM4vzslzNZiqKE6lPKIv?=
- =?us-ascii?Q?pSMvAuDJMrzSzL2DwbYNyL/VbL7aSKBCgQ+8Om+GsCJJsz4SBLUU0X0kV5VO?=
- =?us-ascii?Q?cN3d+1nsmfvja7aaCgtYd8utKfaGvvW31g2PY04wUQdnaTlXEZ136bOoHNJ/?=
- =?us-ascii?Q?rXxPkRDp3pmhLzxYi+VlsyAMUBqSXGBUBAS78v4ZCv39Ja8uLmE9pOCh/bxW?=
- =?us-ascii?Q?K29AOWQ0DQy0RkJ9Nacnl3E7n/g05QMlc6vKDZM/kJMCWmgKVzvG3rZEPWAD?=
- =?us-ascii?Q?LTngsO+qHehqf4zWmp2zf4rF6BAFLAj5aBUooVjDqQEmPS93L9l60sY4TTPN?=
- =?us-ascii?Q?wNbgQRSefgDymHjws2Dkr0sedj/Fj8KCJsvyCDloL8vGkhM8x7lo2GvJB7hH?=
- =?us-ascii?Q?OazlW7Z7oNgYBm/PDUsqdPnAsWDJ9LWhGSg5boPzwEALWOOgK9cd3fV4D9qd?=
- =?us-ascii?Q?71mjy6KSoL0K3izQK0CpLWBhakCqvv7GBrAwD9cB9hQMVHoW1ytaMPO7Ux1k?=
- =?us-ascii?Q?8teZF+Y928eWj4N7QqQ8VL6gmrPJrFQTR1RTfmONsuQS11t1BAgiQ1tfQ5DJ?=
- =?us-ascii?Q?XOagkO0q2jRnwaCY+UCBJvPB3v63PvRBUEwNha5/zjULCxiqKgxbqf0kpabI?=
- =?us-ascii?Q?m3YLr2kwVMIn/yxJtytNVyg2bW6kCWWgI74ZCVpvRgCY/CwU4vC/ajaOVgE1?=
- =?us-ascii?Q?T2PqK0G4/ZiQX6sjGamkPNfEc8IsuYN8q4BmSycutkOE0VT1sOsKF/PUiqXh?=
- =?us-ascii?Q?gNALwDP9LIXs6BuKXTnz3ef20jEld2U3+dlx9jedB7hZmiLV9D9zmu2uCyBy?=
- =?us-ascii?Q?wIWF8FvDJMh4xC6KeqsMrTPYVykxTAmaIOuSA3Puy1za6lDqnk3euNwkOaWm?=
- =?us-ascii?Q?2/EhOl7edeH2pMQAXwX7En2qWq1XtuMjqYl8o5S83RctHDz7Gy396fqFargw?=
- =?us-ascii?Q?eByf1PPIxnz6TFz37mRTSUfAL2B99Vk6t/6oK3IwuiKka/kVyFKghF3X9Ho4?=
- =?us-ascii?Q?tUOpWim63HWwj4TfIwJkMESSBjuWoFfLA07pIYBu1y6yjqY+hkyV9PylpTQR?=
- =?us-ascii?Q?k0F8xQo0ITT3A/QFnsapMLNIZnMI2YgYYhovX07fnpflLVbzZjLAKUg4N3wT?=
- =?us-ascii?Q?bO6MuuAFO5fbRkK1tAIzaCfLXHlffC9K29nBdz0YjimcPlu+rKsAwrdVqSst?=
- =?us-ascii?Q?SJS2ujYDqpuZ+gkuBCZhrJsKOpUg8doOjKyuiUfUf61VCh22gPzcoZC/unf4?=
- =?us-ascii?Q?NufjD+HW8/k2b6GPTFpYk8jy4e4Tq0ukJj6ESUZx+cPYPVoPV6OBTDCJL0r6?=
- =?us-ascii?Q?1tQA+sovnFsHl5bqh3xaxeOopQ/0RWxkTy9SPtIycvFlSn5XB09cPbArjHxj?=
- =?us-ascii?Q?GTP+PmbbfhGebNwQTnZxYwLLIB44HHg2XNyJ8gY9+75p+3f2P4+cfFBtStpm?=
- =?us-ascii?Q?2HmyndeGghEcSYTqX8PEVWM7bbhmdfPyLuO9w9aEOusD2JrM/nl9lVjUsMIq?=
- =?us-ascii?Q?N0ktPy8gfiPSZ1gTycFDa1PNxUyFbg5Dm1XGe8LoC9SM0+13LzE/scg32MMb?=
- =?us-ascii?Q?OjlcbD5rkAF8gxoFhgbie3WD++84t555wRd67qW+?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9b1c0641-f72a-4fa4-ab9a-08dc3d2e1a3a
-X-MS-Exchange-CrossTenant-AuthSource: DM6PR12MB3849.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Mar 2024 16:05:39.9549
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: zR9QSCaL967YGpMMAGxpMr/YckHLdr9ipPzcDCU9SQ+Fl5T3AoQOk/jI4o4XGACF
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL3PR12MB6450
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1784; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=c+JLhSDxkhY7w+LNSmgp+zHARDE2cqnx9VEPDNYMgQ4=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBl50fUAnYGsrZ2HJWCgt9xxz9Xjr2GCv8q5rfPC ZxtNRO+SeKJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZedH1AAKCRCPgPtYfRL+ Tl6/CACp8/Fir0X126Y/o6U8/KCvw0LNLwO8QbNSR4Hl7f47vzPBLyqYoJ/hL7GDEuzt+Td8WDY CpG7WOamLVP44W8G1FxDZaAXkoxyjcCD04HJAkPbn2czr83r/OScSgSdnkkpA+Ymwt4dzc9nnN4 DKbwu9h7sKrfCoG7jgCEjayRG2oOIYL/XA6L2Bwi5O6YWYAqHF5A40Oq0qelcJzqOEI54jvW7zj li92X29CVA15C14UEoBOJ212c2VokyfkvIR56sesSnf+lNP4yLTdhcHZdVTSCOOywdEJQgu13L0 ZEEOqzF++Vg08B3f5jgG9veGSHocezL2VIlLGApIevIw6YOG
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,27 +59,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Muchun Song <muchun.song@linux.dev>, Yang Shi <shy828301@gmail.com>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, "Kirill A . Shutemov" <kirill@shutemov.name>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, kernel@pengutronix.de, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, openipmi-developer@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 05, 2024 at 12:37:44PM +0800, peterx@redhat.com wrote:
-> From: Peter Xu <peterx@redhat.com>
-> 
-> pgd_leaf() is a global API while pgd_large() is not.  Always use
-> the global pgd_leaf(), then drop pgd_large().
-> 
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: x86@kernel.org
-> Signed-off-by: Peter Xu <peterx@redhat.com>
-> ---
->  arch/x86/include/asm/pgtable.h | 4 ++--
->  arch/x86/mm/pti.c              | 2 +-
->  2 files changed, 3 insertions(+), 3 deletions(-)
+The .remove() callback for a platform driver returns an int which makes
+many driver authors wrongly assume it's possible to do error handling by
+returning an error code. However the value returned is ignored (apart
+from emitting a warning) and this typically results in resource leaks.
 
-Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+To improve here there is a quest to make the remove callback return
+void. In the first step of this quest all drivers are converted to
+.remove_new(), which already returns void. Eventually after all drivers
+are converted, .remove_new() will be renamed to .remove().
 
-Jason
+Trivially convert this driver from always returning zero in the remove
+callback to the void returning variant.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/char/ipmi/ipmi_powernv.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
+index da22a8cbe68e..c59a86eb58c7 100644
+--- a/drivers/char/ipmi/ipmi_powernv.c
++++ b/drivers/char/ipmi/ipmi_powernv.c
+@@ -281,15 +281,13 @@ static int ipmi_powernv_probe(struct platform_device *pdev)
+ 	return rc;
+ }
+ 
+-static int ipmi_powernv_remove(struct platform_device *pdev)
++static void ipmi_powernv_remove(struct platform_device *pdev)
+ {
+ 	struct ipmi_smi_powernv *smi = dev_get_drvdata(&pdev->dev);
+ 
+ 	ipmi_unregister_smi(smi->intf);
+ 	free_irq(smi->irq, smi);
+ 	irq_dispose_mapping(smi->irq);
+-
+-	return 0;
+ }
+ 
+ static const struct of_device_id ipmi_powernv_match[] = {
+@@ -304,7 +302,7 @@ static struct platform_driver powernv_ipmi_driver = {
+ 		.of_match_table	= ipmi_powernv_match,
+ 	},
+ 	.probe	= ipmi_powernv_probe,
+-	.remove	= ipmi_powernv_remove,
++	.remove_new = ipmi_powernv_remove,
+ };
+ 
+ 
+-- 
+2.43.0
+
