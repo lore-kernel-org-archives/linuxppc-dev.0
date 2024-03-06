@@ -4,52 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D4EEC5475B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 14:17:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE0D1C54E41
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 15:44:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MhR8u+F9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=OOcZi+Pv;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TqZJX0crrz3vmM
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 01:17:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TqcDb3xq0z3vbK
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 02:44:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MhR8u+F9;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=OOcZi+Pv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::222; helo=relay2-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::222])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqZGL2d24z3d2W
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 01:15:38 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 67B4D6183C;
-	Wed,  6 Mar 2024 14:15:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21296C433A6;
-	Wed,  6 Mar 2024 14:15:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1709734536;
-	bh=5yRjHZPSiRMt+qPwFJbIcOxytchYG541o8XRiohSVwg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=MhR8u+F9cPGt/cabDyues/0eLxDpgk2wbTU6NdJVh9X7OwuxEzjelzAX2szd+fMhR
-	 yHFUtYXMJkOkDzfYJCQ3vdLjz+7hYYQG/eZx3x//isHDfKTnlVmKyorEJu3kRWy5yq
-	 fUG6of4PVYZ+xyjNLfsXMgGi+QCTaGH1vhFVN/lBwINVBo3/XSZ5BjiUj8pTzl+cdX
-	 ddH/srgMmOmOrP5mP9uGHOC6GZS0jwX+TphFQCZS7Oya2B+byhz5ZF01otV6//vlYd
-	 P9o9+JTVswagqpms4Ju25iCWhXNoPP0JPa1uBfege6qjA6xqDQQMaluEC60sh0SnGN
-	 fbxMMZCiB16aA==
-From: Arnd Bergmann <arnd@kernel.org>
-To: Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Kees Cook <keescook@chromium.org>
-Subject: [PATCH v2 2/3] arch: simplify architecture specific page size configuration
-Date: Wed,  6 Mar 2024 15:14:52 +0100
-Message-Id: <20240306141453.3900574-3-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240306141453.3900574-1-arnd@kernel.org>
-References: <20240306141453.3900574-1-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqcCk6YyNz3cGW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 02:43:26 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id B42E140004;
+	Wed,  6 Mar 2024 15:43:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1709739795;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=MYq2Ln/cYGg9mHiPcZf1m5ozgzbPmfufP7t0HGayXEU=;
+	b=OOcZi+PvRqJOXRQte4KHieNLJdGYo88Y4btcN/OcBc+Ytvgx188h6khSW53VMo+IVL1Tay
+	u+2U/0RkJwAtqKIPvBzY4bFONCgfSoJY4s+YpVRKnQGyrrVzRn2HbHNQZFI4T/3OkMddib
+	tJ6TqyXn1Jub3h2Cpb6If3dUDcnSMk7sQB2B73LfCNfpOWoeDJEK+MbWdzE5nLKuMfAiQI
+	qullN1y/jyU7TAOMbqMYUb8lb9hl70HdFalssK2GSF0o2yUC24gcAQEhvZwK40Mr8BpjZ4
+	kROknzsitHe6IaaPQt0kJNGoXx+itPF2FEtXJrgtUWpQJBF5q1TDhHIPxcTTIA==
+Date: Wed, 6 Mar 2024 16:43:11 +0100
+From: Herve Codina <herve.codina@bootlin.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Yury Norov
+ <yury.norov@gmail.com>
+Subject: Re: [PATCH v6 4/5] net: wan: fsl_qmc_hdlc: Add runtime timeslots
+ changes support
+Message-ID: <20240306164311.735ded83@bootlin.com>
+In-Reply-To: <Zehy6K0Sj-cqcxZE@smile.fi.intel.com>
+References: <20240306080726.167338-1-herve.codina@bootlin.com>
+	<20240306080726.167338-5-herve.codina@bootlin.com>
+	<ZehqRMZwtazTf6P6@yury-ThinkPad>
+	<Zehy6K0Sj-cqcxZE@smile.fi.intel.com>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.2.0 (GTK 3.24.41; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,335 +64,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, loongarch@lists.linux.dev, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, Jan Kiszka <jan.kiszka@siemens.com>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-alpha@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Kieran Bingham <kbingham@kernel.org>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-arm-kernel@lists.
- infradead.org, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, netdev@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Mark Brown <broonie@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+Hi Andy, Yury,
 
-arc, arm64, parisc and powerpc all have their own Kconfig symbols
-in place of the common CONFIG_PAGE_SIZE_4KB symbols. Change these
-so the common symbols are the ones that are actually used, while
-leaving the arhcitecture specific ones as the user visible
-place for configuring it, to avoid breaking user configs.
+On Wed, 6 Mar 2024 15:43:04 +0200
+Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
 
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu> (powerpc32)
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: Helge Deller <deller@gmx.de> # parisc
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-No changes from v1
+> On Wed, Mar 06, 2024 at 05:06:12AM -0800, Yury Norov wrote:
+> > On Wed, Mar 06, 2024 at 09:07:20AM +0100, Herve Codina wrote:  
+> 
+> ...
+> 
+> > > +	DECLARE_BITMAP(ts_mask_avail, 64);
+> > > +	DECLARE_BITMAP(ts_mask, 64);
+> > > +	DECLARE_BITMAP(map, 64);  
+> 
+> 
+> > > +	bitmap_from_u64(ts_mask_avail, ts_info->rx_ts_mask_avail);
+> > > +	bitmap_from_u64(map, slot_map);  
+> 
+> > We've got a BITMAP_FROM_U64() for this:
+> > 
+> > 	DECLARE_BITMAP(ts_mask_avail, 64) = { BITMAP_FROM_U64(ts_info->rx_ts_mask_avail) };
+> > 	DECLARE_BITMAP(map, 64) = { BITMAP_FROM_U64(slot_map) };  
+> 
+> This looks ugly. Can we rather provide a macro that does this under the hood?
+> 
+> Roughly:
+> 
+> #define DEFINE_BITMAP_64(name, src)				\
+> 	DECLARE_BITMAP(name, 64) = { BITMAP_FROM_U64(src) }
+> 
 
- arch/arc/Kconfig                  |  3 +++
- arch/arc/include/uapi/asm/page.h  |  6 ++----
- arch/arm64/Kconfig                | 29 +++++++++++++----------------
- arch/arm64/include/asm/page-def.h |  2 +-
- arch/parisc/Kconfig               |  3 +++
- arch/parisc/include/asm/page.h    | 10 +---------
- arch/powerpc/Kconfig              | 31 ++++++-------------------------
- arch/powerpc/include/asm/page.h   |  2 +-
- scripts/gdb/linux/constants.py.in |  2 +-
- scripts/gdb/linux/mm.py           |  2 +-
- 10 files changed, 32 insertions(+), 58 deletions(-)
+Well, the construction I used:
+	DECLARE_BITMAP(foo, 64);
+	...
+	bitmap_from_u64(foo, init_value);
+	...
+can be found in several places in the kernel.
 
-diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
-index 1b0483c51cc1..4092bec198be 100644
---- a/arch/arc/Kconfig
-+++ b/arch/arc/Kconfig
-@@ -284,14 +284,17 @@ choice
- 
- config ARC_PAGE_SIZE_8K
- 	bool "8KB"
-+	select HAVE_PAGE_SIZE_8KB
- 	help
- 	  Choose between 8k vs 16k
- 
- config ARC_PAGE_SIZE_16K
-+	select HAVE_PAGE_SIZE_16KB
- 	bool "16KB"
- 
- config ARC_PAGE_SIZE_4K
- 	bool "4KB"
-+	select HAVE_PAGE_SIZE_4KB
- 	depends on ARC_MMU_V3 || ARC_MMU_V4
- 
- endchoice
-diff --git a/arch/arc/include/uapi/asm/page.h b/arch/arc/include/uapi/asm/page.h
-index 2a4ad619abfb..7fd9e741b527 100644
---- a/arch/arc/include/uapi/asm/page.h
-+++ b/arch/arc/include/uapi/asm/page.h
-@@ -13,10 +13,8 @@
- #include <linux/const.h>
- 
- /* PAGE_SHIFT determines the page size */
--#if defined(CONFIG_ARC_PAGE_SIZE_16K)
--#define PAGE_SHIFT 14
--#elif defined(CONFIG_ARC_PAGE_SIZE_4K)
--#define PAGE_SHIFT 12
-+#ifdef __KERNEL__
-+#define PAGE_SHIFT CONFIG_PAGE_SHIFT
- #else
- /*
-  * Default 8k
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index aa7c1d435139..29290b8cb36d 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -277,27 +277,21 @@ config 64BIT
- config MMU
- 	def_bool y
- 
--config ARM64_PAGE_SHIFT
--	int
--	default 16 if ARM64_64K_PAGES
--	default 14 if ARM64_16K_PAGES
--	default 12
--
- config ARM64_CONT_PTE_SHIFT
- 	int
--	default 5 if ARM64_64K_PAGES
--	default 7 if ARM64_16K_PAGES
-+	default 5 if PAGE_SIZE_64KB
-+	default 7 if PAGE_SIZE_16KB
- 	default 4
- 
- config ARM64_CONT_PMD_SHIFT
- 	int
--	default 5 if ARM64_64K_PAGES
--	default 5 if ARM64_16K_PAGES
-+	default 5 if PAGE_SIZE_64KB
-+	default 5 if PAGE_SIZE_16KB
- 	default 4
- 
- config ARCH_MMAP_RND_BITS_MIN
--	default 14 if ARM64_64K_PAGES
--	default 16 if ARM64_16K_PAGES
-+	default 14 if PAGE_SIZE_64KB
-+	default 16 if PAGE_SIZE_16KB
- 	default 18
- 
- # max bits determined by the following formula:
-@@ -1259,11 +1253,13 @@ choice
- 
- config ARM64_4K_PAGES
- 	bool "4KB"
-+	select HAVE_PAGE_SIZE_4KB
- 	help
- 	  This feature enables 4KB pages support.
- 
- config ARM64_16K_PAGES
- 	bool "16KB"
-+	select HAVE_PAGE_SIZE_16KB
- 	help
- 	  The system will use 16KB pages support. AArch32 emulation
- 	  requires applications compiled with 16K (or a multiple of 16K)
-@@ -1271,6 +1267,7 @@ config ARM64_16K_PAGES
- 
- config ARM64_64K_PAGES
- 	bool "64KB"
-+	select HAVE_PAGE_SIZE_64KB
- 	help
- 	  This feature enables 64KB pages support (4KB by default)
- 	  allowing only two levels of page tables and faster TLB
-@@ -1291,19 +1288,19 @@ choice
- 
- config ARM64_VA_BITS_36
- 	bool "36-bit" if EXPERT
--	depends on ARM64_16K_PAGES
-+	depends on PAGE_SIZE_16KB
- 
- config ARM64_VA_BITS_39
- 	bool "39-bit"
--	depends on ARM64_4K_PAGES
-+	depends on PAGE_SIZE_4KB
- 
- config ARM64_VA_BITS_42
- 	bool "42-bit"
--	depends on ARM64_64K_PAGES
-+	depends on PAGE_SIZE_64KB
- 
- config ARM64_VA_BITS_47
- 	bool "47-bit"
--	depends on ARM64_16K_PAGES
-+	depends on PAGE_SIZE_16KB
- 
- config ARM64_VA_BITS_48
- 	bool "48-bit"
-diff --git a/arch/arm64/include/asm/page-def.h b/arch/arm64/include/asm/page-def.h
-index 2403f7b4cdbf..792e9fe881dc 100644
---- a/arch/arm64/include/asm/page-def.h
-+++ b/arch/arm64/include/asm/page-def.h
-@@ -11,7 +11,7 @@
- #include <linux/const.h>
- 
- /* PAGE_SHIFT determines the page size */
--#define PAGE_SHIFT		CONFIG_ARM64_PAGE_SHIFT
-+#define PAGE_SHIFT		CONFIG_PAGE_SHIFT
- #define PAGE_SIZE		(_AC(1, UL) << PAGE_SHIFT)
- #define PAGE_MASK		(~(PAGE_SIZE-1))
- 
-diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
-index 5c845e8d59d9..b180e684fa0d 100644
---- a/arch/parisc/Kconfig
-+++ b/arch/parisc/Kconfig
-@@ -273,6 +273,7 @@ choice
- 
- config PARISC_PAGE_SIZE_4KB
- 	bool "4KB"
-+	select HAVE_PAGE_SIZE_4KB
- 	help
- 	  This lets you select the page size of the kernel.  For best
- 	  performance, a page size of 16KB is recommended.  For best
-@@ -288,10 +289,12 @@ config PARISC_PAGE_SIZE_4KB
- 
- config PARISC_PAGE_SIZE_16KB
- 	bool "16KB"
-+	select HAVE_PAGE_SIZE_16KB
- 	depends on PA8X00 && BROKEN && !KFENCE
- 
- config PARISC_PAGE_SIZE_64KB
- 	bool "64KB"
-+	select HAVE_PAGE_SIZE_64KB
- 	depends on PA8X00 && BROKEN && !KFENCE
- 
- endchoice
-diff --git a/arch/parisc/include/asm/page.h b/arch/parisc/include/asm/page.h
-index 667e703c0e8f..ad4e15d12ed1 100644
---- a/arch/parisc/include/asm/page.h
-+++ b/arch/parisc/include/asm/page.h
-@@ -4,15 +4,7 @@
- 
- #include <linux/const.h>
- 
--#if defined(CONFIG_PARISC_PAGE_SIZE_4KB)
--# define PAGE_SHIFT	12
--#elif defined(CONFIG_PARISC_PAGE_SIZE_16KB)
--# define PAGE_SHIFT	14
--#elif defined(CONFIG_PARISC_PAGE_SIZE_64KB)
--# define PAGE_SHIFT	16
--#else
--# error "unknown default kernel page size"
--#endif
-+#define PAGE_SHIFT	CONFIG_PAGE_SHIFT
- #define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
- #define PAGE_MASK	(~(PAGE_SIZE-1))
- 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b9fc064d38d2..8fad4e5d7ad5 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -212,7 +212,7 @@ config PPC
- 	select HAVE_ARCH_HUGE_VMAP		if PPC_RADIX_MMU || PPC_8xx
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_JUMP_LABEL_RELATIVE
--	select HAVE_ARCH_KASAN			if PPC32 && PPC_PAGE_SHIFT <= 14
-+	select HAVE_ARCH_KASAN			if PPC32 && PAGE_SHIFT <= 14
- 	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU
- 	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64
- 	select HAVE_ARCH_KASAN_VMALLOC		if HAVE_ARCH_KASAN
-@@ -809,19 +809,23 @@ choice
- config PPC_4K_PAGES
- 	bool "4k page size"
- 	select HAVE_ARCH_SOFT_DIRTY if PPC_BOOK3S_64
-+	select HAVE_PAGE_SIZE_4KB
- 
- config PPC_16K_PAGES
- 	bool "16k page size"
- 	depends on 44x || PPC_8xx
-+	select HAVE_PAGE_SIZE_16KB
- 
- config PPC_64K_PAGES
- 	bool "64k page size"
- 	depends on 44x || PPC_BOOK3S_64
- 	select HAVE_ARCH_SOFT_DIRTY if PPC_BOOK3S_64
-+	select HAVE_PAGE_SIZE_64KB
- 
- config PPC_256K_PAGES
- 	bool "256k page size (Requires non-standard binutils settings)"
- 	depends on 44x && !PPC_47x
-+	select HAVE_PAGE_SIZE_256KB
- 	help
- 	  Make the page size 256k.
- 
-@@ -832,29 +836,6 @@ config PPC_256K_PAGES
- 
- endchoice
- 
--config PAGE_SIZE_4KB
--	def_bool y
--	depends on PPC_4K_PAGES
--
--config PAGE_SIZE_16KB
--	def_bool y
--	depends on PPC_16K_PAGES
--
--config PAGE_SIZE_64KB
--	def_bool y
--	depends on PPC_64K_PAGES
--
--config PAGE_SIZE_256KB
--	def_bool y
--	depends on PPC_256K_PAGES
--
--config PPC_PAGE_SHIFT
--	int
--	default 18 if PPC_256K_PAGES
--	default 16 if PPC_64K_PAGES
--	default 14 if PPC_16K_PAGES
--	default 12
--
- config THREAD_SHIFT
- 	int "Thread shift" if EXPERT
- 	range 13 15
-@@ -891,7 +872,7 @@ config DATA_SHIFT
- 	default 23 if (DEBUG_PAGEALLOC || KFENCE) && PPC_8xx && PIN_TLB_DATA
- 	default 19 if (DEBUG_PAGEALLOC || KFENCE) && PPC_8xx
- 	default 24 if STRICT_KERNEL_RWX && PPC_85xx
--	default PPC_PAGE_SHIFT
-+	default PAGE_SHIFT
- 	help
- 	  On Book3S 32 (603+), DBATs are used to map kernel text and rodata RO.
- 	  Smaller is the alignment, greater is the number of necessary DBATs.
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index e5fcc79b5bfb..e411e5a70ea3 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -21,7 +21,7 @@
-  * page size. When using 64K pages however, whether we are really supporting
-  * 64K pages in HW or not is irrelevant to those definitions.
-  */
--#define PAGE_SHIFT		CONFIG_PPC_PAGE_SHIFT
-+#define PAGE_SHIFT		CONFIG_PAGE_SHIFT
- #define PAGE_SIZE		(ASM_CONST(1) << PAGE_SHIFT)
- 
- #ifndef __ASSEMBLY__
-diff --git a/scripts/gdb/linux/constants.py.in b/scripts/gdb/linux/constants.py.in
-index e810e0c27ff1..10fadc238719 100644
---- a/scripts/gdb/linux/constants.py.in
-+++ b/scripts/gdb/linux/constants.py.in
-@@ -139,7 +139,7 @@ LX_CONFIG(CONFIG_ARM64_64K_PAGES)
- if IS_BUILTIN(CONFIG_ARM64):
-     LX_VALUE(CONFIG_ARM64_PA_BITS)
-     LX_VALUE(CONFIG_ARM64_VA_BITS)
--    LX_VALUE(CONFIG_ARM64_PAGE_SHIFT)
-+    LX_VALUE(CONFIG_PAGE_SHIFT)
-     LX_VALUE(CONFIG_ARCH_FORCE_MAX_ORDER)
- LX_CONFIG(CONFIG_SPARSEMEM)
- LX_CONFIG(CONFIG_SPARSEMEM_EXTREME)
-diff --git a/scripts/gdb/linux/mm.py b/scripts/gdb/linux/mm.py
-index ad5641dcb068..515730fd4c9d 100644
---- a/scripts/gdb/linux/mm.py
-+++ b/scripts/gdb/linux/mm.py
-@@ -41,7 +41,7 @@ class aarch64_page_ops():
-             self.SECTION_SIZE_BITS = 27
-         self.MAX_PHYSMEM_BITS = constants.LX_CONFIG_ARM64_VA_BITS
- 
--        self.PAGE_SHIFT = constants.LX_CONFIG_ARM64_PAGE_SHIFT
-+        self.PAGE_SHIFT = constants.LX_CONFIG_PAGE_SHIFT
-         self.PAGE_SIZE = 1 << self.PAGE_SHIFT
-         self.PAGE_MASK = (~(self.PAGE_SIZE - 1)) & ((1 << 64) - 1)
- 
--- 
-2.39.2
+Having the DEFINE_BITMAP_64() macro can be a way to remove this
+construction but I am not sure that this should be done in this
+series.
 
+IMHO, a specific series introducing the macro and updating pieces of
+code in the kernel everywhere it is needed to replace this construction
+would make much more sense.
+
+
+Best regards,
+Hervé
