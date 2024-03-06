@@ -4,56 +4,107 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8530C54E41
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 08:12:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 070ECC5475B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 08:26:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=RiUUfRMa;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kLLySfvO;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TqQBn3JLDz3vrH
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 19:12:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TqQWv4hZsz3vfS
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 19:26:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=RiUUfRMa;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kLLySfvO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::227; helo=relay7-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::227])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqQW346dNz307y
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2024 19:26:07 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4TqQVx5VXMz4wc4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2024 19:26:01 +1100 (AEDT)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4TqQVx56spz4wcK; Wed,  6 Mar 2024 19:26:01 +1100 (AEDT)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kLLySfvO;
+	dkim-atps=neutral
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shirisha@linux.ibm.com; receiver=ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqQ65336jz3bZ3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2024 19:07:57 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id B567220018;
-	Wed,  6 Mar 2024 08:07:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1709712470;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=JlJArA5cQiNgjEdKQ2Kr090MdFvf677PpXjac5t1UGw=;
-	b=RiUUfRMaAFXlPZcpYDARCwyWT2BhbbVbqY6pmcELmQRjXFiEkVqGaexVzw9MOotKKIsSYh
-	vTYgSfDNw2Ury7r6u4iQMmMd1/0zAC8Z01asLtX63RzLGvoRUVkgM0hFfL2VhomgiD/9gz
-	0xKj3S8+u7IfPo0P5UXemt/XVyo4rQ0Cm9COpgtVJZMG46EXN6zygCuEX11eB2YFA4sWaj
-	k8xkL2oBRb42Wy3x92qwYWGRL4oj/duppbGBvm0uba9C0vVaF2ZNcEEf26mfkbEC6rdRtH
-	ce82cw8HJ+4UfByNDlB0K0ZFaus3BOZYTcAR9x66IB1ZDV8qUuPrxEbPBgbI5Q==
-From: Herve Codina <herve.codina@bootlin.com>
-To: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Herve Codina <herve.codina@bootlin.com>,
-	Yury Norov <yury.norov@gmail.com>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Subject: [PATCH v6 4/5] net: wan: fsl_qmc_hdlc: Add runtime timeslots changes support
-Date: Wed,  6 Mar 2024 09:07:20 +0100
-Message-ID: <20240306080726.167338-5-herve.codina@bootlin.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240306080726.167338-1-herve.codina@bootlin.com>
-References: <20240306080726.167338-1-herve.codina@bootlin.com>
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4TqQVw6tG4z4wc4
+	for <linuxppc-dev@ozlabs.org>; Wed,  6 Mar 2024 19:25:59 +1100 (AEDT)
+Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 4268GGYK004155
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Mar 2024 08:25:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=tHJlrbnWmqUCOg/fNVbrASGLydtjMzn6idvbNE0+aRg=;
+ b=kLLySfvOyz5gZtCgn+tR/s/sBD4F/RbS6Z7s1A4MahfPMFgAM8/x+G+833ybt5WKERBk
+ 1Mh44SSxkVCd7/KalpHlb96hOmANcXadDGqMz9WRiFvlBsa3emxqHs+r92hdpYxW+kv1
+ f5ASPJhf3OTr4sNitigF/CftWpBp1LhKRq4kowebBE+J6s7K44rnwhhSo8W5ZZljlHmJ
+ HdJnFuSymBgCzjpd4OFyCWxpHcM76fkRvmn16cgvLtxtsm3iCpF6inCbRO4HsCAOwlx5
+ R7m7bVr73J9IUcH4I0tRuKwBoJ3RI7fpyuGbjQkvAKw4mE+XtV5sOeAKgx8UBjgJyAjG bw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wpmb9h9td-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@ozlabs.org>; Wed, 06 Mar 2024 08:25:57 +0000
+Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42686CKP022358
+	for <linuxppc-dev@ozlabs.org>; Wed, 6 Mar 2024 08:25:57 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wpmb9h9re-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 06 Mar 2024 08:25:56 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 4267B81L026212;
+	Wed, 6 Mar 2024 08:25:55 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3wmfenwc73-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 06 Mar 2024 08:25:55 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4268Po3x26870366
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 6 Mar 2024 08:25:52 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2C0EF2004D;
+	Wed,  6 Mar 2024 08:25:50 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 069A120040;
+	Wed,  6 Mar 2024 08:25:49 +0000 (GMT)
+Received: from li-d12addcc-2792-11b2-a85c-bd8df30615ab.ibm.com (unknown [9.199.152.158])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  6 Mar 2024 08:25:48 +0000 (GMT)
+Message-ID: <413145ab75563b8b5cc7d78b17926009f0bdbdd0.camel@linux.ibm.com>
+Subject: Re: [PATCH v4] powerpc: Avoid nmi_enter/nmi_exit in real mode
+ interrupt.
+From: Shirisha ganta <shirisha@linux.ibm.com>
+To: Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        linuxppc-dev
+	 <linuxppc-dev@ozlabs.org>
+Date: Wed, 06 Mar 2024 13:55:48 +0530
+In-Reply-To: <20240214095146.1527369-1-mahesh@linux.ibm.com>
+References: <20240214095146.1527369-1-mahesh@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5 (3.28.5-22.el8) 
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: gUyFbd01XawHk6QDKYcpZ1YD1hYAGA04
+X-Proofpoint-GUID: 6_ypiY_j2buG5s-RhLGCj1Ukjj17o8HZ
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: herve.codina@bootlin.com
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-03-06_04,2024-03-05_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0 mlxscore=0
+ spamscore=0 phishscore=0 clxscore=1011 impostorscore=0 adultscore=0
+ priorityscore=1501 suspectscore=0 mlxlogscore=999 malwarescore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2403060066
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,218 +116,164 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Ganesh Goudar <ganeshgr@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-QMC channels support runtime timeslots changes but nothing is done at
-the QMC HDLC driver to handle these changes.
+On Wed, 2024-02-14 at 15:21 +0530, Mahesh Salgaonkar wrote:
+> nmi_enter()/nmi_exit() touches per cpu variables which can lead to
+> kernel
+> crash when invoked during real mode interrupt handling (e.g. early
+> HMI/MCE
+> interrupt handler) if percpu allocation comes from vmalloc area.
+> 
+> Early HMI/MCE handlers are called through
+> DEFINE_INTERRUPT_HANDLER_NMI()
+> wrapper which invokes nmi_enter/nmi_exit calls. We don't see any
+> issue when
+> percpu allocation is from the embedded first chunk. However with
+> CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK enabled there are chances where
+> percpu
+> allocation can come from the vmalloc area.
+> 
+> With kernel command line "percpu_alloc=page" we can force percpu
+> allocation
+> to come from vmalloc area and can see kernel crash in
+> machine_check_early:
+> 
+> [    1.215714] NIP [c000000000e49eb4] rcu_nmi_enter+0x24/0x110
+> [    1.215717] LR [c0000000000461a0] machine_check_early+0xf0/0x2c0
+> [    1.215719] --- interrupt: 200
+> [    1.215720] [c000000fffd73180] [0000000000000000] 0x0 (unreliable)
+> [    1.215722] [c000000fffd731b0] [0000000000000000] 0x0
+> [    1.215724] [c000000fffd73210] [c000000000008364]
+> machine_check_early_common+0x134/0x1f8
+> 
+> Fix this by avoiding use of nmi_enter()/nmi_exit() in real mode if
+> percpu
+> first chunk is not embedded.
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 
-Use existing IFACE ioctl in order to configure the timeslots to use.
+Thanks for the Patch.
+I have tested the patch and the fix works fine.
+selftests/powerpc/mce/inject-ra-err testcase is working as
+expected after enabling percpu_alloc=page with the patch applied.
 
-Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Acked-by: Jakub Kicinski <kuba@kernel.org>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/net/wan/fsl_qmc_hdlc.c | 151 ++++++++++++++++++++++++++++++++-
- 1 file changed, 150 insertions(+), 1 deletion(-)
+Output with Patch:
+# ./inject-ra-err 
+test: inject-ra-err
+tags: git_version:unknown
+success: inject-ra-err
+#
 
-diff --git a/drivers/net/wan/fsl_qmc_hdlc.c b/drivers/net/wan/fsl_qmc_hdlc.c
-index 90063a92209e..31c0f32474a3 100644
---- a/drivers/net/wan/fsl_qmc_hdlc.c
-+++ b/drivers/net/wan/fsl_qmc_hdlc.c
-@@ -10,6 +10,7 @@
- #include <linux/array_size.h>
- #include <linux/bug.h>
- #include <linux/cleanup.h>
-+#include <linux/bitmap.h>
- #include <linux/dma-mapping.h>
- #include <linux/device.h>
- #include <linux/err.h>
-@@ -39,6 +40,7 @@ struct qmc_hdlc {
- 	struct qmc_hdlc_desc tx_descs[8];
- 	unsigned int tx_out;
- 	struct qmc_hdlc_desc rx_descs[4];
-+	u32 slot_map;
- };
- 
- static struct qmc_hdlc *netdev_to_qmc_hdlc(struct net_device *netdev)
-@@ -203,6 +205,144 @@ static netdev_tx_t qmc_hdlc_xmit(struct sk_buff *skb, struct net_device *netdev)
- 	return NETDEV_TX_OK;
- }
- 
-+static int qmc_hdlc_xlate_slot_map(struct qmc_hdlc *qmc_hdlc,
-+				   u32 slot_map, struct qmc_chan_ts_info *ts_info)
-+{
-+	DECLARE_BITMAP(ts_mask_avail, 64);
-+	DECLARE_BITMAP(ts_mask, 64);
-+	DECLARE_BITMAP(map, 64);
-+
-+	/* Tx and Rx available masks must be identical */
-+	if (ts_info->rx_ts_mask_avail != ts_info->tx_ts_mask_avail) {
-+		dev_err(qmc_hdlc->dev, "tx and rx available timeslots mismatch (0x%llx, 0x%llx)\n",
-+			ts_info->rx_ts_mask_avail, ts_info->tx_ts_mask_avail);
-+		return -EINVAL;
-+	}
-+
-+	bitmap_from_u64(ts_mask_avail, ts_info->rx_ts_mask_avail);
-+	bitmap_from_u64(map, slot_map);
-+	bitmap_scatter(ts_mask, map, ts_mask_avail, 64);
-+
-+	if (bitmap_weight(ts_mask, 64) != bitmap_weight(map, 64)) {
-+		dev_err(qmc_hdlc->dev, "Cannot translate timeslots %64pb -> (%64pb, %64pb)\n",
-+			map, ts_mask_avail, ts_mask);
-+		return -EINVAL;
-+	}
-+
-+	bitmap_to_arr64(&ts_info->tx_ts_mask, ts_mask, 64);
-+	ts_info->rx_ts_mask = ts_info->tx_ts_mask;
-+	return 0;
-+}
-+
-+static int qmc_hdlc_xlate_ts_info(struct qmc_hdlc *qmc_hdlc,
-+				  const struct qmc_chan_ts_info *ts_info, u32 *slot_map)
-+{
-+	DECLARE_BITMAP(ts_mask_avail, 64);
-+	DECLARE_BITMAP(ts_mask, 64);
-+	DECLARE_BITMAP(map, 64);
-+	u32 array32[2];
-+
-+	/* Tx and Rx masks and available masks must be identical */
-+	if (ts_info->rx_ts_mask_avail != ts_info->tx_ts_mask_avail) {
-+		dev_err(qmc_hdlc->dev, "tx and rx available timeslots mismatch (0x%llx, 0x%llx)\n",
-+			ts_info->rx_ts_mask_avail, ts_info->tx_ts_mask_avail);
-+		return -EINVAL;
-+	}
-+	if (ts_info->rx_ts_mask != ts_info->tx_ts_mask) {
-+		dev_err(qmc_hdlc->dev, "tx and rx timeslots mismatch (0x%llx, 0x%llx)\n",
-+			ts_info->rx_ts_mask, ts_info->tx_ts_mask);
-+		return -EINVAL;
-+	}
-+
-+	bitmap_from_u64(ts_mask_avail, ts_info->rx_ts_mask_avail);
-+	bitmap_from_u64(ts_mask, ts_info->rx_ts_mask);
-+	bitmap_gather(map, ts_mask, ts_mask_avail, 64);
-+
-+	if (bitmap_weight(ts_mask, 64) != bitmap_weight(map, 64)) {
-+		dev_err(qmc_hdlc->dev, "Cannot translate timeslots (%64pb, %64pb) -> %64pb\n",
-+			ts_mask_avail, ts_mask, map);
-+		return -EINVAL;
-+	}
-+
-+	bitmap_to_arr32(array32, map, 64);
-+	if (array32[1]) {
-+		dev_err(qmc_hdlc->dev, "Slot map out of 32bit (%64pb, %64pb) -> %64pb\n",
-+			ts_mask_avail, ts_mask, map);
-+		return -EINVAL;
-+	}
-+
-+	*slot_map = array32[0];
-+	return 0;
-+}
-+
-+static int qmc_hdlc_set_iface(struct qmc_hdlc *qmc_hdlc, int if_iface, const te1_settings *te1)
-+{
-+	struct qmc_chan_ts_info ts_info;
-+	int ret;
-+
-+	ret = qmc_chan_get_ts_info(qmc_hdlc->qmc_chan, &ts_info);
-+	if (ret) {
-+		dev_err(qmc_hdlc->dev, "get QMC channel ts info failed %d\n", ret);
-+		return ret;
-+	}
-+	ret = qmc_hdlc_xlate_slot_map(qmc_hdlc, te1->slot_map, &ts_info);
-+	if (ret)
-+		return ret;
-+
-+	ret = qmc_chan_set_ts_info(qmc_hdlc->qmc_chan, &ts_info);
-+	if (ret) {
-+		dev_err(qmc_hdlc->dev, "set QMC channel ts info failed %d\n", ret);
-+		return ret;
-+	}
-+
-+	qmc_hdlc->slot_map = te1->slot_map;
-+
-+	return 0;
-+}
-+
-+static int qmc_hdlc_ioctl(struct net_device *netdev, struct if_settings *ifs)
-+{
-+	struct qmc_hdlc *qmc_hdlc = netdev_to_qmc_hdlc(netdev);
-+	te1_settings te1;
-+
-+	switch (ifs->type) {
-+	case IF_GET_IFACE:
-+		ifs->type = IF_IFACE_E1;
-+		if (ifs->size < sizeof(te1)) {
-+			if (!ifs->size)
-+				return 0; /* only type requested */
-+
-+			ifs->size = sizeof(te1); /* data size wanted */
-+			return -ENOBUFS;
-+		}
-+
-+		memset(&te1, 0, sizeof(te1));
-+
-+		/* Update slot_map */
-+		te1.slot_map = qmc_hdlc->slot_map;
-+
-+		if (copy_to_user(ifs->ifs_ifsu.te1, &te1, sizeof(te1)))
-+			return -EFAULT;
-+		return 0;
-+
-+	case IF_IFACE_E1:
-+	case IF_IFACE_T1:
-+		if (!capable(CAP_NET_ADMIN))
-+			return -EPERM;
-+
-+		if (netdev->flags & IFF_UP)
-+			return -EBUSY;
-+
-+		if (copy_from_user(&te1, ifs->ifs_ifsu.te1, sizeof(te1)))
-+			return -EFAULT;
-+
-+		return qmc_hdlc_set_iface(qmc_hdlc, ifs->type, &te1);
-+
-+	default:
-+		return hdlc_ioctl(netdev, ifs);
-+	}
-+}
-+
- static int qmc_hdlc_open(struct net_device *netdev)
- {
- 	struct qmc_hdlc *qmc_hdlc = netdev_to_qmc_hdlc(netdev);
-@@ -326,12 +466,13 @@ static const struct net_device_ops qmc_hdlc_netdev_ops = {
- 	.ndo_open       = qmc_hdlc_open,
- 	.ndo_stop       = qmc_hdlc_close,
- 	.ndo_start_xmit = hdlc_start_xmit,
--	.ndo_siocwandev	= hdlc_ioctl,
-+	.ndo_siocwandev = qmc_hdlc_ioctl,
- };
- 
- static int qmc_hdlc_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-+	struct qmc_chan_ts_info ts_info;
- 	struct qmc_hdlc *qmc_hdlc;
- 	struct qmc_chan_info info;
- 	hdlc_device *hdlc;
-@@ -357,6 +498,14 @@ static int qmc_hdlc_probe(struct platform_device *pdev)
- 		return dev_err_probe(dev, -EINVAL, "QMC chan mode %d is not QMC_HDLC\n",
- 				     info.mode);
- 
-+	ret = qmc_chan_get_ts_info(qmc_hdlc->qmc_chan, &ts_info);
-+	if (ret)
-+		return dev_err_probe(dev, ret, "get QMC channel ts info failed\n");
-+
-+	ret = qmc_hdlc_xlate_ts_info(qmc_hdlc, &ts_info, &qmc_hdlc->slot_map);
-+	if (ret)
-+		return ret;
-+
- 	qmc_hdlc->netdev = alloc_hdlcdev(qmc_hdlc);
- 	if (!qmc_hdlc->netdev)
- 		return -ENOMEM;
--- 
-2.43.0
+Tested-by: Shirisha Ganta <shirisha@linux.ibm.com>
+
+
+> ---
+> Changes in v4:
+> - Fix coding style issues.
+> 
+> Changes in v3:
+> - Address comments from Christophe Leroy to avoid using #ifdefs in
+> the
+>   code
+> - v2 at 
+> https://lore.kernel.org/linuxppc-dev/20240205053647.1763446-1-mahesh@linux.ibm.com/
+> 
+> Changes in v2:
+> - Rebase to upstream master
+> - Use jump_labels, if CONFIG_JUMP_LABEL is enabled, to avoid redoing
+> the
+>   embed first chunk test at each interrupt entry.
+> - v1 is at 
+> https://lore.kernel.org/linuxppc-dev/164578465828.74956.6065296024817333750.stgit@jupiter/
+> ---
+>  arch/powerpc/include/asm/interrupt.h | 10 ++++++++++
+>  arch/powerpc/include/asm/percpu.h    | 10 ++++++++++
+>  arch/powerpc/kernel/setup_64.c       |  3 +++
+>  3 files changed, 23 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/interrupt.h
+> b/arch/powerpc/include/asm/interrupt.h
+> index a4196ab1d0167..0b96464ff0339 100644
+> --- a/arch/powerpc/include/asm/interrupt.h
+> +++ b/arch/powerpc/include/asm/interrupt.h
+> @@ -336,6 +336,14 @@ static inline void
+> interrupt_nmi_enter_prepare(struct pt_regs *regs, struct inte
+>  	if (IS_ENABLED(CONFIG_KASAN))
+>  		return;
+>  
+> +	/*
+> +	 * Likewise, do not use it in real mode if percpu first chunk
+> is not
+> +	 * embedded. With CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK enabled
+> there
+> +	 * are chances where percpu allocation can come from vmalloc
+> area.
+> +	 */
+> +	if (IS_ENABLED(CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK) &&
+> !is_embed_first_chunk)
+> +		return;
+> +
+>  	/* Otherwise, it should be safe to call it */
+>  	nmi_enter();
+>  }
+> @@ -351,6 +359,8 @@ static inline void
+> interrupt_nmi_exit_prepare(struct pt_regs *regs, struct inter
+>  		// no nmi_exit for a pseries hash guest taking a real
+> mode exception
+>  	} else if (IS_ENABLED(CONFIG_KASAN)) {
+>  		// no nmi_exit for KASAN in real mode
+> +	} else if (IS_ENABLED(CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK) &&
+> !is_embed_first_chunk) {
+> +		// no nmi_exit if percpu first chunk is not embedded
+>  	} else {
+>  		nmi_exit();
+>  	}
+> diff --git a/arch/powerpc/include/asm/percpu.h
+> b/arch/powerpc/include/asm/percpu.h
+> index 8e5b7d0b851c6..e24063eb0b33b 100644
+> --- a/arch/powerpc/include/asm/percpu.h
+> +++ b/arch/powerpc/include/asm/percpu.h
+> @@ -15,6 +15,16 @@
+>  #endif /* CONFIG_SMP */
+>  #endif /* __powerpc64__ */
+>  
+> +#ifdef CONFIG_PPC64
+> +#include <linux/jump_label.h>
+> +DECLARE_STATIC_KEY_FALSE(__percpu_embed_first_chunk);
+> +
+> +#define is_embed_first_chunk	\
+> +		(static_key_enabled(&__percpu_embed_first_chunk.key))
+> +#else
+> +#define is_embed_first_chunk	true
+> +#endif /* CONFIG_PPC64 */
+> +
+>  #include <asm-generic/percpu.h>
+>  
+>  #include <asm/paca.h>
+> diff --git a/arch/powerpc/kernel/setup_64.c
+> b/arch/powerpc/kernel/setup_64.c
+> index 2f19d5e944852..e04f0ff69d4b6 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -834,6 +834,7 @@ static __init int pcpu_cpu_to_node(int cpu)
+>  
+>  unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+>  EXPORT_SYMBOL(__per_cpu_offset);
+> +DEFINE_STATIC_KEY_FALSE(__percpu_embed_first_chunk);
+>  
+>  void __init setup_per_cpu_areas(void)
+>  {
+> @@ -869,6 +870,8 @@ void __init setup_per_cpu_areas(void)
+>  			pr_warn("PERCPU: %s allocator failed (%d), "
+>  				"falling back to page size\n",
+>  				pcpu_fc_names[pcpu_chosen_fc], rc);
+> +		else
+> +			static_key_enable(&__percpu_embed_first_chunk.k
+> ey);
+>  	}
+>  
+>  	if (rc < 0)
 
