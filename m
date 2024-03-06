@@ -4,53 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BAE6C54E41
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 12:56:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ED3BC5475B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 12:57:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=OubqRzeA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UfEtVolq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TqXVZ0NJlz3vsf
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 23:56:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TqXXP42yhz3vlb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 23:57:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=OubqRzeA;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UfEtVolq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.118; helo=out30-118.freemail.mail.aliyun.com; envelope-from=yaoma@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-118.freemail.mail.aliyun.com (out30-118.freemail.mail.aliyun.com [115.124.30.118])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqXQQ3FwNz3dWh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2024 23:52:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1709729546; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=v9ykK3Ir2S9XnRBkS+wPr5uicn0rIrMXIis4IDU1Mxg=;
-	b=OubqRzeA6K5Ov46daF+1nHEld3cg53rNcIjePdIxBxoaZVd3vaBcA/Y8/WEMvCcp3rPUC4Nov5G3UAcsFdPO4Mbir+E5LqmDH98gKVvRNjzQ8c5Nf2Y4M2NPS15Q0E4UYY3jPg+EwBFFNm1dA3nPoR/aS/WrAmLtFE55Grm9Qu4=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R111e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018045192;MF=yaoma@linux.alibaba.com;NM=1;PH=DS;RN=16;SR=0;TI=SMTPD_---0W1xhgJL_1709729542;
-Received: from localhost.localdomain(mailfrom:yaoma@linux.alibaba.com fp:SMTPD_---0W1xhgJL_1709729542)
-          by smtp.aliyun-inc.com;
-          Wed, 06 Mar 2024 20:52:25 +0800
-From: Bitao Hu <yaoma@linux.alibaba.com>
-To: dianders@chromium.org,
-	tglx@linutronix.de,
-	liusong@linux.alibaba.com,
-	akpm@linux-foundation.org,
-	pmladek@suse.com,
-	kernelfans@gmail.com,
-	deller@gmx.de,
-	npiggin@gmail.com,
-	tsbogend@alpha.franken.de,
-	James.Bottomley@HansenPartnership.com,
-	jan.kiszka@siemens.com
-Subject: [PATCHv12 4/4] watchdog/softlockup: report the most frequent interrupts
-Date: Wed,  6 Mar 2024 20:52:08 +0800
-Message-Id: <20240306125208.71803-5-yaoma@linux.alibaba.com>
-X-Mailer: git-send-email 2.37.1 (Apple Git-137.1)
-In-Reply-To: <20240306125208.71803-1-yaoma@linux.alibaba.com>
-References: <20240306125208.71803-1-yaoma@linux.alibaba.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqXWb5DvWz2ytp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2024 23:56:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1709729819;
+	bh=7qMkj855gnIh1UQkcFt0aaaoTWPFayqXkWGgolRjo9E=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=UfEtVolq5MqXw9jCn/GeBb+IBQz1dQvJaH/0rnEilELcXz+ev5Hbtp9B7h7mEpBX6
+	 Qz3f0JVrd097eeURWnaXC2C/GW5fBXQWNrwBK0QxwWX1YaRiQ6aIQQ0XFTkV+WzC5v
+	 GXYLf6FZmSDmamdgEA80gV9hcMOlFslVWN4X9wP38RFheO1qGLQawaGr7s8/LUFbMT
+	 gHkmLZS2HLXRCVJcdsFeWrt3RUA35VQsD9LPG6nt3TSnIA5kK6I5fFJLsrkNZ/vfmm
+	 hPS72F4Sajlz8pB2B5k39v9Xa14Hc85llYzAKp2qodd6KdX7Cyd3f5C9srqntJv+gy
+	 0gOjJMv33jZmA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TqXWY0xZyz4wc8;
+	Wed,  6 Mar 2024 23:56:56 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: peterx@redhat.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC 09/13] mm/powerpc: Redefine pXd_huge() with pXd_leaf()
+In-Reply-To: <20240306104147.193052-10-peterx@redhat.com>
+References: <20240306104147.193052-1-peterx@redhat.com>
+ <20240306104147.193052-10-peterx@redhat.com>
+Date: Wed, 06 Mar 2024 23:56:56 +1100
+Message-ID: <87v85zo6w7.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,209 +59,143 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: yaoma@linux.alibaba.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, x86@kernel.org, Muchun Song <muchun.song@linux.dev>, Nicholas Piggin <npiggin@gmail.com>, peterx@redhat.com, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Matthew Wilcox <willy@infradead.org>, Jason Gunthorpe <jgg@nvidia.com>, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the watchdog determines that the current soft lockup is due
-to an interrupt storm based on CPU utilization, reporting the
-most frequent interrupts could be good enough for further
-troubleshooting.
+peterx@redhat.com writes:
+> From: Peter Xu <peterx@redhat.com>
+>
+> PowerPC book3s 4K mostly has the same definition on both, except pXd_huge=
+()
+> constantly returns 0 for hash MMUs.  AFAICT that is fine to be removed,
+> because pXd_huge() reflects a hugetlb entry, while it's own hugetlb pgtab=
+le
+> lookup function (__find_linux_pte() shared by all powerpc code) already u=
+se
+> pXd_leaf() irrelevant of the MMU type.  It means pXd_leaf() should work a=
+ll
+> fine with hash MMU pgtables or something could already went wrong.
 
-Below is an example of interrupt storm. The call tree does not
-provide useful information, but we can analyze which interrupt
-caused the soft lockup by comparing the counts of interrupts.
+Yes I think that's correct.
 
-[  638.870231] watchdog: BUG: soft lockup - CPU#9 stuck for 26s! [swapper/9:0]
-[  638.870825] CPU#9 Utilization every 4s during lockup:
-[  638.871194]  #1:   0% system,          0% softirq,   100% hardirq,     0% idle
-[  638.871652]  #2:   0% system,          0% softirq,   100% hardirq,     0% idle
-[  638.872107]  #3:   0% system,          0% softirq,   100% hardirq,     0% idle
-[  638.872563]  #4:   0% system,          0% softirq,   100% hardirq,     0% idle
-[  638.873018]  #5:   0% system,          0% softirq,   100% hardirq,     0% idle
-[  638.873494] CPU#9 Detect HardIRQ Time exceeds 50%. Most frequent HardIRQs:
-[  638.873994]  #1: 330945      irq#7
-[  638.874236]  #2: 31          irq#82
-[  638.874493]  #3: 10          irq#10
-[  638.874744]  #4: 2           irq#89
-[  638.874992]  #5: 1           irq#102
-...
-[  638.875313] Call trace:
-[  638.875315]  __do_softirq+0xa8/0x364
+4K Hash MMU doesn't support any hugepage size at PMD or PUD level (the
+geometry is wrong), so pmd/pud_huge() were written with that in mind,
+ie. they are hard coded to return false.
 
-Signed-off-by: Bitao Hu <yaoma@linux.alibaba.com>
-Reviewed-by: Liu Song <liusong@linux.alibaba.com>
-Reviewed-by: Douglas Anderson <dianders@chromium.org>
----
- kernel/watchdog.c | 115 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 111 insertions(+), 4 deletions(-)
+But it should be OK to use pmd/pud_leaf(), they will actually look for
+_PAGE_PTE, but it should never be set for 4K Hash.
 
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 69e72d7e461d..c9d49ae8d045 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -12,22 +12,25 @@
- 
- #define pr_fmt(fmt) "watchdog: " fmt
- 
--#include <linux/mm.h>
- #include <linux/cpu.h>
--#include <linux/nmi.h>
- #include <linux/init.h>
-+#include <linux/irq.h>
-+#include <linux/irqdesc.h>
- #include <linux/kernel_stat.h>
-+#include <linux/kvm_para.h>
- #include <linux/math64.h>
-+#include <linux/mm.h>
- #include <linux/module.h>
-+#include <linux/nmi.h>
-+#include <linux/stop_machine.h>
- #include <linux/sysctl.h>
- #include <linux/tick.h>
+See eg. arch/powerpc/include/asm/book3s/64/hash-4k.h:
+
+static inline pmd_t hash__pmd_mkhuge(pmd_t pmd)
+{
+	BUG();
+	return pmd;
+}
+
+> The goal should be that we will have one API pXd_leaf() to detect all kin=
+ds
+> of huge mappings.  AFAICT we need to use the pXd_leaf() impl (rather than
+> pXd_huge() ones) to make sure ie. THPs on hash MMU will also return true.
+>
+> This helps to simplify a follow up patch to drop pXd_huge() treewide.
+>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+> Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Peter Xu <peterx@redhat.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/pgtable-4k.h | 14 ++------------
+>  1 file changed, 2 insertions(+), 12 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/power=
+pc/include/asm/book3s/64/pgtable-4k.h
+> index 48f21820afe2..92545981bb49 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+> @@ -8,22 +8,12 @@
+>  #ifdef CONFIG_HUGETLB_PAGE
+>  static inline int pmd_huge(pmd_t pmd)
+>  {
+> -	/*
+> -	 * leaf pte for huge page
+> -	 */
+> -	if (radix_enabled())
+> -		return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
+> -	return 0;
+> +	return pmd_leaf(pmd);
+>  }
+>=20=20
+>  static inline int pud_huge(pud_t pud)
+>  {
+> -	/*
+> -	 * leaf pte for huge page
+> -	 */
+> -	if (radix_enabled())
+> -		return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
+> -	return 0;
+> +	return pud_leaf(pud);
+>  }
+
+This doesn't actually compile though.
+
+  arch/powerpc/include/asm/book3s/64/pgtable-4k.h:11:16: error: implicit de=
+claration of function =E2=80=98pmd_leaf=E2=80=99; did you mean =E2=80=98pgd=
+_clear=E2=80=99? [-Werror=3Dimplicit-function-declaration]
+
+etc.
+
+To make it compile we'd need to relocate the pmd/pud_leaf() definitions:
+
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/in=
+clude/asm/book3s/64/pgtable.h
+index df66dce8306f..fd7180fded75 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -262,6 +262,18 @@ extern unsigned long __kernel_io_end;
+
+ extern struct page *vmemmap;
+ extern unsigned long pci_io_base;
 +
- #include <linux/sched/clock.h>
- #include <linux/sched/debug.h>
- #include <linux/sched/isolation.h>
--#include <linux/stop_machine.h>
- 
- #include <asm/irq_regs.h>
--#include <linux/kvm_para.h>
- 
- static DEFINE_MUTEX(watchdog_mutex);
- 
-@@ -417,13 +420,104 @@ static void print_cpustat(void)
- 	}
++#define pmd_leaf pmd_leaf
++static inline bool pmd_leaf(pmd_t pmd)
++{
++       return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
++}
++
++#define pud_leaf pud_leaf
++static inline bool pud_leaf(pud_t pud)
++{
++       return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
++}
+ #endif /* __ASSEMBLY__ */
+
+ #include <asm/book3s/64/hash.h>
+@@ -1436,20 +1448,5 @@ static inline bool is_pte_rw_upgrade(unsigned long o=
+ld_val, unsigned long new_va
+        return false;
  }
- 
-+#define HARDIRQ_PERCENT_THRESH          50
-+#define NUM_HARDIRQ_REPORT              5
-+struct irq_counts {
-+	int irq;
-+	u32 counts;
-+};
-+
-+static DEFINE_PER_CPU(bool, snapshot_taken);
-+
-+/* Tabulate the most frequent interrupts. */
-+static void tabulate_irq_count(struct irq_counts *irq_counts, int irq, u32 counts, int rank)
-+{
-+	int i;
-+	struct irq_counts new_count = {irq, counts};
-+
-+	for (i = 0; i < rank; i++) {
-+		if (counts > irq_counts[i].counts)
-+			swap(new_count, irq_counts[i]);
-+	}
-+}
-+
-+/*
-+ * If the hardirq time exceeds HARDIRQ_PERCENT_THRESH% of the sample_period,
-+ * then the cause of softlockup might be interrupt storm. In this case, it
-+ * would be useful to start interrupt counting.
-+ */
-+static bool need_counting_irqs(void)
-+{
-+	u8 util;
-+	int tail = __this_cpu_read(cpustat_tail);
-+
-+	tail = (tail + NUM_HARDIRQ_REPORT - 1) % NUM_HARDIRQ_REPORT;
-+	util = __this_cpu_read(cpustat_util[tail][STATS_HARDIRQ]);
-+	return util > HARDIRQ_PERCENT_THRESH;
-+}
-+
-+static void start_counting_irqs(void)
-+{
-+	if (!__this_cpu_read(snapshot_taken)) {
-+		kstat_snapshot_irqs();
-+		__this_cpu_write(snapshot_taken, true);
-+	}
-+}
-+
-+static void stop_counting_irqs(void)
-+{
-+	__this_cpu_write(snapshot_taken, false);
-+}
-+
-+static void print_irq_counts(void)
-+{
-+	unsigned int i, count;
-+	struct irq_counts irq_counts_sorted[NUM_HARDIRQ_REPORT] = {
-+		{-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}
-+	};
-+
-+	if (__this_cpu_read(snapshot_taken)) {
-+		for_each_active_irq(i) {
-+			count = kstat_get_irq_since_snapshot(i);
-+			tabulate_irq_count(irq_counts_sorted, i, count, NUM_HARDIRQ_REPORT);
-+		}
-+
-+		/*
-+		 * We do not want the "watchdog: " prefix on every line,
-+		 * hence we use "printk" instead of "pr_crit".
-+		 */
-+		printk(KERN_CRIT "CPU#%d Detect HardIRQ Time exceeds %d%%. Most frequent HardIRQs:\n",
-+		       smp_processor_id(), HARDIRQ_PERCENT_THRESH);
-+
-+		for (i = 0; i < NUM_HARDIRQ_REPORT; i++) {
-+			if (irq_counts_sorted[i].irq == -1)
-+				break;
-+
-+			printk(KERN_CRIT "\t#%u: %-10u\tirq#%d\n",
-+			       i + 1, irq_counts_sorted[i].counts,
-+			       irq_counts_sorted[i].irq);
-+		}
-+
-+		/*
-+		 * If the hardirq time is less than HARDIRQ_PERCENT_THRESH% in the last
-+		 * sample_period, then we suspect the interrupt storm might be subsiding.
-+		 */
-+		if (!need_counting_irqs())
-+			stop_counting_irqs();
-+	}
-+}
-+
- static void report_cpu_status(void)
- {
- 	print_cpustat();
-+	print_irq_counts();
- }
- #else
- static inline void update_cpustat(void) { }
- static inline void report_cpu_status(void) { }
-+static inline bool need_counting_irqs(void) { return false; }
-+static inline void start_counting_irqs(void) { }
-+static inline void stop_counting_irqs(void) { }
- #endif
- 
- /*
-@@ -527,6 +621,18 @@ static int is_softlockup(unsigned long touch_ts,
- 			 unsigned long now)
- {
- 	if ((watchdog_enabled & WATCHDOG_SOFTOCKUP_ENABLED) && watchdog_thresh) {
-+		/*
-+		 * If period_ts has not been updated during a sample_period, then
-+		 * in the subsequent few sample_periods, period_ts might also not
-+		 * be updated, which could indicate a potential softlockup. In
-+		 * this case, if we suspect the cause of the potential softlockup
-+		 * might be interrupt storm, then we need to count the interrupts
-+		 * to find which interrupt is storming.
-+		 */
-+		if (time_after_eq(now, period_ts + get_softlockup_thresh() / NUM_SAMPLE_PERIODS) &&
-+		    need_counting_irqs())
-+			start_counting_irqs();
-+
- 		/* Warn about unreasonable delays. */
- 		if (time_after(now, period_ts + get_softlockup_thresh()))
- 			return now - touch_ts;
-@@ -549,6 +655,7 @@ static DEFINE_PER_CPU(struct cpu_stop_work, softlockup_stop_work);
- static int softlockup_fn(void *data)
- {
- 	update_touch_ts();
-+	stop_counting_irqs();
- 	complete(this_cpu_ptr(&softlockup_completion));
- 
- 	return 0;
--- 
-2.37.1 (Apple Git-137.1)
 
+-/*
+- * Like pmd_huge(), but works regardless of config options
+- */
+-#define pmd_leaf pmd_leaf
+-static inline bool pmd_leaf(pmd_t pmd)
+-{
+-       return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
+-}
+-
+-#define pud_leaf pud_leaf
+-static inline bool pud_leaf(pud_t pud)
+-{
+-       return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
+-}
+-
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
+
+cheers
