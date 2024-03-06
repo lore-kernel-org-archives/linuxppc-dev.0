@@ -4,68 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43D32C54E41
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 13:05:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D648C54E41
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 13:07:03 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=cirrus.com header.i=@cirrus.com header.a=rsa-sha256 header.s=PODMain02222019 header.b=KxfLIW5Z;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CzYpciDZ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TqXjM6fRFz3dVK
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 00:05:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TqXlB06H8z3dWr
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 00:07:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=cirrus.com header.i=@cirrus.com header.a=rsa-sha256 header.s=PODMain02222019 header.b=KxfLIW5Z;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CzYpciDZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=opensource.cirrus.com (client-ip=67.231.152.168; helo=mx0b-001ae601.pphosted.com; envelope-from=prvs=07954e2aa0=rf@opensource.cirrus.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 586 seconds by postgrey-1.37 at boromir; Thu, 07 Mar 2024 00:04:42 AEDT
-Received: from mx0b-001ae601.pphosted.com (mx0b-001ae601.pphosted.com [67.231.152.168])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1132; helo=mail-yw1-x1132.google.com; envelope-from=yury.norov@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1132.google.com (mail-yw1-x1132.google.com [IPv6:2607:f8b0:4864:20::1132])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqXhV4XBYz2xX4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 00:04:41 +1100 (AEDT)
-Received: from pps.filterd (m0077474.ppops.net [127.0.0.1])
-	by mx0b-001ae601.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 4268keDm013652;
-	Wed, 6 Mar 2024 06:54:46 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cirrus.com; h=
-	message-id:date:mime-version:subject:to:cc:references:from
-	:in-reply-to:content-type:content-transfer-encoding; s=
-	PODMain02222019; bh=dUnOWEoxp3SnJf2CLLou3NRw4azRYH8sTPSVS7jTw3c=; b=
-	KxfLIW5ZslqURg+L4ZEH6tjKmxwt06qhWECFicj/THLPKjRvstRQgfQ6ki4e5PTf
-	+35OntL91YPaaGaigZAWUN5i5TbjwCHRl25guPLLG2z81RcZ3yiuQUjaCbzCochX
-	bQU8nHv+XY//hCf7NAkmc6MFc3OUw40//e0FS/nIMZsbMJOmTG+pHRq0/wiCS3bw
-	4tN+R8jXnrpzETHN2UA5sVhuBV6POgzb47aptlax+m2xIIjJa8Jew17F/LkL/5BO
-	q2+pJZvF7DHXCvdFa3y1+9K3jj6BoLvyYVEu88oCntCt11sFfKCy90/D/iJtTSJM
-	oVoJuKZTokzobNHXdtxK6w==
-Received: from ediex02.ad.cirrus.com ([84.19.233.68])
-	by mx0b-001ae601.pphosted.com (PPS) with ESMTPS id 3wpn930795-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 Mar 2024 06:54:45 -0600 (CST)
-Received: from ediex02.ad.cirrus.com (198.61.84.81) by ediex02.ad.cirrus.com
- (198.61.84.81) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.4; Wed, 6 Mar 2024
- 12:54:43 +0000
-Received: from ediswmail9.ad.cirrus.com (198.61.86.93) by
- anon-ediex02.ad.cirrus.com (198.61.84.81) with Microsoft SMTP Server id
- 15.2.1544.4 via Frontend Transport; Wed, 6 Mar 2024 12:54:43 +0000
-Received: from [198.61.64.14] (EDIN4L06LR3.ad.cirrus.com [198.61.64.14])
-	by ediswmail9.ad.cirrus.com (Postfix) with ESMTP id 7BA69820241;
-	Wed,  6 Mar 2024 12:54:43 +0000 (UTC)
-Message-ID: <fedf6e86-ca14-4236-85c0-64205c63d7f9@opensource.cirrus.com>
-Date: Wed, 6 Mar 2024 12:54:43 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqXkN1pCqz2ykt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 00:06:19 +1100 (AEDT)
+Received: by mail-yw1-x1132.google.com with SMTP id 00721157ae682-609d9ce5bdeso7014167b3.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Mar 2024 05:06:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1709730374; x=1710335174; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=R0Oi3DIHf6RcVnBQ6jfEGvzGhX4KFvOXX/NtautGKE4=;
+        b=CzYpciDZP/Idb0jCDnkrIKQbC11OdIvYD9qDM1gq6VPqfIktlNIsIGNo22sJgBWQaB
+         DHERo6EMmM9ISBporY2b5RQAn5e+Fb3qORyz5TY0FL8Opmmy14PEJtCjAloBbuTUCgbZ
+         fuKOlrwnD/MW/zqHt2ax3XVY5Az8eDhwhoZ78j42vj9iVEQ61g4pNQo4iSs2gw/xDIhR
+         gGYdbi/KhuiCL71rKRu/zcHwURi4ClNRBbB1GsgbkBrzOqreYp6R/tAiYX0rOhyGavv/
+         2J4Be+Q9dZA+b3f9I6SXjI5UROq80UQLG29z0+oUInmMKTyspsIJ7qnL+dLVuTO0qlKd
+         dg3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1709730374; x=1710335174;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=R0Oi3DIHf6RcVnBQ6jfEGvzGhX4KFvOXX/NtautGKE4=;
+        b=R2qYoVIlA3fvuR6CkqW5NJM7ImsG7oLJNIftm7MVN2ovv4IW9HdbC93B+qODE3vFKB
+         e+zWs8vn3Y3yDpty5m7QRxW/dJubk9ZMoTQaDiSgu+fInFe0QsjPNZjeSyHYr+/odRtr
+         xY7ZnRmidFfoodJ/PTy93BBn3BVgkeE/vRi6j89ryzAJsdWXavRMw9s+T1tN8O/FsyFV
+         lxTJUL3vqBMn4i4pHMSekI4i2ErvAgHubsnE8Yxk305TaXOrO5NxOKgmbBdXcFFjF8Gv
+         FG1xbCv9p523WKQpwV4h1RDVwpzIYO1ObHs6X15m0noIj8oVc6nBmXNIpCGnBm8Z0sND
+         s4Qw==
+X-Forwarded-Encrypted: i=1; AJvYcCUxhn5RIwH+Hzc/DmoqSi1myUpnhjCmAbhpgHHRsTnkqy3d7A+TgE5TmfFKpc1ihnTOXuAd0CwD1XxiM36x5FKDsBaMDnuB6NqiVgsFpA==
+X-Gm-Message-State: AOJu0YwLJQxUrEUtah2cg7WGGwIXi51lmK3WsMwpZZlMaJiHNgBa+WF3
+	vlvsA3SQAdqHAY1mZis3i3o1+9hHgox3KCSCj8KEbHTB8Gbgo/KR
+X-Google-Smtp-Source: AGHT+IE+aoLOnpZkLP/3EfQ+xyS+L+4GWolxGYGRGD6QvHKeBWbWI3i1ajDfNqpm2ci7qFy0mSU4Mg==
+X-Received: by 2002:a81:5b08:0:b0:609:bd7b:bb55 with SMTP id p8-20020a815b08000000b00609bd7bbb55mr7704201ywb.23.1709730374439;
+        Wed, 06 Mar 2024 05:06:14 -0800 (PST)
+Received: from localhost ([2601:344:8301:57f0:a708:4ac5:2d2f:c5bb])
+        by smtp.gmail.com with ESMTPSA id s123-20020a0de981000000b0060968d94177sm3683591ywe.15.2024.03.06.05.06.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 06 Mar 2024 05:06:13 -0800 (PST)
+Date: Wed, 6 Mar 2024 05:06:12 -0800
+From: Yury Norov <yury.norov@gmail.com>
+To: Herve Codina <herve.codina@bootlin.com>
+Subject: Re: [PATCH v6 4/5] net: wan: fsl_qmc_hdlc: Add runtime timeslots
+ changes support
+Message-ID: <ZehqRMZwtazTf6P6@yury-ThinkPad>
+References: <20240306080726.167338-1-herve.codina@bootlin.com>
+ <20240306080726.167338-5-herve.codina@bootlin.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] ASoC: soc-card: Fix missing locking in
- snd_soc_card_get_kcontrol()
-To: Takashi Iwai <tiwai@suse.de>
-References: <20240221123710.690224-1-rf@opensource.cirrus.com>
- <878r33hf81.wl-tiwai@suse.de>
-Content-Language: en-US
-From: Richard Fitzgerald <rf@opensource.cirrus.com>
-In-Reply-To: <878r33hf81.wl-tiwai@suse.de>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: YEs5JGMEo5VD8m1KlprrWBCx10iE2ihb
-X-Proofpoint-ORIG-GUID: YEs5JGMEo5VD8m1KlprrWBCx10iE2ihb
-X-Proofpoint-Spam-Reason: safe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240306080726.167338-5-herve.codina@bootlin.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,102 +80,232 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Xiubo.Lee@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org, broonie@kernel.org, patches@opensource.cirrus.com, shengjiu.wang@gmail.com
+Cc: Andrew Lunn <andrew@lunn.ch>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, netdev@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Mark Brown <broonie@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 29/2/24 08:00, Takashi Iwai wrote:
-> On Wed, 21 Feb 2024 13:37:10 +0100,
-> Richard Fitzgerald wrote:
->>
->> snd_soc_card_get_kcontrol() must be holding a read lock on
->> card->controls_rwsem while walking the controls list.
->>
->> Compare with snd_ctl_find_numid().
->>
->> The existing function is renamed snd_soc_card_get_kcontrol_locked()
->> so that it can be called from contexts that are already holding
->> card->controls_rwsem (for example, control get/put functions).
->>
->> There are few direct or indirect callers of
->> snd_soc_card_get_kcontrol(), and most are safe. Three require
->> changes, which have been included in this patch:
->>
->> codecs/cs35l45.c:
->>    cs35l45_activate_ctl() is called from a control put() function so
->>    is changed to call snd_soc_card_get_kcontrol_locked().
->>
->> codecs/cs35l56.c:
->>    cs35l56_sync_asp1_mixer_widgets_with_firmware() is called from
->>    control get()/put() functions so is changed to call
->>    snd_soc_card_get_kcontrol_locked().
->>
->> fsl/fsl_xcvr.c:
->>    fsl_xcvr_activate_ctl() is called from three places, one of which
->>    already holds card->controls_rwsem:
->>    1. fsl_xcvr_mode_put(), a control put function, which will
->>       already be holding card->controls_rwsem.
->>    2. fsl_xcvr_startup(), a DAI startup function.
->>    3. fsl_xcvr_shutdown(), a DAI shutdown function.
->>
->>    To fix this, fsl_xcvr_activate_ctl() has been changed to call
->>    snd_soc_card_get_kcontrol_locked() so that it is safe to call
->>    directly from fsl_xcvr_mode_put().
->>    The fsl_xcvr_startup() and fsl_xcvr_shutdown() functions have been
->>    changed to take a read lock on card->controls_rsem() around calls
->>    to fsl_xcvr_activate_ctl(). While this is not very elegant, it
->>    keeps the change small, to avoid this patch creating a large
->>    collateral churn in fsl/fsl_xcvr.c.
->>
->> Analysis of other callers of snd_soc_card_get_kcontrol() is that
->> they do not need any changes, they are not holding card->controls_rwsem
->> when they call snd_soc_card_get_kcontrol().
->>
->> Direct callers of snd_soc_card_get_kcontrol():
->>    fsl/fsl_spdif.c: fsl_spdif_dai_probe() - DAI probe function
->>    fsl/fsl_micfil.c: voice_detected_fn() - IRQ handler
->>
->> Indirect callers via soc_component_notify_control():
->>    codecs/cs42l43: cs42l43_mic_shutter() - IRQ handler
->>    codecs/cs42l43: cs42l43_spk_shutter() - IRQ handler
->>    codecs/ak4118.c: ak4118_irq_handler() - IRQ handler
->>    codecs/wm_adsp.c: wm_adsp_write_ctl() - not currently used
->>
->> Indirect callers via snd_soc_limit_volume():
->>    qcom/sc8280xp.c: sc8280xp_snd_init() - DAIlink init function
->>    ti/rx51.c: rx51_aic34_init() - DAI init function
->>
->> I don't have hardware to test the fsl/*, qcom/sc828xp.c, ti/rx51.c
->> and ak4118.c changes.
->>
->> Backport note:
->> The fsl/, qcom/, cs35l45, cs35l56 and cs42l43 callers were added
->> since the Fixes commit so won't all be present on older kernels.
->>
->> Signed-off-by: Richard Fitzgerald <rf@opensource.cirrus.com>
->> Fixes: 209c6cdfd283 ("ASoC: soc-card: move snd_soc_card_get_kcontrol() to soc-card")
->> ---
->> It would be great if people could test the fsl/, qcom/, ti/rx51 and ak4418
->> drivers.
+On Wed, Mar 06, 2024 at 09:07:20AM +0100, Herve Codina wrote:
+> QMC channels support runtime timeslots changes but nothing is done at
+> the QMC HDLC driver to handle these changes.
 > 
-> This fix itself looks correct, and I merged Mark's PR now.
+> Use existing IFACE ioctl in order to configure the timeslots to use.
 > 
-> But in general, it'd be better to use snd_ctl_find_id() and
-> snd_ctl_find_id_unlocked() if possible.  Those standard APIs can use
-> the fast Xarray lookup, and especially for the case like many ASoC
-> drivers that expose hundreds of kcontrols, the performance gain
-> becomes significant.
+> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Acked-by: Jakub Kicinski <kuba@kernel.org>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/net/wan/fsl_qmc_hdlc.c | 151 ++++++++++++++++++++++++++++++++-
+>  1 file changed, 150 insertions(+), 1 deletion(-)
 > 
-> I see that there is no snd_ctl_find_mixer_id_unlocked() variant, but
-> it should be trivial to add.
-> 
-> 
+> diff --git a/drivers/net/wan/fsl_qmc_hdlc.c b/drivers/net/wan/fsl_qmc_hdlc.c
+> index 90063a92209e..31c0f32474a3 100644
+> --- a/drivers/net/wan/fsl_qmc_hdlc.c
+> +++ b/drivers/net/wan/fsl_qmc_hdlc.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/array_size.h>
+>  #include <linux/bug.h>
+>  #include <linux/cleanup.h>
+> +#include <linux/bitmap.h>
+>  #include <linux/dma-mapping.h>
+>  #include <linux/device.h>
+>  #include <linux/err.h>
+> @@ -39,6 +40,7 @@ struct qmc_hdlc {
+>  	struct qmc_hdlc_desc tx_descs[8];
+>  	unsigned int tx_out;
+>  	struct qmc_hdlc_desc rx_descs[4];
+> +	u32 slot_map;
+>  };
+>  
+>  static struct qmc_hdlc *netdev_to_qmc_hdlc(struct net_device *netdev)
+> @@ -203,6 +205,144 @@ static netdev_tx_t qmc_hdlc_xmit(struct sk_buff *skb, struct net_device *netdev)
+>  	return NETDEV_TX_OK;
+>  }
+>  
+> +static int qmc_hdlc_xlate_slot_map(struct qmc_hdlc *qmc_hdlc,
+> +				   u32 slot_map, struct qmc_chan_ts_info *ts_info)
+> +{
+> +	DECLARE_BITMAP(ts_mask_avail, 64);
+> +	DECLARE_BITMAP(ts_mask, 64);
+> +	DECLARE_BITMAP(map, 64);
+> +
+> +	/* Tx and Rx available masks must be identical */
+> +	if (ts_info->rx_ts_mask_avail != ts_info->tx_ts_mask_avail) {
+> +		dev_err(qmc_hdlc->dev, "tx and rx available timeslots mismatch (0x%llx, 0x%llx)\n",
+> +			ts_info->rx_ts_mask_avail, ts_info->tx_ts_mask_avail);
+> +		return -EINVAL;
+> +	}
+> +
+> +	bitmap_from_u64(ts_mask_avail, ts_info->rx_ts_mask_avail);
+> +	bitmap_from_u64(map, slot_map);
+> +	bitmap_scatter(ts_mask, map, ts_mask_avail, 64);
 
-Yes, I'll have a look at that. I was thinking that it would be good
-to have all the code to find controls in one place, instead of a special
-case for ASoC. But I decided to make the bugfix with minimum changes.
+We've got a BITMAP_FROM_U64() for this:
 
-> thanks,
-> 
-> Takashi
+	DECLARE_BITMAP(ts_mask_avail, 64) = { BITMAP_FROM_U64(ts_info->rx_ts_mask_avail) };
+	DECLARE_BITMAP(map, 64) = { BITMAP_FROM_U64(slot_map) };
 
+> +
+> +	if (bitmap_weight(ts_mask, 64) != bitmap_weight(map, 64)) {
+> +		dev_err(qmc_hdlc->dev, "Cannot translate timeslots %64pb -> (%64pb, %64pb)\n",
+> +			map, ts_mask_avail, ts_mask);
+> +		return -EINVAL;
+> +	}
+> +
+> +	bitmap_to_arr64(&ts_info->tx_ts_mask, ts_mask, 64);
+> +	ts_info->rx_ts_mask = ts_info->tx_ts_mask;
+> +	return 0;
+> +}
+> +
+> +static int qmc_hdlc_xlate_ts_info(struct qmc_hdlc *qmc_hdlc,
+> +				  const struct qmc_chan_ts_info *ts_info, u32 *slot_map)
+> +{
+> +	DECLARE_BITMAP(ts_mask_avail, 64);
+> +	DECLARE_BITMAP(ts_mask, 64);
+> +	DECLARE_BITMAP(map, 64);
+> +	u32 array32[2];
+
+NIT. Bad name. I'd suggest slot_array, or something.
+
+> +	/* Tx and Rx masks and available masks must be identical */
+> +	if (ts_info->rx_ts_mask_avail != ts_info->tx_ts_mask_avail) {
+> +		dev_err(qmc_hdlc->dev, "tx and rx available timeslots mismatch (0x%llx, 0x%llx)\n",
+> +			ts_info->rx_ts_mask_avail, ts_info->tx_ts_mask_avail);
+> +		return -EINVAL;
+> +	}
+> +	if (ts_info->rx_ts_mask != ts_info->tx_ts_mask) {
+> +		dev_err(qmc_hdlc->dev, "tx and rx timeslots mismatch (0x%llx, 0x%llx)\n",
+> +			ts_info->rx_ts_mask, ts_info->tx_ts_mask);
+> +		return -EINVAL;
+> +	}
+> +
+> +	bitmap_from_u64(ts_mask_avail, ts_info->rx_ts_mask_avail);
+> +	bitmap_from_u64(ts_mask, ts_info->rx_ts_mask);
+
+Same as above, can you try using BITMAP_FROM_U64()?
+
+Thanks,
+Yury
+
+> +	bitmap_gather(map, ts_mask, ts_mask_avail, 64);
+> +
+> +	if (bitmap_weight(ts_mask, 64) != bitmap_weight(map, 64)) {
+> +		dev_err(qmc_hdlc->dev, "Cannot translate timeslots (%64pb, %64pb) -> %64pb\n",
+> +			ts_mask_avail, ts_mask, map);
+> +		return -EINVAL;
+> +	}
+> +
+> +	bitmap_to_arr32(array32, map, 64);
+> +	if (array32[1]) {
+> +		dev_err(qmc_hdlc->dev, "Slot map out of 32bit (%64pb, %64pb) -> %64pb\n",
+> +			ts_mask_avail, ts_mask, map);
+> +		return -EINVAL;
+> +	}
+> +
+> +	*slot_map = array32[0];
+> +	return 0;
+> +}
+> +
+> +static int qmc_hdlc_set_iface(struct qmc_hdlc *qmc_hdlc, int if_iface, const te1_settings *te1)
+> +{
+> +	struct qmc_chan_ts_info ts_info;
+> +	int ret;
+> +
+> +	ret = qmc_chan_get_ts_info(qmc_hdlc->qmc_chan, &ts_info);
+> +	if (ret) {
+> +		dev_err(qmc_hdlc->dev, "get QMC channel ts info failed %d\n", ret);
+> +		return ret;
+> +	}
+> +	ret = qmc_hdlc_xlate_slot_map(qmc_hdlc, te1->slot_map, &ts_info);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = qmc_chan_set_ts_info(qmc_hdlc->qmc_chan, &ts_info);
+> +	if (ret) {
+> +		dev_err(qmc_hdlc->dev, "set QMC channel ts info failed %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	qmc_hdlc->slot_map = te1->slot_map;
+> +
+> +	return 0;
+> +}
+> +
+> +static int qmc_hdlc_ioctl(struct net_device *netdev, struct if_settings *ifs)
+> +{
+> +	struct qmc_hdlc *qmc_hdlc = netdev_to_qmc_hdlc(netdev);
+> +	te1_settings te1;
+> +
+> +	switch (ifs->type) {
+> +	case IF_GET_IFACE:
+> +		ifs->type = IF_IFACE_E1;
+> +		if (ifs->size < sizeof(te1)) {
+> +			if (!ifs->size)
+> +				return 0; /* only type requested */
+> +
+> +			ifs->size = sizeof(te1); /* data size wanted */
+> +			return -ENOBUFS;
+> +		}
+> +
+> +		memset(&te1, 0, sizeof(te1));
+> +
+> +		/* Update slot_map */
+> +		te1.slot_map = qmc_hdlc->slot_map;
+> +
+> +		if (copy_to_user(ifs->ifs_ifsu.te1, &te1, sizeof(te1)))
+> +			return -EFAULT;
+> +		return 0;
+> +
+> +	case IF_IFACE_E1:
+> +	case IF_IFACE_T1:
+> +		if (!capable(CAP_NET_ADMIN))
+> +			return -EPERM;
+> +
+> +		if (netdev->flags & IFF_UP)
+> +			return -EBUSY;
+> +
+> +		if (copy_from_user(&te1, ifs->ifs_ifsu.te1, sizeof(te1)))
+> +			return -EFAULT;
+> +
+> +		return qmc_hdlc_set_iface(qmc_hdlc, ifs->type, &te1);
+> +
+> +	default:
+> +		return hdlc_ioctl(netdev, ifs);
+> +	}
+> +}
+> +
+>  static int qmc_hdlc_open(struct net_device *netdev)
+>  {
+>  	struct qmc_hdlc *qmc_hdlc = netdev_to_qmc_hdlc(netdev);
+> @@ -326,12 +466,13 @@ static const struct net_device_ops qmc_hdlc_netdev_ops = {
+>  	.ndo_open       = qmc_hdlc_open,
+>  	.ndo_stop       = qmc_hdlc_close,
+>  	.ndo_start_xmit = hdlc_start_xmit,
+> -	.ndo_siocwandev	= hdlc_ioctl,
+> +	.ndo_siocwandev = qmc_hdlc_ioctl,
+>  };
+>  
+>  static int qmc_hdlc_probe(struct platform_device *pdev)
+>  {
+>  	struct device *dev = &pdev->dev;
+> +	struct qmc_chan_ts_info ts_info;
+>  	struct qmc_hdlc *qmc_hdlc;
+>  	struct qmc_chan_info info;
+>  	hdlc_device *hdlc;
+> @@ -357,6 +498,14 @@ static int qmc_hdlc_probe(struct platform_device *pdev)
+>  		return dev_err_probe(dev, -EINVAL, "QMC chan mode %d is not QMC_HDLC\n",
+>  				     info.mode);
+>  
+> +	ret = qmc_chan_get_ts_info(qmc_hdlc->qmc_chan, &ts_info);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "get QMC channel ts info failed\n");
+> +
+> +	ret = qmc_hdlc_xlate_ts_info(qmc_hdlc, &ts_info, &qmc_hdlc->slot_map);
+> +	if (ret)
+> +		return ret;
+> +
+>  	qmc_hdlc->netdev = alloc_hdlcdev(qmc_hdlc);
+>  	if (!qmc_hdlc->netdev)
+>  		return -ENOMEM;
+> -- 
+> 2.43.0
