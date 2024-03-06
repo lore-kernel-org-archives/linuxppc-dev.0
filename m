@@ -4,37 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93446C5475B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 08:08:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44A40C5475B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 08:09:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=JtjBCJZc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=fctAOKTM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TqQ6s1j0gz3vZS
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 19:08:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TqQ7d6fbxz3dRl
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 19:09:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=JtjBCJZc;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=fctAOKTM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.200; helo=relay7-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [217.70.183.200])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqQ6166rZz30gM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2024 19:07:52 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 887BF20002;
-	Wed,  6 Mar 2024 08:07:48 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqQ620JLcz3bWy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2024 19:07:51 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 6162A2000A;
+	Wed,  6 Mar 2024 08:07:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1709712469;
+	t=1709712466;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=s52XVNKgkl9FtWVL4lxN6JUvQsPW5Z/X/q3oXZCSzZU=;
-	b=JtjBCJZcIenSycZ2xsOS+pcqFtzQUMHZW6Zrb7qY08cFa9beWLaUTLnSk1DOnqBxg08F0K
-	8WFHtjYb8AF1hyaeE3Y4PP5+WldH1h5ExetBfkXA4R4CZioaD7dzDAITsRtB+CZyAn2PZV
-	5iMU04jZOqdciXTAZuKFiJHb3dUZ5DyoUnYUL//0XpaFLC3MG4t5mqxLziL+dJi9A4eLaa
-	UaObKQLPkNq4mkFLlfw58NVgymkQxd2giGa3GJo2JRUJzdPVMKEZkZ7MLjYF/tYeCYCiMa
-	lOoqH3fLFQ0ZPN2ePkbS5238Elnqhj0DuCkAS+o4HbKvVnTApEvbsTqEWhYfrQ==
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=1hqiXywqPxinlmqbxEa5AKNjp6J6xlhWN58U0CT6W/o=;
+	b=fctAOKTMnH9sNZmAslIT2qUEzo3b9wOecb3i++oOuqVyI5rs/uh56093VF5GWP0MWCDPCD
+	az1vaf3hrtaAQXobTygYbVy0LEpPm/QVarFmoZzYhz7O+HhMuZQ8YxSZC53bRlEVyTZRXi
+	fm7vpeGUZwm3GSdskRlmgslFd/PUf4+lJZMplOSRLSot3szdoAKOlRbjM4D5IL4xn0sAdN
+	kPABG5MQe0C8qAVw05ciouMJjQiEyZxRtnC8Ymf3g4bVufHTQKeagOSsPpGK/u/HXP6Ntn
+	iAjcmrpLzoDDguqAQlXADE8kyFFHY/1nClKYVzIPYv3APMBLxpE7jx/4gDkRJQ==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
 	"David S. Miller" <davem@davemloft.net>,
@@ -45,13 +44,12 @@ To: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
 	Yury Norov <yury.norov@gmail.com>,
 	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Subject: [PATCH v6 3/5] lib/bitmap: Introduce bitmap_scatter() and bitmap_gather() helpers
-Date: Wed,  6 Mar 2024 09:07:19 +0100
-Message-ID: <20240306080726.167338-4-herve.codina@bootlin.com>
+Subject: [PATCH v6 0/5] Add support for QMC HDLC
+Date: Wed,  6 Mar 2024 09:07:16 +0100
+Message-ID: <20240306080726.167338-1-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240306080726.167338-1-herve.codina@bootlin.com>
-References: <20240306080726.167338-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,224 +67,173 @@ Cc: Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org, linux-kernel@vger.kern
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Hi,
 
-These helpers scatters or gathers a bitmap with the help of the mask
-position bits parameter.
+This series introduces the QMC HDLC support.
 
-bitmap_scatter() does the following:
-  src:  0000000001011010
-                  ||||||
-           +------+|||||
-           |  +----+||||
-           |  |+----+|||
-           |  ||   +-+||
-           |  ||   |  ||
-  mask: ...v..vv...v..vv
-        ...0..11...0..10
-  dst:  0000001100000010
+Patches were previously sent as part of a full feature series and were
+previously reviewed in that context:
+"Add support for QMC HDLC, framer infrastructure and PEF2256 framer" [1]
 
-and bitmap_gather() performs this one:
-   mask: ...v..vv...v..vv
-   src:  0000001100000010
-            ^  ^^   ^   0
-            |  ||   |  10
-            |  ||   > 010
-            |  |+--> 1010
-            |  +--> 11010
-            +----> 011010
-   dst:  0000000000011010
+In order to ease the merge, the full feature series has been split and
+needed parts were merged in v6.8-rc1:
+ - "Prepare the PowerQUICC QMC and TSA for the HDLC QMC driver" [2]
+ - "Add support for framer infrastructure and PEF2256 framer" [3]
 
-bitmap_gather() can the seen as the reverse bitmap_scatter() operation.
+This series contains patches related to the QMC HDLC part (QMC HDLC
+driver):
+ - Introduce the QMC HDLC driver (patches 1 and 2)
+ - Add timeslots change support in QMC HDLC (patch 3)
+ - Add framer support as a framer consumer in QMC HDLC (patch 4)
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Link: https://lore.kernel.org/lkml/20230926052007.3917389-3-andriy.shevchenko@linux.intel.com/
-Co-developed-by: Herve Codina <herve.codina@bootlin.com>
-Signed-off-by: Herve Codina <herve.codina@bootlin.com>
----
- include/linux/bitmap.h | 101 +++++++++++++++++++++++++++++++++++++++++
- lib/test_bitmap.c      |  42 +++++++++++++++++
- 2 files changed, 143 insertions(+)
+Compare to the original full feature series, a modification was done on
+patch 3 in order to use a coherent prefix in the commit title.
 
-diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
-index 99451431e4d6..049ba20911c5 100644
---- a/include/linux/bitmap.h
-+++ b/include/linux/bitmap.h
-@@ -62,6 +62,8 @@ struct device;
-  *  bitmap_shift_left(dst, src, n, nbits)       *dst = *src << n
-  *  bitmap_cut(dst, src, first, n, nbits)       Cut n bits from first, copy rest
-  *  bitmap_replace(dst, old, new, mask, nbits)  *dst = (*old & ~(*mask)) | (*new & *mask)
-+ *  bitmap_scatter(dst, src, mask, nbits)	*dst = map(dense, sparse)(src)
-+ *  bitmap_gather(dst, src, mask, nbits)	*dst = map(sparse, dense)(src)
-  *  bitmap_remap(dst, src, old, new, nbits)     *dst = map(old, new)(src)
-  *  bitmap_bitremap(oldbit, old, new, nbits)    newbit = map(old, new)(oldbit)
-  *  bitmap_onto(dst, orig, relmap, nbits)       *dst = orig relative to relmap
-@@ -487,6 +489,105 @@ static inline void bitmap_replace(unsigned long *dst,
- 		__bitmap_replace(dst, old, new, mask, nbits);
- }
- 
-+/**
-+ * bitmap_scatter - Scatter a bitmap according to the given mask
-+ * @dst: scattered bitmap
-+ * @src: gathered bitmap
-+ * @mask: mask representing bits to assign to in the scattered bitmap
-+ * @nbits: number of bits in each of these bitmaps
-+ *
-+ * Scatters bitmap with sequential bits according to the given @mask.
-+ *
-+ * Example:
-+ * If @src bitmap = 0x005a, with @mask = 0x1313, @dst will be 0x0302.
-+ *
-+ * Or in binary form
-+ * @src			@mask			@dst
-+ * 0000000001011010	0001001100010011	0000001100000010
-+ *
-+ * (Bits 0, 1, 2, 3, 4, 5 are copied to the bits 0, 1, 4, 8, 9, 12)
-+ *
-+ * A more 'visual' description of the operation:
-+ * src:  0000000001011010
-+ *                 ||||||
-+ *          +------+|||||
-+ *          |  +----+||||
-+ *          |  |+----+|||
-+ *          |  ||   +-+||
-+ *          |  ||   |  ||
-+ * mask: ...v..vv...v..vv
-+ *       ...0..11...0..10
-+ * dst:  0000001100000010
-+ *
-+ * A relationship exists between bitmap_scatter() and bitmap_gather().
-+ * bitmap_gather() can be seen as the 'reverse' bitmap_scatter() operation.
-+ * See bitmap_scatter() for details related to this relationship.
-+ */
-+static inline void bitmap_scatter(unsigned long *dst, const unsigned long *src,
-+				  const unsigned long *mask, unsigned int nbits)
-+{
-+	unsigned int n = 0;
-+	unsigned int bit;
-+
-+	bitmap_zero(dst, nbits);
-+
-+	for_each_set_bit(bit, mask, nbits)
-+		__assign_bit(bit, dst, test_bit(n++, src));
-+}
-+
-+/**
-+ * bitmap_gather - Gather a bitmap according to given mask
-+ * @dst: gathered bitmap
-+ * @src: scattered bitmap
-+ * @mask: mask representing bits to extract from in the scattered bitmap
-+ * @nbits: number of bits in each of these bitmaps
-+ *
-+ * Gathers bitmap with sparse bits according to the given @mask.
-+ *
-+ * Example:
-+ * If @src bitmap = 0x0302, with @mask = 0x1313, @dst will be 0x001a.
-+ *
-+ * Or in binary form
-+ * @src			@mask			@dst
-+ * 0000001100000010	0001001100010011	0000000000011010
-+ *
-+ * (Bits 0, 1, 4, 8, 9, 12 are copied to the bits 0, 1, 2, 3, 4, 5)
-+ *
-+ * A more 'visual' description of the operation:
-+ * mask: ...v..vv...v..vv
-+ * src:  0000001100000010
-+ *          ^  ^^   ^   0
-+ *          |  ||   |  10
-+ *          |  ||   > 010
-+ *          |  |+--> 1010
-+ *          |  +--> 11010
-+ *          +----> 011010
-+ * dst:  0000000000011010
-+ *
-+ * A relationship exists between bitmap_gather() and bitmap_scatter(). See
-+ * bitmap_scatter() for the bitmap scatter detailed operations.
-+ * Suppose scattered computed using bitmap_scatter(scattered, src, mask, n).
-+ * The operation bitmap_gather(result, scattered, mask, n) leads to a result
-+ * equal or equivalent to src.
-+ *
-+ * The result can be 'equivalent' because bitmap_scatter() and bitmap_gather()
-+ * are not bijective.
-+ * The result and src values are equivalent in that sense that a call to
-+ * bitmap_scatter(res, src, mask, n) and a call to
-+ * bitmap_scatter(res, result, mask, n) will lead to the same res value.
-+ */
-+static inline void bitmap_gather(unsigned long *dst, const unsigned long *src,
-+				 const unsigned long *mask, unsigned int nbits)
-+{
-+	unsigned int n = 0;
-+	unsigned int bit;
-+
-+	bitmap_zero(dst, nbits);
-+
-+	for_each_set_bit(bit, mask, nbits)
-+		__assign_bit(n++, dst, test_bit(bit, src));
-+}
-+
- static inline void bitmap_next_set_region(unsigned long *bitmap,
- 					  unsigned int *rs, unsigned int *re,
- 					  unsigned int end)
-diff --git a/lib/test_bitmap.c b/lib/test_bitmap.c
-index 65f22c2578b0..6b2b33579f56 100644
---- a/lib/test_bitmap.c
-+++ b/lib/test_bitmap.c
-@@ -380,6 +380,47 @@ static void __init test_replace(void)
- 	expect_eq_bitmap(bmap, exp3_1_0, nbits);
- }
- 
-+static const unsigned long sg_mask[] __initconst = {
-+	BITMAP_FROM_U64(0x000000000000035aULL),
-+};
-+
-+static const unsigned long sg_src[] __initconst = {
-+	BITMAP_FROM_U64(0x0000000000000667ULL),
-+};
-+
-+static const unsigned long sg_gather_exp[] __initconst = {
-+	BITMAP_FROM_U64(0x0000000000000029ULL),
-+};
-+
-+static const unsigned long sg_scatter_exp[] __initconst = {
-+	BITMAP_FROM_U64(0x000000000000021aULL),
-+};
-+
-+static void __init test_bitmap_sg(void)
-+{
-+	unsigned int nbits = 64;
-+	DECLARE_BITMAP(bmap_gather, 100);
-+	DECLARE_BITMAP(bmap_scatter, 100);
-+	DECLARE_BITMAP(bmap_tmp, 100);
-+	DECLARE_BITMAP(bmap_res, 100);
-+
-+	/* Simple gather call */
-+	bitmap_zero(bmap_gather, 100);
-+	bitmap_gather(bmap_gather, sg_src, sg_mask, nbits);
-+	expect_eq_bitmap(sg_gather_exp, bmap_gather, nbits);
-+
-+	/* Simple scatter call */
-+	bitmap_zero(bmap_scatter, 100);
-+	bitmap_scatter(bmap_scatter, sg_src, sg_mask, nbits);
-+	expect_eq_bitmap(sg_scatter_exp, bmap_scatter, nbits);
-+
-+	/* Scatter/gather relationship */
-+	bitmap_zero(bmap_tmp, 100);
-+	bitmap_gather(bmap_tmp, bmap_scatter, sg_mask, nbits);
-+	bitmap_scatter(bmap_res, bmap_tmp, sg_mask, nbits);
-+	expect_eq_bitmap(bmap_scatter, bmap_res, nbits);
-+}
-+
- #define PARSE_TIME	0x1
- #define NO_LEN		0x2
- 
-@@ -1252,6 +1293,7 @@ static void __init selftest(void)
- 	test_copy();
- 	test_bitmap_region();
- 	test_replace();
-+	test_bitmap_sg();
- 	test_bitmap_arr32();
- 	test_bitmap_arr64();
- 	test_bitmap_parse();
+I kept the patches unsquashed as they were previously sent and reviewed.
+Of course, I can squash them if needed.
+
+Compared to the previous iteration:
+  https://lore.kernel.org/linux-kernel/20240229141554.836867-1-herve.codina@bootlin.com/
+this v6 series mainly:
+- Adds missing header file inclusion.
+- Reworks loop in error handler.
+- Improves readability.
+- Adds 'Reviewed-by' tags.
+
+Best regards,
+Hervé
+
+[1]: https://lore.kernel.org/linux-kernel/20231115144007.478111-1-herve.codina@bootlin.com/
+[2]: https://lore.kernel.org/linux-kernel/20231205152116.122512-1-herve.codina@bootlin.com/
+[3]: https://lore.kernel.org/linux-kernel/20231128132534.258459-1-herve.codina@bootlin.com/
+
+Changes v5 -> v6
+  - Patch 1
+    Add missing header file inclusion.
+    Rework loop in qmc_hdlc_open() error handler.
+    Add 'Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>'
+
+  - Patch 2
+    No changes.
+
+  - Patch 3
+    Avoid breaking API calls in kernel-doc to improve readability.
+    Remove Andy's credit. Keep only his signed-off-by.
+
+  - Patch 4 and 5
+    Add	'Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>'.
+
+Changes v4 -> v5
+  - Patch 1
+    Update QMC_HDLC_RX_ERROR_FLAGS to improve readability.
+    Display an error message after releasing resources instead of
+    before.
+    Use 'struct device *dev' in probe().
+    Use dev_err_probe() in probe().
+    Do not print a message on -ENOMEM.
+    Use guard() and scoped_guard().
+
+  - Patch 3
+    Use '(). See' constructing in kernel-doc instead of '() (See ...'
+    Add 'Co-developed-by: Herve Codina <herve.codina@bootlin.com>'
+
+  - Patch 4
+    Use 'struct device *dev' in probe().
+    Use dev_err_probe() in probe().
+    Use '%64pb' instead of '%*pb' in printk formats.
+
+  - Patch 5
+    Use 'struct device *dev' in probe().
+    Use guard()
+
+Changes v3 -> v4
+  - Patch 1
+    Remove of.h and of_platform.h includes, add mod_devicetable.h.
+    Add a blank line in the includes list.
+
+  - Path 2
+    No changes.
+
+  - v3 patches 3 and 4 removed
+
+  - Patch 3 (new patch in v4)
+    Introduce bitmap_{scatter,gather}() based on the original patch done
+    by Andy Shevchenko.
+    Address comments already done on the original patch:
+    https://lore.kernel.org/lkml/20230926052007.3917389-3-andriy.shevchenko@linux.intel.com/
+      - Removed the returned values.
+      - Used 'unsigned int' for all indexes.
+      - Added a 'visual' description of the operations in kernel-doc.
+      - Described the relationship between bitmap_scatter() and
+        bitmap_gather().
+      - Moved bitmap_{scatter,gather}() to the bitmap.h file.
+      - Improved bitmap_{scatter,gather}() test.
+      - Reworked the commit log.
+
+  - Patch 4 (v3 patch 5)
+    Use bitmap_{scatter,gather}()
+
+  - Patches 5 (v3 patch 6)
+    No changes.
+
+Changes v2 -> v3
+  - Patch 1
+    Remove 'inline' function specifier from .c file.
+    Fix a bug introduced when added WARN_ONCE(). The warn condition must
+    be desc->skb (descriptor used) instead of !desc->skb.
+    Remove a lock/unlock section locking the entire qmc_hdlc_xmit()
+    function.
+
+  - Patch 5
+    Use bitmap_from_u64() everywhere instead of bitmap_from_arr32() and
+    bitmap_from_arr64().
+
+Changes v1 -> v2
+  - Patch 1
+    Use the same qmc_hdlc initialisation in qmc_hcld_recv_complete()
+    than the one present in qmc_hcld_xmit_complete().
+    Use WARN_ONCE()
+
+  - Patch 3 (new patch in v2)
+    Make bitmap_onto() available to users
+
+  - Patch 4 (new patch in v2)
+    Introduce bitmap_off()
+
+  - Patch 5 (patch 3 in v1)
+    Use bitmap_*() functions
+
+  - Patch 6 (patch 4 in v1)
+    No changes
+
+Changes compare to the full feature series:
+  - Patch 3
+    Use 'net: wan: fsl_qmc_hdlc:' as commit title prefix
+
+Patches extracted:
+  - Patch 1 : full feature series patch 7
+  - Patch 2 : full feature series patch 8
+  - Patch 3 : full feature series patch 20
+  - Patch 4 : full feature series patch 27
+
+Andy Shevchenko (1):
+  lib/bitmap: Introduce bitmap_scatter() and bitmap_gather() helpers
+
+Herve Codina (4):
+  net: wan: Add support for QMC HDLC
+  MAINTAINERS: Add the Freescale QMC HDLC driver entry
+  net: wan: fsl_qmc_hdlc: Add runtime timeslots changes support
+  net: wan: fsl_qmc_hdlc: Add framer support
+
+ MAINTAINERS                    |   7 +
+ drivers/net/wan/Kconfig        |  12 +
+ drivers/net/wan/Makefile       |   1 +
+ drivers/net/wan/fsl_qmc_hdlc.c | 791 +++++++++++++++++++++++++++++++++
+ include/linux/bitmap.h         | 101 +++++
+ lib/test_bitmap.c              |  42 ++
+ 6 files changed, 954 insertions(+)
+ create mode 100644 drivers/net/wan/fsl_qmc_hdlc.c
+
 -- 
 2.43.0
 
