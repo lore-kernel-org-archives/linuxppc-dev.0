@@ -4,56 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE701C5475B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 17:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE659C5475B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 23:42:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=hqrivvwV;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=V6wMfLDO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=dfxSn7ES;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TqfJg3xwbz3vcn
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 04:17:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tqpqr0D6Qz3vb3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 10:42:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=hqrivvwV;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=V6wMfLDO;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=dfxSn7ES;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqfHs0R8cz2xKQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 04:17:13 +1100 (AEDT)
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1709745424;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vbQn+OoB0S0JSESblEPZvsiWW6fd58wDKWFuC+9wmuM=;
-	b=hqrivvwV8/uKaYSb4vgXogwmxXcmvHD/vpzX4SBT0qMvFOUGrraEFjzmhKWJFdAjgFwGGu
-	i0YzuY8UAmRYf0nsjTLgEHobhCl5xrMUkpEssGQL2qsxjWjlfnV1WwwZsck0s/iT0LXTQv
-	0Rl1eNFX6Z2fuzs4m8UZFZe3NmzD9v+oOARm8YY+Fk5f6y7mGuzj3DqaTd7Ikfe/xxEDxk
-	o/Gn2QgDdLN/gW/30q5PkH4obkwRFVxPLxZYjQeciiXq9oUFO60wX+E19iH4m+YvzQnm17
-	bk4e9hBXQ4eLzXkZtwKVSF+vzA64I5Uh6wxpGU8BVYlxcOrJXuu6QcrFCrnF8w==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1709745424;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vbQn+OoB0S0JSESblEPZvsiWW6fd58wDKWFuC+9wmuM=;
-	b=V6wMfLDOUa0xxXybHidon5vJJmDL46LPJZaLPA1eJ+JCds6w+m0GI846wFu3s4IZ8nf3hV
-	tO38zJpHmpndsvDg==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tqppw4p6wz2yPq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 10:41:12 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1709768472;
+	bh=OHx3bVLlXnvaD4Lk/LqRAXihRU8d5iuk+jHowRU57+A=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=dfxSn7ESt9feXa7Ah5VgnrgsTR94t0TrfqG0PcTuTf3mOM2nYClb7KzncEO44oWvJ
+	 z177IwNoKxwaRwuRElWO9dM9vGP1BGgcQEfox5PbPq0mqdcUVphkGszRXScQ0d7mcO
+	 jW4ikoUKpq/rq3DBl50CSj6CPBHJDbwDqtBF6NxW+foiGgFyBpZYE+I728npTZNMg3
+	 1t/2+QbQypMyzr9+0O+l4J8vO9YugJeJGU6R2JxmPiIz07vqQ4qeSoMI/Ta1CVt4Pi
+	 EW9aQ8ONAeTLEZ2I6yd+B+il/wLckJElOl67KFtvN0q8NsP2LkndTztEXc4YygJJsv
+	 te7iy+1YEdhjg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tqppm50HGz4wcN;
+	Thu,  7 Mar 2024 10:41:04 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
 To: Arnd Bergmann <arnd@kernel.org>, Anna-Maria Behnsen
- <anna-maria@linutronix.de>, Vincenzo Frascino <vincenzo.frascino@arm.com>,
- Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH v2 3/3] arch: define CONFIG_PAGE_SIZE_*KB on all
- architectures
-In-Reply-To: <20240306141453.3900574-4-arnd@kernel.org>
+ <anna-maria@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, Vincenzo
+ Frascino <vincenzo.frascino@arm.com>, Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH v2 1/3] arch: consolidate existing CONFIG_PAGE_SIZE_*KB
+ definitions
+In-Reply-To: <20240306141453.3900574-2-arnd@kernel.org>
 References: <20240306141453.3900574-1-arnd@kernel.org>
- <20240306141453.3900574-4-arnd@kernel.org>
-Date: Wed, 06 Mar 2024 18:17:04 +0100
-Message-ID: <87zfvbth4f.ffs@tglx>
+ <20240306141453.3900574-2-arnd@kernel.org>
+Date: Thu, 07 Mar 2024 10:41:02 +1100
+Message-ID: <87sf13nd2p.fsf@mail.lhotse>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,24 +61,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, loongarch@lists.linux.dev, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, Jan Kiszka <jan.kiszka@siemens.com>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-alpha@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>, Kieran Bingham <kbingham@kernel.org>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu
- -berlin.de>, Stafford Horne <shorne@gmail.com>, Johannes Berg <johannes@sipsolutions.net>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org, loongarch@lists.linux.dev, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, Jan Kiszka <jan.kiszka@siemens.com>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, linux-alpha@vger.kernel.org, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quici
+ nc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Kieran Bingham <kbingham@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 06 2024 at 15:14, Arnd Bergmann wrote:
+Hi Arnd,
 
+Arnd Bergmann <arnd@kernel.org> writes:
 > From: Arnd Bergmann <arnd@arndb.de>
 >
-> Most architectures only support a single hardcoded page size. In order
-> to ensure that each one of these sets the corresponding Kconfig symbols,
-> change over the PAGE_SHIFT definition to the common one and allow
-> only the hardware page size to be selected.
+> These four architectures define the same Kconfig symbols for configuring
+> the page size. Move the logic into a common place where it can be shared
+> with all other architectures.
 >
-> Acked-by: Guo Ren <guoren@kernel.org>
-> Acked-by: Heiko Carstens <hca@linux.ibm.com>
-> Acked-by: Stafford Horne <shorne@gmail.com>
-> Acked-by: Johannes Berg <johannes@sipsolutions.net>
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+> Changes from v1:
+>  - improve Kconfig help texts
+>  - fix Hexagon Kconfig
+>
+>  arch/Kconfig                      | 92 ++++++++++++++++++++++++++++++-
+>  arch/hexagon/Kconfig              | 24 ++------
+>  arch/hexagon/include/asm/page.h   |  6 +-
+>  arch/loongarch/Kconfig            | 21 ++-----
+>  arch/loongarch/include/asm/page.h | 10 +---
+>  arch/mips/Kconfig                 | 58 ++-----------------
+>  arch/mips/include/asm/page.h      | 16 +-----
+>  arch/sh/include/asm/page.h        | 13 +----
+>  arch/sh/mm/Kconfig                | 42 ++++----------
+>  9 files changed, 121 insertions(+), 161 deletions(-)
 
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+There's a few "help" lines missing, which breaks the build:
+
+  arch/Kconfig:1134: syntax error
+  arch/Kconfig:1133: invalid statement
+  arch/Kconfig:1134: invalid statement
+  arch/Kconfig:1135:warning: ignoring unsupported character '.'
+  arch/Kconfig:1135:warning: ignoring unsupported character '.'
+  arch/Kconfig:1135: invalid statement
+  arch/Kconfig:1136: invalid statement
+  arch/Kconfig:1137:warning: ignoring unsupported character '.'
+  arch/Kconfig:1137: invalid statement
+  arch/Kconfig:1143: syntax error
+  arch/Kconfig:1142: invalid statement
+  arch/Kconfig:1143: invalid statement
+  arch/Kconfig:1144:warning: ignoring unsupported character '.'
+  arch/Kconfig:1144: invalid statement
+  arch/Kconfig:1145: invalid statement
+  arch/Kconfig:1146: invalid statement
+  arch/Kconfig:1147: invalid statement
+  arch/Kconfig:1148:warning: ignoring unsupported character '.'
+  arch/Kconfig:1148: invalid statement
+  make[4]: *** [../scripts/kconfig/Makefile:85: syncconfig] Error 1
+
+Fixup diff is:
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 56d45a75f625..f2295fa3b48c 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -1130,6 +1130,7 @@ config PAGE_SIZE_16KB
+ config PAGE_SIZE_32KB
+        bool "32KiB pages"
+        depends on HAVE_PAGE_SIZE_32KB
++       help
+          Using 32KiB page size will result in slightly higher performance
+          kernel at the price of higher memory consumption compared to
+          16KiB pages.  This option is available only on cnMIPS cores.
+@@ -1139,6 +1140,7 @@ config PAGE_SIZE_32KB
+ config PAGE_SIZE_64KB
+        bool "64KiB pages"
+        depends on HAVE_PAGE_SIZE_64KB
++       help
+          Using 64KiB page size will result in slightly higher performance
+          kernel at the price of much higher memory consumption compared to
+          4KiB or 16KiB pages.
+
+
+cheers
