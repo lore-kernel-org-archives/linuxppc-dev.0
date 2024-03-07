@@ -4,42 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8349C5475B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 02:41:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBDB2C5475B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 02:42:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=k3w+8DQK;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=EJoHJad7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tqtq925fwz3vbB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 13:41:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tqtqy2Gplz3vgQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 13:42:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=k3w+8DQK;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=EJoHJad7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
 Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqtpF0SV1z3cF4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 13:40:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqtpF0NQrz3cDw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 13:40:50 +1100 (AEDT)
 Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id 45A39100025;
-	Thu,  7 Mar 2024 05:40:45 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 45A39100025
+	by mx1.sberdevices.ru (Postfix) with ESMTP id C62B410000B;
+	Thu,  7 Mar 2024 05:40:44 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru C62B410000B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1709779245;
-	bh=P/O5w/8cj7I+6+/1kVHjj9xK1e1tJXqkaq/6XxYDflE=;
+	s=mail; t=1709779244;
+	bh=UeNmy3U2L3ZKGxtCqmcJ4OPlsyPvCww7Mr3cs0QeK+U=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=k3w+8DQKlF91NKxB21htrdawx2AotviLb3pmh3STsrkcMwMLsI55bPu/xmidlzxrv
-	 92naq5T7S88QeSLNbmy67UABFnxK/9+jjVYGWzwJPQlVQ45NXbUWh+xyEZIucBReSm
-	 WVDQ3I1EtfxTrKUulke63Pk8LkaX8ZommFKMhtb+Tf3FXCU4Zu9qs3Bs+4ppEfKMBG
-	 fawCmnXBIgQZqUNlAP2eT+bVgO9bOB6FtdfTpIDmdGa3iWriwvfIBQfLNtZQ1nMKl6
-	 71In8X5XlWdXQ4sOPol3KCMk0FjP937env9HY61qbqFNwppK/gRcMSzYgjgzN+B97a
-	 H0rPCvtz4F1SA==
+	b=EJoHJad7g+MuYBUHgDUkUojZ4E4Mb2hJI+XCn0cIQBabbrxWGDD/aEGN70nqJvekj
+	 wT08b8S7QbsThcsRqfKb35D8MYtOYnInlazPA0KMdreWes9+aTlpN4QCJlEA7LOwMQ
+	 lmXsfbSY90huLjlKa/pVkQRF946MQkyTj8VH0GzF0OxUnyMx0Rd9/e3xr3iZy6y+o5
+	 nBinH11FX5I/7f6bfJJJ0fd0ind5xEUU2m1/dpyT9DZEGByeW1gZHgp8Xc9+v54Pdn
+	 k+h2aQ349zCHIcixidkmvRRnqYJ2FE3xmC+uU1t9088tVIJBd+0uBAH/l6+PeRD+C4
+	 GHlU8SnmgNLHA==
 Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Thu,  7 Mar 2024 05:40:45 +0300 (MSK)
+	Thu,  7 Mar 2024 05:40:44 +0300 (MSK)
 Received: from localhost.localdomain (100.125.24.169) by
  p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
@@ -51,12 +51,10 @@ To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
 	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
 	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
 	<nikitos.tr@gmail.com>, <kabel@kernel.org>
-Subject: [PATCH v5 02/10] locking/mutex: introduce devm_mutex_init
-Date: Thu, 7 Mar 2024 05:40:26 +0300
-Message-ID: <20240307024034.1548605-3-gnstark@salutedevices.com>
+Subject: [PATCH v5 00/10] devm_led_classdev_register() usage problem
+Date: Thu, 7 Mar 2024 05:40:24 +0300
+Message-ID: <20240307024034.1548605-1-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20240307024034.1548605-1-gnstark@salutedevices.com>
-References: <20240307024034.1548605-1-gnstark@salutedevices.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -72,11 +70,11 @@ X-KSMG-AntiSpam-Rate: 0
 X-KSMG-AntiSpam-Status: not_detected
 X-KSMG-AntiSpam-Method: none
 X-KSMG-AntiSpam-Auth: dkim=none
-X-KSMG-AntiSpam-Info: LuaCore: 7 0.3.7 6d6bf5bd8eea7373134f756a2fd73e9456bb7d1a, {Tracking_from_domain_doesnt_match_to}, FromAlignment: s, ApMailHostAddress: 100.125.24.169
+X-KSMG-AntiSpam-Info: LuaCore: 7 0.3.7 6d6bf5bd8eea7373134f756a2fd73e9456bb7d1a, {Tracking_uf_ne_domains}, {Tracking_urls_end_caps}, {Tracking_from_domain_doesnt_match_to}, FromAlignment: s, ApMailHostAddress: 100.125.24.169
 X-MS-Exchange-Organization-SCL: -1
 X-KSMG-AntiSpam-Interceptor-Info: scan successful
-X-KSMG-AntiPhishing: Clean
-X-KSMG-LinksScanning: Clean
+X-KSMG-AntiPhishing: Clean, bases: 2024/02/29 16:52:00
+X-KSMG-LinksScanning: Clean, bases: 2024/02/29 16:52:00
 X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2024/02/29 19:21:00 #23899999
 X-KSMG-AntiVirus-Status: Clean, skipped
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,97 +92,123 @@ Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using of devm API leads to a certain order of releasing resources.
-So all dependent resources which are not devm-wrapped should be deleted
-with respect to devm-release order. Mutex is one of such objects that
-often is bound to other resources and has no own devm wrapping.
-Since mutex_destroy() actually does nothing in non-debug builds
-frequently calling mutex_destroy() is just ignored which is safe for now
-but wrong formally and can lead to a problem if mutex_destroy() will be
-extended so introduce devm_mutex_init()
+This patch series fixes the problem of devm_led_classdev_register misusing.
 
-Signed-off-by: George Stark <gnstark@salutedevices.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- Hello Christophe. Hope you don't mind I put you SoB tag because you helped alot
- to make this patch happen.
+The basic problem is described in [1]. Shortly when devm_led_classdev_register()
+is used then led_classdev_unregister() called after driver's remove() callback.
+led_classdev_unregister() calls driver's brightness_set callback and that callback
+may use resources which were destroyed already in driver's remove().
 
- include/linux/mutex.h        | 13 +++++++++++++
+After discussion with maintainers [2] [3] we decided:
+1) don't touch led subsytem core code and don't remove led_set_brightness() from it
+but fix drivers
+2) don't use devm_led_classdev_unregister
+
+So the solution is to use devm wrappers for all resources
+driver's brightness_set() depends on. And introduce dedicated devm wrapper
+for mutex as it's often used resource.
+
+[1] https://lore.kernel.org/lkml/8704539b-ed3b-44e6-aa82-586e2f895e2b@salutedevices.com/T/
+[2] https://lore.kernel.org/lkml/8704539b-ed3b-44e6-aa82-586e2f895e2b@salutedevices.com/T/#mc132b9b350fa51931b4fcfe14705d9f06e91421f
+[3] https://lore.kernel.org/lkml/8704539b-ed3b-44e6-aa82-586e2f895e2b@salutedevices.com/T/#mdbf572a85c33f869a553caf986b6228bb65c8383
+
+Changelog:
+v1->v2:
+	revise patch series completely
+
+v2->v3:
+locking: add define if mutex_destroy() is not an empty function
+	new patch, discussed here [8]
+
+devm-helpers: introduce devm_mutex_init
+	previous version [4]
+	- revise code based on mutex_destroy define
+	- update commit message
+	- update devm_mutex_init()'s description
+
+leds: aw2013: unlock mutex before destroying it
+	previous version [5]
+	- make this patch first in the series
+	- add tags Fixes and RvB by Andy
+
+leds: aw2013: use devm API to cleanup module's resources
+	previous version [6]
+	- make aw2013_chip_disable_action()'s body oneline
+	- don't shadow devm_mutex_init() return code
+
+leds: aw200xx: use devm API to cleanup module's resources
+	previous version [7]
+	- make aw200xx_*_action()'s bodies oneline
+	- don't shadow devm_mutex_init() return code
+
+leds: lm3532: use devm API to cleanup module's resources
+leds: nic78bx: use devm API to cleanup module's resources
+leds: mlxreg: use devm_mutex_init for mutex initializtion
+leds: an30259a: use devm_mutext_init for mutext initialization
+leds: powernv: add LED_RETAIN_AT_SHUTDOWN flag for leds
+	- those pathes were planned but not sent in the series #2 due to mail server
+	problem on my side. I revised them according to the comments.
+
+v3->v4:
+locking: introduce devm_mutex_init
+	new patch
+	- move devm_mutex_init implementation completely from devm-helpers.h to mutex.h
+
+locking: add define if mutex_destroy() is not an empty function
+	drop the patch [9]
+
+devm-helpers: introduce devm_mutex_init
+	drop the patch [10]
+
+leds: aw2013: use devm API to cleanup module's resources
+	- add tag Tested-by: Nikita Travkin <nikita@trvn.ru>
+
+v4->v5:
+leds: aw2013: unlock mutex before destroying it
+	merged separately and removed from the series
+
+locking/mutex: move mutex_destroy() definition lower
+	introduce optional refactoring patch
+
+locking/mutex: introduce devm_mutex_init
+	leave only one devm_mutex_init definition
+	add tag Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+
+leds* patches
+	remove #include <linux/devm-helpers.h> due to devm_mutext_init in mutex.h now
+
+[4] https://lore.kernel.org/lkml/20231204180603.470421-1-gnstark@salutedevices.com/T/#mf500af0eda2a9ffc95594607dbe4cb64f2e3c9a8
+[5] https://lore.kernel.org/lkml/20231204180603.470421-1-gnstark@salutedevices.com/T/#mc92df4fb4f7d4187fb01cc1144acfa5fb5230dd2
+[6] https://lore.kernel.org/lkml/20231204180603.470421-1-gnstark@salutedevices.com/T/#m300df89710c43cc2ab598baa16c68dd0a0d7d681
+[7] https://lore.kernel.org/lkml/20231204180603.470421-1-gnstark@salutedevices.com/T/#m8e5c65e0c6b137c91fa00bb9320ad581164d1d0b
+[8] https://lore.kernel.org/lkml/377e4437-7051-4d88-ae68-1460bcd692e1@redhat.com/T/#m5f84a4a2f387d49678783e652b9e658e02c27450
+[9] https://lore.kernel.org/lkml/20231213223020.2713164-1-gnstark@salutedevices.com/T/#m19ad1fc04c560012c1e27418e3156d0c9306dd84
+[10] https://lore.kernel.org/lkml/20231213223020.2713164-1-gnstark@salutedevices.com/T/#m63126025f5d1bdcef69bcad50f2e58274d42e2d
+
+George Stark (10):
+  locking/mutex: move mutex_destroy() definition lower
+  locking/mutex: introduce devm_mutex_init
+  leds: aw2013: use devm API to cleanup module's resources
+  leds: aw200xx: use devm API to cleanup module's resources
+  leds: lp3952: use devm API to cleanup module's resources
+  leds: lm3532: use devm API to cleanup module's resources
+  leds: nic78bx: use devm API to cleanup module's resources
+  leds: mlxreg: use devm_mutex_init for mutex initializtion
+  leds: an30259a: use devm_mutext_init for mutext initialization
+  leds: powernv: use LED_RETAIN_AT_SHUTDOWN flag for leds
+
+ drivers/leds/leds-an30259a.c | 14 ++++----------
+ drivers/leds/leds-aw200xx.c  | 32 +++++++++++++++++++++-----------
+ drivers/leds/leds-aw2013.c   | 25 +++++++++++++------------
+ drivers/leds/leds-lm3532.c   | 29 +++++++++++++++++------------
+ drivers/leds/leds-lp3952.c   | 21 +++++++++++----------
+ drivers/leds/leds-mlxreg.c   | 14 +++++---------
+ drivers/leds/leds-nic78bx.c  | 23 +++++++++++++----------
+ drivers/leds/leds-powernv.c  | 23 ++++++++---------------
+ include/linux/mutex.h        | 27 +++++++++++++++++++++++----
  kernel/locking/mutex-debug.c | 22 ++++++++++++++++++++++
- 2 files changed, 35 insertions(+)
+ 10 files changed, 137 insertions(+), 93 deletions(-)
 
-diff --git a/include/linux/mutex.h b/include/linux/mutex.h
-index f7611c092db7..9bcf72cb941a 100644
---- a/include/linux/mutex.h
-+++ b/include/linux/mutex.h
-@@ -22,6 +22,8 @@
- #include <linux/cleanup.h>
- #include <linux/mutex_types.h>
-
-+struct device;
-+
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- # define __DEP_MAP_MUTEX_INITIALIZER(lockname)			\
- 		, .dep_map = {					\
-@@ -115,10 +117,21 @@ do {							\
-
- #ifdef CONFIG_DEBUG_MUTEXES
-
-+int devm_mutex_init(struct device *dev, struct mutex *lock);
- void mutex_destroy(struct mutex *lock);
-
- #else
-
-+static inline int devm_mutex_init(struct device *dev, struct mutex *lock)
-+{
-+	/*
-+	 * since mutex_destroy is nop actually there's no need to register it
-+	 * in devm subsystem.
-+	 */
-+	mutex_init(lock);
-+	return 0;
-+}
-+
- static inline void mutex_destroy(struct mutex *lock) {}
-
- #endif
-diff --git a/kernel/locking/mutex-debug.c b/kernel/locking/mutex-debug.c
-index bc8abb8549d2..c9efab1a8026 100644
---- a/kernel/locking/mutex-debug.c
-+++ b/kernel/locking/mutex-debug.c
-@@ -19,6 +19,7 @@
- #include <linux/kallsyms.h>
- #include <linux/interrupt.h>
- #include <linux/debug_locks.h>
-+#include <linux/device.h>
-
- #include "mutex.h"
-
-@@ -104,3 +105,24 @@ void mutex_destroy(struct mutex *lock)
- }
-
- EXPORT_SYMBOL_GPL(mutex_destroy);
-+
-+static void devm_mutex_release(void *res)
-+{
-+	mutex_destroy(res);
-+}
-+
-+/**
-+ * devm_mutex_init - Resource-managed mutex initialization
-+ * @dev:	Device which lifetime mutex is bound to
-+ * @lock:	Pointer to a mutex
-+ *
-+ * Initialize mutex which is automatically destroyed when the driver is detached.
-+ *
-+ * Returns: 0 on success or a negative error code on failure.
-+ */
-+int devm_mutex_init(struct device *dev, struct mutex *lock)
-+{
-+	mutex_init(lock);
-+	return devm_add_action_or_reset(dev, devm_mutex_release, lock);
-+}
-+EXPORT_SYMBOL_GPL(devm_mutex_init);
 --
 2.25.1
 
