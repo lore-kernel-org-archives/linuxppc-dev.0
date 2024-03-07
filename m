@@ -4,56 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A27A0C5475B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2024 17:18:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8349C5475B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 02:41:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=gDCCIQT1;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Ba8NRrLO;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=k3w+8DQK;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TqfKb2HSzz3vfv
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 04:18:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tqtq925fwz3vbB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 13:41:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=gDCCIQT1;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Ba8NRrLO;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=k3w+8DQK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
+Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqfJp1qWFz2xct
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 04:18:02 +1100 (AEDT)
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1709745479;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/OQqHSSiFO9QvgB4mY2J+LyWd+etZHTC3EZIIQab4fo=;
-	b=gDCCIQT1qxbWXTzhufSmoNS52MsO6T6khcDRU4R/DvjT4G7MoNh9Ky1nmGGMUA5kBJGmB5
-	azsjDUOsuP8fnYd10g8AahY82D+0bOAV5U3WP5daAn+croDLWUY3Ux3Xh7i9JWhMGu7ILz
-	CZx/MWC+XoyW1OE1/HgI9ImOzMQ3Hsu7ZGgFD0XsFBH1gJkU/OqCW7ZFdp75gTfSAIe5PP
-	r0Jjoh6AeTDkw4LFACDFt43V3o5FzJyQ23zOJdJCOPm4FdIlpDNblApjxSKyFng8p2xu18
-	6rz3+EZYW43r4daGc6RkeHzoLH9pHS88uirHCfRuC4FSfS7+MEcP8Bkyg26BgA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1709745479;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/OQqHSSiFO9QvgB4mY2J+LyWd+etZHTC3EZIIQab4fo=;
-	b=Ba8NRrLO9SKa1kou0+rIbBztNEAwJsDv3WFMK2NllzRQnMhckZV3x6THtTFG81tO6REjSx
-	6aQnDwMJIY/8bAAA==
-To: Arnd Bergmann <arnd@kernel.org>, Anna-Maria Behnsen
- <anna-maria@linutronix.de>, Vincenzo Frascino <vincenzo.frascino@arm.com>,
- Kees Cook <keescook@chromium.org>
-Subject: Re: [v2 PATCH 0/3] arch: mm, vdso: consolidate PAGE_SIZE definition
-In-Reply-To: <20240306141453.3900574-1-arnd@kernel.org>
-References: <20240306141453.3900574-1-arnd@kernel.org>
-Date: Wed, 06 Mar 2024 18:17:58 +0100
-Message-ID: <87wmqfth2x.ffs@tglx>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqtpF0SV1z3cF4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 13:40:51 +1100 (AEDT)
+Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
+	by mx1.sberdevices.ru (Postfix) with ESMTP id 45A39100025;
+	Thu,  7 Mar 2024 05:40:45 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru 45A39100025
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
+	s=mail; t=1709779245;
+	bh=P/O5w/8cj7I+6+/1kVHjj9xK1e1tJXqkaq/6XxYDflE=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
+	b=k3w+8DQKlF91NKxB21htrdawx2AotviLb3pmh3STsrkcMwMLsI55bPu/xmidlzxrv
+	 92naq5T7S88QeSLNbmy67UABFnxK/9+jjVYGWzwJPQlVQ45NXbUWh+xyEZIucBReSm
+	 WVDQ3I1EtfxTrKUulke63Pk8LkaX8ZommFKMhtb+Tf3FXCU4Zu9qs3Bs+4ppEfKMBG
+	 fawCmnXBIgQZqUNlAP2eT+bVgO9bOB6FtdfTpIDmdGa3iWriwvfIBQfLNtZQ1nMKl6
+	 71In8X5XlWdXQ4sOPol3KCMk0FjP937env9HY61qbqFNwppK/gRcMSzYgjgzN+B97a
+	 H0rPCvtz4F1SA==
+Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mx1.sberdevices.ru (Postfix) with ESMTPS;
+	Thu,  7 Mar 2024 05:40:45 +0300 (MSK)
+Received: from localhost.localdomain (100.125.24.169) by
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1118.40; Thu, 7 Mar 2024 05:40:44 +0300
+From: George Stark <gnstark@salutedevices.com>
+To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
+	<vadimp@nvidia.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<christophe.leroy@csgroup.eu>, <hdegoede@redhat.com>,
+	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
+	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
+	<nikitos.tr@gmail.com>, <kabel@kernel.org>
+Subject: [PATCH v5 02/10] locking/mutex: introduce devm_mutex_init
+Date: Thu, 7 Mar 2024 05:40:26 +0300
+Message-ID: <20240307024034.1548605-3-gnstark@salutedevices.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240307024034.1548605-1-gnstark@salutedevices.com>
+References: <20240307024034.1548605-1-gnstark@salutedevices.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
+X-Originating-IP: [100.125.24.169]
+X-ClientProxiedBy: p-i-exch-a-m1.sberdevices.ru (172.24.196.116) To
+ p-i-exch-sc-m01.sberdevices.ru (172.16.192.107)
+X-KSMG-Rule-ID: 10
+X-KSMG-Message-Action: clean
+X-KSMG-AntiSpam-Lua-Profiles: 183875 [Feb 29 2024]
+X-KSMG-AntiSpam-Version: 6.1.0.3
+X-KSMG-AntiSpam-Envelope-From: gnstark@salutedevices.com
+X-KSMG-AntiSpam-Rate: 0
+X-KSMG-AntiSpam-Status: not_detected
+X-KSMG-AntiSpam-Method: none
+X-KSMG-AntiSpam-Auth: dkim=none
+X-KSMG-AntiSpam-Info: LuaCore: 7 0.3.7 6d6bf5bd8eea7373134f756a2fd73e9456bb7d1a, {Tracking_from_domain_doesnt_match_to}, FromAlignment: s, ApMailHostAddress: 100.125.24.169
+X-MS-Exchange-Organization-SCL: -1
+X-KSMG-AntiSpam-Interceptor-Info: scan successful
+X-KSMG-AntiPhishing: Clean
+X-KSMG-LinksScanning: Clean
+X-KSMG-AntiVirus: Kaspersky Secure Mail Gateway, version 2.0.1.6960, bases: 2024/02/29 19:21:00 #23899999
+X-KSMG-AntiVirus-Status: Clean, skipped
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,23 +90,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, loongarch@lists.linux.dev, Andreas Larsson <andreas@gaisler.com>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, Jan Kiszka <jan.kiszka@siemens.com>, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-alpha@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Kieran Bingham <kbingham@kernel.org>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-arm-kernel@lists.
- infradead.org, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: kernel@salutedevices.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, George Stark <gnstark@salutedevices.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 06 2024 at 15:14, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> Naresh noticed that the newly added usage of the PAGE_SIZE macro in
-> include/vdso/datapage.h introduced a build regression. I had an older
-> patch that I revived to have this defined through Kconfig rather than
-> through including asm/page.h, which is not allowed in vdso code.
->
-> The vdso patch series now has a temporary workaround, but I still want to
-> get this into v6.9 so we can place the hack with CONFIG_PAGE_SIZE
-> in the vdso.
+Using of devm API leads to a certain order of releasing resources.
+So all dependent resources which are not devm-wrapped should be deleted
+with respect to devm-release order. Mutex is one of such objects that
+often is bound to other resources and has no own devm wrapping.
+Since mutex_destroy() actually does nothing in non-debug builds
+frequently calling mutex_destroy() is just ignored which is safe for now
+but wrong formally and can lead to a problem if mutex_destroy() will be
+extended so introduce devm_mutex_init()
 
-Thank you for cleaning this up!
+Signed-off-by: George Stark <gnstark@salutedevices.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ Hello Christophe. Hope you don't mind I put you SoB tag because you helped alot
+ to make this patch happen.
 
-      tglx
+ include/linux/mutex.h        | 13 +++++++++++++
+ kernel/locking/mutex-debug.c | 22 ++++++++++++++++++++++
+ 2 files changed, 35 insertions(+)
+
+diff --git a/include/linux/mutex.h b/include/linux/mutex.h
+index f7611c092db7..9bcf72cb941a 100644
+--- a/include/linux/mutex.h
++++ b/include/linux/mutex.h
+@@ -22,6 +22,8 @@
+ #include <linux/cleanup.h>
+ #include <linux/mutex_types.h>
+
++struct device;
++
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+ # define __DEP_MAP_MUTEX_INITIALIZER(lockname)			\
+ 		, .dep_map = {					\
+@@ -115,10 +117,21 @@ do {							\
+
+ #ifdef CONFIG_DEBUG_MUTEXES
+
++int devm_mutex_init(struct device *dev, struct mutex *lock);
+ void mutex_destroy(struct mutex *lock);
+
+ #else
+
++static inline int devm_mutex_init(struct device *dev, struct mutex *lock)
++{
++	/*
++	 * since mutex_destroy is nop actually there's no need to register it
++	 * in devm subsystem.
++	 */
++	mutex_init(lock);
++	return 0;
++}
++
+ static inline void mutex_destroy(struct mutex *lock) {}
+
+ #endif
+diff --git a/kernel/locking/mutex-debug.c b/kernel/locking/mutex-debug.c
+index bc8abb8549d2..c9efab1a8026 100644
+--- a/kernel/locking/mutex-debug.c
++++ b/kernel/locking/mutex-debug.c
+@@ -19,6 +19,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/interrupt.h>
+ #include <linux/debug_locks.h>
++#include <linux/device.h>
+
+ #include "mutex.h"
+
+@@ -104,3 +105,24 @@ void mutex_destroy(struct mutex *lock)
+ }
+
+ EXPORT_SYMBOL_GPL(mutex_destroy);
++
++static void devm_mutex_release(void *res)
++{
++	mutex_destroy(res);
++}
++
++/**
++ * devm_mutex_init - Resource-managed mutex initialization
++ * @dev:	Device which lifetime mutex is bound to
++ * @lock:	Pointer to a mutex
++ *
++ * Initialize mutex which is automatically destroyed when the driver is detached.
++ *
++ * Returns: 0 on success or a negative error code on failure.
++ */
++int devm_mutex_init(struct device *dev, struct mutex *lock)
++{
++	mutex_init(lock);
++	return devm_add_action_or_reset(dev, devm_mutex_release, lock);
++}
++EXPORT_SYMBOL_GPL(devm_mutex_init);
+--
+2.25.1
+
