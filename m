@@ -4,46 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4946C5475B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 02:43:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93859C54E41
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 02:44:26 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=lU5slDiY;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=nu65ajK2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TqtsX1pD7z3vld
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 13:43:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TqttK1nm8z3vjQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 13:44:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=lU5slDiY;
+	dkim=pass (2048-bit key; unprotected) header.d=salutedevices.com header.i=@salutedevices.com header.a=rsa-sha256 header.s=mail header.b=nu65ajK2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=salutedevices.com (client-ip=37.18.73.165; helo=mx1.sberdevices.ru; envelope-from=gnstark@salutedevices.com; receiver=lists.ozlabs.org)
 Received: from mx1.sberdevices.ru (mx1.sberdevices.ru [37.18.73.165])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqtpF5l1Mz3cGK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 13:40:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TqtpL17Vcz3cF4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 13:40:58 +1100 (AEDT)
 Received: from p-infra-ksmg-sc-msk01 (localhost [127.0.0.1])
-	by mx1.sberdevices.ru (Postfix) with ESMTP id EBF73100037;
-	Thu,  7 Mar 2024 05:40:45 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru EBF73100037
+	by mx1.sberdevices.ru (Postfix) with ESMTP id F13E710003B;
+	Thu,  7 Mar 2024 05:40:46 +0300 (MSK)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mx1.sberdevices.ru F13E710003B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=salutedevices.com;
-	s=mail; t=1709779245;
-	bh=UKhnHyf3Q15t1sWab7Ng1cV9QPOXCfl6k9inzlZSB1c=;
+	s=mail; t=1709779246;
+	bh=ne+UNP12/e+I4agBDJC1BgUysK2PGalNhVYKKmNLm2Y=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type:From;
-	b=lU5slDiYOWyLrEh994hiweA22+yzTSHp9jdwJbNqGuNy2A3IWVFi1gIt8iZbi0zUs
-	 GqLcDXrqzqXcynHSYKsScDlfwHETyxrDNlQc1LemGiWaPSqVtN18hP7hDl14ieqmIz
-	 C/mfeNkyDXiXe0uQxiWka57LBrs/3x8lANQiQ26zzZVNouROM4Qg1WpuraSM5tAolN
-	 82EQUUlJA2ymA/895iBnu/4o1YQhJUCnOrT5JHYPA49tMpjIlcVKktec9ls+Vd21gb
-	 2Cc8X0jMIksss7BQRk+jWAOfS0Y6lRyoOTi7vRjUH3p6VnWwHyIK8SnSzMciQXX/vt
-	 4chEdrHuSM4Pg==
+	b=nu65ajK24mGZGXYD6CTZLIYJBvvVz6hQTvh3DjLtwgnMuQ12/akaHHZn5RNisn5UM
+	 Okqul1+vZjEMxIPNdAJqZLxoQs5ZVk3f/YKvLt9yU/ySc4v28Mz1sPMFLEZjoLSZg5
+	 2NSH4RG6uWP9PD0ZtA3GsUUKNPTgtqX2d/hV7D7oXTz2g8pgkMdvgspqqpWFysUuwF
+	 wyOtIxH+0lM8J7hlO39wTDVWnSKzc20AujIMsUoO0FsLGMjyGi8XnHVkLsKvG0ELdb
+	 DcTrYS0Ci8AkopM0cGpeqiBwUl33j6Pb7u6Zxao0j5C6lC0AePjSUkR7wmwDQarwAq
+	 6QvEYKl8S7IwA==
 Received: from smtp.sberdevices.ru (p-i-exch-sc-m01.sberdevices.ru [172.16.192.107])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
 	by mx1.sberdevices.ru (Postfix) with ESMTPS;
-	Thu,  7 Mar 2024 05:40:45 +0300 (MSK)
+	Thu,  7 Mar 2024 05:40:46 +0300 (MSK)
 Received: from localhost.localdomain (100.125.24.169) by
  p-i-exch-sc-m01.sberdevices.ru (172.16.192.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1118.40; Thu, 7 Mar 2024 05:40:45 +0300
+ 15.2.1118.40; Thu, 7 Mar 2024 05:40:46 +0300
 From: George Stark <gnstark@salutedevices.com>
 To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
 	<vadimp@nvidia.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
@@ -51,9 +51,9 @@ To: <andy.shevchenko@gmail.com>, <pavel@ucw.cz>, <lee@kernel.org>,
 	<mazziesaccount@gmail.com>, <peterz@infradead.org>, <mingo@redhat.com>,
 	<will@kernel.org>, <longman@redhat.com>, <boqun.feng@gmail.com>,
 	<nikitos.tr@gmail.com>, <kabel@kernel.org>
-Subject: [PATCH v5 05/10] leds: lp3952: use devm API to cleanup module's resources
-Date: Thu, 7 Mar 2024 05:40:29 +0300
-Message-ID: <20240307024034.1548605-6-gnstark@salutedevices.com>
+Subject: [PATCH v5 09/10] leds: an30259a: use devm_mutext_init for mutext initialization
+Date: Thu, 7 Mar 2024 05:40:33 +0300
+Message-ID: <20240307024034.1548605-10-gnstark@salutedevices.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240307024034.1548605-1-gnstark@salutedevices.com>
 References: <20240307024034.1548605-1-gnstark@salutedevices.com>
@@ -97,67 +97,54 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 In this driver LEDs are registered using devm_led_classdev_register()
 so they are automatically unregistered after module's remove() is done.
 led_classdev_unregister() calls module's led_set_brightness() to turn off
-the LEDs and that callback uses resources which were destroyed already
-in module's remove() so use devm API instead of remove().
-Also drop explicit turning LEDs off from remove() due to they will be off
-anyway by led_classdev_unregister().
+the LEDs and that callback uses mutex which was destroyed already
+in module's remove() so use devm API instead.
 
 Signed-off-by: George Stark <gnstark@salutedevices.com>
 ---
- drivers/leds/leds-lp3952.c | 21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+ drivers/leds/leds-an30259a.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/leds/leds-lp3952.c b/drivers/leds/leds-lp3952.c
-index 5d18bbfd1f23..e24bfe686312 100644
---- a/drivers/leds/leds-lp3952.c
-+++ b/drivers/leds/leds-lp3952.c
-@@ -207,6 +207,13 @@ static const struct regmap_config lp3952_regmap = {
- 	.cache_type = REGCACHE_MAPLE,
- };
+diff --git a/drivers/leds/leds-an30259a.c b/drivers/leds/leds-an30259a.c
+index 0216afed3b6e..decfca447d8a 100644
+--- a/drivers/leds/leds-an30259a.c
++++ b/drivers/leds/leds-an30259a.c
+@@ -283,7 +283,10 @@ static int an30259a_probe(struct i2c_client *client)
+ 	if (err < 0)
+ 		return err;
  
-+static void gpio_set_low_action(void *data)
-+{
-+	struct lp3952_led_array *priv = (struct lp3952_led_array *)data;
+-	mutex_init(&chip->mutex);
++	err = devm_mutex_init(&client->dev, &chip->mutex);
++	if (err)
++		return err;
 +
-+	gpiod_set_value(priv->enable_gpio, 0);
-+}
-+
- static int lp3952_probe(struct i2c_client *client)
- {
- 	int status;
-@@ -226,6 +233,10 @@ static int lp3952_probe(struct i2c_client *client)
- 		return status;
- 	}
+ 	chip->client = client;
+ 	i2c_set_clientdata(client, chip);
  
-+	status = devm_add_action(&client->dev, gpio_set_low_action, priv);
-+	if (status)
-+		return status;
-+
- 	priv->regmap = devm_regmap_init_i2c(client, &lp3952_regmap);
- 	if (IS_ERR(priv->regmap)) {
- 		int err = PTR_ERR(priv->regmap);
-@@ -254,15 +265,6 @@ static int lp3952_probe(struct i2c_client *client)
+@@ -317,17 +320,9 @@ static int an30259a_probe(struct i2c_client *client)
  	return 0;
+ 
+ exit:
+-	mutex_destroy(&chip->mutex);
+ 	return err;
  }
  
--static void lp3952_remove(struct i2c_client *client)
+-static void an30259a_remove(struct i2c_client *client)
 -{
--	struct lp3952_led_array *priv;
+-	struct an30259a *chip = i2c_get_clientdata(client);
 -
--	priv = i2c_get_clientdata(client);
--	lp3952_on_off(priv, LP3952_LED_ALL, false);
--	gpiod_set_value(priv->enable_gpio, 0);
+-	mutex_destroy(&chip->mutex);
 -}
 -
- static const struct i2c_device_id lp3952_id[] = {
- 	{LP3952_NAME, 0},
- 	{}
-@@ -274,7 +276,6 @@ static struct i2c_driver lp3952_i2c_driver = {
- 			.name = LP3952_NAME,
+ static const struct of_device_id an30259a_match_table[] = {
+ 	{ .compatible = "panasonic,an30259a", },
+ 	{ /* sentinel */ },
+@@ -347,7 +342,6 @@ static struct i2c_driver an30259a_driver = {
+ 		.of_match_table = an30259a_match_table,
  	},
- 	.probe = lp3952_probe,
--	.remove = lp3952_remove,
- 	.id_table = lp3952_id,
+ 	.probe = an30259a_probe,
+-	.remove = an30259a_remove,
+ 	.id_table = an30259a_id,
  };
  
 -- 
