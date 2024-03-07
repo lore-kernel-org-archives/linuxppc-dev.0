@@ -4,70 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1FEAC54E4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 20:35:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 330E5C54E4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2024 20:37:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TztGJW9C;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZH712JAe;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TrLfF3dz6z3vsp
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 07:35:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TrLht693gz3vwg
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 07:37:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TztGJW9C;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZH712JAe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::133; helo=mail-lf1-x133.google.com; envelope-from=yury.norov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tr6Bg0mTbz307y
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2024 22:14:17 +1100 (AEDT)
-Received: by mail-lf1-x133.google.com with SMTP id 2adb3069b0e04-51336ab1fb7so951552e87.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Mar 2024 03:14:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1709810053; x=1710414853; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=2AMWp8CTIDIp4IzjSjlpXPuXredbkA06mu/mQm+MSh8=;
-        b=TztGJW9CSpViv+xSL9SQgmM2wUsm57NFbCX3RxrVWpTQPz0nPu2/p9mRV4i74XXjIS
-         aCW7biJ5z+voT7FKqFWCP6g1MiS5RntWsCwwBpAyhl5xmCIizyrQ1t8HdWFAFgVcu/ZY
-         L14P6pbIAmOt97n+z9An9F1T8a5k85yFTlVr16/OPgZtdLNRUTD6hB7553MSwl827QI1
-         /CRzGSzZN0RkI/MU1vFfUsA0Y0Fsi/v/hcBQRiQFTLi5/5nzMyyxMmNC3qerxE2Azn8a
-         Ea3hsZOKFSlJ/gmPWm+39U6pyfRWFJQTR4wnw7CYZTN+JwWOzUwFXPoHLMzG7YlYCV1l
-         xuhQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1709810053; x=1710414853;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=2AMWp8CTIDIp4IzjSjlpXPuXredbkA06mu/mQm+MSh8=;
-        b=ec6pX3y1ApldMRAMTaOD+S2A0Gf6eQ8VcdYSyhcgmPBom7kC8egeLh0fMfI6P3o3+Q
-         O6JDABHRiTS4VTUVhLi5i5dvn8sf/TacV0ghy+YJgjy3G3Ib6EcCowi0hvn1dSK+syR/
-         fvw3tKu7gQGrAqOPn7ufvvIIHFb8SvLbaJuhYJjahJoHEhbP9xpcho03PkGu00p4Vtrs
-         zx7ZZrHkDCIrFJwwmejLEFSPWL+IfVB7xQh5NlhNnc8nSt6XntAU+abpbMSrBinEPJYC
-         LRcnYASbqjtn88sMJJbmyQ/ahXXtUS/oPFMCmfkvMiAEe+rvaTgKtOk78ReISp1UILjR
-         Qp6w==
-X-Forwarded-Encrypted: i=1; AJvYcCWg0NlCE9TBtcbL4nDhtBw7LV4xODuqThAnndQXHHIli+UZ4PdupHbdYwYU0XYErQ1AQ+k94xXukbXVCFfPyFsuwELF58EFX7yx+fUOSg==
-X-Gm-Message-State: AOJu0YxEU6SD8i4qoGWoGjB9odiTbJuV4t/Ft/t0LR8whD6VwnDNwwg+
-	Oaa0H7rq4sq3rC9Sf/rZwbkJ+riSAKv27tKQs/ZT0j2Oegn29Zq3BwZDcfyyennc0AkoeMkEz13
-	ImOYbY1W8FocphyTYqI52pYowSRk=
-X-Google-Smtp-Source: AGHT+IFB//rVz7J8LQSz57QlmZWNxoI8xZk+YFkdITRdm5qY78WPwwIduSAyCkJ5szOvXqlJJTHOx3Ewfo8up7+BCpk=
-X-Received: by 2002:a05:6512:3d1f:b0:513:2f96:72b5 with SMTP id
- d31-20020a0565123d1f00b005132f9672b5mr1703519lfv.33.1709810052589; Thu, 07
- Mar 2024 03:14:12 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TrLh52z0sz3bnt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2024 07:37:09 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 32A79CE262A;
+	Thu,  7 Mar 2024 20:37:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3FCEC43399;
+	Thu,  7 Mar 2024 20:36:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1709843827;
+	bh=eGOAWjsud1Ck55pN1j35rMAJfavIagxkoPDo64qggSI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ZH712JAesiA+VYRacjgjemvYuwNC+u2uBeBcbpeuc4RDzFUcSpwBReDql9vSCIg6d
+	 F93jh07hklNqj8HKW/f5tnNUFOiEOiJ/tjtfy9Tc/Jrw1hNHT6lF/+Qz8pkj9yoQ8y
+	 +VtpiY/Yqxlrgz22AK+AXoXf8eI8bexciwarO3P1BFhzEOdWvA7fQ6eek7GRC9soYk
+	 oL8S1zToSuXAd//ke4hVGX1dVjhSu+c6TgIhTuFy1FI9xpJGJ+iKB6Ljmnc+QfevSC
+	 pRKNjOCUkQmB51EtN7aQQYHMVP7F4yYBqYg+jVI86Rb2bJrAmukaFXBeAhGileYxkF
+	 Jx7SWbo+p/8Ow==
+Date: Thu, 7 Mar 2024 21:36:56 +0100
+From: Niklas Cassel <cassel@kernel.org>
+To: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Subject: Re: [PATCH v9 06/10] PCI: dwc: ep: Call dw_pcie_ep_init_registers()
+ API directly from all glue drivers
+Message-ID: <ZeolaEIRYmKZjnvT@ryzen>
+References: <20240304-pci-dbi-rework-v9-0-29d433d99cda@linaro.org>
+ <20240304-pci-dbi-rework-v9-6-29d433d99cda@linaro.org>
 MIME-Version: 1.0
-References: <20240306080726.167338-1-herve.codina@bootlin.com>
- <20240306080726.167338-4-herve.codina@bootlin.com> <Zehrd/VgW5AnfJEu@yury-ThinkPad>
- <Zehx-v7h38TPJWwe@smile.fi.intel.com> <20240307083107.0fcd940f@bootlin.com>
-In-Reply-To: <20240307083107.0fcd940f@bootlin.com>
-From: Yury Norov <yury.norov@gmail.com>
-Date: Thu, 7 Mar 2024 06:14:01 -0500
-Message-ID: <CAAH8bW9+MiNnToZjKBz9kU0sy6ETSpGgX0CmaCdhm_6FxUya1w@mail.gmail.com>
-Subject: Re: [PATCH v6 3/5] lib/bitmap: Introduce bitmap_scatter() and
- bitmap_gather() helpers
-To: Herve Codina <herve.codina@bootlin.com>
-Content-Type: multipart/alternative; boundary="000000000000d1723b0613102c71"
-X-Mailman-Approved-At: Fri, 08 Mar 2024 07:34:53 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240304-pci-dbi-rework-v9-6-29d433d99cda@linaro.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,86 +60,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, Netdev <netdev@vger.kernel.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eric Dumazet <edumazet@google.com>, Mark Brown <broonie@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT" <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
+Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Vignesh Raghavendra <vigneshr@ti.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, Minghuan Lian <minghuan.Lian@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Fabio Estevam <festevam@gmail.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Jesper Nilsson <jesper.nilsson@axis.com>, linux-tegra@vger.kernel.org, linux-arm-kernel@axis.com, Jonathan Hunter <jonathanh@nvidia.com>, NXP Linux Team <linux-imx@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, Srikanth Thokala <srikanth.thokala@intel.com>, linux-arm-msm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>, linux-omap@vger.kernel.org, Mingkai Hu <mingkai.hu@nxp.com>, linux-arm-kernel@lists.infradead.org, Roy Zang
+  <roy.zang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, linux-kernel@vger.kernel.org, Vidya Sagar <vidyas@nvidia.com>, linux-renesas-soc@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Gustavo Pimentel <gustavo.pimentel@synopsys.com>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---000000000000d1723b0613102c71
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On Mon, Mar 04, 2024 at 02:52:18PM +0530, Manivannan Sadhasivam wrote:
+> Currently, dw_pcie_ep_init_registers() API is directly called by the glue
+> drivers requiring active refclk from host. But for the other drivers, it is
+> getting called implicitly by dw_pcie_ep_init(). This is due to the fact
+> that this API initializes DWC EP specific registers and that requires an
+> active refclk (either from host or generated locally by endpoint itsef).
+> 
+> But, this causes a discrepancy among the glue drivers. So to avoid this
+> confusion, let's call this API directly from all glue drivers irrespective
+> of refclk dependency. Only difference here is that the drivers requiring
+> refclk from host will call this API only after the refclk is received and
+> other drivers without refclk dependency will call this API right after
+> dw_pcie_ep_init().
+> 
+> With this change, the check for 'core_init_notifier' flag can now be
+> dropped from dw_pcie_ep_init() API. This will also allow us to remove the
+> 'core_init_notifier' flag completely in the later commits.
+> 
+> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+> ---
+>  drivers/pci/controller/dwc/pci-dra7xx.c           |  7 +++++++
+>  drivers/pci/controller/dwc/pci-imx6.c             |  8 ++++++++
+>  drivers/pci/controller/dwc/pci-keystone.c         |  9 +++++++++
+>  drivers/pci/controller/dwc/pci-layerscape-ep.c    |  7 +++++++
+>  drivers/pci/controller/dwc/pcie-artpec6.c         | 13 ++++++++++++-
+>  drivers/pci/controller/dwc/pcie-designware-ep.c   | 22 ----------------------
+>  drivers/pci/controller/dwc/pcie-designware-plat.c |  9 +++++++++
+>  drivers/pci/controller/dwc/pcie-keembay.c         | 16 +++++++++++++++-
+>  drivers/pci/controller/dwc/pcie-rcar-gen4.c       | 12 +++++++++++-
+>  drivers/pci/controller/dwc/pcie-uniphier-ep.c     | 13 ++++++++++++-
+>  10 files changed, 90 insertions(+), 26 deletions(-)
+> 
+> diff --git a/drivers/pci/controller/dwc/pci-dra7xx.c b/drivers/pci/controller/dwc/pci-dra7xx.c
+> index 0e406677060d..395042b29ffc 100644
+> --- a/drivers/pci/controller/dwc/pci-dra7xx.c
+> +++ b/drivers/pci/controller/dwc/pci-dra7xx.c
+> @@ -467,6 +467,13 @@ static int dra7xx_add_pcie_ep(struct dra7xx_pcie *dra7xx,
+>  		return ret;
+>  	}
+>  
+> +	ret = dw_pcie_ep_init_registers(ep);
+> +	if (ret) {
 
-On Thu, Mar 7, 2024, 2:31 AM Herve Codina <herve.codina@bootlin.com> wrote:
+Here you are using if (ret) to error check the return from
+dw_pcie_ep_init_registers().
 
-> Hi Yury,
->
-> On Wed, 6 Mar 2024 15:39:06 +0200
-> Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
->
-> > On Wed, Mar 06, 2024 at 05:11:19AM -0800, Yury Norov wrote:
-> > > On Wed, Mar 06, 2024 at 09:07:19AM +0100, Herve Codina wrote:
-> >
-> > ...
-> >
-> > > Signed-off-by: Yury Norov <yury.norov@gmail.com>
-> >
-> > Why? Shouldn't be Acked-by?
-> >
-> > > Would you like to move this with the rest of the series? If so please
-> > > pull my Sof-by, otherwise I can move it with bitmap-for-next.
-> >
->
-> A new iteration of the series is planned.
-> Yury, may I add your Acked-by in the next iteration ?
->
-> Best regards,
-> Herv=C3=A9
->
 
-Please scratch my sign-off and add ack.
+> index c0c62533a3f1..8392894ed286 100644
+> --- a/drivers/pci/controller/dwc/pci-keystone.c
+> +++ b/drivers/pci/controller/dwc/pci-keystone.c
+> @@ -1286,6 +1286,13 @@ static int ks_pcie_probe(struct platform_device *pdev)
+>  		ret = dw_pcie_ep_init(&pci->ep);
+>  		if (ret < 0)
+>  			goto err_get_sync;
+> +
+> +		ret = dw_pcie_ep_init_registers(&pci->ep);
+> +		if (ret < 0) {
 
->
+Here you are using if (ret < 0) to error check the return from
+dw_pcie_ep_init_registers(). Please be consistent.
 
---000000000000d1723b0613102c71
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"auto"><div><br><br><div class=3D"gmail_quote"><div dir=3D"ltr" =
-class=3D"gmail_attr">On Thu, Mar 7, 2024, 2:31 AM Herve Codina &lt;<a href=
-=3D"mailto:herve.codina@bootlin.com">herve.codina@bootlin.com</a>&gt; wrote=
-:<br></div><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;bor=
-der-left:1px #ccc solid;padding-left:1ex">Hi Yury,<br>
-<br>
-On Wed, 6 Mar 2024 15:39:06 +0200<br>
-Andy Shevchenko &lt;<a href=3D"mailto:andriy.shevchenko@linux.intel.com" ta=
-rget=3D"_blank" rel=3D"noreferrer">andriy.shevchenko@linux.intel.com</a>&gt=
-; wrote:<br>
-<br>
-&gt; On Wed, Mar 06, 2024 at 05:11:19AM -0800, Yury Norov wrote:<br>
-&gt; &gt; On Wed, Mar 06, 2024 at 09:07:19AM +0100, Herve Codina wrote:=C2=
-=A0 <br>
-&gt; <br>
-&gt; ...<br>
-&gt; <br>
-&gt; &gt; Signed-off-by: Yury Norov &lt;<a href=3D"mailto:yury.norov@gmail.=
-com" target=3D"_blank" rel=3D"noreferrer">yury.norov@gmail.com</a>&gt;=C2=
-=A0 <br>
-&gt; <br>
-&gt; Why? Shouldn&#39;t be Acked-by?<br>
-&gt; <br>
-&gt; &gt; Would you like to move this with the rest of the series? If so pl=
-ease<br>
-&gt; &gt; pull my Sof-by, otherwise I can move it with bitmap-for-next.=C2=
-=A0 <br>
-&gt; <br>
-<br>
-A new iteration of the series is planned.<br>
-Yury, may I add your Acked-by in the next iteration ?<br>
-<br>
-Best regards,<br>
-Herv=C3=A9<br></blockquote></div></div><div dir=3D"auto"><br></div><div dir=
-=3D"auto">Please scratch my sign-off and add ack.=C2=A0</div><div dir=3D"au=
-to"><div class=3D"gmail_quote"><blockquote class=3D"gmail_quote" style=3D"m=
-argin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
-</blockquote></div></div></div>
+> diff --git a/drivers/pci/controller/dwc/pcie-artpec6.c b/drivers/pci/controller/dwc/pcie-artpec6.c
+> index 9ed0a9ba7619..0edd9ab3f139 100644
+> --- a/drivers/pci/controller/dwc/pcie-artpec6.c
+> +++ b/drivers/pci/controller/dwc/pcie-artpec6.c
+> @@ -441,7 +441,18 @@ static int artpec6_pcie_probe(struct platform_device *pdev)
+>  
+>  		pci->ep.ops = &pcie_ep_ops;
+>  
+> -		return dw_pcie_ep_init(&pci->ep);
+> +		ret = dw_pcie_ep_init(&pci->ep);
+> +		if (ret < 0)
 
---000000000000d1723b0613102c71--
+Here you are using if (ret < 0) to error check the return from
+dw_pcie_ep_init().
+
+
+> index 778588b4be70..ca9b22e654cd 100644
+> --- a/drivers/pci/controller/dwc/pcie-designware-plat.c
+> +++ b/drivers/pci/controller/dwc/pcie-designware-plat.c
+> @@ -145,6 +145,15 @@ static int dw_plat_pcie_probe(struct platform_device *pdev)
+>  
+>  		pci->ep.ops = &pcie_ep_ops;
+>  		ret = dw_pcie_ep_init(&pci->ep);
+> +		if (ret)
+
+Here you are using if (ret) to error check the return from
+dw_pcie_ep_init(). Please be consistent.
