@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 571A2C54E4A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:28:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDB07C5475B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:29:25 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=OfkqnGF/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bTRLqaaL;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Trn7J06PTz3wLg
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:28:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Trn843YFgz3w58
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:29:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=OfkqnGF/;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bTRLqaaL;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=adrian.hunter@intel.com; receiver=lists.ozlabs.org)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TrmtP5zLWz3vcs
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:17:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TrmtQ4pJyz3vZj
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:17:34 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1709903854; x=1741439854;
+  t=1709903855; x=1741439855;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=zboSVI3HgVZXbpDBNnsTotqgGm69H9hHwUY1hZ67rA8=;
-  b=OfkqnGF/SoGxVbwqQrOxyL4/tBwLo/HfX+LiwCrmMTUCSrGWOVbLwfn7
-   rHcArpY3oJ+ibbjUPjBBDo/Amkv2t3YN2ObAo1CZNalS9ciVXTKWIWJHT
-   Iq9I6gOQENShcWvpXzjt+ZCNIFMuttBo8jgWTtdlOoUp57SBQ7negz+RC
-   cLdyTjJCzruYxuDayWuEgtNVaiF8NETHjMm24jBYBELItMaMuo+iu4o1Q
-   QXwAGn5yfd5cR3WGlXvBfqFp8vJKIJGs+qQ34WxxMufQWI7LlwqNQTYaD
-   b3caxxmIr20edxDHe6Gob+Rq3amKZZiA53OAjC10GunPgCe03eZouWd0A
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342638"
+  bh=qOOcsyBxpUsFxkAH1hi2UNpYCz2148dQEbBRMVKVw/4=;
+  b=bTRLqaaLjH5nyzuzj+aiF7S3sBzufTyts+Lq9r9Swr7TQ19nXAlql7qO
+   micXf7dOSt6px58/igy3CaMmWjZFxSW49YvxixD2TE5p6Zj+WwohWF08T
+   G0Rn6Gw14Cg0R+ctC3xXA8L5BBA/i6f/Zdzy2nFhGgEooEVdqoWQI0xk2
+   nL/xmyhHoM2ACcLHkRf8St2AvObaMOf1qOSY2zSoOwWGBrhictWHW4TPl
+   1k8zLnNuG8ZOUsLEoPZ+LMEl6bzooTNrJSAFUjtW/H0cU7khtUlNjBdA4
+   Bp4oR8O8/MNgiLJCKNzigJF6XoBJwr9JtiwjO+acUT8CHmSin+BEXQ63w
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342933"
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15342638"
+   d="scan'208";a="15342933"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:30 -0800
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:17:32 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15161489"
+   d="scan'208";a="15161611"
 Received: from ahunter6-mobl1.ger.corp.intel.com (HELO ahunter-VirtualBox.home\044ger.corp.intel.com) ([10.249.46.63])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:23 -0800
+  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:17:25 -0800
 From: Adrian Hunter <adrian.hunter@intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 09/19] timekeeping: Move timekeeping helper functions
-Date: Fri,  8 Mar 2024 15:15:02 +0200
-Message-Id: <20240308131512.44324-10-adrian.hunter@intel.com>
+Subject: [PATCH 18/19] timekeeping: Let timekeeping_cycles_to_ns() handle both under and overflow
+Date: Fri,  8 Mar 2024 15:15:11 +0200
+Message-Id: <20240308131512.44324-19-adrian.hunter@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240308131512.44324-1-adrian.hunter@intel.com>
 References: <20240308131512.44324-1-adrian.hunter@intel.com>
@@ -70,73 +70,73 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move timekeeping helper functions to prepare for their reuse.
+For the case !CONFIG_CLOCKSOURCE_VALIDATE_LAST_CYCLE, forego overflow
+protection in the range (mask << 1) < delta <= mask, and interpret it
+always as an inconsistency between CPU clock values. That allows
+slightly neater code, and it is on a slow path so has no effect on
+performance.
 
 Suggested-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
 ---
- kernel/time/timekeeping.c | 34 +++++++++++++++++-----------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ kernel/time/timekeeping.c | 31 +++++++++++++------------------
+ 1 file changed, 13 insertions(+), 18 deletions(-)
 
 diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index b58dffc58a8f..3375f0a6400f 100644
+index 111dfdbd488f..4e18db1819f8 100644
 --- a/kernel/time/timekeeping.c
 +++ b/kernel/time/timekeeping.c
-@@ -381,6 +381,23 @@ static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 de
- 	return nsec;
- }
+@@ -266,17 +266,14 @@ static inline u64 timekeeping_debug_get_ns(const struct tk_read_base *tkr)
+ 	 * Try to catch underflows by checking if we are seeing small
+ 	 * mask-relative negative values.
+ 	 */
+-	if (unlikely((~delta & mask) < (mask >> 3))) {
++	if (unlikely((~delta & mask) < (mask >> 3)))
+ 		tk->underflow_seen = 1;
+-		now = last;
+-	}
  
-+static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 cycles)
-+{
-+	u64 delta;
-+
-+	/* calculate the delta since the last update_wall_time */
-+	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
-+	return timekeeping_delta_to_ns(tkr, delta);
-+}
-+
-+static __always_inline u64 fast_tk_get_delta_ns(struct tk_read_base *tkr)
-+{
-+	u64 delta, cycles = tk_clock_read(tkr);
-+
-+	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
-+	return timekeeping_delta_to_ns(tkr, delta);
-+}
-+
- static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
- {
- 	u64 delta;
-@@ -389,15 +406,6 @@ static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
- 	return timekeeping_delta_to_ns(tkr, delta);
- }
+-	/* Cap delta value to the max_cycles values to avoid mult overflows */
+-	if (unlikely(delta > max)) {
++	/* Check for multiplication overflows */
++	if (unlikely(delta > max))
+ 		tk->overflow_seen = 1;
+-		now = last + max;
+-	}
  
--static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 cycles)
--{
--	u64 delta;
--
--	/* calculate the delta since the last update_wall_time */
--	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
--	return timekeeping_delta_to_ns(tkr, delta);
--}
--
- /**
-  * update_fast_timekeeper - Update the fast and NMI safe monotonic timekeeper.
-  * @tkr: Timekeeping readout base from which we take the update
-@@ -431,14 +439,6 @@ static void update_fast_timekeeper(const struct tk_read_base *tkr,
- 	memcpy(base + 1, base, sizeof(*base));
++	/* timekeeping_cycles_to_ns() handles both under and overflow */
+ 	return timekeeping_cycles_to_ns(tkr, now);
  }
+ #else
+@@ -375,19 +372,17 @@ static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 c
+ 	u64 mask = tkr->mask, delta = (cycles - tkr->cycle_last) & mask;
  
--static __always_inline u64 fast_tk_get_delta_ns(struct tk_read_base *tkr)
--{
--	u64 delta, cycles = tk_clock_read(tkr);
--
--	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
--	return timekeeping_delta_to_ns(tkr, delta);
--}
--
- static __always_inline u64 __ktime_get_fast_ns(struct tk_fast *tkf)
- {
- 	struct tk_read_base *tkr;
+ 	/*
+-	 * This detects the case where the delta overflows the multiplication
+-	 * with tkr->mult.
++	 * This detects both negative motion and the case where the delta
++	 * overflows the multiplication with tkr->mult.
+ 	 */
+ 	if (unlikely(delta > tkr->clock->max_cycles)) {
+-		if (IS_ENABLED(CONFIG_CLOCKSOURCE_VALIDATE_LAST_CYCLE)) {
+-			/*
+-			 * Handle clocksource inconsistency between CPUs to prevent
+-			 * time from going backwards by checking for the MSB of the
+-			 * mask being set in the delta.
+-			 */
+-			if (unlikely(delta & ~(mask >> 1)))
+-				return tkr->xtime_nsec >> tkr->shift;
+-		}
++		/*
++		 * Handle clocksource inconsistency between CPUs to prevent
++		 * time from going backwards by checking for the MSB of the
++		 * mask being set in the delta.
++		 */
++		if (delta & ~(mask >> 1))
++			return tkr->xtime_nsec >> tkr->shift;
+ 
+ 		return delta_to_ns_safe(tkr, delta);
+ 	}
 -- 
 2.34.1
 
