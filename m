@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 604DEC5475B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:25:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2757C5475B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:26:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LaiO/zm3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cyJ23b48;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Trn426k1Pz3w8j
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:25:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Trn4y2QTlz3vmR
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:26:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LaiO/zm3;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cyJ23b48;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=adrian.hunter@intel.com; receiver=lists.ozlabs.org)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Trmt62pN3z3vYN
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:17:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Trmt73wCcz3vbb
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:17:19 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1709903839; x=1741439839;
+  t=1709903840; x=1741439840;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=Zjh6IUndlImHk90vhCoelXOI1d7rMagiowI5tzl77NQ=;
-  b=LaiO/zm3pXs5H7C9TnQGJBc6EvSjnF+44Pzr5I1oDrSJxgJjz4docTjh
-   APcE3a11B8QH8ytU74oy3vqFb+asWFt5ttpCitNLWBgoiPfHB0Pz+82VH
-   ES+AfAO1l3mV3xNgOos+X3WslcHNBlafvlFaGT+VS91jT0WXfvUus6XYh
-   b3dBoDmGQTSqc1sow8uQ2S7MAEziBY7nr+couVRgLs2yPw/zq5JommDpf
-   rZZoxSa4uIlnSQCaVz6sUdPxgte0+bAE12dtqo9KoLWpJgzeQsWMFEF4g
-   Clk0YhZ+dK211nnbv2mqiW4ce/LgBMeRkI8KbepUwP/uD4EIXhZgtaSf5
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342559"
+  bh=DWUH05pMFGBZtgh8QTM1fOtl5JuwFtwudYwKfS+CudI=;
+  b=cyJ23b48VbHg7aFm/A+2oT46kaS6Vf8WBkZ+UxWw61Mqr+gXOu4HxxqS
+   Y5Yw1gH6KZ8tx7rQF8nmdx4A0ih2pxV2nio9XQOtgyFFJjlwkLJ8HrcuI
+   Bt572Sh6y6dTDJ0zQ29n8PsaZ3R4OhAknf4TlGd+3QJ064MwI/i7EaLk3
+   RvCPBYOGLMluYfI3ISeY/VXjFzglLBIz5pTErDMWCP3n7AhBJsV6w/DDh
+   25UMhAbD94MyZYFGp3Ab+ErMz4ONiPFDYS1G9a4pegx66iXp/c7a9L87k
+   ZoRfJSGUKB/nsZRjRNCA3lDEthy/pPMKdvpa0nMnsoUK3MSBdE1xHeOYL
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342870"
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15342559"
+   d="scan'208";a="15342870"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:16 -0800
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:17:18 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15161445"
+   d="scan'208";a="15161597"
 Received: from ahunter6-mobl1.ger.corp.intel.com (HELO ahunter-VirtualBox.home\044ger.corp.intel.com) ([10.249.46.63])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:09 -0800
+  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:17:11 -0800
 From: Adrian Hunter <adrian.hunter@intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 07/19] vdso: Make delta calculation overflow safe
-Date: Fri,  8 Mar 2024 15:15:00 +0200
-Message-Id: <20240308131512.44324-8-adrian.hunter@intel.com>
+Subject: [PATCH 16/19] timekeeping: Prepare timekeeping_cycles_to_ns() for overflow safety
+Date: Fri,  8 Mar 2024 15:15:09 +0200
+Message-Id: <20240308131512.44324-17-adrian.hunter@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240308131512.44324-1-adrian.hunter@intel.com>
 References: <20240308131512.44324-1-adrian.hunter@intel.com>
@@ -70,56 +70,38 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Kernel timekeeping is designed to keep the change in cycles (since the last
-timer interrupt) below max_cycles, which prevents multiplication overflow
-when converting cycles to nanoseconds. However, if timer interrupts stop,
-the calculation will eventually overflow.
-
-Add protection against that, enabled by config option
-CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT. Check against max_cycles, falling
-back to a slower higher precision calculation.
+Open code clocksource_delta() in timekeeping_cycles_to_ns() so that
+overflow safety can be added efficiently.
 
 Suggested-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
 ---
- lib/vdso/gettimeofday.c | 17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ kernel/time/timekeeping.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
-index 9fa90e0794c9..9c3a8d2440c9 100644
---- a/lib/vdso/gettimeofday.c
-+++ b/lib/vdso/gettimeofday.c
-@@ -13,6 +13,18 @@
- # define VDSO_DELTA_MASK(vd)	(vd->mask)
- #endif
- 
-+#ifdef CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT
-+static __always_inline bool vdso_delta_ok(const struct vdso_data *vd, u64 delta)
-+{
-+	return delta < vd->max_cycles;
-+}
-+#else
-+static __always_inline bool vdso_delta_ok(const struct vdso_data *vd, u64 delta)
-+{
-+	return true;
-+}
-+#endif
-+
- #ifndef vdso_shift_ns
- static __always_inline u64 vdso_shift_ns(u64 ns, u32 shift)
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 749387f22f0f..d17484082e2c 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -367,7 +367,17 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
+ static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 cycles)
  {
-@@ -28,7 +40,10 @@ static __always_inline u64 vdso_calc_ns(const struct vdso_data *vd, u64 cycles,
- {
- 	u64 delta = (cycles - vd->cycle_last) & VDSO_DELTA_MASK(vd);
- 
--	return vdso_shift_ns((delta * vd->mult) + base, vd->shift);
-+	if (likely(vdso_delta_ok(vd, delta)))
-+		return vdso_shift_ns((delta * vd->mult) + base, vd->shift);
+ 	/* Calculate the delta since the last update_wall_time() */
+-	u64 delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
++	u64 mask = tkr->mask, delta = (cycles - tkr->cycle_last) & mask;
 +
-+	return mul_u64_u32_add_u64_shr(delta, vd->mult, base, vd->shift);
++	if (IS_ENABLED(CONFIG_CLOCKSOURCE_VALIDATE_LAST_CYCLE)) {
++		/*
++		 * Handle clocksource inconsistency between CPUs to prevent
++		 * time from going backwards by checking for the MSB of the
++		 * mask being set in the delta.
++		 */
++		if (unlikely(delta & ~(mask >> 1)))
++			return tkr->xtime_nsec >> tkr->shift;
++	}
+ 
+ 	return ((delta * tkr->mult) + tkr->xtime_nsec) >> tkr->shift;
  }
- #endif /* vdso_calc_ns */
- 
 -- 
 2.34.1
 
