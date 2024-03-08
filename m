@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C96AC54E4A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 199E4C5475B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:20:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cR1acDDH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NfUiGBOy;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Trmwh5LX3z3vg4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:19:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TrmxT5dJXz3vn7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:20:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cR1acDDH;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NfUiGBOy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=adrian.hunter@intel.com; receiver=lists.ozlabs.org)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TrmsW4YzCz3dXP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:16:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Trmsb010vz3dVH
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:16:50 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1709903808; x=1741439808;
+  t=1709903811; x=1741439811;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=BicpP74oj5pt4/R+FPIitTPzD9PABJ1vfjH9IXWSi8g=;
-  b=cR1acDDHZ7dwWhxGOAvhu88rIvkzWZvqmXz3iZv4bDggPnscvODf9q5c
-   iezU6otHSngx8FfMKCxc1l4hiTCT2Mx46Sk1VtLK6dYN4X7FRS3ucVS5Z
-   N6qceMMO+TMA6WA7Koqx5EzQ9zcOTgtVaXEeQoVeaOVeXpyvt+L7uFGYy
-   xjVBKKVtIpikfPFSwtEi77/wGBXJHdU84bPyqq8mRFopK19ALGtmHzvwa
-   YRwgtLQmRGWHEjEtWsP+JFTRqrjbIyG3xfemjIiNo12E5omGv0BQ25Tik
-   qARhZ7B+V6JUT1ezo25/WqTfjDfOJxau7hJwAwn19Zlq995nBeCvVznc6
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342410"
+  bh=ul0hfPOmfS7i90s07MvVRoTCajL4zQDIAp9Wq9nGTHo=;
+  b=NfUiGBOyiZV4+jXBf/e9uiH+/EySwh1FZmreDK9GkWWEq4rgqQVd8MCL
+   NwBcsFZXkX7TLM2INcgSYKcEk76Ie4Yx8B83OvWHwu2VNW0C5Ha637r4A
+   H95pnJilJ+B93WCk4WSwH9sg0LollqX4pyasR0tRtzjR09IDeYcssiQPh
+   3uOJhB4QPMsShEsJYPDcPg6M0bS4xGHy8aB0mSYSddIsV5JoMNBmpy58P
+   ZFrLJwOzsTJq2TlvWMJ4v2ubrt70y+tC4YoK+L1rx4cpqPBtE/TN7SQzg
+   BgQmjLlHujWuznMnoToNY52kSDC9477uepSZt9Lpm8bnUHi7iGBuWYI5A
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342755"
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15342410"
+   d="scan'208";a="15342755"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:15:41 -0800
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:50 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15161362"
+   d="scan'208";a="15161564"
 Received: from ahunter6-mobl1.ger.corp.intel.com (HELO ahunter-VirtualBox.home\044ger.corp.intel.com) ([10.249.46.63])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:15:34 -0800
+  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:43 -0800
 From: Adrian Hunter <adrian.hunter@intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 02/19] vdso: Consolidate nanoseconds calculation
-Date: Fri,  8 Mar 2024 15:14:55 +0200
-Message-Id: <20240308131512.44324-3-adrian.hunter@intel.com>
+Subject: [PATCH 12/19] timekeeping: Reuse timekeeping_cycles_to_ns()
+Date: Fri,  8 Mar 2024 15:15:05 +0200
+Message-Id: <20240308131512.44324-13-adrian.hunter@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240308131512.44324-1-adrian.hunter@intel.com>
 References: <20240308131512.44324-1-adrian.hunter@intel.com>
@@ -70,165 +70,30 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Consolidate nanoseconds calculation to simplify and reduce code
-duplication.
+Simplify __timekeeping_get_ns() by reusing timekeeping_cycles_to_ns().
 
 Suggested-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
 ---
- arch/x86/include/asm/vdso/gettimeofday.h | 17 +++++----
- lib/vdso/gettimeofday.c                  | 44 +++++++++++-------------
- 2 files changed, 29 insertions(+), 32 deletions(-)
+ kernel/time/timekeeping.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/arch/x86/include/asm/vdso/gettimeofday.h b/arch/x86/include/asm/vdso/gettimeofday.h
-index 8e048ca980df..5727dedd3549 100644
---- a/arch/x86/include/asm/vdso/gettimeofday.h
-+++ b/arch/x86/include/asm/vdso/gettimeofday.h
-@@ -300,7 +300,7 @@ static inline bool arch_vdso_cycles_ok(u64 cycles)
- #define vdso_cycles_ok arch_vdso_cycles_ok
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index c698219b152d..f81d675291e0 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -391,10 +391,7 @@ static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 c
  
- /*
-- * x86 specific delta calculation.
-+ * x86 specific calculation of nanoseconds for the current cycle count
-  *
-  * The regular implementation assumes that clocksource reads are globally
-  * monotonic. The TSC can be slightly off across sockets which can cause
-@@ -308,8 +308,8 @@ static inline bool arch_vdso_cycles_ok(u64 cycles)
-  * jump.
-  *
-  * Therefore it needs to be verified that @cycles are greater than
-- * @last. If not then use @last, which is the base time of the current
-- * conversion period.
-+ * @vd->cycles_last. If not then use @vd->cycles_last, which is the base
-+ * time of the current conversion period.
-  *
-  * This variant also uses a custom mask because while the clocksource mask of
-  * all the VDSO capable clocksources on x86 is U64_MAX, the above code uses
-@@ -317,25 +317,24 @@ static inline bool arch_vdso_cycles_ok(u64 cycles)
-  * declares everything with the MSB/Sign-bit set as invalid. Therefore the
-  * effective mask is S64_MAX.
-  */
--static __always_inline
--u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask, u32 mult)
-+static __always_inline u64 vdso_calc_ns(const struct vdso_data *vd, u64 cycles, u64 base)
+ static __always_inline u64 __timekeeping_get_ns(const struct tk_read_base *tkr)
  {
- 	/*
- 	 * Due to the MSB/Sign-bit being used as invalid marker (see
- 	 * arch_vdso_cycles_valid() above), the effective mask is S64_MAX.
- 	 */
--	u64 delta = (cycles - last) & S64_MAX;
-+	u64 delta = (cycles - vd->cycle_last) & S64_MAX;
- 
- 	/*
- 	 * Due to the above mentioned TSC wobbles, filter out negative motion.
- 	 * Per the above masking, the effective sign bit is now bit 62.
- 	 */
- 	if (unlikely(delta & (1ULL << 62)))
--		return 0;
-+		return base >> vd->shift;
- 
--	return delta * mult;
-+	return ((delta * vd->mult) + base) >> vd->shift;
+-	u64 delta, cycles = tk_clock_read(tkr);
+-
+-	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
+-	return timekeeping_delta_to_ns(tkr, delta);
++	return timekeeping_cycles_to_ns(tkr, tk_clock_read(tkr));
  }
--#define vdso_calc_delta vdso_calc_delta
-+#define vdso_calc_ns vdso_calc_ns
  
- #endif /* !__ASSEMBLY__ */
- 
-diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
-index 042b95e8164d..9fa90e0794c9 100644
---- a/lib/vdso/gettimeofday.c
-+++ b/lib/vdso/gettimeofday.c
-@@ -5,20 +5,12 @@
- #include <vdso/datapage.h>
- #include <vdso/helpers.h>
- 
--#ifndef vdso_calc_delta
--/*
-- * Default implementation which works for all sane clocksources. That
-- * obviously excludes x86/TSC.
-- */
--static __always_inline
--u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask, u32 mult)
--{
-+#ifndef vdso_calc_ns
-+
- #ifdef VDSO_DELTA_NOMASK
--	return (cycles - last) * mult;
-+# define VDSO_DELTA_MASK(vd)	U64_MAX
- #else
--	return ((cycles - last) & mask) * mult;
--#endif
--}
-+# define VDSO_DELTA_MASK(vd)	(vd->mask)
- #endif
- 
- #ifndef vdso_shift_ns
-@@ -28,6 +20,18 @@ static __always_inline u64 vdso_shift_ns(u64 ns, u32 shift)
- }
- #endif
- 
-+/*
-+ * Default implementation which works for all sane clocksources. That
-+ * obviously excludes x86/TSC.
-+ */
-+static __always_inline u64 vdso_calc_ns(const struct vdso_data *vd, u64 cycles, u64 base)
-+{
-+	u64 delta = (cycles - vd->cycle_last) & VDSO_DELTA_MASK(vd);
-+
-+	return vdso_shift_ns((delta * vd->mult) + base, vd->shift);
-+}
-+#endif /* vdso_calc_ns */
-+
- #ifndef __arch_vdso_hres_capable
- static inline bool __arch_vdso_hres_capable(void)
- {
-@@ -53,10 +57,10 @@ static inline bool vdso_cycles_ok(u64 cycles)
- static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
- 					  struct __kernel_timespec *ts)
- {
--	const struct vdso_data *vd;
- 	const struct timens_offset *offs = &vdns->offset[clk];
- 	const struct vdso_timestamp *vdso_ts;
--	u64 cycles, last, ns;
-+	const struct vdso_data *vd;
-+	u64 cycles, ns;
- 	u32 seq;
- 	s64 sec;
- 
-@@ -77,10 +81,7 @@ static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_
- 		cycles = __arch_get_hw_counter(vd->clock_mode, vd);
- 		if (unlikely(!vdso_cycles_ok(cycles)))
- 			return -1;
--		ns = vdso_ts->nsec;
--		last = vd->cycle_last;
--		ns += vdso_calc_delta(cycles, last, vd->mask, vd->mult);
--		ns = vdso_shift_ns(ns, vd->shift);
-+		ns = vdso_calc_ns(vd, cycles, vdso_ts->nsec);
- 		sec = vdso_ts->sec;
- 	} while (unlikely(vdso_read_retry(vd, seq)));
- 
-@@ -115,7 +116,7 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
- 				   struct __kernel_timespec *ts)
- {
- 	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
--	u64 cycles, last, sec, ns;
-+	u64 cycles, sec, ns;
- 	u32 seq;
- 
- 	/* Allows to compile the high resolution parts out */
-@@ -148,10 +149,7 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
- 		cycles = __arch_get_hw_counter(vd->clock_mode, vd);
- 		if (unlikely(!vdso_cycles_ok(cycles)))
- 			return -1;
--		ns = vdso_ts->nsec;
--		last = vd->cycle_last;
--		ns += vdso_calc_delta(cycles, last, vd->mask, vd->mult);
--		ns = vdso_shift_ns(ns, vd->shift);
-+		ns = vdso_calc_ns(vd, cycles, vdso_ts->nsec);
- 		sec = vdso_ts->sec;
- 	} while (unlikely(vdso_read_retry(vd, seq)));
- 
+ static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
 -- 
 2.34.1
 
