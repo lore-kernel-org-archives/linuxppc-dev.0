@@ -4,84 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA8CEC5475B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 14:04:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D91A8C5475B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 15:22:03 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=tum6bEly;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Trnx331qhz3vZ6
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 01:04:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=srs0=ogpy=ko=xs4all.nl=hverkuil@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Trqf22vnsz3vd9
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 02:22:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=tum6bEly;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7e88::611; helo=nam10-dm6-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on20611.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e88::611])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Trnwb2Vnxz3blb
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 01:04:31 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 69651CE1DBE;
-	Fri,  8 Mar 2024 14:04:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0C76FC433F1;
-	Fri,  8 Mar 2024 14:04:24 +0000 (UTC)
-Message-ID: <c3dbbc57-2df4-4c88-98e3-0500910404c4@xs4all.nl>
-Date: Fri, 8 Mar 2024 15:04:23 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TrqdB50G2z3dWw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 02:21:16 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=D7oMZcrJRkxJCauEeoRXc7JIHDjHNYSQDMeYJDWgzltKEDH4lA9tzVyNkDaaaIHWCqUmdohRsaAx5rzrzMO1UsYTNOVNzR1bzWu+9OoAiUAA4nZ7yFl0mLr0mSWpo828pJICJiiVWLOFPAPTSZBcNzcv09YOU5PPEeXXEL9drVO0Gmje85sqdg0e3elArLIfKpqIjJnk3Y2qGCEfgQB3YWY2IIzto43NCSs4HUAVwg+Txb+wCYbAbDH8PgXN0G3YC4sza66mkZtX2WaO7RkMcxL2PoLJzS7LdGIrwu/JGIqvuyXuUJKQXagv2QsN/y145IADn9kzSRUYw2hkWRQYYQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=BYiakZTUOlprqkwsodQuX0BiBMqBwS6JWWCcgGIUhEo=;
+ b=UeBWTqDZm++A9ndNRv5nJ3skZrbI/Dyw7ifHlZW1O8g5hPLBoyNIAWY+ELRO1bTOWhdbhEHOSmuhi8d/26UU33ffVRmMDPIhMRtdu7KZuZ2MxeidH4DyAqQXjNhQ0vhTfk+gbIkahIYzDMxgaGbQ8zeDz3nwPxSOZ+QZ5fuVUk+Fi7hDDb4mmxdQrIH1DrPZFX8LmiWKSa8hoDbMqv8eq5LX0CYC6F+yg+76Xik3u4zf+h2uTpmmoxxMk0wGJwvwyjik2ms+LjzFk8/uAF1rV1G5WWnjFAiS5GcJrMqKmXwgLE7qIea/J4t47QXh+9kgJTYWAK0yHl5R7F2yZHs7CQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=BYiakZTUOlprqkwsodQuX0BiBMqBwS6JWWCcgGIUhEo=;
+ b=tum6bEly7sIONzl0i2Dv/VxtNrMVTMWBa3I7lNZXDSYAAOiiBhUMatRvm3i/7IFrPGOzA6A7vMyLvPuqjB23ToqxjfXW+e2v9EZZS3D0ICOG8cvwcAJaa/plQ99dyPWKCg/ptEmPKXRu0Fwp3s2eIokoKjDJwZwNopSxd2fT2278XW0YFs54m9+1j0pV4Y1mVOK6A3uiqPztXiQyMhEbdr6i9BUZKnBr17p3QzFEgSLBwM/SOSWw9tMZG/ZluQWTx/bmeqcngupLV646VxhNaoHDJi2Y3OXk2iiKLaVbmZ0kOKOW7VDK37Y5RVFvDsJ7CZoQiemSvSDNhC2emYjmEg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DM6PR12MB3849.namprd12.prod.outlook.com (2603:10b6:5:1c7::26)
+ by CH3PR12MB7522.namprd12.prod.outlook.com (2603:10b6:610:142::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7362.27; Fri, 8 Mar
+ 2024 15:20:57 +0000
+Received: from DM6PR12MB3849.namprd12.prod.outlook.com
+ ([fe80::6aec:dbca:a593:a222]) by DM6PR12MB3849.namprd12.prod.outlook.com
+ ([fe80::6aec:dbca:a593:a222%5]) with mapi id 15.20.7362.019; Fri, 8 Mar 2024
+ 15:20:57 +0000
+Date: Fri, 8 Mar 2024 11:20:55 -0400
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: peterx@redhat.com
+Subject: Re: [PATCH RFC 13/13] mm: Document pXd_leaf() API
+Message-ID: <20240308152055.GQ9179@nvidia.com>
+References: <20240306104147.193052-1-peterx@redhat.com>
+ <20240306104147.193052-14-peterx@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240306104147.193052-14-peterx@redhat.com>
+X-ClientProxiedBy: DM6PR08CA0061.namprd08.prod.outlook.com
+ (2603:10b6:5:1e0::35) To DM6PR12MB3849.namprd12.prod.outlook.com
+ (2603:10b6:5:1c7::26)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 09/16] media: uapi: Define audio sample format fourcc
- type
-Content-Language: en-US, nl
-To: Shengjiu Wang <shengjiu.wang@gmail.com>
-References: <1708936109-11587-1-git-send-email-shengjiu.wang@nxp.com>
- <1708936109-11587-10-git-send-email-shengjiu.wang@nxp.com>
- <df05261f-2f0e-490f-883b-72ad8a02d11b@xs4all.nl>
- <CAA+D8AMJOCfp6WdqYqy7KSj=mX9o_D5U-aF6Wn=3cOnhWg7VDg@mail.gmail.com>
- <56368a0d-6ada-4ab6-8389-b4bd20d6efc4@xs4all.nl>
- <CAA+D8AOXKJP1r-+j0QiH82x3MQ+Y1y2c1h04n=jmJncPogn7Vg@mail.gmail.com>
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Autocrypt: addr=hverkuil@xs4all.nl; keydata=
- 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
-In-Reply-To: <CAA+D8AOXKJP1r-+j0QiH82x3MQ+Y1y2c1h04n=jmJncPogn7Vg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM6PR12MB3849:EE_|CH3PR12MB7522:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1b05d8ca-39b4-46ee-aa50-08dc3f835a60
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	Mf1jJ0h2du0z8/ULj/vKUAhJbvjLh6+7CrUOHDqR4eqoQe7Tz7Tujhu6R51ZbKQN/OzHGYfiVxixm/kN/K5B0CzTYc3U95kv4fs8fOFekacbVNlr0K4TfklJeeMhXZ5PY2x6hKqd1/pijLbxT+Yl/sV59wELHlA8Ys0Hw7JZG/8W1ju7DE1n9FnPnk8J3c+BIylGflh0PYeCo9CbNb1ELkFF4FFMu/16iVkgxtTGij92WPuC7aEGrFTFzIYkwIVnqNGQlZSXNCKN4kzQCWJaKwQwBq6m0I1aw45tHY52yRdquTonrNpuJ8egmlWEJ5uo2kIZC6lPcqKuNRmvHzT1ArXNORIZENgNee89Ws0BwL6/3Hd4My564k4+apITOUtyLxAYl8JR76uqTo/7eqDoK99XWJfyCAcZsbbQuARBdxzcsspbmJeQBU1LYR/DEw1UfADXIFX7LUQ9qy0EKF2g5B6E0bbvW44NyLluZu3ccGOeKZFOzQj7nZV0qfT/rKlTimiQwhDaSUDKqBAvfODQ+oapBBcY9FTaUfLDG5EF8Eq2NISTLFjybajpx8W3YMXojzBpO5lY90oBmKYRueV+LvPxjqglxWqMbXZZd9ExAkNS4SoshoJVKvgnFbSEYuIGNlNS2JmlqGB9BUAgjq6QzTEKV9xlqg8SuGCdIDTTcNs=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR12MB3849.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(1800799015)(376005)(7416005);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?TDKWvuiosp+EMnaDv5FPU/qmgWC0FBKfxeUDLMcW6BqeyHFVraPoSlcLhSZ5?=
+ =?us-ascii?Q?cXMlIaZGJI0aKonFy0dvxORP/md11lRkCJDpF/CbG2X9DYHXdrsnPGaI7y8G?=
+ =?us-ascii?Q?xzg7b+0859hQyVRj5XU7DXYQP0fhT4dmtUzuajQBwmDNs4186EL281JzZnXW?=
+ =?us-ascii?Q?vlmJoREILSC+cRG4pznq01p+tzp6rMHWL88H+Z1WdsMlsHuyVuEZpAo7i6yO?=
+ =?us-ascii?Q?vJdvp/lPimBz5OYrN/eT/z3rKEbj0/07hYh2HzHogRMC7woe6PC6QHHvSo6k?=
+ =?us-ascii?Q?JTHJ+ab6YrzkQ8mF7uHAGFZ98/PbB0oYm6i4xsOrQcovJafOPxWYqxLy5rdK?=
+ =?us-ascii?Q?cuaVWvFtORNHE3YBLWjXZvBepAL9mZfGOPasTtcPfLQXsZ7UN7QrhzirNEgp?=
+ =?us-ascii?Q?NJipU4msr8MLAyOJeqWLMT2j3j+qT/Yq5CY6QHwn85m+Lfe1UL/MfCjwRA1T?=
+ =?us-ascii?Q?iLrFkO4sWvrGQRBmxYLgBpX3vtQoW6dmNoHtu2Lqr6c1BxBCkG9OTcCZL3Sv?=
+ =?us-ascii?Q?Rmp4SpnoVtqJELJC+Zs8QFftZ2wU2unk6CNZT047Mq9rDjhUJ07kWlqi92eY?=
+ =?us-ascii?Q?AVCvNr3SEKNMIkZ8yr2RbDqohc+aFA6HzgEexlsB2WvImaZxLhpoINZGK1n/?=
+ =?us-ascii?Q?m0rdB09WIQ3PWvaWfd70kDQg/cIBBmvjMq5RunOOEdlbEz5graZAs17YU4+1?=
+ =?us-ascii?Q?7OPoeCGYqMVqFuENs2Nion4fqM0ILSwLP9rfuj8QhTRCWdcBkgTq9uM54hrc?=
+ =?us-ascii?Q?+5m7iEqwMeW38xmcwQ2JusBzBSCdxzDEGxFVIV48kbUoZ93MgI0Q0ifsTA+P?=
+ =?us-ascii?Q?/ratsOaIkr8R2VkWSMRNo2wZx8LnGvKBSMRilQt7kWGXvTQF0FYRmv0W3nYi?=
+ =?us-ascii?Q?wxM/akKZbnHWgBBdKytcuNqkbg4mVBjULtzAFdh7sPMeRHSjCnpdjFMeej5O?=
+ =?us-ascii?Q?fjcEnIhvfIv/lKq7GDp7AfLgcF9VFp8ZmAPtDzMQbUljSl8jCCBYasrgaG8D?=
+ =?us-ascii?Q?PJLUH2gfrNCKkRRT1ZAAKs0ojgu37YgK0nUjqsZ4IjVAmla3XFUw0FGsh2Sl?=
+ =?us-ascii?Q?f6RIS48jUjhJ2+DXVMJoJraiokhORe2ezoHpVgmnMuGrsMFWJTEV3p0vr1jY?=
+ =?us-ascii?Q?AWfPsw8CZKxwyEmxgDCFS5MJ7t/DcP7lEdPPV2YagU5Umzz1s9W6ph9h5qrU?=
+ =?us-ascii?Q?Y1vyITmKy9zYD7BjQlCgVG0VYViEkXPHpQyAasFzTOeI7gpKaOLdsq/0okfb?=
+ =?us-ascii?Q?ycB8h4HoGJ6IK69+1/2Gq7MZFT/E/8DwbBa5bdfflNjxt0VQqu+4Y8KljqIq?=
+ =?us-ascii?Q?j0UC/R+XSOz01CNz2f3TJ0a58Ij/J2XY88SY/lcIRkDNkDqD8u/0xaxjPhqE?=
+ =?us-ascii?Q?z+VSdLCUgJXmRHc5Yu/tbJNcd6DJD8hemHUgTcq1s98TEpTM5IEt/dOp8jOL?=
+ =?us-ascii?Q?63m0J5JnUE7gbiF5h1ExeNU5yvEGQAnQfw5F1lHh5J0XTQayPbuAmAI3t/p+?=
+ =?us-ascii?Q?c7CP2UIeRmIpjufkCV7u8jthUN+CT3Gl+6ycbcCUC50UyJoAd5QRI3tN/3tx?=
+ =?us-ascii?Q?Go6JQZEkDX1A3tOl2LTM+gtmcJ9iMFWa8QzW0ccC?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1b05d8ca-39b4-46ee-aa50-08dc3f835a60
+X-MS-Exchange-CrossTenant-AuthSource: DM6PR12MB3849.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Mar 2024 15:20:57.0733
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: fWtsoOGaLnCPVHSACr6PP4o6/QfLRD0Y34bz9fbOVcoiZ5mW0tULbel+M85gTh4B
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR12MB7522
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,286 +119,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, Xiubo.Lee@gmail.com, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org, broonie@kernel.org, sakari.ailus@iki.fi, perex@perex.cz, mchehab@kernel.org, festevam@gmail.com, m.szyprowski@samsung.com
+Cc: linux-arm-kernel@lists.infradead.org, x86@kernel.org, Muchun Song <muchun.song@linux.dev>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 08/03/2024 2:52 pm, Shengjiu Wang wrote:
-> On Fri, Mar 8, 2024 at 8:06 PM Hans Verkuil <hverkuil@xs4all.nl> wrote:
->>
->> On 08/03/2024 12:52 pm, Shengjiu Wang wrote:
->>> On Fri, Mar 8, 2024 at 3:34 PM Hans Verkuil <hverkuil@xs4all.nl> wrote:
->>>>
->>>> Hi Shengjiu,
->>>>
->>>> After thinking it over I think this patch can be improved:
->>>>
->>>> On 26/02/2024 9:28 am, Shengjiu Wang wrote:
->>>>> The audio sample format definition is from alsa,
->>>>> the header file is include/uapi/sound/asound.h, but
->>>>> don't include this header file directly, because in
->>>>> user space, there is another copy in alsa-lib.
->>>>> There will be conflict in userspace for include
->>>>> videodev2.h & asound.h and asoundlib.h
->>>>>
->>>>> Here still use the fourcc format.
->>>>>
->>>>> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
->>>>> ---
->>>>>  .../userspace-api/media/v4l/pixfmt-audio.rst  | 87 +++++++++++++++++++
->>>>>  .../userspace-api/media/v4l/pixfmt.rst        |  1 +
->>>>>  drivers/media/v4l2-core/v4l2-ioctl.c          | 13 +++
->>>>>  include/uapi/linux/videodev2.h                | 23 +++++
->>>>>  4 files changed, 124 insertions(+)
->>>>>  create mode 100644 Documentation/userspace-api/media/v4l/pixfmt-audio.rst
->>>>>
->>>>> diff --git a/Documentation/userspace-api/media/v4l/pixfmt-audio.rst b/Documentation/userspace-api/media/v4l/pixfmt-audio.rst
->>>>> new file mode 100644
->>>>> index 000000000000..04b4a7fbd8f4
->>>>> --- /dev/null
->>>>> +++ b/Documentation/userspace-api/media/v4l/pixfmt-audio.rst
->>>>> @@ -0,0 +1,87 @@
->>>>> +.. SPDX-License-Identifier: GFDL-1.1-no-invariants-or-later
->>>>> +
->>>>> +.. _pixfmt-audio:
->>>>> +
->>>>> +*************
->>>>> +Audio Formats
->>>>> +*************
->>>>> +
->>>>> +These formats are used for :ref:`audiomem2mem` interface only.
->>>>
->>>> Here you should also document that all these fourccs start with 'AU' and are
->>>> reserved for mappings of the snd_pcm_format_t type.
->>>>
->>>> Also document the v4l2_fourcc_to_audfmt define and the v4l2_audfmt_to_fourcc
->>>> define (see also below).
->>>
->>> How about below description?
->>> '
->>> All these fourccs starting with 'AU' are reserved for mappings
->>
->> All these fourccs -> All FourCCs
->>
->>> of the snd_pcm_format_t type.
->>>
->>> The v4l2_audfmt_to_fourcc() is defined to convert snd_pcm_format_t
->>
->> convert -> convert the
->>
->>> type to fourcc. The first character is 'A', the second character
->>
->> fourcc -> a FourCC
->>
->>> is 'U', the third character is ten's digit of snd_pcm_format_t,
->>> the fourth character is unit's digit of snd_pcm_format_t.
->>
->> "is 'U', and the remaining two characters is the snd_pcm_format_t
->> value in ASCII. Example: SNDRV_PCM_FORMAT_S16_LE (with value 2)
->> maps to 'AU02' and SNDRV_PCM_FORMAT_S24_3LE (with value 32) maps
->> to 'AU32'."
->>
->>>
->>> The v4l2_fourcc_to_audfmt() is defined to convert these fourccs to
->>
->> fourccs -> FourCCs
->>
->>> snd_pcm_format_t type.
->>
->> BTW, given the way snd_pcm_format_t is defined I am fairly certain
->> some casts are needed for the v4l2_audfmt_to_fourcc define.
->>
->> Regards,
->>
->>         Hans
->>
->>> '
->>> Best regards
->>> Shengjiu Wang
->>>>
->>>>> +
->>>>> +.. tabularcolumns:: |p{5.8cm}|p{1.2cm}|p{10.3cm}|
->>>>> +
->>>>> +.. cssclass:: longtable
->>>>> +
->>>>> +.. flat-table:: Audio Format
->>>>> +    :header-rows:  1
->>>>> +    :stub-columns: 0
->>>>> +    :widths:       3 1 4
->>>>> +
->>>>> +    * - Identifier
->>>>> +      - Code
->>>>> +      - Details
->>>>> +    * .. _V4L2-AUDIO-FMT-S8:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_S8``
->>>>> +      - 'S8'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_S8 in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-S16-LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_S16_LE``
->>>>> +      - 'S16_LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_S16_LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-U16-LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_U16_LE``
->>>>> +      - 'U16_LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_U16_LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-S24-LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_S24_LE``
->>>>> +      - 'S24_LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_S24_LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-U24-LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_U24_LE``
->>>>> +      - 'U24_LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_U24_LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-S32-LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_S32_LE``
->>>>> +      - 'S32_LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_S32_LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-U32-LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_U32_LE``
->>>>> +      - 'U32_LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_U32_LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-FLOAT-LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_FLOAT_LE``
->>>>> +      - 'FLOAT_LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_FLOAT_LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-IEC958-SUBFRAME-LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_IEC958_SUBFRAME_LE``
->>>>> +      - 'IEC958_SUBFRAME_LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_IEC958_SUBFRAME_LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-S24-3LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_S24_3LE``
->>>>> +      - 'S24_3LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_S24_3LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-U24-3LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_U24_3LE``
->>>>> +      - 'U24_3LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_U24_3LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-S20-3LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_S20_3LE``
->>>>> +      - 'S20_3LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_S24_3LE in ALSA
->>>>> +    * .. _V4L2-AUDIO-FMT-U20-3LE:
->>>>> +
->>>>> +      - ``V4L2_AUDIO_FMT_U20_3LE``
->>>>> +      - 'U20_3LE'
->>>>> +      - Corresponds to SNDRV_PCM_FORMAT_U20_3LE in ALSA
->>>>> diff --git a/Documentation/userspace-api/media/v4l/pixfmt.rst b/Documentation/userspace-api/media/v4l/pixfmt.rst
->>>>> index 11dab4a90630..2eb6fdd3b43d 100644
->>>>> --- a/Documentation/userspace-api/media/v4l/pixfmt.rst
->>>>> +++ b/Documentation/userspace-api/media/v4l/pixfmt.rst
->>>>> @@ -36,3 +36,4 @@ see also :ref:`VIDIOC_G_FBUF <VIDIOC_G_FBUF>`.)
->>>>>      colorspaces
->>>>>      colorspaces-defs
->>>>>      colorspaces-details
->>>>> +    pixfmt-audio
->>>>> diff --git a/drivers/media/v4l2-core/v4l2-ioctl.c b/drivers/media/v4l2-core/v4l2-ioctl.c
->>>>> index 961abcdf7290..be229c69e991 100644
->>>>> --- a/drivers/media/v4l2-core/v4l2-ioctl.c
->>>>> +++ b/drivers/media/v4l2-core/v4l2-ioctl.c
->>>>> @@ -1471,6 +1471,19 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
->>>>>       case V4L2_PIX_FMT_Y210:         descr = "10-bit YUYV Packed"; break;
->>>>>       case V4L2_PIX_FMT_Y212:         descr = "12-bit YUYV Packed"; break;
->>>>>       case V4L2_PIX_FMT_Y216:         descr = "16-bit YUYV Packed"; break;
->>>>> +     case V4L2_AUDIO_FMT_S8:         descr = "8-bit Signed"; break;
->>>>> +     case V4L2_AUDIO_FMT_S16_LE:     descr = "16-bit Signed LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_U16_LE:             descr = "16-bit Unsigned LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_S24_LE:             descr = "24(32)-bit Signed LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_U24_LE:             descr = "24(32)-bit Unsigned LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_S32_LE:             descr = "32-bit Signed LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_U32_LE:             descr = "32-bit Unsigned LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_FLOAT_LE:           descr = "32-bit Float LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_IEC958_SUBFRAME_LE: descr = "32-bit IEC958 LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_S24_3LE:            descr = "24(24)-bit Signed LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_U24_3LE:            descr = "24(24)-bit Unsigned LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_S20_3LE:            descr = "20(24)-bit Signed LE"; break;
->>>>> +     case V4L2_AUDIO_FMT_U20_3LE:            descr = "20(24)-bit Unsigned LE"; break;
->>>>>
->>>>>       default:
->>>>>               /* Compressed formats */
->>>>> diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
->>>>> index 2c03d2dfadbe..673a6235a029 100644
->>>>> --- a/include/uapi/linux/videodev2.h
->>>>> +++ b/include/uapi/linux/videodev2.h
->>>>> @@ -843,6 +843,29 @@ struct v4l2_pix_format {
->>>>>  #define V4L2_META_FMT_RK_ISP1_PARAMS v4l2_fourcc('R', 'K', '1', 'P') /* Rockchip ISP1 3A Parameters */
->>>>>  #define V4L2_META_FMT_RK_ISP1_STAT_3A        v4l2_fourcc('R', 'K', '1', 'S') /* Rockchip ISP1 3A Statistics */
->>>>>
->>>>> +/*
->>>>> + * Audio-data formats
->>>>> + * All these audio formats use a fourcc starting with 'AU'
->>>>> + * followed by the SNDRV_PCM_FORMAT_ value from asound.h.
->>>>
->>>> Also document here that fourccs starting with 'AU' are reserved for
->>>> the snd_pcm_format_t to fourcc mappings.
->>>>
->>>> That to avoid that someone adds a 'AUXX' fourcc later.
->>>>
->>>>> + */
->>>>> +#define V4L2_AUDIO_FMT_S8                    v4l2_fourcc('A', 'U', '0', '0')
->>>>> +#define V4L2_AUDIO_FMT_S16_LE                        v4l2_fourcc('A', 'U', '0', '2')
->>>>> +#define V4L2_AUDIO_FMT_U16_LE                        v4l2_fourcc('A', 'U', '0', '4')
->>>>> +#define V4L2_AUDIO_FMT_S24_LE                        v4l2_fourcc('A', 'U', '0', '6')
->>>>> +#define V4L2_AUDIO_FMT_U24_LE                        v4l2_fourcc('A', 'U', '0', '8')
->>>>> +#define V4L2_AUDIO_FMT_S32_LE                        v4l2_fourcc('A', 'U', '1', '0')
->>>>> +#define V4L2_AUDIO_FMT_U32_LE                        v4l2_fourcc('A', 'U', '1', '2')
->>>>> +#define V4L2_AUDIO_FMT_FLOAT_LE                      v4l2_fourcc('A', 'U', '1', '4')
->>>>> +#define V4L2_AUDIO_FMT_IEC958_SUBFRAME_LE    v4l2_fourcc('A', 'U', '1', '8')
->>>>> +#define V4L2_AUDIO_FMT_S24_3LE                       v4l2_fourcc('A', 'U', '3', '2')
->>>>> +#define V4L2_AUDIO_FMT_U24_3LE                       v4l2_fourcc('A', 'U', '3', '4')
->>>>> +#define V4L2_AUDIO_FMT_S20_3LE                       v4l2_fourcc('A', 'U', '3', '6')
->>>>> +#define V4L2_AUDIO_FMT_U20_3LE                       v4l2_fourcc('A', 'U', '3', '8')
->>>>> +
->>>>> +#define v4l2_fourcc_to_audfmt(fourcc)        \
->>>>> +     (__force snd_pcm_format_t)(((((fourcc) >> 16) & 0xff) - '0') * 10  \
->>>>> +                                + ((((fourcc) >> 24) & 0xff) - '0'))
->>>>> +
->>>>
->>>> As I suggested in an earlier reply, add this:
->>>>
->>>> #define v4l2_audfmt_to_fourcc(audfmt) \
->>>>         v4l2_fourcc('A', 'U', '0' + (audfmt) / 10, '0' + (audfmt) % 10)
->>>>
->>>> Even though it is not used in the drivers, since this is a public header used
->>>> by drivers and applications, it makes sense to provide the reverse mapping as well.
->>>>
->>>> Please test it in actual code to make sure there are no compilation warnings.
+On Wed, Mar 06, 2024 at 06:41:47PM +0800, peterx@redhat.com wrote:
+> From: Peter Xu <peterx@redhat.com>
 > 
-> I test this definition, the compiler doesn't report warning.
-
-typedef int __bitwise snd_pcm_format_t;
-
-And __bitwise is apparently a sparse static analyzer attribute, so I suspect that the
-v4l2_audfmt_to_fourcc definition will cause a sparse warning. So you need to check
-with sparse.
-
-Regards,
-
-	Hans
-
+> There's one small section already, but since we're going to remove
+> pXd_huge(), that comment may start to obsolete.
 > 
-> best regards
-> Shengjiu Wang
+> Rewrite that section with more information, hopefully with that the API is
+> crystal clear on what it implies.
 > 
->>>>
->>>> Regards,
->>>>
->>>>         Hans
->>>>
->>>>>  /* priv field value to indicates that subsequent fields are valid. */
->>>>>  #define V4L2_PIX_FMT_PRIV_MAGIC              0xfeedcafe
->>>>>
->>>>
->>
+> Signed-off-by: Peter Xu <peterx@redhat.com>
+> ---
+>  include/linux/pgtable.h | 24 +++++++++++++++++++-----
+>  1 file changed, 19 insertions(+), 5 deletions(-)
 
+Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+
+Jason
