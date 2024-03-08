@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 857BBC5475B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:24:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55C61C54E4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:25:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nr9Uyki0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KDPO3FHj;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Trn2T139sz3vsK
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:24:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Trn3G0GCgz3vmk
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:25:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nr9Uyki0;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KDPO3FHj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=adrian.hunter@intel.com; receiver=lists.ozlabs.org)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Trmt11XcWz3vZq
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:17:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Trmt21fJ8z3vXK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:17:14 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1709903833; x=1741439833;
+  t=1709903834; x=1741439834;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=XagHsKZy0o0b/SfCKSGfthtDX1F7t80ikEGTTX3TaPM=;
-  b=nr9Uyki0CPo29IDPn/lBgteBDfL3jcTWKfsnf9LSA3BMVX45+ygM/psa
-   JFgUPb0Z4XjMjfvKlDYYx3fTn5XkZRh0FkjDwsxUlcNVDbq8ivdOfjGdB
-   JlT9mkKejV3QUURE0egHECOSU7ELVDB7GpkOla5HpeHo0BDZPE7T70nuK
-   uKvwI5Ba20Om+JVnLzagM3QjtVbRkkpDJsquFkEljRlbcPDYoqvZgl/e6
-   I9TT4WKt3O/g6TFETAggCLFRRAyk0y4XefcSzjrayFBYKA2TMEuOILYFb
-   s3hB0u8MZRRbNoNRyjk5Go+7HQVpTaSXlfW5U6+3bRPJhlFxUffSuzur/
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342860"
+  bh=Exf/ex05wg/ZdHrQtagsjpQZFoomRp7dCTSrSntMNmc=;
+  b=KDPO3FHjpzgry90cCUoO13BtX9V3p1XKSg60ftRsJwYjOehbdEnl+sGh
+   wrE/hzy2y+Et8Tlntrz0+2P6jzKnQFPB4nFxoS9NpHzyU2ftrqJGNOaXe
+   utGP9SAta9ZwIwTZn0O9EzgviLbUzQFF9lya7R1KmTLaZLYq6LSyClTRk
+   0ISRGxS7lA6okEj+LVgQSsQRqSKvy0mjiWyKYwZwR90lXaUoft4a6iOoL
+   6eszbRN4to18Jb1J5O6yRyCen6nXu7s/Z4JhNuk/e2Ye6IHIq7tCZOnq7
+   xO8v4MnAyjx/UB1VNYRmqrj3DSJOERyjzUvIpc02qMd11MKPatInq78fN
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342540"
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15342860"
+   d="scan'208";a="15342540"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:17:11 -0800
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:10 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15161586"
+   d="scan'208";a="15161409"
 Received: from ahunter6-mobl1.ger.corp.intel.com (HELO ahunter-VirtualBox.home\044ger.corp.intel.com) ([10.249.46.63])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:17:04 -0800
+  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:02 -0800
 From: Adrian Hunter <adrian.hunter@intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 15/19] timekeeping: Fold in timekeeping_delta_to_ns()
-Date: Fri,  8 Mar 2024 15:15:08 +0200
-Message-Id: <20240308131512.44324-16-adrian.hunter@intel.com>
+Subject: [PATCH 06/19] vdso: Add vdso_data::max_cycles
+Date: Fri,  8 Mar 2024 15:14:59 +0200
+Message-Id: <20240308131512.44324-7-adrian.hunter@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240308131512.44324-1-adrian.hunter@intel.com>
 References: <20240308131512.44324-1-adrian.hunter@intel.com>
@@ -70,45 +70,59 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-timekeeping_delta_to_ns() is now called only from
-timekeeping_cycles_to_ns(), and it is not useful otherwise. Simplify by
-folding it into timekeeping_cycles_to_ns().
+Add vdso_data::max_cycles in preparation to use it to detect potential
+multiplication overflow.
 
 Suggested-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
 ---
- kernel/time/timekeeping.c | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+ include/vdso/datapage.h | 4 ++++
+ kernel/time/vsyscall.c  | 6 ++++++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 1bbfe1ff8d24..749387f22f0f 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -364,23 +364,12 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
- }
+diff --git a/include/vdso/datapage.h b/include/vdso/datapage.h
+index 5d5c0b8efff2..6c3d67d6b758 100644
+--- a/include/vdso/datapage.h
++++ b/include/vdso/datapage.h
+@@ -67,6 +67,7 @@ struct vdso_timestamp {
+  * @seq:		timebase sequence counter
+  * @clock_mode:		clock mode
+  * @cycle_last:		timebase at clocksource init
++ * @max_cycles:		maximum cycles which won't overflow 64bit multiplication
+  * @mask:		clocksource mask
+  * @mult:		clocksource multiplier
+  * @shift:		clocksource shift
+@@ -98,6 +99,9 @@ struct vdso_data {
  
- /* Timekeeper helper functions. */
--
--static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 delta)
--{
--	u64 nsec;
--
--	nsec = delta * tkr->mult + tkr->xtime_nsec;
--	nsec >>= tkr->shift;
--
--	return nsec;
--}
--
- static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 cycles)
- {
- 	/* Calculate the delta since the last update_wall_time() */
- 	u64 delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
+ 	s32			clock_mode;
+ 	u64			cycle_last;
++#ifdef CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT
++	u64			max_cycles;
++#endif
+ 	u64			mask;
+ 	u32			mult;
+ 	u32			shift;
+diff --git a/kernel/time/vsyscall.c b/kernel/time/vsyscall.c
+index f0d5062d9cbc..9193d6133e5d 100644
+--- a/kernel/time/vsyscall.c
++++ b/kernel/time/vsyscall.c
+@@ -22,10 +22,16 @@ static inline void update_vdso_data(struct vdso_data *vdata,
+ 	u64 nsec, sec;
  
--	return timekeeping_delta_to_ns(tkr, delta);
-+	return ((delta * tkr->mult) + tkr->xtime_nsec) >> tkr->shift;
- }
- 
- static __always_inline u64 __timekeeping_get_ns(const struct tk_read_base *tkr)
+ 	vdata[CS_HRES_COARSE].cycle_last	= tk->tkr_mono.cycle_last;
++#ifdef CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT
++	vdata[CS_HRES_COARSE].max_cycles	= tk->tkr_mono.clock->max_cycles;
++#endif
+ 	vdata[CS_HRES_COARSE].mask		= tk->tkr_mono.mask;
+ 	vdata[CS_HRES_COARSE].mult		= tk->tkr_mono.mult;
+ 	vdata[CS_HRES_COARSE].shift		= tk->tkr_mono.shift;
+ 	vdata[CS_RAW].cycle_last		= tk->tkr_raw.cycle_last;
++#ifdef CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT
++	vdata[CS_RAW].max_cycles		= tk->tkr_raw.clock->max_cycles;
++#endif
+ 	vdata[CS_RAW].mask			= tk->tkr_raw.mask;
+ 	vdata[CS_RAW].mult			= tk->tkr_raw.mult;
+ 	vdata[CS_RAW].shift			= tk->tkr_raw.shift;
 -- 
 2.34.1
 
