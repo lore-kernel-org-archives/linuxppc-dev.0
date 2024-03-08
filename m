@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 199E4C5475B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:20:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 817B3C54E4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2024 13:20:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NfUiGBOy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cjirwbVz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TrmxT5dJXz3vn7
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:20:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TrmyH1Whgz3f0P
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2024 00:20:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NfUiGBOy;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cjirwbVz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=adrian.hunter@intel.com; receiver=lists.ozlabs.org)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Trmsb010vz3dVH
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:16:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Trmsc2sH8z3vXS
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2024 00:16:52 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1709903811; x=1741439811;
+  t=1709903813; x=1741439813;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=ul0hfPOmfS7i90s07MvVRoTCajL4zQDIAp9Wq9nGTHo=;
-  b=NfUiGBOyiZV4+jXBf/e9uiH+/EySwh1FZmreDK9GkWWEq4rgqQVd8MCL
-   NwBcsFZXkX7TLM2INcgSYKcEk76Ie4Yx8B83OvWHwu2VNW0C5Ha637r4A
-   H95pnJilJ+B93WCk4WSwH9sg0LollqX4pyasR0tRtzjR09IDeYcssiQPh
-   3uOJhB4QPMsShEsJYPDcPg6M0bS4xGHy8aB0mSYSddIsV5JoMNBmpy58P
-   ZFrLJwOzsTJq2TlvWMJ4v2ubrt70y+tC4YoK+L1rx4cpqPBtE/TN7SQzg
-   BgQmjLlHujWuznMnoToNY52kSDC9477uepSZt9Lpm8bnUHi7iGBuWYI5A
+  bh=bS1S2X2CJjfZI9Wdu/gKC/PtojbjfoojrJoco+YT8K0=;
+  b=cjirwbVzjxJdvFJEW+CsgqOd/iGG8IyY/vIBVa6H27z4iUEwfIwsuvs4
+   EjroBAUNM2Amktk5RUnjtjiA2ZKgfblnUV5rg1JotoXz3u5Sq9/zr+D3G
+   LqR4TtEqcjjSNodNHzeNjXGRcMRp4Th/ulVMmTmLMxGaA1gTGXS6kZE5c
+   dmgWmk7RjfvjsAwTd60DKpxZWTY+R772QWVyN9stGXH5CXWKe6fYxfPyv
+   vBkbv2Ag/+4xIInLpwtwr6aZ9HIRT7+n5QMnHjbhUP5CDA7C78x4mZBDI
+   jebTWjaQThUn28x9fZ9l5e9uuMTdt5M47ryqkaeTDU0rKKq1UdoX46j7W
    Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342755"
+X-IronPort-AV: E=McAfee;i="6600,9927,11006"; a="15342449"
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15342755"
+   d="scan'208";a="15342449"
 Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:50 -0800
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:15:49 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.07,109,1708416000"; 
-   d="scan'208";a="15161564"
+   d="scan'208";a="15161375"
 Received: from ahunter6-mobl1.ger.corp.intel.com (HELO ahunter-VirtualBox.home\044ger.corp.intel.com) ([10.249.46.63])
-  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:16:43 -0800
+  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Mar 2024 05:15:41 -0800
 From: Adrian Hunter <adrian.hunter@intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 12/19] timekeeping: Reuse timekeeping_cycles_to_ns()
-Date: Fri,  8 Mar 2024 15:15:05 +0200
-Message-Id: <20240308131512.44324-13-adrian.hunter@intel.com>
+Subject: [PATCH 03/19] vdso: Add CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT
+Date: Fri,  8 Mar 2024 15:14:56 +0200
+Message-Id: <20240308131512.44324-4-adrian.hunter@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240308131512.44324-1-adrian.hunter@intel.com>
 References: <20240308131512.44324-1-adrian.hunter@intel.com>
@@ -70,30 +70,31 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Simplify __timekeeping_get_ns() by reusing timekeeping_cycles_to_ns().
+Add CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT in preparation to add
+multiplication overflow protection to the VDSO time getter functions.
 
 Suggested-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
 ---
- kernel/time/timekeeping.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ lib/vdso/Kconfig | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index c698219b152d..f81d675291e0 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -391,10 +391,7 @@ static inline u64 timekeeping_cycles_to_ns(const struct tk_read_base *tkr, u64 c
+diff --git a/lib/vdso/Kconfig b/lib/vdso/Kconfig
+index d883ac299508..c46c2300517c 100644
+--- a/lib/vdso/Kconfig
++++ b/lib/vdso/Kconfig
+@@ -30,4 +30,11 @@ config GENERIC_VDSO_TIME_NS
+ 	  Selected by architectures which support time namespaces in the
+ 	  VDSO
  
- static __always_inline u64 __timekeeping_get_ns(const struct tk_read_base *tkr)
- {
--	u64 delta, cycles = tk_clock_read(tkr);
--
--	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
--	return timekeeping_delta_to_ns(tkr, delta);
-+	return timekeeping_cycles_to_ns(tkr, tk_clock_read(tkr));
- }
- 
- static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
++config GENERIC_VDSO_OVERFLOW_PROTECT
++	bool
++	help
++	  Select to add multiplication overflow protection to the VDSO
++	  time getter functions for the price of an extra conditional
++	  in the hotpath.
++
+ endif
 -- 
 2.34.1
 
