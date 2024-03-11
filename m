@@ -4,73 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FEADC54E58
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2024 14:47:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9244AC54E58
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2024 16:39:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zWWweWYI;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=qpRAOM6b;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TtfkF34FHz3cZK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2024 01:47:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TtjDQ5Sztz3fQH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2024 03:39:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zWWweWYI;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=qpRAOM6b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=manivannan.sadhasivam@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.173; helo=out-173.mta1.migadu.com; envelope-from=sean.anderson@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-173.mta1.migadu.com (out-173.mta1.migadu.com [95.215.58.173])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TtfjR3Z4qz3btZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2024 01:46:17 +1100 (AEDT)
-Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-6e63e9abf6aso2383346b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2024 07:46:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1710168372; x=1710773172; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=7WZeoUY9lDhr7yJPXp/YwXiCG8hTtAt9+Pvs1llVqw0=;
-        b=zWWweWYI4s2wmdVwfKb/ALYwf2xjiDT4Y18w2cM57REuIay6cNUGtBTsf5aDDL6amb
-         v64UlNK5nW5Nup+GY2+OdjYBzOj4aFkYKb2ZVgwJ1gsSkjS6iYn47h+s/hUJ66DPwgBG
-         7//KyihYqroehfAuPBCTDO9n5K1XAZ0bULo2lTg28mfHDnNsRXstOGQHp2sdAiZlbmiD
-         ig5uDkbbbyEBNjfeGK8IyfNRa8743QBd3Lrpi7fqTuY+beMiR3nET6wwz64ozHY7mLBy
-         BriwnO4LxlzEQE1ciW1MczABVQXMwrGzN4f13kmJR7LfjXljK1DmFe8Ah/gCuOiiV4CI
-         WCDQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710168372; x=1710773172;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=7WZeoUY9lDhr7yJPXp/YwXiCG8hTtAt9+Pvs1llVqw0=;
-        b=tIvoT0byji6R6S+LZ5BS5LKy4PTLjdXtfRKwUP7FqOJ6Lp81etEBNYsKnevKZzm/9D
-         sf9E8A8Nf7nSWLes1klW3hJHad3hkifB7YVEy/d92TvY5RgQO5zza9w0NUesndH1YJik
-         POIyeGP67ODe3xTImor8WbNB1EjCofSx93lDQcd/Z+0UlfFhxs8yZBVCMvW4vmOEc73q
-         oaM6Y3ttmfCIqT5hgnGV7wU/2b0C+TlB+C+SqBrhh+epvdvDYKJSMJNvvzl3UvMq6t9K
-         xBUiQ/GDFvDyBIYJ3h1182kxVNUlfUrQT+cNnW5/Tp1C2J3JlKYHW17DWGDMtiFPZ+eT
-         SSzQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXXnRlSHdZ75t6QynHJN8OVzucjS45tSM4y7mUc9k/qa8KwlxwZkaHlukcqGhqiHt03DKXY8J2jOR6ezS9wQ2KcTvX2vQAVsx5Hecgz4A==
-X-Gm-Message-State: AOJu0YzxG7zihblVHNNdF2Ovd6Ys2ngo3esyLIDQdpXjb+yGHpX40WUq
-	BSGA4X1r++aAiiQEyDRSbgAHxLzTbM0vsOSllqmsGaw1mOfFsfNhvrDE5VhvrQ==
-X-Google-Smtp-Source: AGHT+IEkyoSv3cUPd2YD+Ord9GisLbDuQ3mTJgXZUAwKm1FrFZN401VY7NABhiAj7Fw9fR+qh9jZVw==
-X-Received: by 2002:a05:6a00:2d20:b0:6e5:5a24:818c with SMTP id fa32-20020a056a002d2000b006e55a24818cmr7159193pfb.7.1710168372299;
-        Mon, 11 Mar 2024 07:46:12 -0700 (PDT)
-Received: from thinkpad ([117.217.184.48])
-        by smtp.gmail.com with ESMTPSA id o12-20020a62f90c000000b006e053e98e1csm4427472pfh.136.2024.03.11.07.46.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 Mar 2024 07:46:11 -0700 (PDT)
-Date: Mon, 11 Mar 2024 20:15:59 +0530
-From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To: Niklas Cassel <cassel@kernel.org>
-Subject: Re: [PATCH v9 07/10] PCI: dwc: ep: Remove "core_init_notifier" flag
-Message-ID: <20240311144559.GA2504@thinkpad>
-References: <20240304-pci-dbi-rework-v9-0-29d433d99cda@linaro.org>
- <20240304-pci-dbi-rework-v9-7-29d433d99cda@linaro.org>
- <ZesRk5Dg4KEASD3U@ryzen>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TtjCX3m1Wz3c9r
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2024 03:39:01 +1100 (AEDT)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1710175120;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=CysZkS7WCe+8wsvCDFOXdWUmYLLJcMTKk+L8QiL4FiE=;
+	b=qpRAOM6bPLgH8lhUR+OsZuQzuhAuG/Ta6lrS5+lMOJSpSOVCmEYtJ95gEsB/xwPdQ7r9bi
+	7h70wYlB7gHmoFqYikGTmQBdKo4Et2xPqbeM+KFQH4JYKUq6cN1NrlQl7M94oxxtLyNSqx
+	ARWrSi7IwUUl9Lu2EsvkPRV4e7BktK0=
+From: Sean Anderson <sean.anderson@linux.dev>
+To: "David S . Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	netdev@vger.kernel.org
+Subject: [PATCH net v5 2/2] soc: fsl: qbman: Use raw spinlock for cgr_lock
+Date: Mon, 11 Mar 2024 12:38:30 -0400
+Message-Id: <20240311163830.12952-2-sean.anderson@linux.dev>
+In-Reply-To: <20240311163830.12952-1-sean.anderson@linux.dev>
+References: <20240311163830.12952-1-sean.anderson@linux.dev>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <ZesRk5Dg4KEASD3U@ryzen>
+X-Migadu-Flow: FLOW_OUT
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,98 +58,139 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Vignesh Raghavendra <vigneshr@ti.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>, Minghuan Lian <minghuan.Lian@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Fabio Estevam <festevam@gmail.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Jesper Nilsson <jesper.nilsson@axis.com>, linux-tegra@vger.kernel.org, linux-arm-kernel@axis.com, Jonathan Hunter <jonathanh@nvidia.com>, NXP Linux Team <linux-imx@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, Srikanth Thokala <srikanth.thokala@intel.com>, linux-arm-msm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>, linux-omap@vger.kernel.org, Mingkai Hu <mingkai.hu@nxp.com>, linux-arm-kernel@
- lists.infradead.org, Roy Zang <roy.zang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, linux-kernel@vger.kernel.org, Vidya Sagar <vidyas@nvidia.com>, linux-renesas-soc@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Gustavo Pimentel <gustavo.pimentel@synopsys.com>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>
+Cc: Sean Anderson <sean.anderson@linux.dev>, Madalin Bucur <madalin.bucur@nxp.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Roy Pledge <roy.pledge@nxp.com>, linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Scott Wood <oss@buserror.net>, Claudiu Manoil <claudiu.manoil@nxp.com>, Camelia Groza <camelia.groza@nxp.com>, stable@vger.kernel.org, Steffen Trumtrar <s.trumtrar@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 08, 2024 at 02:24:35PM +0100, Niklas Cassel wrote:
-> On Mon, Mar 04, 2024 at 02:52:19PM +0530, Manivannan Sadhasivam wrote:
-> > "core_init_notifier" flag is set by the glue drivers requiring refclk from
-> > the host to complete the DWC core initialization. Also, those drivers will
-> > send a notification to the EPF drivers once the initialization is fully
-> > completed using the pci_epc_init_notify() API. Only then, the EPF drivers
-> > will start functioning.
-> > 
-> > For the rest of the drivers generating refclk locally, EPF drivers will
-> > start functioning post binding with them. EPF drivers rely on the
-> > 'core_init_notifier' flag to differentiate between the drivers.
-> > Unfortunately, this creates two different flows for the EPF drivers.
-> > 
-> > So to avoid that, let's get rid of the "core_init_notifier" flag and follow
-> > a single initialization flow for the EPF drivers. This is done by calling
-> > the dw_pcie_ep_init_notify() from all glue drivers after the completion of
-> > dw_pcie_ep_init_registers() API. This will allow all the glue drivers to
-> > send the notification to the EPF drivers once the initialization is fully
-> > completed.
-> > 
-> > Only difference here is that, the drivers requiring refclk from host will
-> > send the notification once refclk is received, while others will send it
-> > during probe time itself.
-> > 
-> > Reviewed-by: Frank Li <Frank.Li@nxp.com>
-> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-> > ---
-> > diff --git a/drivers/pci/endpoint/functions/pci-epf-test.c b/drivers/pci/endpoint/functions/pci-epf-test.c
-> > index 18c80002d3bd..fc0282b0d626 100644
-> > --- a/drivers/pci/endpoint/functions/pci-epf-test.c
-> > +++ b/drivers/pci/endpoint/functions/pci-epf-test.c
-> > @@ -927,21 +928,12 @@ static int pci_epf_test_bind(struct pci_epf *epf)
-> >  	if (ret)
-> >  		return ret;
-> >
-> 
-> Hello Mani,
-> 
-> Since you asked for testing, I gave your series a spin
-> (with a driver without .core_init_notifier).
-> 
-> 
-> There seems to be a problem that pci_epc_write_header() is never called.
-> 
-> Debugging this, it seems that .core_init in pci-epf-test is never called.
-> 
-> If I add debug prints in pci_epc_init_notify(), I see that it does not
-> notify a single EPF driver.
-> 
-> It appears that the patch in $subject will call pci_epc_init_notify()
-> at EPC driver .probe() time, and at that point in time, there are no
-> EPF drivers registered.
-> 
-> They get registered later, when doing the configfs write.
-> 
-> 
-> I would say that it is the following change that breaks things:
-> 
-> > -	if (!core_init_notifier) {
-> > -		ret = pci_epf_test_core_init(epf);
-> > -		if (ret)
-> > -			return ret;
-> > -	}
-> > -
-> 
-> Since without this code, pci_epf_test_core_init() will no longer be called,
-> as there is currently no one that calls epf->core_init() for a EPF driver
-> after it has been bound. (For drivers that call dw_pcie_ep_init_notify() in
-> .probe())
-> 
+smp_call_function always runs its callback in hard IRQ context, even on
+PREEMPT_RT, where spinlocks can sleep. So we need to use a raw spinlock
+for cgr_lock to ensure we aren't waiting on a sleeping task.
 
-Thanks a lot for testing, Niklas!
+Although this bug has existed for a while, it was not apparent until
+commit ef2a8d5478b9 ("net: dpaa: Adjust queue depth on rate change")
+which invokes smp_call_function_single via qman_update_cgr_safe every
+time a link goes up or down.
 
-> I guess one way to solve this would be for the EPC core to keep track of
-> the current EPC "core state" (up/down). If the core is "up" at EPF .bind()
-> time, notify the EPF driver directly after .bind()?
-> 
+Fixes: 96f413f47677 ("soc/fsl/qbman: fix issue in qman_delete_cgr_safe()")
+CC: stable@vger.kernel.org
+Reported-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+Closes: https://lore.kernel.org/all/20230323153935.nofnjucqjqnz34ej@skbuf/
+Reported-by: Steffen Trumtrar <s.trumtrar@pengutronix.de>
+Closes: https://lore.kernel.org/linux-arm-kernel/87wmsyvclu.fsf@pengutronix.de/
+Signed-off-by: Sean Anderson <sean.anderson@linux.dev>
+Reviewed-by: Camelia Groza <camelia.groza@nxp.com>
+Tested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
 
-Yeah, that's a good solution. But I think it would be better if the EPC caches
-all events if the EPF drivers are not available and dispatch them once the bind
-happens for each EPF driver. Even though INIT_COMPLETE is the only event that is
-getting generated before bind() now, IMO it is better to add provision to catch
-other events also.
+---
 
-Wdyt?
+Changes in v5:
+- Clarify commit message
 
-- Mani
+Changes in v4:
+- Add a note about how raw spinlocks aren't quite right
 
+Changes in v3:
+- Change blamed commit to something more appropriate
+
+ drivers/soc/fsl/qbman/qman.c | 25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
+index 1bf1f1ea67f0..7e9074519ad2 100644
+--- a/drivers/soc/fsl/qbman/qman.c
++++ b/drivers/soc/fsl/qbman/qman.c
+@@ -991,7 +991,7 @@ struct qman_portal {
+ 	/* linked-list of CSCN handlers. */
+ 	struct list_head cgr_cbs;
+ 	/* list lock */
+-	spinlock_t cgr_lock;
++	raw_spinlock_t cgr_lock;
+ 	struct work_struct congestion_work;
+ 	struct work_struct mr_work;
+ 	char irqname[MAX_IRQNAME];
+@@ -1281,7 +1281,7 @@ static int qman_create_portal(struct qman_portal *portal,
+ 		/* if the given mask is NULL, assume all CGRs can be seen */
+ 		qman_cgrs_fill(&portal->cgrs[0]);
+ 	INIT_LIST_HEAD(&portal->cgr_cbs);
+-	spin_lock_init(&portal->cgr_lock);
++	raw_spin_lock_init(&portal->cgr_lock);
+ 	INIT_WORK(&portal->congestion_work, qm_congestion_task);
+ 	INIT_WORK(&portal->mr_work, qm_mr_process_task);
+ 	portal->bits = 0;
+@@ -1456,11 +1456,14 @@ static void qm_congestion_task(struct work_struct *work)
+ 	union qm_mc_result *mcr;
+ 	struct qman_cgr *cgr;
+ 
+-	spin_lock_irq(&p->cgr_lock);
++	/*
++	 * FIXME: QM_MCR_TIMEOUT is 10ms, which is too long for a raw spinlock!
++	 */
++	raw_spin_lock_irq(&p->cgr_lock);
+ 	qm_mc_start(&p->p);
+ 	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCONGESTION);
+ 	if (!qm_mc_result_timeout(&p->p, &mcr)) {
+-		spin_unlock_irq(&p->cgr_lock);
++		raw_spin_unlock_irq(&p->cgr_lock);
+ 		dev_crit(p->config->dev, "QUERYCONGESTION timeout\n");
+ 		qman_p_irqsource_add(p, QM_PIRQ_CSCI);
+ 		return;
+@@ -1476,7 +1479,7 @@ static void qm_congestion_task(struct work_struct *work)
+ 	list_for_each_entry(cgr, &p->cgr_cbs, node)
+ 		if (cgr->cb && qman_cgrs_get(&c, cgr->cgrid))
+ 			cgr->cb(p, cgr, qman_cgrs_get(&rr, cgr->cgrid));
+-	spin_unlock_irq(&p->cgr_lock);
++	raw_spin_unlock_irq(&p->cgr_lock);
+ 	qman_p_irqsource_add(p, QM_PIRQ_CSCI);
+ }
+ 
+@@ -2440,7 +2443,7 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
+ 	preempt_enable();
+ 
+ 	cgr->chan = p->config->channel;
+-	spin_lock_irq(&p->cgr_lock);
++	raw_spin_lock_irq(&p->cgr_lock);
+ 
+ 	if (opts) {
+ 		struct qm_mcc_initcgr local_opts = *opts;
+@@ -2477,7 +2480,7 @@ int qman_create_cgr(struct qman_cgr *cgr, u32 flags,
+ 	    qman_cgrs_get(&p->cgrs[1], cgr->cgrid))
+ 		cgr->cb(p, cgr, 1);
+ out:
+-	spin_unlock_irq(&p->cgr_lock);
++	raw_spin_unlock_irq(&p->cgr_lock);
+ 	put_affine_portal();
+ 	return ret;
+ }
+@@ -2512,7 +2515,7 @@ int qman_delete_cgr(struct qman_cgr *cgr)
+ 		return -EINVAL;
+ 
+ 	memset(&local_opts, 0, sizeof(struct qm_mcc_initcgr));
+-	spin_lock_irqsave(&p->cgr_lock, irqflags);
++	raw_spin_lock_irqsave(&p->cgr_lock, irqflags);
+ 	list_del(&cgr->node);
+ 	/*
+ 	 * If there are no other CGR objects for this CGRID in the list,
+@@ -2537,7 +2540,7 @@ int qman_delete_cgr(struct qman_cgr *cgr)
+ 		/* add back to the list */
+ 		list_add(&cgr->node, &p->cgr_cbs);
+ release_lock:
+-	spin_unlock_irqrestore(&p->cgr_lock, irqflags);
++	raw_spin_unlock_irqrestore(&p->cgr_lock, irqflags);
+ 	put_affine_portal();
+ 	return ret;
+ }
+@@ -2577,9 +2580,9 @@ static int qman_update_cgr(struct qman_cgr *cgr, struct qm_mcc_initcgr *opts)
+ 	if (!p)
+ 		return -EINVAL;
+ 
+-	spin_lock_irqsave(&p->cgr_lock, irqflags);
++	raw_spin_lock_irqsave(&p->cgr_lock, irqflags);
+ 	ret = qm_modify_cgr(cgr, 0, opts);
+-	spin_unlock_irqrestore(&p->cgr_lock, irqflags);
++	raw_spin_unlock_irqrestore(&p->cgr_lock, irqflags);
+ 	put_affine_portal();
+ 	return ret;
+ }
 -- 
-மணிவண்ணன் சதாசிவம்
+2.35.1.1320.gc452695387.dirty
+
