@@ -4,88 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DE4FC54E58
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2024 13:23:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FEADC54E58
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2024 14:47:03 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NPUF5zwl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zWWweWYI;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ttct56Vtjz3vZN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2024 00:23:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TtfkF34FHz3cZK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2024 01:47:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NPUF5zwl;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zWWweWYI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=manivannan.sadhasivam@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ttcpx2r19z3bX9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2024 00:20:57 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42BCu6ti001855;
-	Mon, 11 Mar 2024 13:20:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=PDOWkT1/qUN1RbHLq4ddY3Ay1sVFnWbuFxkQ3Hny/jw=;
- b=NPUF5zwlgkOiCovnJzMsrQx991/40mEZDNRB8ylzZqvO5GpBc8mSAPLulk4ZdCFYRIsJ
- emmsH4Tby06EUf8rgdGI2VbkkcKdYsxQswkPyyuSP9WfI4EQ1HxUbx6CvpBUOxQeKCnw
- XWIidxxGIP5dsuYy1Cdoe9CZsaN2Og8qzg/UdC3mAn2nDFy7q4k45CPiX0a5rzTXupYX
- cc2+hD5RZF3w4zkwHdKP+BEGihPICuYzVAcxDB/UGamQz6XfGrnJbF09Z3XCJCNeE9DW
- IAEg9bEC+lKqOMxtT///nGC116vhsirQJkYHEiWXi9bjdfEUImLuroiETFUotZuCmujR 9A== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wt1yk958t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 Mar 2024 13:20:47 +0000
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42BCudFf004062;
-	Mon, 11 Mar 2024 13:20:47 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wt1yk957w-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 Mar 2024 13:20:47 +0000
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42BBqP4a018581;
-	Mon, 11 Mar 2024 13:20:46 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3ws4t1r7d7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 11 Mar 2024 13:20:46 +0000
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42BDKhSC7865002
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 11 Mar 2024 13:20:45 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2A80C58068;
-	Mon, 11 Mar 2024 13:20:43 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 759C058056;
-	Mon, 11 Mar 2024 13:20:42 +0000 (GMT)
-Received: from sbct-3.pok.ibm.com (unknown [9.47.158.153])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 11 Mar 2024 13:20:42 +0000 (GMT)
-From: Stefan Berger <stefanb@linux.ibm.com>
-To: mpe@ellerman.id.au, linux-integrity@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH v2 2/3] dt-bindings: tpm: Add linux,sml-log to ibm,vtpm.yaml
-Date: Mon, 11 Mar 2024 09:20:29 -0400
-Message-ID: <20240311132030.1103122-3-stefanb@linux.ibm.com>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240311132030.1103122-1-stefanb@linux.ibm.com>
-References: <20240311132030.1103122-1-stefanb@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TtfjR3Z4qz3btZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2024 01:46:17 +1100 (AEDT)
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-6e63e9abf6aso2383346b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2024 07:46:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1710168372; x=1710773172; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=7WZeoUY9lDhr7yJPXp/YwXiCG8hTtAt9+Pvs1llVqw0=;
+        b=zWWweWYI4s2wmdVwfKb/ALYwf2xjiDT4Y18w2cM57REuIay6cNUGtBTsf5aDDL6amb
+         v64UlNK5nW5Nup+GY2+OdjYBzOj4aFkYKb2ZVgwJ1gsSkjS6iYn47h+s/hUJ66DPwgBG
+         7//KyihYqroehfAuPBCTDO9n5K1XAZ0bULo2lTg28mfHDnNsRXstOGQHp2sdAiZlbmiD
+         ig5uDkbbbyEBNjfeGK8IyfNRa8743QBd3Lrpi7fqTuY+beMiR3nET6wwz64ozHY7mLBy
+         BriwnO4LxlzEQE1ciW1MczABVQXMwrGzN4f13kmJR7LfjXljK1DmFe8Ah/gCuOiiV4CI
+         WCDQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710168372; x=1710773172;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=7WZeoUY9lDhr7yJPXp/YwXiCG8hTtAt9+Pvs1llVqw0=;
+        b=tIvoT0byji6R6S+LZ5BS5LKy4PTLjdXtfRKwUP7FqOJ6Lp81etEBNYsKnevKZzm/9D
+         sf9E8A8Nf7nSWLes1klW3hJHad3hkifB7YVEy/d92TvY5RgQO5zza9w0NUesndH1YJik
+         POIyeGP67ODe3xTImor8WbNB1EjCofSx93lDQcd/Z+0UlfFhxs8yZBVCMvW4vmOEc73q
+         oaM6Y3ttmfCIqT5hgnGV7wU/2b0C+TlB+C+SqBrhh+epvdvDYKJSMJNvvzl3UvMq6t9K
+         xBUiQ/GDFvDyBIYJ3h1182kxVNUlfUrQT+cNnW5/Tp1C2J3JlKYHW17DWGDMtiFPZ+eT
+         SSzQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXXnRlSHdZ75t6QynHJN8OVzucjS45tSM4y7mUc9k/qa8KwlxwZkaHlukcqGhqiHt03DKXY8J2jOR6ezS9wQ2KcTvX2vQAVsx5Hecgz4A==
+X-Gm-Message-State: AOJu0YzxG7zihblVHNNdF2Ovd6Ys2ngo3esyLIDQdpXjb+yGHpX40WUq
+	BSGA4X1r++aAiiQEyDRSbgAHxLzTbM0vsOSllqmsGaw1mOfFsfNhvrDE5VhvrQ==
+X-Google-Smtp-Source: AGHT+IEkyoSv3cUPd2YD+Ord9GisLbDuQ3mTJgXZUAwKm1FrFZN401VY7NABhiAj7Fw9fR+qh9jZVw==
+X-Received: by 2002:a05:6a00:2d20:b0:6e5:5a24:818c with SMTP id fa32-20020a056a002d2000b006e55a24818cmr7159193pfb.7.1710168372299;
+        Mon, 11 Mar 2024 07:46:12 -0700 (PDT)
+Received: from thinkpad ([117.217.184.48])
+        by smtp.gmail.com with ESMTPSA id o12-20020a62f90c000000b006e053e98e1csm4427472pfh.136.2024.03.11.07.46.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 11 Mar 2024 07:46:11 -0700 (PDT)
+Date: Mon, 11 Mar 2024 20:15:59 +0530
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+To: Niklas Cassel <cassel@kernel.org>
+Subject: Re: [PATCH v9 07/10] PCI: dwc: ep: Remove "core_init_notifier" flag
+Message-ID: <20240311144559.GA2504@thinkpad>
+References: <20240304-pci-dbi-rework-v9-0-29d433d99cda@linaro.org>
+ <20240304-pci-dbi-rework-v9-7-29d433d99cda@linaro.org>
+ <ZesRk5Dg4KEASD3U@ryzen>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 20ubOuGWMGmMN66zt-m4ZQr-JWVw_EUh
-X-Proofpoint-GUID: yCzjiifoKb6BvxyBu9ESDz0GX__e7vvO
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-03-11_08,2024-03-06_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- suspectscore=0 spamscore=0 phishscore=0 malwarescore=0 clxscore=1015
- mlxscore=0 lowpriorityscore=0 mlxlogscore=999 priorityscore=1501
- adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2403110100
+In-Reply-To: <ZesRk5Dg4KEASD3U@ryzen>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,99 +82,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, rnsastry@linux.ibm.com, Nayna Jain <nayna@linux.ibm.com>, jsnitsel@redhat.com, linux-kernel@vger.kernel.org, jarkko@kernel.org, Lukas Wunner <lukas@wunner.de>, peterhuewe@gmx.de, viparash@in.ibm.com, Stefan Berger <stefanb@linux.ibm.com>
+Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Vignesh Raghavendra <vigneshr@ti.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>, Minghuan Lian <minghuan.Lian@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Fabio Estevam <festevam@gmail.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Jesper Nilsson <jesper.nilsson@axis.com>, linux-tegra@vger.kernel.org, linux-arm-kernel@axis.com, Jonathan Hunter <jonathanh@nvidia.com>, NXP Linux Team <linux-imx@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, Srikanth Thokala <srikanth.thokala@intel.com>, linux-arm-msm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>, linux-omap@vger.kernel.org, Mingkai Hu <mingkai.hu@nxp.com>, linux-arm-kernel@
+ lists.infradead.org, Roy Zang <roy.zang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, linux-kernel@vger.kernel.org, Vidya Sagar <vidyas@nvidia.com>, linux-renesas-soc@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Gustavo Pimentel <gustavo.pimentel@synopsys.com>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add linux,sml-log, which carries the firmware TPM log in a uint8-array, to
-the properties. Either this property is required or both linux,sml-base and
-linux,sml-size are required. Add a test case for verification.
+On Fri, Mar 08, 2024 at 02:24:35PM +0100, Niklas Cassel wrote:
+> On Mon, Mar 04, 2024 at 02:52:19PM +0530, Manivannan Sadhasivam wrote:
+> > "core_init_notifier" flag is set by the glue drivers requiring refclk from
+> > the host to complete the DWC core initialization. Also, those drivers will
+> > send a notification to the EPF drivers once the initialization is fully
+> > completed using the pci_epc_init_notify() API. Only then, the EPF drivers
+> > will start functioning.
+> > 
+> > For the rest of the drivers generating refclk locally, EPF drivers will
+> > start functioning post binding with them. EPF drivers rely on the
+> > 'core_init_notifier' flag to differentiate between the drivers.
+> > Unfortunately, this creates two different flows for the EPF drivers.
+> > 
+> > So to avoid that, let's get rid of the "core_init_notifier" flag and follow
+> > a single initialization flow for the EPF drivers. This is done by calling
+> > the dw_pcie_ep_init_notify() from all glue drivers after the completion of
+> > dw_pcie_ep_init_registers() API. This will allow all the glue drivers to
+> > send the notification to the EPF drivers once the initialization is fully
+> > completed.
+> > 
+> > Only difference here is that, the drivers requiring refclk from host will
+> > send the notification once refclk is received, while others will send it
+> > during probe time itself.
+> > 
+> > Reviewed-by: Frank Li <Frank.Li@nxp.com>
+> > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+> > ---
+> > diff --git a/drivers/pci/endpoint/functions/pci-epf-test.c b/drivers/pci/endpoint/functions/pci-epf-test.c
+> > index 18c80002d3bd..fc0282b0d626 100644
+> > --- a/drivers/pci/endpoint/functions/pci-epf-test.c
+> > +++ b/drivers/pci/endpoint/functions/pci-epf-test.c
+> > @@ -927,21 +928,12 @@ static int pci_epf_test_bind(struct pci_epf *epf)
+> >  	if (ret)
+> >  		return ret;
+> >
+> 
+> Hello Mani,
+> 
+> Since you asked for testing, I gave your series a spin
+> (with a driver without .core_init_notifier).
+> 
+> 
+> There seems to be a problem that pci_epc_write_header() is never called.
+> 
+> Debugging this, it seems that .core_init in pci-epf-test is never called.
+> 
+> If I add debug prints in pci_epc_init_notify(), I see that it does not
+> notify a single EPF driver.
+> 
+> It appears that the patch in $subject will call pci_epc_init_notify()
+> at EPC driver .probe() time, and at that point in time, there are no
+> EPF drivers registered.
+> 
+> They get registered later, when doing the configfs write.
+> 
+> 
+> I would say that it is the following change that breaks things:
+> 
+> > -	if (!core_init_notifier) {
+> > -		ret = pci_epf_test_core_init(epf);
+> > -		if (ret)
+> > -			return ret;
+> > -	}
+> > -
+> 
+> Since without this code, pci_epf_test_core_init() will no longer be called,
+> as there is currently no one that calls epf->core_init() for a EPF driver
+> after it has been bound. (For drivers that call dw_pcie_ep_init_notify() in
+> .probe())
+> 
 
-Fixes: 82003e0487fb ("Documentation: tpm: add the IBM Virtual TPM device tree binding documentation")
-Cc: Lukas Wunner <lukas@wunner.de>
-Cc: Nayna Jain <nayna@linux.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
----
- .../devicetree/bindings/tpm/ibm,vtpm.yaml     | 20 +++++++++++++++++--
- .../devicetree/bindings/tpm/tpm-common.yaml   | 14 ++++++++++++-
- 2 files changed, 31 insertions(+), 3 deletions(-)
+Thanks a lot for testing, Niklas!
 
-diff --git a/Documentation/devicetree/bindings/tpm/ibm,vtpm.yaml b/Documentation/devicetree/bindings/tpm/ibm,vtpm.yaml
-index 50a3fd31241c..8885ef3b7638 100644
---- a/Documentation/devicetree/bindings/tpm/ibm,vtpm.yaml
-+++ b/Documentation/devicetree/bindings/tpm/ibm,vtpm.yaml
-@@ -74,8 +74,6 @@ required:
-   - ibm,my-dma-window
-   - ibm,my-drc-index
-   - ibm,loc-code
--  - linux,sml-base
--  - linux,sml-size
- 
- allOf:
-   - $ref: tpm-common.yaml#
-@@ -102,3 +100,21 @@ examples:
-             linux,sml-size = <0xbce10200>;
-         };
-     };
-+  - |
-+    soc {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        tpm@30000003 {
-+            compatible = "IBM,vtpm20";
-+            device_type = "IBM,vtpm";
-+            reg = <0x30000003>;
-+            interrupts = <0xa0003 0x0>;
-+            ibm,#dma-address-cells = <0x2>;
-+            ibm,#dma-size-cells = <0x2>;
-+            ibm,my-dma-window = <0x10000003 0x0 0x0 0x0 0x10000000>;
-+            ibm,my-drc-index = <0x30000003>;
-+            ibm,loc-code = "U9080.HEX.134CA08-V7-C3";
-+            linux,sml-log = <00 00 00 00 03 00 00>;
-+        };
-+    };
-diff --git a/Documentation/devicetree/bindings/tpm/tpm-common.yaml b/Documentation/devicetree/bindings/tpm/tpm-common.yaml
-index 3c1241b2a43f..f6f0b551268c 100644
---- a/Documentation/devicetree/bindings/tpm/tpm-common.yaml
-+++ b/Documentation/devicetree/bindings/tpm/tpm-common.yaml
-@@ -30,6 +30,11 @@ properties:
-       size of reserved memory allocated for firmware event log
-     $ref: /schemas/types.yaml#/definitions/uint32
- 
-+  linux,sml-log:
-+    description:
-+      Content of firmware event log
-+    $ref: /schemas/types.yaml#/definitions/uint8-array
-+
-   memory-region:
-     description: reserved memory allocated for firmware event log
-     maxItems: 1
-@@ -53,15 +58,22 @@ dependentRequired:
-   linux,sml-base: ['linux,sml-size']
-   linux,sml-size: ['linux,sml-base']
- 
--# must only have either memory-region or linux,sml-base
-+# must only have either memory-region or linux,sml-base/size or linux,sml-log
- # as well as either resets or reset-gpios
- dependentSchemas:
-   memory-region:
-     properties:
-       linux,sml-base: false
-+      linux,sml-log: false
-   linux,sml-base:
-     properties:
-       memory-region: false
-+      linux,sml-log: false
-+  linux,sml-log:
-+    properties:
-+      memory-region: false
-+      linux,sml-base: false
-+      linux,sml-size: false
-   resets:
-     properties:
-       reset-gpios: false
+> I guess one way to solve this would be for the EPC core to keep track of
+> the current EPC "core state" (up/down). If the core is "up" at EPF .bind()
+> time, notify the EPF driver directly after .bind()?
+> 
+
+Yeah, that's a good solution. But I think it would be better if the EPC caches
+all events if the EPF drivers are not available and dispatch them once the bind
+happens for each EPF driver. Even though INIT_COMPLETE is the only event that is
+getting generated before bind() now, IMO it is better to add provision to catch
+other events also.
+
+Wdyt?
+
+- Mani
+
 -- 
-2.43.0
-
+மணிவண்ணன் சதாசிவம்
