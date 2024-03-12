@@ -4,89 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9B00C54E58
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2024 20:02:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63105C54E5D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2024 22:29:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hZUjP/D6;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZKQ3snpr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IAS66i75;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TvPgT21Dlz3dXZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 07:02:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TvSxy0PM5z3bw2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 09:29:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hZUjP/D6;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZKQ3snpr;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IAS66i75;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.15; helo=mgamail.intel.com; envelope-from=rick.p.edgecombe@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TvPfb4YKHz3cV5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2024 07:01:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1710273681;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=sq8Q7APw4DcVkqWc+oejv1fuFkz+jT1GPn/e6E4W0Yk=;
-	b=hZUjP/D6J9pwOvjbXWl/TnnGrlwZOagSjLsshCH2LeYVshMTIYUmknyoagJorD1uvevAfF
-	a4nng9HJSzz+frcTyPIb6Rpc0GujIDxIIj10rjzImhujng22bOa8AktSwu7TrDvbJT3xlO
-	BbO5RM739tlIkETH9sPjBcrtdeoDA6w=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1710273682;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=sq8Q7APw4DcVkqWc+oejv1fuFkz+jT1GPn/e6E4W0Yk=;
-	b=ZKQ3snpri8r+3q9plO5BJ7tIv5PnKEWn3i3GPhYPbD1Yezz1guiDCuECvT/2aeu6l1Cq/T
-	lRek4cHQVG7OZb3kGzf/Laa8z+EYkjyvJ3MtT6zB5v2JYZc945iz532YRsbS1IqHabq1cw
-	nSNUtG2aW+Cehope1/h1EuE9mPvAS8s=
-Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com
- [209.85.160.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-190-QrdOiWhhPe-eFx_NUA9wQg-1; Tue, 12 Mar 2024 16:01:18 -0400
-X-MC-Unique: QrdOiWhhPe-eFx_NUA9wQg-1
-Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-42ed8fb8ce0so5362891cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2024 13:01:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710273677; x=1710878477;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=sq8Q7APw4DcVkqWc+oejv1fuFkz+jT1GPn/e6E4W0Yk=;
-        b=sYq8+nTbIFBMrwgd+52vllIFweuUmvWBYECfBwJyo9yjxr8uMDBnVzNB225kJ7pL9A
-         0lRuAFgXeXGssByjfQdIKiAnNFYLbY3Iza4SJD34lrtH5qnTxRl9RYNc0qbyT/kNbknF
-         U5dcZDPWXuH9rBns6wFbtj6KUWLd4/UM0zloTOvtpBTUia5QQFLLTMMFB03/hLpU+z4T
-         tdaVNEdxvQRyUu0I3/VHrtZJhmKUmx/JRrmTQjES6CZi+39GttAO4CNgF/iuyqq5Rfxb
-         Eu8Vv3e8G7x+IGJNkOTNmwQmc0Kegi6zXbRA63jq5gUbH1HmCRvIkJgrgOTCVaRvTAUr
-         GA/Q==
-X-Forwarded-Encrypted: i=1; AJvYcCW1CEzqmEh+ecPDiso08uQwbQjcy2mpzkQ7ae8Ul0r+v4CoKY0WkXWWTJH+5+JebQbvOD15p4j7pt/Rq0a3kpBA+FJp8rcmtbzMSKyT8g==
-X-Gm-Message-State: AOJu0YwJv58Bak8K5L8kOwC6URGzUErksqo5EQyHInqL9Hk5kftFRcwB
-	UXXZ3mJ2swvug6QU0AQC4+Z4AiEglJNIkxJf2Mbs9tsQhic63HoKQm9xM57YHsx3wOuTPNtNQ0X
-	NZnqX/bs37bRi+5iYy3nXFAwPoiv+BWSR1a1KIneBzWyVUcks8zhQ0DzU/aibTSM=
-X-Received: by 2002:a05:620a:2715:b0:788:79d3:402e with SMTP id b21-20020a05620a271500b0078879d3402emr3492050qkp.7.1710273677510;
-        Tue, 12 Mar 2024 13:01:17 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGFci8LJ7emFKeNaMhqM4be32i5qK2b8ngNE0xIpit/UyC+7KzN+KAk6ieS3wmiUOL3/zXkrQ==
-X-Received: by 2002:a05:620a:2715:b0:788:79d3:402e with SMTP id b21-20020a05620a271500b0078879d3402emr3492030qkp.7.1710273677131;
-        Tue, 12 Mar 2024 13:01:17 -0700 (PDT)
-Received: from x1n (cpe688f2e2cb7c3-cm688f2e2cb7c0.cpe.net.cable.rogers.com. [99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id f18-20020a05620a12f200b007882915ca34sm3977850qkl.40.2024.03.12.13.01.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 Mar 2024 13:01:16 -0700 (PDT)
-Date: Tue, 12 Mar 2024 16:01:14 -0400
-From: Peter Xu <peterx@redhat.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH RFC 00/13] mm/treewide: Remove pXd_huge() API
-Message-ID: <ZfC0ioxUrCK5sX1k@x1n>
-References: <20240306104147.193052-1-peterx@redhat.com>
- <f9b786bf-27d9-4e16-b8d2-2a2666d917df@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TvSx25JYfz30Dg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2024 09:29:08 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1710282551; x=1741818551;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=SOxmdONZG+ooJ46ryKwSr/UQJN1BRbIVpZR9p2Kx8ZQ=;
+  b=IAS66i753CdMQtAqghirYqfidmYoVsJpc9SVN56noraScVLoXaqxhbqs
+   M7jStfFYxSd7ECLQuP5IGHOSNVEe0EorvHOAnRdEBQZ2CISiTw9xo1tyF
+   EnQwgT8KWsJBEQ6bE/mQ+Qhh1DkvpyceNOli+JWOASE/7kd9zGIO4bjn8
+   ygEr3QcmCC+HmTGYHYyIBodYhwWyE4QnSAMUvZO9FGatcLn/JPKBigf8c
+   fXa2hjkp0d7xABogBTIKdGgBibl7RLTcp5VNg8wzcEjb44T5JB09SCtKw
+   SF8oQbm4uciaXRXVT9E5CVLrsp8XelyYetljgHllXWJrv4t9BgFr6lwPW
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11011"; a="5192008"
+X-IronPort-AV: E=Sophos;i="6.07,119,1708416000"; 
+   d="scan'208";a="5192008"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Mar 2024 15:29:04 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,119,1708416000"; 
+   d="scan'208";a="16356860"
+Received: from gargayus-mobl1.amr.corp.intel.com (HELO rpedgeco-desk4.intel.com) ([10.255.231.196])
+  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Mar 2024 15:29:03 -0700
+From: Rick Edgecombe <rick.p.edgecombe@intel.com>
+To: Liam.Howlett@oracle.com,
+	akpm@linux-foundation.org,
+	bp@alien8.de,
+	broonie@kernel.org,
+	dave.hansen@linux.intel.com,
+	debug@rivosinc.com,
+	hpa@zytor.com,
+	keescook@chromium.org,
+	kirill.shutemov@linux.intel.com,
+	luto@kernel.org,
+	mingo@redhat.com,
+	peterz@infradead.org,
+	tglx@linutronix.de,
+	x86@kernel.org,
+	christophe.leroy@csgroup.eu
+Subject: [PATCH v3 07/12] powerpc: Use initializer for struct vm_unmapped_area_info
+Date: Tue, 12 Mar 2024 15:28:38 -0700
+Message-Id: <20240312222843.2505560-8-rick.p.edgecombe@intel.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240312222843.2505560-1-rick.p.edgecombe@intel.com>
+References: <20240312222843.2505560-1-rick.p.edgecombe@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <f9b786bf-27d9-4e16-b8d2-2a2666d917df@csgroup.eu>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,44 +79,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "x86@kernel.org" <x86@kernel.org>, Muchun Song <muchun.song@linux.dev>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jason Gunthorpe <jgg@nvidia.com>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Mike Rapoport <rppt@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, linux-mm@kvack.org, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, rick.p.edgecombe@intel.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi, Christophe,
+Future changes will need to add a new member to struct
+vm_unmapped_area_info. This would cause trouble for any call site that
+doesn't initialize the struct. Currently every caller sets each member
+manually, so if new members are added they will be uninitialized and the
+core code parsing the struct will see garbage in the new member.
 
-On Mon, Mar 11, 2024 at 09:58:47AM +0000, Christophe Leroy wrote:
-> Hi Peter, and nice job you are doing in cleaning up things around _huge 
-> stuff.
+It could be possible to initialize the new member manually to 0 at each
+call site. This and a couple other options were discussed, and a working
+consensus (see links) was that in general the best way to accomplish this
+would be via static initialization with designated member initiators.
+Having some struct vm_unmapped_area_info instances not zero initialized
+will put those sites at risk of feeding garbage into vm_unmapped_area() if
+the convention is to zero initialize the struct and any new member addition
+misses a call site that initializes each member manually.
 
-Thanks.  I appreciate your help along the way on Power.
+It could be possible to leave the code mostly untouched, and just change
+the line:
+struct vm_unmapped_area_info info
+to:
+struct vm_unmapped_area_info info = {};
 
-> 
-> One thing that might be worth looking at also at some point is the mess 
-> around pmd_clear_huge() and pud_clear_huge().
-> 
-> I tried to clean things up with commit c742199a014d ("mm/pgtable: add 
-> stubs for {pmd/pub}_{set/clear}_huge") but it was reverted because of 
-> arm64 by commit d8a719059b9d ("Revert "mm/pgtable: add stubs for 
-> {pmd/pub}_{set/clear}_huge"")
-> 
-> So now powerpc/8xx has to implement pmd_clear_huge() and 
-> pud_clear_huge() allthough 8xx page hierarchy only has 2 levels.
+However, that would leave cleanup for the members that are manually set
+to zero, as it would no longer be required.
 
-Those are so far out of my radar, as my focus right now is still more on
-hugetlbfs relevant side of things, while kernel mappings are not yet
-directly involved in hugetlbfs, even though they're still huge mappings.
+So to be reduce the chance of bugs via uninitialized members, instead
+simply continue the process to initialize the struct this way tree wide.
+This will zero any unspecified members. Move the member initializers to the
+struct declaration when they are known at that time. Leave the members out
+that were manually initialized to zero, as this would be redundant for
+designated initializers.
 
-It's a pity to know that broke arm and got reverted, as that looks like a
-good thing to clean it up if ever possible.  I tend to agree with you that
-it seems for 3lvl we should define pgd_huge*() instead of pud_huge*(), so
-that it looks like the only way to provide such a treewide clean API is to
-properly define those APIs for aarch64, and define different pud helpers
-for either 3/4 levels.  But I confess I don't think I fully digested all
-the bits.
+Signed-off-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+Cc: Naveen N. Rao <naveen.n.rao@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: https://lore.kernel.org/lkml/202402280912.33AEE7A9CF@keescook/#t
+Link: https://lore.kernel.org/lkml/j7bfvig3gew3qruouxrh7z7ehjjafrgkbcmg6tcghhfh3rhmzi@wzlcoecgy5rs/
+---
+v3:
+ - Fixed spelling errors in log
+ - Be consistent about field vs member in log
+
+Hi,
+
+This patch was split and refactored out of a tree-wide change [0] to just
+zero-init each struct vm_unmapped_area_info. The overall goal of the
+series is to help shadow stack guard gaps. Currently, there is only one
+arch with shadow stacks, but two more are in progress. It is compile tested
+only.
+
+There was further discussion that this method of initializing the structs
+while nice in some ways has a greater risk of introducing bugs in some of
+the more complicated callers. Since this version was reviewed my arch
+maintainers already, leave it as was already acknowledged.
 
 Thanks,
 
+Rick
+
+[0] https://lore.kernel.org/lkml/20240226190951.3240433-6-rick.p.edgecombe@intel.com/
+---
+ arch/powerpc/mm/book3s64/slice.c | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/mm/book3s64/slice.c b/arch/powerpc/mm/book3s64/slice.c
+index c0b58afb9a47..6c7ac8c73a6c 100644
+--- a/arch/powerpc/mm/book3s64/slice.c
++++ b/arch/powerpc/mm/book3s64/slice.c
+@@ -282,12 +282,12 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+ {
+ 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+ 	unsigned long found, next_end;
+-	struct vm_unmapped_area_info info;
+-
+-	info.flags = 0;
+-	info.length = len;
+-	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
+-	info.align_offset = 0;
++	struct vm_unmapped_area_info info = {
++		.flags = 0,
++		.length = len,
++		.align_mask = PAGE_MASK & ((1ul << pshift) - 1),
++		.align_offset = 0
++	};
+ 	/*
+ 	 * Check till the allow max value for this mmap request
+ 	 */
+@@ -326,13 +326,14 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+ {
+ 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+ 	unsigned long found, prev;
+-	struct vm_unmapped_area_info info;
++	struct vm_unmapped_area_info info = {
++		.flags = VM_UNMAPPED_AREA_TOPDOWN,
++		.length = len,
++		.align_mask = PAGE_MASK & ((1ul << pshift) - 1),
++		.align_offset = 0
++	};
+ 	unsigned long min_addr = max(PAGE_SIZE, mmap_min_addr);
+ 
+-	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+-	info.length = len;
+-	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
+-	info.align_offset = 0;
+ 	/*
+ 	 * If we are trying to allocate above DEFAULT_MAP_WINDOW
+ 	 * Add the different to the mmap_base.
 -- 
-Peter Xu
+2.34.1
 
