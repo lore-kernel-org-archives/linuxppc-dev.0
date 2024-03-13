@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD2F9C54791
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:29:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8657BC54E67
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:30:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvrw72sthz3vtv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:29:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TvrwY1hSjz3vyy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:30:05 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt127rZz3dV3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt12pBVz3dV9
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:27:53 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrsx46Rhz4x0q;
-	Thu, 14 Mar 2024 00:27:49 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrsy234rz4x1P;
+	Thu, 14 Mar 2024 00:27:50 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com, Kunwu Chan <chentao@kylinos.cn>
-In-Reply-To: <20240301085834.1512921-1-chentao@kylinos.cn>
-References: <20240301085834.1512921-1-chentao@kylinos.cn>
-Subject: Re: [PATCH v2] powerpc/mm: Code cleanup for __hash_page_thp
-Message-Id: <171033598344.517247.16630935060498918995.b4-ty@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <3656d47c53bff577739dac536dbae31fff52f6d8.1708078640.git.christophe.leroy@csgroup.eu>
+References: <3656d47c53bff577739dac536dbae31fff52f6d8.1708078640.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/2] powerpc: Refactor __kernel_map_pages()
+Message-Id: <171033598337.517247.16293947196038207498.b4-ty@ellerman.id.au>
 Date: Thu, 14 Mar 2024 00:19:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,20 +46,21 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 01 Mar 2024 16:58:34 +0800, Kunwu Chan wrote:
-> This part was commented from commit 6d492ecc6489
-> ("powerpc/THP: Add code to handle HPTE faults for hugepages")
-> in about 11 years before.
+On Fri, 16 Feb 2024 11:17:33 +0100, Christophe Leroy wrote:
+> __kernel_map_pages() is almost identical for PPC32 and RADIX.
 > 
-> If there are no plans to enable this part code in the future,
-> we can remove this dead code and replace with a comment
-> explaining what the dead code was trying to say.
+> Refactor it.
+> 
+> On PPC32 it is not needed for KFENCE, but to keep it simple
+> just make it similar to PPC64.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/mm: Code cleanup for __hash_page_thp
-      https://git.kernel.org/powerpc/c/d9cf600ecb7b053345aa76c1988cf374260cfdaf
+[1/2] powerpc: Refactor __kernel_map_pages()
+      https://git.kernel.org/powerpc/c/3c8016e681c5e0f5f3ad15edb4569727cd32eaff
+[2/2] powerpc: Don't ignore errors from set_memory_{n}p() in __kernel_map_pages()
+      https://git.kernel.org/powerpc/c/9cbacb834b4afcb55eb8ac5115fa82fc7ede5c83
 
 cheers
