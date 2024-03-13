@@ -4,86 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A01EDC54791
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 07:27:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 183F7C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 08:21:18 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EBUhrqtc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d82jEuaD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TvhtV0Ftnz3vbB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 18:27:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvk4D4wn7z3vXC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 19:21:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EBUhrqtc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d82jEuaD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvhsh1T6dz3dXD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2024 18:27:03 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42D7257n005155;
-	Wed, 13 Mar 2024 07:26:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=rOor7RYeGfCOqux28AEV5i5j/WIDmKriNbgjbkQ8YKQ=;
- b=EBUhrqtc3UDjCknmr7gvBw4Y6++4O/Du8j0GvqBpIL8W+yvZ9MCgtDRn8V9LgfIMVkLT
- lDCzpcfNkPAysAIbDscs7bhnhDFiZ0GMXcJTkBJF+ajeW1rjTTXQI76XRVCTasgnRrK8
- v2MiVDykNyAyttbfVccST9/vao6SAI94kOVeH4DvyRCy6v/Z4e5NRu8iSBeiFPHwHa4o
- +DOc8jDTu+ZFqOxEScPBz176+SHuh0xlRLJaOsYWVIT27UK1/I0tHmQR2f/g+n20QVw+
- 6/hVNwPO3SHS4P00avNURtBtdgbyzK5rQyBqNLrMS6B9UieNJP3kwI1aPq5GQRH6We5k AQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wu7d58ac3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 Mar 2024 07:26:52 +0000
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42D783ob018909;
-	Wed, 13 Mar 2024 07:26:51 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wu7d58ab5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 Mar 2024 07:26:51 +0000
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42D5VakQ018621;
-	Wed, 13 Mar 2024 07:26:50 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3ws4t23tr7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 Mar 2024 07:26:50 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42D7QjJB29753626
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 13 Mar 2024 07:26:47 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E87A920040;
-	Wed, 13 Mar 2024 07:26:44 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3DDA520043;
-	Wed, 13 Mar 2024 07:26:37 +0000 (GMT)
-Received: from vaibhav?linux.ibm.com (unknown [9.43.89.57])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Wed, 13 Mar 2024 07:26:36 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Wed, 13 Mar 2024 12:56:29 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        kvm-ppc@vger.kernel.org
-Subject: [PATCH] KVM: PPC: Book3S HV nestedv2: Cancel pending HDEC exception
-Date: Wed, 13 Mar 2024 12:56:23 +0530
-Message-ID: <20240313072625.76804-1-vaibhav@linux.ibm.com>
-X-Mailer: git-send-email 2.44.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvk3Q0rC8z3bXk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2024 19:20:34 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 30A04CE16AA;
+	Wed, 13 Mar 2024 08:20:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 6729AC43390;
+	Wed, 13 Mar 2024 08:20:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1710318029;
+	bh=WHOuWjV3IDXUssQ4CoKMeiF90k47wssjsrGAJV5cu4U=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=d82jEuaD7bVXGbzKBcPIN9ASyXJ7OV2fy2+f5U1fckbB2EWSLafi2wY0g1ZYn0kQz
+	 7Sz9Wp8GaYZ1B0ItYEbeT6NkNDE/JqR98d1hSK+GguXoS+L7wJ+cL6G1cTa/VjfwdI
+	 v+QQrsjQIKtWMT4YRp8YtIgtRgzLoppxFUd6glWG6XTms5nkwCDqfHpXdfXB/NPNg8
+	 6yWUSLnuNgqKL549fu2Ey3pjE93z9uhUIy+kEPj6+k+CbZuj8PlmGaHG3eT2xT+mAF
+	 78OHYsEsT9np91CfAk7NpNR5sRsB3gqfcwXViOTr99HTaVp6RyUE6dCQ5p21N+BNjH
+	 5dh5B9ObKRX3Q==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 4D806D95060;
+	Wed, 13 Mar 2024 08:20:29 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 7-uVPKZHgdkelGTF0ILsAB7_BnaOOr58
-X-Proofpoint-ORIG-GUID: wBtPzTAxrU-_ZDuPAwchNsQUVA7Ghuey
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-03-13_07,2024-03-12_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=804 phishscore=0
- impostorscore=0 mlxscore=0 suspectscore=0 lowpriorityscore=0
- malwarescore=0 priorityscore=1501 bulkscore=0 clxscore=1011 spamscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2403130054
+Subject: Re: [PATCH net v5 1/2] soc: fsl: qbman: Always disable interrupts when
+ taking cgr_lock
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id:  <171031802931.29357.17308276522742025565.git-patchwork-notify@kernel.org>
+Date: Wed, 13 Mar 2024 08:20:29 +0000
+References: <20240311163830.12952-1-sean.anderson@linux.dev>
+In-Reply-To: <20240311163830.12952-1-sean.anderson@linux.dev>
+To: Sean Anderson <sean.anderson@linux.dev>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,43 +62,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, sbhat@linux.ibm.com, amachhiw@linux.vnet.ibm.com, Jordan Niethe <jniethe5@gmail.com>, gautam@linux.ibm.com, Nicholas Piggin <npiggin@gmail.com>, David.Laight@ACULAB.COM, kconsul@linux.vnet.ibm.com, Vaibhav Jain <vaibhav@linux.ibm.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: s.trumtrar@pengutronix.de, linux-kernel@vger.kernel.org, madalin.bucur@nxp.com, vladimir.oltean@nxp.com, roy.pledge@nxp.com, claudiu.manoil@nxp.com, leoyang.li@nxp.com, oss@buserror.net, edumazet@google.com, camelia.groza@nxp.com, netdev@vger.kernel.org, kuba@kernel.org, stable@vger.kernel.org, pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This reverts commit 180c6b072bf360b686e53d893d8dcf7dbbaec6bb ("KVM: PPC:
-Book3S HV nestedv2: Do not cancel pending decrementer exception") which
-prevented cancelling a pending HDEC exception for nestedv2 KVM guests. It
-was done to avoid overhead of a H_GUEST_GET_STATE hcall to read the 'HDEC
-expiry TB' register which was higher compared to handling extra decrementer
-exceptions.
+Hello:
 
-This overhead of reading 'HDEC expiry TB' register has been mitigated
-recently by the L0 hypervisor(PowerVM) by putting the value of this
-register in L2 guest-state output buffer on trap to L1. From there the
-value of this register is cached, made available in kvmhv_run_single_vcpu()
-to compare it against host(L1) timebase and cancel the pending hypervisor
-decrementer exception if needed.
+This series was applied to netdev/net.git (main)
+by David S. Miller <davem@davemloft.net>:
 
-Fixes: 180c6b072bf3 ("KVM: PPC: Book3S HV nestedv2: Do not cancel pending decrementer exception")
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
----
- arch/powerpc/kvm/book3s_hv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, 11 Mar 2024 12:38:29 -0400 you wrote:
+> smp_call_function_single disables IRQs when executing the callback. To
+> prevent deadlocks, we must disable IRQs when taking cgr_lock elsewhere.
+> This is already done by qman_update_cgr and qman_delete_cgr; fix the
+> other lockers.
+> 
+> Fixes: 96f413f47677 ("soc/fsl/qbman: fix issue in qman_delete_cgr_safe()")
+> CC: stable@vger.kernel.org
+> Signed-off-by: Sean Anderson <sean.anderson@linux.dev>
+> Reviewed-by: Camelia Groza <camelia.groza@nxp.com>
+> Tested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+> 
+> [...]
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 0b921704da45..e47b954ce266 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4856,7 +4856,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
- 	 * entering a nested guest in which case the decrementer is now owned
- 	 * by L2 and the L1 decrementer is provided in hdec_expires
- 	 */
--	if (!kvmhv_is_nestedv2() && kvmppc_core_pending_dec(vcpu) &&
-+	if (kvmppc_core_pending_dec(vcpu) &&
- 			((tb < kvmppc_dec_expires_host_tb(vcpu)) ||
- 			 (trap == BOOK3S_INTERRUPT_SYSCALL &&
- 			  kvmppc_get_gpr(vcpu, 3) == H_ENTER_NESTED)))
+Here is the summary with links:
+  - [net,v5,1/2] soc: fsl: qbman: Always disable interrupts when taking cgr_lock
+    https://git.kernel.org/netdev/net/c/584c2a9184a3
+  - [net,v5,2/2] soc: fsl: qbman: Use raw spinlock for cgr_lock
+    https://git.kernel.org/netdev/net/c/fbec4e7fed89
+
+You are awesome, thank you!
 -- 
-2.44.0
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
