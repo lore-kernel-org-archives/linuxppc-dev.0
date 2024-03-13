@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AF54C54791
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0554CC54791
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:29:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TvrvH6Jrqz3vnY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:28:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvrvj54hYz3vrh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:29:21 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt11CKRz3dTx
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt12TPFz3dV6
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:27:53 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrsz4S0Kz4x1c;
-	Thu, 14 Mar 2024 00:27:51 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrt044nWz4x1k;
+	Thu, 14 Mar 2024 00:27:52 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <85a86e51b4ab26ce4b592984cc0a0851a3cc9479.1708076780.git.christophe.leroy@csgroup.eu>
-References: <85a86e51b4ab26ce4b592984cc0a0851a3cc9479.1708076780.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/trace: Restrict hash_fault trace event to HASH MMU
-Message-Id: <171033598336.517247.1756148879387291088.b4-ty@ellerman.id.au>
+To: Kajol Jain <kjain@linux.ibm.com>
+In-Reply-To: <20240229122847.101162-1-kjain@linux.ibm.com>
+References: <20240229122847.101162-1-kjain@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/hv-gpci: Fix the H_GET_PERF_COUNTER_INFO hcall return value checks
+Message-Id: <171033598343.517247.4423484584244810742.b4-ty@ellerman.id.au>
 Date: Thu, 14 Mar 2024 00:19:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, akanksha@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 16 Feb 2024 10:46:43 +0100, Christophe Leroy wrote:
-> 'perf list' on powerpc 8xx shows an event named "1:hash_fault".
+On Thu, 29 Feb 2024 17:58:47 +0530, Kajol Jain wrote:
+> Running event hv_gpci/dispatch_timebase_by_processor_processor_time_in_timebase_cycles,phys_processor_idx=0/
+> in one of the system throws below error:
 > 
-> This event is pointless because trace_hash_fault() is called only
-> from mm/book3s64/hash_utils.c
-> 
-> Only define it when CONFIG_PPC_64S_HASH_MMU is selected.
+>  ---Logs---
+>  # perf list | grep hv_gpci/dispatch_timebase_by_processor_processor_time_in_timebase_cycles
+>   hv_gpci/dispatch_timebase_by_processor_processor_time_in_timebase_cycles,phys_processor_idx=?/[Kernel PMU event]
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/trace: Restrict hash_fault trace event to HASH MMU
-      https://git.kernel.org/powerpc/c/9e00743aba832f3f30ecb017d3345baf1f372140
+[1/1] powerpc/hv-gpci: Fix the H_GET_PERF_COUNTER_INFO hcall return value checks
+      https://git.kernel.org/powerpc/c/ad86d7ee43b22aa2ed60fb982ae94b285c1be671
 
 cheers
