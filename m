@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F4032C54E58
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:28:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB410C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:28:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TvrtS2qNcz3vcn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:28:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvrtt1s15z3vj2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:28:38 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt10SyXz3dTt
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt11V1Xz3dTt
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:27:53 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrsy5b40z4x1R;
-	Thu, 14 Mar 2024 00:27:50 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrt00P8Zz4x1d;
+	Thu, 14 Mar 2024 00:27:52 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <dc9a794f82ab62572d7d0be5cb4b8b27920a4f78.1708078316.git.christophe.leroy@csgroup.eu>
-References: <dc9a794f82ab62572d7d0be5cb4b8b27920a4f78.1708078316.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Implement set_memory_rox()
-Message-Id: <171033598336.517247.4075878005606513732.b4-ty@ellerman.id.au>
+In-Reply-To: <fbf74887dcf1f1ba9e1680fc3247cbb581b00662.1708078228.git.christophe.leroy@csgroup.eu>
+References: <fbf74887dcf1f1ba9e1680fc3247cbb581b00662.1708078228.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Use user_mode() macro when possible
+Message-Id: <171033598336.517247.12211842941297180348.b4-ty@ellerman.id.au>
 Date: Thu, 14 Mar 2024 00:19:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,19 +46,17 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 16 Feb 2024 11:12:05 +0100, Christophe Leroy wrote:
-> Same as x86 and s390, add set_memory_rox() to avoid doing
-> one pass with set_memory_ro() and a second pass with set_memory_x().
+On Fri, 16 Feb 2024 11:10:36 +0100, Christophe Leroy wrote:
+> There is a nice macro to check user mode.
 > 
-> See commit 60463628c9e0 ("x86/mm: Implement native set_memory_rox()")
-> and commit 22e99fa56443 ("s390/mm: implement set_memory_rox()") for
-> more information.
+> Use it instead of open coding anding with MSR_PR to increase
+> readability and avoid having to comment what that anding is for.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Implement set_memory_rox()
-      https://git.kernel.org/powerpc/c/09ca1b11716f96461a4675eb0418d5cb97687389
+[1/1] powerpc: Use user_mode() macro when possible
+      https://git.kernel.org/powerpc/c/d5835fb60bad641dbae64fe30c02f10857bf4647
 
 cheers
