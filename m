@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8657BC54E67
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:30:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E0F4C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:30:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TvrwY1hSjz3vyy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:30:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvrwy6Wdtz3w3k
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:30:26 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt12pBVz3dV9
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt16wNQz3dV6
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:27:53 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrsy234rz4x1P;
-	Thu, 14 Mar 2024 00:27:50 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrt10VGxz4wxv;
+	Thu, 14 Mar 2024 00:27:53 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <3656d47c53bff577739dac536dbae31fff52f6d8.1708078640.git.christophe.leroy@csgroup.eu>
-References: <3656d47c53bff577739dac536dbae31fff52f6d8.1708078640.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/2] powerpc: Refactor __kernel_map_pages()
-Message-Id: <171033598337.517247.16293947196038207498.b4-ty@ellerman.id.au>
+To: npiggin@gmail.com, christophe.leroy@csgroup.eu, Qiheng Lin <linqiheng@huawei.com>
+In-Reply-To: <20221208133449.16284-1-linqiheng@huawei.com>
+References: <20221208133449.16284-1-linqiheng@huawei.com>
+Subject: Re: [PATCH] powerpc/pseries: Fix potential memleak in papr_get_attr()
+Message-Id: <171033598340.517247.11139891507654380344.b4-ty@ellerman.id.au>
 Date: Thu, 14 Mar 2024 00:19:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,21 +46,15 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 16 Feb 2024 11:17:33 +0100, Christophe Leroy wrote:
-> __kernel_map_pages() is almost identical for PPC32 and RADIX.
+On Thu, 08 Dec 2022 21:34:49 +0800, Qiheng Lin wrote:
+> `buf` is allocated in papr_get_attr(), and krealloc() of `buf`
+> could fail. We need to free the original `buf` in the case of failure.
 > 
-> Refactor it.
 > 
-> On PPC32 it is not needed for KFENCE, but to keep it simple
-> just make it similar to PPC64.
-> 
-> [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc: Refactor __kernel_map_pages()
-      https://git.kernel.org/powerpc/c/3c8016e681c5e0f5f3ad15edb4569727cd32eaff
-[2/2] powerpc: Don't ignore errors from set_memory_{n}p() in __kernel_map_pages()
-      https://git.kernel.org/powerpc/c/9cbacb834b4afcb55eb8ac5115fa82fc7ede5c83
+[1/1] powerpc/pseries: Fix potential memleak in papr_get_attr()
+      https://git.kernel.org/powerpc/c/cda9c0d556283e2d4adaa9960b2dc19b16156bae
 
 cheers
