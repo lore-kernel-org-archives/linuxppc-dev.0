@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4A9BC54E58
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:35:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B52C4C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:36:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvs2z3mLlz3cB2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:35:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvs3P3L3Xz77MG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:36:01 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TvrtC2yvSz3vXM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:28:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TvrtD1CNJz3dWC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:28:04 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TvrtC0L8Sz4xFf;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TvrtC4t8Wz4x1R;
 	Thu, 14 Mar 2024 00:28:03 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Sathvika Vasireddy <sv@linux.ibm.com>
-In-Reply-To: <20221215115258.80810-1-sv@linux.ibm.com>
-References: <20221215115258.80810-1-sv@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/32: Curb objtool unannotated intra-function call warning
-Message-Id: <171033598340.517247.3682725503551770232.b4-ty@ellerman.id.au>
+To: npiggin@gmail.com, christophe.leroy@csgroup.eu, gregkh@linuxfoundation.org, Li zeming <zeming@nfschina.com>
+In-Reply-To: <20221219021816.3012-1-zeming@nfschina.com>
+References: <20221219021816.3012-1-zeming@nfschina.com>
+Subject: Re: [PATCH] boot: simple_alloc: check after increasing memory allocation
+Message-Id: <171033598341.517247.16641505214585396276.b4-ty@ellerman.id.au>
 Date: Thu, 14 Mar 2024 00:19:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sfr@canb.auug.org.au, peterz@infradead.org, npiggin@gmail.com, aik@ozlabs.ru, mingo@redhat.com, naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz, chenzhongjin@huawei.com, Josh Poimboeuf <jpoimboe@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 15 Dec 2022 17:22:58 +0530, Sathvika Vasireddy wrote:
-> objtool throws the following warning:
-> arch/powerpc/kexec/relocate_32.o: warning: objtool: .text+0x2bc: unannotated intra-function call
+On Mon, 19 Dec 2022 10:18:16 +0800, Li zeming wrote:
+> The pointer new adds judgment and should help with program robustness.
 > 
-> Fix this warning by annotating intra-function call, using
-> ANNOTATE_INTRA_FUNCTION_CALL macro, to indicate that the branch target
-> is valid.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/32: Curb objtool unannotated intra-function call warning
-      https://git.kernel.org/powerpc/c/6035e7e35482653d6d93f35f01e1a320573d58f0
+[1/1] boot: simple_alloc: check after increasing memory allocation
+      https://git.kernel.org/powerpc/c/69b0194ccec033c208b071e019032c1919c2822d
 
 cheers
