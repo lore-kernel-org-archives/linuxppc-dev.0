@@ -4,75 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DB13C54E66
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 17:54:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3C23C54E69
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 21:48:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=wQQy+2vx;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rt4e2Rua;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rt4e2Rua;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvynq0Yp5z3dX6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 04:54:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tw3zM38Yfz3vXF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 08:48:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=wQQy+2vx;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rt4e2Rua;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rt4e2Rua;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=manivannan.sadhasivam@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvymz2TFbz3cG3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 04:53:53 +1100 (AEDT)
-Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-6e6c10bdd2fso163781b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2024 10:53:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1710352429; x=1710957229; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=P42L0V1byhnm9xVh8nwf+gtaXnbnBXKB7y3o50DEnDg=;
-        b=wQQy+2vxvLAvNpqd3ubD/nJltqfAjlk8CQ9eCIl3gss64grF0YGr/tSa8cmrjRl0hA
-         J6We1/VMIDulapyU1T5kpZwZQqE0QmxLaHmtRGrd9MLnv9KKmNBA5BRfYMH3BNcEXpTi
-         rUwtjdTXU7v53cWELpp8DI0rrgwCWGks5j7LHpAdFXL4PHm2dQZqrYLU3kSgqXRObBMt
-         EcIL0iwUrANtHIxGfEHjFc/mVZtSwQlLJjcbt1JTYkT/2fOQIm1WDkfnCAS7Dy0eVvwW
-         6LY4h2sx8KADpaSd8MsHkF83YZLZeciLZyjkGsBBrv8d9967jsvYk3uViQkz3PI7rvoV
-         2t8A==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tw3yT06FFz30gJ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 08:47:28 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1710366445;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=o8evz9V3UX8qsNtRrNT6H/1m1GM34KP8FDwkI2vjQ2A=;
+	b=Rt4e2RuaL1A/tArNI5R3j05x1CzL2OCFh++r2I+GgawIBHvN63kk/fZsSC3bJEygWPO2NV
+	w6iJ0//sKI6rKMX+7bLNEmqpySdxbwe0cmCqooBD5vXQHe1O8svw1oS0aRKFG41qCYzQo3
+	O+9u9i7LztD8lCHggJ+uPP7TAI8PsS4=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1710366445;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=o8evz9V3UX8qsNtRrNT6H/1m1GM34KP8FDwkI2vjQ2A=;
+	b=Rt4e2RuaL1A/tArNI5R3j05x1CzL2OCFh++r2I+GgawIBHvN63kk/fZsSC3bJEygWPO2NV
+	w6iJ0//sKI6rKMX+7bLNEmqpySdxbwe0cmCqooBD5vXQHe1O8svw1oS0aRKFG41qCYzQo3
+	O+9u9i7LztD8lCHggJ+uPP7TAI8PsS4=
+Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
+ [209.85.219.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-543-4L-296UbM4Go93EESmo8Pw-1; Wed, 13 Mar 2024 17:47:23 -0400
+X-MC-Unique: 4L-296UbM4Go93EESmo8Pw-1
+Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-690ab2b0de1so1162696d6.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2024 14:47:23 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710352429; x=1710957229;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=P42L0V1byhnm9xVh8nwf+gtaXnbnBXKB7y3o50DEnDg=;
-        b=CkAIFDVr4VkZDz2QZqIEC5e6/3DQnJRrByX217+jzxUW94rZp+YDdLYQ/PO6LykBwZ
-         qXNqSt4mNT6muYYbgC6Dxm2rWSUoQVx+6fSLRaofry76C36iLAyyLlT7jtvDamr7aopl
-         UtO/DJ4J7eVDH8MG5SAEFbGnOHb+p+liakWlNwLtkcETqjqRIDyRi2ZvSpFVCyQqqBtX
-         VSoGu7JqW55o1lvcSjXf7G+ZjCgF4kxm8lVYe7uGBzOy7RIwVoNjNCXzv+D6FfuLJ9T0
-         BPMTjb6e7HdyjAOYQ63VXcQ66gsZsf689sIFPRgDqmAvRKBgK2pDw2au9Lz20tKh0tEk
-         Ra6g==
-X-Forwarded-Encrypted: i=1; AJvYcCVJ2wdgNcQnHWMdYrbIs3qi1bO4FtpAWte65Wmg6PcmDI/k0L0CWghUMRXTzQZHr4ZZfLQTe2/zBaZO4tvuoogJbCoKzU/RaKfR+Fw/8g==
-X-Gm-Message-State: AOJu0Yx6igamKeaJhpE7SEImBv3Q6gC3sTQVkWhBFQJruokioVEFk2tp
-	vNKYMM1qhmbnrh2jftuR5J8WQKGLpH/K8FVB0xqG34/61j3Kx6K/vWRCDBspnA==
-X-Google-Smtp-Source: AGHT+IFcf5q7ruVnxD8hAPCs04EkAgFwMtLJq7WsD337HPZnA1JczKQ1xXu4AYtawACMGMb2l439Qw==
-X-Received: by 2002:a05:6a20:12c9:b0:1a3:113a:bbd5 with SMTP id v9-20020a056a2012c900b001a3113abbd5mr5892663pzg.40.1710352428857;
-        Wed, 13 Mar 2024 10:53:48 -0700 (PDT)
-Received: from thinkpad ([117.213.99.94])
-        by smtp.gmail.com with ESMTPSA id r6-20020a63e506000000b005dbd0facb4dsm7803062pgh.61.2024.03.13.10.53.38
+        d=1e100.net; s=20230601; t=1710366443; x=1710971243;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=o8evz9V3UX8qsNtRrNT6H/1m1GM34KP8FDwkI2vjQ2A=;
+        b=SY/NcMTwy790FY6Ek//8W1CvTf4TaaQYuXBTF0y4NHwY8N7lMUcEN5zvlIdd/8RTLp
+         9t8O0/9BZ/mWfAk9xLn2c2aBWzefsFZyC4wBDJrjdX9ZOt3httGaRjON5fd5QRRv0TxV
+         nTTg+3/NlcTM71Hjpdbw7FSwTi4Xiy3GbI1xBNLATP0v+H2PV2EHCSwJG50eBPwSLve3
+         T4DXVNStogePQobnKTOS5G9aXAwT4sOCASvv86slk13rIgHDXOCWEWFsU9cVC1KprcIH
+         +BU/x8xDW9ukPQ71z1jqj5kfomZMtFFMpYDlsVx4zfLw9Y2HPih1Vgwsmf0/DJce5oP9
+         UzJg==
+X-Forwarded-Encrypted: i=1; AJvYcCXOpRv+2NtfYoWcuHveuPnpf/qy/A+zgSA9SHHhryKrChgCXnVwpI2izke+06SN+dhZicUM/2lto6zD2B5f4UtVZeWiIFFt5I18t9bvFg==
+X-Gm-Message-State: AOJu0Yzdfug9yvfbfEocIaWZTSnJFdJCNDvOSYd60mOcGTqMVy6486hN
+	KECrOfEP5wmGGw2ycCgwIQjZ8o0vbl//sEoAdK/yVHQke1Scq9bh6/eurmqOENZXkQm0UNYSXRG
+	r22iD4gh3w63/mXuwFvjR+xcrSUnKCXfcPB7lmqM6gc1zFrhKnlFVaHNWvuHA7Vk=
+X-Received: by 2002:a05:6214:1743:b0:690:27a:e6 with SMTP id dc3-20020a056214174300b00690027a00e6mr5703630qvb.5.1710366443331;
+        Wed, 13 Mar 2024 14:47:23 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGB+0sslZT/w15j/K+m+SJUdgZVImDODUje9EjvSi+lJj4JWIjdAUo0kKWd9JJ6p81zVpsztA==
+X-Received: by 2002:a05:6214:1743:b0:690:27a:e6 with SMTP id dc3-20020a056214174300b00690027a00e6mr5703604qvb.5.1710366442877;
+        Wed, 13 Mar 2024 14:47:22 -0700 (PDT)
+Received: from x1n.redhat.com ([99.254.121.117])
+        by smtp.gmail.com with ESMTPSA id dv10-20020ad44eea000000b0069111c5cdd4sm60114qvb.100.2024.03.13.14.47.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Mar 2024 10:53:48 -0700 (PDT)
-Date: Wed, 13 Mar 2024 23:23:33 +0530
-From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To: Niklas Cassel <cassel@kernel.org>
-Subject: Re: [PATCH v9 07/10] PCI: dwc: ep: Remove "core_init_notifier" flag
-Message-ID: <20240313175333.GA126027@thinkpad>
-References: <20240304-pci-dbi-rework-v9-0-29d433d99cda@linaro.org>
- <20240304-pci-dbi-rework-v9-7-29d433d99cda@linaro.org>
- <ZesRk5Dg4KEASD3U@ryzen>
- <20240311144559.GA2504@thinkpad>
- <Ze99lLhe2GqIqMgl@ryzen>
+        Wed, 13 Mar 2024 14:47:22 -0700 (PDT)
+From: peterx@redhat.com
+To: linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org
+Subject: [PATCH 01/13] mm/hmm: Process pud swap entry without pud_huge()
+Date: Wed, 13 Mar 2024 17:47:07 -0400
+Message-ID: <20240313214719.253873-2-peterx@redhat.com>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240313214719.253873-1-peterx@redhat.com>
+References: <20240313214719.253873-1-peterx@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <Ze99lLhe2GqIqMgl@ryzen>
+Content-Type: text/plain; charset="US-ASCII"; x-default=true
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,83 +101,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Vignesh Raghavendra <vigneshr@ti.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>, Minghuan Lian <minghuan.Lian@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Fabio Estevam <festevam@gmail.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Jesper Nilsson <jesper.nilsson@axis.com>, linux-tegra@vger.kernel.org, linux-arm-kernel@axis.com, Jonathan Hunter <jonathanh@nvidia.com>, NXP Linux Team <linux-imx@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, Srikanth Thokala <srikanth.thokala@intel.com>, linux-arm-msm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>, linux-omap@vger.kernel.org, Mingkai Hu <mingkai.hu@nxp.com>, linux-arm-kernel@
- lists.infradead.org, Roy Zang <roy.zang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, linux-kernel@vger.kernel.org, Vidya Sagar <vidyas@nvidia.com>, linux-renesas-soc@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Gustavo Pimentel <gustavo.pimentel@synopsys.com>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>
+Cc: Alistair Popple <apopple@nvidia.com>, Muchun Song <muchun.song@linux.dev>, Jason Gunthorpe <jgg@nvidia.com>, x86@kernel.org, peterx@redhat.com, Matthew Wilcox <willy@infradead.org>, Mike Rapoport <rppt@kernel.org>, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 11, 2024 at 10:54:28PM +0100, Niklas Cassel wrote:
-> On Mon, Mar 11, 2024 at 08:15:59PM +0530, Manivannan Sadhasivam wrote:
-> > > 
-> > > I would say that it is the following change that breaks things:
-> > > 
-> > > > -	if (!core_init_notifier) {
-> > > > -		ret = pci_epf_test_core_init(epf);
-> > > > -		if (ret)
-> > > > -			return ret;
-> > > > -	}
-> > > > -
-> > > 
-> > > Since without this code, pci_epf_test_core_init() will no longer be called,
-> > > as there is currently no one that calls epf->core_init() for a EPF driver
-> > > after it has been bound. (For drivers that call dw_pcie_ep_init_notify() in
-> > > .probe())
-> > > 
-> > 
-> > Thanks a lot for testing, Niklas!
-> > 
-> > > I guess one way to solve this would be for the EPC core to keep track of
-> > > the current EPC "core state" (up/down). If the core is "up" at EPF .bind()
-> > > time, notify the EPF driver directly after .bind()?
-> > > 
-> > 
-> > Yeah, that's a good solution. But I think it would be better if the EPC caches
-> > all events if the EPF drivers are not available and dispatch them once the bind
-> > happens for each EPF driver. Even though INIT_COMPLETE is the only event that is
-> > getting generated before bind() now, IMO it is better to add provision to catch
-> > other events also.
-> > 
-> > Wdyt?
-> 
-> I'm not sure.
-> What if the EPF goes up/down/up, it seems a bit silly to send all those
-> events to the EPF driver that will alloc+free+alloc.
-> 
-> Do we know for sure that we will want to store + replay events other than
-> INIT_COMPLETE?
-> 
-> And how many events should we store?
-> 
-> 
-> Until we can think of a good reason which events other than UP/DOWN we
-> can to store, I think that just storing the state as an integer in
-> struct pci_epc seems simpler.
-> 
+From: Peter Xu <peterx@redhat.com>
 
-Hmm, makes sense.
+Swap pud entries do not always return true for pud_huge() for all archs.
+x86 and sparc (so far) allow it, but all the rest do not accept a swap
+entry to be reported as pud_huge().  So it's not safe to check swap entries
+within pud_huge().  Check swap entries before pud_huge(), so it should be
+always safe.
 
-> 
-> Or I guess we could continue with a flag in struct pci_epc_features,
-> like has_perst_notifier, which would then require the EPC driver to
-> call both epc_notify_core_up() and epc_notify_core_down() when receiving
-> the PERST deassert/assert.
-> For a driver without the flag set, the EPC core would call
-> .epc_notify_core_up() after bind. (And .epc_notify_core_down() would never
-> be called, or it could call it before unbind().)
-> That way an EPF driver itself would not need any different handling
-> (all callbacks would always come, either triggered by an EPC driver that
-> has PERST GPIO irq, or triggered by the EPC core for a driver that lacks
-> a PERST GPIO).
-> 
+This is the only place in the kernel that (IMHO, wrongly) relies on
+pud_huge() to return true on pud swap entries.  The plan is to cleanup
+pXd_huge() to only report non-swap mappings for all archs.
 
-For simplicity, I've just used a flag in 'struct pci_epc' to track the core_init
-and call the callback during bind().
+Cc: Alistair Popple <apopple@nvidia.com>
+Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+Signed-off-by: Peter Xu <peterx@redhat.com>
+---
+ mm/hmm.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-But the series has grown big, so I decided to split it into two. One to address
-the DBI access issue and also remove the 'core_init_notifier' flag and another
-one to make EPF drivers more robust to handle the host reboot scenario.
-
-- Mani
-
+diff --git a/mm/hmm.c b/mm/hmm.c
+index 277ddcab4947..c95b9ec5d95f 100644
+--- a/mm/hmm.c
++++ b/mm/hmm.c
+@@ -424,7 +424,7 @@ static int hmm_vma_walk_pud(pud_t *pudp, unsigned long start, unsigned long end,
+ 	walk->action = ACTION_CONTINUE;
+ 
+ 	pud = READ_ONCE(*pudp);
+-	if (pud_none(pud)) {
++	if (!pud_present(pud)) {
+ 		spin_unlock(ptl);
+ 		return hmm_vma_walk_hole(start, end, -1, walk);
+ 	}
+@@ -435,11 +435,6 @@ static int hmm_vma_walk_pud(pud_t *pudp, unsigned long start, unsigned long end,
+ 		unsigned long *hmm_pfns;
+ 		unsigned long cpu_flags;
+ 
+-		if (!pud_present(pud)) {
+-			spin_unlock(ptl);
+-			return hmm_vma_walk_hole(start, end, -1, walk);
+-		}
+-
+ 		i = (addr - range->start) >> PAGE_SHIFT;
+ 		npages = (end - addr) >> PAGE_SHIFT;
+ 		hmm_pfns = &range->hmm_pfns[i];
 -- 
-மணிவண்ணன் சதாசிவம்
+2.44.0
+
