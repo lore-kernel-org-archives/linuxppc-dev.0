@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 588B0C54791
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:34:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19B37C54791
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:34:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvs1k0SYRz774T
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:34:34 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvs275zTqz778B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:34:55 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt65Ct8z3dX3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:27:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt9498xz3dtJ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:28:01 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrt605w4z4x3k;
-	Thu, 14 Mar 2024 00:27:57 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrt86W1qz4x1m;
+	Thu, 14 Mar 2024 00:28:00 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nathan Chancellor <nathan@kernel.org>
-In-Reply-To: <20240127-ppc-xor_vmx-drop-msoft-float-v1-1-f24140e81376@kernel.org>
-References: <20240127-ppc-xor_vmx-drop-msoft-float-v1-1-f24140e81376@kernel.org>
-Subject: Re: [PATCH] powerpc: xor_vmx: Add '-mhard-float' to CFLAGS
-Message-Id: <171033598345.517247.13813107624896171770.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Ricardo B. Marliere" <ricardo@marliere.net>
+In-Reply-To: <20240305-macintosh-v1-1-9c3f4f882045@marliere.net>
+References: <20240305-macintosh-v1-1-9c3f4f882045@marliere.net>
+Subject: Re: [PATCH] macintosh: adb: make adb_dev_class constant
+Message-Id: <171033598346.517247.1715185962283268318.b4-ty@ellerman.id.au>
 Date: Thu, 14 Mar 2024 00:19:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: llvm@lists.linux.dev, patches@lists.linux.dev, aneesh.kumar@kernel.org, npiggin@gmail.com, justinstitt@google.com, naveen.n.rao@linux.ibm.com, stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, morbo@google.com
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 27 Jan 2024 11:07:43 -0700, Nathan Chancellor wrote:
-> arch/powerpc/lib/xor_vmx.o is built with '-msoft-float' (from the main
-> powerpc Makefile) and '-maltivec' (from its CFLAGS), which causes an
-> error when building with clang after a recent change in main:
+On Tue, 05 Mar 2024 17:13:48 -0300, Ricardo B. Marliere wrote:
+> Since commit 43a7206b0963 ("driver core: class: make class_register() take
+> a const *"), the driver core allows for struct class to be in read-only
+> memory, so move the adb_dev_class structure to be declared at build time
+> placing it into read-only memory, instead of having to be dynamically
+> allocated at boot time.
 > 
->   error: option '-msoft-float' cannot be specified with '-maltivec'
->   make[6]: *** [scripts/Makefile.build:243: arch/powerpc/lib/xor_vmx.o] Error 1
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: xor_vmx: Add '-mhard-float' to CFLAGS
-      https://git.kernel.org/powerpc/c/35f20786c481d5ced9283ff42de5c69b65e5ed13
+[1/1] macintosh: adb: make adb_dev_class constant
+      https://git.kernel.org/powerpc/c/83bc680e87292f78c6e823100e417d58a66dcb06
 
 cheers
