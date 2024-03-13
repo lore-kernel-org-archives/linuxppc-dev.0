@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0554CC54791
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:29:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD2F9C54791
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:29:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvrvj54hYz3vrh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:29:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvrw72sthz3vtv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:29:43 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt12TPFz3dV6
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt127rZz3dV3
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:27:53 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrt044nWz4x1k;
-	Thu, 14 Mar 2024 00:27:52 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrsx46Rhz4x0q;
+	Thu, 14 Mar 2024 00:27:49 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Kajol Jain <kjain@linux.ibm.com>
-In-Reply-To: <20240229122847.101162-1-kjain@linux.ibm.com>
-References: <20240229122847.101162-1-kjain@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/hv-gpci: Fix the H_GET_PERF_COUNTER_INFO hcall return value checks
-Message-Id: <171033598343.517247.4423484584244810742.b4-ty@ellerman.id.au>
+To: npiggin@gmail.com, christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com, Kunwu Chan <chentao@kylinos.cn>
+In-Reply-To: <20240301085834.1512921-1-chentao@kylinos.cn>
+References: <20240301085834.1512921-1-chentao@kylinos.cn>
+Subject: Re: [PATCH v2] powerpc/mm: Code cleanup for __hash_page_thp
+Message-Id: <171033598344.517247.16630935060498918995.b4-ty@ellerman.id.au>
 Date: Thu, 14 Mar 2024 00:19:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, akanksha@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 29 Feb 2024 17:58:47 +0530, Kajol Jain wrote:
-> Running event hv_gpci/dispatch_timebase_by_processor_processor_time_in_timebase_cycles,phys_processor_idx=0/
-> in one of the system throws below error:
+On Fri, 01 Mar 2024 16:58:34 +0800, Kunwu Chan wrote:
+> This part was commented from commit 6d492ecc6489
+> ("powerpc/THP: Add code to handle HPTE faults for hugepages")
+> in about 11 years before.
 > 
->  ---Logs---
->  # perf list | grep hv_gpci/dispatch_timebase_by_processor_processor_time_in_timebase_cycles
->   hv_gpci/dispatch_timebase_by_processor_processor_time_in_timebase_cycles,phys_processor_idx=?/[Kernel PMU event]
+> If there are no plans to enable this part code in the future,
+> we can remove this dead code and replace with a comment
+> explaining what the dead code was trying to say.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/hv-gpci: Fix the H_GET_PERF_COUNTER_INFO hcall return value checks
-      https://git.kernel.org/powerpc/c/ad86d7ee43b22aa2ed60fb982ae94b285c1be671
+[1/1] powerpc/mm: Code cleanup for __hash_page_thp
+      https://git.kernel.org/powerpc/c/d9cf600ecb7b053345aa76c1988cf374260cfdaf
 
 cheers
