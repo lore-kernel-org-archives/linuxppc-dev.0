@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1944C54E58
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:33:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAB7AC54791
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 13:34:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvs0l52cBz3vwZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:33:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvs1J3Cswz770W
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 00:34:12 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt52B3Qz3dk2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvrt55FQcz3vX1
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:27:57 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrt512fsz4x3g;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Tvrt5453gz4x3j;
 	Thu, 14 Mar 2024 00:27:57 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20231130125045.3080961-1-mpe@ellerman.id.au>
-References: <20231130125045.3080961-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/irq: Allow softirq to hardirq stack transition
-Message-Id: <171033598342.517247.2859297477499839544.b4-ty@ellerman.id.au>
+In-Reply-To: <20231214103152.12269-1-mpe@ellerman.id.au>
+References: <20231214103152.12269-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 1/5] of: Add of_machine_compatible_match()
+Message-Id: <171033598342.517247.6905314816188419212.b4-ty@ellerman.id.au>
 Date: Thu, 14 Mar 2024 00:19:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com
+Cc: robh+dt@kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 30 Nov 2023 23:50:45 +1100, Michael Ellerman wrote:
-> Allow a transition from the softirq stack to the hardirq stack when
-> handling a hardirq. Doing so means a hardirq received while deep in
-> softirq processing is less likely to cause a stack overflow of the
-> softirq stack.
+On Thu, 14 Dec 2023 21:31:48 +1100, Michael Ellerman wrote:
+> We have of_machine_is_compatible() to check if a machine is compatible
+> with a single compatible string. However some code is able to support
+> multiple compatible boards, and so wants to check for one of many
+> compatible strings.
 > 
-> Previously it wasn't safe to do so because irq_exit() (which initiates
-> softirq processing) was called on the hardirq stack.
+> So add of_machine_compatible_match() which takes a NULL terminated
+> array of compatible strings to check against the root node's
+> compatible property.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/irq: Allow softirq to hardirq stack transition
-      https://git.kernel.org/powerpc/c/4eb20bf34ea296f648971a8528e32cd80efcbe89
+[1/5] of: Add of_machine_compatible_match()
+      https://git.kernel.org/powerpc/c/c029b22f8a98e14988f800d5c0176a9eaec3c8db
+[2/5] of: Change of_machine_is_compatible() to return bool
+      https://git.kernel.org/powerpc/c/cefdb366dcbe97908b6055595a15bf7689556bf8
+[3/5] of: Reimplement of_machine_is_compatible() using of_machine_compatible_match()
+      https://git.kernel.org/powerpc/c/1ac8205f907517a306b661212496fedce79d7cc5
+[4/5] powerpc/machdep: Define 'compatibles' property in ppc_md and use it
+      https://git.kernel.org/powerpc/c/28da734d58c8d0113d0ac4f59880d94c9f249564
+[5/5] powerpc: Stop using of_root
+      https://git.kernel.org/powerpc/c/2a066ae11861257223500d7515e1541199cb7832
 
 cheers
