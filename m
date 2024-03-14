@@ -4,72 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AB5FC54E67
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 13:55:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F331C54E60
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 14:38:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OhZATZ0e;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=iyMWSJej;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TwTRF0cnpz3vc7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 00:55:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwVNW1JXhz3vbW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 01:38:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OhZATZ0e;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=iyMWSJej;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwTQR3rFCz3vX7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 00:54:38 +1100 (AEDT)
-Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-1dd8dd198d0so7238935ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 06:54:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwVMj2jB7z3dVr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 01:37:20 +1100 (AEDT)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-6e5760eeb7aso636993b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 07:37:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1710424476; x=1711029276; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1710427037; x=1711031837; darn=lists.ozlabs.org;
         h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
          :to:content-language:subject:user-agent:mime-version:date:message-id
          :sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=VYCoE6x/5FFdiDNbW6/F39BZo8+6Gfyjcn8t3LZwS0o=;
-        b=OhZATZ0eO3NWqVdnVzPTtj3O5pGd9YE472/TDHK+Hls1CKGwS6Vy4WhmerrXn6uE5V
-         M20sBS5iDhGcZxG0Vzc9wtTg+4inu2YCluibvuNlFt5sVjz5M4DHF7+qkD7SbDEbQSDJ
-         JTf1eIemFAyK00MbtYVYBcJmvWzicFOWDCDZWHDB/VRwxVt163jH63M8r4P2ZegfBC6L
-         Pd1DDdg46SDQy9FJuPAU0NbzuNkvsAlLHqfk753GBujtNtC42xWjLsft5WyBrQnOLTBE
-         hfaQDJlRP3YtjXPfevTmqvuBAlD/CA+AD5UEju0HPs1kBLb3rxEfO4L173OlM2d0tXwA
-         ydIQ==
+        bh=BAt6OIP+0c9gr8bC3zH0o5B8xuDJFBesfpVKBzdrz7Y=;
+        b=iyMWSJej7wwkAGODqoKXkaDxvxpbj21e+VW0lpk6Ueo4ItBiGlf66TVQlpYoaqgXZb
+         0BcQOzBlFGDgm/L6YowJ5r657TSwF52Wk0M4q1JlAb7cULpklvvLTpQkA/kqX0z2gqKm
+         YXnaDNb4AriuJ8pqa63gZyHXdpEQ4rBhheqMm247VBQvD39+w8xDk/yygVqH5pdy56i8
+         bMyzqZ/z1K8iW+rOtqaW72utuKZrXkSvkVop7ucBuO2BM2WupgSKjGTVtZI39J6VW8xP
+         XMVSsshiLDKLnsXfb1Q33yS1Asr7cKSby66pP9AhWt8BV7vkSzaPtlqqY0/VVZx97ktm
+         HI3A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710424476; x=1711029276;
+        d=1e100.net; s=20230601; t=1710427037; x=1711031837;
         h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
          :to:content-language:subject:user-agent:mime-version:date:message-id
          :sender:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=VYCoE6x/5FFdiDNbW6/F39BZo8+6Gfyjcn8t3LZwS0o=;
-        b=TGsSAmruTcA4eq0GmINWIx5QwlYewjayitrkuJ+0e/vvpiCFDkc9reUMtG4SLL2X+h
-         PXGAw5BTrqRsqFua/mcp5sYSfIavoLo3nkje+D4h/OvGoA6YEtJdFQ68+wZTVdfntKdj
-         KEveZM0fBql7Nclg4uPEisp60C+d0H/nZpos6TwKnczD+MG22GH9WSw7SroqBhlamFlh
-         HTV6RDfi7VlnsDSeLymCm19xEnkKFIQ4Hp3xBrspYtxRCcjNjmmVHie2xtszhiLG1/Lp
-         nvAW8f3KJr/FVgUrp8mPfnY+0voU3DJerjtWw8zqOlpA+tvyr+tHP1KIKgh3GltFnQd2
-         c/fw==
-X-Forwarded-Encrypted: i=1; AJvYcCUuvOhjzmud0wtK9gCBpoVseh2jUYO72ETMpVUEbIy3Y+dcpGp8PK/6xOkXQk0iU58pt05eROgNnQ8eBkNz6g57Ul013KJr3l02aDqq2A==
-X-Gm-Message-State: AOJu0YxL5Cv9B2zJVHDheFFy718qjzc82XhWRvOUeN8dZPZoEc/si4Jk
-	fvF3QhRAwKKKw45AuDbs5Qh8OfjnGZIsb+mS/DAHMRuLEAsm+vYI
-X-Google-Smtp-Source: AGHT+IF1d/JjNvaUdlV4zt2IUW1FJQXeQEYCUkspAPTpUNljVFGhXPd+BPdq0X4tfzWPOphzi79Nzg==
-X-Received: by 2002:a17:902:d2d0:b0:1dc:6d64:dcff with SMTP id n16-20020a170902d2d000b001dc6d64dcffmr41795plc.37.1710424476027;
-        Thu, 14 Mar 2024 06:54:36 -0700 (PDT)
+        bh=BAt6OIP+0c9gr8bC3zH0o5B8xuDJFBesfpVKBzdrz7Y=;
+        b=B2Ymz37JcWfpIpbNC/6xHTDo7p2wew8tgh45D3VBp2Bowl56bCkIfjlZOAtqBuKHVl
+         VhfiI0K4Dx0BDM06oX1igFH0CzOqXXnplPe/SoZXVWM/cGCMJAyXefQdg8/tIZIPF8ML
+         WUKb2/RRxRY5H+diPvATbbRpothnNvaARZAtmPPVU+iAvfvj9MK/nI9JzbWmN+kzJNWT
+         D3OUFtdXjcE91FhBeP6zl4pRNbt6yW8r5HtwEPZu0vC/35Bb0eaiHrPN8YTwgimAgO17
+         XswHZR7iP2w4yGQ0JZoTMW3zFO3Lp4qMvMzIfVxuafpPkCWE8RBMOQD63QQKpmiLocEU
+         E2aA==
+X-Forwarded-Encrypted: i=1; AJvYcCXllewOGosnNnyp/mm7czrpAqIOWJhTok5zy2af3SgN3iXKJEd1lgL9QkqLp+DbSwsr6xg7DVdTB1HO80AfF3rf6TW3DkwHJUmUU6mItA==
+X-Gm-Message-State: AOJu0Yz86akRxx/EFtQ9mmnatDPsGqsndJ5nibDnx/RVR19w6SC/SUHR
+	jFMsc8p8UXjXSKNl0AqcNrxo+xE/Drap817QVkkOyWGWhPTPqlhE
+X-Google-Smtp-Source: AGHT+IHI2tIp0Cq1oxvArlLBjZEJLtTGRmuCzkTWhdgoWaqtmo7e0P4BGn7kuXtOt4ZiafnnzeBQ+w==
+X-Received: by 2002:a05:6a20:7343:b0:1a3:4794:54c8 with SMTP id v3-20020a056a20734300b001a3479454c8mr888410pzc.46.1710427037203;
+        Thu, 14 Mar 2024 07:37:17 -0700 (PDT)
 Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id u10-20020a170902e80a00b001dd95b5dd0fsm1700430plg.69.2024.03.14.06.54.33
+        by smtp.gmail.com with ESMTPSA id u36-20020a056a0009a400b006e6c4f22b11sm1532632pfg.212.2024.03.14.07.37.14
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 14 Mar 2024 06:54:35 -0700 (PDT)
-Message-ID: <a4229dee-8a4b-488d-99de-84ed255583a5@roeck-us.net>
-Date: Thu, 14 Mar 2024 06:54:33 -0700
+        Thu, 14 Mar 2024 07:37:16 -0700 (PDT)
+Message-ID: <6d9269c0-bd38-4965-a454-4358e0a182e3@roeck-us.net>
+Date: Thu, 14 Mar 2024 07:37:13 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 11/14] s390: Add support for suppressing warning
- backtraces
+Subject: Re: [PATCH 00/14] Add support for suppressing warning backtraces
 Content-Language: en-US
 To: Geert Uytterhoeven <geert@linux-m68k.org>
 References: <20240312170309.2546362-1-linux@roeck-us.net>
- <20240312170309.2546362-12-linux@roeck-us.net>
- <CAMuHMdXHKfd8agPGx+MjvC4cjW5F6DEeVec3Moe-=LLkrT3CXQ@mail.gmail.com>
+ <CAMuHMdUkvagJVEfnhq=Nx2jnmdS0Ax+zy1CvyN0k7k1EwUpu+g@mail.gmail.com>
 From: Guenter Roeck <linux@roeck-us.net>
 Autocrypt: addr=linux@roeck-us.net; keydata=
  xsFNBE6H1WcBEACu6jIcw5kZ5dGeJ7E7B2uweQR/4FGxH10/H1O1+ApmcQ9i87XdZQiB9cpN
@@ -114,7 +112,7 @@ Autocrypt: addr=linux@roeck-us.net; keydata=
  WkRwrSuCn7UG+qVWZeKEsFKFOkynOs3pVbcbq1pxbhk3TRWCGRU5JolI4ohy/7JV1TVbjiDI
  HP/aVnm6NC8of26P40Pg8EdAhajZnHHjA7FrJXsy3cyIGqvg9os4rNkUWmrCfLLsZDHD8FnU
  mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
-In-Reply-To: <CAMuHMdXHKfd8agPGx+MjvC4cjW5F6DEeVec3Moe-=LLkrT3CXQ@mail.gmail.com>
+In-Reply-To: <CAMuHMdUkvagJVEfnhq=Nx2jnmdS0Ax+zy1CvyN0k7k1EwUpu+g@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -133,57 +131,77 @@ Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freede
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/14/24 00:57, Geert Uytterhoeven wrote:
+On 3/14/24 06:36, Geert Uytterhoeven wrote:
 > Hi Günter,
 > 
-> On Tue, Mar 12, 2024 at 6:06 PM Guenter Roeck <linux@roeck-us.net> wrote:
->> Add name of functions triggering warning backtraces to the __bug_table
->> object section to enable support for suppressing WARNING backtraces.
+> On Tue, Mar 12, 2024 at 6:03 PM Guenter Roeck <linux@roeck-us.net> wrote:
+>> Some unit tests intentionally trigger warning backtraces by passing bad
+>> parameters to kernel API functions. Such unit tests typically check the
+>> return value from such calls, not the existence of the warning backtrace.
 >>
->> To limit image size impact, the pointer to the function name is only added
->> to the __bug_table section if both CONFIG_KUNIT and CONFIG_DEBUG_BUGVERBOSE
->> are enabled. Otherwise, the __func__ assembly parameter is replaced with a
->> (dummy) NULL parameter to avoid an image size increase due to unused
->> __func__ entries (this is necessary because __func__ is not a define but a
->> virtual variable).
+>> Such intentionally generated warning backtraces are neither desirable
+>> nor useful for a number of reasons.
+>> - They can result in overlooked real problems.
+>> - A warning that suddenly starts to show up in unit tests needs to be
+>>    investigated and has to be marked to be ignored, for example by
+>>    adjusting filter scripts. Such filters are ad-hoc because there is
+>>    no real standard format for warnings. On top of that, such filter
+>>    scripts would require constant maintenance.
 >>
->> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+>> One option to address problem would be to add messages such as "expected
+>> warning backtraces start / end here" to the kernel log.  However, that
+>> would again require filter scripts, it might result in missing real
+>> problematic warning backtraces triggered while the test is running, and
+>> the irrelevant backtrace(s) would still clog the kernel log.
+>>
+>> Solve the problem by providing a means to identify and suppress specific
+>> warning backtraces while executing test code. Support suppressing multiple
+>> backtraces while at the same time limiting changes to generic code to the
+>> absolute minimum. Architecture specific changes are kept at minimum by
+>> retaining function names only if both CONFIG_DEBUG_BUGVERBOSE and
+>> CONFIG_KUNIT are enabled.
+>>
+>> The first patch of the series introduces the necessary infrastructure.
+>> The second patch introduces support for counting suppressed backtraces.
+>> This capability is used in patch three to implement unit tests.
+>> Patch four documents the new API.
+>> The next two patches add support for suppressing backtraces in drm_rect
+>> and dev_addr_lists unit tests. These patches are intended to serve as
+>> examples for the use of the functionality introduced with this series.
+>> The remaining patches implement the necessary changes for all
+>> architectures with GENERIC_BUG support.
 > 
-> Thanks for your patch!
+> Thanks for your series!
 > 
->> --- a/arch/s390/include/asm/bug.h
->> +++ b/arch/s390/include/asm/bug.h
->> @@ -8,19 +8,30 @@
->>
->>   #ifdef CONFIG_DEBUG_BUGVERBOSE
->>
->> +#if IS_ENABLED(CONFIG_KUNIT)
->> +# define HAVE_BUG_FUNCTION
->> +# define __BUG_FUNC_PTR        "       .long   %0-.\n"
->> +# define __BUG_FUNC    __func__
->> +#else
->> +# define __BUG_FUNC_PTR
->> +# define __BUG_FUNC    NULL
->> +#endif /* IS_ENABLED(CONFIG_KUNIT) */
->> +
->>   #define __EMIT_BUG(x) do {                                     \
->>          asm_inline volatile(                                    \
->>                  "0:     mc      0,0\n"                          \
->>                  ".section .rodata.str,\"aMS\",@progbits,1\n"    \
->>                  "1:     .asciz  \""__FILE__"\"\n"               \
->>                  ".previous\n"                                   \
->> -               ".section __bug_table,\"awM\",@progbits,%2\n"   \
->> +               ".section __bug_table,\"awM\",@progbits,%3\n"   \
+> I gave it a try on m68k, just running backtrace-suppression-test,
+> and that seems to work fine.
 > 
-> This change conflicts with commit 3938490e78f443fb ("s390/bug:
-> remove entry size from __bug_table section") in linus/master.
-> I guess it should just be dropped?
+>> Design note:
+>>    Function pointers are only added to the __bug_table section if both
+>>    CONFIG_KUNIT and CONFIG_DEBUG_BUGVERBOSE are enabled to avoid image
+>>    size increases if CONFIG_KUNIT=n. There would be some benefits to
+>>    adding those pointers all the time (reduced complexity, ability to
+>>    display function names in BUG/WARNING messages). That change, if
+>>    desired, can be made later.
+> 
+> Unfortunately this also increases kernel size in the CONFIG_KUNIT=m
+> case (ca. 80 KiB for atari_defconfig), making it less attractive to have
+> kunit and all tests enabled as modules in my standard kernel.
 > 
 
-Yes, I know. I'll send v2 rebased to v6.9-rc1 once it is available and,
-yes, the change will be gone after that.
+Good point. Indeed, it does. I wanted to avoid adding a configuration option,
+but maybe I should add it after all. How about something like this ?
+
++config KUNIT_SUPPRESS_BACKTRACE
++       bool "KUnit - Enable backtrace suppression"
++       default y
++       help
++         Enable backtrace suppression for KUnit. If enabled, backtraces
++         generated intentionally by KUnit tests can be suppressed. Disable
++         to reduce kernel image size if image size is more important than
++         suppression of backtraces generated by KUnit tests.
++
 
 Thanks,
 Guenter
-
 
