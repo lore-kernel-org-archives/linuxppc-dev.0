@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 024D1C54E5D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 16:40:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BD34C54E60
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 17:11:06 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cpvp0AQS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iXP13l2B;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TwY6B4Tzpz3dX3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 03:40:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwYn50ng7z3dXT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 04:11:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cpvp0AQS;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iXP13l2B;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.15; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwY5M2dNdz2xTN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 03:39:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwYmF6CDzz3d2S
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 04:10:21 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1710434407; x=1741970407;
+  t=1710436222; x=1741972222;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=djlTZ+NXt62CYBQD0EYVhAEkHu02AG1U5oefnk9Umf8=;
-  b=cpvp0AQSPbxTAkAliTaCloO3fbiMfwmk10Va3GTyu1kYTf+FWnsZkE50
-   mkxPUcq/sN4jbZVNMiHbU6IM46eOGpsBTX8PvMOm6KjsrkgneR7+PW90x
-   0rM3sjz3JaybXkr2TH7q2ySL3s1/U5o4rCLJJyaiXBe/a27sgpEGJw96K
-   T+/oc+kAt1U/45Abg5wxm9sfKjKRFLlSfTZhCvNe5j58Vovic/LOYYWAf
-   xE94zyUoLoaE7HgX9gQzlAp32mtIOnoHasLV0J+9uBA6tcAMroJ7nIR1a
-   TbGcouJ/ymW37vdhgdqNP1p7Imml7qQMDlGle0g6qmJMYQGzyMvOxvVRR
-   Q==;
-X-IronPort-AV: E=McAfee;i="6600,9927,11013"; a="5116155"
-X-IronPort-AV: E=Sophos;i="6.07,125,1708416000"; 
-   d="scan'208";a="5116155"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Mar 2024 09:39:50 -0700
+  bh=uQAxpeExw4NPzD9m5SdNWiPsgYujqGrB4VUfTmi+fXg=;
+  b=iXP13l2BGyK4EzPWxz+VOLQed9bC++miZibYjJFYmyOHoyAiji1D9Euz
+   jqvA2oef9ZOqki3+8mstqdnlgWLBh1/NiplDE7yRWqE8RfxTFZv+TyV2W
+   nnU+8Fjcj5KNQ00iqnkkGrxFK+Q0DRCb/dpGwNoVtyzHBWI8TnKckr99a
+   KruKfkr/k8FUEi4vSH2mEnyG7c+Aiy9cxrJm4QRzmSNM4M1q89lcQkgAD
+   EWMV7K7W56SXEvCml909U4ZjOjG3k0dvnQxkBbGvxHICjAISYD/AlDek7
+   i4M9UWznvnUwPGLj+sekjiY18r7VU8KQ4tdU38g6N7vPR6YcVk7mMACNU
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11013"; a="5457453"
+X-IronPort-AV: E=Sophos;i="6.07,126,1708416000"; 
+   d="scan'208";a="5457453"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Mar 2024 10:10:17 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,125,1708416000"; 
-   d="scan'208";a="17014261"
+X-IronPort-AV: E=Sophos;i="6.07,126,1708416000"; 
+   d="scan'208";a="35486148"
 Received: from laallen-mobl.amr.corp.intel.com (HELO [10.209.21.198]) ([10.209.21.198])
-  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Mar 2024 09:39:50 -0700
-Message-ID: <24f71d52-0891-4cfc-8dec-9f13ed618eee@intel.com>
-Date: Thu, 14 Mar 2024 09:39:51 -0700
+  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Mar 2024 10:10:12 -0700
+Message-ID: <a789c10e-861e-48eb-96d6-aa129d352535@intel.com>
+Date: Thu, 14 Mar 2024 10:10:13 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 1/1] x86/elf: Add a new .note section containing Xfeatures
  information to x86 core files
 Content-Language: en-US
-To: Borislav Petkov <bp@alien8.de>
+To: John Baldwin <jhb@FreeBSD.org>, Vignesh Balasubramanian
+ <vigbalas@amd.com>, linux-kernel@vger.kernel.org,
+ linux-toolchains@vger.kernel.org
 References: <20240314112359.50713-1-vigbalas@amd.com>
  <20240314112359.50713-2-vigbalas@amd.com>
  <dd54d6de-0bcc-4b2e-a420-b1a429b06246@intel.com>
- <20240314160824.GDZfMg-J1VOyjxIMiV@fat_crate.local>
- <6ce6aa20-25d2-4784-823f-2a18f592e002@intel.com>
- <20240314162954.GAZfMmAnYQoRjRbRzc@fat_crate.local>
+ <971d21b7-0309-439e-91b6-234f84da959d@FreeBSD.org>
 From: Dave Hansen <dave.hansen@intel.com>
 Autocrypt: addr=dave.hansen@intel.com; keydata=
  xsFNBE6HMP0BEADIMA3XYkQfF3dwHlj58Yjsc4E5y5G67cfbt8dvaUq2fx1lR0K9h1bOI6fC
@@ -102,9 +102,9 @@ Autocrypt: addr=dave.hansen@intel.com; keydata=
  MTsCeQDdjpgHsj+P2ZDeEKCbma4m6Ez/YWs4+zDm1X8uZDkZcfQlD9NldbKDJEXLIjYWo1PH
  hYepSffIWPyvBMBTW2W5FRjJ4vLRrJSUoEfJuPQ3vW9Y73foyo/qFoURHO48AinGPZ7PC7TF
  vUaNOTjKedrqHkaOcqB185ahG2had0xnFsDPlx5y
-In-Reply-To: <20240314162954.GAZfMmAnYQoRjRbRzc@fat_crate.local>
+In-Reply-To: <971d21b7-0309-439e-91b6-234f84da959d@FreeBSD.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,51 +116,159 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: felix.willgerodt@intel.com, matz@suse.de, keescook@chromium.org, jhb@freebsd.org, binutils@sourceware.org, x86@kernel.org, linux-kernel@vger.kernel.org, aneesh.kumar@kernel.org, linux-mm@kvack.org, Vignesh Balasubramanian <vigbalas@amd.com>, npiggin@gmail.com, linux-toolchains@vger.kernel.org, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, jinisusan.george@amd.com, ebiederm@xmission.com
+Cc: matz@suse.de, keescook@chromium.org, felix.willgerodt@intel.com, bpetkov@amd.com, x86@kernel.org, npiggin@gmail.com, aneesh.kumar@kernel.org, linux-mm@kvack.org, ebiederm@xmission.com, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, jinisusan.george@amd.com, binutils@sourceware.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/14/24 09:29, Borislav Petkov wrote:
+On 3/14/24 09:45, John Baldwin wrote:
+> On 3/14/24 8:37 AM, Dave Hansen wrote:
+>> On 3/14/24 04:23, Vignesh Balasubramanian wrote:
+>>> Add a new .note section containing type, size, offset and flags of
+>>> every xfeature that is present.
+>>
+>> Mechanically, I'd much rather have all of that info in the cover letter
+>> in the actual changelog instead.
+>>
+>> I'd also love to see a practical example of what an actual example core
+>> dump looks like on two conflicting systems:
+>>
+>>     * Total XSAVE size
+>>     * XCR0 value
+>>     * XSTATE_BV from the core dump
+>>     * XFEATURE offsets for each feature
 > 
->> That argument breaks down a bit on the flags though:
->>
->> 	xc.xfeat_flags = xstate_flags[i];
->>
->> Because it comes _directly_ from CPUID with zero filtering:
->>
->> 	cpuid_count(XSTATE_CPUID, i, &eax, &ebx, &ecx, &edx);
->> 	...
->> 	xstate_flags[i] = ecx;
->>
->> So this layout is quite dependent on what's in x86's CPUID.
-> Yeah, no, this should not be copying CPUID flags - those flags should be
-> *translated* to independently defined flags which describe those
-> buffers.
+> I noticed this when I bought an AMD Ryzen 9 5900X based system for
+> my desktop running FreeBSD and found that the XSAVE core dump notes
+> were not recognized by GDB (FreeBSD dumps an XSAVE register set note
+> that matches the same layout of NT_X86_XSTATE used by Linux).
 
-Ditto for:
+I just want to make sure that you heard what I asked.  I'd like to see a
+practical example of how the real-world enumeration changes between two
+real world systems.
 
-	xc.xfeat_type = i;
+Is that possible?
 
-Right now, that's bound to CPUID and XSAVE.  "feat_type==10" can only
-ever be PKRU and that's derived from the XSAVE architecture.
+Here's the raw CPUID data from the XSAVE region on my laptop:
 
-If you want this to be extensible to things outside of the XSAVE
-architecture, it needs to be something actually extensible and not
-entangled with XSAVE.
+>    0x0000000d 0x00: eax=0x000002e7 ebx=0x00000a88 ecx=0x00000a88 edx=0x00000000
+>    0x0000000d 0x01: eax=0x0000000f ebx=0x00000998 ecx=0x00003900 edx=0x00000000
+>    0x0000000d 0x02: eax=0x00000100 ebx=0x00000240 ecx=0x00000000 edx=0x00000000
+>    0x0000000d 0x05: eax=0x00000040 ebx=0x00000440 ecx=0x00000000 edx=0x00000000
+>    0x0000000d 0x06: eax=0x00000200 ebx=0x00000480 ecx=0x00000000 edx=0x00000000
+>    0x0000000d 0x07: eax=0x00000400 ebx=0x00000680 ecx=0x00000000 edx=0x00000000
+>    0x0000000d 0x08: eax=0x00000080 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
+>    0x0000000d 0x09: eax=0x00000008 ebx=0x00000a80 ecx=0x00000000 edx=0x00000000
+>    0x0000000d 0x0b: eax=0x00000010 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
+>    0x0000000d 0x0c: eax=0x00000018 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
+>    0x0000000d 0x0d: eax=0x00000008 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
 
-In other words "xc.xfeat_type" can enumerate XSAVE state components
-being in the dump, but it should not be limited to XSAVE.  Just as an
-example:
+Could we get that for an impacted AMD system, please?
 
-enum feat_type {
-	FEATURE_XSAVE_PKRU,
-	FEATURE_XSAVE__YMM,
-	FEATURE_XSAVE_BNDREGS,
-	FEATURE_XSAVE_BNDCSR,
-	...
-	RANDOM_STATE_NOT_XSAVE
-};
+	cpuid -1 --raw | grep "   0x0000000d "
 
-See how feat_type==1 is PKRU and *NOT* feat_type==10?  That opens the
-door to RANDOM_STATE_NOT_XSAVE or anything else you want.  This would be
-_actually_ extensible.
+should do it.
+
+> In particular, as the cover letter notes, on this AMD processor,
+> there is no "gap" for MPX, so the PKRU registers it provides are at a
+> different offset than on Intel CPUs.  Furthermore, my reading of the
+> SDM is that there is no guarantee of architectural offsets of a given
+> XSAVE feature and that software should be querying CPUID to determine
+> the layout.
+
+I'd say the SDM is an aspirational document.  Intel _aspires_ to be able
+to change the layouts whenever it wants.  That doesn't mean that it
+could actually pull it off in practice.
+
+In practice, the offset are fixed and Intel can't change them.
+
+> FWIW, the relevant CPUID leaves for my AMD system:
+> 
+>    XSAVE features (0xd/0):
+>       XCR0 valid bit field mask               = 0x0000000000000207>          x87 state                            = true
+...
+
+So, those actually aren't the relevant ones.  We need EAX (size) and EBX
+(user offset) from all of the sub-leaves.
+
+>> This is pretty close to just a raw dump of the XSAVE CPUID leaves.
+>> Rather than come up with an XSAVE-specific ABI that depends on CPUID
+>> *ANYWAY* (because it dumps the "flags" register aka. ECX), maybe we
+>> should just bite the bullet and dump out (some of) the raw CPUID space.
+> 
+> So the current note I initially proposed and implemented for FreeBSD
+> (https://reviews.freebsd.org/D42136) and an initial patch set for GDB
+> (https://sourceware.org/pipermail/gdb-patches/2023-October/203083.html)
+> do indeed dump a raw set of CPUID leaves.  The version I have for FreeBSD
+> only dumps the raw leaf values for leaf 0x0d though the note format is
+> extensible should additional leaves be needed in the future.  One of the
+> questions if we wanted to use a CPUID leaf note is which leaves to dump
+> (e.g. do you dump all of them, or do you just dump the subset that is
+> currently needed).
+
+You dump what is needed and add to the dump over time.
+
+> Another quirky question is what to do about systems with hetergeneous
+> cores (E vs P for example).
+That's irrelevant for now.  The cores may be heterogeneous but the
+userspace ISA and (and thus XSAVE formats) are identical.  If they're
+not, then we have bigger problems on our hands.
+
+> Currently those systems use the same XSAVE layout across all cores,
+> but other CPUID leaves do already vary across cores on those systems.
+
+There shouldn't be any CPUID leaves that differ _and_ matter to
+userspace and thus core dumps.
+
+> However, there are other wrinkles with the leaf approach.  Namely, one
+> of the use cases that I currently have an ugly hack for in GDB is if
+> you are using gdb against a remote host running gdbserver and then use
+> 'gcore' to generate a core dump.  GDB needs to write out a NT_X86_XSTATE
+> note, but that note requires a layout.  What GDB does today is just pick
+> a known Intel layout based on the XCR0 mask.  However, GDB should ideally
+> start writing out whatever new note we adopt here, so if we dump raw
+> CPUID leaves it means extending the GDB remote protocol so we can query
+> the CPUID leaves from the remote host.  On the other hand, if we choose a
+> more abstract format as proposed in this patch, the local GDB (or LLDB
+> or whatever) can generate whatever synthetic layout it wants to write
+> the local NT_X86_XSTATE.  (NB: A relevant detail here is that the GDB
+> remote protocol does not pass the entire XSAVE state across as a block,
+> instead gdbserver parses individual register values for AVX, etc.
+> registers and those decoded register values are passed over the
+> protocol.)
+
+So the gdb side says, "Give me PKRU" and the remote side parses the
+XSAVE image, finds PKRU, and sends it over the wire?
+
+> Another question is potentially supporting compact XSAVE format in
+> for NT_X86_XSTATE.  Today Linux has some complicated code to re-expand
+> the compat XSAVE format back out to the standard layout for ptrace() and
+> process core dumps.
+
+Yeah, but supporting the compacted format in NT_X86_XSTATE doesn't help
+us at all.  We still intermingle user and supervisor state and that
+needs to get repacked _anyway_.
+
+In other words, no matter what we do, it's going to be complicated
+because the userspace buffer can't have supervisor state and the kernel
+buffer does have it.  The compacted format mismatch is the least of our
+problems.
+
+>  (FreeBSD doesn't yet make use of XSAVEC so we
+> haven't yet dealt with that problem.) 
+
+... or XSAVES, which is actually the most relevant here.
+
+Backing up... there are two approaches here:
+
+ 1. Dump out raw x86-specific gunk, aka. CPUID contents itself.  There
+    are a billion ways to do this and lots of complications, including
+    the remote protocol implications
+or
+ 2. Define an abstract format that works anywhere, not just on x86 and
+    not just for XSAVE.
+
+There's no (sane) middle ground.  The implementation here (in this
+patch) is fundamentally x86-specific and pretends to be some kind of
+abstracted x86-independent format.
+
+
