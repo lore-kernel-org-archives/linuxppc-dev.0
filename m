@@ -4,88 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8180C54E60
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 13:46:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EBD4C54E60
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 14:09:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=he8MG/k9;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eUUUPCHw;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eUUUPCHw;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TwTFM1TS1z3vcP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 00:46:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwTlv69Jbz3vZp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 01:09:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=he8MG/k9;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eUUUPCHw;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=eUUUPCHw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=huschle@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwTDT6WYvz3vZT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 00:46:00 +1100 (AEDT)
-Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42ECrD2l029511;
-	Thu, 14 Mar 2024 13:45:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : content-type : in-reply-to :
- mime-version; s=pp1; bh=XwiQpHXIslt51XYw+nYwRS+Tl6bFp6ua9li80Bv5mQw=;
- b=he8MG/k9ecHXJLA09kkkxNS8g7veOVeccmEJKg8RCfagzZBt1/11Pxu7FM+pW9DSI5FT
- sVVXvmSHO+SitfcyDOvOwuuKKzwlHIBblYZ60LMmmnjrHjqwYaeITiLhpkg5BFkpEOHO
- c+VsMx6DiSx1hrGAqPrawXuuI7nOO7yMyL+7KEu+zsnnesU3SaygPmvWM93hPMq3hGzZ
- kzf4qyxWICNv95FADnbQnC1yRYLK1D3uQ7RhdFOznR+3RGoQdKu7y1iJDwIqMGHQYWXP
- SbC9edevwNibhqyZJOPb7VmiOm0/JsKq7WUC4Q5skhTxb+4rJ4fFJ+jxFNrRfISILxEK 4w== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wv1mngvq7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 14 Mar 2024 13:45:48 +0000
-Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42EDdHqV001952;
-	Thu, 14 Mar 2024 13:45:47 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wv1mngvpy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 14 Mar 2024 13:45:47 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42EB0RiW020506;
-	Thu, 14 Mar 2024 13:45:46 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3ws3kmd2ar-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 14 Mar 2024 13:45:46 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42EDjgFa12583400
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 14 Mar 2024 13:45:44 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ABADF2004B;
-	Thu, 14 Mar 2024 13:45:42 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 699EB20040;
-	Thu, 14 Mar 2024 13:45:42 +0000 (GMT)
-Received: from DESKTOP-2CCOB1S. (unknown [9.171.201.209])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu, 14 Mar 2024 13:45:42 +0000 (GMT)
-Date: Thu, 14 Mar 2024 14:45:41 +0100
-From: Tobias Huschle <huschle@linux.ibm.com>
-To: Luis Machado <luis.machado@arm.com>
-Subject: Re: [RFC] sched/eevdf: sched feature to dismiss lag on wakeup
-Message-ID: <ZfL/hROYxQudcTuX@DESKTOP-2CCOB1S.>
-References: <20240228161018.14253-1-huschle@linux.ibm.com>
- <5a32e8e1-67cf-4296-a655-f0fc35dc880a@arm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5a32e8e1-67cf-4296-a655-f0fc35dc880a@arm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: PvEnVf3CeDddS-tn5gdTkdX5xc-aFryX
-X-Proofpoint-GUID: uO3Sy-jjvv1DLMP_tYpnLbfXBGAXTWbH
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwTl44FLyz3dHV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 01:09:03 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1710425340;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=H0Ur324GEdYx6Na4EUzT7uu0LrdRXgiT37bQ9SRfD/k=;
+	b=eUUUPCHwLI87TuF9T4tgynGR2l98K59NC+DjzGG6EuLSmXZlPoS5pE3CzkqohYEXys1XT3
+	i+Ri1mPWQOBHQyf84ddyQztD/jO8q6dSyFx68kAob2Z9PIbrB2s6qd0IS+Zf/8mrVs9dbE
+	4pHtFwbuHNJI0lEtIGENcSH+ast1nQw=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1710425340;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=H0Ur324GEdYx6Na4EUzT7uu0LrdRXgiT37bQ9SRfD/k=;
+	b=eUUUPCHwLI87TuF9T4tgynGR2l98K59NC+DjzGG6EuLSmXZlPoS5pE3CzkqohYEXys1XT3
+	i+Ri1mPWQOBHQyf84ddyQztD/jO8q6dSyFx68kAob2Z9PIbrB2s6qd0IS+Zf/8mrVs9dbE
+	4pHtFwbuHNJI0lEtIGENcSH+ast1nQw=
+Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com
+ [209.85.219.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-681-OI6MakTNPWC4MHP1LjIiiw-1; Thu, 14 Mar 2024 10:08:58 -0400
+X-MC-Unique: OI6MakTNPWC4MHP1LjIiiw-1
+Received: by mail-qv1-f71.google.com with SMTP id 6a1803df08f44-690ab2b0de1so3111866d6.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 07:08:58 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710425337; x=1711030137;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=H0Ur324GEdYx6Na4EUzT7uu0LrdRXgiT37bQ9SRfD/k=;
+        b=Cq6Vz7mrcmWHanUvB6cVHwhUY9E9QsG5KUxD1ea6GfTbdekjtvJxoNIW5zBmCwx/28
+         cIixoInlceeNaNT2MTNwiCeeuNW1u033mpceg6qmm2cDR5+bhAmEl8pw60wGQUfGnugo
+         viW30KFAoFWsrVZuaA7LDnq+UdcP9y+iNz8c5+IlbtttJuvt3GT7Lvda/8VYODKRm4Qy
+         0jyO0gEa61dIybgKM3fceydaVcmmVw3g//EmDp8XBOtXDzB6bTpxCpLXsCfZCAmnDB48
+         fKewVYBxtpj+x6+K8iRKNWCUbl1RDDAXEy8B8KLfi9U9hz1y2Luj4RO6YsN3nRKefdlH
+         KKtw==
+X-Forwarded-Encrypted: i=1; AJvYcCVVuonBu60hVEs+WGPBu0RbATee/HGcNyXPzudAuNdUdMGt2DuJ4jaQjTZkowWqFz36JEGLin2UIX3XjZFNY9IcKhaTgsrv9S0gSfHYaA==
+X-Gm-Message-State: AOJu0YycBY/hWU1OfwN0EhUFSpRyGtosb8DLnC9P1PYW/UQw9iciYCoU
+	rgTaZhGrHtruiZISUogBLbWXSnUDsQYokNa7mIMfue7BQD9/MuP+ul/066worqUWIVNUvdxjlqy
+	nDskQfRQ4mG/3NErh2mjpG05Ul5fX3S7iixMRg8Gpa592Sl9UBbw4fIZSG9SOvRY=
+X-Received: by 2002:a05:6214:568f:b0:690:d848:5223 with SMTP id qm15-20020a056214568f00b00690d8485223mr1930032qvb.1.1710425336508;
+        Thu, 14 Mar 2024 07:08:56 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHucQiNsYz/grbilWzCKNHDTJ2JNCr8u+qXqtyrFQdPGNDAiC8YJGtZ0KjeTmr272RirFzDNA==
+X-Received: by 2002:a05:6214:568f:b0:690:d848:5223 with SMTP id qm15-20020a056214568f00b00690d8485223mr1929810qvb.1.1710425332941;
+        Thu, 14 Mar 2024 07:08:52 -0700 (PDT)
+Received: from x1n ([99.254.121.117])
+        by smtp.gmail.com with ESMTPSA id eq9-20020ad45969000000b0069155a36f67sm499868qvb.9.2024.03.14.07.08.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 14 Mar 2024 07:08:52 -0700 (PDT)
+Date: Thu, 14 Mar 2024 10:08:50 -0400
+From: Peter Xu <peterx@redhat.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 12/13] mm/treewide: Remove pXd_huge()
+Message-ID: <ZfME8vjFhl8AdyFe@x1n>
+References: <20240313214719.253873-1-peterx@redhat.com>
+ <20240313214719.253873-13-peterx@redhat.com>
+ <7e93ab99-c956-42d0-9afd-3c856f3ad951@csgroup.eu>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-03-14_11,2024-03-13_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0
- priorityscore=1501 malwarescore=0 clxscore=1015 adultscore=0 spamscore=0
- lowpriorityscore=0 mlxlogscore=999 mlxscore=0 phishscore=0 suspectscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2311290000 definitions=main-2403140100
+In-Reply-To: <7e93ab99-c956-42d0-9afd-3c856f3ad951@csgroup.eu>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,78 +102,149 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, vschneid@redhat.com, vincent.guittot@linaro.org, srikar@linux.vnet.ibm.com, peterz@infradead.org, sshegde@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org, bsegall@google.com, mingo@redhat.com, mgorman@suse.de, nd <nd@arm.com>, bristot@redhat.com, dietmar.eggemann@arm.com
+Cc: Muchun Song <muchun.song@linux.dev>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Mike Rapoport <rppt@kernel.org>, Jason Gunthorpe <jgg@nvidia.com>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 08, 2024 at 03:11:38PM +0000, Luis Machado wrote:
-> On 2/28/24 16:10, Tobias Huschle wrote:
+On Thu, Mar 14, 2024 at 08:56:59AM +0000, Christophe Leroy wrote:
+> 
+> 
+> Le 13/03/2024 à 22:47, peterx@redhat.com a écrit :
+> > From: Peter Xu <peterx@redhat.com>
 > > 
-> > Questions:
-> > 1. The kworker getting its negative lag occurs in the following scenario
-> >    - kworker and a cgroup are supposed to execute on the same CPU
-> >    - one task within the cgroup is executing and wakes up the kworker
-> >    - kworker with 0 lag, gets picked immediately and finishes its
-> >      execution within ~5000ns
-> >    - on dequeue, kworker gets assigned a negative lag
-> >    Is this expected behavior? With this short execution time, I would
-> >    expect the kworker to be fine.
+> > This API is not used anymore, drop it for the whole tree.
+> > 
+> > Signed-off-by: Peter Xu <peterx@redhat.com>
+> > ---
+> >   arch/arm/mm/Makefile                          |  1 -
+> >   arch/arm/mm/hugetlbpage.c                     | 29 -------------------
+> >   arch/arm64/mm/hugetlbpage.c                   | 10 -------
+> >   arch/loongarch/mm/hugetlbpage.c               | 10 -------
+> >   arch/mips/include/asm/pgtable-32.h            |  2 +-
+> >   arch/mips/include/asm/pgtable-64.h            |  2 +-
+> >   arch/mips/mm/hugetlbpage.c                    | 10 -------
+> >   arch/parisc/mm/hugetlbpage.c                  | 11 -------
+> >   .../include/asm/book3s/64/pgtable-4k.h        | 10 -------
+> >   .../include/asm/book3s/64/pgtable-64k.h       | 25 ----------------
+> >   arch/powerpc/include/asm/nohash/pgtable.h     | 10 -------
+> >   arch/riscv/mm/hugetlbpage.c                   | 10 -------
+> >   arch/s390/mm/hugetlbpage.c                    | 10 -------
+> >   arch/sh/mm/hugetlbpage.c                      | 10 -------
+> >   arch/sparc/mm/hugetlbpage.c                   | 10 -------
+> >   arch/x86/mm/hugetlbpage.c                     | 16 ----------
+> >   include/linux/hugetlb.h                       | 24 ---------------
+> >   17 files changed, 2 insertions(+), 198 deletions(-)
+> >   delete mode 100644 arch/arm/mm/hugetlbpage.c
+> > 
 > 
-> That strikes me as a bit odd as well. Have you been able to determine how a negative lag
-> is assigned to the kworker after such a short runtime?
+> > diff --git a/arch/mips/include/asm/pgtable-32.h b/arch/mips/include/asm/pgtable-32.h
+> > index 0e196650f4f4..92b7591aac2a 100644
+> > --- a/arch/mips/include/asm/pgtable-32.h
+> > +++ b/arch/mips/include/asm/pgtable-32.h
+> > @@ -129,7 +129,7 @@ static inline int pmd_none(pmd_t pmd)
+> >   static inline int pmd_bad(pmd_t pmd)
+> >   {
+> >   #ifdef CONFIG_MIPS_HUGE_TLB_SUPPORT
+> > -	/* pmd_huge(pmd) but inline */
+> > +	/* pmd_leaf(pmd) but inline */
 > 
+> Shouldn't this comment have been changed in patch 11 ?
 
-I did some more trace reading though and found something.
+IMHO it's fine to be here, as this is the patch to finally drop _huge().
+Patch 11 only converts the callers to use _leaf()s.  So this comment is
+still valid until this patch, because this patch removes that definition.
 
-What I observed if everything runs regularly:
-- vhost and kworker run alternating on the same CPU
-- if the kworker is done, it leaves the runqueue
-- vhost wakes up the kworker if it needs it
---> this means:
-  - vhost starts alone on an otherwise empty runqueue
-  - it seems like it never gets dequeued
-    (unless another unrelated task joins or migration hits)
-  - if vhost wakes up the kworker, the kworker gets selected
-  - vhost runtime > kworker runtime 
-    --> kworker gets positive lag and gets selected immediately next time
+> 
+> >   	if (unlikely(pmd_val(pmd) & _PAGE_HUGE))
+> 
+> Unlike pmd_huge() which is an outline function, pmd_leaf() is a macro so 
+> it could be used here instead of open coping.
 
-What happens if it does go wrong:
-From what I gather, there seem to be occasions where the vhost either
-executes suprisingly quick, or the kworker surprinsingly slow. If these
-outliers reach critical values, it can happen, that
-   vhost runtime < kworker runtime
-which now causes the kworker to get the negative lag.
+I worry it will break things as pmd_leaf() can sometimes be defined after
+arch *pgtable.h headers.  So I avoided touching it except what I think I'm
+confident.  I had a feeling it's inlined just because of a similar reason
+for the old _huge().
 
-In this case it seems like, that the vhost is very fast in waking up
-the kworker. And coincidentally, the kworker takes, more time than usual
-to finish. We speak of 4-digit to low 5-digit nanoseconds.
+> 
+> >   		return 0;
+> >   #endif
+> > diff --git a/arch/mips/include/asm/pgtable-64.h b/arch/mips/include/asm/pgtable-64.h
+> > index 20ca48c1b606..7c28510b3768 100644
+> > --- a/arch/mips/include/asm/pgtable-64.h
+> > +++ b/arch/mips/include/asm/pgtable-64.h
+> > @@ -245,7 +245,7 @@ static inline int pmd_none(pmd_t pmd)
+> >   static inline int pmd_bad(pmd_t pmd)
+> >   {
+> >   #ifdef CONFIG_MIPS_HUGE_TLB_SUPPORT
+> > -	/* pmd_huge(pmd) but inline */
+> > +	/* pmd_leaf(pmd) but inline */
+> 
+> Same
+> 
+> >   	if (unlikely(pmd_val(pmd) & _PAGE_HUGE))
+> 
+> Same
+> 
+> >   		return 0;
+> >   #endif
+> 
+> > diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
+> > index 2fce3498b000..579a7153857f 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
+> > @@ -4,31 +4,6 @@
+> >   
+> >   #ifndef __ASSEMBLY__
+> >   #ifdef CONFIG_HUGETLB_PAGE
+> > -/*
+> > - * We have PGD_INDEX_SIZ = 12 and PTE_INDEX_SIZE = 8, so that we can have
+> > - * 16GB hugepage pte in PGD and 16MB hugepage pte at PMD;
+> > - *
+> > - * Defined in such a way that we can optimize away code block at build time
+> > - * if CONFIG_HUGETLB_PAGE=n.
+> > - *
+> > - * returns true for pmd migration entries, THP, devmap, hugetlb
+> > - * But compile time dependent on CONFIG_HUGETLB_PAGE
+> > - */
+> 
+> Should we keep this comment somewhere for documentation ?
 
-So, for these outliers, the scheduler extrapolates that the kworker 
-out-consumes the vhost and should be slowed down, although in the majority
-of other cases this does not happen.
+The 2nd/3rd paragraphs are definitely obsolete, so should be dropped.
 
-Therefore this particular usecase would profit from being able to ignore
-such outliers, or being able to ignore a certain amount of difference in the
-lag values, i.e. introduce some grace value around the average runtime for
-which lag is not accounted. But not sure if I like that idea.
+OTOH, I'm not sure how much that will help if e.g. I move that over to
+pmd_leaf(): a check over cpu_to_be64(_PAGE_PTE) is an implementation as
+simple as it could be to explain itself with even no comment to me..
 
-So the negative lag can be somewhat justified, but for this particular case
-it leads to a problem where one outlier can cause havoc. As mentioned in the
-vhost discussion, it could also be argued that the vhost should not rely on 
-the fact that the kworker gets always scheduled on wake up, since these
-timing issues can always happen.
+I also don't fully digest why that 1st paragraph discusses PGD entries: for
+example, there's no pgd_huge() defined.  It may not mean that the comment
+is wrong, perhaps it means that I may lack some knowledge around this area
+on Power..
 
-Hence, the two options:
-- offer the alternative strategy which dismisses lag on wake up for workloads
-  where we know that a task usually finishes faster than others but should
-  not be punished by rare outliers (if that is predicatble, I don't know)
-- require vhost to adress this issue on their side (if possible without 
-  creating an armada of side effects)
+Would you suggest how I should move paragraph 1 (and help to explain what
+it is describing)?  Or maybe we can provide a separate patch for Power's
+huge page sizes but posted separately (and very possibly I'm not the best
+candidate then..).
 
-(plus the third one mentioned above, but that requires a magic cutoff value, meh)
+> 
+> > -static inline int pmd_huge(pmd_t pmd)
+> > -{
+> > -	/*
+> > -	 * leaf pte for huge page
+> > -	 */
+> > -	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
+> > -}
+> > -
+> > -static inline int pud_huge(pud_t pud)
+> > -{
+> > -	/*
+> > -	 * leaf pte for huge page
+> > -	 */
+> > -	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
+> > -}
+> >   
+> >   /*
+> >    * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
 
-> I was looking at a different thread (https://lore.kernel.org/lkml/20240226082349.302363-1-yu.c.chen@intel.com/) that
-> uncovers a potential overflow in the eligibility calculation. Though I don't think that is the case for this particular
-> vhost problem.
+-- 
+Peter Xu
 
-Yea, the numbers I see do not look very overflowy.
