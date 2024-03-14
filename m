@@ -4,69 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03FB4C54791
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 07:40:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53F5BC54E5D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 07:20:32 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=JBXiIRPj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=ChBlI9Z2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tvj953qqXz3vb1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2024 18:40:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwJgf5xfCz3dV9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 18:20:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=JBXiIRPj;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=ChBlI9Z2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=dan.carpenter@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::a32; helo=mail-vk1-xa32.google.com; envelope-from=naresh.kamboju@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-vk1-xa32.google.com (mail-vk1-xa32.google.com [IPv6:2607:f8b0:4864:20::a32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tvj8D1J71z2xLW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2024 18:39:38 +1100 (AEDT)
-Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-a44665605f3so876193766b.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2024 00:39:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwJfp40cwz30hQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 18:19:45 +1100 (AEDT)
+Received: by mail-vk1-xa32.google.com with SMTP id 71dfb90a1353d-4d36c20d0f7so914145e0c.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:19:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1710315572; x=1710920372; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=AvANucvrZ/fsPo2yOI31iWo1FDKNiABMfD22ldNz5dc=;
-        b=JBXiIRPjyXSRjeg73eeKrgUa8r664IoTGKqnjwyUBEXy/9ywdun3bkPQPg2jFXTfH6
-         CBI8DFKdSD5qUdAthwXQPCSBccAr2H0ReOSyXpFyZp7/+g0Fo+X2lUrgT5e6An5ypc1H
-         A6WED7iUiBeYiIxrw87P5AhEtvSpxdS6BlLuJuKyNRb4JeKAYToo+uMKHPd9MLWYLjGt
-         mcLwk31rqRZa2w8S0SbIxxg+CK6q0e9p6pHojw9eQZ34w5Hm/1dhnFliq7lCOwnJ9mBB
-         SIxJkc7D+tp2tY77+MZ2VpT/kmXqev7SOYoaGNnMpG6PR9zjrwfOQd5OERHf1lHRURCn
-         4Mgw==
+        d=linaro.org; s=google; t=1710400782; x=1711005582; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=ojH9YgZdQsTdhM/5DOp0sR2SpKlzVwEvHTXac3BNoo4=;
+        b=ChBlI9Z27J/7tybexawq4fKdPwAJ/v4MauqbPGWHrGfwyzgBVAynlCcX8cskqrz4Ye
+         8oPct99zu3XOjxnjjSrx1TIEAEusoAhOlIQdFWgv+gwPyhlxFNGV50fPgWcuQyee/nGg
+         c/d4tFLqdf7ZwdJJZLUmumTrV2sMAlT0oK6PCwvldPU/u1xr1qJjhyVo8G7ZBXp4+wu7
+         B4waz6BMRkCrxSTmk6754dc6bbSzfXPuV/dicw6nS/1JWV0k6P+ExgbrhFWuonbtDwxa
+         6aHAt/wSfaLpu5xBayagE/Ke1iHbKT3fk1NpNsLQ+uVXu1W0NvkR0cmWuDZMcdCgIVqE
+         pDRg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710315572; x=1710920372;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=AvANucvrZ/fsPo2yOI31iWo1FDKNiABMfD22ldNz5dc=;
-        b=rHTH5OrGgUYAwKdKTMzi56Wd/4QvP8ZwGEO0eFFn3FwyuEwfQMzBWk9GDYdWAzGosh
-         tXFsIzsju4paQVIY8AN2nlm7o9qKIlB256ugRcPS71cLNIKrRiA6E48lZtPSc1Yo5exY
-         VisXGPtsqB7n55KPMgqg8Md8150qd2JFKmYjpVnm3Lo7gvpZFI6L6TOj/AuIgfIDzAj6
-         2gcnLYGjcvCFTpgrJG6E+BmR50SgNBuY0LjJf32l3tjhC2SVkX5xl5L9fDelQIJ0tMya
-         k2N4jxrRshkIkNcNzjH7VC9eGAKKzvvRcuSpFcZhjpxMllyh0JgljveADPvXDW773ANz
-         2yug==
-X-Forwarded-Encrypted: i=1; AJvYcCVaaf0V/rOjSbt46E8qsLesrQsavfjQkrYNSpZHaSaGP+o7sOGhVbyZQTFpNd+ugujchbUKQiTIDc4TZJVvdLGLYDaKBF6TYs0o7HO/jg==
-X-Gm-Message-State: AOJu0Yxeah8KTAryV7WFaC8svj+J6+BrHQo5hLDnQdQG5sGaX5Awr6D6
-	piMII3BRp/5LfiPS/xVUXeKwXnOibpfsUVn5oV1u/mnhWtYmvU7m9e+Md9LbhoE=
-X-Google-Smtp-Source: AGHT+IH38GneADkyKtRbEkb8+HLK5ZsZNpyhD22lE4uk6eUmiwmdHa00scLatPQEFNYx/T2Y2VkSUg==
-X-Received: by 2002:a17:906:2ccb:b0:a41:3e39:b918 with SMTP id r11-20020a1709062ccb00b00a413e39b918mr7484516ejr.24.1710315572226;
-        Wed, 13 Mar 2024 00:39:32 -0700 (PDT)
-Received: from localhost ([102.222.70.76])
-        by smtp.gmail.com with ESMTPSA id qx26-20020a170906fcda00b00a45a687b52asm4578781ejb.213.2024.03.13.00.39.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Mar 2024 00:39:31 -0700 (PDT)
-Date: Wed, 13 Mar 2024 10:39:28 +0300
-From: Dan Carpenter <dan.carpenter@linaro.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 00/14] Add support for suppressing warning backtraces
-Message-ID: <43ef4ef4-303b-45c6-aa50-3e0982c93bd7@moroto.mountain>
-References: <20240312170309.2546362-1-linux@roeck-us.net>
+        d=1e100.net; s=20230601; t=1710400782; x=1711005582;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ojH9YgZdQsTdhM/5DOp0sR2SpKlzVwEvHTXac3BNoo4=;
+        b=gtIDeminwS/ywZrt1g9RCfSR2m4n0hfmiefAzRpkAeETkumckGlagOpkflBXmCl7Ja
+         qdlesENgCw2q8tI+z8uVGrx59Rxh1JXXqi27xjCpeHZHN3Y7B3GS5eCMle32Kanbz5X5
+         7noznXCCa44ZddwdSGkMGSP+HEJa1UtJ1vjsNN4Md2vk5ARMFQA5TmUvnL66ZCT/p4Cf
+         yxwm/pNSHVOVAUghaDClBnSJ6/lgx3bLVxTCvBrrUGCXt7u06upc/5aW/JTntkv//tj8
+         fReUopJwDhX1URh8wUL6EzRODIARnsgJjihKgagFeJgDvkp2V+FOPU6mB0x+Rypy5E20
+         O6NQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX1YvB/1I6KqFB3SGZHw1Ty5wvahPH7sE9ywF34TScopYSMEanSdFh85zYz02Ry5lnimZlzaaaJguitBu5ZFTj9nF1J81/S8gTtgdsBzg==
+X-Gm-Message-State: AOJu0YydpfS6DLjFAa5BPLoMmi9F6rMjkohIlbwX0AJ+rZ6D4ZXK9Xz2
+	IvkAEHyQlXMQfytKsQWZiERUzeLa5UJpnUMelwCTLXIhPRJw8875pbUVrahT2uJ+tArSsGFhZpo
+	OYJHLHJZD+wO1X1Y3wWM8L+xktC7+jYCPSlqATw==
+X-Google-Smtp-Source: AGHT+IEu7MNUInwIY97dleYnWeWXfcA+5F5T/ApvKi6n0MwxHEqr/RR8abTAy2/zINbSlyHB23weCyfflgDg+RLDw2Y=
+X-Received: by 2002:a05:6122:1296:b0:4b9:e8bd:3b2 with SMTP id
+ i22-20020a056122129600b004b9e8bd03b2mr431224vkp.2.1710400782181; Thu, 14 Mar
+ 2024 00:19:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+References: <20240312170309.2546362-1-linux@roeck-us.net>
 In-Reply-To: <20240312170309.2546362-1-linux@roeck-us.net>
+From: Naresh Kamboju <naresh.kamboju@linaro.org>
+Date: Thu, 14 Mar 2024 12:49:30 +0530
+Message-ID: <CA+G9fYsHhTLw3c1Eg-L6G3H2g7-mPf9zdR+hKDCV10RhHk5vhg@mail.gmail.com>
+Subject: Re: [PATCH 00/14] Add support for suppressing warning backtraces
+To: Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,15 +75,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?iso-8859-1?Q?Ma=EDra?= Canal <mcanal@igalia.com>, netdev@lists.linux.dev, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <akpm@lin
- ux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, Anders Roxell <anders.roxell@linaro.org>, linux-sh@vger.kernel.org, =?UTF-8?B?TWHDrXJhIENhbmFs?= <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, netdev@lists.linux.dev, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmerma
+ nn@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thanks!
+On Tue, 12 Mar 2024 at 22:33, Guenter Roeck <linux@roeck-us.net> wrote:
 
-Acked-by: Dan Carpenter <dan.carpenter@linaro.org>
+<trim>
 
-regards,
-dan carpenter
+> This series is based on the RFC patch and subsequent discussion at
+> https://patchwork.kernel.org/project/linux-kselftest/patch/02546e59-1afe-4b08-ba81-d94f3b691c9a@moroto.mountain/
+> and offers a more comprehensive solution of the problem discussed there.
 
+Thanks for the patchset.
+This patch series applied on top of Linux next and tested.
+
+Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
+
+
+--
+Linaro LKFT
+https://lkft.linaro.org
