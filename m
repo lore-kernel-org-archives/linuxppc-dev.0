@@ -4,105 +4,127 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0C51C54E5D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 07:55:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51CEBC54E5D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 08:46:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=azcZjzVn;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=EyBowORn;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TwKRV2Ylkz3vkK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 18:55:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwLbF4k5Hz3vYp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 19:46:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=azcZjzVn;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector2 header.b=EyBowORn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=manivannan.sadhasivam@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f403:c20a::4; helo=pr0p264cu014.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from PR0P264CU014.outbound.protection.outlook.com (mail-francecentralazlp170120004.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::4])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwKKZ0f6kz3vZP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 18:49:53 +1100 (AEDT)
-Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-1dc3b4b9b62so4470645ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 00:49:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1710402592; x=1711007392; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=l1IH4JXPyGY5G2M+FE3S5VV95kQawRh2XQdzV9wj3zI=;
-        b=azcZjzVn4cHraesMMRso37WSuUsb4r0YVIbruhBtLBZSyyI4AQPbySpblHQRNCjgNW
-         pi5iiZ7RKSDQQ2IBhO4OuzkpHpUdJVZuet/ohH8/gt+/q88CNIa8LJmsBGFMOhASRd8Q
-         92seV0drKs9VhrRR08Nr8qc8L4Ya+a/Jdh+3TkqrFT8Kap4gjTi60rkxHHbXJPXIYdUh
-         9rIMenYRWzZvKog8b7nnkfxVBrQ5z/s5OMlec4rta9JPq8XsVjoEDxbo46c9uuD+WCo+
-         IwyofDEWziC786d9XyANRSzafEf8/BqTM4/qVBLvHY+udEtWs5N0CqKl5cNWrEcLj0ie
-         zCnw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710402592; x=1711007392;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=l1IH4JXPyGY5G2M+FE3S5VV95kQawRh2XQdzV9wj3zI=;
-        b=pZkqLgrm+w47aXncuo0DWrmYXsLgK4tYhAMV7uo7y++cWCw+9CDpMi2df1D/JtdrYT
-         Pdhcp3cGD7QT+FnDBWkaa01+dx1OQn/+UHKQ8pZQ9EZP7aoCrAWTI8OrvODHHyFDgSq9
-         /1AM8F/dMUlk3+87wFh+454iLnlYbDH04Qzk0Cj81JRicD1SIEfLRAOmOi9Jbr2FU7OK
-         YDyNNyS49FE0Fe+zypMc4i5FheoUaOfhxfw3dNaRa6SgcJ2yac/nCJ7iUEqD9BM6m5mH
-         va+Tn9qd1+sWBQIl5V/46+6YzgLupX6F2hbX+E5e3jHkGG/lJGZWK49v1cYZT/TYUVDD
-         s+Xw==
-X-Forwarded-Encrypted: i=1; AJvYcCUeYgM2JcyCdn+KfcvRHgzewAfHni5wqss2lPTTpDXieImFT3059/nzbzRcd1MQckUqYPMgYKdnaROzskMBD+0vOtJIFzBBz/awr7c0VA==
-X-Gm-Message-State: AOJu0Yx1hv+fJ4lsZ/ryrRIvFeP9gQFvBKnWu3QNv1gtNwd9Rz/6XEGH
-	k6Tcr0I6p4wezYf8sPe1PA11dJ3XG/RLx8QBmzlhV6JFlvfIIglr8B6YFDFrAMY7xiIMoDNgBdo
-	=
-X-Google-Smtp-Source: AGHT+IFRoWC/HPBrw71SlL9Xc8OJuqzWc/bBWuQ3n9WklxGo0g0LLQYqYMly7CUmrUvwsMMbUvTFSg==
-X-Received: by 2002:a17:902:da88:b0:1dd:d869:a237 with SMTP id j8-20020a170902da8800b001ddd869a237mr3907038plx.34.1710402591972;
-        Thu, 14 Mar 2024 00:49:51 -0700 (PDT)
-Received: from [127.0.1.1] ([117.207.30.211])
-        by smtp.gmail.com with ESMTPSA id l9-20020a170903120900b001dd4fabf695sm946321plh.38.2024.03.14.00.49.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 Mar 2024 00:49:51 -0700 (PDT)
-From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Date: Thu, 14 Mar 2024 13:18:06 +0530
-Subject: [PATCH v10 8/8] PCI: dwc: ep: Remove "core_init_notifier" flag
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwLZL5Dytz3btQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 19:46:01 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=QeKWrERhokmMwgT/KfCdNvF1frQZ5WyENvroS/F/tJ9Jj2bR6TjK5CZ4EcI6HFWyZzTFGgHe5PQB+XuNsAPQRlEmgyHsIj8awRuQOvo3exSouyT2KS2WEs1t6wN/vVwdcaLXiEtZscP0RCZgUiuG5m5nMAzrzTPQzh3l3CV+GcoxRGD4+UMPGN966wQwe79uw/kalLPFfVPKr8y5ZLPeNeu0ncrCPBGEtfMiWB57/oX7p9lEC95vkzh4Sai87PNYJJatQECvnAEGtMmh5TNAkvhUh1IjGuBtVCUr2eb7y1WwzJhqrHXNd8zvCxnPGdebLASTDhYZvqK7Ebby+dqBCg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=H4ggo8kGPaNwVQTARgJjAEvfrmyeDWor1qTfAod04Kc=;
+ b=E//rWsOUfSWoQjhAXQYrJrFFjOHudywqtMfQUJNKqCeEaqQWCprx280rQ43ShhYv4ePyvO1p847m7CRZ9FgJV8twJQvmxKo8ge9lQWhgCHkQsCrowuWJIxfx0KiXM058eaYdnidBX79W3iXOxaytMNm7nLoAUXN1vbGHFTMaPI97kulqCgGF3/8di83uQhqj4u17qy0G5RRivazWqnbFD8g4W89E28rti91oxFY+zxHbLlA9pTt4CwZHKRKC2SRTkiubNkhbnG1/vY7Ovu8j5qGWGaqkcI6HUmG8eP270Fq84gbY88xTqfEhwJcbgkQrzx1vNxwcBLUejCAObgC+Hg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=H4ggo8kGPaNwVQTARgJjAEvfrmyeDWor1qTfAod04Kc=;
+ b=EyBowORnNsgUkYD7kt8Ya4cisfs9DPth7RFwwVjV/ppKYRW9OLLLFZjMKJ4bVsybJ6y531ZW1X0i1zGsawnmMDyy1H6fzwkxRX8Tv2N6Ll8UH5oCIvvvNelwTHIOqjOOT75Ff4HovKV/sE5r/Y+31/qeglfK0K4FjeFALN5JoUOQKbCkw6z7zsm04VGYao7cn4bb27rEXGyeoH7g8I9B8rDZ6rgaP9YAn1t8eQesB4MYdBCTcXPcJBv91ZaiC7u4/PhgI1JfreEnCVVEk4TnR8y3t1/zrPHgT4RZuXCGogHPJzweM7a1R1tSxv3HBmz/Z6AO7ZXtYal3Ia22kxGPdw==
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by MR1P264MB1540.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:15::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7386.21; Thu, 14 Mar
+ 2024 08:45:34 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::c192:d40f:1c33:1f4e]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::c192:d40f:1c33:1f4e%6]) with mapi id 15.20.7386.020; Thu, 14 Mar 2024
+ 08:45:34 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: "peterx@redhat.com" <peterx@redhat.com>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 09/13] mm/powerpc: Redefine pXd_huge() with pXd_leaf()
+Thread-Topic: [PATCH 09/13] mm/powerpc: Redefine pXd_huge() with pXd_leaf()
+Thread-Index: AQHadZASkAUcDDurK02wtpi3kLRmM7E27NOA
+Date: Thu, 14 Mar 2024 08:45:34 +0000
+Message-ID: <7b7d6ce1-4a3f-4392-951d-a9bd146c954c@csgroup.eu>
+References: <20240313214719.253873-1-peterx@redhat.com>
+ <20240313214719.253873-10-peterx@redhat.com>
+In-Reply-To: <20240313214719.253873-10-peterx@redhat.com>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla Thunderbird
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MRZP264MB2988:EE_|MR1P264MB1540:EE_
+x-ms-office365-filtering-correlation-id: ce57b44d-da02-42e5-271e-08dc44031d54
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  rA5KmAMRtzjpLnKzhpUnUXp0Sl/WoS/HIMRi+NlT4ilNn4rhgjwS7ut26JE+BkitLT79yBooprsloJWpZXYZ0fOJYmQ/QK+a/DByeJOJJy85An0PPfouQQvPHvOsSs/r7AAROd4yfVgbbXtBwsB48+u5JzvUJuUyl9FiwvbM42e5q5fVVztbjLcwTpjwigPXJYYcS2RPm+3GkPpj/gMLEWSmylTVmic/rVhy+R6L9mtXi9EUxdOndaX/yBM9jReJqU17+ywI6SnrLSDy2i3tyb/oE5NKK/0fhRP0lai0u3QUUK/5eobynqp1KpREht7Y0VGnj3TaDodEyxIfb88KHeOji0qcheZBjXnmKZJ0en/MKr97ucIV8dayu9hFfFcNrt0/Q7MOcuQ24TSMruZkF+xULO17BjRUtAA9HkB9nddbi1oaIPRgBIaNCO3xdMZ7ygtT5VEouGmKHuVdeCMnuwfZmqVczB1fsSvl9iy+W4gMbmlW97rO6dNLK4HjK2kb3ntANcFloJSk35z4gq0GEWguUd6LXqU8rDigrP/KNd1Xw91IZqgjTfMA+MbbqlQe/GaC1eysKSKVCXCDCbpAm1oj6gFMNbvEXhQzNgUSZObEHiWH/9LwPxwSorbUv1XT/WctdudznfrWRnVEL0n4/aZMibWsH5FzLV39e2jqalw=
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230031)(1800799015)(376005)(7416005)(38070700009);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?TGwvY1A4dXlldjVqdWJhaXYwTnk4VWFCQUtTQlZjVXo3c0xoakRhRi9ROU55?=
+ =?utf-8?B?RENwSTUwTFkrSHRKSG1kN2J1eUNVSVFMV01KSDRHUFgzaWM3a2N5NytBOTU0?=
+ =?utf-8?B?U29nQUdIMWhjNFk1MWswa1pwbjhKTUlBRE15RGp6UGtFN1I5K1hXYytKcWVh?=
+ =?utf-8?B?Mkp2TjhNZ3UzZ3Y5SUViZ0hsbUIwcGd3OWl4bG10Wi90Rno0OHo3MCtuSmFq?=
+ =?utf-8?B?NUhpdlQrTTJjTDJTVDByS1phTmdoNTUvc2RQRDRsU0xNWDhXT0t0RVRmam1M?=
+ =?utf-8?B?UVUwQlFPNXlFdHQ5bzkydTRtL1FoTTk4LzdsZHpjL2JjOTBxZTVBK2F2M0xp?=
+ =?utf-8?B?d1RPcDdRUXJwUndIcFBFZzFTKzlqU293QnZUcTVyMGNNbmxSc2tLMmNxRGVB?=
+ =?utf-8?B?Rmw0UVBoNmdwVk1mTFdQTFllZ1dMQ1dNRDArYXZUNytTK0NZZ1M3NE5rWDU1?=
+ =?utf-8?B?WnFEYVZCRUJ4ZklzUlBUaXBPaXV0bVd4SUF3NzBvL3VldXJFT0Y3em5nNUtV?=
+ =?utf-8?B?RWFXNUVPMFBPaDdtOVNvUU85SVRwZWl6V1BhQ3EybWNnMTkrMlhicGU3SjM1?=
+ =?utf-8?B?SEcyNnRwc21iVjFicG82MmlERW9BT2JDU0xhOW00Y0hvNFE4ZW41K1RMVkdr?=
+ =?utf-8?B?QWo5cUc3b2k0TUJ1RVdEYnJTaE0vemtpc0g2cFJzeEJqcTBvZnFLYUpvcS84?=
+ =?utf-8?B?aUYwZUY5TUpqZmh3ZmpOMzZ5UHYyczZ5dlNMcTI4SUFnNEQyUXorbG9welIy?=
+ =?utf-8?B?YVJLaFhJTzliSU0yVEw1WWJmOGltWFQ1b1pYamZnZ3ZGUTZubUMzaHJBL3JN?=
+ =?utf-8?B?RGVQczFBWWg2cDlmVGdtMk9FREM2d3pkNkVYUW02bVkrTnltdXphZWhoZVJk?=
+ =?utf-8?B?ODkxOUgxeXE3bHlPSCtUMXV2eXRvd2p1ZHp2eUxieVA0MnBXR294Vmh4NEVz?=
+ =?utf-8?B?N2ljeGtrWjBjOENnUFNqd2RRWFljTHJiUVd6WFVmVVg5aHFUanFFVmt1YUhN?=
+ =?utf-8?B?Y0FtZWV2YlRsMC9PamxVMVdQSWczcS9hNjQ5STk5Wit5ZEd1bmdQUHp3UE1U?=
+ =?utf-8?B?RFFCQ2RuaFkwZWNvMlBmNUdIYUQrKzFXR0xsT2JHcG5QSEp1UkRaaXE3bjMx?=
+ =?utf-8?B?T3JjYitodDBkZmh2VmN4M3BqRTR1T2lSdUNaaThib1ZQa1kyQjJtYk4yR2ha?=
+ =?utf-8?B?THFLWXV5UzczMm9UTHp2UjA1cjFYWnptMndjTWV3OFhtVkxWeXJjQW4rQ1NV?=
+ =?utf-8?B?eGhGOWY3VlNYcDZqRTVFRWtGbnlqV1pGWGtmcS9SZkFuRVZROVZuUXIyUExU?=
+ =?utf-8?B?UW5hc1l6dlBUNmtsVnpUZ0llMk5ncE1oTDBJOWwyMkk0QmVveElvUVoyQmZm?=
+ =?utf-8?B?WFRKOHNBeXVpaFhNbUx2c3hDdkNkSS9vbG5WV0FOVTdpeGZ6VXlnbnQ0Kyt3?=
+ =?utf-8?B?Uld4d2JweDlaT3pJZTNRemhDeENoRGFWRlZqVDV5Y3ZSSGpPTGtNbCtRcVl2?=
+ =?utf-8?B?dW9xeVpYQ1RFaDZDaTdMSndCN3FJcW5wQ0U2L1dPWDFTcWV1bUZ4Y0IvcUdy?=
+ =?utf-8?B?cDU0Y1Y4ZHJOS3o1Q0Z1RnpmSmFrQ21GUmNZV2h2dFJHcEY2eFFiWDdPQ0dI?=
+ =?utf-8?B?ZE9rN2tFMHBGZGFLSUlGaUNOMzVHa1hBQU03VFF5eEU5Q3E0Y1YwWFNFTEdM?=
+ =?utf-8?B?bVFidEF1YWhwcVFYK1R4dUN2c2hqUHd0SVdUaElZMi9GZkZJQnZySGRaOHlM?=
+ =?utf-8?B?RWlHUzJQZUtwNllieWRYUTBpWGluYm9Xa1dQM29wVXE3eVpHRUl4MmNSQmI5?=
+ =?utf-8?B?cHNja1RjbTFvOE5nblo0STVlUDMwN0FZaUsyNkMzRHMzTUpTeTdnTlZ1M2Jh?=
+ =?utf-8?B?V3NaUEk4Ni8vaThLNzlNbkwraFBIbXdITTdlbFZXWTJ5d3ZaQ28xRVV2ZWI1?=
+ =?utf-8?B?eWNjUG0xY0h3MTFnaGFtYkpvbk5oUUVrcTZXV3ZoUHRxeFhua2FLWitSK0hI?=
+ =?utf-8?B?N2F0UW5Lbkd5cUZ6d2JqNVBVenlEM0pUZmg0Z1R3VUVzK3hFaU1rRnFIdzJK?=
+ =?utf-8?B?WEMxRlBOdUR5QkpqL2x6aGh4ZWt2V3FueTIxRXp0MVVXNDUvVEZUSmk3ck1G?=
+ =?utf-8?B?VlpyOW4reDdJeGNlYitrNk15SUF4dmZCNFNqZ1FaOTNubzBEcDdvcXRQeVJX?=
+ =?utf-8?B?VlQzQjgrYkdEZzRNM2M1dVErUG5DRk93ZlcrUTB3ZEhJSk13Ymp3b29vbmdW?=
+ =?utf-8?B?TjJkK3N4eGFjeGlqWnp4WlB1RnZBPT0=?=
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240314-pci-dbi-rework-v10-8-14a45c5a938e@linaro.org>
-References: <20240314-pci-dbi-rework-v10-0-14a45c5a938e@linaro.org>
-In-Reply-To: <20240314-pci-dbi-rework-v10-0-14a45c5a938e@linaro.org>
-To: Jingoo Han <jingoohan1@gmail.com>, 
- Gustavo Pimentel <gustavo.pimentel@synopsys.com>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
- Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, 
- Marek Vasut <marek.vasut+renesas@gmail.com>, 
- Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, 
- Thierry Reding <thierry.reding@gmail.com>, 
- Jonathan Hunter <jonathanh@nvidia.com>, 
- Kishon Vijay Abraham I <kishon@ti.com>, Vidya Sagar <vidyas@nvidia.com>, 
- Vignesh Raghavendra <vigneshr@ti.com>, Richard Zhu <hongxing.zhu@nxp.com>, 
- Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, 
- Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- Fabio Estevam <festevam@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, 
- Minghuan Lian <minghuan.Lian@nxp.com>, Mingkai Hu <mingkai.hu@nxp.com>, 
- Roy Zang <roy.zang@nxp.com>, 
- Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, 
- Masami Hiramatsu <mhiramat@kernel.org>, 
- Kishon Vijay Abraham I <kishon@kernel.org>, 
- Jesper Nilsson <jesper.nilsson@axis.com>, 
- Srikanth Thokala <srikanth.thokala@intel.com>
-X-Mailer: b4 0.12.4
-X-Developer-Signature: v=1; a=openpgp-sha256; l=14106;
- i=manivannan.sadhasivam@linaro.org; h=from:subject:message-id;
- bh=S2uv0dCCbhiU2qhbMjneII/AXKnesPZEwsDKdaLNH1s=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBl8qvEnjDMt0fC3AEek+ZebxmAkGUV98ktdKT4w
- pi6cD4dXsCJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCZfKrxAAKCRBVnxHm/pHO
- 9fFvB/9dsE406HBVkYP7CnZHAv77sMSzBAPSzJevA0+uFWPuaqLWI2/rgpttPDfm7VTCgMtlqO9
- SDsdL4oscB15r3Ei90fbPVvqC3TXfo1VksRWwqy9v9qA7FxckWmohHpQMRtlpYjtuKYpA6WvQP1
- IyC8guMXbFB7QzE0gYC2A2Gjj5WvgMeaTa3l/mv9NxcZLaSjvKIJjEfzIs8OtTSnmA1FpYHTnhw
- XUYk8Qgcob93j6ipCqK/4WFiVx53a3XJFwaP99oXxXEeE99NrY+EvG5ZzKMqIGRXGy2ZNFmEYbJ
- PRVWoZjTVky5Iy+iRA5J5jPXu8uYuGyDDvN55z3bSLcmrKBx
-X-Developer-Key: i=manivannan.sadhasivam@linaro.org; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
+Content-ID: <C20A0726B22CF447B12EE24945206852@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: ce57b44d-da02-42e5-271e-08dc44031d54
+X-MS-Exchange-CrossTenant-originalarrivaltime: 14 Mar 2024 08:45:34.7270
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: QZ1AAsb6+h+VYvM9beoz5DWO1wkuApOOT6deefh1sFc5HAa2oF2Yktj/CiImrBgOoXl7SS59usNwx8XRNLGQ7wLVMIr7LvBNtEOMffSt7us=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MR1P264MB1540
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,378 +136,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@axis.com, linux-renesas-soc@vger.kernel.org, Niklas Cassel <cassel@kernel.org>, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Muchun Song <muchun.song@linux.dev>, "x86@kernel.org" <x86@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Matthew Wilcox <willy@infradead.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N.
+ Rao" <naveen.n.rao@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>, Jason Gunthorpe <jgg@nvidia.com>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"core_init_notifier" flag is set by the glue drivers requiring refclk from
-the host to complete the DWC core initialization. Also, those drivers will
-send a notification to the EPF drivers once the initialization is fully
-completed using the pci_epc_init_notify() API. Only then, the EPF drivers
-will start functioning.
-
-For the rest of the drivers generating refclk locally, EPF drivers will
-start functioning post binding with them. EPF drivers rely on the
-'core_init_notifier' flag to differentiate between the drivers.
-Unfortunately, this creates two different flows for the EPF drivers.
-
-So to avoid that, let's get rid of the "core_init_notifier" flag and follow
-a single initialization flow for the EPF drivers. This is done by calling
-the dw_pcie_ep_init_notify() from all glue drivers after the completion of
-dw_pcie_ep_init_registers() API. This will allow all the glue drivers to
-send the notification to the EPF drivers once the initialization is fully
-completed.
-
-Only difference here is that, the drivers requiring refclk from host will
-send the notification once refclk is received, while others will send it
-during probe time itself.
-
-But this also requires the EPC core driver to deliver the notification
-after EPF driver bind. Because, the glue driver can send the notification
-before the EPF drivers bind() and in those cases the EPF drivers will miss
-the event. To accommodate this, EPC core is now caching the state of the
-EPC initialization in 'init_complete' flag and pci-ep-cfs driver sends the
-notification to EPF drivers based on that after each EPF driver bind.
-
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
----
- drivers/pci/controller/dwc/pci-dra7xx.c           |  2 ++
- drivers/pci/controller/dwc/pci-imx6.c             |  2 ++
- drivers/pci/controller/dwc/pci-keystone.c         |  2 ++
- drivers/pci/controller/dwc/pci-layerscape-ep.c    |  2 ++
- drivers/pci/controller/dwc/pcie-artpec6.c         |  2 ++
- drivers/pci/controller/dwc/pcie-designware-plat.c |  2 ++
- drivers/pci/controller/dwc/pcie-keembay.c         |  2 ++
- drivers/pci/controller/dwc/pcie-qcom-ep.c         |  1 -
- drivers/pci/controller/dwc/pcie-rcar-gen4.c       |  2 ++
- drivers/pci/controller/dwc/pcie-tegra194.c        |  1 -
- drivers/pci/controller/dwc/pcie-uniphier-ep.c     |  2 ++
- drivers/pci/endpoint/functions/pci-epf-test.c     | 18 +++++-------------
- drivers/pci/endpoint/pci-ep-cfs.c                 |  9 +++++++++
- drivers/pci/endpoint/pci-epc-core.c               | 22 ++++++++++++++++++++++
- include/linux/pci-epc.h                           |  7 ++++---
- 15 files changed, 58 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/pci/controller/dwc/pci-dra7xx.c b/drivers/pci/controller/dwc/pci-dra7xx.c
-index 395042b29ffc..d2d17d37d3e0 100644
---- a/drivers/pci/controller/dwc/pci-dra7xx.c
-+++ b/drivers/pci/controller/dwc/pci-dra7xx.c
-@@ -474,6 +474,8 @@ static int dra7xx_add_pcie_ep(struct dra7xx_pcie *dra7xx,
- 		return ret;
- 	}
- 
-+	dw_pcie_ep_init_notify(ep);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/pci/controller/dwc/pci-imx6.c b/drivers/pci/controller/dwc/pci-imx6.c
-index bfcafa440ddb..894b5de76e3a 100644
---- a/drivers/pci/controller/dwc/pci-imx6.c
-+++ b/drivers/pci/controller/dwc/pci-imx6.c
-@@ -1144,6 +1144,8 @@ static int imx6_add_pcie_ep(struct imx6_pcie *imx6_pcie,
- 		return ret;
- 	}
- 
-+	dw_pcie_ep_init_notify(ep);
-+
- 	/* Start LTSSM. */
- 	imx6_pcie_ltssm_enable(dev);
- 
-diff --git a/drivers/pci/controller/dwc/pci-keystone.c b/drivers/pci/controller/dwc/pci-keystone.c
-index 093dbb725e41..b7b30470b394 100644
---- a/drivers/pci/controller/dwc/pci-keystone.c
-+++ b/drivers/pci/controller/dwc/pci-keystone.c
-@@ -1293,6 +1293,8 @@ static int ks_pcie_probe(struct platform_device *pdev)
- 			goto err_ep_init;
- 		}
- 
-+		dw_pcie_ep_init_notify(&pci->ep);
-+
- 		break;
- 	default:
- 		dev_err(dev, "INVALID device type %d\n", mode);
-diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-index b712fdd06549..c513598a46d7 100644
---- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
-+++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-@@ -283,6 +283,8 @@ static int __init ls_pcie_ep_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
-+	dw_pcie_ep_init_notify(&pci->ep);
-+
- 	return ls_pcie_ep_interrupt_init(pcie, pdev);
- }
- 
-diff --git a/drivers/pci/controller/dwc/pcie-artpec6.c b/drivers/pci/controller/dwc/pcie-artpec6.c
-index a6095561db4a..a4630b92489b 100644
---- a/drivers/pci/controller/dwc/pcie-artpec6.c
-+++ b/drivers/pci/controller/dwc/pcie-artpec6.c
-@@ -452,6 +452,8 @@ static int artpec6_pcie_probe(struct platform_device *pdev)
- 			return ret;
- 		}
- 
-+		dw_pcie_ep_init_notify(&pci->ep);
-+
- 		break;
- 	default:
- 		dev_err(dev, "INVALID device type %d\n", artpec6_pcie->mode);
-diff --git a/drivers/pci/controller/dwc/pcie-designware-plat.c b/drivers/pci/controller/dwc/pcie-designware-plat.c
-index ca9b22e654cd..8490c5d6ff9f 100644
---- a/drivers/pci/controller/dwc/pcie-designware-plat.c
-+++ b/drivers/pci/controller/dwc/pcie-designware-plat.c
-@@ -154,6 +154,8 @@ static int dw_plat_pcie_probe(struct platform_device *pdev)
- 			dw_pcie_ep_deinit(&pci->ep);
- 		}
- 
-+		dw_pcie_ep_init_notify(&pci->ep);
-+
- 		break;
- 	default:
- 		dev_err(dev, "INVALID device type %d\n", dw_plat_pcie->mode);
-diff --git a/drivers/pci/controller/dwc/pcie-keembay.c b/drivers/pci/controller/dwc/pcie-keembay.c
-index 250d6acf16dc..9fa9354a5f48 100644
---- a/drivers/pci/controller/dwc/pcie-keembay.c
-+++ b/drivers/pci/controller/dwc/pcie-keembay.c
-@@ -438,6 +438,8 @@ static int keembay_pcie_probe(struct platform_device *pdev)
- 			return ret;
- 		}
- 
-+		dw_pcie_ep_init_notify(&pci->ep);
-+
- 		break;
- 	default:
- 		dev_err(dev, "Invalid device type %d\n", pcie->mode);
-diff --git a/drivers/pci/controller/dwc/pcie-qcom-ep.c b/drivers/pci/controller/dwc/pcie-qcom-ep.c
-index 3697b4a944cc..2fb8c15e7a91 100644
---- a/drivers/pci/controller/dwc/pcie-qcom-ep.c
-+++ b/drivers/pci/controller/dwc/pcie-qcom-ep.c
-@@ -775,7 +775,6 @@ static void qcom_pcie_ep_init_debugfs(struct qcom_pcie_ep *pcie_ep)
- 
- static const struct pci_epc_features qcom_pcie_epc_features = {
- 	.linkup_notifier = true,
--	.core_init_notifier = true,
- 	.msi_capable = true,
- 	.msix_capable = false,
- 	.align = SZ_4K,
-diff --git a/drivers/pci/controller/dwc/pcie-rcar-gen4.c b/drivers/pci/controller/dwc/pcie-rcar-gen4.c
-index fb7c03639a53..0448928017f3 100644
---- a/drivers/pci/controller/dwc/pcie-rcar-gen4.c
-+++ b/drivers/pci/controller/dwc/pcie-rcar-gen4.c
-@@ -435,6 +435,8 @@ static int rcar_gen4_add_dw_pcie_ep(struct rcar_gen4_pcie *rcar)
- 		rcar_gen4_pcie_ep_deinit(rcar);
- 	}
- 
-+	dw_pcie_ep_init_notify(ep);
-+
- 	return ret;
- }
- 
-diff --git a/drivers/pci/controller/dwc/pcie-tegra194.c b/drivers/pci/controller/dwc/pcie-tegra194.c
-index 264ee76bf008..e02deb31a72d 100644
---- a/drivers/pci/controller/dwc/pcie-tegra194.c
-+++ b/drivers/pci/controller/dwc/pcie-tegra194.c
-@@ -2006,7 +2006,6 @@ static int tegra_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
- 
- static const struct pci_epc_features tegra_pcie_epc_features = {
- 	.linkup_notifier = true,
--	.core_init_notifier = true,
- 	.msi_capable = false,
- 	.msix_capable = false,
- 	.reserved_bar = 1 << BAR_2 | 1 << BAR_3 | 1 << BAR_4 | 1 << BAR_5,
-diff --git a/drivers/pci/controller/dwc/pcie-uniphier-ep.c b/drivers/pci/controller/dwc/pcie-uniphier-ep.c
-index 82ccaea089be..eb1d79fdb1f1 100644
---- a/drivers/pci/controller/dwc/pcie-uniphier-ep.c
-+++ b/drivers/pci/controller/dwc/pcie-uniphier-ep.c
-@@ -410,6 +410,8 @@ static int uniphier_pcie_ep_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
-+	dw_pcie_ep_init_notify(&priv->pci.ep);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/pci/endpoint/functions/pci-epf-test.c b/drivers/pci/endpoint/functions/pci-epf-test.c
-index 18c80002d3bd..fc0282b0d626 100644
---- a/drivers/pci/endpoint/functions/pci-epf-test.c
-+++ b/drivers/pci/endpoint/functions/pci-epf-test.c
-@@ -753,6 +753,7 @@ static int pci_epf_test_core_init(struct pci_epf *epf)
- 	const struct pci_epc_features *epc_features;
- 	struct pci_epc *epc = epf->epc;
- 	struct device *dev = &epf->dev;
-+	bool linkup_notifier = false;
- 	bool msix_capable = false;
- 	bool msi_capable = true;
- 	int ret;
-@@ -795,6 +796,10 @@ static int pci_epf_test_core_init(struct pci_epf *epf)
- 		}
- 	}
- 
-+	linkup_notifier = epc_features->linkup_notifier;
-+	if (!linkup_notifier)
-+		queue_work(kpcitest_workqueue, &epf_test->cmd_handler.work);
-+
- 	return 0;
- }
- 
-@@ -901,8 +906,6 @@ static int pci_epf_test_bind(struct pci_epf *epf)
- 	const struct pci_epc_features *epc_features;
- 	enum pci_barno test_reg_bar = BAR_0;
- 	struct pci_epc *epc = epf->epc;
--	bool linkup_notifier = false;
--	bool core_init_notifier = false;
- 
- 	if (WARN_ON_ONCE(!epc))
- 		return -EINVAL;
-@@ -913,8 +916,6 @@ static int pci_epf_test_bind(struct pci_epf *epf)
- 		return -EOPNOTSUPP;
- 	}
- 
--	linkup_notifier = epc_features->linkup_notifier;
--	core_init_notifier = epc_features->core_init_notifier;
- 	test_reg_bar = pci_epc_get_first_free_bar(epc_features);
- 	if (test_reg_bar < 0)
- 		return -EINVAL;
-@@ -927,21 +928,12 @@ static int pci_epf_test_bind(struct pci_epf *epf)
- 	if (ret)
- 		return ret;
- 
--	if (!core_init_notifier) {
--		ret = pci_epf_test_core_init(epf);
--		if (ret)
--			return ret;
--	}
--
- 	epf_test->dma_supported = true;
- 
- 	ret = pci_epf_test_init_dma_chan(epf_test);
- 	if (ret)
- 		epf_test->dma_supported = false;
- 
--	if (!linkup_notifier && !core_init_notifier)
--		queue_work(kpcitest_workqueue, &epf_test->cmd_handler.work);
--
- 	return 0;
- }
- 
-diff --git a/drivers/pci/endpoint/pci-ep-cfs.c b/drivers/pci/endpoint/pci-ep-cfs.c
-index 0ea64e24ed61..3b21e28f9b59 100644
---- a/drivers/pci/endpoint/pci-ep-cfs.c
-+++ b/drivers/pci/endpoint/pci-ep-cfs.c
-@@ -64,6 +64,9 @@ static int pci_secondary_epc_epf_link(struct config_item *epf_item,
- 		return ret;
- 	}
- 
-+	/* Send any pending EPC initialization complete to the EPF driver */
-+	pci_epc_notify_pending_init(epc, epf);
-+
- 	return 0;
- }
- 
-@@ -125,6 +128,9 @@ static int pci_primary_epc_epf_link(struct config_item *epf_item,
- 		return ret;
- 	}
- 
-+	/* Send any pending EPC initialization complete to the EPF driver */
-+	pci_epc_notify_pending_init(epc, epf);
-+
- 	return 0;
- }
- 
-@@ -230,6 +236,9 @@ static int pci_epc_epf_link(struct config_item *epc_item,
- 		return ret;
- 	}
- 
-+	/* Send any pending EPC initialization complete to the EPF driver */
-+	pci_epc_notify_pending_init(epc, epf);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/pci/endpoint/pci-epc-core.c b/drivers/pci/endpoint/pci-epc-core.c
-index dcd4e66430c1..ba2ff037dfa6 100644
---- a/drivers/pci/endpoint/pci-epc-core.c
-+++ b/drivers/pci/endpoint/pci-epc-core.c
-@@ -753,10 +753,32 @@ void pci_epc_init_notify(struct pci_epc *epc)
- 			epf->event_ops->core_init(epf);
- 		mutex_unlock(&epf->lock);
- 	}
-+	epc->init_complete = true;
- 	mutex_unlock(&epc->list_lock);
- }
- EXPORT_SYMBOL_GPL(pci_epc_init_notify);
- 
-+/**
-+ * pci_epc_notify_pending_init() - Notify the pending EPC device initialization
-+ *                                 complete to the EPF device
-+ * @epc: the EPC device whose core initialization is pending to be notified
-+ * @epf: the EPF device to be notified
-+ *
-+ * Invoke to notify the pending EPC device initialization complete to the EPF
-+ * device. This is used to deliver the notification if the EPC initialization
-+ * got completed before the EPF driver bind.
-+ */
-+void pci_epc_notify_pending_init(struct pci_epc *epc, struct pci_epf *epf)
-+{
-+	if (epc->init_complete) {
-+		mutex_lock(&epf->lock);
-+		if (epf->event_ops && epf->event_ops->core_init)
-+			epf->event_ops->core_init(epf);
-+		mutex_unlock(&epf->lock);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(pci_epc_notify_pending_init);
-+
- /**
-  * pci_epc_bme_notify() - Notify the EPF device that the EPC device has received
-  *			  the BME event from the Root complex
-diff --git a/include/linux/pci-epc.h b/include/linux/pci-epc.h
-index 40ea18f5aa02..adee6dbe4e45 100644
---- a/include/linux/pci-epc.h
-+++ b/include/linux/pci-epc.h
-@@ -128,6 +128,8 @@ struct pci_epc_mem {
-  * @group: configfs group representing the PCI EPC device
-  * @lock: mutex to protect pci_epc ops
-  * @function_num_map: bitmap to manage physical function number
-+ * @init_complete: flag to indicate whether the EPC initialization is complete
-+ *                 or not
-  */
- struct pci_epc {
- 	struct device			dev;
-@@ -143,13 +145,12 @@ struct pci_epc {
- 	/* mutex to protect against concurrent access of EP controller */
- 	struct mutex			lock;
- 	unsigned long			function_num_map;
-+	bool				init_complete;
- };
- 
- /**
-  * struct pci_epc_features - features supported by a EPC device per function
-  * @linkup_notifier: indicate if the EPC device can notify EPF driver on link up
-- * @core_init_notifier: indicate cores that can notify about their availability
-- *			for initialization
-  * @msi_capable: indicate if the endpoint function has MSI capability
-  * @msix_capable: indicate if the endpoint function has MSI-X capability
-  * @reserved_bar: bitmap to indicate reserved BAR unavailable to function driver
-@@ -159,7 +160,6 @@ struct pci_epc {
-  */
- struct pci_epc_features {
- 	unsigned int	linkup_notifier : 1;
--	unsigned int	core_init_notifier : 1;
- 	unsigned int	msi_capable : 1;
- 	unsigned int	msix_capable : 1;
- 	u8	reserved_bar;
-@@ -198,6 +198,7 @@ int pci_epc_add_epf(struct pci_epc *epc, struct pci_epf *epf,
- void pci_epc_linkup(struct pci_epc *epc);
- void pci_epc_linkdown(struct pci_epc *epc);
- void pci_epc_init_notify(struct pci_epc *epc);
-+void pci_epc_notify_pending_init(struct pci_epc *epc, struct pci_epf *epf);
- void pci_epc_bme_notify(struct pci_epc *epc);
- void pci_epc_remove_epf(struct pci_epc *epc, struct pci_epf *epf,
- 			enum pci_epc_interface_type type);
-
--- 
-2.25.1
-
+DQoNCkxlIDEzLzAzLzIwMjQgw6AgMjI6NDcsIHBldGVyeEByZWRoYXQuY29tIGEgw6ljcml0wqA6
+DQo+IEZyb206IFBldGVyIFh1IDxwZXRlcnhAcmVkaGF0LmNvbT4NCj4gDQo+IFBvd2VyUEMgYm9v
+azNzIDRLIG1vc3RseSBoYXMgdGhlIHNhbWUgZGVmaW5pdGlvbiBvbiBib3RoLCBleGNlcHQgcFhk
+X2h1Z2UoKQ0KPiBjb25zdGFudGx5IHJldHVybnMgMCBmb3IgaGFzaCBNTVVzLiAgQXMgTWljaGFl
+bCBFbGxlcm1hbiBwb2ludGVkIG91dCBbMV0sDQo+IGl0IGlzIHNhZmUgdG8gY2hlY2sgX1BBR0Vf
+UFRFIG9uIGhhc2ggTU1VcywgYXMgdGhlIGJpdCB3aWxsIG5ldmVyIGJlIHNldCBzbw0KPiBpdCB3
+aWxsIGtlZXAgcmV0dXJuaW5nIGZhbHNlLg0KPiANCj4gQXMgYSByZWZlcmVuY2UsIF9fcFttdV1k
+X21raHVnZSgpIHdpbGwgdHJpZ2dlciBhIEJVR19PTiB0cnlpbmcgdG8gY3JlYXRlDQo+IHN1Y2gg
+aHVnZSBtYXBwaW5ncyBmb3IgNEsgaGFzaCBNTVVzLiAgTWVhbndoaWxlLCB0aGUgbWFqb3IgcG93
+ZXJwYyBodWdldGxiDQo+IHBndGFibGUgd2Fsa2VyIF9fZmluZF9saW51eF9wdGUoKSBhbHJlYWR5
+IHVzZWQgcFhkX2xlYWYoKSB0byBjaGVjayBodWdldGxiDQo+IG1hcHBpbmdzLg0KPiANCj4gVGhl
+IGdvYWwgc2hvdWxkIGJlIHRoYXQgd2Ugd2lsbCBoYXZlIG9uZSBBUEkgcFhkX2xlYWYoKSB0byBk
+ZXRlY3QgYWxsIGtpbmRzDQo+IG9mIGh1Z2UgbWFwcGluZ3MuICBBRkFJQ1Qgd2UgbmVlZCB0byB1
+c2UgdGhlIHBYZF9sZWFmKCkgaW1wbCAocmF0aGVyIHRoYW4NCj4gcFhkX2h1Z2UoKSBvbmVzKSB0
+byBtYWtlIHN1cmUgaWUuIFRIUHMgb24gaGFzaCBNTVUgd2lsbCBhbHNvIHJldHVybiB0cnVlLg0K
+DQpBbGwga2luZHMgb2YgaHVnZSBtYXBwaW5ncyA/DQoNCnBYZF9sZWFmKCkgd2lsbCBkZXRlY3Qg
+b25seSBsZWFmIG1hcHBpbmdzIChsaWtlIHBYZF9odWdlKCkgKS4gVGhlcmUgYXJlIA0KYWxzbyBo
+dWdlIG1hcHBpbmdzIHRocm91Z2ggaHVnZXBkLiBPbiBwb3dlcnBjIDh4eCB3ZSBoYXZlIDhNIGh1
+Z2UgcGFnZXMgDQphbmQgNTEyayBodWdlIHBhZ2VzLiBBIFBHRCBlbnRyeSBjb3ZlcnMgNE0gc28g
+cGdkX2xlYWYoKSB3b24ndCByZXBvcnQgDQp0aG9zZSBodWdlIHBhZ2VzLg0KDQo+IA0KPiBUaGlz
+IGhlbHBzIHRvIHNpbXBsaWZ5IGEgZm9sbG93IHVwIHBhdGNoIHRvIGRyb3AgcFhkX2h1Z2UoKSB0
+cmVld2lkZS4NCj4gDQo+IE5PVEU6ICpfbGVhZigpIGRlZmluaXRpb24gbmVlZCB0byBiZSBtb3Zl
+ZCBiZWZvcmUgdGhlIGluY2x1c2lvbiBvZg0KPiBhc20vYm9vazNzLzY0L3BndGFibGUtNGsuaCwg
+d2hpY2ggZGVmaW5lcyBwWGRfaHVnZSgpIHdpdGggaXQuDQo+IA0KPiBbMV0gaHR0cHM6Ly9sb3Jl
+Lmtlcm5lbC5vcmcvci84N3Y4NXpvNnc3LmZzZkBtYWlsLmxob3RzZQ0KPiANCj4gQ2M6IE1pY2hh
+ZWwgRWxsZXJtYW4gPG1wZUBlbGxlcm1hbi5pZC5hdT4NCj4gQ2M6IE5pY2hvbGFzIFBpZ2dpbiA8
+bnBpZ2dpbkBnbWFpbC5jb20+DQo+IENjOiBDaHJpc3RvcGhlIExlcm95IDxjaHJpc3RvcGhlLmxl
+cm95QGNzZ3JvdXAuZXU+DQo+IENjOiAiQW5lZXNoIEt1bWFyIEsuViIgPGFuZWVzaC5rdW1hckBr
+ZXJuZWwub3JnPg0KPiBDYzogIk5hdmVlbiBOLiBSYW8iIDxuYXZlZW4ubi5yYW9AbGludXguaWJt
+LmNvbT4NCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFNpZ25lZC1vZmYt
+Ynk6IFBldGVyIFh1IDxwZXRlcnhAcmVkaGF0LmNvbT4NCj4gLS0tDQo+ICAgLi4uL2luY2x1ZGUv
+YXNtL2Jvb2szcy82NC9wZ3RhYmxlLTRrLmggICAgICAgIHwgMTQgKystLS0tLS0tLQ0KPiAgIGFy
+Y2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9ib29rM3MvNjQvcGd0YWJsZS5oICB8IDI3ICsrKysrKysr
+Ky0tLS0tLS0tLS0NCj4gICAyIGZpbGVzIGNoYW5nZWQsIDE0IGluc2VydGlvbnMoKyksIDI3IGRl
+bGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9i
+b29rM3MvNjQvcGd0YWJsZS00ay5oIGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2Jvb2szcy82
+NC9wZ3RhYmxlLTRrLmgNCj4gaW5kZXggNDhmMjE4MjBhZmUyLi45MjU0NTk4MWJiNDkgMTAwNjQ0
+DQo+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9ib29rM3MvNjQvcGd0YWJsZS00ay5o
+DQo+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9ib29rM3MvNjQvcGd0YWJsZS00ay5o
+DQo+IEBAIC04LDIyICs4LDEyIEBADQo+ICAgI2lmZGVmIENPTkZJR19IVUdFVExCX1BBR0UNCj4g
+ICBzdGF0aWMgaW5saW5lIGludCBwbWRfaHVnZShwbWRfdCBwbWQpDQo+ICAgew0KPiAtCS8qDQo+
+IC0JICogbGVhZiBwdGUgZm9yIGh1Z2UgcGFnZQ0KPiAtCSAqLw0KPiAtCWlmIChyYWRpeF9lbmFi
+bGVkKCkpDQo+IC0JCXJldHVybiAhIShwbWRfcmF3KHBtZCkgJiBjcHVfdG9fYmU2NChfUEFHRV9Q
+VEUpKTsNCj4gLQlyZXR1cm4gMDsNCj4gKwlyZXR1cm4gcG1kX2xlYWYocG1kKTsNCj4gICB9DQo+
+ICAgDQo+ICAgc3RhdGljIGlubGluZSBpbnQgcHVkX2h1Z2UocHVkX3QgcHVkKQ0KPiAgIHsNCj4g
+LQkvKg0KPiAtCSAqIGxlYWYgcHRlIGZvciBodWdlIHBhZ2UNCj4gLQkgKi8NCj4gLQlpZiAocmFk
+aXhfZW5hYmxlZCgpKQ0KPiAtCQlyZXR1cm4gISEocHVkX3JhdyhwdWQpICYgY3B1X3RvX2JlNjQo
+X1BBR0VfUFRFKSk7DQo+IC0JcmV0dXJuIDA7DQo+ICsJcmV0dXJuIHB1ZF9sZWFmKHB1ZCk7DQo+
+ICAgfQ0KPiAgIA0KPiAgIC8qDQo+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9h
+c20vYm9vazNzLzY0L3BndGFibGUuaCBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9ib29rM3Mv
+NjQvcGd0YWJsZS5oDQo+IGluZGV4IGRmNjZkY2U4MzA2Zi4uZmQ3MTgwZmRlZDc1IDEwMDY0NA0K
+PiAtLS0gYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vYm9vazNzLzY0L3BndGFibGUuaA0KPiAr
+KysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vYm9vazNzLzY0L3BndGFibGUuaA0KPiBAQCAt
+MjYyLDYgKzI2MiwxOCBAQCBleHRlcm4gdW5zaWduZWQgbG9uZyBfX2tlcm5lbF9pb19lbmQ7DQo+
+ICAgDQo+ICAgZXh0ZXJuIHN0cnVjdCBwYWdlICp2bWVtbWFwOw0KPiAgIGV4dGVybiB1bnNpZ25l
+ZCBsb25nIHBjaV9pb19iYXNlOw0KPiArDQo+ICsjZGVmaW5lIHBtZF9sZWFmIHBtZF9sZWFmDQo+
+ICtzdGF0aWMgaW5saW5lIGJvb2wgcG1kX2xlYWYocG1kX3QgcG1kKQ0KPiArew0KPiArCXJldHVy
+biAhIShwbWRfcmF3KHBtZCkgJiBjcHVfdG9fYmU2NChfUEFHRV9QVEUpKTsNCj4gK30NCj4gKw0K
+PiArI2RlZmluZSBwdWRfbGVhZiBwdWRfbGVhZg0KPiArc3RhdGljIGlubGluZSBib29sIHB1ZF9s
+ZWFmKHB1ZF90IHB1ZCkNCj4gK3sNCj4gKwlyZXR1cm4gISEocHVkX3JhdyhwdWQpICYgY3B1X3Rv
+X2JlNjQoX1BBR0VfUFRFKSk7DQo+ICt9DQo+ICAgI2VuZGlmIC8qIF9fQVNTRU1CTFlfXyAqLw0K
+PiAgIA0KPiAgICNpbmNsdWRlIDxhc20vYm9vazNzLzY0L2hhc2guaD4NCj4gQEAgLTE0MzYsMjAg
+KzE0NDgsNSBAQCBzdGF0aWMgaW5saW5lIGJvb2wgaXNfcHRlX3J3X3VwZ3JhZGUodW5zaWduZWQg
+bG9uZyBvbGRfdmFsLCB1bnNpZ25lZCBsb25nIG5ld192YQ0KPiAgIAlyZXR1cm4gZmFsc2U7DQo+
+ICAgfQ0KPiAgIA0KPiAtLyoNCj4gLSAqIExpa2UgcG1kX2h1Z2UoKSwgYnV0IHdvcmtzIHJlZ2Fy
+ZGxlc3Mgb2YgY29uZmlnIG9wdGlvbnMNCj4gLSAqLw0KPiAtI2RlZmluZSBwbWRfbGVhZiBwbWRf
+bGVhZg0KPiAtc3RhdGljIGlubGluZSBib29sIHBtZF9sZWFmKHBtZF90IHBtZCkNCj4gLXsNCj4g
+LQlyZXR1cm4gISEocG1kX3JhdyhwbWQpICYgY3B1X3RvX2JlNjQoX1BBR0VfUFRFKSk7DQo+IC19
+DQo+IC0NCj4gLSNkZWZpbmUgcHVkX2xlYWYgcHVkX2xlYWYNCj4gLXN0YXRpYyBpbmxpbmUgYm9v
+bCBwdWRfbGVhZihwdWRfdCBwdWQpDQo+IC17DQo+IC0JcmV0dXJuICEhKHB1ZF9yYXcocHVkKSAm
+IGNwdV90b19iZTY0KF9QQUdFX1BURSkpOw0KPiAtfQ0KPiAtDQo+ICAgI2VuZGlmIC8qIF9fQVNT
+RU1CTFlfXyAqLw0KPiAgICNlbmRpZiAvKiBfQVNNX1BPV0VSUENfQk9PSzNTXzY0X1BHVEFCTEVf
+SF8gKi8NCg==
