@@ -4,119 +4,105 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0126BC54E5D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 15:30:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC39CC54E5D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 15:39:05 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JTnHRPnI;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YAoOhRuz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TwWXf4NVnz3vbm
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 02:30:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwWkw1ySyz3vZk
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 02:39:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JTnHRPnI;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YAoOhRuz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Fri, 15 Mar 2024 02:38:18 AEDT
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwWWs0k2Xz3dHV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 02:29:27 +1100 (AEDT)
-Received: by mail-pg1-x533.google.com with SMTP id 41be03b00d2f7-5dc949f998fso773378a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 08:29:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1710430165; x=1711034965; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=LY7692bTyayLkoksNBH6BmxzoRrgRDh0JILFH+Hu4mE=;
-        b=JTnHRPnIjK4rXCIU6Ys78V4zzyxX8swUz++gVuJcYBa8urUH9UtWyMrgM22Nv3/LGe
-         KnSHhhzq7gIZhg7csxzWR4xf3/DsqpX/t2aKfkQ9t8PI5Ax4/i3QSfXzyPNB4yoGBzzn
-         2BDP5KXNpCnSckdKZQvVzJjMsYTn7gEZ1VhPxtjsU+VcVydzch+5rjeGdVmpBA6jNsNg
-         7a4tH/L0sxGEYe/CnnvljxV56ej9Vnudbn4YG52mKZQ6FnBKfqlLbmcC/TTRp1G94jtW
-         Ws2VO42tAuKkCZucYDSkHud5vRN4VqcZ8KNaLYGJpya11WUMNYETA2ilhetkNmh24Wya
-         MeUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710430165; x=1711034965;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from:references:cc
-         :to:content-language:subject:user-agent:mime-version:date:message-id
-         :sender:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=LY7692bTyayLkoksNBH6BmxzoRrgRDh0JILFH+Hu4mE=;
-        b=LpQH8ch2sPgBocf3AsXoYJwEdYec9qw1XK5pFBL5u7h8Acam1eXy8lwf0G8J/Wt5+W
-         mvJOlxeepu1d0oOSll4lmBrUoSx77g4GUArmAEj7x1hDTYyDnAtG0IlCH8JnrpJxE+E9
-         hdLv79zV2mu4d8ocyRObyESsK+VffJSqEMjJ0xMMdwZRO3R06i9qk7NwF3S2i0JRQ0sf
-         qEH4/Yfi+UQnuETlvHFWsv9RZpSOlSzfHZ6m812IX0HugsKaRrqR674GFTlvfczHMa9U
-         iMH2SSws6XZgq/zm2mgB6HSn+8V0l7NRYpnKJGMetU4kd0ATaSFYUYjL8nsF/0jQqB74
-         oUUQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWeHCe8e1uoh4cb6RyWZWZHjEo/LQTJ2kceg8d9M2cCYK43uXsGAt2HBKyHGR8MaUCCCece8R0JSXzOGSSs/e64RQxY/wv/irXDWLKCRA==
-X-Gm-Message-State: AOJu0Yy2XlnKCl18CsAc7BSU8UoAYoBRkaPMNp5wVBWc1bLgxCda0laB
-	kK8dZ7b7nEXMrQcKjrbuskcGnhtCTuP8XHuTbdNZ1x5o3m7w/AcV
-X-Google-Smtp-Source: AGHT+IEWwlqh10aaLXnz79mTPQ/n+RJWvWMKiaSxEVVrgfvkkAPUMESJkl3thWtTXScKP4Egfyd75w==
-X-Received: by 2002:a17:903:1cf:b0:1dd:afa1:3094 with SMTP id e15-20020a17090301cf00b001ddafa13094mr2404810plh.36.1710430164855;
-        Thu, 14 Mar 2024 08:29:24 -0700 (PDT)
-Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id k18-20020a170902f29200b001dee5da5f3dsm425201plc.100.2024.03.14.08.29.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 14 Mar 2024 08:29:24 -0700 (PDT)
-Message-ID: <3f43bbdf-7ad2-4ca8-ba06-e32876cc8e53@roeck-us.net>
-Date: Thu, 14 Mar 2024 08:29:22 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwWk24xClz30f5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 02:38:18 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1710430698; x=1741966698;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=QDmSjFlGrU6Hd3mA2yDfUAmJpqa2FZnvH3/fn2q3Dj0=;
+  b=YAoOhRuzruNAllkDCT8yhrDjL8oi7EwLnkNNf5G1DKatZwoWL80VzN55
+   SzRMcxMJGiIcFpdogqNeens1qVCT9M2VT7euJRW1eh/y9c37UL6Upk6pD
+   /5PV2if9Wjx8gbIyH1t0VKuZPuCltkjKEwcd0uetp8G0gnaYg0XLyqoyJ
+   0G6i9bDNIu/520kKdYhoLg7CLhaPJfhav5Z1Hf/n/aCxoGg4jTUh/E1qB
+   fZS9WrjnG2OnlbW2q7pPDjLKt4ZmfIjeDH4Zha4yr47Aq9tyR38hefMC8
+   2RMBaw6zDz73v5i4YOUTfhz37XG74DNFipBluwDLR4hUr8qwqpM+LSQdN
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,11013"; a="15981635"
+X-IronPort-AV: E=Sophos;i="6.07,125,1708416000"; 
+   d="scan'208";a="15981635"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Mar 2024 08:37:09 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,125,1708416000"; 
+   d="scan'208";a="49752855"
+Received: from laallen-mobl.amr.corp.intel.com (HELO [10.209.21.198]) ([10.209.21.198])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Mar 2024 08:37:09 -0700
+Message-ID: <dd54d6de-0bcc-4b2e-a420-b1a429b06246@intel.com>
+Date: Thu, 14 Mar 2024 08:37:09 -0700
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/14] Add support for suppressing warning backtraces
+Subject: Re: [PATCH 1/1] x86/elf: Add a new .note section containing Xfeatures
+ information to x86 core files
 Content-Language: en-US
-To: Maxime Ripard <mripard@kernel.org>
-References: <20240312170309.2546362-1-linux@roeck-us.net>
- <CAMuHMdUkvagJVEfnhq=Nx2jnmdS0Ax+zy1CvyN0k7k1EwUpu+g@mail.gmail.com>
- <6d9269c0-bd38-4965-a454-4358e0a182e3@roeck-us.net>
- <20240314-victorious-chupacabra-of-management-baa5c4@houat>
-From: Guenter Roeck <linux@roeck-us.net>
-Autocrypt: addr=linux@roeck-us.net; keydata=
- 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
- mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
-In-Reply-To: <20240314-victorious-chupacabra-of-management-baa5c4@houat>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Vignesh Balasubramanian <vigbalas@amd.com>, linux-kernel@vger.kernel.org,
+ linux-toolchains@vger.kernel.org
+References: <20240314112359.50713-1-vigbalas@amd.com>
+ <20240314112359.50713-2-vigbalas@amd.com>
+From: Dave Hansen <dave.hansen@intel.com>
+Autocrypt: addr=dave.hansen@intel.com; keydata=
+ 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
+In-Reply-To: <20240314112359.50713-2-vigbalas@amd.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,118 +114,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Dan Carpenter <dan.carpenter@linaro.org>, netdev@lists.linux.dev, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <
- tzimmermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: felix.willgerodt@intel.com, matz@suse.de, keescook@chromium.org, jhb@FreeBSD.org, bpetkov@amd.com, x86@kernel.org, npiggin@gmail.com, aneesh.kumar@kernel.org, linux-mm@kvack.org, ebiederm@xmission.com, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, jinisusan.george@amd.com, binutils@sourceware.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/14/24 08:02, Maxime Ripard wrote:
-> On Thu, Mar 14, 2024 at 07:37:13AM -0700, Guenter Roeck wrote:
->> On 3/14/24 06:36, Geert Uytterhoeven wrote:
->>> Hi Günter,
->>>
->>> On Tue, Mar 12, 2024 at 6:03 PM Guenter Roeck <linux@roeck-us.net> wrote:
->>>> Some unit tests intentionally trigger warning backtraces by passing bad
->>>> parameters to kernel API functions. Such unit tests typically check the
->>>> return value from such calls, not the existence of the warning backtrace.
->>>>
->>>> Such intentionally generated warning backtraces are neither desirable
->>>> nor useful for a number of reasons.
->>>> - They can result in overlooked real problems.
->>>> - A warning that suddenly starts to show up in unit tests needs to be
->>>>     investigated and has to be marked to be ignored, for example by
->>>>     adjusting filter scripts. Such filters are ad-hoc because there is
->>>>     no real standard format for warnings. On top of that, such filter
->>>>     scripts would require constant maintenance.
->>>>
->>>> One option to address problem would be to add messages such as "expected
->>>> warning backtraces start / end here" to the kernel log.  However, that
->>>> would again require filter scripts, it might result in missing real
->>>> problematic warning backtraces triggered while the test is running, and
->>>> the irrelevant backtrace(s) would still clog the kernel log.
->>>>
->>>> Solve the problem by providing a means to identify and suppress specific
->>>> warning backtraces while executing test code. Support suppressing multiple
->>>> backtraces while at the same time limiting changes to generic code to the
->>>> absolute minimum. Architecture specific changes are kept at minimum by
->>>> retaining function names only if both CONFIG_DEBUG_BUGVERBOSE and
->>>> CONFIG_KUNIT are enabled.
->>>>
->>>> The first patch of the series introduces the necessary infrastructure.
->>>> The second patch introduces support for counting suppressed backtraces.
->>>> This capability is used in patch three to implement unit tests.
->>>> Patch four documents the new API.
->>>> The next two patches add support for suppressing backtraces in drm_rect
->>>> and dev_addr_lists unit tests. These patches are intended to serve as
->>>> examples for the use of the functionality introduced with this series.
->>>> The remaining patches implement the necessary changes for all
->>>> architectures with GENERIC_BUG support.
->>>
->>> Thanks for your series!
->>>
->>> I gave it a try on m68k, just running backtrace-suppression-test,
->>> and that seems to work fine.
->>>
->>>> Design note:
->>>>     Function pointers are only added to the __bug_table section if both
->>>>     CONFIG_KUNIT and CONFIG_DEBUG_BUGVERBOSE are enabled to avoid image
->>>>     size increases if CONFIG_KUNIT=n. There would be some benefits to
->>>>     adding those pointers all the time (reduced complexity, ability to
->>>>     display function names in BUG/WARNING messages). That change, if
->>>>     desired, can be made later.
->>>
->>> Unfortunately this also increases kernel size in the CONFIG_KUNIT=m
->>> case (ca. 80 KiB for atari_defconfig), making it less attractive to have
->>> kunit and all tests enabled as modules in my standard kernel.
->>>
->>
->> Good point. Indeed, it does. I wanted to avoid adding a configuration option,
->> but maybe I should add it after all. How about something like this ?
->>
->> +config KUNIT_SUPPRESS_BACKTRACE
->> +       bool "KUnit - Enable backtrace suppression"
->> +       default y
->> +       help
->> +         Enable backtrace suppression for KUnit. If enabled, backtraces
->> +         generated intentionally by KUnit tests can be suppressed. Disable
->> +         to reduce kernel image size if image size is more important than
->> +         suppression of backtraces generated by KUnit tests.
->> +
-> 
-> How are tests using that API supposed to handle it then?
-> 
-> Select the config option or put an ifdef?
-> 
-> If the former, we end up in the same situation than without the symbol.
-> If the latter, we end up in a similar situation than disabling KUNIT
-> entirely, with some tests not being run which is just terrible.
-> 
+On 3/14/24 04:23, Vignesh Balasubramanian wrote:
+> Add a new .note section containing type, size, offset and flags of
+> every xfeature that is present.
 
-The API definitions are themselves within #ifdef and dummies if
-KUNIT_SUPPRESS_BACKTRACE (currently CONFIG_KUNIT) is disabled.
-In include/kunit/bug.h:
+Mechanically, I'd much rather have all of that info in the cover letter
+in the actual changelog instead.
 
-#ifdef CONFIG_KUNIT_SUPPRESS_BACKTRACE
-...
-#else
-#define DEFINE_SUPPRESSED_WARNING(func)
-#define START_SUPPRESSED_WARNING(func)
-#define END_SUPPRESSED_WARNING(func)
-#define IS_SUPPRESSED_WARNING(func) (false)
-#define SUPPRESSED_WARNING_COUNT(func) (0)
-#endif
+I'd also love to see a practical example of what an actual example core
+dump looks like on two conflicting systems:
 
-Only difference to the current patch series would be
+   * Total XSAVE size
+   * XCR0 value
+   * XSTATE_BV from the core dump
+   * XFEATURE offsets for each feature
 
-- #if IS_ENABLED(CONFIG_KUNIT)
-+ #ifdef CONFIG_KUNIT_SUPPRESS_BACKTRACE
+Do you have any information about what other OSes are doing in this
+area?  I thought Windows, for instance, was even less flexible about the
+XSAVE format than Linux is.
 
-in that file and elsewhere.
+Why didn't LWP cause this problem?
 
-With KUNIT_SUPPRESS_BACKTRACE=n you'd still get warning backtraces
-triggered by the tests, but the number of tests executed as well
-as the test results would still be the same.
+From the cover letter:
 
-Thanks,
-Guenter
+> But this patch series depends on heuristics based on the total XSAVE
+> register set size and the XCR0 mask to infer the layouts of the
+> various register blocks for core dumps, and hence, is not a foolproof
+> mechanism to determine the layout of the XSAVE area.
+
+It may not be theoretically foolproof.  But I'm struggling to think of a
+case where it would matter in practice.  Is there any CPU from any
+vendor where this is actually _needed_?
+
+Sure, it's ugly as hell, but these notes aren't going to be available
+universally _ever_, so it's not like the crummy heuristic code gets to
+go away.
+
+Have you seen the APX spec?
+
+>
+https://www.intel.com/content/www/us/en/developer/articles/technical/advanced-performance-extensions-apx.html
+
+It makes this even more fun because it adds a new XSAVE state component,
+but reuses the MPX offsets.
+
+> This information will be used by the debuggers to understand the XSAVE
+> layout of the machine where the core file is dumped, and to read XSAVE
+> registers, especially during cross-platform debugging.
+
+This is pretty close to just a raw dump of the XSAVE CPUID leaves.
+Rather than come up with an XSAVE-specific ABI that depends on CPUID
+*ANYWAY* (because it dumps the "flags" register aka. ECX), maybe we
+should just bite the bullet and dump out (some of) the raw CPUID space.
+
 
