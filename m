@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A435C5475B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 08:04:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9331AC54E60
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 13:37:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TwKfd6mGPz3dhR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 19:04:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.166.46; helo=mail-io1-f46.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-io1-f46.google.com (mail-io1-f46.google.com [209.85.166.46])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwT2l21Rmz3vdL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 00:37:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.128.175; helo=mail-yw1-f175.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-f175.google.com (mail-yw1-f175.google.com [209.85.128.175])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwKf74KSsz2yk5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 19:04:14 +1100 (AEDT)
-Received: by mail-io1-f46.google.com with SMTP id ca18e2360f4ac-7c8ae457b27so17924139f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 01:04:14 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwT2H3vZpz3cVv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 00:37:10 +1100 (AEDT)
+Received: by mail-yw1-f175.google.com with SMTP id 00721157ae682-60cbcd04de8so7769117b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 06:37:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710403450; x=1711008250;
+        d=1e100.net; s=20230601; t=1710423427; x=1711028227;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=+kd7vHFr5fszcwgfp701zhW6bd0WPIDQKlsKOb1KQCg=;
-        b=TiFJI9Y6xr4e9st5PvdfGtd4bYSGsKTzGaFgLNzRglKwC43i2k5+OsI5IUQWW78SAc
-         U3dhyWynCy1WGAwu8C0txA68caY2droirvDXTcYCBAMsRt9+h6OkAeOaglOdFkE6lXgb
-         0e9lfmZpxLZ2xzI++g/kpO1uCHrsABrAqMXp749+g0/b0G00vOHZWLXgagxLVF7OBnDw
-         uWaSR6Ouzw79iooLzbXImpQ8dd5HnjicSWArN6cvn8/9g/Rxtb1NSEsmMi4AzbdbZicd
-         aIccOJhhdMbkqwB72yKoH9vWvp07Qhz8nWSuLjRU4eXtHzkvvseWSWd939tWykm/n/60
-         uf9Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUgjk/j6UG86+DvNne6ghXF20hh/APKh7O3WSsgrn2xlQTXz6N4gqPEhAMA/VU+eJGWDX9F5l47yuCu5vyR+6c++I/MW4aepcX5E+5QMw==
-X-Gm-Message-State: AOJu0YzclMCnbrIth0+NzYpHx9r+0eOjWZjdorqdlNlWYI/cYmrBoOTa
-	pa2suDYwtdK3504p1d9ljmI4hYdJzsr07W+Ch2NIwkLA5rdlmgnQS3/FBHDW5fQ=
-X-Google-Smtp-Source: AGHT+IHsurm4Urq6QyzzrRFXs3p84pGhNXogyTbGtPbK2ybOPZEI/TmR0nuM5Ywz+GV9YwyOLRtnzw==
-X-Received: by 2002:a05:6602:5ce:b0:7c8:b447:c3e9 with SMTP id w14-20020a05660205ce00b007c8b447c3e9mr1267161iox.7.1710403449855;
-        Thu, 14 Mar 2024 01:04:09 -0700 (PDT)
-Received: from mail-io1-f42.google.com (mail-io1-f42.google.com. [209.85.166.42])
-        by smtp.gmail.com with ESMTPSA id c17-20020a02c9d1000000b004772b4e3a3asm39658jap.18.2024.03.14.01.04.09
+        bh=QDiARA/24cHYG8FRrouoTvUxwp5WbH/hNpGJ/9ezCCU=;
+        b=rhmffZ/g1ielIG70SCdkBYej9Wvm1jPPc41G73Cgcx8XER/BUw/LPCDORN2iSllSxW
+         yGX0iyNJvLWFPcN1/+mOQbMVQx7DfOvekOztj30LggaJbdnDziMXEehgQWTBZ6ZYzljz
+         wXUstJ+eRXNpiJLsM+fMON/x3Az60Ww6LWN9E7lODSNF/QoFMxkVCu6B69lPjRp4+bXN
+         u13xxqIHMtA02L2SO4hTAp4+0ui99ishnqXN3lCUGs7k0/FJUAfl6OE4PGMlJU04ghA0
+         wKDB8CNsEmYlhvwgUZDtI3L1HigdIyJmU7pf9xr44n0sGBHZTGfQYbTyq/R+YHEUKicR
+         phTA==
+X-Forwarded-Encrypted: i=1; AJvYcCWbGB1II4lffdayYytdG/8Ib7R8cUS891p1ytg/saE8jmnYuZCsQjv9UGS0OCbMc2dsXcAVGulrsSAnzAkQFFpmVgJh9CDZ5CQuRsP3wA==
+X-Gm-Message-State: AOJu0YwxKFKT90Ub+gwKQrKx3T+m0vHV//PjbI7du8hYXqEBnUZFo+hI
+	1pnOPktmIkkokrKKC6BKEY4UW+yfYGaP+83vLNe3D+yvkbY4kAl27K4jmunG3Ek=
+X-Google-Smtp-Source: AGHT+IHTRZ5KK7iD8WRn8PxioBgkT5VMKhpnfOQ6/Y6Iq/KxqIcuwLhdmzv6yAS0Orml3qh5llzxGw==
+X-Received: by 2002:a0d:d88a:0:b0:60a:6a3f:9d47 with SMTP id a132-20020a0dd88a000000b0060a6a3f9d47mr1195881ywe.16.1710423426543;
+        Thu, 14 Mar 2024 06:37:06 -0700 (PDT)
+Received: from mail-yw1-f170.google.com (mail-yw1-f170.google.com. [209.85.128.170])
+        by smtp.gmail.com with ESMTPSA id o1-20020a81ef01000000b0060a304ca3f4sm269229ywm.19.2024.03.14.06.37.04
         for <linuxppc-dev@lists.ozlabs.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 14 Mar 2024 01:04:09 -0700 (PDT)
-Received: by mail-io1-f42.google.com with SMTP id ca18e2360f4ac-7c7476a11e0so24804439f.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 01:04:09 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWrUH1bOzwKLPqzw7BNWQmFbbX5XuFVoL3lQwt8+5TxM6D2rukD+xnEFdSa4uXQlR6BwNPzUH/Q9Yb0+ek9bm1L3+47OfoSluoJY7wJAA==
-X-Received: by 2002:a0d:ea4c:0:b0:609:239a:d0fc with SMTP id
- t73-20020a0dea4c000000b00609239ad0fcmr990474ywe.38.1710403077141; Thu, 14 Mar
- 2024 00:57:57 -0700 (PDT)
+        Thu, 14 Mar 2024 06:37:04 -0700 (PDT)
+Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-60a0a54869bso8984377b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 06:37:04 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWGFCxgugxlaxdcehLJxHx0dPcfsDerW7j1afH9mxQuVGrEZOpmsgnz2jIz0c0eSzqRqMgzEd4ZKCyNMgKq9f+ksVbnfiuh01+DPsGj3A==
+X-Received: by 2002:a0d:fe04:0:b0:60a:4930:5bb1 with SMTP id
+ o4-20020a0dfe04000000b0060a49305bb1mr1000757ywf.5.1710423424398; Thu, 14 Mar
+ 2024 06:37:04 -0700 (PDT)
 MIME-Version: 1.0
-References: <20240312170309.2546362-1-linux@roeck-us.net> <20240312170309.2546362-12-linux@roeck-us.net>
-In-Reply-To: <20240312170309.2546362-12-linux@roeck-us.net>
+References: <20240312170309.2546362-1-linux@roeck-us.net>
+In-Reply-To: <20240312170309.2546362-1-linux@roeck-us.net>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 14 Mar 2024 08:57:45 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdXHKfd8agPGx+MjvC4cjW5F6DEeVec3Moe-=LLkrT3CXQ@mail.gmail.com>
-Message-ID: <CAMuHMdXHKfd8agPGx+MjvC4cjW5F6DEeVec3Moe-=LLkrT3CXQ@mail.gmail.com>
-Subject: Re: [PATCH 11/14] s390: Add support for suppressing warning backtraces
+Date: Thu, 14 Mar 2024 14:36:52 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdUkvagJVEfnhq=Nx2jnmdS0Ax+zy1CvyN0k7k1EwUpu+g@mail.gmail.com>
+Message-ID: <CAMuHMdUkvagJVEfnhq=Nx2jnmdS0Ax+zy1CvyN0k7k1EwUpu+g@mail.gmail.com>
+Subject: Re: [PATCH 00/14] Add support for suppressing warning backtraces
 To: Guenter Roeck <linux@roeck-us.net>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
@@ -76,68 +76,61 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 Hi G=C3=BCnter,
 
-On Tue, Mar 12, 2024 at 6:06=E2=80=AFPM Guenter Roeck <linux@roeck-us.net> =
+On Tue, Mar 12, 2024 at 6:03=E2=80=AFPM Guenter Roeck <linux@roeck-us.net> =
 wrote:
-> Add name of functions triggering warning backtraces to the __bug_table
-> object section to enable support for suppressing WARNING backtraces.
+> Some unit tests intentionally trigger warning backtraces by passing bad
+> parameters to kernel API functions. Such unit tests typically check the
+> return value from such calls, not the existence of the warning backtrace.
 >
-> To limit image size impact, the pointer to the function name is only adde=
-d
-> to the __bug_table section if both CONFIG_KUNIT and CONFIG_DEBUG_BUGVERBO=
-SE
-> are enabled. Otherwise, the __func__ assembly parameter is replaced with =
-a
-> (dummy) NULL parameter to avoid an image size increase due to unused
-> __func__ entries (this is necessary because __func__ is not a define but =
-a
-> virtual variable).
+> Such intentionally generated warning backtraces are neither desirable
+> nor useful for a number of reasons.
+> - They can result in overlooked real problems.
+> - A warning that suddenly starts to show up in unit tests needs to be
+>   investigated and has to be marked to be ignored, for example by
+>   adjusting filter scripts. Such filters are ad-hoc because there is
+>   no real standard format for warnings. On top of that, such filter
+>   scripts would require constant maintenance.
 >
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-
-Thanks for your patch!
-
-> --- a/arch/s390/include/asm/bug.h
-> +++ b/arch/s390/include/asm/bug.h
-> @@ -8,19 +8,30 @@
+> One option to address problem would be to add messages such as "expected
+> warning backtraces start / end here" to the kernel log.  However, that
+> would again require filter scripts, it might result in missing real
+> problematic warning backtraces triggered while the test is running, and
+> the irrelevant backtrace(s) would still clog the kernel log.
 >
->  #ifdef CONFIG_DEBUG_BUGVERBOSE
+> Solve the problem by providing a means to identify and suppress specific
+> warning backtraces while executing test code. Support suppressing multipl=
+e
+> backtraces while at the same time limiting changes to generic code to the
+> absolute minimum. Architecture specific changes are kept at minimum by
+> retaining function names only if both CONFIG_DEBUG_BUGVERBOSE and
+> CONFIG_KUNIT are enabled.
 >
-> +#if IS_ENABLED(CONFIG_KUNIT)
-> +# define HAVE_BUG_FUNCTION
-> +# define __BUG_FUNC_PTR        "       .long   %0-.\n"
-> +# define __BUG_FUNC    __func__
-> +#else
-> +# define __BUG_FUNC_PTR
-> +# define __BUG_FUNC    NULL
-> +#endif /* IS_ENABLED(CONFIG_KUNIT) */
-> +
->  #define __EMIT_BUG(x) do {                                     \
->         asm_inline volatile(                                    \
->                 "0:     mc      0,0\n"                          \
->                 ".section .rodata.str,\"aMS\",@progbits,1\n"    \
->                 "1:     .asciz  \""__FILE__"\"\n"               \
->                 ".previous\n"                                   \
-> -               ".section __bug_table,\"awM\",@progbits,%2\n"   \
-> +               ".section __bug_table,\"awM\",@progbits,%3\n"   \
+> The first patch of the series introduces the necessary infrastructure.
+> The second patch introduces support for counting suppressed backtraces.
+> This capability is used in patch three to implement unit tests.
+> Patch four documents the new API.
+> The next two patches add support for suppressing backtraces in drm_rect
+> and dev_addr_lists unit tests. These patches are intended to serve as
+> examples for the use of the functionality introduced with this series.
+> The remaining patches implement the necessary changes for all
+> architectures with GENERIC_BUG support.
 
-This change conflicts with commit 3938490e78f443fb ("s390/bug:
-remove entry size from __bug_table section") in linus/master.
-I guess it should just be dropped?
+Thanks for your series!
 
->                 "2:     .long   0b-.\n"                         \
->                 "       .long   1b-.\n"                         \
-> -               "       .short  %0,%1\n"                        \
-> -               "       .org    2b+%2\n"                        \
-> +               __BUG_FUNC_PTR                                  \
-> +               "       .short  %1,%2\n"                        \
-> +               "       .org    2b+%3\n"                        \
->                 ".previous\n"                                   \
-> -               : : "i" (__LINE__),                             \
-> +               : : "i" (__BUG_FUNC),                           \
-> +                   "i" (__LINE__),                             \
->                     "i" (x),                                    \
->                     "i" (sizeof(struct bug_entry)));            \
->  } while (0)
+I gave it a try on m68k, just running backtrace-suppression-test,
+and that seems to work fine.
+
+> Design note:
+>   Function pointers are only added to the __bug_table section if both
+>   CONFIG_KUNIT and CONFIG_DEBUG_BUGVERBOSE are enabled to avoid image
+>   size increases if CONFIG_KUNIT=3Dn. There would be some benefits to
+>   adding those pointers all the time (reduced complexity, ability to
+>   display function names in BUG/WARNING messages). That change, if
+>   desired, can be made later.
+
+Unfortunately this also increases kernel size in the CONFIG_KUNIT=3Dm
+case (ca. 80 KiB for atari_defconfig), making it less attractive to have
+kunit and all tests enabled as modules in my standard kernel.
 
 Gr{oetje,eeting}s,
 
