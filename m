@@ -4,51 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1722C5475B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 10:51:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08C8CC54E68
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 12:34:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EwLkY4XJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Bd4SJ205;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TwPMV3X6lz3vYc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 21:51:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwRfJ32VTz3dVJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 23:34:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EwLkY4XJ;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Bd4SJ205;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::224])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwPLd6hX5z3d4L
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 21:51:05 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1710413464;
-	bh=DRdiHGqYqxjEF8hsA5ZH+kEbHXJ9gHLyaDJurUBUBU8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=EwLkY4XJ/XL6m9O01lkeRqb+bFGM+QvljzvF4nbDCTUEioyZoYoIMNbpMjw/ibU28
-	 UaZLGEMxbKyyHXpBTLDqSOa9gMjkeg2wXcWsO6hB8FLPuII9r/uZvQoQ0axiGR9ZjI
-	 OJoivYUdbYAy72HQQGSNAgfMInJNDl8EOWJ+HVA5xsz7/fbUPckzgw0OYMh8LYCfrh
-	 AHfU/K+/T+ds+0JQChBbJxC55hFG5D9mFQW1g+NpydlfUrwdlDsmwljjoxuLlD129X
-	 mFlBgg//ha/jnCRFFGrUoPpkT996Tpp2gKmcMniglSQgR/+XtpLQBEQyF4GYKAqh/K
-	 6sl4QGJjol9Vw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TwPLZ4lVKz4wnr;
-	Thu, 14 Mar 2024 21:51:02 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Herve Codina <herve.codina@bootlin.com>
-Subject: Re: [PATCH v7 1/5] net: wan: Add support for QMC HDLC
-In-Reply-To: <20240314081200.5af62fab@bootlin.com>
-References: <20240307113909.227375-1-herve.codina@bootlin.com>
- <20240307113909.227375-2-herve.codina@bootlin.com>
- <87ttl93f7i.fsf@mail.lhotse> <20240314081200.5af62fab@bootlin.com>
-Date: Thu, 14 Mar 2024 21:51:01 +1100
-Message-ID: <87r0gd2iju.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwRdV1m6yz2xSl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2024 23:34:02 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 50D1BE000B;
+	Thu, 14 Mar 2024 12:33:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1710419632;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=vmS6pTNpvnT/R21GkQzH7oBRj9ygun2hL3GsI2Prl7k=;
+	b=Bd4SJ2052tDvqmPvwvYDCWFxDOPB/uPi0aNi9qDO27H3vwbviwTbcoJHZOzjFbK+CjEU7X
+	wB9bNmnYTzmhxegXTFhGucB/tqAB6sqmnT7QRhpGkdShDRykrBqNTAyzBbHu+PCJ/jUsDB
+	0bmcsLfMSe5AJtreGLtuzOo2zg/xa0gIfiz2RjJMUNu91ufYz06T+erwYijk3HH/wnEYz7
+	KJxBFx4fCqkN0aE1wtWWYJpKMvqq5Dss6mNZoOMpxsNKlK3K1JVB84dGFLNQ3tN85+phO5
+	Q4ybimPoXRvfNhQMWJrRmDMNZor+f7DA+lOxGgtCK2ybxVygKtleWTlvr6da3w==
+From: Herve Codina <herve.codina@bootlin.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Herve Codina <herve.codina@bootlin.com>,
+	Yury Norov <yury.norov@gmail.com>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Subject: [PATCH] net: wan: fsl_qmc_hdlc: Fix module compilation
+Date: Thu, 14 Mar 2024 13:33:46 +0100
+Message-ID: <20240314123346.461350-1-herve.codina@bootlin.com>
+X-Mailer: git-send-email 2.44.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,62 +64,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Vadim Fedorenko <vadim.fedorenko@linux.dev>, Ratheesh Kannoth <rkannoth@marvell.com>, Yury Norov <yury.norov@gmail.com>, netdev@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Mark Brown <broonie@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Andrew Lunn <andrew@lunn.ch>, Ratheesh Kannoth <rkannoth@marvell.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Herve Codina <herve.codina@bootlin.com> writes:
-> Hi Michael,
->
-> On Thu, 14 Mar 2024 10:05:37 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->
->> Hi Herve,
->>=20
->> Herve Codina <herve.codina@bootlin.com> writes:
-> ..
->> This breaks when building as a module (eg. ppc32_allmodconfig):
->>=20
->>   In file included from ../include/linux/device/driver.h:21,
->>                    from ../include/linux/device.h:32,
->>                    from ../include/linux/dma-mapping.h:8,
->>                    from ../drivers/net/wan/fsl_qmc_hdlc.c:13:
->>   ../drivers/net/wan/fsl_qmc_hdlc.c:405:25: error: =E2=80=98qmc_hdlc_dri=
-ver=E2=80=99 undeclared here (not in a function); did you mean =E2=80=98qmc=
-_hdlc_probe=E2=80=99?
->>     405 | MODULE_DEVICE_TABLE(of, qmc_hdlc_driver);
->>         |                         ^~~~~~~~~~~~~~~
->>=20
->>=20
->> IIUIC it should be pointing to the table, not the driver, so:
->>=20
->> diff --git a/drivers/net/wan/fsl_qmc_hdlc.c b/drivers/net/wan/fsl_qmc_hd=
-lc.c
->> index 5fd7ed325f5b..705c3681fb92 100644
->> --- a/drivers/net/wan/fsl_qmc_hdlc.c
->> +++ b/drivers/net/wan/fsl_qmc_hdlc.c
->> @@ -402,7 +402,7 @@ static const struct of_device_id qmc_hdlc_id_table[]=
- =3D {
->>         { .compatible =3D "fsl,qmc-hdlc" },
->>         {} /* sentinel */
->>  };
->> -MODULE_DEVICE_TABLE(of, qmc_hdlc_driver);
->> +MODULE_DEVICE_TABLE(of, qmc_hdlc_id_table);
->>=20
->>  static struct platform_driver qmc_hdlc_driver =3D {
->>         .driver =3D {
->>=20
->>=20
->> Which then builds correctly.
->
-> My bad, I missed that one.
-> I fully agree with your modification.
->
-> Do you want me to make a patch (copy/paste of your proposed modification)
-> or do you plan to send the patch on your side ?
+The fsl_qmc_driver does not compile as module:
+  error: ‘qmc_hdlc_driver’ undeclared here (not in a function);
+    405 | MODULE_DEVICE_TABLE(of, qmc_hdlc_driver);
+        |                         ^~~~~~~~~~~~~~~
 
-Yes if you can please turn it into a proper patch and submit it.
+Fix the typo.
 
-No need to add my SoB, it's trivial.
+Fixes: b40f00ecd463 ("net: wan: Add support for QMC HDLC")
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+Closes: https://lore.kernel.org/linux-kernel/87ttl93f7i.fsf@mail.lhotse/
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+---
+ drivers/net/wan/fsl_qmc_hdlc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-cheers
+diff --git a/drivers/net/wan/fsl_qmc_hdlc.c b/drivers/net/wan/fsl_qmc_hdlc.c
+index 960371df470a..f69b1f579a0c 100644
+--- a/drivers/net/wan/fsl_qmc_hdlc.c
++++ b/drivers/net/wan/fsl_qmc_hdlc.c
+@@ -780,7 +780,7 @@ static const struct of_device_id qmc_hdlc_id_table[] = {
+ 	{ .compatible = "fsl,qmc-hdlc" },
+ 	{} /* sentinel */
+ };
+-MODULE_DEVICE_TABLE(of, qmc_hdlc_driver);
++MODULE_DEVICE_TABLE(of, qmc_hdlc_id_table);
+ 
+ static struct platform_driver qmc_hdlc_driver = {
+ 	.driver = {
+-- 
+2.44.0
+
