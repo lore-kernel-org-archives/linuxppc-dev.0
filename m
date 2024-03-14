@@ -4,49 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B09AC54E60
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 17:17:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3AB0C54E60
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 22:14:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bLCoITag;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=IECZdPuB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TwYvt6r5hz3dWQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 04:16:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwhVb6PJfz3dWQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 09:13:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bLCoITag;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=IECZdPuB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwYv46fRyz3020
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 04:16:16 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 0B278CE1E18;
-	Thu, 14 Mar 2024 17:16:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05C6BC433F1;
-	Thu, 14 Mar 2024 17:16:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1710436573;
-	bh=L79tdLUwzaaRgRXL97CbprC3UX8xdukYNWJfNJ9rn8Y=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=bLCoITag/SuEtTrsO/sMEjHd4BnWeVtJvXB6210xjO0cdkxYMA8vA1JIb6pEd2Kfy
-	 Id8hEuP4GShaNC+PpogaxARWBhxMId5O2Cie8lL7/14MzwoABw+v7vAtpZtvsqvwVm
-	 j+7ReyKeR/gEjByLQxpMlRsVYXDEGyGeHFdCK6t+sjpJtjaZP9s/5wAN9lzVmWJr7r
-	 pLa+CQidixlNP3GHezj2k/ubGEQYBhmB8PMTnGZbFPbhqQ4aFXAmuJp6RUqrSv3XnA
-	 050p8/o022AJfkYOdhHhi7dvoS2VTcsuMhDFAH55Xucdvzdz4Rqw4PKJtaUCOfiv+R
-	 zUf5Dv5K5Grxg==
-Date: Thu, 14 Mar 2024 12:16:11 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>
-Subject: Re: [PATCH 2/4] PCI: Generalize TLP Header Log reading
-Message-ID: <20240314171611.GA958323@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwhTl6Lhhz3dTW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 09:13:15 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1710454394;
+	bh=gEhbEPH5aj2Z/7UOp7mkhRqYJQi1PvcDq1cmOaQVYNc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=IECZdPuB8mxs6KEW1DJaf4Mttp7mFL0NZ4N9gwYMd8u8af4NOt/CKMzgfbF1EJlJt
+	 g2fBzevj2IyWMk/Wvine73Ph8/V8tnlaPGIHrgwuRsSWGNcXy/JoNZaYuVMi7GX2dm
+	 XQuHo4uWY1NMN/BUYgRRxkA65k/hMND4FElAW7HttCDds2lDFL5ZfDv7EhnvSltRxq
+	 vtUYgm28mPyTxy/DixOS/DaWwkAXYvBqDQ1Jk8HLLx5k8TrH8abfyOF9k1Ay1Dz+Ct
+	 5+eR2AIx24QXmDWnEmOPGHmha5eNPNPpz6wyOhcsmXRm6Ara/4t5k5SZpvyVevZt4q
+	 ByD5XMiLCnovw==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TwhTh47qDz4wcR;
+	Fri, 15 Mar 2024 09:13:12 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Vignesh Balasubramanian <vigbalas@amd.com>,
+ linux-kernel@vger.kernel.org, linux-toolchains@vger.kernel.org
+Subject: Re: [PATCH 1/1] x86/elf: Add a new .note section containing
+ Xfeatures information to x86 core files
+In-Reply-To: <20240314112359.50713-2-vigbalas@amd.com>
+References: <20240314112359.50713-1-vigbalas@amd.com>
+ <20240314112359.50713-2-vigbalas@amd.com>
+Date: Fri, 15 Mar 2024 09:13:10 +1100
+Message-ID: <87o7bg31jd.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240206135717.8565-3-ilpo.jarvinen@linux.intel.com>
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,122 +60,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>, Tony Luck <tony.luck@intel.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Borislav Petkov <bp@alien8.de>, linux-pci@vger.kernel.org, Greg Rose <gvrose8192@gmail.com>, Jesse Brandeburg <jesse.brandeburg@intel.com>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, linux-efi@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>, Jeff Kirsher <tarbal@gmail.com>, Jakub Kicinski <kuba@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, linux-kernel@vger.kernel.org, linux-edac@vger.kernel.org
+Cc: felix.willgerodt@intel.com, matz@suse.de, keescook@chromium.org, jhb@FreeBSD.org, bpetkov@amd.com, binutils@sourceware.org, x86@kernel.org, aneesh.kumar@kernel.org, linux-mm@kvack.org, Vignesh Balasubramanian <vigbalas@amd.com>, npiggin@gmail.com, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, jinisusan.george@amd.com, ebiederm@xmission.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[+cc Greg, Jeff -- ancient history, I know, sorry!]
+Hi Vignesh,
 
-On Tue, Feb 06, 2024 at 03:57:15PM +0200, Ilpo Järvinen wrote:
-> Both AER and DPC RP PIO provide TLP Header Log registers (PCIe r6.1
-> secs 7.8.4 & 7.9.14) to convey error diagnostics but the struct is
-> named after AER as the struct aer_header_log_regs. Also, not all places
-> that handle TLP Header Log use the struct and the struct members are
-> named individually.
-> 
-> Generalize the struct name and members, and use it consistently where
-> TLP Header Log is being handled so that a pcie_read_tlp_log() helper
-> can be easily added.
-> 
-> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+Vignesh Balasubramanian <vigbalas@amd.com> writes:
+> Add a new .note section containing type, size, offset and flags of
+> every xfeature that is present.
+>
+> This information will be used by the debuggers to understand the XSAVE
+> layout of the machine where the core file is dumped, and to read XSAVE
+> registers, especially during cross-platform debugging.
+>
+> Co-developed-by: Jini Susan George <jinisusan.george@amd.com>
+> Signed-off-by: Jini Susan George <jinisusan.george@amd.com>
+> Signed-off-by: Vignesh Balasubramanian <vigbalas@amd.com>
+> ---
+>  arch/Kconfig                   |   9 +++
+>  arch/powerpc/Kconfig           |   1 +
+>  arch/powerpc/include/asm/elf.h |   2 -
+>  arch/x86/Kconfig               |   1 +
+>  arch/x86/include/asm/elf.h     |   7 +++
+>  arch/x86/kernel/fpu/xstate.c   | 101 +++++++++++++++++++++++++++++++++
+>  include/linux/elf.h            |   2 +-
+>  include/uapi/linux/elf.h       |   1 +
+>  8 files changed, 121 insertions(+), 3 deletions(-)
 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index bd541527c8c7..5fdf37968b2d 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -1,6 +1,7 @@
->  // SPDX-License-Identifier: GPL-2.0
->  /* Copyright(c) 1999 - 2018 Intel Corporation. */
->  
-> +#include <linux/aer.h>
->  #include <linux/types.h>
->  #include <linux/module.h>
->  #include <linux/pci.h>
-> @@ -391,22 +392,6 @@ u16 ixgbe_read_pci_cfg_word(struct ixgbe_hw *hw, u32 reg)
->  	return value;
->  }
->  
-> -#ifdef CONFIG_PCI_IOV
-> -static u32 ixgbe_read_pci_cfg_dword(struct ixgbe_hw *hw, u32 reg)
-> -{
-> -	struct ixgbe_adapter *adapter = hw->back;
-> -	u32 value;
-> -
-> -	if (ixgbe_removed(hw->hw_addr))
-> -		return IXGBE_FAILED_READ_CFG_DWORD;
-> -	pci_read_config_dword(adapter->pdev, reg, &value);
-> -	if (value == IXGBE_FAILED_READ_CFG_DWORD &&
-> -	    ixgbe_check_cfg_remove(hw, adapter->pdev))
-> -		return IXGBE_FAILED_READ_CFG_DWORD;
-> -	return value;
-> -}
-> -#endif /* CONFIG_PCI_IOV */
-> -
->  void ixgbe_write_pci_cfg_word(struct ixgbe_hw *hw, u32 reg, u16 value)
->  {
->  	struct ixgbe_adapter *adapter = hw->back;
-> @@ -11332,8 +11317,8 @@ static pci_ers_result_t ixgbe_io_error_detected(struct pci_dev *pdev,
->  #ifdef CONFIG_PCI_IOV
->  	struct ixgbe_hw *hw = &adapter->hw;
->  	struct pci_dev *bdev, *vfdev;
-> -	u32 dw0, dw1, dw2, dw3;
-> -	int vf, pos;
-> +	struct pcie_tlp_log tlp_log;
-> +	int vf, pos, ret;
->  	u16 req_id, pf_func;
->  
->  	if (adapter->hw.mac.type == ixgbe_mac_82598EB ||
-> @@ -11351,14 +11336,13 @@ static pci_ers_result_t ixgbe_io_error_detected(struct pci_dev *pdev,
->  	if (!pos)
->  		goto skip_bad_vf_detection;
->  
-> -	dw0 = ixgbe_read_pci_cfg_dword(hw, pos + PCI_ERR_HEADER_LOG);
-> -	dw1 = ixgbe_read_pci_cfg_dword(hw, pos + PCI_ERR_HEADER_LOG + 4);
-> -	dw2 = ixgbe_read_pci_cfg_dword(hw, pos + PCI_ERR_HEADER_LOG + 8);
-> -	dw3 = ixgbe_read_pci_cfg_dword(hw, pos + PCI_ERR_HEADER_LOG + 12);
-> -	if (ixgbe_removed(hw->hw_addr))
-> +	ret = pcie_read_tlp_log(pdev, pos + PCI_ERR_HEADER_LOG, &tlp_log);
-> +	if (ret < 0) {
-> +		ixgbe_check_cfg_remove(hw, pdev);
->  		goto skip_bad_vf_detection;
-> +	}
->  
-> -	req_id = dw1 >> 16;
-> +	req_id = tlp_log.dw[1] >> 16;
->  	/* On the 82599 if bit 7 of the requestor ID is set then it's a VF */
->  	if (!(req_id & 0x0080))
->  		goto skip_bad_vf_detection;
-> @@ -11369,9 +11353,8 @@ static pci_ers_result_t ixgbe_io_error_detected(struct pci_dev *pdev,
->  
->  		vf = FIELD_GET(0x7F, req_id);
->  		e_dev_err("VF %d has caused a PCIe error\n", vf);
-> -		e_dev_err("TLP: dw0: %8.8x\tdw1: %8.8x\tdw2: "
-> -				"%8.8x\tdw3: %8.8x\n",
-> -		dw0, dw1, dw2, dw3);
-> +		e_dev_err("TLP: dw0: %8.8x\tdw1: %8.8x\tdw2: %8.8x\tdw3: %8.8x\n",
-> +			  tlp_log.dw[0], tlp_log.dw[1], tlp_log.dw[2], tlp_log.dw[3]);
->  		switch (adapter->hw.mac.type) {
->  		case ixgbe_mac_82599EB:
->  			device_id = IXGBE_82599_VF_DEVICE_ID;
+IMHO you should split the changes to replace ARCH_HAVE_EXTRA_ELF_NOTES
+with CONFIG_ARCH_HAVE_EXTRA_ELF_NOTES into a lead-up patch.
 
-The rest of this patch is headed for v6.10, but I dropped this ixgbe
-change for now.
-
-These TLP Log registers are generic, not device-specific, and if
-there's something lacking in the PCI core that leads to ixgbe reading
-and dumping them itself, I'd rather improve the PCI core so all
-drivers will benefit without having to add code like this.
-
-83c61fa97a7d ("ixgbe: Add protection from VF invalid target DMA") [1]
-added the ixgbe TLP Log dumping way back in v3.2 (2012).  It does do
-some device-specific VF checking and so on, but even back then, it
-looks like the PCI core would have dumped the log itself [2], so I
-don't know why we needed the extra dumping in ixgbe.
-
-So what I'd really like is to remove the TLP Log reading and printing
-from ixgbe completely, but keep the VF checking.
-
-Bjorn
-
-[1] https://git.kernel.org/linus/83c61fa97a7d
-[2] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/pci/pcie/aer/aerdrv_errprint.c?id=83c61fa97a7d#n181
+cheers
