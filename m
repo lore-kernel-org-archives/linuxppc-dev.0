@@ -4,40 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 837F2C54E58
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 22:26:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FAE5C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 22:27:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=RuyY3u5r;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=jqxDO3Tw;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TxJkb0FkJz3vZF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 09:26:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TxJlQ4LZJz3vkK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 09:27:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=RuyY3u5r;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=jqxDO3Tw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 336 seconds by postgrey-1.37 at boromir; Sat, 16 Mar 2024 07:54:03 AEDT
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxGgv5lpgz3dXH
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxGgv6r6Vz3dXY
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2024 07:54:03 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1710535697;
-	bh=N3YQ+74nNXsZKp7PEdJnsfg+4VEg1y14khiTCB8rEVY=;
+	s=mail; t=1710535698;
+	bh=m+K+pCOcUIKDJXVlXdIjxkNCOOD+02kNnAffkd4pv3g=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=RuyY3u5rYBiguTrn2XInl4Ajsqpr9gged17slcRcyBJUHHxvliEq2D58U55ZU0L/2
-	 tDtmVWfSwncce6QhDGXdWdqZSGwnSc0Kzxfvkvrjor4H49NhkZZxu5MoEIzzUHk82w
-	 zNfqHOTG+OspUx4e92XQR4ruhqFKUsn1UDGgq48w=
+	b=jqxDO3Tw8x00e3dS7v4MMKOqIyXMSrjFO93KkLMrxEo1nDRFf5YphcW2HehQhDnFU
+	 PmlE72GP1SDCPoeSx/FKopC5InS9/uOUubALDtzDcA/2V1nHVuziA1mIR5zLXmk6E1
+	 eB3NdTCQ/ci/brS7mGewz0aIM76V0ywhclUqxjJY=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Fri, 15 Mar 2024 21:48:02 +0100
-Subject: [PATCH 04/11] utsname: constify ctl_table arguments of utility
+Date: Fri, 15 Mar 2024 21:48:06 +0100
+Subject: [PATCH 08/11] ipv6/ndisc: constify ctl_table arguments of utility
  function
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240315-sysctl-const-handler-v1-4-1322ac7cb03d@weissschuh.net>
+Message-Id: <20240315-sysctl-const-handler-v1-8-1322ac7cb03d@weissschuh.net>
 References: <20240315-sysctl-const-handler-v1-0-1322ac7cb03d@weissschuh.net>
 In-Reply-To: <20240315-sysctl-const-handler-v1-0-1322ac7cb03d@weissschuh.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -114,11 +113,11 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  "Serge E. Hallyn" <serge@hallyn.com>, 
  Alexander Popov <alex.popov@linux.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1710535695; l=696;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1710535695; l=778;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=N3YQ+74nNXsZKp7PEdJnsfg+4VEg1y14khiTCB8rEVY=;
- b=xEm0d8CYQV6qN7oZA7EuQpgHjbZrMfPqjThMCUp02NAIP8Ff1lQTYCA5z6GSB4NPcFQzy/2jj
- Y0NcUklMzOzC1as2M3524rbivhNsj1cwIIJnIozArSnSxvsTxxWEUrP
+ bh=m+K+pCOcUIKDJXVlXdIjxkNCOOD+02kNnAffkd4pv3g=;
+ b=d4zm13k2OQna/NlK3uekXkMo7hwOBupIjvbXHKdSXoSk2DsIK+yuhbmEQr0VAeaARyLv14HqX
+ 0Z4woBXtUp1D7/pq8L0Ybaa/TZAKfXvfcMgjftD2Zr5aqWsk6Mdkffo
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 X-Mailman-Approved-At: Sat, 16 Mar 2024 09:23:34 +1100
@@ -143,22 +142,22 @@ helper.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- kernel/utsname_sysctl.c | 2 +-
+ net/ipv6/ndisc.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/utsname_sysctl.c b/kernel/utsname_sysctl.c
-index 019e3a1566cf..46590d4addc8 100644
---- a/kernel/utsname_sysctl.c
-+++ b/kernel/utsname_sysctl.c
-@@ -15,7 +15,7 @@
+diff --git a/net/ipv6/ndisc.c b/net/ipv6/ndisc.c
+index ae134634c323..945d5f5ca039 100644
+--- a/net/ipv6/ndisc.c
++++ b/net/ipv6/ndisc.c
+@@ -1936,7 +1936,7 @@ static struct notifier_block ndisc_netdev_notifier = {
+ };
  
- #ifdef CONFIG_PROC_SYSCTL
- 
--static void *get_uts(struct ctl_table *table)
-+static void *get_uts(const struct ctl_table *table)
+ #ifdef CONFIG_SYSCTL
+-static void ndisc_warn_deprecated_sysctl(struct ctl_table *ctl,
++static void ndisc_warn_deprecated_sysctl(const struct ctl_table *ctl,
+ 					 const char *func, const char *dev_name)
  {
- 	char *which = table->data;
- 	struct uts_namespace *uts_ns;
+ 	static char warncomm[TASK_COMM_LEN];
 
 -- 
 2.44.0
