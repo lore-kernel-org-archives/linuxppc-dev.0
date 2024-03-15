@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5AF0C54E58
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 22:28:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28F85C54E67
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 22:28:46 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Sq8LvcBI;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=FizCPf3S;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TxJmJ1gfTz3vds
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 09:28:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TxJn84qdgz3vjT
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 09:28:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Sq8LvcBI;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=FizCPf3S;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxGgw0CGLz3ddR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2024 07:54:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxGgw1FB5z3dgN
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2024 07:54:04 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1710535697;
-	bh=ZA8n2/koLk8T5EEGrZrQe3HTqPjD2IuDJPJOoTgLjZQ=;
+	s=mail; t=1710535698;
+	bh=yGyEnmkHG4K/QBZUE+wYC6PI0MysqQBf2jxKv03Uqeg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Sq8LvcBI7p1gv8YF+Fl6E9SHh6cG4uM9FEK2x/Wqq1z2lsOrhhz5yQNS/tUAIK6jL
-	 zaTESlVFyFVTGgnfO0nn5yRM2Yc0itbSdfIy/O/NbQJVPCSWx7t53jzls8LBlYOeHK
-	 IrYN0Ex/0XRwb/4piozxul/b2C8P/gHg2Vl5ibj4=
+	b=FizCPf3SLAP8QJl7MKFLQmc5kz5/Ber5gPk8JnKK898Pgfacl6e7Q9zZ8wapuxDxV
+	 TQWvxZCydhPkPxx+WAYMk6TZp7HXP9SWmdfrZU1oYK6fsVpzjHLFaMHd2iiXqD6aYq
+	 mvnmhabBstRavzIG/FFHz4xiVL036JzBS8Q+3twI=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Fri, 15 Mar 2024 21:48:01 +0100
-Subject: [PATCH 03/11] hugetlb: constify ctl_table arguments of utility
+Date: Fri, 15 Mar 2024 21:48:04 +0100
+Subject: [PATCH 06/11] ipv4/sysctl: constify ctl_table arguments of utility
  functions
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240315-sysctl-const-handler-v1-3-1322ac7cb03d@weissschuh.net>
+Message-Id: <20240315-sysctl-const-handler-v1-6-1322ac7cb03d@weissschuh.net>
 References: <20240315-sysctl-const-handler-v1-0-1322ac7cb03d@weissschuh.net>
 In-Reply-To: <20240315-sysctl-const-handler-v1-0-1322ac7cb03d@weissschuh.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -113,11 +113,11 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  "Serge E. Hallyn" <serge@hallyn.com>, 
  Alexander Popov <alex.popov@linux.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1710535695; l=1138;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1710535695; l=1269;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=ZA8n2/koLk8T5EEGrZrQe3HTqPjD2IuDJPJOoTgLjZQ=;
- b=boZ4t6eOPk3Dljh4IP0PKWoLOxGtOLAXof5Zxa1r9XXXItitoJuOMZutWnuJAn75hjXtWjz0B
- 7PQefNn5iOMATogPVExj5hPohFmPOE42B/+MU7bt9FL5JEbL5sxkIfe
+ bh=yGyEnmkHG4K/QBZUE+wYC6PI0MysqQBf2jxKv03Uqeg=;
+ b=WplrulYKd7B5TGswqzcDZbw2m/RyDv+HhOXZKHSfdG38pZxdNlsfrZeeItPHEYHA5eD5Kt+EM
+ V7+s8EbXwZLDElxohBqz8CxV4en1zqMOoIPQsYqfboOMLt8tzBvHJKe
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 X-Mailman-Approved-At: Sat, 16 Mar 2024 09:23:34 +1100
@@ -142,31 +142,33 @@ helpers.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- mm/hugetlb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/ipv4/sysctl_net_ipv4.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 23ef240ba48a..b0d89ab98eaa 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -4929,7 +4929,7 @@ static unsigned int allowed_mems_nr(struct hstate *h)
+diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
+index 7e4f16a7dcc1..363dc2a487ac 100644
+--- a/net/ipv4/sysctl_net_ipv4.c
++++ b/net/ipv4/sysctl_net_ipv4.c
+@@ -130,7 +130,8 @@ static int ipv4_privileged_ports(struct ctl_table *table, int write,
+ 	return ret;
  }
  
- #ifdef CONFIG_SYSCTL
--static int proc_hugetlb_doulongvec_minmax(struct ctl_table *table, int write,
-+static int proc_hugetlb_doulongvec_minmax(const struct ctl_table *table, int write,
- 					  void *buffer, size_t *length,
- 					  loff_t *ppos, unsigned long *out)
+-static void inet_get_ping_group_range_table(struct ctl_table *table, kgid_t *low, kgid_t *high)
++static void inet_get_ping_group_range_table(const struct ctl_table *table,
++					    kgid_t *low, kgid_t *high)
  {
-@@ -4946,7 +4946,7 @@ static int proc_hugetlb_doulongvec_minmax(struct ctl_table *table, int write,
+ 	kgid_t *data = table->data;
+ 	struct net *net =
+@@ -145,7 +146,8 @@ static void inet_get_ping_group_range_table(struct ctl_table *table, kgid_t *low
  }
  
- static int hugetlb_sysctl_handler_common(bool obey_mempolicy,
--			 struct ctl_table *table, int write,
-+			 const struct ctl_table *table, int write,
- 			 void *buffer, size_t *length, loff_t *ppos)
+ /* Update system visible IP port range */
+-static void set_ping_group_range(struct ctl_table *table, kgid_t low, kgid_t high)
++static void set_ping_group_range(const struct ctl_table *table,
++				 kgid_t low, kgid_t high)
  {
- 	struct hstate *h = &default_hstate;
+ 	kgid_t *data = table->data;
+ 	struct net *net =
 
 -- 
 2.44.0
