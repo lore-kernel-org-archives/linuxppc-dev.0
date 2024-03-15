@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FAE5C54E58
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 22:27:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5AF0C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 22:28:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=jqxDO3Tw;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Sq8LvcBI;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TxJlQ4LZJz3vkK
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 09:27:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TxJmJ1gfTz3vds
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 09:28:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=jqxDO3Tw;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Sq8LvcBI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxGgv6r6Vz3dXY
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxGgw0CGLz3ddR
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2024 07:54:03 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1710535698;
-	bh=m+K+pCOcUIKDJXVlXdIjxkNCOOD+02kNnAffkd4pv3g=;
+	s=mail; t=1710535697;
+	bh=ZA8n2/koLk8T5EEGrZrQe3HTqPjD2IuDJPJOoTgLjZQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=jqxDO3Tw8x00e3dS7v4MMKOqIyXMSrjFO93KkLMrxEo1nDRFf5YphcW2HehQhDnFU
-	 PmlE72GP1SDCPoeSx/FKopC5InS9/uOUubALDtzDcA/2V1nHVuziA1mIR5zLXmk6E1
-	 eB3NdTCQ/ci/brS7mGewz0aIM76V0ywhclUqxjJY=
+	b=Sq8LvcBI7p1gv8YF+Fl6E9SHh6cG4uM9FEK2x/Wqq1z2lsOrhhz5yQNS/tUAIK6jL
+	 zaTESlVFyFVTGgnfO0nn5yRM2Yc0itbSdfIy/O/NbQJVPCSWx7t53jzls8LBlYOeHK
+	 IrYN0Ex/0XRwb/4piozxul/b2C8P/gHg2Vl5ibj4=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Fri, 15 Mar 2024 21:48:06 +0100
-Subject: [PATCH 08/11] ipv6/ndisc: constify ctl_table arguments of utility
- function
+Date: Fri, 15 Mar 2024 21:48:01 +0100
+Subject: [PATCH 03/11] hugetlb: constify ctl_table arguments of utility
+ functions
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240315-sysctl-const-handler-v1-8-1322ac7cb03d@weissschuh.net>
+Message-Id: <20240315-sysctl-const-handler-v1-3-1322ac7cb03d@weissschuh.net>
 References: <20240315-sysctl-const-handler-v1-0-1322ac7cb03d@weissschuh.net>
 In-Reply-To: <20240315-sysctl-const-handler-v1-0-1322ac7cb03d@weissschuh.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -113,11 +113,11 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  "Serge E. Hallyn" <serge@hallyn.com>, 
  Alexander Popov <alex.popov@linux.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1710535695; l=778;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1710535695; l=1138;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=m+K+pCOcUIKDJXVlXdIjxkNCOOD+02kNnAffkd4pv3g=;
- b=d4zm13k2OQna/NlK3uekXkMo7hwOBupIjvbXHKdSXoSk2DsIK+yuhbmEQr0VAeaARyLv14HqX
- 0Z4woBXtUp1D7/pq8L0Ybaa/TZAKfXvfcMgjftD2Zr5aqWsk6Mdkffo
+ bh=ZA8n2/koLk8T5EEGrZrQe3HTqPjD2IuDJPJOoTgLjZQ=;
+ b=boZ4t6eOPk3Dljh4IP0PKWoLOxGtOLAXof5Zxa1r9XXXItitoJuOMZutWnuJAn75hjXtWjz0B
+ 7PQefNn5iOMATogPVExj5hPohFmPOE42B/+MU7bt9FL5JEbL5sxkIfe
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 X-Mailman-Approved-At: Sat, 16 Mar 2024 09:23:34 +1100
@@ -138,26 +138,35 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 In a future commit the proc_handlers themselves will change to
 "const struct ctl_table". As a preparation for that adapt the internal
-helper.
+helpers.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- net/ipv6/ndisc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/hugetlb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/ipv6/ndisc.c b/net/ipv6/ndisc.c
-index ae134634c323..945d5f5ca039 100644
---- a/net/ipv6/ndisc.c
-+++ b/net/ipv6/ndisc.c
-@@ -1936,7 +1936,7 @@ static struct notifier_block ndisc_netdev_notifier = {
- };
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 23ef240ba48a..b0d89ab98eaa 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -4929,7 +4929,7 @@ static unsigned int allowed_mems_nr(struct hstate *h)
+ }
  
  #ifdef CONFIG_SYSCTL
--static void ndisc_warn_deprecated_sysctl(struct ctl_table *ctl,
-+static void ndisc_warn_deprecated_sysctl(const struct ctl_table *ctl,
- 					 const char *func, const char *dev_name)
+-static int proc_hugetlb_doulongvec_minmax(struct ctl_table *table, int write,
++static int proc_hugetlb_doulongvec_minmax(const struct ctl_table *table, int write,
+ 					  void *buffer, size_t *length,
+ 					  loff_t *ppos, unsigned long *out)
  {
- 	static char warncomm[TASK_COMM_LEN];
+@@ -4946,7 +4946,7 @@ static int proc_hugetlb_doulongvec_minmax(struct ctl_table *table, int write,
+ }
+ 
+ static int hugetlb_sysctl_handler_common(bool obey_mempolicy,
+-			 struct ctl_table *table, int write,
++			 const struct ctl_table *table, int write,
+ 			 void *buffer, size_t *length, loff_t *ppos)
+ {
+ 	struct hstate *h = &default_hstate;
 
 -- 
 2.44.0
