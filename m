@@ -4,62 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E350CC54E69
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 10:01:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49900C54E67
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 12:20:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=B0QUaI9o;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=l/e5XwYQ;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PBLRRzks;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=l/e5XwYQ;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PBLRRzks;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tx0BR3cFcz3vZt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 21:01:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tx3Hs5lHYz3dXN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 23:20:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=B0QUaI9o;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=l/e5XwYQ;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PBLRRzks;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=l/e5XwYQ;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=PBLRRzks;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tx09c1Gmzz3c12
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 21:00:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1710496820; x=1742032820;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=TgsPBTRp6nSShb4vL2Mx+LcNmJuRLjnumD5YkOFdYI4=;
-  b=B0QUaI9ogZiu2WWqr8FUj2h3uGXvUiD+/d2JpuHeAr9CqOdeCuggZCHN
-   bdw6HTyYBqxajyfJBa4CFDhk4iUOzl0z6JkAgGbEt84Z0CZMEk2L0J8s7
-   XmgirU9YTukzFbVVe71PTN/f6JTOUcEYRSKu96/EHTFw09tmPmXiHcHTO
-   DwZtE78nwbgyLMaumBPOujcEC8CU3svvkg2hLVjiLQ3tGeqtjLU0K3GGs
-   0BlZACvTswnSaKdWVVc9dCQOvvEVKib5IvnNv2GaM+91IhJVfmG5osxZL
-   eweXckhc48IHjSGi3aDDb3wTvC4pP9orLCcKLuSJtKN/8maQSjkbtnLTd
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,11013"; a="16081068"
-X-IronPort-AV: E=Sophos;i="6.07,128,1708416000"; 
-   d="scan'208";a="16081068"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Mar 2024 03:00:09 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,128,1708416000"; 
-   d="scan'208";a="35749372"
-Received: from lkp-server01.sh.intel.com (HELO b21307750695) ([10.239.97.150])
-  by fmviesa002.fm.intel.com with ESMTP; 15 Mar 2024 03:00:04 -0700
-Received: from kbuild by b21307750695 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1rl4M6-000EJx-0R;
-	Fri, 15 Mar 2024 10:00:02 +0000
-Date: Fri, 15 Mar 2024 17:59:53 +0800
-From: kernel test robot <lkp@intel.com>
-To: Vignesh Balasubramanian <vigbalas@amd.com>,
-	linux-kernel@vger.kernel.org, linux-toolchains@vger.kernel.org
-Subject: Re: [PATCH 1/1] x86/elf: Add a new .note section containing
- Xfeatures information to x86 core files
-Message-ID: <202403151742.VEz04MqR-lkp@intel.com>
-References: <20240314112359.50713-2-vigbalas@amd.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tx3Gz73Tpz3cP7
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 23:20:11 +1100 (AEDT)
+Received: from kitsune.suse.cz (unknown [10.100.12.127])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 4C12E1FB63;
+	Fri, 15 Mar 2024 12:20:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710505206; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type;
+	bh=8XXc0JqGcqWsrbseMRyzJOlPdGAmOX3WbaUBfA2wjAE=;
+	b=l/e5XwYQbWLxydmcJ3dP3h+TmZMhT1FLZriFlvKl3dO83ajywTRQZDoTGzQ6d37zYbpvX8
+	j9HGF0DluKgK6SNCI3JeITcXniTDi/NGpVn02KIxbEYg76EHdjf9QLo8rSMv2e4s7QFrr1
+	ULg98ZIPcFCZCX3QQelfGEN9v0BaH20=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710505206;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type;
+	bh=8XXc0JqGcqWsrbseMRyzJOlPdGAmOX3WbaUBfA2wjAE=;
+	b=PBLRRzksiC1Lnz0/B1TnDNaDkpBm4oUnKH/33HfX9HG0In1bcThlAiMzrHMKAYNKIP6sOI
+	WLEEVnH1KpyoexDg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1710505206; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type;
+	bh=8XXc0JqGcqWsrbseMRyzJOlPdGAmOX3WbaUBfA2wjAE=;
+	b=l/e5XwYQbWLxydmcJ3dP3h+TmZMhT1FLZriFlvKl3dO83ajywTRQZDoTGzQ6d37zYbpvX8
+	j9HGF0DluKgK6SNCI3JeITcXniTDi/NGpVn02KIxbEYg76EHdjf9QLo8rSMv2e4s7QFrr1
+	ULg98ZIPcFCZCX3QQelfGEN9v0BaH20=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1710505206;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:
+	 mime-version:mime-version:content-type:content-type;
+	bh=8XXc0JqGcqWsrbseMRyzJOlPdGAmOX3WbaUBfA2wjAE=;
+	b=PBLRRzksiC1Lnz0/B1TnDNaDkpBm4oUnKH/33HfX9HG0In1bcThlAiMzrHMKAYNKIP6sOI
+	WLEEVnH1KpyoexDg==
+Date: Fri, 15 Mar 2024 13:20:05 +0100
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>, netdev@vger.kernel.org
+Subject: Cannot load wireguard module
+Message-ID: <20240315122005.GG20665@kitsune.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240314112359.50713-2-vigbalas@amd.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+Authentication-Results: smtp-out2.suse.de;
+	none
+X-Spamd-Result: default: False [-0.47 / 50.00];
+	 ARC_NA(0.00)[];
+	 FROM_HAS_DN(0.00)[];
+	 RCPT_COUNT_THREE(0.00)[4];
+	 TO_DN_SOME(0.00)[];
+	 TO_MATCH_ENVRCPT_ALL(0.00)[];
+	 MIME_GOOD(-0.10)[text/plain];
+	 NEURAL_HAM_LONG(-1.00)[-1.000];
+	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	 NEURAL_HAM_SHORT(-0.20)[-1.000];
+	 FUZZY_BLOCKED(0.00)[rspamd.com];
+	 RCVD_COUNT_ZERO(0.00)[0];
+	 FROM_EQ_ENVFROM(0.00)[];
+	 MIME_TRACE(0.00)[0:+];
+	 R_MIXED_CHARSET(0.83)[subject];
+	 BAYES_HAM(-0.00)[43.28%]
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,132 +101,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: felix.willgerodt@intel.com, x86@kernel.org, keescook@chromium.org, jhb@freebsd.org, bpetkov@amd.com, binutils@sourceware.org, llvm@lists.linux.dev, aneesh.kumar@kernel.org, linux-mm@kvack.org, Vignesh Balasubramanian <vigbalas@amd.com>, npiggin@gmail.com, oe-kbuild-all@lists.linux.dev, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, jinisusan.george@amd.com, matz@suse.de, ebiederm@xmission.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Vignesh,
+Hello,
 
-kernel test robot noticed the following build errors:
+I cannot load the wireguard module.
 
-[auto build test ERROR on linus/master]
-[also build test ERROR on v6.8 next-20240315]
-[cannot apply to kees/for-next/execve tip/x86/core powerpc/next powerpc/fixes]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Loading the module provides no diagnostic other than 'No such device'.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Vignesh-Balasubramanian/x86-elf-Add-a-new-note-section-containing-Xfeatures-information-to-x86-core-files/20240314-192650
-base:   linus/master
-patch link:    https://lore.kernel.org/r/20240314112359.50713-2-vigbalas%40amd.com
-patch subject: [PATCH 1/1] x86/elf: Add a new .note section containing Xfeatures information to x86 core files
-config: i386-buildonly-randconfig-001-20240315 (https://download.01.org/0day-ci/archive/20240315/202403151742.VEz04MqR-lkp@intel.com/config)
-compiler: clang version 17.0.6 (https://github.com/llvm/llvm-project 6009708b4367171ccdbf4b5905cb6a803753fe18)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240315/202403151742.VEz04MqR-lkp@intel.com/reproduce)
+Please provide maningful diagnostics for loading software-only driver,
+clearly there is no particular device needed.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202403151742.VEz04MqR-lkp@intel.com/
+Thanks
 
-All errors (new ones prefixed by >>):
+Michal
 
->> arch/x86/kernel/fpu/xstate.c:1858:8: error: call to undeclared function 'dump_emit'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-    1858 |                 if (!dump_emit(cprm, &xc, sizeof(struct xfeat_component)))
-         |                      ^
-   arch/x86/kernel/fpu/xstate.c:1869:8: error: call to undeclared function 'dump_emit'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-    1869 |                 if (!dump_emit(cprm, &xc, sizeof(struct xfeat_component)))
-         |                      ^
-   arch/x86/kernel/fpu/xstate.c:1899:7: error: call to undeclared function 'dump_emit'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-    1899 |         if (!dump_emit(cprm, &en, sizeof(en)))
-         |              ^
->> arch/x86/kernel/fpu/xstate.c:1903:7: error: call to undeclared function 'dump_align'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-    1903 |         if (!dump_align(cprm, 4))
-         |              ^
-   4 errors generated.
+jostaberry-1:~ # uname -a
+Linux jostaberry-1 6.8.0-lp155.8.g7e0e887-default #1 SMP Wed Mar 13 09:02:21 UTC 2024 (7e0e887) ppc64le ppc64le ppc64le GNU/Linux
+jostaberry-1:~ # modprobe wireguard
+modprobe: ERROR: could not insert 'wireguard': No such device
+jostaberry-1:~ # modprobe -v wireguard
+insmod /lib/modules/6.8.0-lp155.8.g7e0e887-default/kernel/arch/powerpc/crypto/chacha-p10-crypto.ko.zst 
+modprobe: ERROR: could not insert 'wireguard': No such device
+jostaberry-1:~ # modprobe chacha-generic
+jostaberry-1:~ # modprobe -v wireguard
+insmod /lib/modules/6.8.0-lp155.8.g7e0e887-default/kernel/arch/powerpc/crypto/chacha-p10-crypto.ko.zst 
+modprobe: ERROR: could not insert 'wireguard': No such device
+jostaberry-1:~ # 
 
-
-vim +/dump_emit +1858 arch/x86/kernel/fpu/xstate.c
-
-  1846	
-  1847		struct xfeat_component xc;
-  1848		int num_records = 0;
-  1849		int i;
-  1850	
-  1851		/* XFEATURE_FPU and XFEATURE_SSE, both are fixed legacy states. */
-  1852		for (i = 0; i < FIRST_EXTENDED_XFEATURE; i++) {
-  1853			xc.xfeat_type = i;
-  1854			xc.xfeat_sz = xstate_sizes[i];
-  1855			xc.xfeat_off = xstate_offsets[i];
-  1856			xc.xfeat_flags = xstate_flags[i];
-  1857	
-> 1858			if (!dump_emit(cprm, &xc, sizeof(struct xfeat_component)))
-  1859				return 0;
-  1860			num_records++;
-  1861		}
-  1862	
-  1863		for_each_extended_xfeature(i, fpu_user_cfg.max_features) {
-  1864			xc.xfeat_type = i;
-  1865			xc.xfeat_sz = xstate_sizes[i];
-  1866			xc.xfeat_off = xstate_offsets[i];
-  1867			xc.xfeat_flags = xstate_flags[i];
-  1868	
-  1869			if (!dump_emit(cprm, &xc, sizeof(struct xfeat_component)))
-  1870				return 0;
-  1871			num_records++;
-  1872		}
-  1873	
-  1874		return num_records;
-  1875	}
-  1876	
-  1877	static int get_xsave_desc_size(void)
-  1878	{
-  1879		/* XFEATURE_FP and XFEATURE_SSE, both are fixed legacy states */
-  1880		int xfeatures_count = 2;
-  1881		int i;
-  1882	
-  1883		for_each_extended_xfeature(i, fpu_user_cfg.max_features)
-  1884			xfeatures_count++;
-  1885	
-  1886		return xfeatures_count * (sizeof(struct xfeat_component));
-  1887	}
-  1888	
-  1889	int elf_coredump_extra_notes_write(struct coredump_params *cprm)
-  1890	{
-  1891		const char *owner_name = "LINUX";
-  1892		int num_records = 0;
-  1893		struct elf_note en;
-  1894	
-  1895		en.n_namesz = strlen(owner_name) + 1;
-  1896		en.n_descsz = get_xsave_desc_size();
-  1897		en.n_type = NT_X86_XSAVE_LAYOUT;
-  1898	
-  1899		if (!dump_emit(cprm, &en, sizeof(en)))
-  1900			return 1;
-  1901		if (!dump_emit(cprm, owner_name, en.n_namesz))
-  1902			return 1;
-> 1903		if (!dump_align(cprm, 4))
-  1904			return 1;
-  1905	
-  1906		num_records = dump_xsave_layout_desc(cprm);
-  1907		if (!num_records) {
-  1908			pr_warn("Error adding XSTATE layout ELF note. XSTATE buffer in the core file will be unparseable.");
-  1909			return 1;
-  1910		}
-  1911	
-  1912		/* Total size should be equal to the number of records */
-  1913		if ((sizeof(struct xfeat_component) * num_records) != en.n_descsz) {
-  1914			pr_warn("Error adding XSTATE layout ELF note. The size of the .note section does not match with the total size of the records.");
-  1915			return 1;
-  1916		}
-  1917	
-  1918		if (!dump_align(cprm, 4))
-  1919			return 1;
-  1920	
-  1921		return 0;
-  1922	}
-  1923	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
