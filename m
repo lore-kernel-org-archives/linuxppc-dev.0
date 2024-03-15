@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D085C54E67
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 22:25:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F530C54E67
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 22:25:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=ZRYoy5xK;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=OzlCngVZ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TxJhs4BCJz3vYH
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 09:25:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TxJjj4w8lz3vcT
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 09:25:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=ZRYoy5xK;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=OzlCngVZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxGZf3fmqz3dJ0
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2024 07:49:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxGgv5RX9z3dTm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2024 07:54:03 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1710535767;
-	bh=odMbVtXputh1B0wvO7gtV7cKLTLD5qqVWgyPwr4fby8=;
+	s=mail; t=1710535698;
+	bh=oevlPOUTno1lzAS8VyWx7MVuhqnxcH7itmP3/5hwz20=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=ZRYoy5xKlPbaQJbgxsp1QGsFld7cYmUHymRwffDkifNDwOHyAedHpITyb+WigYxCt
-	 q1gwkFJh6JIVyUe2TB4mwf5as8GGNXoQ1lKGvZwP/yMMpArCzaDsGbQ55vzZG5KmO6
-	 AB8XmeGq62jLL6684ZpFESHQRsP/qQVQN/RRxZNQ=
+	b=OzlCngVZzs14BEfB2dc5J4o4ZKkSQQkWcdhqOSjhZhgkw/Ll2JQ6iAP5cU1U+kVsa
+	 SrPCNtTtm8SHoDqPXiHa4YsznSa7vqTifHCUJbDAIQNi550jyZtghvHYAeHSFkf+H5
+	 CmLMXq4gfmBvTUDddBCzzP8cINqR1mq64EVXhq9A=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Fri, 15 Mar 2024 21:48:07 +0100
-Subject: [PATCH 09/11] ipvs: constify ctl_table arguments of utility
- functions
+Date: Fri, 15 Mar 2024 21:48:03 +0100
+Subject: [PATCH 05/11] neighbour: constify ctl_table arguments of utility
+ function
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240315-sysctl-const-handler-v1-9-1322ac7cb03d@weissschuh.net>
+Message-Id: <20240315-sysctl-const-handler-v1-5-1322ac7cb03d@weissschuh.net>
 References: <20240315-sysctl-const-handler-v1-0-1322ac7cb03d@weissschuh.net>
 In-Reply-To: <20240315-sysctl-const-handler-v1-0-1322ac7cb03d@weissschuh.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -113,11 +113,11 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  "Serge E. Hallyn" <serge@hallyn.com>, 
  Alexander Popov <alex.popov@linux.com>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1710535695; l=1292;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1710535695; l=808;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=odMbVtXputh1B0wvO7gtV7cKLTLD5qqVWgyPwr4fby8=;
- b=7GpUccAEuc2xBmXqEFNwFbz0XLotyU5tmG9v17gkewwd7Qns7NOwDWHSnZv3ofT48IWObeYTu
- 7RChjCUP9KPAHqCOBeJFTfx/E5jUeficzF5rmf2RzH6o0IYBCrGbbwP
+ bh=oevlPOUTno1lzAS8VyWx7MVuhqnxcH7itmP3/5hwz20=;
+ b=nal6nqzlOqju6KoSlkSXv2irkXSIQB1hPxMMvRw5/3x5Pl0PJC8iZv6mLbrbrwrTwJiwMMOTx
+ vrmE29LSkJlAudC9x/ESIVrRSshIpjIXJbLqbScnLDsQB6DzgzZYtRY
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 X-Mailman-Approved-At: Sat, 16 Mar 2024 09:23:34 +1100
@@ -138,38 +138,26 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 In a future commit the proc_handlers themselves will change to
 "const struct ctl_table". As a preparation for that adapt the internal
-helpers.
+helper.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- net/netfilter/ipvs/ip_vs_ctl.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ net/core/neighbour.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
-index 143a341bbc0a..689ac521ea2d 100644
---- a/net/netfilter/ipvs/ip_vs_ctl.c
-+++ b/net/netfilter/ipvs/ip_vs_ctl.c
-@@ -1924,7 +1924,8 @@ proc_do_sync_ports(struct ctl_table *table, int write,
- 	return rc;
+diff --git a/net/core/neighbour.c b/net/core/neighbour.c
+index 552719c3bbc3..1fb71107accf 100644
+--- a/net/core/neighbour.c
++++ b/net/core/neighbour.c
+@@ -3573,7 +3573,7 @@ static void neigh_copy_dflt_parms(struct net *net, struct neigh_parms *p,
+ 	rcu_read_unlock();
  }
  
--static int ipvs_proc_est_cpumask_set(struct ctl_table *table, void *buffer)
-+static int ipvs_proc_est_cpumask_set(const struct ctl_table *table,
-+				     void *buffer)
+-static void neigh_proc_update(struct ctl_table *ctl, int write)
++static void neigh_proc_update(const struct ctl_table *ctl, int write)
  {
- 	struct netns_ipvs *ipvs = table->extra2;
- 	cpumask_var_t *valp = table->data;
-@@ -1962,8 +1963,8 @@ static int ipvs_proc_est_cpumask_set(struct ctl_table *table, void *buffer)
- 	return ret;
- }
- 
--static int ipvs_proc_est_cpumask_get(struct ctl_table *table, void *buffer,
--				     size_t size)
-+static int ipvs_proc_est_cpumask_get(const struct ctl_table *table,
-+				     void *buffer, size_t size)
- {
- 	struct netns_ipvs *ipvs = table->extra2;
- 	cpumask_var_t *valp = table->data;
+ 	struct net_device *dev = ctl->extra1;
+ 	struct neigh_parms *p = ctl->extra2;
 
 -- 
 2.44.0
