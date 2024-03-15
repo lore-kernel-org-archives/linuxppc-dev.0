@@ -4,101 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2FE3C54E60
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2024 22:42:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F653C54E60
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 00:47:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=freebsd.org header.i=@freebsd.org header.a=rsa-sha256 header.s=dkim header.b=sEhNz4ZB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OFzXoeuX;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Twj7j48lNz3vmQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 09:42:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TwlvL0D80z3dH8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2024 11:47:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=freebsd.org header.i=@freebsd.org header.a=rsa-sha256 header.s=dkim header.b=sEhNz4ZB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OFzXoeuX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=freebsd.org (client-ip=96.47.72.81; helo=mx2.freebsd.org; envelope-from=jhb@freebsd.org; receiver=lists.ozlabs.org)
-Received: from mx2.freebsd.org (mx2.freebsd.org [96.47.72.81])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwZLv2Hmmz3dH8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 04:36:54 +1100 (AEDT)
-Received: from mx1.freebsd.org (mx1.freebsd.org [IPv6:2610:1c1:1:606c::19:1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits)
-	 client-signature RSA-PSS (4096 bits))
-	(Client CN "mx1.freebsd.org", Issuer "R3" (verified OK))
-	by mx2.freebsd.org (Postfix) with ESMTPS id 4TwZLq2tq7z45qb;
-	Thu, 14 Mar 2024 17:36:51 +0000 (UTC)
-	(envelope-from jhb@FreeBSD.org)
-Received: from smtp.freebsd.org (smtp.freebsd.org [IPv6:2610:1c1:1:606c::24b:4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
-	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
-	(Client CN "smtp.freebsd.org", Issuer "R3" (verified OK))
-	by mx1.freebsd.org (Postfix) with ESMTPS id 4TwZLq0vlZz4G9m;
-	Thu, 14 Mar 2024 17:36:51 +0000 (UTC)
-	(envelope-from jhb@FreeBSD.org)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=freebsd.org; s=dkim;
-	t=1710437811;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2FRnGeCxFOtPEvgUPXcBs82NrDY5IYDYS2r+RYjKVpg=;
-	b=sEhNz4ZBuiVsXmcilCwowh42gWx/ujdNrhfQgF9MTZYFlTaPNgT6u6CtyovNZK0Ny3h9mr
-	CjC3HmvFbS3BkqOsuR2TOxuM6kBYn8pnaHaQ4RrKVpMDnPny1CpYXDZtxa1zLIZAcWi31H
-	dyjuNpYOqU0wNqbJ3lIuEYxHTtKYl6lUX7XIzF4UyvBMJHmpJcGNGO5SP24p0a9wo6wJTr
-	/P8LZAor9zCuZK2PUIk/anzVNzBpYTQTHb3pdXSzZZKKUACMsWvjUoJjy9IHsaA73UU1+z
-	F1KVTzacJkz7b2ZE1J2ENR/X/qDRR9YZ+z0Mdt6SGn+gwOTkDJJr6G8QZrsaoA==
-ARC-Seal: i=1; s=dkim; d=freebsd.org; t=1710437811; a=rsa-sha256; cv=none;
-	b=PJKOWliNE9sARysvn+5wbnE2O6//dmWKHXlV8KLUAGyZVL7ruhitf1Yv22v2SuiB1cOfv2
-	CFcknR6jm5Wd0uWqAkvHZx4OE9ppyXIYhWhOlJ3yaXvOGMYjqUbtzBa822N37nVaTHugkB
-	Yi5GnZJF9OPyqDUB2cPOrlns4sLcOTrLpYWPzzL0C4cakDQv3yboQLvsM0hNVys8Ca+FE1
-	cf72Qv++5EHsmMq4OYvmnXvM3KEcMWq7phQqb6jeImXXdUBzZUhVRq17uwqz/wLKZZXaIt
-	914d2ab+00tzpHGfMelNG8uVgQLWotKFY53gT6SN9L2qx2iXe8tZkd6K9nw+Rw==
-ARC-Authentication-Results: i=1;
-	mx1.freebsd.org;
-	none
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=freebsd.org;
-	s=dkim; t=1710437811;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2FRnGeCxFOtPEvgUPXcBs82NrDY5IYDYS2r+RYjKVpg=;
-	b=uNM9NnEpZukwPoUCmQi64Ps5+jKT7j+T+8xTlbM759DPqHIneuZ0wR4NKINoteUxbgJNvX
-	dZtg3U0tYZM/JNO3w6oSigr0i4OCzfbaHAY3HWy0iPKcLLMZJRfxPOmK2mFW5kEY+H28Yj
-	cTXHiLTARTTjEJPYbQnbR3jKkbC2I8tqB1XopkCpJRPzJbwHScQr6LG0KK/1NI+iWRAil7
-	LXRBkTUE/AsW9N36R/6ZBD4XeddWzpJiqzfiLQ9yZyMC/hM6exKzQ/J4Er3RdlfZQpgbGD
-	kUkj/Np/G7DTcG6hUeI3XuFFL8gEdgfQBOJzlcI1Fnyb0HIFW1GmpHR3oCTrfQ==
-Received: from [IPV6:2601:644:937f:4c50:9159:2009:aff7:887a] (unknown [IPv6:2601:644:937f:4c50:9159:2009:aff7:887a])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	(Authenticated sender: jhb)
-	by smtp.freebsd.org (Postfix) with ESMTPSA id 4TwZLn2VmVzMNv;
-	Thu, 14 Mar 2024 17:36:49 +0000 (UTC)
-	(envelope-from jhb@FreeBSD.org)
-Message-ID: <b86e4d31-70db-42de-bf54-4ffb03b5cba0@FreeBSD.org>
-Date: Thu, 14 Mar 2024 10:36:48 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TwltS3ccfz3cCt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 11:46:23 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42EKboGX005258;
+	Fri, 15 Mar 2024 00:45:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=92UtFAcY0GTWHCTH+ctu4ttUTr3isdg6lfehUiExBWo=;
+ b=OFzXoeuXXZca/NvVO7M2FSr3lnR3SjWlccG/a920MfreROrvtoqFi5EYQ0rkIuQGD0HP
+ YPwfTpP6qhtczslZKJ1f42VkFgUqpdVsGExE9ds4QXsXZ2mYfWzgJHhYusR0SROd1OV5
+ gI09MzZi/vX8hAr3zRC8AZ39xkNbemZG9chkGYGCxz507SP0ogShlfoKeKpflUUCDYRS
+ xq5Sv6mTCJ0wU96GiQolYgI4IQMhB5qfln8Nb2bkPwpwlf2c9gT6iEONXPV93RwLZ9EL
+ 9RLbe870/YDzszyT4Is8PxaRthbtJsalj+kVO/dWjMfqQk54HeiHIHHZv98DHWnZ+//f DA== 
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wv8ekjn7a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 15 Mar 2024 00:45:52 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42ENaevG018557;
+	Fri, 15 Mar 2024 00:45:52 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3ws4t2g5vg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 15 Mar 2024 00:45:52 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42F0jmFt44957964
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 15 Mar 2024 00:45:50 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4F3B72004B;
+	Fri, 15 Mar 2024 00:45:48 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7162A20040;
+	Fri, 15 Mar 2024 00:45:47 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 15 Mar 2024 00:45:47 +0000 (GMT)
+Received: from [10.61.2.138] (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id EFEBD600F0;
+	Fri, 15 Mar 2024 11:45:43 +1100 (AEDT)
+Message-ID: <56dc0520a97178f3136d8cd94d858fafe6da2119.camel@linux.ibm.com>
+Subject: Re: [PATCH v10 11/12] powerpc: mm: Use set_pte_at_unchecked() for
+ early-boot / internal usages
+From: LTC IMAP <rmclure@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        "linuxppc-dev@lists.ozlabs.org"
+	 <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 15 Mar 2024 11:45:43 +1100
+In-Reply-To: <42bf1fb2-8a8e-4ded-97a6-da2617e89f5b@csgroup.eu>
+References: <20240313042118.230397-1-rmclure@linux.ibm.com>
+	 <20240313042118.230397-12-rmclure@linux.ibm.com>
+	 <42bf1fb2-8a8e-4ded-97a6-da2617e89f5b@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.50.4 (3.50.4-1.fc39) 
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/1] x86/elf: Add a new .note section containing Xfeatures
- information to x86 core files
-Content-Language: en-US
-To: Dave Hansen <dave.hansen@intel.com>,
- Vignesh Balasubramanian <vigbalas@amd.com>, linux-kernel@vger.kernel.org,
- linux-toolchains@vger.kernel.org
-References: <20240314112359.50713-1-vigbalas@amd.com>
- <20240314112359.50713-2-vigbalas@amd.com>
- <dd54d6de-0bcc-4b2e-a420-b1a429b06246@intel.com>
- <971d21b7-0309-439e-91b6-234f84da959d@FreeBSD.org>
- <a789c10e-861e-48eb-96d6-aa129d352535@intel.com>
-From: John Baldwin <jhb@FreeBSD.org>
-In-Reply-To: <a789c10e-861e-48eb-96d6-aa129d352535@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 15 Mar 2024 09:37:24 +1100
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: YcZ4D1kQD3FDaLNp8bu1vpRS98zL7eit
+X-Proofpoint-ORIG-GUID: YcZ4D1kQD3FDaLNp8bu1vpRS98zL7eit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-03-14_13,2024-03-13_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 spamscore=0
+ adultscore=0 clxscore=1015 mlxlogscore=999 mlxscore=0 suspectscore=0
+ phishscore=0 malwarescore=0 priorityscore=1501 lowpriorityscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2311290000 definitions=main-2403150000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,181 +100,253 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: matz@suse.de, keescook@chromium.org, felix.willgerodt@intel.com, bpetkov@amd.com, x86@kernel.org, npiggin@gmail.com, aneesh.kumar@kernel.org, linux-mm@kvack.org, ebiederm@xmission.com, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, jinisusan.george@amd.com, binutils@sourceware.org
+Cc: "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "x86@kernel.org" <x86@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/14/24 10:10 AM, Dave Hansen wrote:
-> On 3/14/24 09:45, John Baldwin wrote:
->> On 3/14/24 8:37 AM, Dave Hansen wrote:
->>> On 3/14/24 04:23, Vignesh Balasubramanian wrote:
->>>> Add a new .note section containing type, size, offset and flags of
->>>> every xfeature that is present.
->>>
->>> Mechanically, I'd much rather have all of that info in the cover letter
->>> in the actual changelog instead.
->>>
->>> I'd also love to see a practical example of what an actual example core
->>> dump looks like on two conflicting systems:
->>>
->>>      * Total XSAVE size
->>>      * XCR0 value
->>>      * XSTATE_BV from the core dump
->>>      * XFEATURE offsets for each feature
->>
->> I noticed this when I bought an AMD Ryzen 9 5900X based system for
->> my desktop running FreeBSD and found that the XSAVE core dump notes
->> were not recognized by GDB (FreeBSD dumps an XSAVE register set note
->> that matches the same layout of NT_X86_XSTATE used by Linux).
-> 
-> I just want to make sure that you heard what I asked.  I'd like to see a
-> practical example of how the real-world enumeration changes between two
-> real world systems.
-> 
-> Is that possible?
-> 
-> Here's the raw CPUID data from the XSAVE region on my laptop:
-> 
->>     0x0000000d 0x00: eax=0x000002e7 ebx=0x00000a88 ecx=0x00000a88 edx=0x00000000
->>     0x0000000d 0x01: eax=0x0000000f ebx=0x00000998 ecx=0x00003900 edx=0x00000000
->>     0x0000000d 0x02: eax=0x00000100 ebx=0x00000240 ecx=0x00000000 edx=0x00000000
->>     0x0000000d 0x05: eax=0x00000040 ebx=0x00000440 ecx=0x00000000 edx=0x00000000
->>     0x0000000d 0x06: eax=0x00000200 ebx=0x00000480 ecx=0x00000000 edx=0x00000000
->>     0x0000000d 0x07: eax=0x00000400 ebx=0x00000680 ecx=0x00000000 edx=0x00000000
->>     0x0000000d 0x08: eax=0x00000080 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
->>     0x0000000d 0x09: eax=0x00000008 ebx=0x00000a80 ecx=0x00000000 edx=0x00000000
->>     0x0000000d 0x0b: eax=0x00000010 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
->>     0x0000000d 0x0c: eax=0x00000018 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
->>     0x0000000d 0x0d: eax=0x00000008 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
-> 
-> Could we get that for an impacted AMD system, please?
-> 
-> 	cpuid -1 --raw | grep "   0x0000000d "
-> 
-> should do it.
+On Wed, 2024-03-13 at 11:30 +0000, Christophe Leroy wrote:
+>=20
+>=20
+> Le 13/03/2024 =C3=A0 05:21, Rohan McLure a =C3=A9crit=C2=A0:
+> > In the new set_ptes() API, set_pte_at() (a special case of
+> > set_ptes())
+> > is intended to be instrumented by the page table check facility.
+> > There
+> > are however several other routines that constitute the API for
+> > setting
+> > page table entries, including set_pmd_at() among others. Such
+> > routines
+> > are themselves implemented in terms of set_ptes_at().
+> >=20
+> > A future patch providing support for page table checking on powerpc
+> > must take care to avoid duplicate calls to
+> > page_table_check_p{te,md,ud}_set(). Allow for assignment of pte
+> > entries
+> > without instrumentation through the set_pte_at_unchecked() routine
+> > introduced in this patch.
+> >=20
+> > Cause API-facing routines that call set_pte_at() to instead call
+> > set_pte_at_unchecked(), which will remain uninstrumented by page
+> > table check. set_ptes() is itself implemented by calls to
+> > __set_pte_at(), so this eliminates redundant code.
+> >=20
+> > Also prefer set_pte_at_unchecked() in early-boot usages which
+> > should not be
+> > instrumented.
+> >=20
+> > Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+> > ---
+> > v9: New patch
+> > v10: don't reuse __set_pte_at(), as that will not apply filters.
+> > Instead
+> > use new set_pte_at_unchecked().
+>=20
+> Are filters needed at all in those usecases ?
 
-    0x0000000d 0x00: eax=0x00000207 ebx=0x00000988 ecx=0x00000988 edx=0x00000000
-    0x0000000d 0x01: eax=0x0000000f ebx=0x00000348 ecx=0x00001800 edx=0x00000000
-    0x0000000d 0x02: eax=0x00000100 ebx=0x00000240 ecx=0x00000000 edx=0x00000000
-    0x0000000d 0x09: eax=0x00000008 ebx=0x00000980 ecx=0x00000000 edx=0x00000000
-    0x0000000d 0x0b: eax=0x00000010 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
-    0x0000000d 0x0c: eax=0x00000018 ebx=0x00000000 ecx=0x00000001 edx=0x00000000
+I'm just retaining the original semantics of these calls. I think
+another patch can replace this call with __set_pte_at() if filters are
+deemed unnecessary.
 
-Here, I think the ebx value for the 0x09 leaf (PKRU) is the relevant difference
-here, it is 0xa80 on your laptop and 0x980 on the AMD CPU.  (This is the
-missing MPX gap on AMD.)
+>=20
+> > ---
+> > =C2=A0 arch/powerpc/include/asm/pgtable.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 | 2 ++
+> > =C2=A0 arch/powerpc/mm/book3s64/hash_pgtable.c=C2=A0 | 2 +-
+> > =C2=A0 arch/powerpc/mm/book3s64/pgtable.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 | 6 +++---
+> > =C2=A0 arch/powerpc/mm/book3s64/radix_pgtable.c | 8 ++++----
+> > =C2=A0 arch/powerpc/mm/nohash/book3e_pgtable.c=C2=A0 | 2 +-
+> > =C2=A0 arch/powerpc/mm/pgtable.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 7 +++++++
+> > =C2=A0 arch/powerpc/mm/pgtable_32.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
+> > =C2=A0 7 files changed, 19 insertions(+), 10 deletions(-)
+> >=20
+> > diff --git a/arch/powerpc/include/asm/pgtable.h
+> > b/arch/powerpc/include/asm/pgtable.h
+> > index 3741a63fb82e..6ff1d8cfa216 100644
+> > --- a/arch/powerpc/include/asm/pgtable.h
+> > +++ b/arch/powerpc/include/asm/pgtable.h
+> > @@ -44,6 +44,8 @@ struct mm_struct;
+> > =C2=A0 void set_ptes(struct mm_struct *mm, unsigned long addr, pte_t
+> > *ptep,
+> > =C2=A0=C2=A0		pte_t pte, unsigned int nr);
+> > =C2=A0 #define set_ptes set_ptes
+> > +void set_pte_at_unchecked(struct mm_struct *mm, unsigned long
+> > addr,
+> > +			=C2=A0 pte_t *ptep, pte_t pte);
+> > =C2=A0 #define update_mmu_cache(vma, addr, ptep) \
+> > =C2=A0=C2=A0	update_mmu_cache_range(NULL, vma, addr, ptep, 1)
+> > =C2=A0=20
+> > diff --git a/arch/powerpc/mm/book3s64/hash_pgtable.c
+> > b/arch/powerpc/mm/book3s64/hash_pgtable.c
+> > index 988948d69bc1..871472f99a01 100644
+> > --- a/arch/powerpc/mm/book3s64/hash_pgtable.c
+> > +++ b/arch/powerpc/mm/book3s64/hash_pgtable.c
+> > @@ -165,7 +165,7 @@ int hash__map_kernel_page(unsigned long ea,
+> > unsigned long pa, pgprot_t prot)
+> > =C2=A0=C2=A0		ptep =3D pte_alloc_kernel(pmdp, ea);
+> > =C2=A0=C2=A0		if (!ptep)
+> > =C2=A0=C2=A0			return -ENOMEM;
+> > -		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >>
+> > PAGE_SHIFT, prot));
+> > +		set_pte_at_unchecked(&init_mm, ea, ptep,
+> > pfn_pte(pa >> PAGE_SHIFT, prot));
+> > =C2=A0=C2=A0	} else {
+> > =C2=A0=C2=A0		/*
+> > =C2=A0=C2=A0		 * If the mm subsystem is not fully up, we cannot
+> > create a
+> > diff --git a/arch/powerpc/mm/book3s64/pgtable.c
+> > b/arch/powerpc/mm/book3s64/pgtable.c
+> > index 3438ab72c346..25082ab6018b 100644
+> > --- a/arch/powerpc/mm/book3s64/pgtable.c
+> > +++ b/arch/powerpc/mm/book3s64/pgtable.c
+> > @@ -116,7 +116,7 @@ void set_pmd_at(struct mm_struct *mm, unsigned
+> > long addr,
+> > =C2=A0=C2=A0	WARN_ON(!(pmd_large(pmd)));
+> > =C2=A0 #endif
+> > =C2=A0=C2=A0	trace_hugepage_set_pmd(addr, pmd_val(pmd));
+> > -	return set_pte_at(mm, addr, pmdp_ptep(pmdp),
+> > pmd_pte(pmd));
+> > +	return set_pte_at_unchecked(mm, addr, pmdp_ptep(pmdp),
+> > pmd_pte(pmd));
+> > =C2=A0 }
+> > =C2=A0=20
+> > =C2=A0 void set_pud_at(struct mm_struct *mm, unsigned long addr,
+> > @@ -133,7 +133,7 @@ void set_pud_at(struct mm_struct *mm, unsigned
+> > long addr,
+> > =C2=A0=C2=A0	WARN_ON(!(pud_large(pud)));
+> > =C2=A0 #endif
+> > =C2=A0=C2=A0	trace_hugepage_set_pud(addr, pud_val(pud));
+> > -	return set_pte_at(mm, addr, pudp_ptep(pudp),
+> > pud_pte(pud));
+> > +	return set_pte_at_unchecked(mm, addr, pudp_ptep(pudp),
+> > pud_pte(pud));
+> > =C2=A0 }
+> > =C2=A0=20
+> > =C2=A0 static void do_serialize(void *arg)
+> > @@ -539,7 +539,7 @@ void ptep_modify_prot_commit(struct
+> > vm_area_struct *vma, unsigned long addr,
+> > =C2=A0=C2=A0	if (radix_enabled())
+> > =C2=A0=C2=A0		return radix__ptep_modify_prot_commit(vma, addr,
+> > =C2=A0=C2=A0						=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ptep,
+> > old_pte, pte);
+> > -	set_pte_at(vma->vm_mm, addr, ptep, pte);
+> > +	set_pte_at_unchecked(vma->vm_mm, addr, ptep, pte);
+> > =C2=A0 }
+> > =C2=A0=20
+> > =C2=A0 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> > diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c
+> > b/arch/powerpc/mm/book3s64/radix_pgtable.c
+> > index 46fa46ce6526..c661e42bb2f1 100644
+> > --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
+> > +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+> > @@ -109,7 +109,7 @@ static int early_map_kernel_page(unsigned long
+> > ea, unsigned long pa,
+> > =C2=A0=C2=A0	ptep =3D pte_offset_kernel(pmdp, ea);
+> > =C2=A0=20
+> > =C2=A0 set_the_pte:
+> > -	set_pte_at(&init_mm, ea, ptep, pfn_pte(pfn, flags));
+> > +	set_pte_at_unchecked(&init_mm, ea, ptep, pfn_pte(pfn,
+> > flags));
+> > =C2=A0=C2=A0	asm volatile("ptesync": : :"memory");
+> > =C2=A0=C2=A0	return 0;
+> > =C2=A0 }
+> > @@ -1522,7 +1522,7 @@ void radix__ptep_modify_prot_commit(struct
+> > vm_area_struct *vma,
+> > =C2=A0=C2=A0	=C2=A0=C2=A0=C2=A0 (atomic_read(&mm->context.copros) > 0))
+> > =C2=A0=C2=A0		radix__flush_tlb_page(vma, addr);
+> > =C2=A0=20
+> > -	set_pte_at(mm, addr, ptep, pte);
+> > +	set_pte_at_unchecked(mm, addr, ptep, pte);
+> > =C2=A0 }
+> > =C2=A0=20
+> > =C2=A0 int pud_set_huge(pud_t *pud, phys_addr_t addr, pgprot_t prot)
+> > @@ -1533,7 +1533,7 @@ int pud_set_huge(pud_t *pud, phys_addr_t
+> > addr, pgprot_t prot)
+> > =C2=A0=C2=A0	if (!radix_enabled())
+> > =C2=A0=C2=A0		return 0;
+> > =C2=A0=20
+> > -	set_pte_at(&init_mm, 0 /* radix unused */, ptep, new_pud);
+> > +	set_pte_at_unchecked(&init_mm, 0 /* radix unused */, ptep,
+> > new_pud);
+> > =C2=A0=20
+> > =C2=A0=C2=A0	return 1;
+> > =C2=A0 }
+> > @@ -1580,7 +1580,7 @@ int pmd_set_huge(pmd_t *pmd, phys_addr_t
+> > addr, pgprot_t prot)
+> > =C2=A0=C2=A0	if (!radix_enabled())
+> > =C2=A0=C2=A0		return 0;
+> > =C2=A0=20
+> > -	set_pte_at(&init_mm, 0 /* radix unused */, ptep, new_pmd);
+> > +	set_pte_at_unchecked(&init_mm, 0 /* radix unused */, ptep,
+> > new_pmd);
+> > =C2=A0=20
+> > =C2=A0=C2=A0	return 1;
+> > =C2=A0 }
+> > diff --git a/arch/powerpc/mm/nohash/book3e_pgtable.c
+> > b/arch/powerpc/mm/nohash/book3e_pgtable.c
+> > index 1c5e4ecbebeb..10d487b2b991 100644
+> > --- a/arch/powerpc/mm/nohash/book3e_pgtable.c
+> > +++ b/arch/powerpc/mm/nohash/book3e_pgtable.c
+> > @@ -111,7 +111,7 @@ int __ref map_kernel_page(unsigned long ea,
+> > phys_addr_t pa, pgprot_t prot)
+> > =C2=A0=C2=A0		}
+> > =C2=A0=C2=A0		ptep =3D pte_offset_kernel(pmdp, ea);
+> > =C2=A0=C2=A0	}
+> > -	set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
+> > prot));
+> > +	set_pte_at_unchecked(&init_mm, ea, ptep, pfn_pte(pa >>
+> > PAGE_SHIFT, prot));
+> > =C2=A0=20
+> > =C2=A0=C2=A0	smp_wmb();
+> > =C2=A0=C2=A0	return 0;
+> > diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> > index e8e0289d7ab0..352679cf2684 100644
+> > --- a/arch/powerpc/mm/pgtable.c
+> > +++ b/arch/powerpc/mm/pgtable.c
+> > @@ -227,6 +227,13 @@ void set_ptes(struct mm_struct *mm, unsigned
+> > long addr, pte_t *ptep,
+> > =C2=A0=C2=A0	}
+> > =C2=A0 }
+> > =C2=A0=20
+> > +void set_pte_at_unchecked(struct mm_struct *mm, unsigned long
+> > addr,
+> > +			=C2=A0 pte_t *ptep, pte_t pte)
+> > +{
+>=20
+> No need of the
+>=20
+> VM_WARN_ON(pte_hw_valid(*ptep) && !pte_protnone(*ptep));
+>=20
+> which is in set_ptes() ?
 
->>> This is pretty close to just a raw dump of the XSAVE CPUID leaves.
->>> Rather than come up with an XSAVE-specific ABI that depends on CPUID
->>> *ANYWAY* (because it dumps the "flags" register aka. ECX), maybe we
->>> should just bite the bullet and dump out (some of) the raw CPUID space.
->>
->> So the current note I initially proposed and implemented for FreeBSD
->> (https://reviews.freebsd.org/D42136) and an initial patch set for GDB
->> (https://sourceware.org/pipermail/gdb-patches/2023-October/203083.html)
->> do indeed dump a raw set of CPUID leaves.  The version I have for FreeBSD
->> only dumps the raw leaf values for leaf 0x0d though the note format is
->> extensible should additional leaves be needed in the future.  One of the
->> questions if we wanted to use a CPUID leaf note is which leaves to dump
->> (e.g. do you dump all of them, or do you just dump the subset that is
->> currently needed).
-> 
-> You dump what is needed and add to the dump over time.
+Good spot, I'll include that check in this routine.
 
-That is what I started with, yes, but am attempting to anticipate future
-problems in my list of caveats.
-
->> Another quirky question is what to do about systems with hetergeneous
->> cores (E vs P for example).
-> That's irrelevant for now.  The cores may be heterogeneous but the
-> userspace ISA and (and thus XSAVE formats) are identical.  If they're
-> not, then we have bigger problems on our hands.
-
-Yes, I agree on the bigger problems and hope we don't have to solve
-them.
-
->> Currently those systems use the same XSAVE layout across all cores,
->> but other CPUID leaves do already vary across cores on those systems.
-> 
-> There shouldn't be any CPUID leaves that differ _and_ matter to
-> userspace and thus core dumps.
-
-Today that is true, yes.  I'm fine with making that tradeoff (along
-with only dumping a subset of leaves) so long as the consensus is that
-is an acceptable tradeoff to make.
-
->> However, there are other wrinkles with the leaf approach.  Namely, one
->> of the use cases that I currently have an ugly hack for in GDB is if
->> you are using gdb against a remote host running gdbserver and then use
->> 'gcore' to generate a core dump.  GDB needs to write out a NT_X86_XSTATE
->> note, but that note requires a layout.  What GDB does today is just pick
->> a known Intel layout based on the XCR0 mask.  However, GDB should ideally
->> start writing out whatever new note we adopt here, so if we dump raw
->> CPUID leaves it means extending the GDB remote protocol so we can query
->> the CPUID leaves from the remote host.  On the other hand, if we choose a
->> more abstract format as proposed in this patch, the local GDB (or LLDB
->> or whatever) can generate whatever synthetic layout it wants to write
->> the local NT_X86_XSTATE.  (NB: A relevant detail here is that the GDB
->> remote protocol does not pass the entire XSAVE state across as a block,
->> instead gdbserver parses individual register values for AVX, etc.
->> registers and those decoded register values are passed over the
->> protocol.)
-> 
-> So the gdb side says, "Give me PKRU" and the remote side parses the
-> XSAVE image, finds PKRU, and sends it over the wire?
-
-Yes.
-
->> Another question is potentially supporting compact XSAVE format in
->> for NT_X86_XSTATE.  Today Linux has some complicated code to re-expand
->> the compat XSAVE format back out to the standard layout for ptrace() and
->> process core dumps.
-> 
-> Yeah, but supporting the compacted format in NT_X86_XSTATE doesn't help
-> us at all.  We still intermingle user and supervisor state and that
-> needs to get repacked _anyway_.
-
-Fair enough.
-
-> In other words, no matter what we do, it's going to be complicated
-> because the userspace buffer can't have supervisor state and the kernel
-> buffer does have it.  The compacted format mismatch is the least of our
-> problems.
-> 
->>    (FreeBSD doesn't yet make use of XSAVEC so we
->> haven't yet dealt with that problem.)
-> 
-> ... or XSAVES, which is actually the most relevant here.
-> 
-> Backing up... there are two approaches here:
-> 
->   1. Dump out raw x86-specific gunk, aka. CPUID contents itself.  There
->      are a billion ways to do this and lots of complications, including
->      the remote protocol implications
-> or
->   2. Define an abstract format that works anywhere, not just on x86 and
->      not just for XSAVE.
-> 
-> There's no (sane) middle ground.  The implementation here (in this
-> patch) is fundamentally x86-specific and pretends to be some kind of
-> abstracted x86-independent format.
-
-Well, are there other register notes that could benefit from an approach
-like this?  Most other register notes I'm aware of on various architectures
-either have a fixed layout (like the typical general purpose register notes),
-or they have a fixed set of registers but the size of individual registers
-can vary (thinks like SME or RISC-V's vector extension).  XSAVE is the only
-one I'm aware of that packs multiple register sets into a single note.
-
-To step back a bit, another approach that could be taken (and I'm not sure
-it is worth it at this point) would to stop dumping a single XSAVE note
-and dump a separate register note for each feature.  That is, dump a note
-for AVX (the upper bits of ymmX), a note for PKRU, etc.  I think if I had
-to pick a strategy at the very beginning that's what I would choose now,
-but this isn't the very beginning and that sort of change is likely too
-disruptive.  (This approach is what happens on other arches today in effect,
-e.g. on AArch64.)
-
--- 
-John Baldwin
+>=20
+> > +	pte =3D set_pte_filter(pte, addr);
+> > +	__set_pte_at(mm, addr, ptep, pte, 0);
+> > +}
+> > +
+> > =C2=A0 void unmap_kernel_page(unsigned long va)
+> > =C2=A0 {
+> > =C2=A0=C2=A0	pmd_t *pmdp =3D pmd_off_k(va);
+> > diff --git a/arch/powerpc/mm/pgtable_32.c
+> > b/arch/powerpc/mm/pgtable_32.c
+> > index 4be97b4a44f9..a5a26faf91ec 100644
+> > --- a/arch/powerpc/mm/pgtable_32.c
+> > +++ b/arch/powerpc/mm/pgtable_32.c
+> > @@ -89,7 +89,7 @@ int __ref map_kernel_page(unsigned long va,
+> > phys_addr_t pa, pgprot_t prot)
+> > =C2=A0=C2=A0		 * hash table
+> > =C2=A0=C2=A0		 */
+> > =C2=A0=C2=A0		BUG_ON((pte_present(*pg) | pte_hashpte(*pg)) &&
+> > pgprot_val(prot));
+> > -		set_pte_at(&init_mm, va, pg, pfn_pte(pa >>
+> > PAGE_SHIFT, prot));
+> > +		set_pte_at_unchecked(&init_mm, va, pg, pfn_pte(pa
+> > >> PAGE_SHIFT, prot));
+> > =C2=A0=C2=A0	}
+> > =C2=A0=C2=A0	smp_wmb();
+> > =C2=A0=C2=A0	return err;
 
