@@ -4,78 +4,118 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFB52C54E60
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 04:26:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D799BC54E60
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 16:17:54 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=fromorbit-com.20230601.gappssmtp.com header.i=@fromorbit-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=M1dDPutJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gdH5+cDe;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TxSkD2NTmz3vYR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2024 15:26:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TxmVn1FHdz3vZX
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2024 03:17:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=fromorbit-com.20230601.gappssmtp.com header.i=@fromorbit-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=M1dDPutJ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gdH5+cDe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=fromorbit.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=david@fromorbit.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxQf24lqJz3brm
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2024 13:52:57 +1100 (AEDT)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-1dc5d0162bcso20769905ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2024 19:52:56 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TxmTt3sQjz2ytj
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Mar 2024 03:17:05 +1100 (AEDT)
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-1deefb08b9eso10942265ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2024 09:17:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=fromorbit-com.20230601.gappssmtp.com; s=20230601; t=1710557573; x=1711162373; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=bBoX08MQ+GnGsn3Ys1XDLWs0vSpU6QZ104y6JQ1iJRA=;
-        b=M1dDPutJdZ3grW5sxjtdR8wvRDPBtFjyiVj43Nxgi+6JNFWG/f0PHRK0TMjSGDN3V6
-         jVIZxaRPETV+XXK1CyeVms2BSUcThyoq+rB/nocVhHvlOkJObnxeaqyCosdlEbDy7GXy
-         63F80W8HqPn9Tkm6WhK92P1fnDIdhckbr++PJ+gJ4/J1xKhh54xPwh/8JQ11OSPPIZa+
-         PynSKJAV5W5QWzDaFvvkdQqe3RFk4npD7rg3F7/umkcTfKPjD0vST4Xfzohx5QdI22+N
-         ZkkETuhXGII1opEIfiq8oWKV39/3O6Rfumm5+Tdl5qefQ7qZpOfeg8RGTQAk64DabnLb
-         HA4Q==
+        d=gmail.com; s=20230601; t=1710605820; x=1711210620; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:references:cc:to
+         :from:content-language:subject:user-agent:mime-version:date
+         :message-id:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=Ad79nxUV3suzPFik/TywaNEexbwGs2i2M0+RnoUpzx8=;
+        b=gdH5+cDeBmJyfNiDJRqS8AyvTcm97t/twWMlTjeXMbzqWbf4HP/hyDS4GN0P/aoFZh
+         fgGyqPSZpTcBD58JQtdHBsDKB1J3hJ1CClCZUOL7Uvw6pMAqP21aFHI6qPplRL26AvJA
+         xljuvrRzP5iixL1Hbp5R8UEZeyTcWrczXCbQO1DFdGebbFnBqgfiVH+nT1E2UQOzABzZ
+         zot0jlybhz4eRGCuqrpwNb0rtoN8H0JMDTEcVMPN4lIkArdebuoEuNy68jE8THs9Lue8
+         ifdVSVCDdwWzom5h772GTdzZJbDH11nOlKjF0ic9VHVJ74Id+gwSIvqvpjN/v7BT5LR7
+         Jd0w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710557573; x=1711162373;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=bBoX08MQ+GnGsn3Ys1XDLWs0vSpU6QZ104y6JQ1iJRA=;
-        b=QMgkjQBdy8+GSOY13JKuqU+ow7CwvjTlvIbhVKZNny0RlFou/435FTTntbC+ulbFpx
-         Tv+3ySbwxnyTF5aFwQPUl/XDnrYb3QHja47Pl4VzsGdginQCao9iXBY8P262Tplcnl4+
-         hQCq3x7kAMBCr6ukpoLCrN+Wme4tDKBkqNV/Ob0U/J7JQyTOyeUzmSld0dSgAb56op/a
-         4yiuAqGv+jOXz4YKzQ81bQ+BUpkvJ2UchQUV+kkGdWL6XebU5OeDQvPqRraksFSeSw/C
-         Que/zdseUXOO29N66glTpgWWqIr7J6MZn9PBbIoYC6xR83FHdZhIh+gMy4JiAaFHdQze
-         Xapg==
-X-Forwarded-Encrypted: i=1; AJvYcCUoMo5Qq/bhvpXFBz7cYnJ+1K65cdE/ltMaJAKbTZapJUia9ztV+BgUaOrHzRemTjRR4+XWtlrRfbq84h5Mc0y4IOqOs3Ldmq+RimgzZA==
-X-Gm-Message-State: AOJu0YwD7Qi9vRqg6Mxb+V8aAGnxVUXRrZmGY6WcooThhGcd7XnItvAt
-	wNO+JKRiYp4M4P3nfmAQwtc1Avr2kuGVwXMyGD4nC1GsaiNuQ9WqO5PQmR8Djsc=
-X-Google-Smtp-Source: AGHT+IF+mhHYlAObRzpfXYn3IGnPDczeVjZaH7QVUqvtIq9UdyOULCBCqzY79zAwu/GemLxZ182Fng==
-X-Received: by 2002:a17:903:2446:b0:1dd:9cb3:8f96 with SMTP id l6-20020a170903244600b001dd9cb38f96mr6055795pls.42.1710557572964;
-        Fri, 15 Mar 2024 19:52:52 -0700 (PDT)
-Received: from dread.disaster.area (pa49-180-185-123.pa.nsw.optusnet.com.au. [49.180.185.123])
-        by smtp.gmail.com with ESMTPSA id f5-20020a170902684500b001dddbb58d5esm4736209pln.109.2024.03.15.19.52.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 15 Mar 2024 19:52:52 -0700 (PDT)
-Received: from dave by dread.disaster.area with local (Exim 4.96)
-	(envelope-from <david@fromorbit.com>)
-	id 1rlKAC-002Wnj-2F;
-	Sat, 16 Mar 2024 13:52:48 +1100
-Date: Sat, 16 Mar 2024 13:52:48 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
-Subject: Re: [PATCH 11/11] sysctl: treewide: constify the ctl_table argument
- of handlers
-Message-ID: <ZfUJgML8tk6RWqOC@dread.disaster.area>
-References: <20240315-sysctl-const-handler-v1-0-1322ac7cb03d@weissschuh.net>
- <20240315-sysctl-const-handler-v1-11-1322ac7cb03d@weissschuh.net>
+        d=1e100.net; s=20230601; t=1710605820; x=1711210620;
+        h=content-transfer-encoding:in-reply-to:autocrypt:references:cc:to
+         :from:content-language:subject:user-agent:mime-version:date
+         :message-id:sender:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Ad79nxUV3suzPFik/TywaNEexbwGs2i2M0+RnoUpzx8=;
+        b=H9XICpm368wBmXQQ2C8+0TrQUrBwBf/yzs1H6B2oA8dePNxbeosdarLBLJ66ATIEdr
+         qG/LHXtyCJx/gL/iRl/g+ZovdrNCJd+iYVEa1Z6TBpdQavXxv6h2+zz7pFEXbTGXGw+q
+         LLF3cGbz5PCWtp/7U2AUGe7vkABnPuqrejkMAqsPPyQGMXwuhVqkezErBtPEH7wuLB9v
+         qXH0FzvVOu7UO+XNwrzYlY44Txr0pAR5910I7AHpHNGO7GOLtZZdp0S6R8HrASmLlict
+         FTMEx/YYZQrDRouTHB2hhHHww9+xAKXcFj9GnHinoBxcaba1DgSgWFD5trHuanj8qG02
+         m9Ow==
+X-Forwarded-Encrypted: i=1; AJvYcCUovCfMaGrQwRfy+QOpl6nHgtADlBTbUWx0gG/tOUxIyoTs7olPgPzCOy6yKfnGCJZlL8PlHc+X9Wyd8m3/WxSYgHVq1V4evqWYRAE2Jg==
+X-Gm-Message-State: AOJu0Yzj8/tRYxAfEp/hnPiUBUijHe+MrPVg+OLCaNPIbZrEnxd3fzIu
+	bIBcj2y0XjFrsRH6YcRdOvHewGuFt4xroDOQvsWOQN1epc/uT9IR
+X-Google-Smtp-Source: AGHT+IGA+TA01Bxsw9/mfWXt9gpOVUmZyN7CpbFyOEGBY8brlAsGWTPBr93mRcRuI84f8oFkGg0zAg==
+X-Received: by 2002:a17:903:22c6:b0:1e0:9a7:e606 with SMTP id y6-20020a17090322c600b001e009a7e606mr552821plg.0.1710605820013;
+        Sat, 16 Mar 2024 09:17:00 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id z17-20020a170903409100b001dd88a5dc47sm5958808plc.290.2024.03.16.09.16.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 16 Mar 2024 09:16:59 -0700 (PDT)
+Message-ID: <04f34097-7788-490d-a9c2-82b44bf6af44@roeck-us.net>
+Date: Sat, 16 Mar 2024 09:16:56 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 00/14] Add support for suppressing warning backtraces
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+References: <20240312170309.2546362-1-linux@roeck-us.net>
+ <CAMuHMdUkvagJVEfnhq=Nx2jnmdS0Ax+zy1CvyN0k7k1EwUpu+g@mail.gmail.com>
+ <6d9269c0-bd38-4965-a454-4358e0a182e3@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
+In-Reply-To: <6d9269c0-bd38-4965-a454-4358e0a182e3@roeck-us.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240315-sysctl-const-handler-v1-11-1322ac7cb03d@weissschuh.net>
-X-Mailman-Approved-At: Sat, 16 Mar 2024 15:26:03 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,211 +127,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Joel Granados <j.granados@samsung.com>, Juri Lelli <juri.lelli@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Ben Segall <bsegall@google.com>, linux-sctp@vger.kernel.org, Yonghong Song <yonghong.song@linux.dev>, Alexander Gordeev <agordeev@linux.ibm.com>, Vincent Guittot <vincent.guittot@linaro.org>, James Morris <jmorris@namei.org>, Jozsef Kadlecsik <kadlec@netfilter.org>, Mel Gorman <mgorman@suse.de>, "Darrick J. Wong" <djwong@kernel.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Alexander Popov <alex.popov@linux.com>, Petr Mladek <pmladek@suse.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>, Remi Denis-Courmont <courmisch@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Christian Brauner <brauner@kernel.org>, Will Drewry <wad@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Sergey Senozhatsky 
- <senozhatsky@chromium.org>, Luis Chamberlain <mcgrof@kernel.org>, Chuck Lever <chuck.lever@oracle.com>, netfilter-devel@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Jiri Olsa <jolsa@kernel.org>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-trace-kernel@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Dave Hansen <dave.hansen@linux.intel.com>, Phillip Potter <phil@philpotter.co.uk>, Song Liu <song@kernel.org>, Eric Dumazet <edumazet@google.com>, John Stultz <jstultz@google.com>, Stanislav Fomichev <sdf@google.com>, linux-s390@vger.kernel.org, Valentin Schneider <vschneid@redhat.com>, Vasily Gorbik <gor@linux.ibm.com>, Anup Patel <anup@brainfault.org>, John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, Julian Anastasov <ja@ssi.bg>, coreteam@netfilter.org, Roopa Prabhu <roopa@nvidia.com>, Sven Schnelle <svens@lin
- ux.ibm.com>, John Ogness <john.ogness@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Simon Horman <horms@verge.net.au>, Xin Long <lucien.xin@gmail.com>, linux-arm-kernel@lists.infradead.org, Hao Luo <haoluo@google.com>, Theodore Ts'o <tytso@mit.edu>, Stephen Boyd <sboyd@kernel.org>, Muchun Song <muchun.song@linux.dev>, Florian Westphal <fw@strlen.de>, "David S. Miller" <davem@davemloft.net>, Eric Biederman <ebiederm@xmission.com>, Anna Schumaker <anna@kernel.org>, Daniel Bristot de Oliveira <bristot@redhat.com>, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Nikolay Aleksandrov <razor@blackwall.org>, Atish Patra <atishp@atishpatra.org>, Alexei Starovoitov <ast@kernel.org>, linux-hardening@vger.kernel.org, Will Deacon <will@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, linux-rdma@vger.kernel.org, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, lvs-devel@vger.kernel.org, Neil Brown <neilb@suse.de>, Allison Hender
- son <allison.henderson@oracle.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Paolo Abeni <pabeni@redhat.com>, Pablo Neira Ayuso <pablo@netfilter.org>, "Serge E. Hallyn" <serge@hallyn.com>, Kees Cook <keescook@chromium.org>, bridge@lists.linux.dev, Steven Rostedt <rostedt@goodmis.org>, Borislav Petkov <bp@alien8.de>, linux-nfs@vger.kernel.org, Olga Kornievskaia <kolga@netapp.com>, Jeff Layton <jlayton@kernel.org>, Andy Lutomirski <luto@amacapital.net>, linux-xfs@vger.kernel.org, bpf@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Chandan Babu R <chandan.babu@oracle.com>, Ian Rogers <irogers@google.com>, Jan Kara <jack@suse.cz>, Peter Zijlstra <peterz@infradead.org>, KP Singh <kpsingh@kernel.org>, linux-mm@kvack.org, "H. Peter Anvin" <hpa@zytor.com>, linux-riscv@lists.infradead.org, rds-devel@oss.oracle.com, x86@kernel.org, Dai Ngo <Dai.Ngo@oracle.com>, Ingo Molnar <mingo@redhat.com>, Jakub Kicinski <kuba@kernel.org>
- , Trond Myklebust <trond.myklebust@hammerspace.com>, Albert Ou <aou@eecs.berkeley.edu>, Heiko Carstens <hca@linux.ibm.com>, apparmor@lists.ubuntu.com, Tom Talpey <tom@talpey.com>, Paul Walmsley <paul.walmsley@sifive.com>, Namhyung Kim <namhyung@kernel.org>, Paul Moore <paul@paul-moore.com>, John Johansen <john.johansen@canonical.com>, netdev@vger.kernel.org, David Ahern <dsahern@kernel.org>, kexec@lists.infradead.org, Adrian Hunter <adrian.hunter@intel.com>, Eduard Zingerman <eddyz87@gmail.com>, linux-security-module@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Martin KaFai Lau <martin.lau@linux.dev>
+Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, netdev@lists.linux.dev, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmer
+ mann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 15, 2024 at 09:48:09PM +0100, Thomas Wei�schuh wrote:
-> Adapt the proc_hander function signature to make it clear that handlers
-> are not supposed to modify their ctl_table argument.
+On 3/14/24 07:37, Guenter Roeck wrote:
+> On 3/14/24 06:36, Geert Uytterhoeven wrote:
+>> Hi Günter,
+>>
+>> On Tue, Mar 12, 2024 at 6:03 PM Guenter Roeck <linux@roeck-us.net> wrote:
+>>> Some unit tests intentionally trigger warning backtraces by passing bad
+>>> parameters to kernel API functions. Such unit tests typically check the
+>>> return value from such calls, not the existence of the warning backtrace.
+>>>
+>>> Such intentionally generated warning backtraces are neither desirable
+>>> nor useful for a number of reasons.
+>>> - They can result in overlooked real problems.
+>>> - A warning that suddenly starts to show up in unit tests needs to be
+>>>    investigated and has to be marked to be ignored, for example by
+>>>    adjusting filter scripts. Such filters are ad-hoc because there is
+>>>    no real standard format for warnings. On top of that, such filter
+>>>    scripts would require constant maintenance.
+>>>
+>>> One option to address problem would be to add messages such as "expected
+>>> warning backtraces start / end here" to the kernel log.  However, that
+>>> would again require filter scripts, it might result in missing real
+>>> problematic warning backtraces triggered while the test is running, and
+>>> the irrelevant backtrace(s) would still clog the kernel log.
+>>>
+>>> Solve the problem by providing a means to identify and suppress specific
+>>> warning backtraces while executing test code. Support suppressing multiple
+>>> backtraces while at the same time limiting changes to generic code to the
+>>> absolute minimum. Architecture specific changes are kept at minimum by
+>>> retaining function names only if both CONFIG_DEBUG_BUGVERBOSE and
+>>> CONFIG_KUNIT are enabled.
+>>>
+>>> The first patch of the series introduces the necessary infrastructure.
+>>> The second patch introduces support for counting suppressed backtraces.
+>>> This capability is used in patch three to implement unit tests.
+>>> Patch four documents the new API.
+>>> The next two patches add support for suppressing backtraces in drm_rect
+>>> and dev_addr_lists unit tests. These patches are intended to serve as
+>>> examples for the use of the functionality introduced with this series.
+>>> The remaining patches implement the necessary changes for all
+>>> architectures with GENERIC_BUG support.
+>>
+>> Thanks for your series!
+>>
+>> I gave it a try on m68k, just running backtrace-suppression-test,
+>> and that seems to work fine.
+>>
+>>> Design note:
+>>>    Function pointers are only added to the __bug_table section if both
+>>>    CONFIG_KUNIT and CONFIG_DEBUG_BUGVERBOSE are enabled to avoid image
+>>>    size increases if CONFIG_KUNIT=n. There would be some benefits to
+>>>    adding those pointers all the time (reduced complexity, ability to
+>>>    display function names in BUG/WARNING messages). That change, if
+>>>    desired, can be made later.
+>>
+>> Unfortunately this also increases kernel size in the CONFIG_KUNIT=m
+>> case (ca. 80 KiB for atari_defconfig), making it less attractive to have
+>> kunit and all tests enabled as modules in my standard kernel.
+>>
 > 
-> This is a prerequisite to moving the static ctl_table structs into
-> .rodata.
-> By migrating all handlers at once a lengthy transition can be avoided.
+> Good point. Indeed, it does. I wanted to avoid adding a configuration option,
+> but maybe I should add it after all. How about something like this ?
 > 
-> The patch was mostly generated by coccinelle with the following script:
+> +config KUNIT_SUPPRESS_BACKTRACE
+> +       bool "KUnit - Enable backtrace suppression"
+> +       default y
+> +       help
+> +         Enable backtrace suppression for KUnit. If enabled, backtraces
+> +         generated intentionally by KUnit tests can be suppressed. Disable
+> +         to reduce kernel image size if image size is more important than
+> +         suppression of backtraces generated by KUnit tests.
+> +
 > 
->     @@
->     identifier func, ctl, write, buffer, lenp, ppos;
->     @@
-> 
->     int func(
->     - struct ctl_table *ctl,
->     + const struct ctl_table *ctl,
->       int write, void *buffer, size_t *lenp, loff_t *ppos)
->     { ... }
 
-Which seems to have screwed up the formatting of the XFS code...
+Any more comments / feedback on this ? Otherwise I'll introduce the
+above configuration option in v2 of the series.
 
-> diff --git a/fs/xfs/xfs_sysctl.c b/fs/xfs/xfs_sysctl.c
-> index a191f6560f98..a3ca192eca79 100644
-> --- a/fs/xfs/xfs_sysctl.c
-> +++ b/fs/xfs/xfs_sysctl.c
-> @@ -10,12 +10,11 @@ static struct ctl_table_header *xfs_table_header;
->  
->  #ifdef CONFIG_PROC_FS
->  STATIC int
-> -xfs_stats_clear_proc_handler(
-> -	struct ctl_table	*ctl,
-> -	int			write,
-> -	void			*buffer,
-> -	size_t			*lenp,
-> -	loff_t			*ppos)
-> +xfs_stats_clear_proc_handler(const struct ctl_table *ctl,
-> +			     int			write,
-> +			     void			*buffer,
-> +			     size_t			*lenp,
-> +			     loff_t			*ppos)
+In this context, any suggestions if it should be enabled or disabled by
+default ? I personally think it would be more important to be able to
+suppress backtraces, but I understand that others may not be willing to
+accept a ~1% image size increase with CONFIG_KUNIT=m unless
+KUNIT_SUPPRESS_BACKTRACE is explicitly disabled.
 
-... because this doesn't match any format I've ever seen in the
-kernel. The diff for this change shold be just:
+Thanks,
+Guenter
 
-@@ -10,7 +10,7 @@ static struct ctl_table_header *xfs_table_header;
- #ifdef CONFIG_PROC_FS
- STATIC int
- xfs_stats_clear_proc_handler(
--	struct ctl_table	*ctl,
-+	const struct ctl_table	*ctl,
- 	int			write,
- 	void			*buffer,
- 	size_t			*lenp,
-
->  {
->  	int		ret, *valp = ctl->data;
->  
-> @@ -30,12 +29,11 @@ xfs_stats_clear_proc_handler(
->  }
->  
->  STATIC int
-> -xfs_panic_mask_proc_handler(
-> -	struct ctl_table	*ctl,
-> -	int			write,
-> -	void			*buffer,
-> -	size_t			*lenp,
-> -	loff_t			*ppos)
-> +xfs_panic_mask_proc_handler(const struct ctl_table *ctl,
-> +			    int			write,
-> +			    void			*buffer,
-> +			    size_t			*lenp,
-> +			    loff_t			*ppos)
->  {
->  	int		ret, *valp = ctl->data;
->  
-> @@ -51,12 +49,11 @@ xfs_panic_mask_proc_handler(
->  #endif /* CONFIG_PROC_FS */
->  
->  STATIC int
-> -xfs_deprecated_dointvec_minmax(
-> -	struct ctl_table	*ctl,
-> -	int			write,
-> -	void			*buffer,
-> -	size_t			*lenp,
-> -	loff_t			*ppos)
-> +xfs_deprecated_dointvec_minmax(const struct ctl_table *ctl,
-> +			       int			write,
-> +			       void			*buffer,
-> +			       size_t			*lenp,
-> +			       loff_t			*ppos)
->  {
->  	if (write) {
->  		printk_ratelimited(KERN_WARNING
-
-And these need fixing as well.
-
-A further quick glance at the patch reveals that there are other
-similar screwed up conversions as well.
-
-> diff --git a/kernel/delayacct.c b/kernel/delayacct.c
-> index 6f0c358e73d8..513791ef573d 100644
-> --- a/kernel/delayacct.c
-> +++ b/kernel/delayacct.c
-> @@ -44,8 +44,9 @@ void delayacct_init(void)
->  }
->  
->  #ifdef CONFIG_PROC_SYSCTL
-> -static int sysctl_delayacct(struct ctl_table *table, int write, void *buffer,
-> -		     size_t *lenp, loff_t *ppos)
-> +static int sysctl_delayacct(const struct ctl_table *table, int write,
-> +			    void *buffer,
-> +			    size_t *lenp, loff_t *ppos)
->  {
->  	int state = delayacct_on;
->  	struct ctl_table t;
-
-Like this.
-
-> diff --git a/kernel/events/core.c b/kernel/events/core.c
-> index 724e6d7e128f..e2955e0d9f44 100644
-> --- a/kernel/events/core.c
-> +++ b/kernel/events/core.c
-> @@ -450,7 +450,8 @@ static void update_perf_cpu_limits(void)
->  
->  static bool perf_rotate_context(struct perf_cpu_pmu_context *cpc);
->  
-> -int perf_event_max_sample_rate_handler(struct ctl_table *table, int write,
-> +int perf_event_max_sample_rate_handler(const struct ctl_table *table,
-> +				       int write,
->  				       void *buffer, size_t *lenp, loff_t *ppos)
->  {
->  	int ret;
-
-And this.
-
-> @@ -474,8 +475,10 @@ int perf_event_max_sample_rate_handler(struct ctl_table *table, int write,
->  
->  int sysctl_perf_cpu_time_max_percent __read_mostly = DEFAULT_CPU_TIME_MAX_PERCENT;
->  
-> -int perf_cpu_time_max_percent_handler(struct ctl_table *table, int write,
-> -		void *buffer, size_t *lenp, loff_t *ppos)
-> +int perf_cpu_time_max_percent_handler(const struct ctl_table *table,
-> +				      int write,
-> +				      void *buffer, size_t *lenp,
-> +				      loff_t *ppos)
->  {
->  	int ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
->  
-
-And this.
-
-> diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-> index b2fc2727d654..003f0f5cb111 100644
-> --- a/kernel/hung_task.c
-> +++ b/kernel/hung_task.c
-> @@ -239,9 +239,10 @@ static long hung_timeout_jiffies(unsigned long last_checked,
->  /*
->   * Process updating of timeout sysctl
->   */
-> -static int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
-> -				  void *buffer,
-> -				  size_t *lenp, loff_t *ppos)
-> +static int proc_dohung_task_timeout_secs(const struct ctl_table *table,
-> +					 int write,
-> +					 void *buffer,
-> +					 size_t *lenp, loff_t *ppos)
->  {
->  	int ret;
->  
-
-And this.
-
-> diff --git a/kernel/latencytop.c b/kernel/latencytop.c
-> index 781249098cb6..0a5c22b19821 100644
-> --- a/kernel/latencytop.c
-> +++ b/kernel/latencytop.c
-> @@ -65,8 +65,9 @@ static struct latency_record latency_record[MAXLR];
->  int latencytop_enabled;
->  
->  #ifdef CONFIG_SYSCTL
-> -static int sysctl_latencytop(struct ctl_table *table, int write, void *buffer,
-> -		size_t *lenp, loff_t *ppos)
-> +static int sysctl_latencytop(const struct ctl_table *table, int write,
-> +			     void *buffer,
-> +			     size_t *lenp, loff_t *ppos)
->  {
->  	int err;
->  
-
-And this.
-
-I could go on, but there are so many examples of this in the patch
-that I think that it needs to be toosed away and regenerated in a
-way that doesn't trash the existing function parameter formatting.
-
--Dave.
--- 
-Dave Chinner
-david@fromorbit.com
