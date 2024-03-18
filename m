@@ -4,96 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBCB8CD1292
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 12:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 710FEC54E5D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2024 03:25:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PTcIfipk;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PTcIfipk;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aZwR6Ce1;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V9KwT1hy3z3vgs
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 23:01:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TygH25VFzz3vX3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2024 14:25:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PTcIfipk;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PTcIfipk;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aZwR6Ce1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V9Kvc0Qhvz3vdr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2024 23:00:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1712232054;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qfuooD1IfgatoIS7OAIU70Y79yHtd6slmR6Wd2lGo90=;
-	b=PTcIfipkFMzHFYd7yVMhlS2XO+r6De9ENvqodeUNcp4851UX0N+SJVG7GkqCCD6WcblYs7
-	zfc8Pg+K83BxtJMnn/ABGm10ahlZq7AzPZbE6DUa2ANpVxHFjSDe7NrkQfy9mteGwcOqBK
-	vuaHe+Fbcf8SIV3OygN/S1PTM41MFgY=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1712232054;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qfuooD1IfgatoIS7OAIU70Y79yHtd6slmR6Wd2lGo90=;
-	b=PTcIfipkFMzHFYd7yVMhlS2XO+r6De9ENvqodeUNcp4851UX0N+SJVG7GkqCCD6WcblYs7
-	zfc8Pg+K83BxtJMnn/ABGm10ahlZq7AzPZbE6DUa2ANpVxHFjSDe7NrkQfy9mteGwcOqBK
-	vuaHe+Fbcf8SIV3OygN/S1PTM41MFgY=
-Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com
- [209.85.219.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-631-CbgIIuSeOKqUeJwYZOFB2Q-1; Thu, 04 Apr 2024 08:00:51 -0400
-X-MC-Unique: CbgIIuSeOKqUeJwYZOFB2Q-1
-Received: by mail-qv1-f71.google.com with SMTP id 6a1803df08f44-69939cb15faso101476d6.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Apr 2024 05:00:51 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712232051; x=1712836851;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=qfuooD1IfgatoIS7OAIU70Y79yHtd6slmR6Wd2lGo90=;
-        b=Ermf+Qfbt6PIWvgZcvXtxbaKpxpvCjD+7B4a4kQdRBPeTZYxETPlezIBixS3oqS46e
-         qhd6UUQWrtpPfbObsd0ThIBlYUHefKjKA8n3Ez7i6z9aQ4KJJN++YW/5nO6PeS8JAMUN
-         +YEqliH2O9kTEG/d+istHsG05tq0W7pg84niFekEshvp3j4cyl32DPtuPFHq307ofP33
-         tPWZ+c4ArlMDimvGxunX0AojVtR5onxDGSVrTKlQFZtp8R/r+ARBvulAusw2fItp1lA1
-         eWgR8/1zwW8e50dwwWUF0rl/Y++2beGZfIC72qitzl3kX8fKixVtVLzCwiHpZTwbObAv
-         QaGg==
-X-Forwarded-Encrypted: i=1; AJvYcCWpOPvlehyCriZvAHK0pavcAUNzkY7g/4YC0Zr/rb18QHoBHkh3gEcIdbQNw4yaIT+7/7X8qczLH6/wCTFz1SZjeA0PqSlp9OefWqrvOg==
-X-Gm-Message-State: AOJu0Ywa2i8lXjwmY512e+PNjDT0kV5z/ZmZEWjMc5dBjXhp6IDSEXzR
-	XHH1PKo6Zt/yneJEy8ybG3CoLMgmSdoa6L+i4//a+Y7Oxj2GB6bquukcvZc0+Q3KD886m8QFtti
-	q1cMvTCxH5PNo8C5kytD+JcVIbQ3b+tcRaZH7ktEZGfNE4GfVOYyP6Ka5UkKovuU=
-X-Received: by 2002:a05:6214:5007:b0:699:4d3:98dc with SMTP id jo7-20020a056214500700b0069904d398dcmr2122680qvb.0.1712232050901;
-        Thu, 04 Apr 2024 05:00:50 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGMCWtQWiLpesBQTQo5kp7GWlhuKWfgLgdLeENDjrnl6Gj4+sgwXTUEXT7yElLHvch56DwpwQ==
-X-Received: by 2002:a05:6214:5007:b0:699:4d3:98dc with SMTP id jo7-20020a056214500700b0069904d398dcmr2122629qvb.0.1712232050343;
-        Thu, 04 Apr 2024 05:00:50 -0700 (PDT)
-Received: from x1n ([99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id jf14-20020a0562142a4e00b006987021a724sm7171209qvb.118.2024.04.04.05.00.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Apr 2024 05:00:50 -0700 (PDT)
-Date: Thu, 4 Apr 2024 08:00:47 -0400
-From: Peter Xu <peterx@redhat.com>
-To: Jason Gunthorpe <jgg@nvidia.com>
-Subject: Re: [PATCH v4 05/13] mm/arch: Provide pud_pfn() fallback
-Message-ID: <Zg6WbzWkoLtbY2LZ@x1n>
-References: <20240327152332.950956-1-peterx@redhat.com>
- <20240327152332.950956-6-peterx@redhat.com>
- <20240402190549.GA706730@dev-arch.thelio-3990X>
- <ZgyKLLVZ4vN56uZE@x1n>
- <20240402225320.GU946323@nvidia.com>
- <ZgyWUYVdUsAiXCC4@xz-m1.local>
- <20240403120841.GB1723999@nvidia.com>
- <Zg2fEP4eEeLhgDwE@x1n>
- <20240404112404.GG1723999@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TygGC2Wnyz3bmy
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2024 14:25:07 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1710732306;
+	bh=NV+IEiKEp7lCdjzjbneFkp6G29/AFeVDyz/GqmHX3m4=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=aZwR6Ce11vNXim4mOCh1eXkx7K65RfM+cau+BhgB9SdLqlZPW+NSBiMfH6HvhOd0A
+	 Cxq4iA45zUMfJd0t0fiCZUW9oT7MdElC1lAHDwjgYhkFVet+3SexBY3VTuWZ+t2GS/
+	 R6YtLN+mqg6XUSgVsgcCPTEOKRlHDfSmPt/ef1FfXW6waLfQPAdiG7JMm/zsq5BT3k
+	 vdQUUXBAz8sJiI6L7YfwQCfB8GuYQWxC3Reysu8xNTnmju7VZ+DNwIB5BF60uJsyDk
+	 OdmHw4LQNlhzuekWxZGLa0lNLJlIa+tl6Z4Z3Fg6YFxfGk0yqItTN1sXJzV54NgtGp
+	 w8QwwUGGGIyQQ==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4TygG42yLDz4wc1;
+	Mon, 18 Mar 2024 14:25:00 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Guenter Roeck <linux@roeck-us.net>, Geert Uytterhoeven
+ <geert@linux-m68k.org>
+Subject: Re: [PATCH 00/14] Add support for suppressing warning backtraces
+In-Reply-To: <04f34097-7788-490d-a9c2-82b44bf6af44@roeck-us.net>
+References: <20240312170309.2546362-1-linux@roeck-us.net>
+ <CAMuHMdUkvagJVEfnhq=Nx2jnmdS0Ax+zy1CvyN0k7k1EwUpu+g@mail.gmail.com>
+ <6d9269c0-bd38-4965-a454-4358e0a182e3@roeck-us.net>
+ <04f34097-7788-490d-a9c2-82b44bf6af44@roeck-us.net>
+Date: Mon, 18 Mar 2024 14:24:59 +1100
+Message-ID: <87ttl4z0fo.fsf@mail.lhotse>
 MIME-Version: 1.0
-In-Reply-To: <20240404112404.GG1723999@nvidia.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,42 +62,117 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: James Houghton <jthoughton@google.com>, David Hildenbrand <david@redhat.com>, Yang Shi <shy828301@gmail.com>, Andrew Jones <andrew.jones@linux.dev>, linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>, linux-riscv@lists.infradead.org, WANG Xuerui <kernel@xen0n.name>, Andrea Arcangeli <aarcange@redhat.com>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Christoph Hellwig <hch@infradead.org>, Vlastimil Babka <vbabka@suse.cz>, Axel Rasmussen <axelrasmussen@google.com>, Rik van Riel <riel@surriel.com>, John Hubbard <jhubbard@nvidia.com>, Nathan Chancellor <nathan@kernel.org>, loongarch@lists.linux.dev, "Kirill A . Shutemov" <kirill@shutemov.name>, linux-arm-kernel@lists.infradead.org, Lorenzo Stoakes <lstoakes@gmail.com>, Muchun Song <muchun.song@linux.dev>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, Ville =?utf-8?B?U3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?utf-8?Q?Ma=C3=ADra?= Canal <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, netdev@lists.linux.dev, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmerma
+ nn@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 04, 2024 at 08:24:04AM -0300, Jason Gunthorpe wrote:
-> On Wed, Apr 03, 2024 at 02:25:20PM -0400, Peter Xu wrote:
-> 
-> > > I'd say the BUILD_BUG has done it's job and found an issue, fix it by
-> > > not defining pud_leaf? I don't see any calls to pud_leaf in loongarch
-> > > at least
-> > 
-> > Yes, that sounds better too to me, however it means we may also risk other
-> > archs that can fail another defconfig build.. and I worry I bring trouble
-> > to multiple such cases.  Fundamentally it's indeed my patch that broke
-> > those builds, so I still sent the change and leave that for arch developers
-> > to decide the best for the archs.
-> 
-> But your change causes silent data corruption if the code path is
-> run.. I think we are overall better to wade through the compile time
-> bugs from linux-next. Honestly if there were alot then I'd think there
-> would be more complaints already.
-> 
-> Maybe it should just be a seperate step from this series.
+Guenter Roeck <linux@roeck-us.net> writes:
+> On 3/14/24 07:37, Guenter Roeck wrote:
+>> On 3/14/24 06:36, Geert Uytterhoeven wrote:
+>>> Hi G=C3=BCnter,
+>>>
+>>> On Tue, Mar 12, 2024 at 6:03=E2=80=AFPM Guenter Roeck <linux@roeck-us.n=
+et> wrote:
+>>>> Some unit tests intentionally trigger warning backtraces by passing bad
+>>>> parameters to kernel API functions. Such unit tests typically check the
+>>>> return value from such calls, not the existence of the warning backtra=
+ce.
+>>>>
+>>>> Such intentionally generated warning backtraces are neither desirable
+>>>> nor useful for a number of reasons.
+>>>> - They can result in overlooked real problems.
+>>>> - A warning that suddenly starts to show up in unit tests needs to be
+>>>> =C2=A0=C2=A0 investigated and has to be marked to be ignored, for exam=
+ple by
+>>>> =C2=A0=C2=A0 adjusting filter scripts. Such filters are ad-hoc because=
+ there is
+>>>> =C2=A0=C2=A0 no real standard format for warnings. On top of that, suc=
+h filter
+>>>> =C2=A0=C2=A0 scripts would require constant maintenance.
+>>>>
+>>>> One option to address problem would be to add messages such as "expect=
+ed
+>>>> warning backtraces start / end here" to the kernel log.=C2=A0 However,=
+ that
+>>>> would again require filter scripts, it might result in missing real
+>>>> problematic warning backtraces triggered while the test is running, and
+>>>> the irrelevant backtrace(s) would still clog the kernel log.
+>>>>
+>>>> Solve the problem by providing a means to identify and suppress specif=
+ic
+>>>> warning backtraces while executing test code. Support suppressing mult=
+iple
+>>>> backtraces while at the same time limiting changes to generic code to =
+the
+>>>> absolute minimum. Architecture specific changes are kept at minimum by
+>>>> retaining function names only if both CONFIG_DEBUG_BUGVERBOSE and
+>>>> CONFIG_KUNIT are enabled.
+>>>>
+>>>> The first patch of the series introduces the necessary infrastructure.
+>>>> The second patch introduces support for counting suppressed backtraces.
+>>>> This capability is used in patch three to implement unit tests.
+>>>> Patch four documents the new API.
+>>>> The next two patches add support for suppressing backtraces in drm_rect
+>>>> and dev_addr_lists unit tests. These patches are intended to serve as
+>>>> examples for the use of the functionality introduced with this series.
+>>>> The remaining patches implement the necessary changes for all
+>>>> architectures with GENERIC_BUG support.
+>>>
+>>> Thanks for your series!
+>>>
+>>> I gave it a try on m68k, just running backtrace-suppression-test,
+>>> and that seems to work fine.
+>>>
+>>>> Design note:
+>>>> =C2=A0=C2=A0 Function pointers are only added to the __bug_table secti=
+on if both
+>>>> =C2=A0=C2=A0 CONFIG_KUNIT and CONFIG_DEBUG_BUGVERBOSE are enabled to a=
+void image
+>>>> =C2=A0=C2=A0 size increases if CONFIG_KUNIT=3Dn. There would be some b=
+enefits to
+>>>> =C2=A0=C2=A0 adding those pointers all the time (reduced complexity, a=
+bility to
+>>>> =C2=A0=C2=A0 display function names in BUG/WARNING messages). That cha=
+nge, if
+>>>> =C2=A0=C2=A0 desired, can be made later.
+>>>
+>>> Unfortunately this also increases kernel size in the CONFIG_KUNIT=3Dm
+>>> case (ca. 80 KiB for atari_defconfig), making it less attractive to have
+>>> kunit and all tests enabled as modules in my standard kernel.
+>>>
+>>=20
+>> Good point. Indeed, it does. I wanted to avoid adding a configuration op=
+tion,
+>> but maybe I should add it after all. How about something like this ?
+>>=20
+>> +config KUNIT_SUPPRESS_BACKTRACE
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 bool "KUnit - Enable backtrace sup=
+pression"
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 default y
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 help
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Enable backtrace suppr=
+ession for KUnit. If enabled, backtraces
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 generated intentionall=
+y by KUnit tests can be suppressed. Disable
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 to reduce kernel image=
+ size if image size is more important than
+>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 suppression of backtra=
+ces generated by KUnit tests.
+>
+> Any more comments / feedback on this ? Otherwise I'll introduce the
+> above configuration option in v2 of the series.
+>
+> In this context, any suggestions if it should be enabled or disabled by
+> default ? I personally think it would be more important to be able to
+> suppress backtraces, but I understand that others may not be willing to
+> accept a ~1% image size increase with CONFIG_KUNIT=3Dm unless
+> KUNIT_SUPPRESS_BACKTRACE is explicitly disabled.
 
-Right, that'll be imho better to be done separate, as I think we'd better
-consolidate the code.
+Please enable it by default.
 
-One thing I don't worry is the warning would cause anything real to fail; I
-don't yet expect any arch that will not define pud_pfn when it needs
-it.. so it can mean all of the build errors may not cause real benefits as
-of now.  But I agree with you we'd better have it.  I'll take a todo and
-I'll try to add it back after all these fallouts.  With my cross build
-chains now it shouldn't be hard, just take some time to revisit each arch.
+There are multiple CI systems that will benefit from it, whereas the
+number of users enabling KUNIT in severely spaced constrainted
+environments is surely small - perhaps just Geert ;).
 
-Thanks,
-
--- 
-Peter Xu
-
+cheers
