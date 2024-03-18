@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44439C54E5D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2024 20:09:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AFD8C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2024 20:10:38 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=C048UWpS;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=C048UWpS;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D6WNaJJu;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D6WNaJJu;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Tz5Yb6vl5z3vrn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 07:09:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tz5ZN66L8z3vf1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 07:10:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=C048UWpS;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=C048UWpS;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D6WNaJJu;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D6WNaJJu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tz5RB1Xl1z3d2g
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2024 07:04:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tz5RF5mxmz3dVj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2024 07:04:25 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1710792259;
+	s=mimecast20190719; t=1710792263;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4C+lWpN1qDfU+nymiqOVXkY7IqPiijqTb8F5rFjpmTU=;
-	b=C048UWpSS9DFNweZrO+WEobrvsPYFW7Ejy5yDvVggdSucJW1FUW0BuJXOV80rWVpTcRytS
-	Jce+QwQ5FwsnAlG6a6tIsTn0bKkUXRlS6GoBovBgCkiM8JEY0JE+UYTX+9PbbzuzmcmDWq
-	jk/tP0gdeCtshOLKjg2KmY31LhdNNKY=
+	bh=vy04FBLzPG5Zls0F5g74nprsAX71rsrg1jdch17dleE=;
+	b=D6WNaJJuaJzZ/z/klT1RNOWAYRu5zRbBXDZ+uPPTWzH3fkJ+ZDyTcvOXpqhQr7BzLinklE
+	wExxIcQhIqCAw06zbrp9FY7X73dAYizqfkZYfmDnH3Gztwfo7taH4YWwdMqSkgzOTJktiM
+	yiBv+QyroXnjdkvP9L5Neg+nfiRhtFg=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1710792259;
+	s=mimecast20190719; t=1710792263;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4C+lWpN1qDfU+nymiqOVXkY7IqPiijqTb8F5rFjpmTU=;
-	b=C048UWpSS9DFNweZrO+WEobrvsPYFW7Ejy5yDvVggdSucJW1FUW0BuJXOV80rWVpTcRytS
-	Jce+QwQ5FwsnAlG6a6tIsTn0bKkUXRlS6GoBovBgCkiM8JEY0JE+UYTX+9PbbzuzmcmDWq
-	jk/tP0gdeCtshOLKjg2KmY31LhdNNKY=
-Received: from mail-ot1-f71.google.com (mail-ot1-f71.google.com
- [209.85.210.71]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=vy04FBLzPG5Zls0F5g74nprsAX71rsrg1jdch17dleE=;
+	b=D6WNaJJuaJzZ/z/klT1RNOWAYRu5zRbBXDZ+uPPTWzH3fkJ+ZDyTcvOXpqhQr7BzLinklE
+	wExxIcQhIqCAw06zbrp9FY7X73dAYizqfkZYfmDnH3Gztwfo7taH4YWwdMqSkgzOTJktiM
+	yiBv+QyroXnjdkvP9L5Neg+nfiRhtFg=
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
+ [209.85.160.197]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-660-rcWdIBVzNd2zcdbUJ5DXVg-1; Mon, 18 Mar 2024 16:04:17 -0400
-X-MC-Unique: rcWdIBVzNd2zcdbUJ5DXVg-1
-Received: by mail-ot1-f71.google.com with SMTP id 46e09a7af769-6dde25ac92fso2115189a34.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2024 13:04:17 -0700 (PDT)
+ us-mta-140-vJRvOTJJNeeY-5D7OyJruw-1; Mon, 18 Mar 2024 16:04:20 -0400
+X-MC-Unique: vJRvOTJJNeeY-5D7OyJruw-1
+Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-42f30752eb4so15656671cf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2024 13:04:20 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710792257; x=1711397057;
+        d=1e100.net; s=20230601; t=1710792260; x=1711397060;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=4C+lWpN1qDfU+nymiqOVXkY7IqPiijqTb8F5rFjpmTU=;
-        b=pNhLNcan24HBf3G+pbEChKxcNF+P/Z8Igw7YLYfaEdyPfiwo2vuVZAi569oEbb/An6
-         27OxGRYL0LgYQK5r57XWF7AExxK0NGCLSeLi/t71e3V9PX4wj4c1GKnPH2ihw/OhLAZq
-         xKUoqlBJ09WTjxz2Ff5Tbj5dysrO4BwwjO2X8pOZyMwEVDFQU7ekGcoo3KbK3Z8+zGQ+
-         oUfOSh4U0uoj4869lOrH8x7Vv8Re+s/KDpiKl2ZIthjpwQ4WuXstuMo3RY0Y/i7MPYpq
-         D9yex9VUgnTmMi1mBVEw6f5zU9Oe1WdbFFzL522zFQpFtwMrIZIe5hA7rk9fCTm01VWW
-         gvGg==
-X-Forwarded-Encrypted: i=1; AJvYcCUiVahHLYS54kYyT5OI2vR3URCwhFSbKezaXKaPeIsXR5/CgSJpKWO4Ex0e1LeBuCuqOGOubG2La3debu9FJYmHqs6sunI01ujAk+exBg==
-X-Gm-Message-State: AOJu0YxZ6k52An2IwBr+67RTOABmi0Y0R0FzPzweJrXyR27Fa5lmaCx+
-	MjPRo9Bm14QrDbEDJFcsm03MTA65yvfLVjbpKfCpJtP9zTwYFIcbiEwArMXgn66au7J0KrFDYe6
-	rR2Ymdvi+TRh+xu68dXloJQe2aY9V2QoFIRadKtJ0FIsEconfXvEkkTknRiWxGHU=
-X-Received: by 2002:a05:6830:33eb:b0:6e5:14d1:54bc with SMTP id i11-20020a05683033eb00b006e514d154bcmr11071074otu.0.1710792257076;
-        Mon, 18 Mar 2024 13:04:17 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEa6+F4MLCWW6AG4iEABFfgYmZgzy20NeyXKIcAPU+wG9nL9kvLpyVpLWIkaaqT6A2sxlc6og==
-X-Received: by 2002:a05:6830:33eb:b0:6e5:14d1:54bc with SMTP id i11-20020a05683033eb00b006e514d154bcmr11071025otu.0.1710792256645;
-        Mon, 18 Mar 2024 13:04:16 -0700 (PDT)
+        bh=vy04FBLzPG5Zls0F5g74nprsAX71rsrg1jdch17dleE=;
+        b=r6S6d77R31EAk6WIazF8riaRHO5zTCsprKIqSMmbQC+0fzWma5LCNTP0dAAXEVcr6Q
+         WJlJ5hVrszZx11kx4QJ86JpouJb9W9qtAsCUh4fu1chz1mV35fAk7tktbpiYZhlAPZYQ
+         62MeHbyeF+d+zDoIJ3kozOy2QKwAmkFg+UnGHkzMZMp4aVRpC6QLM2MXNdpIgyTZs4yK
+         8QL6VPvLtfDCbKdR1HkNpkwxaNMFfVOZ9X8LmB2BLgKxjXMXB7fq8Ce506QtcmFa04IM
+         rUJDqKizc/3GEjX+21HzpVOUT3XD6qHAktwm8OI70WA+H1DYsvkx3YqSTbyy4lehYI/b
+         nskw==
+X-Forwarded-Encrypted: i=1; AJvYcCXiXoZGZ4ATM661qU1qt4E7fgjjjBzQkYF4ofcMj3j8tKaMsMrsocapvLAhc5ijXOui91VK3AIASjp8KrvnA8l10QrIyTGj80IpJ6OCHQ==
+X-Gm-Message-State: AOJu0Yy+OAr1Goo5opftRbRBUO0r2Y3Djr3o/MTOGCMOrKEJ2dlJBOgI
+	c2/XaZHc3b6uioeeTpGHyTSXwDqVIhn+9hK8SbFbI5cLev11B9Komu5EysrJ+5ch0Lb1LK466C5
+	IsCARec+DLvZCRrCS4WKtlbB30gJpAgAZI9CUN2HbR5qjDlhEevGvw0OT0E6MwQ4=
+X-Received: by 2002:ac8:4c86:0:b0:430:c314:d150 with SMTP id j6-20020ac84c86000000b00430c314d150mr275842qtv.6.1710792259897;
+        Mon, 18 Mar 2024 13:04:19 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGpXWUncergFjfMSFDTE8/2jUGQ81NOYysiHRDsucc9G0cV8OOvdubCssw9QQ67SSZupi5Ulw==
+X-Received: by 2002:ac8:4c86:0:b0:430:c314:d150 with SMTP id j6-20020ac84c86000000b00430c314d150mr275803qtv.6.1710792259416;
+        Mon, 18 Mar 2024 13:04:19 -0700 (PDT)
 Received: from x1n.. ([99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id hj10-20020a05622a620a00b0042ebbc1196fsm3484491qtb.87.2024.03.18.13.04.15
+        by smtp.gmail.com with ESMTPSA id hj10-20020a05622a620a00b0042ebbc1196fsm3484491qtb.87.2024.03.18.13.04.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Mar 2024 13:04:16 -0700 (PDT)
+        Mon, 18 Mar 2024 13:04:19 -0700 (PDT)
 From: peterx@redhat.com
 To: linux-kernel@vger.kernel.org,
 	linux-mm@kvack.org
-Subject: [PATCH v2 07/14] mm/arm: Redefine pmd_huge() with pmd_leaf()
-Date: Mon, 18 Mar 2024 16:03:57 -0400
-Message-ID: <20240318200404.448346-8-peterx@redhat.com>
+Subject: [PATCH v2 09/14] mm/powerpc: Redefine pXd_huge() with pXd_leaf()
+Date: Mon, 18 Mar 2024 16:03:59 -0400
+Message-ID: <20240318200404.448346-10-peterx@redhat.com>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240318200404.448346-1-peterx@redhat.com>
 References: <20240318200404.448346-1-peterx@redhat.com>
@@ -101,64 +101,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-kernel@lists.infradead.org, Muchun Song <muchun.song@linux.dev>, Arnd Bergmann <arnd@arndb.de>, Shawn Guo <shawnguo@kernel.org>, Bjorn Andersson <andersson@kernel.org>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Matthew Wilcox <willy@infradead.org>, Konrad Dybcio <konrad.dybcio@linaro.org>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, peterx@redhat.com, Fabio Estevam <festevam@denx.de>, Jason Gunthorpe <jgg@nvidia.com>, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, Muchun Song <muchun.song@linux.dev>, x86@kernel.org, Nicholas Piggin <npiggin@gmail.com>, Matthew Wilcox <willy@infradead.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, peterx@redhat.com, Jason Gunthorpe <jgg@nvidia.com>, sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Peter Xu <peterx@redhat.com>
 
-Most of the archs already define these two APIs the same way.  ARM is more
-complicated in two aspects:
+PowerPC book3s 4K mostly has the same definition on both, except pXd_huge()
+constantly returns 0 for hash MMUs.  As Michael Ellerman pointed out [1],
+it is safe to check _PAGE_PTE on hash MMUs, as the bit will never be set so
+it will keep returning false.
 
-  - For pXd_huge() it's always checking against !PXD_TABLE_BIT, while for
-    pXd_leaf() it's always checking against PXD_TYPE_SECT.
+As a reference, __p[mu]d_mkhuge() will trigger a BUG_ON trying to create
+such huge mappings for 4K hash MMUs.  Meanwhile, the major powerpc hugetlb
+pgtable walker __find_linux_pte() already used pXd_leaf() to check leaf
+hugetlb mappings.
 
-  - SECT/TABLE bits are defined differently on 2-level v.s. 3-level ARM
-    pgtables, which makes the whole thing even harder to follow.
+The goal should be that we will have one API pXd_leaf() to detect all kinds
+of huge mappings (hugepd is still special in this case, though).  AFAICT we
+need to use the pXd_leaf() impl (rather than pXd_huge()'s) to make sure
+ie. THPs on hash MMU will also return true.
 
-Luckily, the second complexity should be hidden by the pmd_leaf()
-implementation against 2-level v.s. 3-level headers.  Invoke pmd_leaf()
-directly for pmd_huge(), to remove the first part of complexity.  This
-prepares to drop pXd_huge() API globally.
+This helps to simplify a follow up patch to drop pXd_huge() treewide.
 
-When at it, drop the obsolete comments - it's outdated.
+NOTE: *_leaf() definition need to be moved before the inclusion of
+asm/book3s/64/pgtable-4k.h, which defines pXd_huge() with it.
 
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc: Bjorn Andersson <andersson@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Konrad Dybcio <konrad.dybcio@linaro.org>
-Cc: Fabio Estevam <festevam@denx.de>
-Cc: linux-arm-kernel@lists.infradead.org
+[1] https://lore.kernel.org/r/87v85zo6w7.fsf@mail.lhotse
+
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Peter Xu <peterx@redhat.com>
 ---
- arch/arm/mm/hugetlbpage.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ .../include/asm/book3s/64/pgtable-4k.h        | 14 ++--------
+ arch/powerpc/include/asm/book3s/64/pgtable.h  | 27 +++++++++----------
+ 2 files changed, 14 insertions(+), 27 deletions(-)
 
-diff --git a/arch/arm/mm/hugetlbpage.c b/arch/arm/mm/hugetlbpage.c
-index dd7a0277c5c0..c2fa643f6bb5 100644
---- a/arch/arm/mm/hugetlbpage.c
-+++ b/arch/arm/mm/hugetlbpage.c
-@@ -18,11 +18,6 @@
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
- 
--/*
-- * On ARM, huge pages are backed by pmd's rather than pte's, so we do a lot
-- * of type casting from pmd_t * to pte_t *.
-- */
--
- int pud_huge(pud_t pud)
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+index 48f21820afe2..92545981bb49 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+@@ -8,22 +8,12 @@
+ #ifdef CONFIG_HUGETLB_PAGE
+ static inline int pmd_huge(pmd_t pmd)
  {
- 	return 0;
-@@ -30,5 +25,5 @@ int pud_huge(pud_t pud)
- 
- int pmd_huge(pmd_t pmd)
- {
--	return pmd_val(pmd) && !(pmd_val(pmd) & PMD_TABLE_BIT);
+-	/*
+-	 * leaf pte for huge page
+-	 */
+-	if (radix_enabled())
+-		return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
+-	return 0;
 +	return pmd_leaf(pmd);
  }
+ 
+ static inline int pud_huge(pud_t pud)
+ {
+-	/*
+-	 * leaf pte for huge page
+-	 */
+-	if (radix_enabled())
+-		return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
+-	return 0;
++	return pud_leaf(pud);
+ }
+ 
+ /*
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index df66dce8306f..fd7180fded75 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -262,6 +262,18 @@ extern unsigned long __kernel_io_end;
+ 
+ extern struct page *vmemmap;
+ extern unsigned long pci_io_base;
++
++#define pmd_leaf pmd_leaf
++static inline bool pmd_leaf(pmd_t pmd)
++{
++	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
++}
++
++#define pud_leaf pud_leaf
++static inline bool pud_leaf(pud_t pud)
++{
++	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
++}
+ #endif /* __ASSEMBLY__ */
+ 
+ #include <asm/book3s/64/hash.h>
+@@ -1436,20 +1448,5 @@ static inline bool is_pte_rw_upgrade(unsigned long old_val, unsigned long new_va
+ 	return false;
+ }
+ 
+-/*
+- * Like pmd_huge(), but works regardless of config options
+- */
+-#define pmd_leaf pmd_leaf
+-static inline bool pmd_leaf(pmd_t pmd)
+-{
+-	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
+-}
+-
+-#define pud_leaf pud_leaf
+-static inline bool pud_leaf(pud_t pud)
+-{
+-	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
+-}
+-
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_BOOK3S_64_PGTABLE_H_ */
 -- 
 2.44.0
 
