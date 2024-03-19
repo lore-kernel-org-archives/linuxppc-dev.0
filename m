@@ -4,75 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 024AEC54E71
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 17:55:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 885BDC54E71
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 18:37:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=kPVWUFLC;
+	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=bZRSuirt;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TzfWm2Rrbz3vXR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2024 04:55:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TzgSl5c41z3vXQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2024 05:37:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=kPVWUFLC;
+	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=bZRSuirt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2001:4860:4864:20::36; helo=mail-oa1-x36.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x36.google.com (mail-oa1-x36.google.com [IPv6:2001:4860:4864:20::36])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=raptorengineering.com (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org)
+Received: from raptorengineering.com (mail.raptorengineering.com [23.155.224.40])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TzfVx0JnJz3c4C
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2024 04:54:31 +1100 (AEDT)
-Received: by mail-oa1-x36.google.com with SMTP id 586e51a60fabf-22200c78d4fso2467889fac.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2024 10:54:31 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TzgRt64jPz3bZ3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2024 05:36:58 +1100 (AEDT)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.rptsys.com (Postfix) with ESMTP id 6486482853FD;
+	Tue, 19 Mar 2024 13:36:55 -0500 (CDT)
+Received: from mail.rptsys.com ([127.0.0.1])
+	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10032)
+	with ESMTP id zNGRQb1hjFIX; Tue, 19 Mar 2024 13:36:53 -0500 (CDT)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.rptsys.com (Postfix) with ESMTP id 95ED982857C6;
+	Tue, 19 Mar 2024 13:36:53 -0500 (CDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com 95ED982857C6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1710870869; x=1711475669; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=HF6Vl5KL4xpUREI17F/A98SYy0fCl/Pf+Aw5AKvgvKY=;
-        b=kPVWUFLCfuZsdLp4Q+L1wPjZGr2pfna34ZP1Hgkj6CMeCyhbxiKyQiR/lwY6LFQ5sV
-         /pqkuNRBtAP6bDbm27R64pmAQXQ23wqHFYNkqNS7lZh+VoO0ZkvDD5jk8EdX1klwebhT
-         ZtWy6q7s1OoAoPLuty6jN18xU+C0NWcras1UyjrivT/YQyswtLdN29H9pHVyncQyoEgn
-         KP9onPOogUo0mCUdSozwXRou90RvUnQ3pHyMmfNoO0wjs7TTgRDbhp5oDY3D5eAqpbA0
-         GKZsKTX1zBLo/bZXNzAc0EPhTN1xQMuAFKXItuVsYyiRnV/3/9LIAKWxFZZT4FX4h9sX
-         Zyfg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1710870869; x=1711475669;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HF6Vl5KL4xpUREI17F/A98SYy0fCl/Pf+Aw5AKvgvKY=;
-        b=SpJ2McU0Cg+54b8U8aIzA73e8KuAXQ6drOfopCwYRkU/d5xCBtq64Hz/bTOrOH1mJH
-         9BfWzs32QtmQn+axmIlqDd/ztvX71Gg6X4q64SLkllg/vomRtRZ/eQw+0SR+mM/+PXzj
-         OK+wOMXsMTw4MsChquzY+63UtMjMX3GZovH1iuvdolW6vUhbZxfAzdwV1ufBcm9viGSS
-         EdP8Q39wjIjb16e/ahVW2d3P+eXNDWC9z8gkz7cF78ztTPn21VKBPoJx+N1Tz7jq/XX+
-         e58m40L8GVLlV6WtX3Q2Oja6CPnkQTe5PxmlDiEQO1RmDkyLZnkZGFzGFhTDuaBPbwPz
-         QNdA==
-X-Forwarded-Encrypted: i=1; AJvYcCWZLnQQ8A/5NpW+1+koTmqkIs/9VYkq09ky+ZA7BPmLqvyLfI591Z7mQH3XUlBJGLK5+MMc7t1rteoKfLzeGfJ06aoSWIiyNT3GH2G00g==
-X-Gm-Message-State: AOJu0YyXW3ufdh+yW8C7XAiRnZP6tpgct2GBINxkn51au1B3U0FFHGcT
-	XSczyBK5btBhd126R14K2+YOg8wnvi6kWeLkczWrJEo60xl02wB6pup0X4moVy8=
-X-Google-Smtp-Source: AGHT+IHVIAnHnQZiZoDX/pbyOjP2H640ehA0I39KqURFs2tz8LL5UStmL8zs/cTqG9a5m1PaAXGInQ==
-X-Received: by 2002:a05:6871:110:b0:221:a517:17ec with SMTP id y16-20020a056871011000b00221a51717ecmr16967034oab.57.1710870868900;
-        Tue, 19 Mar 2024 10:54:28 -0700 (PDT)
-Received: from ziepe.ca ([12.97.180.36])
-        by smtp.gmail.com with ESMTPSA id gh11-20020a056638698b00b00477716fcbb8sm2429986jab.40.2024.03.19.10.54.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 Mar 2024 10:54:28 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.95)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1rmaVW-001eUR-KB;
-	Tue, 19 Mar 2024 11:32:02 -0300
-Date: Tue, 19 Mar 2024 11:32:02 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Shivaprasad G Bhat <sbhat@linux.ibm.com>
-Subject: Re: [RFC PATCH 1/3] powerpc/pseries/iommu: Bring back userspace view
- for single level TCE tables
-Message-ID: <20240319143202.GA66976@ziepe.ca>
-References: <171026724548.8367.8321359354119254395.stgit@linux.ibm.com>
- <171026725393.8367.17497620074051138306.stgit@linux.ibm.com>
+	d=raptorengineering.com; s=B8E824E6-0BE2-11E6-931D-288C65937AAD;
+	t=1710873413; bh=jjl+qmMtiRVpAUsU+d+UXWZRLmd8K+2jgNQsp7lj+04=;
+	h=Date:From:To:Message-ID:MIME-Version;
+	b=bZRSuirtYJVJx6DLzBTldOSSqPcXRGEoyzhi4eq6ezoK3oOseSQDCxWemf+VcT27i
+	 P/2bOL4Vy81473wmz5gBDMJvZNe96fzmvW6jtLHauh0qPnwNM/o/JoLAm8dX1OX4HK
+	 pEZEQTCZDnUY8x8A6J7bhD/nF/t+H+0XQdN7gKfc=
+X-Virus-Scanned: amavisd-new at rptsys.com
+Received: from mail.rptsys.com ([127.0.0.1])
+	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id C_5K4lh6-1JZ; Tue, 19 Mar 2024 13:36:53 -0500 (CDT)
+Received: from vali.starlink.edu (localhost [127.0.0.1])
+	by mail.rptsys.com (Postfix) with ESMTP id 531A182853FD;
+	Tue, 19 Mar 2024 13:36:53 -0500 (CDT)
+Date: Tue, 19 Mar 2024 13:36:51 -0500 (CDT)
+From: Timothy Pearson <tpearson@raptorengineering.com>
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Message-ID: <1386271253.24278379.1710873411133.JavaMail.zimbra@raptorengineeringinc.com>
+In-Reply-To: <20240319143202.GA66976@ziepe.ca>
+References: <171026724548.8367.8321359354119254395.stgit@linux.ibm.com> <171026725393.8367.17497620074051138306.stgit@linux.ibm.com> <20240319143202.GA66976@ziepe.ca>
+Subject: Re: [RFC PATCH 1/3] powerpc/pseries/iommu: Bring back userspace
+ view for single level TCE tables
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <171026725393.8367.17497620074051138306.stgit@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Mailer: Zimbra 8.5.0_GA_3042 (ZimbraWebClient - GC122 (Linux)/8.5.0_GA_3042)
+Thread-Topic: powerpc/pseries/iommu: Bring back userspace view for single level TCE tables
+Thread-Index: eRa4lP8lSoGisWT5ua6Vo0RITwt14g==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,23 +70,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: svaidy@linux.ibm.com, robh@kernel.org, jroedel@suse.de, kvm@vger.kernel.org, gbatra@linux.vnet.ibm.com, aik@ozlabs.ru, alex.williamson@redhat.com, linux-kernel@vger.kernel.org, aneesh.kumar@kernel.org, brking@linux.vnet.ibm.com, tpearson@raptorengineering.com, npiggin@gmail.com, naveen.n.rao@linux.ibm.com, vaibhav@linux.ibm.com, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org, aik@amd.com
+Cc: svaidy@linux.ibm.com, robh@kernel.org, jroedel <jroedel@suse.de>, gbatra <gbatra@linux.vnet.ibm.com>, Shivaprasad G Bhat <sbhat@linux.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>, Alex Williamson <alex.williamson@redhat.com>, npiggin <npiggin@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>, aneesh kumar <aneesh.kumar@kernel.org>, brking@linux.vnet.ibm.com, Timothy Pearson <tpearson@raptorengineering.com>, kvm <kvm@vger.kernel.org>, naveen n rao <naveen.n.rao@linux.ibm.com>, vaibhav <vaibhav@linux.ibm.com>, msuchanek@suse.de, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, aik <aik@amd.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 12, 2024 at 01:14:20PM -0500, Shivaprasad G Bhat wrote:
-> The commit 090bad39b237a ("powerpc/powernv: Add indirect levels to
-> it_userspace") which implemented the tce indirect levels
-> support for PowerNV ended up removing the single level support
-> which existed by default(generic tce_iommu_userspace_view_alloc/free()
-> calls). On pSeries the TCEs are single level, and the allocation
-> of userspace view is lost with the removal of generic code.
 
-:( :(
 
-If this has been broken since 2018 and nobody cared till now can we
-please go in a direction of moving this code to the new iommu APIs
-instead of doubling down on more of this old stuff that apparently
-almost nobody cares about ??
+----- Original Message -----
+> From: "Jason Gunthorpe" <jgg@ziepe.ca>
+> To: "Shivaprasad G Bhat" <sbhat@linux.ibm.com>
+> Cc: "Timothy Pearson" <tpearson@raptorengineering.com>, "Alex Williamson" <alex.williamson@redhat.com>, "linuxppc-dev"
+> <linuxppc-dev@lists.ozlabs.org>, "Michael Ellerman" <mpe@ellerman.id.au>, "npiggin" <npiggin@gmail.com>, "christophe
+> leroy" <christophe.leroy@csgroup.eu>, "aneesh kumar" <aneesh.kumar@kernel.org>, "naveen n rao"
+> <naveen.n.rao@linux.ibm.com>, "gbatra" <gbatra@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com, "Alexey Kardashevskiy"
+> <aik@ozlabs.ru>, robh@kernel.org, "linux-kernel" <linux-kernel@vger.kernel.org>, "kvm" <kvm@vger.kernel.org>, "aik"
+> <aik@amd.com>, msuchanek@suse.de, "jroedel" <jroedel@suse.de>, "vaibhav" <vaibhav@linux.ibm.com>, svaidy@linux.ibm.com
+> Sent: Tuesday, March 19, 2024 9:32:02 AM
+> Subject: Re: [RFC PATCH 1/3] powerpc/pseries/iommu: Bring back userspace view for single level TCE tables
 
-Jason
+> On Tue, Mar 12, 2024 at 01:14:20PM -0500, Shivaprasad G Bhat wrote:
+>> The commit 090bad39b237a ("powerpc/powernv: Add indirect levels to
+>> it_userspace") which implemented the tce indirect levels
+>> support for PowerNV ended up removing the single level support
+>> which existed by default(generic tce_iommu_userspace_view_alloc/free()
+>> calls). On pSeries the TCEs are single level, and the allocation
+>> of userspace view is lost with the removal of generic code.
+> 
+> :( :(
+> 
+> If this has been broken since 2018 and nobody cared till now can we
+> please go in a direction of moving this code to the new iommu APIs
+> instead of doubling down on more of this old stuff that apparently
+> almost nobody cares about ??
+> 
+> Jason
+
+Just FYI Raptor is working on porting things over to the new APIs.  RFC patches should be posted in the next week or two.
