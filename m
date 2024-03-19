@@ -4,79 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A70F0C54E5D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 07:22:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F207C54E60
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 08:00:26 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RbR7nSoD;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TzNTN1Vdpz3d2j
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 18:22:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=srs0=kk+l=kz=xs4all.nl=hverkuil@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TzPKN5HxJz3dXD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 19:00:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RbR7nSoD;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=npiggin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TzNSt6nsCz3cQm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2024 18:21:50 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id B3309CE0A13;
-	Tue, 19 Mar 2024 07:21:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D98CC433F1;
-	Tue, 19 Mar 2024 07:21:42 +0000 (UTC)
-Message-ID: <0898cc9b-5eaa-41b4-9fc3-2483044c537a@xs4all.nl>
-Date: Tue, 19 Mar 2024 08:21:40 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TzPJY5Q3Kz3cCr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2024 18:59:40 +1100 (AEDT)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-6e46dcd8feaso3054061b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2024 00:59:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1710835175; x=1711439975; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/fQl+aBLc/vpQz7SyONYn8N3lgkZT1awNMICSaZyEFc=;
+        b=RbR7nSoDGi4qQTlncnbAMmnP7mynp7ZWa0AJ39aH6WgiooOHRP9Dhby5epWOEam1Py
+         QtoDAiiRyiDGlZOKpwX+em7KOClpymFmu+wiiK7Fuh9XtTvuwQOTt5pWlRImfw3zhaRs
+         7sPqs8ZEYaS5iuk8TDRl1WfX7uyxT20JvG8895RCaZTBX/YcDiXWcmvDIOx3HG5GGlEl
+         ZpARy8/cvEB58QxLskLpc+LwvmvX3fUQgkKPujNhoZ4Sc64cLABFouRAYWgu7NV91dLW
+         ZpnhSDygUHMwnG5OWdlmDIQCPvANz1Hz0R3U0chmEYlsEYkgvV5mdIsVh7G6oR2Q4vhZ
+         jLug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710835175; x=1711439975;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/fQl+aBLc/vpQz7SyONYn8N3lgkZT1awNMICSaZyEFc=;
+        b=CEZZG7cQ/m2LOAoMvlKB2Aa0gMt7Fky4zKcrShUsgj8r8SYgDQwRHNZ1XQUYnFJZHl
+         zn22PWKp0ofKFb41ANH0nFTxSKljMKKSQN8JMfWz+d/MgLjRDuNuYATMFRI2XBILIvoW
+         f6ZvE8Z5HlkjkoqANd3UPHtdNNy3JA9mbjZw54Icmm8yYmeEkxHDhYgfxSwNvUNUXb5v
+         oGpVIBjNGG1i98eu/6UH5iUt9S53ei+xnNRztsJyP6f4QdH7PEUj99ZGrWeIq6eUtMRY
+         +pVC6VKTDZhBFXtPhxGd3NF9Z9WzXCsfnLx8vemUbb4feh2fQ1jIqhcLuSik6Zg1rYX1
+         1rVw==
+X-Forwarded-Encrypted: i=1; AJvYcCV3jdYoL3D8OpXMPYDgVm8llbO6Ah7DDGt85p28/oMLj4b2uSswiLicbxzaq3jG07WSBm3XmXp4XWuFne4bxUf7iBD8MW6ZvjucyNu3/Q==
+X-Gm-Message-State: AOJu0Yz1ETC6rS2IElFSmzegFYXMkLDJsG84QDeYg6rFAHRUHEHcLANR
+	xrU2w62xOuO95imu5ZkZPPhjrfX9SXR+yrsZmxF1ljyi/9tCt02h
+X-Google-Smtp-Source: AGHT+IEXcaZ+nCpbskQUwrx6BQ/MLiJbPCS2B1Ghxjxr9Qzo0j0OmbjqEbdMoyNbFA/iW3gLzs4tgg==
+X-Received: by 2002:a05:6a00:1a88:b0:6e6:ce9e:fed0 with SMTP id e8-20020a056a001a8800b006e6ce9efed0mr2243761pfv.27.1710835175445;
+        Tue, 19 Mar 2024 00:59:35 -0700 (PDT)
+Received: from wheely.local0.net (193-116-208-39.tpgi.com.au. [193.116.208.39])
+        by smtp.gmail.com with ESMTPSA id q23-20020a62ae17000000b006e5c464c0a9sm9121283pff.23.2024.03.19.00.59.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 19 Mar 2024 00:59:35 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Thomas Huth <thuth@redhat.com>
+Subject: [kvm-unit-tests PATCH v7 00/35] migration, powerpc improvements
+Date: Tue, 19 Mar 2024 17:58:51 +1000
+Message-ID: <20240319075926.2422707-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.42.0
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v14 00/16] Add audio support in v4l2 framework
-Content-Language: en-US, nl
-To: Shengjiu Wang <shengjiu.wang@gmail.com>
-References: <1710150841-26991-1-git-send-email-shengjiu.wang@nxp.com>
- <399da377-c2b6-4226-9108-8a1e776b6f3b@xs4all.nl>
- <CAA+D8APgFvATshUJCNxCynJsYr_6=A+V=xf5qFpimd4i4g1ygg@mail.gmail.com>
- <CAA+D8AM-ptHySA6V-s1h3MESfyVZPxB-o_sm9F4wJYCWTeV+YQ@mail.gmail.com>
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Autocrypt: addr=hverkuil@xs4all.nl; keydata=
- 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
-In-Reply-To: <CAA+D8AM-ptHySA6V-s1h3MESfyVZPxB-o_sm9F4wJYCWTeV+YQ@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -90,238 +77,226 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, lgirdwood@gmail.com, Xiubo.Lee@gmail.com, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org, broonie@kernel.org, sakari.ailus@iki.fi, perex@perex.cz, mchehab@kernel.org, festevam@gmail.com, m.szyprowski@samsung.com
+Cc: Laurent Vivier <lvivier@redhat.com>, kvm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Andrew Jones <andrew.jones@linux.dev>, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 19/03/2024 4:14 am, Shengjiu Wang wrote:
-> On Tue, Mar 19, 2024 at 10:24 AM Shengjiu Wang <shengjiu.wang@gmail.com> wrote:
->>
->> On Mon, Mar 18, 2024 at 11:56 PM Hans Verkuil <hverkuil@xs4all.nl> wrote:
->>>
->>> Hi Shengjiu,
->>>
->>> I was about to prepare a pull request for this when I realized that
->>> entries for the new drivers need to be added to the MAINTAINERS file.
->>>
->>> Can you post patches 'v14 17/16' and 'v14/18/16' adding entries for each
->>> new driver?
->>
->> Ok,  How about the change below?
->>
->> VIRTUAL MEM2MEM DRIVER FOR AUDIO
->> M:      Hans Verkuil <hverkuil@xs4all.nl>
->> M:      Shengjiu Wang <shengjiu.wang@gmail.com>
->> L:      linux-media@vger.kernel.org
->> S:      Maintained
->> W:      https://linuxtv.org
->> T:      git git://linuxtv.org/media_tree.git
->> F:      drivers/media/test-drivers/vim2m-audio.c
->>
->> NXP ASRC V4L2 MEM2MEM DRIVERS
->> M:      Shengjiu Wang <shengjiu.wang@gmail.com>
->> L:      linux-media@vger.kernel.org
->> S:      Maintained
->> W:      https://linuxtv.org
->> T:      git git://linuxtv.org/media_tree.git
->> F:      drivers/media/platform/nxp/imx-asrc.c
->>
-> 
-> BTW, should I merge this change to PATCH 15/16  and PATCH 16/16?
-> That I will resend the whole patch series.  Seems this is a better way.
+Tree here
+https://gitlab.com/npiggin/kvm-unit-tests/-/tree/powerpc?ref_type=heads
 
-That's fine!
+Sorry I lost the v6 tag on the previous series. Since then,
+I merged the series with the migration ones since they touch
+the same things.
 
-Regards,
+Addressed almost all comments since the last post, I think just
+one case where a "elif kvm" branch was kept in the powerpc/run
+script because I find it convenient to add KVM specific things
+there if needed.
 
-	Hans
+Main changes since v6 (thanks to reviewers):
+- Rebased on new stack backtrace patches, and cherry picks
+  from v6.
+- Move new files to SPDX headers.
+- Improve comments on and simplify interrupt stack frame and
+  backtracing.
+- Add a docs/ directory with unittests.cfg documentation
+  deduplicated from arch code and moved there, and document
+  new machine= option. Not exactly 1:1 move of comments, so
+  suggestions and improvements welcome there.
+- Made new shell script a bit more consistent with style. I
+  do have shellcheck working and some patches started, btw.,
+  will look at submitting that after this series.
+- Fix up a few unittests and gitlab CI to avoid failing on the
+  QEMU TCG migration bug. Reduced runtime of some of the new
+  migration tests.
 
-> 
-> Best regrads
-> Shengjiu Wang
-> 
->> best regards
->> wang shengjiu
->>
->>>
->>> Thank you,
->>>
->>>         Hans
->>>
->>> On 11/03/2024 10:53 am, Shengjiu Wang wrote:
->>>> Audio signal processing also has the requirement for memory to
->>>> memory similar as Video.
->>>>
->>>> This asrc memory to memory (memory ->asrc->memory) case is a non
->>>> real time use case.
->>>>
->>>> User fills the input buffer to the asrc module, after conversion, then asrc
->>>> sends back the output buffer to user. So it is not a traditional ALSA playback
->>>> and capture case.
->>>>
->>>> It is a specific use case,  there is no reference in current kernel.
->>>> v4l2 memory to memory is the closed implementation,  v4l2 current
->>>> support video, image, radio, tuner, touch devices, so it is not
->>>> complicated to add support for this specific audio case.
->>>>
->>>> Because we had implemented the "memory -> asrc ->i2s device-> codec"
->>>> use case in ALSA.  Now the "memory->asrc->memory" needs
->>>> to reuse the code in asrc driver, so the first 3 patches is for refining
->>>> the code to make it can be shared by the "memory->asrc->memory"
->>>> driver.
->>>>
->>>> The main change is in the v4l2 side, A /dev/vl4-audioX will be created,
->>>> user applications only use the ioctl of v4l2 framework.
->>>>
->>>> Other change is to add memory to memory support for two kinds of i.MX ASRC
->>>> module.
->>>>
->>>> changes in v14:
->>>> - document the reservation of 'AUXX' fourcc format.
->>>> - add v4l2_audfmt_to_fourcc() definition.
->>>>
->>>> changes in v13
->>>> - change 'pixelformat' to 'audioformat' in dev-audio-mem2mem.rst
->>>> - add more description for clock drift in ext-ctrls-audio-m2m.rst
->>>> - Add "media: v4l2-ctrls: add support for fraction_bits" from Hans
->>>>   to avoid build issue for kernel test robot
->>>>
->>>> changes in v12
->>>> - minor changes according to comments
->>>> - drop min_buffers_needed = 1 and V4L2_CTRL_FLAG_UPDATE flag
->>>> - drop bus_info
->>>>
->>>> changes in v11
->>>> - add add-fixed-point-test-controls in vivid.
->>>> - add v4l2_ctrl_fp_compose() helper function for min and max
->>>>
->>>> changes in v10
->>>> - remove FIXED_POINT type
->>>> - change code base on media: v4l2-ctrls: add support for fraction_bits
->>>> - fix issue reported by kernel test robot
->>>> - remove module_alias
->>>>
->>>> changes in v9:
->>>> - add MEDIA_ENT_F_PROC_AUDIO_RESAMPLER.
->>>> - add MEDIA_INTF_T_V4L_AUDIO
->>>> - add media controller support
->>>> - refine the vim2m-audio to support 8k<->16k conversion.
->>>>
->>>> changes in v8:
->>>> - refine V4L2_CAP_AUDIO_M2M to be 0x00000008
->>>> - update doc for FIXED_POINT
->>>> - address comments for imx-asrc
->>>>
->>>> changes in v7:
->>>> - add acked-by from Mark
->>>> - separate commit for fixed point, m2m audio class, audio rate controls
->>>> - use INTEGER_MENU for rate,  FIXED_POINT for rate offset
->>>> - remove used fmts
->>>> - address other comments for Hans
->>>>
->>>> changes in v6:
->>>> - use m2m_prepare/m2m_unprepare/m2m_start/m2m_stop to replace
->>>>   m2m_start_part_one/m2m_stop_part_one, m2m_start_part_two/m2m_stop_part_two.
->>>> - change V4L2_CTRL_TYPE_ASRC_RATE to V4L2_CTRL_TYPE_FIXED_POINT
->>>> - fix warning by kernel test rebot
->>>> - remove some unused format V4L2_AUDIO_FMT_XX
->>>> - Get SNDRV_PCM_FORMAT from V4L2_AUDIO_FMT in driver.
->>>> - rename audm2m to viaudm2m.
->>>>
->>>> changes in v5:
->>>> - remove V4L2_AUDIO_FMT_LPCM
->>>> - define audio pixel format like V4L2_AUDIO_FMT_S8...
->>>> - remove rate and format in struct v4l2_audio_format.
->>>> - Add V4L2_CID_ASRC_SOURCE_RATE and V4L2_CID_ASRC_DEST_RATE controls
->>>> - updata document accordingly.
->>>>
->>>> changes in v4:
->>>> - update document style
->>>> - separate V4L2_AUDIO_FMT_LPCM and V4L2_CAP_AUDIO_M2M in separate commit
->>>>
->>>> changes in v3:
->>>> - Modify documents for adding audio m2m support
->>>> - Add audio virtual m2m driver
->>>> - Defined V4L2_AUDIO_FMT_LPCM format type for audio.
->>>> - Defined V4L2_CAP_AUDIO_M2M capability type for audio m2m case.
->>>> - with modification in v4l-utils, pass v4l2-compliance test.
->>>>
->>>> changes in v2:
->>>> - decouple the implementation in v4l2 and ALSA
->>>> - implement the memory to memory driver as a platfrom driver
->>>>   and move it to driver/media
->>>> - move fsl_asrc_common.h to include/sound folder
->>>>
->>>> Hans Verkuil (1):
->>>>   media: v4l2-ctrls: add support for fraction_bits
->>>>
->>>> Shengjiu Wang (15):
->>>>   ASoC: fsl_asrc: define functions for memory to memory usage
->>>>   ASoC: fsl_easrc: define functions for memory to memory usage
->>>>   ASoC: fsl_asrc: move fsl_asrc_common.h to include/sound
->>>>   ASoC: fsl_asrc: register m2m platform device
->>>>   ASoC: fsl_easrc: register m2m platform device
->>>>   media: uapi: Add V4L2_CAP_AUDIO_M2M capability flag
->>>>   media: v4l2: Add audio capture and output support
->>>>   media: uapi: Define audio sample format fourcc type
->>>>   media: uapi: Add V4L2_CTRL_CLASS_M2M_AUDIO
->>>>   media: uapi: Add audio rate controls support
->>>>   media: uapi: Declare interface types for Audio
->>>>   media: uapi: Add an entity type for audio resampler
->>>>   media: vivid: add fixed point test controls
->>>>   media: imx-asrc: Add memory to memory driver
->>>>   media: vim2m-audio: add virtual driver for audio memory to memory
->>>>
->>>>  .../media/mediactl/media-types.rst            |   11 +
->>>>  .../userspace-api/media/v4l/buffer.rst        |    6 +
->>>>  .../userspace-api/media/v4l/common.rst        |    1 +
->>>>  .../media/v4l/dev-audio-mem2mem.rst           |   71 +
->>>>  .../userspace-api/media/v4l/devices.rst       |    1 +
->>>>  .../media/v4l/ext-ctrls-audio-m2m.rst         |   59 +
->>>>  .../userspace-api/media/v4l/pixfmt-audio.rst  |  100 ++
->>>>  .../userspace-api/media/v4l/pixfmt.rst        |    1 +
->>>>  .../media/v4l/vidioc-enum-fmt.rst             |    2 +
->>>>  .../media/v4l/vidioc-g-ext-ctrls.rst          |    4 +
->>>>  .../userspace-api/media/v4l/vidioc-g-fmt.rst  |    4 +
->>>>  .../media/v4l/vidioc-querycap.rst             |    3 +
->>>>  .../media/v4l/vidioc-queryctrl.rst            |   11 +-
->>>>  .../media/videodev2.h.rst.exceptions          |    3 +
->>>>  .../media/common/videobuf2/videobuf2-v4l2.c   |    4 +
->>>>  drivers/media/platform/nxp/Kconfig            |   13 +
->>>>  drivers/media/platform/nxp/Makefile           |    1 +
->>>>  drivers/media/platform/nxp/imx-asrc.c         | 1256 +++++++++++++++++
->>>>  drivers/media/test-drivers/Kconfig            |   10 +
->>>>  drivers/media/test-drivers/Makefile           |    1 +
->>>>  drivers/media/test-drivers/vim2m-audio.c      |  793 +++++++++++
->>>>  drivers/media/test-drivers/vivid/vivid-core.h |    2 +
->>>>  .../media/test-drivers/vivid/vivid-ctrls.c    |   26 +
->>>>  drivers/media/v4l2-core/v4l2-compat-ioctl32.c |    9 +
->>>>  drivers/media/v4l2-core/v4l2-ctrls-api.c      |    1 +
->>>>  drivers/media/v4l2-core/v4l2-ctrls-core.c     |   93 +-
->>>>  drivers/media/v4l2-core/v4l2-ctrls-defs.c     |   10 +
->>>>  drivers/media/v4l2-core/v4l2-dev.c            |   21 +
->>>>  drivers/media/v4l2-core/v4l2-ioctl.c          |   66 +
->>>>  drivers/media/v4l2-core/v4l2-mem2mem.c        |   13 +-
->>>>  include/media/v4l2-ctrls.h                    |   13 +-
->>>>  include/media/v4l2-dev.h                      |    2 +
->>>>  include/media/v4l2-ioctl.h                    |   34 +
->>>>  .../fsl => include/sound}/fsl_asrc_common.h   |   60 +
->>>>  include/uapi/linux/media.h                    |    2 +
->>>>  include/uapi/linux/v4l2-controls.h            |    9 +
->>>>  include/uapi/linux/videodev2.h                |   50 +-
->>>>  sound/soc/fsl/fsl_asrc.c                      |  144 ++
->>>>  sound/soc/fsl/fsl_asrc.h                      |    4 +-
->>>>  sound/soc/fsl/fsl_asrc_dma.c                  |    2 +-
->>>>  sound/soc/fsl/fsl_easrc.c                     |  233 +++
->>>>  sound/soc/fsl/fsl_easrc.h                     |    6 +-
->>>>  42 files changed, 3128 insertions(+), 27 deletions(-)
->>>>  create mode 100644 Documentation/userspace-api/media/v4l/dev-audio-mem2mem.rst
->>>>  create mode 100644 Documentation/userspace-api/media/v4l/ext-ctrls-audio-m2m.rst
->>>>  create mode 100644 Documentation/userspace-api/media/v4l/pixfmt-audio.rst
->>>>  create mode 100644 drivers/media/platform/nxp/imx-asrc.c
->>>>  create mode 100644 drivers/media/test-drivers/vim2m-audio.c
->>>>  rename {sound/soc/fsl => include/sound}/fsl_asrc_common.h (60%)
->>>>
->>>
-> 
+Thanks,
+Nick
+
+Nicholas Piggin (35):
+  arch-run: Add functions to help handle migration directives from test
+  arch-run: Keep infifo open
+  migration: Add a migrate_skip command
+  (arm|s390): Use migrate_skip in test cases
+  arch-run: Add a "continuous" migration option for tests
+  gitlab-ci: Run migration selftest on s390x and powerpc
+  common: add memory dirtying vs migration test
+  powerpc: Fix KVM caps on POWER9 hosts
+  powerpc: Fix stack backtrace termination
+  powerpc: interrupt stack backtracing
+  powerpc/sprs: Specify SPRs with data rather than code
+  powerpc/sprs: Avoid taking PMU interrupts caused by register fuzzing
+  doc: start documentation directory with unittests.cfg doc
+  scripts: allow machine option to be specified in unittests.cfg
+  scripts: Accommodate powerpc powernv machine differences
+  powerpc: Support powernv machine with QEMU TCG
+  powerpc: Fix emulator illegal instruction test for powernv
+  powerpc/sprs: Test hypervisor registers on powernv machine
+  powerpc: general interrupt tests
+  powerpc: Add rtas stop-self support
+  powerpc: Remove broken SMP exception stack setup
+  powerpc: add SMP and IPI support
+  powerpc: Permit ACCEL=tcg,thread=single
+  powerpc: Avoid using larx/stcx. in spinlocks when only one CPU is
+    running
+  powerpc: Add atomics tests
+  powerpc: Add timebase tests
+  powerpc: Add MMU support
+  common/sieve: Use vmalloc.h for setup_mmu definition
+  common/sieve: Support machines without MMU
+  powerpc: Add sieve.c common test
+  powerpc: add usermode support
+  powerpc: add pmu tests
+  configure: Make arch_libdir a first-class entity
+  powerpc: Remove remnants of ppc64 directory and build structure
+  powerpc: gitlab CI update
+
+ .gitlab-ci.yml                           |  26 +-
+ MAINTAINERS                              |   1 -
+ Makefile                                 |   2 +-
+ arm/gic.c                                |  21 +-
+ arm/unittests.cfg                        |  26 +-
+ common/memory-verify.c                   |  67 +++
+ common/selftest-migration.c              |  26 +-
+ common/sieve.c                           |  15 +-
+ configure                                |  58 +-
+ docs/unittests.txt                       |  95 ++++
+ lib/libcflat.h                           |   2 -
+ lib/migrate.c                            |  37 +-
+ lib/migrate.h                            |   5 +
+ lib/{ppc64 => powerpc}/asm-offsets.c     |   7 +
+ lib/{ppc64 => powerpc}/asm/asm-offsets.h |   0
+ lib/powerpc/asm/atomic.h                 |   6 +
+ lib/powerpc/asm/barrier.h                |  12 +
+ lib/{ppc64 => powerpc}/asm/bitops.h      |   4 +-
+ lib/powerpc/asm/hcall.h                  |   6 +
+ lib/{ppc64 => powerpc}/asm/io.h          |   4 +-
+ lib/powerpc/asm/mmu.h                    |  10 +
+ lib/powerpc/asm/opal.h                   |  22 +
+ lib/powerpc/asm/page.h                   |  65 +++
+ lib/powerpc/asm/pgtable-hwdef.h          |  66 +++
+ lib/powerpc/asm/pgtable.h                | 125 +++++
+ lib/powerpc/asm/processor.h              |  63 +++
+ lib/{ppc64 => powerpc}/asm/ptrace.h      |  22 +-
+ lib/powerpc/asm/reg.h                    |  42 ++
+ lib/powerpc/asm/rtas.h                   |   2 +
+ lib/powerpc/asm/setup.h                  |   3 +-
+ lib/powerpc/asm/smp.h                    |  50 +-
+ lib/powerpc/asm/spinlock.h               |  11 +
+ lib/powerpc/asm/stack.h                  |   3 +
+ lib/{ppc64 => powerpc}/asm/vpa.h         |   0
+ lib/powerpc/hcall.c                      |   4 +-
+ lib/powerpc/io.c                         |  41 +-
+ lib/powerpc/io.h                         |   6 +
+ lib/powerpc/mmu.c                        | 274 ++++++++++
+ lib/powerpc/opal-calls.S                 |  50 ++
+ lib/powerpc/opal.c                       |  76 +++
+ lib/powerpc/processor.c                  |  91 +++-
+ lib/powerpc/rtas.c                       |  81 ++-
+ lib/powerpc/setup.c                      | 159 +++++-
+ lib/powerpc/smp.c                        | 287 ++++++++--
+ lib/powerpc/spinlock.c                   |  33 ++
+ lib/powerpc/stack.c                      |  53 ++
+ lib/ppc64/.gitignore                     |   1 -
+ lib/ppc64/asm/barrier.h                  |   9 -
+ lib/ppc64/asm/handlers.h                 |   1 -
+ lib/ppc64/asm/hcall.h                    |   1 -
+ lib/ppc64/asm/memory_areas.h             |   6 -
+ lib/ppc64/asm/page.h                     |   1 -
+ lib/ppc64/asm/ppc_asm.h                  |   1 -
+ lib/ppc64/asm/processor.h                |   1 -
+ lib/ppc64/asm/reg.h                      |   1 -
+ lib/ppc64/asm/rtas.h                     |   1 -
+ lib/ppc64/asm/setup.h                    |   1 -
+ lib/ppc64/asm/smp.h                      |   1 -
+ lib/ppc64/asm/spinlock.h                 |   6 -
+ lib/ppc64/asm/stack.h                    |   8 -
+ lib/s390x/io.c                           |   1 +
+ lib/s390x/uv.h                           |   1 +
+ lib/vmalloc.c                            |   7 +
+ lib/vmalloc.h                            |   2 +
+ lib/x86/vm.h                             |   1 +
+ powerpc/Makefile                         | 111 +++-
+ powerpc/Makefile.common                  |  85 ---
+ powerpc/Makefile.ppc64                   |  27 -
+ powerpc/atomics.c                        | 374 +++++++++++++
+ powerpc/cstart64.S                       |  66 ++-
+ powerpc/emulator.c                       |  16 +
+ powerpc/interrupts.c                     | 516 ++++++++++++++++++
+ powerpc/memory-verify.c                  |   1 +
+ powerpc/pmu.c                            | 336 ++++++++++++
+ powerpc/run                              |  42 +-
+ powerpc/selftest.c                       |   4 +-
+ powerpc/sieve.c                          |   1 +
+ powerpc/smp.c                            | 348 ++++++++++++
+ powerpc/sprs.c                           | 659 ++++++++++++++++-------
+ powerpc/timebase.c                       | 329 +++++++++++
+ powerpc/tm.c                             |   4 +-
+ powerpc/unittests.cfg                    | 101 +++-
+ riscv/unittests.cfg                      |  26 +-
+ s390x/Makefile                           |   1 +
+ s390x/memory-verify.c                    |   1 +
+ s390x/migration-cmm.c                    |   8 +-
+ s390x/migration-skey.c                   |   4 +-
+ s390x/migration.c                        |   1 +
+ s390x/mvpg.c                             |   1 +
+ s390x/selftest.c                         |   1 +
+ s390x/unittests.cfg                      |  37 +-
+ scripts/arch-run.bash                    | 116 +++-
+ scripts/common.bash                      |   8 +-
+ scripts/runtime.bash                     |  22 +-
+ x86/pmu.c                                |   1 +
+ x86/pmu_lbr.c                            |   1 +
+ x86/unittests.cfg                        |  26 +-
+ x86/vmexit.c                             |   1 +
+ x86/vmware_backdoors.c                   |   1 +
+ 99 files changed, 4729 insertions(+), 657 deletions(-)
+ create mode 100644 common/memory-verify.c
+ create mode 100644 docs/unittests.txt
+ rename lib/{ppc64 => powerpc}/asm-offsets.c (94%)
+ rename lib/{ppc64 => powerpc}/asm/asm-offsets.h (100%)
+ create mode 100644 lib/powerpc/asm/atomic.h
+ create mode 100644 lib/powerpc/asm/barrier.h
+ rename lib/{ppc64 => powerpc}/asm/bitops.h (69%)
+ rename lib/{ppc64 => powerpc}/asm/io.h (50%)
+ create mode 100644 lib/powerpc/asm/mmu.h
+ create mode 100644 lib/powerpc/asm/opal.h
+ create mode 100644 lib/powerpc/asm/page.h
+ create mode 100644 lib/powerpc/asm/pgtable-hwdef.h
+ create mode 100644 lib/powerpc/asm/pgtable.h
+ rename lib/{ppc64 => powerpc}/asm/ptrace.h (59%)
+ create mode 100644 lib/powerpc/asm/spinlock.h
+ rename lib/{ppc64 => powerpc}/asm/vpa.h (100%)
+ create mode 100644 lib/powerpc/mmu.c
+ create mode 100644 lib/powerpc/opal-calls.S
+ create mode 100644 lib/powerpc/opal.c
+ create mode 100644 lib/powerpc/spinlock.c
+ create mode 100644 lib/powerpc/stack.c
+ delete mode 100644 lib/ppc64/.gitignore
+ delete mode 100644 lib/ppc64/asm/barrier.h
+ delete mode 100644 lib/ppc64/asm/handlers.h
+ delete mode 100644 lib/ppc64/asm/hcall.h
+ delete mode 100644 lib/ppc64/asm/memory_areas.h
+ delete mode 100644 lib/ppc64/asm/page.h
+ delete mode 100644 lib/ppc64/asm/ppc_asm.h
+ delete mode 100644 lib/ppc64/asm/processor.h
+ delete mode 100644 lib/ppc64/asm/reg.h
+ delete mode 100644 lib/ppc64/asm/rtas.h
+ delete mode 100644 lib/ppc64/asm/setup.h
+ delete mode 100644 lib/ppc64/asm/smp.h
+ delete mode 100644 lib/ppc64/asm/spinlock.h
+ delete mode 100644 lib/ppc64/asm/stack.h
+ delete mode 100644 powerpc/Makefile.common
+ delete mode 100644 powerpc/Makefile.ppc64
+ create mode 100644 powerpc/atomics.c
+ create mode 100644 powerpc/interrupts.c
+ create mode 120000 powerpc/memory-verify.c
+ create mode 100644 powerpc/pmu.c
+ create mode 120000 powerpc/sieve.c
+ create mode 100644 powerpc/smp.c
+ create mode 100644 powerpc/timebase.c
+ create mode 120000 s390x/memory-verify.c
+
+-- 
+2.42.0
 
