@@ -4,85 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 971EBC54E69
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 14:29:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33D18CD11C2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 15:51:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fqy/iEfT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GhsftalN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TzYy904qfz3dXC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2024 01:29:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Tzbmf5C5gz3dXC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2024 02:51:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fqy/iEfT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GhsftalN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TzYxJ3hSgz3bWH
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2024 01:28:36 +1100 (AEDT)
-Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42JEQcbe023407;
-	Tue, 19 Mar 2024 14:28:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=VXexiXBKopZYjzbOhqUXZ+UbaH9CdHlMt8VeoGUFPvg=;
- b=fqy/iEfTzbQskEzrVIId4HL6XZ6YWk71MpEnqFsLWw5zDCtDKRKwrPomfpqr733jz8CS
- 5I22Lk76Hgo+BO+qeuki5BMjWLSAeH+USslSYaN9Gi2CJgUBqet4Mta1/sgI+mpQTgOT
- 8+h8YiqppzwUSQ5zQjfdI9QTpwAbCm1ks37Y3VWxF2zMIsNlX2Xl+FMZS0+SFEP3Z7wp
- J+OLC0537DGRE2h9bJq8JkiG93Wge8tK/J69+dLdvdEOV/e9bgHpgk/xei1wfYxN3Ifu
- f7/W+QUqyUbQDaybSHhH6FGUZ6q1PxAk7xRGD8FLiyHpU2dZ2ygROv7HfRH1eBjolnwo Ww== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wyb39rnqj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 19 Mar 2024 14:28:18 +0000
-Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42JESIhi027738;
-	Tue, 19 Mar 2024 14:28:18 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wyb39rnqf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 19 Mar 2024 14:28:18 +0000
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42JCbUFY019843;
-	Tue, 19 Mar 2024 14:28:17 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3wwqykftet-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 19 Mar 2024 14:28:17 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42JESBdY17367448
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 19 Mar 2024 14:28:13 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9B8A82004E;
-	Tue, 19 Mar 2024 14:28:11 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AACA920043;
-	Tue, 19 Mar 2024 14:28:09 +0000 (GMT)
-Received: from li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.in.ibm.com (unknown [9.204.206.66])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 19 Mar 2024 14:28:09 +0000 (GMT)
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com
-Subject: [PATCH] arch/powerpc/kvm: Add support for reading VPA counters for pseries guests
-Date: Tue, 19 Mar 2024 19:58:04 +0530
-Message-ID: <20240319142807.95547-1-gautam@linux.ibm.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Tzblp1bNTz2xct
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2024 02:50:30 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 2087560E2C;
+	Tue, 19 Mar 2024 15:50:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 749F8C43390;
+	Tue, 19 Mar 2024 15:50:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1710863425;
+	bh=apyBLSMY17l5k6YmL7tgRw2duWfuFRcprZhgOcvDx3U=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=GhsftalN+s41C0DoGW2lRZ49nObKvR14d7JIS8aFWR3rzkuY2+Zpu6QTzkRkCDGiV
+	 D8vwJOePyyu65N3VDgupFhy1/U/JqfI1I0oFo5YftYtp8LwboRYl0OD0xbH5IOSIq+
+	 5AuBuACNWUmCc9vmgoONrHeDDNdQkDd17u7+6yeylmST3y4pTYrE5E7f77np/rN7Tb
+	 dum6Ntxc1qsM20Ra+kbucPT4ORsI8QJ7UQVkOZDG1kCeJadUlW8c12K9WSJka5dZQD
+	 NjwEFpKTJQuYe8jKAmV5R480Sta75swVTBGOo8Mn/FTrKu1aHj5G8vrv6w8iTLx3Xl
+	 RpnOyaP5pxPRg==
+Date: Tue, 19 Mar 2024 17:49:19 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: Baoquan He <bhe@redhat.com>
+Subject: Re: [PATCH 2/6] x86: remove memblock_find_dma_reserve()
+Message-ID: <Zfmz_1sbbvSWMj9C@kernel.org>
+References: <20240318142138.783350-1-bhe@redhat.com>
+ <20240318142138.783350-3-bhe@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: J8x6r8YAIRMIrqFXNi6zJfskGvl25iTG
-X-Proofpoint-ORIG-GUID: OPxV9XhGccYgCGoYTruZ4lgh7ZSTpv4V
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-03-19_04,2024-03-18_03,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 bulkscore=0
- adultscore=0 priorityscore=1501 suspectscore=0 lowpriorityscore=0
- clxscore=1011 phishscore=0 mlxlogscore=999 impostorscore=0 malwarescore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2403140000 definitions=main-2403190109
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240318142138.783350-3-bhe@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,156 +59,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org, x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PAPR hypervisor has introduced three new counters in the VPA area of
-LPAR CPUs for KVM L2 guest (see [1] for terminology) observability - 2
-for context switches from host to guest and vice versa, and 1 counter
-for getting the total time spent inside the KVM guest. Add a tracepoint
-that enables reading the counters for use by ftrace/perf. Note that this
-tracepoint is only available for nestedv2 API (i.e, KVM on PowerVM).
+Hi Baoquan,
 
-[1] Terminology:
-a. L1 refers to the VM (LPAR) booted on top of PAPR hypervisor
-b. L2 refers to the KVM guest booted on top of L1.
+On Mon, Mar 18, 2024 at 10:21:34PM +0800, Baoquan He wrote:
+> This is not needed any more.
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
----
- arch/powerpc/include/asm/kvm_host.h |  5 +++++
- arch/powerpc/include/asm/lppaca.h   | 11 ++++++++---
- arch/powerpc/kvm/book3s_hv.c        | 20 ++++++++++++++++++++
- arch/powerpc/kvm/trace_hv.h         | 24 ++++++++++++++++++++++++
- 4 files changed, 57 insertions(+), 3 deletions(-)
+I'd swap this and the first patch, so that the first patch would remove
+memblock_find_dma_reserve() and it's changelog will explain why it's not
+needed and then the second patch will simply drop unused set_dma_reserve()
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 8abac5321..26d7bb4b9 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -847,6 +847,11 @@ struct kvm_vcpu_arch {
- 	gpa_t nested_io_gpr;
- 	/* For nested APIv2 guests*/
- 	struct kvmhv_nestedv2_io nestedv2_io;
-+
-+	/* For VPA counters having context switch and guest run time info (in ns) */
-+	u64 l1_to_l2_cs;
-+	u64 l2_to_l1_cs;
-+	u64 l2_runtime;
- #endif
- 
- #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
-diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
-index 61ec2447d..bda6b86b9 100644
---- a/arch/powerpc/include/asm/lppaca.h
-+++ b/arch/powerpc/include/asm/lppaca.h
-@@ -62,7 +62,8 @@ struct lppaca {
- 	u8	donate_dedicated_cpu;	/* Donate dedicated CPU cycles */
- 	u8	fpregs_in_use;
- 	u8	pmcregs_in_use;
--	u8	reserved8[28];
-+	u8	l2_accumul_cntrs_enable;  /* Enable usage of counters for KVM guest */
-+	u8	reserved8[27];
- 	__be64	wait_state_cycles;	/* Wait cycles for this proc */
- 	u8	reserved9[28];
- 	__be16	slb_count;		/* # of SLBs to maintain */
-@@ -92,9 +93,13 @@ struct lppaca {
- 	/* cacheline 4-5 */
- 
- 	__be32	page_ins;		/* CMO Hint - # page ins by OS */
--	u8	reserved12[148];
-+	u8	reserved12[28];
-+	volatile __be64 l1_to_l2_cs_tb;
-+	volatile __be64 l2_to_l1_cs_tb;
-+	volatile __be64 l2_runtime_tb;
-+	u8 reserved13[96];
- 	volatile __be64 dtl_idx;	/* Dispatch Trace Log head index */
--	u8	reserved13[96];
-+	u8	reserved14[96];
- } ____cacheline_aligned;
- 
- #define lppaca_of(cpu)	(*paca_ptrs[cpu]->lppaca_ptr)
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 2b04eba90..b94461b5f 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4092,6 +4092,7 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
- 	unsigned long msr, i;
- 	int trap;
- 	long rc;
-+	struct lppaca *lp = get_lppaca();
- 
- 	io = &vcpu->arch.nestedv2_io;
- 
-@@ -4107,6 +4108,17 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
- 	kvmppc_gse_put_u64(io->vcpu_run_input, KVMPPC_GSID_LPCR, lpcr);
- 
- 	accumulate_time(vcpu, &vcpu->arch.in_guest);
-+
-+	/* Reset the guest host context switch timing */
-+	if (unlikely(trace_kvmppc_vcpu_exit_cs_time_enabled())) {
-+		lp->l2_accumul_cntrs_enable = 1;
-+		lp->l1_to_l2_cs_tb = 0;
-+		lp->l2_to_l1_cs_tb = 0;
-+		lp->l2_runtime_tb = 0;
-+	} else {
-+		lp->l2_accumul_cntrs_enable = 0;
-+	}
-+
- 	rc = plpar_guest_run_vcpu(0, vcpu->kvm->arch.lpid, vcpu->vcpu_id,
- 				  &trap, &i);
- 
-@@ -4133,6 +4145,14 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
- 
- 	timer_rearm_host_dec(*tb);
- 
-+	/* Record context switch and guest_run_time data */
-+	if (unlikely(trace_kvmppc_vcpu_exit_cs_time_enabled())) {
-+		vcpu->arch.l1_to_l2_cs = tb_to_ns(be64_to_cpu(lp->l1_to_l2_cs_tb));
-+		vcpu->arch.l2_to_l1_cs = tb_to_ns(be64_to_cpu(lp->l2_to_l1_cs_tb));
-+		vcpu->arch.l2_runtime = tb_to_ns(be64_to_cpu(lp->l2_runtime_tb));
-+		trace_kvmppc_vcpu_exit_cs_time(vcpu);
-+	}
-+
- 	return trap;
- }
- 
-diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
-index 8d57c8428..10b8f6e5a 100644
---- a/arch/powerpc/kvm/trace_hv.h
-+++ b/arch/powerpc/kvm/trace_hv.h
-@@ -491,6 +491,30 @@ TRACE_EVENT(kvmppc_run_vcpu_enter,
- 	TP_printk("VCPU %d: tgid=%d", __entry->vcpu_id, __entry->tgid)
- );
- 
-+TRACE_EVENT(kvmppc_vcpu_exit_cs_time,
-+	TP_PROTO(struct kvm_vcpu *vcpu),
-+
-+	TP_ARGS(vcpu),
-+
-+	TP_STRUCT__entry(
-+		__field(int,		vcpu_id)
-+		__field(__u64,		l1_to_l2_cs_ns)
-+		__field(__u64,		l2_to_l1_cs_ns)
-+		__field(__u64,		l2_runtime_ns)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->vcpu_id  = vcpu->vcpu_id;
-+		__entry->l1_to_l2_cs_ns = vcpu->arch.l1_to_l2_cs;
-+		__entry->l2_to_l1_cs_ns = vcpu->arch.l2_to_l1_cs;
-+		__entry->l2_runtime_ns = vcpu->l2_runtime;
-+	),
-+
-+	TP_printk("VCPU %d: l1_to_l2_cs_time=%llu-ns l2_to_l1_cs_time=%llu-ns l2_runtime=%llu-ns",
-+		__entry->vcpu_id,  __entry->l1_to_l2_cs_ns,
-+		__entry->l2_to_l1_cs_ns, __entry->l2_runtime_ns)
-+);
-+
- TRACE_EVENT(kvmppc_run_vcpu_exit,
- 	TP_PROTO(struct kvm_vcpu *vcpu),
- 
+> Signed-off-by: Baoquan He <bhe@redhat.com>
+> ---
+>  arch/x86/include/asm/pgtable.h |  1 -
+>  arch/x86/kernel/setup.c        |  2 --
+>  arch/x86/mm/init.c             | 45 ----------------------------------
+>  3 files changed, 48 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+> index 315535ffb258..cefc7a84f7a4 100644
+> --- a/arch/x86/include/asm/pgtable.h
+> +++ b/arch/x86/include/asm/pgtable.h
+> @@ -1200,7 +1200,6 @@ static inline int pgd_none(pgd_t pgd)
+>  extern int direct_gbpages;
+>  void init_mem_mapping(void);
+>  void early_alloc_pgt_buf(void);
+> -extern void memblock_find_dma_reserve(void);
+>  void __init poking_init(void);
+>  unsigned long init_memory_mapping(unsigned long start,
+>  				  unsigned long end, pgprot_t prot);
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index 3e1e96efadfe..5aa00938051f 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -1106,8 +1106,6 @@ void __init setup_arch(char **cmdline_p)
+>  	 */
+>  	arch_reserve_crashkernel();
+>  
+> -	memblock_find_dma_reserve();
+> -
+>  	if (!early_xdbc_setup_hardware())
+>  		early_xdbc_register_console();
+>  
+> diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+> index 5209549e8192..615f0bf4bda6 100644
+> --- a/arch/x86/mm/init.c
+> +++ b/arch/x86/mm/init.c
+> @@ -990,51 +990,6 @@ void __init free_initrd_mem(unsigned long start, unsigned long end)
+>  }
+>  #endif
+>  
+> -/*
+> - * Calculate the precise size of the DMA zone (first 16 MB of RAM),
+> - * and pass it to the MM layer - to help it set zone watermarks more
+> - * accurately.
+> - *
+> - * Done on 64-bit systems only for the time being, although 32-bit systems
+> - * might benefit from this as well.
+> - */
+> -void __init memblock_find_dma_reserve(void)
+> -{
+> -#ifdef CONFIG_X86_64
+> -	u64 nr_pages = 0, nr_free_pages = 0;
+> -	unsigned long start_pfn, end_pfn;
+> -	phys_addr_t start_addr, end_addr;
+> -	int i;
+> -	u64 u;
+> -
+> -	/*
+> -	 * Iterate over all memory ranges (free and reserved ones alike),
+> -	 * to calculate the total number of pages in the first 16 MB of RAM:
+> -	 */
+> -	nr_pages = 0;
+> -	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, NULL) {
+> -		start_pfn = min(start_pfn, MAX_DMA_PFN);
+> -		end_pfn   = min(end_pfn,   MAX_DMA_PFN);
+> -
+> -		nr_pages += end_pfn - start_pfn;
+> -	}
+> -
+> -	/*
+> -	 * Iterate over free memory ranges to calculate the number of free
+> -	 * pages in the DMA zone, while not counting potential partial
+> -	 * pages at the beginning or the end of the range:
+> -	 */
+> -	nr_free_pages = 0;
+> -	for_each_free_mem_range(u, NUMA_NO_NODE, MEMBLOCK_NONE, &start_addr, &end_addr, NULL) {
+> -		start_pfn = min_t(unsigned long, PFN_UP(start_addr), MAX_DMA_PFN);
+> -		end_pfn   = min_t(unsigned long, PFN_DOWN(end_addr), MAX_DMA_PFN);
+> -
+> -		if (start_pfn < end_pfn)
+> -			nr_free_pages += end_pfn - start_pfn;
+> -	}
+> -#endif
+> -}
+> -
+>  void __init zone_sizes_init(void)
+>  {
+>  	unsigned long max_zone_pfns[MAX_NR_ZONES];
+> -- 
+> 2.41.0
+> 
+
 -- 
-2.43.2
-
+Sincerely yours,
+Mike.
