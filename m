@@ -4,93 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9913CC54E60
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 09:09:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D287C54E5D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 13:42:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SaXvhvnU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=mSecvh7G;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4TzQrk1kYyz3vY0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2024 20:09:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4TzXvq3Zfbz3vYK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2024 00:42:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SaXvhvnU;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=mSecvh7G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=huschle@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=vincent.guittot@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4TzQqv1YL9z30Pp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2024 20:08:26 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42J92R6A029460;
-	Tue, 19 Mar 2024 09:08:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : in-reply-to : references : message-id : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=S99aALjqHdt5vxeAAk7T9rQZ0KYFIS8P38QG1M9RXxs=;
- b=SaXvhvnUCT0OOqT6Gb4lY5BqV8t/2YFNoZXuxiNN+XUsFLi1DBJRgkIoarmRIIYfxvgL
- 2AUJhyg5/zhwrUvMC8Q3phAXnKDFktWXmhe5ukqR5mNskGgTgAVBbozIlgQGOLaox687
- iMbi4AwwzX4qtWxDDbJBEd/CJAaDHNrv6fmR5I9RXiClNJSoii8q8MMuE7x19+A1jY6q
- PR0X4op9S9EqM5e8HCQFuBAR7aGXBl1cgGWiENF+ssBzWFAAa5AMwWYZ80L8Q0jqSsGB
- i0jL51+mbHKyXXobZx8ZOvYxqmnRdfqIYpQCLnuLZf9s08XdgDAcwQ643ZVcLj16zjpu ZQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wy7qhr16e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 19 Mar 2024 09:08:07 +0000
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42J96v1a006375;
-	Tue, 19 Mar 2024 09:08:07 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3wy7qhr164-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 19 Mar 2024 09:08:06 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42J8U23i011615;
-	Tue, 19 Mar 2024 09:08:06 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3wwq8kx792-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 19 Mar 2024 09:08:06 +0000
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42J9835j44106156
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 19 Mar 2024 09:08:05 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7982858063;
-	Tue, 19 Mar 2024 09:08:03 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E0F8758065;
-	Tue, 19 Mar 2024 09:08:02 +0000 (GMT)
-Received: from ltc.linux.ibm.com (unknown [9.5.196.140])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 19 Mar 2024 09:08:02 +0000 (GMT)
-Date: Tue, 19 Mar 2024 10:08:02 +0100
-From: Tobias Huschle <huschle@linux.ibm.com>
-To: Luis Machado <luis.machado@arm.com>
-Subject: Re: [RFC] sched/eevdf: sched feature to dismiss lag on wakeup
-In-Reply-To: <66c4286e-deaf-44a0-be62-0928529ae73f@arm.com>
-References: <20240228161018.14253-1-huschle@linux.ibm.com>
- <5a32e8e1-67cf-4296-a655-f0fc35dc880a@arm.com>
- <ZfL/hROYxQudcTuX@DESKTOP-2CCOB1S.>
- <66c4286e-deaf-44a0-be62-0928529ae73f@arm.com>
-Message-ID: <4b25ab45b762e64b9df09d4d12d8289f@linux.ibm.com>
-X-Sender: huschle@linux.ibm.com
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: WDxQaEywQuysNpKZbGQ-CLMB-p-6-mbS
-X-Proofpoint-GUID: cadWNAtsfNUd71EnJPbC7SXTnV4Ucb6I
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4TzXv06pzCz3btl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2024 00:41:30 +1100 (AEDT)
+Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-1dddbe47ac1so36736235ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2024 06:41:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1710855686; x=1711460486; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=QkH9co6nduiKcJJYKmYutH4boWdY0DvPoemwdNHxcDM=;
+        b=mSecvh7GRcH55j7iF6/IrZF/Wppzq8ajLQy7thIR22ufkvBodOfCuavpjJhp56EiBD
+         3c/CnTLsDfNPhGgevCbkFKa7VUXBnPSb7/yaijJMQjfXbtv5dVlIegnTBdtwX+LG+zzb
+         E0xQCxTDrpx2J8FjgjF1G7SAUmbOakZnU8qL75TiDamJbrdQm1FnyVU7lXxL3Jb6Tr8Q
+         0D2zGsjB9Gr/wnlC2VhkXNkfAff8MapCHwjXkZOsLWsR5Xe5Sqd+B4Glmw2flMxpeIXd
+         aT+DYlsJFwR9rydYITLBR1Z259QrZup9877lL82JwFJRTzkwuygcAWWl8rsWqOADq3SG
+         7+Vw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1710855686; x=1711460486;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=QkH9co6nduiKcJJYKmYutH4boWdY0DvPoemwdNHxcDM=;
+        b=Bcvy25IGeK8PqFKPP5axy2Z96Q+B3BtsmqBd/4xec0lq8huhsoehqaC9IVRSXERLBQ
+         WvI32Keb84zgbv0QQZBLYNxQD8FtDQmxXxx1rEVEhsKOXi/AfKSCjMRPATXBjdkvjDbq
+         CVf+eZ8zANAhrsRREzK3tojzH3XpWKaSrGzGYZ8hPqVDMNI43FOWodo6ozjZHxSJKN9G
+         QCvEsYJvuDJGhYq34xNg8lWwiz7ppWtFajqvf7RyPLuEbhfNxQYkrQTtf+qKVTeAuo2E
+         UjCPCw3k0QhPE2LenP8JpSDTjM8XiTIHeNAfuixjS97Q5e5s4ZI/J4xG7/YQWcTLhbzH
+         7VBQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXe/kGRSp195ouGfgQXwJB8rMxcBX3wrZqFi51SqdbH0WAu1v/MnyTk26p67awKYGK8vLWvd5FyovZzRBIAwWksDUg6ZfzW/zsQvjRibA==
+X-Gm-Message-State: AOJu0Yw2RUumTLsuCuuYuWENgjAafd4oYksTyc9VcCR6iyE1EMUVLnw7
+	FPNBxfGWvQ0liwze5YzAnEjOPpYRtJKlMimyhsnCLX1c6yY/V9w49gYXije7FIw94Lt5SxhLu1t
+	FGFCvMKr4EVWiSEJFmPKx94srowR7RvUqJ3O9cw==
+X-Google-Smtp-Source: AGHT+IEAbi0auRWgIpSpp8odJgiWiLOLp0RBR9BR3RBs5ux9Mb65HmgLxN0vr1fSWZK37iYVFCgfrwQjcZWrsLKnr5s=
+X-Received: by 2002:a17:903:2387:b0:1e0:3620:375d with SMTP id
+ v7-20020a170903238700b001e03620375dmr3235503plh.17.1710855686271; Tue, 19 Mar
+ 2024 06:41:26 -0700 (PDT)
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-03-18_12,2024-03-18_03,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- clxscore=1011 priorityscore=1501 impostorscore=0 suspectscore=0
- mlxlogscore=998 phishscore=0 spamscore=0 adultscore=0 bulkscore=0
- malwarescore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2403140000 definitions=main-2403190070
+References: <20240228161018.14253-1-huschle@linux.ibm.com> <5a32e8e1-67cf-4296-a655-f0fc35dc880a@arm.com>
+ <ZfL/hROYxQudcTuX@DESKTOP-2CCOB1S.> <66c4286e-deaf-44a0-be62-0928529ae73f@arm.com>
+ <4b25ab45b762e64b9df09d4d12d8289f@linux.ibm.com>
+In-Reply-To: <4b25ab45b762e64b9df09d4d12d8289f@linux.ibm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Date: Tue, 19 Mar 2024 14:41:14 +0100
+Message-ID: <CAKfTPtDyrsnq-CSFo+upzdOJpuH=JkRzSALad-OL29OvqkK2dg@mail.gmail.com>
+Subject: Re: [RFC] sched/eevdf: sched feature to dismiss lag on wakeup
+To: Tobias Huschle <huschle@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,90 +77,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, vschneid@redhat.com, vincent.guittot@linaro.org, srikar@linux.vnet.ibm.com, peterz@infradead.org, sshegde@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org, bsegall@google.com, mingo@redhat.com, mgorman@suse.de, nd <nd@arm.com>, bristot@redhat.com, dietmar.eggemann@arm.com
+Cc: juri.lelli@redhat.com, vschneid@redhat.com, srikar@linux.vnet.ibm.com, Luis Machado <luis.machado@arm.com>, peterz@infradead.org, sshegde@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org, bsegall@google.com, mingo@redhat.com, mgorman@suse.de, nd <nd@arm.com>, bristot@redhat.com, dietmar.eggemann@arm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2024-03-18 15:45, Luis Machado wrote:
-> On 3/14/24 13:45, Tobias Huschle wrote:
->> On Fri, Mar 08, 2024 at 03:11:38PM +0000, Luis Machado wrote:
->>> On 2/28/24 16:10, Tobias Huschle wrote:
->>>> 
->>>> Questions:
->>>> 1. The kworker getting its negative lag occurs in the following 
->>>> scenario
->>>>    - kworker and a cgroup are supposed to execute on the same CPU
->>>>    - one task within the cgroup is executing and wakes up the 
->>>> kworker
->>>>    - kworker with 0 lag, gets picked immediately and finishes its
->>>>      execution within ~5000ns
->>>>    - on dequeue, kworker gets assigned a negative lag
->>>>    Is this expected behavior? With this short execution time, I 
->>>> would
->>>>    expect the kworker to be fine.
->>> 
->>> That strikes me as a bit odd as well. Have you been able to determine 
->>> how a negative lag
->>> is assigned to the kworker after such a short runtime?
->>> 
->> 
->> I did some more trace reading though and found something.
->> 
->> What I observed if everything runs regularly:
->> - vhost and kworker run alternating on the same CPU
->> - if the kworker is done, it leaves the runqueue
->> - vhost wakes up the kworker if it needs it
->> --> this means:
->>   - vhost starts alone on an otherwise empty runqueue
->>   - it seems like it never gets dequeued
->>     (unless another unrelated task joins or migration hits)
->>   - if vhost wakes up the kworker, the kworker gets selected
->>   - vhost runtime > kworker runtime
->>     --> kworker gets positive lag and gets selected immediately next 
->> time
->> 
->> What happens if it does go wrong:
->> From what I gather, there seem to be occasions where the vhost either
->> executes suprisingly quick, or the kworker surprinsingly slow. If 
->> these
->> outliers reach critical values, it can happen, that
->>    vhost runtime < kworker runtime
->> which now causes the kworker to get the negative lag.
->> 
->> In this case it seems like, that the vhost is very fast in waking up
->> the kworker. And coincidentally, the kworker takes, more time than 
->> usual
->> to finish. We speak of 4-digit to low 5-digit nanoseconds.
->> 
->> So, for these outliers, the scheduler extrapolates that the kworker
->> out-consumes the vhost and should be slowed down, although in the 
->> majority
->> of other cases this does not happen.
-> 
-> Thanks for providing the above details Tobias. It does seem like EEVDF 
-> is strict
-> about the eligibility checks and making tasks wait when their lags are
-> negative, even
-> if just a little bit as in the case of the kworker.
-> 
-> There was a patch to disable the eligibility checks
-> (https://lore.kernel.org/lkml/20231013030213.2472697-1-youssefesmat@chromium.org/),
-> which would make EEVDF more like EVDF, though the deadline comparison 
-> would
-> probably still favor the vhost task instead of the kworker with the
-> negative lag.
-> 
-> I'm not sure if you tried it, but I thought I'd mention it.
+On Tue, 19 Mar 2024 at 10:08, Tobias Huschle <huschle@linux.ibm.com> wrote:
+>
+> On 2024-03-18 15:45, Luis Machado wrote:
+> > On 3/14/24 13:45, Tobias Huschle wrote:
+> >> On Fri, Mar 08, 2024 at 03:11:38PM +0000, Luis Machado wrote:
+> >>> On 2/28/24 16:10, Tobias Huschle wrote:
+> >>>>
+> >>>> Questions:
+> >>>> 1. The kworker getting its negative lag occurs in the following
+> >>>> scenario
+> >>>>    - kworker and a cgroup are supposed to execute on the same CPU
+> >>>>    - one task within the cgroup is executing and wakes up the
+> >>>> kworker
+> >>>>    - kworker with 0 lag, gets picked immediately and finishes its
+> >>>>      execution within ~5000ns
+> >>>>    - on dequeue, kworker gets assigned a negative lag
+> >>>>    Is this expected behavior? With this short execution time, I
+> >>>> would
+> >>>>    expect the kworker to be fine.
+> >>>
+> >>> That strikes me as a bit odd as well. Have you been able to determine
+> >>> how a negative lag
+> >>> is assigned to the kworker after such a short runtime?
+> >>>
+> >>
+> >> I did some more trace reading though and found something.
+> >>
+> >> What I observed if everything runs regularly:
+> >> - vhost and kworker run alternating on the same CPU
+> >> - if the kworker is done, it leaves the runqueue
+> >> - vhost wakes up the kworker if it needs it
+> >> --> this means:
+> >>   - vhost starts alone on an otherwise empty runqueue
+> >>   - it seems like it never gets dequeued
+> >>     (unless another unrelated task joins or migration hits)
+> >>   - if vhost wakes up the kworker, the kworker gets selected
+> >>   - vhost runtime > kworker runtime
+> >>     --> kworker gets positive lag and gets selected immediately next
+> >> time
+> >>
+> >> What happens if it does go wrong:
+> >> From what I gather, there seem to be occasions where the vhost either
+> >> executes suprisingly quick, or the kworker surprinsingly slow. If
+> >> these
+> >> outliers reach critical values, it can happen, that
+> >>    vhost runtime < kworker runtime
+> >> which now causes the kworker to get the negative lag.
+> >>
+> >> In this case it seems like, that the vhost is very fast in waking up
+> >> the kworker. And coincidentally, the kworker takes, more time than
+> >> usual
+> >> to finish. We speak of 4-digit to low 5-digit nanoseconds.
+> >>
+> >> So, for these outliers, the scheduler extrapolates that the kworker
+> >> out-consumes the vhost and should be slowed down, although in the
+> >> majority
+> >> of other cases this does not happen.
+> >
+> > Thanks for providing the above details Tobias. It does seem like EEVDF
+> > is strict
+> > about the eligibility checks and making tasks wait when their lags are
+> > negative, even
+> > if just a little bit as in the case of the kworker.
+> >
+> > There was a patch to disable the eligibility checks
+> > (https://lore.kernel.org/lkml/20231013030213.2472697-1-youssefesmat@chromium.org/),
+> > which would make EEVDF more like EVDF, though the deadline comparison
+> > would
+> > probably still favor the vhost task instead of the kworker with the
+> > negative lag.
+> >
+> > I'm not sure if you tried it, but I thought I'd mention it.
+>
+> Haven't seen that one yet. Unfortunately, it does not help to ignore the
+> eligibility.
+>
+> I'm inclined to rather propose propose a documentation change, which
+> describes that tasks should not rely on woken up tasks being scheduled
+> immediately.
 
-Haven't seen that one yet. Unfortunately, it does not help to ignore the 
-eligibility.
-
-I'm inclined to rather propose propose a documentation change, which 
-describes that tasks should not rely on woken up tasks being scheduled 
-immediately.
-
-Changing things in the code to address for the specific scenario I'm 
-seeing seems to mostly create unwanted side effects and/or would require 
-the definition of some magic cut-off values.
+Where do you see such an assumption ? Even before eevdf, there were
+nothing that ensures such behavior. When using CFS (legacy or eevdf)
+tasks, you can't know if the newly wakeup task will run 1st or not
 
 
+>
+> Changing things in the code to address for the specific scenario I'm
+> seeing seems to mostly create unwanted side effects and/or would require
+> the definition of some magic cut-off values.
+>
+>
