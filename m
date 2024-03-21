@@ -4,83 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9BE5CD11BF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2024 22:09:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DA86C6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2024 22:10:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Z1QOr5VH;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ImCVPY7e;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dx7bxEyx;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dx7bxEyx;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V104T3n6Kz3vX6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 09:09:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V105L00Mvz3vcx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 09:10:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Z1QOr5VH;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ImCVPY7e;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dx7bxEyx;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dx7bxEyx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V102k23lJz3cN6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 09:08:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V102m4dLTz3cN6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 09:08:16 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1711058889;
+	s=mimecast20190719; t=1711058894;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=bzTkuuEUZ2f7C9YouF2ORWZwnTLSeJ8Y5AJhy7kkISQ=;
-	b=Z1QOr5VHwlnXVmwfQMhze8UZ86wYuDJEJRmDmm7Gd/MNIoSjQjosnXLK1+/tX4cfMTLOkW
-	/grErCiT6duLwQtG6YQabPQH0HPqGZbdIpPnBmmZOlDv3FbocaTE0IBk1AYiZw6fGACvtE
-	V0tbvz6WS6cNd0AC3nUqdbM63IySHWk=
+	bh=wdRUTOTGji9K1EOtUzCYNHXUg1STGKkafiwUdqA6oYA=;
+	b=dx7bxEyxtYM0nwPIxFKNKaXxO6CCZFueLILHKRcUmHFkYzB1WvKNYDbYM32CGBaDx2t2O1
+	N4z81KenfMrNGeOGMGQPhJH+ONMkPn6FJ2kVSNM7SkxH97riHY1599c0V7tHNCdzJGq4T5
+	uGmTWlA3e6gjSOkJmorcAEkdnfC8wio=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1711058890;
+	s=mimecast20190719; t=1711058894;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=bzTkuuEUZ2f7C9YouF2ORWZwnTLSeJ8Y5AJhy7kkISQ=;
-	b=ImCVPY7eUCrb0WeAuAadTpNkzj+8tp/cbW8Smg2g3tPFk8HwS5VNpGJh5lKqlNs097zQw4
-	LBLshpfgy+4aiZVXjqaPABht4+G1gkokF6l/8albClgBDeUem1ZzJasETQbgcnm2dHCDco
-	SsMK/dA5XvICb3n9YVXCVY3SvNx5o/E=
-Received: from mail-qt1-f199.google.com (mail-qt1-f199.google.com
- [209.85.160.199]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=wdRUTOTGji9K1EOtUzCYNHXUg1STGKkafiwUdqA6oYA=;
+	b=dx7bxEyxtYM0nwPIxFKNKaXxO6CCZFueLILHKRcUmHFkYzB1WvKNYDbYM32CGBaDx2t2O1
+	N4z81KenfMrNGeOGMGQPhJH+ONMkPn6FJ2kVSNM7SkxH97riHY1599c0V7tHNCdzJGq4T5
+	uGmTWlA3e6gjSOkJmorcAEkdnfC8wio=
+Received: from mail-qv1-f69.google.com (mail-qv1-f69.google.com
+ [209.85.219.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-119-m6QgagZoOeeny54Zg6Wzkw-1; Thu, 21 Mar 2024 18:08:08 -0400
-X-MC-Unique: m6QgagZoOeeny54Zg6Wzkw-1
-Received: by mail-qt1-f199.google.com with SMTP id d75a77b69052e-430d45c66acso2667651cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2024 15:08:08 -0700 (PDT)
+ us-mta-413-ft9fZzh_MW6dbRgeNfukkg-1; Thu, 21 Mar 2024 18:08:12 -0400
+X-MC-Unique: ft9fZzh_MW6dbRgeNfukkg-1
+Received: by mail-qv1-f69.google.com with SMTP id 6a1803df08f44-69152af7760so3924796d6.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2024 15:08:11 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711058887; x=1711663687;
+        d=1e100.net; s=20230601; t=1711058891; x=1711663691;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=bzTkuuEUZ2f7C9YouF2ORWZwnTLSeJ8Y5AJhy7kkISQ=;
-        b=UgIzdSxW/gfz7H5+MLy3s4SFnAX2z2MYazje+hn6sVUAQsdSrCVXmhuJs163EMu5DA
-         SQpeTpadLNplSQpVV+DsW1wj+k7cFd8/9qkvB5TKoypG75t5Kegq+9pOFVSLxtt2WLTX
-         eI410+67dQtEv+D5xP9BrGXhk+KZaynOnKLBML6uBE8t/DERYshZA+KQDcpyDsLzJvOp
-         3QxsVuf52nuCic+liwke/7lj2JD39dO1SUWO8BGWKSghqTkTrAnqdCjQ1gVR29leADcj
-         hqVEnEqFIf/jlYBdFowM5idWrQ9APiItF7o34uMMe1DiHjKbbGXZjdY4mg97BuWocaCr
-         Y+HQ==
-X-Gm-Message-State: AOJu0YyIJ+IxlMGI0gz+wlk4k5NCMF8wnagRHCXGHgDThqjVBRW7ZRxK
-	lMnHnKWMUExO+Lvzo9KrUa+QNVwEOp6fpXE4RkH4Q2CG6/8cAyDgn2Dz5rQcG5kTHwIBJhk534F
-	14PQLZVjydgI+vaPvgGOZjgbme+wvJMlaaSaNwxiDh3rtpThpBPs+fKmHaskJ3K0=
-X-Received: by 2002:a0c:e58b:0:b0:691:87dd:f836 with SMTP id t11-20020a0ce58b000000b0069187ddf836mr428490qvm.5.1711058887537;
-        Thu, 21 Mar 2024 15:08:07 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGbvsPPVNStAWHyU+pKNLEFDZ4j8yXA8+9tn+eCe8z7LjIA9ieYt5evzB7ZRQzGTHD3gHSYEw==
-X-Received: by 2002:a0c:e58b:0:b0:691:87dd:f836 with SMTP id t11-20020a0ce58b000000b0069187ddf836mr428451qvm.5.1711058887085;
-        Thu, 21 Mar 2024 15:08:07 -0700 (PDT)
+        bh=wdRUTOTGji9K1EOtUzCYNHXUg1STGKkafiwUdqA6oYA=;
+        b=FohwB43CeTn917CPPKdJzyWjLCz9Dh33wPUd2rWCwF6s+wDO/aM7mvYfs7XRl2KKTd
+         QMUQC+910teE9XAQjrjIeI9KgnvVDl4Vw/3MIJgOLoUqIBxK11xJLcsB3DjWsYRHW5cE
+         ctzQTRNyt74V/UeVmsVA+TArkYyVEHut1M58IkVVYLidgL+paWLK1rLbxjpZ1TJ/CJia
+         euorQxP5ut7jFioy4/KM1jamZpdiK1RDchGjvAYyElAsBZoQ9UpGuuBcy0RFSfZMBb12
+         /+s4iWnb/Is3FT9n1U/sxtjYXPZcVVEMbbBg5RcG19fLR6/RRkXzBR5zxlOhN9NkVZJw
+         0WUA==
+X-Gm-Message-State: AOJu0Yx2qjQF6ccX5vD3pTT7Xgdku+qDb5XOuFQMOAT3gLBPDqqngwhx
+	sxthdQUzMk4OGUlbi2crpcm00pNZywXG2AzTmP1jSdRq8Y/REptfNzeGaZpwy35F5eLPMOXkahT
+	l2g9kI2gE4oxxs3mzrhVuiRGVlyzTIvRV4XGpOLSq2za/hCsVkmbtNJg58m2Ch84=
+X-Received: by 2002:a05:6214:3a8a:b0:690:3c85:c5b with SMTP id nz10-20020a0562143a8a00b006903c850c5bmr195549qvb.3.1711058891329;
+        Thu, 21 Mar 2024 15:08:11 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IG16ns9jJ9MJ80ThL7hh1B1qvLdYLgSNyXX5iyvBQC6076/qVHetDei+F5v2+719IrZ5asQ9g==
+X-Received: by 2002:a05:6214:3a8a:b0:690:3c85:c5b with SMTP id nz10-20020a0562143a8a00b006903c850c5bmr195527qvb.3.1711058890838;
+        Thu, 21 Mar 2024 15:08:10 -0700 (PDT)
 Received: from x1n.redhat.com ([99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id o6-20020a0562140e4600b00690baf5cde9sm351663qvc.118.2024.03.21.15.08.05
+        by smtp.gmail.com with ESMTPSA id o6-20020a0562140e4600b00690baf5cde9sm351663qvc.118.2024.03.21.15.08.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Mar 2024 15:08:06 -0700 (PDT)
+        Thu, 21 Mar 2024 15:08:10 -0700 (PDT)
 From: peterx@redhat.com
 To: linux-mm@kvack.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 01/12] mm/Kconfig: CONFIG_PGTABLE_HAS_HUGE_LEAVES
-Date: Thu, 21 Mar 2024 18:07:51 -0400
-Message-ID: <20240321220802.679544-2-peterx@redhat.com>
+Subject: [PATCH v3 03/12] mm: Make HPAGE_PXD_* macros even if !THP
+Date: Thu, 21 Mar 2024 18:07:53 -0400
+Message-ID: <20240321220802.679544-4-peterx@redhat.com>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <20240321220802.679544-1-peterx@redhat.com>
 References: <20240321220802.679544-1-peterx@redhat.com>
@@ -106,34 +106,68 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Peter Xu <peterx@redhat.com>
 
-Introduce a config option that will be selected as long as huge leaves are
-involved in pgtable (thp or hugetlbfs).  It would be useful to mark any
-code with this new config that can process either hugetlb or thp pages in
-any level that is higher than pte level.
+These macros can be helpful when we plan to merge hugetlb code into generic
+code.  Move them out and define them even if !THP.
 
+We actually already defined HPAGE_PMD_NR for other reasons even if !THP.
+Reorganize these macros.
+
+Reviewed-by: Christoph Hellwig <hch@infradead.org>
 Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
 Signed-off-by: Peter Xu <peterx@redhat.com>
 ---
- mm/Kconfig | 6 ++++++
- 1 file changed, 6 insertions(+)
+ include/linux/huge_mm.h | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index b924f4a5a3ef..497cdf4d8ebf 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -850,6 +850,12 @@ config READ_ONLY_THP_FOR_FS
+diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+index de0c89105076..3bcdfc7e5d57 100644
+--- a/include/linux/huge_mm.h
++++ b/include/linux/huge_mm.h
+@@ -64,9 +64,6 @@ ssize_t single_hugepage_flag_show(struct kobject *kobj,
+ 				  enum transparent_hugepage_flag flag);
+ extern struct kobj_attribute shmem_enabled_attr;
  
- endif # TRANSPARENT_HUGEPAGE
+-#define HPAGE_PMD_ORDER (HPAGE_PMD_SHIFT-PAGE_SHIFT)
+-#define HPAGE_PMD_NR (1<<HPAGE_PMD_ORDER)
+-
+ /*
+  * Mask of all large folio orders supported for anonymous THP; all orders up to
+  * and including PMD_ORDER, except order-0 (which is not "huge") and order-1
+@@ -87,14 +84,19 @@ extern struct kobj_attribute shmem_enabled_attr;
+ #define thp_vma_allowable_order(vma, vm_flags, smaps, in_pf, enforce_sysfs, order) \
+ 	(!!thp_vma_allowable_orders(vma, vm_flags, smaps, in_pf, enforce_sysfs, BIT(order)))
  
-+#
-+# The architecture supports pgtable leaves that is larger than PAGE_SIZE
-+#
-+config PGTABLE_HAS_HUGE_LEAVES
-+	def_bool TRANSPARENT_HUGEPAGE || HUGETLB_PAGE
+-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ #define HPAGE_PMD_SHIFT PMD_SHIFT
+ #define HPAGE_PMD_SIZE	((1UL) << HPAGE_PMD_SHIFT)
+ #define HPAGE_PMD_MASK	(~(HPAGE_PMD_SIZE - 1))
++#define HPAGE_PMD_ORDER (HPAGE_PMD_SHIFT-PAGE_SHIFT)
++#define HPAGE_PMD_NR (1<<HPAGE_PMD_ORDER)
+ 
+ #define HPAGE_PUD_SHIFT PUD_SHIFT
+ #define HPAGE_PUD_SIZE	((1UL) << HPAGE_PUD_SHIFT)
+ #define HPAGE_PUD_MASK	(~(HPAGE_PUD_SIZE - 1))
++#define HPAGE_PUD_ORDER (HPAGE_PUD_SHIFT-PAGE_SHIFT)
++#define HPAGE_PUD_NR (1<<HPAGE_PUD_ORDER)
 +
- #
- # UP and nommu archs use km based percpu allocator
- #
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ 
+ extern unsigned long transparent_hugepage_flags;
+ extern unsigned long huge_anon_orders_always;
+@@ -378,13 +380,6 @@ static inline bool thp_migration_supported(void)
+ }
+ 
+ #else /* CONFIG_TRANSPARENT_HUGEPAGE */
+-#define HPAGE_PMD_SHIFT ({ BUILD_BUG(); 0; })
+-#define HPAGE_PMD_MASK ({ BUILD_BUG(); 0; })
+-#define HPAGE_PMD_SIZE ({ BUILD_BUG(); 0; })
+-
+-#define HPAGE_PUD_SHIFT ({ BUILD_BUG(); 0; })
+-#define HPAGE_PUD_MASK ({ BUILD_BUG(); 0; })
+-#define HPAGE_PUD_SIZE ({ BUILD_BUG(); 0; })
+ 
+ static inline bool folio_test_pmd_mappable(struct folio *folio)
+ {
 -- 
 2.44.0
 
