@@ -4,86 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5688C54E58
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2024 21:18:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6523C6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2024 21:18:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Qe4+yx2Y;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=YtsudnLU;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V0yws2J8xz3vkm
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 08:18:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V0yxg1rxBz3vXt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 08:18:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Qe4+yx2Y;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=YtsudnLU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=javier.carrasco.cruz@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::131; helo=mail-lf1-x131.google.com; envelope-from=javier.carrasco.cruz@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V0vWB2Wr8z3dTw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 05:44:06 +1100 (AEDT)
-Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-56bcbf40cabso1264417a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2024 11:44:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V0yPn1Lqdz3c9r
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 07:54:35 +1100 (AEDT)
+Received: by mail-lf1-x131.google.com with SMTP id 2adb3069b0e04-513dc99b709so1857430e87.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2024 13:54:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1711046642; x=1711651442; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=HZP+gNYu/Kkn8nZAdI78yJHmmqjo52vGxGg0tHY+NoU=;
-        b=Qe4+yx2Yn1ubpjKGcCyySmaGn87QR+pC3lLa2Fos7gc/0LIWzldtGdbbfNGwb7b35g
-         lLYFgJ7jTKNaTn0lNsDVcbJCl9NXqllWvWulC7e3HGXqHmi08seqMaMdkD951918Fnsf
-         b2/+ZqlUkASH87SOBRsaSgNJ0SnoBx/EIeqp8HVh83j91ziUCkUxIdDWVU31lCGZbInK
-         fN30Ba85imy+NINFj3gHcuOGcJODKPcxXWL/DE8/6k6O9/wG/drWRE1dvFcrr4SmmsE/
-         1WdgaUbyI21tcu71cHlVRf3xuuNV0OVRAL0vXLkA4cBnL84bSMHwzN1hMu6hns5eUkY5
-         BW6A==
+        d=gmail.com; s=20230601; t=1711054468; x=1711659268; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=4dpqtSWJGyTeUnxqugJzMO94Z9iV/f5bgYjvchhbNxE=;
+        b=YtsudnLUsJ27rXGg+lQe+t4KZ25E5J18UX0kPHBgfcPLabMLOcwHTORKF8mrCSmtK2
+         k2bmkGvh+JyXaahajDXn2/lP5MD/IReHknxfaSPHwgyaGi8cr6En7Tq747wa8L0w6XyN
+         kcGIJMRz7S/snzG3dzcK9IG1f0rqjMryBuNfYoc5v5mP9esxVIbx5Z1lvW2mcjya2HZq
+         R+qoBRAttrhMUce8lgJaRUdrTXnhqc5l73LtwDD/0Q8/x4RSHVTxR9aoKANNz//VR6LU
+         Q/yrmqDSiT4yT91sw3MvYj0iWcR91LTIB6FIrcERd7pQMRl8T5hNto0Vae7I6hQM6B+a
+         SMwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711046642; x=1711651442;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=HZP+gNYu/Kkn8nZAdI78yJHmmqjo52vGxGg0tHY+NoU=;
-        b=t9u2jg4l6qTjm2yU2EeMA8QK2Nch1u7920P3Jy3ikTGrvhBZ/MFKbQt2D/nS2vqo0G
-         dR4P8Br3KpFeIsFpg1NXetQP6feUYBdgghnQyjTtvq94jGN8YIQUor0qz8xz97x8OJqZ
-         K69A8zFqqSqMq6/1Arpjp+WQrqZxj2k6/iRGODSKHjj+M9Wj4MrhZ7b/lAhTc8bPJqum
-         NnKrMBK995f7otc0hoxT3J6G1znFLL2ipQPi68Vbn8AXT92XcqIroCFxDYEQqKh6c6Fz
-         K4iYsS8apffws95/cqtjnnFHdB/OBr7vssSdRfToV6Bu3XIRCEGxKGtWOv0ANhcZztKE
-         LZIw==
-X-Forwarded-Encrypted: i=1; AJvYcCU/I6QszOJlSM1ynnkUqVpwBNRHYm2obsGzTpmJrDEEqnuPkBwIrUB/6Uq1HknrcuCiMaro1pg32ngGTGLBKYzgr6aqZdWAte2NsUogaQ==
-X-Gm-Message-State: AOJu0Yz71nXOIpKzY+I/nKSK435cNorYfGo96l37aD+DYpR8Is7gs+9j
-	NObItnzDXIm16BLtGq8j8QvFuFg4Yc77upIkS0Ozb83yUmckiToO
-X-Google-Smtp-Source: AGHT+IF7he+6hAV9Yv95T9uxTXIAXg6hiYAdZakGXqqD9dT16Y++ep9u6yth94oazmiB/4HP9J5m+A==
-X-Received: by 2002:a17:906:278e:b0:a46:f888:70b9 with SMTP id j14-20020a170906278e00b00a46f88870b9mr197252ejc.51.1711046642214;
-        Thu, 21 Mar 2024 11:44:02 -0700 (PDT)
-Received: from [127.0.1.1] (2a02-8389-41cf-e200-7db2-5855-2c59-b89b.cable.dynamic.v6.surfer.at. [2a02:8389:41cf:e200:7db2:5855:2c59:b89b])
-        by smtp.gmail.com with ESMTPSA id t6-20020a17090616c600b00a4576dd5a8csm188627ejd.201.2024.03.21.11.44.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Mar 2024 11:44:01 -0700 (PDT)
-From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Date: Thu, 21 Mar 2024 19:43:46 +0100
-Subject: [PATCH 5/5] dt-bindings: hwmon: ibm,p8-occ-hwmon: move to trivial
- devices
+        d=1e100.net; s=20230601; t=1711054468; x=1711659268;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=4dpqtSWJGyTeUnxqugJzMO94Z9iV/f5bgYjvchhbNxE=;
+        b=gGHQbICGT+rauk+C+KUnvrmqFNoal8elj9bvrbK1Gd3D3QJNSh5nXmTftKNV47OXf7
+         98j00VPVxO9j4nBU88d4l6of2yOQZAILb0/puSsP7XMdwICks37oFcBnucGOV2wUXnxt
+         q4vx15VmvuQdcdKb4HnehyhCpPINEqjZZRRY9Kl/rjpbDEMyjevDLT3uGl5wSeEDYYUd
+         NDAj7p+zf1UaqmfkMUYQzDTtFxKfCWbtlP/hS9wsJSKlKIfdeJJ+3TS8DLobyOcerjJ/
+         NiRg8LpQ1rpULCuS6Qw9xH/69sqid7Gt7s8yUfS2NDQfPE0BedKHuJ1ymALFohteb5zt
+         Ntqw==
+X-Forwarded-Encrypted: i=1; AJvYcCV20F6nCPIIBhK5lPVFjr7NudL2J58WQuiHBu5gPQIZPvcmUxtcLxf1el2N9eTs4Qc+nn4ilXYx19J1AAOoYHc6ApWhshTvQ0bszl8hVQ==
+X-Gm-Message-State: AOJu0YwhXSIhN7+j2O9UjZOlAffznYuTFMxCC/lx3eUSEhNKVUPb1iJR
+	ZHENvA1NnqyWNHHXGYjfsSBZEN88pSWrNvHq0h0oHmbQstaP+5VC
+X-Google-Smtp-Source: AGHT+IF00jvltcjrS4QawwDsCnX+RLKRo6CEUXlNmaAZkEy6czLuI6rU56WPSUMOFR9qHZGoD99mGg==
+X-Received: by 2002:a05:6512:3051:b0:513:9e13:6403 with SMTP id b17-20020a056512305100b005139e136403mr390726lfb.21.1711054467418;
+        Thu, 21 Mar 2024 13:54:27 -0700 (PDT)
+Received: from ?IPV6:2a02:8389:41cf:e200:9fd4:5a72:5943:9800? (2a02-8389-41cf-e200-9fd4-5a72-5943-9800.cable.dynamic.v6.surfer.at. [2a02:8389:41cf:e200:9fd4:5a72:5943:9800])
+        by smtp.gmail.com with ESMTPSA id gt32-20020a1709072da000b00a46ee5b9aa1sm302555ejc.90.2024.03.21.13.54.26
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 21 Mar 2024 13:54:27 -0700 (PDT)
+Message-ID: <469068f9-b219-4d80-bab4-cbffaa04a67d@gmail.com>
+Date: Thu, 21 Mar 2024 21:54:25 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240321-hwmon_dtschema-v1-5-96c3810c3930@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/5] dt-bindings: hwmon: ibmpowernv: convert to dtschema
+To: Rob Herring <robh@kernel.org>
 References: <20240321-hwmon_dtschema-v1-0-96c3810c3930@gmail.com>
-In-Reply-To: <20240321-hwmon_dtschema-v1-0-96c3810c3930@gmail.com>
-To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, 
- Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
- Conor Dooley <conor+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
-X-Mailer: b4 0.14-dev
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1711046632; l=2007;
- i=javier.carrasco.cruz@gmail.com; s=20240312; h=from:subject:message-id;
- bh=V6VzvACmmg1HSyifxT5g+gPzhNzirrHnP3f/hmF8jMU=;
- b=TXRk7ekifN2YtRLJ/Oo1oWCpa34HsD7o7GbskHBhTUhjZ/+c8V9/Lo9lAKj1cgeGDnIUGQN/h
- 5eAaiamzRueCoaHV4HQTQMpkmSZUfx9tlT1/TlKltdb/wu3ufWHZaUu
-X-Developer-Key: i=javier.carrasco.cruz@gmail.com; a=ed25519;
- pk=lzSIvIzMz0JhJrzLXI0HAdPwsNPSSmEn6RbS+PTS9aQ=
+ <20240321-hwmon_dtschema-v1-2-96c3810c3930@gmail.com>
+ <171105391076.2619280.17497439995032037227.robh@kernel.org>
+Content-Language: en-US, de-AT
+From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+In-Reply-To: <171105391076.2619280.17497439995032037227.robh@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-Mailman-Approved-At: Fri, 22 Mar 2024 08:13:59 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -96,64 +84,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Javier Carrasco <javier.carrasco.cruz@gmail.com>
+Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, Jean Delvare <jdelvare@suse.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This binding meets the requirements to be converted to dtschema
-via trivial-devices.yaml.
+On 3/21/24 21:45, Rob Herring wrote:
+> 
+> On Thu, 21 Mar 2024 19:43:43 +0100, Javier Carrasco wrote:
+>> Convert existing binding to support validation.
+>>
+>> This is a straightforward conversion with now new properties.
+>>
+>> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+>> ---
+>>  .../devicetree/bindings/hwmon/ibm,powernv.yaml     | 37 ++++++++++++++++++++++
+>>  .../devicetree/bindings/hwmon/ibmpowernv.txt       | 23 --------------
+>>  2 files changed, 37 insertions(+), 23 deletions(-)
+>>
+> 
+> My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+> on your patch (DT_CHECKER_FLAGS is new in v5.13):
+> 
+> yamllint warnings/errors:
+> 
+> dtschema/dtc warnings/errors:
+> Documentation/devicetree/bindings/hwmon/ibm,powernv.example.dtb: /example-0/sensor: failed to match any schema with compatible: ['st,stts751']
+> 
 
-Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
----
- .../devicetree/bindings/hwmon/ibm,p8-occ-hwmon.txt | 25 ----------------------
- .../devicetree/bindings/trivial-devices.yaml       |  2 ++
- 2 files changed, 2 insertions(+), 25 deletions(-)
+Obvious mistake, this compatible belongs to another patch of the series.
 
-diff --git a/Documentation/devicetree/bindings/hwmon/ibm,p8-occ-hwmon.txt b/Documentation/devicetree/bindings/hwmon/ibm,p8-occ-hwmon.txt
-deleted file mode 100644
-index 5dc5d2e2573d..000000000000
---- a/Documentation/devicetree/bindings/hwmon/ibm,p8-occ-hwmon.txt
-+++ /dev/null
-@@ -1,25 +0,0 @@
--Device-tree bindings for I2C-based On-Chip Controller hwmon device
--------------------------------------------------------------------
--
--Required properties:
-- - compatible = "ibm,p8-occ-hwmon";
-- - reg = <I2C address>;			: I2C bus address
--
--Examples:
--
--    i2c-bus@100 {
--        #address-cells = <1>;
--        #size-cells = <0>;
--        clock-frequency = <100000>;
--        < more properties >
--
--        occ-hwmon@1 {
--            compatible = "ibm,p8-occ-hwmon";
--            reg = <0x50>;
--        };
--
--        occ-hwmon@2 {
--            compatible = "ibm,p8-occ-hwmon";
--            reg = <0x51>;
--        };
--    };
-diff --git a/Documentation/devicetree/bindings/trivial-devices.yaml b/Documentation/devicetree/bindings/trivial-devices.yaml
-index e07be7bf8395..87b0dd9b0734 100644
---- a/Documentation/devicetree/bindings/trivial-devices.yaml
-+++ b/Documentation/devicetree/bindings/trivial-devices.yaml
-@@ -126,6 +126,8 @@ properties:
-           - ibm,cffps1
-             # IBM Common Form Factor Power Supply Versions 2
-           - ibm,cffps2
-+            # IBM On-Chip Controller hwmon device
-+          - ibm,p8-occ-hwmon
-             # Infineon barometric pressure and temperature sensor
-           - infineon,dps310
-             # Infineon IR36021 digital POL buck controller
+Will be fixed for v2.
 
--- 
-2.40.1
+> doc reference errors (make refcheckdocs):
+> 
+> See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20240321-hwmon_dtschema-v1-2-96c3810c3930@gmail.com
+> 
+> The base for the series is generally the latest rc1. A different dependency
+> should be noted in *this* patch.
+> 
+> If you already ran 'make dt_binding_check' and didn't see the above
+> error(s), then make sure 'yamllint' is installed and dt-schema is up to
+> date:
+> 
+> pip3 install dtschema --upgrade
+> 
+> Please check and re-submit after running the above command yourself. Note
+> that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+> your schema. However, it must be unset to test all examples with your schema.
+> 
 
+Best regards,
+Javier Carrasco
