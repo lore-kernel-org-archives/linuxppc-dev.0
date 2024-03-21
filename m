@@ -4,70 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE56DC6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2024 21:16:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34957C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2024 21:16:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ECMQ6KK4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Vk54l/xI;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V0ytT3Rcyz3vcc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 08:16:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V0yvG68HCz3vfc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 08:16:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ECMQ6KK4;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Vk54l/xI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::536; helo=mail-ed1-x536.google.com; envelope-from=javier.carrasco.cruz@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=javier.carrasco.cruz@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V0vW62yC8z3dTw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 05:44:00 +1100 (AEDT)
-Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-56845954ffeso1674281a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2024 11:44:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V0vW673nsz3dV6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 05:44:02 +1100 (AEDT)
+Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-a468004667aso196016366b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2024 11:44:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1711046634; x=1711651434; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=S3YRi7CjBRkbKzL2OgLfygDYkiVqLApDwF8CS48Fl/4=;
-        b=ECMQ6KK4idpY3k6+3B7a4/2ndbUD2ZTImClqfD6PEtJR/1Mq8GRclGNIuP2CFi1H4U
-         Kok72AIEZhfZrfjt3bWJGe8GwT6QYldCgZBzLHW3fzhxNXRgQCY2BXT4lj4u9Y92UuKf
-         9NFX/CqjtZDI2v+9rbQR340RJ5RjUKjqxfWcyPIKF24w7sl65j9A/32AHMcMKs7WI/X7
-         1QVGQY1rwaR3HVoJT0PhDe6bcj5TyXJ9rRLzxeK2Guqsw6A/mxWwmKcU1gYmEV7fOeao
-         O/FAIGRmuXa7WcwwS3tIp1V279Hcgh+geccj0n9g1JEb9lD7GglikpSUfT//6fFXcugq
-         wkyg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711046634; x=1711651434;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=gmail.com; s=20230601; t=1711046639; x=1711651439; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=S3YRi7CjBRkbKzL2OgLfygDYkiVqLApDwF8CS48Fl/4=;
-        b=xCv3F41e/nia2GbjBJ2KyB4HNkoTUOdRm4bYqBGXg8sLj5QnpJWkDwKJq/8beurbmX
-         3gf36KW+nioBgttcTPaMkmPsXkWQpokDOjl/SpLl1WCGHN47JFWYEVl0+YJqQzo94WCL
-         d3AhXYCNwwhn2yj5W0v7id6hwuw0HMUPq1Q0UVp/UFXeRpDeHerWoa5G4zhp1S7re095
-         uY4FTx/aS5nXaMEqja0ALqaG3FYJCFbUHdlIMrndSgvP6ik5SmOem+RCc0Bo4GoR034A
-         1a24AKA0dLmImeK9kMRpxjc6rXhXErBklFv+qnTpGeJToDk+u0IZ0/0tF+9ly5X061ST
-         01OQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUAN0PI+MFDSTPST2eiZY2X0wYtq4I7pnuke9+B3Iv/zAF1RQZVsytWfXyNucbD8Vmopqw0pEkOv45pAxf0zOmA6zHkVBDLVRGpvtd7xw==
-X-Gm-Message-State: AOJu0YwmX4Nm2W3y7rZ6EmswY5U3/zOm4CSYSj5oX1p5wf9YUxqmRLLU
-	8X77ktfX4UMnZ/7QFynEhCPkRzkDw/DfeKQhvUP7iXnlM5Pv0/f+
-X-Google-Smtp-Source: AGHT+IEFiHREKP8OZY99MKua7vP3dIM4RLhMeHsbw+XjxbzuNF+ZCfqYHSxtkpjGdUDBwcJAT31ZEA==
-X-Received: by 2002:a17:906:b4b:b0:a46:edfb:ff68 with SMTP id v11-20020a1709060b4b00b00a46edfbff68mr195840ejg.5.1711046634142;
-        Thu, 21 Mar 2024 11:43:54 -0700 (PDT)
+        bh=hjH3xWAVxcLksXCnS4n7afqAXMFnAXHbQLt/fzJwwaQ=;
+        b=Vk54l/xI0tZQTv2ysJaqcO6ZIc23g0nXw35HPTyNj3jIAxydArvzRML86hbu9jZwxY
+         yf2QW7gwNwqIm38D99mwhpxG88Ep5IFpu04Mrh6ziazJjGN2f0lf4oHisdyVMXB5UlLC
+         MQiOZr6KNdRNcNKi/dTuUjoMago9Nnb4x7T3CVHwR+y2dKanDaFsnRVPHOymZtwljCR9
+         gmVB+yqbvQLK7i24+V2T+1HVKgC8ubTa/8aI6nq+HYAJPNjuFG2wILZnKVVsmmoPphtu
+         I8gs7O0mEXbFL7c8JgWbTHgM2AYn0yPwC7+1Hk8yDZKf3pwEoadGXaxXs2ZIGTqUjUvP
+         ybtA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1711046639; x=1711651439;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=hjH3xWAVxcLksXCnS4n7afqAXMFnAXHbQLt/fzJwwaQ=;
+        b=mIkcPkwg7GJFOeMv7vIqfUH01pl5BUwBhvOkKbrcfDUBd+KnXUBNGoWQj7YsnQyn8E
+         zvOr1qC1vE40toJ45dQeNnDf4z3LfJqqotm70B5b8aa1VjC2gchfXD2wfudNOFnC6pjR
+         XfNYUaxLh1uH0RtczF2CatSvWX/C8CFbKCr9I4qSgTY2CnOJVpF3R0L4F5sau9H+TQNw
+         EMLxGpAHPY7BDxph6UjwMzR5vNvv+CI2aDOk0hx/gLVixNVNmOlEkwtk6EssWFocYnGk
+         3sr++c9taDj/qDJJos9ibRHu9KcGHCrBIZbfF8ePFCtloyNJnvrP29wfUd+s+QT+Sa0J
+         zNQw==
+X-Forwarded-Encrypted: i=1; AJvYcCXfSiwHZ9paZs9pK4ymjmJFD1rSn71pGfNmrOrzm9AguCQDOeK+e32L3+i0ia2N/tyB6WPrtVXN7BkbVwchs030+1EQTkMIHCywenaYjg==
+X-Gm-Message-State: AOJu0YzY9W8a7XHkmisdtZWRtqwpGT/7xGLZj3J3YaVx7TLSxUQEqfSm
+	9I7mLPu5pm69Df0vMbJ063fealNaT53K4t4y37MHoCHw8wexoeFG
+X-Google-Smtp-Source: AGHT+IEyc+V2rYgEcWFTuNuI3kDNAkEe3lfiXa14/sba7m/sCsfv0r/xLVN623itYwLZeUtC/K826w==
+X-Received: by 2002:a17:906:1387:b0:a46:c8e2:40f6 with SMTP id f7-20020a170906138700b00a46c8e240f6mr197265ejc.1.1711046639107;
+        Thu, 21 Mar 2024 11:43:59 -0700 (PDT)
 Received: from [127.0.1.1] (2a02-8389-41cf-e200-7db2-5855-2c59-b89b.cable.dynamic.v6.surfer.at. [2a02:8389:41cf:e200:7db2:5855:2c59:b89b])
-        by smtp.gmail.com with ESMTPSA id t6-20020a17090616c600b00a4576dd5a8csm188627ejd.201.2024.03.21.11.43.52
+        by smtp.gmail.com with ESMTPSA id t6-20020a17090616c600b00a4576dd5a8csm188627ejd.201.2024.03.21.11.43.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Mar 2024 11:43:53 -0700 (PDT)
+        Thu, 21 Mar 2024 11:43:58 -0700 (PDT)
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Subject: [PATCH 0/5] dt-bindings: hwmon: convert multiple devices to
- dtschema
-Date: Thu, 21 Mar 2024 19:43:41 +0100
-Message-Id: <20240321-hwmon_dtschema-v1-0-96c3810c3930@gmail.com>
+Date: Thu, 21 Mar 2024 19:43:44 +0100
+Subject: [PATCH 3/5] dt-bindings: hwmon: pwm-fan: drop text file
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAN1//GUC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIxMDYyMD3Yzy3Py8+JSS4uSM1NxEXfM0U4s0E0tDQ4vERCWgpoKi1LTMCrC
- B0bG1tQCDcjUqYAAAAA==
+Message-Id: <20240321-hwmon_dtschema-v1-3-96c3810c3930@gmail.com>
+References: <20240321-hwmon_dtschema-v1-0-96c3810c3930@gmail.com>
+In-Reply-To: <20240321-hwmon_dtschema-v1-0-96c3810c3930@gmail.com>
 To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, 
  Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
@@ -77,11 +76,11 @@ To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>,
  "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
  "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
 X-Mailer: b4 0.14-dev
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1711046632; l=1900;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1711046632; l=541;
  i=javier.carrasco.cruz@gmail.com; s=20240312; h=from:subject:message-id;
- bh=qb/Bf0zXY7etChiyat2ZjXEDTHS7YWl2pfFPxlK7XNM=;
- b=LOtmOlWuGJJX1J1QTb6GMHIbOB8AUQtCR2RcGKO2IgzNuYJegE0yHi9i1d4c8pEUHYeoO5Fsk
- Jp0xXdmoM1tARxzZhRyS8V3i+Zh/xozT+HvOd6B9c5uZUNkTIj6vQOV
+ bh=WtXVHWYckALrs2tiGdx+CdxFz78VsyEPGAXNNvu5zss=;
+ b=bQuEUQ397vzy8Jfx9LXE1DLb9HcUz0E9hVk1DYfWLzvdIqRa7kwMM7XS2iVsuxw1M9Jk1I4A/
+ cv3JecbM8T4CRJR4jtV7jJtpUQW1Gt2GFqpZ8rXg2nQ+VqWzFO01uJK
 X-Developer-Key: i=javier.carrasco.cruz@gmail.com; a=ed25519;
  pk=lzSIvIzMz0JhJrzLXI0HAdPwsNPSSmEn6RbS+PTS9aQ=
 X-Mailman-Approved-At: Fri, 22 Mar 2024 08:13:59 +1100
@@ -100,47 +99,21 @@ Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series converts the following existing bindings to dtschema:
-
-- as370
-- ibmpowernv
-- stts751
-- ibm,p8-occ-hwmon (moved to trivial-devices.yaml)
-
-Additionally, pwm-fan.txt has been dropped because it was converted a
-year ago, and it is not mentioned anywhere in the tree.
-I could not find the rationale, but its current state does not seem to
-provide any valuable information.
-
-The binding of the as370 looks very simple, but given that the reg
-property is not a single address, I have written a dedicated file for
-it. If reg = <address range> is valid in trivial-devices.yaml, I have
-nothing against moving this device as well.
+This binding was converted to dtschema a year ago.
 
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
-Javier Carrasco (5):
-      dt-bindings: hwmon: as370: convert to dtschema
-      dt-bindings: hwmon: ibmpowernv: convert to dtschema
-      dt-bindings: hwmon: pwm-fan: drop text file
-      dt-bindings: hwmon: stts751: convert to dtschema
-      dt-bindings: hwmon: ibm,p8-occ-hwmon: move to trivial devices
+ Documentation/devicetree/bindings/hwmon/pwm-fan.txt | 1 -
+ 1 file changed, 1 deletion(-)
 
- Documentation/devicetree/bindings/hwmon/as370.txt  | 11 ------
- .../devicetree/bindings/hwmon/ibm,p8-occ-hwmon.txt | 25 -------------
- .../devicetree/bindings/hwmon/ibm,powernv.yaml     | 37 +++++++++++++++++++
- .../devicetree/bindings/hwmon/ibmpowernv.txt       | 23 ------------
- .../devicetree/bindings/hwmon/pwm-fan.txt          |  1 -
- .../devicetree/bindings/hwmon/st,stts751.yaml      | 41 ++++++++++++++++++++++
- .../devicetree/bindings/hwmon/stts751.txt          | 15 --------
- .../devicetree/bindings/hwmon/syna,as370.yaml      | 32 +++++++++++++++++
- .../devicetree/bindings/trivial-devices.yaml       |  2 ++
- 9 files changed, 112 insertions(+), 75 deletions(-)
----
-base-commit: ebc9bee8814d12ec247de117aa2f7fd39ff11127
-change-id: 20240320-hwmon_dtschema-7f58f49118aa
+diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+deleted file mode 100644
+index 48886f0ce415..000000000000
+--- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
++++ /dev/null
+@@ -1 +0,0 @@
+-This file has moved to pwm-fan.yaml.
 
-Best regards,
 -- 
-Javier Carrasco <javier.carrasco.cruz@gmail.com>
+2.40.1
 
