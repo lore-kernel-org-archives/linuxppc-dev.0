@@ -4,69 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE32EC47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 19:26:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EB9CC47DD9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 19:27:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OYFAM8oR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=cNPxta01;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V1XPT40Bsz3vsX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 06:26:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V1XQG5dHjz3vwc
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 06:27:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OYFAM8oR;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=cNPxta01;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12a; helo=mail-lf1-x12a.google.com; envelope-from=javier.carrasco.cruz@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::235; helo=mail-lj1-x235.google.com; envelope-from=javier.carrasco.cruz@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1XMp07l8z3vXF
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1XMp1Dxsz3vZX
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 06:24:52 +1100 (AEDT)
-Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-512f892500cso3030492e87.3
+Received: by mail-lj1-x235.google.com with SMTP id 38308e7fff4ca-2d41d1bedc9so46466891fa.3
         for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 12:24:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1711135487; x=1711740287; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=QZnGroDIqCF/lMVS0ApuLGPQdgg2yOe6mXFPk44TpZc=;
-        b=OYFAM8oRBwy2m/HYwRZLUH4e28eCSFAbDMvhW1Bu0/bN9o0PVckO6dXdi4nxL0B4nu
-         YhVQO0taf3nQPL7JycaeP63fTkA7d2355dHXEg1yTEwJ11gHRs7f8qV21lmRetj1deE4
-         pg0WzKTljH/r2ARKJi1f75N2WU1D53N+nRNQJ0Uo+jxAJ5atT4cxtQ0il9MQLYxf9YXw
-         ObSzzE6iuJ8WErSk0A7GAeaxHc9gx6cEgB4bFGfpYIjKy3zKgJwvpSPGPfy2kCp+wb3Z
-         2C2NbWgrakYLCmKHFP9zfbUktZ95eX4H6HHsQlLwRZBHB9GeeL6/zYV8m5u9Uoafkacz
-         ik3w==
+        d=gmail.com; s=20230601; t=1711135484; x=1711740284; darn=lists.ozlabs.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=vux8fc5fM7LNtFQnsX415d4fh0A+DwGLl9t/xPE2qdQ=;
+        b=cNPxta01GYOHzfiA+8ip5hKyhs615Ytr9yjvqxOQrf7aIAb/UVtDFN9ckZliOEch6g
+         +Cx54JFy+0PvUB4K7R6gLvBWYzXIuaCjUJaJcVs2JdfmoQUQpy0tABE0Z+axeSPaa9RP
+         vWrWr1UVvGK0hXMrQ8/w4mH8jhyYlL4Mx4fW9jvKjkBXJwXVAxhaEodTm/3QAqFIDIuE
+         jfRXSLX6m2JywcoZFJHo1WBaH/bh3oakuu49TxZduzc091MN767QcYZBO4mYksdsuOUL
+         HQtVC4SvWUvYodh5tOO93JUEM7Yq054tcPZtxZLj6oF1VP/nQFK4Sd6oR1xzj7zqJ5sE
+         1R2Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711135487; x=1711740287;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=QZnGroDIqCF/lMVS0ApuLGPQdgg2yOe6mXFPk44TpZc=;
-        b=Z7yd6yVh2F0nvFQAo+az3S6nn8Zsd01EJ2pEjKae301vqiOjjp0MU8UmNOZZ+oMK9T
-         x06Z+hd42f3tH7GKqTDqIlve2K0ZcROcy2lpC4TLnK6U4sIEwpUcgmtQIHoKfcfhHDkF
-         iM45VWnUOuF7tIPQpf85Nrh8p7Ng44ynCI8evniFmdGycNu2sr/s4jCnuM8fADstN4RT
-         mFsPPQGoeEdrrcMytIls9Z3f5lWKYsZuRlGomZtWSsGsL5ZMk1asD3i+wjPFoGeg9jn8
-         RxQcLgGWQopUP0fmDIKoVy/KdTO+TEUC1X8Psimant0RJSGnigyL0SQhzv3sos6pA/ra
-         XkDg==
-X-Forwarded-Encrypted: i=1; AJvYcCXgsu/yiFvsuHBR+FQxwTSOydWyH3n1GozcdsdR77Nvtqs6yzILC5dkT63Gd1riPDC3opaIoowXDHmNGlCRy9adR+Ll1b4mBueH90TefA==
-X-Gm-Message-State: AOJu0YyaAXKGFc6YoHGYeHZe/YBuRul2Udu8HdfK4gdyO1riNFEUsbDA
-	m1aviVMcgsvSYPv390QD2a2uBH2IU+Mv5wJeAPNGBvljkNTbOy8w
-X-Google-Smtp-Source: AGHT+IGGyVKkxeA1Y0HyiM85CqmDIq34jH74s4IHJuZKr9P3A15+SZzTvwvPnoi9mUIq67umtHs1TQ==
-X-Received: by 2002:a19:4344:0:b0:513:e14d:15e1 with SMTP id m4-20020a194344000000b00513e14d15e1mr312698lfj.57.1711135487059;
-        Fri, 22 Mar 2024 12:24:47 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1711135484; x=1711740284;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=vux8fc5fM7LNtFQnsX415d4fh0A+DwGLl9t/xPE2qdQ=;
+        b=sz+/3AkmDVTR2hQPxSaqu2dnH3pN6+XxS1amD8q2gUaYE+Z3XY4BXX1q3ViLSv5Bjo
+         a3X7LJbWF+ZW7m0/vrevpuRdFKMCUA6US/DZYTEAHw5ea6HKjZy9Mxovpa3uymLy3BS5
+         2R7MDgivaWVsDqzGoTSZEz00+t+1CE5GMGbyYW5MpsKdD69Ubk95Lw3QB3LwoUBaljpS
+         nHQoWxEKvm7A8G5ojuaa86DJSl+77JDuDqoLmqavwO1tSEccpn9v8KaDYJbPHXnS3ukN
+         QvGFQ5T7oNN1ymWa7FFZApj7XrTTvsO+16JwLaePwPkD2v3WHqOFXhIMO857E3TNVrUO
+         mPfA==
+X-Forwarded-Encrypted: i=1; AJvYcCW1oC/KEdnpX2yCNQwa+VPoSnzCp28sKoaTM3oqAvczjcqB/3ejFbW+fkKP1VI9Ee7quj4lPHyW2n9DzlTrczbqV0J7ZGIKc6ob7fbb3w==
+X-Gm-Message-State: AOJu0YxtLNQJ8QC6n6FiNfwXBJxiM+yYc6DFOLfQgZfswKcSRSDDcWlK
+	cviJDGLuMfaAfapQEv8C88+pxB/MXPMS47Ed3zNtMUVKYX+3rVzm
+X-Google-Smtp-Source: AGHT+IEztkWv0lG4BchX5uTHqaHr01cPk54RdBLOUlG46H0Z9WQy5mDhfH5yA43OaaEk7mNjUJrofw==
+X-Received: by 2002:a19:e04b:0:b0:513:cf77:48c5 with SMTP id g11-20020a19e04b000000b00513cf7748c5mr314380lfj.38.1711135483932;
+        Fri, 22 Mar 2024 12:24:43 -0700 (PDT)
 Received: from [127.0.1.1] (2a02-8389-41cf-e200-b7fa-7d92-6b28-0504.cable.dynamic.v6.surfer.at. [2a02:8389:41cf:e200:b7fa:7d92:6b28:504])
-        by smtp.gmail.com with ESMTPSA id ku12-20020a170907788c00b00a46b87c32besm138572ejc.39.2024.03.22.12.24.45
+        by smtp.gmail.com with ESMTPSA id ku12-20020a170907788c00b00a46b87c32besm138572ejc.39.2024.03.22.12.24.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 Mar 2024 12:24:46 -0700 (PDT)
+        Fri, 22 Mar 2024 12:24:43 -0700 (PDT)
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Date: Fri, 22 Mar 2024 20:24:36 +0100
-Subject: [PATCH v3 2/5] dt-bindings: hwmon: ibmpowernv: convert to dtschema
+Subject: [PATCH v3 0/5] dt-bindings: hwmon: convert multiple devices to
+ dtschema
+Date: Fri, 22 Mar 2024 20:24:34 +0100
+Message-Id: <20240322-hwmon_dtschema-v3-0-6697de2a8228@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240322-hwmon_dtschema-v3-2-6697de2a8228@gmail.com>
-References: <20240322-hwmon_dtschema-v3-0-6697de2a8228@gmail.com>
-In-Reply-To: <20240322-hwmon_dtschema-v3-0-6697de2a8228@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAPLa/WUC/2XM3QqCMBjG8VuRHbfYh+bHUfcREXO+uheai01WI
+ d57UwikDp8H/r+ZBPAIgTTZTDxEDOjGNOQhI9qocQCKXdpEMJEzKRg1T+vGWzcFbcAqWvZF1ec
+ 155VSJEUPDz2+NvByTdtgmJx/b37k6/ul+C8VOWW0PmlZcaZlLdl5sArvR+0sWako9rn4y0XKi
+ 5K1AFxp0O0+X5blA9JRlpvrAAAA
 To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, 
  Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
@@ -76,11 +78,11 @@ To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>,
  "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
  "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
 X-Mailer: b4 0.14-dev
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1711135482; l=2606;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1711135482; l=2035;
  i=javier.carrasco.cruz@gmail.com; s=20240312; h=from:subject:message-id;
- bh=O6ZF8AixVLf2eRm+20VlkeyMfauGenKZYfdBbtHsutY=;
- b=0k3y3yB8td836Vv0vjh5jj1vLP7hRXi8mtoE4bgIlJu48ClDtv2TlLskejv4mugvbWVAsoSym
- 8fJI9TnfeZsBcncWzvR/6JvN1F+4wJpDnSGIc76J95Uw/RNE6fKayFL
+ bh=TRwBnRIKVJvP1oP0vOUbRxZfMz6ws9mrssXvYU2GQlg=;
+ b=aTmpAFD7euHIggSgchvepGmBQhKMqXWjtiu+W0Zi8S99e23udMRL7ydG7U2wn2xv3SAf/QGZx
+ 1WGULD4yNcQCcA68UZtJRyufTfd8L1k2rWnhV03P4SMgatFErH6KJiP
 X-Developer-Key: i=javier.carrasco.cruz@gmail.com; a=ed25519;
  pk=lzSIvIzMz0JhJrzLXI0HAdPwsNPSSmEn6RbS+PTS9aQ=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -98,91 +100,51 @@ Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, Javier Carrasco <ja
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Convert existing binding to support validation.
+This series converts the following existing bindings to dtschema:
 
-The binding has been renamed to match its compatible strings, with no
-further additions.
+- as370
+- ibmpowernv (renamed to ibm,opal-sensor to match compatibles)
+- stts751
+- ibm,p8-occ-hwmon (moved to trivial-devices.yaml)
 
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Additionally, pwm-fan.txt has been dropped because it was converted a
+year ago, and it is not mentioned anywhere in the tree.
+I could not find the rationale, but its current state does not seem to
+provide any valuable information.
+
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
- .../devicetree/bindings/hwmon/ibm,opal-sensor.yaml | 37 ++++++++++++++++++++++
- .../devicetree/bindings/hwmon/ibmpowernv.txt       | 23 --------------
- 2 files changed, 37 insertions(+), 23 deletions(-)
+Changes in v3:
+- Rename ibmpowernv to ibm,opal-sensor to match compatibles.
+- Link to v2: https://lore.kernel.org/r/20240322-hwmon_dtschema-v2-0-570bee1acecb@gmail.com
 
-diff --git a/Documentation/devicetree/bindings/hwmon/ibm,opal-sensor.yaml b/Documentation/devicetree/bindings/hwmon/ibm,opal-sensor.yaml
-new file mode 100644
-index 000000000000..376ee7f1cdb7
---- /dev/null
-+++ b/Documentation/devicetree/bindings/hwmon/ibm,opal-sensor.yaml
-@@ -0,0 +1,37 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/hwmon/ibm,opal-sensor.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: IBM POWERNV platform sensors
-+
-+maintainers:
-+  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - ibm,opal-sensor-cooling-fan
-+      - ibm,opal-sensor-amb-temp
-+      - ibm,opal-sensor-power-supply
-+      - ibm,opal-sensor-power
-+
-+  sensor-id:
-+    description:
-+      An opaque id provided by the firmware to the kernel, identifies a
-+      given sensor and its attribute data.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+required:
-+  - compatible
-+  - sensor-id
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    sensor {
-+        compatible = "ibm,opal-sensor-cooling-fan";
-+        sensor-id = <0x7052107>;
-+    };
-diff --git a/Documentation/devicetree/bindings/hwmon/ibmpowernv.txt b/Documentation/devicetree/bindings/hwmon/ibmpowernv.txt
-deleted file mode 100644
-index f93242be60a1..000000000000
---- a/Documentation/devicetree/bindings/hwmon/ibmpowernv.txt
-+++ /dev/null
-@@ -1,23 +0,0 @@
--IBM POWERNV platform sensors
------------------------------
--
--Required node properties:
--- compatible: must be one of
--		"ibm,opal-sensor-cooling-fan"
--		"ibm,opal-sensor-amb-temp"
--		"ibm,opal-sensor-power-supply"
--		"ibm,opal-sensor-power"
--- sensor-id: an opaque id provided by the firmware to the kernel, identifies a
--	     given sensor and its attribute data
--
--Example sensors node:
--
--cooling-fan#8-data {
--	sensor-id = <0x7052107>;
--	compatible = "ibm,opal-sensor-cooling-fan";
--};
--
--amb-temp#1-thrs {
--	sensor-id = <0x5096000>;
--	compatible = "ibm,opal-sensor-amb-temp";
--};
+Changes in v2:
+- ibmpowernv: fix compatible string in the example.
+- Link to v1: https://lore.kernel.org/r/20240321-hwmon_dtschema-v1-0-96c3810c3930@gmail.com
 
+---
+Javier Carrasco (5):
+      dt-bindings: hwmon: as370: convert to dtschema
+      dt-bindings: hwmon: ibmpowernv: convert to dtschema
+      dt-bindings: hwmon: pwm-fan: drop text file
+      dt-bindings: hwmon: stts751: convert to dtschema
+      dt-bindings: hwmon: ibm,p8-occ-hwmon: move to trivial devices
+
+ Documentation/devicetree/bindings/hwmon/as370.txt  | 11 ------
+ .../devicetree/bindings/hwmon/ibm,opal-sensor.yaml | 37 +++++++++++++++++++
+ .../devicetree/bindings/hwmon/ibm,p8-occ-hwmon.txt | 25 -------------
+ .../devicetree/bindings/hwmon/ibmpowernv.txt       | 23 ------------
+ .../devicetree/bindings/hwmon/pwm-fan.txt          |  1 -
+ .../devicetree/bindings/hwmon/st,stts751.yaml      | 41 ++++++++++++++++++++++
+ .../devicetree/bindings/hwmon/stts751.txt          | 15 --------
+ .../devicetree/bindings/hwmon/syna,as370.yaml      | 32 +++++++++++++++++
+ .../devicetree/bindings/trivial-devices.yaml       |  2 ++
+ 9 files changed, 112 insertions(+), 75 deletions(-)
+---
+base-commit: ebc9bee8814d12ec247de117aa2f7fd39ff11127
+change-id: 20240320-hwmon_dtschema-7f58f49118aa
+
+Best regards,
 -- 
-2.40.1
+Javier Carrasco <javier.carrasco.cruz@gmail.com>
 
