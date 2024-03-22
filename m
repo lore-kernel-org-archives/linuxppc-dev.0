@@ -4,51 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B23C3C47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 18:04:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76A52C54E71
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 19:25:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p+gO5Ljr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ED+o+Jr7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V1VbN2vwyz3vkB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 05:04:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V1XNh0sxVz3vl7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 06:25:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p+gO5Ljr;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ED+o+Jr7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=javier.carrasco.cruz@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1VVj35g1z3w8j
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 05:00:45 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 25EC4CE1882;
-	Fri, 22 Mar 2024 18:00:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E043C433F1;
-	Fri, 22 Mar 2024 18:00:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711130443;
-	bh=g9Iyt0g4iUXGAQcOoGRDJSNpVdcT6pD1rHESCP3EsNU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=p+gO5Ljr/Bf1h4I0MSugrfaYWl1wCJfGf9RhQTMSoG8sJkNmF8tOnybyGxthDEiUb
-	 //lzM8qLFGc8UOe/pV7WLzwAHwgKOfTLPRkOQ6okD1SSvgfb+AVvgO5S5FmcoKPxNO
-	 Shr0sb+tMV4Z5BV2vd6VAs8iQ0Uy4t/g4RLMi89IWyOhNj+U0vP3D19a7uBsurqMoP
-	 jx4nTkDWrFyBDYJ03jaTw+Ys6hVC/7OMC5Tv41tCRFfJuj4I76yPMtNkhWNF0WzS6P
-	 Ou/E45F1SQWD2Isvlzwd6ex8KUykLlHRp6jZFANMoPsP6xY02HV941wWcTvWdk44Wg
-	 oGIx64k0BH5tA==
-Date: Fri, 22 Mar 2024 18:00:38 +0000
-From: Conor Dooley <conor@kernel.org>
-To: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Subject: Re: [PATCH v2 4/5] dt-bindings: hwmon: stts751: convert to dtschema
-Message-ID: <20240322-swinger-unselfish-8e36bc12cf79@spud>
-References: <20240322-hwmon_dtschema-v2-0-570bee1acecb@gmail.com>
- <20240322-hwmon_dtschema-v2-4-570bee1acecb@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1XMp0xJtz3vZW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 06:24:53 +1100 (AEDT)
+Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-a46ea03c2a5so435271366b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 12:24:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1711135489; x=1711740289; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=D0ZcSySu+KpK49bvvLZjoVLSgT/8Vz6AsAvPYvNMC5c=;
+        b=ED+o+Jr7QAnpETaea5bX/PQAETax4BIXfIEiW94LxrhS0Kdc+vEGRZN2WEzAb50y2P
+         ++x44vYiMY23JNLjud931YZxOtrlGOKC0WGG9Kk6iu3pC3qk79auy1yPi5hfeH0dbSQ3
+         OonZEIa/kPo5c9Y7uxf+W/6bqsnOpcoCja3iWe32Aw3ajEW2lMzl2naGsJgqFrzX8pAO
+         4XOCa6OxLzREGGKMVQIY5GzJM77IsIFF7MIcZB1Nlbbhsx8//g39Q6+/x3ASnqDhVmbs
+         vQdjVgdq8GbTgAe6yfXIVtVF460mFuimkJDP71NAtDx86w6Lhf+mugTVCx6eRb1qNSQm
+         JTpg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1711135489; x=1711740289;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=D0ZcSySu+KpK49bvvLZjoVLSgT/8Vz6AsAvPYvNMC5c=;
+        b=d7zk3tzvR5I1tpgu+SupJ8plYlxuHO2cSaOlDvdQJ3XBRpZ5V1jn1lM4G3S0cRkPPv
+         Gao0ljUKrtew1RpfFhORbIWlEHhiPL2d4RD/4KoaGS3KyXNFwbr/VhnRw0lT5CfeV285
+         IM4GsoRHhyPazTe66QM/Rsv0eoRd7jYwcGUoyRbXKqOVp6jRJ4yV5pLrozXNBjOi4LMX
+         AduIMDLLLOlxMY6un7X5lW+kf6ylk8ZMtXlMEy1SEvnTUlfrcLBq6VhzCKRseQTactBT
+         cxVyk0aK+F5zKyKbG9IAwoE++QyKflibrn2K589VWjHuzMxnt8FNuilDP1ElP6uCGhIC
+         sU1g==
+X-Forwarded-Encrypted: i=1; AJvYcCWdWzJCacdWDxedXALqbiVmGbVhABSQB471IdgWX7LGsCynJTJU89m7LU86F1Qen7lescLKlTVVNqDTkINltjB/hgz8o1SFSYJqGWmXzw==
+X-Gm-Message-State: AOJu0Yz81TkKWoY/kCE80m8JbZMNDr2Nz3cDMzblAoUDfvqBAbaMMrq9
+	lR2ewmVH3FP9jGHMpuk45LCX1yFAwEra4I4pgV92BcT6ISogsQ3w
+X-Google-Smtp-Source: AGHT+IH2yEbV6zpZDo0LYkd3n2fFTzdL0Im5jXNMEzApVu9s22IYYAjdujzEhfw0+DAGNdM8vqJYDw==
+X-Received: by 2002:a17:907:940d:b0:a47:35df:3d40 with SMTP id dk13-20020a170907940d00b00a4735df3d40mr578759ejc.4.1711135488705;
+        Fri, 22 Mar 2024 12:24:48 -0700 (PDT)
+Received: from [127.0.1.1] (2a02-8389-41cf-e200-b7fa-7d92-6b28-0504.cable.dynamic.v6.surfer.at. [2a02:8389:41cf:e200:b7fa:7d92:6b28:504])
+        by smtp.gmail.com with ESMTPSA id ku12-20020a170907788c00b00a46b87c32besm138572ejc.39.2024.03.22.12.24.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 22 Mar 2024 12:24:48 -0700 (PDT)
+From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+Date: Fri, 22 Mar 2024 20:24:37 +0100
+Subject: [PATCH v3 3/5] dt-bindings: hwmon: pwm-fan: drop text file
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="bGPx4mdUKjkLA5FN"
-Content-Disposition: inline
-In-Reply-To: <20240322-hwmon_dtschema-v2-4-570bee1acecb@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240322-hwmon_dtschema-v3-3-6697de2a8228@gmail.com>
+References: <20240322-hwmon_dtschema-v3-0-6697de2a8228@gmail.com>
+In-Reply-To: <20240322-hwmon_dtschema-v3-0-6697de2a8228@gmail.com>
+To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, 
+ Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
+ "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+X-Mailer: b4 0.14-dev
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1711135482; l=582;
+ i=javier.carrasco.cruz@gmail.com; s=20240312; h=from:subject:message-id;
+ bh=ZcfJW77o+avPTeg2tdUvNFQMCBaJDocyWKaLWxFMj3M=;
+ b=L/sFLNsHGNhO/rLBb+tChETQJOlxvloAo8fJxkna9N5FfqHJDz7Pb+FiDVWGj0Ns0klwArXB/
+ pp35gYqwpowB0zH8wqWdg25xMJ5RkM6jU4rix8DnDfF8Q7bQK00/nsM
+X-Developer-Key: i=javier.carrasco.cruz@gmail.com; a=ed25519;
+ pk=lzSIvIzMz0JhJrzLXI0HAdPwsNPSSmEn6RbS+PTS9aQ=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,36 +94,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hwmon@vger.kernel.org, Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Jean Delvare <jdelvare@suse.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
+Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Javier Carrasco <javier.carrasco.cruz@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+This binding was converted to dtschema a year ago.
 
---bGPx4mdUKjkLA5FN
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+---
+ Documentation/devicetree/bindings/hwmon/pwm-fan.txt | 1 -
+ 1 file changed, 1 deletion(-)
 
-On Fri, Mar 22, 2024 at 07:45:29AM +0100, Javier Carrasco wrote:
-> Convert existing binding to support validation.
->=20
-> This is a straightforward conversion with no new properties.
->=20
+diff --git a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt b/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
+deleted file mode 100644
+index 48886f0ce415..000000000000
+--- a/Documentation/devicetree/bindings/hwmon/pwm-fan.txt
++++ /dev/null
+@@ -1 +0,0 @@
+-This file has moved to pwm-fan.yaml.
 
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+-- 
+2.40.1
 
-Thanks,
-Conor.
-
---bGPx4mdUKjkLA5FN
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZf3HRgAKCRB4tDGHoIJi
-0iWWAPsF0UuXl0/1wfe0ENaD/RuvprK3ML0fGOVBkNQ4fbTH1QEA97q9xgWqriro
-TZDPzIK22sIByFav6M5rmCkkDnTAUgg=
-=Hwbs
------END PGP SIGNATURE-----
-
---bGPx4mdUKjkLA5FN--
