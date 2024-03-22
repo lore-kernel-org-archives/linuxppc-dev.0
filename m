@@ -4,120 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DB2FC47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 18:02:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66922C47DD9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 18:04:08 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=vW6G1Xg2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kvrERC+H;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V1VXj6CRjz3wGr
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 05:02:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V1VZb0mxTz3wLx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 05:04:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=vW6G1Xg2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kvrERC+H;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82e; helo=mail-qt1-x82e.google.com; envelope-from=groeck@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82e.google.com (mail-qt1-x82e.google.com [IPv6:2607:f8b0:4864:20::82e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1TGg0M9Zz3cRB
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 04:05:14 +1100 (AEDT)
-Received: by mail-qt1-x82e.google.com with SMTP id d75a77b69052e-431347c6c99so11921cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 10:05:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1711127111; x=1711731911; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=v4N44CMN5oCIe/XAnwlaVauiT1tmi9O/mBbrMgK8XAg=;
-        b=vW6G1Xg2qOnZWvxnH6UfpgvzGxtimjR9MMtd2VXsgidEvdA+HhhBQ4LGMFSgiUVDI0
-         aMvGeFesTq5Tx9/ISsffEjjVd5+THMbSrkt6H6Xw3XZj44PxQ40ghHUgO5miW0fra+er
-         blttUIyXoniRTJgJHR2wvQcu+qXPJ2IUdsJ1li54GZpcd5uP0/0M+FCIdWay0+VzHUmP
-         CxrXNj3JTq4huUVFnTu7nqGCU+88+C6bwjHcB9IQIUAiC/hx4qe97ep6nPmiyaSLgDmw
-         PPRSpHNW1BHfLyh1IE3HppQuyhWQPIuFukHjfHv+qZnEDVMNCbO6k61egTGC6K//hB9d
-         IA/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711127111; x=1711731911;
-        h=content-transfer-encoding:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=v4N44CMN5oCIe/XAnwlaVauiT1tmi9O/mBbrMgK8XAg=;
-        b=teAlp6sASAFL1+rmxwlpULLW0fe+wOz+Dwz6hg5B5p9QK+FcccJ2zxFzdz0/IKjS6J
-         O4YXTgZ9DOt1RHniXb1D0aYFtXS4ViPCadItQNj9XReqAxl8hWtmVRL3AtlovPmkvJH5
-         Lb2v/RxFFlX9mKsIJq4wmCS8B7yTRHmXcp4cYdQWVSnUoeqn6VO5S//Uz5kjqx4i9Za7
-         jMeC3GK3wy5xoi+bacIMRVKUr8E/Pnf+uvPE8CT2qZJXwSC1LUNXvMUA9A3zKxh+z8Y+
-         uWmO1WqRyVIyF9ZB7OFI9OZ7GcvcXKoo4iiqP1JQsPHyxG6hncj72rNLq8Fej+DmpV6h
-         tpQw==
-X-Forwarded-Encrypted: i=1; AJvYcCUBL2KFCEPReyxkJ2U43MTuI4TQuX7iQ+LjV0CgD+mkH/qhppQENKOq81qSsiRguCyMN+XY0hSlKrghemxNfSSlogWEE9Blp2KOUDjMeA==
-X-Gm-Message-State: AOJu0YyxEmpTEri101qmetBV9NxmeuWqGr2VOLMpaft0vOPZ1e1X4ktl
-	RJCLd4Yd/Yr6GUruC0j7Gk+SHIjHfE3FdGXZ17GY+KSiuH1i9z4Fw3k0b/MiGYeebbOwBvI1d/M
-	FiFD4v8TA83fx7lFB0nXofQA+UIDiuqK1wEOZ
-X-Google-Smtp-Source: AGHT+IEMXRAiaxzgPudCV28IsnfTo93KghidIO1NcmkDbiSOepYGnBba5CPcjtadamz0IWr8XSq/M+NvnzVf5opCbEA=
-X-Received: by 2002:a05:622a:2486:b0:431:3c48:a65b with SMTP id
- cn6-20020a05622a248600b004313c48a65bmr12492qtb.11.1711127111085; Fri, 22 Mar
- 2024 10:05:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1VTX2v1Xz3vxs
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 04:59:44 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id E0DB9CE1874;
+	Fri, 22 Mar 2024 17:59:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30CEAC433F1;
+	Fri, 22 Mar 2024 17:59:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1711130382;
+	bh=vYsHN5tUpWVy+FYsrra2eYCMPyeaVlBd8+QL+Nh9b5g=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=kvrERC+HC9ArLBwp5Fh3Xrsa3y5UQi9zCRFAfd9lTmymxC+aQbv7hNJVjfxZxZMrJ
+	 pECB2rBIhEokCw5c+Or39sRuvgLWvuWpU/HrY9ti1WFSZAgsrhs24UB6BCk8YYjvWu
+	 1T9prFLrcbvmEoNSzCrHgN2UE70qsLjPSsnD62FRSPazKgRxP8eUVu0erjqCW809hE
+	 4pmE47B/VZKdlKLh7NVwshneoqtSlMZFdxi4DQDTp8vP9ZYWEr7zDDmqovQxVkBUBS
+	 8TpNVPNfQKanvTdjOeTkbesQDpUacMpUbXBfI+22IFUd4XPV39sHU2evasKP7n75t/
+	 rSMCMlyxXDvQQ==
+Date: Fri, 22 Mar 2024 17:59:37 +0000
+From: Conor Dooley <conor@kernel.org>
+To: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+Subject: Re: [PATCH v2 2/5] dt-bindings: hwmon: ibmpowernv: convert to
+ dtschema
+Message-ID: <20240322-papaya-diabolic-e7c2c4319eb2@spud>
+References: <20240322-hwmon_dtschema-v2-0-570bee1acecb@gmail.com>
+ <20240322-hwmon_dtschema-v2-2-570bee1acecb@gmail.com>
 MIME-Version: 1.0
-References: <20240322132619.6389-1-wsa+renesas@sang-engineering.com>
- <20240322132619.6389-65-wsa+renesas@sang-engineering.com> <e8dff9d4-ed15-44e9-ae9a-2e77845ec40b@microchip.com>
- <Zf22G4jC2gIlzhi_@shikoro>
-In-Reply-To: <Zf22G4jC2gIlzhi_@shikoro>
-From: Guenter Roeck <groeck@google.com>
-Date: Fri, 22 Mar 2024 10:05:00 -0700
-Message-ID: <CABXOdTc14kfPpkF96KG-oeLRTLvjxAD_gtOO2TQFLnHMLNoU_Q@mail.gmail.com>
-Subject: Re: [PATCH 64/64] i2c: reword i2c_algorithm in drivers according to
- newest specification
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, linux-i2c@vger.kernel.org, 
-	Elie Morisse <syniurge@gmail.com>, Shyam Sundar S K <shyam-sundar.s-k@amd.com>, 
-	Andi Shyti <andi.shyti@kernel.org>, Codrin Ciubotariu <codrin.ciubotariu@microchip.com>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Krzysztof Adamski <krzysztof.adamski@nokia.com>, Benson Leung <bleung@chromium.org>, 
-	Guenter Roeck <groeck@chromium.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
-	Mika Westerberg <mika.westerberg@linux.intel.com>, Jan Dabros <jsd@semihalf.com>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
-	Jean-Marie Verdun <verdun@hpe.com>, Nick Hawkins <nick.hawkins@hpe.com>, 
-	Yicong Yang <yangyicong@hisilicon.com>, Oleksij Rempel <o.rempel@pengutronix.de>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
-	Paul Cercueil <paul@crapouillou.net>, Neil Armstrong <neil.armstrong@linaro.org>, 
-	Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
-	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, Khalil Blaiech <kblaiech@nvidia.com>, 
-	Asmaa Mnebhi <asmaa@nvidia.com>, Qii Wang <qii.wang@mediatek.com>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Linus Walleij <linus.walleij@linaro.org>, Avi Fishman <avifishman70@gmail.com>, 
-	Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, 
-	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, 
-	Benjamin Fair <benjaminfair@google.com>, Ajay Gupta <ajayg@nvidia.com>, 
-	Peter Korsgaard <peter@korsgaard.com>, Andrew Lunn <andrew@lunn.ch>, Robert Richter <rric@kernel.org>, 
-	Aaro Koskinen <aaro.koskinen@iki.fi>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, 
-	Tony Lindgren <tony@atomide.com>, Vignesh R <vigneshr@ti.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
-	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Hector Martin <marcan@marcan.st>, 
-	Sven Peter <sven@svenpeter.dev>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
-	Vladimir Zapolskiy <vz@mleia.com>, Loic Poulain <loic.poulain@linaro.org>, Robert Foss <rfoss@kernel.org>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konrad.dybcio@linaro.org>, 
-	Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
-	Pierre-Yves MORDRET <pierre-yves.mordret@foss.st.com>, Alain Volmat <alain.volmat@foss.st.com>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Laxman Dewangan <ldewangan@nvidia.com>, Dmitry Osipenko <digetx@gmail.com>, 
-	Conghui Chen <conghui.chen@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, 
-	Michal Simek <michal.simek@amd.com>, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, chrome-platform@lists.linux.dev, 
-	linux-samsung-soc@vger.kernel.org, imx@lists.linux.dev, 
-	linux-mips@vger.kernel.org, linux-amlogic@lists.infradead.org, 
-	linux-mediatek@lists.infradead.org, openbmc@lists.ozlabs.org, 
-	linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	asahi@lists.linux.dev, linux-arm-msm@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
-	linux-tegra@vger.kernel.org, virtualization@lists.linux.dev, 
-	Ryan Wanner <Ryan.Wanner@microchip.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Sat, 23 Mar 2024 04:58:59 +1100
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="1BqIBqYDHfkBFwJe"
+Content-Disposition: inline
+In-Reply-To: <20240322-hwmon_dtschema-v2-2-570bee1acecb@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,20 +61,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-hwmon@vger.kernel.org, Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Jean Delvare <jdelvare@suse.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 22, 2024 at 9:47=E2=80=AFAM Wolfram Sang
-<wsa+renesas@sang-engineering.com> wrote:
->
->
-> > Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com> # for at91
-> > Probably file names themselves will need some care, in a second time.
->
-> Totally true. I am aware of that. But one step after the other...
->
 
-Kind of odd though to change function names but not parameter names of
-those very same functions.
+--1BqIBqYDHfkBFwJe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Guenter
+On Fri, Mar 22, 2024 at 07:45:27AM +0100, Javier Carrasco wrote:
+> Convert existing binding to support validation.
+>=20
+> This is a straightforward conversion with now new properties.
+>=20
+> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+> ---
+>  .../devicetree/bindings/hwmon/ibm,powernv.yaml     | 37 ++++++++++++++++=
+++++++
+>  .../devicetree/bindings/hwmon/ibmpowernv.txt       | 23 --------------
+>  2 files changed, 37 insertions(+), 23 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/hwmon/ibm,powernv.yaml b/D=
+ocumentation/devicetree/bindings/hwmon/ibm,powernv.yaml
+> new file mode 100644
+> index 000000000000..b26d42bce938
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/hwmon/ibm,powernv.yaml
+
+Filename should really match one of the compatibles. "powernv" is not a
+type of hwmon as far as a quick google reports so I think its a poor
+choice here regardless. With a compatible for the filename:
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+
+Thanks,
+Conor.
+
+> @@ -0,0 +1,37 @@
+> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/hwmon/ibm,powernv.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: IBM POWERNV platform sensors
+> +
+> +maintainers:
+> +  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - ibm,opal-sensor-cooling-fan
+> +      - ibm,opal-sensor-amb-temp
+> +      - ibm,opal-sensor-power-supply
+> +      - ibm,opal-sensor-power
+> +
+> +  sensor-id:
+> +    description:
+> +      An opaque id provided by the firmware to the kernel, identifies a
+> +      given sensor and its attribute data.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +
+> +required:
+> +  - compatible
+> +  - sensor-id
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    sensor {
+> +        compatible =3D "ibm,opal-sensor-cooling-fan";
+> +        sensor-id =3D <0x7052107>;
+> +    };
+> diff --git a/Documentation/devicetree/bindings/hwmon/ibmpowernv.txt b/Doc=
+umentation/devicetree/bindings/hwmon/ibmpowernv.txt
+> deleted file mode 100644
+> index f93242be60a1..000000000000
+> --- a/Documentation/devicetree/bindings/hwmon/ibmpowernv.txt
+> +++ /dev/null
+> @@ -1,23 +0,0 @@
+> -IBM POWERNV platform sensors
+> -----------------------------
+> -
+> -Required node properties:
+> -- compatible: must be one of
+> -		"ibm,opal-sensor-cooling-fan"
+> -		"ibm,opal-sensor-amb-temp"
+> -		"ibm,opal-sensor-power-supply"
+> -		"ibm,opal-sensor-power"
+> -- sensor-id: an opaque id provided by the firmware to the kernel, identi=
+fies a
+> -	     given sensor and its attribute data
+> -
+> -Example sensors node:
+> -
+> -cooling-fan#8-data {
+> -	sensor-id =3D <0x7052107>;
+> -	compatible =3D "ibm,opal-sensor-cooling-fan";
+> -};
+> -
+> -amb-temp#1-thrs {
+> -	sensor-id =3D <0x5096000>;
+> -	compatible =3D "ibm,opal-sensor-amb-temp";
+> -};
+>=20
+> --=20
+> 2.40.1
+>=20
+
+--1BqIBqYDHfkBFwJe
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZf3HCQAKCRB4tDGHoIJi
+0jNGAP9qE1RgXwHh+bJHGrruo2IG/PvvUFE4CGzM4LgWwflF/AEAiZNvtVyjY0Ni
+4RDUtWjJKj6uVoLcSS6AW+psuIZ81g0=
+=vQA/
+-----END PGP SIGNATURE-----
+
+--1BqIBqYDHfkBFwJe--
