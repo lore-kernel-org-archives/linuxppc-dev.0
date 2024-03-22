@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9FB9C54E71
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 19:27:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5933DC54E71
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2024 19:28:27 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=N02JSo/C;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=le6kDbzE;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V1XR42m1gz3w3x
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 06:27:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V1XRt0B15z3w78
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 06:28:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=N02JSo/C;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=le6kDbzE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12a; helo=mail-lf1-x12a.google.com; envelope-from=javier.carrasco.cruz@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52a; helo=mail-ed1-x52a.google.com; envelope-from=javier.carrasco.cruz@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1XMp0qZCz3vYl
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 06:24:52 +1100 (AEDT)
-Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-513d4559fb4so3142966e87.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 12:24:52 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1XMp5dhXz3vZh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 06:24:54 +1100 (AEDT)
+Received: by mail-ed1-x52a.google.com with SMTP id 4fb4d7f45d1cf-56829f41f81so3010822a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 12:24:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1711135486; x=1711740286; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1711135490; x=1711740290; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=rOSsKufZ/8yCjM1/hlvnqYOYaN3abG+vGfagOCNtt2o=;
-        b=N02JSo/CcjNU711TB086d0HoLqCYqXwUx73MFd2Novw8Gm4HpSon9qnvFgCxxafcvR
-         avk24iRcRGYNxEaPtfa0SNu7BoIm8ki1V9npFf6aaxno+awRSRlRSGzYBC0mFOZP39YS
-         aqvS3ib6tHXFyl5vs6WL+bUdneDhCc5zraNjUe6dtH9vPiBLUYlyGX9ayIxjMdtkI6xi
-         p4Bq9WLUWA5p4qVTjxnrhY7JiQc/ahg0h9gZpz5zEuGuey60YPEKLvrAMlhYaLDFxH5g
-         CEwxf2ITdZ3Kydks+K5pLc9NEQURNMpmGdVWxXq/RxDoIqx7vPJc7B+6DAwvwaHsE9uh
-         gsWQ==
+        bh=z0qn6EG3GrsHqpOB936k/w8hIJUCfUQFAV2vkGQLEp0=;
+        b=le6kDbzE0tyk5XifcULqMGScSW5TpZpgy3FV+rJFWLSGN5ZszvXJC2SQVnFLF1QXyM
+         xoCnXqK4aqjWixDrmWQqtSv/ue+BrYCUDw2SkLhlKgOZoGC+mDdZvw8haiQ9LL/YzFys
+         622skHp4r4IkVxJvzcbNbBjvz8Ss0TMCL6EGRJVt2ivRJesoHMXvNtVuYKL+6ZVWEQcw
+         71Ny/uAX7mdICPqePyjA/njRGJS5goVKHILECBc1mzQai96aDKAYSP5XqI2RBomMFTEt
+         wXNEeJQqxwoJKUMlZhdKzM4Z4B4uVtdeylWqzZRohRhbHzSasvwyq5WGRsNGfdQZpDIq
+         P9VA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711135486; x=1711740286;
+        d=1e100.net; s=20230601; t=1711135490; x=1711740290;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=rOSsKufZ/8yCjM1/hlvnqYOYaN3abG+vGfagOCNtt2o=;
-        b=QF3dbh3I2RysA6aGPvgV3aihuojAnUALihEZIbuaJ2UJVWdYSG+26JIaKNOp3gX0lc
-         pZOh4/4RtqcGV9mguh3AvTdfLQyy6w4LGlpwQHEpgFEfh/O0Pvp2iTtAdCp4KtY/mQY/
-         zuwF7TiutrEP8+1GaPX1QUtCRCi9Ez9g0f8bU9X9a6mAYDcY6a28KAoYGJoFmYzfPcR3
-         rprn0q6bjVCeQO52TGfImtglCVdsy/8oeG89du+EcVt6uThOIDVTLZB4x0gijuqWY5k6
-         3HOso30D0iQPgiuxPZ2bD2oDDywuSN4H7mGNhflL3l8RU9e4bVepKe+mXSz4pK97Kj1m
-         o3mw==
-X-Forwarded-Encrypted: i=1; AJvYcCWm3vuQvI+D1xaTG2PeU8jr8ZDQudX4lzE4seI4rLqHzmU7li/if353uD6TLXewHPTBZkeXijJOKrGIrMu3qOBHxbKuqZqcwPJ6MRJ5Tw==
-X-Gm-Message-State: AOJu0YzM05jVgw6W2GZy5ORqBDhRRMwsJts1fDb6HVXovtp9vquwA9Zu
-	j3ECBVShZhknpVFMDP9vu4LHliHhmPBwmqTvxFM7FisiPaLyXJfa
-X-Google-Smtp-Source: AGHT+IHuDeX4dcgp3CoihbTxC+N3DhZXs1ducT1pLshzXnGYUwm8bzwKCXmTT9H7MVuempz6zsEdZw==
-X-Received: by 2002:a05:6512:4dc:b0:512:ac3a:7f27 with SMTP id w28-20020a05651204dc00b00512ac3a7f27mr242869lfq.66.1711135485537;
-        Fri, 22 Mar 2024 12:24:45 -0700 (PDT)
+        bh=z0qn6EG3GrsHqpOB936k/w8hIJUCfUQFAV2vkGQLEp0=;
+        b=fKyFvqBE93wyp/uqULhiPLmbg/IMCuFvBerJ+Nd+JBBLrpsDoNBADaEcbXmoeWv8xk
+         VGtCCeBvqpQUVwdrMeWoCvnVp1dJsd1a/3UA7aXtsp0/LvO/2zVWjiS0pbSu1xbiyh0k
+         7DC5B9W21ds5kwTmPBpWYiAQuyNN4UsqecXtJCDsv15BAhq2AoCm8rQVg5gKaq9/E1ch
+         9C/q2not41hDXwa2gyg5EIaOd2ySYatZ9T8LCb9bzMm7mlSKVfXrGE0IiDKhSJG8S0zh
+         XiZQ4wF3LenLFo6EXIcOyVsDIx5EPzSBjW66Z6mJg2rUQOa03djldjNoIebfgbtSI0VI
+         erJw==
+X-Forwarded-Encrypted: i=1; AJvYcCUaPNgrCkjirszjbgCdX4t9bSdaUzazazq/E4m3Sis0lCe9/e2giDKJHiA2V1w0hpZ353mYVBkiiNdM0QuYyZssfFurY3vUQpyAw/OJcg==
+X-Gm-Message-State: AOJu0YzbXA6DXEaEoU04B/LvwS+Gpakj6X+A9Z8NapQKtL7Pd06BAbxP
+	w5vxtg5DfZoq0ayjdPuwKRf3WXIJotx01sCk6nG42VNEdHwHAgp6
+X-Google-Smtp-Source: AGHT+IEjIVI8QESvEO3Htw539vsXNX9NF9f9TsDBWTJfZ9q1LVdbqw2eP58R/0i0gyBR9SJ655scjw==
+X-Received: by 2002:a17:906:4ece:b0:a47:345f:de7b with SMTP id i14-20020a1709064ece00b00a47345fde7bmr451135ejv.59.1711135490502;
+        Fri, 22 Mar 2024 12:24:50 -0700 (PDT)
 Received: from [127.0.1.1] (2a02-8389-41cf-e200-b7fa-7d92-6b28-0504.cable.dynamic.v6.surfer.at. [2a02:8389:41cf:e200:b7fa:7d92:6b28:504])
-        by smtp.gmail.com with ESMTPSA id ku12-20020a170907788c00b00a46b87c32besm138572ejc.39.2024.03.22.12.24.44
+        by smtp.gmail.com with ESMTPSA id ku12-20020a170907788c00b00a46b87c32besm138572ejc.39.2024.03.22.12.24.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 Mar 2024 12:24:45 -0700 (PDT)
+        Fri, 22 Mar 2024 12:24:50 -0700 (PDT)
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Date: Fri, 22 Mar 2024 20:24:35 +0100
-Subject: [PATCH v3 1/5] dt-bindings: hwmon: as370: convert to dtschema
+Date: Fri, 22 Mar 2024 20:24:38 +0100
+Subject: [PATCH v3 4/5] dt-bindings: hwmon: stts751: convert to dtschema
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240322-hwmon_dtschema-v3-1-6697de2a8228@gmail.com>
+Message-Id: <20240322-hwmon_dtschema-v3-4-6697de2a8228@gmail.com>
 References: <20240322-hwmon_dtschema-v3-0-6697de2a8228@gmail.com>
 In-Reply-To: <20240322-hwmon_dtschema-v3-0-6697de2a8228@gmail.com>
 To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, 
@@ -76,11 +76,11 @@ To: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>,
  "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
  "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
 X-Mailer: b4 0.14-dev
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1711135482; l=1927;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1711135482; l=2209;
  i=javier.carrasco.cruz@gmail.com; s=20240312; h=from:subject:message-id;
- bh=dydiCo7iI1NW4gSDYIevGCRXxnVvyAdCyQwXxWD9D14=;
- b=uCAp20yjInGDG8gzJ0FIAQrtzc84wwJxhwfUU7eg3Q01+/KMV2/ykxX6enHJhFF1zbBAr06Fg
- /fNFWQrMotKCbHp7vDRQHzsfqpghKPeXdhpvIC9B3qgFCAr+VI1Na47
+ bh=wUpWMU2bOBD6Qwu6TCUYfBngziKtHdkpYGHrXVf6ZaI=;
+ b=NDqKnaT/P4mE/GWz2eFqSnF/44C8crtro+gdf4XptGUjavRzlNzPjgh5R2GTrCig2NzJwwhYo
+ 3im3lgjC6v7DXBDTYrIV58QXRPfgrhNMZzY21LtvQ9erQSMTYj7P1RE
 X-Developer-Key: i=javier.carrasco.cruz@gmail.com; a=ed25519;
  pk=lzSIvIzMz0JhJrzLXI0HAdPwsNPSSmEn6RbS+PTS9aQ=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,63 +94,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Javier Carrasco <javier.carrasco.cruz@gmail.com>
+Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, Javier Carrasco <javier.carrasco.cruz@gmail.com>, linux-kernel@vger.kernel.org, Conor Dooley <conor.dooley@microchip.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Convert existing binding to support validation.
 
-This is a straightforward conversion with now new properties.
+This is a straightforward conversion with no new properties.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
- Documentation/devicetree/bindings/hwmon/as370.txt  | 11 --------
- .../devicetree/bindings/hwmon/syna,as370.yaml      | 32 ++++++++++++++++++++++
- 2 files changed, 32 insertions(+), 11 deletions(-)
+ .../devicetree/bindings/hwmon/st,stts751.yaml      | 41 ++++++++++++++++++++++
+ .../devicetree/bindings/hwmon/stts751.txt          | 15 --------
+ 2 files changed, 41 insertions(+), 15 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/hwmon/as370.txt b/Documentation/devicetree/bindings/hwmon/as370.txt
-deleted file mode 100644
-index d102fe765124..000000000000
---- a/Documentation/devicetree/bindings/hwmon/as370.txt
-+++ /dev/null
-@@ -1,11 +0,0 @@
--Bindings for Synaptics AS370 PVT sensors
--
--Required properties:
--- compatible : "syna,as370-hwmon"
--- reg        : address and length of the register set.
--
--Example:
--	hwmon@ea0810 {
--		compatible = "syna,as370-hwmon";
--		reg = <0xea0810 0xc>;
--	};
-diff --git a/Documentation/devicetree/bindings/hwmon/syna,as370.yaml b/Documentation/devicetree/bindings/hwmon/syna,as370.yaml
+diff --git a/Documentation/devicetree/bindings/hwmon/st,stts751.yaml b/Documentation/devicetree/bindings/hwmon/st,stts751.yaml
 new file mode 100644
-index 000000000000..1f7005f55247
+index 000000000000..9c825adbed58
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/hwmon/syna,as370.yaml
-@@ -0,0 +1,32 @@
++++ b/Documentation/devicetree/bindings/hwmon/st,stts751.yaml
+@@ -0,0 +1,41 @@
 +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/hwmon/syna,as370.yaml#
++$id: http://devicetree.org/schemas/hwmon/st,stts751.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Synaptics AS370 PVT sensors
++title: STTS751 Thermometer
 +
 +maintainers:
 +  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
 +
 +properties:
 +  compatible:
-+    const: syna,as370-hwmon
++    const: st,stts751
 +
 +  reg:
-+    description:
-+      Address and length of the register set.
 +    maxItems: 1
++
++  smbus-timeout-disable:
++    description:
++      When set, the smbus timeout function will be disabled.
++    $ref: /schemas/types.yaml#/definitions/flag
 +
 +required:
 +  - compatible
@@ -160,10 +146,37 @@ index 000000000000..1f7005f55247
 +
 +examples:
 +  - |
-+    sensor@ea0810 {
-+        compatible = "syna,as370-hwmon";
-+        reg = <0xea0810 0xc>;
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        thermometer@48 {
++            compatible = "st,stts751";
++            reg = <0x48>;
++            smbus-timeout-disable;
++        };
 +    };
+diff --git a/Documentation/devicetree/bindings/hwmon/stts751.txt b/Documentation/devicetree/bindings/hwmon/stts751.txt
+deleted file mode 100644
+index 3ee1dc30e72f..000000000000
+--- a/Documentation/devicetree/bindings/hwmon/stts751.txt
++++ /dev/null
+@@ -1,15 +0,0 @@
+-* STTS751 thermometer.
+-
+-Required node properties:
+-- compatible: "stts751"
+-- reg: I2C bus address of the device
+-
+-Optional properties:
+-- smbus-timeout-disable: when set, the smbus timeout function will be disabled
+-
+-Example stts751 node:
+-
+-temp-sensor {
+-	compatible = "stts751";
+-	reg = <0x48>;
+-}
 
 -- 
 2.40.1
