@@ -4,92 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9A0DC47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 02:16:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86995C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 09:21:31 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E2onWG02;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E2onWG02;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AmGkF125;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V1jVT4GBrz3vmB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 13:16:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V1tx54xYqz3dWj
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 20:21:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E2onWG02;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E2onWG02;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AmGkF125;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=andi.shyti@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1jTd0l6Wz3dV4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 13:15:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1711160129;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pAkp5p3e769nx5gm8jMLR0gRsGSeiOkGgQjUssudat0=;
-	b=E2onWG02mtI9NWZ539rc+FGL3e+FzxxUNlhpw0EB41GoQGXRYlrAuAJ48alY3d0dODV9cm
-	XYBNlBKgyC7erd3RkV3FJMmI84cQ5+Dls+w3QBGOCwr+/rI/JJPIPVUxWKt7CVV5NqxntU
-	OfmzaoO7LZkXzkC5kV5g7bJLwIA8ItA=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1711160129;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pAkp5p3e769nx5gm8jMLR0gRsGSeiOkGgQjUssudat0=;
-	b=E2onWG02mtI9NWZ539rc+FGL3e+FzxxUNlhpw0EB41GoQGXRYlrAuAJ48alY3d0dODV9cm
-	XYBNlBKgyC7erd3RkV3FJMmI84cQ5+Dls+w3QBGOCwr+/rI/JJPIPVUxWKt7CVV5NqxntU
-	OfmzaoO7LZkXzkC5kV5g7bJLwIA8ItA=
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com
- [209.85.160.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-526-iy7ASRdoOdm7bd2_QjFiRg-1; Fri, 22 Mar 2024 22:15:27 -0400
-X-MC-Unique: iy7ASRdoOdm7bd2_QjFiRg-1
-Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-430c9bbe925so5082321cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2024 19:15:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711160124; x=1711764924;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pAkp5p3e769nx5gm8jMLR0gRsGSeiOkGgQjUssudat0=;
-        b=ExNxhfRznKM8qwjeF2DXWOEVzPOgDWmHp5x+ZUk1cMHNNhmFXBv1aQ8zCwoqqJxiWN
-         Sqp+BZvmyC8wLlbyDcW6ijfmj1Pf+1rAk+wkE4jmGRlhJfZ7LSbBSIzvn2A9ndsR3AT/
-         6NYi2kxI68Ak3UsP95Fp1hN7PLDUVjgBQ8+R+P0ZxN0Zl1WPztKeibH44yh53Gf+icgm
-         2/hxFXWWkD6zyDRTdjaakTLv/SW9x6iGeoUbJk44UJjDSEDDoEkQ6DMcQhZvdZLjg5TA
-         /mrZWuV17GR11u13qJyg5YvIwXWPj6wTB8KrPu7+O14RlSuV8WCrlqQxcgKsLsXxE2fQ
-         k6QA==
-X-Forwarded-Encrypted: i=1; AJvYcCUL13ZMnf21k5QfJExabwlVOGJtkwHHSwfxW3EySUfVPywQ2DZ6WjQ1e6I/bd3HjCxMTopK95xsE8hsC03lkofuIjTNUaSAhqqDqsaXpw==
-X-Gm-Message-State: AOJu0YxCWVEEHuyfX6z9vYZm4AiE3A+6/7jARTeDqkjWWdexwo8gTLRV
-	S97MS2ig5dzNf8qgLhvSM5lGU3VRmF8sWFDiqdralsWcZQONZ9yfqoenvPP8g/QKeLrU6yU1AiW
-	uB4IYV8+nQbOMG52K+TGEJMw+KM09Y2Zop4jK/soKlXjq6sti7saN0+kK+dXGuj8=
-X-Received: by 2002:a05:622a:528b:b0:431:3e97:fb0b with SMTP id dr11-20020a05622a528b00b004313e97fb0bmr799012qtb.3.1711160124131;
-        Fri, 22 Mar 2024 19:15:24 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGSSiaxwf9qVJ61bWD658BkK6bIoISbqMAPHSz2R/uod8u0yF1+dnf1k4ZlNnixmtjYf7I/qg==
-X-Received: by 2002:a05:622a:528b:b0:431:3e97:fb0b with SMTP id dr11-20020a05622a528b00b004313e97fb0bmr798965qtb.3.1711160123562;
-        Fri, 22 Mar 2024 19:15:23 -0700 (PDT)
-Received: from x1n ([99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id f9-20020a05622a114900b0043140cd9996sm152221qty.38.2024.03.22.19.15.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 22 Mar 2024 19:15:23 -0700 (PDT)
-Date: Fri, 22 Mar 2024 22:15:20 -0400
-From: Peter Xu <peterx@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v3 12/12] mm/gup: Handle hugetlb in the generic
- follow_page_mask code
-Message-ID: <Zf47OKjYjkUhs6AT@x1n>
-References: <20240321220802.679544-1-peterx@redhat.com>
- <20240321220802.679544-13-peterx@redhat.com>
- <20240322134818.9b312f77629f79fcf1564b6f@linux-foundation.org>
- <Zf4mR_OxE5Ft4VJg@x1n>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1tw90gByz3bsw;
+	Sat, 23 Mar 2024 20:20:41 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 352B7CE0959;
+	Sat, 23 Mar 2024 09:20:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D51C0C433F1;
+	Sat, 23 Mar 2024 09:20:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1711185636;
+	bh=aGTQuZy7vZpxuhlc2uWM1FWO2cNVLUpXYHPr+30NYM4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=AmGkF125xegySFWAiHvPntmZ+07s8hZQPC/0IVIftdkxYeMJTqDHDoBaq087Sl4Ry
+	 qKx2QcAVw6S410SG7j4biAqt4/h5dTjc1vKUs5R8LJBjxtJSQyMNE1PxZTAhzLwpa+
+	 ZvDOHlqhfPGo+3K1JP9tq5K11rxRL31gNRIYe4fcfJjyAcpNQmozM0AzDwGqt7aAAm
+	 vL1bo7yWAyyXHWJXICav98Il7syCI5t9aEO0HLvfyTQ7cJVQX5WfpHiaD8JmvRG1Zm
+	 VmI4taBLphr2uo/nVmCk1uj3x3TE6/IYqaCXMkAcTk/3yvQe9KoaZIneVeSaGY4Thk
+	 hCCXd6I1k2Bcg==
+Date: Sat, 23 Mar 2024 10:20:32 +0100
+From: Andi Shyti <andi.shyti@kernel.org>
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Subject: Re: [PATCH 00/64] i2c: reword i2c_algorithm according to newest
+ specification
+Message-ID: <ug266trshvhhbsln3eoh53fmsuj3l63ziz6gavcl7rv2jhjr5t@3av5givh5n7m>
+References: <20240322132619.6389-1-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
-In-Reply-To: <Zf4mR_OxE5Ft4VJg@x1n>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20240322132619.6389-1-wsa+renesas@sang-engineering.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,145 +59,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: James Houghton <jthoughton@google.com>, David Hildenbrand <david@redhat.com>, Yang Shi <shy828301@gmail.com>, Andrew Jones <andrew.jones@linux.dev>, linux-mm@kvack.org, linux-riscv@lists.infradead.org, Andrea Arcangeli <aarcange@redhat.com>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, linux-arm-kernel@lists.infradead.org, Jason Gunthorpe <jgg@nvidia.com>, Axel Rasmussen <axelrasmussen@google.com>, Rik van Riel <riel@surriel.com>, John Hubbard <jhubbard@nvidia.com>, "Kirill A . Shutemov" <kirill@shutemov.name>, Vlastimil Babka <vbabka@suse.cz>, Lorenzo Stoakes <lstoakes@gmail.com>, Muchun Song <muchun.song@linux.dev>, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: imx@lists.linux.dev, linux-aspeed@lists.ozlabs.org, linux-mips@vger.kernel.org, linux-i2c@vger.kernel.org, linux-riscv@lists.infradead.org, linux-stm32@st-md-mailman.stormreply.com, chrome-platform@lists.linux.dev, linux-samsung-soc@vger.kernel.org, openbmc@lists.ozlabs.org, linux-rockchip@lists.infradead.org, linux-sunxi@lists.linux.dev, linux-arm-msm@vger.kernel.org, linux-actions@lists.infradead.org, virtualization@lists.linux.dev, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, asahi@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 22, 2024 at 08:45:59PM -0400, Peter Xu wrote:
-> On Fri, Mar 22, 2024 at 01:48:18PM -0700, Andrew Morton wrote:
-> > On Thu, 21 Mar 2024 18:08:02 -0400 peterx@redhat.com wrote:
-> > 
-> > > From: Peter Xu <peterx@redhat.com>
-> > > 
-> > > Now follow_page() is ready to handle hugetlb pages in whatever form, and
-> > > over all architectures.  Switch to the generic code path.
-> > > 
-> > > Time to retire hugetlb_follow_page_mask(), following the previous
-> > > retirement of follow_hugetlb_page() in 4849807114b8.
-> > > 
-> > > There may be a slight difference of how the loops run when processing slow
-> > > GUP over a large hugetlb range on cont_pte/cont_pmd supported archs: each
-> > > loop of __get_user_pages() will resolve one pgtable entry with the patch
-> > > applied, rather than relying on the size of hugetlb hstate, the latter may
-> > > cover multiple entries in one loop.
-> > > 
-> > > A quick performance test on an aarch64 VM on M1 chip shows 15% degrade over
-> > > a tight loop of slow gup after the path switched.  That shouldn't be a
-> > > problem because slow-gup should not be a hot path for GUP in general: when
-> > > page is commonly present, fast-gup will already succeed, while when the
-> > > page is indeed missing and require a follow up page fault, the slow gup
-> > > degrade will probably buried in the fault paths anyway.  It also explains
-> > > why slow gup for THP used to be very slow before 57edfcfd3419 ("mm/gup:
-> > > accelerate thp gup even for "pages != NULL"") lands, the latter not part of
-> > > a performance analysis but a side benefit.  If the performance will be a
-> > > concern, we can consider handle CONT_PTE in follow_page().
-> > > 
-> > > Before that is justified to be necessary, keep everything clean and simple.
-> > > 
-> > 
-> > mm/gup.c:33:21: warning: 'follow_hugepd' declared 'static' but never defined [-Wunused-function]
-> >    33 | static struct page *follow_hugepd(struct vm_area_struct *vma, hugepd_t hugepd,
-> >       |                     ^~~~~~~~~~~~~
-> > 
-> > --- a/mm/gup.c~mm-gup-handle-hugepd-for-follow_page-fix
-> > +++ a/mm/gup.c
-> > @@ -30,10 +30,12 @@ struct follow_page_context {
-> >  	unsigned int page_mask;
-> >  };
-> >  
-> > +#ifdef CONFIG_HAVE_FAST_GUP
-> >  static struct page *follow_hugepd(struct vm_area_struct *vma, hugepd_t hugepd,
-> >  				  unsigned long addr, unsigned int pdshift,
-> >  				  unsigned int flags,
-> >  				  struct follow_page_context *ctx);
-> > +#endif
-> >  
-> >  static inline void sanity_check_pinned_pages(struct page **pages,
-> >  					     unsigned long npages)
-> > _
-> > 
-> > 
-> > This looks inelegant.
-> > 
-> > That's two build issues so far.  Please be more expansive in the
-> > Kconfig variations when testing.  Especially when mucking with pgtable
-> > macros.
-> 
-> Andrew,
-> 
-> Apologies for that, and also for a slightly late response.  Yeah it's time
-> I'll need my set of things to do serious build tests, and I'll at least
-> start to cover a few error prone configs/archs in with that.
-> 
-> I was trying to rely on the build bot in many of previous such cases, as
-> that was quite useful to me to cover many build issues without investing my
-> own test setups, but I think for some reason it retired and stopped working
-> for a while.  Maybe I shouldn't have relied on it at all.
-> 
-> For this specific issue, I'm not sure if CONFIG_HAVE_FAST_GUP is proper?
-> As follow_hugepd() is used in slow gup not fast.  So maybe we can put that
-> under CONFIG_MMU below that code (and I think we can drop "static" too as I
-> don't think it's anything useful).  My version of fixup attached at the end
+Hi Wolfram,
 
-the static is useful; below patch did pass on m68k but won't on
-x86.. ignore that please.
-
-> of email, and I verified it on m68k build.
+On Fri, Mar 22, 2024 at 02:24:53PM +0100, Wolfram Sang wrote:
+> Okay, we need to begin somewhere...
 > 
-> I do plan to post a small fixup series to fix these issues (so far it may
-> contain 1 formal patch to touch up vmstat_item_print_in_thp, and 2 fixups
-> where I'll mark the subject with "fixup!" properly).  Either you can pick
-> up below or you can wait for my small patchset, should be there either
-> today or tomorrow.
+> Start changing the wording of the I2C main header wrt. the newest I2C
+> v7, SMBus 3.2, I3C specifications and replace "master/slave" with more
+> appropriate terms. This first step renames the members of struct
+> i2c_algorithm. Once all in-tree users are converted, the anonymous union
+> will go away again. All this work will also pave the way for finally
+> seperating the monolithic header into more fine-grained headers like
+> "i2c/clients.h" etc. So, this is not a simple renaming-excercise but
+> also a chance to update the I2C core to recent Linux standards.
 
-I changed plan here too; I found more users of HPAGE_PMD_NR assuming it's
-defined even if !CONFIG_MMU.  That's weird, as CONFIG_MMU doesn't even
-define PMD_SHIFT...  To fix this I decided to use the old trick on using
-BUILD_BUG() like it used to work before; frankly I don't know how that
-didn't throw warnings, but i'll make sure it passes all known builds (ps: I
-still haven't got my build harness ready, so that will still be limited but
-should solve known issues).
+yes, very good! It's clearly stated in all three documentations
+that Target replaces Slave and Controller replaces Master (i3c is
+at the 1.1.1 version).
 
-In short: please wait for my fixup series.  Thanks.
+> My motivation is to improve the I2C core API, in general. My motivation
+> is not to clean each and every driver. I think this is impossible
+> because register names based on official documentation will need to stay
+> as they are. But the Linux-internal names should be updated IMO.
 
+Also because some drivers have been written based on previous
+specifications where master/slave was used.
+
+> That being said, I worked on 62 drivers in this series beyond plain
+> renames inside 'struct i2c_algorithm' because the fruits were so
+> low-hanging. Before this series, 112 files in the 'busses/' directory
+> contained 'master' and/or 'slave'. After the series, only 57. Why not?
 > 
-> Thanks,
+> Next step is updating the drivers outside the 'i2c'-folder regarding
+> 'struct i2c_algorithm' so we can remove the anonymous union ASAP. To be
+> able to work on this with minimal dependencies, I'd like to apply this
+> series between -rc1 and -rc2.
 > 
-> ===8<===
-> diff --git a/mm/gup.c b/mm/gup.c
-> index 4cd349390477..a2ed8203495a 100644
-> --- a/mm/gup.c
-> +++ b/mm/gup.c
-> @@ -30,11 +30,6 @@ struct follow_page_context {
->         unsigned int page_mask;
->  };
->  
-> -static struct page *follow_hugepd(struct vm_area_struct *vma, hugepd_t hugepd,
-> -                                 unsigned long addr, unsigned int pdshift,
-> -                                 unsigned int flags,
-> -                                 struct follow_page_context *ctx);
-> -
->  static inline void sanity_check_pinned_pages(struct page **pages,
->                                              unsigned long npages)
->  {
-> @@ -505,6 +500,12 @@ static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)
->  }
->  
->  #ifdef CONFIG_MMU
-> +
-> +struct page *follow_hugepd(struct vm_area_struct *vma, hugepd_t hugepd,
-> +                          unsigned long addr, unsigned int pdshift,
-> +                          unsigned int flags,
-> +                          struct follow_page_context *ctx);
-> +
->  static struct page *no_page_table(struct vm_area_struct *vma,
->                                   unsigned int flags, unsigned long address)
->  {
-> ===8<===
+> I hope this will work for you guys. The changes are really minimal. If
+> you are not comfortable with changes to your driver or need more time to
+> review, please NACK the patch and I will drop the patch and/or address
+> the issues separeately.
 > 
-> -- 
-> Peter Xu
+> @Andi: are you okay with this approach? It means you'd need to merge
+> -rc2 into your for-next branch. Or rebase if all fails.
 
--- 
-Peter Xu
+I think it's a good plan, I'll try to support you with it.
 
+> Speaking of Andi, thanks a lot to him taking care of the controller
+> drivers these days. His work really gives me the freedom to work on I2C
+> core issues again.
+
+Thank you, Wolfram!
+
+Andi
