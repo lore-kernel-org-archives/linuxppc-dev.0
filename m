@@ -4,33 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13A89C47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 00:47:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A502BC47DD9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 00:55:36 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=dNi6vZJw;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V1gXG5rb0z3vyq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 11:47:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V1gjL6qHYz3vl3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2024 11:55:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=dNi6vZJw;
+	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1gVx6Tj6z3vjC
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 11:46:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V1ghX5c2cz3cy4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2024 11:54:52 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1711155292;
+	bh=Q1ozhTLC0i5nJma6jn4h+gT4TZHIFCymNO4pKD/VVU8=;
+	h=From:To:Cc:Subject:Date:From;
+	b=dNi6vZJwyDbkp/Yq+28o/8e3ySxTXuCaIAF23CBOjAuLdpYRgLxvsLpBzaDkWP4Rs
+	 hp8fOw/pYwhdbLVHk+8fJqd/SyiDurShcrLWhX6OSzhYATgoTJJdG0xeSMw+007lth
+	 k1MQysQalKjGNe8BInC5uh5//nat4zvp2ewODhULn/TJfuy3Kc9O0l8IoE6XXGsfjr
+	 VnKLmVqLxuzKG6hgjlZG3x0DQ1mLGvMclEdBDMJXODu0QgWRQ1dApeyxtQ4HTp/amS
+	 Y7qTl5bS5b3KNJG5jDiF2ovweQi6EihbheQUCRtaNL23qQM6ydiVZjPK55mEiXP+D3
+	 aMpKHOBaVHwjg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4V1gVx4dkjz4wyf;
-	Sat, 23 Mar 2024 11:46:33 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Kexec-ml <kexec@lists.infradead.org>, Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <20240226103010.589537-1-hbathini@linux.ibm.com>
-References: <20240226103010.589537-1-hbathini@linux.ibm.com>
-Subject: Re: [PATCH linux-next v2 0/3] powerpc/kexec: split CONFIG_CRASH_DUMP out from CONFIG_KEXEC_CORE
-Message-Id: <171115475789.936455.12230073027482662538.b4-ty@ellerman.id.au>
-Date: Sat, 23 Mar 2024 11:45:57 +1100
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4V1ghX0QzCz4wx5;
+	Sat, 23 Mar 2024 11:54:51 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-6.9-2 tag
+Date: Sat, 23 Mar 2024 11:54:50 +1100
+Message-ID: <87zfupix7p.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,29 +55,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Baoquan He <bhe@redhat.com>, lkml <linux-kernel@vger.kernel.org>, Sourabh Jain <sourabhjain@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Dave Young <dyoung@redhat.com>
+Cc: bhe@redhat.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 26 Feb 2024 16:00:07 +0530, Hari Bathini wrote:
-> This patch series is a follow-up to [1] based on discussions at [2]
-> about additional work needed to get it working on powerpc.
-> 
-> The first patch in the series makes struct crash_mem available with or
-> without CONFIG_CRASH_DUMP enabled. The next patch moves kdump specific
-> code for kexec_file_load syscall under CONFIG_CRASH_DUMP and the last
-> patch splits other kdump specific code under CONFIG_CRASH_DUMP and
-> removes dependency with CONFIG_CRASH_DUMP for CONFIG_KEXEC_CORE.
-> 
-> [...]
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-Applied to powerpc/next.
+Hi Linus,
 
-[1/3] kexec/kdump: make struct crash_mem available without CONFIG_CRASH_DUMP
-      https://git.kernel.org/powerpc/c/56a34d799bfa53064e7b8bd354aacd176aeaecc8
-[2/3] powerpc/kexec: split CONFIG_KEXEC_FILE and CONFIG_CRASH_DUMP
-      https://git.kernel.org/powerpc/c/33f2cc0a2e90f7177c49559b434191b02efd0cd5
-[3/3] powerpc/kdump: Split KEXEC_CORE and CRASH_DUMP dependency
-      https://git.kernel.org/powerpc/c/5c4233cc0920cc90787aafe950b90f6c57a35b88
+Please pull some more powerpc updates for 6.9. These were posted before the
+merge window but had complicated dependencies and/or conflicts with other
+content that has gone into 6.9.
 
 cheers
+
+The following changes since commit 66a27abac311a30edbbb65fe8c41ff1b13876faa:
+
+  Merge tag 'powerpc-6.9-1' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux (2024-03-15 17:53:48 -0700)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.9-2
+
+for you to fetch changes up to 5c4233cc0920cc90787aafe950b90f6c57a35b88:
+
+  powerpc/kdump: Split KEXEC_CORE and CRASH_DUMP dependency (2024-03-17 13:34:00 +1100)
+
+- ------------------------------------------------------------------
+powerpc updates for 6.9 #2
+
+ - Handle errors in mark_rodata_ro() and mark_initmem_nx().
+
+ - Make struct crash_mem available without CONFIG_CRASH_DUMP.
+
+Thanks to: Christophe Leroy, Hari Bathini.
+
+- ------------------------------------------------------------------
+Christophe Leroy (1):
+      powerpc: Handle error in mark_rodata_ro() and mark_initmem_nx()
+
+Hari Bathini (3):
+      kexec/kdump: make struct crash_mem available without CONFIG_CRASH_DUMP
+      powerpc/kexec: split CONFIG_KEXEC_FILE and CONFIG_CRASH_DUMP
+      powerpc/kdump: Split KEXEC_CORE and CRASH_DUMP dependency
+
+
+ arch/powerpc/Kconfig                 |   9 +-
+ arch/powerpc/include/asm/kexec.h     |  98 +++----
+ arch/powerpc/kernel/prom.c           |   2 +-
+ arch/powerpc/kernel/setup-common.c   |   2 +-
+ arch/powerpc/kernel/smp.c            |   4 +-
+ arch/powerpc/kexec/Makefile          |   3 +-
+ arch/powerpc/kexec/core.c            |   4 +
+ arch/powerpc/kexec/elf_64.c          |   4 +-
+ arch/powerpc/kexec/file_load_64.c    | 269 ++++++++++----------
+ arch/powerpc/mm/book3s32/mmu.c       |   7 +-
+ arch/powerpc/mm/mmu_decl.h           |   8 +-
+ arch/powerpc/mm/nohash/8xx.c         |  33 ++-
+ arch/powerpc/mm/nohash/e500.c        |  10 +-
+ arch/powerpc/mm/pgtable_32.c         |  38 ++-
+ arch/powerpc/platforms/powernv/smp.c |   2 +-
+ include/linux/crash_core.h           |  12 +-
+ 16 files changed, 274 insertions(+), 231 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmX+Jw4ACgkQUevqPMjh
+pYA6WA/+PVlWRRhMWDZ0BEMFKtVMwUlGJWSZGNGqX/5ZV40lcTIsuIruw8C6VY11
+Hq1J+CafM3H7LnqzYwruAYhpBYwb1Oje6IK208XiKH+eUmCzzk+hLfjGdbNbkTOx
+6xBqoV3Hjj+p4H6QRXYkZQihQDHy9IfuBGNtoaTaiVuqg9NOT9PLnVNYaI11uLBP
+qRS08hkORyJEOO/QRjoVXyXdP7pOwl1EbuYYg805BZ9NFlp7j105yT8XjKQ1X5w+
+yF4b2eSV78/Z55dpnBM1GqJqkOSaQjq42PKS+JNSBRpgVDZiLzTdVgWBHY1Q2zho
+H5XH9RHvT789vtGsXxhYqvSOSMsM+LgdZo82ZQuqHDA5djmwoMOVXcb/NkyVZ0o3
+E+glLdWe6X+0B8Fhx2PH4R5j5j1r3/B2Ighf9Qz60rXNCnbUfT8ZJefyUZg6pHMg
+Y/YwdftiqBRnVsK1VSvMrIW3/Sk47QHlM2d7B11R9sVw85zlVwg4FHFXlGtoVpFS
+cWZityzVY10wKcblhHYt0/X0n2eeMhjyZuq9lvgls2zypr1qxJ+x/URVVM4hzbNH
+P+1qvVUp9mHfSmUGqC5OWv/365BhPQy2t7vkK1NYmmfee2r2umHEY9zphu/yysUg
+OQvE+v0F7fETuYg/QTWLlsusEyU0uBCoJOxeB2M6KacrNZfE64A=
+=SfuI
+-----END PGP SIGNATURE-----
