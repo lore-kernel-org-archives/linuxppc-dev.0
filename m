@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02D42C54E64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 15:03:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 387E1C54E64
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 15:03:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UAARgC5L;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UAARgC5L;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XSzRQsE5;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hw+Qp2dM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V3GQS4hCbz3dy3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 02:03:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V3GRJ6VgCz3vw3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 02:03:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UAARgC5L;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UAARgC5L;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XSzRQsE5;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hw+Qp2dM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V3GHx0TlNz3vhj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2024 01:57:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V3GJ05WQHz3vYW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2024 01:57:36 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1711378650;
+	s=mimecast20190719; t=1711378653;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=/wvoO9gMxnE/h+72mDdUoxwDkamBxujn5JY0mQMrkk8=;
-	b=UAARgC5Lq9+648tqMb7yuqXxLB4mJ30U1QL8wqpXUssmUz6it4xMVXfK6dAoMR6JOJAK2A
-	66BBS0TDcjNT8Hd2KScmB1trlAF1zE6Bo38iff7G54s5dZOtP325bduj4+mLs7G/p1+UeP
-	kKvwzBUCF5hqWJZLS9nwaAU/0OoO0IQ=
+	bh=1Ez2QF5MYw9LVg300C2Oo4I1YSujmhzgBkyBgmFJgxw=;
+	b=XSzRQsE5Feh4jAVAAfl3RLb/I9opzIlvA6wSxLY1kj2IK4jUNatWIgDOX3BeorCvReHJxR
+	SIkzrOchvEQ3mDMKsatk2HL57wLAgNG/1AUmpAdSbBBqd4sO/8RjAGw8yexEFITiVR4KwP
+	J+J8MaaCV1DECdSZGpBOGuPU3ya0rQ4=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1711378650;
+	s=mimecast20190719; t=1711378654;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=/wvoO9gMxnE/h+72mDdUoxwDkamBxujn5JY0mQMrkk8=;
-	b=UAARgC5Lq9+648tqMb7yuqXxLB4mJ30U1QL8wqpXUssmUz6it4xMVXfK6dAoMR6JOJAK2A
-	66BBS0TDcjNT8Hd2KScmB1trlAF1zE6Bo38iff7G54s5dZOtP325bduj4+mLs7G/p1+UeP
-	kKvwzBUCF5hqWJZLS9nwaAU/0OoO0IQ=
+	bh=1Ez2QF5MYw9LVg300C2Oo4I1YSujmhzgBkyBgmFJgxw=;
+	b=hw+Qp2dMi7HmOojomJZsRKBA9DhnmnPQA+9V2E1lx7xabFlm1bzATin5QAR4IIoTT/kNYJ
+	fpx4NCW2hP6Wsw5+fDwdbvZDOUOUNtxS4B8JPW8la+H8f+yqQJW68ytu7cpbxAQOYYmhBh
+	iRYzzkRfpI2WJ/BVF1yjZt2rGRsR1zY=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-207-ioNvZiFePKuhU6aVg6cs7g-1; Mon, 25 Mar 2024 10:57:25 -0400
-X-MC-Unique: ioNvZiFePKuhU6aVg6cs7g-1
+ us-mta-556-UPy8WchcPpKKNZJqlR81mg-1; Mon, 25 Mar 2024 10:57:29 -0400
+X-MC-Unique: UPy8WchcPpKKNZJqlR81mg-1
 Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com [10.11.54.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 38444185A783;
-	Mon, 25 Mar 2024 14:57:25 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 0BBCA800267;
+	Mon, 25 Mar 2024 14:57:29 +0000 (UTC)
 Received: from MiWiFi-R3L-srv.redhat.com (unknown [10.72.116.12])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 4E4133C22;
-	Mon, 25 Mar 2024 14:57:20 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id D78C43C22;
+	Mon, 25 Mar 2024 14:57:25 +0000 (UTC)
 From: Baoquan He <bhe@redhat.com>
 To: linux-mm@kvack.org
-Subject: [PATCH v2 2/6] mm/mm_init.c: remove the useless dma_reserve
-Date: Mon, 25 Mar 2024 22:56:42 +0800
-Message-ID: <20240325145646.1044760-3-bhe@redhat.com>
+Subject: [PATCH v2 3/6] mm/mm_init.c: add new function calc_nr_all_pages()
+Date: Mon, 25 Mar 2024 22:56:43 +0800
+Message-ID: <20240325145646.1044760-4-bhe@redhat.com>
 In-Reply-To: <20240325145646.1044760-1-bhe@redhat.com>
 References: <20240325145646.1044760-1-bhe@redhat.com>
 MIME-Version: 1.0
@@ -84,75 +84,54 @@ Cc: Baoquan He <bhe@redhat.com>, x86@kernel.org, linux-kernel@vger.kernel.org, a
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now nobody calls set_dma_reserve() to set value for dma_reserve, remove
-set_dma_reserve(), global variable dma_reserve and the codes using it.
+This is a preparation to calculate nr_kernel_pages and nr_all_pages,
+both of which will be used later in alloc_large_system_hash().
+
+nr_all_pages counts up all free but not reserved memory in memblock
+allocator, including HIGHMEM memory. While nr_kernel_pages counts up
+all free but not reserved low memory in memblock allocator, excluding
+HIGHMEM memory.
 
 Signed-off-by: Baoquan He <bhe@redhat.com>
 ---
- include/linux/mm.h |  1 -
- mm/mm_init.c       | 23 -----------------------
- 2 files changed, 24 deletions(-)
+ mm/mm_init.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 0436b919f1c7..ad19350e1538 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -3210,7 +3210,6 @@ static inline int early_pfn_to_nid(unsigned long pfn)
- extern int __meminit early_pfn_to_nid(unsigned long pfn);
- #endif
- 
--extern void set_dma_reserve(unsigned long new_dma_reserve);
- extern void mem_init(void);
- extern void __init mmap_init(void);
- 
 diff --git a/mm/mm_init.c b/mm/mm_init.c
-index 549e76af8f82..153fb2dc666f 100644
+index 153fb2dc666f..c57a7fc97a16 100644
 --- a/mm/mm_init.c
 +++ b/mm/mm_init.c
-@@ -226,7 +226,6 @@ static unsigned long required_movablecore_percent __initdata;
- 
- static unsigned long nr_kernel_pages __initdata;
- static unsigned long nr_all_pages __initdata;
--static unsigned long dma_reserve __initdata;
- 
- static bool deferred_struct_pages __meminitdata;
- 
-@@ -1583,12 +1582,6 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
- 					zone_names[j], memmap_pages, freesize);
- 		}
- 
--		/* Account for reserved pages */
--		if (j == 0 && freesize > dma_reserve) {
--			freesize -= dma_reserve;
--			pr_debug("  %s zone: %lu pages reserved\n", zone_names[0], dma_reserve);
--		}
--
- 		if (!is_highmem_idx(j))
- 			nr_kernel_pages += freesize;
- 		/* Charge for highmem memmap if there are enough kernel pages */
-@@ -2547,22 +2540,6 @@ void *__init alloc_large_system_hash(const char *tablename,
- 	return table;
+@@ -1264,6 +1264,30 @@ static void __init reset_memoryless_node_totalpages(struct pglist_data *pgdat)
+ 	pr_debug("On node %d totalpages: 0\n", pgdat->node_id);
  }
  
--/**
-- * set_dma_reserve - set the specified number of pages reserved in the first zone
-- * @new_dma_reserve: The number of pages to mark reserved
-- *
-- * The per-cpu batchsize and zone watermarks are determined by managed_pages.
-- * In the DMA zone, a significant percentage may be consumed by kernel image
-- * and other unfreeable allocations which can skew the watermarks badly. This
-- * function may optionally be used to account for unfreeable pages in the
-- * first zone (e.g., ZONE_DMA). The effect will be lower watermarks and
-- * smaller per-cpu batchsize.
-- */
--void __init set_dma_reserve(unsigned long new_dma_reserve)
--{
--	dma_reserve = new_dma_reserve;
--}
--
- void __init memblock_free_pages(struct page *page, unsigned long pfn,
- 							unsigned int order)
- {
++static void __init calc_nr_kernel_pages(void)
++{
++	unsigned long start_pfn, end_pfn;
++	phys_addr_t start_addr, end_addr;
++	u64 u;
++#ifdef CONFIG_HIGHMEM
++	unsigned long high_zone_low = arch_zone_lowest_possible_pfn[ZONE_HIGHMEM];
++#endif
++
++	for_each_free_mem_range(u, NUMA_NO_NODE, MEMBLOCK_NONE, &start_addr, &end_addr, NULL) {
++		start_pfn = PFN_UP(start_addr);
++		end_pfn   = PFN_DOWN(end_addr);
++
++		if (start_pfn < end_pfn) {
++			nr_all_pages += end_pfn - start_pfn;
++#ifdef CONFIG_HIGHMEM
++			start_pfn = clamp(start_pfn, 0, high_zone_low);
++			end_pfn = clamp(end_pfn, 0, high_zone_low);
++#endif
++			nr_kernel_pages += end_pfn - start_pfn;
++		}
++	}
++}
++
+ static void __init calculate_node_totalpages(struct pglist_data *pgdat,
+ 						unsigned long node_start_pfn,
+ 						unsigned long node_end_pfn)
 -- 
 2.41.0
 
