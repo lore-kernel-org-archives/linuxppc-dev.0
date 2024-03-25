@@ -4,52 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76999C54E64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 04:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B0E9C54E64
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 04:52:25 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iZ/b0NE+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=F/O/1o3X;
+	dkim=fail reason="signature verification failed" header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=uHxHoUbb;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V30hq0xCKz3dV7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 15:44:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V30sg6jZkz3dWW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 15:52:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iZ/b0NE+;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=F/O/1o3X;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=uHxHoUbb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.50; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 133 seconds by postgrey-1.37 at boromir; Mon, 25 Mar 2024 15:51:37 AEDT
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.50])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V30fR3P0Mz2ykC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 15:42:39 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 6128B60DE9;
-	Mon, 25 Mar 2024 04:42:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B5273C43399;
-	Mon, 25 Mar 2024 04:42:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711341754;
-	bh=duVRPOkUwtqb9I+6o5VQiYAgtSlpWGf+X+0yQv8TjAs=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=iZ/b0NE+i7+do8pgZkg46x1uBB/MQJfp/c/XhpH71z/wGKatNJQnfFVi4TsSrJUcx
-	 p9B9v3m0m2h+2n352ZneEdcJs25ZuYmCkptcEJJi14CEjUg6fZRWGQjsnzSbTTqpuQ
-	 jBLNyyJKgrClKH6Ar2Sk8/u0rVBaZT96gqSwdlSHBYKiJ8LneSrMklScm8Ww85dTEe
-	 eja5sWn2jN4CV4FDoeaf5TOJPL86Efy9rTKDI0W7hc3GLlwluHdA9GYm7yTBbMYg6F
-	 MrrxjzojsaA/BYbk4OYMb2sE8+b4REldcJ8JhTboSwFB0wiYQTm1AKpQdnuWO2wot9
-	 CNckLCoG3Oykg==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 9F5E8D95071;
-	Mon, 25 Mar 2024 04:42:34 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V30rn6Fkbz2ydQ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 15:51:37 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1711342110; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=KM1gqukNZs/d1Eg1N0y+qcCPWoLlrQP4KdBoSmqC31Nu3LnNUHxu7mOUvazP2wkNHn
+    kQeXFovf05EzaNabX148AB4ivRg8ZD3uTHcTeRsfWypHul7+MpowRwVFVvgBxD9IXBx9
+    NIm9zRPOEPpb2RCpHDRGLh3xqis/uux6ASdhO7uDWiBMxvRk7r/7OnElcWM1Z/4NLfmB
+    nBjwnhdlQEWXklFh3r+8PTaycDje8XW0nOSFNo2mFMLHO4yL+KZQGoMrAn90rCWrWGuK
+    WyHMzBvHYt6OLkKyivfI2NJJ8BMoQ7wT5b1uG79xRf8GzWrvbT/qhWQbvx1dua+i7n++
+    /m1A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1711342110;
+    s=strato-dkim-0002; d=strato.com;
+    h=Cc:Subject:From:To:Date:Message-ID:Cc:Date:From:Subject:Sender;
+    bh=9tlt6VnKn+i55GYf6OfIa+/FwEz6BFQDHJPH8qbYv30=;
+    b=a+sqmNburkiDUZsvb3hSrp6XbqCd8BerzWaPfE6y/tqh9KlVT4YTYWh3vSLsncai62
+    sK7VkdOsxj1AlePfVBtqr38ZMx8gJhOuDkQuy6r9JGPYrG0ojiOFhEeP0xkTwC/3M2vd
+    Y0NVC6Yxux5gmSeJUchbGeVXd9h+6OtaKladdZREPQGEDkrATelFDgR/rJ0+3Bw40LOE
+    Olpdz7RJFqALgN4OjT1qmSv7zG9A2Y8ueJwBMtuG8xTVhmOASr+jF8kMfER2AxNtEsNG
+    PPZ2g6YA8+Oza58q5AUa81ay3OdfhidF6DC7dg4pfzOL5BedeTQCna9Z1T7CyVQB6c/H
+    nFeQ==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1711342110;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=Cc:Subject:From:To:Date:Message-ID:Cc:Date:From:Subject:Sender;
+    bh=9tlt6VnKn+i55GYf6OfIa+/FwEz6BFQDHJPH8qbYv30=;
+    b=F/O/1o3XRAOzrvGMXbCeZt9cRoMe2Q5/mNmZNnhaF/0PFtQ1h/zhSai8XiDZyv09Rl
+    SrDJ0pgwKEVtlfpeBmy8A933Q1M8E7SRx8mW7Vq07ji9kocI3TgDtgcLVXHKsG+VXK/g
+    k0d+zWj/wZ6OUfQ5WBdAcpMyvyhv37kK4/MplbWU64Cc/wIHePhtuFAMBlcSu1ULHO/U
+    qcdRNWagNnWeBa9A8QxCO4NDivZ5oWFGEX5orMsdDE2TmUwjhvyIuiKih/y1OFuJv2yj
+    0y/nDQh0eP1uUGLRabqSaCEo3RsmFnwFbHIGPqSpMv1Lqzp2khmaB4Z/4ULbV8eMC9xy
+    cu7Q==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1711342110;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=Cc:Subject:From:To:Date:Message-ID:Cc:Date:From:Subject:Sender;
+    bh=9tlt6VnKn+i55GYf6OfIa+/FwEz6BFQDHJPH8qbYv30=;
+    b=uHxHoUbbAJR1fgQIPnP2ffDCSUIy1sOwOreefTn8Q/jpOcOJsWmMFNahksdolAiDPU
+    XzJ3z2xymoFWAt0kgVDg==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBfi4XXBswJY1xkHd0jCgCs4udHdhJKmTWY2xslQ=="
+Received: from [IPV6:2a02:8109:8984:5d00:299c:b5cd:1d87:5681]
+    by smtp.strato.de (RZmta 50.3.2 AUTH)
+    with ESMTPSA id eaf61b02P4mS4Kn
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Mon, 25 Mar 2024 05:48:28 +0100 (CET)
+Message-ID: <fa247ae4-5825-4dbe-a737-d93b7ab4d4b9@xenosoft.de>
+Date: Mon, 25 Mar 2024 05:48:28 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, hbathini@linux.ibm.com
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: [FSL P50x0] Kernel 6.9-rc1 compiling issue
+Content-Language: en-GB
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 00/11] Bump the minimum supported version of LLVM to 13.0.1
-From: patchwork-bot+linux-riscv@kernel.org
-Message-Id:  <171134175464.18749.18342004135343709281.git-patchwork-notify@kernel.org>
-Date: Mon, 25 Mar 2024 04:42:34 +0000
-References: <20240125-bump-min-llvm-ver-to-13-0-1-v1-0-f5ff9bda41c5@kernel.org>
-In-Reply-To: <20240125-bump-min-llvm-ver-to-13-0-1-v1-0-f5ff9bda41c5@kernel.org>
-To: Nathan Chancellor <nathan@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,34 +93,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com, linux-kernel@vger.kernel.org, aou@eecs.berkeley.edu, linux-hardening@vger.kernel.org, linux-riscv@lists.infradead.org, will@kernel.org, ardb@kernel.org, keescook@chromium.org, masahiroy@kernel.org, x86@kernel.org, linux@armlinux.org.uk, aneesh.kumar@kernel.org, mingo@redhat.com, naveen.n.rao@linux.ibm.com, llvm@lists.linux.dev, nicolas@fjasle.eu, linux-kbuild@vger.kernel.org, npiggin@gmail.com, bp@alien8.de, paul.walmsley@sifive.com, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, patches@lists.linux.dev, conor@kernel.org, palmer@dabbelt.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>, "R.T.Dickinson" <rtd@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>, Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello:
+Hi All,
 
-This series was applied to riscv/linux.git (fixes)
-by Andrew Morton <akpm@linux-foundation.org>:
+The Compiling of the RC1 of kernel 6.9 doesn’t work anymore for our FSL 
+P5020/P5040 boards [1] since the PowerPC updates 6.9-2 [2].
 
-On Thu, 25 Jan 2024 15:55:06 -0700 you wrote:
-> Hi all,
-> 
-> This series bumps the minimum supported version of LLVM for building the
-> kernel to 13.0.1. The first patch does the bump and all subsequent
-> patches clean up all the various workarounds and checks for earlier
-> versions.
-> 
-> [...]
+Error messages:
 
-Here is the summary with links:
-  - [07/11] riscv: Remove MCOUNT_NAME workaround
-    https://git.kernel.org/riscv/c/de5f3984664e
-  - [08/11] riscv: Kconfig: Remove version dependency from CONFIG_CLANG_SUPPORTS_DYNAMIC_FTRACE
-    https://git.kernel.org/riscv/c/a38d97181271
+arch/powerpc/platforms/85xx/smp.c: In function 'mpc85xx_smp_kexec_cpu_down':
+arch/powerpc/platforms/85xx/smp.c:401:13: error: 'crashing_cpu' 
+undeclared (first use in this function); did you mean 'crash_save_cpu'?
+   401 |  if (cpu == crashing_cpu && cpu_thread_in_core(cpu) != 0) {
+       |             ^~~~~~~~~~~~
+       |             crash_save_cpu
+arch/powerpc/platforms/85xx/smp.c:401:13: note: each undeclared 
+identifier is reported only once for each function it appears in
+make[5]: *** [scripts/Makefile.build:244: 
+arch/powerpc/platforms/85xx/smp.o] Error 1
+make[4]: *** [scripts/Makefile.build:485: arch/powerpc/platforms/85xx] 
+Error 2
+make[3]: *** [scripts/Makefile.build:485: arch/powerpc/platforms] Error 2
+make[2]: *** [scripts/Makefile.build:485: arch/powerpc] Error 2
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+---
 
+I was able to revert it. After that the compiling works again.
 
+Could you please check the PowerPC updates 6.9-2? [2]
+
+Thanks,
+Christian
+
+[1] http://wiki.amiga.org/index.php?title=X5000
+[2] 
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v6.9-rc1&id=484193fecd2b6349a6fd1554d306aec646ae1a6a
