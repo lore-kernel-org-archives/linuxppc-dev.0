@@ -4,70 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F203CC54E64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 17:57:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B922BC54E58
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 19:25:35 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=QSBuSMpV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kkXF69Tl;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V3LJ24b3fz3w0t
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 04:57:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V3NFB0n2kz3vhs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 06:25:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=QSBuSMpV;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kkXF69Tl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V3LBW5j8hz3vjb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2024 04:53:07 +1100 (AEDT)
-Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-1def89f0cfdso41149115ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 10:53:07 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V3NDH41yjz3c5J
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2024 06:24:46 +1100 (AEDT)
+Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-29dee60302fso3895457a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 12:24:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1711389185; x=1711993985; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:sender:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yZNhbleKNla2Ie/ZEatm6EVk1jlCAGbsmm+zF41MFkk=;
-        b=QSBuSMpVfuD/1PikKaQvNXjrkSWdOQEUejr01T5BNhcRAuL//vq85abwLjMFt7M2dY
-         YuuOg2sSz+9QqOwzQ9XOmZYFf1XxtcWY5h7CXAZZDqIIS1nj8HlDxjH7xLLzC1wQVEkX
-         snln5qoCbpyVEdr2Yk9qhW2eKjDhmk/I0T1wUwAC9iegsfBPfrxVV5Jue3F7O0H0p+9C
-         v2Tfa4QSCXZVAoMuSUIIDgUhwa3I0nKsV6T0DYKojQJ1mVERSHN27X+OA3fjGYPecglX
-         mFqQxoEOvdWX4BojwEGiWuFvDttUELLe15nRv66boZENMYsZZEv0Ocjdbf9gYllkNQGu
-         7hLg==
+        d=gmail.com; s=20230601; t=1711394683; x=1711999483; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:sender
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=P8SlcQVDmaEWiOte6mDmefSXrzEKVOFtuPmb7V2Kzic=;
+        b=kkXF69TlulpFjnUrhR5bpC4eIRp3/ELJcuv3c61RqbmTIGBXKbaXz7NmDhyRVbdjEC
+         OC0KJKtekjoEPLx5oHKeHzE0I8fMU9JuAiMsf/M/fOhDnLwfu7pGsGK9GglFVemED1rS
+         3i2uOsjO58Kqe+4lhOTCI1Y81xKffg+jSFsloUn8+bdv9gq4wulq0DiayWQF/lDWvJ9m
+         N73HIiXICy06w8cLJWztjciBgQBV6ogSVFLpHpw3Xw8du2vc7QvpBUAvGUTi051HkXtB
+         5V6C7JWuaWLkuoi+HeZefFU5vE5eO0Y3uU3jNn8Ksrw1ArpGILhFzSR9seW6xy8v7dEi
+         1eZg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711389185; x=1711993985;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:sender:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=yZNhbleKNla2Ie/ZEatm6EVk1jlCAGbsmm+zF41MFkk=;
-        b=qyrUdLnm9D8ks1zaWnzrK/ALhCcAyfqxrVBfMQRqDHseCRE5VoKsYtnM1zL4nkeaon
-         94oXPahDDOlRO9+yqsHkkdEQlChBSjfoLrC52N3Dk1TrSFlGWOzo0eCH6uZzvqal88EJ
-         3Z5Z/vm/pm2GfxIHzJfmo9Kc9BL+lXmPT4eJ/jcqVQtZbLUxxeB21ibyM+3wR7n37olf
-         jznUnTWuV3rmz9vnDPaagYn2InlWrtZ9pSh1APyL5udWlnclT5pCGDFOFFX01+mSdSES
-         fA/cR8ReIkZyJRROo8uWCS+kSMwPswZuGqthF+8EoEAnZ9IZ5vrOh5kyG5Hd+KTkk01A
-         /KsA==
-X-Forwarded-Encrypted: i=1; AJvYcCUlFgcb1ANUjaI6pfZM/dM6W7cPYy2B4CPfzqJkW3fTBA2ZX9Hlf7ivwIj7pxwgnsed0lwYWirRrom1ryEFCHFVkswojmqbP+3bfX8vnA==
-X-Gm-Message-State: AOJu0YxfaFWtibEyXZzo9rIAux0YvsuL0phU4wEjtLBfXWx2FQUFsk63
-	VfP9vhd3+pL+A2asGe2THvbU/NXdjsXe0JvEb7HZBcJXYFMR0vAc
-X-Google-Smtp-Source: AGHT+IEKWGuzpihfez0cIj5Jcw9QuULSWV5Y1XxkrBzCrtkepZtfQa7QDls+G+yzQdtdIaLpfh3muA==
-X-Received: by 2002:a17:902:e810:b0:1e0:960b:f395 with SMTP id u16-20020a170902e81000b001e0960bf395mr11373029plg.25.1711389185110;
-        Mon, 25 Mar 2024 10:53:05 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1711394683; x=1711999483;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:sender
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=P8SlcQVDmaEWiOte6mDmefSXrzEKVOFtuPmb7V2Kzic=;
+        b=jnpe7l7PhIy9hjjX1OAcuci1MQ/V9HOF6ftQieZlaV5pplw7mms1MVrnWR3mcgr2iy
+         ip/rHl1SKVwh4Zg+8fiBKrXl4Fs6hUwP9vw+0IhuDH9cz+lQgT2gk1bx6N3cqcKb6XiM
+         xJ4Qrdzmr/6LX+Bh8kiSnjl4UzH6CXWcgzLb6p3H2gwAWIhFR7mbP6YlDrWyhNHNy3jE
+         B6QpgHsYjCqzGd7iK6IbNFPjImCmVt906ojt20q8YIygY0aXPDhQ7FwOUDN6cifxU3al
+         WbY8XqfOBg8v723DimNo0F0aWVKFhHeb0y3BqAYo3AwFwYmTlrBK5vYVl933LxZ/zXsq
+         6pmg==
+X-Forwarded-Encrypted: i=1; AJvYcCUOmbIv2Ki8m1rVuxwfMCnf2jb3ogyUnJFZlKQy8rn+0gYD+uSby1gr1BRnabR3JNLXW1y/G69qczA20gOTsojAvqTv2X1eNq1pXoKTKg==
+X-Gm-Message-State: AOJu0YzPb3e6Do05M02HncI/iOW20fC9JTBGgRluNYPkGAbHrKDrrTus
+	qB4JOYe2hDNKbRJ8cQyY/r3fcS4ay52Fq0k3Cg5gkzKkUqNZhFTU
+X-Google-Smtp-Source: AGHT+IFwrImv53xAJXZaDSLJtn5nAAXYRWdj5wAShxC6nIYkDeejlGCGK79rEKa0DnGROBP9wWQclw==
+X-Received: by 2002:a17:90b:3d8:b0:29b:a345:620a with SMTP id go24-20020a17090b03d800b0029ba345620amr10896738pjb.20.1711394683229;
+        Mon, 25 Mar 2024 12:24:43 -0700 (PDT)
 Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id j5-20020a170902da8500b001e0c568ae8fsm1586519plx.192.2024.03.25.10.53.04
+        by smtp.gmail.com with ESMTPSA id q7-20020a17090a304700b0029bf9969afbsm10113710pjl.53.2024.03.25.12.24.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Mar 2024 10:53:04 -0700 (PDT)
+        Mon, 25 Mar 2024 12:24:42 -0700 (PDT)
+Date: Mon, 25 Mar 2024 12:24:40 -0700
 From: Guenter Roeck <linux@roeck-us.net>
-To: linux-kselftest@vger.kernel.org
-Subject: [PATCH v2 06/14] net: kunit: Suppress lock warning noise at end of dev_addr_lists tests
-Date: Mon, 25 Mar 2024 10:52:40 -0700
-Message-Id: <20240325175248.1499046-7-linux@roeck-us.net>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240325175248.1499046-1-linux@roeck-us.net>
+To: =?iso-8859-1?Q?Ma=EDra?= Canal <mcanal@igalia.com>
+Subject: Re: [PATCH v2 05/14] drm: Suppress intentional warning backtraces in
+ scaling unit tests
+Message-ID: <e880828b-552e-488e-9f31-3989bec276ae@roeck-us.net>
 References: <20240325175248.1499046-1-linux@roeck-us.net>
+ <20240325175248.1499046-6-linux@roeck-us.net>
+ <0729b218-53f1-4139-b165-a324794a9abd@igalia.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <0729b218-53f1-4139-b165-a324794a9abd@igalia.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,75 +83,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?UTF-8?q?Ma=C3=ADra=20Canal?= <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, Jakub Kicinski <kuba@kernel.org>, Linux Kernel Functional Testing <lkft@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vg
- er.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, Naresh Kamboju <naresh.kamboju@linaro.org>, linux-sh@vger.kernel.org, Dan Carpenter <dan.carpenter@linaro.org>, Linux Kernel Functional Testing <lkft@linaro.org>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzim
+ mermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-dev_addr_lists_test generates lock warning noise at the end of tests
-if lock debugging is enabled. There are two sets of warnings.
+Hi,
 
-WARNING: CPU: 0 PID: 689 at kernel/locking/mutex.c:923 __mutex_unlock_slowpath.constprop.0+0x13c/0x368
-DEBUG_LOCKS_WARN_ON(__owner_task(owner) != __get_current())
+On Mon, Mar 25, 2024 at 04:05:06PM -0300, Maíra Canal wrote:
+> Hi Guenter,
+> 
+> On 3/25/24 14:52, Guenter Roeck wrote:
+> > The drm_test_rect_calc_hscale and drm_test_rect_calc_vscale unit tests
+> > intentionally trigger warning backtraces by providing bad parameters to
+> > the tested functions. What is tested is the return value, not the existence
+> > of a warning backtrace. Suppress the backtraces to avoid clogging the
+> > kernel log.
+> > 
+> > Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
+> > Acked-by: Dan Carpenter <dan.carpenter@linaro.org>
+> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> > ---
+> > - Rebased to v6.9-rc1
+> > - Added Tested-by:, Acked-by:, and Reviewed-by: tags
+> > 
+> >   drivers/gpu/drm/tests/drm_rect_test.c | 6 ++++++
+> >   1 file changed, 6 insertions(+)
+> > 
+> > diff --git a/drivers/gpu/drm/tests/drm_rect_test.c b/drivers/gpu/drm/tests/drm_rect_test.c
+> > index 76332cd2ead8..75614cb4deb5 100644
+> > --- a/drivers/gpu/drm/tests/drm_rect_test.c
+> > +++ b/drivers/gpu/drm/tests/drm_rect_test.c
+> > @@ -406,22 +406,28 @@ KUNIT_ARRAY_PARAM(drm_rect_scale, drm_rect_scale_cases, drm_rect_scale_case_desc
+> >   static void drm_test_rect_calc_hscale(struct kunit *test)
+> >   {
+> > +	DEFINE_SUPPRESSED_WARNING(drm_calc_scale);
+> >   	const struct drm_rect_scale_case *params = test->param_value;
+> >   	int scaling_factor;
+> > +	START_SUPPRESSED_WARNING(drm_calc_scale);
+> 
+> I'm not sure if it is not that obvious only to me, but it would be nice
+> to have a comment here, remembering that we provide bad parameters in
+> some test cases.
 
-WARNING: kunit_try_catch/1336 still has locks held!
+Sure. Something like this ?
 
-KUnit test cleanup is not guaranteed to run in the same thread as the test
-itself. For this test, this means that rtnl_lock() and rtnl_unlock() may
-be called from different threads. This triggers the warnings.
-Suppress the warnings because they are irrelevant for the test and just
-confusing.
+        /*
+         * drm_rect_calc_hscale() generates a warning backtrace whenever bad
+         * parameters are passed to it. This affects all unit tests with an
+         * error code in expected_scaling_factor.
+         */
 
-The first warning can be suppressed by using START_SUPPRESSED_WARNING()
-and END_SUPPRESSED_WARNING() around the call to rtnl_unlock(). To suppress
-the second warning, it is necessary to set debug_locks_silent while the
-rtnl lock is held.
-
-Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
-Cc: David Gow <davidgow@google.com>
-Cc: Jakub Kicinski <kuba@kernel.org>
-Acked-by: Dan Carpenter <dan.carpenter@linaro.org>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
-- Rebased to v6.9-rc1
-- Added Tested-by:, Acked-by:, and Reviewed-by: tags
-
- net/core/dev_addr_lists_test.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/net/core/dev_addr_lists_test.c b/net/core/dev_addr_lists_test.c
-index 4dbd0dc6aea2..b427dd1a3c93 100644
---- a/net/core/dev_addr_lists_test.c
-+++ b/net/core/dev_addr_lists_test.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0-or-later
- 
- #include <kunit/test.h>
-+#include <linux/debug_locks.h>
- #include <linux/etherdevice.h>
- #include <linux/netdevice.h>
- #include <linux/rtnetlink.h>
-@@ -49,6 +50,7 @@ static int dev_addr_test_init(struct kunit *test)
- 		KUNIT_FAIL(test, "Can't register netdev %d", err);
- 	}
- 
-+	debug_locks_silent = 1;
- 	rtnl_lock();
- 	return 0;
- }
-@@ -56,8 +58,12 @@ static int dev_addr_test_init(struct kunit *test)
- static void dev_addr_test_exit(struct kunit *test)
- {
- 	struct net_device *netdev = test->priv;
-+	DEFINE_SUPPRESSED_WARNING(__mutex_unlock_slowpath);
- 
-+	START_SUPPRESSED_WARNING(__mutex_unlock_slowpath);
- 	rtnl_unlock();
-+	END_SUPPRESSED_WARNING(__mutex_unlock_slowpath);
-+	debug_locks_silent = 0;
- 	unregister_netdev(netdev);
- 	free_netdev(netdev);
- }
--- 
-2.39.2
-
+Thanks,
+Guenter
