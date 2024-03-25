@@ -4,52 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7400DC47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Mar 2024 23:08:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAB60C54E58
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 04:43:22 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y1kFLPyn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZCEzRCyz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V2sF50slvz3dTv
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 10:08:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V30gF28Dlz3dSV
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 15:43:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y1kFLPyn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZCEzRCyz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V2sD66MDlz3bqB
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 10:07:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V30fQ1KbKz2ysD
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 15:42:38 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 5ED0660E04;
-	Sun, 24 Mar 2024 23:07:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BE43C43399;
-	Sun, 24 Mar 2024 23:07:46 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id C146D60DF5;
+	Mon, 25 Mar 2024 04:42:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B7D52C43141;
+	Mon, 25 Mar 2024 04:42:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711321668;
-	bh=Vql+8js91BRX0rn5qU3meYIvkq3/iZebYzGwS509XTc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Y1kFLPynROeXaia/neLYNhDoRiejoV8FwURaGegVxq+CWtddmSrfg8rZvGajA0DHb
-	 mb0B1wycTdOSGLAFUXKnrVyEsugGi/Eyalcrd4UlUSXcVKtDGi7RtJoWDepbCFD3KJ
-	 hKXsAzOW36fM7e+V7p7Bt1lJ3VHWG/pFAbNFdo8q9BuKLjrkE+TK4s6//uoPNyzZus
-	 sjGTlZdZ35/9XidkW1JZhiNM4Oon8O3ICEDGTMAqEBub1LXdqFjIicE21tZwb6P117
-	 Gncq2cOJzNKAxOMoyGcRiFj1b5dfb6y1j0xbkKj00E+Qk02GV8vYpq16xUp6nS86RE
-	 EDUc5uu8ovFlQ==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH 6.6 397/638] drivers/ps3: select VIDEO to provide cmdline functions
-Date: Sun, 24 Mar 2024 18:57:14 -0400
-Message-ID: <20240324230116.1348576-398-sashal@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240324230116.1348576-1-sashal@kernel.org>
-References: <20240324230116.1348576-1-sashal@kernel.org>
+	s=k20201202; t=1711341754;
+	bh=4yStfrK4SQVUbj2aqcQE+48u8AfaMFrS4+tHEELssTw=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=ZCEzRCyze7tj2dRAQEKT/yrQWS3Pqn4bPaxgQKZdu9YbhUtZLJD0OydpAcdL20PC4
+	 7iWeNBDav2s+KtOjaj7l27OB0sCln5/g9V5SXAhjhM7EBkT+L/FFYX1S4pcK4XwWRQ
+	 pBtQ6pxqVCSVdLLo8XRAXV45QE85EquJCd+GGNsSq4aDXrJ8fipEZWgCqfrqGbzsa5
+	 oRYEe7vAr9h4RbHDCPMVAVMXcT3uCr2OT6NCXc2+AgDiyEYVn3ZkL0eQXFcRH4bldD
+	 F4bUwh+2thCfZ6iLVZBp6HqT2GbT5c7VdFpeMjQyP5Lvmvg7/udPNRbiMi7Bn4c6f4
+	 XPWJGMvrygDww==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id A971DD2D0ED;
+	Mon, 25 Mar 2024 04:42:34 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH 1/1] arch/arm/mm: fix major fault accounting when retrying
+ under per-VMA lock
+From: patchwork-bot+linux-riscv@kernel.org
+Message-Id:  <171134175469.18749.11610415936860732367.git-patchwork-notify@kernel.org>
+Date: Mon, 25 Mar 2024 04:42:34 +0000
+References: <20240123064305.2829244-1-surenb@google.com>
+In-Reply-To: <20240123064305.2829244-1-surenb@google.com>
+To: Suren Baghdasaryan <surenb@google.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,54 +62,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Geoff Levand <geoff@infradead.org>, dri-devel@lists.freedesktop.org, Randy Dunlap <rdunlap@infradead.org>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Thomas Zimmermann <tzimmermann@suse.de>, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, agordeev@linux.ibm.com, x86@kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, linuxppc-dev@lists.ozlabs.org, willy@infradead.org, linux-kernel@vger.kernel.org, rmk+kernel@armlinux.org.uk, palmer@dabbelt.com, luto@kernel.org, linux-riscv@lists.infradead.org, gerald.schaefer@linux.ibm.com, will@kernel.org, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Randy Dunlap <rdunlap@infradead.org>
+Hello:
 
-[ Upstream commit 7edd06233958d9086a9e3eb723a8768d3c5a9ce1 ]
+This patch was applied to riscv/linux.git (fixes)
+by Andrew Morton <akpm@linux-foundation.org>:
 
-When VIDEO is not set, there is a build error. Fix that by selecting
-VIDEO for PS3_PS3AV.
+On Mon, 22 Jan 2024 22:43:05 -0800 you wrote:
+> The change [1] missed ARM architecture when fixing major fault accounting
+> for page fault retry under per-VMA lock. Add missing code to fix ARM
+> architecture fault accounting.
+> 
+> [1] 46e714c729c8 ("arch/mm/fault: fix major fault accounting when retrying under per-VMA lock")
+> 
+> Fixes: 12214eba1992 ("mm: handle read faults under the VMA lock")
+> 
+> [...]
 
-ERROR: modpost: ".video_get_options" [drivers/ps3/ps3av_mod.ko] undefined!
+Here is the summary with links:
+  - [1/1] arch/arm/mm: fix major fault accounting when retrying under per-VMA lock
+    https://git.kernel.org/riscv/c/e870920bbe68
 
-Fixes: dae7fbf43fd0 ("driver/ps3: Include <video/cmdline.h> for mode parsing")
-Fixes: a3b6792e990d ("video/cmdline: Introduce CONFIG_VIDEO for video= parameter")
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-Cc: Naveen N. Rao <naveen.n.rao@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Geoff Levand <geoff@infradead.org>
-Acked-by: Geoff Levand <geoff@infradead.org>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Link: https://patchwork.freedesktop.org/patch/msgid/20240207161322.8073-1-rdunlap@infradead.org
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/powerpc/platforms/ps3/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
-index a44869e5ea70f..1bd1b0b49bc62 100644
---- a/arch/powerpc/platforms/ps3/Kconfig
-+++ b/arch/powerpc/platforms/ps3/Kconfig
-@@ -67,6 +67,7 @@ config PS3_VUART
- config PS3_PS3AV
- 	depends on PPC_PS3
- 	tristate "PS3 AV settings driver" if PS3_ADVANCED
-+	select VIDEO
- 	select PS3_VUART
- 	default y
- 	help
+You are awesome, thank you!
 -- 
-2.43.0
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
