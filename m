@@ -4,52 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3D7DC54E64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 04:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76999C54E64
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 04:44:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GdKqpJYq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iZ/b0NE+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V30h22DxSz3vY5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 15:44:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V30hq0xCKz3dV7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 15:44:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GdKqpJYq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iZ/b0NE+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V30fQ11qFz2ykC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 15:42:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V30fR3P0Mz2ykC
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 15:42:39 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id B4E2C60D39;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 6128B60DE9;
 	Mon, 25 Mar 2024 04:42:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CB0CCC43143;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B5273C43399;
 	Mon, 25 Mar 2024 04:42:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1711341754;
-	bh=XMszcJq9qKpbV4DFBwSekh9f/MWb18ne5dXsAM6kKD8=;
+	bh=duVRPOkUwtqb9I+6o5VQiYAgtSlpWGf+X+0yQv8TjAs=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=GdKqpJYqq4nzWFRO9Hpv5UH3Py1smxmB/DXoCXJtllla7M+UbtYM4CJ5/L896W7IV
-	 yQNZ+TVXisg+8sTpUFlmLRoFuUc0LEioY4l5kubTTV7+kTnb8wBKXBmUQuqxFirQOM
-	 +r7s6pXT4cgp/uVDoprMn8sgYkXHbx8mHeeSxDTGj5EF3mvSNK50KxsmorJkJA4wO7
-	 zDT9ZpkpOD2ZRWN3OzSLAbYkoL+iyKgdNDK5cCLI9ndEy0u4mkYkxx8ZcQ9kia61k/
-	 zgU/eNUoN3a7r9NnvA0lfHszFUpclZw3XcF/Xe2dG4exz/EXhbcXzChTQzT6SVcFzX
-	 xxSpvAwPq1e4Q==
+	b=iZ/b0NE+i7+do8pgZkg46x1uBB/MQJfp/c/XhpH71z/wGKatNJQnfFVi4TsSrJUcx
+	 p9B9v3m0m2h+2n352ZneEdcJs25ZuYmCkptcEJJi14CEjUg6fZRWGQjsnzSbTTqpuQ
+	 jBLNyyJKgrClKH6Ar2Sk8/u0rVBaZT96gqSwdlSHBYKiJ8LneSrMklScm8Ww85dTEe
+	 eja5sWn2jN4CV4FDoeaf5TOJPL86Efy9rTKDI0W7hc3GLlwluHdA9GYm7yTBbMYg6F
+	 MrrxjzojsaA/BYbk4OYMb2sE8+b4REldcJ8JhTboSwFB0wiYQTm1AKpQdnuWO2wot9
+	 CNckLCoG3Oykg==
 Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id BB1EAD95072;
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 9F5E8D95071;
 	Mon, 25 Mar 2024 04:42:34 +0000 (UTC)
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH v3 00/15] mm/memory: optimize fork() with PTE-mapped THP
+Subject: Re: [PATCH 00/11] Bump the minimum supported version of LLVM to 13.0.1
 From: patchwork-bot+linux-riscv@kernel.org
-Message-Id:  <171134175476.18749.11889611045887549553.git-patchwork-notify@kernel.org>
+Message-Id:  <171134175464.18749.18342004135343709281.git-patchwork-notify@kernel.org>
 Date: Mon, 25 Mar 2024 04:42:34 +0000
-References: <20240129124649.189745-1-david@redhat.com>
-In-Reply-To: <20240129124649.189745-1-david@redhat.com>
-To: David Hildenbrand <david@redhat.com>
+References: <20240125-bump-min-llvm-ver-to-13-0-1-v1-0-f5ff9bda41c5@kernel.org>
+In-Reply-To: <20240125-bump-min-llvm-ver-to-13-0-1-v1-0-f5ff9bda41c5@kernel.org>
+To: Nathan Chancellor <nathan@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,7 +61,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: catalin.marinas@arm.com, linux-mm@kvack.org, sparclinux@vger.kernel.org, agordeev@linux.ibm.com, will@kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux@armlinux.org.uk, willy@infradead.org, aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com, gerald.schaefer@linux.ibm.com, borntraeger@linux.ibm.com, aou@eecs.berkeley.edu, ryan.roberts@arm.com, gor@linux.ibm.com, hca@linux.ibm.com, npiggin@gmail.com, paul.walmsley@sifive.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dinguyen@kernel.org, palmer@dabbelt.com, svens@linux.ibm.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: mark.rutland@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com, linux-kernel@vger.kernel.org, aou@eecs.berkeley.edu, linux-hardening@vger.kernel.org, linux-riscv@lists.infradead.org, will@kernel.org, ardb@kernel.org, keescook@chromium.org, masahiroy@kernel.org, x86@kernel.org, linux@armlinux.org.uk, aneesh.kumar@kernel.org, mingo@redhat.com, naveen.n.rao@linux.ibm.com, llvm@lists.linux.dev, nicolas@fjasle.eu, linux-kbuild@vger.kernel.org, npiggin@gmail.com, bp@alien8.de, paul.walmsley@sifive.com, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, patches@lists.linux.dev, conor@kernel.org, palmer@dabbelt.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
@@ -70,50 +70,21 @@ Hello:
 This series was applied to riscv/linux.git (fixes)
 by Andrew Morton <akpm@linux-foundation.org>:
 
-On Mon, 29 Jan 2024 13:46:34 +0100 you wrote:
-> Now that the rmap overhaul[1] is upstream that provides a clean interface
-> for rmap batching, let's implement PTE batching during fork when processing
-> PTE-mapped THPs.
+On Thu, 25 Jan 2024 15:55:06 -0700 you wrote:
+> Hi all,
 > 
-> This series is partially based on Ryan's previous work[2] to implement
-> cont-pte support on arm64, but its a complete rewrite based on [1] to
-> optimize all architectures independent of any such PTE bits, and to
-> use the new rmap batching functions that simplify the code and prepare
-> for further rmap accounting changes.
+> This series bumps the minimum supported version of LLVM for building the
+> kernel to 13.0.1. The first patch does the bump and all subsequent
+> patches clean up all the various workarounds and checks for earlier
+> versions.
 > 
 > [...]
 
 Here is the summary with links:
-  - [v3,01/15] arm64/mm: Make set_ptes() robust when OAs cross 48-bit boundary
-    (no matching commit)
-  - [v3,02/15] arm/pgtable: define PFN_PTE_SHIFT
-    (no matching commit)
-  - [v3,03/15] nios2/pgtable: define PFN_PTE_SHIFT
-    (no matching commit)
-  - [v3,04/15] powerpc/pgtable: define PFN_PTE_SHIFT
-    (no matching commit)
-  - [v3,05/15] riscv/pgtable: define PFN_PTE_SHIFT
-    https://git.kernel.org/riscv/c/57c254b2fb31
-  - [v3,06/15] s390/pgtable: define PFN_PTE_SHIFT
-    (no matching commit)
-  - [v3,07/15] sparc/pgtable: define PFN_PTE_SHIFT
-    (no matching commit)
-  - [v3,08/15] mm/pgtable: make pte_next_pfn() independent of set_ptes()
-    (no matching commit)
-  - [v3,09/15] arm/mm: use pte_next_pfn() in set_ptes()
-    (no matching commit)
-  - [v3,10/15] powerpc/mm: use pte_next_pfn() in set_ptes()
-    (no matching commit)
-  - [v3,11/15] mm/memory: factor out copying the actual PTE in copy_present_pte()
-    (no matching commit)
-  - [v3,12/15] mm/memory: pass PTE to copy_present_pte()
-    (no matching commit)
-  - [v3,13/15] mm/memory: optimize fork() with PTE-mapped THP
-    (no matching commit)
-  - [v3,14/15] mm/memory: ignore dirty/accessed/soft-dirty bits in folio_pte_batch()
-    (no matching commit)
-  - [v3,15/15] mm/memory: ignore writable bit in folio_pte_batch()
-    (no matching commit)
+  - [07/11] riscv: Remove MCOUNT_NAME workaround
+    https://git.kernel.org/riscv/c/de5f3984664e
+  - [08/11] riscv: Kconfig: Remove version dependency from CONFIG_CLANG_SUPPORTS_DYNAMIC_FTRACE
+    https://git.kernel.org/riscv/c/a38d97181271
 
 You are awesome, thank you!
 -- 
