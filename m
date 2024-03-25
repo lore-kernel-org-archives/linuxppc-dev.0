@@ -4,74 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B922BC54E58
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 19:25:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15D68C54E64
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 21:47:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kkXF69Tl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=KrsZ3Dg+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V3NFB0n2kz3vhs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 06:25:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V3RPT1ctKz3fQH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 08:47:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kkXF69Tl;
+	dkim=pass (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=KrsZ3Dg+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=igalia.com (client-ip=213.97.179.56; helo=fanzine2.igalia.com; envelope-from=mcanal@igalia.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 2483 seconds by postgrey-1.37 at boromir; Tue, 26 Mar 2024 06:47:28 AEDT
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V3NDH41yjz3c5J
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2024 06:24:46 +1100 (AEDT)
-Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-29dee60302fso3895457a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 12:24:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1711394683; x=1711999483; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:sender
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=P8SlcQVDmaEWiOte6mDmefSXrzEKVOFtuPmb7V2Kzic=;
-        b=kkXF69TlulpFjnUrhR5bpC4eIRp3/ELJcuv3c61RqbmTIGBXKbaXz7NmDhyRVbdjEC
-         OC0KJKtekjoEPLx5oHKeHzE0I8fMU9JuAiMsf/M/fOhDnLwfu7pGsGK9GglFVemED1rS
-         3i2uOsjO58Kqe+4lhOTCI1Y81xKffg+jSFsloUn8+bdv9gq4wulq0DiayWQF/lDWvJ9m
-         N73HIiXICy06w8cLJWztjciBgQBV6ogSVFLpHpw3Xw8du2vc7QvpBUAvGUTi051HkXtB
-         5V6C7JWuaWLkuoi+HeZefFU5vE5eO0Y3uU3jNn8Ksrw1ArpGILhFzSR9seW6xy8v7dEi
-         1eZg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711394683; x=1711999483;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:sender
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=P8SlcQVDmaEWiOte6mDmefSXrzEKVOFtuPmb7V2Kzic=;
-        b=jnpe7l7PhIy9hjjX1OAcuci1MQ/V9HOF6ftQieZlaV5pplw7mms1MVrnWR3mcgr2iy
-         ip/rHl1SKVwh4Zg+8fiBKrXl4Fs6hUwP9vw+0IhuDH9cz+lQgT2gk1bx6N3cqcKb6XiM
-         xJ4Qrdzmr/6LX+Bh8kiSnjl4UzH6CXWcgzLb6p3H2gwAWIhFR7mbP6YlDrWyhNHNy3jE
-         B6QpgHsYjCqzGd7iK6IbNFPjImCmVt906ojt20q8YIygY0aXPDhQ7FwOUDN6cifxU3al
-         WbY8XqfOBg8v723DimNo0F0aWVKFhHeb0y3BqAYo3AwFwYmTlrBK5vYVl933LxZ/zXsq
-         6pmg==
-X-Forwarded-Encrypted: i=1; AJvYcCUOmbIv2Ki8m1rVuxwfMCnf2jb3ogyUnJFZlKQy8rn+0gYD+uSby1gr1BRnabR3JNLXW1y/G69qczA20gOTsojAvqTv2X1eNq1pXoKTKg==
-X-Gm-Message-State: AOJu0YzPb3e6Do05M02HncI/iOW20fC9JTBGgRluNYPkGAbHrKDrrTus
-	qB4JOYe2hDNKbRJ8cQyY/r3fcS4ay52Fq0k3Cg5gkzKkUqNZhFTU
-X-Google-Smtp-Source: AGHT+IFwrImv53xAJXZaDSLJtn5nAAXYRWdj5wAShxC6nIYkDeejlGCGK79rEKa0DnGROBP9wWQclw==
-X-Received: by 2002:a17:90b:3d8:b0:29b:a345:620a with SMTP id go24-20020a17090b03d800b0029ba345620amr10896738pjb.20.1711394683229;
-        Mon, 25 Mar 2024 12:24:43 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id q7-20020a17090a304700b0029bf9969afbsm10113710pjl.53.2024.03.25.12.24.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Mar 2024 12:24:42 -0700 (PDT)
-Date: Mon, 25 Mar 2024 12:24:40 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: =?iso-8859-1?Q?Ma=EDra?= Canal <mcanal@igalia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V3NkS0pCGz2yPq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2024 06:47:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
+	References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
+	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
+	List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=/cOCj+3wz4G6mk7yJiOWKe+zWsog28msEXqYEYYF/PM=; b=KrsZ3Dg+BwR2PxtUZN7tRdXRM/
+	hzD6VT43T4jmCbBOlQa33Sar4qRrk34fr3Gcfdp4NQWyMpNKX4DH6J6albLyamFGb2CGEiZOtE5rW
+	nfLSP5bRkADNvscY10NWmVllXMUJQDKsyuMyDODwaUtYaCGTGsGnQon7XaddORjvYOehlVXeE6sfa
+	n/bIrGl+ZGAr/bWkdry+5ZKkzUgSzgmqpPyWvxvxDDYmJrN43CkrvCrpPuNbz7XsoF5Y7Liw6IIBe
+	NgZRaSze46IWt9cBigdGv5ZmmlmhThf/TXsUVgjI26u4CbbOLSlCdcwSS/EtJiOUe4764vjuRvM+Q
+	SpYZMTlA==;
+Received: from [177.34.169.255] (helo=[192.168.0.139])
+	by fanzine2.igalia.com with esmtpsa 
+	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
+	id 1ropdK-00FBOo-Kv; Mon, 25 Mar 2024 20:05:23 +0100
+Message-ID: <0729b218-53f1-4139-b165-a324794a9abd@igalia.com>
+Date: Mon, 25 Mar 2024 16:05:06 -0300
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 05/14] drm: Suppress intentional warning backtraces in
  scaling unit tests
-Message-ID: <e880828b-552e-488e-9f31-3989bec276ae@roeck-us.net>
+To: Guenter Roeck <linux@roeck-us.net>, linux-kselftest@vger.kernel.org
 References: <20240325175248.1499046-1-linux@roeck-us.net>
  <20240325175248.1499046-6-linux@roeck-us.net>
- <0729b218-53f1-4139-b165-a324794a9abd@igalia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Language: en-US
+From: =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>
+Autocrypt: addr=mcanal@igalia.com; keydata=
+ xjMEZIsaeRYJKwYBBAHaRw8BAQdAGU6aY8oojw61KS5rGGMrlcilFqR6p6ID45IZ6ovX0h3N
+ H01haXJhIENhbmFsIDxtY2FuYWxAaWdhbGlhLmNvbT7CjwQTFggANxYhBDMCqFtIvFKVRJZQ
+ hDSPnHLaGFVuBQJkixp5BQkFo5qAAhsDBAsJCAcFFQgJCgsFFgIDAQAACgkQNI+cctoYVW5u
+ GAEAwpaC5rI3wD8zqETKwGVoXd6+AbmGfZuVD40xepy7z/8BAM5w95/oyPsHUqOsg/xUTlNp
+ rlbhA+WWoaOXA3XgR+wCzjgEZIsaeRIKKwYBBAGXVQEFAQEHQGoOK0jgh0IorMAacx6WUUWb
+ s3RLiJYWUU6iNrk5wWUbAwEIB8J+BBgWCAAmFiEEMwKoW0i8UpVEllCENI+cctoYVW4FAmSL
+ GnkFCQWjmoACGwwACgkQNI+cctoYVW6cqwD/Q9R98msvkhgRvi18fzUPFDwwogn+F+gQJJ6o
+ pwpgFkAA/R2zOfla3IT6G3SBoV5ucdpdCpnIXFpQLbmfHK7dXsAC
+In-Reply-To: <20240325175248.1499046-6-linux@roeck-us.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <0729b218-53f1-4139-b165-a324794a9abd@igalia.com>
+X-Mailman-Approved-At: Tue, 26 Mar 2024 08:47:15 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,56 +74,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, Naresh Kamboju <naresh.kamboju@linaro.org>, linux-sh@vger.kernel.org, Dan Carpenter <dan.carpenter@linaro.org>, Linux Kernel Functional Testing <lkft@linaro.org>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzim
- mermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, Naresh Kamboju <naresh.kamboju@linaro.org>, linux-sh@vger.kernel.org, Dan Carpenter <dan.carpenter@linaro.org>, Linux Kernel Functional Testing <lkft@linaro.org>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <ak
+ pm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Hi Guenter,
 
-On Mon, Mar 25, 2024 at 04:05:06PM -0300, Maíra Canal wrote:
-> Hi Guenter,
+On 3/25/24 14:52, Guenter Roeck wrote:
+> The drm_test_rect_calc_hscale and drm_test_rect_calc_vscale unit tests
+> intentionally trigger warning backtraces by providing bad parameters to
+> the tested functions. What is tested is the return value, not the existence
+> of a warning backtrace. Suppress the backtraces to avoid clogging the
+> kernel log.
 > 
-> On 3/25/24 14:52, Guenter Roeck wrote:
-> > The drm_test_rect_calc_hscale and drm_test_rect_calc_vscale unit tests
-> > intentionally trigger warning backtraces by providing bad parameters to
-> > the tested functions. What is tested is the return value, not the existence
-> > of a warning backtrace. Suppress the backtraces to avoid clogging the
-> > kernel log.
-> > 
-> > Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
-> > Acked-by: Dan Carpenter <dan.carpenter@linaro.org>
-> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> > ---
-> > - Rebased to v6.9-rc1
-> > - Added Tested-by:, Acked-by:, and Reviewed-by: tags
-> > 
-> >   drivers/gpu/drm/tests/drm_rect_test.c | 6 ++++++
-> >   1 file changed, 6 insertions(+)
-> > 
-> > diff --git a/drivers/gpu/drm/tests/drm_rect_test.c b/drivers/gpu/drm/tests/drm_rect_test.c
-> > index 76332cd2ead8..75614cb4deb5 100644
-> > --- a/drivers/gpu/drm/tests/drm_rect_test.c
-> > +++ b/drivers/gpu/drm/tests/drm_rect_test.c
-> > @@ -406,22 +406,28 @@ KUNIT_ARRAY_PARAM(drm_rect_scale, drm_rect_scale_cases, drm_rect_scale_case_desc
-> >   static void drm_test_rect_calc_hscale(struct kunit *test)
-> >   {
-> > +	DEFINE_SUPPRESSED_WARNING(drm_calc_scale);
-> >   	const struct drm_rect_scale_case *params = test->param_value;
-> >   	int scaling_factor;
-> > +	START_SUPPRESSED_WARNING(drm_calc_scale);
+> Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
+> Acked-by: Dan Carpenter <dan.carpenter@linaro.org>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+> - Rebased to v6.9-rc1
+> - Added Tested-by:, Acked-by:, and Reviewed-by: tags
 > 
-> I'm not sure if it is not that obvious only to me, but it would be nice
-> to have a comment here, remembering that we provide bad parameters in
-> some test cases.
+>   drivers/gpu/drm/tests/drm_rect_test.c | 6 ++++++
+>   1 file changed, 6 insertions(+)
+> 
+> diff --git a/drivers/gpu/drm/tests/drm_rect_test.c b/drivers/gpu/drm/tests/drm_rect_test.c
+> index 76332cd2ead8..75614cb4deb5 100644
+> --- a/drivers/gpu/drm/tests/drm_rect_test.c
+> +++ b/drivers/gpu/drm/tests/drm_rect_test.c
+> @@ -406,22 +406,28 @@ KUNIT_ARRAY_PARAM(drm_rect_scale, drm_rect_scale_cases, drm_rect_scale_case_desc
+>   
+>   static void drm_test_rect_calc_hscale(struct kunit *test)
+>   {
+> +	DEFINE_SUPPRESSED_WARNING(drm_calc_scale);
+>   	const struct drm_rect_scale_case *params = test->param_value;
+>   	int scaling_factor;
+>   
+> +	START_SUPPRESSED_WARNING(drm_calc_scale);
 
-Sure. Something like this ?
+I'm not sure if it is not that obvious only to me, but it would be nice
+to have a comment here, remembering that we provide bad parameters in
+some test cases.
 
-        /*
-         * drm_rect_calc_hscale() generates a warning backtrace whenever bad
-         * parameters are passed to it. This affects all unit tests with an
-         * error code in expected_scaling_factor.
-         */
+Best Regards,
+- MaÃ­ra
 
-Thanks,
-Guenter
+>   	scaling_factor = drm_rect_calc_hscale(&params->src, &params->dst,
+>   					      params->min_range, params->max_range);
+> +	END_SUPPRESSED_WARNING(drm_calc_scale);
+>   
+>   	KUNIT_EXPECT_EQ(test, scaling_factor, params->expected_scaling_factor);
+>   }
+>   
+>   static void drm_test_rect_calc_vscale(struct kunit *test)
+>   {
+> +	DEFINE_SUPPRESSED_WARNING(drm_calc_scale);
+>   	const struct drm_rect_scale_case *params = test->param_value;
+>   	int scaling_factor;
+>   
+> +	START_SUPPRESSED_WARNING(drm_calc_scale);
+>   	scaling_factor = drm_rect_calc_vscale(&params->src, &params->dst,
+>   					      params->min_range, params->max_range);
+> +	END_SUPPRESSED_WARNING(drm_calc_scale);
+>   
+>   	KUNIT_EXPECT_EQ(test, scaling_factor, params->expected_scaling_factor);
+>   }
