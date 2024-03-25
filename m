@@ -4,89 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61E43C54E64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 05:22:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95E09C54E64
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 05:29:36 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=YTPN9++q;
-	dkim=fail reason="signature verification failed" header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=paA1++ZZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=E9twj+/8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V31XM04x9z3dWd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 16:22:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V31hY5RBPz3fQR
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 16:29:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=YTPN9++q;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=paA1++ZZ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=E9twj+/8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.167; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 138 seconds by postgrey-1.37 at boromir; Mon, 25 Mar 2024 16:21:43 AEDT
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.167])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V31WW44bRz2ysD
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 16:21:43 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1711343916; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=b7th4FG2rrVwY+CtVHYiMUkCWlI9i8MkZi0/0Qf9GdA5SDzyXfP3UpBneso8y2br/Y
-    0a5AIeklNgBiDJjNEKoVhz9/dOAdaMCEa5PkOJIHGhOEygcaagGhhZp/SAvvvfsowLJ3
-    5K70A+8yUQ/qnJl1vXL7nhrfkWVbBIjkRqRElY+KlEmdnwwT7qJEvNL+gzpr5cjPOzVg
-    LSg346/SFAlc3NpLiCc+FzZXrupLn0pLpeK+miFAWUb/NQkAHNfheBuG5Qh6Cpb8MrDB
-    HrmiTzt743/2Gak0OAfnGZ/uP3Uyx/XHLWeWkldNOOpvmSixlZ4MosC8GZ8jwjLfFWxz
-    JSIg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1711343916;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:References:Cc:To:From:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=c8f4Ocl60Gvr6M9GiLWC34lQhec8Hxr6qFIesOSWTX0=;
-    b=mDkSLD1TJwNV9hJj1m90n+nPoKDp+gHPSGvNbyxtfJl+m3VskD2NScpqL9owSJvck3
-    ySdOe6vL+za5F5foqp14IKMhSpPz8fSxw0CQqKIkoRMtqGYsTSp1xgxLQQymw8qMrslo
-    +/IHK5qsdQz34LCBbfWeQY/zNzQ3YnHSSyklLGNhYcyYPIh9kqSpBJL5ByAO9u/QM2bE
-    f5RfPMxp1QbG8eILjg0vgjC2wk9SPnF8zjI0+AnoterFy6khrfNoevnekHp7YlMuJX5i
-    tUU5vGUtVWxtRk2R1bNnxuuAvEVFGW1H+huRP1ZzQpi0Or+1P0G6TudJVow5uUIgIWoz
-    f0Iw==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1711343916;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=In-Reply-To:References:Cc:To:From:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=c8f4Ocl60Gvr6M9GiLWC34lQhec8Hxr6qFIesOSWTX0=;
-    b=YTPN9++qinZzFwYOamJymDM7cctSw4BmiD1E9gdRiPUVE0xMQg3b/Mhri1Yy47l9fy
-    f6ZudwVO+aN1lAMrA0ATRdZ9MXEG2EobHAIqCKKzzj/tP/e8TDpOPkFh/HGKzuVvfYpP
-    KnP9pjBdQ2UVWvJVfb2nSj/o60IlU7AV+0ZB3Nye1Kjh33vxy0T7yOrLF/gD1F1uPF3/
-    3qo8mSu8XfgJHdx1f9ClPffklh3NUjocUkSeI0y8X8+JeyQ/ndkVuMNjUwXKuhK4hv99
-    6aJVojT4QYRgF5OMQMiWCQqrXt0uo1M4DQacBgRTroaAwum3U4uwtGhigDtRc9Fnkk4T
-    MpGA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1711343916;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=In-Reply-To:References:Cc:To:From:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=c8f4Ocl60Gvr6M9GiLWC34lQhec8Hxr6qFIesOSWTX0=;
-    b=paA1++ZZLUjOEuRoAD9kWcHUhz4LY5NdLY49yWpUdNy2juefIetZsjLZX3ZG/D3KYw
-    6r7LhC122LJSU1RuD0DA==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBfi4XXBswJY1xkHd0jCgCs4udHdhJKmTWY2xslQ=="
-Received: from [IPV6:2a02:8109:8984:5d00:299c:b5cd:1d87:5681]
-    by smtp.strato.de (RZmta 50.3.2 AUTH)
-    with ESMTPSA id eaf61b02P5Ia4Lv
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Mon, 25 Mar 2024 06:18:36 +0100 (CET)
-Message-ID: <761e7864-4655-4b58-b0ad-60d716c5f321@xenosoft.de>
-Date: Mon, 25 Mar 2024 06:18:35 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V31gm6XZLz2yGk
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 16:28:52 +1100 (AEDT)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42P4TIEi005764;
+	Mon, 25 Mar 2024 05:28:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=/GH65EX4JuT8WWcJRhz97O1bNg+rHUXNCgNcQ4qMfeo=;
+ b=E9twj+/8TKjo+t3BUcQLkSWkrN+ug57hCvHZFs6y7MgVILoN/JFx6bqfqmFZlcDCpWUA
+ g45SF1wsYz1gLp9PZFDlVpnVqGNgrk2HTc7dmbk96V0wAqxcOX04HogJDurI6YklvvAW
+ qjcnuB/52xpe1WZGS1HI+D/n3Lahk1/2UmjIOFJS68lPqp+4G2TTc9AdVvgGS3C25JWE
+ emJDHaieOwYgRYk8I6GZMMZzj8BXAggyFNHAAn6Qav+QCjSjvI6mQyrh/Gz2sbVR1jCl
+ H1za9fnCl0kQ0h+anjAJZiHwnMEN9I1X2cdA3n34FbyGZatsGDw8cFx7qRMeZEdRGlHM Og== 
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x2gadhmx7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 25 Mar 2024 05:28:44 +0000
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42P3giRn011233;
+	Mon, 25 Mar 2024 05:28:43 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3x2bmkpkvj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 25 Mar 2024 05:28:43 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42P5Sd3x52101592
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 25 Mar 2024 05:28:41 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C95EF2004B;
+	Mon, 25 Mar 2024 05:28:39 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 543CC20040;
+	Mon, 25 Mar 2024 05:28:39 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 25 Mar 2024 05:28:39 +0000 (GMT)
+Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 661CB60429;
+	Mon, 25 Mar 2024 16:28:36 +1100 (AEDT)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 2/2] powerpc/code-patching: Use dedicated memory routines for patching
+Date: Mon, 25 Mar 2024 16:28:15 +1100
+Message-ID: <20240325052815.854044-2-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240325052815.854044-1-bgray@linux.ibm.com>
+References: <20240325052815.854044-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: [FSL P50x0] Kernel 6.9-rc1 compiling issue
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>, hbathini@linux.ibm.com
-References: <fa247ae4-5825-4dbe-a737-d93b7ab4d4b9@xenosoft.de>
-Content-Language: de-DE
-In-Reply-To: <fa247ae4-5825-4dbe-a737-d93b7ab4d4b9@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: Rq6Ude6MiOQUNu-WOdBRixhscxcSDTFD
+X-Proofpoint-ORIG-GUID: Rq6Ude6MiOQUNu-WOdBRixhscxcSDTFD
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-03-25_02,2024-03-21_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ spamscore=0 mlxscore=0 malwarescore=0 adultscore=0 suspectscore=0
+ lowpriorityscore=0 phishscore=0 mlxlogscore=625 clxscore=1015 bulkscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2403210000 definitions=main-2403250029
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,62 +94,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>, "R.T.Dickinson" <rtd@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>, Christian Zigotzky <info@xenosoft.de>
+Cc: Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I have created a patch:
+The patching page set up as a writable alias may be in quadrant 0
+(userspace) if the temporary mm path is used. This causes sanitiser
+failures if so. Sanitiser failures also occur on the non-mm path
+because the plain memset family is instrumented, and KASAN treats the
+patching window as poisoned.
 
---- a/arch/powerpc/platforms/85xx/smp.c 2024-03-25 06:14:02.201209476 +0100
-+++ b/arch/powerpc/platforms/85xx/smp.c 2024-03-25 06:10:04.421425931 +0100
-@@ -393,6 +393,7 @@ static void mpc85xx_smp_kexec_cpu_down(i
-         int disable_threadbit = 0;
-         long start = mftb();
-         long now;
-+       int crashing_cpu = -1;
+Introduce locally defined patch_* variants of memset that perform an
+uninstrumented lower level set, as well as detecting write errors like
+the original single patch variant does.
 
-         local_irq_disable();
-         hard_irq_disable();
+copy_to_user() is not correct here, as the PTE makes it a proper kernel
+page (the EAA is privileged access only, RW). It just happens to be in
+quadrant 0 because that's the hardware's mechanism for using the current
+PID vs PID 0 in translations. Importantly, it's incorrect to allow user
+page accesses.
+
+Now that the patching memsets are used, we also propagate a failure up
+to the caller as the single patch variant does.
+
+Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 
 ---
 
--- Christian
+v2: * Fix typo in EAA (from EEA)
+    * Fix references to quadrant number (0, not 1)
+    * Use copy_to_kernel_nofault() over custom memcpy
+    * Drop custom memcpy optimisation patch
+---
+ arch/powerpc/lib/code-patching.c | 31 +++++++++++++++++++++++++++----
+ 1 file changed, 27 insertions(+), 4 deletions(-)
 
-
-On 25 March 2024 at 05:48 am, Christian Zigotzky wrote:
-> Hi All,
->
-> Compiling of the RC1 of kernel 6.9 doesn’t work anymore for our FSL 
-> P5020/P5040 boards [1] since the PowerPC updates 6.9-2 [2].
->
-> Error messages:
->
-> arch/powerpc/platforms/85xx/smp.c: In function 
-> 'mpc85xx_smp_kexec_cpu_down':
-> arch/powerpc/platforms/85xx/smp.c:401:13: error: 'crashing_cpu' 
-> undeclared (first use in this function); did you mean 'crash_save_cpu'?
->   401 |  if (cpu == crashing_cpu && cpu_thread_in_core(cpu) != 0) {
->       |             ^~~~~~~~~~~~
->       |             crash_save_cpu
-> arch/powerpc/platforms/85xx/smp.c:401:13: note: each undeclared 
-> identifier is reported only once for each function it appears in
-> make[5]: *** [scripts/Makefile.build:244: 
-> arch/powerpc/platforms/85xx/smp.o] Error 1
-> make[4]: *** [scripts/Makefile.build:485: arch/powerpc/platforms/85xx] 
-> Error 2
-> make[3]: *** [scripts/Makefile.build:485: arch/powerpc/platforms] Error 2
-> make[2]: *** [scripts/Makefile.build:485: arch/powerpc] Error 2
->
-> ---
->
-> I was able to revert it. After that the compiling works again.
->
-> Could you please check the PowerPC updates 6.9-2? [2]
->
-> Thanks,
-> Christian
->
-> [1] http://wiki.amiga.org/index.php?title=X5000
-> [2] 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v6.9-rc1&id=484193fecd2b6349a6fd1554d306aec646ae1a6a
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index c6ab46156cda..df64343b9214 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -372,9 +372,32 @@ int patch_instruction(u32 *addr, ppc_inst_t instr)
+ }
+ NOKPROBE_SYMBOL(patch_instruction);
+ 
++static int patch_memset64(u64 *addr, u64 val, size_t count)
++{
++	for (u64 *end = addr + count; addr < end; addr++)
++		__put_kernel_nofault(addr, &val, u64, failed);
++
++	return 0;
++
++failed:
++	return -EPERM;
++}
++
++static int patch_memset32(u32 *addr, u32 val, size_t count)
++{
++	for (u32 *end = addr + count; addr < end; addr++)
++		__put_kernel_nofault(addr, &val, u32, failed);
++
++	return 0;
++
++failed:
++	return -EPERM;
++}
++
+ static int __patch_instructions(u32 *patch_addr, u32 *code, size_t len, bool repeat_instr)
+ {
+ 	unsigned long start = (unsigned long)patch_addr;
++	int err;
+ 
+ 	/* Repeat instruction */
+ 	if (repeat_instr) {
+@@ -383,19 +406,19 @@ static int __patch_instructions(u32 *patch_addr, u32 *code, size_t len, bool rep
+ 		if (ppc_inst_prefixed(instr)) {
+ 			u64 val = ppc_inst_as_ulong(instr);
+ 
+-			memset64((u64 *)patch_addr, val, len / 8);
++			err = patch_memset64((u64 *)patch_addr, val, len / 8);
+ 		} else {
+ 			u32 val = ppc_inst_val(instr);
+ 
+-			memset32(patch_addr, val, len / 4);
++			err = patch_memset32(patch_addr, val, len / 4);
+ 		}
+ 	} else {
+-		memcpy(patch_addr, code, len);
++		err = copy_to_kernel_nofault(patch_addr, code, len);
+ 	}
+ 
+ 	smp_wmb();	/* smp write barrier */
+ 	flush_icache_range(start, start + len);
+-	return 0;
++	return err;
+ }
+ 
+ /*
+-- 
+2.44.0
 
