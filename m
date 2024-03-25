@@ -4,87 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 436D8C54E64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 05:30:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02F59C54E64
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 05:54:14 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UsEneNbS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j1t2GmeO;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V31k76nypz3vX6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 16:30:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V32F1470lz3d24
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2024 16:54:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UsEneNbS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j1t2GmeO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam.menghani@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V31hM0FNtz3dXT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 16:29:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V32D96Bfbz3bbW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2024 16:53:29 +1100 (AEDT)
 Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42P2TKcD002120;
-	Mon, 25 Mar 2024 05:29:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- in-reply-to; s=pp1; bh=+W54qSxNSJQWRx6PWgXJJfpx8+VW27a8pwZmgaNlRHg=;
- b=UsEneNbSd039lJDPga9B20LdGeQhJZizXHIGGnzDN7eTbayuUwmgvgEvSxhLZgIR4/v1
- quBEDu0guetYDKW94P7VD0Cs4yu9UEK0v5XpCm5+hVr1vEIn9wor995iSIdl3N6hbqAM
- VmsUAQ/ZcBceaOywa/b2hbWkFT0+yBiyAmKPiDJxbTRCQCGF5+llcS3UrBZTziu0HU9N
- JhNfnI/5NP+IU2Jj6TOp136sJURgrhnR3/byMUuY6A60sMyz94Z+j2l52zkLS4Q06fuk
- LybVhRvrPPtza61oA31I/aH7ufmJdRedViDjdRHs8x2EyM6ge0b8zITCH8fWmVyRsTTY Zg== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x1x53bhuf-1
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42P3TOR6027426;
+	Mon, 25 Mar 2024 05:53:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : content-transfer-encoding
+ : mime-version; s=pp1; bh=lVduRBO6kpx4TPaHDfnifA5JdplfGHc3Qylu30ax4q0=;
+ b=j1t2GmeOhLYoEVE3MA5HFAFbzD4spB6VFuTsokLSI6Q2CJO9od6LthoQHtc94TFCbz3E
+ FCuH5w8yczpKqFlP0TC7v+sSqS8YOMjqnvOZWjABqvaBEWvztawTzEEMc6rrcmCuxtU3
+ 0u4mDaK6zztUndRqz2YuefkKDRvOtLwu8PChW4bvhuJ2N0XfhV3hRNCJ4Qza5zTvK8E+
+ WXuJxLXqKtu7JE7e3v4pSQ3aCoUhzF/mD2hewV+6EkZ/I7VDlI0viFoEtyOaBoivi/81
+ +KpPYX7F7iozQTq1Tx1JybPHMvxgIfiVvHEYgtkt6+peWkTffDS0vuAoGhJGZmwTfHNw yA== 
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x1x53bjv1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 25 Mar 2024 05:29:13 +0000
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42P5PrcF007257;
-	Mon, 25 Mar 2024 05:29:13 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x1x53bhuc-1
+	Mon, 25 Mar 2024 05:53:20 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42P5U7Vt028620;
+	Mon, 25 Mar 2024 05:53:19 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3x2adny3sj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 25 Mar 2024 05:29:13 +0000
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42P4e7ji012990;
-	Mon, 25 Mar 2024 05:29:11 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3x29t076qy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 25 Mar 2024 05:29:11 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42P5T6iS28836400
+	Mon, 25 Mar 2024 05:53:19 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42P5rFnt40763750
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 25 Mar 2024 05:29:08 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 15E2820043;
-	Mon, 25 Mar 2024 05:29:06 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 228CB20040;
-	Mon, 25 Mar 2024 05:29:04 +0000 (GMT)
-Received: from li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.ibm.com (unknown [9.204.206.66])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 25 Mar 2024 05:29:03 +0000 (GMT)
-Date: Mon, 25 Mar 2024 10:59:01 +0530
-From: Gautam Menghani <Gautam.Menghani@linux.ibm.com>
-To: Gautam Menghani <gautam@linux.ibm.com>
-Subject: Re: [PATCH v3] arch/powerpc/kvm: Add support for reading VPA
- counters for pseries guests
-Message-ID: <7cfwgtfka55t4ovlbrzzqc2hamwaeoiddzo2e4wabwxy3tzc53@adwgw2asl6a5>
-References: <20240322101135.33295-1-gautam@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240322101135.33295-1-gautam@linux.ibm.com>
+	Mon, 25 Mar 2024 05:53:17 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9B5F62005A;
+	Mon, 25 Mar 2024 05:53:15 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 28B5A2004E;
+	Mon, 25 Mar 2024 05:53:15 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 25 Mar 2024 05:53:15 +0000 (GMT)
+Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id E19C36015D;
+	Mon, 25 Mar 2024 16:53:12 +1100 (AEDT)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 3/5] powerpc/64: Convert patch_instruction() to patch_u32()
+Date: Mon, 25 Mar 2024 16:53:00 +1100
+Message-ID: <20240325055302.876434-4-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240325055302.876434-1-bgray@linux.ibm.com>
+References: <20240325055302.876434-1-bgray@linux.ibm.com>
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: M7nJETb3ZJKBA-1FXGDYvVntb19-h1mC
-X-Proofpoint-ORIG-GUID: rJte0QdugKEtcpP_KJfjEtHHsJvS9GfM
+X-Proofpoint-GUID: frTScZYqjwIXL8_AriqzAHaAQH2nj2Qi
+X-Proofpoint-ORIG-GUID: frTScZYqjwIXL8_AriqzAHaAQH2nj2Qi
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-03-25_02,2024-03-21_02,2023-05-22_02
+ definitions=2024-03-25_03,2024-03-21_02,2023-05-22_02
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
  spamscore=0 priorityscore=1501 bulkscore=0 adultscore=0 mlxscore=0
- malwarescore=0 phishscore=0 suspectscore=0 clxscore=1011 impostorscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2403210000 definitions=main-2403250029
+ malwarescore=0 phishscore=0 suspectscore=0 clxscore=1015 impostorscore=0
+ mlxlogscore=850 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2403210000 definitions=main-2403250030
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,150 +94,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, aneesh.kumar@kernel.org, npiggin@gmail.com, naveen.n.rao@linux.ibm.com, Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Naveen N Rao <naveen@kernel.org>, Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 22, 2024 at 03:41:32PM +0530, Gautam Menghani wrote:
-> PAPR hypervisor has introduced three new counters in the VPA area of
-> LPAR CPUs for KVM L2 guest (see [1] for terminology) observability - 2
-> for context switches from host to guest and vice versa, and 1 counter
-> for getting the total time spent inside the KVM guest. Add a tracepoint
-> that enables reading the counters for use by ftrace/perf. Note that this
-> tracepoint is only available for nestedv2 API (i.e, KVM on PowerVM).
-> 
-> Also maintain an aggregation of the context switch times in vcpu->arch.
-> This will be useful in getting the aggregate times with a pmu driver
-> which will be upstreamed in the near future.
-> 
-> [1] Terminology:
-> a. L1 refers to the VM (LPAR) booted on top of PAPR hypervisor
-> b. L2 refers to the KVM guest booted on top of L1.
-> 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> ---
-> v1 -> v2:
-> 1. Fix the build error due to invalid struct member reference.
-> 
-> v2 -> v3:
-> 1. Move the counter disabling and zeroing code to a different function.
-> 2. Move the get_lppaca() inside the tracepoint_enabled() branch.
-> 3. Add the aggregation logic to maintain total context switch time.
-> 
->  arch/powerpc/include/asm/kvm_host.h |  5 +++++
->  arch/powerpc/include/asm/lppaca.h   | 11 +++++++---
->  arch/powerpc/kvm/book3s_hv.c        | 33 +++++++++++++++++++++++++++++
->  arch/powerpc/kvm/trace_hv.h         | 25 ++++++++++++++++++++++
->  4 files changed, 71 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index 8abac5321..d953b32dd 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -847,6 +847,11 @@ struct kvm_vcpu_arch {
->  	gpa_t nested_io_gpr;
->  	/* For nested APIv2 guests*/
->  	struct kvmhv_nestedv2_io nestedv2_io;
-> +
-> +	/* Aggregate context switch and guest run time info (in ns) */
-> +	u64 l1_to_l2_cs_agg;
-> +	u64 l2_to_l1_cs_agg;
-> +	u64 l2_runtime_agg;
->  #endif
->  
->  #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
-> diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
-> index 61ec2447d..bda6b86b9 100644
-> --- a/arch/powerpc/include/asm/lppaca.h
-> +++ b/arch/powerpc/include/asm/lppaca.h
-> @@ -62,7 +62,8 @@ struct lppaca {
->  	u8	donate_dedicated_cpu;	/* Donate dedicated CPU cycles */
->  	u8	fpregs_in_use;
->  	u8	pmcregs_in_use;
-> -	u8	reserved8[28];
-> +	u8	l2_accumul_cntrs_enable;  /* Enable usage of counters for KVM guest */
-> +	u8	reserved8[27];
->  	__be64	wait_state_cycles;	/* Wait cycles for this proc */
->  	u8	reserved9[28];
->  	__be16	slb_count;		/* # of SLBs to maintain */
-> @@ -92,9 +93,13 @@ struct lppaca {
->  	/* cacheline 4-5 */
->  
->  	__be32	page_ins;		/* CMO Hint - # page ins by OS */
-> -	u8	reserved12[148];
-> +	u8	reserved12[28];
-> +	volatile __be64 l1_to_l2_cs_tb;
-> +	volatile __be64 l2_to_l1_cs_tb;
-> +	volatile __be64 l2_runtime_tb;
-> +	u8 reserved13[96];
->  	volatile __be64 dtl_idx;	/* Dispatch Trace Log head index */
-> -	u8	reserved13[96];
-> +	u8	reserved14[96];
->  } ____cacheline_aligned;
->  
->  #define lppaca_of(cpu)	(*paca_ptrs[cpu]->lppaca_ptr)
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 8e86eb577..5a0bcb57e 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -4108,6 +4108,30 @@ static void vcpu_vpa_increment_dispatch(struct kvm_vcpu *vcpu)
->  	}
->  }
->  
-> +static void do_trace_nested_cs_time(struct kvm_vcpu *vcpu)
-> +{
-> +	struct lppaca *lp = get_lppaca();
-> +	u64 l1_to_l2_ns, l2_to_l1_ns, l2_runtime_ns;
-> +
-> +	if (!lp->l2_accumul_cntrs_enable)
-> +		return;
-> +
-> +	l1_to_l2_ns = tb_to_ns(be64_to_cpu(lp->l1_to_l2_cs_tb));
-> +	l2_to_l1_ns = tb_to_ns(be64_to_cpu(lp->l2_to_l1_cs_tb));
-> +	l2_runtime_ns = tb_to_ns(be64_to_cpu(lp->l2_runtime_tb));
-> +	trace_kvmppc_vcpu_exit_cs_time(vcpu, l1_to_l2_ns, l2_to_l1_ns,
-> +			l2_runtime_ns);
-> +	lp->l1_to_l2_cs_tb = 0;
-> +	lp->l2_to_l1_cs_tb = 0;
-> +	lp->l2_runtime_tb = 0;
-> +	lp->l2_accumul_cntrs_enable = 0;
-> +
-> +	// Maintain an aggregate of context switch times
-> +	vcpu->arch.l1_to_l2_cs_agg += l1_to_l2_ns;
-> +	vcpu->arch.l2_to_l1_cs_agg += l2_to_l1_ns;
-> +	vcpu->arch.l2_runtime_agg += l2_runtime_ns;
-> +}
-> +
->  static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
->  				     unsigned long lpcr, u64 *tb)
->  {
-> @@ -4130,6 +4154,11 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
->  	kvmppc_gse_put_u64(io->vcpu_run_input, KVMPPC_GSID_LPCR, lpcr);
->  
->  	accumulate_time(vcpu, &vcpu->arch.in_guest);
-> +
-> +	/* Enable the guest host context switch time tracking */
-> +	if (unlikely(trace_kvmppc_vcpu_exit_cs_time_enabled()))
-> +		get_lppaca()->l2_accumul_cntrs_enable = 1;
-> +
->  	rc = plpar_guest_run_vcpu(0, vcpu->kvm->arch.lpid, vcpu->vcpu_id,
->  				  &trap, &i);
->  
-> @@ -4156,6 +4185,10 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
->  
->  	timer_rearm_host_dec(*tb);
->  
-> +	/* Record context switch and guest_run_time data */
-> +	if (unlikely(trace_kvmppc_vcpu_exit_cs_time_enabled()))
-> +		do_trace_nested_cs_time(vcpu);
-> +
+This use of patch_instruction() is working on 32 bit data, and can fail
+if the data looks like a prefixed instruction and the extra write
+crosses a page boundary. Use patch_u32() to fix the write size.
 
-There is an issue with this part - when we enable the
-tracepoint, run the vcpu, but disable the tracepoint before vcpu exit,
-this condition will not be hit and we will continue accumulating the
-context switch times in the VPA. I'll send a v4 where I check for the
-VPA flag. I'll also incorporate any other changes, if required.
+Fixes: 8734b41b3efe ("powerpc/module_64: Fix livepatching for RO modules")
+Link: https://lore.kernel.org/all/20230203004649.1f59dbd4@yea/
+Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 
-Thanks,
-Gautam
+---
+
+v2: * Added the fixes tag, it seems appropriate even if the subject does
+      mention a more robust solution being required.
+
+patch_u64() should be more efficient, but judging from the bug report
+it doesn't seem like the data is doubleword aligned.
+---
+ arch/powerpc/kernel/module_64.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 7112adc597a8..e9bab599d0c2 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -651,12 +651,11 @@ static inline int create_stub(const Elf64_Shdr *sechdrs,
+ 	// func_desc_t is 8 bytes if ABIv2, else 16 bytes
+ 	desc = func_desc(addr);
+ 	for (i = 0; i < sizeof(func_desc_t) / sizeof(u32); i++) {
+-		if (patch_instruction(((u32 *)&entry->funcdata) + i,
+-				      ppc_inst(((u32 *)(&desc))[i])))
++		if (patch_u32(((u32 *)&entry->funcdata) + i, ((u32 *)&desc)[i]))
+ 			return 0;
+ 	}
+ 
+-	if (patch_instruction(&entry->magic, ppc_inst(STUB_MAGIC)))
++	if (patch_u32(&entry->magic, STUB_MAGIC))
+ 		return 0;
+ 
+ 	return 1;
+-- 
+2.44.0
+
