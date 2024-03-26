@@ -4,85 +4,120 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44393CD11DF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 09:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA2FBCD11DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 10:07:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jvcK/+3s;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=zoTbS1Em;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V3lF369jCz3vYM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 20:41:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V3lq920N5z3vdB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2024 21:07:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jvcK/+3s;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=zoTbS1Em;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:2418::700; helo=nam12-bn8-obe.outbound.protection.outlook.com; envelope-from=vignesh.balasubrmanian@amd.com; receiver=lists.ozlabs.org)
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on20700.outbound.protection.outlook.com [IPv6:2a01:111:f403:2418::700])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V3lDC51Crz3d2x
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2024 20:40:59 +1100 (AEDT)
-Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42Q9N54i023600;
-	Tue, 26 Mar 2024 09:40:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=uJNAJjKWdrahfVruhoFLG+c0CK4WQu5T+8th4lVOKTE=;
- b=jvcK/+3s3E6PP0XoYgJZKmJRu7hT7ifU6bayN6IasuSqgcNgmadgjZB17aKy/kYkS93v
- Y4iZWIz+FSNXPu+xR8zUIKduwOU48WexfFcLPuOnFViKOf7+IODJWjKFUphHxPlZxFkx
- OUR0BtJnbuk/85sn2CNaDGwN0s4ylrnaq/beN9S9SCgGJOk9xxLKTXe0wKp7dqCCva2+
- iA8CJ7XShLHac9DiMrj7kaXniXQgVnIrG4nLBmeJuABBPh9bcwOmBCgC2YXHZKxXro1M
- 6RwQNilbm+3sWLvA58u/L8blt1DmIqKufjb3iN4LZs07N3aAD8VPxdOqOM1/4VqXLGDI aQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x3svs0agy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 26 Mar 2024 09:40:47 +0000
-Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42Q9ekc7015313;
-	Tue, 26 Mar 2024 09:40:46 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x3svs0agv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 26 Mar 2024 09:40:46 +0000
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42Q8Bb4g003804;
-	Tue, 26 Mar 2024 09:40:45 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3x2c42pcua-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 26 Mar 2024 09:40:45 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42Q9edBM49021324
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 26 Mar 2024 09:40:42 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A2A492004E;
-	Tue, 26 Mar 2024 09:40:39 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C51CB20067;
-	Tue, 26 Mar 2024 09:40:37 +0000 (GMT)
-Received: from li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.in.ibm.com (unknown [9.204.206.66])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 26 Mar 2024 09:40:37 +0000 (GMT)
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com
-Subject: [PATCH v4] arch/powerpc/kvm: Add support for reading VPA counters for pseries guests
-Date: Tue, 26 Mar 2024 15:10:34 +0530
-Message-ID: <20240326094035.115835-1-gautam@linux.ibm.com>
-X-Mailer: git-send-email 2.44.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V3lpJ6s4Qz3cy4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2024 21:07:02 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=PlHJlrfEMvuWzHDlOrmpMjiG80/dBj2Ht8Xym6E2Ld2yAMnzCpGUivo0skYFrxKIVajcPTkfd34gNlN3SjwupNXbviIn9wKvl3qgzs4+LL6z0UUZS7IuY8A3muZj7F3pHOpPl1AqTJnWE8k4emYrL9zBxhTS5R7JWAIah5vPccC5KEv6MonZdZMtlE/URwYyHsE38oLMVvwcusZUUso69sFos9VnnhfiHGF6aRajGE+HVkksGax0E26xqYwBi9YGFTZD+n9MhI8sgDCmekvcL8l4tGsMvjHVBSREh4tFuWEdwb9+pb98E/WqAAZaabMWSJe2yKrG1934qokoSRIEow==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=kCZcqiQX/KGmjB7Thv3ntO08cG61XMpTYWhL49fL5hY=;
+ b=iBY7dc+FUynsnHTVl+rLa6LygvqI7+ObJ0VMcp72+IV9ar2FsUUbEMHWRZeKwCkznATcOLao2Prk3/mZ8knncF/h1dAtJI1pVXwRgSF9YXF3yEYLWp1YIYE9E6AMezkvlnOhYhvFgYtW5MaOb6vJGjz3XgESZYPxYE01qNLxXvGtg84sVmS6d60Q8ryS7ZwwcceGW6De4FSZEBXYV6J5YoWd+I5lrwckAEGiVntuN9JdHLRQEWX8T8HYdnjWL4MPhYlF+uKZaSS5blk3obiOKt6oy9Rj45JiGMuXhDBr+2k91vwOwu7bGyPr2GrsmG0329bNDg9PkPUA87sEfWeByg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=kCZcqiQX/KGmjB7Thv3ntO08cG61XMpTYWhL49fL5hY=;
+ b=zoTbS1EmCZWFpacyEWlWDnoAVBokGX22BaFND4t8am+ZbA9YkmQkfW4OV1qc8XLbepe+088vA1FJbts3iDUdsgaKppYCR5d/58obqgiJ/PyiTI3TqASIdmZkqj1RTLZ+OxVl3eZEPVDzhyHN9QfjH+b0sH1a+c1DK5jvtIaGrpc=
+Received: from SJ1PR12MB6124.namprd12.prod.outlook.com (2603:10b6:a03:459::15)
+ by IA1PR12MB8555.namprd12.prod.outlook.com (2603:10b6:208:44f::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7409.32; Tue, 26 Mar
+ 2024 10:06:41 +0000
+Received: from SJ1PR12MB6124.namprd12.prod.outlook.com
+ ([fe80::c2c5:a349:ed66:b28]) by SJ1PR12MB6124.namprd12.prod.outlook.com
+ ([fe80::c2c5:a349:ed66:b28%7]) with mapi id 15.20.7409.031; Tue, 26 Mar 2024
+ 10:06:41 +0000
+Message-ID: <1a2b604e-6e1b-4da9-ac2f-e2f2c80054ce@amd.com>
+Date: Tue, 26 Mar 2024 15:36:31 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/1] x86/elf: Add a new .note section containing Xfeatures
+ information to x86 core files
+Content-Language: en-US
+To: Kees Cook <keescook@chromium.org>,
+ "Balasubrmanian, Vignesh" <Vignesh.Balasubrmanian@amd.com>
+References: <20240314112359.50713-1-vigbalas@amd.com>
+ <20240314112359.50713-2-vigbalas@amd.com> <202403140850.5659C0F4@keescook>
+From: "Balasubrmanian, Vignesh" <vigbalas@amd.com>
+In-Reply-To: <202403140850.5659C0F4@keescook>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: PN2PR01CA0245.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:c01:21a::10) To SJ1PR12MB6124.namprd12.prod.outlook.com
+ (2603:10b6:a03:459::15)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: BAQ576wi2XwAlqW_H3TqgG1yWY80G5Bp
-X-Proofpoint-ORIG-GUID: yCeQNG7Mp8v8A4QvUMBUqeyNm0qA3gRq
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-03-26_04,2024-03-21_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- mlxlogscore=999 lowpriorityscore=0 phishscore=0 impostorscore=0
- malwarescore=0 mlxscore=0 adultscore=0 clxscore=1015 bulkscore=0
- suspectscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2403210000 definitions=main-2403260065
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ1PR12MB6124:EE_|IA1PR12MB8555:EE_
+X-LD-Processed: 3dd8961f-e488-4e60-8e11-a82d994e183d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	iZJumW9HgAFn9PMKdUDpo5la0RLXOjBVx6tsFP43BBsgUHkQr6KGrdvO3svbamTvTisdv0A3zH9d9di3vw2qFGGQRQWp92yaEIcK2MyuABNIanc/DZ7chVBxAjgyg4SRFcltOwPWVxbqDo3bWCa5bkoDH85jHF5cYY2LVv0P+Fzd8GZ1hG912F6Y27dGw5kXxLyN+a2ZWN99CwNIdXnsPlBGAS1QvcZslCTKw93qUna2kGAkvLGpAYQtErT0j2CaOIoEXpTUgQuFrYCq+V0dCU8fNQfLTrmU7oGqmZIkygEZaHSegsvvrLQ9LOWm/HjpGizCnhdYZgp9pZwiHr66PCdbPX3l6H9NpYtNlRslIm8RoPmfRY6B+ekEtdQp/MlWRUDnT0U8OxYdRgqrJ8/CLrpTvpGsN1QtrnnXx6s/XIr98XsLnqkfsd27hkfNjfxNi6EoV4ABjWs+prJfX1QVduxFOLABJCg2avE2tlJX1UGN/Tyx9JC2YHiY7QbBdq+5FKJRGgfK53M6mkWcblgYd0mDg6d23gGAkUlHU2U7VQ89/Gn/c5OAJNGBuNvZm0QZbYcAUm4KgCCeIihHygztUDD2H3zhvT6VljsRKWEnwRFz1V7auxQKBEbKBARFep88gJ/FjaS+1kbqUthaM+crjKO5kczHkgrdiH7kzQU50EA=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ1PR12MB6124.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376005)(7416005)(1800799015)(366007);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?utf-8?B?amlUNjFXNzJ3b1JHbk0ya1NSNjVHRVROR2FNc0pyT1c5QVh0Ky82clhLc1lQ?=
+ =?utf-8?B?d1Q1Z05ITHlyQVhMVFJoUWNxdHlxUDluYk8vU1htd0g0TE41WkdFWHpTV3Bl?=
+ =?utf-8?B?bURZclB0b3MvbWl0bmQ4cldPZ2Q4RDZUc3BQa2IyaHVTUXh3L2owbVJPTXN4?=
+ =?utf-8?B?ZVlkaHZ3cUV3T1kvTjNaRUlRVExSazNiS09wZFBnWHlETGw3OVJCRUd3ak82?=
+ =?utf-8?B?U0NsVFRNdDVEczJVeGY1b21xeEhxVDdUZHVoMjBrcGtrMkZSbEo5TU5RaVBR?=
+ =?utf-8?B?bTNqUThQVVpvMkxkcHBYQ21nV2RNOXZqVUNuaU5JaUFiZTBvYzhnSElkT1lN?=
+ =?utf-8?B?dFlpRU5sZUlJTE1BSGtxbWs4ZjhldU5MSzhNVWMzNEJMaFdxZW9lc3kxZWJD?=
+ =?utf-8?B?aG84UzZ3ZVJpMzEyNEU3Sm5wT0xwQktaSTZhdHVuTEdEZzJMcXEvSkpnbHR2?=
+ =?utf-8?B?Q2M1cE03T0JFSHNYRVFweDB3em5KWXIrK0tVT0JSK0ZLaXg4QnlpREhubzM0?=
+ =?utf-8?B?SVhSVUZKODR3dC9OWi9vMG5sL2JBNlVDSFlXUnJaUGk2bUpWRmRnMFJpeFZG?=
+ =?utf-8?B?R2JHQ3RmaVVGSlZlUWNSdGwwVUM2ZUtOWHVGcytLWWxBdnZUOElvN2g1dUZR?=
+ =?utf-8?B?L1ZuWm1kYnlieUljSmJpdGtiWEdrWkx0VlFtci9MWUh4NkxWL0lwdjhDY2ZY?=
+ =?utf-8?B?UTk0TTB2ekxhQ1FNamx4Vm5MM0VQV3hwUGJQc0pZL3Y2N3lqeitIbFRRem5F?=
+ =?utf-8?B?dmdNUkF3WElZaGVjUHc5b2kxT2FYU0ZzbE05U2lFUjVzUG5IOHd1dUVHcklB?=
+ =?utf-8?B?WkIyZDI0K1g2SlJhUHBjK3o1QmN5UUxtWHdrdWdwMk1vb2Z1cUxHQXE5OHVX?=
+ =?utf-8?B?S0F2VnREZzRyS2ZaWFhEUGN5RlE3a3NRRGtUVW5BNi9FZzBZYTFuVDhMUFlF?=
+ =?utf-8?B?anJ0bzQ5ZFgyN2tjTFpsRXhhVGROaUpVdkd1dnVzMEw1dE9ZUC9CblhPZ01y?=
+ =?utf-8?B?d3ZIZnpiU3BTNm1FNFZrcGtmMGpFYno4R0M2R1d0QkVGM3NVTVN2N1haUXhj?=
+ =?utf-8?B?ekYvWTVLUjEyZzNYclcyRjFnbjAwanZLbWtrZTJaMHRlWjQ0LzV1eFd1aVh2?=
+ =?utf-8?B?dm9WQWs3dFMzYlVRTjVUTTZ6YjNUL0ViMnRFR3FlRERvRGdDa0FjQ0Zybktx?=
+ =?utf-8?B?SndOKzNWTytKY0h4WVp6QkIzRk5GUW5YalRlQ0Q3Ymk1eVk3bDd1MmdPc3Y0?=
+ =?utf-8?B?MG9XZGpGQ3R1UUpKbXhHQnRwMFdnVlJkeW9rTFRIK2QvNkhJeHVSN3F1ai9H?=
+ =?utf-8?B?QkdhbGNwY3o1S3FHT0x6aVE0azNiV1RTYTBxaHIyVkxOQTRnRXZtT05IWXdq?=
+ =?utf-8?B?Z3FMbjFCVUpmQ2xKWmhndE9JMVU2VkNwVHpBMVBnK3VQUEJjenNyTWx6Tm5H?=
+ =?utf-8?B?TmxvUnJEakJ6Umw1em9CS1UwYUZnWFlpSEFtWGV0eUg4ZnJVSDVvUjRmZnQ5?=
+ =?utf-8?B?c1dES05aeExxTjJrRjYvUVFjem94RDJ0TDJybzdTZ2g0RnllZFFzU0RNQXU0?=
+ =?utf-8?B?ZjVJbWRXRFk5U1Yyb0tNblMxQ1JqWXJ2REtaZnFaVXBUVnNHejl0VjdZZGRZ?=
+ =?utf-8?B?UDJWeHgrVUJNeGwxV0NaMTIvbnNLTU8zVVFPTnM2dXYrcEZLSHRoNThjVXdn?=
+ =?utf-8?B?RmFEd2JDeTc5V3VwbE50S2kxekgzK3BoMUJQRGowN28vRW1HK0tGb1M3eFJI?=
+ =?utf-8?B?NzREZEpHMnJuT1h4VjFYYVlDQ1Q5d1BXM1NTZy9ZY3RaL3oyVjc0ZXJJQVBF?=
+ =?utf-8?B?ZFR3TzJHTEdHZUxzd1ZPSXJBcFRFVDdhT0NUcTBmaXVKc3UvTHhJWVZLQStD?=
+ =?utf-8?B?MWVBWFA0U0dQTEw5Mi9YeXpJTVJiN2p5eFJCcHJ6QmFjdEFNTlhhTndrNnc5?=
+ =?utf-8?B?SWNaSi9DcUVCUUFqOFN3dVFmL1Q0aTFRR3pkd2JPZ21qSDBxbTRoRDBRTlQ5?=
+ =?utf-8?B?eGtDd0J6Q3VwZldzSlV0VkNYMTZraUF5Sk5kZU5OcVBSa0wyTE1NSzN0MVEy?=
+ =?utf-8?B?d3h3L2R2dENkWXkwc3k5MTNPVFZkaXZnSlJZM1pCMGpXTTRheXNsYTNFOTNV?=
+ =?utf-8?Q?PlXID0VRltIjHWIdRgRzUWh2n?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 88c1d0fd-4728-45ce-2f7f-08dc4d7c6ea0
+X-MS-Exchange-CrossTenant-AuthSource: SJ1PR12MB6124.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Mar 2024 10:06:41.0119
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: wgiD5X4SumZXyZv/PAUOXuuBwqnrLhGgQ/B8J4NVt7TzRBQA+Rc4JVRm/4LhcnclEB+3QSPVJ2nlXmkz18DTIg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB8555
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,183 +129,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Cc: "matz@suse.de" <matz@suse.de>, "felix.willgerodt@intel.com" <felix.willgerodt@intel.com>, "jhb@freebsd.org" <jhb@freebsd.org>, "binutils@sourceware.org" <binutils@sourceware.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Petkov, Borislav" <Borislav.Petkov@amd.com>, "aneesh.kumar@kernel.org" <aneesh.kumar@kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "npiggin@gmail.com" <npiggin@gmail.com>, "linux-toolchains@vger.kernel.org" <linux-toolchains@vger.kernel.org>, "naveen.n.rao@linux.ibm.com" <naveen.n.rao@linux.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "George, Jini Susan" <JiniSusan.George@amd.com>, "ebiederm@xmission.com" <ebiederm@xmission.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PAPR hypervisor has introduced three new counters in the VPA area of
-LPAR CPUs for KVM L2 guest (see [1] for terminology) observability - 2
-for context switches from host to guest and vice versa, and 1 counter
-for getting the total time spent inside the KVM guest. Add a tracepoint
-that enables reading the counters for use by ftrace/perf. Note that this
-tracepoint is only available for nestedv2 API (i.e, KVM on PowerVM).
 
-Also maintain an aggregation of the context switch times in vcpu->arch.
-This will be useful in getting the aggregate times with a pmu driver
-which will be upstreamed in the near future.
+> Otherwise looks reasonable, though I see Dave has feedback to address
+> too. :)
+>
+> Thanks for working on this!
+>
+> -Kees
+Thank you for the review.
+I will address all this on next version.
 
-[1] Terminology:
-a. L1 refers to the VM (LPAR) booted on top of PAPR hypervisor
-b. L2 refers to the KVM guest booted on top of L1.
+thanks,
+vigneshbalu.
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
----
-v1 -> v2:
-1. Fix the build error due to invalid struct member reference.
-
-v2 -> v3:
-1. Move the counter disabling and zeroing code to a different function.
-2. Move the get_lppaca() inside the tracepoint_enabled() branch.
-3. Add the aggregation logic to maintain total context switch time.
-
-v3 -> v4:
-1. After vcpu_run, check the VPA flag instead of checking for tracepoint
-being enabled for disabling the cs time accumulation.
-
- arch/powerpc/include/asm/kvm_host.h |  5 +++++
- arch/powerpc/include/asm/lppaca.h   | 11 ++++++++---
- arch/powerpc/kvm/book3s_hv.c        | 30 +++++++++++++++++++++++++++++
- arch/powerpc/kvm/trace_hv.h         | 25 ++++++++++++++++++++++++
- 4 files changed, 68 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 8abac5321..d953b32dd 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -847,6 +847,11 @@ struct kvm_vcpu_arch {
- 	gpa_t nested_io_gpr;
- 	/* For nested APIv2 guests*/
- 	struct kvmhv_nestedv2_io nestedv2_io;
-+
-+	/* Aggregate context switch and guest run time info (in ns) */
-+	u64 l1_to_l2_cs_agg;
-+	u64 l2_to_l1_cs_agg;
-+	u64 l2_runtime_agg;
- #endif
- 
- #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
-diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
-index 61ec2447d..bda6b86b9 100644
---- a/arch/powerpc/include/asm/lppaca.h
-+++ b/arch/powerpc/include/asm/lppaca.h
-@@ -62,7 +62,8 @@ struct lppaca {
- 	u8	donate_dedicated_cpu;	/* Donate dedicated CPU cycles */
- 	u8	fpregs_in_use;
- 	u8	pmcregs_in_use;
--	u8	reserved8[28];
-+	u8	l2_accumul_cntrs_enable;  /* Enable usage of counters for KVM guest */
-+	u8	reserved8[27];
- 	__be64	wait_state_cycles;	/* Wait cycles for this proc */
- 	u8	reserved9[28];
- 	__be16	slb_count;		/* # of SLBs to maintain */
-@@ -92,9 +93,13 @@ struct lppaca {
- 	/* cacheline 4-5 */
- 
- 	__be32	page_ins;		/* CMO Hint - # page ins by OS */
--	u8	reserved12[148];
-+	u8	reserved12[28];
-+	volatile __be64 l1_to_l2_cs_tb;
-+	volatile __be64 l2_to_l1_cs_tb;
-+	volatile __be64 l2_runtime_tb;
-+	u8 reserved13[96];
- 	volatile __be64 dtl_idx;	/* Dispatch Trace Log head index */
--	u8	reserved13[96];
-+	u8	reserved14[96];
- } ____cacheline_aligned;
- 
- #define lppaca_of(cpu)	(*paca_ptrs[cpu]->lppaca_ptr)
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 8e86eb577..dcd6edd3b 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4108,6 +4108,27 @@ static void vcpu_vpa_increment_dispatch(struct kvm_vcpu *vcpu)
- 	}
- }
- 
-+static void do_trace_nested_cs_time(struct kvm_vcpu *vcpu)
-+{
-+	struct lppaca *lp = get_lppaca();
-+	u64 l1_to_l2_ns, l2_to_l1_ns, l2_runtime_ns;
-+
-+	l1_to_l2_ns = tb_to_ns(be64_to_cpu(lp->l1_to_l2_cs_tb));
-+	l2_to_l1_ns = tb_to_ns(be64_to_cpu(lp->l2_to_l1_cs_tb));
-+	l2_runtime_ns = tb_to_ns(be64_to_cpu(lp->l2_runtime_tb));
-+	trace_kvmppc_vcpu_exit_cs_time(vcpu, l1_to_l2_ns, l2_to_l1_ns,
-+					l2_runtime_ns);
-+	lp->l1_to_l2_cs_tb = 0;
-+	lp->l2_to_l1_cs_tb = 0;
-+	lp->l2_runtime_tb = 0;
-+	lp->l2_accumul_cntrs_enable = 0;
-+
-+	// Maintain an aggregate of context switch times
-+	vcpu->arch.l1_to_l2_cs_agg += l1_to_l2_ns;
-+	vcpu->arch.l2_to_l1_cs_agg += l2_to_l1_ns;
-+	vcpu->arch.l2_runtime_agg += l2_runtime_ns;
-+}
-+
- static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
- 				     unsigned long lpcr, u64 *tb)
- {
-@@ -4130,6 +4151,11 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
- 	kvmppc_gse_put_u64(io->vcpu_run_input, KVMPPC_GSID_LPCR, lpcr);
- 
- 	accumulate_time(vcpu, &vcpu->arch.in_guest);
-+
-+	/* Enable the guest host context switch time tracking */
-+	if (unlikely(trace_kvmppc_vcpu_exit_cs_time_enabled()))
-+		get_lppaca()->l2_accumul_cntrs_enable = 1;
-+
- 	rc = plpar_guest_run_vcpu(0, vcpu->kvm->arch.lpid, vcpu->vcpu_id,
- 				  &trap, &i);
- 
-@@ -4156,6 +4182,10 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
- 
- 	timer_rearm_host_dec(*tb);
- 
-+	/* Record context switch and guest_run_time data */
-+	if (get_lppaca()->l2_accumul_cntrs_enable)
-+		do_trace_nested_cs_time(vcpu);
-+
- 	return trap;
- }
- 
-diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
-index 8d57c8428..ab19977c9 100644
---- a/arch/powerpc/kvm/trace_hv.h
-+++ b/arch/powerpc/kvm/trace_hv.h
-@@ -491,6 +491,31 @@ TRACE_EVENT(kvmppc_run_vcpu_enter,
- 	TP_printk("VCPU %d: tgid=%d", __entry->vcpu_id, __entry->tgid)
- );
- 
-+TRACE_EVENT(kvmppc_vcpu_exit_cs_time,
-+	TP_PROTO(struct kvm_vcpu *vcpu, u64 l1_to_l2_cs, u64 l2_to_l1_cs,
-+		u64 l2_runtime),
-+
-+	TP_ARGS(vcpu, l1_to_l2_cs, l2_to_l1_cs, l2_runtime),
-+
-+	TP_STRUCT__entry(
-+		__field(int,		vcpu_id)
-+		__field(__u64,		l1_to_l2_cs_ns)
-+		__field(__u64,		l2_to_l1_cs_ns)
-+		__field(__u64,		l2_runtime_ns)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->vcpu_id  = vcpu->vcpu_id;
-+		__entry->l1_to_l2_cs_ns = l1_to_l2_cs;
-+		__entry->l2_to_l1_cs_ns = l2_to_l1_cs;
-+		__entry->l2_runtime_ns = l2_runtime;
-+	),
-+
-+	TP_printk("VCPU %d: l1_to_l2_cs_time=%llu-ns l2_to_l1_cs_time=%llu-ns l2_runtime=%llu-ns",
-+		__entry->vcpu_id,  __entry->l1_to_l2_cs_ns,
-+		__entry->l2_to_l1_cs_ns, __entry->l2_runtime_ns)
-+);
-+
- TRACE_EVENT(kvmppc_run_vcpu_exit,
- 	TP_PROTO(struct kvm_vcpu *vcpu),
- 
--- 
-2.43.2
-
+> --
+> Kees Cook
