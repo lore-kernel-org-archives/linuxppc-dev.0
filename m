@@ -4,121 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 036E0C54E67
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 20:47:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3908EC54E67
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 21:11:03 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=UQx1OWwa;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=p4BZexRC;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=fQS5APUa;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=QyrwrTQo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oK7us3XK;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V4dyP4hV1z3vfJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 07:47:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V4fTx3phQz3vZq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 08:11:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=UQx1OWwa;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=p4BZexRC;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=fQS5APUa;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=QyrwrTQo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oK7us3XK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4dvz0VCHz3bvJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 07:45:02 +1100 (AEDT)
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [10.150.64.98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id CBB621FBA5;
-	Wed, 27 Mar 2024 20:44:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1711572299; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0z2Dh//uKAfjU5KhbIcIWrL4XJtx4qBTJAMQSF41C2w=;
-	b=UQx1OWwaMJXL2KlSVSTTpKwbi3N7zHSDdCXeI2LFMMIiMHp3xZ+n7kcMbDYFOAokldfvDi
-	abE35qtE+d2yZBw4w3e0/6rF675Xb/x7ojqL/Vt/WrKWNwV3L1KCNRUWOiIQ7Fte5S6Ih2
-	/88zYOJTrp9DTDbLyxzLinr90LqI0Ew=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1711572299;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0z2Dh//uKAfjU5KhbIcIWrL4XJtx4qBTJAMQSF41C2w=;
-	b=p4BZexRCSMqPbKyYUyeH3zVUYjFtVMbGcOuFoWUxbogbF+9W+LoHSWvhB/WO9727+HjG2V
-	X1V9mkn2KzC71GBA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1711572297; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0z2Dh//uKAfjU5KhbIcIWrL4XJtx4qBTJAMQSF41C2w=;
-	b=fQS5APUagKJnE73lYSqu7UvpbW2n1AY9L5G+pwMo8QJ4oei4VPTNOk5KhhVOB5PjkHYZTd
-	73pDOwDtWl20BoPuSUzKb/PJ8NaKb2t0i36FXgRWnDEcJdlExrmyJpzr1/4KRZVI0QRocv
-	CQpQGuPg5ifOKPedZ7WU7rakTH6X9ME=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1711572297;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0z2Dh//uKAfjU5KhbIcIWrL4XJtx4qBTJAMQSF41C2w=;
-	b=QyrwrTQo9xBmYrU+ysyvddvS2oBfLJL8jF2sEuJQlTe7Dupm60OMbKZY/jXRrLQeCIB3oX
-	dR7oWIf3iK9zPwBg==
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 1B8A013AC5;
-	Wed, 27 Mar 2024 20:44:57 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id qH5vBUmFBGZ2FQAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Wed, 27 Mar 2024 20:44:57 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: arnd@arndb.de,
-	javierm@redhat.com,
-	deller@gmx.de,
-	sui.jingfeng@linux.dev
-Subject: [PATCH v2 1/3] arch: Select fbdev helpers with CONFIG_VIDEO
-Date: Wed, 27 Mar 2024 21:41:29 +0100
-Message-ID: <20240327204450.14914-2-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240327204450.14914-1-tzimmermann@suse.de>
-References: <20240327204450.14914-1-tzimmermann@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4RmF3bqpz3vfW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 00:07:41 +1100 (AEDT)
+Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42RCvb94012838;
+	Wed, 27 Mar 2024 13:07:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ message-id : date : mime-version : subject : to : cc : references : from :
+ in-reply-to; s=pp1; bh=HJbXq1JfXEi1rMHmtFjJFZuzMrTkOEIZ91ZddXivaFo=;
+ b=oK7us3XKJbCNTJuQUNwzOVfrxaQOCJDpi4TOyLi+ONbZrKw0OFfSDrcM/yXdbSldORtN
+ 1aTocjwsFNaEp8gUQNP1mp65oZdAAyCVrtUBjcRUyUIiD/7lqutlGJKAbGSyeFN1OgYw
+ xwnaSOkZ0TpkyLbD8syGqhsKu4+4np8oHQng9o3xAEuMssYUCcJtbqeRRsZtqViHdJBW
+ 0sCBgSnbGQlIzlY3UiGJcsQp39i0uvphZvhVqORoPLXoVSKy8xDQP40Tc5Kg/YmhlVVJ
+ x3YqjCtPhmmDww9zoFWLP/6yz6SXf71yGnojpgeKBUiUTJstoZf2PH9ZiVMnzDWw/NRE qg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x4kwpg0tv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 27 Mar 2024 13:07:18 +0000
+Received: from m0353726.ppops.net (m0353726.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42RD7Ib4030325;
+	Wed, 27 Mar 2024 13:07:18 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x4kwpg0tt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 27 Mar 2024 13:07:18 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42RCk9Lu013343;
+	Wed, 27 Mar 2024 13:07:16 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3x29t0pww7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 27 Mar 2024 13:07:16 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42RD7BH26947116
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 27 Mar 2024 13:07:13 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E410C20043;
+	Wed, 27 Mar 2024 13:07:10 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3502720040;
+	Wed, 27 Mar 2024 13:07:07 +0000 (GMT)
+Received: from [9.171.20.231] (unknown [9.171.20.231])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 27 Mar 2024 13:07:06 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------h9nzZo2uv0YmqUz3TuIoz8BA"
+Message-ID: <3fde44fe-c51a-43ed-847d-d30948504097@linux.ibm.com>
+Date: Wed, 27 Mar 2024 18:37:04 +0530
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [0.70 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 R_MISSING_CHARSET(2.50)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
-	 R_RATELIMIT(0.00)[to_ip_from(RLthqzz6q5hnubohss7ffybi86)];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 NEURAL_HAM_SHORT(-0.20)[-0.999];
-	 RCPT_COUNT_TWELVE(0.00)[27];
-	 MID_CONTAINS_FROM(1.00)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,linutronix.de:email,zytor.com:email,davemloft.net:email,gaisler.com:email,gmx.de:email,hansenpartnership.com:email,alien8.de:email,intel.com:email];
-	 FREEMAIL_TO(0.00)[arndb.de,redhat.com,gmx.de,linux.dev];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-3.00)[100.00%]
-Authentication-Results: smtp-out2.suse.de;
-	none
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4] arch/powerpc/kvm: Add support for reading VPA counters
+ for pseries guests
+To: Gautam Menghani <gautam@linux.ibm.com>, mpe@ellerman.id.au,
+        npiggin@gmail.com, christophe.leroy@csgroup.eu,
+        aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com
+References: <20240326094035.115835-1-gautam@linux.ibm.com>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <20240326094035.115835-1-gautam@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 591AeM7fiW0ZiQtYno-WAOXW3G72ttX3
+X-Proofpoint-GUID: YQiLV80SXsJRJIGe869_ryDYiInxRjol
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-03-27_08,2024-03-27_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 bulkscore=0
+ mlxlogscore=999 adultscore=0 lowpriorityscore=0 phishscore=0
+ suspectscore=0 spamscore=0 priorityscore=1501 mlxscore=0 malwarescore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2403210000 definitions=main-2403270089
+X-Mailman-Approved-At: Thu, 28 Mar 2024 08:10:21 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -130,100 +101,415 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andreas Larsson <andreas@gaisler.com>, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Various Kconfig options selected the per-architecture helpers for
-fbdev. But none of the contained code depends on fbdev. Standardize
-on CONFIG_VIDEO, which will allow to add more general helpers for
-video functionality.
+This is a multi-part message in MIME format.
+--------------h9nzZo2uv0YmqUz3TuIoz8BA
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-CONFIG_VIDEO protects each architecture's video/ directory. This
-allows for the use of more fine-grained control for each directory's
-files, such as the use of CONFIG_STI_CORE on parisc.
 
-v2:
-- sparc: rebased onto Makefile changes
+On 3/26/24 3:10 PM, Gautam Menghani wrote:
+> PAPR hypervisor has introduced three new counters in the VPA area of
+> LPAR CPUs for KVM L2 guest (see [1] for terminology) observability - 2
+> for context switches from host to guest and vice versa, and 1 counter
+> for getting the total time spent inside the KVM guest. Add a tracepoint
+> that enables reading the counters for use by ftrace/perf. Note that this
+> tracepoint is only available for nestedv2 API (i.e, KVM on PowerVM).
+>
+> Also maintain an aggregation of the context switch times in vcpu->arch.
+> This will be useful in getting the aggregate times with a pmu driver
+> which will be upstreamed in the near future.
+>
+> [1] Terminology:
+> a. L1 refers to the VM (LPAR) booted on top of PAPR hypervisor
+> b. L2 refers to the KVM guest booted on top of L1.
+>
+> Signed-off-by: Vaibhav Jain<vaibhav@linux.ibm.com>
+> Signed-off-by: Gautam Menghani<gautam@linux.ibm.com>
+> ---
+> v1 -> v2:
+> 1. Fix the build error due to invalid struct member reference.
+>
+> v2 -> v3:
+> 1. Move the counter disabling and zeroing code to a different function.
+> 2. Move the get_lppaca() inside the tracepoint_enabled() branch.
+> 3. Add the aggregation logic to maintain total context switch time.
+>
+> v3 -> v4:
+> 1. After vcpu_run, check the VPA flag instead of checking for tracepoint
+> being enabled for disabling the cs time accumulation.
+>
+>   arch/powerpc/include/asm/kvm_host.h |  5 +++++
+>   arch/powerpc/include/asm/lppaca.h   | 11 ++++++++---
+>   arch/powerpc/kvm/book3s_hv.c        | 30 +++++++++++++++++++++++++++++
+>   arch/powerpc/kvm/trace_hv.h         | 25 ++++++++++++++++++++++++
+>   4 files changed, 68 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index 8abac5321..d953b32dd 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -847,6 +847,11 @@ struct kvm_vcpu_arch {
+>   	gpa_t nested_io_gpr;
+>   	/* For nested APIv2 guests*/
+>   	struct kvmhv_nestedv2_io nestedv2_io;
+> +
+> +	/* Aggregate context switch and guest run time info (in ns) */
+> +	u64 l1_to_l2_cs_agg;
+> +	u64 l2_to_l1_cs_agg;
+> +	u64 l2_runtime_agg;
+>   #endif
+>   
+>   #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
+> diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
+> index 61ec2447d..bda6b86b9 100644
+> --- a/arch/powerpc/include/asm/lppaca.h
+> +++ b/arch/powerpc/include/asm/lppaca.h
+> @@ -62,7 +62,8 @@ struct lppaca {
+>   	u8	donate_dedicated_cpu;	/* Donate dedicated CPU cycles */
+>   	u8	fpregs_in_use;
+>   	u8	pmcregs_in_use;
+> -	u8	reserved8[28];
+> +	u8	l2_accumul_cntrs_enable;  /* Enable usage of counters for KVM guest */
+> +	u8	reserved8[27];
+>   	__be64	wait_state_cycles;	/* Wait cycles for this proc */
+>   	u8	reserved9[28];
+>   	__be16	slb_count;		/* # of SLBs to maintain */
+> @@ -92,9 +93,13 @@ struct lppaca {
+>   	/* cacheline 4-5 */
+>   
+>   	__be32	page_ins;		/* CMO Hint - # page ins by OS */
+> -	u8	reserved12[148];
+> +	u8	reserved12[28];
+> +	volatile __be64 l1_to_l2_cs_tb;
+> +	volatile __be64 l2_to_l1_cs_tb;
+> +	volatile __be64 l2_runtime_tb;
+> +	u8 reserved13[96];
+>   	volatile __be64 dtl_idx;	/* Dispatch Trace Log head index */
+> -	u8	reserved13[96];
+> +	u8	reserved14[96];
+>   } ____cacheline_aligned;
+>   
+>   #define lppaca_of(cpu)	(*paca_ptrs[cpu]->lppaca_ptr)
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 8e86eb577..dcd6edd3b 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -4108,6 +4108,27 @@ static void vcpu_vpa_increment_dispatch(struct kvm_vcpu *vcpu)
+>   	}
+>   }
+>   
+> +static void do_trace_nested_cs_time(struct kvm_vcpu *vcpu)
+> +{
+> +	struct lppaca *lp = get_lppaca();
+> +	u64 l1_to_l2_ns, l2_to_l1_ns, l2_runtime_ns;
+> +
+> +	l1_to_l2_ns = tb_to_ns(be64_to_cpu(lp->l1_to_l2_cs_tb));
+> +	l2_to_l1_ns = tb_to_ns(be64_to_cpu(lp->l2_to_l1_cs_tb));
+> +	l2_runtime_ns = tb_to_ns(be64_to_cpu(lp->l2_runtime_tb));
+> +	trace_kvmppc_vcpu_exit_cs_time(vcpu, l1_to_l2_ns, l2_to_l1_ns,
+> +					l2_runtime_ns);
+> +	lp->l1_to_l2_cs_tb = 0;
+> +	lp->l2_to_l1_cs_tb = 0;
+> +	lp->l2_runtime_tb = 0;
+> +	lp->l2_accumul_cntrs_enable = 0;
+> +
+> +	// Maintain an aggregate of context switch times
+> +	vcpu->arch.l1_to_l2_cs_agg += l1_to_l2_ns;
+> +	vcpu->arch.l2_to_l1_cs_agg += l2_to_l1_ns;
+> +	vcpu->arch.l2_runtime_agg += l2_runtime_ns;
+> +}
+> +
+>   static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
+>   				     unsigned long lpcr, u64 *tb)
+>   {
+> @@ -4130,6 +4151,11 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
+>   	kvmppc_gse_put_u64(io->vcpu_run_input, KVMPPC_GSID_LPCR, lpcr);
+>   
+>   	accumulate_time(vcpu, &vcpu->arch.in_guest);
+> +
+> +	/* Enable the guest host context switch time tracking */
+> +	if (unlikely(trace_kvmppc_vcpu_exit_cs_time_enabled()))
+> +		get_lppaca()->l2_accumul_cntrs_enable = 1;
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Andreas Larsson <andreas@gaisler.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: x86@kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>
+can we wrap "get_lppaca()->l2_accumul_cntrs_enable" under wrapper function
+like is_l2_accumul_cntrs_enable(), set_l2_accumul_cntrs_enable() and
+unset_l2_accumul_cntrs_enable()?
+
+set/unset does not need a parameter and in future incase if we want to
+check and set or check and unset, we could have additional code in there.
+
+Maddy
+
+> +
+>   	rc = plpar_guest_run_vcpu(0, vcpu->kvm->arch.lpid, vcpu->vcpu_id,
+>   				  &trap, &i);
+>   
+> @@ -4156,6 +4182,10 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
+>   
+>   	timer_rearm_host_dec(*tb);
+>   
+> +	/* Record context switch and guest_run_time data */
+> +	if (get_lppaca()->l2_accumul_cntrs_enable)
+> +		do_trace_nested_cs_time(vcpu);
+> +
+>   	return trap;
+>   }
+>   
+> diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
+> index 8d57c8428..ab19977c9 100644
+> --- a/arch/powerpc/kvm/trace_hv.h
+> +++ b/arch/powerpc/kvm/trace_hv.h
+> @@ -491,6 +491,31 @@ TRACE_EVENT(kvmppc_run_vcpu_enter,
+>   	TP_printk("VCPU %d: tgid=%d", __entry->vcpu_id, __entry->tgid)
+>   );
+>   
+> +TRACE_EVENT(kvmppc_vcpu_exit_cs_time,
+> +	TP_PROTO(struct kvm_vcpu *vcpu, u64 l1_to_l2_cs, u64 l2_to_l1_cs,
+> +		u64 l2_runtime),
+> +
+> +	TP_ARGS(vcpu, l1_to_l2_cs, l2_to_l1_cs, l2_runtime),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(int,		vcpu_id)
+> +		__field(__u64,		l1_to_l2_cs_ns)
+> +		__field(__u64,		l2_to_l1_cs_ns)
+> +		__field(__u64,		l2_runtime_ns)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->vcpu_id  = vcpu->vcpu_id;
+> +		__entry->l1_to_l2_cs_ns = l1_to_l2_cs;
+> +		__entry->l2_to_l1_cs_ns = l2_to_l1_cs;
+> +		__entry->l2_runtime_ns = l2_runtime;
+> +	),
+> +
+> +	TP_printk("VCPU %d: l1_to_l2_cs_time=%llu-ns l2_to_l1_cs_time=%llu-ns l2_runtime=%llu-ns",
+> +		__entry->vcpu_id,  __entry->l1_to_l2_cs_ns,
+> +		__entry->l2_to_l1_cs_ns, __entry->l2_runtime_ns)
+> +);
+> +
+>   TRACE_EVENT(kvmppc_run_vcpu_exit,
+>   	TP_PROTO(struct kvm_vcpu *vcpu),
+>   
+--------------h9nzZo2uv0YmqUz3TuIoz8BA
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p><br>
+    </p>
+    <div class="moz-cite-prefix">On 3/26/24 3:10 PM, Gautam Menghani
+      wrote:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:20240326094035.115835-1-gautam@linux.ibm.com">
+      <pre class="moz-quote-pre" wrap="">PAPR hypervisor has introduced three new counters in the VPA area of
+LPAR CPUs for KVM L2 guest (see [1] for terminology) observability - 2
+for context switches from host to guest and vice versa, and 1 counter
+for getting the total time spent inside the KVM guest. Add a tracepoint
+that enables reading the counters for use by ftrace/perf. Note that this
+tracepoint is only available for nestedv2 API (i.e, KVM on PowerVM).
+
+Also maintain an aggregation of the context switch times in vcpu-&gt;arch.
+This will be useful in getting the aggregate times with a pmu driver
+which will be upstreamed in the near future.
+
+[1] Terminology:
+a. L1 refers to the VM (LPAR) booted on top of PAPR hypervisor
+b. L2 refers to the KVM guest booted on top of L1.
+
+Signed-off-by: Vaibhav Jain <a class="moz-txt-link-rfc2396E" href="mailto:vaibhav@linux.ibm.com">&lt;vaibhav@linux.ibm.com&gt;</a>
+Signed-off-by: Gautam Menghani <a class="moz-txt-link-rfc2396E" href="mailto:gautam@linux.ibm.com">&lt;gautam@linux.ibm.com&gt;</a>
 ---
- arch/parisc/Makefile      | 2 +-
- arch/sparc/Makefile       | 4 ++--
- arch/sparc/video/Makefile | 2 +-
- arch/x86/Makefile         | 2 +-
- arch/x86/video/Makefile   | 3 ++-
- 5 files changed, 7 insertions(+), 6 deletions(-)
+v1 -&gt; v2:
+1. Fix the build error due to invalid struct member reference.
 
-diff --git a/arch/parisc/Makefile b/arch/parisc/Makefile
-index 316f84f1d15c8..21b8166a68839 100644
---- a/arch/parisc/Makefile
-+++ b/arch/parisc/Makefile
-@@ -119,7 +119,7 @@ export LIBGCC
- 
- libs-y	+= arch/parisc/lib/ $(LIBGCC)
- 
--drivers-y += arch/parisc/video/
-+drivers-$(CONFIG_VIDEO) += arch/parisc/video/
- 
- boot	:= arch/parisc/boot
- 
-diff --git a/arch/sparc/Makefile b/arch/sparc/Makefile
-index 2a03daa68f285..757451c3ea1df 100644
---- a/arch/sparc/Makefile
-+++ b/arch/sparc/Makefile
-@@ -59,8 +59,8 @@ endif
- libs-y                 += arch/sparc/prom/
- libs-y                 += arch/sparc/lib/
- 
--drivers-$(CONFIG_PM) += arch/sparc/power/
--drivers-$(CONFIG_FB_CORE) += arch/sparc/video/
-+drivers-$(CONFIG_PM)    += arch/sparc/power/
-+drivers-$(CONFIG_VIDEO) += arch/sparc/video/
- 
- boot := arch/sparc/boot
- 
-diff --git a/arch/sparc/video/Makefile b/arch/sparc/video/Makefile
-index d4d83f1702c61..9dd82880a027a 100644
---- a/arch/sparc/video/Makefile
-+++ b/arch/sparc/video/Makefile
-@@ -1,3 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0-only
- 
--obj-$(CONFIG_FB_CORE) += fbdev.o
-+obj-y	+= fbdev.o
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 15a5f4f2ff0aa..c0ea612c62ebe 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -265,7 +265,7 @@ drivers-$(CONFIG_PCI)            += arch/x86/pci/
- # suspend and hibernation support
- drivers-$(CONFIG_PM) += arch/x86/power/
- 
--drivers-$(CONFIG_FB_CORE) += arch/x86/video/
-+drivers-$(CONFIG_VIDEO) += arch/x86/video/
- 
- ####
- # boot loader support. Several targets are kept for legacy purposes
-diff --git a/arch/x86/video/Makefile b/arch/x86/video/Makefile
-index 5ebe48752ffc4..9dd82880a027a 100644
---- a/arch/x86/video/Makefile
-+++ b/arch/x86/video/Makefile
-@@ -1,2 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0-only
--obj-$(CONFIG_FB_CORE)		+= fbdev.o
+v2 -&gt; v3:
+1. Move the counter disabling and zeroing code to a different function.
+2. Move the get_lppaca() inside the tracepoint_enabled() branch.
+3. Add the aggregation logic to maintain total context switch time.
+
+v3 -&gt; v4:
+1. After vcpu_run, check the VPA flag instead of checking for tracepoint
+being enabled for disabling the cs time accumulation.
+
+ arch/powerpc/include/asm/kvm_host.h |  5 +++++
+ arch/powerpc/include/asm/lppaca.h   | 11 ++++++++---
+ arch/powerpc/kvm/book3s_hv.c        | 30 +++++++++++++++++++++++++++++
+ arch/powerpc/kvm/trace_hv.h         | 25 ++++++++++++++++++++++++
+ 4 files changed, 68 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 8abac5321..d953b32dd 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -847,6 +847,11 @@ struct kvm_vcpu_arch {
+ 	gpa_t nested_io_gpr;
+ 	/* For nested APIv2 guests*/
+ 	struct kvmhv_nestedv2_io nestedv2_io;
 +
-+obj-y	+= fbdev.o
--- 
-2.44.0
++	/* Aggregate context switch and guest run time info (in ns) */
++	u64 l1_to_l2_cs_agg;
++	u64 l2_to_l1_cs_agg;
++	u64 l2_runtime_agg;
+ #endif
+ 
+ #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
+diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
+index 61ec2447d..bda6b86b9 100644
+--- a/arch/powerpc/include/asm/lppaca.h
++++ b/arch/powerpc/include/asm/lppaca.h
+@@ -62,7 +62,8 @@ struct lppaca {
+ 	u8	donate_dedicated_cpu;	/* Donate dedicated CPU cycles */
+ 	u8	fpregs_in_use;
+ 	u8	pmcregs_in_use;
+-	u8	reserved8[28];
++	u8	l2_accumul_cntrs_enable;  /* Enable usage of counters for KVM guest */
++	u8	reserved8[27];
+ 	__be64	wait_state_cycles;	/* Wait cycles for this proc */
+ 	u8	reserved9[28];
+ 	__be16	slb_count;		/* # of SLBs to maintain */
+@@ -92,9 +93,13 @@ struct lppaca {
+ 	/* cacheline 4-5 */
+ 
+ 	__be32	page_ins;		/* CMO Hint - # page ins by OS */
+-	u8	reserved12[148];
++	u8	reserved12[28];
++	volatile __be64 l1_to_l2_cs_tb;
++	volatile __be64 l2_to_l1_cs_tb;
++	volatile __be64 l2_runtime_tb;
++	u8 reserved13[96];
+ 	volatile __be64 dtl_idx;	/* Dispatch Trace Log head index */
+-	u8	reserved13[96];
++	u8	reserved14[96];
+ } ____cacheline_aligned;
+ 
+ #define lppaca_of(cpu)	(*paca_ptrs[cpu]-&gt;lppaca_ptr)
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 8e86eb577..dcd6edd3b 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -4108,6 +4108,27 @@ static void vcpu_vpa_increment_dispatch(struct kvm_vcpu *vcpu)
+ 	}
+ }
+ 
++static void do_trace_nested_cs_time(struct kvm_vcpu *vcpu)
++{
++	struct lppaca *lp = get_lppaca();
++	u64 l1_to_l2_ns, l2_to_l1_ns, l2_runtime_ns;
++
++	l1_to_l2_ns = tb_to_ns(be64_to_cpu(lp-&gt;l1_to_l2_cs_tb));
++	l2_to_l1_ns = tb_to_ns(be64_to_cpu(lp-&gt;l2_to_l1_cs_tb));
++	l2_runtime_ns = tb_to_ns(be64_to_cpu(lp-&gt;l2_runtime_tb));
++	trace_kvmppc_vcpu_exit_cs_time(vcpu, l1_to_l2_ns, l2_to_l1_ns,
++					l2_runtime_ns);
++	lp-&gt;l1_to_l2_cs_tb = 0;
++	lp-&gt;l2_to_l1_cs_tb = 0;
++	lp-&gt;l2_runtime_tb = 0;
++	lp-&gt;l2_accumul_cntrs_enable = 0;
++
++	// Maintain an aggregate of context switch times
++	vcpu-&gt;arch.l1_to_l2_cs_agg += l1_to_l2_ns;
++	vcpu-&gt;arch.l2_to_l1_cs_agg += l2_to_l1_ns;
++	vcpu-&gt;arch.l2_runtime_agg += l2_runtime_ns;
++}
++
+ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
+ 				     unsigned long lpcr, u64 *tb)
+ {
+@@ -4130,6 +4151,11 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	kvmppc_gse_put_u64(io-&gt;vcpu_run_input, KVMPPC_GSID_LPCR, lpcr);
+ 
+ 	accumulate_time(vcpu, &amp;vcpu-&gt;arch.in_guest);
++
++	/* Enable the guest host context switch time tracking */
++	if (unlikely(trace_kvmppc_vcpu_exit_cs_time_enabled()))
++		get_lppaca()-&gt;l2_accumul_cntrs_enable = 1;</pre>
+    </blockquote>
+    <br>
+    <font face="monospace">can we wrap "<span
+      style="white-space: pre-wrap">get_lppaca()-&gt;l2_accumul_cntrs_enable" under wrapper function</span>
+    </font><br>
+    <font face="monospace">like is_<span style="white-space: pre-wrap">l2_accumul_cntrs_enable(),  set_</span><span
+      style="white-space: pre-wrap">l2_accumul_cntrs_enable()  and </span></font><br>
+    <font face="monospace"><span style="white-space: pre-wrap">unset_</span><span
+      style="white-space: pre-wrap">l2_accumul_cntrs_enable()?</span></font><br>
+    <br>
+    <font face="monospace"><span style="white-space: pre-wrap">set/unset does not need a parameter and </span><span
+      style="white-space: pre-wrap">in future incase if we want to</span><br>
+      <span style="white-space: pre-wrap">check and set or check and unset, we could have additional code in there.</span></font>
+    <p><span style="white-space: pre-wrap"><font face="monospace">Maddy</font></span></p>
+    <p><span style="white-space: pre-wrap"></span></p>
+    <p><span style="white-space: pre-wrap"></span></p>
+    <p><span style="white-space: pre-wrap">
+</span></p>
+    <blockquote type="cite"
+      cite="mid:20240326094035.115835-1-gautam@linux.ibm.com">
+      <pre class="moz-quote-pre" wrap="">
++
+ 	rc = plpar_guest_run_vcpu(0, vcpu-&gt;kvm-&gt;arch.lpid, vcpu-&gt;vcpu_id,
+ 				  &amp;trap, &amp;i);
+ 
+@@ -4156,6 +4182,10 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
+ 
+ 	timer_rearm_host_dec(*tb);
+ 
++	/* Record context switch and guest_run_time data */
++	if (get_lppaca()-&gt;l2_accumul_cntrs_enable)
++		do_trace_nested_cs_time(vcpu);
++
+ 	return trap;
+ }
+ 
+diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
+index 8d57c8428..ab19977c9 100644
+--- a/arch/powerpc/kvm/trace_hv.h
++++ b/arch/powerpc/kvm/trace_hv.h
+@@ -491,6 +491,31 @@ TRACE_EVENT(kvmppc_run_vcpu_enter,
+ 	TP_printk("VCPU %d: tgid=%d", __entry-&gt;vcpu_id, __entry-&gt;tgid)
+ );
+ 
++TRACE_EVENT(kvmppc_vcpu_exit_cs_time,
++	TP_PROTO(struct kvm_vcpu *vcpu, u64 l1_to_l2_cs, u64 l2_to_l1_cs,
++		u64 l2_runtime),
++
++	TP_ARGS(vcpu, l1_to_l2_cs, l2_to_l1_cs, l2_runtime),
++
++	TP_STRUCT__entry(
++		__field(int,		vcpu_id)
++		__field(__u64,		l1_to_l2_cs_ns)
++		__field(__u64,		l2_to_l1_cs_ns)
++		__field(__u64,		l2_runtime_ns)
++	),
++
++	TP_fast_assign(
++		__entry-&gt;vcpu_id  = vcpu-&gt;vcpu_id;
++		__entry-&gt;l1_to_l2_cs_ns = l1_to_l2_cs;
++		__entry-&gt;l2_to_l1_cs_ns = l2_to_l1_cs;
++		__entry-&gt;l2_runtime_ns = l2_runtime;
++	),
++
++	TP_printk("VCPU %d: l1_to_l2_cs_time=%llu-ns l2_to_l1_cs_time=%llu-ns l2_runtime=%llu-ns",
++		__entry-&gt;vcpu_id,  __entry-&gt;l1_to_l2_cs_ns,
++		__entry-&gt;l2_to_l1_cs_ns, __entry-&gt;l2_runtime_ns)
++);
++
+ TRACE_EVENT(kvmppc_run_vcpu_exit,
+ 	TP_PROTO(struct kvm_vcpu *vcpu),
+ 
+</pre>
+    </blockquote>
+  </body>
+</html>
+
+--------------h9nzZo2uv0YmqUz3TuIoz8BA--
 
