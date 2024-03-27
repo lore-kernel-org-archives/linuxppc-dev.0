@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6964C54E67
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 17:46:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C49BC54E67
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 17:47:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V4YyF36V9z3vkh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 04:46:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=srs0=g+mr=lb=linaro.org=krzysztof.kozlowski@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V4Yyg2DZBz3vpT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 04:47:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=g+mr=lb=linaro.org=krzysztof.kozlowski@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4Yxm5hgCz3dWP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 04:46:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4Yxp55fTz3dWP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 04:46:22 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 680E5CE2381;
-	Wed, 27 Mar 2024 17:46:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E231C433F1;
-	Wed, 27 Mar 2024 17:46:13 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4804D615E0;
+	Wed, 27 Mar 2024 17:46:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53164C43399;
+	Wed, 27 Mar 2024 17:46:16 +0000 (UTC)
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 To: Ran Wang <ran.wang_1@nxp.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -28,10 +28,12 @@ To: Ran Wang <ran.wang_1@nxp.com>,
 	linux-usb@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] usb: phy: fsl-usb: drop driver owner assignment
-Date: Wed, 27 Mar 2024 18:46:08 +0100
-Message-Id: <20240327174609.519252-1-krzysztof.kozlowski@linaro.org>
+Subject: [PATCH 2/2] usb: typec: nvidia: drop driver owner assignment
+Date: Wed, 27 Mar 2024 18:46:09 +0100
+Message-Id: <20240327174609.519252-2-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240327174609.519252-1-krzysztof.kozlowski@linaro.org>
+References: <20240327174609.519252-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -49,26 +51,26 @@ Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Core in platform_driver_register() already sets the .owner, so driver
-does not need to.
+Core in typec_altmode_register_driver() already sets the .owner, so
+driver does not need to.
 
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- drivers/usb/phy/phy-fsl-usb.c | 1 -
+ drivers/usb/typec/altmodes/nvidia.c | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
-index 79617bb0a70e..1ebbf189a535 100644
---- a/drivers/usb/phy/phy-fsl-usb.c
-+++ b/drivers/usb/phy/phy-fsl-usb.c
-@@ -1005,7 +1005,6 @@ struct platform_driver fsl_otg_driver = {
- 	.remove_new = fsl_otg_remove,
+diff --git a/drivers/usb/typec/altmodes/nvidia.c b/drivers/usb/typec/altmodes/nvidia.c
+index c36769736405..fe70b36f078f 100644
+--- a/drivers/usb/typec/altmodes/nvidia.c
++++ b/drivers/usb/typec/altmodes/nvidia.c
+@@ -35,7 +35,6 @@ static struct typec_altmode_driver nvidia_altmode_driver = {
+ 	.remove = nvidia_altmode_remove,
  	.driver = {
- 		.name = driver_name,
+ 		.name = "typec_nvidia",
 -		.owner = THIS_MODULE,
  	},
  };
- 
+ module_typec_altmode_driver(nvidia_altmode_driver);
 -- 
 2.34.1
 
