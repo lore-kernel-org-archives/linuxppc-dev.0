@@ -4,48 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36F64C54E67
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 18:18:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADEF0C54E67
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 20:02:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=RkxWd7fx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=TQFqRuSj;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V4Zfq66SBz3vZl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 05:18:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V4czB1QRnz3vZn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 07:02:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=RkxWd7fx;
+	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=TQFqRuSj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4Zf16vYNz3bnB
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 05:17:44 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id C461D61446;
-	Wed, 27 Mar 2024 18:17:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 680A4C43390;
-	Wed, 27 Mar 2024 18:17:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1711563462;
-	bh=cuOPfgYarGsg6xpTgF2yo+uJ/Cd9/PbvYrZtfzWIAWA=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=RkxWd7fxszjbkBAhnxMMmGIe1h9FKHAVl8O+/y4E+OyVKiv7IRTOoVWnBexJe9Qi9
-	 +TAsEnYgru/VQSeepmbuUfEprBv2RQg5xWifJm48Tf7YU36SeMA36iZubYcx/pS1In
-	 9D8kpe1b6ypL+O0tgl7HcF34HzDsZeDajYeDtxlE=
-Date: Wed, 27 Mar 2024 11:17:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Huang Shijie <shijie@os.amperecomputing.com>
-Subject: Re: [PATCH v3] NUMA: Early use of cpu_to_node() returns 0 instead
- of the correct node id
-Message-Id: <20240327111740.f8d3802b0eae15bcb8727e04@linux-foundation.org>
-In-Reply-To: <20240126064451.5465-1-shijie@os.amperecomputing.com>
-References: <20240126064451.5465-1-shijie@os.amperecomputing.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4cyM6Tfvz3dXg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 07:02:03 +1100 (AEDT)
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-1dee5ef2a7bso1953915ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2024 13:02:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=sifive.com; s=google; t=1711569721; x=1712174521; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=im7zmQeDt7pZodE0p+VySjAa7DBv0KaW+gKoLu+LS/g=;
+        b=TQFqRuSjPZQrKwtEBtev3Ox8HR0Yp9PCd3uW2aYUa1S5jyKOC0hqH0vQ8384Vsgzw+
+         euRlv0CuFyKES7Gb9RrkvYKh/7UZ2ziTyENoP3Z8qW4wFjiniw5cNpX4pujnSIPVCh6G
+         Rv9HAVf1AI34VOTG0c8IPWZwefPMtidwUi2LX+08K5DLPt4hhwITfp7g26qisels6yrO
+         Wt1Qhr6/UGZDyFnLucTICFVCuF4UnN2CFrhgjej6Uyyei4OJRxHLbLDvdhzm5g9swlac
+         hAVCD86Ir6/AxIkxvZZ21zNzOkVLylBBaQ86zoCuBGccuiqIhlDqqC+IdaSJqa6L2xS7
+         M9aQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1711569721; x=1712174521;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=im7zmQeDt7pZodE0p+VySjAa7DBv0KaW+gKoLu+LS/g=;
+        b=Baohb2VbLqrVE4oey4Bs+Ql8pUXCB0HtpdqJ6KSfjsXtBZhkyecMR6k2N1hGym6VIs
+         Q1s1pq5NYuwsoPUYw1VibblBxiZO4ui23sS7FZ8zeodztRvgRj4/eYWZ5B7oBC4bkfZ6
+         94yI2+dxu26vKy15csADyg38D2PqFFARuN6xnW4qAeP0Fgku9zhBf0NYN3UQpVc6o5nT
+         KiJXQ0E3MDyal4bxK6B/WU8puGixPLQ/ge6UHn5hcPFeZmW7budxV+WNg3sTew5zhXWN
+         0ig8pdY4KAOZucoal3whaiM68fstYJY18C8Kolre7Gt/z9s6i7a18RQP7MuiXIjI+0dl
+         RUZQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXKLNlaJ+SVpioZqQAMnvBnB+6LIVeOkQCQVJ046MXoP368vgMZWTkb223uhlWv5v0gpWU04+DPW8N7UZlBOJdKFH/PbPil4XL8CgXIgA==
+X-Gm-Message-State: AOJu0YzIMXwLVrx2A7yqeP+il27ROjdqUBW9KX6/6AcYFxPTkPNsOGIJ
+	KvUJOzSwN9dY++C43i+T3sUTvNczQIncvKPamFlBKsTepNHzOkYBxqak/cGAyIQ=
+X-Google-Smtp-Source: AGHT+IF+ykWlXq/2p9fLdxe5qiT+fQJVLXU8yD1cTqgZWIiJ9yzpflW/8jhLl1LVX7Yz7XdGYJsgng==
+X-Received: by 2002:a17:903:28e:b0:1e0:d6ce:7e16 with SMTP id j14-20020a170903028e00b001e0d6ce7e16mr805365plr.15.1711569721663;
+        Wed, 27 Mar 2024 13:02:01 -0700 (PDT)
+Received: from sw06.internal.sifive.com ([4.53.31.132])
+        by smtp.gmail.com with ESMTPSA id u4-20020a170902e5c400b001dd0d0d26a4sm9446459plf.147.2024.03.27.13.02.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 27 Mar 2024 13:02:01 -0700 (PDT)
+From: Samuel Holland <samuel.holland@sifive.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-arm-kernel@lists.infradead.org,
+	x86@kernel.org
+Subject: [PATCH v3 02/14] ARM: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
+Date: Wed, 27 Mar 2024 13:00:33 -0700
+Message-ID: <20240327200157.1097089-3-samuel.holland@sifive.com>
+X-Mailer: git-send-email 2.43.1
+In-Reply-To: <20240327200157.1097089-1-samuel.holland@sifive.com>
+References: <20240327200157.1097089-1-samuel.holland@sifive.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,28 +81,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, rafael@kernel.org, catalin.marinas@arm.com, jiaxun.yang@flygoat.com, mikelley@microsoft.com, linux-riscv@lists.infradead.org, will@kernel.org, mingo@kernel.org, vschneid@redhat.com, yury.norov@gmail.com, chenhuacai@kernel.org, cl@os.amperecomputing.com, vbabka@suse.cz, kuba@kernel.org, patches@amperecomputing.com, linux-mips@vger.kernel.org, aou@eecs.berkeley.edu, arnd@arndb.de, paul.walmsley@sifive.com, tglx@linutronix.de, jpoimboe@kernel.org, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, ndesaulniers@google.com, linux-kernel@vger.kernel.org, palmer@dabbelt.com, mhiramat@kernel.org, linuxppc-dev@lists.ozlabs.org, rppt@kernel.org
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, Samuel Holland <samuel.holland@sifive.com>, loongarch@lists.linux.dev, Russell King <linux@armlinux.org.uk>, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 26 Jan 2024 14:44:51 +0800 Huang Shijie <shijie@os.amperecomputing.com> wrote:
+ARM provides an equivalent to the common kernel-mode FPU API, but in a
+different header and using different function names. Add a wrapper
+header, and export CFLAGS adjustments as found in lib/raid6/Makefile.
 
-> During the kernel booting, the generic cpu_to_node() is called too early in
-> arm64, powerpc and riscv when CONFIG_NUMA is enabled.
-> 
-> There are at least four places in the common code where
-> the generic cpu_to_node() is called before it is initialized:
-> 	   1.) early_trace_init()         in kernel/trace/trace.c
-> 	   2.) sched_init()               in kernel/sched/core.c
-> 	   3.) init_sched_fair_class()    in kernel/sched/fair.c
-> 	   4.) workqueue_init_early()     in kernel/workqueue.c
-> 
-> In order to fix the bug, the patch introduces early_numa_node_init()
-> which is called after smp_prepare_boot_cpu() in start_kernel.
-> early_numa_node_init will initialize the "numa_node" as soon as
-> the early_cpu_to_node() is ready, before the cpu_to_node() is called
-> at the first time.
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+---
 
-What are the userspace-visible runtime effects of this bug?
+(no changes since v2)
 
+Changes in v2:
+ - Remove file name from header comment
+
+ arch/arm/Kconfig           |  1 +
+ arch/arm/Makefile          |  7 +++++++
+ arch/arm/include/asm/fpu.h | 15 +++++++++++++++
+ 3 files changed, 23 insertions(+)
+ create mode 100644 arch/arm/include/asm/fpu.h
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index b14aed3a17ab..b1751c2cab87 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -15,6 +15,7 @@ config ARM
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_KEEPINITRD
+ 	select ARCH_HAS_KCOV
++	select ARCH_HAS_KERNEL_FPU_SUPPORT if KERNEL_MODE_NEON
+ 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+ 	select ARCH_HAS_NON_OVERLAPPING_ADDRESS_SPACE
+ 	select ARCH_HAS_PTE_SPECIAL if ARM_LPAE
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index d82908b1b1bb..71afdd98ddf2 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -130,6 +130,13 @@ endif
+ # Accept old syntax despite ".syntax unified"
+ AFLAGS_NOWARN	:=$(call as-option,-Wa$(comma)-mno-warn-deprecated,-Wa$(comma)-W)
+ 
++# The GCC option -ffreestanding is required in order to compile code containing
++# ARM/NEON intrinsics in a non C99-compliant environment (such as the kernel)
++CC_FLAGS_FPU	:= -ffreestanding
++# Enable <arm_neon.h>
++CC_FLAGS_FPU	+= -isystem $(shell $(CC) -print-file-name=include)
++CC_FLAGS_FPU	+= -march=armv7-a -mfloat-abi=softfp -mfpu=neon
++
+ ifeq ($(CONFIG_THUMB2_KERNEL),y)
+ CFLAGS_ISA	:=-Wa,-mimplicit-it=always $(AFLAGS_NOWARN)
+ AFLAGS_ISA	:=$(CFLAGS_ISA) -Wa$(comma)-mthumb
+diff --git a/arch/arm/include/asm/fpu.h b/arch/arm/include/asm/fpu.h
+new file mode 100644
+index 000000000000..2ae50bdce59b
+--- /dev/null
++++ b/arch/arm/include/asm/fpu.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2023 SiFive
++ */
++
++#ifndef __ASM_FPU_H
++#define __ASM_FPU_H
++
++#include <asm/neon.h>
++
++#define kernel_fpu_available()	cpu_has_neon()
++#define kernel_fpu_begin()	kernel_neon_begin()
++#define kernel_fpu_end()	kernel_neon_end()
++
++#endif /* ! __ASM_FPU_H */
+-- 
+2.43.1
 
