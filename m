@@ -4,51 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07586C47DD9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 15:04:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C901C54E67
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 15:16:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sEXhPEfA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Xjdniq+W;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V4VMN3HFbz3vc6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 02:04:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V4VdQ0mwDz3vdw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 02:16:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sEXhPEfA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Xjdniq+W;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4VLQ2Zrrz3vgZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 02:03:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4Vcd4bFlz3fNd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 02:16:17 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 4B910CE26D9;
-	Wed, 27 Mar 2024 15:03:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CCAA5C433F1;
-	Wed, 27 Mar 2024 15:03:49 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id C01AB615A5;
+	Wed, 27 Mar 2024 15:16:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DE84C433C7;
+	Wed, 27 Mar 2024 15:16:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711551835;
-	bh=hrWUIu1S4DXcjUN8so6lC+qmnHu3MFuX+fS4XcrdbO8=;
+	s=k20201202; t=1711552575;
+	bh=3mjqSFARTqJWeXDaQOm2tUVu0IHBSuFehHS5Hx4/O2g=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=sEXhPEfA8uvevGFpChDpATF2dMUKGWLnO5+bt+v7isVd7EjxTKF99rLKMlCoCY2Jk
-	 LuBNcgxFXvcAgzKgdn7vsNZjHWI/5Sxa9eaRM8pqyajO+AVM0tR5DZkT4hNHK6CO2A
-	 w6S39o/WjUkgG+q0WSK5KMJFjhLU7SRfEIgObn/GsY8ta+z1NArzQzAOYHOeZnYnjW
-	 e38vh+dRtIDDS4AosbPwEtJyLKxcC3Cc6m+WHoxDCOw+3s9xMFHxTRa22EtgGEEj/f
-	 8i2TtvEZt8J0HLpsg/flQsmKDxLTLrVkjOuog3osUis787HulTYqsgEXHQXq6rhSio
-	 WTScQfYfAJsMw==
-Date: Wed, 27 Mar 2024 17:03:10 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH RFC 3/3] mm: use "GUP-fast" instead "fast GUP" in
- remaining comments
-Message-ID: <ZgQ1LtMUiaj5maDO@kernel.org>
-References: <20240327130538.680256-1-david@redhat.com>
- <20240327130538.680256-4-david@redhat.com>
+	b=Xjdniq+WJyCdYl8RowcIqwQ+T6OKOC/ulCvVN9gyybhgXcn86gpxQbusTXDQ3EY2U
+	 l0sJhJymwqZsW+4//00COrtoR+EQjGupyH9/kRDW3LY7ec+/vvm6oWrP3oYHh2EbRu
+	 8ovFliBkwALW0cngJy36sVFunwwca1mC+J7VLbtJhZM7CBHzBYinh2Fd4/W9trBrc3
+	 1EOJlqIqKEyrWRpt0yogqJlSghIRJ4E8Tptj0GFagIY6OIR4AGTkzQ6kNs+Mo+voGh
+	 3jb9txE1vb4iHsWrcRZT44FWAqVPD3+QW+QVADCgWLWJOuPWpNpf5eBwTz0gGWOrbO
+	 R3dmQRj6Ct5eA==
+Date: Wed, 27 Mar 2024 08:16:13 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Sasha Levin <sashal@kernel.org>
+Subject: Re: FAILED: Patch "powerpc: xor_vmx: Add '-mhard-float' to CFLAGS"
+ failed to apply to 5.10-stable tree
+Message-ID: <20240327151613.GA1153323@dev-arch.thelio-3990X>
+References: <20240327122007.2835763-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="YKLJLOt2Iod++WF+"
 Content-Disposition: inline
-In-Reply-To: <20240327130538.680256-4-david@redhat.com>
+In-Reply-To: <20240327122007.2835763-1-sashal@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,53 +59,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Peter Xu <peterx@redhat.com>, linux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-mm@kvack.org, Jason Gunthorpe <jgg@nvidia.com>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: llvm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 27, 2024 at 02:05:38PM +0100, David Hildenbrand wrote:
-> Let's fixup the remaining comments to consistently call that thing
-> "GUP-fast". With this change, we consistently call it "GUP-fast".
-> 
-> Signed-off-by: David Hildenbrand <david@redhat.com>
 
-Reviewed-by: Mike Rapoport (IBM) <rppt@kernel.org>
+--YKLJLOt2Iod++WF+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> ---
->  mm/filemap.c    | 2 +-
->  mm/khugepaged.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+On Wed, Mar 27, 2024 at 08:20:07AM -0400, Sasha Levin wrote:
+> The patch below does not apply to the 5.10-stable tree.
+> If someone wants it applied there, or to any other stable or longterm
+> tree, then please email the backport, including the original git commit
+> id to <stable@vger.kernel.org>.
+...
+> ------------------ original commit in Linus's tree ------------------
 > 
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index 387b394754fa..c668e11cd6ef 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -1810,7 +1810,7 @@ EXPORT_SYMBOL(page_cache_prev_miss);
->   * C. Return the page to the page allocator
->   *
->   * This means that any page may have its reference count temporarily
-> - * increased by a speculative page cache (or fast GUP) lookup as it can
-> + * increased by a speculative page cache (or GUP-fast) lookup as it can
->   * be allocated by another user before the RCU grace period expires.
->   * Because the refcount temporarily acquired here may end up being the
->   * last refcount on the page, any page allocation must be freeable by
-> diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-> index 38830174608f..6972fa05132e 100644
-> --- a/mm/khugepaged.c
-> +++ b/mm/khugepaged.c
-> @@ -1169,7 +1169,7 @@ static int collapse_huge_page(struct mm_struct *mm, unsigned long address,
->  	 * huge and small TLB entries for the same virtual address to
->  	 * avoid the risk of CPU bugs in that area.
->  	 *
-> -	 * Parallel fast GUP is fine since fast GUP will back off when
-> +	 * Parallel GUP-fast is fine since GUP-fast will back off when
->  	 * it detects PMD is changed.
->  	 */
->  	_pmd = pmdp_collapse_flush(vma, address, pmd);
-> -- 
-> 2.43.2
-> 
+> From 35f20786c481d5ced9283ff42de5c69b65e5ed13 Mon Sep 17 00:00:00 2001
+> From: Nathan Chancellor <nathan@kernel.org>
+> Date: Sat, 27 Jan 2024 11:07:43 -0700
+> Subject: [PATCH] powerpc: xor_vmx: Add '-mhard-float' to CFLAGS
 
+I have attached a backport that will work for 5.15 and earlier. I think
+you worked around this conflict in 5.15 by taking 04e85bbf71c9 but I am
+not sure that is a smart idea. I think it might just be better to drop
+that dependency and apply this version in 5.15.
+
+Cheers,
+Nathan
+
+--YKLJLOt2Iod++WF+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment;
+	filename="0001-powerpc-xor_vmx-Add-mhard-float-to-CFLAGS.patch"
+
+From c6cb80d94871cbb4ff151f7eb2586cadeb364ef7 Mon Sep 17 00:00:00 2001
+From: Nathan Chancellor <nathan@kernel.org>
+Date: Sat, 27 Jan 2024 11:07:43 -0700
+Subject: [PATCH 4.19 to 5.15] powerpc: xor_vmx: Add '-mhard-float' to CFLAGS
+
+commit 35f20786c481d5ced9283ff42de5c69b65e5ed13 upstream.
+
+arch/powerpc/lib/xor_vmx.o is built with '-msoft-float' (from the main
+powerpc Makefile) and '-maltivec' (from its CFLAGS), which causes an
+error when building with clang after a recent change in main:
+
+  error: option '-msoft-float' cannot be specified with '-maltivec'
+  make[6]: *** [scripts/Makefile.build:243: arch/powerpc/lib/xor_vmx.o] Error 1
+
+Explicitly add '-mhard-float' before '-maltivec' in xor_vmx.o's CFLAGS
+to override the previous inclusion of '-msoft-float' (as the last option
+wins), which matches how other areas of the kernel use '-maltivec', such
+as AMDGPU.
+
+Cc: stable@vger.kernel.org
+Closes: https://github.com/ClangBuiltLinux/linux/issues/1986
+Link: https://github.com/llvm/llvm-project/commit/4792f912b232141ecba4cbae538873be3c28556c
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://msgid.link/20240127-ppc-xor_vmx-drop-msoft-float-v1-1-f24140e81376@kernel.org
+[nathan: Fixed conflicts due to lack of 04e85bbf71c9 in older trees]
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+---
+ arch/powerpc/lib/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 321cab5c3ea0..bd5012aa94e3 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -67,6 +67,6 @@ obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
+ obj-$(CONFIG_FTR_FIXUP_SELFTEST) += feature-fixups-test.o
+ 
+ obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o xor_vmx_glue.o
+-CFLAGS_xor_vmx.o += -maltivec $(call cc-option,-mabi=altivec)
++CFLAGS_xor_vmx.o += -mhard-float -maltivec $(call cc-option,-mabi=altivec)
+ 
+ obj-$(CONFIG_PPC64) += $(obj64-y)
 -- 
-Sincerely yours,
-Mike.
+2.44.0
+
+
+--YKLJLOt2Iod++WF+--
