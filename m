@@ -4,36 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C49BC54E67
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 17:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10EB4C47DD9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2024 17:53:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V4Yyg2DZBz3vpT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 04:47:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=g+mr=lb=linaro.org=krzysztof.kozlowski@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V4Z6B5JMyz3vgs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 04:53:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=srs0=g+mr=lb=linaro.org=krzysztof.kozlowski@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4Yxp55fTz3dWP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 04:46:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4Z5m0z6Kz3dWP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 04:53:16 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 4804D615E0;
-	Wed, 27 Mar 2024 17:46:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53164C43399;
-	Wed, 27 Mar 2024 17:46:16 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 96459CE260E;
+	Wed, 27 Mar 2024 17:53:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E990CC433C7;
+	Wed, 27 Mar 2024 17:53:11 +0000 (UTC)
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-To: Ran Wang <ran.wang_1@nxp.com>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Heikki Krogerus <heikki.krogerus@linux.intel.com>,
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
 	linux-usb@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] usb: typec: nvidia: drop driver owner assignment
-Date: Wed, 27 Mar 2024 18:46:09 +0100
-Message-Id: <20240327174609.519252-2-krzysztof.kozlowski@linaro.org>
+Subject: [PATCH] usb: phy: MAINTAINERS: mark Freescale USB PHY as orphaned
+Date: Wed, 27 Mar 2024 18:53:08 +0100
+Message-Id: <20240327175308.520317-1-krzysztof.kozlowski@linaro.org>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240327174609.519252-1-krzysztof.kozlowski@linaro.org>
-References: <20240327174609.519252-1-krzysztof.kozlowski@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -47,30 +44,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Core in typec_altmode_register_driver() already sets the .owner, so
-driver does not need to.
+Emails to the only maintainer bounce:
+
+  <ran.wang_1@nxp.com>: host nxp-com.mail.protection.outlook.com[52.101.68.39]
+  said: 550 5.4.1 Recipient address rejected: Access denied.
 
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- drivers/usb/typec/altmodes/nvidia.c | 1 -
- 1 file changed, 1 deletion(-)
+ MAINTAINERS | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/usb/typec/altmodes/nvidia.c b/drivers/usb/typec/altmodes/nvidia.c
-index c36769736405..fe70b36f078f 100644
---- a/drivers/usb/typec/altmodes/nvidia.c
-+++ b/drivers/usb/typec/altmodes/nvidia.c
-@@ -35,7 +35,6 @@ static struct typec_altmode_driver nvidia_altmode_driver = {
- 	.remove = nvidia_altmode_remove,
- 	.driver = {
- 		.name = "typec_nvidia",
--		.owner = THIS_MODULE,
- 	},
- };
- module_typec_altmode_driver(nvidia_altmode_driver);
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 51d5a64a5a36..b66812e99caf 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8760,10 +8760,9 @@ S:	Maintained
+ F:	drivers/usb/gadget/udc/fsl*
+ 
+ FREESCALE USB PHY DRIVER
+-M:	Ran Wang <ran.wang_1@nxp.com>
+ L:	linux-usb@vger.kernel.org
+ L:	linuxppc-dev@lists.ozlabs.org
+-S:	Maintained
++S:	Orphan
+ F:	drivers/usb/phy/phy-fsl-usb*
+ 
+ FREEVXFS FILESYSTEM
 -- 
 2.34.1
 
