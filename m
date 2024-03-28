@@ -4,51 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FE23C54E67
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 13:56:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6E63C54E64
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 14:47:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hysjLZhk;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Av25BND/;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aqqNHXgS;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V54pF1gb3z3vc7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 00:56:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V55xD103fz3vbP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 01:47:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hysjLZhk;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Av25BND/;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aqqNHXgS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=vkoul@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V4t7T5pKsz3cVG
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 16:55:49 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id DB667CE2942;
-	Thu, 28 Mar 2024 05:55:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55E6DC433F1;
-	Thu, 28 Mar 2024 05:55:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711605346;
-	bh=C6skgkr2NMPDni3brGoFkl+5/I4LRqRBMa9zmdDL9uY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=hysjLZhkEnvXnxd+HtHwjnxShxKJsdr7YRORWMMbG9CAv2Wo4v/3W17f+9SmlwjYP
-	 AyxLZuXRv9YJGW7TBEhuFvjqai5JqAqlAjT7kP1ISp5EH8RS9fJ2YPnuq82HTriscX
-	 k3oc9NY2bXpiP0jGnfR7dbOxiqpXyBbLE3Kr+zaoP4w8AQS+EkbA1t2gSCobYQ2KlV
-	 32f78em/AA4bHgFdo/ljQvmpapnRbgSvmNw6bLqNSxN3FzIz/Su4hMEut3jzJjbgI6
-	 ErlOb5+1jhqeBVqohmzPhEaaC6pQ2kHQXfpk3998EVOS2mUbOgGjtxbSO/uM8abY2C
-	 N/IIGvRGfpoEA==
-Date: Thu, 28 Mar 2024 11:25:41 +0530
-From: Vinod Koul <vkoul@kernel.org>
-To: Allen Pais <apais@linux.microsoft.com>
-Subject: Re: [PATCH 2/9] dma: Convert from tasklet to BH workqueue
-Message-ID: <ZgUGXTKPVhrA1tam@matsya>
-References: <20240327160314.9982-1-apais@linux.microsoft.com>
- <20240327160314.9982-3-apais@linux.microsoft.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V55wL53ZRz3cWR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 01:46:57 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1711637214;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cPAuSkYgy+MUhS8KdVZMaOcLOllCqbF/NxocVA82LN4=;
+	b=Av25BND/RibwvmfIJu6vQCNmK0zE+/YFiC0pPxmO0BBpwyDzJguegIwixjjFk9+HVq9O3F
+	S/4vMLbnb4DMb9bGGOSN2ox0E63C2dPcyTSCpjYktCu7071Acfr+RTxuF/Eay5uE4V0+Cx
+	PQAS10CDvf6ExevvMpyD0xnpR4qhrLg=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1711637215;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cPAuSkYgy+MUhS8KdVZMaOcLOllCqbF/NxocVA82LN4=;
+	b=aqqNHXgS92c3BpXuG/jkXFDM2AQYtjfm4Txd1pJp1mVi29s5x1iE3+cODhAPs1Zb4kM6Gc
+	qn9tbTYJ1LL4pUGKQGY4Y4Tq3o00AiGcJkciUnWAxKhgwM1D+7faDdAIvoCqc7aUHuLxxZ
+	pIqhvHJPJxnxovZuNPTWEVxrDHQrtoI=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-509-PInHT43-PY2c36tojWgsHg-1; Thu, 28 Mar 2024 10:46:50 -0400
+X-MC-Unique: PInHT43-PY2c36tojWgsHg-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1E226801906;
+	Thu, 28 Mar 2024 14:46:49 +0000 (UTC)
+Received: from localhost (unknown [10.72.116.12])
+	by smtp.corp.redhat.com (Postfix) with ESMTPS id 4FD432024517;
+	Thu, 28 Mar 2024 14:46:48 +0000 (UTC)
+Date: Thu, 28 Mar 2024 22:46:39 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH v2 4/6] mm/mm_init.c: remove meaningless calculation of
+ zone->managed_pages in free_area_init_core()
+Message-ID: <ZgWCzx7+OxPgFIaU@MiWiFi-R3L-srv>
+References: <20240325145646.1044760-1-bhe@redhat.com>
+ <20240325145646.1044760-5-bhe@redhat.com>
+ <ZgUrJuatQqAT0QA1@MiWiFi-R3L-srv>
+ <ZgU9_zpuIOu2b_gT@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240327160314.9982-3-apais@linux.microsoft.com>
-X-Mailman-Approved-At: Fri, 29 Mar 2024 00:55:57 +1100
+In-Reply-To: <ZgU9_zpuIOu2b_gT@kernel.org>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,164 +82,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: imx@lists.linux.dev, ulf.hansson@linaro.org, oneukum@suse.com, duncan.sands@free.fr, hayashi.kunihiko@socionext.com, linux-mmc@vger.kernel.org, aubin.constans@microchip.com, linus.walleij@linaro.org, Frank.Li@nxp.com, linux-hyperv@vger.kernel.org, linux-mips@vger.kernel.org, paul@crapouillou.net, linux-tegra@vger.kernel.org, netdev@vger.kernel.org, maintainers@bluecherrydvr.com, peter.ujfalusi@gmail.com, manivannan.sadhasivam@linaro.org, linux-riscv@lists.infradead.org, kys@microsoft.com, robert.jarzmik@free.fr, haijie1@huawei.com, linux-renesas-soc@vger.kernel.org, wei.liu@kernel.org, linux-omap@vger.kernel.org, florian.fainelli@broadcom.com, linux-rdma@vger.kernel.org, vireshk@kernel.org, jassisinghbrar@gmail.com, decui@microsoft.com, HaraldWelte@viatech.com, jernej.skrabec@gmail.com, jh80.chung@samsung.com, zw@zh-kernel.org, wens@csie.org, stern@rowland.harvard.edu, linux-arm-msm@vger.kernel.org, orsonzhai@gmail.com, pierre@ossman.eu, linux-usb@vger.kernel.org, Eugeniy.Paltsev
- @synopsys.com, patrice.chotard@foss.st.com, asahi@lists.linux.dev, brucechang@via.com.tw, keescook@chromium.org, oakad@yahoo.com, sven@svenpeter.dev, rjui@broadcom.com, s.hauer@pengutronix.de, sean.wang@mediatek.com, linux-actions@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, haojian.zhuang@gmail.com, mirq-linux@rere.qmqm.pl, dmaengine@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, baolin.wang@linux.alibaba.com, matthias.bgg@gmail.com, openipmi-developer@lists.sourceforge.net, mchehab@kernel.org, linux-arm-kernel@lists.infradead.org, angelogioacchino.delregno@collabora.com, sbranden@broadcom.com, logang@deltatee.com, andersson@kernel.org, marcan@marcan.st, haiyangz@microsoft.com, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, konrad.dybcio@linaro.org, linux-sunxi@lists.linux.dev, wangzhou1@hisilicon.com, linux-s390@vger.kernel.org, mhiramat@kernel.org, zhang.lyra@gmail.com, tj@kernel.org, manuel.lauss@gmail.com, linux-media@vger.k
- ernel.org, shawnguo@kernel.org, afaerber@suse.de, daniel@zonque.org
+Cc: linux-mm@kvack.org, akpm@linux-foundation.org, x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Allen,
+On 03/28/24 at 11:53am, Mike Rapoport wrote:
+> On Thu, Mar 28, 2024 at 04:32:38PM +0800, Baoquan He wrote:
+> > On 03/25/24 at 10:56pm, Baoquan He wrote:
+> > >  
+> > >  		/*
+> > > -		 * Set an approximate value for lowmem here, it will be adjusted
+> > > -		 * when the bootmem allocator frees pages into the buddy system.
+> > > -		 * And all highmem pages will be managed by the buddy system.
+> > > +		 * Initialize zone->managed_pages as 0 , it will be reset
+> > > +		 * when memblock allocator frees pages into buddy system.
+> > >  		 */
+> > > -		zone_init_internals(zone, j, nid, freesize);
+> > > +		zone_init_internals(zone, j, nid, 0);
+> > 
+> > Here, we should initialize zone->managed_pages as zone->present_pages
+> > because later page_group_by_mobility_disabled need be set according to
+> > zone->managed_pages. Otherwise page_group_by_mobility_disabled will be
+> > set to 1 always. I will sent out v3.
+> 
+> With zone->managed_pages set to zone->present_pages we won't account for
+> the reserved memory for initialization of page_group_by_mobility_disabled.
 
-Subsytem is dmaengine, can you rename this to dmaengine: ...
+The old zone->managed_pages didn't account for the reserved pages
+either. It's calculated by (zone->present_pages - memmap_pages). memmap
+pages only is only a very small portion, e.g on x86_64, 4K page size,
+assuming size of struct page is 64, then it's 1/64 of system memory.
+On arm64, 64K page size, it's 1/1024 of system memory.
 
-On 27-03-24, 16:03, Allen Pais wrote:
-> The only generic interface to execute asynchronously in the BH context is
-> tasklet; however, it's marked deprecated and has some design flaws. To
-> replace tasklets, BH workqueue support was recently added. A BH workqueue
-> behaves similarly to regular workqueues except that the queued work items
-> are executed in the BH context.
+And about the setting of page_group_by_mobility_disabled, the compared
+value pageblock_nr_pages * MIGRATE_TYPES which is very small. On x86_64,
+it's 4M*6=24M; on arm64 with 64K size and 128M*6=768M which should be
+the biggest among ARCH-es. 
 
-Thanks for conversion, am happy with BH alternative as it helps in
-dmaengine where we need shortest possible time between tasklet and
-interrupt handling to maximize dma performance
+	if (vm_total_pages < (pageblock_nr_pages * MIGRATE_TYPES)) 
+                page_group_by_mobility_disabled = 1;
+        else    
+                page_group_by_mobility_disabled = 0;
+
+So page_group_by_mobility_disabled could be set to 1 only on system with
+very little memory which is very rarely seen. And setting
+zone->managed_pages as zone->present_pages is very close to its old
+value: (zone->present_pages - memmap_pages). Here we don't need be very
+accurate, just a rough value.
 
 > 
-> This patch converts drivers/dma/* from tasklet to BH workqueue.
+> As watermarks are still not initialized at the time build_all_zonelists()
+> is called, we may use nr_all_pages - nr_kernel_pages instead of
+> nr_free_zone_pages(), IMO.
 
+nr_all_pages should be fine if we take this way. nr_kernel_pages is a
+misleading name, it's all low memory pages excluding kernel reserved
+apges. nr_all_pages is all memory pages including highmema and exluding
+kernel reserved pages.
+
+Both is fine to me. The first one is easier, simply setting
+zone->managed_pages as zone->present_pages. The 2nd way is a little more
+accurate.
+
+>  
+> > From a17b0921b4bd00596330f61ee9ea4b82386a9fed Mon Sep 17 00:00:00 2001
+> > From: Baoquan He <bhe@redhat.com>
+> > Date: Thu, 28 Mar 2024 16:20:15 +0800
+> > Subject: [PATCH] mm/mm_init.c: set zone's ->managed_pages as ->present_pages
+> >  for now
+> > Content-type: text/plain
+> > 
+> > Because page_group_by_mobility_disabled need be set according to zone's
+> > managed_pages later.
+> > 
+> > Signed-off-by: Baoquan He <bhe@redhat.com>
+> > ---
+> >  mm/mm_init.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/mm/mm_init.c b/mm/mm_init.c
+> > index cc24e7958c0c..dd875f943cbb 100644
+> > --- a/mm/mm_init.c
+> > +++ b/mm/mm_init.c
+> > @@ -1561,7 +1561,7 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
+> >  		 * Initialize zone->managed_pages as 0 , it will be reset
+> >  		 * when memblock allocator frees pages into buddy system.
+> >  		 */
+> > -		zone_init_internals(zone, j, nid, 0);
+> > +		zone_init_internals(zone, j, nid, zone->present_pages);
+> >  
+> >  		if (!size)
+> >  			continue;
+> > -- 
+> > 2.41.0
+> > 
+> > 
+> > >  
+> > >  		if (!size)
+> > >  			continue;
+> > > @@ -1915,6 +1878,7 @@ void __init free_area_init(unsigned long *max_zone_pfn)
+> > >  		check_for_memory(pgdat);
+> > >  	}
+> > >  
+> > > +	calc_nr_kernel_pages();
+> > >  	memmap_init();
+> > >  
+> > >  	/* disable hash distribution for systems with a single node */
+> > > -- 
+> > > 2.41.0
+> > > 
+> > 
 > 
-> Based on the work done by Tejun Heo <tj@kernel.org>
-> Branch: git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git for-6.10
+> -- 
+> Sincerely yours,
+> Mike.
 > 
-> Signed-off-by: Allen Pais <allen.lkml@gmail.com>
-> ---
->  drivers/dma/altera-msgdma.c                   | 15 ++++----
->  drivers/dma/apple-admac.c                     | 15 ++++----
->  drivers/dma/at_hdmac.c                        |  2 +-
->  drivers/dma/at_xdmac.c                        | 15 ++++----
->  drivers/dma/bcm2835-dma.c                     |  2 +-
->  drivers/dma/dma-axi-dmac.c                    |  2 +-
->  drivers/dma/dma-jz4780.c                      |  2 +-
->  .../dma/dw-axi-dmac/dw-axi-dmac-platform.c    |  2 +-
->  drivers/dma/dw-edma/dw-edma-core.c            |  2 +-
->  drivers/dma/dw/core.c                         | 13 +++----
->  drivers/dma/dw/regs.h                         |  3 +-
->  drivers/dma/ep93xx_dma.c                      | 15 ++++----
->  drivers/dma/fsl-edma-common.c                 |  2 +-
->  drivers/dma/fsl-qdma.c                        |  2 +-
->  drivers/dma/fsl_raid.c                        | 11 +++---
->  drivers/dma/fsl_raid.h                        |  2 +-
->  drivers/dma/fsldma.c                          | 15 ++++----
->  drivers/dma/fsldma.h                          |  3 +-
->  drivers/dma/hisi_dma.c                        |  2 +-
->  drivers/dma/hsu/hsu.c                         |  2 +-
->  drivers/dma/idma64.c                          |  4 +--
->  drivers/dma/img-mdc-dma.c                     |  2 +-
->  drivers/dma/imx-dma.c                         | 27 +++++++-------
->  drivers/dma/imx-sdma.c                        |  6 ++--
->  drivers/dma/ioat/dma.c                        | 17 ++++-----
->  drivers/dma/ioat/dma.h                        |  5 +--
->  drivers/dma/ioat/init.c                       |  2 +-
->  drivers/dma/k3dma.c                           | 19 +++++-----
->  drivers/dma/mediatek/mtk-cqdma.c              | 35 ++++++++++---------
->  drivers/dma/mediatek/mtk-hsdma.c              |  2 +-
->  drivers/dma/mediatek/mtk-uart-apdma.c         |  4 +--
->  drivers/dma/mmp_pdma.c                        | 13 +++----
->  drivers/dma/mmp_tdma.c                        | 11 +++---
->  drivers/dma/mpc512x_dma.c                     | 17 ++++-----
->  drivers/dma/mv_xor.c                          | 13 +++----
->  drivers/dma/mv_xor.h                          |  5 +--
->  drivers/dma/mv_xor_v2.c                       | 23 ++++++------
->  drivers/dma/mxs-dma.c                         | 13 +++----
->  drivers/dma/nbpfaxi.c                         | 15 ++++----
->  drivers/dma/owl-dma.c                         |  2 +-
->  drivers/dma/pch_dma.c                         | 17 ++++-----
->  drivers/dma/pl330.c                           | 31 ++++++++--------
->  drivers/dma/plx_dma.c                         | 13 +++----
->  drivers/dma/ppc4xx/adma.c                     | 17 ++++-----
->  drivers/dma/ppc4xx/adma.h                     |  5 +--
->  drivers/dma/pxa_dma.c                         |  2 +-
->  drivers/dma/qcom/bam_dma.c                    | 35 ++++++++++---------
->  drivers/dma/qcom/gpi.c                        | 18 +++++-----
->  drivers/dma/qcom/hidma.c                      | 11 +++---
->  drivers/dma/qcom/hidma.h                      |  5 +--
->  drivers/dma/qcom/hidma_ll.c                   | 11 +++---
->  drivers/dma/qcom/qcom_adm.c                   |  2 +-
->  drivers/dma/sa11x0-dma.c                      | 27 +++++++-------
->  drivers/dma/sf-pdma/sf-pdma.c                 | 23 ++++++------
->  drivers/dma/sf-pdma/sf-pdma.h                 |  5 +--
->  drivers/dma/sprd-dma.c                        |  2 +-
->  drivers/dma/st_fdma.c                         |  2 +-
->  drivers/dma/ste_dma40.c                       | 17 ++++-----
->  drivers/dma/sun6i-dma.c                       | 33 ++++++++---------
->  drivers/dma/tegra186-gpc-dma.c                |  2 +-
->  drivers/dma/tegra20-apb-dma.c                 | 19 +++++-----
->  drivers/dma/tegra210-adma.c                   |  2 +-
->  drivers/dma/ti/edma.c                         |  2 +-
->  drivers/dma/ti/k3-udma.c                      | 11 +++---
->  drivers/dma/ti/omap-dma.c                     |  2 +-
->  drivers/dma/timb_dma.c                        | 23 ++++++------
->  drivers/dma/txx9dmac.c                        | 29 +++++++--------
->  drivers/dma/txx9dmac.h                        |  5 +--
->  drivers/dma/virt-dma.c                        |  9 ++---
->  drivers/dma/virt-dma.h                        |  9 ++---
->  drivers/dma/xgene-dma.c                       | 21 +++++------
->  drivers/dma/xilinx/xilinx_dma.c               | 23 ++++++------
->  drivers/dma/xilinx/xilinx_dpdma.c             | 21 +++++------
->  drivers/dma/xilinx/zynqmp_dma.c               | 21 +++++------
->  74 files changed, 442 insertions(+), 395 deletions(-)
-> 
-> diff --git a/drivers/dma/altera-msgdma.c b/drivers/dma/altera-msgdma.c
-> index a8e3615235b8..611b5290324b 100644
-> --- a/drivers/dma/altera-msgdma.c
-> +++ b/drivers/dma/altera-msgdma.c
-> @@ -20,6 +20,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/slab.h>
->  #include <linux/of_dma.h>
-> +#include <linux/workqueue.h>
->  
->  #include "dmaengine.h"
->  
-> @@ -170,7 +171,7 @@ struct msgdma_sw_desc {
->  struct msgdma_device {
->  	spinlock_t lock;
->  	struct device *dev;
-> -	struct tasklet_struct irq_tasklet;
-> +	struct work_struct irq_work;
 
-Can we name these as bh_work to signify that we are always in bh
-context? here and everywhere please
-
-
->  	struct list_head pending_list;
->  	struct list_head free_list;
->  	struct list_head active_list;
-> @@ -676,12 +677,12 @@ static int msgdma_alloc_chan_resources(struct dma_chan *dchan)
->  }
->  
->  /**
-> - * msgdma_tasklet - Schedule completion tasklet
-> + * msgdma_work - Schedule completion work
-
-...
-
-> @@ -515,7 +516,7 @@ struct gpii {
->  	enum gpi_pm_state pm_state;
->  	rwlock_t pm_lock;
->  	struct gpi_ring ev_ring;
-> -	struct tasklet_struct ev_task; /* event processing tasklet */
-> +	struct work_struct ev_task; /* event processing work */
->  	struct completion cmd_completion;
->  	enum gpi_cmd gpi_cmd;
->  	u32 cntxt_type_irq_msk;
-> @@ -755,7 +756,7 @@ static void gpi_process_ieob(struct gpii *gpii)
->  	gpi_write_reg(gpii, gpii->ieob_clr_reg, BIT(0));
->  
->  	gpi_config_interrupts(gpii, MASK_IEOB_SETTINGS, 0);
-> -	tasklet_hi_schedule(&gpii->ev_task);
-> +	queue_work(system_bh_highpri_wq, &gpii->ev_task);
-
-This is good conversion, thanks for ensuring system_bh_highpri_wq is
-used here
--- 
-~Vinod
