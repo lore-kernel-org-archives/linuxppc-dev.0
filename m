@@ -4,113 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A052C54E64
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 12:41:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 514CEC54E67
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 13:03:10 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=r3mlxuV6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OxZCP8BM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V537m09xHz3vd9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 23:41:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V53cX5dL6z3vdt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 00:03:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=r3mlxuV6;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OxZCP8BM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.17.21; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=lists.ozlabs.org)
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V536t5w55z3d3Z
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 23:40:52 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1711629595; x=1712234395; i=deller@gmx.de;
-	bh=OcaPQ/YLAkQ4Yfs0ARFNRC7QTLGsd2CnFzORCuSApDw=;
-	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:
-	 In-Reply-To;
-	b=r3mlxuV6fZG4GNUbwLTgqCELwOPup6gs6/aJ9BW15Z9DXrPFwbDCGn1uv7TV5D3a
-	 vG8RgcSevNYbSTgPQF5GrZIWuFxCzTyyD/x5NolpnMTIjeM9S/wnbLoJ0OZfrqxf4
-	 7f3D4JMj8DQaK25n4dRkKVqrepc+L+o+JgmTU6GT2tn3AloonGA50hRe5ZJuIhmi+
-	 cN1QYMIjkZD5bEmTLBFuQcKwB6N4KRIfYIwU/LdYcU3qZFD3qmpORB9+Xk04bBBr3
-	 0hlTidX7LQ009X/BVxug8463q2lBy/XoF9fdJugkpGaugBQ00En9zSFWYxC7PHUPC
-	 8lxYE+fAD2UhNM1+IA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [10.8.0.6] ([78.94.87.245]) by mail.gmx.net (mrgmx104
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MPokN-1sC2tE1Kvz-00MpkI; Thu, 28
- Mar 2024 13:39:55 +0100
-Message-ID: <70aefe08-b4c4-4738-a223-e4b04562cd56@gmx.de>
-Date: Thu, 28 Mar 2024 13:39:50 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V53bh0FhPz3dhR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 00:02:24 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1711630937;
+	bh=x+HARHjN6PjTasqejFvCjOWEUt0vA4nR9qlaT1Vlr5g=;
+	h=From:To:Cc:Subject:Date:From;
+	b=OxZCP8BMd8mnym1pAo2FNEHLzwJZw5ncXfQr0rV0N1Q04cZ/fJnoQoZV/Nn7DByPx
+	 oY4tNYQ7ULeBCNJhVjUmRDOZf0JoFLu7trm+Cvef9XPH4YXvIBPMR8a0iuq1DA6opt
+	 PNmBx1LmqFhibPkoFuLOsooOyqY3tPRK2Bd+t8qrqnravOUzyJ5nxd7swfe4WM0XHg
+	 8NfBW+VgQlBXl/ZTGzJY+o0TKPjcbW42iiQslibed/gj+H5D3H4LKUxtQ3+atdA3WS
+	 QnTQuf00Th3iXc4HKt46R0Hw6ZnCcOfIxLIhbqmKg2DXlLfktNsJ1UvOctq19F8iUT
+	 qJRF3UkQmxuVw==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4V53bX1JF9z4wcq;
+	Fri, 29 Mar 2024 00:02:16 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/crypto/chacha-p10: Fix failure on non Power10
+Date: Fri, 29 Mar 2024 00:02:00 +1100
+Message-ID: <20240328130200.3041687-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.44.0
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/3] arch: Select fbdev helpers with CONFIG_VIDEO
-To: Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de,
- javierm@redhat.com, sui.jingfeng@linux.dev
-References: <20240327204450.14914-1-tzimmermann@suse.de>
- <20240327204450.14914-2-tzimmermann@suse.de>
-Content-Language: en-US
-From: Helge Deller <deller@gmx.de>
-Autocrypt: addr=deller@gmx.de; keydata=
- xsFNBF3Ia3MBEAD3nmWzMgQByYAWnb9cNqspnkb2GLVKzhoH2QD4eRpyDLA/3smlClbeKkWT
- HLnjgkbPFDmcmCz5V0Wv1mKYRClAHPCIBIJgyICqqUZo2qGmKstUx3pFAiztlXBANpRECgwJ
- r+8w6mkccOM9GhoPU0vMaD/UVJcJQzvrxVHO8EHS36aUkjKd6cOpdVbCt3qx8cEhCmaFEO6u
- CL+k5AZQoABbFQEBocZE1/lSYzaHkcHrjn4cQjc3CffXnUVYwlo8EYOtAHgMDC39s9a7S90L
- 69l6G73lYBD/Br5lnDPlG6dKfGFZZpQ1h8/x+Qz366Ojfq9MuuRJg7ZQpe6foiOtqwKym/zV
- dVvSdOOc5sHSpfwu5+BVAAyBd6hw4NddlAQUjHSRs3zJ9OfrEx2d3mIfXZ7+pMhZ7qX0Axlq
- Lq+B5cfLpzkPAgKn11tfXFxP+hcPHIts0bnDz4EEp+HraW+oRCH2m57Y9zhcJTOJaLw4YpTY
- GRUlF076vZ2Hz/xMEvIJddRGId7UXZgH9a32NDf+BUjWEZvFt1wFSW1r7zb7oGCwZMy2LI/G
- aHQv/N0NeFMd28z+deyxd0k1CGefHJuJcOJDVtcE1rGQ43aDhWSpXvXKDj42vFD2We6uIo9D
- 1VNre2+uAxFzqqf026H6cH8hin9Vnx7p3uq3Dka/Y/qmRFnKVQARAQABzRxIZWxnZSBEZWxs
- ZXIgPGRlbGxlckBnbXguZGU+wsGRBBMBCAA7AhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheA
- FiEERUSCKCzZENvvPSX4Pl89BKeiRgMFAl3J1zsCGQEACgkQPl89BKeiRgNK7xAAg6kJTPje
- uBm9PJTUxXaoaLJFXbYdSPfXhqX/BI9Xi2VzhwC2nSmizdFbeobQBTtRIz5LPhjk95t11q0s
- uP5htzNISPpwxiYZGKrNnXfcPlziI2bUtlz4ke34cLK6MIl1kbS0/kJBxhiXyvyTWk2JmkMi
- REjR84lCMAoJd1OM9XGFOg94BT5aLlEKFcld9qj7B4UFpma8RbRUpUWdo0omAEgrnhaKJwV8
- qt0ULaF/kyP5qbI8iA2PAvIjq73dA4LNKdMFPG7Rw8yITQ1Vi0DlDgDT2RLvKxEQC0o3C6O4
- iQq7qamsThLK0JSDRdLDnq6Phv+Yahd7sDMYuk3gIdoyczRkXzncWAYq7XTWl7nZYBVXG1D8
- gkdclsnHzEKpTQIzn/rGyZshsjL4pxVUIpw/vdfx8oNRLKj7iduf11g2kFP71e9v2PP94ik3
- Xi9oszP+fP770J0B8QM8w745BrcQm41SsILjArK+5mMHrYhM4ZFN7aipK3UXDNs3vjN+t0zi
- qErzlrxXtsX4J6nqjs/mF9frVkpv7OTAzj7pjFHv0Bu8pRm4AyW6Y5/H6jOup6nkJdP/AFDu
- 5ImdlA0jhr3iLk9s9WnjBUHyMYu+HD7qR3yhX6uWxg2oB2FWVMRLXbPEt2hRGq09rVQS7DBy
- dbZgPwou7pD8MTfQhGmDJFKm2jvOwU0EXchrcwEQAOsDQjdtPeaRt8EP2pc8tG+g9eiiX9Sh
- rX87SLSeKF6uHpEJ3VbhafIU6A7hy7RcIJnQz0hEUdXjH774B8YD3JKnAtfAyuIU2/rOGa/v
- UN4BY6U6TVIOv9piVQByBthGQh4YHhePSKtPzK9Pv/6rd8H3IWnJK/dXiUDQllkedrENXrZp
- eLUjhyp94ooo9XqRl44YqlsrSUh+BzW7wqwfmu26UjmAzIZYVCPCq5IjD96QrhLf6naY6En3
- ++tqCAWPkqKvWfRdXPOz4GK08uhcBp3jZHTVkcbo5qahVpv8Y8mzOvSIAxnIjb+cklVxjyY9
- dVlrhfKiK5L+zA2fWUreVBqLs1SjfHm5OGuQ2qqzVcMYJGH/uisJn22VXB1c48yYyGv2HUN5
- lC1JHQUV9734I5cczA2Gfo27nTHy3zANj4hy+s/q1adzvn7hMokU7OehwKrNXafFfwWVK3OG
- 1dSjWtgIv5KJi1XZk5TV6JlPZSqj4D8pUwIx3KSp0cD7xTEZATRfc47Yc+cyKcXG034tNEAc
- xZNTR1kMi9njdxc1wzM9T6pspTtA0vuD3ee94Dg+nDrH1As24uwfFLguiILPzpl0kLaPYYgB
- wumlL2nGcB6RVRRFMiAS5uOTEk+sJ/tRiQwO3K8vmaECaNJRfJC7weH+jww1Dzo0f1TP6rUa
- fTBRABEBAAHCwXYEGAEIACAWIQRFRIIoLNkQ2+89Jfg+Xz0Ep6JGAwUCXchrcwIbDAAKCRA+
- Xz0Ep6JGAxtdEAC54NQMBwjUNqBNCMsh6WrwQwbg9tkJw718QHPw43gKFSxFIYzdBzD/YMPH
- l+2fFiefvmI4uNDjlyCITGSM+T6b8cA7YAKvZhzJyJSS7pRzsIKGjhk7zADL1+PJei9p9idy
- RbmFKo0dAL+ac0t/EZULHGPuIiavWLgwYLVoUEBwz86ZtEtVmDmEsj8ryWw75ZIarNDhV74s
- BdM2ffUJk3+vWe25BPcJiaZkTuFt+xt2CdbvpZv3IPrEkp9GAKof2hHdFCRKMtgxBo8Kao6p
- Ws/Vv68FusAi94ySuZT3fp1xGWWf5+1jX4ylC//w0Rj85QihTpA2MylORUNFvH0MRJx4mlFk
- XN6G+5jIIJhG46LUucQ28+VyEDNcGL3tarnkw8ngEhAbnvMJ2RTx8vGh7PssKaGzAUmNNZiG
- MB4mPKqvDZ02j1wp7vthQcOEg08z1+XHXb8ZZKST7yTVa5P89JymGE8CBGdQaAXnqYK3/yWf
- FwRDcGV6nxanxZGKEkSHHOm8jHwvQWvPP73pvuPBEPtKGLzbgd7OOcGZWtq2hNC6cRtsRdDx
- 4TAGMCz4j238m+2mdbdhRh3iBnWT5yPFfnv/2IjFAk+sdix1Mrr+LIDF++kiekeq0yUpDdc4
- ExBy2xf6dd+tuFFBp3/VDN4U0UfG4QJ2fg19zE5Z8dS4jGIbLg==
-In-Reply-To: <20240327204450.14914-2-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:tdzWKBL0P5Wfrjj8yny8Q2lhw+7grSIiFh5Q0dWgyFJJyQtp97n
- 7yW0OxyxmQ4RmQZcPMPcfWKLpDiA9fV7zmf5VhxMbyIqH/cEqbjd6qlgZE0mNtummvbAHsL
- drn/A1jBNNjPS387hymUaTCxPHw8T2VxgIQ2CKXP8w9BQIIhn7y8YrJnQlIsn6MorknokHj
- ntFVjgd6CuyklDh/qiPog==
-UI-OutboundReport: notjunk:1;M01:P0:D2qBu+HavM4=;k8FmDd1t1U1FjeH6FKiF1DaXqYp
- ROvL0p1wFzp/tzOYRBoZWPN7tAQG+ZrP7pQ6ztPNN73BLJkKyVKE9Isru3oEjXw3MTOVA9Ezd
- gZppMzAiEgcBQhHIorV+2MLgsEuRrdVQU85oLX4dFfQ5iYlphg7nXi/5jmYERLvy7VPnteB+8
- 9eDFe9KP6RKOwhVEZt+9G6O+LS7xvljRdO8CPRNnfvd5e4rthXGNzuMqSasE06QkJmCJgT3W6
- K/t2s5ODVZm/cVghaFaLuc79Xk9Iy/vGIAImToxZomxiqcuuxUi/aaldKJ9fir6sXYm0eGMdm
- QYYe8TcqkgPIElCEYL3tasSqJQRWhtYSmOELTetYLJsWKLX/enbTtrBMNBzXxQXu7yczo/J+H
- 4ZO3x6peJ5Khv/0ksPyzMXMLXthWkC1qvr7ldnSmg3pk8+gYxOeiYlhRol/XT+DQ4hK1Re/jx
- KMzsF2tfPLir94oe3ogkGu/92gxxG5NXZoi/waZ8R/pL8K9AzblzBg8WrRWCHzWum0CXt8Nlw
- lNUQNfwXy60ZS7ApLwTsYjZd5LvmI6QcgO6IumiIHcKavIKm1VaLW/jDEq3TpOz8rLTARH+78
- zxH6iSHkEKPN0KpGbCUH09wGlt5VFajvDMbxhL0d+TRMT8Kgc7ZQg1rtn9DhvEWs8P0EkWlSl
- dKzwPwQzQ7farrNoJPW/ud0xqBoQDv+GAcYNOttNfn8dHtcNTdq0Rn++VaprFX7y55vpUCVw7
- Q6SqB0EwgzbwOr2cQRuc6WZXFwjxMucMerAxReY1nAa+62ehK0nK9Fx8SD8ObYiTwkKDKXhXN
- CJKPwBIsReEyp7tEUVxQfOtPNSP7pCBzF2pIeGHr60eiY=
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,112 +57,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andreas Larsson <andreas@gaisler.com>, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: dtsen@linux.ibm.com, msuchanek@suse.de, herbert@gondor.apana.org.au, wireguard@lists.zx2c4.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/27/24 21:41, Thomas Zimmermann wrote:
-> Various Kconfig options selected the per-architecture helpers for
-> fbdev. But none of the contained code depends on fbdev. Standardize
-> on CONFIG_VIDEO, which will allow to add more general helpers for
-> video functionality.
->
-> CONFIG_VIDEO protects each architecture's video/ directory.
+The chacha-p10-crypto module provides optimised chacha routines for
+Power10. It also selects CRYPTO_ARCH_HAVE_LIB_CHACHA which says it
+provides chacha_crypt_arch() to generic code.
 
-Your patch in general looks good.
-But is renaming the config option from CONFIG_FB_CORE to CONFIG_VIDEO
-the best choice?
-CONFIG_VIDEO might be mixed up with multimedia/video-streaming.
+Notably the module needs to provide chacha_crypt_arch() regardless of
+whether it is loaded on Power10 or an older CPU.
 
-Why not e.g. CONFIG_GRAPHICS_CORE?
-I'm fine with CONFIG_VIDEO as well, but if someone has a better idea
-we maybe should go with that instead now?
+The implementation of chacha_crypt_arch() already has a fallback to
+chacha_crypt_generic(), however the module as a whole fails to load on
+pre-Power10, because of the use of module_cpu_feature_match().
 
-Helge
+This breaks for example loading wireguard:
 
-> This
-> allows for the use of more fine-grained control for each directory's
-> files, such as the use of CONFIG_STI_CORE on parisc.
->
-> v2:
-> - sparc: rebased onto Makefile changes
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-> Cc: Helge Deller <deller@gmx.de>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Andreas Larsson <andreas@gaisler.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: x86@kernel.org
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> ---
->   arch/parisc/Makefile      | 2 +-
->   arch/sparc/Makefile       | 4 ++--
->   arch/sparc/video/Makefile | 2 +-
->   arch/x86/Makefile         | 2 +-
->   arch/x86/video/Makefile   | 3 ++-
->   5 files changed, 7 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/parisc/Makefile b/arch/parisc/Makefile
-> index 316f84f1d15c8..21b8166a68839 100644
-> --- a/arch/parisc/Makefile
-> +++ b/arch/parisc/Makefile
-> @@ -119,7 +119,7 @@ export LIBGCC
->
->   libs-y	+=3D arch/parisc/lib/ $(LIBGCC)
->
-> -drivers-y +=3D arch/parisc/video/
-> +drivers-$(CONFIG_VIDEO) +=3D arch/parisc/video/
->
->   boot	:=3D arch/parisc/boot
->
-> diff --git a/arch/sparc/Makefile b/arch/sparc/Makefile
-> index 2a03daa68f285..757451c3ea1df 100644
-> --- a/arch/sparc/Makefile
-> +++ b/arch/sparc/Makefile
-> @@ -59,8 +59,8 @@ endif
->   libs-y                 +=3D arch/sparc/prom/
->   libs-y                 +=3D arch/sparc/lib/
->
-> -drivers-$(CONFIG_PM) +=3D arch/sparc/power/
-> -drivers-$(CONFIG_FB_CORE) +=3D arch/sparc/video/
-> +drivers-$(CONFIG_PM)    +=3D arch/sparc/power/
-> +drivers-$(CONFIG_VIDEO) +=3D arch/sparc/video/
->
->   boot :=3D arch/sparc/boot
->
-> diff --git a/arch/sparc/video/Makefile b/arch/sparc/video/Makefile
-> index d4d83f1702c61..9dd82880a027a 100644
-> --- a/arch/sparc/video/Makefile
-> +++ b/arch/sparc/video/Makefile
-> @@ -1,3 +1,3 @@
->   # SPDX-License-Identifier: GPL-2.0-only
->
-> -obj-$(CONFIG_FB_CORE) +=3D fbdev.o
-> +obj-y	+=3D fbdev.o
-> diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-> index 15a5f4f2ff0aa..c0ea612c62ebe 100644
-> --- a/arch/x86/Makefile
-> +++ b/arch/x86/Makefile
-> @@ -265,7 +265,7 @@ drivers-$(CONFIG_PCI)            +=3D arch/x86/pci/
->   # suspend and hibernation support
->   drivers-$(CONFIG_PM) +=3D arch/x86/power/
->
-> -drivers-$(CONFIG_FB_CORE) +=3D arch/x86/video/
-> +drivers-$(CONFIG_VIDEO) +=3D arch/x86/video/
->
->   ####
->   # boot loader support. Several targets are kept for legacy purposes
-> diff --git a/arch/x86/video/Makefile b/arch/x86/video/Makefile
-> index 5ebe48752ffc4..9dd82880a027a 100644
-> --- a/arch/x86/video/Makefile
-> +++ b/arch/x86/video/Makefile
-> @@ -1,2 +1,3 @@
->   # SPDX-License-Identifier: GPL-2.0-only
-> -obj-$(CONFIG_FB_CORE)		+=3D fbdev.o
-> +
-> +obj-y	+=3D fbdev.o
+  jostaberry-1:~ # modprobe -v wireguard
+  insmod /lib/modules/6.8.0-lp155.8.g7e0e887-default/kernel/arch/powerpc/crypto/chacha-p10-crypto.ko.zst
+  modprobe: ERROR: could not insert 'wireguard': No such device
+
+Fix it by removing module_cpu_feature_match(), and instead check the
+CPU feature manually. If the CPU feature is not found, the module
+still loads successfully, but doesn't register the Power10 specific
+algorithms. That allows chacha_crypt_generic() to remain available for
+use, fixing the problem.
+
+  [root@fedora ~]# modprobe -v wireguard
+  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/net/ipv4/udp_tunnel.ko
+  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/net/ipv6/ip6_udp_tunnel.ko
+  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/lib/crypto/libchacha.ko
+  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/arch/powerpc/crypto/chacha-p10-crypto.ko
+  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/lib/crypto/libchacha20poly1305.ko
+  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/drivers/net/wireguard/wireguard.ko
+  [   18.910452][  T721] wireguard: allowedips self-tests: pass
+  [   18.914999][  T721] wireguard: nonce counter self-tests: pass
+  [   19.029066][  T721] wireguard: ratelimiter self-tests: pass
+  [   19.029257][  T721] wireguard: WireGuard 1.0.0 loaded. See www.wireguard.com for information.
+  [   19.029361][  T721] wireguard: Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+
+Reported-by: Michal Suchánek <msuchanek@suse.de>
+Closes: https://lore.kernel.org/all/20240315122005.GG20665@kitsune.suse.cz/
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/crypto/chacha-p10-glue.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/crypto/chacha-p10-glue.c b/arch/powerpc/crypto/chacha-p10-glue.c
+index 74fb86b0d209..7c728755852e 100644
+--- a/arch/powerpc/crypto/chacha-p10-glue.c
++++ b/arch/powerpc/crypto/chacha-p10-glue.c
+@@ -197,6 +197,9 @@ static struct skcipher_alg algs[] = {
+ 
+ static int __init chacha_p10_init(void)
+ {
++	if (!cpu_has_feature(CPU_FTR_ARCH_31))
++		return 0;
++
+ 	static_branch_enable(&have_p10);
+ 
+ 	return crypto_register_skciphers(algs, ARRAY_SIZE(algs));
+@@ -204,10 +207,13 @@ static int __init chacha_p10_init(void)
+ 
+ static void __exit chacha_p10_exit(void)
+ {
++	if (!static_branch_likely(&have_p10))
++		return;
++
+ 	crypto_unregister_skciphers(algs, ARRAY_SIZE(algs));
+ }
+ 
+-module_cpu_feature_match(PPC_MODULE_FEATURE_P10, chacha_p10_init);
++module_init(chacha_p10_init);
+ module_exit(chacha_p10_exit);
+ 
+ MODULE_DESCRIPTION("ChaCha and XChaCha stream ciphers (P10 accelerated)");
+-- 
+2.44.0
 
