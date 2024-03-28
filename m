@@ -4,48 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 514CEC54E67
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 13:03:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5F02C54E64
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 13:16:25 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OxZCP8BM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Q2sJZS/n;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V53cX5dL6z3vdt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 00:03:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V53vr1mH2z3vfP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 00:16:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OxZCP8BM;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Q2sJZS/n;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.14; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V53bh0FhPz3dhR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 00:02:24 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1711630937;
-	bh=x+HARHjN6PjTasqejFvCjOWEUt0vA4nR9qlaT1Vlr5g=;
-	h=From:To:Cc:Subject:Date:From;
-	b=OxZCP8BMd8mnym1pAo2FNEHLzwJZw5ncXfQr0rV0N1Q04cZ/fJnoQoZV/Nn7DByPx
-	 oY4tNYQ7ULeBCNJhVjUmRDOZf0JoFLu7trm+Cvef9XPH4YXvIBPMR8a0iuq1DA6opt
-	 PNmBx1LmqFhibPkoFuLOsooOyqY3tPRK2Bd+t8qrqnravOUzyJ5nxd7swfe4WM0XHg
-	 8NfBW+VgQlBXl/ZTGzJY+o0TKPjcbW42iiQslibed/gj+H5D3H4LKUxtQ3+atdA3WS
-	 QnTQuf00Th3iXc4HKt46R0Hw6ZnCcOfIxLIhbqmKg2DXlLfktNsJ1UvOctq19F8iUT
-	 qJRF3UkQmxuVw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4V53bX1JF9z4wcq;
-	Fri, 29 Mar 2024 00:02:16 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/crypto/chacha-p10: Fix failure on non Power10
-Date: Fri, 29 Mar 2024 00:02:00 +1100
-Message-ID: <20240328130200.3041687-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.44.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V53v11H9jz3cZB
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 00:15:39 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1711631741; x=1743167741;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Xo032l06yr/hR/jwn/WjJ3wew5ThoMRYTk7U+HZZzrE=;
+  b=Q2sJZS/nVqFerdsLla9TSSOuKtefBSSyOnaQaly8/e1okmhUxEuYXn6r
+   twltxEHuCJBGk3Z4kiJ4OJC0gXqRqx8P6FYVqITSL+KfS5srEQ/9oun/i
+   nJqAYcj/ATCPmjZEC8RWhxjgodmDyY+G4kkWh8MKMrAwBEiOk0NydT2+m
+   pEhNx9Dv83AFAF5b6UoHHDC8308FfyoI7D0azUhwFuhSOLn/D+lhvC/i3
+   SIc3M7x/OTK9HXj3Dm90WuczRICMHVd50x6UXymEIv9PO+XyzoZh+XHcu
+   9pxWgJoSuI/Fe1141b4ZppYRtc2eZjPQFAamYeri/9gQCkFs5rq2VdJ94
+   w==;
+X-CSE-ConnectionGUID: yeg8LIEPQcGrMl1xs5lnRQ==
+X-CSE-MsgGUID: rm1UG1JOTJC/NiPE90xkog==
+X-IronPort-AV: E=McAfee;i="6600,9927,11026"; a="6999353"
+X-IronPort-AV: E=Sophos;i="6.07,161,1708416000"; 
+   d="scan'208";a="6999353"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Mar 2024 06:15:18 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.07,161,1708416000"; 
+   d="scan'208";a="16637521"
+Received: from lkp-server01.sh.intel.com (HELO be39aa325d23) ([10.239.97.150])
+  by fmviesa007.fm.intel.com with ESMTP; 28 Mar 2024 06:15:08 -0700
+Received: from kbuild by be39aa325d23 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1rppb0-0002A6-01;
+	Thu, 28 Mar 2024 13:15:06 +0000
+Date: Thu, 28 Mar 2024 21:15:01 +0800
+From: kernel test robot <lkp@intel.com>
+To: Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de,
+	javierm@redhat.com, deller@gmx.de, sui.jingfeng@linux.dev
+Subject: Re: [PATCH v2 3/3] arch: Rename fbdev header and source files
+Message-ID: <202403282102.OEKoBT3H-lkp@intel.com>
+References: <20240327204450.14914-4-tzimmermann@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240327204450.14914-4-tzimmermann@suse.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,82 +72,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dtsen@linux.ibm.com, msuchanek@suse.de, herbert@gondor.apana.org.au, wireguard@lists.zx2c4.com
+Cc: linux-fbdev@vger.kernel.org, Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, sparclinux@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Huacai Chen <chenhuacai@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev, oe-kbuild-all@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The chacha-p10-crypto module provides optimised chacha routines for
-Power10. It also selects CRYPTO_ARCH_HAVE_LIB_CHACHA which says it
-provides chacha_crypt_arch() to generic code.
+Hi Thomas,
 
-Notably the module needs to provide chacha_crypt_arch() regardless of
-whether it is loaded on Power10 or an older CPU.
+kernel test robot noticed the following build errors:
 
-The implementation of chacha_crypt_arch() already has a fallback to
-chacha_crypt_generic(), however the module as a whole fails to load on
-pre-Power10, because of the use of module_cpu_feature_match().
+[auto build test ERROR on linus/master]
+[also build test ERROR on v6.9-rc1 next-20240328]
+[cannot apply to tip/x86/core deller-parisc/for-next arnd-asm-generic/master]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-This breaks for example loading wireguard:
+url:    https://github.com/intel-lab-lkp/linux/commits/Thomas-Zimmermann/arch-Select-fbdev-helpers-with-CONFIG_VIDEO/20240328-044735
+base:   linus/master
+patch link:    https://lore.kernel.org/r/20240327204450.14914-4-tzimmermann%40suse.de
+patch subject: [PATCH v2 3/3] arch: Rename fbdev header and source files
+config: um-randconfig-001-20240328 (https://download.01.org/0day-ci/archive/20240328/202403282102.OEKoBT3H-lkp@intel.com/config)
+compiler: gcc-12 (Ubuntu 12.3.0-9ubuntu2) 12.3.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240328/202403282102.OEKoBT3H-lkp@intel.com/reproduce)
 
-  jostaberry-1:~ # modprobe -v wireguard
-  insmod /lib/modules/6.8.0-lp155.8.g7e0e887-default/kernel/arch/powerpc/crypto/chacha-p10-crypto.ko.zst
-  modprobe: ERROR: could not insert 'wireguard': No such device
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202403282102.OEKoBT3H-lkp@intel.com/
 
-Fix it by removing module_cpu_feature_match(), and instead check the
-CPU feature manually. If the CPU feature is not found, the module
-still loads successfully, but doesn't register the Power10 specific
-algorithms. That allows chacha_crypt_generic() to remain available for
-use, fixing the problem.
+All errors (new ones prefixed by >>):
 
-  [root@fedora ~]# modprobe -v wireguard
-  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/net/ipv4/udp_tunnel.ko
-  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/net/ipv6/ip6_udp_tunnel.ko
-  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/lib/crypto/libchacha.ko
-  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/arch/powerpc/crypto/chacha-p10-crypto.ko
-  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/lib/crypto/libchacha20poly1305.ko
-  insmod /lib/modules/6.8.0-00001-g786a790c4d79/kernel/drivers/net/wireguard/wireguard.ko
-  [   18.910452][  T721] wireguard: allowedips self-tests: pass
-  [   18.914999][  T721] wireguard: nonce counter self-tests: pass
-  [   19.029066][  T721] wireguard: ratelimiter self-tests: pass
-  [   19.029257][  T721] wireguard: WireGuard 1.0.0 loaded. See www.wireguard.com for information.
-  [   19.029361][  T721] wireguard: Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+   /usr/bin/ld: drivers/video/fbdev/core/fb_io_fops.o: in function `fb_io_mmap':
+>> fb_io_fops.c:(.text+0x251): undefined reference to `pgprot_framebuffer'
+   collect2: error: ld returned 1 exit status
 
-Reported-by: Michal Suchánek <msuchanek@suse.de>
-Closes: https://lore.kernel.org/all/20240315122005.GG20665@kitsune.suse.cz/
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/crypto/chacha-p10-glue.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/crypto/chacha-p10-glue.c b/arch/powerpc/crypto/chacha-p10-glue.c
-index 74fb86b0d209..7c728755852e 100644
---- a/arch/powerpc/crypto/chacha-p10-glue.c
-+++ b/arch/powerpc/crypto/chacha-p10-glue.c
-@@ -197,6 +197,9 @@ static struct skcipher_alg algs[] = {
- 
- static int __init chacha_p10_init(void)
- {
-+	if (!cpu_has_feature(CPU_FTR_ARCH_31))
-+		return 0;
-+
- 	static_branch_enable(&have_p10);
- 
- 	return crypto_register_skciphers(algs, ARRAY_SIZE(algs));
-@@ -204,10 +207,13 @@ static int __init chacha_p10_init(void)
- 
- static void __exit chacha_p10_exit(void)
- {
-+	if (!static_branch_likely(&have_p10))
-+		return;
-+
- 	crypto_unregister_skciphers(algs, ARRAY_SIZE(algs));
- }
- 
--module_cpu_feature_match(PPC_MODULE_FEATURE_P10, chacha_p10_init);
-+module_init(chacha_p10_init);
- module_exit(chacha_p10_exit);
- 
- MODULE_DESCRIPTION("ChaCha and XChaCha stream ciphers (P10 accelerated)");
 -- 
-2.44.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
