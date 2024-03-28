@@ -4,70 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E24FC54E64
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 13:59:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A66EACD11DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 21:57:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=gZFbdLbB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=T6IlFkQn;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V54s36HMVz3vkX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 00:59:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V5HTR23QGz3ccV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 08:57:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=gZFbdLbB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=T6IlFkQn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::b32; helo=mail-yb1-xb32.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb32.google.com (mail-yb1-xb32.google.com [IPv6:2607:f8b0:4864:20::b32])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=htejun@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V54N460djz3c12
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 00:37:24 +1100 (AEDT)
-Received: by mail-yb1-xb32.google.com with SMTP id 3f1490d57ef6-db4364ecd6aso815440276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 06:37:24 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V581c5HK1z3c0H
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 03:21:38 +1100 (AEDT)
+Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-6e782e955adso1089997b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 09:21:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1711633042; x=1712237842; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=vhptj9/Vq4Rm0PoGzxaGiCJqIgDUZwkAbXDvc9ksjDI=;
-        b=gZFbdLbBx25D1ZAKzH9CdI3WLFC7FNoWAr2LVIb3mga/vPUdi2KHc088b0u5TeETm9
-         SgTf8bb3VMkEWz4Up39SygQMbDIZYye00AHMDiEK73ODe9P6LvhMk/JKypRKCRz/lq6W
-         gLV9PHz6gir7VDelcTzQ9W4ZMUdvbH36fBczQj6ItRIzJEbdZvZAA8e6iNXrmF/rF/Sb
-         RH1vQF3eHE5ZxoELU2LxRCeryLv5a3al5PQegd3PDKzMyumHpP8uBTJ/pZ1Vhb/g+fvZ
-         8wOblBYXDXtmhgUV8r8g3amOYLOWtwOzTxjmD04o/MMdW2i6iz5HxNhRa8i7z6zsz2Af
-         pvag==
+        d=gmail.com; s=20230601; t=1711642896; x=1712247696; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=TpQlnbUKf5vfOk3TpOVHNGMqh00k5XUuxEvlHT+naYc=;
+        b=T6IlFkQnjP2I77M1bVP6avX7V3wzldb5IM8WfEjy2tekdGIDZUvFw67aFINmwnJ9+H
+         FXzDjnU33G5B2Yt7Z/DI0Z86nF0K+DSLl+oLzwrKiE/hNgqrz/99oQl96T34LmK7OSxW
+         0BD9gZRYqHc+/Z4//74iFGL3PWkd95EwumbyihluXSSslCabEyMDqZ5FE1Ubcw4XaXsx
+         NNli8EFxU8GFWvPm7DSQDcEnymbABMu6BerzFu/xkHlV9JyXLVLTWAmEA4/Q2E/GNYtO
+         PIh459JJaSUKEc8K917cpdOhobhsT210Qm2Z3AAB+oh6CQ6Y6IiQGX5GvzUrscB/LBZo
+         GMkA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711633042; x=1712237842;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1711642896; x=1712247696;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=vhptj9/Vq4Rm0PoGzxaGiCJqIgDUZwkAbXDvc9ksjDI=;
-        b=OpBNFUoJ0Hh70tnYH0G2TiuRN1FLAsQK4zXpcPnBiRqgilEH1EaQ5OBYvkVpu8QrSt
-         lhddsFCLCXCvYSLp58IBHzqbvWVh9zbdPKs4/ibT1gmMey0iUbUrfHKZfX11L2TQuREN
-         o6m0ztZfbCTbBFQnLjIpDpg0bw+uMoeryJoTfN84FiE+Y0+FansijaBsI8hbSuhRpYYT
-         qOa1YwNyfNgWjss3YCsiuZBek+8t+otfwIJwJm1m9+sfEGcyY4kXbtA1aOIrPbZmLlc2
-         VV8sVsRBZkgbwL3LK3csCYhugDDkwLvfQihX0W7evVhpUozbtheeJLdS3Nd5isXWzr9/
-         ZWKw==
-X-Forwarded-Encrypted: i=1; AJvYcCXhwjAABjygJwtORpyADDOCaB2iLcnNAiyW2XEcnpzqf0uanFWsM6D+LZzfOd6Mud0SDVf7xPi6iwvjU9wiYd8pshgEUQg1r36GzRYuUQ==
-X-Gm-Message-State: AOJu0YzCyzkUBf5AWIg1AFKVSGj9tjdbSXcDm4atkkEyfcWsfVcuVgZl
-	gTm+rzi2v1HpjdhWTFe+SpZMJNXmQzoNWeCPSLeSRVJ4ban+vBc2xkeW0fr+nIBGppzaA9UBKDi
-	JvdCfYiqzGS0e/nMz9NqW4s/fejILpcWS28B83Q==
-X-Google-Smtp-Source: AGHT+IGjGHEbsk10nKTaVGgOOQzkHc5Qm9STf87bHGVpMP0DEmjO9lKjEWUgvRJ23UvcJC23rRkiymMtwiTmbVMLRs0=
-X-Received: by 2002:a25:b9ca:0:b0:dd1:3cc1:5352 with SMTP id
- y10-20020a25b9ca000000b00dd13cc15352mr2820459ybj.15.1711633040798; Thu, 28
- Mar 2024 06:37:20 -0700 (PDT)
-MIME-Version: 1.0
-References: <20240327160314.9982-1-apais@linux.microsoft.com>
- <20240327160314.9982-10-apais@linux.microsoft.com> <CAPDyKFpuKadPQv6+61C2pE4x4FE-DUC5W6WCCPu9Nb2DnDB56g@mail.gmail.com>
-In-Reply-To: <CAPDyKFpuKadPQv6+61C2pE4x4FE-DUC5W6WCCPu9Nb2DnDB56g@mail.gmail.com>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 28 Mar 2024 14:37:09 +0100
-Message-ID: <CACRpkdZ7wAbtTUmmLCef7KnATmfZeAL26Q-gLqnGe3CdZ3+O3A@mail.gmail.com>
-Subject: Re: [PATCH 9/9] mmc: Convert from tasklet to BH workqueue
+        bh=TpQlnbUKf5vfOk3TpOVHNGMqh00k5XUuxEvlHT+naYc=;
+        b=TViJBdu6aJhQDvnhjNiPWr5YfnTEXMgTRJxJE0o2Hs1jq8P3Vq+UJX0ioKAXwhmzEn
+         Xc+jNQATsOS+Yw6Kg2H+PCZMZxlSPVzEPDd2DD9IkLNk0U5gk69fEu7OCvnM77ZOVl8e
+         H+bFEnsxtCfZ8wo5nEkDwp+PD3UmenRnBjE8WixenbgV/cNnHBVcvk0wBAmEDEnXrsNu
+         j/4jNJ8gKVbI7nqpWYXrdjgOElyTybAozcTF+OplpNjBvmRngBhTlYUF9BNzbUgh1luX
+         v44DQ5ut7Ugi7SozrICEAfGD7y2mNUSLuyu0Voi8AsB8031v7NqnU+F5EuTLLQRvsIkb
+         /w+A==
+X-Forwarded-Encrypted: i=1; AJvYcCUJWeZ9htQp6qsyUSwows3pQ2R8daGO3D7Qc7XwX31HzChNC4nsI5ZCdELK0t7lGLTTlBLlvvWUJqfQ0hoByDMxJvh3bm6kzeIrOWUqvw==
+X-Gm-Message-State: AOJu0YzviLH0XF1GYVIDVSd4Rf4t/WB70trnj+sMl66jZplJAGgqL8ef
+	cF2UnVQshf+rZLnPUZJXOMmD4xEQbkbds43XjJvfLQkF18F8rHPT
+X-Google-Smtp-Source: AGHT+IHNLtSIfLiMjPgdNbH73n29Rqo4mQsh/oBERN464FH6NwbPkAtXL24hv7Aec7RU+H+HqkGb1w==
+X-Received: by 2002:a05:6a20:7495:b0:1a5:7308:3297 with SMTP id p21-20020a056a20749500b001a573083297mr1591044pzd.0.1711642896210;
+        Thu, 28 Mar 2024 09:21:36 -0700 (PDT)
+Received: from localhost ([2620:10d:c090:400::5:4d4e])
+        by smtp.gmail.com with ESMTPSA id fd37-20020a056a002ea500b006eab6ac1f83sm1576815pfb.0.2024.03.28.09.21.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 28 Mar 2024 09:21:35 -0700 (PDT)
+Date: Thu, 28 Mar 2024 06:21:34 -1000
+From: Tejun Heo <tj@kernel.org>
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Fri, 29 Mar 2024 00:55:57 +1100
+Subject: Re: [PATCH 9/9] mmc: Convert from tasklet to BH workqueue
+Message-ID: <ZgWZDtNU4tCwqyeu@slm.duckdns.org>
+References: <20240327160314.9982-1-apais@linux.microsoft.com>
+ <20240327160314.9982-10-apais@linux.microsoft.com>
+ <CAPDyKFpuKadPQv6+61C2pE4x4FE-DUC5W6WCCPu9Nb2DnDB56g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFpuKadPQv6+61C2pE4x4FE-DUC5W6WCCPu9Nb2DnDB56g@mail.gmail.com>
+X-Mailman-Approved-At: Fri, 29 Mar 2024 08:57:06 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,35 +82,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: imx@lists.linux.dev, linux-hyperv@vger.kernel.org, oneukum@suse.com, duncan.sands@free.fr, hayashi.kunihiko@socionext.com, linux-mmc@vger.kernel.org, aubin.constans@microchip.com, Frank.Li@nxp.com, linux-usb@vger.kernel.org, HaraldWelte@viatech.com, paul@crapouillou.net, linux-tegra@vger.kernel.org, netdev@vger.kernel.org, maintainers@bluecherrydvr.com, peter.ujfalusi@gmail.com, manivannan.sadhasivam@linaro.org, linux-riscv@lists.infradead.org, kys@microsoft.com, robert.jarzmik@free.fr, haijie1@huawei.com, linux-renesas-soc@vger.kernel.org, wei.liu@kernel.org, linux-omap@vger.kernel.org, florian.fainelli@broadcom.com, linux-rdma@vger.kernel.org, vireshk@kernel.org, jassisinghbrar@gmail.com, decui@microsoft.com, wangzhou1@hisilicon.com, jernej.skrabec@gmail.com, jh80.chung@samsung.com, zw@zh-kernel.org, wens@csie.org, stern@rowland.harvard.edu, linux-arm-msm@vger.kernel.org, orsonzhai@gmail.com, pierre@ossman.eu, linux-mips@vger.kernel.org, Eugeniy.Paltsev@synopsys.com, patrice.ch
- otard@foss.st.com, asahi@lists.linux.dev, brucechang@via.com.tw, keescook@chromium.org, oakad@yahoo.com, sven@svenpeter.dev, rjui@broadcom.com, s.hauer@pengutronix.de, sean.wang@mediatek.com, linux-actions@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, haojian.zhuang@gmail.com, mirq-linux@rere.qmqm.pl, dmaengine@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, baolin.wang@linux.alibaba.com, matthias.bgg@gmail.com, openipmi-developer@lists.sourceforge.net, mchehab@kernel.org, Allen Pais <apais@linux.microsoft.com>, linux-arm-kernel@lists.infradead.org, angelogioacchino.delregno@collabora.com, sbranden@broadcom.com, logang@deltatee.com, andersson@kernel.org, marcan@marcan.st, haiyangz@microsoft.com, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, konrad.dybcio@linaro.org, linux-sunxi@lists.linux.dev, vkoul@kernel.org, linux-s390@vger.kernel.org, mhiramat@kernel.org, zhang.lyra@gmail.com, tj@kernel.org, manuel.lauss@gmail.com, linux-medi
- a@vger.kernel.org, shawnguo@kernel.org, afaerber@suse.de, daniel@zonque.org
+Cc: imx@lists.linux.dev, linux-hyperv@vger.kernel.org, oneukum@suse.com, duncan.sands@free.fr, hayashi.kunihiko@socionext.com, linux-mmc@vger.kernel.org, aubin.constans@microchip.com, linus.walleij@linaro.org, Frank.Li@nxp.com, linux-usb@vger.kernel.org, HaraldWelte@viatech.com, paul@crapouillou.net, linux-tegra@vger.kernel.org, netdev@vger.kernel.org, maintainers@bluecherrydvr.com, peter.ujfalusi@gmail.com, manivannan.sadhasivam@linaro.org, linux-riscv@lists.infradead.org, kys@microsoft.com, robert.jarzmik@free.fr, haijie1@huawei.com, linux-renesas-soc@vger.kernel.org, wei.liu@kernel.org, linux-omap@vger.kernel.org, florian.fainelli@broadcom.com, linux-rdma@vger.kernel.org, vireshk@kernel.org, jassisinghbrar@gmail.com, decui@microsoft.com, wangzhou1@hisilicon.com, jernej.skrabec@gmail.com, jh80.chung@samsung.com, zw@zh-kernel.org, wens@csie.org, stern@rowland.harvard.edu, linux-arm-msm@vger.kernel.org, orsonzhai@gmail.com, pierre@ossman.eu, linux-mips@vger.kernel.org, Eugeniy.Paltse
+ v@synopsys.com, patrice.chotard@foss.st.com, asahi@lists.linux.dev, brucechang@via.com.tw, keescook@chromium.org, oakad@yahoo.com, sven@svenpeter.dev, rjui@broadcom.com, s.hauer@pengutronix.de, sean.wang@mediatek.com, linux-actions@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, haojian.zhuang@gmail.com, mirq-linux@rere.qmqm.pl, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, baolin.wang@linux.alibaba.com, matthias.bgg@gmail.com, openipmi-developer@lists.sourceforge.net, mchehab@kernel.org, Allen Pais <apais@linux.microsoft.com>, linux-arm-kernel@lists.infradead.org, angelogioacchino.delregno@collabora.com, sbranden@broadcom.com, logang@deltatee.com, andersson@kernel.org, marcan@marcan.st, haiyangz@microsoft.com, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, konrad.dybcio@linaro.org, linux-sunxi@lists.linux.dev, vkoul@kernel.org, linux-s390@vger.kernel.org, mhiramat@kernel.org, zhang.lyra@gmail.com, dmaengine@vger.kernel.org, manuel.lauss@gmail.com,
+  linux-media@vger.kernel.org, shawnguo@kernel.org, afaerber@suse.de, daniel@zonque.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Mar 28, 2024 at 1:54=E2=80=AFPM Ulf Hansson <ulf.hansson@linaro.org=
-> wrote:
+Hello,
 
+On Thu, Mar 28, 2024 at 01:53:25PM +0100, Ulf Hansson wrote:
 > At this point we have suggested to drivers to switch to use threaded
 > irq handlers (and regular work queues if needed too). That said,
 > what's the benefit of using the BH work queue?
 
-Context:
-https://lwn.net/Articles/960041/
-"Tasklets, in particular, remain because they offer lower latency than
-workqueues which, since they must go through the CPU scheduler,
-can take longer to execute a deferred-work item."
+BH workqueues should behave about the same as tasklets which have more
+limited interface and is subtly broken in an expensive-to-fix way (around
+freeing in-flight work item), so the plan is to replace tasklets with BH
+workqueues and remove tasklets from the kernel.
 
-The BH WQ is controlled by a software IRQ and quicker than an
-ordinary work item.
+The [dis]advantages of BH workqueues over threaded IRQs or regular threaded
+workqueues are the same as when you compare them to tasklets. No thread
+switching overhead, so latencies will be a bit tighter. Wheteher that
+actually matters really depends on the use case. Here, the biggest advantage
+is that it's mostly interchangeable with tasklets and can thus be swapped
+easily.
 
-I don't know if this little latency could actually affect any MMC
-device, I doubt it.
+Thanks.
 
-The other benefit IIUC is that it is easy to mechanically rewrite tasklets
-to BH workqueues and be sure that it is as fast as the tasklet, if you want
-to switch to threaded IRQ handlers or proper work, you need to write a
-lot of elaborate code and test it (preferably on real hardware).
-
-Yours,
-Linus Walleij
+-- 
+tejun
