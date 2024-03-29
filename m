@@ -4,105 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8E9DCD1283
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 20:37:53 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=0N/h/M4o;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=pmoyIzmQ;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 490A1CD1283
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 21:55:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V5sfm3VLnz3vmH
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2024 07:37:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=0N/h/M4o;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=pmoyIzmQ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V5vNk5Yl2z3vlv
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2024 08:55:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V5sbY6XFVz3bqB
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2024 07:35:05 +1100 (AEDT)
-Received: from imap2.dmz-prg2.suse.org (imap2.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:98])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id EFC633528A;
-	Fri, 29 Mar 2024 20:34:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1711744499; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=MEcgOTyAQAoXByBYKUR2lBKOa8ZhmGZAbpGTc5urdcs=;
-	b=0N/h/M4oFKP9e6JE78XEh1S/v6uJSKh1uvA1wPsCajar4AYYVB5MtoSQURwicU0FjTA3ZA
-	61MBm+lwJkoVB7qIrNvH3IDBG4ar+09OTaZYiATVbRQqTa3K+2VbkUVT17xAR/I3rqyXWN
-	Z87CE1W9k4JpKCgCEwSFnBh/TZXfcOY=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1711744499;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=MEcgOTyAQAoXByBYKUR2lBKOa8ZhmGZAbpGTc5urdcs=;
-	b=pmoyIzmQMCIpxEEegRU389t/9HfEGPbkrxeN/Z4w3PlV59F1yC09nX/ACLDPrFrN/Qx5Ay
-	FEGw4evB+gjhIACQ==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=none
-Received: from imap2.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap2.dmz-prg2.suse.org (Postfix) with ESMTPS id 06E2013A8B;
-	Fri, 29 Mar 2024 20:34:58 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap2.dmz-prg2.suse.org with ESMTPSA
-	id 2ONmAPIlB2YTPgAAn2gu4w
-	(envelope-from <tzimmermann@suse.de>); Fri, 29 Mar 2024 20:34:58 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: arnd@arndb.de,
-	sam@ravnborg.org,
-	javierm@redhat.com,
-	deller@gmx.de,
-	sui.jingfeng@linux.dev
-Subject: [PATCH v3 1/3] arch: Select fbdev helpers with CONFIG_VIDEO
-Date: Fri, 29 Mar 2024 21:32:10 +0100
-Message-ID: <20240329203450.7824-2-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240329203450.7824-1-tzimmermann@suse.de>
-References: <20240329203450.7824-1-tzimmermann@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V5vND2twPz3dWQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2024 08:55:22 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rqKBa-0004gm-2H; Fri, 29 Mar 2024 22:54:54 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rqKBX-009GMO-Re; Fri, 29 Mar 2024 22:54:51 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1rqKBX-00DTkA-2T;
+	Fri, 29 Mar 2024 22:54:51 +0100
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Jiri Slaby <jirislaby@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Dawei Li <set_pte_at@outlook.com>,
+	Damien Le Moal <damien.lemoal@opensource.wdc.com>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] serial: pmac_zilog: Drop usage of platform_driver_probe()
+Date: Fri, 29 Mar 2024 22:54:43 +0100
+Message-ID: <5ea3174616abc9fa256f115b4fb175d289ac1754.1711748999.git.u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <2e3783106bf6bd9a7bdeb12b706378fb16316471.1711748999.git.u.kleine-koenig@pengutronix.de>
+References: <2e3783106bf6bd9a7bdeb12b706378fb16316471.1711748999.git.u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2095; i=u.kleine-koenig@pengutronix.de; h=from:subject:message-id; bh=u1UhruhrTBacTG5k8fHeAqtFCEXrhLT1PXtH1xxAtAA=; b=owGbwMvMwMXY3/A7olbonx/jabUkhjR2i+Usnzv+dSVtseae9CZXZd72KOkmQ4cc419MLt/fL c607rzRyWjMwsDIxSArpshi37gm06pKLrJz7b/LMINYmUCmMHBxCsBEKhzZ//BdMynhn/h7kvJm QdY89rAlGvOLLzzeJuCoczCGIZVjvdAzl0DfX5c7giyjgxOOqHxq4rlncs0m6de+syWn2Lgd5Rp YV0bo/ThwnCkpV1X0411eSSbHufMkLCYV/P+64etzMaO4Ah056YknHJfnnzXS2pf84l7Tdv/pZ7 XvLfjLscXX8q2l9GIbTt3frrwW3g1L6mOuuCXsP/b6nnNEqPP65ftE5/PvLt697bLSdKXvBaYuZ 8Xjm+ZPL7p2tcAgyP6b+szXZdMsPxXHWlsWbU7eevNjnkvS9DOucy+b71GJurNdxaWnTXKSefgu jbDuLdlNPccCEjfOF7Rszwp2b1qXJ20ik3BBYW11iZ8UAA==
+X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
-X-Spamd-Bar: ++
-X-Spamd-Result: default: False [2.89 / 50.00];
-	 ARC_NA(0.00)[];
-	 RCVD_VIA_SMTP_AUTH(0.00)[];
-	 FROM_HAS_DN(0.00)[];
-	 TO_DN_SOME(0.00)[];
-	 FREEMAIL_ENVRCPT(0.00)[gmx.de];
-	 R_MISSING_CHARSET(2.50)[];
-	 MIME_GOOD(-0.10)[text/plain];
-	 TO_MATCH_ENVRCPT_ALL(0.00)[];
-	 BROKEN_CONTENT_TYPE(1.50)[];
-	 DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:98:from];
-	 NEURAL_HAM_LONG(-1.00)[-1.000];
-	 RCVD_COUNT_THREE(0.00)[3];
-	 DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	 MX_GOOD(-0.01)[];
-	 NEURAL_HAM_SHORT(-0.20)[-0.999];
-	 RCPT_COUNT_TWELVE(0.00)[28];
-	 MID_CONTAINS_FROM(1.00)[];
-	 DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,intel.com:email];
-	 FREEMAIL_TO(0.00)[arndb.de,ravnborg.org,redhat.com,gmx.de,linux.dev];
-	 FUZZY_BLOCKED(0.00)[rspamd.com];
-	 FROM_EQ_ENVFROM(0.00)[];
-	 R_DKIM_NA(2.20)[];
-	 MIME_TRACE(0.00)[0:+];
-	 RCVD_TLS_ALL(0.00)[];
-	 BAYES_HAM(-3.00)[100.00%]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: EFC633528A
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,101 +64,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andreas Larsson <andreas@gaisler.com>, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: kernel@pengutronix.de, linux-kbuild@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, linux-serial@vger.kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Various Kconfig options selected the per-architecture helpers for
-fbdev. But none of the contained code depends on fbdev. Standardize
-on CONFIG_VIDEO, which will allow to add more general helpers for
-video functionality.
+There are considerations to drop platform_driver_probe() as a concept
+that isn't relevant any more today. It comes with an added complexity
+that makes many users hold it wrong. (E.g. this driver should have
+marked the driver struct with __refdata to prevent the below mentioned
+false positive section mismatch warning.)
 
-CONFIG_VIDEO protects each architecture's video/ directory. This
-allows for the use of more fine-grained control for each directory's
-files, such as the use of CONFIG_STI_CORE on parisc.
+This fixes a W=1 build warning:
 
-v2:
-- sparc: rebased onto Makefile changes
+	WARNING: modpost: drivers/tty/serial/pmac_zilog: section mismatch in reference: pmz_driver+0x8 (section: .data) -> pmz_detach (section: .exit.text)
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: Helge Deller <deller@gmx.de>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Andreas Larsson <andreas@gaisler.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: x86@kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- arch/parisc/Makefile      | 2 +-
- arch/sparc/Makefile       | 4 ++--
- arch/sparc/video/Makefile | 2 +-
- arch/x86/Makefile         | 2 +-
- arch/x86/video/Makefile   | 3 ++-
- 5 files changed, 7 insertions(+), 6 deletions(-)
+ drivers/tty/serial/pmac_zilog.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/parisc/Makefile b/arch/parisc/Makefile
-index 316f84f1d15c8..21b8166a68839 100644
---- a/arch/parisc/Makefile
-+++ b/arch/parisc/Makefile
-@@ -119,7 +119,7 @@ export LIBGCC
+diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
+index 05d97e89511e..e44621218248 100644
+--- a/drivers/tty/serial/pmac_zilog.c
++++ b/drivers/tty/serial/pmac_zilog.c
+@@ -1695,7 +1695,7 @@ static void pmz_dispose_port(struct uart_pmac_port *uap)
+ 	memset(uap, 0, sizeof(struct uart_pmac_port));
+ }
  
- libs-y	+= arch/parisc/lib/ $(LIBGCC)
+-static int __init pmz_attach(struct platform_device *pdev)
++static int pmz_attach(struct platform_device *pdev)
+ {
+ 	struct uart_pmac_port *uap;
+ 	int i;
+@@ -1714,7 +1714,7 @@ static int __init pmz_attach(struct platform_device *pdev)
+ 	return uart_add_one_port(&pmz_uart_reg, &uap->port);
+ }
  
--drivers-y += arch/parisc/video/
-+drivers-$(CONFIG_VIDEO) += arch/parisc/video/
+-static void __exit pmz_detach(struct platform_device *pdev)
++static void pmz_detach(struct platform_device *pdev)
+ {
+ 	struct uart_pmac_port *uap = platform_get_drvdata(pdev);
  
- boot	:= arch/parisc/boot
+@@ -1789,7 +1789,8 @@ static struct macio_driver pmz_driver = {
+ #else
  
-diff --git a/arch/sparc/Makefile b/arch/sparc/Makefile
-index 2a03daa68f285..757451c3ea1df 100644
---- a/arch/sparc/Makefile
-+++ b/arch/sparc/Makefile
-@@ -59,8 +59,8 @@ endif
- libs-y                 += arch/sparc/prom/
- libs-y                 += arch/sparc/lib/
+ static struct platform_driver pmz_driver = {
+-	.remove_new	= __exit_p(pmz_detach),
++	.probe		= pmz_attach,
++	.remove_new	= pmz_detach,
+ 	.driver		= {
+ 		.name		= "scc",
+ 	},
+@@ -1837,7 +1838,7 @@ static int __init init_pmz(void)
+ #ifdef CONFIG_PPC_PMAC
+ 	return macio_register_driver(&pmz_driver);
+ #else
+-	return platform_driver_probe(&pmz_driver, pmz_attach);
++	return platform_driver_register(&pmz_driver);
+ #endif
+ }
  
--drivers-$(CONFIG_PM) += arch/sparc/power/
--drivers-$(CONFIG_FB_CORE) += arch/sparc/video/
-+drivers-$(CONFIG_PM)    += arch/sparc/power/
-+drivers-$(CONFIG_VIDEO) += arch/sparc/video/
- 
- boot := arch/sparc/boot
- 
-diff --git a/arch/sparc/video/Makefile b/arch/sparc/video/Makefile
-index d4d83f1702c61..9dd82880a027a 100644
---- a/arch/sparc/video/Makefile
-+++ b/arch/sparc/video/Makefile
-@@ -1,3 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0-only
- 
--obj-$(CONFIG_FB_CORE) += fbdev.o
-+obj-y	+= fbdev.o
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 662d9d4033e6b..b80d15c29ecc6 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -260,7 +260,7 @@ drivers-$(CONFIG_PCI)            += arch/x86/pci/
- # suspend and hibernation support
- drivers-$(CONFIG_PM) += arch/x86/power/
- 
--drivers-$(CONFIG_FB_CORE) += arch/x86/video/
-+drivers-$(CONFIG_VIDEO) += arch/x86/video/
- 
- ####
- # boot loader support. Several targets are kept for legacy purposes
-diff --git a/arch/x86/video/Makefile b/arch/x86/video/Makefile
-index 5ebe48752ffc4..9dd82880a027a 100644
---- a/arch/x86/video/Makefile
-+++ b/arch/x86/video/Makefile
-@@ -1,2 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0-only
--obj-$(CONFIG_FB_CORE)		+= fbdev.o
-+
-+obj-y	+= fbdev.o
+base-commit: a6bd6c9333397f5a0e2667d4d82fef8c970108f2
 -- 
-2.44.0
+2.43.0
 
