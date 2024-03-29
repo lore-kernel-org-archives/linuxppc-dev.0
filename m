@@ -4,87 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2F65CD1284
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 02:11:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C060C6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 07:25:36 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ePgrfvcK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=exAz6dEw;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V5P6S2FC1z3vfL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 13:11:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V5X4Z4LDpz3dVH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 18:25:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ePgrfvcK;
+	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=exAz6dEw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nayna@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V5P4r02nrz3dRt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 13:10:19 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 42T22o7m002963;
-	Fri, 29 Mar 2024 02:10:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=aRpkxiWunh+6UIByyAxNf1wYguLUmA+x2SlZJO6e2p0=;
- b=ePgrfvcKVxiNJa3GXBWJ+kvOPjToaDFtmgEB5Rh0tEBXEhHxGC+fl+bMOwCEXi2UhAua
- qHbrXGNvte7Qv6Ey1BRtZ4uE0YsH/uHSDyRl4uciqSq9S+TDQo1E/6JnBOcwZWhhAcIQ
- 8vQ+TO4xcjZyBJ1+CQcGB4QpgQxT3VThTFv/CAlf5MtLKUdLr6W9xyE//jHlg9ijQ2zk
- l6co4Iem/OlyYXfWQg3/Cp10Uv1iulpI5eqUI29TyqJrmMNYxwHYKEJMo9nAqRxxqyXL
- HdPujMbbRDU+TJm35FJ+/Y7EkK2EHpmE3vs3sK/eLPVApbr4sqM5+tCeO0v/JXD70Vlv wg== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x5mgs00bu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 Mar 2024 02:10:14 +0000
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 42T2ADwR013698;
-	Fri, 29 Mar 2024 02:10:13 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x5mgs00bs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 Mar 2024 02:10:13 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 42T1e89t016409;
-	Fri, 29 Mar 2024 02:10:13 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3x29duhmre-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 Mar 2024 02:10:13 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 42T2A7Oi46530934
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 29 Mar 2024 02:10:09 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8017420040;
-	Fri, 29 Mar 2024 02:10:07 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9B46C20043;
-	Fri, 29 Mar 2024 02:10:05 +0000 (GMT)
-Received: from sunshine.hsd1.in.comcast.net (unknown [9.61.39.125])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 29 Mar 2024 02:10:05 +0000 (GMT)
-From: Nayna Jain <nayna@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/2] powerpc/pseries: increase timeout value for plpks_signed_update_var() H_CALL
-Date: Thu, 28 Mar 2024 22:09:54 -0400
-Message-ID: <20240329020954.537236-2-nayna@linux.ibm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240329020954.537236-1-nayna@linux.ibm.com>
-References: <20240329020954.537236-1-nayna@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V5X3j5mGGz3cNt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 18:24:48 +1100 (AEDT)
+Received: by mail-pj1-x102a.google.com with SMTP id 98e67ed59e1d1-2a20e595351so643817a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 00:24:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=sifive.com; s=google; t=1711697085; x=1712301885; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gJgb6TiBTsQDE1YCv6FX1Cn5RHV4TaKIlUyS6ICHf2c=;
+        b=exAz6dEw9Shv2BsSovfAy6R3hnp/y06lftsxVbmUxAMe4s63NBcoQ4rh0ae/WffCJg
+         zHeteok4y0ZeKU8calbW+YEw/hMdfZlQcT5CemmTtqQCfSB6bYZngD1t+PAGnHfwobkn
+         ePo0MWLMp4ZQDubY+joSrNNpWXc4GFLx0sDqSEqmOKlgRM3ZzL4MJ5gRal7CNlm9RbRV
+         2cxdWlf0m9cOK5wCFIuaEihsy120mz3ctq4zgOp6ZR3hYSSGGP4Vdz5VHCjCfBwJ99Pa
+         P67wlKi4dXr6zrj5A6GyvB2RCr9ZyxJVWgxkWrfzybRC6bId4m/St0Jf4faWb6/zksuT
+         qLqg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1711697085; x=1712301885;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=gJgb6TiBTsQDE1YCv6FX1Cn5RHV4TaKIlUyS6ICHf2c=;
+        b=iT9SWRJQRjAxE/1acoLGCZcdSS7p/2cxyuIchT1rjVINpKh9NkZcaY28v/z1RDC5t4
+         ryjBdElAJtt3UlJfz964jdT1FJPntuxaibs7k+6Y8TRbd8i64krERLEDKYtWghjjH3SM
+         Uko9vfZ7RUpPuyqPDX9kbIs7JNCwo7mLpW6M+eY5HXGFU4R0Epgvb2w3ARLMICl+6Pl+
+         A4Z5IakLU1+S/6FYfgjUUxbUeQ45h3E2X83R65SVuazDTsJ2sbsJIJ836cj7ZpTU2VDg
+         dWzgBHG0vlo79ycI19I/rgtPsUvQq1ErWijAU8NGgCVo1LV6ZpLtkdUc+Gww0EY82luD
+         F8UA==
+X-Forwarded-Encrypted: i=1; AJvYcCUD5Pa9xuLWp72eJ49kpeaTqWbWrWVq6F6x/DLeyMjQz5yWvdsQOePwli8fwczr/LTSzydZvjn5tVM2uZEqHO3WjN8SIq9kSlSzx2b8AQ==
+X-Gm-Message-State: AOJu0YwqXHCeS7s+no0KsMkWFu91ROtIqrruawUQDB/D0otZBChOcxrE
+	+hYpTwUyp58y5p+K+Ckm/L1LPMJMzgAasnpeKTiDBs/rvWY93EaCR5Le0+zapC8=
+X-Google-Smtp-Source: AGHT+IHa/zXusbJGA4K8cLPLAWn+CnPIA4cHPz+eGb6xCnwX+ovRVMEI/wA60Ad/6sOmnhgR0Mc6ng==
+X-Received: by 2002:a17:90b:3c50:b0:2a2:19f:dbc7 with SMTP id pm16-20020a17090b3c5000b002a2019fdbc7mr1989065pjb.0.1711697084840;
+        Fri, 29 Mar 2024 00:24:44 -0700 (PDT)
+Received: from sw06.internal.sifive.com ([4.53.31.132])
+        by smtp.gmail.com with ESMTPSA id b8-20020a17090a010800b0029ddac03effsm4971798pjb.11.2024.03.29.00.24.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 29 Mar 2024 00:24:44 -0700 (PDT)
+From: Samuel Holland <samuel.holland@sifive.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-arm-kernel@lists.infradead.org,
+	x86@kernel.org
+Subject: [PATCH v4 01/15] arch: Add ARCH_HAS_KERNEL_FPU_SUPPORT
+Date: Fri, 29 Mar 2024 00:18:16 -0700
+Message-ID: <20240329072441.591471-2-samuel.holland@sifive.com>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240329072441.591471-1-samuel.holland@sifive.com>
+References: <20240329072441.591471-1-samuel.holland@sifive.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 6GIitdpAYBE8lnoitmMqIwYxoHT_KHzp
-X-Proofpoint-GUID: CNbTFw2SO0cMjuGcRu9QqRssgIW66q5A
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-03-29_01,2024-03-28_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 phishscore=0
- mlxlogscore=999 suspectscore=0 adultscore=0 mlxscore=0 priorityscore=1501
- impostorscore=0 lowpriorityscore=0 malwarescore=0 clxscore=1015
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2403210000 definitions=main-2403290016
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,40 +81,188 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Donnellan <ajd@linux.ibm.com>, Greg Joyce <gjoyce@linux.vnet.ibm.com>, Nageswara R Sastry <rnsastry@linux.ibm.com>, Nayna Jain <nayna@linux.ibm.com>, npiggin@gmail.com
+Cc: linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, linux-arch@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Masahiro Yamada <masahiroy@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, amd-gfx@lists.freedesktop.org, Ingo Molnar <mingo@redhat.com>, Nicolas Schier <nicolas@fjasle.eu>, linux-kbuild@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Samuel Holland <samuel.holland@sifive.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Signed update H_CALL currently polls PHYP for 5msec. Update this to
-5sec.
+Several architectures provide an API to enable the FPU and run
+floating-point SIMD code in kernel space. However, the function names,
+header locations, and semantics are inconsistent across architectures,
+and FPU support may be gated behind other Kconfig options.
 
-Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
-Tested-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
+Provide a standard way for architectures to declare that kernel space
+FPU support is available. Architectures selecting this option must
+implement what is currently the most common API (kernel_fpu_begin() and
+kernel_fpu_end(), plus a new function kernel_fpu_available()) and
+provide the appropriate CFLAGS for compiling floating-point C code.
+
+Suggested-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
 ---
-v3:
- * Addition to Patch 1 timeout patch based on Andrew's feedback.
 
- arch/powerpc/platforms/pseries/plpks.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+(no changes since v2)
 
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index bcfcd5acc5c2..4a595493d28a 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -463,9 +463,10 @@ int plpks_signed_update_var(struct plpks_var *var, u64 flags)
- 
- 		continuetoken = retbuf[0];
- 		if (pseries_status_to_err(rc) == -EBUSY) {
--			int delay_ms = get_longbusy_msecs(rc);
--			mdelay(delay_ms);
--			timeout += delay_ms;
-+			int delay_us = get_longbusy_msecs(rc) * 1000;
+Changes in v2:
+ - Add documentation explaining the built-time and runtime APIs
+ - Add a linux/fpu.h header for generic isolation enforcement
+
+ Documentation/core-api/floating-point.rst | 78 +++++++++++++++++++++++
+ Documentation/core-api/index.rst          |  1 +
+ Makefile                                  |  5 ++
+ arch/Kconfig                              |  6 ++
+ include/linux/fpu.h                       | 12 ++++
+ 5 files changed, 102 insertions(+)
+ create mode 100644 Documentation/core-api/floating-point.rst
+ create mode 100644 include/linux/fpu.h
+
+diff --git a/Documentation/core-api/floating-point.rst b/Documentation/core-api/floating-point.rst
+new file mode 100644
+index 000000000000..a8d0d4b05052
+--- /dev/null
++++ b/Documentation/core-api/floating-point.rst
+@@ -0,0 +1,78 @@
++.. SPDX-License-Identifier: GPL-2.0+
 +
-+			fsleep(delay_us);
-+			timeout += delay_us;
- 		}
- 		rc = pseries_status_to_err(rc);
- 	} while (rc == -EBUSY && timeout < PLPKS_MAX_TIMEOUT);
++Floating-point API
++==================
++
++Kernel code is normally prohibited from using floating-point (FP) registers or
++instructions, including the C float and double data types. This rule reduces
++system call overhead, because the kernel does not need to save and restore the
++userspace floating-point register state.
++
++However, occasionally drivers or library functions may need to include FP code.
++This is supported by isolating the functions containing FP code to a separate
++translation unit (a separate source file), and saving/restoring the FP register
++state around calls to those functions. This creates "critical sections" of
++floating-point usage.
++
++The reason for this isolation is to prevent the compiler from generating code
++touching the FP registers outside these critical sections. Compilers sometimes
++use FP registers to optimize inlined ``memcpy`` or variable assignment, as
++floating-point registers may be wider than general-purpose registers.
++
++Usability of floating-point code within the kernel is architecture-specific.
++Additionally, because a single kernel may be configured to support platforms
++both with and without a floating-point unit, FPU availability must be checked
++both at build time and at run time.
++
++Several architectures implement the generic kernel floating-point API from
++``linux/fpu.h``, as described below. Some other architectures implement their
++own unique APIs, which are documented separately.
++
++Build-time API
++--------------
++
++Floating-point code may be built if the option ``ARCH_HAS_KERNEL_FPU_SUPPORT``
++is enabled. For C code, such code must be placed in a separate file, and that
++file must have its compilation flags adjusted using the following pattern::
++
++    CFLAGS_foo.o += $(CC_FLAGS_FPU)
++    CFLAGS_REMOVE_foo.o += $(CC_FLAGS_NO_FPU)
++
++Architectures are expected to define one or both of these variables in their
++top-level Makefile as needed. For example::
++
++    CC_FLAGS_FPU := -mhard-float
++
++or::
++
++    CC_FLAGS_NO_FPU := -msoft-float
++
++Normal kernel code is assumed to use the equivalent of ``CC_FLAGS_NO_FPU``.
++
++Runtime API
++-----------
++
++The runtime API is provided in ``linux/fpu.h``. This header cannot be included
++from files implementing FP code (those with their compilation flags adjusted as
++above). Instead, it must be included when defining the FP critical sections.
++
++.. c:function:: bool kernel_fpu_available( void )
++
++        This function reports if floating-point code can be used on this CPU or
++        platform. The value returned by this function is not expected to change
++        at runtime, so it only needs to be called once, not before every
++        critical section.
++
++.. c:function:: void kernel_fpu_begin( void )
++                void kernel_fpu_end( void )
++
++        These functions create a floating-point critical section. It is only
++        valid to call ``kernel_fpu_begin()`` after a previous call to
++        ``kernel_fpu_available()`` returned ``true``. These functions are only
++        guaranteed to be callable from (preemptible or non-preemptible) process
++        context.
++
++        Preemption may be disabled inside critical sections, so their size
++        should be minimized. They are *not* required to be reentrant. If the
++        caller expects to nest critical sections, it must implement its own
++        reference counting.
+diff --git a/Documentation/core-api/index.rst b/Documentation/core-api/index.rst
+index 7a3a08d81f11..974beccd671f 100644
+--- a/Documentation/core-api/index.rst
++++ b/Documentation/core-api/index.rst
+@@ -48,6 +48,7 @@ Library functionality that is used throughout the kernel.
+    errseq
+    wrappers/atomic_t
+    wrappers/atomic_bitops
++   floating-point
+ 
+ Low level entry and exit
+ ========================
+diff --git a/Makefile b/Makefile
+index 763b6792d3d5..710f65e4249d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -964,6 +964,11 @@ KBUILD_CFLAGS	+= $(CC_FLAGS_CFI)
+ export CC_FLAGS_CFI
+ endif
+ 
++# Architectures can define flags to add/remove for floating-point support
++CC_FLAGS_FPU	+= -D_LINUX_FPU_COMPILATION_UNIT
++export CC_FLAGS_FPU
++export CC_FLAGS_NO_FPU
++
+ ifneq ($(CONFIG_FUNCTION_ALIGNMENT),0)
+ # Set the minimal function alignment. Use the newer GCC option
+ # -fmin-function-alignment if it is available, or fall back to -falign-funtions.
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 9f066785bb71..8e34b3acf73d 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -1569,6 +1569,12 @@ config ARCH_HAS_NONLEAF_PMD_YOUNG
+ 	  address translations. Page table walkers that clear the accessed bit
+ 	  may use this capability to reduce their search space.
+ 
++config ARCH_HAS_KERNEL_FPU_SUPPORT
++	bool
++	help
++	  Architectures that select this option can run floating-point code in
++	  the kernel, as described in Documentation/core-api/floating-point.rst.
++
+ source "kernel/gcov/Kconfig"
+ 
+ source "scripts/gcc-plugins/Kconfig"
+diff --git a/include/linux/fpu.h b/include/linux/fpu.h
+new file mode 100644
+index 000000000000..2fb63e22913b
+--- /dev/null
++++ b/include/linux/fpu.h
+@@ -0,0 +1,12 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef _LINUX_FPU_H
++#define _LINUX_FPU_H
++
++#ifdef _LINUX_FPU_COMPILATION_UNIT
++#error FP code must be compiled separately. See Documentation/core-api/floating-point.rst.
++#endif
++
++#include <asm/fpu.h>
++
++#endif
 -- 
-2.31.1
+2.44.0
 
