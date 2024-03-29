@@ -4,70 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66B87CD11DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2024 22:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBDBFC6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 15:41:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FpkFAP8N;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=drcScYT5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V5HgN0mNqz3vhp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Mar 2024 09:06:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V5l4D1vBQz3vYC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Mar 2024 02:41:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FpkFAP8N;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=drcScYT5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::72d; helo=mail-qk1-x72d.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x72d.google.com (mail-qk1-x72d.google.com [IPv6:2607:f8b0:4864:20::72d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V5Dw14TyDz3vYj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 07:02:09 +1100 (AEDT)
-Received: by mail-qk1-x72d.google.com with SMTP id af79cd13be357-78a5f7269e3so219220385a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2024 13:02:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V5l3M3RyXz3c4C
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Mar 2024 02:40:13 +1100 (AEDT)
+Received: by mail-pf1-x435.google.com with SMTP id d2e1a72fcca58-6e709e0c123so1910535b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Mar 2024 08:40:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1711656126; x=1712260926; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=lQZIemFmXjC6xyiLulQ43Ea/EhoY/GbG4RXFhJQU0/8=;
-        b=FpkFAP8NJxPmLVRD9SRxnZJQjPHv7RocGdziJKEV4vfFGUfkUxhx6Z/5NiX7RMK71C
-         iZDJWs9yuSXnCAj2KKxwGcRD2HGbtMoiThLPbhNfTQ2VN2jBn4ngNnecPTidEc05Qt9r
-         jbdl7H+42ITGvxRS+aEc9hxJp9jEceQ1jwOBh/D64Dtq7pbSWz1cQh/Qa0pC1DZWINUV
-         an4BOmSUluP1DuhCnQPoAaOjITlQwdyB8QneIkL/vWqLQ/L1gWf5BYS0THoo3xT0vyhC
-         LWmmcEML4FSmlY6ntHzhTLQ0fkIlwW1NSJbS2r5dDqvMNIwLE3rUt57PTF4x8by0/OzE
-         sJRg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1711656126; x=1712260926;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=gmail.com; s=20230601; t=1711726808; x=1712331608; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=lQZIemFmXjC6xyiLulQ43Ea/EhoY/GbG4RXFhJQU0/8=;
-        b=ZbdSH7cjvuSqQ3CdDAglLSJxvrUWZwZ94w+UIvQLbqS+pYYGX6UhXHD3JQjOpGnOXm
-         32OJ+yBM/CGPKMxm9SoZ2qOKukPNHrsOjdeizOkJlTXrMv4Ai0MAHavUlRLCPT5bbWm7
-         1iQlCxHusIP9fuzRmO/7uvw/cE2pgReM74KPdg/kPMWFXkDy/voJl4roZohUUt23DO0a
-         efra0C+tgsxVUpwLUmMuVoar894KfFyZ2Sb98OEn/6XKVON0CTzIfJ0254PGf1pWJ/oZ
-         bUSEZS1VnPTONZlw6C5qhSqxjJKHiLgZbDb8+nRVNQt8Hwl//PxQSvhjrU7lSRNjS7AD
-         2B2g==
-X-Forwarded-Encrypted: i=1; AJvYcCUAtr7+2XPRdPCiUz9wAWC9cVGHzsZfUnGRuChMIUNdlIjWkzNz5DTsanuGmEamhUMs2mBgvnCOOPKcc5YG81tw0ZJob8eiGLGsW4qKzQ==
-X-Gm-Message-State: AOJu0Yz1AXNw4lMxvkyIANh23lgxnsVwV3THKsBsYUaBc4G7M74ifA0j
-	dJ5rSsTS9ZvJLVu5vPiTonj2SfQ6q6oCsMoNjdNWonry7TwFK0Y1AZ6l3sOlWThhgLEtRaRveFn
-	tWPbZuYbLf2MqJipmCGxUmcO0vHE=
-X-Google-Smtp-Source: AGHT+IFQNOvoxYEranyGbOCvmAR4etDDhau+OcrTFex7JkKGx6yINzP/h18hs1c4qiY1arvh6SuEYWtwfkxWkgaJ4wM=
-X-Received: by 2002:a05:620a:c4e:b0:78a:62a6:7e2f with SMTP id
- u14-20020a05620a0c4e00b0078a62a67e2fmr5081544qki.5.1711656126274; Thu, 28 Mar
- 2024 13:02:06 -0700 (PDT)
+        bh=iN31wd2vCkiTGMz1OBtEaB4JW8VyiA1XbISlyEebr3E=;
+        b=drcScYT5wthXsuphXCgxCeJYjSF1t1bSfgko8Gfnrg/znfl+t71b7YTUXvdpmogCRQ
+         +K4zcg4e5hlmmdXqY+1LylWFFEWxi1jbPJoF1HbeKJVTwUjIkNQQghON+LCQrjr1WzML
+         gPvZAIzY3myscSZCi7m6EZP8+vP6KtBRxqgGBwLuXrYIrcvTT3xD1sROFuODn56X+Eem
+         STJsdecvYvFSpRDh1vXgjO9q99EkfLQ/6wDYpNfkXaVyb2jCPvj2ttlW30vERhcIChC6
+         zEY/FhNMVsL5KQwAHP1IKYEcOWDkcpi4O8mbNMeKtGnl5sEhBWWMxKqU9mKZPfOjLEc+
+         YDIg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1711726808; x=1712331608;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=iN31wd2vCkiTGMz1OBtEaB4JW8VyiA1XbISlyEebr3E=;
+        b=nJ0PkmnHaigeHJ/itL9GgRLbdhyYbkY7Xhe7XEKQc4gDddaTw4EEYVDAzEpco/062t
+         f/ke+zdZL6/FvSJ/Db+kRQL7hKK04aVrl9ysmsbH9Rcu+hxgaeglLCIViVmtv4pe7qFR
+         4VM3e37dc0TmOhmZvryaNvU3yu15AhONUyf3bnIFsmbz72rflXGNK8e7DgYIQkAy7VNV
+         lggejYOLZv4clOdn0aNgPKhuoSnIio1NbuspAncSegYbBm0gFRtzxuxIinuDhtSWd8eV
+         wO4oTGv6vX8Uvm0MRR5MM78kFK/fS26nCDOUVLLzcGQBvBwRGjmjCfrghBSDRoUcyx6n
+         HTHQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUwjeaffsRD9lvSpFi6pTD34FXkZrvCMy2U6OqRLmFNflhWI9FPTjE+CLkRtyGbt6DCiyCW+BMIf1G+dw/FAY1lElGVRkgIb4XAXKy4zw==
+X-Gm-Message-State: AOJu0YxlwciqYMMVBesNckiasvvThMgbRr5Ia9sARGQO8EVkCk5HP5D/
+	INPHkcovPopdbcaUzj4oXUYvUpPN0De913RgYtMnAWufcHYvqsEq
+X-Google-Smtp-Source: AGHT+IF0O7HII5MYlv2g0E+BHBSm5qRGKAR+0KxI+xwk6+g8c7fXn65jtKX0C7ci+tZdnr/ge20LGw==
+X-Received: by 2002:a05:6a20:3c90:b0:1a5:6bfb:76de with SMTP id b16-20020a056a203c9000b001a56bfb76demr2694088pzj.2.1711726808383;
+        Fri, 29 Mar 2024 08:40:08 -0700 (PDT)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id m9-20020a170902db0900b001dd578121d4sm3581907plx.204.2024.03.29.08.40.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 29 Mar 2024 08:40:07 -0700 (PDT)
+Date: Fri, 29 Mar 2024 08:40:05 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Simon Horman <horms@kernel.org>
+Subject: Re: [PATCH v2 12/14] sh: Add support for suppressing warning
+ backtraces
+Message-ID: <d7663e19-74d5-478d-becc-0a080075e7d6@roeck-us.net>
+References: <20240325175248.1499046-1-linux@roeck-us.net>
+ <20240325175248.1499046-13-linux@roeck-us.net>
+ <20240327144431.GL403975@kernel.org>
+ <320aacc6-b7e5-4c3d-948e-d0743ab26c5d@roeck-us.net>
+ <20240327193920.GV403975@kernel.org>
 MIME-Version: 1.0
-References: <20240327160314.9982-1-apais@linux.microsoft.com>
- <20240327160314.9982-3-apais@linux.microsoft.com> <ZgUGXTKPVhrA1tam@matsya>
- <2e9257af-c123-406b-a189-eaebeecc1d71@app.fastmail.com> <ZgW3j1qkLA-QU4iM@matsya>
- <CAOMdWSKY9D75FM3bswUfXn2o7bGtrei3G5kLt6JdcdOPDXaG8g@mail.gmail.com> <678ba20b-9f1d-41cb-8a25-e716b61ffafe@app.fastmail.com>
-In-Reply-To: <678ba20b-9f1d-41cb-8a25-e716b61ffafe@app.fastmail.com>
-From: Allen <allen.lkml@gmail.com>
-Date: Thu, 28 Mar 2024 13:01:55 -0700
-Message-ID: <CAOMdWSKC4B8zn6N+=5DssB_BiR6JkHBEpJr0ohKb149eJvCKMQ@mail.gmail.com>
-Subject: Re: [PATCH 2/9] dma: Convert from tasklet to BH workqueue
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Fri, 29 Mar 2024 08:57:06 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240327193920.GV403975@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,39 +84,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: imx@lists.linux.dev, Ulf Hansson <ulf.hansson@linaro.org>, Oliver Neukum <oneukum@suse.com>, Duncan Sands <duncan.sands@free.fr>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, "linux-mmc @ vger . kernel . org" <linux-mmc@vger.kernel.org>, aubin.constans@microchip.com, Linus Walleij <linus.walleij@linaro.org>, Frank Li <Frank.Li@nxp.com>, linux-hyperv@vger.kernel.org, linux-usb@vger.kernel.org, HaraldWelte@viatech.com, Paul Cercueil <paul@crapouillou.net>, linux-tegra@vger.kernel.org, Netdev <netdev@vger.kernel.org>, maintainers@bluecherrydvr.com, peter.ujfalusi@gmail.com, Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, linux-riscv@lists.infradead.org, "K. Y. Srinivasan" <kys@microsoft.com>, Robert Jarzmik <robert.jarzmik@free.fr>, haijie1@huawei.com, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Wei Liu <wei.liu@kernel.org>, Linux-OMAP <linux-omap@vger.kernel.org>, Florian Fainelli <florian.fainelli@broadcom.com>, linux-rdma@vger.kernel.org, Viresh Kumar <vire
- shk@kernel.org>, Jassi Brar <jassisinghbrar@gmail.com>, Dexuan Cui <decui@microsoft.com>, Zhou Wang <wangzhou1@hisilicon.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, "jh80.chung" <jh80.chung@samsung.com>, zw@zh-kernel.org, Chen-Yu Tsai <wens@csie.org>, Alan Stern <stern@rowland.harvard.edu>, linux-arm-msm@vger.kernel.org, Orson Zhai <orsonzhai@gmail.com>, pierre@ossman.eu, linux-mips@vger.kernel.org, Eugeniy.Paltsev@synopsys.com, Patrice Chotard <patrice.chotard@foss.st.com>, asahi@lists.linux.dev, brucechang@via.com.tw, Kees Cook <keescook@chromium.org>, oakad@yahoo.com, Sven Peter <sven@svenpeter.dev>, Ray Jui <rjui@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sean Wang <sean.wang@mediatek.com>, linux-actions@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Haojian Zhuang <haojian.zhuang@gmail.com>, =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, dmaengine@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, Bao
- lin Wang <baolin.wang@linux.alibaba.com>, Matthias Brugger <matthias.bgg@gmail.com>, openipmi-developer@lists.sourceforge.net, Mauro Carvalho Chehab <mchehab@kernel.org>, Allen Pais <apais@linux.microsoft.com>, linux-arm-kernel@lists.infradead.org, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Scott Branden <sbranden@broadcom.com>, logang@deltatee.com, Bjorn Andersson <andersson@kernel.org>, Hector Martin <marcan@marcan.st>, Haiyang Zhang <haiyangz@microsoft.com>, linux-kernel@vger.kernel.org, Leo Li <leoyang.li@nxp.com>, Konrad Dybcio <konrad.dybcio@linaro.org>, linux-sunxi@lists.linux.dev, Vinod Koul <vkoul@kernel.org>, linux-s390@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Chunyan Zhang <zhang.lyra@gmail.com>, Tejun Heo <tj@kernel.org>, Manuel Lauss <manuel.lauss@gmail.com>, linux-media@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, =?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>, Daniel Mack <daniel@zonque.org>
+Cc: loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?iso-8859-1?Q?Ma=EDra?= Canal <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, Linux Kernel Functional Testing <lkft@linaro.org>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, l
+ inux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> >> > Since almost every driver associates the tasklet with the
-> >> > dma_chan, we could go one step further and add the
-> >> > work_queue structure directly into struct dma_chan,
-> >> > with the wrapper operating on the dma_chan rather than
-> >> > the work_queue.
-> >>
-> >> I think that is very great idea. having this wrapped in dma_chan would
-> >> be very good way as well
-> >>
-> >> Am not sure if Allen is up for it :-)
-> >
-> >  Thanks Arnd, I know we did speak about this at LPC. I did start
-> > working on using completion. I dropped it as I thought it would
-> > be easier to move to workqueues.
->
-> It's definitely easier to do the workqueue conversion as a first
-> step, and I agree adding support for the completion right away is
-> probably too much. Moving the work_struct into the dma_chan
-> is probably not too hard though, if you leave your current
-> approach for the cases where the tasklet is part of the
-> dma_dev rather than the dma_chan.
->
+On Wed, Mar 27, 2024 at 07:39:20PM +0000, Simon Horman wrote:
+[ ... ]
+> > > 
+> > > Hi Guenter,
+> > > 
+> > > a minor nit from my side: this change results in a Kernel doc warning.
+> > > 
+> > >       .../bug.h:29: warning: expecting prototype for _EMIT_BUG_ENTRY(). Prototype was for HAVE_BUG_FUNCTION() instead
+> > > 
+> > > Perhaps either the new code should be placed above the Kernel doc,
+> > > or scripts/kernel-doc should be enhanced?
+> > > 
+> > 
+> > Thanks a lot for the feedback.
+> > 
+> > The definition block needs to be inside CONFIG_DEBUG_BUGVERBOSE,
+> > so it would be a bit odd to move it above the documentation
+> > just to make kerneldoc happy. I am not really sure that to do
+> > about it.
+> 
+> FWIIW, I agree that would be odd.
+> But perhaps the #ifdef could also move above the Kernel doc?
+> Maybe not a great idea, but the best one I've had so far.
+> 
 
- Alright, I will work on moving work_struck into the dma_chan and
-leave the dma_dev as is (using bh workqueues) and post a RFC.
-Once reviewed, I could move to the next step.
+I did that for the next version of the patch series. It is a bit more
+clumsy, so I left it as separate patch on top of this patch. I'd
+still like to get input from others before making the change final.
 
-Thank you.
-
-- Allen
+Thanks,
+Guenter
