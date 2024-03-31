@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BEFFCD1284
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2024 09:18:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39EEECD1284
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2024 09:19:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TmZ0Zyl0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KQkVLCGO;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V6pV25hGrz3vXl
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2024 20:18:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V6pVq59kpz3vfh
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 31 Mar 2024 20:19:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TmZ0Zyl0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KQkVLCGO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V6pTC3t5Nz3bvW
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2024 20:17:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V6pTJ6Hzbz3dSV
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Mar 2024 20:17:56 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 5FD8760A06;
-	Sun, 31 Mar 2024 09:17:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E617C433F1;
-	Sun, 31 Mar 2024 09:17:44 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 76F1CCE0AE1;
+	Sun, 31 Mar 2024 09:17:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE181C433F1;
+	Sun, 31 Mar 2024 09:17:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1711876667;
-	bh=VzdFzXRE2VaRW7jFZgwq93tJA5xuLG9fPdxBzjiMqvM=;
-	h=From:To:Cc:Subject:Date:From;
-	b=TmZ0Zyl0dHghbpysYElex7UbdbqFMjqVZ9jfc4of38vp92x2Ggicmbza02ifRZyNe
-	 1TQOiRfyYJy90FHAWMK6pQxIo4xQBQomixhiDa82oWD7APSNNNfuIVaDHX+yN9Ds2A
-	 hqnywqXPFnnoubHSKvEAj+w5VFPm/MR7IPQ5fqL22XyHGWtPMLooJXOETsJq/sD6Ex
-	 lTHuYjdGOvWTbWcERl+3lJPyTmBXVvrjy7EQDPW82+o2K8JCIXW3Y95nmH2txcoA5g
-	 IfXDZg2EoKH9SLDB70edXR9gwvhGRWUFHaDKCR02wzl6XPPFkHZX9TH3ztnlKcB4Ig
-	 ukevB8jk8ZHyw==
+	s=k20201202; t=1711876671;
+	bh=ZvMc1elPVJhE6Ny4UYVuUqULOUmKNl8y6zwFM7uGIh0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=KQkVLCGOR+WxOkbH46DMO6r6z5ar9wO2q1mTyCjAVRjUUH3IpKiL4Lc4RF3kMDTM3
+	 horj/O3zCC8wl442itIeiUgeHhDXDJGaOwZ45aB/2DsPZTAhGcTOK4K88TtC9Dvk82
+	 aint35VjVXD1MKD3mCSTrZGRQzaug7otAAHHjWDt6awFgQbyUttuZGFCfUF+7Kmtwf
+	 TFjHYnnUfE4DcTR0oHMAvQHUH4ePtBwzBD7Q3ov6uKNcfkLTwCwPIM+i18Ku8CuTGV
+	 S18hiZYYbYemuMJw+vWK1dYdtBR0v6VPCGlT9V3j4sIi6gqwpcxdXvmECdAt5JIYXs
+	 8IYYAsz55DVwg==
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Ran Wang <ran.wang_1@nxp.com>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -44,10 +44,12 @@ To: Ran Wang <ran.wang_1@nxp.com>,
 	linux-usb@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/3] usb: phy: fsl-usb: drop driver owner assignment
-Date: Sun, 31 Mar 2024 11:17:35 +0200
-Message-Id: <20240331091737.19836-1-krzk@kernel.org>
+Subject: [PATCH v2 3/3] usb: typec: displayport: drop driver owner assignment
+Date: Sun, 31 Mar 2024 11:17:37 +0200
+Message-Id: <20240331091737.19836-3-krzk@kernel.org>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240331091737.19836-1-krzk@kernel.org>
+References: <20240331091737.19836-1-krzk@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -65,31 +67,31 @@ Cc: Krzysztof Kozlowski <krzk@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Core in platform_driver_register() already sets the .owner, so driver
-does not need to.
+Core in typec_altmode_register_driver() already sets the .owner, so
+driver does not need to.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
 ---
 
 Changes in v2:
-1. None
+1. New patch
 ---
- drivers/usb/phy/phy-fsl-usb.c | 1 -
+ drivers/usb/typec/altmodes/displayport.c | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
-index 79617bb0a70e..1ebbf189a535 100644
---- a/drivers/usb/phy/phy-fsl-usb.c
-+++ b/drivers/usb/phy/phy-fsl-usb.c
-@@ -1005,7 +1005,6 @@ struct platform_driver fsl_otg_driver = {
- 	.remove_new = fsl_otg_remove,
+diff --git a/drivers/usb/typec/altmodes/displayport.c b/drivers/usb/typec/altmodes/displayport.c
+index 038dc51f429d..596cd4806018 100644
+--- a/drivers/usb/typec/altmodes/displayport.c
++++ b/drivers/usb/typec/altmodes/displayport.c
+@@ -802,7 +802,6 @@ static struct typec_altmode_driver dp_altmode_driver = {
+ 	.remove = dp_altmode_remove,
  	.driver = {
- 		.name = driver_name,
+ 		.name = "typec_displayport",
 -		.owner = THIS_MODULE,
+ 		.dev_groups = displayport_groups,
  	},
  };
- 
 -- 
 2.34.1
 
