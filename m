@@ -4,61 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1E74CD1284
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 10:13:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 998D8C6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 10:59:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=buugL1es;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Do1DuaqF;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V83cT3Wpfz3dVq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 21:13:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V84dQ0crkz3dKG
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 21:59:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=buugL1es;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Do1DuaqF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=heikki.krogerus@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V83bY04hRz3h05
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2024 21:12:40 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1712052762; x=1743588762;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=Os6fVasxSxEfgD/AHz8TpcoCEaHcsoZy8kQLOOFg1WY=;
-  b=buugL1eshg8aHr9GKq5q3MOybfbU9mExvuI9mg2VxkuBY8OMvO9+iRcT
-   qENNCGyqdG8VvE91F7MwhQU8v6FreXgFYvJpK83kGPgv43aDVEjJqqZyp
-   9WE2EEkTvPPSZVrwFB+Wu2aaf06B+VgJ/A38pisyUdgFIYrF2u7U1zflA
-   N53WlQ+3WKSY7yWwRW9BYew9F6LpNXL0CFDdnbV0lNuCy72XFF/CVPwyv
-   Ti4TtuLY9geXYUuiRmA+n1k09KlAqafBtpQh84i+60hUZvYyIv9kEkynw
-   pVPqoiGlkP+WSsjqbQbb6XTwtiDBHcMyWSvvsOhserC+XTp4jiSoWLRzT
-   w==;
-X-CSE-ConnectionGUID: +PCWpFr/RuWMKA+D4P5+3w==
-X-CSE-MsgGUID: kA5aRt9NR+WEas6+a/wD7w==
-X-IronPort-AV: E=McAfee;i="6600,9927,11031"; a="24669994"
-X-IronPort-AV: E=Sophos;i="6.07,174,1708416000"; 
-   d="scan'208";a="24669994"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Apr 2024 03:11:35 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,11031"; a="937083267"
-X-IronPort-AV: E=Sophos;i="6.07,174,1708416000"; 
-   d="scan'208";a="937083267"
-Received: from kuha.fi.intel.com ([10.237.72.185])
-  by fmsmga001.fm.intel.com with SMTP; 02 Apr 2024 03:11:32 -0700
-Received: by kuha.fi.intel.com (sSMTP sendmail emulation); Tue, 02 Apr 2024 13:11:31 +0300
-Date: Tue, 2 Apr 2024 13:11:31 +0300
-From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Subject: Re: [PATCH 2/2] usb: typec: nvidia: drop driver owner assignment
-Message-ID: <ZgvZ07U+DFcPATII@kuha.fi.intel.com>
-References: <20240327174609.519252-1-krzysztof.kozlowski@linaro.org>
- <20240327174609.519252-2-krzysztof.kozlowski@linaro.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V84cY3s0rz2xPW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2024 21:58:37 +1100 (AEDT)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 4329q3xF027927;
+	Tue, 2 Apr 2024 10:58:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=HXJywvJ8h1L2hokQDmarX8Smkzv5YFT3TxW2MlAzZSU=;
+ b=Do1DuaqFXi/+qr2bhcqsCvCAc0JdFaljcYwMe65RphvnTtYk9ClpHxSdQo5e6fXkYCT5
+ WxzpMX9pmXZTx9kowE/MMzM8d8AlQtO3N3ficHMTFyKQhmxWassl2W8lNigJJqwDJS/z
+ NajTLppFfJglpS87nDV51Clare6vnqez97C8IOpUpaZQFXEZ0CKM3EHBCg5C4/hdg8n0
+ u/7kwQ2cHEUCu2zjtiYexQ22ZGzkQATIIzUfCklXhbEJdUIHNLv6XbkZVnJwu1Bo7di/
+ 6N0r1TjCjnRa1XjnDmD4QWHyfakqrbNBBgp2lGZdMX7FGdmVHhC4OpQQ2W8DNvZAusAf CQ== 
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x8frwr6bd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 02 Apr 2024 10:58:17 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 4328DlJC025770;
+	Tue, 2 Apr 2024 10:58:15 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3x6x2p5xph-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 02 Apr 2024 10:58:15 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 432AwBVH32703202
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 2 Apr 2024 10:58:13 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A89EE20043;
+	Tue,  2 Apr 2024 10:58:11 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B588D20040;
+	Tue,  2 Apr 2024 10:58:09 +0000 (GMT)
+Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.in.ibm.com (unknown [9.203.115.195])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  2 Apr 2024 10:58:09 +0000 (GMT)
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org
+Subject: [PATCH v3 2/2] powerpc/bpf: enable kfunc call
+Date: Tue,  2 Apr 2024 16:28:06 +0530
+Message-ID: <20240402105806.352037-2-hbathini@linux.ibm.com>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240402105806.352037-1-hbathini@linux.ibm.com>
+References: <20240402105806.352037-1-hbathini@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240327174609.519252-2-krzysztof.kozlowski@linaro.org>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: AkUoj42BhHnMAckCHyBUXsZSa8cek-ih
+X-Proofpoint-GUID: AkUoj42BhHnMAckCHyBUXsZSa8cek-ih
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-04-02_04,2024-04-01_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxscore=0
+ malwarescore=0 priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0
+ suspectscore=0 mlxlogscore=999 lowpriorityscore=0 adultscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2403210000
+ definitions=main-2404020079
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,36 +89,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ran Wang <ran.wang_1@nxp.com>, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Martin KaFai Lau <martin.lau@linux.dev>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 27, 2024 at 06:46:09PM +0100, Krzysztof Kozlowski wrote:
-> Core in typec_altmode_register_driver() already sets the .owner, so
-> driver does not need to.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Currently, bpf jit code on powerpc assumes all the bpf functions and
+helpers to be kernel text. This is false for kfunc case, as function
+addresses can be module addresses as well. So, ensure module addresses
+are supported to enable kfunc support.
 
-Reviewed-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Emit instructions based on whether the function address is kernel text
+address or module address to retain optimized instruction sequence for
+kernel text address case.
 
-> ---
->  drivers/usb/typec/altmodes/nvidia.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/usb/typec/altmodes/nvidia.c b/drivers/usb/typec/altmodes/nvidia.c
-> index c36769736405..fe70b36f078f 100644
-> --- a/drivers/usb/typec/altmodes/nvidia.c
-> +++ b/drivers/usb/typec/altmodes/nvidia.c
-> @@ -35,7 +35,6 @@ static struct typec_altmode_driver nvidia_altmode_driver = {
->  	.remove = nvidia_altmode_remove,
->  	.driver = {
->  		.name = "typec_nvidia",
-> -		.owner = THIS_MODULE,
->  	},
->  };
->  module_typec_altmode_driver(nvidia_altmode_driver);
-> -- 
-> 2.34.1
+Also, as bpf programs are always module addresses and a bpf helper can
+be within kernel address as well, using relative addressing often fails
+with "out of range of pcrel address" error. Use unoptimized instruction
+sequence for both kernel and module addresses to work around this, when
+PCREL addressing is used.
 
+With module addresses supported, override bpf_jit_supports_kfunc_call()
+to enable kfunc support. Since module address offsets can be more than
+32-bit long on PPC64, override bpf_jit_supports_far_kfunc_call() to
+enable 64-bit pointers.
+
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+---
+
+* Changes in v3:
+  - Retained optimized instruction sequence when function address is
+    a core kernel address as suggested by Naveen.
+  - Used unoptimized instruction sequence for PCREL addressing to
+    avoid out of range errors for core kernel function addresses.
+  - Folded patch that adds support for kfunc calls with patch that
+    enables/advertises this support as suggested by Naveen.
+
+
+ arch/powerpc/net/bpf_jit_comp.c   | 10 +++++++
+ arch/powerpc/net/bpf_jit_comp64.c | 48 ++++++++++++++++++++-----------
+ 2 files changed, 42 insertions(+), 16 deletions(-)
+
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 0f9a21783329..dc7ffafd7441 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -359,3 +359,13 @@ void bpf_jit_free(struct bpf_prog *fp)
+ 
+ 	bpf_prog_unlock_free(fp);
+ }
++
++bool bpf_jit_supports_kfunc_call(void)
++{
++	return true;
++}
++
++bool bpf_jit_supports_far_kfunc_call(void)
++{
++	return IS_ENABLED(CONFIG_PPC64) ? true : false;
++}
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 7f62ac4b4e65..ec3adf715c55 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -207,24 +207,14 @@ static int bpf_jit_emit_func_call_hlp(u32 *image, struct codegen_context *ctx, u
+ 	unsigned long func_addr = func ? ppc_function_entry((void *)func) : 0;
+ 	long reladdr;
+ 
+-	if (WARN_ON_ONCE(!core_kernel_text(func_addr)))
++	/*
++	 * With the introduction of kfunc feature, BPF helpers can be part of kernel as
++	 * well as module text address.
++	 */
++	if (WARN_ON_ONCE(!kernel_text_address(func_addr)))
+ 		return -EINVAL;
+ 
+-	if (IS_ENABLED(CONFIG_PPC_KERNEL_PCREL)) {
+-		reladdr = func_addr - CTX_NIA(ctx);
+-
+-		if (reladdr >= (long)SZ_8G || reladdr < -(long)SZ_8G) {
+-			pr_err("eBPF: address of %ps out of range of pcrel address.\n",
+-				(void *)func);
+-			return -ERANGE;
+-		}
+-		/* pla r12,addr */
+-		EMIT(PPC_PREFIX_MLS | __PPC_PRFX_R(1) | IMM_H18(reladdr));
+-		EMIT(PPC_INST_PADDI | ___PPC_RT(_R12) | IMM_L(reladdr));
+-		EMIT(PPC_RAW_MTCTR(_R12));
+-		EMIT(PPC_RAW_BCTR());
+-
+-	} else {
++	if (core_kernel_text(func_addr) && !IS_ENABLED(CONFIG_PPC_KERNEL_PCREL)) {
+ 		reladdr = func_addr - kernel_toc_addr();
+ 		if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
+ 			pr_err("eBPF: address of %ps out of range of kernel_toc.\n", (void *)func);
+@@ -235,6 +225,32 @@ static int bpf_jit_emit_func_call_hlp(u32 *image, struct codegen_context *ctx, u
+ 		EMIT(PPC_RAW_ADDI(_R12, _R12, PPC_LO(reladdr)));
+ 		EMIT(PPC_RAW_MTCTR(_R12));
+ 		EMIT(PPC_RAW_BCTRL());
++	} else {
++		if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V1)) {
++			/* func points to the function descriptor */
++			PPC_LI64(bpf_to_ppc(TMP_REG_2), func);
++			/* Load actual entry point from function descriptor */
++			EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), bpf_to_ppc(TMP_REG_2), 0));
++			/* ... and move it to CTR */
++			EMIT(PPC_RAW_MTCTR(bpf_to_ppc(TMP_REG_1)));
++			/*
++			 * Load TOC from function descriptor at offset 8.
++			 * We can clobber r2 since we get called through a
++			 * function pointer (so caller will save/restore r2)
++			 * and since we don't use a TOC ourself.
++			 */
++			EMIT(PPC_RAW_LD(2, bpf_to_ppc(TMP_REG_2), 8));
++			EMIT(PPC_RAW_BCTRL());
++		} else {
++			/* We can clobber r12 */
++			PPC_LI64(12, func);
++			EMIT(PPC_RAW_MTCTR(12));
++			EMIT(PPC_RAW_BCTRL());
++#ifndef CONFIG_PPC_KERNEL_PCREL
++			/* Restore kernel TOC */
++			EMIT(PPC_RAW_LD(2, 13, offsetof(struct paca_struct, kernel_toc)));
++#endif
++		}
+ 	}
+ 
+ 	return 0;
 -- 
-heikki
+2.44.0
+
