@@ -4,52 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B1ADCD128A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 00:28:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 270E3CD128A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 01:54:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=xry111.site header.i=@xry111.site header.a=rsa-sha256 header.s=default header.b=cpIC1dv6;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gyURA9cx;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V7pdB60Wqz3d24
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 11:28:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V7rYD4J7Kz3d2n
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 12:54:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=xry111.site header.i=@xry111.site header.a=rsa-sha256 header.s=default header.b=cpIC1dv6;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gyURA9cx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xry111.site (client-ip=89.208.246.23; helo=xry111.site; envelope-from=xry111@xry111.site; receiver=lists.ozlabs.org)
-Received: from xry111.site (xry111.site [89.208.246.23])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nicholas@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V7pcL4B0cz30fh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2024 11:27:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=xry111.site;
-	s=default; t=1712017644;
-	bh=fIGYmiYD8AMZwe+4Gsw6nOssrG7CtMo9B8Tvv1Z5vlk=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
-	b=cpIC1dv6RObP9UA+0I8I4WbuZMIfJR5hIqdMcNHrMPNjQNGL5CmapUB7sw5Zb1J2j
-	 cclvW9+LqkwMVRWKe8lhRth//DA5btXHe0TnQWbixH1ZsoZh60I7wSB4QKXuH5uN0F
-	 SJLiuxgS/dhiM7o+RzRaZQhPT/0fZgG+Y03Scdqs=
-Received: from [127.0.0.1] (unknown [IPv6:2001:470:683e::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature ECDSA (P-384) server-digest SHA384)
-	(Client did not present a certificate)
-	(Authenticated sender: xry111@xry111.site)
-	by xry111.site (Postfix) with ESMTPSA id A74251A3FFE;
-	Mon,  1 Apr 2024 20:27:22 -0400 (EDT)
-Message-ID: <67838089f740b7022106fccfae907843b02ec376.camel@xry111.site>
-Subject: Re: [PATCHv3 pci-next 1/2] PCI/AER: correctable error message as
- KERN_INFO
-From: Xi Ruoyao <xry111@xry111.site>
-To: Ethan Zhao <haifeng.zhao@linux.intel.com>, Bjorn Helgaas
-	 <helgaas@kernel.org>
-Date: Tue, 02 Apr 2024 08:27:19 +0800
-In-Reply-To: <ac855191-1289-40f5-b910-fb9558d5df76@linux.intel.com>
-References: <20240326211705.GA1497507@bhelgaas>
-	 <ac855191-1289-40f5-b910-fb9558d5df76@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.0 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V7rXN6tR5z3bWH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2024 12:54:12 +1100 (AEDT)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 4321W6qG022031;
+	Tue, 2 Apr 2024 01:54:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=LzMPa98MFPXqWkXtzv4lwoW5+7xQOJKo67nN9boqKto=;
+ b=gyURA9cxnxueeLYMr1gQb1EJ9YCsO3vl8mpKyMDwSWyJjrcuk1Ej20hdgfHORTfgYzow
+ XbMlTFwvgXlOA07HkNoSidWiqmt2EOCW/uq25HqD/JCU9YEGHEMUVhdYbSOqmFfPw2X7
+ HKejbrfv1tv7elkcm3VTSXg+spCNzUWTvNmpkrR086XLdB0XiYTTgw1q5aZsOYy0059Y
+ OSNCSHBERy0eLZMrHjZSMXaHOyJAB2Gftr5seKCFixeZoEq74RjzxyCDdsNZ/nTxzPuF
+ a6fpAYS8xVRBYkbMYyHvDW9TTBP0A1UUGTFr0HwVInyNXK/w5haetL5S36EEZYHFL8CA /g== 
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3x88ef80xn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 02 Apr 2024 01:54:00 +0000
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 4321nRRf015293;
+	Tue, 2 Apr 2024 01:54:00 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3x6y9kucg9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 02 Apr 2024 01:53:59 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4321ruOq31523538
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 2 Apr 2024 01:53:58 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3139E20040;
+	Tue,  2 Apr 2024 01:53:56 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B472020043;
+	Tue,  2 Apr 2024 01:53:55 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  2 Apr 2024 01:53:55 +0000 (GMT)
+Received: from [10.61.2.106] (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8EB426009D;
+	Tue,  2 Apr 2024 12:53:50 +1100 (AEDT)
+Message-ID: <92fe8355-233c-4d73-a81a-08e7c6fc571e@linux.ibm.com>
+Date: Tue, 2 Apr 2024 12:53:50 +1100
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] Add static_key_feature_checks_initialized flag
+Content-Language: en-US
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+References: <20240327045911.64543-1-nicholas@linux.ibm.com>
+ <65caab3e-8618-4045-8bb9-75a2548d7cd7@csgroup.eu>
+From: Nicholas Miehlbradt <nicholas@linux.ibm.com>
+In-Reply-To: <65caab3e-8618-4045-8bb9-75a2548d7cd7@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: jz99gdvvGoJiz07ndX6dzoZVx4EGxZ1N
+X-Proofpoint-ORIG-GUID: jz99gdvvGoJiz07ndX6dzoZVx4EGxZ1N
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-04-01_18,2024-04-01_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ priorityscore=1501 bulkscore=0 suspectscore=0 spamscore=0 mlxlogscore=999
+ mlxscore=0 clxscore=1015 lowpriorityscore=0 malwarescore=0 adultscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2403210000 definitions=main-2404020012
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,17 +98,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: rajatja@chromium.org, rajat.khandelwal@linux.intel.com, Grant Grundler <grundler@chromium.org>, linux-pci@vger.kernel.org, mahesh@linux.ibm.com, linux-kernel@vger.kernel.org, oohall@gmail.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2024-03-27 at 11:49 +0800, Ethan Zhao wrote:
-> so, yup, basically, the signal integrity is not good enough.
-> Though the function could work, its performance will be impacted.
 
-FWIW I've replaced the motherboard and this is gone.  So it's likely a
-signal integrity issue of the motherboard.
 
---=20
-Xi Ruoyao <xry111@xry111.site>
-School of Aerospace Science and Technology, Xidian University
+On 28/3/2024 2:20 am, Christophe Leroy wrote:
+> 
+> 
+> Le 27/03/2024 à 05:59, Nicholas Miehlbradt a écrit :
+>> JUMP_LABEL_FEATURE_CHECK_DEBUG used static_key_initialized to determine
+>> whether {cpu,mmu}_has_feature() was used before static keys were
+>> initialized. However, {cpu,mmu}_has_feature() should not be used before
+>> setup_feature_keys() is called. As static_key_initalized is set much
+>> earlier during boot there is a window in which JUMP_LABEL_FEATURE_CHECK_DEBUG
+>> will not report errors. Add a flag specifically to indicate when
+>> {cpu,mmu}_has_feature() is safe to use.
+> 
+> What do you mean by "much earlier" ?
+> 
+> As far as I can see, static_key_initialized is set by jump_label_init()
+> as cpu_feature_keys_init() and mmu_feature_keys_init() are call
+> immediately after. I don't think it is possible to do anything inbetween.
+> 
+> Or maybe you mean the problem is the call to jump_label_init() in
+> early_init_devtree() ? You should make it explicit in the message, and
+> see if it wouldn't be better to call cpu_feature_keys_init() and
+> mmu_feature_keys_init() as well in early_init_devtree() in that case ?
+> 
+The jump_label_init() call in early_init_devtree() is exactly the issue. 
+I don't think it's possible to move the call to mmu_feature_keys_init() 
+earlier without significant refactoring since mmu features are being set 
+as late as setup_kup().
+
+I'll still sent a v2 with a better worded commit message.
+
+Nicholas
+
+> Christophe
