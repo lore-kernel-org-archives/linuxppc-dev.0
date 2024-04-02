@@ -4,35 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57FFCCD1284
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 08:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A60BDCD1284
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 08:11:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V80v24CqMz3vmV
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 19:10:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V80vS1Sklz3vr9
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Apr 2024 19:11:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V80tb0M7pz3d2g
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V80tb0Ll0z3cM5
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Apr 2024 19:10:30 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.88.105])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4V80RY6c70zwR9b;
-	Tue,  2 Apr 2024 15:50:33 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.88.194])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4V80RS5xc3zwRBB;
+	Tue,  2 Apr 2024 15:50:28 +0800 (CST)
 Received: from dggpemm100001.china.huawei.com (unknown [7.185.36.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id E3190140487;
-	Tue,  2 Apr 2024 15:53:19 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 7B67C140415;
+	Tue,  2 Apr 2024 15:53:15 +0800 (CST)
 Received: from localhost.localdomain (10.175.112.125) by
  dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.35; Tue, 2 Apr 2024 15:53:18 +0800
+ 15.1.2507.35; Tue, 2 Apr 2024 15:53:14 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <akpm@linux-foundation.org>
-Subject: [PATCH 5/7] riscv: mm: accelerate pagefault when badaccess
-Date: Tue, 2 Apr 2024 15:51:40 +0800
-Message-ID: <20240402075142.196265-6-wangkefeng.wang@huawei.com>
+Subject: [PATCH 0/7] arch/mm/fault: accelerate pagefault when badaccess
+Date: Tue, 2 Apr 2024 15:51:35 +0800
+Message-ID: <20240402075142.196265-1-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20240402075142.196265-1-wangkefeng.wang@huawei.com>
-References: <20240402075142.196265-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -54,31 +52,32 @@ Cc: x86@kernel.org, linux-s390@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The vm_flags of vma already checked under per-VMA lock, if it is a
-bad access, directly handle error and return, there is no need to
-lock_mm_and_find_vma() and check vm_flags again.
+After VMA lock-based page fault handling enabled, if bad access met
+under per-vma lock, it will fallback to mmap_lock-based handling,
+so it leads to unnessary mmap lock and vma find again. A test from
+lmbench shows 34% improve after this changes on arm64,
 
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- arch/riscv/mm/fault.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+  lat_sig -P 1 prot lat_sig 0.29194 -> 0.19198
 
-diff --git a/arch/riscv/mm/fault.c b/arch/riscv/mm/fault.c
-index 3ba1d4dde5dd..b3fcf7d67efb 100644
---- a/arch/riscv/mm/fault.c
-+++ b/arch/riscv/mm/fault.c
-@@ -292,7 +292,10 @@ void handle_page_fault(struct pt_regs *regs)
- 
- 	if (unlikely(access_error(cause, vma))) {
- 		vma_end_read(vma);
--		goto lock_mmap;
-+		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
-+		tsk->thread.bad_cause = SEGV_ACCERR;
-+		bad_area_nosemaphore(regs, code, addr);
-+		return;
- 	}
- 
- 	fault = handle_mm_fault(vma, addr, flags | FAULT_FLAG_VMA_LOCK, regs);
+Only build test on other archs except arm64.
+
+Kefeng Wang (7):
+  arm64: mm: cleanup __do_page_fault()
+  arm64: mm: accelerate pagefault when VM_FAULT_BADACCESS
+  arm: mm: accelerate pagefault when VM_FAULT_BADACCESS
+  powerpc: mm: accelerate pagefault when badaccess
+  riscv: mm: accelerate pagefault when badaccess
+  s390: mm: accelerate pagefault when badaccess
+  x86: mm: accelerate pagefault when badaccess
+
+ arch/arm/mm/fault.c     |  4 +++-
+ arch/arm64/mm/fault.c   | 31 ++++++++++---------------------
+ arch/powerpc/mm/fault.c | 33 ++++++++++++++++++++-------------
+ arch/riscv/mm/fault.c   |  5 ++++-
+ arch/s390/mm/fault.c    |  3 ++-
+ arch/x86/mm/fault.c     | 23 ++++++++++++++---------
+ 6 files changed, 53 insertions(+), 46 deletions(-)
+
 -- 
 2.27.0
 
