@@ -4,33 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06988CD1288
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2024 08:39:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB9E5C6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2024 08:40:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V8dV35Q0gz3vtK
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2024 19:39:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V8dVT4Bsbz3vdl
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2024 19:40:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V8dSP40LRz3vcK
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V8dSP72xqz3vcK
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Apr 2024 19:38:29 +1100 (AEDT)
 Received: from mail.maildlp.com (unknown [172.19.163.44])
-	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4V8dP54B5kz1h5X1;
-	Wed,  3 Apr 2024 16:35:37 +0800 (CST)
+	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4V8dP90NXPz29lXd;
+	Wed,  3 Apr 2024 16:35:41 +0800 (CST)
 Received: from dggpemm100001.china.huawei.com (unknown [7.185.36.93])
-	by mail.maildlp.com (Postfix) with ESMTPS id 0D7F8140410;
-	Wed,  3 Apr 2024 16:38:23 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id B1225140410;
+	Wed,  3 Apr 2024 16:38:26 +0800 (CST)
 Received: from localhost.localdomain (10.175.112.125) by
  dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.35; Wed, 3 Apr 2024 16:38:22 +0800
+ 15.1.2507.35; Wed, 3 Apr 2024 16:38:25 +0800
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
 To: <akpm@linux-foundation.org>
-Subject: [PATCH v2 0/7] arch/mm/fault: accelerate pagefault when badaccess
-Date: Wed, 3 Apr 2024 16:37:58 +0800
-Message-ID: <20240403083805.1818160-1-wangkefeng.wang@huawei.com>
+Subject: [PATCH v2 4/7] powerpc: mm: accelerate pagefault when badaccess
+Date: Wed, 3 Apr 2024 16:38:02 +0800
+Message-ID: <20240403083805.1818160-5-wangkefeng.wang@huawei.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20240403083805.1818160-1-wangkefeng.wang@huawei.com>
+References: <20240403083805.1818160-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -52,37 +54,109 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Peter Zijlstra <peterz@infradead.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-After VMA lock-based page fault handling enabled, if bad access met
-under per-vma lock, it will fallback to mmap_lock-based handling,
-so it leads to unnessary mmap lock and vma find again. A test from
-lmbench shows 34% improve after this changes on arm64,
+The access_[pkey]_error() of vma already checked under per-VMA lock, if
+it is a bad access, directly handle error, no need to retry with mmap_lock
+again. In order to release the correct lock, pass the mm_struct into
+bad_access_pkey()/bad_access(), if mm is NULL, release vma lock, or
+release mmap_lock. Since the page faut is handled under per-VMA lock,
+count it as a vma lock event with VMA_LOCK_SUCCESS.
 
-  lat_sig -P 1 prot lat_sig 0.29194 -> 0.19198
-
-Only build test on other archs except arm64.
-
-v2: 
-- a better changelog, and describe the counting changes, suggested by
-  Suren Baghdasaryan
-- add RB
-
-Kefeng Wang (7):
-  arm64: mm: cleanup __do_page_fault()
-  arm64: mm: accelerate pagefault when VM_FAULT_BADACCESS
-  arm: mm: accelerate pagefault when VM_FAULT_BADACCESS
-  powerpc: mm: accelerate pagefault when badaccess
-  riscv: mm: accelerate pagefault when badaccess
-  s390: mm: accelerate pagefault when badaccess
-  x86: mm: accelerate pagefault when badaccess
-
- arch/arm/mm/fault.c     |  4 +++-
- arch/arm64/mm/fault.c   | 31 ++++++++++---------------------
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+---
  arch/powerpc/mm/fault.c | 33 ++++++++++++++++++++-------------
- arch/riscv/mm/fault.c   |  5 ++++-
- arch/s390/mm/fault.c    |  3 ++-
- arch/x86/mm/fault.c     | 23 ++++++++++++++---------
- 6 files changed, 53 insertions(+), 46 deletions(-)
+ 1 file changed, 20 insertions(+), 13 deletions(-)
 
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 53335ae21a40..215690452495 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -71,23 +71,26 @@ static noinline int bad_area_nosemaphore(struct pt_regs *regs, unsigned long add
+ 	return __bad_area_nosemaphore(regs, address, SEGV_MAPERR);
+ }
+ 
+-static int __bad_area(struct pt_regs *regs, unsigned long address, int si_code)
++static int __bad_area(struct pt_regs *regs, unsigned long address, int si_code,
++		      struct mm_struct *mm, struct vm_area_struct *vma)
+ {
+-	struct mm_struct *mm = current->mm;
+ 
+ 	/*
+ 	 * Something tried to access memory that isn't in our memory map..
+ 	 * Fix it, but check if it's kernel or user first..
+ 	 */
+-	mmap_read_unlock(mm);
++	if (mm)
++		mmap_read_unlock(mm);
++	else
++		vma_end_read(vma);
+ 
+ 	return __bad_area_nosemaphore(regs, address, si_code);
+ }
+ 
+ static noinline int bad_access_pkey(struct pt_regs *regs, unsigned long address,
++				    struct mm_struct *mm,
+ 				    struct vm_area_struct *vma)
+ {
+-	struct mm_struct *mm = current->mm;
+ 	int pkey;
+ 
+ 	/*
+@@ -109,7 +112,10 @@ static noinline int bad_access_pkey(struct pt_regs *regs, unsigned long address,
+ 	 */
+ 	pkey = vma_pkey(vma);
+ 
+-	mmap_read_unlock(mm);
++	if (mm)
++		mmap_read_unlock(mm);
++	else
++		vma_end_read(vma);
+ 
+ 	/*
+ 	 * If we are in kernel mode, bail out with a SEGV, this will
+@@ -124,9 +130,10 @@ static noinline int bad_access_pkey(struct pt_regs *regs, unsigned long address,
+ 	return 0;
+ }
+ 
+-static noinline int bad_access(struct pt_regs *regs, unsigned long address)
++static noinline int bad_access(struct pt_regs *regs, unsigned long address,
++			       struct mm_struct *mm, struct vm_area_struct *vma)
+ {
+-	return __bad_area(regs, address, SEGV_ACCERR);
++	return __bad_area(regs, address, SEGV_ACCERR, mm, vma);
+ }
+ 
+ static int do_sigbus(struct pt_regs *regs, unsigned long address,
+@@ -479,13 +486,13 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
+ 
+ 	if (unlikely(access_pkey_error(is_write, is_exec,
+ 				       (error_code & DSISR_KEYFAULT), vma))) {
+-		vma_end_read(vma);
+-		goto lock_mmap;
++		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
++		return bad_access_pkey(regs, address, NULL, vma);
+ 	}
+ 
+ 	if (unlikely(access_error(is_write, is_exec, vma))) {
+-		vma_end_read(vma);
+-		goto lock_mmap;
++		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
++		return bad_access(regs, address, NULL, vma);
+ 	}
+ 
+ 	fault = handle_mm_fault(vma, address, flags | FAULT_FLAG_VMA_LOCK, regs);
+@@ -521,10 +528,10 @@ static int ___do_page_fault(struct pt_regs *regs, unsigned long address,
+ 
+ 	if (unlikely(access_pkey_error(is_write, is_exec,
+ 				       (error_code & DSISR_KEYFAULT), vma)))
+-		return bad_access_pkey(regs, address, vma);
++		return bad_access_pkey(regs, address, mm, vma);
+ 
+ 	if (unlikely(access_error(is_write, is_exec, vma)))
+-		return bad_access(regs, address);
++		return bad_access(regs, address, mm, vma);
+ 
+ 	/*
+ 	 * If for any reason at all we couldn't handle the fault,
 -- 
 2.27.0
 
