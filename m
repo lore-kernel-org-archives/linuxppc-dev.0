@@ -4,70 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6182CD1288
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2024 13:31:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D17CCD128A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2024 21:02:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BHFOsM6+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ZGxG3Jdv;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V8ly32whJz77c7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 00:31:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V8xz95LbFz3dVC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 08:02:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BHFOsM6+;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ZGxG3Jdv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c2d; helo=mail-oo1-xc2d.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-xc2d.google.com (mail-oo1-xc2d.google.com [IPv6:2607:f8b0:4864:20::c2d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V8ljP1l35z3w0m
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2024 00:20:09 +1100 (AEDT)
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-1e0bfc42783so53742365ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Apr 2024 06:20:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V8m0y3vC0z3dh2
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2024 00:33:37 +1100 (AEDT)
+Received: by mail-oo1-xc2d.google.com with SMTP id 006d021491bc7-5a9d06da012so119357eaf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Apr 2024 06:33:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1712150407; x=1712755207; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:sender:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Wn5Y6haDMX+KFeDZiuG3bLreTNkdvF0hb2IVOihuo/Q=;
-        b=BHFOsM6+ZX9nbDNW1H/8G1bUY8NrdK5nxCchpHN08njKrToYoEOWHGG4qgenrxegoT
-         mZKkCK6sxehLVY1W3pP1P3qG9cx54CwLQZ4PRwJU3UgVWjqkLfEg8p+Oh6bY+j87GneH
-         My8+3WhvMcYPb+bV4xkWVl1aeNB8N5KZJ3Dnm+C6AQGu7XbWJtjQu3rQ8SEmHny6IzdB
-         PziGmkiksKi2eGlrMz8RQ9zc3AaBzltaw/wZMp3TNxjHZFo2V1WYYiqxH5kvKQDhZzl6
-         YlZtUDqnRYvhJ2Jqf0oHsn+ra2s+aEPqP7OSf8jQ17y/KsicXc7FoLlhbfK7qNEJJKSR
-         3uGQ==
+        d=gmail.com; s=20230601; t=1712151215; x=1712756015; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=UfJ432sdibD0Lka67Qj4+39whrzSunQCkb9XAcwEVWQ=;
+        b=ZGxG3JdvXgTjwXUjEtsmX3/Zwx89nM88QxayhVkJozOH/XEHZ+jSQjCm2LtXrG/eJt
+         wW6F86lvEdeOc7Wwk7tzIRRr6OJ9nyKt6UqmOsS+lKswaBI0g/wbKxiwj//zEP6fYAn5
+         3TGHZaZaPMV/BcoF8qTXn86ZRWz2qJEMzOEeIEmbBq0ykKOhjPoEkByZis+A/iNlHHbr
+         nIe8SucSWEoxw9RKMGwI3uiWbxaP4zikk0gVWM7broHLoOkNoIWfPDdFOwKojhkUlaXq
+         OTpcW/ajoEzeG52uqrBkfBXWbABFHX6WOq3HYdJAiyiE01yH5xttZt3W3ld2esOBKHpV
+         Q97A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712150407; x=1712755207;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:sender:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=Wn5Y6haDMX+KFeDZiuG3bLreTNkdvF0hb2IVOihuo/Q=;
-        b=ouGZWNssaWy6bqiF7L72ALTxeFZb2cyNTAvH+k4V1CZNdXKvslU11CpLFHNFvZ0l3S
-         QNfnVvpyKxSihE74PshWfiBQaIDl9I/K3CAf1PZoRNAkwbiriSNVv4XxgRuQVY0frPs/
-         J5OJTLpv2cVxO0L/D7zNcfSrxlGJZZwhGqmmRXeAIgPwFp2eiZtgekfDcq9ESwyDYM0+
-         3HP/zLdJ+WfUwUcErj8emeA29kSyBv+rmoW4e5ekdfMxpDU/UBdUkgHACqb5JdDQlr1o
-         HoU2XSojfClSTkUEArmaRi3cNqlK4RLn81rc1cqhGwzV1qrxlFlhuu0f9kWXBhQRmYPH
-         2peg==
-X-Forwarded-Encrypted: i=1; AJvYcCUWVv9XMRntrDlVD33KksCUN+0bOgSrlmxS2j8ghCEAFQ0VXrQMlc9fP8mQHWTtvaSsW2+qC7y1hNX+4N45f2xeWE6+tbgFxe9FeQBeyQ==
-X-Gm-Message-State: AOJu0Yw6QFh7DYIX5BHd5QNt3sx6Oc4NIx76Od42symURo+OFXmkJrYp
-	YcIPlmN9fXZnDBKvgiLl97YziVJa4eJLwbAVXn9n9mVnLI4N2rRY
-X-Google-Smtp-Source: AGHT+IHWmvXbtJ9fAm6MAldmvpyAC7gyMYuUNuumU3VUQ5OUfg6iZFWTqXY0l/Y7ponpfkrN4lhaag==
-X-Received: by 2002:a17:902:e74f:b0:1e0:d630:f054 with SMTP id p15-20020a170902e74f00b001e0d630f054mr18958233plf.7.1712150407580;
-        Wed, 03 Apr 2024 06:20:07 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id k12-20020a170902c40c00b001e0b3a87dbbsm1705074plk.177.2024.04.03.06.20.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Apr 2024 06:20:07 -0700 (PDT)
-From: Guenter Roeck <linux@roeck-us.net>
-To: linux-kselftest@vger.kernel.org
-Subject: [PATCH v3 15/15] powerpc: Add support for suppressing warning backtraces
-Date: Wed,  3 Apr 2024 06:19:36 -0700
-Message-Id: <20240403131936.787234-16-linux@roeck-us.net>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240403131936.787234-1-linux@roeck-us.net>
-References: <20240403131936.787234-1-linux@roeck-us.net>
+        d=1e100.net; s=20230601; t=1712151215; x=1712756015;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=UfJ432sdibD0Lka67Qj4+39whrzSunQCkb9XAcwEVWQ=;
+        b=k39RXzZdsp8mpk2GO5+uXuZgBzCiytB1K41N0xB7BkCECbOx26+M6IO2ko1XTaY4xi
+         7uyzT5U60o0TGNGmHQSygqhzXSGo6ccN03P9fr3bcIJKBHtrtp2nr9qtoMGvz5FP8JMj
+         /7M0O6NksomXJGrAkgcH7SqTKRQN03+Vyl0T5uBOE+pIgWRy9CJf69wTtZk7GPH9i8h6
+         2Yual1URzRhL8m+SanWeL5HMpPaM6n0CFs7/+XswxeOfrreg20PgGYRT7Mf13VkHJwpo
+         i+3E4Az6sBfd/JO7fmtVbXSbWB91rWfa1BG6nsz+b7ty0xZH5vrI/7NYHgAEFOnB9gln
+         mqkw==
+X-Forwarded-Encrypted: i=1; AJvYcCUdg0BWpXHhJBNEls/8ly73ESC77o6dYGYDxCg6QDek/KHlpSdQAK9cCiA5lJEPg/iTuxHJzZranlRQR4/Y3+QZZTS4SFGZ5Cwvp342/w==
+X-Gm-Message-State: AOJu0YzHthKj4TlsiogayKACDMB+YwkvkkUCkZNVbVifs587ldCY887X
+	7sjdp8c9nAkFLAjRGyDE73jyyb48cSJpDaBho72ke8oa0WNUoog4WsBGzJwSzccMbxRQZarwGa6
+	X6AqIvy4w+fEOn73dqZyo1eetE10=
+X-Google-Smtp-Source: AGHT+IFsoYFg4TPJZ/xBylk5B9Nfa55HU119ldFLC4g550cJsZKKSI+Id/ONzGwerMZ8W2tZHWzr/Kf097BxBvAdyL0=
+X-Received: by 2002:a05:6808:181d:b0:3c5:d426:9b87 with SMTP id
+ bh29-20020a056808181d00b003c5d4269b87mr1074785oib.23.1712151214780; Wed, 03
+ Apr 2024 06:33:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20240327160314.9982-1-apais@linux.microsoft.com>
+ <20240327160314.9982-8-apais@linux.microsoft.com> <ea4ac7a3-13ae-4d22-a3d9-fcb7d9e8d751@linux.ibm.com>
+In-Reply-To: <ea4ac7a3-13ae-4d22-a3d9-fcb7d9e8d751@linux.ibm.com>
+From: Allen <allen.lkml@gmail.com>
+Date: Wed, 3 Apr 2024 06:33:23 -0700
+Message-ID: <CAOMdWS+wH9qZ_08nVSQV1sY0C=uHMC+3NmPuFjwKzBFCgMa7MQ@mail.gmail.com>
+Subject: Re: [PATCH 7/9] s390: Convert from tasklet to BH workqueue
+To: Alexandra Winter <wintera@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Thu, 04 Apr 2024 08:02:05 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,122 +77,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?UTF-8?q?Ma=C3=ADra=20Canal?= <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, Linux Kernel Functional Testing <lkft@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, net
- dev@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: imx@lists.linux.dev, ulf.hansson@linaro.org, oneukum@suse.com, duncan.sands@free.fr, hayashi.kunihiko@socionext.com, linux-mmc@vger.kernel.org, aubin.constans@microchip.com, linus.walleij@linaro.org, Frank.Li@nxp.com, linux-hyperv@vger.kernel.org, linux-usb@vger.kernel.org, HaraldWelte@viatech.com, paul@crapouillou.net, linux-tegra@vger.kernel.org, netdev@vger.kernel.org, maintainers@bluecherrydvr.com, peter.ujfalusi@gmail.com, manivannan.sadhasivam@linaro.org, linux-riscv@lists.infradead.org, kys@microsoft.com, robert.jarzmik@free.fr, haijie1@huawei.com, linux-renesas-soc@vger.kernel.org, wei.liu@kernel.org, linux-omap@vger.kernel.org, florian.fainelli@broadcom.com, linux-rdma@vger.kernel.org, vireshk@kernel.org, jassisinghbrar@gmail.com, decui@microsoft.com, wangzhou1@hisilicon.com, jernej.skrabec@gmail.com, jh80.chung@samsung.com, zw@zh-kernel.org, wens@csie.org, stern@rowland.harvard.edu, linux-arm-msm@vger.kernel.org, orsonzhai@gmail.com, pierre@ossman.eu, linux-mips@vger.ke
+ rnel.org, Eugeniy.Paltsev@synopsys.com, patrice.chotard@foss.st.com, asahi@lists.linux.dev, brucechang@via.com.tw, keescook@chromium.org, oakad@yahoo.com, sven@svenpeter.dev, rjui@broadcom.com, s.hauer@pengutronix.de, sean.wang@mediatek.com, linux-actions@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, haojian.zhuang@gmail.com, mirq-linux@rere.qmqm.pl, dmaengine@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, baolin.wang@linux.alibaba.com, matthias.bgg@gmail.com, openipmi-developer@lists.sourceforge.net, mchehab@kernel.org, Allen Pais <apais@linux.microsoft.com>, linux-arm-kernel@lists.infradead.org, angelogioacchino.delregno@collabora.com, sbranden@broadcom.com, logang@deltatee.com, andersson@kernel.org, marcan@marcan.st, haiyangz@microsoft.com, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, konrad.dybcio@linaro.org, linux-sunxi@lists.linux.dev, vkoul@kernel.org, linux-s390@vger.kernel.org, mhiramat@kernel.org, zhang.lyra@gmail.com,
+  tj@kernel.org, manuel.lauss@gmail.com, linux-media@vger.kernel.org, shawnguo@kernel.org, afaerber@suse.de, daniel@zonque.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add name of functions triggering warning backtraces to the __bug_table
-object section to enable support for suppressing WARNING backtraces.
+> >
+> > Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+> > ---
+> >  drivers/s390/block/dasd.c              | 42 ++++++++++++------------
+> >  drivers/s390/block/dasd_int.h          | 10 +++---
+> >  drivers/s390/char/con3270.c            | 27 ++++++++--------
+> >  drivers/s390/crypto/ap_bus.c           | 24 +++++++-------
+> >  drivers/s390/crypto/ap_bus.h           |  2 +-
+> >  drivers/s390/crypto/zcrypt_msgtype50.c |  2 +-
+> >  drivers/s390/crypto/zcrypt_msgtype6.c  |  4 +--
+> >  drivers/s390/net/ctcm_fsms.c           |  4 +--
+> >  drivers/s390/net/ctcm_main.c           | 15 ++++-----
+> >  drivers/s390/net/ctcm_main.h           |  5 +--
+> >  drivers/s390/net/ctcm_mpc.c            | 12 +++----
+> >  drivers/s390/net/ctcm_mpc.h            |  7 ++--
+> >  drivers/s390/net/lcs.c                 | 26 +++++++--------
+> >  drivers/s390/net/lcs.h                 |  2 +-
+> >  drivers/s390/net/qeth_core_main.c      |  2 +-
+> >  drivers/s390/scsi/zfcp_qdio.c          | 45 +++++++++++++-------------
+> >  drivers/s390/scsi/zfcp_qdio.h          |  9 +++---
+> >  17 files changed, 117 insertions(+), 121 deletions(-)
+> >
+>
+>
+> We're looking into the best way to test this.
+>
+> For drivers/s390/net/ctcm* and drivers/s390/net/lcs*:
+> Acked-by: Alexandra Winter <wintera@linux.ibm.com>
 
-To limit image size impact, the pointer to the function name is only added
-to the __bug_table section if both CONFIG_KUNIT_SUPPRESS_BACKTRACE and
-CONFIG_DEBUG_BUGVERBOSE are enabled. Otherwise, the __func__ assembly
-parameter is replaced with a (dummy) NULL parameter to avoid an image size
-increase due to unused __func__ entries (this is necessary because __func__
-is not a define but a virtual variable).
+ Thank you very much.
 
-Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
-Acked-by: Dan Carpenter <dan.carpenter@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
-v2:
-- Rebased to v6.9-rc1
-- Added Tested-by:, Acked-by:, and Reviewed-by: tags
-- Introduced KUNIT_SUPPRESS_BACKTRACE configuration option
-v3:
-- Rebased to v6.9-rc2
+>
+>
+> [...]
+> > diff --git a/drivers/s390/net/qeth_core_main.c b/drivers/s390/net/qeth_core_main.c
+> > index a0cce6872075..10ea95abc753 100644
+> > --- a/drivers/s390/net/qeth_core_main.c
+> > +++ b/drivers/s390/net/qeth_core_main.c
+> > @@ -2911,7 +2911,7 @@ static int qeth_init_input_buffer(struct qeth_card *card,
+> >       }
+> >
+> >       /*
+> > -      * since the buffer is accessed only from the input_tasklet
+> > +      * since the buffer is accessed only from the input_work
+> >        * there shouldn't be a need to synchronize; also, since we use
+> >        * the QETH_IN_BUF_REQUEUE_THRESHOLD we should never run  out off
+> >        * buffers
+>
+> I propose to delete the whole comment block. There have been many changes and
+> I don't think it is helpful for the current qeth driver.
 
- arch/powerpc/include/asm/bug.h | 37 +++++++++++++++++++++++++---------
- 1 file changed, 28 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-index 1db485aacbd9..5b06745d20aa 100644
---- a/arch/powerpc/include/asm/bug.h
-+++ b/arch/powerpc/include/asm/bug.h
-@@ -14,6 +14,9 @@
- 	 .section __bug_table,"aw"
- 5001:	 .4byte \addr - .
- 	 .4byte 5002f - .
-+#ifdef CONFIG_KUNIT_SUPPRESS_BACKTRACE
-+	 .4byte 0
-+#endif
- 	 .short \line, \flags
- 	 .org 5001b+BUG_ENTRY_SIZE
- 	 .previous
-@@ -32,30 +35,46 @@
- #endif /* verbose */
- 
- #else /* !__ASSEMBLY__ */
--/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3 to be FILE, LINE, flags and
--   sizeof(struct bug_entry), respectively */
-+/* _EMIT_BUG_ENTRY expects args %0,%1,%2,%3,%4 to be FILE, __func__, LINE, flags
-+   and sizeof(struct bug_entry), respectively */
- #ifdef CONFIG_DEBUG_BUGVERBOSE
-+
-+#ifdef CONFIG_KUNIT_SUPPRESS_BACKTRACE
-+# define HAVE_BUG_FUNCTION
-+# define __BUG_FUNC_PTR	"	.4byte %1 - .\n"
-+#else
-+# define __BUG_FUNC_PTR
-+#endif /* CONFIG_KUNIT_SUPPRESS_BACKTRACE */
-+
- #define _EMIT_BUG_ENTRY				\
- 	".section __bug_table,\"aw\"\n"		\
- 	"2:	.4byte 1b - .\n"		\
- 	"	.4byte %0 - .\n"		\
--	"	.short %1, %2\n"		\
--	".org 2b+%3\n"				\
-+	__BUG_FUNC_PTR				\
-+	"	.short %2, %3\n"		\
-+	".org 2b+%4\n"				\
- 	".previous\n"
- #else
- #define _EMIT_BUG_ENTRY				\
- 	".section __bug_table,\"aw\"\n"		\
- 	"2:	.4byte 1b - .\n"		\
--	"	.short %2\n"			\
--	".org 2b+%3\n"				\
-+	"	.short %3\n"			\
-+	".org 2b+%4\n"				\
- 	".previous\n"
- #endif
- 
-+#ifdef HAVE_BUG_FUNCTION
-+# define __BUG_FUNC	__func__
-+#else
-+# define __BUG_FUNC	NULL
-+#endif
-+
- #define BUG_ENTRY(insn, flags, ...)			\
- 	__asm__ __volatile__(				\
- 		"1:	" insn "\n"			\
- 		_EMIT_BUG_ENTRY				\
--		: : "i" (__FILE__), "i" (__LINE__),	\
-+		: : "i" (__FILE__), "i" (__BUG_FUNC),	\
-+		  "i" (__LINE__),			\
- 		  "i" (flags),				\
- 		  "i" (sizeof(struct bug_entry)),	\
- 		  ##__VA_ARGS__)
-@@ -80,7 +99,7 @@
- 		if (x)						\
- 			BUG();					\
- 	} else {						\
--		BUG_ENTRY(PPC_TLNEI " %4, 0", 0, "r" ((__force long)(x)));	\
-+		BUG_ENTRY(PPC_TLNEI " %5, 0", 0, "r" ((__force long)(x)));	\
- 	}							\
- } while (0)
- 
-@@ -90,7 +109,7 @@
- 		if (__ret_warn_on)				\
- 			__WARN();				\
- 	} else {						\
--		BUG_ENTRY(PPC_TLNEI " %4, 0",			\
-+		BUG_ENTRY(PPC_TLNEI " %5, 0",			\
- 			  BUGFLAG_WARNING | BUGFLAG_TAINT(TAINT_WARN),	\
- 			  "r" (__ret_warn_on));	\
- 	}							\
--- 
-2.39.2
+ Sure, I will have it fixed in v2.
 
+- Allen
