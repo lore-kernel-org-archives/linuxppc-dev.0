@@ -4,67 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9C4ACD128A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Apr 2024 21:03:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68C6DCD128A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 01:35:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Cm9/mu9e;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qb1JzlHC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V8xzy2X0Cz3vck
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 08:03:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V941G6jN8z3vZT
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 12:34:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Cm9/mu9e;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qb1JzlHC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::936; helo=mail-ua1-x936.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ua1-x936.google.com (mail-ua1-x936.google.com [IPv6:2607:f8b0:4864:20::936])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V8rDy5HYSz3c5J
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2024 03:44:17 +1100 (AEDT)
-Received: by mail-ua1-x936.google.com with SMTP id a1e0cc1a2514c-7e074f8ac06so17613241.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Apr 2024 09:44:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1712162651; x=1712767451; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Aej6QFoETxeFvbQm8/sOYYAdEcWAnghw/7Ynm8n0ucQ=;
-        b=Cm9/mu9eFo2FF4QIhHvgG+5obaD0qEZeNjczne1zyTNfS9vTSmokpswlFNRZkdKGml
-         E7Mkr+ctZEc3L/QoN9mgB9ABv+N5Sk1QostKSy0Dio7jV8pvApKfOhG5ae0bs/qLmaVw
-         /MQzM66GueqG9HMokKRjlGkVxmzcafwKlU9L2KRAEzJcnHAm6u3wfUX6KhOn0MuRaLhj
-         QIlSJxnAXKIiFL+IiYjF42pZU2POoKIqVob1gbwCDOvCRzzgeR1ETXz/akejTuR2qTQA
-         g0pxGHYUFUFibC7hdjoV+LCKKMtb5fhq/VNlV47bNDMFUepOrZFAacOOooliWaUqMLO5
-         I6Ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712162651; x=1712767451;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Aej6QFoETxeFvbQm8/sOYYAdEcWAnghw/7Ynm8n0ucQ=;
-        b=e+mxCzVNM6cCETYm8vGUo3Zdp51xWo1cHQD83HWFzwuU7I3qvCrNNg+jksv+5KlYiW
-         D6Nx0Ha5r9IIaxjn4u9lWM9P53rGj4RFQqKx//RSOS28uXttWWflNygqpoibipQy3e+Y
-         bIT9VtYt4KEZI0UZAYdps1psUs/1ZisRJgA/pcTbno4gVVEJcnYbu7FFrduZ5uLJzguE
-         RE+Lwge/qpV4cgriMEEUCE/algDmWxcwmpTxtzRg/Kn7jVpMVGs8ar8MW6J7XjVvo5AJ
-         iOzW8892c55vRkJza1+FCtVtOqWJGF5clLBvosb+khf76D/zB5FsQWUPvTR4bGeTuWe8
-         yJtQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWwI6CIQLTB5KTuQJnVaFsVW1oWw1HM6Xb86SZmgiAb2G9g6YZYeuxmNDr+zR3fsNOKnZ9fhh5YiKKnwnoLMxnODemjgj2xChrq6iEYtA==
-X-Gm-Message-State: AOJu0YymPXmhKeArSwmhMqWgABC7R7eidtDPGjOnyOZeX6ZMWprzdmHf
-	xTRr8SntWKK6dDsaRNJZdYsm34lZRdvjWFm3AoRciYHVXhgC/Dlxk7+yWSRe80XoPu0PBXa+nz1
-	oxGiIISX7N3MtSAIOM+413VODj/s=
-X-Google-Smtp-Source: AGHT+IFEFFEcpcdQfCxRWJYlDuuUETZ0sWBciDlGUMCvLnJmEBIY1oP87nAaJSL5QQDatxb4oTnFcly4MrzzQ8OrF5o=
-X-Received: by 2002:a05:6122:499a:b0:4d3:b326:5ae8 with SMTP id
- ex26-20020a056122499a00b004d3b3265ae8mr10815788vkb.14.1712162651582; Wed, 03
- Apr 2024 09:44:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V940W0hxtz3cCx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2024 12:34:18 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 5F0C4615AB;
+	Thu,  4 Apr 2024 01:34:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A94D4C433C7;
+	Thu,  4 Apr 2024 01:34:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1712194455;
+	bh=PLHX9CmuF+jzJhTft7r/1Y8OPKACX4mI6u4er178G2M=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=qb1JzlHCkOQ0xQR9xEkxKvsw8OA1eBs2sTlr4JQ5PzuUXWpA08puhxOS0+HGL5xJt
+	 p+tSFhHdI0/W38jVkWUzbZ83SoA9Ze3oVX0I/xz35tzw9J8ehO4Ej2Z+v4WDgVFly6
+	 bK1uHAbfHAa/MKwQyDRnXJvZKbn2ZQDjArtD+Ho/3cPayZMvc1juvsoNzlmJRr/Ju4
+	 IiompHkE91W7nulKLmrSnjlpjrH1dYJE6//xltRqVI5kAJhGo2sMI29VSfrrA1CwJ3
+	 2VTX8Ds9j7vLv82qYyQgrRRjYVgNl7GVkee7GY7YJqfjkE9sRb6rgoQPF1hbD/SIKA
+	 JnLshHl50ZGTA==
+Date: Wed, 3 Apr 2024 18:34:12 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 06/15] net: kunit: Suppress lock warning noise at end
+ of dev_addr_lists tests
+Message-ID: <20240403183412.16254318@kernel.org>
+In-Reply-To: <20240403131936.787234-7-linux@roeck-us.net>
+References: <20240403131936.787234-1-linux@roeck-us.net>
+	<20240403131936.787234-7-linux@roeck-us.net>
 MIME-Version: 1.0
-References: <20240327160314.9982-1-apais@linux.microsoft.com> <20240327160314.9982-2-apais@linux.microsoft.com>
-In-Reply-To: <20240327160314.9982-2-apais@linux.microsoft.com>
-From: Allen <allen.lkml@gmail.com>
-Date: Wed, 3 Apr 2024 09:43:57 -0700
-Message-ID: <CAOMdWSLavg27YZgnfE2QHjO=4RNmFx_7veAURaPG_=qWX=KMVA@mail.gmail.com>
-Subject: Re: [PATCH 1/9] hyperv: Convert from tasklet to BH workqueue
-To: Allen Pais <apais@linux.microsoft.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Thu, 04 Apr 2024 08:02:05 +1100
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,41 +60,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: imx@lists.linux.dev, ulf.hansson@linaro.org, oneukum@suse.com, duncan.sands@free.fr, hayashi.kunihiko@socionext.com, linux-mmc@vger.kernel.org, aubin.constans@microchip.com, linus.walleij@linaro.org, Frank.Li@nxp.com, linux-hyperv@vger.kernel.org, linux-usb@vger.kernel.org, HaraldWelte@viatech.com, paul@crapouillou.net, linux-tegra@vger.kernel.org, netdev@vger.kernel.org, maintainers@bluecherrydvr.com, peter.ujfalusi@gmail.com, manivannan.sadhasivam@linaro.org, linux-riscv@lists.infradead.org, kys@microsoft.com, robert.jarzmik@free.fr, haijie1@huawei.com, linux-renesas-soc@vger.kernel.org, wei.liu@kernel.org, linux-omap@vger.kernel.org, florian.fainelli@broadcom.com, linux-rdma@vger.kernel.org, vireshk@kernel.org, jassisinghbrar@gmail.com, decui@microsoft.com, wangzhou1@hisilicon.com, jernej.skrabec@gmail.com, jh80.chung@samsung.com, zw@zh-kernel.org, wens@csie.org, stern@rowland.harvard.edu, linux-arm-msm@vger.kernel.org, orsonzhai@gmail.com, pierre@ossman.eu, linux-mips@vger.ke
- rnel.org, Eugeniy.Paltsev@synopsys.com, patrice.chotard@foss.st.com, asahi@lists.linux.dev, brucechang@via.com.tw, keescook@chromium.org, oakad@yahoo.com, sven@svenpeter.dev, rjui@broadcom.com, s.hauer@pengutronix.de, sean.wang@mediatek.com, linux-actions@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, haojian.zhuang@gmail.com, mirq-linux@rere.qmqm.pl, dmaengine@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, baolin.wang@linux.alibaba.com, matthias.bgg@gmail.com, openipmi-developer@lists.sourceforge.net, mchehab@kernel.org, linux-arm-kernel@lists.infradead.org, angelogioacchino.delregno@collabora.com, sbranden@broadcom.com, logang@deltatee.com, andersson@kernel.org, marcan@marcan.st, haiyangz@microsoft.com, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, konrad.dybcio@linaro.org, linux-sunxi@lists.linux.dev, vkoul@kernel.org, linux-s390@vger.kernel.org, mhiramat@kernel.org, zhang.lyra@gmail.com, tj@kernel.org, manuel.lauss@gmail.com, 
- linux-media@vger.kernel.org, shawnguo@kernel.org, afaerber@suse.de, daniel@zonque.org
+Cc: x86@kernel.org, loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, Eric Dumazet <edumazet@google.com>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, Ville =?UTF-8?B?U3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?UTF-8?B?TWHDrXJh?= Canal <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, Linux Kernel Functional Testing <lkft@linaro.org>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-paris
+ c@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> The only generic interface to execute asynchronously in the BH context is
-> tasklet; however, it's marked deprecated and has some design flaws. To
-> replace tasklets, BH workqueue support was recently added. A BH workqueue
-> behaves similarly to regular workqueues except that the queued work items
-> are executed in the BH context.
->
-> This patch converts drivers/hv/* from tasklet to BH workqueue.
->
-> Based on the work done by Tejun Heo <tj@kernel.org>
-> Branch: https://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git for-6.10
->
-> Signed-off-by: Allen Pais <allen.lkml@gmail.com>
-> ---
->  drivers/hv/channel.c      |  8 ++++----
->  drivers/hv/channel_mgmt.c |  5 ++---
->  drivers/hv/connection.c   |  9 +++++----
->  drivers/hv/hv.c           |  3 +--
->  drivers/hv/hv_balloon.c   |  4 ++--
->  drivers/hv/hv_fcopy.c     |  8 ++++----
->  drivers/hv/hv_kvp.c       |  8 ++++----
->  drivers/hv/hv_snapshot.c  |  8 ++++----
->  drivers/hv/hyperv_vmbus.h |  9 +++++----
->  drivers/hv/vmbus_drv.c    | 19 ++++++++++---------
->  include/linux/hyperv.h    |  2 +-
->  11 files changed, 42 insertions(+), 41 deletions(-)
+On Wed,  3 Apr 2024 06:19:27 -0700 Guenter Roeck wrote:
+> dev_addr_lists_test generates lock warning noise at the end of tests
+> if lock debugging is enabled. There are two sets of warnings.
+> 
+> WARNING: CPU: 0 PID: 689 at kernel/locking/mutex.c:923 __mutex_unlock_slowpath.constprop.0+0x13c/0x368
+> DEBUG_LOCKS_WARN_ON(__owner_task(owner) != __get_current())
+> 
+> WARNING: kunit_try_catch/1336 still has locks held!
+> 
+> KUnit test cleanup is not guaranteed to run in the same thread as the test
+> itself. For this test, this means that rtnl_lock() and rtnl_unlock() may
+> be called from different threads. This triggers the warnings.
+> Suppress the warnings because they are irrelevant for the test and just
+> confusing and distracting.
+> 
+> The first warning can be suppressed by using START_SUPPRESSED_WARNING()
+> and END_SUPPRESSED_WARNING() around the call to rtnl_unlock(). To suppress
+> the second warning, it is necessary to set debug_locks_silent while the
+> rtnl lock is held.
 
-Wei,
-
- I need to send out a v2 as I did not include the second patch that
-updates drivers/pci/controller/pci-hyperv.c
-
-Thanks.
+Is it okay if I move the locking into the tests, instead?
+It's only 4 lines more and no magic required, seems to work fine.
