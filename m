@@ -4,67 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91A2CCD128A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 00:18:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A66E1CD1288
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 02:15:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=soleen-com.20230601.gappssmtp.com header.i=@soleen-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=AL0vWByp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VyMVQ3zt;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V92Jn1BPZz3d3Z
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 11:18:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V94vZ2Pflz3vZN
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 13:15:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=soleen-com.20230601.gappssmtp.com header.i=@soleen-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=AL0vWByp;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VyMVQ3zt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=soleen.com (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=pasha.tatashin@soleen.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V92Hz0DBXz2xFt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2024 11:17:34 +1100 (AEDT)
-Received: by mail-qt1-x835.google.com with SMTP id d75a77b69052e-430acf667afso2522471cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Apr 2024 17:17:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=soleen-com.20230601.gappssmtp.com; s=20230601; t=1712189851; x=1712794651; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=GSVBno2xCtCV3lEPrUaIPS0RwP9BPDEg1a+b7h+02fA=;
-        b=AL0vWBypR1P59Wmv0wKbhjJBZdRW84+fTecSoTnUdzzpLHWBu0NSu8/7/VvwbC8YKp
-         ZbfJFe2YVv4ZVubKJEKMCoqghpHwESYSJAOjlz/WPSvmkoBGBYG2Y/4ICnHod4GoJRbL
-         hr2l2t8wkOX/1n0PLzYFOMnPRnNOpFHM/QiQj3IpHGLoE4cvgsm6kDbzlGPnY2CXus1u
-         WFz3vYsFlkhZ4VbE1P6y/w56b/HbD2A4xmEaUWF7H6frZLzId0MR7+WKkljazL1bypf9
-         Gn7B+fbZ2MXDBKmFTFah2HwPfOZ7v5+WXZzDN7G0CWvCdqN/6DMQS7Ach7Ea7+6rgdxz
-         R98w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1712189851; x=1712794651;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=GSVBno2xCtCV3lEPrUaIPS0RwP9BPDEg1a+b7h+02fA=;
-        b=RA2BZ6nmFqraQpBjCiBdrV6Dl3L7TfquIQAgpXFvug7IJ55aIstlo0IaV+97rtXXBN
-         UVFabpqPUR/YuZnIrkk1UEt/s0z451fYdcSTsoRjLkyBgTsUyDNZqBQ2aCJCwYEXqPkD
-         J5rxUZ4XszMh3LRFZOX78DJCRRLOmsDNdM5gKmvfNyq5aPOZQHkRe85SlCFLn9MlYuAC
-         iPG4N7GRSo/NPPXj9c326o/eBto1YQ4hXEZWYrX7w20dCuZ+c46KhxS96kBT2zyRMLtB
-         3LJ+hUyBkoVTbQV2pebL9kn7OR/ldE4OHEWmm4RE+I1KgqtnpHB9z+DFZ1aLMSNesDeb
-         aHFw==
-X-Gm-Message-State: AOJu0Yz+tQSuSk/caIlMmUDJGl54HnToFIqfAQPM/CUMVEn2Ne6qj4Se
-	gRJiyc91AUyTQkStbs5iiqy4ZwNyWDd/N9yZF2VfJMRF3Nfay3vfMQiMd/FyWeGNoig6Q3sR2c4
-	vUV3x+u4ZimJr/PIZ2HCoTa+H3b7AN24p9JOrag==
-X-Google-Smtp-Source: AGHT+IHeyRQcXRicFrSlT78VEU+Vzn8mFeWtih7N+0UKFhl1TiJbXhDluQaV4kTzz7cFxWm7uIPajzR+MoCnf8A5Y2k=
-X-Received: by 2002:a05:622a:411:b0:432:f652:1a52 with SMTP id
- n17-20020a05622a041100b00432f6521a52mr1067238qtx.55.1712189851730; Wed, 03
- Apr 2024 17:17:31 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V94tm30rMz3c4M
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2024 13:14:24 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1712196863;
+	bh=0PcvpW5SQPrf4QnOqaQeX/XXu99U3a1qNIXPB0jb71k=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=VyMVQ3ztogSJTiIgLxBnLkNGFUgd68Qe2KDkfvwgzAo6UXogiTKbR69fLdEZZdu7n
+	 j3iNV2JgacCj30EfVfA0nufM6LLB0HhkUu4/gC0cH9GF15bjP6K55yY/SHfDcHG5LZ
+	 C6A3Ro/1onK6pyPh3jlVC2U8y95oPYSyx7VeOvKtcmV57g7fuqL83rvaMyFKYOVpxw
+	 oxm58pQDGWVdn2ucF5HZ6tep2QVSw9tARy9V9golouCtHYA3Tik7KGkuZEvWcLHYKF
+	 3HCUbzR0cNgClz2PklZaCGNb+9TQaIfvB8jeqaIi2XVH6tgkaEYydsWFGiIh6MP6A8
+	 HT6H386UWr5YA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4V94th0jq3z4wcQ;
+	Thu,  4 Apr 2024 13:14:19 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Guenter Roeck <linux@roeck-us.net>, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v3 15/15] powerpc: Add support for suppressing warning
+ backtraces
+In-Reply-To: <20240403131936.787234-16-linux@roeck-us.net>
+References: <20240403131936.787234-1-linux@roeck-us.net>
+ <20240403131936.787234-16-linux@roeck-us.net>
+Date: Thu, 04 Apr 2024 13:14:16 +1100
+Message-ID: <874jch98nb.fsf@mail.lhotse>
 MIME-Version: 1.0
-References: <20240402051154.476244-1-rmclure@linux.ibm.com> <20240402051154.476244-12-rmclure@linux.ibm.com>
-In-Reply-To: <20240402051154.476244-12-rmclure@linux.ibm.com>
-From: Pasha Tatashin <pasha.tatashin@soleen.com>
-Date: Wed, 3 Apr 2024 20:16:54 -0400
-Message-ID: <CA+CK2bC-ua6DVAwZ5oM3X9v3PJx1oKWtbOdBfEdeLHQasXx0Pw@mail.gmail.com>
-Subject: Re: [PATCH v12 11/11] powerpc: mm: Support page table check
-To: Rohan McLure <rmclure@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,35 +59,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, linux-mm@kvack.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: x86@kernel.org, loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, Ville =?utf-8?B?U3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?utf-8?Q?Ma=C3=ADra?= Canal <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, Linux Kernel Functional Testing <lkft@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, netdev@vger.
+ kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 2, 2024 at 1:13=E2=80=AFAM Rohan McLure <rmclure@linux.ibm.com>=
- wrote:
+Guenter Roeck <linux@roeck-us.net> writes:
+> Add name of functions triggering warning backtraces to the __bug_table
+> object section to enable support for suppressing WARNING backtraces.
 >
-> On creation and clearing of a page table mapping, instrument such calls
-> by invoking page_table_check_pte_set and page_table_check_pte_clear
-> respectively. These calls serve as a sanity check against illegal
-> mappings.
+> To limit image size impact, the pointer to the function name is only added
+> to the __bug_table section if both CONFIG_KUNIT_SUPPRESS_BACKTRACE and
+> CONFIG_DEBUG_BUGVERBOSE are enabled. Otherwise, the __func__ assembly
+> parameter is replaced with a (dummy) NULL parameter to avoid an image size
+> increase due to unused __func__ entries (this is necessary because __func__
+> is not a define but a virtual variable).
 >
-> Enable ARCH_SUPPORTS_PAGE_TABLE_CHECK for all platforms.
+> Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
+> Acked-by: Dan Carpenter <dan.carpenter@linaro.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+> v2:
+> - Rebased to v6.9-rc1
+> - Added Tested-by:, Acked-by:, and Reviewed-by: tags
+> - Introduced KUNIT_SUPPRESS_BACKTRACE configuration option
+> v3:
+> - Rebased to v6.9-rc2
 >
-> See also:
->
-> riscv support in commit 3fee229a8eb9 ("riscv/mm: enable
-> ARCH_SUPPORTS_PAGE_TABLE_CHECK")
-> arm64 in commit 42b2547137f5 ("arm64/mm: enable
-> ARCH_SUPPORTS_PAGE_TABLE_CHECK")
-> x86_64 in commit d283d422c6c4 ("x86: mm: add x86_64 support for page tabl=
-e
-> check")
->
-> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+>  arch/powerpc/include/asm/bug.h | 37 +++++++++++++++++++++++++---------
+>  1 file changed, 28 insertions(+), 9 deletions(-)
 
-Reviewed-by: Pasha Tatashin <pasha.tatashin@soleen.com>
+I ran it through some build and boot tests, LGTM.
 
-Thank you for this work!
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-Pasha
+cheers
