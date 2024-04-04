@@ -4,50 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68C6DCD128A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 01:35:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9BF9CD1284
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 16:35:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qb1JzlHC;
+	dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=091+neT1;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4V941G6jN8z3vZT
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Apr 2024 12:34:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V9S032GcWz3vXt
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2024 03:35:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qb1JzlHC;
+	dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=091+neT1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=acm.org (client-ip=199.89.1.12; helo=009.lax.mailroute.net; envelope-from=bvanassche@acm.org; receiver=lists.ozlabs.org)
+Received: from 009.lax.mailroute.net (009.lax.mailroute.net [199.89.1.12])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4V940W0hxtz3cCx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Apr 2024 12:34:18 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 5F0C4615AB;
-	Thu,  4 Apr 2024 01:34:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A94D4C433C7;
-	Thu,  4 Apr 2024 01:34:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712194455;
-	bh=PLHX9CmuF+jzJhTft7r/1Y8OPKACX4mI6u4er178G2M=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=qb1JzlHCkOQ0xQR9xEkxKvsw8OA1eBs2sTlr4JQ5PzuUXWpA08puhxOS0+HGL5xJt
-	 p+tSFhHdI0/W38jVkWUzbZ83SoA9Ze3oVX0I/xz35tzw9J8ehO4Ej2Z+v4WDgVFly6
-	 bK1uHAbfHAa/MKwQyDRnXJvZKbn2ZQDjArtD+Ho/3cPayZMvc1juvsoNzlmJRr/Ju4
-	 IiompHkE91W7nulKLmrSnjlpjrH1dYJE6//xltRqVI5kAJhGo2sMI29VSfrrA1CwJ3
-	 2VTX8Ds9j7vLv82qYyQgrRRjYVgNl7GVkee7GY7YJqfjkE9sRb6rgoQPF1hbD/SIKA
-	 JnLshHl50ZGTA==
-Date: Wed, 3 Apr 2024 18:34:12 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 06/15] net: kunit: Suppress lock warning noise at end
- of dev_addr_lists tests
-Message-ID: <20240403183412.16254318@kernel.org>
-In-Reply-To: <20240403131936.787234-7-linux@roeck-us.net>
-References: <20240403131936.787234-1-linux@roeck-us.net>
-	<20240403131936.787234-7-linux@roeck-us.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V9RzC6RCVz3dTm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2024 03:34:31 +1100 (AEDT)
+Received: from localhost (localhost [127.0.0.1])
+	by 009.lax.mailroute.net (Postfix) with ESMTP id 4V9Rz82lVqzlgTGW;
+	Thu,  4 Apr 2024 16:34:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:content-type:content-type:in-reply-to
+	:from:from:references:content-language:subject:subject
+	:user-agent:mime-version:date:date:message-id:received:received;
+	 s=mr01; t=1712248465; x=1714840466; bh=gtgsa6hJPcd82Maymu91LBcQ
+	ldrh83j7UrAsr0LevII=; b=091+neT1o3mekbMq718chh9bKsxwE0wkn+CCOZYG
+	S6fl1APE+r3rTwwS0xvPO8UCgzrEHBLgfTYh30/4zh3cR+zIxwqiHd5GVycF0zqA
+	5/ZCpyTG+KYqdwztkGR9Nv+e4hBGMZFdN4YTYN9dHPt1e8BwGSmxtMf/QQVbG9oj
+	rIxbM0PkdVbKCOKDjI7fwAf504qlshL9dnvwKBBkQgjkgtdqBoTwxeXeTyXtpcQy
+	UPtcWDPYWFUoo/Qoi+/5qfJ1UDCHuYQeYxbqxqpfanty3BGOvNOd1Pr2G/cW3cmd
+	/9CqjatN++lg2ZRM3mVSk3mWcU9oSF5zD5jt/AsA8LPnDA==
+X-Virus-Scanned: by MailRoute
+Received: from 009.lax.mailroute.net ([127.0.0.1])
+ by localhost (009.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id 8dDNJUMNhI2V; Thu,  4 Apr 2024 16:34:25 +0000 (UTC)
+Received: from [100.96.154.173] (unknown [104.132.1.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: bvanassche@acm.org)
+	by 009.lax.mailroute.net (Postfix) with ESMTPSA id 4V9Rz44ZJxzlgTHp;
+	Thu,  4 Apr 2024 16:34:24 +0000 (UTC)
+Message-ID: <063d9b04-facd-4399-bf50-40452bd2c42f@acm.org>
+Date: Thu, 4 Apr 2024 09:34:23 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] scsi: sg: Avoid race in error handling & drop bogus
+ warn
+Content-Language: en-US
+To: Alexander Wetzel <Alexander@wetzel-home.de>, dgilbert@interlog.com
+References: <81266270-42F4-48F9-9139-8F0C3F0A6553@linux.ibm.com>
+ <20240401191038.18359-1-Alexander@wetzel-home.de>
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <20240401191038.18359-1-Alexander@wetzel-home.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -60,30 +72,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, Eric Dumazet <edumazet@google.com>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, Ville =?UTF-8?B?U3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?UTF-8?B?TWHDrXJh?= Canal <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, Linux Kernel Functional Testing <lkft@linaro.org>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infradead.org, kunit-dev@googlegroups.com, linux-paris
- c@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org, gregkh@linuxfoundation.org, stable@vger.kernel.org, sachinp@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed,  3 Apr 2024 06:19:27 -0700 Guenter Roeck wrote:
-> dev_addr_lists_test generates lock warning noise at the end of tests
-> if lock debugging is enabled. There are two sets of warnings.
+On 4/1/24 12:10, Alexander Wetzel wrote:
+> commit 27f58c04a8f4 ("scsi: sg: Avoid sg device teardown race")
+> introduced an incorrect WARN_ON_ONCE() and missed a sequence where
+> sg_device_destroy() was used after scsi_device_put().
 > 
-> WARNING: CPU: 0 PID: 689 at kernel/locking/mutex.c:923 __mutex_unlock_slowpath.constprop.0+0x13c/0x368
-> DEBUG_LOCKS_WARN_ON(__owner_task(owner) != __get_current())
+> sg_device_destroy() is accessing the parent scsi_device request_queue which
+> will already be set to NULL when the preceding call to scsi_device_put()
+> removed the last reference to the parent scsi_device.
 > 
-> WARNING: kunit_try_catch/1336 still has locks held!
-> 
-> KUnit test cleanup is not guaranteed to run in the same thread as the test
-> itself. For this test, this means that rtnl_lock() and rtnl_unlock() may
-> be called from different threads. This triggers the warnings.
-> Suppress the warnings because they are irrelevant for the test and just
-> confusing and distracting.
-> 
-> The first warning can be suppressed by using START_SUPPRESSED_WARNING()
-> and END_SUPPRESSED_WARNING() around the call to rtnl_unlock(). To suppress
-> the second warning, it is necessary to set debug_locks_silent while the
-> rtnl lock is held.
+> Drop the incorrect WARN_ON_ONCE() - allowing more than one concurrent
+> access to the sg device - and make sure sg_device_destroy() is not used
+> after scsi_device_put() in the error handling.
 
-Is it okay if I move the locking into the tests, instead?
-It's only 4 lines more and no magic required, seems to work fine.
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
