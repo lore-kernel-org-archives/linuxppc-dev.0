@@ -2,92 +2,54 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 464C8C25B74
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2024 14:21:42 +0000 (UTC)
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75776C67861
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2024 11:41:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=b/3JO/Di;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ckg+mCz9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=ZcrcoLqs;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VnyMs3hx0z78m8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2024 00:15:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4V9xQH60SRz3vYm
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2024 22:41:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=b/3JO/Di;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ckg+mCz9;
+	dkim=pass (2048-bit key; unprotected) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.a=rsa-sha256 header.s=1 header.b=ZcrcoLqs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rere.qmqm.pl (client-ip=91.227.64.183; helo=rere.qmqm.pl; envelope-from=mirq-linux@rere.qmqm.pl; receiver=lists.ozlabs.org)
+X-Greylist: delayed 555 seconds by postgrey-1.37 at boromir; Fri, 05 Apr 2024 20:38:50 AEDT
+Received: from rere.qmqm.pl (rere.qmqm.pl [91.227.64.183])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VnyLz6p6xz3w82
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2024 00:14:18 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1716819253;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=SFzMZWvRCDrb7WkYa5wLatMYu1+RpvoRMJMjVnqZvBU=;
-	b=b/3JO/DiCWuqT7mrNRNL72nKwG9RuveCwsU+yoyUDiZAKGoc/GkD8pIvLn2YIEnEltj9Sd
-	vnxtWmH2XJhdoOHPpgS1lDt7vPULej2/ppwSU7CU9D7+hdiDPp9O75WSe/O8qON/hP2KsU
-	9PyY/NXoO8QMbzlqRttfbqpI+SVtfYw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1716819254;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=SFzMZWvRCDrb7WkYa5wLatMYu1+RpvoRMJMjVnqZvBU=;
-	b=Ckg+mCz9aPUbVRG4nBUD+55RP+1XFIrl3goIDgqgkLgK1T/QkvIb+oN6ojeaudjiOe/Acm
-	guJ4cfL5jqUrX0dA4X/t9dNBb6QGfHiLNCvr63G3OE6E2ppPyXub+ey4kG2gkkIDsRIt6g
-	l/+Xfzm7zxfkXJt3lPg2FBNG9BI0Gg8=
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com
- [209.85.219.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-322-acoUMaMeMQeL52gBPK3xhw-1; Mon, 27 May 2024 10:14:10 -0400
-X-MC-Unique: acoUMaMeMQeL52gBPK3xhw-1
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-6ab960d4c84so28186d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2024 07:14:10 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716819250; x=1717424050;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=SFzMZWvRCDrb7WkYa5wLatMYu1+RpvoRMJMjVnqZvBU=;
-        b=IJ0CphLSOmTGYfO1IBvKZ0TfAHvMsQaALpfcdTaTE7hn3I1I9o+apwM35FAXe68YCM
-         VSuT9AZ+HrUKjBexhVfpB/z0fP1NHoG+WTc0K8FzJcMF3cdLVj+LYTYLEvdUcGdDUSds
-         QQYsj35xCh0bdlXeLP6Yt2RzN4uFn4Ui4zue1GSFJ6cWRSBHWI5MbX07WrF7HyQBNv3G
-         hA8IoLYOw3392CP00ZlA1I4AXjYKXE95bDAb3xiKcrhqhhiREhFQn7I79BNU6VBV+WMR
-         S46k9ioN2GyGW/r9lYJwtxMj+q0nr9rszMlMUgRQ3Fo//nWjZioUqQjEHA/bvf3PFzX6
-         8MKw==
-X-Forwarded-Encrypted: i=1; AJvYcCXqBgOzSCKZP+S43je96eK1JkAXA1Hury6Uk0MsXC0pSx4aizSqD4Rgz/YR/+lY0vM9xRaLZ345DFWcourkYSmatrRyp0AyGI7nUFg/vw==
-X-Gm-Message-State: AOJu0YzgfV12E7xvSyZ//5jOqTz8muPJJMfZLMTxMt2jKW1GPZWdOwwp
-	+02ppRRApC4EL0IVAV5phAAtLpHCsSTyBuS55vAl5xy5Psp0DwQS/3Cind07LKd3SIFug8J/8Hh
-	yBnBllPWMv+XCAAUafOrh3Bm0ofEd4OR8+TrYEFTweGAQxy9w98NDNWJlBcd9YBU=
-X-Received: by 2002:a05:622a:1a08:b0:439:ecc6:cdff with SMTP id d75a77b69052e-43fb0e50bbdmr106246841cf.1.1716819249866;
-        Mon, 27 May 2024 07:14:09 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGd8th8Wg469CYBTawHV9rsQeFuB8nclhehcyxMjGfWytXD5S2gp1EDIKK4hPSKKRLENR5EfA==
-X-Received: by 2002:a05:622a:1a08:b0:439:ecc6:cdff with SMTP id d75a77b69052e-43fb0e50bbdmr106246401cf.1.1716819249131;
-        Mon, 27 May 2024 07:14:09 -0700 (PDT)
-Received: from x1n (pool-99-254-121-117.cpe.net.cable.rogers.com. [99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-43fb16b97b5sm33974641cf.18.2024.05.27.07.14.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 May 2024 07:14:08 -0700 (PDT)
-Date: Mon, 27 May 2024 10:14:06 -0400
-From: Peter Xu <peterx@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFC PATCH v2 00/20] Reimplement huge pages without hugepd on
- powerpc (8xx, e500, book3s/64)
-Message-ID: <ZlSVLv2JlsZS4f3d@x1n>
-References: <cover.1715971869.git.christophe.leroy@csgroup.eu>
- <Zk-bpBZ_yjsj_B2z@x1n>
- <87jzjj4y0t.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4V9tj60Sskz2ykC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Apr 2024 20:38:50 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
+	t=1712309337; bh=gui0f6MViE5zSAEEOcDKHdPoDszSctiaYWprNP7GSNc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ZcrcoLqsz/zzlMruWf44PYk75DueBejOUyr1Eh31EyaZcoY7ODel3t0vFK51sQutC
+	 YY7dBqw6x5FiEghmAZFtz/zTJMGq5GtkEocuVfbQcN9BDPuRIei5HZ4DdjLpHxZ7+6
+	 E7lgHaOaQ5/+P2XOh5i4UPTyYivuDu5pF+wIovDfOhmC0jyS7Po0jdQpgN6Tw+kWcU
+	 BR21bYeWeQT2EX7dHW/mtmIf4RbdkqX5exTxh2367mA4o2zBmZSc7BFV4XrNkiEptZ
+	 Q5SBD2Ru9xBFkYUfXpcQGRwkKRKwaEBGta6Gar0WuqKpV+3lBKaNoDOSXQIouXFRPP
+	 Bq/roRR1X1cQQ==
+Received: from remote.user (localhost [127.0.0.1])
+	by rere.qmqm.pl (Postfix) with ESMTPSA id 4V9tTX48kvz8B;
+	Fri,  5 Apr 2024 11:28:48 +0200 (CEST)
+X-Virus-Status: Clean
+X-Virus-Scanned: clamav-milter 1.0.3 at mail
+Date: Fri, 5 Apr 2024 11:28:47 +0200
+From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
+To: Allen Pais <apais@linux.microsoft.com>
+Subject: Re: [PATCH 9/9] mmc: Convert from tasklet to BH workqueue
+Message-ID: <Zg_ET2XmZM_Id_Ad@qmqm.qmqm.pl>
+References: <20240327160314.9982-1-apais@linux.microsoft.com>
+ <20240327160314.9982-10-apais@linux.microsoft.com>
 MIME-Version: 1.0
-In-Reply-To: <87jzjj4y0t.fsf@mail.lhotse>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20240327160314.9982-10-apais@linux.microsoft.com>
+X-Mailman-Approved-At: Fri, 05 Apr 2024 22:40:31 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,26 +61,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Jason Gunthorpe <jgg@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Oscar Salvador <osalvador@suse.de>
+Cc: imx@lists.linux.dev, ulf.hansson@linaro.org, oneukum@suse.com, duncan.sands@free.fr, hayashi.kunihiko@socionext.com, linux-mmc@vger.kernel.org, aubin.constans@microchip.com, linus.walleij@linaro.org, Frank.Li@nxp.com, linux-hyperv@vger.kernel.org, linux-usb@vger.kernel.org, HaraldWelte@viatech.com, paul@crapouillou.net, linux-tegra@vger.kernel.org, netdev@vger.kernel.org, maintainers@bluecherrydvr.com, peter.ujfalusi@gmail.com, manivannan.sadhasivam@linaro.org, linux-riscv@lists.infradead.org, kys@microsoft.com, robert.jarzmik@free.fr, haijie1@huawei.com, linux-renesas-soc@vger.kernel.org, wei.liu@kernel.org, linux-omap@vger.kernel.org, florian.fainelli@broadcom.com, linux-rdma@vger.kernel.org, vireshk@kernel.org, jassisinghbrar@gmail.com, decui@microsoft.com, wangzhou1@hisilicon.com, jernej.skrabec@gmail.com, jh80.chung@samsung.com, zw@zh-kernel.org, wens@csie.org, stern@rowland.harvard.edu, linux-arm-msm@vger.kernel.org, orsonzhai@gmail.com, pierre@ossman.eu, linux-mips@vger.ke
+ rnel.org, Eugeniy.Paltsev@synopsys.com, patrice.chotard@foss.st.com, asahi@lists.linux.dev, keescook@chromium.org, oakad@yahoo.com, sven@svenpeter.dev, rjui@broadcom.com, s.hauer@pengutronix.de, sean.wang@mediatek.com, linux-actions@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, haojian.zhuang@gmail.com, brucechang@via.com.tw, dmaengine@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, baolin.wang@linux.alibaba.com, matthias.bgg@gmail.com, openipmi-developer@lists.sourceforge.net, mchehab@kernel.org, linux-arm-kernel@lists.infradead.org, angelogioacchino.delregno@collabora.com, sbranden@broadcom.com, logang@deltatee.com, andersson@kernel.org, marcan@marcan.st, haiyangz@microsoft.com, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, konrad.dybcio@linaro.org, linux-sunxi@lists.linux.dev, vkoul@kernel.org, linux-s390@vger.kernel.org, mhiramat@kernel.org, zhang.lyra@gmail.com, tj@kernel.org, manuel.lauss@gmail.com, linux-media@vger.kernel.o
+ rg, shawnguo@kernel.org, afaerber@suse.de, daniel@zonque.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 24, 2024 at 02:46:58PM +1000, Michael Ellerman wrote:
-> Christophe is a powerpc developer :)
-
-Yes, definitely. :)
-
+On Wed, Mar 27, 2024 at 04:03:14PM +0000, Allen Pais wrote:
+> The only generic interface to execute asynchronously in the BH context is
+> tasklet; however, it's marked deprecated and has some design flaws. To
+> replace tasklets, BH workqueue support was recently added. A BH workqueue
+> behaves similarly to regular workqueues except that the queued work items
+> are executed in the BH context.
 > 
-> I'll help where I can, but I don't know the hugepd code that well, I've
-> never really worked on it before. Nick will hopefully also be able to
-> help, he at least knows mm better than me, but he also has other work.
+> This patch converts drivers/infiniband/* from tasklet to BH workqueue.
 > 
-> Hopefully we can make this series work, and replace hugepd. But if we
-> can't make that work then there is the possibility of just dropping
-> support for 16M/16G pages with HPT/4K pages.
+> Based on the work done by Tejun Heo <tj@kernel.org>
+> Branch: https://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git for-6.10
+> 
+> Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+> ---
+[...]
+>  drivers/mmc/host/cb710-mmc.c                  | 15 ++--
+>  drivers/mmc/host/cb710-mmc.h                  |  3 +-
+[...]
 
-Great, thank you!
-
--- 
-Peter Xu
-
+Acked-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
