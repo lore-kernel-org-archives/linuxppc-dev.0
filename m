@@ -4,71 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4335CD1292
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2024 03:20:40 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=ooTiwkUK;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAD62CD1284
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2024 13:58:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VBLGH43f5z3vdv
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2024 14:20:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=ooTiwkUK;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=103.168.172.150; helo=fout7-smtp.messagingengine.com; envelope-from=fthain@linux-m68k.org; receiver=lists.ozlabs.org)
-Received: from fout7-smtp.messagingengine.com (fout7-smtp.messagingengine.com [103.168.172.150])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VBcQ71YxJz2yk7
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Apr 2024 00:58:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:4f8:150:2161:1:b009:f23e:0; helo=bmailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 315 seconds by postgrey-1.37 at boromir; Sun, 07 Apr 2024 00:57:27 AEDT
+Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net [IPv6:2a01:4f8:150:2161:1:b009:f23e:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VBLFR00hkz3dVp
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2024 14:19:52 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-	by mailfout.nyi.internal (Postfix) with ESMTP id AB0F913800C6;
-	Fri,  5 Apr 2024 23:19:48 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute6.internal (MEProxy); Fri, 05 Apr 2024 23:19:48 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-	fm2; t=1712373588; x=1712459988; bh=9kul5wYSciMTZEU/ffUWZ8gwme9H
-	jWu3Wnb8YIqDLsk=; b=ooTiwkUKPhqW9zfzDZVT3t/TwKbGTeukyQ4L0eHI7FMv
-	fu2q2wSYhfbk2jjYyI79BJ9vJ5UB4/FWTSOjn12RWZ/kxPypStmk6egXL5gHeDok
-	Iocho1g/7BznBTiKa5E4QQVq+pXilIyNR5+Ijbxp4QN0RAqt0E8sTNM23+ZSF7Ra
-	ojM7WTN9HlJPvg01UFgme3wy3+WzWBYQXSOCuVBejHua7G9sefeUdklA9Dld3i9+
-	7x4WzRhlxgXoysfUO+r2ms3FKpTumVIOY+eYv1ZvNnAxCuXE2ofJMCZNc6fwajWj
-	CePqWoYYYT/OXE3GQI8GbkBa80qBAmFs0Hv6+M1Qfw==
-X-ME-Sender: <xms:Ur8QZuD8CT1UgC2Ds_aeWUmZvG7k3rQ_eX6fvm6SCS3sviG2kXOL1Q>
-    <xme:Ur8QZogH6Jyrkz30kjfkMt-_EmsjoqVYpN1lphw-cgCMiruvqWvzxtId2lyx6l8JU
-    rpJCQKR6aVGCqvyrQI>
-X-ME-Received: <xmr:Ur8QZhm9Tx7fRhWNb6GpVtDOu2okZdG2SZjuYn9I-NI03ZJvLu2MNDfLtmCvWzJKSlDgIoqFANhKgnoRh1rTREAmL4UVNJgj27w>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvledrudeguddgieelucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvfevufgjkfhfgggtsehttdertddttddvnecuhfhrohhmpefhihhnnhcu
-    vfhhrghinhcuoehfthhhrghinheslhhinhhugidqmheikehkrdhorhhgqeenucggtffrrg
-    htthgvrhhnpeelueehleehkefgueevtdevteejkefhffekfeffffdtgfejveekgeefvdeu
-    heeuleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
-    hfthhhrghinheslhhinhhugidqmheikehkrdhorhhg
-X-ME-Proxy: <xmx:Ur8QZsxlx9GVIg02xww6XF9wTSF1HVYFdDDg3IL3dCX74TB4rf7cfw>
-    <xmx:Ur8QZjRkr3MDJRNQqfySKoKF3SnOkXjUIMk2DyozNbelevevHUqjqQ>
-    <xmx:Ur8QZnb-is7g2j0VuIVznGeNBrxJmDGGRbQUGGw_GUDkpPlCOhysHQ>
-    <xmx:Ur8QZsTtMS3xpqUGF7dxI1A7sGSSaN1Rqs6qLMD9_kErmZGlU6GRuA>
-    <xmx:VL8QZhBxeJD7YIEcwdZTCg1evymGUe6vlmyeyGzewfTlaE1QTvbhybbU>
-Feedback-ID: i58a146ae:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
- 5 Apr 2024 23:19:44 -0400 (EDT)
-Date: Sat, 6 Apr 2024 14:21:33 +1100 (AEDT)
-From: Finn Thain <fthain@linux-m68k.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2] serial/pmac_zilog: Remove flawed mitigation for rx
- irq flood
-In-Reply-To: <87v84w7be3.fsf@mail.lhotse>
-Message-ID: <2cb53463-897b-8f3f-7238-9fe87622b54d@linux-m68k.org>
-References: <0df45bedded1249f6c6ec2c2fb0d9879da1841b7.1712273040.git.fthain@linux-m68k.org> <87v84w7be3.fsf@mail.lhotse>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VBcP35nwgz3dCH
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2024 00:57:27 +1100 (AEDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
+	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+	by bmailout3.hostsharing.net (Postfix) with ESMTPS id 94813100D943C;
+	Sat,  6 Apr 2024 15:51:59 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 3B10F233389; Sat,  6 Apr 2024 15:51:59 +0200 (CEST)
+Message-Id: <cover.1712410202.git.lukas@wunner.de>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Sat, 6 Apr 2024 15:52:00 +0200
+Subject: [PATCH 0/2] Deduplicate bin_attribute simple read() callbacks
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,20 +42,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, linux-m68k@lists.linux-m68k.org, Nicholas Piggin <npiggin@gmail.com>, linux-serial@vger.kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Jiri Slaby <jirislaby@kernel.org>
+Cc: intel-gvt-dev@lists.freedesktop.org, linux-efi@vger.kernel.org, Zhi Wang <zhi.wang.linux@gmail.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhenyu Wang <zhenyuw@linux.intel.com>, linux-acpi@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, Jean Delvare <jdelvare@suse.com>, linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 5 Apr 2024, Michael Ellerman wrote:
+For my upcoming PCI device authentication v2 patches, I have the need
+to expose a simple buffer in virtual memory as a bin_attribute.
 
-> I assume you have tested this on an actual pmac, as well as qemu?
-> 
+It turns out we've duplicated the ->read() callback for such simple
+buffers a fair number of times across the tree.
 
-I tested the patched driver and its console functionality using Zilog SCC 
-hardware in a Mac IIci, as well as QEMU's q800 virtual machine.
+So instead of reinventing the wheel, I decided to introduce a common
+helper and eliminate all duplications I could find.
 
-That should suffice from a code coverage point-of-view, since 
-pmz_receive_chars() is portable and independent of CONFIG_PPC_PMAC.
+I'm open to a bikeshedding discussion on the sysfs_bin_attr_simple_read()
+name. ;)
 
-Moreover, I don't know how to get my PowerMac G3 to execute the kludge 
-that's to be removed here. I can't prove it's impossible, though.
+Lukas Wunner (2):
+  sysfs: Add sysfs_bin_attr_simple_read() helper
+  treewide: Use sysfs_bin_attr_simple_read() helper
+
+ arch/powerpc/platforms/powernv/opal.c              | 10 +-------
+ drivers/acpi/bgrt.c                                |  9 +-------
+ drivers/firmware/dmi_scan.c                        | 12 ++--------
+ drivers/firmware/efi/rci2-table.c                  | 10 +-------
+ drivers/gpu/drm/i915/gvt/firmware.c                | 26 +++++----------------
+ .../intel/int340x_thermal/int3400_thermal.c        |  9 +-------
+ fs/sysfs/file.c                                    | 27 ++++++++++++++++++++++
+ include/linux/sysfs.h                              | 15 ++++++++++++
+ init/initramfs.c                                   | 10 +-------
+ kernel/module/sysfs.c                              | 13 +----------
+ 10 files changed, 56 insertions(+), 85 deletions(-)
+
+-- 
+2.43.0
+
