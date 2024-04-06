@@ -4,51 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 432EDCD11C2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Apr 2024 18:32:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7D8BC67861
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Apr 2024 01:02:22 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PjsNhh0f;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HYazYNyp;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VB6XG6Vv2z3vhq
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Apr 2024 05:31:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VBv8D5xrMz3vYf
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Apr 2024 11:02:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PjsNhh0f;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HYazYNyp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VB6WS1Zyjz3vdn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2024 05:31:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VBNwf0vnjz3dwr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Apr 2024 16:20:34 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 034EFCE2447;
-	Fri,  5 Apr 2024 18:31:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C78FFC433F1;
-	Fri,  5 Apr 2024 18:31:04 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 0D4D5CE2777;
+	Sat,  6 Apr 2024 05:20:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3C5A9C433C7;
+	Sat,  6 Apr 2024 05:20:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1712341871;
-	bh=SpJ5IQ9UhqrJWD/qugetHjxi8hPNKx//RaZUEP7dXMk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=PjsNhh0fjSHbdf2868fr6XGX0ymVpLd72hs4QqY449d2ixqqIbiOZ9KGWsTScBEdM
-	 MmD6oO1ZFR5n/8XBcvJfrg+1fJuE6RWAslDhUeScY/894NlfAHOyDlBtG+Jpj6Xgim
-	 AEpzgBbfrsVfqV97+U4MIZvB6mlskGvejsxy0uQkrvJ6HQBnEonvJPKwG4UwRXSFPC
-	 sokGvl/2IbsBR2HRjgP5VVh/y6bBeOez+JNtA6wzhbGF/BxyaWGie9mhpM3y8Fsgqy
-	 nccatqMs+mRkE11DcKuPOVmzq2/2RT6tsP9WZvm4sK8QAsHlkDj+GzXZn741rHxhYU
-	 UZgSQsgWkKskQ==
-Date: Fri, 5 Apr 2024 19:31:02 +0100
-From: Simon Horman <horms@kernel.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 13/15] sh: Move defines needed for suppressing warning
- backtraces
-Message-ID: <20240405183102.GU26556@kernel.org>
-References: <20240403131936.787234-1-linux@roeck-us.net>
- <20240403131936.787234-14-linux@roeck-us.net>
+	s=k20201202; t=1712380828;
+	bh=TBj/hcnPrvS19ZOluMZ12evt8AeDaDrUTBeM5kaTuKY=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=HYazYNypOS+iPe/PmwIZVgrP0OAjOmuWcCZaXmQBd5/DF3DU2Cm7HK1KTLKVM8W2j
+	 EfdrhznuDsHvbEh7NeV1r2EDMVkxTqo+hmKt5MdFIcqj68UTB4u7gvHG6geAe3ArfV
+	 cYxb7yc2nqhO3pPj8ToTFIgL78NntzPlzi3tNk1u8F7N5z7SqSGJ1Z/QhHbUaQaR1j
+	 GTv/7bDPNNXqFXoXNMGCl3bjIAtmML/lX++bgYkRjXumLNf6dEzpQPrpxdPeyVgSKh
+	 czfxRuHIWxcuBJ6wGSXEzVfHmRCYmRJdToESEDFulu3u4HF5IZUSSU3tkxxLhyQRAI
+	 TbkNIwkM8MMRA==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 19C9BD84BAC;
+	Sat,  6 Apr 2024 05:20:28 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240403131936.787234-14-linux@roeck-us.net>
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH 00/34] address all -Wunused-const warnings
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id:  <171238082809.31617.17365732495689756509.git-patchwork-notify@kernel.org>
+Date: Sat, 06 Apr 2024 05:20:28 +0000
+References: <20240403080702.3509288-1-arnd@kernel.org>
+In-Reply-To: <20240403080702.3509288-1-arnd@kernel.org>
+To: Arnd Bergmann <arnd@kernel.org>
+X-Mailman-Approved-At: Sun, 07 Apr 2024 11:01:40 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,69 +62,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, loongarch@lists.linux.dev, linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org, Brendan Higgins <brendan.higgins@linux.dev>, Rich Felker <dalias@libc.org>, linux-kselftest@vger.kernel.org, linux-riscv@lists.infradead.org, David Airlie <airlied@gmail.com>, Arthur Grillo <arthurgrillo@riseup.net>, Ville =?utf-8?B?U3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Daniel Diaz <daniel.diaz@linaro.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-sh@vger.kernel.org, Naresh Kamboju <naresh.kamboju@linaro.org>, =?utf-8?B?TWHDrXJh?= Canal <mcanal@igalia.com>, Dan Carpenter <dan.carpenter@linaro.org>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>, David Gow <davidgow@google.com>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Daniel Vetter <daniel@ffwll.ch>, linux-arm-kernel@lists.infrade
- ad.org, kunit-dev@googlegroups.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Shyam-sundar.S-k@amd.com, heiko@sntech.de, rafael@kernel.org, dri-devel@lists.freedesktop.org, benjamin.tissoires@redhat.com, srinivas.pandruvada@linux.intel.com, hch@lst.de, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-sound@vger.kernel.org, abbotti@mev.co.uk, linux-omap@vger.kernel.org, trond.myklebust@hammerspace.com, elder@kernel.org, kristo@kernel.org, chenxiang66@hisilicon.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org, hsweeten@visionengravers.com, iyappan@os.amperecomputing.com, linux-crypto@vger.kernel.org, akpm@linux-foundation.org, linux-trace-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, alexandre.belloni@bootlin.com, markuss.broks@gmail.com, hvaibhav.linux@gmail.com, linux-i2c@vger.kernel.org, lars@metafoo.de, minyard@acm.org, deller@gmx.de, lee@kernel.org, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, iommu@lists.linu
+ x.dev, yisen.zhuang@huawei.com, lenb@kernel.org, andi.shyti@kernel.org, michael.hennerich@analog.com, linux-kbuild@vger.kernel.org, linux-arm-msm@vger.kernel.org, greybus-dev@lists.linaro.org, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, neil.armstrong@linaro.org, sboyd@kernel.org, jarkko@kernel.org, anna@kernel.org, linux-integrity@vger.kernel.org, alsa-devel@alsa-project.org, jic23@kernel.org, linux-efi@vger.kernel.org, linux-iio@vger.kernel.org, linux-fpga@vger.kernel.org, linux-fbdev@vger.kernel.org, kasan-dev@googlegroups.com, jirislaby@kernel.org, linux-rtc@vger.kernel.org, stf_xl@wp.pl, masahiroy@kernel.org, linux-staging@lists.linux.dev, linux-input@vger.kernel.org, ychuang3@nuvoton.com, keescook@chromium.org, arnd@arndb.de, jikos@kernel.org, robin.murphy@arm.com, rostedt@goodmis.org, nathan@kernel.org, broonie@kernel.org, mdf@kernel.org, openipmi-developer@lists.sourceforge.net, linux-nfs@vger.kernel.org, martin.petersen@oracle.com, dmitry.torokh
+ ov@gmail.com, sre@kernel.org, peda@axentia.se, linux-stm32@st-md-mailman.stormreply.com, tony@atomide.com, liviu.dudau@arm.com, alexandre.torgue@foss.st.com, linux-ide@vger.kernel.org, peterhuewe@gmx.de, ardb@kernel.org, linux-leds@vger.kernel.org, herbert@gondor.apana.org.au, linux-scsi@vger.kernel.org, vkoul@kernel.org, linux-serial@vger.kernel.org, kuba@kernel.org, mhiramat@kernel.org, kvalo@kernel.org, john.allen@amd.com, netdev@vger.kernel.org, andersson@kernel.org, tiwai@suse.com, krzysztof.kozlowski@linaro.org, dlemoal@kernel.org, dmaengine@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 03, 2024 at 06:19:34AM -0700, Guenter Roeck wrote:
-> Declaring the defines needed for suppressing warning inside
-> '#ifdef CONFIG_DEBUG_BUGVERBOSE' results in a kerneldoc warning.
-> 
-> .../bug.h:29: warning: expecting prototype for _EMIT_BUG_ENTRY().
-> 	Prototype was for HAVE_BUG_FUNCTION() instead
-> 
-> Move the defines above the kerneldoc entry for _EMIT_BUG_ENTRY
-> to make kerneldoc happy.
-> 
-> Reported-by: Simon Horman <horms@kernel.org>
-> Cc: Simon Horman <horms@kernel.org>
-> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Cc: Rich Felker <dalias@libc.org>
-> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
-> v3: Added patch. Possibly squash into previous patch.
+Hello:
 
-FWIIW, this looks good to me.
+This series was applied to netdev/net-next.git (main)
+by Jakub Kicinski <kuba@kernel.org>:
 
->  arch/sh/include/asm/bug.h | 16 +++++++++-------
->  1 file changed, 9 insertions(+), 7 deletions(-)
+On Wed,  3 Apr 2024 10:06:18 +0200 you wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
-> diff --git a/arch/sh/include/asm/bug.h b/arch/sh/include/asm/bug.h
-> index 470ce6567d20..bf4947d51d69 100644
-> --- a/arch/sh/include/asm/bug.h
-> +++ b/arch/sh/include/asm/bug.h
-> @@ -11,6 +11,15 @@
->  #define HAVE_ARCH_BUG
->  #define HAVE_ARCH_WARN_ON
->  
-> +#ifdef CONFIG_DEBUG_BUGVERBOSE
-> +#ifdef CONFIG_KUNIT_SUPPRESS_BACKTRACE
-> +# define HAVE_BUG_FUNCTION
-> +# define __BUG_FUNC_PTR	"\t.long %O2\n"
-> +#else
-> +# define __BUG_FUNC_PTR
-> +#endif /* CONFIG_KUNIT_SUPPRESS_BACKTRACE */
-> +#endif /* CONFIG_DEBUG_BUGVERBOSE */
-> +
->  /**
->   * _EMIT_BUG_ENTRY
->   * %1 - __FILE__
-> @@ -25,13 +34,6 @@
->   */
->  #ifdef CONFIG_DEBUG_BUGVERBOSE
->  
-> -#ifdef CONFIG_KUNIT_SUPPRESS_BACKTRACE
-> -# define HAVE_BUG_FUNCTION
-> -# define __BUG_FUNC_PTR	"\t.long %O2\n"
-> -#else
-> -# define __BUG_FUNC_PTR
-> -#endif /* CONFIG_KUNIT_SUPPRESS_BACKTRACE */
-> -
->  #define _EMIT_BUG_ENTRY				\
->  	"\t.pushsection __bug_table,\"aw\"\n"	\
->  	"2:\t.long 1b, %O1\n"			\
-> -- 
-> 2.39.2
+> Compilers traditionally warn for unused 'static' variables, but not
+> if they are constant. The reason here is a custom for C++ programmers
+> to define named constants as 'static const' variables in header files
+> instead of using macros or enums.
 > 
+> [...]
+
+Here is the summary with links:
+  - [05/34] 3c515: remove unused 'mtu' variable
+    https://git.kernel.org/netdev/net-next/c/17b35355c2c6
+  - [19/34] sunrpc: suppress warnings for unused procfs functions
+    (no matching commit)
+  - [26/34] isdn: kcapi: don't build unused procfs code
+    https://git.kernel.org/netdev/net-next/c/91188544af06
+  - [28/34] net: xgbe: remove extraneous #ifdef checks
+    https://git.kernel.org/netdev/net-next/c/0ef416e045ad
+  - [33/34] drivers: remove incorrect of_match_ptr/ACPI_PTR annotations
+    (no matching commit)
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
+
