@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AE4FCD11C2
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Apr 2024 06:40:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F15BCCD11C2
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Apr 2024 06:41:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=vJBnKJUS;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=b6XYzPl9;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VC2fl6N38z3c4C
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Apr 2024 16:40:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VC2gX4Rw3z3dWc
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Apr 2024 16:41:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=vJBnKJUS;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=b6XYzPl9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.118; helo=out30-118.freemail.mail.aliyun.com; envelope-from=yang.lee@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-118.freemail.mail.aliyun.com (out30-118.freemail.mail.aliyun.com [115.124.30.118])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.98; helo=out30-98.freemail.mail.aliyun.com; envelope-from=yang.lee@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-98.freemail.mail.aliyun.com (out30-98.freemail.mail.aliyun.com [115.124.30.98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VC2dw6GTJz3bvW
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VC2dw4bCjz3bnv
 	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Apr 2024 16:40:03 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1712472000; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=EjfZY0CTUIhZ4N4U3YPY3Hn4r3z4P0OXYogLhFLWsC0=;
-	b=vJBnKJUSLignwOdTtWml7+f1jUUiWF4zmGDTk6YcsPHHMugLVeClER2MyE8ocGa7+91On1n9ul22kFIT8IiDyJKSVvkvkDCt2sAPU9GvuS/lRErsIRTcxm+5MVKqvdIvRmPpndViL6KaVeW94OygHBkrogX379IocVYTkncTeZk=
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R751e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046060;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=9;SR=0;TI=SMTPD_---0W4.Zyu2_1712471998;
-Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0W4.Zyu2_1712471998)
+	t=1712471998; h=From:To:Subject:Date:Message-Id:MIME-Version:Content-Type;
+	bh=dvtlUfZMwcpJa+7Ecw8O4/rWENt4hMvDpxuBMY7/pw0=;
+	b=b6XYzPl9pXnO1htaOV8CCaWLqGPduBCINnaO+P32DnqjgqkIe8VdjIVlb89gYX+P4kDxpzKL5lJAgTa9cMVmIcJjRDP9J35EGqJK3DMO0spNkxW+5dks52/TlP//WZVvrW+DRwoVxsEp+cKkfOAwAJs52tUsRr9OZg0liIfyHWM=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R261e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046051;MF=yang.lee@linux.alibaba.com;NM=1;PH=DS;RN=9;SR=0;TI=SMTPD_---0W4.ZytW_1712471996;
+Received: from localhost(mailfrom:yang.lee@linux.alibaba.com fp:SMTPD_---0W4.ZytW_1712471996)
           by smtp.aliyun-inc.com;
-          Sun, 07 Apr 2024 14:39:58 +0800
+          Sun, 07 Apr 2024 14:39:57 +0800
 From: Yang Li <yang.lee@linux.alibaba.com>
 To: arnd@arndb.de,
 	mpe@ellerman.id.au,
@@ -38,13 +38,14 @@ To: arnd@arndb.de,
 	christophe.leroy@csgroup.eu,
 	aneesh.kumar@kernel.org,
 	naveen.n.rao@linux.ibm.com
-Subject: [PATCH -next 3/3] powerpc/rtas: Add kernel-doc comments to smp_startup_cpu()
-Date: Sun,  7 Apr 2024 14:39:52 +0800
-Message-Id: <20240407063952.36270-3-yang.lee@linux.alibaba.com>
+Subject: [PATCH -next 2/3] powerpc: Fix kernel-doc comments in fsl_gtm.c
+Date: Sun,  7 Apr 2024 14:39:51 +0800
+Message-Id: <20240407063952.36270-2-yang.lee@linux.alibaba.com>
 X-Mailer: git-send-email 2.20.1.7.g153144c
 In-Reply-To: <20240407063952.36270-1-yang.lee@linux.alibaba.com>
 References: <20240407063952.36270-1-yang.lee@linux.alibaba.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=n
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -61,27 +62,44 @@ Cc: Yang Li <yang.lee@linux.alibaba.com>, linuxppc-dev@lists.ozlabs.org, linux-k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This commit adds kernel-doc style comments with complete parameter
-descriptions for the function smp_startup_cpu().
+Fix some function names in kernel-doc comments.
 
 Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 ---
- arch/powerpc/platforms/cell/smp.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/sysdev/fsl_gtm.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/smp.c b/arch/powerpc/platforms/cell/smp.c
-index 30394c6f8894..bdb7adde798d 100644
---- a/arch/powerpc/platforms/cell/smp.c
-+++ b/arch/powerpc/platforms/cell/smp.c
-@@ -55,6 +55,8 @@ static cpumask_t of_spin_map;
+diff --git a/arch/powerpc/sysdev/fsl_gtm.c b/arch/powerpc/sysdev/fsl_gtm.c
+index 39186ad6b3c3..71e07883eb48 100644
+--- a/arch/powerpc/sysdev/fsl_gtm.c
++++ b/arch/powerpc/sysdev/fsl_gtm.c
+@@ -77,7 +77,7 @@ struct gtm {
+ static LIST_HEAD(gtms);
+ 
  /**
-  * smp_startup_cpu() - start the given cpu
+- * gtm_get_timer - request GTM timer to use it with the rest of GTM API
++ * gtm_get_timer16 - request GTM timer to use it with the rest of GTM API
+  * Context:	non-IRQ
   *
-+ * @lcpu: Logical CPU ID of the CPU to be started.
-+ *
-  * At boot time, there is nothing to do for primary threads which were
-  * started from Open Firmware.  For anything else, call RTAS with the
-  * appropriate start location.
+  * This function reserves GTM timer for later use. It returns gtm_timer
+@@ -110,7 +110,7 @@ struct gtm_timer *gtm_get_timer16(void)
+ EXPORT_SYMBOL(gtm_get_timer16);
+ 
+ /**
+- * gtm_get_specific_timer - request specific GTM timer
++ * gtm_get_specific_timer16 - request specific GTM timer
+  * @gtm:	specific GTM, pass here GTM's device_node->data
+  * @timer:	specific timer number, Timer1 is 0.
+  * Context:	non-IRQ
+@@ -276,7 +276,7 @@ EXPORT_SYMBOL(gtm_set_timer16);
+  * crop precision of the "usec" argument, thus usec is limited to 16 bits
+  * (single timer width).
+  */
+-int gtm_set_exact_timer16(struct gtm_timer *tmr, u16 usec, bool reload)
++int gtm_set_exact_utimer16(struct gtm_timer *tmr, u16 usec, bool reload)
+ {
+ 	/* quite obvious, frequency which is enough for µSec precision */
+ 	const int freq = 1000000;
 -- 
 2.20.1.7.g153144c
 
