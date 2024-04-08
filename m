@@ -4,46 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52531CD128A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 11:11:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4C93C67861
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 11:12:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=RvRtIJvp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KDdYgPfc;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VCmcg4n0dz3vZJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 21:11:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VCmf41DXzz3vZT
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 21:12:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=RvRtIJvp;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KDdYgPfc;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VCmbs2v80z3cM4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2024 21:10:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VCmdC1Wwrz3cM4
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2024 21:11:59 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1712574645;
-	bh=Yg3RVxf1aZyORcaVE7KcrdEXd2LJDhZI4EMkqtk5Q4g=;
+	s=201909; t=1712574719;
+	bh=Gy2IffhRM6JRRrukWvLRqJnwzreji6m9bj34GwffDNM=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=RvRtIJvpmpQ3rE/TbgnFxKbNxYndCntkwwPN3sdGbr/0RcsRftsP9uWYaxrnp1x8l
-	 hf5HQ8p5mUes6H4WBkUglJB1nVCU/Eo/3TtE/cHI9sIPz+4Ko3k2V+xqTYhiULDrHY
-	 bftXt1/OSdH6RmfnnxMn8FrHCRI3Zzo66PYe+41Al24KsFzfdvDlb01fhoINwYBuU1
-	 W22yIBl0MLvUltJRUw/3tP3jf/l8deJaJqlnoaHqBKkKkMqFC1F7XkZgYKL4G9Es8/
-	 9UK4sSr156PUfq4aECD5pvAWE2CNm2gQkhzgp3ghXXwfH+EuDW+/75R9p2lxMP7N5P
-	 jT43zyDW4pLYw==
+	b=KDdYgPfcoO4Xwkc9vPoJtb5pfxHOMMswqVXzEkb/jhRhZbDZDKl2m5brlJJmmnDdl
+	 0Kkk/GINLb1FttDTi7KiDUakFnGXKeHNjAMNPprZXB820lvKPVgL6e3YNFLJgM8X6r
+	 /Bt/2va9Kh+M5yTqqWdLcOsVJQBS6422N6PmXhpKT+4uMtLMWfFRYFOGVJ1PDbgp5W
+	 aBLla90cOIxiStLjk7j/zyOvU4VMGviSwd/s0Htc/v191CCU4vuhkXFJ/ldbpaMBn+
+	 vCiuYLbrxjHnMPxLxfiOeuQ7etxHECiSkN+/1wB6saocLq7ZwqZ+iE0iUd4YlxCv7i
+	 ww2jBxf3AqLhg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VCmbn1pSyz4wcF;
-	Mon,  8 Apr 2024 21:10:44 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VCmdB2lhKz4wcF;
+	Mon,  8 Apr 2024 21:11:57 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Miehlbradt <nicholas@linux.ibm.com>
-Subject: Re: [PATCH v2] Add static_key_feature_checks_initialized flag
-In-Reply-To: <20240408052358.5030-1-nicholas@linux.ibm.com>
-References: <20240408052358.5030-1-nicholas@linux.ibm.com>
-Date: Mon, 08 Apr 2024 21:10:43 +1000
-Message-ID: <87msq4az4c.fsf@mail.lhotse>
+To: Lukas Wunner <lukas@wunner.de>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] treewide: Use sysfs_bin_attr_simple_read() helper
+In-Reply-To: <92ee0a0e83a5a3f3474845db6c8575297698933a.1712410202.git.lukas@wunner.de>
+References: <cover.1712410202.git.lukas@wunner.de>
+ <92ee0a0e83a5a3f3474845db6c8575297698933a.1712410202.git.lukas@wunner.de>
+Date: Mon, 08 Apr 2024 21:11:57 +1000
+Message-ID: <87jzl8az2a.fsf@mail.lhotse>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -57,23 +60,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Miehlbradt <nicholas@linux.ibm.com>
+Cc: linux-efi@vger.kernel.org, Zhi Wang <zhi.wang.linux@gmail.com>, linux-pm@vger.kernel.org, intel-gvt-dev@lists.freedesktop.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhenyu Wang <zhenyuw@linux.intel.com>, linux-acpi@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, Jean Delvare <jdelvare@suse.com>, linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nicholas Miehlbradt <nicholas@linux.ibm.com> writes:
-> JUMP_LABEL_FEATURE_CHECK_DEBUG used static_key_intialized to determine
-> whether {cpu,mmu}_has_feature() is used before static keys were
-> initialized. However, {cpu,mmu}_has_feature() should not be used before
-> setup_feature_keys() is called but static_key_initialized is set well
-> before this by the call to jump_label_init() in early_init_devtree().
-> This creates a window in which JUMP_LABEL_FEATURE_CHECK_DEBUG will not
-> detect misuse and report errors. Add a flag specifically to indicate
-> when {cpu,mmu}_has_feature() is safe to use.
+Lukas Wunner <lukas@wunner.de> writes:
+> Deduplicate ->read() callbacks of bin_attributes which are backed by a
+> simple buffer in memory:
+>
+> Use the newly introduced sysfs_bin_attr_simple_read() helper instead,
+> either by referencing it directly or by declaring such bin_attributes
+> with BIN_ATTR_SIMPLE_RO() or BIN_ATTR_SIMPLE_ADMIN_RO().
+>
+> Aside from a reduction of LoC, this shaves off a few bytes from vmlinux
+> (304 bytes on an x86_64 allyesconfig).
+>
+> No functional change intended.
+>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+>  arch/powerpc/platforms/powernv/opal.c              | 10 +--------
+>  drivers/acpi/bgrt.c                                |  9 +-------
+>  drivers/firmware/dmi_scan.c                        | 12 ++--------
+>  drivers/firmware/efi/rci2-table.c                  | 10 +--------
+>  drivers/gpu/drm/i915/gvt/firmware.c                | 26 +++++-----------------
+>  .../intel/int340x_thermal/int3400_thermal.c        |  9 +-------
+>  init/initramfs.c                                   | 10 +--------
+>  kernel/module/sysfs.c                              | 13 +----------
+>  8 files changed, 14 insertions(+), 85 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> index 45dd77e..5d0f35b 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -792,14 +792,6 @@ static int __init opal_sysfs_init(void)
+>  	return 0;
+>  }
+>  
+> -static ssize_t export_attr_read(struct file *fp, struct kobject *kobj,
+> -				struct bin_attribute *bin_attr, char *buf,
+> -				loff_t off, size_t count)
+> -{
+> -	return memory_read_from_buffer(buf, count, &off, bin_attr->private,
+> -				       bin_attr->size);
+> -}
+> -
+>  static int opal_add_one_export(struct kobject *parent, const char *export_name,
+>  			       struct device_node *np, const char *prop_name)
+>  {
+> @@ -826,7 +818,7 @@ static int opal_add_one_export(struct kobject *parent, const char *export_name,
+>  	sysfs_bin_attr_init(attr);
+>  	attr->attr.name = name;
+>  	attr->attr.mode = 0400;
+> -	attr->read = export_attr_read;
+> +	attr->read = sysfs_bin_attr_simple_read;
+>  	attr->private = __va(vals[0]);
+>  	attr->size = vals[1];
 
-I'm not sure it warrants a Fixes: tag, but it was commit
-ca829e05d3d4 ("powerpc/64: Init jump labels before parse_early_param()")
-which added the earlier call to jump_label_init() and created the window
-where the debug checks don't fire.
+I gave it a quick boot and checked I could still read the attributes,
+everything seems fine.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
 cheers
