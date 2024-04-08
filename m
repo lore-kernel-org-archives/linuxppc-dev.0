@@ -4,49 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4C93C67861
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 11:12:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BD8AC67861
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 11:46:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KDdYgPfc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=h0ErTczH;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VCmf41DXzz3vZT
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 21:12:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VCnNY4wdpz3vXp
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 21:46:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KDdYgPfc;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=h0ErTczH;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VCmdC1Wwrz3cM4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2024 21:11:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VCnMj2vdTz3cLj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Apr 2024 21:45:21 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1712574719;
-	bh=Gy2IffhRM6JRRrukWvLRqJnwzreji6m9bj34GwffDNM=;
+	s=201909; t=1712576721;
+	bh=taqzyuzUm+h1dAr9up1EmBlmxQ7Pw3TT7Dqle3r+vfk=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=KDdYgPfcoO4Xwkc9vPoJtb5pfxHOMMswqVXzEkb/jhRhZbDZDKl2m5brlJJmmnDdl
-	 0Kkk/GINLb1FttDTi7KiDUakFnGXKeHNjAMNPprZXB820lvKPVgL6e3YNFLJgM8X6r
-	 /Bt/2va9Kh+M5yTqqWdLcOsVJQBS6422N6PmXhpKT+4uMtLMWfFRYFOGVJ1PDbgp5W
-	 aBLla90cOIxiStLjk7j/zyOvU4VMGviSwd/s0Htc/v191CCU4vuhkXFJ/ldbpaMBn+
-	 vCiuYLbrxjHnMPxLxfiOeuQ7etxHECiSkN+/1wB6saocLq7ZwqZ+iE0iUd4YlxCv7i
-	 ww2jBxf3AqLhg==
+	b=h0ErTczH+J8eOKMVXpItrHYKRUMh+pxxcV6/0CoHG40VtMk6SjHBicTMij8g0QPcl
+	 DqWHMNnSfi+fwP5HiCdifsYmHpkp4Xn+DbOgdxU7qWixZBXfw3jqmo2Mf9TSyh+dfR
+	 6VbzGd3EpRZksCPRiEZyrpuPnkVP77GEek1dnGxxPTCQfwlANrE42GRZMWo8lTHAps
+	 +9qTuFxiU3mHHBuAnio0EBxVUDdvEu22B/D31hrzTZyHyg754PmZ251qNdGHU6OTRk
+	 8cDtgXORRLDOqu5a0FunAuYei0U3LrNTqxk35BBWQCXaFVALq9JB3md16kAgiWqViN
+	 5wPghIA4bJBwA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VCmdB2lhKz4wcF;
-	Mon,  8 Apr 2024 21:11:57 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VCnMf3rffz4wcF;
+	Mon,  8 Apr 2024 21:45:18 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Lukas Wunner <lukas@wunner.de>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] treewide: Use sysfs_bin_attr_simple_read() helper
-In-Reply-To: <92ee0a0e83a5a3f3474845db6c8575297698933a.1712410202.git.lukas@wunner.de>
-References: <cover.1712410202.git.lukas@wunner.de>
- <92ee0a0e83a5a3f3474845db6c8575297698933a.1712410202.git.lukas@wunner.de>
-Date: Mon, 08 Apr 2024 21:11:57 +1000
-Message-ID: <87jzl8az2a.fsf@mail.lhotse>
+To: Paolo Bonzini <pbonzini@redhat.com>, linux-kernel@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: Re: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
+In-Reply-To: <20240405115815.3226315-2-pbonzini@redhat.com>
+References: <20240405115815.3226315-1-pbonzini@redhat.com>
+ <20240405115815.3226315-2-pbonzini@redhat.com>
+Date: Mon, 08 Apr 2024 21:45:18 +1000
+Message-ID: <87h6gcaxip.fsf@mail.lhotse>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -60,65 +59,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-efi@vger.kernel.org, Zhi Wang <zhi.wang.linux@gmail.com>, linux-pm@vger.kernel.org, intel-gvt-dev@lists.freedesktop.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhenyu Wang <zhenyuw@linux.intel.com>, linux-acpi@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, Jean Delvare <jdelvare@suse.com>, linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, linux-modules@vger.kernel.org
+Cc: kvm-riscv@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, loongarch@lists.linux.dev, David Hildenbrand <david@redhat.com>, Marc Zyngier <maz@kernel.org>, Atish Patra <atishp@atishpatra.org>, linux-mips@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-perf-users@vger.kernel.org, linux-mm@kvack.org, Bibo Mao <maobibo@loongson.cn>, Sean Christopherson <seanjc@google.com>, Anup Patel <anup@brainfault.org>, kvmarm@lists.linux.dev, Oliver Upton <oliver.upton@linux.dev>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-trace-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Lukas Wunner <lukas@wunner.de> writes:
-> Deduplicate ->read() callbacks of bin_attributes which are backed by a
-> simple buffer in memory:
+Paolo Bonzini <pbonzini@redhat.com> writes:
+> The .change_pte() MMU notifier callback was intended as an
+> optimization. The original point of it was that KSM could tell KVM to flip
+> its secondary PTE to a new location without having to first zap it. At
+> the time there was also an .invalidate_page() callback; both of them were
+> *not* bracketed by calls to mmu_notifier_invalidate_range_{start,end}(),
+> and .invalidate_page() also doubled as a fallback implementation of
+> .change_pte().
 >
-> Use the newly introduced sysfs_bin_attr_simple_read() helper instead,
-> either by referencing it directly or by declaring such bin_attributes
-> with BIN_ATTR_SIMPLE_RO() or BIN_ATTR_SIMPLE_ADMIN_RO().
+> Later on, however, both callbacks were changed to occur within an
+> invalidate_range_start/end() block.
 >
-> Aside from a reduction of LoC, this shaves off a few bytes from vmlinux
-> (304 bytes on an x86_64 allyesconfig).
+> In the case of .change_pte(), commit 6bdb913f0a70 ("mm: wrap calls to
+> set_pte_at_notify with invalidate_range_start and invalidate_range_end",
+> 2012-10-09) did so to remove the fallback from .invalidate_page() to
+> .change_pte() and allow sleepable .invalidate_page() hooks.
 >
-> No functional change intended.
+> This however made KVM's usage of the .change_pte() callback completely
+> moot, because KVM unmaps the sPTEs during .invalidate_range_start()
+> and therefore .change_pte() has no hope of finding a sPTE to change.
+> Drop the generic KVM code that dispatches to kvm_set_spte_gfn(), as
+> well as all the architecture specific implementations.
 >
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 > ---
->  arch/powerpc/platforms/powernv/opal.c              | 10 +--------
->  drivers/acpi/bgrt.c                                |  9 +-------
->  drivers/firmware/dmi_scan.c                        | 12 ++--------
->  drivers/firmware/efi/rci2-table.c                  | 10 +--------
->  drivers/gpu/drm/i915/gvt/firmware.c                | 26 +++++-----------------
->  .../intel/int340x_thermal/int3400_thermal.c        |  9 +-------
->  init/initramfs.c                                   | 10 +--------
->  kernel/module/sysfs.c                              | 13 +----------
->  8 files changed, 14 insertions(+), 85 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 45dd77e..5d0f35b 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -792,14 +792,6 @@ static int __init opal_sysfs_init(void)
->  	return 0;
->  }
->  
-> -static ssize_t export_attr_read(struct file *fp, struct kobject *kobj,
-> -				struct bin_attribute *bin_attr, char *buf,
-> -				loff_t off, size_t count)
-> -{
-> -	return memory_read_from_buffer(buf, count, &off, bin_attr->private,
-> -				       bin_attr->size);
-> -}
-> -
->  static int opal_add_one_export(struct kobject *parent, const char *export_name,
->  			       struct device_node *np, const char *prop_name)
->  {
-> @@ -826,7 +818,7 @@ static int opal_add_one_export(struct kobject *parent, const char *export_name,
->  	sysfs_bin_attr_init(attr);
->  	attr->attr.name = name;
->  	attr->attr.mode = 0400;
-> -	attr->read = export_attr_read;
-> +	attr->read = sysfs_bin_attr_simple_read;
->  	attr->private = __va(vals[0]);
->  	attr->size = vals[1];
+>  arch/arm64/kvm/mmu.c                  | 34 -----------------
+>  arch/loongarch/include/asm/kvm_host.h |  1 -
+>  arch/loongarch/kvm/mmu.c              | 32 ----------------
+>  arch/mips/kvm/mmu.c                   | 30 ---------------
+>  arch/powerpc/include/asm/kvm_ppc.h    |  1 -
+>  arch/powerpc/kvm/book3s.c             |  5 ---
+>  arch/powerpc/kvm/book3s.h             |  1 -
+>  arch/powerpc/kvm/book3s_64_mmu_hv.c   | 12 ------
+>  arch/powerpc/kvm/book3s_hv.c          |  1 -
+>  arch/powerpc/kvm/book3s_pr.c          |  7 ----
+>  arch/powerpc/kvm/e500_mmu_host.c      |  6 ---
 
-I gave it a quick boot and checked I could still read the attributes,
-everything seems fine.
+LGTM.
 
 Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
