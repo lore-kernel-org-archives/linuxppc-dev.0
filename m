@@ -4,107 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 917C6CD1292
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 17:07:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6A03CD1292
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Apr 2024 21:52:57 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.a=rsa-sha256 header.s=selector2 header.b=QnaR3weE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Bc4//Bvg;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VCwWS6PJjz3vX2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 03:07:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VD2rm0LRBz3vXR
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 07:52:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=os.amperecomputing.com header.i=@os.amperecomputing.com header.a=rsa-sha256 header.s=selector2 header.b=QnaR3weE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Bc4//Bvg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=os.amperecomputing.com (client-ip=2a01:111:f403:2009::701; helo=nam10-bn7-obe.outbound.protection.outlook.com; envelope-from=cl@os.amperecomputing.com; receiver=lists.ozlabs.org)
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on20701.outbound.protection.outlook.com [IPv6:2a01:111:f403:2009::701])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nrb@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VCwVb51WVz3d2S
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 03:06:44 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=PKDwh2JRCc2m47RjWuQHDjJLTLDd1K/xJItduEjY8JPXQRaOlF2vzIByaWtfuDY0risCsdCMTfspLufRr9dPedLmYcugTZkd1lNQaIVqstLGJGyfzeSp+zV9IjBqy1+Kkseh74wvU6ddqt0DPXXzkJNU4svsI0Yaly1npOehIGgbD15pR8wbES9PK51lfm4JtEzBBJCn/iI9+2Ak2BuCq6fMQXKHifLctGn4wdLxzuI1SviW5TKdVVMZq/JlyEDf6xg+5XDhvNzs9yTb8dQfHtWRa5+BXZLWuL5hbk3n2Necb1SB+Cg/VqxRCDbR0FVTLEtTPTBOIbtPfKDBxRma7Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nNoKAkLTMmY0o12u40AwRpdsOAvrAdFonDmzHcuPgtE=;
- b=W017H8Fv0oeKDqfBgBGYk+2vIoRFtWoPEjpPfNHF8cZFlRRyUS5UA9ScipRU3MSM9nI59EC5QCxVA+o526n/aVNzHd/LneuHzGpfgQgZY+EoZ78JKvnqWd+snQZeMO1kDgUhD2KPCmjDTliErrZw0tAIdX/GppEPpRxHFs44FAMDKyiulmkPXWC6E25NLGDOIhFBAn9t75d8nuAX9TqcijroVOxowEGiaRDqUgHRUE964SaZG0vlW5E2X0DMO3CKDCo9G9hbmZCoHaj4ZIUoz5M2C0yOI4FORTsB7mkugWciCJcLwJCmjFbNaW+/lSOqOtFLpMUib3osjtbrqi993A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=os.amperecomputing.com; dmarc=pass action=none
- header.from=os.amperecomputing.com; dkim=pass
- header.d=os.amperecomputing.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=os.amperecomputing.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nNoKAkLTMmY0o12u40AwRpdsOAvrAdFonDmzHcuPgtE=;
- b=QnaR3weE2Q0u+SoYxWNkHoFZ29DSRuz0ii+E8O7KjL/OC2RKiMa1hA7OFUuFsrQan70CVH0/TVnMkIlGTP1mYoWlWfMB8jqLeLK9fLCV41BAoCqWd23dfhEfYAMMxR/LyaBk53oq1pRf+UvI3i4n5VvwBfrpPFj50VqBjgPuGQ0=
-Received: from DM6PR01MB5259.prod.exchangelabs.com (2603:10b6:5:68::27) by
- PH7PR01MB8418.prod.exchangelabs.com (2603:10b6:510:2f3::11) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.7409.46; Mon, 8 Apr 2024 17:06:19 +0000
-Received: from DM6PR01MB5259.prod.exchangelabs.com
- ([fe80::7ba2:4e8d:3bb:6e1b]) by DM6PR01MB5259.prod.exchangelabs.com
- ([fe80::7ba2:4e8d:3bb:6e1b%6]) with mapi id 15.20.7409.042; Mon, 8 Apr 2024
- 17:06:19 +0000
-Date: Mon, 8 Apr 2024 10:06:14 -0700 (PDT)
-From: "Lameter, Christopher" <cl@os.amperecomputing.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v3] NUMA: Early use of cpu_to_node() returns 0 instead
- of the correct node id
-In-Reply-To: <20240327111740.f8d3802b0eae15bcb8727e04@linux-foundation.org>
-Message-ID: <1fee24cd-59ab-4843-6ae2-4e49424199f6@os.amperecomputing.com>
-References: <20240126064451.5465-1-shijie@os.amperecomputing.com> <20240327111740.f8d3802b0eae15bcb8727e04@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-X-ClientProxiedBy: MW4PR04CA0325.namprd04.prod.outlook.com
- (2603:10b6:303:82::30) To DM6PR01MB5259.prod.exchangelabs.com
- (2603:10b6:5:68::27)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VCtyn4YBwz3dS8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 01:57:36 +1000 (AEST)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 438FtRrs031161;
+	Mon, 8 Apr 2024 15:57:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ mime-version : content-transfer-encoding : in-reply-to : references : cc :
+ to : from : subject : message-id : date; s=pp1;
+ bh=KmN8pXzmPS9C+zTpyDDF126atEYnqqKhMpgKvQn8Pd4=;
+ b=Bc4//Bvg/S9abrH/E57xm4l5CgWB2VuC9cZi6UT6KhYexbiIu4p0nTX3zK91s95xOz8e
+ oDiSWY+siCOwnzqyRh9uk2tfku0BJP6o5O/HV8xUArknVt2SBT2ft1ougjxJBje7tXgf
+ EADTENHW/Wwmjk3a4fthpGmY9BY0aH+Fe6/ysxifOaHLWxm7YIZW1SEvct/AzQz2JXbl
+ ZXPZ5EED5skwKUetrQ3hNxYA8MWpNW+yK8nMnihbnPcMzip87lrMpKy0c81IFBDiF88R
+ iYDOUpzrE/Czhh4FG4m+W4+38fjlA4ZRwura0g85MxljrPrpqFaDfnb2udpDI+CGqr2E xA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xck8081v2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 08 Apr 2024 15:57:25 +0000
+Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 438FvOGM001415;
+	Mon, 8 Apr 2024 15:57:24 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xck8081uy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 08 Apr 2024 15:57:24 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 438EGVbP013594;
+	Mon, 8 Apr 2024 15:57:23 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3xbgqt96g6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 08 Apr 2024 15:57:23 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 438FvKfk31654532
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 8 Apr 2024 15:57:22 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EFE692004B;
+	Mon,  8 Apr 2024 15:57:19 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AFC2C20043;
+	Mon,  8 Apr 2024 15:57:19 +0000 (GMT)
+Received: from t14-nrb (unknown [9.171.39.74])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  8 Apr 2024 15:57:19 +0000 (GMT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM6PR01MB5259:EE_|PH7PR01MB8418:EE_
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	VaWeO62N1sYtgQOBUbhczRAZL+HpgZdtaKcv39Zc/49NE8QbGpUSXtxSb/4JAoKUF15D2H7m7Ijm9/VoC/YXzeOwVZ8gWkyz50mX8mEzRC/4hXok7DSDmYhNbsQqYamrH52f0F//Am8uK0GWwf6NpfZFttR5Jzoj4uLWk7dGWz/xHqV8nWeXdQqkpbD1YOlUT7pFAG/M65lzDFXr3p53L0orAcmX1kpeWxsc3fTHY4kWcbQ52OpTjSfJ7SnjDtPugahuJbGx3DrDPh7TVe52vxvXGRNKBs67iOT+Cbjqi1iw5/qLcQJLwxAIs8VniHFuuVfhCHg0Kf1SGKF/+JyBKu5IBb2VSTTxf93QxLrf0NkeV6MWS7mFS67U5sCiCYcUCOQOGVjPRMgdJRTzismxnw5WstivwG4D2ZBB2Za7N4SZ+jbp+rERBLOfmIgSz+NVBa//EpEr0Rmh1rL9iIcBnI9ChZku/tzk4HNcav2bW2fVx9CLqOvtiU34r55xZa2+cVWfoZC6mHytov94cjy+bGgnRPfqXtb5/5NKuiT/wrDgSzYCIyDJlaMgvQe7niK+ygPCQTcOMqhrMI6Ypxn+jdAK+tMmpxLlG+8lRAre5snksLTDqY9/ffjG1VqsKEPnk7YXTM5u6Zx6jjZElSC3uxrON5OclerTD3NJ49mgtGU=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR01MB5259.prod.exchangelabs.com;PTR:;CAT:NONE;SFS:(13230031)(366007)(1800799015)(7416005)(376005);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?wqoEqaYevCIG+fPhWivk6K/K6xcO+vVUPqJoT0zcBYJAKL9bdGp8CiYMESP1?=
- =?us-ascii?Q?vw47pNsI8ysWiMAKx6eVBpf9D5Mk7z6OBt3yj5fjrQcqfu+PN2fiT5ASoa24?=
- =?us-ascii?Q?JL9K4/KBh5nZPFXKGXGqFGi0l6YBS9zla70Q04IE+iUm5c2/W5oZAhmMBMGE?=
- =?us-ascii?Q?EBt/mCatCiN67j/60HZMJJNO8vkjg2y3u+C+LhF0Pszzs/uZ7ceT4pBQc+LX?=
- =?us-ascii?Q?/Dpx7N+fyHtUocxs2HcGsCd1Lp9eXCDv0LH6e+IGrt3ZMfC6CKaRPzEEDArt?=
- =?us-ascii?Q?l4pDHHHHX6994TUv8+/Qq8XgC2SFZWMWDSNloLMJTWpa5LvE7C3sQZHFRrmL?=
- =?us-ascii?Q?z1jCtdYuThZ2IbeRBGM0xM1xzz7pgajaroBuaqThGoy8lmf6fwv6PagCQV4H?=
- =?us-ascii?Q?f4BZHuoBOaQ6JDny3BeX9BpnPxmPV2JOKep4jZv0wwcjrFi5DhfOmhYqkhuz?=
- =?us-ascii?Q?6Rifv0LtSWmpv0sbEbIQScTBiQo2e5FtyLVOZUg41Qe3AQr1JyrgYwyOFg9e?=
- =?us-ascii?Q?5h7fefnlss6jw2BkaN+9ZUizY1lstKg7pYjDa8HaRUEGdLnmfKK9uufjnUV6?=
- =?us-ascii?Q?m3LvpIxxsyhatUtuUV7MxHm+TcGLnOXUDkdzzXjgISKz5U5t83AOzImY9yPa?=
- =?us-ascii?Q?k9IKyLhydw9Mxl62vOx5nltMBxZ5rFSJm9hOJAQ7b8kdS0k14W9E/z7qBXrM?=
- =?us-ascii?Q?OsPPK0GPJZ322bvZ9q7BUAS6jy4p5Wn40TO8vUwSL7y/GyJZIZ2hR4/UZr6Q?=
- =?us-ascii?Q?9gt7nCVj8Y5Bw9k8kUj99zg6h9NhG5YhWqsMuznTgsMhliyFmurnRIjGWkkj?=
- =?us-ascii?Q?mpBVVceEedemNICy4PJoibfobI+wT0dwgqdA5LkNg2QNLM44CJXwtSedrdqv?=
- =?us-ascii?Q?yLVZClze38TQNPHBg8WZ4KItyE3fxBvaWfzRJk1X7gBpIurjzc32AG0qoLjQ?=
- =?us-ascii?Q?EPDzW7V88lIG3IPUtDGQpVHoMb2dtrK9OXYwCendFUWQQHKi1BjtL2V+a7sL?=
- =?us-ascii?Q?tNQYy4qLynmfdp9BLlsEaAzxDGBHDmxA/YEUTSsuVGupxIU6zLqMV3HDmVm7?=
- =?us-ascii?Q?nBxR2Gs5hAUTeNW1I2MUq+K5f88qSAc5tWfM5gYHoJtoAaIKJnTDyp9hgtnN?=
- =?us-ascii?Q?Bhh1zBaS4nGBX87UlXMcs1gQ1HpLbUTIrLIkvRZoquWv0VfPzJ/QRvT2iKLS?=
- =?us-ascii?Q?74n+OiJ04nc+KnJ6nECgPLqwJM37WSIcwwq07lQiT4lcwSjQhOREBNd952xa?=
- =?us-ascii?Q?Uat+OBJrLBRSV1GxZWn60b2JnM9GzKZrYoiAN999A/Poharcwwx9SKnBFydP?=
- =?us-ascii?Q?jgXyiZ2boDVDMocgYo8vw2ViItukGNZhkXcXsOi2cV98IzAGfBXdSW0dhhUL?=
- =?us-ascii?Q?7XwG/ydPyaU5Ct8kbYtC8X3a6o9Cepq2FjCGMxRaGlysnANhL11dVWZIwqBI?=
- =?us-ascii?Q?MerD+HCPdULHzY/jZWxlm7JoXmpQMwHFtxYlhUAsrY3DOmKlAWeE0LRiAhd1?=
- =?us-ascii?Q?dcjg36g32ir4afcbX8l+99q8qvUtFNx376DkA17ig2MEIMubDyehjbxlBe15?=
- =?us-ascii?Q?z+LqliEeHu1HVwIJ+FLz9AXacAc8SyNYTUxcvW/UF+uRyfmsAC3j4a4coDwi?=
- =?us-ascii?Q?5A=3D=3D?=
-X-OriginatorOrg: os.amperecomputing.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cbccd8bf-1930-47b1-da78-08dc57ee3516
-X-MS-Exchange-CrossTenant-AuthSource: DM6PR01MB5259.prod.exchangelabs.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Apr 2024 17:06:18.9084
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3bc2b170-fd94-476d-b0ce-4229bdc904a7
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ybuCdCIoL4XveEY+r8vG1FGxhF0uFuZdFTpXdURxrQH2RcOJmrblZZFT60+a5JE2XNQ8hvhdfSHV3ScdWaxwYiUKyy30kguSCD0s+CS7Fik=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR01MB8418
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20240405083539.374995-5-npiggin@gmail.com>
+References: <20240405083539.374995-1-npiggin@gmail.com> <20240405083539.374995-5-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, Thomas Huth <thuth@redhat.com>
+From: Nico Boehr <nrb@linux.ibm.com>
+Subject: Re: [kvm-unit-tests PATCH v8 04/35] (arm|s390): Use migrate_skip in test cases
+Message-ID: <171259183982.48513.4621854263016449501@t14-nrb>
+User-Agent: alot/0.8.1
+Date: Mon, 08 Apr 2024 17:57:19 +0200
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: WvvrAYk1eNdisLzf_Jt3swG_pnL4iGIq
+X-Proofpoint-GUID: thx2ta3EUP6_hwSXn20sQbJ-IGXKBSAL
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-04-08_14,2024-04-05_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 clxscore=1011
+ phishscore=0 bulkscore=0 adultscore=0 impostorscore=0 lowpriorityscore=0
+ malwarescore=0 mlxlogscore=666 priorityscore=1501 mlxscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2404010000 definitions=main-2404080123
+X-Mailman-Approved-At: Tue, 09 Apr 2024 07:52:16 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,19 +98,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, rafael@kernel.org, catalin.marinas@arm.com, jiaxun.yang@flygoat.com, mikelley@microsoft.com, linux-riscv@lists.infradead.org, will@kernel.org, mingo@kernel.org, vschneid@redhat.com, yury.norov@gmail.com, chenhuacai@kernel.org, vbabka@suse.cz, kuba@kernel.org, patches@amperecomputing.com, linux-mips@vger.kernel.org, aou@eecs.berkeley.edu, arnd@arndb.de, paul.walmsley@sifive.com, tglx@linutronix.de, jpoimboe@kernel.org, linux-arm-kernel@lists.infradead.org, Huang Shijie <shijie@os.amperecomputing.com>, gregkh@linuxfoundation.org, ndesaulniers@google.com, linux-kernel@vger.kernel.org, palmer@dabbelt.com, mhiramat@kernel.org, linuxppc-dev@lists.ozlabs.org, rppt@kernel.org
+Cc: Laurent Vivier <lvivier@redhat.com>, kvm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Andrew Jones <andrew.jones@linux.dev>, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 27 Mar 2024, Andrew Morton wrote:
+Quoting Nicholas Piggin (2024-04-05 10:35:05)
+> Have tests use the new migrate_skip command in skip paths, rather than
+> calling migrate_once to prevent harness reporting an error.
+>=20
+> s390x/migration.c adds a new command that looks like it was missing
+> previously.
+>=20
+> Reviewed-by: Thomas Huth <thuth@redhat.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
->> In order to fix the bug, the patch introduces early_numa_node_init()
->> which is called after smp_prepare_boot_cpu() in start_kernel.
->> early_numa_node_init will initialize the "numa_node" as soon as
->> the early_cpu_to_node() is ready, before the cpu_to_node() is called
->> at the first time.
->
-> What are the userspace-visible runtime effects of this bug?
+Thanks for finding the missing skip!
 
-Performance is reduced since there is increase in off node accesses.
-
+Reviewed-by: Nico Boehr <nrb@linux.ibm.com>
