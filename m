@@ -4,86 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08B82C67861
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 03:17:17 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bBOnTa7r;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5556C67861
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 04:16:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VDB2z4Xvlz3vXk
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 13:17:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bBOnTa7r;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VDCMR0WJSz3vZb
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 14:16:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=nichen@iscas.ac.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 326 seconds by postgrey-1.37 at boromir; Tue, 09 Apr 2024 13:14:41 AEST
+Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDB1R6dDSz3d2Y
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 13:15:55 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 43930UGZ016966;
-	Tue, 9 Apr 2024 03:15:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=AJ/47AxKFINULQq5g+Io/je1XryZeopgfjhWG6Fa9EM=;
- b=bBOnTa7rFNkVfCqRn8s8oQ37WgyymuICTrnv6e49kJyTXkOjGvvK3r4eaLfXZ0c9U9Vm
- zgncjhL9H5yHX9zchoxX08k+dLuSthmJHKs8o3m1CUCSHWLlB5d1sy8c7wEyIbAkJzDm
- hGCnkCjLW0yVlZFw9ipnNtvfH5RXHKvagqhmPb/TUf1/ensQYTWPluR87SSdR8A4MUJ5
- 4QFKCHvuOf+FMqzsTpM+KW0IysFc80fdwtqOnkEptIQTP0MSFvj4VEJxUGDk9P9sdHaE
- AligEdxVWAKP7nfYsYaBxlTosNUvkjdhFyShh0KeWoqg0HkQx9TueauMMMoqzgJGp7jy Ow== 
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xcwba00s5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Apr 2024 03:15:52 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 43925Sth029889;
-	Tue, 9 Apr 2024 03:15:51 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3xbj7m3ppp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Apr 2024 03:15:50 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4393FkLj34734696
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 9 Apr 2024 03:15:49 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D493D20043;
-	Tue,  9 Apr 2024 03:15:46 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6BF6120040;
-	Tue,  9 Apr 2024 03:15:46 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  9 Apr 2024 03:15:46 +0000 (GMT)
-Received: from jarvis.ozlabs.ibm.com.com (unknown [9.36.30.101])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id DF8DF61085;
-	Tue,  9 Apr 2024 13:15:42 +1000 (AEST)
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        linux-scsi@vger.kernel.org
-Subject: [PATCH 2/2] MAINTAINERS: Make cxl obsolete
-Date: Tue,  9 Apr 2024 13:10:27 +1000
-Message-ID: <20240409031027.41587-2-ajd@linux.ibm.com>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240409031027.41587-1-ajd@linux.ibm.com>
-References: <20240409031027.41587-1-ajd@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDB010Kydz30f8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 13:14:40 +1000 (AEST)
+Received: from localhost (unknown [124.16.138.129])
+	by APP-05 (Coremail) with SMTP id zQCowADn7gJNsRRm0pFZAg--.12456S2;
+	Tue, 09 Apr 2024 11:09:02 +0800 (CST)
+From: Chen Ni <nichen@iscas.ac.cn>
+To: qiang.zhao@nxp.com,
+	leoyang.li@nxp.com,
+	saravanak@google.com,
+	fido_max@inbox.ru
+Subject: [PATCH] soc: fsl: qe: Add check for platform_driver_register
+Date: Tue,  9 Apr 2024 03:08:40 +0000
+Message-Id: <20240409030840.666703-1-nichen@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: SEueMfRQOtneXDwXmBxMq3ffRDha5uDB
-X-Proofpoint-GUID: SEueMfRQOtneXDwXmBxMq3ffRDha5uDB
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-04-08_19,2024-04-05_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501 mlxscore=0
- phishscore=0 clxscore=1015 malwarescore=0 impostorscore=0 mlxlogscore=650
- spamscore=0 bulkscore=0 adultscore=0 suspectscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2404010000
- definitions=main-2404090018
+X-CM-TRANSID: zQCowADn7gJNsRRm0pFZAg--.12456S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7GF4xAw45Ww1ftF1UZr13urg_yoW3Crc_Cr
+	4rW3W7Xr48ur9akF17tw43Zr929FWavrsaqF40qasxta4xtw17X3y5Zr13AF1kXr4rXFyU
+	Kr9rZrySkw13WjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbz8FF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+	Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AKxVW8Jr
+	0_Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
+	6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr
+	0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxAIw28IcxkI7VAK
+	I48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7
+	xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xII
+	jxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw2
+	0EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x02
+	67AKxVWUJVW8JbIYCTnIWIevJa73UjIFyTuYvjfUoOJ5UUUUU
+X-Originating-IP: [124.16.138.129]
+X-CM-SenderInfo: xqlfxv3q6l2u1dvotugofq/
+X-Mailman-Approved-At: Tue, 09 Apr 2024 14:16:12 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,50 +61,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fbarrat@linux.ibm.com, ukrishn@linux.ibm.com, manoj@linux.ibm.com
+Cc: Chen Ni <nichen@iscas.ac.cn>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The cxl driver is no longer actively maintained and we intend to remove it
-in a future kernel release. Change its status to obsolete, and update the
-sysfs ABI documentation accordingly.
+Return platform_driver_register() in order to transfer the error if
+it fails.
 
-Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+Fixes: be7ecbd240b2 ("soc: fsl: qe: convert QE interrupt controller to platform_device")
+Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
 ---
- Documentation/ABI/{testing => obsolete}/sysfs-class-cxl | 3 +++
- MAINTAINERS                                             | 4 ++--
- 2 files changed, 5 insertions(+), 2 deletions(-)
- rename Documentation/ABI/{testing => obsolete}/sysfs-class-cxl (99%)
+ drivers/soc/fsl/qe/qe_ic.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/obsolete/sysfs-class-cxl
-similarity index 99%
-rename from Documentation/ABI/testing/sysfs-class-cxl
-rename to Documentation/ABI/obsolete/sysfs-class-cxl
-index cfc48a87706b..8cba1b626985 100644
---- a/Documentation/ABI/testing/sysfs-class-cxl
-+++ b/Documentation/ABI/obsolete/sysfs-class-cxl
-@@ -1,3 +1,6 @@
-+The cxl driver is no longer maintained, and will be removed from the kernel in
-+the near future.
-+
- Please note that attributes that are shared between devices are stored in
- the directory pointed to by the symlink device/.
- For example, the real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 34f605498873..5eca2c23fb49 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5770,8 +5770,8 @@ CXL (IBM Coherent Accelerator Processor Interface CAPI) DRIVER
- M:	Frederic Barrat <fbarrat@linux.ibm.com>
- M:	Andrew Donnellan <ajd@linux.ibm.com>
- L:	linuxppc-dev@lists.ozlabs.org
--S:	Supported
--F:	Documentation/ABI/testing/sysfs-class-cxl
-+S:	Obsolete
-+F:	Documentation/ABI/obsolete/sysfs-class-cxl
- F:	Documentation/arch/powerpc/cxl.rst
- F:	arch/powerpc/platforms/powernv/pci-cxl.c
- F:	drivers/misc/cxl/
+diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
+index bbae3d39c7be..f17de6000ff2 100644
+--- a/drivers/soc/fsl/qe/qe_ic.c
++++ b/drivers/soc/fsl/qe/qe_ic.c
+@@ -481,7 +481,6 @@ static struct platform_driver qe_ic_driver =
+ 
+ static int __init qe_ic_of_init(void)
+ {
+-	platform_driver_register(&qe_ic_driver);
+-	return 0;
++	return platform_driver_register(&qe_ic_driver);
+ }
+ subsys_initcall(qe_ic_of_init);
 -- 
-2.44.0
+2.25.1
 
