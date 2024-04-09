@@ -4,52 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5556C67861
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 04:16:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 303FEC67861
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 04:38:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VDCMR0WJSz3vZb
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 14:16:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=nichen@iscas.ac.cn; receiver=lists.ozlabs.org)
-X-Greylist: delayed 326 seconds by postgrey-1.37 at boromir; Tue, 09 Apr 2024 13:14:41 AEST
-Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VDCrR4gsFz3dRm
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 14:38:15 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDB010Kydz30f8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 13:14:40 +1000 (AEST)
-Received: from localhost (unknown [124.16.138.129])
-	by APP-05 (Coremail) with SMTP id zQCowADn7gJNsRRm0pFZAg--.12456S2;
-	Tue, 09 Apr 2024 11:09:02 +0800 (CST)
-From: Chen Ni <nichen@iscas.ac.cn>
-To: qiang.zhao@nxp.com,
-	leoyang.li@nxp.com,
-	saravanak@google.com,
-	fido_max@inbox.ru
-Subject: [PATCH] soc: fsl: qe: Add check for platform_driver_register
-Date: Tue,  9 Apr 2024 03:08:40 +0000
-Message-Id: <20240409030840.666703-1-nichen@iscas.ac.cn>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDCqw5jp9z30fh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 14:37:48 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4VDCqt32GMz4x1R;
+	Tue,  9 Apr 2024 14:37:46 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VDCqt2DB9z4wbr;
+	Tue,  9 Apr 2024 14:37:46 +1000 (AEST)
+From: Michael Ellerman <michaele@au1.ibm.com>
+To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 2/2] MAINTAINERS: Make cxl obsolete
+In-Reply-To: <20240409031027.41587-2-ajd@linux.ibm.com>
+References: <20240409031027.41587-1-ajd@linux.ibm.com>
+ <20240409031027.41587-2-ajd@linux.ibm.com>
+Date: Tue, 09 Apr 2024 14:37:43 +1000
+Message-ID: <87bk6jb17s.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: zQCowADn7gJNsRRm0pFZAg--.12456S2
-X-Coremail-Antispam: 1UD129KBjvdXoW7GF4xAw45Ww1ftF1UZr13urg_yoW3Crc_Cr
-	4rW3W7Xr48ur9akF17tw43Zr929FWavrsaqF40qasxta4xtw17X3y5Zr13AF1kXr4rXFyU
-	Kr9rZrySkw13WjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUbz8FF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
-	Cr1l84ACjcxK6I8E87Iv67AKxVW8Jr0_Cr1UM28EF7xvwVC2z280aVCY1x0267AKxVW8Jr
-	0_Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj
-	6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr
-	0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxAIw28IcxkI7VAK
-	I48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7
-	xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xII
-	jxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAIw2
-	0EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x02
-	67AKxVWUJVW8JbIYCTnIWIevJa73UjIFyTuYvjfUoOJ5UUUUU
-X-Originating-IP: [124.16.138.129]
-X-CM-SenderInfo: xqlfxv3q6l2u1dvotugofq/
-X-Mailman-Approved-At: Tue, 09 Apr 2024 14:16:12 +1000
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,32 +46,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Chen Ni <nichen@iscas.ac.cn>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: fbarrat@linux.ibm.com, ukrishn@linux.ibm.com, manoj@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Return platform_driver_register() in order to transfer the error if
-it fails.
+Andrew Donnellan <ajd@linux.ibm.com> writes:
+> The cxl driver is no longer actively maintained and we intend to remove it
+> in a future kernel release. Change its status to obsolete, and update the
+> sysfs ABI documentation accordingly.
+>
+> Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+> ---
+>  Documentation/ABI/{testing => obsolete}/sysfs-class-cxl | 3 +++
+>  MAINTAINERS                                             | 4 ++--
+>  2 files changed, 5 insertions(+), 2 deletions(-)
+>  rename Documentation/ABI/{testing => obsolete}/sysfs-class-cxl (99%)
 
-Fixes: be7ecbd240b2 ("soc: fsl: qe: convert QE interrupt controller to platform_device")
-Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
----
- drivers/soc/fsl/qe/qe_ic.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+This is a good start, but I suspect if there are any actual users they
+are not going to be monitoring the status of cxl in the MAINTAINERS file :)
 
-diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/soc/fsl/qe/qe_ic.c
-index bbae3d39c7be..f17de6000ff2 100644
---- a/drivers/soc/fsl/qe/qe_ic.c
-+++ b/drivers/soc/fsl/qe/qe_ic.c
-@@ -481,7 +481,6 @@ static struct platform_driver qe_ic_driver =
+I think we should probably modify Kconfig so that anyone who's using cxl
+on purpose has some chance to notice before we remove it.
+
+Something like the patch below. Anyone who has an existing config and
+runs oldconfig will get a prompt, eg:
+
+  Deprecated support for IBM Coherent Accelerators (CXL) (DEPRECATED_CXL) [N/m/y/?] (NEW)
+
+Folks who just use defconfig etc. won't notice any change which is a
+pity. We could also change the default to n, but that risks breaking
+someone's machine. Maybe we do that in a another releases time.
+
+cheers
+
+diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+index 5efc4151bf58..e3fd3fcaf62a 100644
+--- a/drivers/misc/cxl/Kconfig
++++ b/drivers/misc/cxl/Kconfig
+@@ -9,11 +9,18 @@ config CXL_BASE
+ 	select PPC_64S_HASH_MMU
  
- static int __init qe_ic_of_init(void)
- {
--	platform_driver_register(&qe_ic_driver);
--	return 0;
-+	return platform_driver_register(&qe_ic_driver);
- }
- subsys_initcall(qe_ic_of_init);
--- 
-2.25.1
-
+ config CXL
+-	tristate "Support for IBM Coherent Accelerators (CXL)"
++	def_bool y
++	depends on DEPRECATED_CXL
++
++config DEPRECATED_CXL
++	tristate "Deprecated support for IBM Coherent Accelerators (CXL)"
+ 	depends on PPC_POWERNV && PCI_MSI && EEH
+ 	select CXL_BASE
+ 	default m
+ 	help
++	  The cxl driver is no longer actively maintained and we intend to
++	  remove it in a future kernel release.
++
+ 	  Select this option to enable driver support for IBM Coherent
+ 	  Accelerators (CXL).  CXL is otherwise known as Coherent Accelerator
+ 	  Processor Interface (CAPI).  CAPI allows accelerators in FPGAs to be
