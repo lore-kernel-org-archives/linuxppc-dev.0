@@ -4,114 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23FDEC67861
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 22:24:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06587C67861
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 23:45:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=L6MPOq73;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=nAcjPDAW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VDgVF5c3cz3vZn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 08:24:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VDjHr4MtQz3vbn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 09:45:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=L6MPOq73;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=nAcjPDAW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:260f::701; helo=eur04-he1-obe.outbound.protection.outlook.com; envelope-from=kshitiz.varshney@nxp.com; receiver=lists.ozlabs.org)
-Received: from EUR04-HE1-obe.outbound.protection.outlook.com (mail-he1eur04on20701.outbound.protection.outlook.com [IPv6:2a01:111:f403:260f::701])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2418::700; helo=nam12-bn8-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on20700.outbound.protection.outlook.com [IPv6:2a01:111:f403:2418::700])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDNBn3JNRz30N8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 20:54:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDjGt5r2vz3cGK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2024 09:44:19 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=YcJjeDE53z+aJ1bN5rK8YFJm/tKzvnI4M9z7UU8op/hg+RfBa0JEpk7DrWq82Lz8FqoTw6EeYCwmc/DH6w5wVCcnL87lYFXXKtx9oeWnXSgIpIFqViGjqBerbEeH8mYilkJZx+FMMlO2kDb6qwvWTsfiDwR6Nj9OjfrH7E2ATL/4PfQJj2XqaoJLTADtDYNd45riwfQnVaSvqW9X82RI6cCRicTYJJmPo2sZqYP5kWUfn6XoIQjJlCkTX5m0cD9I2dj4M7KDBtua07Ar7j56HAYPV72qPHmwgQXfNe0T+nVv8Q9Vqltzgfz7eStcq+cTM1Wnz45qJKSDHVaMunHqwg==
+ b=Xi+3pvDvOVxI5yXfdGGEQhgvZpb+NKDP96OnbU3lTPZxmfFJxuI72YaIEktEJdLDtS8dTtF5+dxEgaFKn9dpdjO0dGfgBdUOa0iRMybTAJeVRfTAu723wxZN6FbbR4/fv+4hjZHbdXrfr1wrOMiJgn62bIjnIYoHRGhsvcmWOZ0DUh1EMKip5LvYZSK8qCwlhCKukGFl9bPmD+CvaL6AGhFIXo6KD3cYeAz8rIprwihx3zLcPjOxaDtoLn2x8POp/Lj/0Ql5pUS4O3awxM4iUwrezebj4mEm0SO6zVxKCbAffkwddfFN9XfdJvllRi4M4vv9rl0tWRjlaERwjN/UOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=W1OkZhRUlrJCI5ikV2kv17qmHEHI+sfWVAxK9Swq2pc=;
- b=oahpDHm+XTIWxgLZOsiY1ZwcD+ocO6+8HUqiUwyaCmuZJIKrwwLCFAYnB2dmNrYX4hpwWZOCHCqzSdpqOKZgll+it92tna9Ua3r3LxKsQQwzzgw4vBjvj/IfPD1nr6psDSKrVYUAN0sce4A/f0/MC17lPlcFxwDZC33fMgzOQXcZn4CrJphsOt4cPzMaR7dzg4106w6k3a7WQbDbCA0mOm0ThPXZjoQ2VMLvj+GKzX6dMC6HMWlgcxTzBdaFHHOVt4Bk2gA4xFOk+tN1QVeIwh1qgM0wwWNOTp/zc34is23sOTaoj5J9kF4TTG2dhMQGmHMHOq1NvDzRl7C+3UR0oA==
+ bh=ZtYTOEh4QaWorr43L3gIXx64bhliZyCJB+XpBOpnfnY=;
+ b=acpbnNMFSjuW2F/GF7XDJ2VI4xwM9sVYi7kcXFseCy5rM6Bser2UxfQtZHDM5PgFXLLakEAzgJOeLqARrZer0PydIAZh8YGsGIAzp8+sf40tFPy7EQMAcY+XRWEyfBrUJJyVZUbsz7GqvpmeQP7j4u6YnNB/c5B5w7g8tUWxQEljmAXWmaMTBFehxY+yfm4wZoDG4A9WvvE6ClJn3JlxB8HILipb0XM3QdU/s0OIosMVePW52tGx75UHawEnHdT3da11Wi0iqWS4x+SFGWTm5x0lyqUScllgEdZjWgL0jm3qISuW/mNiSZ0B87Z2iTqDAsMoajACRXBI2/r2UPpoiA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=W1OkZhRUlrJCI5ikV2kv17qmHEHI+sfWVAxK9Swq2pc=;
- b=L6MPOq73DM24HMMO+bn74iW3hgPAyu8t0frt71LEn5lP/Hp+RnAJEGFrcvaDum5Y9Mo7BUZjU4K//er4AcHhAk/G+xj/z8yCOUqSGN1R0SEGJL2VD2uqlfvxA+eWqH4vo4vuPrPVUuEHTfOEwbwsJsd0r4F7U3cml3ffYSDFFv4=
-Received: from DB6PR04MB3190.eurprd04.prod.outlook.com (2603:10a6:6:5::31) by
- AM8PR04MB7729.eurprd04.prod.outlook.com (2603:10a6:20b:24c::24) with
+ bh=ZtYTOEh4QaWorr43L3gIXx64bhliZyCJB+XpBOpnfnY=;
+ b=nAcjPDAW0kACTUv5lj0Y/8tRiH/b3l1rt3VC8DswdR/Y9x2JskqMcO5yof+yx1xoRzs+RhlUszlFJMCKFqKyGM/j3Z9wb53p6NMN3vUnPidrWJp8kWBmWhsqbEv05qZSU5gy8xb6InpN6aX8Jwi3muJRcFYzks21wyEutN1UQCgGFkrObwsw4KRhQyTuc72hx3p57wOaubPe21ByEu9vigKyRRkTW5xHDP/i7Xhz+6MMX/7z3FVNi1iMZkv6ZQTS6wX7tBsYQBNN8qqx5EPXlYxlBTm3L3Gnii4tQ8ort7+34j5WkmL0/JgoscbdAbCqcco4TbKwwTTrFdM3JxTocQ==
+Received: from DM6PR12MB3849.namprd12.prod.outlook.com (2603:10b6:5:1c7::26)
+ by CY5PR12MB6371.namprd12.prod.outlook.com (2603:10b6:930:f::14) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7409.55; Tue, 9 Apr
- 2024 10:54:16 +0000
-Received: from DB6PR04MB3190.eurprd04.prod.outlook.com
- ([fe80::e8bc:451:6316:4a6f]) by DB6PR04MB3190.eurprd04.prod.outlook.com
- ([fe80::e8bc:451:6316:4a6f%6]) with mapi id 15.20.7409.042; Tue, 9 Apr 2024
- 10:54:15 +0000
-From: Kshitiz Varshney <kshitiz.varshney@nxp.com>
-To: David Gstir <david@sigma-star.at>, Mimi Zohar <zohar@linux.ibm.com>, James
- Bottomley <jejb@linux.ibm.com>, Jarkko Sakkinen <jarkko@kernel.org>, Herbert
- Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
-Subject: RE: [EXT] [PATCH v8 3/6] KEYS: trusted: Introduce NXP DCP-backed
- trusted keys
-Thread-Topic: [EXT] [PATCH v8 3/6] KEYS: trusted: Introduce NXP DCP-backed
- trusted keys
-Thread-Index: AQHahZe8FOET2O8opkK/K3DU/sDkl7Ffx2mg
-Date: Tue, 9 Apr 2024 10:54:15 +0000
-Message-ID:  <DB6PR04MB31904A8EB8B481A530C90CBB8F072@DB6PR04MB3190.eurprd04.prod.outlook.com>
-References: <20240403072131.54935-1-david@sigma-star.at>
- <20240403072131.54935-4-david@sigma-star.at>
-In-Reply-To: <20240403072131.54935-4-david@sigma-star.at>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: DB6PR04MB3190:EE_|AM8PR04MB7729:EE_
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info:  6/+Vn90fw532JFQk9K/SMegzAD0/T+EMA6S4mChio2VmmWYC1L68I12kBQoO6yv3BS3zdJQ639TVuTaywMtqLQ134H4GxNKoDUaemxwmqPf7xHrzvtzgmFITPzj/hpvssw8JDJS+8d8q+oo1l+YWnktcAYbrOfkI4V0/FJeourmFaiWn+amIyyLlvi9y+isGPCNK4DfyrhKFTwa+ZcArW/J2Ag7Wzq0iQAson7cmGe2yPUSigGUFJT+dmCHcWYXtPrdGm5WCBQ2jRE7q6Py42KbKXkwpsXoofgTu3hEICNwBmnPWHxYnr6DAXMcsUHWfovFL1Afshl8W3b9ZzCgTS77X/dd9/7gN7zphOsoxNUrJJWPo+qtXLhH7iMqYv9haBQGEDDSlsI0OA6BncqPaD7sLiZvfGelSqdIzCqt6HhkQjQolDH1VcMvfpgy1yQGnhjw82rI28MEvWFNvkEzLQI378q6/WAzjjGk9S6QoWOKn5g6vkBj2Cqx9JY3bA3X5Nsex4WMGPXC3mFYTiMElOL8FOtReR5TJjQtNZQJpV2M9NvmuFoBDiyrQXVZIyKEHqtYWAiiW2GrRJOGYKzTvljBLzGi1wfax19dc1xPIajGY05O3IdE8B4M+rJuBU9TPuHcZXQDvSjsbt2n1rt2gT8p8IAkYMf8ehMzcFhhynM8=
-x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB6PR04MB3190.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(1800799015)(366007)(7416005)(376005);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:  =?us-ascii?Q?yxDlHUfSGeqXDt7bACBi41HoXDms9MRKMtnj+PLOR97Mgj3C5D9IJfREc8KP?=
- =?us-ascii?Q?G+HNhn/hnLqrU2bv156Y3NcR5CjihWiYz+K7+kBzAfXWTAe2QI97T5p0Xe86?=
- =?us-ascii?Q?raIDXPyPBPzDShvzJAX4cS//CPgQGEyhuKL9HI6Mobq8ZsgQmB0SiJcYzo4L?=
- =?us-ascii?Q?ZrKxFk1kjP5fzOQVMLCLTjEGapmGQinuXK/cxd1nbVCdmIyVpVa5BRIQYazH?=
- =?us-ascii?Q?KwNHIlpRNf3IJGrG7XaMRzWwTXJvj1yKdEuXD22vrhtcM6ZHpM07IKX+xkOa?=
- =?us-ascii?Q?6dmzHSD8wqh+nWE3m14jt/WkbTj3AUk3lpahmb9Ny3yIVvzQzAhSfExIw0Ld?=
- =?us-ascii?Q?YbTPp1wz+a2nVB2rXcak1b4QN7B0rI9+yLR0NqD05DCPz+83t7cNPiLXCFTi?=
- =?us-ascii?Q?AufraiAEpzJq8AJAbYYPrUpTThVw/bC3oqPu0oqnYt2l/COQmDRPauEfndJK?=
- =?us-ascii?Q?FzI87boLGFEPmw+VJ3ntY+DNU34mPaazRRxQ3INJR8TItKR5hz40x6bOT5xV?=
- =?us-ascii?Q?SVTSG5RymRjPAiwneqtW/DpGe4Snv4VW2tC8e56uphRZSPoZxZAU4wpPipA6?=
- =?us-ascii?Q?a1UtL5KAhwe1TsxwWr2n0z6l2as1/xv3TDxXI/nFBQezCKh4ZFRxVLw5oetf?=
- =?us-ascii?Q?UQT5XYP3kI2Mew5ZSw44nKM2y0Lt3zYcZYF7ON+JYe8E5YfdBpvwgqdcB2is?=
- =?us-ascii?Q?VPAy6uniQ2dluqSbOwz+lfFnyreNZEw62z0SH5jihZgoyU31KB8em0fafQvk?=
- =?us-ascii?Q?UzEl2RBgfM1Ru3FADqG8GmSIJ4wCPVvlet7BHwwpX0hMh/TzDtKlGe9+jze5?=
- =?us-ascii?Q?YX70HmHbi0zYUCV3hYX+U0b/mNz+9xiys5CuOD1YtJgdtr1ytAvP9XzSR7OB?=
- =?us-ascii?Q?k29D0gI3Yvv093jL27fenXjFbKdFp0lAiewdmZ7woMFHdnxKblW25d31voHF?=
- =?us-ascii?Q?7Hrjep4ZmO8mF2jDDi4UZgY9rU2nDyefoyY1gBDXXcv/5xYVxAw9EIAqVlsN?=
- =?us-ascii?Q?jDDbOzQFife+eS3Lh4HgtxgsOIYlI48M5v0aIN2KW1SukbJGkPvHIK3eHIJh?=
- =?us-ascii?Q?szAI5T5QCSddz8YSYejC6Tt76yru29dVRX4kAi72TiR95HNo0hkuNvcVRR86?=
- =?us-ascii?Q?IKYABq4fgQsycXdZr3zqTsAM5A8fg8MEmzh+ZzFqftmCz+Pee4ZONElrnWMF?=
- =?us-ascii?Q?URDn+tmzZvalEPUXnHdqzx1KUcTJ+r6hPb8/ozPYxdHZmsU+TPpxUscMByfZ?=
- =?us-ascii?Q?6iTTWaYxiQvInxDuXLzOIPZ76SfId5pssSCIviDSn7CoiInPpf4b+tO7t3Tq?=
- =?us-ascii?Q?n3xG4oDihWupTndkSJ+GcKj/YXoozmDrwzoQUGlabZCfsAMBXfCAcH0t6/bM?=
- =?us-ascii?Q?38yRRsN9EAq1+Sb7UZGUdHo8DHm4KvAv8EwTGHsSb2u0/rau6zCyy0A31dMx?=
- =?us-ascii?Q?Ua7o7rCI1gbAdhp+geLf1tb5EgpdaAzc5nICuN4iIh7aEO9hrs0GOD4gcjMf?=
- =?us-ascii?Q?V/Fk98pF1LDCD5cQgXPtPnyzLWGrt0fqjf1X3RwvntvGnU0FTAsFdiYjiCYY?=
- =?us-ascii?Q?FstCUy7qxgGCAehR/kIxUqTnuwR1cR6RuUXvmyk+?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ 2024 23:43:57 +0000
+Received: from DM6PR12MB3849.namprd12.prod.outlook.com
+ ([fe80::6aec:dbca:a593:a222]) by DM6PR12MB3849.namprd12.prod.outlook.com
+ ([fe80::6aec:dbca:a593:a222%5]) with mapi id 15.20.7409.053; Tue, 9 Apr 2024
+ 23:43:57 +0000
+Date: Tue, 9 Apr 2024 20:43:55 -0300
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Peter Xu <peterx@redhat.com>
+Subject: Re: [PATCH v3 00/12] mm/gup: Unify hugetlb, part 2
+Message-ID: <20240409234355.GJ5383@nvidia.com>
+References: <20240321220802.679544-1-peterx@redhat.com>
+ <20240322161000.GJ159172@nvidia.com>
+ <ZgHJaJSpoeJVEccN@x1n>
+ <20240326140252.GH6245@nvidia.com>
+ <Zg8gEyE4o_VJsTmx@x1n>
+ <20240405181633.GH5383@nvidia.com>
+ <ZhBwVLyHr8WEKSx2@x1n>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ZhBwVLyHr8WEKSx2@x1n>
+X-ClientProxiedBy: BL1PR13CA0252.namprd13.prod.outlook.com
+ (2603:10b6:208:2ba::17) To DM6PR12MB3849.namprd12.prod.outlook.com
+ (2603:10b6:5:1c7::26)
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM6PR12MB3849:EE_|CY5PR12MB6371:EE_
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	iXQTxovTY807gc9Dbk5H0zd9d0njVbKMhGDXOQQ6ZTfgqyaFPOgiRx4Mm4bl0xB8/31350HIhR084ItECUUS9eEcpvJqW3JxtpmM59l+Nu2rQCGLcq4OISstEP3jYYHjaDUN8g5XVvgfMUvzafeYWdwIrDNHzODw8jTGuwRjiYTmswad9tTkbQmFH8XKGqebBpVt/IcchePxCyZcJ6YmacEx5O4zWVPpkfj3gBLD8YVroioVW8QUWelKirZsM3CD6Kml3GZsn5G6nNUhqMG88wk/GJRjfobkkcxRAGqR0BsiyBXIA6j95P7wnfrNs07dGJbcKq51rcL3V6CjHtoEJRIIKQGqVMyvHKxdb1ikHXTH7dmFZA+uWT3b8biLb0OfshoICsnk0pZLix2Q8FALh1vvX/Y6OB61pAR2koybkQimnh5CCHlf/RmEfnTxIYkeUQIe2CoBvUnmsfTJEQ8H2Olwuijj2tn0a7t26qisAnGPCwrBOrP0RZGSz7czl0awcF4UB4aH4Ba02cVp/JkguACxwR2bRXlWx1VStVtu52JNseiF73W3+DGuGK5BXNlooS3TDobd+CE4AgVZlKDeLiYr9rGDnhWKgjts2A/J2Wb2BH8XY81uonrjBpgM/v5lL6OzW9Hch0PRZqIzzcx9cburqln0VWUxWN25AOVSMnI=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM6PR12MB3849.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230031)(376005)(366007)(1800799015)(7416005);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?LsbAex/tFaOhbX5oXZtD2xnKSHaLeub2PpPUmpl9Y4EinNTpaBVG8vnUJOWG?=
+ =?us-ascii?Q?e/y7V8hJtgWVDC0rkXlLnKpc4TtC+9zKlae4wCl+pXU85lIFDQP9seYfJLYF?=
+ =?us-ascii?Q?oEANW1pktsvHbr6OZlSh8TkvzUGe6e/jJG6J6c9OJQjl3yAZKkRj2KAmAGuC?=
+ =?us-ascii?Q?7DWJR4SyjRGOln34+eJDGyo8OkRjSfnSmjkvn9UnXoTMqdzh8c08s1CVxqin?=
+ =?us-ascii?Q?piyxmajEGbJ8xSYtlc0qHVZZT9r4PqnZazYJUu3h2sFb8WULeXkEcjRn+2/T?=
+ =?us-ascii?Q?CL+wwDvuFk6ycyTyatRwdWkvZoR0xMP+3nqLp/aiLN1nJxiRf4EKH5BK0F5K?=
+ =?us-ascii?Q?+O7CmocJ4fIGpWNwXj/2sDYpUykq58u2jZGwxFlvEpxy3/Fg95YGadeOowqC?=
+ =?us-ascii?Q?J+RRMpxr0mF3gqyrSxQ6lu/QEgIMXeedjrl4a0tO6kmQqs+93a3I2lKgHdGw?=
+ =?us-ascii?Q?tHUTHInOH6556qlhkMptj5KeK2r92pPeG1U5+zY0NlgaGexxpnT7/GJWW6TR?=
+ =?us-ascii?Q?q+3WGX1ffFsk2yQAXMuvYVBDewEWi+zUKnHdxpxa1CMK0hqJyqdzUb3K7VrJ?=
+ =?us-ascii?Q?aWW/9BqXWMPBJT/7M4mNzozLBLiKipDlaQ4C4nq/UJuj8XfMWsvUf4O+Styo?=
+ =?us-ascii?Q?aEM9YwlIG4AzxxV65ZXH5BFJ0mSMo/rQpd++4tWJth8cLrfMwhUvgTl+exbk?=
+ =?us-ascii?Q?SjKlTW7yGaKIIIUAM35bfS7SVK4W7J4l+D5ymCFCH8M6QIgEM5ZlTU7hwL/m?=
+ =?us-ascii?Q?E++4/wtyRULEQd04V1YCuUZYMEX1+8NzhrE2eOuOoNMle0O3+c/qPvXv125V?=
+ =?us-ascii?Q?niP47nXoiMGXvSd9+GyYUnNkuwfiiXa9bqEXTRdwtAp2zNerQslFSA9j48yO?=
+ =?us-ascii?Q?0iWeN6EroSDCvRyhpTrj5HFTtpwjaCCglGLgXYe68aOxiDLqmXHuw/1f7NzZ?=
+ =?us-ascii?Q?ER4NULBHpqZW/H77fQLVa3KpkFueTW0qCMAaxz+2zEMC/WZwzSJnh6cc6wpg?=
+ =?us-ascii?Q?n2iVCPxpVhLcNm6LNkPBKDpcaemM65as+I39xolAOodWS0sVi02NmxWG95KC?=
+ =?us-ascii?Q?J48e5+W/77mvgrt8p/1edxo10TGzDdBSUj6fqojnZaDjGVeaQa5j/l7mRIgT?=
+ =?us-ascii?Q?YtW5amIZHFu1ScXv7QvJ8JUMuLKNyznJPJdNikPmoFc9Z3FKoAuwRo5FFkzA?=
+ =?us-ascii?Q?iziyqOneDlKtDUTooHdz+6xef+7poKlK1II4pe4VCX0xj9/3U/8XwSMNRKlX?=
+ =?us-ascii?Q?TcaQNtPGsdwlAcj9ZqrZq+7V9FS5MBHoN3oHgIPv4X1pi531SZUmJEAiMuvP?=
+ =?us-ascii?Q?laDiXae2IQ1TM1+QqUu/Taey/VgL0nJya/bbhVQu6XU1p4NiIOZ8BitSojst?=
+ =?us-ascii?Q?iXuUC1TEBRedIsRztPhmsrARqVSkLxjmuJrEvbnGHPVMDfkXz26fvgLAtSPr?=
+ =?us-ascii?Q?yKaQLoVnWrBmbcqfaf1OF4dse5IietzKQddHb/62jAYx/USjB0FD7vL/PMBH?=
+ =?us-ascii?Q?DT2+xLhhAtDQE4+/Ho/512dmzC9N4te2pdMA4wHNbAXfSISUOsAxb9UM/m8S?=
+ =?us-ascii?Q?ihV6z0q3kuX/QAwP5flrKN0tCFCiLbrObP4TA0aC?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 85e3d269-d78b-41b7-d9ce-08dc58eeec68
+X-MS-Exchange-CrossTenant-AuthSource: DM6PR12MB3849.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: DB6PR04MB3190.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 774cdf51-20ed-4abb-7456-08dc58836627
-X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Apr 2024 10:54:15.6966
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Apr 2024 23:43:57.2831
  (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: JgFT8FRyMQutdNlCDF9xO48IGysofYzZ3yMW8FJLYTTfINvm3hJWErHFsxCrgDb3QjfJptXddhbCMewViTNo4IVXM4M1VkrS+XI/3riYYr4=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7729
-X-Mailman-Approved-At: Wed, 10 Apr 2024 08:22:33 +1000
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: W8tC1X3VQ0gDilRgFzcj7VTWoVsSZCmOuOX+sy3uB0ahEU1M7HHxIrKg+VfaSHQA
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY5PR12MB6371
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,545 +121,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Gaurav Jain <gaurav.jain@nxp.com>, Catalin Marinas <catalin.marinas@arm.com>, David Howells <dhowells@redhat.com>, "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Paul Moore <paul@paul-moore.com>, Jonathan Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>, "Rafael
- J. Wysocki" <rafael.j.wysocki@intel.com>, James Morris <jmorris@namei.org>, dl-linux-imx <linux-imx@nxp.com>, "Serge E. Hallyn" <serge@hallyn.com>, "Paul E. McKenney" <paulmck@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Pankaj Gupta <pankaj.gupta@nxp.com>, sigma star Kernel Team <upstream+dcp@sigma-star.at>, "Steven
- Rostedt \(Google\)" <rostedt@goodmis.org>, David Oberhollenzer <david.oberhollenzer@sigma-star.at>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Randy Dunlap <rdunlap@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Li Yang <leoyang.li@nxp.com>, "linux-security-module@vger.kernel.org" <linux-security-module@vger.kernel.org>, "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Tejun Heo <tj@kernel.org>, "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, Varun Sethi <V.Sethi@nxp.com>
+Cc: James Houghton <jthoughton@google.com>, David Hildenbrand <david@redhat.com>, Yang Shi <shy828301@gmail.com>, Andrew Jones <andrew.jones@linux.dev>, linux-mm@kvack.org, linux-riscv@lists.infradead.org, Andrea Arcangeli <aarcange@redhat.com>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, linux-arm-kernel@lists.infradead.org, Axel Rasmussen <axelrasmussen@google.com>, Rik van Riel <riel@surriel.com>, John Hubbard <jhubbard@nvidia.com>, "Kirill A . Shutemov" <kirill@shutemov.name>, Vlastimil Babka <vbabka@suse.cz>, Lorenzo Stoakes <lstoakes@gmail.com>, Muchun Song <muchun.song@linux.dev>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Rapoport <rppt@kernel.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi David,
+On Fri, Apr 05, 2024 at 05:42:44PM -0400, Peter Xu wrote:
+> In short, hugetlb mappings shouldn't be special comparing to other huge pXd
+> and large folio (cont-pXd) mappings for most of the walkers in my mind, if
+> not all.  I need to look at all the walkers and there can be some tricky
+> ones, but I believe that applies in general.  It's actually similar to what
+> I did with slow gup here.
 
-> -----Original Message-----
-> From: David Gstir <david@sigma-star.at>
-> Sent: Wednesday, April 3, 2024 12:51 PM
-> To: Mimi Zohar <zohar@linux.ibm.com>; James Bottomley
-> <jejb@linux.ibm.com>; Jarkko Sakkinen <jarkko@kernel.org>; Herbert Xu
-> <herbert@gondor.apana.org.au>; David S. Miller <davem@davemloft.net>
-> Cc: David Gstir <david@sigma-star.at>; Shawn Guo <shawnguo@kernel.org>;
-> Jonathan Corbet <corbet@lwn.net>; Sascha Hauer
-> <s.hauer@pengutronix.de>; Pengutronix Kernel Team
-> <kernel@pengutronix.de>; Fabio Estevam <festevam@gmail.com>; dl-linux-
-> imx <linux-imx@nxp.com>; Ahmad Fatoum <a.fatoum@pengutronix.de>;
-> sigma star Kernel Team <upstream+dcp@sigma-star.at>; David Howells
-> <dhowells@redhat.com>; Li Yang <leoyang.li@nxp.com>; Paul Moore
-> <paul@paul-moore.com>; James Morris <jmorris@namei.org>; Serge E.
-> Hallyn <serge@hallyn.com>; Paul E. McKenney <paulmck@kernel.org>;
-> Randy Dunlap <rdunlap@infradead.org>; Catalin Marinas
-> <catalin.marinas@arm.com>; Rafael J. Wysocki
-> <rafael.j.wysocki@intel.com>; Tejun Heo <tj@kernel.org>; Steven Rostedt
-> (Google) <rostedt@goodmis.org>; linux-doc@vger.kernel.org; linux-
-> kernel@vger.kernel.org; linux-integrity@vger.kernel.org;
-> keyrings@vger.kernel.org; linux-crypto@vger.kernel.org; linux-arm-
-> kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org; linux-security=
--
-> module@vger.kernel.org; Richard Weinberger <richard@nod.at>; David
-> Oberhollenzer <david.oberhollenzer@sigma-star.at>
-> Subject: [EXT] [PATCH v8 3/6] KEYS: trusted: Introduce NXP DCP-backed
-> trusted keys
->=20
-> Caution: This is an external email. Please take care when clicking links =
-or
-> opening attachments. When in doubt, report the message using the 'Report
-> this email' button
->=20
->=20
-> DCP (Data Co-Processor) is the little brother of NXP's CAAM IP.
-> Beside of accelerated crypto operations, it also offers support for hardw=
-are-
-> bound keys. Using this feature it is possible to implement a blob
-> mechanism similar to what CAAM offers. Unlike on CAAM, constructing and
-> parsing the blob has to happen in software (i.e. the kernel).
->=20
-> The software-based blob format used by DCP trusted keys encrypts the
-> payload using AES-128-GCM with a freshly generated random key and
-> nonce.
-> The random key itself is AES-128-ECB encrypted using the DCP unique or
-> OTP key.
->=20
-> The DCP trusted key blob format is:
-> /*
->  * struct dcp_blob_fmt - DCP BLOB format.
->  *
->  * @fmt_version: Format version, currently being %1
->  * @blob_key: Random AES 128 key which is used to encrypt @payload,
->  *            @blob_key itself is encrypted with OTP or UNIQUE device key=
- in
->  *            AES-128-ECB mode by DCP.
->  * @nonce: Random nonce used for @payload encryption.
->  * @payload_len: Length of the plain text @payload.
->  * @payload: The payload itself, encrypted using AES-128-GCM and
-> @blob_key,
->  *           GCM auth tag of size AES_BLOCK_SIZE is attached at the end o=
-f it.
->  *
->  * The total size of a DCP BLOB is sizeof(struct dcp_blob_fmt) +
-> @payload_len +
->  * AES_BLOCK_SIZE.
->  */
-> struct dcp_blob_fmt {
->         __u8 fmt_version;
->         __u8 blob_key[AES_KEYSIZE_128];
->         __u8 nonce[AES_KEYSIZE_128];
->         __le32 payload_len;
->         __u8 payload[];
-> } __packed;
->=20
-> By default the unique key is used. It is also possible to use the OTP key=
-.
-> While the unique key should be unique it is not documented how this key i=
-s
-> derived. Therefore selection the OTP key is supported as well via the
-> use_otp_key module parameter.
->=20
-> Co-developed-by: Richard Weinberger <richard@nod.at>
-> Signed-off-by: Richard Weinberger <richard@nod.at>
-> Co-developed-by: David Oberhollenzer <david.oberhollenzer@sigma-star.at>
-> Signed-off-by: David Oberhollenzer <david.oberhollenzer@sigma-star.at>
-> Signed-off-by: David Gstir <david@sigma-star.at>
-> Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
-> ---
->  include/keys/trusted_dcp.h                |  11 +
->  security/keys/trusted-keys/Kconfig        |   8 +
->  security/keys/trusted-keys/Makefile       |   2 +
->  security/keys/trusted-keys/trusted_core.c |   6 +-
->  security/keys/trusted-keys/trusted_dcp.c  | 313
-> ++++++++++++++++++++++
->  5 files changed, 339 insertions(+), 1 deletion(-)  create mode 100644
-> include/keys/trusted_dcp.h  create mode 100644 security/keys/trusted-
-> keys/trusted_dcp.c
->=20
-> diff --git a/include/keys/trusted_dcp.h b/include/keys/trusted_dcp.h new
-> file mode 100644 index 000000000000..9aaa42075b40
-> --- /dev/null
-> +++ b/include/keys/trusted_dcp.h
-> @@ -0,0 +1,11 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +/*
-> + * Copyright (C) 2021 sigma star gmbh
-> + */
-> +
-> +#ifndef TRUSTED_DCP_H
-> +#define TRUSTED_DCP_H
-> +
-> +extern struct trusted_key_ops dcp_trusted_key_ops;
-> +
-> +#endif
-> diff --git a/security/keys/trusted-keys/Kconfig b/security/keys/trusted-
-> keys/Kconfig
-> index 553dc117f385..1fb8aa001995 100644
-> --- a/security/keys/trusted-keys/Kconfig
-> +++ b/security/keys/trusted-keys/Kconfig
-> @@ -39,6 +39,14 @@ config TRUSTED_KEYS_CAAM
->           Enable use of NXP's Cryptographic Accelerator and Assurance Mod=
-ule
->           (CAAM) as trusted key backend.
->=20
-> +config TRUSTED_KEYS_DCP
-> +       bool "DCP-based trusted keys"
-> +       depends on CRYPTO_DEV_MXS_DCP >=3D TRUSTED_KEYS
-> +       default y
-> +       select HAVE_TRUSTED_KEYS
-> +       help
-> +         Enable use of NXP's DCP (Data Co-Processor) as trusted key back=
-end.
-> +
->  if !HAVE_TRUSTED_KEYS
->         comment "No trust source selected!"
->  endif
-> diff --git a/security/keys/trusted-keys/Makefile b/security/keys/trusted-
-> keys/Makefile
-> index 735aa0bc08ef..f0f3b27f688b 100644
-> --- a/security/keys/trusted-keys/Makefile
-> +++ b/security/keys/trusted-keys/Makefile
-> @@ -14,3 +14,5 @@ trusted-$(CONFIG_TRUSTED_KEYS_TPM) +=3D
-> tpm2key.asn1.o
->  trusted-$(CONFIG_TRUSTED_KEYS_TEE) +=3D trusted_tee.o
->=20
->  trusted-$(CONFIG_TRUSTED_KEYS_CAAM) +=3D trusted_caam.o
-> +
-> +trusted-$(CONFIG_TRUSTED_KEYS_DCP) +=3D trusted_dcp.o
-> diff --git a/security/keys/trusted-keys/trusted_core.c
-> b/security/keys/trusted-keys/trusted_core.c
-> index fee1ab2c734d..5113aeae5628 100644
-> --- a/security/keys/trusted-keys/trusted_core.c
-> +++ b/security/keys/trusted-keys/trusted_core.c
-> @@ -10,6 +10,7 @@
->  #include <keys/trusted-type.h>
->  #include <keys/trusted_tee.h>
->  #include <keys/trusted_caam.h>
-> +#include <keys/trusted_dcp.h>
->  #include <keys/trusted_tpm.h>
->  #include <linux/capability.h>
->  #include <linux/err.h>
-> @@ -30,7 +31,7 @@ MODULE_PARM_DESC(rng, "Select trusted key RNG");
->=20
->  static char *trusted_key_source;
->  module_param_named(source, trusted_key_source, charp, 0); -
-> MODULE_PARM_DESC(source, "Select trusted keys source (tpm, tee or
-> caam)");
-> +MODULE_PARM_DESC(source, "Select trusted keys source (tpm, tee, caam
-> or
-> +dcp)");
->=20
->  static const struct trusted_key_source trusted_key_sources[] =3D {  #if
-> defined(CONFIG_TRUSTED_KEYS_TPM) @@ -42,6 +43,9 @@ static const
-> struct trusted_key_source trusted_key_sources[] =3D {  #if
-> defined(CONFIG_TRUSTED_KEYS_CAAM)
->         { "caam", &trusted_key_caam_ops },  #endif
-> +#if defined(CONFIG_TRUSTED_KEYS_DCP)
-> +       { "dcp", &dcp_trusted_key_ops }, #endif
->  };
->=20
->  DEFINE_STATIC_CALL_NULL(trusted_key_seal, *trusted_key_sources[0].ops-
-> >seal);
-> diff --git a/security/keys/trusted-keys/trusted_dcp.c
-> b/security/keys/trusted-keys/trusted_dcp.c
-> new file mode 100644
-> index 000000000000..16c44aafeab3
-> --- /dev/null
-> +++ b/security/keys/trusted-keys/trusted_dcp.c
-> @@ -0,0 +1,313 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (C) 2021 sigma star gmbh
-> + */
-> +
-> +#include <crypto/aead.h>
-> +#include <crypto/aes.h>
-> +#include <crypto/algapi.h>
-> +#include <crypto/gcm.h>
-> +#include <crypto/skcipher.h>
-> +#include <keys/trusted-type.h>
-> +#include <linux/key-type.h>
-> +#include <linux/module.h>
-> +#include <linux/printk.h>
-> +#include <linux/random.h>
-> +#include <linux/scatterlist.h>
-> +#include <soc/fsl/dcp.h>
-> +
-> +#define DCP_BLOB_VERSION 1
-> +#define DCP_BLOB_AUTHLEN 16
-> +
-> +/**
-> + * struct dcp_blob_fmt - DCP BLOB format.
-> + *
-> + * @fmt_version: Format version, currently being %1.
-> + * @blob_key: Random AES 128 key which is used to encrypt @payload,
-> + *            @blob_key itself is encrypted with OTP or UNIQUE device ke=
-y in
-> + *            AES-128-ECB mode by DCP.
-> + * @nonce: Random nonce used for @payload encryption.
-> + * @payload_len: Length of the plain text @payload.
-> + * @payload: The payload itself, encrypted using AES-128-GCM and
-> @blob_key,
-> + *           GCM auth tag of size DCP_BLOB_AUTHLEN is attached at the en=
-d of
-> it.
-> + *
-> + * The total size of a DCP BLOB is sizeof(struct dcp_blob_fmt) +
-> @payload_len +
-> + * DCP_BLOB_AUTHLEN.
-> + */
-> +struct dcp_blob_fmt {
-> +       __u8 fmt_version;
-> +       __u8 blob_key[AES_KEYSIZE_128];
-> +       __u8 nonce[AES_KEYSIZE_128];
-> +       __le32 payload_len;
-> +       __u8 payload[];
-> +} __packed;
-> +
-> +static bool use_otp_key;
-> +module_param_named(dcp_use_otp_key, use_otp_key, bool, 0);
-> +MODULE_PARM_DESC(dcp_use_otp_key, "Use OTP instead of UNIQUE key
-> for sealing");
-> +
-> +static bool skip_zk_test;
-> +module_param_named(dcp_skip_zk_test, skip_zk_test, bool, 0);
-> +MODULE_PARM_DESC(dcp_skip_zk_test, "Don't test whether device keys
-> are zero'ed");
-> +
-> +static unsigned int calc_blob_len(unsigned int payload_len)
-> +{
-> +       return sizeof(struct dcp_blob_fmt) + payload_len +
-> DCP_BLOB_AUTHLEN;
-> +}
-> +
-> +static int do_dcp_crypto(u8 *in, u8 *out, bool do_encrypt)
-> +{
-> +       struct skcipher_request *req =3D NULL;
-> +       struct scatterlist src_sg, dst_sg;
-> +       struct crypto_skcipher *tfm;
-> +       u8 paes_key[DCP_PAES_KEYSIZE];
-> +       DECLARE_CRYPTO_WAIT(wait);
-> +       int res =3D 0;
-> +
-> +       if (use_otp_key)
-> +               paes_key[0] =3D DCP_PAES_KEY_OTP;
-> +       else
-> +               paes_key[0] =3D DCP_PAES_KEY_UNIQUE;
-> +
-> +       tfm =3D crypto_alloc_skcipher("ecb-paes-dcp", CRYPTO_ALG_INTERNAL=
-,
-> +                                   CRYPTO_ALG_INTERNAL);
-> +       if (IS_ERR(tfm)) {
-> +               res =3D PTR_ERR(tfm);
-> +               tfm =3D NULL;
-> +               goto out;
-> +       }
-> +
-> +       req =3D skcipher_request_alloc(tfm, GFP_NOFS);
-> +       if (!req) {
-> +               res =3D -ENOMEM;
-> +               goto out;
-> +       }
-> +
-> +       skcipher_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG
-> |
-> +                                     CRYPTO_TFM_REQ_MAY_SLEEP,
-> +                                     crypto_req_done, &wait);
-> +       res =3D crypto_skcipher_setkey(tfm, paes_key, sizeof(paes_key));
-> +       if (res < 0)
-> +               goto out;
-> +
-> +       sg_init_one(&src_sg, in, AES_KEYSIZE_128);
-> +       sg_init_one(&dst_sg, out, AES_KEYSIZE_128);
-> +       skcipher_request_set_crypt(req, &src_sg, &dst_sg, AES_KEYSIZE_128=
-,
-> +                                  NULL);
-> +
-> +       if (do_encrypt)
-> +               res =3D crypto_wait_req(crypto_skcipher_encrypt(req), &wa=
-it);
-> +       else
-> +               res =3D crypto_wait_req(crypto_skcipher_decrypt(req), &wa=
-it);
-> +
-> +out:
-> +       skcipher_request_free(req);
-> +       crypto_free_skcipher(tfm);
-> +
-> +       return res;
-> +}
-> +
-> +static int do_aead_crypto(u8 *in, u8 *out, size_t len, u8 *key, u8 *nonc=
-e,
-> +                         bool do_encrypt)
-> +{
-> +       struct aead_request *aead_req =3D NULL;
-> +       struct scatterlist src_sg, dst_sg;
-> +       struct crypto_aead *aead;
-> +       int ret;
-> +
-> +       aead =3D crypto_alloc_aead("gcm(aes)", 0, CRYPTO_ALG_ASYNC);
-> +       if (IS_ERR(aead)) {
-> +               ret =3D PTR_ERR(aead);
-> +               goto out;
-> +       }
-> +
-> +       ret =3D crypto_aead_setauthsize(aead, DCP_BLOB_AUTHLEN);
-> +       if (ret < 0) {
-> +               pr_err("Can't set crypto auth tag len: %d\n", ret);
-> +               goto free_aead;
-> +       }
-> +
-> +       aead_req =3D aead_request_alloc(aead, GFP_KERNEL);
-> +       if (!aead_req) {
-> +               ret =3D -ENOMEM;
-> +               goto free_aead;
-> +       }
-> +
-> +       sg_init_one(&src_sg, in, len);
-> +       if (do_encrypt) {
-> +               /*
-> +                * If we encrypt our buffer has extra space for the auth =
-tag.
-> +                */
-> +               sg_init_one(&dst_sg, out, len + DCP_BLOB_AUTHLEN);
-> +       } else {
-> +               sg_init_one(&dst_sg, out, len);
-> +       }
-> +
-> +       aead_request_set_crypt(aead_req, &src_sg, &dst_sg, len, nonce);
-> +       aead_request_set_callback(aead_req, CRYPTO_TFM_REQ_MAY_SLEEP,
-> NULL,
-> +                                 NULL);
-> +       aead_request_set_ad(aead_req, 0);
-> +
-> +       if (crypto_aead_setkey(aead, key, AES_KEYSIZE_128)) {
-> +               pr_err("Can't set crypto AEAD key\n");
-> +               ret =3D -EINVAL;
-> +               goto free_req;
-> +       }
-> +
-> +       if (do_encrypt)
-> +               ret =3D crypto_aead_encrypt(aead_req);
-> +       else
-> +               ret =3D crypto_aead_decrypt(aead_req);
-> +
-> +free_req:
-> +       aead_request_free(aead_req);
-> +free_aead:
-> +       crypto_free_aead(aead);
-> +out:
-> +       return ret;
-> +}
-> +
-> +static int decrypt_blob_key(u8 *key)
-> +{
-> +       return do_dcp_crypto(key, key, false);
-> +}
-> +
-> +static int encrypt_blob_key(u8 *key)
-> +{
-> +       return do_dcp_crypto(key, key, true);
-> +}
-> +
-> +static int trusted_dcp_seal(struct trusted_key_payload *p, char *datablo=
-b)
-> +{
-> +       struct dcp_blob_fmt *b =3D (struct dcp_blob_fmt *)p->blob;
-> +       int blen, ret;
-> +
-> +       blen =3D calc_blob_len(p->key_len);
-> +       if (blen > MAX_BLOB_SIZE)
-> +               return -E2BIG;
-> +
-> +       b->fmt_version =3D DCP_BLOB_VERSION;
-> +       get_random_bytes(b->nonce, AES_KEYSIZE_128);
-> +       get_random_bytes(b->blob_key, AES_KEYSIZE_128);
+I think that is the big question, I also haven't done the research to
+know the answer.
 
-We can use HWRNG instead of using kernel RNG. Please refer drivers/char/hw_=
-random/imx-rngc.c=20
-> +
-> +       ret =3D do_aead_crypto(p->key, b->payload, p->key_len, b->blob_ke=
-y,
-> +                            b->nonce, true);
-> +       if (ret) {
-> +               pr_err("Unable to encrypt blob payload: %i\n", ret);
-> +               return ret;
-> +       }
-> +
-> +       ret =3D encrypt_blob_key(b->blob_key);
-> +       if (ret) {
-> +               pr_err("Unable to encrypt blob key: %i\n", ret);
-> +               return ret;
-> +       }
-> +
-> +       b->payload_len =3D get_unaligned_le32(&p->key_len);
-> +       p->blob_len =3D blen;
-> +       return 0;
-> +}
-> +
-> +static int trusted_dcp_unseal(struct trusted_key_payload *p, char
-> *datablob)
-> +{
-> +       struct dcp_blob_fmt *b =3D (struct dcp_blob_fmt *)p->blob;
-> +       int blen, ret;
-> +
-> +       if (b->fmt_version !=3D DCP_BLOB_VERSION) {
-> +               pr_err("DCP blob has bad version: %i, expected %i\n",
-> +                      b->fmt_version, DCP_BLOB_VERSION);
-> +               ret =3D -EINVAL;
-> +               goto out;
-> +       }
-> +
-> +       p->key_len =3D le32_to_cpu(b->payload_len);
-> +       blen =3D calc_blob_len(p->key_len);
-> +       if (blen !=3D p->blob_len) {
-> +               pr_err("DCP blob has bad length: %i !=3D %i\n", blen,
-> +                      p->blob_len);
-> +               ret =3D -EINVAL;
-> +               goto out;
-> +       }
-> +
-> +       ret =3D decrypt_blob_key(b->blob_key);
-> +       if (ret) {
-> +               pr_err("Unable to decrypt blob key: %i\n", ret);
-> +               goto out;
-> +       }
-> +
-> +       ret =3D do_aead_crypto(b->payload, p->key, p->key_len +
-> DCP_BLOB_AUTHLEN,
-> +                            b->blob_key, b->nonce, false);
-> +       if (ret) {
-> +               pr_err("Unwrap of DCP payload failed: %i\n", ret);
-> +               goto out;
-> +       }
-> +
-> +       ret =3D 0;
-> +out:
-> +       return ret;
-> +}
-> +
-> +static int test_for_zero_key(void)
-> +{
-> +       /*
-> +        * Encrypting a plaintext of all 0x55 bytes will yield
-> +        * this ciphertext in case the DCP test key is used.
-> +        */
-> +       static const u8 bad[] =3D {0x9a, 0xda, 0xe0, 0x54, 0xf6, 0x3d, 0x=
-fa, 0xff,
-> +                                0x5e, 0xa1, 0x8e, 0x45, 0xed, 0xf6, 0xea=
-, 0x6f};
-> +       void *buf =3D NULL;
-> +       int ret =3D 0;
-> +
-> +       if (skip_zk_test)
-> +               goto out;
-> +
-> +       buf =3D kmalloc(AES_BLOCK_SIZE, GFP_KERNEL);
-> +       if (!buf) {
-> +               ret =3D -ENOMEM;
-> +               goto out;
-> +       }
-> +
-> +       memset(buf, 0x55, AES_BLOCK_SIZE);
-> +
-> +       ret =3D do_dcp_crypto(buf, buf, true);
-> +       if (ret)
-> +               goto out;
-> +
-> +       if (memcmp(buf, bad, AES_BLOCK_SIZE) =3D=3D 0) {
-> +               pr_warn("Device neither in secure nor trusted mode!\n");
-> +               ret =3D -EINVAL;
-> +       }
-> +out:
-> +       kfree(buf);
-> +       return ret;
-> +}
-> +
-> +static int trusted_dcp_init(void)
-> +{
-> +       int ret;
-> +
-> +       if (use_otp_key)
-> +               pr_info("Using DCP OTP key\n");
-> +
-> +       ret =3D test_for_zero_key();
-> +       if (ret) {
-> +               pr_warn("Test for zero'ed keys failed: %i\n", ret);
-> +
-> +               return -EINVAL;
-> +       }
-> +
-> +       return register_key_type(&key_type_trusted);
-> +}
-> +
-> +static void trusted_dcp_exit(void)
-> +{
-> +       unregister_key_type(&key_type_trusted);
-> +}
-> +
-> +struct trusted_key_ops dcp_trusted_key_ops =3D {
-> +       .exit =3D trusted_dcp_exit,
-> +       .init =3D trusted_dcp_init,
-> +       .seal =3D trusted_dcp_seal,
-> +       .unseal =3D trusted_dcp_unseal,
-> +       .migratable =3D 0,
-> +};
-> --
-> 2.35.3
->=20
+At this point focusing on moving what is reasonable to the pXX_* API
+makes sense to me. Then reviewing what remains and making some
+decision.
 
-Regards,
-Kshitiz
+> Like this series, for cont-pXd we'll need multiple walks comparing to
+> before (when with hugetlb_entry()), but for that part I'll provide some
+> performance tests too, and we also have a fallback plan, which is to detect
+> cont-pXd existance, which will also work for large folios.
+
+I think we can optimize this pretty easy.
+ 
+> > I think if you do the easy places for pXX conversion you will have a
+> > good idea about what is needed for the hard places.
+> 
+> Here IMHO we don't need to understand "what is the size of this hugetlb
+> vma"
+
+Yeh, I never really understood why hugetlb was linked to the VMA.. The
+page table is self describing, obviously.
+
+> or "which level of pgtable does this hugetlb vma pages locate",
+
+Ditto
+
+> because we may not need that, e.g., when we only want to collect some smaps
+> statistics.  "whether it's hugetlb" may matter, though. E.g. in the mm
+> walker we see a huge pmd, it can be a thp, it can be a hugetlb (when
+> hugetlb_entry removed), we may need extra check later to put things into
+> the right bucket, but for the walker itself it doesn't necessarily need
+> hugetlb_entry().
+
+Right, places may still need to know it is part of a huge VMA because we
+have special stuff linked to that.
+
+> > But then again we come back to power and its big list of page sizes
+> > and variety :( Looks like some there have huge sizes at the pgd level
+> > at least.
+> 
+> Yeah this is something I want to be super clear, because I may miss
+> something: we don't have real pgd pages, right?  Powerpc doesn't even
+> define p4d_leaf(), AFAICT.
+
+AFAICT it is because it hides it all in hugepd.
+
+If the goal is to purge hugepd then some of the options might turn out
+to convert hugepd into huge p4d/pgd, as I understand it. It would be
+nice to have certainty on this at least.
+
+We have effectively three APIs to parse a single page table and
+currently none of the APIs can return 100% of the data for power.
+
+Jason
