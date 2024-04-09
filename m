@@ -4,60 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EBE7C67861
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 01:25:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EBC1C67861
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 03:16:35 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HkN3+N6v;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QDL9/zEL;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VD7ZG586Yz3vc0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 11:25:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VDB2B4MKzz3vYc
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 13:16:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HkN3+N6v;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QDL9/zEL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VD7Xd065Mz2ygY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 11:24:16 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1712625858; x=1744161858;
-  h=date:from:to:cc:subject:message-id;
-  bh=Q1dCxU5eyQZyYktsNU8AqeMbrpB24X0qUbUWBm9QiI4=;
-  b=HkN3+N6v9IDHZJY+JSf51kL2O6ppJ/lhKTEFugOGu18kJt5nDzL+Axgp
-   Wxw5OuRsu90rvo+Voq/5FczNe8rhOMRVgL6twE4oeRGxxfBI1gkHcmRot
-   gVovAB0WfOPofYtZ+QboCullFraKjxoN7NtK/1cJNik2LMF1GqhByqZtp
-   ztO3m7zCMZ/zE7wIMHfa7XzE3FN5k5gzZ9Myh9qcox0qwQEaeycxvDVZD
-   vZeeUaX6dw3/aw20oUbktJC0Us7oaw0jnUt0DMg0iabUpGkz8VxDFi9Oj
-   ja7Ey6cwM5IQLrdVUyEA06ibSeLipG3vJWr7QOqbqHDPiRSvAxpQUrhlT
-   A==;
-X-CSE-ConnectionGUID: Yq6E2fQbTz+ZGUgp2IXtKg==
-X-CSE-MsgGUID: K9q059iBT+q6umR8U9bqjA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11038"; a="25372135"
-X-IronPort-AV: E=Sophos;i="6.07,188,1708416000"; 
-   d="scan'208";a="25372135"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Apr 2024 18:24:11 -0700
-X-CSE-ConnectionGUID: PuNwsg6BSY+RLKHAM/ZpDA==
-X-CSE-MsgGUID: Gz/E+i1SRmaEspMOVtwJPQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,188,1708416000"; 
-   d="scan'208";a="20093674"
-Received: from lkp-server01.sh.intel.com (HELO e61807b1d151) ([10.239.97.150])
-  by fmviesa006.fm.intel.com with ESMTP; 08 Apr 2024 18:24:09 -0700
-Received: from kbuild by e61807b1d151 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1ru0DW-0005c2-15;
-	Tue, 09 Apr 2024 01:24:06 +0000
-Date: Tue, 09 Apr 2024 09:23:20 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 36ba64b4cbc6145103a0e3586ae7ef595bdef132
-Message-ID: <202404090919.qJBxqa9U-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDB1L0hcjz3c4M
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 13:15:49 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 439386Hr005531;
+	Tue, 9 Apr 2024 03:15:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=3hR7/b+Lcmm0h+bCz7ikScFKg0g90gZUtEoSlyOaUGQ=;
+ b=QDL9/zELLwJNTA0AlRX0XMVL5usITKhIqI7llCZqCy7N8HGs3rxRV/D0UwmrLLuGzbjM
+ yvDYC37VQftNtPjImysV3fWO2/YqdG7hjBeE5aEhfVcM856SZKQSJ0dPtP6pccEaVKIE
+ lq9/hxwzsYTliDoyEkFdEN58SBsV978NCM1absBAfDovsIrF7QDk+A5yGdY4wTpdceLj
+ 9V/9ZgafeMs8F4P7mVfMI641SZ22vli5o/+VNGzL9DhpltKtJMKgkC6XQ//3bYmlk6iV
+ p/gVyxDRbS/1KrgswfW5PQCbioAkZt1yzu7b1BpxwI4JcpfAM5W7/m2zTXafHmMwgnT/ tQ== 
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xcv1gg43b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Apr 2024 03:15:45 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 4390vlJA013550;
+	Tue, 9 Apr 2024 03:15:44 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3xbgqtc1ws-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Apr 2024 03:15:44 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4393Ff1F27656924
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 9 Apr 2024 03:15:43 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2E28E2004B;
+	Tue,  9 Apr 2024 03:15:41 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AC77F20040;
+	Tue,  9 Apr 2024 03:15:40 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  9 Apr 2024 03:15:40 +0000 (GMT)
+Received: from jarvis.ozlabs.ibm.com.com (unknown [9.36.30.101])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 481A76016D;
+	Tue,  9 Apr 2024 13:15:37 +1000 (AEST)
+From: Andrew Donnellan <ajd@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        linux-scsi@vger.kernel.org
+Subject: [PATCH 1/2] MAINTAINERS: Make cxlflash obsolete
+Date: Tue,  9 Apr 2024 13:10:26 +1000
+Message-ID: <20240409031027.41587-1-ajd@linux.ibm.com>
+X-Mailer: git-send-email 2.44.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: MjqIFWIQGX14MH6cBX1Ov2X8XbAeNIZ5
+X-Proofpoint-ORIG-GUID: MjqIFWIQGX14MH6cBX1Ov2X8XbAeNIZ5
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
+ definitions=2024-04-08_19,2024-04-05_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ mlxlogscore=703 priorityscore=1501 adultscore=0 lowpriorityscore=0
+ suspectscore=0 malwarescore=0 phishscore=0 bulkscore=0 clxscore=1011
+ mlxscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2404010000 definitions=main-2404090018
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,179 +92,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: fbarrat@linux.ibm.com, ukrishn@linux.ibm.com, manoj@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: 36ba64b4cbc6145103a0e3586ae7ef595bdef132  selftests/powerpc/papr-vpd: Fix missing variable initialization
+The cxlflash driver is no longer actively maintained and we intend to
+remove it in a future kernel release. Change its status to obsolete.
 
-elapsed time: 722m
+While we're here, Matthew Ochs no longer works at IBM and is no longer in
+a position to access cxlflash hardware, so remove him from the maintainers
+list.
 
-configs tested: 156
-configs skipped: 3
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+---
+ MAINTAINERS | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                             allnoconfig   gcc  
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allmodconfig   gcc  
-arc                               allnoconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                   randconfig-001-20240409   gcc  
-arc                   randconfig-002-20240409   gcc  
-arc                        vdk_hs38_defconfig   gcc  
-arm                              allmodconfig   gcc  
-arm                               allnoconfig   clang
-arm                              allyesconfig   gcc  
-arm                                 defconfig   clang
-arm                   randconfig-001-20240409   gcc  
-arm                   randconfig-002-20240409   clang
-arm                   randconfig-003-20240409   clang
-arm                   randconfig-004-20240409   gcc  
-arm                           sunxi_defconfig   gcc  
-arm                    vt8500_v6_v7_defconfig   gcc  
-arm64                            allmodconfig   clang
-arm64                             allnoconfig   gcc  
-arm64                            allyesconfig   clang
-arm64                               defconfig   gcc  
-arm64                 randconfig-001-20240409   gcc  
-arm64                 randconfig-002-20240409   gcc  
-arm64                 randconfig-003-20240409   clang
-arm64                 randconfig-004-20240409   clang
-csky                             allmodconfig   gcc  
-csky                              allnoconfig   gcc  
-csky                             allyesconfig   gcc  
-csky                                defconfig   gcc  
-csky                  randconfig-001-20240409   gcc  
-csky                  randconfig-002-20240409   gcc  
-hexagon                          allmodconfig   clang
-hexagon                           allnoconfig   clang
-hexagon                          allyesconfig   clang
-hexagon                             defconfig   clang
-hexagon               randconfig-001-20240409   clang
-hexagon               randconfig-002-20240409   clang
-i386                             allmodconfig   gcc  
-i386                              allnoconfig   gcc  
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-001-20240409   clang
-i386         buildonly-randconfig-002-20240409   clang
-i386         buildonly-randconfig-003-20240409   gcc  
-i386         buildonly-randconfig-004-20240409   clang
-i386         buildonly-randconfig-005-20240409   gcc  
-i386         buildonly-randconfig-006-20240409   gcc  
-i386                                defconfig   clang
-i386                  randconfig-001-20240409   clang
-i386                  randconfig-002-20240409   gcc  
-i386                  randconfig-003-20240409   clang
-i386                  randconfig-004-20240409   gcc  
-i386                  randconfig-005-20240409   gcc  
-i386                  randconfig-006-20240409   clang
-i386                  randconfig-011-20240409   gcc  
-i386                  randconfig-012-20240409   clang
-i386                  randconfig-013-20240409   clang
-i386                  randconfig-014-20240409   clang
-i386                  randconfig-015-20240409   gcc  
-i386                  randconfig-016-20240409   clang
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch             randconfig-001-20240409   gcc  
-loongarch             randconfig-002-20240409   gcc  
-m68k                             allmodconfig   gcc  
-m68k                              allnoconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                                defconfig   gcc  
-microblaze                       allmodconfig   gcc  
-microblaze                        allnoconfig   gcc  
-microblaze                       allyesconfig   gcc  
-microblaze                          defconfig   gcc  
-microblaze                      mmu_defconfig   gcc  
-mips                              allnoconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                       bmips_be_defconfig   gcc  
-mips                     cu1830-neo_defconfig   gcc  
-nios2                            allmodconfig   gcc  
-nios2                             allnoconfig   gcc  
-nios2                            allyesconfig   gcc  
-nios2                               defconfig   gcc  
-nios2                 randconfig-001-20240409   gcc  
-nios2                 randconfig-002-20240409   gcc  
-openrisc                          allnoconfig   gcc  
-openrisc                         allyesconfig   gcc  
-openrisc                            defconfig   gcc  
-openrisc                       virt_defconfig   gcc  
-parisc                           allmodconfig   gcc  
-parisc                            allnoconfig   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc                randconfig-001-20240409   gcc  
-parisc                randconfig-002-20240409   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                          allyesconfig   clang
-powerpc                  iss476-smp_defconfig   gcc  
-powerpc                         ps3_defconfig   gcc  
-powerpc               randconfig-001-20240409   clang
-powerpc               randconfig-002-20240409   gcc  
-powerpc               randconfig-003-20240409   clang
-powerpc                  storcenter_defconfig   gcc  
-powerpc64             randconfig-001-20240409   gcc  
-powerpc64             randconfig-002-20240409   clang
-powerpc64             randconfig-003-20240409   gcc  
-riscv                            allmodconfig   clang
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   clang
-riscv                               defconfig   clang
-riscv                 randconfig-001-20240409   clang
-riscv                 randconfig-002-20240409   gcc  
-s390                             allmodconfig   clang
-s390                              allnoconfig   clang
-s390                             allyesconfig   gcc  
-s390                                defconfig   clang
-s390                  randconfig-001-20240409   gcc  
-s390                  randconfig-002-20240409   gcc  
-sh                               allmodconfig   gcc  
-sh                                allnoconfig   gcc  
-sh                               allyesconfig   gcc  
-sh                                  defconfig   gcc  
-sh                            hp6xx_defconfig   gcc  
-sh                    randconfig-001-20240409   gcc  
-sh                    randconfig-002-20240409   gcc  
-sh                           se7705_defconfig   gcc  
-sh                           sh2007_defconfig   gcc  
-sparc                            allmodconfig   gcc  
-sparc                             allnoconfig   gcc  
-sparc                               defconfig   gcc  
-sparc                       sparc32_defconfig   gcc  
-sparc64                          allmodconfig   gcc  
-sparc64                          allyesconfig   gcc  
-sparc64                             defconfig   gcc  
-sparc64               randconfig-001-20240409   gcc  
-sparc64               randconfig-002-20240409   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   gcc  
-um                                  defconfig   clang
-um                             i386_defconfig   gcc  
-um                    randconfig-001-20240409   clang
-um                    randconfig-002-20240409   gcc  
-um                           x86_64_defconfig   clang
-x86_64                            allnoconfig   clang
-x86_64                           allyesconfig   clang
-x86_64                              defconfig   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-xtensa                            allnoconfig   gcc  
-xtensa                generic_kc705_defconfig   gcc  
-xtensa                randconfig-001-20240409   gcc  
-xtensa                randconfig-002-20240409   gcc  
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index aea47e04c3a5..34f605498873 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5780,10 +5780,9 @@ F:	include/uapi/misc/cxl.h
+ 
+ CXLFLASH (IBM Coherent Accelerator Processor Interface CAPI Flash) SCSI DRIVER
+ M:	Manoj N. Kumar <manoj@linux.ibm.com>
+-M:	Matthew R. Ochs <mrochs@linux.ibm.com>
+ M:	Uma Krishnan <ukrishn@linux.ibm.com>
+ L:	linux-scsi@vger.kernel.org
+-S:	Supported
++S:	Obsolete
+ F:	Documentation/arch/powerpc/cxlflash.rst
+ F:	drivers/scsi/cxlflash/
+ F:	include/uapi/scsi/cxlflash_ioctl.h
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.44.0
+
