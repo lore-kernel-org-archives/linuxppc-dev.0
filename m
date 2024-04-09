@@ -4,51 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 427D5C67861
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 09:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3215C67861
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 09:59:28 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=cRBK2iOa;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=yUJNjNeK;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=RudeqC4D;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VDL766Rmmz3dTv
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 19:21:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VDLz345Lyz3dXY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 19:59:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=cRBK2iOa;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=yUJNjNeK;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=RudeqC4D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.197; helo=relay5-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [217.70.183.197])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDL6G5XKTz3bX3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 19:20:35 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id A29971C0004;
-	Tue,  9 Apr 2024 09:20:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1712654430;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDLyF0dfvz3bv8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Apr 2024 19:58:44 +1000 (AEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1712656715;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=3ajs3JfsuDGDVdP991mgTubXeqv6k1ZmOZ7kp7bC5KA=;
-	b=cRBK2iOa2nNkSXPNfmtTgKyhK4xhE1T9Gm0evKyg9J7tjXbovmOHNZhrPQ/V3n0sk+M28N
-	zDxko6zLlDUO0An4fCB1JLix893FFlXC3hQSmHYLuyfUVS7jO6TH3gtxzmEmvndMInhTQV
-	rGpaqWa1j1WQAR5dxo9vo0EW5x6WH2iDigzncpxNeyVbo/jqhw6pobnNz0btocSnyQSnaH
-	iXpjUDh8SeIKcgluiirLyenfxMwoyzQBL9qrQjjltlERPTtcqFk1DMjbBqIkiKpTgslbET
-	dmwb+0IJo7R+B3zs+6byQpQWeKmmUZANmICVv2WDKmry+GCwu9KE/tAupoY2CA==
-Date: Tue, 9 Apr 2024 11:20:27 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH net-next] net: wan: fsl_qmc_hdlc: Convert to platform
- remove callback returning void
-Message-ID: <20240409112027.15c17572@bootlin.com>
-In-Reply-To: <20240409091203.39062-2-u.kleine-koenig@pengutronix.de>
-References: <20240409091203.39062-2-u.kleine-koenig@pengutronix.de>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.2.0 (GTK 3.24.41; x86_64-redhat-linux-gnu)
+	bh=qKspgdo2jemqpn3T00b+Xa65C9dMoGtY4Dq7FXO0Tyg=;
+	b=yUJNjNeKDiThpVYIfc/hToqHg6dkX3L/HoTYvzbPfhlp1m8uKGs2XlnA7L8y5fI5N4cOFQ
+	dQ32nytZ/3UjhNV3dbTOO3Jfj16arUKQd3ugTeQbmVrxaxteUt94atCZh9WNssL7HPPxr3
+	pCn1ZaCza7yC716aaOz0E9ElJsPiAsyL6aSGwchk4R4+heV6rolxLRbt3rqpDlNbHV0Zsg
+	LM1od7FRSc1KMmptgN9TzUpAkmHkOtD8w6Z/GiQIOQr0nIuvqpNqMb/4UrsnnroGwkCm8s
+	MZ283Al2wq+ZdOXvpPy3OWQoVsoJT3sajNpnJ3c4lnq/exiGmnSga1uqUzT3tA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1712656715;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qKspgdo2jemqpn3T00b+Xa65C9dMoGtY4Dq7FXO0Tyg=;
+	b=RudeqC4DlrksEdfkH3Xkz8ONgur7Wdpdnh1N4nAB5MWJHlWx6HGF7wJP3MPuxDdcYmBaf0
+	oxZPsIOLB3/qZhBw==
+To: Bitao Hu <yaoma@linux.alibaba.com>, dianders@chromium.org,
+ liusong@linux.alibaba.com, akpm@linux-foundation.org, pmladek@suse.com,
+ kernelfans@gmail.com, deller@gmx.de, npiggin@gmail.com,
+ tsbogend@alpha.franken.de, James.Bottomley@HansenPartnership.com,
+ jan.kiszka@siemens.com
+Subject: Re: [PATCHv12 1/4] genirq: Provide a snapshot mechanism for
+ interrupt statistics
+In-Reply-To: <20240306125208.71803-2-yaoma@linux.alibaba.com>
+References: <20240306125208.71803-1-yaoma@linux.alibaba.com>
+ <20240306125208.71803-2-yaoma@linux.alibaba.com>
+Date: Tue, 09 Apr 2024 11:58:34 +0200
+Message-ID: <87frvu7t85.ffs@tglx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: herve.codina@bootlin.com
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,45 +69,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, netdev@vger.kernel.org, Eric Dumazet <edumazet@google.com>, kernel@pengutronix.de, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: yaoma@linux.alibaba.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue,  9 Apr 2024 11:12:04 +0200
-Uwe Kleine-König <u.kleine-koenig@pengutronix.de> wrote:
+On Wed, Mar 06 2024 at 20:52, Bitao Hu wrote:
+> The soft lockup detector lacks a mechanism to identify interrupt storms
+> as root cause of a lockup. To enable this the detector needs a
+> mechanism to snapshot the interrupt count statistics on a CPU when the
+> detector observes a potential lockup scenario and compare that against
+> the interrupt count when it warns about the lockup later on. The number
+> of interrupts in that period give a hint whether the lockup might be
+> caused by an interrupt storm.
+>
+> Instead of having extra storage in the lockup detector and accessing
+> the internals of the interrupt descriptor directly, convert the per CPU
+> irq_desc::kstat_irq member to a data structure which contains the
+> counter plus a snapshot member and provide interfaces to take a
+> snapshot of all interrupts on the current CPU and to retrieve the delta
+> of a specific interrupt later on.
+>
+> Originally-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Bitao Hu <yaoma@linux.alibaba.com>
+> Reviewed-by: Liu Song <liusong@linux.alibaba.com>
+> Reviewed-by: Douglas Anderson <dianders@chromium.org>
 
-> The .remove() callback for a platform driver returns an int which makes
-> many driver authors wrongly assume it's possible to do error handling by
-> returning an error code. However the value returned is ignored (apart
-> from emitting a warning) and this typically results in resource leaks.
-> 
-> To improve here there is a quest to make the remove callback return
-> void. In the first step of this quest all drivers are converted to
-> .remove_new(), which already returns void. Eventually after all drivers
-> are converted, .remove_new() will be renamed to .remove().
-> 
-> Trivially convert this driver from always returning zero in the remove
-> callback to the void returning variant.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
-> Hello,
-> 
-> the drivers below of drivers/net were already converted to struct
-> platform_driver::remove_new during the v6.9-rc1 development cycle. This
-> driver was added for v6.9-rc1 and so missed during my conversion.
-> 
-> There are still more drivers to be converted, so there is from my side
-> no need to get this into v6.9, but the next merge window would be nice.
-> 
-> Best regards
-> Uwe
-> 
->  drivers/net/wan/fsl_qmc_hdlc.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
+This does not apply anymore.
 
-Acked-by: Herve Codina <herve.codina@bootlin.com>
+Also can you please split this apart to convert kstat_irqs to a struct
+with just the count in it and then add the snapshot mechanics on top.
 
-Best regards,
-Hervé
+Thanks,
+
+        tglx
+
