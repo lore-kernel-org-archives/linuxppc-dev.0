@@ -4,36 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7AB2CD1296
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 07:33:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F3A6CD11C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 08:08:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VDvhb42ygz3dWP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 17:33:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ghiti.fr (client-ip=2001:4b98:dc4:8::240; helo=mslow1.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=lists.ozlabs.org)
-Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [IPv6:2001:4b98:dc4:8::240])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VDwSN54VMz3vX7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 18:08:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDvh456yBz3bv3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2024 17:33:24 +1000 (AEST)
-Received: from relay2-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::222])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id E62A9C0FCA
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2024 07:33:16 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 45A9B40006;
-	Wed, 10 Apr 2024 07:32:51 +0000 (UTC)
-Message-ID: <8fe1a53f-f031-4423-97e1-28d93d0cd59e@ghiti.fr>
-Date: Wed, 10 Apr 2024 09:32:51 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDwRs5Yx8z3bWH
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2024 18:07:49 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.19.163.44])
+	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4VDwQn2tqGz1GGhl;
+	Wed, 10 Apr 2024 16:06:57 +0800 (CST)
+Received: from dggpemm100001.china.huawei.com (unknown [7.185.36.93])
+	by mail.maildlp.com (Postfix) with ESMTPS id 5D373140154;
+	Wed, 10 Apr 2024 16:07:43 +0800 (CST)
+Received: from [10.174.177.243] (10.174.177.243) by
+ dggpemm100001.china.huawei.com (7.185.36.93) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.35; Wed, 10 Apr 2024 16:07:42 +0800
+Message-ID: <ac978061-ce1a-40a4-8b0a-61883b42bea7@huawei.com>
+Date: Wed, 10 Apr 2024 16:07:41 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 5/7] riscv: mm: accelerate pagefault when badaccess
 Content-Language: en-US
-To: Kefeng Wang <wangkefeng.wang@huawei.com>, akpm@linux-foundation.org
+To: Alexandre Ghiti <alex@ghiti.fr>, <akpm@linux-foundation.org>
 References: <20240403083805.1818160-1-wangkefeng.wang@huawei.com>
  <20240403083805.1818160-6-wangkefeng.wang@huawei.com>
-From: Alexandre Ghiti <alex@ghiti.fr>
-In-Reply-To: <20240403083805.1818160-6-wangkefeng.wang@huawei.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-GND-Sasl: alex@ghiti.fr
+ <8fe1a53f-f031-4423-97e1-28d93d0cd59e@ghiti.fr>
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+In-Reply-To: <8fe1a53f-f031-4423-97e1-28d93d0cd59e@ghiti.fr>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.174.177.243]
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+ dggpemm100001.china.huawei.com (7.185.36.93)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,44 +57,71 @@ Cc: x86@kernel.org, linux-s390@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Kefeng,
-
-On 03/04/2024 10:38, Kefeng Wang wrote:
-> The access_error() of vma already checked under per-VMA lock, if it
-> is a bad access, directly handle error, no need to retry with mmap_lock
-> again. Since the page faut is handled under per-VMA lock, count it as
-> a vma lock event with VMA_LOCK_SUCCESS.
->
-> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
-> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
-> ---
->   arch/riscv/mm/fault.c | 5 ++++-
->   1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/riscv/mm/fault.c b/arch/riscv/mm/fault.c
-> index 3ba1d4dde5dd..b3fcf7d67efb 100644
-> --- a/arch/riscv/mm/fault.c
-> +++ b/arch/riscv/mm/fault.c
-> @@ -292,7 +292,10 @@ void handle_page_fault(struct pt_regs *regs)
->   
->   	if (unlikely(access_error(cause, vma))) {
->   		vma_end_read(vma);
-> -		goto lock_mmap;
-> +		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
-> +		tsk->thread.bad_cause = SEGV_ACCERR;
 
 
-I think we should use the cause variable here instead of SEGV_ACCERR, as 
-bad_cause is a riscv internal status which describes the real fault that 
-happened.
+On 2024/4/10 15:32, Alexandre Ghiti wrote:
+> Hi Kefeng,
+> 
+> On 03/04/2024 10:38, Kefeng Wang wrote:
+>> The access_error() of vma already checked under per-VMA lock, if it
+>> is a bad access, directly handle error, no need to retry with mmap_lock
+>> again. Since the page faut is handled under per-VMA lock, count it as
+>> a vma lock event with VMA_LOCK_SUCCESS.
+>>
+>> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
+>> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+>> ---
+>>   arch/riscv/mm/fault.c | 5 ++++-
+>>   1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/riscv/mm/fault.c b/arch/riscv/mm/fault.c
+>> index 3ba1d4dde5dd..b3fcf7d67efb 100644
+>> --- a/arch/riscv/mm/fault.c
+>> +++ b/arch/riscv/mm/fault.c
+>> @@ -292,7 +292,10 @@ void handle_page_fault(struct pt_regs *regs)
+>>       if (unlikely(access_error(cause, vma))) {
+>>           vma_end_read(vma);
+>> -        goto lock_mmap;
+>> +        count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
+>> +        tsk->thread.bad_cause = SEGV_ACCERR;
+> 
+> 
+> I think we should use the cause variable here instead of SEGV_ACCERR, as 
+> bad_cause is a riscv internal status which describes the real fault that 
+> happened.
 
-Thanks,
+Oh, I see, it is exception causes on riscv, so it should be
 
-Alex
+diff --git a/arch/riscv/mm/fault.c b/arch/riscv/mm/fault.c
+index b3fcf7d67efb..5224f3733802 100644
+--- a/arch/riscv/mm/fault.c
++++ b/arch/riscv/mm/fault.c
+@@ -293,8 +293,8 @@ void handle_page_fault(struct pt_regs *regs)
+         if (unlikely(access_error(cause, vma))) {
+                 vma_end_read(vma);
+                 count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
+-               tsk->thread.bad_cause = SEGV_ACCERR;
+-               bad_area_nosemaphore(regs, code, addr);
++               tsk->thread.bad_cause = cause;
++               bad_area_nosemaphore(regs, SEGV_ACCERR, addr);
+                 return;
+         }
+
+Hi Alex, could you help to check it?
+
+Hi Andrew, please help to squash it after Alex ack it.
+
+Thanks both.
 
 
-> +		bad_area_nosemaphore(regs, code, addr);
-> +		return;
->   	}
->   
->   	fault = handle_mm_fault(vma, addr, flags | FAULT_FLAG_VMA_LOCK, regs);
+> 
+> Thanks,
+> 
+> Alex
+> 
+> 
+>> +        bad_area_nosemaphore(regs, code, addr);
+>> +        return;
+>>       }
+>>       fault = handle_mm_fault(vma, addr, flags | FAULT_FLAG_VMA_LOCK, 
+>> regs);
