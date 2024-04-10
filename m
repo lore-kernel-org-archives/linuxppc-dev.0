@@ -4,91 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C38FCD11C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 15:12:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90F60CD128A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 15:13:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aYAvunXR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tlnG1Ifk;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VF5sj6HCfz3vZM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2024 01:12:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VF5tX1f5Xz3vdT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2024 01:13:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aYAvunXR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tlnG1Ifk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VF5qJ10t1z3cVG
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2024 01:10:19 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 43AEuYeF024033;
-	Wed, 10 Apr 2024 15:09:56 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VF5qd4jL9z3dXP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2024 01:10:37 +1000 (AEST)
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 43AE2SgW003190;
+	Wed, 10 Apr 2024 15:09:57 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=iVwvZSHTk0sajjmtt3NjqRVWU0hXUazHKS+Ps5brC9w=;
- b=aYAvunXRrqmSB8vYblJX/Z6sE60et8FwTcMCcWU6p5cPyrFlpv4RLnI7pF5G79RrlD8G
- 5yzsNiVS53rP78740ux7Si0DfMkamg42z/J3M6eakyH9ywoGwK/q8lSCtfFcn8NEAlK3
- KJnRfZF+uFxo90wlo7K4tNYHQajbMEVCrTmutQz5gnUZYzBV///luZR07xMRyzJkatR/
- wzACSQQ6upBxI4JQD6sT2Qd7Fr+sQaiShhthdyftJiovhacXKv0IY9aa40BTJyhozBkg
- E/Q66RYMflxrssHk3nkFfTxbhMI+gAMKDQ/VMJcQh/ebbWWWX5up4qTXCDX55VA8pbOF GA== 
+ bh=goIiqaO1e1ZadVL5tmtv4UVpZpbODSAt3kyKMNXwyEY=;
+ b=tlnG1IfkgPpDczlaelVaestqGHLNMYNirD81o9vWXW/y6P+tcyYyJkA5Y/RJfm9vkS8M
+ lZEpxUxjscOqgysuqg4M9TNYSIHRjZQDSlbi71bjsTYxKtd79YeUSwVH03h8OBH59sCd
+ a0z/KXmMU37V2A0bj4TQ8k1PMnCrG1Qh8XaT40TM8UVjyfO9TNdY/NKpyJgD99hVXnhA
+ ugKVdhpWmpv/D8M1MaAOKQTdZrDi8Uwbq7BFhMHzXDqkyXLA6LbsxiAEtqszXfcEUcZr
+ QAWyINq5TA5rHE4S3I6IblOR+hiuf5bJzOgrh1irV8olGLcLOga2u7QC2fJRSIl2/iiV SA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xdrh70qkb-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xdv63g6qf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 10 Apr 2024 15:09:56 +0000
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43AF9tEP012896;
-	Wed, 10 Apr 2024 15:09:55 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xdrh70qk4-1
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43AF9ueq023382;
+	Wed, 10 Apr 2024 15:09:56 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xdv63g6qa-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 10 Apr 2024 15:09:55 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 43AD2AlN013544;
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 43ACB0Br016965;
 	Wed, 10 Apr 2024 15:09:55 GMT
 Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3xbgqtnpn9-1
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3xbke2n0jk-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 10 Apr 2024 15:09:54 +0000
 Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 43AF9nBK39715114
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 43AF9ntp47776096
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Wed, 10 Apr 2024 15:09:51 GMT
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2B9962004E;
+	by IMSVA (Postfix) with ESMTP id 2753C2004D;
 	Wed, 10 Apr 2024 15:09:49 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 199522004B;
+	by IMSVA (Postfix) with ESMTP id 135D320040;
 	Wed, 10 Apr 2024 15:09:49 +0000 (GMT)
 Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
 	Wed, 10 Apr 2024 15:09:49 +0000 (GMT)
 Received: by tuxmaker.boeblingen.de.ibm.com (Postfix, from userid 55669)
-	id D31C7E0A03; Wed, 10 Apr 2024 17:09:48 +0200 (CEST)
+	id CBE8FE0628; Wed, 10 Apr 2024 17:09:48 +0200 (CEST)
 From: Alexander Gordeev <agordeev@linux.ibm.com>
 To: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
         Juri Lelli <juri.lelli@redhat.com>,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v2 RESEND 4/5] s390/irq,nmi: include <asm/vtime.h> header directly
-Date: Wed, 10 Apr 2024 17:09:47 +0200
-Message-Id: <3fb696637c0eb7e9d6ffd6cbf9e647d7c5986b3d.1712760275.git.agordeev@linux.ibm.com>
+Subject: [PATCH v2 RESEND 1/5] sched/vtime: remove confusing arch_vtime_task_switch() declaration
+Date: Wed, 10 Apr 2024 17:09:44 +0200
+Message-Id: <783d7c611864f82b0fb9edf01890b9396f3a549a.1712760275.git.agordeev@linux.ibm.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <cover.1712760275.git.agordeev@linux.ibm.com>
 References: <cover.1712760275.git.agordeev@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 6akCn5HRYeQ6TNtTN8-3dk_RAuUBQ7np
-X-Proofpoint-GUID: prDHpVM-oHQMna2nCY1cEOrp4KLyfFFc
+X-Proofpoint-ORIG-GUID: -VpHnQUY1cWPNEXUu0pXzC6Op3cby8Ep
+X-Proofpoint-GUID: qUKdOFIbZu7Jrmu--JI7KXOlVpdGr0OS
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
  definitions=2024-04-10_04,2024-04-09_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- adultscore=0 mlxlogscore=561 suspectscore=0 phishscore=0 clxscore=1011
- malwarescore=0 bulkscore=0 impostorscore=0 priorityscore=1501 spamscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ mlxlogscore=849 priorityscore=1501 lowpriorityscore=0 impostorscore=0
+ bulkscore=0 clxscore=1015 suspectscore=0 adultscore=0 phishscore=0
+ spamscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2404010000 definitions=main-2404100109
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,43 +105,30 @@ Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Vasily Gorbik <gor@l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-update_timer_sys() and update_timer_mcck() are inlines used for
-CPU time accounting from the interrupt and machine-check handlers.
-These routines are specific to s390 architecture, but included
-via <linux/vtime.h> header implicitly. Avoid the extra loop and
-include <asm/vtime.h> header directly.
+Callback arch_vtime_task_switch() is only defined when
+CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is selected. Yet, the
+function prototype forward declaration is present for
+CONFIG_VIRT_CPU_ACCOUNTING_GEN variant. Remove it.
 
-Acked-by: Heiko Carstens <hca@linux.ibm.com>
+Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
 ---
- arch/s390/kernel/irq.c | 1 +
- arch/s390/kernel/nmi.c | 1 +
- 2 files changed, 2 insertions(+)
+ include/linux/vtime.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/s390/kernel/irq.c b/arch/s390/kernel/irq.c
-index 6f71b0ce1068..259496fe0ef9 100644
---- a/arch/s390/kernel/irq.c
-+++ b/arch/s390/kernel/irq.c
-@@ -29,6 +29,7 @@
- #include <asm/hw_irq.h>
- #include <asm/stacktrace.h>
- #include <asm/softirq_stack.h>
-+#include <asm/vtime.h>
- #include "entry.h"
+diff --git a/include/linux/vtime.h b/include/linux/vtime.h
+index 3684487d01e1..593466ceebed 100644
+--- a/include/linux/vtime.h
++++ b/include/linux/vtime.h
+@@ -18,7 +18,6 @@ extern void vtime_account_idle(struct task_struct *tsk);
+ #endif /* !CONFIG_VIRT_CPU_ACCOUNTING */
  
- DEFINE_PER_CPU_SHARED_ALIGNED(struct irq_stat, irq_stat);
-diff --git a/arch/s390/kernel/nmi.c b/arch/s390/kernel/nmi.c
-index c77382a67325..230d010bac9b 100644
---- a/arch/s390/kernel/nmi.c
-+++ b/arch/s390/kernel/nmi.c
-@@ -31,6 +31,7 @@
- #include <asm/crw.h>
- #include <asm/asm-offsets.h>
- #include <asm/pai.h>
-+#include <asm/vtime.h>
- 
- struct mcck_struct {
- 	unsigned int kill_task : 1;
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
+-extern void arch_vtime_task_switch(struct task_struct *tsk);
+ extern void vtime_user_enter(struct task_struct *tsk);
+ extern void vtime_user_exit(struct task_struct *tsk);
+ extern void vtime_guest_enter(struct task_struct *tsk);
 -- 
 2.40.1
 
