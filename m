@@ -4,45 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB5DBC67861
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Apr 2024 17:29:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71AE6CD11C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 11:08:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VDXxm4BMPz3vct
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 03:29:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=a.fatoum@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VF0Sf5WJlz3vcC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Apr 2024 21:08:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=sre@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDXxH4SJKz3d2c
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2024 03:28:33 +1000 (AEST)
-Received: from ptz.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::77] helo=[127.0.0.1])
-	by metis.whiteo.stw.pengutronix.de with esmtp (Exim 4.92)
-	(envelope-from <a.fatoum@pengutronix.de>)
-	id 1ruFGD-0001dT-16; Tue, 09 Apr 2024 19:27:53 +0200
-Message-ID: <4c6164e5-bcfd-4172-a76e-db989f729a8a@pengutronix.de>
-Date: Tue, 9 Apr 2024 19:27:44 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VDwKq683Yz3bX3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Apr 2024 18:02:39 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 019B5CE2645;
+	Wed, 10 Apr 2024 08:02:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0EDFDC43390;
+	Wed, 10 Apr 2024 08:02:36 +0000 (UTC)
+Received: by mercury (Postfix, from userid 1000)
+	id 324081063262; Wed, 10 Apr 2024 10:02:32 +0200 (CEST)
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+To: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>
+In-Reply-To: <20240403080702.3509288-1-arnd@kernel.org>
+References: <20240403080702.3509288-1-arnd@kernel.org>
+Subject: Re: (subset) [PATCH 00/34] address all -Wunused-const warnings
+Message-Id: <171273615213.1094883.18382201508159771859.b4-ty@collabora.com>
+Date: Wed, 10 Apr 2024 10:02:32 +0200
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [EXT] [PATCH v8 3/6] KEYS: trusted: Introduce NXP DCP-backed
- trusted keys
-Content-Language: en-US
-To: Kshitiz Varshney <kshitiz.varshney@nxp.com>,
- David Gstir <david@sigma-star.at>, Mimi Zohar <zohar@linux.ibm.com>,
- James Bottomley <jejb@linux.ibm.com>, Jarkko Sakkinen <jarkko@kernel.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>
-References: <20240403072131.54935-1-david@sigma-star.at>
- <20240403072131.54935-4-david@sigma-star.at>
- <DB6PR04MB31904A8EB8B481A530C90CBB8F072@DB6PR04MB3190.eurprd04.prod.outlook.com>
-From: Ahmad Fatoum <a.fatoum@pengutronix.de>
-In-Reply-To: <DB6PR04MB31904A8EB8B481A530C90CBB8F072@DB6PR04MB3190.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:900:1d::77
-X-SA-Exim-Mail-From: a.fatoum@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+X-Mailer: b4 0.13.0
+X-Mailman-Approved-At: Wed, 10 Apr 2024 21:08:28 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,31 +46,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Gaurav Jain <gaurav.jain@nxp.com>, Catalin Marinas <catalin.marinas@arm.com>, David Howells <dhowells@redhat.com>, "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Paul Moore <paul@paul-moore.com>, Jonathan Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, James Morris <jmorris@namei.org>, dl-linux-imx <linux-imx@nxp.com>, "Serge E. Hallyn" <serge@hallyn.com>, "Paul E. McKenney" <paulmck@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Pankaj Gupta <pankaj.gupta@nxp.com>, sigma star Kernel Team <upstream+dcp@sigma-star.at>, "Steven Rostedt \(Google\)" <rostedt@goodmis.org>, David Oberhollenzer <david.oberhollenzer@sigma-star.at>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawnguo@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kern
- el@vger.kernel.org>, Li Yang <leoyang.li@nxp.com>, "linux-security-module@vger.kernel.org" <linux-security-module@vger.kernel.org>, "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Tejun Heo <tj@kernel.org>, "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Varun Sethi <V.Sethi@nxp.com>
+Cc: Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rafael@kernel.org>, dri-devel@lists.freedesktop.org, Benjamin Tissoires <benjamin.tissoires@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Christoph Hellwig <hch@lst.de>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-sound@vger.kernel.org, Ian Abbott <abbotti@mev.co.uk>, linux-omap@vger.kernel.org, Trond Myklebust <trond.myklebust@hammerspace.com>, Alex Elder <elder@kernel.org>, Tero Kristo <kristo@kernel.org>, Xiang Chen <chenxiang66@hisilicon.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-spi@vger.kernel.org, H Hartley Sweeten <hsweeten@visionengravers.com>, Iyappan Subramanian <iyappan@os.amperecomputing.com>, linux-crypto@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-trace-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, Alexandre Be
+ lloni <alexandre.belloni@bootlin.com>, Markuss Broks <markuss.broks@gmail.com>, Vaibhav Hiremath <hvaibhav.linux@gmail.com>, linux-i2c@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Corey Minyard <minyard@acm.org>, Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, iommu@lists.linux.dev, Yisen Zhuang <yisen.zhuang@huawei.com>, Len Brown <lenb@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>, linux-kbuild@vger.kernel.org, linux-arm-msm@vger.kernel.org, greybus-dev@lists.linaro.org, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Neil Armstrong <neil.armstrong@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Jarkko Sakkinen <jarkko@kernel.org>, Anna Schumaker <anna@kernel.org>, linux-integrity@vger.kernel.org, alsa-devel@alsa-project.org, Jonathan Cameron <jic23@kernel.org>, linux-efi@vger.kernel.org, linux-iio@vger.kernel.org, linux-fpga
+ @vger.kernel.org, linux-fbdev@vger.kernel.org, kasan-dev@googlegroups.com, Jiri Slaby <jirislaby@kernel.org>, linux-rtc@vger.kernel.org, Stanislaw Gruszka <stf_xl@wp.pl>, Masahiro Yamada <masahiroy@kernel.org>, linux-staging@lists.linux.dev, linux-input@vger.kernel.org, Jacky Huang <ychuang3@nuvoton.com>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Jiri Kosina <jikos@kernel.org>, Robin Murphy <robin.murphy@arm.com>, Steven Rostedt <rostedt@goodmis.org>, Nathan Chancellor <nathan@kernel.org>, Mark Brown <broonie@kernel.org>, Moritz Fischer <mdf@kernel.org>, openipmi-developer@lists.sourceforge.net, linux-nfs@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, Peter Rosin <peda@axentia.se>, linux-stm32@st-md-mailman.stormreply.com, Tony Lindgren <tony@atomide.com>, Liviu Dudau <liviu.dudau@arm.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, linux-ide@vger.kerne
+ l.org, Peter Huewe <peterhuewe@gmx.de>, Ard Biesheuvel <ardb@kernel.org>, linux-leds@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org, Vinod Koul <vkoul@kernel.org>, linux-serial@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Masami Hiramatsu <mhiramat@kernel.org>, Kalle Valo <kvalo@kernel.org>, John Allen <john.allen@amd.com>, netdev@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>, Takashi Iwai <tiwai@suse.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Damien Le Moal <dlemoal@kernel.org>, dmaengine@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Kshitiz,
 
-On 09.04.24 12:54, Kshitiz Varshney wrote:
-> Hi David,
->> +       b->fmt_version = DCP_BLOB_VERSION;
->> +       get_random_bytes(b->nonce, AES_KEYSIZE_128);
->> +       get_random_bytes(b->blob_key, AES_KEYSIZE_128);
+On Wed, 03 Apr 2024 10:06:18 +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
-> We can use HWRNG instead of using kernel RNG. Please refer drivers/char/hw_random/imx-rngc.c 
+> Compilers traditionally warn for unused 'static' variables, but not
+> if they are constant. The reason here is a custom for C++ programmers
+> to define named constants as 'static const' variables in header files
+> instead of using macros or enums.
+> 
+> [...]
 
-imx-rngc can be enabled and used to seed the kernel entropy pool. Adding
-direct calls into imx-rngc here only introduces duplicated code at no extra
-benefit.
+Applied, thanks!
 
-Cheers,
-Ahmad
+[09/34] power: rt9455: hide unused rt9455_boost_voltage_values
+        commit: 452d8950db3e839aba1bb13bc5378f4bac11fa04
 
+Best regards,
 -- 
-Pengutronix e.K.                           |                             |
-Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
-31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Sebastian Reichel <sebastian.reichel@collabora.com>
 
