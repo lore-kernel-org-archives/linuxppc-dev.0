@@ -4,88 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7906ACD1292
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2024 07:32:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDADACD128A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2024 07:42:32 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=fAFRq2a4;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=DzSFGGOr;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=J6PF6lua;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VFWch0fLHz3vbt
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2024 17:32:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VFWr73Nr8z3vcJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2024 17:42:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=fAFRq2a4;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=DzSFGGOr;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=J6PF6lua;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.156; helo=wfhigh5-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from wfhigh5-smtp.messagingengine.com (wfhigh5-smtp.messagingengine.com [64.147.123.156])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.98; helo=out30-98.freemail.mail.aliyun.com; envelope-from=yaoma@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-98.freemail.mail.aliyun.com (out30-98.freemail.mail.aliyun.com [115.124.30.98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VFWbr6nSkz3cxn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2024 17:31:52 +1000 (AEST)
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-	by mailfhigh.west.internal (Postfix) with ESMTP id 81E2218000CB;
-	Thu, 11 Apr 2024 03:31:48 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute5.internal (MEProxy); Thu, 11 Apr 2024 03:31:49 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-type:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:subject
-	:subject:to:to; s=fm2; t=1712820708; x=1712907108; bh=ss9obh18Sk
-	iQHEXzh7qcLFdvdlxpa80B0Z7MJyyJWOs=; b=fAFRq2a4RR5m0uoGjxvbSDZhhg
-	XBLt22beIqBHO1PhCVLZIYorAfbGnpIs6i0KjnrNMag6CtHF8mAtIX4+g4JkM/y4
-	oNakw3qvrAtMITJTRe3dP5XCRbSlUNRMtgb+FJogTSdTceTcdRzappHrax+eWmGC
-	C48KZTiW2+745Tpmz56zPJgFu5sXmnDOXQgOHhBxECqtppJaW42Os3TNEDRkpPfI
-	7xKy28dP14Q+rdv1IglqoN1MM2Wo71oJ88dpxu76wssTF5yL3dssA5ZNSuq2aEsa
-	sQ7EBo/MLbjI9e+DTEeltLlDImftLLOUzlWPomQgt5r5GI+C7bz29lbepBoQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-	fm2; t=1712820708; x=1712907108; bh=ss9obh18SkiQHEXzh7qcLFdvdlxp
-	a80B0Z7MJyyJWOs=; b=DzSFGGOr+zqR4sfSmeOxAZvA6tvMP0LGFanC2+BgYdJy
-	+4hbOwbt0daWkKElaJ7hw1qTgNt7659JrHfKx7+c2NRv2nXqcVlsOuvhc37YXOZ6
-	/5MKG6iTFCQ6aufnWu+0iv1mQHtdHJ4K9QX9ZNac5sLfv829dYcU7OrtBhvzAPeJ
-	qvI5fpyEZjo1rJqt0In+B4EMVZTz3BIN6xIPeqBy76lVWIdHpPj7mI1hWq7dyIWT
-	CnWqJQpCHMCE2NVdUfy2AgXYjJNlhFvPsLF/BoiRix4BR68kBN/e6viA7DoExAkP
-	1lsK1ob4cyEjdsraiMT0hwoBXzOe78DNkW/8wTm9dg==
-X-ME-Sender: <xms:45EXZr7T_OnGStrr7SKzpEUpju9NZAoJ-lpF9Idxf_AAZawFa25PqQ>
-    <xme:45EXZg74AAZ239bjRLX7EeRcHaT8wGi_jFHosNYQYKIaCYvcpDRxLFrBw8T1Wh8fR
-    jo4RGsgbbTYIfp5aDQ>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvledrudehjedguddujecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
-    necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
-    enucfjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdet
-    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
-    htthgvrhhnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedt
-    keetffenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
-    grrhhnugesrghrnhgusgdruggv
-X-ME-Proxy: <xmx:45EXZieKjjVog6Wf67CQD8NJtTers1M6KFeWe75e-UlBkt2QP7uJXg>
-    <xmx:45EXZsJIp1DUMatuZM3plg1HZpaO63G81PNWgtOVl7mQ4q3U6QDMgA>
-    <xmx:45EXZvIKtC1NGjybHKKb-88n2S8h7w1gUs0XzOcd8JC5HH3wCWVBpA>
-    <xmx:45EXZlyxfKvoW4q6bfCKoSeKRYfJBEypsh0ZQzt4uZT200LeFEQ3Rw>
-    <xmx:45EXZuaOX9x1nVPc-UnZtz-zaIuHLseO3kmjE2oKiQEaEOt4QcV-JewM>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id 5E761B60092; Thu, 11 Apr 2024 03:31:47 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.11.0-alpha0-379-gabd37849b7-fm-20240408.001-gabd37849
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VFWqK0xbMz3dX4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2024 17:41:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1712821304; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=1Yk1v6VvPiEnbDOY+PB+zFpQw+u5pkfdB+PFPeSVsXk=;
+	b=J6PF6lua0lHVGY9xbtTxn/VuQWPGmILotId2A2DwIzEd4MQG8CNr3q8FOnEQimwcJhtQ/WFzuvhJsW/xCIM46hJefxT5Ke7vsVvx45bxr+me3py6MHjf43R3mzAkZK0izFcczCuKHLlCwCXUnxCVMOo/e55jXk/GMu8hXzG+bN4=
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R241e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046056;MF=yaoma@linux.alibaba.com;NM=1;PH=DS;RN=16;SR=0;TI=SMTPD_---0W4KbQ8p_1712821299;
+Received: from localhost.localdomain(mailfrom:yaoma@linux.alibaba.com fp:SMTPD_---0W4KbQ8p_1712821299)
+          by smtp.aliyun-inc.com;
+          Thu, 11 Apr 2024 15:41:42 +0800
+From: Bitao Hu <yaoma@linux.alibaba.com>
+To: dianders@chromium.org,
+	tglx@linutronix.de,
+	liusong@linux.alibaba.com,
+	akpm@linux-foundation.org,
+	pmladek@suse.com,
+	kernelfans@gmail.com,
+	deller@gmx.de,
+	npiggin@gmail.com,
+	tsbogend@alpha.franken.de,
+	James.Bottomley@HansenPartnership.com,
+	jan.kiszka@siemens.com
+Subject: [PATCHv13 1/5] genirq: Convert kstat_irqs to a struct
+Date: Thu, 11 Apr 2024 15:41:30 +0800
+Message-Id: <20240411074134.30922-2-yaoma@linux.alibaba.com>
+X-Mailer: git-send-email 2.37.1 (Apple Git-137.1)
+In-Reply-To: <20240411074134.30922-1-yaoma@linux.alibaba.com>
+References: <20240411074134.30922-1-yaoma@linux.alibaba.com>
 MIME-Version: 1.0
-Message-Id: <c0e170f7-5498-40ed-ba35-2ac392c2dd2a@app.fastmail.com>
-In-Reply-To:  <CAMj1kXGW5XQxXrYaPhT6sCjH7s0EwqzNjWies3b8UWnUBW5Ngw@mail.gmail.com>
-References: <20240329072441.591471-1-samuel.holland@sifive.com>
- <20240329072441.591471-14-samuel.holland@sifive.com>
- <87wmp4oo3y.fsf@linaro.org> <75a37a4b-f516-40a3-b6b5-4aa1636f9b60@sifive.com>
- <87wmp4ogoe.fsf@linaro.org> <4c8e63d6-ba33-47fe-8150-59eba8babf2d@sifive.com>
- <CAMj1kXGW5XQxXrYaPhT6sCjH7s0EwqzNjWies3b8UWnUBW5Ngw@mail.gmail.com>
-Date: Thu, 11 Apr 2024 09:31:27 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Ard Biesheuvel" <ardb@kernel.org>,
- "Samuel Holland" <samuel.holland@sifive.com>
-Subject: Re: [PATCH v4 13/15] drm/amd/display: Use ARCH_HAS_KERNEL_FPU_SUPPORT
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,48 +62,213 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, Thiago Jung Bauermann <thiago.bauermann@linaro.org>, x86@kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@lst.de>, loongarch@lists.linux.dev, Alex Deucher <alexander.deucher@amd.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: yaoma@linux.alibaba.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 11, 2024, at 09:15, Ard Biesheuvel wrote:
-> On Thu, 11 Apr 2024 at 03:11, Samuel Holland <samuel.holland@sifive.com> wrote:
->> On 2024-04-10 8:02 PM, Thiago Jung Bauermann wrote:
->> > Samuel Holland <samuel.holland@sifive.com> writes:
->>
->> >> The short-term fix would be to drop the `select ARCH_HAS_KERNEL_FPU_SUPPORT` for
->> >> 32-bit arm until we can provide these runtime library functions.
->> >
->> > Does this mean that patch 2 in this series:
->> >
->> > [PATCH v4 02/15] ARM: Implement ARCH_HAS_KERNEL_FPU_SUPPORT
->> >
->> > will be dropped?
->>
->> No, because later patches in the series (3, 6) depend on the definition of
->> CC_FLAGS_FPU from that patch. I will need to send a fixup patch unless I can
->> find a GPL-2 compatible implementation of the runtime library functions.
->>
->
-> Is there really a point to doing that? Do 32-bit ARM systems even have
-> enough address space to the map the BARs of the AMD GPUs that need
-> this support?
->
-> Given that this was not enabled before, I don't think the upshot of
-> this series should be that we enable support for something on 32-bit
-> ARM that may cause headaches down the road without any benefit.
->
-> So I'd prefer a fixup patch that opts ARM out of this over adding
-> support code for 64-bit conversions.
+The irq_desc::kstat_irqs member is a per-CPU variable of type int, and
+it is only capable of counting. The snapshot mechanism for interrupt
+statistics will be added soon, which requires an additional variable to
+store snapshot. To facilitate expansion, convert kstat_irqs here to
+a struct containing only the count.
 
-I have not found any dts file for a 32-bit platform with support
-for a 64-bit prefetchable BAR, and there are very few that even
-have a pcie slot (as opposed on on-board devices) you could
-plug a card into.
+Originally-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Bitao Hu <yaoma@linux.alibaba.com>
+---
+ arch/mips/dec/setup.c                |  2 +-
+ arch/parisc/kernel/smp.c             |  2 +-
+ arch/powerpc/kvm/book3s_hv_rm_xics.c |  2 +-
+ include/linux/irqdesc.h              | 12 ++++++++++--
+ kernel/irq/internals.h               |  2 +-
+ kernel/irq/irqdesc.c                 |  9 ++++-----
+ kernel/irq/proc.c                    |  5 ++---
+ scripts/gdb/linux/interrupts.py      |  6 +++---
+ 8 files changed, 23 insertions(+), 17 deletions(-)
 
-That said, I also don't think we should encourage the use of
-floating-point code in random device drivers. There is really
-no excuse for the amdgpu driver to use floating point math
-here, and we should get AMD to fix their driver instead.
+diff --git a/arch/mips/dec/setup.c b/arch/mips/dec/setup.c
+index 6c3704f51d0d..87f0a1436bf9 100644
+--- a/arch/mips/dec/setup.c
++++ b/arch/mips/dec/setup.c
+@@ -756,7 +756,7 @@ void __init arch_init_irq(void)
+ 				NULL))
+ 			pr_err("Failed to register fpu interrupt\n");
+ 		desc_fpu = irq_to_desc(irq_fpu);
+-		fpu_kstat_irq = this_cpu_ptr(desc_fpu->kstat_irqs);
++		fpu_kstat_irq = this_cpu_ptr(&desc_fpu->kstat_irqs->cnt);
+ 	}
+ 	if (dec_interrupt[DEC_IRQ_CASCADE] >= 0) {
+ 		if (request_irq(dec_interrupt[DEC_IRQ_CASCADE], no_action,
+diff --git a/arch/parisc/kernel/smp.c b/arch/parisc/kernel/smp.c
+index 444154271f23..800eb64e91ad 100644
+--- a/arch/parisc/kernel/smp.c
++++ b/arch/parisc/kernel/smp.c
+@@ -344,7 +344,7 @@ static int smp_boot_one_cpu(int cpuid, struct task_struct *idle)
+ 		struct irq_desc *desc = irq_to_desc(i);
+ 
+ 		if (desc && desc->kstat_irqs)
+-			*per_cpu_ptr(desc->kstat_irqs, cpuid) = 0;
++			*per_cpu_ptr(desc->kstat_irqs, cpuid) = (struct irqstat) { };
+ 	}
+ #endif
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_xics.c b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+index e42984878503..f2636414d82a 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_xics.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_xics.c
+@@ -837,7 +837,7 @@ static inline void this_cpu_inc_rm(unsigned int __percpu *addr)
+  */
+ static void kvmppc_rm_handle_irq_desc(struct irq_desc *desc)
+ {
+-	this_cpu_inc_rm(desc->kstat_irqs);
++	this_cpu_inc_rm(&desc->kstat_irqs->cnt);
+ 	__this_cpu_inc(kstat.irqs_sum);
+ }
+ 
+diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
+index d9451d456a73..c28612674acb 100644
+--- a/include/linux/irqdesc.h
++++ b/include/linux/irqdesc.h
+@@ -17,6 +17,14 @@ struct irq_desc;
+ struct irq_domain;
+ struct pt_regs;
+ 
++/**
++ * struct irqstat - interrupt statistics
++ * @cnt:	real-time interrupt count
++ */
++struct irqstat {
++	unsigned int	cnt;
++};
++
+ /**
+  * struct irq_desc - interrupt descriptor
+  * @irq_common_data:	per irq and chip data passed down to chip functions
+@@ -55,7 +63,7 @@ struct pt_regs;
+ struct irq_desc {
+ 	struct irq_common_data	irq_common_data;
+ 	struct irq_data		irq_data;
+-	unsigned int __percpu	*kstat_irqs;
++	struct irqstat __percpu	*kstat_irqs;
+ 	irq_flow_handler_t	handle_irq;
+ 	struct irqaction	*action;	/* IRQ action list */
+ 	unsigned int		status_use_accessors;
+@@ -119,7 +127,7 @@ extern struct irq_desc irq_desc[NR_IRQS];
+ static inline unsigned int irq_desc_kstat_cpu(struct irq_desc *desc,
+ 					      unsigned int cpu)
+ {
+-	return desc->kstat_irqs ? *per_cpu_ptr(desc->kstat_irqs, cpu) : 0;
++	return desc->kstat_irqs ? per_cpu(desc->kstat_irqs->cnt, cpu) : 0;
+ }
+ 
+ static inline struct irq_desc *irq_data_to_desc(struct irq_data *data)
+diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
+index bcc7f21db9ee..1d92532c2aae 100644
+--- a/kernel/irq/internals.h
++++ b/kernel/irq/internals.h
+@@ -258,7 +258,7 @@ static inline void irq_state_set_masked(struct irq_desc *desc)
+ 
+ static inline void __kstat_incr_irqs_this_cpu(struct irq_desc *desc)
+ {
+-	__this_cpu_inc(*desc->kstat_irqs);
++	__this_cpu_inc(desc->kstat_irqs->cnt);
+ 	__this_cpu_inc(kstat.irqs_sum);
+ }
+ 
+diff --git a/kernel/irq/irqdesc.c b/kernel/irq/irqdesc.c
+index 4c6b32318ce3..b59b79200ad7 100644
+--- a/kernel/irq/irqdesc.c
++++ b/kernel/irq/irqdesc.c
+@@ -134,7 +134,7 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
+ 	desc->name = NULL;
+ 	desc->owner = owner;
+ 	for_each_possible_cpu(cpu)
+-		*per_cpu_ptr(desc->kstat_irqs, cpu) = 0;
++		*per_cpu_ptr(desc->kstat_irqs, cpu) = (struct irqstat) { };
+ 	desc_smp_init(desc, node, affinity);
+ }
+ 
+@@ -186,7 +186,7 @@ static int init_desc(struct irq_desc *desc, int irq, int node,
+ 		     const struct cpumask *affinity,
+ 		     struct module *owner)
+ {
+-	desc->kstat_irqs = alloc_percpu(unsigned int);
++	desc->kstat_irqs = alloc_percpu(struct irqstat);
+ 	if (!desc->kstat_irqs)
+ 		return -ENOMEM;
+ 
+@@ -968,8 +968,7 @@ unsigned int kstat_irqs_cpu(unsigned int irq, int cpu)
+ {
+ 	struct irq_desc *desc = irq_to_desc(irq);
+ 
+-	return desc && desc->kstat_irqs ?
+-			*per_cpu_ptr(desc->kstat_irqs, cpu) : 0;
++	return desc && desc->kstat_irqs ? per_cpu(desc->kstat_irqs->cnt, cpu) : 0;
+ }
+ 
+ static bool irq_is_nmi(struct irq_desc *desc)
+@@ -991,7 +990,7 @@ static unsigned int kstat_irqs(unsigned int irq)
+ 		return data_race(desc->tot_count);
+ 
+ 	for_each_possible_cpu(cpu)
+-		sum += data_race(*per_cpu_ptr(desc->kstat_irqs, cpu));
++		sum += data_race(per_cpu(desc->kstat_irqs->cnt, cpu));
+ 	return sum;
+ }
+ 
+diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
+index 623b8136e9af..6954e0a02047 100644
+--- a/kernel/irq/proc.c
++++ b/kernel/irq/proc.c
+@@ -490,7 +490,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 
+ 	if (desc->kstat_irqs) {
+ 		for_each_online_cpu(j)
+-			any_count |= data_race(*per_cpu_ptr(desc->kstat_irqs, j));
++			any_count |= data_race(per_cpu(desc->kstat_irqs->cnt, j));
+ 	}
+ 
+ 	if ((!desc->action || irq_desc_is_chained(desc)) && !any_count)
+@@ -498,8 +498,7 @@ int show_interrupts(struct seq_file *p, void *v)
+ 
+ 	seq_printf(p, "%*d: ", prec, i);
+ 	for_each_online_cpu(j)
+-		seq_printf(p, "%10u ", desc->kstat_irqs ?
+-					*per_cpu_ptr(desc->kstat_irqs, j) : 0);
++		seq_printf(p, "%10u ", desc->kstat_irqs ? per_cpu(desc->kstat_irqs->cnt, j) : 0);
+ 
+ 	raw_spin_lock_irqsave(&desc->lock, flags);
+ 	if (desc->irq_data.chip) {
+diff --git a/scripts/gdb/linux/interrupts.py b/scripts/gdb/linux/interrupts.py
+index 66ae5c7690cf..616a5f26377a 100644
+--- a/scripts/gdb/linux/interrupts.py
++++ b/scripts/gdb/linux/interrupts.py
+@@ -37,7 +37,7 @@ def show_irq_desc(prec, irq):
+     any_count = 0
+     if desc['kstat_irqs']:
+         for cpu in cpus.each_online_cpu():
+-            any_count += cpus.per_cpu(desc['kstat_irqs'], cpu)
++            any_count += cpus.per_cpu(desc['kstat_irqs'], cpu)['cnt']
+ 
+     if (desc['action'] == 0 or irq_desc_is_chained(desc)) and any_count == 0:
+         return text;
+@@ -45,7 +45,7 @@ def show_irq_desc(prec, irq):
+     text += "%*d: " % (prec, irq)
+     for cpu in cpus.each_online_cpu():
+         if desc['kstat_irqs']:
+-            count = cpus.per_cpu(desc['kstat_irqs'], cpu)
++            count = cpus.per_cpu(desc['kstat_irqs'], cpu)['cnt']
+         else:
+             count = 0
+         text += "%10u" % (count)
+@@ -177,7 +177,7 @@ def arm_common_show_interrupts(prec):
+         if desc == 0:
+             continue
+         for cpu in cpus.each_online_cpu():
+-            text += "%10u" % (cpus.per_cpu(desc['kstat_irqs'], cpu))
++            text += "%10u" % (cpus.per_cpu(desc['kstat_irqs'], cpu)['cnt'])
+         text += "      %s" % (ipi_types[ipi].string())
+         text += "\n"
+     return text
+-- 
+2.37.1 (Apple Git-137.1)
 
-     Arnd
