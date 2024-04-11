@@ -4,39 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40538C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2024 13:47:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3A98C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2024 14:03:49 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=0NcGI5ol;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VFgwn6txjz3vd0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Apr 2024 23:47:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=h08.hostsharing.net (client-ip=2a01:37:3000::53df:4ef0:0; helo=bmailout2.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 396 seconds by postgrey-1.37 at boromir; Thu, 11 Apr 2024 23:46:40 AEST
-Received: from bmailout2.hostsharing.net (bmailout2.hostsharing.net [IPv6:2a01:37:3000::53df:4ef0:0])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VFhJ43GSnz3vYB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Apr 2024 00:03:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=0NcGI5ol;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VFgwJ3ZLVz3cT2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Apr 2024 23:46:40 +1000 (AEST)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
-	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
-	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
-	by bmailout2.hostsharing.net (Postfix) with ESMTPS id 5FE7E28013A52;
-	Thu, 11 Apr 2024 15:39:50 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 4AE723FFCDE; Thu, 11 Apr 2024 15:39:50 +0200 (CEST)
-Date: Thu, 11 Apr 2024 15:39:50 +0200
-From: Lukas Wunner <lukas@wunner.de>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 0/2] Deduplicate bin_attribute simple read() callbacks
-Message-ID: <ZhfoJkIxJvRal8aF@wunner.de>
-References: <cover.1712410202.git.lukas@wunner.de>
- <2024041128-huddling-humped-4304@gregkh>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VFhHJ1GnVz3d2c
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Apr 2024 00:03:07 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 85C126033D;
+	Thu, 11 Apr 2024 14:03:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE959C072AA;
+	Thu, 11 Apr 2024 14:03:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1712844183;
+	bh=6UJZZ6IjHCrKomyVcGWFI8QkbjcakZqKcaKnyTXHAhA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=0NcGI5oljWMkz32EWruHRpi43mJPvYvSKu4mleZsj5+GOQTshIcV111wtKcQHvsNp
+	 XXfxmBKYOpZh4N6vL8eBzbUdsIlu//opGukHcs5BzJI+9f8trzvxeTsj6dlgnoiYd/
+	 32oIUS7dqxBHJXAPFn+chDjOyRDZHMGN0+u/Y2ts=
+Date: Thu, 11 Apr 2024 16:03:00 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: li.hao40@zte.com.cn
+Subject: Re: [PATCH] tty: hvc: wakeup hvc console immediately when needed
+Message-ID: <2024041151-crewmate-entail-62a5@gregkh>
+References: <20240411215017604oDcKsSipiLnfwd2SzAnsj@zte.com.cn>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2024041128-huddling-humped-4304@gregkh>
+In-Reply-To: <20240411215017604oDcKsSipiLnfwd2SzAnsj@zte.com.cn>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,27 +55,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: intel-gvt-dev@lists.freedesktop.org, Jean Delvare <jdelvare@suse.com>, Zhi Wang <zhi.wang.linux@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, Zhenyu Wang <zhenyuw@linux.intel.com>, linux-acpi@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, linux-efi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, linux-modules@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, jirislaby@kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 11, 2024 at 03:07:46PM +0200, Greg Kroah-Hartman wrote:
-> On Sat, Apr 06, 2024 at 03:52:00PM +0200, Lukas Wunner wrote:
-> > For my upcoming PCI device authentication v2 patches, I have the need
-> > to expose a simple buffer in virtual memory as a bin_attribute.
-> > 
-> > It turns out we've duplicated the ->read() callback for such simple
-> > buffers a fair number of times across the tree.
-> > 
-> > So instead of reinventing the wheel, I decided to introduce a common
-> > helper and eliminate all duplications I could find.
-> > 
-> > I'm open to a bikeshedding discussion on the sysfs_bin_attr_simple_read()
-> > name. ;)
+On Thu, Apr 11, 2024 at 09:50:17PM +0800, li.hao40@zte.com.cn wrote:
+> From: Li Hao <li.hao40@zte.com.cn>
 > 
-> Seems like no one objects, should I just take this through my
-> driver-core tree for 6.10?
+> Cancel the do_wakeup flag in hvc_struct, and change it to immediately
+> wake up tty when hp->n_outbuf is 0 in hvc_push().
+> 
+> When we receive a key input character, the interrupt handling function
+> hvc_handle_interrupt() will be executed, and the echo thread
+> flush_to_ldisc() will be added to the queue.
+> 
+> If the user is currently using tcsetattr(), a hang may occur. tcsetattr()
+> enters kernel and waits for hp->n_outbuf to become 0 via
+> tty_wait_until_sent(). If the echo thread finishes executing before
+> reaching tty_wait_until_sent (for example, put_chars() takes too long),
+> it will cause while meeting the wakeup condition (hp->do_wakeup = 1),
+> tty_wait_until_sent() cannot be woken up (missed the tty_wakeup() of
+> this round&apos;s tty_poll). Unless the next key input character comes,
+> hvc_poll will be executed, and tty_wakeup() will be performed through
+> the do_wakeup flag.
+> 
+> Signed-off-by: Li Hao
 
-That would be awesome, thank you!
+Did checkpatch say this was ok?
 
-Lukas
