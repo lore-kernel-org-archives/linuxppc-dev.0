@@ -4,50 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6458BC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 07:14:39 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Kfwz+WxX;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA666C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 07:26:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VHz255ZPgz3vZG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 17:14:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Kfwz+WxX;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VHzJH30Ypz3dXC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 17:26:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zte.com.cn (client-ip=63.216.63.35; helo=mxhk.zte.com.cn; envelope-from=li.hao40@zte.com.cn; receiver=lists.ozlabs.org)
+Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.216.63.35])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VHz1D5cSbz3bpp
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2024 17:13:52 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id A5C3260BEA;
-	Mon, 15 Apr 2024 07:13:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8AF96C32786;
-	Mon, 15 Apr 2024 07:13:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713165227;
-	bh=hI1ImZuD4MtyBx70PUSFix6Ajtea0wMbCKe8L/3v+Uw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Kfwz+WxX4OnZCXGFtjBzjL9126WIkdrbjltIC8HAHlnoFmUHRdTxctELKKeDm3/G3
-	 0KpuRm2j9xyTgugEs3AJUH0reYdRAqSLjrD2xMAdgwz2/pBTa1U26p1rg2Ivg5H4Qq
-	 td+149Vd7AD+yzKZOTyLPyE2DDKdUMQdrUQ/blgav/mJ7SW2z1CdViCOZ5Q1qImmHx
-	 iQpS/a6Sn6pES0kXsdO/iE7gout/0mGCogD26pMxeEJvlQssheoqIJBA4UUupmROd/
-	 4f5oAxom4n+SWtO1yf87LvEkyoUBBS05Muyq07R4dlHGUB1AcG5VBJ9Om7TSnzB//l
-	 g9aTHmbIc8oOw==
-Date: Mon, 15 Apr 2024 12:42:43 +0530
-From: Naveen N Rao <naveen@kernel.org>
-To: Hari Bathini <hbathini@linux.ibm.com>
-Subject: Re: [PATCH v3 2/2] powerpc/bpf: enable kfunc call
-Message-ID: <6ktv57iaptqnquimayjyqbpjrmedyenvdrobx3dkxei7for75n@w3uzj4rvvivt>
-References: <20240402105806.352037-1-hbathini@linux.ibm.com>
- <20240402105806.352037-2-hbathini@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240402105806.352037-2-hbathini@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VHzHn1zN0z2ytj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2024 17:26:26 +1000 (AEST)
+Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4VHzHc2DRbz6FK2S;
+	Mon, 15 Apr 2024 15:26:20 +0800 (CST)
+Received: from xaxapp01.zte.com.cn ([10.88.99.176])
+	by mse-fl1.zte.com.cn with SMTP id 43F7QFGx087387;
+	Mon, 15 Apr 2024 15:26:15 +0800 (+08)
+	(envelope-from li.hao40@zte.com.cn)
+Received: from mapi (xaxapp01[null])
+	by mapi (Zmail) with MAPI id mid31;
+	Mon, 15 Apr 2024 15:26:17 +0800 (CST)
+Date: Mon, 15 Apr 2024 15:26:17 +0800 (CST)
+X-Zmail-TransId: 2af9661cd6996c9-22440
+X-Mailer: Zmail v1.0
+Message-ID: <20240415152617552rmRLJBUV8aJ4lLJILh6-Z@zte.com.cn>
+Mime-Version: 1.0
+From: <li.hao40@zte.com.cn>
+To: <jirislaby@kernel.org>
+Subject: =?UTF-8?B?W1BBVENIIHYyXSB0dHk6IGh2Yzogd2FrZXVwIGh2YyBjb25zb2xlIGltbWVkaWF0ZWx5IHdoZW4gbmVlZGVk?=
+Content-Type: text/plain;
+	charset="UTF-8"
+X-MAIL: mse-fl1.zte.com.cn 43F7QFGx087387
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 661CD69C.000/4VHzHc2DRbz6FK2S
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,156 +51,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Martin KaFai Lau <martin.lau@linux.dev>, Andrii Nakryiko <andrii@kernel.org>, Alexei Starovoitov <ast@kernel.org>, bpf@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 02, 2024 at 04:28:06PM +0530, Hari Bathini wrote:
-> Currently, bpf jit code on powerpc assumes all the bpf functions and
-> helpers to be kernel text. This is false for kfunc case, as function
-> addresses can be module addresses as well. So, ensure module addresses
-> are supported to enable kfunc support.
-> 
-> Emit instructions based on whether the function address is kernel text
-> address or module address to retain optimized instruction sequence for
-> kernel text address case.
-> 
-> Also, as bpf programs are always module addresses and a bpf helper can
-> be within kernel address as well, using relative addressing often fails
-> with "out of range of pcrel address" error. Use unoptimized instruction
-> sequence for both kernel and module addresses to work around this, when
-> PCREL addressing is used.
+From: Li Hao <li.hao40@zte.com.cn>
 
-I guess we need a fixes tag for this?
-Fixes: 7e3a68be42e1 ("powerpc/64: vmlinux support building with PCREL addresing")
+Cancel the do_wakeup flag in hvc_struct, and change it to immediately
+wake up tty when hp->n_outbuf is 0 in hvc_push().
 
-It will be good to separate out this fix into a separate patch.
+When we receive a key input character, the interrupt handling function
+hvc_handle_interrupt() will be executed, and the echo thread
+flush_to_ldisc() will be added to the queue.
 
-Also, I know I said we could use the generic PPC_LI64() for pcrel, but 
-we may be able to use a more optimized sequence when calling bpf kernel 
-helpers.  See stub_insns[] in module_64.c for an example where we load 
-paca->kernelbase, then use a prefixed load instruction to populate the 
-lower 34-bit value. For calls out to module area, we can use the generic 
-PPC_LI64() macro only if it is outside range of a prefixed load 
-instruction.
+If the user is currently using tcsetattr(), a hang may occur. tcsetattr()
+enters kernel and waits for hp->n_outbuf to become 0 via
+tty_wait_until_sent(). If the echo thread finishes executing before
+reaching tty_wait_until_sent (for example, put_chars() takes too long),
+it will cause while meeting the wakeup condition (hp->do_wakeup = 1),
+tty_wait_until_sent() cannot be woken up (missed the tty_wakeup() of
+this round's tty_poll). Unless the next key input character comes,
+hvc_poll will be executed, and tty_wakeup() will be performed through
+the do_wakeup flag.
 
-> 
-> With module addresses supported, override bpf_jit_supports_kfunc_call()
-> to enable kfunc support. Since module address offsets can be more than
-> 32-bit long on PPC64, override bpf_jit_supports_far_kfunc_call() to
-> enable 64-bit pointers.
-> 
-> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
-> ---
-> 
-> * Changes in v3:
->   - Retained optimized instruction sequence when function address is
->     a core kernel address as suggested by Naveen.
->   - Used unoptimized instruction sequence for PCREL addressing to
->     avoid out of range errors for core kernel function addresses.
->   - Folded patch that adds support for kfunc calls with patch that
->     enables/advertises this support as suggested by Naveen.
-> 
-> 
->  arch/powerpc/net/bpf_jit_comp.c   | 10 +++++++
->  arch/powerpc/net/bpf_jit_comp64.c | 48 ++++++++++++++++++++-----------
->  2 files changed, 42 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> index 0f9a21783329..dc7ffafd7441 100644
-> --- a/arch/powerpc/net/bpf_jit_comp.c
-> +++ b/arch/powerpc/net/bpf_jit_comp.c
-> @@ -359,3 +359,13 @@ void bpf_jit_free(struct bpf_prog *fp)
->  
->  	bpf_prog_unlock_free(fp);
->  }
-> +
-> +bool bpf_jit_supports_kfunc_call(void)
-> +{
-> +	return true;
-> +}
-> +
-> +bool bpf_jit_supports_far_kfunc_call(void)
-> +{
-> +	return IS_ENABLED(CONFIG_PPC64) ? true : false;
-> +}
-> diff --git a/arch/powerpc/net/bpf_jit_comp64.c 
-> b/arch/powerpc/net/bpf_jit_comp64.c
-> index 7f62ac4b4e65..ec3adf715c55 100644
-> --- a/arch/powerpc/net/bpf_jit_comp64.c
-> +++ b/arch/powerpc/net/bpf_jit_comp64.c
-> @@ -207,24 +207,14 @@ static int bpf_jit_emit_func_call_hlp(u32 *image, struct codegen_context *ctx, u
->  	unsigned long func_addr = func ? ppc_function_entry((void *)func) : 0;
->  	long reladdr;
->  
-> -	if (WARN_ON_ONCE(!core_kernel_text(func_addr)))
-> +	/*
-> +	 * With the introduction of kfunc feature, BPF helpers can be part of kernel as
-> +	 * well as module text address.
-> +	 */
-> +	if (WARN_ON_ONCE(!kernel_text_address(func_addr)))
->  		return -EINVAL;
->  
-> -	if (IS_ENABLED(CONFIG_PPC_KERNEL_PCREL)) {
-> -		reladdr = func_addr - CTX_NIA(ctx);
-> -
-> -		if (reladdr >= (long)SZ_8G || reladdr < -(long)SZ_8G) {
-> -			pr_err("eBPF: address of %ps out of range of pcrel address.\n",
-> -				(void *)func);
-> -			return -ERANGE;
-> -		}
-> -		/* pla r12,addr */
-> -		EMIT(PPC_PREFIX_MLS | __PPC_PRFX_R(1) | IMM_H18(reladdr));
-> -		EMIT(PPC_INST_PADDI | ___PPC_RT(_R12) | IMM_L(reladdr));
-> -		EMIT(PPC_RAW_MTCTR(_R12));
-> -		EMIT(PPC_RAW_BCTR());
-> -
-> -	} else {
-> +	if (core_kernel_text(func_addr) && !IS_ENABLED(CONFIG_PPC_KERNEL_PCREL)) {
->  		reladdr = func_addr - kernel_toc_addr();
->  		if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
->  			pr_err("eBPF: address of %ps out of range of kernel_toc.\n", (void *)func);
-> @@ -235,6 +225,32 @@ static int bpf_jit_emit_func_call_hlp(u32 *image, struct codegen_context *ctx, u
->  		EMIT(PPC_RAW_ADDI(_R12, _R12, PPC_LO(reladdr)));
->  		EMIT(PPC_RAW_MTCTR(_R12));
->  		EMIT(PPC_RAW_BCTRL());
-> +	} else {
-> +		if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V1)) {
-> +			/* func points to the function descriptor */
-> +			PPC_LI64(bpf_to_ppc(TMP_REG_2), func);
-> +			/* Load actual entry point from function descriptor */
-> +			EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), bpf_to_ppc(TMP_REG_2), 0));
-> +			/* ... and move it to CTR */
-> +			EMIT(PPC_RAW_MTCTR(bpf_to_ppc(TMP_REG_1)));
-> +			/*
-> +			 * Load TOC from function descriptor at offset 8.
-> +			 * We can clobber r2 since we get called through a
-> +			 * function pointer (so caller will save/restore r2)
-> +			 * and since we don't use a TOC ourself.
-> +			 */
-> +			EMIT(PPC_RAW_LD(2, bpf_to_ppc(TMP_REG_2), 8));
-> +			EMIT(PPC_RAW_BCTRL());
+v1->v2:
+Some fixes according to:
+https://lore.kernel.org/all/75dff5cd-7b0e-4039-9157-8bf10cf7ba29@kernel.org/
+    use tty_port_tty_wakeup() instead of tty_wakeup() to wake up tty
 
-I thought we started using TOC for ABIv1 when we moved to using an 
-optimized function call sequence for bpf helpers?  If so, we will need 
-to load kernel toc here for subsequent calls to BPF helpers.
+Signed-off-by: Li Hao <li.hao40@zte.com.cn>
+---
+ drivers/tty/hvc/hvc_console.c | 10 +++-------
+ drivers/tty/hvc/hvc_console.h |  1 -
+ 2 files changed, 3 insertions(+), 8 deletions(-)
 
-> +		} else {
-> +			/* We can clobber r12 */
-> +			PPC_LI64(12, func);
-> +			EMIT(PPC_RAW_MTCTR(12));
-> +			EMIT(PPC_RAW_BCTRL());
-> +#ifndef CONFIG_PPC_KERNEL_PCREL
-> +			/* Restore kernel TOC */
-> +			EMIT(PPC_RAW_LD(2, 13, offsetof(struct paca_struct, kernel_toc)));
-> +#endif
-> +		}
->  	}
->  
->  	return 0;
-> -- 
-> 2.44.0
-> 
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index cd1f657f7..cbd234847 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -480,7 +480,7 @@ static int hvc_push(struct hvc_struct *hp)
+ 	n = hp->ops->put_chars(hp->vtermno, hp->outbuf, hp->n_outbuf);
+ 	if (n <= 0) {
+ 		if (n == 0 || n == -EAGAIN) {
+-			hp->do_wakeup = 1;
++			tty_port_tty_wakeup(&hp->port);
+ 			return 0;
+ 		}
+ 		/* throw away output on error; this happens when
+@@ -491,7 +491,7 @@ static int hvc_push(struct hvc_struct *hp)
+ 	if (hp->n_outbuf > 0)
+ 		memmove(hp->outbuf, hp->outbuf + n, hp->n_outbuf);
+ 	else
+-		hp->do_wakeup = 1;
++		tty_port_tty_wakeup(&hp->port);
 
-- Naveen
+ 	return n;
+ }
+@@ -739,11 +739,7 @@ static int __hvc_poll(struct hvc_struct *hp, bool may_sleep)
+ 	poll_mask |= HVC_POLL_READ;
 
+  out:
+-	/* Wakeup write queue if necessary */
+-	if (hp->do_wakeup) {
+-		hp->do_wakeup = 0;
+-		tty_wakeup(tty);
+-	}
++	/* Wakeup in hvc_push */
+  bail:
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+
+diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
+index cf4c1af08..6622f71ba 100644
+--- a/drivers/tty/hvc/hvc_console.h
++++ b/drivers/tty/hvc/hvc_console.h
+@@ -36,7 +36,6 @@ struct hvc_struct {
+ 	struct tty_port port;
+ 	spinlock_t lock;
+ 	int index;
+-	int do_wakeup;
+ 	int outbuf_size;
+ 	int n_outbuf;
+ 	uint32_t vtermno;
+-- 
+2.25.1
