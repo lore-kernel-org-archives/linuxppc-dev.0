@@ -4,46 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A64F9C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 07:33:51 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=K46aGOps;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68989C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 07:35:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VHzSG265pz3vYm
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 17:33:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=K46aGOps;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VHzVj0yKsz3vcH
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 17:35:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VHzRS2x1Fz3bpp
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2024 17:33:07 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 3845360BEA;
-	Mon, 15 Apr 2024 07:33:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46CB6C113CC;
-	Mon, 15 Apr 2024 07:33:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1713166383;
-	bh=HulXt605iuUDWNZIZsCC+JKKUiQZcW1J0o0UnNGNdvs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=K46aGOpsj6wmLaobqllJwK4TnGyGVXDuTVnR8nBLVeWjxALN0+QdN+IFw1JCVWPnJ
-	 GeeNTiCUxWcnXevgo/1tti3AkCZUYM5qP4d4RwEArlbOz4UOFYhxQ7Q6JELQsZt58B
-	 tnU/8GTYNH/CZ+NXJbTo83skk62F3bGhkieDydVY=
-Date: Mon, 15 Apr 2024 09:33:01 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: li.hao40@zte.com.cn
-Subject: Re: [PATCH v2] tty: hvc: wakeup hvc console immediately when needed
-Message-ID: <2024041531-caliber-overreach-2d4e@gregkh>
-References: <20240415152617552rmRLJBUV8aJ4lLJILh6-Z@zte.com.cn>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240415152617552rmRLJBUV8aJ4lLJILh6-Z@zte.com.cn>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VHzVF6kDPz2xdp
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2024 17:35:33 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 0F7172001C5;
+	Mon, 15 Apr 2024 09:35:29 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id CCAFA2001C4;
+	Mon, 15 Apr 2024 09:35:28 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id DF879183ACAF;
+	Mon, 15 Apr 2024 15:35:26 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: lgirdwood@gmail.com,
+	broonie@kernel.org,
+	robh+dt@kernel.org,
+	krzysztof.kozlowski+dt@linaro.org,
+	conor+dt@kernel.org,
+	shengjiu.wang@gmail.com,
+	linux-sound@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2] ASoC: fsl-asoc-card: add wm8904 codec support
+Date: Mon, 15 Apr 2024 15:17:34 +0800
+Message-Id: <1713165456-3494-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,40 +57,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, jirislaby@kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 15, 2024 at 03:26:17PM +0800, li.hao40@zte.com.cn wrote:
-> From: Li Hao <li.hao40@zte.com.cn>
-> 
-> Cancel the do_wakeup flag in hvc_struct, and change it to immediately
-> wake up tty when hp->n_outbuf is 0 in hvc_push().
-> 
-> When we receive a key input character, the interrupt handling function
-> hvc_handle_interrupt() will be executed, and the echo thread
-> flush_to_ldisc() will be added to the queue.
-> 
-> If the user is currently using tcsetattr(), a hang may occur. tcsetattr()
-> enters kernel and waits for hp->n_outbuf to become 0 via
-> tty_wait_until_sent(). If the echo thread finishes executing before
-> reaching tty_wait_until_sent (for example, put_chars() takes too long),
-> it will cause while meeting the wakeup condition (hp->do_wakeup = 1),
-> tty_wait_until_sent() cannot be woken up (missed the tty_wakeup() of
-> this round's tty_poll). Unless the next key input character comes,
-> hvc_poll will be executed, and tty_wakeup() will be performed through
-> the do_wakeup flag.
-> 
-> v1->v2:
-> Some fixes according to:
-> https://lore.kernel.org/all/75dff5cd-7b0e-4039-9157-8bf10cf7ba29@kernel.org/
->     use tty_port_tty_wakeup() instead of tty_wakeup() to wake up tty
+add wm8904 codec support in fsl-asoc-card.
 
-As per the documentation, the v1... stuff needs to go below the --- line
-so git will strip it away.
+Shengjiu Wang (2):
+  ASoC: fsl-asoc-card: add wm8904 codec support
+  ASoC: dt-bindings: fsl-asoc-card: Add compatbile string for wm8904
+    codec
 
-Please fix up and send a v3.
+ .../devicetree/bindings/sound/fsl-asoc-card.yaml          | 1 +
+ sound/soc/fsl/fsl-asoc-card.c                             | 8 ++++++++
+ 2 files changed, 9 insertions(+)
 
-thanks,
+-- 
+2.34.1
 
-greg k-h
