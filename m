@@ -4,50 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1235C00A94
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 07:36:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F1A0C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 07:50:21 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=iBwpdq/R;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VHzWY4Chxz3dVq
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 17:36:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VHzqJ08yVz3vZL
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Apr 2024 17:50:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=iBwpdq/R;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.14; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 340 seconds by postgrey-1.37 at boromir; Mon, 15 Apr 2024 17:49:34 AEST
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VHzVG5kfFz2yt0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2024 17:35:34 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id D3D5D1A0197;
-	Mon, 15 Apr 2024 09:35:31 +0200 (CEST)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 9CAB11A018D;
-	Mon, 15 Apr 2024 09:35:31 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id B69C9183AD16;
-	Mon, 15 Apr 2024 15:35:29 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: lgirdwood@gmail.com,
-	broonie@kernel.org,
-	robh+dt@kernel.org,
-	krzysztof.kozlowski+dt@linaro.org,
-	conor+dt@kernel.org,
-	shengjiu.wang@gmail.com,
-	linux-sound@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	perex@perex.cz,
-	tiwai@suse.com,
-	alsa-devel@alsa-project.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] ASoC: dt-bindings: fsl-asoc-card: Add compatbile string for wm8904 codec
-Date: Mon, 15 Apr 2024 15:17:36 +0800
-Message-Id: <1713165456-3494-3-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1713165456-3494-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1713165456-3494-1-git-send-email-shengjiu.wang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VHzpQ1PJ1z3cRd
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Apr 2024 17:49:33 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1713167355; x=1713772155; i=markus.elfring@web.de;
+	bh=Ehw3JP9/jH11oJR68DQOEghJBea6xoCh7eHWITgqHRM=;
+	h=X-UI-Sender-Class:Date:Subject:From:To:Cc:References:
+	 In-Reply-To;
+	b=iBwpdq/RO58ICbaUPRRSA5P5ZLc4xyuONdOC/5En/PYU3A4y45FsuO7D32qI9o7F
+	 vQSkClUlYOGcWjGmraIVWnlCIVGPL7Nb/eK7FsoFfhTFt+haURvGfyxWe4H0iUkSL
+	 bZdlF73hB+UEALaPjejDBDtgF3eb81VTiSQzneWAAdPxy0zffLVWieIrtVqeWwR9M
+	 sP6rnsnv0WV3nCT9nLDL1P37W7SkgVp90ZLDTv0ftebyJ9ZIvZel1h7xxeAFogm4J
+	 ySfdypimUqwi4Q6heZyz6yu0Ne1GDVKq9taJkOo/k+Iq5fRYXt896CMLc8AEUmRqj
+	 PLNkaAVCzhGhOdEhbw==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.21] ([94.31.80.95]) by smtp.web.de (mrweb006
+ [213.165.67.108]) with ESMTPSA (Nemesis) id 1MLzin-1sE4zj2557-00Hz6h; Mon, 15
+ Apr 2024 09:43:14 +0200
+Message-ID: <ee6022b8-3aeb-4e6e-99f5-2668dd344e0a@web.de>
+Date: Mon, 15 Apr 2024 09:42:53 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [0/2] powerpc/powernv/vas: Adjustments for two function
+ implementations
+From: Markus Elfring <Markus.Elfring@web.de>
+To: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+References: <7be66990-de9e-488b-ad6d-fafd1c7bb34c@web.de>
+Content-Language: en-GB
+In-Reply-To: <7be66990-de9e-488b-ad6d-fafd1c7bb34c@web.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:clWA/QkEMk1zwMQrfsyv96T78gaWC3LvgzWJUo1bf0wfhW8Ib83
+ dTf4utj1Tw3KMQwJMwkvi+LGtQt2GBBMU6UbPuBwVyePLDUe3W71tPDnKSa9VsvT3sqgU2D
+ caERPxmHaL4CoVKIpUQiXoj+F2s2abtVqYEeEsw4j8HcEgYEFMKkhherMm4g5b+S9nrXboa
+ OH2uBab55WhqqaOsclLAA==
+UI-OutboundReport: notjunk:1;M01:P0:XDGvqtlbsvw=;clok6l8u7F4e0BKTPzsmYyV60Cx
+ 7MxfXEqWOcKc7FswsTSQ4FAY9hIfdAXPmkzH8pAngwkyaBwB04EFbVSxQ2CuS71g+K5FNxIh7
+ 4gISIXZ1CkoJaFRwrsnfc9hUmYkGB/xA0WQQpWm/MqYH0nBm6Nrv1cpBSMSA998ZO+lxdinAo
+ fXEzlwTIRXSxS7Fi826RQrPY5VQuhoaaDS9zCEHQZ02G6z3RtiUOFiX9xEh4ZR3W2Y+8F74bu
+ JQ/7okl6l9GnlPw21wCK44UtKshQ8RUkcAVCyFoSTQQuWQONYiOV4F6qcd5G9hgZh/jreJZ3n
+ cJ7m8uyDSd3RTTXm9KNgexZf+mqoPMFEg6oxVCUf69+tP9V7/yxLVGu/OMVo3O4DaJGt5QDod
+ X+6KUwGdP1N5/37IKUayGR5TKWFN6OYRISaGsgFBDBJMNpakRaN8ifLPG25VSSi1aujQFq85L
+ xcVCdUWQzKf1nAHKPxkvSmLcUv403IxBT1cD3Gaa2NKQjmDG/MRTZ+HPuoIb47qR8R85ERFmT
+ LrILgHfWThMWBMS6S0viMPM7A4BaMfbsRSamNgmT71rz7gfbj0MUml/QJgEG0dYodz39EM39U
+ XtQgQ/hJf+D4cvQ2pvZ+xhrfpzpWJ1HToH3hb1BjdY8wJCnVjgLoGlOrXo9vIlRysz74iOgDv
+ a9ejOenqdQ0GRrVudb1xryuCZetlQe7CkI12WsJMwH7SYmTb/HMVPn2VLFp+nm5b33KeUmEv1
+ F4QTQewWadtwsZeV2vO3a1anBcReyZZa68xBnYo/5W33yPCWoU61s/kys7p61t/ooWsr6/Vy5
+ bHJ41N/W2D/FdkdC0Rr39+9WgtI8ZxLVTNiV+kXjIXO80=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,28 +84,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: LKML <linux-kernel@vger.kernel.org>, cocci@inria.fr
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The wm8904 codec is used on an i.MX95 Toradex board.
+> A few update suggestions were taken into account
+> from static source code analysis.
+>
+> Markus Elfring (2):
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- Documentation/devicetree/bindings/sound/fsl-asoc-card.yaml | 1 +
- 1 file changed, 1 insertion(+)
+I would appreciate a bit more information about the reasons
+why this patch series was rejected.
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl-asoc-card.yaml b/Documentation/devicetree/bindings/sound/fsl-asoc-card.yaml
-index 42ca39eebd49..16093b48823a 100644
---- a/Documentation/devicetree/bindings/sound/fsl-asoc-card.yaml
-+++ b/Documentation/devicetree/bindings/sound/fsl-asoc-card.yaml
-@@ -76,6 +76,7 @@ properties:
-               - fsl,imx-audio-tlv320aic31xx
-               - fsl,imx-audio-tlv320aic32x4
-               - fsl,imx-audio-wm8524
-+              - fsl,imx-audio-wm8904
-               - fsl,imx-audio-wm8960
-               - fsl,imx-audio-wm8962
-               - fsl,imx-audio-wm8958
--- 
-2.34.1
 
+>   One function call less in vas_window_alloc() after error detection
+
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/1f1c21cf-c34c-418c=
+-b00c-8e6474f12612@web.de/
+
+
+>   Return directly after a failed kasprintf() in map_paste_region()
+
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/f46f04bc-613c-4e98=
+-b602-4c5120556b09@web.de/
+
+
+>  arch/powerpc/platforms/powernv/vas-window.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+
+
+Regards,
+Markus
