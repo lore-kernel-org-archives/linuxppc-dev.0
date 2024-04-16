@@ -4,91 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FA91C04FF8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2024 07:19:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FC43C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2024 07:48:38 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YXr143cE;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YXr143cE;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Cwwpdjv8;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Cwwpdjv8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VJb5K5C63z3vXD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2024 17:19:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VJbks0ZpRz3vZS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Apr 2024 17:48:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YXr143cE;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YXr143cE;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Cwwpdjv8;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Cwwpdjv8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VJb4X3bq0z2ykC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2024 17:18:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VJbk16y4Qz3bqC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2024 17:47:53 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1713251929;
+	s=mimecast20190719; t=1713253670;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=e5e+KDoend6ys1L9LmDT595ey+XRcm1nHptmRwP1piM=;
-	b=YXr143cETpKSgloF9DlJhmutws8PYwZ5qfOad/NzPY4rOm6AvJm5K5KplHx7LaROM+PHc3
-	i7Ru7Pqeaz2kRZ/2cY1ueOT0nx9yYNglumWm3HTIlWV3W74d35s0oAE9+JGN/QpyqfIyDa
-	/OnL+u9B2MBEodJd5AgTknomnShwoEs=
+	bh=+ua83BZdc5k0K/1LGqgW/mLhHYV5FbFxuQ3/oCEZ8HY=;
+	b=Cwwpdjv8/942bKujgCHzM+FjSPM29SQiAPbKokabWs0bWvn7yZU0ytuydMzsI8j3iSm1ig
+	FI1gi7neiUKMrIzuNPwgBQWX8nDb7GzkZDd7EW8+2fT+0Ve1s1SM7bdYAcAmddGDuIx7jm
+	cSZ8aQWbZYMaL23MYjrQsO7t+kkd1/4=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1713251929;
+	s=mimecast20190719; t=1713253670;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=e5e+KDoend6ys1L9LmDT595ey+XRcm1nHptmRwP1piM=;
-	b=YXr143cETpKSgloF9DlJhmutws8PYwZ5qfOad/NzPY4rOm6AvJm5K5KplHx7LaROM+PHc3
-	i7Ru7Pqeaz2kRZ/2cY1ueOT0nx9yYNglumWm3HTIlWV3W74d35s0oAE9+JGN/QpyqfIyDa
-	/OnL+u9B2MBEodJd5AgTknomnShwoEs=
-Received: from mail-lj1-f197.google.com (mail-lj1-f197.google.com
- [209.85.208.197]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=+ua83BZdc5k0K/1LGqgW/mLhHYV5FbFxuQ3/oCEZ8HY=;
+	b=Cwwpdjv8/942bKujgCHzM+FjSPM29SQiAPbKokabWs0bWvn7yZU0ytuydMzsI8j3iSm1ig
+	FI1gi7neiUKMrIzuNPwgBQWX8nDb7GzkZDd7EW8+2fT+0Ve1s1SM7bdYAcAmddGDuIx7jm
+	cSZ8aQWbZYMaL23MYjrQsO7t+kkd1/4=
+Received: from mail-lf1-f71.google.com (mail-lf1-f71.google.com
+ [209.85.167.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-633-Z0QRIv7_PNCg4DtliYzy3g-1; Tue, 16 Apr 2024 03:18:47 -0400
-X-MC-Unique: Z0QRIv7_PNCg4DtliYzy3g-1
-Received: by mail-lj1-f197.google.com with SMTP id 38308e7fff4ca-2da2f30cb50so27138971fa.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2024 00:18:47 -0700 (PDT)
+ us-mta-633-UyGn0bABO0eLOEWHO7cBYA-1; Tue, 16 Apr 2024 03:47:49 -0400
+X-MC-Unique: UyGn0bABO0eLOEWHO7cBYA-1
+Received: by mail-lf1-f71.google.com with SMTP id 2adb3069b0e04-516c8697daaso3272559e87.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Apr 2024 00:47:47 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1713251926; x=1713856726;
+        d=1e100.net; s=20230601; t=1713253667; x=1713858467;
         h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :references:cc:to:from:subject:user-agent:mime-version:date
+         :from:references:cc:to:subject:user-agent:mime-version:date
          :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=e5e+KDoend6ys1L9LmDT595ey+XRcm1nHptmRwP1piM=;
-        b=ZGuVNiUZqnU7bLmtXUblbtnHfVpDEuMlvrP70bEepDAda3jUqiMv7orPmkMdwSnMiK
-         de6rhgEXAAA/e5Fz8AFRd7z29w1TeEVJsuSxlues3cUS85as9ryhlEo9gcEKSSF8CoND
-         vlE9i4yeIE1sINs7FEI9acf4BXA7ftVvc57WH6WJGI8cPeil3tT/SQHNF3EBAfwvuxT7
-         MtxjIFAGsdZBdPRHf3Iwq7DxLd50ca8lIMHoqYFuU7t8kinpXSllrvWNMC3Ude7LLTLK
-         2k0AbmuLFCiTybyupIn4Geja3JYVd0dTnojDAAT8TA5sfnyYUFGufoyzureNCnMVID2T
-         O3jA==
-X-Forwarded-Encrypted: i=1; AJvYcCXRKNtLODJsudwfDonfWK+yhzwBK1qLj+A9RtzZgemE+kfjFXuRrz05Qkr2xX8mu1wRysY3aH7UTzuxWKMTzfwIEwgOhUjCT0zCXfVnYA==
-X-Gm-Message-State: AOJu0YzjnwCtCV5sC2iEwPJFEciLgLIJ8Awh49kdvGepU6eFD5urUm+f
-	6FR692tOwmeSkX/IzwZSttzIpaG9YW16atkAd5f1jZqaVWPB7KO6/+yzyfk9sb9vEGCEjdAJtrO
-	HF0CEV+zQxKTw7UI72frLydjxi4CI6mHnKSPf5lGGh7RLxJpBO/d2vWxAsHLVpME=
-X-Received: by 2002:a19:f013:0:b0:513:dd23:7a02 with SMTP id p19-20020a19f013000000b00513dd237a02mr7870991lfc.26.1713251926384;
-        Tue, 16 Apr 2024 00:18:46 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEjafICuo5LMwPp30unfFJwJWF4tCZLumMUMpRA+B5uETtyWY+iRGeCE31PSoDRCrKXhxjOaQ==
-X-Received: by 2002:a19:f013:0:b0:513:dd23:7a02 with SMTP id p19-20020a19f013000000b00513dd237a02mr7870975lfc.26.1713251925956;
-        Tue, 16 Apr 2024 00:18:45 -0700 (PDT)
+        bh=+ua83BZdc5k0K/1LGqgW/mLhHYV5FbFxuQ3/oCEZ8HY=;
+        b=dFKBOpt2+4FG8ElHYYC9qwGrKQctVyw4s2uXbaSjAhyAJwfNCyxcOHy3nqePpkZrmE
+         +HZ4AVSRLnvlQIGHPEE1wWc347hZCvOyqZ8kGjWHTrv12sNc3juDPWeQw0glpG3gYEYo
+         ZW5euR0kRieaJqcG8lj6twLiAxgKzE/PlNvCpdOgzZrLkQdGnNLXXlw+xqJhYgKzUohs
+         4vYrLgLrPxvT+SGMpD52AdAWlDDacz77CZHef6P3BUV/2nHktHCs0V2jX3674SEDoPts
+         kvcO1+wKD/3C9Jbo7cF3OTCvhmA+8izixdWZvR9+OafaacbGfxZyy849k8zvE364bu86
+         wh+A==
+X-Forwarded-Encrypted: i=1; AJvYcCWGrXGR5gkn/Hk6kj1gu/pVRprcGDtojrpCv+Y4TBxdvAqpgPLnfMKPDEOgBllokdfLcfJdGh+rt2YSxT3jxVl1/2/ArgRnnb1VIV0pBA==
+X-Gm-Message-State: AOJu0YxmUW6OXq3JA/7Sra0nL3HEJ+AEKBNkMQeVDTnUi9xIeUm4shIu
+	uJJsowlR1oNkU5cFpvSR7N+OokeNrO3/0kJ4yTivYgc/LI7XXJ6VRV8txyx97jdNEXUdB2QnUrj
+	HpmyGxsWbI7SOu5y3cFeVwdgQYxhcNzVvNrCD11tqXYm73M15/SnRjRr89WeHHmM=
+X-Received: by 2002:ac2:4c39:0:b0:518:a518:be22 with SMTP id u25-20020ac24c39000000b00518a518be22mr5043903lfq.55.1713253666805;
+        Tue, 16 Apr 2024 00:47:46 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHBI4YhGrRTrXRG+BQ7/DzU9JtvaiDYupjsqe88ZfKKQXB9zmPX9FMji5+O7gP+5wnvbzQxYg==
+X-Received: by 2002:ac2:4c39:0:b0:518:a518:be22 with SMTP id u25-20020ac24c39000000b00518a518be22mr5043893lfq.55.1713253666463;
+        Tue, 16 Apr 2024 00:47:46 -0700 (PDT)
 Received: from [192.168.0.9] (ip-109-43-179-50.web.vodafone.de. [109.43.179.50])
-        by smtp.gmail.com with ESMTPSA id k21-20020a17090666d500b00a518bcb41c1sm6421258ejp.126.2024.04.16.00.18.45
+        by smtp.gmail.com with ESMTPSA id q26-20020a056402041a00b0056e78224d82sm5717431edv.81.2024.04.16.00.47.45
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 16 Apr 2024 00:18:45 -0700 (PDT)
-Message-ID: <bc91c2e1-6099-46c5-bbca-18bb7adb82d2@redhat.com>
-Date: Tue, 16 Apr 2024 09:18:44 +0200
+        Tue, 16 Apr 2024 00:47:46 -0700 (PDT)
+Message-ID: <e4bf3383-6f8c-4378-a19c-b022224e3f45@redhat.com>
+Date: Tue, 16 Apr 2024 09:47:44 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH v8 06/35] gitlab-ci: Run migration selftest
- on s390x and powerpc
-From: Thomas Huth <thuth@redhat.com>
-To: Nico Boehr <nrb@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [kvm-unit-tests PATCH v8 10/35] powerpc: interrupt stack
+ backtracing
+To: Nicholas Piggin <npiggin@gmail.com>
 References: <20240405083539.374995-1-npiggin@gmail.com>
- <20240405083539.374995-7-npiggin@gmail.com>
- <171259239221.48513.3205716585028068515@t14-nrb>
- <e6c452bd-9101-40b7-ae3b-02400fed9e42@redhat.com>
+ <20240405083539.374995-11-npiggin@gmail.com>
+From: Thomas Huth <thuth@redhat.com>
 Autocrypt: addr=thuth@redhat.com; keydata=
  xsFNBFH7eUwBEACzyOXKU+5Pcs6wNpKzrlJwzRl3VGZt95VCdb+FgoU9g11m7FWcOafrVRwU
  yYkTm9+7zBUc0sW5AuPGR/dp3pSLX/yFWsA/UB4nJsHqgDvDU7BImSeiTrnpMOTXb7Arw2a2
@@ -131,12 +129,12 @@ Autocrypt: addr=thuth@redhat.com; keydata=
  oiT+z+/E59qj/EKfyce3sbC9XLjXv3mHMrq1tKX4G7IJGnS989E/fg6crv6NHae9Ckm7+lSs
  IQu4bBP2GxiRQ+NV3iV/KU3ebMRzqIC//DCOxzQNFNJAKldPe/bKZMCxEqtVoRkuJtNdp/5a
  yXFZ6TfE1hGKrDBYAm4vrnZ4CXFSBDllL59cFFOJCkn4Xboj/aVxxJxF30bn
-In-Reply-To: <e6c452bd-9101-40b7-ae3b-02400fed9e42@redhat.com>
+In-Reply-To: <20240405083539.374995-11-npiggin@gmail.com>
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -152,47 +150,20 @@ Cc: Laurent Vivier <lvivier@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/04/2024 21.22, Thomas Huth wrote:
-> On 08/04/2024 18.06, Nico Boehr wrote:
->> Quoting Nicholas Piggin (2024-04-05 10:35:07)
->>> The migration harness is complicated and easy to break so CI will
->>> be helpful.
->>>
->>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>> ---
->>>   .gitlab-ci.yml      | 32 +++++++++++++++++++++++---------
->>>   s390x/unittests.cfg |  8 ++++++++
->>>   2 files changed, 31 insertions(+), 9 deletions(-)
->>>
->>> diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
->>> index ff34b1f50..60b3cdfd2 100644
->>> --- a/.gitlab-ci.yml
->>> +++ b/.gitlab-ci.yml
->> [...]
->>> @@ -135,7 +147,7 @@ build-riscv64:
->>>   build-s390x:
->>>    extends: .outoftree_template
->>>    script:
->>> - - dnf install -y qemu-system-s390x gcc-s390x-linux-gnu
->>> + - dnf install -y qemu-system-s390x gcc-s390x-linux-gnu nmap-ncat
->>>    - mkdir build
->>>    - cd build
->>>    - ../configure --arch=s390x --cross-prefix=s390x-linux-gnu-
->>> @@ -161,6 +173,8 @@ build-s390x:
->>>         sclp-1g
->>>         sclp-3g
->>>         selftest-setup
->>> +      selftest-migration-kvm
->>
->> We're running under TCG in the Gitlab CI. I'm a little bit confused why
->> we're running a KVM-only test here.
+On 05/04/2024 10.35, Nicholas Piggin wrote:
+> Add support for backtracing across interrupt stacks, and add
+> interrupt frame backtrace for unhandled interrupts.
 > 
-> The build-s390x job is TCG, indeed, but we have the "s390x-kvm" job that 
-> runs on a KVM-capable s390x host, so it could be added there?
+> This requires a back-chain created from initial interrupt stack
+> frame to the r1 value of the interrupted context. A label is
+> added at the return location of the exception handler call, so
+> the unwinder can recognize the initial interrupt frame.
+> 
+> The additional cstart entry-frame is no longer required because
+> the unwinder now looks for frame == 0 as well as address == 0.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
 
-I now gave it a try and it seems to work, so I updated this patch and pushed 
-it to the repository now.
-
-  Thomas
-
+Acked-by: Thomas Huth <thuth@redhat.com>
 
