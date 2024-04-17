@@ -4,68 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99153C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2024 00:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E347C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2024 23:34:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=motorola.com header.i=@motorola.com header.a=rsa-sha256 header.s=DKIM202306 header.b=HUJud35s;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ctJEl6Ox;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VK1R35FPzz3cQm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Apr 2024 10:06:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VKcgV3cGfz3d32
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2024 09:34:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=motorola.com header.i=@motorola.com header.a=rsa-sha256 header.s=DKIM202306 header.b=HUJud35s;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ctJEl6Ox;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=motorola.com (client-ip=148.163.148.104; helo=mx0a-00823401.pphosted.com; envelope-from=mbland@motorola.com; receiver=lists.ozlabs.org)
-Received: from mx0a-00823401.pphosted.com (mx0a-00823401.pphosted.com [148.163.148.104])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VK0kw1gyBz30Kd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2024 09:35:02 +1000 (AEST)
-Received: from pps.filterd (m0355086.ppops.net [127.0.0.1])
-	by mx0a-00823401.pphosted.com (8.17.1.24/8.17.1.24) with ESMTP id 43GFWY7R014135;
-	Tue, 16 Apr 2024 17:12:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=motorola.com; h=
-	message-id:in-reply-to:references:to:cc:date:from; s=DKIM202306;
-	 bh=+0oKsuxOJ+ao+KImx0m/FxKr962etjTELMfZAVNTvR0=; b=HUJud35sONT3
-	12p5bcMnws6f9rYRgcVlt4KyduO+HKJrcwuWnQFyp4ttaKrplmKIZCJO7QAHussz
-	H1JDq3AQAX2O917Y2Tso21atXf7jJrUEAlleRF6ynAEBMUIjBrGcSAZSrv6v2lI4
-	qDTMb+reewQi4cDuQ24UI/bj1/eAUF8x7Fefq3Qu9rBorSHsAX/mJW+cW7/5k/ZW
-	zx5QcNrBjKgIEiy4AZKILeAvA1e3L+GNU8GGdGXsAXuCgGhj6vLDExaCRSht/Do3
-	4C/UtZEAMpMG66zyM8feuC+GuKi0Wgg4KckxQS/INHpjcM37PInnPqxfrfuNg+N5
-	JPxWLri1lQ==
-Received: from va32lpfpp04.lenovo.com ([104.232.228.24])
-	by mx0a-00823401.pphosted.com (PPS) with ESMTPS id 3xh8qsv4vg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 16 Apr 2024 17:12:42 +0000 (GMT)
-Received: from va32lmmrp01.lenovo.com (va32lmmrp01.mot.com [10.62.177.113])
-	(using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by va32lpfpp04.lenovo.com (Postfix) with ESMTPS id 4VJrFj1NRGzj9hF;
-	Tue, 16 Apr 2024 17:12:41 +0000 (UTC)
-Received: from ilclbld243.mot.com (ilclbld243.mot.com [100.64.22.29])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	(Authenticated sender: mbland)
-	by va32lmmrp01.lenovo.com (Postfix) with ESMTPSA id 4VJrFj0wt7z2VZS6;
-	Tue, 16 Apr 2024 17:12:41 +0000 (UTC)
-Message-Id: <20240416120827.062020959-6-mbland@motorola.com>
-In-Reply-To: <20240416120827.062020959-1-mbland@motorola.com>
-References: <20240416120827.062020959-1-mbland@motorola.com>
-To: linux-mm@kvack.org
-Date: Tue, 16 Apr 2024 17:12:41 +0000 (UTC)
-From: mbland@motorola.com
-X-Proofpoint-GUID: P1eiHsdOlOVx1OG-b5rNCTNCTl9E_MmU
-X-Proofpoint-ORIG-GUID: P1eiHsdOlOVx1OG-b5rNCTNCTl9E_MmU
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.272,Aquarius:18.0.1011,Hydra:6.0.619,FMLib:17.11.176.26
- definitions=2024-04-16_14,2024-04-16_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- bulkscore=0 lowpriorityscore=0 mlxscore=0 adultscore=0 phishscore=0
- suspectscore=0 malwarescore=0 clxscore=1011 spamscore=0 mlxlogscore=999
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2404010003 definitions=main-2404160107
-X-Mailman-Approved-At: Wed, 17 Apr 2024 10:05:40 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VKcfZ3nyqz3cBK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2024 09:33:26 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id BC8CB61616
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2024 23:33:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 251BEC32781
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2024 23:33:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1713396803;
+	bh=UVEJ59zmDjoboUO24xHkWUbtsfOaV4nMW96i+du0QWo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=ctJEl6OxbGN0Xa/zKZdRG4cmrNUa++7Za0jkJ76ZtS4yvfvZKwVdaTK6WvFe8qq4C
+	 3ubstYMLecmqUf7Ha1ZgPPuqdQCxKklwq+lyjmMnjegcfFrb3zYZZ8krQoi+g2yTe3
+	 1vkOF62ScCXzORqJTdBDsldzwZZCh3zMfKFWBWNgiEhQia++pLQr+3c9KsBx6W/8us
+	 IgbFDf2xdbJbGhNFpf1JmYC0vs8MUefllz7TMoEY7laoJOdYwDEFsi99WbLhKzvKWl
+	 5yYEVDRugTnRDaLu4cR88b/98Fy3f0gn/lzUqzLNogkEZMT9UHZdN790vLRHsHK2EP
+	 N1ddMLXRw9eYw==
+Received: by mail-ed1-f47.google.com with SMTP id 4fb4d7f45d1cf-56e47843cc7so236743a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Apr 2024 16:33:23 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWUlJsUVAlqaa6duEdt1g+ZGj+tMe7pLuSdPMMbJozPanlb/82zrLz9vz+ZEBNyuvfu5+oklhCSua3LHm746JL40zOak4B1vpAwvDSPsw==
+X-Gm-Message-State: AOJu0YxXa+T7fJtgxbjItHMaARl6uXSKGVQw6EQgSixtt2JfPyQkMsfd
+	hBIAJF4lMOBX2UjVEDzG7qKzi4ITcJNY3yINhAEwQ0cWY/9FzR3pdNdD9e1e9iJj4c5FMJYOSyn
+	15yFnY2Sge2NJgXVnlkUaptGFIfA=
+X-Google-Smtp-Source: AGHT+IEHuhOgcI3i5xgKWDt/RXWKyZ/pV78ei3ikSzZKT8X4nbojHe59GGn0FqOU5qFFQVvC8y10X+N0SPB8sxHbE0Q=
+X-Received: by 2002:a05:6512:3184:b0:519:b95:22b5 with SMTP id
+ i4-20020a056512318400b005190b9522b5mr446945lfe.51.1713396780753; Wed, 17 Apr
+ 2024 16:33:00 -0700 (PDT)
+MIME-Version: 1.0
+References: <20240411160051.2093261-1-rppt@kernel.org> <20240411160051.2093261-6-rppt@kernel.org>
+ <20240415075241.GF40213@noisy.programming.kicks-ass.net> <Zh1lnIdgFeM1o8S5@FVFF77S0Q05N.cambridge.arm.com>
+ <Zh4nJp8rv1qRBs8m@kernel.org>
+In-Reply-To: <Zh4nJp8rv1qRBs8m@kernel.org>
+From: Song Liu <song@kernel.org>
+Date: Wed, 17 Apr 2024 16:32:49 -0700
+X-Gmail-Original-Message-ID: <CAPhsuW6Pbg2k_Gu4dsBx+H8H5XCHvNdtEZJBPiG_eT0qqr9D1w@mail.gmail.com>
+Message-ID: <CAPhsuW6Pbg2k_Gu4dsBx+H8H5XCHvNdtEZJBPiG_eT0qqr9D1w@mail.gmail.com>
+Subject: Re: [PATCH v4 05/15] mm: introduce execmem_alloc() and execmem_free()
+To: Mike Rapoport <rppt@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,227 +71,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Maxwell Bland <mbland@motorola.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Russell King <linux@armlinux.org.uk>, linux-mm@kvack.org, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, linux-mips@vger.kernel.org, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, netdev@vger.kernel.org, Kent Overstreet <kent.overstree
+ t@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Bjorn Topel <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Catalin Marinas <catalin.marinas@arm.com>,
-Will Deacon <will@kernel.org>,
-Michael Ellerman <mpe@ellerman.id.au>,
-Nicholas Piggin <npiggin@gmail.com>,
-Christophe Leroy <christophe.leroy@csgroup.eu>,
-"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
-"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
-Paul Walmsley <paul.walmsley@sifive.com>,
-Palmer Dabbelt <palmer@dabbelt.com>,
-Albert Ou <aou@eecs.berkeley.edu>,
-Alexander Gordeev <agordeev@linux.ibm.com>,
-Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-Heiko Carstens <hca@linux.ibm.com>,
-Vasily Gorbik <gor@linux.ibm.com>,
-Christian Borntraeger <borntraeger@linux.ibm.com>,
-Sven Schnelle <svens@linux.ibm.com>,
-Dave Hansen <dave.hansen@linux.intel.com>,
-Andy Lutomirski <luto@kernel.org>,
-Peter Zijlstra <peterz@infradead.org>,
-Thomas Gleixner <tglx@linutronix.de>,
-Ingo Molnar <mingo@redhat.com>,
-Borislav Petkov <bp@alien8.de>,
-x86@kernel.org,
-"H. Peter Anvin" <hpa@zytor.com>,
-Andrew Morton <akpm@linux-foundation.org>,
-Ard Biesheuvel <ardb@kernel.org>,
-Mark Rutland <mark.rutland@arm.com>,
-Maxwell Bland <mbland@motorola.com>,
-Alexandre Ghiti <alexghiti@rivosinc.com>,
-Yu Chien Peter Lin <peterlin@andestech.com>,
-Song Shuai <suagrfillet@gmail.com>,
-linux-arm-kernel@lists.infradead.org,
-linux-kernel@vger.kernel.org,
-linuxppc-dev@lists.ozlabs.org,
-linux-riscv@lists.infradead.org,
-linux-s390@vger.kernel.org
-From: Maxwell Bland <mbland@motorola.com>
-Date: Mon, 15 Apr 2024 14:51:32 -0500
-Subject: [PATCH 5/5] ptdump: add state parameter for non-leaf callback
+On Tue, Apr 16, 2024 at 12:23=E2=80=AFAM Mike Rapoport <rppt@kernel.org> wr=
+ote:
+>
+> On Mon, Apr 15, 2024 at 06:36:39PM +0100, Mark Rutland wrote:
+> > On Mon, Apr 15, 2024 at 09:52:41AM +0200, Peter Zijlstra wrote:
+> > > On Thu, Apr 11, 2024 at 07:00:41PM +0300, Mike Rapoport wrote:
+> > > > +/**
+> > > > + * enum execmem_type - types of executable memory ranges
+> > > > + *
+> > > > + * There are several subsystems that allocate executable memory.
+> > > > + * Architectures define different restrictions on placement,
+> > > > + * permissions, alignment and other parameters for memory that can=
+ be used
+> > > > + * by these subsystems.
+> > > > + * Types in this enum identify subsystems that allocate executable=
+ memory
+> > > > + * and let architectures define parameters for ranges suitable for
+> > > > + * allocations by each subsystem.
+> > > > + *
+> > > > + * @EXECMEM_DEFAULT: default parameters that would be used for typ=
+es that
+> > > > + * are not explcitly defined.
+> > > > + * @EXECMEM_MODULE_TEXT: parameters for module text sections
+> > > > + * @EXECMEM_KPROBES: parameters for kprobes
+> > > > + * @EXECMEM_FTRACE: parameters for ftrace
+> > > > + * @EXECMEM_BPF: parameters for BPF
+> > > > + * @EXECMEM_TYPE_MAX:
+> > > > + */
+> > > > +enum execmem_type {
+> > > > + EXECMEM_DEFAULT,
+> > > > + EXECMEM_MODULE_TEXT =3D EXECMEM_DEFAULT,
+> > > > + EXECMEM_KPROBES,
+> > > > + EXECMEM_FTRACE,
+> > > > + EXECMEM_BPF,
+> > > > + EXECMEM_TYPE_MAX,
+> > > > +};
+> > >
+> > > Can we please get a break-down of how all these types are actually
+> > > different from one another?
+> > >
+> > > I'm thinking some platforms have a tiny immediate space (arm64 comes =
+to
+> > > mind) and has less strict placement constraints for some of them?
+> >
+> > Yeah, and really I'd *much* rather deal with that in arch code, as I ha=
+ve said
+> > several times.
+> >
+> > For arm64 we have two bsaic restrictions:
+> >
+> > 1) Direct branches can go +/-128M
+> >    We can expand this range by having direct branches go to PLTs, at a
+> >    performance cost.
+> >
+> > 2) PREL32 relocations can go +/-2G
+> >    We cannot expand this further.
+> >
+> > * We don't need to allocate memory for ftrace. We do not use trampoline=
+s.
+> >
+> > * Kprobes XOL areas don't care about either of those; we don't place an=
+y
+> >   PC-relative instructions in those. Maybe we want to in future.
+> >
+> > * Modules care about both; we'd *prefer* to place them within +/-128M o=
+f all
+> >   other kernel/module code, but if there's no space we can use PLTs and=
+ expand
+> >   that to +/-2G. Since modules can refreence other modules, that ends u=
+p
+> >   actually being halved, and modules have to fit within some 2G window =
+that
+> >   also covers the kernel.
 
-ptdump can now note non-leaf descriptor entries, a useful addition for
-debugging table descriptor permissions when working on related code
+Is +/- 2G enough for all realistic use cases? If so, I guess we don't
+really need
+EXECMEM_ANYWHERE below?
 
-Signed-off-by: Maxwell Bland <mbland@motorola.com>
----
- arch/arm64/mm/ptdump.c          |  6 ++++--
- arch/powerpc/mm/ptdump/ptdump.c |  2 ++
- arch/riscv/mm/ptdump.c          |  6 ++++--
- arch/s390/mm/dump_pagetables.c  |  6 ++++--
- arch/x86/mm/dump_pagetables.c   |  3 ++-
- include/linux/ptdump.h          |  1 +
- mm/ptdump.c                     | 13 +++++++++++++
- 7 files changed, 30 insertions(+), 7 deletions(-)
+> >
+> > * I'm not sure about BPF's requirements; it seems happy doing the same =
+as
+> >   modules.
+>
+> BPF are happy with vmalloc().
+>
+> > So if we *must* use a common execmem allocator, what we'd reall want is=
+ our own
+> > types, e.g.
+> >
+> >       EXECMEM_ANYWHERE
+> >       EXECMEM_NOPLT
+> >       EXECMEM_PREL32
+> >
+> > ... and then we use those in arch code to implement module_alloc() and =
+friends.
+>
+> I'm looking at execmem_types more as definition of the consumers, maybe I
+> should have named the enum execmem_consumer at the first place.
 
-diff --git a/arch/arm64/mm/ptdump.c b/arch/arm64/mm/ptdump.c
-index 796231a4fd63..1a6f4a3513e5 100644
---- a/arch/arm64/mm/ptdump.c
-+++ b/arch/arm64/mm/ptdump.c
-@@ -299,7 +299,8 @@ void ptdump_walk(struct seq_file *s, struct ptdump_info *info)
- 			.range = (struct ptdump_range[]){
- 				{info->base_addr, end},
- 				{0, 0}
--			}
-+			},
-+			.note_non_leaf = false
- 		}
- 	};
- 
-@@ -335,7 +336,8 @@ bool ptdump_check_wx(void)
- 			.range = (struct ptdump_range[]) {
- 				{_PAGE_OFFSET(vabits_actual), ~0UL},
- 				{0, 0}
--			}
-+			},
-+			.note_non_leaf = false
- 		}
- 	};
- 
-diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
-index 9dc239967b77..89e673f5fd3d 100644
---- a/arch/powerpc/mm/ptdump/ptdump.c
-+++ b/arch/powerpc/mm/ptdump/ptdump.c
-@@ -307,6 +307,7 @@ static int ptdump_show(struct seq_file *m, void *v)
- 		.ptdump = {
- 			.note_page = note_page,
- 			.range = ptdump_range,
-+			.note_non_leaf = false
- 		}
- 	};
- 
-@@ -340,6 +341,7 @@ bool ptdump_check_wx(void)
- 		.ptdump = {
- 			.note_page = note_page,
- 			.range = ptdump_range,
-+			.note_non_leaf = false
- 		}
- 	};
- 
-diff --git a/arch/riscv/mm/ptdump.c b/arch/riscv/mm/ptdump.c
-index 1289cc6d3700..b355633afcaf 100644
---- a/arch/riscv/mm/ptdump.c
-+++ b/arch/riscv/mm/ptdump.c
-@@ -328,7 +328,8 @@ static void ptdump_walk(struct seq_file *s, struct ptd_mm_info *pinfo)
- 			.range = (struct ptdump_range[]) {
- 				{pinfo->base_addr, pinfo->end},
- 				{0, 0}
--			}
-+			},
-+			.note_non_leaf = false
- 		}
- 	};
- 
-@@ -350,7 +351,8 @@ bool ptdump_check_wx(void)
- 			.range = (struct ptdump_range[]) {
- 				{KERN_VIRT_START, ULONG_MAX},
- 				{0, 0}
--			}
-+			},
-+			.note_non_leaf = false
- 		}
- 	};
- 
-diff --git a/arch/s390/mm/dump_pagetables.c b/arch/s390/mm/dump_pagetables.c
-index ffd07ed7b4af..6468cfd53e2a 100644
---- a/arch/s390/mm/dump_pagetables.c
-+++ b/arch/s390/mm/dump_pagetables.c
-@@ -200,7 +200,8 @@ bool ptdump_check_wx(void)
- 			.range = (struct ptdump_range[]) {
- 				{.start = 0, .end = max_addr},
- 				{.start = 0, .end = 0},
--			}
-+			},
-+			.note_non_leaf = false
- 		},
- 		.seq = NULL,
- 		.level = -1,
-@@ -239,7 +240,8 @@ static int ptdump_show(struct seq_file *m, void *v)
- 			.range = (struct ptdump_range[]) {
- 				{.start = 0, .end = max_addr},
- 				{.start = 0, .end = 0},
--			}
-+			},
-+			.note_non_leaf = false
- 		},
- 		.seq = m,
- 		.level = -1,
-diff --git a/arch/x86/mm/dump_pagetables.c b/arch/x86/mm/dump_pagetables.c
-index 89079ea73e65..43f00dfb955f 100644
---- a/arch/x86/mm/dump_pagetables.c
-+++ b/arch/x86/mm/dump_pagetables.c
-@@ -380,7 +380,8 @@ bool ptdump_walk_pgd_level_core(struct seq_file *m,
- 		.ptdump = {
- 			.note_page	= note_page,
- 			.effective_prot = effective_prot,
--			.range		= ptdump_ranges
-+			.range		= ptdump_ranges,
-+			.note_non_leaf  = false
- 		},
- 		.level = -1,
- 		.to_dmesg	= dmesg,
-diff --git a/include/linux/ptdump.h b/include/linux/ptdump.h
-index 8dbd51ea8626..b3e793a5c77f 100644
---- a/include/linux/ptdump.h
-+++ b/include/linux/ptdump.h
-@@ -16,6 +16,7 @@ struct ptdump_state {
- 			  int level, u64 val);
- 	void (*effective_prot)(struct ptdump_state *st, int level, u64 val);
- 	const struct ptdump_range *range;
-+	bool note_non_leaf;
- };
- 
- bool ptdump_walk_pgd_level_core(struct seq_file *m,
-diff --git a/mm/ptdump.c b/mm/ptdump.c
-index 106e1d66e9f9..97da7a765b22 100644
---- a/mm/ptdump.c
-+++ b/mm/ptdump.c
-@@ -41,6 +41,9 @@ static int ptdump_pgd_entry(pgd_t *pgd, unsigned long addr,
- 	if (st->effective_prot)
- 		st->effective_prot(st, 0, pgd_val(val));
- 
-+	if (st->note_non_leaf && !pgd_leaf(val))
-+		st->note_page(st, addr, 0, pgd_val(val));
-+
- 	if (pgd_leaf(val)) {
- 		st->note_page(st, addr, 0, pgd_val(val));
- 		walk->action = ACTION_CONTINUE;
-@@ -64,6 +67,9 @@ static int ptdump_p4d_entry(p4d_t *p4d, unsigned long addr,
- 	if (st->effective_prot)
- 		st->effective_prot(st, 1, p4d_val(val));
- 
-+	if (st->note_non_leaf && !p4d_leaf(val))
-+		st->note_page(st, addr, 1, p4d_val(val));
-+
- 	if (p4d_leaf(val)) {
- 		st->note_page(st, addr, 1, p4d_val(val));
- 		walk->action = ACTION_CONTINUE;
-@@ -87,6 +93,9 @@ static int ptdump_pud_entry(pud_t *pud, unsigned long addr,
- 	if (st->effective_prot)
- 		st->effective_prot(st, 2, pud_val(val));
- 
-+	if (st->note_non_leaf && !pud_leaf(val))
-+		st->note_page(st, addr, 2, pud_val(val));
-+
- 	if (pud_leaf(val)) {
- 		st->note_page(st, addr, 2, pud_val(val));
- 		walk->action = ACTION_CONTINUE;
-@@ -108,6 +117,10 @@ static int ptdump_pmd_entry(pmd_t *pmd, unsigned long addr,
- 
- 	if (st->effective_prot)
- 		st->effective_prot(st, 3, pmd_val(val));
-+
-+	if (st->note_non_leaf && !pmd_leaf(val))
-+		st->note_page(st, addr, 3, pmd_val(val));
-+
- 	if (pmd_leaf(val)) {
- 		st->note_page(st, addr, 3, pmd_val(val));
- 		walk->action = ACTION_CONTINUE;
--- 
-2.39.2
+I think looking at execmem_type from consumers' point of view adds
+unnecessary complexity. IIUC, for most (if not all) archs, ftrace, kprobe,
+and bpf (and maybe also module text) all have the same requirements.
+Did I miss something?
 
+IOW, we have
+
+enum execmem_type {
+        EXECMEM_DEFAULT,
+        EXECMEM_TEXT,
+        EXECMEM_KPROBES =3D EXECMEM_TEXT,
+        EXECMEM_FTRACE =3D EXECMEM_TEXT,
+        EXECMEM_BPF =3D EXECMEM_TEXT,      /* we may end up without
+_KPROBE, _FTRACE, _BPF */
+        EXECMEM_DATA,  /* rw */
+        EXECMEM_RO_DATA,
+        EXECMEM_RO_AFTER_INIT,
+        EXECMEM_TYPE_MAX,
+};
+
+Does this make sense?
+
+Thanks,
+Song
