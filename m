@@ -4,55 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A9C3C04FF8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2024 15:37:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8899CC04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2024 16:14:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aeWcQxDn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QKWF8JTq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VL23R6qspz3dL2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2024 01:37:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VL2t10tdlz3dSM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2024 02:14:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aeWcQxDn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QKWF8JTq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=song@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VL22d5HDdz3cVM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2024 01:37:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VL2s852HDz3cWp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2024 02:14:04 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 2418A6189A;
-	Thu, 18 Apr 2024 15:37:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19B5DC113CC;
-	Thu, 18 Apr 2024 15:36:54 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id AFF1ACE185D
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2024 16:14:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7322C3277B
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2024 16:14:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713454626;
-	bh=/6e7koqBjxGvjgcyfyqozsKjWrzhFa989KlG6h+G83A=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aeWcQxDnlnHobtWl/wSsLjnz0sXveyb3C9ZWUzhRio2isgl/ECkWL5MfHpcmEMTW7
-	 /3gTsH9zle5F7iUK2MtYGoEYVXSVNBMbfrRBJdAbuLXT5C4Rci/tim3vMb2/HkXNT3
-	 0BdaT4fZ5qEwRw4j04psUJzOpDE+rRKi3VjZ9pFXSPLklZtfjmSfaFH4UR8286lGH5
-	 60/sHoFS02dtG3EW7cMEMNkjH3P1jYGW/oaOVey/LIzfE2ojr8NLFIf5bqbQCitx7d
-	 hsc5w5cHL6aJI5zSA/0oAAIzFKyYOhtBXIDwcp4O2/SqIU/0gLgXdRamRK8O7d7lre
-	 JIoqk7vYwCgbA==
-Date: Thu, 18 Apr 2024 18:35:48 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Song Liu <song@kernel.org>
-Subject: Re: [PATCH v4 05/15] mm: introduce execmem_alloc() and execmem_free()
-Message-ID: <ZiE91CJcNw7gBj9g@kernel.org>
-References: <20240411160051.2093261-1-rppt@kernel.org>
- <20240411160051.2093261-6-rppt@kernel.org>
- <20240415075241.GF40213@noisy.programming.kicks-ass.net>
- <Zh1lnIdgFeM1o8S5@FVFF77S0Q05N.cambridge.arm.com>
- <Zh4nJp8rv1qRBs8m@kernel.org>
- <CAPhsuW6Pbg2k_Gu4dsBx+H8H5XCHvNdtEZJBPiG_eT0qqr9D1w@mail.gmail.com>
+	s=k20201202; t=1713456841;
+	bh=q/TFlw8SQh+Cko4nU/ng2SJ+spicGdHxGtHPBf/Abnk=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=QKWF8JTqm58INLwGllp0FpCdKA+4HVthmQGojPwlLwz/CzvDupBln2tDa0JxxVT3h
+	 9I7DpSmJ8lOrojowdqSiCh2qcPLKXHcJWahr/LsRKoimlCRLEGzrENrG3o9kFH+usO
+	 i5Uoall6+ng5DIWhZcIBvHqNjg1V9YxU/O3gqnfaquqVpvjeUa1Ln7x3DimeC08fFd
+	 hg+ro7zsoce8fMGXC9TZUX4AVwsN42ulovUJae+4eeUwyJYlzcMgZJLHMlMif6hKb8
+	 XAy19kJzQAz55LYLEJJVfb5Ee/I081i7hdGhY0gcdzrCOy2SjjHFiLjMG16M8+ZMXw
+	 edLWR6CS/8U/g==
+Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-2d717603aa5so14117291fa.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Apr 2024 09:14:01 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUUYo3JplVE5R6jo/MBOI5eWiLbBs2lqUFHISdoubJ5j8ReyW/R7t1wHykXi+TN5NlKATA2sMx5XPgxJsVfJQW8mNM0ApqIRN3Ka/NQBA==
+X-Gm-Message-State: AOJu0YwTlh9ilsY0I9f3mWFcWQPDOlRCMMBdcGsPLuoVXM3m6VpBjkXh
+	gvs5/qIrUcVMJWzy3V5Czl53oZyxnucQHP9Bwrw3HbPiA4VNHhXGOlv1MjXkqalHBbuZiqBm1QO
+	EhSzPaXXc+zLy9l7UGjV39TpDGzc=
+X-Google-Smtp-Source: AGHT+IHLiDWbpJNv5cpg7tSucX1RJbILlT9QE6EE0zaOt0RsDuLJ8JfO9fqfVmmivnqe0091gRHYHRJJ+tsSYBR5kLA=
+X-Received: by 2002:ac2:5fad:0:b0:519:569b:361b with SMTP id
+ s13-20020ac25fad000000b00519569b361bmr1973077lfe.63.1713456819439; Thu, 18
+ Apr 2024 09:13:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPhsuW6Pbg2k_Gu4dsBx+H8H5XCHvNdtEZJBPiG_eT0qqr9D1w@mail.gmail.com>
+References: <20240411160051.2093261-1-rppt@kernel.org> <20240411160051.2093261-6-rppt@kernel.org>
+ <20240415075241.GF40213@noisy.programming.kicks-ass.net> <Zh1lnIdgFeM1o8S5@FVFF77S0Q05N.cambridge.arm.com>
+ <Zh4nJp8rv1qRBs8m@kernel.org> <CAPhsuW6Pbg2k_Gu4dsBx+H8H5XCHvNdtEZJBPiG_eT0qqr9D1w@mail.gmail.com>
+ <ZiE91CJcNw7gBj9g@kernel.org>
+In-Reply-To: <ZiE91CJcNw7gBj9g@kernel.org>
+From: Song Liu <song@kernel.org>
+Date: Thu, 18 Apr 2024 09:13:27 -0700
+X-Gmail-Original-Message-ID: <CAPhsuW4au6v8k8Ab7Ff6Yj64rGvZ7wkz=Xrgh8ZZtLyscpChqQ@mail.gmail.com>
+Message-ID: <CAPhsuW4au6v8k8Ab7Ff6Yj64rGvZ7wkz=Xrgh8ZZtLyscpChqQ@mail.gmail.com>
+Subject: Re: [PATCH v4 05/15] mm: introduce execmem_alloc() and execmem_free()
+To: Mike Rapoport <rppt@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,124 +77,82 @@ Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Peter Zijlstra <peterz@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 17, 2024 at 04:32:49PM -0700, Song Liu wrote:
-> On Tue, Apr 16, 2024 at 12:23 AM Mike Rapoport <rppt@kernel.org> wrote:
+On Thu, Apr 18, 2024 at 8:37=E2=80=AFAM Mike Rapoport <rppt@kernel.org> wro=
+te:
+>
+[...]
 > >
-> > On Mon, Apr 15, 2024 at 06:36:39PM +0100, Mark Rutland wrote:
-> > > On Mon, Apr 15, 2024 at 09:52:41AM +0200, Peter Zijlstra wrote:
-> > > > On Thu, Apr 11, 2024 at 07:00:41PM +0300, Mike Rapoport wrote:
-> > > > > +/**
-> > > > > + * enum execmem_type - types of executable memory ranges
-> > > > > + *
-> > > > > + * There are several subsystems that allocate executable memory.
-> > > > > + * Architectures define different restrictions on placement,
-> > > > > + * permissions, alignment and other parameters for memory that can be used
-> > > > > + * by these subsystems.
-> > > > > + * Types in this enum identify subsystems that allocate executable memory
-> > > > > + * and let architectures define parameters for ranges suitable for
-> > > > > + * allocations by each subsystem.
-> > > > > + *
-> > > > > + * @EXECMEM_DEFAULT: default parameters that would be used for types that
-> > > > > + * are not explcitly defined.
-> > > > > + * @EXECMEM_MODULE_TEXT: parameters for module text sections
-> > > > > + * @EXECMEM_KPROBES: parameters for kprobes
-> > > > > + * @EXECMEM_FTRACE: parameters for ftrace
-> > > > > + * @EXECMEM_BPF: parameters for BPF
-> > > > > + * @EXECMEM_TYPE_MAX:
-> > > > > + */
-> > > > > +enum execmem_type {
-> > > > > + EXECMEM_DEFAULT,
-> > > > > + EXECMEM_MODULE_TEXT = EXECMEM_DEFAULT,
-> > > > > + EXECMEM_KPROBES,
-> > > > > + EXECMEM_FTRACE,
-> > > > > + EXECMEM_BPF,
-> > > > > + EXECMEM_TYPE_MAX,
-> > > > > +};
+> > Is +/- 2G enough for all realistic use cases? If so, I guess we don't
+> > really need
+> > EXECMEM_ANYWHERE below?
+> >
 > > > >
-> > > > Can we please get a break-down of how all these types are actually
-> > > > different from one another?
+> > > > * I'm not sure about BPF's requirements; it seems happy doing the s=
+ame as
+> > > >   modules.
+> > >
+> > > BPF are happy with vmalloc().
+> > >
+> > > > So if we *must* use a common execmem allocator, what we'd reall wan=
+t is our own
+> > > > types, e.g.
 > > > >
-> > > > I'm thinking some platforms have a tiny immediate space (arm64 comes to
-> > > > mind) and has less strict placement constraints for some of them?
+> > > >       EXECMEM_ANYWHERE
+> > > >       EXECMEM_NOPLT
+> > > >       EXECMEM_PREL32
+> > > >
+> > > > ... and then we use those in arch code to implement module_alloc() =
+and friends.
 > > >
-> > > Yeah, and really I'd *much* rather deal with that in arch code, as I have said
-> > > several times.
-> > >
-> > > For arm64 we have two bsaic restrictions:
-> > >
-> > > 1) Direct branches can go +/-128M
-> > >    We can expand this range by having direct branches go to PLTs, at a
-> > >    performance cost.
-> > >
-> > > 2) PREL32 relocations can go +/-2G
-> > >    We cannot expand this further.
-> > >
-> > > * We don't need to allocate memory for ftrace. We do not use trampolines.
-> > >
-> > > * Kprobes XOL areas don't care about either of those; we don't place any
-> > >   PC-relative instructions in those. Maybe we want to in future.
-> > >
-> > > * Modules care about both; we'd *prefer* to place them within +/-128M of all
-> > >   other kernel/module code, but if there's no space we can use PLTs and expand
-> > >   that to +/-2G. Since modules can refreence other modules, that ends up
-> > >   actually being halved, and modules have to fit within some 2G window that
-> > >   also covers the kernel.
-> 
-> Is +/- 2G enough for all realistic use cases? If so, I guess we don't
-> really need
-> EXECMEM_ANYWHERE below?
-> 
-> > >
-> > > * I'm not sure about BPF's requirements; it seems happy doing the same as
-> > >   modules.
+> > > I'm looking at execmem_types more as definition of the consumers, may=
+be I
+> > > should have named the enum execmem_consumer at the first place.
 > >
-> > BPF are happy with vmalloc().
+> > I think looking at execmem_type from consumers' point of view adds
+> > unnecessary complexity. IIUC, for most (if not all) archs, ftrace, kpro=
+be,
+> > and bpf (and maybe also module text) all have the same requirements.
+> > Did I miss something?
+>
+> It's enough to have one architecture with different constrains for kprobe=
+s
+> and bpf to warrant a type for each.
+>
+
+AFAICT, some of these constraints can be changed without too much work.
+
+> Where do you see unnecessary complexity?
+>
+> > IOW, we have
 > >
-> > > So if we *must* use a common execmem allocator, what we'd reall want is our own
-> > > types, e.g.
-> > >
-> > >       EXECMEM_ANYWHERE
-> > >       EXECMEM_NOPLT
-> > >       EXECMEM_PREL32
-> > >
-> > > ... and then we use those in arch code to implement module_alloc() and friends.
+> > enum execmem_type {
+> >         EXECMEM_DEFAULT,
+> >         EXECMEM_TEXT,
+> >         EXECMEM_KPROBES =3D EXECMEM_TEXT,
+> >         EXECMEM_FTRACE =3D EXECMEM_TEXT,
+> >         EXECMEM_BPF =3D EXECMEM_TEXT,      /* we may end up without
+> > _KPROBE, _FTRACE, _BPF */
+> >         EXECMEM_DATA,  /* rw */
+> >         EXECMEM_RO_DATA,
+> >         EXECMEM_RO_AFTER_INIT,
+> >         EXECMEM_TYPE_MAX,
+> > };
 > >
-> > I'm looking at execmem_types more as definition of the consumers, maybe I
-> > should have named the enum execmem_consumer at the first place.
-> 
-> I think looking at execmem_type from consumers' point of view adds
-> unnecessary complexity. IIUC, for most (if not all) archs, ftrace, kprobe,
-> and bpf (and maybe also module text) all have the same requirements.
-> Did I miss something?
+> > Does this make sense?
+>
+> How do you suggest to deal with e.g. riscv that has separate address spac=
+es
+> for modules, kprobes and bpf?
 
-It's enough to have one architecture with different constrains for kprobes
-and bpf to warrant a type for each.
+IIUC, modules and bpf use the same address space on riscv, while kprobes us=
+e
+vmalloc address. I haven't tried this yet, but I think we can let
+kprobes use the
+same space as modules and bpf, which is:
 
-Where do you see unnecessary complexity?
- 
-> IOW, we have
-> 
-> enum execmem_type {
->         EXECMEM_DEFAULT,
->         EXECMEM_TEXT,
->         EXECMEM_KPROBES = EXECMEM_TEXT,
->         EXECMEM_FTRACE = EXECMEM_TEXT,
->         EXECMEM_BPF = EXECMEM_TEXT,      /* we may end up without
-> _KPROBE, _FTRACE, _BPF */
->         EXECMEM_DATA,  /* rw */
->         EXECMEM_RO_DATA,
->         EXECMEM_RO_AFTER_INIT,
->         EXECMEM_TYPE_MAX,
-> };
-> 
-> Does this make sense?
- 
-How do you suggest to deal with e.g. riscv that has separate address spaces
-for modules, kprobes and bpf?
+ffffffff00000000 |  -4     GB | ffffffff7fffffff |    2 GB | modules, BPF
 
-> Thanks,
-> Song
+Did I get this right?
 
--- 
-Sincerely yours,
-Mike.
+Thanks,
+Song
