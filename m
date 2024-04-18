@@ -4,56 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80727C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2024 14:20:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1597C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2024 15:39:57 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B2pNwg/h;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dhagt/Ds;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VL0L4168Gz3dK9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2024 00:20:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VL25m0kzXz3dLK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2024 01:39:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B2pNwg/h;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dhagt/Ds;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VL0KB6wpcz3cQx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2024 00:19:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VL24y6yp6z3cV6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2024 01:39:14 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 6F60961831;
-	Thu, 18 Apr 2024 14:19:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03DADC32781;
-	Thu, 18 Apr 2024 14:19:35 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id CD174CE188E;
+	Thu, 18 Apr 2024 15:39:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDB10C113CC;
+	Thu, 18 Apr 2024 15:38:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713449980;
-	bh=AUt0AvjyUjML6ZxpdeebsS26lKqvFMfvN3N/sVPtRcY=;
+	s=k20201202; t=1713454751;
+	bh=poikjUesrlZvYhdkYUVTGKAXtyh6o27VwcY88bzAEGE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=B2pNwg/hwD4GFU+j3nK1XWEUYARxusswHne4K6Z5OpMVZCZ5ULburdPwHrZg5I4iu
-	 U/y9G2YsiGlibZSfkHi7l9Xc1A1byzgoT5FVOk+X4RFIoKyf/9F5r8tzdINa6Ps8CK
-	 NPuSjycgX6VTiF+iVSS1slG1ZPMnyNtYdJWJVNkY44ow8evHMgw76zaMNBUTb1gBOc
-	 nj3GHa4KAPMpDuvEycIrwcKhHJVzFpCFK7p7pG+gbOJbi5QsNN4n2gti59vuYtfqHK
-	 aaq8X28NwfZ8l26T0x1HIRhf7nZrUbo6m75mqZ305iGTMgwp0/oNpia09G3VtqBot9
-	 UR6a8YKfras6w==
-Date: Thu, 18 Apr 2024 15:19:32 +0100
-From: Will Deacon <will@kernel.org>
-To: Sean Christopherson <seanjc@google.com>
-Subject: Re: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
-Message-ID: <20240418141932.GA1855@willie-the-truck>
-References: <20240405115815.3226315-1-pbonzini@redhat.com>
- <20240405115815.3226315-2-pbonzini@redhat.com>
- <20240412104408.GA27645@willie-the-truck>
- <86jzl2sovz.wl-maz@kernel.org>
- <ZhlLHtfeSHk9gRRO@google.com>
- <86h6g5si0m.wl-maz@kernel.org>
- <Zh1d94Pl6gneVoDd@google.com>
+	b=Dhagt/DsCV508bBCSM8PQFh0KZ4ChVYVPTqwgApoowoaluDog1pdK/qIVJU1bAfJ1
+	 yTHdqpTqCwsTRyfpVzaQYmToVgTGF005G8P5bcBRn51+TfjO6upp0QzeXZdpRVmP9T
+	 DyDQSEZc+G77sXhvEvzJVgEwHd81+hiEegtvxJRrNRYHrUsgJx5AWmHmLJX+3OoPI9
+	 DgUEekwf3Gv6AvfsAJ1j1lmBPCAVlRdxF5BEqB76VwjdS5tGiPR4UhLWWIRbIEiDfd
+	 AIVB7M07XTdJ0VLvAnDkmSjg91AV2IlHsKb94RwxZ2UFTajWhnfg+q+QMNKv4wdsDX
+	 0LvSLkPCKaqng==
+Date: Thu, 18 Apr 2024 18:37:52 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Masami Hiramatsu <masami.hiramatsu@gmail.com>
+Subject: Re: [PATCH v4 14/15] kprobes: remove dependency on CONFIG_MODULES
+Message-ID: <ZiE-UE27NalI-IeW@kernel.org>
+References: <20240411160051.2093261-1-rppt@kernel.org>
+ <20240411160051.2093261-15-rppt@kernel.org>
+ <20240418061615.5fad23b954bf317c029acc4d@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Zh1d94Pl6gneVoDd@google.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20240418061615.5fad23b954bf317c029acc4d@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,67 +60,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, Marc Zyngier <maz@kernel.org>, linux-trace-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Atish Patra <atishp@atishpatra.org>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-kernel@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, linux-perf-users@vger.kernel.org, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, Luis Chamberlain <mcgrof@kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev
+ >, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 15, 2024 at 10:03:51AM -0700, Sean Christopherson wrote:
-> On Sat, Apr 13, 2024, Marc Zyngier wrote:
-> > On Fri, 12 Apr 2024 15:54:22 +0100, Sean Christopherson <seanjc@google.com> wrote:
-> > > 
-> > > On Fri, Apr 12, 2024, Marc Zyngier wrote:
-> > > > On Fri, 12 Apr 2024 11:44:09 +0100, Will Deacon <will@kernel.org> wrote:
-> > > > > On Fri, Apr 05, 2024 at 07:58:12AM -0400, Paolo Bonzini wrote:
-> > > > > Also, if you're in the business of hacking the MMU notifier code, it
-> > > > > would be really great to change the .clear_flush_young() callback so
-> > > > > that the architecture could handle the TLB invalidation. At the moment,
-> > > > > the core KVM code invalidates the whole VMID courtesy of 'flush_on_ret'
-> > > > > being set by kvm_handle_hva_range(), whereas we could do a much
-> > > > > lighter-weight and targetted TLBI in the architecture page-table code
-> > > > > when we actually update the ptes for small ranges.
-> > > > 
-> > > > Indeed, and I was looking at this earlier this week as it has a pretty
-> > > > devastating effect with NV (it blows the shadow S2 for that VMID, with
-> > > > costly consequences).
-> > > > 
-> > > > In general, it feels like the TLB invalidation should stay with the
-> > > > code that deals with the page tables, as it has a pretty good idea of
-> > > > what needs to be invalidated and how -- specially on architectures
-> > > > that have a HW-broadcast facility like arm64.
-> > > 
-> > > Would this be roughly on par with an in-line flush on arm64?  The simpler, more
-> > > straightforward solution would be to let architectures override flush_on_ret,
-> > > but I would prefer something like the below as x86 can also utilize a range-based
-> > > flush when running as a nested hypervisor.
+Hi Masami,
+
+On Thu, Apr 18, 2024 at 06:16:15AM +0900, Masami Hiramatsu wrote:
+> Hi Mike,
 > 
-> ...
+> On Thu, 11 Apr 2024 19:00:50 +0300
+> Mike Rapoport <rppt@kernel.org> wrote:
 > 
-> > I think this works for us on HW that has range invalidation, which
-> > would already be a positive move.
+> > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
 > > 
-> > For the lesser HW that isn't range capable, it also gives the
-> > opportunity to perform the iteration ourselves or go for the nuclear
-> > option if the range is larger than some arbitrary constant (though
-> > this is additional work).
+> > kprobes depended on CONFIG_MODULES because it has to allocate memory for
+> > code.
 > > 
-> > But this still considers the whole range as being affected by
-> > range->handler(). It'd be interesting to try and see whether more
-> > precise tracking is (or isn't) generally beneficial.
+> > Since code allocations are now implemented with execmem, kprobes can be
+> > enabled in non-modular kernels.
+> > 
+> > Add #ifdef CONFIG_MODULE guards for the code dealing with kprobes inside
+> > modules, make CONFIG_KPROBES select CONFIG_EXECMEM and drop the
+> > dependency of CONFIG_KPROBES on CONFIG_MODULES.
 > 
-> I assume the idea would be to let arch code do single-page invalidations of
-> stage-2 entries for each gfn?
+> Thanks for this work, but this conflicts with the latest fix in v6.9-rc4.
+> Also, can you use IS_ENABLED(CONFIG_MODULES) instead of #ifdefs in
+> function body? We have enough dummy functions for that, so it should
+> not make a problem.
 
-Right, as it's the only code which knows which ptes actually ended up
-being aged.
+I'll rebase and will try to reduce ifdefery where possible.
 
-> Unless I'm having a brain fart, x86 can't make use of that functionality.  Intel
-> doesn't provide any way to do targeted invalidation of stage-2 mappings.  AMD
-> provides an instruction to do broadcast invalidations, but it takes a virtual
-> address, i.e. a stage-1 address.  I can't tell if it's a host virtual address or
-> a guest virtual address, but it's a moot point because KVM doen't have the guest
-> virtual address, and if it's a host virtual address, there would need to be valid
-> mappings in the host page tables for it to work, which KVM can't guarantee.
+> Thank you,
+> 
+> > 
+> > Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+> > ---
+> >  arch/Kconfig                |  2 +-
+> >  kernel/kprobes.c            | 43 +++++++++++++++++++++----------------
+> >  kernel/trace/trace_kprobe.c | 11 ++++++++++
+> >  3 files changed, 37 insertions(+), 19 deletions(-)
+> > 
+> 
+> -- 
+> Masami Hiramatsu
 
-Ah, so it sounds like it would need to be an arch opt-in then.
-
-Will
+-- 
+Sincerely yours,
+Mike.
