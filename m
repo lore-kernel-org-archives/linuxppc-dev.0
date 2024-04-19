@@ -4,48 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17EF5C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Apr 2024 20:36:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57D3FC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2024 00:42:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lqMh5SX8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YAp6FL07;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VL8gr4r1Yz3dDj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2024 06:36:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VLG7V6Fj5z3dSv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2024 10:42:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lqMh5SX8;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=YAp6FL07;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VL8fy6yXDz3cV6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2024 06:35:38 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 37A24CE188C;
-	Thu, 18 Apr 2024 20:35:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22406C113CC;
-	Thu, 18 Apr 2024 20:35:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713472533;
-	bh=/k8CBxtFFxCCrPyB0ZQkRVXX+qR7tZDSRdyejPSOIGs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=lqMh5SX89qQB4n0qiw+izwaIkIAQ9m5dPQcveLPH9gV04HsYTxKOqyV8WjIy8YPDm
-	 BjMiHFMgSW1lLjFpuhr5b/MKyBGNWBuqzUxQDvHB8FONBTMR1Mx9rd/qZtH2C/QJHh
-	 T1WQQnf/Fl3i57nr5m7v09tpEhCH5clUGCA+23zY/B/8P4w5LxBpU6NQPtUA59FhB3
-	 4p8O4tUN8AyPthpZOn5UtZ1MbfKcLlxLGSAnRTQ1B7E3NCabGXoeS32keleyGYfETw
-	 brXTPMqtDcxieiwey+Qu8NTZlP8WR+aLwPLPYKRTrsiSdgRgDS1+v7eTDwHkRrB5/M
-	 HQZsTmxFMiBgQ==
-Date: Thu, 18 Apr 2024 15:35:31 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Subject: Re: [PATCH v8 2/3] PCI/AER: Disable AER service on suspend
-Message-ID: <20240418203531.GA251408@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VLG6g30zwz3cNc
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2024 10:41:31 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1713487290;
+	bh=NHQNrd99LJ9MCuk0KL/kZIA73cOzGBuWiBRcno6RL5o=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=YAp6FL07CTI4y3Sq9B2GU6XiWXcFkW9Dnb3nbVlsty3SZpOJYDW+PZQ1YdkkslClb
+	 uHU+cHmAxw2ocGndLAqhSjEWmo1CbnohJjrXCbg5Zg8wUAoQr8b1Pu2TApfsiYFngh
+	 L+jikFj2KqK6YLefc8J4RY1cfNQefRXouhndrq4HXUYNqiO48nrCcyZlcd4fSmNyhA
+	 8jFDBWIlNwm3J6QzHT4e1C+Tx7DkMdi8wqKNd0DAY9bUFhVuSlsE0hAspeH0ISsyn8
+	 akcTI07axeLP9ZToKe3hMQ4i1WFYFHI0j2rvVQOus+cEIBbRC8qhZMG3+Qz+Si2Eem
+	 X12cZe8M1rpIw==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VLG6d1yqHz4wcn;
+	Fri, 19 Apr 2024 10:41:29 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: David Christensen <drc@linux.ibm.com>, dougmill@linux.ibm.com,
+ davem@davemloft.net
+Subject: Re: [PATCH net] MAINTAINERS: eth: mark IBM eHEA as an Orphan
+In-Reply-To: <20240418195517.528577-1-drc@linux.ibm.com>
+References: <20240418195517.528577-1-drc@linux.ibm.com>
+Date: Fri, 19 Apr 2024 10:41:24 +1000
+Message-ID: <87zftq9oaz.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240416043225.1462548-2-kai.heng.feng@canonical.com>
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,122 +58,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kch@nvidia.com, regressions@lists.linux.dev, linux-pci@vger.kernel.org, mahesh@linux.ibm.com, linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org, kbusch@kernel.org, oohall@gmail.com, hare@suse.de, bagasdotme@gmail.com, bhelgaas@google.com, gloriouseggroll@gmail.com, linuxppc-dev@lists.ozlabs.org, hch@lst.de, sagi@grimberg.me
+Cc: pradeeps@linux.ibm.com, Linux PPC <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 16, 2024 at 12:32:24PM +0800, Kai-Heng Feng wrote:
-> When the power rail gets cut off, the hardware can create some electric
-> noise on the link that triggers AER. If IRQ is shared between AER with
-> PME, such AER noise will cause a spurious wakeup on system suspend.
-> 
-> When the power rail gets back, the firmware of the device resets itself
-> and can create unexpected behavior like sending PTM messages. For this
-> case, the driver will always be too late to toggle off features should
-> be disabled.
-> 
-> As Per PCIe Base Spec 5.0, section 5.2, titled "Link State Power
-> Management", TLP and DLLP transmission are disabled for a Link in L2/L3
-> Ready (D3hot), L2 (D3cold with aux power) and L3 (D3cold) states. So if
-> the power will be turned off during suspend process, disable AER service
-> and re-enable it during the resume process. This should not affect the
-> basic functionality.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=209149
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=216295
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=218090
-> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-
-Thanks for reviving this series.  I tried follow the history about
-this, but there are at least two series that were very similar and I
-can't put it all together.
-
+David Christensen <drc@linux.ibm.com> writes:
+> Current maintainer Douglas Miller has left IBM and no replacement has
+> been assigned for the driver. The eHEA hardware was last used on
+> IBM POWER7 systems, the last of which reached end-of-support at the
+> end of 2020.
+>
+> Signed-off-by: David Christensen <drc@linux.ibm.com>
+> Reviewed-by: Pradeep Satyanarayana <pradeeps@linux.ibm.com>
 > ---
-> v8:
->  - Add more bug reports.
-> 
-> v7:
->  - Wording
->  - Disable AER completely (again) if power will be turned off
-> 
-> v6:
-> v5:
->  - Wording.
-> 
-> v4:
-> v3:
->  - No change.
-> 
-> v2:
->  - Only disable AER IRQ.
->  - No more check on PME IRQ#.
->  - Use helper.
-> 
->  drivers/pci/pcie/aer.c | 25 +++++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
-> 
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index ac6293c24976..bea7818c2d1b 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -28,6 +28,7 @@
->  #include <linux/delay.h>
->  #include <linux/kfifo.h>
->  #include <linux/slab.h>
-> +#include <linux/suspend.h>
->  #include <acpi/apei.h>
->  #include <acpi/ghes.h>
->  #include <ras/ras_event.h>
-> @@ -1497,6 +1498,28 @@ static int aer_probe(struct pcie_device *dev)
->  	return 0;
->  }
->  
-> +static int aer_suspend(struct pcie_device *dev)
-> +{
-> +	struct aer_rpc *rpc = get_service_data(dev);
-> +	struct pci_dev *pdev = rpc->rpd;
-> +
-> +	if (pci_ancestor_pr3_present(pdev) || pm_suspend_via_firmware())
-> +		aer_disable_rootport(rpc);
+>  MAINTAINERS | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-Why do we check pci_ancestor_pr3_present(pdev) and
-pm_suspend_via_firmware()?  I'm getting pretty convinced that we need
-to disable AER interrupts on suspend in general.  I think it will be
-better if we do that consistently on all platforms, not special cases
-based on details of how we suspend.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-Also, why do we use aer_disable_rootport() instead of just
-aer_disable_irq()?  I think it's the interrupt that causes issues on
-suspend.  I see that there *were* some versions that used
-aer_disable_irq(), but I can't find the reason it changed.
+cheers
 
-> +
-> +	return 0;
-> +}
-> +
-> +static int aer_resume(struct pcie_device *dev)
-> +{
-> +	struct aer_rpc *rpc = get_service_data(dev);
-> +	struct pci_dev *pdev = rpc->rpd;
-> +
-> +	if (pci_ancestor_pr3_present(pdev) || pm_resume_via_firmware())
-> +		aer_enable_rootport(rpc);
-> +
-> +	return 0;
-> +}
-> +
->  /**
->   * aer_root_reset - reset Root Port hierarchy, RCEC, or RCiEP
->   * @dev: pointer to Root Port, RCEC, or RCiEP
-> @@ -1561,6 +1584,8 @@ static struct pcie_port_service_driver aerdriver = {
->  	.service	= PCIE_PORT_SERVICE_AER,
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index b5b89687680b..bcbbc240e51d 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -7831,9 +7831,8 @@ W:	http://aeschi.ch.eu.org/efs/
+>  F:	fs/efs/
 >  
->  	.probe		= aer_probe,
-> +	.suspend	= aer_suspend,
-> +	.resume		= aer_resume,
->  	.remove		= aer_remove,
->  };
+>  EHEA (IBM pSeries eHEA 10Gb ethernet adapter) DRIVER
+> -M:	Douglas Miller <dougmill@linux.ibm.com>
+>  L:	netdev@vger.kernel.org
+> -S:	Maintained
+> +S:	Orphan
+>  F:	drivers/net/ethernet/ibm/ehea/
 >  
+>  ELM327 CAN NETWORK DRIVER
 > -- 
-> 2.34.1
-> 
+> 2.39.3
