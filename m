@@ -4,65 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 064C8C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Apr 2024 21:43:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78A63C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 04:25:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m4HnPRVF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhvasTWv;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VLp6y4k6Lz3dLL
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 07:43:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VLz234V7mz3dKF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 14:24:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m4HnPRVF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhvasTWv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VLp660Q6Cz3cVv
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2024 07:42:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VLz1F4Vprz3c4P
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2024 14:24:17 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 4BBBD61A53
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2024 21:42:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA847C072AA
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2024 21:42:49 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 1D0AA60C70;
+	Sat, 20 Apr 2024 04:24:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83904C072AA;
+	Sat, 20 Apr 2024 04:24:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713562970;
-	bh=TCFccoU0QynIlhNVSwfE9PBflv6m2g3eer2smjEjHo0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=m4HnPRVFmWRnbZz8jQgaboXaGgGHKM6NiRHPnWxYnXriYRx79b4qxLh61hmOGchcc
-	 BeAAWFrwxoxYJkYzlzLPxW1HmMSHuQQ804wgQ9HB2dliWoJAMe+WuPJgC73w48qsaY
-	 8p0FVzWBN/to3b7K3DQ7j/PsKeJd4uV1W+Gch+w6NTUGukNdlDn0g0cB3UnAb3jQx7
-	 PSf8rBW9ZQhouGbP6ra7uug8JuzEdjBEg+XfggIiIEQt0h1ve10SOMFqY9M0wevTbL
-	 Eq6Fd3MJ0oNRWLCEy29E4JMXnQs2SedtXJyicXYfXpkSeddtxs7BNvLDpvfmOC5KQu
-	 tl/dlpBBhEWSQ==
-Received: by mail-wr1-f50.google.com with SMTP id ffacd0b85a97d-343c2f5b50fso1630317f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Apr 2024 14:42:49 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUp4tDu5DqLrxmeJ+Yq9lJyE/J4X/+QXMmbjRBPLU4VJKibjP1RjZ3UAEzCOtQ5rONX6wCiw8RSo+gfXEikQTReoeLaITXA9oJvsq/XJg==
-X-Gm-Message-State: AOJu0YzuSEi56Zy5T9hUNlZQBQnTgY2IHb9754uUp6ZwgLeu6kqRisSC
-	qF3liVgK+IHHTfG4JXMrI0Ww/KJ6G/vlA6XrP1lnQacDPo8F+oOXtYKvr6IoPSOTsQSe0FvGsgf
-	12y+PgsoaWZnP22c/HPNAJnwHWvU=
-X-Google-Smtp-Source: AGHT+IH4AnwX5zN14P6kYOA/5jMldeW1Bv8FPwjpWGtVTE89ihBaxTYgE7/68A2MjqxVZZCm/ny8Sr/SdDVp6qchZyo=
-X-Received: by 2002:a19:5f4d:0:b0:519:5b84:1038 with SMTP id
- a13-20020a195f4d000000b005195b841038mr1897119lfj.20.1713562948432; Fri, 19
- Apr 2024 14:42:28 -0700 (PDT)
-MIME-Version: 1.0
-References: <Zh4nJp8rv1qRBs8m@kernel.org> <CAPhsuW6Pbg2k_Gu4dsBx+H8H5XCHvNdtEZJBPiG_eT0qqr9D1w@mail.gmail.com>
- <ZiE91CJcNw7gBj9g@kernel.org> <CAPhsuW4au6v8k8Ab7Ff6Yj64rGvZ7wkz=Xrgh8ZZtLyscpChqQ@mail.gmail.com>
- <ZiFd567L4Zzm2okO@kernel.org> <CAPhsuW5SL4_=ZXdHZV8o0KS+5Vf25UMvEKhRgFQLioFtf2pgoQ@mail.gmail.com>
- <ZiIVVBgaDN4RsroT@kernel.org> <CAPhsuW7WoU+a46FhqqH8f-3=ehxeD4wSgKDWegMin1pT49OSWw@mail.gmail.com>
- <ZiKjmaDgz_56ovbv@kernel.org> <CAPhsuW7Nj1Sa_9xQtTgHz9AmX39zdh2x2COqA-qmkfpfX9hNWw@mail.gmail.com>
- <ZiLNGgVSQ7_cg58y@kernel.org>
-In-Reply-To: <ZiLNGgVSQ7_cg58y@kernel.org>
-From: Song Liu <song@kernel.org>
-Date: Fri, 19 Apr 2024 14:42:16 -0700
-X-Gmail-Original-Message-ID: <CAPhsuW4KRM4O4RFbYQrt=Coqyh9w29WiF2YF=8soDfauLFsKBA@mail.gmail.com>
-Message-ID: <CAPhsuW4KRM4O4RFbYQrt=Coqyh9w29WiF2YF=8soDfauLFsKBA@mail.gmail.com>
+	s=k20201202; t=1713587052;
+	bh=XIe/vC5nJoDDEu9/Q7ZoXeJlkdIzu3x0dG0pVHSQyaU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=YhvasTWvPZXPkThPYjnuTXJtKsDsFI6ZK4Bt9IvngW4VcopIHwZq0rN2TN47VCWUq
+	 FBJkDpR2DtP+unWDJY8C7sJEQiAOVs8L9KzXsojOjPLi6kQ9YDHioYtZ6nUFM1e0iU
+	 J5CLWhI8Oh/UQKju6kDG7HnVFfwfwBxuIE1OR267WnG9gRFiBTNZwpWVx17pWQtTrY
+	 fdbuHV6o8S3vVJ6wqWsJuIqtAsaxpsI2nzHYz53bqy1qeEbZ3ljz7qw9wo3USiXNjB
+	 OSy86A07SSbIPPzvVI3U5+/bWUkfoO6zoETP+0NHBuzBlMRXY9HoUBu5v7wjVTOH+s
+	 DowdwAPfYuE4g==
+Date: Sat, 20 Apr 2024 07:22:50 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Song Liu <song@kernel.org>
 Subject: Re: [PATCH v4 05/15] mm: introduce execmem_alloc() and execmem_free()
-To: Mike Rapoport <rppt@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Message-ID: <ZiNDGjkcqEPqruza@kernel.org>
+References: <ZiE91CJcNw7gBj9g@kernel.org>
+ <CAPhsuW4au6v8k8Ab7Ff6Yj64rGvZ7wkz=Xrgh8ZZtLyscpChqQ@mail.gmail.com>
+ <ZiFd567L4Zzm2okO@kernel.org>
+ <CAPhsuW5SL4_=ZXdHZV8o0KS+5Vf25UMvEKhRgFQLioFtf2pgoQ@mail.gmail.com>
+ <ZiIVVBgaDN4RsroT@kernel.org>
+ <CAPhsuW7WoU+a46FhqqH8f-3=ehxeD4wSgKDWegMin1pT49OSWw@mail.gmail.com>
+ <ZiKjmaDgz_56ovbv@kernel.org>
+ <CAPhsuW7Nj1Sa_9xQtTgHz9AmX39zdh2x2COqA-qmkfpfX9hNWw@mail.gmail.com>
+ <ZiLNGgVSQ7_cg58y@kernel.org>
+ <CAPhsuW4KRM4O4RFbYQrt=Coqyh9w29WiF2YF=8soDfauLFsKBA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAPhsuW4KRM4O4RFbYQrt=Coqyh9w29WiF2YF=8soDfauLFsKBA@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,65 +73,67 @@ Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Peter Zijlstra <peterz@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 19, 2024 at 1:00=E2=80=AFPM Mike Rapoport <rppt@kernel.org> wro=
-te:
->
-> On Fri, Apr 19, 2024 at 10:32:39AM -0700, Song Liu wrote:
-> > On Fri, Apr 19, 2024 at 10:03=E2=80=AFAM Mike Rapoport <rppt@kernel.org=
-> wrote:
-> > [...]
-> > > > >
-> > > > > [1] https://lore.kernel.org/all/20240411160526.2093408-1-rppt@ker=
-nel.org
-> > > >
-> > > > For the ROX to work, we need different users (module text, kprobe, =
-etc.) to have
-> > > > the same execmem_range. From [1]:
-> > > >
-> > > > static void *execmem_cache_alloc(struct execmem_range *range, size_=
-t size)
-> > > > {
-> > > > ...
-> > > >        p =3D __execmem_cache_alloc(size);
-> > > >        if (p)
-> > > >                return p;
-> > > >       err =3D execmem_cache_populate(range, size);
-> > > > ...
-> > > > }
-> > > >
-> > > > We are calling __execmem_cache_alloc() without range. For this to w=
-ork,
-> > > > we can only call execmem_cache_alloc() with one execmem_range.
-> > >
-> > > Actually, on x86 this will "just work" because everything shares the =
-same
-> > > address space :)
-> > >
-> > > The 2M pages in the cache will be in the modules space, so
-> > > __execmem_cache_alloc() will always return memory from that address s=
-pace.
-> > >
-> > > For other architectures this indeed needs to be fixed with passing th=
-e
-> > > range to __execmem_cache_alloc() and limiting search in the cache for=
- that
-> > > range.
+On Fri, Apr 19, 2024 at 02:42:16PM -0700, Song Liu wrote:
+> On Fri, Apr 19, 2024 at 1:00 PM Mike Rapoport <rppt@kernel.org> wrote:
 > >
-> > I think we at least need the "map to" concept (initially proposed by Th=
-omas)
-> > to get this work. For example, EXECMEM_BPF and EXECMEM_KPROBE
-> > maps to EXECMEM_MODULE_TEXT, so that all these actually share
-> > the same range.
->
-> Why?
+> > On Fri, Apr 19, 2024 at 10:32:39AM -0700, Song Liu wrote:
+> > > On Fri, Apr 19, 2024 at 10:03 AM Mike Rapoport <rppt@kernel.org> wrote:
+> > > [...]
+> > > > > >
+> > > > > > [1] https://lore.kernel.org/all/20240411160526.2093408-1-rppt@kernel.org
+> > > > >
+> > > > > For the ROX to work, we need different users (module text, kprobe, etc.) to have
+> > > > > the same execmem_range. From [1]:
+> > > > >
+> > > > > static void *execmem_cache_alloc(struct execmem_range *range, size_t size)
+> > > > > {
+> > > > > ...
+> > > > >        p = __execmem_cache_alloc(size);
+> > > > >        if (p)
+> > > > >                return p;
+> > > > >       err = execmem_cache_populate(range, size);
+> > > > > ...
+> > > > > }
+> > > > >
+> > > > > We are calling __execmem_cache_alloc() without range. For this to work,
+> > > > > we can only call execmem_cache_alloc() with one execmem_range.
+> > > >
+> > > > Actually, on x86 this will "just work" because everything shares the same
+> > > > address space :)
+> > > >
+> > > > The 2M pages in the cache will be in the modules space, so
+> > > > __execmem_cache_alloc() will always return memory from that address space.
+> > > >
+> > > > For other architectures this indeed needs to be fixed with passing the
+> > > > range to __execmem_cache_alloc() and limiting search in the cache for that
+> > > > range.
+> > >
+> > > I think we at least need the "map to" concept (initially proposed by Thomas)
+> > > to get this work. For example, EXECMEM_BPF and EXECMEM_KPROBE
+> > > maps to EXECMEM_MODULE_TEXT, so that all these actually share
+> > > the same range.
+> >
+> > Why?
+> 
+> IIUC, we need to update __execmem_cache_alloc() to take a range pointer as
+> input. module text will use "range" for EXECMEM_MODULE_TEXT, while kprobe
+> will use "range" for EXECMEM_KPROBE. Without "map to" concept or sharing
+> the "range" object, we will have to compare different range parameters to check
+> we can share cached pages between module text and kprobe, which is not
+> efficient. Did I miss something?
 
-IIUC, we need to update __execmem_cache_alloc() to take a range pointer as
-input. module text will use "range" for EXECMEM_MODULE_TEXT, while kprobe
-will use "range" for EXECMEM_KPROBE. Without "map to" concept or sharing
-the "range" object, we will have to compare different range parameters to c=
-heck
-we can share cached pages between module text and kprobe, which is not
-efficient. Did I miss something?
+We can always share large ROX pages as long as they are within the correct
+address space. The permissions for them are ROX and the alignment
+differences are due to KASAN and this is handled during allocation of the
+large page to refill the cache. __execmem_cache_alloc() only needs to limit
+the search for the address space of the range.
 
-Thanks,
-Song
+And regardless, they way we deal with sharing of the cache can be sorted
+out later.
+
+> Thanks,
+> Song
+
+-- 
+Sincerely yours,
+Mike.
