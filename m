@@ -4,47 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2906C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 03:25:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEDBFC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 07:35:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jb3n1Qnc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HstIwZ4k;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VLxjF3dfXz3dCy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 13:25:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VM3GG3lZtz3d2m
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 17:35:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jb3n1Qnc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HstIwZ4k;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VLxhQ4BwRz3cGK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2024 13:24:38 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1713583478;
-	bh=QSEFJcDkqnsnAMU/Ge1i+z1kKqo7SuN9MsF+v00cPIs=;
-	h=From:To:Cc:Subject:Date:From;
-	b=jb3n1QncF9hFFcPfMacNi+/OzL6WOoN3nW+lwLJbbm1K9IzVbaDb0Fij33SVwwmo+
-	 LrhaJFdWyU+kEfn5D5P6aRCqikn7u5RegbHm8ZvDyUwLUkgt8+YT7iFODZydZz+3w5
-	 UNVImiihAdqeIv4M94gHs/awrDzzLquk1C80bAy/+RHzzZ3+ru/7eOHwpQR7mLJbR8
-	 QYA3T7dP982ZnUEWqZkIucJ8eyntMD+29wfUOpF4JKkj7Requ2vyHRxJ7uLjkJwAPW
-	 dy5+A5WTVrULsZU4SFeeEilzaBZi9d31IGlznOPc86K2/q+RA3xC8P2tY4nKJAiZR/
-	 qZkiC9Y36y8TQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VLxhP5P1kz4wcF;
-	Sat, 20 Apr 2024 13:24:37 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-6.9-3 tag
-Date: Sat, 20 Apr 2024 13:24:34 +1000
-Message-ID: <87jzksaf7x.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VM3FP035Cz3bZ3
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2024 17:35:04 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id F15A6CE10BD;
+	Sat, 20 Apr 2024 07:35:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4FB26C113CE;
+	Sat, 20 Apr 2024 07:34:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1713598501;
+	bh=YQ9KfPtm5Gq9HYepBoPJrHlxAcwZYbjakD5piFpGBCI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=HstIwZ4kXYt594F3dTAKefbjqk59LgLelJ4wfeugjHKdccg9U6QSsThvKUdOj6kpr
+	 cxBq3QX4LKiL1ekSZ4hlwHrg2Qo19wEMdjfcoqJC1hKB987QXK8Wq3oegsKl2zZTfI
+	 0ahwnVH2zTwg0WMFDB5bQY2DWepkh6sfONxxfG+SnniZiiLcfZnS8gmDD4/taXFr4a
+	 gNoyuT99b/yZU19nTHh4Wm4L6MjmbQoSYrPwuVYcHB2CCTGISZcttYnTQA36iEYp8c
+	 S1AEVNMPdbCPnyweb2c/fhVBUzL5EOQDTyFmN+U+fX6hUzHCENDjnN15hBAkD3dzc1
+	 3OfMh4fyGR7Ag==
+Date: Sat, 20 Apr 2024 10:33:38 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v4 14/15] kprobes: remove dependency on CONFIG_MODULES
+Message-ID: <ZiNv0jY7Ebw75iQl@kernel.org>
+References: <20240411160051.2093261-1-rppt@kernel.org>
+ <20240411160051.2093261-15-rppt@kernel.org>
+ <20240418061615.5fad23b954bf317c029acc4d@gmail.com>
+ <ZiKSffcTiP2c6fbs@kernel.org>
+ <321def3e-8bf1-4920-92dd-037b20f1272d@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <321def3e-8bf1-4920-92dd-037b20f1272d@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,73 +63,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, herbert@gondor.apana.org.au, sbhat@linux.ibm.com, linux-kernel@vger.kernel.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, "x86@kernel.org" <x86@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, Luis Chamberlain <mcgrof@kernel.org>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Nadav Amit <nadav.amit@gmail.com>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, "linux-trace-kernel@vger.kernel.org" <linux-trace-kernel@vger.kernel.org>, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, Thomas Gleixner <tglx@linutronix.de>, Masami Hiramats
+ u <masami.hiramatsu@gmail.com>, "bpf@vger.kernel.org" <bpf@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, Puranjay Mohan <puranjay12@gmail.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Kent Overstreet <kent.overstreet@linux.dev>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>, "linux-modules@vger.kernel.org" <linux-modules@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+On Fri, Apr 19, 2024 at 03:59:40PM +0000, Christophe Leroy wrote:
+> 
+> 
+> Le 19/04/2024 à 17:49, Mike Rapoport a écrit :
+> > Hi Masami,
+> > 
+> > On Thu, Apr 18, 2024 at 06:16:15AM +0900, Masami Hiramatsu wrote:
+> >> Hi Mike,
+> >>
+> >> On Thu, 11 Apr 2024 19:00:50 +0300
+> >> Mike Rapoport <rppt@kernel.org> wrote:
+> >>
+> >>> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+> >>>
+> >>> kprobes depended on CONFIG_MODULES because it has to allocate memory for
+> >>> code.
+> >>>
+> >>> Since code allocations are now implemented with execmem, kprobes can be
+> >>> enabled in non-modular kernels.
+> >>>
+> >>> Add #ifdef CONFIG_MODULE guards for the code dealing with kprobes inside
+> >>> modules, make CONFIG_KPROBES select CONFIG_EXECMEM and drop the
+> >>> dependency of CONFIG_KPROBES on CONFIG_MODULES.
+> >>
+> >> Thanks for this work, but this conflicts with the latest fix in v6.9-rc4.
+> >> Also, can you use IS_ENABLED(CONFIG_MODULES) instead of #ifdefs in
+> >> function body? We have enough dummy functions for that, so it should
+> >> not make a problem.
+> > 
+> > The code in check_kprobe_address_safe() that gets the module and checks for
+> > __init functions does not compile with IS_ENABLED(CONFIG_MODULES).
+> > I can pull it out to a helper or leave #ifdef in the function body,
+> > whichever you prefer.
+> 
+> As far as I can see, the only problem is MODULE_STATE_COMING.
+> Can we move 'enum module_state' out of #ifdef CONFIG_MODULES in module.h  ?
 
-Hi Linus,
+There's dereference of 'struct module' there:
+ 
+		(*probed_mod)->state != MODULE_STATE_COMING) {
+			...
+		}
 
-Please pull some more powerpc fixes for 6.9:
+so moving out 'enum module_state' won't be enough.
+ 
+> >   
+> >> -- 
+> >> Masami Hiramatsu
+> > 
 
-The following changes since commit 39cd87c4eb2b893354f3b850f916353f2658ae6f:
-
-  Linux 6.9-rc2 (2024-03-31 14:32:39 -0700)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/po=
-werpc-6.9-3
-
-for you to fetch changes up to 210cfef579260ed6c3b700e7baeae51a5e183f43:
-
-  selftests/powerpc/papr-vpd: Fix missing variable initialization (2024-04-=
-12 14:40:07 +1000)
-
-- ------------------------------------------------------------------
-powerpc fixes for 6.9 #3
-
- - Fix wireguard loading failure on pre-Power10 due to Power10 crypto routi=
-nes.
-
- - Fix papr-vpd selftest failure due to missing variable initialization.
-
- - Avoid unnecessary get/put in spapr_tce_platform_iommu_attach_dev().
-
-Thanks to: Geetika Moolchandani, Jason Gunthorpe, Michal Such=C3=A1nek, Nat=
-han Lynch,
-Shivaprasad G Bhat.
-
-- ------------------------------------------------------------------
-Michael Ellerman (1):
-      powerpc/crypto/chacha-p10: Fix failure on non Power10
-
-Nathan Lynch (1):
-      selftests/powerpc/papr-vpd: Fix missing variable initialization
-
-Shivaprasad G Bhat (1):
-      powerpc/iommu: Refactor spapr_tce_platform_iommu_attach_dev()
-
-
- arch/powerpc/crypto/chacha-p10-glue.c               | 8 +++++++-
- arch/powerpc/kernel/iommu.c                         | 7 +++----
- tools/testing/selftests/powerpc/papr_vpd/papr_vpd.c | 2 +-
- 3 files changed, 11 insertions(+), 6 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmYjNHwACgkQUevqPMjh
-pYCbuA//VsCCZotHFjCuEMX4hKFE+FS7doJ6HAaj1lysJLVQsXW94pEufcy53hXX
-y4DQ06Y2vV/zJTrbYk/3vukeMDcc7ZSE9IKZlnSvZP1GizGF2dQE/AjsqNfJ5iV4
-1YcE22fmjoSIL2pbD337r1BHqEwGvcd47Rm0SET6yIxQamTKHLAa7Q9OIindDMaq
-Qu/g6LFoa856idDkXRY96xNWRodGzNyhZ3+16F4jsE2pbGiYNbjqyua3ke8leWgI
-DInYs9KholNeg285Qbjq6VaXcMjJG6po8N/MDJDxdysVhF+9GTXlyKSN9oURDUtf
-IDWpbrF3n7WE3iUllucKWNXBQbfX5yoFlZ7PnOj+Tjm1RcyBZDBhoq05DNcosFY0
-Mgbg7hKluxUP7ijSMOOKKYasMrNqJofo+f3S78L3sBDjIW2w/j6+ZP6EQ515t7he
-/oac+WfFr6m0rEtQtZuf0TMPWv60odfjkLuGFomcd5qpldXesMfR62rT+RSN3M7m
-7kJj4duYpKJJZEdOdj9PzVMqQd/dd5cpeO2b1vJef7G6lHXRaB0tTaDMnvZBNtlL
-7etRE5g1ErvOFGnoAzeXcU3GFU2ZO49cpKMjqwubivufNXDwZ7VKJfPjIsb4cfm0
-lsquI0A5FhkIDr1G/0wL4VyCisKYCAuYj9NCSf9F9iM+92w+fKo=3D
-=3DgaHh
------END PGP SIGNATURE-----
+-- 
+Sincerely yours,
+Mike.
