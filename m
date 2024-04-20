@@ -4,59 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78A63C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 04:25:01 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhvasTWv;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14829C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 20:02:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VLz234V7mz3dKF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Apr 2024 14:24:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhvasTWv;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VMMqQ5M0cz3dX4
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Apr 2024 06:02:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:37:3000::53df:4ef0:0; helo=bmailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+Received: from bmailout2.hostsharing.net (bmailout2.hostsharing.net [IPv6:2a01:37:3000::53df:4ef0:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VLz1F4Vprz3c4P
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Apr 2024 14:24:17 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 1D0AA60C70;
-	Sat, 20 Apr 2024 04:24:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83904C072AA;
-	Sat, 20 Apr 2024 04:24:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1713587052;
-	bh=XIe/vC5nJoDDEu9/Q7ZoXeJlkdIzu3x0dG0pVHSQyaU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=YhvasTWvPZXPkThPYjnuTXJtKsDsFI6ZK4Bt9IvngW4VcopIHwZq0rN2TN47VCWUq
-	 FBJkDpR2DtP+unWDJY8C7sJEQiAOVs8L9KzXsojOjPLi6kQ9YDHioYtZ6nUFM1e0iU
-	 J5CLWhI8Oh/UQKju6kDG7HnVFfwfwBxuIE1OR267WnG9gRFiBTNZwpWVx17pWQtTrY
-	 fdbuHV6o8S3vVJ6wqWsJuIqtAsaxpsI2nzHYz53bqy1qeEbZ3ljz7qw9wo3USiXNjB
-	 OSy86A07SSbIPPzvVI3U5+/bWUkfoO6zoETP+0NHBuzBlMRXY9HoUBu5v7wjVTOH+s
-	 DowdwAPfYuE4g==
-Date: Sat, 20 Apr 2024 07:22:50 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Song Liu <song@kernel.org>
-Subject: Re: [PATCH v4 05/15] mm: introduce execmem_alloc() and execmem_free()
-Message-ID: <ZiNDGjkcqEPqruza@kernel.org>
-References: <ZiE91CJcNw7gBj9g@kernel.org>
- <CAPhsuW4au6v8k8Ab7Ff6Yj64rGvZ7wkz=Xrgh8ZZtLyscpChqQ@mail.gmail.com>
- <ZiFd567L4Zzm2okO@kernel.org>
- <CAPhsuW5SL4_=ZXdHZV8o0KS+5Vf25UMvEKhRgFQLioFtf2pgoQ@mail.gmail.com>
- <ZiIVVBgaDN4RsroT@kernel.org>
- <CAPhsuW7WoU+a46FhqqH8f-3=ehxeD4wSgKDWegMin1pT49OSWw@mail.gmail.com>
- <ZiKjmaDgz_56ovbv@kernel.org>
- <CAPhsuW7Nj1Sa_9xQtTgHz9AmX39zdh2x2COqA-qmkfpfX9hNWw@mail.gmail.com>
- <ZiLNGgVSQ7_cg58y@kernel.org>
- <CAPhsuW4KRM4O4RFbYQrt=Coqyh9w29WiF2YF=8soDfauLFsKBA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAPhsuW4KRM4O4RFbYQrt=Coqyh9w29WiF2YF=8soDfauLFsKBA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VMMpv0n3bz3cJl
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Apr 2024 06:01:42 +1000 (AEST)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
+	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+	by bmailout2.hostsharing.net (Postfix) with ESMTPS id C6E382800C99F;
+	Sat, 20 Apr 2024 22:01:24 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id BF393CC625; Sat, 20 Apr 2024 22:01:24 +0200 (CEST)
+Message-ID: <cover.1713608122.git.lukas@wunner.de>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Sat, 20 Apr 2024 22:00:00 +0200
+Subject: [PATCH 0/6] Deduplicate string exposure in sysfs
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,72 +41,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Russell King <linux@armlinux.org.uk>, linux-mm@kvack.org, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, linux-mips@vger.kernel.org, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Puranjay Mohan <puranjay12@gmail.com>, netdev@vger.kernel.org, Kent Overstreet <kent.overstree
- t@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Bjorn Topel <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>, storagedev@microchip.com, Yicong Yang <yangyicong@hisilicon.com>, ibm-acpi-devel@lists.sourceforge.net, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Will Deacon <will@kernel.org>, Jijie Shao <shaojijie@huawei.com>, Khuong Dinh <khuong@os.amperecomputing.com>, Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, linux-rdma@vger.kernel.org, "Luke D. Jones" <luke@ljones.dev>, Nilesh Javali <njavali@marvell.com>, Ilpo Jaervinen <ilpo.jarvinen@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, platform-driver-x86@vger.kernel.org, Jean Delvare <jdelvare@suse.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Hans de Goede <hdegoede@redhat.com>, Jonathan Cameron <jonathan.cameron@huawei.com>, Azael Avalos <coproscefalo@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org, linux-scsi@vger.kernel.org, "Martin K. Petersen" <mart
+ in.petersen@oracle.com>, Don Brace <don.brace@microchip.com>, Bjorn Andersson <andersson@kernel.org>, Anil Gurumur thy <anil.gurumurthy@qlogic.com>, Konrad Dybcio <konrad.dybcio@linaro.org>, GR-QLogic-Storage-Upstream@marvell.com, Shuai Xue <xueshuai@linux.alibaba.com>, Corentin Chary <corentin.chary@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 19, 2024 at 02:42:16PM -0700, Song Liu wrote:
-> On Fri, Apr 19, 2024 at 1:00 PM Mike Rapoport <rppt@kernel.org> wrote:
-> >
-> > On Fri, Apr 19, 2024 at 10:32:39AM -0700, Song Liu wrote:
-> > > On Fri, Apr 19, 2024 at 10:03 AM Mike Rapoport <rppt@kernel.org> wrote:
-> > > [...]
-> > > > > >
-> > > > > > [1] https://lore.kernel.org/all/20240411160526.2093408-1-rppt@kernel.org
-> > > > >
-> > > > > For the ROX to work, we need different users (module text, kprobe, etc.) to have
-> > > > > the same execmem_range. From [1]:
-> > > > >
-> > > > > static void *execmem_cache_alloc(struct execmem_range *range, size_t size)
-> > > > > {
-> > > > > ...
-> > > > >        p = __execmem_cache_alloc(size);
-> > > > >        if (p)
-> > > > >                return p;
-> > > > >       err = execmem_cache_populate(range, size);
-> > > > > ...
-> > > > > }
-> > > > >
-> > > > > We are calling __execmem_cache_alloc() without range. For this to work,
-> > > > > we can only call execmem_cache_alloc() with one execmem_range.
-> > > >
-> > > > Actually, on x86 this will "just work" because everything shares the same
-> > > > address space :)
-> > > >
-> > > > The 2M pages in the cache will be in the modules space, so
-> > > > __execmem_cache_alloc() will always return memory from that address space.
-> > > >
-> > > > For other architectures this indeed needs to be fixed with passing the
-> > > > range to __execmem_cache_alloc() and limiting search in the cache for that
-> > > > range.
-> > >
-> > > I think we at least need the "map to" concept (initially proposed by Thomas)
-> > > to get this work. For example, EXECMEM_BPF and EXECMEM_KPROBE
-> > > maps to EXECMEM_MODULE_TEXT, so that all these actually share
-> > > the same range.
-> >
-> > Why?
-> 
-> IIUC, we need to update __execmem_cache_alloc() to take a range pointer as
-> input. module text will use "range" for EXECMEM_MODULE_TEXT, while kprobe
-> will use "range" for EXECMEM_KPROBE. Without "map to" concept or sharing
-> the "range" object, we will have to compare different range parameters to check
-> we can share cached pages between module text and kprobe, which is not
-> efficient. Did I miss something?
+Introduce a generic ->show() callback to expose a string as a device
+attribute in sysfs.  Deduplicate various identical callbacks across
+the tree.
 
-We can always share large ROX pages as long as they are within the correct
-address space. The permissions for them are ROX and the alignment
-differences are due to KASAN and this is handled during allocation of the
-large page to refill the cache. __execmem_cache_alloc() only needs to limit
-the search for the address space of the range.
+Result:  Minus 216 LoC, minus 1576 bytes vmlinux size (x86_64 allyesconfig).
 
-And regardless, they way we deal with sharing of the cache can be sorted
-out later.
+This is a byproduct of my upcoming PCI device authentication v2 patches.
 
-> Thanks,
-> Song
+
+Lukas Wunner (6):
+  driver core: Add device_show_string() helper for sysfs attributes
+  hwmon: Use device_show_string() helper for sysfs attributes
+  IB/qib: Use device_show_string() helper for sysfs attributes
+  perf: Use device_show_string() helper for sysfs attributes
+  platform/x86: Use device_show_string() helper for sysfs attributes
+  scsi: Use device_show_string() helper for sysfs attributes
+
+ arch/powerpc/perf/hv-24x7.c              | 10 ----
+ arch/x86/events/intel/core.c             | 13 ++---
+ drivers/base/core.c                      |  9 ++++
+ drivers/hwmon/i5k_amb.c                  | 15 ++----
+ drivers/hwmon/ibmpex.c                   | 14 ++----
+ drivers/infiniband/hw/qib/qib.h          |  1 -
+ drivers/infiniband/hw/qib/qib_driver.c   |  6 ---
+ drivers/infiniband/hw/qib/qib_sysfs.c    | 10 +---
+ drivers/perf/alibaba_uncore_drw_pmu.c    | 12 +----
+ drivers/perf/arm-cci.c                   | 12 +----
+ drivers/perf/arm-ccn.c                   | 11 +----
+ drivers/perf/arm_cspmu/arm_cspmu.c       | 10 ----
+ drivers/perf/arm_cspmu/arm_cspmu.h       |  7 +--
+ drivers/perf/arm_dsu_pmu.c               | 11 +----
+ drivers/perf/cxl_pmu.c                   | 13 +----
+ drivers/perf/hisilicon/hisi_pcie_pmu.c   | 13 +----
+ drivers/perf/hisilicon/hisi_uncore_pmu.c | 14 ------
+ drivers/perf/hisilicon/hisi_uncore_pmu.h |  4 +-
+ drivers/perf/hisilicon/hns3_pmu.c        | 12 +----
+ drivers/perf/qcom_l3_pmu.c               | 11 +----
+ drivers/perf/xgene_pmu.c                 | 11 +----
+ drivers/platform/x86/asus-wmi.c          | 62 ++++++------------------
+ drivers/platform/x86/thinkpad_acpi.c     | 10 +---
+ drivers/platform/x86/toshiba_acpi.c      |  9 +---
+ drivers/scsi/bfa/bfad_attr.c             | 28 +++--------
+ drivers/scsi/ibmvscsi_tgt/ibmvscsi_tgt.c | 11 +----
+ drivers/scsi/mvsas/mv_init.c             | 10 +---
+ drivers/scsi/qla2xxx/qla_attr.c          | 11 +----
+ drivers/scsi/smartpqi/smartpqi_init.c    | 11 ++---
+ include/linux/device.h                   | 15 ++++++
+ 30 files changed, 85 insertions(+), 301 deletions(-)
 
 -- 
-Sincerely yours,
-Mike.
+2.43.0
+
