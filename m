@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1725C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 08:21:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E01CC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 08:21:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VNJ9Z3vGlz3vvN
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 18:21:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VNJB00YDSz3vyk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 18:21:28 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNJ6w4CrVz3cYq
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2024 18:18:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNJ6x01Rqz3cjt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2024 18:18:49 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VNJ6w2xtQz4x23;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VNJ6w6Mg5z4x2P;
 	Mon, 22 Apr 2024 18:18:48 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Nathan Chancellor <nathan@kernel.org>
-In-Reply-To: <20240405-ppc-fix-wa-fatal-warnings-clang-v1-1-bdcd969f2ef0@kernel.org>
-References: <20240405-ppc-fix-wa-fatal-warnings-clang-v1-1-bdcd969f2ef0@kernel.org>
-Subject: Re: [PATCH] powerpc: Fix fatal warnings flag for LLVM's integrated assembler
-Message-Id: <171377378380.1025456.16747240278509808133.b4-ty@ellerman.id.au>
+To: mpe@ellerman.id.au, Nicholas Miehlbradt <nicholas@linux.ibm.com>
+In-Reply-To: <20240408052358.5030-1-nicholas@linux.ibm.com>
+References: <20240408052358.5030-1-nicholas@linux.ibm.com>
+Subject: Re: [PATCH v2] Add static_key_feature_checks_initialized flag
+Message-Id: <171377378381.1025456.6870359647889434716.b4-ty@ellerman.id.au>
 Date: Mon, 22 Apr 2024 18:16:23 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: justinstitt@google.com, ajd@linux.ibm.com, llvm@lists.linux.dev, patches@lists.linux.dev, morbo@google.com, bgray@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 05 Apr 2024 12:31:22 -0700, Nathan Chancellor wrote:
-> When building with LLVM_IAS=1, there is an error because
-> '-fatal-warnings' is not recognized as a valid flag:
-> 
->   clang: error: unsupported argument '-fatal-warnings' to option '-Wa,'
-> 
-> Use the double hyphen version of the flag, '--fatal-warnings', which
-> works with both the GNU assembler and LLVM's integrated assembler.
+On Mon, 08 Apr 2024 05:23:58 +0000, Nicholas Miehlbradt wrote:
+> JUMP_LABEL_FEATURE_CHECK_DEBUG used static_key_intialized to determine
+> whether {cpu,mmu}_has_feature() is used before static keys were
+> initialized. However, {cpu,mmu}_has_feature() should not be used before
+> setup_feature_keys() is called but static_key_initialized is set well
+> before this by the call to jump_label_init() in early_init_devtree().
+> This creates a window in which JUMP_LABEL_FEATURE_CHECK_DEBUG will not
+> detect misuse and report errors. Add a flag specifically to indicate
+> when {cpu,mmu}_has_feature() is safe to use.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Fix fatal warnings flag for LLVM's integrated assembler
-      https://git.kernel.org/powerpc/c/8884fc918f6aee220f9b41806974508bd0213aca
+[1/1] Add static_key_feature_checks_initialized flag
+      https://git.kernel.org/powerpc/c/676b2f99b0f6cd11193eeae13c976565c3fc7545
 
 cheers
