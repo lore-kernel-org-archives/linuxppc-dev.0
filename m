@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33EDEC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 08:20:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FCA0C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 08:20:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VNJ8J6Snpz3cXZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 18:20:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VNJ8l0Zmyz3vmg
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 18:20:23 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNJ6t5qKRz3cnS
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2024 18:18:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNJ6v5G1Zz3cVq
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2024 18:18:47 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VNJ6t4KWTz4x0K;
-	Mon, 22 Apr 2024 18:18:46 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VNJ6v0Zlxz4x1Y;
+	Mon, 22 Apr 2024 18:18:47 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Benjamin Gray <bgray@linux.ibm.com>
-In-Reply-To: <20240326044420.577031-1-bgray@linux.ibm.com>
-References: <20240326044420.577031-1-bgray@linux.ibm.com>
-Subject: Re: [PATCH v1] powerpc: Error on assembly warnings
-Message-Id: <171377378378.1025456.11801725557870298548.b4-ty@ellerman.id.au>
+To: Arnd Bergmann <arnd@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Nathan Chancellor <nathan@kernel.org>, Paul Mackerras <paulus@ozlabs.org>, Geoff Levand <geoff@infradead.org>
+In-Reply-To: <d64f06f4-81ae-4ec5-ab3b-d7f7f091e0ac@infradead.org>
+References: <20240320180333.151043-1-arnd@kernel.org> <415f4af0-f44a-49fb-b1fa-76f64ed09ec6@infradead.org> <d64f06f4-81ae-4ec5-ab3b-d7f7f091e0ac@infradead.org>
+Subject: Re: [PATCH v2] powerpc: Fix PS3 allmodconfig warning
+Message-Id: <171377378379.1025456.13649802272990358966.b4-ty@ellerman.id.au>
 Date: Mon, 22 Apr 2024 18:16:23 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,25 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com
+Cc: Kevin Hao <haokexin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, llvm@lists.linux.dev, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Justin Stitt <justinstitt@google.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Bill Wendling <morbo@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 26 Mar 2024 15:44:20 +1100, Benjamin Gray wrote:
-> We currently enable -Werror on the arch/powerpc subtree. However this
-> only catches C warnings. Assembly warnings are logged, but the make
-> invocation will still succeed. This can allow incorrect syntax such as
+On Mon, 01 Apr 2024 16:08:31 +0900, Geoff Levand wrote:
+> The struct ps3_notification_device in the ps3_probe_thread routine
+> is too large to be on the stack, causing a warning for an
+> allmodconfig build with clang.
 > 
->   ori r3, r4, r5
-> 
-> to be compiled without catching that the assembler is treating r5
-> as the immediate value 5.
+> Change the struct ps3_notification_device from a variable on the stack
+> to a dynamically allocated variable.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Error on assembly warnings
-      https://git.kernel.org/powerpc/c/608d4a5ca56302181e669cea0aa571cbec6680eb
+[1/1] powerpc: Fix PS3 allmodconfig warning
+      https://git.kernel.org/powerpc/c/bfe51886ca544956eb4ff924d1937ac01d0ca9c8
 
 cheers
