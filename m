@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E01CC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 08:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13A9FC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 08:21:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VNJB00YDSz3vyk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 18:21:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VNJBP4plcz3vhZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Apr 2024 18:21:49 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNJ6x01Rqz3cjt
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNJ6x4Pybz3cVq
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Apr 2024 18:18:49 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VNJ6w6Mg5z4x2P;
-	Mon, 22 Apr 2024 18:18:48 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VNJ6x2dVfz4x0w;
+	Mon, 22 Apr 2024 18:18:49 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Nicholas Miehlbradt <nicholas@linux.ibm.com>
-In-Reply-To: <20240408052358.5030-1-nicholas@linux.ibm.com>
-References: <20240408052358.5030-1-nicholas@linux.ibm.com>
-Subject: Re: [PATCH v2] Add static_key_feature_checks_initialized flag
-Message-Id: <171377378381.1025456.6870359647889434716.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+In-Reply-To: <a19ee3dc2b304d39da364a592d5cd167449f8c4a.1713365940.git.ritesh.list@gmail.com>
+References: <a19ee3dc2b304d39da364a592d5cd167449f8c4a.1713365940.git.ritesh.list@gmail.com>
+Subject: Re: [PATCH] powerpc/ptdump: Fix walk_vmemmap to also print first vmemmap entry
+Message-Id: <171377378383.1025456.16155849910889118496.b4-ty@ellerman.id.au>
 Date: Mon, 22 Apr 2024 18:16:23 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,25 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: nathanl@linux.ibm.com, donettom@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 08 Apr 2024 05:23:58 +0000, Nicholas Miehlbradt wrote:
-> JUMP_LABEL_FEATURE_CHECK_DEBUG used static_key_intialized to determine
-> whether {cpu,mmu}_has_feature() is used before static keys were
-> initialized. However, {cpu,mmu}_has_feature() should not be used before
-> setup_feature_keys() is called but static_key_initialized is set well
-> before this by the call to jump_label_init() in early_init_devtree().
-> This creates a window in which JUMP_LABEL_FEATURE_CHECK_DEBUG will not
-> detect misuse and report errors. Add a flag specifically to indicate
-> when {cpu,mmu}_has_feature() is safe to use.
+On Wed, 17 Apr 2024 20:37:40 +0530, Ritesh Harjani (IBM) wrote:
+> walk_vmemmap() was skipping the first vmemmap entry pointed by
+> vmemmap_list pointer itself. This patch fixes that.
+> 
+> With this we should see the vmemmap entry at 0xc00c000000000000 for hash
+> which wasn't getting printed on doing
+> 
+> "cat /sys/kernel/debug/kernel_hash_pagetable"
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] Add static_key_feature_checks_initialized flag
-      https://git.kernel.org/powerpc/c/676b2f99b0f6cd11193eeae13c976565c3fc7545
+[1/1] powerpc/ptdump: Fix walk_vmemmap to also print first vmemmap entry
+      https://git.kernel.org/powerpc/c/f318c8be797f8572629d5386a88cde7d753457a8
 
 cheers
