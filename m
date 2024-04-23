@@ -4,49 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4226C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 08:10:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BF37C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 08:11:27 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=qrpXb4E7;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Z4eTOEAy;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VNvv93CmRz3vrT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 18:10:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VNvvy0vwZz3w6C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 18:11:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=qrpXb4E7;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Z4eTOEAy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNvkW0tvfz3cWP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2024 18:03:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNvkY63rNz3cWP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2024 18:03:17 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1713858962;
-	bh=1pR6m5Wi5iIO9mWeE7uFEYPdE/xPU01dcPav6FtcGgk=;
+	bh=D/3OJwMoANYNDnHN43YEhKh/XOzsWgZJBxcvKVpFvHo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=qrpXb4E7M7hSiZ8Cf2INubIQwovOxf8rtiST2nTdYG56P/i02vaGe83f+9bvQprvq
-	 VgpcOsvaoWCndC7LXwkbN21msJ81t9jqvLggR4K6+dWl6vt6tbFaQ5B1IFnTi+I3Mw
-	 H0IMGkDPx1RTLLHkm4qk51fTBM34bIyN02uPPn08=
+	b=Z4eTOEAyeZGZRhMLErDlHrOzyIn7K/DlkM60MPZgILl0NsHakg85D489lgcJ2pyps
+	 w8ZjrPHlpbLbeknooUuGV8AX44PHoyXa1MFbZ8JyqpCmrdU3drnEDl22/6rS7GAbFk
+	 mLBVLjPqI1ce59ORnQdEOqbJ1Zk5A8F74faI2Ijw=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 23 Apr 2024 09:54:37 +0200
-Subject: [PATCH v3 02/11] cgroup: bpf: constify ctl_table arguments and
- fields
+Date: Tue, 23 Apr 2024 09:54:36 +0200
+Subject: [PATCH v3 01/11] stackleak: don't modify ctl_table argument
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240423-sysctl-const-handler-v3-2-e0beccb836e2@weissschuh.net>
+Message-Id: <20240423-sysctl-const-handler-v3-1-e0beccb836e2@weissschuh.net>
 References: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
 In-Reply-To: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
 To: Luis Chamberlain <mcgrof@kernel.org>, 
  Joel Granados <j.granados@samsung.com>, Kees Cook <keescook@chromium.org>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1713858961; l=686;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1713858961; l=1205;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=1pR6m5Wi5iIO9mWeE7uFEYPdE/xPU01dcPav6FtcGgk=;
- b=pcm/jJjouDKJ7dKkXuplkCwgN4lakaTVY5yViah+TEyJb0kgB/5JxKSM28vhTdxT/a0KzPrgc
- T5MafpuEka/DMwunsovOVuekoxGTF4FJjqwg/mb6qFtEZR2YOr2vquk
+ bh=D/3OJwMoANYNDnHN43YEhKh/XOzsWgZJBxcvKVpFvHo=;
+ b=1RhNomBbqj6XFaD6ZYOxEHBLV6bfBHp2WGUjkt4XBn/Ez17CpMDHBnau1hMCabUBp0fIJIUhv
+ lq3ewsWLz9gCbCEhY4DcLZnRRhb9Y2u6rar0aoKgOs7QrHrAJv1mc4Z
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -64,28 +63,37 @@ Cc: Dave Chinner <david@fromorbit.com>, =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In a future commit the sysctl core will only use
-"const struct ctl_table". As a preparation for that adapt the cgroup-bpf
-code.
+In a future commit the proc_handlers will change to
+"const struct ctl_table".
+As a preparation for that adapt the logic to work with a temporary
+variable, similar to how it is done in other parts of the kernel.
 
+Fixes: 964c9dff0091 ("stackleak: Allow runtime disabling of kernel stack erasing")
+Acked-by: Kees Cook <keescook@chromium.org>
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- include/linux/filter.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/stackleak.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/filter.h b/include/linux/filter.h
-index 7a27f19bf44d..4eada55a2df8 100644
---- a/include/linux/filter.h
-+++ b/include/linux/filter.h
-@@ -1404,7 +1404,7 @@ struct bpf_sock_ops_kern {
+diff --git a/kernel/stackleak.c b/kernel/stackleak.c
+index d099f3affcf1..558b9d6d28d3 100644
+--- a/kernel/stackleak.c
++++ b/kernel/stackleak.c
+@@ -27,10 +27,11 @@ static int stack_erasing_sysctl(struct ctl_table *table, int write,
+ 	int ret = 0;
+ 	int state = !static_branch_unlikely(&stack_erasing_bypass);
+ 	int prev_state = state;
++	struct ctl_table tmp = *table;
  
- struct bpf_sysctl_kern {
- 	struct ctl_table_header *head;
--	struct ctl_table *table;
-+	const struct ctl_table *table;
- 	void *cur_val;
- 	size_t cur_len;
- 	void *new_val;
+-	table->data = &state;
+-	table->maxlen = sizeof(int);
+-	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
++	tmp.data = &state;
++	tmp.maxlen = sizeof(int);
++	ret = proc_dointvec_minmax(&tmp, write, buffer, lenp, ppos);
+ 	state = !!state;
+ 	if (ret || !write || state == prev_state)
+ 		return ret;
 
 -- 
 2.44.0
