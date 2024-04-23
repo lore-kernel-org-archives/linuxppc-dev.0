@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1A11C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 08:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E4C4C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 08:07:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=iLEuUiqm;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Jh4kHqKR;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VNvpT3RR5z3vhG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 18:06:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VNvqG1V8qz3vpv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 18:07:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=iLEuUiqm;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Jh4kHqKR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNvkQ4x2dz3cTt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2024 18:03:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNvkV4bpZz3cTp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2024 18:03:14 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1713858962;
-	bh=odMbVtXputh1B0wvO7gtV7cKLTLD5qqVWgyPwr4fby8=;
+	bh=rhTtJbRFTTDD/EEuqh+xmQGgJG7l1CgJQWXHlODBL5I=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=iLEuUiqmghQTs4TpLEBZo8gm3hwwbmMwVh4LjetW99mef7fnKS1+JFbAcu6CXN+nU
-	 Qkeg3C6Dg8GVXnY7Yt7xJGc6b7m/FkLbHyvle0PIjuq8AhNHSJZCZpA5JwOewu8BaK
-	 /noyOblAFfy+/YF6CCqIRarm1v2eXbwf+FU797II=
+	b=Jh4kHqKR8uFfgbO8D9WK1hxUfjPm8iO4Tj/1g9oqbdvZsvOO7NNctmOr5j9hI/VKE
+	 pHafcxJ8BdeddjSts/bMxWLccdEWmQmje38r1ok3DoPkrNGs3KG6i7U8YJpR6imRw2
+	 VR1iTBJjamva0pTfL/MxJ99YyYItdDSAEsnB8hOA=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 23 Apr 2024 09:54:44 +0200
-Subject: [PATCH v3 09/11] ipvs: constify ctl_table arguments of utility
- functions
+Date: Tue, 23 Apr 2024 09:54:41 +0200
+Subject: [PATCH v3 06/11] ipv4/sysctl: constify ctl_table arguments of
+ utility functions
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240423-sysctl-const-handler-v3-9-e0beccb836e2@weissschuh.net>
+Message-Id: <20240423-sysctl-const-handler-v3-6-e0beccb836e2@weissschuh.net>
 References: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
 In-Reply-To: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
 To: Luis Chamberlain <mcgrof@kernel.org>, 
  Joel Granados <j.granados@samsung.com>, Kees Cook <keescook@chromium.org>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1713858961; l=1292;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1713858961; l=1269;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=odMbVtXputh1B0wvO7gtV7cKLTLD5qqVWgyPwr4fby8=;
- b=HGS1kdZAsaJZKpg4r6Gy7F4xJbcNv2yq+KS0wT9dr5GDwl8/cNzV2zronax9Lbe4GmE5G3NOC
- F+TpiwFZuPaBZHHRsyNSIMTh2HPxXZ0cjduuz09UV7awWr9POrydgh8
+ bh=rhTtJbRFTTDD/EEuqh+xmQGgJG7l1CgJQWXHlODBL5I=;
+ b=xkBxm95PFV9biLBQXL/jnQoslPWOqeiKfLilfo9X0/w/rpk96uwZ6XcT8dAItQlTvocuJZiXJ
+ AWgjsh5bK7RD2GBrU5dFR8YS1o9Y0qoHpG5ydJoQPSEwJ0OoCUdGv/k
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,34 +70,33 @@ helpers.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- net/netfilter/ipvs/ip_vs_ctl.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ net/ipv4/sysctl_net_ipv4.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
-index 143a341bbc0a..689ac521ea2d 100644
---- a/net/netfilter/ipvs/ip_vs_ctl.c
-+++ b/net/netfilter/ipvs/ip_vs_ctl.c
-@@ -1924,7 +1924,8 @@ proc_do_sync_ports(struct ctl_table *table, int write,
- 	return rc;
- }
- 
--static int ipvs_proc_est_cpumask_set(struct ctl_table *table, void *buffer)
-+static int ipvs_proc_est_cpumask_set(const struct ctl_table *table,
-+				     void *buffer)
- {
- 	struct netns_ipvs *ipvs = table->extra2;
- 	cpumask_var_t *valp = table->data;
-@@ -1962,8 +1963,8 @@ static int ipvs_proc_est_cpumask_set(struct ctl_table *table, void *buffer)
+diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
+index ce5d19978a26..fc4c001bf72a 100644
+--- a/net/ipv4/sysctl_net_ipv4.c
++++ b/net/ipv4/sysctl_net_ipv4.c
+@@ -130,7 +130,8 @@ static int ipv4_privileged_ports(struct ctl_table *table, int write,
  	return ret;
  }
  
--static int ipvs_proc_est_cpumask_get(struct ctl_table *table, void *buffer,
--				     size_t size)
-+static int ipvs_proc_est_cpumask_get(const struct ctl_table *table,
-+				     void *buffer, size_t size)
+-static void inet_get_ping_group_range_table(struct ctl_table *table, kgid_t *low, kgid_t *high)
++static void inet_get_ping_group_range_table(const struct ctl_table *table,
++					    kgid_t *low, kgid_t *high)
  {
- 	struct netns_ipvs *ipvs = table->extra2;
- 	cpumask_var_t *valp = table->data;
+ 	kgid_t *data = table->data;
+ 	struct net *net =
+@@ -145,7 +146,8 @@ static void inet_get_ping_group_range_table(struct ctl_table *table, kgid_t *low
+ }
+ 
+ /* Update system visible IP port range */
+-static void set_ping_group_range(struct ctl_table *table, kgid_t low, kgid_t high)
++static void set_ping_group_range(const struct ctl_table *table,
++				 kgid_t low, kgid_t high)
+ {
+ 	kgid_t *data = table->data;
+ 	struct net *net =
 
 -- 
 2.44.0
