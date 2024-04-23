@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB077C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 08:10:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4226C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 08:10:46 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=BuKkQ4wn;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=qrpXb4E7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VNvtN3VQ7z3w1s
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 18:10:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VNvv93CmRz3vrT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 18:10:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=BuKkQ4wn;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=qrpXb4E7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNvkV5vkMz3cWN
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNvkW0tvfz3cWP
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2024 18:03:14 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1713858962;
-	bh=ydR7obNBKRDnMbLpYk0O5xU1+ChzUePuE2B1VMOxcXg=;
+	bh=1pR6m5Wi5iIO9mWeE7uFEYPdE/xPU01dcPav6FtcGgk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=BuKkQ4wnru53tO4VImE+RBd94hQrxsXOmY7rg+ASOS2vW15touD/aAGtiLNa1kC+7
-	 kC2YollDK7PTHGVEIYC9k1hBEXljd/ZFrzfP4ao96J9I20cbjm5KtPCpR+HwBCFr96
-	 ZKhP+40sphF/eXyhl8i7U8pbsuJQSpZMyZvpLjxI=
+	b=qrpXb4E7M7hSiZ8Cf2INubIQwovOxf8rtiST2nTdYG56P/i02vaGe83f+9bvQprvq
+	 VgpcOsvaoWCndC7LXwkbN21msJ81t9jqvLggR4K6+dWl6vt6tbFaQ5B1IFnTi+I3Mw
+	 H0IMGkDPx1RTLLHkm4qk51fTBM34bIyN02uPPn08=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 23 Apr 2024 09:54:45 +0200
-Subject: [PATCH v3 10/11] sysctl: constify ctl_table arguments of utility
- function
+Date: Tue, 23 Apr 2024 09:54:37 +0200
+Subject: [PATCH v3 02/11] cgroup: bpf: constify ctl_table arguments and
+ fields
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20240423-sysctl-const-handler-v3-10-e0beccb836e2@weissschuh.net>
+Message-Id: <20240423-sysctl-const-handler-v3-2-e0beccb836e2@weissschuh.net>
 References: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
 In-Reply-To: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
 To: Luis Chamberlain <mcgrof@kernel.org>, 
  Joel Granados <j.granados@samsung.com>, Kees Cook <keescook@chromium.org>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1713858961; l=4555;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1713858961; l=686;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=ydR7obNBKRDnMbLpYk0O5xU1+ChzUePuE2B1VMOxcXg=;
- b=ILR4Nd0n0ptnfip2BSMBBu8wiCN5WTML70FZKdOlvCmeFL1Tz1zsPatlYuvHdEeskE5uykhWp
- ovqoAP1o0dGDhLLLePYQ0dpqqOG2g0I2Y7dJoidleRvVpkT/QbYbHhD
+ bh=1pR6m5Wi5iIO9mWeE7uFEYPdE/xPU01dcPav6FtcGgk=;
+ b=pcm/jJjouDKJ7dKkXuplkCwgN4lakaTVY5yViah+TEyJb0kgB/5JxKSM28vhTdxT/a0KzPrgc
+ T5MafpuEka/DMwunsovOVuekoxGTF4FJjqwg/mb6qFtEZR2YOr2vquk
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -64,117 +64,28 @@ Cc: Dave Chinner <david@fromorbit.com>, =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In a future commit the proc_handlers themselves will change to
-"const struct ctl_table". As a preparation for that adapt the internal
-helper.
+In a future commit the sysctl core will only use
+"const struct ctl_table". As a preparation for that adapt the cgroup-bpf
+code.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- include/linux/sysctl.h |  2 +-
- kernel/sysctl.c        | 21 +++++++++++----------
- 2 files changed, 12 insertions(+), 11 deletions(-)
+ include/linux/filter.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 09db2f2e6488..54fbec062772 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -237,7 +237,7 @@ extern struct ctl_table_header *register_sysctl_mount_point(const char *path);
+diff --git a/include/linux/filter.h b/include/linux/filter.h
+index 7a27f19bf44d..4eada55a2df8 100644
+--- a/include/linux/filter.h
++++ b/include/linux/filter.h
+@@ -1404,7 +1404,7 @@ struct bpf_sock_ops_kern {
  
- void do_sysctl_args(void);
- bool sysctl_is_alias(char *param);
--int do_proc_douintvec(struct ctl_table *table, int write,
-+int do_proc_douintvec(const struct ctl_table *table, int write,
- 		      void *buffer, size_t *lenp, loff_t *ppos,
- 		      int (*conv)(unsigned long *lvalp,
- 				  unsigned int *valp,
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index e0b917328cf9..62dd27752960 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -205,7 +205,7 @@ static int _proc_do_string(char *data, int maxlen, int write,
- 	return 0;
- }
- 
--static void warn_sysctl_write(struct ctl_table *table)
-+static void warn_sysctl_write(const struct ctl_table *table)
- {
- 	pr_warn_once("%s wrote to %s when file position was not 0!\n"
- 		"This will not be supported in the future. To silence this\n"
-@@ -223,7 +223,7 @@ static void warn_sysctl_write(struct ctl_table *table)
-  * handlers can ignore the return value.
-  */
- static bool proc_first_pos_non_zero_ignore(loff_t *ppos,
--					   struct ctl_table *table)
-+					   const struct ctl_table *table)
- {
- 	if (!*ppos)
- 		return false;
-@@ -468,7 +468,7 @@ static int do_proc_douintvec_conv(unsigned long *lvalp,
- 
- static const char proc_wspace_sep[] = { ' ', '\t', '\n' };
- 
--static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
-+static int __do_proc_dointvec(void *tbl_data, const struct ctl_table *table,
- 		  int write, void *buffer,
- 		  size_t *lenp, loff_t *ppos,
- 		  int (*conv)(bool *negp, unsigned long *lvalp, int *valp,
-@@ -541,7 +541,7 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
- 	return err;
- }
- 
--static int do_proc_dointvec(struct ctl_table *table, int write,
-+static int do_proc_dointvec(const struct ctl_table *table, int write,
- 		  void *buffer, size_t *lenp, loff_t *ppos,
- 		  int (*conv)(bool *negp, unsigned long *lvalp, int *valp,
- 			      int write, void *data),
-@@ -552,7 +552,7 @@ static int do_proc_dointvec(struct ctl_table *table, int write,
- }
- 
- static int do_proc_douintvec_w(unsigned int *tbl_data,
--			       struct ctl_table *table,
-+			       const struct ctl_table *table,
- 			       void *buffer,
- 			       size_t *lenp, loff_t *ppos,
- 			       int (*conv)(unsigned long *lvalp,
-@@ -639,7 +639,7 @@ static int do_proc_douintvec_r(unsigned int *tbl_data, void *buffer,
- 	return err;
- }
- 
--static int __do_proc_douintvec(void *tbl_data, struct ctl_table *table,
-+static int __do_proc_douintvec(void *tbl_data, const struct ctl_table *table,
- 			       int write, void *buffer,
- 			       size_t *lenp, loff_t *ppos,
- 			       int (*conv)(unsigned long *lvalp,
-@@ -675,7 +675,7 @@ static int __do_proc_douintvec(void *tbl_data, struct ctl_table *table,
- 	return do_proc_douintvec_r(i, buffer, lenp, ppos, conv, data);
- }
- 
--int do_proc_douintvec(struct ctl_table *table, int write,
-+int do_proc_douintvec(const struct ctl_table *table, int write,
- 		      void *buffer, size_t *lenp, loff_t *ppos,
- 		      int (*conv)(unsigned long *lvalp,
- 				  unsigned int *valp,
-@@ -1023,8 +1023,9 @@ static int sysrq_sysctl_handler(struct ctl_table *table, int write,
- }
- #endif
- 
--static int __do_proc_doulongvec_minmax(void *data, struct ctl_table *table,
--		int write, void *buffer, size_t *lenp, loff_t *ppos,
-+static int __do_proc_doulongvec_minmax(void *data,
-+		const struct ctl_table *table, int write,
-+		void *buffer, size_t *lenp, loff_t *ppos,
- 		unsigned long convmul, unsigned long convdiv)
- {
- 	unsigned long *i, *min, *max;
-@@ -1096,7 +1097,7 @@ static int __do_proc_doulongvec_minmax(void *data, struct ctl_table *table,
- 	return err;
- }
- 
--static int do_proc_doulongvec_minmax(struct ctl_table *table, int write,
-+static int do_proc_doulongvec_minmax(const struct ctl_table *table, int write,
- 		void *buffer, size_t *lenp, loff_t *ppos, unsigned long convmul,
- 		unsigned long convdiv)
- {
+ struct bpf_sysctl_kern {
+ 	struct ctl_table_header *head;
+-	struct ctl_table *table;
++	const struct ctl_table *table;
+ 	void *cur_val;
+ 	size_t cur_len;
+ 	void *new_val;
 
 -- 
 2.44.0
