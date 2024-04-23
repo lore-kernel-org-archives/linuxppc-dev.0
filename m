@@ -4,50 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BF37C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 08:11:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15E75C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 09:33:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Z4eTOEAy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PB45pmdK;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VNvvy0vwZz3w6C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 18:11:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VNxl23zw4z3dXj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Apr 2024 19:33:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Z4eTOEAy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PB45pmdK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNvkY63rNz3cWP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2024 18:03:17 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1713858962;
-	bh=D/3OJwMoANYNDnHN43YEhKh/XOzsWgZJBxcvKVpFvHo=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Z4eTOEAyeZGZRhMLErDlHrOzyIn7K/DlkM60MPZgILl0NsHakg85D489lgcJ2pyps
-	 w8ZjrPHlpbLbeknooUuGV8AX44PHoyXa1MFbZ8JyqpCmrdU3drnEDl22/6rS7GAbFk
-	 mLBVLjPqI1ce59ORnQdEOqbJ1Zk5A8F74faI2Ijw=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 23 Apr 2024 09:54:36 +0200
-Subject: [PATCH v3 01/11] stackleak: don't modify ctl_table argument
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VNxkB10mcz3cds
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Apr 2024 19:33:06 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 64BDFCE0B86;
+	Tue, 23 Apr 2024 09:33:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10BA1C116B1;
+	Tue, 23 Apr 2024 09:33:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1713864782;
+	bh=wsUmgqvDZJN/e9reBbhNgk7SNk5EqxeH/8Bjswytoz8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=PB45pmdKhegAatE9P0YGTf3bfcdjIpWIRseRVrVd7giXt3MxwRmPOFCvDQF9fgABn
+	 5Yg13EOS2LKs0QR/YOmSklY6bcJf0dOXqKdrYFcbh0xl1tNX0wb4IAfQLPNmGZ5dgZ
+	 zCn9Ea9x2uq8YXF9qNqSVDAjrMefmQdRhqjkSoaoNoyuix+bDrFIEPPql15mOLHiKI
+	 5bnWq+wg6S27dCBLdkhzsFem0tLyXLUv94mE9zcm0Ya1rh0dWT0fm8EuCfybohC/eT
+	 fdLjmLglb9G7K9xBaiSIb3S9xQJGCUN0kwQyIewz2oAFHXYlpZuVrHpKiQTCI2VJB4
+	 ktdozmUhKlxeA==
+Date: Tue, 23 Apr 2024 14:55:21 +0530
+From: Naveen N Rao <naveen@kernel.org>
+To: Benjamin Gray <bgray@linux.ibm.com>
+Subject: Re: [PATCH v3 5/5] powerpc/code-patching: Add boot selftest for data
+ patching
+Message-ID: <yct5zr7cqsfy3skmoazhaaxcjvsfgsuap2ggardurqjtiob3z2@ubsimrmcepcl>
+References: <20240325055302.876434-1-bgray@linux.ibm.com>
+ <20240325055302.876434-6-bgray@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20240423-sysctl-const-handler-v3-1-e0beccb836e2@weissschuh.net>
-References: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
-In-Reply-To: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
-To: Luis Chamberlain <mcgrof@kernel.org>, 
- Joel Granados <j.granados@samsung.com>, Kees Cook <keescook@chromium.org>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1713858961; l=1205;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=D/3OJwMoANYNDnHN43YEhKh/XOzsWgZJBxcvKVpFvHo=;
- b=1RhNomBbqj6XFaD6ZYOxEHBLV6bfBHp2WGUjkt4XBn/Ez17CpMDHBnau1hMCabUBp0fIJIUhv
- lq3ewsWLz9gCbCEhY4DcLZnRRhb9Y2u6rar0aoKgOs7QrHrAJv1mc4Z
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240325055302.876434-6-bgray@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,42 +60,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dave Chinner <david@fromorbit.com>, =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, linux-hardening@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, linux-sctp@vger.kernel.org, lvs-devel@vger.kernel.org, coreteam@netfilter.org, linux-trace-kernel@vger.kernel.org, bridge@lists.linux.dev, apparmor@lists.ubuntu.com, linux-xfs@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, netfilter-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In a future commit the proc_handlers will change to
-"const struct ctl_table".
-As a preparation for that adapt the logic to work with a temporary
-variable, similar to how it is done in other parts of the kernel.
+On Mon, Mar 25, 2024 at 04:53:02PM +1100, Benjamin Gray wrote:
+> Extend the code patching selftests with some basic coverage of the new
+> data patching variants too.
+> 
+> Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
+> 
+> ---
+> 
+> v3: * New in v3
+> ---
+>  arch/powerpc/lib/test-code-patching.c | 36 +++++++++++++++++++++++++++
+>  1 file changed, 36 insertions(+)
+> 
+> diff --git a/arch/powerpc/lib/test-code-patching.c b/arch/powerpc/lib/test-code-patching.c
+> index c44823292f73..e96c48fcd4db 100644
+> --- a/arch/powerpc/lib/test-code-patching.c
+> +++ b/arch/powerpc/lib/test-code-patching.c
+> @@ -347,6 +347,41 @@ static void __init test_prefixed_patching(void)
+>  	check(!memcmp(iptr, expected, sizeof(expected)));
+>  }
+>  
+> +static void __init test_data_patching(void)
+> +{
+> +	void *buf;
+> +	u32 *addr32;
+> +
+> +	buf = vzalloc(PAGE_SIZE);
+> +	check(buf);
+> +	if (!buf)
+> +		return;
+> +
+> +	addr32 = buf + 128;
+> +
+> +	addr32[1] = 0xA0A1A2A3;
+> +	addr32[2] = 0xB0B1B2B3;
+> +
+> +	patch_uint(&addr32[1], 0xC0C1C2C3);
+> +
+> +	check(addr32[0] == 0);
+> +	check(addr32[1] == 0xC0C1C2C3);
+> +	check(addr32[2] == 0xB0B1B2B3);
+> +	check(addr32[3] == 0);
+> +
+> +	patch_ulong(&addr32[1], 0xD0D1D2D3);
+> +
+> +	check(addr32[0] == 0);
+> +	*(unsigned long *)(&addr32[1]) = 0xD0D1D2D3;
 
-Fixes: 964c9dff0091 ("stackleak: Allow runtime disabling of kernel stack erasing")
-Acked-by: Kees Cook <keescook@chromium.org>
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
- kernel/stackleak.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+Should that have been a check() instead?
 
-diff --git a/kernel/stackleak.c b/kernel/stackleak.c
-index d099f3affcf1..558b9d6d28d3 100644
---- a/kernel/stackleak.c
-+++ b/kernel/stackleak.c
-@@ -27,10 +27,11 @@ static int stack_erasing_sysctl(struct ctl_table *table, int write,
- 	int ret = 0;
- 	int state = !static_branch_unlikely(&stack_erasing_bypass);
- 	int prev_state = state;
-+	struct ctl_table tmp = *table;
- 
--	table->data = &state;
--	table->maxlen = sizeof(int);
--	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
-+	tmp.data = &state;
-+	tmp.maxlen = sizeof(int);
-+	ret = proc_dointvec_minmax(&tmp, write, buffer, lenp, ppos);
- 	state = !!state;
- 	if (ret || !write || state == prev_state)
- 		return ret;
+- Naveen
 
--- 
-2.44.0
-
+> +
+> +	if (!IS_ENABLED(CONFIG_PPC64))
+> +		check(addr32[2] == 0xB0B1B2B3);
+> +
+> +	check(addr32[3] == 0);
+> +
+> +	vfree(buf);
+> +}
+> +
+>  static int __init test_code_patching(void)
+>  {
+>  	pr_info("Running code patching self-tests ...\n");
+> @@ -356,6 +391,7 @@ static int __init test_code_patching(void)
+>  	test_create_function_call();
+>  	test_translate_branch();
+>  	test_prefixed_patching();
+> +	test_data_patching();
+>  
+>  	return 0;
+>  }
+> -- 
+> 2.44.0
+> 
