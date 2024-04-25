@@ -4,74 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D55B7C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2024 03:05:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73FA4C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2024 03:13:26 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=dPf4qBDS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PspTijnP;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VQ11W1xRYz3dWS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2024 13:05:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VQ1C909KFz3dK4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2024 13:13:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=dPf4qBDS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PspTijnP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=martin.petersen@oracle.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 4018 seconds by postgrey-1.37 at boromir; Thu, 25 Apr 2024 13:04:20 AEST
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VQ10h3S9Xz3cgk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2024 13:04:19 +1000 (AEST)
-Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 43P0jUJQ032490;
-	Thu, 25 Apr 2024 01:57:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2023-11-20;
- bh=iD0eF3jpWi06WFWT9jICwohhM4CtHMBbrSU7TQYtR80=;
- b=dPf4qBDSj5YqS2qRQr2i57JC+eZa9uy0kJzl6761X/ycy3kJh9Hzyc7+xUGy04YUvIER
- RAGu/sPMVDJwdxUnW1hWoct+rS0B1qKb7z8YYM6QQidTktjmankZEsSnRqFOzl7iHbwr
- xjJRmiwvAT1RqO9KKPWS8GZOgL3LM64tAKvoAOpy9ZCNwn5T0WNMeyC4AHW9rvGdy4VX
- ztGSPAh57KPYP684cHkujDW40J9w/Bgs6zFsavXBUdTd1IZFEX25AEydMOXqVjfa3ndy
- /kFgkzQa7EDyi/9e8/5uvlD6vzCIkfrOGGgcRu98UGyHRbn/vtjWs1lylmfBYK40PxB+ ZQ== 
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3xm5kbt350-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 25 Apr 2024 01:57:14 +0000
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.19/8.17.1.19) with ESMTP id 43P1udih025265;
-	Thu, 25 Apr 2024 01:57:12 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3xm45fyh1k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 25 Apr 2024 01:57:12 +0000
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43P1vCuL009586;
-	Thu, 25 Apr 2024 01:57:12 GMT
-Received: from ca-mkp2.ca.oracle.com.com (mpeterse-ol9.allregionaliads.osdevelopmeniad.oraclevcn.com [100.100.251.135])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3xm45fyh1b-1;
-	Thu, 25 Apr 2024 01:57:12 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        linux-scsi@vger.kernel.org, Andrew Donnellan <ajd@linux.ibm.com>
-Subject: Re: [PATCH 1/2] MAINTAINERS: Make cxlflash obsolete
-Date: Wed, 24 Apr 2024 21:57:00 -0400
-Message-ID: <171362345488.571343.5494585475689526516.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240409031027.41587-1-ajd@linux.ibm.com>
-References: <20240409031027.41587-1-ajd@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VQ1BG46mBz3cjv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2024 13:12:38 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id ABCB261D28;
+	Thu, 25 Apr 2024 03:12:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55C57C113CD;
+	Thu, 25 Apr 2024 03:12:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1714014756;
+	bh=Cc9/KJ14ILnwNdU8czLRH7creacZ14o3hne1jmTaNs0=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=PspTijnPTb4cLwKaUXaBK6lgKqrykqW7TnXryDjg7qy1V4DjZ9qYPfEzdMwJcLXmE
+	 2q4vN4nwJllD1z/pH7aACsx2p2ofCITa183q4xZiAclRBaq/82Q7A/KwffAzVOELei
+	 BATUW6SiIq4LeUt/sDYn/hnGKl2shhXeP1rwhzi0rZHTU/OxLjZRFcQA8QACF8kBTq
+	 Md3p5a2MNJIshoUuU+UOn1xH4LNXomCzxGby8JGUI0mSu2HkcgWhSAkP5pU+L9gZk0
+	 nFvpPG5wZraQmtC6JOcQTZn622/SbjwBkjxqFODHiN0ijyqtZ768dGuDQszSMnLkI8
+	 ayXyd+53H5Hzw==
+Date: Wed, 24 Apr 2024 20:12:34 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Thomas =?UTF-8?B?V2Vpw59zY2h1aA==?= <linux@weissschuh.net>
+Subject: Re: [PATCH v3 00/11] sysctl: treewide: constify ctl_table argument
+ of sysctl handlers
+Message-ID: <20240424201234.3cc2b509@kernel.org>
+In-Reply-To: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
+References: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1011,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-04-25_01,2024-04-24_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 mlxlogscore=866
- mlxscore=0 phishscore=0 spamscore=0 malwarescore=0 adultscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2404010000 definitions=main-2404250012
-X-Proofpoint-GUID: 0-SKBKWbUced76nFdb_0kKODfeCpFBYy
-X-Proofpoint-ORIG-GUID: 0-SKBKWbUced76nFdb_0kKODfeCpFBYy
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,25 +59,13 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fbarrat@linux.ibm.com, ukrishn@linux.ibm.com, manoj@linux.ibm.com, "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: Joel Granados <j.granados@samsung.com>, Dave Chinner <david@fromorbit.com>, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, linux-hardening@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, linux-sctp@vger.kernel.org, lvs-devel@vger.kernel.org, coreteam@netfilter.org, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, bridge@lists.linux.dev, apparmor@lists.ubuntu.com, linux-xfs@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, netfilter-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 09 Apr 2024 13:10:26 +1000, Andrew Donnellan wrote:
+On Tue, 23 Apr 2024 09:54:35 +0200 Thomas Wei=C3=9Fschuh wrote:
+> The series was split from my larger series sysctl-const series [0].
+> It only focusses on the proc_handlers but is an important step to be
+> able to move all static definitions of ctl_table into .rodata.
 
-> The cxlflash driver is no longer actively maintained and we intend to
-> remove it in a future kernel release. Change its status to obsolete.
-> 
-> While we're here, Matthew Ochs no longer works at IBM and is no longer in
-> a position to access cxlflash hardware, so remove him from the maintainers
-> list.
-> 
-> [...]
-
-Applied to 6.10/scsi-queue, thanks!
-
-[1/2] MAINTAINERS: Make cxlflash obsolete
-      https://git.kernel.org/mkp/scsi/c/6d97e807c906
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Split this per subsystem, please.
