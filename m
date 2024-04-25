@@ -4,74 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B65BC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2024 14:46:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A00EBC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2024 20:35:46 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=eRbKs6ry;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Z+gqGa8P;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VQJZb559Nz3vY6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 00:46:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VQSKs0HXBz3dxN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 06:35:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=eRbKs6ry;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Z+gqGa8P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=skhan@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VQJYl502vz3cnt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 00:45:30 +1000 (AEST)
-Received: by mail-pf1-x435.google.com with SMTP id d2e1a72fcca58-6f013c304bbso81494b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2024 07:45:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1714056328; x=1714661128; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Upe9hXc85SfykUK8OSJyDQtUplWhtMiTd1jA3tMRXuo=;
-        b=eRbKs6ryiA2ApZBtsVDf0OLrTiYdZD5V7aWyTEhy5zpxupUyHZ0fDL6NtcFzR3NWpq
-         RS+efbKyBrXrH5HANnZMIRGvKotSA+5S0JnBCHaTPgyYsll7Z8uTseQRj7r0dKOFD/54
-         kiEtLcWThfVs5JITJdxuX5mM4DwEX6aWxAMCw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1714056328; x=1714661128;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Upe9hXc85SfykUK8OSJyDQtUplWhtMiTd1jA3tMRXuo=;
-        b=k3/+fksblFba2/q0WrvthwCMJZDl6+LB8EqKI2QBodKFhDOLWOjET5AxelMV1eH+ZN
-         +j/eLJFrhv9wahKJKSssb+Qmg2RDEhAMN8SuMWDO2zxQSeeb5fAijeF1QwwVcFKb1cAE
-         m0SIUapINxrcg1E+rYX3/qd2dgFVZvApMAn5mm4pQGfmqBsvuyb2dwupe6sqFgmAtRyb
-         mdOvotviD9l0BVUmiPDyESFaDcUXKFOL6GezZfW4pHUvX08XSN5uK/TBTvhEu0TNS/nZ
-         b4f3tTm+UF+SJ+Asq81B8zYFCd+WSjctmPy0QNuHNuY33ZKgjlmCKafvr5shwvpOSMDT
-         Lcxw==
-X-Forwarded-Encrypted: i=1; AJvYcCXs6K2h2g5dr5MpBMqGuVJpELWSZXtKWQX2FICzxzk9DOCi3GRmGHUKVkecSQuguSGllOJySV2798/SoksFl1yb82CcvlS2FthYIU8mmw==
-X-Gm-Message-State: AOJu0Yyjck1MmaSuYn3mD/q1lEgUc/IskU4JdsecaIfTfP0JyD8Sw68X
-	053uYNQOqCLdLiDsjUvNgQIDtXViqFnDAlCx2ykwkfVG3Bp5bURpTyXz6zqEwzI=
-X-Google-Smtp-Source: AGHT+IH2ZWIxVnWGlxZ14mWcvRqLtKyE6u0gRzo1WyBlfFhqv5treC26C0VPwnpQrTOD05hYIY1E7A==
-X-Received: by 2002:a05:6a00:731:b0:6ea:ba47:a63b with SMTP id 17-20020a056a00073100b006eaba47a63bmr6568081pfm.0.1714056327589;
-        Thu, 25 Apr 2024 07:45:27 -0700 (PDT)
-Received: from [192.168.43.82] ([223.185.79.208])
-        by smtp.gmail.com with ESMTPSA id k124-20020a633d82000000b005f7d61ec8afsm11351461pga.91.2024.04.25.07.45.11
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 25 Apr 2024 07:45:27 -0700 (PDT)
-Message-ID: <3848a9ad-07aa-48da-a2b7-264c4a990b5b@linuxfoundation.org>
-Date: Thu, 25 Apr 2024 08:45:07 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VQSK14Sc3z3cjm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 06:34:58 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1714077293;
+	bh=bZqtcMhFx7TDPaIgrLqyfpl0/OfmMPAKopBgZDQprIg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Z+gqGa8PD+3BrRxF+Exe+s/+n1FrcsSYPFeQUrvoT2UUvEiGsEXMDYuXjYQJDYiRJ
+	 9/0fJxtI2lDBLEHhkegO15rObvRhgIuWQMhE+D085PPIsVKHmI/z9Zz6qr7xUxUgOg
+	 gdOVIytSYg1zquf83mxdxD8VyvGj7mHBMGjmlG8k=
+Date: Thu, 25 Apr 2024 22:34:52 +0200
+From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
+To: Joel Granados <j.granados@samsung.com>
+Subject: Re: [PATCH v3 00/11] sysctl: treewide: constify ctl_table argument
+ of sysctl handlers
+Message-ID: <d11f875e-4fb5-46dd-a412-84818208c575@t-8ch.de>
+References: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
+ <CGME20240425031241eucas1p1fb0790e0d03ccbe4fca2b5f6da83d6db@eucas1p1.samsung.com>
+ <20240424201234.3cc2b509@kernel.org>
+ <20240425110412.2n5d27smecfncsfa@joelS2.panther.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v13 25/35] KVM: selftests: Convert lib's mem regions to
- KVM_SET_USER_MEMORY_REGION2
-To: Dan Carpenter <dan.carpenter@linaro.org>,
- Sean Christopherson <seanjc@google.com>, Shuah Khan <shuah@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-26-seanjc@google.com>
- <69ae0694-8ca3-402c-b864-99b500b24f5d@moroto.mountain>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <69ae0694-8ca3-402c-b864-99b500b24f5d@moroto.mountain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20240425110412.2n5d27smecfncsfa@joelS2.panther.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,29 +55,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Anders Roxell <anders.roxell@linaro.org>, Benjamin Copeland <ben.copeland@linaro.org>, Marc Zyngier <maz@kernel.org>, Naresh Kamboju <naresh.kamboju@linaro.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-
- 8?B?TWlja2HDq2wgU2FsYcO8?= =?UTF-8?Q?n?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: Dave Chinner <david@fromorbit.com>, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, linux-hardening@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, linux-sctp@vger.kernel.org, lvs-devel@vger.kernel.org, coreteam@netfilter.org, Jakub Kicinski <kuba@kernel.org>, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, bridge@lists.linux.dev, apparmor@lists.ubuntu.com, linux-xfs@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, netfilter-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4/25/24 08:12, Dan Carpenter wrote:
-> On Fri, Oct 27, 2023 at 11:22:07AM -0700, Sean Christopherson wrote:
->> Use KVM_SET_USER_MEMORY_REGION2 throughout KVM's selftests library so that
->> support for guest private memory can be added without needing an entirely
->> separate set of helpers.
->>
->> Note, this obviously makes selftests backwards-incompatible with older KVM
->    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->> versions from this point forward.
->    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Hi Joel,
+
+On 2024-04-25 13:04:12+0000, Joel Granados wrote:
+> On Wed, Apr 24, 2024 at 08:12:34PM -0700, Jakub Kicinski wrote:
+> > On Tue, 23 Apr 2024 09:54:35 +0200 Thomas Weißschuh wrote:
+> > > The series was split from my larger series sysctl-const series [0].
+> > > It only focusses on the proc_handlers but is an important step to be
+> > > able to move all static definitions of ctl_table into .rodata.
+> > 
+> > Split this per subsystem, please.
+> It is tricky to do that because it changes the first argument (ctl*) to
+> const in the proc_handler function type defined in sysclt.h:
+> "
+> -typedef int proc_handler(struct ctl_table *ctl, int write, void *buffer,
+> +typedef int proc_handler(const struct ctl_table *ctl, int write, void *buffer,
+>                 size_t *lenp, loff_t *ppos);
+> "
+> This means that all the proc_handlers need to change at the same time.
 > 
-> Is there a way we could disable the tests on older kernels instead of
-> making them fail?  Check uname or something?  There is probably a
-> standard way to do this...  It's these tests which fail.
+> However, there is an alternative way to do this that allows chunking. We
+> first define the proc_handler as a void pointer (casting it where it is
+> being used) [1]. Then we could do the constification by subsystem (like
+> Jakub proposes). Finally we can "revert the void pointer change so we
+> don't have one size fit all pointer as our proc_handler [2].
+> 
+> Here are some comments about the alternative:
+> 1. We would need to make the first argument const in all the derived
+>    proc_handlers [3] 
+> 2. There would be no undefined behavior for two reasons:
+>    2.1. There is no case where we change the first argument. We know
+>         this because there are no compile errors after we make it const.
+>    2.2. We would always go from non-const to const. This is the case
+>         because all the stuff that is unchanged in non-const.
+> 3. If the idea sticks, it should go into mainline as one patchset. I
+>    would not like to have a void* proc_handler in a kernel release.
+> 4. I think this is a "win/win" solution were the constification goes
+>    through and it is divided in such a way that it is reviewable.
+> 
+> I would really like to hear what ppl think about this "heretic"
+> alternative. @Thomas, @Luis, @Kees @Jakub?
 
-They shouldn't fail - the tests should be skipped on older kernels.
-If it is absolutely necessary to dd uname to check kernel version,
-refer to zram/zram_lib.sh for an example.
+Thanks for that alternative, I'm not a big fan though.
 
-thanks,
--- Shuah
+Besides the wonky syntax, Control Flow Integrity should trap on
+this construct. Functions are called through different pointers than
+their actual types which is exactly what CFI is meant to prevent.
+
+Maybe people find it easier to review when using
+"--word-diff" and/or "-U0" with git diff/show.
+There is really nothing going an besides adding a few "const"s.
+
+But if the consensus prefers this solution, I'll be happy to adopt it.
+
+> [1] https://git.kernel.org/pub/scm/linux/kernel/git/joel.granados/linux.git/commit/?h=jag/constfy_treewide_alternative&id=4a383503b1ea650d4e12c1f5838974e879f5aa6f
+> [2] https://git.kernel.org/pub/scm/linux/kernel/git/joel.granados/linux.git/commit/?h=jag/constfy_treewide_alternative&id=a3be65973d27ec2933b9e81e1bec60be3a9b460d
+> [3] proc_dostring, proc_dobool, proc_dointvec....
+
+
+Thomas
