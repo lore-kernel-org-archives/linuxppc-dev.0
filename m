@@ -4,52 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E473C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2024 11:28:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B65BC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2024 14:46:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mRKJ93uq;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=eRbKs6ry;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VQDB35dPvz3dX3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Apr 2024 21:28:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VQJZb559Nz3vY6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 00:46:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mRKJ93uq;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=eRbKs6ry;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=skhan@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VQD9F5fk3z3dDh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2024 21:27:29 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 75A0BCE19F8;
-	Thu, 25 Apr 2024 11:27:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 872C5C113CC;
-	Thu, 25 Apr 2024 11:27:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714044445;
-	bh=/xag3OkcGEyfkLOWbreP2qxcC/ujNSwQZVNR+WIcJbw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=mRKJ93uqcY3f24wDK0kXzBjcPBV39G7QObjuc4CmkQfRv5R+mMpJ1b6/J6H5u2HIm
-	 t3h5+32yZNa9AnoOJhEsPXOxE743fBO/ZLvaD3SlDtF8Xs+uMfOxHE4vQafUCmrTeS
-	 RauCHvdPX8zvNEuF1uoAtnZsVbEL6F3JQU4ITMpZeHMVpsbaStweISAUZ6NSPwqYK1
-	 Bznvw3m7I67nKaMSLncnqLg+qkh3IpEMtvfeKnmZfr3+eXQJE4Y4h22qAAkj/prqE7
-	 l7Z0jthgvYfF/3lWJ+ZN1Mj9l+O5eeFJL9TnW2NlZSe49x5nzyjc40EKQCg+px2KUW
-	 1T6j/jrkd3wfw==
-Date: Thu, 25 Apr 2024 16:47:58 +0530
-From: Naveen N Rao <naveen@kernel.org>
-To: Gautam Menghani <gautam@linux.ibm.com>
-Subject: Re: [PATCH v5 RESEND] arch/powerpc/kvm: Add support for reading VPA
- counters for pseries guests
-Message-ID: <ne4jzv6dyremumuulw6c5zcwgncz5igsesfmlazg4jxmkaz3te@jpqv3qfo7jlb>
-References: <20240402070656.28441-1-gautam@linux.ibm.com>
- <aauzmvtbpgxbr4aa3s4k33cdi7fljs5q4ifn5x2swncz7dtvam@gclohylavkpl>
- <ualscagnpj54rvn33ncaznp7ibvvqulhrmq46qsg73wokgswxy@naopf7leuk66>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VQJYl502vz3cnt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 00:45:30 +1000 (AEST)
+Received: by mail-pf1-x435.google.com with SMTP id d2e1a72fcca58-6f013c304bbso81494b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Apr 2024 07:45:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google; t=1714056328; x=1714661128; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Upe9hXc85SfykUK8OSJyDQtUplWhtMiTd1jA3tMRXuo=;
+        b=eRbKs6ryiA2ApZBtsVDf0OLrTiYdZD5V7aWyTEhy5zpxupUyHZ0fDL6NtcFzR3NWpq
+         RS+efbKyBrXrH5HANnZMIRGvKotSA+5S0JnBCHaTPgyYsll7Z8uTseQRj7r0dKOFD/54
+         kiEtLcWThfVs5JITJdxuX5mM4DwEX6aWxAMCw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1714056328; x=1714661128;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Upe9hXc85SfykUK8OSJyDQtUplWhtMiTd1jA3tMRXuo=;
+        b=k3/+fksblFba2/q0WrvthwCMJZDl6+LB8EqKI2QBodKFhDOLWOjET5AxelMV1eH+ZN
+         +j/eLJFrhv9wahKJKSssb+Qmg2RDEhAMN8SuMWDO2zxQSeeb5fAijeF1QwwVcFKb1cAE
+         m0SIUapINxrcg1E+rYX3/qd2dgFVZvApMAn5mm4pQGfmqBsvuyb2dwupe6sqFgmAtRyb
+         mdOvotviD9l0BVUmiPDyESFaDcUXKFOL6GezZfW4pHUvX08XSN5uK/TBTvhEu0TNS/nZ
+         b4f3tTm+UF+SJ+Asq81B8zYFCd+WSjctmPy0QNuHNuY33ZKgjlmCKafvr5shwvpOSMDT
+         Lcxw==
+X-Forwarded-Encrypted: i=1; AJvYcCXs6K2h2g5dr5MpBMqGuVJpELWSZXtKWQX2FICzxzk9DOCi3GRmGHUKVkecSQuguSGllOJySV2798/SoksFl1yb82CcvlS2FthYIU8mmw==
+X-Gm-Message-State: AOJu0Yyjck1MmaSuYn3mD/q1lEgUc/IskU4JdsecaIfTfP0JyD8Sw68X
+	053uYNQOqCLdLiDsjUvNgQIDtXViqFnDAlCx2ykwkfVG3Bp5bURpTyXz6zqEwzI=
+X-Google-Smtp-Source: AGHT+IH2ZWIxVnWGlxZ14mWcvRqLtKyE6u0gRzo1WyBlfFhqv5treC26C0VPwnpQrTOD05hYIY1E7A==
+X-Received: by 2002:a05:6a00:731:b0:6ea:ba47:a63b with SMTP id 17-20020a056a00073100b006eaba47a63bmr6568081pfm.0.1714056327589;
+        Thu, 25 Apr 2024 07:45:27 -0700 (PDT)
+Received: from [192.168.43.82] ([223.185.79.208])
+        by smtp.gmail.com with ESMTPSA id k124-20020a633d82000000b005f7d61ec8afsm11351461pga.91.2024.04.25.07.45.11
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 25 Apr 2024 07:45:27 -0700 (PDT)
+Message-ID: <3848a9ad-07aa-48da-a2b7-264c4a990b5b@linuxfoundation.org>
+Date: Thu, 25 Apr 2024 08:45:07 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ualscagnpj54rvn33ncaznp7ibvvqulhrmq46qsg73wokgswxy@naopf7leuk66>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v13 25/35] KVM: selftests: Convert lib's mem regions to
+ KVM_SET_USER_MEMORY_REGION2
+To: Dan Carpenter <dan.carpenter@linaro.org>,
+ Sean Christopherson <seanjc@google.com>, Shuah Khan <shuah@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <20231027182217.3615211-1-seanjc@google.com>
+ <20231027182217.3615211-26-seanjc@google.com>
+ <69ae0694-8ca3-402c-b864-99b500b24f5d@moroto.mountain>
+Content-Language: en-US
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <69ae0694-8ca3-402c-b864-99b500b24f5d@moroto.mountain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,72 +83,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, aneesh.kumar@kernel.org, Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Shuah Khan <skhan@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Isaku Yamahata <isaku.yamahata@gmail.com>, Anders Roxell <anders.roxell@linaro.org>, Benjamin Copeland <ben.copeland@linaro.org>, Marc Zyngier <maz@kernel.org>, Naresh Kamboju <naresh.kamboju@linaro.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?UTF-
+ 8?B?TWlja2HDq2wgU2FsYcO8?= =?UTF-8?Q?n?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 24, 2024 at 11:08:38AM +0530, Gautam Menghani wrote:
-> On Mon, Apr 22, 2024 at 09:15:02PM +0530, Naveen N Rao wrote:
-> > On Tue, Apr 02, 2024 at 12:36:54PM +0530, Gautam Menghani wrote:
-> > >  static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 
-> > >  time_limit,
-> > >  				     unsigned long lpcr, u64 *tb)
-> > >  {
-> > > @@ -4130,6 +4161,11 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
-> > >  	kvmppc_gse_put_u64(io->vcpu_run_input, KVMPPC_GSID_LPCR, lpcr);
-> > >  
-> > >  	accumulate_time(vcpu, &vcpu->arch.in_guest);
-> > > +
-> > > +	/* Enable the guest host context switch time tracking */
-> > > +	if (unlikely(trace_kvmppc_vcpu_exit_cs_time_enabled()))
-> > > +		kvmhv_set_l2_accumul(1);
-> > > +
-> > >  	rc = plpar_guest_run_vcpu(0, vcpu->kvm->arch.lpid, vcpu->vcpu_id,
-> > >  				  &trap, &i);
-> > >  
-> > > @@ -4156,6 +4192,10 @@ static int kvmhv_vcpu_entry_nestedv2(struct kvm_vcpu *vcpu, u64 time_limit,
-> > >  
-> > >  	timer_rearm_host_dec(*tb);
-> > >  
-> > > +	/* Record context switch and guest_run_time data */
-> > > +	if (kvmhv_get_l2_accumul())
-> > > +		do_trace_nested_cs_time(vcpu);
-> > > +
-> > >  	return trap;
-> > >  }
-> > 
-> > I'm assuming the counters in VPA are cumulative, since you are zero'ing 
-> > them out on exit. If so, I think a better way to implement this is to 
-> > use TRACE_EVENT_FN() and provide tracepoint registration and 
-> > unregistration functions. You can then enable the counters once during 
-> > registration and avoid repeated writes to the VPA area. With that, you 
-> > also won't need to do anything before vcpu entry. If you maintain 
-> > previous values, you can calculate the delta and emit the trace on vcpu 
-> > exit. The values in VPA area can then serve as the cumulative values.
-> > 
+On 4/25/24 08:12, Dan Carpenter wrote:
+> On Fri, Oct 27, 2023 at 11:22:07AM -0700, Sean Christopherson wrote:
+>> Use KVM_SET_USER_MEMORY_REGION2 throughout KVM's selftests library so that
+>> support for guest private memory can be added without needing an entirely
+>> separate set of helpers.
+>>
+>> Note, this obviously makes selftests backwards-incompatible with older KVM
+>    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>> versions from this point forward.
+>    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 > 
-> This approach will have a problem. The context switch times are reported
-> in the L1 LPAR's CPU's VPA area. Consider the following scenario:
-> 
-> 1. L1 has 2 cpus, and L2 has 1 cpu
-> 2. L2 runs on L1's cpu0 for a few seconds, and the counter values go to
-> 1 million
-> 3. We are maintaining a copy of values of VPA in separate variables, so
-> those variables also have 1 million.
-> 4. Now if L2's vcpu is migrated to another L1 cpu, that L1 cpu's VPA
-> counters will start from 0, so if we try to get delta value, we will end
-> up doing 0 - 1 million, which would be wrong.
+> Is there a way we could disable the tests on older kernels instead of
+> making them fail?  Check uname or something?  There is probably a
+> standard way to do this...  It's these tests which fail.
 
-I'm assuming you mean migrating the task. If we maintain the previous 
-readings in paca, it should work I think.
+They shouldn't fail - the tests should be skipped on older kernels.
+If it is absolutely necessary to dd uname to check kernel version,
+refer to zram/zram_lib.sh for an example.
 
-> 
-> The aggregation logic in this patch works as we zero out the VPA after
-> every switch, and maintain aggregation in a vcpu->arch
-
-Are the cumulative values of the VPA counters of no significance? We 
-lose those with this approach. Not sure if we care.
-
-
-- Naveen
-
+thanks,
+-- Shuah
