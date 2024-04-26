@@ -4,50 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDC05C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 08:41:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72BDDC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 18:49:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vQ8mtMLc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N7h4BKoZ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VQmR23rDyz3wVM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 18:41:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VR1x64R7jz3dBZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Apr 2024 04:49:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vQ8mtMLc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N7h4BKoZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VQmDZ3JHFz3vvp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 18:32:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VR1wF3Y72z3cXy
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Apr 2024 04:49:01 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 99E676200D;
-	Fri, 26 Apr 2024 08:32:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5724C2BD10;
-	Fri, 26 Apr 2024 08:32:01 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 3A3F1620F1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 18:48:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9A78C2BD10
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 18:48:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714120332;
-	bh=+AOj3OMDSB3feHYUPdQfVhUVtDWDdcImqVlO1v4xpng=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=vQ8mtMLcrimNPX91Y2YQmvdQw4cikExY2pLxFz+/UT+e9TLir0xOZ3FBo5RrzGpzb
-	 JWR44T3XJshDZMYXiba7l/A544v2LOC9MQLrngwOyrxDozIHscwKHoIb5QIGzqfNXg
-	 hlLFV/4Q2E5d2sHTZ7tlXh/zsv1dp1lvJElyqwmb0wchrenBmob4Dc1MtkVQ+MEtdh
-	 7oC9vfii7ckW0bsH176/J480uOF/fn8rgcExibP+RvW506G6An6Z0c8ibMrhm9JIVO
-	 4Z8XvkBOO1+QWHViSo081jrAt8THz37irqAEYTIKSADYbtZr55Yu4BB7vII7ZC4wKk
-	 Q8kmGiXMxjpQQ==
-From: Mike Rapoport <rppt@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v6 16/16] bpf: remove CONFIG_BPF_JIT dependency on CONFIG_MODULES of
-Date: Fri, 26 Apr 2024 11:28:54 +0300
-Message-ID: <20240426082854.7355-17-rppt@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240426082854.7355-1-rppt@kernel.org>
-References: <20240426082854.7355-1-rppt@kernel.org>
+	s=k20201202; t=1714157338;
+	bh=Hyt9cSwCpY4B/TYQfJ50zYLktchyWIPJ9BFUEyet93w=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=N7h4BKoZxJgQd9xVRuX/M86Dlrxi640K1yvD40sd6wIIt1B5wSz+Mr1057jFLkLm7
+	 YZLxJUXsO3aGDcNsRJacV4WWKmENUeWDAGgelEEhQ25IisoVmsZjs2wqWO2oDQMI4D
+	 uSiPujWrzA8VGIDR/ukvMt5azOqWqFDBQT80OwN/ng08krBNl8C4Y7bbqtWCLiYMMs
+	 Ml7Mm3G2ZYOMxJWAhjUW9ZUeZXzqyXsxytjciMPlz0IZG/fa33C4c7C9ww3ptvMroe
+	 tBefFgyrg4HjdgYCDGUZZv+XFU/Y1OA/hzEGUupM+8QfQ1YJfq2oXsvFywmF/2Inu5
+	 uXrPdi7lPrPAg==
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-a58e2740cd7so10374866b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 11:48:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCW/aj9fFyM0FyGGfiEH/sSN8yahVxu4Xb+2i4Uoa1wouQySXDqV3OrzDdCguRUznPfxo9+tnOa1YX5yRIDOwVaFrLQIEGgk7BPMrUQyXw==
+X-Gm-Message-State: AOJu0YwNPPMV2/ZdMnt9AXIdGxekmmKia9HOWTX1ggdfSNSMYW/MQcBJ
+	ZEuW1hoBurk5woxwFqgPVUd5VsEisJcfP2tPoMPrY+DsjMtwZlGFGcaqBqYYj8ijI2WLoywtg16
+	T5DgENQAiV8i4hrkwbLDX5PmTy1k=
+X-Google-Smtp-Source: AGHT+IFMUG93L8El2Q8N1eCq6gv3PwlvgFwZKVcKUA/i/TE/TYvbrOCl1aD96inecCeUz3meYOs5/CsGWzmxgWNQdJE=
+X-Received: by 2002:a05:6512:5cb:b0:51a:cc71:b91d with SMTP id
+ o11-20020a05651205cb00b0051acc71b91dmr149470lfo.19.1714157316791; Fri, 26 Apr
+ 2024 11:48:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20240426082854.7355-1-rppt@kernel.org> <20240426082854.7355-6-rppt@kernel.org>
+In-Reply-To: <20240426082854.7355-6-rppt@kernel.org>
+From: Song Liu <song@kernel.org>
+Date: Fri, 26 Apr 2024 11:48:25 -0700
+X-Gmail-Original-Message-ID: <CAPhsuW75813E1MrdMYrqJXvuunbiJ046vT_EoReXA-60HJxT+Q@mail.gmail.com>
+Message-ID: <CAPhsuW75813E1MrdMYrqJXvuunbiJ046vT_EoReXA-60HJxT+Q@mail.gmail.com>
+Subject: Re: [PATCH v6 05/16] module: make module_memory_{alloc,free} more self-contained
+To: Mike Rapoport <rppt@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,38 +69,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Russell King <linux@armlinux.org.uk>, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, =?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn@kernel.org>, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <ke
- nt.overstreet@linux.dev>, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-modules@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Russell King <linux@armlinux.org.uk>, linux-mm@kvack.org, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, linux-mips@vger.kernel.org, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linu
+ x.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Mike Rapoport (IBM)" <rppt@kernel.org>
-
-BPF just-in-time compiler depended on CONFIG_MODULES because it used
-module_alloc() to allocate memory for the generated code.
-
-Since code allocations are now implemented with execmem, drop dependency of
-CONFIG_BPF_JIT on CONFIG_MODULES and make it select CONFIG_EXECMEM.
-
-Suggested-by: Björn Töpel <bjorn@kernel.org>
-Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
----
- kernel/bpf/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/kernel/bpf/Kconfig b/kernel/bpf/Kconfig
-index bc25f5098a25..f999e4e0b344 100644
---- a/kernel/bpf/Kconfig
-+++ b/kernel/bpf/Kconfig
-@@ -43,7 +43,7 @@ config BPF_JIT
- 	bool "Enable BPF Just In Time compiler"
- 	depends on BPF
- 	depends on HAVE_CBPF_JIT || HAVE_EBPF_JIT
--	depends on MODULES
-+	select EXECMEM
- 	help
- 	  BPF programs are normally handled by a BPF interpreter. This option
- 	  allows the kernel to generate native code when a program is loaded
--- 
-2.43.0
-
+On Fri, Apr 26, 2024 at 1:30=E2=80=AFAM Mike Rapoport <rppt@kernel.org> wro=
+te:
+>
+> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+>
+> Move the logic related to the memory allocation and freeing into
+> module_memory_alloc() and module_memory_free().
+>
+> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+Acked-by: Song Liu <song@kernel.org>
