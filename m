@@ -4,56 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C4C9C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 07:34:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 904B7C19F4F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 13:45:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=r6EVUWWW;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AnQJ1dJI;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AnQJ1dJI;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VQkyG0C40z3vkm
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 17:34:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VQvBV6xPlz3cfn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Apr 2024 23:45:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=r6EVUWWW;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AnQJ1dJI;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AnQJ1dJI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VQkxQ0XkKz3bYc
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 17:34:01 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 08B2561FCB;
-	Fri, 26 Apr 2024 07:34:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 91A6EC113CD;
-	Fri, 26 Apr 2024 07:33:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714116839;
-	bh=gksl38yx9eZzDHDXbUKTYhZmDGqlaFTVA8MzoHCjPSQ=;
-	h=Date:Cc:Subject:From:To:References:In-Reply-To:From;
-	b=r6EVUWWWwqWuB2/4TPNdaGpUi5w/svatLiUkQPW7jg/Kqfz+v9PjTsqhHX0V5+EAd
-	 O9Q7MLhBBw+u+yC3YJdVVaI93yGyVAyg60gYgQw+aYYn1jycUg0XiChWp0Iu1VFKMv
-	 DwPywl0dLcmeXRt7ZEBqHGpgzLkfbaLNMsfQI9WfrWSOqgHI+raXZsInlkpmvx5zN2
-	 Aw4iSz/F3PrrMtthz0B2wb3NwCnmeHWiHSYEJZOSeSYq9iQITvYdPXRUZEGz3Zp6OT
-	 dsVslJOA6lLCpSJkkdCeyvYqDh4fWotWkzTVM/CVN72PQmXal5hJg3KuZB1fRSHKNY
-	 lVwcEZNrXTKCg==
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 26 Apr 2024 10:33:40 +0300
-Message-Id: <D0TVP8ILJMO0.HERRWR4PA7N6@kernel.org>
-Subject: Re: [PATCH v13 25/35] KVM: selftests: Convert lib's mem regions to
- KVM_SET_USER_MEMORY_REGION2
-From: "Jarkko Sakkinen" <jarkko@kernel.org>
-To: "Sean Christopherson" <seanjc@google.com>, "Shuah Khan"
- <skhan@linuxfoundation.org>
-X-Mailer: aerc 0.17.0
-References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-26-seanjc@google.com>
- <69ae0694-8ca3-402c-b864-99b500b24f5d@moroto.mountain>
- <3848a9ad-07aa-48da-a2b7-264c4a990b5b@linuxfoundation.org>
- <ZipyPYR8Nv_usoU4@google.com>
-In-Reply-To: <ZipyPYR8Nv_usoU4@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VQv9f64PRz3cX0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 23:45:09 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1714139104;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=uF1kPlR2Ck3Z44kTNMrT7zanJ3tMGvooilBaXGx0yJc=;
+	b=AnQJ1dJI3MtJ+7I0tkcWnraRJUBm9MW1uPpoAEPQpP6czxDrPrFfY2kGvbxe30YS501/Gb
+	PSLgnbiOQZ/7zQJxoekoEhYqIxC3Za3r1Srf5f+U0V+3uinJqwqRjSzCEDqUXtxMa4WzCo
+	R83vtPBuT6SQIbOeXPccWXoDQIHCLVo=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1714139104;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=uF1kPlR2Ck3Z44kTNMrT7zanJ3tMGvooilBaXGx0yJc=;
+	b=AnQJ1dJI3MtJ+7I0tkcWnraRJUBm9MW1uPpoAEPQpP6czxDrPrFfY2kGvbxe30YS501/Gb
+	PSLgnbiOQZ/7zQJxoekoEhYqIxC3Za3r1Srf5f+U0V+3uinJqwqRjSzCEDqUXtxMa4WzCo
+	R83vtPBuT6SQIbOeXPccWXoDQIHCLVo=
+Received: from mail-ot1-f71.google.com (mail-ot1-f71.google.com
+ [209.85.210.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-398-9DUMfmy4Osqwl5TdI9TbXQ-1; Fri, 26 Apr 2024 09:45:02 -0400
+X-MC-Unique: 9DUMfmy4Osqwl5TdI9TbXQ-1
+Received: by mail-ot1-f71.google.com with SMTP id 46e09a7af769-6eba7dc8f1eso477070a34.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Apr 2024 06:45:02 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1714139102; x=1714743902;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uF1kPlR2Ck3Z44kTNMrT7zanJ3tMGvooilBaXGx0yJc=;
+        b=Kpo8h6jO6y+1AhuM/K0ci2psu8Pn4RqPjUv8iGl3TeaPH1gt4JbvaIUCH/oI5G/xYp
+         2Z5zBZYA3+XptAmoMZcnskkZqK3vh39PHyo8E2sIALUZ/7rXKPd9A3UT1A5UeVhq0oQW
+         8vz63z9FOEBfXRASCteoMFUPRWdFck3ZkzgMeZkLD86jC6fjxdgqpU+7w2LvB3mwJeCw
+         K9rNE932U800opSGtm1cH6PGf5i8RtvqW0iuz6b0W9t2tKsYjFhvxODu+Wo7dTW/Z6qL
+         19tgDeMQFTDXZT4t6lTVQ8CMSrFW4X8DUWSuv9vz2e0/TnBX2P8MX8ZDiXOIDKeTYcVt
+         8C5g==
+X-Forwarded-Encrypted: i=1; AJvYcCWmabezQhpGDG/JXs/hoQZ/ORjvH3cFu7mwp1GonFGqBM7OLm18QnTFOeo6UK+PA7tyvp5YAEF8TrzjDG+fAhWoAumZaUbioKRgfkLu0A==
+X-Gm-Message-State: AOJu0Yx8f5Y3ox8VT8UZ9+G4kyHJCK0UCPmaJiOPib3J31u35aGjZp3u
+	qjIUyg6L5B1yRrrGNKPs2l6iGa5yImDcH6MZiKVgouzqPz0/JMvSH2ZDQIld4hyR1NIc44qTPgo
+	mFkThmgTOXc7E64/PaBxe/1VxKWl/d/mDexJ7csgmkUdSgoOzLkfyJIIcczredpw=
+X-Received: by 2002:a05:6808:d53:b0:3c5:f29a:5fda with SMTP id w19-20020a0568080d5300b003c5f29a5fdamr3101402oik.3.1714139101675;
+        Fri, 26 Apr 2024 06:45:01 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGzrxrCF28uWDRUo6q+zp4qFvioOS0q1e4hOagwn8iRvVD4UFCuaQuTxLkqj/Vp49yVezlG5g==
+X-Received: by 2002:a05:6808:d53:b0:3c5:f29a:5fda with SMTP id w19-20020a0568080d5300b003c5f29a5fdamr3101360oik.3.1714139100964;
+        Fri, 26 Apr 2024 06:45:00 -0700 (PDT)
+Received: from x1n (pool-99-254-121-117.cpe.net.cable.rogers.com. [99.254.121.117])
+        by smtp.gmail.com with ESMTPSA id w9-20020a0ca809000000b00696b1050be8sm6864026qva.133.2024.04.26.06.44.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 26 Apr 2024 06:45:00 -0700 (PDT)
+Date: Fri, 26 Apr 2024 09:44:58 -0400
+From: Peter Xu <peterx@redhat.com>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v1 1/3] mm/gup: consistently name GUP-fast functions
+Message-ID: <Ziuv2jLY1wgBITiP@x1n>
+References: <20240402125516.223131-1-david@redhat.com>
+ <20240402125516.223131-2-david@redhat.com>
+ <e685c532-8330-4a57-bc08-c67845e0c352@redhat.com>
+MIME-Version: 1.0
+In-Reply-To: <e685c532-8330-4a57-bc08-c67845e0c352@redhat.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,19 +99,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Chao Peng <chao.p.peng@linux.intel.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Dan Carpenter <dan.carpenter@linaro.org>, Anders Roxell <anders.roxell@linaro.org>, Benjamin Copeland <ben.copeland@linaro.org>, Marc Zyngier <maz@kernel.org>, Naresh Kamboju <naresh.kamboju@linaro.org>, Huacai Chen <chenhuacai@kernel.org>, Xiaoyao Li <xiaoyao.li@intel.com>, "Matthew Wilcox \(Oracle\)" <willy@infradead.org>, Wang <wei.w.wang@intel.com>, Fuad Tabba <tabba@google.com>, Yu Zhang <yu.c.zhang@linux.intel.com>, Maciej Szmigiero <mail@maciej.szmigiero.name>, Albert Ou <aou@eecs.berkeley.edu>, Isaku Yamahata <isaku.yamahata@gmail.com>, Vlastimil Babka <vbabka@suse.cz>, Michael Roth <michael.roth@amd.com>, Ackerley
- Tng <ackerleytng@google.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, =?utf-8?q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Isaku Yamahata <isaku.yamahata@intel.com>, Christian Brauner <brauner@kernel.org>, Quentin Perret <qperret@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Liam Merwick <liam.merwick@oracle.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, David Matlack <dmatlack@google.com>, Palmer Dabbelt <palmer@dabbelt.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, kvm-riscv@lists.infradead.org, Anup
- Patel <anup@brainfault.org>, linux-fsdevel@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Vishal Annapurve <vannapurve@google.com>, linuxppc-dev@lists.ozlabs.org, Xu
- Yilun <yilun.xu@intel.com>, Anish Moorthy <amoorthy@google.com>
+Cc: linux-s390@vger.kernel.org, loongarch@lists.linux.dev, linux-sh@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org, Jason Gunthorpe <jgg@nvidia.com>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu Apr 25, 2024 at 6:09 PM EEST, Sean Christopherson wrote:
-> +       __TEST_REQUIRE(kvm_has_cap(KVM_CAP_USER_MEMORY2),
-> +                      "KVM selftests from v6.8+ require KVM_SET_USER_MEM=
-ORY_REGION2");
+On Fri, Apr 26, 2024 at 09:17:47AM +0200, David Hildenbrand wrote:
+> On 02.04.24 14:55, David Hildenbrand wrote:
+> > Let's consistently call the "fast-only" part of GUP "GUP-fast" and rename
+> > all relevant internal functions to start with "gup_fast", to make it
+> > clearer that this is not ordinary GUP. The current mixture of
+> > "lockless", "gup" and "gup_fast" is confusing.
+> > 
+> > Further, avoid the term "huge" when talking about a "leaf" -- for
+> > example, we nowadays check pmd_leaf() because pmd_huge() is gone. For the
+> > "hugepd"/"hugepte" stuff, it's part of the name ("is_hugepd"), so that
+> > stays.
+> > 
+> > What remains is the "external" interface:
+> > * get_user_pages_fast_only()
+> > * get_user_pages_fast()
+> > * pin_user_pages_fast()
+> > 
+> > The high-level internal functions for GUP-fast (+slow fallback) are now:
+> > * internal_get_user_pages_fast() -> gup_fast_fallback()
+> > * lockless_pages_from_mm() -> gup_fast()
+> > 
+> > The basic GUP-fast walker functions:
+> > * gup_pgd_range() -> gup_fast_pgd_range()
+> > * gup_p4d_range() -> gup_fast_p4d_range()
+> > * gup_pud_range() -> gup_fast_pud_range()
+> > * gup_pmd_range() -> gup_fast_pmd_range()
+> > * gup_pte_range() -> gup_fast_pte_range()
+> > * gup_huge_pgd()  -> gup_fast_pgd_leaf()
+> > * gup_huge_pud()  -> gup_fast_pud_leaf()
+> > * gup_huge_pmd()  -> gup_fast_pmd_leaf()
+> > 
+> > The weird hugepd stuff:
+> > * gup_huge_pd() -> gup_fast_hugepd()
+> > * gup_hugepte() -> gup_fast_hugepte()
+> 
+> I just realized that we end up calling these from follow_hugepd() as well.
+> And something seems to be off, because gup_fast_hugepd() won't have the VMA
+> even in the slow-GUP case to pass it to gup_must_unshare().
+> 
+> So these are GUP-fast functions and the terminology seem correct. But the
+> usage from follow_hugepd() is questionable,
+> 
+> commit a12083d721d703f985f4403d6b333cc449f838f6
+> Author: Peter Xu <peterx@redhat.com>
+> Date:   Wed Mar 27 11:23:31 2024 -0400
+> 
+>     mm/gup: handle hugepd for follow_page()
+> 
+> 
+> states "With previous refactors on fast-gup gup_huge_pd(), most of the code
+> can be leveraged", which doesn't look quite true just staring the the
+> gup_must_unshare() call where we don't pass the VMA. Also,
+> "unlikely(pte_val(pte) != pte_val(ptep_get(ptep)" doesn't make any sense for
+> slow GUP ...
 
-This would work also for casual (but not seasoned) visitor in KVM code
-as additionl documentation.
+Yes it's not needed, just doesn't look worthwhile to put another helper on
+top just for this.  I mentioned this in the commit message here:
 
-BR, Jarkko
+  There's something not needed for follow page, for example, gup_hugepte()
+  tries to detect pgtable entry change which will never happen with slow
+  gup (which has the pgtable lock held), but that's not a problem to check.
+
+> 
+> @Peter, any insights?
+
+However I think we should pass vma in for sure, I guess I overlooked that,
+and it didn't expose in my tests too as I probably missed ./cow.
+
+I'll prepare a separate patch on top of this series and the gup-fast rename
+patches (I saw this one just reached mm-stable), and I'll see whether I can
+test it too if I can find a Power system fast enough.  I'll probably drop
+the "fast" in the hugepd function names too.
+
+Thanks,
+
+-- 
+Peter Xu
+
