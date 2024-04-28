@@ -4,92 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22F01C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2024 19:02:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16EB9C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Apr 2024 19:03:34 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Axk6keNv;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L9SqdAw5;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Tp4kaBYf;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Tp4kaBYf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VSG7H2RqHz3cSg
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2024 05:02:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VSG843F2pz3cZ9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2024 05:03:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Axk6keNv;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=L9SqdAw5;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Tp4kaBYf;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Tp4kaBYf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VSG6N4PD9z30gK
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VSG6N589Nz3c6n
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2024 05:02:03 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
 	s=mimecast20190719; t=1714330918;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TChkYNJLokf0R7TU3fj1Jd4fvD6sn29Wrs03bf1LQhQ=;
-	b=Axk6keNvXKEbIba4UfZYVs0EImo7LuSWyQJok2oAAnhJA5JZTgj4Cm5/YDlwOAXvhp72uJ
-	VjYgsQ5cthy7flGvlgpj8GF9T9JGrtNRYRnjA23w+kbdnwX3tvVP4OmiPwAGozauF4tcHW
-	nMyKjz0MkkS330rRfiAs3oIJ4JpkIYQ=
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=pkigxwzJ0pF/T4NqveAQpx8gjiN35IK7jok4Q5z8klI=;
+	b=Tp4kaBYfVo+v8FMxDaMou815jjcRz6BC/66RD2KJRAJBG+DTN3qWnImyQ61j6+AaKXCXm0
+	M/o8it+q1ifca1RJOb9mEUAz36d4zJtBmMtQeXD+aom71PEC4r8FqN/nDZ80m17J7lkzIA
+	U+0DVyceb0PAW8OoR9PEIUtfwvlWBn0=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1714330919;
+	s=mimecast20190719; t=1714330918;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TChkYNJLokf0R7TU3fj1Jd4fvD6sn29Wrs03bf1LQhQ=;
-	b=L9SqdAw5Jp6lX2qgXB3sIjYo7KK/AviG2+8F9ZhhT7gWOdnLqZ9l52rNlZs8198QocXf1n
-	EZ5sTe7dOhjQxlB7AclvAHmy3mw9jhqJM0dtPNYWvXUVub+gjgEjpYC1wxQYgIoAV5AfM5
-	CAgOwlca02EWQbPUcNkBjjVbsB6GDLo=
-Received: from mail-oo1-f70.google.com (mail-oo1-f70.google.com
- [209.85.161.70]) by relay.mimecast.com with ESMTP with STARTTLS
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=pkigxwzJ0pF/T4NqveAQpx8gjiN35IK7jok4Q5z8klI=;
+	b=Tp4kaBYfVo+v8FMxDaMou815jjcRz6BC/66RD2KJRAJBG+DTN3qWnImyQ61j6+AaKXCXm0
+	M/o8it+q1ifca1RJOb9mEUAz36d4zJtBmMtQeXD+aom71PEC4r8FqN/nDZ80m17J7lkzIA
+	U+0DVyceb0PAW8OoR9PEIUtfwvlWBn0=
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com
+ [209.85.222.198]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-539-95DZ5fYmOQu6o6Q8bIkMug-1; Sun, 28 Apr 2024 15:01:57 -0400
-X-MC-Unique: 95DZ5fYmOQu6o6Q8bIkMug-1
-Received: by mail-oo1-f70.google.com with SMTP id 006d021491bc7-5af985fcdadso684596eaf.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Apr 2024 12:01:56 -0700 (PDT)
+ us-mta-527-sY3B9a4wNLGq7sS3Sm0kiw-1; Sun, 28 Apr 2024 15:01:54 -0400
+X-MC-Unique: sY3B9a4wNLGq7sS3Sm0kiw-1
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-79085537977so2191685a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Apr 2024 12:01:54 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1714330916; x=1714935716;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=TChkYNJLokf0R7TU3fj1Jd4fvD6sn29Wrs03bf1LQhQ=;
-        b=BQd7rm+TIl37prJ//JY2V1azGNxleo8d+NdrMOv2ttz6xxFUIeob6FxbKVMeVWAd5Y
-         WC0yYbv2Px8R1e8nto7gqiqi8Q+FgWWyejqLtUhYakx+Vp1bHgu9sVOy9Umenf+efNzj
-         uaReiutUOQbfBzwCZS6aGO/JUMNeluoqbeG8DTtiX4o6VrluHYOLokyPNHkwaLHRsRM7
-         w/JVT516VCtnGwn5I3gNxDeyai/DRj8aDqaJfqcBam6G3E3u1DDaFhovVAPFIvf/FIpd
-         S8werF4AIwTXb32Jm/c/2j1SC1KslsHHg7Lv4val1TLDxha3qzSn/WmBNgpaMWMrKCyh
-         uTKQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVUQ/5+LS2RJ/DIRYN7mEdMRGrGJ7TXQkQaJpB1BfjuytIz/bk/rR+HGPX+E12Pv5lI1XJh+OwA+RDgzEwwXnSkIdv8PC9Z1VvJDsOnLA==
-X-Gm-Message-State: AOJu0Yw25jt95eDEX4jJKpNDfFa4eQs92CJRVtW8yJgQUcX5UtnfojwJ
-	eBPlx/pXxRPwmM6H8kCDczhJZZ6Tz0Uqb7zKOnWbYnYTSKNkApioaXjL+J4ZJtlICthPLAkzBY3
-	i57s8GB9mxUmLCMy6dloExNnLcSncBZEVuJwbcbom+TLoqB7Y97DTGAon/GmdQVw=
-X-Received: by 2002:a05:6830:7193:b0:6ed:ffd4:f871 with SMTP id el19-20020a056830719300b006edffd4f871mr5375195otb.0.1714330916162;
-        Sun, 28 Apr 2024 12:01:56 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGbfCPhcOZyAaf7bBZJaTYiO0a8lHR2gVf15VHmfKPjl2t1+bRyODyi0XieC0TmXGWNmTdCnA==
-X-Received: by 2002:a05:6830:7193:b0:6ed:ffd4:f871 with SMTP id el19-20020a056830719300b006edffd4f871mr5375155otb.0.1714330915677;
-        Sun, 28 Apr 2024 12:01:55 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1714330914; x=1714935714;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=pkigxwzJ0pF/T4NqveAQpx8gjiN35IK7jok4Q5z8klI=;
+        b=mAX05vZsn3oK2swrXUnhJlKk1Icas1GN0TS72xOFZXXAup2jIcQdmhwRU6Xul4lTjS
+         7bY4/wcbcMtHVtzGwHFWlDcZ1jbzkChmWf7OUW71q+hBue6MNEAB6gFf3WVQ8gZdWWaS
+         bnQEJnpdYRsLL9tqpw4DD97drcRuTX0NWm3qaGmuE5rAjNcLubpYTNxfonDJucahmTMr
+         Jsi091D41bFOHbuIT94nbEGszIAB7tcyBEibxLzTDIqzZTrU0wxCno3bXdjMRvo9Pl6Q
+         soDhbf9TQIwVmlWdjonJF+Hn1arNO3AvaRUOCPFelyGYDaBWaxKIO85zN6P1PLD1fGMt
+         1NGw==
+X-Forwarded-Encrypted: i=1; AJvYcCVt1EjmdTLX+4vIDGyRP0Ri1/H7C1q7+I8xz/4iBjQZ0m1v/BoDnqV5AxykWC2RqtVwXAyIeNR8QGTWk941jsUmvmdpGcmtr8KdXNxksQ==
+X-Gm-Message-State: AOJu0Yxl9+dCgu814O5mw/eLDiqmswpawecYRaIddcK4WSH5zFOskWyI
+	JIWCveXCeXHZpC6oB0Cw7HDISN+RvwE3v/dstkXyUjW+lLIy9j7Z78/O03Or9LvMF1Mze8wNAby
+	0R6pnexb8gEvAzUBSRw9E49AVl+k+FRUClGan1iAFT0QNh/noene/PgKeGWTgTEI=
+X-Received: by 2002:a05:620a:17a0:b0:790:e83a:e6eb with SMTP id ay32-20020a05620a17a000b00790e83ae6ebmr4022624qkb.5.1714330913779;
+        Sun, 28 Apr 2024 12:01:53 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEc5kc0cZSyusKzQeLAgeOYcB5BLCEjzPmI8Bn8/lrUkN7IeJKwQ4CrGxFGrgIzhwqWtQQFqg==
+X-Received: by 2002:a05:620a:17a0:b0:790:e83a:e6eb with SMTP id ay32-20020a05620a17a000b00790e83ae6ebmr4022591qkb.5.1714330913186;
+        Sun, 28 Apr 2024 12:01:53 -0700 (PDT)
 Received: from x1n.redhat.com (pool-99-254-121-117.cpe.net.cable.rogers.com. [99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id oo8-20020a05620a530800b0078d693c0b4bsm9818152qkn.135.2024.04.28.12.01.54
+        by smtp.gmail.com with ESMTPSA id oo8-20020a05620a530800b0078d693c0b4bsm9818152qkn.135.2024.04.28.12.01.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 28 Apr 2024 12:01:55 -0700 (PDT)
+        Sun, 28 Apr 2024 12:01:52 -0700 (PDT)
 From: Peter Xu <peterx@redhat.com>
 To: linux-kernel@vger.kernel.org,
 	linux-mm@kvack.org
-Subject: [PATCH 2/2] mm/selftests: Don't prefault in gup_longterm tests
-Date: Sun, 28 Apr 2024 15:01:51 -0400
-Message-ID: <20240428190151.201002-3-peterx@redhat.com>
+Subject: [PATCH 0/2] mm/gup: Fix hugepd for longterm R/O pin on Power
+Date: Sun, 28 Apr 2024 15:01:49 -0400
+Message-ID: <20240428190151.201002-1-peterx@redhat.com>
 X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240428190151.201002-1-peterx@redhat.com>
-References: <20240428190151.201002-1-peterx@redhat.com>
 MIME-Version: 1.0
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="US-ASCII"; x-default=true
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,47 +101,41 @@ Cc: Lorenzo Stoakes <lstoakes@gmail.com>, David Hildenbrand <david@redhat.com>, 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Prefault, especially with RW, makes the GUP test too easy, and may not yet
-reach the core of the test.
+This series should apply to both mm-stable and mm-unstable, I am not sure
+whether it's even applicable to apply on mm-stable directly, but perhaps
+not urgently needed either.  Anyway, it'll apply to either tree.  It also
+means cc stable is not needed even if I had the Fixes attached.
 
-For example, R/O longterm pins will just hit, pte_write()==true for
-whatever cases, the unsharing logic won't be ever tested.
+Patch 1 fixes that bug in mm-stable, patch 2 enhances the gup_longterm to
+be able to discover such issue.
 
-This patch remove the prefault.  This tortures more code paths at least to
-cover the unshare care for R/O longterm pins, in which case the first R/O
-GUP attempt will fault in the page R/O first, then the 2nd will go through
-the unshare path, checking whether an unshare is needed.
+In general, the previous hugetlb rework [1] on gup-slow introduced an issue
+with R/O longterm pin.  Nobody yet found it in either a real report or test
+case, probably because our test case doesn't yet cover it (not before patch
+2), and it's also a pretty rare path: it only happens with Power longterm
+R/O pins on a page cache that is installed as a hugepd read-only.
 
-Cc: David Hildenbrand <david@redhat.com>
-Signed-off-by: Peter Xu <peterx@redhat.com>
----
- tools/testing/selftests/mm/gup_longterm.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+Please read each of the patch for details.
 
-diff --git a/tools/testing/selftests/mm/gup_longterm.c b/tools/testing/selftests/mm/gup_longterm.c
-index ad168d35b23b..488e32186246 100644
---- a/tools/testing/selftests/mm/gup_longterm.c
-+++ b/tools/testing/selftests/mm/gup_longterm.c
-@@ -119,10 +119,16 @@ static void do_test(int fd, size_t size, enum test_type type, bool shared)
- 	}
- 
- 	/*
--	 * Fault in the page writable such that GUP-fast can eventually pin
--	 * it immediately.
-+	 * Explicitly avoid pre-faulting in the page, this can help testing
-+	 * more code paths.
-+	 *
-+	 * Take example of an upcoming R/O pin test, if we RW prefault the
-+	 * page, such pin will directly skip R/O unsharing and the longterm
-+	 * pin will success mostly always.  When not prefaulted, R/O
-+	 * longterm pin will first fault in a RO page, then the 2nd round
-+	 * it'll go via the unshare check.  Otherwise those paths aren't
-+	 * covered.
- 	 */
--	memset(mem, 0, size);
- 
- 	switch (type) {
- 	case TEST_TYPE_RO:
+I retested "./run_vmtests.sh -t gup_test -a" on a Power8 system with a
+Power8 VM, with 16MB hugepd hugepd entries installed.  Note that I tested
+exactly the same matrix before, but patch 2 will change gup_longterm test,
+so it's actually slightly different test carried out, and the new test
+(gup_longterm.c, when apply patch 2 only) will hang mm-stable on Andrew's
+tree with that 16MB huge page.
+
+Thanks,
+
+[1] https://lore.kernel.org/r/20240327152332.950956-1-peterx@redhat.com
+
+Peter Xu (2):
+  mm/gup: Fix hugepd handling in hugetlb rework
+  mm/selftests: Don't prefault in gup_longterm tests
+
+ mm/gup.c                                  | 64 ++++++++++++++---------
+ tools/testing/selftests/mm/gup_longterm.c | 12 +++--
+ 2 files changed, 48 insertions(+), 28 deletions(-)
+
 -- 
 2.44.0
 
