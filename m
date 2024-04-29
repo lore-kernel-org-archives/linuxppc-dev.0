@@ -4,90 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62B1DC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2024 09:49:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F494C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2024 11:49:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Kg9UUvOf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=IZujhDOG;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VSdny0L4Yz3dV3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2024 19:49:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VShT64xzTz3d40
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2024 21:49:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Kg9UUvOf;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=IZujhDOG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::531; helo=mail-ed1-x531.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VSdn53x69z3cfR
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2024 19:48:25 +1000 (AEST)
-Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 43T9WcRr023175;
-	Mon, 29 Apr 2024 09:47:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : references : mime-version : content-type :
- content-transfer-encoding : in-reply-to; s=pp1;
- bh=Kn2/uMMJ4m7IZDO8WlgsPqO7vUsAlVouDdMvBgTuG6Q=;
- b=Kg9UUvOfIY+q0ndE7ZECmZZUdA61ZCkJRFtD9wLCjYzo6fe8LGiqgmj/OaQd5I/iEeGT
- h1W12UFRvhBs0Ojrxq2EVahg4SwzhBVbMh+nl7Xnt0KphpPc+1K4uJnLB1ltR+O9/J8Y
- xH2aBPNbeoLf7rIVjTmAK85pN4JRaPC9PScCooRYa7ChiJY29YfixJaL//aFd9303wQR
- GZQxdsEVeB2nF62y0IT3RUjuxSeOIjIAGLlEpPQHiihzSala+ltUzs1I4eJF+yCxcsu9
- xwGFkZf6AwHS79UZe7yymFDc9jL+Zte2Za8lJWgzOlYfHYZrwUSEHHijG4bCs204Im4A kw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xt90jg0v6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Apr 2024 09:47:55 +0000
-Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 43T9ltmx016519;
-	Mon, 29 Apr 2024 09:47:55 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xt90jg0v5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Apr 2024 09:47:54 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 43T7DaXf001450;
-	Mon, 29 Apr 2024 09:47:53 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3xsbptppem-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Apr 2024 09:47:53 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 43T9loYx26542522
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 29 Apr 2024 09:47:52 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0556520040;
-	Mon, 29 Apr 2024 09:47:50 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B4E6220043;
-	Mon, 29 Apr 2024 09:47:48 +0000 (GMT)
-Received: from osiris (unknown [9.171.12.101])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 29 Apr 2024 09:47:48 +0000 (GMT)
-Date: Mon, 29 Apr 2024 11:47:47 +0200
-From: Heiko Carstens <hca@linux.ibm.com>
-To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
-Subject: Re: [PATCH v3 11/11] sysctl: treewide: constify the ctl_table
- argument of handlers
-Message-ID: <20240429094747.29046-G-hca@linux.ibm.com>
-References: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
- <20240423-sysctl-const-handler-v3-11-e0beccb836e2@weissschuh.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VShSH0XgRz3d2W
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2024 21:49:01 +1000 (AEST)
+Received: by mail-ed1-x531.google.com with SMTP id 4fb4d7f45d1cf-57230faeb81so2592747a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2024 04:49:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1714391337; x=1714996137; darn=lists.ozlabs.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=zgF7uDK3ODdULvp2AprCnsXD0Ii385XkEkpICxLIUP8=;
+        b=IZujhDOGCgPnuFZnAnQpbL+l8wY/i9xXPeEaPqydTmjAGBn1R8hiR+pC7a2UZQ92eU
+         GDA5MRs7R/3h74hq7fXMh6YryJEUzyvrm1Le5K4ii2kIKpJpJiGHZs8Qy3tJ9H6D8pgB
+         QGOtTVaYeezVv3kvkJOhxM9IY7Irj/jcbkBg5Xmdyq7pGzTzobQNlGNELW+28Ccg7226
+         6E+UjfotlV6m/2ZYTQBJ/i4CpSyyP98nv1D7EGXEafBxmXD5x6po/22aOnisMmfchOoS
+         6WQclGa9SPAARrSd3u3SVEONBBN8fIiHk9gFDahR8ZNmdsLRQ/45GIL+kiIUP8nji0XI
+         qkQA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1714391337; x=1714996137;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=zgF7uDK3ODdULvp2AprCnsXD0Ii385XkEkpICxLIUP8=;
+        b=EKcW/DWAaAy1nIYOUNh99gJMCbwZZ/+wJpOW3J1iqDMQaNEByznGSAYgTpr6mFXagV
+         Nm/3WjJl+bEB42l8uYilpJQAE6MuQyQK4y6SfzTiiosGGeIYEZbdAnLS1WktScXBkRtS
+         rDgKpUVmRogYcdmcnGa6KubO3O2vChEmdr23ZptdRAiwLJBT1m71QpDS5Lcnf8jBbMM8
+         Qubn2OgKoafj2z5CI9PE+iZToPy9Dj4dl63Lea43458AtqRmbh9MwT9mxDzHrhzKJpqP
+         +AksdTt8/pMzkUMxLp1TF3TcBr/xRA96Q0SPoooy/8bxlfHQuBDekEKiG1KuRlKlTen7
+         exxQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVvBnJMnczH/RIxTICMjBJ2VAmXT7Ohx/q3dfxGs3GO4MWe8OngIhZCg8ntoxJOo0gSa4Pt+n98mCpcXJDiqK/NWbaHlGR/W+28F9kLjQ==
+X-Gm-Message-State: AOJu0YyqIOU8oQCx/DQglypFJncEPf+N2NsvSMGSF6sCXqITb0ETv4rx
+	u8+0JVmTfQhbAdSKu0cPPyT+p409N/46AJNj18v6qPOZZpD0KH2Mem+hBB7lZG0=
+X-Google-Smtp-Source: AGHT+IFMulAQp2dFZ0Q7CZL4pR5DvDvO/9NEVxfbIybQWLY3FZZ5OUXvmdGImHkWL/GlP/fLlPTrQA==
+X-Received: by 2002:a50:99c7:0:b0:572:3f41:25aa with SMTP id n7-20020a5099c7000000b005723f4125aamr8735212edb.11.1714391336676;
+        Mon, 29 Apr 2024 04:48:56 -0700 (PDT)
+Received: from [127.0.1.1] ([178.197.223.16])
+        by smtp.gmail.com with ESMTPSA id y43-20020a50bb2e000000b0057000a2cb5bsm13549651ede.18.2024.04.29.04.48.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Apr 2024 04:48:56 -0700 (PDT)
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: [PATCH 0/4] ASoC: Constify static snd_pcm_hardware
+Date: Mon, 29 Apr 2024 13:48:45 +0200
+Message-Id: <20240429-n-asoc-const-snd-pcm-hardware-v1-0-c6ce60989834@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240423-sysctl-const-handler-v3-11-e0beccb836e2@weissschuh.net>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: dsJabyKjD5wmo-a4UVf9qexuuOQkOoCK
-X-Proofpoint-GUID: 7SlQVN0HjcUbQBl5eVSaH1VEy2oE_0-m
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1011,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-04-29_07,2024-04-26_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- bulkscore=0 mlxlogscore=999 adultscore=0 malwarescore=0 priorityscore=1501
- impostorscore=0 suspectscore=0 clxscore=1011 mlxscore=0 spamscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2404010000 definitions=main-2404290061
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAB2JL2YC/x3MQQqDQAwAwK9Izg1sFwXrV8RDyMaaQ7OSFFsQ/
+ 96lx7nMCSGuEjB1J7gcGlqt4X7rgDeyp6CWZsgp96nPDzSkqIxcLd4YVnDnF27k5UMuuCYaqMg
+ 4DkzQjt1l1e//n5fr+gFMAIkPbwAAAA==
+To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, 
+ Banajit Goswami <bgoswami@quicinc.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, 
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, 
+ Nicolin Chen <nicoleotsuka@gmail.com>, Shawn Guo <shawnguo@kernel.org>, 
+ Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Jerome Brunet <jbrunet@baylibre.com>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Kevin Hilman <khilman@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+ Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, 
+ Masami Hiramatsu <mhiramat@kernel.org>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1038;
+ i=krzysztof.kozlowski@linaro.org; h=from:subject:message-id;
+ bh=8hlbxDVsli5Uho2Dc9zk1d5MLlzWuHE+5PgzBXH717k=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBmL4kgxXlqNnnMKJpg2EaIkw0QWwus3XmTLMuWB
+ hWfdwwddXWJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCZi+JIAAKCRDBN2bmhouD
+ 14MsD/4wk/fFPGuo07Tc6t4ZBVVny/yf56kqMyV3UPs7GTN7fgENz4Vs5Gin8llVwv9nvvbIrfh
+ cBrBJ53HMb7tMNtKDhoCjXLKV6y/XFF3OcjnUu8dFKF9+HWsntLk2pUa7XZf/m3xuCoFz+I2+2X
+ FtEvt7tK7J1L1CbOP082IC4ZkhfTVvhN7VjqiC1AcntknqAwCKb5II6RAtl044X2cAgHBFXI7B1
+ Qo/+a8PGKa0K0uBnIoHoNp75nHACjabA/jn601auP/o6zvNEBbjmG/1jviOgBIo6/+12fvjPqxx
+ E9EcND0vFAI4b2W8IiR2Xg4uWuTtkzGOQ8gVmSQMUY/Xqhgulo8rrUYpnIV5JlSObZpNZstIdHZ
+ 3di//AnjPfGRIgVC0kO6jiOPGtCi/WnZe8zyg1tkArBgsmXLIXbuACRbR90yWnYeWGk0Ny8w76f
+ T0pJ7kVVgxhVy84se9GzdxXC3V4bBs8KB0UmtCrmfQTKLG/ZcYUIptvLIejPfxSNAnOYcSN4XMu
+ DF8BifoTInlQ+Xw9QYLBMmT5zOa2kXfIiS04T/C0Z55+ur3NPpX35/hwD93URXyFfrBLnClmjbo
+ PHSEi6tWOFhgJAg8kZWEuqJOx4/8mOJxKL+LiIkCVek5bgHt7OxbuIiY10JdZB1Gy6BujtRGdnc
+ RzHz8OsHOxt8zBQ==
+X-Developer-Key: i=krzysztof.kozlowski@linaro.org; a=openpgp;
+ fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,47 +110,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Joel Granados <j.granados@samsung.com>, Dave Chinner <david@fromorbit.com>, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, linux-hardening@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, linux-sctp@vger.kernel.org, lvs-devel@vger.kernel.org, coreteam@netfilter.org, linux-trace-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>, bridge@lists.linux.dev, apparmor@lists.ubuntu.com, linux-xfs@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, netfilter-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: imx@lists.linux.dev, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, linux-amlogic@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 23, 2024 at 09:54:46AM +0200, Thomas Weiﬂschuh wrote:
-> Adapt the proc_hander function signature to make it clear that handlers
-> are not supposed to modify their ctl_table argument.
-> 
-> This is a prerequisite to moving the static ctl_table structs into
-> rodata.
-> By migrating all handlers at once a lengthy transition can be avoided.
-> 
-> The patch was mostly generated by coccinelle with the following script:
-> 
->     @@
->     identifier func, ctl, write, buffer, lenp, ppos;
->     @@
-> 
->     int func(
->     - struct ctl_table *ctl,
->     + const struct ctl_table *ctl,
->       int write, void *buffer, size_t *lenp, loff_t *ppos)
->     { ... }
-> 
-> In addition to the scripted changes some other changes are done:
-> 
-> * the typedef proc_handler is adapted
-> 
-> * the prototypes of non-static handler are adapted
-> 
-> * kernel/seccomp.c:{read,write}_actions_logged() and
->   kernel/watchdog.c:proc_watchdog_common() are adapted as they need to
->   adapted together with the handlers for type-consistency reasons
-> 
-> Signed-off-by: Thomas Weiﬂschuh <linux@weissschuh.net>
+No dependencies.
 
-...
+Static 'struct snd_pcm_hardware' is not modified by few drivers and its
+copy is passed to the core, so it can be made const for increased code
+safety.
 
->  arch/s390/appldata/appldata_base.c        | 10 ++---
->  arch/s390/kernel/debug.c                  |  2 +-
->  arch/s390/kernel/topology.c               |  2 +-
->  arch/s390/mm/cmm.c                        |  6 +--
+Best regards,
+Krzysztof
 
-Acked-by: Heiko Carstens <hca@linux.ibm.com> # s390
+---
+Krzysztof Kozlowski (4):
+      ASoC: qcom: Constify static snd_pcm_hardware
+      ASoC: fsl: Constify static snd_pcm_hardware
+      ASoC: meson: Constify static snd_pcm_hardware
+      ASoC: uniphier: Constify static snd_pcm_hardware
+
+ sound/soc/fsl/imx-pcm-rpmsg.c    | 2 +-
+ sound/soc/meson/aiu-fifo-i2s.c   | 2 +-
+ sound/soc/meson/aiu-fifo-spdif.c | 2 +-
+ sound/soc/meson/aiu-fifo.h       | 2 +-
+ sound/soc/meson/axg-fifo.c       | 2 +-
+ sound/soc/qcom/qdsp6/q6apm-dai.c | 4 ++--
+ sound/soc/qcom/qdsp6/q6asm-dai.c | 2 +-
+ sound/soc/uniphier/aio-dma.c     | 2 +-
+ 8 files changed, 9 insertions(+), 9 deletions(-)
+---
+base-commit: ebbaba914053d8bcadd7d64eb8d2555299509a27
+change-id: 20240429-n-asoc-const-snd-pcm-hardware-f0a5ade885ca
+
+Best regards,
+-- 
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
