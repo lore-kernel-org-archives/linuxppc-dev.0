@@ -4,52 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E428BC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2024 14:10:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64520C04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Apr 2024 17:06:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=anw3SI+V;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=FDZaSnrm;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VSlbS477mz3cgl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2024 00:10:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VSqTy5qmQz3d8n
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Apr 2024 03:05:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=anw3SI+V;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=FDZaSnrm;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::d31; helo=mail-io1-xd31.google.com; envelope-from=keescook@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-io1-xd31.google.com (mail-io1-xd31.google.com [IPv6:2607:f8b0:4864:20::d31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VSlZd1bCZz3cXl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2024 00:09:45 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1714399785;
-	bh=OSV4xQE36WJK5s4wJOfO2BbSCoo6uuLgwgYmh3Q3rks=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=anw3SI+VLR2Hx2VXa+Klq6C0hfY7AHmNOgWE1DdUeM5M9JDFlyHVVmSeNnk3bXzwn
-	 QHZJ0khvJBZh7GOYRjtCytgHd5d78U0ru7HWVrff9LjHe6uEe1ymL/3Drv3KP9aaVe
-	 lCN6YCDYKXz1fH0l/dFZ5xfIwTU0GNj1K+v2ipRbaSV9FUyZ80bMYKv6WBSQElrGLO
-	 dJP3csukXWhrz/+zriUv29T6F47cx7ORSQeujGSsIf6JCrf+4VJe7ESAl04cv6z1qQ
-	 4uBLFgT4setEpap0WjcCP7a8eDT3nUeTr2NoH9+qhqPK/Utx6JZK4cypTMa/BOmEXH
-	 ItzFx3DMLn+bQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VSlZd07lqz4wcd;
-	Tue, 30 Apr 2024 00:09:44 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, npiggin@gmail.com,
- christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org,
- naveen.n.rao@linux.ibm.com, shuah@kernel.org
-Subject: Re: [PATCH 2/3] selftest/powerpc: Add flags.mk to support pmu
- buildable
-In-Reply-To: <20240229093711.581230-2-maddy@linux.ibm.com>
-References: <20240229093711.581230-1-maddy@linux.ibm.com>
- <20240229093711.581230-2-maddy@linux.ibm.com>
-Date: Tue, 30 Apr 2024 00:09:43 +1000
-Message-ID: <874jbkjm54.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VSqT54M6Mz3cWg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Apr 2024 03:05:11 +1000 (AEST)
+Received: by mail-io1-xd31.google.com with SMTP id ca18e2360f4ac-7d9e2a5e097so175035839f.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Apr 2024 10:05:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1714410306; x=1715015106; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=NjIM1YsOHJSXus8VNmDaNi8MZ1j7PDi3kmS0uCHnMmg=;
+        b=FDZaSnrmhL3AMLpYxlFC65rn3ey47L4NNNMm/L/vZMYjF+MqzsPoCyTzHNpIaZU5l0
+         Bcjwou8RwRiM1Z0/ZUl3zFR1ZaK0V2XSULY4kkF1iurrowajj/8/48573Vg8SwiFAKUG
+         XP0tyFun813KwB0nwX0PBAXYD0bxI87VJqEMk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1714410306; x=1715015106;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=NjIM1YsOHJSXus8VNmDaNi8MZ1j7PDi3kmS0uCHnMmg=;
+        b=tnafVnCK4c7MSLehpSzK6bxJRyzXfaR6oSYdeQgjXywVzkFGRA/nw2UgrPMXXmeSdU
+         depL03Hve4btU2fxgLjG8oza0Efc4ILysl6Yxux8G6Z7wow1843IxH3AZ/g3P6jYcAGb
+         ENYFutQPwZKDI43cCuQtwPdyXFSRgZA4QO42wzytkkuLQRnI8Z/fmPpbYRhSw5Rxm29J
+         ZJcVDpGBDA2ftez1wEga9hf2mj8r6/SLPCJEUhcPTDCLg98iCPxW0624eIPR9M4bwCRK
+         sawgVyYebos/uQ4CLcqs/mAKI714QnjU6D9O5BtSoYw0ySvwiJ8ltFqwW0b+f4WCLxnu
+         MV1g==
+X-Forwarded-Encrypted: i=1; AJvYcCUAG5ZA7LnCRJjsoJvSgLUsLnE1xl+AMK6Ij5vje58De7FXKPLvQ6EVGO2dO1NjnIq9CGpbEOCIr++JIK/JnVBydQpM54bxU94dTdIHXw==
+X-Gm-Message-State: AOJu0Yx0bZGwkqPt1uMMHPkyRGyXz5p68BoATGGDjBb616qeVbJ49wio
+	rGlW4Br8ccQbyBg3nP+L7cqb7cYL52u8z+T2juT33xoA8CrjXOWYvWaSCP9KaQ==
+X-Google-Smtp-Source: AGHT+IHFoa7yUHDaRgqu4l/JUQo/w0VQEfcK74Y0V+lFVzAsB35zJ7rZlOdiXClJHSoCrRrlV+IkTQ==
+X-Received: by 2002:a5e:9246:0:b0:7de:a753:82b3 with SMTP id z6-20020a5e9246000000b007dea75382b3mr420256iop.15.1714410306525;
+        Mon, 29 Apr 2024 10:05:06 -0700 (PDT)
+Received: from www.outflux.net ([198.0.35.241])
+        by smtp.gmail.com with ESMTPSA id x71-20020a63864a000000b00606dd49d3b8sm9250880pgd.57.2024.04.29.10.05.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Apr 2024 10:05:04 -0700 (PDT)
+Date: Mon, 29 Apr 2024 10:05:01 -0700
+From: Kees Cook <keescook@chromium.org>
+To: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Subject: Re: [PATCH][next] crypto/nx: Avoid potential
+ -Wflex-array-member-not-at-end warning
+Message-ID: <202404290947.4A8BF6A6@keescook>
+References: <ZgHmRNcR+a4EJX94@neat>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ZgHmRNcR+a4EJX94@neat>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,57 +76,190 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Sachin Sant <sachinp@linux.ibm.com>, linux-kselftest@vger.kernel.org
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-hardening@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Madhavan Srinivasan <maddy@linux.ibm.com> writes:
-> When running `make -C powerpc/pmu run_tests` from top level selftests
-> directory, currently this error is being reported
->
-> make: Entering directory '/home/maddy/linux/tools/testing/selftests/powerpc/pmu'
-> Makefile:40: warning: overriding recipe for target 'emit_tests'
-> ../../lib.mk:111: warning: ignoring old recipe for target 'emit_tests'
-> gcc -m64    count_instructions.c ../harness.c event.c lib.c ../utils.c loop.S  -o /home/maddy/selftest_output//count_instructions
-> In file included from count_instructions.c:13:
-> event.h:12:10: fatal error: utils.h: No such file or directory
-> 12 | #include "utils.h"
->   |          ^~~~~~~~~
-> compilation terminated.
->
-> This is due to missing of include path in CFLAGS. That is, CFLAGS and
-> GIT_VERSION macros are defined in the powerpc/ folder Makefile which
-> in this case not involved.
->
-> To address the failure incase of executing specific sub-folder test directly,
-> a new rule file has been addded by the patch called "flags.mk" under
-> selftest/powerpc/ folder and is linked to all the Makefile of powerpc/pmu
-> sub-folders.
+On Mon, Mar 25, 2024 at 03:01:56PM -0600, Gustavo A. R. Silva wrote:
+> -Wflex-array-member-not-at-end is coming in GCC-14, and we are getting
+> ready to enable it globally.
+> 
+> Use the `__struct_group()` helper to separate the flexible array
+> from the rest of the members in flexible `struct nx842_crypto_header`,
+> through tagged `struct nx842_crypto_header_hdr`, and avoid embedding
+> the flexible-array member in the middle of `struct nx842_crypto_ctx`.
+> 
+> Also, use `container_of()` whenever we need to retrieve a pointer to
+> the flexible structure.
+> 
+> This code was detected with the help of Coccinelle, and audited and
+> modified manually.
+> 
+> Link: https://github.com/KSPP/linux/issues/202
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> ---
+>  drivers/crypto/nx/nx-842.c |  6 ++++--
+>  drivers/crypto/nx/nx-842.h | 11 +++++++----
+>  2 files changed, 11 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
+> index 2ab90ec10e61..82214cde2bcd 100644
+> --- a/drivers/crypto/nx/nx-842.c
+> +++ b/drivers/crypto/nx/nx-842.c
+> @@ -251,7 +251,9 @@ int nx842_crypto_compress(struct crypto_tfm *tfm,
+>  			  u8 *dst, unsigned int *dlen)
+>  {
+>  	struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
+> -	struct nx842_crypto_header *hdr = &ctx->header;
+> +	struct nx842_crypto_header *hdr =
+> +				container_of(&ctx->header,
+> +					     struct nx842_crypto_header, hdr);
+>  	struct nx842_crypto_param p;
+>  	struct nx842_constraints c = *ctx->driver->constraints;
+>  	unsigned int groups, hdrsize, h;
+> @@ -490,7 +492,7 @@ int nx842_crypto_decompress(struct crypto_tfm *tfm,
+>  	}
+>  
+>  	memcpy(&ctx->header, src, hdr_len);
+> -	hdr = &ctx->header;
+> +	hdr = container_of(&ctx->header, struct nx842_crypto_header, hdr);
+>  
+>  	for (n = 0; n < hdr->groups; n++) {
+>  		/* ignore applies to last group */
+> diff --git a/drivers/crypto/nx/nx-842.h b/drivers/crypto/nx/nx-842.h
+> index 7590bfb24d79..1f42c83d2683 100644
+> --- a/drivers/crypto/nx/nx-842.h
+> +++ b/drivers/crypto/nx/nx-842.h
+> @@ -157,9 +157,12 @@ struct nx842_crypto_header_group {
+>  } __packed;
+>  
+>  struct nx842_crypto_header {
+> -	__be16 magic;		/* NX842_CRYPTO_MAGIC */
+> -	__be16 ignore;		/* decompressed end bytes to ignore */
+> -	u8 groups;		/* total groups in this header */
+> +	/* New members must be added within the __struct_group() macro below. */
+> +	__struct_group(nx842_crypto_header_hdr, hdr, __packed,
+> +		__be16 magic;		/* NX842_CRYPTO_MAGIC */
+> +		__be16 ignore;		/* decompressed end bytes to ignore */
+> +		u8 groups;		/* total groups in this header */
+> +	);
+>  	struct nx842_crypto_header_group group[];
+>  } __packed;
+>  
+> @@ -171,7 +174,7 @@ struct nx842_crypto_ctx {
+>  	u8 *wmem;
+>  	u8 *sbounce, *dbounce;
+>  
+> -	struct nx842_crypto_header header;
+> +	struct nx842_crypto_header_hdr header;
+>  	struct nx842_crypto_header_group group[NX842_CRYPTO_GROUP_MAX];
+>  
+>  	struct nx842_driver *driver;
 
-This patch made my selftest build go from ~10s to ~50s !
+Hmm. I think commit 03952d980153 ("crypto: nx - make platform drivers
+directly register with crypto") incorrectly added "struct nx842_driver
+*driver" to the end of struct nx842_crypto_ctx. I think it should be
+before "header".
 
-I tracked it down to "git describe" being run hundreds of times.
+Then I see:
 
-> diff --git a/tools/testing/selftests/powerpc/flags.mk b/tools/testing/selftests/powerpc/flags.mk
-> new file mode 100644
-> index 000000000000..28374f470126
-> --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/flags.mk
-> @@ -0,0 +1,12 @@
-> +#This checks for any ENV variables and add those.
-> +
-> +#ifeq ($(GIT_VERSION),)
+#define NX842_CRYPTO_HEADER_SIZE(g)                             \
+        (sizeof(struct nx842_crypto_header) +                   \
+         sizeof(struct nx842_crypto_header_group) * (g))
+
+This is just struct_size(), really. And nothing uses:
+
+#define NX842_CRYPTO_HEADER_MAX_SIZE                            \
+        NX842_CRYPTO_HEADER_SIZE(NX842_CRYPTO_GROUP_MAX)
+
+And then looking for what uses struct nx842_crypto_ctx's "group" member,
+I don't see anything except some sizeof()s:
+
+drivers/crypto/nx/nx-common-powernv.c:1044:     .cra_ctxsize = sizeof(struct nx842_crypto_ctx),
+drivers/crypto/nx/nx-common-pseries.c:1021:     .cra_ctxsize = sizeof(struct nx842_crypto_ctx),
+
+This is just a maximally sized ctx (as if the group count were
+NX842_CRYPTO_GROUP_MAX), which we could use struct_size for again:
+
+     .cra_ctxsize = struct_size_t(struct nx842_crypto_ctx, header.group,
+				  NX842_CRYPTO_GROUP_MAX),
+
+So then "group" can be entirely removed from struct nx842_crypto_ctx.
+
+The result means we can also add __counted_by:
+
+
+diff --git a/drivers/crypto/nx/nx-842.c b/drivers/crypto/nx/nx-842.c
+index 2ab90ec10e61..144972fe2e6f 100644
+--- a/drivers/crypto/nx/nx-842.c
++++ b/drivers/crypto/nx/nx-842.c
+@@ -62,10 +62,7 @@
+  */
+ #define NX842_CRYPTO_MAGIC	(0xf842)
+ #define NX842_CRYPTO_HEADER_SIZE(g)				\
+-	(sizeof(struct nx842_crypto_header) +			\
+-	 sizeof(struct nx842_crypto_header_group) * (g))
+-#define NX842_CRYPTO_HEADER_MAX_SIZE				\
+-	NX842_CRYPTO_HEADER_SIZE(NX842_CRYPTO_GROUP_MAX)
++	struct_size_t(nx842_crypto_header, group, g)
  
-This isn't right, # is a comment in make syntax, so this line is just a
-comment. It needs to be "ifeq".
-
-> +GIT_VERSION = $(shell git describe --always --long --dirty || echo "unknown")
+ /* bounce buffer size */
+ #define BOUNCE_BUFFER_ORDER	(2)
+diff --git a/drivers/crypto/nx/nx-842.h b/drivers/crypto/nx/nx-842.h
+index 7590bfb24d79..70d9f99a4595 100644
+--- a/drivers/crypto/nx/nx-842.h
++++ b/drivers/crypto/nx/nx-842.h
+@@ -160,7 +160,7 @@ struct nx842_crypto_header {
+ 	__be16 magic;		/* NX842_CRYPTO_MAGIC */
+ 	__be16 ignore;		/* decompressed end bytes to ignore */
+ 	u8 groups;		/* total groups in this header */
+-	struct nx842_crypto_header_group group[];
++	struct nx842_crypto_header_group group[] __counted_by(groups);
+ } __packed;
  
-Using '=' here means Make re-runs the command every time the variable is
-used. Previously that was OK because the variable was set once and then
-exported. But now that it's a Make variable in each file it leads to
-"git describe" being run a few hundred times.
+ #define NX842_CRYPTO_GROUP_MAX	(0x20)
+@@ -171,10 +171,9 @@ struct nx842_crypto_ctx {
+ 	u8 *wmem;
+ 	u8 *sbounce, *dbounce;
+ 
+-	struct nx842_crypto_header header;
+-	struct nx842_crypto_header_group group[NX842_CRYPTO_GROUP_MAX];
+-
+ 	struct nx842_driver *driver;
++
++	struct nx842_crypto_header header;
+ };
+ 
+ int nx842_crypto_init(struct crypto_tfm *tfm, struct nx842_driver *driver);
+diff --git a/drivers/crypto/nx/nx-common-powernv.c b/drivers/crypto/nx/nx-common-powernv.c
+index 8c859872c183..22ab4a5885f2 100644
+--- a/drivers/crypto/nx/nx-common-powernv.c
++++ b/drivers/crypto/nx/nx-common-powernv.c
+@@ -1041,7 +1041,8 @@ static struct crypto_alg nx842_powernv_alg = {
+ 	.cra_driver_name	= "842-nx",
+ 	.cra_priority		= 300,
+ 	.cra_flags		= CRYPTO_ALG_TYPE_COMPRESS,
+-	.cra_ctxsize		= sizeof(struct nx842_crypto_ctx),
++	.cra_ctxsize		= struct_size_t(struct nx842_crypto_ctx, header.group,
++						NX842_CRYPTO_GROUP_MAX),
+ 	.cra_module		= THIS_MODULE,
+ 	.cra_init		= nx842_powernv_crypto_init,
+ 	.cra_exit		= nx842_crypto_exit,
+diff --git a/drivers/crypto/nx/nx-common-pseries.c b/drivers/crypto/nx/nx-common-pseries.c
+index 35f2d0d8507e..fdf328eab6fc 100644
+--- a/drivers/crypto/nx/nx-common-pseries.c
++++ b/drivers/crypto/nx/nx-common-pseries.c
+@@ -1018,7 +1018,8 @@ static struct crypto_alg nx842_pseries_alg = {
+ 	.cra_driver_name	= "842-nx",
+ 	.cra_priority		= 300,
+ 	.cra_flags		= CRYPTO_ALG_TYPE_COMPRESS,
+-	.cra_ctxsize		= sizeof(struct nx842_crypto_ctx),
++	.cra_ctxsize		= struct_size_t(struct nx842_crypto_ctx, header.group,
++						NX842_CRYPTO_GROUP_MAX),
+ 	.cra_module		= THIS_MODULE,
+ 	.cra_init		= nx842_pseries_crypto_init,
+ 	.cra_exit		= nx842_crypto_exit,
 
-I've squashed in those fixes, no need to send a v2.
 
-cheers
+-- 
+Kees Cook
