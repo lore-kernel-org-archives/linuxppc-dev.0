@@ -4,51 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72DCEC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2024 02:04:47 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhQIcLda;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1981DC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2024 23:01:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VVHLj5CBsz3cXC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2024 12:04:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhQIcLda;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=mhiramat@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VVqDD32CDz3d8M
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 09:01:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dudau.co.uk (client-ip=80.229.23.120; helo=smtp.dudau.co.uk; envelope-from=liviu@dudau.co.uk; receiver=lists.ozlabs.org)
+X-Greylist: delayed 584 seconds by postgrey-1.37 at boromir; Fri, 03 May 2024 09:00:29 AEST
+Received: from smtp.dudau.co.uk (dliviu.plus.com [80.229.23.120])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VVHKv4JJtz30gp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2024 12:04:03 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id E6114CE118C;
-	Thu,  2 May 2024 02:03:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61933C072AA;
-	Thu,  2 May 2024 02:03:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1714615438;
-	bh=SWeXBcXKkGPsnHoi2Nzn5QOh0E73YoSqFU3TTZEHOKs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=YhQIcLdaveuK6MKu9y1bDPu7YCeJeaD5GJ35EMerY6iX3OsYP+KVxeTI+M0gEZQbs
-	 LxO+v7yucUYCdXnMxtB2jBZe6xTl6o61vJb4R2yUuZlI/0AvHG4TY/VVikUFRSux50
-	 gw3mNFE5e07MSAqwmvg1EXJyNPHjPdJqheM8nxMdWoU/Azn6W5Byp3CMODzXHf3s9a
-	 /k+7PeaHHzE+y6eRMY8KPhYObFbk091HF3G+gVHvMmPrvMWxWX+UJkO/5YwSlsLYsF
-	 fsEtpqtSpMPA2EkSrwsyNkC/Fuc86iYSQS6bdNM2fAroRhz83u1/uEGQo3Hv5h3uG0
-	 90V/Mvci7IfiA==
-Date: Thu, 2 May 2024 11:03:48 +0900
-From: Masami Hiramatsu (Google) <mhiramat@kernel.org>
-To: Guo Ren <guoren@kernel.org>
-Subject: Re: [PATCH v3] kprobe/ftrace: bail out if ftrace was killed
-Message-Id: <20240502110348.016f190e0b0565b7e9ecdb48@kernel.org>
-In-Reply-To: <CAJF2gTT8a4PBU3ekZFNTi6EuETT9hhKfhXrPgGGpn92rQMNSvg@mail.gmail.com>
-References: <20240501162956.229427-1-stephen.s.brennan@oracle.com>
-	<CAJF2gTT8a4PBU3ekZFNTi6EuETT9hhKfhXrPgGGpn92rQMNSvg@mail.gmail.com>
-X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VVqCd2z33z3bYc
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 09:00:28 +1000 (AEST)
+Received: from mail.dudau.co.uk (bart.dudau.co.uk [192.168.14.2])
+	by smtp.dudau.co.uk (Postfix) with SMTP id 557B041D12F3;
+	Thu, 02 May 2024 23:50:36 +0100 (BST)
+Received: by mail.dudau.co.uk (sSMTP sendmail emulation); Thu, 02 May 2024 23:50:36 +0100
+Date: Thu, 2 May 2024 23:50:36 +0100
+From: Liviu Dudau <liviu@dudau.co.uk>
+To: Luis Chamberlain <mcgrof@kernel.org>
+Subject: Re: [PATCH v7 00/16] mm: jit/text allocator
+Message-ID: <ZjQYvOYgURx9/+d0@bart.dudau.co.uk>
+References: <20240429121620.1186447-1-rppt@kernel.org>
+ <Zi_K4K-j-VB_WI4i@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Zi_K4K-j-VB_WI4i@bombadil.infradead.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,249 +43,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Stephen Brennan <stephen.s.brennan@oracle.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, linux-csky@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Alexander Gordeev <agordeev@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Ingo Molnar <mingo@redhat.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-parisc@vger.ke
- rnel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Philippe =?utf-8?Q?Mathieu-Daud=C3=A9?= <philmd@linaro.org>, linux-mm@kvack.org, netdev@vge
+ r.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, =?utf-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-modules@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2 May 2024 01:35:16 +0800
-Guo Ren <guoren@kernel.org> wrote:
+On Mon, Apr 29, 2024 at 09:29:20AM -0700, Luis Chamberlain wrote:
+> On Mon, Apr 29, 2024 at 03:16:04PM +0300, Mike Rapoport wrote:
+> > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+> > 
+> > Hi,
+> > 
+> > The patches are also available in git:
+> > https://git.kernel.org/pub/scm/linux/kernel/git/rppt/linux.git/log/?h=execmem/v7
+> > 
+> > v7 changes:
+> > * define MODULE_{VADDR,END} for riscv32 to fix the build and avoid
+> >   #ifdefs in a function body
+> > * add Acks, thanks everybody
+> 
+> Thanks, I've pushed this to modules-next for further exposure / testing.
+> Given the status of testing so far with prior revisions, in that only a
+> few issues were found and that those were fixed, and the status of
+> reviews, this just might be ripe for v6.10.
 
-> On Thu, May 2, 2024 at 12:30 AM Stephen Brennan
-> <stephen.s.brennan@oracle.com> wrote:
-> >
-> > If an error happens in ftrace, ftrace_kill() will prevent disarming
-> > kprobes. Eventually, the ftrace_ops associated with the kprobes will be
-> > freed, yet the kprobes will still be active, and when triggered, they
-> > will use the freed memory, likely resulting in a page fault and panic.
-> >
-> > This behavior can be reproduced quite easily, by creating a kprobe and
-> > then triggering a ftrace_kill(). For simplicity, we can simulate an
-> > ftrace error with a kernel module like [1]:
-> >
-> > [1]: https://github.com/brenns10/kernel_stuff/tree/master/ftrace_killer
-> >
-> >   sudo perf probe --add commit_creds
-> >   sudo perf trace -e probe:commit_creds
-> >   # In another terminal
-> >   make
-> >   sudo insmod ftrace_killer.ko  # calls ftrace_kill(), simulating bug
-> >   # Back to perf terminal
-> >   # ctrl-c
-> >   sudo perf probe --del commit_creds
-> >
-> > After a short period, a page fault and panic would occur as the kprobe
-> > continues to execute and uses the freed ftrace_ops. While ftrace_kill()
-> > is supposed to be used only in extreme circumstances, it is invoked in
-> > FTRACE_WARN_ON() and so there are many places where an unexpected bug
-> > could be triggered, yet the system may continue operating, possibly
-> > without the administrator noticing. If ftrace_kill() does not panic the
-> > system, then we should do everything we can to continue operating,
-> > rather than leave a ticking time bomb.
-> >
-> > Signed-off-by: Stephen Brennan <stephen.s.brennan@oracle.com>
-> > ---
-> > Changes in v3:
-> >   Don't expose ftrace_is_dead(). Create a "kprobe_ftrace_disabled"
-> >   variable and check it directly in the kprobe handlers.
-> > Link to v1/v2 discussion:
-> >   https://lore.kernel.org/all/20240426225834.993353-1-stephen.s.brennan@oracle.com/
-> >
-> >  arch/csky/kernel/probes/ftrace.c     | 3 +++
-> >  arch/loongarch/kernel/ftrace_dyn.c   | 3 +++
-> >  arch/parisc/kernel/ftrace.c          | 3 +++
-> >  arch/powerpc/kernel/kprobes-ftrace.c | 3 +++
-> >  arch/riscv/kernel/probes/ftrace.c    | 3 +++
-> >  arch/s390/kernel/ftrace.c            | 3 +++
-> >  arch/x86/kernel/kprobes/ftrace.c     | 3 +++
-> >  include/linux/kprobes.h              | 7 +++++++
-> >  kernel/kprobes.c                     | 6 ++++++
-> >  kernel/trace/ftrace.c                | 1 +
-> >  10 files changed, 35 insertions(+)
-> >
-> > diff --git a/arch/csky/kernel/probes/ftrace.c b/arch/csky/kernel/probes/ftrace.c
-> > index 834cffcfbce3..7ba4b98076de 100644
-> > --- a/arch/csky/kernel/probes/ftrace.c
-> > +++ b/arch/csky/kernel/probes/ftrace.c
-> > @@ -12,6 +12,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
-> >         struct kprobe_ctlblk *kcb;
-> >         struct pt_regs *regs;
-> >
-> > +       if (unlikely(kprobe_ftrace_disabled))
-> > +               return;
-> > +
-> For csky part.
-> Acked-by: Guo Ren <guoren@kernel.org>
+Looks like there is still some work needed. I've picked up next-20240501
+and on arch/mips with CONFIG_MODULE_COMPRESS_XZ=y and CONFIG_MODULE_DECOMPRESS=y
+I fail to load any module:
 
-Thanks Stephen, Guo and Steve!
+# modprobe rfkill
+[11746.539090] Invalid ELF header magic: != ELF
+[11746.587149] execmem: unable to allocate memory
+modprobe: can't load module rfkill (kernel/net/rfkill/rfkill.ko.xz): Out of memory
 
-Let me pick this to probes/for-next!
+The (hopefully) relevant parts of my .config:
 
-Thank you,
+CONFIG_HAVE_KERNEL_XZ=y
+CONFIG_MIPS=y
+CONFIG_RALINK=y
+CONFIG_SOC_MT7621=y
+CONFIG_EXECMEM=y
+CONFIG_MODULES_USE_ELF_REL=y
+CONFIG_MODULES=y
+# CONFIG_MODULE_DEBUG is not set
+# CONFIG_MODULE_FORCE_LOAD is not set
+CONFIG_MODULE_UNLOAD=y
+# CONFIG_MODULE_FORCE_UNLOAD is not set
+# CONFIG_MODULE_UNLOAD_TAINT_TRACKING is not set
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+# CONFIG_MODULE_SIG is not set
+# CONFIG_MODULE_COMPRESS_NONE is not set
+# CONFIG_MODULE_COMPRESS_GZIP is not set
+CONFIG_MODULE_COMPRESS_XZ=y
+# CONFIG_MODULE_COMPRESS_ZSTD is not set
+CONFIG_MODULE_DECOMPRESS=y
+# CONFIG_MODULE_ALLOW_MISSING_NAMESPACE_IMPORTS is not set
+CONFIG_MODULES_TREE_LOOKUP=y
+
+
+Best regards,
+Liviu
+
 
 > 
-> >         bit = ftrace_test_recursion_trylock(ip, parent_ip);
-> >         if (bit < 0)
-> >                 return;
-> > diff --git a/arch/loongarch/kernel/ftrace_dyn.c b/arch/loongarch/kernel/ftrace_dyn.c
-> > index 73858c9029cc..bff058317062 100644
-> > --- a/arch/loongarch/kernel/ftrace_dyn.c
-> > +++ b/arch/loongarch/kernel/ftrace_dyn.c
-> > @@ -287,6 +287,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
-> >         struct kprobe *p;
-> >         struct kprobe_ctlblk *kcb;
-> >
-> > +       if (unlikely(kprobe_ftrace_disabled))
-> > +               return;
-> > +
-> >         bit = ftrace_test_recursion_trylock(ip, parent_ip);
-> >         if (bit < 0)
-> >                 return;
-> > diff --git a/arch/parisc/kernel/ftrace.c b/arch/parisc/kernel/ftrace.c
-> > index 621a4b386ae4..c91f9c2e61ed 100644
-> > --- a/arch/parisc/kernel/ftrace.c
-> > +++ b/arch/parisc/kernel/ftrace.c
-> > @@ -206,6 +206,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
-> >         struct kprobe *p;
-> >         int bit;
-> >
-> > +       if (unlikely(kprobe_ftrace_disabled))
-> > +               return;
-> > +
-> >         bit = ftrace_test_recursion_trylock(ip, parent_ip);
-> >         if (bit < 0)
-> >                 return;
-> > diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
-> > index 072ebe7f290b..f8208c027148 100644
-> > --- a/arch/powerpc/kernel/kprobes-ftrace.c
-> > +++ b/arch/powerpc/kernel/kprobes-ftrace.c
-> > @@ -21,6 +21,9 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
-> >         struct pt_regs *regs;
-> >         int bit;
-> >
-> > +       if (unlikely(kprobe_ftrace_disabled))
-> > +               return;
-> > +
-> >         bit = ftrace_test_recursion_trylock(nip, parent_nip);
-> >         if (bit < 0)
-> >                 return;
-> > diff --git a/arch/riscv/kernel/probes/ftrace.c b/arch/riscv/kernel/probes/ftrace.c
-> > index 7142ec42e889..a69dfa610aa8 100644
-> > --- a/arch/riscv/kernel/probes/ftrace.c
-> > +++ b/arch/riscv/kernel/probes/ftrace.c
-> > @@ -11,6 +11,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
-> >         struct kprobe_ctlblk *kcb;
-> >         int bit;
-> >
-> > +       if (unlikely(kprobe_ftrace_disabled))
-> > +               return;
-> > +
-> >         bit = ftrace_test_recursion_trylock(ip, parent_ip);
-> >         if (bit < 0)
-> >                 return;
-> > diff --git a/arch/s390/kernel/ftrace.c b/arch/s390/kernel/ftrace.c
-> > index c46381ea04ec..7f6f8c438c26 100644
-> > --- a/arch/s390/kernel/ftrace.c
-> > +++ b/arch/s390/kernel/ftrace.c
-> > @@ -296,6 +296,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
-> >         struct kprobe *p;
-> >         int bit;
-> >
-> > +       if (unlikely(kprobe_ftrace_disabled))
-> > +               return;
-> > +
-> >         bit = ftrace_test_recursion_trylock(ip, parent_ip);
-> >         if (bit < 0)
-> >                 return;
-> > diff --git a/arch/x86/kernel/kprobes/ftrace.c b/arch/x86/kernel/kprobes/ftrace.c
-> > index dd2ec14adb77..15af7e98e161 100644
-> > --- a/arch/x86/kernel/kprobes/ftrace.c
-> > +++ b/arch/x86/kernel/kprobes/ftrace.c
-> > @@ -21,6 +21,9 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
-> >         struct kprobe_ctlblk *kcb;
-> >         int bit;
-> >
-> > +       if (unlikely(kprobe_ftrace_disabled))
-> > +               return;
-> > +
-> >         bit = ftrace_test_recursion_trylock(ip, parent_ip);
-> >         if (bit < 0)
-> >                 return;
-> > diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-> > index 0ff44d6633e3..5fcbc254d186 100644
-> > --- a/include/linux/kprobes.h
-> > +++ b/include/linux/kprobes.h
-> > @@ -378,11 +378,15 @@ static inline void wait_for_kprobe_optimizer(void) { }
-> >  extern void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
-> >                                   struct ftrace_ops *ops, struct ftrace_regs *fregs);
-> >  extern int arch_prepare_kprobe_ftrace(struct kprobe *p);
-> > +/* Set when ftrace has been killed: kprobes on ftrace must be disabled for safety */
-> > +extern bool kprobe_ftrace_disabled __read_mostly;
-> > +extern void kprobe_ftrace_kill(void);
-> >  #else
-> >  static inline int arch_prepare_kprobe_ftrace(struct kprobe *p)
-> >  {
-> >         return -EINVAL;
-> >  }
-> > +static inline void kprobe_ftrace_kill(void) {}
-> >  #endif /* CONFIG_KPROBES_ON_FTRACE */
-> >
-> >  /* Get the kprobe at this addr (if any) - called with preemption disabled */
-> > @@ -495,6 +499,9 @@ static inline void kprobe_flush_task(struct task_struct *tk)
-> >  static inline void kprobe_free_init_mem(void)
-> >  {
-> >  }
-> > +static inline void kprobe_ftrace_kill(void)
-> > +{
-> > +}
-> >  static inline int disable_kprobe(struct kprobe *kp)
-> >  {
-> >         return -EOPNOTSUPP;
-> > diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> > index 65adc815fc6e..166ebf81dc45 100644
-> > --- a/kernel/kprobes.c
-> > +++ b/kernel/kprobes.c
-> > @@ -1068,6 +1068,7 @@ static struct ftrace_ops kprobe_ipmodify_ops __read_mostly = {
-> >
-> >  static int kprobe_ipmodify_enabled;
-> >  static int kprobe_ftrace_enabled;
-> > +bool kprobe_ftrace_disabled;
-> >
-> >  static int __arm_kprobe_ftrace(struct kprobe *p, struct ftrace_ops *ops,
-> >                                int *cnt)
-> > @@ -1136,6 +1137,11 @@ static int disarm_kprobe_ftrace(struct kprobe *p)
-> >                 ipmodify ? &kprobe_ipmodify_ops : &kprobe_ftrace_ops,
-> >                 ipmodify ? &kprobe_ipmodify_enabled : &kprobe_ftrace_enabled);
-> >  }
-> > +
-> > +void kprobe_ftrace_kill()
-> > +{
-> > +       kprobe_ftrace_disabled = true;
-> > +}
-> >  #else  /* !CONFIG_KPROBES_ON_FTRACE */
-> >  static inline int arm_kprobe_ftrace(struct kprobe *p)
-> >  {
-> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> > index da1710499698..96db99c347b3 100644
-> > --- a/kernel/trace/ftrace.c
-> > +++ b/kernel/trace/ftrace.c
-> > @@ -7895,6 +7895,7 @@ void ftrace_kill(void)
-> >         ftrace_disabled = 1;
-> >         ftrace_enabled = 0;
-> >         ftrace_trace_function = ftrace_stub;
-> > +       kprobe_ftrace_kill();
-> >  }
-> >
-> >  /**
-> > --
-> > 2.39.3
-> >
+>   Luis
 > 
-> 
-> -- 
-> Best Regards
->  Guo Ren
-
 
 -- 
-Masami Hiramatsu (Google) <mhiramat@kernel.org>
+Everyone who uses computers frequently has had, from time to time,
+a mad desire to attack the precocious abacus with an axe.
+       	   	      	     	  -- John D. Clark, Ignition!
