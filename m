@@ -4,49 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA553C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 May 2024 18:10:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E29CAC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2024 02:49:24 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=OKthm/ur;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DFAmDOHK;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VV4qc13Mdz3cYt
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2024 04:10:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VVJLC2NlVz3cbD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 May 2024 12:49:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=OKthm/ur;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DFAmDOHK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.184; helo=out-184.mta0.migadu.com; envelope-from=oliver.upton@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 444 seconds by postgrey-1.37 at boromir; Thu, 02 May 2024 04:09:49 AEST
-Received: from out-184.mta0.migadu.com (out-184.mta0.migadu.com [91.218.175.184])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VV4pj66jBz3cTt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2024 04:09:49 +1000 (AEST)
-Date: Wed, 1 May 2024 18:01:31 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1714586499;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=69cqu9i0hgyzyuHYDqr+vrRYe6XfjRaXapX+zs6xjnE=;
-	b=OKthm/ur+byGKYcHm2DPTNC5z/URFbkOGPadzI7eiZzZ5mezBuOrZl7iO90ODYz9fRbgEy
-	6ouYU5nahmPlBewz9DVswxKYUkCE/I5p4/wec5b9+XAdcs6XajZ/4HudNHe28xxU0lQwpd
-	WHY0DzOGslb59/2viaOe877XKsJlqEk=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Oliver Upton <oliver.upton@linux.dev>
-To: Sean Christopherson <seanjc@google.com>
-Subject: Re: [PATCH 0/4] KVM: Fold kvm_arch_sched_in() into
- kvm_arch_vcpu_load()
-Message-ID: <ZjKDe6SlVWGj0ugA@linux.dev>
-References: <20240430193157.419425-1-seanjc@google.com>
- <ZjGMn5tlq8edKZYv@linux.dev>
- <ZjJRhQhX_12eBvY-@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VVJKL2mlHz3cSK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 May 2024 12:48:38 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1714618114;
+	bh=LrVjbcwBL6zqpz2GG6XF8+fyAJ6JNCKelE3eQyc4qns=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=DFAmDOHKbB0/pXHOtl1L1kb9Za3gqyI12JbPRfI06fypIE/4Z2D6OfqiCXiPouTAP
+	 Kf+S2wi/H2umKd0qRPfHrYYe911aKVxBmQPdXVAWX4SfPgcxwhDDXWMKiFUqim0CGQ
+	 LLo3Uu8pKCyfY3CXqatAhzgMQZBNaki6OMNtMxmzftCGOfRpBMuKnA+3pAg8ry+ptm
+	 4TsScYial9tXade9MIURQjYPpMwSU0VrkklYW8aRHuzTEiCO0/pw/2sQW6kpRWFF+e
+	 aREwi066iccvWuMO3V5ckfoo4aPNPbgWj+a5RCtOLqTgJcrSo63/44l/TK0cdXenwU
+	 mOJajHxCpdj8g==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VVJKG2ZdYz4x0C;
+	Thu,  2 May 2024 12:48:34 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Chancellor <nathan@kernel.org>
+Subject: Re: [PATCH] powerpc: Set _IO_BASE to POISON_POINTER_DELTA not 0 for
+ CONFIG_PCI=n
+In-Reply-To: <20240501162056.GA2458112@dev-arch.thelio-3990X>
+References: <20240430140440.200871-1-mpe@ellerman.id.au>
+ <20240501162056.GA2458112@dev-arch.thelio-3990X>
+Date: Thu, 02 May 2024 12:48:31 +1000
+Message-ID: <87y18tc4jk.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZjJRhQhX_12eBvY-@google.com>
-X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,73 +59,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Anup Patel <anup@brainfault.org>, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Paolo Bonzini <pbonzini@redhat.com>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
+Cc: naresh.kamboju@linaro.org, linuxppc-dev@lists.ozlabs.org, arnd@arndb.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 01, 2024 at 07:28:21AM -0700, Sean Christopherson wrote:
-> On Wed, May 01, 2024, Oliver Upton wrote:
-> > On Tue, Apr 30, 2024 at 12:31:53PM -0700, Sean Christopherson wrote:
-> > > Drop kvm_arch_sched_in() and instead pass a @sched_in boolean to
-> > > kvm_arch_vcpu_load().
-> > > 
-> > > While fiddling with an idea for optimizing state management on AMD CPUs,
-> > > I wanted to skip re-saving certain host state when a vCPU is scheduled back
-> > > in, as the state (theoretically) shouldn't change for the task while it's
-> > > scheduled out.  Actually doing that was annoying and unnecessarily brittle
-> > > due to having a separate API for the kvm_sched_in() case (the state save
-> > > needed to be in kvm_arch_vcpu_load() for the common path).
-> > > 
-> > > E.g. I could have set a "temporary"-ish flag somewhere in kvm_vcpu, but (a)
-> > > that's gross and (b) it would rely on the arbitrary ordering between
-> > > sched_in() and vcpu_load() staying the same.
-> > 
-> > Another option would be to change the rules around kvm_arch_sched_in()
-> > where the callee is expected to load the vCPU context.
-> > 
-> > The default implementation could just call kvm_arch_vcpu_load() directly
-> > and the x86 implementation can order things the way it wants before
-> > kvm_arch_vcpu_load().
-> > 
-> > I say this because ...
-> > 
-> > > The only real downside I see is that arm64 and riscv end up having to pass
-> > > "false" for their direct usage of kvm_arch_vcpu_load(), and passing boolean
-> > > literals isn't ideal.  But that can be solved by adding an inner helper that
-> > > omits the @sched_in param (I almost added a patch to do that, but I couldn't
-> > > convince myself it was necessary).
-> > 
-> > Needing to pass @sched_in for other usage of kvm_arch_vcpu_load() hurts
-> > readability, especially when no other architecture besides x86 cares
-> > about it.
-> 
-> Yeah, that bothers me too.
-> 
-> I tried your suggestion of having x86's kvm_arch_sched_in() do kvm_arch_vcpu_load(),
-> and even with an added kvm_arch_sched_out() to provide symmetry, the x86 code is
-> kludgy, and even the common code is a bit confusing as it's not super obvious
-> that kvm_sched_{in,out}() is really just kvm_arch_vcpu_{load,put}().
-> 
-> Staring a bit more at the vCPU flags we have, adding a "bool scheduled_out" isn't
-> terribly gross if it's done in common code and persists across load() and put(),
-> i.e. isn't so blatantly a temporary field.  And because it's easy, it could be
-> set with WRITE_ONCE() so that if it can be read cross-task if there's ever a
-> reason to do so.
-> 
-> The x86 code ends up being less ugly, and adding future arch/vendor code for
-> sched_in() *or* sched_out() requires minimal churn, e.g. arch code doesn't need
-> to override kvm_arch_sched_in().
-> 
-> The only weird part is that vcpu->preempted and vcpu->ready have slightly
-> different behavior, as they are cleared before kvm_arch_vcpu_load().  But the
-> weirdness is really with those flags no having symmetry, not with scheduled_out
-> itself.
-> 
-> Thoughts?
+Nathan Chancellor <nathan@kernel.org> writes:
+> Hi Michael,
+>
+> On Wed, May 01, 2024 at 12:04:40AM +1000, Michael Ellerman wrote:
+...
+>> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+>> index 08c550ed49be..1cd6eb6c8101 100644
+>> --- a/arch/powerpc/include/asm/io.h
+>> +++ b/arch/powerpc/include/asm/io.h
+>> @@ -37,7 +37,7 @@ extern struct pci_dev *isa_bridge_pcidev;
+>>   * define properly based on the platform
+>>   */
+>>  #ifndef CONFIG_PCI
+>> -#define _IO_BASE	0
+>> +#define _IO_BASE	POISON_POINTER_DELTA
+>
+> This works for CONFIG_PPC64 but not CONFIG_PPC32 (so tinyconfig and
+> allnoconfig like Naresh reported) because CONFIG_ILLEGAL_POINTER_VALUE
+> is defined as 0 in that case.
+>
+>   $ grep -P 'CONFIG_(ILLEGAL_POINTER_VALUE|PCI|PPC32)' .config
+>   CONFIG_PPC32=y
+>   CONFIG_ILLEGAL_POINTER_VALUE=0
 
-Yeah, this seems reasonable. Perhaps scheduled_out could be a nice hint
-for guardrails / sanity checks in the future.
+:facepalm:
 
--- 
-Thanks,
-Oliver
+Looks like we can fix the compiler warnings just by doing the arithmetic
+before casting to void *. I'll send a v2.
+
+cheers
