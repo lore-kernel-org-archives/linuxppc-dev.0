@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D06F4C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:47:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DEFCC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:47:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6v83yXBz86pZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:47:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6vk06lqz3vxp
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:47:46 +1000 (AEST)
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6nl3tbsz3cds
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:42:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6r12tvtz3cXk
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:44:33 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6nl320gz4xPR;
-	Fri,  3 May 2024 20:42:35 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6r11wgNz4x1P;
+	Fri,  3 May 2024 20:44:33 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <20240412092047.455483-1-sshegde@linux.ibm.com>
-References: <20240412092047.455483-1-sshegde@linux.ibm.com>
-Subject: Re: [PATCH v2 0/2] powerpc/pseries: Fixes for lparstat boot reports
-Message-Id: <171473286291.451432.5360724442247323299.b4-ty@ellerman.id.au>
-Date: Fri, 03 May 2024 20:41:02 +1000
+To: mpe@ellerman.id.au, Gaurav Batra <gbatra@linux.ibm.com>
+In-Reply-To: <20240422205141.10662-1-gbatra@linux.ibm.com>
+References: <20240422205141.10662-1-gbatra@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/pseries/iommu: LPAR panics during boot up with a frozen PE
+Message-Id: <171473304166.454113.12860025914855146124.b4-ty@ellerman.id.au>
+Date: Fri, 03 May 2024 20:44:01 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -42,26 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, tyreld@linux.ibm.com, mahesh@linux.ibm.com, npiggin@gmail.com, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 12 Apr 2024 14:50:45 +0530, Shrikanth Hegde wrote:
-> Currently lparstat reports which shows since LPAR boot are wrong for
-> some fields. There is a need for storing the PIC(Pool Idle Count) at
-> boot for accurate reporting. PATCH 1 Does that.
+On Mon, 22 Apr 2024 15:51:41 -0500, Gaurav Batra wrote:
+> At the time of LPAR boot up, partition firmware provides Open Firmware
+> property ibm,dma-window for the PE. This property is provided on the PCI
+> bus the PE is attached to.
 > 
-> While there, it was noticed that hcall return value is long and both
-> h_get_ppp and h_get_mpp could set the uninitialized values if the hcall
-> fails. PATCH 2 does that.
+> There are execptions where the partition firmware might not provide this
+> property for the PE at the time of LPAR boot up. One of the scenario is
+> where the firmware has frozen the PE due to some error condition. This
+> PE is frozen for 24 hours or unless the whole system is reinitialized.
 > 
 > [...]
 
-Applied to powerpc/next.
+Applied to powerpc/fixes.
 
-[1/2] powerpc/pseries: Add pool idle time at LPAR boot
-      https://git.kernel.org/powerpc/c/9c74ecfd0fc46e2eaf92c1b6169cc0c8a87f1dc2
-[2/2] powerpc/pseries: Add failure related checks for h_get_mpp and h_get_ppp
-      https://git.kernel.org/powerpc/c/6d4341638516bf97b9a34947e0bd95035a8230a5
+[1/1] powerpc/pseries/iommu: LPAR panics during boot up with a frozen PE
+      https://git.kernel.org/powerpc/c/49a940dbdc3107fecd5e6d3063dc07128177e058
 
 cheers
