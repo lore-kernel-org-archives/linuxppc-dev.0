@@ -4,52 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07617C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:32:13 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DOsfCdzb;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2FF4C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:40:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6Ym4VLFz3cWd
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:32:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DOsfCdzb;
-	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6lp0yrBz3d2m
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:40:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dudau.co.uk (client-ip=80.229.23.120; helo=smtp.dudau.co.uk; envelope-from=liviu@dudau.co.uk; receiver=lists.ozlabs.org)
+Received: from smtp.dudau.co.uk (dliviu.plus.com [80.229.23.120])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6Xv62gFz3bqB
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:31:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1714732286;
-	bh=TIJc0C8VYI8NP8T6hYxCZ0p55TU3pPioI63BIn1neXc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=DOsfCdzbo/QkOFusLlMfAQECua0i8qmby3YWGrPVdXT/SpMWYUE+K7j4vWvgtVQ3x
-	 hZ43szoi/d2SMlQpZEJ1Ej9Ju6KxOD9a99mLh7ApID9yQNZdkIlhPhECCNEMYiNkxR
-	 KoFBt3grljGCxECdyNggoYvqK6v2YFFmQHY7gtxeh+MmU7Kk6kRhP6Rtt9ptPVL8lJ
-	 GUAkxOVK7T4BPIxZ+gnO2VJ6YJgPwwA8nXyZ3OL++de8kyAmBNRcKIzJjt/yHKR1Hc
-	 WAFqOqbeJKE/ZTO8t5kU59JyqbcS374agfuaiOzvmMqnU+DYPlLSHhDpyu3I3LZDiJ
-	 bnntoOkp+Ytyw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6Xt5JkVz4wnv;
-	Fri,  3 May 2024 20:31:26 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 2/2] MAINTAINERS: Make cxl obsolete
-In-Reply-To: <2492716e18c515e21b855305c0bc760057dbcf7a.camel@linux.ibm.com>
-References: <20240409031027.41587-1-ajd@linux.ibm.com>
- <20240409031027.41587-2-ajd@linux.ibm.com> <87bk6jb17s.fsf@mail.lhotse>
- <33cf08b4fe751af156b1a7c17f69a0ca37dc5eed.camel@linux.ibm.com>
- <2492716e18c515e21b855305c0bc760057dbcf7a.camel@linux.ibm.com>
-Date: Fri, 03 May 2024 20:31:24 +1000
-Message-ID: <87le4ruqyr.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6lK5N3Qz2ytN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:40:27 +1000 (AEST)
+Received: from mail.dudau.co.uk (bart.dudau.co.uk [192.168.14.2])
+	by smtp.dudau.co.uk (Postfix) with SMTP id E754641D12F0;
+	Fri, 03 May 2024 11:40:22 +0100 (BST)
+Received: by mail.dudau.co.uk (sSMTP sendmail emulation); Fri, 03 May 2024 11:40:22 +0100
+Date: Fri, 3 May 2024 11:40:22 +0100
+From: Liviu Dudau <liviu@dudau.co.uk>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH v7 00/16] mm: jit/text allocator
+Message-ID: <ZjS/Ft8rkcnOMAeT@bart.dudau.co.uk>
+References: <20240429121620.1186447-1-rppt@kernel.org>
+ <Zi_K4K-j-VB_WI4i@bombadil.infradead.org>
+ <ZjQYvOYgURx9/+d0@bart.dudau.co.uk>
+ <ZjQcmcA0sNH7jfD7@bombadil.infradead.org>
+ <ZjQuggSFcO8FXSd2@bart.dudau.co.uk>
+ <ZjSECeooxZELXSC1@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <ZjSECeooxZELXSC1@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,89 +46,119 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: fbarrat@linux.ibm.com, ukrishn@linux.ibm.com, manoj@linux.ibm.com
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Russell King <linux@armlinux.org.uk>, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, =?utf-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>, linux-mips@vger.kernel.org, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Philippe =?utf-8?Q?Mathieu-Daud=C3=A9?
+ = <philmd@linaro.org>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andrew Donnellan <ajd@linux.ibm.com> writes:
-> On Fri, 2024-05-03 at 13:15 +1000, Andrew Donnellan wrote:
->> This doesn't seem quite right to me, I don't think we can just
->> redefine
->> CONFIG_CXL as a bool, but I'll do something like this. Probably won't
->> bother for CXLFLASH since they'll see it for CXL anyway, but I might
->> add a warning message on probe to both drivers.
+On Fri, May 03, 2024 at 09:28:25AM +0300, Mike Rapoport wrote:
+> On Fri, May 03, 2024 at 01:23:30AM +0100, Liviu Dudau wrote:
+> > On Thu, May 02, 2024 at 04:07:05PM -0700, Luis Chamberlain wrote:
+> > > On Thu, May 02, 2024 at 11:50:36PM +0100, Liviu Dudau wrote:
+> > > > On Mon, Apr 29, 2024 at 09:29:20AM -0700, Luis Chamberlain wrote:
+> > > > > On Mon, Apr 29, 2024 at 03:16:04PM +0300, Mike Rapoport wrote:
+> > > > > > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+> > > > > > 
+> > > > > > Hi,
+> > > > > > 
+> > > > > > The patches are also available in git:
+> > > > > > https://git.kernel.org/pub/scm/linux/kernel/git/rppt/linux.git/log/?h=execmem/v7
+> > > > > > 
+> > > > > > v7 changes:
+> > > > > > * define MODULE_{VADDR,END} for riscv32 to fix the build and avoid
+> > > > > >   #ifdefs in a function body
+> > > > > > * add Acks, thanks everybody
+> > > > > 
+> > > > > Thanks, I've pushed this to modules-next for further exposure / testing.
+> > > > > Given the status of testing so far with prior revisions, in that only a
+> > > > > few issues were found and that those were fixed, and the status of
+> > > > > reviews, this just might be ripe for v6.10.
+> > > > 
+> > > > Looks like there is still some work needed. I've picked up next-20240501
+> > > > and on arch/mips with CONFIG_MODULE_COMPRESS_XZ=y and CONFIG_MODULE_DECOMPRESS=y
+> > > > I fail to load any module:
+> > > > 
+> > > > # modprobe rfkill
+> > > > [11746.539090] Invalid ELF header magic: != ELF
+> > > > [11746.587149] execmem: unable to allocate memory
+> > > > modprobe: can't load module rfkill (kernel/net/rfkill/rfkill.ko.xz): Out of memory
+> > > > 
+> > > > The (hopefully) relevant parts of my .config:
+> > > 
+> > > Thanks for the report! Any chance we can get you to try a bisection? I
+> > > think it should take 2-3 test boots. To help reduce scope you try modules-next:
+> > > 
+> > > https://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/linux.git/log/?h=modules-next
+> > > 
+> > > Then can you check by resetting your tree to commmit 3fbe6c2f820a76 (mm:
+> > > introduce execmem_alloc() and execmem_free()"). I suspect that should
+> > > boot, so your bad commit would be the tip 3c2c250cb3a5fbb ("bpf: remove
+> > > CONFIG_BPF_JIT dependency on CONFIG_MODULES of").
+> > > 
+> > > That gives us only a few commits to bisect:
+> > > 
+> > > git log --oneline 3fbe6c2f820a76bc36d5546bda85832f57c8fce2..
+> > > 3c2c250cb3a5 (HEAD -> modules-next, korg/modules-next) bpf: remove CONFIG_BPF_JIT dependency on CONFIG_MODULES of
+> > > 11e8e65cce5c kprobes: remove dependency on CONFIG_MODULES
+> > > e10cbc38697b powerpc: use CONFIG_EXECMEM instead of CONFIG_MODULES where appropriate
+> > > 4da3d38f24c5 x86/ftrace: enable dynamic ftrace without CONFIG_MODULES
+> > > 13ae3d74ee70 arch: make execmem setup available regardless of CONFIG_MODULES
+> > > 460bbbc70a47 powerpc: extend execmem_params for kprobes allocations
+> > > e1a14069b5b4 arm64: extend execmem_info for generated code allocations
+> > > 971e181c6585 riscv: extend execmem_params for generated code allocations
+> > > 0fa276f26721 mm/execmem, arch: convert remaining overrides of module_alloc to execmem
+> > > 022cef244287 mm/execmem, arch: convert simple overrides of module_alloc to execmem
+> > > 
+> > > With 2-3 boots we should be to tell which is the bad commit.
+> > 
+> > Looks like 0fa276f26721 is the first bad commit.
+> > 
+> > $ git bisect log
+> > # bad: [3c2c250cb3a5fbbccc4a4ff4c9354c54af91f02c] bpf: remove CONFIG_BPF_JIT dependency on CONFIG_MODULES of
+> > # good: [3fbe6c2f820a76bc36d5546bda85832f57c8fce2] mm: introduce execmem_alloc() and execmem_free()
+> > git bisect start '3c2c250cb3a5' '3fbe6c2f820a76'
+> > # bad: [460bbbc70a47e929b1936ca68979f3b79f168fc6] powerpc: extend execmem_params for kprobes allocations
+> > git bisect bad 460bbbc70a47e929b1936ca68979f3b79f168fc6
+> > # bad: [0fa276f26721e0ffc2ae9c7cf67dcc005b43c67e] mm/execmem, arch: convert remaining overrides of module_alloc to execmem
+> > git bisect bad 0fa276f26721e0ffc2ae9c7cf67dcc005b43c67e
+> > # good: [022cef2442870db738a366d3b7a636040c081859] mm/execmem, arch: convert simple overrides of module_alloc to execmem
+> > git bisect good 022cef2442870db738a366d3b7a636040c081859
+> > # first bad commit: [0fa276f26721e0ffc2ae9c7cf67dcc005b43c67e] mm/execmem, arch: convert remaining overrides of module_alloc to execmem
+> > 
+> > Maybe MIPS also needs a ARCH_WANTS_EXECMEM_LATE?
+> 
+> I don't think so. It rather seems there's a bug in the initialization of
+> the defaults in execmem. This should fix it:
+> 
+> diff --git a/mm/execmem.c b/mm/execmem.c
+> index f6dc3fabc1ca..0c4b36bc6d10 100644
+> --- a/mm/execmem.c
+> +++ b/mm/execmem.c
+> @@ -118,7 +118,6 @@ static void __init __execmem_init(void)
+>  		info->ranges[EXECMEM_DEFAULT].end = VMALLOC_END;
+>  		info->ranges[EXECMEM_DEFAULT].pgprot = PAGE_KERNEL_EXEC;
+>  		info->ranges[EXECMEM_DEFAULT].alignment = 1;
+> -		return;
+>  	}
+>  
+>  	if (!execmem_validate(info))
 >
-> The more I look at how to do this, the more issues I see, though
-> perhaps because I personally use olddefconfig more than I use
-> oldconfig.
->
-> Without changing the default to n, running olddefconfig is liable to
-> switch CXL back on in configs where the user has disabled it.
 
-Yes that's true.
+That does, indeed, fix the issue!
 
-> Conversely, if the user has set CXL=y rather than CXL=m, I'm not sure
-> if there's any way to make it such that olddefconfig doesn't reset one
-> symbol or the other to the default m.
->
-> Honestly, I'm very tempted to be a little more aggressive and a) not
-> bother with trying to play games with symbols, b) change the default to
-> n in this release, c) add a warning printed on probe, and see whether
-> anyone complains.
+You can add my Tested-by when you submit the patch.
 
-You mean just changing CXL to default n?
+Best regards,
+Liviu
 
-The problem is that has no effect on folks with existing configs. Those
-of us who build from defconfigs will have it turned off, but any actual
-users with existing configs will just still have it enabled.
 
-I'm not really convinced printing warnings does much. I guess an actual
-WARN_ON might work, but only if someone is watching the console.
+> 
+> -- 
+> Sincerely yours,
+> Mike.
+> 
 
-> We could also print a message during the build itself, though that kind
-> of noise is liable to break things in other ways?
-
-More likely to break some CI somewhere, and a good chance it isn't even
-seen by a human unless they're paying close attention to the build
-output.
-
-> It would be kind of nice if kbuild had some way to mark a symbol for
-> deprecation which could print a warning during configuration.
-
-Yeah, though it suffers from the same problem that there's a good chance
-no one notices.
-
-The below I think works. It does print a warning about CXL changing from
-tristate to bool, but that seems harmless.
-
-In all cases olddefconfig will turn CXL off, whether it was on, off
-or =m beforehand. A fresh defconfig has it off. The only way to turn it
-on is explicitly.
-
-cheers
-
-diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
-index 5efc4151bf58..e62c16cc7292 100644
---- a/drivers/misc/cxl/Kconfig
-+++ b/drivers/misc/cxl/Kconfig
-@@ -9,11 +9,18 @@ config CXL_BASE
-        select PPC_64S_HASH_MMU
-
- config CXL
--       tristate "Support for IBM Coherent Accelerators (CXL)"
-+       def_bool y
-+       depends on DEPRECATED_CXL
-+
-+config DEPRECATED_CXL
-+       tristate "Deprecated support for IBM Coherent Accelerators (CXL)"
-        depends on PPC_POWERNV && PCI_MSI && EEH
-        select CXL_BASE
--       default m
-+       default n
-        help
-+         The cxl driver is no longer actively maintained and we intend to
-+         remove it in a future kernel release.
-+
-          Select this option to enable driver support for IBM Coherent
-          Accelerators (CXL).  CXL is otherwise known as Coherent Accelerator
-          Processor Interface (CAPI).  CAPI allows accelerators in FPGAs to be
+-- 
+Everyone who uses computers frequently has had, from time to time,
+a mad desire to attack the precocious abacus with an axe.
+       	   	      	     	  -- John D. Clark, Ignition!
