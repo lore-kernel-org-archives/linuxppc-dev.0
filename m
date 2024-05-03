@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3A89C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:07:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0974C10F16
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:07:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRK72hnyz3wD5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:07:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRKc2XGkz3vhT
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:07:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vN1krKz3cTv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:02:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vq0M8jz3cb1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:02 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0CCDA1595;
-	Fri,  3 May 2024 06:02:34 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 46B66165C;
+	Fri,  3 May 2024 06:02:47 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B03A13F73F;
-	Fri,  3 May 2024 06:02:05 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EA6483F73F;
+	Fri,  3 May 2024 06:02:18 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 04/29] arm64: disable trapping of POR_EL0 to EL2
-Date: Fri,  3 May 2024 14:01:22 +0100
-Message-Id: <20240503130147.1154804-5-joey.gouly@arm.com>
+Subject: [PATCH v4 08/29] KVM: arm64: make kvm_at() take an OP_AT_*
+Date: Fri,  3 May 2024 14:01:26 +0100
+Message-Id: <20240503130147.1154804-9-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240503130147.1154804-1-joey.gouly@arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
@@ -45,42 +45,53 @@ Cc: szabolcs.nagy@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Allow EL0 or EL1 to access POR_EL0 without being trapped to EL2.
+To allow using newer instructions that current assemblers don't know about,
+replace the `at` instruction with the underlying SYS instruction.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
+Cc: Marc Zyngier <maz@kernel.org>
+Cc: Oliver Upton <oliver.upton@linux.dev>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- arch/arm64/include/asm/el2_setup.h | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ arch/arm64/include/asm/kvm_asm.h       | 3 ++-
+ arch/arm64/kvm/hyp/include/hyp/fault.h | 2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/include/asm/el2_setup.h b/arch/arm64/include/asm/el2_setup.h
-index b7afaa026842..df5614be4b70 100644
---- a/arch/arm64/include/asm/el2_setup.h
-+++ b/arch/arm64/include/asm/el2_setup.h
-@@ -184,12 +184,20 @@
- .Lset_pie_fgt_\@:
- 	mrs_s	x1, SYS_ID_AA64MMFR3_EL1
- 	ubfx	x1, x1, #ID_AA64MMFR3_EL1_S1PIE_SHIFT, #4
--	cbz	x1, .Lset_fgt_\@
-+	cbz	x1, .Lset_poe_fgt_\@
+diff --git a/arch/arm64/include/asm/kvm_asm.h b/arch/arm64/include/asm/kvm_asm.h
+index 24b5e6b23417..ce65fd0f01b0 100644
+--- a/arch/arm64/include/asm/kvm_asm.h
++++ b/arch/arm64/include/asm/kvm_asm.h
+@@ -10,6 +10,7 @@
+ #include <asm/hyp_image.h>
+ #include <asm/insn.h>
+ #include <asm/virt.h>
++#include <asm/sysreg.h>
  
- 	/* Disable trapping of PIR_EL1 / PIRE0_EL1 */
- 	orr	x0, x0, #HFGxTR_EL2_nPIR_EL1
- 	orr	x0, x0, #HFGxTR_EL2_nPIRE0_EL1
- 
-+.Lset_poe_fgt_\@:
-+	mrs_s	x1, SYS_ID_AA64MMFR3_EL1
-+	ubfx	x1, x1, #ID_AA64MMFR3_EL1_S1POE_SHIFT, #4
-+	cbz	x1, .Lset_fgt_\@
-+
-+	/* Disable trapping of POR_EL0 */
-+	orr	x0, x0, #HFGxTR_EL2_nPOR_EL0
-+
- .Lset_fgt_\@:
- 	msr_s	SYS_HFGRTR_EL2, x0
- 	msr_s	SYS_HFGWTR_EL2, x0
+ #define ARM_EXIT_WITH_SERROR_BIT  31
+ #define ARM_EXCEPTION_CODE(x)	  ((x) & ~(1U << ARM_EXIT_WITH_SERROR_BIT))
+@@ -261,7 +262,7 @@ extern u64 __kvm_get_mdcr_el2(void);
+ 	asm volatile(							\
+ 	"	mrs	%1, spsr_el2\n"					\
+ 	"	mrs	%2, elr_el2\n"					\
+-	"1:	at	"at_op", %3\n"					\
++	"1:	" __msr_s(at_op, "%3") "\n"				\
+ 	"	isb\n"							\
+ 	"	b	9f\n"						\
+ 	"2:	msr	spsr_el2, %1\n"					\
+diff --git a/arch/arm64/kvm/hyp/include/hyp/fault.h b/arch/arm64/kvm/hyp/include/hyp/fault.h
+index 9e13c1bc2ad5..487c06099d6f 100644
+--- a/arch/arm64/kvm/hyp/include/hyp/fault.h
++++ b/arch/arm64/kvm/hyp/include/hyp/fault.h
+@@ -27,7 +27,7 @@ static inline bool __translate_far_to_hpfar(u64 far, u64 *hpfar)
+ 	 * saved the guest context yet, and we may return early...
+ 	 */
+ 	par = read_sysreg_par();
+-	if (!__kvm_at("s1e1r", far))
++	if (!__kvm_at(OP_AT_S1E1R, far))
+ 		tmp = read_sysreg_par();
+ 	else
+ 		tmp = SYS_PAR_EL1_F; /* back to the guest */
 -- 
 2.25.1
 
