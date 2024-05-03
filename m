@@ -4,42 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 689CBC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:18:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42094C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:46:04 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BZoQANMu;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRYb0jwDz88MM
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:18:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=exordes.com (client-ip=188.121.53.79; helo=sxb1plsmtpa01-08.prod.sxb1.secureserver.net; envelope-from=dai.lu@exordes.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 989 seconds by postgrey-1.37 at boromir; Sat, 04 May 2024 00:10:29 AEST
-Received: from sxb1plsmtpa01-08.prod.sxb1.secureserver.net (sxb1plsmtpa01-08.prod.sxb1.secureserver.net [188.121.53.79])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWS9k6HKlz3vnl
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:46:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BZoQANMu;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VWCPd1SgPz3dKp
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2024 00:10:28 +1000 (AEST)
-Received: from exordes.com ([87.92.66.153])
-	by :SMTPAUTH: with ESMTPSA
-	id 2tK2scLjMxHuR2tK4sVIBL; Fri, 03 May 2024 06:51:38 -0700
-X-CMAE-Analysis: v=2.4 cv=cvxQkE4i c=1 sm=1 tr=0 ts=6634ebea
- a=13ZijDARommhillvnyM9pA==:117 a=13ZijDARommhillvnyM9pA==:17 a=eCYXQZmkAAAA:8
- a=uR_b-lsrg1CRw0mhrfkA:9 a=77AlN4CNbnqoG63BkLSu:22
-X-SECURESERVER-ACCT: dai.lu@exordes.com
-From: Lu Dai <dai.lu@exordes.com>
-To: npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	naveen.n.rao@linux.ibm.com
-Subject: [PATCH V2] tty: hvc: hvc_opal: eliminate uses of of_node_put()
-Date: Fri,  3 May 2024 16:52:15 +0300
-Message-Id: <20240503135215.252635-1-dai.lu@exordes.com>
-X-Mailer: git-send-email 2.39.2
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CMAE-Envelope: MS4xfK2SJXHeQgzrLA0xsB+HjKB3cxOwZkyFDlpkZ84PVaqsyCTvL/FxZ0QPWHjEOQVWn2g7LFf8Y1sq0Te1o5VFqyt1HwcJcjs4d7qSc9L9LkLzL84OVPC3
- R3wVQKH2DMNIRl/PcfXEfC2fVHQEWtVgWax+8p8AvBieqvfs06lv5qJgSmgBhF4L0o9dmXyfB2TEq5gYV5J9LmslArOLg2caADAnqmk4YwrN+ZG6Uo/u1Hki
- N0Sh58JOo9lh/c9kig/nXnuGFy5K8Booorzo0OLIMQppxlEmIMxOUE9Cn0jLsnNL9eKwOEgZpIkl/SbY/mbeQefS6o1Q6afx/VIdqA5x1ZtR2pEdBJmnlhei
- u1DCKkHGmP9zDD872aSfeOQlmuWgehboPXxmPblkGmdIB/tCWNrW62kb0N/LFGRvGpO0RCwe4W9U4Sjazhe9lRohC70zG2V+uet/SFJOyiDqEuX5ArHiVYiL
- 5itZKd5GZnpdmi/NxfkU+4Te9p3P073L2unWzktYpiuwr/UzkyYU0kPxm/rcGZywpreg1whLxXnjs8VYihOorzHmxPh+g+uNtOGL4nrOLAACp4mf5mJ9pXIz
- M/NdkrwoKVZEe7nMGQLFbPfgZNJrWXXtgzSyoileU3hDgA==
-X-Mailman-Approved-At: Sat, 04 May 2024 09:04:52 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VWS8t3NJBz3dTb
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2024 09:45:18 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id A8E5061D82;
+	Fri,  3 May 2024 23:45:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EF2F4C116B1;
+	Fri,  3 May 2024 23:45:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1714779915;
+	bh=DlRlFVsHUqhvPdkfip9DnPPB8Y/bNEuxfZL0IMIFLYk=;
+	h=Date:Cc:Subject:From:To:References:In-Reply-To:From;
+	b=BZoQANMu5xxuHXX714j4tlKziMZOQFhvYDjQLmlnL6HneFF17oZkflc23OPLrUjm6
+	 l96OiS8KxIKEs5kczliHGVnsn10tT68fYsWkcfAYPWXZ1XvmzGoHvUkp1ZxmKrWpDC
+	 s7td0SjDAOIEg2AzAYplNdCnrGMHYph1oVDt7Xqi8J5CfL0NaerWmmjCQ7oBTxZkFN
+	 hi9mYVwSgjD715rrjl4RTDFa7RFivlIKP+ftuX65ggz1X4tvvvHVoGTWJAtpHvh7Rc
+	 WVqUjjU2Mp8QltWKiPa2PEtJQ3MsGF6I9PdUxd++kH3e/soRIgYBMoF7CMkgpxB3MJ
+	 71FCga1RH5W5w==
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 04 May 2024 02:45:05 +0300
+Message-Id: <D10EQTNQXQYO.1QBNX5LMFU8NK@kernel.org>
+Subject: Re: [EXT] [PATCH v8 6/6] docs: trusted-encrypted: add DCP as new
+ trust source
+From: "Jarkko Sakkinen" <jarkko@kernel.org>
+To: "David Gstir" <david@sigma-star.at>
+X-Mailer: aerc 0.17.0
+References: <20240403072131.54935-1-david@sigma-star.at>
+ <20240403072131.54935-7-david@sigma-star.at>
+ <D0ALT2QCUIYB.8NFTE7Z18JKN@kernel.org>
+ <DB6PR04MB3190F6B78FF3760EBCC14E758F072@DB6PR04MB3190.eurprd04.prod.outlook.com> <7783BAE9-87DA-4DD5-ADFA-15A9B55EEF39@sigma-star.at> <DB6PR04MB319062F2A19A250BA22C12D48F1A2@DB6PR04MB3190.eurprd04.prod.outlook.com> <DB9357A7-0B20-4E57-AF66-3DD0F55ED538@sigma-star.at>
+In-Reply-To: <DB9357A7-0B20-4E57-AF66-3DD0F55ED538@sigma-star.at>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,81 +63,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: shuah@kernel.org, javier.carrasco.cruz@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Lu Dai <dai.lu@exordes.com>, julia.lawall@inria.fr, linux-serial@vger.kernel.org, gregkh@linuxfoundation.org, jirislaby@kernel.org
+Cc: "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Gaurav Jain <gaurav.jain@nxp.com>, Catalin Marinas <catalin.marinas@arm.com>, Mimi Zohar <zohar@linux.ibm.com>, David Howells <dhowells@redhat.com>, "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>, Herbert Xu <herbert@gondor.apana.org.au>, Jonathan
+ Corbet <corbet@lwn.net>, Richard Weinberger <richard@nod.at>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, James
+ Morris <jmorris@namei.org>, dl-linux-imx <linux-imx@nxp.com>, James Bottomley <jejb@linux.ibm.com>, "Serge E. Hallyn" <serge@hallyn.com>, "Paul E.
+ McKenney" <paulmck@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Pankaj Gupta <pankaj.gupta@nxp.com>, sigma star Kernel Team <upstream+dcp@sigma-star.at>, "Steven Rostedt
+ \(Google\)" <rostedt@goodmis.org>, David Oberhollenzer <david.oberhollenzer@sigma-star.at>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Paul Moore <paul@paul-moore.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Randy Dunlap <rdunlap@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Li
+ Yang <leoyang.li@nxp.com>, "linux-security-module@vger.kernel.org" <linux-security-module@vger.kernel.org>, "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Tejun Heo <tj@kernel.org>, "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>, Kshitiz Varshney <kshitiz.varshney@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "David S.
+ Miller" <davem@davemloft.net>, Varun Sethi <V.Sethi@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Make use of the __free() cleanup handler to automatically free nodes
-when they get out of scope.
+On Tue Apr 30, 2024 at 3:03 PM EEST, David Gstir wrote:
+> Hi Jarkko,
+>
+> > On 30.04.2024, at 13:48, Kshitiz Varshney <kshitiz.varshney@nxp.com> wr=
+ote:
+> >=20
+> > Hi David,
+> >=20
+> >> -----Original Message-----
+> >> From: David Gstir <david@sigma-star.at>
+> >> Sent: Monday, April 29, 2024 5:05 PM
+> >> To: Kshitiz Varshney <kshitiz.varshney@nxp.com>
+>
+>
+> >>=20
+> >> Did you get around to testing this?
+> >> I=E2=80=99d greatly appreciate a Tested-by for this. :-)
+> >>=20
+> >> Thanks!
+> >> BR, David
+> >=20
+> > Currently, I am bit busy with other priority activities. It will take t=
+ime to test this patch set.
+>
+> How should we proceed here?
+> Do we have to miss another release cycle, because of a Tested-by?
+>
+> If any bugs pop up I=E2=80=99ll happily fix them, but at the moment it ap=
+pears to be more of a formality.
+> IMHO the patch set itself is rather small and has been thoroughly reviewe=
+d to ensure that any huge
+> issues would already have been caught by now.
 
-Remove the need for a 'goto' as an effect.
+I don't mind picking this actually since unless you consume it,
+it should not get in the way. I'll pick it during the weekend.
+Thanks for reminding.
 
-Signed-off-by: Lu Dai <dai.lu@exordes.com>
----
-Changes since v1:
-Move the assignment of 'opal' to its declaration
-Seperate the declaration of 'np'
-
- drivers/tty/hvc/hvc_opal.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-index 095c33ad10f8..c17e8343ea60 100644
---- a/drivers/tty/hvc/hvc_opal.c
-+++ b/drivers/tty/hvc/hvc_opal.c
-@@ -327,19 +327,18 @@ static void udbg_init_opal_common(void)
- 
- void __init hvc_opal_init_early(void)
- {
--	struct device_node *stdout_node = of_node_get(of_stdout);
-+	struct device_node *stdout_node __free(device_node) = of_node_get(of_stdout);
- 	const __be32 *termno;
- 	const struct hv_ops *ops;
- 	u32 index;
- 
- 	/* If the console wasn't in /chosen, try /ibm,opal */
- 	if (!stdout_node) {
--		struct device_node *opal, *np;
--
- 		/* Current OPAL takeover doesn't provide the stdout
- 		 * path, so we hard wire it
- 		 */
--		opal = of_find_node_by_path("/ibm,opal/consoles");
-+		struct device_node *opal __free(device_node) =
-+			of_find_node_by_path("/ibm,opal/consoles");
- 		if (opal) {
- 			pr_devel("hvc_opal: Found consoles in new location\n");
- 		} else {
-@@ -350,13 +349,13 @@ void __init hvc_opal_init_early(void)
- 		}
- 		if (!opal)
- 			return;
-+		struct device_node *np;
- 		for_each_child_of_node(opal, np) {
- 			if (of_node_name_eq(np, "serial")) {
- 				stdout_node = np;
- 				break;
- 			}
- 		}
--		of_node_put(opal);
- 	}
- 	if (!stdout_node)
- 		return;
-@@ -382,13 +381,11 @@ void __init hvc_opal_init_early(void)
- 		hvsilib_establish(&hvc_opal_boot_priv.hvsi);
- 		pr_devel("hvc_opal: Found HVSI console\n");
- 	} else
--		goto out;
-+		return;
- 	hvc_opal_boot_termno = index;
- 	udbg_init_opal_common();
- 	add_preferred_console("hvc", index, NULL);
- 	hvc_instantiate(index, index, ops);
--out:
--	of_node_put(stdout_node);
- }
- 
- #ifdef CONFIG_PPC_EARLY_DEBUG_OPAL_RAW
--- 
-2.39.2
-
+BR, Jarkko
