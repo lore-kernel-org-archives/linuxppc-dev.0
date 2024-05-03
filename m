@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57EE7C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:46:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41871C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:46:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6st0Byqz3wMB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:46:10 +1000 (AEST)
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6tH6vC3z3wRK
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:46:31 +1000 (AEST)
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6ng4b14z3cVw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:42:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6nk4GMQz3cbH
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:42:34 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6ng3Nz5z4xNs;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6ng6xftz4xPM;
 	Fri,  3 May 2024 20:42:31 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Nathan Lynch <nathanl@linux.ibm.com>
-In-Reply-To: <20240408-pseries-hvcall-retbuf-v1-1-ebc73d7253cf@linux.ibm.com>
-References: <20240408-pseries-hvcall-retbuf-v1-1-ebc73d7253cf@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: Enforce hcall result buffer validity and size
-Message-Id: <171473286293.451432.6710538148006658461.b4-ty@ellerman.id.au>
+To: yangyingliang@huawei.com, mpe@ellerman.id.au, sundar <prosunofficial@gmail.com>
+In-Reply-To: <20240424150718.5006-1-prosunofficial@gmail.com>
+References: <20240424150718.5006-1-prosunofficial@gmail.com>
+Subject: Re: [PATCH linux-next] macintosh/macio-adb: replace of_node_put() with __free
+Message-Id: <171473286295.451432.11707762913723680358.b4-ty@ellerman.id.au>
 Date: Fri, 03 May 2024 20:41:02 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: javier.carrasco.cruz@gmail.com, Julia Lawall <julia.lawall@inria.fr>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, skhan@linuxfoundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 08 Apr 2024 09:08:31 -0500, Nathan Lynch wrote:
-> plpar_hcall(), plpar_hcall9(), and related functions expect callers to
-> provide valid result buffers of certain minimum size. Currently this
-> is communicated only through comments in the code and the compiler has
-> no idea.
+On Wed, 24 Apr 2024 20:37:18 +0530, sundar wrote:
+> use the new cleanup magic to replace of_node_put() with
+> __free(device_node) marking to auto release when they get out of scope.
 > 
-> For example, if I write a bug like this:
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries: Enforce hcall result buffer validity and size
-      https://git.kernel.org/powerpc/c/ff2e185cf73df480ec69675936c4ee75a445c3e4
+[1/1] macintosh/macio-adb: replace of_node_put() with __free
+      https://git.kernel.org/powerpc/c/84030aacf127d000180fa3cb4b589d8ab1b0d46b
 
 cheers
