@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 563C1C10F16
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:12:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B95BFC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:13:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRRL0Pybz87TV
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:12:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRRq3BVzz87Xs
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:13:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vv3G6lz3cbL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vw6cxTz3ccF
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:08 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3471E1691;
-	Fri,  3 May 2024 06:02:57 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BC8511713;
+	Fri,  3 May 2024 06:03:33 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D7C373F73F;
-	Fri,  3 May 2024 06:02:28 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6B5063F73F;
+	Fri,  3 May 2024 06:03:05 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 11/29] arm64: re-order MTE VM_ flags
-Date: Fri,  3 May 2024 14:01:29 +0100
-Message-Id: <20240503130147.1154804-12-joey.gouly@arm.com>
+Subject: [PATCH v4 22/29] arm64: add Permission Overlay Extension Kconfig
+Date: Fri,  3 May 2024 14:01:40 +0100
+Message-Id: <20240503130147.1154804-23-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240503130147.1154804-1-joey.gouly@arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
@@ -45,30 +45,49 @@ Cc: szabolcs.nagy@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To make it easier to share the generic PKEYs flags, move the MTE flag.
+Now that support for POE and Protection Keys has been implemented, add a
+config to allow users to actually enable it.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
 ---
- include/linux/mm.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm64/Kconfig | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 5605b938acce..2065727b3787 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -377,8 +377,8 @@ extern unsigned int kobjsize(const void *objp);
- #endif
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 7b11c98b3e84..676ebe4bf9eb 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -2095,6 +2095,28 @@ config ARM64_EPAN
+ 	  if the cpu does not implement the feature.
+ endmenu # "ARMv8.7 architectural features"
  
- #if defined(CONFIG_ARM64_MTE)
--# define VM_MTE		VM_HIGH_ARCH_0	/* Use Tagged memory for access control */
--# define VM_MTE_ALLOWED	VM_HIGH_ARCH_1	/* Tagged memory permitted */
-+# define VM_MTE		VM_HIGH_ARCH_4	/* Use Tagged memory for access control */
-+# define VM_MTE_ALLOWED	VM_HIGH_ARCH_5	/* Tagged memory permitted */
- #else
- # define VM_MTE		VM_NONE
- # define VM_MTE_ALLOWED	VM_NONE
++menu "ARMv8.9 architectural features"
++config ARM64_POE
++	prompt "Permission Overlay Extension"
++	def_bool y
++	select ARCH_USES_HIGH_VMA_FLAGS
++	select ARCH_HAS_PKEYS
++	help
++	  The Permission Overlay Extension is used to implement Memory
++	  Protection Keys. Memory Protection Keys provides a mechanism for
++	  enforcing page-based protections, but without requiring modification
++	  of the page tables when an application changes protection domains.
++
++	  For details, see Documentation/core-api/protection-keys.rst
++
++	  If unsure, say y.
++
++config ARCH_PKEY_BITS
++	int
++	default 3
++
++endmenu # "ARMv8.9 architectural features"
++
+ config ARM64_SVE
+ 	bool "ARM Scalable Vector Extension support"
+ 	default y
 -- 
 2.25.1
 
