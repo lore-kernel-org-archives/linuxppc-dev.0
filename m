@@ -4,65 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBE49C25B4F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 18:20:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 224D0C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 19:05:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=fc2PgZtZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tcB95ld7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWJy73kRYz3vbr
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 04:20:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWKxk5PBnz3dW7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 05:05:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=fc2PgZtZ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tcB95ld7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--dmatlack.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3qio1zggkdkmgpdwodfnjrrjoh.frpolqxassf-ghyolvwv.rcodev.ruj@flex--dmatlack.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VWJtx6sk5z3dCm
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2024 04:17:44 +1000 (AEST)
-Received: by mail-yb1-xb4a.google.com with SMTP id 3f1490d57ef6-dc64f63d768so17839689276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 May 2024 11:17:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1714760258; x=1715365058; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=u5lOataUl4CqNIE0BOfGoSKjtAnehJHFOaimjTGPj/Y=;
-        b=fc2PgZtZ70GIgKuLoK5WqMHggzZLdFnPTSCQC9YC5utMhIFaFKx+7+a5AwxCvjX3po
-         b0S7c6VjV/zFIrzuhOLmFh3zU38M3D0HjVyYJPe7Zt3wudUJ8TkwfPjhz6SKsyJTRDxc
-         g0Bf0VZyMTy4t6y23c+/ZmH/G1+iYvqF8FeM0xMWwEmfeXYTX9IxAI0df4G5PIBwF0Hz
-         o1CxZ/N/MD2BkePUimq6ctS/c3rve3XknY3mhVFYHdwJhy4JpvpL0DmLB7cHDivQXj50
-         HAkcOyJyQjU28utE0xUN4nOFBLc5r11ybSrbxL1agPY+AuBeXYE0PLWJhPfk2n2WuAF0
-         1fvw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1714760258; x=1715365058;
-        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=u5lOataUl4CqNIE0BOfGoSKjtAnehJHFOaimjTGPj/Y=;
-        b=QPw3tQuTjpMD74ZkEvsoGQvEQtvyrmwgUec9Na0j4nvECTZlwC5GSVi2oNHdopWwvb
-         xKukMt2ZFL5wSQZc6T4PcNyz87/wJQkG84tWHaD/KToGJVfa4B7KUg1H67EnnINs1pkI
-         2GjxxXrsiHEo2SwpLGm6gFDDpqxFBcsZf96DeW4xCZqtYcr2qT/Dg3j2SJWJNbqZ1kWr
-         icaQ8r0ubJp46SJfrFrAllax6KCr3MDzpBuFjj63ADdU0Zb8LZzpLD+KngY3JpiQ9dO/
-         ikvv3kVX1ULzY2lAncVLjzZbr+cZmc4lTpAwp2LQwLSQBeeDVxUbSNFdaCpOzxtg+6tf
-         5ing==
-X-Forwarded-Encrypted: i=1; AJvYcCXYjeXqb3HUnsmZ3tq39/FT72AiMyKmWUvGRaB3iWSnCVuPXYizG2pY4XKqF8EW0ljqZy39PZ6ZzDkjAQlmHzvSNqJf2RxFJcmQ+UapOA==
-X-Gm-Message-State: AOJu0YyWKfa7P1X0HwsMnkIKYGSUnjEiBIZiI7aLk3DK4XDiLWgt10CE
-	oc9WhCaSpRDNB4KGbhQ5Cqx1cvDHAAAQI4fExgnYA9+8x7SNoWvg/dNOA+mk5zLIXJLzNvYCtmH
-	uV4EdkIblIw==
-X-Google-Smtp-Source: AGHT+IGi/6BGSqLUvb7wYnWHXOlhd9obpauunW/BcufWuEVmkE7H211A4Dm9y03t3pfp70UoCYU1Se1aO50snA==
-X-Received: from dmatlack-n2d-128.c.googlers.com ([fda3:e722:ac3:cc00:20:ed76:c0a8:1309])
- (user=dmatlack job=sendgmr) by 2002:a05:6902:729:b0:dcc:c57c:8873 with SMTP
- id l9-20020a056902072900b00dccc57c8873mr1104781ybt.9.1714760258668; Fri, 03
- May 2024 11:17:38 -0700 (PDT)
-Date: Fri,  3 May 2024 11:17:31 -0700
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.45.0.rc1.225.g2a3ae87e7f-goog
-Message-ID: <20240503181734.1467938-1-dmatlack@google.com>
-Subject: [PATCH v3 0/3] KVM: Set vcpu->preempted/ready iff scheduled out while running
-From: David Matlack <dmatlack@google.com>
-To: Paolo Bonzini <pbonzini@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VWKwr4wbgz3dHM
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2024 05:04:27 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 443J2CmZ019986;
+	Fri, 3 May 2024 19:04:10 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : from : subject : to : cc : references : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=WUBN60VCN41QsJywwzVL25QchOzXSBNS8hgmPyNLXoY=;
+ b=tcB95ld7F7DijM4jVRbG2d1AYQmdxCaHJM34Q3PoDLipUPJQ1pJ543y3VIPdbs2k+oCs
+ QUCw1mzJFaWp9Y1bbiJfOIUCmkb3XH3ZBHQhVlFO9CLQOyoAHYIUbU2n3tM5mDJjsCQN
+ WqJUROicsJyS7pRjxAt+iP4EmT2xYqcbGwRDLxc+pcPJ70hfrvAr/lp3S5zA3Zaogfwz
+ kgQh8Z9jPTZUURxlBaGgFsS2i4+f5BN+ImGaSAs3Ny10dPsBD3f560xJsQVJlQ0cVPsS
+ nT8Cas4rsVJ8BQpoIwxDaE4niuwHEipEdZ59VE/trks9J3FCVoT/fy1C/3dH6zn2Bmfm Rw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xw5qn005f-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 May 2024 19:04:09 +0000
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 443J49nb022725;
+	Fri, 3 May 2024 19:04:09 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3xw5qn0059-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 May 2024 19:04:09 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 443Gx3Lc027539;
+	Fri, 3 May 2024 19:04:07 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3xsc30yhbh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 May 2024 19:04:07 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 443J42kj29688406
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 3 May 2024 19:04:04 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E3F7B20063;
+	Fri,  3 May 2024 19:04:01 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 26D3620040;
+	Fri,  3 May 2024 19:03:57 +0000 (GMT)
+Received: from [9.79.188.181] (unknown [9.79.188.181])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  3 May 2024 19:03:56 +0000 (GMT)
+Message-ID: <8c28a1d5-ac84-445b-80e6-a705e6d7ff1b@linux.ibm.com>
+Date: Sat, 4 May 2024 00:33:53 +0530
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+Subject: Re: [RFC PATCH v2 0/6] powerpc: pSeries: vfio: iommu: Re-enable
+ support for SPAPR TCE VFIO
+To: Alexey Kardashevskiy <aik@amd.com>, Jason Gunthorpe <jgg@ziepe.ca>
+References: <171450753489.10851.3056035705169121613.stgit@linux.ibm.com>
+ <20240501140942.GA1723318@ziepe.ca>
+ <703f15b0-d895-4518-9886-0827a6c4e769@amd.com>
+Content-Language: en-US
+In-Reply-To: <703f15b0-d895-4518-9886-0827a6c4e769@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: HIZcT-7cbuRtFOwoGEyq3j59oupDRwUo
+X-Proofpoint-ORIG-GUID: WK-GKvd8eVh7xm6lA8DkjakifWyPP0VI
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1011,Hydra:6.0.650,FMLib:17.11.176.26
+ definitions=2024-05-03_13,2024-05-03_02,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 clxscore=1015
+ spamscore=0 priorityscore=1501 impostorscore=0 mlxscore=0 bulkscore=0
+ malwarescore=0 suspectscore=0 adultscore=0 phishscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2404010000
+ definitions=main-2405030134
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,69 +101,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Paul Walmsley <paul.walmsley@sifive.com>, David Matlack <dmatlack@google.com>, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Zenghui Yu <yuzenghui@huawei.com>, Palmer Dabbelt <palmer@dabbelt.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Suzuki K Poulose <suzuki.poulose@arm.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Atish Patra <atishp@atishpatra.org>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Sean Christopherson <seanjc@google.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, aik@ozlabs.ru, linux-kernel@vger.kernel.org, oohall@gmail.com, ruscur@russell.cc, brking@linux.vnet.ibm.com, robh@kernel.org, svaidy@linux.ibm.com, aneesh.kumar@kernel.org, joel@jms.id.au, naveen.n.rao@linux.ibm.com, msuchanek@suse.de, jroedel@suse.de, gbatra@linux.vnet.ibm.com, npiggin@gmail.com, alex.williamson@redhat.com, mahesh@linux.ibm.com, tpearson@raptorengineering.com, vaibhav@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series changes KVM to mark a vCPU as preempted/ready if-and-only-if
-it's scheduled out while running. i.e. Do not mark a vCPU
-preempted/ready if it's scheduled out during a non-KVM_RUN ioctl() or
-when userspace is doing KVM_RUN with immediate_exit=true.
-
-This is a logical extension of commit 54aa83c90198 ("KVM: x86: do not
-set st->preempted when going back to user space"), which  stopped
-marking a vCPU as preempted when returning to userspace. But if userspace
-invokes a KVM vCPU ioctl() that gets preempted, the vCPU will be marked
-preempted/ready. This is arguably incorrect behavior since the vCPU was
-not actually preempted while the guest was running, it was preempted
-while doing something on behalf of userspace.
-
-In practice, this avoids KVM dirtying guest memory via the steal time
-page after userspace has paused vCPUs, e.g. for Live Migration, which
-allows userspace to collect the final dirty bitmap before or in parallel
-with saving vCPU state without having to worry about saving vCPU state
-triggering writes to guest memory.
-
-Patch 1 introduces vcpu->wants_to_run to allow KVM to detect when a vCPU
-is in its core run loop.
-
-Patch 2 renames immediated_exit to immediated_exit__unsafe within KVM to
-ensure that any new references get extra scrutiny.
-
-Patch 3 perform leverages vcpu->wants_to_run to contrain when
-vcpu->preempted and vcpu->ready are set.
-
-v3:
- - Use READ_ONCE() to read immediate_exit [Sean]
- - Replace use of immediate_exit with !wants_to_run to avoid TOCTOU [Sean]
- - Hide/Rename immediate_exit in KVM to harden against TOCTOU bugs [Sean]
-
-v2: https://lore.kernel.org/kvm/20240307163541.92138-1-dmatlack@google.com/
- - Drop Google-specific "PRODKERNEL: " shortlog prefix [me]
-
-v1: https://lore.kernel.org/kvm/20231218185850.1659570-1-dmatlack@google.com/
-
-David Matlack (3):
-  KVM: Introduce vcpu->wants_to_run
-  KVM: Ensure new code that references immediate_exit gets extra
-    scrutiny
-  KVM: Mark a vCPU as preempted/ready iff it's scheduled out while
-    running
-
- arch/arm64/kvm/arm.c       |  2 +-
- arch/loongarch/kvm/vcpu.c  |  2 +-
- arch/mips/kvm/mips.c       |  2 +-
- arch/powerpc/kvm/powerpc.c |  2 +-
- arch/riscv/kvm/vcpu.c      |  2 +-
- arch/s390/kvm/kvm-s390.c   |  2 +-
- arch/x86/kvm/x86.c         |  4 ++--
- include/linux/kvm_host.h   |  1 +
- include/uapi/linux/kvm.h   | 15 ++++++++++++++-
- virt/kvm/kvm_main.c        |  5 ++++-
- 10 files changed, 27 insertions(+), 10 deletions(-)
+On 5/2/24 06:59, Alexey Kardashevskiy wrote:
+>
+>
+> On 2/5/24 00:09, Jason Gunthorpe wrote:
+>> On Tue, Apr 30, 2024 at 03:05:34PM -0500, Shivaprasad G Bhat wrote:
+>>> RFC v1 was posted here [1]. As I was testing more and fixing the
+>>> issues, I realized its clean to have the table_group_ops implemented
+>>> the way it is done on PowerNV and stop 'borrowing' the DMA windows
+>>> for pSeries.
+>>>
+>>> This patch-set implements the iommu table_group_ops for pSeries for
+>>> VFIO SPAPR TCE sub-driver thereby enabling the VFIO support on POWER
+>>> pSeries machines.
+>>
+>> Wait, did they previously not have any support?
+> >
+>> Again, this TCE stuff needs to go away, not grow. I can grudgingly
+>> accept fixing it where it used to work, but not enabling more HW that
+>> never worked before! :(
+>
+>
+> This used to work when I tried last time 2+ years ago, not a new 
+> stuff. Thanks,
+>
+Thanks Alexey for pitching in.
 
 
-base-commit: 296655d9bf272cfdd9d2211d099bcb8a61b93037
--- 
-2.45.0.rc1.225.g2a3ae87e7f-goog
+Hi Jason,
 
+
+As Alexey implied, this used to work in the past.
+
+
+The support for pSeries VFIO exists for a long time, and the support
+for VFIO_SPAPR_TCE_v2_IOMMU also was added with
+9d67c9433509 ("powerpc/iommu: Add "borrowing" iommu_table_group_ops")
+
+
+The commit 090bad39b237a ("powerpc/powernv: Add indirect levels to 
+it_userspace")
+broke the userspace view for pSeries, which the Patch 6 here tries to
+bring back.
+
+
+We found more issues with 9d67c9433509 and I felt its
+better to stop "borrowing" the DMA windows as that would be
+cleaner which is what is done in Patch 6.
+
+
+In this process we discovered few bugs in upstream as well, which
+we have been trying to fix and have posted few of fixes earlier like,
+d2d00e15808 powerpc: iommu: Bring back table group release_ownership() call
+83b3836bf83 iommu: Allow ops->default_domain to work when !CONFIG_IOMMU_DMA
+
+
+So, this patch series tries to fix some more issues(patch 2, 4, 6)
+coupled with some code refactoring(1, 3, 5 & 6) to stop "borrowing"
+DMA windows.
+
+
+We have legacy workloads using VFIO in userspace/kvm guests running
+on downstream distro kernels. We want these workloads to be able to
+continue running on our arch.
+
+
+Going forward we are planning to have the IOMMUFD support for PPC64,
+I firmly believe the refactoring in this patch series is a step in
+that direction.
+
+
+Thanks,
+Shivaprasad
