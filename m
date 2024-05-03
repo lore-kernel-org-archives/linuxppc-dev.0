@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0974C10F16
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:07:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8353DC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:08:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRKc2XGkz3vhT
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:07:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRL41SXlz3wLy
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:08:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vq0M8jz3cb1
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vq03p5z3cZm
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:02 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 46B66165C;
-	Fri,  3 May 2024 06:02:47 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A58911650;
+	Fri,  3 May 2024 06:02:40 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EA6483F73F;
-	Fri,  3 May 2024 06:02:18 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 54B283F73F;
+	Fri,  3 May 2024 06:02:12 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 08/29] KVM: arm64: make kvm_at() take an OP_AT_*
-Date: Fri,  3 May 2024 14:01:26 +0100
-Message-Id: <20240503130147.1154804-9-joey.gouly@arm.com>
+Subject: [PATCH v4 06/29] arm64: context switch POR_EL0 register
+Date: Fri,  3 May 2024 14:01:24 +0100
+Message-Id: <20240503130147.1154804-7-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240503130147.1154804-1-joey.gouly@arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
@@ -45,53 +45,128 @@ Cc: szabolcs.nagy@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To allow using newer instructions that current assemblers don't know about,
-replace the `at` instruction with the underlying SYS instruction.
+POR_EL0 is a register that can be modified by userspace directly,
+so it must be context switched.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
-Cc: Marc Zyngier <maz@kernel.org>
-Cc: Oliver Upton <oliver.upton@linux.dev>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
 ---
- arch/arm64/include/asm/kvm_asm.h       | 3 ++-
- arch/arm64/kvm/hyp/include/hyp/fault.h | 2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ arch/arm64/include/asm/cpufeature.h |  6 ++++++
+ arch/arm64/include/asm/processor.h  |  1 +
+ arch/arm64/include/asm/sysreg.h     |  3 +++
+ arch/arm64/kernel/process.c         | 28 ++++++++++++++++++++++++++++
+ 4 files changed, 38 insertions(+)
 
-diff --git a/arch/arm64/include/asm/kvm_asm.h b/arch/arm64/include/asm/kvm_asm.h
-index 24b5e6b23417..ce65fd0f01b0 100644
---- a/arch/arm64/include/asm/kvm_asm.h
-+++ b/arch/arm64/include/asm/kvm_asm.h
-@@ -10,6 +10,7 @@
- #include <asm/hyp_image.h>
- #include <asm/insn.h>
- #include <asm/virt.h>
-+#include <asm/sysreg.h>
+diff --git a/arch/arm64/include/asm/cpufeature.h b/arch/arm64/include/asm/cpufeature.h
+index 8b904a757bd3..d46aab23e06e 100644
+--- a/arch/arm64/include/asm/cpufeature.h
++++ b/arch/arm64/include/asm/cpufeature.h
+@@ -832,6 +832,12 @@ static inline bool system_supports_lpa2(void)
+ 	return cpus_have_final_cap(ARM64_HAS_LPA2);
+ }
  
- #define ARM_EXIT_WITH_SERROR_BIT  31
- #define ARM_EXCEPTION_CODE(x)	  ((x) & ~(1U << ARM_EXIT_WITH_SERROR_BIT))
-@@ -261,7 +262,7 @@ extern u64 __kvm_get_mdcr_el2(void);
- 	asm volatile(							\
- 	"	mrs	%1, spsr_el2\n"					\
- 	"	mrs	%2, elr_el2\n"					\
--	"1:	at	"at_op", %3\n"					\
-+	"1:	" __msr_s(at_op, "%3") "\n"				\
- 	"	isb\n"							\
- 	"	b	9f\n"						\
- 	"2:	msr	spsr_el2, %1\n"					\
-diff --git a/arch/arm64/kvm/hyp/include/hyp/fault.h b/arch/arm64/kvm/hyp/include/hyp/fault.h
-index 9e13c1bc2ad5..487c06099d6f 100644
---- a/arch/arm64/kvm/hyp/include/hyp/fault.h
-+++ b/arch/arm64/kvm/hyp/include/hyp/fault.h
-@@ -27,7 +27,7 @@ static inline bool __translate_far_to_hpfar(u64 far, u64 *hpfar)
- 	 * saved the guest context yet, and we may return early...
- 	 */
- 	par = read_sysreg_par();
--	if (!__kvm_at("s1e1r", far))
-+	if (!__kvm_at(OP_AT_S1E1R, far))
- 		tmp = read_sysreg_par();
- 	else
- 		tmp = SYS_PAR_EL1_F; /* back to the guest */
++static inline bool system_supports_poe(void)
++{
++	return IS_ENABLED(CONFIG_ARM64_POE) &&
++		alternative_has_cap_unlikely(ARM64_HAS_S1POE);
++}
++
+ int do_emulate_mrs(struct pt_regs *regs, u32 sys_reg, u32 rt);
+ bool try_emulate_mrs(struct pt_regs *regs, u32 isn);
+ 
+diff --git a/arch/arm64/include/asm/processor.h b/arch/arm64/include/asm/processor.h
+index f77371232d8c..e6376f979273 100644
+--- a/arch/arm64/include/asm/processor.h
++++ b/arch/arm64/include/asm/processor.h
+@@ -184,6 +184,7 @@ struct thread_struct {
+ 	u64			sctlr_user;
+ 	u64			svcr;
+ 	u64			tpidr2_el0;
++	u64			por_el0;
+ };
+ 
+ static inline unsigned int thread_get_vl(struct thread_struct *thread,
+diff --git a/arch/arm64/include/asm/sysreg.h b/arch/arm64/include/asm/sysreg.h
+index 9e8999592f3a..62c399811dbf 100644
+--- a/arch/arm64/include/asm/sysreg.h
++++ b/arch/arm64/include/asm/sysreg.h
+@@ -1064,6 +1064,9 @@
+ #define POE_RXW		UL(0x7)
+ #define POE_MASK	UL(0xf)
+ 
++/* Initial value for Permission Overlay Extension for EL0 */
++#define POR_EL0_INIT	POE_RXW
++
+ #define ARM64_FEATURE_FIELD_BITS	4
+ 
+ /* Defined for compatibility only, do not add new users. */
+diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
+index 4ae31b7af6c3..0ffaca98bed6 100644
+--- a/arch/arm64/kernel/process.c
++++ b/arch/arm64/kernel/process.c
+@@ -271,12 +271,23 @@ static void flush_tagged_addr_state(void)
+ 		clear_thread_flag(TIF_TAGGED_ADDR);
+ }
+ 
++static void flush_poe(void)
++{
++	if (!system_supports_poe())
++		return;
++
++	write_sysreg_s(POR_EL0_INIT, SYS_POR_EL0);
++	/* ISB required for kernel uaccess routines when chaning POR_EL0 */
++	isb();
++}
++
+ void flush_thread(void)
+ {
+ 	fpsimd_flush_thread();
+ 	tls_thread_flush();
+ 	flush_ptrace_hw_breakpoint(current);
+ 	flush_tagged_addr_state();
++	flush_poe();
+ }
+ 
+ void arch_release_task_struct(struct task_struct *tsk)
+@@ -371,6 +382,9 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ 		if (system_supports_tpidr2())
+ 			p->thread.tpidr2_el0 = read_sysreg_s(SYS_TPIDR2_EL0);
+ 
++		if (system_supports_poe())
++			p->thread.por_el0 = read_sysreg_s(SYS_POR_EL0);
++
+ 		if (stack_start) {
+ 			if (is_compat_thread(task_thread_info(p)))
+ 				childregs->compat_sp = stack_start;
+@@ -495,6 +509,19 @@ static void erratum_1418040_new_exec(void)
+ 	preempt_enable();
+ }
+ 
++static void permission_overlay_switch(struct task_struct *next)
++{
++	if (!system_supports_poe())
++		return;
++
++	current->thread.por_el0 = read_sysreg_s(SYS_POR_EL0);
++	if (current->thread.por_el0 != next->thread.por_el0) {
++		write_sysreg_s(next->thread.por_el0, SYS_POR_EL0);
++		/* ISB required for kernel uaccess routines when chaning POR_EL0 */
++		isb();
++	}
++}
++
+ /*
+  * __switch_to() checks current->thread.sctlr_user as an optimisation. Therefore
+  * this function must be called with preemption disabled and the update to
+@@ -530,6 +557,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	ssbs_thread_switch(next);
+ 	erratum_1418040_thread_switch(next);
+ 	ptrauth_thread_switch_user(next);
++	permission_overlay_switch(next);
+ 
+ 	/*
+ 	 * Complete any pending TLB or cache maintenance on this CPU in case
 -- 
 2.25.1
 
