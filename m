@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5582C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:14:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 694EBC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:15:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRTl30Grz87pn
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:14:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRVF10bsz3w2J
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:15:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9wQ5PM3z3ccW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9wZ6r08z3cb2
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:42 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6F8C416F2;
-	Fri,  3 May 2024 06:03:10 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 14B72175D;
+	Fri,  3 May 2024 06:03:37 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1ECA63F73F;
-	Fri,  3 May 2024 06:02:42 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B7DF53F73F;
+	Fri,  3 May 2024 06:03:08 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 15/29] arm64: handle PKEY/POE faults
-Date: Fri,  3 May 2024 14:01:33 +0100
-Message-Id: <20240503130147.1154804-16-joey.gouly@arm.com>
+Subject: [PATCH v4 23/29] kselftest/arm64: move get_header()
+Date: Fri,  3 May 2024 14:01:41 +0100
+Message-Id: <20240503130147.1154804-24-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240503130147.1154804-1-joey.gouly@arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
@@ -45,163 +45,94 @@ Cc: szabolcs.nagy@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If a memory fault occurs that is due to an overlay/pkey fault, report that to
-userspace with a SEGV_PKUERR.
+Put this function in the header so that it can be used by other tests, without
+needing to link to testcases.c.
+
+This will be used by selftest/mm/protection_keys.c
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Shuah Khan <shuah@kernel.org>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Reviewed-by: Mark Brown <broonie@kernel.org>
 ---
- arch/arm64/include/asm/traps.h |  1 +
- arch/arm64/kernel/traps.c      | 12 ++++++--
- arch/arm64/mm/fault.c          | 56 ++++++++++++++++++++++++++++++++--
- 3 files changed, 64 insertions(+), 5 deletions(-)
+ .../arm64/signal/testcases/testcases.c        | 23 -----------------
+ .../arm64/signal/testcases/testcases.h        | 25 +++++++++++++++++--
+ 2 files changed, 23 insertions(+), 25 deletions(-)
 
-diff --git a/arch/arm64/include/asm/traps.h b/arch/arm64/include/asm/traps.h
-index eefe766d6161..f6f6f2cb7f10 100644
---- a/arch/arm64/include/asm/traps.h
-+++ b/arch/arm64/include/asm/traps.h
-@@ -25,6 +25,7 @@ try_emulate_armv8_deprecated(struct pt_regs *regs, u32 insn)
- void force_signal_inject(int signal, int code, unsigned long address, unsigned long err);
- void arm64_notify_segfault(unsigned long addr);
- void arm64_force_sig_fault(int signo, int code, unsigned long far, const char *str);
-+void arm64_force_sig_fault_pkey(int signo, int code, unsigned long far, const char *str, int pkey);
- void arm64_force_sig_mceerr(int code, unsigned long far, short lsb, const char *str);
- void arm64_force_sig_ptrace_errno_trap(int errno, unsigned long far, const char *str);
+diff --git a/tools/testing/selftests/arm64/signal/testcases/testcases.c b/tools/testing/selftests/arm64/signal/testcases/testcases.c
+index 674b88cc8c39..e4331440fed0 100644
+--- a/tools/testing/selftests/arm64/signal/testcases/testcases.c
++++ b/tools/testing/selftests/arm64/signal/testcases/testcases.c
+@@ -6,29 +6,6 @@
  
-diff --git a/arch/arm64/kernel/traps.c b/arch/arm64/kernel/traps.c
-index 215e6d7f2df8..1bac6c84d3f5 100644
---- a/arch/arm64/kernel/traps.c
-+++ b/arch/arm64/kernel/traps.c
-@@ -263,16 +263,24 @@ static void arm64_show_signal(int signo, const char *str)
- 	__show_regs(regs);
- }
+ #include "testcases.h"
  
--void arm64_force_sig_fault(int signo, int code, unsigned long far,
--			   const char *str)
-+void arm64_force_sig_fault_pkey(int signo, int code, unsigned long far,
-+			   const char *str, int pkey)
+-struct _aarch64_ctx *get_header(struct _aarch64_ctx *head, uint32_t magic,
+-				size_t resv_sz, size_t *offset)
+-{
+-	size_t offs = 0;
+-	struct _aarch64_ctx *found = NULL;
+-
+-	if (!head || resv_sz < HDR_SZ)
+-		return found;
+-
+-	while (offs <= resv_sz - HDR_SZ &&
+-	       head->magic != magic && head->magic) {
+-		offs += head->size;
+-		head = GET_RESV_NEXT_HEAD(head);
+-	}
+-	if (head->magic == magic) {
+-		found = head;
+-		if (offset)
+-			*offset = offs;
+-	}
+-
+-	return found;
+-}
+-
+ bool validate_extra_context(struct extra_context *extra, char **err,
+ 			    void **extra_data, size_t *extra_size)
  {
- 	arm64_show_signal(signo, str);
- 	if (signo == SIGKILL)
- 		force_sig(SIGKILL);
-+	else if (code == SEGV_PKUERR)
-+		force_sig_pkuerr((void __user *)far, pkey);
- 	else
- 		force_sig_fault(signo, code, (void __user *)far);
- }
+diff --git a/tools/testing/selftests/arm64/signal/testcases/testcases.h b/tools/testing/selftests/arm64/signal/testcases/testcases.h
+index 7727126347e0..3185e6875694 100644
+--- a/tools/testing/selftests/arm64/signal/testcases/testcases.h
++++ b/tools/testing/selftests/arm64/signal/testcases/testcases.h
+@@ -88,8 +88,29 @@ struct fake_sigframe {
  
-+void arm64_force_sig_fault(int signo, int code, unsigned long far,
-+			   const char *str)
+ bool validate_reserved(ucontext_t *uc, size_t resv_sz, char **err);
+ 
+-struct _aarch64_ctx *get_header(struct _aarch64_ctx *head, uint32_t magic,
+-				size_t resv_sz, size_t *offset);
++static inline struct _aarch64_ctx *get_header(struct _aarch64_ctx *head, uint32_t magic,
++				size_t resv_sz, size_t *offset)
 +{
-+	arm64_force_sig_fault_pkey(signo, code, far, str, 0);
-+}
++	size_t offs = 0;
++	struct _aarch64_ctx *found = NULL;
 +
- void arm64_force_sig_mceerr(int code, unsigned long far, short lsb,
- 			    const char *str)
- {
-diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
-index 8251e2fea9c7..585295168918 100644
---- a/arch/arm64/mm/fault.c
-+++ b/arch/arm64/mm/fault.c
-@@ -23,6 +23,7 @@
- #include <linux/sched/debug.h>
- #include <linux/highmem.h>
- #include <linux/perf_event.h>
-+#include <linux/pkeys.h>
- #include <linux/preempt.h>
- #include <linux/hugetlb.h>
- 
-@@ -489,6 +490,23 @@ static void do_bad_area(unsigned long far, unsigned long esr,
- #define VM_FAULT_BADMAP		((__force vm_fault_t)0x010000)
- #define VM_FAULT_BADACCESS	((__force vm_fault_t)0x020000)
- 
-+static bool fault_from_pkey(unsigned long esr, struct vm_area_struct *vma,
-+			unsigned int mm_flags)
-+{
-+	unsigned long iss2 = ESR_ELx_ISS2(esr);
++	if (!head || resv_sz < HDR_SZ)
++		return found;
 +
-+	if (!arch_pkeys_enabled())
-+		return false;
-+
-+	if (iss2 & ESR_ELx_Overlay)
-+		return true;
-+
-+	return !arch_vma_access_permitted(vma,
-+			mm_flags & FAULT_FLAG_WRITE,
-+			mm_flags & FAULT_FLAG_INSTRUCTION,
-+			mm_flags & FAULT_FLAG_REMOTE);
-+}
-+
- static vm_fault_t __do_page_fault(struct mm_struct *mm,
- 				  struct vm_area_struct *vma, unsigned long addr,
- 				  unsigned int mm_flags, unsigned long vm_flags,
-@@ -529,6 +547,8 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
- 	unsigned int mm_flags = FAULT_FLAG_DEFAULT;
- 	unsigned long addr = untagged_addr(far);
- 	struct vm_area_struct *vma;
-+	bool pkey_fault = false;
-+	int pkey = -1;
- 
- 	if (kprobe_page_fault(regs, esr))
- 		return 0;
-@@ -590,6 +610,12 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
- 		vma_end_read(vma);
- 		goto lock_mmap;
- 	}
-+
-+	if (fault_from_pkey(esr, vma, mm_flags)) {
-+		vma_end_read(vma);
-+		goto lock_mmap;
++	while (offs <= resv_sz - HDR_SZ &&
++	       head->magic != magic && head->magic) {
++		offs += head->size;
++		head = GET_RESV_NEXT_HEAD(head);
++	}
++	if (head->magic == magic) {
++		found = head;
++		if (offset)
++			*offset = offs;
 +	}
 +
- 	fault = handle_mm_fault(vma, addr, mm_flags | FAULT_FLAG_VMA_LOCK, regs);
- 	if (!(fault & (VM_FAULT_RETRY | VM_FAULT_COMPLETED)))
- 		vma_end_read(vma);
-@@ -617,6 +643,11 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
- 		goto done;
- 	}
- 
-+	if (fault_from_pkey(esr, vma, mm_flags)) {
-+		pkey_fault = true;
-+		pkey = vma_pkey(vma);
-+	}
++	return found;
++}
 +
- 	fault = __do_page_fault(mm, vma, addr, mm_flags, vm_flags, regs);
  
- 	/* Quick path to respond to signals */
-@@ -682,9 +713,28 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
- 		 * Something tried to access memory that isn't in our memory
- 		 * map.
- 		 */
--		arm64_force_sig_fault(SIGSEGV,
--				      fault == VM_FAULT_BADACCESS ? SEGV_ACCERR : SEGV_MAPERR,
--				      far, inf->name);
-+		int fault_kind;
-+		/*
-+		 * The pkey value that we return to userspace can be different
-+		 * from the pkey that caused the fault.
-+		 *
-+		 * 1. T1   : mprotect_key(foo, PAGE_SIZE, pkey=4);
-+		 * 2. T1   : set POR_EL0 to deny access to pkey=4, touches, page
-+		 * 3. T1   : faults...
-+		 * 4.    T2: mprotect_key(foo, PAGE_SIZE, pkey=5);
-+		 * 5. T1   : enters fault handler, takes mmap_lock, etc...
-+		 * 6. T1   : reaches here, sees vma_pkey(vma)=5, when we really
-+		 *	     faulted on a pte with its pkey=4.
-+		 */
-+
-+		if (pkey_fault)
-+			fault_kind = SEGV_PKUERR;
-+		else
-+			fault_kind = fault == VM_FAULT_BADACCESS ? SEGV_ACCERR : SEGV_MAPERR;
-+
-+		arm64_force_sig_fault_pkey(SIGSEGV,
-+				      fault_kind,
-+				      far, inf->name, pkey);
- 	}
- 
- 	return 0;
+ static inline struct _aarch64_ctx *get_terminator(struct _aarch64_ctx *head,
+ 						  size_t resv_sz,
 -- 
 2.25.1
 
