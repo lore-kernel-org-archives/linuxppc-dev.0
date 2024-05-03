@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 295BBC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:11:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63EF2C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:12:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRQM6Bdbz87Kl
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:11:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRQs0nB5z87P7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:12:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vs42S8z3cZm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vv0pzZz3cfn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:07 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 70D791756;
-	Fri,  3 May 2024 06:03:30 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7F63A1692;
+	Fri,  3 May 2024 06:03:00 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1F2EF3F73F;
-	Fri,  3 May 2024 06:03:02 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2EC6C3F73F;
+	Fri,  3 May 2024 06:02:32 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 21/29] arm64/ptrace: add support for FEAT_POE
-Date: Fri,  3 May 2024 14:01:39 +0100
-Message-Id: <20240503130147.1154804-22-joey.gouly@arm.com>
+Subject: [PATCH v4 12/29] arm64: add POIndex defines
+Date: Fri,  3 May 2024 14:01:30 +0100
+Message-Id: <20240503130147.1154804-13-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240503130147.1154804-1-joey.gouly@arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
@@ -45,101 +45,36 @@ Cc: szabolcs.nagy@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a regset for POE containing POR_EL0.
+The 3-bit POIndex is stored in the PTE at bits 60..62.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- arch/arm64/kernel/ptrace.c | 46 ++++++++++++++++++++++++++++++++++++++
- include/uapi/linux/elf.h   |  1 +
- 2 files changed, 47 insertions(+)
+ arch/arm64/include/asm/pgtable-hwdef.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm64/kernel/ptrace.c b/arch/arm64/kernel/ptrace.c
-index 0d022599eb61..b756578aeaee 100644
---- a/arch/arm64/kernel/ptrace.c
-+++ b/arch/arm64/kernel/ptrace.c
-@@ -1440,6 +1440,39 @@ static int tagged_addr_ctrl_set(struct task_struct *target, const struct
- }
- #endif
+diff --git a/arch/arm64/include/asm/pgtable-hwdef.h b/arch/arm64/include/asm/pgtable-hwdef.h
+index ef207a0d4f0d..370a02922fe1 100644
+--- a/arch/arm64/include/asm/pgtable-hwdef.h
++++ b/arch/arm64/include/asm/pgtable-hwdef.h
+@@ -198,6 +198,16 @@
+ #define PTE_PI_IDX_2	53	/* PXN */
+ #define PTE_PI_IDX_3	54	/* UXN */
  
-+#ifdef CONFIG_ARM64_POE
-+static int poe_get(struct task_struct *target,
-+		   const struct user_regset *regset,
-+		   struct membuf to)
-+{
-+	if (!system_supports_poe())
-+		return -EINVAL;
++/*
++ * POIndex[2:0] encoding (Permission Overlay Extension)
++ */
++#define PTE_PO_IDX_0	(_AT(pteval_t, 1) << 60)
++#define PTE_PO_IDX_1	(_AT(pteval_t, 1) << 61)
++#define PTE_PO_IDX_2	(_AT(pteval_t, 1) << 62)
 +
-+	return membuf_write(&to, &target->thread.por_el0,
-+			    sizeof(target->thread.por_el0));
-+}
++#define PTE_PO_IDX_MASK		GENMASK_ULL(62, 60)
 +
-+static int poe_set(struct task_struct *target, const struct
-+		   user_regset *regset, unsigned int pos,
-+		   unsigned int count, const void *kbuf, const
-+		   void __user *ubuf)
-+{
-+	int ret;
-+	long ctrl;
 +
-+	if (!system_supports_poe())
-+		return -EINVAL;
-+
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &ctrl, 0, -1);
-+	if (ret)
-+		return ret;
-+
-+	target->thread.por_el0 = ctrl;
-+
-+	return 0;
-+}
-+#endif
-+
- enum aarch64_regset {
- 	REGSET_GPR,
- 	REGSET_FPR,
-@@ -1469,6 +1502,9 @@ enum aarch64_regset {
- #ifdef CONFIG_ARM64_TAGGED_ADDR_ABI
- 	REGSET_TAGGED_ADDR_CTRL,
- #endif
-+#ifdef CONFIG_ARM64_POE
-+	REGSET_POE
-+#endif
- };
- 
- static const struct user_regset aarch64_regsets[] = {
-@@ -1628,6 +1664,16 @@ static const struct user_regset aarch64_regsets[] = {
- 		.set = tagged_addr_ctrl_set,
- 	},
- #endif
-+#ifdef CONFIG_ARM64_POE
-+	[REGSET_POE] = {
-+		.core_note_type = NT_ARM_POE,
-+		.n = 1,
-+		.size = sizeof(long),
-+		.align = sizeof(long),
-+		.regset_get = poe_get,
-+		.set = poe_set,
-+	},
-+#endif
- };
- 
- static const struct user_regset_view user_aarch64_view = {
-diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-index b54b313bcf07..81762ff3c99e 100644
---- a/include/uapi/linux/elf.h
-+++ b/include/uapi/linux/elf.h
-@@ -441,6 +441,7 @@ typedef struct elf64_shdr {
- #define NT_ARM_ZA	0x40c		/* ARM SME ZA registers */
- #define NT_ARM_ZT	0x40d		/* ARM SME ZT registers */
- #define NT_ARM_FPMR	0x40e		/* ARM floating point mode register */
-+#define NT_ARM_POE	0x40f		/* ARM POE registers */
- #define NT_ARC_V2	0x600		/* ARCv2 accumulator/extra registers */
- #define NT_VMCOREDD	0x700		/* Vmcore Device Dump Note */
- #define NT_MIPS_DSP	0x800		/* MIPS DSP ASE registers */
+ /*
+  * Memory Attribute override for Stage-2 (MemAttr[3:0])
+  */
 -- 
 2.25.1
 
