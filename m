@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DAB4C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:16:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C286C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:16:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRWg2HLbz885v
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:16:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRX82ScMz3w44
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:16:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9wm3kYfz3cgW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9wr2dXNz3cgk
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:56 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0A9D21713;
-	Fri,  3 May 2024 06:03:47 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 90E15175A;
+	Fri,  3 May 2024 06:03:50 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id ABFB83F73F;
-	Fri,  3 May 2024 06:03:18 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 052593F73F;
+	Fri,  3 May 2024 06:03:21 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 26/29] kselftest/arm64: add HWCAP test for FEAT_S1POE
-Date: Fri,  3 May 2024 14:01:44 +0100
-Message-Id: <20240503130147.1154804-27-joey.gouly@arm.com>
+Subject: [PATCH v4 27/29] kselftest/arm64: parse POE_MAGIC in a signal frame
+Date: Fri,  3 May 2024 14:01:45 +0100
+Message-Id: <20240503130147.1154804-28-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240503130147.1154804-1-joey.gouly@arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
@@ -45,7 +45,8 @@ Cc: szabolcs.nagy@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Check that when POE is enabled, the POR_EL0 register is accessible.
+Teach the signal frame parsing about the new POE frame, avoids warning when it
+is generated.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
@@ -54,41 +55,24 @@ Cc: Mark Brown <broonie@kernel.org>
 Cc: Shuah Khan <shuah@kernel.org>
 Reviewed-by: Mark Brown <broonie@kernel.org>
 ---
- tools/testing/selftests/arm64/abi/hwcap.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ tools/testing/selftests/arm64/signal/testcases/testcases.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/tools/testing/selftests/arm64/abi/hwcap.c b/tools/testing/selftests/arm64/abi/hwcap.c
-index d8909b2b535a..f2d6007a2b98 100644
---- a/tools/testing/selftests/arm64/abi/hwcap.c
-+++ b/tools/testing/selftests/arm64/abi/hwcap.c
-@@ -156,6 +156,12 @@ static void pmull_sigill(void)
- 	asm volatile(".inst 0x0ee0e000" : : : );
- }
- 
-+static void poe_sigill(void)
-+{
-+	/* mrs x0, POR_EL0 */
-+	asm volatile("mrs x0, S3_3_C10_C2_4" : : : "x0");
-+}
-+
- static void rng_sigill(void)
- {
- 	asm volatile("mrs x0, S3_3_C2_C4_0" : : : "x0");
-@@ -601,6 +607,14 @@ static const struct hwcap_data {
- 		.cpuinfo = "pmull",
- 		.sigill_fn = pmull_sigill,
- 	},
-+	{
-+		.name = "POE",
-+		.at_hwcap = AT_HWCAP2,
-+		.hwcap_bit = HWCAP2_POE,
-+		.cpuinfo = "poe",
-+		.sigill_fn = poe_sigill,
-+		.sigill_reliable = true,
-+	},
- 	{
- 		.name = "RNG",
- 		.at_hwcap = AT_HWCAP2,
+diff --git a/tools/testing/selftests/arm64/signal/testcases/testcases.c b/tools/testing/selftests/arm64/signal/testcases/testcases.c
+index e4331440fed0..e6daa94fcd2e 100644
+--- a/tools/testing/selftests/arm64/signal/testcases/testcases.c
++++ b/tools/testing/selftests/arm64/signal/testcases/testcases.c
+@@ -161,6 +161,10 @@ bool validate_reserved(ucontext_t *uc, size_t resv_sz, char **err)
+ 			if (head->size != sizeof(struct esr_context))
+ 				*err = "Bad size for esr_context";
+ 			break;
++		case POE_MAGIC:
++			if (head->size != sizeof(struct poe_context))
++				*err = "Bad size for poe_context";
++			break;
+ 		case TPIDR2_MAGIC:
+ 			if (head->size != sizeof(struct tpidr2_context))
+ 				*err = "Bad size for tpidr2_context";
 -- 
 2.25.1
 
