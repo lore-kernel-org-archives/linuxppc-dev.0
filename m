@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C33BBC10F16
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:42:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB782C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:43:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6p42sD7z3dKH
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:42:52 +1000 (AEST)
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6pV2nx3z3fQR
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:43:14 +1000 (AEST)
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6nb1D5xz2ytN
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6nb4Mh1z2ytN
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:42:27 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6nZ72RFz4x1P;
-	Fri,  3 May 2024 20:42:26 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6nb3XK1z4x1x;
+	Fri,  3 May 2024 20:42:27 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, "Aneesh Kumar K.V (IBM)" <aneesh.kumar@kernel.org>
-In-Reply-To: <20240403083611.172833-1-aneesh.kumar@kernel.org>
-References: <20240403083611.172833-1-aneesh.kumar@kernel.org>
-Subject: Re: [PATCH 1/3] powerpc/mm: Align memory_limit value specified using mem= kernel parameter
-Message-Id: <171473286289.451432.3306607552242417496.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, Ganesh Goudar <ganeshgr@linux.ibm.com>
+In-Reply-To: <20240422075737.1405551-1-ganeshgr@linux.ibm.com>
+References: <20240422075737.1405551-1-ganeshgr@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/eeh: Permanently disable the removed device
+Message-Id: <171473286293.451432.6098541078355300548.b4-ty@ellerman.id.au>
 Date: Fri, 03 May 2024 20:41:02 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,31 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Naveen N Rao <naveen@kernel.org>
+Cc: Sahitya.Damerla@ibm.com, mahesh@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 03 Apr 2024 14:06:09 +0530, Aneesh Kumar K.V (IBM) wrote:
-> The value specified for the memory limit is used to set a restriction on
-> memory usage. It is important to ensure that this restriction is within
-> the linear map kernel address space range. The hash page table
-> translation uses a 16MB page size to map the kernel linear map address
-> space. htab_bolt_mapping() function aligns down the size of the range
-> while mapping kernel linear address space. Since the memblock limit is
-> enforced very early during boot, before we can detect the type of memory
-> translation (radix vs hash), we align the memory limit value specified
-> as a kernel parameter to 16MB. This alignment value will work for both
-> hash and radix translations.
+On Mon, 22 Apr 2024 13:27:37 +0530, Ganesh Goudar wrote:
+> When a device is hot removed on powernv, the hotplug driver clears
+> the device's state. However, on pseries, if a device is removed by
+> phyp after reaching the error threshold, the kernel remains unaware,
+> leading to the device not being torn down. This prevents necessary
+> remediation actions like failover.
+> 
+> Permanently disable the device if the presence check fails.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/3] powerpc/mm: Align memory_limit value specified using mem= kernel parameter
-      https://git.kernel.org/powerpc/c/5ca096161cdccfa328acf6704a4615528471d309
-[2/3] powerpc/fadump: Don't update the user-specified memory limit
-      https://git.kernel.org/powerpc/c/f94f5ac07983cb53de0c964f5428366c19e81993
-[3/3] powerpc/mm: Update the memory limit based on direct mapping restrictions
-      https://git.kernel.org/powerpc/c/5a799af9522641517f6d871d9f56e2658ee7db58
+[1/1] powerpc/eeh: Permanently disable the removed device
+      https://git.kernel.org/powerpc/c/d1679b4fa1722e6bb4a17b13aacdc01a130ba362
 
 cheers
