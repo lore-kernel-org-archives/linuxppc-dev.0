@@ -4,29 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41871C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:46:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66BF7C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:46:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6tH6vC3z3wRK
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:46:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6tk0czdz3vjc
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:46:54 +1000 (AEST)
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6nk4GMQz3cbH
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:42:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6nl0YN3z3cc6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:42:35 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4VW6nl0N41z4xPR; Fri,  3 May 2024 20:42:35 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6ng6xftz4xPM;
-	Fri,  3 May 2024 20:42:31 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6nk6jvtz4x0w;
+	Fri,  3 May 2024 20:42:34 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: yangyingliang@huawei.com, mpe@ellerman.id.au, sundar <prosunofficial@gmail.com>
-In-Reply-To: <20240424150718.5006-1-prosunofficial@gmail.com>
-References: <20240424150718.5006-1-prosunofficial@gmail.com>
-Subject: Re: [PATCH linux-next] macintosh/macio-adb: replace of_node_put() with __free
-Message-Id: <171473286295.451432.11707762913723680358.b4-ty@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org, Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <20240422195932.1583833-1-sourabhjain@linux.ibm.com>
+References: <20240422195932.1583833-1-sourabhjain@linux.ibm.com>
+Subject: Re: [PATCH v10 0/3] powerpc: make fadump resilient with memory add/remove events
+Message-Id: <171473286292.451432.11432896911033997980.b4-ty@ellerman.id.au>
 Date: Fri, 03 May 2024 20:41:02 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,19 +44,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: javier.carrasco.cruz@gmail.com, Julia Lawall <julia.lawall@inria.fr>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, skhan@linuxfoundation.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Aditya Gupta <adityag@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>, Naveen N Rao <naveen@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 24 Apr 2024 20:37:18 +0530, sundar wrote:
-> use the new cleanup magic to replace of_node_put() with
-> __free(device_node) marking to auto release when they get out of scope.
+On Tue, 23 Apr 2024 01:29:29 +0530, Sourabh Jain wrote:
+> Problem:
+> ========
+> Due to changes in memory resources caused by either memory hotplug or
+> online/offline events, the elfcorehdr, which describes the cpus and
+> memory of the crashed kernel to the kernel that collects the dump (known
+> as second/fadump kernel), becomes outdated. Consequently, attempting
+> dump collection with an outdated elfcorehdr can lead to failed or
+> inaccurate dump collection.
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] macintosh/macio-adb: replace of_node_put() with __free
-      https://git.kernel.org/powerpc/c/84030aacf127d000180fa3cb4b589d8ab1b0d46b
+[1/3] powerpc: make fadump resilient with memory add/remove events
+      https://git.kernel.org/powerpc/c/c6c5b14dac0d1bd0da8b4d1d3b77f18eb9085fcb
+[2/3] powerpc/fadump: add hotplug_ready sysfs interface
+      https://git.kernel.org/powerpc/c/bc446c5acabadeb38b61b565535401c5dfdd1214
+[3/3] Documentation/powerpc: update fadump implementation details
+      https://git.kernel.org/powerpc/c/57e6700145c5d1f49c52137e9163f73ec5441256
 
 cheers
