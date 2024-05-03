@@ -4,60 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 574CEC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:41:42 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TDMGJHop;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C33BBC10F16
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:42:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6mh6vzSz3dHL
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:41:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TDMGJHop;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6p42sD7z3dKH
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:42:52 +1000 (AEST)
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6lR0w8xz3cWd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:40:32 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1714732836; x=1746268836;
-  h=date:from:to:cc:subject:message-id;
-  bh=l2F0DuJb5MYiS2sTnKxdRUYLEF64MJklzZErWflF6xM=;
-  b=TDMGJHopP6frZzSw61DeblpJN8WfJHkQScOxjz8UmMkkjCPz8NRXNdq3
-   pLDD0H35gYCU3ShQQmNLSffGdz5G4bDnvUHaZrGnJstjGfyfFAbguGg/k
-   DF+M9cXiak8m0lHhRX8E5W1W8Mo6uFKAeGhliczDLoVJjvOe/6pROBzrI
-   YbE6AiOGPRoJNw8n02yiVCLECgoY54fEvvGCfiDsm4DUbKYZhpueTBDyy
-   3gtMn9vfkQ5lBBlyW+85qI3bNWpnwJUE1ecH7O2UJXNFhL4OKFAmhk+d4
-   kRwCO8QUVrBqJL96xblchMbCSC65mRmFzVhcudhe3Jcj2uyZ5uOsw0ujI
-   w==;
-X-CSE-ConnectionGUID: G1OEDNR6QZmZqFq+kiWxHA==
-X-CSE-MsgGUID: 9CqgRuvXTnKJeahYw5nUEA==
-X-IronPort-AV: E=McAfee;i="6600,9927,11062"; a="14355139"
-X-IronPort-AV: E=Sophos;i="6.07,251,1708416000"; 
-   d="scan'208";a="14355139"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 May 2024 03:40:29 -0700
-X-CSE-ConnectionGUID: onKOkuYyRBCK5Q0yKOC8kg==
-X-CSE-MsgGUID: lyTfB2NaQ4aMAaa/9IAzMA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.07,251,1708416000"; 
-   d="scan'208";a="27468492"
-Received: from lkp-server01.sh.intel.com (HELO e434dd42e5a1) ([10.239.97.150])
-  by orviesa009.jf.intel.com with ESMTP; 03 May 2024 03:40:27 -0700
-Received: from kbuild by e434dd42e5a1 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1s2qL3-000BbT-0R;
-	Fri, 03 May 2024 10:40:25 +0000
-Date: Fri, 03 May 2024 18:40:08 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- cebb0005e8e4bc482151a261af649ab1a73edffd
-Message-ID: <202405031806.cnsq0rWg-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6nb1D5xz2ytN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:42:27 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6nZ72RFz4x1P;
+	Fri,  3 May 2024 20:42:26 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, "Aneesh Kumar K.V (IBM)" <aneesh.kumar@kernel.org>
+In-Reply-To: <20240403083611.172833-1-aneesh.kumar@kernel.org>
+References: <20240403083611.172833-1-aneesh.kumar@kernel.org>
+Subject: Re: [PATCH 1/3] powerpc/mm: Align memory_limit value specified using mem= kernel parameter
+Message-Id: <171473286289.451432.3306607552242417496.b4-ty@ellerman.id.au>
+Date: Fri, 03 May 2024 20:41:02 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,162 +42,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Naveen N Rao <naveen@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: cebb0005e8e4bc482151a261af649ab1a73edffd  Documentation: Document PowerPC kernel dynamic DEXCR interface
+On Wed, 03 Apr 2024 14:06:09 +0530, Aneesh Kumar K.V (IBM) wrote:
+> The value specified for the memory limit is used to set a restriction on
+> memory usage. It is important to ensure that this restriction is within
+> the linear map kernel address space range. The hash page table
+> translation uses a 16MB page size to map the kernel linear map address
+> space. htab_bolt_mapping() function aligns down the size of the range
+> while mapping kernel linear address space. Since the memblock limit is
+> enforced very early during boot, before we can detect the type of memory
+> translation (radix vs hash), we align the memory limit value specified
+> as a kernel parameter to 16MB. This alignment value will work for both
+> hash and radix translations.
+> 
+> [...]
 
-elapsed time: 1207m
+Applied to powerpc/next.
 
-configs tested: 139
-configs skipped: 3
+[1/3] powerpc/mm: Align memory_limit value specified using mem= kernel parameter
+      https://git.kernel.org/powerpc/c/5ca096161cdccfa328acf6704a4615528471d309
+[2/3] powerpc/fadump: Don't update the user-specified memory limit
+      https://git.kernel.org/powerpc/c/f94f5ac07983cb53de0c964f5428366c19e81993
+[3/3] powerpc/mm: Update the memory limit based on direct mapping restrictions
+      https://git.kernel.org/powerpc/c/5a799af9522641517f6d871d9f56e2658ee7db58
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                             allnoconfig   gcc  
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allmodconfig   gcc  
-arc                               allnoconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                          axs103_defconfig   gcc  
-arc                                 defconfig   gcc  
-arc                   randconfig-001-20240503   gcc  
-arc                   randconfig-002-20240503   gcc  
-arc                           tb10x_defconfig   gcc  
-arm                              allmodconfig   gcc  
-arm                               allnoconfig   clang
-arm                              allyesconfig   gcc  
-arm                                 defconfig   clang
-arm                        multi_v5_defconfig   gcc  
-arm                   randconfig-004-20240503   gcc  
-arm                         s3c6400_defconfig   gcc  
-arm                           sama5_defconfig   gcc  
-arm64                            allmodconfig   clang
-arm64                             allnoconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                 randconfig-002-20240503   gcc  
-csky                             allmodconfig   gcc  
-csky                              allnoconfig   gcc  
-csky                             allyesconfig   gcc  
-csky                                defconfig   gcc  
-csky                  randconfig-001-20240503   gcc  
-csky                  randconfig-002-20240503   gcc  
-hexagon                          allmodconfig   clang
-hexagon                           allnoconfig   clang
-hexagon                          allyesconfig   clang
-hexagon                             defconfig   clang
-i386                             allmodconfig   gcc  
-i386                              allnoconfig   gcc  
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-001-20240503   clang
-i386         buildonly-randconfig-002-20240503   clang
-i386         buildonly-randconfig-006-20240503   clang
-i386                                defconfig   clang
-i386                  randconfig-002-20240503   clang
-i386                  randconfig-003-20240503   clang
-i386                  randconfig-005-20240503   clang
-i386                  randconfig-006-20240503   clang
-i386                  randconfig-011-20240503   clang
-i386                  randconfig-016-20240503   clang
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                        allyesconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch             randconfig-001-20240503   gcc  
-loongarch             randconfig-002-20240503   gcc  
-m68k                             allmodconfig   gcc  
-m68k                              allnoconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                                defconfig   gcc  
-microblaze                       allmodconfig   gcc  
-microblaze                        allnoconfig   gcc  
-microblaze                       allyesconfig   gcc  
-microblaze                          defconfig   gcc  
-mips                             allmodconfig   gcc  
-mips                              allnoconfig   gcc  
-mips                             allyesconfig   gcc  
-nios2                            allmodconfig   gcc  
-nios2                             allnoconfig   gcc  
-nios2                            allyesconfig   gcc  
-nios2                               defconfig   gcc  
-nios2                 randconfig-001-20240503   gcc  
-nios2                 randconfig-002-20240503   gcc  
-openrisc                         allmodconfig   gcc  
-openrisc                          allnoconfig   gcc  
-openrisc                         allyesconfig   gcc  
-openrisc                            defconfig   gcc  
-parisc                           allmodconfig   gcc  
-parisc                            allnoconfig   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc                randconfig-001-20240503   gcc  
-parisc                randconfig-002-20240503   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                          allyesconfig   clang
-powerpc                    ge_imp3a_defconfig   gcc  
-powerpc                 mpc8313_rdb_defconfig   gcc  
-powerpc               randconfig-003-20240503   gcc  
-riscv                            allmodconfig   clang
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   clang
-riscv                               defconfig   clang
-riscv                 randconfig-001-20240503   gcc  
-riscv                 randconfig-002-20240503   gcc  
-s390                             allmodconfig   clang
-s390                              allnoconfig   clang
-s390                             allyesconfig   gcc  
-s390                                defconfig   clang
-s390                  randconfig-001-20240503   gcc  
-s390                  randconfig-002-20240503   gcc  
-sh                               allmodconfig   gcc  
-sh                                allnoconfig   gcc  
-sh                               allyesconfig   gcc  
-sh                         apsh4a3a_defconfig   gcc  
-sh                                  defconfig   gcc  
-sh                        edosk7705_defconfig   gcc  
-sh                    randconfig-001-20240503   gcc  
-sh                    randconfig-002-20240503   gcc  
-sparc                            allmodconfig   gcc  
-sparc                             allnoconfig   gcc  
-sparc                            allyesconfig   gcc  
-sparc                               defconfig   gcc  
-sparc64                          allmodconfig   gcc  
-sparc64                          allyesconfig   gcc  
-sparc64                             defconfig   gcc  
-sparc64               randconfig-001-20240503   gcc  
-sparc64               randconfig-002-20240503   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   gcc  
-um                                  defconfig   clang
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   clang
-x86_64                            allnoconfig   clang
-x86_64                           allyesconfig   clang
-x86_64       buildonly-randconfig-001-20240503   gcc  
-x86_64       buildonly-randconfig-002-20240503   gcc  
-x86_64       buildonly-randconfig-003-20240503   gcc  
-x86_64       buildonly-randconfig-005-20240503   gcc  
-x86_64                              defconfig   gcc  
-x86_64                randconfig-004-20240503   gcc  
-x86_64                randconfig-005-20240503   gcc  
-x86_64                randconfig-076-20240503   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-xtensa                            allnoconfig   gcc  
-xtensa                           allyesconfig   gcc  
-xtensa                       common_defconfig   gcc  
-xtensa                randconfig-001-20240503   gcc  
-xtensa                randconfig-002-20240503   gcc  
-xtensa                    xip_kc705_defconfig   gcc  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+cheers
