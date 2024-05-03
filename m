@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DB2BC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:44:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A7DCC4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:45:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6r95nhTz3w4f
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:44:41 +1000 (AEST)
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW6rb5lgXz3w84
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:45:03 +1000 (AEST)
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6nd4t6Vz2ytN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:42:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VW6nf0vGrz2ytN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 20:42:30 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6nd3J3Lz4xM1;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VW6nf008nz4xM5;
 	Fri,  3 May 2024 20:42:29 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20240430044228.49015-1-mpe@ellerman.id.au>
-References: <20240430044228.49015-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] MAINTAINERS: powerpc: Remove Aneesh
-Message-Id: <171473286295.451432.18028419480406369786.b4-ty@ellerman.id.au>
+In-Reply-To: <20240419115913.3317575-1-mpe@ellerman.id.au>
+References: <20240419115913.3317575-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/dart: Drop unnecessary call to kmemleak_no_scan()
+Message-Id: <171473286293.451432.5977353003119585563.b4-ty@ellerman.id.au>
 Date: Fri, 03 May 2024 20:41:02 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,18 +42,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: naveen.n.rao@linux.ibm.com, aneesh.kumar@kernel.org, npiggin@gmail.com, linux-kernel@vger.kernel.org
+Cc: erhard_f@mailbox.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 30 Apr 2024 14:42:28 +1000, Michael Ellerman wrote:
-> Aneesh is stepping down from powerpc maintenance.
+On Fri, 19 Apr 2024 21:59:13 +1000, Michael Ellerman wrote:
+> Erhard reported that kmemleak was showing a warning at boot:
 > 
+>   kmemleak: Not scanning unknown object at 0xc00000007f000000
+>   CPU: 0 PID: 0 Comm: swapper Not tainted 5.19.0-rc3-PMacG5+ #2
+>   Call Trace:
+>    .dump_stack_lvl+0x7c/0xc4 (unreliable)
+>    .kmemleak_no_scan+0xe0/0x100
+>    .iommu_init_early_dart+0x2f0/0x924
+>    .pmac_probe+0x1b0/0x20c
+>    .setup_arch+0x1b8/0x674
+>    .start_kernel+0xdc/0xb74
+>    start_here_common+0x1c/0x44
+>   DART table allocated at: (____ptrval____)
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] MAINTAINERS: powerpc: Remove Aneesh
-      https://git.kernel.org/powerpc/c/6a3e640b5dcf56fb44d66d525e01ea08633c6b8b
+[1/1] powerpc/dart: Drop unnecessary call to kmemleak_no_scan()
+      https://git.kernel.org/powerpc/c/4ccae23609f589dd69a593f457f76ee8b0e2d4e0
 
 cheers
