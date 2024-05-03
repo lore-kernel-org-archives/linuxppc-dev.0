@@ -4,91 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FDC9C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 20:00:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACDE1C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 22:54:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dC3Esp0c;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cnNTKPVv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oN1qhSjF;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWM9s6SBrz3dTZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 06:00:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWR1h1NtHz3dTV
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 08:54:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dC3Esp0c;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cnNTKPVv;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oN1qhSjF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jsavitz@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VWM9015Xkz3ckN
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2024 06:00:02 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1714766397;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=sUTF5ozfojoSJuPIPVB/o8L+t4pbL1ydu6RylcxUyuQ=;
-	b=dC3Esp0c6w9ajDQNNp8yRFeAUUuyAPRSfNWbSWjCNljkQTh5Id3ffbFalm7+msxuqMaDcr
-	lc6gBHsiqvwrJryInWsDTXv8aooMn7CqXtezdkRJgpA38h6pjjMyfBS9gXG5yeii1SNRit
-	pQzFo/upGbep4nLa8pxozpo6wCM2/fQ=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1714766398;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=sUTF5ozfojoSJuPIPVB/o8L+t4pbL1ydu6RylcxUyuQ=;
-	b=cnNTKPVvtt8qx7mdbP3V2wxoWQ49qFN1CzZS5V4NPwFXdu5tLLV5hkPZvd+MXh1h1E4Xbe
-	hhtx0LKGh9XiTdWfBBLyL6v4mAOBYNIsoamWTIBD1K3b8rzCkMaTlOM+uxo3tdEEm4TtbJ
-	B5nsd3lD4idvT+twOk4SqdfZBT4UCq4=
-Received: from mail-vk1-f198.google.com (mail-vk1-f198.google.com
- [209.85.221.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-153--ySykv4nP5K1tv73Ikqj3Q-1; Fri, 03 May 2024 15:59:55 -0400
-X-MC-Unique: -ySykv4nP5K1tv73Ikqj3Q-1
-Received: by mail-vk1-f198.google.com with SMTP id 71dfb90a1353d-4df20a887beso48296e0c.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 May 2024 12:59:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1714766395; x=1715371195;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=sUTF5ozfojoSJuPIPVB/o8L+t4pbL1ydu6RylcxUyuQ=;
-        b=vFEcRXrN+wBVCZT3ZFqxToKY7T4YpYaiSkftbbStq4/AlsiiQ9vlDKRkhqKk1n1IA9
-         bIpwX9oNGZa2qxTbRFc76o7aY+78TOL9fpGnVEKQjVPPe6rXhRy3LiFjc0JXPEL/ppsH
-         /ysgMFfQ+3LHf77ENCr4+ce9w59j+PkQ4cB65FgX4RgalVGVX92s/zUcRqItQ5730OR5
-         h3nXcaI7Cfv1Bmfv6z73NSvOHC1tcfNyIONgwQYMhg4ddoRiVqKkqPw23wkkyoTrApR5
-         /wNrv/0tH/IUC/Ow6owqx6zcCpQ5cr04l1BqM8Hy0VoYCNIAre6HRfu3EBQiecM3/+pt
-         EGcA==
-X-Forwarded-Encrypted: i=1; AJvYcCUrZmc3SJbpzGdpo79c516bUUNy16H2c2t+X7n9Tj2QYewiwsWfAXPcmZnNg5KgB/C6JDYpcSZdcPXkuP6ujQid9YTMxEE3xFduzMuBtw==
-X-Gm-Message-State: AOJu0YyViUxJ7K3vvOvaFOAg4fA9ZBQN8J/p/fCuyxIkoNcfi/21FWXR
-	Rj1v7CffoqXsuWRaa5SoJeqAYxQeoA0M8HdUVGMzozrXT4tdgHotvLJVcLJaQ6OYyrwoi/sD3Sc
-	mD7m7tOGjMVQ3E411FSa9VwJCD9NPRXP1HUn/nIqkg1Aj2y8hYvX2XKQyu8TV5UOYPWLc2RHcPJ
-	UKNxWh9SF8yNo+CcKhJA6nhrfGQG9FOM/9UxsqSQ==
-X-Received: by 2002:a05:6122:4a16:b0:4df:2ce2:6e4 with SMTP id ez22-20020a0561224a1600b004df2ce206e4mr2302859vkb.4.1714766395343;
-        Fri, 03 May 2024 12:59:55 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGtF36t68YBMxMVQTeu3aiyANAwgE7VTaR/kru2zfyItYBUnQlHXYZVIl46ZGQlXL5hfHqms2dpIPNZYXvQZ70=
-X-Received: by 2002:a05:6122:4a16:b0:4df:2ce2:6e4 with SMTP id
- ez22-20020a0561224a1600b004df2ce206e4mr2302841vkb.4.1714766395073; Fri, 03
- May 2024 12:59:55 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VWR0m1SN0z3dBh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 May 2024 08:53:12 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id ADA6BCE1A24;
+	Fri,  3 May 2024 22:53:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2293C116B1;
+	Fri,  3 May 2024 22:53:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1714776787;
+	bh=mXcYLMX35fPnLEPH9zrI4bMp+JPZC+O689bhhbTpo/o=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=oN1qhSjFtfExfcxp83Bnx+pofMcdi/EXKHF/817yLrh6CgflKgvoJCwR2vGGsCl8W
+	 BH3uD1m9s+Y+lFfVKyFCLD5HmKBXBd4Cv8OTNmjN8FMXOu7vHV/ktIA32LAwkmJzpb
+	 SMEKKGVzYWgrVCP4JBFVtZ+bDAAWNE6BsWablP9gsqxQvdUqpRAqi7TCqG22Kg00Jr
+	 TJLehTP1MnHzrOFt3RrIlDmIx/739zyd/khyjVxrI+VT/LjQ9sgoQY14/G3e88rupv
+	 vnEmTJ0KBZeGyGQ7H18LOxlzu83Dc4xmNsZA+Pk979Ea1/wfmQn+bqC6qvw5vvzFk+
+	 0bFWAPvc5oMAA==
+Date: Fri, 3 May 2024 17:53:05 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>
+Subject: Re: [PATCH v3 1/2] PCI: Add TLP Prefix reading into
+ pcie_read_tlp_log()
+Message-ID: <20240503225305.GA1609388@bhelgaas>
 MIME-Version: 1.0
-References: <20240403083611.172833-1-aneesh.kumar@kernel.org>
- <20240417143631.253489-1-jsavitz@redhat.com> <CAL1p7m65qzeQ-RsOiQ1X737mr2xr9WYn1g0Wn_nKAzx55jD=Ag@mail.gmail.com>
- <87fruz3aby.fsf@mail.lhotse>
-In-Reply-To: <87fruz3aby.fsf@mail.lhotse>
-From: Joel Savitz <jsavitz@redhat.com>
-Date: Fri, 3 May 2024 15:59:39 -0400
-Message-ID: <CAL1p7m6mj_mbYpRoMmwy1xAqhKxgeLG5fBFB+SSVvHHZWe=+TQ@mail.gmail.com>
-Subject: Re: [PATCH 1/3] powerpc/mm: Align memory_limit value specified using
- mem= kernel parameter
-To: Michael Ellerman <mpe@ellerman.id.au>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20240412133635.3831-2-ilpo.jarvinen@linux.intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,33 +59,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@kernel.org, linuxppc-dev@lists.ozlabs.org, naveen@kernel.org, npiggin@gmail.com
+Cc: linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-kernel@vger.kernel.org, Lukas Wunner <lukas@wunner.de>, Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 2, 2024 at 10:20=E2=80=AFPM Michael Ellerman <mpe@ellerman.id.a=
-u> wrote:
->
-> Joel Savitz <jsavitz@redhat.com> writes:
-> > On Wed, Apr 17, 2024 at 10:36=E2=80=AFAM Joel Savitz <jsavitz@redhat.co=
-m> wrote:
-> >>
-> >> Acked-by: Joel Savitz <jsavitz@redhat.com>
-> >>
-> >
-> > Hi,
-> >
-> > What is the status of this? This patch fixes a bug where a powerpc
-> > machine hangs at boot when passed an unaligned value in the mem=3D
-> > kernel parameter.
->
-> It's in linux-next for v6.10
->
-> cheers
->
+On Fri, Apr 12, 2024 at 04:36:34PM +0300, Ilpo Järvinen wrote:
+> pcie_read_tlp_log() handles only 4 TLP Header Log DWORDs but TLP Prefix
+> Log (PCIe r6.1 secs 7.8.4.12 & 7.9.14.13) may also be present.
+> 
+> Generalize pcie_read_tlp_log() and struct pcie_tlp_log to handle also
+> TLP Prefix Log. The layout of relevant registers in AER and DPC
+> Capability is not identical because the offsets of TLP Header Log and
+> TLP Prefix Log vary so the callers must pass the offsets to
+> pcie_read_tlp_log().
 
-Thanks!
+I think the layouts of the Header Log and the TLP Prefix Log *are*
+identical, but they are at different offsets in the AER Capability vs
+the DPC Capability.  Lukas and I have both stumbled over this.
 
-Best,
-Joel Savitz
+Similar and more comments at:
+https://lore.kernel.org/r/20240322193011.GA701027@bhelgaas
 
+> Convert eetlp_prefix_path into integer called eetlp_prefix_max and
+> make is available also when CONFIG_PCI_PASID is not configured to
+> be able to determine the number of E-E Prefixes.
+
+s/make is/make it/
+
+I think this could be a separate patch.
+
+> --- a/include/linux/aer.h
+> +++ b/include/linux/aer.h
+> @@ -20,6 +20,7 @@ struct pci_dev;
+>  
+>  struct pcie_tlp_log {
+>  	u32 dw[4];
+> +	u32 prefix[4];
+>  };
+>  
+>  struct aer_capability_regs {
+> @@ -37,7 +38,9 @@ struct aer_capability_regs {
+>  	u16 uncor_err_source;
+>  };
+>  
+> -int pcie_read_tlp_log(struct pci_dev *dev, int where, struct pcie_tlp_log *log);
+> +int pcie_read_tlp_log(struct pci_dev *dev, int where, int where2,
+> +		      unsigned int tlp_len, struct pcie_tlp_log *log);
+> +unsigned int aer_tlp_log_len(struct pci_dev *dev);
+
+I think it was a mistake to expose pcie_read_tlp_log() outside
+drivers/pci, and I don't think we should expose aer_tlp_log_len()
+either.
+
+We might be stuck with exposing struct pcie_tlp_log since it looks
+like ras_event.h uses it.
+
+Bjorn
