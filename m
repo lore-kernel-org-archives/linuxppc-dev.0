@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B95BFC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:13:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA5F3C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 23:13:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRRq3BVzz87Xs
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:13:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWRSJ2TcYz3wLR
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 09:13:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vw6cxTz3ccF
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VW9vz4qSvz3ckN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 23:03:11 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BC8511713;
-	Fri,  3 May 2024 06:03:33 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CAB99169C;
+	Fri,  3 May 2024 06:03:03 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6B5063F73F;
-	Fri,  3 May 2024 06:03:05 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 797533F73F;
+	Fri,  3 May 2024 06:02:35 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 22/29] arm64: add Permission Overlay Extension Kconfig
-Date: Fri,  3 May 2024 14:01:40 +0100
-Message-Id: <20240503130147.1154804-23-joey.gouly@arm.com>
+Subject: [PATCH v4 13/29] arm64: convert protection key into vm_flags and pgprot values
+Date: Fri,  3 May 2024 14:01:31 +0100
+Message-Id: <20240503130147.1154804-14-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240503130147.1154804-1-joey.gouly@arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
@@ -45,49 +45,63 @@ Cc: szabolcs.nagy@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that support for POE and Protection Keys has been implemented, add a
-config to allow users to actually enable it.
+Modify arch_calc_vm_prot_bits() and vm_get_page_prot() such that the pkey
+value is set in the vm_flags and then into the pgprot value.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
 ---
- arch/arm64/Kconfig | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ arch/arm64/include/asm/mman.h | 8 +++++++-
+ arch/arm64/mm/mmap.c          | 9 +++++++++
+ 2 files changed, 16 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 7b11c98b3e84..676ebe4bf9eb 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -2095,6 +2095,28 @@ config ARM64_EPAN
- 	  if the cpu does not implement the feature.
- endmenu # "ARMv8.7 architectural features"
+diff --git a/arch/arm64/include/asm/mman.h b/arch/arm64/include/asm/mman.h
+index 5966ee4a6154..ecb2d18dc4d7 100644
+--- a/arch/arm64/include/asm/mman.h
++++ b/arch/arm64/include/asm/mman.h
+@@ -7,7 +7,7 @@
+ #include <uapi/asm/mman.h>
  
-+menu "ARMv8.9 architectural features"
-+config ARM64_POE
-+	prompt "Permission Overlay Extension"
-+	def_bool y
-+	select ARCH_USES_HIGH_VMA_FLAGS
-+	select ARCH_HAS_PKEYS
-+	help
-+	  The Permission Overlay Extension is used to implement Memory
-+	  Protection Keys. Memory Protection Keys provides a mechanism for
-+	  enforcing page-based protections, but without requiring modification
-+	  of the page tables when an application changes protection domains.
+ static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot,
+-	unsigned long pkey __always_unused)
++	unsigned long pkey)
+ {
+ 	unsigned long ret = 0;
+ 
+@@ -17,6 +17,12 @@ static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot,
+ 	if (system_supports_mte() && (prot & PROT_MTE))
+ 		ret |= VM_MTE;
+ 
++#if defined(CONFIG_ARCH_HAS_PKEYS)
++	ret |= pkey & 0x1 ? VM_PKEY_BIT0 : 0;
++	ret |= pkey & 0x2 ? VM_PKEY_BIT1 : 0;
++	ret |= pkey & 0x4 ? VM_PKEY_BIT2 : 0;
++#endif
 +
-+	  For details, see Documentation/core-api/protection-keys.rst
+ 	return ret;
+ }
+ #define arch_calc_vm_prot_bits(prot, pkey) arch_calc_vm_prot_bits(prot, pkey)
+diff --git a/arch/arm64/mm/mmap.c b/arch/arm64/mm/mmap.c
+index 642bdf908b22..86eda6bc7893 100644
+--- a/arch/arm64/mm/mmap.c
++++ b/arch/arm64/mm/mmap.c
+@@ -102,6 +102,15 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
+ 	if (vm_flags & VM_MTE)
+ 		prot |= PTE_ATTRINDX(MT_NORMAL_TAGGED);
+ 
++#ifdef CONFIG_ARCH_HAS_PKEYS
++	if (vm_flags & VM_PKEY_BIT0)
++		prot |= PTE_PO_IDX_0;
++	if (vm_flags & VM_PKEY_BIT1)
++		prot |= PTE_PO_IDX_1;
++	if (vm_flags & VM_PKEY_BIT2)
++		prot |= PTE_PO_IDX_2;
++#endif
 +
-+	  If unsure, say y.
-+
-+config ARCH_PKEY_BITS
-+	int
-+	default 3
-+
-+endmenu # "ARMv8.9 architectural features"
-+
- config ARM64_SVE
- 	bool "ARM Scalable Vector Extension support"
- 	default y
+ 	return __pgprot(prot);
+ }
+ EXPORT_SYMBOL(vm_get_page_prot);
 -- 
 2.25.1
 
