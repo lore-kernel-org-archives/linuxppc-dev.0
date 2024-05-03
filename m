@@ -4,47 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6271DC4345F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 01:01:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1E7BC41513
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 01:48:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256 header.s=bytemarkmx header.b=kwM8XMwo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=huJ8dvqB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VVsvm5ptQz3cW4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 11:01:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VVtx82q9cz3cVG
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 11:48:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256 header.s=bytemarkmx header.b=kwM8XMwo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=huJ8dvqB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=treblig.org (client-ip=2a00:1098:5b::1; helo=mx.treblig.org; envelope-from=linux@treblig.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 2257 seconds by postgrey-1.37 at boromir; Fri, 03 May 2024 11:01:10 AEST
-Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VVstt6sLQz3bdV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 11:01:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
-	; s=bytemarkmx; h=MIME-Version:Message-ID:Date:Subject:From:Content-Type:From
-	:Subject; bh=TwhhGJYX8S5isC/qXpdo6M+smqQWbmRemXXOvuWIYPs=; b=kwM8XMwoqP4IbG0+
-	0zfWn62s1OSNbxh4YF4B8RdGoTlVfokrYBsIV2RqrmUN9Sxo34stiEMPB4DFCFIV+ZmlRlf0KNQhl
-	lj3Be/du6TDKhzddcj1tNl1hiRt8WI8dERlvyTkp52z6LqGqgLjD7o9csEVud+9bFnKBDqTc1+ztR
-	jRZnWO4G+gjhzNbBrL0b8uTODfv9ebsHmiEGrNuU8mNtvUDZFrpDoqVkhO4DI6GVjv8F0hShx2Ipc
-	3X4i31UON2ywDuyE0V95GDhhZlUh59ILEJW8WZtAWCM8QkOKhZlTv13DwfjkdGf+SF7kumemGuLAA
-	V/HAXJSTJKPcnJfAqg==;
-Received: from localhost ([127.0.0.1] helo=dalek.home.treblig.org)
-	by mx.treblig.org with esmtp (Exim 4.96)
-	(envelope-from <linux@treblig.org>)
-	id 1s2ghx-004Mi8-1m;
-	Fri, 03 May 2024 00:23:25 +0000
-From: linux@treblig.org
-To: mpe@ellerman.id.au,
-	npiggin@gmail.com
-Subject: [PATCH] power: Remove arch specific module bug stuff
-Date: Fri,  3 May 2024 01:23:17 +0100
-Message-ID: <20240503002317.183500-1-linux@treblig.org>
-X-Mailer: git-send-email 2.44.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VVtwH1MWfz3bl6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 11:47:27 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 195B961BF3;
+	Fri,  3 May 2024 01:47:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DB22C113CC;
+	Fri,  3 May 2024 01:47:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1714700842;
+	bh=jnztmxuaRUJ/EUjiAcJ6LSXXmWw6auqF5LGM5XsjF8A=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=huJ8dvqB+TN/5IgJ6rtnCXfVgXOlZfAdZYA/7vs7YuLO962TFb+avL/V+5+Rni204
+	 u9/f/fRre6WsTm1XAt3biIJ7MtrAkKMlIcdBiezfCUBrbLhc4GQOvDOFdoMrywy15G
+	 HVDUuTPVvWfCo/LWmMR/YAYd76bJuAAZMqubdIdTqLpUHdoyUTiJr/OhqWHi1DQwX/
+	 TTfuZAYA+OBxUo5XMadmDCz6i1lMZq0CwsUh/khAN9yCvtk9LCjCamRsZktG50n/EX
+	 TDY9n+egIwFoWC/EpRvSADEFoGvRx918hONbY9legxC9/dh+ROPGl1a4VHgQWky9Ab
+	 R0tQiZIJgiz0A==
+Date: Fri, 3 May 2024 10:47:19 +0900
+From: Mark Brown <broonie@kernel.org>
+To: Mauro Carvalho Chehab <mchehab@kernel.org>
+Subject: Re: [PATCH v15 00/16] Add audio support in v4l2 framework
+Message-ID: <ZjRCJ2ZcmKOIo7_p@finisterre.sirena.org.uk>
+References: <1710834674-3285-1-git-send-email-shengjiu.wang@nxp.com>
+ <20240430082112.jrovosb6lgblgpfg@basti-XPS-13-9310>
+ <ZjEEKyvb02CWz3l4@finisterre.sirena.org.uk>
+ <20240430172752.20ffcd56@sal.lan>
+ <ZjGhPz-bokg6ZbDJ@finisterre.sirena.org.uk>
+ <87sez0k661.wl-tiwai@suse.de>
+ <20240502095956.0a8c5b26@sal.lan>
+ <20240502102643.4ee7f6c2@sal.lan>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="YhSjxC/xCHptpvaf"
+Content-Disposition: inline
+In-Reply-To: <20240502102643.4ee7f6c2@sal.lan>
+X-Cookie: lisp, v.:
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,57 +67,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Dr. David Alan Gilbert" <linux@treblig.org>
+Cc: nicoleotsuka@gmail.com, alsa-devel@alsa-project.org, lgirdwood@gmail.com, Sebastian Fricke <sebastian.fricke@collabora.com>, Xiubo.Lee@gmail.com, Takashi Iwai <tiwai@suse.de>, festevam@gmail.com, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-kernel@vger.kernel.org, tfiga@chromium.org, hverkuil@xs4all.nl, linuxppc-dev@lists.ozlabs.org, sakari.ailus@iki.fi, perex@perex.cz, linux-media@vger.kernel.org, shengjiu.wang@gmail.com, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
 
-The last function to reference module_bug_list went in 2008's
-  commit b9754568ef17 ("powerpc: Remove dead module_find_bug code")
-but I don't think that was called since 2006's
-  commit 73c9ceab40b1 ("[POWERPC] Generic BUG for powerpc")
+--YhSjxC/xCHptpvaf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Now that the list has gone, I think we can also clean up the bug
-entries in mod_arch_specific.
+On Thu, May 02, 2024 at 10:26:43AM +0100, Mauro Carvalho Chehab wrote:
+> Mauro Carvalho Chehab <mchehab@kernel.org> escreveu:
 
-Lightly boot tested.
+> > There are still time control associated with it, as audio and video
+> > needs to be in sync. This is done by controlling the buffers size=20
+> > and could be fine-tuned by checking when the buffer transfer is done.
 
-Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
----
- arch/powerpc/include/asm/module.h | 5 -----
- arch/powerpc/kernel/module.c      | 2 --
- 2 files changed, 7 deletions(-)
+=2E..
 
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index a8e2e8339fb7f..300c777cc3075 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -48,11 +48,6 @@ struct mod_arch_specific {
- 	unsigned long tramp;
- 	unsigned long tramp_regs;
- #endif
--
--	/* List of BUG addresses, source line numbers and filenames */
--	struct list_head bug_list;
--	struct bug_entry *bug_table;
--	unsigned int num_bugs;
- };
- 
- /*
-diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-index f6d6ae0a16923..8989e069e3aae 100644
---- a/arch/powerpc/kernel/module.c
-+++ b/arch/powerpc/kernel/module.c
-@@ -17,8 +17,6 @@
- #include <asm/setup.h>
- #include <asm/sections.h>
- 
--static LIST_HEAD(module_bug_list);
--
- static const Elf_Shdr *find_section(const Elf_Ehdr *hdr,
- 				    const Elf_Shdr *sechdrs,
- 				    const char *name)
--- 
-2.44.0
+> Just complementing: on media, we do this per video buffer (or
+> per half video buffer). A typical use case on cameras is to have
+> buffers transferred 30 times per second, if the video was streamed=20
+> at 30 frames per second.=20
 
+IIRC some big use case for this hardware was transcoding so there was a
+desire to just go at whatever rate the hardware could support as there
+is no interactive user consuming the output as it is generated.
+
+> I would assume that, on an audio/video stream, the audio data
+> transfer will be programmed to also happen on a regular interval.
+
+With audio the API is very much "wake userspace every Xms".
+
+--YhSjxC/xCHptpvaf
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmY0QicACgkQJNaLcl1U
+h9DEDgf+OxkntU8LcfqnvW2Z51UqNQJ0p62Te/DmJ+wZWQotYcbwAQdb4fMKfeyw
+TU+Kka5bvWBtYfhoCnXFlDqQUh4Ldk7wZEWfHS2KCCM+o3mr/WHvxCRqSvy2geXZ
++76U6qA5/RPQnAFUlNe9Kp4LK4LpvGg9KONljKpsIdFBEDvJG84wr+zLwDuboy4O
+rVP1hJQmucWST9qsBWFT+7VmJt9tbK2I3iwIB2Z3utiJvBFvyyj8bVMx5I1ssxfj
+Rh5yL+iQ+aEQkTwEBTzuAS055XYNxzl/eBa25iRWCgoYOrMiphGpWBDWp5qUoPiB
+SWVL9dU2q9I5o4Y+GNohSdEw9Rctfw==
+=OLs5
+-----END PGP SIGNATURE-----
+
+--YhSjxC/xCHptpvaf--
