@@ -4,35 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01814C04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 00:24:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CCD2C4345F
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 May 2024 14:32:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VVs422N7dz3d81
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 May 2024 10:24:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dudau.co.uk (client-ip=80.229.23.120; helo=smtp.dudau.co.uk; envelope-from=liviu@dudau.co.uk; receiver=lists.ozlabs.org)
-Received: from smtp.dudau.co.uk (dliviu.plus.com [80.229.23.120])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VWqrS1YVcz3cYK
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2024 00:32:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout1.hostsharing.net (client-ip=2a01:37:1000::53df:5f64:0; helo=bmailout1.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
+Received: from bmailout1.hostsharing.net (bmailout1.hostsharing.net [IPv6:2a01:37:1000::53df:5f64:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VVs3Y0FG9z301T
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 May 2024 10:23:35 +1000 (AEST)
-Received: from mail.dudau.co.uk (bart.dudau.co.uk [192.168.14.2])
-	by smtp.dudau.co.uk (Postfix) with SMTP id 2D79141D12F0;
-	Fri, 03 May 2024 01:23:31 +0100 (BST)
-Received: by mail.dudau.co.uk (sSMTP sendmail emulation); Fri, 03 May 2024 01:23:31 +0100
-Date: Fri, 3 May 2024 01:23:30 +0100
-From: Liviu Dudau <liviu@dudau.co.uk>
-To: Luis Chamberlain <mcgrof@kernel.org>
-Subject: Re: [PATCH v7 00/16] mm: jit/text allocator
-Message-ID: <ZjQuggSFcO8FXSd2@bart.dudau.co.uk>
-References: <20240429121620.1186447-1-rppt@kernel.org>
- <Zi_K4K-j-VB_WI4i@bombadil.infradead.org>
- <ZjQYvOYgURx9/+d0@bart.dudau.co.uk>
- <ZjQcmcA0sNH7jfD7@bombadil.infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VWqqx2V5Mz30Tg
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 May 2024 00:31:51 +1000 (AEST)
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
+	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+	by bmailout1.hostsharing.net (Postfix) with ESMTPS id 8667D300102B7;
+	Sat,  4 May 2024 16:31:42 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 672E936599; Sat,  4 May 2024 16:31:42 +0200 (CEST)
+Date: Sat, 4 May 2024 16:31:42 +0200
+From: Lukas Wunner <lukas@wunner.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] Deduplicate string exposure in sysfs
+Message-ID: <ZjZGzg5LFU2AT3_D@wunner.de>
+References: <cover.1713608122.git.lukas@wunner.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ZjQcmcA0sNH7jfD7@bombadil.infradead.org>
+In-Reply-To: <cover.1713608122.git.lukas@wunner.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,93 +49,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Philippe =?utf-8?Q?Mathieu-Daud=C3=A9?= <philmd@linaro.org>, linux-mm@kvack.org, netdev@vge
- r.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, =?utf-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, linux-modules@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Mike Rapoport <rppt@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Tyrel Datwyler <tyreld@linux.ibm.com>, storagedev@microchip.com, Yicong Yang <yangyicong@hisilicon.com>, ibm-acpi-devel@lists.sourceforge.net, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Will Deacon <will@kernel.org>, Jijie Shao <shaojijie@huawei.com>, Khuong Dinh <khuong@os.amperecomputing.com>, Sudarsana Kalluru <sudarsana.kalluru@qlogic.com>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, linux-rdma@vger.kernel.org, "Luke D. Jones" <luke@ljones.dev>, Nilesh Javali <njavali@marvell.com>, Ilpo Jaervinen <ilpo.jarvinen@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, platform-driver-x86@vger.kernel.org, Jean Delvare <jdelvare@suse.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Hans de Goede <hdegoede@redhat.com>, Jonathan Cameron <jonathan.cameron@huawei.com>, Azael Avalos <coproscefalo@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org, linux-scsi@vger.kernel.org, "Martin K. Petersen" <mart
+ in.petersen@oracle.com>, Don Brace <don.brace@microchip.com>, Bjorn Andersson <andersson@kernel.org>, Anil Gurumur thy <anil.gurumurthy@qlogic.com>, Konrad Dybcio <konrad.dybcio@linaro.org>, GR-QLogic-Storage-Upstream@marvell.com, Shuai Xue <xueshuai@linux.alibaba.com>, Corentin Chary <corentin.chary@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 02, 2024 at 04:07:05PM -0700, Luis Chamberlain wrote:
-> On Thu, May 02, 2024 at 11:50:36PM +0100, Liviu Dudau wrote:
-> > On Mon, Apr 29, 2024 at 09:29:20AM -0700, Luis Chamberlain wrote:
-> > > On Mon, Apr 29, 2024 at 03:16:04PM +0300, Mike Rapoport wrote:
-> > > > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
-> > > > 
-> > > > Hi,
-> > > > 
-> > > > The patches are also available in git:
-> > > > https://git.kernel.org/pub/scm/linux/kernel/git/rppt/linux.git/log/?h=execmem/v7
-> > > > 
-> > > > v7 changes:
-> > > > * define MODULE_{VADDR,END} for riscv32 to fix the build and avoid
-> > > >   #ifdefs in a function body
-> > > > * add Acks, thanks everybody
-> > > 
-> > > Thanks, I've pushed this to modules-next for further exposure / testing.
-> > > Given the status of testing so far with prior revisions, in that only a
-> > > few issues were found and that those were fixed, and the status of
-> > > reviews, this just might be ripe for v6.10.
-> > 
-> > Looks like there is still some work needed. I've picked up next-20240501
-> > and on arch/mips with CONFIG_MODULE_COMPRESS_XZ=y and CONFIG_MODULE_DECOMPRESS=y
-> > I fail to load any module:
-> > 
-> > # modprobe rfkill
-> > [11746.539090] Invalid ELF header magic: != ELF
-> > [11746.587149] execmem: unable to allocate memory
-> > modprobe: can't load module rfkill (kernel/net/rfkill/rfkill.ko.xz): Out of memory
-> > 
-> > The (hopefully) relevant parts of my .config:
-> 
-> Thanks for the report! Any chance we can get you to try a bisection? I
-> think it should take 2-3 test boots. To help reduce scope you try modules-next:
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/linux.git/log/?h=modules-next
-> 
-> Then can you check by resetting your tree to commmit 3fbe6c2f820a76 (mm:
-> introduce execmem_alloc() and execmem_free()"). I suspect that should
-> boot, so your bad commit would be the tip 3c2c250cb3a5fbb ("bpf: remove
-> CONFIG_BPF_JIT dependency on CONFIG_MODULES of").
-> 
-> That gives us only a few commits to bisect:
-> 
-> git log --oneline 3fbe6c2f820a76bc36d5546bda85832f57c8fce2..
-> 3c2c250cb3a5 (HEAD -> modules-next, korg/modules-next) bpf: remove CONFIG_BPF_JIT dependency on CONFIG_MODULES of
-> 11e8e65cce5c kprobes: remove dependency on CONFIG_MODULES
-> e10cbc38697b powerpc: use CONFIG_EXECMEM instead of CONFIG_MODULES where appropriate
-> 4da3d38f24c5 x86/ftrace: enable dynamic ftrace without CONFIG_MODULES
-> 13ae3d74ee70 arch: make execmem setup available regardless of CONFIG_MODULES
-> 460bbbc70a47 powerpc: extend execmem_params for kprobes allocations
-> e1a14069b5b4 arm64: extend execmem_info for generated code allocations
-> 971e181c6585 riscv: extend execmem_params for generated code allocations
-> 0fa276f26721 mm/execmem, arch: convert remaining overrides of module_alloc to execmem
-> 022cef244287 mm/execmem, arch: convert simple overrides of module_alloc to execmem
-> 
-> With 2-3 boots we should be to tell which is the bad commit.
+Dear Greg,
 
-Looks like 0fa276f26721 is the first bad commit.
-
-$ git bisect log
-# bad: [3c2c250cb3a5fbbccc4a4ff4c9354c54af91f02c] bpf: remove CONFIG_BPF_JIT dependency on CONFIG_MODULES of
-# good: [3fbe6c2f820a76bc36d5546bda85832f57c8fce2] mm: introduce execmem_alloc() and execmem_free()
-git bisect start '3c2c250cb3a5' '3fbe6c2f820a76'
-# bad: [460bbbc70a47e929b1936ca68979f3b79f168fc6] powerpc: extend execmem_params for kprobes allocations
-git bisect bad 460bbbc70a47e929b1936ca68979f3b79f168fc6
-# bad: [0fa276f26721e0ffc2ae9c7cf67dcc005b43c67e] mm/execmem, arch: convert remaining overrides of module_alloc to execmem
-git bisect bad 0fa276f26721e0ffc2ae9c7cf67dcc005b43c67e
-# good: [022cef2442870db738a366d3b7a636040c081859] mm/execmem, arch: convert simple overrides of module_alloc to execmem
-git bisect good 022cef2442870db738a366d3b7a636040c081859
-# first bad commit: [0fa276f26721e0ffc2ae9c7cf67dcc005b43c67e] mm/execmem, arch: convert remaining overrides of module_alloc to execmem
-
-Maybe MIPS also needs a ARCH_WANTS_EXECMEM_LATE?
-
-Best regards,
-Liviu
-
+On Sat, Apr 20, 2024 at 10:00:00PM +0200, Lukas Wunner wrote:
+> Introduce a generic ->show() callback to expose a string as a device
+> attribute in sysfs.  Deduplicate various identical callbacks across
+> the tree.
 > 
->   Luis
+> Result:  Minus 216 LoC, minus 1576 bytes vmlinux size (x86_64 allyesconfig).
 > 
+> This is a byproduct of my upcoming PCI device authentication v2 patches.
+> 
+> 
+> Lukas Wunner (6):
+>   driver core: Add device_show_string() helper for sysfs attributes
+>   hwmon: Use device_show_string() helper for sysfs attributes
+>   IB/qib: Use device_show_string() helper for sysfs attributes
+>   perf: Use device_show_string() helper for sysfs attributes
+>   platform/x86: Use device_show_string() helper for sysfs attributes
+>   scsi: Use device_show_string() helper for sysfs attributes
 
--- 
-Everyone who uses computers frequently has had, from time to time,
-a mad desire to attack the precocious abacus with an axe.
-       	   	      	     	  -- John D. Clark, Ignition!
+This series hasn't been applied to driver-core-next AFAICS and the
+merge window is drawing closer.
+
+So far only patches 1, 2 and 5 have been ack'ed by the respective
+subsystem maintainers.  If the missing acks are the reason it hasn't
+been applied, would it be possibe to apply only 1, 2 and 5?
+
+I would then resubmit the other ones individually to the subsystem
+maintainers in the next cycle.
+
+Thanks!
+
+Lukas
