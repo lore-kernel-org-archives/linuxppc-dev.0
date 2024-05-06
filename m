@@ -4,78 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 270AEC25B5F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2024 17:44:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38A73C25B4F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2024 20:41:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=ccqMDQ7O;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QtQKPsSz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VY81X5GPtz3cHN
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 03:44:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VYCx94Lgzz3cVP
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 06:41:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=ccqMDQ7O;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QtQKPsSz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::32f; helo=mail-ot1-x32f.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-ot1-x32f.google.com (mail-ot1-x32f.google.com [IPv6:2607:f8b0:4864:20::32f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VY80j2nStz30Vp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2024 03:44:04 +1000 (AEST)
-Received: by mail-ot1-x32f.google.com with SMTP id 46e09a7af769-6efbd2b15b1so2154645a34.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 May 2024 10:44:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1715017440; x=1715622240; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=NrQdyQAmxtGDrr/un2msxGNjav0moWDiCcc8IHL04QU=;
-        b=ccqMDQ7OiQuPg0NFKiQX5GIYjRKTsqv9Y+UdEysjXgWcYnBoOqrgpDajc8hkGxKZzr
-         Ii31XYn5Wub591rZCdNBqtQOyEuEIxTjJGkjg/XI0BdNTYSdd01Bi+yezdSD08VEq2UQ
-         Ofxc35zF80F/jmJWnJwKqOW1w21AEThpr9QBG4URQtqcElQgsIqAsqcklRFU+R7dPsME
-         +BylNOZLMvddYDUEXVRHDqWFiiYhHMQaX/xOd51Y0XRVxBTobLrEYAivMsCXcJHhN+UO
-         3zTos1jY+751nfh/OxgI7/kMxCTFe+1Zpj8nZYD8VSNSQ66aeV8qy8R7V7N/1dQs2Ns/
-         jWbg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1715017440; x=1715622240;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=NrQdyQAmxtGDrr/un2msxGNjav0moWDiCcc8IHL04QU=;
-        b=SS7j0vbSRpav/2orxLDOXIbnNOmlJwEk6BisBkJ8muI7wU8P/jOg/8UDWuUrnQ0/Ur
-         USzH3vNRln1qwKjBw9GX0/5L1eYo759x1Q8Hvr9YaxeEoX906W8KfA3dDVeYP7XT7tPs
-         Oh09DO/NLpdHB8uQIAfs3aDdjL0P335FwvYVWFAFVzqCe3GofZBs5Bn2u3Bbw0OHDmnH
-         1iDjpLFaFV4E037F7McKyPjPMM0ERCkr59cqyp40g5rmjFsX+0Nosfp4gLxDlAI97vpJ
-         bdaFWVwwbPAKpJOAvxdQTKz/QLFqvah0D78Nj4jKdKk71f1HSD7fe+D/nc9YGk8B59Mb
-         ipcg==
-X-Forwarded-Encrypted: i=1; AJvYcCXX1ppPMGQur1AXhWzFflKNMTbUhMgzmCqsME4uV58/GzRgEkhJkVpigwgyJcV7QEY7syun197ydJT+mJ9ZnFu1msPO7SRHYqzf+FaodA==
-X-Gm-Message-State: AOJu0Yyq2lD+/GQ3jSuAtTLFtUZGYYJ0bFPOiD69HmSJC7sL/O+VZhxb
-	PwXbQlyLtf5EYHtacr3UJhNfPF2MFgDGBKISMuBwy7Di+gEQmIaMiBzlEzbV6Ec=
-X-Google-Smtp-Source: AGHT+IFfws1Gcb6acoXVWBj5aeFUz+NzC1+evoEYOr7ky0Ifa7neFHPAAV511Z8X/ku679UyYkztmg==
-X-Received: by 2002:a05:6871:3a10:b0:23c:49e2:bac2 with SMTP id 586e51a60fabf-24019c343admr143784fac.18.1715017439642;
-        Mon, 06 May 2024 10:43:59 -0700 (PDT)
-Received: from ziepe.ca (hlfxns017vw-142-68-80-239.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.68.80.239])
-        by smtp.gmail.com with ESMTPSA id co13-20020a05683065cd00b006ee2fc97885sm2030608otb.72.2024.05.06.10.43.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 May 2024 10:43:58 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.95)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1s42NZ-003UHM-8o;
-	Mon, 06 May 2024 14:43:57 -0300
-Date: Mon, 6 May 2024 14:43:57 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Shivaprasad G Bhat <sbhat@linux.ibm.com>
-Subject: Re: [RFC PATCH v2 0/6] powerpc: pSeries: vfio: iommu: Re-enable
- support for SPAPR TCE VFIO
-Message-ID: <20240506174357.GF901876@ziepe.ca>
-References: <171450753489.10851.3056035705169121613.stgit@linux.ibm.com>
- <20240501140942.GA1723318@ziepe.ca>
- <703f15b0-d895-4518-9886-0827a6c4e769@amd.com>
- <8c28a1d5-ac84-445b-80e6-a705e6d7ff1b@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VYCwL3KhPz30TP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2024 06:40:34 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 2122E6147A;
+	Mon,  6 May 2024 20:40:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9306DC116B1;
+	Mon,  6 May 2024 20:40:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1715028031;
+	bh=17mRCbCfXGe86VG0NVuPEUfPhy17zEjuU8/1HmxjZxk=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+	b=QtQKPsSzuNs6uzyWsroCoJ4KrnIGRPNK8LfMhdoYMB8cGQHSloKsVexyMci4+IAfE
+	 F+Ean8pzVvYi5B9A4m4Z/zDiiLyCg74+C/udlm5hbEcL+xeMuoN7Wcg8WBeMU5iDGX
+	 3MYLPI4JFro/Fd8vY7osVlcqI2+V22lxRD/USee+uFSR/7SQ/dmDkieWvWW2UrNuU7
+	 vLnSfECXxxS334Uygg47qobO4pcwoxW9rs55KHaWBj9hI3ywhUYfXKeCVjIV+vOFTD
+	 xB6M8vflhZnHPzjP2c0UX7FT/z6jP+MqLJ4lrWwPvKTZa1dTSagmuoXtn8Ud8IyqaD
+	 6NCz1zIzG97MQ==
+Date: Mon, 06 May 2024 15:40:29 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8c28a1d5-ac84-445b-80e6-a705e6d7ff1b@linux.ibm.com>
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20240506125152.78174-1-mpe@ellerman.id.au>
+References: <20240506125152.78174-1-mpe@ellerman.id.au>
+Message-Id: <171502764539.89665.4515475844355212839.robh@kernel.org>
+Subject: Re: [PATCH 0/7] Remove 40x
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,22 +59,207 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, linux-kernel@vger.kernel.org, oohall@gmail.com, ruscur@russell.cc, brking@linux.vnet.ibm.com, robh@kernel.org, svaidy@linux.ibm.com, aneesh.kumar@kernel.org, joel@jms.id.au, naveen.n.rao@linux.ibm.com, msuchanek@suse.de, jroedel@suse.de, gbatra@linux.vnet.ibm.com, npiggin@gmail.com, alex.williamson@redhat.com, mahesh@linux.ibm.com, tpearson@raptorengineering.com, Alexey Kardashevskiy <aik@amd.com>, vaibhav@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, May 04, 2024 at 12:33:53AM +0530, Shivaprasad G Bhat wrote:
-> We have legacy workloads using VFIO in userspace/kvm guests running
-> on downstream distro kernels. We want these workloads to be able to
-> continue running on our arch.
 
-It has been broken since 2018, I don't find this reasoning entirely
-reasonable :\
+On Mon, 06 May 2024 22:51:45 +1000, Michael Ellerman wrote:
+> The 40x platforms & CPUs are old and have been unmaintained for years, and as
+> far as we can tell have no users.
+> 
+> Note 44x and 476 are not affected.
+> 
+> Christophe first proposed removing 40x in 2020:
+>   https://lore.kernel.org/linuxppc-dev/40899eb1b8f10da3706acd06c3d46d2418c8886e.1585635837.git.christophe.leroy@c-s.fr/
+> 
+> And on a few subsequent occasions.
+> 
+> The proposed removal was covered on Phronix:
+>   https://www.phoronix.com/news/PowerPC-40x-400-Linux-Removal
+> 
+> OpenWRT dropped support in 2019.
+> 
+> So unless anyone steps up to maintain it, remove 40x as unused. RIP.
+> 
+> cheers
+> 
+> 
+> More context: https://github.com/linuxppc/issues/issues/349
+> 
+> Christophe Leroy (4):
+>   powerpc/40x: Remove 40x platforms.
+>   powerpc/boot: Remove all 40x platforms from boot
+>   powerpc: Remove core support for 40x
+>   powerpc/platforms: Move files from 4xx to 44x
+> 
+> Michael Ellerman (3):
+>   powerpc: Remove 40x from Kconfig and defconfig
+>   powerpc/4xx: Remove CONFIG_BOOKE_OR_40x
+>   powerpc: Replace CONFIG_4xx with CONFIG_44x
+> 
+>  MAINTAINERS                                   |   1 -
+>  arch/powerpc/Kconfig                          |  17 +-
+>  arch/powerpc/Kconfig.debug                    |  13 -
+>  arch/powerpc/Makefile                         |   5 -
+>  arch/powerpc/boot/4xx.c                       | 266 -------
+>  arch/powerpc/boot/4xx.h                       |   4 -
+>  arch/powerpc/boot/Makefile                    |  11 -
+>  arch/powerpc/boot/cuboot-acadia.c             | 171 -----
+>  arch/powerpc/boot/cuboot-hotfoot.c            | 139 ----
+>  arch/powerpc/boot/cuboot-kilauea.c            |  46 --
+>  arch/powerpc/boot/dcr.h                       |  11 -
+>  arch/powerpc/boot/dts/acadia.dts              | 224 ------
+>  arch/powerpc/boot/dts/hotfoot.dts             | 296 -------
+>  arch/powerpc/boot/dts/kilauea.dts             | 407 ----------
+>  arch/powerpc/boot/dts/obs600.dts              | 314 --------
+>  arch/powerpc/boot/ppcboot-hotfoot.h           | 119 ---
+>  arch/powerpc/boot/ppcboot.h                   |   2 +-
+>  arch/powerpc/configs/40x.config               |   2 -
+>  arch/powerpc/configs/40x/acadia_defconfig     |  61 --
+>  arch/powerpc/configs/40x/kilauea_defconfig    |  69 --
+>  arch/powerpc/configs/40x/klondike_defconfig   |  43 --
+>  arch/powerpc/configs/40x/makalu_defconfig     |  59 --
+>  arch/powerpc/configs/40x/obs600_defconfig     |  69 --
+>  arch/powerpc/configs/40x/walnut_defconfig     |  55 --
+>  arch/powerpc/configs/ppc40x_defconfig         |  74 --
+>  arch/powerpc/include/asm/cacheflush.h         |   2 +-
+>  arch/powerpc/include/asm/cputable.h           |   7 -
+>  arch/powerpc/include/asm/hw_irq.h             |   8 +-
+>  arch/powerpc/include/asm/irq.h                |   2 +-
+>  arch/powerpc/include/asm/kup.h                |   2 +-
+>  arch/powerpc/include/asm/mmu.h                |   7 -
+>  arch/powerpc/include/asm/nohash/32/mmu-40x.h  |  68 --
+>  arch/powerpc/include/asm/nohash/32/pgtable.h  |   4 +-
+>  arch/powerpc/include/asm/nohash/32/pte-40x.h  |  73 --
+>  arch/powerpc/include/asm/nohash/mmu.h         |   5 +-
+>  arch/powerpc/include/asm/ppc_asm.h            |   2 +-
+>  arch/powerpc/include/asm/processor.h          |   2 +-
+>  arch/powerpc/include/asm/ptrace.h             |   2 +-
+>  arch/powerpc/include/asm/reg.h                |  27 +-
+>  arch/powerpc/include/asm/reg_booke.h          | 113 +--
+>  arch/powerpc/include/asm/time.h               |   7 +-
+>  arch/powerpc/include/asm/udbg.h               |   1 -
+>  arch/powerpc/kernel/Makefile                  |   1 -
+>  arch/powerpc/kernel/asm-offsets.c             |   2 +-
+>  arch/powerpc/kernel/cpu_specs.h               |   4 -
+>  arch/powerpc/kernel/cpu_specs_40x.h           | 280 -------
+>  arch/powerpc/kernel/entry_32.S                |  48 +-
+>  arch/powerpc/kernel/epapr_hcalls.S            |   2 +-
+>  arch/powerpc/kernel/head_32.h                 |  12 +-
+>  arch/powerpc/kernel/head_40x.S                | 721 ------------------
+>  arch/powerpc/kernel/head_booke.h              |   3 +-
+>  arch/powerpc/kernel/irq.c                     |   2 +-
+>  arch/powerpc/kernel/kgdb.c                    |   4 +-
+>  arch/powerpc/kernel/misc_32.S                 |  40 -
+>  arch/powerpc/kernel/process.c                 |   4 +-
+>  arch/powerpc/kernel/setup.h                   |   2 +-
+>  arch/powerpc/kernel/setup_32.c                |   2 +-
+>  arch/powerpc/kernel/time.c                    |   2 +-
+>  arch/powerpc/kernel/traps.c                   |   2 +-
+>  arch/powerpc/kernel/udbg.c                    |   3 -
+>  arch/powerpc/kernel/udbg_16550.c              |  23 -
+>  arch/powerpc/mm/fault.c                       |   4 +-
+>  arch/powerpc/mm/mmu_context.c                 |   2 +-
+>  arch/powerpc/mm/mmu_decl.h                    |   8 +-
+>  arch/powerpc/mm/nohash/40x.c                  | 161 ----
+>  arch/powerpc/mm/nohash/Makefile               |   1 -
+>  arch/powerpc/mm/nohash/kup.c                  |   2 -
+>  arch/powerpc/mm/nohash/mmu_context.c          |   5 +-
+>  arch/powerpc/mm/nohash/tlb_low.S              |  27 +-
+>  arch/powerpc/mm/ptdump/Makefile               |   2 +-
+>  arch/powerpc/platforms/40x/Kconfig            |  78 --
+>  arch/powerpc/platforms/40x/Makefile           |   2 -
+>  arch/powerpc/platforms/40x/ppc40x_simple.c    |  74 --
+>  arch/powerpc/platforms/44x/Makefile           |   6 +-
+>  arch/powerpc/platforms/{4xx => 44x}/cpm.c     |   0
+>  arch/powerpc/platforms/{4xx => 44x}/gpio.c    |   0
+>  .../powerpc/platforms/{4xx => 44x}/hsta_msi.c |   0
+>  arch/powerpc/platforms/44x/machine_check.c    |  15 +
+>  arch/powerpc/platforms/{4xx => 44x}/pci.c     | 100 ---
+>  arch/powerpc/platforms/{4xx => 44x}/pci.h     |   0
+>  arch/powerpc/platforms/{4xx => 44x}/soc.c     |   0
+>  arch/powerpc/platforms/{4xx => 44x}/uic.c     |   0
+>  arch/powerpc/platforms/4xx/Makefile           |   7 -
+>  arch/powerpc/platforms/4xx/machine_check.c    |  23 -
+>  arch/powerpc/platforms/Kconfig                |   1 -
+>  arch/powerpc/platforms/Kconfig.cputype        |  30 +-
+>  arch/powerpc/platforms/Makefile               |   2 -
+>  arch/powerpc/sysdev/Kconfig                   |   4 +-
+>  scripts/head-object-list.txt                  |   1 -
+>  89 files changed, 77 insertions(+), 4445 deletions(-)
+>  delete mode 100644 arch/powerpc/boot/cuboot-acadia.c
+>  delete mode 100644 arch/powerpc/boot/cuboot-hotfoot.c
+>  delete mode 100644 arch/powerpc/boot/cuboot-kilauea.c
+>  delete mode 100644 arch/powerpc/boot/dts/acadia.dts
+>  delete mode 100644 arch/powerpc/boot/dts/hotfoot.dts
+>  delete mode 100644 arch/powerpc/boot/dts/kilauea.dts
+>  delete mode 100644 arch/powerpc/boot/dts/obs600.dts
+>  delete mode 100644 arch/powerpc/boot/ppcboot-hotfoot.h
+>  delete mode 100644 arch/powerpc/configs/40x.config
+>  delete mode 100644 arch/powerpc/configs/40x/acadia_defconfig
+>  delete mode 100644 arch/powerpc/configs/40x/kilauea_defconfig
+>  delete mode 100644 arch/powerpc/configs/40x/klondike_defconfig
+>  delete mode 100644 arch/powerpc/configs/40x/makalu_defconfig
+>  delete mode 100644 arch/powerpc/configs/40x/obs600_defconfig
+>  delete mode 100644 arch/powerpc/configs/40x/walnut_defconfig
+>  delete mode 100644 arch/powerpc/configs/ppc40x_defconfig
+>  delete mode 100644 arch/powerpc/include/asm/nohash/32/mmu-40x.h
+>  delete mode 100644 arch/powerpc/include/asm/nohash/32/pte-40x.h
+>  delete mode 100644 arch/powerpc/kernel/cpu_specs_40x.h
+>  delete mode 100644 arch/powerpc/kernel/head_40x.S
+>  delete mode 100644 arch/powerpc/mm/nohash/40x.c
+>  delete mode 100644 arch/powerpc/platforms/40x/Kconfig
+>  delete mode 100644 arch/powerpc/platforms/40x/Makefile
+>  delete mode 100644 arch/powerpc/platforms/40x/ppc40x_simple.c
+>  rename arch/powerpc/platforms/{4xx => 44x}/cpm.c (100%)
+>  rename arch/powerpc/platforms/{4xx => 44x}/gpio.c (100%)
+>  rename arch/powerpc/platforms/{4xx => 44x}/hsta_msi.c (100%)
+>  rename arch/powerpc/platforms/{4xx => 44x}/pci.c (95%)
+>  rename arch/powerpc/platforms/{4xx => 44x}/pci.h (100%)
+>  rename arch/powerpc/platforms/{4xx => 44x}/soc.c (100%)
+>  rename arch/powerpc/platforms/{4xx => 44x}/uic.c (100%)
+>  delete mode 100644 arch/powerpc/platforms/4xx/Makefile
+>  delete mode 100644 arch/powerpc/platforms/4xx/machine_check.c
+> 
+> --
+> 2.45.0
+> 
+> 
+> 
 
-> I firmly believe the refactoring in this patch series is a step in
-> that direction.
 
-But fine, as long as we are going to fix it. PPC really needs this to
-be resolved to keep working.
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
 
-Jason
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
+
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
+
+  pip3 install dtschema --upgrade
+
+
+New warnings running 'make CHECK_DTBS=y acadia.dtb hotfoot.dtb kilauea.dtb obs600.dtb' for 20240506125152.78174-1-mpe@ellerman.id.au:
+
+make[2]: *** No rule to make target 'arch/powerpc/boot/dts/obs600.dtb'.
+make[2]: *** No rule to make target 'arch/powerpc/boot/dts/hotfoot.dtb'.
+make[2]: *** No rule to make target 'arch/powerpc/boot/dts/kilauea.dtb'.
+make[1]: *** [/home/rob/proj/linux-dt-testing/Makefile:1392: hotfoot.dtb] Error 2
+make[1]: *** [/home/rob/proj/linux-dt-testing/Makefile:1392: kilauea.dtb] Error 2
+make[1]: *** [/home/rob/proj/linux-dt-testing/Makefile:1392: obs600.dtb] Error 2
+make[2]: *** No rule to make target 'arch/powerpc/boot/dts/acadia.dtb'.
+make[1]: *** [/home/rob/proj/linux-dt-testing/Makefile:1392: acadia.dtb] Error 2
+make: *** [Makefile:240: __sub-make] Error 2
+make: Target 'acadia.dtb' not remade because of errors.
+make: Target 'hotfoot.dtb' not remade because of errors.
+make: Target 'kilauea.dtb' not remade because of errors.
+make: Target 'obs600.dtb' not remade because of errors.
+
+
+
+
+
