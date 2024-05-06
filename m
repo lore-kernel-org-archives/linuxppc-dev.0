@@ -4,45 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B75F5C4345F
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 May 2024 19:35:13 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=McWQbNDY;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B6ADC25B4F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2024 18:15:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VXZWN2NYgz3cYc
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2024 05:35:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=mcgrof@infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VY8jJ3BNBz3cXD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 04:15:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=srs0=huxk=mj=goodmis.org=rostedt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VXZV64X9kz3cXj
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 May 2024 05:34:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Sender:In-Reply-To:Content-Type:
-	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=ir7v3reFern2bMfdElsM96VZnzXzk0n4uUJTOAif+1Q=; b=McWQbNDYzuYXgpSXDP4LItZWas
-	c+G1yOfrbEspOzp1y83MmoVq+GjM65/lDs5ubikEffoKy6knBTT0Cnta994MJYbor6t7/xL39+xZY
-	ql5OkyzdVJnqVLsZA07ot1DBjiNfK/PRj32i+7icc4KxOKtjuizlh6PQ2yg/Gh2uW00MtWrZH+noT
-	DmGe+qrgLQzl+Vjiy6wLJXFRAfjYNsLD6oxZNRyY3G4+BY0/9l8y8NCR4bpLwA4zkQq+SpC8pRlQ7
-	1jq7R+FD/uXz6shSAQhD3+U1mfsV1BoTVZ/bSVu26krBG1rtN+CtsWnH1RZsq3KB14EYp0oR36XWz
-	2afx1NrA==;
-Received: from mcgrof by bombadil.infradead.org with local (Exim 4.97.1 #2 (Red Hat Linux))
-	id 1s3hc8-0000000587A-2v0C;
-	Sun, 05 May 2024 19:33:36 +0000
-Date: Sun, 5 May 2024 12:33:36 -0700
-From: Luis Chamberlain <mcgrof@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VY8hn6XjPz30VR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2024 04:15:21 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 617ADCE0B16;
+	Mon,  6 May 2024 18:15:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4789AC116B1;
+	Mon,  6 May 2024 18:15:10 +0000 (UTC)
+Date: Mon, 6 May 2024 14:15:15 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
 To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH RESEND v8 00/16] mm: jit/text allocator
-Message-ID: <ZjffEEsRIb8r0jG6@bombadil.infradead.org>
-References: <20240505160628.2323363-1-rppt@kernel.org>
+Subject: Re: [PATCH v8 06/17] mm: introduce execmem_alloc() and
+ execmem_free()
+Message-ID: <20240506141515.10fb2a69@gandalf.local.home>
+In-Reply-To: <20240505142600.2322517-7-rppt@kernel.org>
+References: <20240505142600.2322517-1-rppt@kernel.org>
+	<20240505142600.2322517-7-rppt@kernel.org>
+X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240505160628.2323363-1-rppt@kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,23 +46,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-mips@vger.kernel.org, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liviu Dudau <liviu@dudau.co.uk>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.o
- rg>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, =?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Russell King <linux@armlinux.org.uk>, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, linux-mips@vger.kernel.org, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liviu Dudau <liviu@dudau.co.uk>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Philippe =?UTF-8?B?TWF0aGlldS1EYXVkw6k=?= <philmd@linaro.o
+ rg>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, May 05, 2024 at 07:06:12PM +0300, Mike Rapoport wrote:
-> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
-> 
-> Hi,
-> 
-> The patches are also available in git:
-> https://git.kernel.org/pub/scm/linux/kernel/git/rppt/linux.git/log/?h=execmem/v8
-> 
-> v8:
-> * fix intialization of default_execmem_info
+On Sun,  5 May 2024 17:25:49 +0300
+Mike Rapoport <rppt@kernel.org> wrote:
 
-Thanks, applied and pushed to modules-next. If we find fixes, let's
-please just now have separate patches on top of this series.
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 70139d9d2e01..c8ddb7abda7c 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/memory.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/set_memory.h>
+> +#include <linux/execmem.h>
+>  
+>  #include <trace/syscall.h>
+>  
+> @@ -261,15 +262,14 @@ void arch_ftrace_update_code(int command)
+>  #ifdef CONFIG_X86_64
+>  
+>  #ifdef CONFIG_MODULES
+> -#include <linux/moduleloader.h>
+>  /* Module allocation simplifies allocating memory for code */
+>  static inline void *alloc_tramp(unsigned long size)
+>  {
+> -	return module_alloc(size);
+> +	return execmem_alloc(EXECMEM_FTRACE, size);
+>  }
+>  static inline void tramp_free(void *tramp)
+>  {
+> -	module_memfree(tramp);
+> +	execmem_free(tramp);
+>  }
+>  #else
+>  /* Trampolines can only be created if modules are supported */
+> diff --git a/arch/x86/kernel/kprobes/core.c b/arch/x86/kernel/kprobes/core.c
 
-  Luis
+Acked-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+
+-- Steve
