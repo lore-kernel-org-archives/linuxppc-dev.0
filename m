@@ -4,36 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91A51C10F1A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 14:42:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F7EFC25B4F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 14:53:44 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JvNPgBvv;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VYgwq1VQ2z3cVm
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 00:42:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VYh9g1hvQz3cX7
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 00:53:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JvNPgBvv;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VYgw02bP3z3cCM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 00:41:52 +1000 (AEST)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4VYgvw102Bz4x0x; Wed,  8 May 2024 00:41:48 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VYgvt194nz4x23;
-	Wed,  8 May 2024 00:41:46 +1000 (AEST)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org, Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20240326055413.186534-1-sourabhjain@linux.ibm.com>
-References: <20240326055413.186534-1-sourabhjain@linux.ibm.com>
-Subject: Re: [PATCH v18 0/6] powerpc/crash: Kernel handling of CPU and memory hotplug
-Message-Id: <171509287314.62008.11812494124513471250.b4-ty@ellerman.id.au>
-Date: Wed, 08 May 2024 00:41:13 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VYh8t4PdKz3cF6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 00:53:02 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id ECB1FCE126E;
+	Tue,  7 May 2024 14:53:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B756BC4AF63;
+	Tue,  7 May 2024 14:52:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1715093580;
+	bh=G2fd/G6gHoEl3QR40FzwdMkgc9pQE2sWSv49OHbI4d4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=JvNPgBvvlZTMle2tmEciAGw4tri1AC80m9Gm4LuqqYzLzoD5yn/+U4w1lq0hVsEPN
+	 NuNmtC1elTWZev4XncK6IHzUFAxmbg4LwnEV2c9vAfCl5HJiireagp/Ej8oPJKGuul
+	 /6wHXPs9HT5lEn/+xwvxUOqeUwCCUpDzN95f5CsNZGT/7Chke0GafGBJQAcZez/uUq
+	 7poyjgcEqoT6wr6EBEJHitW+ROmlFfZzQBtREzVs2C9YM3212ZkdWRARw8oLHMVc5H
+	 OynWw14pkd5xCPEp01lHucmRHRS0CLawCT4nnn2ZQ71hfKMrdUUgBFHkFabTYqEwrO
+	 EdReYeVrSrymw==
+Date: Tue, 7 May 2024 11:52:57 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Namhyung Kim <namhyung@kernel.org>
+Subject: Re: [PATCH V2 3/9] tools/perf: Fix a comment about multi_regs in
+ extract_reg_offset function
+Message-ID: <ZjpASVk1GezAzDAG@x1>
+References: <20240506121906.76639-1-atrajeev@linux.vnet.ibm.com>
+ <20240506121906.76639-4-atrajeev@linux.vnet.ibm.com>
+ <CAM9d7ciKUQErzu1Y7FnWCryW15xUkyJLSt-Jez9h8TYgp-tLjw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAM9d7ciKUQErzu1Y7FnWCryW15xUkyJLSt-Jez9h8TYgp-tLjw@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -45,34 +63,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Mimi Zohar <zohar@linux.ibm.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Valentin Schneider <vschneid@redhat.com>, Baoquan He <bhe@redhat.com>, x86@kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Laurent Dufour <laurent.dufour@fr.ibm.com>, Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>, Naveen N Rao <naveen@kernel.org>, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Hari Bathini <hbathini@linux.ibm.com>, Oscar Salvador <osalvador@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kexec@lists.infradead.org, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Akhil Raj <lf32.dev@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: irogers@google.com, Athira Rajeev <atrajeev@linux.vnet.ibm.com>, kjain@linux.ibm.com, adrian.hunter@intel.com, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, jolsa@kernel.org, akanksha@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 26 Mar 2024 11:24:07 +0530, Sourabh Jain wrote:
-> Commit 247262756121 ("crash: add generic infrastructure for crash
-> hotplug support") added a generic infrastructure that allows
-> architectures to selectively update the kdump image component during CPU
-> or memory add/remove events within the kernel itself.
+On Mon, May 06, 2024 at 09:40:15PM -0700, Namhyung Kim wrote:
+> On Mon, May 6, 2024 at 5:19 AM Athira Rajeev
+> <atrajeev@linux.vnet.ibm.com> wrote:
+> >
+> > Fix a comment in function which explains how multi_regs field gets set
+> > for an instruction. In the example, "mov  %rsi, 8(%rbx,%rcx,4)", the
+> > comment mistakenly referred to "dst_multi_regs = 0". Correct it to use
+> > "src_multi_regs = 0"
+> >
+> > Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 > 
-> This patch series adds crash hotplug handler for PowerPC and enable
-> support to update the kdump image on CPU/Memory add/remove events.
-> 
-> [...]
+> Acked-by: Namhyung Kim <namhyung@kernel.org>
 
-Applied to powerpc/topic/kdump-hotplug.
+Cherry picked this one into perf-tools-next.
 
-[1/6] crash: forward memory_notify arg to arch crash hotplug handler
-      https://git.kernel.org/powerpc/c/118005713e35a1893c6ee47ab2926cca277737de
-[2/6] crash: add a new kexec flag for hotplug support
-      https://git.kernel.org/powerpc/c/79365026f86948b52c3cb7bf099dded92c559b4c
-[3/6] powerpc/kexec: move *_memory_ranges functions to ranges.c
-      https://git.kernel.org/powerpc/c/f5f0da5a7b18fab383bac92044fd8f4f288c9d38
-[4/6] PowerPC/kexec: make the update_cpus_node() function public
-      https://git.kernel.org/powerpc/c/0857beff9c1ec8bb421a8b7a721da0f34cc886c0
-[5/6] powerpc/crash: add crash CPU hotplug support
-      https://git.kernel.org/powerpc/c/b741092d59761b98781fcb4f3f521312ed8d5006
-[6/6] powerpc/crash: add crash memory hotplug support
-      https://git.kernel.org/powerpc/c/849599b702ef8977fcd5b2f27c61ef773c42bb88
+Thanks,
 
-cheers
+- Arnaldo
