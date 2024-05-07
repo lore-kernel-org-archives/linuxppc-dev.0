@@ -4,58 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22281C10F1A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 19:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7970DC10F1A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 23:24:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=DGHZcDwQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NCM+bV+z;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VYpNm5LLqz3cTb
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 05:33:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VYvW00dGzz3cTf
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 09:24:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=DGHZcDwQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NCM+bV+z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org)
-X-Greylist: delayed 539 seconds by postgrey-1.37 at boromir; Wed, 08 May 2024 05:32:58 AEST
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=puranjay@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VYpMt6MZ9z30Wf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 05:32:58 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
-	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
-	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=1Rlt99zmcVILKclqpbjv2utXWPqAc4TJPPlL31nMJt8=; b=DGHZcDwQt05/ofsRmHCXxB7F7p
-	4+19AHlf/kB9ynBunr+XzmEvyFe6jOB5Bi4Rg6t+TMauL7eOeAIVct20JsAWJK4OCulTHdC9kwooI
-	piaA8++amm65GJTBciceqX7s9AIYLi/5LAzyO1mzBOTXaqL3R65vQlUcICSp/KtxsspkpnGaEw/jv
-	BFFDRAv6XEpLYVjeNMGIqqF6+U84USuu86U1FYPS/48Wb2aAdf83MBClnEzbI40mPdQEnJjsMlRxA
-	jA2Mxibyz2aoHWw87X0TBKAU7uJ6LRcRJ4xY4XkjrvGCwdIf2txmwWpBcVfF0tuTv/Uq/WjjhOrdl
-	Mj+cEspQ==;
-Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:36042)
-	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <linux@armlinux.org.uk>)
-	id 1s4QP6-0004C4-0A;
-	Tue, 07 May 2024 20:23:08 +0100
-Received: from linux by shell.armlinux.org.uk with local (Exim 4.94.2)
-	(envelope-from <linux@shell.armlinux.org.uk>)
-	id 1s4QOw-0000ZA-Of; Tue, 07 May 2024 20:22:58 +0100
-Date: Tue, 7 May 2024 20:22:58 +0100
-From: "Russell King (Oracle)" <linux@armlinux.org.uk>
-To: Allen Pais <apais@linux.microsoft.com>
-Subject: Re: [PATCH 1/1] [RFC] ethernet: Convert from tasklet to BH workqueue
-Message-ID: <Zjp/kgBE2ddjV044@shell.armlinux.org.uk>
-References: <20240507190111.16710-1-apais@linux.microsoft.com>
- <20240507190111.16710-2-apais@linux.microsoft.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VYmBr4rp7z3cCn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 03:55:00 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 88E49CE137E;
+	Tue,  7 May 2024 17:54:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F871C2BBFC;
+	Tue,  7 May 2024 17:54:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1715104496;
+	bh=uDjLVkavopOnCJiGjdVePDtNVdHPscLWRcS9JUdVQk8=;
+	h=From:To:Cc:Subject:Date:From;
+	b=NCM+bV+zSSHM0SF7KwWG6eVUNX4KpeYhAiCETsZwjAFYNrx6sstPZrCFMyVhA4yEJ
+	 AmLtuuuoqPJ0VrWPKbzCiDOEPoyXheVsO18eDOoHeYuIOVKGm+oHIjm0o12FuBJ5ca
+	 ISiEgElsIrQpoTLRTqAIW5YZWbKJ7o3K0ZIFd2E+ZImeSS8gFR8ttp9QCGyZ8cvc2g
+	 tZjFC/NOz6N4z5F7d5pI9SHkMmKu4hUrExjDm/78Ixh42XJP3yEQ5nczlO1hXYNQz1
+	 M6QjT/AXAJ9yndG9gxobO5krXfrQBsm8YdmTD4r5p84gTS0WMGPvEyWkIgd+MXntSY
+	 fgzrvg17DGtPA==
+From: Puranjay Mohan <puranjay@kernel.org>
+To: Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Martin KaFai Lau <martin.lau@linux.dev>,
+	Eduard Zingerman <eddyz87@gmail.com>,
+	Song Liu <song@kernel.org>,
+	Yonghong Song <yonghong.song@linux.dev>,
+	John Fastabend <john.fastabend@gmail.com>,
+	KP Singh <kpsingh@kernel.org>,
+	Stanislav Fomichev <sdf@google.com>,
+	Hao Luo <haoluo@google.com>,
+	Jiri Olsa <jolsa@kernel.org>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	bpf@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH bpf] powerpc/bpf: enforce full ordering for ATOMIC operations with BPF_FETCH
+Date: Tue,  7 May 2024 17:54:39 +0000
+Message-Id: <20240507175439.119467-1-puranjay@kernel.org>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240507190111.16710-2-apais@linux.microsoft.com>
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Wed, 08 May 2024 09:23:46 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,32 +78,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: marcin.s.wojtas@gmail.com, kda@linux-powerpc.org, edumazet@google.com, linux-acenic@sunsite.dk, louis.peens@corigine.com, angelogioacchino.delregno@collabora.com, borisp@nvidia.com, cooldavid@cooldavid.org, aneesh.kumar@kernel.org, tlfalcon@linux.ibm.com, naveen.n.rao@linux.ibm.com, kuba@kernel.org, pabeni@redhat.com, lorenzo@kernel.org, Mark-MC.Lee@mediatek.com, jes@trained-monkey.org, nnac123@linux.ibm.com, richardcochran@gmail.com, sean.wang@mediatek.com, npiggin@gmail.com, linux-net-drivers@amd.com, cai.huoqing@linux.dev, matthias.bgg@gmail.com, linux-arm-kernel@lists.infradead.org, mlindner@marvell.com, netdev@vger.kernel.org, oss-drivers@corigine.com, dougmill@linux.ibm.com, linux-kernel@vger.kernel.org, UNGLinuxDriver@microchip.com, stephen@networkplumber.org, linux-rdma@vger.kernel.org, bryan.whitehead@microchip.com, linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, nbd@nbd.name
+Cc: puranjay12@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 07, 2024 at 07:01:11PM +0000, Allen Pais wrote:
-> The only generic interface to execute asynchronously in the BH context is
-> tasklet; however, it's marked deprecated and has some design flaws. To
-> replace tasklets, BH workqueue support was recently added. A BH workqueue
-> behaves similarly to regular workqueues except that the queued work items
-> are executed in the BH context.
-> 
-> This patch converts drivers/ethernet/* from tasklet to BH workqueue.
+The Linux Kernel Memory Model [1][2] requires RMW operations that have a
+return value to be fully ordered.
 
-I doubt you're going to get many comments on this patch, being so large
-and spread across all drivers. I'm not going to bother trying to edit
-this down to something more sensible, I'll just plonk my comment here.
+BPF atomic operations with BPF_FETCH (including BPF_XCHG and
+BPF_CMPXCHG) return a value back so they need to be JITed to fully
+ordered operations. POWERPC currently emits relaxed operations for
+these.
 
-For the mvpp2 driver, you're only updating a comment - and looking at
-it, the comment no longer reflects the code. It doesn't make use of
-tasklets at all. That makes the comment wrong whether or not it's
-updated. So I suggest rather than doing a search and replace for
-"tasklet" to "BH blahblah" (sorry, I don't remember what you replaced
-it with) just get rid of that bit of the comment.
+We can show this by running the following litmus-test:
 
-Thanks.
+PPC SB+atomic_add+fetch
 
+{
+0:r0=x;  (* dst reg assuming offset is 0 *)
+0:r1=2;  (* src reg *)
+0:r2=1;
+0:r4=y;  (* P0 writes to this, P1 reads this *)
+0:r5=z;  (* P1 writes to this, P0 reads this *)
+0:r6=0;
+
+1:r2=1;
+1:r4=y;
+1:r5=z;
+}
+
+P0                      | P1            ;
+stw         r2, 0(r4)   | stw  r2,0(r5) ;
+                        |               ;
+loop:lwarx  r3, r6, r0  |               ;
+mr          r8, r3      |               ;
+add         r3, r3, r1  | sync          ;
+stwcx.      r3, r6, r0  |               ;
+bne         loop        |               ;
+mr          r1, r8      |               ;
+                        |               ;
+lwa         r7, 0(r5)   | lwa  r7,0(r4) ;
+
+~exists(0:r7=0 /\ 1:r7=0)
+
+Witnesses
+Positive: 9 Negative: 3
+Condition ~exists (0:r7=0 /\ 1:r7=0)
+Observation SB+atomic_add+fetch Sometimes 3 9
+
+This test shows that the older store in P0 is reordered with a newer
+load to a different address. Although there is a RMW operation with
+fetch between them. Adding a sync before and after RMW fixes the issue:
+
+Witnesses
+Positive: 9 Negative: 0
+Condition ~exists (0:r7=0 /\ 1:r7=0)
+Observation SB+atomic_add+fetch Never 0 9
+
+[1] https://www.kernel.org/doc/Documentation/memory-barriers.txt
+[2] https://www.kernel.org/doc/Documentation/atomic_t.txt
+
+Fixes: 65112709115f ("powerpc/bpf/64: add support for BPF_ATOMIC bitwise operations")
+Signed-off-by: Puranjay Mohan <puranjay@kernel.org>
+---
+ arch/powerpc/net/bpf_jit_comp32.c | 11 +++++++++++
+ arch/powerpc/net/bpf_jit_comp64.c | 11 +++++++++++
+ 2 files changed, 22 insertions(+)
+
+diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
+index 2f39c50ca729..b635e5344e8a 100644
+--- a/arch/powerpc/net/bpf_jit_comp32.c
++++ b/arch/powerpc/net/bpf_jit_comp32.c
+@@ -853,6 +853,15 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+ 			/* Get offset into TMP_REG */
+ 			EMIT(PPC_RAW_LI(tmp_reg, off));
+ 			tmp_idx = ctx->idx * 4;
++			/*
++			 * Enforce full ordering for operations with BPF_FETCH by emitting a 'sync'
++			 * before and after the operation.
++			 *
++			 * This is a requirement in the Linux Kernel Memory Model.
++			 * See __cmpxchg_u64() in asm/cmpxchg.h as an example.
++			 */
++			if (imm & BPF_FETCH)
++				EMIT(PPC_RAW_SYNC());
+ 			/* load value from memory into r0 */
+ 			EMIT(PPC_RAW_LWARX(_R0, tmp_reg, dst_reg, 0));
+ 
+@@ -905,6 +914,8 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+ 
+ 			/* For the BPF_FETCH variant, get old data into src_reg */
+ 			if (imm & BPF_FETCH) {
++				/* Emit 'sync' to enforce full ordering */
++				EMIT(PPC_RAW_SYNC());
+ 				EMIT(PPC_RAW_MR(ret_reg, ax_reg));
+ 				if (!fp->aux->verifier_zext)
+ 					EMIT(PPC_RAW_LI(ret_reg - 1, 0)); /* higher 32-bit */
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 79f23974a320..27026f19605d 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -804,6 +804,15 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+ 			/* Get offset into TMP_REG_1 */
+ 			EMIT(PPC_RAW_LI(tmp1_reg, off));
+ 			tmp_idx = ctx->idx * 4;
++			/*
++			 * Enforce full ordering for operations with BPF_FETCH by emitting a 'sync'
++			 * before and after the operation.
++			 *
++			 * This is a requirement in the Linux Kernel Memory Model.
++			 * See __cmpxchg_u64() in asm/cmpxchg.h as an example.
++			 */
++			if (imm & BPF_FETCH)
++				EMIT(PPC_RAW_SYNC());
+ 			/* load value from memory into TMP_REG_2 */
+ 			if (size == BPF_DW)
+ 				EMIT(PPC_RAW_LDARX(tmp2_reg, tmp1_reg, dst_reg, 0));
+@@ -865,6 +874,8 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+ 			PPC_BCC_SHORT(COND_NE, tmp_idx);
+ 
+ 			if (imm & BPF_FETCH) {
++				/* Emit 'sync' to enforce full ordering */
++				EMIT(PPC_RAW_SYNC());
+ 				EMIT(PPC_RAW_MR(ret_reg, _R0));
+ 				/*
+ 				 * Skip unnecessary zero-extension for 32-bit cmpxchg.
 -- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTP is here! 80Mbps down 10Mbps up. Decent connectivity at last!
+2.40.1
+
