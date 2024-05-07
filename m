@@ -4,69 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7970DC10F1A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 23:24:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F09DAC10F1A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 23:42:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NCM+bV+z;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WH1d1Zrd;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VYvW00dGzz3cTf
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 09:24:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VYvvD3wlKz3cS3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 09:42:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NCM+bV+z;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WH1d1Zrd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=puranjay@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=mhiramat@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VYmBr4rp7z3cCn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 03:55:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VYvtN3bXGz30Tc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 09:41:16 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 88E49CE137E;
-	Tue,  7 May 2024 17:54:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F871C2BBFC;
-	Tue,  7 May 2024 17:54:56 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 5A11261B3C;
+	Tue,  7 May 2024 23:41:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D7C2C2BBFC;
+	Tue,  7 May 2024 23:41:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1715104496;
-	bh=uDjLVkavopOnCJiGjdVePDtNVdHPscLWRcS9JUdVQk8=;
-	h=From:To:Cc:Subject:Date:From;
-	b=NCM+bV+zSSHM0SF7KwWG6eVUNX4KpeYhAiCETsZwjAFYNrx6sstPZrCFMyVhA4yEJ
-	 AmLtuuuoqPJ0VrWPKbzCiDOEPoyXheVsO18eDOoHeYuIOVKGm+oHIjm0o12FuBJ5ca
-	 ISiEgElsIrQpoTLRTqAIW5YZWbKJ7o3K0ZIFd2E+ZImeSS8gFR8ttp9QCGyZ8cvc2g
-	 tZjFC/NOz6N4z5F7d5pI9SHkMmKu4hUrExjDm/78Ixh42XJP3yEQ5nczlO1hXYNQz1
-	 M6QjT/AXAJ9yndG9gxobO5krXfrQBsm8YdmTD4r5p84gTS0WMGPvEyWkIgd+MXntSY
-	 fgzrvg17DGtPA==
-From: Puranjay Mohan <puranjay@kernel.org>
-To: Alexei Starovoitov <ast@kernel.org>,
-	Daniel Borkmann <daniel@iogearbox.net>,
-	Andrii Nakryiko <andrii@kernel.org>,
-	Martin KaFai Lau <martin.lau@linux.dev>,
-	Eduard Zingerman <eddyz87@gmail.com>,
-	Song Liu <song@kernel.org>,
-	Yonghong Song <yonghong.song@linux.dev>,
-	John Fastabend <john.fastabend@gmail.com>,
-	KP Singh <kpsingh@kernel.org>,
-	Stanislav Fomichev <sdf@google.com>,
-	Hao Luo <haoluo@google.com>,
-	Jiri Olsa <jolsa@kernel.org>,
-	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
-	Hari Bathini <hbathini@linux.ibm.com>,
-	bpf@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH bpf] powerpc/bpf: enforce full ordering for ATOMIC operations with BPF_FETCH
-Date: Tue,  7 May 2024 17:54:39 +0000
-Message-Id: <20240507175439.119467-1-puranjay@kernel.org>
-X-Mailer: git-send-email 2.40.1
-MIME-Version: 1.0
+	s=k20201202; t=1715125273;
+	bh=ODKOUMcSjW/vZC3ltI6tPmb1ZIxhx2e2qI8/N+kVOFM=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=WH1d1ZrdOijFn1cT49Jm2ZUSrhswkNac03IVHqq7Eohwb66eyC/upbIRg5OmSQrS5
+	 590jVcfK2eY7mGIT+Mu2vfZ+2kgvT+bvvG+nO0mpjkaiB/hzuVoCqKdsgEfcB6GUI1
+	 tZHVMdm8HMaoJWCDDdSEsUeSS2shrn9LwS64jApcEtp551mG5S0J2RXLfrbG59V5J/
+	 HlHuUhoLZsEzbSOo52SetyHK+GisTyafXt2qQ3WQN6uI/FPqAL3Mvb4Ag0onvgsMRn
+	 PVoqChvTS3nyekeTg4nrB1W8PoOH/gLtrOXEqRETwcHpFeC7NS6eZgZtaW77r3KgQl
+	 SXWjnlSGSut3Q==
+Date: Wed, 8 May 2024 08:41:02 +0900
+From: Masami Hiramatsu (Google) <mhiramat@kernel.org>
+To: Mike Rapoport <rppt@kernel.org>
+Subject: Re: [PATCH RESEND v8 05/16] module: make module_memory_{alloc,free}
+ more self-contained
+Message-Id: <20240508084102.9e9b18a9b111d427e7cc9c94@kernel.org>
+In-Reply-To: <20240505160628.2323363-6-rppt@kernel.org>
+References: <20240505160628.2323363-1-rppt@kernel.org>
+	<20240505160628.2323363-6-rppt@kernel.org>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Wed, 08 May 2024 09:23:46 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,131 +62,151 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: puranjay12@gmail.com
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Russell King <linux@armlinux.org.uk>, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, linux-mips@vger.kernel.org, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liviu Dudau <liviu@dudau.co.uk>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Philippe =?UTF-8?B?T
+ WF0aGlldS1EYXVkw6k=?= <philmd@linaro.org>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Linux Kernel Memory Model [1][2] requires RMW operations that have a
-return value to be fully ordered.
+On Sun,  5 May 2024 19:06:17 +0300
+Mike Rapoport <rppt@kernel.org> wrote:
 
-BPF atomic operations with BPF_FETCH (including BPF_XCHG and
-BPF_CMPXCHG) return a value back so they need to be JITed to fully
-ordered operations. POWERPC currently emits relaxed operations for
-these.
+> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+> 
+> Move the logic related to the memory allocation and freeing into
+> module_memory_alloc() and module_memory_free().
+> 
 
-We can show this by running the following litmus-test:
+Looks good to me.
 
-PPC SB+atomic_add+fetch
+Reviewed-by: Masami Hiramatsu (Google) <mhiramat@kernel.org>
 
-{
-0:r0=x;  (* dst reg assuming offset is 0 *)
-0:r1=2;  (* src reg *)
-0:r2=1;
-0:r4=y;  (* P0 writes to this, P1 reads this *)
-0:r5=z;  (* P1 writes to this, P0 reads this *)
-0:r6=0;
+Thanks,
 
-1:r2=1;
-1:r4=y;
-1:r5=z;
-}
+> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+> Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+> ---
+>  kernel/module/main.c | 64 +++++++++++++++++++++++++++-----------------
+>  1 file changed, 39 insertions(+), 25 deletions(-)
+> 
+> diff --git a/kernel/module/main.c b/kernel/module/main.c
+> index e1e8a7a9d6c1..5b82b069e0d3 100644
+> --- a/kernel/module/main.c
+> +++ b/kernel/module/main.c
+> @@ -1203,15 +1203,44 @@ static bool mod_mem_use_vmalloc(enum mod_mem_type type)
+>  		mod_mem_type_is_core_data(type);
+>  }
+>  
+> -static void *module_memory_alloc(unsigned int size, enum mod_mem_type type)
+> +static int module_memory_alloc(struct module *mod, enum mod_mem_type type)
+>  {
+> +	unsigned int size = PAGE_ALIGN(mod->mem[type].size);
+> +	void *ptr;
+> +
+> +	mod->mem[type].size = size;
+> +
+>  	if (mod_mem_use_vmalloc(type))
+> -		return vzalloc(size);
+> -	return module_alloc(size);
+> +		ptr = vmalloc(size);
+> +	else
+> +		ptr = module_alloc(size);
+> +
+> +	if (!ptr)
+> +		return -ENOMEM;
+> +
+> +	/*
+> +	 * The pointer to these blocks of memory are stored on the module
+> +	 * structure and we keep that around so long as the module is
+> +	 * around. We only free that memory when we unload the module.
+> +	 * Just mark them as not being a leak then. The .init* ELF
+> +	 * sections *do* get freed after boot so we *could* treat them
+> +	 * slightly differently with kmemleak_ignore() and only grey
+> +	 * them out as they work as typical memory allocations which
+> +	 * *do* eventually get freed, but let's just keep things simple
+> +	 * and avoid *any* false positives.
+> +	 */
+> +	kmemleak_not_leak(ptr);
+> +
+> +	memset(ptr, 0, size);
+> +	mod->mem[type].base = ptr;
+> +
+> +	return 0;
+>  }
+>  
+> -static void module_memory_free(void *ptr, enum mod_mem_type type)
+> +static void module_memory_free(struct module *mod, enum mod_mem_type type)
+>  {
+> +	void *ptr = mod->mem[type].base;
+> +
+>  	if (mod_mem_use_vmalloc(type))
+>  		vfree(ptr);
+>  	else
+> @@ -1229,12 +1258,12 @@ static void free_mod_mem(struct module *mod)
+>  		/* Free lock-classes; relies on the preceding sync_rcu(). */
+>  		lockdep_free_key_range(mod_mem->base, mod_mem->size);
+>  		if (mod_mem->size)
+> -			module_memory_free(mod_mem->base, type);
+> +			module_memory_free(mod, type);
+>  	}
+>  
+>  	/* MOD_DATA hosts mod, so free it at last */
+>  	lockdep_free_key_range(mod->mem[MOD_DATA].base, mod->mem[MOD_DATA].size);
+> -	module_memory_free(mod->mem[MOD_DATA].base, MOD_DATA);
+> +	module_memory_free(mod, MOD_DATA);
+>  }
+>  
+>  /* Free a module, remove from lists, etc. */
+> @@ -2225,7 +2254,6 @@ static int find_module_sections(struct module *mod, struct load_info *info)
+>  static int move_module(struct module *mod, struct load_info *info)
+>  {
+>  	int i;
+> -	void *ptr;
+>  	enum mod_mem_type t = 0;
+>  	int ret = -ENOMEM;
+>  
+> @@ -2234,26 +2262,12 @@ static int move_module(struct module *mod, struct load_info *info)
+>  			mod->mem[type].base = NULL;
+>  			continue;
+>  		}
+> -		mod->mem[type].size = PAGE_ALIGN(mod->mem[type].size);
+> -		ptr = module_memory_alloc(mod->mem[type].size, type);
+> -		/*
+> -                 * The pointer to these blocks of memory are stored on the module
+> -                 * structure and we keep that around so long as the module is
+> -                 * around. We only free that memory when we unload the module.
+> -                 * Just mark them as not being a leak then. The .init* ELF
+> -                 * sections *do* get freed after boot so we *could* treat them
+> -                 * slightly differently with kmemleak_ignore() and only grey
+> -                 * them out as they work as typical memory allocations which
+> -                 * *do* eventually get freed, but let's just keep things simple
+> -                 * and avoid *any* false positives.
+> -		 */
+> -		kmemleak_not_leak(ptr);
+> -		if (!ptr) {
+> +
+> +		ret = module_memory_alloc(mod, type);
+> +		if (ret) {
+>  			t = type;
+>  			goto out_enomem;
+>  		}
+> -		memset(ptr, 0, mod->mem[type].size);
+> -		mod->mem[type].base = ptr;
+>  	}
+>  
+>  	/* Transfer each section which specifies SHF_ALLOC */
+> @@ -2296,7 +2310,7 @@ static int move_module(struct module *mod, struct load_info *info)
+>  	return 0;
+>  out_enomem:
+>  	for (t--; t >= 0; t--)
+> -		module_memory_free(mod->mem[t].base, t);
+> +		module_memory_free(mod, t);
+>  	return ret;
+>  }
+>  
+> -- 
+> 2.43.0
+> 
 
-P0                      | P1            ;
-stw         r2, 0(r4)   | stw  r2,0(r5) ;
-                        |               ;
-loop:lwarx  r3, r6, r0  |               ;
-mr          r8, r3      |               ;
-add         r3, r3, r1  | sync          ;
-stwcx.      r3, r6, r0  |               ;
-bne         loop        |               ;
-mr          r1, r8      |               ;
-                        |               ;
-lwa         r7, 0(r5)   | lwa  r7,0(r4) ;
 
-~exists(0:r7=0 /\ 1:r7=0)
-
-Witnesses
-Positive: 9 Negative: 3
-Condition ~exists (0:r7=0 /\ 1:r7=0)
-Observation SB+atomic_add+fetch Sometimes 3 9
-
-This test shows that the older store in P0 is reordered with a newer
-load to a different address. Although there is a RMW operation with
-fetch between them. Adding a sync before and after RMW fixes the issue:
-
-Witnesses
-Positive: 9 Negative: 0
-Condition ~exists (0:r7=0 /\ 1:r7=0)
-Observation SB+atomic_add+fetch Never 0 9
-
-[1] https://www.kernel.org/doc/Documentation/memory-barriers.txt
-[2] https://www.kernel.org/doc/Documentation/atomic_t.txt
-
-Fixes: 65112709115f ("powerpc/bpf/64: add support for BPF_ATOMIC bitwise operations")
-Signed-off-by: Puranjay Mohan <puranjay@kernel.org>
----
- arch/powerpc/net/bpf_jit_comp32.c | 11 +++++++++++
- arch/powerpc/net/bpf_jit_comp64.c | 11 +++++++++++
- 2 files changed, 22 insertions(+)
-
-diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
-index 2f39c50ca729..b635e5344e8a 100644
---- a/arch/powerpc/net/bpf_jit_comp32.c
-+++ b/arch/powerpc/net/bpf_jit_comp32.c
-@@ -853,6 +853,15 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
- 			/* Get offset into TMP_REG */
- 			EMIT(PPC_RAW_LI(tmp_reg, off));
- 			tmp_idx = ctx->idx * 4;
-+			/*
-+			 * Enforce full ordering for operations with BPF_FETCH by emitting a 'sync'
-+			 * before and after the operation.
-+			 *
-+			 * This is a requirement in the Linux Kernel Memory Model.
-+			 * See __cmpxchg_u64() in asm/cmpxchg.h as an example.
-+			 */
-+			if (imm & BPF_FETCH)
-+				EMIT(PPC_RAW_SYNC());
- 			/* load value from memory into r0 */
- 			EMIT(PPC_RAW_LWARX(_R0, tmp_reg, dst_reg, 0));
- 
-@@ -905,6 +914,8 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
- 
- 			/* For the BPF_FETCH variant, get old data into src_reg */
- 			if (imm & BPF_FETCH) {
-+				/* Emit 'sync' to enforce full ordering */
-+				EMIT(PPC_RAW_SYNC());
- 				EMIT(PPC_RAW_MR(ret_reg, ax_reg));
- 				if (!fp->aux->verifier_zext)
- 					EMIT(PPC_RAW_LI(ret_reg - 1, 0)); /* higher 32-bit */
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 79f23974a320..27026f19605d 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -804,6 +804,15 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
- 			/* Get offset into TMP_REG_1 */
- 			EMIT(PPC_RAW_LI(tmp1_reg, off));
- 			tmp_idx = ctx->idx * 4;
-+			/*
-+			 * Enforce full ordering for operations with BPF_FETCH by emitting a 'sync'
-+			 * before and after the operation.
-+			 *
-+			 * This is a requirement in the Linux Kernel Memory Model.
-+			 * See __cmpxchg_u64() in asm/cmpxchg.h as an example.
-+			 */
-+			if (imm & BPF_FETCH)
-+				EMIT(PPC_RAW_SYNC());
- 			/* load value from memory into TMP_REG_2 */
- 			if (size == BPF_DW)
- 				EMIT(PPC_RAW_LDARX(tmp2_reg, tmp1_reg, dst_reg, 0));
-@@ -865,6 +874,8 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
- 			PPC_BCC_SHORT(COND_NE, tmp_idx);
- 
- 			if (imm & BPF_FETCH) {
-+				/* Emit 'sync' to enforce full ordering */
-+				EMIT(PPC_RAW_SYNC());
- 				EMIT(PPC_RAW_MR(ret_reg, _R0));
- 				/*
- 				 * Skip unnecessary zero-extension for 32-bit cmpxchg.
 -- 
-2.40.1
-
+Masami Hiramatsu (Google) <mhiramat@kernel.org>
