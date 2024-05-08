@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCE2AC04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:46:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D8C6C04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:47:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGf92tCrz3wKw
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:46:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGfZ6gGfz77yW
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:47:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXQ6RNhz3cY8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:41:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXR2l7kz3cYF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:41:59 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXQ45fLz4x4T;
-	Wed,  8 May 2024 23:41:58 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXR24Wnz4xGX;
+	Wed,  8 May 2024 23:41:59 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, npiggin@gmail.com, linux@treblig.org
-In-Reply-To: <20240503002317.183500-1-linux@treblig.org>
-References: <20240503002317.183500-1-linux@treblig.org>
-Subject: Re: [PATCH] power: Remove arch specific module bug stuff
-Message-Id: <171517558546.165093.744820732746093524.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Masahiro Yamada <masahiroy@kernel.org>
+In-Reply-To: <20240216135517.2002749-1-masahiroy@kernel.org>
+References: <20240216135517.2002749-1-masahiroy@kernel.org>
+Subject: Re: [PATCH] powerpc: remove unused *_syscall_64.o variables in Makefile
+Message-Id: <171517558552.165093.5436397769184900794.b4-ty@ellerman.id.au>
 Date: Wed, 08 May 2024 23:39:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,24 +43,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 03 May 2024 01:23:17 +0100, linux@treblig.org wrote:
-> The last function to reference module_bug_list went in 2008's
->   commit b9754568ef17 ("powerpc: Remove dead module_find_bug code")
-> but I don't think that was called since 2006's
->   commit 73c9ceab40b1 ("[POWERPC] Generic BUG for powerpc")
+On Fri, 16 Feb 2024 22:55:17 +0900, Masahiro Yamada wrote:
+> Commit ab1a517d55b0 ("powerpc/syscall: Rename syscall_64.c into
+> interrupt.c") missed to update these three lines:
 > 
-> Now that the list has gone, I think we can also clean up the bug
-> entries in mod_arch_specific.
+>   GCOV_PROFILE_syscall_64.o := n
+>   KCOV_INSTRUMENT_syscall_64.o := n
+>   UBSAN_SANITIZE_syscall_64.o := n
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] power: Remove arch specific module bug stuff
-      https://git.kernel.org/powerpc/c/4071739249fd2e647e7058dbab0db4ddc0a0c427
+[1/1] powerpc: remove unused *_syscall_64.o variables in Makefile
+      https://git.kernel.org/powerpc/c/4f1dad618587fa2fa903235301111c8c382b6f3e
 
 cheers
