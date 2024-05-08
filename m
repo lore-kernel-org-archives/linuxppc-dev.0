@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E72D0C19F4F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:46:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCE2AC04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:46:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGdl4QVmz3fTB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:46:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGf92tCrz3wKw
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:46:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXQ1R8Jz3cXk
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXQ6RNhz3cY8
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:41:58 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXP6RJ9z4xG1;
-	Wed,  8 May 2024 23:41:57 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXQ45fLz4x4T;
+	Wed,  8 May 2024 23:41:58 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <20240502173205.142794-1-hbathini@linux.ibm.com>
-References: <20240502173205.142794-1-hbathini@linux.ibm.com>
-Subject: Re: [PATCH v4 1/2] powerpc64/bpf: fix tail calls for PCREL addressing
-Message-Id: <171517558549.165093.12896481227430118737.b4-ty@ellerman.id.au>
+To: mpe@ellerman.id.au, npiggin@gmail.com, linux@treblig.org
+In-Reply-To: <20240503002317.183500-1-linux@treblig.org>
+References: <20240503002317.183500-1-linux@treblig.org>
+Subject: Re: [PATCH] power: Remove arch specific module bug stuff
+Message-Id: <171517558546.165093.744820732746093524.b4-ty@ellerman.id.au>
 Date: Wed, 08 May 2024 23:39:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,31 +43,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, stable@vger.kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Martin KaFai Lau <martin.lau@linux.dev>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 02 May 2024 23:02:04 +0530, Hari Bathini wrote:
-> With PCREL addressing, there is no kernel TOC. So, it is not setup in
-> prologue when PCREL addressing is used. But the number of instructions
-> to skip on a tail call was not adjusted accordingly. That resulted in
-> not so obvious failures while using tailcalls. 'tailcalls' selftest
-> crashed the system with the below call trace:
+On Fri, 03 May 2024 01:23:17 +0100, linux@treblig.org wrote:
+> The last function to reference module_bug_list went in 2008's
+>   commit b9754568ef17 ("powerpc: Remove dead module_find_bug code")
+> but I don't think that was called since 2006's
+>   commit 73c9ceab40b1 ("[POWERPC] Generic BUG for powerpc")
 > 
->   bpf_test_run+0xe8/0x3cc (unreliable)
->   bpf_prog_test_run_skb+0x348/0x778
->   __sys_bpf+0xb04/0x2b00
->   sys_bpf+0x28/0x38
->   system_call_exception+0x168/0x340
->   system_call_vectored_common+0x15c/0x2ec
+> Now that the list has gone, I think we can also clean up the bug
+> entries in mod_arch_specific.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc64/bpf: fix tail calls for PCREL addressing
-      https://git.kernel.org/powerpc/c/2ecfe59cd7de1f202e9af2516a61fbbf93d0bd4d
-[2/2] powerpc/bpf: enable kfunc call
-      https://git.kernel.org/powerpc/c/61688a82e047a4166436bf2665716cc070572ffa
+[1/1] power: Remove arch specific module bug stuff
+      https://git.kernel.org/powerpc/c/4071739249fd2e647e7058dbab0db4ddc0a0c427
 
 cheers
