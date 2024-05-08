@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEF59C04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:50:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37FB8C04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:51:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGkS2h2Xz78nx
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:50:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGl06DX6z78tD
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:51:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGdT3CB8z3vXG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:46:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGdX6qrFz3flb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:46:24 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGdS57yFz4x0v;
-	Wed,  8 May 2024 23:46:20 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGdT5t9dz4x33;
+	Wed,  8 May 2024 23:46:21 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Vaibhav Jain <vaibhav@linux.ibm.com>, Kautuk Consul <kconsul@linux.vnet.ibm.com>, Amit Machhiwal <amachhiw@linux.vnet.ibm.com>, Jordan Niethe <jniethe5@gmail.com>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-In-Reply-To: <a7ed4cc12e0a0bbd97fac44fe6c222d1c393ec95.1706441651.git.christophe.jaillet@wanadoo.fr>
-References: <a7ed4cc12e0a0bbd97fac44fe6c222d1c393ec95.1706441651.git.christophe.jaillet@wanadoo.fr>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV nestedv2: Fix an error handling path in gs_msg_ops_kvmhv_nestedv2_config_fill_info()
-Message-Id: <171517595459.167543.3276617285735136069.b4-ty@ellerman.id.au>
+To: Paolo Bonzini <pbonzini@redhat.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>
+In-Reply-To: <20230411061446.26324-1-joel@jms.id.au>
+References: <20230411061446.26324-1-joel@jms.id.au>
+Subject: Re: [PATCH] KVM: PPC: Fix documentation for ppc mmu caps
+Message-Id: <171517595458.167543.4513284574842934696.b4-ty@ellerman.id.au>
 Date: Wed, 08 May 2024 23:45:54 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,23 +43,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Gautam Menghani <gautam@linux.ibm.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Cc: Jonathan Corbet <corbet@lwn.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 28 Jan 2024 12:34:25 +0100, Christophe JAILLET wrote:
-> The return value of kvmppc_gse_put_buff_info() is not assigned to 'rc' and
-> 'rc' is uninitialized at this point.
-> So the error handling can not work.
-> 
-> Assign the expected value to 'rc' to fix the issue.
+On Tue, 11 Apr 2023 15:44:46 +0930, Joel Stanley wrote:
+> The documentation mentions KVM_CAP_PPC_RADIX_MMU, but the defines in the
+> kvm headers spell it KVM_CAP_PPC_MMU_RADIX. Similarly with
+> KVM_CAP_PPC_MMU_HASH_V3.
 > 
 > 
-> [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/1] KVM: PPC: Book3S HV nestedv2: Fix an error handling path in gs_msg_ops_kvmhv_nestedv2_config_fill_info()
-      https://git.kernel.org/powerpc/c/b52e8cd3f835869370f8540f1bc804a47a47f02b
+[1/1] KVM: PPC: Fix documentation for ppc mmu caps
+      https://git.kernel.org/powerpc/c/651d61bc8b7d8bb622cfc24be2ee92eebb4ed3cc
 
 cheers
