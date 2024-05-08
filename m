@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B659C04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:43:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1739AC04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:43:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGZ01PZrz3fmF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:43:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGZP554hz3d9g
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:43:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXJ5kphz3cVt
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXJ6CDfz3cVx
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:41:52 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXB5s5mz4x33;
-	Wed,  8 May 2024 23:41:46 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXJ2ZlGz4x3j;
+	Wed,  8 May 2024 23:41:52 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com, Kunwu Chan <chentao@kylinos.cn>
-In-Reply-To: <20240126025030.577795-1-chentao@kylinos.cn>
-References: <20240126025030.577795-1-chentao@kylinos.cn>
-Subject: Re: [PATCH] powerpc/pseries/pci: Code cleanup
-Message-Id: <171517558556.165093.1888093707103171409.b4-ty@ellerman.id.au>
+To: jk@ozlabs.org, arnd@arndb.de, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com, Kunwu Chan <chentao@kylinos.cn>
+In-Reply-To: <20240126021258.574916-1-chentao@kylinos.cn>
+References: <20240126021258.574916-1-chentao@kylinos.cn>
+Subject: Re: [PATCH v2] powerpc/cell: Code cleanup for spufs_mfc_flush
+Message-Id: <171517558556.165093.4418850718054989946.b4-ty@ellerman.id.au>
 Date: Wed, 08 May 2024 23:39:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -47,16 +47,19 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 26 Jan 2024 10:50:30 +0800, Kunwu Chan wrote:
-> This part was commented in about 19 years before.
+On Fri, 26 Jan 2024 10:12:58 +0800, Kunwu Chan wrote:
+> This part was commented from commit a33a7d7309d7
+> ("[PATCH] spufs: implement mfc access for PPE-side DMA")
+> in about 18 years before.
+> 
 > If there are no plans to enable this part code in the future,
 > we can remove this dead code.
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries/pci: Code cleanup
-      https://git.kernel.org/powerpc/c/2d8ebee0aac3a45d81de4f44255c8021d5a3401e
+[1/1] powerpc/cell: Code cleanup for spufs_mfc_flush
+      https://git.kernel.org/powerpc/c/66d8e646e8e78ea6088d9f6b9465e211566b5133
 
 cheers
