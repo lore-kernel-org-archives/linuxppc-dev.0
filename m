@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88857C04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:48:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D0ABC19F4F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:48:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGgQ1Pq8z78Gg
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:48:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGgq6k3bz78LB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:48:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXS2JxGz3cYL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:42:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXT2K6Sz3cXS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:42:01 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXS1kWCz4xLw;
-	Wed,  8 May 2024 23:42:00 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXT1Zvtz4xFf;
+	Wed,  8 May 2024 23:42:01 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20240507140150.54630-1-mpe@ellerman.id.au>
-References: <20240507140150.54630-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] macintosh/ams: Fix unused variable warning
-Message-Id: <171517558556.165093.8834544573482791339.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Naveen N Rao <naveen@kernel.org>
+In-Reply-To: <20240110141237.3179199-1-naveen@kernel.org>
+References: <20240110141237.3179199-1-naveen@kernel.org>
+Subject: Re: [PATCH v2] powerpc/Makefile: Remove bits related to the previous use of -mcmodel=large
+Message-Id: <171517558556.165093.6408043019567943120.b4-ty@ellerman.id.au>
 Date: Wed, 08 May 2024 23:39:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,19 +46,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 08 May 2024 00:01:50 +1000, Michael Ellerman wrote:
-> If both CONFIG_SENSORS_AMS_PMU and CONFIG_SENSORS_AMS_I2C are unset,
-> there is an unused variable warning in the ams driver:
+On Wed, 10 Jan 2024 19:42:37 +0530, Naveen N Rao wrote:
+> All supported compilers today (gcc v5.1+ and clang v11+) have support for
+> -mcmodel=medium. As such, NO_MINIMAL_TOC is no longer being set. Remove
+> NO_MINIMAL_TOC as well as the fallback to -mminimal-toc.
 > 
->   drivers/macintosh/ams/ams-core.c: In function 'ams_init':
->   drivers/macintosh/ams/ams-core.c:181:29: warning: unused variable 'np'
->     181 |         struct device_node *np;
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] macintosh/ams: Fix unused variable warning
-      https://git.kernel.org/powerpc/c/bc8744c6bf0d487dcb7911d093fce60a62cc2654
+[1/1] powerpc/Makefile: Remove bits related to the previous use of -mcmodel=large
+      https://git.kernel.org/powerpc/c/c330b50d8cae1a7b1fed7622eedacaf652396bb7
 
 cheers
