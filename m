@@ -4,33 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F22CCC19F4F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:51:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 597D9C04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:52:11 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eV9g7Oo6;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGlQ4bLxz3g5g
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:51:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGmB01mWz3cX3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:52:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eV9g7Oo6;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGdY3W7Qz3vh4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:46:25 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGdY2PzCz4x30;
-	Wed,  8 May 2024 23:46:25 +1000 (AEST)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, Vaibhav Jain <vaibhav@linux.ibm.com>
-In-Reply-To: <20240415035731.103097-1-vaibhav@linux.ibm.com>
-References: <20240415035731.103097-1-vaibhav@linux.ibm.com>
-Subject: Re: [PATCH v2] KVM: PPC: Book3S HV nestedv2: Cancel pending DEC exception
-Message-Id: <171517595456.167543.8572230162605343190.b4-ty@ellerman.id.au>
-Date: Wed, 08 May 2024 23:45:54 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGgf1p2dz78JN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:48:14 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id A1D4B61BE3;
+	Wed,  8 May 2024 13:48:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D59BCC113CC;
+	Wed,  8 May 2024 13:48:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1715176088;
+	bh=xgHln/S0N3xK3r9g48jliwLklyosUPHMKzEFivOOsFM=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=eV9g7Oo6aO4YBPs5bYhHrXa84k6uIdcZjdL8HHkIG2T0iag+LPv9vxwLxZMKZmRQp
+	 TFYUVEMfmpe4sfsA52OayAmHd9ftUj/zYyCXQZ+EtFP4OSeLSOXoJsNhFkcFw4jZ6a
+	 TJEgGmhfdwafv0hg9VVkVik3buLHJFnpfrzR62LiwujKAdTEgmaIjAxRmb2xkMUrfo
+	 FdxvUdp24w/XgV+KfZRWEmee9ZuwAXAjUCGT+O7kF9WBilofRH7n6tkapwqlq7xf2e
+	 +qFLNcA3XlVlovFYwxr9FWjzTdNOKLiGHUsCa+CM/m0bsHVYFFvfYp2FaocBRb53Bx
+	 xb5Ye07+8rGGw==
+Date: Wed, 8 May 2024 06:48:06 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Erhard Furtner <erhard_f@mailbox.org>
+Subject: Re: WARNING: CPU: 1 PID: 1 at net/core/netpoll.c:370
+ netpoll_send_skb+0x1fc/0x20c at boot when netconsole is enabled (kernel
+ v6.9-rc5, v6.8.7, sungem, PowerMac G4 DP)
+Message-ID: <20240508064806.10b95d29@kernel.org>
+In-Reply-To: <20240508105505.098efd6c@yea>
+References: <20240428125306.2c3080ef@legion>
+	<20240429183630.399859e2@kernel.org>
+	<20240505232713.46c03b30@yea>
+	<20240506072645.448bc49f@kernel.org>
+	<20240507024258.07980f55@yea>
+	<20240506181020.292b25f0@kernel.org>
+	<20240508105505.098efd6c@yea>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -43,26 +67,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, sbhat@linux.ibm.com, amachhiw@linux.vnet.ibm.com, gautam@linux.ibm.com, Nicholas Piggin <npiggin@gmail.com>, David.Laight@ACULAB.COM, kconsul@linux.vnet.ibm.com, Jordan Niethe <jniethe5@gmail.com>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 15 Apr 2024 09:27:29 +0530, Vaibhav Jain wrote:
-> This reverts commit 180c6b072bf3 ("KVM: PPC: Book3S HV nestedv2: Do not
-> cancel pending decrementer exception") [1] which prevented canceling a
-> pending HDEC exception for nestedv2 KVM guests. It was done to avoid
-> overhead of a H_GUEST_GET_STATE hcall to read the 'DEC expiry TB' register
-> which was higher compared to handling extra decrementer exceptions.
+On Wed, 8 May 2024 10:55:05 +0200 Erhard Furtner wrote:
+> I could do that with the explanation you stated. But should any
+> further questions arise in this process I would also lack the
+> technical background to deal with them. ;)
+
+Alright, submitted :)
+
+> I also noticed a similar #ifdef CONFIG_NET_POLL_CONTROLLER logic shows up in
+> many network drivers, e.g. net/ethernet/realtek/8139too.c:
 > 
-> However recent benchmarks indicate that overhead of not handling 'DECR'
-> expiry for Nested KVM Guest(L2) is higher and results in much larger exits
-> to Pseries Host(L1) as indicated by the Unixbench-arithoh bench[2]
-> 
+> #ifdef CONFIG_NET_POLL_CONTROLLER
+> static void rtl8139_poll_controller(struct net_device *dev);
+> #endif
 > [...]
+> #ifdef CONFIG_NET_POLL_CONTROLLER
+> /*
+>  * Polling receive - used by netconsole and other diagnostic tools
+>  * to allow network i/o with interrupts disabled.
+>  */
+> static void rtl8139_poll_controller(struct net_device *dev)
+> {
+>         struct rtl8139_private *tp = netdev_priv(dev);
+>        	const int irq = tp->pci_dev->irq;
+> 
+>        	disable_irq_nosync(irq);
+>        	rtl8139_interrupt(irq, dev);
+>        	enable_irq(irq);
+> }
+> #endif
+> [...]
+> #ifdef CONFIG_NET_POLL_CONTROLLER
+>        	.ndo_poll_controller    = rtl8139_poll_controller,
+> #endif
+> 
+> 
+> Should it be removed here too? This would be more cards I can test.
+> So far I only see this on my G4 and I think something similar on an
+> old Pentium4 box I no longer have. 
 
-Applied to powerpc/topic/ppc-kvm.
-
-[1/1] KVM: PPC: Book3S HV nestedv2: Cancel pending DEC exception
-      https://git.kernel.org/powerpc/c/7be6ce7043b4cf293c8826a48fd9f56931cef2cf
-
-cheers
+That one looks legit. Note the _nosync() which solves the immediate
+IRQ masking / deadlock issue. And the rtl8139_interrupt() function
+actually does the packet cleanup in case of 8139too.
