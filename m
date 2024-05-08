@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E62FC04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:44:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E706CC04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 13:45:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGbf5sGGz3cT8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:44:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VZGc43xK7z3cVZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 May 2024 23:45:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXM0b1Jz3cWt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:41:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZGXN0KTzz3cWy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 May 2024 23:41:56 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXL6qNbz4x5J;
-	Wed,  8 May 2024 23:41:54 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VZGXM34nTz4x80;
+	Wed,  8 May 2024 23:41:55 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, Shuah Khan <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, Benjamin Gray <bgray@linux.ibm.com>, Colin Ian King <colin.i.king@gmail.com>
-In-Reply-To: <20240508084117.2869261-1-colin.i.king@gmail.com>
-References: <20240508084117.2869261-1-colin.i.king@gmail.com>
-Subject: Re: [PATCH][next] selftests/powerpc/dexcr: Fix spelling mistake "predicition" -> "prediction"
-Message-Id: <171517558560.165093.578560379909292376.b4-ty@ellerman.id.au>
+To: Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Ran Wang <ran.wang_1@nxp.com>, Zhao Chenhui <chenhui.zhao@freescale.com>, Li Yang <leoyang.li@nxp.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Jakub Kicinski <kuba@kernel.org>, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Frank Li <Frank.Li@nxp.com>
+In-Reply-To: <20240119203911.3143928-1-Frank.Li@nxp.com>
+References: <20240119203911.3143928-1-Frank.Li@nxp.com>
+Subject: Re: [PATCH 1/4] powerpc: dts: add power management nodes to FSL chips
+Message-Id: <171517558555.165093.3578824568292116308.b4-ty@ellerman.id.au>
 Date: Wed, 08 May 2024 23:39:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,18 +43,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: imx@lists.linux.dev
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 08 May 2024 09:41:17 +0100, Colin Ian King wrote:
-> There is a spelling mistake in the help message. Fix it.
+On Fri, 19 Jan 2024 15:38:54 -0500, Frank Li wrote:
+> Enable Power Management feature on device tree, including MPC8536,
+> MPC8544, MPC8548, MPC8572, P1010, P1020, P1021, P1022, P2020, P2041,
+> P3041, T104X, T1024.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] selftests/powerpc/dexcr: Fix spelling mistake "predicition" -> "prediction"
-      https://git.kernel.org/powerpc/c/98ec6d38ee57a734123c6f5d42640804034024ef
+[1/4] powerpc: dts: add power management nodes to FSL chips
+      https://git.kernel.org/powerpc/c/b12ba096b89084d1e2d6ebdb71b852eeebef95d3
+[2/4] powerpc: dts: p1010rdb: fix INTx interrupt issue on P1010RDB-PB
+      https://git.kernel.org/powerpc/c/9c8dc6f34351cd0c6a2ef83be2266f7dd67c152c
+[3/4] powerpc: dts: mpc85xx: remove "simple-bus" compatible from ifc node
+      https://git.kernel.org/powerpc/c/0bf51cc9e9e57a751b4c5dacbfa499ba5cd8bd72
+[4/4] powerpc: dts: fsl: rename ifc node name to be memory-controller
+      https://git.kernel.org/powerpc/c/acb354fe97e5aa6d9534b601ce18ef7866f25c4d
 
 cheers
