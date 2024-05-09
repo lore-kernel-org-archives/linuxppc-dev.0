@@ -4,53 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5631CC25B4F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2024 01:00:54 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=D0za5rf8;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAE2EC10F1A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2024 03:19:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VZYbm6Ql3z3c4P
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2024 11:00:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=D0za5rf8;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VZcgG3nmsz3cf8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2024 13:19:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZYZx3PqSz30WM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2024 11:00:09 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 4637561A3C;
-	Thu,  9 May 2024 01:00:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5827C113CC;
-	Thu,  9 May 2024 01:00:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1715216405;
-	bh=9n6emzJJV1YX0cAHx4F9eAW5P1FzVQRtiGBpOCeJFX0=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=D0za5rf8sBZLeTFfBwvH/5N1DEtRx4ddPaEKSxntYldtCZFiYr+kZfL/DPfTpd57y
-	 FkhTonAdznnnMsG/Jp8zcJ/5PM+gP0HSB24OIa5SvzI6O66EgZUZWygQB8n3m664Vk
-	 iw2gLzWak8zQqGD7NWJHmLYv7ayRF7VNeJDvoJQbuuL4ka1sD6Vgqp+3H5xH816G20
-	 IgUv7nVLhAegE3iIM6ZwFEP1kfHbzk6yoOEt4uVmR2mApKLXHKB1BZi2CcWGV8jx04
-	 kONXdu6CLktRjchT/w65rRI6tXLJZuu9lzLKHyav3WPKnjku1XOKMFyOYjqa3XcRWl
-	 nEfGC6fd23pIg==
-Date: Wed, 8 May 2024 18:00:03 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH v3 00/11] sysctl: treewide: constify ctl_table argument
- of sysctl handlers
-Message-ID: <20240508180003.548af21b@kernel.org>
-In-Reply-To: <202405080959.104A73A914@keescook>
-References: <20240423-sysctl-const-handler-v3-0-e0beccb836e2@weissschuh.net>
-	<20240424201234.3cc2b509@kernel.org>
-	<202405080959.104A73A914@keescook>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZcfq3FQTz3c4P
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2024 13:18:42 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B70072008F0;
+	Thu,  9 May 2024 05:18:39 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6CE432007D5;
+	Thu,  9 May 2024 05:18:39 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 4AFF5181D0FC;
+	Thu,  9 May 2024 11:18:37 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: lgirdwood@gmail.com,
+	broonie@kernel.org,
+	robh+dt@kernel.org,
+	krzysztof.kozlowski+dt@linaro.org,
+	conor+dt@kernel.org,
+	shengjiu.wang@gmail.com,
+	linux-sound@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/4] ASoC: dt-bindings: fsl,xcvr: Add compatible string for i.MX95
+Date: Thu,  9 May 2024 10:57:37 +0800
+Message-Id: <1715223460-32662-2-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1715223460-32662-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1715223460-32662-1-git-send-email-shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,20 +60,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Joel Granados <j.granados@samsung.com>, Dave Chinner <david@fromorbit.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, linux-hardening@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, linux-sctp@vger.kernel.org, lvs-devel@vger.kernel.org, coreteam@netfilter.org, linux-trace-kernel@vger.kernel.org, bridge@lists.linux.dev, apparmor@lists.ubuntu.com, linux-xfs@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, kexec@lists.infradead.org, Thomas =?UTF-8?B?V2Vpw59zY2h1aA==?= <linux@weissschuh.net>, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, netfilter-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 8 May 2024 10:11:35 -0700 Kees Cook wrote:
-> > Split this per subsystem, please.  
-> 
-> I've done a few painful API transitions before, and I don't think the
-> complexity of these changes needs a per-subsystem constification pass. I
-> think this series is the right approach, but that patch 11 will need
-> coordination with Linus. We regularly do system-wide prototype changes
-> like this right at the end of the merge window before -rc1 comes out.
+Add compatible string "fsl,imx95-xcvr" for i.MX95 platform.
 
-Right. I didn't read the code closely enough before responding.
-Chalk my response up to being annoyed by the constant stream of
-cross-tree changes in procfs without proper cover letter explaining 
-how they will be merged :|
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ Documentation/devicetree/bindings/sound/fsl,xcvr.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/sound/fsl,xcvr.yaml b/Documentation/devicetree/bindings/sound/fsl,xcvr.yaml
+index 0eb0c1ba8710..1c74a32def09 100644
+--- a/Documentation/devicetree/bindings/sound/fsl,xcvr.yaml
++++ b/Documentation/devicetree/bindings/sound/fsl,xcvr.yaml
+@@ -22,6 +22,7 @@ properties:
+     enum:
+       - fsl,imx8mp-xcvr
+       - fsl,imx93-xcvr
++      - fsl,imx95-xcvr
+ 
+   reg:
+     items:
+-- 
+2.34.1
+
