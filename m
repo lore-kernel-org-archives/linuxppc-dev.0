@@ -4,37 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0592C25B4F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 May 2024 18:23:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99B19C10F1A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2024 21:39:35 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=V1/4nc4q;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VY8sk1z5cz3cYW
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 May 2024 04:23:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=goodmis.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=huxk=mj=goodmis.org=rostedt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vb5520Hqqz3dWw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 07:39:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=V1/4nc4q;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::929; helo=mail-ua1-x929.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ua1-x929.google.com (mail-ua1-x929.google.com [IPv6:2607:f8b0:4864:20::929])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VY8sG3RmWz30Vb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 May 2024 04:22:42 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 239F46140D;
-	Mon,  6 May 2024 18:22:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B99BC116B1;
-	Mon,  6 May 2024 18:22:35 +0000 (UTC)
-Date: Mon, 6 May 2024 14:22:40 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH v8 13/17] x86/ftrace: enable dynamic ftrace without
- CONFIG_MODULES
-Message-ID: <20240506142240.36c38d7f@gandalf.local.home>
-In-Reply-To: <20240505142600.2322517-14-rppt@kernel.org>
-References: <20240505142600.2322517-1-rppt@kernel.org>
-	<20240505142600.2322517-14-rppt@kernel.org>
-X-Mailer: Claws Mail 3.20.0git84 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vb5486pMzz3dDJ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2024 07:38:48 +1000 (AEST)
+Received: by mail-ua1-x929.google.com with SMTP id a1e0cc1a2514c-7f82c932858so441907241.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 May 2024 14:38:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1715290725; x=1715895525; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZcXomuFTNs6kAOjv+oYFgSUhkraR2OB9WxwHOqU2kw0=;
+        b=V1/4nc4qTqJJUc3iRrLf1fHDGApLbU3+G0AvnfG2wgH5V11ujdLIPCyS9ZUBTgjNCR
+         p2GX6ZvGeMKDoBpXRbFbrHsXcOxZVx1qS5mGkyO1zeOPmCzV1qCtIf7w7a5zK6y1Qoa1
+         xgML2AUwhx90X5QOz3qivME+EA2PbrCtz/67/X6F0bt7Os0Mo63If/75RvJlBZyNoRL+
+         YaEH7PjPRo6No+4gTWiGCe7QCudqEVmfMcbNRVGvQMTqDT2U8cgP54dLA1AC8n/PfWaI
+         9PbNcQ76PbSyjwZmDag7Si0LfBa38bMfxZiCg+gsBA774dmXcv/4dNWIvmZB8Y/X9Z8b
+         +blg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1715290725; x=1715895525;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ZcXomuFTNs6kAOjv+oYFgSUhkraR2OB9WxwHOqU2kw0=;
+        b=gRzm9PdYjy9bVIZfZlSt51EVgC9h3Nhp0yGT9Yw7gj6F1DMMkw7GwtIl7Qg9m2LKjV
+         Ohoy5V2RzmVEMV3KdzWWC5eEd3CoVcnYe09PGAbbcLyrJGHybzCodanhcMyY/HFOKzJU
+         QkiLA43WC69BZnbaNGXm5mCgMDtzFuCB6hYjdHpU7Ouo1ZEpVMjS1PRAONFraldhosse
+         eDew79E6Sr1Ss07cDsYXUhu7/gghYPE97PSTra/rEgizDsv6VQxoA0y4sKgUNEx+ORZJ
+         EHIa2QjL8bjNx4gw4Jij/jZfbPHZ09tPPsppBqnra1HTWMaHrzkdWkUYFk/an0EJ6WBJ
+         JefQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWFByrkj7twSX1K5K6JLLOKsMDvSA9sdfA/QXL6KctnAWitYX6wCpWUwtvTEpQORgf2hg8B6WgHgJuENnoAOryzRR4ej9OWg+yIKoSUNA==
+X-Gm-Message-State: AOJu0YzeNjti0CWmDLBetrWF/eMAQM7SwLqBVh+WOVrhCEAc0g1ga5wS
+	fblsr5idRfxt2ufCvg0rQvk6HR2RuByt7kaJsJTz1mVYG4peY+oGaQjXb1D55lW5TXUjD8p+o3t
+	pYsxXFqWkCngYNNfqrMEyyx6nab0=
+X-Google-Smtp-Source: AGHT+IGDPdAnAHFbOGEVVQfuthPYBDUFn04X97C8h8u5g41EhAQrrR+vQZTM+R921KKRTb5redHLdvkWlrvB0RI6wnw=
+X-Received: by 2002:a05:6122:2a51:b0:4d8:75ca:8cbe with SMTP id
+ 71dfb90a1353d-4df8839a7cemr976657e0c.16.1715290725239; Thu, 09 May 2024
+ 14:38:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+References: <20240507190111.16710-1-apais@linux.microsoft.com>
+ <20240507190111.16710-2-apais@linux.microsoft.com> <Zjp/kgBE2ddjV044@shell.armlinux.org.uk>
+ <CAOMdWSKfkT4K9MAOn-rL44pycHPhVDj4CtiYkru5y_s0S-sPeQ@mail.gmail.com>
+ <20240508201654.GA2248333@kernel.org> <e9633d41d0d004db3ec6e2b6d9dcb95d029dbb94.camel@redhat.com>
+In-Reply-To: <e9633d41d0d004db3ec6e2b6d9dcb95d029dbb94.camel@redhat.com>
+From: Allen <allen.lkml@gmail.com>
+Date: Thu, 9 May 2024 14:38:34 -0700
+Message-ID: <CAOMdWS+WRC7KOqPUXJ88ikCDPS-6oZ0i6OFTUk95DFTfYtNZcA@mail.gmail.com>
+Subject: Re: [PATCH 1/1] [RFC] ethernet: Convert from tasklet to BH workqueue
+To: Paolo Abeni <pabeni@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -46,31 +79,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Russell King <linux@armlinux.org.uk>, Song Liu <song@kernel.org>, Donald Dutile <ddutile@redhat.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, linux-mips@vger.kernel.org, linux-trace-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>, Will Deacon <will@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liviu Dudau <liviu@dudau.co.uk>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Philippe =?UTF-8?B?TWF0aGlldS1EYXVkw6k=?= <philmd@linaro.o
- rg>, linux-mm@kvack.org, netdev@vger.kernel.org, Kent Overstreet <kent.overstreet@linux.dev>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>, Eric Chanudet <echanude@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, linux-modules@vger.kernel.org
+Cc: marcin.s.wojtas@gmail.com, kda@linux-powerpc.org, edumazet@google.com, linux-acenic@sunsite.dk, louis.peens@corigine.com, borisp@nvidia.com, cooldavid@cooldavid.org, "Russell King \(Oracle\)" <linux@armlinux.org.uk>, aneesh.kumar@kernel.org, tlfalcon@linux.ibm.com, naveen.n.rao@linux.ibm.com, kuba@kernel.org, angelogioacchino.delregno@collabora.com, lorenzo@kernel.org, Mark-MC.Lee@mediatek.com, jes@trained-monkey.org, nnac123@linux.ibm.com, richardcochran@gmail.com, sean.wang@mediatek.com, npiggin@gmail.com, linux-net-drivers@amd.com, cai.huoqing@linux.dev, matthias.bgg@gmail.com, Allen Pais <apais@linux.microsoft.com>, linux-arm-kernel@lists.infradead.org, mlindner@marvell.com, netdev@vger.kernel.org, oss-drivers@corigine.com, dougmill@linux.ibm.com, linux-kernel@vger.kernel.org, UNGLinuxDriver@microchip.com, stephen@networkplumber.org, linux-rdma@vger.kernel.org, Simon Horman <horms@kernel.org>, bryan.whitehead@microchip.com, linux-mediatek@lists.infradead.org, linuxppc-dev@lis
+ ts.ozlabs.org, davem@davemloft.net, nbd@nbd.name
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun,  5 May 2024 17:25:56 +0300
-Mike Rapoport <rppt@kernel.org> wrote:
+Paolo,
 
-> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
-> 
-> Dynamic ftrace must allocate memory for code and this was impossible
-> without CONFIG_MODULES.
-> 
-> With execmem separated from the modules code, execmem_text_alloc() is
-> available regardless of CONFIG_MODULES.
-> 
-> Remove dependency of dynamic ftrace on CONFIG_MODULES and make
-> CONFIG_DYNAMIC_FTRACE select CONFIG_EXECMEM in Kconfig.
-> 
-> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
-> ---
->  arch/x86/Kconfig         |  1 +
->  arch/x86/kernel/ftrace.c | 10 ----------
->  2 files changed, 1 insertion(+), 10 deletions(-)
+> On Wed, 2024-05-08 at 21:16 +0100, Simon Horman wrote:
+> > * As this patch seems to involve many non-trivial changes
+> >   it seems to me that it would be best to break it up somehow.
+> >   To allow proper review.
+>
+> I would like to stress this latest point: it looks like the changes to
+> all the drivers are completely independent. If so, you have to break
+> the series on a per driver basis. Since the total number of patch will
+> be higher then 15 (maximum size allowed on netdev) you will have to
+> split this in several smaller series.
+>
 
-Reviewed-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+ Right, it's a valid point. Per-driver might not work. Depending on the
+driver and changes, I will try and make it an independent series.
 
--- Steve
+> Beyond making the change reviewable, it will allow eventually reverting
+> the changes individually, should that cause any regressions.
+>
+
+Thank you, I understand the concern here. Will work on it in v2.
+
+Thank you very much for your time and suggestions.
+
+ - Allen
