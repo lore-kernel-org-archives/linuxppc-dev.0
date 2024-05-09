@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 372BDC25B74
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2024 03:19:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7244C10F1A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2024 03:20:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VZch55zm7z3dWh
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2024 13:19:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VZchW42yrz3fSv
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 May 2024 13:20:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZcfq6nmQz3c5Y
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2024 13:18:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VZcfs10MKz3c5Y
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 May 2024 13:18:45 +1000 (AEST)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 505D9200AAA;
-	Thu,  9 May 2024 05:18:38 +0200 (CEST)
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 90A97200AA9;
+	Thu,  9 May 2024 05:18:42 +0200 (CEST)
 Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 03CDD2007D5;
-	Thu,  9 May 2024 05:18:38 +0200 (CEST)
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 456D42007D5;
+	Thu,  9 May 2024 05:18:42 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id CEF81180222F;
-	Thu,  9 May 2024 11:18:35 +0800 (+08)
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 2B099181D0FC;
+	Thu,  9 May 2024 11:18:40 +0800 (+08)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: lgirdwood@gmail.com,
 	broonie@kernel.org,
@@ -42,10 +42,12 @@ To: lgirdwood@gmail.com,
 	tiwai@suse.com,
 	alsa-devel@alsa-project.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/4] ASoC: fsl_xcvr: Support i.MX95 platform
-Date: Thu,  9 May 2024 10:57:36 +0800
-Message-Id: <1715223460-32662-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH 3/4] ASoC: fsl_xcvr: Support reparent pll clocks for phy_clk
+Date: Thu,  9 May 2024 10:57:39 +0800
+Message-Id: <1715223460-32662-4-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1715223460-32662-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1715223460-32662-1-git-send-email-shengjiu.wang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -61,21 +63,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On i.MX95 wakeup domain, there is one instance of Audio XCVR
-supporting SPDIF mode with a connection to the Audio XCVR physical
-interface.
+When there are 'pll8k' and 'pll11k' clock existing, the clock
+source of 'phy_clk' can be changed for different sample rate
+requirement.
 
-Shengjiu Wang (4):
-  ASoC: dt-bindings: fsl,xcvr: Add compatible string for i.MX95
-  ASoC: dt-bindings: fsl,xcvr: Add two PLL clock sources
-  ASoC: fsl_xcvr: Support reparent pll clocks for phy_clk
-  ASoC: fsl_xcvr: Add support for i.MX95 platform
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/fsl_xcvr.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
- .../devicetree/bindings/sound/fsl,xcvr.yaml   |   7 +
- sound/soc/fsl/fsl_xcvr.c                      | 128 ++++++++++++------
- sound/soc/fsl/fsl_xcvr.h                      |  91 +++++++++++++
- 3 files changed, 183 insertions(+), 43 deletions(-)
-
+diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
+index c46f64557a7f..0ffa10e924ef 100644
+--- a/sound/soc/fsl/fsl_xcvr.c
++++ b/sound/soc/fsl/fsl_xcvr.c
+@@ -15,6 +15,7 @@
+ #include <sound/pcm_params.h>
+ 
+ #include "fsl_xcvr.h"
++#include "fsl_utils.h"
+ #include "imx-pcm.h"
+ 
+ #define FSL_XCVR_CAPDS_SIZE	256
+@@ -33,6 +34,8 @@ struct fsl_xcvr {
+ 	struct clk *pll_ipg_clk;
+ 	struct clk *phy_clk;
+ 	struct clk *spba_clk;
++	struct clk *pll8k_clk;
++	struct clk *pll11k_clk;
+ 	struct reset_control *reset;
+ 	u8 streams;
+ 	u32 mode;
+@@ -362,6 +365,8 @@ static int fsl_xcvr_en_aud_pll(struct fsl_xcvr *xcvr, u32 freq)
+ 
+ 	freq = xcvr->soc_data->spdif_only ? freq / 5 : freq;
+ 	clk_disable_unprepare(xcvr->phy_clk);
++	fsl_asoc_reparent_pll_clocks(dev, xcvr->phy_clk,
++				     xcvr->pll8k_clk, xcvr->pll11k_clk, freq);
+ 	ret = clk_set_rate(xcvr->phy_clk, freq);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Error while setting AUD PLL rate: %d\n", ret);
+@@ -1287,6 +1292,9 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
+ 		return PTR_ERR(xcvr->pll_ipg_clk);
+ 	}
+ 
++	fsl_asoc_get_pll_clocks(dev, &xcvr->pll8k_clk,
++				&xcvr->pll11k_clk);
++
+ 	xcvr->ram_addr = devm_platform_ioremap_resource_byname(pdev, "ram");
+ 	if (IS_ERR(xcvr->ram_addr))
+ 		return PTR_ERR(xcvr->ram_addr);
 -- 
 2.34.1
 
