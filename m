@@ -4,34 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0B46C25B10
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 08:10:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CF88C25B10
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 08:22:08 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EBtI1QRF;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VbM4h2sLtz3cfn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 18:10:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VbM495ybVz3c4v
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2024 18:09:45 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 44A87c2O030764;
-	Fri, 10 May 2024 03:07:38 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 44A87bmJ030763;
-	Fri, 10 May 2024 03:07:37 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Fri, 10 May 2024 03:07:37 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VbMLR0S2Lz3cYK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 18:22:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EBtI1QRF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VbMKf1KdTz3cCt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2024 18:21:25 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44A8IqFA006095;
+	Fri, 10 May 2024 08:21:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=IPicuXcvG4YrrJxDCK3z2nbRd1si1MVme/lZEySCfeg=;
+ b=EBtI1QRFwsdhwAkcuvMzIQd44w4KxKJ2yjYrLBBfn3R1K0h9l2Qo9s276FIZMAES7skf
+ 5J4G1rtm9820nriNlZ2VagTCSLGPMQKLgNcEeYRq3l7jIm78qel25fSvOpSIX7+kc+Ft
+ EVahoHkg5Yk9ZtxZHC0BRk9A1CwpePMddDARLwgMh+Pa6jyWFH2t2KUr3aIo8eiay0bl
+ M2OYBdIzvKoe1IKDgDdIQMUOuWH1x8ZvcaYM3k6w0L77g10z3WT3Q3d7XhSFDPjQJ71O
+ 0mBTRSvAbXnjgITctnH8YKBnqSLcN/a8UGCTHMCTlJebT+9Q5OFt/uQksn8n0ZkrnP6h 1A== 
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y1fy7004m-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 10 May 2024 08:21:21 +0000
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44A7D1Uj009533;
+	Fri, 10 May 2024 08:21:20 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3xyshv02x1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 10 May 2024 08:21:20 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44A8LGJN51315082
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 10 May 2024 08:21:18 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9811920043;
+	Fri, 10 May 2024 08:21:16 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C0AC02004E;
+	Fri, 10 May 2024 08:21:15 +0000 (GMT)
+Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.in.ibm.com (unknown [9.203.115.195])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 10 May 2024 08:21:15 +0000 (GMT)
+From: Hari Bathini <hbathini@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 3/3] powerpc: Check only single values are passed to CPU/MMU feature checks
-Message-ID: <20240510080737.GY19790@gate.crashing.org>
-References: <20240509121248.270878-1-mpe@ellerman.id.au> <20240509121248.270878-3-mpe@ellerman.id.au> <20240509163456.GX19790@gate.crashing.org> <87ikzmmage.fsf@mail.lhotse>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ikzmmage.fsf@mail.lhotse>
-User-Agent: Mutt/1.4.2.3i
+Subject: [PATCH] powerpc/fadump: update documentation about bootargs_append
+Date: Fri, 10 May 2024 13:51:14 +0530
+Message-ID: <20240510082114.561163-1-hbathini@linux.ibm.com>
+X-Mailer: git-send-email 2.45.0
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: l5a8PVzqXONwQxL1Nnxg5uZeERoC3pWk
+X-Proofpoint-ORIG-GUID: l5a8PVzqXONwQxL1Nnxg5uZeERoC3pWk
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
+ definitions=2024-05-10_06,2024-05-10_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 impostorscore=0
+ suspectscore=0 adultscore=0 clxscore=1015 lowpriorityscore=0 spamscore=0
+ mlxlogscore=783 phishscore=0 priorityscore=1501 malwarescore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2405010000
+ definitions=main-2405100059
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -43,45 +88,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 10, 2024 at 04:45:37PM +1000, Michael Ellerman wrote:
-> Segher Boessenkool <segher@kernel.crashing.org> writes:
-> > On Thu, May 09, 2024 at 10:12:48PM +1000, Michael Ellerman wrote:
-> >> cpu_has_feature()/mmu_has_feature() are only able to check a single
-> >> feature at a time, but there is no enforcement of that.
-> >> 
-> >> In fact, as fixed in the previous commit, there was code that was
-> >> passing multiple values to cpu_has_feature().
-> >> 
-> >> So add a check that only a single feature is passed using popcount.
-> >> 
-> >> Note that the test allows 0 or 1 bits to be set, because some code
-> >> relies on cpu_has_feature(0) being false, the check with
-> >> CPU_FTRS_POSSIBLE ensures that. See for example CPU_FTR_PPC_LE.
-> >
-> > This btw is exactly
-> >
-> > 	BUILD_BUG_ON(feature & (feature - 1));
-> >
-> > but the popcount is more readable :-)
-> 
-> Yeah for those of us who don't see bits cascading in our sleep I think
-> the popcount is easier to understand ;)
+Update ABI documentation about the introduction of the new sysfs
+entry bootargs_append. This sysfs entry will be used to setup the
+additional parameters to be passed to dump capture kernel.
 
-Absolutely :-)  This is just one of the most well-known bittricks, for
-seeing if x is a power of two you write
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+---
 
-  x && x & (x-1)
+* This patch is a follow-up of below patch series, to update corresponding
+  ABI documentation:
 
-but here you do not need to test for x not being zero.  Hardly ever get
-to use that simpler thing, so it jumped out at me here :-)
+    https://lore.kernel.org/all/20240509115755.519982-1-hbathini@linux.ibm.com/
 
-[ For understanding the x & (x-1) thing, it is perhaps easiest if you
-first consider an x with more than one bit set: x-1 will have the same
-topmost set bit. ]
+ Documentation/ABI/testing/sysfs-kernel-fadump | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
+diff --git a/Documentation/ABI/testing/sysfs-kernel-fadump b/Documentation/ABI/testing/sysfs-kernel-fadump
+index c586054657d6..2f9daa7ca55b 100644
+--- a/Documentation/ABI/testing/sysfs-kernel-fadump
++++ b/Documentation/ABI/testing/sysfs-kernel-fadump
+@@ -49,3 +49,10 @@ Description:	read only
+ 		memory add/remove events because elfcorehdr is now prepared in
+ 		the second/fadump kernel.
+ User:		kexec-tools
++
++What:		/sys/kernel/fadump/bootargs_append
++Date:		May 2024
++Contact:	linuxppc-dev@lists.ozlabs.org
++Description:	read/write
++		This is a special sysfs file available to setup additional
++		parameters to be passed to capture kernel.
+-- 
+2.45.0
 
-Segher
