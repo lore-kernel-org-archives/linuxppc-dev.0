@@ -4,79 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CF88C25B10
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 08:22:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BF7DC25B74
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 10:08:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EBtI1QRF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VqSsnKMs;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VbMLR0S2Lz3cYK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 18:22:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VbPjj1GxJz3cbF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 20:08:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EBtI1QRF;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VqSsnKMs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VbMKf1KdTz3cCt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2024 18:21:25 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44A8IqFA006095;
-	Fri, 10 May 2024 08:21:21 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=IPicuXcvG4YrrJxDCK3z2nbRd1si1MVme/lZEySCfeg=;
- b=EBtI1QRFwsdhwAkcuvMzIQd44w4KxKJ2yjYrLBBfn3R1K0h9l2Qo9s276FIZMAES7skf
- 5J4G1rtm9820nriNlZ2VagTCSLGPMQKLgNcEeYRq3l7jIm78qel25fSvOpSIX7+kc+Ft
- EVahoHkg5Yk9ZtxZHC0BRk9A1CwpePMddDARLwgMh+Pa6jyWFH2t2KUr3aIo8eiay0bl
- M2OYBdIzvKoe1IKDgDdIQMUOuWH1x8ZvcaYM3k6w0L77g10z3WT3Q3d7XhSFDPjQJ71O
- 0mBTRSvAbXnjgITctnH8YKBnqSLcN/a8UGCTHMCTlJebT+9Q5OFt/uQksn8n0ZkrnP6h 1A== 
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y1fy7004m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 May 2024 08:21:21 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44A7D1Uj009533;
-	Fri, 10 May 2024 08:21:20 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3xyshv02x1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 May 2024 08:21:20 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44A8LGJN51315082
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 10 May 2024 08:21:18 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9811920043;
-	Fri, 10 May 2024 08:21:16 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C0AC02004E;
-	Fri, 10 May 2024 08:21:15 +0000 (GMT)
-Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.in.ibm.com (unknown [9.203.115.195])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 10 May 2024 08:21:15 +0000 (GMT)
-From: Hari Bathini <hbathini@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/fadump: update documentation about bootargs_append
-Date: Fri, 10 May 2024 13:51:14 +0530
-Message-ID: <20240510082114.561163-1-hbathini@linux.ibm.com>
-X-Mailer: git-send-email 2.45.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: l5a8PVzqXONwQxL1Nnxg5uZeERoC3pWk
-X-Proofpoint-ORIG-GUID: l5a8PVzqXONwQxL1Nnxg5uZeERoC3pWk
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VbPhq1nXyz30Tx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2024 20:08:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1715335691; x=1746871691;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=TVMIEcYV4lRuU2NwGaITevK1+8W4KKh6YOoRO/qra7M=;
+  b=VqSsnKMshG0AtaXvtJBZ/8Wrz01t7NGL3y7ev80VtRZ85nznSJ1FOgEs
+   bDNdMmIn4kRVqQ0s9Eeh4LeiCPdXZF/4ICSfKZHiine65cFIJPL0ZBhg0
+   8Tp+TXqiTNBe8oXQiduWAUYinIrxbQrQwPA3LLWHjpC88tz2aSAxeKKQ/
+   WkHGn9nBswS5oFkQQDLd5WH13o0a7ybwn8WLh7Ru4Tem8gJ1vzhLjcAVe
+   iaWIXCzgkMteH/6qr2dBjwp9AyYy1jie+ojw932DrOxnGO3Dyi9XFnJot
+   PdrmpXaPunaOHwKmXjBeVEi4pts33Qb4UihuInlxm9mkbPstKGoEA+gzK
+   Q==;
+X-CSE-ConnectionGUID: ERtrWucFT7WOKMiSDRYM/w==
+X-CSE-MsgGUID: iIyJX4McSLWmSHyj28fm6g==
+X-IronPort-AV: E=McAfee;i="6600,9927,11068"; a="36687471"
+X-IronPort-AV: E=Sophos;i="6.08,150,1712646000"; 
+   d="scan'208";a="36687471"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2024 03:08:06 -0700
+X-CSE-ConnectionGUID: RV+ByP7IRaqW++iFvT79NQ==
+X-CSE-MsgGUID: TQZAEOqrR1u/FZX9fdQiBg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.08,150,1712646000"; 
+   d="scan'208";a="29571396"
+Received: from ijarvine-desk1.ger.corp.intel.com (HELO localhost) ([10.245.247.85])
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2024 03:08:05 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: linux-pci@vger.kernel.org,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Lukas Wunner <lukas@wunner.de>,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v4 3/7] PCI: Make pcie_read_tlp_log() signature same
+Date: Fri, 10 May 2024 13:07:26 +0300
+Message-Id: <20240510100730.18805-4-ilpo.jarvinen@linux.intel.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20240510100730.18805-1-ilpo.jarvinen@linux.intel.com>
+References: <20240510100730.18805-1-ilpo.jarvinen@linux.intel.com>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-05-10_06,2024-05-10_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 impostorscore=0
- suspectscore=0 adultscore=0 clxscore=1015 lowpriorityscore=0 spamscore=0
- mlxlogscore=783 phishscore=0 priorityscore=1501 malwarescore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2405010000
- definitions=main-2405100059
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,40 +76,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Update ABI documentation about the introduction of the new sysfs
-entry bootargs_append. This sysfs entry will be used to setup the
-additional parameters to be passed to dump capture kernel.
+pcie_read_tlp_log()'s prototype and function signature diverged due to
+changes made while applying.
 
-Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+Make the parameters of pcie_read_tlp_log() named identically.
+
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
+ drivers/pci/pcie/tlp.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-* This patch is a follow-up of below patch series, to update corresponding
-  ABI documentation:
-
-    https://lore.kernel.org/all/20240509115755.519982-1-hbathini@linux.ibm.com/
-
- Documentation/ABI/testing/sysfs-kernel-fadump | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/Documentation/ABI/testing/sysfs-kernel-fadump b/Documentation/ABI/testing/sysfs-kernel-fadump
-index c586054657d6..2f9daa7ca55b 100644
---- a/Documentation/ABI/testing/sysfs-kernel-fadump
-+++ b/Documentation/ABI/testing/sysfs-kernel-fadump
-@@ -49,3 +49,10 @@ Description:	read only
- 		memory add/remove events because elfcorehdr is now prepared in
- 		the second/fadump kernel.
- User:		kexec-tools
-+
-+What:		/sys/kernel/fadump/bootargs_append
-+Date:		May 2024
-+Contact:	linuxppc-dev@lists.ozlabs.org
-+Description:	read/write
-+		This is a special sysfs file available to setup additional
-+		parameters to be passed to capture kernel.
+diff --git a/drivers/pci/pcie/tlp.c b/drivers/pci/pcie/tlp.c
+index 3f053cc62290..2bf15749cd31 100644
+--- a/drivers/pci/pcie/tlp.c
++++ b/drivers/pci/pcie/tlp.c
+@@ -15,22 +15,21 @@
+  * pcie_read_tlp_log - read TLP Header Log
+  * @dev: PCIe device
+  * @where: PCI Config offset of TLP Header Log
+- * @tlp_log: TLP Log structure to fill
++ * @log: TLP Log structure to fill
+  *
+- * Fill @tlp_log from TLP Header Log registers, e.g., AER or DPC.
++ * Fill @log from TLP Header Log registers, e.g., AER or DPC.
+  *
+  * Return: 0 on success and filled TLP Log structure, <0 on error.
+  */
+ int pcie_read_tlp_log(struct pci_dev *dev, int where,
+-		      struct pcie_tlp_log *tlp_log)
++		      struct pcie_tlp_log *log)
+ {
+ 	int i, ret;
+ 
+-	memset(tlp_log, 0, sizeof(*tlp_log));
++	memset(log, 0, sizeof(*log));
+ 
+ 	for (i = 0; i < 4; i++) {
+-		ret = pci_read_config_dword(dev, where + i * 4,
+-					    &tlp_log->dw[i]);
++		ret = pci_read_config_dword(dev, where + i * 4, &log->dw[i]);
+ 		if (ret)
+ 			return pcibios_err_to_errno(ret);
+ 	}
 -- 
-2.45.0
+2.39.2
 
