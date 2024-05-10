@@ -4,51 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B2F6C25B10
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 07:04:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CEEFC25B10
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 08:09:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=d1Z7pyrE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iebstXhD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VbKd06C2Bz3cVx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 17:04:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VbM3G4fv9z3cYP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 18:08:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=d1Z7pyrE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iebstXhD;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VbKc935QQz30VT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2024 17:03:53 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1715324626;
-	bh=Wwz7PGF/2JLHmkgwfEtn4Lag7AXqlkDZb7B4D9iEdQI=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=d1Z7pyrEGBrs6L0dz6cxVggbbbxS4Owx0CmDlA2znN4HgBBG3unC7rP44d4u5muzJ
-	 sW6V4HKKp5OuQRS5dDqKiVPOAJJdFBRzJjXVfKWS3xawstBOT548LbQUjb0K9AUi3m
-	 TIPnWU/d63yWYygXxoAoPG5Eu0nYq0rJy2yqmDx61YaPDYITg0L9haUpysurM+9Jis
-	 mNZz4QMY4q9wj8LBHjY47tQGLA2B4LSyqC0YLLcgDY6kyAZtOH/+cv9gtLPWhh7W3D
-	 /t0FWdL/FzbE3P03a5nRQSfQjoSC9TGSahFl4bvIlbbzVPdT15a51DEFnQfpQp5AB6
-	 yHZ62XQb2poTw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VbKc13n7cz4wcC;
-	Fri, 10 May 2024 17:03:45 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Naresh Kamboju <naresh.kamboju@linaro.org>
-Subject: Re: [PATCH v2 1/2] powerpc/io: Avoid clang null pointer arithmetic
- warnings
-In-Reply-To: <CA+G9fYvo4--rSTHC1Vxdbbe62O6FhL_P2XdcF2Q7ZRku8HjpGg@mail.gmail.com>
-References: <20240503075619.394467-1-mpe@ellerman.id.au>
- <CA+G9fYvo4--rSTHC1Vxdbbe62O6FhL_P2XdcF2Q7ZRku8HjpGg@mail.gmail.com>
-Date: Fri, 10 May 2024 17:03:45 +1000
-Message-ID: <87fruqm9m6.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VbM2Q5XSdz3c4v
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2024 18:08:14 +1000 (AEST)
+Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44A82NB1020425;
+	Fri, 10 May 2024 08:08:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=Yb/vjD8glsfq1SlBLic5YblLSj4cuO72sCftFNzR4Is=;
+ b=iebstXhDp5oERp8z25g1LkwTcjwRRINFrQEc6P3gi74lT00gEpW2hZHCv0/g97WBtfmW
+ 6df5C3iCWGbEyvinq7YmZVGdJRce9/9zIVoWakov7LonW32AQboDjdoXYRBu4rIporm+
+ A+KhcKkhn3Qs379fvnvaZ/M2yRIFKkYCgxHp9WpSADWHinEOS/f3tIQ8XfmZChFcyyQn
+ lCe1233N1RkLixeX7AB/kybCMar3Zoh8jb7KebRmQqCXRwZOWxnDJxjrWM7xWIeVgmuh
+ m7WnSrTEhVBC7VbamhIT8hlh0klYLxKJDckJIWdlOpZtp9+eLnPTrRi8E2Wb7RJ95pxx JQ== 
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y1fqf00c4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 10 May 2024 08:08:05 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44A7YODI009470;
+	Fri, 10 May 2024 08:08:04 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3xysfxr233-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 10 May 2024 08:08:03 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44A880o751380730
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 10 May 2024 08:08:02 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E9F222004D;
+	Fri, 10 May 2024 08:07:59 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B18262004E;
+	Fri, 10 May 2024 08:07:58 +0000 (GMT)
+Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.in.ibm.com (unknown [9.203.115.195])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 10 May 2024 08:07:58 +0000 (GMT)
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/85xx: fix compile error without CONFIG_CRASH_DUMP
+Date: Fri, 10 May 2024 13:37:57 +0530
+Message-ID: <20240510080757.560159-1-hbathini@linux.ibm.com>
+X-Mailer: git-send-email 2.45.0
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: coLCGXngZv6SWSWuRM0Avfe4Vqkeb-Cr
+X-Proofpoint-GUID: coLCGXngZv6SWSWuRM0Avfe4Vqkeb-Cr
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
+ definitions=2024-05-10_04,2024-05-10_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ mlxlogscore=999 lowpriorityscore=0 malwarescore=0 impostorscore=0
+ clxscore=1011 mlxscore=0 phishscore=0 spamscore=0 adultscore=0
+ suspectscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2405010000 definitions=main-2405100057
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,41 +88,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathan@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, arnd@arndb.de
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, stable@vger.kernel.org, Christian Zigotzky <chzigotzky@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Naresh Kamboju <naresh.kamboju@linaro.org> writes:
-> On Fri, 3 May 2024 at 13:26, Michael Ellerman <mpe@ellerman.id.au> wrote:
->>
->> With -Wextra clang warns about pointer arithmetic using a null pointer.
->> When building with CONFIG_PCI=n, that triggers a warning in the IO
->> accessors, eg:
->>
->>   In file included from linux/arch/powerpc/include/asm/io.h:672:
->>   linux/arch/powerpc/include/asm/io-defs.h:23:1: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
->>      23 | DEF_PCI_AC_RET(inb, u8, (unsigned long port), (port), pio, port)
->>         | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>   ...
->>   linux/arch/powerpc/include/asm/io.h:591:53: note: expanded from macro '__do_inb'
->>     591 | #define __do_inb(port)          readb((PCI_IO_ADDR)_IO_BASE + port);
->>         |                                       ~~~~~~~~~~~~~~~~~~~~~ ^
->>
->> That is because when CONFIG_PCI=n, _IO_BASE is defined as 0.
->>
->> Although _IO_BASE is defined as plain 0, the cast (PCI_IO_ADDR) converts
->> it to void * before the addition with port happens.
->>
->> Instead the addition can be done first, and then the cast. The resulting
->> value will be the same, but avoids the warning, and also avoids void
->> pointer arithmetic which is apparently non-standard.
->>
->> Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
->> Closes: https://lore.kernel.org/all/CA+G9fYtEh8zmq8k8wE-8RZwW-Qr927RLTn+KqGnq1F=ptaaNsA@mail.gmail.com
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->
-> Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
+Since commit 5c4233cc0920 ("powerpc/kdump: Split KEXEC_CORE and
+CRASH_DUMP dependency"), crashing_cpu is not available without
+CONFIG_CRASH_DUMP. Fix compile error on 64-BIT 85xx owing to this
+change.
 
-Thanks.
+Cc: stable@vger.kernel.org
+Fixes: 5c4233cc0920 ("powerpc/kdump: Split KEXEC_CORE and CRASH_DUMP dependency")
+Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+Closes: https://lore.kernel.org/all/fa247ae4-5825-4dbe-a737-d93b7ab4d4b9@xenosoft.de/
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+---
+ arch/powerpc/platforms/85xx/smp.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-cheers
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 40aa58206888..e52b848b64b7 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -398,6 +398,7 @@ static void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
+ 	hard_irq_disable();
+ 	mpic_teardown_this_cpu(secondary);
+ 
++#ifdef CONFIG_CRASH_DUMP
+ 	if (cpu == crashing_cpu && cpu_thread_in_core(cpu) != 0) {
+ 		/*
+ 		 * We enter the crash kernel on whatever cpu crashed,
+@@ -406,9 +407,11 @@ static void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
+ 		 */
+ 		disable_threadbit = 1;
+ 		disable_cpu = cpu_first_thread_sibling(cpu);
+-	} else if (sibling != crashing_cpu &&
+-		   cpu_thread_in_core(cpu) == 0 &&
+-		   cpu_thread_in_core(sibling) != 0) {
++	} else if (sibling == crashing_cpu) {
++		return;
++	}
++#endif
++	if (cpu_thread_in_core(cpu) == 0 && cpu_thread_in_core(sibling) != 0) {
+ 		disable_threadbit = 2;
+ 		disable_cpu = sibling;
+ 	}
+-- 
+2.45.0
+
