@@ -4,65 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEDB9C25B74
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 10:11:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27133C25B10
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 10:11:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=b8fMB31u;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nLHiCpI/;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VbPmB35h6z3dXW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 20:11:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VbPmy57xGz3fmL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 May 2024 20:11:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=b8fMB31u;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nLHiCpI/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Fri, 10 May 2024 20:08:53 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VbPjR40Rjz3cYp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2024 20:08:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VbPjd1vyTz3cZm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 May 2024 20:08:52 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1715335724; x=1746871724;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=pYTxNr/L4Gjfg/Z/BGNiuJOEbWyvLqpfs+1c7rEX78Q=;
-  b=b8fMB31uhMawYPMxnGcz8lOvKOF4eHvOUVxyEGHOmiI/gWQvVyjnwm12
-   niuOLLI+DhiAeTrp8b06QfpVmCae8iPbaVHG9gPMuul1DljMfXbGtJMLr
-   AVAtCEiU3AnC5d1olvWm17wCaqoZXSXzR1ZlvB44DfP1isaHDzFEYd0pW
-   xPsQfhipfiK3cTqAKYEBjOrPMsCJCuydDxqwFyJJ/hFl040NT2bnGOuDg
-   EslTRvq+OMMVZXJs6tUIhwoRVJ43siCrrl/ZzuZXQj5wxQPsumhTy18ya
-   hYc6ChQlBzKSX1v4xDfolCjRIvhJ7/ZkEZ4OvormX2V0BCzNaExg2QIqC
+  t=1715335734; x=1746871734;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=OCWYMtnallfof9cmVRtJ1kPAbbWtnFDn34D2Owmif80=;
+  b=nLHiCpI/vdFMKLeFabvsKyh7DtAhX9CXs2VCu4VsKqz7VDzai8RamPnn
+   tvP1LGK1z8tmgj5EKxvzL0MTrnumjRq2FWHK53I0N3G9WwPdzQmJPJftb
+   NU/pp6nwNAGSbBiXmU6JolBpXUDCqJ2egGuK7c8BL+HT/6qViCSj3HiCQ
+   0kukcIKWXunxjH2pvsKPyABCc1DrV4eBj+XNUamaG4ZAOR74cfjJP7nJP
+   W2dDbSWvMCG7o3ZgiEjX8LwHBVl4wWpka3odAeUHi4wGAnH7mALfVZmcZ
+   fD5GV8SBjHwQIZ0I93WFQ5OSpGdHi2ZMr8ICjzqiKICfdrVPsimKaTuO6
    w==;
-X-CSE-ConnectionGUID: M5fPV9mZRCi28kqjuOLWww==
-X-CSE-MsgGUID: YNLtu7mfQPSEwzaSrDfDUg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11068"; a="33819874"
+X-CSE-ConnectionGUID: ZniuGmqmRSeXR8WLE3Z++g==
+X-CSE-MsgGUID: kfUkYoL0SY2vgS8xgdf2Qw==
+X-IronPort-AV: E=McAfee;i="6600,9927,11068"; a="11144828"
 X-IronPort-AV: E=Sophos;i="6.08,150,1712646000"; 
-   d="scan'208";a="33819874"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2024 03:08:41 -0700
-X-CSE-ConnectionGUID: ZYrlwfHdSGe7z9FmAwQgvQ==
-X-CSE-MsgGUID: F/V7B8E1RuWHq3yMYoA0dw==
+   d="scan'208";a="11144828"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2024 03:07:42 -0700
+X-CSE-ConnectionGUID: TqrY0fPERpWwBY1Kjl+aIA==
+X-CSE-MsgGUID: iZwTQAU0TY6ihNHFo1S42A==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.08,150,1712646000"; 
-   d="scan'208";a="29511653"
+   d="scan'208";a="29588212"
 Received: from ijarvine-desk1.ger.corp.intel.com (HELO localhost) ([10.245.247.85])
-  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2024 03:08:37 -0700
+  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 May 2024 03:07:38 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To: linux-pci@vger.kernel.org,
 	Bjorn Helgaas <bhelgaas@google.com>,
 	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
 	Oliver O'Halloran <oohall@gmail.com>,
-	Lukas Wunner <lukas@wunner.de>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 7/7] PCI: Create helper to print TLP Header and Prefix Log
-Date: Fri, 10 May 2024 13:07:30 +0300
-Message-Id: <20240510100730.18805-8-ilpo.jarvinen@linux.intel.com>
+	Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH v4 0/7] PCI: Consolidate TLP Log reading and printing
+Date: Fri, 10 May 2024 13:07:23 +0300
+Message-Id: <20240510100730.18805-1-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20240510100730.18805-1-ilpo.jarvinen@linux.intel.com>
-References: <20240510100730.18805-1-ilpo.jarvinen@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -77,140 +74,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Cc: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add pcie_print_tlp_log() helper to print TLP Header and Prefix Log.
-Print End-End Prefixes only if they are non-zero.
+This series has the remaining patches of the AER & DPC TLP Log handling
+consolidation and now includes a few minor improvements to the earlier
+accepted TLP Logging code.
 
-Consolidate the few places which currently print TLP using custom
-formatting.
+v4:
+- Added patches:
+	- Remove EXPORT of pcie_read_tlp_log()
+	- Moved code to pcie/tlp.c and build only with AER enabled
+	- Match variables in prototype and function
+	- int -> unsigned int conversion
+	- eetlp_prefix_max into own patch
+- struct pcie_tlp_log param consistently called "log" within tlp.c
+- Moved function prototypes into drivers/pci/pci.h
+- Describe AER/DPC differences more clearly in one commit message
 
-The first attempt used pr_cont() instead of building a string first but
-it turns out pr_cont() is not compatible with pci_err() and prints on a
-separate line. When I asked about this, Andy Shevchenko suggested
-pr_cont() should not be used in the first place (to eventually get rid
-of it) so pr_cont() is now replaced with building the string first.
+v3:
+- Small rewording in a commit message
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
----
- drivers/pci/pci.h      |  2 ++
- drivers/pci/pcie/aer.c | 10 ++--------
- drivers/pci/pcie/dpc.c |  5 +----
- drivers/pci/pcie/tlp.c | 31 +++++++++++++++++++++++++++++++
- 4 files changed, 36 insertions(+), 12 deletions(-)
+v2:
+- Don't add EXPORT()s
+- Don't include igxbe changes
+- Don't use pr_cont() as it's incompatible with pci_err() and according
+  to Andy Shevchenko should not be used in the first place
 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 3d9034d89be8..bf13d2fc4bb7 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -424,6 +424,8 @@ int pcie_read_tlp_log(struct pci_dev *dev, int where, int where2,
- 		      unsigned int tlp_len, struct pcie_tlp_log *log);
- unsigned int aer_tlp_log_len(struct pci_dev *dev);
- unsigned int dpc_tlp_log_len(struct pci_dev *dev);
-+void pcie_print_tlp_log(const struct pci_dev *dev,
-+			const struct pcie_tlp_log *log, const char *pfx);
- #endif	/* CONFIG_PCIEAER */
- 
- #ifdef CONFIG_PCIEPORTBUS
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index ecc1dea5a208..efb9e728fe94 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -664,12 +664,6 @@ static void pci_rootport_aer_stats_incr(struct pci_dev *pdev,
- 	}
- }
- 
--static void __print_tlp_header(struct pci_dev *dev, struct pcie_tlp_log *t)
--{
--	pci_err(dev, "  TLP Header: %08x %08x %08x %08x\n",
--		t->dw[0], t->dw[1], t->dw[2], t->dw[3]);
--}
--
- static void __aer_print_error(struct pci_dev *dev,
- 			      struct aer_err_info *info)
- {
-@@ -724,7 +718,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
- 	__aer_print_error(dev, info);
- 
- 	if (info->tlp_header_valid)
--		__print_tlp_header(dev, &info->tlp);
-+		pcie_print_tlp_log(dev, &info->tlp, "  ");
- 
- out:
- 	if (info->id && info->error_dev_num > 1 && info->id == id)
-@@ -796,7 +790,7 @@ void pci_print_aer(struct pci_dev *dev, int aer_severity,
- 			aer->uncor_severity);
- 
- 	if (tlp_header_valid)
--		__print_tlp_header(dev, &aer->header_log);
-+		pcie_print_tlp_log(dev, &aer->header_log, "  ");
- 
- 	trace_aer_event(dev_name(&dev->dev), (status & ~mask),
- 			aer_severity, tlp_header_valid, &aer->header_log);
-diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
-index 5056cc6961ec..598f74384471 100644
---- a/drivers/pci/pcie/dpc.c
-+++ b/drivers/pci/pcie/dpc.c
-@@ -220,10 +220,7 @@ static void dpc_process_rp_pio_error(struct pci_dev *pdev)
- 	pcie_read_tlp_log(pdev, cap + PCI_EXP_DPC_RP_PIO_HEADER_LOG,
- 			  cap + PCI_EXP_DPC_RP_PIO_TLPPREFIX_LOG,
- 			  dpc_tlp_log_len(pdev), &tlp_log);
--	pci_err(pdev, "TLP Header: %#010x %#010x %#010x %#010x\n",
--		tlp_log.dw[0], tlp_log.dw[1], tlp_log.dw[2], tlp_log.dw[3]);
--	for (i = 0; i < pdev->dpc_rp_log_size - 5; i++)
--		pci_err(pdev, "TLP Prefix Header: dw%d, %#010x\n", i, tlp_log.prefix[i]);
-+	pcie_print_tlp_log(pdev, &tlp_log, "");
- 
- 	if (pdev->dpc_rp_log_size < 5)
- 		goto clear_status;
-diff --git a/drivers/pci/pcie/tlp.c b/drivers/pci/pcie/tlp.c
-index 3615ca520c9a..59a28485696f 100644
---- a/drivers/pci/pcie/tlp.c
-+++ b/drivers/pci/pcie/tlp.c
-@@ -6,6 +6,7 @@
-  */
- 
- #include <linux/aer.h>
-+#include <linux/array_size.h>
- #include <linux/pci.h>
- #include <linux/string.h>
- 
-@@ -74,3 +75,33 @@ int pcie_read_tlp_log(struct pci_dev *dev, int where, int where2,
- 
- 	return 0;
- }
-+
-+/**
-+ * pcie_print_tlp_log - Print TLP Header / Prefix Log contents
-+ * @dev: PCIe device
-+ * @log: TLP Log structure
-+ * @pfx: String prefix (for print out indentation)
-+ *
-+ * Prints TLP Header and Prefix Log information held by @log.
-+ */
-+void pcie_print_tlp_log(const struct pci_dev *dev,
-+			const struct pcie_tlp_log *log, const char *pfx)
-+{
-+	char buf[(10 + 1) * (4 + ARRAY_SIZE(log->prefix)) + 14 + 1];
-+	unsigned int i;
-+	int len;
-+
-+	len = scnprintf(buf, sizeof(buf), "%#010x %#010x %#010x %#010x",
-+			log->dw[0], log->dw[1], log->dw[2], log->dw[3]);
-+
-+	if (log->prefix[0])
-+		len += scnprintf(buf + len, sizeof(buf) - len, " E-E Prefixes:");
-+	for (i = 0; i < ARRAY_SIZE(log->prefix); i++) {
-+		if (!log->prefix[i])
-+			break;
-+		len += scnprintf(buf + len, sizeof(buf) - len,
-+				 " %#010x", log->prefix[i]);
-+	}
-+
-+	pci_err(dev, "%sTLP Header: %s\n", pfx, buf);
-+}
+Ilpo Järvinen (7):
+  PCI: Don't expose pcie_read_tlp_log() outside of PCI subsystem
+  PCI: Move TLP Log handling to own file
+  PCI: Make pcie_read_tlp_log() signature same
+  PCI: Use unsigned int i in pcie_read_tlp_log()
+  PCI: Store # of supported End-End TLP Prefixes
+  PCI: Add TLP Prefix reading into pcie_read_tlp_log()
+  PCI: Create helper to print TLP Header and Prefix Log
+
+ drivers/pci/ats.c             |   2 +-
+ drivers/pci/pci.c             |  28 ---------
+ drivers/pci/pci.h             |   9 +++
+ drivers/pci/pcie/Makefile     |   2 +-
+ drivers/pci/pcie/aer.c        |  14 ++---
+ drivers/pci/pcie/dpc.c        |  14 ++---
+ drivers/pci/pcie/tlp.c        | 107 ++++++++++++++++++++++++++++++++++
+ drivers/pci/probe.c           |  14 +++--
+ include/linux/aer.h           |   3 +-
+ include/linux/pci.h           |   2 +-
+ include/uapi/linux/pci_regs.h |   2 +
+ 11 files changed, 141 insertions(+), 56 deletions(-)
+ create mode 100644 drivers/pci/pcie/tlp.c
+
 -- 
 2.39.2
 
