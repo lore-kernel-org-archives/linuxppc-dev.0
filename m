@@ -4,51 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFDC2C04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2024 10:54:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D69D1C04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2024 11:32:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lhIZOkwa;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=miVZhObz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VdtX45xvZz2yvx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2024 20:54:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VdvMw0jKZz3cHH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 May 2024 21:32:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lhIZOkwa;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=miVZhObz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VdtWG43tGz2yvs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2024 20:53:30 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id D636361228;
-	Tue, 14 May 2024 10:53:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3D3CC32781;
-	Tue, 14 May 2024 10:53:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1715684008;
-	bh=aU1RwmVoZA1OHt1xQFp3L8EH8NSGi/JkZ+0wsLin0kw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=lhIZOkwal34GZ1VVw0JrpLrXyv1VHEeYDo7S0XiBZcMN+jqcjxV7nvHqVk5nayOMj
-	 EKELqxj/mmmPo/LD+JMHU5hOx1j7KnlWHfKYZjk9M48EwXTwIUCykA5kqnxgqQ+Ove
-	 /2iBh+sMiwkGQFBn66lSDnO/sYhBjd/W5J4QQFnK47WLC8cqDl6YIKDYqNI/FKbdxZ
-	 qDhKMClYu5SM0jfnrDM/qR6CN8hyjxZpu++QVR0oGKgVXZXCaEV89eWrwYAViqWK45
-	 d1gCWgg4KHUukpzf/XAGOKd9fhBrytEaVnlwbMB/GJNI9Ri4QCW5p7Qtf37let0DDk
-	 Qw3DeZDcZuFZg==
-Date: Tue, 14 May 2024 16:20:04 +0530
-From: Naveen N Rao <naveen@kernel.org>
-To: Gautam Menghani <gautam@linux.ibm.com>
-Subject: Re: [PATCH] arch/powerpc: Remove the definition of unused cede
- function
-Message-ID: <vfx2z4dn6afpkl4z7ygewadw7mohfd7l3tfazdya4sbxniurkg@vrubq25slkvs>
-References: <20240514100507.271681-1-gautam@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VdvM20wBLz2yvp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 May 2024 21:31:24 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1715686286; x=1747222286;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=jJsIyGCb+UYU0upD3tEgow1pHR8mvqbiW1YtMiSq/uk=;
+  b=miVZhObzHEHb3ce4f/HYgkSzuAlkv1mYSLP8ycVjx7DRBlt2DFAozMfV
+   nNHRxGGKLJrBeNFRXho8WF8WnfLaRnHYRsIfJ0pL/vSppxYkqRVr4cY3Q
+   15ct95CvKQxVnwhZQS+9h17OUMceeHKgsvNctsq6b0jfCdZ7TK3V3/vce
+   NY6vJi/JFpit99+DOXZeRJmDxKWyDdKj3i6/pFa6x3JYXYdE5Ol4GteEK
+   hh2m6RwnGfaSOZMLMGLOMoPccORFm90cBmbgAK4Ac1M1V+GGHg3PhqQuw
+   IxS9Eg0GlcZ7fZ5E/oMFEFfSnqCxG7Aa0C47+04O8BoOPzIuti9zkszbv
+   w==;
+X-CSE-ConnectionGUID: 9OKm7xsnQSm3nfs9/TfhKQ==
+X-CSE-MsgGUID: bl29mCIoRWeMiEKJiChczw==
+X-IronPort-AV: E=McAfee;i="6600,9927,11072"; a="11532815"
+X-IronPort-AV: E=Sophos;i="6.08,159,1712646000"; 
+   d="scan'208";a="11532815"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 May 2024 04:31:20 -0700
+X-CSE-ConnectionGUID: mijAQijJQFGOD+cpqW0VZg==
+X-CSE-MsgGUID: Rk5dwf0BSwaiBBbO4hvl7A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.08,159,1712646000"; 
+   d="scan'208";a="35179610"
+Received: from ijarvine-desk1.ger.corp.intel.com (HELO localhost) ([10.245.247.94])
+  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 May 2024 04:31:18 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: linux-pci@vger.kernel.org,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH v5 0/7] PCI: Consolidate TLP Log reading and printing
+Date: Tue, 14 May 2024 14:31:02 +0300
+Message-Id: <20240514113109.6690-1-ilpo.jarvinen@linux.intel.com>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240514100507.271681-1-gautam@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,56 +73,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, linux-kernel@vger.kernel.org
+Cc: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, May 14, 2024 at 03:35:03PM GMT, Gautam Menghani wrote:
-> Remove extended_cede_processor() definition as it has no callers since
-> commit 48f6e7f6d948("powerpc/pseries: remove cede offline state for CPUs")
+This series has the remaining patches of the AER & DPC TLP Log handling
+consolidation and now includes a few minor improvements to the earlier
+accepted TLP Logging code.
 
-extended_cede_processor() was added in commit 69ddb57cbea0 
-("powerpc/pseries: Add extended_cede_processor() helper function."), 
-which also added [get|set]_cede_latency_hint(). Those can also be 
-removed if extended_cede_processor() is no longer needed.
+v5:
+- Fix build with AER=y and DPC=n
+- Match kerneldoc and function parameter name
 
-- Naveen
+v4:
+- Added patches:
+	- Remove EXPORT of pcie_read_tlp_log()
+	- Moved code to pcie/tlp.c and build only with AER enabled
+	- Match variables in prototype and function
+	- int -> unsigned int conversion
+	- eetlp_prefix_max into own patch
+- struct pcie_tlp_log param consistently called "log" within tlp.c
+- Moved function prototypes into drivers/pci/pci.h
+- Describe AER/DPC differences more clearly in one commit message
 
-> 
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/plpar_wrappers.h | 18 ------------------
->  1 file changed, 18 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-> index b3ee44a40c2f..6431fa1e1cb1 100644
-> --- a/arch/powerpc/include/asm/plpar_wrappers.h
-> +++ b/arch/powerpc/include/asm/plpar_wrappers.h
-> @@ -37,24 +37,6 @@ static inline long cede_processor(void)
->  	return plpar_hcall_norets_notrace(H_CEDE);
->  }
->  
-> -static inline long extended_cede_processor(unsigned long latency_hint)
-> -{
-> -	long rc;
-> -	u8 old_latency_hint = get_cede_latency_hint();
-> -
-> -	set_cede_latency_hint(latency_hint);
-> -
-> -	rc = cede_processor();
-> -
-> -	/* Ensure that H_CEDE returns with IRQs on */
-> -	if (WARN_ON(IS_ENABLED(CONFIG_PPC_IRQ_SOFT_MASK_DEBUG) && !(mfmsr() & MSR_EE)))
-> -		__hard_irq_enable();
-> -
-> -	set_cede_latency_hint(old_latency_hint);
-> -
-> -	return rc;
-> -}
-> -
->  static inline long vpa_call(unsigned long flags, unsigned long cpu,
->  		unsigned long vpa)
->  {
-> -- 
-> 2.45.0
-> 
+v3:
+- Small rewording in a commit message
+
+v2:
+- Don't add EXPORT()s
+- Don't include igxbe changes
+- Don't use pr_cont() as it's incompatible with pci_err() and according
+  to Andy Shevchenko should not be used in the first place
+
+Ilpo Järvinen (7):
+  PCI: Don't expose pcie_read_tlp_log() outside of PCI subsystem
+  PCI: Move TLP Log handling to own file
+  PCI: Make pcie_read_tlp_log() signature same
+  PCI: Use unsigned int i in pcie_read_tlp_log()
+  PCI: Store # of supported End-End TLP Prefixes
+  PCI: Add TLP Prefix reading into pcie_read_tlp_log()
+  PCI: Create helper to print TLP Header and Prefix Log
+
+ drivers/pci/ats.c             |   2 +-
+ drivers/pci/pci.c             |  28 ---------
+ drivers/pci/pci.h             |   9 +++
+ drivers/pci/pcie/Makefile     |   2 +-
+ drivers/pci/pcie/aer.c        |  14 ++---
+ drivers/pci/pcie/dpc.c        |  14 ++---
+ drivers/pci/pcie/tlp.c        | 109 ++++++++++++++++++++++++++++++++++
+ drivers/pci/probe.c           |  14 +++--
+ include/linux/aer.h           |   3 +-
+ include/linux/pci.h           |   2 +-
+ include/uapi/linux/pci_regs.h |   2 +
+ 11 files changed, 143 insertions(+), 56 deletions(-)
+ create mode 100644 drivers/pci/pcie/tlp.c
+
+-- 
+2.39.2
+
