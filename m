@@ -4,76 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3E8EC25B75
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2024 11:38:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1FE1C25B75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2024 13:00:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=cryptogams.org header.i=@cryptogams.org header.a=rsa-sha256 header.s=gmail header.b=pmJT7ccq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TEeTVv7C;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VfWSc27R1z3dS9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2024 21:38:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=cryptogams.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VfYHZ1CKQz3cXV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2024 23:00:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=cryptogams.org header.i=@cryptogams.org header.a=rsa-sha256 header.s=gmail header.b=pmJT7ccq;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TEeTVv7C;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cryptogams.org (client-ip=2a00:1450:4864:20::233; helo=mail-lj1-x233.google.com; envelope-from=appro@cryptogams.org; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x233.google.com (mail-lj1-x233.google.com [IPv6:2a00:1450:4864:20::233])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VfS6037h2z30fM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2024 19:07:03 +1000 (AEST)
-Received: by mail-lj1-x233.google.com with SMTP id 38308e7fff4ca-2e52181c228so52985551fa.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2024 02:07:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cryptogams.org; s=gmail; t=1715764019; x=1716368819; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=sCN4Aw4+b34uYf5T+77CTVPm7n3v2SZABsZPxP6R4EM=;
-        b=pmJT7ccq0DW/Pn/Z9tFfGiuW44+pgVdoBAQQyP0b7TtwL7emM8e8goY3c9EFpmrWeY
-         hWhpgOAEPzSosyL43p5FNaToMvukl6RZ2LjhlQzHTJmKMZOcDLwiLV5/NbJPbB1mb8Os
-         z4j98LvjUsT4g0ZwwxkWYgcIa7hCeH93wjuJJ+vaI6C4pqqHdo57w+D3N2V9F+H3q7Uh
-         PdzAScPFnVhkNde4UK5LmcP1uPaF7if1IsVmQbUeoBERe+rIdsf6Uzy0MWWdwbkQUyTi
-         elrvZIupMykcLnbOyAaS8GsQavgHs0wZKwRpYhGbx4vTeg98/f3ETDpJYHcqT7UJUwgf
-         ysUg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1715764019; x=1716368819;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=sCN4Aw4+b34uYf5T+77CTVPm7n3v2SZABsZPxP6R4EM=;
-        b=gOjeb80ZYu7pZ1aC07pIZSNCFJe2pDfxugvNEnNogjkkTwbvw+vQQb9rn79c/C54fT
-         lkTwqAuEMDLOTpP5nRMBjn9FDipqsj2MtD62TgerDQxdEHpHCWW2Gluoqjoe6nDO2kT4
-         TC9HsZknamLEoQ+nXIp534+0rFU4Tl0GMwr/IHguGWEI/BdIMtOARBkuDaglWsdrGnuS
-         v+R0bmoKux6EkACYxtzcU0vnq1fKFIlHEf3W1Ci3MfpkHDZbBmfXKVgt77tF4Q8w9hAH
-         +mbxC6/e9AyH81Q1KS7w7g5ag+rRImHD00Nkta3wa+zAzpHFoE+ci+MOv4EtuaNK4UZx
-         oVAw==
-X-Forwarded-Encrypted: i=1; AJvYcCU+WgDsfIfhoK4x2tUo8isbAyloQ/liP6zQrrhpPtDvveKP10UW4FtgRYghQ9p4+MIduXnyf8rVHK2kvQcEZXxE2DfJF3BHTEDZgBI8Rg==
-X-Gm-Message-State: AOJu0Yxr6r+kSL/68C04sTgfbIpkMwaY63kJU0WMhDDiWAAtPs7nNgGV
-	ew4eNUEhkxN8hnU7Keac5rwYdGTYOH6fz2BWYP22CH+Jl/OoU7ntGpCl4Nb6aEz0lDuPEUUjit6
-	F
-X-Google-Smtp-Source: AGHT+IFGA1MJpKD7oQyr1PZIq0Tmx5HGUB13Z1Mg0iiS0ZqwHQj3FyTq5u9WwgiEAYYNn+VyIwyrpw==
-X-Received: by 2002:a2e:a794:0:b0:2e6:f3af:c6aa with SMTP id 38308e7fff4ca-2e6f3afcb13mr16822391fa.40.1715764019239;
-        Wed, 15 May 2024 02:06:59 -0700 (PDT)
-Received: from [10.0.1.129] (c-922370d5.012-252-67626723.bbcust.telenor.se. [213.112.35.146])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-2e4d1621233sm20272571fa.126.2024.05.15.02.06.58
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 15 May 2024 02:06:58 -0700 (PDT)
-Message-ID: <db513fd8-4723-4b4c-bc14-7da7222617b3@cryptogams.org>
-Date: Wed, 15 May 2024 11:06:58 +0200
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VfYGl36DRz3cTr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 May 2024 22:59:58 +1000 (AEST)
+Received: from pps.filterd (m0353726.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44F9SrQx016508;
+	Wed, 15 May 2024 12:59:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=utdxrJinQ3y3ssW67uY8/Vj2gKWk7dVKOdUrx/aByzo=;
+ b=TEeTVv7CfS7LIh1J0XHjvyUbr/hk3lJtfWgJK0M0nTGdwCUknp1BqL+wceuIqAcU56rl
+ i/w9NPn6fKdkLJFkVBhCc4gLIN0vMgeLJ3M3G4DtLfJxpW1DwiX5+myGBuvikgNIiF7Z
+ xLF5VJNsE01TrfA5sVJk5Po/XT/L3Ha+QmJ6ERDvdP0W4zeH2i0QQbxsBTfWWAovEXXm
+ DOnG1Z99Xy6ayDR3909a8HVMbG3dQZ9bExJuHp8YrMJI7DA1MCMZQjAo1YnNB0a+CnqZ
+ sHCbE8sTSqejJCFKb+Se1wgar/krjASe0jHD39t9nFckKgzKaA9T8gTpTGtmcoL1sK3+ sA== 
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y4te9rgrt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 May 2024 12:59:44 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44FA70pQ006132;
+	Wed, 15 May 2024 12:59:43 GMT
+Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3y2nq2u836-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 May 2024 12:59:43 +0000
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44FCxeB450856216
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 15 May 2024 12:59:42 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 064FD58054;
+	Wed, 15 May 2024 12:59:40 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C27A45805D;
+	Wed, 15 May 2024 12:59:38 +0000 (GMT)
+Received: from [9.67.88.41] (unknown [9.67.88.41])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 15 May 2024 12:59:38 +0000 (GMT)
+Message-ID: <3d857119-8eb4-4dc0-8543-f30922d53187@linux.ibm.com>
+Date: Wed, 15 May 2024 07:59:38 -0500
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 1/3] crypto: X25519 low-level primitives for ppc64le.
-To: Danny Tsen <dtsen@linux.ibm.com>, linux-crypto@vger.kernel.org
+To: Andy Polyakov <appro@cryptogams.org>, linux-crypto@vger.kernel.org
 References: <20240514173835.4814-1-dtsen@linux.ibm.com>
  <20240514173835.4814-2-dtsen@linux.ibm.com>
+ <dc5aadc2-308d-4f24-8a59-45da21b8b2e5@cryptogams.org>
 Content-Language: en-US
-From: Andy Polyakov <appro@cryptogams.org>
-In-Reply-To: <20240514173835.4814-2-dtsen@linux.ibm.com>
+From: Danny Tsen <dtsen@linux.ibm.com>
+In-Reply-To: <dc5aadc2-308d-4f24-8a59-45da21b8b2e5@cryptogams.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Wed, 15 May 2024 21:36:22 +1000
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: DlR67ri-zm08JTzNj0Bkvc7vRlejwpzl
+X-Proofpoint-ORIG-GUID: DlR67ri-zm08JTzNj0Bkvc7vRlejwpzl
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
+ definitions=2024-05-15_06,2024-05-15_01,2023-05-22_02
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 mlxlogscore=999
+ phishscore=0 adultscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ bulkscore=0 spamscore=0 suspectscore=0 impostorscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2405010000
+ definitions=main-2405150090
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,41 +99,26 @@ Cc: herbert@gondor.apana.org.au, dtsen@us.ibm.com, nayna@linux.ibm.com, linux-ke
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Thank you Andy.  Will fix this.
 
-> +SYM_FUNC_START(x25519_fe51_sqr_times)
-> ...
-> +
-> +.Lsqr_times_loop:
-> ...
-> +
-> +	std	9,16(3)
-> +	std	10,24(3)
-> +	std	11,32(3)
-> +	std	7,0(3)
-> +	std	8,8(3)
-> +	bdnz	.Lsqr_times_loop
-
-I see no reason for why the stores can't be moved outside the loop in 
-question.
-
-> +SYM_FUNC_START(x25519_fe51_frombytes)
-> +.align	5
-> +
-> +	li	12, -1
-> +	srdi	12, 12, 13	# 0x7ffffffffffff
-> +
-> +	ld	5, 0(4)
-> +	ld	6, 8(4)
-> +	ld	7, 16(4)
-> +	ld	8, 24(4)
-
-Is there actual guarantee that the byte input is 64-bit aligned? While 
-it is true that processor is obliged to handle misaligned loads and 
-stores by the ISA specification, them being inefficient doesn't go 
-against it. Most notably inefficiency is likely to be noted at the page 
-boundaries. What I'm trying to say is that it would be more appropriate 
-to avoid the unaligned loads (and stores).
-
-Cheers.
-
+On 5/15/24 3:11 AM, Andy Polyakov wrote:
+> Hi,
+>
+> Couple of remarks inline.
+>
+>> +# [1] https://www.openssl.org/~appro/cryptogams/
+>
+> https://github.com/dot-asm/cryptogams/ is arguably better reference.
+>
+>> +SYM_FUNC_START(x25519_fe51_mul)
+>> +.align    5
+>
+> The goal is to align the label, not the first instruction after the 
+> directive. It's not a problem in this spot, in the beginning of the 
+> module that is, but further below it's likely to inject redundant nops 
+> between the label and meaningful code. But since the directive in 
+> question is not position-sensitive one can resolve this by changing 
+> the order of the directive and the SYM_FUNC_START macro.
+>
+> Cheers.
+>
