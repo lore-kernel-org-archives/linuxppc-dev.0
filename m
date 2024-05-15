@@ -4,72 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85421C25B79
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2024 14:08:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49852C25B75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2024 14:09:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=Mcnikm9u;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fHk5Icr+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VfZnc0TPxz3g4R
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 00:08:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VfZpf5m2zz3vfJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 00:09:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=Mcnikm9u;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fHk5Icr+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=savoirfairelinux.com (client-ip=208.88.110.44; helo=mail.savoirfairelinux.com; envelope-from=elinor.montmasson@savoirfairelinux.com; receiver=lists.ozlabs.org)
-Received: from mail.savoirfairelinux.com (mail.savoirfairelinux.com [208.88.110.44])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=pierre-louis.bossart@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Thu, 16 May 2024 00:05:55 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VfZdm2qs9z3cYH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 00:01:32 +1000 (AEST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 4D6279C5906;
-	Wed, 15 May 2024 09:54:29 -0400 (EDT)
-Received: from mail.savoirfairelinux.com ([127.0.0.1])
- by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10032)
- with ESMTP id Ish-8LJQ0Fwu; Wed, 15 May 2024 09:54:26 -0400 (EDT)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 25F9B9C58F7;
-	Wed, 15 May 2024 09:54:26 -0400 (EDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 25F9B9C58F7
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=savoirfairelinux.com; s=DFC430D2-D198-11EC-948E-34200CB392D2;
-	t=1715781266; bh=MCWyc8mb0oR2muaRyC6AF7jxkzHQ2Iwvsk0aFLNFOuM=;
-	h=From:To:Date:Message-Id:MIME-Version;
-	b=Mcnikm9uXK4jOORxM/eCSym+rjBAXeHBPokUEhdVEggYnJxDONF7Rim+xeVTKafmO
-	 XdzMzWdoIPBuwBuIqzS4uCS/580Xc8Z3FvPb53pRrdnSjU6F0/c8S6nP5e13gk4J9P
-	 EJd5k9TFlaPsxpGYFFYkuYLk/pXYS6Qy211dik4eHUoB1JXElVcwhKn2KF+bIuKM00
-	 o3VI/Fu18DnTq1VaT4RS2STMlMy75lBg84hHixc6rDEeGdja31mtEUzr8kpfCWNYTn
-	 TNwhDaxAgVJbkN1hGqjwVNfVAKshjsWYUhspft5sfmGnYCa5vpmt2VSbuEcuN+t1Ct
-	 mkroDX/eLcMwA==
-X-Virus-Scanned: amavis at mail.savoirfairelinux.com
-Received: from mail.savoirfairelinux.com ([127.0.0.1])
- by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10026)
- with ESMTP id c7CZ7qnrxxjg; Wed, 15 May 2024 09:54:26 -0400 (EDT)
-Received: from gerard.rennes.sfl (lmontsouris-657-1-69-118.w80-15.abo.wanadoo.fr [80.15.101.118])
-	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id 2D00A9C58F8;
-	Wed, 15 May 2024 09:54:24 -0400 (EDT)
-From: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
-To: Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Subject: [PATCHv4 3/9] ASoC: fsl-asoc-card: add compatibility to use 2 codecs in dai-links
-Date: Wed, 15 May 2024 15:54:05 +0200
-Message-Id: <20240515135411.343333-4-elinor.montmasson@savoirfairelinux.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240515135411.343333-1-elinor.montmasson@savoirfairelinux.com>
-References: <20240515135411.343333-1-elinor.montmasson@savoirfairelinux.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VfZkq1Xmvz3gFD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 00:05:54 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1715781956; x=1747317956;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=Is9J5YRpNzvklFE+cfQ23ylGaJ3nXqCLhHCxIrAy0f4=;
+  b=fHk5Icr+feFHHQ4bjBldE6oy06cxJiuy6/R5o//kD1IJLukhqLtQhj0T
+   87s3nuDP56Z4dfp/J0YGrvw/cMgmcEdtJIBC946mfFarlUmeDQwdtwCt9
+   fzSNd2rQoGzVfoaDDbPWAVPSCUO42eNQCOqT93HA10uxm0b4yYRSTS7A7
+   qI0/aYv5eNxtbTqkE+OilKqrZY88sRQ607kQYwKJhBO3tjtaN5QOp6/+5
+   09uT8bFeNUZ4ebX97e78JaIQ/W4fuM6Yr1PYTZj+2CKK3wRTTEI8nDVjK
+   dSsxdYbuXnrV8Gp5jWc1j5ZepHkV/5vdkji4fnxlbLRA98QY26n/SQcVj
+   g==;
+X-CSE-ConnectionGUID: RDACZYMASwuMz+556l0z4Q==
+X-CSE-MsgGUID: KJIkoup1Qja9Yj59+zh3lw==
+X-IronPort-AV: E=McAfee;i="6600,9927,11074"; a="23234040"
+X-IronPort-AV: E=Sophos;i="6.08,162,1712646000"; 
+   d="scan'208";a="23234040"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 May 2024 07:04:44 -0700
+X-CSE-ConnectionGUID: ureli23YTFOv+UNUpcaPtw==
+X-CSE-MsgGUID: 4mxvp+5zQbCHGtglpG+BDA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.08,162,1712646000"; 
+   d="scan'208";a="35778478"
+Received: from wtcline-desk12.amr.corp.intel.com (HELO [10.125.108.49]) ([10.125.108.49])
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 May 2024 07:04:42 -0700
+Message-ID: <4170720a-f7bb-484e-9235-a8720cec92c1@linux.intel.com>
+Date: Wed, 15 May 2024 09:04:41 -0500
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v15 00/16] Add audio support in v4l2 framework
+To: Jaroslav Kysela <perex@perex.cz>, Shengjiu Wang
+ <shengjiu.wang@gmail.com>,
+ =?UTF-8?Q?Amadeusz_S=C5=82awi=C5=84ski?=
+ <amadeuszx.slawinski@linux.intel.com>
+References: <1710834674-3285-1-git-send-email-shengjiu.wang@nxp.com>
+ <20240430082112.jrovosb6lgblgpfg@basti-XPS-13-9310>
+ <ZjEEKyvb02CWz3l4@finisterre.sirena.org.uk> <20240430172752.20ffcd56@sal.lan>
+ <ZjGhPz-bokg6ZbDJ@finisterre.sirena.org.uk> <87sez0k661.wl-tiwai@suse.de>
+ <20240502095956.0a8c5b26@sal.lan> <20240502102643.4ee7f6c2@sal.lan>
+ <ZjRCJ2ZcmKOIo7_p@finisterre.sirena.org.uk> <20240503094225.47fe4836@sal.lan>
+ <CAA+D8APfM3ayXHAPadHLty52PYE9soQM6o780=mZs+R4px-AOQ@mail.gmail.com>
+ <22d94c69-7e9f-4aba-ae71-50cc2e5dd8ab@xs4all.nl>
+ <51408e79-646d-4d23-bc5b-cd173d363327@linux.intel.com>
+ <CAA+D8AM7+SvXBi=LKRqvJkLsrYW=nkHTfFe957z2Qzm89bc48g@mail.gmail.com>
+ <cd71e8e8-b4dc-40ed-935e-a84c222997e6@linux.intel.com>
+ <CAA+D8AMpLB0N++_iLWLN_qettNz-gKGQz2c2yLsY8qSycibkYg@mail.gmail.com>
+ <2f771fe9-7c09-4e74-9b04-de52581133fd@linux.intel.com>
+ <CAA+D8AMJKPVR99jzYCR5EsbMa8P95jQrDL=4ayYMuz+Cu1d2mQ@mail.gmail.com>
+ <28d423b1-49d8-4180-8394-622b1afd9cd9@perex.cz>
+Content-Language: en-US
+From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+In-Reply-To: <28d423b1-49d8-4180-8394-622b1afd9cd9@perex.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,460 +90,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org, Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>, linuxppc-dev@lists.ozlabs.org
+Cc: nicoleotsuka@gmail.com, alsa-devel@alsa-project.org, lgirdwood@gmail.com, Sebastian Fricke <sebastian.fricke@collabora.com>, Xiubo.Lee@gmail.com, Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>, tiwai@suse.com, linux-media@vger.kernel.org, tfiga@chromium.org, Hans Verkuil <hverkuil@xs4all.nl>, linuxppc-dev@lists.ozlabs.org, Mark Brown <broonie@kernel.org>, sakari.ailus@iki.fi, Mauro Carvalho Chehab <mchehab@kernel.org>, festevam@gmail.com, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Adapt the driver to work with configurations using two codecs or more.
-Modify fsl_asoc_card_probe() to handle use cases where 2 codecs are
-given in the device tree.
-This will be needed for the generic codec case.
 
-Use cases using one codec will ignore any given codecs other than the
-first.
 
-Signed-off-by: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
-Co-authored-by: Philip-Dylan Gleonec <philip-dylan.gleonec@savoirfairelinux=
-.com>
----
- sound/soc/fsl/fsl-asoc-card.c | 239 ++++++++++++++++++++--------------
- 1 file changed, 139 insertions(+), 100 deletions(-)
+On 5/9/24 06:13, Jaroslav Kysela wrote:
+> On 09. 05. 24 12:44, Shengjiu Wang wrote:
+>>>> mem2mem is just like the decoder in the compress pipeline. which is
+>>>> one of the components in the pipeline.
+>>>
+>>> I was thinking of loopback with endpoints using compress streams,
+>>> without physical endpoint, something like:
+>>>
+>>> compress playback (to feed data from userspace) -> DSP (processing) ->
+>>> compress capture (send data back to userspace)
+>>>
+>>> Unless I'm missing something, you should be able to process data as fast
+>>> as you can feed it and consume it in such case.
+>>>
+>>
+>> Actually in the beginning I tried this,  but it did not work well.
+>> ALSA needs time control for playback and capture, playback and capture
+>> needs to synchronize.  Usually the playback and capture pipeline is
+>> independent in ALSA design,  but in this case, the playback and capture
+>> should synchronize, they are not independent.
+> 
+> The core compress API core no strict timing constraints. You can
+> eventually0 have two half-duplex compress devices, if you like to have
+> really independent mechanism. If something is missing in API, you can
+> extend this API (like to inform the user space that it's a
+> producer/consumer processing without any relation to the real time). I
+> like this idea.
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index c83492e7cec2..620a25eb068a 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -99,7 +99,7 @@ struct fsl_asoc_card_priv {
- 	struct simple_util_jack hp_jack;
- 	struct simple_util_jack mic_jack;
- 	struct platform_device *pdev;
--	struct codec_priv codec_priv;
-+	struct codec_priv codec_priv[2];
- 	struct cpu_priv cpu_priv;
- 	struct snd_soc_card card;
- 	u8 streams;
-@@ -172,11 +172,13 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_sub=
-stream *substream,
- 	struct snd_soc_pcm_runtime *rtd =3D snd_soc_substream_to_rtd(substream);
- 	struct fsl_asoc_card_priv *priv =3D snd_soc_card_get_drvdata(rtd->card);
- 	bool tx =3D substream->stream =3D=3D SNDRV_PCM_STREAM_PLAYBACK;
--	struct codec_priv *codec_priv =3D &priv->codec_priv;
-+	struct codec_priv *codec_priv;
-+	struct snd_soc_dai *codec_dai;
- 	struct cpu_priv *cpu_priv =3D &priv->cpu_priv;
- 	struct device *dev =3D rtd->card->dev;
- 	unsigned int pll_out;
- 	int ret;
-+	int i;
-=20
- 	priv->sample_rate =3D params_rate(params);
- 	priv->sample_format =3D params_format(params);
-@@ -208,28 +210,32 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_sub=
-stream *substream,
- 	}
-=20
- 	/* Specific configuration for PLL */
--	if (codec_priv->pll_id >=3D 0 && codec_priv->fll_id >=3D 0) {
--		if (priv->sample_format =3D=3D SNDRV_PCM_FORMAT_S24_LE)
--			pll_out =3D priv->sample_rate * 384;
--		else
--			pll_out =3D priv->sample_rate * 256;
-+	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-+		codec_priv =3D &priv->codec_priv[i];
-=20
--		ret =3D snd_soc_dai_set_pll(snd_soc_rtd_to_codec(rtd, 0),
--					  codec_priv->pll_id,
--					  codec_priv->mclk_id,
--					  codec_priv->mclk_freq, pll_out);
--		if (ret) {
--			dev_err(dev, "failed to start FLL: %d\n", ret);
--			goto fail;
--		}
-+		if (codec_priv->pll_id >=3D 0 && codec_priv->fll_id >=3D 0) {
-+			if (priv->sample_format =3D=3D SNDRV_PCM_FORMAT_S24_LE)
-+				pll_out =3D priv->sample_rate * 384;
-+			else
-+				pll_out =3D priv->sample_rate * 256;
-=20
--		ret =3D snd_soc_dai_set_sysclk(snd_soc_rtd_to_codec(rtd, 0),
--					     codec_priv->fll_id,
--					     pll_out, SND_SOC_CLOCK_IN);
-+			ret =3D snd_soc_dai_set_pll(codec_dai,
-+						codec_priv->pll_id,
-+						codec_priv->mclk_id,
-+						codec_priv->mclk_freq, pll_out);
-+			if (ret) {
-+				dev_err(dev, "failed to start FLL: %d\n", ret);
-+				goto fail;
-+			}
-=20
--		if (ret && ret !=3D -ENOTSUPP) {
--			dev_err(dev, "failed to set SYSCLK: %d\n", ret);
--			goto fail;
-+			ret =3D snd_soc_dai_set_sysclk(codec_dai,
-+						codec_priv->fll_id,
-+						pll_out, SND_SOC_CLOCK_IN);
-+
-+			if (ret && ret !=3D -ENOTSUPP) {
-+				dev_err(dev, "failed to set SYSCLK: %d\n", ret);
-+				goto fail;
-+			}
- 		}
- 	}
-=20
-@@ -244,28 +250,34 @@ static int fsl_asoc_card_hw_free(struct snd_pcm_subst=
-ream *substream)
- {
- 	struct snd_soc_pcm_runtime *rtd =3D snd_soc_substream_to_rtd(substream);
- 	struct fsl_asoc_card_priv *priv =3D snd_soc_card_get_drvdata(rtd->card);
--	struct codec_priv *codec_priv =3D &priv->codec_priv;
-+	struct codec_priv *codec_priv;
-+	struct snd_soc_dai *codec_dai;
- 	struct device *dev =3D rtd->card->dev;
- 	int ret;
-+	int i;
-=20
- 	priv->streams &=3D ~BIT(substream->stream);
-=20
--	if (!priv->streams && codec_priv->pll_id >=3D 0 && codec_priv->fll_id >=
-=3D 0) {
--		/* Force freq to be free_freq to avoid error message in codec */
--		ret =3D snd_soc_dai_set_sysclk(snd_soc_rtd_to_codec(rtd, 0),
--					     codec_priv->mclk_id,
--					     codec_priv->free_freq,
--					     SND_SOC_CLOCK_IN);
--		if (ret) {
--			dev_err(dev, "failed to switch away from FLL: %d\n", ret);
--			return ret;
--		}
-+	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-+		codec_priv =3D &priv->codec_priv[i];
-=20
--		ret =3D snd_soc_dai_set_pll(snd_soc_rtd_to_codec(rtd, 0),
--					  codec_priv->pll_id, 0, 0, 0);
--		if (ret && ret !=3D -ENOTSUPP) {
--			dev_err(dev, "failed to stop FLL: %d\n", ret);
--			return ret;
-+		if (!priv->streams && codec_priv->pll_id >=3D 0 && codec_priv->fll_id >=
-=3D 0) {
-+			/* Force freq to be free_freq to avoid error message in codec */
-+			ret =3D snd_soc_dai_set_sysclk(codec_dai,
-+						codec_priv->mclk_id,
-+						codec_priv->free_freq,
-+						SND_SOC_CLOCK_IN);
-+			if (ret) {
-+				dev_err(dev, "failed to switch away from FLL: %d\n", ret);
-+				return ret;
-+			}
-+
-+			ret =3D snd_soc_dai_set_pll(codec_dai,
-+						codec_priv->pll_id, 0, 0, 0);
-+			if (ret && ret !=3D -ENOTSUPP) {
-+				dev_err(dev, "failed to stop FLL: %d\n", ret);
-+				return ret;
-+			}
- 		}
- 	}
-=20
-@@ -504,10 +516,11 @@ static int fsl_asoc_card_late_probe(struct snd_soc_ca=
-rd *card)
- 	struct fsl_asoc_card_priv *priv =3D snd_soc_card_get_drvdata(card);
- 	struct snd_soc_pcm_runtime *rtd =3D list_first_entry(
- 			&card->rtd_list, struct snd_soc_pcm_runtime, list);
--	struct snd_soc_dai *codec_dai =3D snd_soc_rtd_to_codec(rtd, 0);
--	struct codec_priv *codec_priv =3D &priv->codec_priv;
-+	struct snd_soc_dai *codec_dai;
-+	struct codec_priv *codec_priv;
- 	struct device *dev =3D card->dev;
- 	int ret;
-+	int i;
-=20
- 	if (fsl_asoc_card_is_ac97(priv)) {
- #if IS_ENABLED(CONFIG_SND_AC97_CODEC)
-@@ -526,31 +539,36 @@ static int fsl_asoc_card_late_probe(struct snd_soc_ca=
-rd *card)
- 		return 0;
- 	}
-=20
--	ret =3D snd_soc_dai_set_sysclk(codec_dai, codec_priv->mclk_id,
--				     codec_priv->mclk_freq, SND_SOC_CLOCK_IN);
--	if (ret && ret !=3D -ENOTSUPP) {
--		dev_err(dev, "failed to set sysclk in %s\n", __func__);
--		return ret;
--	}
-+	for_each_rtd_codec_dais(rtd, i, codec_dai) {
-+		codec_priv =3D &priv->codec_priv[i];
-=20
--	if (!IS_ERR_OR_NULL(codec_priv->mclk))
--		clk_prepare_enable(codec_priv->mclk);
-+		ret =3D snd_soc_dai_set_sysclk(codec_dai, codec_priv->mclk_id,
-+					codec_priv->mclk_freq, SND_SOC_CLOCK_IN);
-+		if (ret && ret !=3D -ENOTSUPP) {
-+			dev_err(dev, "failed to set sysclk in %s\n", __func__);
-+			return ret;
-+		}
-+
-+		if (!IS_ERR_OR_NULL(codec_priv->mclk))
-+			clk_prepare_enable(codec_priv->mclk);
-+	}
-=20
- 	return 0;
- }
-=20
- static int fsl_asoc_card_probe(struct platform_device *pdev)
- {
--	struct device_node *cpu_np, *codec_np, *asrc_np;
-+	struct device_node *cpu_np, *asrc_np;
-+	struct device_node *codec_np[2];
- 	struct device_node *np =3D pdev->dev.of_node;
- 	struct platform_device *asrc_pdev =3D NULL;
- 	struct device_node *bitclkprovider =3D NULL;
- 	struct device_node *frameprovider =3D NULL;
- 	struct platform_device *cpu_pdev;
- 	struct fsl_asoc_card_priv *priv;
--	struct device *codec_dev =3D NULL;
-+	struct device *codec_dev[2] =3D { NULL, NULL };
- 	const char *codec_dai_name;
--	const char *codec_dev_name;
-+	const char *codec_dev_name[2];
- 	u32 asrc_fmt =3D 0;
- 	u32 width;
- 	int ret;
-@@ -576,21 +594,25 @@ static int fsl_asoc_card_probe(struct platform_device=
- *pdev)
- 		goto fail;
- 	}
-=20
--	codec_np =3D of_parse_phandle(np, "audio-codec", 0);
--	if (codec_np) {
--		struct platform_device *codec_pdev;
--		struct i2c_client *codec_i2c;
-+	codec_np[0] =3D of_parse_phandle(np, "audio-codec", 0);
-+	codec_np[1] =3D of_parse_phandle(np, "audio-codec", 1);
-=20
--		codec_i2c =3D of_find_i2c_device_by_node(codec_np);
--		if (codec_i2c) {
--			codec_dev =3D &codec_i2c->dev;
--			codec_dev_name =3D codec_i2c->name;
--		}
--		if (!codec_dev) {
--			codec_pdev =3D of_find_device_by_node(codec_np);
--			if (codec_pdev) {
--				codec_dev =3D &codec_pdev->dev;
--				codec_dev_name =3D codec_pdev->name;
-+	for (int i =3D 0; i < 2; i++) {
-+		if (codec_np[i]) {
-+			struct platform_device *codec_pdev;
-+			struct i2c_client *codec_i2c;
-+
-+			codec_i2c =3D of_find_i2c_device_by_node(codec_np[i]);
-+			if (codec_i2c) {
-+				codec_dev[i] =3D &codec_i2c->dev;
-+				codec_dev_name[i] =3D codec_i2c->name;
-+			}
-+			if (!codec_dev[i]) {
-+				codec_pdev =3D of_find_device_by_node(codec_np[i]);
-+				if (codec_pdev) {
-+					codec_dev[i] =3D &codec_pdev->dev;
-+					codec_dev_name[i] =3D codec_pdev->name;
-+				}
- 			}
- 		}
- 	}
-@@ -600,12 +622,14 @@ static int fsl_asoc_card_probe(struct platform_device=
- *pdev)
- 		asrc_pdev =3D of_find_device_by_node(asrc_np);
-=20
- 	/* Get the MCLK rate only, and leave it controlled by CODEC drivers */
--	if (codec_dev) {
--		struct clk *codec_clk =3D clk_get(codec_dev, NULL);
-+	for (int i =3D 0; i < 2; i++) {
-+		if (codec_dev[i]) {
-+			struct clk *codec_clk =3D clk_get(codec_dev[i], NULL);
-=20
--		if (!IS_ERR(codec_clk)) {
--			priv->codec_priv.mclk_freq =3D clk_get_rate(codec_clk);
--			clk_put(codec_clk);
-+			if (!IS_ERR(codec_clk)) {
-+				priv->codec_priv[i].mclk_freq =3D clk_get_rate(codec_clk);
-+				clk_put(codec_clk);
-+			}
- 		}
- 	}
-=20
-@@ -625,25 +649,27 @@ static int fsl_asoc_card_probe(struct platform_device=
- *pdev)
- 	priv->card.num_dapm_routes =3D ARRAY_SIZE(audio_map);
- 	priv->card.driver_name =3D DRIVER_NAME;
-=20
--	priv->codec_priv.fll_id =3D -1;
--	priv->codec_priv.pll_id =3D -1;
-+	for (int i =3D 0; i < 2; i++) {
-+		priv->codec_priv[i].fll_id =3D -1;
-+		priv->codec_priv[i].pll_id =3D -1;
-+	}
-=20
- 	/* Diversify the card configurations */
- 	if (of_device_is_compatible(np, "fsl,imx-audio-cs42888")) {
- 		codec_dai_name =3D "cs42888";
--		priv->cpu_priv.sysclk_freq[TX] =3D priv->codec_priv.mclk_freq;
--		priv->cpu_priv.sysclk_freq[RX] =3D priv->codec_priv.mclk_freq;
-+		priv->cpu_priv.sysclk_freq[TX] =3D priv->codec_priv[0].mclk_freq;
-+		priv->cpu_priv.sysclk_freq[RX] =3D priv->codec_priv[0].mclk_freq;
- 		priv->cpu_priv.sysclk_dir[TX] =3D SND_SOC_CLOCK_OUT;
- 		priv->cpu_priv.sysclk_dir[RX] =3D SND_SOC_CLOCK_OUT;
- 		priv->cpu_priv.slot_width =3D 32;
- 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBC_CFC;
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-cs427x")) {
- 		codec_dai_name =3D "cs4271-hifi";
--		priv->codec_priv.mclk_id =3D CS427x_SYSCLK_MCLK;
-+		priv->codec_priv[0].mclk_id =3D CS427x_SYSCLK_MCLK;
- 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBP_CFP;
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-sgtl5000")) {
- 		codec_dai_name =3D "sgtl5000";
--		priv->codec_priv.mclk_id =3D SGTL5000_SYSCLK;
-+		priv->codec_priv[0].mclk_id =3D SGTL5000_SYSCLK;
- 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBP_CFP;
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-tlv320aic32x4")) {
- 		codec_dai_name =3D "tlv320aic32x4-hifi";
-@@ -659,14 +685,14 @@ static int fsl_asoc_card_probe(struct platform_device=
- *pdev)
- 		priv->card.num_dapm_routes =3D ARRAY_SIZE(audio_map_tx);
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8962")) {
- 		codec_dai_name =3D "wm8962";
--		priv->codec_priv.mclk_id =3D WM8962_SYSCLK_MCLK;
--		priv->codec_priv.fll_id =3D WM8962_SYSCLK_FLL;
--		priv->codec_priv.pll_id =3D WM8962_FLL;
-+		priv->codec_priv[0].mclk_id =3D WM8962_SYSCLK_MCLK;
-+		priv->codec_priv[0].fll_id =3D WM8962_SYSCLK_FLL;
-+		priv->codec_priv[0].pll_id =3D WM8962_FLL;
- 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBP_CFP;
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8960")) {
- 		codec_dai_name =3D "wm8960-hifi";
--		priv->codec_priv.fll_id =3D WM8960_SYSCLK_AUTO;
--		priv->codec_priv.pll_id =3D WM8960_SYSCLK_AUTO;
-+		priv->codec_priv[0].fll_id =3D WM8960_SYSCLK_AUTO;
-+		priv->codec_priv[0].pll_id =3D WM8960_SYSCLK_AUTO;
- 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBP_CFP;
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-ac97")) {
- 		codec_dai_name =3D "ac97-hifi";
-@@ -698,25 +724,25 @@ static int fsl_asoc_card_probe(struct platform_device=
- *pdev)
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8958")) {
- 		codec_dai_name =3D "wm8994-aif1";
- 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBP_CFP;
--		priv->codec_priv.mclk_id =3D WM8994_FLL_SRC_MCLK1;
--		priv->codec_priv.fll_id =3D WM8994_SYSCLK_FLL1;
--		priv->codec_priv.pll_id =3D WM8994_FLL1;
--		priv->codec_priv.free_freq =3D priv->codec_priv.mclk_freq;
-+		priv->codec_priv[0].mclk_id =3D WM8994_FLL_SRC_MCLK1;
-+		priv->codec_priv[0].fll_id =3D WM8994_SYSCLK_FLL1;
-+		priv->codec_priv[0].pll_id =3D WM8994_FLL1;
-+		priv->codec_priv[0].free_freq =3D priv->codec_priv[0].mclk_freq;
- 		priv->card.dapm_routes =3D NULL;
- 		priv->card.num_dapm_routes =3D 0;
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-nau8822")) {
- 		codec_dai_name =3D "nau8822-hifi";
--		priv->codec_priv.mclk_id =3D NAU8822_CLK_MCLK;
--		priv->codec_priv.fll_id =3D NAU8822_CLK_PLL;
--		priv->codec_priv.pll_id =3D NAU8822_CLK_PLL;
-+		priv->codec_priv[0].mclk_id =3D NAU8822_CLK_MCLK;
-+		priv->codec_priv[0].fll_id =3D NAU8822_CLK_PLL;
-+		priv->codec_priv[0].pll_id =3D NAU8822_CLK_PLL;
- 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBM_CFM;
--		if (codec_dev)
--			priv->codec_priv.mclk =3D devm_clk_get(codec_dev, NULL);
-+		if (codec_dev[0])
-+			priv->codec_priv[0].mclk =3D devm_clk_get(codec_dev[0], NULL);
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-wm8904")) {
- 		codec_dai_name =3D "wm8904-hifi";
--		priv->codec_priv.mclk_id =3D WM8904_FLL_MCLK;
--		priv->codec_priv.fll_id =3D WM8904_CLK_FLL;
--		priv->codec_priv.pll_id =3D WM8904_FLL_MCLK;
-+		priv->codec_priv[0].mclk_id =3D WM8904_FLL_MCLK;
-+		priv->codec_priv[0].fll_id =3D WM8904_CLK_FLL;
-+		priv->codec_priv[0].pll_id =3D WM8904_FLL_MCLK;
- 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBP_CFP;
- 	} else {
- 		dev_err(&pdev->dev, "unknown Device Tree compatible\n");
-@@ -728,18 +754,30 @@ static int fsl_asoc_card_probe(struct platform_device=
- *pdev)
- 	 * Allow setting mclk-id from the device-tree node. Otherwise, the
- 	 * default value for each card configuration is used.
- 	 */
--	of_property_read_u32(np, "mclk-id", &priv->codec_priv.mclk_id);
-+	for (int i =3D 0; i < 2; i++) {
-+		of_property_read_u32_index(np, "mclk-id", i,
-+					&priv->codec_priv[i].mclk_id);
-+	}
-=20
- 	/* Format info from DT is optional. */
- 	snd_soc_daifmt_parse_clock_provider_as_phandle(np, NULL, &bitclkprovider,=
- &frameprovider);
- 	if (bitclkprovider || frameprovider) {
- 		unsigned int daifmt =3D snd_soc_daifmt_parse_format(np, NULL);
-+		bool codec_bitclkprovider =3D false;
-+		bool codec_frameprovider =3D false;
-+
-+		for (int i =3D 0; i < 2; i++) {
-+			if (bitclkprovider && codec_np[i] =3D=3D bitclkprovider)
-+				codec_bitclkprovider =3D true;
-+			if (frameprovider && codec_np[i] =3D=3D frameprovider)
-+				codec_frameprovider =3D true;
-+		}
-=20
--		if (codec_np =3D=3D bitclkprovider)
--			daifmt |=3D (codec_np =3D=3D frameprovider) ?
-+		if (codec_bitclkprovider)
-+			daifmt |=3D (codec_frameprovider) ?
- 				SND_SOC_DAIFMT_CBP_CFP : SND_SOC_DAIFMT_CBP_CFC;
- 		else
--			daifmt |=3D (codec_np =3D=3D frameprovider) ?
-+			daifmt |=3D (codec_frameprovider) ?
- 				SND_SOC_DAIFMT_CBC_CFP : SND_SOC_DAIFMT_CBC_CFC;
-=20
- 		/* Override dai_fmt with value from DT */
-@@ -755,7 +793,7 @@ static int fsl_asoc_card_probe(struct platform_device *=
-pdev)
- 	of_node_put(bitclkprovider);
- 	of_node_put(frameprovider);
-=20
--	if (!fsl_asoc_card_is_ac97(priv) && !codec_dev) {
-+	if (!fsl_asoc_card_is_ac97(priv) && !codec_dev[0]) {
- 		dev_dbg(&pdev->dev, "failed to find codec device\n");
- 		ret =3D -EPROBE_DEFER;
- 		goto asrc_fail;
-@@ -795,7 +833,7 @@ static int fsl_asoc_card_probe(struct platform_device *=
-pdev)
- 	ret =3D snd_soc_of_parse_card_name(&priv->card, "model");
- 	if (ret) {
- 		snprintf(priv->name, sizeof(priv->name), "%s-audio",
--			 fsl_asoc_card_is_ac97(priv) ? "ac97" : codec_dev_name);
-+			 fsl_asoc_card_is_ac97(priv) ? "ac97" : codec_dev_name[0]);
- 		priv->card.name =3D priv->name;
- 	}
- 	priv->card.dai_link =3D priv->dai_link;
-@@ -820,7 +858,7 @@ static int fsl_asoc_card_probe(struct platform_device *=
-pdev)
- 	priv->dai_link[0].codecs[0].dai_name =3D codec_dai_name;
-=20
- 	if (!fsl_asoc_card_is_ac97(priv))
--		priv->dai_link[0].codecs[0].of_node =3D codec_np;
-+		priv->dai_link[0].codecs[0].of_node =3D codec_np[0];
- 	else {
- 		u32 idx;
-=20
-@@ -928,7 +966,8 @@ static int fsl_asoc_card_probe(struct platform_device *=
-pdev)
-=20
- asrc_fail:
- 	of_node_put(asrc_np);
--	of_node_put(codec_np);
-+	of_node_put(codec_np[0]);
-+	of_node_put(codec_np[1]);
- 	put_device(&cpu_pdev->dev);
- fail:
- 	of_node_put(cpu_np);
---=20
-2.34.1
+The compress API was never intended to be used this way. It was meant to
+send compressed data to a DSP for rendering, and keep the host processor
+in a low-power state while the DSP local buffer was drained. There was
+no intent to do a loop back to the host, because that keeps the host in
+a high-power state and probably negates the power savings due to a DSP.
 
+The other problem with the loopback is that the compress stuff is
+usually a "Front-End" in ASoC/DPCM parlance, and we don't have a good
+way to do a loopback between Front-Ends. The entire framework is based
+on FEs being connected to BEs.
+
+One problem that I can see for ASRC is that it's not clear when the data
+will be completely processed on the "capture" stream when you stop the
+"playback" stream. There's a non-zero risk of having a truncated output
+or waiting for data that will never be generated.
+
+In other words, it might be possible to reuse/extend the compress API
+for a 'coprocessor' approach without any rendering to traditional
+interfaces, but it's uncharted territory.
