@@ -4,52 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 643A3C25B75
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2024 14:06:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EB7FC25B75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 May 2024 14:07:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=vl0xUnXs;
+	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=Td6C1HQc;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VfZlD6qHYz3gGL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 00:06:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VfZm24hXWz3gKX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 00:06:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=vl0xUnXs;
+	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=Td6C1HQc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=savoirfairelinux.com (client-ip=208.88.110.44; helo=mail.savoirfairelinux.com; envelope-from=elinor.montmasson@savoirfairelinux.com; receiver=lists.ozlabs.org)
 Received: from mail.savoirfairelinux.com (mail.savoirfairelinux.com [208.88.110.44])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VfZdm2fD8z3cXx
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VfZdm2pl2z3cYB
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 00:01:32 +1000 (AEST)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 33B529C5902;
-	Wed, 15 May 2024 09:54:29 -0400 (EDT)
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id 4A7719C5818;
+	Wed, 15 May 2024 09:54:21 -0400 (EDT)
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10032)
- with ESMTP id oLQzmlB7ssmx; Wed, 15 May 2024 09:54:28 -0400 (EDT)
+ with ESMTP id fFMLMWQGlLgx; Wed, 15 May 2024 09:54:20 -0400 (EDT)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 3607B9C5901;
-	Wed, 15 May 2024 09:54:28 -0400 (EDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 3607B9C5901
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id E10049C58EA;
+	Wed, 15 May 2024 09:54:19 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com E10049C58EA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=savoirfairelinux.com; s=DFC430D2-D198-11EC-948E-34200CB392D2;
-	t=1715781268; bh=GpzR/17iMA4EadC53BL4NxQUIlEZs6QmMHR5Cm26pOc=;
+	t=1715781260; bh=9rD/3giniaHUn4tfYhFlufR+6C3wG/E6x6qDZI5qkbI=;
 	h=From:To:Date:Message-Id:MIME-Version;
-	b=vl0xUnXs7mucGwqzmCP+MNBzyr2Jb2/nqr2VjDOuYnWtx7jTAJ4VYP8JFa6m6EdM+
-	 /ZoQzHHA7r4vZUXX0UPzUkQwldIWsUG4JTjOkI6AVVLFGBKfnhZuLGH3adNIPLv27T
-	 ZAf3yuVbia7eNLCTGVhwVocSytJWsGToJTLgTHO/uzJ7OAQff+i/mVYGg2ImU8gH1x
-	 WHqB7yja6jPuxMVVETkpSyaav86Njhh9gaAxDFnE51jc/nuqSe+trOREmcapXLSwfT
-	 6/pQshTaoP6CyldZO/bG9ffHm4UJLvwQS8J/Hp5mNJpdaa3lw0vCZT90qIA6nQXAk8
-	 4+IjC/yC/9TtQ==
+	b=Td6C1HQca4ZqBgvcF6hj2mgY9wXFWGbiyXP/Yp4HUmYsTdKKQqcLMmlsWdK1i3+Fy
+	 x9z2MdmShQG3NlTVhIXzYiKWXiHiDoaOLMA3Ms26RXmTReq52KGGP9VZJTd6HVQ2Iv
+	 wybi9Od8okL9AGj4fkgwhLaXZ7reXVDGQw4vPkk0+G5ndH6RSOtr7D/59u3CBG9o7J
+	 9Nnu2XO88JxrkB3qxOnVYPvGvYQnm17cAxPbANDSvchiUFll5FneSheUsjUoVWvgoG
+	 OEzv3gqVB3YFlPLvFKm15XRs6G98kHvwNJej+xhjjtc+LCChJAfOiTPtC0Dgq7/X21
+	 8vbun28p1Pj9g==
 X-Virus-Scanned: amavis at mail.savoirfairelinux.com
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10026)
- with ESMTP id 9M6HJKIjOg_U; Wed, 15 May 2024 09:54:28 -0400 (EDT)
+ with ESMTP id 3sJiTzQkGwk9; Wed, 15 May 2024 09:54:19 -0400 (EDT)
 Received: from gerard.rennes.sfl (lmontsouris-657-1-69-118.w80-15.abo.wanadoo.fr [80.15.101.118])
-	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id 3ED219C58F8;
-	Wed, 15 May 2024 09:54:26 -0400 (EDT)
+	by mail.savoirfairelinux.com (Postfix) with ESMTPSA id CEC679C5818;
+	Wed, 15 May 2024 09:54:17 -0400 (EDT)
 From: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
 To: Liam Girdwood <lgirdwood@gmail.com>,
 	Mark Brown <broonie@kernel.org>,
@@ -62,13 +62,12 @@ To: Liam Girdwood <lgirdwood@gmail.com>,
 	Nicolin Chen <nicoleotsuka@gmail.com>,
 	Jaroslav Kysela <perex@perex.cz>,
 	Takashi Iwai <tiwai@suse.com>
-Subject: [PATCHv4 4/9] ASoC: fsl-asoc-card: add new compatible for a generic codec use case
-Date: Wed, 15 May 2024 15:54:06 +0200
-Message-Id: <20240515135411.343333-5-elinor.montmasson@savoirfairelinux.com>
+Subject: [PATCHv4 0/9] ASoC: fsl-asoc-card: compatibility integration of a generic codec use case for use with S/PDIF controller
+Date: Wed, 15 May 2024 15:54:02 +0200
+Message-Id: <20240515135411.343333-1-elinor.montmasson@savoirfairelinux.com>
 X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20240515135411.343333-1-elinor.montmasson@savoirfairelinux.com>
-References: <20240515135411.343333-1-elinor.montmasson@savoirfairelinux.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=quoted-printable
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,94 +84,114 @@ Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the new compatible "fsl,imx-audio-generic" for a generic codec
-use case. It allows using the fsl-asoc-card driver with the
-spdif_receiver and spdif_transmitter codec drivers used as dummy codecs.
-It can be used for cases where there is no real codec or codecs which do
-not require declaring controls.
+Hello,
 
-Signed-off-by: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
-Co-authored-by: Philip-Dylan Gleonec <philip-dylan.gleonec@savoirfairelinux=
-.com>
----
- sound/soc/fsl/fsl-asoc-card.c | 29 ++++++++++++++++++++++++++---
- 1 file changed, 26 insertions(+), 3 deletions(-)
+This is the v4 of the series of patch aiming to make the machine driver
+"fsl-asoc-card" compatible with use cases where there is no real codec
+driver. It proposes to use the "spdif_receiver" and "spdif_transmitter"
+drivers instead of the dummy codec.
+This is a first step in using the S/PDIF controller with the ASRC.
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 620a25eb068a..a4ecc9093558 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -567,6 +567,7 @@ static int fsl_asoc_card_probe(struct platform_device *=
-pdev)
- 	struct platform_device *cpu_pdev;
- 	struct fsl_asoc_card_priv *priv;
- 	struct device *codec_dev[2] =3D { NULL, NULL };
-+	const char *generic_codec_dai_names[2];
- 	const char *codec_dai_name;
- 	const char *codec_dev_name[2];
- 	u32 asrc_fmt =3D 0;
-@@ -744,6 +745,11 @@ static int fsl_asoc_card_probe(struct platform_device =
-*pdev)
- 		priv->codec_priv[0].fll_id =3D WM8904_CLK_FLL;
- 		priv->codec_priv[0].pll_id =3D WM8904_FLL_MCLK;
- 		priv->dai_fmt |=3D SND_SOC_DAIFMT_CBP_CFP;
-+	} else if (of_device_is_compatible(np, "fsl,imx-audio-generic")) {
-+		generic_codec_dai_names[0] =3D "dit-hifi";
-+		generic_codec_dai_names[1] =3D "dir-hifi";
-+		priv->dai_link[0].num_codecs =3D 2;
-+		priv->dai_link[2].num_codecs =3D 2;
- 	} else {
- 		dev_err(&pdev->dev, "unknown Device Tree compatible\n");
- 		ret =3D -EINVAL;
-@@ -798,6 +804,12 @@ static int fsl_asoc_card_probe(struct platform_device =
-*pdev)
- 		ret =3D -EPROBE_DEFER;
- 		goto asrc_fail;
- 	}
-+	if (of_device_is_compatible(np, "fsl,imx-audio-generic")
-+	  && !codec_dev[1]) {
-+		dev_dbg(&pdev->dev, "failed to find second codec device\n");
-+		ret =3D -EPROBE_DEFER;
-+		goto asrc_fail;
-+	}
-=20
- 	/* Common settings for corresponding Freescale CPU DAI driver */
- 	if (of_node_name_eq(cpu_np, "ssi")) {
-@@ -855,11 +867,21 @@ static int fsl_asoc_card_probe(struct platform_device=
- *pdev)
-=20
- 	/* Normal DAI Link */
- 	priv->dai_link[0].cpus->of_node =3D cpu_np;
--	priv->dai_link[0].codecs[0].dai_name =3D codec_dai_name;
-=20
--	if (!fsl_asoc_card_is_ac97(priv))
-+	if (of_device_is_compatible(np, "fsl,imx-audio-generic")) {
-+		priv->dai_link[0].codecs[0].dai_name =3D
-+			generic_codec_dai_names[0];
-+		priv->dai_link[0].codecs[1].dai_name =3D
-+			generic_codec_dai_names[1];
-+	} else {
-+		priv->dai_link[0].codecs[0].dai_name =3D codec_dai_name;
-+	}
-+
-+	if (!fsl_asoc_card_is_ac97(priv)) {
- 		priv->dai_link[0].codecs[0].of_node =3D codec_np[0];
--	else {
-+		if (of_device_is_compatible(np, "fsl,imx-audio-generic"))
-+			priv->dai_link[0].codecs[1].of_node =3D codec_np[1];
-+	} else {
- 		u32 idx;
-=20
- 		ret =3D of_property_read_u32(cpu_np, "cell-index", &idx);
-@@ -990,6 +1012,7 @@ static const struct of_device_id fsl_asoc_card_dt_ids[=
-] =3D {
- 	{ .compatible =3D "fsl,imx-audio-wm8958", },
- 	{ .compatible =3D "fsl,imx-audio-nau8822", },
- 	{ .compatible =3D "fsl,imx-audio-wm8904", },
-+	{ .compatible =3D "fsl,imx-audio-generic", },
- 	{}
- };
- MODULE_DEVICE_TABLE(of, fsl_asoc_card_dt_ids);
+The five first patches add compatibility with the pair of codecs
+"spdif_receiver" and "spdif_transmitter" with a new compatible,
+"fsl,imx-audio-generic". Codec parameters are set with default values.
+Consequently, the driver is modified to work with multi-codec use cases.
+It can get 2 codecs phandles from the device tree, and the
+"fsl_asoc_card_priv" struct now has 2 "codec_priv" to store properties
+of both codecs. It is fixed to 2 codecs as only "fsl,imx-audio-generic"
+uses multiple codecs at the moment.
+However, the driver now uses "for_each_codecs" macros when possible to
+ease future implementations of multi-codec configurations.
+
+The three following patches add configuration options for the
+devicetree. They configure the CPU DAI when using
+"fsl,imx-audio-generic". These options are usually hard-coded in
+"fsl-asoc-card.c" for each audio codec. Because the generic codec could
+be used with other CPU DAIs than the S/PDIF controller, setting these
+parameters could be required.
+These new options try to follow the style of the simple-card driver:
+* standard TDM properties are used, as defined in "tdm-slot.txt".
+* the CPU DAI system-clock can be specified, allowing the codec to
+retrieve its frequency.
+* the CPU DAI system-clock direction can be specified through a new
+binding, the same way it is done in simple-card.
+
+The last commit updates the DT bindings documentation and add a new
+example for the generic codec use case.
+
+This series of patch was successfully built for arm64 and x86 on top of
+the latest=C2=A0"for-next" branch of the ASoC git tree on the 14th of May
+2024.
+These modifications have also been tested on an i.MX8MN evaluation
+board, with a linux kernel RT v6.1.26-rt8.
+
+If you have any question or remark about these commits, don't hesitate
+to reply.
+
+Best regards,
+Elinor Montmasson
+
+
+Changelog:
+v3 -> v4:
+* Use the standard TDM bidings, as defined in "tdm-slot.txt", for the
+new optional DT bindings setting the TDM slots number and width.
+* Use the clock DT bindings to optionally specify the CPU DAI system
+clock frequency, instead of a dedicated new binding.
+* Rename the new DT binding "cpu-sysclk-dir-out" to
+"cpu-system-clock-direction-out" to better follow the style of the
+simple-card driver.
+* Merge TX an RX bindings for CPU DAI system-clock, to better follow the
+style of the simple-card driver, and also as there was no use case in
+fsl-asoc-card where TX and RX settings had to be different.
+* Add the documentation for the new bindings in the new DT schema
+bindings documentation. Also add an example with the generic codec.
+* v3 patch series at :
+https://lore.kernel.org/alsa-devel/20231218124058.2047167-1-elinor.montmass=
+on@savoirfairelinux.com/
+
+v2 -> v3:
+* When the bitmaster or framemaster are retrieved from the device tree,
+the driver will now compare them with the two codecs possibly given in
+device tree, and not just the first codec.
+* Improve driver modifications to use multiple codecs for better
+integration of future multi-codec use cases:
+    * Use "for_each_codec" macros when possible.
+    * "fsl_asoc_card_priv" struct now has 2 "codec_priv" as the driver
+    can currently retrieve 2 codec phandles from the device tree.
+* Fix subject of patch 10/10 to follow the style of the subsystem
+* v2 patch series at:
+https://lore.kernel.org/alsa-devel/20231027144734.3654829-1-elinor.montmass=
+on@savoirfairelinux.com/
+
+v1 -> v2:
+* Replace use of the dummy codec by the pair of codecs spdif_receiver /
+spdif_transmitter.
+* Adapt how dai links codecs are used to take into account the
+possibility for multiple codecs per link.
+* Change compatible name.
+* Adapt driver to be able to register two codecs given in the device
+tree.
+* v1 patch series at:
+https://lore.kernel.org/alsa-devel/20230901144550.520072-1-elinor.montmasso=
+n@savoirfairelinux.com/
+
+
+Elinor Montmasson (9):
+  ASoC: fsl-asoc-card: add support for dai links with multiple codecs
+  ASoC: fsl-asoc-card: add second dai link component for codecs
+  ASoC: fsl-asoc-card: add compatibility to use 2 codecs in dai-links
+  ASoC: fsl-asoc-card: add new compatible for a generic codec use case
+  ASoC: fsl-asoc-card: set generic codec as clock provider
+  ASoC: fsl-asoc-card: add use of devicetree TDM slot properties
+  ASoC: fsl-asoc-card: add DT clock "cpu_sysclk" with generic codec
+  ASoC: fsl-asoc-card: add DT property "cpu-system-clock-direction-out"
+  ASoC: dt-bindings: fsl-asoc-card: add compatible for generic codec
+
+ .../bindings/sound/fsl-asoc-card.yaml         |  96 +++++-
+ sound/soc/fsl/fsl-asoc-card.c                 | 306 +++++++++++-------
+ 2 files changed, 287 insertions(+), 115 deletions(-)
+
 --=20
 2.34.1
 
