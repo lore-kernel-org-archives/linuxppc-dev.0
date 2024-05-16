@@ -4,53 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B872CC25B74
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 05:27:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3B81C25B74
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 08:39:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=rothwell.id.au header.i=@rothwell.id.au header.a=rsa-sha256 header.s=201702 header.b=Y71SZzMK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=cryptogams.org header.i=@cryptogams.org header.a=rsa-sha256 header.s=gmail header.b=dGCczesd;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VfzBb0RYdz3dBg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 15:27:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=rothwell.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vg3Ry2DJKz3fnK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 18:39:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=cryptogams.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=rothwell.id.au header.i=@rothwell.id.au header.a=rsa-sha256 header.s=201702 header.b=Y71SZzMK;
+	dkim=pass (2048-bit key; unprotected) header.d=cryptogams.org header.i=@cryptogams.org header.a=rsa-sha256 header.s=gmail header.b=dGCczesd;
 	dkim-atps=neutral
-Received: from mail.rothwell.id.au (gimli.rothwell.id.au [103.230.158.156])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cryptogams.org (client-ip=2a00:1450:4864:20::12c; helo=mail-lf1-x12c.google.com; envelope-from=appro@cryptogams.org; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vfy3B0zrVz3cXg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 14:36:22 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rothwell.id.au;
-	s=201702; t=1715834180;
-	bh=r1kOvfgIYROHWlLOWok8nOUpUvblp7y8+UA6RrmiDLY=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=Y71SZzMKdNFi775gwXxXQZntcsEzWtoVGOTUG5yNXVlDLCfBWHVFOjfF9lrhTKObR
-	 zWA5kOBA+5xP90d/ObePZi8BufFHwGrkhvOjNa8UhtYsDOQUXNH26cTeulASLhduTI
-	 AyQNYfJ7XRX/7E4CHPiU5EQF4yk8yuFMKtlAUNpx3m3n0H6aVPWGkte6shEQGVZ8uz
-	 bKQFAO//OtvPlcTLQGCg6F4LlaTWrhLR9D9/ei3sdCWmkDp8fYr3kDFeWqKUxUBW6H
-	 UCoalryUFWvtD0cCVMV5dN9jsUCvdXLsPj7b/bwo1bxh9Dw+vHePp2hv/uS79DzpG2
-	 gpaKQqPlg7YqA==
-Received: from authenticated.rothwell.id.au (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.rothwell.id.au (Postfix) with ESMTPSA id 4Vfy354RHgz4L;
-	Thu, 16 May 2024 14:36:17 +1000 (AEST)
-Date: Thu, 16 May 2024 14:36:12 +1000
-From: Stephen Rothwell <sfr@rothwell.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: linux-next: build warning after merge of the powerpc tree
-Message-ID: <20240516143612.1a369133@oak>
-In-Reply-To: <87cypmwk92.fsf@mail.lhotse>
-References: <20240515163708.3380c4d1@canb.auug.org.au>
-	<87cypmwk92.fsf@mail.lhotse>
-X-Mailer: Claws Mail 4.2.0 (GTK 3.24.41; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vg3R53MSCz3clp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 18:38:55 +1000 (AEST)
+Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-51f72a29f13so591155e87.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 01:38:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=cryptogams.org; s=gmail; t=1715848725; x=1716453525; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=VOeW1i0XSjN8EcRDRG2ima3ZBqcENGXoN19rlekIi1o=;
+        b=dGCczesd1ClVon8SgMAx4u1ilm5LOP3rUY4QX0+dk/CPHpMpxrWqf/11xoxgnHl4vW
+         ZcyO9gTV2/TPVII9Tqvl1W7+RfWomjDKrwqMo66ouguAxNXUqKQk8ygaM7AwMKkZkZyq
+         ZxrKcQIbQB1TxAxtXe7ciwQrbgbCozI8XR5HJpXlE+pHrNg6nyoSWYlwo8+rnDfv8maX
+         whs4dTmJzSGAy6vMwR2PDCDnKa00q8NPawt3eLwi5k/F2JXOn12gx9ZPbFeorXn7iI/3
+         ou75dbUEgYrj2EXYWoUrLuETqgMHrantWb/KjxoYxnVbKbR0Epi/j4reF7yGSPMSv44N
+         Z+2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1715848725; x=1716453525;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=VOeW1i0XSjN8EcRDRG2ima3ZBqcENGXoN19rlekIi1o=;
+        b=MChz49HTeq990LGZMarBmu0vBPXc3u0PTbOeow7hPRZSDJxwT7PvWnvTkkCdSGRMhn
+         mND+QaD4oyxyqxNpanQfyhhsYQXNeISwYVTLkl7qY7atvW9+t7D2zqi2iq102qjw+8ZB
+         7Hf+0xcxPo8x2qkfG/CThekQ7/AocgpXWbIiu76T4Bs2k5hqedo6eDxAx+iQmnl2o+W8
+         T4QllVIERBFdkbGp8q1bf7T3LklMY1qQK5KkSY9bxHa22L4BZS+LzoydAF/MXdKxzoGw
+         ao7GUkv5PjfTMSJztZOuqV40vOUs/FLyYjrefkniKEvxjOPaX3xk4nJm7ivYo8uPfz7O
+         UJGQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXzJ3O1Im0AHu4TRmnjKY5K47qKNKhKYZTxJKgTmAzCtaKlxn4epMtPQMgoyi7CCkkk0uvtMt95YzKD8pA8zCoLgfJcpkXSQFLzWx9LBQ==
+X-Gm-Message-State: AOJu0Yw6rE5CMxpR8qogi1DyGIiolyqomzm9SwSTBO+O/9k4z7xosdFy
+	nIi3CZzytCA8aCg39Umk+tr2DaMzIfjIFBO0UKtQujAaxopwI9OEojJqhx5tBTA=
+X-Google-Smtp-Source: AGHT+IH4ciVi2WPFfN4wIB15qPhRg9zSbcHYMDpqRPhOgTsgCJ+nsPiQObpBhEe9fHl4yk1Q/wux9A==
+X-Received: by 2002:a19:5f41:0:b0:518:9362:f63 with SMTP id 2adb3069b0e04-5220f97041fmr11199702e87.0.1715848724887;
+        Thu, 16 May 2024 01:38:44 -0700 (PDT)
+Received: from [10.0.1.129] (c-922370d5.012-252-67626723.bbcust.telenor.se. [213.112.35.146])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-521f35ad461sm2876576e87.33.2024.05.16.01.38.44
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 16 May 2024 01:38:44 -0700 (PDT)
+Message-ID: <89e7b4b0-9804-41be-b9b1-aeba57cd3cc6@cryptogams.org>
+Date: Thu, 16 May 2024 10:38:43 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/8=rEbHDsm_Vfaw.dcRcMzja";
- protocol="application/pgp-signature"; micalg=pgp-sha256
-X-Mailman-Approved-At: Thu, 16 May 2024 15:27:08 +1000
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/3] crypto: X25519 low-level primitives for ppc64le.
+To: Michael Ellerman <mpe@ellerman.id.au>, Danny Tsen <dtsen@linux.ibm.com>,
+ linux-crypto@vger.kernel.org
+References: <20240514173835.4814-1-dtsen@linux.ibm.com>
+ <20240514173835.4814-2-dtsen@linux.ibm.com> <87a5kqwe59.fsf@mail.lhotse>
+Content-Language: en-US
+From: Andy Polyakov <appro@cryptogams.org>
+In-Reply-To: <87a5kqwe59.fsf@mail.lhotse>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,55 +84,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Linux Next Mailing List <linux-next@vger.kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Hari Bathini <hbathini@linux.ibm.com>
+Cc: herbert@gondor.apana.org.au, dtsen@us.ibm.com, nayna@linux.ibm.com, linux-kernel@vger.kernel.org, ltcgcw@linux.vnet.ibm.com, leitao@debian.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/8=rEbHDsm_Vfaw.dcRcMzja
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hi Michael,
+>> +.abiversion	2
+> 
+> I'd prefer that was left to the compiler flags.
 
-On Thu, 16 May 2024 12:42:01 +1000 Michael Ellerman <mpe@ellerman.id.au> wr=
-ote:
->
-> Stephen Rothwell <sfr@canb.auug.org.au> writes:
-> >
-> > After merging the powerpc tree, today's (it may have been yesterday's)
-> > linux-next build (powerpc allyesconfig) produced this warning:
-> >
-> > WARNING: modpost: vmlinux: section mismatch in reference: fadump_setup_=
-param_area+0x200 (section: .text.fadump_setup_param_area) -> memblock_phys_=
-alloc_range (section: .init.text) =20
->=20
-> I don't see the warning, but clearly it is possible if the compiler
-> decides not to inline fadump_setup_param_area().
->=20
-> What compiler version are you using?
+Problem is that it's the compiler that is responsible for providing this 
+directive in the intermediate .s prior invoking the assembler. And there 
+is no assembler flag to pass through -Wa. If concern is ABI neutrality, 
+then solution would rather be #if (_CALL_ELF-0) == 2/#endif. One can 
+also make a case for
 
-$ gcc --version
-gcc (Debian 13.2.0-7) 13.2.0
+#ifdef _CALL_ELF
+.abiversion _CALL_ELF
+#endif
 
-(on zz1 if you want to test)
---=20
-Cheers,
-Stephen Rothwell
+Cheers.
 
---Sig_/8=rEbHDsm_Vfaw.dcRcMzja
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmZFjTwACgkQAVBC80lX
-0Gz/qgf/UJFGAJa8YAH/RLjgrt44P6TQj7A0baJl0AhyJHCh4vSoeUKU76gt1a4y
-yLMDSLtS8ar9pHKQO1+HAVEaboun2nieyDDoM6qDeyw0Pywm58+r5XjeSxEGOEfb
-5QPKnGihFEbxxoU2RQjIpT9A4Jk6X9P4gILdcy9EtFSvIK0OG6PgIIaisQCfUWnT
-fSjvKKSKcFsz/vRMIvr5rTPXgIUHSyMC93h1cSKv4izciaeGxvmup/iu8FPS7Txl
-MTUDFpDINHJOLG82u6CedDXuqlOcCBgtYXBvmCkIH/dEfGeVjevDwokpbrFjk3qC
-GGjpxOLqlbzxgqp9o2c7Qs4YG1F0/Q==
-=MM25
------END PGP SIGNATURE-----
-
---Sig_/8=rEbHDsm_Vfaw.dcRcMzja--
