@@ -4,86 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C19AC25B79
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 11:40:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E08B9C25B74
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 12:07:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KyO02AKP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=g0n6ddhI;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vg7T50JMzz3dng
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 21:40:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vg8441dS0z3dvs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 22:07:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KyO02AKP;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=g0n6ddhI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vg7SG3HmWz3cXL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 21:40:14 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44G9tHIG014697;
-	Thu, 16 May 2024 11:40:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=Cdkakt5nIoiblbiSIViMcQKNwneapIYRohkNyPb6PyQ=;
- b=KyO02AKPiPGr1yXE/136MhM9GCOIJBYVy/chWZn7EVMCaCe3tpeUevEHXxN7omx9PIxm
- EJjGkjTEL/9Kq7g2K4LJlf1YEDcMbFkdvimziOOZSeMtYsbSSxEIU7KViDCbwKrduZ24
- XCkLWbVqvjH0Djx8Qn+Grd7zwNkfuJ7PXEHTf3AWPXHSL3bOSCM9g+ps2c5j1qJhxJ6m
- xNx5n0nLdvb0WBw92s/Co6R0wajcActtZFn9D3WHHZHOdjxuhLFNvnukCKgnKF8qBirP
- 5LprL97dyX1MbHAR4X3XNiyygWUNYpIEUtdtYT2X3ZwM+t7F/6jO1Pr7IIfSNSn7OsZf Kw== 
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y5d67rqb3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 May 2024 11:40:00 +0000
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44G9QSDf005721;
-	Thu, 16 May 2024 11:39:59 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3y2nq318r9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 May 2024 11:39:59 +0000
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44GBdt0d48496910
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 16 May 2024 11:39:58 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CDA335805C;
-	Thu, 16 May 2024 11:39:55 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BF6F958060;
-	Thu, 16 May 2024 11:39:54 +0000 (GMT)
-Received: from [9.67.138.125] (unknown [9.67.138.125])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 16 May 2024 11:39:54 +0000 (GMT)
-Message-ID: <3c14a6cf-509e-4743-be26-b14aef7f6930@linux.ibm.com>
-Date: Thu, 16 May 2024 06:39:54 -0500
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vg83C2cpyz3ccX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 22:07:03 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1715861221;
+	bh=eNAEbz0fp/gY1nhw1dpy1yORqplQKqdzXReDnu/+e4g=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=g0n6ddhIF7/0X29LcsUDo8Z4BWeTQgdK8scAYY/1iaMbeN5vvDA0gHJNo1eeCezYx
+	 gkjsu6a+zNqBDJvvlQUSZp48sk4wwJMUTseU6EDA3ocYioVRc89Of0YdyaemMdRi6M
+	 pWkga5jzFG+2LKvxwY+QnrOVi2mT6JYVc5zKFbZ7B197AhdehtvTv8lpa+Ac6SukZh
+	 FdFSbRKfBsiJa8RGwmiXUVQM8mwe71xs14qZkSaa+jnMkKjFoP5ooC/d2/iAoAecZb
+	 BNJjc1oxZAyhmSfHKtoknrWEBy5sQLAZN6PjXhjyRFnON6TASlKnqfu5Ea31RdZyYA
+	 dAULMCr282Ugg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Vg8380233z4wby;
+	Thu, 16 May 2024 22:06:59 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andy Polyakov <appro@cryptogams.org>, Danny Tsen <dtsen@linux.ibm.com>,
+ linux-crypto@vger.kernel.org
 Subject: Re: [PATCH 1/3] crypto: X25519 low-level primitives for ppc64le.
-To: Andy Polyakov <appro@cryptogams.org>,
-        Michael Ellerman <mpe@ellerman.id.au>, linux-crypto@vger.kernel.org
+In-Reply-To: <89e7b4b0-9804-41be-b9b1-aeba57cd3cc6@cryptogams.org>
 References: <20240514173835.4814-1-dtsen@linux.ibm.com>
  <20240514173835.4814-2-dtsen@linux.ibm.com> <87a5kqwe59.fsf@mail.lhotse>
  <89e7b4b0-9804-41be-b9b1-aeba57cd3cc6@cryptogams.org>
-Content-Language: en-US
-From: Danny Tsen <dtsen@linux.ibm.com>
-In-Reply-To: <89e7b4b0-9804-41be-b9b1-aeba57cd3cc6@cryptogams.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: n8Z0X2o36bwPDtwQ7kznsRkefGBk65ll
-X-Proofpoint-ORIG-GUID: n8Z0X2o36bwPDtwQ7kznsRkefGBk65ll
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-05-16_05,2024-05-15_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 phishscore=0
- mlxlogscore=777 malwarescore=0 suspectscore=0 adultscore=0 bulkscore=0
- priorityscore=1501 mlxscore=0 clxscore=1015 spamscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2405010000
- definitions=main-2405160082
+Date: Thu, 16 May 2024 22:06:58 +1000
+Message-ID: <875xvevu3h.fsf@mail.lhotse>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,28 +65,68 @@ Cc: herbert@gondor.apana.org.au, dtsen@us.ibm.com, nayna@linux.ibm.com, linux-ke
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Andy,
-
-I learned something here.  Will fix this.  Thanks.
-
--Danny
-
-On 5/16/24 3:38 AM, Andy Polyakov wrote:
+Andy Polyakov <appro@cryptogams.org> writes:
 > Hi,
 >
->>> +.abiversion    2
+>>> +.abiversion	2
 >>
 >> I'd prefer that was left to the compiler flags.
 >
-> Problem is that it's the compiler that is responsible for providing 
-> this directive in the intermediate .s prior invoking the assembler. 
-> And there is no assembler flag to pass through -Wa. If concern is ABI 
-> neutrality, then solution would rather be #if (_CALL_ELF-0) == 
-> 2/#endif. One can also make a case for
+> Problem is that it's the compiler that is responsible for providing this
+> directive in the intermediate .s prior invoking the assembler. And there
+> is no assembler flag to pass through -Wa.
+
+Hmm, right. But none of our existing .S files include .abiversion
+directives.
+
+We build .S files with gcc, passing -mabi=elfv2, but it seems to have no
+effect.
+
+So all the intermediate .o's generated from .S files are not ELFv2:
+
+  $ find .build/ -name '*.o' | xargs file | grep Unspecified
+  .build/arch/powerpc/kernel/vdso/note-64.o:                        ELF 64-bit LSB relocatable, 64-bit PowerPC or cisco 7500, Unspecified or Power ELF V1 ABI, version 1 (SYSV), not stripped
+  .build/arch/powerpc/kernel/vdso/sigtramp64-64.o:                  ELF 64-bit LSB relocatable, 64-bit PowerPC or cisco 7500, Unspecified or Power ELF V1 ABI, version 1 (SYSV), not stripped
+  .build/arch/powerpc/kernel/vdso/getcpu-64.o:                      ELF 64-bit LSB relocatable, 64-bit PowerPC or cisco 7500, Unspecified or Power ELF V1 ABI, version 1 (SYSV), not stripped
+  .build/arch/powerpc/kernel/vdso/gettimeofday-64.o:                ELF 64-bit LSB relocatable, 64-bit PowerPC or cisco 7500, Unspecified or Power ELF V1 ABI, version 1 (SYSV), not stripped
+  .build/arch/powerpc/kernel/vdso/datapage-64.o:                    ELF 64-bit LSB relocatable, 64-bit PowerPC or cisco 7500, Unspecified or Power ELF V1 ABI, version 1 (SYSV), not stripped
+  ...
+
+But the actual code follows ELFv2, because we wrote it that way, and I
+guess the linker doesn't look at the actual ABI version of the .o ?
+
+So it currently works. But it's kind of gross that those .o files are
+not ELFv2 for an ELFv2 build.
+
+> If concern is ABI neutrality,
+> then solution would rather be #if (_CALL_ELF-0) == 2/#endif. One can
+> also make a case for
 >
 > #ifdef _CALL_ELF
 > .abiversion _CALL_ELF
 > #endif
->
-> Cheers.
->
+
+Is .abiversion documented anywhere? I can't see it in the manual.
+
+We used to use _CALL_ELF, but the kernel config is supposed to be the
+source of truth, so we'd use:
+
+  #ifdef CONFIG_PPC64_ELF_ABI_V2
+  .abiversion 2
+  #endif
+
+And probably put it in a macro like:
+
+  #ifdef CONFIG_PPC64_ELF_ABI_V2
+  #define ASM_ABI_VERSION .abiversion 2
+  #else
+  #define ASM_ABI_VERSION
+  #endif
+
+Or something like that. But it's annoying that we need to go and
+sprinkle that in every .S file.
+
+Anyway, my comment can be ignored as far as this series is concerned,
+seems we have to clean this up everywhere.
+
+cheers
