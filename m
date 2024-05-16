@@ -4,90 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D859EC25B74
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 12:15:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90E59C25B77
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 12:18:54 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cESpALxA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ja4iCsqE;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vg8FC2jz6z3fnd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 22:15:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vg8Js0vtgz3fqG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 May 2024 22:18:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cESpALxA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ja4iCsqE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nilay@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vg2sC3jkLz3ccf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 18:13:03 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44G4xccx014197;
-	Thu, 16 May 2024 08:12:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=DH0mN+aOMsYMwR930H2X9EhzHvBrWXx1OS4vU9gfm/g=;
- b=cESpALxAZG1AygqyDPrnC1crsSMyp4X2PXR0O/iscWKUtajxFZek56uAJR1yKKFltskb
- osyCPyy9tdAdS6eVGYBxiiF+uiRPuhcED/xlKERZG7X4j9VJgmg5WWXKmBCEwUk/e6m0
- zPe8m3yPGPdKOUwf2ujEjBbAfYLFS4QNJOddVkWW+H8Xn0bilD1jqgFSwGJm8lUJ+NFO
- /C3vpMcuL+B72CS3Kv+PnxBVHm2yKGcwMprK81nFzeC5H7Kz/Vn/Dg0HzW+Rn/VMU813
- xv6gG99srNMwpXkLkk5jqJkYhtL10++g+awCifafOL9ieI9AOGtna+zwsqsRWocjYVxH lA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y58e20tmk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 May 2024 08:12:56 +0000
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 44G8CtZQ018979;
-	Thu, 16 May 2024 08:12:55 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y58e20tmg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 May 2024 08:12:55 +0000
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44G7j7MA002339;
-	Thu, 16 May 2024 08:12:55 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3y2m0pguqn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 May 2024 08:12:55 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44G8Cnfl50659718
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 16 May 2024 08:12:51 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 67F8420049;
-	Thu, 16 May 2024 08:12:49 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7E90320040;
-	Thu, 16 May 2024 08:12:46 +0000 (GMT)
-Received: from li-c9696b4c-3419-11b2-a85c-f9edc3bf8a84.in.ibm.com (unknown [9.109.198.160])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 16 May 2024 08:12:46 +0000 (GMT)
-From: Nilay Shroff <nilay@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        naveen.n.rao@linux.ibm.com
-Subject: [PATCH 1/1] powerpc/numa: Online a node if PHB is attached.
-Date: Thu, 16 May 2024 13:42:22 +0530
-Message-ID: <20240516081230.3119651-2-nilay@linux.ibm.com>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240516081230.3119651-1-nilay@linux.ibm.com>
-References: <20240516081230.3119651-1-nilay@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vg8J30wtSz3cf8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 May 2024 22:18:11 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 48BCDCE1896;
+	Thu, 16 May 2024 12:18:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65724C113CC;
+	Thu, 16 May 2024 12:18:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1715861887;
+	bh=xIBvgUA3GxPMhfgmzaW4zOWO/kjFOkYCDtn0FkIzZSI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ja4iCsqEuuzYg8BupkdjBsN2Ry+ctT+W0pZt0icJqpavJRjyEC6s3v3vlQCfyK0s7
+	 ovL4vjFh28xGivUCIRHW7v71UTmnB8/VMhCRHqy/zbPf+IavRmmupIfw/iDfIjyDbT
+	 tVerabbA1NrsSPHh9hUvUoVLrdw0l6NscBct74hoGACqZ9RlRSY6Ev1cS/DTwXCXWK
+	 UZ9SfFemywcbXYcp+Oz60r3FmlZMW4QjeSivnTqEWV69XZeTPkFtCT71vmwnWxJODR
+	 dOHSH6To38jOcHOTrHNiWnN8LRAm0axg/+ZEQuQ/NxbNC1m6pIeJgL0VQ5aRt6MfQT
+	 nI4tl4RXT24YQ==
+Date: Thu, 16 May 2024 13:18:00 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
+Subject: Re: [PATCHv4 8/9] ASoC: fsl-asoc-card: add DT property
+ "cpu-system-clock-direction-out"
+Message-ID: <20d8eb96-6346-4341-95ee-74729001c01a@sirena.org.uk>
+References: <20240515135411.343333-1-elinor.montmasson@savoirfairelinux.com>
+ <20240515135411.343333-9-elinor.montmasson@savoirfairelinux.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Eg_NmLegN0rkomiZk3RCQ7OPa2AMYYde
-X-Proofpoint-GUID: XI3tTzuCMiRQu4tnGueQjqltBD4M9tYL
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-05-16_03,2024-05-15_01,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- lowpriorityscore=0 malwarescore=0 mlxlogscore=999 bulkscore=0 adultscore=0
- priorityscore=1501 suspectscore=0 phishscore=0 spamscore=0 clxscore=1015
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2405010000 definitions=main-2405160057
-X-Mailman-Approved-At: Thu, 16 May 2024 22:14:22 +1000
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="qyP2+HTgE4Ups3SO"
+Content-Disposition: inline
+In-Reply-To: <20240515135411.343333-9-elinor.montmasson@savoirfairelinux.com>
+X-Cookie: I'm having a MID-WEEK CRISIS!
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,99 +63,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gjoyce@linux.ibm.com, srikar@linux.ibm.com, Nilay Shroff <nilay@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, sshegde@linux.ibm.com
+Cc: devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-sound@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Shengjiu Wang <shengjiu.wang@gmail.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In the current design, a numa-node is made online only if
-that node is attached to cpu/memory. With this design, if
-any PCI/IO device is found to be attached to a numa-node
-which is not online then the numa-node id of the corresponding
-PCI/IO device is set to NUMA_NO_NODE(-1). This design may
-negatively impact the performance of PCIe device if the
-numa-node assigned to PCIe device is -1 because in such case
-we may not be able to accurately calculate the distance
-between two nodes.
-The multi-controller NVMe PCIe disk has an issue with
-calculating the node distance if the PCIe NVMe controller
-is attached to a PCI host bridge which has numa-node id
-value set to NUMA_NO_NODE. This patch helps fix this ensuring
-that a cpu/memory less numa node is made online if it's
-attached to PCI host bridge.
 
-Signed-off-by: Nilay Shroff <nilay@linux.ibm.com>
----
- arch/powerpc/mm/numa.c                     | 14 +++++++++++++-
- arch/powerpc/platforms/pseries/pci_dlpar.c | 14 ++++++++++++++
- 2 files changed, 27 insertions(+), 1 deletion(-)
+--qyP2+HTgE4Ups3SO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index a490724e84ad..9e5e366cee43 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -896,7 +896,7 @@ static int __init numa_setup_drmem_lmb(struct drmem_lmb *lmb,
- 
- static int __init parse_numa_properties(void)
- {
--	struct device_node *memory;
-+	struct device_node *memory, *pci;
- 	int default_nid = 0;
- 	unsigned long i;
- 	const __be32 *associativity;
-@@ -1010,6 +1010,18 @@ static int __init parse_numa_properties(void)
- 			goto new_range;
- 	}
- 
-+	for_each_node_by_name(pci, "pci") {
-+		int nid;
-+
-+		associativity = of_get_associativity(pci);
-+		if (associativity) {
-+			nid = associativity_to_nid(associativity);
-+			initialize_form1_numa_distance(associativity);
-+		}
-+		if (likely(nid >= 0) && !node_online(nid))
-+			node_set_online(nid);
-+	}
-+
- 	/*
- 	 * Now do the same thing for each MEMBLOCK listed in the
- 	 * ibm,dynamic-memory property in the
-diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-index 4448386268d9..52e2623a741d 100644
---- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-+++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-@@ -11,6 +11,7 @@
- 
- #include <linux/pci.h>
- #include <linux/export.h>
-+#include <linux/node.h>
- #include <asm/pci-bridge.h>
- #include <asm/ppc-pci.h>
- #include <asm/firmware.h>
-@@ -21,9 +22,22 @@
- struct pci_controller *init_phb_dynamic(struct device_node *dn)
- {
- 	struct pci_controller *phb;
-+	int nid;
- 
- 	pr_debug("PCI: Initializing new hotplug PHB %pOF\n", dn);
- 
-+	nid = of_node_to_nid(dn);
-+	if (likely((nid) >= 0)) {
-+		if (!node_online(nid)) {
-+			if (__register_one_node(nid)) {
-+				pr_err("PCI: Failed to register node %d\n", nid);
-+			} else {
-+				update_numa_distance(dn);
-+				node_set_online(nid);
-+			}
-+		}
-+	}
-+
- 	phb = pcibios_alloc_controller(dn);
- 	if (!phb)
- 		return NULL;
--- 
-2.44.0
+On Wed, May 15, 2024 at 03:54:10PM +0200, Elinor Montmasson wrote:
+> Add new optional DT property "cpu-system-clock-direction-out" to set
+> sysclk direction as "out" for the CPU DAI when using the generic codec.
+> It is set for both Tx and Rx.
+> If not set, the direction is "in".
+> The way the direction value is used is up to the CPU DAI driver
+> implementation.
 
+This feels like we should be using the clock bindings to specify the
+clock input of whatever is using the output from the SoC, though that's
+a lot more work.
+
+--qyP2+HTgE4Ups3SO
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmZF+XcACgkQJNaLcl1U
+h9BOcAgAgLtirZZNkJCJym3Zg2exAkuMznCbG3vzhug2rdyPFeYCt7+q3uMqs9QL
+ehCjibTUMcmLCA4pJA5G6l+OS+Fy9fAuaZc3tIADu0AcarzVHsy96kWjlUnkJTTo
+IIcoydNZKalL0k4wMPB48k5pxCeo4eOjHql//4G+IauEcMgEOHbzwf+17CJPXsq1
+x3NqwVfmrKBUy8ze66Rxjis67wEhMd7360LCdRtiOZQIf/JEzKCV0v/s0UwhmHVP
+VR8c5o/YUpMNGefA317nPw8Tw9hVgqtLYV1hLwYn/C7QzIrIhGPn7m16h57m6IPz
+N8JFnC+MvXIZjtMWx00is/tRmxqM6g==
+=T9W3
+-----END PGP SIGNATURE-----
+
+--qyP2+HTgE4Ups3SO--
