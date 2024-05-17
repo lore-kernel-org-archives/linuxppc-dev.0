@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D520C04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 19:22:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DFF8C04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 19:23:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VgxgR5NHwz3vr6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2024 05:22:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vgxgs1C6tz3wWq
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2024 05:23:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vgxct2HBbz3fpP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2024 05:20:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vgxcy42XVz3fpt
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2024 05:20:34 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4Vgx9P0dblz9t0b;
-	Fri, 17 May 2024 21:00:09 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4Vgx9H3Jflz9st4;
+	Fri, 17 May 2024 21:00:03 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Dh53uZwyolMl; Fri, 17 May 2024 21:00:09 +0200 (CEST)
+	with ESMTP id h8Eu0JPkjFau; Fri, 17 May 2024 21:00:03 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4Vgx9L0fNXz9sy4;
-	Fri, 17 May 2024 21:00:06 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4Vgx9H2DPjz9st0;
+	Fri, 17 May 2024 21:00:03 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 123E58B775;
-	Fri, 17 May 2024 21:00:06 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 42E4B8B783;
+	Fri, 17 May 2024 21:00:03 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id gSQP0sesHSz5; Fri, 17 May 2024 21:00:05 +0200 (CEST)
+	with ESMTP id kTwwTQayvkPH; Fri, 17 May 2024 21:00:03 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.232.121])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 81FEC8B786;
-	Fri, 17 May 2024 21:00:05 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A6FB58B766;
+	Fri, 17 May 2024 21:00:02 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Jason Gunthorpe <jgg@nvidia.com>,
@@ -44,14 +44,12 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 	Oscar Salvador <osalvador@suse.de>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC PATCH v2 05/20] powerpc/mm: Allow hugepages without hugepd
-Date: Fri, 17 May 2024 20:59:59 +0200
-Message-ID: <cb65d20e42e80e39dc2be240e7eb118333ce5171.1715971869.git.christophe.leroy@csgroup.eu>
+Subject: [RFC PATCH v2 00/20] Reimplement huge pages without hugepd on powerpc (8xx, e500, book3s/64)
+Date: Fri, 17 May 2024 20:59:54 +0200
+Message-ID: <cover.1715971869.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.44.0
-In-Reply-To: <cover.1715971869.git.christophe.leroy@csgroup.eu>
-References: <cover.1715971869.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1715972396; l=5056; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=I4UsJaxfqWCr6V6W5RXQLS8pGH/1YRxr58LkMABPEp8=; b=y8YNsxDQQALuLaML6eKaripIXxjHtP2GbnBYFSWLMGP9P0CyaP47NYx88GjVwawkyAE6f73e4 vZXnDXc/h2iC/zyQC1DT24JmlUA+mWWBXRQc6pM3mcyCmfPBKuvsdxH
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1715972395; l=6993; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=nXgiWCnTh81NG+HIgJTsNmlUbBq2v6oarBwpgv/bUOk=; b=JJc9xjsdS8vG4cTo/Ay4rt3hpTzOoF+49PWU37xMh+OtrrREx7xjwaJB5Mb+tWOmexAHZkx0S g8PFoT08NPSBoJdlf5dx+XAf+WUko8IAO1YC5ivO0qgat4VyLrQHX6W
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,159 +67,139 @@ Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In preparation of implementing huge pages on powerpc 8xx
-without hugepd, enclose hugepd related code inside an
-ifdef CONFIG_ARCH_HAS_HUGEPD
+This is the continuation of the RFC v1 series "Reimplement huge pages
+without hugepd on powerpc 8xx". It now get rid of hugepd completely
+after handling also e500 and book3s/64
 
-This also allows removing some stubs.
+Unlike most architectures, powerpc 8xx HW requires a two-level
+pagetable topology for all page sizes. So a leaf PMD-contig approach
+is not feasible as such.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/book3s/32/pgalloc.h |  2 --
- arch/powerpc/include/asm/hugetlb.h           | 10 ++--------
- arch/powerpc/include/asm/nohash/pgtable.h    |  8 +++++---
- arch/powerpc/mm/hugetlbpage.c                | 13 +++++++++++++
- arch/powerpc/mm/pgtable.c                    |  2 ++
- 5 files changed, 22 insertions(+), 13 deletions(-)
+Possible sizes are 4k, 16k, 512k and 8M.
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-index dc5c039eb28e..dd4eb3063175 100644
---- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-@@ -47,8 +47,6 @@ static inline void pgtable_free(void *table, unsigned index_size)
- 	}
- }
- 
--#define get_hugepd_cache_index(x)  (x)
--
- static inline void pgtable_free_tlb(struct mmu_gather *tlb,
- 				    void *table, int shift)
- {
-diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-index ea71f7245a63..79176a499763 100644
---- a/arch/powerpc/include/asm/hugetlb.h
-+++ b/arch/powerpc/include/asm/hugetlb.h
-@@ -30,10 +30,12 @@ static inline int is_hugepage_only_range(struct mm_struct *mm,
- }
- #define is_hugepage_only_range is_hugepage_only_range
- 
-+#ifdef CONFIG_ARCH_HAS_HUGEPD
- #define __HAVE_ARCH_HUGETLB_FREE_PGD_RANGE
- void hugetlb_free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
- 			    unsigned long end, unsigned long floor,
- 			    unsigned long ceiling);
-+#endif
- 
- #define __HAVE_ARCH_HUGE_PTEP_GET_AND_CLEAR
- static inline pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
-@@ -67,14 +69,6 @@ static inline void flush_hugetlb_page(struct vm_area_struct *vma,
- {
- }
- 
--#define hugepd_shift(x) 0
--static inline pte_t *hugepte_offset(hugepd_t hpd, unsigned long addr,
--				    unsigned pdshift)
--{
--	return NULL;
--}
--
--
- static inline void __init gigantic_hugetlb_cma_reserve(void)
- {
- }
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index 427db14292c9..ac3353f7f2ac 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -340,7 +340,7 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
- 
- #define pgprot_writecombine pgprot_noncached_wc
- 
--#ifdef CONFIG_HUGETLB_PAGE
-+#ifdef CONFIG_ARCH_HAS_HUGEPD
- static inline int hugepd_ok(hugepd_t hpd)
- {
- #ifdef CONFIG_PPC_8xx
-@@ -351,6 +351,10 @@ static inline int hugepd_ok(hugepd_t hpd)
- #endif
- }
- 
-+#define is_hugepd(hpd)		(hugepd_ok(hpd))
-+#endif
-+
-+#ifdef CONFIG_HUGETLB_PAGE
- static inline int pmd_huge(pmd_t pmd)
- {
- 	return 0;
-@@ -360,8 +364,6 @@ static inline int pud_huge(pud_t pud)
- {
- 	return 0;
- }
--
--#define is_hugepd(hpd)		(hugepd_ok(hpd))
- #endif
- 
- int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 66ac56b26007..82495b8ea793 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -42,6 +42,7 @@ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr, unsigned long s
- 	return __find_linux_pte(mm->pgd, addr, NULL, NULL);
- }
- 
-+#ifdef CONFIG_ARCH_HAS_HUGEPD
- static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 			   unsigned long address, unsigned int pdshift,
- 			   unsigned int pshift, spinlock_t *ptl)
-@@ -193,6 +194,16 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
- 
- 	return hugepte_offset(*hpdp, addr, pdshift);
- }
-+#else
-+pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
-+		      unsigned long addr, unsigned long sz)
-+{
-+	if (sz < PMD_SIZE)
-+		return pte_alloc_huge(mm, pmd_off(mm, addr), addr, sz);
-+
-+	return NULL;
-+}
-+#endif
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- /*
-@@ -248,6 +259,7 @@ int __init alloc_bootmem_huge_page(struct hstate *h, int nid)
- 	return __alloc_bootmem_huge_page(h, nid);
- }
- 
-+#ifdef CONFIG_ARCH_HAS_HUGEPD
- #ifndef CONFIG_PPC_BOOK3S_64
- #define HUGEPD_FREELIST_SIZE \
- 	((PAGE_SIZE - sizeof(struct hugepd_freelist)) / sizeof(pte_t))
-@@ -505,6 +517,7 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
- 		}
- 	} while (addr = next, addr != end);
- }
-+#endif
- 
- bool __init arch_hugetlb_valid_size(unsigned long size)
- {
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 9e7ba9c3851f..acdf64c9b93e 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -487,8 +487,10 @@ pte_t *__find_linux_pte(pgd_t *pgdir, unsigned long ea,
- 	if (!hpdp)
- 		return NULL;
- 
-+#ifdef CONFIG_ARCH_HAS_HUGEPD
- 	ret_pte = hugepte_offset(*hpdp, ea, pdshift);
- 	pdshift = hugepd_shift(*hpdp);
-+#endif
- out:
- 	if (hpage_shift)
- 		*hpage_shift = pdshift;
+First level (PGD/PMD) covers 4M per entry. For 8M pages, two PMD entries
+must point to a single entry level-2 page table. Until now that was
+done using hugepd. This series changes it to use standard page tables
+where the entry is replicated 1024 times on each of the two pagetables
+refered by the two associated PMD entries for that 8M page.
+
+At the moment it has to look into each helper to know if the
+hugepage ptep is a PTE or a PMD in order to know it is a 8M page or
+a lower size. I hope this can me handled by core-mm in the future.
+
+For e500 and book3s/64 there are less constraints because it is not
+tied to the HW assisted tablewalk like on 8xx, so it is easier to use
+leaf PMDs (and PUDs).
+
+On e500 the supported page sizes are 4M, 16M, 64M, 256M and 1G. All at
+PMD level on e500/32 and mix of PMD and PUD for e500/64. We encode page
+size with 4 available bits in PTE entries. On e300/32 PGD entries size
+is increases to 64 bits in order to allow leaf-PMD entries because PTE
+are 64 bits on e500.
+
+On book3s/64 only the hash-4k mode is concerned. It supports 16M pages
+as cont-PMD and 16G pages as cont-PUD. In other modes (radix-4k, radix-6k
+and hash-64k) the sizes match with PMD and PUD sizes so that's just leaf
+entries.
+
+Christophe Leroy (20):
+  mm: Provide pagesize to pmd_populate()
+  mm: Provide page size to pte_alloc_huge()
+  mm: Provide pmd to pte_leaf_size()
+  mm: Provide mm_struct and address to huge_ptep_get()
+  powerpc/mm: Allow hugepages without hugepd
+  powerpc/8xx: Fix size given to set_huge_pte_at()
+  powerpc/8xx: Rework support for 8M pages using contiguous PTE entries
+  powerpc/8xx: Simplify struct mmu_psize_def
+  powerpc/mm: Remove _PAGE_PSIZE
+  powerpc/mm: Fix __find_linux_pte() on 32 bits with PMD leaf entries
+  powerpc/mm: Complement huge_pte_alloc() for all non HUGEPD setups
+  powerpc/64e: Remove unneeded #ifdef CONFIG_PPC_E500
+  powerpc/64e: Clean up impossible setups
+  powerpc/e500: Remove enc field from struct mmu_psize_def
+  powerpc/85xx: Switch to 64 bits PGD
+  powerpc/e500: Encode hugepage size in PTE bits
+  powerpc/e500: Use contiguous PMD instead of hugepd
+  powerpc/64s: Use contiguous PMD/PUD instead of HUGEPD
+  powerpc/mm: Remove hugepd leftovers
+  mm: Remove CONFIG_ARCH_HAS_HUGEPD
+
+ arch/arm/include/asm/hugetlb-3level.h         |   2 +-
+ arch/arm64/include/asm/hugetlb.h              |   2 +-
+ arch/arm64/include/asm/pgtable.h              |   2 +-
+ arch/arm64/mm/hugetlbpage.c                   |   4 +-
+ arch/parisc/mm/hugetlbpage.c                  |   2 +-
+ arch/powerpc/Kconfig                          |   1 -
+ arch/powerpc/include/asm/book3s/32/pgalloc.h  |   2 -
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  |  15 -
+ arch/powerpc/include/asm/book3s/64/hash.h     |  38 +-
+ arch/powerpc/include/asm/book3s/64/hugetlb.h  |  38 --
+ .../include/asm/book3s/64/pgtable-4k.h        |  34 --
+ .../include/asm/book3s/64/pgtable-64k.h       |  20 -
+ arch/powerpc/include/asm/hugetlb.h            |  26 +-
+ .../include/asm/nohash/32/hugetlb-8xx.h       |  58 +--
+ arch/powerpc/include/asm/nohash/32/mmu-8xx.h  |   9 +-
+ arch/powerpc/include/asm/nohash/32/pgalloc.h  |   2 +
+ arch/powerpc/include/asm/nohash/32/pte-40x.h  |   3 -
+ arch/powerpc/include/asm/nohash/32/pte-44x.h  |   3 -
+ arch/powerpc/include/asm/nohash/32/pte-85xx.h |   3 -
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h  |  64 ++-
+ .../powerpc/include/asm/nohash/hugetlb-e500.h |  36 +-
+ arch/powerpc/include/asm/nohash/mmu-e500.h    |   4 -
+ arch/powerpc/include/asm/nohash/pgalloc.h     |   2 -
+ arch/powerpc/include/asm/nohash/pgtable.h     |  45 +-
+ arch/powerpc/include/asm/nohash/pte-e500.h    |  22 +-
+ arch/powerpc/include/asm/page.h               |  32 --
+ arch/powerpc/include/asm/pgtable-be-types.h   |  10 -
+ arch/powerpc/include/asm/pgtable-types.h      |  13 +-
+ arch/powerpc/include/asm/pgtable.h            |   3 +
+ arch/powerpc/kernel/head_85xx.S               |  33 +-
+ arch/powerpc/kernel/head_8xx.S                |  10 +-
+ arch/powerpc/mm/book3s64/hash_utils.c         |  11 +-
+ arch/powerpc/mm/book3s64/pgtable.c            |  12 -
+ arch/powerpc/mm/hugetlbpage.c                 | 450 ++----------------
+ arch/powerpc/mm/init-common.c                 |   8 +-
+ arch/powerpc/mm/kasan/8xx.c                   |  15 +-
+ arch/powerpc/mm/nohash/8xx.c                  |  46 +-
+ arch/powerpc/mm/nohash/book3e_pgtable.c       |   4 +-
+ arch/powerpc/mm/nohash/tlb.c                  | 172 ++-----
+ arch/powerpc/mm/nohash/tlb_low_64e.S          | 257 ++--------
+ arch/powerpc/mm/pgtable.c                     |  94 ++--
+ arch/powerpc/mm/pgtable_32.c                  |   2 +-
+ arch/riscv/include/asm/hugetlb.h              |   2 +-
+ arch/riscv/include/asm/pgtable.h              |   2 +-
+ arch/riscv/mm/hugetlbpage.c                   |   4 +-
+ arch/s390/include/asm/hugetlb.h               |   2 +-
+ arch/s390/mm/hugetlbpage.c                    |   2 +-
+ arch/sh/mm/hugetlbpage.c                      |   2 +-
+ arch/sparc/include/asm/pgtable_64.h           |   2 +-
+ arch/sparc/mm/hugetlbpage.c                   |   4 +-
+ fs/hugetlbfs/inode.c                          |   2 +-
+ fs/proc/task_mmu.c                            |   8 +-
+ fs/userfaultfd.c                              |   2 +-
+ include/asm-generic/hugetlb.h                 |   2 +-
+ include/linux/hugetlb.h                       |  10 +-
+ include/linux/mm.h                            |  12 +-
+ include/linux/pgtable.h                       |   2 +-
+ include/linux/swapops.h                       |   2 +-
+ kernel/events/core.c                          |   2 +-
+ mm/Kconfig                                    |  10 -
+ mm/damon/vaddr.c                              |   6 +-
+ mm/filemap.c                                  |   2 +-
+ mm/gup.c                                      | 105 +---
+ mm/hmm.c                                      |   2 +-
+ mm/hugetlb.c                                  |  46 +-
+ mm/internal.h                                 |   2 +-
+ mm/memory-failure.c                           |   2 +-
+ mm/memory.c                                   |  19 +-
+ mm/mempolicy.c                                |   2 +-
+ mm/migrate.c                                  |   4 +-
+ mm/mincore.c                                  |   2 +-
+ mm/pagewalk.c                                 |  57 +--
+ mm/pgalloc-track.h                            |   2 +-
+ mm/userfaultfd.c                              |   6 +-
+ 74 files changed, 494 insertions(+), 1444 deletions(-)
+
 -- 
 2.44.0
 
