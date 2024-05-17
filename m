@@ -4,92 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12804C25B7A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 12:35:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB226C25B77
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 13:03:39 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mvab/JPm;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CF5YEVK1;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vgmdv3y81z3fR1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 22:35:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VgnG23MCSz3cTD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 23:03:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mvab/JPm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CF5YEVK1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=krishnak@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=andreyknvl@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vgkry63LHz2yvv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2024 21:15:14 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44H9WUn6011746;
-	Fri, 17 May 2024 11:15:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
- message-id : date : mime-version : subject : to : cc : references : from :
- in-reply-to; s=pp1; bh=2ZnqHX2hKFitdHTwQKH/qQGiuwzKCUaHKqwkFGYaHrI=;
- b=mvab/JPmLzgYhzwExKrOYcUELZvnNiQnOU2cfNI7FLun3HYfYaEcqfdran7qmNN5wvTn
- 5KaGhPcPKHOai2mhOUr2kfCzovuv/w1Su9oUcFv/ZvJ5k+YsdpHnUWFSX9X0zU/Kc2do
- Lu20KDQzqJWYAQaKdHJVLaX09vjMJBpVofhszesj0o96coSXJ5X1DTuAroDZ21p4GmCa
- Vv8k67k20KAnLh+iggvwuqQQ4RdtBXWU++I0FcznyEHVjDlffCwkL5kkJJYSXGSFLS5Y
- XBFxxqCkkojzMOnBxBWinBg1wLimlGvUlTUwRgw4yBYBLhypWReCJAocr6IbZgkxZvSI 5w== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y64pj88a1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 17 May 2024 11:15:02 +0000
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 44HBF1Mx029345;
-	Fri, 17 May 2024 11:15:01 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y64pj88a0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 17 May 2024 11:15:01 +0000
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44H9xsGh018764;
-	Fri, 17 May 2024 11:15:00 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3y2k0tyyp3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 17 May 2024 11:15:00 +0000
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44HBEuuH21824200
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 17 May 2024 11:14:59 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C380E58063;
-	Fri, 17 May 2024 11:14:56 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2B25458052;
-	Fri, 17 May 2024 11:14:53 +0000 (GMT)
-Received: from [9.109.241.85] (unknown [9.109.241.85])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 17 May 2024 11:14:52 +0000 (GMT)
-Content-Type: multipart/alternative;
- boundary="------------w2Abro4c46mvBT9wBxFVKX0a"
-Message-ID: <fd0e22ab-5998-4b57-828e-224dda6bf490@linux.ibm.com>
-Date: Fri, 17 May 2024 16:44:51 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VgnF94FtDz30TW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2024 23:02:52 +1000 (AEST)
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-420180b58c5so728555e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2024 06:02:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1715950960; x=1716555760; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=rrQk/zOuwoZ/gTNLgUZwce7uWfKFbQWp+MK1UVbA3u4=;
+        b=CF5YEVK1nR1bq0A4VmGBgS6bEaELT27Z6akBMlNg9cqLJTAh1DKwp1XClr9IqV9mDF
+         Rt2iiPr+WJm7UhSELlJLRWIOQlPStXr8DCQSW8JBXQwFBxBseW+RvBqSXBtddiO8je3A
+         q7Y0j52uTtyv7y4jIwWvU8fJZLyIO2sx7yqx90Kj4EGMhQ1QOhHwq5DD0fvtmm0ZvIWZ
+         gYn12eHqrzGfH+GUFWZRWtAUYuL8Wxx3owWCE6ugV7pt5H7hCTiTFFJDA1LxTprkTG5k
+         UBrb3upFW3wvHnJQSn9r1WHRYVPdOpKa6EETQsvTE30BsIEUzkyjKKHxaNPpi88bOtlb
+         0xbQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1715950960; x=1716555760;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=rrQk/zOuwoZ/gTNLgUZwce7uWfKFbQWp+MK1UVbA3u4=;
+        b=jZGqqDlb9Oepd41o+Fxqwcve8EkiOtdwdkFUil/G4g4YiQI6XcVvfP05gBdGNUNKe1
+         tfiihLwXG6x0ezmVz+C0pndc8Qz4Uu0JiCj9PoivTgDCaY2hmhu8S2DpFjheX4BvPcWe
+         l79GWNo/U7IOi6lZ9B0KK0228fO7ZX0WDl0w5iNcbFCELh8H6Yae9Dg7NRaul0c7wYkw
+         lvLC4dR6xbWi2qscDIgZ53z+qUtusw3pwVPO2pKPCNcWVTqXT6/Adaswz5GE3dtQ8Sgo
+         dENKPeHjN3NKaDVn0M/zdYJRghtaYGmaOraHv/W81xEOsq0A+amaS0kDtRdpjTqi4UnK
+         CXOw==
+X-Forwarded-Encrypted: i=1; AJvYcCW159L/yiT3Dj0amUt64GwRsXNol8jD3VZnuxf1bxOMtgq88OOZYB602ocdXaY0E4CMbNgjCYrwbioLoXTl8UaOSLzLrNvT3RCXDwipvA==
+X-Gm-Message-State: AOJu0Yxywl9wBxA0rAnac+W5XtATUEMr7fsz9+SmOvYJBfG960xLGK3V
+	J4pUQbmN852qrJlfzcJjpsebLwHQxPCu4Avd0pSspjmXS7hkOc+J0jKYKXKTrjUq632Y+a6v5oO
+	Jhju6Qs6ZbCKUtYWd2UGD544gNTs=
+X-Google-Smtp-Source: AGHT+IHX94cPFrvL5t8yUA0EZIaiHQgX1Gs+ZQsluKSuj6RLMC47d3ViG5IjIZio8T5UO+CHiINEcWLKeJcnz4a/eAg=
+X-Received: by 2002:a7b:c40a:0:b0:41b:d4a3:ad6a with SMTP id
+ 5b1f17b1804b1-41feaa42ce1mr205732115e9.17.1715950959914; Fri, 17 May 2024
+ 06:02:39 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] powerpc: hotplug driver bridge support
-To: "Oliver O'Halloran" <oohall@gmail.com>
-References: <20240514135303.176134-1-krishnak@linux.ibm.com>
- <20240514135303.176134-3-krishnak@linux.ibm.com>
- <CAOSf1CFDCTMdmrjoSRdP09rJgtzPVDnCPXpfS-S+J7XKHzKRCw@mail.gmail.com>
-Content-Language: en-US
-From: krishna kumar <krishnak@linux.ibm.com>
-In-Reply-To: <CAOSf1CFDCTMdmrjoSRdP09rJgtzPVDnCPXpfS-S+J7XKHzKRCw@mail.gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 6JDKP9ggUi4ipoGJA5lg2tWTjfiIGEkc
-X-Proofpoint-ORIG-GUID: dXfg880jrtrEBUpEfSpMrCgwsRBbJ7Uu
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-05-17_03,2024-05-17_02,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 spamscore=0
- suspectscore=0 bulkscore=0 mlxscore=0 mlxlogscore=999 clxscore=1015
- phishscore=0 impostorscore=0 malwarescore=0 priorityscore=1501
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2405010000 definitions=main-2405170090
-X-Mailman-Approved-At: Fri, 17 May 2024 22:30:12 +1000
+References: <20240427205020.3ecf3895@yea> <20240501144156.17e65021@outsider.home>
+In-Reply-To: <20240501144156.17e65021@outsider.home>
+From: Andrey Konovalov <andreyknvl@gmail.com>
+Date: Fri, 17 May 2024 15:02:28 +0200
+Message-ID: <CA+fCnZdNBEekgcfaGafJKmpb-A7R6rBuL5QojOhpqkHZvz1nKg@mail.gmail.com>
+Subject: Re: Machine freezes after running KASAN KUnit test 21 with a GCC 13.2
+ built kernel but runs tests fine with a CLANG 18 build kernel (v6.9-rc5,
+ 32bit ppc, PowerMac G4 DP)
+To: Erhard Furtner <erhard_f@mailbox.org>, Nico Pache <npache@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,487 +80,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, mahesh@linux.ibm.com, Gaurav Batra <gbatra@linux.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>, Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------w2Abro4c46mvBT9wBxFVKX0a
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Hi Oliver,
-
-Thanks for review. Please find my response below -
-
-
-On 5/17/24 08:12, Oliver O'Halloran wrote:
-> On Tue, May 14, 2024 at 11:54 PM Krishna Kumar<krishnak@linux.ibm.com>  wrote:
->> There is an issue with the hotplug operation when it's done on the
->> bridge/switch slot. The bridge-port and devices behind the bridge, which
->> become offline by hot-unplug operation, don't get hot-plugged/enabled by
->> doing hot-plug operation on that slot. Only the first port of the bridge
->> gets enabled and the remaining port/devices remain unplugged. The hot
->> plug/unplug operation is done by the hotplug driver
->> (drivers/pci/hotplug/pnv_php.c).
->>
->> Root Cause Analysis: This behavior is due to missing code for the DPC
->> switch/bridge.
-> I don't see anything touching DPC in this series?
-
-I apologize for the confusion. When I mentioned DPC, I was referring to 
-the downward bridge port (the sibling ones) that were not enabled after 
-the hot plug operation. I didn't mean to refer to DPC events. It seems 
-that this caused some confusion, and I will remove this word in my next 
-version of the patch. Thank you!
-
+On Wed, May 1, 2024 at 2:42=E2=80=AFPM 'Erhard Furtner' via kasan-dev
+<kasan-dev@googlegroups.com> wrote:
 >
->> *snip*
->>
->> Command for reproducing the issue :
->>
->> For hot unplug/disable - echo 0 > /sys/bus/pci/slots/C5/power
->> For hot plug/enable -    echo 1 > /sys/bus/pci/slots/C5/power
->>
->> where C5 is slot associated with bridge.
->>
->> Scenario/Tests:
->> Output of lspci -nn before test is given below. This snippet contains
->> devices used for testing on Powernv machine.
->>
->> 0004:02:00.0 PCI bridge [0604]: PMC-Sierra Inc. Device [11f8:4052]
->> 0004:02:01.0 PCI bridge [0604]: PMC-Sierra Inc. Device [11f8:4052]
->> 0004:02:02.0 PCI bridge [0604]: PMC-Sierra Inc. Device [11f8:4052]
->> 0004:02:03.0 PCI bridge [0604]: PMC-Sierra Inc. Device [11f8:4052]
->> 0004:08:00.0 Serial Attached SCSI controller [0107]:
->> Broadcom / LSI SAS3216 PCI-Express Fusion-MPT SAS-3 [1000:00c9] (rev 01)
->> 0004:09:00.0 Serial Attached SCSI controller [0107]:
->> Broadcom / LSI SAS3216 PCI-Express Fusion-MPT SAS-3 [1000:00c9] (rev 01)
->>
->> Output of lspci -tv before test is as follows:
->>
->> # lspci -tv
->>   +-[0004:00]---00.0-[01-0e]--+-00.0-[02-0e]--+-00.0-[03-07]--
->>   |                           |               +-01.0-[08]----00.0  Broadcom / LSI SAS3216 PCI-Express Fusion-MPT SAS-3
->>   |                           |               +-02.0-[09]----00.0  Broadcom / LSI SAS3216 PCI-Express Fusion-MPT SAS-3
->>   |                           |               \-03.0-[0a-0e]--
->>   |                           \-00.1  PMC-Sierra Inc. Device 4052
->>
->> C5(bridge) and C6(End Point) slot address are as below:
->> # cat /sys/bus/pci/slots/C5/address
->> 0004:02:00
->> # cat /sys/bus/pci/slots/C6/address
->> 0004:09:00
-> Uh, if I'm reading this right it looks like your "slot" C5 is actually
-> the PCIe switch's internal bus which is definitely not hot pluggable.
-
-It's a hotplug slot. Please see the snippet below:
-
-:~$ sudo lspci -vvv -s 0004:02:00.0 | grep --color HotPlug
-
-          SltCap:    AttnBtn- PwrCtrl+ MRL- AttnInd- PwrInd- HotPlug+ Surprise-
-
-:~$
-
-:~$ sudo lspci -vvv -s 0004:02:01.0 | grep --color HotPlug
-
-         SltCap:    AttnBtn- PwrCtrl+ MRL- AttnInd- PwrInd- HotPlug+ Surprise-
-
-:~$
-
-:~$ sudo lspci -vvv -s 0004:02:02.0 | grep --color HotPlug
-
-         SltCap:    AttnBtn- PwrCtrl+ MRL- AttnInd- PwrInd- HotPlug+ Surprise-
-
-:~$
-
-:~$ sudo lspci -vvv -s 0004:02:03.0 | grep --color HotPlug
-
-         SltCap:    AttnBtn- PwrCtrl+ MRL- AttnInd- PwrInd- HotPlug+ Surprise-
-
-:~$
-
-
-> I find it helps to look at the PCI topology in terms of where the
-> physical PCIe links are. Here we've got:
+> On Sat, 27 Apr 2024 20:50:20 +0200
+> Erhard Furtner <erhard_f@mailbox.org> wrote:
 >
-> - A link between the PHB (0004:00:00.0) and the switch upstream port
-> (0004:01:00.0)
-> - A link from switch downstream port 0 (0004:02:00.0) to nothing
-> - A link from switch downstream port 1 (0004:02:01.0) to a SAS card
-> - A link from switch downstream port 2 (0004:02:02.0) to a SAS card
-> - A link from switch downstream port 2 (0004:02:03.0) to nothing
+> > Greetings!
+> >
+> > Building kernel v6.9-rc5 with GCC 13.2 + binutils 2.42 and running KASA=
+N KUnit tests (CONFIG_KASAN_INLINE=3Dy, CONFIG_KASAN_KUNIT_TEST=3Dy) on my =
+Dual CPU PowerMac G4 DP always freezes the machine after test 21 (see attac=
+hed dmesg gcc_v02). Sometimes the G4 is able to reboot, most of the time it=
+ just freezes:
 >
-> Note that there's no PCIe link between the switch upstream port
-> (0004:01:00.0) and the downstream ports on bus 0004:02. The connection
-> between those is invisible to us because it's custom bus logic
-> internal to the PCIe switch ASIC. What I think has happened here is
-> that system firmware has supplied bad PCIe slot information to OPAL
-> which has resulted in pnv_php advertising a slot in the wrong place.
-> Assuming this following the usual IBM convention I'd expect the bridge
-> device for C5 to be the PHB's root port and the bus should be 0004:01.
-
-It seems like your explanation about the missing 0004:01:00.0 may be 
-correct and could be due to a firmware bug. However, the scope of this 
-patch does not relate to this issue. Additionally, if it starts with 
-0004:01:00.0 to 0004:01:03.0, the behavior of hot-unplug and hot-plug 
-operations will remain inconsistent. This patch aims to address the 
-inconsistent behavior of hot-unplug and hot-plug.
-
-> It might be worth adding some logic to pnv_php to verify the PCI
-> bridge upstream of the slot actually has the PCIe slot capability to
-> guard against this problem.
-
-We can have a look at this problem in another patch.
-
+> Turns out this is not a ppc specific issue at all, happens also on my AMD=
+ FX 8370, tested on kernel v6.9-rc6. clang18 built kernel runs and passes K=
+ASAN KUnit tests fine whereas a gcc13 built kernel freezes or reboots after=
+ test 20 (ppc after test 21):
 >
->> Hot-unplug operation on slot associated with bridge:
->> # echo 0 > /sys/bus/pci/slots/C5/power
->> # lspci -tv
->>   +-[0004:00]---00.0-[01-0e]--+-00.0-[02-0e]--
->>   |                           \-00.1  PMC-Sierra Inc. Device 4052
-> Yep, "powering off" C5 doesn't remove the upstream port device. This
-> would create problems if you physically removed the card from C5 since
-> the kernel would assume the switch device is still present.
+> [...]
+>     ok 16 kmalloc_uaf_16
+>     # kmalloc_oob_in_memset: EXPECTATION FAILED at mm/kasan/kasan_test.c:=
+566
+>     KASAN failure expected in "memset(ptr, 0, size + KASAN_GRANULE_SIZE)"=
+, but none occurred
+>     not ok 17 kmalloc_oob_in_memset
+>     # kmalloc_oob_memset_2: EXPECTATION FAILED at mm/kasan/kasan_test.c:4=
+96
+>     KASAN failure expected in "memset(ptr + size - 1, 0, memset_size)", b=
+ut none occurred
+>     not ok 18 kmalloc_oob_memset_2
+>     # kmalloc_oob_memset_4: EXPECTATION FAILED at mm/kasan/kasan_test.c:5=
+14
+>     KASAN failure expected in "memset(ptr + size - 3, 0, memset_size)", b=
+ut none occurred
+>     not ok 19 kmalloc_oob_memset_4
+>     # kmalloc_oob_memset_8: EXPECTATION FAILED at mm/kasan/kasan_test.c:5=
+32
+>     KASAN failure expected in "memset(ptr + size - 7, 0, memset_size)", b=
+ut none occurred
+>     not ok 20 kmalloc_oob_memset_8
+>     # kmalloc_oob_memset_16: EXPECTATION FAILED at mm/kasan/kasan_test.c:=
+550
+>     KASAN failure expected in "memset(ptr + size - 15, 0, memset_size)", =
+but none occurred
 
-Powering off C5 does removes 0004:02:00.0 to 0004:02:00.3 (all the downstream
-sibling bridge ports) and SAS devices behind these bridge ports. But Powering
-on does not enable them. The behavior should be in sync. Please see the snippet
-in patch.
++Nico, who also encountered this issue.
 
->
->> *snip*
->
->> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
->> index 38561d6a2079..bea612759832 100644
->> --- a/arch/powerpc/kernel/pci_dn.c
->> +++ b/arch/powerpc/kernel/pci_dn.c
->> @@ -493,4 +493,36 @@ static void pci_dev_pdn_setup(struct pci_dev *pdev)
->>          pdn = pci_get_pdn(pdev);
->>          pdev->dev.archdata.pci_data = pdn;
->>   }
->> +
->> +void pci_traverse_sibling_nodes_and_scan_slot(struct device_node *start, struct pci_bus *bus)
->> +{
->> +       struct device_node *dn;
->> +       int slotno;
->> +
->> +       u32 class = 0;
->> +
->> +       if (!of_property_read_u32(start->child, "class-code", &class)) {
->> +               /* Call of pci_scan_slot for non-bridge/EP case */
->> +               if (!((class >> 8) == PCI_CLASS_BRIDGE_PCI)) {
->> +                       slotno = PCI_SLOT(PCI_DN(start->child)->devfn);
->> +                       pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
->> +                       return;
->> +               }
->> +       }
->> +
->> +       /* Iterate all siblings */
->> +       for_each_child_of_node(start, dn) {
->> +               class = 0;
->> +
->> +               if (!of_property_read_u32(start->child, "class-code", &class)) {
->> +                       /* Call of pci_scan_slot on each sibling-nodes/bridge-ports */
->> +                       if ((class >> 8) == PCI_CLASS_BRIDGE_PCI) {
->> +                               slotno = PCI_SLOT(PCI_DN(dn)->devfn);
->> +                               pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
->> +                       }
->> +               }
->> +       }
-> If you're going to iterate over all the DT nodes why not just scan all
-> of them rather than special casing bridges? IIRC current logic is the
-> way it is because PowerVM only puts single devices under a PHB and in
-> the PowerNV (pnv_php) case the PCIe spec guarantees that only device 0
-> will be present on the end of a link. If you want to handle the more
-> generic case then feel free, but do it properly.
+Mailed a patch that should fix this:
+https://lore.kernel.org/linux-mm/20240517130118.759301-1-andrey.konovalov@l=
+inux.dev/T/#u
 
-We wanted to handle the more generic case and did not want to be 
-confined to only one device assumption. We want to fix the current 
-inconsistent behavior more generically. Regarding the fix, the fix is 
-obvious: We have to traverse and find the bridge ports from DT and 
-invoke pci_scan_slot() on them. This will discover and create the entry 
-for bridge ports (0004:02:00.0 to 0004:02:00.3 on the given bus- 
-0004:02). There is already an existing function, pci_scan_bridge() 
-which is doing invocation of pci_scan_slot () for the devices behind the 
-bridge, in this case for SAS device. So eventually, we are doing a scan 
-of all the entities behind the slot. Would you like me to combine the 
-non-bridge and bridge cases into one? I can attempt to do this. 
-Hopefully, if we incorporate the iterate sibling logic case correctly, 
-we may not need to maintain these two separate cases for bridge and 
-non-bridge. I will attempt this, and if it works, I will include it in 
-the next patch. Thanks. Best Regards, Krishna
+You can consider disabling CONFIG_FORTIFY_SOURCE for now as a workaround.
 
---------------w2Abro4c46mvBT9wBxFVKX0a
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <pre>Hi Oliver,</pre>
-    <pre>Thanks for review. Please find my response below -
-</pre>
-    <p><br>
-    </p>
-    <div class="moz-cite-prefix">On 5/17/24 08:12, Oliver O'Halloran
-      wrote:<br>
-    </div>
-    <blockquote type="cite"
-cite="mid:CAOSf1CFDCTMdmrjoSRdP09rJgtzPVDnCPXpfS-S+J7XKHzKRCw@mail.gmail.com">
-      <pre class="moz-quote-pre" wrap="">On Tue, May 14, 2024 at 11:54 PM Krishna Kumar <a class="moz-txt-link-rfc2396E" href="mailto:krishnak@linux.ibm.com">&lt;krishnak@linux.ibm.com&gt;</a> wrote:
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">
-There is an issue with the hotplug operation when it's done on the
-bridge/switch slot. The bridge-port and devices behind the bridge, which
-become offline by hot-unplug operation, don't get hot-plugged/enabled by
-doing hot-plug operation on that slot. Only the first port of the bridge
-gets enabled and the remaining port/devices remain unplugged. The hot
-plug/unplug operation is done by the hotplug driver
-(drivers/pci/hotplug/pnv_php.c).
-
-Root Cause Analysis: This behavior is due to missing code for the DPC
-switch/bridge.
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-I don't see anything touching DPC in this series?</pre>
-    </blockquote>
-    <pre><span data-preserver-spaces="true">I apologize for the confusion. When I mentioned DPC, I </span><span
-    data-preserver-spaces="true">was referring</span><span
-    data-preserver-spaces="true"> to the 
-downward bridge port (the sibling ones) that </span><span
-    data-preserver-spaces="true">were not enabled</span><span
-    data-preserver-spaces="true"> after the hot 
-plug operation. I didn't mean to refer to DPC events. </span><span
-    data-preserver-spaces="true">It seems </span><span
-    data-preserver-spaces="true">that</span><span
-    data-preserver-spaces="true"> this 
-caused some confusion, and I will remove this word in my next </span><span
-    data-preserver-spaces="true">version of the 
-patch</span><span data-preserver-spaces="true">.</span><span
-    data-preserver-spaces="true"> Thank you!</span></pre>
-    <blockquote type="cite"
-cite="mid:CAOSf1CFDCTMdmrjoSRdP09rJgtzPVDnCPXpfS-S+J7XKHzKRCw@mail.gmail.com">
-      <pre class="moz-quote-pre" wrap="">
-
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">*snip*
-
-Command for reproducing the issue :
-
-For hot unplug/disable - echo 0 &gt; /sys/bus/pci/slots/C5/power
-For hot plug/enable -    echo 1 &gt; /sys/bus/pci/slots/C5/power
-
-where C5 is slot associated with bridge.
-
-Scenario/Tests:
-Output of lspci -nn before test is given below. This snippet contains
-devices used for testing on Powernv machine.
-
-0004:02:00.0 PCI bridge [0604]: PMC-Sierra Inc. Device [11f8:4052]
-0004:02:01.0 PCI bridge [0604]: PMC-Sierra Inc. Device [11f8:4052]
-0004:02:02.0 PCI bridge [0604]: PMC-Sierra Inc. Device [11f8:4052]
-0004:02:03.0 PCI bridge [0604]: PMC-Sierra Inc. Device [11f8:4052]
-0004:08:00.0 Serial Attached SCSI controller [0107]:
-Broadcom / LSI SAS3216 PCI-Express Fusion-MPT SAS-3 [1000:00c9] (rev 01)
-0004:09:00.0 Serial Attached SCSI controller [0107]:
-Broadcom / LSI SAS3216 PCI-Express Fusion-MPT SAS-3 [1000:00c9] (rev 01)
-
-Output of lspci -tv before test is as follows:
-
-# lspci -tv
- +-[0004:00]---00.0-[01-0e]--+-00.0-[02-0e]--+-00.0-[03-07]--
- |                           |               +-01.0-[08]----00.0  Broadcom / LSI SAS3216 PCI-Express Fusion-MPT SAS-3
- |                           |               +-02.0-[09]----00.0  Broadcom / LSI SAS3216 PCI-Express Fusion-MPT SAS-3
- |                           |               \-03.0-[0a-0e]--
- |                           \-00.1  PMC-Sierra Inc. Device 4052
-
-C5(bridge) and C6(End Point) slot address are as below:
-# cat /sys/bus/pci/slots/C5/address
-0004:02:00
-# cat /sys/bus/pci/slots/C6/address
-0004:09:00
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-Uh, if I'm reading this right it looks like your "slot" C5 is actually
-the PCIe switch's internal bus which is definitely not hot pluggable.</pre>
-    </blockquote>
-    <pre><span data-preserver-spaces="true">It's a hotplug slot. Please see the snippet below:</span></pre>
-    <pre>:~$ sudo lspci -vvv -s 0004:02:00.0 | grep --color HotPlug 
-</pre>
-    <pre>         SltCap:    AttnBtn- PwrCtrl+ MRL- AttnInd- PwrInd- HotPlug+ Surprise-</pre>
-    <pre>:~$ </pre>
-    <pre>:~$ sudo lspci -vvv -s 0004:02:01.0 | grep --color HotPlug</pre>
-    <pre>        SltCap:    AttnBtn- PwrCtrl+ MRL- AttnInd- PwrInd- HotPlug+ Surprise-</pre>
-    <pre>:~$ </pre>
-    <pre>:~$ sudo lspci -vvv -s 0004:02:02.0 | grep --color HotPlug</pre>
-    <pre>        SltCap:    AttnBtn- PwrCtrl+ MRL- AttnInd- PwrInd- HotPlug+ Surprise-</pre>
-    <pre>:~$ </pre>
-    <pre>:~$ sudo lspci -vvv -s 0004:02:03.0 | grep --color HotPlug</pre>
-    <pre>        SltCap:    AttnBtn- PwrCtrl+ MRL- AttnInd- PwrInd- HotPlug+ Surprise-</pre>
-    <pre>:~$ </pre>
-    <br>
-    <blockquote type="cite"
-cite="mid:CAOSf1CFDCTMdmrjoSRdP09rJgtzPVDnCPXpfS-S+J7XKHzKRCw@mail.gmail.com">
-      <pre class="moz-quote-pre" wrap="">
-I find it helps to look at the PCI topology in terms of where the
-physical PCIe links are. Here we've got:
-
-- A link between the PHB (0004:00:00.0) and the switch upstream port
-(0004:01:00.0)
-- A link from switch downstream port 0 (0004:02:00.0) to nothing
-- A link from switch downstream port 1 (0004:02:01.0) to a SAS card
-- A link from switch downstream port 2 (0004:02:02.0) to a SAS card
-- A link from switch downstream port 2 (0004:02:03.0) to nothing
-
-Note that there's no PCIe link between the switch upstream port
-(0004:01:00.0) and the downstream ports on bus 0004:02. The connection
-between those is invisible to us because it's custom bus logic
-internal to the PCIe switch ASIC. What I think has happened here is
-that system firmware has supplied bad PCIe slot information to OPAL
-which has resulted in pnv_php advertising a slot in the wrong place.
-Assuming this following the usual IBM convention I'd expect the bridge
-device for C5 to be the PHB's root port and the bus should be 0004:01.</pre>
-    </blockquote>
-    <pre><span data-preserver-spaces="true">It seems like your explanation about the missing 0004:01:00.0 may be 
-correct and could be due to a firmware bug. However, the scope of this 
-patch does not relate to this issue. Additionally, if it starts with 
-0004:01:00.0 to 0004:01:03.0, the behavior of hot-unplug and hot-plug 
-operations will remain inconsistent. This patch aims to address the 
-inconsistent behavior of hot-unplug and hot-plug.</span></pre>
-    <pre></pre>
-    <blockquote type="cite"
-cite="mid:CAOSf1CFDCTMdmrjoSRdP09rJgtzPVDnCPXpfS-S+J7XKHzKRCw@mail.gmail.com">
-      <pre class="moz-quote-pre" wrap="">
-It might be worth adding some logic to pnv_php to verify the PCI
-bridge upstream of the slot actually has the PCIe slot capability to
-guard against this problem.</pre>
-    </blockquote>
-    <pre><span data-preserver-spaces="true">We can have a look at this problem in another patch.</span></pre>
-    <blockquote type="cite"
-cite="mid:CAOSf1CFDCTMdmrjoSRdP09rJgtzPVDnCPXpfS-S+J7XKHzKRCw@mail.gmail.com">
-      <pre class="moz-quote-pre" wrap="">
-
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">Hot-unplug operation on slot associated with bridge:
-# echo 0 &gt; /sys/bus/pci/slots/C5/power
-# lspci -tv
- +-[0004:00]---00.0-[01-0e]--+-00.0-[02-0e]--
- |                           \-00.1  PMC-Sierra Inc. Device 4052
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-Yep, "powering off" C5 doesn't remove the upstream port device. This
-would create problems if you physically removed the card from C5 since
-the kernel would assume the switch device is still present.</pre>
-    </blockquote>
-    <pre>Powering off C5 does removes 0004:02:00.0 to 0004:02:00.3 (all the downstream 
-sibling bridge ports) and SAS devices behind these bridge ports. But Powering 
-on does not enable them. The behavior should be in sync. Please see the snippet 
-in patch.</pre>
-    <blockquote type="cite"
-cite="mid:CAOSf1CFDCTMdmrjoSRdP09rJgtzPVDnCPXpfS-S+J7XKHzKRCw@mail.gmail.com">
-      <pre class="moz-quote-pre" wrap="">
-
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">*snip*
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 38561d6a2079..bea612759832 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -493,4 +493,36 @@ static void pci_dev_pdn_setup(struct pci_dev *pdev)
-        pdn = pci_get_pdn(pdev);
-        pdev-&gt;dev.archdata.pci_data = pdn;
- }
-+
-+void pci_traverse_sibling_nodes_and_scan_slot(struct device_node *start, struct pci_bus *bus)
-+{
-+       struct device_node *dn;
-+       int slotno;
-+
-+       u32 class = 0;
-+
-+       if (!of_property_read_u32(start-&gt;child, "class-code", &amp;class)) {
-+               /* Call of pci_scan_slot for non-bridge/EP case */
-+               if (!((class &gt;&gt; 8) == PCI_CLASS_BRIDGE_PCI)) {
-+                       slotno = PCI_SLOT(PCI_DN(start-&gt;child)-&gt;devfn);
-+                       pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
-+                       return;
-+               }
-+       }
-+
-+       /* Iterate all siblings */
-+       for_each_child_of_node(start, dn) {
-+               class = 0;
-+
-+               if (!of_property_read_u32(start-&gt;child, "class-code", &amp;class)) {
-+                       /* Call of pci_scan_slot on each sibling-nodes/bridge-ports */
-+                       if ((class &gt;&gt; 8) == PCI_CLASS_BRIDGE_PCI) {
-+                               slotno = PCI_SLOT(PCI_DN(dn)-&gt;devfn);
-+                               pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
-+                       }
-+               }
-+       }
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-If you're going to iterate over all the DT nodes why not just scan all
-of them rather than special casing bridges? IIRC current logic is the
-way it is because PowerVM only puts single devices under a PHB and in
-the PowerNV (pnv_php) case the PCIe spec guarantees that only device 0
-will be present on the end of a link. If you want to handle the more
-generic case then feel free, but do it properly.</pre>
-    </blockquote>
-    <pre><span data-preserver-spaces="true">We wanted to handle the more generic case and did not want to </span><span
-    data-preserver-spaces="true">be confined</span><span
-    data-preserver-spaces="true"> to 
-only one device assumption. We want to fix the current inconsistent behavior 
-more generically. Regarding the fix, the fix is obvious:  We have to traverse 
-and find the bridge ports from DT and invoke  pci_scan_slot() on them. </span><span
-    data-preserver-spaces="true">This</span><span
-    data-preserver-spaces="true"> will 
-discover and create the entry for bridge ports (0004:02:00.0 to 0004:02:00.3 on 
-the given bus- 0004:02). There is already an existing function, pci_scan_bridge() </span><span
-    data-preserver-spaces="true">
-which</span><span data-preserver-spaces="true"> is doing invocation of pci_scan_slot () for the devices behind the bridge, 
-in this case for  SAS device. So eventually, we are doing a scan of all the entities 
-behind the slot.
-
-</span><span data-preserver-spaces="true">Would you like me to combine the non-bridge and bridge cases into one? I can attempt 
-to do this. </span><span data-preserver-spaces="true">Hopefully, if we incorporate the iterate sibling logic case </span><span
-    data-preserver-spaces="true">correctly</span><span
-    data-preserver-spaces="true">, 
-we may not need to maintain these </span><span
-    data-preserver-spaces="true">two</span><span
-    data-preserver-spaces="true"> separate cases for bridge and non-bridge.</span><span
-    data-preserver-spaces="true"> I 
-will attempt this, and if it works, I will include it in the next patch. Thanks.
-
-Best Regards,
-Krishna
-</span></pre>
-    <blockquote type="cite"
-cite="mid:CAOSf1CFDCTMdmrjoSRdP09rJgtzPVDnCPXpfS-S+J7XKHzKRCw@mail.gmail.com">
-      <pre class="moz-quote-pre" wrap="">
-</pre>
-    </blockquote>
-  </body>
-</html>
-
---------------w2Abro4c46mvBT9wBxFVKX0a--
-
+Thank you!
