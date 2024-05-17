@@ -4,54 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20213C25B79
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 17:05:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26F57C04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 19:01:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vgtd94gn0z30Wn
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2024 03:05:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=linux.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.179; helo=mail-pf1-f179.google.com; envelope-from=kswilczynski@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-f179.google.com (mail-pf1-f179.google.com [209.85.210.179])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VgxC82xP5z30WT
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2024 05:01:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+X-Greylist: delayed 60 seconds by postgrey-1.37 at boromir; Sat, 18 May 2024 05:01:12 AEST
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vgtcg6gsDz2ysf
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2024 03:05:06 +1000 (AEST)
-Received: by mail-pf1-f179.google.com with SMTP id d2e1a72fcca58-6f44bcbaae7so1253396b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2024 10:05:06 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1715965501; x=1716570301;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ZAF2nClB9tdRe2nZvO7iQeg/IDzJ4PErDPhyqSEtfbs=;
-        b=niGcP7GYLqsMmmpUzRZrEcDHAxZ9EczMtpo+mU4vnDbwtW76V/1XopmXOcPlaxa5+a
-         e6rFLvB0Ye2mX5e7U0Dbyfdi35qGW0Uyk825rdFzQhJgQ7a1efyWd0FFNPnaxaf9cs1h
-         qJQB0HLr0WZq11eYHkZfUL2wvESsFz5xWyBdq/6jK+YZKpQpS2J51fDj6OwUqIo2Xchu
-         Zsc+0enO8u1sh6Yp6tuGAnniMkYl16pK5YC8UNuAqsDEdG82mym3l3cmIA2TdYkU7z+u
-         GxzZ+zdlbSMv+Tw8IQKJAEarED3T2WDihTZk3DJL61U084sO7c+W1NrBqwd2gm9wMUUm
-         OQZw==
-X-Forwarded-Encrypted: i=1; AJvYcCXYKgol/DgjvmNHEAWSNqnvoIycoIS1Mh/iNTOQ0hEPmsVv9iwvkAFtbipontaqA9S0bS3NZr8RvZkAtla1KfOKIJBcw9rq7BSGcwA1EA==
-X-Gm-Message-State: AOJu0YyWevfcP5KxoWl3gin1ZzDWIr0JbgZU9bodJ23evTeGPEOxY53o
-	3aH0G0f6gqbEY665zpAJrnlIsE7w7Uz7fQXjWzJSxJS5KrrRD+hj
-X-Google-Smtp-Source: AGHT+IGDk5wz8T58ydDnsgGbyCZmHKCAeGjDn9utiYyGXMhzVl4Lcok/JS9rF8CQMUTTLF/lj2nWEQ==
-X-Received: by 2002:a05:6a00:238b:b0:6ea:afdb:6d03 with SMTP id d2e1a72fcca58-6f4e02d3ef9mr24111615b3a.19.1715965501417;
-        Fri, 17 May 2024 10:05:01 -0700 (PDT)
-Received: from localhost (fpd11144dd.ap.nuro.jp. [209.17.68.221])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-6f68c7d3651sm1904783b3a.183.2024.05.17.10.04.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 May 2024 10:04:59 -0700 (PDT)
-Date: Sat, 18 May 2024 02:04:58 +0900
-From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
-To: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: Re: [PATCH v12 0/8] PCI: dwc: ep: Fix DBI access failure for drivers
- requiring refclk from host
-Message-ID: <20240517170458.GA1947919@rocinante>
-References: <20240327-pci-dbi-rework-v12-0-082625472414@linaro.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VgxBc56CNz30TL
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2024 05:01:12 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4Vgx9S1gxkz9t5l;
+	Fri, 17 May 2024 21:00:12 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 4cIGKIGNK9z9; Fri, 17 May 2024 21:00:12 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4Vgx9M672Bz9syj;
+	Fri, 17 May 2024 21:00:07 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id CD4458B766;
+	Fri, 17 May 2024 21:00:07 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id ioM59iiRK_y8; Fri, 17 May 2024 21:00:07 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.232.121])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 479FE8B783;
+	Fri, 17 May 2024 21:00:07 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Jason Gunthorpe <jgg@nvidia.com>,
+	Peter Xu <peterx@redhat.com>,
+	Oscar Salvador <osalvador@suse.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>
+Subject: [RFC PATCH v2 08/20] powerpc/8xx: Simplify struct mmu_psize_def
+Date: Fri, 17 May 2024 21:00:02 +0200
+Message-ID: <ca2d232f07adfd7b3ed56d339a6071155cc9bcb7.1715971869.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <cover.1715971869.git.christophe.leroy@csgroup.eu>
+References: <cover.1715971869.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240327-pci-dbi-rework-v12-0-082625472414@linaro.org>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1715972396; l=1285; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=EKXFvixH1QDRMdDwLAcDFjoK2t9maiUDKOftRAhE8M8=; b=nX2X6vEpdK44UnfhG3HKWABTDQWPK0OwmzarT+5JSy8AVJaSKAikMUF3Rybc/nYF0xa9AiYQb w8VI07De5zHDDN3sYCq674/uu4dnjwSQUFkrAM6P02f/hMw3ZRsgD1m
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,60 +66,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Vignesh Raghavendra <vigneshr@ti.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, Frank Li <Frank.Li@nxp.com>, Minghuan Lian <minghuan.Lian@nxp.com>, Thierry Reding <thierry.reding@gmail.com>, Fabio Estevam <festevam@gmail.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Jesper Nilsson <jesper.nilsson@axis.com>, linux-tegra@vger.kernel.org, linux-arm-kernel@axis.com, Jonathan Hunter <jonathanh@nvidia.com>, linux-rockchip@lists.infradead.org, NXP Linux Team <linux-imx@nxp.com>, Shawn Lin <shawn.lin@rock-chips.com>, Richard Zhu <hongxing.zhu@nxp.com>, Srikanth Thokala <srikanth.thokala@intel.com>, linux-arm-msm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>, linux-omap@vger.kernel.org, Mingkai Hu <mingkai.hu@nxp.com>, linux-arm-kernel@lists.infradead.org,
-  Roy Zang <roy.zang@nxp.com>, Niklas Cassel <cassel@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Heiko Stuebner <heiko@sntech.de>, linux-kernel@vger.kernel.org, Vidya Sagar <vidyas@nvidia.com>, linux-renesas-soc@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 8xx, only the shift field is used in struct mmu_psize_def
 
-Hello,
+Remove other fields and related macros.
 
-> This series is the continuation of previous work by Vidya Sagar [1] to fix the
-> issues related to accessing DBI register space before completing the core
-> initialization in some EP platforms like Tegra194/234 and Qcom EP.
-> 
-> Since Vidya is busy, I took over the series based on his consent (off-list
-> discussion).
-> 
-> NOTE
-> ====
-> 
-> Based on the comments received in v7 [2], I've heavily modified the series
-> to fix several other issues reported by Bjorn and Niklas. One noticeable
-> change is getting rid of the 'core_init_notifer' flag added to differentiate
-> between glue drivers requiring refclk from host and drivers getting refclk
-> locally.
-> 
-> By getting rid of this flag, now both the DWC EP driver and the EPF drivers
-> can use a single flow and need not distinguish between the glue drivers.
-> 
-> We can also get rid of the 'link_up_notifier' flag in the future by following
-> the same convention.
-> 
-> Testing
-> =======
-> 
-> I've tested the series on Qcom SM8450 based dev board that depends on refclk
-> from host with EPF_MHI driver. It'd be good to test this series on platforms
-> that generate refclk locally and also with EPF_TEST driver.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/nohash/32/mmu-8xx.h | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-Applied to controller/dwc, thank you!
+diff --git a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
+index 141d82e249a8..a756a1e59c54 100644
+--- a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
+@@ -189,19 +189,14 @@ typedef struct {
+ 
+ #define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
+ 
+-/* Page size definitions, common between 32 and 64-bit
++/*
++ * Page size definitions for 8xx
+  *
+  *    shift : is the "PAGE_SHIFT" value for that page size
+- *    penc  : is the pte encoding mask
+  *
+  */
+ struct mmu_psize_def {
+ 	unsigned int	shift;	/* number of bits */
+-	unsigned int	enc;	/* PTE encoding */
+-	unsigned int    ind;    /* Corresponding indirect page size shift */
+-	unsigned int	flags;
+-#define MMU_PAGE_SIZE_DIRECT	0x1	/* Supported as a direct size */
+-#define MMU_PAGE_SIZE_INDIRECT	0x2	/* Supported as an indirect size */
+ };
+ 
+ extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
+-- 
+2.44.0
 
-[01/08] PCI: dwc: ep: Fix DBI access failure for drivers requiring refclk from host
-        https://git.kernel.org/pci/pci/c/869bc5253406
-[02/08] PCI: dwc: ep: Add Kernel-doc comments for APIs
-        https://git.kernel.org/pci/pci/c/7cbebc86c72a
-[03/08] PCI: dwc: ep: Remove deinit() callback from struct dw_pcie_ep_ops
-        https://git.kernel.org/pci/pci/c/b7dec6b85089
-[04/08] PCI: dwc: ep: Rename dw_pcie_ep_exit() to dw_pcie_ep_deinit()
-        https://git.kernel.org/pci/pci/c/c8682a3314c1
-[05/08] PCI: dwc: ep: Introduce dw_pcie_ep_cleanup() API for drivers supporting PERST#
-        https://git.kernel.org/pci/pci/c/570d7715eed8
-[06/08] PCI: dwc: ep: Rename dw_pcie_ep_init_complete() to dw_pcie_ep_init_registers()
-        https://git.kernel.org/pci/pci/c/7d6e64c443ea
-[07/08] PCI: dwc: ep: Call dw_pcie_ep_init_registers() API directly from all glue drivers
-        https://git.kernel.org/pci/pci/c/df69e17ccc2f
-[08/08] PCI: endpoint: Remove "core_init_notifier" flag
-        https://git.kernel.org/pci/pci/c/a01e7214bef9
-
-	Krzysztof
