@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2970C25B78
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 09:06:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1693C04FFE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 09:07:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=oG1T2vdH;
+	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=yJbKu2bb;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vgh0N03SFz3c05
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 19:06:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vgh183Lzjz30Wh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 19:07:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=savoirfairelinux.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=oG1T2vdH;
+	dkim=pass (2048-bit key; unprotected) header.d=savoirfairelinux.com header.i=@savoirfairelinux.com header.a=rsa-sha256 header.s=DFC430D2-D198-11EC-948E-34200CB392D2 header.b=yJbKu2bb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=savoirfairelinux.com (client-ip=208.88.110.44; helo=mail.savoirfairelinux.com; envelope-from=elinor.montmasson@savoirfairelinux.com; receiver=lists.ozlabs.org)
 Received: from mail.savoirfairelinux.com (mail.savoirfairelinux.com [208.88.110.44])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VggzX3lvpz30TW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2024 19:05:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VggzW1FR7z30Sv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 May 2024 19:05:41 +1000 (AEST)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id 8B8DB9C58EA;
-	Fri, 17 May 2024 05:05:42 -0400 (EDT)
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id BE8889C585F;
+	Fri, 17 May 2024 05:05:36 -0400 (EDT)
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10032)
- with ESMTP id ycSku0e4je0q; Fri, 17 May 2024 05:05:41 -0400 (EDT)
+ with ESMTP id OzTJfta_rJ3O; Fri, 17 May 2024 05:05:36 -0400 (EDT)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id E1D8D9C591F;
-	Fri, 17 May 2024 05:05:41 -0400 (EDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com E1D8D9C591F
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id 157C59C591E;
+	Fri, 17 May 2024 05:05:36 -0400 (EDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.savoirfairelinux.com 157C59C591E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=savoirfairelinux.com; s=DFC430D2-D198-11EC-948E-34200CB392D2;
-	t=1715936741; bh=cx6CQV5YfxghVjmPjejucL2olCe90bCSbFqa4g71+0M=;
+	t=1715936736; bh=eDu4DXcZYZmRMzTsE23CtiqrrOlfxWxDABDYJj8qWVA=;
 	h=Date:From:To:Message-ID:MIME-Version;
-	b=oG1T2vdHJ7olkf/IEQ4rw1h56wPiTy9nafFlLPsGCZwsqEJt/hBQwoXKYfPbmqn2h
-	 qZu2NlE4sQ8A4gbFeK5DUxGaN4+8TNLmbIKDfM5+i/QQN7IS+ya2Uh+JmKsmsSkqf5
-	 MBGTtuIp7xLTlE+3yW/sFKWA4LY7drC0AoeY8TdAT7jSKPSGqa4jIqgy8pHLsrqkyh
-	 yAcrOiTjeSJLLtXbpZhHcSON6ooFo3JQVIidV1+HLSXl00uXRf6t6r0H3XspC0vWKO
-	 wEcQ2mrCYmQ0xuC6DEzFord8S+Lfc/I7cQ++SWegOi5kEYBQ0bQ2PDnlLdkJZIuoH9
-	 7VWRve/a3Uxng==
+	b=yJbKu2bbAaZIR1lR4fB9rs8ae78l/ej/Pp4GgndaChfrPjM47VvPNd7mTV47IFukQ
+	 X//+44ZJ4DRw9DkSHZQf+v4uy4/XKYtuUAaLvLFOebJCl7icu265xkvxy38LLcQmS7
+	 Uyg52oLkXf5YOc/GhiY3eH6K1tqG//Rc45iBqqEkBeuftfDcDzCCis0t5jONcc0Oyu
+	 HuRL8xxkCfNNH2TA3XiBbsjIWxvlyZmJi19c0PW2BlDRhMuiH8f3EfoiH8ednXXhWm
+	 KV3s2SR/VuND91x4ULBGel4DWWFLJ+utgH1gix+qQFlQ/twAETDwd9o1xrq4N0stDE
+	 CWzLmI6/TPfag==
 X-Virus-Scanned: amavis at mail.savoirfairelinux.com
 Received: from mail.savoirfairelinux.com ([127.0.0.1])
  by localhost (mail.savoirfairelinux.com [127.0.0.1]) (amavis, port 10026)
- with ESMTP id UkPCSXxrdA7W; Fri, 17 May 2024 05:05:41 -0400 (EDT)
+ with ESMTP id 8CeRVN1p2hdp; Fri, 17 May 2024 05:05:35 -0400 (EDT)
 Received: from mail.savoirfairelinux.com (mail.savoirfairelinux.com [192.168.48.237])
-	by mail.savoirfairelinux.com (Postfix) with ESMTP id ABB829C58EA;
-	Fri, 17 May 2024 05:05:41 -0400 (EDT)
-Date: Fri, 17 May 2024 05:05:41 -0400 (EDT)
+	by mail.savoirfairelinux.com (Postfix) with ESMTP id B02AA9C585F;
+	Fri, 17 May 2024 05:05:35 -0400 (EDT)
+Date: Fri, 17 May 2024 05:05:35 -0400 (EDT)
 From: Elinor Montmasson <elinor.montmasson@savoirfairelinux.com>
 To: Mark Brown <broonie@kernel.org>
-Message-ID: <599489232.349333.1715936741672.JavaMail.zimbra@savoirfairelinux.com>
-In-Reply-To: <ce9a87c6-4a5c-4f0a-a8df-1fdce8c1f5df@sirena.org.uk>
-References: <20240515135411.343333-1-elinor.montmasson@savoirfairelinux.com> <20240515135411.343333-10-elinor.montmasson@savoirfairelinux.com> <ce9a87c6-4a5c-4f0a-a8df-1fdce8c1f5df@sirena.org.uk>
-Subject: Re: [PATCHv4 9/9] ASoC: dt-bindings: fsl-asoc-card: add compatible
- for generic codec
+Message-ID: <822567441.349330.1715936735603.JavaMail.zimbra@savoirfairelinux.com>
+In-Reply-To: <ffb3624f-2170-4642-aaa5-fb6736a75d59@sirena.org.uk>
+References: <20240515135411.343333-1-elinor.montmasson@savoirfairelinux.com> <20240515135411.343333-8-elinor.montmasson@savoirfairelinux.com> <ffb3624f-2170-4642-aaa5-fb6736a75d59@sirena.org.uk>
+Subject: Re: [PATCHv4 7/9] ASoC: fsl-asoc-card: add DT clock "cpu_sysclk"
+ with generic codec
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 X-Mailer: Zimbra 8.8.15_GA_4581 (ZimbraWebClient - GC112 (Linux)/8.8.15_GA_4581)
-Thread-Topic: ASoC: dt-bindings: fsl-asoc-card: add compatible for generic codec
-Thread-Index: 5nXwooIVrjUMUfEG3TeQl8yJKNJb9Q==
+Thread-Topic: ASoC: fsl-asoc-card: add DT clock "cpu_sysclk" with generic codec
+Thread-Index: iBqosQBSuRfSSp+1CUZcAzEUlctHMQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,34 +80,38 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: "Mark Brown" <broonie@kernel.org>
-Sent: Thursday, 16 May, 2024 14:11:11
-> On Wed, May 15, 2024 at 03:54:11PM +0200, Elinor Montmasson wrote:
+Sent: Thursday, 16 May, 2024 14:13:19
+> On Wed, May 15, 2024 at 03:54:09PM +0200, Elinor Montmasson wrote:
 > 
->> Add documentation about new dts bindings following new support
->> for compatible "fsl,imx-audio-generic".
+>> Add an optional DT clock "cpu_sysclk" to get the CPU DAI system-clock
+>> frequency when using the generic codec.
+>> It is set for both Tx and Rx.
+>> The way the frequency value is used is up to the CPU DAI driver
+>> implementation.
 > 
->>    audio-codec:
->> -    $ref: /schemas/types.yaml#/definitions/phandle
->> -    description: The phandle of an audio codec
->> +    $ref: /schemas/types.yaml#/definitions/phandle-array
->> +    description: |
->> +      The phandle of an audio codec.
->> +      If using the "fsl,imx-audio-generic" compatible, give instead a pair of
->> +      phandles with the spdif_transmitter first (driver SPDIF DIT) and the
->> +      spdif_receiver second (driver SPDIF DIR).
->> +    items:
->> +      maxItems: 1
+>> +		struct clk *cpu_sysclk = clk_get(&pdev->dev, "cpu_sysclk");
+>> +		if (!IS_ERR(cpu_sysclk)) {
+>> +			priv->cpu_priv.sysclk_freq[TX] = clk_get_rate(cpu_sysclk);
+>> +			priv->cpu_priv.sysclk_freq[RX] = priv->cpu_priv.sysclk_freq[TX];
+>> +			clk_put(cpu_sysclk);
+>> +		}
 > 
-> This description (and the code) don't feel like they're actually generic
-> - they're clearly specific to the bidrectional S/PDIF case.  I'd expect
-> something called -generic to cope with single CODECs as well as double,
-> and not to have any constraints on what those are.
+> I don't really understand the goal here - this is just reading whatever
+> frequency happens to be set in the hardware when the driver starts up
+> which if nothing else seems rather fragile?
 
-I proposed, in an reply of the v3 patch series to Krzysztof Kozlowski,
-the compatible "fsl,imx-audio-no-codec" instead of "generic".
-Krzysztof thought it was too generic, but it would convey more clearly
-that it is for cases without codec driver.
-Would this other compatible string be more appropriate ?
+The driver allow to set the sysclk frequency
+of the CPU DAI through `priv->cpu_priv.sysclk_freq` when calling
+`fsl_asoc_card_hw_params()`.
+Currently it is hard-coded per use-case in the driver.
+
+My reasoning was that with a generic codec/compatible, there might
+be use-cases needing to use this parameter, so I exposed it here via DT.
+
+Is it a bad idea to expose this parameter ? This is not a requirement for the
+driver to work, most of the current compatibles do not use this parameter.
+It is currently used only for `fsl,imx-audio-cs42888`.
+In that case I can remove this commit.
 
 Best regards,
 Elinor Montmasson
