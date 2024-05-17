@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6E65C04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 19:21:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FEEEC25B78
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 May 2024 19:21:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vgxdm3XP6z3g5S
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2024 05:21:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VgxfB132jz3gBS
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 May 2024 05:21:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VgxcX6mz5z3cgM
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2024 05:20:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vgxcc5ldBz3d9s
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 May 2024 05:20:16 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4Vgx9K2jYtz9swJ;
-	Fri, 17 May 2024 21:00:05 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4Vgx9Q3vS0z9t1J;
+	Fri, 17 May 2024 21:00:10 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id gMGO7naZoj9R; Fri, 17 May 2024 21:00:05 +0200 (CEST)
+	with ESMTP id wn4ZCLJ6Jmpw; Fri, 17 May 2024 21:00:10 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4Vgx9J2YGvz9st0;
-	Fri, 17 May 2024 21:00:04 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4Vgx9L4MS7z9sv8;
+	Fri, 17 May 2024 21:00:06 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 531748B783;
-	Fri, 17 May 2024 21:00:04 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9167C8B775;
+	Fri, 17 May 2024 21:00:06 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 9pZ5saJOEJBi; Fri, 17 May 2024 21:00:04 +0200 (CEST)
+	with ESMTP id GDVjEHegVUU1; Fri, 17 May 2024 21:00:06 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.232.121])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BFECB8B766;
-	Fri, 17 May 2024 21:00:03 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0D7EC8B766;
+	Fri, 17 May 2024 21:00:06 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Jason Gunthorpe <jgg@nvidia.com>,
@@ -44,14 +44,14 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 	Oscar Salvador <osalvador@suse.de>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC PATCH v2 02/20] mm: Provide page size to pte_alloc_huge()
-Date: Fri, 17 May 2024 20:59:56 +0200
-Message-ID: <948e6fc68864c828d29378b6a6cdd646978f0d72.1715971869.git.christophe.leroy@csgroup.eu>
+Subject: [RFC PATCH v2 06/20] powerpc/8xx: Fix size given to set_huge_pte_at()
+Date: Fri, 17 May 2024 21:00:00 +0200
+Message-ID: <04f4e737608ea0b177b88057db138fbf0d6ab138.1715971869.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <cover.1715971869.git.christophe.leroy@csgroup.eu>
 References: <cover.1715971869.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1715972396; l=4165; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=CTYyLk66YS0+OdgpLXOZR1qF0kcbsr8yDQZpdQ5zBt4=; b=dAKl6Em8xkfyfxIIKsYEdC7P9K8L8qBOqIPl6RMLJyfgLNi/KfzNUajNF3HAgqR1hUOVvbtT3 q99tm0UJjHpDPZYvntspvgUWxi3wQLhboksALUd5IY1rTrYJNY1mhJh
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1715972396; l=902; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=1GF1AP8tajvOLO+5SI7vVcCcLKzzL1YzSZ6WjpVPsw8=; b=IoskHevYmLAROXWm3Bla0EeNdkO8Ms0H48szoFx+ijylMn/U7znhO/J36x3c1ZmqLZveNFdLf 4Wdtrm4IX4aCKC2WiUHsJ1pg9pKyKmjBwmsEssdpkJRnTzyOgJQlVQS
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,115 +69,29 @@ Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to be able to flag the PMD entry with _PMD_HUGE_8M on
-powerpc 8xx, provide page size to pte_alloc_huge() and use it
-through the newly introduced pte_alloc_size().
+set_huge_pte_at() expects the real page size, not the psize which is
+the index of the page definition in table mmu_psize_defs[]
 
+Fixes: 935d4f0c6dc8 ("mm: hugetlb: add huge page size param to set_huge_pte_at()")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/arm64/mm/hugetlbpage.c   | 2 +-
- arch/parisc/mm/hugetlbpage.c  | 2 +-
- arch/powerpc/mm/hugetlbpage.c | 2 +-
- arch/riscv/mm/hugetlbpage.c   | 2 +-
- arch/sh/mm/hugetlbpage.c      | 2 +-
- arch/sparc/mm/hugetlbpage.c   | 2 +-
- include/linux/hugetlb.h       | 4 ++--
- 7 files changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/mm/nohash/8xx.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
-index b872b003a55f..aa7ded49f8cf 100644
---- a/arch/arm64/mm/hugetlbpage.c
-+++ b/arch/arm64/mm/hugetlbpage.c
-@@ -292,7 +292,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
- 			return NULL;
+diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
+index 43d4842bb1c7..d93433e26ded 100644
+--- a/arch/powerpc/mm/nohash/8xx.c
++++ b/arch/powerpc/mm/nohash/8xx.c
+@@ -94,7 +94,8 @@ static int __ref __early_map_kernel_hugepage(unsigned long va, phys_addr_t pa,
+ 		return -EINVAL;
  
- 		WARN_ON(addr & (sz - 1));
--		ptep = pte_alloc_huge(mm, pmdp, addr);
-+		ptep = pte_alloc_huge(mm, pmdp, addr, sz);
- 	} else if (sz == PMD_SIZE) {
- 		if (want_pmd_share(vma, addr) && pud_none(READ_ONCE(*pudp)))
- 			ptep = huge_pmd_share(mm, vma, addr, pudp);
-diff --git a/arch/parisc/mm/hugetlbpage.c b/arch/parisc/mm/hugetlbpage.c
-index a9f7e21f6656..2f4c6b440710 100644
---- a/arch/parisc/mm/hugetlbpage.c
-+++ b/arch/parisc/mm/hugetlbpage.c
-@@ -66,7 +66,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
- 	if (pud) {
- 		pmd = pmd_alloc(mm, pud, addr);
- 		if (pmd)
--			pte = pte_alloc_huge(mm, pmd, addr);
-+			pte = pte_alloc_huge(mm, pmd, addr, sz);
- 	}
- 	return pte;
+ 	set_huge_pte_at(&init_mm, va, ptep,
+-			pte_mkhuge(pfn_pte(pa >> PAGE_SHIFT, prot)), psize);
++			pte_mkhuge(pfn_pte(pa >> PAGE_SHIFT, prot)),
++			1UL << mmu_psize_to_shift(psize));
+ 
+ 	return 0;
  }
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 594a4b7b2ca2..66ac56b26007 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -183,7 +183,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
- 		return NULL;
- 
- 	if (IS_ENABLED(CONFIG_PPC_8xx) && pshift < PMD_SHIFT)
--		return pte_alloc_huge(mm, (pmd_t *)hpdp, addr);
-+		return pte_alloc_huge(mm, (pmd_t *)hpdp, addr, sz);
- 
- 	BUG_ON(!hugepd_none(*hpdp) && !hugepd_ok(*hpdp));
- 
-diff --git a/arch/riscv/mm/hugetlbpage.c b/arch/riscv/mm/hugetlbpage.c
-index 5ef2a6891158..dc77a58c6321 100644
---- a/arch/riscv/mm/hugetlbpage.c
-+++ b/arch/riscv/mm/hugetlbpage.c
-@@ -67,7 +67,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm,
- 
- 	for_each_napot_order(order) {
- 		if (napot_cont_size(order) == sz) {
--			pte = pte_alloc_huge(mm, pmd, addr & napot_cont_mask(order));
-+			pte = pte_alloc_huge(mm, pmd, addr & napot_cont_mask(order), sz);
- 			break;
- 		}
- 	}
-diff --git a/arch/sh/mm/hugetlbpage.c b/arch/sh/mm/hugetlbpage.c
-index 6cb0ad73dbb9..26579429e5ed 100644
---- a/arch/sh/mm/hugetlbpage.c
-+++ b/arch/sh/mm/hugetlbpage.c
-@@ -38,7 +38,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
- 			if (pud) {
- 				pmd = pmd_alloc(mm, pud, addr);
- 				if (pmd)
--					pte = pte_alloc_huge(mm, pmd, addr);
-+					pte = pte_alloc_huge(mm, pmd, addr, sz);
- 			}
- 		}
- 	}
-diff --git a/arch/sparc/mm/hugetlbpage.c b/arch/sparc/mm/hugetlbpage.c
-index b432500c13a5..5a342199e837 100644
---- a/arch/sparc/mm/hugetlbpage.c
-+++ b/arch/sparc/mm/hugetlbpage.c
-@@ -298,7 +298,7 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
- 		return NULL;
- 	if (sz >= PMD_SIZE)
- 		return (pte_t *)pmd;
--	return pte_alloc_huge(mm, pmd, addr);
-+	return pte_alloc_huge(mm, pmd, addr, sz);
- }
- 
- pte_t *huge_pte_offset(struct mm_struct *mm,
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 77b30a8c6076..d9c5d9daadc5 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -193,9 +193,9 @@ static inline pte_t *pte_offset_huge(pmd_t *pmd, unsigned long address)
- 	return pte_offset_kernel(pmd, address);
- }
- static inline pte_t *pte_alloc_huge(struct mm_struct *mm, pmd_t *pmd,
--				    unsigned long address)
-+				    unsigned long address, unsigned long sz)
- {
--	return pte_alloc(mm, pmd) ? NULL : pte_offset_huge(pmd, address);
-+	return pte_alloc_size(mm, pmd, sz) ? NULL : pte_offset_huge(pmd, address);
- }
- #endif
- 
 -- 
 2.44.0
 
