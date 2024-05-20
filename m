@@ -2,89 +2,51 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46F4EC04FFE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2024 08:31:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 518DFC41513
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2024 08:46:36 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kLjmWEEp;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=IHPcsPjX;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VjVsv5x11z3g2X
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2024 18:22:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kLjmWEEp;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VjWBc2fFkz3fql
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 May 2024 18:36:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=geoff@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VjVrQ54Mzz3cYP
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2024 18:20:54 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44K6U4eE032441;
-	Mon, 20 May 2024 08:20:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=1ZljFRPQkJliM89Aj1uqay/WLHKarY1XQa8XB660YSs=;
- b=kLjmWEEpRo2pFdXEWqRTKMBqpWQ7iyW+HvVoMFRz0SYPA/5TcEEn/MTeCtCWqZtEkVC7
- Wc9tb9zKc7N07xQuGUXxJqE1m9QOqSmV79jT3+9qWnCvl4MbHt6udAaNyYSiA00MLYi5
- 8tniWoYWpRwmJcHCA5Viet2aD/cUvMKbvk8U4ud2bKOuiFQZUbnxWXdbcZmtUy2zqjk4
- ngO6dXDqigWwJWvxy/PsxoLQGw+bhnRCj583tIBmXTWSXXuOOlEiYV9w3b5mOkbnp0fp
- pp6VnIakf5Qa2pJX3XwRKq1cWuif+16hujY7456dy/uVMjruEfs7l3ExDU7P1ShW7kep Ag== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y7wnxgnqr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 20 May 2024 08:20:37 +0000
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 44K8KbpV008202;
-	Mon, 20 May 2024 08:20:37 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y7wnxgnqp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 20 May 2024 08:20:37 +0000
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44K5178e000878;
-	Mon, 20 May 2024 08:20:35 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3y771yxw0h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 20 May 2024 08:20:35 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44K8KTp941943530
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 20 May 2024 08:20:31 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CF65C20040;
-	Mon, 20 May 2024 08:20:29 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0D4212004D;
-	Mon, 20 May 2024 08:20:28 +0000 (GMT)
-Received: from li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.in.ibm.com (unknown [9.204.206.66])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 20 May 2024 08:20:27 +0000 (GMT)
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        naveen.n.rao@linux.ibm.com, clg@kaod.org
-Subject: [RESEND PATCH 1/3] arch/powerpc/kvm: Use bitmap to speed up resend of irqs in ICS
-Date: Mon, 20 May 2024 13:50:08 +0530
-Message-ID: <20240520082014.140697-2-gautam@linux.ibm.com>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <20240520082014.140697-1-gautam@linux.ibm.com>
-References: <20240520082014.140697-1-gautam@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VjW9g50kgz30T0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 May 2024 18:35:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+	In-Reply-To:References:Cc:To:Subject:From:MIME-Version:Date:Message-ID:Sender
+	:Reply-To:Content-ID:Content-Description;
+	bh=dpZt6/Fkp6cxSrkFSrKcy3qvvymahFE/nlsFRXFz8oo=; b=IHPcsPjXdZVdyEsUSG0KgQGlU3
+	FH9erA1GmVZuG4RGyjZqvkb5FKg8LwSxvysjdg8a1kOx7kuGbY73hOznZcdeHxRhnbc/z3Op9DDmj
+	9QpdDlW5tJo04MBjsoaubEGcvbKPwOzkrLGADWbi/CIcEVimMOI9V9vcHwm1sS9BHynbh4mkqU2R9
+	PSpIWPC3RAIgIUAvi+Ugc4DNkeGVWpb6kpPJxQRNWBmTEKO6jkzcn2/1Mp8ULl3p+YpB31DPGJQc4
+	vSCUCqM4Gh5kO9leuk21HSn7x5QA2jHmqcuE9fiZb1wIKSBJPn7oypp/mnU2gHHKiS5SqMKuLDdLe
+	8OBEWz3Q==;
+Received: from fpd2fa7e2a.ap.nuro.jp ([210.250.126.42] helo=[192.168.1.8])
+	by casper.infradead.org with esmtpsa (Exim 4.97.1 #2 (Red Hat Linux))
+	id 1s8yUc-0000000FpGq-26qt;
+	Mon, 20 May 2024 08:35:38 +0000
+Message-ID: <d8c56e37-38c6-454e-81be-a574b42c83be@infradead.org>
+Date: Mon, 20 May 2024 17:35:32 +0900
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: md7XFMpY2sLfiYBBRvq-vqILGD4IWWBZ
-X-Proofpoint-GUID: mGIm1GLoZKNh7eUYRFOJVIOyPzd7QlHI
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.11.176.26
- definitions=2024-05-20_04,2024-05-17_03,2023-05-22_02
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- mlxlogscore=333 priorityscore=1501 impostorscore=0 adultscore=0
- clxscore=1015 lowpriorityscore=0 suspectscore=0 mlxscore=0 spamscore=0
- phishscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2405010000 definitions=main-2405200068
+User-Agent: Mozilla Thunderbird
+From: Geoff Levand <geoff@infradead.org>
+Subject: Re: CVE-2023-52665: powerpc/ps3_defconfig: Disable
+ PPC64_BIG_ENDIAN_ELF_ABI_V2
+To: Michael Ellerman <mpe@ellerman.id.au>, cve@kernel.org,
+ linux-kernel@vger.kernel.org, linux-cve-announce@vger.kernel.org
+References: <2024051725-CVE-2023-52665-1d6f@gregkh>
+ <87zfslufoo.fsf@mail.lhotse>
+Content-Language: en-US
+In-Reply-To: <87zfslufoo.fsf@mail.lhotse>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,80 +58,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When an irq is to be resent, all 1024 irqs in an ICS are scanned and the
-irqs having 'resend' flag set are resent. Optimize this flow using bitmap
-array to speed up the resends.
+On 5/20/24 16:04, Michael Ellerman wrote:
+> Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
+>> Description
+>> ===========
+>>
+>> In the Linux kernel, the following vulnerability has been resolved:
+>>
+>> powerpc/ps3_defconfig: Disable PPC64_BIG_ENDIAN_ELF_ABI_V2
+>>
+>> Commit 8c5fa3b5c4df ("powerpc/64: Make ELFv2 the default for big-endian
+>> builds"), merged in Linux-6.5-rc1 changes the calling ABI in a way
+>> that is incompatible with the current code for the PS3's LV1 hypervisor
+>> calls.
+>>
+>> This change just adds the line '# CONFIG_PPC64_BIG_ENDIAN_ELF_ABI_V2 is not set'
+>> to the ps3_defconfig file so that the PPC64_ELF_ABI_V1 is used.
+>>
+>> Fixes run time errors like these:
+>>
+>>   BUG: Kernel NULL pointer dereference at 0x00000000
+>>   Faulting instruction address: 0xc000000000047cf0
+>>   Oops: Kernel access of bad area, sig: 11 [#1]
+>>   Call Trace:
+>>   [c0000000023039e0] [c00000000100ebfc] ps3_create_spu+0xc4/0x2b0 (unreliable)
+>>   [c000000002303ab0] [c00000000100d4c4] create_spu+0xcc/0x3c4
+>>   [c000000002303b40] [c00000000100eae4] ps3_enumerate_spus+0xa4/0xf8
+>>
+>> The Linux kernel CVE team has assigned CVE-2023-52665 to this issue.
+> 
+> IMHO this doesn't warrant a CVE. The crash mentioned above happens at
+> boot, so the system is not vulnerable it's just broken :)
 
-Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
----
- arch/powerpc/kvm/book3s_xics.c | 22 +++++++++++-----------
- arch/powerpc/kvm/book3s_xics.h |  1 +
- 2 files changed, 12 insertions(+), 11 deletions(-)
+As Greg says, with PPC64_BIG_ENDIAN_ELF_ABI_V2 enabled the system won't
+boot, so there is no chance of a vulnerability.
 
-diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
-index 589a8f257120..12de526f04c4 100644
---- a/arch/powerpc/kvm/book3s_xics.c
-+++ b/arch/powerpc/kvm/book3s_xics.c
-@@ -47,9 +47,6 @@
-  * TODO
-  * ====
-  *
-- * - To speed up resends, keep a bitmap of "resend" set bits in the
-- *   ICS
-- *
-  * - Speed up server# -> ICP lookup (array ? hash table ?)
-  *
-  * - Make ICS lockless as well, or at least a per-interrupt lock or hashed
-@@ -125,15 +122,17 @@ static int ics_deliver_irq(struct kvmppc_xics *xics, u32 irq, u32 level)
- static void ics_check_resend(struct kvmppc_xics *xics, struct kvmppc_ics *ics,
- 			     struct kvmppc_icp *icp)
- {
--	int i;
-+	u32 irq;
-+	struct ics_irq_state *state;
- 
--	for (i = 0; i < KVMPPC_XICS_IRQ_PER_ICS; i++) {
--		struct ics_irq_state *state = &ics->irq_state[i];
--		if (state->resend) {
--			XICS_DBG("resend %#x prio %#x\n", state->number,
--				      state->priority);
--			icp_deliver_irq(xics, icp, state->number, true);
--		}
-+	for_each_set_bit(irq, ics->resend_map, KVMPPC_XICS_IRQ_PER_ICS) {
-+		state = &ics->irq_state[irq];
-+
-+		if (!test_and_clear_bit(irq, ics->resend_map))
-+			continue;
-+		if (!state)
-+			continue;
-+		icp_deliver_irq(xics, icp, state->number, true);
- 	}
- }
- 
-@@ -489,6 +488,7 @@ static void icp_deliver_irq(struct kvmppc_xics *xics, struct kvmppc_icp *icp,
- 		 */
- 		smp_wmb();
- 		set_bit(ics->icsid, icp->resend_map);
-+		set_bit(src, ics->resend_map);
- 
- 		/*
- 		 * If the need_resend flag got cleared in the ICP some time
-diff --git a/arch/powerpc/kvm/book3s_xics.h b/arch/powerpc/kvm/book3s_xics.h
-index 08fb0843faf5..8fcb34ea47a4 100644
---- a/arch/powerpc/kvm/book3s_xics.h
-+++ b/arch/powerpc/kvm/book3s_xics.h
-@@ -98,6 +98,7 @@ struct kvmppc_ics {
- 	arch_spinlock_t lock;
- 	u16 icsid;
- 	struct ics_irq_state irq_state[KVMPPC_XICS_IRQ_PER_ICS];
-+	DECLARE_BITMAP(resend_map, KVMPPC_XICS_IRQ_PER_ICS);
- };
- 
- struct kvmppc_xics {
--- 
-2.44.0
+-Geoff
 
