@@ -2,76 +2,89 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE916C25B78
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 01:52:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 687F7C25B78
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 02:06:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=SjbWfkKx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P8EOiDC5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VkYwW69HVz7918
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 11:43:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VkZFq3Cgjz78rD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 11:58:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=SjbWfkKx;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P8EOiDC5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3bu1nzgykda46so1xqu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VkYsM4S10z3g3b
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2024 11:40:23 +1000 (AEST)
-Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-61be1fcf9abso195671027b3.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 18:40:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1716342022; x=1716946822; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=Ky0OyQodlYj1lBm/FQov7vVQOSf0t15DeKBOaNpreRc=;
-        b=SjbWfkKx8QRYTYm9WMHJM4ftk09Jy83a28Mj/wNc82allbvo/zm1TYAQtziOqDWpoX
-         x9vPGRdQFIn9z98XgaF6v6+2nkUkstz0D6eR2WF+XDo4k93zFwAGUb9670p1TdiRexbB
-         RQA35DpqX2aFn0JInjsnha8DaTjxYDB7z3Q4PWQy3mWTDKB4Eo1O6cBdrCUROWli2Iyl
-         Ir2q4Lk3/dSnUCi+vVEnFf0o4Q+W0+JK3tDAhyOPZlJ17QH+fxDhu2YhG5dXEXqchPkr
-         GNCdEPGr+HtxJKufQHkYlf4PaVELj6FFKiKtpDC9TI5h/PLvJjEwJhZL9geBOJkMuMwe
-         D7Og==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716342022; x=1716946822;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Ky0OyQodlYj1lBm/FQov7vVQOSf0t15DeKBOaNpreRc=;
-        b=g8dsqT0m3/D88+hC9sZ4JRDvc5nfJCoHc4GyVSJZbQO/PYXIBo+gQtycZjvkWmufgW
-         LJukRVgD/FfHWg2Rn4jyqH5ZlCKGjQH8sjvKdZw8gPZrC+JRq8fDd8xB9NIMxTNt1LZn
-         kCawZnLgyucMc2OvgGi0SYoYAq0WuHpoaz4DTCPFvgrKze2hx/9HA4wiKOWxw9LcDFAR
-         khbL6AtLWdrhxIio3HubEI38Fc7wjfAJpJNq3jmYiPgrsEwzi0smi9xeEBcnu1rHLvMh
-         N+S4sDo1ZiGumddki/TjbaM9s4lV1v9T53xv6yETu7v+CEgZx6yDbNLpOqBp6FzZ4VAT
-         83IA==
-X-Forwarded-Encrypted: i=1; AJvYcCUqXgNjEHsW6weqLGgJOa0QpGSRpPOoBUgX7+5Agex+j6GMOulA8VIkLw8ULp728IN9LPW69H5zLf9BuMdgV5vUS9ymgBzmMKXq5Ozegg==
-X-Gm-Message-State: AOJu0YyMCvwBxeWwVzE/EiF7XSOc/2h2HGlAd/Rfz2Pt6yLHeFfak39u
-	Ruy5ds+bzncqpyDAemL6+c1BVkJ8NCmYdPkt6Fhpc3YDswiJUPBiiZEjXj7dlURAd/2yTTyRsqa
-	CWA==
-X-Google-Smtp-Source: AGHT+IH3ylTQdVbQjZOc6EesCmA9Xrxy9wlcjQn2SMB7bi30ktsJ//ZvCxppwijf1/jMZuHd3SCyhhC4bqo=
-X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a05:690c:251:b0:61b:1dbf:e3f with SMTP id
- 00721157ae682-627e46d457amr2201297b3.4.1716342021752; Tue, 21 May 2024
- 18:40:21 -0700 (PDT)
-Date: Tue, 21 May 2024 18:40:10 -0700
-In-Reply-To: <20240522014013.1672962-1-seanjc@google.com>
-Mime-Version: 1.0
-References: <20240522014013.1672962-1-seanjc@google.com>
-X-Mailer: git-send-email 2.45.0.215.g3402c0e53f-goog
-Message-ID: <20240522014013.1672962-4-seanjc@google.com>
-Subject: [PATCH v2 3/6] KVM: x86: Fold kvm_arch_sched_in() into kvm_arch_vcpu_load()
-From: Sean Christopherson <seanjc@google.com>
-To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
-	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
-	Huacai Chen <chenhuacai@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VjklC4NZzz3fq1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 03:17:11 +1000 (AEST)
+Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44KGWMCa025758;
+	Mon, 20 May 2024 17:17:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : reply-to : references : mime-version : content-type
+ : in-reply-to; s=pp1; bh=HKtOB+oFscURG03ulDdZ1tuzGvSOwET8hBkLOc3xVCY=;
+ b=P8EOiDC5pKDN1qY29oCGeRVg+2T7jZS2yKgyQB3K/8p4r9v2PDIWfRo/PrLRWnYKz7fl
+ fWY2N0CrVVoAR4Fy33sBIKnzy/19kd7I1ESdqEV26FMhzOu2Vx3Kmmy8RftB9Y85BCit
+ EvYQtNNNmvHlGLFQxXcbVHlVDvP8ZeY4DgfLIC+IJLPBq7Clw2+HWjJwroezOJURzV4r
+ P48pZ3xMwEFRluoixEWTbcq29vLMV7Q1AF2hPc44lQjg4kxpPfEkvQ2KO7ROiZ6mgeoS
+ riE8XTpPZ3UsEKO0A+RlXylrMsm+MeqTQSVIEK1MKOOfGV44ZHBUGN7UepUkr0zB0Ur0 4Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y8a4b83p1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 20 May 2024 17:17:01 +0000
+Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 44KHH1QB001726;
+	Mon, 20 May 2024 17:17:01 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3y8a4b83p0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 20 May 2024 17:17:01 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44KFMMRl007412;
+	Mon, 20 May 2024 17:17:00 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3y79c2rfu4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 20 May 2024 17:17:00 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44KHGrwY57409814
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 20 May 2024 17:16:57 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C5C8120040;
+	Mon, 20 May 2024 17:16:53 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EC3032004D;
+	Mon, 20 May 2024 17:16:51 +0000 (GMT)
+Received: from linux.ibm.com (unknown [9.126.150.29])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with SMTP;
+	Mon, 20 May 2024 17:16:51 +0000 (GMT)
+Date: Mon, 20 May 2024 22:46:50 +0530
+From: Srikar Dronamraju <srikar@linux.ibm.com>
+To: Nilay Shroff <nilay@linux.ibm.com>
+Subject: Re: [PATCH v2 1/1] powerpc/numa: Online a node if PHB is attached.
+Message-ID: <20240520171650.GK2531@linux.ibm.com>
+References: <20240517142531.3273464-1-nilay@linux.ibm.com>
+ <20240517142531.3273464-3-nilay@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20240517142531.3273464-3-nilay@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: iOKmuu6NlxlxyOwx1K2qPsexcxYD3REF
+X-Proofpoint-GUID: VpHDuA8fgUR__3-BZzHkmK_yujIA3N6v
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.12.28.16
+ definitions=2024-05-20_09,2024-05-17_03,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
+ impostorscore=0 clxscore=1011 malwarescore=0 phishscore=0 spamscore=0
+ bulkscore=0 mlxlogscore=777 lowpriorityscore=0 adultscore=0 mlxscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2405010000 definitions=main-2405200138
+X-Mailman-Approved-At: Wed, 22 May 2024 11:57:27 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,178 +96,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Sean Christopherson <seanjc@google.com>
-Cc: kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, kvmarm@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Reply-To: Srikar Dronamraju <srikar@linux.ibm.com>
+Cc: sshegde@linux.ibm.com, gjoyce@linux.ibm.com, npiggin@gmail.com, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fold the guts of kvm_arch_sched_in() into kvm_arch_vcpu_load(), keying
-off the recently added kvm_vcpu.scheduled_out as appropriate.
+* Nilay Shroff <nilay@linux.ibm.com> [2024-05-17 19:55:23]:
 
-Note, there is a very slight functional change, as PLE shrink updates will
-now happen after blasting WBINVD, but that is quite uninteresting as the
-two operations do not interact in any way.
+Hi Nilay,
 
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- arch/x86/include/asm/kvm-x86-ops.h |  1 -
- arch/x86/include/asm/kvm_host.h    |  2 --
- arch/x86/kvm/svm/svm.c             | 11 +++--------
- arch/x86/kvm/vmx/main.c            |  2 --
- arch/x86/kvm/vmx/vmx.c             |  9 +++------
- arch/x86/kvm/vmx/x86_ops.h         |  1 -
- arch/x86/kvm/x86.c                 | 17 ++++++++++-------
- 7 files changed, 16 insertions(+), 27 deletions(-)
+> In the current design, a numa-node is made online only if
+> that node is attached to cpu/memory. With this design, if
+> any PCI/IO device is found to be attached to a numa-node
+> which is not online then the numa-node id of the corresponding
+> PCI/IO device is set to NUMA_NO_NODE(-1). This design may
+> negatively impact the performance of PCIe device if the
+> numa-node assigned to PCIe device is -1 because in such case
+> we may not be able to accurately calculate the distance
+> between two nodes.
+> The multi-controller NVMe PCIe disk has an issue with
+> calculating the node distance if the PCIe NVMe controller
+> is attached to a PCI host bridge which has numa-node id
+> value set to NUMA_NO_NODE. This patch helps fix this ensuring
+> that a cpu/memory less numa node is made online if it's
+> attached to PCI host bridge.
+> 
+Looks good to me.
 
-diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
-index 566d19b02483..5a8b74c2e6c4 100644
---- a/arch/x86/include/asm/kvm-x86-ops.h
-+++ b/arch/x86/include/asm/kvm-x86-ops.h
-@@ -103,7 +103,6 @@ KVM_X86_OP(write_tsc_multiplier)
- KVM_X86_OP(get_exit_info)
- KVM_X86_OP(check_intercept)
- KVM_X86_OP(handle_exit_irqoff)
--KVM_X86_OP(sched_in)
- KVM_X86_OP_OPTIONAL(update_cpu_dirty_logging)
- KVM_X86_OP_OPTIONAL(vcpu_blocking)
- KVM_X86_OP_OPTIONAL(vcpu_unblocking)
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index aabf1648a56a..0df4d14db896 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1750,8 +1750,6 @@ struct kvm_x86_ops {
- 			       struct x86_exception *exception);
- 	void (*handle_exit_irqoff)(struct kvm_vcpu *vcpu);
- 
--	void (*sched_in)(struct kvm_vcpu *vcpu, int cpu);
--
- 	/*
- 	 * Size of the CPU's dirty log buffer, i.e. VMX's PML buffer.  A zero
- 	 * value indicates CPU dirty logging is unsupported or disabled.
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index 3d0549ca246f..51a5eb31aee5 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -1548,6 +1548,9 @@ static void svm_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 	struct svm_cpu_data *sd = per_cpu_ptr(&svm_data, cpu);
- 
-+	if (vcpu->scheduled_out && !kvm_pause_in_guest(vcpu->kvm))
-+		shrink_ple_window(vcpu);
-+
- 	if (sd->current_vmcb != svm->vmcb) {
- 		sd->current_vmcb = svm->vmcb;
- 
-@@ -4572,12 +4575,6 @@ static void svm_handle_exit_irqoff(struct kvm_vcpu *vcpu)
- 		vcpu->arch.at_instruction_boundary = true;
- }
- 
--static void svm_sched_in(struct kvm_vcpu *vcpu, int cpu)
--{
--	if (!kvm_pause_in_guest(vcpu->kvm))
--		shrink_ple_window(vcpu);
--}
--
- static void svm_setup_mce(struct kvm_vcpu *vcpu)
- {
- 	/* [63:9] are reserved. */
-@@ -5046,8 +5043,6 @@ static struct kvm_x86_ops svm_x86_ops __initdata = {
- 	.check_intercept = svm_check_intercept,
- 	.handle_exit_irqoff = svm_handle_exit_irqoff,
- 
--	.sched_in = svm_sched_in,
--
- 	.nested_ops = &svm_nested_ops,
- 
- 	.deliver_interrupt = svm_deliver_interrupt,
-diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
-index 7c546ad3e4c9..4fee9a8cc5a1 100644
---- a/arch/x86/kvm/vmx/main.c
-+++ b/arch/x86/kvm/vmx/main.c
-@@ -121,8 +121,6 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
- 	.check_intercept = vmx_check_intercept,
- 	.handle_exit_irqoff = vmx_handle_exit_irqoff,
- 
--	.sched_in = vmx_sched_in,
--
- 	.cpu_dirty_log_size = PML_ENTITY_NUM,
- 	.update_cpu_dirty_logging = vmx_update_cpu_dirty_logging,
- 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 07a4d6a3a43e..da2f95385a12 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -1517,6 +1517,9 @@ void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- {
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 
-+	if (vcpu->scheduled_out && !kvm_pause_in_guest(vcpu->kvm))
-+		shrink_ple_window(vcpu);
-+
- 	vmx_vcpu_load_vmcs(vcpu, cpu, NULL);
- 
- 	vmx_vcpu_pi_load(vcpu, cpu);
-@@ -8171,12 +8174,6 @@ void vmx_cancel_hv_timer(struct kvm_vcpu *vcpu)
- }
- #endif
- 
--void vmx_sched_in(struct kvm_vcpu *vcpu, int cpu)
--{
--	if (!kvm_pause_in_guest(vcpu->kvm))
--		shrink_ple_window(vcpu);
--}
--
- void vmx_update_cpu_dirty_logging(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
-diff --git a/arch/x86/kvm/vmx/x86_ops.h b/arch/x86/kvm/vmx/x86_ops.h
-index 502704596c83..3cb0be94e779 100644
---- a/arch/x86/kvm/vmx/x86_ops.h
-+++ b/arch/x86/kvm/vmx/x86_ops.h
-@@ -112,7 +112,6 @@ u64 vmx_get_l2_tsc_multiplier(struct kvm_vcpu *vcpu);
- void vmx_write_tsc_offset(struct kvm_vcpu *vcpu);
- void vmx_write_tsc_multiplier(struct kvm_vcpu *vcpu);
- void vmx_request_immediate_exit(struct kvm_vcpu *vcpu);
--void vmx_sched_in(struct kvm_vcpu *vcpu, int cpu);
- void vmx_update_cpu_dirty_logging(struct kvm_vcpu *vcpu);
- #ifdef CONFIG_X86_64
- int vmx_set_hv_timer(struct kvm_vcpu *vcpu, u64 guest_deadline_tsc,
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index d750546ec934..e924d1c51e31 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -5004,6 +5004,16 @@ static bool need_emulate_wbinvd(struct kvm_vcpu *vcpu)
- 
- void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- {
-+	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
-+
-+	if (vcpu->scheduled_out) {
-+		vcpu->arch.l1tf_flush_l1d = true;
-+		if (pmu->version && unlikely(pmu->event_count)) {
-+			pmu->need_cleanup = true;
-+			kvm_make_request(KVM_REQ_PMU, vcpu);
-+		}
-+	}
-+
- 	/* Address WBINVD may be executed by guest */
- 	if (need_emulate_wbinvd(vcpu)) {
- 		if (static_call(kvm_x86_has_wbinvd_exit)())
-@@ -12578,14 +12588,7 @@ bool kvm_vcpu_is_bsp(struct kvm_vcpu *vcpu)
- 
- void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu)
- {
--	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
- 
--	vcpu->arch.l1tf_flush_l1d = true;
--	if (pmu->version && unlikely(pmu->event_count)) {
--		pmu->need_cleanup = true;
--		kvm_make_request(KVM_REQ_PMU, vcpu);
--	}
--	static_call(kvm_x86_sched_in)(vcpu, cpu);
- }
- 
- void kvm_arch_free_vm(struct kvm *kvm)
+Reviewed-by: Srikar Dronamraju <srikar@linux.ibm.com>
+
 -- 
-2.45.0.215.g3402c0e53f-goog
-
+Thanks and Regards
+Srikar Dronamraju
