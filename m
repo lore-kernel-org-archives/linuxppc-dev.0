@@ -2,48 +2,68 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1E0EC25B74
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 12:46:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 118A8C25B78
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 17:16:36 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Dil3JiPb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=tltR7SGT;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VkDZC1D4dz3vhw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 22:41:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VkLYh5C8fz3gKd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 03:11:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Dil3JiPb;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=tltR7SGT;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=ndesaulniers@google.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VkDXc0kF3z3fmx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 22:39:44 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1716295182;
-	bh=PtJg90eCKUeWCOBDJVpdlGuxCb24a9Zni7LG4xkpVt0=;
-	h=From:To:Cc:Subject:Date:From;
-	b=Dil3JiPb/gL3zZItcwa55UYAUCOiiHh4kjaEIAmUxh3AzPctsnmkzIG/AoiPIIVA7
-	 iBpVBlLMRuxDffGM42WMUPR7Ms24lkguyeYlcrVYANjJRs3kQnS5iYq5l0QYbmRDNm
-	 hrR2+rBYdzh5LTnOq30d6aorDUk4vh+UAjRv562dHdxE2tLwXqol+Y8uBCKeRVv10X
-	 WN0Dj4LzPZmo5UAfCEKafh6CcT9Yxz9NtulgO3DjTVLTp3fEP4rId1JikKRK1yE8Zi
-	 gn3UlKXtpplLu0RTHaHj6iXu1Vn9Msr8lBSBhzCHLiv1DbHA6vNW2hM7iidvMJy0z0
-	 /qZhSolzLKFqg==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VkDXY3QF8z4wjF;
-	Tue, 21 May 2024 22:39:41 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2] powerpc/uaccess: Fix build errors seen with GCC 14
-Date: Tue, 21 May 2024 22:39:18 +1000
-Message-ID: <20240521123919.245886-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.45.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VkLXs0Cx5z3g11
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2024 03:10:19 +1000 (AEST)
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-34d8d11a523so2295692f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 10:10:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1716311407; x=1716916207; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=HuK1GFvDv/XOLzeFBZqPy2BBKvmQtzuGFjz04oNkQG8=;
+        b=tltR7SGT3RQjhv3k37viEOpP6G+cyVmsPw2BA5nqf1IZZ4SoKbGwwbOQiNuXLlbh75
+         Uq+8ItmHOZpnS0OTDw0w2kDPXsXyIz+B6qcVd2EpQczyaxw7YeBUEOG66C3OEPGzjNAg
+         0WTi19D5hd5LdKf2Kr+O54XEttONKwdQoG0W2AWZ4lgc2R4HNnEGkKtSUOfIsO13BCef
+         rMfqWIczqEIrVk7mEe5DhBsX64x5qadhDqjMnvNbWvnxuzyPADlOgNwSOVhjDsLSSCnP
+         /ZU6Ac9M1Rj8XxtsL72RoNu6p3BBJhfbFYEktC8iYohJIVIkLzckofx9MukgFwlaL3fQ
+         9QVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1716311407; x=1716916207;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=HuK1GFvDv/XOLzeFBZqPy2BBKvmQtzuGFjz04oNkQG8=;
+        b=Nqjsn/JUIbscQsSGUn6rjnLqweLNlZ7+w+7k+Mkkw0A163xkyRS3IKogdUnY5a9py6
+         AmI6yoZ1X5qp1KPWlmtSywsPM3d3HWuI4Z+H7daPhm0hxkeR3ejeIcbSwpVsGJdWGStL
+         RW44Y2apR9ClhUoVz1cJPl9p15L/HNpVDP4ZuYwnXMyJ0aFi+eIpKHaP/kyB3ihCkY+6
+         T3mqtCeVmm1X/WKI1DcNcb9jlha0zxe9d3w5YiasbbvH0PHOL8dLllRs0Ntq0+MXhJCP
+         WaPshfHU1d1ak7OriJX4N8bISypma77/tEgEEAidPdrsi65+TDMm/Id3/YS30y73/Z+N
+         NVhQ==
+X-Gm-Message-State: AOJu0YzxYkcLFx16SNNYkKQ7RHS00YZV+WSuKXU9D6N3mRP9E8r47hqA
+	HbQXgCwiapfFzv/tni3tJutXDN/V+slTKsokX9DWzV+aCc0FS0dRoIiqrFK9xDsbq75f0CfY98c
+	5ZgUJG1w5+VVnXQsrb7w29Fq6wbUoVtVJy0iI
+X-Google-Smtp-Source: AGHT+IFxpMH1HCZGasabEUN+YSFCEKr/yIUVyx+8vhxEVNOIW/01AjQNJqwe0Xe0xifVDCfueONrimJvjZ29r+aHyxg=
+X-Received: by 2002:a5d:6646:0:b0:34c:e2f:ceeb with SMTP id
+ ffacd0b85a97d-3504a7364e2mr25555214f8f.17.1716311407039; Tue, 21 May 2024
+ 10:10:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20240521123919.245886-1-mpe@ellerman.id.au>
+In-Reply-To: <20240521123919.245886-1-mpe@ellerman.id.au>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Tue, 21 May 2024 10:09:51 -0700
+Message-ID: <CAKwvOdm0_dAvQtuJXWfSCwh+2Jy=79DyjG+tKp9NGv9tunwj1A@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/uaccess: Fix build errors seen with GCC 14
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,87 +75,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathan@kernel.org, ndesaulniers@google.com, linkw@gcc.gnu.org
+Cc: nathan@kernel.org, linuxppc-dev@lists.ozlabs.org, linkw@gcc.gnu.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Building ppc64le_defconfig with GCC 14 fails with assembler errors:
+On Tue, May 21, 2024 at 5:39=E2=80=AFAM Michael Ellerman <mpe@ellerman.id.a=
+u> wrote:
+>
+> Building ppc64le_defconfig with GCC 14 fails with assembler errors:
+>
+>     CC      fs/readdir.o
+>   /tmp/ccdQn0mD.s: Assembler messages:
+>   /tmp/ccdQn0mD.s:212: Error: operand out of domain (18 is not a multiple=
+ of 4)
+>   /tmp/ccdQn0mD.s:226: Error: operand out of domain (18 is not a multiple=
+ of 4)
+>   ... [6 lines]
+>   /tmp/ccdQn0mD.s:1699: Error: operand out of domain (18 is not a multipl=
+e of 4)
+>
+> A snippet of the asm shows:
+>
+>   # ../fs/readdir.c:210:         unsafe_copy_dirent_name(dirent->d_name, =
+name, namlen, efault_end);
+>          ld 9,0(29)       # MEM[(u64 *)name_38(D) + _88 * 1], MEM[(u64 *)=
+name_38(D) + _88 * 1]
+>   # 210 "../fs/readdir.c" 1
+>          1:      std 9,18(8)     # put_user       # *__pus_addr_52, MEM[(=
+u64 *)name_38(D) + _88 * 1]
+>
+> The 'std' instruction requires a 4-byte aligned displacement because
+> it is a DS-form instruction, and as the assembler says, 18 is not a
+> multiple of 4.
+>
+> The fix is to change the constraint on the memory operand to put_user(),
+> from "m" which is a general memory reference to "YZ".
+>
+> The "Z" constraint is documented in the GCC manual PowerPC machine
+> constraints, and specifies a "memory operand accessed with indexed or
+> indirect addressing". "Y" is not documented in the manual but specifies
+> a "memory operand for a DS-form instruction". Using both allows the
+> compiler to generate a DS-form "std" or X-form "stdx" as appropriate.
+>
+> The change has to be conditional on CONFIG_PPC_KERNEL_PREFIXED because
+> the "Y" constraint does not guarantee 4-byte alignment when prefixed
+> instructions are enabled.
+>
+> Unfortunately clang doesn't support the "Y" constraint so that has to be
+> behind an ifdef.
 
-    CC      fs/readdir.o
-  /tmp/ccdQn0mD.s: Assembler messages:
-  /tmp/ccdQn0mD.s:212: Error: operand out of domain (18 is not a multiple of 4)
-  /tmp/ccdQn0mD.s:226: Error: operand out of domain (18 is not a multiple of 4)
-  ... [6 lines]
-  /tmp/ccdQn0mD.s:1699: Error: operand out of domain (18 is not a multiple of 4)
+Filed: https://github.com/llvm/llvm-project/issues/92939
 
-A snippet of the asm shows:
-
-  # ../fs/readdir.c:210:         unsafe_copy_dirent_name(dirent->d_name, name, namlen, efault_end);
-         ld 9,0(29)       # MEM[(u64 *)name_38(D) + _88 * 1], MEM[(u64 *)name_38(D) + _88 * 1]
-  # 210 "../fs/readdir.c" 1
-         1:      std 9,18(8)     # put_user       # *__pus_addr_52, MEM[(u64 *)name_38(D) + _88 * 1]
-
-The 'std' instruction requires a 4-byte aligned displacement because
-it is a DS-form instruction, and as the assembler says, 18 is not a
-multiple of 4.
-
-The fix is to change the constraint on the memory operand to put_user(),
-from "m" which is a general memory reference to "YZ".
-
-The "Z" constraint is documented in the GCC manual PowerPC machine
-constraints, and specifies a "memory operand accessed with indexed or
-indirect addressing". "Y" is not documented in the manual but specifies
-a "memory operand for a DS-form instruction". Using both allows the
-compiler to generate a DS-form "std" or X-form "stdx" as appropriate.
-
-The change has to be conditional on CONFIG_PPC_KERNEL_PREFIXED because
-the "Y" constraint does not guarantee 4-byte alignment when prefixed
-instructions are enabled.
-
-Unfortunately clang doesn't support the "Y" constraint so that has to be
-behind an ifdef.
-
-Although the build error is only seen with GCC 14, that appears to just
-be luck. The constraint has been incorrect since it was first added.
-
-Fixes: c20beffeec3c ("powerpc/uaccess: Use flexible addressing with __put_user()/__get_user()")
-Cc: stable@vger.kernel.org # v5.10+
-Suggested-by: Kewen Lin <linkw@gcc.gnu.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/uaccess.h | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index de10437fd206..4cba724c8899 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -92,9 +92,25 @@ __pu_failed:							\
- 		: label)
- #endif
- 
-+#ifdef CONFIG_CC_IS_CLANG
-+#define DS_FORM_CONSTRAINT "Z<>"
-+#else
-+#define DS_FORM_CONSTRAINT "YZ<>"
-+#endif
-+
- #ifdef __powerpc64__
-+#ifdef CONFIG_PPC_KERNEL_PREFIXED
- #define __put_user_asm2_goto(x, ptr, label)			\
- 	__put_user_asm_goto(x, ptr, label, "std")
-+#else
-+#define __put_user_asm2_goto(x, addr, label)			\
-+	asm goto ("1: std%U1%X1 %0,%1	# put_user\n"		\
-+		EX_TABLE(1b, %l2)				\
-+		:						\
-+		: "r" (x), DS_FORM_CONSTRAINT (*addr)		\
-+		:						\
-+		: label)
-+#endif // CONFIG_PPC_KERNEL_PREFIXED
- #else /* __powerpc64__ */
- #define __put_user_asm2_goto(x, addr, label)			\
- 	asm goto(					\
--- 
-2.45.1
-
+--=20
+Thanks,
+~Nick Desaulniers
