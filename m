@@ -2,61 +2,50 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85795C25B74
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 12:06:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01699C25B74
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 12:46:36 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KZ5ZVNpZ;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VkCcP5XgKz3gH1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 21:57:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VkDYR0cptz3gJB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 22:40:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KZ5ZVNpZ;
+	dkim-atps=neutral
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VkCbw4R3vz3fpB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 21:57:32 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VkDXc0mSPz3fp7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 22:39:44 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1716295183;
+	bh=mppIXiXoLcuRe3+LxvWfWg1SEmVE0I7B3O6Xsc+0bdY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=KZ5ZVNpZaNOGLdWzyODs9BFE4jk/VI+2f/zvHIKI5rUtGUzHQS1O/xZJBE9UiGH5j
+	 UfgoFtnUQiLw2TZukPEWPxKuGquDS9+KawUxf1eEbIkgR0yP3VsVIai6AajPLt4pEY
+	 uQBeioXc2aSD+GxIztlu7VZ+XTstpcHIrjC2BgGulOIhRKgoP+FnTg4ZRuQVil3ERx
+	 wC9uox90ShYVHRlGqe24ExbttRML3FSqEz0nZrILJ/RJGJbkVjqj3SpUcsUd6IIMC5
+	 DZ+DYO37JkeHSmtQlBNp5Ms8Wl0NpL1enP6MD9u6CVZhxBEzprvDNIzTY3tZYbBh4r
+	 JAOmCA3ao3uCA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 64D505C0FA;
-	Tue, 21 May 2024 11:57:22 +0000 (UTC)
-Authentication-Results: smtp-out2.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id D202413A21;
-	Tue, 21 May 2024 11:57:21 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 2qi3MCGMTGZncgAAD6G6ig
-	(envelope-from <osalvador@suse.de>); Tue, 21 May 2024 11:57:21 +0000
-Date: Tue, 21 May 2024 13:57:20 +0200
-From: Oscar Salvador <osalvador@suse.de>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [RFC PATCH v2 01/20] mm: Provide pagesize to pmd_populate()
-Message-ID: <ZkyMIOs76sZI5GsV@localhost.localdomain>
-References: <cover.1715971869.git.christophe.leroy@csgroup.eu>
- <91159d49bcbee0526ca6235ff7ef1ee7d378d013.1715971869.git.christophe.leroy@csgroup.eu>
- <ZksRfAXja0fhNePD@localhost.localdomain>
- <dc66eff8-4371-4685-9dd8-3dacd3744e73@csgroup.eu>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VkDXb1Q0Wz4wyQ;
+	Tue, 21 May 2024 22:39:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/2] powerpc/uaccess: Use YZ asm constraint for ld
+Date: Tue, 21 May 2024 22:39:19 +1000
+Message-ID: <20240521123919.245886-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.45.1
+In-Reply-To: <20240521123919.245886-1-mpe@ellerman.id.au>
+References: <20240521123919.245886-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dc66eff8-4371-4685-9dd8-3dacd3744e73@csgroup.eu>
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Rspamd-Queue-Id: 64D505C0FA
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,63 +57,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Peter Xu <peterx@redhat.com>, Jason Gunthorpe <jgg@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: nathan@kernel.org, ndesaulniers@google.com, linkw@gcc.gnu.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 20, 2024 at 04:24:51PM +0000, Christophe Leroy wrote:
-> I had a quick look at that document and it seems to provide a good 
-> summary of MMU features and principles. However there are some 
-> theoritical information which is not fully right in practice. For 
-> instance when they say "Segment attributes. These fields define 
-> attributes common to all pages in this segment.". This is right in 
-> theory if you consider it from Linux page table topology point of view, 
-> hence what they call a segment is a PMD entry for Linux. However, in 
-> practice each page has its own L1 and L2 attributes and there is not 
-> requirement at HW level to have all L1 attributes of all pages of a 
-> segment the same.
+The 'ld' instruction requires a 4-byte aligned displacement because it
+is a DS-form instruction. But the "m" asm constraint doesn't enforce
+that.
 
-Thanks for taking the time Christophe, highly appreciated.
+Add a special case of __get_user_asm2_goto() so that the "YZ" constraint
+can be used for "ld".
 
+The "Z" constraint is documented in the GCC manual PowerPC machine
+constraints, and specifies a "memory operand accessed with indexed or
+indirect addressing". "Y" is not documented in the manual but specifies
+a "memory operand for a DS-form instruction". Using both allows the
+compiler to generate a DS-form "ld" or X-form "ldx" as appropriate.
+
+The change has to be conditional on CONFIG_PPC_KERNEL_PREFIXED because
+the "Y" constraint does not guarantee 4-byte alignment when prefixed
+instructions are enabled.
+
+No build errors have been reported due to this, but the possibility is
+there depending on compiler code generation decisions.
+
+Fixes: c20beffeec3c ("powerpc/uaccess: Use flexible addressing with __put_user()/__get_user()")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/uaccess.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 4cba724c8899..fd594bf6c6a9 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -181,8 +181,19 @@ do {								\
+ #endif
  
-> rlwimi = Rotate Left Word Immediate then Mask Insert. Here it rotates 
-> r10 by 23 bits to the left (or 9 to the right) then masks with 
-> _PMD_PAGE_512K and inserts it into r11.
-> 
-> It means _PAGE_HUGE bit is copied into lower bit of PS attribute.
-> 
-> PS takes the following values:
-> 
-> PS = 00 ==> Small page (4k or 16k)
-> PS = 01 ==> 512k page
-> PS = 10 ==> Undefined
-> PS = 11 ==> 8M page
-
-I see, thanks for the explanation.
-
-> That's a RFC, all ideas are welcome, I needed something to replace 
-> hugepd_populate()
-
-The only user interested in pmd_populate() having a sz parameter
-is 8xx because it will toggle _PMD_PAGE_8M in case of a 8MB mapping.
-
-Would it be possible for 8xx to encode the 'sz' in the *pmd pointer
-prior to calling down the chain? (something like as we do for PTR_ERR()).
-Then pmd_populate_{kernel_}size() from 8xx, would extract it like:
-
- unsigned long sz = PTR_SIZE(pmd)
-
-Then we would not need all these 'sz' parameters scattered.
-
-Can that work?
-
-
-PD: Do you know a way to emulate a 8xx VM? qemu seems to not have
-support support.
-
-Thanks
-
-
+ #ifdef __powerpc64__
++#ifdef CONFIG_PPC_KERNEL_PREFIXED
+ #define __get_user_asm2_goto(x, addr, label)			\
+ 	__get_user_asm_goto(x, addr, label, "ld")
++#else
++#define __get_user_asm2_goto(x, addr, label)			\
++	asm_goto_output(					\
++		"1:	ld%U1%X1 %0, %1	# get_user\n"		\
++		EX_TABLE(1b, %l2)				\
++		: "=r" (x)					\
++		: DS_FORM_CONSTRAINT (*addr)			\
++		:						\
++		: label)
++#endif // CONFIG_PPC_KERNEL_PREFIXED
+ #else /* __powerpc64__ */
+ #define __get_user_asm2_goto(x, addr, label)			\
+ 	asm_goto_output(					\
 -- 
-Oscar Salvador
-SUSE Labs
+2.45.1
+
