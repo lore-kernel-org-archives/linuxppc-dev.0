@@ -2,46 +2,46 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91849C25B79
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 03:11:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 227D9C25B7B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 03:11:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=fX8m3HcC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SdlCKIvN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VjzlH4hWRz3w6H
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 13:03:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vjzjw2RdDz3vYq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 May 2024 13:01:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=fX8m3HcC;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SdlCKIvN;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VjzkV5Tjyz3vZW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 13:02:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vjzj82fnxz3gDB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 13:01:16 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1716260545;
-	bh=aZ8eL+an0k4EGUGhJYQuS679Qpvr/5jI+zIpE3s7TKM=;
+	s=201909; t=1716260476;
+	bh=HeX+ig8qxtmDxUpT3wj3GXg4AsVmeDqRACTRwneLw0A=;
 	h=From:To:Cc:Subject:Date:From;
-	b=fX8m3HcCBadlJFZVLLv4f/oG6DuCW581DUDftxw/5iZbT/ZzaUnPDTes22hq3B5RF
-	 kDdM+FmBEsPArKY05nywjsUhfd3BK5b9i0YU13cFmyyX0NUkJtWFGZFNTod00s1ct5
-	 bvBHu+zNrr346znIlfplZq97wjUN/CwpafLsnoSriZtDKoTQXQtUuPVULM8IXbHCG5
-	 ZXQFn3eW4uo+tvYyGH0on3q4gJ1mPmkguAWI6ueKfJyEqOJfQnOyNs0gLtk5XeF0LV
-	 p3PqmBEF901A/zVNYTK/unMIvL4NBhK4XGUf7jJOPu74AOR6OlQnyBDQd0BIqjQ4Vd
-	 CkisghALVDOmw==
+	b=SdlCKIvNkUzfDQN0vRTs7acrYOni4xbXcU7DBQk6uJPiskIGomlcFwKf2XYs1F1fQ
+	 M/EEbhGlBfRbb++kgMILjYcGd1mRMUOu/EVI9CWLX2g+hyrI0CxR59iBAybfpXhOa3
+	 sVGweflawWcur84zMc0kNBx04J6JIzuvtwKg1hjnhPjAXWyH9KvMsubFJ78p5fa51j
+	 rv/bVykNb203yU/XLMr4Lizea2Dygwcy2AHVsF4Y9zFBmxb6rd2YA7JsUOqM4DPz9D
+	 QI3KQTRImB2NKopwZ3dAdY923pS5zylD80k0ejmjS0eb+nZSBL75KqBz86zUJaBrCX
+	 dja2t+qyUFsKw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VjzkS71Ghz4wc3;
-	Tue, 21 May 2024 13:02:24 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Vjzj80dZpz4wc3;
+	Tue, 21 May 2024 13:01:16 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linux-kselftest@vger.kernel.org>,
 	<skhan@linuxfoundation.org>
-Subject: [PATCH] selftests/mm: Fix build warnings on ppc64
-Date: Tue, 21 May 2024 13:02:19 +1000
-Message-ID: <20240521030219.57439-1-mpe@ellerman.id.au>
+Subject: [PATCH] selftests: cachestat: Fix build warnings on ppc64
+Date: Tue, 21 May 2024 13:01:11 +1000
+Message-ID: <20240521030111.56568-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.45.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -57,47 +57,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: nphamcs@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, hannes@cmpxchg.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Fix warnings like:
-
-  In file included from uffd-unit-tests.c:8:
-  uffd-unit-tests.c: In function ‘uffd_poison_handle_fault’:
-  uffd-common.h:45:33: warning: format ‘%llu’ expects argument of type
-  ‘long long unsigned int’, but argument 3 has type ‘__u64’ {aka ‘long
-  unsigned int’} [-Wformat=]
+  test_cachestat.c: In function ‘print_cachestat’:
+  test_cachestat.c:30:38: warning: format ‘%llu’ expects argument of
+  type ‘long long unsigned int’, but argument 2 has type ‘__u64’ {aka
+  ‘long unsigned int’} [-Wformat=]
 
 By switching to unsigned long long for u64 for ppc64 builds.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/mm/gup_test.c    | 1 +
- tools/testing/selftests/mm/uffd-common.h | 1 +
- 2 files changed, 2 insertions(+)
+ tools/testing/selftests/cachestat/test_cachestat.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/tools/testing/selftests/mm/gup_test.c b/tools/testing/selftests/mm/gup_test.c
-index bd335cf9bc0e..bdeaac67ff9a 100644
---- a/tools/testing/selftests/mm/gup_test.c
-+++ b/tools/testing/selftests/mm/gup_test.c
-@@ -1,3 +1,4 @@
-+#define __SANE_USERSPACE_TYPES__ // Use ll64
- #include <fcntl.h>
- #include <errno.h>
- #include <stdio.h>
-diff --git a/tools/testing/selftests/mm/uffd-common.h b/tools/testing/selftests/mm/uffd-common.h
-index cc5629c3d2aa..a70ae10b5f62 100644
---- a/tools/testing/selftests/mm/uffd-common.h
-+++ b/tools/testing/selftests/mm/uffd-common.h
-@@ -8,6 +8,7 @@
- #define __UFFD_COMMON_H__
- 
+diff --git a/tools/testing/selftests/cachestat/test_cachestat.c b/tools/testing/selftests/cachestat/test_cachestat.c
+index b171fd53b004..632ab44737ec 100644
+--- a/tools/testing/selftests/cachestat/test_cachestat.c
++++ b/tools/testing/selftests/cachestat/test_cachestat.c
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
  #define _GNU_SOURCE
 +#define __SANE_USERSPACE_TYPES__ // Use ll64
+ 
  #include <stdio.h>
- #include <errno.h>
- #include <unistd.h>
+ #include <stdbool.h>
 -- 
 2.45.1
 
