@@ -2,67 +2,66 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DD7AC25B74
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 01:51:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C07CC25B74
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 01:51:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=CYZ603Tf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=hgP01ScC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VkYyz56Pqz87Km
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 11:45:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VkYtz2kMdz3wKY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 11:41:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=CYZ603Tf;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=hgP01ScC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3c01nzgykdbqcyu73w08805y.w86527eh99w-xyf52cdc.8j5uvc.8b0@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::54a; helo=mail-pg1-x54a.google.com; envelope-from=3au1nzgykdao2okxtmqyyqvo.mywvsx47zzm-no5vs232.y9vkl2.y1q@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x54a.google.com (mail-pg1-x54a.google.com [IPv6:2607:f8b0:4864:20::54a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VkYsS6bdtz3g6N
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2024 11:40:28 +1000 (AEST)
-Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-61bed763956so247999037b3.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 18:40:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VkYsK4glBz3g1d
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2024 11:40:21 +1000 (AEST)
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-5c66a69ec8eso10774993a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 18:40:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1716342027; x=1716946827; darn=lists.ozlabs.org;
+        d=google.com; s=20230601; t=1716342018; x=1716946818; darn=lists.ozlabs.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=N3tcdNqgpk0g0Qawt6D2SIU8FL4Y9j5vsBcc8xUlRY4=;
-        b=CYZ603Tfsn1eFwcYpW2jA2nnq/5wfp6n/qYIrbInTD0MhZo4LY3oL4PcJjukAh1lmu
-         bd6tb6r5uYQL1f5JFifnBCcVV+tum0hQeTc0HzGJuzCXBXzaBAFkg7VtWNx4XdRwqNrD
-         gYhA54QeZSn76jTgNKoeuYZLWuQYI/cYrHx7Tz0mVyaNIWhiatWXMqZix7KZoL95FmzW
-         jtPqOakPtwA4lrwMaRP9kdj+dU8JdgAXzTJOe5QLjejToJYZTMOU/cKsNWe5j5shFTK1
-         /uLXyBRdyPzzVAyIPdOoCUQN/rgjHlU4nI26UPbieop2NZvLVem+Ncdr4MbtNyLyF3VU
-         WtOA==
+        bh=ksrstYm4acNB+vq44uyCoC45OYvJ0DDPXjwdxHvKYos=;
+        b=hgP01ScCaPfVPekwFRHpfg1SM2VfWlje+bMJdMADO3XGr+9UnRsRwq1dWQBkBMzbe5
+         c4xfHXW6ItBrghAsaXAq29SLmfV/kX99TPNo1CZEZfudbr37yB6m0jJRgqRHuVV4b/u3
+         dNBqKggE1f4HQYmLqsZMS3taM2BlmB51gNIYVp6kGKXNx8hxgVKgmRz91eC9E3vwlIVh
+         z1KzWFFUTq1ZdYywPOduh3r+ffKVUwZ/idBA0IZRpV2vGxJSqNFoy8XTHSQxXyt5vQds
+         bPu1EWX0WyDmwbOGbQwsVMIzvY7p/TerZKut4myPC1HB0X8bSn8o8v79xugfpsVgOmDb
+         U6lQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716342027; x=1716946827;
+        d=1e100.net; s=20230601; t=1716342018; x=1716946818;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=N3tcdNqgpk0g0Qawt6D2SIU8FL4Y9j5vsBcc8xUlRY4=;
-        b=PUpbZWf9M2jV2wqtUWKNQDv4zomMPFWxzxg9peRpllvAj1iKTWC+xim1IzQ1RtIp/W
-         er0XxAZKONvAwHfNElgHNdRy3/B4iZ94EW5txWlaGN4GTjO9CDnlRl67lpC3hZSiEEym
-         RLiif2YWjgTn/nP0O6kYCtPttnCvi1acL2awozUuHAn9v0lVOgWFY5B6dUC3QXFWqy1o
-         LpBg2ebfJln70TNj/GHqL3OO9/TfbyVZk5vHNaQM5oKC56leEqV2gYnpLAzRoi/3+mHS
-         3bnBb60LqTjurxrjxvxZu7bkZthU6bE0CySMMW6jhRNbh9LDnH+DJmwFBSNiG8/jE16y
-         ZNyg==
-X-Forwarded-Encrypted: i=1; AJvYcCVrk4MGGMI57xZNpsYWEX1tipsXWND4/Z2b+pIEs9ybdRqrw3OniNEjP0joj6YpIvWHAb1U6O0vn4FLOktl0PZa1mVR7a7qErNaKjLn1A==
-X-Gm-Message-State: AOJu0YxjuQyIhKgiuNsEMumlTfv5ZgtSlNl3EUyscSme21EuAg0ZYFYS
-	qhWI7mAqLSU+1m9T6u3yqd9PKyEaIcV6lyRZTt+qqIAggHF0b5SSJ1pQogJ/tRtRbMxT7xXOu6t
-	ufA==
-X-Google-Smtp-Source: AGHT+IFL81/qwy5rtkuJ10qcaRdu2JQbneM9E+pjVdbps1/0e/VA4O7XiaE6CliC0DQxJV6ImSRXVMyGgXw=
+        bh=ksrstYm4acNB+vq44uyCoC45OYvJ0DDPXjwdxHvKYos=;
+        b=pvVzMAebi5GX8lfM5sow9W8cytAfwbtbf8EUpHJXk6Utxzc8ZwAMNFcnIYgX/QaKoV
+         njHOWP3ZVspMJMIPPLfbQ1Cz2DtxwIqx/5HroqaER84m/sV6xE8D7NG6J9Bp+4YWY2FX
+         4QfQ5PKibqJWVC5HgBGkiyBe/PrE3VkV7ynDooHPRJhGJgp8gS/khJpFLj2ukZPIHVz/
+         azPZFgvZmsAdbY2fJNkSH8/qGs1llSI5iPkdluJL0tgzTwRFRnvK/2dFcKdvcOcbN8v+
+         STxrF3gKg8rymqyyZmKx5muFD68g9UUu3yHj33fIvXJ4+bqU89UYaVMVrIMfFlvw/t6w
+         B4Kg==
+X-Forwarded-Encrypted: i=1; AJvYcCUNqJdBwJiVdlaSw9c63j12vYV72FaQCuk9rMY0Y8mausN343ipq7HtwbTEh1ziQ+uBcdZKzoCU8szTGcMj0H14yiJ3DziM5oWKTJzhog==
+X-Gm-Message-State: AOJu0YwO/2eJ4qe1eSzlLphplCs9ocf0jIXiiTt6ziNhqKkFHo4QoI8H
+	7DUBiYR4RO6Smz79BjULaQvIc/3XRcUgfUlcv82cvBA/kb1tXAY5Qn6yVG67Sp/poBD7HybqQxm
+	n+g==
+X-Google-Smtp-Source: AGHT+IHJLNUzIn6ctcMF+INwxFBaLeFnt3jt+tGT+n5clQV+H1h//pkXMDRUR1aNO5clBwbY0FCScT/OPUo=
 X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a81:4984:0:b0:61b:e6d8:1c01 with SMTP id
- 00721157ae682-627e487fd2emr1914977b3.10.1716342027243; Tue, 21 May 2024
- 18:40:27 -0700 (PDT)
-Date: Tue, 21 May 2024 18:40:13 -0700
+ (user=seanjc job=sendgmr) by 2002:a05:6a02:484:b0:5dc:5111:d8b1 with SMTP id
+ 41be03b00d2f7-676492dc83emr2297a12.5.1716342017980; Tue, 21 May 2024 18:40:17
+ -0700 (PDT)
+Date: Tue, 21 May 2024 18:40:08 -0700
 In-Reply-To: <20240522014013.1672962-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20240522014013.1672962-1-seanjc@google.com>
 X-Mailer: git-send-email 2.45.0.215.g3402c0e53f-goog
-Message-ID: <20240522014013.1672962-7-seanjc@google.com>
-Subject: [PATCH v2 6/6] KVM: x86: Drop now-superflous setting of
- l1tf_flush_l1d in vcpu_run()
+Message-ID: <20240522014013.1672962-2-seanjc@google.com>
+Subject: [PATCH v2 1/6] KVM: Add a flag to track if a loaded vCPU is scheduled out
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -89,48 +88,70 @@ Cc: kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, linux-mips@vger.kernel.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that KVM unconditionally sets l1tf_flush_l1d in kvm_arch_vcpu_load(),
-drop the redundant store from vcpu_run().  The flag is cleared only when
-VM-Enter is imminent, deep below vcpu_run(), i.e. barring a KVM bug, it's
-impossible for l1tf_flush_l1d to be cleared between loading the vCPU and
-calling vcpu_run().
+Add a kvm_vcpu.scheduled_out flag to track if a vCPU is in the process of
+being scheduled out (vCPU put path), or if the vCPU is being reloaded
+after being scheduled out (vCPU load path).  In the short term, this will
+allow dropping kvm_arch_sched_in(), as arch code can query scheduled_out
+during kvm_arch_vcpu_load().
 
+Longer term, scheduled_out opens up other potential optimizations, without
+creating subtle/brittle dependencies.  E.g. it allows KVM to keep guest
+state (that is managed via kvm_arch_vcpu_{load,put}()) loaded across
+kvm_sched_{out,in}(), if KVM knows the state isn't accessed by the host
+kernel.  Forcing arch code to coordinate between kvm_arch_sched_{in,out}()
+and kvm_arch_vcpu_{load,put}() is awkward, not reusable, and relies on the
+exact ordering of calls into arch code.
+
+Adding scheduled_out also obviates the need for a kvm_arch_sched_out()
+hook, e.g. if arch code needs to do something novel when putting vCPU
+state.
+
+And even if KVM never uses scheduled_out for anything beyond dropping
+kvm_arch_sched_in(), just being able to remove all of the arch stubs makes
+it worth adding the flag.
+
+Link: https://lore.kernel.org/all/20240430224431.490139-1-seanjc@google.com
+Cc: Oliver Upton <oliver.upton@linux.dev>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 7 ++++---
- arch/x86/kvm/x86.c     | 1 -
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ include/linux/kvm_host.h | 1 +
+ virt/kvm/kvm_main.c      | 4 ++++
+ 2 files changed, 5 insertions(+)
 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index da2f95385a12..552b6a9887a5 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -6672,9 +6672,10 @@ static noinstr void vmx_l1d_flush(struct kvm_vcpu *vcpu)
- 		bool flush_l1d;
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 7b57878c8c18..bde69f74b031 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -380,6 +380,7 @@ struct kvm_vcpu {
+ #endif
+ 	bool preempted;
+ 	bool ready;
++	bool scheduled_out;
+ 	struct kvm_vcpu_arch arch;
+ 	struct kvm_vcpu_stat stat;
+ 	char stats_id[KVM_STATS_NAME_SIZE];
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index a1756d5077ee..7ecea573d121 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -6288,6 +6288,8 @@ static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
+ 	__this_cpu_write(kvm_running_vcpu, vcpu);
+ 	kvm_arch_sched_in(vcpu, cpu);
+ 	kvm_arch_vcpu_load(vcpu, cpu);
++
++	WRITE_ONCE(vcpu->scheduled_out, false);
+ }
  
- 		/*
--		 * Clear the per-vcpu flush bit, it gets set again
--		 * either from vcpu_run() or from one of the unsafe
--		 * VMEXIT handlers.
-+		 * Clear the per-vcpu flush bit, it gets set again if the vCPU
-+		 * is reloaded, i.e. if the vCPU is scheduled out or if KVM
-+		 * exits to userspace, or if KVM reaches one of the unsafe
-+		 * VMEXIT handlers, e.g. if KVM calls into the emulator.
- 		 */
- 		flush_l1d = vcpu->arch.l1tf_flush_l1d;
- 		vcpu->arch.l1tf_flush_l1d = false;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 60fea297f91f..86ae7392cc59 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -11264,7 +11264,6 @@ static int vcpu_run(struct kvm_vcpu *vcpu)
- 	int r;
+ static void kvm_sched_out(struct preempt_notifier *pn,
+@@ -6295,6 +6297,8 @@ static void kvm_sched_out(struct preempt_notifier *pn,
+ {
+ 	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
  
- 	vcpu->run->exit_reason = KVM_EXIT_UNKNOWN;
--	vcpu->arch.l1tf_flush_l1d = true;
- 
- 	for (;;) {
- 		/*
++	WRITE_ONCE(vcpu->scheduled_out, true);
++
+ 	if (current->on_rq) {
+ 		WRITE_ONCE(vcpu->preempted, true);
+ 		WRITE_ONCE(vcpu->ready, true);
 -- 
 2.45.0.215.g3402c0e53f-goog
 
