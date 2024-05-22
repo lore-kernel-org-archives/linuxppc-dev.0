@@ -2,66 +2,67 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97C49C25B74
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 01:51:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8295C25B74
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 01:51:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=4IAih3Oz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=WIws1BWe;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VkYvl48mnz78lM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 11:42:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VkYy43VS9z79Vq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 May 2024 11:44:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=4IAih3Oz;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=WIws1BWe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3a01nzgykdaw4qmzvos00sxq.o0yxuz6911o-pq7xu454.0bxmn4.03s@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3cu1nzgykdbiaws51uy66y3w.u64305cf77u-vwd30aba.6h3sta.69y@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VkYsM3yRvz3g1d
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2024 11:40:23 +1000 (AEST)
-Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-61be325413eso6068377b3.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 18:40:23 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VkYsS0SQcz3g5f
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 May 2024 11:40:28 +1000 (AEST)
+Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-de8b66d59f7so576002276.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 May 2024 18:40:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1716342020; x=1716946820; darn=lists.ozlabs.org;
+        d=google.com; s=20230601; t=1716342025; x=1716946825; darn=lists.ozlabs.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
-        bh=RHSd/NUpLA+qEQZ24Usoansq2bi58Ee8oOJzhOJ4pNg=;
-        b=4IAih3OzbK2UGZx8ebySUbC+OX/Xg71alguGLrXOSLhSPqz//j9RfD0OiuJvTE3P9X
-         5s4GcxVmnJg9kAU8AXNEzOYNXFmo7CbNSnJ+mROj7E6/PUkgfxH3hgzz1VgGDRBFnOlc
-         addDJvgdKK+sPIvizeA+DPdPeBvc1zodtKS+Fy+tpiCIq9k3Eq1sl4G3AkUhAMf0ksac
-         u7PUOqNw9btScp3TdoGRQLX54lQVWtiQhHIYZw9MZUw/1K51XTYB9mHBhKdFXLb6AL8C
-         H1PSeCVmCMt80J8yt9hdeBraXVaCHCdNxix997+2YpLeq5MohS5RyzzHnbbtOBtWCIEe
-         +Hpg==
+        bh=9/Jh3NT05cAP4Dr5P4AOID5+N71m8JBqExCgFsAlL8M=;
+        b=WIws1BWeQ/CK2ZSNScgjK2GoXEf4aQhYQcbQMD7TMMXRxRfJee5rwdY5j5yJQbCkwo
+         3uzzDzCAHDZ4Y5AfbWstCCNpcuBUsVN8cgbZxOEQCIsJdKuw0VHkZzsekTziMUBdYGAU
+         p8vggxGCdCWRn2nL63r5X9snSpo/zVYRuUoIRc9FhTf2K7o+GXEQE3ixZ66S2mMcPRFx
+         H6L2rgT0uOy6lz9gMyq7KyekUQTRy5UcFIORLZAVPE+0qn0Mt0QhSxaiJKTHECHvtE/5
+         2zPOMyS7XPZKpFDgR0sa/SGK6kvebelw2bdHb9l2aI+YOkZCH3VeR8JcJVU7AUU/75UM
+         cXhQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716342020; x=1716946820;
+        d=1e100.net; s=20230601; t=1716342025; x=1716946825;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=RHSd/NUpLA+qEQZ24Usoansq2bi58Ee8oOJzhOJ4pNg=;
-        b=hRcW4GD6rsJ2c7sjk08nW9iDzCURX+kPxdoFpyElr0rUkacDV47DsPKp8AWaGOVjyL
-         QjBlDzxFjOzA7fmo3i/VndXdOGYFECPsNZMqZEs/dPctoItJVdG7WfcnY31m5LtYSuEl
-         l/mLC1X5i76evAMvrY3iRZpdeqy7KFtVNtSutG/N8RqJFZVy+lZ73IPoMYGZRwDvEr/v
-         iD8tsHFZao8FaaJmwI97CtsBYR0pqRH+QnZM7If74gpfGLbnxKMFHaUUkKvQp+2Zpfn9
-         uMKs97FEp1kAuiraX2spZlnr2HIA2z0BRvFw8wMVVyydRSVXxSusXJ0S2ZHJGIR0cseJ
-         cQmQ==
-X-Forwarded-Encrypted: i=1; AJvYcCW21mcZNONHA4VoKxPC6kNoAziIYtYHd+6lLpjFdn8uojnt2uARa/APA7RZ9bP4V8vG0aiOhj7vbW9fTDQJQYg25qJKYaWTD4CxCERXvg==
-X-Gm-Message-State: AOJu0YzXQz88aHJOwhR64MJ15fNUDyuO7QB3T6Mb1rv7Lzn6p7Jc5SQK
-	km7V1UQwov0YnAoD1+Ug9ktJRplGgpBSs6Z6NFIFxXReRfWqDzP/qhfetIAGsXiPYb+apBhagmD
-	Cwg==
-X-Google-Smtp-Source: AGHT+IE9wMBEKwP41aGLYHN5gIBbi7welOi0G93+qj4AotHFqdz8JFE0XRpN5nX1Yz+N7pw0xKG3cBx+pVY=
+        bh=9/Jh3NT05cAP4Dr5P4AOID5+N71m8JBqExCgFsAlL8M=;
+        b=B2J6QVKmHlxWH/V74amzoB18A+lEJ6Bzo4t1UWqxJ1mMp5TQBaex5VOzh3VqN++at0
+         WKaF8kT9RI124A+xllDDVH2xxbL1HrymOntBq5DUBTqxDJOC80BYKlbkOkaxApSFddaw
+         bTNcgWMyAkf4u1ZfWgnoQXxQ5EX8wL5MgdXT69gM0bfAyx7u5zdLCYWdV60aj/5UrnVO
+         gxbLAnSsIRpekjB4f25JsbRpXvOWWXEQBtdGtiwHrg4DchX3mI12URwA9TMkwwL1TW36
+         l6zzYM3O4imCVFsZBcYiEq7BY+L4jnCIO1XuNUrkuc+zAy35MyvOn9ka1kagK6J26o94
+         JyLg==
+X-Forwarded-Encrypted: i=1; AJvYcCXa0EHjJCB+XR0WA0c4+MMn5jwhqdfezXNb+PYENEvb5D0pFMbcM8aEd2kR64mYgf4qLutNGrFqaXlFXIsmJC0FwzJoqdh8DsFaii1dCg==
+X-Gm-Message-State: AOJu0YzZTSoxDZoZ1BfGRnFINrnZiQ64bCeHjjNuTkqrxLbWgkYmgM62
+	8HlI+Orcr4X1v+FBYcHV244mwaTYdU45zDmfhlRYqs18XT9W9s0ExRWy5waUhB7g4paoAM7E1Tg
+	Yyw==
+X-Google-Smtp-Source: AGHT+IFb4ojjFIBjH/g1gqSAZtGdXjScECyPQCKxtonXS1wS1/Q6Sfuh8cMohHl5GHkfuJ7096x7AKNuxdo=
 X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a0d:ca57:0:b0:61b:e53e:c7ae with SMTP id
- 00721157ae682-627e46aa2e9mr2093257b3.2.1716342019957; Tue, 21 May 2024
- 18:40:19 -0700 (PDT)
-Date: Tue, 21 May 2024 18:40:09 -0700
+ (user=seanjc job=sendgmr) by 2002:a05:6902:100f:b0:dda:c4ec:7db5 with SMTP id
+ 3f1490d57ef6-df4e10405f6mr210549276.4.1716342025422; Tue, 21 May 2024
+ 18:40:25 -0700 (PDT)
+Date: Tue, 21 May 2024 18:40:12 -0700
 In-Reply-To: <20240522014013.1672962-1-seanjc@google.com>
 Mime-Version: 1.0
 References: <20240522014013.1672962-1-seanjc@google.com>
 X-Mailer: git-send-email 2.45.0.215.g3402c0e53f-goog
-Message-ID: <20240522014013.1672962-3-seanjc@google.com>
-Subject: [PATCH v2 2/6] KVM: VMX: Move PLE grow/shrink helpers above vmx_vcpu_load()
+Message-ID: <20240522014013.1672962-6-seanjc@google.com>
+Subject: [PATCH v2 5/6] KVM: x86: Unconditionally set l1tf_flush_l1d during
+ vCPU load
 From: Sean Christopherson <seanjc@google.com>
 To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
 	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
@@ -88,99 +89,40 @@ Cc: kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, linux-mips@vger.kernel.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move VMX's {grow,shrink}_ple_window() above vmx_vcpu_load() in preparation
-of moving the sched_in logic, which handles shrinking the PLE window, into
-vmx_vcpu_load().
-
-No functional change intended.
+Always set l1tf_flush_l1d during kvm_arch_vcpu_load() instead of setting
+it only when the vCPU is being scheduled back in.  The flag is processed
+only when VM-Enter is imminent, and KVM obviously needs to load the vCPU
+before VM-Enter, so attempting to precisely set l1tf_flush_l1d provides no
+meaningful value.  I.e. the flag _will_ be set either way, it's simply a
+matter of when.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 64 +++++++++++++++++++++---------------------
- 1 file changed, 32 insertions(+), 32 deletions(-)
+ arch/x86/kvm/x86.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 51b2cd13250a..07a4d6a3a43e 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -1410,6 +1410,38 @@ static void vmx_write_guest_kernel_gs_base(struct vcpu_vmx *vmx, u64 data)
- }
- #endif
- 
-+static void grow_ple_window(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
-+	unsigned int old = vmx->ple_window;
-+
-+	vmx->ple_window = __grow_ple_window(old, ple_window,
-+					    ple_window_grow,
-+					    ple_window_max);
-+
-+	if (vmx->ple_window != old) {
-+		vmx->ple_window_dirty = true;
-+		trace_kvm_ple_window_update(vcpu->vcpu_id,
-+					    vmx->ple_window, old);
-+	}
-+}
-+
-+static void shrink_ple_window(struct kvm_vcpu *vcpu)
-+{
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
-+	unsigned int old = vmx->ple_window;
-+
-+	vmx->ple_window = __shrink_ple_window(old, ple_window,
-+					      ple_window_shrink,
-+					      ple_window);
-+
-+	if (vmx->ple_window != old) {
-+		vmx->ple_window_dirty = true;
-+		trace_kvm_ple_window_update(vcpu->vcpu_id,
-+					    vmx->ple_window, old);
-+	}
-+}
-+
- void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
- 			struct loaded_vmcs *buddy)
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 59aa772af755..60fea297f91f 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -5006,12 +5006,11 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
  {
-@@ -5889,38 +5921,6 @@ int vmx_vcpu_pre_run(struct kvm_vcpu *vcpu)
- 	return 1;
- }
+ 	struct kvm_pmu *pmu = vcpu_to_pmu(vcpu);
  
--static void grow_ple_window(struct kvm_vcpu *vcpu)
--{
--	struct vcpu_vmx *vmx = to_vmx(vcpu);
--	unsigned int old = vmx->ple_window;
--
--	vmx->ple_window = __grow_ple_window(old, ple_window,
--					    ple_window_grow,
--					    ple_window_max);
--
--	if (vmx->ple_window != old) {
--		vmx->ple_window_dirty = true;
--		trace_kvm_ple_window_update(vcpu->vcpu_id,
--					    vmx->ple_window, old);
--	}
--}
--
--static void shrink_ple_window(struct kvm_vcpu *vcpu)
--{
--	struct vcpu_vmx *vmx = to_vmx(vcpu);
--	unsigned int old = vmx->ple_window;
--
--	vmx->ple_window = __shrink_ple_window(old, ple_window,
--					      ple_window_shrink,
--					      ple_window);
--
--	if (vmx->ple_window != old) {
--		vmx->ple_window_dirty = true;
--		trace_kvm_ple_window_update(vcpu->vcpu_id,
--					    vmx->ple_window, old);
--	}
--}
--
- /*
-  * Indicate a busy-waiting vcpu in spinlock. We do not enable the PAUSE
-  * exiting, so only get here on cpu with PAUSE-Loop-Exiting.
+-	if (vcpu->scheduled_out) {
+-		vcpu->arch.l1tf_flush_l1d = true;
+-		if (pmu->version && unlikely(pmu->event_count)) {
+-			pmu->need_cleanup = true;
+-			kvm_make_request(KVM_REQ_PMU, vcpu);
+-		}
++	vcpu->arch.l1tf_flush_l1d = true;
++
++	if (vcpu->scheduled_out && pmu->version && pmu->event_count) {
++		pmu->need_cleanup = true;
++		kvm_make_request(KVM_REQ_PMU, vcpu);
+ 	}
+ 
+ 	/* Address WBINVD may be executed by guest */
 -- 
 2.45.0.215.g3402c0e53f-goog
 
