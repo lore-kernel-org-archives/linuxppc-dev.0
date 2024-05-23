@@ -2,44 +2,56 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E294C25B75
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2024 11:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54013C25B75
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2024 11:21:38 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TrAFcD/0;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VlQN02fpgz78qm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2024 21:06:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=176.9.242.54; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 343 seconds by postgrey-1.37 at boromir; Thu, 23 May 2024 21:05:57 AEST
-Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [176.9.242.54])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VlQZK0bQnz79Ml
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2024 21:15:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TrAFcD/0;
+	dkim-atps=neutral
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VlQMT0QqGz3vYc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2024 21:05:57 +1000 (AEST)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VlQXq0hYkz3vy5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2024 21:14:03 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1716462840;
+	bh=RQkvd78utY4Ja+S0DO/1Mye5FaeMmZbhGPyeP5EJKQQ=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=TrAFcD/0oCSj4bONcbgtSXsgS11T7S6E6WEE0gffpW7ra3PdygToDHYnWt9FP325X
+	 Ulu0bqi0OxVHifCazgqTPTcv/aaBzA/83J1DT67GuP6P4kjWTmxYpR3k5d8QUw5SLX
+	 KaBhSbgX+yGymHJf39ImQ6bnlzCPqhwGCGOmHgS0sHnNQgFIAZ6faJ7xj1yh2/HfZ9
+	 /Z9LFLWzTrGlhqhCpc9jNxdoVnW04Z3oqkCtkFgdgatmkjO7vuIyMxPYAtcwoYLtH4
+	 NkZDz2N+aA5I64TWM3LiovfgstkBhV29OKuQ0ghCtOqMnTp1QDGg0kge9VdLNWKmjf
+	 eyL0seoYf1YEg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
-	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
-	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
-	by mailout3.hostsharing.net (Postfix) with ESMTPS id BFDF41029124C;
-	Thu, 23 May 2024 13:00:02 +0200 (CEST)
-Received: from localhost (unknown [89.246.108.87])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by h08.hostsharing.net (Postfix) with ESMTPSA id 6AD8F603EE84;
-	Thu, 23 May 2024 13:00:02 +0200 (CEST)
-X-Mailbox-Line: From 05f4290439a58730738a15b0c99cd8576c4aa0d9 Mon Sep 17 00:00:00 2001
-Message-ID: <05f4290439a58730738a15b0c99cd8576c4aa0d9.1716461752.git.lukas@wunner.de>
-In-Reply-To: <2024052334-nape-wanting-0a2a@gregkh>
-References: <2024052334-nape-wanting-0a2a@gregkh>
-From: Lukas Wunner <lukas@wunner.de>
-Date: Thu, 23 May 2024 13:00:00 +0200
-Subject: [PATCH] sysfs: Unbreak the build around sysfs_bin_attr_simple_read()
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VlQXk23Vyz4wcK;
+	Thu, 23 May 2024 21:13:58 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Eric Chanudet <echanude@redhat.com>, Dave Hansen
+ <dave.hansen@linux.intel.com>, Andy Lutomirski <luto@kernel.org>, Peter
+ Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter
+ Anvin" <hpa@zytor.com>, Mike Rapoport <rppt@kernel.org>, Andrew Morton
+ <akpm@linux-foundation.org>, Baoquan He <bhe@redhat.com>, Nick Piggin
+ <npiggin@gmail.com>
+Subject: Re: [PATCH v2] mm/mm_init: use node's number of cpus in
+ deferred_page_init_max_threads
+In-Reply-To: <20240522203758.626932-4-echanude@redhat.com>
+References: <20240522203758.626932-4-echanude@redhat.com>
+Date: Thu, 23 May 2024 21:13:55 +1000
+Message-ID: <87jzjk3hn0.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,48 +63,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: intel-gvt-dev@lists.freedesktop.org, linux-efi@vger.kernel.org, Zhi Wang <zhi.wang.linux@gmail.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhenyu Wang <zhenyuw@linux.intel.com>, linux-acpi@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, Jean Delvare <jdelvare@suse.com>, linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, linux-modules@vger.kernel.org
+Cc: linux-s390@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Eric Chanudet <echanude@redhat.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Günter reports build breakage for m68k "m5208evb_defconfig" plus
-CONFIG_BLK_DEV_INITRD=y caused by commit 66bc1a173328 ("treewide:
-Use sysfs_bin_attr_simple_read() helper").
+Eric Chanudet <echanude@redhat.com> writes:
+> x86_64 is already using the node's cpu as maximum threads. Make that the
+> default for all archs setting DEFERRED_STRUCT_PAGE_INIT.
+>
+> This returns to the behavior prior making the function arch-specific
+> with commit ecd096506922 ("mm: make deferred init's max threads
+> arch-specific").
+>
+> Signed-off-by: Eric Chanudet <echanude@redhat.com>
+>
+> ---
+> Setting DEFERRED_STRUCT_PAGE_INIT and testing on a few arm64 platforms
+> shows faster deferred_init_memmap completions:
+>
+> |         | x13s        | SA8775p-ride | Ampere R137-P31 | Ampere HR330 |
+> |         | Metal, 32GB | VM, 36GB     | VM, 58GB        | Metal, 128GB |
+> |         | 8cpus       | 8cpus        | 8cpus           | 32cpus       |
+> |---------|-------------|--------------|-----------------|--------------|
+> | threads |  ms     (%) | ms       (%) |  ms         (%) |  ms      (%) |
+> |---------|-------------|--------------|-----------------|--------------|
+> | 1       | 108    (0%) | 72      (0%) | 224        (0%) | 324     (0%) |
+> | cpus    |  24  (-77%) | 36    (-50%) |  40      (-82%) |  56   (-82%) |
+>
+> - v1: https://lore.kernel.org/linux-arm-kernel/20240520231555.395979-5-echanude@redhat.com
+> - Changes since v1:
+>  - Make the generic function return the number of cpus of the node as
+>    max threads limit instead overriding it for arm64.
+> - Drop Baoquan He's R-b on v1 since the logic changed.
+> - Add CCs according to patch changes (ppc and s390 set
+>   DEFERRED_STRUCT_PAGE_INIT by default).
+>
+>  arch/x86/mm/init_64.c | 12 ------------
+>  mm/mm_init.c          |  2 +-
+>  2 files changed, 1 insertion(+), 13 deletions(-)
 
-The defconfig disables CONFIG_SYSFS, so sysfs_bin_attr_simple_read()
-is not compiled into the kernel.  But init/initramfs.c references
-that function in the initializer of a struct bin_attribute.
+On a machine here (1TB, 40 cores, 4KB pages) the existing code gives:
 
-Add an empty static inline to avoid the build breakage.
+  [    0.500124] node 2 deferred pages initialised in 210ms
+  [    0.515790] node 3 deferred pages initialised in 230ms
+  [    0.516061] node 0 deferred pages initialised in 230ms
+  [    0.516522] node 7 deferred pages initialised in 230ms
+  [    0.516672] node 4 deferred pages initialised in 230ms
+  [    0.516798] node 6 deferred pages initialised in 230ms
+  [    0.517051] node 5 deferred pages initialised in 230ms
+  [    0.523887] node 1 deferred pages initialised in 240ms
 
-Fixes: 66bc1a173328 ("treewide: Use sysfs_bin_attr_simple_read() helper")
-Reported-by: Guenter Roeck <linux@roeck-us.net>
-Closes: https://lore.kernel.org/r/e12b0027-b199-4de7-b83d-668171447ccc@roeck-us.net
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
- include/linux/sysfs.h | 9 +++++++++
- 1 file changed, 9 insertions(+)
+vs with the patch:
 
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index a7d725fbf739..c4e64dc11206 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -750,6 +750,15 @@ static inline int sysfs_emit_at(char *buf, int at, const char *fmt, ...)
- {
- 	return 0;
- }
-+
-+static inline ssize_t sysfs_bin_attr_simple_read(struct file *file,
-+						 struct kobject *kobj,
-+						 struct bin_attribute *attr,
-+						 char *buf, loff_t off,
-+						 size_t count)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_SYSFS */
- 
- static inline int __must_check sysfs_create_file(struct kobject *kobj,
--- 
-2.43.0
+  [    0.379613] node 0 deferred pages initialised in 90ms
+  [    0.380388] node 1 deferred pages initialised in 90ms
+  [    0.380540] node 4 deferred pages initialised in 100ms
+  [    0.390239] node 6 deferred pages initialised in 100ms
+  [    0.390249] node 2 deferred pages initialised in 100ms
+  [    0.390786] node 3 deferred pages initialised in 110ms
+  [    0.396721] node 5 deferred pages initialised in 110ms
+  [    0.397095] node 7 deferred pages initialised in 110ms
 
+Which is a nice speedup.
+
+Tested-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
