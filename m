@@ -2,61 +2,50 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0C70C25B79
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2024 11:21:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C3B2C25B79
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2024 11:31:38 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H+seZe7t;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JQLKM0vm;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VlQYP5ldqz793p
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2024 21:14:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VlQpG6lRNz78yv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 May 2024 21:25:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H+seZe7t;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JQLKM0vm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VlQXc0YPSz3gJs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2024 21:13:52 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id BACE2CE1691
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2024 11:13:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AEF8BC32782
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2024 11:13:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1716462825;
-	bh=8Iv96qeK3XO6FCLRf729LFGYnVsyZm+QYnohsytJjMQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=H+seZe7tia9XlPVFbMv1VD3pMpCR28zP+PYcUgiD0HO1ott5vOkK+LXl8bv8ATOEV
-	 Ad7Ijqn3GCoXbbBre2uB55H4H1dRQNmRXl/deA5egIYXocWhAF9rjgR8lVkJ5+o8NZ
-	 OG5SDUld0NahdcHQMt64J6N7ht+au3cZ7TP09Urx3Iapvq5rotxpP0AiIYeXXglQ+6
-	 eZ6rD75sGB4BUdqavP/iRsVStenQOXZHzPwo0753UW4DF8n8g0eL1BvpVIdVLbJYOM
-	 wm7k3mmwTOQHb3zq+xrznKr/qzcbVsen8qnT1gcW3fzAwIv2+ZiRq09Avg0ymvLDR1
-	 yv6vXxM56UoxA==
-Received: by mail-oo1-f41.google.com with SMTP id 006d021491bc7-5b2f2a584c6so500404eaf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2024 04:13:45 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWkUDISzFV4S+Se6RRtgCWLMExet03ZFUGGQo9cpRinB15Xnc2gvqomWWRs0EPtlSBF177Iclz6a1qxd7htBg74E72zRHwRTQ3SJ4P8gw==
-X-Gm-Message-State: AOJu0YxprATuAeofC6PuIL4pBPCDohn4gca5iYhECcg5cqEsJu5xRGoe
-	6pQ1SkMpDBNfLhMH1AWbDp+0HD1Fp87/ZZIg+d6W6oPOBeowzG2id5joTVpdY6qL1Wf1Mt4RqCx
-	H8J5crHDkIHlqKR1goMVWkvv2iQE=
-X-Google-Smtp-Source: AGHT+IGDJUzVNILe+89DNDK58fKL2girzfjapTcy0TAMQFrntEneDV5GD9qcXO8dgV6h6vsQw1LQsO6L8qszS/mlEfc=
-X-Received: by 2002:a05:6820:2c8a:b0:5b2:89f:452 with SMTP id
- 006d021491bc7-5b6a240fad5mr4236608eaf.1.1716462825087; Thu, 23 May 2024
- 04:13:45 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VlQnW0f2Kz3vZm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 May 2024 21:25:03 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1716463503;
+	bh=xz5HmwISGE6JPRBQj3ZIbQI4h9QCSU4QHSIcfScVatg=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=JQLKM0vmOL055TJl+XXGRzzbmUvRLCww8tlf6nddVcsrtzh+WvpCorTP+wKrHCjgk
+	 CKPEjguPEXgyQ6lX9w4lfTqTk3GV3lUWMf7zFzz4NZGRmNiXA8pfbq6nSKdmi1+rcF
+	 9fjamtltw2z0Y4NHnL94nwlifGqvjyUNaBOdZgz18tmOsxobeguHV6rUnuHuunbaAO
+	 G5JdBc6IAQrt+8Bgdbh10jDHGwpcIkcsUmeJYJB+bkyv7BbIAXdR/XucRU/Do9Ivh/
+	 /sa8oFuB6ITwLPSXlbch2gfXNjws6fkbLdLZUXxe+VpOgJ4f2w73grRTKIydwQvOET
+	 3jaBF9LmQY4xA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VlQnV2GSdz4wb0;
+	Thu, 23 May 2024 21:25:02 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Prabhav Kumar Vaish <pvkumar5749404@gmail.com>, akpm@linux-foundation.org
+Subject: Re: [PATCH next] arch: powerpc: platforms: Remove unnecessary call
+ to of_node_get
+In-Reply-To: <20240522194250.1165568-1-pvkumar5749404@gmail.com>
+References: <20240522194250.1165568-1-pvkumar5749404@gmail.com>
+Date: Thu, 23 May 2024 21:25:01 +1000
+Message-ID: <87h6eo3h4i.fsf@mail.lhotse>
 MIME-Version: 1.0
-References: <2024052334-nape-wanting-0a2a@gregkh> <05f4290439a58730738a15b0c99cd8576c4aa0d9.1716461752.git.lukas@wunner.de>
-In-Reply-To: <05f4290439a58730738a15b0c99cd8576c4aa0d9.1716461752.git.lukas@wunner.de>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 23 May 2024 13:13:34 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0ihKzCbFxfVn9s5zB3WJepzi+dUPk1LFRMnbFF-9EV6nw@mail.gmail.com>
-Message-ID: <CAJZ5v0ihKzCbFxfVn9s5zB3WJepzi+dUPk1LFRMnbFF-9EV6nw@mail.gmail.com>
-Subject: Re: [PATCH] sysfs: Unbreak the build around sysfs_bin_attr_simple_read()
-To: Lukas Wunner <lukas@wunner.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,59 +57,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: intel-gvt-dev@lists.freedesktop.org, Jean Delvare <jdelvare@suse.com>, Zhi Wang <zhi.wang.linux@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, Zhenyu Wang <zhenyuw@linux.intel.com>, linux-acpi@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, linux-efi@vger.kernel.org, linux-modules@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, Ard Biesheuvel <ardb@kernel.org>, Guenter Roeck <linux@roeck-us.net>
+Cc: Prabhav Kumar Vaish <pvkumar5749404@gmail.com>, javier.carrasco.cruz@gmail.com, linux-kernel@vger.kernel.org, julia.lawall@inria.fr, npiggin@gmail.com, skhan@linuxfoundation.org, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 23, 2024 at 1:00=E2=80=AFPM Lukas Wunner <lukas@wunner.de> wrot=
-e:
->
-> G=C3=BCnter reports build breakage for m68k "m5208evb_defconfig" plus
-> CONFIG_BLK_DEV_INITRD=3Dy caused by commit 66bc1a173328 ("treewide:
-> Use sysfs_bin_attr_simple_read() helper").
->
-> The defconfig disables CONFIG_SYSFS, so sysfs_bin_attr_simple_read()
-> is not compiled into the kernel.  But init/initramfs.c references
-> that function in the initializer of a struct bin_attribute.
->
-> Add an empty static inline to avoid the build breakage.
->
-> Fixes: 66bc1a173328 ("treewide: Use sysfs_bin_attr_simple_read() helper")
-> Reported-by: Guenter Roeck <linux@roeck-us.net>
-> Closes: https://lore.kernel.org/r/e12b0027-b199-4de7-b83d-668171447ccc@ro=
-eck-us.net
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+Prabhav Kumar Vaish <pvkumar5749404@gmail.com> writes:
+> `dev->of_node` has a pointer to device node, of_node_get call seems
+> unnecessary.
 
-Works for me.
+Sorry but it is necessary.
 
-Reviewed-by: Rafael J. Wysocki <rafael@kernel.org>
-
+> Signed-off-by: Prabhav Kumar Vaish <pvkumar5749404@gmail.com>
 > ---
->  include/linux/sysfs.h | 9 +++++++++
->  1 file changed, 9 insertions(+)
+>  arch/powerpc/platforms/cell/iommu.c | 9 +++------
+>  1 file changed, 3 insertions(+), 6 deletions(-)
 >
-> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-> index a7d725fbf739..c4e64dc11206 100644
-> --- a/include/linux/sysfs.h
-> +++ b/include/linux/sysfs.h
-> @@ -750,6 +750,15 @@ static inline int sysfs_emit_at(char *buf, int at, c=
-onst char *fmt, ...)
+> diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+> index 4cd9c0de22c2..5b794ce08689 100644
+> --- a/arch/powerpc/platforms/cell/iommu.c
+> +++ b/arch/powerpc/platforms/cell/iommu.c
+> @@ -780,14 +780,13 @@ static int __init cell_iommu_init_disabled(void)
+>  static u64 cell_iommu_get_fixed_address(struct device *dev)
 >  {
->         return 0;
->  }
-> +
-> +static inline ssize_t sysfs_bin_attr_simple_read(struct file *file,
-> +                                                struct kobject *kobj,
-> +                                                struct bin_attribute *at=
-tr,
-> +                                                char *buf, loff_t off,
-> +                                                size_t count)
-> +{
-> +       return 0;
-> +}
->  #endif /* CONFIG_SYSFS */
->
->  static inline int __must_check sysfs_create_file(struct kobject *kobj,
-> --
-> 2.43.0
->
+>  	u64 cpu_addr, size, best_size, dev_addr = OF_BAD_ADDR;
+> -	struct device_node *np;
+> +	struct device_node *np = dev->of_node;
+>  	const u32 *ranges = NULL;
+>  	int i, len, best, naddr, nsize, pna, range_size;
+>  
+>  	/* We can be called for platform devices that have no of_node */
+> -	np = of_node_get(dev->of_node);
+>  	if (!np)
+> -		goto out;
+> +		return dev_addr;
+>  
+>  	while (1) {
+>  		naddr = of_n_addr_cells(np);
+
+		nsize = of_n_size_cells(np);
+		np = of_get_next_parent(np);
+		if (!np)
+			break;
+
+of_get_next_parent() drops the reference of the node passed to it (np).
+
+So if you actually tested your patch you should see a recount underflow.
+
+cheers
