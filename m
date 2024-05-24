@@ -2,49 +2,50 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69486C25B79
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 May 2024 07:31:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77D82C25B74
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 May 2024 07:41:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ByOKk0V7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kPnrARDn;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VlxRH0fbnz87bh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 May 2024 17:26:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VlxdC0hjmz88fH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 May 2024 17:34:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ByOKk0V7;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kPnrARDn;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VlxQT2rlDz3cbQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2024 17:25:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VlxYs4BdSz87TV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 May 2024 17:31:45 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1716535518;
-	bh=6Nxzlvh6hi/K9obT/OWbCZiouMvR46Xa9Rav7X3CLf0=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=ByOKk0V7ZEccbM3hSsVjeYiyQfMGD14qpRTg9787+rmXSGvxNYhpt/FkKoBZT6pFb
-	 ONsGC97njz2dXaztOnEyCwHTdBC7Ho8dGBHffh5fZTFjh1ZCjsCwetR9ezghEBY2kG
-	 zuxRO3Bqm22lj6cNVCBH0K+3f2+31JyB7YUN28655vsElCurpxtqp7LOZJKWdk721b
-	 UcheUeZVS9LquznNQs1qlKhvDNfhBPxW24QfHthpjLEnI6Gi/u7xJWaytfN9n2NFbq
-	 GGkQy1qq3mW/Lstk3DYMcVrsczv9aGsF9/AxkS3S3Qk00r9JWJqNrhDNdR8TCuVhZa
-	 VWLcRzwgAfEJQ==
+	s=201909; t=1716535905;
+	bh=NcBut2Y/N1CgT348/j3xHb5WCF0OiR+6Lqt9GJo0Vyk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=kPnrARDnt7YXSKTI35wZMMSzcAdeg2mkVYtEkDBa8u2Ux7dNnxussi4APF1UyZI7o
+	 LNxYZQYgS8WcJMVqv7S7DJz7aLgl/T+WTXnWDP8RMLAHQUN1n7VYczaDNhB+x5/+t7
+	 6RdGQZa6nQhQho5MpPxsIYl63FND5WiLFRq85oK+kvHLabmCnrXCdebxzE7TB9Nwd4
+	 S0V0BAI7pdPbyWaEC0RKZysV2Ey8864qee0IHp4eKs+NxOCNV2ioONbvHzneCO/Am4
+	 6KHL7yQaGbQmACeCuC+G3IUtfOdbSXXjqUSF9xBAcU1AOSbKVra0vvNBaMijnh14DV
+	 s6bwhhdAkDTPQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VlxQQ2Frvz4wc5;
-	Fri, 24 May 2024 17:25:18 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VlxYs52Qqz4wny;
+	Fri, 24 May 2024 17:31:45 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anjali K <anjalik@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] powerpc/perf: Set cpumode flags using sample address
-In-Reply-To: <20240517094607.422166-1-anjalik@linux.ibm.com>
-References: <20240517094607.422166-1-anjalik@linux.ibm.com>
-Date: Fri, 24 May 2024 17:25:17 +1000
-Message-ID: <87ed9r4qoy.fsf@mail.lhotse>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 4/6] powerpc/64e: Drop MMU_FTR_TYPE_FSL_E checks in 64-bit code
+Date: Fri, 24 May 2024 17:31:39 +1000
+Message-ID: <20240524073141.1637736-4-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.45.1
+In-Reply-To: <20240524073141.1637736-1-mpe@ellerman.id.au>
+References: <20240524073141.1637736-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,147 +57,202 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: anjalik@linux.ibm.com, kjain@linux.ibm.com, atrajeev@linux.vnet.ibm.com, maddy@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Anjali,
+All 64-bit Book3E have MMU_FTR_TYPE_FSL_E, since A2 was removed, so
+remove checks for it in 64-bit only code.
 
-Anjali K <anjalik@linux.ibm.com> writes:
-> Currently in some cases, when the sampled instruction address register
-> latches to a specific address during sampling, there is an inconsistency
-> in the privilege bits captured in the sampled event register.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/setup_64.c   |  6 +-
+ arch/powerpc/mm/nohash/tlb_64e.c | 97 ++++++++++++--------------------
+ 2 files changed, 38 insertions(+), 65 deletions(-)
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 2f19d5e94485..12ca0bf27045 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -696,11 +696,7 @@ __init u64 ppc64_bolted_size(void)
+ {
+ #ifdef CONFIG_PPC_BOOK3E_64
+ 	/* Freescale BookE bolts the entire linear mapping */
+-	/* XXX: BookE ppc64_rma_limit setup seems to disagree? */
+-	if (early_mmu_has_feature(MMU_FTR_TYPE_FSL_E))
+-		return linear_map_top;
+-	/* Other BookE, we assume the first GB is bolted */
+-	return 1ul << 30;
++	return linear_map_top;
+ #else
+ 	/* BookS radix, does not take faults on linear mapping */
+ 	if (early_radix_enabled())
+diff --git a/arch/powerpc/mm/nohash/tlb_64e.c b/arch/powerpc/mm/nohash/tlb_64e.c
+index 9db85ee9ba5b..21c4b2442fcf 100644
+--- a/arch/powerpc/mm/nohash/tlb_64e.c
++++ b/arch/powerpc/mm/nohash/tlb_64e.c
+@@ -86,9 +86,8 @@ static void __init setup_page_sizes(void)
+ 	int psize;
  
-I don't really like "inconsistency", it's vague.
-
-The sampled address is correct, and the privilege bits are incorrect.
-
-If someone is offended by that wording you can direct them to me :)
-
-> For example, a snippet from the perf report on a power10 system is:
-> Overhead  Address             Command       Shared Object      Symbol
-> ........  ..................  ............  .................  .......................
->      2.41%  0x7fff9f94a02c      null_syscall  [unknown]          [k] 0x00007fff9f94a02c
->      2.20%  0x7fff9f94a02c      null_syscall  libc.so.6          [.] syscall
->
-> perf_get_misc_flags() function looks at the privilege bits to return
-> the corresponding flags to be used for the address symbol and these
-> privilege bit details are read from the sampled event register. In the
-> above snippet, address "0x00007fff9f94a02c" is shown as "k" (kernel) due
-> to the inconsistent privilege bits captured in the sampled event register.
+ 	unsigned int mmucfg = mfspr(SPRN_MMUCFG);
+-	int fsl_mmu = mmu_has_feature(MMU_FTR_TYPE_FSL_E);
  
-"incorrect privilege bits"
-
-> To address this case, the proposed fix is to additionally check whether the
+-	if (fsl_mmu && (mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V1) {
++	if ((mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V1) {
+ 		unsigned int tlb1cfg = mfspr(SPRN_TLB1CFG);
+ 		unsigned int min_pg, max_pg;
  
-"To address this case check whether the"
-
-> sampled address is in the kernel area. Since this is specific to the latest
-> platform, a new pmu flag is added called "PPMU_P10" and is used to
-> contain the proposed fix.
-
-You should explain why this fix replaces the existing P10_DD1 logic.
-
-> Signed-off-by: Anjali K <anjalik@linux.ibm.com>
-> ---
-> Changelog:
-> V1->V2:
-> Fixed the build warning reported by the kernel test bot
-> Added a new flag PPMU_P10 and used it instead of PPMU_ARCH_31 to restrict
-> the changes to the current platform (Power10)
->
->  arch/powerpc/include/asm/perf_event_server.h |  1 +
->  arch/powerpc/perf/core-book3s.c              | 43 ++++++++------------
->  arch/powerpc/perf/power10-pmu.c              |  3 +-
->  3 files changed, 20 insertions(+), 27 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-> index e2221d29fdf9..12f7bfb4cab1 100644
-> --- a/arch/powerpc/include/asm/perf_event_server.h
-> +++ b/arch/powerpc/include/asm/perf_event_server.h
-> @@ -90,6 +90,7 @@ struct power_pmu {
->  #define PPMU_ARCH_31		0x00000200 /* Has MMCR3, SIER2 and SIER3 */
->  #define PPMU_P10_DD1		0x00000400 /* Is power10 DD1 processor version */
->  #define PPMU_HAS_ATTR_CONFIG1	0x00000800 /* Using config1 attribute */
-> +#define PPMU_P10			0x00001000 /* For power10 pmu */
-  
-Can you put PPMU_P10 immediately after PPMU_P10_DD1. It's OK to renumber
-PPMU_HAS_ATTR_CONFIG1.
-
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 6b5f8a94e7d8..8a2677463a73 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -266,31 +266,12 @@ static inline u32 perf_flags_from_msr(struct pt_regs *regs)
->  static inline u32 perf_get_misc_flags(struct pt_regs *regs)
->  {
->  	bool use_siar = regs_use_siar(regs);
-> -	unsigned long mmcra = regs->dsisr;
-> -	int marked = mmcra & MMCRA_SAMPLE_ENABLE;
-> +	unsigned long siar = mfspr(SPRN_SIAR);
+@@ -115,7 +114,7 @@ static void __init setup_page_sizes(void)
+ 		goto out;
+ 	}
  
-We shouldn't read SPRN_SIAR until we know it will be used.
+-	if (fsl_mmu && (mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V2) {
++	if ((mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V2) {
+ 		u32 tlb1cfg, tlb1ps;
+ 
+ 		tlb0cfg = mfspr(SPRN_TLB0CFG);
+@@ -213,26 +212,24 @@ static void early_init_this_mmu(void)
+ 	}
+ 	mtspr(SPRN_MAS4, mas4);
+ 
+-	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+-		unsigned int num_cams;
+-		bool map = true;
++	unsigned int num_cams;
++	bool map = true;
+ 
+-		/* use a quarter of the TLBCAM for bolted linear map */
+-		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
++	/* use a quarter of the TLBCAM for bolted linear map */
++	num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
+ 
+-		/*
+-		 * Only do the mapping once per core, or else the
+-		 * transient mapping would cause problems.
+-		 */
++	/*
++	 * Only do the mapping once per core, or else the
++	 * transient mapping would cause problems.
++	 */
+ #ifdef CONFIG_SMP
+-		if (hweight32(get_tensr()) > 1)
+-			map = false;
++	if (hweight32(get_tensr()) > 1)
++		map = false;
+ #endif
+ 
+-		if (map)
+-			linear_map_top = map_mem_in_cams(linear_map_top,
+-							 num_cams, false, true);
+-	}
++	if (map)
++		linear_map_top = map_mem_in_cams(linear_map_top,
++						 num_cams, false, true);
+ 
+ 	/* A sync won't hurt us after mucking around with
+ 	 * the MMU configuration
+@@ -242,16 +239,10 @@ static void early_init_this_mmu(void)
+ 
+ static void __init early_init_mmu_global(void)
+ {
+-	/* XXX This should be decided at runtime based on supported
+-	 * page sizes in the TLB, but for now let's assume 16M is
+-	 * always there and a good fit (which it probably is)
+-	 *
++	/*
+ 	 * Freescale booke only supports 4K pages in TLB0, so use that.
+ 	 */
+-	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E))
+-		mmu_vmemmap_psize = MMU_PAGE_4K;
+-	else
+-		mmu_vmemmap_psize = MMU_PAGE_16M;
++	mmu_vmemmap_psize = MMU_PAGE_4K;
+ 
+ 	/* XXX This code only checks for TLB 0 capabilities and doesn't
+ 	 *     check what page size combos are supported by the HW. It
+@@ -264,13 +255,10 @@ static void __init early_init_mmu_global(void)
+ 	/* Look for HW tablewalk support */
+ 	setup_mmu_htw();
+ 
+-	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+-		if (book3e_htw_mode == PPC_HTW_NONE) {
+-			extlb_level_exc = EX_TLB_SIZE;
+-			patch_exception(0x1c0, exc_data_tlb_miss_bolted_book3e);
+-			patch_exception(0x1e0,
+-				exc_instruction_tlb_miss_bolted_book3e);
+-		}
++	if (book3e_htw_mode == PPC_HTW_NONE) {
++		extlb_level_exc = EX_TLB_SIZE;
++		patch_exception(0x1c0, exc_data_tlb_miss_bolted_book3e);
++		patch_exception(0x1e0, exc_instruction_tlb_miss_bolted_book3e);
+ 	}
+ 
+ 	/* Set the global containing the top of the linear mapping
+@@ -283,16 +271,14 @@ static void __init early_init_mmu_global(void)
+ 
+ static void __init early_mmu_set_memory_limit(void)
+ {
+-	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+-		/*
+-		 * Limit memory so we dont have linear faults.
+-		 * Unlike memblock_set_current_limit, which limits
+-		 * memory available during early boot, this permanently
+-		 * reduces the memory available to Linux.  We need to
+-		 * do this because highmem is not supported on 64-bit.
+-		 */
+-		memblock_enforce_memory_limit(linear_map_top);
+-	}
++	/*
++	 * Limit memory so we dont have linear faults.
++	 * Unlike memblock_set_current_limit, which limits
++	 * memory available during early boot, this permanently
++	 * reduces the memory available to Linux.  We need to
++	 * do this because highmem is not supported on 64-bit.
++	 */
++	memblock_enforce_memory_limit(linear_map_top);
+ 
+ 	memblock_set_current_limit(linear_map_top);
+ }
+@@ -313,12 +299,8 @@ void early_init_mmu_secondary(void)
+ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 				phys_addr_t first_memblock_size)
+ {
+-	/* On non-FSL Embedded 64-bit, we adjust the RMA size to match
+-	 * the bolted TLB entry. We know for now that only 1G
+-	 * entries are supported though that may eventually
+-	 * change.
+-	 *
+-	 * on FSL Embedded 64-bit, usually all RAM is bolted, but with
++	/*
++	 * On FSL Embedded 64-bit, usually all RAM is bolted, but with
+ 	 * unusual memory sizes it's possible for some RAM to not be mapped
+ 	 * (such RAM is not used at all by Linux, since we don't support
+ 	 * highmem on 64-bit).  We limit ppc64_rma_size to what would be
+@@ -330,19 +312,14 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	 * We crop it to the size of the first MEMBLOCK to
+ 	 * avoid going over total available memory just in case...
+ 	 */
+-	if (early_mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+-		unsigned long linear_sz;
+-		unsigned int num_cams;
+-
+-		/* use a quarter of the TLBCAM for bolted linear map */
+-		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
++	unsigned long linear_sz;
++	unsigned int num_cams;
+ 
+-		linear_sz = map_mem_in_cams(first_memblock_size, num_cams,
+-					    true, true);
++	/* use a quarter of the TLBCAM for bolted linear map */
++	num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
+ 
+-		ppc64_rma_size = min_t(u64, linear_sz, 0x40000000);
+-	} else
+-		ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
++	linear_sz = map_mem_in_cams(first_memblock_size, num_cams, true, true);
++	ppc64_rma_size = min_t(u64, linear_sz, 0x40000000);
+ 
+ 	/* Finally limit subsequent allocations */
+ 	memblock_set_current_limit(first_memblock_base + ppc64_rma_size);
+-- 
+2.45.1
 
-> +	unsigned long addr;
->  
->  	if (!use_siar)
->  		return perf_flags_from_msr(regs);
->  
-> -	/*
-> -	 * Check the address in SIAR to identify the
-> -	 * privilege levels since the SIER[MSR_HV, MSR_PR]
-> -	 * bits are not set for marked events in power10
-> -	 * DD1.
-> -	 */
-> -	if (marked && (ppmu->flags & PPMU_P10_DD1)) {
-> -		unsigned long siar = mfspr(SPRN_SIAR);
-> -		if (siar) {
-> -			if (is_kernel_addr(siar))
-> -				return PERF_RECORD_MISC_KERNEL;
-> -			return PERF_RECORD_MISC_USER;
-> -		} else {
-> -			if (is_kernel_addr(regs->nip))
-> -				return PERF_RECORD_MISC_KERNEL;
-> -			return PERF_RECORD_MISC_USER;
-> -		}
-> -	}
-> -
->  	/*
->  	 * If we don't have flags in MMCRA, rather than using
->  	 * the MSR, we intuit the flags from the address in
-> @@ -298,19 +279,29 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
->  	 * results
->  	 */
->  	if (ppmu->flags & PPMU_NO_SIPR) {
-> -		unsigned long siar = mfspr(SPRN_SIAR);
->  		if (is_kernel_addr(siar))
->  			return PERF_RECORD_MISC_KERNEL;
->  		return PERF_RECORD_MISC_USER;
->  	}
->  
->  	/* PR has priority over HV, so order below is important */
-> -	if (regs_sipr(regs))
-> -		return PERF_RECORD_MISC_USER;
-> -
-> -	if (regs_sihv(regs) && (freeze_events_kernel != MMCR0_FCHV))
-> +	if (regs_sipr(regs)) {
-> +		if (!(ppmu->flags & PPMU_P10))
-> +			return PERF_RECORD_MISC_USER;
-> +	} else if (regs_sihv(regs) && (freeze_events_kernel != MMCR0_FCHV))
->  		return PERF_RECORD_MISC_HYPERVISOR;
->  
-> +	/*
-> +	 * Check the address in SIAR to identify the
-> +	 * privilege levels since the SIER[MSR_HV, MSR_PR]
-> +	 * bits are not set correctly in power10 sometimes
-> +	 */
-> +	if (ppmu->flags & PPMU_P10) {
-> +		addr = siar ? siar : regs->nip;
-> +		if (!is_kernel_addr(addr))
-> +			return PERF_RECORD_MISC_USER;
-> +	}
-> +
->  	return PERF_RECORD_MISC_KERNEL;
->  }
-
-cheers
