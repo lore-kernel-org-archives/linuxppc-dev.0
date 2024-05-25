@@ -2,113 +2,114 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 860F2C25B78
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2024 04:36:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC65BC25B78
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2024 04:41:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=l1u02PQ7;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/P4sqCWy;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=l1u02PQ7;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/P4sqCWy;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=jEuDA50d;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Hw080IjZ;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=jEuDA50d;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Hw080IjZ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VmTVN6TwJz79SL
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2024 14:30:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VmTd565wVz79pt
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 May 2024 14:36:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=l1u02PQ7;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/P4sqCWy;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=l1u02PQ7;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/P4sqCWy;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=jEuDA50d;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Hw080IjZ;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=jEuDA50d;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Hw080IjZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VmTTZ0mgZz797j
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2024 14:29:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VmTcF0Qw0z79Zh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 May 2024 14:35:40 +1000 (AEST)
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id B90FE210B7;
-	Sat, 25 May 2024 04:29:50 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id B3778340A3;
+	Sat, 25 May 2024 04:35:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1716611390; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1716611734; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=0jMHt0Q/JR84IkdUwzp1Rd4JSoh8dVTU4aWoOj2QTcg=;
-	b=l1u02PQ7mUeizPUtziKZMSjLfSDrBiAuCREz31HsHEIKq6Y05wZ/ksZDnm96yJCEyTPp89
-	s+woPlXhybRjXGtzwwPgGx4OyhUH2WiS/97dN6hchsbJ593I1ri2VE0E9y1EHydxnEf6Jq
-	zRIaWjIMf0LqWRyNkCQmi3MLLt8gtr0=
+	bh=YAR/KSCrC5bL7GZChS4ptojHBPTVtU1QG1noLesxm6g=;
+	b=jEuDA50dLntxOGELXKI4qEeWr/V+CaRxCdiOUzPdnIRvDi5/zK0XkRCmTAZy1wMQPCIS80
+	0IaM+NLFjiKWQzgpy/cufDsUy0SP+eHYbytzXy+ubegIB20C8TMmqXTKJ/inBorr91nUr7
+	pBGs3iF56AnWXc9vlBjyET4uDr5BrrQ=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1716611390;
+	s=susede2_ed25519; t=1716611734;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=0jMHt0Q/JR84IkdUwzp1Rd4JSoh8dVTU4aWoOj2QTcg=;
-	b=/P4sqCWykN268llQRDZDNDK/3U5kd/JdBzk4bO/RCBrUwi8Yi3n/+zg7ms3JYCFIumrcNw
-	wnHCd3Mdif0hhBDg==
-Authentication-Results: smtp-out2.suse.de;
+	bh=YAR/KSCrC5bL7GZChS4ptojHBPTVtU1QG1noLesxm6g=;
+	b=Hw080IjZdbmzoh1NF9fvOmgSZm3v0K6OCVCqVSDn1Th3qHiq/yI5pSgIecmVycDo0Ce0wr
+	mUYgoFCwNmLo81Dw==
+Authentication-Results: smtp-out1.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1716611390; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1716611734; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=0jMHt0Q/JR84IkdUwzp1Rd4JSoh8dVTU4aWoOj2QTcg=;
-	b=l1u02PQ7mUeizPUtziKZMSjLfSDrBiAuCREz31HsHEIKq6Y05wZ/ksZDnm96yJCEyTPp89
-	s+woPlXhybRjXGtzwwPgGx4OyhUH2WiS/97dN6hchsbJ593I1ri2VE0E9y1EHydxnEf6Jq
-	zRIaWjIMf0LqWRyNkCQmi3MLLt8gtr0=
+	bh=YAR/KSCrC5bL7GZChS4ptojHBPTVtU1QG1noLesxm6g=;
+	b=jEuDA50dLntxOGELXKI4qEeWr/V+CaRxCdiOUzPdnIRvDi5/zK0XkRCmTAZy1wMQPCIS80
+	0IaM+NLFjiKWQzgpy/cufDsUy0SP+eHYbytzXy+ubegIB20C8TMmqXTKJ/inBorr91nUr7
+	pBGs3iF56AnWXc9vlBjyET4uDr5BrrQ=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1716611390;
+	s=susede2_ed25519; t=1716611734;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=0jMHt0Q/JR84IkdUwzp1Rd4JSoh8dVTU4aWoOj2QTcg=;
-	b=/P4sqCWykN268llQRDZDNDK/3U5kd/JdBzk4bO/RCBrUwi8Yi3n/+zg7ms3JYCFIumrcNw
-	wnHCd3Mdif0hhBDg==
+	bh=YAR/KSCrC5bL7GZChS4ptojHBPTVtU1QG1noLesxm6g=;
+	b=Hw080IjZdbmzoh1NF9fvOmgSZm3v0K6OCVCqVSDn1Th3qHiq/yI5pSgIecmVycDo0Ce0wr
+	mUYgoFCwNmLo81Dw==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3F5F513A6B;
-	Sat, 25 May 2024 04:29:50 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3903D13A6B;
+	Sat, 25 May 2024 04:35:34 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id vwuLDD5pUWaVPAAAD6G6ig
-	(envelope-from <osalvador@suse.de>); Sat, 25 May 2024 04:29:50 +0000
-Date: Sat, 25 May 2024 06:29:48 +0200
+	id q3RoC5ZqUWZpJwAAD6G6ig
+	(envelope-from <osalvador@suse.de>); Sat, 25 May 2024 04:35:34 +0000
+Date: Sat, 25 May 2024 06:35:32 +0200
 From: Oscar Salvador <osalvador@suse.de>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [RFC PATCH v2 11/20] powerpc/mm: Complement huge_pte_alloc() for
- all non HUGEPD setups
-Message-ID: <ZlFpPBlLoBZNjd73@localhost.localdomain>
+Subject: Re: [RFC PATCH v2 14/20] powerpc/e500: Remove enc field from struct
+ mmu_psize_def
+Message-ID: <ZlFqlO7oic7_Isn4@localhost.localdomain>
 References: <cover.1715971869.git.christophe.leroy@csgroup.eu>
- <59a1390923c40b0b83ae062e3041873292186577.1715971869.git.christophe.leroy@csgroup.eu>
+ <9c7f189b7733b00e8dc9825e76b6bb257bbd519b.1715971869.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <59a1390923c40b0b83ae062e3041873292186577.1715971869.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <9c7f189b7733b00e8dc9825e76b6bb257bbd519b.1715971869.git.christophe.leroy@csgroup.eu>
 X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
+	BAYES_HAM(-3.00)[99.99%];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
 	NEURAL_HAM_SHORT(-0.20)[-1.000];
 	MIME_GOOD(-0.10)[text/plain];
-	RCVD_TLS_ALL(0.00)[];
 	RCPT_COUNT_SEVEN(0.00)[9];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
 	MISSING_XM_UA(0.00)[];
-	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
 	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
 	FROM_HAS_DN(0.00)[];
 	FREEMAIL_CC(0.00)[linux-foundation.org,nvidia.com,redhat.com,ellerman.id.au,gmail.com,vger.kernel.org,kvack.org,lists.ozlabs.org];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_DN_SOME(0.00)[];
 	FROM_EQ_ENVFROM(0.00)[];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
-	TO_DN_SOME(0.00)[]
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email]
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,67 +125,18 @@ Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 17, 2024 at 09:00:05PM +0200, Christophe Leroy wrote:
-> huge_pte_alloc() for non-HUGEPD targets is reserved for 8xx at the
-> moment. In order to convert other targets for non-HUGEPD, complement
-> huge_pte_alloc() to support any standard cont-PxD setup.
+On Fri, May 17, 2024 at 09:00:08PM +0200, Christophe Leroy wrote:
+> enc field is hidden behind BOOK3E_PAGESZ_XX macros, and when you look
+> closer you realise that this field is nothing else than the value of
+> shift minus ten.
+> 
+> So remove enc field and calculate tsize from shift field.
+> 
+> Also remove inc filed which is unused.
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  arch/powerpc/mm/hugetlbpage.c | 25 ++++++++++++++++++++++++-
->  1 file changed, 24 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 42b12e1ec851..f8aefa1e7363 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -195,11 +195,34 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
->  pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
->  		      unsigned long addr, unsigned long sz)
->  {
-> -	pmd_t *pmd = pmd_off(mm, addr);
-> +	pgd_t *pgd;
-> +	p4d_t *p4d;
-> +	pud_t *pud;
-> +	pmd_t *pmd;
-> +
-> +	addr &= ~(sz - 1);
-> +	pgd = pgd_offset(mm, addr);
-> +
-> +	p4d = p4d_offset(pgd, addr);
-> +	if (sz >= PGDIR_SIZE)
-> +		return (pte_t *)p4d;
-> +
-> +	pud = pud_alloc(mm, p4d, addr);
-> +	if (!pud)
-> +		return NULL;
-> +	if (sz >= PUD_SIZE)
-> +		return (pte_t *)pud;
-> +
-> +	pmd = pmd_alloc(mm, pud, addr);
-> +	if (!pmd)
-> +		return NULL;
->  
->  	if (sz < PMD_SIZE)
->  		return pte_alloc_huge(mm, pmd, addr, sz);
->  
-> +	if (!IS_ENABLED(CONFIG_PPC_8xx))
-> +		return (pte_t *)pmd;
 
-So only 8xx has cont-PMD for hugepages?
-
-> +
->  	if (sz != SZ_8M)
->  		return NULL;
-
-Since this function is the core for allocation huge pages, I think it would
-benefit from a comment at the top explaining the possible layouts.
-e.g: Who can have cont-{P4d,PUD,PMD} etc.
-A brief explanation of the possible scheme for all powerpc platforms.
-
-That would help people looking into this in a future.
-
- 
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
 
 -- 
 Oscar Salvador
