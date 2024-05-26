@@ -2,56 +2,53 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFE90C25B7C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 09:37:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03F93C25B75
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 10:36:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VnD1v5ybFz8967
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 19:26:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VnFLz2T93z79qx
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 20:26:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=lists.ozlabs.org)
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VnCy41fGnz87MC
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 May 2024 19:23:39 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4VnCws1CNQz9tM6;
-	Sun, 26 May 2024 11:22:37 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id JruguevNDikF; Sun, 26 May 2024 11:22:37 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4VnCwn36pWz9t0b;
-	Sun, 26 May 2024 11:22:33 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 66AD98B773;
-	Sun, 26 May 2024 11:22:33 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id kh32NAzcDDi9; Sun, 26 May 2024 11:22:33 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.233.45])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D75428B774;
-	Sun, 26 May 2024 11:22:32 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	Jason Gunthorpe <jgg@nvidia.com>,
-	Peter Xu <peterx@redhat.com>,
-	Oscar Salvador <osalvador@suse.de>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC PATCH v3 10/16] powerpc/e500: Remove enc and ind fields from struct mmu_psize_def
-Date: Sun, 26 May 2024 11:22:30 +0200
-Message-ID: <f5356bf9c9459a8a7acbd244bac946877b9bef9f.1716714720.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <cover.1716714720.git.christophe.leroy@csgroup.eu>
-References: <cover.1716714720.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VnFKz4GClz3gHl
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 May 2024 20:25:59 +1000 (AEST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1sBB3o-0002ub-4H; Sun, 26 May 2024 12:25:04 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1sBB3i-0032ch-Nm; Sun, 26 May 2024 12:24:58 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.96)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1sBB3i-00CPaP-22;
+	Sun, 26 May 2024 12:24:58 +0200
+Date: Sun, 26 May 2024 12:24:58 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Corey Minyard <corey@minyard.net>
+Subject: Re: [PATCH 0/6] ipmi: Convert to platform remove callback returning
+ void
+Message-ID: <nkhpr2ddrc4i7ai6gwamxrednx327atigoaxmamwq763bgpi46@fghhdinrqda7>
+References: <cover.1709655755.git.u.kleine-koenig@pengutronix.de>
+ <3uhfeeahn2u23mxyumyxcyx4kmcxzczipkan7eqh4aslsmhxyz@zgsmwj2jvb2v>
+ <Zhf9mQx/KgXOzPTs@mail.minyard.net>
+ <sjgseqireuaswtbuwl3rvcszpsjzph4opq52x2kbudczxutz7o@2tua2oueufdd>
+ <ZlH4KFZ3MYzelzZK@mail.minyard.net>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1716715344; l=3777; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=GvUuKmINqllZ54PyQ+lDpy16CYLzBdm/Cr1rg49spF8=; b=d9+A30hsr6+WdZlbUsIdtK+TSdEN3bWFPGbJYvW17ggKvjX2Yrn6aM1NgByklQUj8NRk4OZ2r Rwr94EFR2ibCqZY5flmp1fIpsZ0dcIaUsmk0q8YrB04xKD2l1+DnjpL
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="iom6itn46xokgfg6"
+Content-Disposition: inline
+In-Reply-To: <ZlH4KFZ3MYzelzZK@mail.minyard.net>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,119 +60,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Corey Minyard <minyard@acm.org>, Benjamin Fair <benjaminfair@google.com>, linux-aspeed@lists.ozlabs.org, Avi Fishman <avifishman70@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, openbmc@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>, Nicholas Piggin <npiggin@gmail.com>, Tali Perry <tali.perry1@gmail.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Nancy Yuen <yuenn@google.com>, kernel@pengutronix.de, Patrick Venture <venture@google.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, openipmi-developer@lists.sourceforge.net, Andrew Jeffery <andrew@codeconstruct.com.au>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Tomer Maimon <tmaimon77@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-enc field is hidden behind BOOK3E_PAGESZ_XX macros, and when you look
-closer you realise that this field is nothing else than the value of
-shift minus ten.
 
-So remove enc field and calculate tsize from shift field.
+--iom6itn46xokgfg6
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Also remove inc field which is unused.
+Hello Corey,
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Oscar Salvador <osalvador@suse.de>
----
- arch/powerpc/include/asm/nohash/mmu-e500.h | 3 ---
- arch/powerpc/mm/nohash/book3e_pgtable.c    | 4 ++--
- arch/powerpc/mm/nohash/tlb.c               | 9 +--------
- arch/powerpc/mm/nohash/tlb_64e.c           | 2 +-
- 4 files changed, 4 insertions(+), 14 deletions(-)
+On Sat, May 25, 2024 at 09:39:36AM -0500, Corey Minyard wrote:
+> On Sat, May 25, 2024 at 12:10:38PM +0200, Uwe Kleine-K=F6nig wrote:
+> > These changes are in next since a while but didn't land in Linus tree
+> > for v6.10-rc1. I intend to send a PR to Greg early next week changing
+> > platform_driver::remove to match remove_new. If these commits don't make
+> > it in in time, I'll be so bold and just include the commits from your
+> > for-next branch in my PR.
+>=20
+> I sent them to Linus right after 6.9 dropped, let me resend...
 
-diff --git a/arch/powerpc/include/asm/nohash/mmu-e500.h b/arch/powerpc/include/asm/nohash/mmu-e500.h
-index 7dc24b8632d7..b281d9eeaf1e 100644
---- a/arch/powerpc/include/asm/nohash/mmu-e500.h
-+++ b/arch/powerpc/include/asm/nohash/mmu-e500.h
-@@ -244,14 +244,11 @@ typedef struct {
- /* Page size definitions, common between 32 and 64-bit
-  *
-  *    shift : is the "PAGE_SHIFT" value for that page size
-- *    penc  : is the pte encoding mask
-  *
-  */
- struct mmu_psize_def
- {
- 	unsigned int	shift;	/* number of bits */
--	unsigned int	enc;	/* PTE encoding */
--	unsigned int    ind;    /* Corresponding indirect page size shift */
- 	unsigned int	flags;
- #define MMU_PAGE_SIZE_DIRECT	0x1	/* Supported as a direct size */
- #define MMU_PAGE_SIZE_INDIRECT	0x2	/* Supported as an indirect size */
-diff --git a/arch/powerpc/mm/nohash/book3e_pgtable.c b/arch/powerpc/mm/nohash/book3e_pgtable.c
-index 1c5e4ecbebeb..ad2a7c26f2a0 100644
---- a/arch/powerpc/mm/nohash/book3e_pgtable.c
-+++ b/arch/powerpc/mm/nohash/book3e_pgtable.c
-@@ -29,10 +29,10 @@ int __meminit vmemmap_create_mapping(unsigned long start,
- 		_PAGE_KERNEL_RW;
- 
- 	/* PTEs only contain page size encodings up to 32M */
--	BUG_ON(mmu_psize_defs[mmu_vmemmap_psize].enc > 0xf);
-+	BUG_ON(mmu_psize_defs[mmu_vmemmap_psize].shift - 10 > 0xf);
- 
- 	/* Encode the size in the PTE */
--	flags |= mmu_psize_defs[mmu_vmemmap_psize].enc << 8;
-+	flags |= (mmu_psize_defs[mmu_vmemmap_psize].shift - 10) << 8;
- 
- 	/* For each PTE for that area, map things. Note that we don't
- 	 * increment phys because all PTEs are of the large size and
-diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
-index f57dc721d063..b653a7be4cb1 100644
---- a/arch/powerpc/mm/nohash/tlb.c
-+++ b/arch/powerpc/mm/nohash/tlb.c
-@@ -53,37 +53,30 @@
- struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
- 	[MMU_PAGE_4K] = {
- 		.shift	= 12,
--		.enc	= BOOK3E_PAGESZ_4K,
- 	},
- 	[MMU_PAGE_2M] = {
- 		.shift	= 21,
--		.enc	= BOOK3E_PAGESZ_2M,
- 	},
- 	[MMU_PAGE_4M] = {
- 		.shift	= 22,
--		.enc	= BOOK3E_PAGESZ_4M,
- 	},
- 	[MMU_PAGE_16M] = {
- 		.shift	= 24,
--		.enc	= BOOK3E_PAGESZ_16M,
- 	},
- 	[MMU_PAGE_64M] = {
- 		.shift	= 26,
--		.enc	= BOOK3E_PAGESZ_64M,
- 	},
- 	[MMU_PAGE_256M] = {
- 		.shift	= 28,
--		.enc	= BOOK3E_PAGESZ_256M,
- 	},
- 	[MMU_PAGE_1G] = {
- 		.shift	= 30,
--		.enc	= BOOK3E_PAGESZ_1GB,
- 	},
- };
- 
- static inline int mmu_get_tsize(int psize)
- {
--	return mmu_psize_defs[psize].enc;
-+	return mmu_psize_defs[psize].shift - 10;
- }
- #else
- static inline int mmu_get_tsize(int psize)
-diff --git a/arch/powerpc/mm/nohash/tlb_64e.c b/arch/powerpc/mm/nohash/tlb_64e.c
-index 053128a5636c..7988238496d7 100644
---- a/arch/powerpc/mm/nohash/tlb_64e.c
-+++ b/arch/powerpc/mm/nohash/tlb_64e.c
-@@ -53,7 +53,7 @@ int extlb_level_exc;
-  */
- void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long address)
- {
--	int tsize = mmu_psize_defs[mmu_pte_psize].enc;
-+	int tsize = mmu_psize_defs[mmu_pte_psize].shift - 10;
- 
- 	if (book3e_htw_mode != PPC_HTW_NONE) {
- 		unsigned long start = address & PMD_MASK;
--- 
-2.44.0
+That worked, they landed now in Linus' tree. Thanks, that makes it a bit
+less ugly for me.
 
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--iom6itn46xokgfg6
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmZTDfkACgkQj4D7WH0S
+/k7BPwgAr6xD+4ieftmbUYTU20hpTMCFNQIGMGywkgy6RQbW9ETmo4DTqDfVVtQw
+rOTCz1AIpQXqREfEmaf6Z+mUHHXwl3+9M1H0VdEnDQXJNbGTEpoL7hW5fBNXeBEw
+t5OnxEpvcN3nggHf8XRynW9SSgnw7RMepD0veOWeUxe76AmJZrYOTNwgYwp61ade
+7vOgwlSmPQ6s5ygQ0YJCckbVxfthPXBwMHFmdu1NcBDIzXz+b0jYwe2ixKfZEXZz
+N8Ti522H4WgTjtr9TMXXNkQd3cjLmBMdbFLr6xtKpxrsvJKkjOlJhm+irzw+Mhgj
+b04pbiT3qFEfsmSj+LMFKeWPl29liw==
+=Qytg
+-----END PGP SIGNATURE-----
+
+--iom6itn46xokgfg6--
