@@ -2,39 +2,39 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E79AC25B7C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 09:31:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85011C25B75
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 09:31:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VnD0w3ZJnz88dp
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 19:26:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VnCxk3Y30z79Gh
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 19:23:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VnCxj1RxVz79Ft
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 May 2024 19:23:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VnCww0d0Vz3fsf
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 May 2024 19:22:40 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4VnCwq1CK7z9tKP;
-	Sun, 26 May 2024 11:22:35 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4VnCwh3cGJz9sx4;
+	Sun, 26 May 2024 11:22:28 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7V_Cp29LHmpb; Sun, 26 May 2024 11:22:35 +0200 (CEST)
+	with ESMTP id 2hScOgdmlG8K; Sun, 26 May 2024 11:22:28 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4VnCwm2XNCz9sgJ;
-	Sun, 26 May 2024 11:22:32 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4VnCwh2cMQz9sgJ;
+	Sun, 26 May 2024 11:22:28 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 52C788B773;
-	Sun, 26 May 2024 11:22:32 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4BC5E8B774;
+	Sun, 26 May 2024 11:22:28 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id wHoLxZ_Th6YA; Sun, 26 May 2024 11:22:32 +0200 (CEST)
+	with ESMTP id vdh24kCSHDYJ; Sun, 26 May 2024 11:22:28 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.233.45])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A7FE48B774;
-	Sun, 26 May 2024 11:22:31 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7A24C8B773;
+	Sun, 26 May 2024 11:22:27 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Jason Gunthorpe <jgg@nvidia.com>,
@@ -42,14 +42,14 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 	Oscar Salvador <osalvador@suse.de>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC PATCH v3 08/16] powerpc/8xx: Rework support for 8M pages using contiguous PTE entries
-Date: Sun, 26 May 2024 11:22:28 +0200
-Message-ID: <09f4ae803da751de7741f3d6bc5d94b8acf18829.1716714720.git.christophe.leroy@csgroup.eu>
+Subject: [RFC PATCH v3 01/16] powerpc/64e: Remove unused IBM HTW code [SQUASHED]
+Date: Sun, 26 May 2024 11:22:21 +0200
+Message-ID: <0345e831c9bf0d3d482677277e6b976bcc51de6b.1716714720.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <cover.1716714720.git.christophe.leroy@csgroup.eu>
 References: <cover.1716714720.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1716715343; l=19487; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=vnzi7mdUq6iGdJjWOPJWf1tUxHXxktCXqPUPuhEYdmc=; b=DSjbkjiwH0eOqAPzgtSf93EpWNEbhe1/ElBpJAFlZ6gtgzLL7m3sOh1rzXENQK+y3tpXiraXb 2cKo3iq4KapCTSRn73vDe6SLPNiFeU4BBHjeJWkAMvnUhxpgjR0Eu0O
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1716715343; l=40864; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=7P5m5qnsOOzOIX3zvYc63487z05AhuMULzMhzjcBwYs=; b=IX8/Znba5UBqXpE9wlVa5ThxGbssIh0VGG35Ts8wWSdrMgueRZs7iIREnPgxTEgfgzN3jhtLW PgoCFVpvVjSAv7xpHeWWyQtXWdKMFsOp87UnAB1gPKmhXJOuhHqhrGa
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,557 +67,1308 @@ Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to fit better with standard Linux page tables layout, add
-support for 8M pages using contiguous PTE entries in a standard
-page table. Page tables will then be populated with 1024 similar
-entries and two PMD entries will point to that page table.
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-The PMD entries also get a flag to tell it is addressing an 8M page,
-this is required for the HW tablewalk assistance.
+This is a squash of series from Michael https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20240524073141.1637736-1-mpe@ellerman.id.au/
 
+The nohash HTW_IBM (Hardware Table Walk) code is unused since support
+for A2 was removed in commit fb5a515704d7 ("powerpc: Remove platforms/
+wsp and associated pieces") (2014).
+
+The remaining supported CPUs use either no HTW (data_tlb_miss_bolted),
+or the e6500 HTW (data_tlb_miss_e6500).
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+powerpc/64e: Split out nohash Book3E 64-bit code
+
+A reasonable chunk of nohash/tlb.c is 64-bit only code, split it out
+into a separate file.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+powerpc/64e: Drop E500 ifdefs in 64-bit code
+
+All 64-bit Book3E have E500=y, so drop the unneeded ifdefs.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+powerpc/64e: Drop MMU_FTR_TYPE_FSL_E checks in 64-bit code
+
+All 64-bit Book3E have MMU_FTR_TYPE_FSL_E, since A2 was removed, so
+remove checks for it in 64-bit only code.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+powerpc/64e: Consolidate TLB miss handler patching
+
+The 64e TLB miss handler patching is done in setup_mmu_htw(), and then
+again immediately afterward in early_init_mmu_global(). Consolidate it
+into a single location.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+powerpc/64e: Drop unused TLB miss handlers
+
+There are two possibilities for book3e_htw_mode, PPC_HTW_E6500 or
+PPC_HTW_NONE.
+
+The TLB miss handlers are patched to use, respectively:
+  - exc_[data|indstruction]_tlb_miss_e6500_book3e
+  - exc_[data|indstruction]_tlb_miss_bolted_book3e
+
+Which means the default handlers are never used. Remove those, and use
+the bolted handlers (PPC_HTW_NONE) by default.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-v3:
-- Move huge_ptep_get() for a more readable commit diff
-- Flag PMD as 8Mbytes in set_huge_pte_at()
-- Define __pte_leaf_size()
-- Change pte_update() instead of all huge callers of pte_update()
-- Added ptep_is_8m_pmdp() helper
-- Fixed kasan early memory 8M allocation
----
- arch/powerpc/Kconfig                          |  1 -
- .../include/asm/nohash/32/hugetlb-8xx.h       | 38 +++----------
- arch/powerpc/include/asm/nohash/32/pte-8xx.h  | 53 ++++++++++++-------
- arch/powerpc/include/asm/nohash/pgtable.h     |  4 --
- arch/powerpc/include/asm/page.h               |  5 --
- arch/powerpc/include/asm/pgtable.h            |  3 ++
- arch/powerpc/kernel/head_8xx.S                | 10 +---
- arch/powerpc/mm/hugetlbpage.c                 | 18 ++++---
- arch/powerpc/mm/kasan/8xx.c                   | 21 +++++---
- arch/powerpc/mm/nohash/8xx.c                  | 40 +++++++-------
- arch/powerpc/mm/pgtable.c                     | 27 +++++++---
- arch/powerpc/mm/pgtable_32.c                  |  2 +-
- arch/powerpc/platforms/Kconfig.cputype        |  2 +
- 13 files changed, 112 insertions(+), 112 deletions(-)
+ arch/powerpc/include/asm/nohash/mmu-e500.h |   3 +-
+ arch/powerpc/kernel/exceptions-64e.S       |   4 +-
+ arch/powerpc/kernel/setup_64.c             |   6 +-
+ arch/powerpc/mm/nohash/Makefile            |   2 +-
+ arch/powerpc/mm/nohash/tlb.c               | 398 +------------------
+ arch/powerpc/mm/nohash/tlb_64e.c           | 314 +++++++++++++++
+ arch/powerpc/mm/nohash/tlb_low_64e.S       | 421 ---------------------
+ 7 files changed, 320 insertions(+), 828 deletions(-)
+ create mode 100644 arch/powerpc/mm/nohash/tlb_64e.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index a1a3b3363008..6a4ea7dad23f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -135,7 +135,6 @@ config PPC
- 	select ARCH_HAS_DMA_MAP_DIRECT 		if PPC_PSERIES
- 	select ARCH_HAS_FORTIFY_SOURCE
- 	select ARCH_HAS_GCOV_PROFILE_ALL
--	select ARCH_HAS_HUGEPD			if HUGETLB_PAGE
- 	select ARCH_HAS_KCOV
- 	select ARCH_HAS_MEMBARRIER_CALLBACKS
- 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
-diff --git a/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h b/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
-index 92df40c6cc6b..c60219269323 100644
---- a/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/hugetlb-8xx.h
-@@ -4,42 +4,12 @@
+diff --git a/arch/powerpc/include/asm/nohash/mmu-e500.h b/arch/powerpc/include/asm/nohash/mmu-e500.h
+index 6ddced0415cb..7dc24b8632d7 100644
+--- a/arch/powerpc/include/asm/nohash/mmu-e500.h
++++ b/arch/powerpc/include/asm/nohash/mmu-e500.h
+@@ -303,8 +303,7 @@ extern unsigned long linear_map_top;
+ extern int book3e_htw_mode;
  
- #define PAGE_SHIFT_8M		23
- 
--static inline pte_t *hugepd_page(hugepd_t hpd)
--{
--	BUG_ON(!hugepd_ok(hpd));
--
--	return (pte_t *)__va(hpd_val(hpd) & ~HUGEPD_SHIFT_MASK);
--}
--
--static inline unsigned int hugepd_shift(hugepd_t hpd)
--{
--	return PAGE_SHIFT_8M;
--}
--
--static inline pte_t *hugepte_offset(hugepd_t hpd, unsigned long addr,
--				    unsigned int pdshift)
--{
--	unsigned long idx = (addr & (SZ_4M - 1)) >> PAGE_SHIFT;
--
--	return hugepd_page(hpd) + idx;
--}
--
- static inline void flush_hugetlb_page(struct vm_area_struct *vma,
- 				      unsigned long vmaddr)
- {
- 	flush_tlb_page(vma, vmaddr);
- }
- 
--static inline void hugepd_populate(hugepd_t *hpdp, pte_t *new, unsigned int pshift)
--{
--	*hpdp = __hugepd(__pa(new) | _PMD_USER | _PMD_PRESENT | _PMD_PAGE_8M);
--}
--
--static inline void hugepd_populate_kernel(hugepd_t *hpdp, pte_t *new, unsigned int pshift)
--{
--	*hpdp = __hugepd(__pa(new) | _PMD_PRESENT | _PMD_PAGE_8M);
--}
--
- static inline int check_and_get_huge_psize(int shift)
- {
- 	return shift_to_mmu_psize(shift);
-@@ -49,6 +19,14 @@ static inline int check_and_get_huge_psize(int shift)
- void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
- 		     pte_t pte, unsigned long sz);
- 
-+#define __HAVE_ARCH_HUGE_PTEP_GET
-+static inline pte_t huge_ptep_get(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
-+{
-+	if (ptep_is_8m_pmdp(mm, addr, ptep))
-+		ptep = pte_offset_kernel((pmd_t *)ptep, 0);
-+	return ptep_get(ptep);
-+}
-+
- #define __HAVE_ARCH_HUGE_PTE_CLEAR
- static inline void huge_pte_clear(struct mm_struct *mm, unsigned long addr,
- 				  pte_t *ptep, unsigned long sz)
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-index 625c31d6ce5c..54ebb91dbdcf 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-@@ -119,7 +119,7 @@ static inline pte_t pte_mkhuge(pte_t pte)
- 
- #define pte_mkhuge pte_mkhuge
- 
--static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, pte_t *p,
-+static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
- 				     unsigned long clr, unsigned long set, int huge);
- 
- static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
-@@ -141,19 +141,12 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma, pte_t *pt
- }
- #define __ptep_set_access_flags __ptep_set_access_flags
- 
--static inline unsigned long pgd_leaf_size(pgd_t pgd)
--{
--	if (pgd_val(pgd) & _PMD_PAGE_8M)
--		return SZ_8M;
--	return SZ_4M;
--}
--
--#define pgd_leaf_size pgd_leaf_size
--
--static inline unsigned long pte_leaf_size(pte_t pte)
-+static inline unsigned long __pte_leaf_size(pmd_t pmd, pte_t pte)
- {
- 	pte_basic_t val = pte_val(pte);
- 
-+	if (pmd_val(pmd) & _PMD_PAGE_8M)
-+		return SZ_8M;
- 	if (val & _PAGE_HUGE)
- 		return SZ_512K;
- 	if (val & _PAGE_SPS)
-@@ -161,31 +154,38 @@ static inline unsigned long pte_leaf_size(pte_t pte)
- 	return SZ_4K;
- }
- 
--#define pte_leaf_size pte_leaf_size
-+#define __pte_leaf_size __pte_leaf_size
+ #define PPC_HTW_NONE	0
+-#define PPC_HTW_IBM	1
+-#define PPC_HTW_E6500	2
++#define PPC_HTW_E6500	1
  
  /*
-  * On the 8xx, the page tables are a bit special. For 16k pages, we have
-  * 4 identical entries. For 512k pages, we have 128 entries as if it was
-  * 4k pages, but they are flagged as 512k pages for the hardware.
-- * For other page sizes, we have a single entry in the table.
-+ * For 8M pages, we have 1024 entries as if it was 4M pages (PMD_SIZE)
-+ * but they are flagged as 8M pages for the hardware.
-+ * For 4k pages, we have a single entry in the table.
-  */
- static pmd_t *pmd_off(struct mm_struct *mm, unsigned long addr);
--static int hugepd_ok(hugepd_t hpd);
-+static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address);
-+
-+static inline bool ptep_is_8m_pmdp(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
-+{
-+	return (pmd_t *)ptep == pmd_off(mm, ALIGN_DOWN(addr, SZ_8M));
-+}
- 
- static inline int number_of_cells_per_pte(pmd_t *pmd, pte_basic_t val, int huge)
+  * 64-bit booke platforms don't load the tlb in the tlb miss handler code.
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index dcf0591ad3c2..63f6b9f513a4 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -485,8 +485,8 @@ interrupt_base_book3e:					/* fake trap */
+ 	EXCEPTION_STUB(0x160, decrementer)		/* 0x0900 */
+ 	EXCEPTION_STUB(0x180, fixed_interval)		/* 0x0980 */
+ 	EXCEPTION_STUB(0x1a0, watchdog)			/* 0x09f0 */
+-	EXCEPTION_STUB(0x1c0, data_tlb_miss)
+-	EXCEPTION_STUB(0x1e0, instruction_tlb_miss)
++	EXCEPTION_STUB(0x1c0, data_tlb_miss_bolted)
++	EXCEPTION_STUB(0x1e0, instruction_tlb_miss_bolted)
+ 	EXCEPTION_STUB(0x200, altivec_unavailable)
+ 	EXCEPTION_STUB(0x220, altivec_assist)
+ 	EXCEPTION_STUB(0x260, perfmon)
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index ae36a129789f..22f83fbbc762 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -696,11 +696,7 @@ __init u64 ppc64_bolted_size(void)
  {
- 	if (!huge)
- 		return PAGE_SIZE / SZ_4K;
--	else if (hugepd_ok(*((hugepd_t *)pmd)))
--		return 1;
-+	else if ((pmd_val(*pmd) & _PMD_PAGE_MASK) == _PMD_PAGE_8M)
-+		return SZ_4M / SZ_4K;
- 	else if (IS_ENABLED(CONFIG_PPC_4K_PAGES) && !(val & _PAGE_HUGE))
- 		return SZ_16K / SZ_4K;
- 	else
- 		return SZ_512K / SZ_4K;
+ #ifdef CONFIG_PPC_BOOK3E_64
+ 	/* Freescale BookE bolts the entire linear mapping */
+-	/* XXX: BookE ppc64_rma_limit setup seems to disagree? */
+-	if (early_mmu_has_feature(MMU_FTR_TYPE_FSL_E))
+-		return linear_map_top;
+-	/* Other BookE, we assume the first GB is bolted */
+-	return 1ul << 30;
++	return linear_map_top;
+ #else
+ 	/* BookS radix, does not take faults on linear mapping */
+ 	if (early_radix_enabled())
+diff --git a/arch/powerpc/mm/nohash/Makefile b/arch/powerpc/mm/nohash/Makefile
+index b3f0498dd42f..90e846f0c46c 100644
+--- a/arch/powerpc/mm/nohash/Makefile
++++ b/arch/powerpc/mm/nohash/Makefile
+@@ -1,7 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+ obj-y				+= mmu_context.o tlb.o tlb_low.o kup.o
+-obj-$(CONFIG_PPC_BOOK3E_64)  	+= tlb_low_64e.o book3e_pgtable.o
++obj-$(CONFIG_PPC_BOOK3E_64)  	+= tlb_64e.o tlb_low_64e.o book3e_pgtable.o
+ obj-$(CONFIG_40x)		+= 40x.o
+ obj-$(CONFIG_44x)		+= 44x.o
+ obj-$(CONFIG_PPC_8xx)		+= 8xx.o
+diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
+index 5ffa0af4328a..f57dc721d063 100644
+--- a/arch/powerpc/mm/nohash/tlb.c
++++ b/arch/powerpc/mm/nohash/tlb.c
+@@ -110,28 +110,6 @@ struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
+ };
+ #endif
+ 
+-/* The variables below are currently only used on 64-bit Book3E
+- * though this will probably be made common with other nohash
+- * implementations at some point
+- */
+-#ifdef CONFIG_PPC64
+-
+-int mmu_pte_psize;		/* Page size used for PTE pages */
+-int mmu_vmemmap_psize;		/* Page size used for the virtual mem map */
+-int book3e_htw_mode;		/* HW tablewalk?  Value is PPC_HTW_* */
+-unsigned long linear_map_top;	/* Top of linear mapping */
+-
+-
+-/*
+- * Number of bytes to add to SPRN_SPRG_TLB_EXFRAME on crit/mcheck/debug
+- * exceptions.  This is used for bolted and e6500 TLB miss handlers which
+- * do not modify this SPRG in the TLB miss code; for other TLB miss handlers,
+- * this is set to zero.
+- */
+-int extlb_level_exc;
+-
+-#endif /* CONFIG_PPC64 */
+-
+ #ifdef CONFIG_PPC_E500
+ /* next_tlbcam_idx is used to round-robin tlbcam entry assignment */
+ DEFINE_PER_CPU(int, next_tlbcam_idx);
+@@ -358,381 +336,7 @@ void tlb_flush(struct mmu_gather *tlb)
+ 	flush_tlb_mm(tlb->mm);
  }
  
--static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, pte_t *p,
--				     unsigned long clr, unsigned long set, int huge)
-+static inline pte_basic_t __pte_update(struct mm_struct *mm, unsigned long addr, pte_t *p,
-+				       unsigned long clr, unsigned long set, int huge)
+-/*
+- * Below are functions specific to the 64-bit variant of Book3E though that
+- * may change in the future
+- */
+-
+-#ifdef CONFIG_PPC64
+-
+-/*
+- * Handling of virtual linear page tables or indirect TLB entries
+- * flushing when PTE pages are freed
+- */
+-void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long address)
+-{
+-	int tsize = mmu_psize_defs[mmu_pte_psize].enc;
+-
+-	if (book3e_htw_mode != PPC_HTW_NONE) {
+-		unsigned long start = address & PMD_MASK;
+-		unsigned long end = address + PMD_SIZE;
+-		unsigned long size = 1UL << mmu_psize_defs[mmu_pte_psize].shift;
+-
+-		/* This isn't the most optimal, ideally we would factor out the
+-		 * while preempt & CPU mask mucking around, or even the IPI but
+-		 * it will do for now
+-		 */
+-		while (start < end) {
+-			__flush_tlb_page(tlb->mm, start, tsize, 1);
+-			start += size;
+-		}
+-	} else {
+-		unsigned long rmask = 0xf000000000000000ul;
+-		unsigned long rid = (address & rmask) | 0x1000000000000000ul;
+-		unsigned long vpte = address & ~rmask;
+-
+-		vpte = (vpte >> (PAGE_SHIFT - 3)) & ~0xffful;
+-		vpte |= rid;
+-		__flush_tlb_page(tlb->mm, vpte, tsize, 0);
+-	}
+-}
+-
+-static void __init setup_page_sizes(void)
+-{
+-	unsigned int tlb0cfg;
+-	unsigned int tlb0ps;
+-	unsigned int eptcfg;
+-	int i, psize;
+-
+-#ifdef CONFIG_PPC_E500
+-	unsigned int mmucfg = mfspr(SPRN_MMUCFG);
+-	int fsl_mmu = mmu_has_feature(MMU_FTR_TYPE_FSL_E);
+-
+-	if (fsl_mmu && (mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V1) {
+-		unsigned int tlb1cfg = mfspr(SPRN_TLB1CFG);
+-		unsigned int min_pg, max_pg;
+-
+-		min_pg = (tlb1cfg & TLBnCFG_MINSIZE) >> TLBnCFG_MINSIZE_SHIFT;
+-		max_pg = (tlb1cfg & TLBnCFG_MAXSIZE) >> TLBnCFG_MAXSIZE_SHIFT;
+-
+-		for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+-			struct mmu_psize_def *def;
+-			unsigned int shift;
+-
+-			def = &mmu_psize_defs[psize];
+-			shift = def->shift;
+-
+-			if (shift == 0 || shift & 1)
+-				continue;
+-
+-			/* adjust to be in terms of 4^shift Kb */
+-			shift = (shift - 10) >> 1;
+-
+-			if ((shift >= min_pg) && (shift <= max_pg))
+-				def->flags |= MMU_PAGE_SIZE_DIRECT;
+-		}
+-
+-		goto out;
+-	}
+-
+-	if (fsl_mmu && (mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V2) {
+-		u32 tlb1cfg, tlb1ps;
+-
+-		tlb0cfg = mfspr(SPRN_TLB0CFG);
+-		tlb1cfg = mfspr(SPRN_TLB1CFG);
+-		tlb1ps = mfspr(SPRN_TLB1PS);
+-		eptcfg = mfspr(SPRN_EPTCFG);
+-
+-		if ((tlb1cfg & TLBnCFG_IND) && (tlb0cfg & TLBnCFG_PT))
+-			book3e_htw_mode = PPC_HTW_E6500;
+-
+-		/*
+-		 * We expect 4K subpage size and unrestricted indirect size.
+-		 * The lack of a restriction on indirect size is a Freescale
+-		 * extension, indicated by PSn = 0 but SPSn != 0.
+-		 */
+-		if (eptcfg != 2)
+-			book3e_htw_mode = PPC_HTW_NONE;
+-
+-		for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+-			struct mmu_psize_def *def = &mmu_psize_defs[psize];
+-
+-			if (!def->shift)
+-				continue;
+-
+-			if (tlb1ps & (1U << (def->shift - 10))) {
+-				def->flags |= MMU_PAGE_SIZE_DIRECT;
+-
+-				if (book3e_htw_mode && psize == MMU_PAGE_2M)
+-					def->flags |= MMU_PAGE_SIZE_INDIRECT;
+-			}
+-		}
+-
+-		goto out;
+-	}
+-#endif
+-
+-	tlb0cfg = mfspr(SPRN_TLB0CFG);
+-	tlb0ps = mfspr(SPRN_TLB0PS);
+-	eptcfg = mfspr(SPRN_EPTCFG);
+-
+-	/* Look for supported direct sizes */
+-	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+-		struct mmu_psize_def *def = &mmu_psize_defs[psize];
+-
+-		if (tlb0ps & (1U << (def->shift - 10)))
+-			def->flags |= MMU_PAGE_SIZE_DIRECT;
+-	}
+-
+-	/* Indirect page sizes supported ? */
+-	if ((tlb0cfg & TLBnCFG_IND) == 0 ||
+-	    (tlb0cfg & TLBnCFG_PT) == 0)
+-		goto out;
+-
+-	book3e_htw_mode = PPC_HTW_IBM;
+-
+-	/* Now, we only deal with one IND page size for each
+-	 * direct size. Hopefully all implementations today are
+-	 * unambiguous, but we might want to be careful in the
+-	 * future.
+-	 */
+-	for (i = 0; i < 3; i++) {
+-		unsigned int ps, sps;
+-
+-		sps = eptcfg & 0x1f;
+-		eptcfg >>= 5;
+-		ps = eptcfg & 0x1f;
+-		eptcfg >>= 5;
+-		if (!ps || !sps)
+-			continue;
+-		for (psize = 0; psize < MMU_PAGE_COUNT; psize++) {
+-			struct mmu_psize_def *def = &mmu_psize_defs[psize];
+-
+-			if (ps == (def->shift - 10))
+-				def->flags |= MMU_PAGE_SIZE_INDIRECT;
+-			if (sps == (def->shift - 10))
+-				def->ind = ps + 10;
+-		}
+-	}
+-
+-out:
+-	/* Cleanup array and print summary */
+-	pr_info("MMU: Supported page sizes\n");
+-	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
+-		struct mmu_psize_def *def = &mmu_psize_defs[psize];
+-		const char *__page_type_names[] = {
+-			"unsupported",
+-			"direct",
+-			"indirect",
+-			"direct & indirect"
+-		};
+-		if (def->flags == 0) {
+-			def->shift = 0;	
+-			continue;
+-		}
+-		pr_info("  %8ld KB as %s\n", 1ul << (def->shift - 10),
+-			__page_type_names[def->flags & 0x3]);
+-	}
+-}
+-
+-static void __init setup_mmu_htw(void)
+-{
+-	/*
+-	 * If we want to use HW tablewalk, enable it by patching the TLB miss
+-	 * handlers to branch to the one dedicated to it.
+-	 */
+-
+-	switch (book3e_htw_mode) {
+-	case PPC_HTW_IBM:
+-		patch_exception(0x1c0, exc_data_tlb_miss_htw_book3e);
+-		patch_exception(0x1e0, exc_instruction_tlb_miss_htw_book3e);
+-		break;
+-#ifdef CONFIG_PPC_E500
+-	case PPC_HTW_E6500:
+-		extlb_level_exc = EX_TLB_SIZE;
+-		patch_exception(0x1c0, exc_data_tlb_miss_e6500_book3e);
+-		patch_exception(0x1e0, exc_instruction_tlb_miss_e6500_book3e);
+-		break;
+-#endif
+-	}
+-	pr_info("MMU: Book3E HW tablewalk %s\n",
+-		book3e_htw_mode != PPC_HTW_NONE ? "enabled" : "not supported");
+-}
+-
+-/*
+- * Early initialization of the MMU TLB code
+- */
+-static void early_init_this_mmu(void)
+-{
+-	unsigned int mas4;
+-
+-	/* Set MAS4 based on page table setting */
+-
+-	mas4 = 0x4 << MAS4_WIMGED_SHIFT;
+-	switch (book3e_htw_mode) {
+-	case PPC_HTW_E6500:
+-		mas4 |= MAS4_INDD;
+-		mas4 |= BOOK3E_PAGESZ_2M << MAS4_TSIZED_SHIFT;
+-		mas4 |= MAS4_TLBSELD(1);
+-		mmu_pte_psize = MMU_PAGE_2M;
+-		break;
+-
+-	case PPC_HTW_IBM:
+-		mas4 |= MAS4_INDD;
+-		mas4 |=	BOOK3E_PAGESZ_1M << MAS4_TSIZED_SHIFT;
+-		mmu_pte_psize = MMU_PAGE_1M;
+-		break;
+-
+-	case PPC_HTW_NONE:
+-		mas4 |=	BOOK3E_PAGESZ_4K << MAS4_TSIZED_SHIFT;
+-		mmu_pte_psize = mmu_virtual_psize;
+-		break;
+-	}
+-	mtspr(SPRN_MAS4, mas4);
+-
+-#ifdef CONFIG_PPC_E500
+-	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+-		unsigned int num_cams;
+-		bool map = true;
+-
+-		/* use a quarter of the TLBCAM for bolted linear map */
+-		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
+-
+-		/*
+-		 * Only do the mapping once per core, or else the
+-		 * transient mapping would cause problems.
+-		 */
+-#ifdef CONFIG_SMP
+-		if (hweight32(get_tensr()) > 1)
+-			map = false;
+-#endif
+-
+-		if (map)
+-			linear_map_top = map_mem_in_cams(linear_map_top,
+-							 num_cams, false, true);
+-	}
+-#endif
+-
+-	/* A sync won't hurt us after mucking around with
+-	 * the MMU configuration
+-	 */
+-	mb();
+-}
+-
+-static void __init early_init_mmu_global(void)
+-{
+-	/* XXX This should be decided at runtime based on supported
+-	 * page sizes in the TLB, but for now let's assume 16M is
+-	 * always there and a good fit (which it probably is)
+-	 *
+-	 * Freescale booke only supports 4K pages in TLB0, so use that.
+-	 */
+-	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E))
+-		mmu_vmemmap_psize = MMU_PAGE_4K;
+-	else
+-		mmu_vmemmap_psize = MMU_PAGE_16M;
+-
+-	/* XXX This code only checks for TLB 0 capabilities and doesn't
+-	 *     check what page size combos are supported by the HW. It
+-	 *     also doesn't handle the case where a separate array holds
+-	 *     the IND entries from the array loaded by the PT.
+-	 */
+-	/* Look for supported page sizes */
+-	setup_page_sizes();
+-
+-	/* Look for HW tablewalk support */
+-	setup_mmu_htw();
+-
+-#ifdef CONFIG_PPC_E500
+-	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+-		if (book3e_htw_mode == PPC_HTW_NONE) {
+-			extlb_level_exc = EX_TLB_SIZE;
+-			patch_exception(0x1c0, exc_data_tlb_miss_bolted_book3e);
+-			patch_exception(0x1e0,
+-				exc_instruction_tlb_miss_bolted_book3e);
+-		}
+-	}
+-#endif
+-
+-	/* Set the global containing the top of the linear mapping
+-	 * for use by the TLB miss code
+-	 */
+-	linear_map_top = memblock_end_of_DRAM();
+-
+-	ioremap_bot = IOREMAP_BASE;
+-}
+-
+-static void __init early_mmu_set_memory_limit(void)
+-{
+-#ifdef CONFIG_PPC_E500
+-	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+-		/*
+-		 * Limit memory so we dont have linear faults.
+-		 * Unlike memblock_set_current_limit, which limits
+-		 * memory available during early boot, this permanently
+-		 * reduces the memory available to Linux.  We need to
+-		 * do this because highmem is not supported on 64-bit.
+-		 */
+-		memblock_enforce_memory_limit(linear_map_top);
+-	}
+-#endif
+-
+-	memblock_set_current_limit(linear_map_top);
+-}
+-
+-/* boot cpu only */
+-void __init early_init_mmu(void)
+-{
+-	early_init_mmu_global();
+-	early_init_this_mmu();
+-	early_mmu_set_memory_limit();
+-}
+-
+-void early_init_mmu_secondary(void)
+-{
+-	early_init_this_mmu();
+-}
+-
+-void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+-				phys_addr_t first_memblock_size)
+-{
+-	/* On non-FSL Embedded 64-bit, we adjust the RMA size to match
+-	 * the bolted TLB entry. We know for now that only 1G
+-	 * entries are supported though that may eventually
+-	 * change.
+-	 *
+-	 * on FSL Embedded 64-bit, usually all RAM is bolted, but with
+-	 * unusual memory sizes it's possible for some RAM to not be mapped
+-	 * (such RAM is not used at all by Linux, since we don't support
+-	 * highmem on 64-bit).  We limit ppc64_rma_size to what would be
+-	 * mappable if this memblock is the only one.  Additional memblocks
+-	 * can only increase, not decrease, the amount that ends up getting
+-	 * mapped.  We still limit max to 1G even if we'll eventually map
+-	 * more.  This is due to what the early init code is set up to do.
+-	 *
+-	 * We crop it to the size of the first MEMBLOCK to
+-	 * avoid going over total available memory just in case...
+-	 */
+-#ifdef CONFIG_PPC_E500
+-	if (early_mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+-		unsigned long linear_sz;
+-		unsigned int num_cams;
+-
+-		/* use a quarter of the TLBCAM for bolted linear map */
+-		num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
+-
+-		linear_sz = map_mem_in_cams(first_memblock_size, num_cams,
+-					    true, true);
+-
+-		ppc64_rma_size = min_t(u64, linear_sz, 0x40000000);
+-	} else
+-#endif
+-		ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
+-
+-	/* Finally limit subsequent allocations */
+-	memblock_set_current_limit(first_memblock_base + ppc64_rma_size);
+-}
+-#else /* ! CONFIG_PPC64 */
++#ifndef CONFIG_PPC64
+ void __init early_init_mmu(void)
  {
- 	pte_basic_t *entry = (pte_basic_t *)p;
- 	pte_basic_t old = pte_val(*p);
-@@ -197,7 +197,7 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
- 
- 	for (i = 0; i < num; i += PAGE_SIZE / SZ_4K, new += PAGE_SIZE) {
- 		*entry++ = new;
--		if (IS_ENABLED(CONFIG_PPC_16K_PAGES) && num != 1) {
-+		if (IS_ENABLED(CONFIG_PPC_16K_PAGES)) {
- 			*entry++ = new;
- 			*entry++ = new;
- 			*entry++ = new;
-@@ -207,6 +207,21 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
- 	return old;
- }
- 
-+static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
-+				     unsigned long clr, unsigned long set, int huge)
+ 	unsigned long root = of_get_flat_dt_root();
+diff --git a/arch/powerpc/mm/nohash/tlb_64e.c b/arch/powerpc/mm/nohash/tlb_64e.c
+new file mode 100644
+index 000000000000..053128a5636c
+--- /dev/null
++++ b/arch/powerpc/mm/nohash/tlb_64e.c
+@@ -0,0 +1,314 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright 2008,2009 Ben Herrenschmidt <benh@kernel.crashing.org>
++ *                     IBM Corp.
++ *
++ *  Derived from arch/ppc/mm/init.c:
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
++ *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
++ *    Copyright (C) 1996 Paul Mackerras
++ *
++ *  Derived from "arch/i386/mm/init.c"
++ *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
++ */
++
++#include <linux/kernel.h>
++#include <linux/export.h>
++#include <linux/mm.h>
++#include <linux/init.h>
++#include <linux/pagemap.h>
++#include <linux/memblock.h>
++
++#include <asm/pgalloc.h>
++#include <asm/tlbflush.h>
++#include <asm/tlb.h>
++#include <asm/code-patching.h>
++#include <asm/cputhreads.h>
++
++#include <mm/mmu_decl.h>
++
++/* The variables below are currently only used on 64-bit Book3E
++ * though this will probably be made common with other nohash
++ * implementations at some point
++ */
++int mmu_pte_psize;		/* Page size used for PTE pages */
++int mmu_vmemmap_psize;		/* Page size used for the virtual mem map */
++int book3e_htw_mode;		/* HW tablewalk?  Value is PPC_HTW_* */
++unsigned long linear_map_top;	/* Top of linear mapping */
++
++
++/*
++ * Number of bytes to add to SPRN_SPRG_TLB_EXFRAME on crit/mcheck/debug
++ * exceptions.  This is used for bolted and e6500 TLB miss handlers which
++ * do not modify this SPRG in the TLB miss code; for other TLB miss handlers,
++ * this is set to zero.
++ */
++int extlb_level_exc;
++
++/*
++ * Handling of virtual linear page tables or indirect TLB entries
++ * flushing when PTE pages are freed
++ */
++void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long address)
 +{
-+	pte_basic_t old;
++	int tsize = mmu_psize_defs[mmu_pte_psize].enc;
 +
-+	if (huge && ptep_is_8m_pmdp(mm, addr, ptep)) {
-+		pmd_t *pmdp = (pmd_t *)ptep;
++	if (book3e_htw_mode != PPC_HTW_NONE) {
++		unsigned long start = address & PMD_MASK;
++		unsigned long end = address + PMD_SIZE;
++		unsigned long size = 1UL << mmu_psize_defs[mmu_pte_psize].shift;
 +
-+		old = __pte_update(mm, addr, pte_offset_kernel(pmdp, 0), clr, set, huge);
-+		__pte_update(mm, addr, pte_offset_kernel(pmdp + 1, 0), clr, set, huge);
++		/* This isn't the most optimal, ideally we would factor out the
++		 * while preempt & CPU mask mucking around, or even the IPI but
++		 * it will do for now
++		 */
++		while (start < end) {
++			__flush_tlb_page(tlb->mm, start, tsize, 1);
++			start += size;
++		}
 +	} else {
-+		old = __pte_update(mm, addr, ptep, clr, set, huge);
-+	}
-+	return old;
-+}
- #define pte_update pte_update
- 
- #ifdef CONFIG_PPC_16K_PAGES
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index ac3353f7f2ac..c4be7754e96f 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -343,12 +343,8 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
- #ifdef CONFIG_ARCH_HAS_HUGEPD
- static inline int hugepd_ok(hugepd_t hpd)
- {
--#ifdef CONFIG_PPC_8xx
--	return ((hpd_val(hpd) & _PMD_PAGE_MASK) == _PMD_PAGE_8M);
--#else
- 	/* We clear the top bit to indicate hugepd */
- 	return (hpd_val(hpd) && (hpd_val(hpd) & PD_HUGE) == 0);
--#endif
- }
- 
- #define is_hugepd(hpd)		(hugepd_ok(hpd))
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index e411e5a70ea3..018c3d55232c 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -293,13 +293,8 @@ static inline const void *pfn_to_kaddr(unsigned long pfn)
- /*
-  * Some number of bits at the level of the page table that points to
-  * a hugepte are used to encode the size.  This masks those bits.
-- * On 8xx, HW assistance requires 4k alignment for the hugepte.
-  */
--#ifdef CONFIG_PPC_8xx
--#define HUGEPD_SHIFT_MASK     0xfff
--#else
- #define HUGEPD_SHIFT_MASK     0x3f
--#endif
- 
- #ifndef __ASSEMBLY__
- 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 239709a2f68e..264a6c09517a 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -106,6 +106,9 @@ unsigned long vmalloc_to_phys(void *vmalloc_addr);
- 
- void pgtable_cache_add(unsigned int shift);
- 
-+#ifdef CONFIG_PPC32
-+void __init *early_alloc_pgtable(unsigned long size);
-+#endif
- pte_t *early_pte_alloc_kernel(pmd_t *pmdp, unsigned long va);
- 
- #if defined(CONFIG_STRICT_KERNEL_RWX) || defined(CONFIG_PPC32)
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 647b0b445e89..43919ae0bd11 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -415,14 +415,13 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	oris	r11, r11, (swapper_pg_dir - PAGE_OFFSET)@ha
- 3:
- 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
-+	rlwinm	r11, r11, 0, ~_PMD_PAGE_8M
- 	mtspr	SPRN_MD_TWC, r11
--	mtcrf	0x01, r11
- 	mfspr	r11, SPRN_MD_TWC
- 	lwz	r11, 0(r11)	/* Get the pte */
--	bt	28,200f		/* bit 28 = Large page (8M) */
- 	/* concat physical page address(r11) and page offset(r10) */
- 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
--201:	lwz	r11,0(r11)
-+	lwz	r11,0(r11)
- /* Check if it really is a dcbx instruction. */
- /* dcbt and dcbtst does not generate DTLB Misses/Errors,
-  * no need to include them here */
-@@ -441,11 +440,6 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 141:	mfspr	r10,SPRN_M_TW
- 	b	DARFixed	/* Nope, go back to normal TLB processing */
- 
--200:
--	/* concat physical page address(r11) and page offset(r10) */
--	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT_8M, 31
--	b	201b
--
- 144:	mfspr	r10, SPRN_DSISR
- 	rlwinm	r10, r10,0,7,5	/* Clear store bit for buggy dcbst insn */
- 	mtspr	SPRN_DSISR, r10
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 20fad59ff9f5..5193f6845725 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -183,9 +183,6 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
- 	if (!hpdp)
- 		return NULL;
- 
--	if (IS_ENABLED(CONFIG_PPC_8xx) && pshift < PMD_SHIFT)
--		return pte_alloc_huge(mm, (pmd_t *)hpdp, addr);
--
- 	BUG_ON(!hugepd_none(*hpdp) && !hugepd_ok(*hpdp));
- 
- 	if (hugepd_none(*hpdp) && __hugepte_alloc(mm, hpdp, addr,
-@@ -218,8 +215,18 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
- 	if (!pmd)
- 		return NULL;
- 
--	if (sz >= PMD_SIZE)
-+	if (sz >= PMD_SIZE) {
-+		/* On 8xx, all hugepages are handled as contiguous PTEs */
-+		if (IS_ENABLED(CONFIG_PPC_8xx)) {
-+			int i;
++		unsigned long rmask = 0xf000000000000000ul;
++		unsigned long rid = (address & rmask) | 0x1000000000000000ul;
++		unsigned long vpte = address & ~rmask;
 +
-+			for (i = 0; i < sz / PMD_SIZE; i++) {
-+				if (!pte_alloc_huge(mm, pmd + i, addr))
-+					return NULL;
++		vpte = (vpte >> (PAGE_SHIFT - 3)) & ~0xffful;
++		vpte |= rid;
++		__flush_tlb_page(tlb->mm, vpte, tsize, 0);
++	}
++}
++
++static void __init setup_page_sizes(void)
++{
++	unsigned int tlb0cfg;
++	unsigned int eptcfg;
++	int psize;
++
++	unsigned int mmucfg = mfspr(SPRN_MMUCFG);
++
++	if ((mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V1) {
++		unsigned int tlb1cfg = mfspr(SPRN_TLB1CFG);
++		unsigned int min_pg, max_pg;
++
++		min_pg = (tlb1cfg & TLBnCFG_MINSIZE) >> TLBnCFG_MINSIZE_SHIFT;
++		max_pg = (tlb1cfg & TLBnCFG_MAXSIZE) >> TLBnCFG_MAXSIZE_SHIFT;
++
++		for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
++			struct mmu_psize_def *def;
++			unsigned int shift;
++
++			def = &mmu_psize_defs[psize];
++			shift = def->shift;
++
++			if (shift == 0 || shift & 1)
++				continue;
++
++			/* adjust to be in terms of 4^shift Kb */
++			shift = (shift - 10) >> 1;
++
++			if ((shift >= min_pg) && (shift <= max_pg))
++				def->flags |= MMU_PAGE_SIZE_DIRECT;
++		}
++
++		goto out;
++	}
++
++	if ((mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V2) {
++		u32 tlb1cfg, tlb1ps;
++
++		tlb0cfg = mfspr(SPRN_TLB0CFG);
++		tlb1cfg = mfspr(SPRN_TLB1CFG);
++		tlb1ps = mfspr(SPRN_TLB1PS);
++		eptcfg = mfspr(SPRN_EPTCFG);
++
++		if ((tlb1cfg & TLBnCFG_IND) && (tlb0cfg & TLBnCFG_PT))
++			book3e_htw_mode = PPC_HTW_E6500;
++
++		/*
++		 * We expect 4K subpage size and unrestricted indirect size.
++		 * The lack of a restriction on indirect size is a Freescale
++		 * extension, indicated by PSn = 0 but SPSn != 0.
++		 */
++		if (eptcfg != 2)
++			book3e_htw_mode = PPC_HTW_NONE;
++
++		for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
++			struct mmu_psize_def *def = &mmu_psize_defs[psize];
++
++			if (!def->shift)
++				continue;
++
++			if (tlb1ps & (1U << (def->shift - 10))) {
++				def->flags |= MMU_PAGE_SIZE_DIRECT;
++
++				if (book3e_htw_mode && psize == MMU_PAGE_2M)
++					def->flags |= MMU_PAGE_SIZE_INDIRECT;
 +			}
 +		}
- 		return (pte_t *)pmd;
++
++		goto out;
 +	}
- 
- 	return pte_alloc_huge(mm, pmd, addr);
- }
-@@ -619,8 +626,7 @@ static int __init hugetlbpage_init(void)
- 		if (pdshift > shift) {
- 			if (!IS_ENABLED(CONFIG_PPC_8xx))
- 				pgtable_cache_add(pdshift - shift);
--		} else if (IS_ENABLED(CONFIG_PPC_E500) ||
--			   IS_ENABLED(CONFIG_PPC_8xx)) {
-+		} else if (IS_ENABLED(CONFIG_PPC_E500)) {
- 			pgtable_cache_add(PTE_T_ORDER);
- 		}
- 
-diff --git a/arch/powerpc/mm/kasan/8xx.c b/arch/powerpc/mm/kasan/8xx.c
-index 2784224054f8..989d6cdf4141 100644
---- a/arch/powerpc/mm/kasan/8xx.c
-+++ b/arch/powerpc/mm/kasan/8xx.c
-@@ -6,28 +6,33 @@
- #include <linux/memblock.h>
- #include <linux/hugetlb.h>
- 
-+#include <asm/pgalloc.h>
-+
- static int __init
- kasan_init_shadow_8M(unsigned long k_start, unsigned long k_end, void *block)
- {
- 	pmd_t *pmd = pmd_off_k(k_start);
- 	unsigned long k_cur, k_next;
- 
--	for (k_cur = k_start; k_cur != k_end; k_cur = k_next, pmd += 2, block += SZ_8M) {
--		pte_basic_t *new;
-+	for (k_cur = k_start; k_cur != k_end; k_cur = k_next, pmd++, block += SZ_4M) {
-+		pte_t *ptep;
-+		int i;
- 
- 		k_next = pgd_addr_end(k_cur, k_end);
--		k_next = pgd_addr_end(k_next, k_end);
- 		if ((void *)pmd_page_vaddr(*pmd) != kasan_early_shadow_pte)
- 			continue;
- 
--		new = memblock_alloc(sizeof(pte_basic_t), SZ_4K);
--		if (!new)
-+		ptep = memblock_alloc(PTE_FRAG_SIZE, PTE_FRAG_SIZE);
-+		if (!ptep)
- 			return -ENOMEM;
- 
--		*new = pte_val(pte_mkhuge(pfn_pte(PHYS_PFN(__pa(block)), PAGE_KERNEL)));
-+		for (i = 0; i < PTRS_PER_PTE; i++) {
-+			pte_t pte = pte_mkhuge(pfn_pte(PHYS_PFN(__pa(block + i * PAGE_SIZE)), PAGE_KERNEL));
- 
--		hugepd_populate_kernel((hugepd_t *)pmd, (pte_t *)new, PAGE_SHIFT_8M);
--		hugepd_populate_kernel((hugepd_t *)pmd + 1, (pte_t *)new, PAGE_SHIFT_8M);
-+			__set_pte_at(&init_mm, k_cur, ptep + i, pte, 1);
++out:
++	/* Cleanup array and print summary */
++	pr_info("MMU: Supported page sizes\n");
++	for (psize = 0; psize < MMU_PAGE_COUNT; ++psize) {
++		struct mmu_psize_def *def = &mmu_psize_defs[psize];
++		const char *__page_type_names[] = {
++			"unsupported",
++			"direct",
++			"indirect",
++			"direct & indirect"
++		};
++		if (def->flags == 0) {
++			def->shift = 0;	
++			continue;
 +		}
-+		pmd_populate_kernel(&init_mm, pmd, ptep);
-+		*pmd = __pmd(pmd_val(*pmd) | _PMD_PAGE_8M);
- 	}
- 	return 0;
- }
-diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
-index d93433e26ded..388bba0ab3e7 100644
---- a/arch/powerpc/mm/nohash/8xx.c
-+++ b/arch/powerpc/mm/nohash/8xx.c
-@@ -11,6 +11,7 @@
- #include <linux/hugetlb.h>
- 
- #include <asm/fixmap.h>
-+#include <asm/pgalloc.h>
- 
- #include <mm/mmu_decl.h>
- 
-@@ -48,20 +49,6 @@ unsigned long p_block_mapped(phys_addr_t pa)
- 	return 0;
- }
- 
--static pte_t __init *early_hugepd_alloc_kernel(hugepd_t *pmdp, unsigned long va)
--{
--	if (hpd_val(*pmdp) == 0) {
--		pte_t *ptep = memblock_alloc(sizeof(pte_basic_t), SZ_4K);
--
--		if (!ptep)
--			return NULL;
--
--		hugepd_populate_kernel((hugepd_t *)pmdp, ptep, PAGE_SHIFT_8M);
--		hugepd_populate_kernel((hugepd_t *)pmdp + 1, ptep, PAGE_SHIFT_8M);
--	}
--	return hugepte_offset(*(hugepd_t *)pmdp, va, PGDIR_SHIFT);
--}
--
- static int __ref __early_map_kernel_hugepage(unsigned long va, phys_addr_t pa,
- 					     pgprot_t prot, int psize, bool new)
- {
-@@ -75,24 +62,33 @@ static int __ref __early_map_kernel_hugepage(unsigned long va, phys_addr_t pa,
- 		if (WARN_ON(slab_is_available()))
- 			return -EINVAL;
- 
--		if (psize == MMU_PAGE_512K)
-+		if (psize == MMU_PAGE_512K) {
- 			ptep = early_pte_alloc_kernel(pmdp, va);
--		else
--			ptep = early_hugepd_alloc_kernel((hugepd_t *)pmdp, va);
-+			/* The PTE should never be already present */
-+			if (WARN_ON(pte_present(*ptep) && pgprot_val(prot)))
-+				return -EINVAL;
-+		} else {
-+			if (WARN_ON(!pmd_none(*pmdp) || !pmd_none(*(pmdp + 1))))
-+				return -EINVAL;
-+
-+			ptep = early_alloc_pgtable(PTE_FRAG_SIZE);
-+			pmd_populate_kernel(&init_mm, pmdp, ptep);
-+
-+			ptep = early_alloc_pgtable(PTE_FRAG_SIZE);
-+			pmd_populate_kernel(&init_mm, pmdp + 1, ptep);
-+
-+			ptep = (pte_t *)pmdp;
-+		}
- 	} else {
- 		if (psize == MMU_PAGE_512K)
- 			ptep = pte_offset_kernel(pmdp, va);
- 		else
--			ptep = hugepte_offset(*(hugepd_t *)pmdp, va, PGDIR_SHIFT);
-+			ptep = (pte_t *)pmdp;
- 	}
- 
- 	if (WARN_ON(!ptep))
- 		return -ENOMEM;
- 
--	/* The PTE should never be already present */
--	if (new && WARN_ON(pte_present(*ptep) && pgprot_val(prot)))
--		return -EINVAL;
--
- 	set_huge_pte_at(&init_mm, va, ptep,
- 			pte_mkhuge(pfn_pte(pa >> PAGE_SHIFT, prot)),
- 			1UL << mmu_psize_to_shift(psize));
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index c56593f568a2..3a393d94cecf 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -297,11 +297,8 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- }
- 
- #if defined(CONFIG_PPC_8xx)
--void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
--		     pte_t pte, unsigned long sz)
-+static void __set_huge_pte_at(pmd_t *pmd, pte_t *ptep, pte_basic_t val)
- {
--	pmd_t *pmd = pmd_off(mm, addr);
--	pte_basic_t val;
- 	pte_basic_t *entry = (pte_basic_t *)ptep;
- 	int num, i;
- 
-@@ -311,15 +308,29 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
- 	 */
- 	VM_WARN_ON(pte_hw_valid(*ptep) && !pte_protnone(*ptep));
- 
--	pte = set_pte_filter(pte, addr);
--
--	val = pte_val(pte);
--
- 	num = number_of_cells_per_pte(pmd, val, 1);
- 
- 	for (i = 0; i < num; i++, entry++, val += SZ_4K)
- 		*entry = val;
- }
-+
-+void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
-+		     pte_t pte, unsigned long sz)
-+{
-+	pmd_t *pmdp = pmd_off(mm, addr);
-+
-+	pte = set_pte_filter(pte, addr);
-+
-+	if (sz == SZ_8M) { /* Flag both PMD entries as 8M and fill both page tables */
-+		*pmdp = __pmd(pmd_val(*pmdp) | _PMD_PAGE_8M);
-+		*(pmdp + 1) = __pmd(pmd_val(*(pmdp + 1)) | _PMD_PAGE_8M);
-+
-+		__set_huge_pte_at(pmdp, pte_offset_kernel(pmdp, 0), pte_val(pte));
-+		__set_huge_pte_at(pmdp, pte_offset_kernel(pmdp + 1, 0), pte_val(pte) + SZ_4M);
-+	} else {
-+		__set_huge_pte_at(pmdp, ptep, pte_val(pte));
++		pr_info("  %8ld KB as %s\n", 1ul << (def->shift - 10),
++			__page_type_names[def->flags & 0x3]);
 +	}
 +}
- #endif
- #endif /* CONFIG_HUGETLB_PAGE */
++
++/*
++ * Early initialization of the MMU TLB code
++ */
++static void early_init_this_mmu(void)
++{
++	unsigned int mas4;
++
++	/* Set MAS4 based on page table setting */
++
++	mas4 = 0x4 << MAS4_WIMGED_SHIFT;
++	switch (book3e_htw_mode) {
++	case PPC_HTW_E6500:
++		mas4 |= MAS4_INDD;
++		mas4 |= BOOK3E_PAGESZ_2M << MAS4_TSIZED_SHIFT;
++		mas4 |= MAS4_TLBSELD(1);
++		mmu_pte_psize = MMU_PAGE_2M;
++		break;
++
++	case PPC_HTW_NONE:
++		mas4 |=	BOOK3E_PAGESZ_4K << MAS4_TSIZED_SHIFT;
++		mmu_pte_psize = mmu_virtual_psize;
++		break;
++	}
++	mtspr(SPRN_MAS4, mas4);
++
++	unsigned int num_cams;
++	bool map = true;
++
++	/* use a quarter of the TLBCAM for bolted linear map */
++	num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
++
++	/*
++	 * Only do the mapping once per core, or else the
++	 * transient mapping would cause problems.
++	 */
++#ifdef CONFIG_SMP
++	if (hweight32(get_tensr()) > 1)
++		map = false;
++#endif
++
++	if (map)
++		linear_map_top = map_mem_in_cams(linear_map_top,
++						 num_cams, false, true);
++
++	/* A sync won't hurt us after mucking around with
++	 * the MMU configuration
++	 */
++	mb();
++}
++
++static void __init early_init_mmu_global(void)
++{
++	/*
++	 * Freescale booke only supports 4K pages in TLB0, so use that.
++	 */
++	mmu_vmemmap_psize = MMU_PAGE_4K;
++
++	/* XXX This code only checks for TLB 0 capabilities and doesn't
++	 *     check what page size combos are supported by the HW. It
++	 *     also doesn't handle the case where a separate array holds
++	 *     the IND entries from the array loaded by the PT.
++	 */
++	/* Look for supported page sizes */
++	setup_page_sizes();
++
++	/*
++	 * If we want to use HW tablewalk, enable it by patching the TLB miss
++	 * handlers to branch to the one dedicated to it.
++	 */
++	extlb_level_exc = EX_TLB_SIZE;
++	switch (book3e_htw_mode) {
++	case PPC_HTW_E6500:
++		patch_exception(0x1c0, exc_data_tlb_miss_e6500_book3e);
++		patch_exception(0x1e0, exc_instruction_tlb_miss_e6500_book3e);
++		break;
++	}
++
++	pr_info("MMU: Book3E HW tablewalk %s\n",
++		book3e_htw_mode != PPC_HTW_NONE ? "enabled" : "not supported");
++
++	/* Set the global containing the top of the linear mapping
++	 * for use by the TLB miss code
++	 */
++	linear_map_top = memblock_end_of_DRAM();
++
++	ioremap_bot = IOREMAP_BASE;
++}
++
++static void __init early_mmu_set_memory_limit(void)
++{
++	/*
++	 * Limit memory so we dont have linear faults.
++	 * Unlike memblock_set_current_limit, which limits
++	 * memory available during early boot, this permanently
++	 * reduces the memory available to Linux.  We need to
++	 * do this because highmem is not supported on 64-bit.
++	 */
++	memblock_enforce_memory_limit(linear_map_top);
++
++	memblock_set_current_limit(linear_map_top);
++}
++
++/* boot cpu only */
++void __init early_init_mmu(void)
++{
++	early_init_mmu_global();
++	early_init_this_mmu();
++	early_mmu_set_memory_limit();
++}
++
++void early_init_mmu_secondary(void)
++{
++	early_init_this_mmu();
++}
++
++void setup_initial_memory_limit(phys_addr_t first_memblock_base,
++				phys_addr_t first_memblock_size)
++{
++	/*
++	 * On FSL Embedded 64-bit, usually all RAM is bolted, but with
++	 * unusual memory sizes it's possible for some RAM to not be mapped
++	 * (such RAM is not used at all by Linux, since we don't support
++	 * highmem on 64-bit).  We limit ppc64_rma_size to what would be
++	 * mappable if this memblock is the only one.  Additional memblocks
++	 * can only increase, not decrease, the amount that ends up getting
++	 * mapped.  We still limit max to 1G even if we'll eventually map
++	 * more.  This is due to what the early init code is set up to do.
++	 *
++	 * We crop it to the size of the first MEMBLOCK to
++	 * avoid going over total available memory just in case...
++	 */
++	unsigned long linear_sz;
++	unsigned int num_cams;
++
++	/* use a quarter of the TLBCAM for bolted linear map */
++	num_cams = (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) / 4;
++
++	linear_sz = map_mem_in_cams(first_memblock_size, num_cams, true, true);
++	ppc64_rma_size = min_t(u64, linear_sz, 0x40000000);
++
++	/* Finally limit subsequent allocations */
++	memblock_set_current_limit(first_memblock_base + ppc64_rma_size);
++}
+diff --git a/arch/powerpc/mm/nohash/tlb_low_64e.S b/arch/powerpc/mm/nohash/tlb_low_64e.S
+index 7e0b8fe1c279..a54e7d6c3d0b 100644
+--- a/arch/powerpc/mm/nohash/tlb_low_64e.S
++++ b/arch/powerpc/mm/nohash/tlb_low_64e.S
+@@ -511,232 +511,6 @@ itlb_miss_fault_e6500:
+ 	tlb_epilog_bolted
+ 	b	exc_instruction_storage_book3e
  
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index cfd622ebf774..787b22206386 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -48,7 +48,7 @@ notrace void __init early_ioremap_init(void)
- 	early_ioremap_setup();
- }
+-/**********************************************************************
+- *                                                                    *
+- * TLB miss handling for Book3E with TLB reservation and HES support  *
+- *                                                                    *
+- **********************************************************************/
+-
+-
+-/* Data TLB miss */
+-	START_EXCEPTION(data_tlb_miss)
+-	TLB_MISS_PROLOG
+-
+-	/* Now we handle the fault proper. We only save DEAR in normal
+-	 * fault case since that's the only interesting values here.
+-	 * We could probably also optimize by not saving SRR0/1 in the
+-	 * linear mapping case but I'll leave that for later
+-	 */
+-	mfspr	r14,SPRN_ESR
+-	mfspr	r16,SPRN_DEAR		/* get faulting address */
+-	srdi	r15,r16,44		/* get region */
+-	xoris	r15,r15,0xc
+-	cmpldi	cr0,r15,0		/* linear mapping ? */
+-	beq	tlb_load_linear		/* yes -> go to linear map load */
+-	cmpldi	cr1,r15,1		/* vmalloc mapping ? */
+-
+-	/* The page tables are mapped virtually linear. At this point, though,
+-	 * we don't know whether we are trying to fault in a first level
+-	 * virtual address or a virtual page table address. We can get that
+-	 * from bit 0x1 of the region ID which we have set for a page table
+-	 */
+-	andis.	r10,r15,0x1
+-	bne-	virt_page_table_tlb_miss
+-
+-	std	r14,EX_TLB_ESR(r12);	/* save ESR */
+-	std	r16,EX_TLB_DEAR(r12);	/* save DEAR */
+-
+-	 /* We need _PAGE_PRESENT and  _PAGE_ACCESSED set */
+-	li	r11,_PAGE_PRESENT
+-	oris	r11,r11,_PAGE_ACCESSED@h
+-
+-	/* We do the user/kernel test for the PID here along with the RW test
+-	 */
+-	srdi.	r15,r16,60		/* Check for user region */
+-
+-	/* We pre-test some combination of permissions to avoid double
+-	 * faults:
+-	 *
+-	 * We move the ESR:ST bit into the position of _PAGE_BAP_SW in the PTE
+-	 * ESR_ST   is 0x00800000
+-	 * _PAGE_BAP_SW is 0x00000010
+-	 * So the shift is >> 19. This tests for supervisor writeability.
+-	 * If the page happens to be supervisor writeable and not user
+-	 * writeable, we will take a new fault later, but that should be
+-	 * a rare enough case.
+-	 *
+-	 * We also move ESR_ST in _PAGE_DIRTY position
+-	 * _PAGE_DIRTY is 0x00001000 so the shift is >> 11
+-	 *
+-	 * MAS1 is preset for all we need except for TID that needs to
+-	 * be cleared for kernel translations
+-	 */
+-	rlwimi	r11,r14,32-19,27,27
+-	rlwimi	r11,r14,32-16,19,19
+-	beq	normal_tlb_miss_user
+-	/* XXX replace the RMW cycles with immediate loads + writes */
+-1:	mfspr	r10,SPRN_MAS1
+-	rlwinm	r10,r10,0,16,1		/* Clear TID */
+-	mtspr	SPRN_MAS1,r10
+-	beq+	cr1,normal_tlb_miss
+-
+-	/* We got a crappy address, just fault with whatever DEAR and ESR
+-	 * are here
+-	 */
+-	TLB_MISS_EPILOG_ERROR
+-	b	exc_data_storage_book3e
+-
+-/* Instruction TLB miss */
+-	START_EXCEPTION(instruction_tlb_miss)
+-	TLB_MISS_PROLOG
+-
+-	/* If we take a recursive fault, the second level handler may need
+-	 * to know whether we are handling a data or instruction fault in
+-	 * order to get to the right store fault handler. We provide that
+-	 * info by writing a crazy value in ESR in our exception frame
+-	 */
+-	li	r14,-1	/* store to exception frame is done later */
+-
+-	/* Now we handle the fault proper. We only save DEAR in the non
+-	 * linear mapping case since we know the linear mapping case will
+-	 * not re-enter. We could indeed optimize and also not save SRR0/1
+-	 * in the linear mapping case but I'll leave that for later
+-	 *
+-	 * Faulting address is SRR0 which is already in r16
+-	 */
+-	srdi	r15,r16,44		/* get region */
+-	xoris	r15,r15,0xc
+-	cmpldi	cr0,r15,0		/* linear mapping ? */
+-	beq	tlb_load_linear		/* yes -> go to linear map load */
+-	cmpldi	cr1,r15,1		/* vmalloc mapping ? */
+-
+-	/* We do the user/kernel test for the PID here along with the RW test
+-	 */
+-	li	r11,_PAGE_PRESENT|_PAGE_BAP_UX	/* Base perm */
+-	oris	r11,r11,_PAGE_ACCESSED@h
+-
+-	srdi.	r15,r16,60			/* Check for user region */
+-	std	r14,EX_TLB_ESR(r12)		/* write crazy -1 to frame */
+-	beq	normal_tlb_miss_user
+-
+-	li	r11,_PAGE_PRESENT|_PAGE_BAP_SX	/* Base perm */
+-	oris	r11,r11,_PAGE_ACCESSED@h
+-	/* XXX replace the RMW cycles with immediate loads + writes */
+-	mfspr	r10,SPRN_MAS1
+-	rlwinm	r10,r10,0,16,1			/* Clear TID */
+-	mtspr	SPRN_MAS1,r10
+-	beq+	cr1,normal_tlb_miss
+-
+-	/* We got a crappy address, just fault */
+-	TLB_MISS_EPILOG_ERROR
+-	b	exc_instruction_storage_book3e
+-
+-/*
+- * This is the guts of the first-level TLB miss handler for direct
+- * misses. We are entered with:
+- *
+- * r16 = faulting address
+- * r15 = region ID
+- * r14 = crap (free to use)
+- * r13 = PACA
+- * r12 = TLB exception frame in PACA
+- * r11 = PTE permission mask
+- * r10 = crap (free to use)
+- */
+-normal_tlb_miss_user:
+-#ifdef CONFIG_PPC_KUAP
+-	mfspr	r14,SPRN_MAS1
+-	rlwinm.	r14,r14,0,0x3fff0000
+-	beq-	normal_tlb_miss_access_fault /* KUAP fault */
+-#endif
+-normal_tlb_miss:
+-	/* So we first construct the page table address. We do that by
+-	 * shifting the bottom of the address (not the region ID) by
+-	 * PAGE_SHIFT-3, clearing the bottom 3 bits (get a PTE ptr) and
+-	 * or'ing the fourth high bit.
+-	 *
+-	 * NOTE: For 64K pages, we do things slightly differently in
+-	 * order to handle the weird page table format used by linux
+-	 */
+-	srdi	r15,r16,44
+-	oris	r10,r15,0x1
+-	rldicl	r14,r16,64-(PAGE_SHIFT-3),PAGE_SHIFT-3+4
+-	sldi	r15,r10,44
+-	clrrdi	r14,r14,19
+-	or	r10,r15,r14
+-
+-	ld	r14,0(r10)
+-
+-finish_normal_tlb_miss:
+-	/* Check if required permissions are met */
+-	andc.	r15,r11,r14
+-	bne-	normal_tlb_miss_access_fault
+-
+-	/* Now we build the MAS:
+-	 *
+-	 * MAS 0   :	Fully setup with defaults in MAS4 and TLBnCFG
+-	 * MAS 1   :	Almost fully setup
+-	 *               - PID already updated by caller if necessary
+-	 *               - TSIZE need change if !base page size, not
+-	 *                 yet implemented for now
+-	 * MAS 2   :	Defaults not useful, need to be redone
+-	 * MAS 3+7 :	Needs to be done
+-	 *
+-	 * TODO: mix up code below for better scheduling
+-	 */
+-	clrrdi	r10,r16,12		/* Clear low crap in EA */
+-	rlwimi	r10,r14,32-19,27,31	/* Insert WIMGE */
+-	mtspr	SPRN_MAS2,r10
+-
+-	/* Check page size, if not standard, update MAS1 */
+-	rldicl	r10,r14,64-8,64-8
+-	cmpldi	cr0,r10,BOOK3E_PAGESZ_4K
+-	beq-	1f
+-	mfspr	r11,SPRN_MAS1
+-	rlwimi	r11,r14,31,21,24
+-	rlwinm	r11,r11,0,21,19
+-	mtspr	SPRN_MAS1,r11
+-1:
+-	/* Move RPN in position */
+-	rldicr	r11,r14,64-(PTE_RPN_SHIFT-PAGE_SHIFT),63-PAGE_SHIFT
+-	clrldi	r15,r11,12		/* Clear crap at the top */
+-	rlwimi	r15,r14,32-8,22,25	/* Move in U bits */
+-	rlwimi	r15,r14,32-2,26,31	/* Move in BAP bits */
+-
+-	/* Mask out SW and UW if !DIRTY (XXX optimize this !) */
+-	andi.	r11,r14,_PAGE_DIRTY
+-	bne	1f
+-	li	r11,MAS3_SW|MAS3_UW
+-	andc	r15,r15,r11
+-1:
+-	srdi	r16,r15,32
+-	mtspr	SPRN_MAS3,r15
+-	mtspr	SPRN_MAS7,r16
+-
+-	tlbwe
+-
+-normal_tlb_miss_done:
+-	/* We don't bother with restoring DEAR or ESR since we know we are
+-	 * level 0 and just going back to userland. They are only needed
+-	 * if you are going to take an access fault
+-	 */
+-	TLB_MISS_EPILOG_SUCCESS
+-	rfi
+-
+-normal_tlb_miss_access_fault:
+-	/* We need to check if it was an instruction miss */
+-	andi.	r10,r11,_PAGE_BAP_UX
+-	bne	1f
+-	ld	r14,EX_TLB_DEAR(r12)
+-	ld	r15,EX_TLB_ESR(r12)
+-	mtspr	SPRN_DEAR,r14
+-	mtspr	SPRN_ESR,r15
+-	TLB_MISS_EPILOG_ERROR
+-	b	exc_data_storage_book3e
+-1:	TLB_MISS_EPILOG_ERROR
+-	b	exc_instruction_storage_book3e
+-
+-
+ /*
+  * This is the guts of the second-level TLB miss handler for direct
+  * misses. We are entered with:
+@@ -893,201 +667,6 @@ virt_page_table_tlb_miss_whacko_fault:
+ 	TLB_MISS_EPILOG_ERROR
+ 	b	exc_data_storage_book3e
  
--static void __init *early_alloc_pgtable(unsigned long size)
-+void __init *early_alloc_pgtable(unsigned long size)
- {
- 	void *ptr = memblock_alloc(size, size);
- 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index b2d8c0da2ad9..fa4bb096b3ae 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -98,6 +98,7 @@ config PPC_BOOK3S_64
- 	select ARCH_ENABLE_HUGEPAGE_MIGRATION if HUGETLB_PAGE && MIGRATION
- 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK
- 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
-+	select ARCH_HAS_HUGEPD if HUGETLB_PAGE
- 	select ARCH_SUPPORTS_HUGETLBFS
- 	select ARCH_SUPPORTS_NUMA_BALANCING
- 	select HAVE_MOVE_PMD
-@@ -290,6 +291,7 @@ config PPC_BOOK3S
- config PPC_E500
- 	select FSL_EMB_PERFMON
- 	bool
-+	select ARCH_HAS_HUGEPD if HUGETLB_PAGE
- 	select ARCH_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
- 	select PPC_SMP_MUXED_IPI
- 	select PPC_DOORBELL
+-
+-/**************************************************************
+- *                                                            *
+- * TLB miss handling for Book3E with hw page table support    *
+- *                                                            *
+- **************************************************************/
+-
+-
+-/* Data TLB miss */
+-	START_EXCEPTION(data_tlb_miss_htw)
+-	TLB_MISS_PROLOG
+-
+-	/* Now we handle the fault proper. We only save DEAR in normal
+-	 * fault case since that's the only interesting values here.
+-	 * We could probably also optimize by not saving SRR0/1 in the
+-	 * linear mapping case but I'll leave that for later
+-	 */
+-	mfspr	r14,SPRN_ESR
+-	mfspr	r16,SPRN_DEAR		/* get faulting address */
+-	srdi	r11,r16,44		/* get region */
+-	xoris	r11,r11,0xc
+-	cmpldi	cr0,r11,0		/* linear mapping ? */
+-	beq	tlb_load_linear		/* yes -> go to linear map load */
+-	cmpldi	cr1,r11,1		/* vmalloc mapping ? */
+-
+-	/* We do the user/kernel test for the PID here along with the RW test
+-	 */
+-	srdi.	r11,r16,60		/* Check for user region */
+-	ld	r15,PACAPGD(r13)	/* Load user pgdir */
+-	beq	htw_tlb_miss
+-
+-	/* XXX replace the RMW cycles with immediate loads + writes */
+-1:	mfspr	r10,SPRN_MAS1
+-	rlwinm	r10,r10,0,16,1		/* Clear TID */
+-	mtspr	SPRN_MAS1,r10
+-	ld	r15,PACA_KERNELPGD(r13)	/* Load kernel pgdir */
+-	beq+	cr1,htw_tlb_miss
+-
+-	/* We got a crappy address, just fault with whatever DEAR and ESR
+-	 * are here
+-	 */
+-	TLB_MISS_EPILOG_ERROR
+-	b	exc_data_storage_book3e
+-
+-/* Instruction TLB miss */
+-	START_EXCEPTION(instruction_tlb_miss_htw)
+-	TLB_MISS_PROLOG
+-
+-	/* If we take a recursive fault, the second level handler may need
+-	 * to know whether we are handling a data or instruction fault in
+-	 * order to get to the right store fault handler. We provide that
+-	 * info by keeping a crazy value for ESR in r14
+-	 */
+-	li	r14,-1	/* store to exception frame is done later */
+-
+-	/* Now we handle the fault proper. We only save DEAR in the non
+-	 * linear mapping case since we know the linear mapping case will
+-	 * not re-enter. We could indeed optimize and also not save SRR0/1
+-	 * in the linear mapping case but I'll leave that for later
+-	 *
+-	 * Faulting address is SRR0 which is already in r16
+-	 */
+-	srdi	r11,r16,44		/* get region */
+-	xoris	r11,r11,0xc
+-	cmpldi	cr0,r11,0		/* linear mapping ? */
+-	beq	tlb_load_linear		/* yes -> go to linear map load */
+-	cmpldi	cr1,r11,1		/* vmalloc mapping ? */
+-
+-	/* We do the user/kernel test for the PID here along with the RW test
+-	 */
+-	srdi.	r11,r16,60		/* Check for user region */
+-	ld	r15,PACAPGD(r13)		/* Load user pgdir */
+-	beq	htw_tlb_miss
+-
+-	/* XXX replace the RMW cycles with immediate loads + writes */
+-1:	mfspr	r10,SPRN_MAS1
+-	rlwinm	r10,r10,0,16,1			/* Clear TID */
+-	mtspr	SPRN_MAS1,r10
+-	ld	r15,PACA_KERNELPGD(r13)		/* Load kernel pgdir */
+-	beq+	htw_tlb_miss
+-
+-	/* We got a crappy address, just fault */
+-	TLB_MISS_EPILOG_ERROR
+-	b	exc_instruction_storage_book3e
+-
+-
+-/*
+- * This is the guts of the second-level TLB miss handler for direct
+- * misses. We are entered with:
+- *
+- * r16 = virtual page table faulting address
+- * r15 = PGD pointer
+- * r14 = ESR
+- * r13 = PACA
+- * r12 = TLB exception frame in PACA
+- * r11 = crap (free to use)
+- * r10 = crap (free to use)
+- *
+- * It can be re-entered by the linear mapping miss handler. However, to
+- * avoid too much complication, it will save/restore things for us
+- */
+-htw_tlb_miss:
+-#ifdef CONFIG_PPC_KUAP
+-	mfspr	r10,SPRN_MAS1
+-	rlwinm.	r10,r10,0,0x3fff0000
+-	beq-	htw_tlb_miss_fault /* KUAP fault */
+-#endif
+-	/* Search if we already have a TLB entry for that virtual address, and
+-	 * if we do, bail out.
+-	 *
+-	 * MAS1:IND should be already set based on MAS4
+-	 */
+-	PPC_TLBSRX_DOT(0,R16)
+-	beq	htw_tlb_miss_done
+-
+-	/* Now, we need to walk the page tables. First check if we are in
+-	 * range.
+-	 */
+-	rldicl.	r10,r16,64-PGTABLE_EADDR_SIZE,PGTABLE_EADDR_SIZE+4
+-	bne-	htw_tlb_miss_fault
+-
+-	/* Get the PGD pointer */
+-	cmpldi	cr0,r15,0
+-	beq-	htw_tlb_miss_fault
+-
+-	/* Get to PGD entry */
+-	rldicl	r11,r16,64-(PGDIR_SHIFT-3),64-PGD_INDEX_SIZE-3
+-	clrrdi	r10,r11,3
+-	ldx	r15,r10,r15
+-	cmpdi	cr0,r15,0
+-	bge	htw_tlb_miss_fault
+-
+-	/* Get to PUD entry */
+-	rldicl	r11,r16,64-(PUD_SHIFT-3),64-PUD_INDEX_SIZE-3
+-	clrrdi	r10,r11,3
+-	ldx	r15,r10,r15
+-	cmpdi	cr0,r15,0
+-	bge	htw_tlb_miss_fault
+-
+-	/* Get to PMD entry */
+-	rldicl	r11,r16,64-(PMD_SHIFT-3),64-PMD_INDEX_SIZE-3
+-	clrrdi	r10,r11,3
+-	ldx	r15,r10,r15
+-	cmpdi	cr0,r15,0
+-	bge	htw_tlb_miss_fault
+-
+-	/* Ok, we're all right, we can now create an indirect entry for
+-	 * a 1M or 256M page.
+-	 *
+-	 * The last trick is now that because we use "half" pages for
+-	 * the HTW (1M IND is 2K and 256M IND is 32K) we need to account
+-	 * for an added LSB bit to the RPN. For 64K pages, there is no
+-	 * problem as we already use 32K arrays (half PTE pages), but for
+-	 * 4K page we need to extract a bit from the virtual address and
+-	 * insert it into the "PA52" bit of the RPN.
+-	 */
+-	rlwimi	r15,r16,32-9,20,20
+-	/* Now we build the MAS:
+-	 *
+-	 * MAS 0   :	Fully setup with defaults in MAS4 and TLBnCFG
+-	 * MAS 1   :	Almost fully setup
+-	 *               - PID already updated by caller if necessary
+-	 *               - TSIZE for now is base ind page size always
+-	 * MAS 2   :	Use defaults
+-	 * MAS 3+7 :	Needs to be done
+-	 */
+-	ori	r10,r15,(BOOK3E_PAGESZ_4K << MAS3_SPSIZE_SHIFT)
+-
+-	srdi	r16,r10,32
+-	mtspr	SPRN_MAS3,r10
+-	mtspr	SPRN_MAS7,r16
+-
+-	tlbwe
+-
+-htw_tlb_miss_done:
+-	/* We don't bother with restoring DEAR or ESR since we know we are
+-	 * level 0 and just going back to userland. They are only needed
+-	 * if you are going to take an access fault
+-	 */
+-	TLB_MISS_EPILOG_SUCCESS
+-	rfi
+-
+-htw_tlb_miss_fault:
+-	/* We need to check if it was an instruction miss. We know this
+-	 * though because r14 would contain -1
+-	 */
+-	cmpdi	cr0,r14,-1
+-	beq	1f
+-	mtspr	SPRN_DEAR,r16
+-	mtspr	SPRN_ESR,r14
+-	TLB_MISS_EPILOG_ERROR
+-	b	exc_data_storage_book3e
+-1:	TLB_MISS_EPILOG_ERROR
+-	b	exc_instruction_storage_book3e
+-
+ /*
+  * This is the guts of "any" level TLB miss handler for kernel linear
+  * mapping misses. We are entered with:
 -- 
 2.44.0
+
+
 
