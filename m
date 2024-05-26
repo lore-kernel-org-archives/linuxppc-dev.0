@@ -2,39 +2,39 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2F8FC25B7D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 09:36:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10ECFC25B75
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 09:37:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VnD1V1Dd6z3dTJ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 19:26:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VnD2K4rh8z89Kl
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 May 2024 19:27:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VnCxt5QSVz87Gg
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 May 2024 19:23:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VnCyF2r6sz87Rs
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 May 2024 19:23:49 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4VnCwr2vCrz9tLt;
-	Sun, 26 May 2024 11:22:36 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4VnCwt3PJbz9t0b;
+	Sun, 26 May 2024 11:22:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7rqfgFOy_RFJ; Sun, 26 May 2024 11:22:36 +0200 (CEST)
+	with ESMTP id EFDz7JuFCePh; Sun, 26 May 2024 11:22:38 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4VnCwm6JNtz9tCB;
-	Sun, 26 May 2024 11:22:32 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4VnCwn6T8vz9tHF;
+	Sun, 26 May 2024 11:22:33 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D46658B773;
-	Sun, 26 May 2024 11:22:32 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D867D8B773;
+	Sun, 26 May 2024 11:22:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id JtYuilF064Yh; Sun, 26 May 2024 11:22:32 +0200 (CEST)
+	with ESMTP id CA2oBDYLj0zg; Sun, 26 May 2024 11:22:33 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.233.45])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 523048B764;
-	Sun, 26 May 2024 11:22:32 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5E2D68B764;
+	Sun, 26 May 2024 11:22:33 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Jason Gunthorpe <jgg@nvidia.com>,
@@ -42,14 +42,14 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 	Oscar Salvador <osalvador@suse.de>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC PATCH v3 09/16] powerpc/8xx: Simplify struct mmu_psize_def
-Date: Sun, 26 May 2024 11:22:29 +0200
-Message-ID: <b39165aa73ce701b13dead64a976d96eeb576ff5.1716714720.git.christophe.leroy@csgroup.eu>
+Subject: [RFC PATCH v3 11/16] powerpc/e500: Switch to 64 bits PGD on 85xx (32 bits)
+Date: Sun, 26 May 2024 11:22:31 +0200
+Message-ID: <35168a76c011ee9bf1a86d67e04d0a04eb6b1df5.1716714720.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <cover.1716714720.git.christophe.leroy@csgroup.eu>
 References: <cover.1716714720.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1716715343; l=1334; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=foRpSg705p76Fv1R91+1LawwFjSx303hjdxd+UuPeuU=; b=89d4p5uFz+OUF0vWXwpE9jxbam9lfuKp47lCKKGXHyK1z/cO7nzq7sxyAgrLXaeLZMYHbfSY5 YabPz86rjLkBdFPZ0ljkWIGS9zTQw6ikc6YqwGMkSv89uOR+Dn/jGi1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1716715344; l=2287; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=s4/AO36tt/CSDTJwqMkp0Ne29mDvmColJNi/FwYddUk=; b=p17SdvRCCZ/qVZRALoCx/U4AFn6zApoVFY6TKJR8dw5A3LKR5Ec49NHqY3/Iy0X9tMj3pVyt2 x0GXrO10KYXA0P4ttvrgwBfX8X2sK/2tM+qR1H9MAKBseTavRwt+MKu
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,42 +67,61 @@ Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8xx, only the shift field is used in struct mmu_psize_def
+At the time being when CONFIG_PTE_64BIT is selected, PTE entries are
+64 bits but PGD entries are still 32 bits.
 
-Remove other fields and related macros.
+In order to allow leaf PMD entries, switch the PGD to 64 bits entries.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Oscar Salvador <osalvador@suse.de>
 ---
- arch/powerpc/include/asm/nohash/32/mmu-8xx.h | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/pgtable-types.h |  4 ++++
+ arch/powerpc/kernel/head_85xx.S          | 10 ++++++----
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-index 141d82e249a8..a756a1e59c54 100644
---- a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-@@ -189,19 +189,14 @@ typedef struct {
+diff --git a/arch/powerpc/include/asm/pgtable-types.h b/arch/powerpc/include/asm/pgtable-types.h
+index 082c85cc09b1..db965d98e0ae 100644
+--- a/arch/powerpc/include/asm/pgtable-types.h
++++ b/arch/powerpc/include/asm/pgtable-types.h
+@@ -49,7 +49,11 @@ static inline unsigned long pud_val(pud_t x)
+ #endif /* CONFIG_PPC64 */
  
- #define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
- 
--/* Page size definitions, common between 32 and 64-bit
-+/*
-+ * Page size definitions for 8xx
-  *
-  *    shift : is the "PAGE_SHIFT" value for that page size
-- *    penc  : is the pte encoding mask
-  *
-  */
- struct mmu_psize_def {
- 	unsigned int	shift;	/* number of bits */
--	unsigned int	enc;	/* PTE encoding */
--	unsigned int    ind;    /* Corresponding indirect page size shift */
--	unsigned int	flags;
--#define MMU_PAGE_SIZE_DIRECT	0x1	/* Supported as a direct size */
--#define MMU_PAGE_SIZE_INDIRECT	0x2	/* Supported as an indirect size */
- };
- 
- extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
+ /* PGD level */
++#if defined(CONFIG_PPC_E500) && defined(CONFIG_PTE_64BIT)
++typedef struct { unsigned long long pgd; } pgd_t;
++#else
+ typedef struct { unsigned long pgd; } pgd_t;
++#endif
+ #define __pgd(x)	((pgd_t) { (x) })
+ static inline unsigned long pgd_val(pgd_t x)
+ {
+diff --git a/arch/powerpc/kernel/head_85xx.S b/arch/powerpc/kernel/head_85xx.S
+index 39724ff5ae1f..a305244afc9f 100644
+--- a/arch/powerpc/kernel/head_85xx.S
++++ b/arch/powerpc/kernel/head_85xx.S
+@@ -307,8 +307,9 @@ set_ivor:
+ #ifdef CONFIG_PTE_64BIT
+ #ifdef CONFIG_HUGETLB_PAGE
+ #define FIND_PTE	\
+-	rlwinm	r12, r10, 13, 19, 29;	/* Compute pgdir/pmd offset */	\
+-	lwzx	r11, r12, r11;		/* Get pgd/pmd entry */		\
++	rlwinm	r12, r10, 14, 18, 28;	/* Compute pgdir/pmd offset */	\
++	add	r12, r11, r12;						\
++	lwz	r11, 4(r12);		/* Get pgd/pmd entry */		\
+ 	rlwinm.	r12, r11, 0, 0, 20;	/* Extract pt base address */	\
+ 	blt	1000f;			/* Normal non-huge page */	\
+ 	beq	2f;			/* Bail if no table */		\
+@@ -321,8 +322,9 @@ set_ivor:
+ 1001:	lwz	r11, 4(r12);		/* Get pte entry */
+ #else
+ #define FIND_PTE	\
+-	rlwinm	r12, r10, 13, 19, 29;	/* Compute pgdir/pmd offset */	\
+-	lwzx	r11, r12, r11;		/* Get pgd/pmd entry */		\
++	rlwinm	r12, r10, 14, 18, 28;	/* Compute pgdir/pmd offset */	\
++	add	r12, r11, r12;						\
++	lwz	r11, 4(r12);		/* Get pgd/pmd entry */		\
+ 	rlwinm.	r12, r11, 0, 0, 20;	/* Extract pt base address */	\
+ 	beq	2f;			/* Bail if no table */		\
+ 	rlwimi	r12, r10, 23, 20, 28;	/* Compute pte address */	\
 -- 
 2.44.0
 
