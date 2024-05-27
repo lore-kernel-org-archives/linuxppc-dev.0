@@ -2,53 +2,53 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5261C25B74
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2024 16:12:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDD51C25B74
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2024 16:16:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XV7gug9f;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q/8XJZaE;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vp0ny27Yvz99Nl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2024 02:04:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vp0s43ht4z9BFg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2024 02:07:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XV7gug9f;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q/8XJZaE;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
 Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vp0h760MRz89HK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2024 01:59:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vp0j31ksxz89ZP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2024 02:00:07 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id CB3BFCE0FEE;
-	Mon, 27 May 2024 15:59:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6118EC32781;
-	Mon, 27 May 2024 15:59:16 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 79597CE0FEE;
+	Mon, 27 May 2024 16:00:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F333CC2BBFC;
+	Mon, 27 May 2024 16:00:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1716825558;
-	bh=8lcv+SRxqyMKfALO/IS1xe9UxB1wDiKm1bUjXQ/gZEo=;
+	s=k20201202; t=1716825605;
+	bh=3j6I4oXfoJyk2FD8DzmE8CORnviTv/b07TPvLGl+Hf0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=XV7gug9fkZ03CPIwGSiKNr8MMhr6C4oLu9Hc5i/QAMH/VWOgk3bkG3jrP/uo+cphG
-	 CAuL4BLspYpMo1tQzALAQkOS73N5YeMVVFbdsP4xH0bkNBZsxXRJnRFRHu0jcOBvXH
-	 y3GkSUA3ZmBE86cDoUM30ZIHiWTHVIJ3SqJYhkhd8TLI4uiEi42nvF4sPhmyTzXbtc
-	 GysgRGKDV0/xCAcMfRyK9sv9V1FWqih0L4oo6baBkBo0v7JWePwM3yQSOObv+z8SZQ
-	 9QNhoJLP7Mo+EEATjPDefVJg0UCdve6vRqb+E2bRq+t1MsdL7po88uT9fGwU8zc5Gu
-	 /FC63y4duQQBg==
+	b=Q/8XJZaEAZmUW1fYgIXjoKQfJaX+mSVsfPHrZwE5fsSqdZiWWXyCBfFDRpjsY0rPB
+	 8lt1N2o5sERqeJn6vLMO2NlT9DXpx3Xx4tM9WezJOyYePmR/TcsAhUNrWYbDT2zVVs
+	 YQoIgFeKv8ONoIKGGuc71Fxinp0BQFCSwoMyXZnBJqAX4odIqW5/FgLATQsaSsvoW1
+	 /0AwB14ClTi2SStkR2WIY2aF2Wcd+6XojEZTJu0T5ZmQ7QdaBdQDOy21RgaTdC8Rti
+	 YhSqynuIShshgB0UidXd/3isVpAS/UpEsTK1YORI2iFRlU6EYsMWabF3aavK/VUbOI
+	 TH7o17n92Q/Cw==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 7/7] powerpc/io: Avoid clang null pointer arithmetic warnings
-Date: Mon, 27 May 2024 11:58:31 -0400
-Message-ID: <20240527155845.3866271-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 2/2] powerpc/io: Avoid clang null pointer arithmetic warnings
+Date: Mon, 27 May 2024 11:59:45 -0400
+Message-ID: <20240527155949.3866553-2-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240527155845.3866271-1-sashal@kernel.org>
-References: <20240527155845.3866271-1-sashal@kernel.org>
+In-Reply-To: <20240527155949.3866553-1-sashal@kernel.org>
+References: <20240527155949.3866553-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.10.218
+X-stable-base: Linux 4.19.315
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -61,7 +61,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, wangkefeng.wang@huawei.com, bhe@redhat.com, arnd@arndb.de, Naresh Kamboju <naresh.kamboju@linaro.org>, llvm@lists.linux.dev, stanislav.kinsburskii@gmail.com, nathan@kernel.org, geert@linux-m68k.org, bhelgaas@google.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, wangkefeng.wang@huawei.com, bhe@redhat.com, arnd@arndb.de, Naresh Kamboju <naresh.kamboju@linaro.org>, llvm@lists.linux.dev, stanislav.kinsburskii@gmail.com, nathan@kernel.org, geert@linux-m68k.org, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
@@ -101,10 +101,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 0182b291248ac..058d21f493fad 100644
+index 4681d4c50567e..5ff8ab12f56c7 100644
 --- a/arch/powerpc/include/asm/io.h
 +++ b/arch/powerpc/include/asm/io.h
-@@ -541,12 +541,12 @@ __do_out_asm(_rec_outl, "stwbrx")
+@@ -569,12 +569,12 @@ __do_out_asm(_rec_outl, "stwbrx")
  #define __do_inw(port)		_rec_inw(port)
  #define __do_inl(port)		_rec_inl(port)
  #else /* CONFIG_PPC32 */
@@ -123,7 +123,7 @@ index 0182b291248ac..058d21f493fad 100644
  #endif /* !CONFIG_PPC32 */
  
  #ifdef CONFIG_EEH
-@@ -562,12 +562,12 @@ __do_out_asm(_rec_outl, "stwbrx")
+@@ -590,12 +590,12 @@ __do_out_asm(_rec_outl, "stwbrx")
  #define __do_writesw(a, b, n)	_outsw(PCI_FIX_ADDR(a),(b),(n))
  #define __do_writesl(a, b, n)	_outsl(PCI_FIX_ADDR(a),(b),(n))
  
