@@ -2,39 +2,39 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11F7EC25B74
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2024 13:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FC95C25B79
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2024 13:41:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VnxV23xDPz8B29
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2024 23:35:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VnxRq3r6Cz88qT
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2024 23:33:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VnxPj6fnlz87Vf
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2024 23:31:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VnxPH1R5mz87GZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 May 2024 23:31:15 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4VnxNl50Ssz9tKP;
-	Mon, 27 May 2024 15:30:47 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4VnxNY39myz9syd;
+	Mon, 27 May 2024 15:30:37 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id PTTff4CE0Yd7; Mon, 27 May 2024 15:30:47 +0200 (CEST)
+	with ESMTP id QPpKG3o7xn_a; Mon, 27 May 2024 15:30:37 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4VnxNl4Nvvz9tC6;
-	Mon, 27 May 2024 15:30:47 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4VnxNY2Zzjz9sqS;
+	Mon, 27 May 2024 15:30:37 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 91E898B773;
-	Mon, 27 May 2024 15:30:47 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 53AB38B773;
+	Mon, 27 May 2024 15:30:37 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Zt8Ki81erwHc; Mon, 27 May 2024 15:30:47 +0200 (CEST)
+	with ESMTP id dnmhP2yQDIxO; Mon, 27 May 2024 15:30:37 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.232.49])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8E4C38B764;
-	Mon, 27 May 2024 15:30:46 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B08078B764;
+	Mon, 27 May 2024 15:30:35 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Jason Gunthorpe <jgg@nvidia.com>,
@@ -42,14 +42,14 @@ To: Andrew Morton <akpm@linux-foundation.org>,
 	Oscar Salvador <osalvador@suse.de>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [RFC PATCH v4 12/16] powerpc/e500: Encode hugepage size in PTE bits
-Date: Mon, 27 May 2024 15:30:10 +0200
-Message-ID: <10eae3c6815e3aba5f624af92321948e4684c95a.1716815901.git.christophe.leroy@csgroup.eu>
+Subject: [RFC PATCH v4 07/16] powerpc/8xx: Fix size given to set_huge_pte_at()
+Date: Mon, 27 May 2024 15:30:05 +0200
+Message-ID: <75f695241f19fd08ce4f476110b933b7850249d3.1716815901.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <cover.1716815901.git.christophe.leroy@csgroup.eu>
 References: <cover.1716815901.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1716816601; l=1805; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=uUFe3OogHVPo7wrS42BAn509SjAdI6hEiXUNXjCP0Kk=; b=YL5kCMuwuiOUJzgHNZiLsRNG4JGxpb9X2MJhw2pkjypC8qNj9tqf0pexIsNSaqtiXEuIkUx7j tzlHiAZj6RlB4nEJ2M7CYqgs3yfKNJWdU6O3BAWWYEbp+QuluiZGoYd
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1716816600; l=967; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=D5c7rc2WApQ3tCbzTNEVQ0Gk3Td9OpyCeDWt3oeDJWA=; b=wqFHcjPXA+RmKeGLWUXQ7d01EPFwdwnDrXyqFosPd+EELJOAwUJ3KBbQ7UPPIOF5o8fX2QyDs d5FVrFEhD65AbwWAkEOgTVWQtleIBSW0PmXTmX8yM/GA1KsMvHg8MVO
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,47 +67,30 @@ Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use U0-U3 bits to encode hugepage size, more exactly page shift.
+set_huge_pte_at() expects the size of the hugepage as an int, not the
+psize which is the index of the page definition in table mmu_psize_defs[]
 
-As we start using hugepages at shift 21 (2Mbytes), substract 20
-so that it fits into 4 bits. That may change in the future if
-we want to use smaller hugepages.
-
+Fixes: 935d4f0c6dc8 ("mm: hugetlb: add huge page size param to set_huge_pte_at()")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
 ---
- arch/powerpc/include/asm/nohash/hugetlb-e500.h | 6 ++++++
- arch/powerpc/include/asm/nohash/pte-e500.h     | 3 +++
- 2 files changed, 9 insertions(+)
+ arch/powerpc/mm/nohash/8xx.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/hugetlb-e500.h b/arch/powerpc/include/asm/nohash/hugetlb-e500.h
-index 8f04ad20e040..d8e51a3f8557 100644
---- a/arch/powerpc/include/asm/nohash/hugetlb-e500.h
-+++ b/arch/powerpc/include/asm/nohash/hugetlb-e500.h
-@@ -42,4 +42,10 @@ static inline int check_and_get_huge_psize(int shift)
- 	return shift_to_mmu_psize(shift);
+diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
+index 43d4842bb1c7..d93433e26ded 100644
+--- a/arch/powerpc/mm/nohash/8xx.c
++++ b/arch/powerpc/mm/nohash/8xx.c
+@@ -94,7 +94,8 @@ static int __ref __early_map_kernel_hugepage(unsigned long va, phys_addr_t pa,
+ 		return -EINVAL;
+ 
+ 	set_huge_pte_at(&init_mm, va, ptep,
+-			pte_mkhuge(pfn_pte(pa >> PAGE_SHIFT, prot)), psize);
++			pte_mkhuge(pfn_pte(pa >> PAGE_SHIFT, prot)),
++			1UL << mmu_psize_to_shift(psize));
+ 
+ 	return 0;
  }
- 
-+static inline pte_t arch_make_huge_pte(pte_t entry, unsigned int shift, vm_flags_t flags)
-+{
-+	return __pte(pte_val(entry) | (_PAGE_U3 * (shift - 20)));
-+}
-+#define arch_make_huge_pte arch_make_huge_pte
-+
- #endif /* _ASM_POWERPC_NOHASH_HUGETLB_E500_H */
-diff --git a/arch/powerpc/include/asm/nohash/pte-e500.h b/arch/powerpc/include/asm/nohash/pte-e500.h
-index 975facc7e38e..091e4bff1fba 100644
---- a/arch/powerpc/include/asm/nohash/pte-e500.h
-+++ b/arch/powerpc/include/asm/nohash/pte-e500.h
-@@ -46,6 +46,9 @@
- #define _PAGE_NO_CACHE	0x400000 /* I: cache inhibit */
- #define _PAGE_WRITETHRU	0x800000 /* W: cache write-through */
- 
-+#define _PAGE_HSIZE_MSK (_PAGE_U0 | _PAGE_U1 | _PAGE_U2 | _PAGE_U3)
-+#define _PAGE_HSIZE_SHIFT	14
-+
- /* "Higher level" linux bit combinations */
- #define _PAGE_EXEC		(_PAGE_BAP_SX | _PAGE_BAP_UX) /* .. and was cache cleaned */
- #define _PAGE_READ		(_PAGE_BAP_SR | _PAGE_BAP_UR) /* User read permission */
 -- 
 2.44.0
 
