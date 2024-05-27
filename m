@@ -2,53 +2,53 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6BC7C41513
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5649C25B74
 	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 May 2024 16:11:41 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bEyrSrhm;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kjnn1rnB;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vp0pl01Pfz99ZG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2024 02:05:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vp0n30BvKz999f
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 May 2024 02:03:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bEyrSrhm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kjnn1rnB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vp0hb1z7Xz89Qs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2024 01:59:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vp0h42lCtz89GK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 May 2024 01:59:16 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id EB34D61B1C;
-	Mon, 27 May 2024 15:59:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5399BC4AF0B;
-	Mon, 27 May 2024 15:59:40 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 0EFAE61B1D;
+	Mon, 27 May 2024 15:59:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2DA98C2BBFC;
+	Mon, 27 May 2024 15:59:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1716825581;
-	bh=DjAs8dmTmQ1x9EQebS1fjcTYhz0yBUAm+9fuL3XtfuA=;
+	s=k20201202; t=1716825554;
+	bh=TyJFoh57lXVSFKFbEQkDyizMJeZPrs9afzkUpBAV0Qk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=bEyrSrhmagK59fAw7xNGrD82wwqi5eYa7SAAhfYcd0AORe9UPa3wrs/nW+GqCBFGU
-	 2SDovz75dRn3S5PSTBKxeWPftaADMaffrDqXdinojYMWF6c+vrymNIvfBoYDxmiv66
-	 IcscW54+FpEcPnCRRL+uRPHfS2Q3L7ZSjdwxXGAsaoClgWQRM9leHXxCveedTFZtXR
-	 ah8MIFadhj+vkMv3AhhVulNWT9cRFNaf8mZZ1c9X+NrCiNxJ4VNHt9LHgRxdnRWlbO
-	 RI6J46U+31O6ySdo+JUNBwv1PJtVqdSJ8V060eF/7CMXmrMGRXT45sBoFyZ4TSeTEW
-	 JUqwIZPbfKlZQ==
+	b=kjnn1rnBOR5Ld6rftupc4czkfTSnckWuhvvUz3KbQQ/S+9h7v+zmZxCN0EUeDMtvU
+	 wvvzTOyvxSZhooy/GAERRnWVS1dtsvgOP5SUOEE05kxjs88ZEiPceO27aTl/K65D9b
+	 SbtygkhAbbZY3O87dO8U8gyb8qbN2R85KTPoNcSDlT9LF/p9QRz+90Qkdz8C5x3uOj
+	 aPXReB0M+gz/7e6YhNYAvO3esK2rS/eRYdSQZKzcFeQf+T3xGKr7Fk//LFA0sD1j2I
+	 g3Lcgp2CySRbIuQzhAkJHUb4A5WDWN/zhAfEtWZYynSGt6fdBJi6fWUFHOcS5Qmxix
+	 7oOWDm0n8zQYA==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 2/3] powerpc/pseries: Enforce hcall result buffer validity and size
-Date: Mon, 27 May 2024 11:59:17 -0400
-Message-ID: <20240527155925.3866466-2-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 6/7] powerpc/pseries: Enforce hcall result buffer validity and size
+Date: Mon, 27 May 2024 11:58:30 -0400
+Message-ID: <20240527155845.3866271-6-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240527155925.3866466-1-sashal@kernel.org>
-References: <20240527155925.3866466-1-sashal@kernel.org>
+In-Reply-To: <20240527155845.3866271-1-sashal@kernel.org>
+References: <20240527155845.3866271-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.4.277
+X-stable-base: Linux 5.10.218
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -61,7 +61,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, Sasha Levin <sashal@kernel.org>, llvm@lists.linux.dev, sshegde@linux.ibm.com, nathan@kernel.org, kconsul@linux.vnet.ibm.com, jniethe5@gmail.com, vaibhav@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, Sasha Levin <sashal@kernel.org>, amachhiw@linux.vnet.ibm.com, gautam@linux.ibm.com, llvm@lists.linux.dev, sshegde@linux.ibm.com, nathan@kernel.org, jniethe5@gmail.com, vaibhav@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
@@ -107,10 +107,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 11112023e327d..344330b17376f 100644
+index 00c8cda1c9c31..a8035af4fc50a 100644
 --- a/arch/powerpc/include/asm/hvcall.h
 +++ b/arch/powerpc/include/asm/hvcall.h
-@@ -403,7 +403,7 @@ long plpar_hcall_norets(unsigned long opcode, ...);
+@@ -453,7 +453,7 @@ long plpar_hcall_norets_notrace(unsigned long opcode, ...);
   * Used for all but the craziest of phyp interfaces (see plpar_hcall9)
   */
  #define PLPAR_HCALL_BUFSIZE 4
@@ -119,7 +119,7 @@ index 11112023e327d..344330b17376f 100644
  
  /**
   * plpar_hcall_raw: - Make a hypervisor call without calculating hcall stats
-@@ -417,7 +417,7 @@ long plpar_hcall(unsigned long opcode, unsigned long *retbuf, ...);
+@@ -467,7 +467,7 @@ long plpar_hcall(unsigned long opcode, unsigned long *retbuf, ...);
   * plpar_hcall, but plpar_hcall_raw works in real mode and does not
   * calculate hypervisor call statistics.
   */
@@ -128,7 +128,7 @@ index 11112023e327d..344330b17376f 100644
  
  /**
   * plpar_hcall9: - Make a pseries hypervisor call with up to 9 return arguments
-@@ -428,8 +428,8 @@ long plpar_hcall_raw(unsigned long opcode, unsigned long *retbuf, ...);
+@@ -478,8 +478,8 @@ long plpar_hcall_raw(unsigned long opcode, unsigned long *retbuf, ...);
   * PLPAR_HCALL9_BUFSIZE to size the return argument buffer.
   */
  #define PLPAR_HCALL9_BUFSIZE 9
