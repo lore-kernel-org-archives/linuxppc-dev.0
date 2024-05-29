@@ -2,72 +2,68 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AF67C25B7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 20:56:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FDDCC25B75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 22:01:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=THt8q/L/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=fPzXA+W3;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VqM3K4mt3z7BDt
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 06:50:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VqNWQ33qnz87ZM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 07:56:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=THt8q/L/;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=fPzXA+W3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Too many DNS lookups) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=osalvador@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::54a; helo=mail-pg1-x54a.google.com; envelope-from=3y6rxzgykdeqykgtpimuumrk.iusrot03vvi-jk1royzy.u5rghy.uxm@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x54a.google.com (mail-pg1-x54a.google.com [IPv6:2607:f8b0:4864:20::54a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqM2V2lz9z79vT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 06:49:52 +1000 (AEST)
-Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-354f51ac110so186311f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 13:49:52 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqNVZ27nFz7BLh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 07:55:50 +1000 (AEST)
+Received: by mail-pg1-x54a.google.com with SMTP id 41be03b00d2f7-6bfe9914116so73941a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 14:55:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1717015783; x=1717620583; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=jn8GixokyynrojPzWlSDYGpdxGemGL68O+dT+8a9CnA=;
-        b=THt8q/L/8F+TrxsSvjjs3fXYvMsSSTuvwfx06Rndmw0SUETJvPExB1ZwXhs7bQpzpv
-         BPjvVDLfYPc6y1LgkNT4A24dQKBBaLFHr852UnkVG3KgLWT4i7kbhc3NEzNnpyRICK8i
-         PLvbpKwmvmcaBis4ERYJ48CSlCxffkca2UdA8sWcJc2Uavo3D1EPgYH08DhFppC0/v3p
-         Ipr4sz0cCF8QwRDPbJgPsKx+fV1s/P+JM0OSOog7Ox9zfH+mFPjmVYA2vhAt0ZK0tGgV
-         7Q+B7CdrqxL8nerhwfMQK385Q0XSoWqg12KIcRSgN/KHy1W1HE43Tddrv30/Po+NN/P3
-         cRkw==
+        d=google.com; s=20230601; t=1717019748; x=1717624548; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=R0O8RdWVLc2UjPDSDGViR160MauFo82inRxl7GpP6bk=;
+        b=fPzXA+W3+cmI18hpSXlbWT3QLNoZVwaVgAOaZy7aGf23fTI7OcbcONlNpKzniLnBLw
+         M5aK8vAgjRABsWZd0fHfwA1GVXxTFT7yjuAB26Ig6Jqtg7AuvkaQSn4ZTcKQ5xpzM6du
+         ZC+QUZEunCGuxmJatLeYsUCj7BDvRnHhYkLEaolPFVYZ7OpLMhJw/DqqCZtYFHBLSODe
+         DxdxfeQ/B/wt+Jv6ZttRbwLhCu/QcpURUTrkks2EZiETMS+ElfgYAzgkB4RyWYhYi6r0
+         MDDkUVX65QqHbCqgE7BncHr13vG6Lpa3bgrpiz6+YYQKGNboDmm939rQF9UXfn9bfLEg
+         /SBA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717015783; x=1717620583;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:date:from:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=jn8GixokyynrojPzWlSDYGpdxGemGL68O+dT+8a9CnA=;
-        b=ct9DfYJhJb/ORCF7qAbfPq+4/u6c2TcEd2AvboMCyhc6DtNTwjZRnaaQVyVpvYG0X9
-         w0atZjGsIu1D5VQZxWzISX9EOtkPdE2xgRYXgr901keJqGhvU5/T95UP3EZs87Ryoc5N
-         cenvT8xW4jk2xv0ROA7o0YJMSL0WOXh3zTxyMGK8raujiuTuQSXsDJw58RJwhxhnlzaC
-         0diWs1hqmeSQArTJSo4gaj7ANg3N7yFHEwLq5eU3vMjxrYDHKfydeP+plaQxlDXPy37x
-         bGPXJpUJON7zcNjIUsMIKjBPityCNyHD2ZVlFu4rhI0UJrmYqBcdE5qPgZz4pW7mtpad
-         iFaw==
-X-Forwarded-Encrypted: i=1; AJvYcCU60DMyr3tyAfS5Xo+e0VOhRqY45ywt/QUHd0MbrlddkWdg+deQWSEvJgvRwCNrh5vCeeNLmBJS49vhzhuRjvdalQdugumRIf6H3ie9jA==
-X-Gm-Message-State: AOJu0Yys3CjBVPcK4FvwAwOz1SXu15QcQaW8mNPQLasBdhH4B/4YVPwN
-	CCssdojdCGfyMuYH5TT5zzzN5jMdLdzCzCDlAw4rm5OrAsfNCZgansQvhacJ5Uc=
-X-Google-Smtp-Source: AGHT+IENMwv9QoM9UqE02MAyheYmszVS5H9UUthK4Eu3nO+XUYm5m3RAvFfJ037Ub0kS/amMiPZnTw==
-X-Received: by 2002:a05:6000:1f8f:b0:358:149c:eeca with SMTP id ffacd0b85a97d-35dc00c69c2mr261576f8f.67.1717015782708;
-        Wed, 29 May 2024 13:49:42 -0700 (PDT)
-Received: from localhost.localdomain (62.83.84.125.dyn.user.ono.com. [62.83.84.125])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3557a090805sm15479283f8f.48.2024.05.29.13.49.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 May 2024 13:49:42 -0700 (PDT)
-From: Oscar Salvador <osalvador@suse.com>
-X-Google-Original-From: Oscar Salvador <osalvador@suse.de>
-Date: Wed, 29 May 2024 22:49:40 +0200
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [RFC PATCH v4 16/16] mm: Remove CONFIG_ARCH_HAS_HUGEPD
-Message-ID: <ZleU5I6iJq5VmPWI@localhost.localdomain>
-References: <cover.1716815901.git.christophe.leroy@csgroup.eu>
- <98d6ff5bc9395785e268b9f8eff08fb742c045c6.1716815901.git.christophe.leroy@csgroup.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <98d6ff5bc9395785e268b9f8eff08fb742c045c6.1716815901.git.christophe.leroy@csgroup.eu>
+        d=1e100.net; s=20230601; t=1717019748; x=1717624548;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=R0O8RdWVLc2UjPDSDGViR160MauFo82inRxl7GpP6bk=;
+        b=gMFvdunTbGY+u1MPSeLo+7Ol1FwwjD9/DayFOASHKKRifEfi30L9i8+qu7siduw9rK
+         p+lad6/dGzcsO2sK31Jxl4UpsDV+LiI1zs57YrW7NNMq5TzpqmUzDeD5CG/Y9yDq/0N9
+         lReBKJgD16crOevDS/rdHtunlN1RqeJRzYlpDNbht2/2HLNLopk8Uvo+UfHG9y18rz20
+         EYv+vyt//O0558EoRyU6Chch7OnnYHsRFG03BLDIVnNav3vPSAVGcQuJGWNEpc69JF7l
+         aGuk9pitNtOMrfZU0dAmzP1LYT3umBv/Y9c6rdKbxFEqJsApSSDZoWFfqa3WpSXYTirx
+         C+LQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXVd3gWzzLbRms39ybh1rx0gJY0HVxn8RFg56J1Q4J+5JksFUss+qqBowMUbQCNEixGczgkK3PaO+YwjNlmfobyZhgZPZjbcpr+i9ixxg==
+X-Gm-Message-State: AOJu0Yx+ks3wPkZoWeb3mAfzdwNXQAjyPJ+tpC32wjYitqw5V0lFm0Qu
+	XhIw+ouxZ5btt2Ha11QKxno2+YIC8PlFhlXH0Sd2hsVk2YQ6oVdi0dn9+AcT7IkxtCIahM3AoOI
+	gRQ==
+X-Google-Smtp-Source: AGHT+IGx3SrykKCWRo4963j21qgI5u7l1D5l4vFz5cSTor42JO4rQICXW/WPSO9JICYG6TRZvTrpM8pyR8k=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a05:6a02:308:b0:65c:f515:1590 with SMTP id
+ 41be03b00d2f7-6bfdaf2b2f6mr480a12.11.1717019747924; Wed, 29 May 2024 14:55:47
+ -0700 (PDT)
+Date: Wed, 29 May 2024 14:55:46 -0700
+In-Reply-To: <20240529180510.2295118-5-jthoughton@google.com>
+Mime-Version: 1.0
+References: <20240529180510.2295118-1-jthoughton@google.com> <20240529180510.2295118-5-jthoughton@google.com>
+Message-ID: <ZlekYljG7KJwblUj@google.com>
+Subject: Re: [PATCH v4 4/7] KVM: Move MMU lock acquisition for
+ test/clear_young to architecture
+From: Sean Christopherson <seanjc@google.com>
+To: James Houghton <jthoughton@google.com>
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,39 +75,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Peter Xu <peterx@redhat.com>, Jason Gunthorpe <jgg@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Yu Zhao <yuzhao@google.com>, Jonathan Corbet <corbet@lwn.net>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, David Matlack <dmatlack@google.com>, Palmer Dabbelt <palmer@dabbelt.com
+ >, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, Ankit Agrawal <ankita@nvidia.com>, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, May 27, 2024 at 03:30:14PM +0200, Christophe Leroy wrote:
-> powerpc was the only user of CONFIG_ARCH_HAS_HUGEPD and doesn't
-> use it anymore, so remove all related code.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
-> v4: Rebased on v6.10-rc1
-> ---
->  arch/powerpc/mm/hugetlbpage.c |   1 -
->  include/linux/hugetlb.h       |   6 --
->  mm/Kconfig                    |  10 --
->  mm/gup.c                      | 183 +---------------------------------
->  mm/pagewalk.c                 |  57 +----------
->  5 files changed, 9 insertions(+), 248 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 76846c6014e4..6b043180220a 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -78,7 +78,6 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
->  
->  	return pte_alloc_huge(mm, pmd, addr);
->  }
-> -#endif
+On Wed, May 29, 2024, James Houghton wrote:
+> For implementation mmu_notifier_{test,clear}_young, the KVM memslot
+> walker used to take the MMU lock for us. Now make the architectures
+> take it themselves.
 
-Did not notice this before.
-This belongs to the previous patch.
+Hmm, *forcing* architectures to take mmu_lock is a step backwards.  Rather than
+add all of this churn, what about adding CONFIG_KVM_MMU_NOTIFIER_LOCKLESS, e.g.
 
+static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
+							 unsigned long start,
+							 unsigned long end,
+							 gfn_handler_t handler)
+{
+	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+	const struct kvm_mmu_notifier_range range = {
+		.start		= start,
+		.end		= end,
+		.handler	= handler,
+		.on_lock	= (void *)kvm_null_fn,
+		.flush_on_ret	= false,
+		.may_block	= false,
+		.lockless	= IS_ENABLED(CONFIG_KVM_MMU_NOTIFIER_LOCKLESS),
+	};
 
--- 
-Oscar Salvador
-SUSE Labs
+	return __kvm_handle_hva_range(kvm, &range).ret;
+}
