@@ -2,75 +2,72 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20D14C25B75
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 10:21:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71B9EC27C43
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 10:21:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=ZeXuGQhf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=ZdFEj7Og;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vq4v33Kt5z88nj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 20:12:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vq4xQ1lLlz89BS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 20:14:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=ZeXuGQhf;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=ZdFEj7Og;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Too many DNS lookups) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::129; helo=mail-lf1-x129.google.com; envelope-from=osalvador@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Too many DNS lookups) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::431; helo=mail-wr1-x431.google.com; envelope-from=osalvador@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vq4tF1DgFz3vcy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 20:11:48 +1000 (AEST)
-Received: by mail-lf1-x129.google.com with SMTP id 2adb3069b0e04-5238b5c07efso2138663e87.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 03:11:49 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vq4wd0yHpz8922
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 20:13:52 +1000 (AEST)
+Received: by mail-wr1-x431.google.com with SMTP id ffacd0b85a97d-35b6467754cso1109646f8f.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 03:13:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1716977504; x=1717582304; darn=lists.ozlabs.org;
+        d=suse.com; s=google; t=1716977629; x=1717582429; darn=lists.ozlabs.org;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=k0oPejzF1w45d4ohzjxE+rStMmo86jxOO0aZ2z51+qs=;
-        b=ZeXuGQhfpmEzxz2Pv7eel/DspfBjQ8H5ggTmmEsMVJfNBWz2ZHO7tKGM3ljVOS+3ui
-         AYRnW+bcoYMtIa/lLFi+a01ELhcfkJGsfXaeiXZE2QXMzME/1G6w37U9SLQwtmpU9CoA
-         ky2BVuIExD9mKFpJeuytznL9x5CrsDYCVcDlaPm/YyCQSP1tyHoUut9Yy9wDO2GonCDu
-         FOypE38kLCjJRKklDSDJvgy2X8EMAkCk7pcDifOsqvTxwv42hloKde6jjWfJkrQyKBxr
-         u79WqtPyWo+bDHtQXa2Ovj7hJN9ew24fx47Fbo1FlS1hYIDBS+HwBX4ZNcnHM12Eacte
-         bZtw==
+        bh=DWva4iesfpIM/la1EwXKKVb8Cdii/+9H2sXG1XsGOhg=;
+        b=ZdFEj7Og5H6q+Z9eUCTmir/j5mrccJgLnT3cLQoihvh0JC4NA5YXu3y3uAjYAwHScr
+         xjodVWMBYpkQkVxbD1UVR3lB4RNmc3DLGuCuqCxTKBbmwfMfdMcib9MWdUH4n0VOpyZM
+         Lxvtj46ficcys57JNg0s1yUiTpMk0uUVNtDma8DhZJl7dGQOcz8T+jyqx94psFjYK+nw
+         k/BbJ4TSP5/EkwflFF82R2HOhMKU/Zf/3j5p+Fe0cLqj0g12lZOToNXojKSgKNqL/xVZ
+         GZzEl8KZ1LQKuZsUVGljOjXndLZdnQWXshCKlxG+sboaa7Y0fH9ZafQcqJT7PS7RJB5K
+         Wh5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1716977504; x=1717582304;
+        d=1e100.net; s=20230601; t=1716977629; x=1717582429;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:date:from:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=k0oPejzF1w45d4ohzjxE+rStMmo86jxOO0aZ2z51+qs=;
-        b=b1s2N9RdtcysU5gKg6NVXQ1rFdkjnLWxry/vt5DmJMf5nlfKz/EeKF4hqrWvK2X82v
-         n1LY6N0aTYfShAf+LiADJFPbpFPd37YyofhvU2ZJRjyEgFANfLXth2kVVV1B4PcG4SW9
-         oBC2B26i6a3AWwGbddZjZtq63QoBQ26QfoY7zlALIxkOaRprh/HQeYX5XZE5t2c5JWst
-         9TyeSkaRkuVEC13Dvi/rioUHsOH5q7ZLnn0HpVb44XnBzJ9HmksugChWgu1AbEFjbRXy
-         QA8xcoEeg1TdXDKFP8z+z+jmWxxSkx1nooHelww15KEcuDqp1JtCyooWknX5ZPWDyLLr
-         AlZg==
-X-Forwarded-Encrypted: i=1; AJvYcCU2m+eWvHEqiVjNbP0TGZR9G+rEl0/7nBVxXLQjE3xcYeTdMU1jsphT2fESoRIGE3hhUL4Rijrj0ktLrp5OwOjCMCIUDteiE786srVuYQ==
-X-Gm-Message-State: AOJu0YyxlLfVhfyhqVr5pXs90b29d0OiyFHq6kGxtxHpVseiqioqPEsh
-	ZNFk/F3MLHmy/k5OOLm7Ul5VG5WFBdJ1FDpkEQQ2cXF6LnqxJc95wa4al4H4ysI=
-X-Google-Smtp-Source: AGHT+IFgYrZo5ta4E3uoE7uAwXaw0QkKXO8VSmlKA6YJb4kJBFmoM8GRlbMlJbE7XEdqt2jjmDPZMw==
-X-Received: by 2002:a19:8c5e:0:b0:51d:bbb:7a4e with SMTP id 2adb3069b0e04-529645e344bmr9036378e87.24.1716977503662;
-        Wed, 29 May 2024 03:11:43 -0700 (PDT)
+        bh=DWva4iesfpIM/la1EwXKKVb8Cdii/+9H2sXG1XsGOhg=;
+        b=u8Y++cvd+GZdSVsNSsyuxIkAMkjcGuQRY9tp7Nwf67ftGc+JUUyCFlNENtEVd7SULZ
+         qeuKaR/XVuePxwgVh9Jl/OvE4490K0kQpJWLwnGwVrJfpVbU6MUlQifPIcLcXSH+ZIvL
+         XSXzeIr8+9msTrp0zt1CMtedBOjhSTKjCn7oapSmy7leIrJ43IAJwRjn0T7YnzB78i0H
+         RuU8sY1NbZl+uR2Wc6dCOu3DI7NE/Lvg1u4DoPfjmy4YlB9Bk+NH0i78wTexITNweHF4
+         UTiLYHlxYENhTP64/AsmV0I36PO0MeT/7EBsj5Z62Z3rpxyRhg4MhrJzTr39gyHF5aHz
+         1QcQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXisLvI7wSCXsSRkhAwcHfRcFQ02qkVlPl9S2oEHMQJfMs7X1uuprb/lHavlbrYz3sztpeysftR5iWGNwU2mr4wPZOvvN+qMB48tIE/FA==
+X-Gm-Message-State: AOJu0YySYXms5xEtWaAGw9x3cWbYfWfN8TG83CZ+Z8ZFdK78jbcgqrmF
+	n0bBqwYZlMVaDd2xkKQHCB0k5VdN8kQqWoxiwZx3PCHDZ9oKthHsvTsTVTw+40I=
+X-Google-Smtp-Source: AGHT+IHt9Ba6L+0f+m26haQIjzUpLMjXASE+7cuXYPhAXHN7krwAJUlx5hJ8S9Vd/bRx1rHfXxW0sg==
+X-Received: by 2002:adf:b350:0:b0:354:f82c:78b0 with SMTP id ffacd0b85a97d-3552fdf968fmr11329720f8f.70.1716977629174;
+        Wed, 29 May 2024 03:13:49 -0700 (PDT)
 Received: from localhost.localdomain (62.83.84.125.dyn.user.ono.com. [62.83.84.125])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-421089cd6f7sm174662585e9.46.2024.05.29.03.11.42
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3574c7017d1sm11775623f8f.76.2024.05.29.03.13.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 May 2024 03:11:43 -0700 (PDT)
+        Wed, 29 May 2024 03:13:48 -0700 (PDT)
 From: Oscar Salvador <osalvador@suse.com>
 X-Google-Original-From: Oscar Salvador <osalvador@suse.de>
-Date: Wed, 29 May 2024 12:11:41 +0200
+Date: Wed, 29 May 2024 12:13:47 +0200
 To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [RFC PATCH v4 14/16] powerpc/64s: Use contiguous PMD/PUD instead
- of HUGEPD
-Message-ID: <Zlb_XT12arHu9vu3@localhost.localdomain>
+Subject: Re: [RFC PATCH v4 16/16] mm: Remove CONFIG_ARCH_HAS_HUGEPD
+Message-ID: <Zlb_243CPcPiN7Q-@localhost.localdomain>
 References: <cover.1716815901.git.christophe.leroy@csgroup.eu>
- <610be6003a6d215e9e9ca87d7f5402042da1e355.1716815901.git.christophe.leroy@csgroup.eu>
- <Zlb0BugOwko4PrLm@localhost.localdomain>
- <315d1dc7-9eda-45cd-863d-803bfae4c29b@csgroup.eu>
+ <98d6ff5bc9395785e268b9f8eff08fb742c045c6.1716815901.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <315d1dc7-9eda-45cd-863d-803bfae4c29b@csgroup.eu>
+In-Reply-To: <98d6ff5bc9395785e268b9f8eff08fb742c045c6.1716815901.git.christophe.leroy@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,42 +79,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oscar Salvador <osalvador@suse.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Peter Xu <peterx@redhat.com>, Jason Gunthorpe <jgg@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Peter Xu <peterx@redhat.com>, Jason Gunthorpe <jgg@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 29, 2024 at 10:07:55AM +0000, Christophe Leroy wrote:
-> We can't but I didn't want to leave nb undefined or with a value that 
-> might lead to writing in the weed. Value 1 seems a safe default.
-
-Might be worth to throw a WARN_ON?
-
-> >> diff --git a/arch/powerpc/mm/book3s64/hugetlbpage.c b/arch/powerpc/mm/book3s64/hugetlbpage.c
-> >> index 5a2e512e96db..83c3361b358b 100644
-> >> --- a/arch/powerpc/mm/book3s64/hugetlbpage.c
-> >> +++ b/arch/powerpc/mm/book3s64/hugetlbpage.c
-> >> @@ -53,6 +53,16 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
-> >>   		/* If PTE permissions don't match, take page fault */
-> >>   		if (unlikely(!check_pte_access(access, old_pte)))
-> >>   			return 1;
-> >> +		/*
-> >> +		 * If hash-4k, hugepages use seeral contiguous PxD entries
-> > 'several'
-> >> +		 * so bail out and let mm make the page young or dirty
-> >> +		 */
-> >> +		if (IS_ENABLED(CONFIG_PPC_4K_PAGES)) {
-> >> +			if (!(old_pte & _PAGE_ACCESSED))
-> >> +				return 1;
-> >> +			if ((access & _PAGE_WRITE) && !(old_pte & _PAGE_DIRTY))
-> >> +				return 1;
-> > 
-> > I have 0 clue about this code. What would happen if we do not bail out?
-> > 
+On Mon, May 27, 2024 at 03:30:14PM +0200, Christophe Leroy wrote:
+> powerpc was the only user of CONFIG_ARCH_HAS_HUGEPD and doesn't
+> use it anymore, so remove all related code.
 > 
-> In that case the pte_xchg() in the while () will only set ACCESS or 
-> DIRTY bit on the first PxD entry, not on all cont-PxD entries.
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-I see, thanks for explaining.
+Acked-by: Oscar Salvador <osalvador@suse.de>
 
 
 -- 
