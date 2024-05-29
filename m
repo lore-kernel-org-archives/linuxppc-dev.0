@@ -2,67 +2,72 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C72ABC27C43
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 22:01:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59160C27C43
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 22:06:52 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=iCCYpEut;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=u7jqO97t;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VqNQQ24qLz7BG6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 07:52:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VqNcD5qsKz8849
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 08:00:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=iCCYpEut;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=u7jqO97t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3xqnxzgykdd0rdzmibfnnfkd.bnlkhmtwoob-cdukhrsr.nykzar.nqf@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3xkvxzgykdd8tfbokdhpphmf.dpnmjovyqqd-efwmjtut.p0mbct.psh@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x44a.google.com (mail-pf1-x44a.google.com [IPv6:2607:f8b0:4864:20::44a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqNPZ0LQDz79t3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 07:51:28 +1000 (AEST)
-Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-62777fe7b86so2548827b3.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 14:51:28 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqNbP4j8kz87lK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 07:59:59 +1000 (AEST)
+Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-701b7ef17fcso265973b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 15:00:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1717019486; x=1717624286; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=HZEwQSuDxXsJBbCguZar5+VKzM/izfp4n/7bUq7QabM=;
-        b=iCCYpEutEMerDO/J1CVjqT3lykTUgmXIFxDzu0UzEwnKXF3soiKoBKU+ORHOV0dg7D
-         haeCRA/abWbxZeZwyZyncIfw6q6dUNY/ggGvS9WC9rzZB+4n+sZnEvux7rN9ol+JVGId
-         JiOMC004TZpqA6bIgeet3t9UdFZr8FjpgljSmrcHE+KNrexwy6NdLMgUgq1JuJGVw9dJ
-         DCS9qrNxxsSrDdKllb3QE+VOg8oqKxjIbDpZhUXmKoBHifGK4W61sMO2Q9dH+/lEIifv
-         VwLuas1Ze+dE0hSFFwlwwmS0OSch8MPio41TmNZ2HbXTR6yW5yhzRTHYo3m8YUchTIyF
-         BxXQ==
+        d=google.com; s=20230601; t=1717019997; x=1717624797; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:from:subject:message-id:references
+         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=VygQSYtgJkxGCNbSiB1TmlrjiVcPo9FASZn5iwrGyKo=;
+        b=u7jqO97towFbOD4HG5OjSrKRMYUGAmWhCuOdZcHDPVbRvbk57Dg1s3/dspGkNKB+Mq
+         1u90s2szotAo3zR6U/1CYxQ6H22viYZEPUyuAUQ99MUfrW+k+2ZoQdI0NhLhE/HUEkzR
+         oHLP7g0jt64UH0clfv7Xcp6pURSzkMzerV0pQ0XTTZ0H2ED7rSLWT4OEdjEBpSZUS+4v
+         frFnA4B7qfl7Jeu6bFAregfXQ9SPksZ36Gyu0hsI6IirmKYtfzDYnvQCcgmTZ2I0ahjQ
+         LtCr0ta5swTFb2CrzsdMURR2QVC7xZjXWO8iUbyVWztY6zS+5LBYTBmYDyejQk8PGzff
+         V0Fw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717019486; x=1717624286;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=HZEwQSuDxXsJBbCguZar5+VKzM/izfp4n/7bUq7QabM=;
-        b=UpqugwmRz/W4iayeVD/FUfd0HCogUkkZLaSHkqkdJKy6OYxobHSuCG7Di1EuQpICbQ
-         oNovNpyIfz7nG56eVJawtYLImA2ZxJtZ0zFKECk+/O0unTaF6DDM24SLFJ5+rEz+lSKh
-         dgZvSetUpTLr10X6Es+fJhlGFm+zcCSSrHHwMTBmWfn7HmfObIQV8yik7pk1kvH4eaF/
-         RLp+GkwH2LVwDNwRLTmiShrEBc81vixpFB8magtBpJQOxmfDR0keccejdIPQN43lziwq
-         vWUPGdwvAGAoHo83GO9hcnJQFxSeXvjvpmz9suIP5agCy9lNrCjOvyKBQ8SYIb4Li+zM
-         UlRQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUO2DMD3bCi8etvl48edqf/0b4PQJghbkyXayCCHyChharh41mkh2AL7YiRR26b9E852GgOnTdkYpJZeu32tIGKp6ggIcldjCft2K2YcQ==
-X-Gm-Message-State: AOJu0YwHkjtfYrg2JgxSF9XHKEcGWtr9J2wpwhOjy1nfylX5aVfv5C7L
-	11KSCpAz5iFLv9VclEXEx9pihck7G8xrBMT+OshlMdvuJNPdrrGgldN6hA1mfWKxY4HmBRbsIzo
-	Fig==
-X-Google-Smtp-Source: AGHT+IGqNZ2BbD8cAo2AnWXa3Pi0tfvxVmoPgtWnywK5+NXQgcmpZ6RBn86fT+8nIYtd+ZPLip7+OZUjHdQ=
+        d=1e100.net; s=20230601; t=1717019997; x=1717624797;
+        h=content-transfer-encoding:cc:to:from:subject:message-id:references
+         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=VygQSYtgJkxGCNbSiB1TmlrjiVcPo9FASZn5iwrGyKo=;
+        b=F9h/Yar4bTXRUh5YYAaXZHPYO8jq0EeGOVrC1ZQxwPMP4UL47XZK1B1UVKPcSr1XZ5
+         Uomi2F4IuMhaAW6x8aS+2umUvUreXT6ITxxYYw3fyNp32Wuh6CyJ+jbwgrPDeJuae4Y7
+         ZvzYtMYa7++2GZETIX96Z+iFqisw37T0QItRPHEHtpqUFwzWbNuL+e0clRTjZFkKPL5x
+         sYnTD2jaOAWlryLH37IP008902zXmXuDSUvSsPzRCxYeJy/cBhSIzRTm0TUn9umpuJRy
+         nYem6GePOOnHSSXQ96SLIulItnbXf+VYZaMAU7o+xbmBirU7sLbn17cGR8KzL3YTL+k3
+         7BCA==
+X-Forwarded-Encrypted: i=1; AJvYcCXp4k9xthmoEOBxcj4RVtach5M/kjcK3fu2gKgtiW48tM3XqsOuSHUTQxV99y+V+SaDPOhid6hWjuPGjpJf8DHX0H5cjWe6pudLqLV2OQ==
+X-Gm-Message-State: AOJu0YzdHCarahAN6LY9c4ZNW8Xs5IZN/ab8lPTqvtTDJkKyCby83wsH
+	mmJc0KKuSuLbX8hy6DIEo51+gHhJq50YuV5tYUwx+EY9OQxDKcwLK8udpKL2NUGz151UYnJX35T
+	5Sg==
+X-Google-Smtp-Source: AGHT+IErfD3/6U7Yg0vFWmN+JznLDOE9vgR2lO1JhTGk52Ll6iOJE5uAx2O1dqENYjCcQTLMPcB8oRdC9wY=
 X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
- (user=seanjc job=sendgmr) by 2002:a05:6902:188e:b0:df7:8889:4795 with SMTP id
- 3f1490d57ef6-dfa5a407dc6mr54800276.0.1717019486318; Wed, 29 May 2024 14:51:26
+ (user=seanjc job=sendgmr) by 2002:a05:6a00:8607:b0:702:1e25:a47c with SMTP id
+ d2e1a72fcca58-70231a8676amr343b3a.1.1717019996755; Wed, 29 May 2024 14:59:56
  -0700 (PDT)
-Date: Wed, 29 May 2024 14:51:24 -0700
-In-Reply-To: <20240529180510.2295118-4-jthoughton@google.com>
+Date: Wed, 29 May 2024 14:59:55 -0700
+In-Reply-To: <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
 Mime-Version: 1.0
-References: <20240529180510.2295118-1-jthoughton@google.com> <20240529180510.2295118-4-jthoughton@google.com>
-Message-ID: <ZlejXCYIuJ7_DlwL@google.com>
-Subject: Re: [PATCH v4 3/7] KVM: Add lockless memslot walk to KVM
+References: <20240529180510.2295118-1-jthoughton@google.com>
+ <20240529180510.2295118-3-jthoughton@google.com> <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
+Message-ID: <ZlelW93_T6P-ZuSZ@google.com>
+Subject: Re: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs participate
+ in aging
 From: Sean Christopherson <seanjc@google.com>
-To: James Houghton <jthoughton@google.com>
-Content-Type: text/plain; charset="us-ascii"
+To: Yu Zhao <yuzhao@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,63 +79,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Yu Zhao <yuzhao@google.com>, Jonathan Corbet <corbet@lwn.net>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, David Matlack <dmatlack@google.com>, Palmer Dabbelt <palmer@dabbelt.com
- >, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, Ankit Agrawal <ankita@nvidia.com>, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
+Cc: James Houghton <jthoughton@google.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, David Matlack <dmatlack@google.com>, Palmer Dabbelt <palmer@
+ dabbelt.com>, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, Ankit Agrawal <ankita@nvidia.com>, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 29, 2024, James Houghton wrote:
-> @@ -686,10 +694,12 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
->  	return __kvm_handle_hva_range(kvm, &range).ret;
->  }
->  
-> -static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
-> -							 unsigned long start,
-> -							 unsigned long end,
-> -							 gfn_handler_t handler)
-> +static __always_inline int kvm_handle_hva_range_no_flush(
-> +		struct mmu_notifier *mn,
-> +		unsigned long start,
-> +		unsigned long end,
-> +		gfn_handler_t handler,
-> +		bool lockless)
+On Wed, May 29, 2024, Yu Zhao wrote:
+> On Wed, May 29, 2024 at 12:05=E2=80=AFPM James Houghton <jthoughton@googl=
+e.com> wrote:
+> >
+> > Secondary MMUs are currently consulted for access/age information at
+> > eviction time, but before then, we don't get accurate age information.
+> > That is, pages that are mostly accessed through a secondary MMU (like
+> > guest memory, used by KVM) will always just proceed down to the oldest
+> > generation, and then at eviction time, if KVM reports the page to be
+> > young, the page will be activated/promoted back to the youngest
+> > generation.
+>=20
+> Correct, and as I explained offline, this is the only reasonable
+> behavior if we can't locklessly walk secondary MMUs.
+>=20
+> Just for the record, the (crude) analogy I used was:
+> Imagine a large room with many bills ($1, $5, $10, ...) on the floor,
+> but you are only allowed to pick up 10 of them (and put them in your
+> pocket). A smart move would be to survey the room *first and then*
+> pick up the largest ones. But if you are carrying a 500 lbs backpack,
+> you would just want to pick up whichever that's in front of you rather
+> than walk the entire room.
+>=20
+> MGLRU should only scan (or lookaround) secondary MMUs if it can be
+> done lockless. Otherwise, it should just fall back to the existing
+> approach, which existed in previous versions but is removed in this
+> version.
 
-Unnecessary and unwanted style change.
-
->  {
->  	struct kvm *kvm = mmu_notifier_to_kvm(mn);
->  	const struct kvm_mmu_notifier_range range = {
-> @@ -699,6 +709,7 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
->  		.on_lock	= (void *)kvm_null_fn,
->  		.flush_on_ret	= false,
->  		.may_block	= false,
-> +		.lockless	= lockless,
-
-Why add @lockess to kvm_handle_hva_range_no_flush()?  Both callers immediately
-pass %false, and conceptually, locking is always optional for a "no flush" variant.
-
->  	};
->  
->  	return __kvm_handle_hva_range(kvm, &range).ret;
-> @@ -889,7 +900,8 @@ static int kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
->  	 * cadence. If we find this inaccurate, we might come up with a
->  	 * more sophisticated heuristic later.
->  	 */
-> -	return kvm_handle_hva_range_no_flush(mn, start, end, kvm_age_gfn);
-> +	return kvm_handle_hva_range_no_flush(mn, start, end,
-> +					     kvm_age_gfn, false);
->  }
->  
->  static int kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
-> @@ -899,7 +911,7 @@ static int kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
->  	trace_kvm_test_age_hva(address);
->  
->  	return kvm_handle_hva_range_no_flush(mn, address, address + 1,
-> -					     kvm_test_age_gfn);
-> +					     kvm_test_age_gfn, false);
->  }
->  
->  static void kvm_mmu_notifier_release(struct mmu_notifier *mn,
-> -- 
-> 2.45.1.288.g0e0cd299f1-goog
-> 
+IIUC, by "existing approach" you mean completely ignore secondary MMUs that=
+ don't
+implement a lockless walk?
