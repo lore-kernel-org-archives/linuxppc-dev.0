@@ -2,51 +2,89 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB12FC25B75
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 05:41:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF421C25B7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 06:36:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LeEZBqXs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SQ09H8HL;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vpyhd3lqwz79JH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 15:33:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vpzxy6YN4z79C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 16:29:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LeEZBqXs;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SQ09H8HL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vpygp4KRNz3gKL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 15:32:22 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id B5E97623CF;
-	Wed, 29 May 2024 05:32:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A7FFC2BD10;
-	Wed, 29 May 2024 05:32:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1716960739;
-	bh=aBznwI196mCXdIjypa7AmSwqqkGS5EsYJK31pzgSYXA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=LeEZBqXsaFwHKqq22xYJkq1anme+3hC9y4dtkgVlEK8L0HpFZWUwdSNmDY9Dkw6NW
-	 jmYzLhjePapm2TqQULKLIdowZXJ5+4rkJdUNI6remV3ooCQ/tnpDnrCOCjxWLhxWUa
-	 wnIWzdQOEkuJE9hEeHvETExo8PPpuO700JnCabxsCN0WeaNU6RsdbqNH06C052cUbz
-	 pcYHVG/nEm6xkBGENDwx7i0hAa/WwhPnHmaFiBu7FRjnOtZfVtTI158ewx8yBQdXzA
-	 2PEUKqEd3KrOUZjq6zO2DU3cPgp149y+59wWRzK4VAWqxaA4LAIaxHdvKkBqK7f830
-	 Q8mHay2aWjJlg==
-Date: Wed, 29 May 2024 08:30:27 +0300
-From: Mike Rapoport <rppt@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vpzx625xwz3vb4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 16:28:57 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44T6FdfC013776;
+	Wed, 29 May 2024 06:28:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc : content-type : date
+ : from : in-reply-to : message-id : mime-version : references : subject :
+ to; s=pp1; bh=+9ciCvK01Z1vwRn+uCkI0yr1rl0idUx0MxgT/mBTRp8=;
+ b=SQ09H8HLx9M78yQKlYrmKQm3yRxz1UsM0yOx61dlY2w+9sF8O+xHQhR9iABxbxsT+7gO
+ s+LrGy67cIxS6LjHK+sxpjTOW44tKZOwE9W6+seZUgjQMkYIC7bY1V8EjBKDSPa24dv0
+ sywA3JHM33X3ibL7DgFJvo/y2rAqjlzx2svhLtZlHBoTORB7o3QoVEcDBDTRTtt3WL3j
+ cjv37MFKCUJWtJsSriNhlIOOkKRDRDRZLlY2Wz1eBmpDGlBoH2WY1WxeLf8tQrFMJU1S
+ gzUrI6MwKduWFKEOQjpuQd4HUxfYJe9d8up06QTVJHvmHLfgAfjhfVZpypusiYyJsGfq rw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ydxr601rc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 29 May 2024 06:28:26 +0000
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 44T6SQbX000843;
+	Wed, 29 May 2024 06:28:26 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ydxr601ra-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 29 May 2024 06:28:26 +0000
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44T4AE7O009841;
+	Wed, 29 May 2024 06:28:25 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 3ydpbbj886-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 29 May 2024 06:28:25 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44T6SLGc52166990
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 29 May 2024 06:28:23 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2C67C20040;
+	Wed, 29 May 2024 06:28:21 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 028962004B;
+	Wed, 29 May 2024 06:28:20 +0000 (GMT)
+Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.179.17.188])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed, 29 May 2024 06:28:19 +0000 (GMT)
+Date: Wed, 29 May 2024 08:28:18 +0200
+From: Alexander Gordeev <agordeev@linux.ibm.com>
 To: Eric Chanudet <echanude@redhat.com>
 Subject: Re: [PATCH v3] mm/mm_init: use node's number of cpus in
  deferred_page_init_max_threads
-Message-ID: <Zla9cwSorlNg98F5@kernel.org>
+Message-ID: <ZlbLAg94/2SC24Qz@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
 References: <20240528185455.643227-4-echanude@redhat.com>
-MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20240528185455.643227-4-echanude@redhat.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: z22Gsl5oLmrdkoQNWXaaSgLxF8vW1NJ4
+X-Proofpoint-ORIG-GUID: TLy3r68G42Y8NzR4SwGlMiiYEiCLM0KP
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.12.28.16
+ definitions=2024-05-28_14,2024-05-28_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 priorityscore=1501
+ suspectscore=0 impostorscore=0 clxscore=1011 adultscore=0 spamscore=0
+ bulkscore=0 malwarescore=0 phishscore=0 mlxlogscore=999 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2405010000
+ definitions=main-2405290040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,7 +96,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, x86@kernel.org, Baoquan He <bhe@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, Nick Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel@lists.infradead.org
+Cc: linux-s390@vger.kernel.org, x86@kernel.org, Baoquan He <bhe@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, Nick Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, linux-arm-kernel@lists.infradead.org, Andy Lutomirski <luto@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Mike Rapoport <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
@@ -93,9 +131,7 @@ On Tue, May 28, 2024 at 02:54:58PM -0400, Eric Chanudet wrote:
 > 
 > Signed-off-by: Eric Chanudet <echanude@redhat.com>
 > Tested-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-
-Acked-by: Mike Rapoport (IBM) <rppt@kernel.org>
-
+> 
 > ---
 > - v1: https://lore.kernel.org/linux-arm-kernel/20240520231555.395979-5-echanude@redhat.com
 > - Changes since v1:
@@ -118,65 +154,7 @@ Acked-by: Mike Rapoport (IBM) <rppt@kernel.org>
 >  include/linux/memblock.h |  2 --
 >  mm/mm_init.c             |  5 ++---
 >  3 files changed, 2 insertions(+), 17 deletions(-)
-> 
-> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-> index 7e177856ee4f..adec42928ec1 100644
-> --- a/arch/x86/mm/init_64.c
-> +++ b/arch/x86/mm/init_64.c
-> @@ -1354,18 +1354,6 @@ void __init mem_init(void)
->  	preallocate_vmalloc_pages();
->  }
->  
-> -#ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
-> -int __init deferred_page_init_max_threads(const struct cpumask *node_cpumask)
-> -{
-> -	/*
-> -	 * More CPUs always led to greater speedups on tested systems, up to
-> -	 * all the nodes' CPUs.  Use all since the system is otherwise idle
-> -	 * now.
-> -	 */
-> -	return max_t(int, cpumask_weight(node_cpumask), 1);
-> -}
-> -#endif
-> -
->  int kernel_set_to_readonly;
->  
->  void mark_rodata_ro(void)
-> diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-> index e2082240586d..40c62aca36ec 100644
-> --- a/include/linux/memblock.h
-> +++ b/include/linux/memblock.h
-> @@ -335,8 +335,6 @@ void __next_mem_pfn_range_in_zone(u64 *idx, struct zone *zone,
->  	for (; i != U64_MAX;					  \
->  	     __next_mem_pfn_range_in_zone(&i, zone, p_start, p_end))
->  
-> -int __init deferred_page_init_max_threads(const struct cpumask *node_cpumask);
-> -
->  #endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
->  
->  /**
-> diff --git a/mm/mm_init.c b/mm/mm_init.c
-> index f72b852bd5b8..acfeba508796 100644
-> --- a/mm/mm_init.c
-> +++ b/mm/mm_init.c
-> @@ -2122,11 +2122,10 @@ deferred_init_memmap_chunk(unsigned long start_pfn, unsigned long end_pfn,
->  	}
->  }
->  
-> -/* An arch may override for more concurrency. */
-> -__weak int __init
-> +static unsigned int __init
->  deferred_page_init_max_threads(const struct cpumask *node_cpumask)
->  {
-> -	return 1;
-> +	return max(cpumask_weight(node_cpumask), 1U);
->  }
->  
->  /* Initialise remaining memory on a node */
-> -- 
-> 2.44.0
-> 
 
--- 
-Sincerely yours,
-Mike.
+It does speed up. For s390:
+
+Acked-by: Alexander Gordeev <agordeev@linux.ibm.com>
