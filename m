@@ -2,69 +2,68 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14B08C25B7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 16:36:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA59FC25B75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 May 2024 18:11:42 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=U6nBRG4z;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=l/E19cZS;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VqFGJ2Bw0z79pp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 02:29:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=sifive.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VqHPV0McSz7B2P
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 04:06:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=U6nBRG4z;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=l/E19cZS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--jthoughton.bounces.google.com (client-ip=2607:f8b0:4864:20::a49; helo=mail-vk1-xa49.google.com; envelope-from=3xm5xzgokdne6g4bh34gba3bb381.zb985ahkccz-01i85fgf.bm8xyf.be3@flex--jthoughton.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-vk1-xa49.google.com (mail-vk1-xa49.google.com [IPv6:2607:f8b0:4864:20::a49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqFFV5908z798q
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 02:29:01 +1000 (AEST)
-Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-1f47f07aceaso19398655ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 09:29:01 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqHNf1JP0z78rH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 04:05:21 +1000 (AEST)
+Received: by mail-vk1-xa49.google.com with SMTP id 71dfb90a1353d-4e4f02f0c5aso17768e0c.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 11:05:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1717000135; x=1717604935; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=iUKf6RPGHkE9ueRDvwJp4yAPIvOh2riYCScZzEfcavE=;
-        b=U6nBRG4zpvlSqMRbmFpCx0uaJ3BRr4NVxmd90SDmcZ7mNZ5YB80OA0m57mjWdlKUFh
-         msfQhEYoRdt6YIjh0tJ2jgcYmqp/eomBUKFHtv4NgYPgGSTMqJtlZONiwJ47UHmPRUIy
-         ORoSV4X/87nCbBFpYrrdJtgmFYgB5TJz48Z9oQn62wqfUSNINzNTphmenPOxXdlj4HyQ
-         PtL/vIF6tlXYShgaFqmlsTTHnA1o6sOSWJ4u+orw812LkMsGjTzTrQ7FpUS8hqcpbsy9
-         N7MiQSmDsTCqvRQveU8hw3fEEvkuJHRFAFE5L8dYPuIHC3Gk4G1cv7ki3/vLZs7F5Qh1
-         XSbA==
+        d=google.com; s=20230601; t=1717005918; x=1717610718; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=nPLVZGS8AMw+CagEZYqGOZQVma0bD0XI55fQjmFacis=;
+        b=l/E19cZS+aTqVbFBUCOB9y43MwjjW4ifbz/dfMFpiWykR9MaSTn/ECjAgRjiUhrZL4
+         h3reGuOek6r2QcauwrAxtVMLN2DJmfXd9c7oU9eFgQ2r1AjPkBRKp8+FDzjtiOx11/bU
+         0Bl/4Tpf7lKHnzv6HK+4JRd+8ZP3dIHvp/9KVCuGgXqm+NOGABsqW1rtYaTguuNB1eXi
+         cgfZ3Tgk/ytnqf19JQcejgKqKd6B6ZNQ5s0y/6hf6G9n7ptJ3L+SNCSPsDYiVPFZPwF0
+         TX3rT6JX4W5Xd0P7TNK7b40FtxqzJlBK4SNDhrrT+dK6DjDNAfibUl5E0ktg2lff8NG6
+         t9pA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717000135; x=1717604935;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=iUKf6RPGHkE9ueRDvwJp4yAPIvOh2riYCScZzEfcavE=;
-        b=MR5Imyv/k8Jvt7gLx+Tfo82VUyNMHlGXg2NMMrMhUZkB6gj7MfDbxi4imPDp35TWBV
-         aZ1gNbY19SLDyC9Fs8/DiwPXLW4aMIUTVDCFyqh9Y3eMCWUtjwrf13lYIs6QE9EIkiJe
-         AYHcKYPm3wiH77QEVIjbtstbBtyQXJCgknGIfABuwYlh7Gw1ZEmZaKR2YeVdCjgNX2eB
-         sxIgGeB9UPpPSk7mqDI5W9fyJsmM3s0Ugw5ODqzpiVvsjgMKFuaGmcB/4WPcLmu7UBCZ
-         O79jVa72DdYbJcKj590y+a9pZGCO4M5TwRYT6GAlVLAh+8b2b9rsssa71EFf1TyczrwM
-         ZIIw==
-X-Gm-Message-State: AOJu0Yz3NVOvy0H9rsNgDTDRj0alr30OgxC+zC8YuSkrXGCk2+6NNSen
-	oXeADfhkFnfGzaoKNbnPslbXVi1KWG2/9R+OZArLXqjOnQ6DwXZpeU8bdmKUR/F/UU8YrTdJHSj
-	6l8aUHOIy2MOdDCOnc0tf5W6H0WwSzYS+zLlYTvryDpJx4Vw23evJAhzbJLZXnqr/1dlow88nxC
-	WbAtYp5BSE6E096JEs53CGI2oGwyn07Scx4bbeOlwGdtCsD3P691druA==
-X-Google-Smtp-Source: AGHT+IEjVPCvcjtvs+arO36qgagTdadtsaeqU3GiNIZQ/tvSccsvX/2ca/K2QWSCF0VhUZl8F1kyfA==
-X-Received: by 2002:a17:902:c943:b0:1f4:64ba:af9f with SMTP id d9443c01a7336-1f464bab2f7mr139578315ad.48.1717000134988;
-        Wed, 29 May 2024 09:28:54 -0700 (PDT)
-Received: from sw06.internal.sifive.com ([4.53.31.132])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-1f44c9a88e0sm101756305ad.231.2024.05.29.09.28.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 May 2024 09:28:54 -0700 (PDT)
-From: Samuel Holland <samuel.holland@sifive.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Limit ARCH_HAS_KERNEL_FPU_SUPPORT to PPC64
-Date: Wed, 29 May 2024 09:28:50 -0700
-Message-ID: <20240529162852.1209-1-samuel.holland@sifive.com>
-X-Mailer: git-send-email 2.44.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        d=1e100.net; s=20230601; t=1717005918; x=1717610718;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=nPLVZGS8AMw+CagEZYqGOZQVma0bD0XI55fQjmFacis=;
+        b=GLs3s9mznexRl7+2In6DdUdLt3Xa+OIEp02NWIQeprQ5XSi7qTEPoiO7qNbal8P4R7
+         xHLpANsdiz7lachJX+/i3p6tyihDyUlm7MLnyu9p+1cxmTBhSNxQQkzOnKouK9YMmGdv
+         8nfWwbMw0+ZVp+Dcvs5aIa1wUTp5SpFKTukbQZHUhQM/hFkfxO5AyycurG2MEu683rnl
+         Up9I7+fi7l6MbgI65DG2Dh+jFTcE48eU6xMDCvWCd+vw9EoVs8wqkoDfEl57McPCZNKG
+         oZ/Knk81mIwM7YOYAEguzXz8YugdDLAwnqGgFMP7aqlFqL8fnpgzLVEKbVGxNjzu9yW7
+         zTag==
+X-Forwarded-Encrypted: i=1; AJvYcCWFxrd2NIxpgG+H3A21qiNc2A/4Ktc9fEf8uq0GiGAU5BExqg+7H/lIsT8mzl7Y8rP5kPEL+HCeXYyzkK2Gyufw6non0n7bMFM3ALFVQA==
+X-Gm-Message-State: AOJu0YwRIjYS18244QgCrH4TfXN2CCRr9pQM1E4m9tkhZqgUZK9bY1OV
+	TKjT6XjDwiVURhz13kB8KojFh8vBvUQVSnsxCc8gjLErxjOE5QOwFBrOZJELbIFao/DD0nILbvh
+	vIzp0Djlw7wVNEMl6cg==
+X-Google-Smtp-Source: AGHT+IHYErK4IEAw4AodIy6/uS9D/1KylfkBeNLUgQvcCMlB4bZF6bJgSfUsGpPUaVK45i5PNzhTyn3VxbK8rZqg
+X-Received: from jthoughton.c.googlers.com ([fda3:e722:ac3:cc00:14:4d90:c0a8:2a4f])
+ (user=jthoughton job=sendgmr) by 2002:a05:6122:2006:b0:4d8:797b:94e0 with
+ SMTP id 71dfb90a1353d-4e4f0112182mr502860e0c.0.1717005918294; Wed, 29 May
+ 2024 11:05:18 -0700 (PDT)
+Date: Wed, 29 May 2024 18:05:04 +0000
+In-Reply-To: <20240529180510.2295118-1-jthoughton@google.com>
+Mime-Version: 1.0
+References: <20240529180510.2295118-1-jthoughton@google.com>
+X-Mailer: git-send-email 2.45.1.288.g0e0cd299f1-goog
+Message-ID: <20240529180510.2295118-2-jthoughton@google.com>
+Subject: [PATCH v4 1/7] mm/Kconfig: Add LRU_GEN_WALKS_SECONDARY_MMU
+From: James Houghton <jthoughton@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Paolo Bonzini <pbonzini@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,50 +75,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, linux-kernel@vger.kernel.org, Samuel Holland <samuel.holland@sifive.com>, Nicholas Piggin <npiggin@gmail.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>, Guenter Roeck <linux@roeck-us.net>
+Cc: James Houghton <jthoughton@google.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Yu Zhao <yuzhao@google.com>, Jonathan Corbet <corbet@lwn.net>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, David Matlack <dmatlack@google.
+ com>, Palmer Dabbelt <palmer@dabbelt.com>, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, Sean Christopherson <seanjc@google.com>, Ankit Agrawal <ankita@nvidia.com>, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When building a 32-bit kernel, some toolchains do not allow mixing soft
-float and hard float object files:
+Add this option so that one building the kernel can choose whether or
+not they want to support walking the secondary MMU.
 
-    LD      vmlinux.o
-  powerpc64le-unknown-linux-musl-ld: lib/test_fpu_impl.o uses hard float, arch/powerpc/kernel/udbg.o uses soft float
-  powerpc64le-unknown-linux-musl-ld: failed to merge target specific data of file lib/test_fpu_impl.o
-  make[2]: *** [scripts/Makefile.vmlinux_o:62: vmlinux.o] Error 1
-  make[1]: *** [Makefile:1152: vmlinux_o] Error 2
-  make: *** [Makefile:240: __sub-make] Error 2
+We want users to be able to blindly enable all lru_gen features to have
+the best possible performance most of the time. Walking the secondary
+MMU is mainly useful for be able to do proactive reclaim, and it is
+possible that doing this can harm VM performance.
 
-This is not an issue when building a 64-bit kernel. To unbreak the
-build, limit ARCH_HAS_KERNEL_FPU_SUPPORT to 64-bit kernels. This is okay
-because the only real user of this option, amdgpu, was previously
-limited to PPC64 anyway; see commit a28e4b672f04 ("drm/amd/display: use
-ARCH_HAS_KERNEL_FPU_SUPPORT").
+This option should be enabled by users who run VMs and also care to do
+proactive aging/reclaim with MGLRU.
 
-Fixes: 01db473e1aa3 ("powerpc: implement ARCH_HAS_KERNEL_FPU_SUPPORT")
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202405250851.Z4daYSWG-lkp@intel.com/
-Reported-by: Guenter Roeck <linux@roeck-us.net>
-Closes: https://lore.kernel.org/lkml/eeffaec3-df63-4e55-ab7a-064a65c00efa@roeck-us.net/
-Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+With this config option enabled, a user can still disable the
+new functionality at runtime through sysfs.
+
+Signed-off-by: James Houghton <jthoughton@google.com>
 ---
+ mm/Kconfig | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 3c968f2f4ac4..c88c6d46a5bc 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -137,7 +137,7 @@ config PPC
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_HUGEPD			if HUGETLB_PAGE
- 	select ARCH_HAS_KCOV
--	select ARCH_HAS_KERNEL_FPU_SUPPORT	if PPC_FPU
-+	select ARCH_HAS_KERNEL_FPU_SUPPORT	if PPC64 && PPC_FPU
- 	select ARCH_HAS_MEMBARRIER_CALLBACKS
- 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
- 	select ARCH_HAS_MEMREMAP_COMPAT_ALIGN	if PPC_64S_HASH_MMU
+diff --git a/mm/Kconfig b/mm/Kconfig
+index b4cb45255a54..3ac4b1dbf745 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -1222,6 +1222,14 @@ config LRU_GEN_STATS
+ 
+ 	  This option has a per-memcg and per-node memory overhead.
+ 
++config LRU_GEN_WALKS_SECONDARY_MMU
++	bool "Walk secondary MMUs when aging"
++	depends on LRU_GEN && LRU_GEN_WALKS_MMU
++	help
++	  This option allows multi-gen LRU to walk secondary MMU page tables
++	  when aging. This allows for proactive reclaim, but this can reduce
++	  overall performance (e.g. for a KVM VM).
++
+ config LRU_GEN_WALKS_MMU
+ 	def_bool y
+ 	depends on LRU_GEN && ARCH_HAS_HW_PTE_YOUNG
 -- 
-2.44.1
+2.45.1.288.g0e0cd299f1-goog
 
