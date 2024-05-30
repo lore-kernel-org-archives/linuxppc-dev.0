@@ -2,50 +2,70 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B316C25B7E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 03:06:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BD18C25B75
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 03:36:44 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=FlBbOh4Y;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=JYzvWvDL;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VqWGs338Vz7BSP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 13:01:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VqWv70HG3z87jl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 13:29:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=FlBbOh4Y;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=JYzvWvDL;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=jthoughton@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqWG10CPKz79N2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 13:00:25 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1717038022;
-	bh=iylmbElts6rbIaBJgVgvReqoNsA+FU35YPufgnhE8Do=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=FlBbOh4Y78Fxlvp6m2kkxiz/CGCkxiwvegkQt2vP5IJIo8Pj16HZ5Oyjk250J2gA7
-	 rSnu65YAx6Mw7YfRUCfLyZZV/HiYlFCnZyBYcuRJYXu8gfDlGdwD7QuXITo0Q2A6xg
-	 ZHXCgnNmLl7FEDescz8psPJssk++rS1a09TjCNcCuMwc5tFOLkafLlCTEVW2yBSQkt
-	 khQ4Ks+Fkvv6XxK7NDUKchc191iBZp2yB80gsSE9/xZu4qa1XMU70yqZjTLwMG9V2b
-	 yanBof6OB4Pq58aEtehNgtLAgl0R6/jQohS18NpmozlnQF/9oKWeMOlVuuplCKozfh
-	 NOJGnhBmx5UfA==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VqWFy33wKz4wqK;
-	Thu, 30 May 2024 13:00:22 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Shuah Khan <skhan@linuxfoundation.org>, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH] selftests/overlayfs: Fix build error on ppc64
-In-Reply-To: <3f3a70ba-40d2-4624-b8c5-7c3ae2a025fb@linuxfoundation.org>
-References: <20240521022616.45240-1-mpe@ellerman.id.au>
- <3f3a70ba-40d2-4624-b8c5-7c3ae2a025fb@linuxfoundation.org>
-Date: Thu, 30 May 2024 13:00:20 +1000
-Message-ID: <878qzs3sxn.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqWtK1hgvz87PK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 13:28:25 +1000 (AEST)
+Received: by mail-qt1-x835.google.com with SMTP id d75a77b69052e-43fe3289fc5so118491cf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 20:28:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1717039702; x=1717644502; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=CyFUQdvGKe8UpOcfXmkz33OD4v6xcNcft6Wk6HjbLrw=;
+        b=JYzvWvDLD3lQkuGa5KATCfi8vmE9yOmlZcit8XcwtyqFCRzrw2GTswuPTxogdi1RIp
+         RGexfSFlveMzLc+6MZVz8AGrEaXbCoaTpkbggPGOkY9Z0vhYSG5taJiER+5oscTRYouI
+         pE6ietcdgexDYU4G9eoQnoArdTlgWpuBuaIfvnEASE/nYAXYP0tLBuD+gxtEnbqtzGSj
+         m2z05zN0aBOZH2asSdisEGunEs+Lt5FXPovoTbtu8ZtysuVLrDNad6T/S7Fn+o77FI4s
+         ebS/9RycvNW/DCUFNcPyDX3kXTt3MiUvip2s4XVmVk6L9G3H5CDDALzO+4jcqfd7kStE
+         SfmQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1717039702; x=1717644502;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=CyFUQdvGKe8UpOcfXmkz33OD4v6xcNcft6Wk6HjbLrw=;
+        b=SxC4/YPR32ZLFSOwBrXQA0C6D7g2LlUcgycaGkYUi2jetg/ErjvY7kBnhR628Cj3HJ
+         1N/l9o8uz8L8MX7udTwrTse8eurSsuyY4kS9DtJX0ymZguVEJ6/A6FxeaTvtZVLx8vfV
+         zo4veJcbdxpaQ+SNTwIYISsuI/HZfMyLNx81PFIaUG2jhDx6uIPH2qgQ8X61CobEmzM2
+         Sd0Gf4seHKCmVx1Pzrf2rGWgPnHcbPgBPSD9Hzm10pzXaAY7FPc9rDANV65DFrA4J+0J
+         JQ+3Mwt1rdUQq+DtLKOPSr7fiUe4gsgsWvLi5xpipfyZxbrGsTCzErdbk+SEXTCqR/Jk
+         o4KQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX7yu/zsL2xq2hjpqQrlIV+eHUIr3i7LhqZxo1uBHH46UKqTW1RMnw7a07W74d8yyloaZoNypFB5OcDoqkIPIYA8RYtbqJxOtBqCJzs5Q==
+X-Gm-Message-State: AOJu0YwfZ8gWcG6E5tzNusEsudeRKRVY/A91ebF0WPMrUhshGYMco+LT
+	146AFlh+CtCiut+HNCH6iMH99xz2heSW/F36TdeJXh4Jh94PJ8PjduO5rwE/uOCc5jll2jyPfIw
+	FAG4TDF3SSHP0JmrHdrtweW9vG++3h9NH9Z+p
+X-Google-Smtp-Source: AGHT+IGBhNbFRaaD0WOEIsVSMflxCvd13kkSSK1hcGeX1B4TzLlXvTq7xC3rTsBmGx8uhqPHEIa2GYmfEXsD+JkYxAs=
+X-Received: by 2002:a05:622a:90e:b0:43e:cb4:1d10 with SMTP id
+ d75a77b69052e-43fe8e5f830mr1851431cf.14.1717039701993; Wed, 29 May 2024
+ 20:28:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+References: <20240529180510.2295118-1-jthoughton@google.com>
+ <20240529180510.2295118-5-jthoughton@google.com> <ZlekYljG7KJwblUj@google.com>
+In-Reply-To: <ZlekYljG7KJwblUj@google.com>
+From: James Houghton <jthoughton@google.com>
+Date: Wed, 29 May 2024 20:27:45 -0700
+Message-ID: <CADrL8HVZxoO33F2UJBoTjF_SXpxyZmH=RTM5G3stgo_kRPjazA@mail.gmail.com>
+Subject: Re: [PATCH v4 4/7] KVM: Move MMU lock acquisition for
+ test/clear_young to architecture
+To: Sean Christopherson <seanjc@google.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -58,46 +78,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: shuah <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
+Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Yu Zhao <yuzhao@google.com>, Jonathan Corbet <corbet@lwn.net>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, David Matlack <dmatlack@google.com>, Palmer Dabbelt <palmer@dabbelt.com
+ >, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, Ankit Agrawal <ankita@nvidia.com>, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Shuah Khan <skhan@linuxfoundation.org> writes:
-> On 5/20/24 20:26, Michael Ellerman wrote:
->> Fix build error on ppc64:
->>    dev_in_maps.c: In function =E2=80=98get_file_dev_and_inode=E2=80=99:
->>    dev_in_maps.c:60:59: error: format =E2=80=98%llu=E2=80=99 expects arg=
-ument of type
->>    =E2=80=98long long unsigned int *=E2=80=99, but argument 7 has type =
-=E2=80=98__u64 *=E2=80=99 {aka =E2=80=98long
->>    unsigned int *=E2=80=99} [-Werror=3Dformat=3D]
->>=20
->> By switching to unsigned long long for u64 for ppc64 builds.
->>=20
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->> ---
->>   tools/testing/selftests/filesystems/overlayfs/dev_in_maps.c | 1 +
->>   1 file changed, 1 insertion(+)
->>=20
->> diff --git a/tools/testing/selftests/filesystems/overlayfs/dev_in_maps.c=
- b/tools/testing/selftests/filesystems/overlayfs/dev_in_maps.c
->> index 759f86e7d263..2862aae58b79 100644
->> --- a/tools/testing/selftests/filesystems/overlayfs/dev_in_maps.c
->> +++ b/tools/testing/selftests/filesystems/overlayfs/dev_in_maps.c
->> @@ -1,5 +1,6 @@
->>   // SPDX-License-Identifier: GPL-2.0
->>   #define _GNU_SOURCE
->> +#define __SANE_USERSPACE_TYPES__ // Use ll64
->>=20=20=20
->>   #include <inttypes.h>
->>   #include <unistd.h>
+On Wed, May 29, 2024 at 2:55=E2=80=AFPM Sean Christopherson <seanjc@google.=
+com> wrote:
 >
-> Applied to linux-kselftest fixes for the next rc.
+> On Wed, May 29, 2024, James Houghton wrote:
+> > For implementation mmu_notifier_{test,clear}_young, the KVM memslot
+> > walker used to take the MMU lock for us. Now make the architectures
+> > take it themselves.
+>
+> Hmm, *forcing* architectures to take mmu_lock is a step backwards.  Rathe=
+r than
+> add all of this churn, what about adding CONFIG_KVM_MMU_NOTIFIER_LOCKLESS=
+, e.g.
+>
+> static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notif=
+ier *mn,
+>                                                          unsigned long st=
+art,
+>                                                          unsigned long en=
+d,
+>                                                          gfn_handler_t ha=
+ndler)
+> {
+>         struct kvm *kvm =3D mmu_notifier_to_kvm(mn);
+>         const struct kvm_mmu_notifier_range range =3D {
+>                 .start          =3D start,
+>                 .end            =3D end,
+>                 .handler        =3D handler,
+>                 .on_lock        =3D (void *)kvm_null_fn,
+>                 .flush_on_ret   =3D false,
+>                 .may_block      =3D false,
+>                 .lockless       =3D IS_ENABLED(CONFIG_KVM_MMU_NOTIFIER_LO=
+CKLESS),
+>         };
+>
+>         return __kvm_handle_hva_range(kvm, &range).ret;
+> }
 
-Thanks.
-
-> Michael, If you want to take this through, let me know, I can drop this.
-
-I'm happy for you to take this one and the others.
-
-cheers
+Thanks Sean, yes this is a lot better. I will do this for v5.
