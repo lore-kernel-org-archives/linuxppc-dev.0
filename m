@@ -4,78 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF0EFC25B74
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 22:44:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE157C25B74
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 23:02:50 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=geanix.com header.i=@geanix.com header.a=rsa-sha256 header.s=default2211 header.b=LXFXSmXE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JJuva+cI;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vr1Ww02GKz3g8F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 08:44:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=geanix.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vr1xP0P7fz3fm7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 09:02:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=geanix.com header.i=@geanix.com header.a=rsa-sha256 header.s=default2211 header.b=LXFXSmXE;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JJuva+cI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=geanix.com (client-ip=188.40.30.78; helo=www530.your-server.de; envelope-from=esben@geanix.com; receiver=lists.ozlabs.org)
-Received: from www530.your-server.de (www530.your-server.de [188.40.30.78])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Fri, 31 May 2024 09:01:58 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqpxL5jjJz3cHH
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2024 00:47:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=geanix.com;
-	s=default2211; h=Cc:To:In-Reply-To:References:Message-Id:
-	Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:From:Sender:
-	Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender
-	:Resent-To:Resent-Cc:Resent-Message-ID;
-	bh=Rx1tDglSe0Vnos0b8SgqUc/GQHG/nBapjYKNOpTecRQ=; b=LXFXSmXE2NO6YoJACAG3IMhtgZ
-	jreM9kQQmdz5ILPRCxN6w3NCKxwWeiQ6JWn1iTvdIHT6gROBRicQ7hBXZKQIYp+ajIGUWmVzYXLRP
-	syzvqX5+DN2HPikkBrfddlUAOXRw/NdT2sIc2IFJeX6AXAiz5VGtC5KWpIeOulB3MY6N6oz1nch73
-	rX5i9KQcR9LjMYZbOJp9bNOYEyd5Xnt69hgwSRi/4hSpDhRxX63JQI+Ss3Mng0G+86dkSxx9+ERm4
-	LtS+NydUjy+9VO2NYSrsXlbcGxxj4FHsEGSeaUM2/B2d+W6HAdyd+uzSCKBJz1iOjLJptboBtMOvn
-	LBsRktjg==;
-Received: from sslproxy07.your-server.de ([78.47.199.104])
-	by www530.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <esben@geanix.com>)
-	id 1sCh3C-000CAk-1m; Thu, 30 May 2024 16:46:42 +0200
-Received: from [185.17.218.86] (helo=localhost)
-	by sslproxy07.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <esben@geanix.com>)
-	id 1sCh3B-000NCM-0q;
-	Thu, 30 May 2024 16:46:40 +0200
-From: Esben Haabendal <esben@geanix.com>
-Date: Thu, 30 May 2024 16:46:37 +0200
-Subject: [PATCH v3 2/3] powerpc/configs: Update defconfig with now
- user-visible CONFIG_FSL_IFC
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vr1wQ3mdrz3dX3
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2024 09:01:58 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1717110119; x=1748646119;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=81hqptQlE/LEM/MdYuEb48YnMieQd2hcNEosrso0DUw=;
+  b=JJuva+cIoV4UUp7A53JxZkOo+T1mH444nnV0BZZdg500v8m6/mVye8K/
+   /pkIMcKLda9ILVBwwlYPvUIfZ9N+fgHB+2zNZ7jT4CoZu7fIdrF3q62hk
+   zi50i2Vm2dejUjWyExZY5uoXJcSK0dz+wFcl8gWP9JUfIDt6kTP7EF44o
+   n5bYgWwbjDVd1bVBrzlXGshY8Teh1/A+6us9QfjSAfOFHkWb5Q6NfP0+l
+   lG9+QW4xb6NDaGGyeUO+kH/LxYtZT0BtDz9E3TIVL77fcEGXWThA0ArEx
+   BpOFqykEGz2rVNEk5aDhfJT+bp7EmRa/BojJQG/xkCrmJwBECCMNWQUEY
+   A==;
+X-CSE-ConnectionGUID: VVskXpX2SNujBVmo7o0yHg==
+X-CSE-MsgGUID: ouHRrWF5RFqLzlptQHjDPQ==
+X-IronPort-AV: E=McAfee;i="6600,9927,11088"; a="24299014"
+X-IronPort-AV: E=Sophos;i="6.08,202,1712646000"; 
+   d="scan'208";a="24299014"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 May 2024 16:00:49 -0700
+X-CSE-ConnectionGUID: ppAMvIboShW3rdupJXGmfw==
+X-CSE-MsgGUID: YE22diODSCqeXIU3YdF4gg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.08,202,1712646000"; 
+   d="scan'208";a="59152829"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by fmviesa002.fm.intel.com with ESMTP; 30 May 2024 16:00:41 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+	id 49EA837D; Fri, 31 May 2024 02:00:40 +0300 (EEST)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Rob Herring <robh@kernel.org>,
+	Weidong Wang <wangweidong.a@awinic.com>,
+	Mark Brown <broonie@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+	Shenghao Ding <shenghao-ding@ti.com>,
+	Marco Felsch <m.felsch@pengutronix.de>,
+	Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+	Chancel Liu <chancel.liu@nxp.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	alsa-devel@alsa-project.org,
+	patches@opensource.cirrus.com,
+	linuxppc-dev@lists.ozlabs.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-rockchip@lists.infradead.org
+Subject: [PATCH v1 3/6] ASoC: rockchip: Remove unused of_gpio.h
+Date: Fri, 31 May 2024 01:58:49 +0300
+Message-ID: <20240530230037.1156253-4-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.43.0.rc1.1336.g36b5255a03ac
+In-Reply-To: <20240530230037.1156253-1-andriy.shevchenko@linux.intel.com>
+References: <20240530230037.1156253-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240530-fsl-ifc-config-v3-2-1fd2c3d233dd@geanix.com>
-References: <20240530-fsl-ifc-config-v3-0-1fd2c3d233dd@geanix.com>
-In-Reply-To: <20240530-fsl-ifc-config-v3-0-1fd2c3d233dd@geanix.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>, 
- Tudor Ambarus <tudor.ambarus@linaro.org>, 
- Pratyush Yadav <pratyush@kernel.org>, Michael Walle <mwalle@kernel.org>, 
- Miquel Raynal <miquel.raynal@bootlin.com>, 
- Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, 
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1717080399; l=958;
- i=esben@geanix.com; s=20240523; h=from:subject:message-id;
- bh=gYh5ZeM8RAfRySwrSZmO3AMBCrGHKKvIQY62urO1EUw=;
- b=bEJ0aVmdyDT0u7vwaSZCYG6fAyLnvfzCYF/YRQ2PzyReLEUsEQqAiYRgiG0aZcxyjQ+7BA76p
- O+Nhm+tA4POA6cUaW0cQw3HzyLrZ/KPEneXUVUsEnnoTKtdF81zYrIk
-X-Developer-Key: i=esben@geanix.com; a=ed25519;
- pk=PbXoezm+CERhtgVeF/QAgXtEzSkDIahcWfC7RIXNdEk=
-X-Authenticated-Sender: esben@geanix.com
-X-Virus-Scanned: Clear (ClamAV 0.103.10/27291/Thu May 30 10:29:52 2024)
-X-Mailman-Approved-At: Fri, 31 May 2024 08:19:55 +1000
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,40 +90,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Esben Haabendal <esben@geanix.com>, linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Fabio Estevam <festevam@gmail.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, Liam Girdwood <lgirdwood@gmail.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Xiubo Li <Xiubo.Lee@gmail.com>, Takashi Iwai <tiwai@suse.com>, James Schulman <james.schulman@cirrus.com>, Kevin Lu <kevin-lu@ti.com>, Richard Fitzgerald <rf@opensource.cirrus.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Banajit Goswami <bgoswami@quicinc.com>, Jaroslav Kysela <perex@perex.cz>, Shawn Guo <shawnguo@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, David Rhodes <david.rhodes@cirrus.com>, Baojun Xu <baojun.xu@ti.com>, Heiko Stuebner <heiko@sntech.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With CONFIG_FSL_IFC now being user-visible, and thus changed from a select
-to depends in CONFIG_MTD_NAND_FSL_IFC, the dependencies needs to be
-selected in defconfigs.
+of_gpio.h is deprecated and subject to remove. The drivers in question
+don't use it, simply remove the unused header.
 
-Signed-off-by: Esben Haabendal <esben@geanix.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- arch/powerpc/configs/85xx-hw.config | 2 ++
- 1 file changed, 2 insertions(+)
+ sound/soc/rockchip/rockchip_i2s.c   | 1 -
+ sound/soc/rockchip/rockchip_spdif.c | 1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/configs/85xx-hw.config b/arch/powerpc/configs/85xx-hw.config
-index 524db76f47b7..8aff83217397 100644
---- a/arch/powerpc/configs/85xx-hw.config
-+++ b/arch/powerpc/configs/85xx-hw.config
-@@ -24,6 +24,7 @@ CONFIG_FS_ENET=y
- CONFIG_FSL_CORENET_CF=y
- CONFIG_FSL_DMA=y
- CONFIG_FSL_HV_MANAGER=y
-+CONFIG_FSL_IFC=y
- CONFIG_FSL_PQ_MDIO=y
- CONFIG_FSL_RIO=y
- CONFIG_FSL_XGMAC_MDIO=y
-@@ -58,6 +59,7 @@ CONFIG_INPUT_FF_MEMLESS=m
- CONFIG_MARVELL_PHY=y
- CONFIG_MDIO_BUS_MUX_GPIO=y
- CONFIG_MDIO_BUS_MUX_MMIOREG=y
-+CONFIG_MEMORY=y
- CONFIG_MMC_SDHCI_OF_ESDHC=y
- CONFIG_MMC_SDHCI_PLTFM=y
- CONFIG_MMC_SDHCI=y
-
+diff --git a/sound/soc/rockchip/rockchip_i2s.c b/sound/soc/rockchip/rockchip_i2s.c
+index b0c3ef030e06..b378f870b3ad 100644
+--- a/sound/soc/rockchip/rockchip_i2s.c
++++ b/sound/soc/rockchip/rockchip_i2s.c
+@@ -11,7 +11,6 @@
+ #include <linux/mfd/syscon.h>
+ #include <linux/delay.h>
+ #include <linux/of.h>
+-#include <linux/of_gpio.h>
+ #include <linux/clk.h>
+ #include <linux/pinctrl/consumer.h>
+ #include <linux/pm_runtime.h>
+diff --git a/sound/soc/rockchip/rockchip_spdif.c b/sound/soc/rockchip/rockchip_spdif.c
+index 1a24b78e9e02..eb9d5dee196e 100644
+--- a/sound/soc/rockchip/rockchip_spdif.c
++++ b/sound/soc/rockchip/rockchip_spdif.c
+@@ -11,7 +11,6 @@
+ 
+ #include <linux/module.h>
+ #include <linux/delay.h>
+-#include <linux/of_gpio.h>
+ #include <linux/clk.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/mfd/syscon.h>
 -- 
-2.45.1
+2.43.0.rc1.1336.g36b5255a03ac
 
