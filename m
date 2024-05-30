@@ -4,60 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28499C25B74
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 22:36:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F29EC25B74
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 22:37:35 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=mjr29FQk;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ePqfRUmf;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vr1MQ2b6tz3fvp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 08:36:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vr1NF4wHwz3fyQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 08:37:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=mjr29FQk;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ePqfRUmf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com; envelope-from=coelacanthushex@gmail.com; receiver=lists.ozlabs.org)
 Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqkLj6Swvz2xps
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqkLj6dNKz2ykt
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 21:20:12 +1000 (AEST)
-Received: by mail-pl1-x643.google.com with SMTP id d9443c01a7336-1f44b42d1caso6301435ad.0
+Received: by mail-pl1-x643.google.com with SMTP id d9443c01a7336-1f082d92864so6320505ad.1
         for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 04:20:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1717068005; x=1717672805; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=z8dJKE69s5+86iqiKT1v7IFgnofzj53z+mkIUUuty68=;
-        b=mjr29FQklpg8/DNt4DpRYY5uuMrfdp4bFP89Fo97MY+uu5epPPUDTP0tvaHxms9dEU
-         R5KZLNXTSfF2VjCNyHWK4Ek+/q/WMdTOz0DM2Nl+N501xKMoJlh+aIMtCmvoCRYtboW8
-         YYLTHsHYtqbjr7lX/yl3GuA14CujtYC9sFIm3aRqOf4skz1ck1H2oVNCi7oVxVlpxALY
-         9gvNoJK/9pdDJ3d1q+QeU6LyszzlYzFrC+9s2ukJiVOjVHZzxugaWK5QMu3Wu6M1jjBP
-         /QzwNpxwneMA7Ofigf3mVbCLAVl7lX1asLzzhRdcLNrkfB6+IiNuPNsxbk23xVUWRnoT
-         tVig==
+        d=gmail.com; s=20230601; t=1717068010; x=1717672810; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=UKDbsptHUOf10z9ycdwLPkvcPnlZIVKylvaMWlEqffg=;
+        b=ePqfRUmfXowbGfZMiOGaaXZ56eTFOU5jsb//T2l/9+Y/+zeckSHNwdZj8Nn0eGhLEV
+         w0YN2CBl3cca6eg1hD02jt10VawD/dW5098KAfEfGd+LDfZFVZMP6qohSXNbuVaoql23
+         KzVtJkc9U1SicHOpypwNP40nOmGgKwUm4t6ObC7R5vcJ/NtFYR1Ju8vcQ2+O2Gbd6uJU
+         VgyrlJZGze9jlfZDaK6Zi4CMrmi+fQICy0nncCig30nAfZbQUoIYbcqXdIyDpM6KZkpt
+         jpGk7erua/++tvxtoARb7KyWpf5wHXWFS1EmhjJOQ1Ohc4A56a3+yUwtDYfZ+7Ruy6JZ
+         PE5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717068005; x=1717672805;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=z8dJKE69s5+86iqiKT1v7IFgnofzj53z+mkIUUuty68=;
-        b=lsrqofdHIKt22Nz5QRnUB5nIpqzrorSZZ4QKRoNz6WKjtDz9DIzZuTJDXiP/QmWk+x
-         Hk2bjmwcx0Qjy+1kUo4tVmy2HEGD+7z4KJIDF+1fTuG+RusoHiv+s2x9KoM2v2WAOCmE
-         2jUoeLUddJ4wYjWxZAc+bkE2dos2EzeU4+qlYUqK/OF3cLHK1sX58nx9XSiEUJ8n7czl
-         FVVft/SfqQkTSp1a4xWyRU54pZmI3miGdrRczxelQV9RFHy+kgYyNVO5iVpPGNR3c4Qz
-         4iYzu87D3LrrQa/LKf8iiqPnO4bMCkhqdaGYTTFaRiyaVbo+Dz8By3g3G284T/ej4X3L
-         w62w==
-X-Forwarded-Encrypted: i=1; AJvYcCV8SJpBeZFlXga0MXVl6hJl4GACtEE/saLDKMwLdr7TPBOC+vk0Lazo/QcYGenYmGtoQojs9Nql6NV52jNmJCHD7X7LG2ZLBQoxmWqwFg==
-X-Gm-Message-State: AOJu0YxVFidzPTvNFY5DvCNrBPe2+Sx2QyrV53U24JlXdDf6n0y9xo7K
-	haZ1HwEBwEqM9AQ1Lv40Su0fO+x7+uqd6BrYU4+o9gtufBxXPR70
-X-Google-Smtp-Source: AGHT+IHnnxtV+JRyOSR711uh0rY3WubRdOsfI4Q80RTI+mV/CYp9f7gUkptu0Yhyjwe8jY0JUuOaAA==
-X-Received: by 2002:a17:903:22cb:b0:1f3:50e7:36db with SMTP id d9443c01a7336-1f6199310f7mr20627105ad.48.1717068004916;
-        Thu, 30 May 2024 04:20:04 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1717068010; x=1717672810;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=UKDbsptHUOf10z9ycdwLPkvcPnlZIVKylvaMWlEqffg=;
+        b=gh1xfQL7peoCreqi3BPNpahRzxANx3PHKQxspkwUlnnsuILJpAZALpsgljerjkci7w
+         sfdOJPIVfHZYfhWHpUjsFuVIp2uPQY+fo+7HIPjop23sVIW71xy2SMrQmle3ZAuFVL/R
+         D+rdNzF8Uhq9W9lKakRe8JsUEdRfR9Dw+WjjwCtMgc6Aololea1XaWVefpIzeuhRsvG6
+         sV8hrkkomOteE0XaaJIU9R6pZ7RqliToI9XGQ/zSy/hSVo0S2QTdqDlu0jvWVJFRDnSv
+         JYvjGN6DearklA8b7WQPkfZHNK3kNjBYFrR7LZJKYBDgD3FVx1ZGFX7Z1DHO+FsPw/qC
+         lpig==
+X-Forwarded-Encrypted: i=1; AJvYcCX1j7+5dg1Aj7O/CpF0dkRpMy8woU9rI0U+plGRs1aB2nFbUQm6JtmmyZtaW2Qlr9VKbX17C1FhBYg5kJQJW1SkikdNgxS9DXLSzAHhZw==
+X-Gm-Message-State: AOJu0Yx0fB4HNIu5cahR1n1/3DIkisGwhSYT+rlrczFNNpsTj6yidldw
+	9p2Oe19UqS5NMiS/QfPYNvc+rNYFLQfNoPOTIm/DlbfdcGuNHI9X
+X-Google-Smtp-Source: AGHT+IG8jDyJ8as1gn+77mY1eHAg+/C0hnh88tNUqGm5hMTpX2IBrtY6RK5OpQr2kS5B3uzx1FXS4g==
+X-Received: by 2002:a17:90a:b005:b0:2bd:f3dc:62d0 with SMTP id 98e67ed59e1d1-2c1abc41427mr1745172a91.37.1717068010054;
+        Thu, 30 May 2024 04:20:10 -0700 (PDT)
 Received: from localhost ([212.107.28.52])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-1f44c754d20sm116341765ad.32.2024.05.30.04.20.03
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2c1a777a976sm1534201a91.20.2024.05.30.04.20.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 May 2024 04:20:04 -0700 (PDT)
+        Thu, 30 May 2024 04:20:09 -0700 (PDT)
 From: Celeste Liu <coelacanthushex@gmail.com>
 X-Google-Original-From: Celeste Liu <CoelacanthusHex@gmail.com>
 To: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>,
@@ -98,12 +99,14 @@ To: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>,
 	linux-mips@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-sh@vger.kernel.org
-Subject: [PATCH 0/6] defconfig: drop RT_GROUP_SCHED=y
-Date: Thu, 30 May 2024 19:19:48 +0800
-Message-ID: <20240530111947.549474-8-CoelacanthusHex@gmail.com>
+Subject: [PATCH 2/6] loongarch: defconfig: drop RT_GROUP_SCHED=y
+Date: Thu, 30 May 2024 19:19:50 +0800
+Message-ID: <20240530111947.549474-10-CoelacanthusHex@gmail.com>
 X-Mailer: git-send-email 2.45.1
+In-Reply-To: <20240530111947.549474-8-CoelacanthusHex@gmail.com>
+References: <20240530111947.549474-8-CoelacanthusHex@gmail.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2134; i=CoelacanthusHex@gmail.com; h=from:subject; bh=YDOl/Eq4EU32U8REOXA1aLCIyDHNFvkWJvOdwbcP7JA=; b=owJ4nJvAy8zAJfY4pvNJRPo6U8bTakkMaREJlycx/Wu4/Y1tQ+K7zVu27px3o+2Lk2ztb/Ozp zgqUpTP2XztKGVhEONikBVTZBHb+fT1stJHH5bxmsyAmcPKBDKEgYtTACbycj7DP527VsIyk9XS 03fzz7u7fEfWj2MbLsg93Phzuu9s68m3tf0Y/jtvNfKVfy57aprVB27vy3ZWNnJqNsYHao9/4hZ SOJ4dzggA3yZObA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1629; i=CoelacanthusHex@gmail.com; h=from:subject; bh=h4glHeoHIj1lCrO/9cfcaGCSQbc7rI3O4B300cL/OlA=; b=owJ4nJvAy8zAJfY4pvNJRPo6U8bTakkMaREJ1/n69Xxaeu7NP36NP963pkB213cGx83nk+e+3 76w6tID+4kdpSwMYlwMsmKKLGI7n75eVvrowzJekxkwc1iZQIYwcHEKwESKNRn+WU/3fra1weNu krm/TiCjVtvfa8brLyYvXBxW9+bE9hjTBwx/hWUiri0SdmdLcHzGfvl11UovoVVOsWVy29fF/F/ 2874CBwCfBE2n
 X-Developer-Key: i=CoelacanthusHex@gmail.com; a=openpgp; fpr=892EBC7DC392DFF9C9C03F1D15F4180E73787863
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Fri, 31 May 2024 08:19:55 +1000
@@ -137,34 +140,26 @@ lose the benefits of cgroup v2 if all RT process were placed in the same cgroup.
 Red Hat, Gentoo, Arch Linux and Debian all disable it. systemd also doesn't
 support it.[2]
 
-I leave tools/testing/selftests/bpf/config.{s390x,aarch64} untouched because
-I don't whether bpf testing requires it.
-
 [1]: https://bugzilla.redhat.com/show_bug.cgi?id=1229700
 [2]: https://github.com/systemd/systemd/issues/13781#issuecomment-549164383
 
-
-Celeste Liu (6):
-  riscv: defconfig: drop RT_GROUP_SCHED=y
-  loongarch: defconfig: drop RT_GROUP_SCHED=y
-  mips: defconfig: drop RT_GROUP_SCHED=y from generic/db1xxx/eyeq5
-  powerpc: defconfig: drop RT_GROUP_SCHED=y from ppc6xx_defconfig
-  sh: defconfig: drop RT_GROUP_SCHED=y from sdk7786/urquell
-  arm: defconfig: drop RT_GROUP_SCHED=y from bcm2855/tegra/omap2plus
-
- arch/arm/configs/bcm2835_defconfig         | 1 -
- arch/arm/configs/omap2plus_defconfig       | 1 -
- arch/arm/configs/tegra_defconfig           | 1 -
+Signed-off-by: Celeste Liu <CoelacanthusHex@gmail.com>
+---
  arch/loongarch/configs/loongson3_defconfig | 1 -
- arch/mips/configs/db1xxx_defconfig         | 1 -
- arch/mips/configs/eyeq5_defconfig          | 1 -
- arch/mips/configs/generic_defconfig        | 1 -
- arch/powerpc/configs/ppc6xx_defconfig      | 1 -
- arch/riscv/configs/defconfig               | 1 -
- arch/sh/configs/sdk7786_defconfig          | 1 -
- arch/sh/configs/urquell_defconfig          | 1 -
- 11 files changed, 11 deletions(-)
+ 1 file changed, 1 deletion(-)
 
+diff --git a/arch/loongarch/configs/loongson3_defconfig b/arch/loongarch/configs/loongson3_defconfig
+index b4252c357c8e..4d93adb3f1a2 100644
+--- a/arch/loongarch/configs/loongson3_defconfig
++++ b/arch/loongarch/configs/loongson3_defconfig
+@@ -23,7 +23,6 @@ CONFIG_NUMA_BALANCING=y
+ CONFIG_MEMCG=y
+ CONFIG_BLK_CGROUP=y
+ CONFIG_CFS_BANDWIDTH=y
+-CONFIG_RT_GROUP_SCHED=y
+ CONFIG_CGROUP_PIDS=y
+ CONFIG_CGROUP_RDMA=y
+ CONFIG_CGROUP_FREEZER=y
 -- 
 2.45.1
 
