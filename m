@@ -2,70 +2,57 @@ Return-Path: <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FD10C25B75
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 03:36:58 +0000 (UTC)
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F268EC25B74
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 06:26:12 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=o6YZhAS/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=leemhuis.info header.i=@leemhuis.info header.a=rsa-sha256 header.s=he214686 header.b=MRRzk7j2;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VqWt034d4z7BNk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 13:28:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VqbqR0518z3cYm
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 16:26:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=leemhuis.info
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=o6YZhAS/;
+	dkim=pass (2048-bit key; unprotected) header.d=leemhuis.info header.i=@leemhuis.info header.a=rsa-sha256 header.s=he214686 header.b=MRRzk7j2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::829; helo=mail-qt1-x829.google.com; envelope-from=jthoughton@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com [IPv6:2607:f8b0:4864:20::829])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=leemhuis.info (client-ip=80.237.130.52; helo=wp530.webpack.hosteurope.de; envelope-from=regressions@leemhuis.info; receiver=lists.ozlabs.org)
+Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqWs70v4nz79LP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 13:27:21 +1000 (AEST)
-Received: by mail-qt1-x829.google.com with SMTP id d75a77b69052e-43e14f0bd75so110761cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 May 2024 20:27:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1717039638; x=1717644438; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kzO8DZyZzCqrZIAMGt7yPpLcZJsj3wUliJt03pVmX2A=;
-        b=o6YZhAS/MIGpdPsP7uMYq63blbmfW3iociRZFqWv17i/V2mMIb8OuToTeYjku7u+1o
-         wGxF+csIT3CbTcHT/98WvaxkAivrUUCDqBceszYXPZybsIOhnzgHjjDHW1xoGe5Mz7if
-         Z4x8DApvKcU5KuZ3HK7sQiLuM+sNv1VZafrE0nfy0Sg4YxriiRp6fwgSv4nxxs8pmv2P
-         itw9CA0nuqRzAJ/R1riIg5sXReiGP/yfs6UoxlzW/8JVfKucP4o6Xm9VPElhlXTub3mD
-         WkRZdj7FwKxpPkOOwdoi5WIMUOpcttR+XfkrXUkoUPFuBIBuY5ICcf2XKwkc7CQFjR19
-         J2qQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717039638; x=1717644438;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=kzO8DZyZzCqrZIAMGt7yPpLcZJsj3wUliJt03pVmX2A=;
-        b=rZgsPui+5xrvyt8jLyowdw5emW9Sm2LXwy2I3OeDU/xOM40LLCe7IbZ3xcwMua0ATV
-         1BYoK3i5lLqtSi7LA55PJDBVujo25FUgZJ0Wef38sAaIyrLEEYl7hlyp3DNwWDFfoG6a
-         R8jcewptqcHwmyPoEMggxt8hGZRc/gDRcs11tsRQePmTw4sx40WgbxHwXqzXiynbEDKZ
-         hAyqpqWFCEel5wEgJ8eI6de2fh13f8dA8TQj5pCymbAUvsPHtJukSDVsCRX2xJ6imxjw
-         pLHm0OuEQnvpBIwI4sS/4qg8cLD7vwPsS3jU0sB0BsMPrbTSeiwixR+ok/pioaB43Fdz
-         msgQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWExE5lmMC+LVHfs8Jmz5tpE3WAijtZFpl9hfmXkbWGfMU8Sx4BMcDDW0rJB9nv5NTXHDHHZAdrvRwybdS3/2AkvZ9DyNJrD0MSuYNFyw==
-X-Gm-Message-State: AOJu0YwTdVewKCTifF5FbIlNW7wTodFNbJVeTQUKYXnWQsHHOE6B3DBL
-	96okWUQb1XwsGhsiC/jH7quZ03F+r5/l+d280zD+9P/x1+GmYOZ05+RehicgVCCQp3KJPy5312+
-	AvRliT4tkIukp7/KGuqXtSk+KKG5ES9nfmxQ4
-X-Google-Smtp-Source: AGHT+IFVU+i/PACo9p4/Bfxh1CqiMIWSQeR950pdjWP8hj1BhsXnC5rRHtunLNirP/Gyt4FL6G7AiU0HcN3VuQYeCls=
-X-Received: by 2002:a05:622a:a313:b0:43f:ebce:be50 with SMTP id
- d75a77b69052e-43febcebe65mr835941cf.16.1717039638165; Wed, 29 May 2024
- 20:27:18 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VqbpZ021pz3cWd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 May 2024 16:25:24 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=leemhuis.info; s=he214686; h=Content-Transfer-Encoding:Content-Type:
+	In-Reply-To:References:Reply-To:Cc:To:From:Subject:MIME-Version:Date:
+	Message-ID:From:Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:
+	Content-Type:Content-Transfer-Encoding:Content-ID:Content-Description:
+	In-Reply-To:References; bh=yQt4cMQXQ51kt8CWUHvAJmRopwcLuvZdstpsxz59W6I=;
+	t=1717050326; x=1717482326; b=MRRzk7j2TlSeJVLCsh4reSjM1RNcn9KJ4A2+s1vc+z0leL5
+	xbi8e9dSaEal1mUeom9To0e+hQbQLPCDLenH4N/Tsen+LZ/iJEEqwntbZbvS9ZCn9OqsaCqpqKSbz
+	kDl8diPfIfT4IEi2O0TBbFvBK+RRxaMIUBK3Cl/vQlFaRg2RhSd6kK/3k2wtAOXLWk9n2Gs6D2+3s
+	FLpCNoZU+rcnvdGSizx87noRAQ2vHT3ep3nc0L9BVgEAeTY+gsbeHGJ2PkPRJHC++2rs7RHkGidlw
+	tE1iHoeUKfcP9Z1ysdfp4u28yzx2MLWci4VmpPCRKm4KGguTqP/khPglfiwuHW8g==;
+Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
+	by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
+	id 1sCZDs-00064g-Tr; Thu, 30 May 2024 08:25:12 +0200
+Message-ID: <f96bd990-20d4-4c41-99f4-401b3ab46652@leemhuis.info>
+Date: Thu, 30 May 2024 08:25:12 +0200
 MIME-Version: 1.0
-References: <20240529180510.2295118-1-jthoughton@google.com>
- <20240529180510.2295118-4-jthoughton@google.com> <ZlejXCYIuJ7_DlwL@google.com>
-In-Reply-To: <ZlejXCYIuJ7_DlwL@google.com>
-From: James Houghton <jthoughton@google.com>
-Date: Wed, 29 May 2024 20:26:41 -0700
-Message-ID: <CADrL8HUa9o+G6-Yn9oWt2LUgoVYGU=sYE2-JhkpoRgrS6Wi57g@mail.gmail.com>
-Subject: Re: [PATCH v4 3/7] KVM: Add lockless memslot walk to KVM
-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 04/23] scsi: initialize scsi midlayer limits before
+ allocating the queue
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+To: Michael Ellerman <mpe@ellerman.id.au>, Christoph Hellwig <hch@lst.de>
+References: <20240520151536.GA32532@lst.de>
+ <fc6a2243-6982-45e9-a640-9d98c29a8f53@leemhuis.info>
+Content-Language: en-US, de-DE
+In-Reply-To: <fc6a2243-6982-45e9-a640-9d98c29a8f53@leemhuis.info>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1717050326;10ba9e81;
+X-HE-SMSGID: 1sCZDs-00064g-Tr
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,87 +64,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Yu Zhao <yuzhao@google.com>, Jonathan Corbet <corbet@lwn.net>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, David Matlack <dmatlack@google.com>, Palmer Dabbelt <palmer@dabbelt.com
- >, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, Ankit Agrawal <ankita@nvidia.com>, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
+Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
+Cc: Jens Axboe <axboe@kernel.dk>, linux-scsi@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, John Garry <john.g.garry@oracle.com>, linux-block@vger.kernel.org, Niklas Cassel <cassel@kernel.org>, Damien Le Moal <dlemoal@kernel.org>, linux-ide@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>, Linux kernel regressions list <regressions@lists.linux.dev>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 29, 2024 at 2:51=E2=80=AFPM Sean Christopherson <seanjc@google.=
-com> wrote:
->
-> On Wed, May 29, 2024, James Houghton wrote:
-> > @@ -686,10 +694,12 @@ static __always_inline int kvm_handle_hva_range(s=
-truct mmu_notifier *mn,
-> >       return __kvm_handle_hva_range(kvm, &range).ret;
-> >  }
-> >
-> > -static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_no=
-tifier *mn,
-> > -                                                      unsigned long st=
-art,
-> > -                                                      unsigned long en=
-d,
-> > -                                                      gfn_handler_t ha=
-ndler)
-> > +static __always_inline int kvm_handle_hva_range_no_flush(
-> > +             struct mmu_notifier *mn,
-> > +             unsigned long start,
-> > +             unsigned long end,
-> > +             gfn_handler_t handler,
-> > +             bool lockless)
->
-> Unnecessary and unwanted style change.
+On 29.05.24 16:36, Linux regression tracking (Thorsten Leemhuis) wrote:
+> [CCing the regression list, as it should be in the loop for regressions:
+> https://docs.kernel.org/admin-guide/reporting-regressions.html]
+> 
+> On 20.05.24 17:15, Christoph Hellwig wrote:
+>> Adding ben and the linuxppc list.
+> 
+> Hmm, no reply and no other progress to get this resolved afaics. So lets
+> bring Michael into the mix, he might be able to help out.
+> 
+> BTW TWIMC: a PowerMac G5 user user reported similar symptoms here
+> recently: https://bugzilla.kernel.org/show_bug.cgi?id=218858
 
-Sorry -- this will be fixed.
+And yet another report with similar symptoms, this time with a
+"PowerMac7,2 PPC970 0x390202 PowerMac":
+https://bugzilla.kernel.org/show_bug.cgi?id=218905
 
->
-> >  {
-> >       struct kvm *kvm =3D mmu_notifier_to_kvm(mn);
-> >       const struct kvm_mmu_notifier_range range =3D {
-> > @@ -699,6 +709,7 @@ static __always_inline int kvm_handle_hva_range_no_=
-flush(struct mmu_notifier *mn
-> >               .on_lock        =3D (void *)kvm_null_fn,
-> >               .flush_on_ret   =3D false,
-> >               .may_block      =3D false,
-> > +             .lockless       =3D lockless,
->
-> Why add @lockess to kvm_handle_hva_range_no_flush()?  Both callers immedi=
-ately
-> pass %false, and conceptually, locking is always optional for a "no flush=
-" variant.
+Ciao, Thorsten
 
-Right, this isn't needed in this patch. But I think I need it
-eventually (like, in the next patch), so I'll move it where it is
-really needed.
-
-
-
->
-> >       };
-> >
-> >       return __kvm_handle_hva_range(kvm, &range).ret;
-> > @@ -889,7 +900,8 @@ static int kvm_mmu_notifier_clear_young(struct mmu_=
-notifier *mn,
-> >        * cadence. If we find this inaccurate, we might come up with a
-> >        * more sophisticated heuristic later.
-> >        */
-> > -     return kvm_handle_hva_range_no_flush(mn, start, end, kvm_age_gfn)=
-;
-> > +     return kvm_handle_hva_range_no_flush(mn, start, end,
-> > +                                          kvm_age_gfn, false);
-> >  }
-> >
-> >  static int kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
-> > @@ -899,7 +911,7 @@ static int kvm_mmu_notifier_test_young(struct mmu_n=
-otifier *mn,
-> >       trace_kvm_test_age_hva(address);
-> >
-> >       return kvm_handle_hva_range_no_flush(mn, address, address + 1,
-> > -                                          kvm_test_age_gfn);
-> > +                                          kvm_test_age_gfn, false);
-> >  }
-> >
-> >  static void kvm_mmu_notifier_release(struct mmu_notifier *mn,
-> > --
-> > 2.45.1.288.g0e0cd299f1-goog
-> >
+>> Context: pata_macio initialization now fails as we enforce that the
+>> segment size is set properly.
+>>
+>> On Wed, May 15, 2024 at 04:52:29PM -0700, Guenter Roeck wrote:
+>>> pata_macio_common_init() Calling ata_host_activate() with limit 65280
+>>> ...
+>>> max_segment_size is 65280; PAGE_SIZE is 65536; BLK_MAX_SEGMENT_SIZE is 65536
+>>> WARNING: CPU: 0 PID: 12 at block/blk-settings.c:202 blk_validate_limits+0x2d4/0x364
+>>> ...
+>>>
+>>> This is with PPC_BOOK3S_64 which selects a default page size of 64k.
+>>
+>> Yeah.  Did you actually manage to use pata macio previously?  Or is
+>> it just used because it's part of the pmac default config?
+>>
+>>> Looking at the old code, I think it did what you suggested above,
+>>
+>>> but assuming that the driver requested a lower limit on purpose that
+>>> may not be the best solution.
+>>
+>>> Never mind, though - I updated my test configuration to explicitly
+>>> configure the page size to 4k to work around the problem. With that,
+>>> please consider this report a note in case someone hits the problem
+>>> on a real system (and sorry for the noise).
+>>
+>> Yes, the idea behind this change was to catch such errors.  So far
+>> most errors have been drivers setting lower limits than what the
+>> hardware can actually handle, but I'd love to track this down.
+>>
+>> If the hardware can't actually handle the lower limit we should
+>> probably just fail the probe gracefully with a well comment if
+>> statement instead.
