@@ -4,72 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBE07C25B75
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 20:32:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 171EEC25B75
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 21:11:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=c+fYHPRq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hO0+5HwC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VrZYw3F4Rz3flt
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 06:32:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VrbQn1t9Jz3fpn
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 07:11:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=c+fYHPRq;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hO0+5HwC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=yuzhao@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrZY45H1jz3dKd
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 06:32:07 +1000 (AEST)
-Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-41fef5dda72so4005e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2024 13:32:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1717187516; x=1717792316; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=InPM3IgrwlWAIe+nSHKsuhmVDndDnlj7rMcdOWuFi5w=;
-        b=c+fYHPRqq48j/YYH4h0kbuTIygm5/HAraAGSjvs7WkfzHX7ThrT/pn0VuoqQ4rnf0n
-         9fF5/izHXv9wacTuEiHw6Ypeiz6BsTnkpk05zu6++8MBIrdddAVvkit68TNlwjXaUHvT
-         iHHCWXXRxU583s+ZSLDcAObyPu0XvYVzntDSeD5P7UUfeLRY6IPuH5uSIrsYERY45rPt
-         rWpanl4x8zmuvGP5DjnDhuJs7j1CjeTt04+p4Wwp1nLFDF38RveIlC+97M18MffiwvAR
-         VVKsn4xZITZmf9cn1N9knUpubouH92lluPSRYB4q2JYgClddo7NfVvs3CQxl5OQ9POmq
-         O4Hw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717187516; x=1717792316;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=InPM3IgrwlWAIe+nSHKsuhmVDndDnlj7rMcdOWuFi5w=;
-        b=GBzz7gh3+TXYwWV7bcbRnrcPeUbDrT5DICDWM/jvMrDqki6TSvpef4drhnXn3nMhuQ
-         FMY3aMZ8xqX+4p1RcV12EFsT5LiHG2MMsRnXNQHueMi6VGUVrbsn81YD0JW0tUN79e9E
-         i/T0X173GQxgqRZAbvbOx6oXuYXyDR6LR6fWA+iwtjDKnOG2Qrah27GXuI31h2GJuwQH
-         puTcrXi0Nx4bw1u2SLRDzjPO5inCofTxPMuQ1iH1W9sQVzMG8llFYoUbyRnMT2puXD+6
-         x2yPZhIdGZxULfO/R8leKrEUFKyaA0OyEyn/F74sWnm6qsgJS+PNIK5dXPJROkCv4egS
-         FMxQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVgD3JCVtSDZu2KmM/LVtD2KnQvfiE1X9YptBm8dzGxx9q/roF2tsU74f3eQG+YNCil/BDTD9O2nBdbEw+fv98fcBfsX9s2Go0ieXSRNQ==
-X-Gm-Message-State: AOJu0YwE98Z/CDyZE0160WkRD1CUObDFe3C7Apm+hxozmjhVmPaas/4Z
-	CPYf3TBI8HhqpDEx68C9xLM8IXcz2lFza0EUd12/yy0PAQk25ixd/oA1piiGd/V71LxFWFVPmOV
-	o/PG1r6qGWcxMRlpoIkkSTZQzvSo7JhJtbG22
-X-Google-Smtp-Source: AGHT+IECr7zScct/L9KDZG2FMT9+ZV9pueXumB1G4qrj8mkBEYnZr/Z/kM44zsq5c/gUQqURoi9spkN6RMIRJ4Ct+FE=
-X-Received: by 2002:a05:600c:299:b0:418:97c6:188d with SMTP id
- 5b1f17b1804b1-421358ce41bmr41075e9.7.1717187515962; Fri, 31 May 2024 13:31:55
- -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrbPF70BZz3dXK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 07:10:25 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44VKjlQs003440;
+	Fri, 31 May 2024 21:10:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc :
+ content-transfer-encoding : content-type : date : from : in-reply-to :
+ message-id : mime-version : references : subject : to; s=pp1;
+ bh=rA8cLUV+37eItOYNc5h1LCYPwTbIyEdRLeqhTlQuMEs=;
+ b=hO0+5HwC7D139vrOI1ZibjPY1kt2/Tqj0mRtxNt1v5MS4ojs4hQ1Sh4KfQYn1CW21voF
+ VdgkrLDShVQj+K6KL2ULpme4OR3m7dYKGmK5yk4XfsCnTK+JNetD4HglxBLVOWG9yQYe
+ YUCeU71n26KLYuUm2YeOSNQRn6znQubjE/twiiigw1GCIw2ImozuY8/j02r8dur3XNLM
+ 17o5xs3dFtZtYC5YjzaxxScDlWVyyHDU/B5COBMWPLikhFTNM+JzVMEua8wfIW89oOEJ
+ zgOcItZH+z4vFZHdj/+UOLAu4F0EpuzBAIuCwKi9n68ARJ+YC56cWqUZ3FFXzhRzXyZM bQ== 
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yfnd103a8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 May 2024 21:10:10 +0000
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44VJZ1uq002437;
+	Fri, 31 May 2024 21:10:09 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3ydpb123f6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 May 2024 21:10:09 +0000
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44VLA68811797172
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 31 May 2024 21:10:08 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ADAE658071;
+	Fri, 31 May 2024 21:10:06 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B11E958076;
+	Fri, 31 May 2024 21:10:05 +0000 (GMT)
+Received: from [9.67.180.145] (unknown [9.67.180.145])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 31 May 2024 21:10:05 +0000 (GMT)
+Message-ID: <cc3c8213-cf64-4eb5-9508-8d80b1ce6333@linux.ibm.com>
+Date: Fri, 31 May 2024 16:10:05 -0500
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/3] crypto: X25519 supports for ppc64le
+To: Herbert Xu <herbert@gondor.apana.org.au>
+References: <20240516151957.2215-1-dtsen@linux.ibm.com>
+ <Zlmkgisql2NxPcXi@gondor.apana.org.au>
+Content-Language: en-US
+From: Danny Tsen <dtsen@linux.ibm.com>
+In-Reply-To: <Zlmkgisql2NxPcXi@gondor.apana.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 0-CDeAQI6eP4-dv1vUzumlx09OVAU8yg
+X-Proofpoint-ORIG-GUID: 0-CDeAQI6eP4-dv1vUzumlx09OVAU8yg
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-References: <20240529180510.2295118-1-jthoughton@google.com>
- <20240529180510.2295118-3-jthoughton@google.com> <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
- <Zll7IuGYGG5uI20W@linux.dev>
-In-Reply-To: <Zll7IuGYGG5uI20W@linux.dev>
-From: Yu Zhao <yuzhao@google.com>
-Date: Fri, 31 May 2024 14:31:17 -0600
-Message-ID: <CAOUHufa50Dy8CJ5+D10Khs4NU-3Pv0B8qi-GYkcppctTVUkPcA@mail.gmail.com>
-Subject: Re: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs participate
- in aging
-To: Oliver Upton <oliver.upton@linux.dev>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.12.28.16
+ definitions=2024-05-31_14,2024-05-30_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 adultscore=0
+ lowpriorityscore=0 mlxscore=0 priorityscore=1501 phishscore=0 spamscore=0
+ impostorscore=0 suspectscore=0 malwarescore=0 clxscore=1015
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2405010000 definitions=main-2405310161
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,70 +94,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: James Houghton <jthoughton@google.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, David Matlack <dmatlack@google.com>, Palmer Dabbelt <palmer@
- dabbelt.com>, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, Sean Christopherson <seanjc@google.com>, Ankit Agrawal <ankita@nvidia.com>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
+Cc: dtsen@us.ibm.com, nayna@linux.ibm.com, linux-kernel@vger.kernel.org, appro@cryptogams.org, linux-crypto@vger.kernel.org, ltcgcw@linux.vnet.ibm.com, leitao@debian.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 31, 2024 at 1:24=E2=80=AFAM Oliver Upton <oliver.upton@linux.de=
-v> wrote:
->
-> On Wed, May 29, 2024 at 03:03:21PM -0600, Yu Zhao wrote:
-> > On Wed, May 29, 2024 at 12:05=E2=80=AFPM James Houghton <jthoughton@goo=
-gle.com> wrote:
-> > >
-> > > Secondary MMUs are currently consulted for access/age information at
-> > > eviction time, but before then, we don't get accurate age information=
-.
-> > > That is, pages that are mostly accessed through a secondary MMU (like
-> > > guest memory, used by KVM) will always just proceed down to the oldes=
-t
-> > > generation, and then at eviction time, if KVM reports the page to be
-> > > young, the page will be activated/promoted back to the youngest
-> > > generation.
-> >
-> > Correct, and as I explained offline, this is the only reasonable
-> > behavior if we can't locklessly walk secondary MMUs.
-> >
-> > Just for the record, the (crude) analogy I used was:
-> > Imagine a large room with many bills ($1, $5, $10, ...) on the floor,
-> > but you are only allowed to pick up 10 of them (and put them in your
-> > pocket). A smart move would be to survey the room *first and then*
-> > pick up the largest ones. But if you are carrying a 500 lbs backpack,
-> > you would just want to pick up whichever that's in front of you rather
-> > than walk the entire room.
-> >
-> > MGLRU should only scan (or lookaround) secondary MMUs if it can be
-> > done lockless. Otherwise, it should just fall back to the existing
-> > approach, which existed in previous versions but is removed in this
-> > version.
->
-> Grabbing the MMU lock for write to scan sucks, no argument there. But
-> can you please be specific about the impact of read lock v. RCU in the
-> case of arm64? I had asked about this before and you never replied.
->
-> My concern remains that adding support for software table walkers
-> outside of the MMU lock entirely requires more work than just deferring
-> the deallocation to an RCU callback. Walkers that previously assumed
-> 'exclusive' access while holding the MMU lock for write must now cope
-> with volatile PTEs.
->
-> Yes, this problem already exists when hardware sets the AF, but the
-> lock-free walker implementation needs to be generic so it can be applied
-> for other PTE bits.
+Thanks Herbert.
 
-Direct reclaim is multi-threaded and each reclaimer can take the mmu
-lock for read (testing the A-bit) or write (unmapping before paging
-out) on arm64. The fundamental problem of using the readers-writer
-lock in this case is priority inversion: the readers have lower
-priority than the writers, so ideally, we don't want the readers to
-block the writers at all.
 
-Using my previous (crude) analogy: puting the bill right in front of
-you (the writers) profits immediately whereas searching for the
-largest bill (the readers) can be futile.
-
-As I said earlier, I prefer we drop the arm64 support for now, but I
-will not object to taking the mmu lock for read when clearing the
-A-bit, as long as we fully understand the problem here and document it
-clearly.
+On 5/31/24 5:20 AM, Herbert Xu wrote:
+> On Thu, May 16, 2024 at 11:19:54AM -0400, Danny Tsen wrote:
+>> This patch series provide X25519 support for ppc64le with a new module
+>> curve25519-ppc64le.
+>>
+>> The implementation is based on CRYPTOGAMs perl output from x25519-ppc64.pl.
+>> (see https://github.com/dot-asm/cryptogams/)
+>> Modified and added 4 supporting functions.
+>>
+>> This patch has passed the selftest by running modprobe
+>> curve25519-ppc64le.
+>>
+>> Danny Tsen (3):
+>>    X25519 low-level primitives for ppc64le.
+>>    X25519 core functions for ppc64le
+>>    Update Kconfig and Makefile for ppc64le x25519.
+>>
+>>   arch/powerpc/crypto/Kconfig                   |  11 +
+>>   arch/powerpc/crypto/Makefile                  |   2 +
+>>   arch/powerpc/crypto/curve25519-ppc64le-core.c | 299 ++++++++
+>>   arch/powerpc/crypto/curve25519-ppc64le_asm.S  | 671 ++++++++++++++++++
+>>   4 files changed, 983 insertions(+)
+>>   create mode 100644 arch/powerpc/crypto/curve25519-ppc64le-core.c
+>>   create mode 100644 arch/powerpc/crypto/curve25519-ppc64le_asm.S
+>>
+>> -- 
+>> 2.31.1
+> All applied.  Thanks.
