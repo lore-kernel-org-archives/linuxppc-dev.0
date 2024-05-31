@@ -4,56 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8946AC41513
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 17:21:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04C5BC25B75
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 19:12:59 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=c+stuysy;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VrVK54RxPz3fwK
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 03:21:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.51; helo=mail-lf1-f51.google.com; envelope-from=breno.debian@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-f51.google.com (mail-lf1-f51.google.com [209.85.167.51])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VrXnj5CL4z3dXK
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 05:12:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=c+stuysy;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.180; helo=out-180.mta0.migadu.com; envelope-from=oliver.upton@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-180.mta0.migadu.com (out-180.mta0.migadu.com [91.218.175.180])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrVJd5VJMz3frv
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 03:21:04 +1000 (AEST)
-Received: by mail-lf1-f51.google.com with SMTP id 2adb3069b0e04-52b8bb0c059so938852e87.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2024 10:21:04 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717176061; x=1717780861;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UcZffNit3Q48QxaxBeTWm9BAi+VW/T91AWLE1RFtijg=;
-        b=ZqpHJi9kEfPcdo2uTqWqkzVfzQxZj8uSMctosb5AcJUgmpC0ETWP63rzL94/EK9XCD
-         muRoiNHQgaHX0K7hIQ5pbtazKjKzuqhy+10x37Yjj1FS+yVWxC90E/VGZQSb1aEtNasj
-         On/BMK3o3V34n2VFr8IRCfm2aDEfnMM+jbKdNXdmFc4DfT9UAPoSabEGLO3hnWuKxDSC
-         6PRAJnC7UrG1EXTLri+JdjHnJiDTo2fkMc121m5bjKv2ulNP2v2ni60WBUZJYwcSKc6u
-         C9q8lWBwwE/CZ1VrLyiB4LXZR7x/Y0X+DZEsmAblHzuaUp6hswrr4WUD4fOnXc8FW/Cj
-         KUAQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWvntuW8m7Q5nSMX5I0FK7myGFTXbFkmK1tcWZLsbQ+7BWOxFth+0DuHIHfhC4YdFHY0xKYhbc4GVhJjm0fN3ixfXMlmrybhJX1vIgUSw==
-X-Gm-Message-State: AOJu0YwSbV3ic0qAK4fiK2fJgQkMtfa7Zjw2fLDNA1/UpmakbvewpO+9
-	PXPrS5OU5mxuGlchYH5Pj4iAk/DbDfsreyLAiCx9hy80h09z7bBg
-X-Google-Smtp-Source: AGHT+IG7Z5BYF385iHI0i33jHgHSCeGKSd6hDjXdu/WI/o3Y5RcAwwxAqoEMRU2Tq6s3pbIzs/V89A==
-X-Received: by 2002:ac2:5b8c:0:b0:52b:3738:f56b with SMTP id 2adb3069b0e04-52b895970ecmr1918800e87.36.1717176060725;
-        Fri, 31 May 2024 10:21:00 -0700 (PDT)
-Received: from gmail.com (fwdproxy-lla-006.fbsv.net. [2a03:2880:30ff:6::face:b00c])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-57a31b990easm1201899a12.6.2024.05.31.10.20.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 31 May 2024 10:21:00 -0700 (PDT)
-Date: Fri, 31 May 2024 10:20:58 -0700
-From: Breno Leitao <leitao@debian.org>
-To: Nathan Lynch <nathanl@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/rtas: Prevent Spectre v1 gadget construction in
- sys_rtas()
-Message-ID: <ZloG+sK1aZ7mSnKj@gmail.com>
-References: <20240530-sys_rtas-nargs-nret-v1-1-129acddd4d89@linux.ibm.com>
- <ZlnUaZiXM3Fuy+0g@gmail.com>
- <87le3q3p6r.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrXmq42Xzz3dH4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 05:12:09 +1000 (AEST)
+X-Envelope-To: jthoughton@google.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1717182706;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=H/R5IQbpE5t+x2dR39LRiJBqiBXfmFPbwxdtpnn5hGs=;
+	b=c+stuysyrYtChztUjj8bfOLa+pidnwFeuWOXm8J8IFP59C7O1SPwkzhQYX7vXUlN1P6bs5
+	FvYG4eEtw8I3Z1F5NDtIKLP4wlgV4ZNL+EPxaYtUlojUk2IX9MNoL7r3xWNfltbQiD1hec
+	SsERK6rU5wdZ1zfN5Rp0Z+kjvAVliNw=
+X-Envelope-To: akpm@linux-foundation.org
+X-Envelope-To: pbonzini@redhat.com
+X-Envelope-To: aou@eecs.berkeley.edu
+X-Envelope-To: ankita@nvidia.com
+X-Envelope-To: anup@brainfault.org
+X-Envelope-To: atishp@atishpatra.org
+X-Envelope-To: axelrasmussen@google.com
+X-Envelope-To: maobibo@loongson.cn
+X-Envelope-To: catalin.marinas@arm.com
+X-Envelope-To: dmatlack@google.com
+X-Envelope-To: rientjes@google.com
+X-Envelope-To: chenhuacai@kernel.org
+X-Envelope-To: james.morse@arm.com
+X-Envelope-To: corbet@lwn.net
+X-Envelope-To: maz@kernel.org
+X-Envelope-To: mpe@ellerman.id.au
+X-Envelope-To: npiggin@gmail.com
+X-Envelope-To: palmer@dabbelt.com
+X-Envelope-To: paul.walmsley@sifive.com
+X-Envelope-To: rananta@google.com
+X-Envelope-To: ryan.roberts@arm.com
+X-Envelope-To: seanjc@google.com
+X-Envelope-To: shahuang@redhat.com
+X-Envelope-To: shuah@kernel.org
+X-Envelope-To: suzuki.poulose@arm.com
+X-Envelope-To: zhaotianrui@loongson.cn
+X-Envelope-To: will@kernel.org
+X-Envelope-To: yuzhao@google.com
+X-Envelope-To: yuzenghui@huawei.com
+X-Envelope-To: kvm-riscv@lists.infradead.org
+X-Envelope-To: kvm@vger.kernel.org
+X-Envelope-To: kvmarm@lists.linux.dev
+X-Envelope-To: linux-arm-kernel@lists.infradead.org
+X-Envelope-To: linux-doc@vger.kernel.org
+X-Envelope-To: linux-kernel@vger.kernel.org
+X-Envelope-To: linux-kselftest@vger.kernel.org
+X-Envelope-To: linux-mips@vger.kernel.org
+X-Envelope-To: linux-mm@kvack.org
+X-Envelope-To: linux-riscv@lists.infradead.org
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+X-Envelope-To: loongarch@lists.linux.dev
+Date: Fri, 31 May 2024 12:11:33 -0700
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Oliver Upton <oliver.upton@linux.dev>
+To: James Houghton <jthoughton@google.com>
+Subject: Re: [PATCH v4 6/7] KVM: arm64: Relax locking for kvm_test_age_gfn
+ and kvm_age_gfn
+Message-ID: <Zlog5Yk_Pjq0jQhC@linux.dev>
+References: <20240529180510.2295118-1-jthoughton@google.com>
+ <20240529180510.2295118-7-jthoughton@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87le3q3p6r.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+In-Reply-To: <20240529180510.2295118-7-jthoughton@google.com>
+X-Migadu-Flow: FLOW_OUT
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,40 +99,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Yu Zhao <yuzhao@google.com>, Jonathan Corbet <corbet@lwn.net>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, David Matlack <dmatlack@google.com>, Palmer Dabbelt <palmer@dabbelt.com
+ >, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, Sean Christopherson <seanjc@google.com>, Ankit Agrawal <ankita@nvidia.com>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Marc Zyngier <maz@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 31, 2024 at 11:45:48AM -0500, Nathan Lynch wrote:
-> Breno Leitao <leitao@debian.org> writes:
-> 
-> > On Thu, May 30, 2024 at 07:44:12PM -0500, Nathan Lynch via B4 Relay wrote:
-> >> From: Nathan Lynch <nathanl@linux.ibm.com>
+On Wed, May 29, 2024 at 06:05:09PM +0000, James Houghton wrote:
 
-> >> +	nargs = array_index_nospec(nargs, ARRAY_SIZE(args.args));
-> >> +	nret = array_index_nospec(nret, ARRAY_SIZE(args.args) - nargs);
-> >
-> > On an unrelated note, can nargs and nret are integers and could be
-> > eventually negative. Is this a valid use case?
-> 
-> No, it's not valid for a caller to provide negative nargs or nret. I
-> convinced myself that this bounds check:
-> 
-> 	nargs = be32_to_cpu(args.nargs);
-> 	nret  = be32_to_cpu(args.nret);
-> 
-> 	if (nargs >= ARRAY_SIZE(args.args)
-> 	    || nret > ARRAY_SIZE(args.args)
-> 	    || nargs + nret > ARRAY_SIZE(args.args))
-> 		return -EINVAL;
-> 
-> rejects negative values of nargs or nret due to C's "usual arithmetic
-> conversions", where nargs and nret are implicitly converted to size_t
-> for the comparisons.
-> 
-> However I don't see any value in keeping them as signed int. I have some
-> changes in progress in this area and I'll plan on making these unsigned.
+[...]
 
-yea, I think it will help to make this code easier to read/review.
+> diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+> index 9e2bbee77491..eabb07c66a07 100644
+> --- a/arch/arm64/kvm/hyp/pgtable.c
+> +++ b/arch/arm64/kvm/hyp/pgtable.c
+> @@ -1319,10 +1319,8 @@ static int stage2_age_walker(const struct kvm_pgtable_visit_ctx *ctx,
+>  	data->young = true;
+>  
+>  	/*
+> -	 * stage2_age_walker() is always called while holding the MMU lock for
+> -	 * write, so this will always succeed. Nonetheless, this deliberately
+> -	 * follows the race detection pattern of the other stage-2 walkers in
+> -	 * case the locking mechanics of the MMU notifiers is ever changed.
+> +	 * This walk may not be exclusive; the PTE is permitted to change
+> +	 * from under us.
+>  	 */
+>  	if (data->mkold && !stage2_try_set_pte(ctx, new))
+>  		return -EAGAIN;
 
-Thanks again for fixing it.
+It is probably worth mentioning that if there was a race to update the
+PTE then the GFN is most likely young, so failing to clear AF probably
+isn't even consequential.
+
+-- 
+Thanks,
+Oliver
