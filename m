@@ -4,74 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF130C25B7E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 16:46:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ADBAC25B75
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 18:42:48 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=yAk5tqzl;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Btrcptra;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VrTXp5w4Lz3fqf
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 02:46:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VrX6t5LXNz3dPs
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 04:42:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=yAk5tqzl;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Btrcptra;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=yuzhao@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::b0; helo=out-176.mta1.migadu.com; envelope-from=oliver.upton@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 41897 seconds by postgrey-1.37 at boromir; Sat, 01 Jun 2024 04:41:59 AEST
+Received: from out-176.mta1.migadu.com (out-176.mta1.migadu.com [IPv6:2001:41d0:203:375::b0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrTX03rmLz3fpy
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 02:45:51 +1000 (AEST)
-Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-420107286ecso2175e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2024 09:45:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1717173944; x=1717778744; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=TH4bnbtSSVEcXN8q4TBBHbQcYVbG9UpE4sBQSCvIGBs=;
-        b=yAk5tqzlL2w4KQHgEt73RxwGF4vkXk0NshyVRygpzaqi3Dvg8pG8yT3FeUWEvIWz66
-         ZnX28XarAWJfLDbGXfkelWfYtaGgxRGPTaSVBY81M+DwywwmDVeuIGvTHfiEuoOzhShq
-         uK+1Ufgo7yq6xFt+ZNUgB8X2Dgy9SHnd7ak3fHp4DuwMIwy7sH1InXqzs4tsqUS+6DpV
-         mz8T3dVz8xTPzvI4D8/5MLpCjeJUE2tFjIAnyYG7B9xnLyqyS20OghCgpj080k4PD5Gp
-         FLxW5aDYoUkjWkNDB1U4Rshh54L1I8DMcIzCpXoE7IcPDnveQyS/QHoTxEAFYmgfOkzt
-         Rs+g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717173944; x=1717778744;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=TH4bnbtSSVEcXN8q4TBBHbQcYVbG9UpE4sBQSCvIGBs=;
-        b=XVaqW3HJzpskoJz8A+s15Ks7hi0zxGQqPUeDmcTCnZeS2MUt4Em6eo1jHKoJxLAhow
-         G8TGvMnISI2HusAa2RUywyWvMCRfZoXN5ile60lftf2ln6isqOkz5ph3Ior1wf6hI8jh
-         MMf2FLISxWEUrVpDwmi1TjoORS/lUJYe04+pzoXWoPFO+OI/wN62HK3HgGfuDmUswFRg
-         ehIxXCrBYqmhlkFWXwjoHHY3ZGf63Tk71mnqlNumFBKW5CZfOgkJuu4HN46ScXJePKAE
-         IjUbdx6PwrT5DndQZw3abzjIcktk7h+TKyRzz2wHqYykxfXzP1vraSuSxQbugsE1NdUB
-         l7fw==
-X-Forwarded-Encrypted: i=1; AJvYcCUEpijfy5vRDOaW6RbB1wFRlOfBC1mHLVwU4acdhnVmPwOp2au29k9RXqlb1/ZrGKl8dhXQG+EsceQsz928FDMY1PgnQlfjKc2NYC/kdg==
-X-Gm-Message-State: AOJu0YxKiIk4pnTmXW9Y668J6WhhISeCJ3AVe0wZ0RnBsI9pH0wfBNFZ
-	KzhMK4WcdBVLRNq/NK7FhQ1PmW6W37P1f8eGld5ppHznfuDoLmanZYBM4K1bg5DeuSRyg1W9nRP
-	8ekFSqaZ2utv9uGoyN2pIs5p+WthPuIdaYVkX
-X-Google-Smtp-Source: AGHT+IEq8Fs3z13ePwWrnbWJUDpx50btCGNNHylLrjkBr8g/csKK0P+GO3+xFEqljtHAVxZhGvPrjS68k6wXeE2cHVA=
-X-Received: by 2002:a05:600c:6546:b0:41f:9dd0:7168 with SMTP id
- 5b1f17b1804b1-4212c091f55mr2200815e9.2.1717173943952; Fri, 31 May 2024
- 09:45:43 -0700 (PDT)
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrX5z28Kbz3dK1
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 04:41:56 +1000 (AEST)
+X-Envelope-To: yuzhao@google.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1717180886;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ZrkvQ09UVgsdWxfCoZpOjcpYyls+3WTdBXC7IWp+Dfo=;
+	b=BtrcptrahIHMY/n9/AZA3DXzcLGC2SGPLvU4nGpmgpexhmeAxDztnyub/a9ACk3LuYD+jI
+	LdluBPvSaCSCX0KVcSV8bu/k0Ua9VEQflTkBfxkmAhE+NkAnYBC/j5woXAspbTVxmRtrc9
+	MlzHXFSR+9wI8QbERC3hyyKRlZW/w/A=
+X-Envelope-To: jthoughton@google.com
+X-Envelope-To: seanjc@google.com
+X-Envelope-To: akpm@linux-foundation.org
+X-Envelope-To: pbonzini@redhat.com
+X-Envelope-To: aou@eecs.berkeley.edu
+X-Envelope-To: ankita@nvidia.com
+X-Envelope-To: anup@brainfault.org
+X-Envelope-To: atishp@atishpatra.org
+X-Envelope-To: axelrasmussen@google.com
+X-Envelope-To: maobibo@loongson.cn
+X-Envelope-To: catalin.marinas@arm.com
+X-Envelope-To: dmatlack@google.com
+X-Envelope-To: rientjes@google.com
+X-Envelope-To: chenhuacai@kernel.org
+X-Envelope-To: james.morse@arm.com
+X-Envelope-To: corbet@lwn.net
+X-Envelope-To: maz@kernel.org
+X-Envelope-To: mpe@ellerman.id.au
+X-Envelope-To: npiggin@gmail.com
+X-Envelope-To: palmer@dabbelt.com
+X-Envelope-To: paul.walmsley@sifive.com
+X-Envelope-To: rananta@google.com
+X-Envelope-To: ryan.roberts@arm.com
+X-Envelope-To: shahuang@redhat.com
+X-Envelope-To: shuah@kernel.org
+X-Envelope-To: suzuki.poulose@arm.com
+X-Envelope-To: zhaotianrui@loongson.cn
+X-Envelope-To: will@kernel.org
+X-Envelope-To: yuzenghui@huawei.com
+X-Envelope-To: kvm-riscv@lists.infradead.org
+X-Envelope-To: kvm@vger.kernel.org
+X-Envelope-To: kvmarm@lists.linux.dev
+X-Envelope-To: linux-arm-kernel@lists.infradead.org
+X-Envelope-To: linux-doc@vger.kernel.org
+X-Envelope-To: linux-kernel@vger.kernel.org
+X-Envelope-To: linux-kselftest@vger.kernel.org
+X-Envelope-To: linux-mips@vger.kernel.org
+X-Envelope-To: linux-mm@kvack.org
+X-Envelope-To: linux-riscv@lists.infradead.org
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+X-Envelope-To: loongarch@lists.linux.dev
+Date: Fri, 31 May 2024 11:41:14 -0700
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Oliver Upton <oliver.upton@linux.dev>
+To: Yu Zhao <yuzhao@google.com>
+Subject: Re: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs
+ participate in aging
+Message-ID: <ZloZysAPL0ePk3bY@linux.dev>
 References: <20240529180510.2295118-1-jthoughton@google.com>
- <20240529180510.2295118-3-jthoughton@google.com> <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
- <ZlelW93_T6P-ZuSZ@google.com> <CAOUHufZdEpY6ra73SMHA33DegKxKaUM=Os7A7aDBFND6NkbUmQ@mail.gmail.com>
- <Zley-u_dOlZ-S-a6@google.com> <CADrL8HXHWg_MkApYQTngzmN21NEGNWC6KzJDw_Lm63JHJkR=5A@mail.gmail.com>
- <CAOUHufZq6DwpStzHtjG+TOiHaQ6FFbkTfHMCe8Yy0n_M9MKdqw@mail.gmail.com> <Zll2ILUNWE-JPi9U@linux.dev>
-In-Reply-To: <Zll2ILUNWE-JPi9U@linux.dev>
-From: Yu Zhao <yuzhao@google.com>
-Date: Fri, 31 May 2024 10:45:04 -0600
-Message-ID: <CAOUHufb_-w=B+NfHAUAo=O8bDXZBdXeeGRZD6kY=krN07srbGA@mail.gmail.com>
-Subject: Re: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs participate
- in aging
-To: Oliver Upton <oliver.upton@linux.dev>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ <20240529180510.2295118-3-jthoughton@google.com>
+ <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
+ <ZlelW93_T6P-ZuSZ@google.com>
+ <CAOUHufZdEpY6ra73SMHA33DegKxKaUM=Os7A7aDBFND6NkbUmQ@mail.gmail.com>
+ <Zley-u_dOlZ-S-a6@google.com>
+ <CADrL8HXHWg_MkApYQTngzmN21NEGNWC6KzJDw_Lm63JHJkR=5A@mail.gmail.com>
+ <CAOUHufZq6DwpStzHtjG+TOiHaQ6FFbkTfHMCe8Yy0n_M9MKdqw@mail.gmail.com>
+ <Zll2ILUNWE-JPi9U@linux.dev>
+ <CAOUHufb_-w=B+NfHAUAo=O8bDXZBdXeeGRZD6kY=krN07srbGA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAOUHufb_-w=B+NfHAUAo=O8bDXZBdXeeGRZD6kY=krN07srbGA@mail.gmail.com>
+X-Migadu-Flow: FLOW_OUT
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,64 +115,105 @@ Cc: James Houghton <jthoughton@google.com>, kvm@vger.kernel.org, linux-doc@vger.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 31, 2024 at 1:03=E2=80=AFAM Oliver Upton <oliver.upton@linux.de=
-v> wrote:
->
-> On Fri, May 31, 2024 at 12:05:48AM -0600, Yu Zhao wrote:
+On Fri, May 31, 2024 at 10:45:04AM -0600, Yu Zhao wrote:
+> On Fri, May 31, 2024 at 1:03 AM Oliver Upton <oliver.upton@linux.dev> wrote:
+> >
+> > On Fri, May 31, 2024 at 12:05:48AM -0600, Yu Zhao wrote:
+> 
+> Let me add back what I said earlier:
+> 
+>   I'm not convinced, but it doesn't mean your point of view is
+>   invalid. If you fully understand the implications of your design
+>   choice and document them, I will not object.
 
-Let me add back what I said earlier:
+Thanks, I appreciate the sentiment. Hopefully we can align here.
 
-  I'm not convinced, but it doesn't mean your point of view is
-  invalid. If you fully understand the implications of your design
-  choice and document them, I will not object.
+> > > All optimizations in v2 were measured step by step. Even that bitmap,
+> > > which might be considered overengineered, brought a readily
+> > > measuarable 4% improvement in memcached throughput on Altra Max
+> > > swapping to Optane:
+> >
+> > That's great, but taking an iterative approach to the problem allows
+> > the reviewers and maintainers to come to their own conclusions about
+> > each optimization independently. Squashing all of that together and
+> > posting the result doesn't allow for this.
+> 
+> That's your methodology, which I respect: as I said I won't stand in your way.
+> 
+> But mine is backed by data, please do respect that as well,
 
-> > All optimizations in v2 were measured step by step. Even that bitmap,
-> > which might be considered overengineered, brought a readily
-> > measuarable 4% improvement in memcached throughput on Altra Max
-> > swapping to Optane:
->
-> That's great, but taking an iterative approach to the problem allows
-> the reviewers and maintainers to come to their own conclusions about
-> each optimization independently. Squashing all of that together and
-> posting the result doesn't allow for this.
+Data is useful and expected for changes that aim to improve the
+performance of a system in one way or another. That is, after all, the
+sole intention of the work, no?
 
-That's your methodology, which I respect: as I said I won't stand in your w=
-ay.
+What I'm also looking for is a controlled experiment, where a single
+independent variable (e.g. locking) can be evaluated against the
+baseline. All-or-nothing data has limited usefulness.
 
-But mine is backed by data, please do respect that as well, by doing
-what I asked: document your justifications.
+> by doing what I asked: document your justifications.
 
-> Even if we were to take the series as-is, the door is wide open to
-> subsequent improvements.
->
-> > What I don't think is acceptable is simplifying those optimizations
-> > out without documenting your justifications (I would even call it a
-> > design change, rather than simplification, from v3 to v4).
->
-> No, sorry, there's nothing wrong with James' approach here.
+The justification for a series is against the upstream tree, not some
+out-of-tree stuff. The cover letter explicitly calls out the decision
+to simplify the patch series along with performance data I can reproduce
+on my own systems.
 
-Sorry, are you saying "without documenting your justifications" is
-nothing wrong? If so, please elaborate.
+This is a perfect example of how to contribute changes upstream.
 
-> The discussion that led to the design of v4 happened on list; you were
-> on CC. The general consensus on the KVM side was that the bitmap was
-> complicated and lacked independent justification. There was ample
-> opportunity to voice your concerns before he spent the time on v4.
+> > > What I don't think is acceptable is simplifying those optimizations
+> > > out without documenting your justifications (I would even call it a
+> > > design change, rather than simplification, from v3 to v4).
+> >
+> > No, sorry, there's nothing wrong with James' approach here.
+> 
+> Sorry, are you saying "without documenting your justifications" is
+> nothing wrong? If so, please elaborate.
 
-Please re-read my previous emails -- I never object to the removal of
-the bitmap or James' approach.
+As I mentioned above, the reasoning is adequately documented and the
+discussion that led to v4 is public. OTOH...
 
-And please stop making assumptions -- I did voice my concerns with
-James privately.
+> > The discussion that led to the design of v4 happened on list; you were
+> > on CC. The general consensus on the KVM side was that the bitmap was
+> > complicated and lacked independent justification. There was ample
+> > opportunity to voice your concerns before he spent the time on v4.
+> 
+> Please re-read my previous emails -- I never object to the removal of
+> the bitmap or James' approach.
+> 
+> And please stop making assumptions -- I did voice my concerns with
+> James privately.
+        ^~~~~~~~~
 
-> You seriously cannot fault a contributor for respinning their work based
-> on the provided feedback.
+If it happened in private then its no better than having said nothing at
+all.
 
-Are you saying I faulted James for taking others' feedback? If so,
-where? And I'll make sure I don't give such an impression in the
-future.
+Please, keep the conversation on-list next time so we can iron out any
+disagreements there. Otherwise contributors are put in a *very* awkward
+situation of mediating the on- and off-list dialogue.
 
-Also what do you think about the technical flaws and inaccurate
-understandings I pointed out? You seem to have a strong opinion on
-your iterate approach, but I hope you didn't choose to overlook the
-real meat of this discussion.
+> > You seriously cannot fault a contributor for respinning their work based
+> > on the provided feedback.
+> 
+> Are you saying I faulted James for taking others' feedback?
+
+No. Sufficient justification is captured in the public review feedback +
+series cover letter. Your statement that the approach was changed without
+justification is unsubstantiated.
+
+> Also what do you think about the technical flaws and inaccurate
+> understandings I pointed out? You seem to have a strong opinion on
+> your iterate approach, but I hope you didn't choose to overlook the
+> real meat of this discussion.
+
+Serious question: are you not receiving my mail or something?
+
+I re-raised my question to you from ages ago about locking on the arm64
+MMU. You didn't answer last time, I'd appreciate a reply this time
+around.
+
+Otherwise I couldn't be bothered about the color of the Kconfig bikeshed
+and don't have anything meaningful to add there. I think the three of
+you are trending in the right direction.
+
+-- 
+Thanks,
+Oliver
