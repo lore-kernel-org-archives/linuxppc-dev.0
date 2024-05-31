@@ -4,52 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A878EC25B75
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 16:45:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D746DC25B7E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 16:47:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IjkbaIIo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=htIUEOik;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VrTW265g6z3fr4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 02:45:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VrTYb0d8dz3fsb
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 02:47:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IjkbaIIo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=htIUEOik;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=lee@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrTVB3vttz2xQB
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 02:44:18 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 44F3F62C85;
-	Fri, 31 May 2024 16:44:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35664C32786;
-	Fri, 31 May 2024 16:44:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1717173850;
-	bh=gjNaygJxEmGVOCosMiMdTQrI3y7aaBzzVSVlr1yu1jQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=IjkbaIIooYDH8y6nOdbyewI+UXwTb5Nfq4KqnfU2FPVRJA02NNCv0JdHkgXnq7tqK
-	 X1lN4otqKMIhbjpgKtq5ftcAirF7PWO0e/isWzEN/+JC8R7EbgrVLmtdOiTsQhqzvJ
-	 Yftmtcf4zFkQI8vkim1i+nYIIcGu+VlsP/XFBFRoSWfSb3dlDLshKKSbs80SRrm3fu
-	 xmw3w0Vm43wBcT1pz9POYb1EYVAoH2Y/seEOrbFdJWJYdmMpc1jhygDB1YfdHaMlft
-	 KOkHfQhuRRZ0NqBm1LqATpCTbjSGYhyhwmInq31JB81lASlrNH4uqTa1nEy1ee9C6t
-	 ZCKqHyGtMwIoA==
-Date: Fri, 31 May 2024 17:44:05 +0100
-From: Lee Jones <lee@kernel.org>
-To: MarileneGarcia <marilene.agarcia@gmail.com>
-Subject: Re: [PATCH v2 linux-next] leds: powernv: replace of_node_put to
- __free
-Message-ID: <20240531164405.GV1005600@google.com>
-References: <20240529200233.1188228-1-marilene.agarcia@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrTXM1HRNz3fqc
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 02:46:10 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44VGZIJ1006114;
+	Fri, 31 May 2024 16:45:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc : content-type : date
+ : from : in-reply-to : message-id : mime-version : references : subject :
+ to; s=pp1; bh=ZjFK/pokSH1u/vjIDLWUHiBWlhTGV4J55bhEWPGFW50=;
+ b=htIUEOiknGi0RBj+R9w8NAAiSH3mCCvngLmzk4o/zzJuSYb4Iccw02dQdilI9KsaGNuy
+ /KTBIZKxmcWFRGJLgKdqFg33qg2nU0MjQIjHlJVcqru2xggXpxp0tUnQurEDfTuuJ+4t
+ a7kp7PM/DEIgUKHN2qvpZxAY5UeMybbZUKKM/pdOq8Cvbn0hMXB7wDmFxPdPQL5eT9tK
+ Q6cHTSHOpeE2imC09RpiQCtX5JAfAWnQ0gdqrLPcun65INb5Vxo5CzGVjnEhnabp71QE
+ fnlh3k7ENjgVPeqsM9/ECOauGNIwrMjusuwCzIomRIOYReMGqQQSvy1zaiNuXOMqT1yi VQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yfhvcg20c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 May 2024 16:45:53 +0000
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 44VGjqAM021936;
+	Fri, 31 May 2024 16:45:52 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yfhvcg20a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 May 2024 16:45:52 +0000
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44VGEop3006900;
+	Fri, 31 May 2024 16:45:51 GMT
+Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3ydpebrxyj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 May 2024 16:45:51 +0000
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44VGjnOr57475554
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 31 May 2024 16:45:51 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 52F9958065;
+	Fri, 31 May 2024 16:45:49 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1FE2458051;
+	Fri, 31 May 2024 16:45:49 +0000 (GMT)
+Received: from localhost (unknown [9.67.105.183])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 31 May 2024 16:45:49 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Breno Leitao <leitao@debian.org>
+Subject: Re: [PATCH] powerpc/rtas: Prevent Spectre v1 gadget construction in
+ sys_rtas()
+In-Reply-To: <ZlnUaZiXM3Fuy+0g@gmail.com>
+References: <20240530-sys_rtas-nargs-nret-v1-1-129acddd4d89@linux.ibm.com>
+ <ZlnUaZiXM3Fuy+0g@gmail.com>
+Date: Fri, 31 May 2024 11:45:48 -0500
+Message-ID: <87le3q3p6r.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240529200233.1188228-1-marilene.agarcia@gmail.com>
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: mN-QNzJyZ8-VD9LK-8SHyVmYoAuee8-i
+X-Proofpoint-GUID: y6BiRMtiPmAFoVVn1afSp6U2KgrM6VXb
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.12.28.16
+ definitions=2024-05-31_12,2024-05-30_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 clxscore=1015
+ lowpriorityscore=0 mlxscore=0 adultscore=0 suspectscore=0 phishscore=0
+ impostorscore=0 priorityscore=1501 mlxlogscore=774 malwarescore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2405010000 definitions=main-2405310126
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,130 +97,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Javier Carrasco <javier.carrasco.cruz@gmail.com>, linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@inria.fr>, Nicholas Piggin <npiggin@gmail.com>, Pavel Machek <pavel@ucw.cz>, Shuah Khan <skhan@linuxfoundation.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 29 May 2024, MarileneGarcia wrote:
+Breno Leitao <leitao@debian.org> writes:
 
-> Use __free for device_node values, and thus drop calls to
-> of_node_put.
-> 
-> The variable attribute __free adds a scope based cleanup to
-> the device node. The goal is to reduce memory management issues
-> in the kernel code.
-> 
-> The of_node_put calls were removed, and the
-> for_each_available_child_of_node was replaced to the equivalent
-> for_each_available_child_of_node_scoped which use the __free.
-> 
-> Suggested-by: Julia Lawall <julia.lawall@inria.fr>
-> Signed-off-by: MarileneGarcia <marilene.agarcia@gmail.com>
-> ---
-> Changes v2:
-> It was missing a blank line.
-> 
-> Suggested-by: Julia Lawall <julia.lawall@inria.fr>
-> Signed-off-by: MarileneGarcia <marilene.agarcia@gmail.com>
-> ---
->  drivers/leds/leds-powernv.c | 28 +++++++++-------------------
->  1 file changed, 9 insertions(+), 19 deletions(-)
-> 
-> diff --git a/drivers/leds/leds-powernv.c b/drivers/leds/leds-powernv.c
-> index 4f01acb75727..8f94d2efed9f 100644
-> --- a/drivers/leds/leds-powernv.c
-> +++ b/drivers/leds/leds-powernv.c
-> @@ -246,29 +246,25 @@ static int powernv_led_classdev(struct platform_device *pdev,
->  	const char *cur = NULL;
->  	int rc = -1;
->  	struct property *p;
-> -	struct device_node *np;
->  	struct powernv_led_data *powernv_led;
->  	struct device *dev = &pdev->dev;
->  
-> -	for_each_available_child_of_node(led_node, np) {
-> +	for_each_available_child_of_node_scoped(led_node, np) {
->  		p = of_find_property(np, "led-types", NULL);
->  
->  		while ((cur = of_prop_next_string(p, cur)) != NULL) {
->  			powernv_led = devm_kzalloc(dev, sizeof(*powernv_led),
->  						   GFP_KERNEL);
-> -			if (!powernv_led) {
-> -				of_node_put(np);
-> +			if (!powernv_led)
->  				return -ENOMEM;
-> -			}
->  
->  			powernv_led->common = powernv_led_common;
->  			powernv_led->loc_code = (char *)np->name;
->  
->  			rc = powernv_led_create(dev, powernv_led, cur);
-> -			if (rc) {
-> -				of_node_put(np);
-> +			if (rc)
->  				return rc;
-> -			}
-> +
->  		} /* while end */
->  	}
->  
-> @@ -278,12 +274,11 @@ static int powernv_led_classdev(struct platform_device *pdev,
->  /* Platform driver probe */
->  static int powernv_led_probe(struct platform_device *pdev)
->  {
-> -	struct device_node *led_node;
->  	struct powernv_led_common *powernv_led_common;
->  	struct device *dev = &pdev->dev;
-> -	int rc;
-> +	struct device_node *led_node __free(device_node) =
-> +							of_find_node_by_path("/ibm,opal/leds");
+> On Thu, May 30, 2024 at 07:44:12PM -0500, Nathan Lynch via B4 Relay wrote:
+>> From: Nathan Lynch <nathanl@linux.ibm.com>
+>> 
+>> Smatch warns:
+>> 
+>>   arch/powerpc/kernel/rtas.c:1932 __do_sys_rtas() warn: potential
+>>   spectre issue 'args.args' [r] (local cap)
+>> 
+>> The 'nargs' and 'nret' locals come directly from a user-supplied
+>> buffer and are used as indexes into a small stack-based array and as
+>> inputs to copy_to_user() after they are subject to bounds checks.
+>> 
+>> Use array_index_nospec() after the bounds checks to clamp these values
+>> for speculative execution.
+>> 
+>> Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+>> Reported-by: Breno Leitao <leitao@debian.org>
+>
+> Thanks for working on it. 
+>
+> Reviewed-by: Breno Leitao <leitao@debian.org>
 
-This is not a good line-break strategy.
+Thanks!
 
-	struct device_node *led_node
-		__free(device_node) = of_find_node_by_path("/ibm,opal/leds");
+>
+>> +	nargs = array_index_nospec(nargs, ARRAY_SIZE(args.args));
+>> +	nret = array_index_nospec(nret, ARRAY_SIZE(args.args) - nargs);
+>
+> On an unrelated note, can nargs and nret are integers and could be
+> eventually negative. Is this a valid use case?
 
-	struct device_node *led_node __free(device_node) =
-		of_find_node_by_path("/ibm,opal/leds");
+No, it's not valid for a caller to provide negative nargs or nret. I
+convinced myself that this bounds check:
 
-Please choose one of these instead.
+	nargs = be32_to_cpu(args.nargs);
+	nret  = be32_to_cpu(args.nret);
 
-I suggest the top one might read a little easier.
+	if (nargs >= ARRAY_SIZE(args.args)
+	    || nret > ARRAY_SIZE(args.args)
+	    || nargs + nret > ARRAY_SIZE(args.args))
+		return -EINVAL;
 
-> -	led_node = of_find_node_by_path("/ibm,opal/leds");
+rejects negative values of nargs or nret due to C's "usual arithmetic
+conversions", where nargs and nret are implicitly converted to size_t
+for the comparisons.
 
-Does the __free() have to be combined with an allocation?
-
->  	if (!led_node) {
->  		dev_err(dev, "%s: LED parent device node not found\n",
->  			__func__);
-> @@ -292,20 +287,15 @@ static int powernv_led_probe(struct platform_device *pdev)
->  
->  	powernv_led_common = devm_kzalloc(dev, sizeof(*powernv_led_common),
->  					  GFP_KERNEL);
-> -	if (!powernv_led_common) {
-> -		rc = -ENOMEM;
-> -		goto out;
-> -	}
-> +	if (!powernv_led_common)
-> +		return -ENOMEM;
->  
->  	mutex_init(&powernv_led_common->lock);
->  	powernv_led_common->max_led_type = cpu_to_be64(OPAL_SLOT_LED_TYPE_MAX);
->  
->  	platform_set_drvdata(pdev, powernv_led_common);
->  
-> -	rc = powernv_led_classdev(pdev, led_node, powernv_led_common);
-> -out:
-> -	of_node_put(led_node);
-> -	return rc;
-> +	return powernv_led_classdev(pdev, led_node, powernv_led_common);
->  }
->  
->  /* Platform driver remove */
-> -- 
-> 2.34.1
-> 
-
--- 
-Lee Jones [李琼斯]
+However I don't see any value in keeping them as signed int. I have some
+changes in progress in this area and I'll plan on making these unsigned.
