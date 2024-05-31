@@ -4,80 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98E5FC25B74
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 May 2024 23:07:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0030C25B74
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 00:36:17 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eREhSZo/;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cWTelCmJ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vr22J5QmYz3ftT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 09:07:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vr41D0xHZz3fmn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 10:36:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eREhSZo/;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cWTelCmJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vr1wV08vrz3dXC
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2024 09:02:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1717110124; x=1748646124;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=AuYIRZwuv1vWCs2uWjv6nHv7VSkA6+15BzU0BIBlcXI=;
-  b=eREhSZo/O0/KHj7sOV61PuNKIF0gIQ4wJsIwRm9+HgTO/A2uqgLm06r2
-   tHwIx52Oz5Ms9xrBx804WfTLx5m/tlNauE4LARpr2IFwMQKlk1R5dYdMt
-   IqaDlrKFu8h/8u5znXG/eH5Fkn7yLawHLSvBprafSJgDoBGTrMc48N/2e
-   /rPijkPI5j0REy+cvU3FLt+KwAkaL/SOgG+pJHH6ENZwU3rQenU8NiU1C
-   aDjShlBmBziKpg5oTewo12IJDcUyKamRCxrixvNMmMtFS0xQ6xztaofbG
-   gROIEQ+19K1FOaqPhVFzqlV648nUjh3s7Q0/SMqo1/qmzFanGGm+o0oBy
-   Q==;
-X-CSE-ConnectionGUID: VEWSIwTcQHqGo5kTSSLg9w==
-X-CSE-MsgGUID: bD7nUcrUQ5eYUD9smkKrZg==
-X-IronPort-AV: E=McAfee;i="6600,9927,11088"; a="24195386"
-X-IronPort-AV: E=Sophos;i="6.08,202,1712646000"; 
-   d="scan'208";a="24195386"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 May 2024 16:01:00 -0700
-X-CSE-ConnectionGUID: sobAkPNVTae+BISEGqSQCg==
-X-CSE-MsgGUID: iCEpUl0ZQQiPRNOUAbqr4A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,202,1712646000"; 
-   d="scan'208";a="40895353"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by orviesa003.jf.intel.com with ESMTP; 30 May 2024 16:00:50 -0700
-Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 69C1F6AB; Fri, 31 May 2024 02:00:40 +0300 (EEST)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Rob Herring <robh@kernel.org>,
-	Weidong Wang <wangweidong.a@awinic.com>,
-	Mark Brown <broonie@kernel.org>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-	Shenghao Ding <shenghao-ding@ti.com>,
-	Marco Felsch <m.felsch@pengutronix.de>,
-	Alper Nebi Yasak <alpernebiyasak@gmail.com>,
-	Chancel Liu <chancel.liu@nxp.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	alsa-devel@alsa-project.org,
-	patches@opensource.cirrus.com,
-	linuxppc-dev@lists.ozlabs.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-rockchip@lists.infradead.org
-Subject: [PATCH v1 5/6] ASoC: generic: Replace of_gpio.h by proper one
-Date: Fri, 31 May 2024 01:58:51 +0300
-Message-ID: <20240530230037.1156253-6-andriy.shevchenko@linux.intel.com>
-X-Mailer: git-send-email 2.43.0.rc1.1336.g36b5255a03ac
-In-Reply-To: <20240530230037.1156253-1-andriy.shevchenko@linux.intel.com>
-References: <20240530230037.1156253-1-andriy.shevchenko@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vr40M1zCmz3dTB
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2024 10:35:30 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 44V0TAQ2001938;
+	Fri, 31 May 2024 00:35:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc : content-type : date
+ : from : in-reply-to : message-id : mime-version : references : subject :
+ to; s=pp1; bh=Gksg9ASmB4oUKniGsv1oGIGtEURLj504u/+VF+hKbow=;
+ b=cWTelCmJPAc6uyIA7jfoRiwqN25cyptudYb8BOqc4zJ/Q+jBgqNH3wVXzZUf0PZetzK7
+ GXFMvs3eGf/GDbg1EGzbD8VBMcyxJoDZNlnLW3+4GaRtstSa3nWV8Tv5UExJcEQmSs7d
+ GMnEd1oT3OfTKf7Q140d9yo92dR8rvvWagUKUXhIvl0dCZbbzlwV8uRpN1n2+7xoAHqC
+ Z07P00z/72dpMOS96CSa+XHEAHLEXwp0dzzNkKmd1jsxq1cvfo5t4ojzcnFyXo4Sg0j6
+ az3CKAUxsFaD0J7DM0bk7N0C4duGPNkXL6OCMcHdEaul76ZF4sakBOUx3qpO0h95wzEn rA== 
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yf41dr0xp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 May 2024 00:35:11 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 44UM9kad024784;
+	Fri, 31 May 2024 00:35:09 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3ydphqvwgq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 May 2024 00:35:09 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 44V0Z79864029024
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 31 May 2024 00:35:09 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2ACD65806C;
+	Fri, 31 May 2024 00:35:07 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DD1815804B;
+	Fri, 31 May 2024 00:35:06 +0000 (GMT)
+Received: from localhost (unknown [9.67.129.78])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 31 May 2024 00:35:06 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Breno Leitao <leitao@debian.org>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/kernel: Fix potential spectre v1 in syscall
+In-Reply-To: <87wmno2c11.fsf@mail.lhotse>
+References: <1534876926-21849-1-git-send-email-leitao@debian.org>
+ <baf6af2b-d6e1-4df8-9466-98d19f8c765f@csgroup.eu>
+ <ZfAa59Z8njiGUnRW@gmail.com> <874jdb4sj9.fsf@mail.lhotse>
+ <875xxj36ke.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
+ <87wmno2c11.fsf@mail.lhotse>
+Date: Thu, 30 May 2024 19:35:05 -0500
+Message-ID: <87o78m4y4m.fsf@li-e15d104c-2135-11b2-a85c-d7ef17e56be6.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: N-IHrn_CQ9ipB2o6vDrFfqGA95DR2fL-
+X-Proofpoint-ORIG-GUID: N-IHrn_CQ9ipB2o6vDrFfqGA95DR2fL-
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.12.28.16
+ definitions=2024-05-30_21,2024-05-30_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 impostorscore=0
+ mlxscore=0 malwarescore=0 phishscore=0 lowpriorityscore=0 mlxlogscore=408
+ priorityscore=1501 adultscore=0 clxscore=1011 spamscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2405010000
+ definitions=main-2405310002
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,34 +93,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Fabio Estevam <festevam@gmail.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, Liam Girdwood <lgirdwood@gmail.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Xiubo Li <Xiubo.Lee@gmail.com>, Takashi Iwai <tiwai@suse.com>, James Schulman <james.schulman@cirrus.com>, Kevin Lu <kevin-lu@ti.com>, Richard Fitzgerald <rf@opensource.cirrus.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Banajit Goswami <bgoswami@quicinc.com>, Jaroslav Kysela <perex@perex.cz>, Shawn Guo <shawnguo@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, David Rhodes <david.rhodes@cirrus.com>, Baojun Xu <baojun.xu@ti.com>, Heiko Stuebner <heiko@sntech.de>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-of_gpio.h is deprecated and subject to remove.
-The driver doesn't use it directly, replace it
-with what is really being used.
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> Nathan Lynch <nathanl@linux.ibm.com> writes:
+>>
+>> 1. The patch sanitizes 'nargs' immediately before the call to memset(),
+>>    but shouldn't that happen before 'nargs' is used as an input to
+>>    copy_from_user()?
+>
+> I think the reasoning is that there's no way to exploit an out of bounds
+> value using copy_from_user(). But it's much easier to reason about if we
+> just do the sanitisation up front.
+>
+>> 2. If 'nargs' needs this treatment, then why wouldn't the user-supplied
+>>    'nret' and 'token' need them as well? 'nret' is used to index the
+>>    same array as 'nargs'. And at least conceptually, 'token' is used to
+>>    index a data structure (xarray) with array-like semantics (to be
+>>    fair, this is a relatively recent development and was not the case
+>>    when this change was submitted).
+>     
+> I don't know exactly what smatch looks for when trying to detect these,
+> but I suspect it's a plain array access. Not sure why it doesn't
+> complain about nret, but I think it would be good to sanitise it as
+> well.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- sound/soc/generic/audio-graph-card2-custom-sample.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Agreed. I'm sending a new patch that does this.
 
-diff --git a/sound/soc/generic/audio-graph-card2-custom-sample.c b/sound/soc/generic/audio-graph-card2-custom-sample.c
-index 1b6ccd2de964..8e5a51098490 100644
---- a/sound/soc/generic/audio-graph-card2-custom-sample.c
-+++ b/sound/soc/generic/audio-graph-card2-custom-sample.c
-@@ -5,8 +5,9 @@
- // Copyright (C) 2020 Renesas Electronics Corp.
- // Copyright (C) 2020 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
- //
-+#include <linux/device.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/module.h>
--#include <linux/of_gpio.h>
- #include <linux/platform_device.h>
- #include <sound/graph_card.h>
- 
--- 
-2.43.0.rc1.1336.g36b5255a03ac
+> token is different, at least in the above code, because it's not bounds
+> checked, so there's no bounds check to bypass.
 
+Right.
+
+> Though maybe there is one inside the rtas lookup code that should be
+> masked.
+
+In rtas_function_token()? I think it's OK... the handles passed to it
+are always build-time constants that are supposed to be within the
+bounds of the function table.
