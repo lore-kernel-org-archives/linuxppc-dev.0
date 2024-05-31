@@ -4,101 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ADBAC25B75
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 18:42:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E684C25B75
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 May 2024 21:08:08 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Btrcptra;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=K3sN0AfG;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VrX6t5LXNz3dPs
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 04:42:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VrbLZ199Kz3flw
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 07:08:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Btrcptra;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=K3sN0AfG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::b0; helo=out-176.mta1.migadu.com; envelope-from=oliver.upton@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 41897 seconds by postgrey-1.37 at boromir; Sat, 01 Jun 2024 04:41:59 AEST
-Received: from out-176.mta1.migadu.com (out-176.mta1.migadu.com [IPv6:2001:41d0:203:375::b0])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=dmatlack@google.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrX5z28Kbz3dK1
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 04:41:56 +1000 (AEST)
-X-Envelope-To: yuzhao@google.com
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1717180886;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ZrkvQ09UVgsdWxfCoZpOjcpYyls+3WTdBXC7IWp+Dfo=;
-	b=BtrcptrahIHMY/n9/AZA3DXzcLGC2SGPLvU4nGpmgpexhmeAxDztnyub/a9ACk3LuYD+jI
-	LdluBPvSaCSCX0KVcSV8bu/k0Ua9VEQflTkBfxkmAhE+NkAnYBC/j5woXAspbTVxmRtrc9
-	MlzHXFSR+9wI8QbERC3hyyKRlZW/w/A=
-X-Envelope-To: jthoughton@google.com
-X-Envelope-To: seanjc@google.com
-X-Envelope-To: akpm@linux-foundation.org
-X-Envelope-To: pbonzini@redhat.com
-X-Envelope-To: aou@eecs.berkeley.edu
-X-Envelope-To: ankita@nvidia.com
-X-Envelope-To: anup@brainfault.org
-X-Envelope-To: atishp@atishpatra.org
-X-Envelope-To: axelrasmussen@google.com
-X-Envelope-To: maobibo@loongson.cn
-X-Envelope-To: catalin.marinas@arm.com
-X-Envelope-To: dmatlack@google.com
-X-Envelope-To: rientjes@google.com
-X-Envelope-To: chenhuacai@kernel.org
-X-Envelope-To: james.morse@arm.com
-X-Envelope-To: corbet@lwn.net
-X-Envelope-To: maz@kernel.org
-X-Envelope-To: mpe@ellerman.id.au
-X-Envelope-To: npiggin@gmail.com
-X-Envelope-To: palmer@dabbelt.com
-X-Envelope-To: paul.walmsley@sifive.com
-X-Envelope-To: rananta@google.com
-X-Envelope-To: ryan.roberts@arm.com
-X-Envelope-To: shahuang@redhat.com
-X-Envelope-To: shuah@kernel.org
-X-Envelope-To: suzuki.poulose@arm.com
-X-Envelope-To: zhaotianrui@loongson.cn
-X-Envelope-To: will@kernel.org
-X-Envelope-To: yuzenghui@huawei.com
-X-Envelope-To: kvm-riscv@lists.infradead.org
-X-Envelope-To: kvm@vger.kernel.org
-X-Envelope-To: kvmarm@lists.linux.dev
-X-Envelope-To: linux-arm-kernel@lists.infradead.org
-X-Envelope-To: linux-doc@vger.kernel.org
-X-Envelope-To: linux-kernel@vger.kernel.org
-X-Envelope-To: linux-kselftest@vger.kernel.org
-X-Envelope-To: linux-mips@vger.kernel.org
-X-Envelope-To: linux-mm@kvack.org
-X-Envelope-To: linux-riscv@lists.infradead.org
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-X-Envelope-To: loongarch@lists.linux.dev
-Date: Fri, 31 May 2024 11:41:14 -0700
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Oliver Upton <oliver.upton@linux.dev>
-To: Yu Zhao <yuzhao@google.com>
-Subject: Re: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs
- participate in aging
-Message-ID: <ZloZysAPL0ePk3bY@linux.dev>
-References: <20240529180510.2295118-1-jthoughton@google.com>
- <20240529180510.2295118-3-jthoughton@google.com>
- <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
- <ZlelW93_T6P-ZuSZ@google.com>
- <CAOUHufZdEpY6ra73SMHA33DegKxKaUM=Os7A7aDBFND6NkbUmQ@mail.gmail.com>
- <Zley-u_dOlZ-S-a6@google.com>
- <CADrL8HXHWg_MkApYQTngzmN21NEGNWC6KzJDw_Lm63JHJkR=5A@mail.gmail.com>
- <CAOUHufZq6DwpStzHtjG+TOiHaQ6FFbkTfHMCe8Yy0n_M9MKdqw@mail.gmail.com>
- <Zll2ILUNWE-JPi9U@linux.dev>
- <CAOUHufb_-w=B+NfHAUAo=O8bDXZBdXeeGRZD6kY=krN07srbGA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrbKl0jgVz3dV9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 07:07:22 +1000 (AEST)
+Received: by mail-wr1-x436.google.com with SMTP id ffacd0b85a97d-354f3f6c3b1so2234419f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2024 14:07:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1717189638; x=1717794438; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Xx3RPcl1E+PKSqvPm+Il1+elz18o0K6zeYgjqcWFZiw=;
+        b=K3sN0AfGJYZ1Wp97SeZ04XIx154t7ixAxRuQc7fv4iVFMIFe53Uc6dI3lcoJeZa8sO
+         HgQ4mH/5UpLFp7YE3EHkaW6M3lRQiQ3z7nOxht/4NOEsJW3IU2CQB8XH6ukA0GwHWA9E
+         RayUWQayb7NHT/ksIQQeUEiyfQ+iTYGqUEDOqx16Al6d6psxAt+hxXhgh/9I8loXR1vf
+         SRiZeNTPSYAdX3N9lhdvIyk6Dz6LqWO4Gx8sdnu2esWcsU9Xb5vSgLZVR+r/papctCWW
+         4sg1QhgIHouAZOf39843VxkwgU75rLyayjydw/1leOdiQYSo7x4jK4z7u474z1TwZHVo
+         T6ug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1717189638; x=1717794438;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Xx3RPcl1E+PKSqvPm+Il1+elz18o0K6zeYgjqcWFZiw=;
+        b=QXzR+rn/hpoOJtF8YiEPs0JwPiSeHh5O4mfdGrUsVz4yI0w/PR6OpfmaOcx19IVf0m
+         2MZj+EVY4f6zcMXbJq98M+nbkqmbIpJJRwxebKTijHW6jyL2KYYfGi8RBmtHdw2ZpxPr
+         4lD5AcwMMj4C2Tr8B8b/KHHCeJwzyqjJv0KSlMBJR2CNUhMyGvkaYCgX3MASV6wYMwUm
+         WeXTSPIwPtLzWDjh8esaNiUEz78QeT8VercsXq9CiJIiNopth+A0J1ZA9/Lr8T7LzmpZ
+         wYnI/QFjt10DFvHLVdR4u0yhjMIaPT8uZNDe4MMJKjKsaaCnfUpXs9O2sxEO9yB9hOtz
+         Szrw==
+X-Forwarded-Encrypted: i=1; AJvYcCW+wN6foj+wQas9f4r0NvWX9ROzwMvTg46hr18J74/s+7qbMqFFKxOeCvySQp9HN1yjraSYTxPfUNkw3u1mN9gwE7AnYq7Iw/vv5nH2gQ==
+X-Gm-Message-State: AOJu0Yw+qx2schCgDBY6qkwsgfxLmF8r1QkO3he5pF5adIFv96T8CuUi
+	4bxt9K59yXA+r7AaUd4f3gNWQts1DfL7M9mbKKbxM2qVYHLwoQ84ztHaX7fna8WwPK1DILyS52K
+	r0mHFP5NyENxfY/P/H3jDiYySXXavFOVm1+1a
+X-Google-Smtp-Source: AGHT+IE03rpUbTjyQuwZWIC8g/9gHa5mH+MWE/NTSPO8cSZrAXipu4jJgjC2128Si67H3Tnp43CK2uN+A9xSwuw2ufM=
+X-Received: by 2002:a5d:4cc1:0:b0:34c:d9f5:a8e with SMTP id
+ ffacd0b85a97d-35e0f25b1a0mr2178382f8f.7.1717189638221; Fri, 31 May 2024
+ 14:07:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAOUHufb_-w=B+NfHAUAo=O8bDXZBdXeeGRZD6kY=krN07srbGA@mail.gmail.com>
-X-Migadu-Flow: FLOW_OUT
+References: <20240529180510.2295118-1-jthoughton@google.com>
+ <20240529180510.2295118-3-jthoughton@google.com> <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
+ <Zll7IuGYGG5uI20W@linux.dev> <CAOUHufa50Dy8CJ5+D10Khs4NU-3Pv0B8qi-GYkcppctTVUkPcA@mail.gmail.com>
+In-Reply-To: <CAOUHufa50Dy8CJ5+D10Khs4NU-3Pv0B8qi-GYkcppctTVUkPcA@mail.gmail.com>
+From: David Matlack <dmatlack@google.com>
+Date: Fri, 31 May 2024 14:06:49 -0700
+Message-ID: <CALzav=e4PmGV6ayuMCwbKWq8EnOomYKBj-0Lj+gV-kPO=h156A@mail.gmail.com>
+Subject: Re: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs participate
+ in aging
+To: Yu Zhao <yuzhao@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,110 +81,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: James Houghton <jthoughton@google.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Anup Patel <anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Atish Patra <atishp@atishpatra.org>, David Matlack <dmatlack@googl
- e.com>, Palmer Dabbelt <palmer@dabbelt.com>, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, Sean Christopherson <seanjc@google.com>, Ankit Agrawal <ankita@nvidia.com>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
+Cc: James Houghton <jthoughton@google.com>, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-kselftest@vger.kernel.org, Raghavendra Rao Ananta <rananta@google.com>, linux-riscv@lists.infradead.org, Shuah Khan <shuah@kernel.org>, Marc Zyngier <maz@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Huacai Chen <chenhuacai@kernel.org>, David Rientjes <rientjes@google.com>, Zenghui Yu <yuzenghui@huawei.com>, Axel Rasmussen <axelrasmussen@google.com>, linux-mips@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, Ryan Roberts <ryan.roberts@arm.com>, Will Deacon <will@kernel.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, Shaoqin Huang <shahuang@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, Palmer Dabbelt <palmer@dabbelt.com>, linux-
+ arm-kernel@lists.infradead.org, Sean Christopherson <seanjc@google.com>, Ankit Agrawal <ankita@nvidia.com>, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 31, 2024 at 10:45:04AM -0600, Yu Zhao wrote:
-> On Fri, May 31, 2024 at 1:03 AM Oliver Upton <oliver.upton@linux.dev> wrote:
+On Fri, May 31, 2024 at 1:31=E2=80=AFPM Yu Zhao <yuzhao@google.com> wrote:
+>
+> On Fri, May 31, 2024 at 1:24=E2=80=AFAM Oliver Upton <oliver.upton@linux.=
+dev> wrote:
 > >
-> > On Fri, May 31, 2024 at 12:05:48AM -0600, Yu Zhao wrote:
-> 
-> Let me add back what I said earlier:
-> 
->   I'm not convinced, but it doesn't mean your point of view is
->   invalid. If you fully understand the implications of your design
->   choice and document them, I will not object.
-
-Thanks, I appreciate the sentiment. Hopefully we can align here.
-
-> > > All optimizations in v2 were measured step by step. Even that bitmap,
-> > > which might be considered overengineered, brought a readily
-> > > measuarable 4% improvement in memcached throughput on Altra Max
-> > > swapping to Optane:
+> > On Wed, May 29, 2024 at 03:03:21PM -0600, Yu Zhao wrote:
+> > > On Wed, May 29, 2024 at 12:05=E2=80=AFPM James Houghton <jthoughton@g=
+oogle.com> wrote:
+> > > >
+> > > > Secondary MMUs are currently consulted for access/age information a=
+t
+> > > > eviction time, but before then, we don't get accurate age informati=
+on.
+> > > > That is, pages that are mostly accessed through a secondary MMU (li=
+ke
+> > > > guest memory, used by KVM) will always just proceed down to the old=
+est
+> > > > generation, and then at eviction time, if KVM reports the page to b=
+e
+> > > > young, the page will be activated/promoted back to the youngest
+> > > > generation.
+> > >
+> > > Correct, and as I explained offline, this is the only reasonable
+> > > behavior if we can't locklessly walk secondary MMUs.
+> > >
+> > > Just for the record, the (crude) analogy I used was:
+> > > Imagine a large room with many bills ($1, $5, $10, ...) on the floor,
+> > > but you are only allowed to pick up 10 of them (and put them in your
+> > > pocket). A smart move would be to survey the room *first and then*
+> > > pick up the largest ones. But if you are carrying a 500 lbs backpack,
+> > > you would just want to pick up whichever that's in front of you rathe=
+r
+> > > than walk the entire room.
+> > >
+> > > MGLRU should only scan (or lookaround) secondary MMUs if it can be
+> > > done lockless. Otherwise, it should just fall back to the existing
+> > > approach, which existed in previous versions but is removed in this
+> > > version.
 > >
-> > That's great, but taking an iterative approach to the problem allows
-> > the reviewers and maintainers to come to their own conclusions about
-> > each optimization independently. Squashing all of that together and
-> > posting the result doesn't allow for this.
-> 
-> That's your methodology, which I respect: as I said I won't stand in your way.
-> 
-> But mine is backed by data, please do respect that as well,
-
-Data is useful and expected for changes that aim to improve the
-performance of a system in one way or another. That is, after all, the
-sole intention of the work, no?
-
-What I'm also looking for is a controlled experiment, where a single
-independent variable (e.g. locking) can be evaluated against the
-baseline. All-or-nothing data has limited usefulness.
-
-> by doing what I asked: document your justifications.
-
-The justification for a series is against the upstream tree, not some
-out-of-tree stuff. The cover letter explicitly calls out the decision
-to simplify the patch series along with performance data I can reproduce
-on my own systems.
-
-This is a perfect example of how to contribute changes upstream.
-
-> > > What I don't think is acceptable is simplifying those optimizations
-> > > out without documenting your justifications (I would even call it a
-> > > design change, rather than simplification, from v3 to v4).
+> > Grabbing the MMU lock for write to scan sucks, no argument there. But
+> > can you please be specific about the impact of read lock v. RCU in the
+> > case of arm64? I had asked about this before and you never replied.
 > >
-> > No, sorry, there's nothing wrong with James' approach here.
-> 
-> Sorry, are you saying "without documenting your justifications" is
-> nothing wrong? If so, please elaborate.
+> > My concern remains that adding support for software table walkers
+> > outside of the MMU lock entirely requires more work than just deferring
+> > the deallocation to an RCU callback. Walkers that previously assumed
+> > 'exclusive' access while holding the MMU lock for write must now cope
+> > with volatile PTEs.
+> >
+> > Yes, this problem already exists when hardware sets the AF, but the
+> > lock-free walker implementation needs to be generic so it can be applie=
+d
+> > for other PTE bits.
+>
+> Direct reclaim is multi-threaded and each reclaimer can take the mmu
+> lock for read (testing the A-bit) or write (unmapping before paging
+> out) on arm64. The fundamental problem of using the readers-writer
+> lock in this case is priority inversion: the readers have lower
+> priority than the writers, so ideally, we don't want the readers to
+> block the writers at all.
+>
+> Using my previous (crude) analogy: puting the bill right in front of
+> you (the writers) profits immediately whereas searching for the
+> largest bill (the readers) can be futile.
+>
+> As I said earlier, I prefer we drop the arm64 support for now, but I
+> will not object to taking the mmu lock for read when clearing the
+> A-bit, as long as we fully understand the problem here and document it
+> clearly.
 
-As I mentioned above, the reasoning is adequately documented and the
-discussion that led to v4 is public. OTOH...
+FWIW, Google Cloud has been doing proactive reclaim and kstaled-based
+aging (a Google-internal page aging daemon, for those outside of
+Google) for many years on x86 VMs with the A-bit harvesting
+under the write-lock. So I'm skeptical that making ARM64 lockless is
+necessary to allow Secondary MMUs to participate in MGLRU aging with
+acceptable performance for Cloud usecases. I don't even think it's
+necessary on x86 but it's a simple enough change that we might as well
+just do it.
 
-> > The discussion that led to the design of v4 happened on list; you were
-> > on CC. The general consensus on the KVM side was that the bitmap was
-> > complicated and lacked independent justification. There was ample
-> > opportunity to voice your concerns before he spent the time on v4.
-> 
-> Please re-read my previous emails -- I never object to the removal of
-> the bitmap or James' approach.
-> 
-> And please stop making assumptions -- I did voice my concerns with
-> James privately.
-        ^~~~~~~~~
+I suspect under pathological conditions (host under intense memory
+pressure and high rate of reclaim occurring) making A-bit harvesting
+lockless will perform better. But under such conditions VM performance
+is likely going to suffer regardless. In a Cloud environment we deal
+with that through other mechanisms to reduce the rate of reclaim and
+make the host healthy.
 
-If it happened in private then its no better than having said nothing at
-all.
+For these reasons, I think there's value in giving users the option to
+enable Secondary MMUs participation MGLRU aging even when A-bit
+test/clearing is not done locklessly. I believe this was James' intent
+with the Kconfig. Perhaps a default-off writable module parameter
+would be better to avoid distros accidentally turning it on?
 
-Please, keep the conversation on-list next time so we can iron out any
-disagreements there. Otherwise contributors are put in a *very* awkward
-situation of mediating the on- and off-list dialogue.
-
-> > You seriously cannot fault a contributor for respinning their work based
-> > on the provided feedback.
-> 
-> Are you saying I faulted James for taking others' feedback?
-
-No. Sufficient justification is captured in the public review feedback +
-series cover letter. Your statement that the approach was changed without
-justification is unsubstantiated.
-
-> Also what do you think about the technical flaws and inaccurate
-> understandings I pointed out? You seem to have a strong opinion on
-> your iterate approach, but I hope you didn't choose to overlook the
-> real meat of this discussion.
-
-Serious question: are you not receiving my mail or something?
-
-I re-raised my question to you from ages ago about locking on the arm64
-MMU. You didn't answer last time, I'd appreciate a reply this time
-around.
-
-Otherwise I couldn't be bothered about the color of the Kconfig bikeshed
-and don't have anything meaningful to add there. I think the three of
-you are trending in the right direction.
-
--- 
-Thanks,
-Oliver
+If and when there is a usecase for optimizing VM performance under
+pathological reclaim conditions on ARM, we can make it lockless then.
