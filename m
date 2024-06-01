@@ -4,89 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA94FC25B76
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 06:20:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A65BC25B76
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 06:21:04 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nbu7sFZu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fuWtH7Ov;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vrqbn63gzz2xSN
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 16:20:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VrqcZ3prqz30TC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 16:21:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nbu7sFZu;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fuWtH7Ov;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrqVX66g7z30VM
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 16:15:48 +1000 (AEST)
-Received: from pps.filterd (m0353724.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 4515eDhj031165;
-	Sat, 1 Jun 2024 06:15:41 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrqVg5sJgz3bpN
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 16:15:55 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 4516E7eu019161;
+	Sat, 1 Jun 2024 06:15:48 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc :
  content-transfer-encoding : date : from : in-reply-to : message-id :
  mime-version : references : subject : to; s=pp1;
- bh=TYEBzrW07N/ogzV9Qw4w6v26sSbMMehVo778VYvCLw8=;
- b=nbu7sFZunFufatp1LA1ZhTLeauEVKjSzmYCGgyVy00Hksf1H894W/FtWQhw8GLaINDnZ
- 4Yy0OlruRePjFNIUzQNmxc19ljFfyqeLCj5sT/e3Tf5ePW1XeyY+0/un5deKIEYNAzx7
- /p8rIQf3I8bz0+IN/0TPbfDNVW+bhFBAPICMF4orIBZEgSmZGC0AJW3uj4+EtE0p2Kcd
- 2mqN1MEJg6jAYsOwyohqPMaFBHcqbbm3+j4yBwwGx/zp+s7GOEmoJ9k5Lo6h9o+JhgLi
- BatSCmTO2E3cfiY67FukX8utYh9SmNF1yAcyQR9sJ3LvENHq3lbUGhMFD8TkN0bbik5I GA== 
+ bh=aHiqJtG49mG0UaUX25LDdievEkHAG9gtPMzFgOfLaTM=;
+ b=fuWtH7OvD/0CUmHapJZK5uGrr+lXGnIoQPYPc0pgWJuSSnXYIrtUxIdwQiPAiiTjqpam
+ gONkWySWyGmSnpl696i51pmUG9MyUKLdO7di4pUWM5cX7KyOUjo1tCSuKXdlWhMYA+Ra
+ aEnDa94oqQXLulf04KA05AO+7YPt17mUcXUVmXVdcDLbSfoqBLyTAHxlCPNJfNomIAtV
+ b0DOMs4VChBLuDErCJTEpKaT6xWYpD1xtg4AIgbk+7HgwGJoCPMMB8xliyv9JhROjiPr
+ YP2VAFzxPHmpcH2tfEQmqvPh7KkbHGylAoTU61yxMTjEP5OTU4j13mXVcCg/sT/hTMK8 Bg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yfwgy02v4-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yfx5y00dc-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 01 Jun 2024 06:15:40 +0000
-Received: from m0353724.ppops.net (m0353724.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4516Fe22029417;
-	Sat, 1 Jun 2024 06:15:40 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yfwgy02uv-1
+	Sat, 01 Jun 2024 06:15:47 +0000
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4516Flxt022062;
+	Sat, 1 Jun 2024 06:15:47 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yfx5y00d5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 01 Jun 2024 06:15:40 +0000
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 4514JCSe002487;
-	Sat, 1 Jun 2024 06:10:39 GMT
+	Sat, 01 Jun 2024 06:15:47 +0000
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 4514JN2a013365;
+	Sat, 1 Jun 2024 06:10:46 GMT
 Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3yfv1k8k3w-1
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3yfvad8gn3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 01 Jun 2024 06:10:39 +0000
+	Sat, 01 Jun 2024 06:10:46 +0000
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4516AXRr28443118
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4516AeTE50069902
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 1 Jun 2024 06:10:35 GMT
+	Sat, 1 Jun 2024 06:10:42 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9CF602004F;
-	Sat,  1 Jun 2024 06:10:33 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 6B25520043;
+	Sat,  1 Jun 2024 06:10:40 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 99A2B20040;
-	Sat,  1 Jun 2024 06:10:30 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 730232005A;
+	Sat,  1 Jun 2024 06:10:37 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.43.41.43])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat,  1 Jun 2024 06:10:30 +0000 (GMT)
+	Sat,  1 Jun 2024 06:10:37 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
         irogers@google.com, namhyung@kernel.org, segher@kernel.crashing.org,
         christophe.leroy@csgroup.eu
-Subject: [PATCH V3 12/14] tools/perf: Add support to find global register variables using find_data_type_global_reg
-Date: Sat,  1 Jun 2024 11:39:39 +0530
-Message-Id: <20240601060941.13692-13-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH V3 14/14] tools/perf: Set instruction name to be used with insn-stat when using raw instruction
+Date: Sat,  1 Jun 2024 11:39:41 +0530
+Message-Id: <20240601060941.13692-15-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20240601060941.13692-1-atrajeev@linux.vnet.ibm.com>
 References: <20240601060941.13692-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: YnLTkwPlHASFDXP9MwvgOVdoMJY1iae3
-X-Proofpoint-ORIG-GUID: TV7vwEdfwX3HaOkaX7etqGHEWQxotae5
+X-Proofpoint-ORIG-GUID: 041M6fATO8LN5qK50JHckIFIKLqbJygf
+X-Proofpoint-GUID: enGxDQ5Wirs2hmalJlufVlz3u95idsUU
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.12.28.16
  definitions=2024-06-01_01,2024-05-30_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 phishscore=0
- impostorscore=0 adultscore=0 spamscore=0 mlxscore=0 priorityscore=1501
- malwarescore=0 mlxlogscore=999 lowpriorityscore=0 clxscore=1015
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999
+ lowpriorityscore=0 spamscore=0 mlxscore=0 clxscore=1015 malwarescore=0
+ priorityscore=1501 impostorscore=0 phishscore=0 suspectscore=0
+ adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2405010000 definitions=main-2406010046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,194 +103,186 @@ Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are cases where define a global register variable and associate it
-with a specified register. Example, in powerpc, two registers are
-defined to represent variable:
-1. r13: represents local_paca
-register struct paca_struct *local_paca asm("r13");
+Since the "ins.name" is not set while using raw instruction,
+perf annotate with insn-stat gives wrong data:
 
-2. r1: represents stack_pointer
-register void *__stack_pointer asm("r1");
+Result from "./perf annotate --data-type --insn-stat":
 
-These regs are present in dwarf debug as DW_OP_reg as part of variables
-in the cu_die (compile unit). These are not present in die search done
-in the list of nested scopes since these are global register variables.
+Annotate Instruction stats
+total 615, ok 419 (68.1%), bad 196 (31.9%)
 
-Example for local_paca represented by r13:
+  Name      :  Good   Bad
+-----------------------------------------------------------
+            :   419   196
 
-<<>>
- <1><18dc6b4>: Abbrev Number: 128 (DW_TAG_variable)
-    <18dc6b6>   DW_AT_name        : (indirect string, offset: 0x3861): local_paca
-    <18dc6ba>   DW_AT_decl_file   : 48
-    <18dc6bb>   DW_AT_decl_line   : 36
-    <18dc6bc>   DW_AT_decl_column : 30
-    <18dc6bd>   DW_AT_type        : <0x18dc6c3>
-    <18dc6c1>   DW_AT_external    : 1
-    <18dc6c1>   DW_AT_location    : 1 byte block: 5d    (DW_OP_reg13 (r13))
+Patch sets "dl->ins.name" in arch specific function "check_ppc_insn"
+while initialising "struct disasm_line". Also update "ins_find" function
+to pass "struct disasm_line" as a parameter so as to set its name field
+in arch specific call.
 
- <1><18dc6c3>: Abbrev Number: 3 (DW_TAG_pointer_type)
-    <18dc6c4>   DW_AT_byte_size   : 8
-    <18dc6c4>   DW_AT_type        : <0x18dc353>
+With the patch changes:
 
-Where  DW_AT_type : <0x18dc6c3> further points to :
+Annotate Instruction stats
+total 609, ok 446 (73.2%), bad 163 (26.8%)
 
- <1><18dc6c3>: Abbrev Number: 3 (DW_TAG_pointer_type)
-    <18dc6c4>   DW_AT_byte_size   : 8
-    <18dc6c4>   DW_AT_type        : <0x18dc353>
-
-which belongs to:
-
- <1><18dc353>: Abbrev Number: 67 (DW_TAG_structure_type)
-    <18dc354>   DW_AT_name        : (indirect string, offset: 0x56cd): paca_struct
-    <18dc358>   DW_AT_byte_size   : 2944
-    <18dc35a>   DW_AT_alignment   : 128
-    <18dc35b>   DW_AT_decl_file   : 48
-    <18dc35c>   DW_AT_decl_line   : 61
-    <18dc35d>   DW_AT_decl_column : 8
-    <18dc35d>   DW_AT_sibling     : <0x18dc6b4>
-<<>>
-
-Similar is case with "r1".
-
-<<>>
- <1><18dd772>: Abbrev Number: 129 (DW_TAG_variable)
-    <18dd774>   DW_AT_name        : (indirect string, offset: 0x11ba): current_stack_pointer
-    <18dd778>   DW_AT_decl_file   : 51
-    <18dd779>   DW_AT_decl_line   : 1468
-    <18dd77b>   DW_AT_decl_column : 24
-    <18dd77c>   DW_AT_type        : <0x18da5cd>
-    <18dd780>   DW_AT_external    : 1
-    <18dd780>   DW_AT_location    : 1 byte block: 51    (DW_OP_reg1 (r1))
-
- where 18da5cd is:
-
- <1><18da5cd>: Abbrev Number: 47 (DW_TAG_base_type)
-    <18da5ce>   DW_AT_byte_size   : 8
-    <18da5cf>   DW_AT_encoding    : 7   (unsigned)
-    <18da5d0>   DW_AT_name        : (indirect string, offset: 0x55c7): long unsigned int
-<<>>
-
-To identify data type for these two special cases, iterate over
-variables in the CU die (Compile Unit) and match it with the register.
-If the variable is a base type, ie die_get_real_type will return NULL
-here, set offset to zero. With the changes, data type for "paca_struct"
-and "long unsigned int" for r1 is identified.
-
-Snippet from ./perf report -s type,type_off
-
-    12.85%  long unsigned int  long unsigned int +0 (no field)
-     4.68%  struct paca_struct  struct paca_struct +2312 (__current)
-     4.57%  struct paca_struct  struct paca_struct +2354 (irq_soft_mask)
+  Name/opcode:  Good   Bad
+-----------------------------------------------------------
+  58                  :   323    80
+  32                  :    49    43
+  34                  :    33    11
+  OP_31_XOP_LDX       :     8    20
+  40                  :    23     0
+  OP_31_XOP_LWARX     :     5     1
+  OP_31_XOP_LWZX      :     2     3
+  OP_31_XOP_LDARX     :     3     0
+  33                  :     0     2
+  OP_31_XOP_LBZX      :     0     1
+  OP_31_XOP_LWAX      :     0     1
+  OP_31_XOP_LHZX      :     0     1
 
 Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 ---
- tools/perf/util/annotate-data.c      | 40 ++++++++++++++++++++++++++++
- tools/perf/util/annotate.c           |  8 ++++++
- tools/perf/util/annotate.h           |  1 +
- tools/perf/util/include/dwarf-regs.h |  1 +
- 4 files changed, 50 insertions(+)
+ .../perf/arch/powerpc/annotate/instructions.c  | 18 +++++++++++++++---
+ tools/perf/builtin-annotate.c                  |  4 ++--
+ tools/perf/util/annotate.c                     |  2 +-
+ tools/perf/util/disasm.c                       | 10 +++++-----
+ tools/perf/util/disasm.h                       |  2 +-
+ 5 files changed, 24 insertions(+), 12 deletions(-)
 
-diff --git a/tools/perf/util/annotate-data.c b/tools/perf/util/annotate-data.c
-index 734acdd8c4b7..82232f2d8e16 100644
---- a/tools/perf/util/annotate-data.c
-+++ b/tools/perf/util/annotate-data.c
-@@ -1170,6 +1170,40 @@ static int find_data_type_block(struct data_loc_info *dloc,
- 	return ret;
+diff --git a/tools/perf/arch/powerpc/annotate/instructions.c b/tools/perf/arch/powerpc/annotate/instructions.c
+index 3ecf5a986037..c4113b3ee71a 100644
+--- a/tools/perf/arch/powerpc/annotate/instructions.c
++++ b/tools/perf/arch/powerpc/annotate/instructions.c
+@@ -189,8 +189,9 @@ static int cmp_offset(const void *a, const void *b)
+ 	return (val1->value - val2->value);
  }
  
-+/*
-+ * Handle cases where define a global register variable and
-+ * associate it with a specified register. These regs are
-+ * present in dwarf debug as DW_OP_reg as part of variables
-+ * in the cu_die (compile unit). Iterate over variables in the
-+ * cu_die and match with reg to identify data type die.
-+ */
-+static int find_data_type_global_reg(struct data_loc_info *dloc, int reg, Dwarf_Die *cu_die,
-+		Dwarf_Die *type_die)
-+{
-+	Dwarf_Die vr_die;
-+	int ret = -1;
-+	struct die_var_type *var_types = NULL;
-+
-+	die_collect_vars(cu_die, &var_types);
-+	while (var_types) {
-+		if (var_types->reg == reg) {
-+			if (dwarf_offdie(dloc->di->dbg, var_types->die_off, &vr_die)) {
-+				if (die_get_real_type(&vr_die, type_die) == NULL) {
-+					dloc->type_offset = 0;
-+					dwarf_offdie(dloc->di->dbg, var_types->die_off, type_die);
-+				}
-+				pr_debug_type_name(type_die, TSR_KIND_TYPE);
-+				ret = 0;
-+				pr_debug_dtp("found by CU for %s (die:%#lx)\n",
-+						dwarf_diename(type_die), (long)dwarf_dieoffset(type_die));
-+			}
-+			break;
-+		}
-+		var_types = var_types->next;
-+	}
-+	return ret;
-+}
-+
- /* The result will be saved in @type_die */
- static int find_data_type_die(struct data_loc_info *dloc, Dwarf_Die *type_die)
+-static struct ins_ops *check_ppc_insn(int raw_insn)
++static struct ins_ops *check_ppc_insn(struct disasm_line *dl)
  {
-@@ -1217,6 +1251,12 @@ static int find_data_type_die(struct data_loc_info *dloc, Dwarf_Die *type_die)
- 	pr_debug_dtp("CU for %s (die:%#lx)\n",
- 		     dwarf_diename(&cu_die), (long)dwarf_dieoffset(&cu_die));
++	int raw_insn = dl->ops.raw_insn;
+ 	int opcode = PPC_OP(raw_insn);
+ 	int mem_insn_31 = PPC_21_30(raw_insn);
+ 	struct insn_offset *ret;
+@@ -198,19 +199,30 @@ static struct ins_ops *check_ppc_insn(int raw_insn)
+ 		"OP_31_INSN",
+ 		mem_insn_31
+ 	};
++	char name_insn[32];
  
-+	if (loc->reg_type == DWARF_REG_GLOBAL) {
-+		ret = find_data_type_global_reg(dloc, reg, &cu_die, type_die);
-+		if (!ret)
-+			goto out;
-+	}
-+
- 	if (reg == DWARF_REG_PC) {
- 		if (get_global_var_type(&cu_die, dloc, dloc->ip, dloc->var_addr,
- 					&offset, type_die)) {
+ 	/*
+ 	 * Instructions with opcode 32 to 63 are memory
+ 	 * instructions in powerpc
+ 	 */
+ 	if ((opcode & 0x20)) {
++		/*
++		 * Set name in case of raw instruction to
++		 * opcode to be used in insn-stat
++		 */
++		if (!strlen(dl->ins.name)) {
++			sprintf(name_insn, "%d", opcode);
++			dl->ins.name = strdup(name_insn);
++		}
+ 		return &load_store_ops;
+ 	} else if (opcode == 31) {
+ 		/* Check for memory instructions with opcode 31 */
+ 		ret = bsearch(&mem_insns_31_opcode, ins_array, ARRAY_SIZE(ins_array), sizeof(ins_array[0]), cmp_offset);
+-		if (ret != NULL)
++		if (ret) {
++			if (!strlen(dl->ins.name))
++				dl->ins.name = strdup(ret->name);
+ 			return &load_store_ops;
+-		else {
++		} else {
+ 			mem_insns_31_opcode.value = PPC_22_30(raw_insn);
+ 			ret = bsearch(&mem_insns_31_opcode, arithmetic_ins_op_31, ARRAY_SIZE(arithmetic_ins_op_31),
+ 					sizeof(arithmetic_ins_op_31[0]), cmp_offset);
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 50d2fb222d48..926467b9a023 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -396,10 +396,10 @@ static void print_annotate_item_stat(struct list_head *head, const char *title)
+ 	printf("total %d, ok %d (%.1f%%), bad %d (%.1f%%)\n\n", total,
+ 	       total_good, 100.0 * total_good / (total ?: 1),
+ 	       total_bad, 100.0 * total_bad / (total ?: 1));
+-	printf("  %-10s: %5s %5s\n", "Name", "Good", "Bad");
++	printf("  %-10s: %5s %5s\n", "Name/opcode", "Good", "Bad");
+ 	printf("-----------------------------------------------------------\n");
+ 	list_for_each_entry(istat, head, list)
+-		printf("  %-10s: %5d %5d\n", istat->name, istat->good, istat->bad);
++		printf("  %-20s: %5d %5d\n", istat->name, istat->good, istat->bad);
+ 	printf("\n");
+ }
+ 
 diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
-index 2b8cc759ae35..ddb36dddb8cc 100644
+index ddb36dddb8cc..b8fc663dad4c 100644
 --- a/tools/perf/util/annotate.c
 +++ b/tools/perf/util/annotate.c
-@@ -2431,6 +2431,14 @@ struct annotated_data_type *hist_entry__get_data_type(struct hist_entry *he)
- 			op_loc->reg1 = DWARF_REG_PC;
- 		}
+@@ -2235,7 +2235,7 @@ static struct annotated_item_stat *annotate_data_stat(struct list_head *head,
+ 		return NULL;
  
-+		/* Global reg variable 13 and 1
-+		 * assign to DWARF_REG_GLOBAL
-+		 */
-+		if (arch__is(arch, "powerpc")) {
-+			if ((op_loc->reg1 == 13) || (op_loc->reg1 == 1))
-+				op_loc->reg_type = DWARF_REG_GLOBAL;
-+		}
-+
- 		mem_type = find_data_type(&dloc);
+ 	istat->name = strdup(name);
+-	if (istat->name == NULL) {
++	if ((istat->name == NULL) || (!strlen(istat->name))) {
+ 		free(istat);
+ 		return NULL;
+ 	}
+diff --git a/tools/perf/util/disasm.c b/tools/perf/util/disasm.c
+index 915508d2e197..94ca0b8759fe 100644
+--- a/tools/perf/util/disasm.c
++++ b/tools/perf/util/disasm.c
+@@ -868,7 +868,7 @@ static void ins__sort(struct arch *arch)
+ 	qsort(arch->instructions, nmemb, sizeof(struct ins), ins__cmp);
+ }
  
- 		if (mem_type == NULL && is_stack_canary(arch, op_loc)) {
-diff --git a/tools/perf/util/annotate.h b/tools/perf/util/annotate.h
-index d5c821c22f79..43ae75d8356b 100644
---- a/tools/perf/util/annotate.h
-+++ b/tools/perf/util/annotate.h
-@@ -472,6 +472,7 @@ struct annotated_op_loc {
- 	bool mem_ref;
- 	bool multi_regs;
- 	bool imm;
-+	int reg_type;
- };
+-static struct ins_ops *__ins__find(struct arch *arch, const char *name, int raw_insn)
++static struct ins_ops *__ins__find(struct arch *arch, const char *name, struct disasm_line *dl)
+ {
+ 	struct ins *ins;
+ 	const int nmemb = arch->nr_instructions;
+@@ -880,7 +880,7 @@ static struct ins_ops *__ins__find(struct arch *arch, const char *name, int raw_
+ 		 */
+ 		struct ins_ops *ops;
  
- enum annotated_insn_ops {
-diff --git a/tools/perf/util/include/dwarf-regs.h b/tools/perf/util/include/dwarf-regs.h
-index 7ea39362ecaf..a873c906a86b 100644
---- a/tools/perf/util/include/dwarf-regs.h
-+++ b/tools/perf/util/include/dwarf-regs.h
-@@ -5,6 +5,7 @@
+-		ops = check_ppc_insn(raw_insn);
++		ops = check_ppc_insn(dl);
+ 		if (ops)
+ 			return ops;
+ 	}
+@@ -914,9 +914,9 @@ static struct ins_ops *__ins__find(struct arch *arch, const char *name, int raw_
+ 	return ins ? ins->ops : NULL;
+ }
  
- #define DWARF_REG_PC  0xd3af9c /* random number */
- #define DWARF_REG_FB  0xd3affb /* random number */
-+#define DWARF_REG_GLOBAL 0xd3affc /* random number */
+-struct ins_ops *ins__find(struct arch *arch, const char *name, int raw_insn)
++struct ins_ops *ins__find(struct arch *arch, const char *name, struct disasm_line *dl)
+ {
+-	struct ins_ops *ops = __ins__find(arch, name, raw_insn);
++	struct ins_ops *ops = __ins__find(arch, name, dl);
  
- #ifdef HAVE_DWARF_SUPPORT
- const char *get_arch_regstr(unsigned int n);
+ 	if (!ops && arch->associate_instruction_ops)
+ 		ops = arch->associate_instruction_ops(arch, name);
+@@ -926,7 +926,7 @@ struct ins_ops *ins__find(struct arch *arch, const char *name, int raw_insn)
+ 
+ static void disasm_line__init_ins(struct disasm_line *dl, struct arch *arch, struct map_symbol *ms)
+ {
+-	dl->ins.ops = ins__find(arch, dl->ins.name, dl->ops.raw_insn);
++	dl->ins.ops = ins__find(arch, dl->ins.name, dl);
+ 
+ 	if (!dl->ins.ops)
+ 		return;
+diff --git a/tools/perf/util/disasm.h b/tools/perf/util/disasm.h
+index 831ebcc329cd..2788c3fe2157 100644
+--- a/tools/perf/util/disasm.h
++++ b/tools/perf/util/disasm.h
+@@ -106,7 +106,7 @@ struct annotate_args {
+ struct arch *arch__find(const char *name);
+ bool arch__is(struct arch *arch, const char *name);
+ 
+-struct ins_ops *ins__find(struct arch *arch, const char *name, int raw_insn);
++struct ins_ops *ins__find(struct arch *arch, const char *name, struct disasm_line *dl);
+ int ins__scnprintf(struct ins *ins, char *bf, size_t size,
+ 		   struct ins_operands *ops, int max_ins_name);
+ 
 -- 
 2.43.0
 
