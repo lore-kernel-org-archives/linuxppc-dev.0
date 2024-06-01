@@ -4,70 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30867C25B76
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 06:03:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACA1FC25B76
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 06:11:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=DSPY6Sup;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AzQ2w0pT;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VrqDD6nlbz30gp
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 16:03:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VrqNz4r5sz30T1
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Jun 2024 16:10:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=DSPY6Sup;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AzQ2w0pT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=yuzhao@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrqCM67jjz30Sr
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 16:02:38 +1000 (AEST)
-Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-41fef5dda72so22485e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 May 2024 23:02:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1717221748; x=1717826548; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=03Wu35we0AtpCbYTPC6nQVPEe1FBNArJXj6MHkLG5QE=;
-        b=DSPY6SupCyyBKVjRk4PzngQY/9MJ9KLft0YzB3fWZkOIP15TOZvL3Ketk4cXkOT034
-         g7TDtmFyhfEonyfOLcCkekCdMMOQOnQu0RapDAAz8VLEBXuIRqgVyyBKlQkabNU9ZU0+
-         0B2Pneqy5F/BMFWDhqQoU8swRF0752KaU9AaP+F7YfBeNhFQKtYwOCC74Ib5Iaq7db/Z
-         0BIiqyA2iMrJPDiK2nu0u8l/Cke0wZ1TlTCQ1pemfFQgvxtRzcRFu158HgR/C3pm2R4f
-         09AMuiE3SgLe2dXXHG9T5vH030BqDZj8AK4X5s+zuwwMGzkrScH5iK2jtPnt95q1YCO4
-         5esQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717221748; x=1717826548;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=03Wu35we0AtpCbYTPC6nQVPEe1FBNArJXj6MHkLG5QE=;
-        b=WJv+5YA7YgKWbLnS2QOXDAwH8sN2xQqWsUNT115K6jElo3izhYBWKquHdIFoA8n5ju
-         +GB3WzvjCu2IwX4+NaZUL65TV/bEgO2u4Ylsn4uvOFx6aNAEqooqWb3Hfzdq/jibWmDD
-         axGPV9iYidIBHU+/ZtS3pK/WHD1QAsaM3T4w6VQMpe8JadPD3eNBma1AunlK0jTkOWa2
-         p+6VWoo81P43e7Gl6hbTkD3+TQTI41GLMlGnQlKk5zn3e9YsoXtSX/k5EssZT7pyquaG
-         xjD56Kt3EhonAe3quieHC6XJOvj97GeZBN3IprsI4ozCCZ6TM14o3BsSp+iR8PMjBO0+
-         o8PA==
-X-Forwarded-Encrypted: i=1; AJvYcCVavhzoA8zacsfOCsNAq4cHpoRuQVOgdBJeNjxDH7rrfq44HvtzN9D+9Kxv/Uxcjs2ldaWEsyFWBGXuTvXPryTzEy3eOlpL0Inqm11Ekw==
-X-Gm-Message-State: AOJu0YzZocoMnGA5Ug6OkxA7grFkogDXhtTySF7yZWPXMXxBjxSGMKIz
-	1ort+0SUDe3wsCJAK10zcSSr5m2K8t/YuLq7vRcYqoxZheFaZ9CVddqbkCLVpGCDux/tOi4iFnA
-	jjvjiqCu0ES+rBjfbJDXrR0hWsSVrc1kYHMoW
-X-Google-Smtp-Source: AGHT+IEVUzMdm8Lm7SZSaitHhHrP131BbDBUR9UqoctY0LV310H6evrUmHxPt9jXfff6VgaBsMCnfOFvtBHzsqfwy5Y=
-X-Received: by 2002:a05:600c:3ca6:b0:41b:4c6a:de6d with SMTP id
- 5b1f17b1804b1-421358c4114mr613585e9.5.1717221747058; Fri, 31 May 2024
- 23:02:27 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VrqN93JcHz301T
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Jun 2024 16:10:17 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 4515tSt6029398;
+	Sat, 1 Jun 2024 06:10:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc :
+ content-transfer-encoding : date : from : in-reply-to : message-id :
+ mime-version : references : subject : to; s=pp1;
+ bh=co57nuNrHPYEE66TT44hKD3LaG//aQrqYGNHuVsyeuY=;
+ b=AzQ2w0pT3CurSdc8ZHlGdTnPyqOQhmDgNaCllmGCjmYCyycQav2PRJJoqpY052rtneku
+ 1nazzWytN5XhK4mzufl8k0UfHfxhALqNJKOACNR/dKBnH0MWbB+JapzlW1EV7opRGB0H
+ wQpSejqps82S5EPtRvIyCLJTud3yTxhgPh6r87VCBQDRR8jsO/h8cuhllK98mJkQ2fAX
+ CzKqF/VClY4eInS4ROlxGLi6rqbfMgg+St84ReF26nWw+RnwM0kIlIHRe8GJGNU+X4of
+ 4BfxiPq0qAqzoJGxw45UaiRktnyj7yIiJ+4jvtjbRt0psA+rHS0i1Q5k3WCumzG/CZmL vw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yfvq0g62d-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 01 Jun 2024 06:10:02 +0000
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 4516A1Ig024915;
+	Sat, 1 Jun 2024 06:10:01 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yfvq0g629-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 01 Jun 2024 06:10:01 +0000
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 4514JLr7003114;
+	Sat, 1 Jun 2024 06:10:00 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3yfv3j0j41-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 01 Jun 2024 06:10:00 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 45169sef52887992
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 1 Jun 2024 06:09:56 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9BFC020040;
+	Sat,  1 Jun 2024 06:09:54 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A4E5E2004B;
+	Sat,  1 Jun 2024 06:09:51 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.43.41.43])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat,  1 Jun 2024 06:09:51 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        irogers@google.com, namhyung@kernel.org, segher@kernel.crashing.org,
+        christophe.leroy@csgroup.eu
+Subject: [PATCH V3 01/14] tools/perf: Move the data structures related to register type to header file
+Date: Sat,  1 Jun 2024 11:39:28 +0530
+Message-Id: <20240601060941.13692-2-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20240601060941.13692-1-atrajeev@linux.vnet.ibm.com>
+References: <20240601060941.13692-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-References: <20240508202111.768b7a4d@yea> <20240515224524.1c8befbe@yea> <CAOUHufZ-9NmzOKjLedvZFp0=N0LvRZn77qC6k1WXK+NHtKr=0w@mail.gmail.com>
-In-Reply-To: <CAOUHufZ-9NmzOKjLedvZFp0=N0LvRZn77qC6k1WXK+NHtKr=0w@mail.gmail.com>
-From: Yu Zhao <yuzhao@google.com>
-Date: Sat, 1 Jun 2024 00:01:48 -0600
-Message-ID: <CAOUHufZ36rQc8AfLtRv2QrEareysdvbprAEO5XkcG-FeDOxFLA@mail.gmail.com>
-Subject: Re: kswapd0: page allocation failure: order:0, mode:0x820(GFP_ATOMIC),
- nodemask=(null),cpuset=/,mems_allowed=0 (Kernel v6.5.9, 32bit ppc)
-To: Erhard Furtner <erhard_f@mailbox.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: cflkpj7SKg07U9iI_G0jhoOvrylkmw80
+X-Proofpoint-GUID: M4shfdqvG4oYvaS4BMcU8N54aYGlBGe3
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.650,FMLib:17.12.28.16
+ definitions=2024-06-01_01,2024-05-30_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ clxscore=1015 mlxlogscore=999 adultscore=0 mlxscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 bulkscore=0 impostorscore=0
+ priorityscore=1501 phishscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2405010000 definitions=main-2406010045
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,363 +99,184 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.org, akanksha@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, May 15, 2024 at 4:06=E2=80=AFPM Yu Zhao <yuzhao@google.com> wrote:
->
-> On Wed, May 15, 2024 at 2:45=E2=80=AFPM Erhard Furtner <erhard_f@mailbox.=
-org> wrote:
-> >
-> > On Wed, 8 May 2024 20:21:11 +0200
-> > Erhard Furtner <erhard_f@mailbox.org> wrote:
-> >
-> > > Greetings!
-> > >
-> > > Got that on my dual CPU PowerMac G4 DP shortly after boot. This does =
-not happen every time at bootup though:
-> > >
-> > > [...]
-> > > kswapd0: page allocation failure: order:0, mode:0x820(GFP_ATOMIC), no=
-demask=3D(null),cpuset=3D/,mems_allowed=3D0
-> > > CPU: 1 PID: 40 Comm: kswapd0 Not tainted 6.8.9-gentoo-PMacG4 #1
-> > > Hardware name: PowerMac3,6 7455 0x80010303 PowerMac
-> >
-> > Very similar page allocation failure on the same machine on kernel 6.9.=
-0 too. Seems it can easily be provoked by running a memory stressor, e.g. "=
-stress-ng --vm 2 --vm-bytes 1930M --verify -v":
-> >
-> > [...]
-> > kswapd0: page allocation failure: order:0, mode:0xcc0(GFP_KERNEL), node=
-mask=3D(null),cpuset=3D/,mems_allowed=3D0
-> > CPU: 0 PID: 41 Comm: kswapd0 Not tainted 6.9.0-gentoo-PMacG4 #1
-> > Hardware name: PowerMac3,6 7455 0x80010303 PowerMac
-> > Call Trace:
-> > [c1c65940] [c07926d4] dump_stack_lvl+0x80/0xac (unreliable)
-> > [c1c65960] [c01b6234] warn_alloc+0x100/0x178
-> > [c1c659c0] [c01b661c] __alloc_pages+0x370/0x8d0
-> > [c1c65a80] [c01c4854] __read_swap_cache_async+0xc0/0x1cc
-> > [c1c65ad0] [c01cb580] zswap_writeback_entry+0x50/0x154
-> > [c1c65be0] [c01cb6f4] shrink_memcg_cb+0x70/0xec
-> > [c1c65c10] [c019518c] __list_lru_walk_one+0xa0/0x154
-> > [c1c65c70] [c01952a4] list_lru_walk_one+0x64/0x7c
-> > [c1c65ca0] [c01cad00] zswap_shrinker_scan+0xac/0xc4
-> > [c1c65cd0] [c018052c] do_shrink_slab+0x18c/0x304
-> > [c1c65d20] [c0180a40] shrink_slab+0x174/0x260
-> > [c1c65da0] [c017cb0c] shrink_one+0xbc/0x134
-> > [c1c65dd0] [c017e3e4] shrink_node+0x238/0x84c
-> > [c1c65e50] [c017ed38] balance_pgdat+0x340/0x650
-> > [c1c65f50] [c017f270] kswapd+0x228/0x25c
-> > [c1c65fc0] [c006bbac] kthread+0xe4/0xe8
-> > [c1c65ff0] [c0015304] start_kernel_thread+0x10/0x14
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 15, objs: 225, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 15, objs: 225, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 15, objs: 225, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 15, objs: 225, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 15, objs: 225, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: kmalloc-rnd-15-2k, object size: 2048, buffer size: 6144, defau=
-lt order: 3, min order: 1
-> >   kmalloc-rnd-15-2k debugging increased min order, use slab_debug=3DO t=
-o disable.
-> >   node 0: slabs: 33, objs: 165, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 15, objs: 225, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: kmalloc-rnd-15-2k, object size: 2048, buffer size: 6144, defau=
-lt order: 3, min order: 1
-> >   kmalloc-rnd-15-2k debugging increased min order, use slab_debug=3DO t=
-o disable.
-> >   node 0: slabs: 33, objs: 165, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 15, objs: 225, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: kmalloc-rnd-15-2k, object size: 2048, buffer size: 6144, defau=
-lt order: 3, min order: 1
-> >   kmalloc-rnd-15-2k debugging increased min order, use slab_debug=3DO t=
-o disable.
-> >   node 0: slabs: 33, objs: 165, free: 0
-> > Mem-Info:
-> > active_anon:340071 inactive_anon:139179 isolated_anon:0
-> >  active_file:8297 inactive_file:2506 isolated_file:0
-> >  unevictable:4 dirty:1 writeback:18
-> >  slab_reclaimable:1377 slab_unreclaimable:7426
-> >  mapped:6804 shmem:112 pagetables:946
-> >  sec_pagetables:0 bounce:0
-> >  kernel_misc_reclaimable:0
-> >  free:1141 free_pcp:7 free_cma:0
-> > Node 0 active_anon:1360284kB inactive_anon:556716kB active_file:33188kB=
- inactive_file:10024kB unevictable:16kB isolated(anon):0kB isolated(file):0=
-kB mapped:27216kB dirty:4kB writeback:72kB shmem:448kB writeback_tmp:0kB ke=
-rnel_stack:1560kB pagetables:3784kB sec_pagetables:0kB all_unreclaimable? n=
-o
-> > DMA free:56kB boost:7756kB min:11208kB low:12068kB high:12928kB reserve=
-d_highatomic:0KB active_anon:635128kB inactive_anon:58260kB active_file:268=
-kB inactive_file:3000kB unevictable:0kB writepending:324kB present:786432kB=
- managed:746644kB mlocked:0kB bounce:0kB free_pcp:28kB local_pcp:28kB free_=
-cma:0kB
-> > lowmem_reserve[]: 0 0 1280 1280
-> > DMA: 0*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB =
-0*2048kB 0*4096kB =3D 0kB
-> > 63943 total pagecache pages
-> > 53024 pages in swap cache
-> > Free swap  =3D 8057248kB
-> > Total swap =3D 8388604kB
-> > 524288 pages RAM
-> > 327680 pages HighMem/MovableOnly
-> > 9947 pages reserved
-> > warn_alloc: 396 callbacks suppressed
-> > kswapd0: page allocation failure: order:0, mode:0xcc0(GFP_KERNEL), node=
-mask=3D(null),cpuset=3D/,mems_allowed=3D0
-> > CPU: 1 PID: 41 Comm: kswapd0 Not tainted 6.9.0-gentoo-PMacG4 #1
-> > Hardware name: PowerMac3,6 7455 0x80010303 PowerMac
-> > Call Trace:
-> > [c1c65940] [c07926d4] dump_stack_lvl+0x80/0xac (unreliable)
-> > [c1c65960] [c01b6234] warn_alloc+0x100/0x178
-> > [c1c659c0] [c01b661c] __alloc_pages+0x370/0x8d0
-> > [c1c65a80] [c01c4854] __read_swap_cache_async+0xc0/0x1cc
-> > [c1c65ad0] [c01cb580] zswap_writeback_entry+0x50/0x154
-> > [c1c65be0] [c01cb6f4] shrink_memcg_cb+0x70/0xec
-> > [c1c65c10] [c019518c] __list_lru_walk_one+0xa0/0x154
-> > [c1c65c70] [c01952a4] list_lru_walk_one+0x64/0x7c
-> > [c1c65ca0] [c01cad00] zswap_shrinker_scan+0xac/0xc4
-> > [c1c65cd0] [c018052c] do_shrink_slab+0x18c/0x304
-> > [c1c65d20] [c0180a40] shrink_slab+0x174/0x260
-> > [c1c65da0] [c017cb0c] shrink_one+0xbc/0x134
-> > [c1c65dd0] [c017e3e4] shrink_node+0x238/0x84c
-> > [c1c65e50] [c017ed38] balance_pgdat+0x340/0x650
-> > [c1c65f50] [c017f270] kswapd+0x228/0x25c
-> > slab_out_of_memory: 53 callbacks suppressed
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: kmalloc-rnd-15-2k, object size: 2048, buffer size: 6144, defau=
-lt order: 3, min order: 1
-> >   kmalloc-rnd-15-2k debugging increased min order, use slab_debug=3DO t=
-o disable.
-> >   node 0: slabs: 33, objs: 165, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: kmalloc-rnd-15-2k, object size: 2048, buffer size: 6144, defau=
-lt order: 3, min order: 1
-> >   kmalloc-rnd-15-2k debugging increased min order, use slab_debug=3DO t=
-o disable.
-> >   node 0: slabs: 33, objs: 165, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: kmalloc-rnd-15-2k, object size: 2048, buffer size: 6144, defau=
-lt order: 3, min order: 1
-> >   kmalloc-rnd-15-2k debugging increased min order, use slab_debug=3DO t=
-o disable.
-> >   node 0: slabs: 33, objs: 165, free: 0
-> > [c1c65fc0] [c006bbac] kthread+0xe4/0xe8
-> > [c1c65ff0] [c0015304] start_kernel_thread+0x10/0x14
-> > Mem-Info:
-> > active_anon:351976 inactive_anon:123514 isolated_anon:0
-> >  active_file:4648 inactive_file:2081 isolated_file:0
-> >  unevictable:4 dirty:1 writeback:39
-> >  slab_reclaimable:918 slab_unreclaimable:7222
-> >  mapped:5359 shmem:21 pagetables:940
-> >  sec_pagetables:0 bounce:0
-> >  kernel_misc_reclaimable:0
-> >  free:2563 free_pcp:142 free_cma:0
-> > Node 0 active_anon:1407904kB inactive_anon:494056kB active_file:18592kB=
- inactive_file:8324kB unevictable:16kB isolated(anon):0kB isolated(file):0k=
-B mapped:21436kB dirty:4kB writeback:156kB shmem:84kB writeback_tmp:0kB ker=
-nel_stack:1552kB pagetables:3760kB sec_pagetables:0kB all_unreclaimable? no
-> > DMA free:0kB boost:7756kB min:11208kB low:12068kB high:12928kB reserved=
-_highatomic:0KB active_anon:199336kB inactive_anon:491432kB active_file:461=
-2kB inactive_file:5980kB unevictable:0kB writepending:660kB present:786432k=
-B managed:746644kB mlocked:0kB bounce:0kB free_pcp:568kB local_pcp:20kB fre=
-e_cma:0kB
-> > lowmem_reserve[]: 0 0 1280 1280
-> > DMA: 0*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB =
-0*2048kB 0*4096kB =3D 0kB
-> > 45961 total pagecache pages
-> > 39207 pages in swap cache
-> > Free swap  =3D 8093096kB
-> > Total swap =3D 8388604kB
-> > 524288 pages RAM
-> > 327680 pages HighMem/MovableOnly
-> > 9947 pages reserved
-> > warn_alloc: 343 callbacks suppressed
-> > kswapd0: page allocation failure: order:0, mode:0xcc0(GFP_KERNEL), node=
-mask=3D(null),cpuset=3D/,mems_allowed=3D0
-> > CPU: 0 PID: 41 Comm: kswapd0 Not tainted 6.9.0-gentoo-PMacG4 #1
-> > Hardware name: PowerMac3,6 7455 0x80010303 PowerMac
-> > Call Trace:
-> > [c1c65940] [c07926d4] dump_stack_lvl+0x80/0xac (unreliable)
-> > [c1c65960] [c01b6234] warn_alloc+0x100/0x178
-> > [c1c659c0] [c01b661c] __alloc_pages+0x370/0x8d0
-> > [c1c65a80] [c01c4854] __read_swap_cache_async+0xc0/0x1cc
-> > [c1c65ad0] [c01cb580] zswap_writeback_entry+0x50/0x154
-> > [c1c65be0] [c01cb6f4] shrink_memcg_cb+0x70/0xec
-> > [c1c65c10] [c019518c] __list_lru_walk_one+0xa0/0x154
-> > slab_out_of_memory: 59 callbacks suppressed
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: kmalloc-rnd-15-2k, object size: 2048, buffer size: 6144, defau=
-lt order: 3, min order: 1
-> >   kmalloc-rnd-15-2k debugging increased min order, use slab_debug=3DO t=
-o disable.
-> >   node 0: slabs: 33, objs: 165, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: kmalloc-rnd-15-2k, object size: 2048, buffer size: 6144, defau=
-lt order: 3, min order: 1
-> >   kmalloc-rnd-15-2k debugging increased min order, use slab_debug=3DO t=
-o disable.
-> >   node 0: slabs: 33, objs: 165, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: skbuff_small_head, object size: 480, buffer size: 544, default=
- order: 1, min order: 0
-> >   node 0: slabs: 18, objs: 270, free: 0
-> > SLUB: Unable to allocate memory on node -1, gfp=3D0x820(GFP_ATOMIC)
-> >   cache: kmalloc-rnd-15-2k, object size: 2048, buffer size: 6144, defau=
-lt order: 3, min order: 1
-> >   kmalloc-rnd-15-2k debugging increased min order, use slab_debug=3DO t=
-o disable.
-> >   node 0: slabs: 33, objs: 165, free: 0
-> > [c1c65c70] [c01952a4] list_lru_walk_one+0x64/0x7c
-> > [c1c65ca0] [c01cad00] zswap_shrinker_scan+0xac/0xc4
-> > [c1c65cd0] [c018052c] do_shrink_slab+0x18c/0x304
-> > [c1c65d20] [c0180a40] shrink_slab+0x174/0x260
-> > [c1c65da0] [c017cb0c] shrink_one+0xbc/0x134
-> > [c1c65dd0] [c017e3e4] shrink_node+0x238/0x84c
-> > [c1c65e50] [c017ed38] balance_pgdat+0x340/0x650
-> > [c1c65f50] [c017f270] kswapd+0x228/0x25c
-> > [c1c65fc0] [c006bbac] kthread+0xe4/0xe8
-> > [c1c65ff0] [c0015304] start_kernel_thread+0x10/0x14
-> > Mem-Info:
-> > active_anon:235002 inactive_anon:240975 isolated_anon:0
-> >  active_file:4356 inactive_file:2551 isolated_file:0
-> >  unevictable:4 dirty:7 writeback:19
-> >  slab_reclaimable:1008 slab_unreclaimable:7218
-> >  mapped:5601 shmem:21 pagetables:939
-> >  sec_pagetables:0 bounce:0
-> >  kernel_misc_reclaimable:0
-> >  free:1340 free_pcp:23 free_cma:0
-> > Node 0 active_anon:940008kB inactive_anon:963900kB active_file:17424kB =
-inactive_file:10204kB unevictable:16kB isolated(anon):0kB isolated(file):0k=
-B mapped:22404kB dirty:28kB writeback:76kB shmem:84kB writeback_tmp:0kB ker=
-nel_stack:1552kB pagetables:3756kB sec_pagetables:0kB all_unreclaimable? no
-> > DMA free:0kB boost:7756kB min:11208kB low:12068kB high:12928kB reserved=
-_highatomic:0KB active_anon:644060kB inactive_anon:36332kB active_file:5276=
-kB inactive_file:5516kB unevictable:0kB writepending:348kB present:786432kB=
- managed:746644kB mlocked:0kB bounce:0kB free_pcp:92kB local_pcp:92kB free_=
-cma:0kB
-> > lowmem_reserve[]: 0 0 1280 1280
-> > DMA: 0*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB =
-0*2048kB 0*4096kB =3D 0kB
-> > 116345 total pagecache pages
-> > 109413 pages in swap cache
-> > Free swap  =3D 7819300kB
-> > Total swap =3D 8388604kB
-> > 524288 pages RAM
-> > 327680 pages HighMem/MovableOnly
-> > 9947 pages reserved
-> >
-> >
-> > I switched from zstd to lzo as zswap default compressor so zstd does no=
-t show up on the dmesg. But the rest looks pretty similar.
-> >
-> > Full dmesg and kernel .config attached.
-> >
-> > Regards,
-> > Erhard
->
-> Hi Erhard,
->
-> Thanks for the reports. I'll take a look at them and get back to you
-> in a few days.
+Data type profiling uses instruction tracking by checking each
+instruction and updating the register type state in some data
+structures. This is useful to find the data type in cases when the
+register state gets transferred from one reg to another. Example, in
+x86, "mov" instruction and in powerpc, "mr" instruction. Currently these
+structures are defined in annotate-data.c and instruction tracking is
+implemented only for x86. Move these data structures to
+"annotate-data.h" header file so that other arch implementations can use
+it in arch specific files as well.
 
-Hi Erhard,
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+---
+ tools/perf/util/annotate-data.c | 53 +------------------------------
+ tools/perf/util/annotate-data.h | 55 +++++++++++++++++++++++++++++++++
+ 2 files changed, 56 insertions(+), 52 deletions(-)
 
-The OOM kills on both kernel versions seem to be reasonable to me.
+diff --git a/tools/perf/util/annotate-data.c b/tools/perf/util/annotate-data.c
+index 965da6c0b542..a4c7f98a75e3 100644
+--- a/tools/perf/util/annotate-data.c
++++ b/tools/perf/util/annotate-data.c
+@@ -31,15 +31,6 @@
+ 
+ static void delete_var_types(struct die_var_type *var_types);
+ 
+-enum type_state_kind {
+-	TSR_KIND_INVALID = 0,
+-	TSR_KIND_TYPE,
+-	TSR_KIND_PERCPU_BASE,
+-	TSR_KIND_CONST,
+-	TSR_KIND_POINTER,
+-	TSR_KIND_CANARY,
+-};
+-
+ #define pr_debug_dtp(fmt, ...)					\
+ do {								\
+ 	if (debug_type_profile)					\
+@@ -140,49 +131,7 @@ static void pr_debug_location(Dwarf_Die *die, u64 pc, int reg)
+ 	}
+ }
+ 
+-/*
+- * Type information in a register, valid when @ok is true.
+- * The @caller_saved registers are invalidated after a function call.
+- */
+-struct type_state_reg {
+-	Dwarf_Die type;
+-	u32 imm_value;
+-	bool ok;
+-	bool caller_saved;
+-	u8 kind;
+-};
+-
+-/* Type information in a stack location, dynamically allocated */
+-struct type_state_stack {
+-	struct list_head list;
+-	Dwarf_Die type;
+-	int offset;
+-	int size;
+-	bool compound;
+-	u8 kind;
+-};
+-
+-/* FIXME: This should be arch-dependent */
+-#define TYPE_STATE_MAX_REGS  16
+-
+-/*
+- * State table to maintain type info in each register and stack location.
+- * It'll be updated when new variable is allocated or type info is moved
+- * to a new location (register or stack).  As it'd be used with the
+- * shortest path of basic blocks, it only maintains a single table.
+- */
+-struct type_state {
+-	/* state of general purpose registers */
+-	struct type_state_reg regs[TYPE_STATE_MAX_REGS];
+-	/* state of stack location */
+-	struct list_head stack_vars;
+-	/* return value register */
+-	int ret_reg;
+-	/* stack pointer register */
+-	int stack_reg;
+-};
+-
+-static bool has_reg_type(struct type_state *state, int reg)
++bool has_reg_type(struct type_state *state, int reg)
+ {
+ 	return (unsigned)reg < ARRAY_SIZE(state->regs);
+ }
+diff --git a/tools/perf/util/annotate-data.h b/tools/perf/util/annotate-data.h
+index 0a57d9f5ee78..ef235b1b15e1 100644
+--- a/tools/perf/util/annotate-data.h
++++ b/tools/perf/util/annotate-data.h
+@@ -6,6 +6,9 @@
+ #include <linux/compiler.h>
+ #include <linux/rbtree.h>
+ #include <linux/types.h>
++#include "dwarf-aux.h"
++#include "annotate.h"
++#include "debuginfo.h"
+ 
+ struct annotated_op_loc;
+ struct debuginfo;
+@@ -15,6 +18,15 @@ struct hist_entry;
+ struct map_symbol;
+ struct thread;
+ 
++enum type_state_kind {
++	TSR_KIND_INVALID = 0,
++	TSR_KIND_TYPE,
++	TSR_KIND_PERCPU_BASE,
++	TSR_KIND_CONST,
++	TSR_KIND_POINTER,
++	TSR_KIND_CANARY,
++};
++
+ /**
+  * struct annotated_member - Type of member field
+  * @node: List entry in the parent list
+@@ -142,6 +154,48 @@ struct annotated_data_stat {
+ };
+ extern struct annotated_data_stat ann_data_stat;
+ 
++/*
++ * Type information in a register, valid when @ok is true.
++ * The @caller_saved registers are invalidated after a function call.
++ */
++struct type_state_reg {
++	Dwarf_Die type;
++	u32 imm_value;
++	bool ok;
++	bool caller_saved;
++	u8 kind;
++};
++
++/* Type information in a stack location, dynamically allocated */
++struct type_state_stack {
++	struct list_head list;
++	Dwarf_Die type;
++	int offset;
++	int size;
++	bool compound;
++	u8 kind;
++};
++
++/* FIXME: This should be arch-dependent */
++#define TYPE_STATE_MAX_REGS  32
++
++/*
++ * State table to maintain type info in each register and stack location.
++ * It'll be updated when new variable is allocated or type info is moved
++ * to a new location (register or stack).  As it'd be used with the
++ * shortest path of basic blocks, it only maintains a single table.
++ */
++struct type_state {
++	/* state of general purpose registers */
++	struct type_state_reg regs[TYPE_STATE_MAX_REGS];
++	/* state of stack location */
++	struct list_head stack_vars;
++	/* return value register */
++	int ret_reg;
++	/* stack pointer register */
++	int stack_reg;
++};
++
+ #ifdef HAVE_DWARF_SUPPORT
+ 
+ /* Returns data type at the location (ip, reg, offset) */
+@@ -160,6 +214,7 @@ void global_var_type__tree_delete(struct rb_root *root);
+ 
+ int hist_entry__annotate_data_tty(struct hist_entry *he, struct evsel *evsel);
+ 
++bool has_reg_type(struct type_state *state, int reg);
+ #else /* HAVE_DWARF_SUPPORT */
+ 
+ static inline struct annotated_data_type *
+-- 
+2.43.0
 
-Your system has 2GB memory and it uses zswap with zsmalloc (which is
-good since it can allocate from the highmem zone) and zstd/lzo (which
-doesn't matter much). Somehow -- I couldn't figure out why -- it
-splits the 2GB into a 0.25GB DMA zone and a 1.75GB highmem zone:
-
-[    0.000000] Zone ranges:
-[    0.000000]   DMA      [mem 0x0000000000000000-0x000000002fffffff]
-[    0.000000]   Normal   empty
-[    0.000000]   HighMem  [mem 0x0000000030000000-0x000000007fffffff]
-
-The kernel can't allocate from the highmem zone -- only userspace and
-zsmalloc can. OOM kills were due to the low memory conditions in the
-DMA zone where the kernel itself failed to allocate from.
-
-Do you know a kernel version that doesn't have OOM kills while running
-the same workload? If so, could you send that .config to me? If not,
-could you try disabling CONFIG_HIGHMEM? (It might not help but I'm out
-of ideas at the moment.)
-
-Thanks!
