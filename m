@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 729BCC25B7E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2024 02:46:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2F7FC25B74
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2024 02:47:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vsymd3L5jz3cns
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2024 12:46:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vsyn30VMdz3ckg
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2024 12:47:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VsylP3rsKz3bTP
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2024 12:45:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VsylQ4fKHz3cLQ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Jun 2024 12:45:54 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VsylN3kNRz4x10;
-	Mon,  3 Jun 2024 12:45:52 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VsylP5N6Nz4x12;
+	Mon,  3 Jun 2024 12:45:53 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, Yonghong Song <yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, KP Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@google.com>, Hao Luo <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Hari Bathini <hbathini@linux.ibm.com>, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, paulmck@kernel.org, Puranjay Mohan <puranjay@kernel.org>
-In-Reply-To: <20240513100248.110535-1-puranjay@kernel.org>
-References: <20240513100248.110535-1-puranjay@kernel.org>
-Subject: Re: [PATCH bpf v3] powerpc/bpf: enforce full ordering for ATOMIC operations with BPF_FETCH
-Message-Id: <171738271132.1517513.12789013884540856700.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Samuel Holland <samuel.holland@sifive.com>
+In-Reply-To: <20240529162852.1209-1-samuel.holland@sifive.com>
+References: <20240529162852.1209-1-samuel.holland@sifive.com>
+Subject: Re: [PATCH] powerpc: Limit ARCH_HAS_KERNEL_FPU_SUPPORT to PPC64
+Message-Id: <171738271138.1517513.7328136672025419201.b4-ty@ellerman.id.au>
 Date: Mon, 03 Jun 2024 12:45:11 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,24 +43,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Puranjay Mohan <puranjay@kernel.org>
+Cc: kernel test robot <lkp@intel.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Christian König <christian.koenig@amd.com>, Guenter Roeck <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 13 May 2024 10:02:48 +0000, Puranjay Mohan wrote:
-> The Linux Kernel Memory Model [1][2] requires RMW operations that have a
-> return value to be fully ordered.
+On Wed, 29 May 2024 09:28:50 -0700, Samuel Holland wrote:
+> When building a 32-bit kernel, some toolchains do not allow mixing soft
+> float and hard float object files:
 > 
-> BPF atomic operations with BPF_FETCH (including BPF_XCHG and
-> BPF_CMPXCHG) return a value back so they need to be JITed to fully
-> ordered operations. POWERPC currently emits relaxed operations for
-> these.
+>     LD      vmlinux.o
+>   powerpc64le-unknown-linux-musl-ld: lib/test_fpu_impl.o uses hard float, arch/powerpc/kernel/udbg.o uses soft float
+>   powerpc64le-unknown-linux-musl-ld: failed to merge target specific data of file lib/test_fpu_impl.o
+>   make[2]: *** [scripts/Makefile.vmlinux_o:62: vmlinux.o] Error 1
+>   make[1]: *** [Makefile:1152: vmlinux_o] Error 2
+>   make: *** [Makefile:240: __sub-make] Error 2
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/bpf: enforce full ordering for ATOMIC operations with BPF_FETCH
-      https://git.kernel.org/powerpc/c/b1e7cee96127468c2483cf10c2899c9b5cf79bf8
+[1/1] powerpc: Limit ARCH_HAS_KERNEL_FPU_SUPPORT to PPC64
+      https://git.kernel.org/powerpc/c/be2fc65d66e0406cc9d39d40becaecdf4ee765f3
 
 cheers
