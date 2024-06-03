@@ -4,68 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BBBFC25B75
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2024 19:32:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A00EC25B75
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Jun 2024 22:14:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h5ypBDu0;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=jMkzvXns;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VtP4n71rNz3cyc
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2024 05:32:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VtSgV490qz3cbR
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2024 08:14:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h5ypBDu0;
+	dkim=pass (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=jMkzvXns;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mailbox.org (client-ip=2001:67c:2050:0:465::201; helo=mout-p-201.mailbox.org; envelope-from=erhard_f@mailbox.org; receiver=lists.ozlabs.org)
+Received: from mout-p-201.mailbox.org (unknown [IPv6:2001:67c:2050:0:465::201])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VtP3x54syz3cZC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2024 05:31:41 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id CCF9F60918;
-	Mon,  3 Jun 2024 19:31:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 80880C2BD10;
-	Mon,  3 Jun 2024 19:31:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1717443098;
-	bh=ADjDfMOOWtB5OlarqJFBuey88NNlSIwhNIIO5H123ZM=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=h5ypBDu07d6S/tyrCJGFAoXm5SLMQGUtNq9gkbxAAae51e9bkVqOMecJLcG9R7S95
-	 UtiMUSB5IJvaxKd9xxXFnmxoCwXdetCne1mjBpchZWH9v+OKUNW9/LvQdlww9TZlDg
-	 YWSxwjwJ8CeNougTNhur30YbinEBSwgKyTwS+GoYkJ8PAJNWlneYG4blZqy++Hmaag
-	 +zfMd9VtlXWP8Qq1lveg6GkFR0/L4WTKQfNIyQuTP44R6doPzN0bit4stc/9sfTh+/
-	 D89StqCmjLjRCs3WTp96plmSpvPXSFGH0t7oZjCRbt2MvdgOb0WOUKELZ4Al2c6pKp
-	 VhB/nDQM/cxtQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69B99C25B75;
-	Mon,  3 Jun 2024 19:31:38 +0000 (UTC)
-From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Mon, 03 Jun 2024 14:31:32 -0500
-Subject: [PATCH] powerpc/mm/drmem: Silence drmem_init() early return
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VtSfY5Q3pz3bdm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2024 08:13:23 +1000 (AEST)
+Received: from smtp202.mailbox.org (smtp202.mailbox.org [IPv6:2001:67c:2050:b231:465::202])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mout-p-201.mailbox.org (Postfix) with ESMTPS id 4VtSfC58Zlz9sZG;
+	Tue,  4 Jun 2024 00:13:07 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
+	t=1717452787;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=A4mvgXvzsnDLCwao81wHmfd72l0a/3E0/ihIluzp53E=;
+	b=jMkzvXnsDbJMZoaVvMV9HUytnV1y8iZ5KUo9y1GdlxePPX3XfQBk/s6pqxLBiUcOLlfkVk
+	4ayMfjjbjpLwwPRDTtLkMZ5InIqxthuD8ZRRSJim7C9L/McHiAtiPQYFKFgLEHGnmKr0jg
+	lC2U+4tuwDf2dvtnn9jtqQ3sO8A+XweQPmmOJmBAphNUhej6GQiaB4ZsNl7D/rvOH+Q4bS
+	Tn5EGAmlejUafEI1k+QohoXu2A/Qsz5asXCr/dzhX1DHEkx6xcjLedRWCTcJ+xtZHcIDjX
+	ndxSvjfgjMTvemQUY67wki8rSZf9iWh39Q0vuis64IX65xKphxiJwA3SQFM/1w==
+Date: Tue, 4 Jun 2024 00:13:04 +0200
+From: Erhard Furtner <erhard_f@mailbox.org>
+To: Yu Zhao <yuzhao@google.com>
+Subject: Re: kswapd0: page allocation failure: order:0,
+ mode:0x820(GFP_ATOMIC), nodemask=(null),cpuset=/,mems_allowed=0 (Kernel
+ v6.5.9, 32bit ppc)
+Message-ID: <20240604001304.5420284f@yea>
+In-Reply-To: <20240602200332.3e531ff1@yea>
+References: <20240508202111.768b7a4d@yea>
+	<20240515224524.1c8befbe@yea>
+	<CAOUHufZ-9NmzOKjLedvZFp0=N0LvRZn77qC6k1WXK+NHtKr=0w@mail.gmail.com>
+	<CAOUHufZ36rQc8AfLtRv2QrEareysdvbprAEO5XkcG-FeDOxFLA@mail.gmail.com>
+	<20240602200332.3e531ff1@yea>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240603-silence-drmem_init-v1-1-e9d71646bc3d@linux.ibm.com>
-X-B4-Tracking: v=1; b=H4sIABMaXmYC/x3M3QpAMBiH8VvRe2w1zEduRRLbH28x2iSl3bvl8
- HfwPC95OIanNnnJ4WbPh43I0oT0OtoFgk005TJXspKF8LzBagjjduwDW76EGVVZ12jkpDTF8HS
- Y+fmnXR/CBysngiRkAAAA
-To: Michael Ellerman <mpe@ellerman.id.au>, 
- Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1717443097; l=939;
- i=nathanl@linux.ibm.com; s=20230817; h=from:subject:message-id;
- bh=ArKgFOJwaRqH7ZIf89ZHqTfwAzZfHpebTMperM6RitI=;
- b=rq41dBW5bVWytILVb8ARF1MR+WzjqtCGpcm7z8zm3h9fUhcoF8ykkRTGOgOWYA1AIt1MVG2Ss
- tn46YYWpZBuC0dR05kphRGalt5WOA7a1WTD7EIItSs01+Kfyws4Pvc6
-X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
- pk=jPDF44RvT+9DGFOH3NGoIu1xN9dF+82pjdpnKjXfoJ0=
-X-Endpoint-Received: by B4 Relay for nathanl@linux.ibm.com/20230817 with
- auth_id=78
-X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
+Content-Type: multipart/mixed; boundary="MP_/L6u2AePrH2ig2h2isRGtuja"
+X-MBO-RS-ID: 1fbfa6395497c39efc6
+X-MBO-RS-META: 46pgksj1cfgiiro3owzb3sxib5g9z6g6
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,46 +68,190 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: nathanl@linux.ibm.com
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Yosry Ahmed <yosryahmed@google.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Lynch <nathanl@linux.ibm.com>
+--MP_/L6u2AePrH2ig2h2isRGtuja
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-It's not an error or noteworthy condition if the
-"ibm,dynamic-reconfiguration-memory" node isn't present.
+On Sun, 2 Jun 2024 20:03:32 +0200
+Erhard Furtner <erhard_f@mailbox.org> wrote:
 
-Drop the needless message.
+> On Sat, 1 Jun 2024 00:01:48 -0600
+> Yu Zhao <yuzhao@google.com> wrote:
+> 
+> > The OOM kills on both kernel versions seem to be reasonable to me.
+> > 
+> > Your system has 2GB memory and it uses zswap with zsmalloc (which is
+> > good since it can allocate from the highmem zone) and zstd/lzo (which
+> > doesn't matter much). Somehow -- I couldn't figure out why -- it
+> > splits the 2GB into a 0.25GB DMA zone and a 1.75GB highmem zone:
+> > 
+> > [    0.000000] Zone ranges:
+> > [    0.000000]   DMA      [mem 0x0000000000000000-0x000000002fffffff]
+> > [    0.000000]   Normal   empty
+> > [    0.000000]   HighMem  [mem 0x0000000030000000-0x000000007fffffff]
+> > 
+> > The kernel can't allocate from the highmem zone -- only userspace and
+> > zsmalloc can. OOM kills were due to the low memory conditions in the
+> > DMA zone where the kernel itself failed to allocate from.
+> > 
+> > Do you know a kernel version that doesn't have OOM kills while running
+> > the same workload? If so, could you send that .config to me? If not,
+> > could you try disabling CONFIG_HIGHMEM? (It might not help but I'm out
+> > of ideas at the moment.)
 
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
----
- arch/powerpc/mm/drmem.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Ok, the bisect I did actually revealed something meaningful:
 
-diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
-index c110ab8fa8a3..8dd7b340d51f 100644
---- a/arch/powerpc/mm/drmem.c
-+++ b/arch/powerpc/mm/drmem.c
-@@ -491,10 +491,8 @@ static int __init drmem_init(void)
- 	const __be32 *prop;
- 
- 	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
--	if (!dn) {
--		pr_info("No dynamic reconfiguration memory found\n");
-+	if (!dn)
- 		return 0;
--	}
- 
- 	if (init_drmem_lmb_size(dn)) {
- 		of_node_put(dn);
+ # git bisect good
+b8cf32dc6e8c75b712cbf638e0fd210101c22f17 is the first bad commit
+commit b8cf32dc6e8c75b712cbf638e0fd210101c22f17
+Author: Yosry Ahmed <yosryahmed@google.com>
+Date:   Tue Jun 20 19:46:44 2023 +0000
 
----
-base-commit: be2fc65d66e0406cc9d39d40becaecdf4ee765f3
-change-id: 20240603-silence-drmem_init-da4577e80b4c
+    mm: zswap: multiple zpools support
+    
+    Support using multiple zpools of the same type in zswap, for concurrency
+    purposes.  A fixed number of 32 zpools is suggested by this commit, which
+    was determined empirically.  It can be later changed or made into a config
+    option if needed.
+    
+    On a setup with zswap and zsmalloc, comparing a single zpool to 32 zpools
+    shows improvements in the zsmalloc lock contention, especially on the swap
+    out path.
+    
+    The following shows the perf analysis of the swapout path when 10
+    workloads are simultaneously reclaiming and refaulting tmpfs pages.  There
+    are some improvements on the swap in path as well, but less significant.
+    
+    1 zpool:
+    
+     |--28.99%--zswap_frontswap_store
+           |
+           <snip>
+           |
+           |--8.98%--zpool_map_handle
+           |     |
+           |      --8.98%--zs_zpool_map
+           |           |
+           |            --8.95%--zs_map_object
+           |                 |
+           |                  --8.38%--_raw_spin_lock
+           |                       |
+           |                        --7.39%--queued_spin_lock_slowpath
+           |
+           |--8.82%--zpool_malloc
+           |     |
+           |      --8.82%--zs_zpool_malloc
+           |           |
+           |            --8.80%--zs_malloc
+           |                 |
+           |                 |--7.21%--_raw_spin_lock
+           |                 |     |
+           |                 |      --6.81%--queued_spin_lock_slowpath
+           <snip>
+    
+    32 zpools:
+    
+     |--16.73%--zswap_frontswap_store
+           |
+           <snip>
+           |
+           |--1.81%--zpool_malloc
+           |     |
+           |      --1.81%--zs_zpool_malloc
+           |           |
+           |            --1.79%--zs_malloc
+           |                 |
+           |                  --0.73%--obj_malloc
+           |
+           |--1.06%--zswap_update_total_size
+           |
+           |--0.59%--zpool_map_handle
+           |     |
+           |      --0.59%--zs_zpool_map
+           |           |
+           |            --0.57%--zs_map_object
+           |                 |
+           |                  --0.51%--_raw_spin_lock
+           <snip>
+    
+    Link: https://lkml.kernel.org/r/20230620194644.3142384-1-yosryahmed@google.com
+    Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
+    Suggested-by: Yu Zhao <yuzhao@google.com>
+    Acked-by: Chris Li (Google) <chrisl@kernel.org>
+    Reviewed-by: Nhat Pham <nphamcs@gmail.com>
+    Tested-by: Nhat Pham <nphamcs@gmail.com>
+    Cc: Dan Streetman <ddstreet@ieee.org>
+    Cc: Domenico Cerasuolo <cerasuolodomenico@gmail.com>
+    Cc: Johannes Weiner <hannes@cmpxchg.org>
+    Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+    Cc: Seth Jennings <sjenning@redhat.com>
+    Cc: Vitaly Wool <vitaly.wool@konsulko.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Best regards,
--- 
-Nathan Lynch <nathanl@linux.ibm.com>
+ mm/zswap.c | 81 +++++++++++++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 54 insertions(+), 27 deletions(-)
 
 
+'bad' bisects were where the "kswapd0: page allocation failure:" showed up when running the workload, 'good' bisects were the cases where I only got the kernels OOM reaper killing the workload. In the good cases the machine stayed usable via VNC, in the bad cases with the issue showing up the machine crashed and rebooted >80% of the time shortly after showing the issue in dmesg (via netconsole). I triple checked the good cases to be sure only the OOM reaper showed up and not the kswapd0: page allocation failure.
+
+Bisect.log attached.
+
+Regards,
+Erhard
+
+--MP_/L6u2AePrH2ig2h2isRGtuja
+Content-Type: text/x-log
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=bisect.log
+
+git bisect start
+# Status: warte auf guten und schlechten Commit
+# good: [88690811da69826fdb59d908a6e5e9d0c63b581a] Linux 6.1.92
+git bisect good 88690811da69826fdb59d908a6e5e9d0c63b581a
+# Status: warte auf schlechten Commit, 1 guter Commit bekannt
+# bad: [a38297e3fb012ddfa7ce0321a7e5a8daeb1872b6] Linux 6.9
+git bisect bad a38297e3fb012ddfa7ce0321a7e5a8daeb1872b6
+# good: [830b3c68c1fb1e9176028d02ef86f3cf76aa2476] Linux 6.1
+git bisect good 830b3c68c1fb1e9176028d02ef86f3cf76aa2476
+# good: [1b580c9bb63414903cfb414571e92e4fd36d6969] Merge branch 'samples-bpf-remove-unmaintained-xdp-sample-utilities'
+git bisect good 1b580c9bb63414903cfb414571e92e4fd36d6969
+# bad: [5ab500d6f9f50d8246865a2ead85d0e88ea30004] Merge branch 'sfc-implement-ndo_hwtstamp_-get-set'
+git bisect bad 5ab500d6f9f50d8246865a2ead85d0e88ea30004
+# bad: [cc33a80b816406f900a53c7f98a50f6eacdd2e31] MAINTAINERS: Maintainer change for ptp_vmw driver
+git bisect bad cc33a80b816406f900a53c7f98a50f6eacdd2e31
+# bad: [4debf77169ee459c46ec70e13dc503bc25efd7d2] Merge tag 'for-linus-iommufd' of git://git.kernel.org/pub/scm/linux/kernel/git/jgg/iommufd
+git bisect bad 4debf77169ee459c46ec70e13dc503bc25efd7d2
+# bad: [1086eeac9c333b6db6c98594f02996c8261c60c5] Merge tag 'lsm-pr-20230829' of git://git.kernel.org/pub/scm/linux/kernel/git/pcmoore/lsm
+git bisect bad 1086eeac9c333b6db6c98594f02996c8261c60c5
+# good: [0fc81f376468ce67d70ecd1016dfe901a51a39f5] Merge tag 'regmap-v6.6' of git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regmap
+git bisect good 0fc81f376468ce67d70ecd1016dfe901a51a39f5
+# good: [bd6c11bc43c496cddfc6cf603b5d45365606dbd5] Merge tag 'net-next-6.6' of git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next
+git bisect good bd6c11bc43c496cddfc6cf603b5d45365606dbd5
+# bad: [5553b15a4bbba8039e1f31b63642048286f540dc] m68k: implement the new page table range API
+git bisect bad 5553b15a4bbba8039e1f31b63642048286f540dc
+# good: [0c2e394ab23017303f676e6206a54c54bb0e3681] mm: move FAULT_FLAG_VMA_LOCK check down in handle_pte_fault()
+git bisect good 0c2e394ab23017303f676e6206a54c54bb0e3681
+# bad: [3f32c49ed6f15c8412a8abc93a92c4b37e6c4592] mm: memtest: convert to memtest_report_meminfo()
+git bisect bad 3f32c49ed6f15c8412a8abc93a92c4b37e6c4592
+# bad: [6ad243b83b5094026fdb3171711ddb25246b3d8a] mm/damon/sysfs: implement a command for updating only schemes tried total bytes
+git bisect bad 6ad243b83b5094026fdb3171711ddb25246b3d8a
+# bad: [68af05143fd4b49d4b12eab8d63c91ffbc7c4e5e] kernel/iomem.c: remove __weak ioremap_cache helper
+git bisect bad 68af05143fd4b49d4b12eab8d63c91ffbc7c4e5e
+# good: [27af67f35631ac4b61b5e4455b44c9aee8d2cc4b] powerpc/book3s64/mm: enable transparent pud hugepage
+git bisect good 27af67f35631ac4b61b5e4455b44c9aee8d2cc4b
+# bad: [34f4c198bfbe86612c368eb122002787acecaa93] zswap: make zswap_store() take a folio
+git bisect bad 34f4c198bfbe86612c368eb122002787acecaa93
+# good: [601f006fddc66e369fdac7c572f981eafd159dac] powerpc/book3s64/radix: remove mmu_vmemmap_psize
+git bisect good 601f006fddc66e369fdac7c572f981eafd159dac
+# bad: [b8cf32dc6e8c75b712cbf638e0fd210101c22f17] mm: zswap: multiple zpools support
+git bisect bad b8cf32dc6e8c75b712cbf638e0fd210101c22f17
+# good: [6be3601517d90b728095d70c14f3a04b9adcb166] powerpc/book3s64/radix: add debug message to give more details of vmemmap allocation
+git bisect good 6be3601517d90b728095d70c14f3a04b9adcb166
+# first bad commit: [b8cf32dc6e8c75b712cbf638e0fd210101c22f17] mm: zswap: multiple zpools support
+
+--MP_/L6u2AePrH2ig2h2isRGtuja--
