@@ -4,54 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE758C25B78
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2024 13:37:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA220C25B78
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2024 16:12:57 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=c5MUdjtS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=bKe1+7t8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vts8x6cH9z3cQq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2024 23:37:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vtwc764rRz3cYx
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jun 2024 02:12:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=c5MUdjtS;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=bKe1+7t8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b6; helo=out-182.mta0.migadu.com; envelope-from=andrew.jones@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-182.mta0.migadu.com (unknown [IPv6:2001:41d0:1004:224b::b6])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::529; helo=mail-ed1-x529.google.com; envelope-from=yosryahmed@google.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x529.google.com (mail-ed1-x529.google.com [IPv6:2a00:1450:4864:20::529])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vts832PhBz3cRy
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2024 23:36:43 +1000 (AEST)
-X-Envelope-To: thuth@redhat.com
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1717508174;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VSUx8HBtycvTGXY09hNGvaNW48lkTHHSidcjdBZAQTA=;
-	b=c5MUdjtSaSzL5wKb5gCPz/p8gGG3ZAhHmjp+GUfKQDpd5pdZ4tj9/WgMAr0kqKU3O/sFP/
-	NBA8AW7g3JY5hnVjZXuTOGt4vF3EgHjI6dd4S8tdD+w7fRoXSCuVqJVR24bTZLUZji7/hi
-	Xs9cqC3hGjkj5SkThrbCniW4BS61m4U=
-X-Envelope-To: npiggin@gmail.com
-X-Envelope-To: lvivier@redhat.com
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-X-Envelope-To: kvm@vger.kernel.org
-Date: Tue, 4 Jun 2024 15:36:10 +0200
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Thomas Huth <thuth@redhat.com>
-Subject: Re: [kvm-unit-tests PATCH v9 29/31] powerpc: Remove remnants of
- ppc64 directory and build structure
-Message-ID: <20240604-92e3b6502a920717bec7d780@orel>
-References: <20240504122841.1177683-1-npiggin@gmail.com>
- <20240504122841.1177683-30-npiggin@gmail.com>
- <15d6ae85-a46e-4a99-a3b9-6aa6420e0639@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VtwbH2nzdz3cVW
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2024 02:12:10 +1000 (AEST)
+Received: by mail-ed1-x529.google.com with SMTP id 4fb4d7f45d1cf-579fa270e53so6537635a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Jun 2024 09:12:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1717517521; x=1718122321; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=7Fq1N08ityDodrU5UqN/tu7ksF/MqwNuqjUfkSs8E40=;
+        b=bKe1+7t84tQ34ghX8qTPvFdx1/TaKW3l6NK7GIlzISSgvcoKYXShwF+uncTyJp9Ldq
+         2QKMgA323W1w62k+9J10o+H1TwgOCKsS27bAnz3xa7KPgcVi6lhMmN5WtxCpp0F8SPg+
+         gCO/OjFHLgpP/NJnCyRIo0dhO2Bmk70tP63NRDSD+WHu3eppnHhm9p5W9vVam/uKAePj
+         +B3nnVukKKqUlpfH9u1jWmKN+pQhlF7zZ7rZuJq1y59zNSbstozMK74Bj0JcSWDp5nPY
+         MvOYfKr2QYiZNhDA8Rp7J528AhhmDif7YWYBBNF/SQP/C/uDZWVnJaJheOxFvB3FyOyd
+         ceCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1717517521; x=1718122321;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=7Fq1N08ityDodrU5UqN/tu7ksF/MqwNuqjUfkSs8E40=;
+        b=BYndBGLJSA4UqwhXZvKgbs3rYlJ9dPnvO8RbhGKUrSMqFf6flVEtF8JILqVnbkdC6k
+         Lte2lycD+bXOrtdOZhjs64DfTnZirm1ejnXFMJ9WLERXZZ2ScJm3URZB5Ovq8YQQBG6W
+         fRbli3FiR1eXpJFO7qW2XbxkTcOMw1blTepIiSE8oZoO3STHzZ6jNFvOViO3IPqKVWz6
+         xlNVJPalHB+Fh08763tXxiQe9PCb/Ksa5teuV5Hnkhaq4PzCjZ9Dl+bCjfPqVcKOIqjE
+         3/QEVfIDV+6ecnfHJWqFcyJ1ebR5MNC1kpuMt51jfCzQmwnQME9ZPUMSTyGhdMEPlpp3
+         OJwA==
+X-Forwarded-Encrypted: i=1; AJvYcCV6Wlbs4a6/jJI0ZZBKtH3cbzLpokg2bcil0LI6IdTbquHZRYi1XqLY9DhYhIWfm/zzmZkmwh83LEPJT2M36T4ALj3wc/KbkESixJKk6g==
+X-Gm-Message-State: AOJu0YxFOHn5aASQTdnHhURGnXMTAn94UBargu3B+cmSwkWPNU1GbeeZ
+	DHEJpwuFle7DREAx92uh/omTl2lbZpJOr2MMUKgZ0g8tpytoqqmDhYHD7tVLOsIXyD40U6iQg7S
+	ZJLYjLVNiTAp6SHNlJUrVFjQFJg5AGsLhcD85
+X-Google-Smtp-Source: AGHT+IHjToe9HZIMn9NzVD0RPeflJl/bU+DgMt9GMRZwk/Ij7exz/RMTsjf5+KctCPjgAFtdRjBi3oCz1G19/QxZrYg=
+X-Received: by 2002:a17:906:35da:b0:a59:d2ac:3856 with SMTP id
+ a640c23a62f3a-a699f66643bmr380966b.22.1717517520321; Tue, 04 Jun 2024
+ 09:12:00 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <15d6ae85-a46e-4a99-a3b9-6aa6420e0639@redhat.com>
-X-Migadu-Flow: FLOW_OUT
+References: <20240508202111.768b7a4d@yea> <20240515224524.1c8befbe@yea>
+ <CAOUHufZ-9NmzOKjLedvZFp0=N0LvRZn77qC6k1WXK+NHtKr=0w@mail.gmail.com>
+ <CAOUHufZ36rQc8AfLtRv2QrEareysdvbprAEO5XkcG-FeDOxFLA@mail.gmail.com>
+ <20240602200332.3e531ff1@yea> <20240604001304.5420284f@yea>
+ <CAJD7tkbCRLdy0vD2Pd17fNrxHgkzW1VucN4qMkohLFLBLaaeCQ@mail.gmail.com> <20240604134458.3ae4396a@yea>
+In-Reply-To: <20240604134458.3ae4396a@yea>
+From: Yosry Ahmed <yosryahmed@google.com>
+Date: Tue, 4 Jun 2024 09:11:21 -0700
+Message-ID: <CAJD7tkYjJJGthQ_8NukGw6Q9EYbLA=8sAH_7=B90KXEL6HWdSw@mail.gmail.com>
+Subject: Re: kswapd0: page allocation failure: order:0, mode:0x820(GFP_ATOMIC),
+ nodemask=(null),cpuset=/,mems_allowed=0 (Kernel v6.5.9, 32bit ppc)
+To: Erhard Furtner <erhard_f@mailbox.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,42 +83,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: Nhat Pham <nphamcs@gmail.com>, Yu Zhao <yuzhao@google.com>, Sergey Senozhatsky <senozhatsky@chromium.org>, Minchan Kim <minchan@kernel.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Johannes Weiner <hannes@cmpxchg.org>, Chengming Zhou <chengming.zhou@linux.dev>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 04, 2024 at 12:49:51PM GMT, Thomas Huth wrote:
-> On 04/05/2024 14.28, Nicholas Piggin wrote:
-> > This moves merges ppc64 directories and files into powerpc, and
-> > merges the 3 makefiles into one.
-> > 
-> > The configure --arch=powerpc option is aliased to ppc64 for
-> > good measure.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> ...
-> > diff --git a/powerpc/Makefile b/powerpc/Makefile
-> > index 8a007ab54..e4b5312a2 100644
-> > --- a/powerpc/Makefile
-> > +++ b/powerpc/Makefile
-> > @@ -1 +1,111 @@
-> > -include $(SRCDIR)/$(TEST_DIR)/Makefile.$(ARCH)
-> > +#
-> > +# powerpc makefile
-> > +#
-> > +# Authors: Andrew Jones <drjones@redhat.com>
-> 
-> I'd maybe drop that e-mail address now since it it not valid anymore.
-> Andrew, do want to see your new mail address here?
+On Tue, Jun 4, 2024 at 4:45=E2=80=AFAM Erhard Furtner <erhard_f@mailbox.org=
+> wrote:
+>
+> On Mon, 3 Jun 2024 16:24:02 -0700
+> Yosry Ahmed <yosryahmed@google.com> wrote:
+>
+> > Thanks for bisecting. Taking a look at the thread, it seems like you
+> > have a very limited area of memory to allocate kernel memory from. One
+> > possible reason why that commit can cause an issue is because we will
+> > have multiple instances of the zsmalloc slab caches 'zspage' and
+> > 'zs_handle', which may contribute to fragmentation in slab memory.
+> >
+> > Do you have /proc/slabinfo from a good and a bad run by any chance?
+> >
+> > Also, could you check if the attached patch helps? It makes sure that
+> > even when we use multiple zsmalloc zpools, we will use a single slab
+> > cache of each type.
+>
+> Thanks for looking into this! I got you 'cat /proc/slabinfo' from a good =
+HEAD, from a bad HEAD and from the bad HEAD + your patch applied.
+>
+> Good was 6be3601517d90b728095d70c14f3a04b9adcb166, bad was b8cf32dc6e8c75=
+b712cbf638e0fd210101c22f17 which I got both from my bisect.log. I got the s=
+labinfo shortly after boot and a 2nd time shortly before the OOM or the ksw=
+apd0: page allocation failure happens. I terminated the workload (stress-ng=
+ --vm 2 --vm-bytes 1930M --verify -v) manually shortly before the 2 GiB RAM=
+ exhausted and got the slabinfo then.
+>
+> The patch applied to git b8cf32dc6e8c75b712cbf638e0fd210101c22f17 unfortu=
+nately didn't make a difference, I got the kswapd0: page allocation failure=
+ nevertheless.
 
-No need to change to my new email address. We can either keep it as is for
-historical records, and as part of faithful code move, or just drop it.
+Thanks for trying this out. The patch reduces the amount of wasted
+memory due to the 'zs_handle' and 'zspage' caches by an order of
+magnitude, but it was a small number to begin with (~250K).
 
-Thanks,
-drew
+I cannot think of other reasons why having multiple zsmalloc pools
+will end up using more memory in the 0.25GB zone that the kernel
+allocations can be made from.
 
-> 
-> Apart from that:
-> Acked-by: Thomas Huth <thuth@redhat.com>
-> 
+The number of zpools can be made configurable or determined at runtime
+by the size of the machine, but I don't want to do this without
+understanding the problem here first. Adding other zswap and zsmalloc
+folks in case they have any ideas.
+
+>
+> Regards,
+> Erhard
