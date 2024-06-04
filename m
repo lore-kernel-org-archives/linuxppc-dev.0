@@ -4,55 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2F63C25B78
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2024 18:04:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B065C25B78
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Jun 2024 18:05:30 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bVboMyeb;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vtz4S1Zcnz3dTw
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jun 2024 04:04:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huaweicloud.com (client-ip=45.249.212.51; helo=dggsgout11.his.huawei.com; envelope-from=luogengkun@huaweicloud.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1114 seconds by postgrey-1.37 at boromir; Tue, 04 Jun 2024 22:09:41 AEST
-Received: from dggsgout11.his.huawei.com (unknown [45.249.212.51])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vtz605Jqsz3d8Y
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jun 2024 04:05:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bVboMyeb;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=mwalle@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VtqCT4Lfkz3cM5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2024 22:09:37 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.19.163.235])
-	by dggsgout11.his.huawei.com (SkyGuard) with ESMTP id 4Vtpng1l5lz4f3nTs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2024 19:50:47 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.112])
-	by mail.maildlp.com (Postfix) with ESMTP id 528621A0AAB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Jun 2024 19:50:58 +0800 (CST)
-Received: from huaweicloud.com (unknown [10.67.174.193])
-	by APP1 (Coremail) with SMTP id cCh0CgBnOBGd_15metYuOg--.43086S4;
-	Tue, 04 Jun 2024 19:50:55 +0800 (CST)
-From: Luo Gengkun <luogengkun@huaweicloud.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] watchdog/core: Fix AA deadlock causeb by watchdog
-Date: Tue,  4 Jun 2024 11:57:36 +0000
-Message-Id: <20240604115736.1013341-1-luogengkun@huaweicloud.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vtt9H3YJwz3cRB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Jun 2024 00:22:59 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 89A8B61299;
+	Tue,  4 Jun 2024 14:22:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F4A1C2BBFC;
+	Tue,  4 Jun 2024 14:22:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1717510976;
+	bh=FdTguazvLu4tk48L/f04l3yuEnV7aGDYYNx41+us/Qs=;
+	h=From:To:Cc:Subject:Date:From;
+	b=bVboMyebn/DjvMsctpWLi974VTBEL/aKCCC5I0DgmNuozf1Md35JJCLQktC6Wer3z
+	 PByFBdgAa9WtP6+oRMrvboGhnMVIHK5QgsFVEvQERePUsNaLlNNP68HvC6RshNXl/c
+	 2coTsbpXsx7hvdRoBOH/jmWg90CqxoypisXTpmr11Ekv4IYKrjKnH/OLWBLBQA+p6F
+	 o+V/1qhPlFc+DoXqf2Fh4RdrP54TEvIDz3T2uwng5eEFXmeojosH/V6r2u/n6D264L
+	 bTdfmg50w9CbICCssMpgU/wL/CGRUDo8vxZHLWAXahNxe52If3hSJDfx2J+aQSSaP9
+	 T6d2LDfn4fIlw==
+From: Michael Walle <mwalle@kernel.org>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Shawn Guo <shawnguo@kernel.org>
+Subject: [PATCH 1/2] dt-bindings: Drop Li Yang as maintainer for all bindings
+Date: Tue,  4 Jun 2024 16:22:48 +0200
+Message-Id: <20240604142249.1957762-1-mwalle@kernel.org>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: cCh0CgBnOBGd_15metYuOg--.43086S4
-X-Coremail-Antispam: 1UD129KBjvJXoWxArW5tFykAF47Aw4UAFWDJwb_yoW5AF47pr
-	9FvFy7tw4UCr4kZayfJ3sxGry8Ca4vgr43GF4DG3yFkF1YkFn8Xrna9FnxXrZ0vrZxZF4j
-	vwn0qrWfta4UtaUanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUvF14x267AKxVW5JVWrJwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
-	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
-	CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
-	2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
-	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
-	Y2ka0xkIwI1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4
-	xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r4a6rW5
-	MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I
-	0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWrJr0_WFyUJwCI42IY6I8E87Iv67AK
-	xVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvj
-	fUOmhFUUUUU
-X-CM-SenderInfo: 5oxrwvpqjn3046kxt4xhlfz01xgou0bp/
 X-Mailman-Approved-At: Wed, 05 Jun 2024 03:59:10 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -65,113 +61,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: pmladek@suse.com, mhocko@suse.com, lecopzer.chen@mediatek.com, yaoma@linux.alibaba.com, linuxppc-dev@lists.ozlabs.org, dianders@chromium.org, song@kernel.org, bpf@vger.kernel.org, npiggin@gmail.com, trix@redhat.com, naveen.n.rao@linux.ibm.com, kernelfans@gmail.com, akpm@linux-foundation.org, luogengkun@huaweicloud.com, tglx@linutronix.de
+Cc: devicetree@vger.kernel.org, Michael Walle <mwalle@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We found an AA deadlock problem as shown belowed:
+Remove Li Yang from all device tree bindings because mails to this
+address are bouncing.
 
-TaskA				TaskB				WatchDog			system_wq
+Commit fbdd90334a62 ("MAINTAINERS: Drop Li Yang as their email address
+stopped working") already removed the entry from the MAINTAINERS but
+didn't address all the in-file entries of the device tree bindings.
 
-...
-css_killed_work_fn:
-P(cgroup_mutex)
-...
-								...
-								__lockup_detector_reconfigure:
-								P(cpu_hotplug_lock.read)
-								...
-				...
-				percpu_down_write:
-				P(cpu_hotplug_lock.write)
-												...
-												cgroup_bpf_release:
-												P(cgroup_mutex)
-								smp_call_on_cpu:
-								Wait system_wq
-
-cpuset_css_offline:
-P(cpu_hotplug_lock.read)
-
-WatchDog is waitting for system_wq, who is waitting for cgroup_mutex, to finish
-the jobs, but the owner of the cgroup_mutex is waitting for cpu_hotplug_lock.
-The key point is the cpu_hotplug_lock, cause the system_wq may be waitting other
-lock. What's more, it seems that smp_call_on_cpu doesn't need protection from
-cpu_hotplug_lock. I try to revert the old patch to fix this problem, but I
-encountered some conflicts. Or I should just release and acquire cpu_hotplug_lock
-during between smp_call_on_cpu? I'm looking forward any suggestion :).
-
-Fixes: e31d6883f21c ("watchdog/core, powerpc: Lock cpus across reconfiguration")
-
-Signed-off-by: Luo Gengkun <luogengkun@huaweicloud.com>
+Signed-off-by: Michael Walle <mwalle@kernel.org>
 ---
- arch/powerpc/kernel/watchdog.c | 4 ++++
- kernel/watchdog.c              | 9 ---------
- 2 files changed, 4 insertions(+), 9 deletions(-)
+ Documentation/devicetree/bindings/arm/fsl.yaml                   | 1 -
+ .../devicetree/bindings/interrupt-controller/fsl,ls-extirq.yaml  | 1 -
+ .../devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml         | 1 -
+ .../devicetree/bindings/soc/fsl/fsl,layerscape-scfg.yaml         | 1 -
+ 4 files changed, 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 8c464a5d8246..f33f532ea7fa 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -550,17 +550,21 @@ void watchdog_hardlockup_stop(void)
- {
- 	int cpu;
+diff --git a/Documentation/devicetree/bindings/arm/fsl.yaml b/Documentation/devicetree/bindings/arm/fsl.yaml
+index f731fb5b5e2a..8a1f8e387a61 100644
+--- a/Documentation/devicetree/bindings/arm/fsl.yaml
++++ b/Documentation/devicetree/bindings/arm/fsl.yaml
+@@ -8,7 +8,6 @@ title: Freescale i.MX Platforms
  
-+	cpus_read_lock();
- 	for_each_cpu(cpu, &wd_cpus_enabled)
- 		stop_watchdog_on_cpu(cpu);
-+	cpus_read_unlock();
- }
+ maintainers:
+   - Shawn Guo <shawnguo@kernel.org>
+-  - Li Yang <leoyang.li@nxp.com>
  
- void watchdog_hardlockup_start(void)
- {
- 	int cpu;
+ properties:
+   $nodename:
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.yaml b/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.yaml
+index 887e565b9573..199b34fdbefc 100644
+--- a/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.yaml
++++ b/Documentation/devicetree/bindings/interrupt-controller/fsl,ls-extirq.yaml
+@@ -8,7 +8,6 @@ title: Freescale Layerscape External Interrupt Controller
  
-+	cpus_read_lock();
- 	watchdog_calc_timeouts();
- 	for_each_cpu_and(cpu, cpu_online_mask, &watchdog_cpumask)
- 		start_watchdog_on_cpu(cpu);
-+	cpus_read_unlock();
- }
+ maintainers:
+   - Shawn Guo <shawnguo@kernel.org>
+-  - Li Yang <leoyang.li@nxp.com>
  
- /*
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 51915b44ac73..13303a932cde 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -867,7 +867,6 @@ int lockup_detector_offline_cpu(unsigned int cpu)
+ description: |
+   Some Layerscape SOCs (LS1021A, LS1043A, LS1046A LS1088A, LS208xA,
+diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+index ce1a6505eb51..3fb0534ea597 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
++++ b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+@@ -8,7 +8,6 @@ title: Freescale Layerscape Device Configuration Unit
  
- static void __lockup_detector_reconfigure(void)
- {
--	cpus_read_lock();
- 	watchdog_hardlockup_stop();
+ maintainers:
+   - Shawn Guo <shawnguo@kernel.org>
+-  - Li Yang <leoyang.li@nxp.com>
  
- 	softlockup_stop_all();
-@@ -877,12 +876,6 @@ static void __lockup_detector_reconfigure(void)
- 		softlockup_start_all();
+ description: |
+   DCFG is the device configuration unit, that provides general purpose
+diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-scfg.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-scfg.yaml
+index a6a511b00a12..2a456c8af992 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-scfg.yaml
++++ b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-scfg.yaml
+@@ -8,7 +8,6 @@ title: Freescale Layerscape Supplemental Configuration Unit
  
- 	watchdog_hardlockup_start();
--	cpus_read_unlock();
--	/*
--	 * Must be called outside the cpus locked section to prevent
--	 * recursive locking in the perf code.
--	 */
--	__lockup_detector_cleanup();
- }
+ maintainers:
+   - Shawn Guo <shawnguo@kernel.org>
+-  - Li Yang <leoyang.li@nxp.com>
  
- void lockup_detector_reconfigure(void)
-@@ -916,11 +909,9 @@ static __init void lockup_detector_setup(void)
- #else /* CONFIG_SOFTLOCKUP_DETECTOR */
- static void __lockup_detector_reconfigure(void)
- {
--	cpus_read_lock();
- 	watchdog_hardlockup_stop();
- 	lockup_detector_update_enable();
- 	watchdog_hardlockup_start();
--	cpus_read_unlock();
- }
- void lockup_detector_reconfigure(void)
- {
+ description: |
+   SCFG is the supplemental configuration unit, that provides SoC specific
 -- 
-2.34.1
+2.39.2
 
