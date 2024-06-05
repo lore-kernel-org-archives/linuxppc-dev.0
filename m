@@ -4,53 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05AA1C27C52
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jun 2024 22:18:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44B81C25B76
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jun 2024 22:19:28 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BCXSfczw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=V6h/QSWS;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vvhgl1FPfz3cyZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2024 08:18:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VvhhZ2jDJz3cfx
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2024 08:19:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BCXSfczw;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=V6h/QSWS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VvhbW6h3zz30Tr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2024 08:15:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vvhbb2Ylcz30Tm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2024 08:15:07 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1717625705; x=1749161705;
+  t=1717625708; x=1749161708;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=81hqptQlE/LEM/MdYuEb48YnMieQd2hcNEosrso0DUw=;
-  b=BCXSfczwZhX9J7r6dwKnp0k2cR97ey7mtz5ABtuq8vh98rpwC7/YZbCA
-   ZgxibFIzgNIfYImqZWOEUN+o8kB0MPVeFankydOuKkMt5umKyY8V1Hcek
-   +ZyzWs8c8Z8cVaClYDRY+cVzTyJuy/8Gr2kDccBbwxwTjCsSgZJJj2eOv
-   IBl+cka+zPwtQmZ8KAj5w5IVEmIxs4vGoJx2oWolmI87edNnlxfLBLLZP
-   W2mayhJ7eqNt+QtzOur3nyg39ijPNrbZ/XJpe0BOfKkonp/QouMmyuPwU
-   FVA1lvSbq4SNUfuFYFTAVf0sVL2qZD13sS0EVGbO3K5awrBrpKn8C05kk
+  bh=SGwfez3lrOf2K/YTWirwKNhphy+WK2Ug6UhveRqerj0=;
+  b=V6h/QSWS4Jwv+XcdW9emWMUyCZEkGYA0qoUAnRpA51bI7HkL76dDROwK
+   BaMtkS75B9qJHJ3nNY6lAPQX2ESfEudxZtIf4mHPLxmZ7tp0k+SkhcgYg
+   eKnRcDNHSWwlmPRfX+xwPaDITSymuJhToZKAhFgMjRHoAwfdgVgI6qXZO
+   U9/nwGjXqBWLteIt3M23/7OMQgnWuf9C204q913I1rQFIaHZVojibkheg
+   wUop5fCXi+ae3mG8PU+oNvlIpVAR0wxK4JEHTavjbYEeRvOAtX94H3s9V
+   AjTV2X3+ZeM3V8nIZ9Oolr587POC6eVMFZlr1ZAW2tW5OjbHyp/OV5ONA
    w==;
-X-CSE-ConnectionGUID: z6gxgq4PQsugNbGYpkethA==
-X-CSE-MsgGUID: HCa+Cc2wRMKkL3ShmQM1ng==
-X-IronPort-AV: E=McAfee;i="6600,9927,11094"; a="14218720"
+X-CSE-ConnectionGUID: IuqfdJ3HQWuUWhWywd3uJw==
+X-CSE-MsgGUID: H/MFCtozSIWwrGtGTWsfRw==
+X-IronPort-AV: E=McAfee;i="6600,9927,11094"; a="24895513"
 X-IronPort-AV: E=Sophos;i="6.08,217,1712646000"; 
-   d="scan'208";a="14218720"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jun 2024 15:14:58 -0700
-X-CSE-ConnectionGUID: t3Uw16VJSqWd0O8yE01ocw==
-X-CSE-MsgGUID: G+RGTNK3RGqRQhdhfEVyug==
+   d="scan'208";a="24895513"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jun 2024 15:15:06 -0700
+X-CSE-ConnectionGUID: iPCqY0lBTKatrBzAwnb8Lw==
+X-CSE-MsgGUID: +aj2d5oZRpGkSjNLeON5+w==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.08,217,1712646000"; 
-   d="scan'208";a="37621428"
+   d="scan'208";a="38168625"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by fmviesa007.fm.intel.com with ESMTP; 05 Jun 2024 15:14:49 -0700
+  by orviesa006.jf.intel.com with ESMTP; 05 Jun 2024 15:14:57 -0700
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id C9DEC44F; Thu, 06 Jun 2024 01:14:47 +0300 (EEST)
+	id E7E797B5; Thu, 06 Jun 2024 01:14:47 +0300 (EEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Charles Keepax <ckeepax@opensource.cirrus.com>,
 	Rob Herring <robh@kernel.org>,
@@ -72,9 +72,9 @@ To: Charles Keepax <ckeepax@opensource.cirrus.com>,
 	imx@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
 	linux-rockchip@lists.infradead.org
-Subject: [PATCH v2 3/6] ASoC: rockchip: Remove unused of_gpio.h
-Date: Thu,  6 Jun 2024 00:27:26 +0300
-Message-ID: <20240605221446.2624964-4-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 5/6] ASoC: generic: Replace of_gpio.h by proper one
+Date: Thu,  6 Jun 2024 00:27:28 +0300
+Message-ID: <20240605221446.2624964-6-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.43.0.rc1.1336.g36b5255a03ac
 In-Reply-To: <20240605221446.2624964-1-andriy.shevchenko@linux.intel.com>
 References: <20240605221446.2624964-1-andriy.shevchenko@linux.intel.com>
@@ -95,39 +95,31 @@ Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Fabio Estevam <festevam@gmail.com>, P
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-of_gpio.h is deprecated and subject to remove. The drivers in question
-don't use it, simply remove the unused header.
+of_gpio.h is deprecated and subject to remove.
+The driver doesn't use it directly, replace it
+with what is really being used.
 
+Acked-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- sound/soc/rockchip/rockchip_i2s.c   | 1 -
- sound/soc/rockchip/rockchip_spdif.c | 1 -
- 2 files changed, 2 deletions(-)
+ sound/soc/generic/audio-graph-card2-custom-sample.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/sound/soc/rockchip/rockchip_i2s.c b/sound/soc/rockchip/rockchip_i2s.c
-index b0c3ef030e06..b378f870b3ad 100644
---- a/sound/soc/rockchip/rockchip_i2s.c
-+++ b/sound/soc/rockchip/rockchip_i2s.c
-@@ -11,7 +11,6 @@
- #include <linux/mfd/syscon.h>
- #include <linux/delay.h>
- #include <linux/of.h>
--#include <linux/of_gpio.h>
- #include <linux/clk.h>
- #include <linux/pinctrl/consumer.h>
- #include <linux/pm_runtime.h>
-diff --git a/sound/soc/rockchip/rockchip_spdif.c b/sound/soc/rockchip/rockchip_spdif.c
-index 1a24b78e9e02..eb9d5dee196e 100644
---- a/sound/soc/rockchip/rockchip_spdif.c
-+++ b/sound/soc/rockchip/rockchip_spdif.c
-@@ -11,7 +11,6 @@
- 
+diff --git a/sound/soc/generic/audio-graph-card2-custom-sample.c b/sound/soc/generic/audio-graph-card2-custom-sample.c
+index 1b6ccd2de964..8e5a51098490 100644
+--- a/sound/soc/generic/audio-graph-card2-custom-sample.c
++++ b/sound/soc/generic/audio-graph-card2-custom-sample.c
+@@ -5,8 +5,9 @@
+ // Copyright (C) 2020 Renesas Electronics Corp.
+ // Copyright (C) 2020 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+ //
++#include <linux/device.h>
++#include <linux/mod_devicetable.h>
  #include <linux/module.h>
- #include <linux/delay.h>
 -#include <linux/of_gpio.h>
- #include <linux/clk.h>
- #include <linux/pm_runtime.h>
- #include <linux/mfd/syscon.h>
+ #include <linux/platform_device.h>
+ #include <sound/graph_card.h>
+ 
 -- 
 2.43.0.rc1.1336.g36b5255a03ac
 
