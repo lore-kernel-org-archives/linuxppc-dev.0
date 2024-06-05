@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AD99C25B76
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jun 2024 21:39:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF935C25B76
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Jun 2024 21:39:47 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vLRhpOph;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lQxwQXuR;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vvgp11sdBz3bhD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2024 07:39:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vvgpn6Y8fz3cQq
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Jun 2024 07:39:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vLRhpOph;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lQxwQXuR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vvgn80fJmz3020
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2024 07:38:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VvgnP4VPTz3cF4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Jun 2024 07:38:33 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id D4D73CE1942;
-	Wed,  5 Jun 2024 21:38:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 34EC6C4AF1B;
-	Wed,  5 Jun 2024 21:38:12 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 0106D61B1C;
+	Wed,  5 Jun 2024 21:38:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C9B38C4AF09;
+	Wed,  5 Jun 2024 21:38:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1717623495;
-	bh=D+XNwiT5oc5Dm3t9kYZHsZnZ+hfVu8uRIo4dcxzvk7c=;
+	s=k20201202; t=1717623509;
+	bh=yrMbNY2Gr7i5mUw30Jlna/5JAKzdrHFu4hvA2gyNBkg=;
 	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=vLRhpOphNGmBaQmxfLFjNesmRJ8CdhImZQC71upgsbQ9PPymnKlCzrlqFjLGIkzxY
-	 FIV7raA/XCMVmU5o+l3I5StSQvgAOUajlN6bNfywQwvMrirXHu609WSmlsKD4wM/BT
-	 MMxuQifeVDY7YfTfT0t28C7KmuTc3dUblWm+pkhhAiYha2eipBYX4fP1gE+E7wLHHn
-	 24ed61T32aZ9YM92xUTb6Xs5bFpJb8Onne/DVujNek8MEgDREqJtKyKFKnDcTuUDoX
-	 fm9vUtzVjbH0I2hRysdQTdmMrwMCnIUZgzEyk4o8mxNZyxqi55LcyecAw2wXk+2mIn
-	 7k2nMmp+sQIaA==
+	b=lQxwQXuRvfm9OWCFsbHuZEiWtVU5w6nccY6yS+rlo0rS2J+6lU3V/M6LSrtC2U0NK
+	 l9brby4WmHNVoLDfTQn/MnwGvLoeFge6FjifxDqZTg3+7dw2P42pu3rwCcnk0Fo8LR
+	 djuvepdmdBlyxG0uerykdOmWo4+bePL3hzmdc8Ei4+0mU7ry8ttbAhtWAxpKXQLLgB
+	 Uu+PWn93L1CKJR4v/j05j+462Wa74MvY6sfGYtzT0dzNImxNELgR00pFp1Tt/7C7Zb
+	 yS8YotY8URtKUMYU24Enw0Fugh7uPxyYALCETLFebOTPKfkjyghDGIAufUNb5sMnB1
+	 Nkj1PnPb5aKLg==
 From: Mark Brown <broonie@kernel.org>
 To: lgirdwood@gmail.com, robh+dt@kernel.org, 
  krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org, 
@@ -46,11 +46,11 @@ To: lgirdwood@gmail.com, robh+dt@kernel.org,
  Xiubo.Lee@gmail.com, festevam@gmail.com, nicoleotsuka@gmail.com, 
  perex@perex.cz, tiwai@suse.com, alsa-devel@alsa-project.org, 
  linuxppc-dev@lists.ozlabs.org, Shengjiu Wang <shengjiu.wang@nxp.com>
-In-Reply-To: <1715656329-8061-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1715656329-8061-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2 0/2] ASoC: fsl_xcvr: Support i.MX95 platform
-Message-Id: <171762349194.565712.7362032139063923896.b4-ty@kernel.org>
-Date: Wed, 05 Jun 2024 22:38:11 +0100
+In-Reply-To: <1716972002-2315-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1716972002-2315-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH v4 0/2] ASoC: fsl_xcvr: Support i.MX95 platform
+Message-Id: <171762350655.565712.3068600680938105880.b4-ty@kernel.org>
+Date: Wed, 05 Jun 2024 22:38:26 +0100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -69,16 +69,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 May 2024 11:12:07 +0800, Shengjiu Wang wrote:
+On Wed, 29 May 2024 16:40:00 +0800, Shengjiu Wang wrote:
 > On i.MX95 wakeup domain, there is one instance of Audio XCVR
 > supporting SPDIF mode with a connection to the Audio XCVR physical
 > interface.
 > 
-> changes in v2:
-> - Merge patch 1&2, 3&4 from v1 together.
-> - Add more comments in commit message
-> - Add constaint for clocks used on i.mx95
-> - Add 'select SND_SOC_FSL_UTILS' for compiling issue.
+> changes in v4:
+> - refine the constarint for 'clocks' according to Rob's comments
 > 
 > [...]
 
