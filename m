@@ -4,82 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56AD3C27C5E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2024 02:04:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04438C27C5E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2024 03:11:16 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=h0Y81llp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=a+lPQnr+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VwPdv30Bpz3cYm
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2024 12:04:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VwR6p6xlXz3bYR
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Jun 2024 13:11:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=h0Y81llp;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=a+lPQnr+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::333; helo=mail-ot1-x333.google.com; envelope-from=flintglass@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ot1-x333.google.com (mail-ot1-x333.google.com [IPv6:2607:f8b0:4864:20::333])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vw9t86cShz3fRK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2024 03:14:23 +1000 (AEST)
-Received: by mail-ot1-x333.google.com with SMTP id 46e09a7af769-6f938a7f492so613838a34.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Jun 2024 10:14:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1717694059; x=1718298859; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+/1l2hgdu4GOtQ+Ob2oTmSMpsc9q1e6vX4IAFQSksuY=;
-        b=h0Y81llpVMlohfEE/lYbvUsY7476g3YDqO5IBkU3L2fc2sWzMK5xm6MmyOK+ohcnHB
-         SquBFBiiK4NUviSKqiuLi5dvKOXpsMKUyFVUlKtlrnFLUIO3c1c1kulBsLlLIycU0arF
-         jdox7vWwjvFb25iak1d+m09fE2wllTP8RAVTQlP/ptYlGAz4e7GVF3oOZ13X30n5xwJt
-         DXLlZOPVamRweh3Z3100XVNHUQXWorfy9y/QuGoCG659+zTmV43i5l8uA60eqzCZxD0w
-         SaKIaaf5MeJ7rwN7h5IWiuESMpwJfTVQVHvHk1bX07XMUx26xjUgmfHJX4HUzJeJiMkE
-         Y6Uw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1717694059; x=1718298859;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=+/1l2hgdu4GOtQ+Ob2oTmSMpsc9q1e6vX4IAFQSksuY=;
-        b=iondr4F3uyEoqPIQSHcoYyLBXYQlkGHUDMNN4S0+xCDtk2m9hExqr9F/e1jpu1UImf
-         AJfoLCyhtjFlvKSkEdQCXi7+1tFgSQ51GI9TJYgg0ql/+Z4bh/LmEUdRxV1fapWx6z0Y
-         S82mSsyYVIXvpo4H7eQf3nU782WSxX/QbW0ocFvET2sMUzgP6267flA9jr2swNv5s5HQ
-         rnj3SCeqREwpMMhh8zOcWUPrKA3eDr8ote0aO9c7OXmDOfeDWO/omwuonmdp8rDdO9Ab
-         nWf65ixDvyaTy5YvluASB+1/wdx/4TQoF+AaRlkuClFMG0Jo1BVU8i3azUDRI8ldRdRe
-         AMXA==
-X-Forwarded-Encrypted: i=1; AJvYcCVUZCW7RQc7OSHNomE31ZeFWZ/9Gkpghj9Eb+0mShxqD3t3rHIpWuLrKnleaW/MyjPqYTf7RGcweUwddD1+lgFDuz8ECq3m1sL9nK/pfA==
-X-Gm-Message-State: AOJu0Yy31OB1AiC/37cx58uP3DljGFrgcTaGxnn6FMq9SJzfSLgD1EIs
-	N/SsUkgEVwzWZ5miAvDz5xa4GAzDHOLMa6Ni2tmEO5EevsJiE1mFzHj+HDr2Lc5kgHMKD1rA167
-	ZcYyO6fS5NTRtbPb8o2AsNvq+EQI=
-X-Google-Smtp-Source: AGHT+IFWj6gKymPuX65qB3SLiTcr/L24kWgHP0A2qAXzrNU1UqM44JmLCxgMounxH46aeClTSRC9dMKKMGyWy81enQM=
-X-Received: by 2002:a05:6808:618:b0:3d1:e059:fec6 with SMTP id
- 5614622812f47-3d210d2b29emr63262b6e.3.1717694059455; Thu, 06 Jun 2024
- 10:14:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VwR5y4HR3z30VY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Jun 2024 13:10:30 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1717729830;
+	bh=9lFwEx/JP+T+tWQXbEOOpWSpvQQLktCyT0QZNUBEBwk=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=a+lPQnr+Hnyw9k4PYjdItxkPOKkzpbq1xDGrmf9objw3RJOsGfDNkk6kSXDnqMZAa
+	 JnknCa8WBXOCOPeF6PLMjiqipv2f8aEyttcN+W/h4CKUL6DmOfx/m+uaUzFkhIxrr/
+	 Q/2ZJZeD3PTtuw48WIFqfGAv7imifCi9XSNcA1Xaphf3B/szumvFTpkUjZoAeasVju
+	 Np++rhcJmzGs6m/QnGKZs9p7yuarwU8jTd2NmBsa0MARAmElxFYUmx0feSgupgFiO7
+	 8ArAOcVNEMjnJMXXKdD1ryHmh3JFwOp+KSgzF5E+b0md7so63XmiCVjvXKBFhCqYsE
+	 gS6Efuir3IqzA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VwR5w0Q8qz4wc8;
+	Fri,  7 Jun 2024 13:10:28 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Niklas Cassel <cassel@kernel.org>
+Subject: Re: [PATCH] ata: pata_macio: Fix max_segment_size with PAGE_SIZE ==
+ 64K
+In-Reply-To: <ZmG0TUiw0Nagwroj@ryzen.lan>
+References: <20240606111445.400001-1-mpe@ellerman.id.au>
+ <ZmG0TUiw0Nagwroj@ryzen.lan>
+Date: Fri, 07 Jun 2024 13:10:25 +1000
+Message-ID: <87ikylphwe.fsf@mail.lhotse>
 MIME-Version: 1.0
-References: <20240508202111.768b7a4d@yea> <20240515224524.1c8befbe@yea>
- <CAOUHufZ-9NmzOKjLedvZFp0=N0LvRZn77qC6k1WXK+NHtKr=0w@mail.gmail.com>
- <CAOUHufZ36rQc8AfLtRv2QrEareysdvbprAEO5XkcG-FeDOxFLA@mail.gmail.com>
- <20240602200332.3e531ff1@yea> <20240604001304.5420284f@yea>
- <CAJD7tkbCRLdy0vD2Pd17fNrxHgkzW1VucN4qMkohLFLBLaaeCQ@mail.gmail.com>
- <20240604134458.3ae4396a@yea> <CAJD7tkYjJJGthQ_8NukGw6Q9EYbLA=8sAH_7=B90KXEL6HWdSw@mail.gmail.com>
- <CAOUHufa0Fpj6SjNgB-z0n5Jg63q1ewkbOAU65forpDwQVs45qg@mail.gmail.com>
- <CAJD7tkb=5GJ9SNUwDsu1Zy3Tus4rjsNo60Hg9N7=gGth409Diw@mail.gmail.com>
- <CAOUHufb6zXr14Wm3T-4-OJh7iAq+vzDKwVYfHLhMMt96SpiZXg@mail.gmail.com>
- <CAJD7tkZ+QY55GTzW9A7ZCm=rxAEfrW76cWXf8o5nwiKSXp8z=w@mail.gmail.com>
- <20240604231019.18e2f373@yea> <CAJD7tkYq5u7B+0UH2XKpeWJnUxoO2kJ1_XZ2JOgYpyNEVR7u0g@mail.gmail.com>
- <20240606010431.2b33318c@yea> <CAJD7tkbhWYzx=6YmzAh0F+cK-_Bn8mPOH7gMbQS7YVXmaFSgFg@mail.gmail.com>
-In-Reply-To: <CAJD7tkbhWYzx=6YmzAh0F+cK-_Bn8mPOH7gMbQS7YVXmaFSgFg@mail.gmail.com>
-From: Takero Funaki <flintglass@gmail.com>
-Date: Fri, 7 Jun 2024 02:14:07 +0900
-Message-ID: <CAPpoddc2vOLdQJ7HwG7x+=oZsTz221+YJcNbUtKvPjA9AyeY2w@mail.gmail.com>
-Subject: Re: kswapd0: page allocation failure: order:0, mode:0x820(GFP_ATOMIC),
- nodemask=(null),cpuset=/,mems_allowed=0 (Kernel v6.5.9, 32bit ppc)
-To: Yosry Ahmed <yosryahmed@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Fri, 07 Jun 2024 12:03:56 +1000
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,43 +60,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Erhard Furtner <erhard_f@mailbox.org>, Nhat Pham <nphamcs@gmail.com>, Yu Zhao <yuzhao@google.com>, Sergey Senozhatsky <senozhatsky@chromium.org>, Minchan Kim <minchan@kernel.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Johannes Weiner <hannes@cmpxchg.org>, Chengming Zhou <chengming.zhou@linux.dev>, linuxppc-dev@lists.ozlabs.org, "Vlastimil Babka \(SUSE\)" <vbabka@kernel.org>
+Cc: doru.iorgulescu1@gmail.com, martin.petersen@oracle.com, linux-scsi@vger.kernel.org, john.g.garry@oracle.com, linux-ide@vger.kernel.org, dlemoal@kernel.org, linuxppc-dev@lists.ozlabs.org, hch@lst.de, regressions@lists.linux.dev
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-2024=E5=B9=B46=E6=9C=886=E6=97=A5(=E6=9C=A8) 8:42 Yosry Ahmed <yosryahmed@g=
-oogle.com>:
-
-> I think there are multiple ways to go forward here:
-> (a) Make the number of zpools a config option, leave the default as
-> 32, but allow special use cases to set it to 1 or similar. This is
-> probably not preferable because it is not clear to users how to set
-> it, but the idea is that no one will have to set it except special use
-> cases such as Erhard's (who will want to set it to 1 in this case).
+Niklas Cassel <cassel@kernel.org> writes:
+> On Thu, Jun 06, 2024 at 09:14:45PM +1000, Michael Ellerman wrote:
+>> The pata_macio driver advertises a max_segment_size of 0xff00, because
+>> the hardware doesn't cope with requests >= 64K.
+>> 
+>> However the SCSI core requires max_segment_size to be at least
+>> PAGE_SIZE, which is a problem for pata_macio when the kernel is built
+>> with 64K pages.
+>> 
+>> In older kernels the SCSI core would just increase the segment size to
+>> be equal to PAGE_SIZE, however since the commit tagged below it causes a
+>> warning and the device fails to probe:
+>> 
+>>   WARNING: CPU: 0 PID: 26 at block/blk-settings.c:202 .blk_validate_limits+0x2f8/0x35c
+>>   CPU: 0 PID: 26 Comm: kworker/u4:1 Not tainted 6.10.0-rc1 #1
+>>   Hardware name: PowerMac7,2 PPC970 0x390202 PowerMac
+>>   ...
+>>   NIP .blk_validate_limits+0x2f8/0x35c
+>>   LR  .blk_alloc_queue+0xc0/0x2f8
+>>   Call Trace:
+>>     .blk_alloc_queue+0xc0/0x2f8
+>>     .blk_mq_alloc_queue+0x60/0xf8
+>>     .scsi_alloc_sdev+0x208/0x3c0
+>>     .scsi_probe_and_add_lun+0x314/0x52c
+>>     .__scsi_add_device+0x170/0x1a4
+>>     .ata_scsi_scan_host+0x2bc/0x3e4
+>>     .async_port_probe+0x6c/0xa0
+>>     .async_run_entry_fn+0x60/0x1bc
+>>     .process_one_work+0x228/0x510
+>>     .worker_thread+0x360/0x530
+>>     .kthread+0x134/0x13c
+>>     .start_kernel_thread+0x10/0x14
+>>   ...
+>>   scsi_alloc_sdev: Allocation failure during SCSI scanning, some SCSI devices might not be configured
+>> 
+>> Although the hardware can't cope with a 64K segment, the driver
+>> already deals with that internally by splitting large requests in
+>> pata_macio_qc_prep(). That is how the driver has managed to function
+>> until now on 64K kernels.
+>> 
+>> So fix the driver to advertise a max_segment_size of 64K, which avoids
+>> the warning and keeps the SCSI core happy.
+>> 
+>> Fixes: afd53a3d8528 ("scsi: core: Initialize scsi midlayer limits before allocating the queue")
+>> Reported-by: Guenter Roeck <linux@roeck-us.net>
+>> Closes: https://lore.kernel.org/all/ce2bf6af-4382-4fe1-b392-cc6829f5ceb2@roeck-us.net/
+>> Reported-by: Doru Iorgulescu <doru.iorgulescu1@gmail.com>
+>> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=218858
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> Reviewed-by: Christoph Hellwig <hch@lst.de>
+>> ---
 >
-> (b) Make the number of zpools scale linearly with the number of CPUs.
-> Maybe something like nr_cpus/4 or nr_cpus/8. The problem with this
-> approach is that with a large number of CPUs, too many zpools will
-> start having diminishing returns. Fragmentation will keep increasing,
-> while the scalability/concurrency gains will diminish.
+> Applied to libata/for-6.10-fixes:
+> https://git.kernel.org/pub/scm/linux/kernel/git/libata/linux.git/log/?h=for-6.10-fixes
 >
-> (c) Make the number of zpools scale logarithmically with the number of
-> CPUs. Maybe something like 4log2(nr_cpus). This will keep the number
-> of zpools from increasing too much and close to the status quo. The
-> problem is that at a small number of CPUs (e.g. 2), 4log2(nr_cpus)
-> will actually give a nr_zpools > nr_cpus. So we will need to come up
-> with a more fancy magic equation (e.g. 4log2(nr_cpus/4)).
->
+> With John's Reviewed-by from the other thread:
+> https://lore.kernel.org/linux-ide/171362345502.571343.9746199181827642774.b4-ty@oracle.com/T/#t
 
-I just posted a patch to limit the number of zpools, with some
-theoretical background explained in the code comments. I believe that
-2 * CPU linearly is sufficient to reduce contention, but the scale can
-be reduced further. All CPUs are trying to allocate/free zswap is
-unlikely to happen.
- How many concurrent accesses were the original 32 zpools supposed to
-handle? I think it was for 16 cpu or more. or nr_cpus/4 would be
-enough?
+Thanks.
 
---=20
-
-<flintglass@gmail.com>
+cheers
