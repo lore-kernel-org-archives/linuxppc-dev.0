@@ -4,46 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33454C27C5E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2024 08:40:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 504A0C27C5E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2024 08:41:05 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FYaNHIWH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GLY+4j3u;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VyQHC1MxLz3cLj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2024 18:40:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VyQHz20tKz3cM7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Jun 2024 18:41:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FYaNHIWH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GLY+4j3u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VyQGQ5Frkz30TK
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2024 18:39:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VyQGW2864z3cQx
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Jun 2024 18:39:47 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 42D6160AB8;
-	Mon, 10 Jun 2024 08:39:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25718C2BBFC;
-	Mon, 10 Jun 2024 08:39:37 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 568F7CE10D1;
+	Mon, 10 Jun 2024 08:39:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04487C2BBFC;
+	Mon, 10 Jun 2024 08:39:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1718008779;
-	bh=ja0F8E5mpqd3wHBq+jUnpLeKU4nNxSQxOz90WvjQzGU=;
-	h=From:To:Cc:Subject:Date:From;
-	b=FYaNHIWHBDmm+usoHfDngTtJzY+U+2d98dvYfq6nlK/SDtGTbBBIqO04XZjY3qqzA
-	 bEKJ/6fEh1EIEURqM/n8y+fu1bbuIxo8p7I/FZfrrmXHpmLWRzddZ7t2dCkciFyFF1
-	 7j2Gd/xmd+pXWGknbeGQlESxBthnL/KNHl4rYjGZoeZBXl6NoqzGuQHbQqJlt842EH
-	 n7FRm0Kg8Qn03V0KI2FQrHLh94+Fi5N+10xd4yozBWCutAcWhTlMYjXVdbqz5k6V01
-	 x3GIGqsLhb+EgDHGkyRjHDkKnj/RdBMH28enC+mK4PHJMhIrscBc6vDpiBvOkEihHN
-	 0jHEYNMNFJOzA==
+	s=k20201202; t=1718008783;
+	bh=LdKNhGeILF1XCcYgrdj0dZhvpLSTNXN1KrsnubpYwJw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=GLY+4j3uodQhsNhUR1Pv/rrLBKWQigEjQDC75RGv3ce+XSmxBeboVYqO+1S26b3Kf
+	 RPclsbqGgEBthRHCe21PWgTehhViNXnU/libGOsnqtuuLFO0N+BqhFsOPGE+hk/QRa
+	 3sTH7hBYnJs3Wh5Zq9TZD4MaDonKzVt+7unuqVQAG/uDM18sXGi9zVw6cia2IypgZM
+	 rhnpCraV6J60MY6MyJXQpRcXLnZ+3lmNyGTDn+XILK/VMMT0zeDhMRpNY0MMxQiuyH
+	 HgQyspsCaBHFlulGF7+FaC7UX+9yC3LhDDSVVipR9G61DKG79wGAX5ML9hyCJztkoV
+	 yyBrTI+wdE5OQ==
 From: Naveen N Rao <naveen@kernel.org>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [RFC PATCH v2 0/5] powerpc/ftrace: Move ftrace sequence out of line
-Date: Mon, 10 Jun 2024 14:08:13 +0530
-Message-ID: <cover.1718008093.git.naveen@kernel.org>
+Subject: [RFC PATCH v2 2/5] powerpc/ftrace: Remove pointer to struct module from dyn_arch_ftrace
+Date: Mon, 10 Jun 2024 14:08:15 +0530
+Message-ID: <50b038f167f3fb94ed6074e029b6794bbe6e83a2.1718008093.git.naveen@kernel.org>
 X-Mailer: git-send-email 2.45.2
+In-Reply-To: <cover.1718008093.git.naveen@kernel.org>
+References: <cover.1718008093.git.naveen@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -61,62 +63,237 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Masahiro Yamada <masahiroy@kernel.org>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is v2 of the series posted here:
-http://lkml.kernel.org/r/cover.1702045299.git.naveen@kernel.org
+Pointer to struct module is only relevant for ftrace records belonging
+to kernel modules. Having this field in dyn_arch_ftrace wastes memory
+for all ftrace records belonging to the kernel. Remove the same in
+favour of looking up the module from the ftrace record address, similar
+to other architectures.
 
-Since v2, the primary change is that the entire ftrace sequence is moved 
-out of line and this is now restricted to 64-bit powerpc by default.  
-Patch 5 has the details.
+Signed-off-by: Naveen N Rao <naveen@kernel.org>
+---
+ arch/powerpc/include/asm/ftrace.h        |  1 -
+ arch/powerpc/kernel/trace/ftrace.c       | 47 ++++++++++-----
+ arch/powerpc/kernel/trace/ftrace_64_pg.c | 73 +++++++++++-------------
+ 3 files changed, 64 insertions(+), 57 deletions(-)
 
-I have dropped patches to enable DYNAMIC_FTRACE_WITH_CALL_OPS and ftrace 
-direct support so that this approach can be finalized.
-
-This series depends on Benjamin Gray's series adding support for 
-patch_ulong():
-http://lkml.kernel.org/r/20240515024445.236364-1-bgray@linux.ibm.com
-
-
-Appreciate feedback on the approach.
-
-
-Thanks,
-Naveen
-
-
-
-Naveen N Rao (5):
-  powerpc/kprobes: Use ftrace to determine if a probe is at function
-    entry
-  powerpc/ftrace: Remove pointer to struct module from dyn_arch_ftrace
-  powerpc/ftrace: Unify 32-bit and 64-bit ftrace entry code
-  kbuild: Add generic hook for architectures to use before the final
-    vmlinux link
-  powerpc64/ftrace: Move ftrace sequence out of line
-
- arch/Kconfig                             |   3 +
- arch/powerpc/Kconfig                     |   4 +
- arch/powerpc/Makefile                    |   4 +
- arch/powerpc/include/asm/ftrace.h        |  11 +-
- arch/powerpc/include/asm/module.h        |   5 +
- arch/powerpc/kernel/asm-offsets.c        |   4 +
- arch/powerpc/kernel/kprobes.c            |  18 +--
- arch/powerpc/kernel/module_64.c          |  67 +++++++-
- arch/powerpc/kernel/trace/ftrace.c       | 196 ++++++++++++++++++++---
- arch/powerpc/kernel/trace/ftrace_64_pg.c |  73 ++++-----
- arch/powerpc/kernel/trace/ftrace_entry.S |  75 ++++++---
- arch/powerpc/kernel/vmlinux.lds.S        |   3 +-
- arch/powerpc/tools/vmlinux_o.sh          |  47 ++++++
- scripts/link-vmlinux.sh                  |  18 ++-
- 14 files changed, 419 insertions(+), 109 deletions(-)
- create mode 100755 arch/powerpc/tools/vmlinux_o.sh
-
-
-base-commit: 2c644f2847c188b4fa545e602e4a1d4db55e8c8d
-prerequisite-patch-id: a1d50e589288239d5a8b1c1f354cd4737057c9d3
-prerequisite-patch-id: da4142d56880861bd0ad7ad7087c9e2670a2ee54
-prerequisite-patch-id: 609d292e054b2396b603890522a940fa0bdfb6d8
-prerequisite-patch-id: 6f7213fb77b1260defbf43be0e47bff9c80054cc
-prerequisite-patch-id: ad3b71bf071ae4ba1bee5b087e61a2055772a74f
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index 107fc5a48456..201f9d15430a 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -26,7 +26,6 @@ unsigned long prepare_ftrace_return(unsigned long parent, unsigned long ip,
+ struct module;
+ struct dyn_ftrace;
+ struct dyn_arch_ftrace {
+-	struct module *mod;
+ };
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE_WITH_ARGS
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index d8d6b4fd9a14..041be965485e 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -106,20 +106,36 @@ static unsigned long find_ftrace_tramp(unsigned long ip)
+ 	return 0;
+ }
+ 
++static struct module *ftrace_lookup_module(struct dyn_ftrace *rec)
++{
++	struct module *mod = NULL;
++
++#ifdef CONFIG_MODULES
++	/*
++	 * NOTE: __module_text_address() must be called with preemption
++	 * disabled, but we can rely on ftrace_lock to ensure that 'mod'
++	 * retains its validity throughout the remainder of this code.
++	*/
++	preempt_disable();
++	mod = __module_text_address(rec->ip);
++	preempt_enable();
++
++	if (!mod)
++		pr_err("No module loaded at addr=%lx\n", rec->ip);
++#endif
++
++	return mod;
++}
++
+ static int ftrace_get_call_inst(struct dyn_ftrace *rec, unsigned long addr, ppc_inst_t *call_inst)
+ {
+ 	unsigned long ip = rec->ip;
+ 	unsigned long stub;
++	struct module *mod;
+ 
+ 	if (is_offset_in_branch_range(addr - ip)) {
+ 		/* Within range */
+ 		stub = addr;
+-#ifdef CONFIG_MODULES
+-	} else if (rec->arch.mod) {
+-		/* Module code would be going to one of the module stubs */
+-		stub = (addr == (unsigned long)ftrace_caller ? rec->arch.mod->arch.tramp :
+-							       rec->arch.mod->arch.tramp_regs);
+-#endif
+ 	} else if (core_kernel_text(ip)) {
+ 		/* We would be branching to one of our ftrace stubs */
+ 		stub = find_ftrace_tramp(ip);
+@@ -128,7 +144,16 @@ static int ftrace_get_call_inst(struct dyn_ftrace *rec, unsigned long addr, ppc_
+ 			return -EINVAL;
+ 		}
+ 	} else {
+-		return -EINVAL;
++		mod = ftrace_lookup_module(rec);
++		if (mod) {
++#ifdef CONFIG_MODULES
++			/* Module code would be going to one of the module stubs */
++			stub = (addr == (unsigned long)ftrace_caller ? mod->arch.tramp :
++								       mod->arch.tramp_regs);
++#endif
++		} else {
++			return -EINVAL;
++		}
+ 	}
+ 
+ 	*call_inst = ftrace_create_branch_inst(ip, stub, 1);
+@@ -256,14 +281,6 @@ int ftrace_init_nop(struct module *mod, struct dyn_ftrace *rec)
+ 	if (ret)
+ 		return ret;
+ 
+-	if (!core_kernel_text(ip)) {
+-		if (!mod) {
+-			pr_err("0x%lx: No module provided for non-kernel address\n", ip);
+-			return -EFAULT;
+-		}
+-		rec->arch.mod = mod;
+-	}
+-
+ 	/* Nop-out the ftrace location */
+ 	new = ppc_inst(PPC_RAW_NOP());
+ 	addr = MCOUNT_ADDR;
+diff --git a/arch/powerpc/kernel/trace/ftrace_64_pg.c b/arch/powerpc/kernel/trace/ftrace_64_pg.c
+index 12fab1803bcf..45bd8dcf9886 100644
+--- a/arch/powerpc/kernel/trace/ftrace_64_pg.c
++++ b/arch/powerpc/kernel/trace/ftrace_64_pg.c
+@@ -116,6 +116,24 @@ static unsigned long find_bl_target(unsigned long ip, ppc_inst_t op)
+ }
+ 
+ #ifdef CONFIG_MODULES
++static struct module *ftrace_lookup_module(struct dyn_ftrace *rec)
++{
++	struct module *mod;
++	/*
++	 * NOTE: __module_text_address() must be called with preemption
++	 * disabled, but we can rely on ftrace_lock to ensure that 'mod'
++	 * retains its validity throughout the remainder of this code.
++	*/
++	preempt_disable();
++	mod = __module_text_address(rec->ip);
++	preempt_enable();
++
++	if (!mod)
++		pr_err("No module loaded at addr=%lx\n", rec->ip);
++
++	return mod;
++}
++
+ static int
+ __ftrace_make_nop(struct module *mod,
+ 		  struct dyn_ftrace *rec, unsigned long addr)
+@@ -124,6 +142,12 @@ __ftrace_make_nop(struct module *mod,
+ 	unsigned long ip = rec->ip;
+ 	ppc_inst_t op, pop;
+ 
++	if (!mod) {
++		mod = ftrace_lookup_module(rec);
++		if (!mod)
++			return -EINVAL;
++	}
++
+ 	/* read where this goes */
+ 	if (copy_inst_from_kernel_nofault(&op, (void *)ip)) {
+ 		pr_err("Fetching opcode failed.\n");
+@@ -366,27 +390,6 @@ int ftrace_make_nop(struct module *mod,
+ 		return -EINVAL;
+ 	}
+ 
+-	/*
+-	 * Out of range jumps are called from modules.
+-	 * We should either already have a pointer to the module
+-	 * or it has been passed in.
+-	 */
+-	if (!rec->arch.mod) {
+-		if (!mod) {
+-			pr_err("No module loaded addr=%lx\n", addr);
+-			return -EFAULT;
+-		}
+-		rec->arch.mod = mod;
+-	} else if (mod) {
+-		if (mod != rec->arch.mod) {
+-			pr_err("Record mod %p not equal to passed in mod %p\n",
+-			       rec->arch.mod, mod);
+-			return -EINVAL;
+-		}
+-		/* nothing to do if mod == rec->arch.mod */
+-	} else
+-		mod = rec->arch.mod;
+-
+ 	return __ftrace_make_nop(mod, rec, addr);
+ }
+ 
+@@ -411,7 +414,10 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	ppc_inst_t op[2];
+ 	void *ip = (void *)rec->ip;
+ 	unsigned long entry, ptr, tramp;
+-	struct module *mod = rec->arch.mod;
++	struct module *mod = ftrace_lookup_module(rec);
++
++	if (!mod)
++		return -EINVAL;
+ 
+ 	/* read where this goes */
+ 	if (copy_inst_from_kernel_nofault(op, ip))
+@@ -533,16 +539,6 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 		return -EINVAL;
+ 	}
+ 
+-	/*
+-	 * Out of range jumps are called from modules.
+-	 * Being that we are converting from nop, it had better
+-	 * already have a module defined.
+-	 */
+-	if (!rec->arch.mod) {
+-		pr_err("No module loaded\n");
+-		return -EINVAL;
+-	}
+-
+ 	return __ftrace_make_call(rec, addr);
+ }
+ 
+@@ -555,7 +551,10 @@ __ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
+ 	ppc_inst_t op;
+ 	unsigned long ip = rec->ip;
+ 	unsigned long entry, ptr, tramp;
+-	struct module *mod = rec->arch.mod;
++	struct module *mod = ftrace_lookup_module(rec);
++
++	if (!mod)
++		return -EINVAL;
+ 
+ 	/* If we never set up ftrace trampolines, then bail */
+ 	if (!mod->arch.tramp || !mod->arch.tramp_regs) {
+@@ -668,14 +667,6 @@ int ftrace_modify_call(struct dyn_ftrace *rec, unsigned long old_addr,
+ 		return -EINVAL;
+ 	}
+ 
+-	/*
+-	 * Out of range jumps are called from modules.
+-	 */
+-	if (!rec->arch.mod) {
+-		pr_err("No module loaded\n");
+-		return -EINVAL;
+-	}
+-
+ 	return __ftrace_modify_call(rec, old_addr, addr);
+ }
+ #endif
 -- 
 2.45.2
 
