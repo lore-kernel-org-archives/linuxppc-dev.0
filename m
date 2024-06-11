@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B440C25B76
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 08:18:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18272C25B76
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 08:19:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz1lr2mlMz3cgM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 18:18:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz1mF6cx8z3dDM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 18:19:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=hare@suse.de; receiver=lists.ozlabs.org)
 Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz1kt25PCz3cTt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 18:17:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz1lM43N7z3cWG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 18:18:23 +1000 (AEST)
 Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id D69B422D35;
-	Tue, 11 Jun 2024 08:17:55 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id F414222D0F;
+	Tue, 11 Jun 2024 08:12:14 +0000 (UTC)
 Authentication-Results: smtp-out1.suse.de;
 	none
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1F239137DF;
-	Tue, 11 Jun 2024 08:17:55 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id EBB43137DF;
+	Tue, 11 Jun 2024 08:12:13 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id hDAwBzMIaGbQWwAAD6G6ig
-	(envelope-from <hare@suse.de>); Tue, 11 Jun 2024 08:17:55 +0000
-Message-ID: <fc162d48-de62-437e-b2a7-bbf56a507c4d@suse.de>
-Date: Tue, 11 Jun 2024 10:17:54 +0200
+	id VT1AN90GaGbKWQAAD6G6ig
+	(envelope-from <hare@suse.de>); Tue, 11 Jun 2024 08:12:13 +0000
+Message-ID: <4032635d-a17f-44e5-a547-b175fa271945@suse.de>
+Date: Tue, 11 Jun 2024 10:12:13 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 06/26] loop: also use the default block size from an
- underlying block device
+Subject: Re: [PATCH 02/26] sd: move zone limits setup out of
+ sd_read_block_characteristics
 To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
 References: <20240611051929.513387-1-hch@lst.de>
- <20240611051929.513387-7-hch@lst.de>
+ <20240611051929.513387-3-hch@lst.de>
 Content-Language: en-US
 From: Hannes Reinecke <hare@suse.de>
-In-Reply-To: <20240611051929.513387-7-hch@lst.de>
+In-Reply-To: <20240611051929.513387-3-hch@lst.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Rspamd-Pre-Result: action=no action;
 	module=replies;
 	Message is reply to one we originated
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
+X-Rspamd-Queue-Id: F414222D0F
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 X-Rspamd-Pre-Result: action=no action;
 	module=replies;
 	Message is reply to one we originated
 X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Rspamd-Queue-Id: D69B422D35
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,17 +76,49 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 6/11/24 07:19, Christoph Hellwig wrote:
-> Fix the code in loop_reconfigure_limits to pick a default block size for
-> O_DIRECT file descriptors to also work when the loop device sits on top
-> of a block device and not just on a regular file on a block device based
-> file system.
+> Move a bit of code that sets up the zone flag and the write granularity
+> into sd_zbc_read_zones to be with the rest of the zoned limits.
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > ---
->   drivers/block/loop.c | 8 +++++++-
->   1 file changed, 7 insertions(+), 1 deletion(-)
+>   drivers/scsi/sd.c     | 21 +--------------------
+>   drivers/scsi/sd_zbc.c | 13 ++++++++++++-
+>   2 files changed, 13 insertions(+), 21 deletions(-)
 > 
-Reviewed-by: Hannes Reinecke <hare@suse.de>
+> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+> index 85b45345a27739..5bfed61c70db8f 100644
+> --- a/drivers/scsi/sd.c
+> +++ b/drivers/scsi/sd.c
+> @@ -3308,29 +3308,10 @@ static void sd_read_block_characteristics(struct scsi_disk *sdkp,
+>   		blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, q);
+>   	}
+>   
+> -
+> -#ifdef CONFIG_BLK_DEV_ZONED /* sd_probe rejects ZBD devices early otherwise */
+> -	if (sdkp->device->type == TYPE_ZBC) {
+> -		lim->zoned = true;
+> -
+> -		/*
+> -		 * Per ZBC and ZAC specifications, writes in sequential write
+> -		 * required zones of host-managed devices must be aligned to
+> -		 * the device physical block size.
+> -		 */
+> -		lim->zone_write_granularity = sdkp->physical_block_size;
+> -	} else {
+> -		/*
+> -		 * Host-aware devices are treated as conventional.
+> -		 */
+> -		lim->zoned = false;
+> -	}
+> -#endif /* CONFIG_BLK_DEV_ZONED */
+> -
+>   	if (!sdkp->first_scan)
+>   		return;
+>   
+> -	if (lim->zoned)
+> +	if (sdkp->device->type == TYPE_ZBC)
+
+Why not sd_is_zoned()?
 
 Cheers,
 
