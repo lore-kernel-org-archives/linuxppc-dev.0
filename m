@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D9EFC27C65
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 05:23:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84A02C25B76
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 05:24:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=UXmi+XkX;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=sHoQc0fU;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VyxsT2X42z3cWZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 15:23:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VyxtF3jQzz3ccQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 15:24:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=UXmi+XkX;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=sHoQc0fU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+2fedbe304aabaf399917+7597+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VyxnW04P8z30Wn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 15:19:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VyxnZ1krgz30Wd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 15:20:02 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
 	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=QZOtfSoQAA02jj5gA5gptGlEH50imtUdZkhUebJgjrY=; b=UXmi+XkXDTmhUIFmQ+lCw4UloG
-	14qIavWEJ+8aZIyq6Y+DxHB0S+SOdr/Qm7RnBCGVrQ6ORBr+Hqf8WMeKLVA1Ap/HXQFtuZp9XeHwE
-	mLWCp4AAXKrG1/s2Fd8LRv78JletbtIZkPhtpE7wERgDDf281dTYOKtaadOkC4olXUszQKCGm5yP1
-	BpkgDcxJ6TrEqCdmFlqaO5NBmiBg3C6wPCtwYpOHue5QOYvKPnHjae3lNtfzFW81dHNN4ZfSiAMBf
-	4uq0nk+3pDzVezm1sl4pM5+/+sE3FR5B72qqnqHf1v7fD0uNQAYqOZPwF/oW5OjnMH5uLvQLA7tKb
-	NcAQXwJw==;
+	bh=eTQ/ypSzK4lWAaVunDc3tjHt1iOpV7nN08jg8TeOXAw=; b=sHoQc0fUtpHycjsITV56G6LvHu
+	Xm6IZXN1xSVejiDFIWNtspmlJUAy3p7hyoPQDHaK2j8uPpjWRbLpfhR0ew8O9GOJzk9M0kamdKVSK
+	h+gO2FlpjqqnZU18qlfXHcI65jms2sw8Gusy9MG0fvAfD2y9LgREXQqEidgiJekt6Ad0BXV8H7wJ7
+	laGv8UKsVQsPiuQ/hLbDrBliLkQDBQpg9pL4x4e1mvw/4MdqnWTVfp+cTO0elCEI+YMIJ7UGMAb5i
+	o+KErO/5ahImbdE+1ecP+Db6dV/kjpPeVfK/+qvScno/vTvojiYJmwz/wDzBrXkKvWBAHc0v7OlDs
+	cGWiEsNA==;
 Received: from 2a02-8389-2341-5b80-cdb4-8e7d-405d-6b77.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:cdb4:8e7d:405d:6b77] helo=localhost)
 	by bombadil.infradead.org with esmtpsa (Exim 4.97.1 #2 (Red Hat Linux))
-	id 1sGtv2-00000007QpR-0wAa;
-	Tue, 11 Jun 2024 05:19:40 +0000
+	id 1sGtv6-00000007Qry-3x0S;
+	Tue, 11 Jun 2024 05:19:48 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 03/26] loop: stop using loop_reconfigure_limits in __loop_clr_fd
-Date: Tue, 11 Jun 2024 07:19:03 +0200
-Message-ID: <20240611051929.513387-4-hch@lst.de>
+Subject: [PATCH 05/26] loop: regularize upgrading the lock size for direct I/O
+Date: Tue, 11 Jun 2024 07:19:05 +0200
+Message-ID: <20240611051929.513387-6-hch@lst.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240611051929.513387-1-hch@lst.de>
 References: <20240611051929.513387-1-hch@lst.de>
@@ -63,43 +63,70 @@ Cc: nvdimm@lists.linux.dev, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <j
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__loop_clr_fd wants to clear all settings on the device.  Prepare for
-moving more settings into the block limits by open coding
-loop_reconfigure_limits.
+The LOOP_CONFIGURE path automatically upgrades the block size to that
+of the underlying file for O_DIRECT file descriptors, but the
+LOOP_SET_BLOCK_SIZE path does not.  Fix this by lifting the code to
+pick the block size into common code.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/block/loop.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/block/loop.c | 25 +++++++++++++++----------
+ 1 file changed, 15 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index 93780f41646b75..93a49c40a31a71 100644
+index c658282454af1b..4f6d8514d19bd6 100644
 --- a/drivers/block/loop.c
 +++ b/drivers/block/loop.c
-@@ -1133,6 +1133,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
+@@ -975,10 +975,24 @@ loop_set_status_from_info(struct loop_device *lo,
+ 	return 0;
+ }
  
- static void __loop_clr_fd(struct loop_device *lo, bool release)
++static unsigned short loop_default_blocksize(struct loop_device *lo,
++		struct block_device *backing_bdev)
++{
++	/* In case of direct I/O, match underlying block size */
++	if ((lo->lo_backing_file->f_flags & O_DIRECT) && backing_bdev)
++		return bdev_logical_block_size(backing_bdev);
++	return 512;
++}
++
+ static int loop_reconfigure_limits(struct loop_device *lo, unsigned short bsize)
  {
-+	struct queue_limits lim;
- 	struct file *filp;
- 	gfp_t gfp = lo->old_gfp_mask;
++	struct file *file = lo->lo_backing_file;
++	struct inode *inode = file->f_mapping->host;
+ 	struct queue_limits lim;
  
-@@ -1156,7 +1157,14 @@ static void __loop_clr_fd(struct loop_device *lo, bool release)
- 	lo->lo_offset = 0;
- 	lo->lo_sizelimit = 0;
- 	memset(lo->lo_file_name, 0, LO_NAME_SIZE);
--	loop_reconfigure_limits(lo, 512, false);
++	if (!bsize)
++		bsize = loop_default_blocksize(lo, inode->i_sb->s_bdev);
 +
-+	/* reset the block size to the default */
-+	lim = queue_limits_start_update(lo->lo_queue);
-+	lim.logical_block_size = 512;
-+	lim.physical_block_size = 512;
-+	lim.io_min = 512;
-+	queue_limits_commit_update(lo->lo_queue, &lim);
-+
- 	invalidate_disk(lo->lo_disk);
- 	loop_sysfs_exit(lo);
- 	/* let user-space know about this change */
+ 	lim = queue_limits_start_update(lo->lo_queue);
+ 	lim.logical_block_size = bsize;
+ 	lim.physical_block_size = bsize;
+@@ -997,7 +1011,6 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
+ 	int error;
+ 	loff_t size;
+ 	bool partscan;
+-	unsigned short bsize;
+ 	bool is_loop;
+ 
+ 	if (!file)
+@@ -1076,15 +1089,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
+ 	if (!(lo->lo_flags & LO_FLAGS_READ_ONLY) && file->f_op->fsync)
+ 		blk_queue_write_cache(lo->lo_queue, true, false);
+ 
+-	if (config->block_size)
+-		bsize = config->block_size;
+-	else if ((lo->lo_backing_file->f_flags & O_DIRECT) && inode->i_sb->s_bdev)
+-		/* In case of direct I/O, match underlying block size */
+-		bsize = bdev_logical_block_size(inode->i_sb->s_bdev);
+-	else
+-		bsize = 512;
+-
+-	error = loop_reconfigure_limits(lo, bsize);
++	error = loop_reconfigure_limits(lo, config->block_size);
+ 	if (WARN_ON_ONCE(error))
+ 		goto out_unlock;
+ 
 -- 
 2.43.0
 
