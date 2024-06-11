@@ -4,49 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D735C27C4F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 02:49:37 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=n5d2Rslb;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0C6EC27C4F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 03:17:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VytRz0ZRhz3bfS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 12:49:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=n5d2Rslb;
-	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vyv4Y4yz9z3cVN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 13:17:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=hook=nn=goodmis.org=rostedt@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VytR924gGz2xWS
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 12:48:53 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1718074133;
-	bh=iDuiwhB+pKUJIaO9+T/AdLMu71C/Az9pqj1QFlkz4Mc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=n5d2Rslba9yBwabDT8iSTrqM52wJpO+0wn1Ki7P4/7yWgp9kolhkBXb7IahJG+BfY
-	 VYSEnGTfEhyjtutmgZGdK/ZtrVne7NEn6nbEELtM1Yi0GqSM5Kk8xNI0UtlxJw0txW
-	 GhCv4zbM+OljZCTHVOZ8NRQileZqmE+uH4etvSzlXvLQ3JjmeTGw1tLl2YAhYxQavE
-	 UD1S/RZkYOy0YYD1tQ38BFP1Yu4+ukOAiahV2GaQVUkt5YaEtfoHarhP+O1VEfbF8s
-	 CBXdeZEUT1qWUtMX7+AXjRxeXdT5v5K0INovQBpR9l1GUcpBRuoD2gzFukHwJ2XRvg
-	 xhMaAim97o89A==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4VytR95zlxz4wc5;
-	Tue, 11 Jun 2024 12:48:53 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ganesh Goudar <ganeshgr@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/eeh: avoid possible crash when edev->pdev changes
-In-Reply-To: <20240527075433.415693-1-ganeshgr@linux.ibm.com>
-References: <20240527075433.415693-1-ganeshgr@linux.ibm.com>
-Date: Tue, 11 Jun 2024 12:48:51 +1000
-Message-ID: <87cyoop52k.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vyv461Qk6z30Sx
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 13:17:26 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 6F30660C23;
+	Tue, 11 Jun 2024 03:17:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07B51C2BBFC;
+	Tue, 11 Jun 2024 03:17:23 +0000 (UTC)
+Received: from rostedt by gandalf with local (Exim 4.97)
+	(envelope-from <rostedt@goodmis.org>)
+	id 1sGs0v-00000001Jgi-42JD;
+	Mon, 10 Jun 2024 23:17:37 -0400
+Message-ID: <20240611031737.821995106@goodmis.org>
+User-Agent: quilt/0.68
+Date: Mon, 10 Jun 2024 23:09:35 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ linux-csky@vger.kernel.org,
+ loongarch@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org
+Subject: [PATCH 1/2] function_graph: Fix up ftrace_graph_ret_addr()
+References: <20240611030934.162955582@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,40 +54,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>, mahesh@linux.ibm.com, wenxiong@us.ibm.com
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Jonathan Corbet <corbet@lwn.net>, Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Yang Li <yang.lee@linux.alibaba.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Borislav Petkov <bp@alien8.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ganesh,
+From: "Steven Rostedt (Google)" <rostedt@goodmis.org>
 
-Ganesh Goudar <ganeshgr@linux.ibm.com> writes:
-> If a PCI device is removed during eeh_pe_report_edev(), edev->pdev
-> will change and can cause a crash, hold the PCI rescan/remove lock
-> while taking a copy of edev->pdev.
->
-> Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/eeh_pe.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-> index d1030bc52564..49f968733912 100644
-> --- a/arch/powerpc/kernel/eeh_pe.c
-> +++ b/arch/powerpc/kernel/eeh_pe.c
-> @@ -859,7 +859,9 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
->  
->  	/* Retrieve the parent PCI bus of first (top) PCI device */
->  	edev = list_first_entry_or_null(&pe->edevs, struct eeh_dev, entry);
-> +	pci_lock_rescan_remove();
->  	pdev = eeh_dev_to_pci_dev(edev);
-> +	pci_unlock_rescan_remove();
->  	if (pdev)
->  		return pdev->bus;
+Yang Li sent a patch to fix the kerneldoc of ftrace_graph_ret_addr().
+While reviewing it, I realized that the comments in the entire function
+header needed a rewrite. When doing that, I realized that @idx parameter
+was being ignored. Every time this was called by the unwinder, it would
+start the loop at the top of the shadow stack and look for the matching
+stack pointer. When it found it, it would return it. When the unwinder
+asked for the next function, it would search from the beginning again.
 
-What prevents pdev being freed/reused immediately after you drop the
-rescan/remove lock?
+In reality, it should start from where it left off. That was the reason
+for the @idx parameter in the first place. The first time the unwinder
+calls this function, the @idx pointer would contain zero. That would mean
+to start from the top of the stack. The function was supposed to update
+the @idx with the index where it found the return address, so that the
+next time the unwinder calls this function it doesn't have to search
+through the previous addresses it found (making it O(n^2)!).
 
-AFAICS eeh_dev_to_pci_dev() doesn't take an additional reference to the
-pdev or anything.
+This speeds up the unwinder's use of ftrace_graph_ret_addr() by an order
+of magnitude.
 
-cheers
+Link: https://lore.kernel.org/linux-trace-kernel/20240610181746.656e3759@gandalf.local.home/
+
+Reported-by: Yang Li <yang.lee@linux.alibaba.com>
+Fixes: 7aa1eaef9f428 ("function_graph: Allow multiple users to attach to function graph")
+Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+---
+ kernel/trace/fgraph.c | 28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/trace/fgraph.c b/kernel/trace/fgraph.c
+index 63d0c2f84ce1..91f1eef256af 100644
+--- a/kernel/trace/fgraph.c
++++ b/kernel/trace/fgraph.c
+@@ -870,18 +870,24 @@ ftrace_graph_get_ret_stack(struct task_struct *task, int idx)
+ }
+ 
+ /**
+- * ftrace_graph_ret_addr - convert a potentially modified stack return address
+- *			   to its original value
++ * ftrace_graph_ret_addr - return the original value of the return address
++ * @task: The task the unwinder is being executed on
++ * @idx: An initialized pointer to the next stack index to use
++ * @ret: The current return address (likely pointing to return_handler)
++ * @retp: The address on the stack of the current return location
+  *
+  * This function can be called by stack unwinding code to convert a found stack
+- * return address ('ret') to its original value, in case the function graph
++ * return address (@ret) to its original value, in case the function graph
+  * tracer has modified it to be 'return_to_handler'.  If the address hasn't
+- * been modified, the unchanged value of 'ret' is returned.
++ * been modified, the unchanged value of @ret is returned.
+  *
+- * 'idx' is a state variable which should be initialized by the caller to zero
+- * before the first call.
++ * @idx holds the last index used to know where to start from. It should be
++ * initialized to zero for the first iteration as that will mean to start
++ * at the top of the shadow stack. If the location is found, this pointer
++ * will be assigned that location so that if called again, it will continue
++ * where it left off.
+  *
+- * 'retp' is a pointer to the return address on the stack.  It's ignored if
++ * @retp is a pointer to the return address on the stack.  It's ignored if
+  * the arch doesn't have HAVE_FUNCTION_GRAPH_RET_ADDR_PTR defined.
+  */
+ #ifdef HAVE_FUNCTION_GRAPH_RET_ADDR_PTR
+@@ -895,6 +901,10 @@ unsigned long ftrace_graph_ret_addr(struct task_struct *task, int *idx,
+ 	if (ret != return_handler)
+ 		return ret;
+ 
++	if (!idx)
++		return ret;
++
++	i = *idx ? : task->curr_ret_stack;
+ 	while (i > 0) {
+ 		ret_stack = get_ret_stack(current, i, &i);
+ 		if (!ret_stack)
+@@ -908,8 +918,10 @@ unsigned long ftrace_graph_ret_addr(struct task_struct *task, int *idx,
+ 		 * Thus we will continue to find real return address.
+ 		 */
+ 		if (ret_stack->retp == retp &&
+-		    ret_stack->ret != return_handler)
++		    ret_stack->ret != return_handler) {
++			*idx = i;
+ 			return ret_stack->ret;
++		}
+ 	}
+ 
+ 	return ret;
+-- 
+2.43.0
+
+
