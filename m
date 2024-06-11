@@ -4,52 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA4C4C25B76
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 07:33:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F77AC25B76
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 07:34:24 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SPZjzavt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NK69Ca5T;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz0lF64B8z3cR9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 17:33:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz0mZ2psHz3cCb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 17:34:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SPZjzavt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NK69Ca5T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz0kT19PXz3c2K
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 17:32:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz0ln49mMz3c2K
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 17:33:41 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 32D5260C47;
-	Tue, 11 Jun 2024 07:32:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F0F2C2BD10;
-	Tue, 11 Jun 2024 07:32:27 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id D4C1760C25;
+	Tue, 11 Jun 2024 07:33:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CD458C2BD10;
+	Tue, 11 Jun 2024 07:33:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1718091151;
-	bh=AF+zG6ZFufj7ktoeAMS7+47wp+ON6l7hR24Gr5fCwt0=;
+	s=k20201202; t=1718091219;
+	bh=oHlrsHMGSP+TFKBHBiaHuNGPDyXYV0yztvtK1Y/4xoA=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=SPZjzavtcTKyCdC4WGEmHFxtV9LSffVVHpZkghrgh94KIDRkU8Rgia29Z6gttxoe9
-	 zOX7C6t8muRYmEJZDxtGZLcKQdFby+uhJ+qwHFKzMHofsRuUcCtmhO2REjHrW7IVjC
-	 7C0j0tRe+awY6OwUGv767JT4KMLbYhYrBxC1MF4vQdaDAWH1YkqCVa5cS1IpTDl7jQ
-	 DwpBzOgI8vuLSRr2nP+6MuC1MYxBAnJs8yxlw2hav/xabgNZGi1G1i8tZ6aqMjzXS4
-	 h+CSlB5tmAFTFG1Iuv9NHsTDXLnN731DIz3tGAdH8iuIjAV/89MvaPrp5ZojK8LhAf
-	 PBu9mWf+fZU2w==
-Message-ID: <77ea357f-f73f-4524-8995-ed204d5f3431@kernel.org>
-Date: Tue, 11 Jun 2024 16:32:26 +0900
+	b=NK69Ca5T+un738Cht9WHCgDsDCtG+gx8LYD6gWuaN5n85S7Yoy0xxNUkFXn4cHxHv
+	 Wlv+wGcdYIf+EVH9ZUhb5I5VG8NRhQniAqY8z0Q49SoQKDz4xicGpKlJi87Afp005I
+	 EtH89giKv6HAFkHTX4qfxqAZNfqbbdEoL02qUnKFAY7p5J0TI+KJ8srSwUMmzd4BcU
+	 hfvqIdBP7X08PHZVdAv1hTm1A4VlEuGPTd2au2zULBAaTxZxCjrUn/VKKe7PVNMklX
+	 962B+4yOZjBDU8ZEfAUGNkCr9yE5Pg/u5zYNHenczAAetVmyH+GxTRZJ9JSnWhGfdr
+	 S8dGvnoNweUXw==
+Message-ID: <57a98863-e1ca-4ef8-aa7c-5012daa22808@kernel.org>
+Date: Tue, 11 Jun 2024 16:33:32 +0900
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 11/26] block: freeze the queue in queue_attr_store
+Subject: Re: [PATCH 12/26] block: remove blk_flush_policy
 To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
 References: <20240611051929.513387-1-hch@lst.de>
- <20240611051929.513387-12-hch@lst.de>
+ <20240611051929.513387-13-hch@lst.de>
 Content-Language: en-US
 From: Damien Le Moal <dlemoal@kernel.org>
 Organization: Western Digital Research
-In-Reply-To: <20240611051929.513387-12-hch@lst.de>
+In-Reply-To: <20240611051929.513387-13-hch@lst.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -68,9 +68,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 6/11/24 2:19 PM, Christoph Hellwig wrote:
-> queue_attr_store updates attributes used to control generating I/O, and
-> can cause malformed bios if changed with I/O in flight.  Freeze the queue
-> in common code instead of adding it to almost every attribute.
+> Fold blk_flush_policy into the only caller to prepare for pending changes
+> to it.
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
