@@ -4,98 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A49BC27C5E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 08:50:28 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UYP6KTIU;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A78BC27C5E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 09:32:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz2SL3q2Tz3cXW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 18:50:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UYP6KTIU;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz2RW1P43z2xdg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 18:49:43 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 47A1160D3C;
-	Tue, 11 Jun 2024 08:49:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4740BC2BD10;
-	Tue, 11 Jun 2024 08:49:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1718095781;
-	bh=hjc0fCsVq9ydI0+KQ9TtQdj35XeVhSSbzEUpWWkiC7g=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=UYP6KTIUnVGCkbSsq+S5husAJvuVZ3iZtJZTse+KeLfIPhc4EqQZPKWbNn+Evir7E
-	 c5gdwIp6LOGdApq/YqGmzpKztlV1GcCXv/dv0b6zRidw64xHvhGeyt/0WaV1Eve3nu
-	 JtiBfYVjClLe0+yGt1EuepKo5n9yTycljGzg0xH8HgGCnwSXsLOwk840x8rlsr5zUC
-	 hS6p0XDfeWWsXO4yb/4WczKh3/9bHX1raiM8KwLnrFEoI0G0RJ/XyVlu8SMkZtaev1
-	 wDEdWtw3vOODI7KTk7P9ZE0DjuD7puzzIGeducq6RbkglZemQYso99Rh10jJRm+Euc
-	 5P5C18WIwEIuA==
-Message-ID: <364dc212-71dc-4bc9-b4fa-97ba2f92d679@kernel.org>
-Date: Tue, 11 Jun 2024 10:49:36 +0200
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz3NV2Lrdz3cf8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 19:32:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alpha.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de; envelope-from=tsbogend@alpha.franken.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 2457 seconds by postgrey-1.37 at boromir; Tue, 11 Jun 2024 19:31:45 AEST
+Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz3N14gjdz3cBG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 19:31:45 +1000 (AEST)
+Received: from uucp by elvis.franken.de with local-rmail (Exim 3.36 #1)
+	id 1sGxBT-0000Ne-00; Tue, 11 Jun 2024 10:48:51 +0200
+Received: by alpha.franken.de (Postfix, from userid 1000)
+	id 023C9C0120; Tue, 11 Jun 2024 10:41:16 +0200 (CEST)
+Date: Tue, 11 Jun 2024 10:41:16 +0200
+From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To: Celeste Liu <coelacanthushex@gmail.com>
+Subject: Re: [PATCH 3/6] mips: defconfig: drop RT_GROUP_SCHED=y from
+ generic/db1xxx/eyeq5
+Message-ID: <ZmgNrOr1nalSTeja@alpha.franken.de>
+References: <20240530111947.549474-8-CoelacanthusHex@gmail.com>
+ <20240530111947.549474-11-CoelacanthusHex@gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 2/2] dt-bindings: memory: fsl: replace maintainer
-To: Michael Walle <mwalle@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>
-References: <20240604142249.1957762-1-mwalle@kernel.org>
- <20240604142249.1957762-2-mwalle@kernel.org>
-Content-Language: en-US
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
-In-Reply-To: <20240604142249.1957762-2-mwalle@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240530111947.549474-11-CoelacanthusHex@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,22 +42,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Rich Felker <dalias@libc.org>, Lennart Poettering <lennart@poettering.net>, linux-sh@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@rivosinc.com>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Guo Ren <guoren@kernel.org>, linux-kselftest@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Sven Joachim <svenjoac@gmx.de>, Mykola Lysenko <mykolal@fb.com>, =?iso-8859-1?Q?Th=E9o?= Lebrun <theo.lebrun@bootlin.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Gregory CLEMENT <gregory.clement@bootlin.com>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, Ray Jui <rjui@broadcom.com>, Nicholas Piggin <npiggin@gmail.com>, linux-rpi-kernel@lists.infradead.org, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Icenowy Zheng <uwu@icenowy.me>, Florian Fainelli <florian.fainelli@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Vladimir Kondratiev <vladimir.kondratiev@mobileye.com>, linux-mips@vger.kernel.org, linux-riscv@lists.infradead.org, Heinrich Schuchardt <heinrich.schuchardt@canonical.com>, Anup Patel <anup@brainfault.org>, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04/06/2024 16:22, Michael Walle wrote:
-> Li Yang's mail address is bouncing, replace it with Shawn Guo's one.
+On Thu, May 30, 2024 at 07:19:51PM +0800, Celeste Liu wrote:
+> For cgroup v1, if turned on, and there's any cgroup in the "cpu" hierarchy it
+> needs an RT budget assigned, otherwise the processes in it will not be able to
+> get RT at all. The problem with RT group scheduling is that it requires the
+> budget assigned but there's no way we could assign a default budget, since the
+> values to assign are both upper and lower time limits, are absolute, and need to
+> be sum up to < 1 for each individal cgroup. That means we cannot really come up
+> with values that would work by default in the general case.[1]
 > 
-> Signed-off-by: Michael Walle <mwalle@kernel.org>
+> For cgroup v2, it's almost unusable as well. If it turned on, the cpu controller
+> can only be enabled when all RT processes are in the root cgroup. But it will
+> lose the benefits of cgroup v2 if all RT process were placed in the same cgroup.
+> 
+> Red Hat, Gentoo, Arch Linux and Debian all disable it. systemd also doesn't
+> support it.[2]
+> 
+> [1]: https://bugzilla.redhat.com/show_bug.cgi?id=1229700
+> [2]: https://github.com/systemd/systemd/issues/13781#issuecomment-549164383
+> 
+> Signed-off-by: Celeste Liu <CoelacanthusHex@gmail.com>
 > ---
-> This is marked as an RFC because it is more of a question for Shawn if
-> he is willing to take over the maintainership.
-> ---
+>  arch/mips/configs/db1xxx_defconfig  | 1 -
+>  arch/mips/configs/eyeq5_defconfig   | 1 -
+>  arch/mips/configs/generic_defconfig | 1 -
+>  3 files changed, 3 deletions(-)
 
-I suppose this could go via IMX SoC tree, so:
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+applied to mips-next.
 
-Best regards,
-Krzysztof
+Thomas.
 
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
+good idea.                                                [ RFC1925, 2.3 ]
