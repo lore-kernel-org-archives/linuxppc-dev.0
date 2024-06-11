@@ -4,52 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAF2AC25B76
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 07:27:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F1A4C25B76
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 07:28:54 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lhYNStRM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LTBp4slD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz0cp6S8lz3c9r
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 17:27:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz0fD0v8tz3cP3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 17:28:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lhYNStRM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LTBp4slD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz0c210mKz2xQL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 17:26:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz0dS4ztsz2xQL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 17:28:12 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 9B23CCE19AB;
-	Tue, 11 Jun 2024 07:26:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2CA5C2BD10;
-	Tue, 11 Jun 2024 07:26:46 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id C7491CE19E8;
+	Tue, 11 Jun 2024 07:28:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5C86C2BD10;
+	Tue, 11 Jun 2024 07:28:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1718090811;
-	bh=HG5UcXVYc2pVMu2PGi4iUFqByljMapi6PfR/6ZqBwfo=;
+	s=k20201202; t=1718090891;
+	bh=PzNpxodKMaXzOrbrQbgP0Usp5K8OR/0f+y46RXYG5GI=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=lhYNStRMJNPVo8fichD7Z0COMh5KCSazuVjE6/0APdy+3x8aX6d+I4Uw+ap69ZwAp
-	 3u5aa7mjFdEVQyfJG5WY+eMXxSD+64OfuIlIsHMpLDbrxnp9UPUkR/yayj5dU13RXh
-	 23qGW6mbrSQ4iFRccSriB2Li9Cf3c2qv3X/apL7b2mQFQrd0/fuwpUhAaRGZ1yOusP
-	 n79nDvyWzKvLB0HpWl65/GKtJMfxc7ZpotjxL9zrrr1dQ3UsAtGXJa69S+Dlnhewkx
-	 FHwdj5ZYnFJw9FRojR+8wLW1FYdzAyPRpPQ7jZN/hjLct6+Y9JYli0WJbtrwanSHKq
-	 GWPNeceTmkiMQ==
-Message-ID: <b3a0692c-05f2-459d-9bed-33b7aa3d79c0@kernel.org>
-Date: Tue, 11 Jun 2024 16:26:45 +0900
+	b=LTBp4slDow5NcmeSUO+en/N5x+IvZpqfr4dZ5xfX2JzmBZDcu3dZh1tN6fO3CqfN5
+	 fC9Rl/OM4T8uVQSZE7K0T1VbSc5kGVEloD8CTTVrPkbvI0U3LUhjHwjw0gYgT6m0wL
+	 fsRPyDZqXTT6dQCkbhnlW45jwonhukSCr4JLmJKisZxNZLowwOQwk30YR8lK0/xTNh
+	 Ya4myshjfW/7uX8nEJDGL/WMaUQq8CNmicSbttSzKnr2l9hJq0Cmz3iSLAwvK+uere
+	 9vcVlwnm7Ycw2p4k6Qg21I4xZXBRD9ik7edbDXJpFSNi3bC1udvNreNPZ0wJBOp6Lf
+	 6blq/N52Sp8VQ==
+Message-ID: <d1bff26d-0059-4122-8179-75a1b72f3cfc@kernel.org>
+Date: Tue, 11 Jun 2024 16:28:05 +0900
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 08/26] virtio_blk: remove virtblk_update_cache_mode
+Subject: Re: [PATCH 09/26] nbd: move setting the cache control flags to
+ __nbd_set_size
 To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
 References: <20240611051929.513387-1-hch@lst.de>
- <20240611051929.513387-9-hch@lst.de>
+ <20240611051929.513387-10-hch@lst.de>
 Content-Language: en-US
 From: Damien Le Moal <dlemoal@kernel.org>
 Organization: Western Digital Research
-In-Reply-To: <20240611051929.513387-9-hch@lst.de>
+In-Reply-To: <20240611051929.513387-10-hch@lst.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -68,9 +69,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 6/11/24 2:19 PM, Christoph Hellwig wrote:
-> virtblk_update_cache_mode boils down to a single call to
-> blk_queue_write_cache.  Remove it in preparation for moving the cache
-> control flags into the queue_limits.
+> Move setting the cache control flags in nbd in preparation for moving
+> these flags into the queue_limits structure.
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
