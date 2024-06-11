@@ -4,42 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A22BC27C4F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 03:18:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7F62C25B76
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 05:20:46 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=WiVjV03M;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vyv5N1MzTz3dKX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 13:18:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=goodmis.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=srs0=hook=nn=goodmis.org=rostedt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VyxpN4j4cz3cTM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 15:20:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=WiVjV03M;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+2fedbe304aabaf399917+7597+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vyv4B1C6Mz3cCt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 13:17:30 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id C009FCE01BC;
-	Tue, 11 Jun 2024 03:17:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A354C4AF1A;
-	Tue, 11 Jun 2024 03:17:23 +0000 (UTC)
-Received: from rostedt by gandalf with local (Exim 4.97)
-	(envelope-from <rostedt@goodmis.org>)
-	id 1sGs0v-00000001JgD-3KfX;
-	Mon, 10 Jun 2024 23:17:37 -0400
-Message-ID: <20240611030934.162955582@goodmis.org>
-User-Agent: quilt/0.68
-Date: Mon, 10 Jun 2024 23:09:34 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org,
- linux-trace-kernel@vger.kernel.org,
- linux-doc@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- linux-csky@vger.kernel.org,
- loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org
-Subject: [PATCH 0/2] function_graph: ftrace_graph_ret_addr(); there can be only one!
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VyxnW02LJz30Wl
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 15:19:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
+	:Reply-To:Content-Type:Content-ID:Content-Description;
+	bh=/rZOEnnB7Ck+WcvkswrD5CLavDNj5FzzjxdVzwDte5o=; b=WiVjV03MdppIPPUHNpSsnAOswF
+	ZzMT4QsJKrqeWjtewh91sTq17Q4mo/C/OnhzWIHeo3L6EpP/u5Gsw2y5ZNZfc7s43LyqK4sDE1FpG
+	n1CGW9hR1hsCjP39wbq7dK7SQZcyfIub4k/1gShQl6ug5pyEmBvaRSdlHDbKv6EQUFXWG9X2Kzvcy
+	zRMbflEfBG9QqO9Hao0c27BB16ZyEsohd1SqZIqSoJ2Ac8A6Z5CwEpmzXHO5aP1ywzKVK6Fios+k2
+	5kTJ0aXnUDA7DWdvI+0EcSX4K7nERHV9k7gUQZmoCHBh5G3C3UOTx9SpD50hTrGhUjyYp0My1+kjg
+	Nmuwb5EA==;
+Received: from 2a02-8389-2341-5b80-cdb4-8e7d-405d-6b77.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:cdb4:8e7d:405d:6b77] helo=localhost)
+	by bombadil.infradead.org with esmtpsa (Exim 4.97.1 #2 (Red Hat Linux))
+	id 1sGtv4-00000007QqN-2LdZ;
+	Tue, 11 Jun 2024 05:19:42 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Jens Axboe <axboe@kernel.dk>
+Subject: [PATCH 04/26] loop: always update discard settings in loop_reconfigure_limits
+Date: Tue, 11 Jun 2024 07:19:04 +0200
+Message-ID: <20240611051929.513387-5-hch@lst.de>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240611051929.513387-1-hch@lst.de>
+References: <20240611051929.513387-1-hch@lst.de>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,30 +59,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Jonathan Corbet <corbet@lwn.net>, Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Borislav Petkov <bp@alien8.de>
+Cc: nvdimm@lists.linux.dev, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, linux-nvme@lists.infradead.org, Song Liu <song@kernel.org>, linux-mtd@lists.infradead.org, Vineeth Vijayan <vneethv@linux.ibm.com>, Alasdair Kergon <agk@redhat.com>, drbd-dev@lists.linbit.com, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, Richard Weinberger <richard@nod.at>, Geert Uytterhoeven <geert@linux-m68k.org>, Yu Kuai <yukuai3@huawei.com>, dm-devel@lists.linux.dev, linux-um@lists.infradead.org, Mike Snitzer <snitzer@kernel.org>, Josef Bacik <josef@toxicpanda.com>, nbd@other.debian.org, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Mikulas Patocka <mpatocka@redhat.com>, xen-devel@lists.xenproject.org, ceph-devel@vger.kernel.org, Ming Lei <ming.lei@redhat.com>, linux-bcache@vger.kernel.org, linux-block@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-mmc@vger.kernel.org, Philipp Reisner <philipp.reisner@linbit.com>, =?UTF-8?q?Christoph=20B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, virtualization@lists.linux.dev, Lars Ellenberg <lars.ellenberg@linbit.com>, linuxppc-dev@lists.ozlabs.org, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Simplify loop_reconfigure_limits by always updating the discard limits.
+This adds a little more work to loop_set_block_size, but doesn't change
+the outcome as the discard flag won't change.
 
-I noticed a slight bug in ftrace_graph_ret_addr() for when
-HAVE_FUNCTION_GRAPH_RET_ADDR_PTR was defined and fixed it up.
-I then noticed it was buggy when not defined. Looking for an
-architecture that did not have it defined, I couldn't find any.
-So I removed it.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/block/loop.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-Steven Rostedt (Google) (2):
-      function_graph: Fix up ftrace_graph_ret_addr()
-      function_graph: Everyone uses HAVE_FUNCTION_GRAPH_RET_ADDR_PTR, remove it
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 93a49c40a31a71..c658282454af1b 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -975,8 +975,7 @@ loop_set_status_from_info(struct loop_device *lo,
+ 	return 0;
+ }
+ 
+-static int loop_reconfigure_limits(struct loop_device *lo, unsigned short bsize,
+-		bool update_discard_settings)
++static int loop_reconfigure_limits(struct loop_device *lo, unsigned short bsize)
+ {
+ 	struct queue_limits lim;
+ 
+@@ -984,8 +983,7 @@ static int loop_reconfigure_limits(struct loop_device *lo, unsigned short bsize,
+ 	lim.logical_block_size = bsize;
+ 	lim.physical_block_size = bsize;
+ 	lim.io_min = bsize;
+-	if (update_discard_settings)
+-		loop_config_discard(lo, &lim);
++	loop_config_discard(lo, &lim);
+ 	return queue_limits_commit_update(lo->lo_queue, &lim);
+ }
+ 
+@@ -1086,7 +1084,7 @@ static int loop_configure(struct loop_device *lo, blk_mode_t mode,
+ 	else
+ 		bsize = 512;
+ 
+-	error = loop_reconfigure_limits(lo, bsize, true);
++	error = loop_reconfigure_limits(lo, bsize);
+ 	if (WARN_ON_ONCE(error))
+ 		goto out_unlock;
+ 
+@@ -1496,7 +1494,7 @@ static int loop_set_block_size(struct loop_device *lo, unsigned long arg)
+ 	invalidate_bdev(lo->lo_device);
+ 
+ 	blk_mq_freeze_queue(lo->lo_queue);
+-	err = loop_reconfigure_limits(lo, arg, false);
++	err = loop_reconfigure_limits(lo, arg);
+ 	loop_update_dio(lo);
+ 	blk_mq_unfreeze_queue(lo->lo_queue);
+ 
+-- 
+2.43.0
 
-----
- Documentation/trace/ftrace-design.rst | 12 -------
- arch/arm64/include/asm/ftrace.h       | 11 -------
- arch/csky/include/asm/ftrace.h        |  2 --
- arch/loongarch/include/asm/ftrace.h   |  1 -
- arch/powerpc/include/asm/ftrace.h     |  2 --
- arch/riscv/include/asm/ftrace.h       |  1 -
- arch/s390/include/asm/ftrace.h        |  1 -
- arch/x86/include/asm/ftrace.h         |  2 --
- include/linux/ftrace.h                |  2 --
- kernel/trace/fgraph.c                 | 61 ++++++++++++-----------------------
- 10 files changed, 20 insertions(+), 75 deletions(-)
