@@ -4,53 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54E8CC25B76
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 08:10:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB7C4C27C5E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 08:13:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ASIoL/u9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=efMUQjqz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz1ZK29xpz3cVd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 18:10:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz1dg63Wgz3cVq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 18:13:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ASIoL/u9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=efMUQjqz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz1YY3tbWz2yvx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 18:09:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz1cv06Hvz3c9r
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 18:12:46 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 7900960D2E;
-	Tue, 11 Jun 2024 08:09:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F729C2BD10;
-	Tue, 11 Jun 2024 08:09:46 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 3E604CE0988;
+	Tue, 11 Jun 2024 08:12:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 85352C2BD10;
+	Tue, 11 Jun 2024 08:12:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1718093392;
-	bh=q0QC/DwdDecsb+SsO2WPgUlAOrUNDUio/s56qnb48bM=;
+	s=k20201202; t=1718093565;
+	bh=zMBbLHWiI0o4/6MjscYA2/ULza201WjvhSMdL22ilmQ=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ASIoL/u9H/6b4lUyYk5oEzSADY2SPITglYQKbn22RE2v5Zmv+Bdu4yXt2dx4LBuyj
-	 NVG1rUDMHnNTWyjPGwlGMS7q0dEKke4PAWQg/UzftKu/Ly2DNOhNfxEkKQj6EFDaHU
-	 gbMPLXlbaDGII4KmlbUUWCoStYYGCahBnCwU3sHyUUKQqZ1YdU0vcRocoxwls2ROg2
-	 gKF/wxkN6x65ww9rMbS9NJlQNYUg7Y5U2acfwFYdpXRWwDXOcSxo1CVQbqP3uooiqP
-	 0hvYmqaICGemmnL938SwljJXBPejQKyIB0+ALAtSSclYdQCRHYhtFi/CQNV4wF5aIA
-	 8HiTkYhUDl6Cg==
-Message-ID: <d51e4163-99e3-4435-870d-faef3887ab6a@kernel.org>
-Date: Tue, 11 Jun 2024 17:09:45 +0900
+	b=efMUQjqzDR6/6LZgdCczIkMTU67PAqpDM0RBu6vBwxbRTCrqV/SLQPjysAgXVIH+u
+	 Gs7FwJjGTrCL01zQP92DMiL3AF1rQHaJ0EqlTORyNynpUYXTzsuY6sJ9mfoqPT1Tvg
+	 BSo7cvDW+fM7fvH1aN5LdfHWfYWXWuQSJiOAXVL+z2KUCiOWthz8XV9sMCo6FSpXv+
+	 2SHsDignO7grM22XDSxgAJ0znadsNiLDmWusigAzWpriOV5Y9jvSmQhMPwNSEb8Bvj
+	 SvInHsx54FSttIPvfIwG30ulL5P3X40mKZipSzOnWLUzNb0kOcJMR/irZgSdTd0fnE
+	 LJc4doaBwGC7g==
+Message-ID: <a10087ad-8b2c-4a6c-accb-fb1e8015e704@kernel.org>
+Date: Tue, 11 Jun 2024 17:12:40 +0900
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 16/26] block: move the io_stat flag setting to
- queue_limits
+Subject: Re: [PATCH 17/26] block: move the stable_write flag to queue_limits
 To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
 References: <20240611051929.513387-1-hch@lst.de>
- <20240611051929.513387-17-hch@lst.de>
+ <20240611051929.513387-18-hch@lst.de>
 Content-Language: en-US
 From: Damien Le Moal <dlemoal@kernel.org>
 Organization: Western Digital Research
-In-Reply-To: <20240611051929.513387-17-hch@lst.de>
+In-Reply-To: <20240611051929.513387-18-hch@lst.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,18 +68,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 6/11/24 2:19 PM, Christoph Hellwig wrote:
-> Move the io_stat flag into the queue_limits feature field so that it
-> can be set atomically and all I/O is frozen when changing the flag.
+> Move the io_stat flag into the queue_limits feature field so that it can
 
-Why a feature ? It seems more appropriate for io_stat to be a flag rather than
-a feature as that is a block layer thing rather than a device characteristic, no ?
+s/io_stat/stable_write
 
+> be set atomically and all I/O is frozen when changing the flag.
 > 
-> Simplify md and dm to set the flag unconditionally instead of avoiding
-> setting a simple flag for cases where it already is set by other means,
-> which is a bit pointless.
+> The flag is now inherited by blk_stack_limits, which greatly simplifies
+> the code in dm, and fixed md which previously did not pass on the flag
+> set on lower devices.
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Other than the nit above, looks OK to me.
+
+Reviewed-by: Damien Le Moal <dlemoal@kernel.org>
 
 -- 
 Damien Le Moal
