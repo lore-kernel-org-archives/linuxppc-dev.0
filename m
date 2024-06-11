@@ -4,33 +4,114 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A78BC27C5E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 09:32:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59608C25B76
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 09:36:00 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1h9kfKoU;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Wyti0idM;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1h9kfKoU;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Wyti0idM;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz3NV2Lrdz3cf8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 19:32:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alpha.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de; envelope-from=tsbogend@alpha.franken.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 2457 seconds by postgrey-1.37 at boromir; Tue, 11 Jun 2024 19:31:45 AEST
-Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz3N14gjdz3cBG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 19:31:45 +1000 (AEST)
-Received: from uucp by elvis.franken.de with local-rmail (Exim 3.36 #1)
-	id 1sGxBT-0000Ne-00; Tue, 11 Jun 2024 10:48:51 +0200
-Received: by alpha.franken.de (Postfix, from userid 1000)
-	id 023C9C0120; Tue, 11 Jun 2024 10:41:16 +0200 (CEST)
-Date: Tue, 11 Jun 2024 10:41:16 +0200
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To: Celeste Liu <coelacanthushex@gmail.com>
-Subject: Re: [PATCH 3/6] mips: defconfig: drop RT_GROUP_SCHED=y from
- generic/db1xxx/eyeq5
-Message-ID: <ZmgNrOr1nalSTeja@alpha.franken.de>
-References: <20240530111947.549474-8-CoelacanthusHex@gmail.com>
- <20240530111947.549474-11-CoelacanthusHex@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vz3St2b6Lz3d3Q
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Jun 2024 19:35:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1h9kfKoU;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Wyti0idM;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=1h9kfKoU;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Wyti0idM;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vz3R801f5z3cb4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 19:34:27 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 2FB9133686;
+	Tue, 11 Jun 2024 09:34:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1718098465; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=bXl9G+kh6CJWJjfSYdY3mI/mE/xXvq102BbFQ15gmgk=;
+	b=1h9kfKoUjzUX7Pg0FYO4/Hn86ca25G+Dw0AJG6LeaEH4SJ+Pr27qT5mX6xNgxC6+O6nlft
+	br7k3/K0BFcSDett6c63kGZre4r1PJdSH5PsMsFXqyiITD7SPqMSS1uvPAn4oCFafdgeLW
+	Px/kUM1cWdNYU4YVxTTrQ2a7A0yPIFM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1718098465;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=bXl9G+kh6CJWJjfSYdY3mI/mE/xXvq102BbFQ15gmgk=;
+	b=Wyti0idMR4rKs3LoThTM+Y8V0nVad7j2jppVkPhnwFxzg/7HdB6YPRlKnU0DR4KISNMvTk
+	44kaEKvNEVIr0MBQ==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1718098465; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=bXl9G+kh6CJWJjfSYdY3mI/mE/xXvq102BbFQ15gmgk=;
+	b=1h9kfKoUjzUX7Pg0FYO4/Hn86ca25G+Dw0AJG6LeaEH4SJ+Pr27qT5mX6xNgxC6+O6nlft
+	br7k3/K0BFcSDett6c63kGZre4r1PJdSH5PsMsFXqyiITD7SPqMSS1uvPAn4oCFafdgeLW
+	Px/kUM1cWdNYU4YVxTTrQ2a7A0yPIFM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1718098465;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=bXl9G+kh6CJWJjfSYdY3mI/mE/xXvq102BbFQ15gmgk=;
+	b=Wyti0idMR4rKs3LoThTM+Y8V0nVad7j2jppVkPhnwFxzg/7HdB6YPRlKnU0DR4KISNMvTk
+	44kaEKvNEVIr0MBQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A858413A55;
+	Tue, 11 Jun 2024 09:34:24 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id Jbt2JiAaaGapdAAAD6G6ig
+	(envelope-from <osalvador@suse.de>); Tue, 11 Jun 2024 09:34:24 +0000
+Date: Tue, 11 Jun 2024 11:34:23 +0200
+From: Oscar Salvador <osalvador@suse.de>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v5 02/18] mm: Define __pte_leaf_size() to also take a PMD
+ entry
+Message-ID: <ZmgaHyS0izhtKbx6@localhost.localdomain>
+References: <cover.1717955558.git.christophe.leroy@csgroup.eu>
+ <172b11c93e0de7a84937af2da9f80bd17c56b8c9.1717955558.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240530111947.549474-11-CoelacanthusHex@gmail.com>
+In-Reply-To: <172b11c93e0de7a84937af2da9f80bd17c56b8c9.1717955558.git.christophe.leroy@csgroup.eu>
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	RCVD_TLS_ALL(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[linux-foundation.org,nvidia.com,redhat.com,ellerman.id.au,gmail.com,vger.kernel.org,kvack.org,lists.ozlabs.org];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo]
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,40 +123,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, Lennart Poettering <lennart@poettering.net>, linux-sh@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@rivosinc.com>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Guo Ren <guoren@kernel.org>, linux-kselftest@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Sven Joachim <svenjoac@gmx.de>, Mykola Lysenko <mykolal@fb.com>, =?iso-8859-1?Q?Th=E9o?= Lebrun <theo.lebrun@bootlin.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Gregory CLEMENT <gregory.clement@bootlin.com>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, Ray Jui <rjui@broadcom.com>, Nicholas Piggin <npiggin@gmail.com>, linux-rpi-kernel@lists.infradead.org, loongarch@lists.linux.dev, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Icenowy Zheng <uwu@icenowy.me>, Florian Fainelli <florian.fainelli@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Vladimir Kondratiev <vladimir.kondratiev@mobileye.com>, linux-mips@vger.kernel.org, linux-riscv@lists.infradead.org, Heinrich Schuchardt <heinrich.schuchardt@canonical.com>, Anup Patel <anup@brainfault.org>, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Peter Xu <peterx@redhat.com>, Jason Gunthorpe <jgg@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, May 30, 2024 at 07:19:51PM +0800, Celeste Liu wrote:
-> For cgroup v1, if turned on, and there's any cgroup in the "cpu" hierarchy it
-> needs an RT budget assigned, otherwise the processes in it will not be able to
-> get RT at all. The problem with RT group scheduling is that it requires the
-> budget assigned but there's no way we could assign a default budget, since the
-> values to assign are both upper and lower time limits, are absolute, and need to
-> be sum up to < 1 for each individal cgroup. That means we cannot really come up
-> with values that would work by default in the general case.[1]
+On Mon, Jun 10, 2024 at 07:54:47AM +0200, Christophe Leroy wrote:
+> On powerpc 8xx, when a page is 8M size, the information is in the PMD
+> entry. So allow architectures to provide __pte_leaf_size() instead of
+> pte_leaf_size() and provide the PMD entry to that function.
 > 
-> For cgroup v2, it's almost unusable as well. If it turned on, the cpu controller
-> can only be enabled when all RT processes are in the root cgroup. But it will
-> lose the benefits of cgroup v2 if all RT process were placed in the same cgroup.
+> When __pte_leaf_size() is not defined, define it as a pte_leaf_size()
+> so that architectures not interested in the PMD arguments are not
+> impacted.
 > 
-> Red Hat, Gentoo, Arch Linux and Debian all disable it. systemd also doesn't
-> support it.[2]
-> 
-> [1]: https://bugzilla.redhat.com/show_bug.cgi?id=1229700
-> [2]: https://github.com/systemd/systemd/issues/13781#issuecomment-549164383
-> 
-> Signed-off-by: Celeste Liu <CoelacanthusHex@gmail.com>
-> ---
->  arch/mips/configs/db1xxx_defconfig  | 1 -
->  arch/mips/configs/eyeq5_defconfig   | 1 -
->  arch/mips/configs/generic_defconfig | 1 -
->  3 files changed, 3 deletions(-)
+> Only define a default pte_leaf_size() when __pte_leaf_size() is not
+> defined to make sure nobody adds new calls to pte_leaf_size() in the
+> core.
 
-applied to mips-next.
+Hi Christophe,
 
-Thomas.
+Now I am going to give you a hard time, so sorry in advance.
+I should have raised this before, but I was not fully aware of it.
+
+There is an ongoing effort of unifying pagewalkers [1], so hugetlb does not have
+to be special-cased anymore, and the operations we do for THP on page-table basis
+work for hugetlb as well.
+
+The most special bit about this is huge_ptep_get.
+huge_ptep_get() gets special handled on arm/arm64/riscv and s390.
+
+arm64 and riscv is about cont-pmd/pte and propagate the dirty/young bits bits, so that
+is fine as walkers can already understand that.
+s390 is a funny one because it converts pud/pmd to pte and viceversa, because hugetlb
+*works* with ptes, so before returning the pte it has to transfer all
+bits from PUD/PMD level into a something that PTE level can understand.
+As you can imagine, this can be gone as we already have all the
+information in PUD/PMD and that is all pagewalkers need.
+
+But we are left with the one you will introduce in patch#8.
+
+8MB pages get mapped as cont-pte, but all the information is stored in
+the PMD entries (size, dirtiness, present etc).
+huge_ptep_get() will return the PMD for 8MB, and so all operations hugetlb
+code performs with what huge_ptep_get returns will be performed on those PMDs.
+
+Which brings me to this point:
+
+I do not think __pte_leaf_size is needed. AFAICS, it should be enough to define
+pmd_leaf on 8xx, and return 8MB if it is a 8MB hugepage.
+
+   #define pmd_leaf pmd_leaf
+   static inline bool pmd_leaf(pmd_t pmd)
+   {
+          return pmd_val(pmd) & _PMD_PAGE_8M);
+   }
+
+   and then pmd_leaf_size to return _PMD_PAGE_8M.
+   
+This will help because on the ongoing effort of unifying hugetlb and
+getting rid of huge_ptep_get() [1], pagewalkers will stumble upon the
+8mb-PMD as they do for regular PMDs.
+
+Which means that they would be caught in the following code:
+
+        ptl = pmd_huge_lock(pmd, vma);
+        if (ptl) {
+	        - 8MB hugepages will be handled here
+                smaps_pmd_entry(pmd, addr, walk);
+                spin_unlock(ptl);
+        }
+	/* pte stuff */
+	...
+
+where pmd_huge_lock is:
+
+ static inline spinlock_t *pmd_huge_lock(pmd_t *pmd, struct vm_area_struct *vma)
+ {
+        spinlock_t *ptl = pmd_lock(vma->vm_mm, pmd);
+
+        if (pmd_leaf(*pmd) || pmd_devmap(*pmd))
+                return ptl;
+        spin_unlock(ptl);
+        return NULL;
+ }
+
+So, since pmd_leaf() will return true for 8MB hugepages, we are fine,
+because anyway we want to perform pagetable operations on *that* PMD and
+not the ptes that are cont-mapped, which is different for e.g: 512K
+hugepages, where we perform it on pte level.
+
+So I would suggest that instead of this patch, we have one implementing pmd_leaf
+and pmd_leaf_size for 8Mb hugepages on power8xx, as that takes us closer to our goal of
+unifying hugetlb.
+
+[1] https://github.com/leberus/linux/tree/hugetlb-pagewalk-v2
+
 
 -- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
-good idea.                                                [ RFC1925, 2.3 ]
+Oscar Salvador
+SUSE Labs
