@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8998FC27C53
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 06:58:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C038C27C75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 06:59:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VzbxF3jH8z3fvB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 16:58:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vzbxg1dbKz3frl
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 16:59:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vzbvx4g59z3dPs
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 16:57:49 +1000 (AEST)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6B0F31A123F;
-	Wed, 12 Jun 2024 08:57:46 +0200 (CEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vzbvz3zf8z3dPs
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 16:57:51 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 884552018B5;
+	Wed, 12 Jun 2024 08:57:49 +0200 (CEST)
 Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id D13331A0FFA;
-	Wed, 12 Jun 2024 08:57:45 +0200 (CEST)
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id EE47820079D;
+	Wed, 12 Jun 2024 08:57:48 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 8A012181D0FD;
-	Wed, 12 Jun 2024 14:57:43 +0800 (+08)
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id ABEFB181D0FD;
+	Wed, 12 Jun 2024 14:57:46 +0800 (+08)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: shengjiu.wang@gmail.com,
 	Xiubo.Lee@gmail.com,
@@ -43,9 +43,9 @@ To: shengjiu.wang@gmail.com,
 	imx@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] ASoC: fsl_sai: Add separate DAI for transmitter and receiver
-Date: Wed, 12 Jun 2024 14:40:50 +0800
-Message-Id: <1718174452-17596-2-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH 3/3] ASoC: imx-audmix: Split capture device for audmix
+Date: Wed, 12 Jun 2024 14:40:52 +0800
+Message-Id: <1718174452-17596-4-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1718174452-17596-1-git-send-email-shengjiu.wang@nxp.com>
 References: <1718174452-17596-1-git-send-email-shengjiu.wang@nxp.com>
@@ -65,310 +65,179 @@ Cc: viorel.suman@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The transmitter and receiver part of the SAI interface need to be
-configured with different master/slave mode, especially to work
-with the audiomix module.
-
-+-------+               +-----------+
-| SAI1  |   --TX-->     |           |
-|       |   <--RX--     |           |
-+-------+               |           |
-                        | AUDIOMIX  |
-+-------+               |           |
-| SAI2  |   --TX-->     |           |
-+-------+               +-----------+
-
-The SAI1 TX is in master mode, but SAI1 RX is in slave mode.
-So add another two DAIs for TX and RX separately. but only
-defined fsl_sai_set_dai_fmt_tx() and fsl_sai_set_dai_fmt_rx()
-ops function for current case, in the future, the other ops
-function for TX and RX can be defined if required.
+There will be three devices for this sound card, hw:x,0 is
+the playback device for one SAI, hw:x,1 is the playback device
+for another SAI, hw:x,2 is the capture device for audmix
+output. then capture device and playback device can be configured
+with different master/slave mode.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- sound/soc/fsl/fsl_sai.c | 141 +++++++++++++++++++++++++++++-----------
- sound/soc/fsl/fsl_sai.h |   4 +-
- 2 files changed, 104 insertions(+), 41 deletions(-)
+ sound/soc/fsl/imx-audmix.c | 79 ++++++++++++++++++++++----------------
+ 1 file changed, 45 insertions(+), 34 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 0e2c31439670..d03b0172b8ad 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -357,18 +357,18 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
- 	case SND_SOC_DAIFMT_BP_FP:
- 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
- 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
--		sai->is_consumer_mode = false;
-+		sai->is_consumer_mode[tx] = false;
- 		break;
- 	case SND_SOC_DAIFMT_BC_FC:
--		sai->is_consumer_mode = true;
-+		sai->is_consumer_mode[tx] = true;
- 		break;
- 	case SND_SOC_DAIFMT_BP_FC:
- 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
--		sai->is_consumer_mode = false;
-+		sai->is_consumer_mode[tx] = false;
- 		break;
- 	case SND_SOC_DAIFMT_BC_FP:
- 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
--		sai->is_consumer_mode = true;
-+		sai->is_consumer_mode[tx] = true;
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -400,6 +400,16 @@ static int fsl_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
- 	return ret;
- }
+diff --git a/sound/soc/fsl/imx-audmix.c b/sound/soc/fsl/imx-audmix.c
+index 2aeb18397bcb..6fbcf33fd0de 100644
+--- a/sound/soc/fsl/imx-audmix.c
++++ b/sound/soc/fsl/imx-audmix.c
+@@ -140,6 +140,13 @@ static const struct snd_soc_ops imx_audmix_be_ops = {
+ 	.hw_params = imx_audmix_be_hw_params,
+ };
  
-+static int fsl_sai_set_dai_fmt_tx(struct snd_soc_dai *cpu_dai, unsigned int fmt)
-+{
-+	return fsl_sai_set_dai_fmt_tr(cpu_dai, fmt, true);
-+}
++static const char *name[][3] = {
++	{"HiFi-AUDMIX-FE-0", "HiFi-AUDMIX-FE-1", "HiFi-AUDMIX-FE-2"},
++	{"sai-tx", "sai-tx", "sai-rx"},
++	{"AUDMIX-Playback-0", "AUDMIX-Playback-1", "CPU-Capture"},
++	{"CPU-Playback", "CPU-Playback", "AUDMIX-Capture-0"},
++};
 +
-+static int fsl_sai_set_dai_fmt_rx(struct snd_soc_dai *cpu_dai, unsigned int fmt)
-+{
-+	return fsl_sai_set_dai_fmt_tr(cpu_dai, fmt, false);
-+}
-+
- static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
+ static int imx_audmix_probe(struct platform_device *pdev)
  {
- 	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
-@@ -412,7 +422,7 @@ static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
- 	bool support_1_1_ratio = sai->verid.version >= 0x0301;
+ 	struct device_node *np = pdev->dev.of_node;
+@@ -150,7 +157,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
+ 	struct imx_audmix *priv;
+ 	int i, num_dai, ret;
+ 	const char *fe_name_pref = "HiFi-AUDMIX-FE-";
+-	char *be_name, *be_pb, *be_cp, *dai_name, *capture_dai_name;
++	char *be_name, *dai_name;
  
- 	/* Don't apply to consumer mode */
--	if (sai->is_consumer_mode)
-+	if (sai->is_consumer_mode[tx])
- 		return 0;
+ 	if (pdev->dev.parent) {
+ 		audmix_np = pdev->dev.parent->of_node;
+@@ -183,6 +190,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
+ 	if (!priv)
+ 		return -ENOMEM;
  
- 	/*
-@@ -575,7 +585,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 		}
- 	}
++	num_dai += 1;
+ 	priv->num_dai = 2 * num_dai;
+ 	priv->dai = devm_kcalloc(&pdev->dev, priv->num_dai,
+ 				 sizeof(struct snd_soc_dai_link), GFP_KERNEL);
+@@ -196,7 +204,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
+ 	if (!priv->dai_conf)
+ 		return -ENOMEM;
  
--	if (!sai->is_consumer_mode) {
-+	if (!sai->is_consumer_mode[tx]) {
- 		ret = fsl_sai_set_bclk(cpu_dai, tx, bclk);
- 		if (ret)
+-	priv->num_dapm_routes = 3 * num_dai;
++	priv->num_dapm_routes = num_dai;
+ 	priv->dapm_routes = devm_kcalloc(&pdev->dev, priv->num_dapm_routes,
+ 					 sizeof(struct snd_soc_dapm_route),
+ 					 GFP_KERNEL);
+@@ -211,8 +219,12 @@ static int imx_audmix_probe(struct platform_device *pdev)
+ 		if (!dlc)
+ 			return -ENOMEM;
+ 
+-		ret = of_parse_phandle_with_args(audmix_np, "dais", NULL, i,
+-						 &args);
++		if (i == num_dai - 1)
++			ret = of_parse_phandle_with_args(audmix_np, "dais", NULL, 0,
++							 &args);
++		else
++			ret = of_parse_phandle_with_args(audmix_np, "dais", NULL, i,
++							 &args);
+ 		if (ret < 0) {
+ 			dev_err(&pdev->dev, "of_parse_phandle_with_args failed\n");
  			return ret;
-@@ -613,7 +623,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 	 * RCR5(TCR5) for playback(capture), or there will be sync error.
- 	 */
+@@ -226,20 +238,14 @@ static int imx_audmix_probe(struct platform_device *pdev)
+ 		put_device(&cpu_pdev->dev);
  
--	if (!sai->is_consumer_mode && fsl_sai_dir_is_synced(sai, adir)) {
-+	if (!sai->is_consumer_mode[tx] && fsl_sai_dir_is_synced(sai, adir)) {
- 		regmap_update_bits(sai->regmap, FSL_SAI_xCR4(!tx, ofs),
- 				   FSL_SAI_CR4_SYWD_MASK | FSL_SAI_CR4_FRSZ_MASK |
- 				   FSL_SAI_CR4_CHMOD_MASK,
-@@ -683,7 +693,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 	 * FSD_MSTR bit for this specific case.
- 	 */
- 	if (sai->soc_data->mclk_with_tere && sai->mclk_direction_output &&
--	    !sai->is_consumer_mode)
-+	    !sai->is_consumer_mode[tx])
- 		regmap_update_bits(sai->regmap, FSL_SAI_xCR4(tx, ofs),
- 				   FSL_SAI_CR4_FSD_MSTR, 0);
+ 		dai_name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s%s",
+-					  fe_name_pref, args.np->full_name + 1);
++					  fe_name_pref, args.np->full_name);
+ 		if (!dai_name)
+ 			return -ENOMEM;
  
-@@ -697,7 +707,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 		dev_info(pdev->dev.parent, "DAI FE name:%s\n", dai_name);
  
- 	/* Enable FSD_MSTR after configuring word width */
- 	if (sai->soc_data->mclk_with_tere && sai->mclk_direction_output &&
--	    !sai->is_consumer_mode)
-+	    !sai->is_consumer_mode[tx])
- 		regmap_update_bits(sai->regmap, FSL_SAI_xCR4(tx, ofs),
- 				   FSL_SAI_CR4_FSD_MSTR, FSL_SAI_CR4_FSD_MSTR);
+-		if (i == 0) {
++		if (i == num_dai - 1)
+ 			out_cpu_np = args.np;
+-			capture_dai_name =
+-				devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s %s",
+-					       dai_name, "CPU-Capture");
+-			if (!capture_dai_name)
+-				return -ENOMEM;
+-		}
  
-@@ -720,8 +730,8 @@ static int fsl_sai_hw_free(struct snd_pcm_substream *substream,
- 	regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx, ofs),
- 			   FSL_SAI_CR3_TRCE_MASK, 0);
- 
--	if (!sai->is_consumer_mode &&
--			sai->mclk_streams & BIT(substream->stream)) {
-+	if (!sai->is_consumer_mode[tx] &&
-+	    sai->mclk_streams & BIT(substream->stream)) {
- 		clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[tx]]);
- 		sai->mclk_streams &= ~BIT(substream->stream);
- 	}
-@@ -759,7 +769,7 @@ static void fsl_sai_config_disable(struct fsl_sai *sai, int dir)
- 	 * This is a hardware bug, and will be fix in the
- 	 * next sai version.
- 	 */
--	if (!sai->is_consumer_mode) {
-+	if (!sai->is_consumer_mode[tx]) {
- 		/* Software Reset */
- 		regmap_write(sai->regmap, FSL_SAI_xCSR(tx, ofs), FSL_SAI_CSR_SR);
- 		/* Clear SR bit to finish the reset */
-@@ -914,6 +924,30 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
- 	.startup	= fsl_sai_startup,
- };
- 
-+static const struct snd_soc_dai_ops fsl_sai_pcm_dai_tx_ops = {
-+	.probe		= fsl_sai_dai_probe,
-+	.set_bclk_ratio	= fsl_sai_set_dai_bclk_ratio,
-+	.set_sysclk	= fsl_sai_set_dai_sysclk,
-+	.set_fmt	= fsl_sai_set_dai_fmt_tx,
-+	.set_tdm_slot	= fsl_sai_set_dai_tdm_slot,
-+	.hw_params	= fsl_sai_hw_params,
-+	.hw_free	= fsl_sai_hw_free,
-+	.trigger	= fsl_sai_trigger,
-+	.startup	= fsl_sai_startup,
-+};
+ 		/*
+ 		 * CPU == Platform
+@@ -252,27 +258,23 @@ static int imx_audmix_probe(struct platform_device *pdev)
+ 		priv->dai[i].num_cpus = 1;
+ 		priv->dai[i].num_codecs = 1;
+ 		priv->dai[i].num_platforms = 1;
+-
+-		priv->dai[i].name = dai_name;
++		priv->dai[i].name = name[0][i];
+ 		priv->dai[i].stream_name = "HiFi-AUDMIX-FE";
+ 		priv->dai[i].cpus->of_node = args.np;
+-		priv->dai[i].cpus->dai_name = dev_name(&cpu_pdev->dev);
++		priv->dai[i].cpus->dai_name = name[1][i];
 +
-+static const struct snd_soc_dai_ops fsl_sai_pcm_dai_rx_ops = {
-+	.probe		= fsl_sai_dai_probe,
-+	.set_bclk_ratio	= fsl_sai_set_dai_bclk_ratio,
-+	.set_sysclk	= fsl_sai_set_dai_sysclk,
-+	.set_fmt	= fsl_sai_set_dai_fmt_rx,
-+	.set_tdm_slot	= fsl_sai_set_dai_tdm_slot,
-+	.hw_params	= fsl_sai_hw_params,
-+	.hw_free	= fsl_sai_hw_free,
-+	.trigger	= fsl_sai_trigger,
-+	.startup	= fsl_sai_startup,
-+};
+ 		priv->dai[i].dynamic = 1;
+ 		priv->dai[i].dpcm_playback = 1;
+-		priv->dai[i].dpcm_capture = (i == 0 ? 1 : 0);
++		if (i == num_dai - 1) {
++			priv->dai[i].dpcm_capture = 1;
++			priv->dai[i].dpcm_playback = 0;
++		}
+ 		priv->dai[i].ignore_pmdown_time = 1;
+ 		priv->dai[i].ops = &imx_audmix_fe_ops;
+ 
+ 		/* Add AUDMIX Backend */
+ 		be_name = devm_kasprintf(&pdev->dev, GFP_KERNEL,
+ 					 "audmix-%d", i);
+-		be_pb = devm_kasprintf(&pdev->dev, GFP_KERNEL,
+-				       "AUDMIX-Playback-%d", i);
+-		be_cp = devm_kasprintf(&pdev->dev, GFP_KERNEL,
+-				       "AUDMIX-Capture-%d", i);
+-		if (!be_name || !be_pb || !be_cp)
+-			return -ENOMEM;
+-
+ 		priv->dai[num_dai + i].cpus	= &dlc[1];
+ 		priv->dai[num_dai + i].codecs	= &snd_soc_dummy_dlc;
+ 
+@@ -284,24 +286,33 @@ static int imx_audmix_probe(struct platform_device *pdev)
+ 		priv->dai[num_dai + i].cpus->dai_name = be_name;
+ 		priv->dai[num_dai + i].no_pcm = 1;
+ 		priv->dai[num_dai + i].dpcm_playback = 1;
+-		priv->dai[num_dai + i].dpcm_capture  = 1;
++		if (i == num_dai - 1) {
++			priv->dai[num_dai + i].dpcm_capture  = 1;
++			priv->dai[num_dai + i].dpcm_playback  = 0;
++		}
+ 		priv->dai[num_dai + i].ignore_pmdown_time = 1;
+ 		priv->dai[num_dai + i].ops = &imx_audmix_be_ops;
+ 
+ 		priv->dai_conf[i].dlc.of_node = args.np;
+ 		priv->dai_conf[i].name_prefix = dai_name;
+ 
+-		priv->dapm_routes[i].source =
+-			devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s %s",
+-				       dai_name, "CPU-Playback");
+-		if (!priv->dapm_routes[i].source)
+-			return -ENOMEM;
++		if (i == num_dai - 1) {
++			priv->dapm_routes[i].sink =
++				devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s %s",
++					       dai_name, name[2][i]);
++			if (!priv->dapm_routes[i].sink)
++				return -ENOMEM;
+ 
+-		priv->dapm_routes[i].sink = be_pb;
+-		priv->dapm_routes[num_dai + i].source   = be_pb;
+-		priv->dapm_routes[num_dai + i].sink     = be_cp;
+-		priv->dapm_routes[2 * num_dai + i].source = be_cp;
+-		priv->dapm_routes[2 * num_dai + i].sink   = capture_dai_name;
++			priv->dapm_routes[i].source = name[3][i];
++		} else {
++			priv->dapm_routes[i].source =
++				devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s %s",
++					       dai_name, name[3][i]);
++			if (!priv->dapm_routes[i].source)
++				return -ENOMEM;
 +
- static int fsl_sai_dai_resume(struct snd_soc_component *component)
- {
- 	struct fsl_sai *sai = snd_soc_component_get_drvdata(component);
-@@ -931,26 +965,55 @@ static int fsl_sai_dai_resume(struct snd_soc_component *component)
- 	return 0;
- }
- 
--static struct snd_soc_dai_driver fsl_sai_dai_template = {
--	.playback = {
--		.stream_name = "CPU-Playback",
--		.channels_min = 1,
--		.channels_max = 32,
--		.rate_min = 8000,
--		.rate_max = 2822400,
--		.rates = SNDRV_PCM_RATE_KNOT,
--		.formats = FSL_SAI_FORMATS,
-+static struct snd_soc_dai_driver fsl_sai_dai_template[] = {
-+	{
-+		.name = "sai-tx-rx",
-+		.playback = {
-+			.stream_name = "CPU-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 2822400,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_SAI_FORMATS,
-+		},
-+		.capture = {
-+			.stream_name = "CPU-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 2822400,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_SAI_FORMATS,
-+		},
-+		.ops = &fsl_sai_pcm_dai_ops,
-+	},
-+	{
-+		.name = "sai-tx",
-+		.playback = {
-+			.stream_name = "CPU-Playback",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+				.rate_min = 8000,
-+			.rate_max = 2822400,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_SAI_FORMATS,
-+		},
-+		.ops = &fsl_sai_pcm_dai_tx_ops,
- 	},
--	.capture = {
--		.stream_name = "CPU-Capture",
--		.channels_min = 1,
--		.channels_max = 32,
--		.rate_min = 8000,
--		.rate_max = 2822400,
--		.rates = SNDRV_PCM_RATE_KNOT,
--		.formats = FSL_SAI_FORMATS,
-+	{
-+		.name = "sai-rx",
-+		.capture = {
-+			.stream_name = "CPU-Capture",
-+			.channels_min = 1,
-+			.channels_max = 32,
-+			.rate_min = 8000,
-+			.rate_max = 2822400,
-+			.rates = SNDRV_PCM_RATE_KNOT,
-+			.formats = FSL_SAI_FORMATS,
-+		},
-+		.ops = &fsl_sai_pcm_dai_rx_ops,
- 	},
--	.ops = &fsl_sai_pcm_dai_ops,
- };
- 
- static const struct snd_soc_component_driver fsl_component = {
-@@ -1399,15 +1462,15 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 		return ret;
++			priv->dapm_routes[i].sink = name[2][i];
++		}
  	}
  
--	memcpy(&sai->cpu_dai_drv, &fsl_sai_dai_template,
--	       sizeof(fsl_sai_dai_template));
-+	memcpy(&sai->cpu_dai_drv, fsl_sai_dai_template,
-+	       sizeof(*fsl_sai_dai_template) * ARRAY_SIZE(fsl_sai_dai_template));
- 
- 	/* Sync Tx with Rx as default by following old DT binding */
- 	sai->synchronous[RX] = true;
- 	sai->synchronous[TX] = false;
--	sai->cpu_dai_drv.symmetric_rate = 1;
--	sai->cpu_dai_drv.symmetric_channels = 1;
--	sai->cpu_dai_drv.symmetric_sample_bits = 1;
-+	sai->cpu_dai_drv[0].symmetric_rate = 1;
-+	sai->cpu_dai_drv[0].symmetric_channels = 1;
-+	sai->cpu_dai_drv[0].symmetric_sample_bits = 1;
- 
- 	if (of_property_read_bool(np, "fsl,sai-synchronous-rx") &&
- 	    of_property_read_bool(np, "fsl,sai-asynchronous")) {
-@@ -1424,9 +1487,9 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 		/* Discard all settings for asynchronous mode */
- 		sai->synchronous[RX] = false;
- 		sai->synchronous[TX] = false;
--		sai->cpu_dai_drv.symmetric_rate = 0;
--		sai->cpu_dai_drv.symmetric_channels = 0;
--		sai->cpu_dai_drv.symmetric_sample_bits = 0;
-+		sai->cpu_dai_drv[0].symmetric_rate = 0;
-+		sai->cpu_dai_drv[0].symmetric_channels = 0;
-+		sai->cpu_dai_drv[0].symmetric_sample_bits = 0;
- 	}
- 
- 	sai->mclk_direction_output = of_property_read_bool(np, "fsl,sai-mclk-direction-output");
-@@ -1505,7 +1568,7 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = devm_snd_soc_register_component(dev, &fsl_component,
--					      &sai->cpu_dai_drv, 1);
-+					      sai->cpu_dai_drv, ARRAY_SIZE(fsl_sai_dai_template));
- 	if (ret)
- 		goto err_pm_get_sync;
- 
-diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
-index 550df87b6a06..dadbd16ee394 100644
---- a/sound/soc/fsl/fsl_sai.h
-+++ b/sound/soc/fsl/fsl_sai.h
-@@ -282,7 +282,7 @@ struct fsl_sai {
- 	struct clk *pll11k_clk;
- 	struct resource *res;
- 
--	bool is_consumer_mode;
-+	bool is_consumer_mode[2];
- 	bool is_lsb_first;
- 	bool is_dsp_mode;
- 	bool is_pdm_mode;
-@@ -299,7 +299,7 @@ struct fsl_sai {
- 	unsigned int bclk_ratio;
- 
- 	const struct fsl_sai_soc_data *soc_data;
--	struct snd_soc_dai_driver cpu_dai_drv;
-+	struct snd_soc_dai_driver cpu_dai_drv[3];
- 	struct snd_dmaengine_dai_dma_data dma_params_rx;
- 	struct snd_dmaengine_dai_dma_data dma_params_tx;
- 	struct fsl_sai_verid verid;
+ 	cpu_pdev = of_find_device_by_node(out_cpu_np);
 -- 
 2.34.1
 
