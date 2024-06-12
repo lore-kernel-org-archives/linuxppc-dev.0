@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37B07C27C77
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 06:58:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD98DC27C53
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 06:58:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VzbwQ1WTdz3fpv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 16:58:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Vzbwq6Lnsz3frt
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 16:58:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vzbvx30ppz3cB2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 16:57:48 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 98E5C2018C0;
-	Wed, 12 Jun 2024 08:57:44 +0200 (CEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vzbvx5YYhz3dWQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 16:57:49 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id BA9851A124C;
+	Wed, 12 Jun 2024 08:57:47 +0200 (CEST)
 Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4A3CA2018BC;
-	Wed, 12 Jun 2024 08:57:44 +0200 (CEST)
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6D2A51A0FFA;
+	Wed, 12 Jun 2024 08:57:47 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id EFA27181D0F9;
-	Wed, 12 Jun 2024 14:57:41 +0800 (+08)
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 1D65C180222C;
+	Wed, 12 Jun 2024 14:57:45 +0800 (+08)
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: shengjiu.wang@gmail.com,
 	Xiubo.Lee@gmail.com,
@@ -43,10 +43,12 @@ To: shengjiu.wang@gmail.com,
 	imx@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] ASoC: imx-audmix: Split capture device to be a new device
-Date: Wed, 12 Jun 2024 14:40:49 +0800
-Message-Id: <1718174452-17596-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: [PATCH 2/3] ASoC: fsl_audmix: Split playback and capture stream to different DAI
+Date: Wed, 12 Jun 2024 14:40:51 +0800
+Message-Id: <1718174452-17596-3-git-send-email-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1718174452-17596-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1718174452-17596-1-git-send-email-shengjiu.wang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -63,29 +65,51 @@ Cc: viorel.suman@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The transmitter and receiver part of the SAI interface need to be
-configured with different master/slave mode, especially to work
-with the audiomix module.
+As audmix requires playback and capture stream in different
+master/slave mode, so separate playback and capture stream to
+different DAI. There are three DAIs required, two DAIs for playback
+one DAI for capture.
 
-The SAI1 TX is in master mode, but SAI1 RX is in slave mode.
-So add another two DAIs for TX and RX separately in fsl_sai driver.
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/fsl_audmix.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
-There will be three devices for audiomix sound card, hw:x,0 is
-the playback device for one SAI, hw:x,1 is the playback device
-for another SAI, hw:x,2 is the capture device for audmix
-output.
-
-Shengjiu Wang (3):
-  ASoC: fsl_sai: Add separate DAI for transmitter and receiver
-  ASoC: fsl_audmix: Split playback and capture stream to different DAI
-  ASoC: imx-audmix: Split capture device for audmix
-
- sound/soc/fsl/fsl_audmix.c |  16 ++---
- sound/soc/fsl/fsl_sai.c    | 141 +++++++++++++++++++++++++++----------
- sound/soc/fsl/fsl_sai.h    |   4 +-
- sound/soc/fsl/imx-audmix.c |  79 ++++++++++++---------
- 4 files changed, 155 insertions(+), 85 deletions(-)
-
+diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
+index 0ab2c1962117..1671a3037c60 100644
+--- a/sound/soc/fsl/fsl_audmix.c
++++ b/sound/soc/fsl/fsl_audmix.c
+@@ -326,15 +326,6 @@ static struct snd_soc_dai_driver fsl_audmix_dai[] = {
+ 			.rates = SNDRV_PCM_RATE_8000_96000,
+ 			.formats = FSL_AUDMIX_FORMATS,
+ 		},
+-		.capture = {
+-			.stream_name = "AUDMIX-Capture-0",
+-			.channels_min = 8,
+-			.channels_max = 8,
+-			.rate_min = 8000,
+-			.rate_max = 96000,
+-			.rates = SNDRV_PCM_RATE_8000_96000,
+-			.formats = FSL_AUDMIX_FORMATS,
+-		},
+ 		.ops = &fsl_audmix_dai_ops,
+ 	},
+ 	{
+@@ -349,8 +340,13 @@ static struct snd_soc_dai_driver fsl_audmix_dai[] = {
+ 			.rates = SNDRV_PCM_RATE_8000_96000,
+ 			.formats = FSL_AUDMIX_FORMATS,
+ 		},
++		.ops = &fsl_audmix_dai_ops,
++	},
++	{
++		.id   = 2,
++		.name = "audmix-2",
+ 		.capture = {
+-			.stream_name = "AUDMIX-Capture-1",
++			.stream_name = "AUDMIX-Capture-0",
+ 			.channels_min = 8,
+ 			.channels_max = 8,
+ 			.rate_min = 8000,
 -- 
 2.34.1
 
