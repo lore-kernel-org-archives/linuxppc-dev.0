@@ -4,52 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C038C27C75
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 06:59:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5464C27C53
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 07:26:22 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=T6OIPsFO;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Vzbxg1dbKz3frl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 16:59:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VzcXr4N6Qz3fVm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 17:26:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=T6OIPsFO;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::b9; helo=out-185.mta1.migadu.com; envelope-from=andrew.jones@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 503 seconds by postgrey-1.37 at boromir; Wed, 12 Jun 2024 17:25:35 AEST
+Received: from out-185.mta1.migadu.com (out-185.mta1.migadu.com [IPv6:2001:41d0:203:375::b9])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Vzbvz3zf8z3dPs
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 16:57:51 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 884552018B5;
-	Wed, 12 Jun 2024 08:57:49 +0200 (CEST)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id EE47820079D;
-	Wed, 12 Jun 2024 08:57:48 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id ABEFB181D0FD;
-	Wed, 12 Jun 2024 14:57:46 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	shawnguo@kernel.org,
-	s.hauer@pengutronix.de,
-	kernel@pengutronix.de,
-	alsa-devel@alsa-project.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] ASoC: imx-audmix: Split capture device for audmix
-Date: Wed, 12 Jun 2024 14:40:52 +0800
-Message-Id: <1718174452-17596-4-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1718174452-17596-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1718174452-17596-1-git-send-email-shengjiu.wang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VzcWz5hKvz3cTw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 17:25:35 +1000 (AEST)
+X-Envelope-To: npiggin@gmail.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1718176600;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=HHB/lYVyp77gev3X+Spg1bAYCcC3JHUd82+j9ExIkfI=;
+	b=T6OIPsFOXMYRNCAJuz6xX2hI+M4U0kJnhGxH3oUL4xlpquC0ysCPZ702s0XnDA5vf2IYte
+	mSGh6DBq5eOnxD8ylbk7sPjqxCu7wFQLKyFkHjVhxFICVkY+IbFj7fpDGgfligKPXitLSy
+	J3HlfKfp4vO5VbEuL+IuBoFGsv+3Xvk=
+X-Envelope-To: thuth@redhat.com
+X-Envelope-To: kvm@vger.kernel.org
+X-Envelope-To: mhartmay@linux.ibm.com
+X-Envelope-To: kvmarm@lists.linux.dev
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+X-Envelope-To: kvm-riscv@lists.infradead.org
+X-Envelope-To: linux-s390@vger.kernel.org
+Date: Wed, 12 Jun 2024 09:16:36 +0200
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Andrew Jones <andrew.jones@linux.dev>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [kvm-unit-tests PATCH] build: retain intermediate .aux.o targets
+Message-ID: <20240612-39939298ecbc2ba78479a2f2@orel>
+References: <20240612044234.212156-1-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240612044234.212156-1-npiggin@gmail.com>
+X-Migadu-Flow: FLOW_OUT
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,183 +64,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: viorel.suman@nxp.com
+Cc: linux-s390@vger.kernel.org, Thomas Huth <thuth@redhat.com>, kvm@vger.kernel.org, Marc Hartmayer <mhartmay@linux.ibm.com>, kvm-riscv@lists.infradead.org, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There will be three devices for this sound card, hw:x,0 is
-the playback device for one SAI, hw:x,1 is the playback device
-for another SAI, hw:x,2 is the capture device for audmix
-output. then capture device and playback device can be configured
-with different master/slave mode.
+On Wed, Jun 12, 2024 at 02:42:32PM GMT, Nicholas Piggin wrote:
+> arm, powerpc, riscv, build .aux.o targets with implicit pattern rules
+> in dependency chains that cause them to be made as intermediate files,
+> which get removed when make finishes. This results in unnecessary
+> partial rebuilds. If make is run again, this time the .aux.o targets
+> are not intermediate, possibly due to being made via different
+> dependencies.
+> 
+> Adding .aux.o files to .PRECIOUS prevents them being removed and solves
+> the rebuild problem.
+> 
+> s390x does not have the problem because .SECONDARY prevents dependancies
+> from being built as intermediate. However the same change is made for
+> s390x, for consistency.
+> 
+> Suggested-by: Marc Hartmayer <mhartmay@linux.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arm/Makefile.common     | 2 +-
+>  powerpc/Makefile.common | 2 +-
+>  riscv/Makefile          | 2 +-
+>  s390x/Makefile          | 2 +-
+>  4 files changed, 4 insertions(+), 4 deletions(-)
+>
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/imx-audmix.c | 79 ++++++++++++++++++++++----------------
- 1 file changed, 45 insertions(+), 34 deletions(-)
-
-diff --git a/sound/soc/fsl/imx-audmix.c b/sound/soc/fsl/imx-audmix.c
-index 2aeb18397bcb..6fbcf33fd0de 100644
---- a/sound/soc/fsl/imx-audmix.c
-+++ b/sound/soc/fsl/imx-audmix.c
-@@ -140,6 +140,13 @@ static const struct snd_soc_ops imx_audmix_be_ops = {
- 	.hw_params = imx_audmix_be_hw_params,
- };
- 
-+static const char *name[][3] = {
-+	{"HiFi-AUDMIX-FE-0", "HiFi-AUDMIX-FE-1", "HiFi-AUDMIX-FE-2"},
-+	{"sai-tx", "sai-tx", "sai-rx"},
-+	{"AUDMIX-Playback-0", "AUDMIX-Playback-1", "CPU-Capture"},
-+	{"CPU-Playback", "CPU-Playback", "AUDMIX-Capture-0"},
-+};
-+
- static int imx_audmix_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
-@@ -150,7 +157,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
- 	struct imx_audmix *priv;
- 	int i, num_dai, ret;
- 	const char *fe_name_pref = "HiFi-AUDMIX-FE-";
--	char *be_name, *be_pb, *be_cp, *dai_name, *capture_dai_name;
-+	char *be_name, *dai_name;
- 
- 	if (pdev->dev.parent) {
- 		audmix_np = pdev->dev.parent->of_node;
-@@ -183,6 +190,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
- 	if (!priv)
- 		return -ENOMEM;
- 
-+	num_dai += 1;
- 	priv->num_dai = 2 * num_dai;
- 	priv->dai = devm_kcalloc(&pdev->dev, priv->num_dai,
- 				 sizeof(struct snd_soc_dai_link), GFP_KERNEL);
-@@ -196,7 +204,7 @@ static int imx_audmix_probe(struct platform_device *pdev)
- 	if (!priv->dai_conf)
- 		return -ENOMEM;
- 
--	priv->num_dapm_routes = 3 * num_dai;
-+	priv->num_dapm_routes = num_dai;
- 	priv->dapm_routes = devm_kcalloc(&pdev->dev, priv->num_dapm_routes,
- 					 sizeof(struct snd_soc_dapm_route),
- 					 GFP_KERNEL);
-@@ -211,8 +219,12 @@ static int imx_audmix_probe(struct platform_device *pdev)
- 		if (!dlc)
- 			return -ENOMEM;
- 
--		ret = of_parse_phandle_with_args(audmix_np, "dais", NULL, i,
--						 &args);
-+		if (i == num_dai - 1)
-+			ret = of_parse_phandle_with_args(audmix_np, "dais", NULL, 0,
-+							 &args);
-+		else
-+			ret = of_parse_phandle_with_args(audmix_np, "dais", NULL, i,
-+							 &args);
- 		if (ret < 0) {
- 			dev_err(&pdev->dev, "of_parse_phandle_with_args failed\n");
- 			return ret;
-@@ -226,20 +238,14 @@ static int imx_audmix_probe(struct platform_device *pdev)
- 		put_device(&cpu_pdev->dev);
- 
- 		dai_name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s%s",
--					  fe_name_pref, args.np->full_name + 1);
-+					  fe_name_pref, args.np->full_name);
- 		if (!dai_name)
- 			return -ENOMEM;
- 
- 		dev_info(pdev->dev.parent, "DAI FE name:%s\n", dai_name);
- 
--		if (i == 0) {
-+		if (i == num_dai - 1)
- 			out_cpu_np = args.np;
--			capture_dai_name =
--				devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s %s",
--					       dai_name, "CPU-Capture");
--			if (!capture_dai_name)
--				return -ENOMEM;
--		}
- 
- 		/*
- 		 * CPU == Platform
-@@ -252,27 +258,23 @@ static int imx_audmix_probe(struct platform_device *pdev)
- 		priv->dai[i].num_cpus = 1;
- 		priv->dai[i].num_codecs = 1;
- 		priv->dai[i].num_platforms = 1;
--
--		priv->dai[i].name = dai_name;
-+		priv->dai[i].name = name[0][i];
- 		priv->dai[i].stream_name = "HiFi-AUDMIX-FE";
- 		priv->dai[i].cpus->of_node = args.np;
--		priv->dai[i].cpus->dai_name = dev_name(&cpu_pdev->dev);
-+		priv->dai[i].cpus->dai_name = name[1][i];
-+
- 		priv->dai[i].dynamic = 1;
- 		priv->dai[i].dpcm_playback = 1;
--		priv->dai[i].dpcm_capture = (i == 0 ? 1 : 0);
-+		if (i == num_dai - 1) {
-+			priv->dai[i].dpcm_capture = 1;
-+			priv->dai[i].dpcm_playback = 0;
-+		}
- 		priv->dai[i].ignore_pmdown_time = 1;
- 		priv->dai[i].ops = &imx_audmix_fe_ops;
- 
- 		/* Add AUDMIX Backend */
- 		be_name = devm_kasprintf(&pdev->dev, GFP_KERNEL,
- 					 "audmix-%d", i);
--		be_pb = devm_kasprintf(&pdev->dev, GFP_KERNEL,
--				       "AUDMIX-Playback-%d", i);
--		be_cp = devm_kasprintf(&pdev->dev, GFP_KERNEL,
--				       "AUDMIX-Capture-%d", i);
--		if (!be_name || !be_pb || !be_cp)
--			return -ENOMEM;
--
- 		priv->dai[num_dai + i].cpus	= &dlc[1];
- 		priv->dai[num_dai + i].codecs	= &snd_soc_dummy_dlc;
- 
-@@ -284,24 +286,33 @@ static int imx_audmix_probe(struct platform_device *pdev)
- 		priv->dai[num_dai + i].cpus->dai_name = be_name;
- 		priv->dai[num_dai + i].no_pcm = 1;
- 		priv->dai[num_dai + i].dpcm_playback = 1;
--		priv->dai[num_dai + i].dpcm_capture  = 1;
-+		if (i == num_dai - 1) {
-+			priv->dai[num_dai + i].dpcm_capture  = 1;
-+			priv->dai[num_dai + i].dpcm_playback  = 0;
-+		}
- 		priv->dai[num_dai + i].ignore_pmdown_time = 1;
- 		priv->dai[num_dai + i].ops = &imx_audmix_be_ops;
- 
- 		priv->dai_conf[i].dlc.of_node = args.np;
- 		priv->dai_conf[i].name_prefix = dai_name;
- 
--		priv->dapm_routes[i].source =
--			devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s %s",
--				       dai_name, "CPU-Playback");
--		if (!priv->dapm_routes[i].source)
--			return -ENOMEM;
-+		if (i == num_dai - 1) {
-+			priv->dapm_routes[i].sink =
-+				devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s %s",
-+					       dai_name, name[2][i]);
-+			if (!priv->dapm_routes[i].sink)
-+				return -ENOMEM;
- 
--		priv->dapm_routes[i].sink = be_pb;
--		priv->dapm_routes[num_dai + i].source   = be_pb;
--		priv->dapm_routes[num_dai + i].sink     = be_cp;
--		priv->dapm_routes[2 * num_dai + i].source = be_cp;
--		priv->dapm_routes[2 * num_dai + i].sink   = capture_dai_name;
-+			priv->dapm_routes[i].source = name[3][i];
-+		} else {
-+			priv->dapm_routes[i].source =
-+				devm_kasprintf(&pdev->dev, GFP_KERNEL, "%s %s",
-+					       dai_name, name[3][i]);
-+			if (!priv->dapm_routes[i].source)
-+				return -ENOMEM;
-+
-+			priv->dapm_routes[i].sink = name[2][i];
-+		}
- 	}
- 
- 	cpu_pdev = of_find_device_by_node(out_cpu_np);
--- 
-2.34.1
-
+Acked-by: Andrew Jones <andrew.jones@linux.dev>
