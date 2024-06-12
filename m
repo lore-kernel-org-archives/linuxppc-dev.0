@@ -4,31 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91660C27C53
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 04:55:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45638C27C75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 04:58:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VzYBC47YFz3frC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 14:54:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VzYGm1r01z3d4D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 14:58:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VzY9m1Jm4z3cbd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 14:54:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VzYGK44kJz3ccN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 14:58:33 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
-	id 6904768BEB; Wed, 12 Jun 2024 06:54:29 +0200 (CEST)
-Date: Wed, 12 Jun 2024 06:54:29 +0200
+	id 6FC9B68BFE; Wed, 12 Jun 2024 06:58:28 +0200 (CEST)
+Date: Wed, 12 Jun 2024 06:58:28 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Damien Le Moal <dlemoal@kernel.org>
-Subject: Re: [PATCH 13/26] block: move cache control settings out of
- queue->flags
-Message-ID: <20240612045429.GB26776@lst.de>
-References: <20240611051929.513387-1-hch@lst.de> <20240611051929.513387-14-hch@lst.de> <d21b162a-1fd3-4fd1-a17f-f127f964bdf1@kernel.org>
+Subject: Re: [PATCH 16/26] block: move the io_stat flag setting to
+ queue_limits
+Message-ID: <20240612045828.GC26776@lst.de>
+References: <20240611051929.513387-1-hch@lst.de> <20240611051929.513387-17-hch@lst.de> <d51e4163-99e3-4435-870d-faef3887ab6a@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d21b162a-1fd3-4fd1-a17f-f127f964bdf1@kernel.org>
+In-Reply-To: <d51e4163-99e3-4435-870d-faef3887ab6a@kernel.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -45,19 +45,18 @@ Cc: nvdimm@lists.linux.dev, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <j
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 11, 2024 at 04:55:04PM +0900, Damien Le Moal wrote:
+On Tue, Jun 11, 2024 at 05:09:45PM +0900, Damien Le Moal wrote:
 > On 6/11/24 2:19 PM, Christoph Hellwig wrote:
-> > Move the cache control settings into the queue_limits so that they
-> > can be set atomically and all I/O is frozen when changing the
-> > flags.
+> > Move the io_stat flag into the queue_limits feature field so that it
+> > can be set atomically and all I/O is frozen when changing the flag.
 > 
-> ...so that they can be set atomically with the device queue frozen when
-> changing the flags.
-> 
-> may be better.
+> Why a feature ? It seems more appropriate for io_stat to be a flag rather than
+> a feature as that is a block layer thing rather than a device characteristic, no ?
 
-Sure.
+Because it must actually be supported by the driver for bio based
+drivers.  Then again we also support chaning it through sysfs, so
+we might actually need both.  At least unlike say the cache it's
+not actively harmful when enabled despite not being supported.
 
-If there was anything below I've skipped it after skipping over two
-pages of full quotes.
-
+I can look into that, but I'll do it in another series after getting
+all the driver changes out.
