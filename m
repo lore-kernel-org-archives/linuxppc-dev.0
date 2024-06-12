@@ -4,71 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 315DFC27C53
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 05:34:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63F46C27C75
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 06:49:33 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hhIOatpR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TvtXRuwV;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4VzZ4J58Qlz3wCR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 15:34:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4VzbkM0hG1z3dng
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Jun 2024 16:49:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hhIOatpR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TvtXRuwV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=npiggin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mhartmay@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4VzYrF6j6tz3cgW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 15:24:29 +1000 (AEST)
-Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-1f6f1677b26so4209775ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Jun 2024 22:24:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1718169868; x=1718774668; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=TlQRgBFNQaoTa6dz8Jq/4j8RyKmazPn0sRYigP/0Fhw=;
-        b=hhIOatpRVQs0IGzXrRPJ7x+kmnPMAisL3yWugAsqDBv8NC27vuDHlgk9hGAn10JKvG
-         pC+hnbCPnZ8Grgot+8trjo7tlR8+qBhNseUpuD7wyBo5jlvMG0/DpCCX+w7OD21n15xu
-         Vlp4IJMuiYob86xTopO1BYAwzVUoyt4K/Lglavwok3nfaMJ3vsx7QXtMD+4rHS3SvwtO
-         RQqsy+d00Y+uy7/tN10jDwXy608eJODJXc+B2w3OU24WH+6EQ+PEKKelWXrkyOYiIrVY
-         p9OWQVw8MDkf63xhiST4Hy3IkdJWiWP1EuFTTVvJ4R1cZW1u8cKeN4b8prpm3oryluAL
-         jrBg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718169868; x=1718774668;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=TlQRgBFNQaoTa6dz8Jq/4j8RyKmazPn0sRYigP/0Fhw=;
-        b=sP5rqH+s1qDkGiXO6lNNqvl9WPVmsCtpb9HXAzjOcPAyHMYDgjtFiReABRjm0ZoYct
-         S++H+C6uYRw2oYoQjdVJNU1q3uGLot/qHIoaZt8OBkuNjR5UEVepE640gumL2XU7jsPb
-         PNc1O8TOwu3N6HsAHUTXsBKRMTOCM3z0lgXeBE48qa+xYb103vfPrDxp751KQENHZYFx
-         3HXZ1ctToF4yzgdQiojJmWSQ9tZeUMjh+xCr3qxyUhSu44AgSHfyKT3kQTeQLbRCGF8J
-         RteMCAkv5APL4jq7mNbB7ftRTMabfDr+/qstr0qtg3wYp0ZefiyUSDTv8iPmG9ZH9qZo
-         MpFw==
-X-Forwarded-Encrypted: i=1; AJvYcCUipTK64Vwt2fBHcvlLU3Y+78mKEI1yGNFf15E9o/ncb3SOEzDcIQNu/xXL92mwn8jr8wIpjDiQTNDZFnAAT+whjNvzTaaGUo3QIqHRMA==
-X-Gm-Message-State: AOJu0YwmbDg40QZp8sb2bw2ox5sTRuSHModg6YfzPKVe++g6O18XEIUN
-	gQhBNc8tAKiFt2OoL01sAG14c2D4tEzdyRplu3MLBw4E4YMxoIf04UxG/g==
-X-Google-Smtp-Source: AGHT+IEqLz5Dn4PKUTWY9xRYytx04I5xM9up7gD53spppmLeXqURYzOa8OHXdMBNI8YPHgpkyPGQjw==
-X-Received: by 2002:a17:902:c404:b0:1f7:2185:d2d9 with SMTP id d9443c01a7336-1f728791b33mr72648115ad.5.1718169868000;
-        Tue, 11 Jun 2024 22:24:28 -0700 (PDT)
-Received: from wheely.local0.net (220-235-199-47.tpgi.com.au. [220.235.199.47])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-1f6bd75f711sm112170705ad.11.2024.06.11.22.24.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Jun 2024 22:24:27 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Thomas Huth <thuth@redhat.com>
-Subject: [kvm-unit-tests PATCH v10 15/15] powerpc/gitlab-ci: Enable more tests with Fedora 40
-Date: Wed, 12 Jun 2024 15:23:20 +1000
-Message-ID: <20240612052322.218726-16-npiggin@gmail.com>
-X-Mailer: git-send-email 2.45.1
-In-Reply-To: <20240612052322.218726-1-npiggin@gmail.com>
-References: <20240612052322.218726-1-npiggin@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4VzbjY0K4Cz3dW1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Jun 2024 16:48:48 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45C5xPJd015403;
+	Wed, 12 Jun 2024 06:48:13 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:in-reply-to:references:date:message-id
+	:mime-version:content-type:content-transfer-encoding; s=pp1; bh=
+	7U/aGo/SegEj8qcEL5oci96thwe+0ZYEfL1TiW6lAi8=; b=TvtXRuwVyf0rv9Xv
+	3EdzGNk5V5t7q97nijvmvC5wemqtR4pJHp8FJf8MSWlZf75JXZExYFbGRo1+cYLX
+	iFPSueyYM+OooiHjECfTGD4V/46CU0UC9vDGrNjgQtJT2YsO/FBDjjevtPifDVaO
+	LojcA5kilarCYm1jJX2dDKgShv5+boINScANkn1pbCXnWFAlS3KWSPIBqWNopcmB
+	nXVWV0DM2jaHF5lG8/NGt1nFy0ZMIeBXKWAdV7Ypw1KIQQ+eHKSm7y8hHKPZYbWg
+	sYnLmkSqoW0y0ftj3aM+jKAlJ10sWLeQwfdRj2C3mThpemyHaejsxGWH/TpQEUzP
+	mxtyNg==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yq60dr3kk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Jun 2024 06:48:13 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 45C6mCSx025480;
+	Wed, 12 Jun 2024 06:48:13 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yq60dr3kg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Jun 2024 06:48:12 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 45C6622I023566;
+	Wed, 12 Jun 2024 06:48:12 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3yn3umjues-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Jun 2024 06:48:12 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 45C6m8G225821916
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 12 Jun 2024 06:48:10 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5ED2120065;
+	Wed, 12 Jun 2024 06:48:08 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EFD5B2004D;
+	Wed, 12 Jun 2024 06:48:07 +0000 (GMT)
+Received: from li-1de7cd4c-3205-11b2-a85c-d27f97db1fe1.ibm.com (unknown [9.171.76.207])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed, 12 Jun 2024 06:48:07 +0000 (GMT)
+From: "Marc Hartmayer" <mhartmay@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, Thomas Huth <thuth@redhat.com>,
+        kvm@vger.kernel.org
+Subject: Re: [kvm-unit-tests PATCH] build: retain intermediate .aux.o targets
+In-Reply-To: <20240612044234.212156-1-npiggin@gmail.com>
+References: <20240612044234.212156-1-npiggin@gmail.com>
+Date: Wed, 12 Jun 2024 08:48:07 +0200
+Message-ID: <87a5jqejx4.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: _IynBDK5YLWOnJjcMpaLtlgb0ppN9llp
+X-Proofpoint-ORIG-GUID: 76CjRMsJNf39GEcQi1k4dJX1xNvcpOto
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-06-12_02,2024-06-11_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ adultscore=0 spamscore=0 bulkscore=0 mlxlogscore=999 suspectscore=0
+ phishscore=0 clxscore=1011 impostorscore=0 mlxscore=0 priorityscore=1501
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2405170001 definitions=main-2406120044
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,103 +99,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Andrew Jones <andrew.jones@linux.dev>
+Cc: kvmarm@lists.linux.dev, linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, Andrew Jones <andrew.jones@linux.dev>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With Fedora 40 (QEMU 8.2), more tests can be enabled.
+On Wed, Jun 12, 2024 at 02:42 PM +1000, Nicholas Piggin <npiggin@gmail.com>=
+ wrote:
+> arm, powerpc, riscv, build .aux.o targets with implicit pattern rules
+> in dependency chains that cause them to be made as intermediate files,
+> which get removed when make finishes. This results in unnecessary
+> partial rebuilds. If make is run again, this time the .aux.o targets
+> are not intermediate, possibly due to being made via different
+> dependencies.
+>
+> Adding .aux.o files to .PRECIOUS prevents them being removed and solves
+> the rebuild problem.
+>
+> s390x does not have the problem because .SECONDARY prevents dependancies
+> from being built as intermediate. However the same change is made for
+> s390x, for consistency.
+>
+> Suggested-by: Marc Hartmayer <mhartmay@linux.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- .gitlab-ci.yml        |  2 +-
- powerpc/unittests.cfg | 17 ++++++++---------
- 2 files changed, 9 insertions(+), 10 deletions(-)
+[=E2=80=A6snip=E2=80=A6]
 
-diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
-index ffb3767ec..ee14330a3 100644
---- a/.gitlab-ci.yml
-+++ b/.gitlab-ci.yml
-@@ -110,7 +110,7 @@ build-ppc64le:
-  extends: .intree_template
-  image: fedora:40
-  script:
-- - dnf install -y qemu-system-ppc gcc-powerpc64-linux-gnu nmap-ncat
-+ - dnf install -y qemu-system-ppc gcc-powerpc64-linux-gnu nmap-ncat jq
-  - ./configure --arch=ppc64 --endian=little --cross-prefix=powerpc64-linux-gnu-
-  - make -j2
-  - ACCEL=tcg MAX_SMP=8 ./run_tests.sh -g gitlab-ci
-diff --git a/powerpc/unittests.cfg b/powerpc/unittests.cfg
-index 9e7df22f4..27092b185 100644
---- a/powerpc/unittests.cfg
-+++ b/powerpc/unittests.cfg
-@@ -28,7 +28,7 @@ file = selftest-migration.elf
- machine = pseries
- groups = selftest migration
- 
--# QEMU 7.0 (Fedora 37) in gitlab CI has known migration bugs in TCG, so
-+# QEMU 8.2 (Fedora 40) in gitlab CI has known migration bugs in TCG, so
- # make a kvm-only version for CI
- [selftest-migration-ci]
- file = selftest-migration.elf
-@@ -81,18 +81,18 @@ groups = rtas gitlab-ci
- file = emulator.elf
- groups = gitlab-ci
- 
--# QEMU 7.0 (Fedora 37) in gitlab CI fails this
-+# QEMU 8.2 in Fedora 40 fails because it allows supervisor to change MSR[ME]
- [interrupts]
- file = interrupts.elf
- 
--# QEMU 7.0 (Fedora 37) in gitlab CI fails this
- [mmu]
- file = mmu.elf
- smp = 2
-+groups = gitlab-ci
- 
--# QEMU 7.0 (Fedora 37) in gitlab CI fails this
- [pmu]
- file = pmu.elf
-+groups = gitlab-ci
- 
- [smp]
- file = smp.elf
-@@ -120,15 +120,15 @@ machine = pseries
- extra_params = -append "migration -m"
- groups = migration gitlab-ci
- 
--# QEMU 7.0 (Fedora 37) in gitlab CI fails this
- [timebase]
- file = timebase.elf
-+groups = gitlab-ci
- 
--# QEMU 7.0 (Fedora 37) in gitlab CI fails this
- [timebase-icount]
- file = timebase.elf
- accel = tcg
- extra_params = -icount shift=5
-+groups = gitlab-ci
- 
- [h_cede_tm]
- file = tm.elf
-@@ -138,16 +138,15 @@ smp = 2,threads=2
- extra_params = -machine cap-htm=on -append "h_cede_tm"
- groups = h_cede_tm
- 
--# QEMU 7.0 (Fedora 37) in gitlab CI fails this
- [sprs]
- file = sprs.elf
-+groups = gitlab-ci
- 
--# QEMU 7.0 (Fedora 37) in gitlab CI fails this
- [sprs-migration]
- file = sprs.elf
- machine = pseries
- extra_params = -append '-w'
--groups = migration
-+groups = migration gitlab-ci
- 
- # Too costly to run in CI
- [sieve]
--- 
-2.45.1
+> @@ -85,7 +85,7 @@ CFLAGS +=3D -fno-delete-null-pointer-checks
+>  LDFLAGS +=3D -Wl,--build-id=3Dnone
+>=20=20
+>  # We want to keep intermediate files
+> -.PRECIOUS: %.o %.lds
+> +.PRECIOUS: %.o %.aux.o %.lds
+>=20=20
+>  asm-offsets =3D lib/$(ARCH)/asm-offsets.h
+>  include $(SRCDIR)/scripts/asm-offsets.mak
+> --=20
+> 2.45.1
+>
+>
 
+Thanks for fixing this!
+
+Reviewed-by: Marc Hartmayer <mhartmay@linux.ibm.com>
+
+--=20
+Kind regards / Beste Gr=C3=BC=C3=9Fe
+   Marc Hartmayer
+
+IBM Deutschland Research & Development GmbH
+Vorsitzender des Aufsichtsrats: Wolfgang Wendt
+Gesch=C3=A4ftsf=C3=BChrung: David Faller
+Sitz der Gesellschaft: B=C3=B6blingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
