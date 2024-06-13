@@ -4,28 +4,28 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15E06C27C75
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2024 22:04:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C26DC27C4F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2024 22:04:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W0bz30H8tz3dTn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2024 08:03:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W0bzX0GwXz3cxn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2024 08:04:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=zhengyejian1@huawei.com; receiver=lists.ozlabs.org)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W0PBT1bmSz30W9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2024 23:58:09 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.19.163.252])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4W0Ncy6vjrzxSf1;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W0PBc6V6Nz3bqP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2024 23:58:16 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.19.163.174])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4W0Ncy3KstzwTml;
 	Thu, 13 Jun 2024 21:32:34 +0800 (CST)
 Received: from dggpeml500012.china.huawei.com (unknown [7.185.36.15])
-	by mail.maildlp.com (Postfix) with ESMTPS id 9A566180069;
-	Thu, 13 Jun 2024 21:36:40 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id BFC44140154;
+	Thu, 13 Jun 2024 21:36:41 +0800 (CST)
 Received: from localhost.localdomain (10.67.175.61) by
  dggpeml500012.china.huawei.com (7.185.36.15) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.39; Thu, 13 Jun 2024 21:36:40 +0800
+ 15.1.2507.39; Thu, 13 Jun 2024 21:36:41 +0800
 From: Zheng Yejian <zhengyejian1@huawei.com>
 To: <rostedt@goodmis.org>, <mhiramat@kernel.org>, <mark.rutland@arm.com>,
 	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
@@ -35,9 +35,9 @@ To: <rostedt@goodmis.org>, <mhiramat@kernel.org>, <mark.rutland@arm.com>,
 	<masahiroy@kernel.org>, <nathan@kernel.org>, <nicolas@fjasle.eu>,
 	<kees@kernel.org>, <james.clark@arm.com>, <kent.overstreet@linux.dev>,
 	<yhs@fb.com>, <jpoimboe@kernel.org>, <peterz@infradead.org>
-Subject: [PATCH 2/6] kallsyms: Emit symbol at the holes in the text
-Date: Thu, 13 Jun 2024 21:37:07 +0800
-Message-ID: <20240613133711.2867745-3-zhengyejian1@huawei.com>
+Subject: [PATCH 6/6] ftrace: Revert the FTRACE_MCOUNT_MAX_OFFSET workaround
+Date: Thu, 13 Jun 2024 21:37:11 +0800
+Message-ID: <20240613133711.2867745-7-zhengyejian1@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240613133711.2867745-1-zhengyejian1@huawei.com>
 References: <20240613133711.2867745-1-zhengyejian1@huawei.com>
@@ -63,234 +63,246 @@ Cc: zhengyejian1@huawei.com, linux-kbuild@vger.kernel.org, linux-kernel@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When a weak type function is overridden, its symbol will be removed
-from the symbol table, but its code will not be removed. Besides,
-due to lacking of size for kallsyms, kernel compute function size by
-substracting its symbol address from its next symbol address (see
-kallsyms_lookup_size_offset()). These will cause that size of some
-function is computed to be larger than it actually is, just because
-symbol of its following weak function is removed.
+After patch titled "ftrace: Skip invalid __fentry__ in
+ftrace_process_locs()", __fentry__ locations in overridden weak function
+have been checked and skipped, then all records in ftrace_pages are
+valid, the FTRACE_MCOUNT_MAX_OFFSET workaround can be reverted, include:
+ 1. commit b39181f7c690 ("ftrace: Add FTRACE_MCOUNT_MAX_OFFSET to avoid
+    adding weak function")
+ 2. commit 7af82ff90a2b ("powerpc/ftrace: Ignore weak functions")
+ 3. commit f6834c8c59a8 ("powerpc/ftrace: Fix dropping weak symbols with
+    older toolchains")
 
-This issue also causes multiple __fentry__ locations to be counted in
-the some function scope, and eventually causes ftrace_location() to find
-wrong __fentry__ location. It was reported in
-Link: https://lore.kernel.org/all/20240607115211.734845-1-zhengyejian1@huawei.com/
-
-Peter suggested to change scipts/kallsyms.c to emit readily
-identifiable symbol names for all the weak junk, eg:
-
-  __weak_junk_NNNNN
-
-The name of this kind symbol needs some discussion, but it's temporarily
-called "__hole_symbol_XXXXX" in this patch:
-1. Pass size info to scripts/kallsyms  (see mksysmap());
-2. Traverse sorted function symbols, if one function address plus its
-   size less than next function address, it means there's a hole, then
-   emit a symbol "__hole_symbol_XXXXX" there which type is 't'.
-
-After this patch, the effect is as follows:
-
-  $ cat /proc/kallsyms | grep -A 3 do_one_initcall
-  ffffffff810021e0 T do_one_initcall
-  ffffffff8100245e t __hole_symbol_XXXXX
-  ffffffff810024a0 t __pfx_rootfs_init_fs_context
-
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Zheng Yejian <zhengyejian1@huawei.com>
 ---
- scripts/kallsyms.c      | 101 +++++++++++++++++++++++++++++++++++++++-
- scripts/link-vmlinux.sh |   4 +-
- scripts/mksysmap        |   2 +-
- 3 files changed, 102 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/ftrace.h |   7 --
+ arch/x86/include/asm/ftrace.h     |   7 --
+ kernel/trace/ftrace.c             | 141 +-----------------------------
+ 3 files changed, 2 insertions(+), 153 deletions(-)
 
-diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-index 6559a9802f6e..5c4cde864a04 100644
---- a/scripts/kallsyms.c
-+++ b/scripts/kallsyms.c
-@@ -35,6 +35,7 @@
- struct sym_entry {
- 	struct sym_entry *next;
- 	unsigned long long addr;
-+	unsigned long long size;
- 	unsigned int len;
- 	unsigned int seq;
- 	unsigned int start_pos;
-@@ -74,6 +75,7 @@ static int token_profit[0x10000];
- static unsigned char best_table[256][2];
- static unsigned char best_table_len[256];
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index 107fc5a48456..d6ed058c8041 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -10,13 +10,6 @@
  
-+static const char hole_symbol[] = "__hole_symbol_XXXXX";
+ #define HAVE_FUNCTION_GRAPH_RET_ADDR_PTR
  
- static void usage(void)
- {
-@@ -130,8 +132,16 @@ static struct sym_entry *read_symbol(FILE *in, char **buf, size_t *buf_len)
- 	size_t len;
- 	ssize_t readlen;
- 	struct sym_entry *sym;
-+	unsigned long long size = 0;
+-/* Ignore unused weak functions which will have larger offsets */
+-#if defined(CONFIG_MPROFILE_KERNEL) || defined(CONFIG_ARCH_USING_PATCHABLE_FUNCTION_ENTRY)
+-#define FTRACE_MCOUNT_MAX_OFFSET	16
+-#elif defined(CONFIG_PPC32)
+-#define FTRACE_MCOUNT_MAX_OFFSET	8
+-#endif
+-
+ #ifndef __ASSEMBLY__
+ extern void _mcount(void);
  
- 	errno = 0;
-+	/*
-+	 * Example of expected symbol format:
-+	 * 1. symbol with size info:
-+	 *    ffffffff81000070 00000000000001d7 T __startup_64
-+	 * 2. symbol without size info:
-+	 *    0000000002a00000 A text_size
-+	 */
- 	readlen = getline(buf, buf_len, in);
- 	if (readlen < 0) {
- 		if (errno) {
-@@ -145,9 +155,24 @@ static struct sym_entry *read_symbol(FILE *in, char **buf, size_t *buf_len)
- 		(*buf)[readlen - 1] = 0;
+diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
+index 897cf02c20b1..7a147c9da08d 100644
+--- a/arch/x86/include/asm/ftrace.h
++++ b/arch/x86/include/asm/ftrace.h
+@@ -9,13 +9,6 @@
+ # define MCOUNT_ADDR		((unsigned long)(__fentry__))
+ #define MCOUNT_INSN_SIZE	5 /* sizeof mcount call */
  
- 	addr = strtoull(*buf, &p, 16);
-+	if (*buf == p || *p++ != ' ') {
-+		fprintf(stderr, "line format error: unable to parse address\n");
-+		exit(EXIT_FAILURE);
-+	}
-+
-+	if (*p == '0') {
-+		char *str = p;
+-/* Ignore unused weak functions which will have non zero offsets */
+-#ifdef CONFIG_HAVE_FENTRY
+-# include <asm/ibt.h>
+-/* Add offset for endbr64 if IBT enabled */
+-# define FTRACE_MCOUNT_MAX_OFFSET	ENDBR_INSN_SIZE
+-#endif
+-
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ #define ARCH_SUPPORTS_FTRACE_OPS 1
+ #endif
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index c46c35ac9b42..1d60dc9a850b 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -49,8 +49,6 @@
+ #define FTRACE_NOCLEAR_FLAGS	(FTRACE_FL_DISABLED | FTRACE_FL_TOUCHED | \
+ 				 FTRACE_FL_MODIFIED)
  
--	if (*buf == p || *p++ != ' ' || !isascii((type = *p++)) || *p++ != ' ') {
--		fprintf(stderr, "line format error\n");
-+		size = strtoull(str, &p, 16);
-+		if (str == p || *p++ != ' ') {
-+			fprintf(stderr, "line format error: unable to parse size\n");
-+			exit(EXIT_FAILURE);
-+		}
-+	}
-+
-+	type = *p++;
-+	if (!isascii(type) || *p++ != ' ') {
-+		fprintf(stderr, "line format error: unable to parse type\n");
- 		exit(EXIT_FAILURE);
- 	}
- 
-@@ -182,6 +207,7 @@ static struct sym_entry *read_symbol(FILE *in, char **buf, size_t *buf_len)
- 		exit(EXIT_FAILURE);
- 	}
- 	sym->addr = addr;
-+	sym->size = size;
- 	sym->len = len;
- 	sym->sym[0] = type;
- 	strcpy(sym_name(sym), name);
-@@ -795,6 +821,76 @@ static void sort_symbols(void)
- 	qsort(table, table_cnt, sizeof(table[0]), compare_symbols);
+-#define FTRACE_INVALID_FUNCTION		"__ftrace_invalid_address__"
+-
+ #define FTRACE_WARN_ON(cond)			\
+ 	({					\
+ 		int ___r = cond;		\
+@@ -3709,105 +3707,6 @@ static void add_trampoline_func(struct seq_file *m, struct ftrace_ops *ops,
+ 		seq_printf(m, " ->%pS", ptr);
  }
  
-+static int may_exist_hole_after_symbol(const struct sym_entry *se)
-+{
-+	char type = se->sym[0];
-+
-+	/* Only check text symbol or weak symbol */
-+	if (type != 't' && type != 'T' &&
-+	    type != 'w' && type != 'W')
-+		return 0;
-+	/* Symbol without size has no hole */
-+	return se->size != 0;
-+}
-+
-+static struct sym_entry *gen_hole_symbol(unsigned long long addr)
-+{
-+	struct sym_entry *sym;
-+	static size_t len = sizeof(hole_symbol);
-+
-+	/* include type field */
-+	sym = malloc(sizeof(*sym) + len + 1);
-+	if (!sym) {
-+		fprintf(stderr, "unable to allocate memory for hole symbol\n");
-+		exit(EXIT_FAILURE);
-+	}
-+	sym->addr = addr;
-+	sym->size = 0;
-+	sym->len = len;
-+	sym->sym[0] = 't';
-+	strcpy(sym_name(sym), hole_symbol);
-+	sym->percpu_absolute = 0;
-+	return sym;
-+}
-+
-+static void emit_hole_symbols(void)
-+{
-+	unsigned int i, pos, nr_emit;
-+	struct sym_entry **new_table;
-+	unsigned int new_cnt;
-+
-+	nr_emit = 0;
-+	for (i = 0; i < table_cnt - 1; i++) {
-+		if (may_exist_hole_after_symbol(table[i]) &&
-+		    table[i]->addr + table[i]->size < table[i+1]->addr)
-+			nr_emit++;
-+	}
-+	if (!nr_emit)
-+		return;
-+
-+	new_cnt = table_cnt + nr_emit;
-+	new_table = malloc(sizeof(*new_table) * new_cnt);
-+	if (!new_table) {
-+		fprintf(stderr, "unable to allocate memory for new table\n");
-+		exit(EXIT_FAILURE);
-+	}
-+
-+	pos = 0;
-+	for (i = 0; i < table_cnt; i++) {
-+		unsigned long long addr;
-+
-+		new_table[pos++] = table[i];
-+		if ((i == table_cnt - 1) || !may_exist_hole_after_symbol(table[i]))
-+			continue;
-+		addr = table[i]->addr + table[i]->size;
-+		if (addr < table[i+1]->addr)
-+			new_table[pos++] = gen_hole_symbol(addr);
-+	}
-+	free(table);
-+	table = new_table;
-+	table_cnt = new_cnt;
-+}
-+
- static void make_percpus_absolute(void)
+-#ifdef FTRACE_MCOUNT_MAX_OFFSET
+-/*
+- * Weak functions can still have an mcount/fentry that is saved in
+- * the __mcount_loc section. These can be detected by having a
+- * symbol offset of greater than FTRACE_MCOUNT_MAX_OFFSET, as the
+- * symbol found by kallsyms is not the function that the mcount/fentry
+- * is part of. The offset is much greater in these cases.
+- *
+- * Test the record to make sure that the ip points to a valid kallsyms
+- * and if not, mark it disabled.
+- */
+-static int test_for_valid_rec(struct dyn_ftrace *rec)
+-{
+-	char str[KSYM_SYMBOL_LEN];
+-	unsigned long offset;
+-	const char *ret;
+-
+-	ret = kallsyms_lookup(rec->ip, NULL, &offset, NULL, str);
+-
+-	/* Weak functions can cause invalid addresses */
+-	if (!ret || offset > FTRACE_MCOUNT_MAX_OFFSET) {
+-		rec->flags |= FTRACE_FL_DISABLED;
+-		return 0;
+-	}
+-	return 1;
+-}
+-
+-static struct workqueue_struct *ftrace_check_wq __initdata;
+-static struct work_struct ftrace_check_work __initdata;
+-
+-/*
+- * Scan all the mcount/fentry entries to make sure they are valid.
+- */
+-static __init void ftrace_check_work_func(struct work_struct *work)
+-{
+-	struct ftrace_page *pg;
+-	struct dyn_ftrace *rec;
+-
+-	mutex_lock(&ftrace_lock);
+-	do_for_each_ftrace_rec(pg, rec) {
+-		test_for_valid_rec(rec);
+-	} while_for_each_ftrace_rec();
+-	mutex_unlock(&ftrace_lock);
+-}
+-
+-static int __init ftrace_check_for_weak_functions(void)
+-{
+-	INIT_WORK(&ftrace_check_work, ftrace_check_work_func);
+-
+-	ftrace_check_wq = alloc_workqueue("ftrace_check_wq", WQ_UNBOUND, 0);
+-
+-	queue_work(ftrace_check_wq, &ftrace_check_work);
+-	return 0;
+-}
+-
+-static int __init ftrace_check_sync(void)
+-{
+-	/* Make sure the ftrace_check updates are finished */
+-	if (ftrace_check_wq)
+-		destroy_workqueue(ftrace_check_wq);
+-	return 0;
+-}
+-
+-late_initcall_sync(ftrace_check_sync);
+-subsys_initcall(ftrace_check_for_weak_functions);
+-
+-static int print_rec(struct seq_file *m, unsigned long ip)
+-{
+-	unsigned long offset;
+-	char str[KSYM_SYMBOL_LEN];
+-	char *modname;
+-	const char *ret;
+-
+-	ret = kallsyms_lookup(ip, NULL, &offset, &modname, str);
+-	/* Weak functions can cause invalid addresses */
+-	if (!ret || offset > FTRACE_MCOUNT_MAX_OFFSET) {
+-		snprintf(str, KSYM_SYMBOL_LEN, "%s_%ld",
+-			 FTRACE_INVALID_FUNCTION, offset);
+-		ret = NULL;
+-	}
+-
+-	seq_puts(m, str);
+-	if (modname)
+-		seq_printf(m, " [%s]", modname);
+-	return ret == NULL ? -1 : 0;
+-}
+-#else
+-static inline int test_for_valid_rec(struct dyn_ftrace *rec)
+-{
+-	return 1;
+-}
+-
+-static inline int print_rec(struct seq_file *m, unsigned long ip)
+-{
+-	seq_printf(m, "%ps", (void *)ip);
+-	return 0;
+-}
+-#endif
+-
+ static int t_show(struct seq_file *m, void *v)
  {
- 	unsigned int i;
-@@ -854,6 +950,7 @@ int main(int argc, char **argv)
- 	if (absolute_percpu)
- 		make_percpus_absolute();
- 	sort_symbols();
-+	emit_hole_symbols();
- 	if (base_relative)
- 		record_relative_base();
- 	optimize_token_table();
-diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
-index 518c70b8db50..8e1373902bfe 100755
---- a/scripts/link-vmlinux.sh
-+++ b/scripts/link-vmlinux.sh
-@@ -189,11 +189,11 @@ kallsyms_step()
+ 	struct ftrace_iterator *iter = m->private;
+@@ -3835,13 +3734,7 @@ static int t_show(struct seq_file *m, void *v)
+ 	if (iter->flags & FTRACE_ITER_ADDRS)
+ 		seq_printf(m, "%lx ", rec->ip);
+ 
+-	if (print_rec(m, rec->ip)) {
+-		/* This should only happen when a rec is disabled */
+-		WARN_ON_ONCE(!(rec->flags & FTRACE_FL_DISABLED));
+-		seq_putc(m, '\n');
+-		return 0;
+-	}
+-
++	seq_printf(m, "%ps", (void *)rec->ip);
+ 	if (iter->flags & (FTRACE_ITER_ENABLED | FTRACE_ITER_TOUCHED)) {
+ 		struct ftrace_ops *ops;
+ 
+@@ -4221,24 +4114,6 @@ add_rec_by_index(struct ftrace_hash *hash, struct ftrace_glob *func_g,
+ 	return 0;
  }
  
- # Create map file with all symbols from ${1}
--# See mksymap for additional details
-+# See mksysmap for additional details
- mksysmap()
- {
- 	info NM ${2}
--	${NM} -n "${1}" | sed -f "${srctree}/scripts/mksysmap" > "${2}"
-+	${NM} -nS "${1}" | sed -f "${srctree}/scripts/mksysmap" > "${2}"
- }
+-#ifdef FTRACE_MCOUNT_MAX_OFFSET
+-static int lookup_ip(unsigned long ip, char **modname, char *str)
+-{
+-	unsigned long offset;
+-
+-	kallsyms_lookup(ip, NULL, &offset, modname, str);
+-	if (offset > FTRACE_MCOUNT_MAX_OFFSET)
+-		return -1;
+-	return 0;
+-}
+-#else
+-static int lookup_ip(unsigned long ip, char **modname, char *str)
+-{
+-	kallsyms_lookup(ip, NULL, NULL, modname, str);
+-	return 0;
+-}
+-#endif
+-
+ static int
+ ftrace_match_record(struct dyn_ftrace *rec, struct ftrace_glob *func_g,
+ 		struct ftrace_glob *mod_g, int exclude_mod)
+@@ -4246,12 +4121,7 @@ ftrace_match_record(struct dyn_ftrace *rec, struct ftrace_glob *func_g,
+ 	char str[KSYM_SYMBOL_LEN];
+ 	char *modname;
  
- sorttable()
-diff --git a/scripts/mksysmap b/scripts/mksysmap
-index c12723a04655..7a4415f21143 100755
---- a/scripts/mksysmap
-+++ b/scripts/mksysmap
-@@ -2,7 +2,7 @@
- # SPDX-License-Identifier: GPL-2.0-only
- #
- # sed script to filter out symbols that are not needed for System.map,
--# or not suitable for kallsyms. The input should be 'nm -n <file>'.
-+# or not suitable for kallsyms. The input should be 'nm -nS <file>'.
- #
- # System.map is used by module-init tools and some debugging
- # tools to retrieve the actual addresses of symbols in the kernel.
+-	if (lookup_ip(rec->ip, &modname, str)) {
+-		/* This should only happen when a rec is disabled */
+-		WARN_ON_ONCE(system_state == SYSTEM_RUNNING &&
+-			     !(rec->flags & FTRACE_FL_DISABLED));
+-		return 0;
+-	}
++	kallsyms_lookup(rec->ip, NULL, NULL, &modname, str);
+ 
+ 	if (mod_g) {
+ 		int mod_matches = (modname) ? ftrace_match(modname, mod_g) : 0;
+@@ -6887,13 +6757,6 @@ void ftrace_module_enable(struct module *mod)
+ 		if (!within_module(rec->ip, mod))
+ 			break;
+ 
+-		/* Weak functions should still be ignored */
+-		if (!test_for_valid_rec(rec)) {
+-			/* Clear all other flags. Should not be enabled anyway */
+-			rec->flags = FTRACE_FL_DISABLED;
+-			continue;
+-		}
+-
+ 		cnt = 0;
+ 
+ 		/*
 -- 
 2.25.1
 
