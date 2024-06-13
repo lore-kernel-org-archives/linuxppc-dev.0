@@ -4,28 +4,28 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C96D4C27C4F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2024 22:03:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 438B2C27C4F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Jun 2024 22:03:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W0by95P54z3cgk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2024 08:03:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W0byc1H71z3fr1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2024 08:03:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=zhengyejian1@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=zhengyejian1@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W0P536y2nz30T9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2024 23:53:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W0P6j4xT1z30TX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Jun 2024 23:54:53 +1000 (AEST)
 Received: from mail.maildlp.com (unknown [172.19.88.105])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4W0Ncy4kpHzxSCx;
-	Thu, 13 Jun 2024 21:32:34 +0800 (CST)
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4W0NcC6mT1zmb2t;
+	Thu, 13 Jun 2024 21:31:55 +0800 (CST)
 Received: from dggpeml500012.china.huawei.com (unknown [7.185.36.15])
-	by mail.maildlp.com (Postfix) with ESMTPS id 5229B140258;
-	Thu, 13 Jun 2024 21:36:40 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 761B1140258;
+	Thu, 13 Jun 2024 21:36:41 +0800 (CST)
 Received: from localhost.localdomain (10.67.175.61) by
  dggpeml500012.china.huawei.com (7.185.36.15) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.39; Thu, 13 Jun 2024 21:36:39 +0800
+ 15.1.2507.39; Thu, 13 Jun 2024 21:36:41 +0800
 From: Zheng Yejian <zhengyejian1@huawei.com>
 To: <rostedt@goodmis.org>, <mhiramat@kernel.org>, <mark.rutland@arm.com>,
 	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
@@ -35,9 +35,9 @@ To: <rostedt@goodmis.org>, <mhiramat@kernel.org>, <mark.rutland@arm.com>,
 	<masahiroy@kernel.org>, <nathan@kernel.org>, <nicolas@fjasle.eu>,
 	<kees@kernel.org>, <james.clark@arm.com>, <kent.overstreet@linux.dev>,
 	<yhs@fb.com>, <jpoimboe@kernel.org>, <peterz@infradead.org>
-Subject: [PATCH 1/6] kallsyms: Optimize multiple times of realloc() to one time of malloc()
-Date: Thu, 13 Jun 2024 21:37:06 +0800
-Message-ID: <20240613133711.2867745-2-zhengyejian1@huawei.com>
+Subject: [PATCH 5/6] ftrace: Fix possible out-of-bound issue in ftrace_process_locs()
+Date: Thu, 13 Jun 2024 21:37:10 +0800
+Message-ID: <20240613133711.2867745-6-zhengyejian1@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240613133711.2867745-1-zhengyejian1@huawei.com>
 References: <20240613133711.2867745-1-zhengyejian1@huawei.com>
@@ -63,86 +63,70 @@ Cc: zhengyejian1@huawei.com, linux-kbuild@vger.kernel.org, linux-kernel@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Array 'table' is used to store pointers of symbols that read from in.map
-file, and its size depends on the number of symbols. Currently 'table'
-is expanded by calling realloc() every 10000 symbols read.
+In ftrace_process_locs(), a series pages are prepared and linked in
+start_pg, then fentry records are skipped or added, then unused pages
+are freed.
 
-However, there generally are around 100000+ symbols, which means that
-the expansion is generally 10+ times.
+However, assume that all records are skipped, currently the start_pg
+will still be in list of ftrace_pages_start but without any record.
+Then in ftrace_free_mem() index record by (pg->index - 1) will be out
+of bound.
 
-As an optimization, introduce linked list 'sym_list' to associate and
-count all symbols, then store them into 'table' at one time.
+To fix this issue, properly handle with unused start_pg and add
+WARN_ON_ONCE() where the records need to be indexed.
 
+Fixes: 26efd79c4624 ("ftrace: Fix possible warning on checking all pages used in ftrace_process_locs()")
 Signed-off-by: Zheng Yejian <zhengyejian1@huawei.com>
 ---
- scripts/kallsyms.c | 33 ++++++++++++++++++++-------------
- 1 file changed, 20 insertions(+), 13 deletions(-)
+ kernel/trace/ftrace.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-index 47978efe4797..6559a9802f6e 100644
---- a/scripts/kallsyms.c
-+++ b/scripts/kallsyms.c
-@@ -33,6 +33,7 @@
- #define KSYM_NAME_LEN		512
- 
- struct sym_entry {
-+	struct sym_entry *next;
- 	unsigned long long addr;
- 	unsigned int len;
- 	unsigned int seq;
-@@ -60,7 +61,8 @@ static struct addr_range percpu_range = {
- };
- 
- static struct sym_entry **table;
--static unsigned int table_size, table_cnt;
-+static struct sym_entry *sym_list;
-+static unsigned int table_cnt;
- static int all_symbols;
- static int absolute_percpu;
- static int base_relative;
-@@ -273,6 +275,7 @@ static void read_map(const char *in)
- 	struct sym_entry *sym;
- 	char *buf = NULL;
- 	size_t buflen = 0;
-+	int i;
- 
- 	fp = fopen(in, "r");
- 	if (!fp) {
-@@ -286,18 +289,22 @@ static void read_map(const char *in)
- 			continue;
- 
- 		sym->start_pos = table_cnt;
--
--		if (table_cnt >= table_size) {
--			table_size += 10000;
--			table = realloc(table, sizeof(*table) * table_size);
--			if (!table) {
--				fprintf(stderr, "out of memory\n");
--				fclose(fp);
--				exit (1);
--			}
--		}
--
--		table[table_cnt++] = sym;
-+		table_cnt++;
-+		sym->next = sym_list;
-+		sym_list = sym;
-+	}
-+	table = malloc(sizeof(*table) * table_cnt);
-+	if (!table) {
-+		fprintf(stderr, "unable to allocate memory for table\n");
-+		free(buf);
-+		fclose(fp);
-+		exit(EXIT_FAILURE);
-+	}
-+	sym = sym_list;
-+	i = table_cnt - 1;
-+	while (sym) {
-+		table[i--] = sym;
-+		sym = sym->next;
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 0e8628e4d296..c46c35ac9b42 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -6575,10 +6575,22 @@ static int ftrace_process_locs(struct module *mod,
+ 		rec->ip = addr;
  	}
  
- 	free(buf);
+-	if (pg->next) {
++	if (pg->index == 0) {
++		/* No record is added on the current page, so it's unused */
++		pg_unuse = pg;
++	} else if (pg->next) {
++		/* Current page has records, so it's next page is unused */
+ 		pg_unuse = pg->next;
+ 		pg->next = NULL;
+ 	}
++	/*
++	 * Even the start_pg hasn't been used, that means, no record has
++	 * been added, so restore state of ftrace_pages and just go out.
++	 */
++	if (pg_unuse == start_pg) {
++		ftrace_pages->next = NULL;
++		goto out;
++	}
+ 
+ 	/* Assign the last page to ftrace_pages */
+ 	ftrace_pages = pg;
+@@ -6794,6 +6806,8 @@ void ftrace_release_mod(struct module *mod)
+ 	 */
+ 	last_pg = &ftrace_pages_start;
+ 	for (pg = ftrace_pages_start; pg; pg = *last_pg) {
++		/* The page should have at lease one record */
++		WARN_ON_ONCE(!pg->index);
+ 		rec = &pg->records[0];
+ 		if (within_module(rec->ip, mod)) {
+ 			/*
+@@ -7176,6 +7190,8 @@ void ftrace_free_mem(struct module *mod, void *start_ptr, void *end_ptr)
+ 		mod_map = allocate_ftrace_mod_map(mod, start, end);
+ 
+ 	for (pg = ftrace_pages_start; pg; last_pg = &pg->next, pg = *last_pg) {
++		/* The page should have at lease one record */
++		WARN_ON_ONCE(!pg->index);
+ 		if (end < pg->records[0].ip ||
+ 		    start >= (pg->records[pg->index - 1].ip + MCOUNT_INSN_SIZE))
+ 			continue;
 -- 
 2.25.1
 
