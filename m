@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07B68C27C6E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2024 17:34:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 539BAC27C6E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Jun 2024 17:35:03 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nf3yFR89;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XRwAjETN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W15xS6LY8z3cgP
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2024 03:34:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W15yF1Njnz3cc7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Jun 2024 03:35:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nf3yFR89;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XRwAjETN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W15nT2GPFz3ccN
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W15nV16pNz3cfx
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Jun 2024 03:27:25 +1000 (AEST)
-Received: from pps.filterd (m0353723.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45EEu3iF009502;
-	Fri, 14 Jun 2024 17:27:10 GMT
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45EH5aiH011574;
+	Fri, 14 Jun 2024 17:27:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
 	:to:cc:subject:date:message-id:in-reply-to:references
-	:mime-version:content-transfer-encoding; s=pp1; bh=MRvo+DJHmdUX1
-	3CKwbtu7Mhcw+avdYVm9NmGEpHKYvI=; b=nf3yFR89WOoix/ec/COkc3F4gJWQx
-	Y5tbYCFsO0SO0ayr1Cnjic0Ih1/1Y4z4KnRuwkrQbd42iBEpJu//e5vZP1f9gbtG
-	FZGDX1sqvY6XgB1X1gOt40z0Qh6T3rxGesEtfK6sHYoZk3HyRcf9WH+0Fi2VcKgU
-	QJTh2cPNBkHZiHMjVA+IIY+MQnVrTN9rsum2yiJgA154cJMec2TikNnFdFsNU/jM
-	FroUvByC8LWBAu3WyPURS2/gB4TQeJmkZTwrGkg92NdOYbxdaL1Be2nXIs96ArRF
-	NN3LMIbFpRHOYIsqiQ+YK6aU2Op0GLIzJlGDE7RMolRoatGalGVpuNHAA==
+	:mime-version:content-transfer-encoding; s=pp1; bh=enMmO1dX8+z+g
+	bOZgGZvImi4iIDzA7xxnbD+Pf1d+Vc=; b=XRwAjETN1Q2Gx5LOBYPFI5c3wd54R
+	lnqAlyZ42A615b4fIDThxyq7QfYMjeNlt4JErxDOdruTdAR5BosrgB8B/oMLAmxB
+	auvJInVQ8K1AkocHGBDh/E3tPv0iGYBVYEUOSynTMR8MZ0mw9KQams3Y2afQZxoa
+	EXSNJFvXH5lou7b9O6meFCwH7yrfBSd37QzEojWX/tN/pyAqYX2ZTYduIQEwKV+h
+	JvZudcbgnR9xhmvlFXZHc+gD+bevHJ1Zuma6Ud5KTDWpQP6OaIvlQkWOjbwVU+Tz
+	Azupr095EUscKQA8ztHwDANtj9lxx3py+2J+k+JA9D07ixS9Ls+fpoWNg==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yrq7crhh7-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yrnwa0svt-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Jun 2024 17:27:10 +0000 (GMT)
-Received: from m0353723.ppops.net (m0353723.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 45EHR93g018257;
-	Fri, 14 Jun 2024 17:27:09 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yrq7crhh3-1
+	Fri, 14 Jun 2024 17:27:19 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 45EHRJqs011242;
+	Fri, 14 Jun 2024 17:27:19 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yrnwa0svq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Jun 2024 17:27:09 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 45EGeo7m003916;
-	Fri, 14 Jun 2024 17:27:08 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3yn2mqkeya-1
+	Fri, 14 Jun 2024 17:27:19 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 45EFNfPR023618;
+	Fri, 14 Jun 2024 17:27:18 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3yn3unb3vm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Jun 2024 17:27:08 +0000
+	Fri, 14 Jun 2024 17:27:17 +0000
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 45EHR3Zt56426846
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 45EHRCsn42205480
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 14 Jun 2024 17:27:05 GMT
+	Fri, 14 Jun 2024 17:27:14 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 199D520040;
-	Fri, 14 Jun 2024 17:27:03 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 73AF920040;
+	Fri, 14 Jun 2024 17:27:12 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4C3D420043;
-	Fri, 14 Jun 2024 17:27:00 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A55212004B;
+	Fri, 14 Jun 2024 17:27:09 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.43.82.18])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 14 Jun 2024 17:27:00 +0000 (GMT)
+	Fri, 14 Jun 2024 17:27:09 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
         irogers@google.com, namhyung@kernel.org, segher@kernel.crashing.org,
         christophe.leroy@csgroup.eu
-Subject: [V4 07/16] tools/perf: Add support to identify memory instructions of opcode 31 in powerpc
-Date: Fri, 14 Jun 2024 22:56:22 +0530
-Message-Id: <20240614172631.56803-8-atrajeev@linux.vnet.ibm.com>
+Subject: [V4 10/16] tools/perf: Update instruction tracking for powerpc
+Date: Fri, 14 Jun 2024 22:56:25 +0530
+Message-Id: <20240614172631.56803-11-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20240614172631.56803-1-atrajeev@linux.vnet.ibm.com>
 References: <20240614172631.56803-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: _1rN30nsA2byuAO1A7lW7v6h5rXvjEPM
-X-Proofpoint-ORIG-GUID: MgovDfTClnqBrm1MF-6jncfSnW_VDBAf
+X-Proofpoint-GUID: rByaeX0enDHTz1Owai2gBYoqUVdtuxqz
+X-Proofpoint-ORIG-GUID: Fdbx81Z2xlNhgyjXkUzNYm5Vmn8w-N1M
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
  definitions=2024-06-14_15,2024-06-14_03,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxlogscore=886
- adultscore=0 phishscore=0 mlxscore=0 spamscore=0 clxscore=1015
- impostorscore=0 lowpriorityscore=0 suspectscore=0 priorityscore=1501
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxlogscore=999
+ mlxscore=0 suspectscore=0 adultscore=0 clxscore=1015 spamscore=0
+ impostorscore=0 priorityscore=1501 bulkscore=0 lowpriorityscore=0
  malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2405170001 definitions=main-2406140119
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -103,172 +103,145 @@ Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There are memory instructions in powerpc with opcode as 31.
-Example: "ldx RT,RA,RB" , Its X form is as below:
+Add instruction tracking function "update_insn_state_powerpc" for
+powerpc. Example sequence in powerpc:
 
-  ______________________________________
-  | 31 |  RT  |  RA |  RB |   21     |/|
-  --------------------------------------
-  0    6     11    16    21         30 31
+ld      r10,264(r3)
+mr      r31,r3
+<<after some sequence>
+ld      r9,312(r31)
 
-The opcode for "ldx" is 31. There are other instructions also with
-opcode 31 which are memory insn like ldux, stbx, lwzx, lhaux
-But all instructions with opcode 31 are not memory. Example is add
-instruction: "add RT,RA,RB"
-
-The value in bit 21-30 [ 21 for ldx ] is different for these
-instructions. Patch uses this value to assign instruction ops for these
-cases. The naming convention and value to identify these are picked from
-defines in "arch/powerpc/include/asm/ppc-opcode.h"
+Consider ithe sample is pointing to: "ld r9,312(r31)".
+Here the memory reference is hit at "312(r31)" where 312 is the offset
+and r31 is the source register. Previous instruction sequence shows that
+register state of r3 is moved to r31. So to identify the data type for r31
+access, the previous instruction ("mr") needs to be tracked and the
+state type entry has to be updated. Current instruction tracking support
+in perf tools infrastructure is specific to x86. Patch adds this support
+for powerpc as well.
 
 Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 ---
- .../perf/arch/powerpc/annotate/instructions.c | 107 +++++++++++++++++-
- tools/perf/util/disasm.c                      |   3 +
- 2 files changed, 108 insertions(+), 2 deletions(-)
+ .../perf/arch/powerpc/annotate/instructions.c | 65 +++++++++++++++++++
+ tools/perf/util/annotate-data.c               |  9 ++-
+ tools/perf/util/disasm.c                      |  1 +
+ 3 files changed, 74 insertions(+), 1 deletion(-)
 
 diff --git a/tools/perf/arch/powerpc/annotate/instructions.c b/tools/perf/arch/powerpc/annotate/instructions.c
-index 10fea5e5cf4c..4ee959a24738 100644
+index db72148eb857..13eaec36a9dc 100644
 --- a/tools/perf/arch/powerpc/annotate/instructions.c
 +++ b/tools/perf/arch/powerpc/annotate/instructions.c
-@@ -49,18 +49,121 @@ static struct ins_ops *powerpc__associate_instruction_ops(struct arch *arch, con
- 	return ops;
- }
- 
--#define PPC_OP(op)      (((op) >> 26) & 0x3F)
-+#define PPC_OP(op)	(((op) >> 26) & 0x3F)
-+#define PPC_21_30(R)	(((R) >> 1) & 0x3ff)
-+
-+struct insn_offset {
-+	const char	*name;
-+	int		value;
-+};
-+
-+/*
-+ * There are memory instructions with opcode 31 which are
-+ * of X Form, Example:
-+ * ldx RT,RA,RB
-+ * ______________________________________
-+ * | 31 |  RT  |  RA |  RB |   21     |/|
-+ * --------------------------------------
-+ * 0    6     11    16    21         30 31
-+ *
-+ * But all instructions with opcode 31 are not memory.
-+ * Example: add RT,RA,RB
-+ *
-+ * Use bits 21 to 30 to check memory insns with 31 as opcode.
-+ * In ins_array below, for ldx instruction:
-+ * name => OP_31_XOP_LDX
-+ * value => 21
-+ */
-+
-+static struct insn_offset ins_array[] = {
-+	{ .name = "OP_31_XOP_LXSIWZX",  .value = 12, },
-+	{ .name = "OP_31_XOP_LWARX",	.value = 20, },
-+	{ .name = "OP_31_XOP_LDX",	.value = 21, },
-+	{ .name = "OP_31_XOP_LWZX",	.value = 23, },
-+	{ .name = "OP_31_XOP_LDUX",	.value = 53, },
-+	{ .name = "OP_31_XOP_LWZUX",	.value = 55, },
-+	{ .name = "OP_31_XOP_LXSIWAX",  .value = 76, },
-+	{ .name = "OP_31_XOP_LDARX",    .value = 84, },
-+	{ .name = "OP_31_XOP_LBZX",	.value = 87, },
-+	{ .name = "OP_31_XOP_LVX",      .value = 103, },
-+	{ .name = "OP_31_XOP_LBZUX",    .value = 119, },
-+	{ .name = "OP_31_XOP_STXSIWX",  .value = 140, },
-+	{ .name = "OP_31_XOP_STDX",	.value = 149, },
-+	{ .name = "OP_31_XOP_STWX",	.value = 151, },
-+	{ .name = "OP_31_XOP_STDUX",	.value = 181, },
-+	{ .name = "OP_31_XOP_STWUX",	.value = 183, },
-+	{ .name = "OP_31_XOP_STBX",	.value = 215, },
-+	{ .name = "OP_31_XOP_STVX",     .value = 231, },
-+	{ .name = "OP_31_XOP_STBUX",	.value = 247, },
-+	{ .name = "OP_31_XOP_LHZX",	.value = 279, },
-+	{ .name = "OP_31_XOP_LHZUX",	.value = 311, },
-+	{ .name = "OP_31_XOP_LXVDSX",   .value = 332, },
-+	{ .name = "OP_31_XOP_LWAX",	.value = 341, },
-+	{ .name = "OP_31_XOP_LHAX",	.value = 343, },
-+	{ .name = "OP_31_XOP_LWAUX",	.value = 373, },
-+	{ .name = "OP_31_XOP_LHAUX",	.value = 375, },
-+	{ .name = "OP_31_XOP_STHX",	.value = 407, },
-+	{ .name = "OP_31_XOP_STHUX",	.value = 439, },
-+	{ .name = "OP_31_XOP_LXSSPX",   .value = 524, },
-+	{ .name = "OP_31_XOP_LDBRX",	.value = 532, },
-+	{ .name = "OP_31_XOP_LSWX",	.value = 533, },
-+	{ .name = "OP_31_XOP_LWBRX",	.value = 534, },
-+	{ .name = "OP_31_XOP_LFSUX",    .value = 567, },
-+	{ .name = "OP_31_XOP_LXSDX",    .value = 588, },
-+	{ .name = "OP_31_XOP_LSWI",	.value = 597, },
-+	{ .name = "OP_31_XOP_LFDX",     .value = 599, },
-+	{ .name = "OP_31_XOP_LFDUX",    .value = 631, },
-+	{ .name = "OP_31_XOP_STXSSPX",  .value = 652, },
-+	{ .name = "OP_31_XOP_STDBRX",	.value = 660, },
-+	{ .name = "OP_31_XOP_STXWX",	.value = 661, },
-+	{ .name = "OP_31_XOP_STWBRX",	.value = 662, },
-+	{ .name = "OP_31_XOP_STFSX",	.value = 663, },
-+	{ .name = "OP_31_XOP_STFSUX",	.value = 695, },
-+	{ .name = "OP_31_XOP_STXSDX",   .value = 716, },
-+	{ .name = "OP_31_XOP_STSWI",	.value = 725, },
-+	{ .name = "OP_31_XOP_STFDX",	.value = 727, },
-+	{ .name = "OP_31_XOP_STFDUX",	.value = 759, },
-+	{ .name = "OP_31_XOP_LXVW4X",   .value = 780, },
-+	{ .name = "OP_31_XOP_LHBRX",	.value = 790, },
-+	{ .name = "OP_31_XOP_LXVD2X",   .value = 844, },
-+	{ .name = "OP_31_XOP_LFIWAX",	.value = 855, },
-+	{ .name = "OP_31_XOP_LFIWZX",	.value = 887, },
-+	{ .name = "OP_31_XOP_STXVW4X",  .value = 908, },
-+	{ .name = "OP_31_XOP_STHBRX",	.value = 918, },
-+	{ .name = "OP_31_XOP_STXVD2X",  .value = 972, },
-+	{ .name = "OP_31_XOP_STFIWX",	.value = 983, },
-+};
-+
-+static int cmp_offset(const void *a, const void *b)
-+{
-+	const struct insn_offset *val1 = a;
-+	const struct insn_offset *val2 = b;
-+
-+	return (val1->value - val2->value);
-+}
- 
- static struct ins_ops *check_ppc_insn(int raw_insn)
- {
- 	int opcode = PPC_OP(raw_insn);
-+	int mem_insn_31 = PPC_21_30(raw_insn);
-+	struct insn_offset *ret;
-+	struct insn_offset mem_insns_31_opcode = {
-+		"OP_31_INSN",
-+		mem_insn_31
-+	};
- 
- 	/*
- 	 * Instructions with opcode 32 to 63 are memory
- 	 * instructions in powerpc
- 	 */
--	if ((opcode & 0x20))
-+	if ((opcode & 0x20)) {
- 		return &load_store_ops;
-+	} else if (opcode == 31) {
-+		/* Check for memory instructions with opcode 31 */
-+		ret = bsearch(&mem_insns_31_opcode, ins_array, ARRAY_SIZE(ins_array), sizeof(ins_array[0]), cmp_offset);
-+		if (ret != NULL)
-+			return &load_store_ops;
-+	}
- 
+@@ -231,6 +231,71 @@ static struct ins_ops *check_ppc_insn(int raw_insn)
  	return NULL;
  }
+ 
++/*
++ * Instruction tracking function to track register state moves.
++ * Example sequence:
++ *    ld      r10,264(r3)
++ *    mr      r31,r3
++ *    <<after some sequence>
++ *    ld      r9,312(r31)
++ *
++ * Previous instruction sequence shows that register state of r3
++ * is moved to r31. update_insn_state_powerpc tracks these state
++ * changes
++ */
++#ifdef HAVE_DWARF_SUPPORT
++static void update_insn_state_powerpc(struct type_state *state,
++		struct data_loc_info *dloc, Dwarf_Die * cu_die __maybe_unused,
++		struct disasm_line *dl)
++{
++	struct annotated_insn_loc loc;
++	struct annotated_op_loc *src = &loc.ops[INSN_OP_SOURCE];
++	struct annotated_op_loc *dst = &loc.ops[INSN_OP_TARGET];
++	struct type_state_reg *tsr;
++	u32 insn_offset = dl->al.offset;
++
++	if (annotate_get_insn_location(dloc->arch, dl, &loc) < 0)
++		return;
++
++	/*
++	 * Value 444 for bits 21:30 is for "mr"
++	 * instruction. "mr" is extended OR. So set the
++	 * source and destination reg correctly
++	 */
++	if (PPC_21_30(dl->raw.raw_insn) == 444) {
++		int src_reg = src->reg1;
++
++		src->reg1 = dst->reg1;
++		dst->reg1 = src_reg;
++	}
++
++	if (!has_reg_type(state, dst->reg1))
++		return;
++
++	tsr = &state->regs[dst->reg1];
++
++	if (!has_reg_type(state, src->reg1) ||
++			!state->regs[src->reg1].ok) {
++		tsr->ok = false;
++		return;
++	}
++
++	tsr->type = state->regs[src->reg1].type;
++	tsr->kind = state->regs[src->reg1].kind;
++	tsr->ok = true;
++
++	pr_debug_dtp("mov [%x] reg%d -> reg%d",
++			insn_offset, src->reg1, dst->reg1);
++	pr_debug_type_name(&tsr->type, tsr->kind);
++}
++#else /* HAVE_DWARF_SUPPORT */
++static void update_insn_state_powerpc(struct type_state *state __maybe_unused, struct data_loc_info *dloc __maybe_unused,
++		Dwarf_Die * cu_die __maybe_unused, struct disasm_line *dl __maybe_unused)
++{
++	return;
++}
++#endif /* HAVE_DWARF_SUPPORT */
++
+ static int powerpc__annotate_init(struct arch *arch, char *cpuid __maybe_unused)
+ {
+ 	if (!arch->initialized) {
+diff --git a/tools/perf/util/annotate-data.c b/tools/perf/util/annotate-data.c
+index 7a48c3d72b89..734acdd8c4b7 100644
+--- a/tools/perf/util/annotate-data.c
++++ b/tools/perf/util/annotate-data.c
+@@ -1080,6 +1080,13 @@ static int find_data_type_insn(struct data_loc_info *dloc,
+ 	return ret;
+ }
+ 
++static int arch_supports_insn_tracking(struct data_loc_info *dloc)
++{
++	if ((arch__is(dloc->arch, "x86")) || (arch__is(dloc->arch, "powerpc")))
++		return 1;
++	return 0;
++}
++
+ /*
+  * Construct a list of basic blocks for each scope with variables and try to find
+  * the data type by updating a type state table through instructions.
+@@ -1094,7 +1101,7 @@ static int find_data_type_block(struct data_loc_info *dloc,
+ 	int ret = -1;
+ 
+ 	/* TODO: other architecture support */
+-	if (!arch__is(dloc->arch, "x86"))
++	if (!arch_supports_insn_tracking(dloc))
+ 		return -1;
+ 
+ 	prev_dst_ip = dst_ip = dloc->ip;
 diff --git a/tools/perf/util/disasm.c b/tools/perf/util/disasm.c
-index 8428df0b9c17..4e605d082a02 100644
+index 2191a3ec6517..86ff98e64890 100644
 --- a/tools/perf/util/disasm.c
 +++ b/tools/perf/util/disasm.c
-@@ -696,6 +696,9 @@ static int load_store__parse(struct arch *arch __maybe_unused, struct ins_operan
- {
- 	ops->source.mem_ref = true;
- 	ops->source.multi_regs = false;
-+	/* opcode 31 is of X form */
-+	if (PPC_OP(dl->raw.raw_insn) == 31)
-+		ops->source.multi_regs = true;
- 
- 	ops->target.mem_ref = false;
- 	ops->target.multi_regs = false;
+@@ -155,6 +155,7 @@ static struct arch architectures[] = {
+ 	{
+ 		.name = "powerpc",
+ 		.init = powerpc__annotate_init,
++		.update_insn_state = update_insn_state_powerpc,
+ 	},
+ 	{
+ 		.name = "riscv64",
 -- 
 2.43.0
 
