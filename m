@@ -4,53 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28689C2BA1A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 22:52:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 483EDC27C79
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 23:38:36 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=cvjhYuw0;
+	dkim=pass (1024-bit key; unprotected) header.d=yeah.net header.i=@yeah.net header.a=rsa-sha256 header.s=s110527 header.b=VDJWUUvO;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W34rv5N1Dz3gHb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2024 08:52:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lwn.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W35tK69whz3gHl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2024 09:38:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=yeah.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=cvjhYuw0;
+	dkim=pass (1024-bit key; unprotected) header.d=yeah.net header.i=@yeah.net header.a=rsa-sha256 header.s=s110527 header.b=VDJWUUvO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net (client-ip=2600:3c01:e000:3a1::42; helo=ms.lwn.net; envelope-from=corbet@lwn.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 389 seconds by postgrey-1.37 at boromir; Tue, 18 Jun 2024 08:51:26 AEST
-Received: from ms.lwn.net (ms.lwn.net [IPv6:2600:3c01:e000:3a1::42])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W34qy45KJz3gDj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2024 08:51:26 +1000 (AEST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net 927BB45E08
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
-	t=1718664289; bh=tgZ5hgb9Gf21KDYdEib2nJBRoH1w2xOfXPJe310ZmBc=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=cvjhYuw077bLfEWVkm9B5y5MkRFtnN2/7arlWOO7bad+/c5EIZSmmsxUsPbBOEYjQ
-	 ufEy35QWt09ug5fQPilU7spMPSYU1isz3ea/kkmCxABk/Dr+6aeJW7szpbPsNAa4po
-	 tEWUN7mUfw1nB0rMxivttg0ZW0+SiU+wjuj7+aJ0vfMqUbHU6GjcKOWI6yW/5JtqJt
-	 rZCuSOHc9XvpOyZWgd22iPaKNr/S8gbJP4Ej666iYP0pCsR2IpxXy1t5DLFeW5CQqt
-	 euVA6wNmKKeDQpqt0mTD/FuDevW/lBoZgpFBa1kVyhH6JZ7tE+3uXxvmP5dvQL3zGJ
-	 RiqX95vwBmMOQ==
-Received: from localhost (c-24-9-249-71.hsd1.co.comcast.net [24.9.249.71])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by ms.lwn.net (Postfix) with ESMTPSA id 927BB45E08;
-	Mon, 17 Jun 2024 22:44:49 +0000 (UTC)
-From: Jonathan Corbet <corbet@lwn.net>
-To: Thomas Huth <thuth@redhat.com>, linux-doc@vger.kernel.org, Nathan Lynch
- <nathanl@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] Documentation: Remove the unused "topology_updates"
- from kernel-parameters.txt
-In-Reply-To: <20240617060848.38937-1-thuth@redhat.com>
-References: <20240617060848.38937-1-thuth@redhat.com>
-Date: Mon, 17 Jun 2024 16:44:48 -0600
-Message-ID: <87zfrjfau7.fsf@trenco.lwn.net>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=yeah.net (client-ip=123.58.177.132; helo=mail-177132.yeah.net; envelope-from=shawnguo2@yeah.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 615 seconds by postgrey-1.37 at boromir; Sun, 16 Jun 2024 22:37:42 AEST
+Received: from mail-177132.yeah.net (mail-177132.yeah.net [123.58.177.132])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W2CGG16CGz30T3
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Jun 2024 22:37:40 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yeah.net;
+	s=s110527; h=Date:From:Subject:Message-ID:MIME-Version:
+	Content-Type; bh=JnRMwwFkdoEc5/NCW6kftWAir30cVbQ0j2y/PvQ3WvM=;
+	b=VDJWUUvO8q6Wy3ZDQ/po1/sppVWySiCJqpCFFPsrRIuzxaF3gZ5dRKu2wza3qZ
+	dd8K93C7eVedoZnKRLihFPPpD0NO0SnINDCpkjngrGQqoP7wiHb0+H2ZUs2vsVyB
+	wOkOtINMFYJWN/hvGSVCc90wkuvkf8yHptG5deXyZSWEs=
+Received: from dragon (unknown [114.216.76.201])
+	by smtp2 (Coremail) with SMTP id C1UQrADnL2kT2m5mUY7ECA--.11632S3;
+	Sun, 16 Jun 2024 20:27:00 +0800 (CST)
+Date: Sun, 16 Jun 2024 20:26:59 +0800
+From: Shawn Guo <shawnguo2@yeah.net>
+To: Michael Walle <mwalle@kernel.org>
+Subject: Re: [PATCH 1/2] dt-bindings: Drop Li Yang as maintainer for all
+ bindings
+Message-ID: <Zm7aE5+1KONVCi1i@dragon>
+References: <20240604142249.1957762-1-mwalle@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240604142249.1957762-1-mwalle@kernel.org>
+X-CM-TRANSID: C1UQrADnL2kT2m5mUY7ECA--.11632S3
+X-Coremail-Antispam: 1Uf129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
+	VFW2AGmfu7bjvjm3AaLaJ3UbIYCTnIWIevJa73UjIFyTuYvjxUVwIDUUUUU
+X-Originating-IP: [114.216.76.201]
+X-CM-SenderInfo: pvkd40hjxrjqh1hdxhhqhw/1tbiDRQAZVszXmJAYgAAsK
+X-Mailman-Approved-At: Tue, 18 Jun 2024 09:37:51 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,37 +58,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thomas Huth <thuth@redhat.com> writes:
+On Tue, Jun 04, 2024 at 04:22:48PM +0200, Michael Walle wrote:
+> Remove Li Yang from all device tree bindings because mails to this
+> address are bouncing.
+> 
+> Commit fbdd90334a62 ("MAINTAINERS: Drop Li Yang as their email address
+> stopped working") already removed the entry from the MAINTAINERS but
+> didn't address all the in-file entries of the device tree bindings.
+> 
+> Signed-off-by: Michael Walle <mwalle@kernel.org>
 
-> The "topology_updates" switch has been removed four years ago in commit
-> c30f931e891e ("powerpc/numa: remove ability to enable topology updates"),
-> so let's remove this from the documentation, too.
->
-> Signed-off-by: Thomas Huth <thuth@redhat.com>
-> ---
->  Documentation/admin-guide/kernel-parameters.txt | 6 ------
->  1 file changed, 6 deletions(-)
->
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index f58001338860..b75852f1a789 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -6600,12 +6600,6 @@
->  			e.g. base its process migration decisions on it.
->  			Default is on.
->  
-> -	topology_updates= [KNL, PPC, NUMA]
-> -			Format: {off}
-> -			Specify if the kernel should ignore (off)
-> -			topology updates sent by the hypervisor to this
-> -			LPAR.
-> -
->  	torture.disable_onoff_at_boot= [KNL]
+Applied both, thanks!
 
-Applied, thanks.
-
-jon
