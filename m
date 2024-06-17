@@ -4,54 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8AE94C27C77
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 06:31:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96160C27C77
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 07:37:57 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OVa4VXa4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ooy9eGh+;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W2g5Q2fMhz3cXK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 16:31:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W2hYv2vk3z3fq6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 17:37:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OVa4VXa4;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ooy9eGh+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W2fzV3cbZz3fnM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2024 16:26:30 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id D5232CE0E70;
-	Mon, 17 Jun 2024 06:26:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 897D7C2BD10;
-	Mon, 17 Jun 2024 06:26:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1718605589;
-	bh=5ukl1My1jMqhSyTqZEFqdGlI+72qAecy5V2ti5Kc46U=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=OVa4VXa4gPyN4KTWboLud3pwf0TJbbk/rQ5BM4+Ufc5q6edplugfrWWUEhonGkfMR
-	 QHtsT5neG8mJ3vHyVK4COzgFtMwuBSA3Ltr1Kmgg0P9h/SDaPK/4D4vixnSs7AOdoo
-	 HP6agM24471d/vJb4Hh8SFe0zewqIqWCGc3aXNawn13hq27CQJOtkzwEi0TWYKBp4l
-	 c0TLeE0D0RKiKV3rNJyqOIzjVOG/87Bt7edT59MQLl5UfWjsDRSx6vZMzrYnvW4QJA
-	 /RoDuAqhbb/WQma0tOFHLAJHwURkZ+Z0rxy3rGxoovWXWM4rnyYIVDHULrocVjTDvQ
-	 k66Zct4kG1uEw==
-Message-ID: <c9871979-de72-49ca-879b-5f2bd773d517@kernel.org>
-Date: Mon, 17 Jun 2024 15:26:23 +0900
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W2hY431Jzz3fnF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2024 17:37:11 +1000 (AEST)
+Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45H7T7xe000847;
+	Mon, 17 Jun 2024 07:37:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:in-reply-to:references
+	:mime-version:content-transfer-encoding; s=pp1; bh=vkv/AvAT5DUCU
+	U2nueP8/iPpxM8EDUk/KB/4kQaf52Y=; b=Ooy9eGh+JVBKl5kpUnjQNJt2hxFWK
+	wjoQHPuUnNhRKPUEzUfmDqycBIFPX2GzookOcA3l8B6GLlLXu+CzPZOK4CwjxWfc
+	c+cu8djSiPhkVvGEOuQVtaicuoHAc6eUEOCtxT10IzvZleMY5Mn/BoUquC/iLWRi
+	eRLJBRZVLiTsoZR+ZNdx24qdyFqQpw3sBisBqJkaKA2MgMDwOJ82g4s9q9iUSdA/
+	rmpFABhtiVRL2I4vG9RNGQpwpRXSkDFK8/KsD4szZ8W9zLMLMRdDh46sGTgXATAL
+	+u/sdhPyZaziSJC7M8gHUmNei9XAJltqrmAksxYv1Co1BQ66XekNltdyw==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ytgshg0nk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Jun 2024 07:37:07 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 45H609gu009478;
+	Mon, 17 Jun 2024 07:37:07 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3ysqgm7mhn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Jun 2024 07:37:07 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 45H7b1XF55378256
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 17 Jun 2024 07:37:03 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ADBA52004D;
+	Mon, 17 Jun 2024 07:37:01 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 82B8020040;
+	Mon, 17 Jun 2024 07:37:00 +0000 (GMT)
+Received: from tp-ibm-com.domain.name (unknown [9.171.38.70])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 17 Jun 2024 07:37:00 +0000 (GMT)
+From: Ganesh Goudar <ganeshgr@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH v2 1/1] powerpc/eeh: Enable PHBs to recovery in parallel
+Date: Mon, 17 Jun 2024 13:06:44 +0530
+Message-ID: <20240617073644.566218-2-ganeshgr@linux.ibm.com>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <20240617073644.566218-1-ganeshgr@linux.ibm.com>
+References: <20240617073644.566218-1-ganeshgr@linux.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 19/26] block: move the nowait flag to queue_limits
-To: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
-References: <20240617060532.127975-1-hch@lst.de>
- <20240617060532.127975-20-hch@lst.de>
-From: Damien Le Moal <dlemoal@kernel.org>
-Content-Language: en-US
-Organization: Western Digital Research
-In-Reply-To: <20240617060532.127975-20-hch@lst.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: vzVgZvJpXn5WZ582sFgtXuE8QKNaUYeY
+X-Proofpoint-GUID: vzVgZvJpXn5WZ582sFgtXuE8QKNaUYeY
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-06-17_06,2024-06-14_03,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 mlxscore=0
+ adultscore=0 bulkscore=0 mlxlogscore=776 clxscore=1015 lowpriorityscore=0
+ spamscore=0 priorityscore=1501 impostorscore=0 phishscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2405170001
+ definitions=main-2406170055
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,23 +90,229 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nvdimm@lists.linux.dev, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, linux-nvme@lists.infradead.org, Song Liu <song@kernel.org>, linux-mtd@lists.infradead.org, Vineeth Vijayan <vneethv@linux.ibm.com>, Alasdair Kergon <agk@redhat.com>, drbd-dev@lists.linbit.com, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, Richard Weinberger <richard@nod.at>, Geert Uytterhoeven <geert@linux-m68k.org>, Yu Kuai <yukuai3@huawei.com>, dm-devel@lists.linux.dev, linux-um@lists.infradead.org, Mike Snitzer <snitzer@kernel.org>, Josef Bacik <josef@toxicpanda.com>, nbd@other.debian.org, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Mikulas Patocka <mpatocka@redhat.com>, xen-devel@lists.xenproject.org, ceph-devel@vger.kernel.org, Ming Lei <ming.lei@redhat.com>, linux-bcache@vger.kernel.org, linux-block@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-mmc@vger.kernel.org, Philipp Reisner <philipp.reisner@linbit.com>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, virtualization@lists.linux.dev, Lars Ellenberg <lars.ellenberg@linbit.com>, linuxppc-dev@lists.ozlabs.org, =?UTF-8?Q?Roger_Pau_Monn=C3=A9?= <roger.pau@citrix.com>
+Cc: Ganesh Goudar <ganeshgr@linux.ibm.com>, mahesh@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/17/24 15:04, Christoph Hellwig wrote:
-> Move the nowait flag into the queue_limits feature field so that it can
-> be set atomically with the queue frozen.
-> 
-> Stacking drivers are simplified in that they now can simply set the
-> flag, and blk_stack_limits will clear it when the features is not
-> supported by any of the underlying devices.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Currnetly, with a single event queue EEH recovery is entirely
+serialized and takes place within a single kernel thread. This
+can cause recovery to take a long time when there are many
+devices.
 
-Reviewed-by: Damien Le Moal <dlemoal@kernel.org>
+Have the recovery event queue per PHB and allow the recovery to
+happen in parallel for all the PHBs.
 
+Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+---
+v2: Include missing hunk, which modifies __eeh_send_failure_event.
+---
+ arch/powerpc/include/asm/eeh_event.h  |  7 ++++
+ arch/powerpc/include/asm/pci-bridge.h |  4 ++
+ arch/powerpc/kernel/eeh_driver.c      | 27 +++++++++++-
+ arch/powerpc/kernel/eeh_event.c       | 59 +++++++++++++++++----------
+ arch/powerpc/kernel/eeh_pe.c          |  4 ++
+ 5 files changed, 78 insertions(+), 23 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/eeh_event.h b/arch/powerpc/include/asm/eeh_event.h
+index dadde7d52f46..6af1b5bb6103 100644
+--- a/arch/powerpc/include/asm/eeh_event.h
++++ b/arch/powerpc/include/asm/eeh_event.h
+@@ -8,6 +8,8 @@
+ #define ASM_POWERPC_EEH_EVENT_H
+ #ifdef __KERNEL__
+ 
++#include <linux/workqueue.h>
++
+ /*
+  * structure holding pci controller data that describes a
+  * change in the isolation status of a PCI slot.  A pointer
+@@ -15,15 +17,20 @@
+  * callback.
+  */
+ struct eeh_event {
++	struct work_struct	work;
+ 	struct list_head	list;	/* to form event queue	*/
+ 	struct eeh_pe		*pe;	/* EEH PE		*/
+ };
+ 
++extern spinlock_t eeh_eventlist_lock;
++
+ int eeh_event_init(void);
++int eeh_phb_event(struct eeh_pe *pe);
+ int eeh_send_failure_event(struct eeh_pe *pe);
+ int __eeh_send_failure_event(struct eeh_pe *pe);
+ void eeh_remove_event(struct eeh_pe *pe, bool force);
+ void eeh_handle_normal_event(struct eeh_pe *pe);
++void eeh_handle_normal_event_work(struct work_struct *work);
+ void eeh_handle_special_event(void);
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 2aa3a091ef20..61884d9398bf 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -138,6 +138,10 @@ struct pci_controller {
+ 
+ 	/* iommu_ops support */
+ 	struct iommu_device	iommu;
++
++	bool eeh_in_progress;
++	struct list_head eeh_eventlist;
++	spinlock_t eeh_eventlist_lock;
+ };
+ 
+ /* These are used for config access before all the PCI probing
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 7efe04c68f0f..4cf5fd409369 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -1116,6 +1116,30 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
+ 	eeh_pe_state_clear(pe, EEH_PE_RECOVERING, true);
+ }
+ 
++void eeh_handle_normal_event_work(struct work_struct *work)
++{
++	unsigned long flags;
++	struct eeh_event *event = container_of(work, struct eeh_event, work);
++	struct pci_controller *phb = event->pe->phb;
++
++	eeh_handle_normal_event(event->pe);
++
++	kfree(event);
++	spin_lock_irqsave(&phb->eeh_eventlist_lock, flags);
++	WARN_ON_ONCE(!phb->eeh_in_progress);
++	if (list_empty(&phb->eeh_eventlist)) {
++		phb->eeh_in_progress = false;
++		pr_debug("EEH: No more work to do\n");
++	} else {
++		pr_warn("EEH: More work to do\n");
++		event = list_entry(phb->eeh_eventlist.next,
++				   struct eeh_event, list);
++		list_del(&event->list);
++		queue_work(system_unbound_wq, &event->work);
++	}
++	spin_unlock_irqrestore(&phb->eeh_eventlist_lock, flags);
++}
++
+ /**
+  * eeh_handle_special_event - Handle EEH events without a specific failing PE
+  *
+@@ -1185,8 +1209,7 @@ void eeh_handle_special_event(void)
+ 		 */
+ 		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
+ 		    rc == EEH_NEXT_ERR_FENCED_PHB) {
+-			eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
+-			eeh_handle_normal_event(pe);
++			eeh_phb_event(pe);
+ 		} else {
+ 			eeh_for_each_pe(pe, tmp_pe)
+ 				eeh_pe_for_each_dev(tmp_pe, edev, tmp_edev)
+diff --git a/arch/powerpc/kernel/eeh_event.c b/arch/powerpc/kernel/eeh_event.c
+index c23a454af08a..8a9d6358d39f 100644
+--- a/arch/powerpc/kernel/eeh_event.c
++++ b/arch/powerpc/kernel/eeh_event.c
+@@ -22,7 +22,7 @@
+  *  work-queue, where a worker thread can drive recovery.
+  */
+ 
+-static DEFINE_SPINLOCK(eeh_eventlist_lock);
++DEFINE_SPINLOCK(eeh_eventlist_lock);
+ static DECLARE_COMPLETION(eeh_eventlist_event);
+ static LIST_HEAD(eeh_eventlist);
+ 
+@@ -91,6 +91,42 @@ int eeh_event_init(void)
+ 	return 0;
+ }
+ 
++int eeh_phb_event(struct eeh_pe *pe)
++{
++	struct eeh_event *event;
++	unsigned long flags;
++	struct pci_controller *phb;
++
++	event = kzalloc(sizeof(*event), GFP_ATOMIC);
++	if (!event)
++		return -ENOMEM;
++
++	if (pe) {
++		phb = pe->phb;
++		event->pe = pe;
++		INIT_WORK(&event->work, eeh_handle_normal_event_work);
++		eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
++		pr_err("EEH: EVENT=ERROR_DETECTED PHB=%#x PE=%#x\n",
++		       phb->global_number, pe->addr);
++		spin_lock_irqsave(&phb->eeh_eventlist_lock, flags);
++		if (phb->eeh_in_progress) {
++			pr_info("EEH: EEH already in progress on this PHB, queueing.\n");
++			list_add(&event->list, &phb->eeh_eventlist);
++		} else {
++			pr_info("EEH: Beginning recovery on this PHB.\n");
++			WARN_ON_ONCE(!list_empty(&phb->eeh_eventlist));
++			phb->eeh_in_progress = true;
++			queue_work(system_unbound_wq, &event->work);
++		}
++		spin_unlock_irqrestore(&phb->eeh_eventlist_lock, flags);
++	} else {
++		spin_lock_irqsave(&eeh_eventlist_lock, flags);
++		list_add(&event->list, &eeh_eventlist);
++		complete(&eeh_eventlist_event);
++		spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
++	}
++	return 0;
++}
+ /**
+  * eeh_send_failure_event - Generate a PCI error event
+  * @pe: EEH PE
+@@ -101,16 +137,6 @@ int eeh_event_init(void)
+  */
+ int __eeh_send_failure_event(struct eeh_pe *pe)
+ {
+-	unsigned long flags;
+-	struct eeh_event *event;
+-
+-	event = kzalloc(sizeof(*event), GFP_ATOMIC);
+-	if (!event) {
+-		pr_err("EEH: out of memory, event not handled\n");
+-		return -ENOMEM;
+-	}
+-	event->pe = pe;
+-
+ 	/*
+ 	 * Mark the PE as recovering before inserting it in the queue.
+ 	 * This prevents the PE from being free()ed by a hotplug driver
+@@ -128,16 +154,7 @@ int __eeh_send_failure_event(struct eeh_pe *pe)
+ 
+ 		eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
+ 	}
+-
+-	/* We may or may not be called in an interrupt context */
+-	spin_lock_irqsave(&eeh_eventlist_lock, flags);
+-	list_add(&event->list, &eeh_eventlist);
+-	spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
+-
+-	/* For EEH deamon to knick in */
+-	complete(&eeh_eventlist_event);
+-
+-	return 0;
++	return eeh_phb_event(pe);
+ }
+ 
+ int eeh_send_failure_event(struct eeh_pe *pe)
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index d1030bc52564..67c6e6621b0d 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -81,6 +81,10 @@ int eeh_phb_pe_create(struct pci_controller *phb)
+ {
+ 	struct eeh_pe *pe;
+ 
++	phb->eeh_in_progress = false;
++	INIT_LIST_HEAD(&phb->eeh_eventlist);
++	spin_lock_init(&phb->eeh_eventlist_lock);
++
+ 	/* Allocate PHB PE */
+ 	pe = eeh_pe_alloc(phb, EEH_PE_PHB);
+ 	if (!pe) {
 -- 
-Damien Le Moal
-Western Digital Research
+2.44.0
 
