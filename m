@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9390EC27C6E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 06:19:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94CDCC27C77
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 06:20:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=sSor2PQw;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Oj54QgNy;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W2fqQ2vNmz3dRg
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 16:19:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W2frC2xMvz3dRZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 16:20:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=sSor2PQw;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Oj54QgNy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+625ba2f6da96caf54eae+7603+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W2fXn2cSHz30Ty
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W2fXn4cvbz3cWr
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Jun 2024 16:06:49 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
 	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=coy7WUktq0cqVSrDGz+XN80hfWwE+5h35+hSlMVetYE=; b=sSor2PQw/QuqbhYszFQ8rlEmZr
-	SiTwCYDpPaJjWDDrRQyHRgJ0l14gFaeEENBvWGFnnz9JgrJxP9RbrJwv7sI6mq5Vk180rnGhawiLc
-	MWEpEO65Vl94ZiuN/Q4XtztWKQkEw9FKQjDlsxcZNNM9BPOgPkHIlvGIpKl+W6wsO36IA362HWMxw
-	/ZgAyihyP08wX3SVGzKPxzON4Vh6BgRp8O3pDqq8wx1rWomxqnFYiRragnfJQyPz1C3jRlpl82LGA
-	BY0xWnzWuDnLETJCcmPXi4K73c9tiVAY4ATE4VyoW5+A20HvuGtG9pqhwRT70hZl/mHoY3Y4PeOOx
-	QHa035Tw==;
+	bh=0+0kfVN+poIOW7TyJ8IvGWts9ay/jCSMmWoFEtfaqiY=; b=Oj54QgNypOFvWLQYtpWWZ3K7Hv
+	KgPgK4WxEoascCvZcw9c+tBv6JmauG/P7miwUJZx8LBvJCegwhU9q7k+3k1w0iXy4SRvv2Tg4xB51
+	7vuQL68zzMzWtOyhf/u+r5WP9Ym8bv9d3V2MWiIYDKd4VfDKTC2n/uo12lFVpLpdYCu8I1D1y3Wtr
+	tXpk97mEvfifvogKN2+UehfnLHSyV+hF6LXFm6AV/ITy88LzszK4+hqzZRtbUUVXl6sup5+O6tdzU
+	8ohmOhTkk9eBOJYsHheov19MtZGMAQNzgEXX0DPteBjiV/h0VVbcxkNsl2tyw0+1Y0rMVrTjx3qJX
+	Fb9W59iA==;
 Received: from [91.187.204.140] (helo=localhost)
 	by bombadil.infradead.org with esmtpsa (Exim 4.97.1 #2 (Red Hat Linux))
-	id 1sJ5Vc-00000009Irp-1Kdh;
-	Mon, 17 Jun 2024 06:06:28 +0000
+	id 1sJ5Vj-00000009Iyb-0AOH;
+	Mon, 17 Jun 2024 06:06:35 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH 17/26]  block: move the stable_writes flag to queue_limits
-Date: Mon, 17 Jun 2024 08:04:44 +0200
-Message-ID: <20240617060532.127975-18-hch@lst.de>
+Subject: [PATCH 19/26] block: move the nowait flag to queue_limits
+Date: Mon, 17 Jun 2024 08:04:46 +0200
+Message-ID: <20240617060532.127975-20-hch@lst.de>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240617060532.127975-1-hch@lst.de>
 References: <20240617060532.127975-1-hch@lst.de>
@@ -59,371 +59,247 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nvdimm@lists.linux.dev, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, linux-nvme@lists.infradead.org, Song Liu <song@kernel.org>, linux-mtd@lists.infradead.org, Vineeth Vijayan <vneethv@linux.ibm.com>, Alasdair Kergon <agk@redhat.com>, drbd-dev@lists.linbit.com, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, Richard Weinberger <richard@nod.at>, Geert Uytterhoeven <geert@linux-m68k.org>, Yu Kuai <yukuai3@huawei.com>, dm-devel@lists.linux.dev, linux-um@lists.infradead.org, Mike Snitzer <snitzer@kernel.org>, Josef Bacik <josef@toxicpanda.com>, nbd@other.debian.org, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Damien Le Moal <dlemoal@kernel.org>, Mikulas Patocka <mpatocka@redhat.com>, xen-devel@lists.xenproject.org, ceph-devel@vger.kernel.org, Ming Lei <ming.lei@redhat.com>, linux-bcache@vger.kernel.org, linux-block@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-mmc@vger.kernel.org, Philipp Reisner <philipp.reisner@linbit.com>, =?UTF-8?q?Christoph=20B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, virtualization@lists.linux.dev, Lars Ellenberg <lars.ellenberg@linbit.com>, linuxppc-dev@lists.ozlabs.org, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>
+Cc: nvdimm@lists.linux.dev, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, linux-nvme@lists.infradead.org, Song Liu <song@kernel.org>, linux-mtd@lists.infradead.org, Vineeth Vijayan <vneethv@linux.ibm.com>, Alasdair Kergon <agk@redhat.com>, drbd-dev@lists.linbit.com, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, Richard Weinberger <richard@nod.at>, Geert Uytterhoeven <geert@linux-m68k.org>, Yu Kuai <yukuai3@huawei.com>, dm-devel@lists.linux.dev, linux-um@lists.infradead.org, Mike Snitzer <snitzer@kernel.org>, Josef Bacik <josef@toxicpanda.com>, nbd@other.debian.org, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Mikulas Patocka <mpatocka@redhat.com>, xen-devel@lists.xenproject.org, ceph-devel@vger.kernel.org, Ming Lei <ming.lei@redhat.com>, linux-bcache@vger.kernel.org, linux-block@vger.kernel.org, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-mmc@vger.kernel.org, Philipp Reisner <philipp.reisner@linbit.com>, =?UTF-8?q?Christoph=20B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, virtualization@lists.linux.dev, Lars Ellenberg <lars.ellenberg@linbit.com>, linuxppc-dev@lists.ozlabs.org, =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move the stable_writes flag into the queue_limits feature field so that
-it can be set atomically with the queue frozen.
+Move the nowait flag into the queue_limits feature field so that it can
+be set atomically with the queue frozen.
 
-The flag is now inherited by blk_stack_limits, which greatly simplifies
-the code in dm, and fixed md which previously did not pass on the flag
-set on lower devices.
+Stacking drivers are simplified in that they now can simply set the
+flag, and blk_stack_limits will clear it when the features is not
+supported by any of the underlying devices.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Damien Le Moal <dlemoal@kernel.org>
 ---
- block/blk-mq-debugfs.c         |  1 -
- block/blk-sysfs.c              | 29 +----------------------------
- drivers/block/drbd/drbd_main.c |  5 ++---
- drivers/block/rbd.c            |  9 +++------
- drivers/block/zram/zram_drv.c  |  2 +-
- drivers/md/dm-table.c          | 19 -------------------
- drivers/md/raid5.c             |  6 ++++--
- drivers/mmc/core/queue.c       |  5 +++--
- drivers/nvme/host/core.c       |  9 +++++----
- drivers/nvme/host/multipath.c  |  4 ----
- drivers/scsi/iscsi_tcp.c       |  8 ++++----
- include/linux/blkdev.h         |  9 ++++++---
- 12 files changed, 29 insertions(+), 77 deletions(-)
+ block/blk-mq-debugfs.c        |  1 -
+ block/blk-mq.c                |  2 +-
+ block/blk-settings.c          |  9 +++++++++
+ drivers/block/brd.c           |  4 ++--
+ drivers/md/dm-table.c         | 18 +++---------------
+ drivers/md/md.c               | 18 +-----------------
+ drivers/nvme/host/multipath.c |  3 +--
+ include/linux/blkdev.h        |  9 +++++----
+ 8 files changed, 22 insertions(+), 42 deletions(-)
 
 diff --git a/block/blk-mq-debugfs.c b/block/blk-mq-debugfs.c
-index cbe99444ed1a54..eb73f1d348e5a9 100644
+index 957774e40b1d0c..62b132e9a9ce3b 100644
 --- a/block/blk-mq-debugfs.c
 +++ b/block/blk-mq-debugfs.c
-@@ -88,7 +88,6 @@ static const char *const blk_queue_flag_name[] = {
- 	QUEUE_FLAG_NAME(SYNCHRONOUS),
- 	QUEUE_FLAG_NAME(SAME_FORCE),
- 	QUEUE_FLAG_NAME(INIT_DONE),
--	QUEUE_FLAG_NAME(STABLE_WRITES),
- 	QUEUE_FLAG_NAME(POLL),
- 	QUEUE_FLAG_NAME(DAX),
- 	QUEUE_FLAG_NAME(STATS),
-diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-index 6f58530fb3c08e..cde525724831ef 100644
---- a/block/blk-sysfs.c
-+++ b/block/blk-sysfs.c
-@@ -296,37 +296,10 @@ static ssize_t queue_##_name##_store(struct request_queue *q,		 \
- 	return queue_feature_store(q, page, count, _feature);		 \
- }
+@@ -96,7 +96,6 @@ static const char *const blk_queue_flag_name[] = {
+ 	QUEUE_FLAG_NAME(ZONE_RESETALL),
+ 	QUEUE_FLAG_NAME(RQ_ALLOC_TIME),
+ 	QUEUE_FLAG_NAME(HCTX_ACTIVE),
+-	QUEUE_FLAG_NAME(NOWAIT),
+ 	QUEUE_FLAG_NAME(SQ_SCHED),
+ 	QUEUE_FLAG_NAME(SKIP_TAGSET_QUIESCE),
+ };
+diff --git a/block/blk-mq.c b/block/blk-mq.c
+index cf67dc13f7dd4c..43235acc87505f 100644
+--- a/block/blk-mq.c
++++ b/block/blk-mq.c
+@@ -4118,7 +4118,7 @@ struct request_queue *blk_mq_alloc_queue(struct blk_mq_tag_set *set,
  
--#define QUEUE_SYSFS_BIT_FNS(name, flag, neg)				\
--static ssize_t								\
--queue_##name##_show(struct request_queue *q, char *page)		\
--{									\
--	int bit;							\
--	bit = test_bit(QUEUE_FLAG_##flag, &q->queue_flags);		\
--	return queue_var_show(neg ? !bit : bit, page);			\
--}									\
--static ssize_t								\
--queue_##name##_store(struct request_queue *q, const char *page, size_t count) \
--{									\
--	unsigned long val;						\
--	ssize_t ret;							\
--	ret = queue_var_store(&val, page, count);			\
--	if (ret < 0)							\
--		 return ret;						\
--	if (neg)							\
--		val = !val;						\
--									\
--	if (val)							\
--		blk_queue_flag_set(QUEUE_FLAG_##flag, q);		\
--	else								\
--		blk_queue_flag_clear(QUEUE_FLAG_##flag, q);		\
--	return ret;							\
--}
--
- QUEUE_SYSFS_FEATURE(rotational, BLK_FEAT_ROTATIONAL)
- QUEUE_SYSFS_FEATURE(add_random, BLK_FEAT_ADD_RANDOM)
- QUEUE_SYSFS_FEATURE(iostats, BLK_FEAT_IO_STAT)
--QUEUE_SYSFS_BIT_FNS(stable_writes, STABLE_WRITES, 0);
--#undef QUEUE_SYSFS_BIT_FNS
-+QUEUE_SYSFS_FEATURE(stable_writes, BLK_FEAT_STABLE_WRITES);
+ 	if (!lim)
+ 		lim = &default_lim;
+-	lim->features |= BLK_FEAT_IO_STAT;
++	lim->features |= BLK_FEAT_IO_STAT | BLK_FEAT_NOWAIT;
  
- static ssize_t queue_zoned_show(struct request_queue *q, char *page)
- {
-diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
-index 2ef29a47807550..f92673f05c7abc 100644
---- a/drivers/block/drbd/drbd_main.c
-+++ b/drivers/block/drbd/drbd_main.c
-@@ -2698,7 +2698,8 @@ enum drbd_ret_code drbd_create_device(struct drbd_config_context *adm_ctx, unsig
- 		 */
- 		.max_hw_sectors		= DRBD_MAX_BIO_SIZE_SAFE >> 8,
- 		.features		= BLK_FEAT_WRITE_CACHE | BLK_FEAT_FUA |
--					  BLK_FEAT_ROTATIONAL,
-+					  BLK_FEAT_ROTATIONAL |
-+					  BLK_FEAT_STABLE_WRITES,
- 	};
+ 	q = blk_alloc_queue(lim, set->numa_node);
+ 	if (IS_ERR(q))
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+index 536ee202fcdccb..bf4622c19b5c09 100644
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -459,6 +459,15 @@ int blk_stack_limits(struct queue_limits *t, struct queue_limits *b,
  
- 	device = minor_to_device(minor);
-@@ -2737,8 +2738,6 @@ enum drbd_ret_code drbd_create_device(struct drbd_config_context *adm_ctx, unsig
- 	sprintf(disk->disk_name, "drbd%d", minor);
- 	disk->private_data = device;
+ 	t->features |= (b->features & BLK_FEAT_INHERIT_MASK);
  
--	blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES, disk->queue);
--
- 	device->md_io.page = alloc_page(GFP_KERNEL);
- 	if (!device->md_io.page)
- 		goto out_no_io_page;
-diff --git a/drivers/block/rbd.c b/drivers/block/rbd.c
-index ec1f1c7d4275cd..008e850555f41a 100644
---- a/drivers/block/rbd.c
-+++ b/drivers/block/rbd.c
-@@ -4949,7 +4949,6 @@ static const struct blk_mq_ops rbd_mq_ops = {
- static int rbd_init_disk(struct rbd_device *rbd_dev)
- {
- 	struct gendisk *disk;
--	struct request_queue *q;
- 	unsigned int objset_bytes =
- 	    rbd_dev->layout.object_size * rbd_dev->layout.stripe_count;
- 	struct queue_limits lim = {
-@@ -4979,12 +4978,14 @@ static int rbd_init_disk(struct rbd_device *rbd_dev)
- 		lim.max_write_zeroes_sectors = objset_bytes >> SECTOR_SHIFT;
- 	}
- 
-+	if (!ceph_test_opt(rbd_dev->rbd_client->client, NOCRC))
-+		lim.features |= BLK_FEAT_STABLE_WRITES;
++	/*
++	 * BLK_FEAT_NOWAIT needs to be supported both by the stacking driver
++	 * and all underlying devices.  The stacking driver sets the flag
++	 * before stacking the limits, and this will clear the flag if any
++	 * of the underlying devices does not support it.
++	 */
++	if (!(b->features & BLK_FEAT_NOWAIT))
++		t->features &= ~BLK_FEAT_NOWAIT;
 +
- 	disk = blk_mq_alloc_disk(&rbd_dev->tag_set, &lim, rbd_dev);
- 	if (IS_ERR(disk)) {
- 		err = PTR_ERR(disk);
- 		goto out_tag_set;
- 	}
--	q = disk->queue;
- 
- 	snprintf(disk->disk_name, sizeof(disk->disk_name), RBD_DRV_NAME "%d",
- 		 rbd_dev->dev_id);
-@@ -4996,10 +4997,6 @@ static int rbd_init_disk(struct rbd_device *rbd_dev)
- 		disk->minors = RBD_MINORS_PER_MAJOR;
- 	disk->fops = &rbd_bd_ops;
- 	disk->private_data = rbd_dev;
--
--	if (!ceph_test_opt(rbd_dev->rbd_client->client, NOCRC))
--		blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES, q);
--
- 	rbd_dev->disk = disk;
- 
- 	return 0;
-diff --git a/drivers/block/zram/zram_drv.c b/drivers/block/zram/zram_drv.c
-index aad840fc7e18e3..f8f1b5b54795ac 100644
---- a/drivers/block/zram/zram_drv.c
-+++ b/drivers/block/zram/zram_drv.c
-@@ -2208,6 +2208,7 @@ static int zram_add(void)
- #if ZRAM_LOGICAL_BLOCK_SIZE == PAGE_SIZE
- 		.max_write_zeroes_sectors	= UINT_MAX,
- #endif
-+		.features			= BLK_FEAT_STABLE_WRITES,
+ 	t->max_sectors = min_not_zero(t->max_sectors, b->max_sectors);
+ 	t->max_user_sectors = min_not_zero(t->max_user_sectors,
+ 			b->max_user_sectors);
+diff --git a/drivers/block/brd.c b/drivers/block/brd.c
+index d77deb571dbd06..a300645cd9d4a5 100644
+--- a/drivers/block/brd.c
++++ b/drivers/block/brd.c
+@@ -335,7 +335,8 @@ static int brd_alloc(int i)
+ 		.max_hw_discard_sectors	= UINT_MAX,
+ 		.max_discard_segments	= 1,
+ 		.discard_granularity	= PAGE_SIZE,
+-		.features		= BLK_FEAT_SYNCHRONOUS,
++		.features		= BLK_FEAT_SYNCHRONOUS |
++					  BLK_FEAT_NOWAIT,
  	};
- 	struct zram *zram;
- 	int ret, device_id;
-@@ -2246,7 +2247,6 @@ static int zram_add(void)
- 	/* Actual capacity set using sysfs (/sys/block/zram<id>/disksize */
- 	set_capacity(zram->disk, 0);
- 	blk_queue_flag_set(QUEUE_FLAG_SYNCHRONOUS, zram->disk->queue);
--	blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES, zram->disk->queue);
- 	ret = device_add_disk(NULL, zram->disk, zram_disk_groups);
- 	if (ret)
+ 
+ 	list_for_each_entry(brd, &brd_devices, brd_list)
+@@ -367,7 +368,6 @@ static int brd_alloc(int i)
+ 	strscpy(disk->disk_name, buf, DISK_NAME_LEN);
+ 	set_capacity(disk, rd_size * 2);
+ 	
+-	blk_queue_flag_set(QUEUE_FLAG_NOWAIT, disk->queue);
+ 	err = add_disk(disk);
+ 	if (err)
  		goto out_cleanup_disk;
 diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
-index 5d5431e531aea9..aaf379cb15d91f 100644
+index aaf379cb15d91f..84d636712c7284 100644
 --- a/drivers/md/dm-table.c
 +++ b/drivers/md/dm-table.c
-@@ -1819,13 +1819,6 @@ static bool dm_table_supports_secure_erase(struct dm_table *t)
+@@ -582,7 +582,7 @@ int dm_split_args(int *argc, char ***argvp, char *input)
+ static void dm_set_stacking_limits(struct queue_limits *limits)
+ {
+ 	blk_set_stacking_limits(limits);
+-	limits->features |= BLK_FEAT_IO_STAT;
++	limits->features |= BLK_FEAT_IO_STAT | BLK_FEAT_NOWAIT;
+ }
+ 
+ /*
+@@ -1746,12 +1746,6 @@ static bool dm_table_supports_write_zeroes(struct dm_table *t)
  	return true;
  }
  
--static int device_requires_stable_pages(struct dm_target *ti,
--					struct dm_dev *dev, sector_t start,
--					sector_t len, void *data)
+-static int device_not_nowait_capable(struct dm_target *ti, struct dm_dev *dev,
+-				     sector_t start, sector_t len, void *data)
 -{
--	return bdev_stable_writes(dev->bdev);
+-	return !bdev_nowait(dev->bdev);
 -}
 -
- int dm_table_set_restrictions(struct dm_table *t, struct request_queue *q,
- 			      struct queue_limits *limits)
+ static bool dm_table_supports_nowait(struct dm_table *t)
  {
-@@ -1862,18 +1855,6 @@ int dm_table_set_restrictions(struct dm_table *t, struct request_queue *q,
- 	if (dm_table_any_dev_attr(t, device_dax_write_cache_enabled, NULL))
- 		dax_write_cache(t->md->dax_dev, true);
+ 	for (unsigned int i = 0; i < t->num_targets; i++) {
+@@ -1759,10 +1753,6 @@ static bool dm_table_supports_nowait(struct dm_table *t)
  
--	/*
--	 * Some devices don't use blk_integrity but still want stable pages
--	 * because they do their own checksumming.
--	 * If any underlying device requires stable pages, a table must require
--	 * them as well.  Only targets that support iterate_devices are considered:
--	 * don't want error, zero, etc to require stable pages.
--	 */
--	if (dm_table_any_dev_attr(t, device_requires_stable_pages, NULL))
--		blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES, q);
+ 		if (!dm_target_supports_nowait(ti->type))
+ 			return false;
+-
+-		if (!ti->type->iterate_devices ||
+-		    ti->type->iterate_devices(ti, device_not_nowait_capable, NULL))
+-			return false;
+ 	}
+ 
+ 	return true;
+@@ -1824,10 +1814,8 @@ int dm_table_set_restrictions(struct dm_table *t, struct request_queue *q,
+ {
+ 	int r;
+ 
+-	if (dm_table_supports_nowait(t))
+-		blk_queue_flag_set(QUEUE_FLAG_NOWAIT, q);
 -	else
--		blk_queue_flag_clear(QUEUE_FLAG_STABLE_WRITES, q);
--
+-		blk_queue_flag_clear(QUEUE_FLAG_NOWAIT, q);
++	if (!dm_table_supports_nowait(t))
++		limits->features &= ~BLK_FEAT_NOWAIT;
+ 
+ 	if (!dm_table_supports_discards(t)) {
+ 		limits->max_hw_discard_sectors = 0;
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 8db0db8d5a27ac..f1c7d4f281c521 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -5788,7 +5788,7 @@ struct mddev *md_alloc(dev_t dev, char *name)
+ 	int error;
+ 	struct queue_limits lim = {
+ 		.features		= BLK_FEAT_WRITE_CACHE | BLK_FEAT_FUA |
+-					  BLK_FEAT_IO_STAT,
++					  BLK_FEAT_IO_STAT | BLK_FEAT_NOWAIT,
+ 	};
+ 
  	/*
- 	 * For a zoned target, setup the zones related queue attributes
- 	 * and resources necessary for zone append emulation if necessary.
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 675c68fa6c6403..e875763d69917d 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -7082,12 +7082,14 @@ raid5_store_skip_copy(struct mddev *mddev, const char *page, size_t len)
- 		err = -ENODEV;
- 	else if (new != conf->skip_copy) {
- 		struct request_queue *q = mddev->gendisk->queue;
-+		struct queue_limits lim = queue_limits_start_update(q);
- 
- 		conf->skip_copy = new;
- 		if (new)
--			blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES, q);
-+			lim.features |= BLK_FEAT_STABLE_WRITES;
- 		else
--			blk_queue_flag_clear(QUEUE_FLAG_STABLE_WRITES, q);
-+			lim.features &= ~BLK_FEAT_STABLE_WRITES;
-+		err = queue_limits_commit_update(q, &lim);
- 	}
- 	mddev_unlock_and_resume(mddev);
- 	return err ?: len;
-diff --git a/drivers/mmc/core/queue.c b/drivers/mmc/core/queue.c
-index da00904d4a3c7e..d0b3ca8a11f071 100644
---- a/drivers/mmc/core/queue.c
-+++ b/drivers/mmc/core/queue.c
-@@ -378,13 +378,14 @@ static struct gendisk *mmc_alloc_disk(struct mmc_queue *mq,
- 		lim.max_segments = host->max_segs;
+@@ -6150,13 +6150,6 @@ int md_run(struct mddev *mddev)
+ 		}
  	}
  
-+	if (mmc_host_is_spi(host) && host->use_spi_crc)
-+		lim.features |= BLK_FEAT_STABLE_WRITES;
-+
- 	disk = blk_mq_alloc_disk(&mq->tag_set, &lim, mq);
- 	if (IS_ERR(disk))
- 		return disk;
- 	mq->queue = disk->queue;
- 
--	if (mmc_host_is_spi(host) && host->use_spi_crc)
--		blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES, mq->queue);
- 	blk_queue_rq_timeout(mq->queue, 60 * HZ);
- 
- 	dma_set_max_seg_size(mmc_dev(host), queue_max_segment_size(mq->queue));
-diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
-index 0d753fe71f35b0..5ecf762d7c8837 100644
---- a/drivers/nvme/host/core.c
-+++ b/drivers/nvme/host/core.c
-@@ -3724,6 +3724,7 @@ static void nvme_ns_add_to_ctrl_list(struct nvme_ns *ns)
- 
- static void nvme_alloc_ns(struct nvme_ctrl *ctrl, struct nvme_ns_info *info)
- {
-+	struct queue_limits lim = { };
- 	struct nvme_ns *ns;
- 	struct gendisk *disk;
- 	int node = ctrl->numa_node;
-@@ -3732,7 +3733,10 @@ static void nvme_alloc_ns(struct nvme_ctrl *ctrl, struct nvme_ns_info *info)
- 	if (!ns)
- 		return;
- 
--	disk = blk_mq_alloc_disk(ctrl->tagset, NULL, ns);
-+	if (ctrl->opts && ctrl->opts->data_digest)
-+		lim.features |= BLK_FEAT_STABLE_WRITES;
-+
-+	disk = blk_mq_alloc_disk(ctrl->tagset, &lim, ns);
- 	if (IS_ERR(disk))
- 		goto out_free_ns;
- 	disk->fops = &nvme_bdev_ops;
-@@ -3741,9 +3745,6 @@ static void nvme_alloc_ns(struct nvme_ctrl *ctrl, struct nvme_ns_info *info)
- 	ns->disk = disk;
- 	ns->queue = disk->queue;
- 
--	if (ctrl->opts && ctrl->opts->data_digest)
--		blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES, ns->queue);
+-	if (!mddev_is_dm(mddev)) {
+-		struct request_queue *q = mddev->gendisk->queue;
 -
- 	if (ctrl->ops->supports_pci_p2pdma &&
- 	    ctrl->ops->supports_pci_p2pdma(ctrl))
- 		blk_queue_flag_set(QUEUE_FLAG_PCI_P2PDMA, ns->queue);
+-		/* Set the NOWAIT flags if all underlying devices support it */
+-		if (nowait)
+-			blk_queue_flag_set(QUEUE_FLAG_NOWAIT, q);
+-	}
+ 	if (pers->sync_request) {
+ 		if (mddev->kobj.sd &&
+ 		    sysfs_create_group(&mddev->kobj, &md_redundancy_group))
+@@ -7115,15 +7108,6 @@ static int hot_add_disk(struct mddev *mddev, dev_t dev)
+ 	set_bit(MD_SB_CHANGE_DEVS, &mddev->sb_flags);
+ 	if (!mddev->thread)
+ 		md_update_sb(mddev, 1);
+-	/*
+-	 * If the new disk does not support REQ_NOWAIT,
+-	 * disable on the whole MD.
+-	 */
+-	if (!bdev_nowait(rdev->bdev)) {
+-		pr_info("%s: Disabling nowait because %pg does not support nowait\n",
+-			mdname(mddev), rdev->bdev);
+-		blk_queue_flag_clear(QUEUE_FLAG_NOWAIT, mddev->gendisk->queue);
+-	}
+ 	/*
+ 	 * Kick recovery, maybe this spare has to be added to the
+ 	 * array immediately.
 diff --git a/drivers/nvme/host/multipath.c b/drivers/nvme/host/multipath.c
-index eea727cfa9e67d..173796f2ddea9f 100644
+index 173796f2ddea9f..61a162c9cf4e6c 100644
 --- a/drivers/nvme/host/multipath.c
 +++ b/drivers/nvme/host/multipath.c
-@@ -868,10 +868,6 @@ void nvme_mpath_add_disk(struct nvme_ns *ns, __le32 anagrpid)
- 		nvme_mpath_set_live(ns);
- 	}
+@@ -538,7 +538,7 @@ int nvme_mpath_alloc_disk(struct nvme_ctrl *ctrl, struct nvme_ns_head *head)
  
--	if (test_bit(QUEUE_FLAG_STABLE_WRITES, &ns->queue->queue_flags) &&
--	    ns->head->disk)
--		blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES,
--				   ns->head->disk->queue);
- #ifdef CONFIG_BLK_DEV_ZONED
- 	if (blk_queue_is_zoned(ns->queue) && ns->head->disk)
- 		ns->head->disk->nr_zones = ns->disk->nr_zones;
-diff --git a/drivers/scsi/iscsi_tcp.c b/drivers/scsi/iscsi_tcp.c
-index 60688f18fac6f7..c708e105963833 100644
---- a/drivers/scsi/iscsi_tcp.c
-+++ b/drivers/scsi/iscsi_tcp.c
-@@ -1057,15 +1057,15 @@ static umode_t iscsi_sw_tcp_attr_is_visible(int param_type, int param)
- 	return 0;
- }
+ 	blk_set_stacking_limits(&lim);
+ 	lim.dma_alignment = 3;
+-	lim.features |= BLK_FEAT_IO_STAT;
++	lim.features |= BLK_FEAT_IO_STAT | BLK_FEAT_NOWAIT;
+ 	if (head->ids.csi != NVME_CSI_ZNS)
+ 		lim.max_zone_append_sectors = 0;
  
--static int iscsi_sw_tcp_slave_configure(struct scsi_device *sdev)
-+static int iscsi_sw_tcp_device_configure(struct scsi_device *sdev,
-+		struct queue_limits *lim)
- {
- 	struct iscsi_sw_tcp_host *tcp_sw_host = iscsi_host_priv(sdev->host);
- 	struct iscsi_session *session = tcp_sw_host->session;
- 	struct iscsi_conn *conn = session->leadconn;
+@@ -550,7 +550,6 @@ int nvme_mpath_alloc_disk(struct nvme_ctrl *ctrl, struct nvme_ns_head *head)
+ 	sprintf(head->disk->disk_name, "nvme%dn%d",
+ 			ctrl->subsys->instance, head->instance);
  
- 	if (conn->datadgst_en)
--		blk_queue_flag_set(QUEUE_FLAG_STABLE_WRITES,
--				   sdev->request_queue);
-+		lim->features |= BLK_FEAT_STABLE_WRITES;
- 	return 0;
- }
- 
-@@ -1083,7 +1083,7 @@ static const struct scsi_host_template iscsi_sw_tcp_sht = {
- 	.eh_device_reset_handler= iscsi_eh_device_reset,
- 	.eh_target_reset_handler = iscsi_eh_recover_target,
- 	.dma_boundary		= PAGE_SIZE - 1,
--	.slave_configure        = iscsi_sw_tcp_slave_configure,
-+	.device_configure	= iscsi_sw_tcp_device_configure,
- 	.proc_name		= "iscsi_tcp",
- 	.this_id		= -1,
- 	.track_queue_depth	= 1,
+-	blk_queue_flag_set(QUEUE_FLAG_NOWAIT, head->disk->queue);
+ 	/*
+ 	 * This assumes all controllers that refer to a namespace either
+ 	 * support poll queues or not.  That is not a strict guarantee,
 diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 5fafb2f95fd1a3..8936eb6ba60956 100644
+index cee7b44a142513..f3d4519d609d95 100644
 --- a/include/linux/blkdev.h
 +++ b/include/linux/blkdev.h
-@@ -298,13 +298,17 @@ enum {
+@@ -304,6 +304,9 @@ enum {
  
- 	/* do disk/partitions IO accounting */
- 	BLK_FEAT_IO_STAT			= (1u << 4),
+ 	/* always completes in submit context */
+ 	BLK_FEAT_SYNCHRONOUS			= (1u << 6),
 +
-+	/* don't modify data until writeback is done */
-+	BLK_FEAT_STABLE_WRITES			= (1u << 5),
++	/* supports REQ_NOWAIT */
++	BLK_FEAT_NOWAIT				= (1u << 7),
  };
  
  /*
-  * Flags automatically inherited when stacking limits.
-  */
- #define BLK_FEAT_INHERIT_MASK \
--	(BLK_FEAT_WRITE_CACHE | BLK_FEAT_FUA | BLK_FEAT_ROTATIONAL)
-+	(BLK_FEAT_WRITE_CACHE | BLK_FEAT_FUA | BLK_FEAT_ROTATIONAL | \
-+	 BLK_FEAT_STABLE_WRITES)
+@@ -580,12 +583,10 @@ struct request_queue {
+ #define QUEUE_FLAG_ZONE_RESETALL 26	/* supports Zone Reset All */
+ #define QUEUE_FLAG_RQ_ALLOC_TIME 27	/* record rq->alloc_time_ns */
+ #define QUEUE_FLAG_HCTX_ACTIVE	28	/* at least one blk-mq hctx is active */
+-#define QUEUE_FLAG_NOWAIT       29	/* device supports NOWAIT */
+ #define QUEUE_FLAG_SQ_SCHED     30	/* single queue style io dispatch */
+ #define QUEUE_FLAG_SKIP_TAGSET_QUIESCE	31 /* quiesce_tagset skip the queue*/
  
- /* internal flags in queue_limits.flags */
- enum {
-@@ -565,7 +569,6 @@ struct request_queue {
- #define QUEUE_FLAG_SYNCHRONOUS	11	/* always completes in submit context */
- #define QUEUE_FLAG_SAME_FORCE	12	/* force complete on same CPU */
- #define QUEUE_FLAG_INIT_DONE	14	/* queue is initialized */
--#define QUEUE_FLAG_STABLE_WRITES 15	/* don't modify blks until WB is done */
- #define QUEUE_FLAG_POLL		16	/* IO polling enabled if set */
- #define QUEUE_FLAG_DAX		19	/* device supports DAX */
- #define QUEUE_FLAG_STATS	20	/* track IO start and completion times */
-@@ -1323,7 +1326,7 @@ static inline bool bdev_stable_writes(struct block_device *bdev)
- 	if (IS_ENABLED(CONFIG_BLK_DEV_INTEGRITY) &&
- 	    q->limits.integrity.csum_type != BLK_INTEGRITY_CSUM_NONE)
- 		return true;
--	return test_bit(QUEUE_FLAG_STABLE_WRITES, &q->queue_flags);
-+	return q->limits.features & BLK_FEAT_STABLE_WRITES;
+-#define QUEUE_FLAG_MQ_DEFAULT	((1UL << QUEUE_FLAG_SAME_COMP) |	\
+-				 (1UL << QUEUE_FLAG_NOWAIT))
++#define QUEUE_FLAG_MQ_DEFAULT	(1UL << QUEUE_FLAG_SAME_COMP)
+ 
+ void blk_queue_flag_set(unsigned int flag, struct request_queue *q);
+ void blk_queue_flag_clear(unsigned int flag, struct request_queue *q);
+@@ -1348,7 +1349,7 @@ static inline bool bdev_fua(struct block_device *bdev)
+ 
+ static inline bool bdev_nowait(struct block_device *bdev)
+ {
+-	return test_bit(QUEUE_FLAG_NOWAIT, &bdev_get_queue(bdev)->queue_flags);
++	return bdev->bd_disk->queue->limits.features & BLK_FEAT_NOWAIT;
  }
  
- static inline bool blk_queue_write_cache(struct request_queue *q)
+ static inline bool bdev_is_zoned(struct block_device *bdev)
 -- 
 2.43.0
 
