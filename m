@@ -4,178 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B4E1C2BA15
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 14:44:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 089A3C2BA15
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Jun 2024 14:57:18 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=AtIAwrJO;
-	dkim=fail reason="signature verification failed" header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/6mV7E+R;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=AtIAwrJO;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/6mV7E+R;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=clhRAdt9;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W2t1j5b3fz3ft2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2024 00:44:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W2tJr4kY2z3g4F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Jun 2024 00:57:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=AtIAwrJO;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/6mV7E+R;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=AtIAwrJO;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/6mV7E+R;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=clhRAdt9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=vbabka@suse.cz; receiver=lists.ozlabs.org)
-X-Greylist: delayed 362 seconds by postgrey-1.37 at boromir; Tue, 18 Jun 2024 00:43:27 AEST
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=srhl=nt=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W2t0v3PQSz3ftG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2024 00:43:26 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 028C038307;
-	Mon, 17 Jun 2024 14:37:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1718635041; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tBpItSg2rTz9A3cM6/CQbLUXm0OnJ+ZDaZH/npYdctA=;
-	b=AtIAwrJOGKZ95YUnzoZRavtyJNPzsMkIqzRjTaWGzzqzcRfxo2zXyF0X9JGqZrr++Atk/c
-	9hsG3lE6hBDE9SeKY5DYOFBALbEAbJEV0kxD2e/s97Shr50SvBD1ItfsnoMI8ih2MTKBkO
-	lAHTSOaU9wYHigyb55PKxDQf3HeW4H0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1718635041;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tBpItSg2rTz9A3cM6/CQbLUXm0OnJ+ZDaZH/npYdctA=;
-	b=/6mV7E+RwcoHlPKPuwAVxwA0JkB6fXZ+XRtgQukX3keIRU9RWFJWle4Z27nDutkzBZFr00
-	JlMYS3BMf1J7auBg==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.cz header.s=susede2_rsa header.b=AtIAwrJO;
-	dkim=pass header.d=suse.cz header.s=susede2_ed25519 header.b="/6mV7E+R"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1718635041; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tBpItSg2rTz9A3cM6/CQbLUXm0OnJ+ZDaZH/npYdctA=;
-	b=AtIAwrJOGKZ95YUnzoZRavtyJNPzsMkIqzRjTaWGzzqzcRfxo2zXyF0X9JGqZrr++Atk/c
-	9hsG3lE6hBDE9SeKY5DYOFBALbEAbJEV0kxD2e/s97Shr50SvBD1ItfsnoMI8ih2MTKBkO
-	lAHTSOaU9wYHigyb55PKxDQf3HeW4H0=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1718635041;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=tBpItSg2rTz9A3cM6/CQbLUXm0OnJ+ZDaZH/npYdctA=;
-	b=/6mV7E+RwcoHlPKPuwAVxwA0JkB6fXZ+XRtgQukX3keIRU9RWFJWle4Z27nDutkzBZFr00
-	JlMYS3BMf1J7auBg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id BD441139AB;
-	Mon, 17 Jun 2024 14:37:20 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id l5WXLSBKcGaxWwAAD6G6ig
-	(envelope-from <vbabka@suse.cz>); Mon, 17 Jun 2024 14:37:20 +0000
-Message-ID: <324c25c9-fe86-4d82-b4e2-5f3ad76031c7@suse.cz>
-Date: Mon, 17 Jun 2024 16:37:20 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W2tJ15YR8z3g1j
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Jun 2024 00:56:33 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id CBF18611A6;
+	Mon, 17 Jun 2024 14:56:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F573C2BD10;
+	Mon, 17 Jun 2024 14:56:26 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="clhRAdt9"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1718636183;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6bcwrvbIl7+eEjyyGJoXxh1mehCsgFRYWHRM/zwpUAQ=;
+	b=clhRAdt9QmHzMaEEzVai+8NS5mBwqdWC/f0sKn8iKNRjAYqBW9N3E2L8sbjmiy2SQkZGk0
+	hK8NYQAMg8k+eCY6yhiOMg3Eok18XjHMRfrN68QDTwANHVK37YKOUoOk4GYwZc7KCjnUD+
+	5Jm/fDnndt2OgFIS0O5m9q1UI47PGCA=
+Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 071c720a (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Mon, 17 Jun 2024 14:56:22 +0000 (UTC)
+Date: Mon, 17 Jun 2024 16:56:17 +0200
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Uladzislau Rezki <urezki@gmail.com>
 Subject: Re: [PATCH 00/14] replace call_rcu by kfree_rcu for simple
  kmem_cache_free callback
-Content-Language: en-US
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>,
- Uladzislau Rezki <urezki@gmail.com>
-References: <baee4d58-17b4-4918-8e45-4d8068a23e8c@paulmck-laptop>
- <ZmrfA1p2zSVIaYam@zx2c4.com>
- <80e03b02-7e24-4342-af0b-ba5117b19828@paulmck-laptop>
+Message-ID: <ZnBOkZClsvAUa_5X@zx2c4.com>
+References: <80e03b02-7e24-4342-af0b-ba5117b19828@paulmck-laptop>
  <Zmru7hhz8kPDPsyz@pc636>
  <7efde25f-6af5-4a67-abea-b26732a8aca1@paulmck-laptop>
  <Zmsuswo8OPIhY5KJ@pc636>
  <cb51bc57-47b8-456a-9ac0-f8aa0931b144@paulmck-laptop>
  <ZmszOd5idhf2Cb-v@pc636>
  <b03b007f-3afa-4ad4-b76b-dea7b3aa2bc3@paulmck-laptop>
- <Zmw5FTX752g0vtlD@pc638.lan> <ZmybGZDbXkw7JTjc@zx2c4.com>
-From: Vlastimil Babka <vbabka@suse.cz>
-Autocrypt: addr=vbabka@suse.cz; keydata=
- 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
- EP+ylKVEKb0Q2A==
-In-Reply-To: <ZmybGZDbXkw7JTjc@zx2c4.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spamd-Result: default: False [-4.50 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	XM_UA_NO_VERSION(0.01)[];
-	RCVD_TLS_ALL(0.00)[];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[28];
-	FREEMAIL_TO(0.00)[zx2c4.com,gmail.com];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	R_RATELIMIT(0.00)[to_ip_from(RLujeud1qp5x6qhm7ow61zc6bu)];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[kernel.org,inria.fr,vger.kernel.org,lists.linux.dev,efficios.com,lists.ozlabs.org,linux.ibm.com,csgroup.eu,gmail.com,lists.zx2c4.com,suse.de,netapp.com,oracle.com,talpey.com,netfilter.org];
-	MID_RHS_MATCH_FROM(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	DKIM_TRACE(0.00)[suse.cz:+]
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 028C038307
+ <Zmw5FTX752g0vtlD@pc638.lan>
+ <ZmybGZDbXkw7JTjc@zx2c4.com>
+ <ZnA_QFvuyABnD3ZA@pc636>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <ZnA_QFvuyABnD3ZA@pc636>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -187,40 +72,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Neil Brown <neilb@suse.de>, kernel-janitors@vger.kernel.org, Olga Kornievskaia <kolga@netapp.com>, Dai Ngo <Dai.Ngo@oracle.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, coreteam@netfilter.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Jakub Kicinski <kuba@kernel.org>, linux-trace-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@kernel.org>, bridge@lists.linux.dev, ecryptfs@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-can@vger.kernel.org, linux-block@vger.kernel.org, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Tom Talpey <tom@talpey.com>, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, Lai Jiangshan <jiangshanlai@gmail.com>, linux-kernel@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>, netfilter-devel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com
+Cc: kvm@vger.kernel.org, Neil Brown <neilb@suse.de>, kernel-janitors@vger.kernel.org, Olga Kornievskaia <kolga@netapp.com>, Dai Ngo <Dai.Ngo@oracle.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, coreteam@netfilter.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Jakub Kicinski <kuba@kernel.org>, linux-trace-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@kernel.org>, bridge@lists.linux.dev, ecryptfs@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-can@vger.kernel.org, linux-block@vger.kernel.org, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Vlastimil Babka <vbabka@suse.cz>, Tom Talpey <tom@talpey.com>, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, Lai Jiangshan <jiangshanlai@gmail.com>, linux-kernel@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>, netfilter-devel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, wireguard@lists.zx2c4.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/14/24 9:33 PM, Jason A. Donenfeld wrote:
-> On Fri, Jun 14, 2024 at 02:35:33PM +0200, Uladzislau Rezki wrote:
->> +	/* Should a destroy process be deferred? */
->> +	if (s->flags & SLAB_DEFER_DESTROY) {
->> +		list_move_tail(&s->list, &slab_caches_defer_destroy);
->> +		schedule_delayed_work(&slab_caches_defer_destroy_work, HZ);
->> +		goto out_unlock;
->> +	}
+On Mon, Jun 17, 2024 at 03:50:56PM +0200, Uladzislau Rezki wrote:
+> On Fri, Jun 14, 2024 at 09:33:45PM +0200, Jason A. Donenfeld wrote:
+> > On Fri, Jun 14, 2024 at 02:35:33PM +0200, Uladzislau Rezki wrote:
+> > > +	/* Should a destroy process be deferred? */
+> > > +	if (s->flags & SLAB_DEFER_DESTROY) {
+> > > +		list_move_tail(&s->list, &slab_caches_defer_destroy);
+> > > +		schedule_delayed_work(&slab_caches_defer_destroy_work, HZ);
+> > > +		goto out_unlock;
+> > > +	}
+> > 
+> > Wouldn't it be smoother to have the actual kmem_cache_free() function
+> > check to see if it's been marked for destruction and the refcount is
+> > zero, rather than polling every one second? I mentioned this approach
+> > in: https://lore.kernel.org/all/Zmo9-YGraiCj5-MI@zx2c4.com/ -
+> > 
+> >     I wonder if the right fix to this would be adding a `should_destroy`
+> >     boolean to kmem_cache, which kmem_cache_destroy() sets to true. And
+> >     then right after it checks `if (number_of_allocations == 0)
+> >     actually_destroy()`, and likewise on each kmem_cache_free(), it
+> >     could check `if (should_destroy && number_of_allocations == 0)
+> >     actually_destroy()`. 
+> > 
+> I do not find pooling as bad way we can go with. But your proposal
+> sounds reasonable to me also. We can combine both "prototypes" to
+> one and offer.
 > 
-> Wouldn't it be smoother to have the actual kmem_cache_free() function
-> check to see if it's been marked for destruction and the refcount is
-> zero, rather than polling every one second? I mentioned this approach
-> in: https://lore.kernel.org/all/Zmo9-YGraiCj5-MI@zx2c4.com/ -
-> 
->     I wonder if the right fix to this would be adding a `should_destroy`
->     boolean to kmem_cache, which kmem_cache_destroy() sets to true. And
->     then right after it checks `if (number_of_allocations == 0)
->     actually_destroy()`, and likewise on each kmem_cache_free(), it
->     could check `if (should_destroy && number_of_allocations == 0)
->     actually_destroy()`. 
+> Can you post a prototype here?
 
-I would prefer not to affect the performance of kmem_cache_free() by doing
-such checks, if possible. Ideally we'd have a way to wait/poll for the
-kfree_rcu() "grace period" expiring even with the batching that's
-implemented there. Even if it's pesimistically long to avoid affecting
-kfree_rcu() performance. The goal here is just to print the warnings if
-there was a leak and the precise timing of them shouldn't matter. The owning
-module could be already unloaded at that point? I guess only a kunit test
-could want to be synchronous and then it could just ask for
-kmem_cache_free() to wait synchronously.
+This is untested, but the simplest, shortest possible version would be:
 
-> Jason
+diff --git a/mm/slab.h b/mm/slab.h
+index 5f8f47c5bee0..907c0ea56c01 100644
+--- a/mm/slab.h
++++ b/mm/slab.h
+@@ -275,6 +275,7 @@ struct kmem_cache {
+ 	unsigned int inuse;		/* Offset to metadata */
+ 	unsigned int align;		/* Alignment */
+ 	unsigned int red_left_pad;	/* Left redzone padding size */
++	bool is_destroyed;		/* Destruction happens when no objects */
+ 	const char *name;		/* Name (only for display!) */
+ 	struct list_head list;		/* List of slab caches */
+ #ifdef CONFIG_SYSFS
+diff --git a/mm/slab_common.c b/mm/slab_common.c
+index 1560a1546bb1..f700bed066d9 100644
+--- a/mm/slab_common.c
++++ b/mm/slab_common.c
+@@ -494,8 +494,8 @@ void kmem_cache_destroy(struct kmem_cache *s)
+ 		goto out_unlock;
+
+ 	err = shutdown_cache(s);
+-	WARN(err, "%s %s: Slab cache still has objects when called from %pS",
+-	     __func__, s->name, (void *)_RET_IP_);
++	if (err)
++		s->is_destroyed = true;
+ out_unlock:
+ 	mutex_unlock(&slab_mutex);
+ 	cpus_read_unlock();
+diff --git a/mm/slub.c b/mm/slub.c
+index 1373ac365a46..7db8fe90a323 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -4510,6 +4510,8 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
+ 		return;
+ 	trace_kmem_cache_free(_RET_IP_, x, s);
+ 	slab_free(s, virt_to_slab(x), x, _RET_IP_);
++	if (s->is_destroyed)
++		kmem_cache_destroy(s);
+ }
+ EXPORT_SYMBOL(kmem_cache_free);
+
+@@ -5342,9 +5344,6 @@ static void free_partial(struct kmem_cache *s, struct kmem_cache_node *n)
+ 		if (!slab->inuse) {
+ 			remove_partial(n, slab);
+ 			list_add(&slab->slab_list, &discard);
+-		} else {
+-			list_slab_objects(s, slab,
+-			  "Objects remaining in %s on __kmem_cache_shutdown()");
+ 		}
+ 	}
+ 	spin_unlock_irq(&n->list_lock);
 
