@@ -4,41 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6613CC2BA1A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 09:00:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC01FC2BA18
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 09:05:14 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=JMOTMWHl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=BYraRfk7;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W4ZGG0R3Mz3cQq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 19:00:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W4ZMD2pJ9z3cDT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 19:05:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=JMOTMWHl;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=BYraRfk7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4ZF82pBlz30Vp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 18:59:55 +1000 (AEST)
-Received: from relay7-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::227])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id 540F0C4783
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 08:43:28 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 240FB2000A;
-	Thu, 20 Jun 2024 08:43:16 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4ZLR0d1Bz30TZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 19:04:29 +1000 (AEST)
+Received: from relay7-d.mail.gandi.net (unknown [217.70.183.200])
+	by mslow1.mail.gandi.net (Postfix) with ESMTP id 65747C452C
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 08:43:26 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 5E33D20012;
+	Thu, 20 Jun 2024 08:43:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1718872997;
+	t=1718872999;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=XcZoHw1OxV6TsmAdg+08k1YhnLc5NmNZMePFnQJFI74=;
-	b=JMOTMWHljpjCiEnj20gVflZbP5I0/oA0m5LI7Peo2g6KnbKgJM+tpDzkfM60wiK006X4rD
-	fdJ+B7kHZfNdZ1wTM9N+lqNE0kDbAjNf7LysqWif9DsZBNhinrBuS5CUowXI5Dcg/pRLAs
-	reYJFaKbfMDOSThnKTcGOB0PageUCGNZZXa2g9rAmdAt9+N5wIRGOYOkZJ1PETHJz3OJ2x
-	qvVBt66rDKhQwnn0/bwwJ4qtm02pn5w51tXQQ9gyujkTyHeeWJ0BEqHIZi2CYAaPTwFMEQ
-	zBMSXhdRBYeowrpIqM4FpapoCbb++LQHx6r8bgAie559o0HfGxskJl3NQnzICQ==
+	bh=YDLRcTY0BkTaFAdlLFjztJqIMTmDai9TLYinXM16row=;
+	b=BYraRfk7fEz5L1838NbMQUtgasaGC3yafWba1AA59mzifxKYEytwkNwf8SyIWpTY3kgf6B
+	XVylMtJ5iP8zPd51l9KZueVKs9oinG3sl6rbBmqPv7N/6EmTdGrluo/VNLTg6qjw1NVJ5K
+	FxI9ONYG7CI54wUSXtP8pOp/P6Q7OuDTS/4XCYA8fJ3iZ5xX/HN37b9QFIO0OqRZskePlB
+	L91Bt6v+i5rN5HUE8T5+kkQFZ0M0AKz8O/Spdg6uN9XAhBPsCZbP6cwciBfrvrhyDFvpEf
+	ggReD1B+0vtfuCPOfKDWeEOU4Tr4aTq27ArjK8IYP4XQs5WublUbr+biTu74ig==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Liam Girdwood <lgirdwood@gmail.com>,
@@ -54,9 +54,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Jaroslav Kysela <perex@perex.cz>,
 	Takashi Iwai <tiwai@suse.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 06/10] ASoC: fsl: fsl_qmc_audio: Introduce qmc_dai_constraints_interleaved()
-Date: Thu, 20 Jun 2024 10:42:53 +0200
-Message-ID: <20240620084300.397853-7-herve.codina@bootlin.com>
+Subject: [PATCH 08/10] soc: fsl: cpm1: qmc: Introduce qmc_chan_count_phandles()
+Date: Thu, 20 Jun 2024 10:42:55 +0200
+Message-ID: <20240620084300.397853-9-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240620084300.397853-1-herve.codina@bootlin.com>
 References: <20240620084300.397853-1-herve.codina@bootlin.com>
@@ -78,100 +78,54 @@ Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Constraints are set by qmc_dai_startup(). These constraints are specific
-to the interleaved mode.
+No function in the QMC API is available to get the number of phandles
+present in a phandle list.
 
-With the future introduction of support for non-interleaved mode, a new
-set of constraints will be set. To make the code clear and keep
-qmc_dai_startup() simple, extract the current interleaved mode
-constraints settings to a specific function.
+Fill this lack introducing qmc_chan_count_phandles().
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- sound/soc/fsl/fsl_qmc_audio.c | 37 +++++++++++++++++++++--------------
- 1 file changed, 22 insertions(+), 15 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 13 +++++++++++++
+ include/soc/fsl/qe/qmc.h |  2 ++
+ 2 files changed, 15 insertions(+)
 
-diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
-index 36145f1ddbf1..f70c6c8eec4a 100644
---- a/sound/soc/fsl/fsl_qmc_audio.c
-+++ b/sound/soc/fsl/fsl_qmc_audio.c
-@@ -436,24 +436,14 @@ static int qmc_dai_hw_rule_capture_format_by_channels(struct snd_pcm_hw_params *
- 	return qmc_dai_hw_rule_format_by_channels(qmc_dai, params, qmc_dai->nb_rx_ts);
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index e23d60018400..76bb496305a0 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -1777,6 +1777,19 @@ static struct qmc_chan *qmc_chan_get_from_qmc(struct device_node *qmc_np, unsign
+ 	return qmc_chan;
  }
  
--static int qmc_dai_startup(struct snd_pcm_substream *substream,
--			   struct snd_soc_dai *dai)
-+static int qmc_dai_constraints_interleaved(struct snd_pcm_substream *substream,
-+					   struct qmc_dai *qmc_dai)
- {
--	struct qmc_dai_prtd *prtd = substream->runtime->private_data;
- 	snd_pcm_hw_rule_func_t hw_rule_channels_by_format;
- 	snd_pcm_hw_rule_func_t hw_rule_format_by_channels;
--	struct qmc_dai *qmc_dai;
- 	unsigned int frame_bits;
- 	int ret;
- 
--	qmc_dai = qmc_dai_get_data(dai);
--	if (!qmc_dai) {
--		dev_err(dai->dev, "Invalid dai\n");
--		return -EINVAL;
--	}
--
--	prtd->qmc_dai = qmc_dai;
--
- 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
- 		hw_rule_channels_by_format = qmc_dai_hw_rule_capture_channels_by_format;
- 		hw_rule_format_by_channels = qmc_dai_hw_rule_capture_format_by_channels;
-@@ -468,7 +458,7 @@ static int qmc_dai_startup(struct snd_pcm_substream *substream,
- 				  hw_rule_channels_by_format, qmc_dai,
- 				  SNDRV_PCM_HW_PARAM_FORMAT, -1);
- 	if (ret) {
--		dev_err(dai->dev, "Failed to add channels rule (%d)\n", ret);
-+		dev_err(qmc_dai->dev, "Failed to add channels rule (%d)\n", ret);
- 		return ret;
- 	}
- 
-@@ -476,7 +466,7 @@ static int qmc_dai_startup(struct snd_pcm_substream *substream,
- 				  hw_rule_format_by_channels, qmc_dai,
- 				  SNDRV_PCM_HW_PARAM_CHANNELS, -1);
- 	if (ret) {
--		dev_err(dai->dev, "Failed to add format rule (%d)\n", ret);
-+		dev_err(qmc_dai->dev, "Failed to add format rule (%d)\n", ret);
- 		return ret;
- 	}
- 
-@@ -484,13 +474,30 @@ static int qmc_dai_startup(struct snd_pcm_substream *substream,
- 					   SNDRV_PCM_HW_PARAM_FRAME_BITS,
- 					   frame_bits);
- 	if (ret < 0) {
--		dev_err(dai->dev, "Failed to add frame_bits constraint (%d)\n", ret);
-+		dev_err(qmc_dai->dev, "Failed to add frame_bits constraint (%d)\n", ret);
- 		return ret;
- 	}
- 
- 	return 0;
- }
- 
-+static int qmc_dai_startup(struct snd_pcm_substream *substream,
-+			   struct snd_soc_dai *dai)
++int qmc_chan_count_phandles(struct device_node *np, const char *phandles_name)
 +{
-+	struct qmc_dai_prtd *prtd = substream->runtime->private_data;
-+	struct qmc_dai *qmc_dai;
++	int count;
 +
-+	qmc_dai = qmc_dai_get_data(dai);
-+	if (!qmc_dai) {
-+		dev_err(dai->dev, "Invalid dai\n");
-+		return -EINVAL;
-+	}
++	/* phandles are fixed args phandles with one arg */
++	count = of_count_phandle_with_args(np, phandles_name, NULL);
++	if (count < 0)
++		return count;
 +
-+	prtd->qmc_dai = qmc_dai;
-+
-+	return qmc_dai_constraints_interleaved(substream, qmc_dai);
++	return count / 2;
 +}
++EXPORT_SYMBOL(qmc_chan_count_phandles);
 +
- static int qmc_dai_hw_params(struct snd_pcm_substream *substream,
- 			     struct snd_pcm_hw_params *params,
- 			     struct snd_soc_dai *dai)
+ struct qmc_chan *qmc_chan_get_byphandles_index(struct device_node *np,
+ 					       const char *phandles_name,
+ 					       int index)
+diff --git a/include/soc/fsl/qe/qmc.h b/include/soc/fsl/qe/qmc.h
+index 0fa7205145ce..294e42ea8d4c 100644
+--- a/include/soc/fsl/qe/qmc.h
++++ b/include/soc/fsl/qe/qmc.h
+@@ -16,6 +16,8 @@ struct device_node;
+ struct device;
+ struct qmc_chan;
+ 
++int qmc_chan_count_phandles(struct device_node *np, const char *phandles_name);
++
+ struct qmc_chan *qmc_chan_get_byphandles_index(struct device_node *np,
+ 					       const char *phandles_name,
+ 					       int index);
 -- 
 2.45.0
 
