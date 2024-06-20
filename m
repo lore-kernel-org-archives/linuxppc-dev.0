@@ -4,74 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79013C27C79
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 17:58:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9A7DC2BB85
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 17:59:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kYXp291T;
+	dkim=pass (2048-bit key; unprotected) header.d=timesys-com.20230601.gappssmtp.com header.i=@timesys-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=1meaowdD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W4pBw1H7Nz3cYg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 03:58:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W4pCh4ChQz3clB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 03:59:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=timesys.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kYXp291T;
+	dkim=pass (2048-bit key; unprotected) header.d=timesys-com.20230601.gappssmtp.com header.i=@timesys-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=1meaowdD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=yury.norov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=timesys.com (client-ip=2a00:1450:4864:20::62b; helo=mail-ej1-x62b.google.com; envelope-from=piotr.wojtaszczyk@timesys.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4pB209kcz3cSd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2024 03:58:02 +1000 (AEST)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-1f6da06ba24so8863065ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 10:58:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4pB32nN5z3cW1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2024 03:58:03 +1000 (AEST)
+Received: by mail-ej1-x62b.google.com with SMTP id a640c23a62f3a-a6e349c0f2bso138732666b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 10:58:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1718906280; x=1719511080; darn=lists.ozlabs.org;
+        d=timesys-com.20230601.gappssmtp.com; s=20230601; t=1718906280; x=1719511080; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=gJqqXRh/eOzPQsK99Bb/yzPgqho23i5/Ws9ra3QtPAE=;
-        b=kYXp291Twihmv4GfnovuhRqc0EJwR8P9rX66NMEv1fQnw1jSE5nWmny6yKk43NDWka
-         +whWiTESVXZMzE2297eyaMm37+dVQQStmmbzs7sTLdkVJLU6luXF2EeEE2oyMCQLrmYV
-         A38KW63MNgLnty2qxA2ZkIX9++t0ahSYvSmE4FAOr3SPqaiyXGcMdTTx+S7KJLo1sZY0
-         S4Dn8MfU6zrKsCv0MlqS3frAGnDuEDtiQPwkcnkUe2VwAsKN75acSibICGXtMI41uuOl
-         GYXu5i/2s4Dgk211OJy9/jz2cv4rtuqA+CvQaK4TDvFVo89B0/nFcph/tOn7it/8k7r4
-         73Kw==
+        bh=LLJSsUsQJimHeyehvy4obxzFbfnPiiocs4Of944Xm3I=;
+        b=1meaowdDK7DF5jJTMy3ADvOqjIQjWwK9d8Dud7sjRe+2g5gsqV7b3u9661w3Zw19as
+         0g0gA2QPHLEbLHrj6NTA6DkiroU+fqkVSib9heQ1sEh6IMMVkZ2MTctL1EslRap+vouv
+         n7+unb5OQhz8k2n7lgq550v5ZqYxZF5+Va5hRN3mP33hjcw9MhgeiKsjUcx7V+dwCtiV
+         LLm1bYAra+9AVIczjl0ewaYo7y6BBzJYd+5NMIovxeknUWbhUBNuH+2Czs+POJ8tzHt1
+         t1Z+f6lQ1EXMz6R6acWUOpsmwnncmoEwWO8IVuYAY6sasMNVvIONh+KmlXzDMAYKytYT
+         eFcg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20230601; t=1718906280; x=1719511080;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=gJqqXRh/eOzPQsK99Bb/yzPgqho23i5/Ws9ra3QtPAE=;
-        b=InBUXmZfkGzcqXAuBtb/XWEmKAqvSl48SZSrWoI+Uq1jrXRxp//RVPOeySntondAAH
-         D80wUIiXznqcpNkNCit7zfqQ0/Ebghyw1AL0aV4vZb2LxxQ/cE25b6ZolCwR1GQicP8Z
-         R9RRKYIusY30XRr+viYSJmD+taVa8YoaakgisgrJacJcIgSjMvD2nTE7qxXsQO0kUB1n
-         2JQ9YibdXhYBRaiXzZD5jjjr6EES1oHffJ+a9xi8uKaaE95M0REpvWBbatCF3xfGWmPL
-         WTOSPODr7t3T6gd0rIAhdWAbk7y8/Np0zMbVakN9vQYZtvfcQGO0Fy24BHO2YLcsnZRP
-         exAQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWdsWUoDWgJaHfaQYctKxlqmoeUfICpc/Ku7UWQ/dMDYxXukbkRtoMxNbLHKzA3OIKAiSxeuahn5np/gj3bR4RxbguDdkA2MYlyXjVUFg==
-X-Gm-Message-State: AOJu0YwAIW3NdvuGr2NDzr1dgy/n7u5P+LnjTFevS8eaeLNV6hSDP+at
-	BI5TuiwGr3X7JL9cSbkUvQ8HcGZgUG9TW+ZALVs3mg7iD/W1sR+q
-X-Google-Smtp-Source: AGHT+IF4qTXDJh2dmu7C8j7KbrNKpNe1traR1hBaJSEqONmhCH9MELk4yXOVD6L7Rof1XKmaGu/wKA==
-X-Received: by 2002:a17:903:1211:b0:1f8:3c9e:3ba8 with SMTP id d9443c01a7336-1f9aa3b50b0mr70367035ad.10.1718906280486;
+        bh=LLJSsUsQJimHeyehvy4obxzFbfnPiiocs4Of944Xm3I=;
+        b=KJukbMFwmwokyoCY3m6oESgmGyuVwdP2FPF3Qjks17PKeWDAozWMq8Cp7cbRXRLTpH
+         b5V+MHe3YDlCeIhSDfEXmz9m90IIqiMoX1Wll4ZDe8fOoIC44UrUfdK9QLa4z3oOXQvn
+         D0GfMVdPYf8B/6jlxx2SuU3ZB9/V7uxUB3HorsbTRCoh1/lhHqFitveLtofdzNrLwfFI
+         b/hQtaWM2o89VhgP1u5MDK/++aZ3I97bOOmh5ht7oXGpDgmJpiO3yKdY3md1DyvHI6G4
+         ZqDf8dBBFngmVsbzBSMTT1yCLZPIYL0wG5bdtFYF2yNVk0/Hmymct25xcG+BI7ZOqout
+         Ry5w==
+X-Forwarded-Encrypted: i=1; AJvYcCVhQl0/iHeMbihXKXn/o3TVk723WaWVhGCqxn4M9oSTiYwQDzSg+bpVce6zVUDHwyVY/vfJIpQQOqbRCLDUZPYU6HX+u7TBXxa8BZNhrg==
+X-Gm-Message-State: AOJu0YyVDPgr7CjQS8j9mBMu16ofAOK4T/An/uZKvLgoYnbSV7V6IeEd
+	ONRwdwUBLHTwJ+pLngoLHhNNZd2e9u1hStlp5QeGFkmJvhnmeG6XFW8cckYUfUM=
+X-Google-Smtp-Source: AGHT+IGXtwYdokrlfBxhK8FxTp2sWYE+r/rA8OXrz8ajsAvjdcVPMUue0BkFzpXPCbEPXWGLdile5Q==
+X-Received: by 2002:a17:907:8025:b0:a6f:147f:7d06 with SMTP id a640c23a62f3a-a6fab7de093mr273780966b.77.1718906280266;
         Thu, 20 Jun 2024 10:58:00 -0700 (PDT)
-Received: from localhost ([216.228.127.128])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-1f855f339fbsm139710805ad.262.2024.06.20.10.57.59
+Received: from localhost.localdomain ([91.216.213.152])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a6f56f42e80sm781370766b.186.2024.06.20.10.57.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Jun 2024 10:58:00 -0700 (PDT)
-From: Yury Norov <yury.norov@gmail.com>
-To: linux-kernel@vger.kernel.org,
+        Thu, 20 Jun 2024 10:57:59 -0700 (PDT)
+From: Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>
+To: Vinod Koul <vkoul@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	"J.M.B. Downing" <jonathan.downing@nautel.com>,
+	Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>,
+	Vladimir Zapolskiy <vz@mleia.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Yangtao Li <frank.li@vivo.com>,
+	Li Zetao <lizetao1@huawei.com>,
+	Chancel Liu <chancel.liu@nxp.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Colin Ian King <colin.i.king@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 18/40] powerpc: optimize arch code by using atomic find_bit() API
-Date: Thu, 20 Jun 2024 10:56:41 -0700
-Message-ID: <20240620175703.605111-19-yury.norov@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240620175703.605111-1-yury.norov@gmail.com>
-References: <20240620175703.605111-1-yury.norov@gmail.com>
+	dmaengine@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sound@vger.kernel.org,
+	linux-clk@vger.kernel.org,
+	linux-i2c@vger.kernel.org,
+	linux-mtd@lists.infradead.org
+Subject: [Patch v4 01/10] dt-bindings: dma: pl08x: Add dma-cells description
+Date: Thu, 20 Jun 2024 19:56:32 +0200
+Message-Id: <20240620175657.358273-2-piotr.wojtaszczyk@timesys.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240620175657.358273-1-piotr.wojtaszczyk@timesys.com>
+References: <20240620175657.358273-1-piotr.wojtaszczyk@timesys.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -85,170 +112,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sergey Shtylyov <s.shtylyov@omp.ru>, Jan Kara <jack@suse.cz>, Bart Van Assche <bvanassche@acm.org>, Yury Norov <yury.norov@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Matthew Wilcox <willy@infradead.org>, Mirsad Todorovac <mirsad.todorovac@alu.unizg.hr>, Linus Torvalds <torvalds@linux-foundation.org>, Alexey Klimov <alexey.klimov@linaro.org>
+Cc: Markus Elfring <Markus.Elfring@web.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use find_and_{set,clear}_bit() where appropriate and simplify the logic.
+Recover dma-cells description from the legacy DT binding.
 
-Signed-off-by: Yury Norov <yury.norov@gmail.com>
+Signed-off-by: Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>
 ---
- arch/powerpc/mm/book3s32/mmu_context.c     | 11 +++---
- arch/powerpc/platforms/pasemi/dma_lib.c    | 46 ++++++----------------
- arch/powerpc/platforms/powernv/pci-sriov.c | 13 ++----
- 3 files changed, 20 insertions(+), 50 deletions(-)
+Changes for v4:
+- This patch is new in v4
 
-diff --git a/arch/powerpc/mm/book3s32/mmu_context.c b/arch/powerpc/mm/book3s32/mmu_context.c
-index 1922f9a6b058..ece7b55b6cdb 100644
---- a/arch/powerpc/mm/book3s32/mmu_context.c
-+++ b/arch/powerpc/mm/book3s32/mmu_context.c
-@@ -17,6 +17,7 @@
-  *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
-  */
+ Documentation/devicetree/bindings/dma/arm-pl08x.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/dma/arm-pl08x.yaml b/Documentation/devicetree/bindings/dma/arm-pl08x.yaml
+index ab25ae63d2c3..191215d36c85 100644
+--- a/Documentation/devicetree/bindings/dma/arm-pl08x.yaml
++++ b/Documentation/devicetree/bindings/dma/arm-pl08x.yaml
+@@ -52,6 +52,13 @@ properties:
+   clock-names:
+     maxItems: 1
  
-+#include <linux/find_atomic.h>
- #include <linux/mm.h>
- #include <linux/init.h>
- #include <linux/export.h>
-@@ -50,13 +51,11 @@ static unsigned long context_map[LAST_CONTEXT / BITS_PER_LONG + 1];
- 
- unsigned long __init_new_context(void)
- {
--	unsigned long ctx = next_mmu_context;
-+	unsigned long ctx;
- 
--	while (test_and_set_bit(ctx, context_map)) {
--		ctx = find_next_zero_bit(context_map, LAST_CONTEXT+1, ctx);
--		if (ctx > LAST_CONTEXT)
--			ctx = 0;
--	}
-+	ctx = find_and_set_next_bit(context_map, LAST_CONTEXT + 1, next_mmu_context);
-+	if (ctx > LAST_CONTEXT)
-+		ctx = 0;
- 	next_mmu_context = (ctx + 1) & LAST_CONTEXT;
- 
- 	return ctx;
-diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
-index 1be1f18f6f09..db008902e5f3 100644
---- a/arch/powerpc/platforms/pasemi/dma_lib.c
-+++ b/arch/powerpc/platforms/pasemi/dma_lib.c
-@@ -5,6 +5,7 @@
-  * Common functions for DMA access on PA Semi PWRficient
-  */
- 
-+#include <linux/find_atomic.h>
- #include <linux/kernel.h>
- #include <linux/export.h>
- #include <linux/pci.h>
-@@ -118,14 +119,9 @@ static int pasemi_alloc_tx_chan(enum pasemi_dmachan_type type)
- 		limit = MAX_TXCH;
- 		break;
- 	}
--retry:
--	bit = find_next_bit(txch_free, MAX_TXCH, start);
--	if (bit >= limit)
--		return -ENOSPC;
--	if (!test_and_clear_bit(bit, txch_free))
--		goto retry;
--
--	return bit;
++  "#dma-cells":
++    const: 2
++    description: |
++      First cell should contain the DMA request,
++      second cell should contain either 1 or 2 depending on
++      which AHB master that is used.
 +
-+	bit = find_and_clear_next_bit(txch_free, MAX_TXCH, start);
-+	return bit < limit ? bit : -ENOSPC;
- }
- 
- static void pasemi_free_tx_chan(int chan)
-@@ -136,15 +132,9 @@ static void pasemi_free_tx_chan(int chan)
- 
- static int pasemi_alloc_rx_chan(void)
- {
--	int bit;
--retry:
--	bit = find_first_bit(rxch_free, MAX_RXCH);
--	if (bit >= MAX_TXCH)
--		return -ENOSPC;
--	if (!test_and_clear_bit(bit, rxch_free))
--		goto retry;
--
--	return bit;
-+	int bit = find_and_clear_bit(rxch_free, MAX_RXCH);
-+
-+	return bit < MAX_TXCH ? bit : -ENOSPC;
- }
- 
- static void pasemi_free_rx_chan(int chan)
-@@ -374,16 +364,9 @@ EXPORT_SYMBOL(pasemi_dma_free_buf);
-  */
- int pasemi_dma_alloc_flag(void)
- {
--	int bit;
-+	int bit = find_and_clear_bit(flags_free, MAX_FLAGS);
- 
--retry:
--	bit = find_first_bit(flags_free, MAX_FLAGS);
--	if (bit >= MAX_FLAGS)
--		return -ENOSPC;
--	if (!test_and_clear_bit(bit, flags_free))
--		goto retry;
--
--	return bit;
-+	return bit < MAX_FLAGS ? bit : -ENOSPC;
- }
- EXPORT_SYMBOL(pasemi_dma_alloc_flag);
- 
-@@ -439,16 +422,9 @@ EXPORT_SYMBOL(pasemi_dma_clear_flag);
-  */
- int pasemi_dma_alloc_fun(void)
- {
--	int bit;
--
--retry:
--	bit = find_first_bit(fun_free, MAX_FLAGS);
--	if (bit >= MAX_FLAGS)
--		return -ENOSPC;
--	if (!test_and_clear_bit(bit, fun_free))
--		goto retry;
-+	int bit = find_and_clear_bit(fun_free, MAX_FLAGS);
- 
--	return bit;
-+	return bit < MAX_FLAGS ? bit : -ENOSPC;
- }
- EXPORT_SYMBOL(pasemi_dma_alloc_fun);
- 
-diff --git a/arch/powerpc/platforms/powernv/pci-sriov.c b/arch/powerpc/platforms/powernv/pci-sriov.c
-index cc7b1dd54ac6..e33e57c559f7 100644
---- a/arch/powerpc/platforms/powernv/pci-sriov.c
-+++ b/arch/powerpc/platforms/powernv/pci-sriov.c
-@@ -3,6 +3,7 @@
- #include <linux/kernel.h>
- #include <linux/ioport.h>
- #include <linux/bitmap.h>
-+#include <linux/find_atomic.h>
- #include <linux/pci.h>
- 
- #include <asm/opal.h>
-@@ -397,18 +398,12 @@ static int64_t pnv_ioda_map_m64_single(struct pnv_phb *phb,
- 
- static int pnv_pci_alloc_m64_bar(struct pnv_phb *phb, struct pnv_iov_data *iov)
- {
--	int win;
-+	int win = find_and_set_bit(&phb->ioda.m64_bar_alloc, phb->ioda.m64_bar_idx + 1);
- 
--	do {
--		win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
--				phb->ioda.m64_bar_idx + 1, 0);
--
--		if (win >= phb->ioda.m64_bar_idx + 1)
--			return -1;
--	} while (test_and_set_bit(win, &phb->ioda.m64_bar_alloc));
-+	if (win >= phb->ioda.m64_bar_idx + 1)
-+		return -1;
- 
- 	set_bit(win, iov->used_m64_bar_mask);
--
- 	return win;
- }
- 
+   lli-bus-interface-ahb1:
+     type: boolean
+     description: if AHB master 1 is eligible for fetching LLIs
 -- 
-2.43.0
+2.25.1
 
