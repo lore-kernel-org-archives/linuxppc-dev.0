@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 798D1C2BA18
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 12:52:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12CDAC27C79
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 12:52:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W4gPZ1N0fz3fwZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 22:52:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W4gPz5nRsz3dV6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 22:52:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4gMV5cbdz3bYc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 22:50:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4gMW1ldtz3bZN
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 22:50:47 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W4gMW48Rnz4wyg;
-	Thu, 20 Jun 2024 22:50:47 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W4gMX0f0rz4w2K;
+	Thu, 20 Jun 2024 22:50:48 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Nathan Lynch <nathanl@linux.ibm.com>
-In-Reply-To: <20240603-silence-drmem_init-v1-1-e9d71646bc3d@linux.ibm.com>
-References: <20240603-silence-drmem_init-v1-1-e9d71646bc3d@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/mm/drmem: Silence drmem_init() early return
-Message-Id: <171888775104.806750.3492120135202937957.b4-ty@ellerman.id.au>
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen.n.rao@linux.ibm.com, Nilay Shroff <nilay@linux.ibm.com>
+In-Reply-To: <20240517142531.3273464-1-nilay@linux.ibm.com>
+References: <20240517142531.3273464-1-nilay@linux.ibm.com>
+Subject: Re: [PATCH v2 0/1] powerpc/numa: Make cpu/memory less numa-node online
+Message-Id: <171888775101.806750.1610653396234062205.b4-ty@ellerman.id.au>
 Date: Thu, 20 Jun 2024 22:49:11 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,21 +43,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: gjoyce@linux.ibm.com, srikar@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, sshegde@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 03 Jun 2024 14:31:32 -0500, Nathan Lynch wrote:
-> It's not an error or noteworthy condition if the
-> "ibm,dynamic-reconfiguration-memory" node isn't present.
+On Fri, 17 May 2024 19:55:21 +0530, Nilay Shroff wrote:
+> On NUMA aware system, we make a numa-node online only if that node is
+> attached to cpu/memory. However it's possible that we have some PCI/IO
+> device affinitized to a numa-node which is not currently online. In such
+> case we set the numa-node id of the corresponding PCI device to -1
+> (NUMA_NO_NODE). Not assigning the correct numa-node id to PCI device may
+> impact the performance of such device. For instance, we have a multi
+> controller NVMe disk where each controller of the disk is attached to
+> different PHB (PCI host bridge). Each of these PHBs has numa-node id
+> assigned during PCI enumeration. During PCI enumeration if we find that
+> the numa-node is not online then we set the numa-node id of the PHB to -1.
+> If we create shared namespace and attach to multi controller NVMe disk
+> then that namespace could be accessed through each controller and as each
+> controller is connected to different PHBs, it's possible to access the
+> same namespace using multiple PCI channel. While sending IO to a shared
+> namespace, NVMe driver would calculate the optimal IO path using numa-node
+> distance. However if the numa-node id is not correctly assigned to NVMe
+> PCIe controller then it's possible that driver would calculate incorrect
+> NUMA distance and hence select the non-optimal path for sending IO. If
+> this happens then we could potentially observe the degraded IO performance.
 > 
-> Drop the needless message.
-> 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/mm/drmem: Silence drmem_init() early return
-      https://git.kernel.org/powerpc/c/11e6e6d8bf8f908468bac0447727e3f3923c8512
+[1/1] powerpc/numa: Online a node if PHB is attached.
+      https://git.kernel.org/powerpc/c/11981816e3614156a1fe14a1e8e77094ea46c7d5
 
 cheers
