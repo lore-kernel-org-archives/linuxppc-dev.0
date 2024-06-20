@@ -4,46 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B4D6C2BA1A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 16:26:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AD25C2BA1A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 16:27:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AaWGCEH0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HkyRLylM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W4m8J5NRGz3cVn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 02:26:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W4m944zkmz3cXy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 02:27:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AaWGCEH0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HkyRLylM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4m5V48wPz3cTM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2024 02:23:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4m5c0RY7z3cTL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2024 02:24:04 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 6A3ABCE2741;
-	Thu, 20 Jun 2024 16:23:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ECB5EC4AF07;
-	Thu, 20 Jun 2024 16:23:49 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 61FC6621F9;
+	Thu, 20 Jun 2024 16:24:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BFFD4C32786;
+	Thu, 20 Jun 2024 16:23:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1718900636;
-	bh=Doj0//VPfq9z758xR2+yZ79Db+NeekZ0EoHrfr9q2Q0=;
+	s=k20201202; t=1718900643;
+	bh=cJPHgO7rC0lwgzSVqzH0rTJpOL4kkIXZCXlrSaP+FJc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=AaWGCEH0FUtHpMS1MWl92zyMC/tgI55ZbXl6tZ3t5C3/D90MhQY7LMPv52sRtXgX7
-	 /tDHOQ6fobnn4uVWb5vNTuBQIwEAxDas3AiEfhSop6feRAWhRnZ+da7P7VMngnhmkk
-	 uKday5m0uC0pCQIfQjJmNfph+BSKsE6mupZiTK4nCMh6ev02nOQHZHAifS9GhfJcf8
-	 Av2+SR2IBKxnqrqNk3UUKHECPl0wYIrYeODFjmzBUOQioGFpi7EdScbEqPk5DdwfzV
-	 /j7R+AlsEtHGaZd/7u8r6X3V3OMunqnE6kTRg7ZdDsGpPmUCRt3Q2a3/R9uSNNqkgU
-	 9t5D3HmhZEJ5Q==
+	b=HkyRLylMnXyv0WsxD8QL8vKVPSKro4BwCxwyewRoTfPdeRVcm1oChn7k8vYspR3wd
+	 yQW8rnIE0bv8kkbtAqaKqgPnepA6DcOCp3JMdTlAnT8RlKjsKi5K+r9OqT4HoFonmG
+	 f3kHhl3ZWTZMo4GtaggxJcXmFVjVUSUkiC4DBTES3UPVTq0B2sYkBQsRdANXLL6bIL
+	 SCHzW2/7J9RmI1gl2ED3xynQG4CCaaemzF9kz+POcz6T4kzugSs3WAtC5cl5ThjNaj
+	 oq/eswLVYZeUNXhiqyKfNJrn1nns2jlf4JSkYv7RCQh4XBBytNYAFCKzeahkxjiU8J
+	 nnR+Jle+gafYw==
 From: Arnd Bergmann <arnd@kernel.org>
 To: linux-arch@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 03/15] mips: fix compat_sys_lseek syscall
-Date: Thu, 20 Jun 2024 18:23:04 +0200
-Message-Id: <20240620162316.3674955-4-arnd@kernel.org>
+Subject: [PATCH 04/15] sparc: fix old compat_sys_select()
+Date: Thu, 20 Jun 2024 18:23:05 +0200
+Message-Id: <20240620162316.3674955-5-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240620162316.3674955-1-arnd@kernel.org>
 References: <20240620162316.3674955-1-arnd@kernel.org>
@@ -66,30 +66,32 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-This is almost compatible, but passing a negative offset should result
-in a EINVAL error, but on mips o32 compat mode would seek to a large
-32-bit byte offset.
+sparc has two identical select syscalls at numbers 93 and 230, respectively.
+During the conversion to the modern syscall.tbl format, the older one of the
+two broke in compat mode, and now refers to the native 64-bit syscall.
 
-Use compat_sys_lseek() to correctly sign-extend the argument.
+Restore the correct behavior. This has very little effect, as glibc has
+been using the newer number anyway.
 
+Fixes: 6ff645dd683a ("sparc: add system call table generation support")
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/mips/kernel/syscalls/syscall_o32.tbl | 2 +-
+ arch/sparc/kernel/syscalls/syscall.tbl | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
-index 85751c9b9cdb..2439a2491cff 100644
---- a/arch/mips/kernel/syscalls/syscall_o32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
-@@ -27,7 +27,7 @@
- 17	o32	break				sys_ni_syscall
- # 18 was sys_stat
- 18	o32	unused18			sys_ni_syscall
--19	o32	lseek				sys_lseek
-+19	o32	lseek				sys_lseek			compat_sys_lseek
- 20	o32	getpid				sys_getpid
- 21	o32	mount				sys_mount
- 22	o32	umount				sys_oldumount
+diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
+index b354139b40be..5e55f73f9880 100644
+--- a/arch/sparc/kernel/syscalls/syscall.tbl
++++ b/arch/sparc/kernel/syscalls/syscall.tbl
+@@ -117,7 +117,7 @@
+ 90	common	dup2			sys_dup2
+ 91	32	setfsuid32		sys_setfsuid
+ 92	common	fcntl			sys_fcntl			compat_sys_fcntl
+-93	common	select			sys_select
++93	common	select			sys_select			compat_sys_select
+ 94	32	setfsgid32		sys_setfsgid
+ 95	common	fsync			sys_fsync
+ 96	common	setpriority		sys_setpriority
 -- 
 2.39.2
 
