@@ -4,31 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71D94C27C79
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 14:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29654C2BA1A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 14:30:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W4jXm6RPNz3cl9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 00:28:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W4jZB5kKJz3cfn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 00:30:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4jXJ5HZXz3bhD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2024 00:28:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4jYl6vn6z3cBx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2024 00:29:47 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W4jX82DTxz4wb7;
-	Fri, 21 Jun 2024 00:28:24 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W4jYl3rsWz4w2H;
+	Fri, 21 Jun 2024 00:29:47 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20240510102235.2269496-1-sourabhjain@linux.ibm.com>
-References: <20240510102235.2269496-1-sourabhjain@linux.ibm.com>
-Subject: Re: [PATCH v2 0/2] powerpc: kexec fixes
-Message-Id: <171888775128.806750.5842115931116050967.b4-ty@ellerman.id.au>
-Date: Thu, 20 Jun 2024 22:49:11 +1000
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com, corbet@lwn.net, Gautam Menghani <gautam@linux.ibm.com>
+In-Reply-To: <20240605113913.83715-1-gautam@linux.ibm.com>
+References: <20240605113913.83715-1-gautam@linux.ibm.com>
+Subject: Re: [PATCH v2 0/2] Fix doorbell emulation for v2 API on PPC
+Message-Id: <171889374983.827284.3419155044368284562.b4-ty@ellerman.id.au>
+Date: Fri, 21 Jun 2024 00:29:09 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -43,27 +43,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Aditya Gupta <adityag@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 10 May 2024 15:52:33 +0530, Sourabh Jain wrote:
-> Patch series fixes two kexec issues.
+On Wed, 05 Jun 2024 17:09:08 +0530, Gautam Menghani wrote:
+> Doorbell emulation for KVM on PAPR guests is broken as support for DPDES
+> was not added in initial patch series [1].
+> Add DPDES support and doorbell handling support for V2 API.
 > 
-> 01/02: Update extra size calculation for kexec FDT to avoid kexec load
-> failure due to FDT_ERR_NOSPACE while including CPU nodes added post
-> boot and reserved memory ranges.
+> [1] lore.kernel.org/linuxppc-dev/20230914030600.16993-1-jniethe5@gmail.com
 > 
-> 02/02: Fix update_cpus_node/core_64.c function to include missing device
-> nodes under /cpus node with device_type != "cpu".
+> Changes in v2:
+> 1. Split DPDES support into its own patch
 > 
 > [...]
 
-Applied to powerpc/next.
+Applied to powerpc/topic/ppc-kvm.
 
-[1/2] powerpc/kexec_file: fix extra size calculation for kexec FDT
-      https://git.kernel.org/powerpc/c/0d3ff067331ef84e7e7f49537d768881042ed5ba
-[2/2] powerpc/kexec_file: fix cpus node update to FDT
-      https://git.kernel.org/powerpc/c/932bed41217059638c78a75411b7893b121d2162
+[1/2] arch/powerpc/kvm: Add DPDES support in helper library for Guest state buffer
+      https://git.kernel.org/powerpc/c/55dfb8bed6fe8bda390cc71cca878d11a9407099
+[2/2] arch/powerpc/kvm: Fix doorbell emulation for v2 API
+      https://git.kernel.org/powerpc/c/54ec2bd9e0173b75daf84675d07c56584f96564b
 
 cheers
