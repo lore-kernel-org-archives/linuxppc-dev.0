@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7E15C2BA18
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 12:49:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01A19C27C79
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 12:49:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W4gKR3FwTz3cZ2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 22:48:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W4gKs49mRz3clB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Jun 2024 22:49:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4gJz5qt9z3bZN
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 22:48:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W4gK871kPz3cSS
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 22:48:44 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W4gJw1sK0z4wcJ;
-	Thu, 20 Jun 2024 22:48:32 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W4gJy4TM4z4wcg;
+	Thu, 20 Jun 2024 22:48:34 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20240614122910.3499489-1-mpe@ellerman.id.au>
-References: <20240614122910.3499489-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Prevent UAF in kvm_spapr_tce_attach_iommu_group()
-Message-Id: <171888750930.804969.9625740096908801774.b4-ty@ellerman.id.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Danny Tsen <dtsen@linux.ibm.com>, Nathan Lynch <nathanl@linux.ibm.com>
+In-Reply-To: <20240603-powerpc-crypto-ignore-p8-asm-v1-1-05843fec2bb7@linux.ibm.com>
+References: <20240603-powerpc-crypto-ignore-p8-asm-v1-1-05843fec2bb7@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/crypto: Add generated P8 asm to .gitignore
+Message-Id: <171888750936.804969.14409568109203763184.b4-ty@ellerman.id.au>
 Date: Thu, 20 Jun 2024 22:45:09 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,23 +43,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brauner@kernel.org, sbhat@linux.ibm.com, kvm@vger.kernel.org, tpearson@raptorengineering.com, aik@amd.com, linux-fsdevel@vger.kernel.org, torvalds@linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 14 Jun 2024 22:29:10 +1000, Michael Ellerman wrote:
-> Al reported a possible use-after-free (UAF) in kvm_spapr_tce_attach_iommu_group().
+On Mon, 03 Jun 2024 08:01:03 -0500, Nathan Lynch wrote:
+> Looks like drivers/crypto/vmx/.gitignore should have been merged into
+> arch/powerpc/crypto/.gitignore as part of commit
+> 109303336a0c ("crypto: vmx - Move to arch/powerpc/crypto") so that all
+> generated asm files are ignored.
 > 
-> It looks up `stt` from tablefd, but then continues to use it after doing
-> fdput() on the returned fd. After the fdput() the tablefd is free to be
-> closed by another thread. The close calls kvm_spapr_tce_release() and
-> then release_spapr_tce_table() (via call_rcu()) which frees `stt`.
 > 
-> [...]
 
 Applied to powerpc/fixes.
 
-[1/1] KVM: PPC: Book3S HV: Prevent UAF in kvm_spapr_tce_attach_iommu_group()
-      https://git.kernel.org/powerpc/c/a986fa57fd81a1430e00b3c6cf8a325d6f894a63
+[1/1] powerpc/crypto: Add generated P8 asm to .gitignore
+      https://git.kernel.org/powerpc/c/2b85b7fb1376481f7d4c2cf92e5da942f06b2547
 
 cheers
