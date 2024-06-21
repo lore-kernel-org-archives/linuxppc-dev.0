@@ -4,93 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BB8AC27C4F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 14:30:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12869C27C4F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 14:34:02 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FsDVcJ7f;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FsDVcJ7f;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=T/m6eyfw;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W5KXK65Vkz3cb0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2024 00:30:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W5Kc75S58z3cb0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2024 00:33:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FsDVcJ7f;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FsDVcJ7f;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=T/m6eyfw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Sat, 22 Jun 2024 00:33:17 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W5KQM19jXz3cbR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2024 00:25:30 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1718979929;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=k2ztUKph00cBWbOmplix2Q4QYxHwnhS7TcGpCnDIOcM=;
-	b=FsDVcJ7f3YBQvC2+/7lCJERGU6LO2gu4s3mu1YH/TIRyBmu4CeUG47QzlQ7rOHBxKQtdYS
-	q3oJLhjvppHYSm/d8FaFKCa4wj0DXGdW4BSzaW/Hg1rPPUMDQR5dBCa3C2PwCXJhsTu25T
-	V6XAfAZH/xmPOuzvjHQ0pZpG7sYgE+o=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1718979929;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=k2ztUKph00cBWbOmplix2Q4QYxHwnhS7TcGpCnDIOcM=;
-	b=FsDVcJ7f3YBQvC2+/7lCJERGU6LO2gu4s3mu1YH/TIRyBmu4CeUG47QzlQ7rOHBxKQtdYS
-	q3oJLhjvppHYSm/d8FaFKCa4wj0DXGdW4BSzaW/Hg1rPPUMDQR5dBCa3C2PwCXJhsTu25T
-	V6XAfAZH/xmPOuzvjHQ0pZpG7sYgE+o=
-Received: from mail-oa1-f72.google.com (mail-oa1-f72.google.com
- [209.85.160.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-80-gwitl1rSMJu7KoxXVK1Mpg-1; Fri, 21 Jun 2024 10:25:23 -0400
-X-MC-Unique: gwitl1rSMJu7KoxXVK1Mpg-1
-Received: by mail-oa1-f72.google.com with SMTP id 586e51a60fabf-25989a3969dso365780fac.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2024 07:25:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1718979918; x=1719584718;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=k2ztUKph00cBWbOmplix2Q4QYxHwnhS7TcGpCnDIOcM=;
-        b=WYmmKhpsdVhR3j6Oy8u+EKlabSz6zQyzt9xHw/OypHFFeXDu1yXeQLJyKNv12vewGK
-         UMHpUJwLbzpvlEqXobQsmgyWmZa52NiQPkODFcAFoFbzc/Ylf6b4ub3sJWKVbhIhx5sF
-         KLYGE62Wk31yGy3RNGRkh7B7cxvf/rtg9KMz5G4yoOyXmqU1lzUOyEdazy1a+UdNivuq
-         Pn4VPbLutFUwc4Em8a3ZSVZP85H0T3vayLRBXK+Gzf+Q3IgrHvnUH0npQFGCvABp7q+h
-         dI67r+jYP3m9A6iSbkIFzxfTwd2fI6uufQL7UH9x+ZXfVynXz3GKv1tcMHcndUIKWK+V
-         Ay3g==
-X-Forwarded-Encrypted: i=1; AJvYcCXhKTEsX5uZpzKHHYgfM7xxMp6Qya+z7Ivi9mkQevpe/KNMT699lOZPtW1+nwx/TmrqsR3ggQa1tiouplaKzN7UopO4o7GsTxkSFMqZyQ==
-X-Gm-Message-State: AOJu0Yw13k0Mv11t3Y61yyYZOPOT59IdfAo4neIrK0I44RQhQSrhDowK
-	bkrEEgMnaczmFeH7mhNnpK4rZpGarGr49/5C78NIY7hlYZ4YIgaFk7DA+aQ8/i2Xuk+fsghPIjs
-	woV8PE5TcBeruJ1w2RT0Do8rCXgQIlncivtR+5F5pKRhCEG2zHk1alXEeNmeAtfY=
-X-Received: by 2002:a05:6871:14f:b0:254:cae6:a812 with SMTP id 586e51a60fabf-25c94d8a94emr9065106fac.3.1718979917843;
-        Fri, 21 Jun 2024 07:25:17 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEpfu3cPye3+7RpVIl2JRxNk+CTOiRpoiTdFmb6dpb/ERi8sD9JFsePfCkLHiFMYZR2Pz0U9w==
-X-Received: by 2002:a05:6871:14f:b0:254:cae6:a812 with SMTP id 586e51a60fabf-25c94d8a94emr9065078fac.3.1718979917305;
-        Fri, 21 Jun 2024 07:25:17 -0700 (PDT)
-Received: from x1n.redhat.com (pool-99-254-121-117.cpe.net.cable.rogers.com. [99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-79bce944cb2sm90564785a.125.2024.06.21.07.25.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Jun 2024 07:25:16 -0700 (PDT)
-From: Peter Xu <peterx@redhat.com>
-To: linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org
-Subject: [PATCH 5/7] mm/x86: Make pud_leaf() only cares about PSE bit
-Date: Fri, 21 Jun 2024 10:25:02 -0400
-Message-ID: <20240621142504.1940209-6-peterx@redhat.com>
-X-Mailer: git-send-email 2.45.0
-In-Reply-To: <20240621142504.1940209-1-peterx@redhat.com>
-References: <20240621142504.1940209-1-peterx@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W5KbK64Bmz30T0
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2024 00:33:17 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1718980399; x=1750516399;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=SCV4XnLDPwX4vm7ZchPPteJullsBv/S+vDAJVlZdLhA=;
+  b=T/m6eyfwD78MAGoBPjmJudZ40XOANMQ+syzLFgc9H380BXHFYzcUXUVI
+   yXc6qbfvmhdt2J3FYG3KosjfawV1aozP+7DqF5zKRSDDZUAwhpP9/r5Hf
+   +CMJKu7emU1LkNeytYAYEzXWaEERXTztFoq9XsuK0z7cVr0ZDWefjlYeI
+   s9Gd2rcT9DYQSYc/W61tzlw1w4mH4PveTVODIJhV1I/rl24Pc9i+Eti4Z
+   OUwVkkGI9G32LkZOwvfK8wrMUCSbpGJ0fTD0237Ohbc57nr7SDsaITTqY
+   XIdnGXzBCi/EJB4Fn5r9GGHZBK6yXe6Rqex5CvxhGbmGIywHGZZRFAe7h
+   A==;
+X-CSE-ConnectionGUID: fhCwFS5aQVG75MeplrNQVg==
+X-CSE-MsgGUID: zDrvbHFkSZ2dabcIZNk/ig==
+X-IronPort-AV: E=McAfee;i="6700,10204,11110"; a="41420526"
+X-IronPort-AV: E=Sophos;i="6.08,254,1712646000"; 
+   d="scan'208";a="41420526"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2024 07:32:10 -0700
+X-CSE-ConnectionGUID: qwXb30wBQOKcJIT2kbiqwA==
+X-CSE-MsgGUID: NYXjrJQvTViS1Ij6Y5vCtg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.08,254,1712646000"; 
+   d="scan'208";a="42706810"
+Received: from bmurrell-mobl.amr.corp.intel.com (HELO [10.124.221.70]) ([10.124.221.70])
+  by orviesa009-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Jun 2024 07:32:08 -0700
+Message-ID: <afffce60-f03d-4f0f-ab03-410b4571d52b@intel.com>
+Date: Fri, 21 Jun 2024 07:32:09 -0700
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="US-ASCII"; x-default=true
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 5/7] mm/x86: Make pud_leaf() only cares about PSE bit
+To: Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org
+References: <20240621142504.1940209-1-peterx@redhat.com>
+ <20240621142504.1940209-6-peterx@redhat.com>
+From: Dave Hansen <dave.hansen@intel.com>
+Content-Language: en-US
+Autocrypt: addr=dave.hansen@intel.com; keydata=
+ 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
+In-Reply-To: <20240621142504.1940209-6-peterx@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,38 +118,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>, peterx@redhat.com, Christophe Leroy <christophe.leroy@csgroup.eu>, Dan Williams <dan.j.williams@intel.com>, Dave Jiang <dave.jiang@intel.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Ingo Molnar <mingo@redhat.com>, Huang Ying <ying.huang@intel.com>, Rik van Riel <riel@surriel.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill@shutemov.name>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>
+Cc: Huang Ying <ying.huang@intel.com>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Jiang <dave.jiang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Rik van Riel <riel@surriel.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Mel Gorman <mgorman@techsingularity.net>, Matthew Wilcox <willy@infradead.org>, Nicholas Piggin <npiggin@gmail.com>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, "Kirill A . Shutemov" <kirill@shutemov.name>, Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-An entry should be reported as PUD leaf even if it's PROT_NONE, in which
-case PRESENT bit isn't there. I hit bad pud without this when testing dax
-1G on zapping a PROT_NONE PUD.
+On 6/21/24 07:25, Peter Xu wrote:
+> An entry should be reported as PUD leaf even if it's PROT_NONE, in which
+> case PRESENT bit isn't there. I hit bad pud without this when testing dax
+> 1G on zapping a PROT_NONE PUD.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: x86@kernel.org
-Signed-off-by: Peter Xu <peterx@redhat.com>
----
- arch/x86/include/asm/pgtable.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Yeah, looks like pmd_leaf() got fixed up because of its involvement in
+THP, but PUDs got missed.  This patch also realigns pmd_leaf() and
+pud_leaf() behavior, which is important.
 
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index 65b8e5bb902c..25fc6d809572 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -1073,8 +1073,7 @@ static inline pmd_t *pud_pgtable(pud_t pud)
- #define pud_leaf pud_leaf
- static inline bool pud_leaf(pud_t pud)
- {
--	return (pud_val(pud) & (_PAGE_PSE | _PAGE_PRESENT)) ==
--		(_PAGE_PSE | _PAGE_PRESENT);
-+	return pud_val(pud) & _PAGE_PSE;
- }
- 
- static inline int pud_bad(pud_t pud)
--- 
-2.45.0
+Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
 
