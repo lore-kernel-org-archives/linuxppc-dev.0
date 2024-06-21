@@ -4,61 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 249E2C27C4F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 04:01:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4281C27C4F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 05:06:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=aa8eYg0B;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Pbdyw/2C;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W53Yz2W7Yz3cYg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 14:01:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W551l2pvnz3d9B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 15:06:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=aa8eYg0B;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Pbdyw/2C;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::336; helo=mail-ot1-x336.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ot1-x336.google.com (mail-ot1-x336.google.com [IPv6:2607:f8b0:4864:20::336])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W53Y65fyNz3cWD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2024 14:00:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1718942428; x=1750478428;
-  h=date:from:to:cc:subject:message-id;
-  bh=HxY8vrD3hasBrLnXrsb5Tq4QgOB85RTK+fTOCaSFt5E=;
-  b=aa8eYg0BrSTNJw687A9ogY4Pb3MXmCfPKQydXKZJC+tmLw7Qgy4hhO+M
-   PbARd9uNVRMgbzpL9O+ySZpo97Gm49RA/cks9vAX32AVc/vN3mCMF3Fhe
-   WPDEa7cvGgv45hbyc//PIwGxLroD7u+XRwN9S1JaauQZGdfRJv/itLkzu
-   uzPJV5w+VPOiBvq8uIKKMWcXBFOao9gDxg+UB8XroIbhCMwfmJxsonbwu
-   NW5t27LD/w3TGO+YGdNfIbfZlElPS+bLUzikMRnxp1nJHUYRQSmBqRz6r
-   Z+ePeSDu7NgyxoQPdoECmu7VAsOW3b/oSM7fSkf2PulEJYRgKcf+jdDD8
-   g==;
-X-CSE-ConnectionGUID: d/f4BbuZR0mhZeRchE29UA==
-X-CSE-MsgGUID: A+lqdJfQQdG8nLRO9znCiQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11109"; a="27097921"
-X-IronPort-AV: E=Sophos;i="6.08,253,1712646000"; 
-   d="scan'208";a="27097921"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jun 2024 21:00:21 -0700
-X-CSE-ConnectionGUID: jfHUbMIxSsqTjriHNxegIg==
-X-CSE-MsgGUID: OWFlaYgtQeajQ8dxUVJGUA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,253,1712646000"; 
-   d="scan'208";a="65708164"
-Received: from lkp-server01.sh.intel.com (HELO 68891e0c336b) ([10.239.97.150])
-  by fmviesa002.fm.intel.com with ESMTP; 20 Jun 2024 21:00:20 -0700
-Received: from kbuild by 68891e0c336b with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1sKVRh-0008BC-24;
-	Fri, 21 Jun 2024 04:00:17 +0000
-Date: Fri, 21 Jun 2024 11:59:46 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS
- e2b06d707dd067509cdc9ceba783c06fa6a551c2
-Message-ID: <202406211144.SSQbBtug-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W550x0fk7z3cQf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Jun 2024 15:06:07 +1000 (AEST)
+Received: by mail-ot1-x336.google.com with SMTP id 46e09a7af769-6f96445cfaeso927532a34.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Jun 2024 22:06:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1718946362; x=1719551162; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=K7Qm0uXfQVJ0pL26mcNJNw6zIMxofNWokQ38AnTAGFg=;
+        b=Pbdyw/2CAwo/uWI4q+WvI6aPHGI18ooN3+v3Xs6a6POQlMCvmssIkzn2fyBFmdQmmK
+         2fpurEaBOV5kwgwTCsxh4rhyb345K6OKnmYz2imHAjUYOLx/Y1HH1kOiEtg8XaQQcUKS
+         HQ4tLia8uFlEdIAUH07D5NmMvbssUh+gk+0EYA9GO7IA3fi0fSWYd3k8M97CHZYQHfwj
+         Lc1HabGNkkqnccnOYhxpZ7t2QqoiKMnsSGcHdw09ywYMA6sxwN6CVY+QO7zriIHWaRUw
+         BgNNspEkvTc3eMsEc2lOzulQo+bhu6v0d6DgWh4j3WUnLflS24HEKMVQXfhJ+MHVmam6
+         Kopw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1718946362; x=1719551162;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=K7Qm0uXfQVJ0pL26mcNJNw6zIMxofNWokQ38AnTAGFg=;
+        b=whjZaPjaRiGAIlsjw8mKWxkzY/Ou1BeKaefhcLN/Jj36+phvM2C6Vv4ny50l9MYkoz
+         sgu0rP5vbFDDXMl+8q/CJ6pSs+cvfFY9DwrMT5VdiLNavPCGt/PhBYb6OkHLtMT5FzNk
+         90T9R7znx3T2zWEPRj5LGj87bHHRawD47jLmQxlU+UYTlMVQjiIceg/cwOZbUIgi1Lnb
+         HpFja8NaSmugdSKCK+udpj78UKK0YzsyTuBnqWSC8APZ9LVbaOqdUp8wj1FJ9rzcDO34
+         8xZij7Q8yaIbf4EQgIDjc8C59Xbw1S8mYNSLWJHNPgRAkGyw9fPGIrn7sDGGFSqZBF8i
+         /Uig==
+X-Forwarded-Encrypted: i=1; AJvYcCXxOlScxeJm+kOTlcexmbeuyGakLMz6/SDrz/MjiZisZeeNGC0kvMRQKTH3qsGYUFp0njc7ajEGbsEIOSgWrc15rBMScnsp4rw5Y0MX3g==
+X-Gm-Message-State: AOJu0YwrnF3liYF931jtm2Sk4UQg6Y43Wp8JaA2Ag9GUr9M5HN5NjZeK
+	2lw4wOL88CoL/238sRI1OkKPOzVgIY1h9AAQ4sQOIIqTC0FHL0go
+X-Google-Smtp-Source: AGHT+IEl8AUL32RskP9KGXc80Es0L2iMivKVGf7869FhG8wMEglB481MAH7e/tfcS1tKjlee8zzZuw==
+X-Received: by 2002:a05:6830:18ea:b0:6f9:9540:76a8 with SMTP id 46e09a7af769-70073b35f82mr7986503a34.13.1718946361927;
+        Thu, 20 Jun 2024 22:06:01 -0700 (PDT)
+Received: from apais-devbox.. ([2001:569:766d:6500:fb4e:6cf3:3ec6:9292])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-716c950d71asm371308a12.62.2024.06.20.22.06.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 20 Jun 2024 22:06:01 -0700 (PDT)
+From: Allen Pais <allen.lkml@gmail.com>
+To: kuba@kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
+	Haren Myneni <haren@linux.ibm.com>,
+	Rick Lindsley <ricklind@linux.ibm.com>,
+	Nick Child <nnac123@linux.ibm.com>,
+	Thomas Falcon <tlfalcon@linux.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Paolo Abeni <pabeni@redhat.com>
+Subject: [PATCH 12/15] net: ibmvnic: Convert tasklet API to new bottom half workqueue mechanism
+Date: Thu, 20 Jun 2024 22:05:22 -0700
+Message-Id: <20240621050525.3720069-13-allen.lkml@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240621050525.3720069-1-allen.lkml@gmail.com>
+References: <20240621050525.3720069-1-allen.lkml@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,144 +91,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: marcin.s.wojtas@gmail.com, kda@linux-powerpc.org, Allen Pais <allen.lkml@gmail.com>, linux-acenic@sunsite.dk, louis.peens@corigine.com, borisp@nvidia.com, cooldavid@cooldavid.org, aneesh.kumar@kernel.org, mlindner@marvell.com, lorenzo@kernel.org, Mark-MC.Lee@mediatek.com, jes@trained-monkey.org, richardcochran@gmail.com, sean.wang@mediatek.com, linux-net-drivers@amd.com, cai.huoqing@linux.dev, matthias.bgg@gmail.com, angelogioacchino.delregno@collabora.com, bryan.whitehead@microchip.com, dougmill@linux.ibm.com, linux-kernel@vger.kernel.org, UNGLinuxDriver@microchip.com, stephen@networkplumber.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, nbd@nbd.name
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: e2b06d707dd067509cdc9ceba783c06fa6a551c2  Automatic merge of 'next' into merge (2024-06-17 15:38)
+Migrate tasklet APIs to the new bottom half workqueue mechanism. It
+replaces all occurrences of tasklet usage with the appropriate workqueue
+APIs throughout the ibmvnic driver. This transition ensures compatibility
+with the latest design and enhances performance.
 
-elapsed time: 5231m
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 24 ++++++++++++------------
+ drivers/net/ethernet/ibm/ibmvnic.h |  2 +-
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
-configs tested: 121
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                             allnoconfig   gcc-13.2.0
-alpha                               defconfig   gcc-13.2.0
-arc                               allnoconfig   gcc-13.2.0
-arc                                 defconfig   gcc-13.2.0
-arc                   randconfig-001-20240618   gcc-13.2.0
-arc                   randconfig-002-20240618   gcc-13.2.0
-arm                               allnoconfig   clang-19
-arm                                 defconfig   clang-14
-arm                   randconfig-001-20240618   gcc-13.2.0
-arm                   randconfig-002-20240618   gcc-13.2.0
-arm                   randconfig-003-20240618   clang-19
-arm                   randconfig-004-20240618   gcc-13.2.0
-arm64                             allnoconfig   gcc-13.2.0
-arm64                               defconfig   gcc-13.2.0
-arm64                 randconfig-001-20240618   clang-17
-arm64                 randconfig-002-20240618   clang-19
-arm64                 randconfig-003-20240618   clang-16
-arm64                 randconfig-004-20240618   clang-19
-csky                              allnoconfig   gcc-13.2.0
-csky                                defconfig   gcc-13.2.0
-csky                  randconfig-001-20240618   gcc-13.2.0
-csky                  randconfig-002-20240618   gcc-13.2.0
-hexagon                           allnoconfig   clang-19
-hexagon                             defconfig   clang-19
-hexagon               randconfig-001-20240618   clang-19
-hexagon               randconfig-002-20240618   clang-19
-i386         buildonly-randconfig-001-20240618   gcc-13
-i386         buildonly-randconfig-002-20240618   gcc-12
-i386         buildonly-randconfig-003-20240618   gcc-8
-i386         buildonly-randconfig-004-20240618   gcc-10
-i386         buildonly-randconfig-005-20240618   gcc-10
-i386         buildonly-randconfig-006-20240618   gcc-10
-i386                  randconfig-001-20240618   clang-18
-i386                  randconfig-002-20240618   gcc-13
-i386                  randconfig-003-20240618   gcc-13
-i386                  randconfig-004-20240618   clang-18
-i386                  randconfig-005-20240618   clang-18
-i386                  randconfig-006-20240618   clang-18
-i386                  randconfig-011-20240618   gcc-13
-i386                  randconfig-012-20240618   gcc-11
-i386                  randconfig-013-20240618   gcc-7
-i386                  randconfig-014-20240618   gcc-11
-i386                  randconfig-015-20240618   clang-18
-i386                  randconfig-016-20240618   clang-18
-loongarch                         allnoconfig   gcc-13.2.0
-loongarch                           defconfig   gcc-13.2.0
-loongarch             randconfig-001-20240618   gcc-13.2.0
-loongarch             randconfig-002-20240618   gcc-13.2.0
-m68k                              allnoconfig   gcc-13.2.0
-m68k                                defconfig   gcc-13.2.0
-microblaze                        allnoconfig   gcc-13.2.0
-microblaze                          defconfig   gcc-13.2.0
-mips                              allnoconfig   gcc-13.2.0
-nios2                             allnoconfig   gcc-13.2.0
-nios2                               defconfig   gcc-13.2.0
-nios2                 randconfig-001-20240618   gcc-13.2.0
-nios2                 randconfig-002-20240618   gcc-13.2.0
-openrisc                          allnoconfig   gcc-13.2.0
-openrisc                            defconfig   gcc-13.2.0
-parisc                            allnoconfig   gcc-13.2.0
-parisc                              defconfig   gcc-13.2.0
-parisc                randconfig-001-20240618   gcc-13.2.0
-parisc                randconfig-002-20240618   gcc-13.2.0
-parisc64                            defconfig   gcc-13.2.0
-powerpc                           allnoconfig   gcc-13.2.0
-powerpc               randconfig-001-20240618   gcc-13.2.0
-powerpc               randconfig-002-20240618   clang-19
-powerpc               randconfig-003-20240618   clang-19
-powerpc64             randconfig-001-20240618   clang-19
-powerpc64             randconfig-002-20240618   clang-17
-powerpc64             randconfig-003-20240618   clang-19
-riscv                             allnoconfig   gcc-13.2.0
-riscv                               defconfig   clang-19
-riscv                 randconfig-001-20240618   gcc-13.2.0
-riscv                 randconfig-002-20240618   clang-14
-s390                              allnoconfig   clang-19
-s390                                defconfig   clang-19
-s390                  randconfig-001-20240618   clang-15
-s390                  randconfig-002-20240618   gcc-13.2.0
-sh                                allnoconfig   gcc-13.2.0
-sh                                  defconfig   gcc-13.2.0
-sh                    randconfig-001-20240618   gcc-13.2.0
-sh                    randconfig-002-20240618   gcc-13.2.0
-sparc                             allnoconfig   gcc-13.2.0
-sparc                               defconfig   gcc-13.2.0
-sparc64                             defconfig   gcc-13.2.0
-sparc64               randconfig-001-20240618   gcc-13.2.0
-sparc64               randconfig-002-20240618   gcc-13.2.0
-um                                allnoconfig   clang-17
-um                                  defconfig   clang-19
-um                             i386_defconfig   gcc-13
-um                    randconfig-001-20240618   clang-19
-um                    randconfig-002-20240618   clang-19
-um                           x86_64_defconfig   clang-15
-x86_64       buildonly-randconfig-001-20240617   gcc-13
-x86_64       buildonly-randconfig-002-20240617   clang-18
-x86_64       buildonly-randconfig-003-20240617   gcc-13
-x86_64       buildonly-randconfig-004-20240617   gcc-13
-x86_64       buildonly-randconfig-005-20240617   gcc-11
-x86_64       buildonly-randconfig-006-20240617   clang-18
-x86_64                randconfig-001-20240617   clang-18
-x86_64                randconfig-002-20240617   gcc-8
-x86_64                randconfig-003-20240617   gcc-13
-x86_64                randconfig-004-20240617   clang-18
-x86_64                randconfig-005-20240617   clang-18
-x86_64                randconfig-006-20240617   gcc-13
-x86_64                randconfig-011-20240617   clang-18
-x86_64                randconfig-012-20240617   clang-18
-x86_64                randconfig-013-20240617   clang-18
-x86_64                randconfig-014-20240617   clang-18
-x86_64                randconfig-015-20240617   clang-18
-x86_64                randconfig-016-20240617   clang-18
-x86_64                randconfig-071-20240617   gcc-9
-x86_64                randconfig-072-20240617   clang-18
-x86_64                randconfig-073-20240617   clang-18
-x86_64                randconfig-074-20240617   clang-18
-x86_64                randconfig-075-20240617   clang-18
-x86_64                randconfig-076-20240617   gcc-13
-xtensa                            allnoconfig   gcc-13.2.0
-xtensa                randconfig-001-20240618   gcc-13.2.0
-xtensa                randconfig-002-20240618   gcc-13.2.0
-
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 5e9a93bdb518..2e817a560c3a 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -2725,7 +2725,7 @@ static const char *reset_reason_to_string(enum ibmvnic_reset_reason reason)
+ /*
+  * Initialize the init_done completion and return code values. We
+  * can get a transport event just after registering the CRQ and the
+- * tasklet will use this to communicate the transport event. To ensure
++ * bh work will use this to communicate the transport event. To ensure
+  * we don't miss the notification/error, initialize these _before_
+  * regisering the CRQ.
+  */
+@@ -4429,7 +4429,7 @@ static void send_request_cap(struct ibmvnic_adapter *adapter, int retry)
+ 	int cap_reqs;
+ 
+ 	/* We send out 6 or 7 REQUEST_CAPABILITY CRQs below (depending on
+-	 * the PROMISC flag). Initialize this count upfront. When the tasklet
++	 * the PROMISC flag). Initialize this count upfront. When the bh work
+ 	 * receives a response to all of these, it will send the next protocol
+ 	 * message (QUERY_IP_OFFLOAD).
+ 	 */
+@@ -4965,7 +4965,7 @@ static void send_query_cap(struct ibmvnic_adapter *adapter)
+ 	int cap_reqs;
+ 
+ 	/* We send out 25 QUERY_CAPABILITY CRQs below.  Initialize this count
+-	 * upfront. When the tasklet receives a response to all of these, it
++	 * upfront. When the bh work receives a response to all of these, it
+ 	 * can send out the next protocol messaage (REQUEST_CAPABILITY).
+ 	 */
+ 	cap_reqs = 25;
+@@ -5477,7 +5477,7 @@ static int handle_login_rsp(union ibmvnic_crq *login_rsp_crq,
+ 	int i;
+ 
+ 	/* CHECK: Test/set of login_pending does not need to be atomic
+-	 * because only ibmvnic_tasklet tests/clears this.
++	 * because only ibmvnic_bh_work tests/clears this.
+ 	 */
+ 	if (!adapter->login_pending) {
+ 		netdev_warn(netdev, "Ignoring unexpected login response\n");
+@@ -6063,13 +6063,13 @@ static irqreturn_t ibmvnic_interrupt(int irq, void *instance)
+ {
+ 	struct ibmvnic_adapter *adapter = instance;
+ 
+-	tasklet_schedule(&adapter->tasklet);
++	queue_work(system_bh_wq, &adapter->bh_work);
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void ibmvnic_tasklet(struct tasklet_struct *t)
++static void ibmvnic_bh_work(struct work_struct *work)
+ {
+-	struct ibmvnic_adapter *adapter = from_tasklet(adapter, t, tasklet);
++	struct ibmvnic_adapter *adapter = from_work(adapter, work, bh_work);
+ 	struct ibmvnic_crq_queue *queue = &adapter->crq;
+ 	union ibmvnic_crq *crq;
+ 	unsigned long flags;
+@@ -6150,7 +6150,7 @@ static void release_crq_queue(struct ibmvnic_adapter *adapter)
+ 
+ 	netdev_dbg(adapter->netdev, "Releasing CRQ\n");
+ 	free_irq(vdev->irq, adapter);
+-	tasklet_kill(&adapter->tasklet);
++	cancel_work_sync(&adapter->bh_work);
+ 	do {
+ 		rc = plpar_hcall_norets(H_FREE_CRQ, vdev->unit_address);
+ 	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
+@@ -6201,7 +6201,7 @@ static int init_crq_queue(struct ibmvnic_adapter *adapter)
+ 
+ 	retrc = 0;
+ 
+-	tasklet_setup(&adapter->tasklet, (void *)ibmvnic_tasklet);
++	INIT_WORK(&adapter->bh_work, (void *)ibmvnic_bh_work);
+ 
+ 	netdev_dbg(adapter->netdev, "registering irq 0x%x\n", vdev->irq);
+ 	snprintf(crq->name, sizeof(crq->name), "ibmvnic-%x",
+@@ -6223,12 +6223,12 @@ static int init_crq_queue(struct ibmvnic_adapter *adapter)
+ 	spin_lock_init(&crq->lock);
+ 
+ 	/* process any CRQs that were queued before we enabled interrupts */
+-	tasklet_schedule(&adapter->tasklet);
++	queue_work(system_bh_wq, &adapter->bh_work);
+ 
+ 	return retrc;
+ 
+ req_irq_failed:
+-	tasklet_kill(&adapter->tasklet);
++	cancel_work_sync(&adapter->bh_work);
+ 	do {
+ 		rc = plpar_hcall_norets(H_FREE_CRQ, vdev->unit_address);
+ 	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
+@@ -6621,7 +6621,7 @@ static int ibmvnic_resume(struct device *dev)
+ 	if (adapter->state != VNIC_OPEN)
+ 		return 0;
+ 
+-	tasklet_schedule(&adapter->tasklet);
++	queue_work(system_bh_wq, &adapter->bh_work);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+index 94ac36b1408b..b65b210a8059 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.h
++++ b/drivers/net/ethernet/ibm/ibmvnic.h
+@@ -1036,7 +1036,7 @@ struct ibmvnic_adapter {
+ 	u32 cur_rx_buf_sz;
+ 	u32 prev_rx_buf_sz;
+ 
+-	struct tasklet_struct tasklet;
++	struct work_struct bh_work;
+ 	enum vnic_state state;
+ 	/* Used for serialization of state field. When taking both state
+ 	 * and rwi locks, take state lock first.
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.34.1
+
