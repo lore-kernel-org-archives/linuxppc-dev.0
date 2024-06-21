@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9213C2BB85
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 17:05:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C407C27C4F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 17:05:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W5Nyp30WWz3dDp
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2024 03:05:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W5NzF6bzQz3dVR
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2024 03:05:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
 Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W5NyN0rvYz3bvP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2024 03:05:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W5Nyq0Gb2z3clb
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2024 03:05:22 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 7D26BCE2FA1;
-	Fri, 21 Jun 2024 17:04:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0EC8DC2BBFC;
-	Fri, 21 Jun 2024 17:04:53 +0000 (UTC)
-Date: Fri, 21 Jun 2024 18:04:51 +0100
+	by sin.source.kernel.org (Postfix) with ESMTP id A9572CE2FA0;
+	Fri, 21 Jun 2024 17:05:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 91AB8C2BBFC;
+	Fri, 21 Jun 2024 17:05:17 +0000 (UTC)
+Date: Fri, 21 Jun 2024 18:05:15 +0100
 From: Catalin Marinas <catalin.marinas@arm.com>
 To: Joey Gouly <joey.gouly@arm.com>
-Subject: Re: [PATCH v4 11/29] arm64: re-order MTE VM_ flags
-Message-ID: <ZnWys_YG5DrJnjDD@arm.com>
+Subject: Re: [PATCH v4 12/29] arm64: add POIndex defines
+Message-ID: <ZnWyy0_yAsrpihbO@arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
- <20240503130147.1154804-12-joey.gouly@arm.com>
+ <20240503130147.1154804-13-joey.gouly@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240503130147.1154804-12-joey.gouly@arm.com>
+In-Reply-To: <20240503130147.1154804-13-joey.gouly@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,8 +48,8 @@ Cc: szabolcs.nagy@arm.com, dave.hansen@linux.intel.com, linux-mm@kvack.org, hpa@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 03, 2024 at 02:01:29PM +0100, Joey Gouly wrote:
-> To make it easier to share the generic PKEYs flags, move the MTE flag.
+On Fri, May 03, 2024 at 02:01:30PM +0100, Joey Gouly wrote:
+> The 3-bit POIndex is stored in the PTE at bits 60..62.
 > 
 > Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 > Cc: Catalin Marinas <catalin.marinas@arm.com>
