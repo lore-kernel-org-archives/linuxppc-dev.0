@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57C78C2BB85
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 16:59:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46559C2BD05
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Jun 2024 17:02:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W5NqW6w1vz3cfy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2024 02:59:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W5NvM6d2zz3cnt
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Jun 2024 03:02:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W5Nq44XYLz3cY8
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2024 02:58:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W5Ntw2xYYz3blb
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Jun 2024 03:02:00 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 44DF86279F;
-	Fri, 21 Jun 2024 16:58:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB1D4C2BBFC;
-	Fri, 21 Jun 2024 16:58:29 +0000 (UTC)
-Date: Fri, 21 Jun 2024 17:58:27 +0100
+	by dfw.source.kernel.org (Postfix) with ESMTP id B1E6062320;
+	Fri, 21 Jun 2024 17:01:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24E56C2BBFC;
+	Fri, 21 Jun 2024 17:01:54 +0000 (UTC)
+Date: Fri, 21 Jun 2024 18:01:52 +0100
 From: Catalin Marinas <catalin.marinas@arm.com>
 To: Joey Gouly <joey.gouly@arm.com>
 Subject: Re: [PATCH v4 05/29] arm64: cpufeature: add Permission Overlay
  Extension cpucap
-Message-ID: <ZnWxM1tNITYyyXS_@arm.com>
+Message-ID: <ZnWyAJb63XjZiEqf@arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
  <20240503130147.1154804-6-joey.gouly@arm.com>
 MIME-Version: 1.0
@@ -57,7 +57,5 @@ On Fri, May 03, 2024 at 02:01:23PM +0100, Joey Gouly wrote:
 > Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 > Cc: Catalin Marinas <catalin.marinas@arm.com>
 > Cc: Will Deacon <will@kernel.org>
-
-Adding some acks otherwise I'll forget what I reviewed.
 
 Acked-by: Catalin Marinas <catalin.marinas@arm.com>
