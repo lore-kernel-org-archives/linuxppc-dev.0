@@ -4,47 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E771C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Jun 2024 02:08:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB800C2BA18
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Jun 2024 06:49:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=MucHfsGs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UHcJqmP3;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W6Dyk40VPz3cWk
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Jun 2024 12:08:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W6MCj1pJFz3cWn
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Jun 2024 16:49:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=MucHfsGs;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UHcJqmP3;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W6Dxw4v2rz3c1L
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2024 12:07:32 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1719108451;
-	bh=wjZLuNgx9By6ZqOtH117HEBJ1w7wnHQvmaXPVGYIMZc=;
-	h=From:To:Cc:Subject:Date:From;
-	b=MucHfsGsSlsy8pXHPmu849QMMmGwTUwAx0FD9y5+oYzCL5dRetg2UnjJkaT6LQep3
-	 Z/fn3rR/oYPHhZ93WSFHzFx6EqMHlfYCluG0DuLME0o4ahRsQFwxL+CkQ+dqLQ+thc
-	 Eiw6gU8ZZWjEQEtFmIcMhDIk3T3x1HIHTnr7QmYlK36swNcKf7isqo6cPXQGX/au10
-	 5A86YS75PYtPmmJ3Ciopdfn3/6DYLyAHV4DaRCAdB8/jqoyiaCtVdFCX0oLfPQ6+U4
-	 ZbMJ7tDNTLwoCtxNLB+pljkgL15xOCnVZY6pSAqtnBjFJRMzkClCH59vkqf7LuSQXB
-	 o8alUAztcfQNQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W6Dxt3cBSz4wbh;
-	Sun, 23 Jun 2024 12:07:30 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-6.10-3 tag
-Date: Sun, 23 Jun 2024 12:07:28 +1000
-Message-ID: <87sex4csyn.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W6MBv1Zwfz2ytN
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Jun 2024 16:49:10 +1000 (AEST)
+Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45N5uhqL007961;
+	Sun, 23 Jun 2024 06:49:07 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:in-reply-to:references
+	:mime-version:content-transfer-encoding; s=pp1; bh=SVxEI1Xo6AFLf
+	6kIIt2Gs7dNrEuAM0rikRzL+VZn28w=; b=UHcJqmP3S3YV0AWKPnJYBVHytTdDn
+	GCJUurSHxy6HXGpe0iQyT9UuF5CGXMCnLQlTobS5pbD8fL+P+/mSGjL+YVFDgctn
+	DA+w2BIwAfXPxUhO2d+qSSbM2SmVgT6zgdBqBxlHOQX1FPZJ2ba6tdkfwwOgZpQM
+	1SE/3+S6ADpVtcxwNfWsxC/9whroMiPM0lTdcmg5iU3hNQxt5onvDViuRW4MHIMf
+	wI3yDPSZy57oPMvGqb/e9daRFThkYQpx/cqV34ipl00WHCvChTQoCEJNvS0jGURS
+	VtgKaYdvgp/8mQkGB1FS7tRbeqGHqbhb8eUgGOdKhSDd+Rs3v/GI7xuBA==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yxc93g7tp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 23 Jun 2024 06:49:06 +0000 (GMT)
+Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 45N6n6U0018324;
+	Sun, 23 Jun 2024 06:49:06 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yxc93g7tm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 23 Jun 2024 06:49:06 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 45N2gcdb019984;
+	Sun, 23 Jun 2024 06:49:05 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3yxb5m0scm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 23 Jun 2024 06:49:05 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 45N6mx4e32834064
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 23 Jun 2024 06:49:01 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9BCFF2004D;
+	Sun, 23 Jun 2024 06:48:59 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 35D432004F;
+	Sun, 23 Jun 2024 06:48:57 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.43.64.228])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 23 Jun 2024 06:48:57 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        irogers@google.com, namhyung@kernel.org
+Subject: [PATCH V4 2/3] tools/perf: Use is_perf_pid_map_name helper function to check dso's of pattern /tmp/perf-%d.map
+Date: Sun, 23 Jun 2024 12:18:49 +0530
+Message-Id: <20240623064850.83720-2-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20240623064850.83720-1-atrajeev@linux.vnet.ibm.com>
+References: <20240623064850.83720-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: oKy7q-Ew-GUP27ocbsHDr59YNDT1J0WD
+X-Proofpoint-GUID: YafeZ3bdIcmVkcs3nhhbcRy0scaLX1zy
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-06-23_01,2024-06-21_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 bulkscore=0
+ mlxlogscore=999 suspectscore=0 lowpriorityscore=0 adultscore=0
+ priorityscore=1501 mlxscore=0 phishscore=0 clxscore=1015 spamscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2406140001 definitions=main-2406230047
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,62 +98,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.org, akanksha@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+commit 80d496be89ed ("perf report: Add support for profiling JIT
+generated code") added support for profiling JIT generated code.
+This patch handles dso's of form "/tmp/perf-$PID.map".
 
-Hi Linus,
+Some of the references doesn't check exactly for same pattern.
+some uses "if (!strncmp(dso_name, "/tmp/perf-", 10))". Fix
+this by using helper function perf_pid_map_tid and
+is_perf_pid_map_name which looks for proper pattern of
+form: "/tmp/perf-$PID.map" for these checks.
 
-Please pull some more powerpc fixes for 6.10:
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+---
+ tools/perf/util/dsos.c    | 2 +-
+ tools/perf/util/srcline.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-The following changes since commit c3f38fa61af77b49866b006939479069cd451173:
+diff --git a/tools/perf/util/dsos.c b/tools/perf/util/dsos.c
+index ab3d0c01dd63..846828ea1f00 100644
+--- a/tools/perf/util/dsos.c
++++ b/tools/perf/util/dsos.c
+@@ -275,7 +275,7 @@ static void dso__set_basename(struct dso *dso)
+ 	char *base, *lname;
+ 	int tid;
+ 
+-	if (sscanf(dso__long_name(dso), "/tmp/perf-%d.map", &tid) == 1) {
++	if (perf_pid_map_tid(dso__long_name(dso), &tid)) {
+ 		if (asprintf(&base, "[JIT] tid %d", tid) < 0)
+ 			return;
+ 	} else {
+diff --git a/tools/perf/util/srcline.c b/tools/perf/util/srcline.c
+index 9d670d8c1c08..51eb78993fe2 100644
+--- a/tools/perf/util/srcline.c
++++ b/tools/perf/util/srcline.c
+@@ -39,7 +39,7 @@ static const char *srcline_dso_name(struct dso *dso)
+ 	if (dso_name[0] == '[')
+ 		return NULL;
+ 
+-	if (!strncmp(dso_name, "/tmp/perf-", 10))
++	if (is_perf_pid_map_name(dso_name))
+ 		return NULL;
+ 
+ 	return dso_name;
+-- 
+2.35.3
 
-  Linux 6.10-rc2 (2024-06-02 15:44:56 -0700)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.10-3
-
-for you to fetch changes up to a986fa57fd81a1430e00b3c6cf8a325d6f894a63:
-
-  KVM: PPC: Book3S HV: Prevent UAF in kvm_spapr_tce_attach_iommu_group() (2024-06-16 10:20:11 +1000)
-
-- ------------------------------------------------------------------
-powerpc fixes for 6.10 #3
-
- - Prevent use-after-free in 64-bit KVM VFIO
-
- - Add generated Power8 crypto asm to .gitignore
-
-Thanks to: Al Viro, Nathan Lynch.
-
-- ------------------------------------------------------------------
-Michael Ellerman (1):
-      KVM: PPC: Book3S HV: Prevent UAF in kvm_spapr_tce_attach_iommu_group()
-
-Nathan Lynch (1):
-      powerpc/crypto: Add generated P8 asm to .gitignore
-
-
- arch/powerpc/crypto/.gitignore   |  2 ++
- arch/powerpc/kvm/book3s_64_vio.c | 18 +++++++++++++-----
- 2 files changed, 15 insertions(+), 5 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmZ3gucACgkQUevqPMjh
-pYC25xAAsSnTIzbZpHdg3Bdb0vqdgzQimS9TbXGm5Qnea6rZawXYcSEoLuUABWZY
-ZkNDoezJoL9nks7JGO1lbTICUNFKleFSlBLye4WgRn7NQBlgFP2GYiH1hXJIlE0C
-qNyqY8k9uhJQor6CYt4eygskVwjpdX6oeIcHcUNWQy7/p1jID48DFS7QHib0WWm+
-wwuiPhdqBwlbJCQUO0zBmDgg8rAhPmeGSR1iHWJxk69CIcEOoXK8sxv1ZTKuE0YN
-clOKeAPrlZ3dz2jDojcMUzckFxg9J/Wlozk+m4LVl4XVj5hV7TqBpT4BVJNoMk1i
-qWV00bVg7sEWXQ9CGR71NKpdeE4pIeiN4EAEkW+nSmlJ0x9htadNychode+9cakb
-E0U/fb/rB6T32UJsEUAFF2Dq8dG5wWXHPqn0rHh9v63tPvnteUisSFM9DN7Be9a4
-UziItFANSmt3AK0uvBMgoYk8HM2USLb4WvigWdqtW9j6AGmO5NYPl1PgrLCDkFBA
-Feevx5TAIs6GeGKrzbE5s9QHMAwtVhsN1g8lJgbCPZJfh9wcynIyrPI4K/Vu5J9A
-tpNbRXGsfk/MCsNF6kgm+pAoseavXUwjsSNteFwq7eMSqZUgeG5a1hx/36b5mHdW
-+YANpMmzS3Ae2HscZ6E8xTGxzfmmWmr6SczN0i0lBCR5cjUo7Cw=
-=oWyE
------END PGP SIGNATURE-----
