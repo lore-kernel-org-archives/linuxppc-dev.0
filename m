@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DA4DC2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 12:33:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3869C2D0D1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 12:33:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W76nD07sGz3dB7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 22:33:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W76nd2MTyz3cyf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 22:33:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W76l20gXcz3cYv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 22:31:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W76l32lSzz30VM
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 22:31:11 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W76l30MYzz4wc8;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W76l33xMDz4wqM;
 	Mon, 24 Jun 2024 22:31:11 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, Ganesh Goudar <ganeshgr@linux.ibm.com>
-In-Reply-To: <20240617140240.580453-1-ganeshgr@linux.ibm.com>
-References: <20240617140240.580453-1-ganeshgr@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/eeh: avoid possible crash when edev->pdev changes
-Message-Id: <171923223896.136336.14908435779633218072.b4-ty@ellerman.id.au>
+To: mpe@ellerman.id.au, Jinglin Wen <jinglin.wen@shingroup.cn>
+In-Reply-To: <20240620024150.14857-1-jinglin.wen@shingroup.cn>
+References: <20240617023509.5674-1-jinglin.wen@shingroup.cn> <20240620024150.14857-1-jinglin.wen@shingroup.cn>
+Subject: Re: [PATCH v2] powerpc: Fix unnecessary copy to 0 when kernel is booted at address 0.
+Message-Id: <171923223894.136336.11371649484834180156.b4-ty@ellerman.id.au>
 Date: Mon, 24 Jun 2024 22:30:38 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,20 +43,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mahesh@linux.ibm.com, wenxiong@us.ibm.com
+Cc: masahiroy@kernel.org, linux-kernel@vger.kernel.org, christophe.leroy@csgroup.eu, npiggin@gmail.com, naveen.n.rao@linux.ibm.com, stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 17 Jun 2024 19:32:40 +0530, Ganesh Goudar wrote:
-> If a PCI device is removed during eeh_pe_report_edev(), edev->pdev
-> will change and can cause a crash, hold the PCI rescan/remove lock
-> while taking a copy of edev->pdev->bus.
+On Thu, 20 Jun 2024 10:41:50 +0800, Jinglin Wen wrote:
+> According to the code logic, when the kernel is loaded to address 0,
+> no copying operation should be performed, but it is currently being
+> done.
 > 
+> This patch fixes the issue where the kernel code was incorrectly
+> duplicated to address 0 when booting from address 0.
 > 
+> [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/eeh: avoid possible crash when edev->pdev changes
-      https://git.kernel.org/powerpc/c/a1216e62d039bf63a539bbe718536ec789a853dd
+[1/1] powerpc: Fix unnecessary copy to 0 when kernel is booted at address 0.
+      https://git.kernel.org/powerpc/c/13fc6c175924eaa953cf597ce28ffa4edc4554a6
 
 cheers
