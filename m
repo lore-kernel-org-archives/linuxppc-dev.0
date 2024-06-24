@@ -4,55 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0383C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 14:55:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F18AC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 15:04:49 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hX6lgAhz;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W79xL3NJXz7BBN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2024 00:55:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1190 seconds by postgrey-1.37 at boromir; Tue, 25 Jun 2024 00:50:49 AEST
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W7B8G5GTgz3vbv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2024 01:04:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hX6lgAhz;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W79r921M0z794X
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2024 00:50:48 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.19.88.105])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4W79ML6fkQzddS9;
-	Mon, 24 Jun 2024 22:29:18 +0800 (CST)
-Received: from dggpemf100008.china.huawei.com (unknown [7.185.36.138])
-	by mail.maildlp.com (Postfix) with ESMTPS id F0305140156;
-	Mon, 24 Jun 2024 22:30:51 +0800 (CST)
-Received: from [10.174.177.243] (10.174.177.243) by
- dggpemf100008.china.huawei.com (7.185.36.138) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Mon, 24 Jun 2024 22:30:50 +0800
-Message-ID: <1285eb59-fcc3-4db8-9dd9-e7c4d82b1be0@huawei.com>
-Date: Mon, 24 Jun 2024 22:30:50 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W7B7T5FqTz2ysf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2024 01:04:05 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id A19C7CE12C8;
+	Mon, 24 Jun 2024 15:04:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BB4DC2BBFC;
+	Mon, 24 Jun 2024 15:04:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1719241441;
+	bh=pL5pT4yOWULjdyQiY7Dx0OcaqM/qghZcDutXrpJKO3I=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=hX6lgAhzRO27sRmolRzsH954/mdFR1FqaRnz0OGHONScSiz6EswsWDR233AyCkblQ
+	 3btOnKfpxWy1NGBzg/E8H8xdGUxG2CG1VE/RsE0ZJROhK9T4+69S13jyVdtyBVo7vZ
+	 TgEHH3MyaK4QKCIBpdrRKfR8yxeQg5A6wQK0mKhCewNvFopTDZA7vKmzhM1iTShJ6v
+	 xtj8obOJ3EyChAhq/3GBpMpPguvsLqejgNRZgYzaCWUQKTl3x9bDz6dNuhS5biujuo
+	 kOk9ClGk+0ejrbMIBmYQAqGeQSLv99zSdDKDzqSdQ/D2h6A4UdR9cKfR5yddMVx54o
+	 jmBXVOv/5i0TA==
+Date: Mon, 24 Jun 2024 09:04:00 -0600
+From: Rob Herring <robh@kernel.org>
+To: Frank Li <Frank.Li@nxp.com>
+Subject: Re: [PATCH 1/1] dt-bindings: soc: fsl: Convert q(b)man-* to yaml
+ format
+Message-ID: <20240624150400.GA3624893-robh@kernel.org>
+References: <20240621213031.2759046-1-Frank.Li@nxp.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 18/18] arm64/mm: Automatically fold contpte mappings
-Content-Language: en-US
-To: Ryan Roberts <ryan.roberts@arm.com>, Catalin Marinas
-	<catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Ard Biesheuvel
-	<ardb@kernel.org>, Marc Zyngier <maz@kernel.org>, James Morse
-	<james.morse@arm.com>, Andrey Ryabinin <ryabinin.a.a@gmail.com>, Andrew
- Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>,
-	Mark Rutland <mark.rutland@arm.com>, David Hildenbrand <david@redhat.com>,
-	John Hubbard <jhubbard@nvidia.com>, Zi Yan <ziy@nvidia.com>, Barry Song
-	<21cnbao@gmail.com>, Alistair Popple <apopple@nvidia.com>, Yang Shi
-	<shy828301@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
-	<mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
-	<dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
-References: <20240215103205.2607016-1-ryan.roberts@arm.com>
- <20240215103205.2607016-19-ryan.roberts@arm.com>
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-In-Reply-To: <20240215103205.2607016-19-ryan.roberts@arm.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.174.177.243]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- dggpemf100008.china.huawei.com (7.185.36.138)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240621213031.2759046-1-Frank.Li@nxp.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,195 +60,519 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Conor Dooley <conor+dt@kernel.org>, imx@lists.linux.dev, open list <linux-kernel@vger.kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, "open list:FREESCALE SOC DRIVERS" <linuxppc-dev@lists.ozlabs.org>, "moderated list:FREESCALE SOC DRIVERS" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ryan,
-
-A big regression on page-fault3("Separate file shared mapping page
-fault") testcase from will-it-scale on arm64, no issue on x86,
-
-./page_fault3_processes -t 128 -s 5
-
-1) large folio disabled on ext4:
-    92378735
-2) large folio  enabled on ext4 +  CONTPTE enabled
-    16164943
-3) large folio  enabled on ext4 +  CONTPTE disabled
-    80364074
-4) large folio  enabled on ext4 +  CONTPTE enabled + large folio mapping 
-enabled in finish_fault()[2]
-    299656874
-
-We found *contpte_convert* consume lots of CPU(76%) in case 2), and 
-disparaged by following change[2], it is easy to understood the 
-different between case 2) and case 4) since case 2) always map one page
-size, but always try to fold contpte mappings, which spend a lot of
-time. Case 4) is a workaround, any other better suggestion?
-
-Thanks.
-
-[1] https://github.com/antonblanchard/will-it-scale
-[2] enable large folio mapping in finish_fault()
-
-diff --git a/mm/memory.c b/mm/memory.c
-index 00728ea95583..5623a8ce3a1e 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -4880,7 +4880,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
-          * approach also applies to non-anonymous-shmem faults to avoid
-          * inflating the RSS of the process.
-          */
--       if (!vma_is_anon_shmem(vma) || unlikely(userfaultfd_armed(vma))) {
-+       if (unlikely(userfaultfd_armed(vma))) {
-                 nr_pages = 1;
-         } else if (nr_pages > 1) {
-                 pgoff_t idx = folio_page_idx(folio, page);
-
-
-On 2024/2/15 18:32, Ryan Roberts wrote:
-> There are situations where a change to a single PTE could cause the
-> contpte block in which it resides to become foldable (i.e. could be
-> repainted with the contiguous bit). Such situations arise, for example,
-> when user space temporarily changes protections, via mprotect, for
-> individual pages, such can be the case for certain garbage collectors.
+On Fri, Jun 21, 2024 at 05:30:14PM -0400, Frank Li wrote:
+> Convert qman, bman, qman-portals, bman-portals to yaml format.
 > 
-> We would like to detect when such a PTE change occurs. However this can
-> be expensive due to the amount of checking required. Therefore only
-> perform the checks when an indiviual PTE is modified via mprotect
-> (ptep_modify_prot_commit() -> set_pte_at() -> set_ptes(nr=1)) and only
-> when we are setting the final PTE in a contpte-aligned block.
+> Additional Chang for fsl,q(b)man-portal:
+
+typo
+
+> - Only keep one example.
+> - Add fsl,qman-channel-id property.
+> - Use interrupt type macro.
+> - Remove top level qman-portals@ff4200000 at example.
 > 
-> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
+> Additional change for fsl,q(b)man:
+> - Fixed example error.
+> - Remove redundent part, only keep fsl,qman node.
+> - Change memory-regions to memory-region.
+> - fsl,q(b)man-portals is not required property
+> 
+> Additional change for fsl,qman-fqd.yaml:
+> - Fixed example error.
+> - Only keep one example.
+> - Ref to reserve-memory.yaml
+> - Merge fsl,bman reserver memory part
+> 
+> Signed-off-by: Frank Li <Frank.Li@nxp.com>
 > ---
->   arch/arm64/include/asm/pgtable.h | 26 +++++++++++++
->   arch/arm64/mm/contpte.c          | 64 ++++++++++++++++++++++++++++++++
->   2 files changed, 90 insertions(+)
-> 
-> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-> index 8310875133ff..401087e8a43d 100644
-> --- a/arch/arm64/include/asm/pgtable.h
-> +++ b/arch/arm64/include/asm/pgtable.h
-> @@ -1185,6 +1185,8 @@ extern void ptep_modify_prot_commit(struct vm_area_struct *vma,
->    * where it is possible and makes sense to do so. The PTE_CONT bit is considered
->    * a private implementation detail of the public ptep API (see below).
->    */
-> +extern void __contpte_try_fold(struct mm_struct *mm, unsigned long addr,
-> +				pte_t *ptep, pte_t pte);
->   extern void __contpte_try_unfold(struct mm_struct *mm, unsigned long addr,
->   				pte_t *ptep, pte_t pte);
->   extern pte_t contpte_ptep_get(pte_t *ptep, pte_t orig_pte);
-> @@ -1206,6 +1208,29 @@ extern int contpte_ptep_set_access_flags(struct vm_area_struct *vma,
->   				unsigned long addr, pte_t *ptep,
->   				pte_t entry, int dirty);
->   
-> +static __always_inline void contpte_try_fold(struct mm_struct *mm,
-> +				unsigned long addr, pte_t *ptep, pte_t pte)
-> +{
-> +	/*
-> +	 * Only bother trying if both the virtual and physical addresses are
-> +	 * aligned and correspond to the last entry in a contig range. The core
-> +	 * code mostly modifies ranges from low to high, so this is the likely
-> +	 * the last modification in the contig range, so a good time to fold.
-> +	 * We can't fold special mappings, because there is no associated folio.
-> +	 */
+>  .../bindings/soc/fsl/bman-portals.txt         |  56 ------
+>  .../devicetree/bindings/soc/fsl/bman.txt      | 137 -------------
+>  .../bindings/soc/fsl/fsl,bman-portal.yaml     |  51 +++++
+>  .../devicetree/bindings/soc/fsl/fsl,bman.yaml |  83 ++++++++
+>  .../bindings/soc/fsl/fsl,qman-fqd.yaml        |  68 +++++++
+>  .../bindings/soc/fsl/fsl,qman-portal.yaml     | 110 +++++++++++
+>  .../devicetree/bindings/soc/fsl/fsl,qman.yaml |  97 +++++++++
+>  .../bindings/soc/fsl/qman-portals.txt         | 134 -------------
+>  .../devicetree/bindings/soc/fsl/qman.txt      | 187 ------------------
+>  9 files changed, 409 insertions(+), 514 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/soc/fsl/bman-portals.txt
+>  delete mode 100644 Documentation/devicetree/bindings/soc/fsl/bman.txt
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/fsl,bman-portal.yaml
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/fsl,bman.yaml
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/fsl,qman-fqd.yaml
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/fsl,qman-portal.yaml
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/fsl,qman.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/soc/fsl/qman-portals.txt
+>  delete mode 100644 Documentation/devicetree/bindings/soc/fsl/qman.txt
+
+
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,bman-portal.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,bman-portal.yaml
+> new file mode 100644
+> index 0000000000000..06b51f049098f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/fsl/fsl,bman-portal.yaml
+> @@ -0,0 +1,51 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/soc/fsl/fsl,bman-portal.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +	const unsigned long contmask = CONT_PTES - 1;
-> +	bool valign = ((addr >> PAGE_SHIFT) & contmask) == contmask;
+> +title: QorIQ DPAA Queue Manager Portals
 > +
-> +	if (unlikely(valign)) {
-> +		bool palign = (pte_pfn(pte) & contmask) == contmask;
+> +maintainers:
+> +  - Frank Li <Frank.Li@nxp.com>
 > +
-> +		if (unlikely(palign &&
-> +		    pte_valid(pte) && !pte_cont(pte) && !pte_special(pte)))
-> +			__contpte_try_fold(mm, addr, ptep, pte);
-> +	}
-> +}
+> +description:
+> +  QorIQ DPAA Buffer Manager Portal
 > +
->   static __always_inline void contpte_try_unfold(struct mm_struct *mm,
->   				unsigned long addr, pte_t *ptep, pte_t pte)
->   {
-> @@ -1286,6 +1311,7 @@ static __always_inline void set_ptes(struct mm_struct *mm, unsigned long addr,
->   	if (likely(nr == 1)) {
->   		contpte_try_unfold(mm, addr, ptep, __ptep_get(ptep));
->   		__set_ptes(mm, addr, ptep, pte, 1);
-> +		contpte_try_fold(mm, addr, ptep, pte);
->   	} else {
->   		contpte_set_ptes(mm, addr, ptep, pte, nr);
->   	}
-> diff --git a/arch/arm64/mm/contpte.c b/arch/arm64/mm/contpte.c
-> index 50e0173dc5ee..16788f07716d 100644
-> --- a/arch/arm64/mm/contpte.c
-> +++ b/arch/arm64/mm/contpte.c
-> @@ -73,6 +73,70 @@ static void contpte_convert(struct mm_struct *mm, unsigned long addr,
->   	__set_ptes(mm, start_addr, start_ptep, pte, CONT_PTES);
->   }
->   
-> +void __contpte_try_fold(struct mm_struct *mm, unsigned long addr,
-> +			pte_t *ptep, pte_t pte)
-> +{
-> +	/*
-> +	 * We have already checked that the virtual and pysical addresses are
-> +	 * correctly aligned for a contpte mapping in contpte_try_fold() so the
-> +	 * remaining checks are to ensure that the contpte range is fully
-> +	 * covered by a single folio, and ensure that all the ptes are valid
-> +	 * with contiguous PFNs and matching prots. We ignore the state of the
-> +	 * access and dirty bits for the purpose of deciding if its a contiguous
-> +	 * range; the folding process will generate a single contpte entry which
-> +	 * has a single access and dirty bit. Those 2 bits are the logical OR of
-> +	 * their respective bits in the constituent pte entries. In order to
-> +	 * ensure the contpte range is covered by a single folio, we must
-> +	 * recover the folio from the pfn, but special mappings don't have a
-> +	 * folio backing them. Fortunately contpte_try_fold() already checked
-> +	 * that the pte is not special - we never try to fold special mappings.
-> +	 * Note we can't use vm_normal_page() for this since we don't have the
-> +	 * vma.
-> +	 */
+> +  Portals are memory mapped interfaces to BMan that allow low-latency, lock-less
+> +  interaction by software running on processor cores, accelerators and network
+> +  interfaces with the BMan
 > +
-> +	unsigned long folio_start, folio_end;
-> +	unsigned long cont_start, cont_end;
-> +	pte_t expected_pte, subpte;
-> +	struct folio *folio;
-> +	struct page *page;
-> +	unsigned long pfn;
-> +	pte_t *orig_ptep;
-> +	pgprot_t prot;
+> +properties:
+> +  compatible:
+> +    oneOf:
+> +      - const: fsl,bman-portal
+> +      - items:
+> +          - enum:
+> +              - fsl,ls1043a-bmap-portal
+> +              - fsl,ls1046a-bmap-portal
+> +          - const: fsl,bman-portal
+> +  reg:
+> +    items:
+> +      - description: the cache-enabled region of the portal
+> +      - description: the cache-inhibited region of the porta
+
+typo
+
 > +
-> +	int i;
+> +  interrupts:
+> +    maxItems: 1
 > +
-> +	if (!mm_is_user(mm))
-> +		return;
+> +required:
+> +  - compatible
+> +  - reg
+> +  - interrupts
 > +
-> +	page = pte_page(pte);
-> +	folio = page_folio(page);
-> +	folio_start = addr - (page - &folio->page) * PAGE_SIZE;
-> +	folio_end = folio_start + folio_nr_pages(folio) * PAGE_SIZE;
-> +	cont_start = ALIGN_DOWN(addr, CONT_PTE_SIZE);
-> +	cont_end = cont_start + CONT_PTE_SIZE;
+> +additionalProperties: false
 > +
-> +	if (folio_start > cont_start || folio_end < cont_end)
-> +		return;
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/irq.h>
 > +
-> +	pfn = ALIGN_DOWN(pte_pfn(pte), CONT_PTES);
-> +	prot = pte_pgprot(pte_mkold(pte_mkclean(pte)));
-> +	expected_pte = pfn_pte(pfn, prot);
-> +	orig_ptep = ptep;
-> +	ptep = contpte_align_down(ptep);
+> +    bman-portal@0 {
+> +        compatible = "fsl,bman-portal-1.0.0", "fsl,bman-portal";
+> +        reg = <0x0 0x4000>, <0x100000 0x1000>;
+> +        interrupts = <105 IRQ_TYPE_EDGE_FALLING 0 0>;
+> +    };
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,bman.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,bman.yaml
+> new file mode 100644
+> index 0000000000000..e6b3d489ce5cc
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/fsl/fsl,bman.yaml
+> @@ -0,0 +1,83 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/soc/fsl/fsl,bman.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +	for (i = 0; i < CONT_PTES; i++) {
-> +		subpte = pte_mkold(pte_mkclean(__ptep_get(ptep)));
-> +		if (!pte_same(subpte, expected_pte))
-> +			return;
-> +		expected_pte = pte_advance_pfn(expected_pte, 1);
-> +		ptep++;
-> +	}
+> +title: QorIQ DPAA Buffer Manager
 > +
-> +	pte = pte_mkcont(pte);
-> +	contpte_convert(mm, addr, orig_ptep, pte);
-> +}
-> +EXPORT_SYMBOL(__contpte_try_fold);
+> +maintainers:
+> +  - Frank Li <Frank.Li@nxp.com>
 > +
->   void __contpte_try_unfold(struct mm_struct *mm, unsigned long addr,
->   			pte_t *ptep, pte_t pte)
->   {
+> +description:
+> +  The Buffer Manager is part of the Data-Path Acceleration Architecture (DPAA).
+> +  BMan supports hardware allocation and deallocation of buffers belonging to pools
+> +  originally created by software with configurable depletion thresholds. This
+> +  binding covers the CCSR space programming model
+> +
+> +properties:
+> +  compatible:
+> +    oneOf:
+> +      - const: fsl,bman
+> +      - items:
+> +          - enum:
+> +              - fsl,ls1043a-bman
+> +              - fsl,ls1046a-bman
+> +          - const: fsl,bman
+> +
+> +  reg:
+> +    items:
+> +      - description:
+
+Needs '|' if you want formatting preserved.
+
+> +          Registers region within the CCSR address space
+> +
+> +          The BMan revision information is located in the BMAN_IP_REV_1/2 registers which
+> +          are located at offsets 0xbf8 and 0xbfc
+
+Wrap lines at 80 unless there's a good reason to go to 100. There isn't 
+here.
+
+> +
+> +  interrupts:
+> +    items:
+> +      - description: The error interrupt
+> +
+> +  memory-region:
+> +    $ref: /schemas/types.yaml#/definitions/phandle-array
+
+memory-region already has a type. Need to define how many entries and 
+what they are.
+
+> +    description:
+> +      List of phandles referencing the BMan private memory
+> +      nodes (described below). The bman-fqd node must be
+> +      first followed by bman-pfdr node. Only used on ARM
+> +
+> +      Devices connected to a BMan instance via Direct Connect Portals (DCP) must link
+> +      to the respective BMan instance
+> +
+> +  fsl,bman-portals:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: ref fsl,bman-port.yaml
+> +
+> +  fsl,liodn:
+> +    $ref: /schemas/types.yaml#/definitions/uint32-array
+> +    description:
+> +      See pamu.txt, PAMU property used for static LIODN assignment
+> +
+> +  fsl,iommu-parent:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description:
+> +      See pamu.txt, PAMU property used for dynamic LIODN assignment
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - interrupts
+> +  - fsl,bman-portals
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +    bman@31a000 {
+> +        compatible = "fsl,bman";
+> +        reg = <0x31a000 0x1000>;
+> +        interrupts = <16 IRQ_TYPE_EDGE_FALLING 1 2>;
+> +        fsl,liodn = <0x17>;
+> +        fsl,bman-portals = <&bportals>;
+> +        memory-region = <&bman_fbpr>;
+> +    };
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,qman-fqd.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,qman-fqd.yaml
+> new file mode 100644
+> index 0000000000000..f7af14dc7deb6
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/fsl/fsl,qman-fqd.yaml
+> @@ -0,0 +1,68 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/soc/fsl/fsl,qman-fqd.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: QMan Private Memory Nodes
+> +
+> +maintainers:
+> +  - Frank Li <Frank.Li@nxp.com>
+> +
+> +description: |
+> +  QMan requires two contiguous range of physical memory used for the backing store
+> +  for QMan Frame Queue Descriptor (FQD) and Packed Frame Descriptor Record (PFDR).
+> +  This memory is reserved/allocated as a node under the /reserved-memory node.
+> +
+> +  BMan requires a contiguous range of physical memory used for the backing store
+> +  for BMan Free Buffer Proxy Records (FBPR). This memory is reserved/allocated as
+> +  a node under the /reserved-memory node.
+> +
+> +  The QMan FQD memory node must be named "qman-fqd"
+> +  The QMan PFDR memory node must be named "qman-pfdr"
+> +  The BMan FBPR memory node must be named "bman-fbpr"
+> +
+> +  The following constraints are relevant to the FQD and PFDR private memory:
+> +    - The size must be 2^(size + 1), with size = 11..29. That is 4 KiB to
+> +      1 GiB
+> +    - The alignment must be a muliptle of the memory size
+> +
+> +  The size of the FQD and PFDP must be chosen by observing the hardware features
+> +  configured via the Reset Configuration Word (RCW) and that are relevant to a
+> +  specific board (e.g. number of MAC(s) pinned-out, number of offline/host command
+> +  FMan ports, etc.). The size configured in the DT must reflect the hardware
+> +  capabilities and not the specific needs of an application
+> +
+> +  For additional details about reserved memory regions see reserved-memory.txt
+
+Please read what that document says.
+
+> +
+> +properties:
+> +  $nodename:
+> +    pattern: '^(qman-fqd|qman-pfdr|bman-fbpr|)+$'
+
+Don't need the last '|' or the '+'.
+
+> +
+> +  compatible:
+> +    enum:
+> +      - fsl,qman-fqd
+> +      - fsl,qman-pfdr
+> +      - fsl,bman-fbpr
+> +
+> +required:
+> +  - compatible
+> +
+> +allOf:
+> +  - $ref: reserved-memory.yaml
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    reserved-memory {
+> +        #address-cells = <2>;
+> +        #size-cells = <2>;
+> +
+> +        qman-fqd {
+> +            compatible = "shared-dma-pool";
+> +            size = <0 0x400000>;
+> +            alignment = <0 0x400000>;
+> +            no-map;
+> +        };
+> +    };
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,qman-portal.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,qman-portal.yaml
+> new file mode 100644
+> index 0000000000000..6c81e0d66f4d5
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/fsl/fsl,qman-portal.yaml
+> @@ -0,0 +1,110 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/soc/fsl/fsl,qman-portal.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: QorIQ DPAA Queue Manager Portals
+> +
+> +maintainers:
+> +  - Frank Li <Frank.Li@nxp.com>
+> +
+> +description:
+> +  Portals are memory mapped interfaces to QMan that allow low-latency, lock-less
+> +  interaction by software running on processor cores, accelerators and network
+> +  interfaces with the QMan
+> +
+> +properties:
+> +  compatible:
+> +    oneOf:
+> +      - const: fsl,qman-portal
+> +      - items:
+> +          - enum:
+> +              - fsl,ls1043-qman-portal
+> +              - fsl,ls1046-qman-portal
+> +              - fsl,qman-portal-1.2.0
+> +          - const: fsl,qman-portal
+> +
+> +  reg:
+> +    items:
+> +      - description: the cache-enabled region of the portal
+> +      - description: the cache-inhibited region of the portal
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  fsl,liodn:
+> +    $ref: /schemas/types.yaml#/definitions/uint32-array
+> +    description: See pamu.txt. Two LIODN(s). DQRR LIODN (DLIODN) and Frame LIODN
+> +      (FLIODN)
+> +
+> +  fsl,iommu-parent:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: See pamu.txt.
+> +
+> +  fsl,qman-channel-id:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: qman channel id.
+> +
+> +  cell-index:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description:
+> +      The hardware index of the channel. This can also be
+> +      determined by dividing any of the channel's 8 work queue
+> +      IDs by 8
+> +
+> +      In addition to these properties the qman-portals should have sub-nodes to
+> +      represent the HW devices/portals that are connected to the software portal
+> +      described here
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - interrupts
+> +
+> +additionalProperties: false
+> +
+> +patternProperties:
+> +  '^(fman0|fman1|pme|crypto|)+$':
+
+Same regex problems here.
+
+> +    type: object
+> +    properties:
+> +      fsl,liodn:
+> +        description: See pamu.txt, PAMU property used for static LIODN assignment
+> +
+> +      fsl,iommu-parent:
+> +        description: See pamu.txt, PAMU property used for dynamic LIODN assignment
+> +
+> +      dev-handle:
+> +        $ref: /schemas/types.yaml#/definitions/phandle
+> +        description:
+> +          The phandle to the particular hardware device that this
+> +          portal is connected to.
+> +
+> +    additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +    qman-portal@0 {
+> +        compatible = "fsl,qman-portal-1.2.0", "fsl,qman-portal";
+> +        reg = <0 0x4000>, <0x100000 0x1000>;
+> +        interrupts = <104 IRQ_TYPE_EDGE_FALLING 0 0>;
+> +        fsl,liodn = <1 2>;
+> +        fsl,qman-channel-id = <0>;
+> +
+> +        fman0 {
+> +            fsl,liodn = <0x21>;
+> +            dev-handle = <&fman0>;
+> +        };
+> +
+> +        fman1 {
+> +            fsl,liodn = <0xa1>;
+> +            dev-handle = <&fman1>;
+> +        };
+> +
+> +        crypto {
+> +            fsl,liodn = <0x41 0x66>;
+> +            dev-handle = <&crypto>;
+> +        };
+> +    };
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,qman.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,qman.yaml
+> new file mode 100644
+> index 0000000000000..341c3d2cfd6c7
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/fsl/fsl,qman.yaml
+> @@ -0,0 +1,97 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/soc/fsl/fsl,qman.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: QorIQ DPAA Queue Manager
+> +
+> +maintainers:
+> +  - Frank Li <Frank.Li@nxp.com>
+> +
+> +description:
+> +  The Queue Manager is part of the Data-Path Acceleration Architecture (DPAA). QMan
+> +  supports queuing and QoS scheduling of frames to CPUs, network interfaces and
+> +  DPAA logic modules, maintains packet ordering within flows. Besides providing
+> +  flow-level queuing, is also responsible for congestion management functions such
+> +  as RED/WRED, congestion notifications and tail discards. This binding covers the
+> +  CCSR space programming model
+> +
+> +properties:
+> +  compatible:
+> +    oneOf:
+> +      - const: fsl,qman
+> +      - items:
+> +          - enum:
+> +              - fsl,ls1043a-qman
+> +              - fsl,ls1046a-qman
+> +          - const: fsl,qman
+> +  reg:
+> +    items:
+> +      - description:
+> +          Registers region within the CCSR address space
+> +
+> +          The QMan revision information is located in the QMAN_IP_REV_1/2 registers which
+> +          are located at offsets 0xbf8 and 0xbfc
+> +
+> +  interrupts:
+> +    items:
+> +      - description: The error interrupt
+> +
+> +  fsl,qman-portals:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: ref fsl,qman-port.yaml
+> +
+> +  fsl,liodn:
+> +    $ref: /schemas/types.yaml#/definitions/uint32-array
+> +    description:
+> +      See pamu.txt, PAMU property used for static LIODN assignment
+> +
+> +  fsl,iommu-parent:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description:
+> +      See pamu.txt, PAMU property used for dynamic LIODN assignment
+> +
+> +  clocks:
+> +    maxItems: 1
+> +    description:
+> +      See clock-bindings.txt and qoriq-clock.txt
+
+Drop.
+
+> +      Reference input clock. Its frequency is half of the platform clock
+> +
+> +  memory-region:
+> +    $ref: /schemas/types.yaml#/definitions/phandle-array
+> +    description:
+> +      List of phandles referencing the QMan private memory
+> +      nodes (described below). The qman-fqd node must be
+> +      first followed by qman-pfdr node. Only used on ARM
+> +
+> +      Devices connected to a QMan instance via Direct Connect Portals (DCP) must link
+> +      to the respective QMan instance
+> +
+> +  fsl,qman:
+> +    $ref: /schemas/types.yaml#/definitions/uint32-array
+> +    description:
+> +      List of phandle and DCP index pairs, to the QMan instance
+> +      to which this device is connected via the DCP
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - interrupts
+> +  - fsl,qman-portals
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +    qman: qman@318000 {
+> +        compatible = "fsl,qman";
+> +        reg = <0x318000 0x1000>;
+> +        interrupts = <16 IRQ_TYPE_EDGE_FALLING 1 3>;
+> +        fsl,liodn = <0x16>;
+> +        fsl,qman-portals = <&qportals>;
+> +        memory-region = <&qman_fqd &qman_pfdr>;
+> +        clocks = <&platform_pll 1>;
+> +    };
