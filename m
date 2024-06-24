@@ -4,171 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E695C3064D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2024 02:36:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFE6FC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2024 03:54:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AE10sN/C;
+	dkim=pass (2048-bit key; unprotected) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=KQhFpsDN;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W8jPt0Tmqz3gBH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2024 12:36:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W8l751GKqz3cft
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2024 13:54:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AE10sN/C;
+	dkim=pass (2048-bit key; unprotected) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=KQhFpsDN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=oliver.sang@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W8jP15yKjz3g91
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2024 12:36:03 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1719455767; x=1750991767;
-  h=date:from:to:cc:subject:message-id:references:
-   in-reply-to:mime-version;
-  bh=Tm5fXzj/0p2EHgLOiFB38ADrMsp4/BzPcBMAMvA3Zcg=;
-  b=AE10sN/CUnKoPQnur7OPX3X+ZQBaljd5vcR9tk29iwrkHdlqa3mlBa+1
-   F9KArwa/dLJjtQU7h0GFfOZVENI+OdPn1sI8e/4l8gd7n2TTFm7pbXpia
-   t0Ob1Jp5mTHv46IDImBwaSDXtd+s5LfX5U2f3nBMGiLgaa/m+F9x4zpE9
-   o7vAGmvEvxzxcgVDhxMyCIANa9NBuL0d8kNS2Ap28DVCmfOf8VUcx3bYJ
-   UxDvAmd6IFKWOohsTw0Zhpx1OvltYzo6WJU/BgG+jESQEptyYdLpWtLNa
-   c/DcXt9a8Jau/zVgvfgGwB6ecVCGh0k9tnwBQo4cmPyRWGvO69lSS4ToS
-   g==;
-X-CSE-ConnectionGUID: D4ppWZdUSa6ryIrYEkog2w==
-X-CSE-MsgGUID: bWNo+wzpSVWzeEm8YQuHIQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11115"; a="27150866"
-X-IronPort-AV: E=Sophos;i="6.08,268,1712646000"; 
-   d="scan'208";a="27150866"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jun 2024 19:35:59 -0700
-X-CSE-ConnectionGUID: j10ZU3/DQnqD1weyP265+g==
-X-CSE-MsgGUID: iUcHYBtvRKG8/JVyWBtSnA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.08,268,1712646000"; 
-   d="scan'208";a="44643323"
-Received: from fmsmsx603.amr.corp.intel.com ([10.18.126.83])
-  by orviesa006.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 26 Jun 2024 19:36:00 -0700
-Received: from fmsmsx603.amr.corp.intel.com (10.18.126.83) by
- fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.39; Wed, 26 Jun 2024 19:35:58 -0700
-Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
- fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.39 via Frontend Transport; Wed, 26 Jun 2024 19:35:58 -0700
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (104.47.70.46) by
- edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.39; Wed, 26 Jun 2024 19:35:58 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ekMKBmk67ur17JmKVOIbQXZ1fARbRMGad4UXkuRY2r5YWVhRlmYLRuAa+tk1/jQevXtZHlBL8lUxrEMhSQJsAURlKSzRRiRw0jEbfll1whAAun0sBah1iYobacA6l5JVeYheJXjv+ThwF0/cdVlkV6FbZRrf1v9yFFidoWgXOJ0ZDKV9PTlyKmuQvshTXGPE3dTjc0ErAMv8vh95mcvW7Fhst5mLVb6+KVI5wsNpPZWsFw/F2t7Xfc1zrwjTNiZciiNHPCHR3eufqHQmDBlNg0exJng8atRJBdhjD0Qlp0TygNLw+LcMRT/bcdj8s56rYC49D04Rl+uTrDmRjXJX9w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=+jSD7+FSTNy4cDlgbUVR5l0uy8U1HhJxiVCdYXXKGto=;
- b=cS1onbZTaz6hoAaeHtDFbFFAoLCBqY89YJ0ChMu/l5JygZp83vUplEo1j5ino1QNK0G5wxNYjBav2K4grmtn42ti+SzaiVdJQXHKI2rSYMyt6vlHYR4NtdibDCki+rI4OzvLVJPtupLeN7/ryWBhwuB8cVD62dKxeySX/pzy2w3lI71tWZqfH+s4TY6x7F4SxSh9qsfL8m6gpv1LlU5Xsg2aeJEpec41cykvfRENtheWAohONum+gjJQGsAsHQ7g+hhZIBvf2SnCXF4YVi4La+KNibZcbdQTWYAzAYwY5RdzxJEN4WWwBIgChOqdJcnKa9UeBmftpbkYiZTnwp1e4w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from LV3PR11MB8603.namprd11.prod.outlook.com (2603:10b6:408:1b6::9)
- by PH8PR11MB6998.namprd11.prod.outlook.com (2603:10b6:510:222::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7698.30; Thu, 27 Jun
- 2024 02:35:55 +0000
-Received: from LV3PR11MB8603.namprd11.prod.outlook.com
- ([fe80::4622:29cf:32b:7e5c]) by LV3PR11MB8603.namprd11.prod.outlook.com
- ([fe80::4622:29cf:32b:7e5c%2]) with mapi id 15.20.7698.025; Thu, 27 Jun 2024
- 02:35:55 +0000
-Date: Thu, 27 Jun 2024 10:35:38 +0800
-From: Oliver Sang <oliver.sang@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [axboe-block:for-next] [block]  1122c0c1cc:  aim7.jobs-per-min
- 22.6% improvement
-Message-ID: <ZnzP+nUrk8+9bANK@xsang-OptiPlex-9020>
-References: <202406250948.e0044f1d-oliver.sang@intel.com>
- <ZnqGf49cvy6W-xWf@infradead.org>
- <Znt4qTr/NdeIPyNp@xsang-OptiPlex-9020>
- <ZnuNhkH26nZi8fz6@infradead.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <ZnuNhkH26nZi8fz6@infradead.org>
-X-ClientProxiedBy: KL1PR01CA0154.apcprd01.prod.exchangelabs.com
- (2603:1096:820:149::8) To LV3PR11MB8603.namprd11.prod.outlook.com
- (2603:10b6:408:1b6::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W77x33sLrz30f8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 23:24:53 +1000 (AEST)
+Received: by mail-ej1-x62d.google.com with SMTP id a640c23a62f3a-a725041ad74so60602966b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 06:24:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1719235484; x=1719840284; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/qNmpKJuYqjpPf8ANNBdO2N5OryrwiWb6w2l8lfusXk=;
+        b=KQhFpsDNZyP0uHngc2BMM/3WPs/ywLI5szJjsRByY0PZBVqJlFlb7Nhe9XAZsAa8Jg
+         KuogLGCMPVy2NN7uttmxLN4qlxmSb5q+27K2hjcQFUMJlDgbo82FvXNtgvwUQqVc4/nx
+         DzRDAqPjuEMl58XmvskAYNr2Et3d5wHzvd/WaZGLkOBNoGS0MH2XI+tdRkdSpLjWamBs
+         VK5dKzDql1JV4RFeXr6hOEg6SbBu+Ga1ZUe5dR7Y0zNOEbwxHFhvgDoSInQMo4/p3MJ+
+         BKiC9GAZPfEfKSGqMrat5K1ZrPsIq84EXqHSZzJ0KpRW/6WIjOQ6ebDPcx79UH5E13Ow
+         YvCQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1719235484; x=1719840284;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/qNmpKJuYqjpPf8ANNBdO2N5OryrwiWb6w2l8lfusXk=;
+        b=q0ZH0cmfAEkV/bpImnr5DFWGsbHiLMlL9dBwEpi9mf0oOoLC5d0hU1ULSpVELGgIWj
+         4JQVGbUIHCxRCXTDeRuxQv0LgIM5Htllss13S0lN1uP5ubhj6aSsNZTH22MtfH5T8uQL
+         y3GLoiXKSwqgj92DEtfwYx4tYMSllyCIsNNWZXr5vroTW30cC937XMWR2+2TBLZlkUqk
+         x05HnWGHtWTITNwEYm1+t6BzOwtACF8JExexrPUHHaWAgoQzfLC3ISyTYa0NFPxkAJua
+         ywihD6DGztsFySUZBKpp6JCUiFvjj0lKy+6KFxeiIA5Q7O9G142urbUFiTGSZ5y06pFK
+         FcIg==
+X-Gm-Message-State: AOJu0YyhbhMwS+a6Sm3nkJnkFGYXmP+fyVkA+SLR0sRaJ56QQFleQjKQ
+	kfA8mQOztQR2jgzwlqeKT5baapU7DNGtxyDpqImprla7+EaDu1zm8RMsHLfHDEQ=
+X-Google-Smtp-Source: AGHT+IH5sdZC4fUoXdA9SbZYcEzF1JAGZSeiELDR0lPD2ttVCqNAj60gu0/0JD15lfwLA1qlYRoBUg==
+X-Received: by 2002:a50:c307:0:b0:57d:4df:f7e0 with SMTP id 4fb4d7f45d1cf-57d4bddf37dmr3706685a12.35.1719235483812;
+        Mon, 24 Jun 2024 06:24:43 -0700 (PDT)
+Received: from localhost ([2a02:8071:b783:6940:5d40:c7b4:b6ef:a1b])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-57d3040f3e0sm4666760a12.25.2024.06.24.06.24.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Jun 2024 06:24:43 -0700 (PDT)
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] macintosh: Drop explicit initialization of struct i2c_device_id::driver_data to 0
+Date: Mon, 24 Jun 2024 15:24:33 +0200
+Message-ID: <20240624132433.1244750-2-u.kleine-koenig@baylibre.com>
+X-Mailer: git-send-email 2.43.0
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV3PR11MB8603:EE_|PH8PR11MB6998:EE_
-X-MS-Office365-Filtering-Correlation-Id: 674cc3cf-f9ec-45c0-a6a8-08dc9651dedf
-X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|376014|7416014|1800799024;
-X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?TRxfcgNOCtfec4hTwWFvMGMk/COYA0kIqOAMmNI1yLflOEUnMrC3HKSuGvS7?=
- =?us-ascii?Q?FlZ5anx25Bn6ds9LE7sKSXWnS9P0z+RqwfQwFZKr+N8xbpF4rO4O0JckG4yr?=
- =?us-ascii?Q?18GkU0fXamh/e6RVsa6DxlKZIQ/siRR2kROXVVBspKb1TXmivGfTpqoSALDT?=
- =?us-ascii?Q?D6K8RFOdaN23OAQr/BzT579DCtLzqhLQw89jGBHWmddgAc5XlHMsoxm23v9x?=
- =?us-ascii?Q?ZGf094sZ/4Do+7jifvn7Noc+OwuzRT06IKl/5fLQ3ZslTgJRLGfgJCRJsO+R?=
- =?us-ascii?Q?b7mWhhQBVT5hsWsYMBgyyKLwtteXCPK1OH5xqdNJeH470XH+opeH3e8hYtrJ?=
- =?us-ascii?Q?yyNTwe0U7WX2XUwY8FrMtkItIBEGZX2cbquzZSy+59z9gFt7g4Uc2zBjsE98?=
- =?us-ascii?Q?Jvf3otBt+Mg9ThMrpecwfNx1wJMEsHdeaywbAaGUkBBgHssBmYiqxpEA8EAq?=
- =?us-ascii?Q?77ii0hZNzvN5Jb2LhIDw7rBPHTt8GWY3doXv2iyu0T1BQOhnfSpVgDazU6SF?=
- =?us-ascii?Q?2IoUQY14B6+aa4aqByEtt2QVDHvbRHKRVBbEZGjNBn5WAEZYT/bgi/TvkzOX?=
- =?us-ascii?Q?LwAsZ5td/r7dAQBAlBn0ikMs5cH4ulNUo9onVMsbIS+4HRuv2mNxC1EWbMQh?=
- =?us-ascii?Q?guAGtIdIstekDRPHgnbw2C0dIZu4y5YePzd5+2834CTx90RUj/X59bcH1h9p?=
- =?us-ascii?Q?CzmIKkV5lQ6qMtlBj/tGbC93hWjhwyCSmZifp/5omvOc3LVCQCgPzR9azrYk?=
- =?us-ascii?Q?/KNMniNOMacvN921845wipSaJPH84jegt+JSwAgw3fZ/wHlftemOgt75jQ9/?=
- =?us-ascii?Q?Nr0kTnfvJYjRtYWW8DyprJDkprrhwicy36nlg0fpv+rOUZlIjZruK/L13TW8?=
- =?us-ascii?Q?fWG7Q3+w/PTcceIGkWsoQwqM6YktLrnX/51grMHgplF8Jv+gvCSFD49Xrwut?=
- =?us-ascii?Q?csqVFJVPJRNxYhDbY+0DL2cy+Ugg+zoDd6jcKJAY8VC/f083O62ANCxuDGKi?=
- =?us-ascii?Q?NnPxUHYRCfJMBcN6t8DDuG8JMK/XVC4rs5gKDCyw+p5Pj2jzHmnbhuzf8cRa?=
- =?us-ascii?Q?8PzXWrK7CZVb+j8DL9di6kKrGIzUAjYGzjt/3RHS453vPktsWB7toBbq9AXI?=
- =?us-ascii?Q?GHR8zOCq+qocCiTCtGphEI4+rqenHgANTDUD1lbjRtwRjYqYPCuLkobS63HM?=
- =?us-ascii?Q?K3OZGEX3MCVDLHNrnA4XhfEKQYFnecI1PKZBLqd99TsGBPVcF1qPZQ6YcjpF?=
- =?us-ascii?Q?RpjpoLTZqRCuCe4TIGY01vwDDQm2JW9SsDj2PFuaihrMaRJxm+K9FVVf30q6?=
- =?us-ascii?Q?fshmX05BlCbat33Li4490RGv?=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV3PR11MB8603.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?XkJHoqEbbM3JioGWYfAmoP8lBk7qjFj2lkgZoon44AEkR4yGBxONytPQaEcz?=
- =?us-ascii?Q?bvt87CcroadHHVHWDkhzgrZPOr8Ai6Oo3vK1kK6wtUatWrn84K3MSVps9Plz?=
- =?us-ascii?Q?Q5eaG+UHCcQGUfYkz6Mud6z1tvPGKRyuF5/O0EBDqofeWMvPurkeRfZFYPqN?=
- =?us-ascii?Q?+2m03Q8dPHKXlBC2CTYZREbzJaM7sFbOzyYyewMBegAmXRNL0UFpo6QDHh+c?=
- =?us-ascii?Q?3FRW6irHhD36jivRQTtEHJs7z7qKsfvIxMZVR1+dVN5oi1UahV0Kx4nwAv6B?=
- =?us-ascii?Q?OR0HNy3/wxjkKw2Z2LsOHpxwRpYHd9+spuEXpi8sLDC1Hs4BafOMY00LbILM?=
- =?us-ascii?Q?Pnq7UEPrbKxOrAGZ0VfyOgu50nGFpYbDiNKaQAf+E+38/Z6ewWSTg+itcUyD?=
- =?us-ascii?Q?tKBd2rYqbWAwT8fQ9n4MxKtoWHf4Gv8O8Cj32SYJXLayD/bGJ0Z+v47dSI8V?=
- =?us-ascii?Q?fNx2bjPhrfVU8v0o8eKyp5AphavWzAkHAE3Fy1TTysXTXpiRqPmcJVSVI+Z0?=
- =?us-ascii?Q?Bow6fPlu2zwES1M2fMyErOgyiPkOOBsM7vKZGDKPY3yyQ2GjriCafbzfMQZf?=
- =?us-ascii?Q?xQJrtkEV7M5US6pwa9vQNwf4duLiTSfGqpDuzXa2+RFNxu9lNh5TI9h27NjI?=
- =?us-ascii?Q?a8jenYz7gz0t2CfFu4n26V/NdNtJ+f3TYubNK+it6XWRJP5WNDlYF+UzpSSL?=
- =?us-ascii?Q?Lj1Fy4HTcK9AFV0i4JKWKEPjkDcq5cxKz8KnrklZ2puizFeWJDuyOIsFqzqn?=
- =?us-ascii?Q?R1hmLstI8hD3U36TYol6f8vUZgEiZPFvItB3yJsuPup9LDWndW+PTYYZ+NaR?=
- =?us-ascii?Q?p6pecjyt06v9HMEP48DUKqBQ2V7AR+FJv0NPuB/A8YYknTXgxoSrCxRHfvOb?=
- =?us-ascii?Q?nBUSVHivLm++m/fEbMf9/ISWG1Cyu3Dkwf1CNm6rJ1PtoSPQfJ+3c4zarTG4?=
- =?us-ascii?Q?YT2v4zViUKxGQvVm1QqlN7yRm0VieczBOmGECoTtL3Ab4lSwVvTfhM17EkhR?=
- =?us-ascii?Q?79oCcpcBtlivNjLrS9dGvcph3hGtOCusnR3p9kJLJb+QFsSFd0zJPKgeVDBj?=
- =?us-ascii?Q?nQ0lRzd3afMc7qoIBREKDB7eUv7cjcHZpBfeMsNhtCuhi7TigsvplUHzztl0?=
- =?us-ascii?Q?d9wSS1OHvHR6l7GtMxb3XIdE3Thj8fpX5G1ZErs0THQKnEMRDh5xkIa6ZTXZ?=
- =?us-ascii?Q?hu0qs4qeubuRegkSL8thgXY6AcgylxwoFb1pjftNYxVZZQXT32WhfTAfm+ci?=
- =?us-ascii?Q?InvlSSFUukZnNxmg62LuKScj73V93eNWqGam7DQC48VYvCTbet23Lu3BhgeX?=
- =?us-ascii?Q?AcJJKNVtgv2JYLpgQg31EOCyxK1nqo62id1JjOp0Ku+xOzt1IoZVDUAncb2E?=
- =?us-ascii?Q?bEv/vHy6YUGIOzX9W6On4eERqHrtiXLpEj4uFgZHs50CD3cRiN/muEQlDL0p?=
- =?us-ascii?Q?pgWPxkVUCXMdEBQzT9mt5FcFMn4c5rGB7B8611DgnuepOzrcpAMqZxkgRRYz?=
- =?us-ascii?Q?fj6tdXb1MOfADBp6CPNP6OZ5c2TijvsXYdp6G60Ex2MfiTay+7Ic4GOVHWmn?=
- =?us-ascii?Q?OWwsOpxOauCPVRJfTbRJUl/4EBkIArnZ+JM6VLbc?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 674cc3cf-f9ec-45c0-a6a8-08dc9651dedf
-X-MS-Exchange-CrossTenant-AuthSource: LV3PR11MB8603.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Jun 2024 02:35:55.6518
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: hEBCTBXCHr+NZDa/x9iWUFtzY8u2lfF7JCHOgMZESWvucK+BA/PXRt59u98o1xusx6adaHjnRY53UbVFdCazpQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR11MB6998
-X-OriginatorOrg: intel.com
+Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3640; i=u.kleine-koenig@baylibre.com; h=from:subject; bh=UUmEoJxmAO34JtinxvV5zz+5Vb0YgSxjl6fepG/1hhU=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBmeXOSVpDpx9DHnLI+6umm9/IULSnytvkweBV7D HZ1EY4zaB2JATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZnlzkgAKCRCPgPtYfRL+ TqVCB/0b4fEeIP5UXuWbQrUpr2Hk7NWOCaMQHBwy3xxcFewfYTY6gjW8IaA0YYkwO+T6UIIH+Ur ufguMdAObsKCYx+FcS4tp8adNkOSL7T+fAaS/C/SF+3jseaXKM6oIT7NNvUqL0Jap9vfsIU21OD d6g2UT21UkmkO0ucrWPNjjYPFBbLLj2fWT616V5061zDvmsyt8bUQ/HRDjF8XUNu23xz0uDMGHr uZl7UHzg9DVQv5VztDDWybD0gP2Bv3ElDtp8Bd8Q8dbbZmI7enLs4GGEst6q0wOIo54FCBzVt+p PuJfiKSywwYLVauQxBc/mqha8vlb8fVUBu7KS7Efo1GX/AQW
+X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 27 Jun 2024 13:53:28 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -180,58 +80,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nvdimm@lists.linux.dev, Ulf Hansson <ulf.hansson@linaro.org>, feng.tang@intel.com, linux-nvme@lists.infradead.org, linux-mtd@lists.infradead.org, Christoph Hellwig <hch@lst.de>, drbd-dev@lists.linbit.com, lkp@intel.com, linux-scsi@vger.kernel.org, ying.huang@intel.com, xen-devel@lists.xenproject.org, dm-devel@lists.linux.dev, linux-um@lists.infradead.org, virtualization@lists.linux.dev, nbd@other.debian.org, linux-raid@vger.kernel.org, linux-bcache@vger.kernel.org, Damien
- Le Moal <dlemoal@kernel.org>, Hannes Reinecke <hare@suse.de>, Jens Axboe <axboe@kernel.dk>, linux-block@vger.kernel.org, linux-mmc@vger.kernel.org, fengwei.yin@intel.com, oliver.sang@intel.com, oe-lkp@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-hi, Christoph Hellwig,
+These drivers don't use the driver_data member of struct i2c_device_id,
+so don't explicitly initialize this member.
 
-On Tue, Jun 25, 2024 at 08:39:50PM -0700, Christoph Hellwig wrote:
-> On Wed, Jun 26, 2024 at 10:10:49AM +0800, Oliver Sang wrote:
-> > I'm not sure I understand this test request. as in title, we see a good
-> > improvement of aim7 for 1122c0c1cc, and we didn't observe other issues for
-> > this commit.
-> 
-> The improvement suggests we are not sending cache flushes when we should
-> send them, or at least just handle them in md.
+This prepares putting driver_data in an anonymous union which requires
+either no initialization or named designators. But it's also a nice
+cleanup on its own.
 
-thanks for explanation!
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
+---
+ drivers/macintosh/ams/ams-i2c.c             | 2 +-
+ drivers/macintosh/windfarm_ad7417_sensor.c  | 2 +-
+ drivers/macintosh/windfarm_fcu_controls.c   | 2 +-
+ drivers/macintosh/windfarm_lm87_sensor.c    | 2 +-
+ drivers/macintosh/windfarm_max6690_sensor.c | 2 +-
+ drivers/macintosh/windfarm_smu_sat.c        | 2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-> 
-> > do you mean this improvement is not expected or exposes some problems instead?
-> > then by below patch, should the performance back to the level of parent of
-> > 1122c0c1cc?
-> > 
-> > sure! it's our great pleasure to test your patches. I noticed there are
-> > [1]
-> > https://lore.kernel.org/all/20240625110603.50885-2-hch@lst.de/
-> > which includes "[PATCH 1/7] md: set md-specific flags for all queue limits"
-> > [2]
-> > https://lore.kernel.org/all/20240625145955.115252-2-hch@lst.de/
-> > which includes "[PATCH 1/8] md: set md-specific flags for all queue limits"
-> > 
-> > which one you suggest us to test?
-> > do we only need to apply the first patch "md: set md-specific flags for all queue limits"
-> > upon 1122c0c1cc?
-> > then is the expectation the performance back to parent of 1122c0c1cc?
-> 
-> Either just the patch in reply or the entire [2] series would be fine.
+diff --git a/drivers/macintosh/ams/ams-i2c.c b/drivers/macintosh/ams/ams-i2c.c
+index f9bfe84b1c73..d5cdbba6e7c7 100644
+--- a/drivers/macintosh/ams/ams-i2c.c
++++ b/drivers/macintosh/ams/ams-i2c.c
+@@ -60,7 +60,7 @@ static int ams_i2c_probe(struct i2c_client *client);
+ static void ams_i2c_remove(struct i2c_client *client);
+ 
+ static const struct i2c_device_id ams_id[] = {
+-	{ "MAC,accelerometer_1", 0 },
++	{ "MAC,accelerometer_1" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, ams_id);
+diff --git a/drivers/macintosh/windfarm_ad7417_sensor.c b/drivers/macintosh/windfarm_ad7417_sensor.c
+index 49ce37fde930..3ff4577ba847 100644
+--- a/drivers/macintosh/windfarm_ad7417_sensor.c
++++ b/drivers/macintosh/windfarm_ad7417_sensor.c
+@@ -304,7 +304,7 @@ static void wf_ad7417_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id wf_ad7417_id[] = {
+-	{ "MAC,ad7417", 0 },
++	{ "MAC,ad7417" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, wf_ad7417_id);
+diff --git a/drivers/macintosh/windfarm_fcu_controls.c b/drivers/macintosh/windfarm_fcu_controls.c
+index 603ef6c600ba..82365f19adb4 100644
+--- a/drivers/macintosh/windfarm_fcu_controls.c
++++ b/drivers/macintosh/windfarm_fcu_controls.c
+@@ -573,7 +573,7 @@ static void wf_fcu_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id wf_fcu_id[] = {
+-	{ "MAC,fcu", 0 },
++	{ "MAC,fcu" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, wf_fcu_id);
+diff --git a/drivers/macintosh/windfarm_lm87_sensor.c b/drivers/macintosh/windfarm_lm87_sensor.c
+index 975361c23a93..16635e2b180b 100644
+--- a/drivers/macintosh/windfarm_lm87_sensor.c
++++ b/drivers/macintosh/windfarm_lm87_sensor.c
+@@ -156,7 +156,7 @@ static void wf_lm87_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id wf_lm87_id[] = {
+-	{ "MAC,lm87cimt", 0 },
++	{ "MAC,lm87cimt" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, wf_lm87_id);
+diff --git a/drivers/macintosh/windfarm_max6690_sensor.c b/drivers/macintosh/windfarm_max6690_sensor.c
+index 02856d1f0313..d734b31b8236 100644
+--- a/drivers/macintosh/windfarm_max6690_sensor.c
++++ b/drivers/macintosh/windfarm_max6690_sensor.c
+@@ -112,7 +112,7 @@ static void wf_max6690_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id wf_max6690_id[] = {
+-	{ "MAC,max6690", 0 },
++	{ "MAC,max6690" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, wf_max6690_id);
+diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windfarm_smu_sat.c
+index 50baa062c9df..ff8805ecf2e5 100644
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -333,7 +333,7 @@ static void wf_sat_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id wf_sat_id[] = {
+-	{ "MAC,smu-sat", 0 },
++	{ "MAC,smu-sat" },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(i2c, wf_sat_id);
 
-I failed to apply patch in your previous reply to 1122c0c1cc or current tip
-of axboe-block/for-next:
-c1440ed442a58 (axboe-block/for-next) Merge branch 'for-6.11/block' into for-next
+base-commit: f76698bd9a8ca01d3581236082d786e9a6b72bb7
+-- 
+2.43.0
 
-but it's ok to apply upon next:
-* 0fc4bfab2cd45 (tag: next-20240625) Add linux-next specific files for 20240625
-
-I've already started the test based on this applyment.
-is the expectation that patch should not introduce performance change comparing
-to 0fc4bfab2cd45?
-
-or if this applyment is not ok, please just give me guidance. Thanks!
-
-
-> 
-> Thanks!
-> 
