@@ -4,50 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C97F0C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 16:22:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FB50C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 16:23:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W7CtD2lh1z3cnr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2024 02:22:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W7Ctf4R1Bz3dJB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2024 02:23:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.218.46; helo=mail-ej1-f46.google.com; envelope-from=breno.debian@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com [209.85.218.46])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.218.47; helo=mail-ej1-f47.google.com; envelope-from=breno.debian@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W7CsL5MFTz3blb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2024 02:21:58 +1000 (AEST)
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-a6fe118805dso218431466b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 09:21:59 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W7CsQ4zpTz3d2W
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2024 02:22:02 +1000 (AEST)
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-a689ad8d1f6so574145666b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 09:22:03 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1719246114; x=1719850914;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=z5dYSmS+UlMvDH3osanHRgj0IFMR5noB3hmhQYLwPF0=;
-        b=XiqvWr/PMiW7PtxAmCe2bI/Ld/j/sPXVp4VSOxlVlEs+SvBxREG551VRwgdixZvat8
-         oqScsJZOVIOINLATtIWyJ7fIlnFa1IqqlxZfKPG/IA/HsBTJGh52mt3etah7Ly7mlfRQ
-         Mba3r2pDZHjM+2ThGYYNzajgrNRG0ArJxYIwP91bI/oggeG7imD1CxkM+81Fj30ehH/P
-         hnI4vUMFoxMZiVRXjMxuUDlkF5Jtp41lR0hocUAoTwk6XoFuhzqmYGdNmXTf4o8VRhJ0
-         dfBruP0L6dVjgf8phqajX8I1GQSOki8MV6g64UhXPSVieB1/T4gl+94q6k4f1STC9Dhy
-         AtMQ==
-X-Gm-Message-State: AOJu0YwkIQNPE192S8QmjyIyZn3yq+njE0D8hixXyAhr1iWjpKMOZjTG
-	nuQ/2Ysw/V6ZMa2VFHAgjIXs/JMj321mnXz7oamgDOpX+Jmg7M6cc/wUOdsX
-X-Google-Smtp-Source: AGHT+IGAirccbr9ebRQ4r1Bpr+wLTdNcrvrtLbrlxOOhudvRIZe2BWJOZZT0opPHnukDV9nHPaB2Zg==
-X-Received: by 2002:a17:907:8e93:b0:a6e:f62d:bd02 with SMTP id a640c23a62f3a-a7245c84f2emr309572466b.7.1719246113524;
-        Mon, 24 Jun 2024 09:21:53 -0700 (PDT)
-Received: from localhost (fwdproxy-lla-001.fbsv.net. [2a03:2880:30ff:1::face:b00c])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a724d8a362fsm173519666b.158.2024.06.24.09.21.52
+        d=1e100.net; s=20230601; t=1719246120; x=1719850920;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=SNRZatXFYSvT7dWA5Z47QsnQSl5EsRqGGJzSsqaHcYY=;
+        b=r+Xrp8HT3C/aYp2hV8HUH7DaVcMn6O0vARfuJZvSZG0cKHuW5dvM6K3GnyXWow7E8e
+         zUFNCWI6oweBvkbENe4IcsjNMq6SbxXVxEFhA+lil+71S2XGoMavsgGO/1glbNA04Go+
+         8aZ8Naza7vwXbuF9mx/HvLrc1ozSY9ZSTnT3HXF/mRMHqPMM+MqFdL/V9QvKP+r2mjS8
+         GuQCN4svxrhKVm1v65Krzi8aMY7TAIcgC0LGs/ca2JqCxT/AyAVbn64EkGKNmQYzUF1y
+         YHvvBxN5RgJhvMlaZbeNNdQY3tCPYMbD3JGxuPKRe+NZDwR8MbsT8yMWD8j93dyk2kam
+         yZow==
+X-Gm-Message-State: AOJu0YxKfzlAp0YdGZ5BiIncmNtVdnOci2vduGWUSX7imhXYN/zrvSRP
+	+T1ndXi/py2khtOhSsix4WI0ONfYAU0mjf60U93Ejrce9J7aOrCwNN1/Wt5O
+X-Google-Smtp-Source: AGHT+IGzJL+qgZxR9ubJMoPUs7gDPXfWNurJaThSzu++EbZAe9YtGjEOTHF/GkySo3VJEwJszmtBpw==
+X-Received: by 2002:a17:907:d509:b0:a6f:27e6:8892 with SMTP id a640c23a62f3a-a7245dc9697mr402052666b.60.1719246116948;
+        Mon, 24 Jun 2024 09:21:56 -0700 (PDT)
+Received: from localhost (fwdproxy-lla-003.fbsv.net. [2a03:2880:30ff:3::face:b00c])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a72541fc49asm132301866b.74.2024.06.24.09.21.56
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Jun 2024 09:21:53 -0700 (PDT)
+        Mon, 24 Jun 2024 09:21:56 -0700 (PDT)
 From: Breno Leitao <leitao@debian.org>
 To: linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
-	netdev@vger.kernel.org
-Subject: [PATCH 1/4] soc: fsl: qbman: FSL_DPAA depends on COMPILE_TEST
-Date: Mon, 24 Jun 2024 09:21:19 -0700
-Message-ID: <20240624162128.1665620-1-leitao@debian.org>
+	netdev@vger.kernel.org,
+	=?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>,
+	Pankaj Gupta <pankaj.gupta@nxp.com>,
+	Gaurav Jain <gaurav.jain@nxp.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>
+Subject: [PATCH 3/4] crypto: caam: Unembed net_dev structure from qi
+Date: Mon, 24 Jun 2024 09:21:21 -0700
+Message-ID: <20240624162128.1665620-3-leitao@debian.org>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240624162128.1665620-1-leitao@debian.org>
+References: <20240624162128.1665620-1-leitao@debian.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -61,34 +68,149 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kuba@kernel.org, Roy.Pledge@nxp.com, open list <linux-kernel@vger.kernel.org>, horms@kernel.org
+Cc: kuba@kernel.org, Roy.Pledge@nxp.com, "open list:FREESCALE CAAM Cryptographic Acceleration and...,
+	linux-kernel@vger.kernel.org open list" <linux-crypto@vger.kernel.org>, horms@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As most of the drivers that depend on ARCH_LAYERSCAPE, make FSL_DPAA
-depend on COMPILE_TEST for compilation and testing.
+Embedding net_device into structures prohibits the usage of flexible
+arrays in the net_device structure. For more details, see the discussion
+at [1].
 
-	# grep -r depends.\*ARCH_LAYERSCAPE.\*COMPILE_TEST | wc -l
-	29
+Un-embed the net_devices from struct caam_qi_pcpu_priv by converting them
+into pointers, and allocating them dynamically. Use the leverage
+alloc_netdev_dummy() to allocate the net_device object at
+caam_qi_init().
 
+The free of the device occurs at caam_qi_shutdown().
+
+Link: https://lore.kernel.org/all/20240229225910.79e224cf@kernel.org/ [1]
 Signed-off-by: Breno Leitao <leitao@debian.org>
 ---
- drivers/soc/fsl/qbman/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+PS: Unfortunately due to lack of hardware, this was not tested in real
+hardware.
 
-diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
-index bdecb86bb656..27774ec6ff90 100644
---- a/drivers/soc/fsl/qbman/Kconfig
-+++ b/drivers/soc/fsl/qbman/Kconfig
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0-only
- menuconfig FSL_DPAA
- 	bool "QorIQ DPAA1 framework support"
--	depends on ((FSL_SOC_BOOKE || ARCH_LAYERSCAPE) && ARCH_DMA_ADDR_T_64BIT)
-+	depends on ((FSL_SOC_BOOKE || ARCH_LAYERSCAPE || COMPILE_TEST) && ARCH_DMA_ADDR_T_64BIT)
- 	select GENERIC_ALLOCATOR
- 	help
- 	  The Freescale Data Path Acceleration Architecture (DPAA) is a set of
+ drivers/crypto/caam/qi.c | 43 ++++++++++++++++++++++++++++++++--------
+ 1 file changed, 35 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/crypto/caam/qi.c b/drivers/crypto/caam/qi.c
+index 46a083849a8e..0c13ffc81862 100644
+--- a/drivers/crypto/caam/qi.c
++++ b/drivers/crypto/caam/qi.c
+@@ -57,7 +57,7 @@ struct caam_napi {
+  */
+ struct caam_qi_pcpu_priv {
+ 	struct caam_napi caam_napi;
+-	struct net_device net_dev;
++	struct net_device *net_dev;
+ 	struct qman_fq *rsp_fq;
+ } ____cacheline_aligned;
+ 
+@@ -144,7 +144,7 @@ static void caam_fq_ern_cb(struct qman_portal *qm, struct qman_fq *fq,
+ {
+ 	const struct qm_fd *fd;
+ 	struct caam_drv_req *drv_req;
+-	struct device *qidev = &(raw_cpu_ptr(&pcpu_qipriv)->net_dev.dev);
++	struct device *qidev = &(raw_cpu_ptr(&pcpu_qipriv)->net_dev->dev);
+ 	struct caam_drv_private *priv = dev_get_drvdata(qidev);
+ 
+ 	fd = &msg->ern.fd;
+@@ -530,6 +530,7 @@ static void caam_qi_shutdown(void *data)
+ 
+ 		if (kill_fq(qidev, per_cpu(pcpu_qipriv.rsp_fq, i)))
+ 			dev_err(qidev, "Rsp FQ kill failed, cpu: %d\n", i);
++		free_netdev(pcpu_qipriv.net_dev);
+ 	}
+ 
+ 	qman_delete_cgr_safe(&priv->cgr);
+@@ -573,7 +574,7 @@ static enum qman_cb_dqrr_result caam_rsp_fq_dqrr_cb(struct qman_portal *p,
+ 	struct caam_napi *caam_napi = raw_cpu_ptr(&pcpu_qipriv.caam_napi);
+ 	struct caam_drv_req *drv_req;
+ 	const struct qm_fd *fd;
+-	struct device *qidev = &(raw_cpu_ptr(&pcpu_qipriv)->net_dev.dev);
++	struct device *qidev = &(raw_cpu_ptr(&pcpu_qipriv)->net_dev->dev);
+ 	struct caam_drv_private *priv = dev_get_drvdata(qidev);
+ 	u32 status;
+ 
+@@ -718,12 +719,24 @@ static void free_rsp_fqs(void)
+ 		kfree(per_cpu(pcpu_qipriv.rsp_fq, i));
+ }
+ 
++static void free_caam_qi_pcpu_netdev(const cpumask_t *cpus)
++{
++	struct caam_qi_pcpu_priv *priv;
++	int i;
++
++	for_each_cpu(i, cpus) {
++		priv = per_cpu_ptr(&pcpu_qipriv, i);
++		free_netdev(priv->net_dev);
++	}
++}
++
+ int caam_qi_init(struct platform_device *caam_pdev)
+ {
+ 	int err, i;
+ 	struct device *ctrldev = &caam_pdev->dev, *qidev;
+ 	struct caam_drv_private *ctrlpriv;
+ 	const cpumask_t *cpus = qman_affine_cpus();
++	cpumask_t clean_mask;
+ 
+ 	ctrlpriv = dev_get_drvdata(ctrldev);
+ 	qidev = ctrldev;
+@@ -743,6 +756,8 @@ int caam_qi_init(struct platform_device *caam_pdev)
+ 		return err;
+ 	}
+ 
++	cpumask_clear(&clean_mask);
++
+ 	/*
+ 	 * Enable the NAPI contexts on each of the core which has an affine
+ 	 * portal.
+@@ -751,10 +766,16 @@ int caam_qi_init(struct platform_device *caam_pdev)
+ 		struct caam_qi_pcpu_priv *priv = per_cpu_ptr(&pcpu_qipriv, i);
+ 		struct caam_napi *caam_napi = &priv->caam_napi;
+ 		struct napi_struct *irqtask = &caam_napi->irqtask;
+-		struct net_device *net_dev = &priv->net_dev;
++		struct net_device *net_dev;
+ 
++		net_dev = alloc_netdev_dummy(0);
++		if (!net_dev) {
++			err = -ENOMEM;
++			goto fail;
++		}
++		cpumask_set_cpu(i, &clean_mask);
++		priv->net_dev = net_dev;
+ 		net_dev->dev = *qidev;
+-		INIT_LIST_HEAD(&net_dev->napi_list);
+ 
+ 		netif_napi_add_tx_weight(net_dev, irqtask, caam_qi_poll,
+ 					 CAAM_NAPI_WEIGHT);
+@@ -766,16 +787,22 @@ int caam_qi_init(struct platform_device *caam_pdev)
+ 				     dma_get_cache_alignment(), 0, NULL);
+ 	if (!qi_cache) {
+ 		dev_err(qidev, "Can't allocate CAAM cache\n");
+-		free_rsp_fqs();
+-		return -ENOMEM;
++		err = -ENOMEM;
++		goto fail2;
+ 	}
+ 
+ 	caam_debugfs_qi_init(ctrlpriv);
+ 
+ 	err = devm_add_action_or_reset(qidev, caam_qi_shutdown, ctrlpriv);
+ 	if (err)
+-		return err;
++		goto fail2;
+ 
+ 	dev_info(qidev, "Linux CAAM Queue I/F driver initialised\n");
+ 	return 0;
++
++fail2:
++	free_rsp_fqs();
++fail:
++	free_caam_qi_pcpu_netdev(&clean_mask);
++	return err;
+ }
 -- 
 2.43.0
 
