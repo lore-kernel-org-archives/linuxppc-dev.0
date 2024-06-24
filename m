@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBBEFC2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 12:32:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DA4DC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 12:33:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W76mp2gYCz3d2B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 22:32:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W76nD07sGz3dB7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 22:33:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W76l14DKCz30V3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 22:31:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W76l20gXcz3cYv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 22:31:10 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W76l23hQTz4wbr;
-	Mon, 24 Jun 2024 22:31:10 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W76l30MYzz4wc8;
+	Mon, 24 Jun 2024 22:31:11 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, Anjali K <anjalik@linux.ibm.com>
-In-Reply-To: <20240614173844.746818-1-anjalik@linux.ibm.com>
-References: <20240614173844.746818-1-anjalik@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: Whitelist dtl slub object for copying to userspace
-Message-Id: <171923223890.136336.18261608186644229436.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, Ganesh Goudar <ganeshgr@linux.ibm.com>
+In-Reply-To: <20240617140240.580453-1-ganeshgr@linux.ibm.com>
+References: <20240617140240.580453-1-ganeshgr@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc/eeh: avoid possible crash when edev->pdev changes
+Message-Id: <171923223896.136336.14908435779633218072.b4-ty@ellerman.id.au>
 Date: Mon, 24 Jun 2024 22:30:38 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,47 +43,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kees@kernel.org, npiggin@gmail.com, naveen@kernel.org, christophe.leroy@csgroup.eu, gustavoars@kernel.org, linux-hardening@vger.kernel.org, vishalc@linux.ibm.com
+Cc: mahesh@linux.ibm.com, wenxiong@us.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 14 Jun 2024 23:08:44 +0530, Anjali K wrote:
-> Reading the dispatch trace log from /sys/kernel/debug/powerpc/dtl/cpu-*
-> results in a BUG() when the config CONFIG_HARDENED_USERCOPY is enabled as
-> shown below.
+On Mon, 17 Jun 2024 19:32:40 +0530, Ganesh Goudar wrote:
+> If a PCI device is removed during eeh_pe_report_edev(), edev->pdev
+> will change and can cause a crash, hold the PCI rescan/remove lock
+> while taking a copy of edev->pdev->bus.
 > 
->     kernel BUG at mm/usercopy.c:102!
->     Oops: Exception in kernel mode, sig: 5 [#1]
->     LE PAGE_SIZE=64K MMU=Radix SMP NR_CPUS=2048 NUMA pSeries
->     Modules linked in: xfs libcrc32c dm_service_time sd_mod t10_pi sg ibmvfc
->     scsi_transport_fc ibmveth pseries_wdt dm_multipath dm_mirror dm_region_hash dm_log dm_mod fuse
->     CPU: 27 PID: 1815 Comm: python3 Not tainted 6.10.0-rc3 #85
->     Hardware name: IBM,9040-MRX POWER10 (raw) 0x800200 0xf000006 of:IBM,FW1060.00 (NM1060_042) hv:phyp pSeries
->     NIP:  c0000000005d23d4 LR: c0000000005d23d0 CTR: 00000000006ee6f8
->     REGS: c000000120c078c0 TRAP: 0700   Not tainted  (6.10.0-rc3)
->     MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 2828220f  XER: 0000000e
->     CFAR: c0000000001fdc80 IRQMASK: 0
->     [ ... GPRs omitted ... ]
->     NIP [c0000000005d23d4] usercopy_abort+0x78/0xb0
->     LR [c0000000005d23d0] usercopy_abort+0x74/0xb0
->     Call Trace:
->      usercopy_abort+0x74/0xb0 (unreliable)
->      __check_heap_object+0xf8/0x120
->      check_heap_object+0x218/0x240
->      __check_object_size+0x84/0x1a4
->      dtl_file_read+0x17c/0x2c4
->      full_proxy_read+0x8c/0x110
->      vfs_read+0xdc/0x3a0
->      ksys_read+0x84/0x144
->      system_call_exception+0x124/0x330
->      system_call_vectored_common+0x15c/0x2ec
->     --- interrupt: 3000 at 0x7fff81f3ab34
 > 
-> [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/pseries: Whitelist dtl slub object for copying to userspace
-      https://git.kernel.org/powerpc/c/1a14150e1656f7a332a943154fc486504db4d586
+[1/1] powerpc/eeh: avoid possible crash when edev->pdev changes
+      https://git.kernel.org/powerpc/c/a1216e62d039bf63a539bbe718536ec789a853dd
 
 cheers
