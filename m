@@ -4,88 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26F73C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 12:13:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1927EC2D0D1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 12:28:12 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JpryBzst;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SToKp7Lz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W76LS55bvz3cWS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 22:13:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W76gY3KRwz3cRs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Jun 2024 22:28:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JpryBzst;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SToKp7Lz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=krishnak@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W76JP4rdPz3cW0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 22:11:33 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45OBTn1o001434;
-	Mon, 24 Jun 2024 12:11:24 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
-	:to:cc:subject:date:message-id:in-reply-to:references
-	:mime-version:content-transfer-encoding; s=pp1; bh=xnvHat8p/H0lr
-	hVdrRpss/zDOVGdT1aSkMPN9LWYkaU=; b=JpryBzstb5QFE53fJAcYBHjAxMAm+
-	1pH51sc20XqEDnwDeM8x7oX5aQxNSPBLWnJmzy84ZvMo2scG+mSCTmVA+1vlYHUk
-	5Xpg0XwmU1cmgFM85tMRFHyrwk9rpwbHpV9JbNRQwrhGXgY67ZzJFl+ky26AN+Es
-	J0wCLMP7hjp/aorqFtm5Uy4aJGlJlXrR3aIgbj9Akhpp4rqlVDbk6YAXkpTeQ0+3
-	K8Z9LXdwllWOLiRQuksUdEFV86LaqN/7epb/pUzGsb/n+TYzywhn9PJYGvOz+j+8
-	ecyvj/GbuNXBR6cC50z3H+ptKSFe0ZMocem3Z8QZAG+j7bsFPBv1laLpA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yy7y0r38g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 24 Jun 2024 12:11:23 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 45OC3ITg028045;
-	Mon, 24 Jun 2024 12:11:23 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yy7y0r38c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 24 Jun 2024 12:11:22 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 45OAkMSj020074;
-	Mon, 24 Jun 2024 12:11:21 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 3yxb5m8b3s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 24 Jun 2024 12:11:21 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 45OCBGAf32834050
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 24 Jun 2024 12:11:18 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7460220043;
-	Mon, 24 Jun 2024 12:11:16 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3480D2004B;
-	Mon, 24 Jun 2024 12:11:13 +0000 (GMT)
-Received: from li-a50b8fcc-3415-11b2-a85c-f1daa4f09788.in.ibm.com (unknown [9.109.241.85])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 24 Jun 2024 12:11:13 +0000 (GMT)
-From: Krishna Kumar <krishnak@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com
-Subject: [PATCH v3 2/2] powerpc: hotplug driver bridge support
-Date: Mon, 24 Jun 2024 17:39:28 +0530
-Message-ID: <20240624121052.233232-3-krishnak@linux.ibm.com>
-X-Mailer: git-send-email 2.45.0
-In-Reply-To: <20240624121052.233232-1-krishnak@linux.ibm.com>
-References: <20240624121052.233232-1-krishnak@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W76fm0fPVz3cJl
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Jun 2024 22:27:28 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1719232049;
+	bh=FROEVf3UpXcDdrq+Kfh4EUYIgWJ07k/D0WBereELIuY=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=SToKp7LzJ2VSbmBufDakqRTJmT2U3zbAc17iQr1aVZa9kH0jQX3wpT30sfitf+DJQ
+	 3qnwlW6XGbxiTgP+YQ+JSxLabCZ72UcIofsiO+E4jJzPt7jQaRkNrB3VTXkgglf1Ee
+	 9k6kijv6QTv8VJH7TYDXTmnIOnFDeuPuFiXhOOWDmP2ZUdUvL+LlISSMIFOx/zxRXv
+	 1k02lg7dcTETOG7OCz9Oxw4lM3rZnbE1ci9kK0+y/P0qFwXz+EgnZqk2QyCjLL/aVi
+	 wIOUd6MG1hFHXK2vUQCjQUWGHE6hGmFFeeXNaxXoBD6lYYsTit+BaqAcHW/yPgRYip
+	 x9QgnZw5t1+kQ==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W76fn0P76z4wqM;
+	Mon, 24 Jun 2024 22:27:29 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 5/7] powerpc/4xx: Remove CONFIG_BOOKE_OR_40x
+Date: Mon, 24 Jun 2024 22:27:21 +1000
+Message-ID: <20240624122723.134292-5-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.45.2
+In-Reply-To: <20240624122723.134292-1-mpe@ellerman.id.au>
+References: <20240624122723.134292-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 88M_4EJ97CbN7eemeRuehuUU9FlSvnZ3
-X-Proofpoint-ORIG-GUID: GqfoZ7rwesZsKJWL-5n-06r5qAQiGShw
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-06-24_09,2024-06-24_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
- lowpriorityscore=0 malwarescore=0 clxscore=1015 mlxlogscore=999
- priorityscore=1501 bulkscore=0 spamscore=0 phishscore=0 mlxscore=0
- suspectscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2406140001 definitions=main-2406240095
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,126 +59,308 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, aneesh.kumar@kernel.org, linux-pci@vger.kernel.org, Krishna Kumar <krishnak@linux.ibm.com>, linux-kernel@vger.kernel.org, christophe.leroy@csgroup.eu, gbatra@linux.ibm.com, bhelgaas@google.com, tpearson@raptorengineering.com, oohall@gmail.com, brking@linux.vnet.ibm.com, mahesh.salgaonkar@in.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is an issue with the hotplug operation when it's done on the
-bridge/switch slot. The bridge-port and devices behind the bridge, which
-become offline by hot-unplug operation, don't get hot-plugged/enabled by
-doing hot-plug operation on that slot. Only the first port of the bridge
-gets enabled and the remaining port/devices remain unplugged. The hot
-plug/unplug operation is done by the hotplug driver
-(drivers/pci/hotplug/pnv_php.c).
+Now that 40x is gone, replace CONFIG_BOOKE_OR_40x by CONFIG_BOOKE.
 
-Root Cause Analysis: This behavior is due to missing code for the
-switch/bridge. The existing driver depends on pci_hp_add_devices()
-function for device enablement. This function calls pci_scan_slot() on
-only one device-node/port of the bridge, not on all the siblings'
-device-node/port.
-
-The missing code needs to be added which will find all the sibling
-device-nodes/bridge-ports and will run explicit pci_scan_slot() on
-those.  A new function has been added for this purpose which gets
-invoked from pci_hp_add_devices(). This new function
-pci_traverse_sibling_nodes_and_scan_slot() gets all the sibling
-bridge-ports by traversal and explicitly invokes pci_scan_slot on them.
-
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Gaurav Batra <gbatra@linux.ibm.com>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>
-
-Signed-off-by: Krishna Kumar <krishnak@linux.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/ppc-pci.h |  4 ++++
- arch/powerpc/kernel/pci-hotplug.c  |  5 ++---
- arch/powerpc/kernel/pci_dn.c       | 32 ++++++++++++++++++++++++++++++
- 3 files changed, 38 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h      | 8 ++++----
+ arch/powerpc/include/asm/irq.h         | 2 +-
+ arch/powerpc/include/asm/kup.h         | 2 +-
+ arch/powerpc/include/asm/processor.h   | 2 +-
+ arch/powerpc/include/asm/ptrace.h      | 2 +-
+ arch/powerpc/include/asm/reg.h         | 2 +-
+ arch/powerpc/kernel/asm-offsets.c      | 2 +-
+ arch/powerpc/kernel/entry_32.S         | 2 +-
+ arch/powerpc/kernel/epapr_hcalls.S     | 2 +-
+ arch/powerpc/kernel/irq.c              | 2 +-
+ arch/powerpc/kernel/kgdb.c             | 4 ++--
+ arch/powerpc/kernel/process.c          | 2 +-
+ arch/powerpc/kernel/setup.h            | 2 +-
+ arch/powerpc/kernel/setup_32.c         | 2 +-
+ arch/powerpc/kernel/time.c             | 2 +-
+ arch/powerpc/mm/mmu_context.c          | 2 +-
+ arch/powerpc/mm/nohash/mmu_context.c   | 2 +-
+ arch/powerpc/platforms/Kconfig.cputype | 5 -----
+ 18 files changed, 21 insertions(+), 26 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index a8b7e8682f5b..83db8d0798ac 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -28,6 +28,10 @@ struct pci_dn;
- void *pci_traverse_device_nodes(struct device_node *start,
- 				void *(*fn)(struct device_node *, void *),
- 				void *data);
-+
-+void pci_traverse_sibling_nodes_and_scan_slot(struct device_node *start,
-+					       struct pci_bus *bus);
-+
- extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
+v2: Rebase only.
+
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 317659fdeacf..569ac1165b06 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -63,7 +63,7 @@
  
- #if defined(CONFIG_IOMMU_API) && (defined(CONFIG_PPC_PSERIES) || \
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 0fe251c6ac2c..639a3d592fe2 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -106,7 +106,7 @@ EXPORT_SYMBOL_GPL(pci_hp_remove_devices);
-  */
- void pci_hp_add_devices(struct pci_bus *bus)
+ static inline void __hard_irq_enable(void)
  {
--	int slotno, mode, max;
-+	int mode, max;
- 	struct pci_dev *dev;
- 	struct pci_controller *phb;
- 	struct device_node *dn = pci_bus_to_OF_node(bus);
-@@ -129,8 +129,7 @@ void pci_hp_add_devices(struct pci_bus *bus)
- 		 * order for fully rescan all the way down to pick them up.
- 		 * They can have been removed during partial hotplug.
- 		 */
--		slotno = PCI_SLOT(PCI_DN(dn->child)->devfn);
--		pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
-+		pci_traverse_sibling_nodes_and_scan_slot(dn, bus);
- 		max = bus->busn_res.start;
- 		/*
- 		 * Scan bridges that are already configured. We don't touch
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 38561d6a2079..bea612759832 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -493,4 +493,36 @@ static void pci_dev_pdn_setup(struct pci_dev *pdev)
- 	pdn = pci_get_pdn(pdev);
- 	pdev->dev.archdata.pci_data = pdn;
+-	if (IS_ENABLED(CONFIG_BOOKE_OR_40x))
++	if (IS_ENABLED(CONFIG_BOOKE))
+ 		wrtee(MSR_EE);
+ 	else if (IS_ENABLED(CONFIG_PPC_8xx))
+ 		wrtspr(SPRN_EIE);
+@@ -75,7 +75,7 @@ static inline void __hard_irq_enable(void)
+ 
+ static inline void __hard_irq_disable(void)
+ {
+-	if (IS_ENABLED(CONFIG_BOOKE_OR_40x))
++	if (IS_ENABLED(CONFIG_BOOKE))
+ 		wrtee(0);
+ 	else if (IS_ENABLED(CONFIG_PPC_8xx))
+ 		wrtspr(SPRN_EID);
+@@ -87,7 +87,7 @@ static inline void __hard_irq_disable(void)
+ 
+ static inline void __hard_EE_RI_disable(void)
+ {
+-	if (IS_ENABLED(CONFIG_BOOKE_OR_40x))
++	if (IS_ENABLED(CONFIG_BOOKE))
+ 		wrtee(0);
+ 	else if (IS_ENABLED(CONFIG_PPC_8xx))
+ 		wrtspr(SPRN_NRI);
+@@ -99,7 +99,7 @@ static inline void __hard_EE_RI_disable(void)
+ 
+ static inline void __hard_RI_enable(void)
+ {
+-	if (IS_ENABLED(CONFIG_BOOKE_OR_40x))
++	if (IS_ENABLED(CONFIG_BOOKE))
+ 		return;
+ 
+ 	if (IS_ENABLED(CONFIG_PPC_8xx))
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index ba1a5974e714..aa3751960ffd 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -33,7 +33,7 @@ extern int distribute_irqs;
+ 
+ struct pt_regs;
+ 
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ /*
+  * Per-cpu stacks for handling critical, debug and machine check
+  * level interrupts.
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index ad7e8c5aec3f..2bb03d941e3e 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -20,7 +20,7 @@ static __always_inline bool kuap_is_disabled(void);
+ #include <asm/nohash/32/kup-8xx.h>
+ #endif
+ 
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ #include <asm/nohash/kup-booke.h>
+ #endif
+ 
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index e44cac0da346..6b94de17201c 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -159,7 +159,7 @@ struct thread_struct {
+ 	unsigned long	sr0;
+ #endif
+ #endif /* CONFIG_PPC32 */
+-#if defined(CONFIG_BOOKE_OR_40x) && defined(CONFIG_PPC_KUAP)
++#if defined(CONFIG_BOOKE) && defined(CONFIG_PPC_KUAP)
+ 	unsigned long	pid;	/* value written in PID reg. at interrupt exit */
+ #endif
+ 	/* Debug Registers */
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index ea8f91fbc62f..7b9350756875 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -310,7 +310,7 @@ static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
+ 
+ static inline bool cpu_has_msr_ri(void)
+ {
+-	return !IS_ENABLED(CONFIG_BOOKE_OR_40x);
++	return !IS_ENABLED(CONFIG_BOOKE);
  }
-+
-+void pci_traverse_sibling_nodes_and_scan_slot(struct device_node *start, struct pci_bus *bus)
-+{
-+	struct device_node *dn;
-+	int slotno;
-+
-+	u32 class = 0;
-+
-+	if (!of_property_read_u32(start->child, "class-code", &class)) {
-+		/* Call of pci_scan_slot for non-bridge/EP case */
-+		if (!((class >> 8) == PCI_CLASS_BRIDGE_PCI)) {
-+			slotno = PCI_SLOT(PCI_DN(start->child)->devfn);
-+			pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
-+			return;
-+		}
-+	}
-+
-+	/* Iterate all siblings */
-+	for_each_child_of_node(start, dn) {
-+		class = 0;
-+
-+		if (!of_property_read_u32(start->child, "class-code", &class)) {
-+			/* Call of pci_scan_slot on each sibling-nodes/bridge-ports */
-+			if ((class >> 8) == PCI_CLASS_BRIDGE_PCI) {
-+				slotno = PCI_SLOT(PCI_DN(dn)->devfn);
-+				pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
-+			}
-+		}
-+	}
-+
-+}
-+
- DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pci_dev_pdn_setup);
+ 
+ static inline bool regs_is_unrecoverable(struct pt_regs *regs)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 76c1490f5c97..0228c90bbcc7 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -18,7 +18,7 @@
+ #include <asm/feature-fixups.h>
+ 
+ /* Pickup Book E specific registers. */
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ #include <asm/reg_booke.h>
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index f029755f9e69..23733282de4d 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -54,7 +54,7 @@
+ #endif
+ 
+ #ifdef CONFIG_PPC32
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ #include "head_booke.h"
+ #endif
+ #endif
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 070eab8b6a28..1522164b10e4 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -108,7 +108,7 @@ transfer_to_syscall:
+ 	stw	r11, 0(r1)
+ 	mflr	r12
+ 	stw	r12, _LINK(r1)
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ 	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
+ #endif
+ 	lis	r12,STACK_FRAME_REGS_MARKER@ha /* exception frame marker */
+diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
+index 1a9b5ae8ccb2..6a414ed5a411 100644
+--- a/arch/powerpc/kernel/epapr_hcalls.S
++++ b/arch/powerpc/kernel/epapr_hcalls.S
+@@ -21,7 +21,7 @@ _GLOBAL(epapr_ev_idle)
+ 	ori	r4, r4,_TLF_NAPPING	/* so when we take an exception */
+ 	PPC_STL	r4, TI_LOCAL_FLAGS(r2)	/* it will return to our caller */
+ 
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ 	wrteei	1
+ #else
+ 	mfmsr	r4
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 7504ceec5c58..2e1600a8bbbb 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -333,7 +333,7 @@ void __init init_IRQ(void)
+ 		static_call_update(ppc_get_irq, ppc_md.get_irq);
+ }
+ 
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ void   *critirq_ctx[NR_CPUS] __read_mostly;
+ void    *dbgirq_ctx[NR_CPUS] __read_mostly;
+ void *mcheckirq_ctx[NR_CPUS] __read_mostly;
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index ebe4d1645ca1..7a8bc03a00af 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -45,7 +45,7 @@ static struct hard_trap_info
+ 	{ 0x0800, 0x08 /* SIGFPE */  },		/* fp unavailable */
+ 	{ 0x0900, 0x0e /* SIGALRM */ },		/* decrementer */
+ 	{ 0x0c00, 0x14 /* SIGCHLD */ },		/* system call */
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ 	{ 0x2002, 0x05 /* SIGTRAP */ },		/* debug */
+ #if defined(CONFIG_PPC_85xx)
+ 	{ 0x2010, 0x08 /* SIGFPE */  },		/* spe unavailable */
+@@ -64,7 +64,7 @@ static struct hard_trap_info
+ 	{ 0x2010, 0x08 /* SIGFPE */  },		/* fp unavailable */
+ 	{ 0x2020, 0x08 /* SIGFPE */  },		/* ap unavailable */
+ #endif
+-#else /* !CONFIG_BOOKE_OR_40x */
++#else /* !CONFIG_BOOKE */
+ 	{ 0x0d00, 0x05 /* SIGTRAP */ },		/* single-step */
+ #if defined(CONFIG_PPC_8xx)
+ 	{ 0x1000, 0x04 /* SIGILL */  },		/* software emulation */
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index a7671786764b..0e96bd38570c 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1875,7 +1875,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ #if defined(CONFIG_PPC_BOOK3S_32) && defined(CONFIG_PPC_KUAP)
+ 	p->thread.kuap = KUAP_NONE;
+ #endif
+-#if defined(CONFIG_BOOKE_OR_40x) && defined(CONFIG_PPC_KUAP)
++#if defined(CONFIG_BOOKE) && defined(CONFIG_PPC_KUAP)
+ 	p->thread.pid = MMU_NO_CONTEXT;
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
+index 7912bb50a7cb..385a00a2e2ca 100644
+--- a/arch/powerpc/kernel/setup.h
++++ b/arch/powerpc/kernel/setup.h
+@@ -29,7 +29,7 @@ void setup_tlb_core_data(void);
+ static inline void setup_tlb_core_data(void) { }
+ #endif
+ 
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ void exc_lvl_early_init(void);
+ #else
+ static inline void exc_lvl_early_init(void) { }
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index b761cc1a403c..e515c1f7d8d3 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -176,7 +176,7 @@ void __init emergency_stack_init(void)
+ }
+ #endif
+ 
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ void __init exc_lvl_early_init(void)
+ {
+ 	unsigned int i, hw_cpu;
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index c0fdc6d94fee..0ff9f038e800 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -695,7 +695,7 @@ static int __init get_freq(char *name, int cells, unsigned long *val)
+ 
+ static void start_cpu_decrementer(void)
+ {
+-#ifdef CONFIG_BOOKE_OR_40x
++#ifdef CONFIG_BOOKE
+ 	unsigned int tcr;
+ 
+ 	/* Clear any pending timer interrupts */
+diff --git a/arch/powerpc/mm/mmu_context.c b/arch/powerpc/mm/mmu_context.c
+index b24c19078eb1..3e3af29b4523 100644
+--- a/arch/powerpc/mm/mmu_context.c
++++ b/arch/powerpc/mm/mmu_context.c
+@@ -21,7 +21,7 @@ static inline void switch_mm_pgdir(struct task_struct *tsk,
+ #ifdef CONFIG_PPC_BOOK3S_32
+ 	tsk->thread.sr0 = mm->context.sr0;
+ #endif
+-#if defined(CONFIG_BOOKE_OR_40x) && defined(CONFIG_PPC_KUAP)
++#if defined(CONFIG_BOOKE) && defined(CONFIG_PPC_KUAP)
+ 	tsk->thread.pid = mm->context.id;
+ #endif
+ }
+diff --git a/arch/powerpc/mm/nohash/mmu_context.c b/arch/powerpc/mm/nohash/mmu_context.c
+index 92dc028aff1f..0b181da40ddb 100644
+--- a/arch/powerpc/mm/nohash/mmu_context.c
++++ b/arch/powerpc/mm/nohash/mmu_context.c
+@@ -303,7 +303,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
+ 	if (IS_ENABLED(CONFIG_BDI_SWITCH))
+ 		abatron_pteptrs[1] = next->pgd;
+ 	set_context(id, next->pgd);
+-#if defined(CONFIG_BOOKE_OR_40x) && defined(CONFIG_PPC_KUAP)
++#if defined(CONFIG_BOOKE) && defined(CONFIG_PPC_KUAP)
+ 	tsk->thread.pid = id;
+ #endif
+ 	raw_spin_unlock(&context_lock);
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 2b686ee2dd2b..55337628bf92 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -335,11 +335,6 @@ config BOOKE
+ 	depends on PPC_E500 || 44x
+ 	default y
+ 
+-config BOOKE_OR_40x
+-	bool
+-	depends on BOOKE
+-	default y
+-
+ config PTE_64BIT
+ 	bool
+ 	depends on 44x || PPC_E500 || PPC_86xx
 -- 
-2.45.0
+2.45.2
 
