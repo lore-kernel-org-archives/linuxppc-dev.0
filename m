@@ -4,93 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9838C30653
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2024 11:49:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 889D9C2BBCA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2024 11:50:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LfQ9I13T;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LVjeXkbR;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W7jmQ0m5tz3cnR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2024 21:49:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W7jnB5pzWz3cRY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Jun 2024 21:50:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LfQ9I13T;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LVjeXkbR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W7jlc0RT3z30Vb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2024 21:48:43 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45PBaHn4000691;
-	Tue, 25 Jun 2024 11:48:32 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W7jm05b5tz3clw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Jun 2024 21:49:04 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 45PBeYGp025112;
+	Tue, 25 Jun 2024 11:48:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-type:mime-version:subject:from:in-reply-to:date:cc
-	:content-transfer-encoding:message-id:references:to; s=pp1; bh=W
-	ICUOPn6G8vaIEnI5sjdZgE7qeNqV5Cn8Hfz1bsE0NU=; b=LfQ9I13T3l0ZpsRrX
-	3Yf13itfYwyPr0MwnJK+JFnWz7iQ2C1HbZkNlMpGBoN9WmarIqrGPboQddClUyFE
-	tpoJEg8ShxUB1V5VoBKO109UOKMVbp4e2V1rnH9aAWnTSHDGLIpuuLTvDdtbor6I
-	akEtRToF5iROjzj9dxzKAjGFm5d8Y03Sm7yMit2JwwfOu8lKlnGcGFDFiXxb7E2q
-	2kSbF+udQD3pscvaebgjxNXaKMsMR+bnAgnn9okjrbduGurKF3KlBb0+0/C5zSd4
-	xuCOZZBXnXOqDExekPmHefJCc9KmbbyBTZ1WmfYao0zYDhAhW9X78kJDOomIvCYL
-	4cXvA==
+	content-type:subject:from:in-reply-to:date:cc:message-id
+	:references:to:content-transfer-encoding:mime-version; s=pp1;
+	 bh=Y2hhtNXdnOP2URjK6F8cNvjZytpeeXwrjcm6KAj53Bw=; b=LVjeXkbRiSVb
+	PNnpqhI/AQS/E1x+ZdTYg6RTMisFfB6qZDeUAnbCiU2jErwV48kcKbwdkrdHHgJZ
+	4wZ0iyh7CMK9bnkmqQBP9tWmf+DogKDoAyHuUJELnW9rn94kOaTB8sATbgSWP6cW
+	LoB6YeM4IVW66Nr26nua/sxhQWIwlMwamLa6ATMv043JP914A7oMwEHDzM2nLlVd
+	bojtg8m541dwOn6TAxt8LvF8ibaMbYFnlZV7+EMrYpsBQ8OUuEzZPECMU/omGBO4
+	ELGvflxvJdETmw+sTWHY4+oucYt+U3Se1t7dZONcAd1NFuqWqSQXEqPRTvgz2VLg
+	KI022QQH5A==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yyw22016v-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yyw21819n-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Jun 2024 11:48:32 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 45PBmVj3017340;
-	Tue, 25 Jun 2024 11:48:31 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yyw22016r-1
+	Tue, 25 Jun 2024 11:48:56 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 45PBmtc9005441;
+	Tue, 25 Jun 2024 11:48:55 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3yyw21819h-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Jun 2024 11:48:31 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 45PAWAdv018093;
-	Tue, 25 Jun 2024 11:48:31 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 3yx8xu6c73-1
+	Tue, 25 Jun 2024 11:48:55 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 45PBGRKf019602;
+	Tue, 25 Jun 2024 11:48:54 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 3yx9xpx5kw-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Jun 2024 11:48:30 +0000
+	Tue, 25 Jun 2024 11:48:54 +0000
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 45PBmP2M46465520
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 45PBmmCI45875550
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 25 Jun 2024 11:48:27 GMT
+	Tue, 25 Jun 2024 11:48:50 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 68B1B2004B;
-	Tue, 25 Jun 2024 11:48:25 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 746CF20043;
+	Tue, 25 Jun 2024 11:48:48 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CA48420040;
-	Tue, 25 Jun 2024 11:48:22 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 8233B20040;
+	Tue, 25 Jun 2024 11:48:45 +0000 (GMT)
 Received: from smtpclient.apple (unknown [9.43.30.249])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue, 25 Jun 2024 11:48:22 +0000 (GMT)
+	Tue, 25 Jun 2024 11:48:45 +0000 (GMT)
 Content-Type: text/plain;
 	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3774.600.62\))
-Subject: Re: [V4 01/16] tools/perf: Move the data structures related to
- register type to header file
+Subject: Re: [V4 00/16] Add data type profiling support for powerpc
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <ZnpShR7zd9cVdxSj@google.com>
-Date: Tue, 25 Jun 2024 16:24:58 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <0AF30B3F-AD13-4398-AC0F-AA6B5425D4AA@linux.vnet.ibm.com>
+In-Reply-To: <ZnYVitG1tffUNTn6@google.com>
+Date: Tue, 25 Jun 2024 17:18:34 +0530
+Message-Id: <B34AF03E-FD05-4600-9548-ADDB33A534EF@linux.vnet.ibm.com>
 References: <20240614172631.56803-1-atrajeev@linux.vnet.ibm.com>
- <20240614172631.56803-2-atrajeev@linux.vnet.ibm.com>
- <ZnpShR7zd9cVdxSj@google.com>
+ <C84A4D8E-3BCD-47A7-B41E-1B39744AECDF@linux.vnet.ibm.com>
+ <ZnYVitG1tffUNTn6@google.com>
 To: Namhyung Kim <namhyung@kernel.org>
 X-Mailer: Apple Mail (2.3774.600.62)
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Wx4xQ1HC-ykBn5uzAbPblL6G-qjztymv
-X-Proofpoint-ORIG-GUID: JwmN6Qul-YFYonxRwifTiBMGpHnaCfmb
+X-Proofpoint-ORIG-GUID: _z5g5GnrlNUwrrJan91ypYAkkS5LQD5T
+X-Proofpoint-GUID: vMLeO6i0WB3tQse4eVMru0MJLMYVJ24F
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
  definitions=2024-06-25_06,2024-06-25_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- bulkscore=0 spamscore=0 adultscore=0 mlxscore=0 clxscore=1015 phishscore=0
- mlxlogscore=999 impostorscore=0 suspectscore=0 lowpriorityscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 spamscore=0
+ adultscore=0 bulkscore=0 lowpriorityscore=0 priorityscore=1501
+ impostorscore=0 phishscore=0 mlxscore=0 suspectscore=0 malwarescore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2406140001 definitions=main-2406250084
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,216 +103,202 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ian Rogers <irogers@google.com>, disgoel@linux.vnet.ibm.com, maddy@linux.ibm.com, kjain@linux.ibm.com, Adrian Hunter <adrian.hunter@intel.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, LKML <linux-kernel@vger.kernel.org>, linux-perf-users@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>, Jiri Olsa <jolsa@kernel.org>, akanksha@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Ian Rogers <irogers@google.com>, Disha Goel <disgoel@linux.vnet.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>, Adrian Hunter <adrian.hunter@intel.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, LKML <linux-kernel@vger.kernel.org>, linux-perf-users <linux-perf-users@vger.kernel.org>, Arnaldo Carvalho de Melo <acme@kernel.org>, Jiri Olsa <jolsa@kernel.org>, akanksha@linux.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-> On 25 Jun 2024, at 10:45=E2=80=AFAM, Namhyung Kim =
-<namhyung@kernel.org> wrote:
+> On 22 Jun 2024, at 5:36=E2=80=AFAM, Namhyung Kim <namhyung@kernel.org> wr=
+ote:
 >=20
 > Hello,
 >=20
-> On Fri, Jun 14, 2024 at 10:56:16PM +0530, Athira Rajeev wrote:
->> Data type profiling uses instruction tracking by checking each
->> instruction and updating the register type state in some data
->> structures. This is useful to find the data type in cases when the
->> register state gets transferred from one reg to another. Example, in
->> x86, "mov" instruction and in powerpc, "mr" instruction. Currently =
-these
->> structures are defined in annotate-data.c and instruction tracking is
->> implemented only for x86. Move these data structures to
->> "annotate-data.h" header file so that other arch implementations can =
-use
->> it in arch specific files as well.
+> On Thu, Jun 20, 2024 at 09:01:01PM +0530, Athira Rajeev wrote:
 >>=20
->> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
->> ---
->> tools/perf/util/annotate-data.c | 53 +------------------------------
->> tools/perf/util/annotate-data.h | 55 =
-+++++++++++++++++++++++++++++++++
->> 2 files changed, 56 insertions(+), 52 deletions(-)
 >>=20
->> diff --git a/tools/perf/util/annotate-data.c =
-b/tools/perf/util/annotate-data.c
->> index 965da6c0b542..a4c7f98a75e3 100644
->> --- a/tools/perf/util/annotate-data.c
->> +++ b/tools/perf/util/annotate-data.c
->> @@ -31,15 +31,6 @@
+>>> On 14 Jun 2024, at 10:56=E2=80=AFPM, Athira Rajeev <atrajeev@linux.vnet=
+.ibm.com> wrote:
+>>>=20
+>>> The patchset from Namhyung added support for data type profiling
+>>> in perf tool. This enabled support to associate PMU samples to data
+>>> types they refer using DWARF debug information. With the upstream
+>>> perf, currently it possible to run perf report or perf annotate to
+>>> view the data type information on x86.
+>>>=20
+>>> Initial patchset posted here had changes need to enable data type
+>>> profiling support for powerpc.
+>>>=20
+>>> https://lore.kernel.org/all/6e09dc28-4a2e-49d8-a2b5-ffb3396a9952@csgrou=
+p.eu/T/
+>>>=20
+>>> Main change were:
+>>> 1. powerpc instruction nmemonic table to associate load/store
+>>> instructions with move_ops which is use to identify if instruction
+>>> is a memory access one.
+>>> 2. To get register number and access offset from the given
+>>> instruction, code uses fields from "struct arch" -> objump.
+>>> Added entry for powerpc here.
+>>> 3. A get_arch_regnum to return register number from the
+>>> register name string.
+>>>=20
+>>> But the apporach used in the initial patchset used parsing of
+>>> disassembled code which the current perf tool implementation does.
+>>>=20
+>>> Example: lwz     r10,0(r9)
+>>>=20
+>>> This line "lwz r10,0(r9)" is parsed to extract instruction name,
+>>> registers names and offset. Also to find whether there is a memory
+>>> reference in the operands, "memory_ref_char" field of objdump is used.
+>>> For x86, "(" is used as memory_ref_char to tackle instructions of the
+>>> form "mov  (%rax), %rcx".
+>>>=20
+>>> In case of powerpc, not all instructions using "(" are the only memory
+>>> instructions. Example, above instruction can also be of extended form (X
+>>> form) "lwzx r10,0,r19". Inorder to easy identify the instruction catego=
+ry
+>>> and extract the source/target registers, second patchset added support =
+to use
+>>> raw instruction. With raw instruction, macros are added to extract opco=
+de
+>>> and register fields.
+>>> Link to second patchset:
+>>> https://lore.kernel.org/all/20240506121906.76639-1-atrajeev@linux.vnet.=
+ibm.com/
+>>>=20
+>>> Example representation using --show-raw-insn in objdump gives result:
+>>>=20
+>>> 38 01 81 e8     ld      r4,312(r1)
+>>>=20
+>>> Here "38 01 81 e8" is the raw instruction representation. In powerpc,
+>>> this translates to instruction form: "ld RT,DS(RA)" and binary code
+>>> as:
+>>> _____________________________________
+>>> | 58 |  RT  |  RA |      DS       | |
+>>> -------------------------------------
+>>> 0    6     11    16              30 31
+>>>=20
+>>> Second patchset used "objdump" again to read the raw instruction.
+>>> But since there is no need to disassemble and binary code can be read
+>>> directly from the DSO, third patchset (ie this patchset) uses below
+>>> apporach. The apporach preferred in powerpc to parse sample for data
+>>> type profiling in V3 patchset is:
+>>> - Read directly from DSO using dso__data_read_offset
+>>> - If that fails for any case, fallback to using libcapstone
+>>> - If libcapstone is not supported, approach will use objdump
+>>>=20
+>>> Patchset adds support to pick the opcode and reg fields from this
+>>> raw/binary instruction code. This approach came in from review comment
+>>> by Segher Boessenkool and Christophe for the initial patchset.
+>>>=20
+>>> Apart from that, instruction tracking is enabled for powerpc and
+>>> support function is added to find variables defined as registers
+>>> Example, in powerpc, below two registers are
+>>> defined to represent variable:
+>>> 1. r13: represents local_paca
+>>> register struct paca_struct *local_paca asm("r13");
+>>>=20
+>>> 2. r1: represents stack_pointer
+>>> register void *__stack_pointer asm("r1");
+>>>=20
+>>> These are handled in this patchset.
+>>>=20
+>>> - Patch 1 is to rearrange register state type structures to header file
+>>> so that it can referred from other arch specific files
+>>> - Patch 2 is to make instruction tracking as a callback to"struct arch"
+>>> so that it can be implemented by other archs easily and defined in arch
+>>> specific files
+>>> - Patch 3 adds support to capture and parse raw instruction in powerpc
+>>> using dso__data_read_offset utility
+>>> - Patch 4 adds logic to support using objdump when doing default "perf
+>>> report" or "perf annotate" since it that needs disassembled instruction.
+>>> - Patch 5 adds disasm_line__parse to parse raw instruction for powerpc
+>>> - Patch 6 update parameters for reg extract functions to use raw
+>>> instruction on powerpc
+>>> - Patch 7 add support to identify memory instructions of opcode 31 in
+>>> powerpc
+>>> - Patch 8 adds more instructions to support instruction tracking in pow=
+erpc
+>>> - Patch 9 and 10 handles instruction tracking for powerpc.
+>>> - Patch 11, 12 and 13 add support to use libcapstone in powerpc
+>>> - Patch 14 and patch 15 handles support to find global register variabl=
+es
+>>> - Patch 16 handles insn-stat option for perf annotate
+>>>=20
+>>> Note:
+>>> - There are remaining unknowns (25%) as seen in annotate Instruction st=
+ats
+>>> below.
+>>> - This patchset is not tested on powerpc32. In next step of enhancements
+>>> along with handling remaining unknowns, plan to cover powerpc32 changes
+>>> based on how testing goes.
+>>>=20
+>>> With the current patchset:
+>>>=20
+>>> ./perf record -a -e mem-loads sleep 1
+>>> ./perf report -s type,typeoff --hierarchy --group --stdio
+>>> ./perf annotate --data-type --insn-stat
+>>>=20
+>>> perf annotate logs:
+>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>>>=20
+>>> Annotate Instruction stats
+>>> total 609, ok 446 (73.2%), bad 163 (26.8%)
+>>>=20
+>>> Name/opcode:  Good   Bad
+>>> -----------------------------------------------------------
+>>> 58                  :   323    80
+>>> 32                  :    49    43
+>>> 34                  :    33    11
+>>> OP_31_XOP_LDX       :     8    20
+>>> 40                  :    23     0
+>>> OP_31_XOP_LWARX     :     5     1
+>>> OP_31_XOP_LWZX      :     2     3
+>>> OP_31_XOP_LDARX     :     3     0
+>>> 33                  :     0     2
+>>> OP_31_XOP_LBZX      :     0     1
+>>> OP_31_XOP_LWAX      :     0     1
+>>> OP_31_XOP_LHZX      :     0     1
+>>>=20
+>>> perf report logs:
+>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>>>=20
+>>> Total Lost Samples: 0
+>>>=20
+>>> Samples: 1K of event 'mem-loads'
+>>> Event count (approx.): 937238
+>>>=20
+>>> Overhead  Data Type  Data Type Offset
+>>> ........  .........  ................
+>>>=20
+>>> 48.60%  (unknown)  (unknown) +0 (no field)
+>>> 12.85%  long unsigned int  long unsigned int +0 (current_stack_pointer)
+>>>  4.68%  struct paca_struct  struct paca_struct +2312 (__current)
+>>>  4.57%  struct paca_struct  struct paca_struct +2354 (irq_soft_mask)
+>>>  2.69%  struct paca_struct  struct paca_struct +2808 (canary)
+>>>  2.68%  struct paca_struct  struct paca_struct +8 (paca_index)
+>>>  2.24%  struct paca_struct  struct paca_struct +48 (data_offset)
+>>>  1.41%  struct vm_fault  struct vm_fault +0 (vma)
+>>>  1.29%  struct task_struct  struct task_struct +276 (flags)
+>>>  1.03%  struct pt_regs  struct pt_regs +264 (user_regs.msr)
+>>>  0.90%  struct security_hook_list  struct security_hook_list +0 (list.n=
+ext)
+>>>  0.76%  struct irq_desc  struct irq_desc +304 (irq_data.chip)
+>>>  0.76%  struct rq  struct rq +2856 (cpu)
+>>>=20
+>>> Thanks
+>>> Athira Rajeev
 >>=20
->> static void delete_var_types(struct die_var_type *var_types);
+>> Hi All
 >>=20
->> -enum type_state_kind {
->> - TSR_KIND_INVALID =3D 0,
->> - TSR_KIND_TYPE,
->> - TSR_KIND_PERCPU_BASE,
->> - TSR_KIND_CONST,
->> - TSR_KIND_POINTER,
->> - TSR_KIND_CANARY,
->> -};
->> -
->> #define pr_debug_dtp(fmt, ...) \
->> do { \
->> if (debug_type_profile) \
->> @@ -140,49 +131,7 @@ static void pr_debug_location(Dwarf_Die *die, =
-u64 pc, int reg)
->> }
->> }
->>=20
->> -/*
->> - * Type information in a register, valid when @ok is true.
->> - * The @caller_saved registers are invalidated after a function =
-call.
->> - */
->> -struct type_state_reg {
->> - Dwarf_Die type;
->> - u32 imm_value;
->> - bool ok;
->> - bool caller_saved;
->> - u8 kind;
->> -};
->> -
->> -/* Type information in a stack location, dynamically allocated */
->> -struct type_state_stack {
->> - struct list_head list;
->> - Dwarf_Die type;
->> - int offset;
->> - int size;
->> - bool compound;
->> - u8 kind;
->> -};
->> -
->> -/* FIXME: This should be arch-dependent */
->> -#define TYPE_STATE_MAX_REGS  16
->> -
->> -/*
->> - * State table to maintain type info in each register and stack =
-location.
->> - * It'll be updated when new variable is allocated or type info is =
-moved
->> - * to a new location (register or stack).  As it'd be used with the
->> - * shortest path of basic blocks, it only maintains a single table.
->> - */
->> -struct type_state {
->> - /* state of general purpose registers */
->> - struct type_state_reg regs[TYPE_STATE_MAX_REGS];
->> - /* state of stack location */
->> - struct list_head stack_vars;
->> - /* return value register */
->> - int ret_reg;
->> - /* stack pointer register */
->> - int stack_reg;
->> -};
->> -
->> -static bool has_reg_type(struct type_state *state, int reg)
->> +bool has_reg_type(struct type_state *state, int reg)
->> {
->> return (unsigned)reg < ARRAY_SIZE(state->regs);
->> }
->> diff --git a/tools/perf/util/annotate-data.h =
-b/tools/perf/util/annotate-data.h
->> index 0a57d9f5ee78..ef235b1b15e1 100644
->> --- a/tools/perf/util/annotate-data.h
->> +++ b/tools/perf/util/annotate-data.h
->> @@ -6,6 +6,9 @@
->> #include <linux/compiler.h>
->> #include <linux/rbtree.h>
->> #include <linux/types.h>
->> +#include "dwarf-aux.h"
->> +#include "annotate.h"
->> +#include "debuginfo.h"
->>=20
->> struct annotated_op_loc;
->> struct debuginfo;
->> @@ -15,6 +18,15 @@ struct hist_entry;
->> struct map_symbol;
->> struct thread;
->>=20
->> +enum type_state_kind {
->> + TSR_KIND_INVALID =3D 0,
->> + TSR_KIND_TYPE,
->> + TSR_KIND_PERCPU_BASE,
->> + TSR_KIND_CONST,
->> + TSR_KIND_POINTER,
->> + TSR_KIND_CANARY,
->> +};
->> +
->> /**
->> * struct annotated_member - Type of member field
->> * @node: List entry in the parent list
->> @@ -142,6 +154,48 @@ struct annotated_data_stat {
->> };
->> extern struct annotated_data_stat ann_data_stat;
->>=20
->> +/*
->> + * Type information in a register, valid when @ok is true.
->> + * The @caller_saved registers are invalidated after a function =
-call.
->> + */
->> +struct type_state_reg {
->> + Dwarf_Die type;
->> + u32 imm_value;
->> + bool ok;
->> + bool caller_saved;
->> + u8 kind;
->> +};
->> +
->> +/* Type information in a stack location, dynamically allocated */
->> +struct type_state_stack {
->> + struct list_head list;
->> + Dwarf_Die type;
->> + int offset;
->> + int size;
->> + bool compound;
->> + u8 kind;
->> +};
->> +
->> +/* FIXME: This should be arch-dependent */
->> +#define TYPE_STATE_MAX_REGS  32
+>> Requesting for review comments for this patchset
 >=20
-> Can you please define this for powerpc separately?  I think x86 should
-> remain in 16.
+> Sorry about the delay, I was traveling and busy with other things.
+> I'll review this next week!
+
+Thanks Namhyung
 >=20
 > Thanks,
 > Namhyung
-
-Sure, I will have this change in V5
->=20
->> +
->> +/*
->> + * State table to maintain type info in each register and stack =
-location.
->> + * It'll be updated when new variable is allocated or type info is =
-moved
->> + * to a new location (register or stack).  As it'd be used with the
->> + * shortest path of basic blocks, it only maintains a single table.
->> + */
->> +struct type_state {
->> + /* state of general purpose registers */
->> + struct type_state_reg regs[TYPE_STATE_MAX_REGS];
->> + /* state of stack location */
->> + struct list_head stack_vars;
->> + /* return value register */
->> + int ret_reg;
->> + /* stack pointer register */
->> + int stack_reg;
->> +};
->> +
->> #ifdef HAVE_DWARF_SUPPORT
->>=20
->> /* Returns data type at the location (ip, reg, offset) */
->> @@ -160,6 +214,7 @@ void global_var_type__tree_delete(struct rb_root =
-*root);
->>=20
->> int hist_entry__annotate_data_tty(struct hist_entry *he, struct evsel =
-*evsel);
->>=20
->> +bool has_reg_type(struct type_state *state, int reg);
->> #else /* HAVE_DWARF_SUPPORT */
->>=20
->> static inline struct annotated_data_type *
->> --=20
->> 2.43.0
 
 
