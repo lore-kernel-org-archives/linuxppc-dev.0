@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C89A8C3064D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2024 05:31:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 830EBC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2024 05:34:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W8nHq1k1zz3dW6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2024 15:31:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W8nLY0FkGz3fqB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Jun 2024 15:34:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W8nHN04Cgz3ck2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2024 15:31:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W8nL51dsmz3d8B
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Jun 2024 15:33:48 +1000 (AEST)
 Received: by verein.lst.de (Postfix, from userid 2407)
-	id A5B7B68AFE; Thu, 27 Jun 2024 07:31:24 +0200 (CEST)
-Date: Thu, 27 Jun 2024 07:31:24 +0200
+	id 1840168C4E; Thu, 27 Jun 2024 07:33:44 +0200 (CEST)
+Date: Thu, 27 Jun 2024 07:33:43 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Alistair Popple <apopple@nvidia.com>
-Subject: Re: [PATCH 03/13] fs/dax: Refactor wait for dax idle page
-Message-ID: <20240627053124.GC14837@lst.de>
-References: <cover.66009f59a7fe77320d413011386c3ae5c2ee82eb.1719386613.git-series.apopple@nvidia.com> <cdbf5489af735e0ad95beab6b4b13d3a2f75745f.1719386613.git-series.apopple@nvidia.com>
+Subject: Re: [PATCH 04/13] fs/dax: Add dax_page_free callback
+Message-ID: <20240627053343.GD14837@lst.de>
+References: <cover.66009f59a7fe77320d413011386c3ae5c2ee82eb.1719386613.git-series.apopple@nvidia.com> <e626eda568267e1f86d5c30c24bc62474b45f6c3.1719386613.git-series.apopple@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cdbf5489af735e0ad95beab6b4b13d3a2f75745f.1719386613.git-series.apopple@nvidia.com>
+In-Reply-To: <e626eda568267e1f86d5c30c24bc62474b45f6c3.1719386613.git-series.apopple@nvidia.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -44,15 +44,19 @@ Cc: linmiaohe@huawei.com, nvdimm@lists.linux.dev, jack@suse.cz, david@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 27, 2024 at 10:54:18AM +1000, Alistair Popple wrote:
-> A FS DAX page is considered idle when its refcount drops to one. This
-> is currently open-coded in all file systems supporting FS DAX. Move
-> the idle detection to a common function to make future changes easier.
+On Thu, Jun 27, 2024 at 10:54:19AM +1000, Alistair Popple wrote:
+> When a fs dax page is freed it has to notify filesystems that the page
+> has been unpinned/unmapped and is free. Currently this involves
+> special code in the page free paths to detect a transition of refcount
+> from 2 to 1 and to call some fs dax specific code.
 > 
-> Signed-off-by: Alistair Popple <apopple@nvidia.com>
-> Reviewed-by: Jan Kara <jack@suse.cz>
+> A future change will require this to happen when the page refcount
+> drops to zero. In this case we can use the existing
+> pgmap->ops->page_free() callback so wire that up for all devices that
+> support FS DAX (nvdimm and virtio).
 
-I'm pretty sure I already review this ages ago, but:
-
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Given that ->page_ffree is only called from free_zone_device_folio
+and right next to a switch on the the type, can't we just do the
+wake_up_var there without the somewhat confusing indirect call that
+just back in common code without any driver logic?
 
