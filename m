@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28809C3064D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2024 12:15:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B240C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2024 12:16:10 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Us9Q4XYn;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=LoBhqVT8;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W9ZC32rTtz3cbX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2024 22:15:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W9ZCq6WH6z3cgP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2024 22:16:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Us9Q4XYn;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=LoBhqVT8;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W9Z796tqHz3cPK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2024 22:12:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W9Z7F3vDFz3cbX
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2024 22:12:09 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1719576727;
-	bh=MhPbSBWdpn8r92fM02FiIVmlkH3KeQYLSGzTg+sg1GQ=;
+	s=201909; t=1719576725;
+	bh=RrS40OIYMVwMmZ4uED0LJB4GpzAzYiyL4Abmsao5qik=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=Us9Q4XYn1EZ2tuQaiiVglUYwDzgTrvzjzm2eV6IticDZXr0hs/ZncxnlNOR4VIw+d
-	 1Z2I0KQtj9kjUKFk7EjBNEVufJ7kyjAgQUGJg5F0Ct4ekLZ7ijdta+M6NDrSjhyMQS
-	 eeNBztCttYvrfUwh/KCrqVk8FsAjx/VgC19Yp3NlZ3bZBkgY8KRLA6zGlN8iB5axtY
-	 C5qOC6fM2NYp5ie2uRrwJ8TKwEYsea90lyrzSSKy5QCrnXd5s3RJbvr6W1UmIV5yeG
-	 ECXAsNaS37YnLTTDlJ74WeWO7GOAx840zyz9v9n0SHricXJKgvNS/CiImVfK7/CvRK
-	 5yTAjmMEvNt4g==
+	b=LoBhqVT8UORVE0FLAYbtsXzxmtE1r6/hRThYoxY9ZSAD8ANAbvfnTFl/X2y3+Zke5
+	 6urSgCpNucMbJFs4LRkOiFWd9dNfxj+jvWBXSUU/+cgUtNXAWyhOxdBikL4tt/IcgW
+	 Tx5Fj9d1C/BlGIsCk22iQnac21MpVtGF179f9QWPJi+GQQBDS09W042Q5bNVcv7D1F
+	 F5OnRj7H0Pc4BUl7nRzWpvIQElzxnncmcAdFvX0XmCUYCbVEaKl2eCfP4PO2GU4kdO
+	 2Zoe3PX0skhaUSBtKwFgBs5efBoX8a48rSHT3SSbRZ/3NwDolLJfbRRuYaCnY50r0e
+	 KK4dgtlMDlkXg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W9Z7C0y68z4wcr;
-	Fri, 28 Jun 2024 22:12:07 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W9Z7904F0z4wcS;
+	Fri, 28 Jun 2024 22:12:04 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v3 7/7] powerpc/platforms: Move files from 4xx to 44x
-Date: Fri, 28 Jun 2024 22:12:01 +1000
-Message-ID: <20240628121201.130802-7-mpe@ellerman.id.au>
+Subject: [PATCH v3 3/7] powerpc: Remove 40x from Kconfig and defconfig
+Date: Fri, 28 Jun 2024 22:11:57 +1000
+Message-ID: <20240628121201.130802-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20240628121201.130802-1-mpe@ellerman.id.au>
 References: <20240628121201.130802-1-mpe@ellerman.id.au>
@@ -62,165 +62,193 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Remove 40x from Kconfig, making the code unreachable.
 
-Only 44x uses 4xx now, so only keep one directory.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/44x/Makefile           |  6 ++++-
- arch/powerpc/platforms/{4xx => 44x}/cpm.c     |  0
- arch/powerpc/platforms/{4xx => 44x}/gpio.c    |  0
- .../powerpc/platforms/{4xx => 44x}/hsta_msi.c |  0
- arch/powerpc/platforms/44x/machine_check.c    | 15 ++++++++++++
- arch/powerpc/platforms/{4xx => 44x}/pci.c     |  0
- arch/powerpc/platforms/{4xx => 44x}/pci.h     |  0
- arch/powerpc/platforms/{4xx => 44x}/soc.c     |  0
- arch/powerpc/platforms/{4xx => 44x}/uic.c     |  0
- arch/powerpc/platforms/4xx/Makefile           |  7 ------
- arch/powerpc/platforms/4xx/machine_check.c    | 23 -------------------
- arch/powerpc/platforms/Makefile               |  1 -
- 12 files changed, 20 insertions(+), 32 deletions(-)
- rename arch/powerpc/platforms/{4xx => 44x}/cpm.c (100%)
- rename arch/powerpc/platforms/{4xx => 44x}/gpio.c (100%)
- rename arch/powerpc/platforms/{4xx => 44x}/hsta_msi.c (100%)
- rename arch/powerpc/platforms/{4xx => 44x}/pci.c (100%)
- rename arch/powerpc/platforms/{4xx => 44x}/pci.h (100%)
- rename arch/powerpc/platforms/{4xx => 44x}/soc.c (100%)
- rename arch/powerpc/platforms/{4xx => 44x}/uic.c (100%)
- delete mode 100644 arch/powerpc/platforms/4xx/Makefile
- delete mode 100644 arch/powerpc/platforms/4xx/machine_check.c
+ arch/powerpc/Kconfig                   | 12 ++++++------
+ arch/powerpc/Kconfig.debug             | 13 -------------
+ arch/powerpc/Makefile                  |  5 -----
+ arch/powerpc/configs/40x.config        |  2 --
+ arch/powerpc/platforms/Kconfig.cputype | 21 ++++-----------------
+ 5 files changed, 10 insertions(+), 43 deletions(-)
+ delete mode 100644 arch/powerpc/configs/40x.config
 
 v3: Unchanged.
 
-diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index 5ba031f57652..ca7b1bb442d9 100644
---- a/arch/powerpc/platforms/44x/Makefile
-+++ b/arch/powerpc/platforms/44x/Makefile
-@@ -1,5 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0
--obj-y	+= misc_44x.o machine_check.o
-+obj-y	+= misc_44x.o machine_check.o uic.o soc.o
- ifneq ($(CONFIG_PPC4xx_CPM),y)
- obj-y	+= idle.o
- endif
-@@ -12,3 +12,7 @@ obj-$(CONFIG_CANYONLANDS)+= canyonlands.o
- obj-$(CONFIG_CURRITUCK)	+= ppc476.o
- obj-$(CONFIG_AKEBONO)	+= ppc476.o
- obj-$(CONFIG_FSP2)	+= fsp2.o
-+obj-$(CONFIG_PCI)		+= pci.o
-+obj-$(CONFIG_PPC4xx_HSTA_MSI)	+= hsta_msi.o
-+obj-$(CONFIG_PPC4xx_CPM)	+= cpm.o
-+obj-$(CONFIG_PPC4xx_GPIO)	+= gpio.o
-diff --git a/arch/powerpc/platforms/4xx/cpm.c b/arch/powerpc/platforms/44x/cpm.c
-similarity index 100%
-rename from arch/powerpc/platforms/4xx/cpm.c
-rename to arch/powerpc/platforms/44x/cpm.c
-diff --git a/arch/powerpc/platforms/4xx/gpio.c b/arch/powerpc/platforms/44x/gpio.c
-similarity index 100%
-rename from arch/powerpc/platforms/4xx/gpio.c
-rename to arch/powerpc/platforms/44x/gpio.c
-diff --git a/arch/powerpc/platforms/4xx/hsta_msi.c b/arch/powerpc/platforms/44x/hsta_msi.c
-similarity index 100%
-rename from arch/powerpc/platforms/4xx/hsta_msi.c
-rename to arch/powerpc/platforms/44x/hsta_msi.c
-diff --git a/arch/powerpc/platforms/44x/machine_check.c b/arch/powerpc/platforms/44x/machine_check.c
-index 5d19daacd78a..85ff33a8d9b6 100644
---- a/arch/powerpc/platforms/44x/machine_check.c
-+++ b/arch/powerpc/platforms/44x/machine_check.c
-@@ -9,6 +9,21 @@
- #include <asm/reg.h>
- #include <asm/cacheflush.h>
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c88c6d46a5bc..16d625c71dfa 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -149,7 +149,7 @@ config PPC
+ 	select ARCH_HAS_PTE_SPECIAL
+ 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE && PPC_BOOK3S_64
+ 	select ARCH_HAS_SET_MEMORY
+-	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S || PPC_8xx || 40x) && !HIBERNATION
++	select ARCH_HAS_STRICT_KERNEL_RWX	if (PPC_BOOK3S || PPC_8xx) && !HIBERNATION
+ 	select ARCH_HAS_STRICT_KERNEL_RWX	if PPC_85xx && !HIBERNATION && !RANDOMIZE_BASE
+ 	select ARCH_HAS_STRICT_MODULE_RWX	if ARCH_HAS_STRICT_KERNEL_RWX
+ 	select ARCH_HAS_SYSCALL_WRAPPER		if !SPU_BASE && !COMPAT
+@@ -167,7 +167,7 @@ config PPC
+ 	select ARCH_SPLIT_ARG64			if PPC32
+ 	select ARCH_STACKWALK
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+-	select ARCH_SUPPORTS_DEBUG_PAGEALLOC	if PPC_BOOK3S || PPC_8xx || 40x
++	select ARCH_SUPPORTS_DEBUG_PAGEALLOC	if PPC_BOOK3S || PPC_8xx
+ 	select ARCH_USE_BUILTIN_BSWAP
+ 	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
+ 	select ARCH_USE_MEMTEST
+@@ -389,7 +389,7 @@ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+ 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
+ 		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
+-		   || 44x || 40x
++		   || 44x
  
-+int machine_check_4xx(struct pt_regs *regs)
-+{
-+	unsigned long reason = regs->esr;
-+
-+	if (reason & ESR_IMCP) {
-+		printk("Instruction");
-+		mtspr(SPRN_ESR, reason & ~ESR_IMCP);
-+	} else
-+		printk("Data");
-+
-+	printk(" machine check in kernel mode.\n");
-+
-+	return 0;
-+}
-+
- int machine_check_440A(struct pt_regs *regs)
- {
- 	unsigned long reason = regs->esr;
-diff --git a/arch/powerpc/platforms/4xx/pci.c b/arch/powerpc/platforms/44x/pci.c
-similarity index 100%
-rename from arch/powerpc/platforms/4xx/pci.c
-rename to arch/powerpc/platforms/44x/pci.c
-diff --git a/arch/powerpc/platforms/4xx/pci.h b/arch/powerpc/platforms/44x/pci.h
-similarity index 100%
-rename from arch/powerpc/platforms/4xx/pci.h
-rename to arch/powerpc/platforms/44x/pci.h
-diff --git a/arch/powerpc/platforms/4xx/soc.c b/arch/powerpc/platforms/44x/soc.c
-similarity index 100%
-rename from arch/powerpc/platforms/4xx/soc.c
-rename to arch/powerpc/platforms/44x/soc.c
-diff --git a/arch/powerpc/platforms/4xx/uic.c b/arch/powerpc/platforms/44x/uic.c
-similarity index 100%
-rename from arch/powerpc/platforms/4xx/uic.c
-rename to arch/powerpc/platforms/44x/uic.c
-diff --git a/arch/powerpc/platforms/4xx/Makefile b/arch/powerpc/platforms/4xx/Makefile
-deleted file mode 100644
-index 7f57c35f8dec..000000000000
---- a/arch/powerpc/platforms/4xx/Makefile
-+++ /dev/null
-@@ -1,7 +0,0 @@
--# SPDX-License-Identifier: GPL-2.0-only
--obj-y				+= uic.o machine_check.o
--obj-$(CONFIG_44x)		+= soc.o
--obj-$(CONFIG_PCI)		+= pci.o
--obj-$(CONFIG_PPC4xx_HSTA_MSI)	+= hsta_msi.o
--obj-$(CONFIG_PPC4xx_CPM)	+= cpm.o
--obj-$(CONFIG_PPC4xx_GPIO)	+= gpio.o
-diff --git a/arch/powerpc/platforms/4xx/machine_check.c b/arch/powerpc/platforms/4xx/machine_check.c
-deleted file mode 100644
-index a905da1d6f41..000000000000
---- a/arch/powerpc/platforms/4xx/machine_check.c
-+++ /dev/null
-@@ -1,23 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- */
--
--#include <linux/kernel.h>
--#include <linux/printk.h>
--#include <linux/ptrace.h>
--
--#include <asm/reg.h>
--
--int machine_check_4xx(struct pt_regs *regs)
--{
--	unsigned long reason = regs->esr;
--
--	if (reason & ESR_IMCP) {
--		printk("Instruction");
--		mtspr(SPRN_ESR, reason & ~ESR_IMCP);
--	} else
--		printk("Data");
--	printk(" machine check in kernel mode.\n");
--
--	return 0;
--}
-diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
-index d1a417b301b6..786d374bff31 100644
---- a/arch/powerpc/platforms/Makefile
-+++ b/arch/powerpc/platforms/Makefile
-@@ -4,7 +4,6 @@ obj-$(CONFIG_FSL_ULI1575)	+= fsl_uli1575.o
+ config ARCH_SUSPEND_NONZERO_CPU
+ 	def_bool y
+@@ -443,7 +443,7 @@ config ARCH_SUPPORTS_UPROBES
  
- obj-$(CONFIG_PPC_PMAC)		+= powermac/
- obj-$(CONFIG_PPC_CHRP)		+= chrp/
--obj-$(CONFIG_4xx)		+= 4xx/
- obj-$(CONFIG_44x)		+= 44x/
- obj-$(CONFIG_PPC_MPC512x)	+= 512x/
- obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
+ config PPC_ADV_DEBUG_REGS
+ 	bool
+-	depends on 40x || BOOKE
++	depends on BOOKE
+ 	default y
+ 
+ config PPC_ADV_DEBUG_IACS
+@@ -1077,7 +1077,7 @@ config GENERIC_ISA_DMA
+ config PPC_INDIRECT_PCI
+ 	bool
+ 	depends on PCI
+-	default y if 40x || 44x
++	default y if 44x
+ 
+ config SBUS
+ 	bool
+@@ -1102,7 +1102,7 @@ config FSL_PMC
+ config PPC4xx_CPM
+ 	bool
+ 	default y
+-	depends on SUSPEND && (44x || 40x)
++	depends on SUSPEND && 44x
+ 	help
+ 	  PPC4xx Clock Power Management (CPM) support (suspend/resume).
+ 	  It also enables support for two different idle states (idle-wait
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 8c80b154e814..3799ceceb04a 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -244,14 +244,6 @@ config PPC_EARLY_DEBUG_44x
+ 	  inbuilt serial port.  If you enable this, ensure you set
+ 	  PPC_EARLY_DEBUG_44x_PHYSLOW below to suit your target board.
+ 
+-config PPC_EARLY_DEBUG_40x
+-	bool "Early serial debugging for IBM/AMCC 40x CPUs"
+-	depends on 40x
+-	help
+-	  Select this to enable early debugging for IBM 40x chips via the
+-	  inbuilt serial port. This works on chips with a 16550 compatible
+-	  UART.
+-
+ config PPC_EARLY_DEBUG_CPM
+ 	bool "Early serial debugging for Freescale CPM-based serial ports"
+ 	depends on SERIAL_CPM=y
+@@ -356,11 +348,6 @@ config PPC_EARLY_DEBUG_44x_PHYSHIGH
+ 	depends on PPC_EARLY_DEBUG_44x
+ 	default "0x1"
+ 
+-config PPC_EARLY_DEBUG_40x_PHYSADDR
+-	hex "Early debug UART physical address"
+-	depends on PPC_EARLY_DEBUG_40x
+-	default "0xef600300"
+-
+ config PPC_EARLY_DEBUG_CPM_ADDR
+ 	hex "CPM UART early debug transmit descriptor address"
+ 	depends on PPC_EARLY_DEBUG_CPM
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index a8479c881cac..bbfe4a1f06ef 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -301,11 +301,6 @@ ppc32_allmodconfig:
+ 	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/book3s_32.config \
+ 		-f $(srctree)/Makefile allmodconfig
+ 
+-generated_configs += ppc40x_allmodconfig
+-ppc40x_allmodconfig:
+-	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/40x.config \
+-		-f $(srctree)/Makefile allmodconfig
+-
+ generated_configs += ppc44x_allmodconfig
+ ppc44x_allmodconfig:
+ 	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/44x.config \
+diff --git a/arch/powerpc/configs/40x.config b/arch/powerpc/configs/40x.config
+deleted file mode 100644
+index 82a9d58ddb81..000000000000
+--- a/arch/powerpc/configs/40x.config
++++ /dev/null
+@@ -1,2 +0,0 @@
+-CONFIG_PPC64=n
+-CONFIG_40x=y
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index b2d8c0da2ad9..2b686ee2dd2b 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -43,14 +43,6 @@ config PPC_8xx
+ 	select HAVE_ARCH_VMAP_STACK
+ 	select HUGETLBFS
+ 
+-config 40x
+-	bool "AMCC 40x"
+-	select PPC_DCR_NATIVE
+-	select PPC_UDBG_16550
+-	select 4xx_SOC
+-	select HAVE_PCI
+-	select PPC_KUEP if PPC_KUAP
+-
+ config 44x
+ 	bool "AMCC 44x, 46x or 47x"
+ 	select PPC_DCR_NATIVE
+@@ -194,11 +186,6 @@ config E6500_CPU
+ 	depends on !CC_IS_CLANG
+ 	select PPC_HAS_LBARX_LHARX
+ 
+-config 405_CPU
+-	bool "40x family"
+-	depends on 40x
+-	depends on !CC_IS_CLANG
+-
+ config 440_CPU
+ 	bool "440 (44x family)"
+ 	depends on 44x
+@@ -340,7 +327,7 @@ config FSL_EMB_PERF_EVENT_E500
+ 
+ config 4xx
+ 	bool
+-	depends on 40x || 44x
++	depends on 44x
+ 	default y
+ 
+ config BOOKE
+@@ -350,7 +337,7 @@ config BOOKE
+ 
+ config BOOKE_OR_40x
+ 	bool
+-	depends on BOOKE || 40x
++	depends on BOOKE
+ 	default y
+ 
+ config PTE_64BIT
+@@ -495,8 +482,8 @@ config PPC_KERNEL_PCREL
+ 	  This option builds the kernel with the pc relative ABI model.
+ 
+ config PPC_KUEP
+-	bool "Kernel Userspace Execution Prevention" if !40x
+-	default y if !40x
++	bool "Kernel Userspace Execution Prevention"
++	default y
+ 	help
+ 	  Enable support for Kernel Userspace Execution Prevention (KUEP)
+ 
 -- 
 2.45.2
 
