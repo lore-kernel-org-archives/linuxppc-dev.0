@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0518FC2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2024 12:12:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0701C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2024 12:13:28 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Bf7vDcsR;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=n7URXq9v;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4W9Z7x2tktz3cYt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2024 22:12:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4W9Z8k2x4rz3cnZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Jun 2024 22:13:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Bf7vDcsR;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=n7URXq9v;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4W9Z773Kg8z30Wb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2024 22:12:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4W9Z7841NRz30Wb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Jun 2024 22:12:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1719576724;
-	bh=gdaWDFSlG4C8QBwqTGNGvrGU4c2rzXjwFngGQdM2yok=;
+	s=201909; t=1719576725;
+	bh=Z+GAsYYiUDvhhQCYKljBRJ7IQKiuluaqjeiR9BKybV0=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=Bf7vDcsRtgzudTEdIDEy6sdS2Ut8DsxlzmiHFUS/gmFzD4I+myphcesXsSz+0ez2J
-	 cqs0CLyPb6kiKp8cvdrryojnNY9wIFdjIleYCSgbHg1LjTEerM3dK0RWesYt3uMTYI
-	 bKhn+vvWpw1xuAsJS0baWoKh2fmDqNzEXQgm0wejNA5j/Ur0gJk25/X4IWAVkGBSKr
-	 X6DQT+qKl65vAFFDM2cvi3cq5VaHsPJeZQnkrEl/UpH6f7LLDeU8EB+URFgVI+TR4l
-	 zGEOy0h7mIVUxx30xBBX196h8gE9X1qetn7ydJ3yg2N6su6S6Y+zkEY2MEEUtoXmEi
-	 2Nb0S6srfe8qA==
+	b=n7URXq9vEPjWPO93u6ctc6qIGqBevrIyTClCqBlKNcTpvRRbqu/doSWq+Vy4zPZIJ
+	 dmPVkf2F17EHz+QWhON90dTiF6YigaFchDzQysWJbmzazGEY32LNV5Q0s3M6t7Xrre
+	 tUxpECipe4UC98TT/3sfixeSKaPaBpJqCej41Fby/wDrk06cv7vVK/MJpHKYlRJYI/
+	 dFE5HYiqwQPeHm5b3SkdOZjcVfG6vXoaZaNb3x1pz8nhS1m+oYjWaqPbmA3K+jW3rT
+	 M/ffOb0qet5u8fMjiFNYyScHV+qhdEyFE1OVmztGHiHkUskb5/5C9gl4xlES47EBOv
+	 g4+MeLi72O2nw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W9Z783C9Yz4wc8;
-	Fri, 28 Jun 2024 22:12:04 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4W9Z7948jcz4wcg;
+	Fri, 28 Jun 2024 22:12:05 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v3 2/7] powerpc/boot: Remove all 40x platforms from boot
-Date: Fri, 28 Jun 2024 22:11:56 +1000
-Message-ID: <20240628121201.130802-2-mpe@ellerman.id.au>
+Subject: [PATCH v3 4/7] powerpc: Remove core support for 40x
+Date: Fri, 28 Jun 2024 22:11:58 +1000
+Message-ID: <20240628121201.130802-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.45.2
 In-Reply-To: <20240628121201.130802-1-mpe@ellerman.id.au>
 References: <20240628121201.130802-1-mpe@ellerman.id.au>
@@ -64,3088 +64,2292 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Remove 40x platforms from the boot directory.
+Now that 40x platforms have gone, remove support
+for 40x in the core of powerpc arch.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/boot/4xx.c             | 266 ------------------
- arch/powerpc/boot/4xx.h             |   4 -
- arch/powerpc/boot/Makefile          |  11 -
- arch/powerpc/boot/cuboot-acadia.c   | 171 ------------
- arch/powerpc/boot/cuboot-hotfoot.c  | 139 ----------
- arch/powerpc/boot/cuboot-kilauea.c  |  46 ----
- arch/powerpc/boot/dcr.h             |  11 -
- arch/powerpc/boot/dts/acadia.dts    | 224 ---------------
- arch/powerpc/boot/dts/haleakala.dts | 281 -------------------
- arch/powerpc/boot/dts/hotfoot.dts   | 296 --------------------
- arch/powerpc/boot/dts/kilauea.dts   | 407 ----------------------------
- arch/powerpc/boot/dts/klondike.dts  | 212 ---------------
- arch/powerpc/boot/dts/makalu.dts    | 353 ------------------------
- arch/powerpc/boot/dts/obs600.dts    | 314 ---------------------
- arch/powerpc/boot/ppcboot-hotfoot.h | 119 --------
- arch/powerpc/boot/ppcboot.h         |   2 +-
- arch/powerpc/boot/wrapper           |  20 --
- 17 files changed, 1 insertion(+), 2875 deletions(-)
- delete mode 100644 arch/powerpc/boot/cuboot-acadia.c
- delete mode 100644 arch/powerpc/boot/cuboot-hotfoot.c
- delete mode 100644 arch/powerpc/boot/cuboot-kilauea.c
- delete mode 100644 arch/powerpc/boot/dts/acadia.dts
- delete mode 100644 arch/powerpc/boot/dts/haleakala.dts
- delete mode 100644 arch/powerpc/boot/dts/hotfoot.dts
- delete mode 100644 arch/powerpc/boot/dts/kilauea.dts
- delete mode 100644 arch/powerpc/boot/dts/klondike.dts
- delete mode 100644 arch/powerpc/boot/dts/makalu.dts
- delete mode 100644 arch/powerpc/boot/dts/obs600.dts
- delete mode 100644 arch/powerpc/boot/ppcboot-hotfoot.h
+ arch/powerpc/include/asm/cputable.h          |   7 -
+ arch/powerpc/include/asm/mmu.h               |   7 -
+ arch/powerpc/include/asm/nohash/32/mmu-40x.h |  68 --
+ arch/powerpc/include/asm/nohash/32/pgtable.h |   4 +-
+ arch/powerpc/include/asm/nohash/32/pte-40x.h |  73 --
+ arch/powerpc/include/asm/nohash/mmu.h        |   5 +-
+ arch/powerpc/include/asm/reg.h               |  25 +-
+ arch/powerpc/include/asm/reg_booke.h         | 113 +--
+ arch/powerpc/include/asm/time.h              |   7 +-
+ arch/powerpc/include/asm/udbg.h              |   1 -
+ arch/powerpc/kernel/Makefile                 |   1 -
+ arch/powerpc/kernel/cpu_specs.h              |   4 -
+ arch/powerpc/kernel/cpu_specs_40x.h          | 280 -------
+ arch/powerpc/kernel/entry_32.S               |  40 -
+ arch/powerpc/kernel/head_32.h                |  12 +-
+ arch/powerpc/kernel/head_40x.S               | 721 -------------------
+ arch/powerpc/kernel/head_booke.h             |   3 +-
+ arch/powerpc/kernel/misc_32.S                |  40 -
+ arch/powerpc/kernel/traps.c                  |   2 +-
+ arch/powerpc/kernel/udbg.c                   |   3 -
+ arch/powerpc/kernel/udbg_16550.c             |  23 -
+ arch/powerpc/mm/mmu_decl.h                   |   8 +-
+ arch/powerpc/mm/nohash/40x.c                 | 161 -----
+ arch/powerpc/mm/nohash/Makefile              |   1 -
+ arch/powerpc/mm/nohash/kup.c                 |   2 -
+ arch/powerpc/mm/nohash/mmu_context.c         |   3 -
+ arch/powerpc/mm/nohash/tlb_low.S             |  27 +-
+ arch/powerpc/platforms/4xx/pci.c             | 100 ---
+ scripts/head-object-list.txt                 |   1 -
+ 29 files changed, 14 insertions(+), 1728 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/nohash/32/mmu-40x.h
+ delete mode 100644 arch/powerpc/include/asm/nohash/32/pte-40x.h
+ delete mode 100644 arch/powerpc/kernel/cpu_specs_40x.h
+ delete mode 100644 arch/powerpc/kernel/head_40x.S
+ delete mode 100644 arch/powerpc/mm/nohash/40x.c
 
 v3: Unchanged.
 
-diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-index 00c4d843a023..682ca3827892 100644
---- a/arch/powerpc/boot/4xx.c
-+++ b/arch/powerpc/boot/4xx.c
-@@ -253,7 +253,6 @@ void ibm4xx_denali_fixup_memsize(void)
- 	dt_fixup_memory(0, memsize);
- }
- 
--#define SPRN_DBCR0_40X 0x3F2
- #define SPRN_DBCR0_44X 0x134
- #define DBCR0_RST_SYSTEM 0x30000000
- 
-@@ -270,18 +269,6 @@ void ibm44x_dbcr_reset(void)
- 
- }
- 
--void ibm40x_dbcr_reset(void)
--{
--	unsigned long tmp;
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 07a204d21034..201218faed61 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -353,7 +353,6 @@ static inline void cpu_feature_keys_init(void) { }
+ 	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE  | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON)
+ #define CPU_FTRS_8XX	(CPU_FTR_NOEXECUTE)
+-#define CPU_FTRS_40X	(CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_44X	(CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_440x6	(CPU_FTR_NOEXECUTE | \
+ 	    CPU_FTR_INDEXED_DCR)
+@@ -507,9 +506,6 @@ enum {
+ #ifdef CONFIG_PPC_8xx
+ 	    CPU_FTRS_8XX |
+ #endif
+-#ifdef CONFIG_40x
+-	    CPU_FTRS_40X |
+-#endif
+ #ifdef CONFIG_PPC_47x
+ 	    CPU_FTRS_47X | CPU_FTR_476_DD2 |
+ #elif defined(CONFIG_44x)
+@@ -582,9 +578,6 @@ enum {
+ #ifdef CONFIG_PPC_8xx
+ 	    CPU_FTRS_8XX &
+ #endif
+-#ifdef CONFIG_40x
+-	    CPU_FTRS_40X &
+-#endif
+ #ifdef CONFIG_PPC_47x
+ 	    CPU_FTRS_47X &
+ #elif defined(CONFIG_44x)
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 8a27b046c6a2..009c45044a5a 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -16,7 +16,6 @@
+  */
+ #define MMU_FTR_HPTE_TABLE		ASM_CONST(0x00000001)
+ #define MMU_FTR_TYPE_8xx		ASM_CONST(0x00000002)
+-#define MMU_FTR_TYPE_40x		ASM_CONST(0x00000004)
+ #define MMU_FTR_TYPE_44x		ASM_CONST(0x00000008)
+ #define MMU_FTR_TYPE_FSL_E		ASM_CONST(0x00000010)
+ #define MMU_FTR_TYPE_47x		ASM_CONST(0x00000020)
+@@ -153,9 +152,6 @@ enum {
+ #ifdef CONFIG_PPC_8xx
+ 		MMU_FTR_TYPE_8xx |
+ #endif
+-#ifdef CONFIG_40x
+-		MMU_FTR_TYPE_40x |
+-#endif
+ #ifdef CONFIG_PPC_47x
+ 		MMU_FTR_TYPE_47x | MMU_FTR_USE_TLBIVAX_BCAST | MMU_FTR_LOCK_BCAST_INVAL |
+ #elif defined(CONFIG_44x)
+@@ -202,9 +198,6 @@ enum {
+ #ifdef CONFIG_PPC_8xx
+ #define MMU_FTRS_ALWAYS		MMU_FTR_TYPE_8xx
+ #endif
+-#ifdef CONFIG_40x
+-#define MMU_FTRS_ALWAYS		MMU_FTR_TYPE_40x
+-#endif
+ #ifdef CONFIG_PPC_47x
+ #define MMU_FTRS_ALWAYS		MMU_FTR_TYPE_47x
+ #elif defined(CONFIG_44x)
+diff --git a/arch/powerpc/include/asm/nohash/32/mmu-40x.h b/arch/powerpc/include/asm/nohash/32/mmu-40x.h
+deleted file mode 100644
+index 8a8f13a22cf4..000000000000
+--- a/arch/powerpc/include/asm/nohash/32/mmu-40x.h
++++ /dev/null
+@@ -1,68 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef _ASM_POWERPC_MMU_40X_H_
+-#define _ASM_POWERPC_MMU_40X_H_
 -
--	asm volatile (
--		"mfspr	%0,%1\n"
--		"oris	%0,%0,%2@h\n"
--		"mtspr	%1,%0"
--		: "=&r"(tmp) : "i"(SPRN_DBCR0_40X), "i"(DBCR0_RST_SYSTEM)
--		);
--}
+-/*
+- * PPC40x support
+- */
 -
- #define EMAC_RESET 0x20000000
- void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1)
+-#define PPC40X_TLB_SIZE 64
+-
+-/*
+- * TLB entries are defined by a "high" tag portion and a "low" data
+- * portion.  On all architectures, the data portion is 32-bits.
+- *
+- * TLB entries are managed entirely under software control by reading,
+- * writing, and searchoing using the 4xx-specific tlbre, tlbwr, and tlbsx
+- * instructions.
+- */
+-
+-#define	TLB_LO          1
+-#define	TLB_HI          0
+-
+-#define	TLB_DATA        TLB_LO
+-#define	TLB_TAG         TLB_HI
+-
+-/* Tag portion */
+-
+-#define TLB_EPN_MASK    0xFFFFFC00      /* Effective Page Number */
+-#define TLB_PAGESZ_MASK 0x00000380
+-#define TLB_PAGESZ(x)   (((x) & 0x7) << 7)
+-#define   PAGESZ_1K		0
+-#define   PAGESZ_4K             1
+-#define   PAGESZ_16K            2
+-#define   PAGESZ_64K            3
+-#define   PAGESZ_256K           4
+-#define   PAGESZ_1M             5
+-#define   PAGESZ_4M             6
+-#define   PAGESZ_16M            7
+-#define TLB_VALID       0x00000040      /* Entry is valid */
+-
+-/* Data portion */
+-
+-#define TLB_RPN_MASK    0xFFFFFC00      /* Real Page Number */
+-#define TLB_PERM_MASK   0x00000300
+-#define TLB_EX          0x00000200      /* Instruction execution allowed */
+-#define TLB_WR          0x00000100      /* Writes permitted */
+-#define TLB_ZSEL_MASK   0x000000F0
+-#define TLB_ZSEL(x)     (((x) & 0xF) << 4)
+-#define TLB_ATTR_MASK   0x0000000F
+-#define TLB_W           0x00000008      /* Caching is write-through */
+-#define TLB_I           0x00000004      /* Caching is inhibited */
+-#define TLB_M           0x00000002      /* Memory is coherent */
+-#define TLB_G           0x00000001      /* Memory is guarded from prefetch */
+-
+-#ifndef __ASSEMBLY__
+-
+-typedef struct {
+-	unsigned int	id;
+-	unsigned int	active;
+-	void __user	*vdso;
+-} mm_context_t;
+-
+-#endif /* !__ASSEMBLY__ */
+-
+-#define mmu_virtual_psize	MMU_PAGE_4K
+-#define mmu_linear_psize	MMU_PAGE_256M
+-
+-#endif /* _ASM_POWERPC_MMU_40X_H_ */
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index 9164a9e41b02..9508399dd036 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -118,9 +118,7 @@
+  * (hardware-defined) PowerPC PTE as closely as possible.
+  */
+ 
+-#if defined(CONFIG_40x)
+-#include <asm/nohash/32/pte-40x.h>
+-#elif defined(CONFIG_44x)
++#if defined(CONFIG_44x)
+ #include <asm/nohash/32/pte-44x.h>
+ #elif defined(CONFIG_PPC_85xx) && defined(CONFIG_PTE_64BIT)
+ #include <asm/nohash/pte-e500.h>
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+deleted file mode 100644
+index d759cfd74754..000000000000
+--- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
++++ /dev/null
+@@ -1,73 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef _ASM_POWERPC_NOHASH_32_PTE_40x_H
+-#define _ASM_POWERPC_NOHASH_32_PTE_40x_H
+-#ifdef __KERNEL__
+-
+-/*
+- * At present, all PowerPC 400-class processors share a similar TLB
+- * architecture. The instruction and data sides share a unified,
+- * 64-entry, fully-associative TLB which is maintained totally under
+- * software control. In addition, the instruction side has a
+- * hardware-managed, 4-entry, fully-associative TLB which serves as a
+- * first level to the shared TLB. These two TLBs are known as the UTLB
+- * and ITLB, respectively (see "mmu.h" for definitions).
+- *
+- * There are several potential gotchas here.  The 40x hardware TLBLO
+- * field looks like this:
+- *
+- * 0  1  2  3  4  ... 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+- * RPN.....................  0  0 EX WR ZSEL.......  W  I  M  G
+- *
+- * Where possible we make the Linux PTE bits match up with this
+- *
+- * - bits 20 and 21 must be cleared, because we use 4k pages (40x can
+- *   support down to 1k pages), this is done in the TLBMiss exception
+- *   handler.
+- * - We use only zones 0 (for kernel pages) and 1 (for user pages)
+- *   of the 16 available.  Bit 24-26 of the TLB are cleared in the TLB
+- *   miss handler.  Bit 27 is PAGE_USER, thus selecting the correct
+- *   zone.
+- * - PRESENT *must* be in the bottom two bits because swap PTEs
+- *   use the top 30 bits.  Because 40x doesn't support SMP anyway, M is
+- *   irrelevant so we borrow it for PAGE_PRESENT.  Bit 30
+- *   is cleared in the TLB miss handler before the TLB entry is loaded.
+- * - All other bits of the PTE are loaded into TLBLO without
+- *   modification, leaving us only the bits 20, 21, 24, 25, 26, 30 for
+- *   software PTE bits.  We actually use bits 21, 24, 25, and
+- *   30 respectively for the software bits: ACCESSED, DIRTY, RW, and
+- *   PRESENT.
+- */
+-
+-#define	_PAGE_GUARDED	0x001	/* G: page is guarded from prefetch */
+-#define _PAGE_PRESENT	0x002	/* software: PTE contains a translation */
+-#define	_PAGE_NO_CACHE	0x004	/* I: caching is inhibited */
+-#define	_PAGE_WRITETHRU	0x008	/* W: caching is write-through */
+-#define	_PAGE_READ	0x010	/* software: read permission */
+-#define	_PAGE_SPECIAL	0x020	/* software: Special page */
+-#define	_PAGE_DIRTY	0x080	/* software: dirty page */
+-#define _PAGE_WRITE	0x100	/* hardware: WR, anded with dirty in exception */
+-#define _PAGE_EXEC	0x200	/* hardware: EX permission */
+-#define _PAGE_ACCESSED	0x400	/* software: R: page referenced */
+-
+-/* No page size encoding in the linux PTE */
+-#define _PAGE_PSIZE		0
+-
+-/* cache related flags non existing on 40x */
+-#define _PAGE_COHERENT	0
+-
+-#define _PMD_PRESENT	0x400	/* PMD points to page of PTEs */
+-#define _PMD_PRESENT_MASK	_PMD_PRESENT
+-#define _PMD_BAD	0x802
+-#define _PMD_SIZE_4M	0x0c0
+-#define _PMD_SIZE_16M	0x0e0
+-#define _PMD_USER	0
+-
+-#define _PTE_NONE_MASK	0
+-
+-#define _PAGE_BASE_NC	(_PAGE_PRESENT | _PAGE_ACCESSED)
+-#define _PAGE_BASE	(_PAGE_BASE_NC)
+-
+-#include <asm/pgtable-masks.h>
+-
+-#endif /* __KERNEL__ */
+-#endif /*  _ASM_POWERPC_NOHASH_32_PTE_40x_H */
+diff --git a/arch/powerpc/include/asm/nohash/mmu.h b/arch/powerpc/include/asm/nohash/mmu.h
+index e264be219fdb..4cc795044103 100644
+--- a/arch/powerpc/include/asm/nohash/mmu.h
++++ b/arch/powerpc/include/asm/nohash/mmu.h
+@@ -2,10 +2,7 @@
+ #ifndef _ASM_POWERPC_NOHASH_MMU_H_
+ #define _ASM_POWERPC_NOHASH_MMU_H_
+ 
+-#if defined(CONFIG_40x)
+-/* 40x-style software loaded TLB */
+-#include <asm/nohash/32/mmu-40x.h>
+-#elif defined(CONFIG_44x)
++#if defined(CONFIG_44x)
+ /* 44x-style software loaded TLB */
+ #include <asm/nohash/32/mmu-44x.h>
+ #elif defined(CONFIG_PPC_E500)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index eed33cb916d0..76c1490f5c97 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -233,14 +233,10 @@
+ 
+ /* Special Purpose Registers (SPRNs)*/
+ 
+-#ifdef CONFIG_40x
+-#define SPRN_PID	0x3B1	/* Process ID */
+-#else
+ #define SPRN_PID	0x030	/* Process ID */
+ #ifdef CONFIG_BOOKE
+ #define SPRN_PID0	SPRN_PID/* Process ID Register 0 */
+ #endif
+-#endif
+ 
+ #define SPRN_CTR	0x009	/* Count Register */
+ #define SPRN_DSCR	0x11
+@@ -527,7 +523,7 @@
+ #define SPRN_TSCR	0x399	/* Thread Switch Control Register */
+ 
+ #define SPRN_DEC	0x016		/* Decrement Register */
+-#define SPRN_PIT	0x3DB		/* Programmable Interval Timer (40x/BOOKE) */
++#define SPRN_PIT	0x3DB		/* Programmable Interval Timer (BOOKE) */
+ 
+ #define SPRN_DER	0x095		/* Debug Enable Register */
+ #define DER_RSTE	0x40000000	/* Reset Interrupt */
+@@ -1116,15 +1112,6 @@
+  *	- SPRG2 indicator that we are in RTAS
+  *	- SPRG4 (603 only) pseudo TLB LRU data
+  *
+- * 32-bit 40x:
+- *	- SPRG0 scratch for exception vectors
+- *	- SPRG1 scratch for exception vectors
+- *	- SPRG2 scratch for exception vectors
+- *	- SPRG4 scratch for exception vectors (not 403)
+- *	- SPRG5 scratch for exception vectors (not 403)
+- *	- SPRG6 scratch for exception vectors (not 403)
+- *	- SPRG7 scratch for exception vectors (not 403)
+- *
+  * 32-bit 440 and FSL BookE:
+  *	- SPRG0 scratch for exception vectors
+  *	- SPRG1 scratch for exception vectors (*)
+@@ -1216,16 +1203,6 @@
+ #define SPRN_SPRG_603_LRU	SPRN_SPRG4
+ #endif
+ 
+-#ifdef CONFIG_40x
+-#define SPRN_SPRG_SCRATCH0	SPRN_SPRG0
+-#define SPRN_SPRG_SCRATCH1	SPRN_SPRG1
+-#define SPRN_SPRG_SCRATCH2	SPRN_SPRG2
+-#define SPRN_SPRG_SCRATCH3	SPRN_SPRG4
+-#define SPRN_SPRG_SCRATCH4	SPRN_SPRG5
+-#define SPRN_SPRG_SCRATCH5	SPRN_SPRG6
+-#define SPRN_SPRG_SCRATCH6	SPRN_SPRG7
+-#endif
+-
+ #ifdef CONFIG_BOOKE
+ #define SPRN_SPRG_RSCRATCH0	SPRN_SPRG0
+ #define SPRN_SPRG_WSCRATCH0	SPRN_SPRG0
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index af56980b6cdb..656bfaf91526 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -1,10 +1,7 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
+ /*
+  * Contains register definitions common to the Book E PowerPC
+- * specification.  Notice that while the IBM-40x series of CPUs
+- * are not true Book E PowerPCs, they borrowed a number of features
+- * before Book E was finalized, and are included here as well.  Unfortunately,
+- * they sometimes used different locations than true Book E CPUs did.
++ * specification.
+  *
+  * Copyright 2009-2010 Freescale Semiconductor, Inc.
+  */
+@@ -42,9 +39,6 @@
+ #define MSR_KERNEL	(MSR_ | MSR_64BIT)
+ #define MSR_USER32	(MSR_ | MSR_PR | MSR_EE)
+ #define MSR_USER64	(MSR_USER32 | MSR_64BIT)
+-#elif defined (CONFIG_40x)
+-#define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_IR|MSR_DR|MSR_CE)
+-#define MSR_USER	(MSR_KERNEL|MSR_PR|MSR_EE)
+ #else
+ #define MSR_KERNEL	(MSR_ME|MSR_RI|MSR_CE)
+ #define MSR_USER	(MSR_KERNEL|MSR_PR|MSR_EE)
+@@ -157,7 +151,6 @@
+ #define SPRN_TLB3CFG	0x2B3	/* TLB 3 Config Register */
+ #define SPRN_EPR	0x2BE	/* External Proxy Register */
+ #define SPRN_CCR1	0x378	/* Core Configuration Register 1 */
+-#define SPRN_ZPR	0x3B0	/* Zone Protection Register (40x) */
+ #define SPRN_MAS7	0x3B0	/* MMU Assist Register 7 */
+ #define SPRN_MMUCR	0x3B2	/* MMU Control Register */
+ #define SPRN_CCR0	0x3B3	/* Core Configuration Register 0 */
+@@ -166,7 +159,6 @@
+ #define SPRN_SGR	0x3B9	/* Storage Guarded Register */
+ #define SPRN_DCWR	0x3BA	/* Data Cache Write-thru Register */
+ #define SPRN_SLER	0x3BB	/* Little-endian real mode */
+-#define SPRN_SU0R	0x3BC	/* "User 0" real mode (40x) */
+ #define SPRN_DCMP	0x3D1	/* Data TLB Compare Register */
+ #define SPRN_ICDBDR	0x3D3	/* Instruction Cache Debug Data Register */
+ #define SPRN_EVPR	0x3D6	/* Exception Vector Prefix Register */
+@@ -183,10 +175,8 @@
+ #define SPRN_SVR	0x3FF	/* System Version Register */
+ 
+ /*
+- * SPRs which have conflicting definitions on true Book E versus classic,
+- * or IBM 40x.
++ * SPRs which have conflicting definitions on true Book E versus classic.
+  */
+-#ifdef CONFIG_BOOKE
+ #define SPRN_CSRR0	0x03A	/* Critical Save and Restore Register 0 */
+ #define SPRN_CSRR1	0x03B	/* Critical Save and Restore Register 1 */
+ #define SPRN_DEAR	0x03D	/* Data Error Address Register */
+@@ -201,22 +191,6 @@
+ #define SPRN_DAC2	0x13D	/* Data Address Compare 2 */
+ #define SPRN_TSR	0x150	/* Timer Status Register */
+ #define SPRN_TCR	0x154	/* Timer Control Register */
+-#endif /* Book E */
+-#ifdef CONFIG_40x
+-#define SPRN_DBCR1	0x3BD	/* Debug Control Register 1 */		
+-#define SPRN_ESR	0x3D4	/* Exception Syndrome Register */
+-#define SPRN_DEAR	0x3D5	/* Data Error Address Register */
+-#define SPRN_TSR	0x3D8	/* Timer Status Register */
+-#define SPRN_TCR	0x3DA	/* Timer Control Register */
+-#define SPRN_SRR2	0x3DE	/* Save/Restore Register 2 */
+-#define SPRN_SRR3	0x3DF	/* Save/Restore Register 3 */
+-#define SPRN_DBSR	0x3F0	/* Debug Status Register */		
+-#define SPRN_DBCR0	0x3F2	/* Debug Control Register 0 */
+-#define SPRN_DAC1	0x3F6	/* Data Address Compare 1 */
+-#define SPRN_DAC2	0x3F7	/* Data Address Compare 2 */
+-#define SPRN_CSRR0	SPRN_SRR2 /* Critical Save and Restore Register 0 */
+-#define SPRN_CSRR1	SPRN_SRR3 /* Critical Save and Restore Register 1 */
+-#endif
+ #define SPRN_HACOP	0x15F	/* Hypervisor Available Coprocessor Register */
+ 
+ /* Bit definitions for CCR1. */
+@@ -296,10 +270,6 @@
+ #endif
+ 
+ /* Bit definitions for the DBSR. */
+-/*
+- * DBSR bits which have conflicting definitions on true Book E versus IBM 40x.
+- */
+-#ifdef CONFIG_BOOKE
+ #define DBSR_IDE	0x80000000	/* Imprecise Debug Event */
+ #define DBSR_MRR	0x30000000	/* Most Recent Reset */
+ #define DBSR_IC		0x08000000	/* Instruction Completion */
+@@ -319,21 +289,6 @@
+ #define DBSR_CRET	0x00000020	/* Critical Return Debug Event */
+ #define DBSR_IAC12ATS	0x00000002	/* Instr Address Compare 1/2 Toggle */
+ #define DBSR_IAC34ATS	0x00000001	/* Instr Address Compare 3/4 Toggle */
+-#endif
+-#ifdef CONFIG_40x
+-#define DBSR_IC		0x80000000	/* Instruction Completion */
+-#define DBSR_BT		0x40000000	/* Branch taken */
+-#define DBSR_IRPT	0x20000000	/* Exception Debug Event */
+-#define DBSR_TIE	0x10000000	/* Trap Instruction debug Event */
+-#define DBSR_IAC1	0x04000000	/* Instruction Address Compare 1 Event */
+-#define DBSR_IAC2	0x02000000	/* Instruction Address Compare 2 Event */
+-#define DBSR_IAC3	0x00080000	/* Instruction Address Compare 3 Event */
+-#define DBSR_IAC4	0x00040000	/* Instruction Address Compare 4 Event */
+-#define DBSR_DAC1R	0x01000000	/* Data Address Compare 1 Read Event */
+-#define DBSR_DAC1W	0x00800000	/* Data Address Compare 1 Write Event */
+-#define DBSR_DAC2R	0x00400000	/* Data Address Compare 2 Read Event */
+-#define DBSR_DAC2W	0x00200000	/* Data Address Compare 2 Write Event */
+-#endif
+ 
+ /* Bit definitions related to the ESR. */
+ #define ESR_MCI		0x80000000	/* Machine Check - Instruction */
+@@ -355,69 +310,6 @@
+ #define ESR_SPV		0x00000080	/* Signal Processing operation */
+ 
+ /* Bit definitions related to the DBCR0. */
+-#if defined(CONFIG_40x)
+-#define DBCR0_EDM	0x80000000	/* External Debug Mode */
+-#define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
+-#define DBCR0_RST	0x30000000	/* all the bits in the RST field */
+-#define DBCR0_RST_SYSTEM 0x30000000	/* System Reset */
+-#define DBCR0_RST_CHIP	0x20000000	/* Chip Reset */
+-#define DBCR0_RST_CORE	0x10000000	/* Core Reset */
+-#define DBCR0_RST_NONE	0x00000000	/* No Reset */
+-#define DBCR0_IC	0x08000000	/* Instruction Completion */
+-#define DBCR0_ICMP	DBCR0_IC
+-#define DBCR0_BT	0x04000000	/* Branch Taken */
+-#define DBCR0_BRT	DBCR0_BT
+-#define DBCR0_EDE	0x02000000	/* Exception Debug Event */
+-#define DBCR0_IRPT	DBCR0_EDE
+-#define DBCR0_TDE	0x01000000	/* TRAP Debug Event */
+-#define DBCR0_IA1	0x00800000	/* Instr Addr compare 1 enable */
+-#define DBCR0_IAC1	DBCR0_IA1
+-#define DBCR0_IA2	0x00400000	/* Instr Addr compare 2 enable */
+-#define DBCR0_IAC2	DBCR0_IA2
+-#define DBCR0_IA12	0x00200000	/* Instr Addr 1-2 range enable */
+-#define DBCR0_IA12X	0x00100000	/* Instr Addr 1-2 range eXclusive */
+-#define DBCR0_IA3	0x00080000	/* Instr Addr compare 3 enable */
+-#define DBCR0_IAC3	DBCR0_IA3
+-#define DBCR0_IA4	0x00040000	/* Instr Addr compare 4 enable */
+-#define DBCR0_IAC4	DBCR0_IA4
+-#define DBCR0_IA34	0x00020000	/* Instr Addr 3-4 range Enable */
+-#define DBCR0_IA34X	0x00010000	/* Instr Addr 3-4 range eXclusive */
+-#define DBCR0_IA12T	0x00008000	/* Instr Addr 1-2 range Toggle */
+-#define DBCR0_IA34T	0x00004000	/* Instr Addr 3-4 range Toggle */
+-#define DBCR0_FT	0x00000001	/* Freeze Timers on debug event */
+-
+-#define dbcr_iac_range(task)	((task)->thread.debug.dbcr0)
+-#define DBCR_IAC12I	DBCR0_IA12			/* Range Inclusive */
+-#define DBCR_IAC12X	(DBCR0_IA12 | DBCR0_IA12X)	/* Range Exclusive */
+-#define DBCR_IAC12MODE	(DBCR0_IA12 | DBCR0_IA12X)	/* IAC 1-2 Mode Bits */
+-#define DBCR_IAC34I	DBCR0_IA34			/* Range Inclusive */
+-#define DBCR_IAC34X	(DBCR0_IA34 | DBCR0_IA34X)	/* Range Exclusive */
+-#define DBCR_IAC34MODE	(DBCR0_IA34 | DBCR0_IA34X)	/* IAC 3-4 Mode Bits */
+-
+-/* Bit definitions related to the DBCR1. */
+-#define DBCR1_DAC1R	0x80000000	/* DAC1 Read Debug Event */
+-#define DBCR1_DAC2R	0x40000000	/* DAC2 Read Debug Event */
+-#define DBCR1_DAC1W	0x20000000	/* DAC1 Write Debug Event */
+-#define DBCR1_DAC2W	0x10000000	/* DAC2 Write Debug Event */
+-
+-#define dbcr_dac(task)	((task)->thread.debug.dbcr1)
+-#define DBCR_DAC1R	DBCR1_DAC1R
+-#define DBCR_DAC1W	DBCR1_DAC1W
+-#define DBCR_DAC2R	DBCR1_DAC2R
+-#define DBCR_DAC2W	DBCR1_DAC2W
+-
+-/*
+- * Are there any active Debug Events represented in the
+- * Debug Control Registers?
+- */
+-#define DBCR0_ACTIVE_EVENTS	(DBCR0_ICMP | DBCR0_IAC1 | DBCR0_IAC2 | \
+-				 DBCR0_IAC3 | DBCR0_IAC4)
+-#define DBCR1_ACTIVE_EVENTS	(DBCR1_DAC1R | DBCR1_DAC2R | \
+-				 DBCR1_DAC1W | DBCR1_DAC2W)
+-#define DBCR_ACTIVE_EVENTS(dbcr0, dbcr1)  (((dbcr0) & DBCR0_ACTIVE_EVENTS) || \
+-					   ((dbcr1) & DBCR1_ACTIVE_EVENTS))
+-
+-#elif defined(CONFIG_BOOKE)
+ #define DBCR0_EDM	0x80000000	/* External Debug Mode */
+ #define DBCR0_IDM	0x40000000	/* Internal Debug Mode */
+ #define DBCR0_RST	0x30000000	/* all the bits in the RST field */
+@@ -518,7 +410,6 @@
+ 
+ #define DBCR_ACTIVE_EVENTS(dbcr0, dbcr1)  (((dbcr0) & DBCR0_ACTIVE_EVENTS) || \
+ 					   ((dbcr1) & DBCR1_ACTIVE_EVENTS))
+-#endif /* #elif defined(CONFIG_BOOKE) */
+ 
+ /* Bit definitions related to the TCR. */
+ #define TCR_WP(x)	(((x)&0x3)<<30)	/* WDT Period */
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index 9f50766c4623..221c8f8ff89b 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -58,9 +58,6 @@ static inline u64 get_vtb(void)
+  */
+ static inline u64 get_dec(void)
  {
-@@ -544,256 +531,3 @@ void ibm440spe_fixup_clocks(unsigned int sys_clk,
- 	eplike_fixup_uart_clk(1, "/plb/opb/serial@f0000300", ser_clk, plb_clk);
- 	eplike_fixup_uart_clk(2, "/plb/opb/serial@f0000600", ser_clk, plb_clk);
+-	if (IS_ENABLED(CONFIG_40x))
+-		return mfspr(SPRN_PIT);
+-
+ 	return mfspr(SPRN_DEC);
  }
--
--void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk)
--{
--	u32 pllmr = mfdcr(DCRN_CPC0_PLLMR);
--	u32 cpc0_cr0 = mfdcr(DCRN_405_CPC0_CR0);
--	u32 cpc0_cr1 = mfdcr(DCRN_405_CPC0_CR1);
--	u32 psr = mfdcr(DCRN_405_CPC0_PSR);
--	u32 cpu, plb, opb, ebc, tb, uart0, uart1, m;
--	u32 fwdv, fwdvb, fbdv, cbdv, opdv, epdv, ppdv, udiv;
--
--	fwdv = (8 - ((pllmr & 0xe0000000) >> 29));
--	fbdv = (pllmr & 0x1e000000) >> 25;
--	if (fbdv == 0)
--		fbdv = 16;
--	cbdv = ((pllmr & 0x00060000) >> 17) + 1; /* CPU:PLB */
--	opdv = ((pllmr & 0x00018000) >> 15) + 1; /* PLB:OPB */
--	ppdv = ((pllmr & 0x00006000) >> 13) + 1; /* PLB:PCI */
--	epdv = ((pllmr & 0x00001800) >> 11) + 2; /* PLB:EBC */
--	udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1;
--
--	/* check for 405GPr */
--	if ((mfpvr() & 0xfffffff0) == (0x50910951 & 0xfffffff0)) {
--		fwdvb = 8 - (pllmr & 0x00000007);
--		if (!(psr & 0x00001000)) /* PCI async mode enable == 0 */
--			if (psr & 0x00000020) /* New mode enable */
--				m = fwdvb * 2 * ppdv;
--			else
--				m = fwdvb * cbdv * ppdv;
--		else if (psr & 0x00000020) /* New mode enable */
--			if (psr & 0x00000800) /* PerClk synch mode */
--				m = fwdvb * 2 * epdv;
--			else
--				m = fbdv * fwdv;
--		else if (epdv == fbdv)
--			m = fbdv * cbdv * epdv;
--		else
--			m = fbdv * fwdvb * cbdv;
--
--		cpu = sys_clk * m / fwdv;
--		plb = sys_clk * m / (fwdvb * cbdv);
--	} else {
--		m = fwdv * fbdv * cbdv;
--		cpu = sys_clk * m / fwdv;
--		plb = cpu / cbdv;
--	}
--	opb = plb / opdv;
--	ebc = plb / epdv;
--
--	if (cpc0_cr0 & 0x80)
--		/* uart0 uses the external clock */
--		uart0 = ser_clk;
--	else
--		uart0 = cpu / udiv;
--
--	if (cpc0_cr0 & 0x40)
--		/* uart1 uses the external clock */
--		uart1 = ser_clk;
--	else
--		uart1 = cpu / udiv;
--
--	/* setup the timebase clock to tick at the cpu frequency */
--	cpc0_cr1 = cpc0_cr1 & ~0x00800000;
--	mtdcr(DCRN_405_CPC0_CR1, cpc0_cr1);
--	tb = cpu;
--
--	dt_fixup_cpu_clocks(cpu, tb, 0);
--	dt_fixup_clock("/plb", plb);
--	dt_fixup_clock("/plb/opb", opb);
--	dt_fixup_clock("/plb/ebc", ebc);
--	dt_fixup_clock("/plb/opb/serial@ef600300", uart0);
--	dt_fixup_clock("/plb/opb/serial@ef600400", uart1);
--}
--
--
--void ibm405ep_fixup_clocks(unsigned int sys_clk)
--{
--	u32 pllmr0 = mfdcr(DCRN_CPC0_PLLMR0);
--	u32 pllmr1 = mfdcr(DCRN_CPC0_PLLMR1);
--	u32 cpc0_ucr = mfdcr(DCRN_CPC0_UCR);
--	u32 cpu, plb, opb, ebc, uart0, uart1;
--	u32 fwdva, fwdvb, fbdv, cbdv, opdv, epdv;
--	u32 pllmr0_ccdv, tb, m;
--
--	fwdva = 8 - ((pllmr1 & 0x00070000) >> 16);
--	fwdvb = 8 - ((pllmr1 & 0x00007000) >> 12);
--	fbdv = (pllmr1 & 0x00f00000) >> 20;
--	if (fbdv == 0)
--		fbdv = 16;
--
--	cbdv = ((pllmr0 & 0x00030000) >> 16) + 1; /* CPU:PLB */
--	epdv = ((pllmr0 & 0x00000300) >> 8) + 2;  /* PLB:EBC */
--	opdv = ((pllmr0 & 0x00003000) >> 12) + 1; /* PLB:OPB */
--
--	m = fbdv * fwdvb;
--
--	pllmr0_ccdv = ((pllmr0 & 0x00300000) >> 20) + 1;
--	if (pllmr1 & 0x80000000)
--		cpu = sys_clk * m / (fwdva * pllmr0_ccdv);
--	else
--		cpu = sys_clk / pllmr0_ccdv;
--
--	plb = cpu / cbdv;
--	opb = plb / opdv;
--	ebc = plb / epdv;
--	tb = cpu;
--	uart0 = cpu / (cpc0_ucr & 0x0000007f);
--	uart1 = cpu / ((cpc0_ucr & 0x00007f00) >> 8);
--
--	dt_fixup_cpu_clocks(cpu, tb, 0);
--	dt_fixup_clock("/plb", plb);
--	dt_fixup_clock("/plb/opb", opb);
--	dt_fixup_clock("/plb/ebc", ebc);
--	dt_fixup_clock("/plb/opb/serial@ef600300", uart0);
--	dt_fixup_clock("/plb/opb/serial@ef600400", uart1);
--}
--
--static u8 ibm405ex_fwdv_multi_bits[] = {
--	/* values for:  1 - 16 */
--	0x01, 0x02, 0x0e, 0x09, 0x04, 0x0b, 0x10, 0x0d, 0x0c, 0x05,
--	0x06, 0x0f, 0x0a, 0x07, 0x08, 0x03
--};
--
--u32 ibm405ex_get_fwdva(unsigned long cpr_fwdv)
--{
--	u32 index;
--
--	for (index = 0; index < ARRAY_SIZE(ibm405ex_fwdv_multi_bits); index++)
--		if (cpr_fwdv == (u32)ibm405ex_fwdv_multi_bits[index])
--			return index + 1;
--
--	return 0;
--}
--
--static u8 ibm405ex_fbdv_multi_bits[] = {
--	/* values for:  1 - 100 */
--	0x00, 0xff, 0x7e, 0xfd, 0x7a, 0xf5, 0x6a, 0xd5, 0x2a, 0xd4,
--	0x29, 0xd3, 0x26, 0xcc, 0x19, 0xb3, 0x67, 0xce, 0x1d, 0xbb,
--	0x77, 0xee, 0x5d, 0xba, 0x74, 0xe9, 0x52, 0xa5, 0x4b, 0x96,
--	0x2c, 0xd8, 0x31, 0xe3, 0x46, 0x8d, 0x1b, 0xb7, 0x6f, 0xde,
--	0x3d, 0xfb, 0x76, 0xed, 0x5a, 0xb5, 0x6b, 0xd6, 0x2d, 0xdb,
--	0x36, 0xec, 0x59, 0xb2, 0x64, 0xc9, 0x12, 0xa4, 0x48, 0x91,
--	0x23, 0xc7, 0x0e, 0x9c, 0x38, 0xf0, 0x61, 0xc2, 0x05, 0x8b,
--	0x17, 0xaf, 0x5f, 0xbe, 0x7c, 0xf9, 0x72, 0xe5, 0x4a, 0x95,
--	0x2b, 0xd7, 0x2e, 0xdc, 0x39, 0xf3, 0x66, 0xcd, 0x1a, 0xb4,
--	0x68, 0xd1, 0x22, 0xc4, 0x09, 0x93, 0x27, 0xcf, 0x1e, 0xbc,
--	/* values for:  101 - 200 */
--	0x78, 0xf1, 0x62, 0xc5, 0x0a, 0x94, 0x28, 0xd0, 0x21, 0xc3,
--	0x06, 0x8c, 0x18, 0xb0, 0x60, 0xc1, 0x02, 0x84, 0x08, 0x90,
--	0x20, 0xc0, 0x01, 0x83, 0x07, 0x8f, 0x1f, 0xbf, 0x7f, 0xfe,
--	0x7d, 0xfa, 0x75, 0xea, 0x55, 0xaa, 0x54, 0xa9, 0x53, 0xa6,
--	0x4c, 0x99, 0x33, 0xe7, 0x4e, 0x9d, 0x3b, 0xf7, 0x6e, 0xdd,
--	0x3a, 0xf4, 0x69, 0xd2, 0x25, 0xcb, 0x16, 0xac, 0x58, 0xb1,
--	0x63, 0xc6, 0x0d, 0x9b, 0x37, 0xef, 0x5e, 0xbd, 0x7b, 0xf6,
--	0x6d, 0xda, 0x35, 0xeb, 0x56, 0xad, 0x5b, 0xb6, 0x6c, 0xd9,
--	0x32, 0xe4, 0x49, 0x92, 0x24, 0xc8, 0x11, 0xa3, 0x47, 0x8e,
--	0x1c, 0xb8, 0x70, 0xe1, 0x42, 0x85, 0x0b, 0x97, 0x2f, 0xdf,
--	/* values for:  201 - 255 */
--	0x3e, 0xfc, 0x79, 0xf2, 0x65, 0xca, 0x15, 0xab, 0x57, 0xae,
--	0x5c, 0xb9, 0x73, 0xe6, 0x4d, 0x9a, 0x34, 0xe8, 0x51, 0xa2,
--	0x44, 0x89, 0x13, 0xa7, 0x4f, 0x9e, 0x3c, 0xf8, 0x71, 0xe2,
--	0x45, 0x8a, 0x14, 0xa8, 0x50, 0xa1, 0x43, 0x86, 0x0c, 0x98,
--	0x30, 0xe0, 0x41, 0x82, 0x04, 0x88, 0x10, 0xa0, 0x40, 0x81,
--	0x03, 0x87, 0x0f, 0x9f, 0x3f  /* END */
--};
--
--u32 ibm405ex_get_fbdv(unsigned long cpr_fbdv)
--{
--	u32 index;
--
--	for (index = 0; index < ARRAY_SIZE(ibm405ex_fbdv_multi_bits); index++)
--		if (cpr_fbdv == (u32)ibm405ex_fbdv_multi_bits[index])
--			return index + 1;
--
--	return 0;
--}
--
--void ibm405ex_fixup_clocks(unsigned int sys_clk, unsigned int uart_clk)
--{
--	/* PLL config */
--	u32 pllc  = CPR0_READ(DCRN_CPR0_PLLC);
--	u32 plld  = CPR0_READ(DCRN_CPR0_PLLD);
--	u32 cpud  = CPR0_READ(DCRN_CPR0_PRIMAD);
--	u32 plbd  = CPR0_READ(DCRN_CPR0_PRIMBD);
--	u32 opbd  = CPR0_READ(DCRN_CPR0_OPBD);
--	u32 perd  = CPR0_READ(DCRN_CPR0_PERD);
--
--	/* Dividers */
--	u32 fbdv   = ibm405ex_get_fbdv(__fix_zero((plld >> 24) & 0xff, 1));
--
--	u32 fwdva  = ibm405ex_get_fwdva(__fix_zero((plld >> 16) & 0x0f, 1));
--
--	u32 cpudv0 = __fix_zero((cpud >> 24) & 7, 8);
--
--	/* PLBDV0 is hardwared to 010. */
--	u32 plbdv0 = 2;
--	u32 plb2xdv0 = __fix_zero((plbd >> 16) & 7, 8);
--
--	u32 opbdv0 = __fix_zero((opbd >> 24) & 3, 4);
--
--	u32 perdv0 = __fix_zero((perd >> 24) & 3, 4);
--
--	/* Resulting clocks */
--	u32 cpu, plb, opb, ebc, vco, tb, uart0, uart1;
--
--	/* PLL's VCO is the source for primary forward ? */
--	if (pllc & 0x40000000) {
--		u32 m;
--
--		/* Feedback path */
--		switch ((pllc >> 24) & 7) {
--		case 0:
--			/* PLLOUTx */
--			m = fbdv;
--			break;
--		case 1:
--			/* CPU */
--			m = fbdv * fwdva * cpudv0;
--			break;
--		case 5:
--			/* PERClk */
--			m = fbdv * fwdva * plb2xdv0 * plbdv0 * opbdv0 * perdv0;
--			break;
--		default:
--			printf("WARNING ! Invalid PLL feedback source !\n");
--			goto bypass;
--		}
--
--		vco = (unsigned int)(sys_clk * m);
--	} else {
--bypass:
--		/* Bypass system PLL */
--		vco = 0;
--	}
--
--	/* CPU = VCO / ( FWDVA x CPUDV0) */
--	cpu = vco / (fwdva * cpudv0);
--	/* PLB = VCO / ( FWDVA x PLB2XDV0 x PLBDV0) */
--	plb = vco / (fwdva * plb2xdv0 * plbdv0);
--	/* OPB = PLB / OPBDV0 */
--	opb = plb / opbdv0;
--	/* EBC = OPB / PERDV0 */
--	ebc = opb / perdv0;
--
--	tb = cpu;
--	uart0 = uart1 = uart_clk;
--
--	dt_fixup_cpu_clocks(cpu, tb, 0);
--	dt_fixup_clock("/plb", plb);
--	dt_fixup_clock("/plb/opb", opb);
--	dt_fixup_clock("/plb/opb/ebc", ebc);
--	dt_fixup_clock("/plb/opb/serial@ef600200", uart0);
--	dt_fixup_clock("/plb/opb/serial@ef600300", uart1);
--}
-diff --git a/arch/powerpc/boot/4xx.h b/arch/powerpc/boot/4xx.h
-index 77f15d124c81..62df496b7ba6 100644
---- a/arch/powerpc/boot/4xx.h
-+++ b/arch/powerpc/boot/4xx.h
-@@ -12,13 +12,9 @@ void ibm4xx_sdram_fixup_memsize(void);
- void ibm440spe_fixup_memsize(void);
- void ibm4xx_denali_fixup_memsize(void);
- void ibm44x_dbcr_reset(void);
--void ibm40x_dbcr_reset(void);
- void ibm4xx_quiesce_eth(u32 *emac0, u32 *emac1);
- void ibm4xx_fixup_ebc_ranges(const char *ebc);
  
--void ibm405gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk);
--void ibm405ep_fixup_clocks(unsigned int sys_clk);
--void ibm405ex_fixup_clocks(unsigned int sys_clk, unsigned int uart_clk);
- void ibm440gp_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk);
- void ibm440ep_fixup_clocks(unsigned int sys_clk, unsigned int ser_clk,
- 			   unsigned int tmr_clk);
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 35f6b15e4c47..fa8518067d38 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -54,10 +54,8 @@ endif
+@@ -71,9 +68,7 @@ static inline u64 get_dec(void)
+  */
+ static inline void set_dec(u64 val)
+ {
+-	if (IS_ENABLED(CONFIG_40x))
+-		mtspr(SPRN_PIT, (u32)val);
+-	else if (IS_ENABLED(CONFIG_BOOKE))
++	if (IS_ENABLED(CONFIG_BOOKE))
+ 		mtspr(SPRN_DEC, val);
+ 	else
+ 		mtspr(SPRN_DEC, val - 1);
+diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
+index b1f094728b35..289023f7a656 100644
+--- a/arch/powerpc/include/asm/udbg.h
++++ b/arch/powerpc/include/asm/udbg.h
+@@ -44,7 +44,6 @@ void __init udbg_init_rtas_panel(void);
+ void __init udbg_init_rtas_console(void);
+ void __init udbg_init_btext(void);
+ void __init udbg_init_44x_as1(void);
+-void __init udbg_init_40x_realmode(void);
+ void __init udbg_init_cpm(void);
+ void __init udbg_init_usbgecko(void);
+ void __init udbg_init_memcons(void);
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 8585d03c02d3..1784b6a6ca1d 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -123,7 +123,6 @@ obj-$(CONFIG_JUMP_LABEL)	+= jump_label.o
  
- $(obj)/4xx.o: BOOTTARGETFLAGS += -mcpu=405
- $(obj)/ebony.o: BOOTTARGETFLAGS += -mcpu=440
--$(obj)/cuboot-hotfoot.o: BOOTTARGETFLAGS += -mcpu=405
- $(obj)/cuboot-taishan.o: BOOTTARGETFLAGS += -mcpu=440
- $(obj)/cuboot-katmai.o: BOOTTARGETFLAGS += -mcpu=440
--$(obj)/cuboot-acadia.o: BOOTTARGETFLAGS += -mcpu=405
- $(obj)/treeboot-iss4xx.o: BOOTTARGETFLAGS += -mcpu=405
- $(obj)/treeboot-currituck.o: BOOTTARGETFLAGS += -mcpu=405
- $(obj)/treeboot-akebono.o: BOOTTARGETFLAGS += -mcpu=405
-@@ -146,7 +144,6 @@ src-wlib-$(CONFIG_PPC_POWERNV) += opal-calls.S opal.c
- ifndef CONFIG_PPC64_BOOT_WRAPPER
- src-wlib-y += crtsavres.S
- endif
--src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
- src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
- src-wlib-$(CONFIG_PPC_8xx) += mpc8xx.c planetcore.c fsl-soc.c
- src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
-@@ -154,9 +151,6 @@ src-wlib-$(CONFIG_EMBEDDED6xx) += ugecon.c fsl-soc.c
- src-wlib-$(CONFIG_CPM) += cpm-serial.c
+ obj-$(CONFIG_PPC64)		+= head_64.o
+ obj-$(CONFIG_PPC_BOOK3S_32)	+= head_book3s_32.o
+-obj-$(CONFIG_40x)		+= head_40x.o
+ obj-$(CONFIG_44x)		+= head_44x.o
+ obj-$(CONFIG_PPC_8xx)		+= head_8xx.o
+ obj-$(CONFIG_PPC_85xx)		+= head_85xx.o
+diff --git a/arch/powerpc/kernel/cpu_specs.h b/arch/powerpc/kernel/cpu_specs.h
+index 85ded3f77204..5ea14605bb41 100644
+--- a/arch/powerpc/kernel/cpu_specs.h
++++ b/arch/powerpc/kernel/cpu_specs.h
+@@ -1,9 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
  
- src-plat-y := of.c epapr.c
--src-plat-$(CONFIG_40x) += fixed-head.S cuboot-hotfoot.c \
--				cuboot-acadia.c \
--				cuboot-kilauea.c simpleboot.c
- src-plat-$(CONFIG_44x) += treeboot-ebony.c cuboot-ebony.c treeboot-bamboo.c \
- 				cuboot-bamboo.c cuboot-sam440ep.c \
- 				cuboot-sequoia.c cuboot-rainier.c \
-@@ -300,11 +294,6 @@ image-$(CONFIG_EPAPR_BOOT)		+= zImage.epapr
- # Boards with newish u-boot firmware can use the uImage target above
- #
- 
--# Board ports in arch/powerpc/platform/40x/Kconfig
--image-$(CONFIG_HOTFOOT)			+= cuImage.hotfoot
--image-$(CONFIG_ACADIA)			+= cuImage.acadia
--image-$(CONFIG_OBS600)			+= uImage.obs600
+-#ifdef CONFIG_40x
+-#include "cpu_specs_40x.h"
+-#endif
 -
- # Board ports in arch/powerpc/platform/44x/Kconfig
- image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
- image-$(CONFIG_BAMBOO)			+= treeImage.bamboo cuImage.bamboo
-diff --git a/arch/powerpc/boot/cuboot-acadia.c b/arch/powerpc/boot/cuboot-acadia.c
+ #ifdef CONFIG_PPC_47x
+ #include "cpu_specs_47x.h"
+ #elif defined(CONFIG_44x)
+diff --git a/arch/powerpc/kernel/cpu_specs_40x.h b/arch/powerpc/kernel/cpu_specs_40x.h
 deleted file mode 100644
-index 46e96756cfe1..000000000000
---- a/arch/powerpc/boot/cuboot-acadia.c
+index a1362a75b8c8..000000000000
+--- a/arch/powerpc/kernel/cpu_specs_40x.h
 +++ /dev/null
-@@ -1,171 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Old U-boot compatibility for Acadia
-- *
-- * Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-- *
-- * Copyright 2008 IBM Corporation
-- */
--
--#include "ops.h"
--#include "io.h"
--#include "dcr.h"
--#include "stdio.h"
--#include "4xx.h"
--#include "44x.h"
--#include "cuboot.h"
--
--#define TARGET_4xx
--#include "ppcboot.h"
--
--static bd_t bd;
--
--#define CPR_PERD0_SPIDV_MASK   0x000F0000     /* SPI Clock Divider */
--
--#define PLLC_SRC_MASK	       0x20000000     /* PLL feedback source */
--
--#define PLLD_FBDV_MASK	       0x1F000000     /* PLL feedback divider value */
--#define PLLD_FWDVA_MASK        0x000F0000     /* PLL forward divider A value */
--#define PLLD_FWDVB_MASK        0x00000700     /* PLL forward divider B value */
--
--#define PRIMAD_CPUDV_MASK      0x0F000000     /* CPU Clock Divisor Mask */
--#define PRIMAD_PLBDV_MASK      0x000F0000     /* PLB Clock Divisor Mask */
--#define PRIMAD_OPBDV_MASK      0x00000F00     /* OPB Clock Divisor Mask */
--#define PRIMAD_EBCDV_MASK      0x0000000F     /* EBC Clock Divisor Mask */
--
--#define PERD0_PWMDV_MASK       0xFF000000     /* PWM Divider Mask */
--#define PERD0_SPIDV_MASK       0x000F0000     /* SPI Divider Mask */
--#define PERD0_U0DV_MASK        0x0000FF00     /* UART 0 Divider Mask */
--#define PERD0_U1DV_MASK        0x000000FF     /* UART 1 Divider Mask */
--
--static void get_clocks(void)
--{
--	unsigned long sysclk, cpr_plld, cpr_pllc, cpr_primad, plloutb, i;
--	unsigned long pllFwdDiv, pllFwdDivB, pllFbkDiv, pllPlbDiv, pllExtBusDiv;
--	unsigned long pllOpbDiv, freqEBC, freqUART, freqOPB;
--	unsigned long div;		/* total divisor udiv * bdiv */
--	unsigned long umin;		/* minimum udiv	*/
--	unsigned short diff;		/* smallest diff */
--	unsigned long udiv;		/* best udiv */
--	unsigned short idiff;		/* current diff */
--	unsigned short ibdiv;		/* current bdiv */
--	unsigned long est;		/* current estimate */
--	unsigned long baud;
--	void *np;
--
--	/* read the sysclk value from the CPLD */
--	sysclk = (in_8((unsigned char *)0x80000000) == 0xc) ? 66666666 : 33333000;
--
--	/*
--	 * Read PLL Mode registers
--	 */
--	cpr_plld = CPR0_READ(DCRN_CPR0_PLLD);
--	cpr_pllc = CPR0_READ(DCRN_CPR0_PLLC);
--
--	/*
--	 * Determine forward divider A
--	 */
--	pllFwdDiv = ((cpr_plld & PLLD_FWDVA_MASK) >> 16);
--
--	/*
--	 * Determine forward divider B
--	 */
--	pllFwdDivB = ((cpr_plld & PLLD_FWDVB_MASK) >> 8);
--	if (pllFwdDivB == 0)
--		pllFwdDivB = 8;
--
--	/*
--	 * Determine FBK_DIV.
--	 */
--	pllFbkDiv = ((cpr_plld & PLLD_FBDV_MASK) >> 24);
--	if (pllFbkDiv == 0)
--		pllFbkDiv = 256;
--
--	/*
--	 * Read CPR_PRIMAD register
--	 */
--	cpr_primad = CPR0_READ(DCRN_CPR0_PRIMAD);
--
--	/*
--	 * Determine PLB_DIV.
--	 */
--	pllPlbDiv = ((cpr_primad & PRIMAD_PLBDV_MASK) >> 16);
--	if (pllPlbDiv == 0)
--		pllPlbDiv = 16;
--
--	/*
--	 * Determine EXTBUS_DIV.
--	 */
--	pllExtBusDiv = (cpr_primad & PRIMAD_EBCDV_MASK);
--	if (pllExtBusDiv == 0)
--		pllExtBusDiv = 16;
--
--	/*
--	 * Determine OPB_DIV.
--	 */
--	pllOpbDiv = ((cpr_primad & PRIMAD_OPBDV_MASK) >> 8);
--	if (pllOpbDiv == 0)
--		pllOpbDiv = 16;
--
--	/* There is a bug in U-Boot that prevents us from using
--	 * bd.bi_opbfreq because U-Boot doesn't populate it for
--	 * 405EZ.  We get to calculate it, yay!
--	 */
--	freqOPB = (sysclk *pllFbkDiv) /pllOpbDiv;
--
--	freqEBC = (sysclk * pllFbkDiv) / pllExtBusDiv;
--
--	plloutb = ((sysclk * ((cpr_pllc & PLLC_SRC_MASK) ?
--					   pllFwdDivB : pllFwdDiv) *
--		    pllFbkDiv) / pllFwdDivB);
--
--	np = find_node_by_alias("serial0");
--	if (getprop(np, "current-speed", &baud, sizeof(baud)) != sizeof(baud))
--		fatal("no current-speed property\n\r");
--
--	udiv = 256;			/* Assume lowest possible serial clk */
--	div = plloutb / (16 * baud); /* total divisor */
--	umin = (plloutb / freqOPB) << 1;	/* 2 x OPB divisor */
--	diff = 256;			/* highest possible */
--
--	/* i is the test udiv value -- start with the largest
--	 * possible (256) to minimize serial clock and constrain
--	 * search to umin.
--	 */
--	for (i = 256; i > umin; i--) {
--		ibdiv = div / i;
--		est = i * ibdiv;
--		idiff = (est > div) ? (est-div) : (div-est);
--		if (idiff == 0) {
--			udiv = i;
--			break;      /* can't do better */
--		} else if (idiff < diff) {
--			udiv = i;       /* best so far */
--			diff = idiff;   /* update lowest diff*/
--		}
--	}
--	freqUART = plloutb / udiv;
--
--	dt_fixup_cpu_clocks(bd.bi_procfreq, bd.bi_intfreq, bd.bi_plb_busfreq);
--	dt_fixup_clock("/plb/ebc", freqEBC);
--	dt_fixup_clock("/plb/opb", freqOPB);
--	dt_fixup_clock("/plb/opb/serial@ef600300", freqUART);
--	dt_fixup_clock("/plb/opb/serial@ef600400", freqUART);
--}
--
--static void acadia_fixups(void)
--{
--	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
--	get_clocks();
--	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
--}
--	
--void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
--		unsigned long r6, unsigned long r7)
--{
--	CUBOOT_INIT();
--	platform_ops.fixups = acadia_fixups;
--	platform_ops.exit = ibm40x_dbcr_reset;
--	fdt_init(_dtb_start);
--	serial_console_init();
--}
-diff --git a/arch/powerpc/boot/cuboot-hotfoot.c b/arch/powerpc/boot/cuboot-hotfoot.c
-deleted file mode 100644
-index 0e5532f855d6..000000000000
---- a/arch/powerpc/boot/cuboot-hotfoot.c
-+++ /dev/null
-@@ -1,139 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Old U-boot compatibility for Esteem 195E Hotfoot CPU Board
-- *
-- * Author: Solomon Peachy <solomon@linux-wlan.com>
-- */
--
--#include "ops.h"
--#include "stdio.h"
--#include "reg.h"
--#include "dcr.h"
--#include "4xx.h"
--#include "cuboot.h"
--
--#define TARGET_4xx
--#define TARGET_HOTFOOT
--
--#include "ppcboot-hotfoot.h"
--
--static bd_t bd;
--
--#define NUM_REGS 3
--
--static void hotfoot_fixups(void)
--{
--	u32 uart = mfdcr(DCRN_CPC0_UCR) & 0x7f;
--
--	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize); 
--
--	dt_fixup_cpu_clocks(bd.bi_procfreq, bd.bi_procfreq, 0);
--	dt_fixup_clock("/plb", bd.bi_plb_busfreq);
--	dt_fixup_clock("/plb/opb", bd.bi_opbfreq);
--	dt_fixup_clock("/plb/ebc", bd.bi_pci_busfreq);
--	dt_fixup_clock("/plb/opb/serial@ef600300", bd.bi_procfreq / uart); 
--	dt_fixup_clock("/plb/opb/serial@ef600400", bd.bi_procfreq / uart); 
--	
--	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
--	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
--
--	/* Is this a single eth/serial board? */
--	if ((bd.bi_enet1addr[0] == 0) && 
--	    (bd.bi_enet1addr[1] == 0) &&
--	    (bd.bi_enet1addr[2] == 0) &&
--	    (bd.bi_enet1addr[3] == 0) &&
--	    (bd.bi_enet1addr[4] == 0) &&
--	    (bd.bi_enet1addr[5] == 0)) {
--		void *devp;
--
--		printf("Trimming devtree for single serial/eth board\n");
--
--		devp = finddevice("/plb/opb/serial@ef600300");
--		if (!devp)
--			fatal("Can't find node for /plb/opb/serial@ef600300");
--		del_node(devp);
--
--		devp = finddevice("/plb/opb/ethernet@ef600900");
--		if (!devp)
--			fatal("Can't find node for /plb/opb/ethernet@ef600900");
--		del_node(devp);
--	}
--
--	ibm4xx_quiesce_eth((u32 *)0xef600800, (u32 *)0xef600900);
--
--	/* Fix up flash size in fdt for 4M boards. */
--	if (bd.bi_flashsize < 0x800000) {
--		u32 regs[NUM_REGS];
--		void *devp = finddevice("/plb/ebc/nor_flash@0");
--		if (!devp)
--			fatal("Can't find FDT node for nor_flash!??");
--
--		printf("Fixing devtree for 4M Flash\n");
--		
--		/* First fix up the base address */
--		getprop(devp, "reg", regs, sizeof(regs));
--		regs[0] = 0;
--		regs[1] = 0xffc00000;
--		regs[2] = 0x00400000;
--		setprop(devp, "reg", regs, sizeof(regs));
--		
--		/* Then the offsets */
--		devp = finddevice("/plb/ebc/nor_flash@0/partition@0");
--		if (!devp)
--			fatal("Can't find FDT node for partition@0");
--		getprop(devp, "reg", regs, 2*sizeof(u32));
--		regs[0] -= 0x400000;
--		setprop(devp, "reg", regs,  2*sizeof(u32));
--
--		devp = finddevice("/plb/ebc/nor_flash@0/partition@1");
--		if (!devp)
--			fatal("Can't find FDT node for partition@1");
--		getprop(devp, "reg", regs, 2*sizeof(u32));
--		regs[0] -= 0x400000;
--		setprop(devp, "reg", regs,  2*sizeof(u32));
--
--		devp = finddevice("/plb/ebc/nor_flash@0/partition@2");
--		if (!devp)
--			fatal("Can't find FDT node for partition@2");
--		getprop(devp, "reg", regs, 2*sizeof(u32));
--		regs[0] -= 0x400000;
--		setprop(devp, "reg", regs,  2*sizeof(u32));
--
--		devp = finddevice("/plb/ebc/nor_flash@0/partition@3");
--		if (!devp)
--			fatal("Can't find FDT node for partition@3");
--		getprop(devp, "reg", regs, 2*sizeof(u32));
--		regs[0] -= 0x400000;
--		setprop(devp, "reg", regs,  2*sizeof(u32));
--
--		devp = finddevice("/plb/ebc/nor_flash@0/partition@4");
--		if (!devp)
--			fatal("Can't find FDT node for partition@4");
--		getprop(devp, "reg", regs, 2*sizeof(u32));
--		regs[0] -= 0x400000;
--		setprop(devp, "reg", regs,  2*sizeof(u32));
--
--		devp = finddevice("/plb/ebc/nor_flash@0/partition@6");
--		if (!devp)
--			fatal("Can't find FDT node for partition@6");
--		getprop(devp, "reg", regs, 2*sizeof(u32));
--		regs[0] -= 0x400000;
--		setprop(devp, "reg", regs,  2*sizeof(u32));
--
--		/* Delete the FeatFS node */
--		devp = finddevice("/plb/ebc/nor_flash@0/partition@5");
--		if (!devp)
--			fatal("Can't find FDT node for partition@5");
--		del_node(devp);
--	}
--}
--
--void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
--		   unsigned long r6, unsigned long r7)
--{
--	CUBOOT_INIT();
--	platform_ops.fixups = hotfoot_fixups;
--        platform_ops.exit = ibm40x_dbcr_reset;
--	fdt_init(_dtb_start);
--	serial_console_init();
--}
-diff --git a/arch/powerpc/boot/cuboot-kilauea.c b/arch/powerpc/boot/cuboot-kilauea.c
-deleted file mode 100644
-index fda182f518a2..000000000000
---- a/arch/powerpc/boot/cuboot-kilauea.c
-+++ /dev/null
-@@ -1,46 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Old U-boot compatibility for PPC405EX. This image is already included
-- * a dtb.
-- *
-- * Author: Tiejun Chen <tiejun.chen@windriver.com>
-- *
-- * Copyright (C) 2009 Wind River Systems, Inc.
-- */
--
--#include "ops.h"
--#include "io.h"
--#include "dcr.h"
--#include "stdio.h"
--#include "4xx.h"
--#include "44x.h"
--#include "cuboot.h"
--
--#define TARGET_4xx
--#define TARGET_44x
--#include "ppcboot.h"
--
--#define KILAUEA_SYS_EXT_SERIAL_CLOCK     11059200        /* ext. 11.059MHz clk */
--
--static bd_t bd;
--
--static void kilauea_fixups(void)
--{
--	unsigned long sysclk = 33333333;
--
--	ibm405ex_fixup_clocks(sysclk, KILAUEA_SYS_EXT_SERIAL_CLOCK);
--	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
--	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
--	dt_fixup_mac_address_by_alias("ethernet0", bd.bi_enetaddr);
--	dt_fixup_mac_address_by_alias("ethernet1", bd.bi_enet1addr);
--}
--
--void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
--		unsigned long r6, unsigned long r7)
--{
--	CUBOOT_INIT();
--	platform_ops.fixups = kilauea_fixups;
--	platform_ops.exit = ibm40x_dbcr_reset;
--	fdt_init(_dtb_start);
--	serial_console_init();
--}
-diff --git a/arch/powerpc/boot/dcr.h b/arch/powerpc/boot/dcr.h
-index 334ab8b5a668..91dc3a302cc8 100644
---- a/arch/powerpc/boot/dcr.h
-+++ b/arch/powerpc/boot/dcr.h
-@@ -153,17 +153,6 @@ static const unsigned long sdram_bxcr[] = { SDRAM0_B0CR, SDRAM0_B1CR,
- #define CPR0_SCPID	0x120
- #define CPR0_PLLC0	0x40
- 
--/* 405GP Clocking/Power Management/Chip Control regs */
--#define DCRN_CPC0_PLLMR 0xb0
--#define DCRN_405_CPC0_CR0 0xb1
--#define DCRN_405_CPC0_CR1 0xb2
--#define DCRN_405_CPC0_PSR 0xb4
--
--/* 405EP Clocking/Power Management/Chip Control regs */
--#define DCRN_CPC0_PLLMR0  0xf0
--#define DCRN_CPC0_PLLMR1  0xf4
--#define DCRN_CPC0_UCR     0xf5
--
- /* 440GX/405EX Clock Control reg */
- #define DCRN_CPR0_CLKUPD				0x020
- #define DCRN_CPR0_PLLC					0x040
-diff --git a/arch/powerpc/boot/dts/acadia.dts b/arch/powerpc/boot/dts/acadia.dts
-deleted file mode 100644
-index 5fedda811378..000000000000
---- a/arch/powerpc/boot/dts/acadia.dts
-+++ /dev/null
-@@ -1,224 +0,0 @@
--/*
-- * Device Tree Source for AMCC Acadia (405EZ)
-- *
-- * Copyright IBM Corp. 2008
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2.  This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-- */
--
--/dts-v1/;
--
--/ {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	model = "amcc,acadia";
--	compatible = "amcc,acadia";
--	dcr-parent = <&{/cpus/cpu@0}>;
--
--	aliases {
--		ethernet0 = &EMAC0;
--		serial0 = &UART0;
--		serial1 = &UART1;
--	};
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		cpu@0 {
--			device_type = "cpu";
--			model = "PowerPC,405EZ";
--			reg = <0x0>;
--			clock-frequency = <0>; /* Filled in by wrapper */
--			timebase-frequency = <0>; /* Filled in by wrapper */
--			i-cache-line-size = <32>;
--			d-cache-line-size = <32>;
--			i-cache-size = <16384>;
--			d-cache-size = <16384>;
--			dcr-controller;
--			dcr-access-method = "native";
--		};
--	};
--
--	memory {
--		device_type = "memory";
--		reg = <0x0 0x0>; /* Filled in by wrapper */
--	};
--
--	UIC0: interrupt-controller {
--		compatible = "ibm,uic-405ez", "ibm,uic";
--		interrupt-controller;
--		dcr-reg = <0x0c0 0x009>;
--		cell-index = <0>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--	};
--
--	plb {
--		compatible = "ibm,plb-405ez", "ibm,plb3";
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges;
--		clock-frequency = <0>; /* Filled in by wrapper */
--
--		MAL0: mcmal {
--			compatible = "ibm,mcmal-405ez", "ibm,mcmal";
--			dcr-reg = <0x380 0x62>;
--			num-tx-chans = <1>;
--			num-rx-chans = <1>;
--			interrupt-parent = <&UIC0>;
--			/* 405EZ has only 3 interrupts to the UIC, as
--			 * SERR, TXDE, and RXDE are or'd together into
--			 * one UIC bit
--			 */
--			interrupts = <
--				0x13 0x4 /* TXEOB */
--				0x15 0x4 /* RXEOB */
--				0x12 0x4 /* SERR, TXDE, RXDE */>;
--		};
--
--		POB0: opb {
--			compatible = "ibm,opb-405ez", "ibm,opb";
--			#address-cells = <1>;
--			#size-cells = <1>;
--			ranges;
--			dcr-reg = <0x0a 0x05>;
--			clock-frequency = <0>; /* Filled in by wrapper */
--
--			UART0: serial@ef600300 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600300 0x8>;
--				virtual-reg = <0xef600300>;
--				clock-frequency = <0>; /* Filled in by wrapper */
--				current-speed = <115200>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x5 0x4>;
--			};
--
--			UART1: serial@ef600400 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600400 0x8>;
--				clock-frequency = <0>; /* Filled in by wrapper */
--				current-speed = <115200>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x6 0x4>;
--			};
--
--			IIC: i2c@ef600500 {
--				compatible = "ibm,iic-405ez", "ibm,iic";
--				reg = <0xef600500 0x11>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0xa 0x4>;
--			};
--
--			GPIO0: gpio@ef600700 {
--				compatible = "ibm,gpio-405ez";
--				reg = <0xef600700 0x20>;
--			};
--
--			GPIO1: gpio@ef600800 {
--				compatible = "ibm,gpio-405ez";
--				reg = <0xef600800 0x20>;
--			};
--
--			EMAC0: ethernet@ef600900 {
--				device_type = "network";
--				compatible = "ibm,emac-405ez", "ibm,emac";
--				interrupt-parent = <&UIC0>;
--				interrupts = <
--					0x10 0x4 /* Ethernet */
--					0x11 0x4 /* Ethernet Wake up */>;
--				local-mac-address = [000000000000]; /* Filled in by wrapper */
--				reg = <0xef600900 0x70>;
--				mal-device = <&MAL0>;
--				mal-tx-channel = <0>;
--				mal-rx-channel = <0>;
--				cell-index = <0>;
--				max-frame-size = <1500>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--				phy-mode = "mii";
--				phy-map = <0x0>;
--			};
--
--			CAN0: can@ef601000 {
--				compatible = "amcc,can-405ez";
--				reg = <0xef601000 0x620>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x7 0x4>;
--			};
--
--			CAN1: can@ef601800 {
--				compatible = "amcc,can-405ez";
--				reg = <0xef601800 0x620>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x8 0x4>;
--			};
--
--			cameleon@ef602000 {
--				compatible = "amcc,cameleon-405ez";
--				reg = <0xef602000 0x800>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0xb 0x4 0xc 0x4>;
--			};
--
--			ieee1588@ef602800 {
--				compatible = "amcc,ieee1588-405ez";
--				reg = <0xef602800 0x60>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x4 0x4>;
--				/* This thing is a bit weird.  It has its own UIC
--				 * that it uses to generate snapshot triggers.  We
--				 * don't really support this device yet, and it needs
--				 * work to figure this out.
--				 */
--				dcr-reg = <0xe0 0x9>;
--			};
--
--			usb@ef603000 {
--				compatible = "ohci-be";
--				reg = <0xef603000 0x80>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0xd 0x4 0xe 0x4>;
--			};
--
--			dac@ef603300 {
--				compatible = "amcc,dac-405ez";
--				reg = <0xef603300 0x40>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x18 0x4>;
--			};
--
--			adc@ef603400 {
--				compatible = "amcc,adc-405ez";
--				reg = <0xef603400 0x40>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x17 0x4>;
--			};
--
--			spi@ef603500 {
--				compatible = "amcc,spi-405ez";
--				reg = <0xef603500 0x100>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x9 0x4>;
--			};
--		};
--
--		EBC0: ebc {
--			compatible = "ibm,ebc-405ez", "ibm,ebc";
--			dcr-reg = <0x12 0x2>;
--			#address-cells = <2>;
--			#size-cells = <1>;
--			clock-frequency = <0>; /* Filled in by wrapper */
--		};
--	};
--
--	chosen {
--		stdout-path = "/plb/opb/serial@ef600300";
--	};
--};
-diff --git a/arch/powerpc/boot/dts/haleakala.dts b/arch/powerpc/boot/dts/haleakala.dts
-deleted file mode 100644
-index f81ce8786d59..000000000000
---- a/arch/powerpc/boot/dts/haleakala.dts
-+++ /dev/null
-@@ -1,281 +0,0 @@
--/*
-- * Device Tree Source for AMCC Haleakala (405EXr)
-- *
-- * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
-- *
-- * This file is licensed under the terms of the GNU General Public
-- * License version 2.  This program is licensed "as is" without
-- * any warranty of any kind, whether express or implied.
-- */
--
--/dts-v1/;
--
--/ {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	model = "amcc,haleakala";
--	compatible = "amcc,haleakala", "amcc,kilauea";
--	dcr-parent = <&{/cpus/cpu@0}>;
--
--	aliases {
--		ethernet0 = &EMAC0;
--		serial0 = &UART0;
--		serial1 = &UART1;
--	};
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		cpu@0 {
--			device_type = "cpu";
--			model = "PowerPC,405EXr";
--			reg = <0x00000000>;
--			clock-frequency = <0>; /* Filled in by U-Boot */
--			timebase-frequency = <0>; /* Filled in by U-Boot */
--			i-cache-line-size = <32>;
--			d-cache-line-size = <32>;
--			i-cache-size = <16384>; /* 16 kB */
--			d-cache-size = <16384>; /* 16 kB */
--			dcr-controller;
--			dcr-access-method = "native";
--		};
--	};
--
--	memory {
--		device_type = "memory";
--		reg = <0x00000000 0x00000000>; /* Filled in by U-Boot */
--	};
--
--	UIC0: interrupt-controller {
--		compatible = "ibm,uic-405exr", "ibm,uic";
--		interrupt-controller;
--		cell-index = <0>;
--		dcr-reg = <0x0c0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--	};
--
--	UIC1: interrupt-controller1 {
--		compatible = "ibm,uic-405exr","ibm,uic";
--		interrupt-controller;
--		cell-index = <1>;
--		dcr-reg = <0x0d0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	UIC2: interrupt-controller2 {
--		compatible = "ibm,uic-405exr","ibm,uic";
--		interrupt-controller;
--		cell-index = <2>;
--		dcr-reg = <0x0e0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x1c 0x4 0x1d 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	plb {
--		compatible = "ibm,plb-405exr", "ibm,plb4";
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges;
--		clock-frequency = <0>; /* Filled in by U-Boot */
--
--		SDRAM0: memory-controller {
--			compatible = "ibm,sdram-405exr", "ibm,sdram-4xx-ddr2";
--			dcr-reg = <0x010 0x002>;
--			interrupt-parent = <&UIC2>;
--			interrupts = <0x5 0x4	/* ECC DED Error */ 
--				      0x6 0x4>;	/* ECC SEC Error */ 
--		};
--
--		MAL0: mcmal {
--			compatible = "ibm,mcmal-405exr", "ibm,mcmal2";
--			dcr-reg = <0x180 0x062>;
--			num-tx-chans = <2>;
--			num-rx-chans = <2>;
--			interrupt-parent = <&MAL0>;
--			interrupts = <0x0 0x1 0x2 0x3 0x4>;
--			#interrupt-cells = <1>;
--			#address-cells = <0>;
--			#size-cells = <0>;
--			interrupt-map = </*TXEOB*/ 0x0 &UIC0 0xa 0x4
--					/*RXEOB*/ 0x1 &UIC0 0xb 0x4
--					/*SERR*/  0x2 &UIC1 0x0 0x4
--					/*TXDE*/  0x3 &UIC1 0x1 0x4
--					/*RXDE*/  0x4 &UIC1 0x2 0x4>;
--			interrupt-map-mask = <0xffffffff>;
--		};
--
--		POB0: opb {
--			compatible = "ibm,opb-405exr", "ibm,opb";
--			#address-cells = <1>;
--			#size-cells = <1>;
--			ranges = <0x80000000 0x80000000 0x10000000
--				  0xef600000 0xef600000 0x00a00000
--				  0xf0000000 0xf0000000 0x10000000>;
--			dcr-reg = <0x0a0 0x005>;
--			clock-frequency = <0>; /* Filled in by U-Boot */
--
--			EBC0: ebc {
--				compatible = "ibm,ebc-405exr", "ibm,ebc";
--				dcr-reg = <0x012 0x002>;
--				#address-cells = <2>;
--				#size-cells = <1>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				/* ranges property is supplied by U-Boot */
--				interrupts = <0x5 0x1>;
--				interrupt-parent = <&UIC1>;
--
--				nor_flash@0,0 {
--					compatible = "amd,s29gl512n", "cfi-flash";
--					bank-width = <2>;
--					reg = <0x00000000 0x00000000 0x04000000>;
--					#address-cells = <1>;
--					#size-cells = <1>;
--					partition@0 {
--						label = "kernel";
--						reg = <0x00000000 0x00200000>;
--					};
--					partition@200000 {
--						label = "root";
--						reg = <0x00200000 0x00200000>;
--					};
--					partition@400000 {
--						label = "user";
--						reg = <0x00400000 0x03b60000>;
--					};
--					partition@3f60000 {
--						label = "env";
--						reg = <0x03f60000 0x00040000>;
--					};
--					partition@3fa0000 {
--						label = "u-boot";
--						reg = <0x03fa0000 0x00060000>;
--					};
--				};
--			};
--
--			UART0: serial@ef600200 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600200 0x00000008>;
--				virtual-reg = <0xef600200>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				current-speed = <0>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x1a 0x4>;
--			};
--
--			UART1: serial@ef600300 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600300 0x00000008>;
--				virtual-reg = <0xef600300>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				current-speed = <0>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x1 0x4>;
--			};
--
--			IIC0: i2c@ef600400 {
--				compatible = "ibm,iic-405exr", "ibm,iic";
--				reg = <0xef600400 0x00000014>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x2 0x4>;
--			};
--
--			IIC1: i2c@ef600500 {
--				compatible = "ibm,iic-405exr", "ibm,iic";
--				reg = <0xef600500 0x00000014>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x7 0x4>;
--			};
--
--
--			RGMII0: emac-rgmii@ef600b00 {
--				compatible = "ibm,rgmii-405exr", "ibm,rgmii";
--				reg = <0xef600b00 0x00000104>;
--				has-mdio;
--			};
--
--			EMAC0: ethernet@ef600900 {
--				linux,network-index = <0x0>;
--				device_type = "network";
--				compatible = "ibm,emac-405exr", "ibm,emac4sync";
--				interrupt-parent = <&EMAC0>;
--				interrupts = <0x0 0x1>;
--				#interrupt-cells = <1>;
--				#address-cells = <0>;
--				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC0 0x18 0x4
--						/*Wake*/  0x1 &UIC1 0x1d 0x4>;
--				reg = <0xef600900 0x000000c4>;
--				local-mac-address = [000000000000]; /* Filled in by U-Boot */
--				mal-device = <&MAL0>;
--				mal-tx-channel = <0>;
--				mal-rx-channel = <0>;
--				cell-index = <0>;
--				max-frame-size = <9000>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--				rx-fifo-size-gige = <16384>;
--				tx-fifo-size-gige = <16384>;
--				phy-mode = "rgmii";
--				phy-map = <0x00000000>;
--				rgmii-device = <&RGMII0>;
--				rgmii-channel = <0>;
--				has-inverted-stacr-oc;
--				has-new-stacr-staopc;
--			};
--		};
--
--		PCIE0: pcie@a0000000 {
--			device_type = "pci";
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			compatible = "ibm,plb-pciex-405ex", "ibm,plb-pciex";
--			primary;
--			port = <0x0>; /* port number */
--			reg = <0xa0000000 0x20000000	/* Config space access */
--			       0xef000000 0x00001000>;	/* Registers */
--			dcr-reg = <0x040 0x020>;
--			sdr-base = <0x400>;
--
--			/* Outbound ranges, one memory and one IO,
--			 * later cannot be changed
--			 */
--			ranges = <0x02000000 0x00000000 0x80000000 0x90000000 0x00000000 0x08000000
--				  0x01000000 0x00000000 0x00000000 0xe0000000 0x00000000 0x00010000>;
--
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
--
--			/* This drives busses 0x00 to 0x3f */
--			bus-range = <0x0 0x3f>;
--
--			/* Legacy interrupts (note the weird polarity, the bridge seems
--			 * to invert PCIe legacy interrupts).
--			 * We are de-swizzling here because the numbers are actually for
--			 * port of the root complex virtual P2P bridge. But I want
--			 * to avoid putting a node for it in the tree, so the numbers
--			 * below are basically de-swizzled numbers.
--			 * The real slot is on idsel 0, so the swizzling is 1:1
--			 */
--			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
--			interrupt-map = <
--				0x0 0x0 0x0 0x1 &UIC2 0x0 0x4 /* swizzled int A */
--				0x0 0x0 0x0 0x2 &UIC2 0x1 0x4 /* swizzled int B */
--				0x0 0x0 0x0 0x3 &UIC2 0x2 0x4 /* swizzled int C */
--				0x0 0x0 0x0 0x4 &UIC2 0x3 0x4 /* swizzled int D */>;
--		};
--	};
--};
-diff --git a/arch/powerpc/boot/dts/hotfoot.dts b/arch/powerpc/boot/dts/hotfoot.dts
-deleted file mode 100644
-index b93bf2d9dd5b..000000000000
---- a/arch/powerpc/boot/dts/hotfoot.dts
-+++ /dev/null
-@@ -1,296 +0,0 @@
--/*
-- * Device Tree Source for ESTeem 195E Hotfoot
-- *
-- * Copyright 2009 AbsoluteValue Systems <solomon@linux-wlan.com>
-- *
-- * This file is licensed under the terms of the GNU General Public
-- * License version 2.  This program is licensed "as is" without
-- * any warranty of any kind, whether express or implied.
-- */
--
--/dts-v1/;
--
--/ {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	model = "est,hotfoot";
--	compatible = "est,hotfoot";
--	dcr-parent = <&{/cpus/cpu@0}>;
--
--	aliases {
--		ethernet0 = &EMAC0;
--		ethernet1 = &EMAC1;
--		serial0 = &UART0;
--		serial1 = &UART1;
--	};
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		cpu@0 {
--			device_type = "cpu";
--			model = "PowerPC,405EP";
--			reg = <0x00000000>;
--			clock-frequency = <0>; /* Filled in by zImage */
--			timebase-frequency = <0>; /* Filled in by zImage */
--			i-cache-line-size = <0x20>;
--			d-cache-line-size = <0x20>;
--			i-cache-size = <0x4000>;
--			d-cache-size = <0x4000>;
--			dcr-controller;
--			dcr-access-method = "native";
--		};
--	};
--
--	memory {
--		device_type = "memory";
--		reg = <0x00000000 0x00000000>; /* Filled in by zImage */
--	};
--
--	UIC0: interrupt-controller {
--		compatible = "ibm,uic";
--		interrupt-controller;
--		cell-index = <0>;
--		dcr-reg = <0x0c0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--	};
--
--	plb {
--		compatible = "ibm,plb3";
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges;
--		clock-frequency = <0>; /* Filled in by zImage */
--
--		SDRAM0: memory-controller {
--			compatible = "ibm,sdram-405ep";
--			dcr-reg = <0x010 0x002>;
--		};
--
--		MAL: mcmal {
--			compatible = "ibm,mcmal-405ep", "ibm,mcmal";
--			dcr-reg = <0x180 0x062>;
--			num-tx-chans = <4>;
--			num-rx-chans = <2>;
--			interrupt-parent = <&UIC0>;
--			interrupts = <
--				0xb 0x4 /* TXEOB */
--				0xc 0x4 /* RXEOB */
--				0xa 0x4 /* SERR */
--				0xd 0x4 /* TXDE */
--				0xe 0x4 /* RXDE */>;
--		};
--
--		POB0: opb {
--			compatible = "ibm,opb-405ep", "ibm,opb";
--			#address-cells = <1>;
--			#size-cells = <1>;
--			ranges = <0xef600000 0xef600000 0x00a00000>;
--			dcr-reg = <0x0a0 0x005>;
--			clock-frequency = <0>; /* Filled in by zImage */
--
--			/* Hotfoot has UART0/UART1 swapped */
--
--			UART0: serial@ef600400 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600400 0x00000008>;
--				virtual-reg = <0xef600400>;
--				clock-frequency = <0>; /* Filled in by zImage */
--				current-speed = <0x9600>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x1 0x4>;
--			};
--
--			UART1: serial@ef600300 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600300 0x00000008>;
--				virtual-reg = <0xef600300>;
--				clock-frequency = <0>; /* Filled in by zImage */
--				current-speed = <0x9600>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x0 0x4>;
--			};
--
--			IIC: i2c@ef600500 {
--				#address-cells = <1>;
--				#size-cells = <0>;
--				compatible = "ibm,iic-405ep", "ibm,iic";
--				reg = <0xef600500 0x00000011>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x2 0x4>;
--
--				rtc@68 {
--					/* Actually a DS1339 */
--					compatible = "dallas,ds1307";
--					reg = <0x68>;
--				};
--
--				temp@4a {
--					/* Not present on all boards */
--					compatible = "national,lm75";
--					reg = <0x4a>;
--				};
--			};
--
--			GPIO: gpio@ef600700 {
--				#gpio-cells = <2>;
--				compatible = "ibm,ppc4xx-gpio";
--				reg = <0xef600700 0x00000020>;
--				gpio-controller;
--			};
--
--			gpio-leds {
--				compatible = "gpio-leds";
--				status {
--					label = "Status";
--					gpios = <&GPIO 1 0>;
--				};
--				radiorx {
--					label = "Rx";
--					gpios = <&GPIO 0xe 0>;
--				};
--			};
--
--			EMAC0: ethernet@ef600800 {
--				linux,network-index = <0x0>;
--				device_type = "network";
--				compatible = "ibm,emac-405ep", "ibm,emac";
--				interrupt-parent = <&UIC0>;
--				interrupts = <
--					0xf 0x4 /* Ethernet */
--					0x9 0x4 /* Ethernet Wake Up */>;
--				local-mac-address = [000000000000]; /* Filled in by zImage */
--				reg = <0xef600800 0x00000070>;
--				mal-device = <&MAL>;
--				mal-tx-channel = <0>;
--				mal-rx-channel = <0>;
--				cell-index = <0>;
--				max-frame-size = <0x5dc>;
--				rx-fifo-size = <0x1000>;
--				tx-fifo-size = <0x800>;
--				phy-mode = "mii";
--				phy-map = <0x00000000>;
--			};
--
--			EMAC1: ethernet@ef600900 {
--				linux,network-index = <0x1>;
--				device_type = "network";
--				compatible = "ibm,emac-405ep", "ibm,emac";
--				interrupt-parent = <&UIC0>;
--				interrupts = <
--					0x11 0x4 /* Ethernet */
--					0x9 0x4 /* Ethernet Wake Up */>;
--				local-mac-address = [000000000000]; /* Filled in by zImage */
--				reg = <0xef600900 0x00000070>;
--				mal-device = <&MAL>;
--				mal-tx-channel = <2>;
--				mal-rx-channel = <1>;
--				cell-index = <1>;
--				max-frame-size = <0x5dc>;
--				rx-fifo-size = <0x1000>;
--				tx-fifo-size = <0x800>;
--				mdio-device = <&EMAC0>;
--				phy-mode = "mii";
--				phy-map = <0x0000001>;
--			};
--		};
--
--		EBC0: ebc {
--			compatible = "ibm,ebc-405ep", "ibm,ebc";
--			dcr-reg = <0x012 0x002>;
--			#address-cells = <2>;
--			#size-cells = <1>;
--
--			/* The ranges property is supplied by the bootwrapper
--			 * and is based on the firmware's configuration of the
--			 * EBC bridge
--			 */
--			clock-frequency = <0>; /* Filled in by zImage */
--
--			nor_flash@0 {
--				compatible = "cfi-flash";
--				bank-width = <2>;
--				reg = <0x0 0xff800000 0x00800000>;
--				#address-cells = <1>;
--				#size-cells = <1>;
--
--				/* This mapping is for the 8M flash
--				   4M flash has all ofssets -= 4M,
--				   and FeatFS partition is not present */
--				partition@0 {
--					label = "Bootloader";
--					reg = <0x7c0000 0x40000>;
--					/* read-only; */
--				};
--				partition@1 {
--					label = "Env_and_Config_Primary";
--					reg = <0x400000 0x10000>;
--				};
--				partition@2 {
--					label = "Kernel";
--					reg = <0x420000 0x100000>;
--				};
--				partition@3 {
--					label = "Filesystem";
--					reg = <0x520000 0x2a0000>;
--				};
--				partition@4 {
--					label = "Env_and_Config_Secondary";
--					reg = <0x410000 0x10000>;
--				};
--				partition@5 {
--					label = "FeatFS";
--					reg = <0x000000 0x400000>;
--				};
--				partition@6 {
--					label = "Bootloader_Env";
--					reg = <0x7d0000 0x10000>;
--				};
--			};
--		};
--
--		PCI0: pci@ec000000 {
--			device_type = "pci";
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			compatible = "ibm,plb405ep-pci", "ibm,plb-pci";
--			primary;
--			reg = <0xeec00000 0x00000008    /* Config space access */
--				0xeed80000 0x00000004    /* IACK */
--				0xeed80000 0x00000004    /* Special cycle */
--				0xef480000 0x00000040>;  /* Internal registers */
--
--			/* Outbound ranges, one memory and one IO,
--			 * later cannot be changed. Chip supports a second
--			 * IO range but we don't use it for now
--			 */
--			ranges = <0x02000000 0x00000000 0x80000000 0x80000000 0x00000000 0x20000000
--				0x01000000 0x00000000 0x00000000 0xe8000000 0x00000000 0x00010000>;
--
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
--
--			interrupt-parent = <&UIC0>;
--			interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
--			interrupt-map = <
--				/* IDSEL 3 -- slot1 (optional) 27/29 A/B IRQ2/4 */
--				0x1800 0x0 0x0 0x1 &UIC0 0x1b 0x8
--				0x1800 0x0 0x0 0x2 &UIC0 0x1d 0x8
--
--				/* IDSEL 4 -- slot0, 26/28 A/B IRQ1/3 */
--				0x2000 0x0 0x0 0x1 &UIC0 0x1a 0x8
--				0x2000 0x0 0x0 0x2 &UIC0 0x1c 0x8
--				>;
--		};
--	};
--
--	chosen {
--		stdout-path = &UART0;
--	};
--};
-diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
-deleted file mode 100644
-index c07a7525a72c..000000000000
---- a/arch/powerpc/boot/dts/kilauea.dts
-+++ /dev/null
-@@ -1,407 +0,0 @@
--/*
-- * Device Tree Source for AMCC Kilauea (405EX)
-- *
-- * Copyright 2007-2009 DENX Software Engineering, Stefan Roese <sr@denx.de>
-- *
-- * This file is licensed under the terms of the GNU General Public
-- * License version 2.  This program is licensed "as is" without
-- * any warranty of any kind, whether express or implied.
-- */
--
--/dts-v1/;
--
--/ {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	model = "amcc,kilauea";
--	compatible = "amcc,kilauea";
--	dcr-parent = <&{/cpus/cpu@0}>;
--
--	aliases {
--		ethernet0 = &EMAC0;
--		ethernet1 = &EMAC1;
--		serial0 = &UART0;
--		serial1 = &UART1;
--	};
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		cpu@0 {
--			device_type = "cpu";
--			model = "PowerPC,405EX";
--			reg = <0x00000000>;
--			clock-frequency = <0>; /* Filled in by U-Boot */
--			timebase-frequency = <0>; /* Filled in by U-Boot */
--			i-cache-line-size = <32>;
--			d-cache-line-size = <32>;
--			i-cache-size = <16384>; /* 16 kB */
--			d-cache-size = <16384>; /* 16 kB */
--			dcr-controller;
--			dcr-access-method = "native";
--		};
--	};
--
--	memory {
--		device_type = "memory";
--		reg = <0x00000000 0x00000000>; /* Filled in by U-Boot */
--	};
--
--	UIC0: interrupt-controller {
--		compatible = "ibm,uic-405ex", "ibm,uic";
--		interrupt-controller;
--		cell-index = <0>;
--		dcr-reg = <0x0c0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--	};
--
--	UIC1: interrupt-controller1 {
--		compatible = "ibm,uic-405ex","ibm,uic";
--		interrupt-controller;
--		cell-index = <1>;
--		dcr-reg = <0x0d0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	UIC2: interrupt-controller2 {
--		compatible = "ibm,uic-405ex","ibm,uic";
--		interrupt-controller;
--		cell-index = <2>;
--		dcr-reg = <0x0e0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x1c 0x4 0x1d 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	CPM0: cpm {
--		compatible = "ibm,cpm";
--		dcr-access-method = "native";
--		dcr-reg = <0x0b0 0x003>;
--		unused-units = <0x00000000>;
--		idle-doze = <0x02000000>;
--		standby = <0xe3e74800>;
--	};
--
--	plb {
--		compatible = "ibm,plb-405ex", "ibm,plb4";
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges;
--		clock-frequency = <0>; /* Filled in by U-Boot */
--
--		SDRAM0: memory-controller {
--			compatible = "ibm,sdram-405ex", "ibm,sdram-4xx-ddr2";
--			dcr-reg = <0x010 0x002>;
--			interrupt-parent = <&UIC2>;
--			interrupts = <0x5 0x4	/* ECC DED Error */ 
--				      0x6 0x4>;	/* ECC SEC Error */ 
--		};
--
--		CRYPTO: crypto@ef700000 {
--			compatible = "amcc,ppc405ex-crypto", "amcc,ppc4xx-crypto";
--			reg = <0xef700000 0x80400>;
--			interrupt-parent = <&UIC0>;
--			interrupts = <0x17 0x2>;
--		};
--
--		MAL0: mcmal {
--			compatible = "ibm,mcmal-405ex", "ibm,mcmal2";
--			dcr-reg = <0x180 0x062>;
--			num-tx-chans = <2>;
--			num-rx-chans = <2>;
--			interrupt-parent = <&MAL0>;
--			interrupts = <0x0 0x1 0x2 0x3 0x4>;
--			#interrupt-cells = <1>;
--			#address-cells = <0>;
--			#size-cells = <0>;
--			interrupt-map = </*TXEOB*/ 0x0 &UIC0 0xa 0x4
--					/*RXEOB*/ 0x1 &UIC0 0xb 0x4
--					/*SERR*/  0x2 &UIC1 0x0 0x4
--					/*TXDE*/  0x3 &UIC1 0x1 0x4
--					/*RXDE*/  0x4 &UIC1 0x2 0x4>;
--			interrupt-map-mask = <0xffffffff>;
--		};
--
--		POB0: opb {
--			compatible = "ibm,opb-405ex", "ibm,opb";
--			#address-cells = <1>;
--			#size-cells = <1>;
--			ranges = <0x80000000 0x80000000 0x10000000
--				  0xef600000 0xef600000 0x00a00000
--				  0xf0000000 0xf0000000 0x10000000>;
--			dcr-reg = <0x0a0 0x005>;
--			clock-frequency = <0>; /* Filled in by U-Boot */
--
--			EBC0: ebc {
--				compatible = "ibm,ebc-405ex", "ibm,ebc";
--				dcr-reg = <0x012 0x002>;
--				#address-cells = <2>;
--				#size-cells = <1>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				/* ranges property is supplied by U-Boot */
--				interrupts = <0x5 0x1>;
--				interrupt-parent = <&UIC1>;
--
--				nor_flash@0,0 {
--					compatible = "amd,s29gl512n", "cfi-flash";
--					bank-width = <2>;
--					reg = <0x00000000 0x00000000 0x04000000>;
--					#address-cells = <1>;
--					#size-cells = <1>;
--					partition@0 {
--						label = "kernel";
--						reg = <0x00000000 0x001e0000>;
--					};
--					partition@1e0000 {
--						label = "dtb";
--						reg = <0x001e0000 0x00020000>;
--					};
--					partition@200000 {
--						label = "root";
--						reg = <0x00200000 0x00200000>;
--					};
--					partition@400000 {
--						label = "user";
--						reg = <0x00400000 0x03b60000>;
--					};
--					partition@3f60000 {
--						label = "env";
--						reg = <0x03f60000 0x00040000>;
--					};
--					partition@3fa0000 {
--						label = "u-boot";
--						reg = <0x03fa0000 0x00060000>;
--					};
--				};
--
--				ndfc@1,0 {
--					compatible = "ibm,ndfc";
--					reg = <0x00000001 0x00000000 0x00002000>;
--					ccr = <0x00001000>;
--					bank-settings = <0x80002222>;
--					#address-cells = <1>;
--					#size-cells = <1>;
--
--					nand {
--						#address-cells = <1>;
--						#size-cells = <1>;
--
--						partition@0 {
--							label = "u-boot";
--							reg = <0x00000000 0x00100000>;
--						};
--						partition@100000 {
--							label = "user";
--							reg = <0x00000000 0x03f00000>;
--						};
--					};
--				};
--			};
--
--			UART0: serial@ef600200 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600200 0x00000008>;
--				virtual-reg = <0xef600200>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				current-speed = <0>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x1a 0x4>;
--			};
--
--			UART1: serial@ef600300 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600300 0x00000008>;
--				virtual-reg = <0xef600300>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				current-speed = <0>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x1 0x4>;
--			};
--
--			IIC0: i2c@ef600400 {
--				compatible = "ibm,iic-405ex", "ibm,iic";
--				reg = <0xef600400 0x00000014>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x2 0x4>;
--				#address-cells = <1>;
--				#size-cells = <0>;
--
--				rtc@68 {
--					compatible = "dallas,ds1338";
--					reg = <0x68>;
--				};
--
--				dtt@48 {
--					compatible = "dallas,ds1775";
--					reg = <0x48>;
--				};
--			};
--
--			IIC1: i2c@ef600500 {
--				compatible = "ibm,iic-405ex", "ibm,iic";
--				reg = <0xef600500 0x00000014>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x7 0x4>;
--			};
--
--			RGMII0: emac-rgmii@ef600b00 {
--				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
--				reg = <0xef600b00 0x00000104>;
--				has-mdio;
--			};
--
--			EMAC0: ethernet@ef600900 {
--				linux,network-index = <0x0>;
--				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4sync";
--				interrupt-parent = <&EMAC0>;
--				interrupts = <0x0 0x1>;
--				#interrupt-cells = <1>;
--				#address-cells = <0>;
--				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC0 0x18 0x4
--						/*Wake*/  0x1 &UIC1 0x1d 0x4>;
--				reg = <0xef600900 0x000000c4>;
--				local-mac-address = [000000000000]; /* Filled in by U-Boot */
--				mal-device = <&MAL0>;
--				mal-tx-channel = <0>;
--				mal-rx-channel = <0>;
--				cell-index = <0>;
--				max-frame-size = <9000>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--				rx-fifo-size-gige = <16384>;
--				tx-fifo-size-gige = <16384>;
--				phy-mode = "rgmii";
--				phy-map = <0x00000000>;
--				rgmii-device = <&RGMII0>;
--				rgmii-channel = <0>;
--				has-inverted-stacr-oc;
--				has-new-stacr-staopc;
--			};
--
--			EMAC1: ethernet@ef600a00 {
--				linux,network-index = <0x1>;
--				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4sync";
--				interrupt-parent = <&EMAC1>;
--				interrupts = <0x0 0x1>;
--				#interrupt-cells = <1>;
--				#address-cells = <0>;
--				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC0 0x19 0x4
--						/*Wake*/  0x1 &UIC1 0x1f 0x4>;
--				reg = <0xef600a00 0x000000c4>;
--				local-mac-address = [000000000000]; /* Filled in by U-Boot */
--				mal-device = <&MAL0>;
--				mal-tx-channel = <1>;
--				mal-rx-channel = <1>;
--				cell-index = <1>;
--				max-frame-size = <9000>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--				rx-fifo-size-gige = <16384>;
--				tx-fifo-size-gige = <16384>;
--				phy-mode = "rgmii";
--				phy-map = <0x00000000>;
--				rgmii-device = <&RGMII0>;
--				rgmii-channel = <1>;
--				has-inverted-stacr-oc;
--				has-new-stacr-staopc;
--			};
--		};
--
--		PCIE0: pcie@a0000000 {
--			device_type = "pci";
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			compatible = "ibm,plb-pciex-405ex", "ibm,plb-pciex";
--			primary;
--			port = <0x0>; /* port number */
--			reg = <0xa0000000 0x20000000	/* Config space access */
--			       0xef000000 0x00001000>;	/* Registers */
--			dcr-reg = <0x040 0x020>;
--			sdr-base = <0x400>;
--
--			/* Outbound ranges, one memory and one IO,
--			 * later cannot be changed
--			 */
--			ranges = <0x02000000 0x00000000 0x80000000 0x90000000 0x00000000 0x08000000
--				  0x01000000 0x00000000 0x00000000 0xe0000000 0x00000000 0x00010000>;
--
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
--
--			/* This drives busses 0x00 to 0x3f */
--			bus-range = <0x0 0x3f>;
--
--			/* Legacy interrupts (note the weird polarity, the bridge seems
--			 * to invert PCIe legacy interrupts).
--			 * We are de-swizzling here because the numbers are actually for
--			 * port of the root complex virtual P2P bridge. But I want
--			 * to avoid putting a node for it in the tree, so the numbers
--			 * below are basically de-swizzled numbers.
--			 * The real slot is on idsel 0, so the swizzling is 1:1
--			 */
--			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
--			interrupt-map = <
--				0x0 0x0 0x0 0x1 &UIC2 0x0 0x4 /* swizzled int A */
--				0x0 0x0 0x0 0x2 &UIC2 0x1 0x4 /* swizzled int B */
--				0x0 0x0 0x0 0x3 &UIC2 0x2 0x4 /* swizzled int C */
--				0x0 0x0 0x0 0x4 &UIC2 0x3 0x4 /* swizzled int D */>;
--		};
--
--		PCIE1: pcie@c0000000 {
--			device_type = "pci";
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			compatible = "ibm,plb-pciex-405ex", "ibm,plb-pciex";
--			primary;
--			port = <0x1>; /* port number */
--			reg = <0xc0000000 0x20000000	/* Config space access */
--			       0xef001000 0x00001000>;	/* Registers */
--			dcr-reg = <0x060 0x020>;
--			sdr-base = <0x440>;
--
--			/* Outbound ranges, one memory and one IO,
--			 * later cannot be changed
--			 */
--			ranges = <0x02000000 0x00000000 0x80000000 0x98000000 0x00000000 0x08000000
--				  0x01000000 0x00000000 0x00000000 0xe0010000 0x00000000 0x00010000>;
--
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
--
--			/* This drives busses 0x40 to 0x7f */
--			bus-range = <0x40 0x7f>;
--
--			/* Legacy interrupts (note the weird polarity, the bridge seems
--			 * to invert PCIe legacy interrupts).
--			 * We are de-swizzling here because the numbers are actually for
--			 * port of the root complex virtual P2P bridge. But I want
--			 * to avoid putting a node for it in the tree, so the numbers
--			 * below are basically de-swizzled numbers.
--			 * The real slot is on idsel 0, so the swizzling is 1:1
--			 */
--			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
--			interrupt-map = <
--				0x0 0x0 0x0 0x1 &UIC2 0xb 0x4 /* swizzled int A */
--				0x0 0x0 0x0 0x2 &UIC2 0xc 0x4 /* swizzled int B */
--				0x0 0x0 0x0 0x3 &UIC2 0xd 0x4 /* swizzled int C */
--				0x0 0x0 0x0 0x4 &UIC2 0xe 0x4 /* swizzled int D */>;
--		};
--	};
--};
-diff --git a/arch/powerpc/boot/dts/klondike.dts b/arch/powerpc/boot/dts/klondike.dts
-deleted file mode 100644
-index 97432177892a..000000000000
---- a/arch/powerpc/boot/dts/klondike.dts
-+++ /dev/null
-@@ -1,212 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * Device Tree for Klondike (APM8018X) board.
-- *
-- * Copyright (c) 2010, Applied Micro Circuits Corporation
-- * Author: Tanmay Inamdar <tinamdar@apm.com>
-- */
--
--/dts-v1/;
--
--/ {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	model = "apm,klondike";
--	compatible = "apm,klondike";
--	dcr-parent = <&{/cpus/cpu@0}>;
--
--	aliases {
--		ethernet0 = &EMAC0;
--		ethernet1 = &EMAC1;
--	};
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		cpu@0 {
--			device_type = "cpu";
--			model = "PowerPC,apm8018x";
--			reg = <0x00000000>;
--			clock-frequency = <300000000>; /* Filled in by U-Boot */
--			timebase-frequency = <300000000>; /* Filled in by U-Boot */
--			i-cache-line-size = <32>;
--			d-cache-line-size = <32>;
--			i-cache-size = <16384>; /* 16 kB */
--			d-cache-size = <16384>; /* 16 kB */
--			dcr-controller;
--			dcr-access-method = "native";
--		};
--	};
--
--	memory {
--		device_type = "memory";
--		reg = <0x00000000 0x20000000>; /* Filled in by U-Boot */
--	};
--
--	UIC0: interrupt-controller {
--		compatible = "ibm,uic";
--		interrupt-controller;
--		cell-index = <0>;
--		dcr-reg = <0x0c0 0x010>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--	};
--
--	UIC1: interrupt-controller1 {
--		compatible = "ibm,uic";
--		interrupt-controller;
--		cell-index = <1>;
--		dcr-reg = <0x0d0 0x010>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	UIC2: interrupt-controller2 {
--		compatible = "ibm,uic";
--		interrupt-controller;
--		cell-index = <2>;
--		dcr-reg = <0x0e0 0x010>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x0a 0x4 0x0b 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	UIC3: interrupt-controller3 {
--		compatible = "ibm,uic";
--		interrupt-controller;
--		cell-index = <3>;
--		dcr-reg = <0x0f0 0x010>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x10 0x4 0x11 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	plb {
--		compatible = "ibm,plb4";
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges;
--		clock-frequency = <0>; /* Filled in by U-Boot */
--
--		SDRAM0: memory-controller {
--			compatible = "ibm,sdram-apm8018x";
--			dcr-reg = <0x010 0x002>;
--		};
--
--		MAL0: mcmal {
--			compatible = "ibm,mcmal2";
--			dcr-reg = <0x180 0x062>;
--			num-tx-chans = <2>;
--			num-rx-chans = <16>;
--			#address-cells = <0>;
--			#size-cells = <0>;
--			interrupt-parent = <&UIC1>;
--			interrupts = </*TXEOB*/   0x6 0x4
--					/*RXEOB*/ 0x7 0x4
--					/*SERR*/  0x1 0x4
--					/*TXDE*/  0x2 0x4
--					/*RXDE*/  0x3 0x4>;
--		};
--
--		POB0: opb {
--			compatible = "ibm,opb";
--			#address-cells = <1>;
--			#size-cells = <1>;
--			ranges = <0x20000000 0x20000000 0x30000000
--				  0x50000000 0x50000000 0x10000000
--				  0x60000000 0x60000000 0x10000000
--				  0xFE000000 0xFE000000 0x00010000>;
--			dcr-reg = <0x100 0x020>;
--			clock-frequency = <300000000>; /* Filled in by U-Boot */
--
--			RGMII0: emac-rgmii@400a2000 {
--				compatible = "ibm,rgmii";
--				reg = <0x400a2000 0x00000010>;
--				has-mdio;
--			};
--
--			TAH0: emac-tah@400a3000 {
--				compatible = "ibm,tah";
--				reg = <0x400a3000 0x100>;
--			};
--
--			TAH1: emac-tah@400a4000 {
--				compatible = "ibm,tah";
--				reg = <0x400a4000 0x100>;
--			};
--
--			EMAC0: ethernet@400a0000 {
--				compatible = "ibm,emac4", "ibm-emac4sync";
--				interrupt-parent = <&EMAC0>;
--				interrupts = <0x0>;
--				#interrupt-cells = <1>;
--				#address-cells = <0>;
--				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC0 0x13 0x4>;
--				reg = <0x400a0000 0x00000100>;
--				local-mac-address = [000000000000]; /* Filled in by U-Boot */
--				mal-device = <&MAL0>;
--				mal-tx-channel = <0x0>;
--				mal-rx-channel = <0x0>;
--				cell-index = <0>;
--				max-frame-size = <9000>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--				phy-mode = "rgmii";
--				phy-address = <0x2>;
--				turbo = "no";
--				phy-map = <0x00000000>;
--				rgmii-device = <&RGMII0>;
--				rgmii-channel = <0>;
--				tah-device = <&TAH0>;
--				tah-channel = <0>;
--				has-inverted-stacr-oc;
--				has-new-stacr-staopc;
--			};
--
--			EMAC1: ethernet@400a1000 {
--				compatible = "ibm,emac4", "ibm-emac4sync";
--				status = "disabled";
--				interrupt-parent = <&EMAC1>;
--				interrupts = <0x0>;
--				#interrupt-cells = <1>;
--				#address-cells = <0>;
--				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC0 0x14 0x4>;
--				reg = <0x400a1000 0x00000100>;
--				local-mac-address = [000000000000]; /* Filled in by U-Boot */
--				mal-device = <&MAL0>;
--				mal-tx-channel = <1>;
--				mal-rx-channel = <8>;
--				cell-index = <1>;
--				max-frame-size = <9000>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--				phy-mode = "rgmii";
--				phy-address = <0x3>;
--				turbo = "no";
--				phy-map = <0x00000000>;
--				rgmii-device = <&RGMII0>;
--				rgmii-channel = <1>;
--				tah-device = <&TAH1>;
--				tah-channel = <0>;
--				has-inverted-stacr-oc;
--				has-new-stacr-staopc;
--				mdio-device = <&EMAC0>;
--			};
--		};
--	};
--
--	chosen {
--		stdout-path = "/plb/opb/serial@50001000";
--	};
--};
-diff --git a/arch/powerpc/boot/dts/makalu.dts b/arch/powerpc/boot/dts/makalu.dts
-deleted file mode 100644
-index c473cd911bca..000000000000
---- a/arch/powerpc/boot/dts/makalu.dts
-+++ /dev/null
-@@ -1,353 +0,0 @@
--/*
-- * Device Tree Source for AMCC Makalu (405EX)
-- *
-- * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
-- *
-- * This file is licensed under the terms of the GNU General Public
-- * License version 2.  This program is licensed "as is" without
-- * any warranty of any kind, whether express or implied.
-- */
--
--/dts-v1/;
--
--/ {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	model = "amcc,makalu";
--	compatible = "amcc,makalu";
--	dcr-parent = <&{/cpus/cpu@0}>;
--
--	aliases {
--		ethernet0 = &EMAC0;
--		ethernet1 = &EMAC1;
--		serial0 = &UART0;
--		serial1 = &UART1;
--	};
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		cpu@0 {
--			device_type = "cpu";
--			model = "PowerPC,405EX";
--			reg = <0x00000000>;
--			clock-frequency = <0>; /* Filled in by U-Boot */
--			timebase-frequency = <0>; /* Filled in by U-Boot */
--			i-cache-line-size = <32>;
--			d-cache-line-size = <32>;
--			i-cache-size = <16384>; /* 16 kB */
--			d-cache-size = <16384>; /* 16 kB */
--			dcr-controller;
--			dcr-access-method = "native";
--		};
--	};
--
--	memory {
--		device_type = "memory";
--		reg = <0x00000000 0x00000000>; /* Filled in by U-Boot */
--	};
--
--	UIC0: interrupt-controller {
--		compatible = "ibm,uic-405ex", "ibm,uic";
--		interrupt-controller;
--		cell-index = <0>;
--		dcr-reg = <0x0c0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--	};
--
--	UIC1: interrupt-controller1 {
--		compatible = "ibm,uic-405ex","ibm,uic";
--		interrupt-controller;
--		cell-index = <1>;
--		dcr-reg = <0x0d0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	UIC2: interrupt-controller2 {
--		compatible = "ibm,uic-405ex","ibm,uic";
--		interrupt-controller;
--		cell-index = <2>;
--		dcr-reg = <0x0e0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x1c 0x4 0x1d 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	plb {
--		compatible = "ibm,plb-405ex", "ibm,plb4";
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges;
--		clock-frequency = <0>; /* Filled in by U-Boot */
--
--		SDRAM0: memory-controller {
--			compatible = "ibm,sdram-405ex", "ibm,sdram-4xx-ddr2";
--			dcr-reg = <0x010 0x002>;
--			interrupt-parent = <&UIC2>;
--			interrupts = <0x5 0x4 /* ECC DED Error */
--			              0x6 0x4 /* ECC SEC Error */ >;
--		};
--
--		MAL0: mcmal {
--			compatible = "ibm,mcmal-405ex", "ibm,mcmal2";
--			dcr-reg = <0x180 0x062>;
--			num-tx-chans = <2>;
--			num-rx-chans = <2>;
--			interrupt-parent = <&MAL0>;
--			interrupts = <0x0 0x1 0x2 0x3 0x4>;
--			#interrupt-cells = <1>;
--			#address-cells = <0>;
--			#size-cells = <0>;
--			interrupt-map = </*TXEOB*/ 0x0 &UIC0 0xa 0x4
--					/*RXEOB*/ 0x1 &UIC0 0xb 0x4
--					/*SERR*/  0x2 &UIC1 0x0 0x4
--					/*TXDE*/  0x3 &UIC1 0x1 0x4
--					/*RXDE*/  0x4 &UIC1 0x2 0x4>;
--			interrupt-map-mask = <0xffffffff>;
--		};
--
--		POB0: opb {
--			compatible = "ibm,opb-405ex", "ibm,opb";
--			#address-cells = <1>;
--			#size-cells = <1>;
--			ranges = <0x80000000 0x80000000 0x10000000
--				  0xef600000 0xef600000 0x00a00000
--				  0xf0000000 0xf0000000 0x10000000>;
--			dcr-reg = <0x0a0 0x005>;
--			clock-frequency = <0>; /* Filled in by U-Boot */
--
--			EBC0: ebc {
--				compatible = "ibm,ebc-405ex", "ibm,ebc";
--				dcr-reg = <0x012 0x002>;
--				#address-cells = <2>;
--				#size-cells = <1>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				/* ranges property is supplied by U-Boot */
--				interrupts = <0x5 0x1>;
--				interrupt-parent = <&UIC1>;
--
--				nor_flash@0,0 {
--					compatible = "amd,s29gl512n", "cfi-flash";
--					bank-width = <2>;
--					reg = <0x00000000 0x00000000 0x04000000>;
--					#address-cells = <1>;
--					#size-cells = <1>;
--					partition@0 {
--						label = "kernel";
--						reg = <0x00000000 0x00200000>;
--					};
--					partition@200000 {
--						label = "root";
--						reg = <0x00200000 0x00200000>;
--					};
--					partition@400000 {
--						label = "user";
--						reg = <0x00400000 0x03b60000>;
--					};
--					partition@3f60000 {
--						label = "env";
--						reg = <0x03f60000 0x00040000>;
--					};
--					partition@3fa0000 {
--						label = "u-boot";
--						reg = <0x03fa0000 0x00060000>;
--					};
--				};
--			};
--
--			UART0: serial@ef600200 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600200 0x00000008>;
--				virtual-reg = <0xef600200>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				current-speed = <0>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x1a 0x4>;
--			};
--
--			UART1: serial@ef600300 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600300 0x00000008>;
--				virtual-reg = <0xef600300>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				current-speed = <0>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x1 0x4>;
--			};
--
--			IIC0: i2c@ef600400 {
--				compatible = "ibm,iic-405ex", "ibm,iic";
--				reg = <0xef600400 0x00000014>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x2 0x4>;
--			};
--
--			IIC1: i2c@ef600500 {
--				compatible = "ibm,iic-405ex", "ibm,iic";
--				reg = <0xef600500 0x00000014>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x7 0x4>;
--			};
--
--
--			RGMII0: emac-rgmii@ef600b00 {
--				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
--				reg = <0xef600b00 0x00000104>;
--				has-mdio;
--			};
--
--			EMAC0: ethernet@ef600900 {
--				linux,network-index = <0x0>;
--				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4sync";
--				interrupt-parent = <&EMAC0>;
--				interrupts = <0x0 0x1>;
--				#interrupt-cells = <1>;
--				#address-cells = <0>;
--				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC0 0x18 0x4
--						/*Wake*/  0x1 &UIC1 0x1d 0x4>;
--				reg = <0xef600900 0x000000c4>;
--				local-mac-address = [000000000000]; /* Filled in by U-Boot */
--				mal-device = <&MAL0>;
--				mal-tx-channel = <0>;
--				mal-rx-channel = <0>;
--				cell-index = <0>;
--				max-frame-size = <9000>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--				rx-fifo-size-gige = <16384>;
--				tx-fifo-size-gige = <16384>;
--				phy-mode = "rgmii";
--				phy-map = <0x0000003f>;	/* Start at 6 */
--				rgmii-device = <&RGMII0>;
--				rgmii-channel = <0>;
--				has-inverted-stacr-oc;
--				has-new-stacr-staopc;
--			};
--
--			EMAC1: ethernet@ef600a00 {
--				linux,network-index = <0x1>;
--				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4sync";
--				interrupt-parent = <&EMAC1>;
--				interrupts = <0x0 0x1>;
--				#interrupt-cells = <1>;
--				#address-cells = <0>;
--				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC0 0x19 0x4
--						/*Wake*/  0x1 &UIC1 0x1f 0x4>;
--				reg = <0xef600a00 0x000000c4>;
--				local-mac-address = [000000000000]; /* Filled in by U-Boot */
--				mal-device = <&MAL0>;
--				mal-tx-channel = <1>;
--				mal-rx-channel = <1>;
--				cell-index = <1>;
--				max-frame-size = <9000>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--                                rx-fifo-size-gige = <16384>;
--                                tx-fifo-size-gige = <16384>;
--				phy-mode = "rgmii";
--				phy-map = <0x00000000>;
--				rgmii-device = <&RGMII0>;
--				rgmii-channel = <1>;
--				has-inverted-stacr-oc;
--				has-new-stacr-staopc;
--			};
--		};
--
--		PCIE0: pcie@a0000000 {
--			device_type = "pci";
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			compatible = "ibm,plb-pciex-405ex", "ibm,plb-pciex";
--			primary;
--			port = <0x0>; /* port number */
--			reg = <0xa0000000 0x20000000	/* Config space access */
--			       0xef000000 0x00001000>;	/* Registers */
--			dcr-reg = <0x040 0x020>;
--			sdr-base = <0x400>;
--
--			/* Outbound ranges, one memory and one IO,
--			 * later cannot be changed
--			 */
--			ranges = <0x02000000 0x00000000 0x80000000 0x90000000 0x00000000 0x08000000
--				  0x01000000 0x00000000 0x00000000 0xe0000000 0x00000000 0x00010000>;
--
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
--
--			/* This drives busses 0x00 to 0x3f */
--			bus-range = <0x0 0x3f>;
--
--			/* Legacy interrupts (note the weird polarity, the bridge seems
--			 * to invert PCIe legacy interrupts).
--			 * We are de-swizzling here because the numbers are actually for
--			 * port of the root complex virtual P2P bridge. But I want
--			 * to avoid putting a node for it in the tree, so the numbers
--			 * below are basically de-swizzled numbers.
--			 * The real slot is on idsel 0, so the swizzling is 1:1
--			 */
--			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
--			interrupt-map = <
--				0x0 0x0 0x0 0x1 &UIC2 0x0 0x4 /* swizzled int A */
--				0x0 0x0 0x0 0x2 &UIC2 0x1 0x4 /* swizzled int B */
--				0x0 0x0 0x0 0x3 &UIC2 0x2 0x4 /* swizzled int C */
--				0x0 0x0 0x0 0x4 &UIC2 0x3 0x4 /* swizzled int D */>;
--		};
--
--		PCIE1: pcie@c0000000 {
--			device_type = "pci";
--			#interrupt-cells = <1>;
--			#size-cells = <2>;
--			#address-cells = <3>;
--			compatible = "ibm,plb-pciex-405ex", "ibm,plb-pciex";
--			primary;
--			port = <0x1>; /* port number */
--			reg = <0xc0000000 0x20000000	/* Config space access */
--			       0xef001000 0x00001000>;	/* Registers */
--			dcr-reg = <0x060 0x020>;
--			sdr-base = <0x440>;
--
--			/* Outbound ranges, one memory and one IO,
--			 * later cannot be changed
--			 */
--			ranges = <0x02000000 0x00000000 0x80000000 0x98000000 0x00000000 0x08000000
--				  0x01000000 0x00000000 0x00000000 0xe0010000 0x00000000 0x00010000>;
--
--			/* Inbound 2GB range starting at 0 */
--			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x80000000>;
--
--			/* This drives busses 0x40 to 0x7f */
--			bus-range = <0x40 0x7f>;
--
--			/* Legacy interrupts (note the weird polarity, the bridge seems
--			 * to invert PCIe legacy interrupts).
--			 * We are de-swizzling here because the numbers are actually for
--			 * port of the root complex virtual P2P bridge. But I want
--			 * to avoid putting a node for it in the tree, so the numbers
--			 * below are basically de-swizzled numbers.
--			 * The real slot is on idsel 0, so the swizzling is 1:1
--			 */
--			interrupt-map-mask = <0x0 0x0 0x0 0x7>;
--			interrupt-map = <
--				0x0 0x0 0x0 0x1 &UIC2 0xb 0x4 /* swizzled int A */
--				0x0 0x0 0x0 0x2 &UIC2 0xc 0x4 /* swizzled int B */
--				0x0 0x0 0x0 0x3 &UIC2 0xd 0x4 /* swizzled int C */
--				0x0 0x0 0x0 0x4 &UIC2 0xe 0x4 /* swizzled int D */>;
--		};
--	};
--};
-diff --git a/arch/powerpc/boot/dts/obs600.dts b/arch/powerpc/boot/dts/obs600.dts
-deleted file mode 100644
-index d10b0411809b..000000000000
---- a/arch/powerpc/boot/dts/obs600.dts
-+++ /dev/null
-@@ -1,314 +0,0 @@
--/*
-- * Device Tree Source for PlatHome OpenBlockS 600 (405EX)
-- *
-- * Copyright 2011 Ben Herrenschmidt, IBM Corp.
-- *
-- * Based on Kilauea by:
-- *
-- * Copyright 2007-2009 DENX Software Engineering, Stefan Roese <sr@denx.de>
-- *
-- * This file is licensed under the terms of the GNU General Public
-- * License version 2.  This program is licensed "as is" without
-- * any warranty of any kind, whether express or implied.
-- */
--
--/dts-v1/;
--
--/ {
--	#address-cells = <1>;
--	#size-cells = <1>;
--	model = "PlatHome,OpenBlockS 600";
--	compatible = "plathome,obs600";
--	dcr-parent = <&{/cpus/cpu@0}>;
--
--	aliases {
--		ethernet0 = &EMAC0;
--		ethernet1 = &EMAC1;
--		serial0 = &UART0;
--		serial1 = &UART1;
--	};
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		cpu@0 {
--			device_type = "cpu";
--			model = "PowerPC,405EX";
--			reg = <0x00000000>;
--			clock-frequency = <0>; /* Filled in by U-Boot */
--			timebase-frequency = <0>; /* Filled in by U-Boot */
--			i-cache-line-size = <32>;
--			d-cache-line-size = <32>;
--			i-cache-size = <16384>; /* 16 kB */
--			d-cache-size = <16384>; /* 16 kB */
--			dcr-controller;
--			dcr-access-method = "native";
--		};
--	};
--
--	memory {
--		device_type = "memory";
--		reg = <0x00000000 0x00000000>; /* Filled in by U-Boot */
--	};
--
--	UIC0: interrupt-controller {
--		compatible = "ibm,uic-405ex", "ibm,uic";
--		interrupt-controller;
--		cell-index = <0>;
--		dcr-reg = <0x0c0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--	};
--
--	UIC1: interrupt-controller1 {
--		compatible = "ibm,uic-405ex","ibm,uic";
--		interrupt-controller;
--		cell-index = <1>;
--		dcr-reg = <0x0d0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x1e 0x4 0x1f 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	UIC2: interrupt-controller2 {
--		compatible = "ibm,uic-405ex","ibm,uic";
--		interrupt-controller;
--		cell-index = <2>;
--		dcr-reg = <0x0e0 0x009>;
--		#address-cells = <0>;
--		#size-cells = <0>;
--		#interrupt-cells = <2>;
--		interrupts = <0x1c 0x4 0x1d 0x4>; /* cascade */
--		interrupt-parent = <&UIC0>;
--	};
--
--	CPM0: cpm {
--		compatible = "ibm,cpm";
--		dcr-access-method = "native";
--		dcr-reg = <0x0b0 0x003>;
--		unused-units = <0x00000000>;
--		idle-doze = <0x02000000>;
--		standby = <0xe3e74800>;
--	};
--
--	plb {
--		compatible = "ibm,plb-405ex", "ibm,plb4";
--		#address-cells = <1>;
--		#size-cells = <1>;
--		ranges;
--		clock-frequency = <0>; /* Filled in by U-Boot */
--
--		SDRAM0: memory-controller {
--			compatible = "ibm,sdram-405ex", "ibm,sdram-4xx-ddr2";
--			dcr-reg = <0x010 0x002>;
--			interrupt-parent = <&UIC2>;
--			interrupts = <0x5 0x4	/* ECC DED Error */
--				      0x6 0x4>;	/* ECC SEC Error */
--		};
--
--		CRYPTO: crypto@ef700000 {
--			compatible = "amcc,ppc405ex-crypto", "amcc,ppc4xx-crypto";
--			reg = <0xef700000 0x80400>;
--			interrupt-parent = <&UIC0>;
--			interrupts = <0x17 0x2>;
--		};
--
--		MAL0: mcmal {
--			compatible = "ibm,mcmal-405ex", "ibm,mcmal2";
--			dcr-reg = <0x180 0x062>;
--			num-tx-chans = <2>;
--			num-rx-chans = <2>;
--			interrupt-parent = <&MAL0>;
--			interrupts = <0x0 0x1 0x2 0x3 0x4>;
--			#interrupt-cells = <1>;
--			#address-cells = <0>;
--			#size-cells = <0>;
--			interrupt-map = </*TXEOB*/ 0x0 &UIC0 0xa 0x4
--					/*RXEOB*/ 0x1 &UIC0 0xb 0x4
--					/*SERR*/  0x2 &UIC1 0x0 0x4
--					/*TXDE*/  0x3 &UIC1 0x1 0x4
--					/*RXDE*/  0x4 &UIC1 0x2 0x4>;
--			interrupt-map-mask = <0xffffffff>;
--		};
--
--		POB0: opb {
--			compatible = "ibm,opb-405ex", "ibm,opb";
--			#address-cells = <1>;
--			#size-cells = <1>;
--			ranges = <0x80000000 0x80000000 0x10000000
--				  0xef600000 0xef600000 0x00a00000
--				  0xf0000000 0xf0000000 0x10000000>;
--			dcr-reg = <0x0a0 0x005>;
--			clock-frequency = <0>; /* Filled in by U-Boot */
--
--			EBC0: ebc {
--				compatible = "ibm,ebc-405ex", "ibm,ebc";
--				dcr-reg = <0x012 0x002>;
--				#address-cells = <2>;
--				#size-cells = <1>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				/* ranges property is supplied by U-Boot */
--				interrupts = <0x5 0x1>;
--				interrupt-parent = <&UIC1>;
--
--				nor_flash@0,0 {
--					compatible = "amd,s29gl512n", "cfi-flash";
--					bank-width = <2>;
--					reg = <0x00000000 0x00000000 0x08000000>;
--					#address-cells = <1>;
--					#size-cells = <1>;
--					partition@0 {
--						label = "kernel + initrd";
--						reg = <0x00000000 0x03de0000>;
--					};
--					partition@3de0000 {
--						label = "user config area";
--						reg = <0x03de0000 0x00080000>;
--					};
--					partition@3e60000 {
--						label = "user program area";
--						reg = <0x03e60000 0x04000000>;
--					};
--					partition@7e60000 {
--						label = "flat device tree";
--						reg = <0x07e60000 0x00080000>;
--					};
--					partition@7ee0000 {
--						label = "test program";
--						reg = <0x07ee0000 0x00080000>;
--					};
--					partition@7f60000 {
--						label = "u-boot env";
--						reg = <0x07f60000 0x00040000>;
--					};
--					partition@7fa0000 {
--						label = "u-boot";
--						reg = <0x07fa0000 0x00060000>;
--					};
--				};
--			};
--
--			UART0: serial@ef600200 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600200 0x00000008>;
--				virtual-reg = <0xef600200>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				current-speed = <0>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x1a 0x4>;
--			};
--
--			UART1: serial@ef600300 {
--				device_type = "serial";
--				compatible = "ns16550";
--				reg = <0xef600300 0x00000008>;
--				virtual-reg = <0xef600300>;
--				clock-frequency = <0>; /* Filled in by U-Boot */
--				current-speed = <0>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x1 0x4>;
--			};
--
--			IIC0: i2c@ef600400 {
--				compatible = "ibm,iic-405ex", "ibm,iic";
--				reg = <0xef600400 0x00000014>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x2 0x4>;
--				#address-cells = <1>;
--				#size-cells = <0>;
--
--				rtc@68 {
--					compatible = "dallas,ds1340";
--					reg = <0x68>;
--				};
--			};
--
--			IIC1: i2c@ef600500 {
--				compatible = "ibm,iic-405ex", "ibm,iic";
--				reg = <0xef600500 0x00000014>;
--				interrupt-parent = <&UIC0>;
--				interrupts = <0x7 0x4>;
--			};
--
--			RGMII0: emac-rgmii@ef600b00 {
--				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
--				reg = <0xef600b00 0x00000104>;
--				has-mdio;
--			};
--
--			EMAC0: ethernet@ef600900 {
--				linux,network-index = <0x0>;
--				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4sync";
--				interrupt-parent = <&EMAC0>;
--				interrupts = <0x0 0x1>;
--				#interrupt-cells = <1>;
--				#address-cells = <0>;
--				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC0 0x18 0x4
--						/*Wake*/  0x1 &UIC1 0x1d 0x4>;
--				reg = <0xef600900 0x000000c4>;
--				local-mac-address = [000000000000]; /* Filled in by U-Boot */
--				mal-device = <&MAL0>;
--				mal-tx-channel = <0>;
--				mal-rx-channel = <0>;
--				cell-index = <0>;
--				max-frame-size = <9000>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--				rx-fifo-size-gige = <16384>;
--				tx-fifo-size-gige = <16384>;
--				phy-mode = "rgmii";
--				phy-map = <0x00000000>;
--				rgmii-device = <&RGMII0>;
--				rgmii-channel = <0>;
--				has-inverted-stacr-oc;
--				has-new-stacr-staopc;
--			};
--
--			EMAC1: ethernet@ef600a00 {
--				linux,network-index = <0x1>;
--				device_type = "network";
--				compatible = "ibm,emac-405ex", "ibm,emac4sync";
--				interrupt-parent = <&EMAC1>;
--				interrupts = <0x0 0x1>;
--				#interrupt-cells = <1>;
--				#address-cells = <0>;
--				#size-cells = <0>;
--				interrupt-map = </*Status*/ 0x0 &UIC0 0x19 0x4
--						/*Wake*/  0x1 &UIC1 0x1f 0x4>;
--				reg = <0xef600a00 0x000000c4>;
--				local-mac-address = [000000000000]; /* Filled in by U-Boot */
--				mal-device = <&MAL0>;
--				mal-tx-channel = <1>;
--				mal-rx-channel = <1>;
--				cell-index = <1>;
--				max-frame-size = <9000>;
--				rx-fifo-size = <4096>;
--				tx-fifo-size = <2048>;
--				rx-fifo-size-gige = <16384>;
--				tx-fifo-size-gige = <16384>;
--				phy-mode = "rgmii";
--				phy-map = <0x00000000>;
--				rgmii-device = <&RGMII0>;
--				rgmii-channel = <1>;
--				has-inverted-stacr-oc;
--				has-new-stacr-staopc;
--			};
--
--			GPIO: gpio@ef600800 {
--				device_type = "gpio";
--				compatible = "ibm,gpio-405ex", "ibm,ppc4xx-gpio";
--				reg = <0xef600800 0x50>;
--			};
--		};
--	};
--        chosen {
--                stdout-path = "/plb/opb/serial@ef600200";
--        };
--};
-diff --git a/arch/powerpc/boot/ppcboot-hotfoot.h b/arch/powerpc/boot/ppcboot-hotfoot.h
-deleted file mode 100644
-index 4728db95f58a..000000000000
---- a/arch/powerpc/boot/ppcboot-hotfoot.h
-+++ /dev/null
-@@ -1,119 +0,0 @@
+@@ -1,280 +0,0 @@
 -/* SPDX-License-Identifier: GPL-2.0-or-later */
 -/*
-- * This interface is used for compatibility with old U-boots *ONLY*.
-- * Please do not imitate or extend this.
+- *  Copyright (C) 2001 Ben. Herrenschmidt (benh@kernel.crashing.org)
 - */
 -
--/* 
-- * Unfortunately, the ESTeem Hotfoot board uses a mangled version of 
-- * ppcboot.h for historical reasons, and in the interest of having a 
-- * mainline kernel boot on the production board+bootloader, this was the 
-- * least-offensive solution.  Please direct all flames to:
-- *
-- *  Solomon Peachy <solomon@linux-wlan.com>
-- *
-- * (This header is identical to ppcboot.h except for the 
-- *  TARGET_HOTFOOT bits)
-- */
--
--/*
-- * (C) Copyright 2000, 2001
-- * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
-- */
--
--#ifndef __PPCBOOT_H__
--#define __PPCBOOT_H__
--
--/*
-- * Board information passed to kernel from PPCBoot
-- *
-- * include/asm-ppc/ppcboot.h
-- */
--
--#include "types.h"
--
--typedef struct bd_info {
--	unsigned long	bi_memstart;	/* start of DRAM memory */
--	unsigned long	bi_memsize;	/* size	 of DRAM memory in bytes */
--	unsigned long	bi_flashstart;	/* start of FLASH memory */
--	unsigned long	bi_flashsize;	/* size	 of FLASH memory */
--	unsigned long	bi_flashoffset; /* reserved area for startup monitor */
--	unsigned long	bi_sramstart;	/* start of SRAM memory */
--	unsigned long	bi_sramsize;	/* size	 of SRAM memory */
--#if defined(TARGET_8xx) || defined(TARGET_CPM2) || defined(TARGET_85xx) ||\
--	defined(TARGET_83xx)
--	unsigned long	bi_immr_base;	/* base of IMMR register */
+-static struct cpu_spec cpu_specs[] __initdata = {
+-	{	/* STB 04xxx */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x41810000,
+-		.cpu_name		= "STB04xxx",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* NP405L */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x41610000,
+-		.cpu_name		= "NP405L",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* NP4GS3 */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x40B10000,
+-		.cpu_name		= "NP4GS3",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{   /* NP405H */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x41410000,
+-		.cpu_name		= "NP405H",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405GPr */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x50910000,
+-		.cpu_name		= "405GPr",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{   /* STBx25xx */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x51510000,
+-		.cpu_name		= "STBx25xx",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405LP */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x41F10000,
+-		.cpu_name		= "405LP",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EP */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x51210000,
+-		.cpu_name		= "405EP",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EX Rev. A/B with Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x12910007,
+-		.cpu_name		= "405EX Rev. A/B",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EX Rev. C without Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x1291000d,
+-		.cpu_name		= "405EX Rev. C",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EX Rev. C with Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x1291000f,
+-		.cpu_name		= "405EX Rev. C",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EX Rev. D without Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x12910003,
+-		.cpu_name		= "405EX Rev. D",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EX Rev. D with Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x12910005,
+-		.cpu_name		= "405EX Rev. D",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EXr Rev. A/B without Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x12910001,
+-		.cpu_name		= "405EXr Rev. A/B",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EXr Rev. C without Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x12910009,
+-		.cpu_name		= "405EXr Rev. C",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EXr Rev. C with Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x1291000b,
+-		.cpu_name		= "405EXr Rev. C",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EXr Rev. D without Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x12910000,
+-		.cpu_name		= "405EXr Rev. D",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* 405EXr Rev. D with Security */
+-		.pvr_mask		= 0xffff000f,
+-		.pvr_value		= 0x12910002,
+-		.cpu_name		= "405EXr Rev. D",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{
+-		/* 405EZ */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x41510000,
+-		.cpu_name		= "405EZ",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* APM8018X */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x7ff11432,
+-		.cpu_name		= "APM8018X",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	},
+-	{	/* default match */
+-		.pvr_mask		= 0x00000000,
+-		.pvr_value		= 0x00000000,
+-		.cpu_name		= "(generic 40x PPC)",
+-		.cpu_features		= CPU_FTRS_40X,
+-		.cpu_user_features	= PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU |
+-					  PPC_FEATURE_HAS_4xxMAC,
+-		.mmu_features		= MMU_FTR_TYPE_40x,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_4xx,
+-		.platform		= "ppc405",
+-	}
+-};
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 7eda33a24bb4..070eab8b6a28 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -158,9 +158,6 @@ syscall_exit_finish:
+ 1:	REST_GPR(2, r1)
+ 	REST_GPR(1, r1)
+ 	rfi
+-#ifdef CONFIG_40x
+-	b .	/* Prevent prefetch past rfi */
 -#endif
--#if defined(TARGET_PPC_MPC52xx)
--	unsigned long   bi_mbar_base;   /* base of internal registers */
--#endif
--	unsigned long	bi_bootflags;	/* boot / reboot flag (for LynxOS) */
--	unsigned long	bi_ip_addr;	/* IP Address */
--	unsigned char	bi_enetaddr[6];	/* Ethernet address */
--#if defined(TARGET_HOTFOOT)
--	/* second onboard ethernet port */
--	unsigned char	bi_enet1addr[6];
--#define HAVE_ENET1ADDR
--#endif /* TARGET_HOOTFOOT */
--	unsigned short	bi_ethspeed;	/* Ethernet speed in Mbps */
--	unsigned long	bi_intfreq;	/* Internal Freq, in MHz */
--	unsigned long	bi_busfreq;	/* Bus Freq, in MHz */
--#if defined(TARGET_CPM2)
--	unsigned long	bi_cpmfreq;	/* CPM_CLK Freq, in MHz */
--	unsigned long	bi_brgfreq;	/* BRG_CLK Freq, in MHz */
--	unsigned long	bi_sccfreq;	/* SCC_CLK Freq, in MHz */
--	unsigned long	bi_vco;		/* VCO Out from PLL, in MHz */
--#endif
--#if defined(TARGET_PPC_MPC52xx)
--	unsigned long   bi_ipbfreq;     /* IPB Bus Freq, in MHz */
--	unsigned long   bi_pcifreq;     /* PCI Bus Freq, in MHz */
--#endif
--	unsigned long	bi_baudrate;	/* Console Baudrate */
--#if defined(TARGET_4xx)
--	unsigned char	bi_s_version[4];	/* Version of this structure */
--	unsigned char	bi_r_version[32];	/* Version of the ROM (IBM) */
--	unsigned int	bi_procfreq;	/* CPU (Internal) Freq, in Hz */
--	unsigned int	bi_plb_busfreq;	/* PLB Bus speed, in Hz */
--	unsigned int	bi_pci_busfreq;	/* PCI Bus speed, in Hz */
--	unsigned char	bi_pci_enetaddr[6];	/* PCI Ethernet MAC address */
--#endif
--#if defined(TARGET_HOTFOOT)
--	unsigned int     bi_pllouta_freq;       /* PLL OUTA speed, in Hz */
--#endif
--#if defined(TARGET_HYMOD)
--	hymod_conf_t	bi_hymod_conf;	/* hymod configuration information */
--#endif
--#if defined(TARGET_EVB64260) || defined(TARGET_405EP) || defined(TARGET_44x) || \
--	defined(TARGET_85xx) ||	defined(TARGET_83xx) || defined(TARGET_HAS_ETH1)
--	/* second onboard ethernet port */
--	unsigned char	bi_enet1addr[6];
--#define HAVE_ENET1ADDR
--#endif
--#if defined(TARGET_EVB64260) || defined(TARGET_440GX) || \
--    defined(TARGET_85xx) || defined(TARGET_HAS_ETH2)
--	/* third onboard ethernet ports */
--	unsigned char	bi_enet2addr[6];
--#define HAVE_ENET2ADDR
--#endif
--#if defined(TARGET_440GX) || defined(TARGET_HAS_ETH3)
--	/* fourth onboard ethernet ports */
--	unsigned char	bi_enet3addr[6];
--#define HAVE_ENET3ADDR
--#endif
--#if defined(TARGET_HOTFOOT)
--        int             bi_phynum[2];           /* Determines phy mapping */
--        int             bi_phymode[2];          /* Determines phy mode */
--#endif
--#if defined(TARGET_4xx)
--	unsigned int	bi_opbfreq;		/* OB clock in Hz */
--	int		bi_iic_fast[2];		/* Use fast i2c mode */
--#endif
--#if defined(TARGET_440GX)
--	int		bi_phynum[4];		/* phy mapping */
--	int		bi_phymode[4];		/* phy mode */
--#endif
--} bd_t;
--
--#define bi_tbfreq	bi_intfreq
--
--#endif	/* __PPCBOOT_H__ */
-diff --git a/arch/powerpc/boot/ppcboot.h b/arch/powerpc/boot/ppcboot.h
-index a78b0b257698..90c8f452fe6e 100644
---- a/arch/powerpc/boot/ppcboot.h
-+++ b/arch/powerpc/boot/ppcboot.h
-@@ -63,7 +63,7 @@ typedef struct bd_info {
- #if defined(TARGET_HYMOD)
- 	hymod_conf_t	bi_hymod_conf;	/* hymod configuration information */
- #endif
--#if defined(TARGET_EVB64260) || defined(TARGET_405EP) || defined(TARGET_44x) || \
-+#if defined(TARGET_EVB64260) || defined(TARGET_44x) || \
- 	defined(TARGET_85xx) ||	defined(TARGET_83xx) || defined(TARGET_HAS_ETH1)
- 	/* second onboard ethernet port */
- 	unsigned char	bi_enet1addr[6];
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 352d7de24018..585c4ea27ab9 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -468,26 +468,6 @@ uboot)
-     fi
-     exit 0
-     ;;
--uboot-obs600)
--    rm -f "$ofile"
--    # obs600 wants a multi image with an initrd, so we need to put a fake
--    # one in even when building a "normal" image.
--    if [ -n "$initrd" ]; then
--	real_rd="$initrd"
--    else
--	real_rd=`mktemp`
--	echo "\0" >>"$real_rd"
--    fi
--    ${MKIMAGE} -A ppc -O linux -T multi -C gzip -a $membase -e $membase \
--	$uboot_version -d "$vmz":"$real_rd":"$dtb" "$ofile"
--    if [ -z "$initrd" ]; then
--	rm -f "$real_rd"
--    fi
--    if [ -z "$cacheit" ]; then
--	rm -f "$vmz"
--    fi
--    exit 0
--    ;;
- esac
  
- addsec() {
+ 3:	mtcr	r5
+ 	lwz	r4,_CTR(r1)
+@@ -237,9 +234,6 @@ fast_exception_return:
+ 	REST_GPR(12, r11)
+ 	REST_GPR(11, r11)
+ 	rfi
+-#ifdef CONFIG_40x
+-	b .	/* Prevent prefetch past rfi */
+-#endif
+ _ASM_NOKPROBE_SYMBOL(fast_exception_return)
+ 
+ /* aargh, a nonrecoverable interrupt, panic */
+@@ -296,9 +290,6 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 	REST_GPR(0, r1)
+ 	REST_GPR(1, r1)
+ 	rfi
+-#ifdef CONFIG_40x
+-	b .	/* Prevent prefetch past rfi */
+-#endif
+ 
+ .Lrestore_nvgprs:
+ 	REST_NVGPRS(r1)
+@@ -346,9 +337,6 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 	REST_GPR(0, r1)
+ 	REST_GPR(1, r1)
+ 	rfi
+-#ifdef CONFIG_40x
+-	b .	/* Prevent prefetch past rfi */
+-#endif
+ 
+ 1:	/*
+ 	 * Emulate stack store with update. New r1 value was already calculated
+@@ -375,9 +363,6 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 	mfspr	r9, SPRN_SPRG_SCRATCH0
+ #endif
+ 	rfi
+-#ifdef CONFIG_40x
+-	b .	/* Prevent prefetch past rfi */
+-#endif
+ _ASM_NOKPROBE_SYMBOL(interrupt_return)
+ 
+ #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+@@ -395,17 +380,6 @@ _ASM_NOKPROBE_SYMBOL(interrupt_return)
+  * time of the critical interrupt.
+  *
+  */
+-#ifdef CONFIG_40x
+-#define PPC_40x_TURN_OFF_MSR_DR						    \
+-	/* avoid any possible TLB misses here by turning off MSR.DR, we	    \
+-	 * assume the instructions here are mapped by a pinned TLB entry */ \
+-	li	r10,MSR_IR;						    \
+-	mtmsr	r10;							    \
+-	isync;								    \
+-	tophys(r1, r1);
+-#else
+-#define PPC_40x_TURN_OFF_MSR_DR
+-#endif
+ 
+ #define RET_FROM_EXC_LEVEL(exc_lvl_srr0, exc_lvl_srr1, exc_lvl_rfi)	\
+ 	REST_NVGPRS(r1);						\
+@@ -423,7 +397,6 @@ _ASM_NOKPROBE_SYMBOL(interrupt_return)
+ 	mtlr	r11;							\
+ 	lwz	r10,_CCR(r1);						\
+ 	mtcrf	0xff,r10;						\
+-	PPC_40x_TURN_OFF_MSR_DR;					\
+ 	lwz	r9,_DEAR(r1);						\
+ 	lwz	r10,_ESR(r1);						\
+ 	mtspr	SPRN_DEAR,r9;						\
+@@ -471,19 +444,6 @@ _ASM_NOKPROBE_SYMBOL(interrupt_return)
+ #define RESTORE_MMU_REGS
+ #endif
+ 
+-#ifdef CONFIG_40x
+-	.globl	ret_from_crit_exc
+-ret_from_crit_exc:
+-	lis	r9,crit_srr0@ha;
+-	lwz	r9,crit_srr0@l(r9);
+-	lis	r10,crit_srr1@ha;
+-	lwz	r10,crit_srr1@l(r10);
+-	mtspr	SPRN_SRR0,r9;
+-	mtspr	SPRN_SRR1,r10;
+-	RET_FROM_EXC_LEVEL(SPRN_CSRR0, SPRN_CSRR1, PPC_RFCI)
+-_ASM_NOKPROBE_SYMBOL(ret_from_crit_exc)
+-#endif /* CONFIG_40x */
+-
+ #ifdef CONFIG_BOOKE
+ 	.globl	ret_from_crit_exc
+ ret_from_crit_exc:
+diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
+index f8e2911478a7..9cba7dbf58dd 100644
+--- a/arch/powerpc/kernel/head_32.h
++++ b/arch/powerpc/kernel/head_32.h
+@@ -21,17 +21,9 @@
+ 	mtspr	SPRN_SPRG_SCRATCH1,r11
+ 	mfspr	r10, SPRN_SPRG_THREAD
+ 	.if	\handle_dar_dsisr
+-#ifdef CONFIG_40x
+-	mfspr	r11, SPRN_DEAR
+-#else
+ 	mfspr	r11, SPRN_DAR
+-#endif
+ 	stw	r11, DAR(r10)
+-#ifdef CONFIG_40x
+-	mfspr	r11, SPRN_ESR
+-#else
+ 	mfspr	r11, SPRN_DSISR
+-#endif
+ 	stw	r11, DSISR(r10)
+ 	.endif
+ 	mfspr	r11, SPRN_SRR0
+@@ -96,9 +88,7 @@
+ 	.endif
+ 	lwz	r9, SRR1(r12)
+ 	lwz	r12, SRR0(r12)
+-#ifdef CONFIG_40x
+-	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?) */
+-#elif defined(CONFIG_PPC_8xx)
++#ifdef CONFIG_PPC_8xx
+ 	mtspr	SPRN_EID, r2		/* Set MSR_RI */
+ #else
+ 	li	r10, MSR_KERNEL		/* can take exceptions */
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+deleted file mode 100644
+index 9fc90410b385..000000000000
+--- a/arch/powerpc/kernel/head_40x.S
++++ /dev/null
+@@ -1,721 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
+-/*
+- *    Copyright (c) 1995-1996 Gary Thomas <gdt@linuxppc.org>
+- *      Initial PowerPC version.
+- *    Copyright (c) 1996 Cort Dougan <cort@cs.nmt.edu>
+- *      Rewritten for PReP
+- *    Copyright (c) 1996 Paul Mackerras <paulus@cs.anu.edu.au>
+- *      Low-level exception handers, MMU support, and rewrite.
+- *    Copyright (c) 1997 Dan Malek <dmalek@jlc.net>
+- *      PowerPC 8xx modifications.
+- *    Copyright (c) 1998-1999 TiVo, Inc.
+- *      PowerPC 403GCX modifications.
+- *    Copyright (c) 1999 Grant Erickson <grant@lcse.umn.edu>
+- *      PowerPC 403GCX/405GP modifications.
+- *    Copyright 2000 MontaVista Software Inc.
+- *	PPC405 modifications
+- *      PowerPC 403GCX/405GP modifications.
+- * 	Author: MontaVista Software, Inc.
+- *         	frank_rowand@mvista.com or source@mvista.com
+- * 	   	debbie_chu@mvista.com
+- *
+- *    Module name: head_4xx.S
+- *
+- *    Description:
+- *      Kernel execution entry point code.
+- */
+-
+-#include <linux/init.h>
+-#include <linux/pgtable.h>
+-#include <linux/sizes.h>
+-#include <linux/linkage.h>
+-
+-#include <asm/processor.h>
+-#include <asm/page.h>
+-#include <asm/mmu.h>
+-#include <asm/cputable.h>
+-#include <asm/thread_info.h>
+-#include <asm/ppc_asm.h>
+-#include <asm/asm-offsets.h>
+-#include <asm/ptrace.h>
+-
+-#include "head_32.h"
+-
+-/* As with the other PowerPC ports, it is expected that when code
+- * execution begins here, the following registers contain valid, yet
+- * optional, information:
+- *
+- *   r3 - Board info structure pointer (DRAM, frequency, MAC address, etc.)
+- *   r4 - Starting address of the init RAM disk
+- *   r5 - Ending address of the init RAM disk
+- *   r6 - Start of kernel command line string (e.g. "mem=96m")
+- *   r7 - End of kernel command line string
+- *
+- * This is all going to change RSN when we add bi_recs.......  -- Dan
+- */
+-	__HEAD
+-_GLOBAL(_stext);
+-_GLOBAL(_start);
+-
+-	mr	r31,r3			/* save device tree ptr */
+-
+-	/* We have to turn on the MMU right away so we get cache modes
+-	 * set correctly.
+-	 */
+-	bl	initial_mmu
+-
+-/* We now have the lower 16 Meg mapped into TLB entries, and the caches
+- * ready to work.
+- */
+-turn_on_mmu:
+-	lis	r0,MSR_KERNEL@h
+-	ori	r0,r0,MSR_KERNEL@l
+-	mtspr	SPRN_SRR1,r0
+-	lis	r0,start_here@h
+-	ori	r0,r0,start_here@l
+-	mtspr	SPRN_SRR0,r0
+-	rfi				/* enables MMU */
+-	b	.			/* prevent prefetch past rfi */
+-
+-/*
+- * This area is used for temporarily saving registers during the
+- * critical exception prolog.
+- */
+-	. = 0xc0
+-crit_save:
+-_GLOBAL(crit_r10)
+-	.space	4
+-_GLOBAL(crit_r11)
+-	.space	4
+-_GLOBAL(crit_srr0)
+-	.space	4
+-_GLOBAL(crit_srr1)
+-	.space	4
+-_GLOBAL(crit_r1)
+-	.space	4
+-_GLOBAL(crit_dear)
+-	.space	4
+-_GLOBAL(crit_esr)
+-	.space	4
+-
+-/*
+- * Exception prolog for critical exceptions.  This is a little different
+- * from the normal exception prolog above since a critical exception
+- * can potentially occur at any point during normal exception processing.
+- * Thus we cannot use the same SPRG registers as the normal prolog above.
+- * Instead we use a couple of words of memory at low physical addresses.
+- * This is OK since we don't support SMP on these processors.
+- */
+-.macro CRITICAL_EXCEPTION_PROLOG trapno name
+-	stw	r10,crit_r10@l(0)	/* save two registers to work with */
+-	stw	r11,crit_r11@l(0)
+-	mfspr	r10,SPRN_SRR0
+-	mfspr	r11,SPRN_SRR1
+-	stw	r10,crit_srr0@l(0)
+-	stw	r11,crit_srr1@l(0)
+-	mfspr	r10,SPRN_DEAR
+-	mfspr	r11,SPRN_ESR
+-	stw	r10,crit_dear@l(0)
+-	stw	r11,crit_esr@l(0)
+-	mfcr	r10			/* save CR in r10 for now	   */
+-	mfspr	r11,SPRN_SRR3		/* check whether user or kernel    */
+-	andi.	r11,r11,MSR_PR
+-	lis	r11,(critirq_ctx-PAGE_OFFSET)@ha
+-	lwz	r11,(critirq_ctx-PAGE_OFFSET)@l(r11)
+-	beq	1f
+-	/* COMING FROM USER MODE */
+-	mfspr	r11,SPRN_SPRG_THREAD	/* if from user, start at top of   */
+-	lwz	r11,TASK_STACK-THREAD(r11) /* this thread's kernel stack */
+-1:	stw	r1,crit_r1@l(0)
+-	addi	r1,r11,THREAD_SIZE-INT_FRAME_SIZE /* Alloc an excpt frm  */
+-	LOAD_REG_IMMEDIATE(r11, MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)) /* re-enable MMU */
+-	mtspr	SPRN_SRR1, r11
+-	lis	r11, 1f@h
+-	ori	r11, r11, 1f@l
+-	mtspr	SPRN_SRR0, r11
+-	rfi
+-
+-	.text
+-1:
+-\name\()_virt:
+-	lwz	r11,crit_r1@l(0)
+-	stw	r11,GPR1(r1)
+-	stw	r11,0(r1)
+-	mr	r11,r1
+-	stw	r10,_CCR(r11)		/* save various registers	   */
+-	stw	r12,GPR12(r11)
+-	stw	r9,GPR9(r11)
+-	mflr	r10
+-	stw	r10,_LINK(r11)
+-	lis	r9,PAGE_OFFSET@ha
+-	lwz	r10,crit_r10@l(r9)
+-	lwz	r12,crit_r11@l(r9)
+-	stw	r10,GPR10(r11)
+-	stw	r12,GPR11(r11)
+-	lwz	r12,crit_dear@l(r9)
+-	lwz	r9,crit_esr@l(r9)
+-	stw	r12,_DEAR(r11)		/* since they may have had stuff   */
+-	stw	r9,_ESR(r11)		/* exception was taken		   */
+-	mfspr	r12,SPRN_SRR2
+-	mfspr	r9,SPRN_SRR3
+-	rlwinm	r9,r9,0,14,12		/* clear MSR_WE (necessary?)	   */
+-	COMMON_EXCEPTION_PROLOG_END \trapno + 2
+-_ASM_NOKPROBE_SYMBOL(\name\()_virt)
+-.endm
+-
+-	/*
+-	 * State at this point:
+-	 * r9 saved in stack frame, now saved SRR3 & ~MSR_WE
+-	 * r10 saved in crit_r10 and in stack frame, trashed
+-	 * r11 saved in crit_r11 and in stack frame,
+-	 *	now phys stack/exception frame pointer
+-	 * r12 saved in stack frame, now saved SRR2
+-	 * CR saved in stack frame, CR0.EQ = !SRR3.PR
+-	 * LR, DEAR, ESR in stack frame
+-	 * r1 saved in stack frame, now virt stack/excframe pointer
+-	 * r0, r3-r8 saved in stack frame
+-	 */
+-
+-/*
+- * Exception vectors.
+- */
+-#define CRITICAL_EXCEPTION(n, label, hdlr)			\
+-	START_EXCEPTION(n, label);				\
+-	CRITICAL_EXCEPTION_PROLOG n label;				\
+-	prepare_transfer_to_handler;				\
+-	bl	hdlr;						\
+-	b	ret_from_crit_exc
+-
+-/*
+- * 0x0100 - Critical Interrupt Exception
+- */
+-	CRITICAL_EXCEPTION(0x0100, CriticalInterrupt, unknown_exception)
+-
+-/*
+- * 0x0200 - Machine Check Exception
+- */
+-	CRITICAL_EXCEPTION(0x0200, MachineCheck, machine_check_exception)
+-
+-/*
+- * 0x0300 - Data Storage Exception
+- * This happens for just a few reasons.  U0 set (but we don't do that),
+- * or zone protection fault (user violation, write to protected page).
+- * The other Data TLB exceptions bail out to this point
+- * if they can't resolve the lightweight TLB fault.
+- */
+-	START_EXCEPTION(0x0300,	DataStorage)
+-	EXCEPTION_PROLOG 0x300 DataStorage handle_dar_dsisr=1
+-	prepare_transfer_to_handler
+-	bl	do_page_fault
+-	b	interrupt_return
+-
+-/*
+- * 0x0400 - Instruction Storage Exception
+- * This is caused by a fetch from non-execute or guarded pages.
+- */
+-	START_EXCEPTION(0x0400, InstructionAccess)
+-	EXCEPTION_PROLOG 0x400 InstructionAccess
+-	li	r5,0
+-	stw	r5, _ESR(r11)		/* Zero ESR */
+-	stw	r12, _DEAR(r11)		/* SRR0 as DEAR */
+-	prepare_transfer_to_handler
+-	bl	do_page_fault
+-	b	interrupt_return
+-
+-/* 0x0500 - External Interrupt Exception */
+-	EXCEPTION(0x0500, HardwareInterrupt, do_IRQ)
+-
+-/* 0x0600 - Alignment Exception */
+-	START_EXCEPTION(0x0600, Alignment)
+-	EXCEPTION_PROLOG 0x600 Alignment handle_dar_dsisr=1
+-	prepare_transfer_to_handler
+-	bl	alignment_exception
+-	REST_NVGPRS(r1)
+-	b	interrupt_return
+-
+-/* 0x0700 - Program Exception */
+-	START_EXCEPTION(0x0700, ProgramCheck)
+-	EXCEPTION_PROLOG 0x700 ProgramCheck handle_dar_dsisr=1
+-	prepare_transfer_to_handler
+-	bl	program_check_exception
+-	REST_NVGPRS(r1)
+-	b	interrupt_return
+-
+-	EXCEPTION(0x0800, Trap_08, unknown_exception)
+-	EXCEPTION(0x0900, Trap_09, unknown_exception)
+-	EXCEPTION(0x0A00, Trap_0A, unknown_exception)
+-	EXCEPTION(0x0B00, Trap_0B, unknown_exception)
+-
+-/* 0x0C00 - System Call Exception */
+-	START_EXCEPTION(0x0C00,	SystemCall)
+-	SYSCALL_ENTRY	0xc00
+-/*	Trap_0D is commented out to get more space for system call exception */
+-
+-/*	EXCEPTION(0x0D00, Trap_0D, unknown_exception) */
+-	EXCEPTION(0x0E00, Trap_0E, unknown_exception)
+-	EXCEPTION(0x0F00, Trap_0F, unknown_exception)
+-
+-/* 0x1000 - Programmable Interval Timer (PIT) Exception */
+-	START_EXCEPTION(0x1000, DecrementerTrap)
+-	b Decrementer
+-
+-/* 0x1010 - Fixed Interval Timer (FIT) Exception */
+-	START_EXCEPTION(0x1010, FITExceptionTrap)
+-	b FITException
+-
+-/* 0x1020 - Watchdog Timer (WDT) Exception */
+-	START_EXCEPTION(0x1020, WDTExceptionTrap)
+-	b WDTException
+-
+-/* 0x1100 - Data TLB Miss Exception
+- * As the name implies, translation is not in the MMU, so search the
+- * page tables and fix it.  The only purpose of this function is to
+- * load TLB entries from the page table if they exist.
+- */
+-	START_EXCEPTION(0x1100,	DTLBMiss)
+-	mtspr	SPRN_SPRG_SCRATCH5, r10 /* Save some working registers */
+-	mtspr	SPRN_SPRG_SCRATCH6, r11
+-	mtspr	SPRN_SPRG_SCRATCH3, r12
+-	mtspr	SPRN_SPRG_SCRATCH4, r9
+-	mfcr	r12
+-	mfspr	r9, SPRN_PID
+-	rlwimi	r12, r9, 0, 0xff
+-	mfspr	r10, SPRN_DEAR		/* Get faulting address */
+-
+-	/* If we are faulting a kernel address, we have to use the
+-	 * kernel page tables.
+-	 */
+-	lis	r11, PAGE_OFFSET@h
+-	cmplw	r10, r11
+-	blt+	3f
+-	lis	r11, swapper_pg_dir@h
+-	ori	r11, r11, swapper_pg_dir@l
+-	li	r9, 0
+-	mtspr	SPRN_PID, r9		/* TLB will have 0 TID */
+-	b	4f
+-
+-	/* Get the PGD for the current thread.
+-	 */
+-3:
+-	mfspr	r11,SPRN_SPRG_THREAD
+-	lwz	r11,PGDIR(r11)
+-#ifdef CONFIG_PPC_KUAP
+-	rlwinm.	r9, r9, 0, 0xff
+-	beq	5f			/* Kuap fault */
+-#endif
+-4:
+-	tophys(r11, r11)
+-	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
+-	lwz	r11, 0(r11)		/* Get L1 entry */
+-	andi.	r9, r11, _PMD_PRESENT	/* Check if it points to a PTE page */
+-	beq	2f			/* Bail if no table */
+-
+-	rlwimi	r11, r10, 22, 20, 29	/* Compute PTE address */
+-	lwz	r11, 0(r11)		/* Get Linux PTE */
+-	li	r9, _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_READ
+-	andc.	r9, r9, r11		/* Check permission */
+-	bne	5f
+-
+-	rlwinm	r9, r11, 1, _PAGE_WRITE	/* dirty => w */
+-	and	r9, r9, r11		/* hwwrite = dirty & w */
+-	rlwimi	r11, r9, 0, _PAGE_WRITE	/* replace w by hwwrite */
+-
+-	/* Create TLB tag.  This is the faulting address plus a static
+-	 * set of bits.  These are size, valid, E, U0.
+-	*/
+-	li	r9, 0x00c0
+-	rlwimi	r10, r9, 0, 20, 31
+-
+-	b	finish_tlb_load
+-
+-2:	/* Check for possible large-page pmd entry */
+-	rlwinm.	r9, r11, 2, 22, 24
+-	beq	5f
+-
+-	/* Create TLB tag.  This is the faulting address, plus a static
+-	 * set of bits (valid, E, U0) plus the size from the PMD.
+-	 */
+-	ori	r9, r9, 0x40
+-	rlwimi	r10, r9, 0, 20, 31
+-
+-	b	finish_tlb_load
+-
+-5:
+-	/* The bailout.  Restore registers to pre-exception conditions
+-	 * and call the heavyweights to help us out.
+-	 */
+-	mtspr	SPRN_PID, r12
+-	mtcrf	0x80, r12
+-	mfspr	r9, SPRN_SPRG_SCRATCH4
+-	mfspr	r12, SPRN_SPRG_SCRATCH3
+-	mfspr	r11, SPRN_SPRG_SCRATCH6
+-	mfspr	r10, SPRN_SPRG_SCRATCH5
+-	b	DataStorage
+-
+-/* 0x1200 - Instruction TLB Miss Exception
+- * Nearly the same as above, except we get our information from different
+- * registers and bailout to a different point.
+- */
+-	START_EXCEPTION(0x1200,	ITLBMiss)
+-	mtspr	SPRN_SPRG_SCRATCH5, r10	 /* Save some working registers */
+-	mtspr	SPRN_SPRG_SCRATCH6, r11
+-	mtspr	SPRN_SPRG_SCRATCH3, r12
+-	mtspr	SPRN_SPRG_SCRATCH4, r9
+-	mfcr	r12
+-	mfspr	r9, SPRN_PID
+-	rlwimi	r12, r9, 0, 0xff
+-	mfspr	r10, SPRN_SRR0		/* Get faulting address */
+-
+-	/* If we are faulting a kernel address, we have to use the
+-	 * kernel page tables.
+-	 */
+-	lis	r11, PAGE_OFFSET@h
+-	cmplw	r10, r11
+-	blt+	3f
+-	lis	r11, swapper_pg_dir@h
+-	ori	r11, r11, swapper_pg_dir@l
+-	li	r9, 0
+-	mtspr	SPRN_PID, r9		/* TLB will have 0 TID */
+-	b	4f
+-
+-	/* Get the PGD for the current thread.
+-	 */
+-3:
+-	mfspr	r11,SPRN_SPRG_THREAD
+-	lwz	r11,PGDIR(r11)
+-#ifdef CONFIG_PPC_KUAP
+-	rlwinm.	r9, r9, 0, 0xff
+-	beq	5f			/* Kuap fault */
+-#endif
+-4:
+-	tophys(r11, r11)
+-	rlwimi	r11, r10, 12, 20, 29	/* Create L1 (pgdir/pmd) address */
+-	lwz	r11, 0(r11)		/* Get L1 entry */
+-	andi.	r9, r11, _PMD_PRESENT	/* Check if it points to a PTE page */
+-	beq	2f			/* Bail if no table */
+-
+-	rlwimi	r11, r10, 22, 20, 29	/* Compute PTE address */
+-	lwz	r11, 0(r11)		/* Get Linux PTE */
+-	li	r9, _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_EXEC
+-	andc.	r9, r9, r11		/* Check permission */
+-	bne	5f
+-
+-	rlwinm	r9, r11, 1, _PAGE_WRITE	/* dirty => w */
+-	and	r9, r9, r11		/* hwwrite = dirty & w */
+-	rlwimi	r11, r9, 0, _PAGE_WRITE	/* replace w by hwwrite */
+-
+-	/* Create TLB tag.  This is the faulting address plus a static
+-	 * set of bits.  These are size, valid, E, U0.
+-	*/
+-	li	r9, 0x00c0
+-	rlwimi	r10, r9, 0, 20, 31
+-
+-	b	finish_tlb_load
+-
+-2:	/* Check for possible large-page pmd entry */
+-	rlwinm.	r9, r11, 2, 22, 24
+-	beq	5f
+-
+-	/* Create TLB tag.  This is the faulting address, plus a static
+-	 * set of bits (valid, E, U0) plus the size from the PMD.
+-	 */
+-	ori	r9, r9, 0x40
+-	rlwimi	r10, r9, 0, 20, 31
+-
+-	b	finish_tlb_load
+-
+-5:
+-	/* The bailout.  Restore registers to pre-exception conditions
+-	 * and call the heavyweights to help us out.
+-	 */
+-	mtspr	SPRN_PID, r12
+-	mtcrf	0x80, r12
+-	mfspr	r9, SPRN_SPRG_SCRATCH4
+-	mfspr	r12, SPRN_SPRG_SCRATCH3
+-	mfspr	r11, SPRN_SPRG_SCRATCH6
+-	mfspr	r10, SPRN_SPRG_SCRATCH5
+-	b	InstructionAccess
+-
+-	EXCEPTION(0x1300, Trap_13, unknown_exception)
+-	EXCEPTION(0x1400, Trap_14, unknown_exception)
+-	EXCEPTION(0x1500, Trap_15, unknown_exception)
+-	EXCEPTION(0x1600, Trap_16, unknown_exception)
+-	EXCEPTION(0x1700, Trap_17, unknown_exception)
+-	EXCEPTION(0x1800, Trap_18, unknown_exception)
+-	EXCEPTION(0x1900, Trap_19, unknown_exception)
+-	EXCEPTION(0x1A00, Trap_1A, unknown_exception)
+-	EXCEPTION(0x1B00, Trap_1B, unknown_exception)
+-	EXCEPTION(0x1C00, Trap_1C, unknown_exception)
+-	EXCEPTION(0x1D00, Trap_1D, unknown_exception)
+-	EXCEPTION(0x1E00, Trap_1E, unknown_exception)
+-	EXCEPTION(0x1F00, Trap_1F, unknown_exception)
+-
+-/* Check for a single step debug exception while in an exception
+- * handler before state has been saved.  This is to catch the case
+- * where an instruction that we are trying to single step causes
+- * an exception (eg ITLB/DTLB miss) and thus the first instruction of
+- * the exception handler generates a single step debug exception.
+- *
+- * If we get a debug trap on the first instruction of an exception handler,
+- * we reset the MSR_DE in the _exception handler's_ MSR (the debug trap is
+- * a critical exception, so we are using SPRN_CSRR1 to manipulate the MSR).
+- * The exception handler was handling a non-critical interrupt, so it will
+- * save (and later restore) the MSR via SPRN_SRR1, which will still have
+- * the MSR_DE bit set.
+- */
+-	/* 0x2000 - Debug Exception */
+-	START_EXCEPTION(0x2000, DebugTrap)
+-	CRITICAL_EXCEPTION_PROLOG 0x2000 DebugTrap
+-
+-	/*
+-	 * If this is a single step or branch-taken exception in an
+-	 * exception entry sequence, it was probably meant to apply to
+-	 * the code where the exception occurred (since exception entry
+-	 * doesn't turn off DE automatically).  We simulate the effect
+-	 * of turning off DE on entry to an exception handler by turning
+-	 * off DE in the SRR3 value and clearing the debug status.
+-	 */
+-	mfspr	r10,SPRN_DBSR		/* check single-step/branch taken */
+-	andis.	r10,r10,DBSR_IC@h
+-	beq+	2f
+-
+-	andi.	r10,r9,MSR_IR|MSR_PR	/* check supervisor + MMU off */
+-	beq	1f			/* branch and fix it up */
+-
+-	mfspr   r10,SPRN_SRR2		/* Faulting instruction address */
+-	cmplwi  r10,0x2100
+-	bgt+    2f			/* address above exception vectors */
+-
+-	/* here it looks like we got an inappropriate debug exception. */
+-1:	rlwinm	r9,r9,0,~MSR_DE		/* clear DE in the SRR3 value */
+-	lis	r10,DBSR_IC@h		/* clear the IC event */
+-	mtspr	SPRN_DBSR,r10
+-	/* restore state and get out */
+-	lwz	r10,_CCR(r11)
+-	lwz	r0,GPR0(r11)
+-	lwz	r1,GPR1(r11)
+-	mtcrf	0x80,r10
+-	mtspr	SPRN_SRR2,r12
+-	mtspr	SPRN_SRR3,r9
+-	lwz	r9,GPR9(r11)
+-	lwz	r12,GPR12(r11)
+-	lwz	r10,crit_r10@l(0)
+-	lwz	r11,crit_r11@l(0)
+-	rfci
+-	b	.
+-
+-	/* continue normal handling for a critical exception... */
+-2:	mfspr	r4,SPRN_DBSR
+-	stw	r4,_ESR(r11)		/* DebugException takes DBSR in _ESR */
+-	prepare_transfer_to_handler
+-	bl	DebugException
+-	b	ret_from_crit_exc
+-
+-	/* Programmable Interval Timer (PIT) Exception. (from 0x1000) */
+-	__HEAD
+-Decrementer:
+-	EXCEPTION_PROLOG 0x1000 Decrementer
+-	lis	r0,TSR_PIS@h
+-	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
+-	prepare_transfer_to_handler
+-	bl	timer_interrupt
+-	b	interrupt_return
+-
+-	/* Fixed Interval Timer (FIT) Exception. (from 0x1010) */
+-	__HEAD
+-FITException:
+-	EXCEPTION_PROLOG 0x1010 FITException
+-	prepare_transfer_to_handler
+-	bl	unknown_exception
+-	b	interrupt_return
+-
+-	/* Watchdog Timer (WDT) Exception. (from 0x1020) */
+-	__HEAD
+-WDTException:
+-	CRITICAL_EXCEPTION_PROLOG 0x1020 WDTException
+-	prepare_transfer_to_handler
+-	bl	WatchdogException
+-	b	ret_from_crit_exc
+-
+-/* Other PowerPC processors, namely those derived from the 6xx-series
+- * have vectors from 0x2100 through 0x2F00 defined, but marked as reserved.
+- * However, for the 4xx-series processors these are neither defined nor
+- * reserved.
+- */
+-
+-	__HEAD
+-	/* Damn, I came up one instruction too many to fit into the
+-	 * exception space :-).  Both the instruction and data TLB
+-	 * miss get to this point to load the TLB.
+-	 * 	r10 - TLB_TAG value
+-	 * 	r11 - Linux PTE
+-	 *	r9 - available to use
+-	 *	PID - loaded with proper value when we get here
+-	 *	Upon exit, we reload everything and RFI.
+-	 * Actually, it will fit now, but oh well.....a common place
+-	 * to load the TLB.
+-	 */
+-tlb_4xx_index:
+-	.long	0
+-finish_tlb_load:
+-	/*
+-	 * Clear out the software-only bits in the PTE to generate the
+-	 * TLB_DATA value.  These are the bottom 2 bits of the RPM, the
+-	 * 4 bits of the zone field, and M.
+-	 */
+-	li	r9, 0x0cf2
+-	andc	r11, r11, r9
+-	rlwimi	r11, r10, 8, 24, 27	/* Copy 4 upper address bit into zone */
+-
+-	/* load the next available TLB index. */
+-	lwz	r9, tlb_4xx_index@l(0)
+-	addi	r9, r9, 1
+-	andi.	r9, r9, PPC40X_TLB_SIZE - 1
+-	stw	r9, tlb_4xx_index@l(0)
+-
+-	tlbwe	r11, r9, TLB_DATA		/* Load TLB LO */
+-	tlbwe	r10, r9, TLB_TAG		/* Load TLB HI */
+-
+-	/* Done...restore registers and get out of here.
+-	*/
+-	mtspr	SPRN_PID, r12
+-	mtcrf	0x80, r12
+-	mfspr	r9, SPRN_SPRG_SCRATCH4
+-	mfspr	r12, SPRN_SPRG_SCRATCH3
+-	mfspr	r11, SPRN_SPRG_SCRATCH6
+-	mfspr	r10, SPRN_SPRG_SCRATCH5
+-	rfi			/* Should sync shadow TLBs */
+-	b	.		/* prevent prefetch past rfi */
+-
+-/* This is where the main kernel code starts.
+- */
+-start_here:
+-
+-	/* ptr to current */
+-	lis	r2,init_task@h
+-	ori	r2,r2,init_task@l
+-
+-	/* ptr to phys current thread */
+-	tophys(r4,r2)
+-	addi	r4,r4,THREAD	/* init task's THREAD */
+-	mtspr	SPRN_SPRG_THREAD,r4
+-
+-	/* stack */
+-	lis	r1,init_thread_union@ha
+-	addi	r1,r1,init_thread_union@l
+-	li	r0,0
+-	stwu	r0,THREAD_SIZE-STACK_FRAME_MIN_SIZE(r1)
+-
+-	bl	early_init	/* We have to do this with MMU on */
+-
+-/*
+- * Decide what sort of machine this is and initialize the MMU.
+- */
+-#ifdef CONFIG_KASAN
+-	bl	kasan_early_init
+-#endif
+-	li	r3,0
+-	mr	r4,r31
+-	bl	machine_init
+-	bl	MMU_init
+-
+-/* Go back to running unmapped so we can load up new values
+- * and change to using our exception vectors.
+- * On the 4xx, all we have to do is invalidate the TLB to clear
+- * the old 16M byte TLB mappings.
+- */
+-	lis	r4,2f@h
+-	ori	r4,r4,2f@l
+-	tophys(r4,r4)
+-	lis	r3,(MSR_KERNEL & ~(MSR_IR|MSR_DR))@h
+-	ori	r3,r3,(MSR_KERNEL & ~(MSR_IR|MSR_DR))@l
+-	mtspr	SPRN_SRR0,r4
+-	mtspr	SPRN_SRR1,r3
+-	rfi
+-	b	.		/* prevent prefetch past rfi */
+-
+-/* Load up the kernel context */
+-2:
+-	sync			/* Flush to memory before changing TLB */
+-	tlbia
+-	isync			/* Flush shadow TLBs */
+-
+-	/* set up the PTE pointers for the Abatron bdiGDB.
+-	*/
+-	lis	r6, swapper_pg_dir@h
+-	ori	r6, r6, swapper_pg_dir@l
+-	lis	r5, abatron_pteptrs@h
+-	ori	r5, r5, abatron_pteptrs@l
+-	stw	r5, 0xf0(0)	/* Must match your Abatron config file */
+-	tophys(r5,r5)
+-	stw	r6, 0(r5)
+-
+-/* Now turn on the MMU for real! */
+-	lis	r4,MSR_KERNEL@h
+-	ori	r4,r4,MSR_KERNEL@l
+-	lis	r3,start_kernel@h
+-	ori	r3,r3,start_kernel@l
+-	mtspr	SPRN_SRR0,r3
+-	mtspr	SPRN_SRR1,r4
+-	rfi			/* enable MMU and jump to start_kernel */
+-	b	.		/* prevent prefetch past rfi */
+-
+-/* Set up the initial MMU state so we can do the first level of
+- * kernel initialization.  This maps the first 32 MBytes of memory 1:1
+- * virtual to physical and more importantly sets the cache mode.
+- */
+-SYM_FUNC_START_LOCAL(initial_mmu)
+-	tlbia			/* Invalidate all TLB entries */
+-	isync
+-
+-	/* We should still be executing code at physical address 0x0000xxxx
+-	 * at this point. However, start_here is at virtual address
+-	 * 0xC000xxxx. So, set up a TLB mapping to cover this once
+-	 * translation is enabled.
+-	 */
+-
+-	lis	r3,KERNELBASE@h		/* Load the kernel virtual address */
+-	ori	r3,r3,KERNELBASE@l
+-	tophys(r4,r3)			/* Load the kernel physical address */
+-
+-	iccci	r0,r3			/* Invalidate the i-cache before use */
+-
+-	/* Load the kernel PID.
+-	*/
+-	li	r0,0
+-	mtspr	SPRN_PID,r0
+-	sync
+-
+-	/* Configure and load one entry into TLB slots 63 */
+-	clrrwi	r4,r4,10		/* Mask off the real page number */
+-	ori	r4,r4,(TLB_WR | TLB_EX)	/* Set the write and execute bits */
+-
+-	clrrwi	r3,r3,10		/* Mask off the effective page number */
+-	ori	r3,r3,(TLB_VALID | TLB_PAGESZ(PAGESZ_16M))
+-
+-        li      r0,63                    /* TLB slot 63 */
+-
+-	tlbwe	r4,r0,TLB_DATA		/* Load the data portion of the entry */
+-	tlbwe	r3,r0,TLB_TAG		/* Load the tag portion of the entry */
+-
+-	li	r0,62			/* TLB slot 62 */
+-	addis	r4,r4,SZ_16M@h
+-	addis	r3,r3,SZ_16M@h
+-	tlbwe	r4,r0,TLB_DATA		/* Load the data portion of the entry */
+-	tlbwe	r3,r0,TLB_TAG		/* Load the tag portion of the entry */
+-
+-	isync
+-
+-	/* Establish the exception vector base
+-	*/
+-	lis	r4,KERNELBASE@h		/* EVPR only uses the high 16-bits */
+-	tophys(r0,r4)			/* Use the physical address */
+-	mtspr	SPRN_EVPR,r0
+-
+-	blr
+-SYM_FUNC_END(initial_mmu)
+-
+-_GLOBAL(abort)
+-        mfspr   r13,SPRN_DBCR0
+-        oris    r13,r13,DBCR0_RST_SYSTEM@h
+-        mtspr   SPRN_DBCR0,r13
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index b6b5b01a173c..0b5c1993809e 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -145,10 +145,9 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_EMB_HV)
+ 	b	transfer_to_syscall	/* jump to handler */
+ .endm
+ 
+-/* To handle the additional exception priority levels on 40x and Book-E
++/* To handle the additional exception priority levels on Book-E
+  * processors we allocate a stack per additional priority level.
+  *
+- * On 40x critical is the only additional level
+  * On 44x/e500 we have critical and machine check
+  *
+  * Additionally we reserve a SPRG for each priority level so we can free up a
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 2eabb15687a6..033cd00aa0fc 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -176,46 +176,6 @@ _GLOBAL(low_choose_7447a_dfs)
+ 
+ #endif /* CONFIG_CPU_FREQ_PMAC && CONFIG_PPC_BOOK3S_32 */
+ 
+-#ifdef CONFIG_40x
+-
+-/*
+- * Do an IO access in real mode
+- */
+-_GLOBAL(real_readb)
+-	mfmsr	r7
+-	rlwinm	r0,r7,0,~MSR_DR
+-	sync
+-	mtmsr	r0
+-	sync
+-	isync
+-	lbz	r3,0(r3)
+-	sync
+-	mtmsr	r7
+-	sync
+-	isync
+-	blr
+-_ASM_NOKPROBE_SYMBOL(real_readb)
+-
+-	/*
+- * Do an IO access in real mode
+- */
+-_GLOBAL(real_writeb)
+-	mfmsr	r7
+-	rlwinm	r0,r7,0,~MSR_DR
+-	sync
+-	mtmsr	r0
+-	sync
+-	isync
+-	stb	r3,0(r4)
+-	sync
+-	mtmsr	r7
+-	sync
+-	isync
+-	blr
+-_ASM_NOKPROBE_SYMBOL(real_writeb)
+-
+-#endif /* CONFIG_40x */
+-
+ /*
+  * Copy a whole page.  We use the dcbz instruction on the destination
+  * to reduce memory traffic (it eliminates the unnecessary reads of
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index f23430adb68a..28d6472c380a 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -2244,7 +2244,7 @@ void __noreturn unrecoverable_exception(struct pt_regs *regs)
+ 		;
+ }
+ 
+-#if defined(CONFIG_BOOKE_WDT) || defined(CONFIG_40x)
++#ifdef CONFIG_BOOKE_WDT
+ DEFINE_INTERRUPT_HANDLER_NMI(WatchdogException)
+ {
+ 	printk (KERN_EMERG "PowerPC Book-E Watchdog Exception\n");
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index 92b3fc258d11..4b99208f5adc 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -49,9 +49,6 @@ void __init udbg_early_init(void)
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_44x)
+ 	/* PPC44x debug */
+ 	udbg_init_44x_as1();
+-#elif defined(CONFIG_PPC_EARLY_DEBUG_40x)
+-	/* PPC40x debug */
+-	udbg_init_40x_realmode();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_CPM)
+ 	udbg_init_cpm();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_USBGECKO)
+diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
+index a0467e528b70..313802aff571 100644
+--- a/arch/powerpc/kernel/udbg_16550.c
++++ b/arch/powerpc/kernel/udbg_16550.c
+@@ -274,29 +274,6 @@ void __init udbg_init_44x_as1(void)
+ 
+ #endif /* CONFIG_PPC_EARLY_DEBUG_44x */
+ 
+-#ifdef CONFIG_PPC_EARLY_DEBUG_40x
+-
+-static u8 udbg_uart_in_40x(unsigned int reg)
+-{
+-	return real_readb((void __iomem *)CONFIG_PPC_EARLY_DEBUG_40x_PHYSADDR
+-			  + reg);
+-}
+-
+-static void udbg_uart_out_40x(unsigned int reg, u8 val)
+-{
+-	real_writeb(val, (void __iomem *)CONFIG_PPC_EARLY_DEBUG_40x_PHYSADDR
+-		    + reg);
+-}
+-
+-void __init udbg_init_40x_realmode(void)
+-{
+-	udbg_uart_in = udbg_uart_in_40x;
+-	udbg_uart_out = udbg_uart_out_40x;
+-	udbg_use_uart();
+-}
+-
+-#endif /* CONFIG_PPC_EARLY_DEBUG_40x */
+-
+ #ifdef CONFIG_PPC_EARLY_DEBUG_16550
+ 
+ static void __iomem *udbg_uart_early_addr;
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 6949c2c937e7..b2d1eea09761 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -20,9 +20,9 @@
+ #include <asm/trace.h>
+ 
+ /*
+- * On 40x and 8xx, we directly inline tlbia and tlbivax
++ * On 8xx, we directly inline tlbia
+  */
+-#if defined(CONFIG_40x) || defined(CONFIG_PPC_8xx)
++#ifdef CONFIG_PPC_8xx
+ static inline void _tlbil_all(void)
+ {
+ 	asm volatile ("sync; tlbia; isync" : : : "memory");
+@@ -35,7 +35,7 @@ static inline void _tlbil_pid(unsigned int pid)
+ }
+ #define _tlbil_pid_noind(pid)	_tlbil_pid(pid)
+ 
+-#else /* CONFIG_40x || CONFIG_PPC_8xx */
++#else /* CONFIG_PPC_8xx */
+ extern void _tlbil_all(void);
+ extern void _tlbil_pid(unsigned int pid);
+ #ifdef CONFIG_PPC_BOOK3E_64
+@@ -43,7 +43,7 @@ extern void _tlbil_pid_noind(unsigned int pid);
+ #else
+ #define _tlbil_pid_noind(pid)	_tlbil_pid(pid)
+ #endif
+-#endif /* !(CONFIG_40x || CONFIG_PPC_8xx) */
++#endif /* !CONFIG_PPC_8xx */
+ 
+ /*
+  * On 8xx, we directly inline tlbie, on others, it's extern
+diff --git a/arch/powerpc/mm/nohash/40x.c b/arch/powerpc/mm/nohash/40x.c
+deleted file mode 100644
+index e835e80c09db..000000000000
+--- a/arch/powerpc/mm/nohash/40x.c
++++ /dev/null
+@@ -1,161 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- * This file contains the routines for initializing the MMU
+- * on the 4xx series of chips.
+- *  -- paulus
+- *
+- *  Derived from arch/ppc/mm/init.c:
+- *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
+- *
+- *  Modifications by Paul Mackerras (PowerMac) (paulus@cs.anu.edu.au)
+- *  and Cort Dougan (PReP) (cort@cs.nmt.edu)
+- *    Copyright (C) 1996 Paul Mackerras
+- *
+- *  Derived from "arch/i386/mm/init.c"
+- *    Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
+- */
+-
+-#include <linux/signal.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/types.h>
+-#include <linux/ptrace.h>
+-#include <linux/mman.h>
+-#include <linux/mm.h>
+-#include <linux/swap.h>
+-#include <linux/stddef.h>
+-#include <linux/vmalloc.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/highmem.h>
+-#include <linux/memblock.h>
+-
+-#include <asm/io.h>
+-#include <asm/mmu_context.h>
+-#include <asm/mmu.h>
+-#include <linux/uaccess.h>
+-#include <asm/smp.h>
+-#include <asm/bootx.h>
+-#include <asm/machdep.h>
+-#include <asm/setup.h>
+-
+-#include <mm/mmu_decl.h>
+-
+-/*
+- * MMU_init_hw does the chip-specific initialization of the MMU hardware.
+- */
+-void __init MMU_init_hw(void)
+-{
+-	int i;
+-	unsigned long zpr;
+-
+-	/*
+-	 * The Zone Protection Register (ZPR) defines how protection will
+-	 * be applied to every page which is a member of a given zone.
+-	 * The zone index bits (of ZSEL) in the PTE are used for software
+-	 * indicators. We use the 4 upper bits of virtual address to select
+-	 * the zone. We set all zones above TASK_SIZE to zero, allowing
+-	 * only kernel access as indicated in the PTE. For zones below
+-	 * TASK_SIZE, we set a 01 binary (a value of 10 will not work)
+-	 * to allow user access as indicated in the PTE.  This also allows
+-	 * kernel access as indicated in the PTE.
+-	 */
+-
+-	for (i = 0, zpr = 0; i < TASK_SIZE >> 28; i++)
+-		zpr |= 1 << (30 - i * 2);
+-
+-	mtspr(SPRN_ZPR, zpr);
+-
+-	flush_instruction_cache();
+-
+-	/*
+-	 * Set up the real-mode cache parameters for the exception vector
+-	 * handlers (which are run in real-mode).
+-	 */
+-
+-        mtspr(SPRN_DCWR, 0x00000000);	/* All caching is write-back */
+-
+-        /*
+-	 * Cache instruction and data space where the exception
+-	 * vectors and the kernel live in real-mode.
+-	 */
+-
+-        mtspr(SPRN_DCCR, 0xFFFF0000);	/* 2GByte of data space at 0x0. */
+-        mtspr(SPRN_ICCR, 0xFFFF0000);	/* 2GByte of instr. space at 0x0. */
+-}
+-
+-#define LARGE_PAGE_SIZE_16M	(1<<24)
+-#define LARGE_PAGE_SIZE_4M	(1<<22)
+-
+-unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
+-{
+-	unsigned long v, s, mapped;
+-	phys_addr_t p;
+-
+-	v = KERNELBASE;
+-	p = 0;
+-	s = total_lowmem;
+-
+-	if (IS_ENABLED(CONFIG_KFENCE))
+-		return 0;
+-
+-	if (debug_pagealloc_enabled())
+-		return 0;
+-
+-	if (strict_kernel_rwx_enabled())
+-		return 0;
+-
+-	while (s >= LARGE_PAGE_SIZE_16M) {
+-		pmd_t *pmdp;
+-		unsigned long val = p | _PMD_SIZE_16M | _PAGE_EXEC | _PAGE_RW;
+-
+-		pmdp = pmd_off_k(v);
+-		*pmdp++ = __pmd(val);
+-		*pmdp++ = __pmd(val);
+-		*pmdp++ = __pmd(val);
+-		*pmdp++ = __pmd(val);
+-
+-		v += LARGE_PAGE_SIZE_16M;
+-		p += LARGE_PAGE_SIZE_16M;
+-		s -= LARGE_PAGE_SIZE_16M;
+-	}
+-
+-	while (s >= LARGE_PAGE_SIZE_4M) {
+-		pmd_t *pmdp;
+-		unsigned long val = p | _PMD_SIZE_4M | _PAGE_EXEC | _PAGE_RW;
+-
+-		pmdp = pmd_off_k(v);
+-		*pmdp = __pmd(val);
+-
+-		v += LARGE_PAGE_SIZE_4M;
+-		p += LARGE_PAGE_SIZE_4M;
+-		s -= LARGE_PAGE_SIZE_4M;
+-	}
+-
+-	mapped = total_lowmem - s;
+-
+-	/* If the size of RAM is not an exact power of two, we may not
+-	 * have covered RAM in its entirety with 16 and 4 MiB
+-	 * pages. Consequently, restrict the top end of RAM currently
+-	 * allocable so that calls to the MEMBLOCK to allocate PTEs for "tail"
+-	 * coverage with normal-sized pages (or other reasons) do not
+-	 * attempt to allocate outside the allowed range.
+-	 */
+-	memblock_set_current_limit(mapped);
+-
+-	return mapped;
+-}
+-
+-void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+-				phys_addr_t first_memblock_size)
+-{
+-	/* We don't currently support the first MEMBLOCK not mapping 0
+-	 * physical on those processors
+-	 */
+-	BUG_ON(first_memblock_base != 0);
+-
+-	/* 40x can only access 16MB at the moment (see head_40x.S) */
+-	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
+-}
+diff --git a/arch/powerpc/mm/nohash/Makefile b/arch/powerpc/mm/nohash/Makefile
+index b3f0498dd42f..86d0fe434824 100644
+--- a/arch/powerpc/mm/nohash/Makefile
++++ b/arch/powerpc/mm/nohash/Makefile
+@@ -2,7 +2,6 @@
+ 
+ obj-y				+= mmu_context.o tlb.o tlb_low.o kup.o
+ obj-$(CONFIG_PPC_BOOK3E_64)  	+= tlb_low_64e.o book3e_pgtable.o
+-obj-$(CONFIG_40x)		+= 40x.o
+ obj-$(CONFIG_44x)		+= 44x.o
+ obj-$(CONFIG_PPC_8xx)		+= 8xx.o
+ obj-$(CONFIG_PPC_E500)		+= e500.o
+diff --git a/arch/powerpc/mm/nohash/kup.c b/arch/powerpc/mm/nohash/kup.c
+index e1f7de2e54ec..c20c4f357fbf 100644
+--- a/arch/powerpc/mm/nohash/kup.c
++++ b/arch/powerpc/mm/nohash/kup.c
+@@ -15,8 +15,6 @@
+ void setup_kuap(bool disabled)
+ {
+ 	if (disabled) {
+-		if (IS_ENABLED(CONFIG_40x))
+-			disable_kuep = true;
+ 		if (smp_processor_id() == boot_cpuid)
+ 			cur_cpu_spec->mmu_features &= ~MMU_FTR_KUAP;
+ 		return;
+diff --git a/arch/powerpc/mm/nohash/mmu_context.c b/arch/powerpc/mm/nohash/mmu_context.c
+index ccd5819b1bd9..92dc028aff1f 100644
+--- a/arch/powerpc/mm/nohash/mmu_context.c
++++ b/arch/powerpc/mm/nohash/mmu_context.c
+@@ -219,9 +219,6 @@ static void set_context(unsigned long id, pgd_t *pgd)
+ 		/* sync */
+ 		mb();
+ 	} else if (kuap_is_disabled()) {
+-		if (IS_ENABLED(CONFIG_40x))
+-			mb();	/* sync */
+-
+ 		mtspr(SPRN_PID, id);
+ 		isync();
+ 	}
+diff --git a/arch/powerpc/mm/nohash/tlb_low.S b/arch/powerpc/mm/nohash/tlb_low.S
+index e1199608ff4d..c4d296e73731 100644
+--- a/arch/powerpc/mm/nohash/tlb_low.S
++++ b/arch/powerpc/mm/nohash/tlb_low.S
+@@ -32,32 +32,7 @@
+ #include <asm/asm-compat.h>
+ #include <asm/feature-fixups.h>
+ 
+-#if defined(CONFIG_40x)
+-
+-/*
+- * 40x implementation needs only tlbil_va
+- */
+-_GLOBAL(__tlbil_va)
+-	/* We run the search with interrupts disabled because we have to change
+-	 * the PID and I don't want to preempt when that happens.
+-	 */
+-	mfmsr	r5
+-	mfspr	r6,SPRN_PID
+-	wrteei	0
+-	mtspr	SPRN_PID,r4
+-	tlbsx.	r3, 0, r3
+-	mtspr	SPRN_PID,r6
+-	wrtee	r5
+-	bne	1f
+-	sync
+-	/* There are only 64 TLB entries, so r3 < 64, which means bit 25 is
+-	 * clear. Since 25 is the V bit in the TLB_TAG, loading this value
+-	 * will invalidate the TLB entry. */
+-	tlbwe	r3, r3, TLB_TAG
+-	isync
+-1:	blr
+-
+-#elif defined(CONFIG_PPC_8xx)
++#if defined(CONFIG_PPC_8xx)
+ 
+ /*
+  * Nothing to do for 8xx, everything is inline
+diff --git a/arch/powerpc/platforms/4xx/pci.c b/arch/powerpc/platforms/4xx/pci.c
+index 48626615b18b..db6d33ca753f 100644
+--- a/arch/powerpc/platforms/4xx/pci.c
++++ b/arch/powerpc/platforms/4xx/pci.c
+@@ -1263,102 +1263,6 @@ static struct ppc4xx_pciex_hwops ppc460sx_pcie_hwops __initdata = {
+ 
+ #endif /* CONFIG_44x */
+ 
+-#ifdef CONFIG_40x
+-
+-static int __init ppc405ex_pciex_core_init(struct device_node *np)
+-{
+-	/* Nothing to do, return 2 ports */
+-	return 2;
+-}
+-
+-static void __init ppc405ex_pcie_phy_reset(struct ppc4xx_pciex_port *port)
+-{
+-	/* Assert the PE0_PHY reset */
+-	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET, 0x01010000);
+-	msleep(1);
+-
+-	/* deassert the PE0_hotreset */
+-	if (port->endpoint)
+-		mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET, 0x01111000);
+-	else
+-		mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET, 0x01101000);
+-
+-	/* poll for phy !reset */
+-	/* XXX FIXME add timeout */
+-	while (!(mfdcri(SDR0, port->sdr_base + PESDRn_405EX_PHYSTA) & 0x00001000))
+-		;
+-
+-	/* deassert the PE0_gpl_utl_reset */
+-	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET, 0x00101000);
+-}
+-
+-static int __init ppc405ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
+-{
+-	u32 val;
+-
+-	if (port->endpoint)
+-		val = PTYPE_LEGACY_ENDPOINT;
+-	else
+-		val = PTYPE_ROOT_PORT;
+-
+-	mtdcri(SDR0, port->sdr_base + PESDRn_DLPSET,
+-	       1 << 24 | val << 20 | LNKW_X1 << 12);
+-
+-	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET1, 0x00000000);
+-	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET2, 0x01010000);
+-	mtdcri(SDR0, port->sdr_base + PESDRn_405EX_PHYSET1, 0x720F0000);
+-	mtdcri(SDR0, port->sdr_base + PESDRn_405EX_PHYSET2, 0x70600003);
+-
+-	/*
+-	 * Only reset the PHY when no link is currently established.
+-	 * This is for the Atheros PCIe board which has problems to establish
+-	 * the link (again) after this PHY reset. All other currently tested
+-	 * PCIe boards don't show this problem.
+-	 * This has to be re-tested and fixed in a later release!
+-	 */
+-	val = mfdcri(SDR0, port->sdr_base + PESDRn_LOOP);
+-	if (!(val & 0x00001000))
+-		ppc405ex_pcie_phy_reset(port);
+-
+-	dcr_write(port->dcrs, DCRO_PEGPL_CFG, 0x10000000);  /* guarded on */
+-
+-	port->has_ibpre = 1;
+-
+-	return ppc4xx_pciex_port_reset_sdr(port);
+-}
+-
+-static int ppc405ex_pciex_init_utl(struct ppc4xx_pciex_port *port)
+-{
+-	dcr_write(port->dcrs, DCRO_PEGPL_SPECIAL, 0x0);
+-
+-	/*
+-	 * Set buffer allocations and then assert VRB and TXE.
+-	 */
+-	out_be32(port->utl_base + PEUTL_OUTTR,   0x02000000);
+-	out_be32(port->utl_base + PEUTL_INTR,    0x02000000);
+-	out_be32(port->utl_base + PEUTL_OPDBSZ,  0x04000000);
+-	out_be32(port->utl_base + PEUTL_PBBSZ,   0x21000000);
+-	out_be32(port->utl_base + PEUTL_IPHBSZ,  0x02000000);
+-	out_be32(port->utl_base + PEUTL_IPDBSZ,  0x04000000);
+-	out_be32(port->utl_base + PEUTL_RCIRQEN, 0x00f00000);
+-	out_be32(port->utl_base + PEUTL_PCTL,    0x80800066);
+-
+-	out_be32(port->utl_base + PEUTL_PBCTL,   0x08000000);
+-
+-	return 0;
+-}
+-
+-static struct ppc4xx_pciex_hwops ppc405ex_pcie_hwops __initdata =
+-{
+-	.want_sdr	= true,
+-	.core_init	= ppc405ex_pciex_core_init,
+-	.port_init_hw	= ppc405ex_pciex_init_port_hw,
+-	.setup_utl	= ppc405ex_pciex_init_utl,
+-	.check_link	= ppc4xx_pciex_check_link_sdr,
+-};
+-
+-#endif /* CONFIG_40x */
+-
+ #ifdef CONFIG_476FPE
+ static int __init ppc_476fpe_pciex_core_init(struct device_node *np)
+ {
+@@ -1427,10 +1331,6 @@ static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
+ 	if (of_device_is_compatible(np, "ibm,plb-pciex-apm821xx"))
+ 		ppc4xx_pciex_hwops = &apm821xx_pcie_hwops;
+ #endif /* CONFIG_44x    */
+-#ifdef CONFIG_40x
+-	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
+-		ppc4xx_pciex_hwops = &ppc405ex_pcie_hwops;
+-#endif
+ #ifdef CONFIG_476FPE
+ 	if (of_device_is_compatible(np, "ibm,plb-pciex-476fpe")
+ 		|| of_device_is_compatible(np, "ibm,plb-pciex-476gtr"))
+diff --git a/scripts/head-object-list.txt b/scripts/head-object-list.txt
+index 890f69005bab..fd5d00bac447 100644
+--- a/scripts/head-object-list.txt
++++ b/scripts/head-object-list.txt
+@@ -27,7 +27,6 @@ arch/mips/kernel/head.o
+ arch/nios2/kernel/head.o
+ arch/openrisc/kernel/head.o
+ arch/parisc/kernel/head.o
+-arch/powerpc/kernel/head_40x.o
+ arch/powerpc/kernel/head_44x.o
+ arch/powerpc/kernel/head_64.o
+ arch/powerpc/kernel/head_8xx.o
 -- 
 2.45.2
 
