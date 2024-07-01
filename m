@@ -4,93 +4,134 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA547C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2024 19:15:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D846EC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2024 19:48:35 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DxlwhEpg;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=LBlBcGYM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WCbNY33HQz3fRZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 05:15:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WCc6V2SRqz3dhY
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 05:48:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DxlwhEpg;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=LBlBcGYM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:2613::600; helo=eur05-vi1-obe.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on20600.outbound.protection.outlook.com [IPv6:2a01:111:f403:2613::600])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCbMm641wz3cR1
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 05:15:00 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 461Iuxdu013370;
-	Mon, 1 Jul 2024 19:14:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	message-id:date:subject:to:cc:references:from:in-reply-to
-	:content-type:content-transfer-encoding:mime-version; s=pp1; bh=
-	HaYcdNOCxqMIToS0HOUilgNmYJAyWRLxhVayCjb+2cU=; b=DxlwhEpg6zPsxRcC
-	0DVMLb4mjZDUUTnbip+qBSJuTaCVO+3au2Nu/KnzBHe4dyTVVE/7n21ebckDX6/e
-	MXc+CuQl4m3w1EqoVBbRVnraOZk+ELf/sMsoSC6JQBZ8OWyOOf7XNqWU+C/bumHq
-	MotfFH5vjf5i7Pn51BIdidyFT6Q2Oaqsaa1ONoZ8ZrsfJdvXeuYcJScmxIYJNLJO
-	hxdWH/fO0evE5s8WkXJkBrcqONKH68FhzWdzWTboPXIsAqzuwIFJrlsC+38PE898
-	k5lYcJV35hUZrIPhmbPGjwle+MX7pAXN/xBG54B9rnEKyYn+qSMOoaSql0ttXbUu
-	4P3GLQ==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4041rw03bm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 01 Jul 2024 19:14:47 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 461J0wJl026393;
-	Mon, 1 Jul 2024 19:14:46 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 402wkprw12-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 01 Jul 2024 19:14:46 +0000
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 461JEiZi25887238
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 1 Jul 2024 19:14:46 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4BB145804E;
-	Mon,  1 Jul 2024 19:14:44 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A4B4258062;
-	Mon,  1 Jul 2024 19:14:43 +0000 (GMT)
-Received: from [9.47.158.152] (unknown [9.47.158.152])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  1 Jul 2024 19:14:43 +0000 (GMT)
-Message-ID: <e7db74a0-cd5c-4394-b87e-c31ea0861ea1@linux.ibm.com>
-Date: Mon, 1 Jul 2024 15:14:43 -0400
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] tpm: ibmvtpm: Call tpm2_sessions_init() to initialize
- session support
-To: Jarkko Sakkinen <jarkko.sakkinen@iki.fi>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        Linux regressions mailing list <regressions@lists.linux.dev>
-References: <20240617193408.1234365-1-stefanb@linux.ibm.com>
- <9e167f3e-cd81-45ab-bd34-939f516b05a4@linux.ibm.com>
- <55e8331d-4682-40df-9a1b-8a08dc5f6409@leemhuis.info>
- <9f86a167074d9b522311715c567f1c19b88e3ad4.camel@kernel.org>
- <53d96a8b-26ef-46a3-9b68-3d791613e47c@linux.ibm.com>
- <D2EFNJTR80JS.1RW91OVY1UH1N@iki.fi>
-Content-Language: en-US
-From: Stefan Berger <stefanb@linux.ibm.com>
-In-Reply-To: <D2EFNJTR80JS.1RW91OVY1UH1N@iki.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Zw2_j-fDyvuJHOCaZUrh914wenkHAsg3
-X-Proofpoint-ORIG-GUID: Zw2_j-fDyvuJHOCaZUrh914wenkHAsg3
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCc5h54Rbz3dTL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 05:47:50 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=SXFeCAQcHwV/+goQF941rAm2aab2l3J3WW9VZSmlAcu1x+jI28DFlU+x1QCyBrqKO6c8Km/70lHwBJlldv2KME3z78+PeE5WiddB014Z0HhuIV6zfxWQnl9d0Z3/B+jY5nRmaFg/iFwEenUR9HJCPgjUZr609x80B4RoyYepViCm+abEbAYUNpaEkW7A4SKn92g3mZQdNjOHL4h9zdBPN+/xuCUG48QMvwlB4JL/nsE+M2TsOtzOec9vTOOeHRDmaAclp/SQF4nZ6BEy9CDLZBYTUsImU5W4PCyJc9hVfDSd9/RrDZYcI2vPGDrGB4fekxPoHei4y6V+niWIIicH3A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hICCXKtcOQDqUtuANseh1x25+W6S4EmgP9u30nRj+AU=;
+ b=DZRu1jU1GO60D/cDlHlunYTBiuGuRp84ZleNHDCloWdc8nAUtzbyQtrxQqyB7AO832Z/QsD8Col1tu7/Q59bMzmxelh/W/B8Q1UqukoHH3aO3w/5C0SeaFgMuQy931m+b3OVE5LEzPLro5xzPjtV5NzQIOu+SRZmeDSwLsTES7mL8Pz9Ql01DsEASRsLP4FtelWJrFuA+YZTEPU0Z4vpai/RcV0GMB40fCuQGM/sqq62TYfC9JLe/wkNKXqSVQSRgKhTaBoQczu5IVfwDSr12OIBKA4874zQsXR0kI1yIXAct10L1G4fFJ6gjSqzlVF+i5T/Utou85D3JKO/ZRI3TA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hICCXKtcOQDqUtuANseh1x25+W6S4EmgP9u30nRj+AU=;
+ b=LBlBcGYMOcH/FlpSDeJ26gJLXFMTohv4ncBHFq8x0t7dL8Zmu6PorbTyYxuqz6tLsxc4xix8XZfNYy/5pgHXnX+RU1urqex3egsJrdup4csNxAToT/tkxt33f3Oucbod/mvC53d9KM6iCOE+o5NpDWRUKYIwi1HRfyEsEnLdIYM=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from PAXPR04MB9642.eurprd04.prod.outlook.com (2603:10a6:102:240::14)
+ by DU2PR04MB8773.eurprd04.prod.outlook.com (2603:10a6:10:2e0::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7719.32; Mon, 1 Jul
+ 2024 19:47:28 +0000
+Received: from PAXPR04MB9642.eurprd04.prod.outlook.com
+ ([fe80::9126:a61e:341d:4b06]) by PAXPR04MB9642.eurprd04.prod.outlook.com
+ ([fe80::9126:a61e:341d:4b06%2]) with mapi id 15.20.7719.029; Mon, 1 Jul 2024
+ 19:47:28 +0000
+Date: Mon, 1 Jul 2024 15:47:16 -0400
+From: Frank Li <Frank.li@nxp.com>
+To: Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>
+Subject: Re: [Patch v5 08/12] dmaengine: Add dma router for pl08x in LPC32XX
+ SoC
+Message-ID: <ZoMHxC7cRN45s0yl@lizhi-Precision-Tower-5810>
+References: <20240627150046.258795-1-piotr.wojtaszczyk@timesys.com>
+ <20240627150046.258795-9-piotr.wojtaszczyk@timesys.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240627150046.258795-9-piotr.wojtaszczyk@timesys.com>
+X-ClientProxiedBy: BYAPR05CA0035.namprd05.prod.outlook.com
+ (2603:10b6:a03:c0::48) To PAXPR04MB9642.eurprd04.prod.outlook.com
+ (2603:10a6:102:240::14)
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-07-01_19,2024-07-01_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- mlxlogscore=999 impostorscore=0 spamscore=0 clxscore=1011 bulkscore=0
- phishscore=0 mlxscore=0 adultscore=0 priorityscore=1501 suspectscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2406140001 definitions=main-2407010141
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PAXPR04MB9642:EE_|DU2PR04MB8773:EE_
+X-MS-Office365-Filtering-Correlation-Id: e896c931-a10a-409d-32e5-08dc9a06a382
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: 	BCL:0;ARA:13230040|1800799024|366016|52116014|7416014|376014|38350700014;
+X-Microsoft-Antispam-Message-Info: 	=?us-ascii?Q?Mw9px1KJGKX0Pln0NxrxQWC3N2WXR+lh1tVqNDSNXGcyAoB+GvecBJBgIQD4?=
+ =?us-ascii?Q?R9K3hjw7JYU6zcnKYBKGQpGC90jmlMswm9o+GkIln12kXEavMCXwBv0ByNtD?=
+ =?us-ascii?Q?mt0qh+iy3De8OQcanh4D2oxxp1ZaiDp4TvkFNsZC1NI2v+/0JK6GZiEkJMlq?=
+ =?us-ascii?Q?aKbLMSF4T5tomQzKqxqBmp6BPrnGD1oRi1JemMASq331mAOSOz52xCW5qJe3?=
+ =?us-ascii?Q?WX9eeLGwsdgYLWA9mIt87YFxnK0c/AStIUcanTbTPykVdfgNI9/GwrGEMGcS?=
+ =?us-ascii?Q?8DuvqymJtVfMJQ+1pZ5zkHgsdW+tVOrKTSuSPweifGlmOafkcWMtuMCrOnEu?=
+ =?us-ascii?Q?7fYtweI5Q6+frQu1g74UFv5MIY5gYJvJguuMEm3Jnir9EPH62sqxFXoI8YhL?=
+ =?us-ascii?Q?xk7BxMdyhrpckzF5ex+LVI8g1w624/cTkn3MTt18dIXQ4QKA0IZoVjISQpoF?=
+ =?us-ascii?Q?8jQYX2LLbdzCcswdTnTFMGI2W96Ft05d16EXvgNY20qC4bIFHsQnNlCN8KD2?=
+ =?us-ascii?Q?rybHFzwzzb8+56E/nBhXz1f4ZqxUgfp7Qg2a2IK3BvvATbgD3lTLRg4IlDgo?=
+ =?us-ascii?Q?uriv5foBMkfEBIkn3hABtzPUUQ5zDBxRh6omI2QDsw9QLIc6NJdnvBWx6BCP?=
+ =?us-ascii?Q?hjaYmUPPAeGlo+pXO8LaxcoVbsCB3v9Fx5awQjVy9paMxlGBw2iFDOtUnADc?=
+ =?us-ascii?Q?0A1Si96180Gfm86JugFX/4DTHHBRQ594CRQWwBvoM/YjigqeZ/LxBuQGS2lT?=
+ =?us-ascii?Q?TAufSEIl87Htj5/kZn0a+Fplv3zJ/R7WsidfdR7eXxog3+E1BhoPhr+jlnfP?=
+ =?us-ascii?Q?7G2opItSX5+GuEcdxzhj9DsuVzHy+kW11PdtQAO3kqnwx/M4ZiZqBKqYvVwS?=
+ =?us-ascii?Q?11K/pA9Wg7ENv3ilkAO7muktpmTsJbzq5B9X4syscRWTmTJkEv2ddPMUgZpv?=
+ =?us-ascii?Q?scEoru/8xgG3DUW4bgsCx4yDBZOo48rQe3QGTtlRDwrUxxYk32/3+L5kBM0x?=
+ =?us-ascii?Q?OVqm0u7URo6XObErXWYM2WIECk64GT+wLpVOIzoHhyGBXkm+mSQBXa0JxSO+?=
+ =?us-ascii?Q?TMmg6FVxe9zXe2WwHUJlCIbA9bLibxIuEatDqxMf5j+Vceg3bAfepifxWDHK?=
+ =?us-ascii?Q?me6/SrpBk9Zt2DrszJWyLk+JMfKBx2aQQpX13zky3uRvkv5S1jgJAD45F2Jr?=
+ =?us-ascii?Q?zG48IMxGnl62FWjoGir3ARygvXO29hj3uk0Dbem5aHELae32/D3QBArSOvzf?=
+ =?us-ascii?Q?lyfK9awYd5H7LLEzy7WyMckedUa20oZg5ZDiB4lw+CsXSr/jqw7JEFp/NWko?=
+ =?us-ascii?Q?QzhY67qb6WVQEsm8yKk60VlluDD/puWosZJfZl+qdNgU0fDHFMJV5vXhwnuU?=
+ =?us-ascii?Q?MGw87U0=3D?=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9642.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(52116014)(7416014)(376014)(38350700014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?ZRiyCfaZqIGJr+j1met8q0fHABGzpLbhEEmcjoG6cSOrbwUKg96dEb1qgB0o?=
+ =?us-ascii?Q?Wt/9LfHqiWbR2H2anvTpF+cr1H0V0UvLnNEdZCv4n7yaxN870g80EWesvZZC?=
+ =?us-ascii?Q?JoL4E7iKSUvOhw1TrGkpakg4kNsIrUSvjHwEifov4GVuGD65tIT2xT3E/NeH?=
+ =?us-ascii?Q?cVkKxC+iXoOuhnVUUtuyWaf4GUoMXkz0qNtCywDMGghqyNSabKmR9N5u935h?=
+ =?us-ascii?Q?FffvalAvqoN8JJ0GghEg5C3XAv8g7d95GfJeQRLtSNMaeudbV7dJRwQHL0ox?=
+ =?us-ascii?Q?C1W1aaYh3nor1jgxWnQd0JwU7zHG39h5UKRLxgbO07rIhkYIwvJO1Zm22BWc?=
+ =?us-ascii?Q?5fA+LHnkpajGsR3MIa7Ac2f2GuQxr3Ipg/8fdB6CCxrzrdpIrTbhuh1Yz17d?=
+ =?us-ascii?Q?vTM0ECPh2RUcGiu/N2hkMSbW7I8C33/r2b3j7N5I0O8hWs8oouAZ/yW/V5gF?=
+ =?us-ascii?Q?1Uq7zyTgr0e0dhhdmWIuj/U4c1g83dQHRLBlU7BTXVv39KojW5CEh/Agod/0?=
+ =?us-ascii?Q?pvgRVdSsaXZN2Nxreg2Q3wH/zEctnJJOksF9z3NhuS0H/jt33sRnnt//GH7F?=
+ =?us-ascii?Q?YDqHEZlncclf7v42YkuC60Vxhh67y6+c8ky3aycld29A/koTEZPa/GaYS/eW?=
+ =?us-ascii?Q?1ubMk2mjWmopqok9ewnV6PHiuzFZ9B2hqP6mQsqIseB8yDXJ3bmO+e2bqhb0?=
+ =?us-ascii?Q?yuw5j1f9OP7ty6iyRox91t1sddNBhUnWSRwXB0kcXNdjBqmrD/dNBLSZJqux?=
+ =?us-ascii?Q?QUS2qczBr3nfXyOEb1rRJPG5t01UJbeTfYdMqf7R7Jl/R5gveX3rXJvJQBE0?=
+ =?us-ascii?Q?yeE4ZrsUcvLjh+y0PE4M1WzLsMRzeUy1wKCOF+WVdcsWbXrhDTzotOLaW50n?=
+ =?us-ascii?Q?uOyCKRXucV7T6W4SXXxb1jfvrWlytiFx32GjCX8M8u6PzlV3lD0oyVVD9EXy?=
+ =?us-ascii?Q?q5x9PdGHDB5wnrgEAzoehjXcR2PlVs3wtxM74DDausfxy/GnRRoGjFJpM623?=
+ =?us-ascii?Q?BJH2+3pkSQ1nFHIfUTpKU2Krku0pZjudXTIdTP6xOwHHA3bVEF+VRKGkBIbB?=
+ =?us-ascii?Q?IQvyE0dRXV9nnfFIydCQBmsuBbYe2Z96MeGmbCApmwFiSVLZP9SKN58YVT2d?=
+ =?us-ascii?Q?xLDhnPQedQSfqQTwiI0krF8h400xIJS2VlE737tmD+zrvBFPXFm+LzgXW8rX?=
+ =?us-ascii?Q?EcZ/m5WRg53YVGzlH9wdBr+QtB7qio028sfd8Ka0OgbK9LO88FVK8rg5YWgQ?=
+ =?us-ascii?Q?OPuTY3uoYRYP1bhnkn6Lt8DjFRbM+7U6hqPY4bA1LPya81KmmMeeP7HbyQVk?=
+ =?us-ascii?Q?qYhLWZQIdhAAYhvgI+ouULe2kM7QgiqzVySrd80oI043yey0EU/C7Ay7147N?=
+ =?us-ascii?Q?NDCzAJt7CsZp+7LWouqsDMAibbnzeeBqmLsHolsO6+kpUgthgQ9XtX1S5Ul/?=
+ =?us-ascii?Q?YcuWc0TODnbt3QG2rsRqe3X6Oohg/hnezNVg03vhBWOq3NfyI3Ks/raOnhe9?=
+ =?us-ascii?Q?Zi7+9Nlg0YJTC/ZsgrFuM+smAddrkRWOvk/T6/RMfySZ3taBrs9RRVB7h6qQ?=
+ =?us-ascii?Q?1VfL8izdgSjYQA+KPNs2W6RmN9XDSyBSOoJswQ+Z?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e896c931-a10a-409d-32e5-08dc9a06a382
+X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9642.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Jul 2024 19:47:28.6103
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: m9nNFWFnPYhoS9Qb3Ul5Z9yKd75CdzwZtMWYH559ymntNw6aq6QvDnMxLJbVYBDnQiPlQSSIa/urKFWcXkCuXA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU2PR04MB8773
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,110 +143,295 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: naveen.n.rao@linux.ibm.com, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, Vignesh Raghavendra <vigneshr@ti.com>, Michael Turquette <mturquette@baylibre.com>, Li Zetao <lizetao1@huawei.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, Miquel Raynal <miquel.raynal@bootlin.com>, linux-clk@vger.kernel.org, Rob Herring <robh@kernel.org>, Richard Weinberger <richard@nod.at>, Russell King <linux@armlinux.org.uk>, "J.M.B. Downing" <jonathan.downing@nautel.com>, Corentin Labbe <clabbe@baylibre.com>, devicetree@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Yangtao Li <frank.li@vivo.com>, linux-sound@vger.kernel.org, Vladimir Zapolskiy <vz@mleia.com>, Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@kernel.org>, Takashi Iwai <tiwai@suse.com>, linux-kernel@vger.kernel.org, Vinod Koul <vkoul@kernel.org>, Chancel Liu <chancel.liu@nxp.com>, dmaengine@vger.kernel.org, Krzysztof Kozlowski <krzk+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, Jun 27, 2024 at 05:00:26PM +0200, Piotr Wojtaszczyk wrote:
+> LPC32XX connects few of its peripherals to pl08x DMA thru a multiplexer,
+                                                       ^^^ through?
+I google 'thru', most said it is informal spell of 'through'.
 
-
-On 7/1/24 15:01, Jarkko Sakkinen wrote:
-> On Mon Jul 1, 2024 at 6:29 PM UTC, Stefan Berger wrote:
->>
->>
->> On 7/1/24 11:22, Jarkko Sakkinen wrote:
->>> On Fri, 2024-06-28 at 17:00 +0200, Linux regression tracking (Thorsten Leemhuis) wrote:
->>>> [CCing the regression list]
->>>>
->>>> On 20.06.24 00:34, Stefan Berger wrote:
->>>>> Jarkko,
->>>>>     are you ok with this patch?
->>>>
->>>> Hmmm, hope I did not miss anythng, but looks like nothing happened for
->>>> about 10 days here. Hence:
->>>>
->>>> Jarkko, looks like some feedback from your side really would help to
->>>> find a path to get this regression resolved before 6.10 is released.
->>>>
->>>> Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
->>>
->>> Sorry for latency, and except a bit more slow phase also during
->>> July because I'm most of this month on Holiday, except taking care
->>> 6.11 release.
->>>
->>> This really is a bug in the HMAC code not in the IBM driver as
->>> it should not break because of a new feature, i.e. this is only
->>> correct conclusions, give the "no regressions" rule.
->>>
->>> Since HMAC is by default only for x86_64 and it does not break
->>> defconfig's, we should take time and fix the actual issue.
->>
->> It was enabled it on my ppc64 system after a git pull -- at least I did
->> not enable it explicitly. Besides that others can enable it on any arch
->> unless you now change the 'default x86_64' to a 'depends x86_64' iiuc
->> otherwise the usage of a Fixes: , as I used in my patch, would be justified.
->>
->> config TCG_TPM2_HMAC
->> 	bool "Use HMAC and encrypted transactions on the TPM bus"
->> 	default X86_64
->> 	select CRYPTO_ECDH
->> 	select CRYPTO_LIB_AESCFB
->> 	select CRYPTO_LIB_SHA256
->>
->> https://elixir.bootlin.com/linux/v6.10-rc6/source/drivers/char/tpm/Kconfig
+> this driver allows to route a signal request line thru the multiplexer for
+> given peripheral.
 > 
-> Yep, it is still a bug, and unmodified IBM vtpm driver must be expected
-> to work. I was merely saying that there is some window to  fix it properly
-> instead of duct tape since it is not yet widely enable feature.
+> Signed-off-by: Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>
+> ---
+> Changes for v5:
+> - Fix struct declaration order
+> - Removed unused variables
+> - Break search loop if expected lpc32xx_muxes[i].signal is found
 > 
-> I was shocked to see that the implementation has absolutely no checks
-> whether chip->auth was allocated. I mean anything that would cause
-> tpm2_sessions_init() not called could trigger null dereference.
+> Changes for v4:
+> - This patch is new in v4
 > 
-> So can you test this and see how your test hardware behaves:
-
-I just tested it and it does NOT resolve the issue on my ppc64 machine. 
-I see this here:
-
-[    1.549798] tpm_ibmvtpm 5000: CRQ initialized
-[    1.549871] tpm_ibmvtpm 5000: CRQ initialization completed
-[    2.569446] tpm2_start_auth_session: encryption is not active
-[    2.570544] tpm tpm0: A TPM error (154) occurred attempting get random
-....
-[  330.188826] tpm tpm0: A TPM error (149) occurred attempting extend a 
-PCR value
-[  330.189438] ima: Error Communicating to TPM chip, result: 149
-[  330.195007] tpm tpm0: A TPM error (149) occurred attempting extend a 
-PCR value
-[  330.195550] ima: Error Communicating to TPM chip, result: 149
-[  330.197246] tpm tpm0: A TPM error (149) occurred attempting extend a 
-PCR value
-[  330.197727] ima: Error Communicating to TPM chip, result: 149
-[  330.199378] tpm tpm0: A TPM error (149) occurred attempting extend a 
-PCR value
-[  330.199962] ima: Error Communicating to TPM chip, result: 149
-[  330.201452] tpm tpm0: A TPM error (149) occurred attempting extend a 
-PCR value
-[  330.201917] ima: Error Communicating to TPM chip, result: 149
-
-
-My 4-liner patch, applied on top of it, does resolve the issue:
-
-[    1.462079] tpm_ibmvtpm 5000: CRQ initialized
-[    1.462125] tpm_ibmvtpm 5000: CRQ initialization completed
-[    2.496024] xhci_hcd 0000:00:02.0: xHCI Host Controller
-[    2.496183] xhci_hcd 0000:00:02.0: new USB bus registered, assigned 
-bus number 1
-
-Applying it is probably the better path forward than restricting HMAC to 
-x86_64 now and enabling it on a per-architecture basis afterwards ...
-
-    Stefan
-
+>  MAINTAINERS                  |   1 +
+>  drivers/dma/Kconfig          |   9 ++
+>  drivers/dma/Makefile         |   1 +
+>  drivers/dma/lpc32xx-dmamux.c | 195 +++++++++++++++++++++++++++++++++++
+>  4 files changed, 206 insertions(+)
+>  create mode 100644 drivers/dma/lpc32xx-dmamux.c
 > 
-> https://lore.kernel.org/linux-integrity/20240701170735.109583-1-jarkko@kernel.org/T/#u
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index ceec359c68fc..118d48747641 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2404,6 +2404,7 @@ R:	Vladimir Zapolskiy <vz@mleia.com>
+>  L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+>  S:	Maintained
+>  F:	Documentation/devicetree/bindings/dma/nxp,lpc3220-dmamux.yaml
+> +F:	drivers/dma/lpc32xx-dmamux.c
+>  
+>  ARM/Marvell Dove/MV78xx0/Orion SOC support
+>  M:	Andrew Lunn <andrew@lunn.ch>
+> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+> index 002a5ec80620..aeace3d7e066 100644
+> --- a/drivers/dma/Kconfig
+> +++ b/drivers/dma/Kconfig
+> @@ -378,6 +378,15 @@ config LPC18XX_DMAMUX
+>  	  Enable support for DMA on NXP LPC18xx/43xx platforms
+>  	  with PL080 and multiplexed DMA request lines.
+>  
+> +config LPC32XX_DMAMUX
+> +	bool "NXP LPC32xx DMA MUX for PL080"
+> +	depends on ARCH_LPC32XX || COMPILE_TEST
+> +	depends on OF && AMBA_PL08X
+> +	select MFD_SYSCON
+> +	help
+> +	  Support for PL080 multiplexed DMA request lines on
+> +	  LPC32XX platrofm.
+> +
+>  config LS2X_APB_DMA
+>  	tristate "Loongson LS2X APB DMA support"
+>  	depends on LOONGARCH || COMPILE_TEST
+> diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
+> index 802ca916f05f..6f1350b62e7f 100644
+> --- a/drivers/dma/Makefile
+> +++ b/drivers/dma/Makefile
+> @@ -50,6 +50,7 @@ obj-$(CONFIG_INTEL_IOATDMA) += ioat/
+>  obj-y += idxd/
+>  obj-$(CONFIG_K3_DMA) += k3dma.o
+>  obj-$(CONFIG_LPC18XX_DMAMUX) += lpc18xx-dmamux.o
+> +obj-$(CONFIG_LPC32XX_DMAMUX) += lpc32xx-dmamux.o
+>  obj-$(CONFIG_LS2X_APB_DMA) += ls2x-apb-dma.o
+>  obj-$(CONFIG_MILBEAUT_HDMAC) += milbeaut-hdmac.o
+>  obj-$(CONFIG_MILBEAUT_XDMAC) += milbeaut-xdmac.o
+> diff --git a/drivers/dma/lpc32xx-dmamux.c b/drivers/dma/lpc32xx-dmamux.c
+> new file mode 100644
+> index 000000000000..351d7e23e615
+> --- /dev/null
+> +++ b/drivers/dma/lpc32xx-dmamux.c
+> @@ -0,0 +1,195 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +//
+> +// Copyright 2024 Timesys Corporation <piotr.wojtaszczyk@timesys.com>
+> +//
+> +// Based on TI DMA Crossbar driver by:
+> +//   Copyright (C) 2015 Texas Instruments Incorporated - http://www.ti.com
+> +//   Author: Peter Ujfalusi <peter.ujfalusi@ti.com>
+> +
+> +#include <linux/err.h>
+> +#include <linux/init.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/of.h>
+> +#include <linux/of_dma.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +#include <linux/spinlock.h>
+> +
+> +#define LPC32XX_SSP_CLK_CTRL 0x78
+> +#define LPC32XX_I2S_CLK_CTRL 0x7c
+> +
+> +struct lpc32xx_dmamux {
+> +	int signal;
+> +	char *name_sel0;
+> +	char *name_sel1;
+> +	int muxval;
+> +	int muxreg;
+> +	int bit;
+> +	bool busy;
+> +};
+> +
+> +struct lpc32xx_dmamux_data {
+> +	struct dma_router dmarouter;
+> +	struct regmap *reg;
+> +	spinlock_t lock; /* protects busy status flag */
+> +};
+> +
+> +/* From LPC32x0 User manual "3.2.1 DMA request signals" */
+> +static struct lpc32xx_dmamux lpc32xx_muxes[] = {
+> +	{
+> +		.signal = 3,
+> +		.name_sel0 = "spi2-rx-tx",
+> +		.name_sel1 = "ssp1-rx",
+> +		.muxreg = LPC32XX_SSP_CLK_CTRL,
+> +		.bit = 5,
+> +	},
+> +	{
+> +		.signal = 10,
+> +		.name_sel0 = "uart7-rx",
+> +		.name_sel1 = "i2s1-dma1",
+> +		.muxreg = LPC32XX_I2S_CLK_CTRL,
+> +		.bit = 4,
+> +	},
+> +	{
+> +		.signal = 11,
+> +		.name_sel0 = "spi1-rx-tx",
+> +		.name_sel1 = "ssp1-tx",
+> +		.muxreg = LPC32XX_SSP_CLK_CTRL,
+> +		.bit = 4,
+> +	},
+> +	{
+> +		.signal = 14,
+> +		.name_sel0 = "none",
+> +		.name_sel1 = "ssp0-rx",
+> +		.muxreg = LPC32XX_SSP_CLK_CTRL,
+> +		.bit = 3,
+> +	},
+> +	{
+> +		.signal = 15,
+> +		.name_sel0 = "none",
+> +		.name_sel1 = "ssp0-tx",
+> +		.muxreg = LPC32XX_SSP_CLK_CTRL,
+> +		.bit = 2,
+> +	},
+> +};
+> +
+> +static void lpc32xx_dmamux_release(struct device *dev, void *route_data)
+> +{
+> +	struct lpc32xx_dmamux_data *dmamux = dev_get_drvdata(dev);
+> +	struct lpc32xx_dmamux *mux = route_data;
+> +
+> +	dev_dbg(dev, "releasing dma request signal %d routed to %s\n",
+> +		mux->signal, mux->muxval ? mux->name_sel1 : mux->name_sel1);
+> +
+> +	guard(spinlock)(&dmamux->lock);
+> +
+> +	mux->busy = false;
+> +}
+> +
+> +static void *lpc32xx_dmamux_reserve(struct of_phandle_args *dma_spec,
+> +				    struct of_dma *ofdma)
+> +{
+> +	struct platform_device *pdev = of_find_device_by_node(ofdma->of_node);
+> +	struct device *dev = &pdev->dev;
+> +	struct lpc32xx_dmamux_data *dmamux = platform_get_drvdata(pdev);
+> +	unsigned long flags;
+> +	struct lpc32xx_dmamux *mux = NULL;
+> +	int i;
+
+It'd better keep reverse christmas tree order.
+
+> +
+> +	if (dma_spec->args_count != 3) {
+> +		dev_err(&pdev->dev, "invalid number of dma mux args\n");
+> +		return ERR_PTR(-EINVAL);
+> +	}
+> +
+> +	for (i = 0; i < ARRAY_SIZE(lpc32xx_muxes); i++) {
+> +		if (lpc32xx_muxes[i].signal == dma_spec->args[0]) {
+> +			mux = &lpc32xx_muxes[i];
+> +			break;
+> +		}
+> +	}
+
+Add empty line here.
+
+> +	if (!mux) {
+> +		dev_err(&pdev->dev, "invalid mux request number: %d\n",
+> +			dma_spec->args[0]);
+> +		return ERR_PTR(-EINVAL);
+> +	}
+> +
+> +	if (dma_spec->args[2] > 1) {
+> +		dev_err(&pdev->dev, "invalid dma mux value: %d\n",
+> +			dma_spec->args[1]);
+> +		return ERR_PTR(-EINVAL);
+> +	}
+> +
+> +	/* The of_node_put() will be done in the core for the node */
+> +	dma_spec->np = of_parse_phandle(ofdma->of_node, "dma-masters", 0);
+> +	if (!dma_spec->np) {
+> +		dev_err(&pdev->dev, "can't get dma master\n");
+> +		return ERR_PTR(-EINVAL);
+> +	}
+> +
+> +	spin_lock_irqsave(&dmamux->lock, flags);
+
+you already use guard in lpc32xx_dmamux_release().
+here is better place to use guard also.
+
+because it spin lock, better use scoped_guard() {}.
+
+> +	if (mux->busy) {
+> +		spin_unlock_irqrestore(&dmamux->lock, flags);
+> +		dev_err(dev, "dma request signal %d busy, routed to %s\n",
+> +			mux->signal, mux->muxval ? mux->name_sel1 : mux->name_sel1);
+> +		of_node_put(dma_spec->np);
+> +		return ERR_PTR(-EBUSY);
+> +	}
+> +
+> +	mux->busy = true;
+> +	mux->muxval = dma_spec->args[2] ? BIT(mux->bit) : 0;
+> +
+> +	regmap_update_bits(dmamux->reg, mux->muxreg, BIT(mux->bit), mux->muxval);
+> +	spin_unlock_irqrestore(&dmamux->lock, flags);
+> +
+> +	dma_spec->args[2] = 0;
+> +	dma_spec->args_count = 2;
+
+Why need update dma_spec here? Suppose it just pass down dt information. 
+
+> +
+> +	dev_dbg(dev, "dma request signal %d routed to %s\n",
+> +		mux->signal, mux->muxval ? mux->name_sel1 : mux->name_sel1);
+> +
+> +	return mux;
+> +}
+> +
+> +static int lpc32xx_dmamux_probe(struct platform_device *pdev)
+> +{
+> +	struct device_node *np = pdev->dev.of_node;
+> +	struct lpc32xx_dmamux_data *dmamux;
+> +
+> +	dmamux = devm_kzalloc(&pdev->dev, sizeof(*dmamux), GFP_KERNEL);
+> +	if (!dmamux)
+> +		return -ENOMEM;
+> +
+> +	dmamux->reg = syscon_node_to_regmap(np->parent);
+> +	if (IS_ERR(dmamux->reg)) {
+> +		dev_err(&pdev->dev, "syscon lookup failed\n");
+> +		return PTR_ERR(dmamux->reg);
+> +	}
+> +
+> +	spin_lock_init(&dmamux->lock);
+> +	platform_set_drvdata(pdev, dmamux);
+> +	dmamux->dmarouter.dev = &pdev->dev;
+> +	dmamux->dmarouter.route_free = lpc32xx_dmamux_release;
+> +
+> +	return of_dma_router_register(np, lpc32xx_dmamux_reserve,
+> +				      &dmamux->dmarouter);
+> +}
+> +
+> +static const struct of_device_id lpc32xx_dmamux_match[] = {
+> +	{ .compatible = "nxp,lpc3220-dmamux" },
+> +	{},
+> +};
+> +
+> +static struct platform_driver lpc32xx_dmamux_driver = {
+> +	.probe	= lpc32xx_dmamux_probe,
+> +	.driver = {
+> +		.name = "lpc32xx-dmamux",
+> +		.of_match_table = lpc32xx_dmamux_match,
+> +	},
+> +};
+> +
+> +static int __init lpc32xx_dmamux_init(void)
+> +{
+> +	return platform_driver_register(&lpc32xx_dmamux_driver);
+> +}
+> +arch_initcall(lpc32xx_dmamux_init);
+> -- 
+> 2.25.1
 > 
-> I'll modify it accrodingly if problems persist. Please put your feedback
-> over there. I cannot anything but compile test so it could be that
-> I've ignored something.
-> 
-> BR, Jarkko
