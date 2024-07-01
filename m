@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38C41C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2024 14:17:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 719FDC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2024 14:17:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WCSmT6qbgz3g45
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 00:17:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WCSn217JYz3dHP
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 00:17:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=m.felsch@pengutronix.de; receiver=lists.ozlabs.org)
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCSk65NBbz3fW2
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 00:15:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCSkD3V4cz3fW3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 00:15:32 +1000 (AEST)
 Received: from dude02.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::28])
 	by metis.whiteo.stw.pengutronix.de with esmtp (Exim 4.92)
 	(envelope-from <m.felsch@pengutronix.de>)
-	id 1sOHTX-0001LY-MS; Mon, 01 Jul 2024 15:53:47 +0200
+	id 1sOHTX-0001LY-6i; Mon, 01 Jul 2024 15:53:47 +0200
 From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Mon, 01 Jul 2024 15:53:45 +0200
-Subject: [PATCH 6/9] powerpc: convert to MTD_EEPROM_AT24
+Date: Mon, 01 Jul 2024 15:53:41 +0200
+Subject: [PATCH 2/9] mtd: add mtd_is_master helper
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240701-b4-v6-10-topic-usbc-tcpci-v1-6-3fd5f4a193cc@pengutronix.de>
+Message-Id: <20240701-b4-v6-10-topic-usbc-tcpci-v1-2-3fd5f4a193cc@pengutronix.de>
 References: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
 In-Reply-To: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
 To: Miquel Raynal <miquel.raynal@bootlin.com>, 
@@ -75,83 +75,29 @@ Cc: Marco Felsch <m.felsch@pengutronix.de>, imx@lists.linux.dev, linux-aspeed@li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The EEPROM_AT24 Kconfig symbol is marked as deprecated. Make use of the
-new Kconfig symbol to select the I2C EEPROM driver support.
+Provide a simple helper to make it easy to detect an master mtd device.
 
 Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
 ---
- arch/powerpc/configs/44x/warp_defconfig | 2 +-
- arch/powerpc/configs/mpc512x_defconfig  | 2 +-
- arch/powerpc/configs/mpc5200_defconfig  | 2 +-
- arch/powerpc/configs/ppc6xx_defconfig   | 2 +-
- arch/powerpc/configs/skiroot_defconfig  | 2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ include/linux/mtd/mtd.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/configs/44x/warp_defconfig b/arch/powerpc/configs/44x/warp_defconfig
-index 20891c413149..d8cab860c9d9 100644
---- a/arch/powerpc/configs/44x/warp_defconfig
-+++ b/arch/powerpc/configs/44x/warp_defconfig
-@@ -36,7 +36,7 @@ CONFIG_MTD_RAW_NAND=y
- CONFIG_MTD_NAND_NDFC=y
- CONFIG_MTD_UBI=y
- CONFIG_BLK_DEV_RAM=y
--CONFIG_EEPROM_AT24=y
-+CONFIG_MTD_EEPROM_AT24=y
- CONFIG_SCSI=y
- CONFIG_BLK_DEV_SD=y
- CONFIG_SCSI_SPI_ATTRS=y
-diff --git a/arch/powerpc/configs/mpc512x_defconfig b/arch/powerpc/configs/mpc512x_defconfig
-index d24457bc5791..0a919a76cfb8 100644
---- a/arch/powerpc/configs/mpc512x_defconfig
-+++ b/arch/powerpc/configs/mpc512x_defconfig
-@@ -46,7 +46,7 @@ CONFIG_MTD_UBI=y
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_COUNT=1
- CONFIG_BLK_DEV_RAM_SIZE=8192
--CONFIG_EEPROM_AT24=y
-+CONFIG_MTD_EEPROM_AT24=y
- CONFIG_EEPROM_AT25=y
- CONFIG_SCSI=y
- # CONFIG_SCSI_PROC_FS is not set
-diff --git a/arch/powerpc/configs/mpc5200_defconfig b/arch/powerpc/configs/mpc5200_defconfig
-index c0fe5e76604a..8142836ef61a 100644
---- a/arch/powerpc/configs/mpc5200_defconfig
-+++ b/arch/powerpc/configs/mpc5200_defconfig
-@@ -38,7 +38,7 @@ CONFIG_MTD_UBI=m
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=32768
--CONFIG_EEPROM_AT24=y
-+CONFIG_MTD_EEPROM_AT24=y
- CONFIG_BLK_DEV_SD=y
- CONFIG_CHR_DEV_SG=y
- CONFIG_ATA=y
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index 66c7b28d7450..5bca729a57c2 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -318,7 +318,7 @@ CONFIG_CDROM_PKTCDVD=m
- CONFIG_VIRTIO_BLK=m
- CONFIG_ENCLOSURE_SERVICES=m
- CONFIG_SENSORS_TSL2550=m
--CONFIG_EEPROM_AT24=m
-+CONFIG_MTD_EEPROM_AT24=m
- CONFIG_EEPROM_LEGACY=m
- CONFIG_EEPROM_MAX6875=m
- CONFIG_EEPROM_93CX6=m
-diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-index 9d44e6630908..e9be7f217cea 100644
---- a/arch/powerpc/configs/skiroot_defconfig
-+++ b/arch/powerpc/configs/skiroot_defconfig
-@@ -77,7 +77,7 @@ CONFIG_BLK_DEV_RAM_SIZE=65536
- CONFIG_VIRTIO_BLK=m
- CONFIG_BLK_DEV_NVME=m
- CONFIG_NVME_MULTIPATH=y
--CONFIG_EEPROM_AT24=m
-+CONFIG_MTD_EEPROM_AT24=m
- # CONFIG_CXL is not set
- # CONFIG_OCXL is not set
- CONFIG_BLK_DEV_SD=m
+diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
+index 8d10d9d2e830..bf3fc2ea7230 100644
+--- a/include/linux/mtd/mtd.h
++++ b/include/linux/mtd/mtd.h
+@@ -408,6 +408,11 @@ static inline struct mtd_info *mtd_get_master(struct mtd_info *mtd)
+ 	return mtd;
+ }
+ 
++static inline bool mtd_is_master(struct mtd_info *mtd)
++{
++	return mtd->parent ? false : true;
++}
++
+ static inline u64 mtd_get_master_ofs(struct mtd_info *mtd, u64 ofs)
+ {
+ 	while (mtd->parent) {
 
 -- 
 2.39.2
