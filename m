@@ -4,32 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 719FDC2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2024 14:17:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 619E3C30653
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2024 14:18:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WCSn217JYz3dHP
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 00:17:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WCSnR6sBvz3g9J
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 00:18:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=m.felsch@pengutronix.de; receiver=lists.ozlabs.org)
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCSkD3V4cz3fW3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 00:15:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCSkL1RLMz3fnY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 00:15:38 +1000 (AEST)
 Received: from dude02.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::28])
 	by metis.whiteo.stw.pengutronix.de with esmtp (Exim 4.92)
 	(envelope-from <m.felsch@pengutronix.de>)
-	id 1sOHTX-0001LY-6i; Mon, 01 Jul 2024 15:53:47 +0200
+	id 1sOHTW-0001LY-Vb; Mon, 01 Jul 2024 15:53:46 +0200
 From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Mon, 01 Jul 2024 15:53:41 +0200
-Subject: [PATCH 2/9] mtd: add mtd_is_master helper
+Subject: [PATCH 0/9] AT24 EEPROM MTD Support
+Date: Mon, 01 Jul 2024 15:53:39 +0200
+Message-Id: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240701-b4-v6-10-topic-usbc-tcpci-v1-2-3fd5f4a193cc@pengutronix.de>
-References: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
-In-Reply-To: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
+X-B4-Tracking: v=1; b=H4sIAOO0gmYC/x3MQQqEMAxG4atI1hNIpTjoVcTF9DeO2WhpVQTx7
+ haX3+K9i7Im00xddVHSw7KtS4H7VIT5t/yVbSymWmovX3EcPB8NO+FtjQbecwBviDCGD2gDoI1
+ 4Kn1MOtn5vvvhvh826v1ZawAAAA==
 To: Miquel Raynal <miquel.raynal@bootlin.com>, 
  Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
  Arnd Bergmann <arnd@arndb.de>, 
@@ -75,30 +76,86 @@ Cc: Marco Felsch <m.felsch@pengutronix.de>, imx@lists.linux.dev, linux-aspeed@li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Provide a simple helper to make it easy to detect an master mtd device.
+This series adds the intial support to handle EEPROMs via the MTD layer
+as well. This allow the user-space to have separate paritions since
+EEPROMs can become quite large nowadays.
+
+With this patchset applied EEPROMs can be accessed via:
+  - legacy 'eeprom' device
+  - nvmem device
+  - mtd device(s)
+
+The patchset targets only the AT24 (I2C) EEPROMs since I have no access
+to AT25 (SPI) EEPROMs nor to one of the other misc/eeprom/* devices.
+
+Note: I'm not familiar with Kconfig symbol migration so I don't know if
+the last patch is required at the moment. Please be notified that the
+list of recipients is quite large due to the defconfig changes.
+
+Regards,
+  Marco
 
 Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
 ---
- include/linux/mtd/mtd.h | 5 +++++
- 1 file changed, 5 insertions(+)
+Marco Felsch (9):
+      mtd: core: add nvmem_write support
+      mtd: add mtd_is_master helper
+      mtd: add support to handle EEPROM devices
+      mtd: devices: add AT24 eeprom support
+      ARM: defconfig: convert to MTD_EEPROM_AT24
+      powerpc: convert to MTD_EEPROM_AT24
+      MIPS: configs: convert to MTD_EEPROM_AT24
+      LoongArch: convert to MTD_EEPROM_AT24
+      eeprom: at24: remove deprecated Kconfig symbol
 
-diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
-index 8d10d9d2e830..bf3fc2ea7230 100644
---- a/include/linux/mtd/mtd.h
-+++ b/include/linux/mtd/mtd.h
-@@ -408,6 +408,11 @@ static inline struct mtd_info *mtd_get_master(struct mtd_info *mtd)
- 	return mtd;
- }
- 
-+static inline bool mtd_is_master(struct mtd_info *mtd)
-+{
-+	return mtd->parent ? false : true;
-+}
-+
- static inline u64 mtd_get_master_ofs(struct mtd_info *mtd, u64 ofs)
- {
- 	while (mtd->parent) {
+ MAINTAINERS                                 |   2 +-
+ arch/arm/configs/aspeed_g4_defconfig        |   2 +-
+ arch/arm/configs/aspeed_g5_defconfig        |   2 +-
+ arch/arm/configs/at91_dt_defconfig          |   2 +-
+ arch/arm/configs/axm55xx_defconfig          |   2 +-
+ arch/arm/configs/davinci_all_defconfig      |   2 +-
+ arch/arm/configs/imx_v4_v5_defconfig        |   2 +-
+ arch/arm/configs/imx_v6_v7_defconfig        |   2 +-
+ arch/arm/configs/ixp4xx_defconfig           |   2 +-
+ arch/arm/configs/keystone_defconfig         |   2 +-
+ arch/arm/configs/lpc18xx_defconfig          |   2 +-
+ arch/arm/configs/lpc32xx_defconfig          |   2 +-
+ arch/arm/configs/multi_v5_defconfig         |   2 +-
+ arch/arm/configs/multi_v7_defconfig         |   2 +-
+ arch/arm/configs/mvebu_v5_defconfig         |   2 +-
+ arch/arm/configs/mvebu_v7_defconfig         |   2 +-
+ arch/arm/configs/mxs_defconfig              |   2 +-
+ arch/arm/configs/omap2plus_defconfig        |   2 +-
+ arch/arm/configs/pxa_defconfig              |   2 +-
+ arch/arm/configs/s3c6400_defconfig          |   2 +-
+ arch/arm/configs/sama5_defconfig            |   2 +-
+ arch/arm/configs/sama7_defconfig            |   2 +-
+ arch/arm/configs/shmobile_defconfig         |   2 +-
+ arch/arm/configs/socfpga_defconfig          |   2 +-
+ arch/arm/configs/tegra_defconfig            |   2 +-
+ arch/arm/configs/wpcm450_defconfig          |   2 +-
+ arch/loongarch/configs/loongson3_defconfig  |   2 +-
+ arch/mips/configs/cavium_octeon_defconfig   |   2 +-
+ arch/mips/configs/db1xxx_defconfig          |   2 +-
+ arch/powerpc/configs/44x/warp_defconfig     |   2 +-
+ arch/powerpc/configs/mpc512x_defconfig      |   2 +-
+ arch/powerpc/configs/mpc5200_defconfig      |   2 +-
+ arch/powerpc/configs/ppc6xx_defconfig       |   2 +-
+ arch/powerpc/configs/skiroot_defconfig      |   2 +-
+ drivers/misc/eeprom/Kconfig                 |  31 -------
+ drivers/misc/eeprom/Makefile                |   1 -
+ drivers/mtd/devices/Kconfig                 |  31 +++++++
+ drivers/mtd/devices/Makefile                |   1 +
+ drivers/{misc/eeprom => mtd/devices}/at24.c | 122 +++++++++++++++-------------
+ drivers/mtd/mtdcore.c                       |  49 ++++++++++-
+ include/linux/mtd/mtd.h                     |   5 ++
+ include/uapi/mtd/mtd-abi.h                  |   2 +
+ 42 files changed, 187 insertions(+), 123 deletions(-)
+---
+base-commit: 1613e604df0cd359cf2a7fbd9be7a0bcfacfabd0
+change-id: 20240701-b4-v6-10-topic-usbc-tcpci-c4bc9bcce604
 
+Best regards,
 -- 
-2.39.2
+Marco Felsch <m.felsch@pengutronix.de>
 
