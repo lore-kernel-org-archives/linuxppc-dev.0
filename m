@@ -4,31 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72685C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2024 14:15:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64D3BC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Jul 2024 14:15:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WCSjp4pxVz3fSx
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 00:15:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WCSkD6mf2z3fW3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 00:15:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=m.felsch@pengutronix.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1249 seconds by postgrey-1.37 at boromir; Tue, 02 Jul 2024 00:14:47 AEST
 Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCSjM4G7cz3c5Y
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 00:14:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCSjY65WGz3cfg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 00:14:57 +1000 (AEST)
 Received: from dude02.red.stw.pengutronix.de ([2a0a:edc0:0:1101:1d::28])
 	by metis.whiteo.stw.pengutronix.de with esmtp (Exim 4.92)
 	(envelope-from <m.felsch@pengutronix.de>)
-	id 1sOHTX-0001LY-37; Mon, 01 Jul 2024 15:53:47 +0200
+	id 1sOHTX-0001LY-Qc; Mon, 01 Jul 2024 15:53:47 +0200
 From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Mon, 01 Jul 2024 15:53:40 +0200
-Subject: [PATCH 1/9] mtd: core: add nvmem_write support
+Date: Mon, 01 Jul 2024 15:53:46 +0200
+Subject: [PATCH 7/9] MIPS: configs: convert to MTD_EEPROM_AT24
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240701-b4-v6-10-topic-usbc-tcpci-v1-1-3fd5f4a193cc@pengutronix.de>
+Message-Id: <20240701-b4-v6-10-topic-usbc-tcpci-v1-7-3fd5f4a193cc@pengutronix.de>
 References: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
 In-Reply-To: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
 To: Miquel Raynal <miquel.raynal@bootlin.com>, 
@@ -76,53 +75,41 @@ Cc: Marco Felsch <m.felsch@pengutronix.de>, imx@lists.linux.dev, linux-aspeed@li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The MTD framework does support the NVMEM framework already but only the
-read support was implemented. This commit adds the write support if the
-MTD device supports writing (MTD_WRITEABLE is set).
+The EEPROM_AT24 Kconfig symbol is marked as deprecated. Make use of the
+new Kconfig symbol to select the I2C EEPROM driver support.
 
 Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
 ---
- drivers/mtd/mtdcore.c | 17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ arch/mips/configs/cavium_octeon_defconfig | 2 +-
+ arch/mips/configs/db1xxx_defconfig        | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index 724f917f91ba..dcd97e59425e 100644
---- a/drivers/mtd/mtdcore.c
-+++ b/drivers/mtd/mtdcore.c
-@@ -544,6 +544,20 @@ static int mtd_nvmem_reg_read(void *priv, unsigned int offset,
- 	return retlen == bytes ? 0 : -EIO;
- }
- 
-+static int mtd_nvmem_reg_write(void *priv, unsigned int offset,
-+			       void *val, size_t bytes)
-+{
-+	struct mtd_info *mtd = priv;
-+	size_t retlen;
-+	int err;
-+
-+	err = mtd_write(mtd, offset, bytes, &retlen, val);
-+	if (err && err != -EUCLEAN)
-+		return err;
-+
-+	return retlen == bytes ? 0 : -EIO;
-+}
-+
- static int mtd_nvmem_add(struct mtd_info *mtd)
- {
- 	struct device_node *node = mtd_get_of_node(mtd);
-@@ -555,10 +569,11 @@ static int mtd_nvmem_add(struct mtd_info *mtd)
- 	config.owner = THIS_MODULE;
- 	config.add_legacy_fixed_of_cells = of_device_is_compatible(node, "nvmem-cells");
- 	config.reg_read = mtd_nvmem_reg_read;
-+	config.reg_write = mtd_nvmem_reg_write;
- 	config.size = mtd->size;
- 	config.word_size = 1;
- 	config.stride = 1;
--	config.read_only = true;
-+	config.read_only = !(mtd->flags & MTD_WRITEABLE);
- 	config.root_only = true;
- 	config.ignore_wp = true;
- 	config.priv = mtd;
+diff --git a/arch/mips/configs/cavium_octeon_defconfig b/arch/mips/configs/cavium_octeon_defconfig
+index f523ee6f25bf..a5bb80a59c6e 100644
+--- a/arch/mips/configs/cavium_octeon_defconfig
++++ b/arch/mips/configs/cavium_octeon_defconfig
+@@ -50,7 +50,7 @@ CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_AMDSTD=y
+ CONFIG_MTD_SLRAM=y
+ CONFIG_BLK_DEV_LOOP=y
+-CONFIG_EEPROM_AT24=y
++CONFIG_MTD_EEPROM_AT24=y
+ CONFIG_EEPROM_AT25=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_ATA=y
+diff --git a/arch/mips/configs/db1xxx_defconfig b/arch/mips/configs/db1xxx_defconfig
+index b2d9253ff786..b1c1777df16c 100644
+--- a/arch/mips/configs/db1xxx_defconfig
++++ b/arch/mips/configs/db1xxx_defconfig
+@@ -95,7 +95,7 @@ CONFIG_MTD_NAND_ECC_SW_BCH=y
+ CONFIG_MTD_NAND_AU1550=y
+ CONFIG_MTD_NAND_PLATFORM=y
+ CONFIG_MTD_SPI_NOR=y
+-CONFIG_EEPROM_AT24=y
++CONFIG_MTD_EEPROM_AT24=y
+ CONFIG_EEPROM_AT25=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_CHR_DEV_SG=y
 
 -- 
 2.39.2
