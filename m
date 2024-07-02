@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BEA1C3064D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 07:01:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD339C3064D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 07:01:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=irSIw51u;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hq8PoOKz;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WCv2j5xLmz3d9G
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 17:01:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WCv3T3sG2z3cWP
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 17:01:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=irSIw51u;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hq8PoOKz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCv1w2xm6z2ysd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 17:00:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WCv2F1Sdvz3cXD
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jul 2024 17:00:53 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 74928CE0F30;
-	Tue,  2 Jul 2024 07:00:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B0576C116B1;
-	Tue,  2 Jul 2024 07:00:26 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 48BE1CE1BB6;
+	Tue,  2 Jul 2024 07:00:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0473FC116B1;
+	Tue,  2 Jul 2024 07:00:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1719903632;
-	bh=G08x9Hsb4KLp3BcCWhMY8WT2trDfN0A90XlVgRrIvp8=;
+	s=k20201202; t=1719903649;
+	bh=FS41p/aHV/AdeAid3qNfKkLGKSCulGrxDVJp7+CTRfg=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=irSIw51ubwpKsbC2BrtrQTcOfGSkHw+pUSM51Z/9l6eTUZ/S5wv2gATsWL7pBQwKz
-	 m89OubxuZ5nqlb4TxAbkUGIfTL1fOWqQRzYAtTTpLi457vFf6I1PtaMZH0+FZl4nwb
-	 qAyLK6IGY6gDL9ynQykqx7eBWkWl5MnNfMMn8Yg2rMazU+GNtiEQhG9QCaGuZZMhN4
-	 XtC7mGX3gVlxoFGE67N2yyqweuSw/NN1jVaWZ4LNwtBLpy5kZ6QupFKT2q2h7Yx6ih
-	 fvh1T6yN8ZffnPniM1MhKlssLpOY42DgXiDqVMFHb/SYgJppCTaELZy9D375X8h2ko
-	 sD7h4MnO5kHOw==
-Message-ID: <d203dd45-fe69-48dc-aa36-d9870065f2e9@kernel.org>
-Date: Tue, 2 Jul 2024 09:00:24 +0200
+	b=hq8PoOKz319snuW5x/MvSEZd5jRkj6iwZKJsU5uNMY9VStk2BTjFvT+jlKjkincBZ
+	 qFsEH16mLERORU1nxU7CQSSUfNo0Dz6yVClX4rPrWNVYXKJoExxMJ0r3fQzp5UifnC
+	 lCrYbi0BRfahKm6ZpvoZykRFZomQ/0N2uryOglJAwoKiKe8MeKZ6eFxrXP9I7HW7hA
+	 6+0NboW42LKV5V+JZxu1HOnQ0eZ4ECnZwTnVvzRgT2Rode58QOkghUx9JZBAC9wl+Z
+	 TGu72UDOzZlkqwBQZQyOgQhp3YJgT3Y4CzGmSKKI4DyXkHmfuppovNFoCh/rQlVGSz
+	 XJc0eZY9eFioQ==
+Message-ID: <515e039b-2a1a-414b-96ce-9690fe0dd7b1@kernel.org>
+Date: Tue, 2 Jul 2024 09:00:41 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/3] powerpc/configs: Update defconfig with now
+Subject: Re: [PATCH v3 3/3] arm64/configs: Update defconfig with now
  user-visible CONFIG_FSL_IFC
 To: Esben Haabendal <esben@geanix.com>,
  Tudor Ambarus <tudor.ambarus@linaro.org>,
@@ -55,7 +55,7 @@ To: Esben Haabendal <esben@geanix.com>,
  "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
  Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>
 References: <20240530-fsl-ifc-config-v3-0-1fd2c3d233dd@geanix.com>
- <20240530-fsl-ifc-config-v3-2-1fd2c3d233dd@geanix.com>
+ <20240530-fsl-ifc-config-v3-3-1fd2c3d233dd@geanix.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -101,7 +101,7 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20240530-fsl-ifc-config-v3-2-1fd2c3d233dd@geanix.com>
+In-Reply-To: <20240530-fsl-ifc-config-v3-3-1fd2c3d233dd@geanix.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -122,11 +122,9 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 On 30/05/2024 16:46, Esben Haabendal wrote:
 > With CONFIG_FSL_IFC now being user-visible, and thus changed from a select
 > to depends in CONFIG_MTD_NAND_FSL_IFC, the dependencies needs to be
-> selected in defconfigs.
+> selected in defconfig.
 > 
 > Signed-off-by: Esben Haabendal <esben@geanix.com>
-
-Anyone is going to pick this up?
 
 Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
