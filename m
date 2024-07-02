@@ -4,56 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 202BCC30658
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 17:51:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDA94C30658
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Jul 2024 17:56:20 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fp8a4ALq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=mvSgJCG5;
+	dkim=fail reason="signature verification failed" header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=2L5SkDMM;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WD9SS3B61z3dSZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 03:51:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WD9ZW3F6Bz3cY0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 03:56:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fp8a4ALq;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=mvSgJCG5;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=2L5SkDMM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pratyush@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.165; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.165])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WD4gl2Z34z3fnh;
-	Wed,  3 Jul 2024 00:15:31 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 3735661D50;
-	Tue,  2 Jul 2024 14:15:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE16EC116B1;
-	Tue,  2 Jul 2024 14:15:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1719929727;
-	bh=Yj29D4k1LcVn7Ks20rGXW4rvIpFaMTU+k2U6e4btBIQ=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=fp8a4ALqKzJzQAFeAuZkwqCTvJuj0YtIUipMdlDd1rdkIFeKnzJXvTU3ZN0hz7K3I
-	 gdGUBWehue5RqVC5hGNOUvvuyOunqynlN5KMwgWGLsZkZ1bjI6ci4xj01PXjke6cF8
-	 p/8NbVcc0wZLJ+yL0JRUzNF2LdURmYzmHW6CDju7ahJGwtuuwL4Mzn+Aj/Z1wcz5bH
-	 oWLRk0GLRph+pRoW5289upyRK2T1BiUlNsysIDE7Lh88Pb71ZAoYouEyj8x2rrNUUH
-	 b1aKcrmm/8bQuL0VWowbIbLBntgCeNZ+kZbpWxKHVFdpLswkkGR7QKvlhrlM+MW3hn
-	 NrIInqs3S0POA==
-From: Pratyush Yadav <pratyush@kernel.org>
-To: Maxime Ripard <mripard@kernel.org>
-Subject: Re: [PATCH 4/9] mtd: devices: add AT24 eeprom support
-In-Reply-To: <20240702-congenial-vigilant-boar-aeae44@houat> (Maxime Ripard's
-	message of "Tue, 2 Jul 2024 15:56:52 +0200")
-References: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
-	<20240701-b4-v6-10-topic-usbc-tcpci-v1-4-3fd5f4a193cc@pengutronix.de>
-	<07b701a9-7b52-45b7-8dba-1c25d77cbf15@linaro.org>
-	<mafs0ikxnykpr.fsf@kernel.org>
-	<20240702-congenial-vigilant-boar-aeae44@houat>
-Date: Tue, 02 Jul 2024 16:15:20 +0200
-Message-ID: <mafs0ed8byj5z.fsf@kernel.org>
-User-Agent: Gnus/5.13 (Gnus v5.13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WD9Yd3tPGz30Ty
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 03:55:31 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1719942903; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=DWGnEPQ9ll4FHGnZdCzyUt/27cf3QCHSLL2H6N7j1y9I8/5t/QSLfLhciIdaMGC42Y
+    ZGbsO4EyECz9Xn5dMA71o8YI7a5GqseVXqZVop6T/IzVSQWEAYfqkJRUhOAG4Y6lLE5q
+    oo/HTc5mRaEMlpT0auXnXLco6/rcwQyRI8Ifl0zecAArrKEf5BuPVP7EMqBZObEY2pjz
+    8O4EcY7onRtxeJyX5gVtjPSiQNsZlG+AwF4kFtyIl52PEB0d0m/oR6ddqLAzV/mW3awJ
+    1k3p9lH+TC68Jurp6Pqj6cK+sHN8mKox01s7A6P3yGk4Wgx6l/tXAEpUeGIjdC5HpggJ
+    H+eQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1719942903;
+    s=strato-dkim-0002; d=strato.com;
+    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=E673tN2YQj+8YdDOgypEUonLvv3SNH0/z/xJh5Re/DY=;
+    b=TUH8DlAnzXLMbDaA3ihEWSXBi0VQHbeMnvhQgaiEWRjHbluLzIqYjTG0W1Fc+vMAzW
+    6qrH5pNpyrNE4iz1yucvS/iJCFZkatQacxjOdufZQQ7T1QBkcVjRcQmUZ5hTJCRqNEnV
+    7kVnJvar/aWp9C3+WYz5sS38Q41UQJYMq4iJkZvEqeJ1WO9G4BbUkcNDvMLI1Z0+E52R
+    p16OMXLEglADqukqNzFp8bUTRVoNov8rrP6TUJHsoX8wdqBCvCAR1QJEVGUFBSJJf12z
+    rUS8/WX4tAL/fMg8SGFPeTNZiAG/yRSmob8qoS0421Z3348yOOQzy4tvqGURq3jSJvUb
+    V0aA==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1719942903;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=E673tN2YQj+8YdDOgypEUonLvv3SNH0/z/xJh5Re/DY=;
+    b=mvSgJCG5rSIq5dPPNijVjlXgWwhiola37MFtb1m9skjSHrEwcRhKFw/ZcTO6ifc2/j
+    pc4T1yNBPdQzycn+0ygstbXGz2axwqCpcExcrz8XrXX9eswR++lMGY93b9M1Ae6cF8HC
+    petAvBZi2jHzkmgwOGjA14GAKa/hTw4eywvEf05JrKNd680jgimHJ7tT//YlvzjC0Uy5
+    rcW/gQJgAf2lCgz7ut9YKi4HsoGOJmKU2sI5ZBJtXd9VMK1VTAlDkYbRULcr5DfqH6OO
+    aeNMdV2zsMVVFzpYCyxMTqcR4wnyuxFuJi8IwHjGNolp9q61vUNOO1qSpKiMo7H3r2e0
+    FMyg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1719942903;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=E673tN2YQj+8YdDOgypEUonLvv3SNH0/z/xJh5Re/DY=;
+    b=2L5SkDMMJPrUnN6/0MOrNysN60u+4JYcWSxBecqkr/iZwN1FF+8LF70umCGJRvJDoJ
+    2NmsXx+urSXr+XIM6BAg==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHvJzedR43JwibS68C57Gui33iwqCo/HyxjBt/hV5IkL4zA=="
+Received: from [IPV6:2a01:599:803:d861:d64a:638:126b:586e]
+    by smtp.strato.de (RZmta 50.5.0 AUTH)
+    with ESMTPSA id e08389062Ht2M9R
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Tue, 2 Jul 2024 19:55:02 +0200 (CEST)
+Message-ID: <68b7988d-eaaa-4713-99c3-525a34c5b322@xenosoft.de>
+Date: Tue, 2 Jul 2024 19:55:38 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Mailman-Approved-At: Wed, 03 Jul 2024 03:49:43 +1000
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PowerPC] [PASEMI] Issue with the identification of ATA drives
+ after the of/irq updates 2024-05-29
+To: Marc Zyngier <maz@kernel.org>
+References: <3ab66fab-c3f2-4bed-a04d-a10c57dcdd9b@xenosoft.de>
+ <861q4bizxc.wl-maz@kernel.org>
+Content-Language: en-US
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+In-Reply-To: <861q4bizxc.wl-maz@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,42 +98,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Vignesh Raghavendra <vigneshr@ti.com>, Geert Uytterhoeven <geert+renesas@glider.be>, imx@lists.linux.dev, Tony Lindgren <tony@atomide.com>, Marco Felsch <m.felsch@pengutronix.de>, Nicolas Ferre <nicolas.ferre@microchip.com>, Thierry Reding <thierry.reding@gmail.com>, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, Miquel Raynal <miquel.raynal@bootlin.com>, WANG Xuerui <kernel@xen0n.name>, Fabio Estevam <festevam@gmail.com>, linux-aspeed@lists.ozlabs.org, Richard Weinberger <richard@nod.at>, Bartosz Golaszewski <brgl@bgdev.pl>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Christophe Leroy <christophe.leroy@csgroup.eu>, Jonathan Hunter <jonathanh@nvidia.com>, Tudor Ambarus <tudor.ambarus@linaro.org>, Joel Stanley <joel@jms.id.au>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Arnd Bergmann <arnd@arndb.de>, openbmc@lists.ozlabs.org, Sascha Hauer <s.hauer@pengutronix.de>, Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>, Nicholas Piggin <npiggin@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>, loongarch@lists.linux.dev, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@tuxon.dev>, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Gregory Clement <gregory.clement@bootlin.com>, Pratyush Yadav <pratyush@kernel.org>
+Cc: apatel@ventanamicro.com, Rob Herring <robh@kernel.org>, Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>, DTML <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mad skateman <madskateman@gmail.com>, Matthew Leaman <matthew@a-eon.biz>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christian Zigotzky <info@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 02 2024, Maxime Ripard wrote:
+Hello Marc,
 
-> On Tue, Jul 02, 2024 at 03:41:52PM GMT, Pratyush Yadav wrote:
->> On Mon, Jul 01 2024, Tudor Ambarus wrote:
->> 
->> > On 7/1/24 2:53 PM, Marco Felsch wrote:
->> >> EEPROMs can become quite large nowadays (>=64K). Exposing such devices
->> >> as single device isn't always sufficient. There may be partitions which
->> >> require different access permissions. Also write access always need to
->> >> to verify the offset.
->> >> 
->> >> Port the current misc/eeprom/at24.c driver to the MTD framework since
->> >> EEPROMs are memory-technology devices and the framework already supports
->> >
->> > I was under the impression that MTD devices are tightly coupled by erase
->> > blocks. But then we see MTD_NO_ERASE, so what are MTD devices after all?
->> 
->> I was curious as well so I did some digging.
->> 
-[...]
->> 
->> I also found a thread from 2013 by Maxime Ripard (+Cc) suggesting adding
->> EEPROMs to MTD [1]. The main purpose would have been unifying the EEPROM
->> drivers under a single interface. I am not sure what came of it though,
->> since I can't find any patches that followed up with the proposal.
+Thank you for your reply.
+
+On 02.07.24 17:19, Marc Zyngier wrote:
+> Christian,
 >
-> That discussion led to drivers/nvmem after I started to work on
-> some early prototype, and Srinivas took over that work.
+> On Sun, 30 Jun 2024 11:21:55 +0100,
+> Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
+>> Hello,
+>>
+>> There is an issue with the identification of ATA drives with our
+>> P.A. Semi Nemo boards [1] after the
+>> commit "of/irq: Factor out parsing of interrupt-map parent
+>> phandle+args from of_irq_parse_raw()" [2].
+>>
+>> Error messages:
+>>
+>> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+>> ata2.00: qc timeout after 10000 mssecs (cmd 0xec)
+>>
+>> Screenshots [3]
+>>
+>> I bisected yesterday [4] and "of/irq: Factor out parsing of
+>> interrupt-map parent phandle+args from of_irq_parse_raw()" [2] is the
+>> first bad commit.
+>>
+>> Then I created a patch for reverting this first bad commit. I also
+>> reverted the changes in drivers/of/property.c. [5]
+>>
+>> The patched kernel boots with successful detection of the ATA devices.
+>>
+>> Please check the of/irq updates.
+> It is hard to understand what is going on with so little information.
+>
+> Please provide the device tree for your platform. It isn't possible to
+> debug this without it, no matter how many pictures you provide. If it
+> doesn't exist in source form, you can dump it using:
+>
+> # dtc -I dtb /sys/firmware/fdt
+>
+> and posting the full output.
+>
+> Additionally, a full dmesg of both working and non working boots would
+> be useful.
+>
+> Thanks,
+>
+> 	M.
+>
+The device tree of the Nemo board and further information: 
+https://forum.hyperion-entertainment.com/viewtopic.php?p=54406#p54406
 
-So would you say it is better for EEPROM drivers to use nvmem instead of
-moving under MTD?
-
--- 
-Regards,
-Pratyush Yadav
+Cheers,
+Christian
