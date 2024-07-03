@@ -4,86 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C85CC2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 10:27:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B0E2C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 10:39:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=NlYiDjUJ;
-	dkim=fail reason="signature verification failed" header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=HnKQGAsQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=cPZSrbgY;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WDbZ10zwDz3cmV
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 20:27:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WDbqp01ypz2ysg
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 20:39:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=NlYiDjUJ;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=HnKQGAsQ;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=cPZSrbgY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.165; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.165])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.194; helo=relay2-d.mail.gandi.net; envelope-from=luca.ceresoli@bootlin.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Wed, 03 Jul 2024 20:38:36 AEST
+Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [217.70.183.194])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WDbY92q5Mz2ypm
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 20:26:34 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1720002389; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=pNni1aDpo97idlHxjXEYnr6cXufqQ1jfdjKSGUt64RdiIJ3hZ/VMc5U4O2R+3KRJF8
-    eVmiPsIvVrA0xoR4cJTO4201shWC308D3zA4CDnlKcIQYMqsB0TXJRc67yQvQpD/hAd+
-    fHbh4Qr7pFcE1wRbur2SCH1S52UJB6VStAy1IFJIHRDPiPO908GpHMxldhfba3x26afW
-    bIHaFkvr+u5BZtgJbCQT9zd/d09jSRpRqXunOn90L4f4P4kTUzWzIc1+gc8UTFKkdS96
-    NRPSAecnwQamLoLUza+pl5T0OdIHZ72zCckgnFqGDUJDZPqMfk2aST9N8vgOicsIlThO
-    mfhg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1720002389;
-    s=strato-dkim-0002; d=strato.com;
-    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
-    From:Subject:Sender;
-    bh=gsB15KylrTss2Q22K6/8fTOKkDDS/+PxBfNc7RDie7Q=;
-    b=UG+n1195gUiIEu7LB4gqzxjZecdaYprqZt2a6tpLjGHWBrJIdFUZwLVExUdocJMM9d
-    uBSh4p9xwzF1tHgOf4imCEd4OTLjUVac6xO5wjDXQXKbPt6pbS8yJWEX1EZC8dQtnNOG
-    zgg03J5KUOO5A0GhTvk/OSu26BePtiGjfupk42zzUJdhuB5ZGBHY1r6zD4kucH95ABd1
-    8qkb9oxfZtkWjI/bYwO6g9Kjk7/tkgvjqs8Tqill2DVX9WSANCjV8MGNh7Hf0b3SEjDM
-    yynHmklLA51dGl9oLInAbFyqsgrQtQWoP3adSeOnnrn2lZBNC0HQUENFyFKefxkpuSO8
-    RTfQ==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1720002389;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
-    From:Subject:Sender;
-    bh=gsB15KylrTss2Q22K6/8fTOKkDDS/+PxBfNc7RDie7Q=;
-    b=NlYiDjUJmvVFgMtRhTdc3b/gD4AkDu0mBIay4tIzGxAIfULvTCZX93yP2uZuKH92hD
-    ym+q8FC9qBTAV/T+hylgajPy2bpxTozICiH7EEMmfiyuqZHvxAZAsOJ5sDJs/AydDtms
-    vWXdJLqUU8UM84jICH+D8aL1tGhIp1faiEBb+/PW5AN1uC3T/zGBxh5E8VBi0Jtd1Inw
-    sOX7qLvDbwNf/lqhCENApB6yOtZBq4Pic/I9F1OZ2b5C2dY0r/KgIALFT1Xpif5bJANo
-    AXeTzJbEig/pt+z+QKvxLntcTQssOKxKOok5Oz+Ix/dlvXACziytvv40ek1POdJkmTI6
-    CYcQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1720002389;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
-    From:Subject:Sender;
-    bh=gsB15KylrTss2Q22K6/8fTOKkDDS/+PxBfNc7RDie7Q=;
-    b=HnKQGAsQRUJcpMBsv1E/ZPqnTqey+uXtiTQTlOFjnyEkHRAWmJZAj2ew7Elq+gaeFp
-    lhwKcR1ItlZ1bX9h07AA==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5jgsyqQXntn0mkb0Dnz0PBqI1iVaDzyFx0Z7Dc="
-Received: from smtpclient.apple
-    by smtp.strato.de (RZmta 50.5.0 AUTH)
-    with ESMTPSA id e08389063AQSOWH
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Wed, 3 Jul 2024 12:26:28 +0200 (CEST)
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PowerPC] [PASEMI] Issue with the identification of ATA drives after the of/irq updates 2024-05-29
-Date: Wed, 3 Jul 2024 12:26:17 +0200
-Message-Id: <B550D4C4-6F82-409E-B5A8-E7D123ACB93D@xenosoft.de>
-References: <86cynv9dx7.wl-maz@kernel.org>
-In-Reply-To: <86cynv9dx7.wl-maz@kernel.org>
-To: Marc Zyngier <maz@kernel.org>
-X-Mailer: iPhone Mail (21F90)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WDbq05WBCz3c5F
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 20:38:36 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 1B34140007;
+	Wed,  3 Jul 2024 10:38:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1720003113;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=RU3pzYG6bF53Hk2/xb6Gkld3bSr1k5kQ8wZC1imwq1g=;
+	b=cPZSrbgY1uyHHUyxN4ire6Mmb4TO2Vu4T16Cw0ijX9WtOdQxRVHvR8xZ+jgMpz5IE44inL
+	vII6SqG0BXZ0XbJVzXjYjxMz8zquGtkc7ojMGbf+/xzpe9vPjARGlOsl4Kt/bELXixFXbH
+	5T4k5i2pHjA7qYSjwFIN2biRcDna40ZV3h1eAQappwyEIKEtCUiI5XdvuyfwdrmtIeJjgC
+	EmXxc3JWVdEIgSVbA2I6p8eyD4T5kYYxryDYm4ngJCNcK71xw65khBJRmgNBswdV/gvQA8
+	WY/WU4scw62nCs+t+3Qq4YDu8vQayuKSd07TBXf+564kOUKkT1WLhWlM6A8vaQ==
+From: Luca Ceresoli <luca.ceresoli@bootlin.com>
+Date: Wed, 03 Jul 2024 12:37:01 +0200
+Subject: [PATCH 17/20] ASoC: arizona: convert to
+ of_property_for_each_u32_new()
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20240703-of_property_for_each_u32-v1-17-42c1fc0b82aa@bootlin.com>
+References: <20240703-of_property_for_each_u32-v1-0-42c1fc0b82aa@bootlin.com>
+In-Reply-To: <20240703-of_property_for_each_u32-v1-0-42c1fc0b82aa@bootlin.com>
+To: Miguel Ojeda <ojeda@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Saravana Kannan <saravanak@google.com>, 
+ Nathan Chancellor <nathan@kernel.org>, 
+ Michael Turquette <mturquette@baylibre.com>, 
+ Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ =?utf-8?q?Emilio_L=C3=B3pez?= <emilio@elopez.com.ar>, 
+ Chen-Yu Tsai <wens@csie.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+ Samuel Holland <samuel@sholland.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@linaro.org>, 
+ Thomas Gleixner <tglx@linutronix.de>, 
+ Florian Fainelli <florian.fainelli@broadcom.com>, 
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+ Linus Walleij <linus.walleij@linaro.org>, 
+ Bartosz Golaszewski <brgl@bgdev.pl>, Jonathan Cameron <jic23@kernel.org>, 
+ Lee Jones <lee@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>, 
+ Richard Leitner <richard.leitner@linux.dev>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+ Nicolas Ferre <nicolas.ferre@microchip.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, 
+ Damien Le Moal <dlemoal@kernel.org>
+X-Mailer: b4 0.14.0
+X-GND-Sasl: luca.ceresoli@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,22 +87,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: apatel@ventanamicro.com, Rob Herring <robh@kernel.org>, Darren Stevens <darren@stevens-zone.net>, "R.T.Dickinson" <rtd2@xtra.co.nz>, DTML <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mad skateman <madskateman@gmail.com>, Matthew Leaman <matthew@a-eon.biz>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christian Zigotzky <info@xenosoft.de>
+Cc: devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Peng Fan \(OSS\)" <peng.fan@oss.nxp.com>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, linux-arm-msm@vger.kernel.org, llvm@lists.linux.dev, linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org, linux-sunxi@lists.linux.dev, linux-gpio@vger.kernel.org, patches@opensource.cirrus.com, linux-usb@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-serial@vger.kernel.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Luca Ceresoli <luca.ceresoli@bootlin.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3. Jul 2024, at 08:40, Marc Zyngier <maz@kernel.org> wrote:
+Simplify code using of_property_for_each_u32_new() as the two additional
+parameters in of_property_for_each_u32() are not used here.
 
-This isn't a DTS. This is a listing of all the nodes, not something I
-can use to feed the kernel. I explained how to generate it.
+Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+---
+ sound/soc/codecs/arizona.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-Download the compiled device tree for the Nemo board:
-http://www.xenosoft.de/fdt-nemo-board.zip
+diff --git a/sound/soc/codecs/arizona.c b/sound/soc/codecs/arizona.c
+index 7434aeeda292..1a64b9815809 100644
+--- a/sound/soc/codecs/arizona.c
++++ b/sound/soc/codecs/arizona.c
+@@ -2786,15 +2786,13 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
+ {
+ 	struct arizona_pdata *pdata = &arizona->pdata;
+ 	struct device_node *np = arizona->dev->of_node;
+-	struct property *prop;
+-	const __be32 *cur;
+ 	u32 val;
+ 	u32 pdm_val[ARIZONA_MAX_PDM_SPK];
+ 	int ret;
+ 	int count = 0;
+ 
+ 	count = 0;
+-	of_property_for_each_u32(np, "wlf,inmode", prop, cur, val) {
++	of_property_for_each_u32_new(np, "wlf,inmode", val) {
+ 		if (count == ARRAY_SIZE(pdata->inmode))
+ 			break;
+ 
+@@ -2803,7 +2801,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
+ 	}
+ 
+ 	count = 0;
+-	of_property_for_each_u32(np, "wlf,dmic-ref", prop, cur, val) {
++	of_property_for_each_u32_new(np, "wlf,dmic-ref", val) {
+ 		if (count == ARRAY_SIZE(pdata->dmic_ref))
+ 			break;
+ 
+@@ -2812,7 +2810,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
+ 	}
+ 
+ 	count = 0;
+-	of_property_for_each_u32(np, "wlf,out-mono", prop, cur, val) {
++	of_property_for_each_u32_new(np, "wlf,out-mono", val) {
+ 		if (count == ARRAY_SIZE(pdata->out_mono))
+ 			break;
+ 
+@@ -2821,7 +2819,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
+ 	}
+ 
+ 	count = 0;
+-	of_property_for_each_u32(np, "wlf,max-channels-clocked", prop, cur, val) {
++	of_property_for_each_u32_new(np, "wlf,max-channels-clocked", val) {
+ 		if (count == ARRAY_SIZE(pdata->max_channels_clocked))
+ 			break;
+ 
+@@ -2830,7 +2828,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
+ 	}
+ 
+ 	count = 0;
+-	of_property_for_each_u32(np, "wlf,out-volume-limit", prop, cur, val) {
++	of_property_for_each_u32_new(np, "wlf,out-volume-limit", val) {
+ 		if (count == ARRAY_SIZE(pdata->out_vol_limit))
+ 			break;
+ 
 
-No, thank you.
-
-=E2=80=94=E2=80=94=E2=80=94=E2=80=94=E2=80=94=E2=80=94=E2=80=94=E2=80=94
-
-You know already the device tree: https://lists.ozlabs.org/pipermail/linuxpp=
-c-dev/2021-November/236587.html=
+-- 
+2.34.1
 
