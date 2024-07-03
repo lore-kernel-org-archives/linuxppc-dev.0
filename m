@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25C0DC2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 10:52:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40139C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 10:52:40 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=QjQJZfS3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=oXUa31OD;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WDc6Q6GVcz3dHD
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 20:51:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WDc7B6hgKz3dKX
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 20:52:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=QjQJZfS3;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=oXUa31OD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::240; helo=mslow1.mail.gandi.net; envelope-from=luca.ceresoli@bootlin.com; receiver=lists.ozlabs.org)
 Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [IPv6:2001:4b98:dc4:8::240])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WDbwP6Mg7z3dRY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 20:43:17 +1000 (AEST)
-Received: from relay2-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::222])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id 48975C6798
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 10:38:22 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id E267B40002;
-	Wed,  3 Jul 2024 10:38:09 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WDbwQ4Xvbz3cZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 20:43:18 +1000 (AEST)
+Received: from relay2-d.mail.gandi.net (unknown [217.70.183.194])
+	by mslow1.mail.gandi.net (Postfix) with ESMTP id F1CC7C67D2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 10:38:29 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id E28834000D;
+	Wed,  3 Jul 2024 10:38:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1720003093;
+	t=1720003101;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=JB7jnVV90mJW2p0b0n6I13HQQYwTmmWWoFEk/HwlIBA=;
-	b=QjQJZfS3hQSmHwIyTs5N6cWBkKEhVJTnmXxV93K/mH/jCw3bNE8vBVQazsP6i+9s7H/eKZ
-	WQ573YI8LUuy/E7FsVFy7LphtduSQki23ZLleDsQAiHGRYob4mVEeLvvfzWmuC++ENo7GP
-	z56ULB449b1QKqRW49icT0WrmlOIurvHPx95lM4gK0zARettlLCbxHyglvYZt7IuPzQwDZ
-	pPyregDeYjogULkibHX5sMVBCzcCYzEI290IYlZOTNreRVC/JZ9ORcuum4RGJIjQ0j/Tu3
-	bkDdZHqjZdtRBTwwd8l0pwDZZ+Xl6swWizUKdCrki+QAvN2fUScfyf28Brju6g==
+	bh=78C35tW4lsYFlY1YR8UtHYwhkc3TnVCBtcNefWaJVZc=;
+	b=oXUa31ODiP9nVQgcAJYvkSJjw3Nl2xFkxoaUzbjkYfoZy0WqW3XM09Ra2i4md0DVO/df0t
+	uzTPi9Mn7rVmhdGD7Y1I3UmO0z3XeaklUDL1qX4csSZO2ZrOFbBlsG9UPGLp+QmqkV+Hoc
+	TRCec4TuUqXAgW/qR2UGILaYaPYt4+pBAtb/OP9thxJesMbY+DSuiw7MnpCGOmmB4MmI3b
+	Km2dkMTd/9bCebKT2xBVzdPVNVEg86RF7Y/XtEw8Yg2UwoWQu7+Z12VU1X/ofhPrafsSC0
+	0RKAGKrDYJ4h9dTCEnLg/BUsSSq/9f/jPdbkRxLFapx2puNRwIHp/UMj7smt6Q==
 From: Luca Ceresoli <luca.ceresoli@bootlin.com>
-Date: Wed, 03 Jul 2024 12:36:56 +0200
-Subject: [PATCH 12/20] iio: adc: ti_am335x_adc: convert to
+Date: Wed, 03 Jul 2024 12:36:58 +0200
+Subject: [PATCH 14/20] tty: sysrq: convert to
  of_property_for_each_u32_new()
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240703-of_property_for_each_u32-v1-12-42c1fc0b82aa@bootlin.com>
+Message-Id: <20240703-of_property_for_each_u32-v1-14-42c1fc0b82aa@bootlin.com>
 References: <20240703-of_property_for_each_u32-v1-0-42c1fc0b82aa@bootlin.com>
 In-Reply-To: <20240703-of_property_for_each_u32-v1-0-42c1fc0b82aa@bootlin.com>
 To: Miguel Ojeda <ojeda@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -98,28 +98,31 @@ parameters in of_property_for_each_u32() are not used here.
 
 Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
 ---
- drivers/iio/adc/ti_am335x_adc.c | 4 +---
+ drivers/tty/sysrq.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/iio/adc/ti_am335x_adc.c b/drivers/iio/adc/ti_am335x_adc.c
-index 95fa857e8aad..ca0f542ebc77 100644
---- a/drivers/iio/adc/ti_am335x_adc.c
-+++ b/drivers/iio/adc/ti_am335x_adc.c
-@@ -564,13 +564,11 @@ static int tiadc_parse_dt(struct platform_device *pdev,
- 			  struct tiadc_device *adc_dev)
+diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
+index e5974b8239c9..719376dda5c1 100644
+--- a/drivers/tty/sysrq.c
++++ b/drivers/tty/sysrq.c
+@@ -770,8 +770,6 @@ static void sysrq_of_get_keyreset_config(void)
  {
- 	struct device_node *node = pdev->dev.of_node;
+ 	u32 key;
+ 	struct device_node *np;
 -	struct property *prop;
--	const __be32 *cur;
- 	int channels = 0;
- 	u32 val;
- 	int i;
+-	const __be32 *p;
  
--	of_property_for_each_u32(node, "ti,adc-channels", prop, cur, val) {
-+	of_property_for_each_u32_new(node, "ti,adc-channels", val) {
- 		adc_dev->channel_line[channels] = val;
+ 	np = of_find_node_by_path("/chosen/linux,sysrq-reset-seq");
+ 	if (!np) {
+@@ -782,7 +780,7 @@ static void sysrq_of_get_keyreset_config(void)
+ 	/* Reset in case a __weak definition was present */
+ 	sysrq_reset_seq_len = 0;
  
- 		/* Set Default values for optional DT parameters */
+-	of_property_for_each_u32(np, "keyset", prop, p, key) {
++	of_property_for_each_u32_new(np, "keyset", key) {
+ 		if (key == KEY_RESERVED || key > KEY_MAX ||
+ 		    sysrq_reset_seq_len == SYSRQ_KEY_RESET_MAX)
+ 			break;
 
 -- 
 2.34.1
