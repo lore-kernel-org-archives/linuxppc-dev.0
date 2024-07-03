@@ -4,47 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B0E2C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 10:39:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98A53C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 10:39:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=cPZSrbgY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=QHZuw6Oi;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WDbqp01ypz2ysg
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 20:39:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WDbrZ0v3rz3cZ6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 20:39:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=cPZSrbgY;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=QHZuw6Oi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.194; helo=relay2-d.mail.gandi.net; envelope-from=luca.ceresoli@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Wed, 03 Jul 2024 20:38:36 AEST
 Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [217.70.183.194])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WDbq05WBCz3c5F
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 20:38:36 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 1B34140007;
-	Wed,  3 Jul 2024 10:38:30 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WDbq23xSWz3c5F
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 20:38:38 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id E4CB84000B;
+	Wed,  3 Jul 2024 10:38:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1720003113;
+	t=1720003109;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=RU3pzYG6bF53Hk2/xb6Gkld3bSr1k5kQ8wZC1imwq1g=;
-	b=cPZSrbgY1uyHHUyxN4ire6Mmb4TO2Vu4T16Cw0ijX9WtOdQxRVHvR8xZ+jgMpz5IE44inL
-	vII6SqG0BXZ0XbJVzXjYjxMz8zquGtkc7ojMGbf+/xzpe9vPjARGlOsl4Kt/bELXixFXbH
-	5T4k5i2pHjA7qYSjwFIN2biRcDna40ZV3h1eAQappwyEIKEtCUiI5XdvuyfwdrmtIeJjgC
-	EmXxc3JWVdEIgSVbA2I6p8eyD4T5kYYxryDYm4ngJCNcK71xw65khBJRmgNBswdV/gvQA8
-	WY/WU4scw62nCs+t+3Qq4YDu8vQayuKSd07TBXf+564kOUKkT1WLhWlM6A8vaQ==
+	bh=imP4H/ERPSE6KZ0W7q22wukZU6P/ZNa1h2LRRg5LPSE=;
+	b=QHZuw6OixcFOf1fmX7hr0vv6C5X6qtVBD6nwyc/mtaoJV27PNoTaRYDMr1H7OzlZvi4/bT
+	2YGle6Qhcx2ekS2M2kUmkbY0YflInP7/4aNiheGiNRTI+kIj4ZyHOjuT/iuTTvGttyFTx1
+	mZHEZour3jCbqjqEbH0udwlKJ7YcYpKFsxC1x6/Ze7kdpU8CZ7qKJxBxWkszlyEzzb6j4u
+	TDWInmuOi4dYzH/pOWH5Nb7Zq+N9j0N0VkB88X9GYj6xQIDu5zvSqSLb0dXuBDfyBQLOey
+	Yp9zkmm43vokpDk/jIF2hByFQDKg4eXCJ84Gqy+i39DwtK9oDiqQ5v8gutjCrg==
 From: Luca Ceresoli <luca.ceresoli@bootlin.com>
-Date: Wed, 03 Jul 2024 12:37:01 +0200
-Subject: [PATCH 17/20] ASoC: arizona: convert to
+Date: Wed, 03 Jul 2024 12:37:00 +0200
+Subject: [PATCH 16/20] mfd: ti_am335x_tscadc: convert to
  of_property_for_each_u32_new()
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20240703-of_property_for_each_u32-v1-17-42c1fc0b82aa@bootlin.com>
+Message-Id: <20240703-of_property_for_each_u32-v1-16-42c1fc0b82aa@bootlin.com>
 References: <20240703-of_property_for_each_u32-v1-0-42c1fc0b82aa@bootlin.com>
 In-Reply-To: <20240703-of_property_for_each_u32-v1-0-42c1fc0b82aa@bootlin.com>
 To: Miguel Ojeda <ojeda@kernel.org>, Rob Herring <robh@kernel.org>, 
@@ -96,66 +95,31 @@ parameters in of_property_for_each_u32() are not used here.
 
 Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
 ---
- sound/soc/codecs/arizona.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ drivers/mfd/ti_am335x_tscadc.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/sound/soc/codecs/arizona.c b/sound/soc/codecs/arizona.c
-index 7434aeeda292..1a64b9815809 100644
---- a/sound/soc/codecs/arizona.c
-+++ b/sound/soc/codecs/arizona.c
-@@ -2786,15 +2786,13 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
- {
- 	struct arizona_pdata *pdata = &arizona->pdata;
- 	struct device_node *np = arizona->dev->of_node;
+diff --git a/drivers/mfd/ti_am335x_tscadc.c b/drivers/mfd/ti_am335x_tscadc.c
+index 4bbd542d753e..a2e6112f885f 100644
+--- a/drivers/mfd/ti_am335x_tscadc.c
++++ b/drivers/mfd/ti_am335x_tscadc.c
+@@ -119,8 +119,6 @@ static	int ti_tscadc_probe(struct platform_device *pdev)
+ 	struct clk *clk;
+ 	struct device_node *node;
+ 	struct mfd_cell *cell;
 -	struct property *prop;
 -	const __be32 *cur;
+ 	bool use_tsc = false, use_mag = false;
  	u32 val;
- 	u32 pdm_val[ARIZONA_MAX_PDM_SPK];
- 	int ret;
- 	int count = 0;
- 
- 	count = 0;
--	of_property_for_each_u32(np, "wlf,inmode", prop, cur, val) {
-+	of_property_for_each_u32_new(np, "wlf,inmode", val) {
- 		if (count == ARRAY_SIZE(pdata->inmode))
- 			break;
- 
-@@ -2803,7 +2801,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
+ 	int err;
+@@ -167,7 +165,7 @@ static	int ti_tscadc_probe(struct platform_device *pdev)
  	}
  
- 	count = 0;
--	of_property_for_each_u32(np, "wlf,dmic-ref", prop, cur, val) {
-+	of_property_for_each_u32_new(np, "wlf,dmic-ref", val) {
- 		if (count == ARRAY_SIZE(pdata->dmic_ref))
- 			break;
- 
-@@ -2812,7 +2810,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
- 	}
- 
- 	count = 0;
--	of_property_for_each_u32(np, "wlf,out-mono", prop, cur, val) {
-+	of_property_for_each_u32_new(np, "wlf,out-mono", val) {
- 		if (count == ARRAY_SIZE(pdata->out_mono))
- 			break;
- 
-@@ -2821,7 +2819,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
- 	}
- 
- 	count = 0;
--	of_property_for_each_u32(np, "wlf,max-channels-clocked", prop, cur, val) {
-+	of_property_for_each_u32_new(np, "wlf,max-channels-clocked", val) {
- 		if (count == ARRAY_SIZE(pdata->max_channels_clocked))
- 			break;
- 
-@@ -2830,7 +2828,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
- 	}
- 
- 	count = 0;
--	of_property_for_each_u32(np, "wlf,out-volume-limit", prop, cur, val) {
-+	of_property_for_each_u32_new(np, "wlf,out-volume-limit", val) {
- 		if (count == ARRAY_SIZE(pdata->out_vol_limit))
- 			break;
- 
+ 	node = of_get_child_by_name(pdev->dev.of_node, "adc");
+-	of_property_for_each_u32(node, "ti,adc-channels", prop, cur, val) {
++	of_property_for_each_u32_new(node, "ti,adc-channels", val) {
+ 		adc_channels++;
+ 		if (val > 7) {
+ 			dev_err(&pdev->dev, " PIN numbers are 0..7 (not %d)\n",
 
 -- 
 2.34.1
