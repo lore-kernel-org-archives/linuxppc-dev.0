@@ -4,115 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F4BAC30653
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 12:45:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F244C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 13:11:15 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=cirrus.com header.i=@cirrus.com header.a=rsa-sha256 header.s=PODMain02222019 header.b=nmgAGu9Q;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=microchip.com header.i=@microchip.com header.a=rsa-sha256 header.s=mchp header.b=ZSeFDBAV;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WDfdX3yw6z3dDq
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 22:45:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=opensource.cirrus.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WDgC56bRlz3dlY
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Jul 2024 23:11:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=cirrus.com header.i=@cirrus.com header.a=rsa-sha256 header.s=PODMain02222019 header.b=nmgAGu9Q;
+	dkim=pass (2048-bit key; unprotected) header.d=microchip.com header.i=@microchip.com header.a=rsa-sha256 header.s=mchp header.b=ZSeFDBAV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=opensource.cirrus.com (client-ip=67.231.152.168; helo=mx0b-001ae601.pphosted.com; envelope-from=prvs=4914b47104=rf@opensource.cirrus.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 4334 seconds by postgrey-1.37 at boromir; Wed, 03 Jul 2024 22:44:54 AEST
-Received: from mx0b-001ae601.pphosted.com (mx0b-001ae601.pphosted.com [67.231.152.168])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Two or more type TXT spf records found.) smtp.mailfrom=microchip.com (client-ip=68.232.154.123; helo=esa.microchip.iphmx.com; envelope-from=prvs=90776fd9d=nicolas.ferre@microchip.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Wed, 03 Jul 2024 23:10:30 AEST
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WDfck37rLz3cbg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 22:44:52 +1000 (AEST)
-Received: from pps.filterd (m0077474.ppops.net [127.0.0.1])
-	by mx0b-001ae601.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4636mxjt003511;
-	Wed, 3 Jul 2024 06:31:31 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cirrus.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	PODMain02222019; bh=f37i3vEXbnh14lMCwflrH5FfWLKGacpcQ9pw+V8X0GM=; b=
-	nmgAGu9QNNUy+G+YvJbJdLDq3r5Fy6Tlvw22gJFuOhC/HUVavm2zyhCYI2OsrfAU
-	mDwZcEl1Ie0x2Rgl8iIhzLQtM75dpvKeYlXQz4E9/9wzgMOiW1NBymVDkVs0cTmu
-	JrK/H/3DummtYV3aHM2KFCYbKNXUwvtz7SG9OT4cRFAPBEILdNBAos0jQqGiEr3t
-	oi7Em/CxuTdS52KqxbQqLFHVuvcJjnJJi1ZWq5PU7lS2UOXmy0Q0EPAGOj1qBR7M
-	lZ91HcM0b6ZMw/944h0ilF+OF6+f/+KyPnSZdWznrzM0Dnba7pZz4Xv9KWNq0Kg6
-	bSGAR7m1b6TnrBo5lsVPKg==
-Received: from ediex02.ad.cirrus.com ([84.19.233.68])
-	by mx0b-001ae601.pphosted.com (PPS) with ESMTPS id 402epjd9kx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 03 Jul 2024 06:31:30 -0500 (CDT)
-Received: from ediex01.ad.cirrus.com (198.61.84.80) by ediex02.ad.cirrus.com
- (198.61.84.81) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Wed, 3 Jul 2024
- 12:31:29 +0100
-Received: from ediswmail9.ad.cirrus.com (198.61.86.93) by
- anon-ediex01.ad.cirrus.com (198.61.84.80) with Microsoft SMTP Server id
- 15.2.1544.9 via Frontend Transport; Wed, 3 Jul 2024 12:31:29 +0100
-Received: from [198.90.208.18] (ediswws06.ad.cirrus.com [198.90.208.18])
-	by ediswmail9.ad.cirrus.com (Postfix) with ESMTP id E8801820244;
-	Wed,  3 Jul 2024 11:31:28 +0000 (UTC)
-Message-ID: <0796b481-3eec-4618-b92e-a372b7da5381@opensource.cirrus.com>
-Date: Wed, 3 Jul 2024 12:31:28 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WDgBG49pZz3ccL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jul 2024 23:10:30 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1720012231; x=1751548231;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=W8KnSELxoOeLFO4Bkg8ypBzvhOg9ofBU1heW/xaRe4k=;
+  b=ZSeFDBAVavnEurTfrP2va9QFBYdih5fOU7/4zsqRrr6OdyDFO5XHfuPN
+   PfVVOnL9k/XJPoB1qvrvfzaukNjDe3jXGEyO5WVcGLLuUWXbB56HbBO2C
+   Aa8HeDs4t3L+q5UEHD5A/v2XrG8TCv4gGG9rBrJYhF8b7uHGtfJAVsgpU
+   3vQrvLYrdFyl3H6QaQVEQcucBPYqMcUY/6Iu0MA9PEQLUB64oAQt+CPhF
+   JYjVMPidVFeIrIXgQv62uLMCKnlYjkf+4hv9Apx29Ue3rwXEnfoEn5bbx
+   Gid/o2SaaftpexBIsqPqDoKq80BkakfTE5ntpJt8U0yLI16O8aXHjwMwm
+   Q==;
+X-CSE-ConnectionGUID: EqW5S7eWRE2aTexdHZiS+A==
+X-CSE-MsgGUID: NasQoXC7S5Kaxo5UL3Vsag==
+X-IronPort-AV: E=Sophos;i="6.09,182,1716274800"; 
+   d="scan'208";a="28777735"
+X-Amp-Result: SKIPPED(no attachment in message)
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+  by esa4.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 03 Jul 2024 06:09:24 -0700
+Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
+ chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Wed, 3 Jul 2024 06:09:03 -0700
+Received: from [10.180.116.202] (10.10.85.11) by chn-vm-ex01.mchp-main.com
+ (10.10.85.143) with Microsoft SMTP Server id 15.1.2507.35 via Frontend
+ Transport; Wed, 3 Jul 2024 06:08:46 -0700
+Message-ID: <a8cc31a9-d58f-4a4e-98fb-a7ba47bc744e@microchip.com>
+Date: Wed, 3 Jul 2024 15:09:07 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 17/20] ASoC: arizona: convert to
+Subject: Re: [PATCH 11/20] irqchip/atmel-aic: convert to
  of_property_for_each_u32_new()
-To: Luca Ceresoli <luca.ceresoli@bootlin.com>,
-        Miguel Ojeda
-	<ojeda@kernel.org>, Rob Herring <robh@kernel.org>,
-        Saravana Kannan
-	<saravanak@google.com>,
-        Nathan Chancellor <nathan@kernel.org>,
-        "Michael
- Turquette" <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, "Tony
- Lindgren" <tony@atomide.com>,
-        Bjorn Andersson <andersson@kernel.org>,
-        =?UTF-8?Q?Emilio_L=C3=B3pez?= <emilio@elopez.com.ar>,
-        Chen-Yu Tsai
-	<wens@csie.org>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Samuel Holland
-	<samuel@sholland.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Daniel Lezcano
-	<daniel.lezcano@linaro.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        "Florian
- Fainelli" <florian.fainelli@broadcom.com>,
-        "Broadcom internal kernel review
- list" <bcm-kernel-feedback-list@broadcom.com>,
-        Linus Walleij
-	<linus.walleij@linaro.org>,
-        Bartosz Golaszewski <brgl@bgdev.pl>,
-        "Jonathan
- Cameron" <jic23@kernel.org>, Lee Jones <lee@kernel.org>,
-        Shawn Guo
-	<shawnguo@kernel.org>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>,
-        Greg Kroah-Hartman
-	<gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        "Richard
- Leitner" <richard.leitner@linux.dev>,
-        Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        "Naveen N. Rao"
-	<naveen.n.rao@linux.ibm.com>,
-        Damien Le Moal <dlemoal@kernel.org>
+To: Luca Ceresoli <luca.ceresoli@bootlin.com>, Miguel Ojeda
+	<ojeda@kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan
+	<saravanak@google.com>, Nathan Chancellor <nathan@kernel.org>, Michael
+ Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Tony
+ Lindgren <tony@atomide.com>, Bjorn Andersson <andersson@kernel.org>,
+	=?UTF-8?Q?Emilio_L=C3=B3pez?= <emilio@elopez.com.ar>, Chen-Yu Tsai
+	<wens@csie.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland
+	<samuel@sholland.org>, Krzysztof Kozlowski <krzk@kernel.org>, Daniel Lezcano
+	<daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Florian
+ Fainelli <florian.fainelli@broadcom.com>, Broadcom internal kernel review
+ list <bcm-kernel-feedback-list@broadcom.com>, Linus Walleij
+	<linus.walleij@linaro.org>, Bartosz Golaszewski <brgl@bgdev.pl>, Jonathan
+ Cameron <jic23@kernel.org>, Lee Jones <lee@kernel.org>, Shawn Guo
+	<shawnguo@kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>,
+	=?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <ukleinek@kernel.org>, Greg Kroah-Hartman
+	<gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, Richard
+ Leitner <richard.leitner@linux.dev>, Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
+	<christophe.leroy@csgroup.eu>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
+	Damien Le Moal <dlemoal@kernel.org>
 References: <20240703-of_property_for_each_u32-v1-0-42c1fc0b82aa@bootlin.com>
- <20240703-of_property_for_each_u32-v1-17-42c1fc0b82aa@bootlin.com>
-Content-Language: en-GB
-From: Richard Fitzgerald <rf@opensource.cirrus.com>
-In-Reply-To: <20240703-of_property_for_each_u32-v1-17-42c1fc0b82aa@bootlin.com>
+ <20240703-of_property_for_each_u32-v1-11-42c1fc0b82aa@bootlin.com>
+Content-Language: en-US, fr-FR
+From: Nicolas Ferre <nicolas.ferre@microchip.com>
+Organization: microchip
+In-Reply-To: <20240703-of_property_for_each_u32-v1-11-42c1fc0b82aa@bootlin.com>
 Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: CFz_RdAJOFjMU2QBvo3bIc4bvB6lzh5q
-X-Proofpoint-ORIG-GUID: CFz_RdAJOFjMU2QBvo3bIc4bvB6lzh5q
-X-Proofpoint-Spam-Reason: safe
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,71 +100,42 @@ Cc: devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Peng Fan \(O
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03/07/2024 11:37, Luca Ceresoli wrote:
+On 03/07/2024 at 12:36, Luca Ceresoli wrote:
 > Simplify code using of_property_for_each_u32_new() as the two additional
 > parameters in of_property_for_each_u32() are not used here.
 > 
 > Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+
+Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+
 > ---
->   sound/soc/codecs/arizona.c | 12 +++++-------
->   1 file changed, 5 insertions(+), 7 deletions(-)
+>   drivers/irqchip/irq-atmel-aic-common.c | 4 +---
+>   1 file changed, 1 insertion(+), 3 deletions(-)
 > 
-> diff --git a/sound/soc/codecs/arizona.c b/sound/soc/codecs/arizona.c
-> index 7434aeeda292..1a64b9815809 100644
-> --- a/sound/soc/codecs/arizona.c
-> +++ b/sound/soc/codecs/arizona.c
-> @@ -2786,15 +2786,13 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
->   {
->   	struct arizona_pdata *pdata = &arizona->pdata;
->   	struct device_node *np = arizona->dev->of_node;
-> -	struct property *prop;
-> -	const __be32 *cur;
->   	u32 val;
->   	u32 pdm_val[ARIZONA_MAX_PDM_SPK];
->   	int ret;
->   	int count = 0;
->   
->   	count = 0;
-> -	of_property_for_each_u32(np, "wlf,inmode", prop, cur, val) {
-> +	of_property_for_each_u32_new(np, "wlf,inmode", val) {
->   		if (count == ARRAY_SIZE(pdata->inmode))
->   			break;
->   
-> @@ -2803,7 +2801,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
->   	}
->   
->   	count = 0;
-> -	of_property_for_each_u32(np, "wlf,dmic-ref", prop, cur, val) {
-> +	of_property_for_each_u32_new(np, "wlf,dmic-ref", val) {
->   		if (count == ARRAY_SIZE(pdata->dmic_ref))
->   			break;
->   
-> @@ -2812,7 +2810,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
->   	}
->   
->   	count = 0;
-> -	of_property_for_each_u32(np, "wlf,out-mono", prop, cur, val) {
-> +	of_property_for_each_u32_new(np, "wlf,out-mono", val) {
->   		if (count == ARRAY_SIZE(pdata->out_mono))
->   			break;
->   
-> @@ -2821,7 +2819,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
->   	}
->   
->   	count = 0;
-> -	of_property_for_each_u32(np, "wlf,max-channels-clocked", prop, cur, val) {
-> +	of_property_for_each_u32_new(np, "wlf,max-channels-clocked", val) {
->   		if (count == ARRAY_SIZE(pdata->max_channels_clocked))
->   			break;
->   
-> @@ -2830,7 +2828,7 @@ int arizona_of_get_audio_pdata(struct arizona *arizona)
->   	}
->   
->   	count = 0;
-> -	of_property_for_each_u32(np, "wlf,out-volume-limit", prop, cur, val) {
-> +	of_property_for_each_u32_new(np, "wlf,out-volume-limit", val) {
->   		if (count == ARRAY_SIZE(pdata->out_vol_limit))
->   			break;
->   
+> diff --git a/drivers/irqchip/irq-atmel-aic-common.c b/drivers/irqchip/irq-atmel-aic-common.c
+> index 072bd227b6c6..543ea249df53 100644
+> --- a/drivers/irqchip/irq-atmel-aic-common.c
+> +++ b/drivers/irqchip/irq-atmel-aic-common.c
+> @@ -111,8 +111,6 @@ static void __init aic_common_ext_irq_of_init(struct irq_domain *domain)
+>          struct device_node *node = irq_domain_get_of_node(domain);
+>          struct irq_chip_generic *gc;
+>          struct aic_chip_data *aic;
+> -       struct property *prop;
+> -       const __be32 *p;
+>          u32 hwirq;
 > 
-Reviewed-by: Richard Fitzgerald <rf@opensource.cirrus.com>
+>          gc = irq_get_domain_generic_chip(domain, 0);
+> @@ -120,7 +118,7 @@ static void __init aic_common_ext_irq_of_init(struct irq_domain *domain)
+>          aic = gc->private;
+>          aic->ext_irqs |= 1;
+> 
+> -       of_property_for_each_u32(node, "atmel,external-irqs", prop, p, hwirq) {
+> +       of_property_for_each_u32_new(node, "atmel,external-irqs", hwirq) {
+>                  gc = irq_get_domain_generic_chip(domain, hwirq);
+>                  if (!gc) {
+>                          pr_warn("AIC: external irq %d >= %d skip it\n",
+> 
+> --
+> 2.34.1
+> 
+
