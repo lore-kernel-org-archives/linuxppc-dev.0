@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA69AC2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 23:15:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F06CC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 23:16:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WGmT53qqzz3g4b
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2024 09:15:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WGmTW1JNBz3g7V
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2024 09:15:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGmQ36Wh8z2xFn
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2024 09:12:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGmQ45555z3cVy
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2024 09:13:00 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WGmQ3421Jz4xPd;
-	Sun,  7 Jul 2024 09:12:59 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WGmQ41lL0z4xPf;
+	Sun,  7 Jul 2024 09:13:00 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Jeff Johnson <quic_jjohnson@quicinc.com>
-In-Reply-To: <20240509-mac_hid-md-v1-1-4091f1e4e4e0@quicinc.com>
-References: <20240509-mac_hid-md-v1-1-4091f1e4e4e0@quicinc.com>
-Subject: Re: [PATCH] macintosh/mac_hid: add MODULE_DESCRIPTION()
-Message-Id: <172030740423.964765.11410477570460429115.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Scott Wood <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>, Jeremy Kerr <jk@ozlabs.org>, Jeff Johnson <quic_jjohnson@quicinc.com>
+In-Reply-To: <20240615-md-powerpc-arch-powerpc-v1-1-ba4956bea47a@quicinc.com>
+References: <20240615-md-powerpc-arch-powerpc-v1-1-ba4956bea47a@quicinc.com>
+Subject: Re: [PATCH] powerpc: add missing MODULE_DESCRIPTION() macros
+Message-Id: <172030740426.964765.16456298836722102264.b4-ty@ellerman.id.au>
 Date: Sun, 07 Jul 2024 09:10:04 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,18 +43,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 09 May 2024 18:23:37 -0700, Jeff Johnson wrote:
-> Fix the make W=1 warning:
-> WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/macintosh/mac_hid.o
+On Sat, 15 Jun 2024 10:06:18 -0700, Jeff Johnson wrote:
+> With ARCH=powerpc, make allmodconfig && make W=1 C=1 reports:
+> WARNING: modpost: missing MODULE_DESCRIPTION() in arch/powerpc/kernel/rtas_flash.o
+> WARNING: modpost: missing MODULE_DESCRIPTION() in arch/powerpc/sysdev/rtc_cmos_setup.o
+> WARNING: modpost: missing MODULE_DESCRIPTION() in arch/powerpc/platforms/pseries/papr_scm.o
+> WARNING: modpost: missing MODULE_DESCRIPTION() in arch/powerpc/platforms/cell/spufs/spufs.o
+> WARNING: modpost: missing MODULE_DESCRIPTION() in arch/powerpc/platforms/cell/cbe_thermal.o
+> WARNING: modpost: missing MODULE_DESCRIPTION() in arch/powerpc/platforms/cell/cpufreq_spudemand.o
+> WARNING: modpost: missing MODULE_DESCRIPTION() in arch/powerpc/platforms/cell/cbe_powerbutton.o
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] macintosh/mac_hid: add MODULE_DESCRIPTION()
-      https://git.kernel.org/powerpc/c/50b5fed94e21c0992c79fafdd041c9863c1fd2d2
+[1/1] powerpc: add missing MODULE_DESCRIPTION() macros
+      https://git.kernel.org/powerpc/c/9c5f64734f895528128605e2f3b170d220be086d
 
 cheers
