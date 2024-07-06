@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3D3CC38150
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 23:16:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76F46C38150
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 23:16:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WGmTw3yPnz3gBp
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2024 09:16:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WGmVL1Ktwz3gDR
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2024 09:16:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGmQ51Yqwz3cXT
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2024 09:13:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGmQ72Q4Hz3cQD
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2024 09:13:03 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WGmQ50JNQz4xPg;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WGmQ53pPpz4xPh;
 	Sun,  7 Jul 2024 09:13:01 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, "Rob Herring (Arm)" <robh@kernel.org>
-In-Reply-To: <20240702210344.722364-1-robh@kernel.org>
-References: <20240702210344.722364-1-robh@kernel.org>
-Subject: Re: [PATCH] powerpc: kexec: Use of_property_read_reg()
-Message-Id: <172030740416.964765.12728805130197290017.b4-ty@ellerman.id.au>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, Shivaprasad G Bhat <sbhat@linux.ibm.com>
+In-Reply-To: <172008854222.784.13666247605789409729.stgit@linux.ibm.com>
+References: <172008854222.784.13666247605789409729.stgit@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries/iommu: Define spapr_tce_table_group_ops only with CONFIG_IOMMU_API
+Message-Id: <172030740421.964765.9452921118927851661.b4-ty@ellerman.id.au>
 Date: Sun, 07 Jul 2024 09:10:04 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,19 +43,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, christophe.leroy@csgroup.eu, gbatra@linux.ibm.com, jgg@ziepe.ca, tpearson@raptorengineering.com, npiggin@gmail.com, ruscur@russell.cc, vaibhav@linux.ibm.com, msuchanek@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 02 Jul 2024 15:03:44 -0600, Rob Herring (Arm) wrote:
-> Replace open-coded parsing of "reg" property with
-> of_property_read_reg().
+On Thu, 04 Jul 2024 10:22:37 +0000, Shivaprasad G Bhat wrote:
+> The patch fixes the below warning,
+> arch/powerpc/platforms/pseries/iommu.c:1824:37: warning: 'spapr_tce_table_group_ops' defined but not used [-Wunused-variable]
+> 
+> The other error reported by the test robot no longer exists on the top
+> of the tree due to later changes on the file.
 > 
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: kexec: Use of_property_read_reg()
-      https://git.kernel.org/powerpc/c/cf08b628cd146a3cb597999f4d4dc590068bf011
+[1/1] powerpc/pseries/iommu: Define spapr_tce_table_group_ops only with CONFIG_IOMMU_API
+      https://git.kernel.org/powerpc/c/af199e6ca29c77fb8fea9a78f18dfb165af37cd7
 
 cheers
