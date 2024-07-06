@@ -4,46 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34080C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 11:24:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A36FC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 12:09:23 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=kcJY/IXj;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VajEfRv5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WGSht5sdZz3cVS
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 21:24:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WGThL0Zs3z3cZB
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 22:09:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=kcJY/IXj;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VajEfRv5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sang-engineering.com (client-ip=194.117.254.33; helo=mail.zeus03.de; envelope-from=wsa+renesas@sang-engineering.com; receiver=lists.ozlabs.org)
-Received: from mail.zeus03.de (zeus03.de [194.117.254.33])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGSf96t8tz3cW4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2024 21:22:25 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	sang-engineering.com; h=from:to:cc:subject:date:message-id
-	:in-reply-to:references:mime-version:content-transfer-encoding;
-	 s=k1; bh=3fwRgUirFZkfXKcJC7Vv4K4A/Dc48+trUOny3ev4Fh8=; b=kcJY/I
-	XjUawthxhRKCMxtL1TNK9RqG22zDCp9Tr3p/+YF4aDqSxkppG+ld2jdpRoeBexWc
-	3ahuv1kD2Ym41tevqXsOGNcFIosuswGFy31+TkZ5mxZv3jQHf/Fk2t1jNe9lS7/K
-	T7SPe5BtpjUYGVPsVVj2K2ASDTrRxsNilO91rD7eWowhPxY3x33TYjolfGELRMSy
-	U04Rq04OF+AtvXWA9t6XgUjVjoUB1Cd5IR3B2LRBJ7WNHw39M4Oyhq1SPBYcIBrE
-	U/Hytu85jskq9IB4HBku0oewZF45TbmG2f5mbViGSg2uwPlD3t7pc86TjZHF9/il
-	tqR8q9Bawf+2SLWA==
-Received: (qmail 3811298 invoked from network); 6 Jul 2024 13:22:03 +0200
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 6 Jul 2024 13:22:03 +0200
-X-UD-Smtp-Session: l3s3148p1@heixY5IczOFQT+F6
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-To: linux-i2c@vger.kernel.org
-Subject: [PATCH v2 59/60] i2c: cpm: reword according to newest specification
-Date: Sat,  6 Jul 2024 13:20:59 +0200
-Message-ID: <20240706112116.24543-60-wsa+renesas@sang-engineering.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240706112116.24543-1-wsa+renesas@sang-engineering.com>
-References: <20240706112116.24543-1-wsa+renesas@sang-engineering.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGTgV26R8z30Wm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jul 2024 22:08:38 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1720267717;
+	bh=Ug+KF5YGrihKrbfmbNh75185czFZqdxboNmnIHHzoMM=;
+	h=From:To:Subject:Date:From;
+	b=VajEfRv5A/al4NyXt1zZwzC5DDDzC2Op3uXKHJdF4r/DouJO39myesAZJZmNrj8hb
+	 Ecdg5mNtSQG6nQ3jVBDDZGbZA3HyOy+ntBRpW2N2wBcAYhM33SQCyuF+GDWOpo+jWY
+	 AZ61D7UF76ezemvbw0YtVfA43xCSPydM4F69vnAXD6qKRqf5zdHvU0Kx0zfZ922BnQ
+	 ETDGQw1sXLe3VXs1kQqtrFApFSiAoh86uobm+n0/xMSqVRkalsYwiZ5VZVd1TUBzAu
+	 MYQrql4ucIzOdllgR7loB/vR3RJ+qXQccoyoiNQRh7a8bv97TqTAzYKntGC9p6B/uh
+	 P/yewTF47hTkA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WGTgT23pvz4w2S;
+	Sat,  6 Jul 2024 22:08:37 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] selftests/powerpc: Fix build with USERCFLAGS set
+Date: Sat,  6 Jul 2024 22:08:33 +1000
+Message-ID: <20240706120833.909853-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.45.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -57,42 +57,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, linuxppc-dev@lists.ozlabs.org, Andi Shyti <andi.shyti@kernel.org>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Change the wording of this driver wrt. the newest I2C v7 and SMBus 3.2
-specifications and replace "master/slave" with more appropriate terms.
+Currently building the powerpc selftests with USERCFLAGS set to anything
+causes the build to break:
 
-Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Reviewed-by: Andi Shyti <andi.shyti@kernel.org>
-Acked-by: Jochen Friedrich <jochen@scram.de>
+  $ make -C tools/testing/selftests/powerpc V=1 USERCFLAGS=-Wno-error
+  ...
+  gcc -Wno-error    cache_shape.c ...
+  cache_shape.c:18:10: fatal error: utils.h: No such file or directory
+     18 | #include "utils.h"
+        |          ^~~~~~~~~
+  compilation terminated.
+
+This happens because the USERCFLAGS are added to CFLAGS in lib.mk, which
+causes the check of CFLAGS in powerpc/flags.mk to skip setting CFLAGS at
+all, resulting in none of the usual CFLAGS being passed. That can
+be seen in the output above, the only flag passed to the compiler is
+-Wno-error.
+
+Fix it by dropping the conditional setting of CFLAGS in flags.mk.
+Instead always set CFLAGS, but also append USERCFLAGS if they are set.
+
+Note that appending to CFLAGS (with +=) wouldn't work, because flags.mk
+is included by multiple Makefiles (to support partial builds), causing
+CFLAGS to be appended to multiple times. Additionally that would place
+the USERCFLAGS prior to the standard CFLAGS, meaning the USERCFLAGS
+couldn't override the standard flags. Being able to override the
+standard flags is desirable, for example for adding -Wno-error.
+
+With the fix in place, the CFLAGS are set correctly, including the
+USERCFLAGS:
+
+  $ make -C tools/testing/selftests/powerpc V=1 USERCFLAGS=-Wno-error
+  ...
+  gcc -std=gnu99 -O2 -Wall -Werror -DGIT_VERSION='"v6.10-rc2-7-gdea17e7e56c3"'
+  -I/home/michael/linux/tools/testing/selftests/powerpc/include -Wno-error
+  cache_shape.c ...
+
+Fixes: 5553a79387e9 ("selftests/powerpc: Add flags.mk to support pmu buildable")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/i2c/busses/i2c-cpm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ tools/testing/selftests/powerpc/flags.mk | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
-index 4404b4aac676..4794ec066eb0 100644
---- a/drivers/i2c/busses/i2c-cpm.c
-+++ b/drivers/i2c/busses/i2c-cpm.c
-@@ -402,7 +402,7 @@ static u32 cpm_i2c_func(struct i2c_adapter *adap)
- /* -----exported algorithm data: -------------------------------------	*/
+diff --git a/tools/testing/selftests/powerpc/flags.mk b/tools/testing/selftests/powerpc/flags.mk
+index b909bee3cb2a..abb9e58d95c4 100644
+--- a/tools/testing/selftests/powerpc/flags.mk
++++ b/tools/testing/selftests/powerpc/flags.mk
+@@ -5,8 +5,5 @@ GIT_VERSION := $(shell git describe --always --long --dirty || echo "unknown")
+ export GIT_VERSION
+ endif
  
- static const struct i2c_algorithm cpm_i2c_algo = {
--	.master_xfer = cpm_i2c_xfer,
-+	.xfer = cpm_i2c_xfer,
- 	.functionality = cpm_i2c_func,
- };
- 
-@@ -570,7 +570,7 @@ static int cpm_i2c_setup(struct cpm_i2c *cpm)
- 	out_8(&cpm->i2c_reg->i2brg, brg);
- 
- 	out_8(&cpm->i2c_reg->i2mod, 0x00);
--	out_8(&cpm->i2c_reg->i2com, I2COM_MASTER);	/* Master mode */
-+	out_8(&cpm->i2c_reg->i2com, I2COM_MASTER);
- 
- 	/* Disable interrupts. */
- 	out_8(&cpm->i2c_reg->i2cmr, 0);
+-ifeq ($(CFLAGS),)
+-CFLAGS := -std=gnu99 -O2 -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(selfdir)/powerpc/include $(CFLAGS)
++CFLAGS := -std=gnu99 -O2 -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(selfdir)/powerpc/include $(USERCFLAGS)
+ export CFLAGS
+-endif
+-
 -- 
-2.43.0
+2.45.2
 
