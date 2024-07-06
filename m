@@ -4,34 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F181AC38150
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 23:17:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DF60C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 23:17:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WGmVl5BJRz3gJY
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2024 09:17:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WGmWH6jzWz3gKn
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2024 09:17:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGmQB0DDBz3d4L
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2024 09:13:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGmQC2X8tz3dBb
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2024 09:13:07 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WGmQ74gwWz4xQM;
-	Sun,  7 Jul 2024 09:13:03 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WGmQB2YFFz4xQQ;
+	Sun,  7 Jul 2024 09:13:06 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, tpearson@raptorengineering.com, alex.williamson@redhat.com, linuxppc-dev@lists.ozlabs.org, aik@amd.com, Shivaprasad G Bhat <sbhat@linux.ibm.com>
-In-Reply-To: <171923268781.1397.8871195514893204050.stgit@linux.ibm.com>
-References: <171923268781.1397.8871195514893204050.stgit@linux.ibm.com>
-Subject: Re: [PATCH v4 0/6] powerpc: pSeries: vfio: iommu: Re-enable support for SPAPR TCE VFIO
-Message-Id: <172030740409.964765.9717587564748516161.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Uwe Kleine-König <u.kleine-koenig@baylibre.com>
+In-Reply-To: <20240624132433.1244750-2-u.kleine-koenig@baylibre.com>
+References: <20240624132433.1244750-2-u.kleine-koenig@baylibre.com>
+Subject: Re: [PATCH] macintosh: Drop explicit initialization of struct i2c_device_id::driver_data to 0
+Message-Id: <172030740410.964765.6364482339954878207.b4-ty@ellerman.id.au>
 Date: Sun, 07 Jul 2024 09:10:04 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -43,36 +43,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: svaidy@linux.ibm.com, gbatra@linux.ibm.com, jroedel@suse.de, kvm@vger.kernel.org, robh@kernel.org, aik@ozlabs.ru, sanastasio@raptorengineering.com, linux-kernel@vger.kernel.org, christophe.leroy@csgroup.eu, mahesh@linux.ibm.com, aneesh.kumar@kernel.org, jgg@ziepe.ca, oohall@gmail.com, npiggin@gmail.com, ruscur@russell.cc, naveen.n.rao@linux.ibm.com, vaibhav@linux.ibm.com, brking@linux.ibm.com, msuchanek@suse.de, joel@jms.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 24 Jun 2024 12:38:07 +0000, Shivaprasad G Bhat wrote:
-> The patches reimplement the iommu table_group_ops for pSeries
-> for VFIO SPAPR TCE sub-driver thereby bringing consistency with
-> PowerNV implementation and getting rid of limitations/bugs which
-> were emanating from these differences on the earlier approach on
-> pSeries.
+On Mon, 24 Jun 2024 15:24:33 +0200, Uwe Kleine-König wrote:
+> These drivers don't use the driver_data member of struct i2c_device_id,
+> so don't explicitly initialize this member.
 > 
-> Structure of the patchset:
-> -------------------------
-> The first and fifth patches just code movements.
+> This prepares putting driver_data in an anonymous union which requires
+> either no initialization or named designators. But it's also a nice
+> cleanup on its own.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/6] powerpc/iommu: Move pSeries specific functions to pseries/iommu.c
-      https://git.kernel.org/powerpc/c/b09c031d9433dda3186190e5845ba0d720212567
-[2/6] powerpc/pseries/iommu: Fix the VFIO_IOMMU_SPAPR_TCE_GET_INFO ioctl output
-      https://git.kernel.org/powerpc/c/6af67f2ddfcbbca551d786415beda14c48fb6ddf
-[3/6] powerpc/pseries/iommu: Use the iommu table[0] for IOV VF's DDW
-      https://git.kernel.org/powerpc/c/aed6e4946ed9654fc965482b045b84f9b9572bb8
-[4/6] vfio/spapr: Always clear TCEs before unsetting the window
-      https://git.kernel.org/powerpc/c/4ba2fdff2eb174114786784926d0efb6903c88a6
-[5/6] powerpc/iommu: Move dev_has_iommu_table() to iommu.c
-      https://git.kernel.org/powerpc/c/35146eadcb81d72153a1621f3cc0d5588cae19d3
-[6/6] powerpc/iommu: Reimplement the iommu_table_group_ops for pSeries
-      https://git.kernel.org/powerpc/c/f431a8cde7f102fce412546db6e62fdbde1131a7
+[1/1] macintosh: Drop explicit initialization of struct i2c_device_id::driver_data to 0
+      https://git.kernel.org/powerpc/c/38767dde5f7b691026a8481904a0ae1c9d74e647
 
 cheers
