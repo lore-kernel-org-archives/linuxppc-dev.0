@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C46DC38150
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 23:14:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7DFEC2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Jul 2024 23:15:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WGmS76tHhz3fwb
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2024 09:14:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WGmSY39w1z3g1c
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  7 Jul 2024 09:15:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGmQ23t06z3cPX
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2024 09:12:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WGmQ31tSSz3cPX
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Jul 2024 09:12:59 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WGmQ22g6yz4xPY;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WGmQ26BRRz4xPc;
 	Sun,  7 Jul 2024 09:12:58 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Nathan Lynch <nathanl@linux.ibm.com>
-In-Reply-To: <20240603-fix-cpu-hwdesc-v1-1-945f2850fcaa@linux.ibm.com>
-References: <20240603-fix-cpu-hwdesc-v1-1-945f2850fcaa@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/prom: Add CPU info to hardware description string later
-Message-Id: <172030740413.964765.17776308171096929157.b4-ty@ellerman.id.au>
+In-Reply-To: <20240530-sys_rtas-nargs-nret-v1-1-129acddd4d89@linux.ibm.com>
+References: <20240530-sys_rtas-nargs-nret-v1-1-129acddd4d89@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/rtas: Prevent Spectre v1 gadget construction in sys_rtas()
+Message-Id: <172030740413.964765.4617244559617362750.b4-ty@ellerman.id.au>
 Date: Sun, 07 Jul 2024 09:10:04 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,25 +43,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 03 Jun 2024 07:36:55 -0500, Nathan Lynch wrote:
-> cur_cpu_spec->cpu_name is appended to ppc_hw_desc before cur_cpu_spec
-> has taken on its final value. This is illustrated on pseries by
-> comparing the CPU name as reported at boot ("POWER8E (raw)") to the
-> contents of /proc/cpuinfo ("POWER8 (architected)"):
+On Thu, 30 May 2024 19:44:12 -0500, Nathan Lynch wrote:
+> Smatch warns:
 > 
->   $ dmesg | grep Hardware
->   Hardware name: IBM,8408-E8E POWER8E (raw) 0x4b0201 0xf000004 \
->     of:IBM,FW860.50 (SV860_146) hv:phyp pSeries
+>   arch/powerpc/kernel/rtas.c:1932 __do_sys_rtas() warn: potential
+>   spectre issue 'args.args' [r] (local cap)
+> 
+> The 'nargs' and 'nret' locals come directly from a user-supplied
+> buffer and are used as indexes into a small stack-based array and as
+> inputs to copy_to_user() after they are subject to bounds checks.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/prom: Add CPU info to hardware description string later
-      https://git.kernel.org/powerpc/c/7bdd1c6c87de758750d419eedab7285b95b66417
+[1/1] powerpc/rtas: Prevent Spectre v1 gadget construction in sys_rtas()
+      https://git.kernel.org/powerpc/c/0974d03eb479384466d828d65637814bee6b26d7
 
 cheers
