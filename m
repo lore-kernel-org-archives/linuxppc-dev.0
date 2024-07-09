@@ -4,107 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EE2AC2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2024 13:11:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08C8BC3DA41
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2024 13:34:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=zhdjt+CP;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6PyvjXLG;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=zhdjt+CP;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6PyvjXLG;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=PtsalJxW;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WJLwz0YXQz3dWK
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2024 23:11:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WJMR95D3Nz3cSN
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2024 23:34:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=zhdjt+CP;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6PyvjXLG;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=zhdjt+CP;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6PyvjXLG;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=PtsalJxW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WJLw54YYcz3cGS
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2024 23:11:00 +1000 (AEST)
-Received: from kitsune.suse.cz (unknown [10.100.12.127])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 07CBD1F7BB;
-	Tue,  9 Jul 2024 13:10:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1720530657; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Jvj+CYjfPLQdg2gDrjN70o2HTsk5KrY6yRIRFXK7aRY=;
-	b=zhdjt+CP9j6IsQpKFUmHQ17XhvBZ1D1/msT/WoixqygoHVxrAXeIZHKCIPYAAhXSvoRSsk
-	4++ec+dNBPhmGxPEmwXOW7JHmm4t8b+O0Yfl7ewZPe12Ls+9Jvc2O/JfiUTehjm4k9T6xN
-	QX+OZKX+V06Zcry0sA9pupy8GvUJzas=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1720530657;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Jvj+CYjfPLQdg2gDrjN70o2HTsk5KrY6yRIRFXK7aRY=;
-	b=6PyvjXLGBFNiv0ipDIrwgc4QrXZ3Sgr/6nTJwlhiD8W+eltiaIYRl+yBTIm6QbBqayRFt/
-	ANTVdB1gib9pMJAw==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1720530657; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Jvj+CYjfPLQdg2gDrjN70o2HTsk5KrY6yRIRFXK7aRY=;
-	b=zhdjt+CP9j6IsQpKFUmHQ17XhvBZ1D1/msT/WoixqygoHVxrAXeIZHKCIPYAAhXSvoRSsk
-	4++ec+dNBPhmGxPEmwXOW7JHmm4t8b+O0Yfl7ewZPe12Ls+9Jvc2O/JfiUTehjm4k9T6xN
-	QX+OZKX+V06Zcry0sA9pupy8GvUJzas=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1720530657;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Jvj+CYjfPLQdg2gDrjN70o2HTsk5KrY6yRIRFXK7aRY=;
-	b=6PyvjXLGBFNiv0ipDIrwgc4QrXZ3Sgr/6nTJwlhiD8W+eltiaIYRl+yBTIm6QbBqayRFt/
-	ANTVdB1gib9pMJAw==
-Date: Tue, 9 Jul 2024 15:10:55 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pseries: Fix scv instruction crash with kexec
-Message-ID: <20240709131055.GB26833@kitsune.suse.cz>
-References: <20240625134047.298759-1-npiggin@gmail.com>
- <20240709105314.GA26833@kitsune.suse.cz>
- <87h6cy67ld.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WJMQN2N1Sz2y8Z
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2024 23:33:47 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 2FA196145C;
+	Tue,  9 Jul 2024 13:33:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7155FC32786;
+	Tue,  9 Jul 2024 13:32:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1720531972;
+	bh=mOE+ryN8qxxEVONxkiQngqNrCkNEB9WBTPuTNVncMOs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=PtsalJxWGaXFB9T7jLMLh7Ih886MrFqgDPdz3jcM2NG0VRU6tQC3lLBTvDWW5x/NY
+	 BxtT4eqc40FFMIAsSBC2zbYanf4pJuIwqNj/lDGe9vHNPUIxRkXqqr+45S+8DlVZ8a
+	 DNjoLE4uvKgLBaDhpz6dtKbrYdChnBdNf8T6Nlac=
+Date: Tue, 9 Jul 2024 15:32:50 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Ma Ke <make24@iscas.ac.cn>
+Subject: Re: [PATCH] cxl: Fix possible null pointer dereference in
+ read_handle()
+Message-ID: <2024070940-customize-sturdily-fc81@gregkh>
+References: <20240709131754.855144-1-make24@iscas.ac.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87h6cy67ld.fsf@mail.lhotse>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_ZERO(0.00)[0];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_THREE(0.00)[4];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	FREEMAIL_CC(0.00)[gmail.com,lists.ozlabs.org,linux.ibm.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email]
+In-Reply-To: <20240709131754.855144-1-make24@iscas.ac.cn>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,71 +57,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Sourabh Jain <sourabhjain@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: ajd@linux.ibm.com, arnd@arndb.de, linux-kernel@vger.kernel.org, stable@vger.kernel.org, manoj@linux.vnet.ibm.com, imunsie@au1.ibm.com, fbarrat@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, clombard@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 09, 2024 at 11:03:10PM +1000, Michael Ellerman wrote:
-> Michal Suchánek <msuchanek@suse.de> writes:
-> > Hello,
-> >
-> > On Tue, Jun 25, 2024 at 11:40:47PM +1000, Nicholas Piggin wrote:
-> >> kexec on pseries disables AIL (reloc_on_exc), required for scv
-> >> instruction support, before other CPUs have been shut down. This means
-> >> they can execute scv instructions after AIL is disabled, which causes an
-> >> interrupt at an unexpected entry location that crashes the kernel.
-> >> 
-> >> Change the kexec sequence to disable AIL after other CPUs have been
-> >> brought down.
-> >> 
-> >> As a refresher, the real-mode scv interrupt vector is 0x17000, and the
-> >> fixed-location head code probably couldn't easily deal with implementing
-> >> such high addresses so it was just decided not to support that interrupt
-> >> at all.
-> >> 
-> >> Reported-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> >> Fixes: 7fa95f9adaee7 ("powerpc/64s: system call support for scv/rfscv instructions")
-> >
-> > looks like this is only broken by
-> > commit 2ab2d5794f14 ("powerpc/kasan: Disable address sanitization in kexec paths")
-> >
-> > This change reverts the kexec parts done in that commit.
-> >
-> > That is the fix is 5.19+, not 5.9+
+On Tue, Jul 09, 2024 at 09:17:54PM +0800, Ma Ke wrote:
+> In read_handle() of_get_address() may return NULL which is later
+> dereferenced. Fix this bug by adding NULL check.
 > 
-> Commit 2ab2d5794f14 moved the kexec code from one file to another, but
-> didn't change when the key function (pseries_disable_reloc_on_exc()) was
-> called.
+> Cc: stable@vger.kernel.org
+> Fixes: 14baf4d9c739 ("cxl: Add guest-specific code")
+> Signed-off-by: Ma Ke <make24@iscas.ac.cn>
+> ---
+>  drivers/misc/cxl/of.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> The old code was:
-> 
-> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-> index a3dab15b0a2f..c9fcc30a0365 100644
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -421,16 +421,6 @@ void pseries_disable_reloc_on_exc(void)
->  }
->  EXPORT_SYMBOL(pseries_disable_reloc_on_exc);
-> 
-> -#ifdef CONFIG_KEXEC_CORE
-> -static void pSeries_machine_kexec(struct kimage *image)
-> -{
-> -       if (firmware_has_feature(FW_FEATURE_SET_MODE))
-> -               pseries_disable_reloc_on_exc();
-> -
-> -       default_machine_kexec(image);
-> -}
-> -#endif
-> -
-> 
-> ie. pseries_disable_reloc_on_exc() (which disables AIL) is called before
-> default_machine_kexec() where secondary CPUs are collected.
-> 
-> So AFAICS the bug would still have been there prior to 2ab2d5794f14. But
-> it's late here so I could be reading it wrong.
+> diff --git a/drivers/misc/cxl/of.c b/drivers/misc/cxl/of.c
+> index bcc005dff1c0..d8dbb3723951 100644
+> --- a/drivers/misc/cxl/of.c
+> +++ b/drivers/misc/cxl/of.c
+> @@ -58,7 +58,7 @@ static int read_handle(struct device_node *np, u64 *handle)
+>  
+>  	/* Get address and size of the node */
+>  	prop = of_get_address(np, 0, &size, NULL);
+> -	if (size)
+> +	if (!prop || size)
+>  		return -EINVAL;
 
-Indeed, missed that the code was only moved.
+How was this issue found?
 
-Thanks for the clarification
+thanks,
 
-Michal
+greg k-h
