@@ -4,99 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22E97C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2024 10:54:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50E41C3DA41
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2024 12:39:36 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Ep5yM+XM;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=9BcXKMIJ;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=GnDPxJa5;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lkILmT7M;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TKfDXVnq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WJHtC3jjDz3cYG
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2024 20:54:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WJLCp75Ddz3cXZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Jul 2024 22:39:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Ep5yM+XM;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=9BcXKMIJ;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=GnDPxJa5;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lkILmT7M;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TKfDXVnq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WJHsN46DHz30Ss
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2024 20:53:28 +1000 (AEST)
-Received: from kitsune.suse.cz (unknown [10.100.12.127])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WJLBy4TTyz30Sq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jul 2024 22:38:50 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1720528725;
+	bh=GmUsmLNBIQmHW+JpWrHCwH01WEhfM5xgRbqsJMF93No=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=TKfDXVnq4T0Yt94cqUje8f+e8cqlm1eOR4zpw3mH0J+WJjdedfiXukVb0N0USQBzl
+	 an+2rjHqTgzz0S+/C7bw91G2WylXJ1V9T+H3v99ZKbNndLSVQzKzwCcwX2PxQzxcvy
+	 yWCpk9oxrmS0eKemK6VJcaNzm8zRZA+O4GQ/eqAyMrGQ1RwGGwaS4wuRxI2lkgv3BJ
+	 QPxXbiLXVDgwm1kuSlAftov88xNcM5RQlSLxk0IJEcpTCjEbvGpHAtVE5rtFIODAdj
+	 UvUw+ig522m7IoDZWue+Hv7OeiTGl5qKxdw02iSUSfQemOLOH+1ElGonthCgdVSUHi
+	 6N+F+0H4Tspxg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id E06AF1F7B5;
-	Tue,  9 Jul 2024 10:53:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1720522396; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=S6PZdiJUUOQ7/tocirlXk54I+exN8OLe8KW3h1b5AAU=;
-	b=Ep5yM+XMyBz5JKZvmiZ3dx+0gOJlUf9vDrLHcGSo5+yeUBspfy4FYvLpaP5klu3/Mp50jq
-	uI0mawcGJpeLGq9NPwXm27ghdDzAwVAbRXNX7GgvZvuYtTI1KPTyCA+FiK9ln/xHZ38ID+
-	IpDuLMV/jq1CDbczhp+Ody2m2S4bQeE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1720522396;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=S6PZdiJUUOQ7/tocirlXk54I+exN8OLe8KW3h1b5AAU=;
-	b=9BcXKMIJwRrV2+r7BsOiKjQJphoJdzNcCCfNIUEK9lSHE3FcEd1Y8trxy3JsLOWvEDj++h
-	11vTSfV8kPXQBbAg==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1720522395; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=S6PZdiJUUOQ7/tocirlXk54I+exN8OLe8KW3h1b5AAU=;
-	b=GnDPxJa5ZNCS15va8Zb+oR/Li2PPkBaKeuUfQVSnmkw2LXEGSItP5XB3/PCkYLgqePd76G
-	V483aJP/fRsigiX+wJx5Y6jHf1CxmFbYBbtI6FkU6uzWPPmOrgB4vWdILxTAY8emKqI12K
-	4g+ipnibhAd15xW6iVbMT8bBpqPUVJ4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1720522395;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=S6PZdiJUUOQ7/tocirlXk54I+exN8OLe8KW3h1b5AAU=;
-	b=lkILmT7Mzc+btc0jAmQiIw/Ob2VT4dlvTnRVHbDGCvlfrlSJktY9ZzsjF18vZY8HwTTcjG
-	vS/iYZmVshVCGoAA==
-Date: Tue, 9 Jul 2024 12:53:14 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/pseries: Fix scv instruction crash with kexec
-Message-ID: <20240709105314.GA26833@kitsune.suse.cz>
-References: <20240625134047.298759-1-npiggin@gmail.com>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WJLBq3Qzqz4wcl;
+	Tue,  9 Jul 2024 22:38:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Naveen N Rao
+ <naveen@kernel.org>
+Subject: Re: WARNING&Oops in v6.6.37 on ppc64lea - Trying to vfree() bad
+ address (00000000453be747)
+In-Reply-To: <2024070958-plant-prozac-6a33@gregkh>
+References: <20240705203413.wbv2nw3747vjeibk@altlinux.org>
+ <cf736c5e37489e7dc7ffd67b9de2ab47@matoro.tk>
+ <2024070904-cod-bobcat-a0d0@gregkh>
+ <1720516964.n61e0dnv80.naveen@kernel.org>
+ <2024070958-plant-prozac-6a33@gregkh>
+Date: Tue, 09 Jul 2024 22:38:43 +1000
+Message-ID: <87sewi68q4.fsf@mail.lhotse>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240625134047.298759-1-npiggin@gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.992];
-	MIME_GOOD(-0.10)[text/plain];
-	FREEMAIL_TO(0.00)[gmail.com];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_ZERO(0.00)[0];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCPT_COUNT_THREE(0.00)[3]
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,117 +64,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: matoro <matoro_mailinglist_kernel@matoro.tk>, stable@vger.kernel.org, Vitaly Chikunov <vt@altlinux.org>, Hari Bathini <hbathini@linux.ibm.com>, bpf@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, ltp@lists.linux.it
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+Greg Kroah-Hartman <gregkh@linuxfoundation.org> writes:
+> On Tue, Jul 09, 2024 at 03:02:13PM +0530, Naveen N Rao wrote:
+>> Greg Kroah-Hartman wrote:
+>> > On Mon, Jul 08, 2024 at 11:16:48PM -0400, matoro wrote:
+>> > > On 2024-07-05 16:34, Vitaly Chikunov wrote:
+>> > > > Hi,
+>> > > > > There is new WARNING and Oops on ppc64le in v6.6.37 when running
+>> > > LTP tests:
+>> > > > bpf_prog01, bpf_prog02, bpf_prog04, bpf_prog05, prctl04. Logs excerpt
+>> > > > below. I
+>> > > > see there is 1 commit in v6.6.36..v6.6.37 with call to
+>> > > > bpf_jit_binary_pack_finalize, backported from 5 patch mainline patchset:
+>> > > > >   f99feda5684a powerpc/bpf: use
+>> > > bpf_jit_binary_pack_[alloc|finalize|free]
+>> > > >
+>> 
+>> <snip>
+>> 
+>> > > > > And so on. Temporary build/test log is at
+>> > > > https://git.altlinux.org/tasks/352218/build/100/ppc64le/log
+>> > > > > Other stable/longterm branches or other architectures does not
+>> > > exhibit this.
+>> > > > > Thanks,
+>> > > 
+>> > > Hi all - this just took down a production server for me, on POWER9 bare
+>> > > metal.  Not running tests, just booting normally, before services even came
+>> > > up.  Had to perform manual restoration, reverting to 6.6.36 worked.  Also
+>> > > running 64k kernel, unsure if it's better on 4k kernel.
+>> > > 
+>> > > In case it's helpful, here's the log from my boot:
+>> > > https://dpaste.org/Gyxxg/raw
+>> > 
+>> > Ok, this isn't good, something went wrong with my backports here.  Let
+>> > me go revert them all and push out a new 6.6.y release right away.
+>> 
+>> I think the problem is that the series adding support for bpf prog_pack was
+>> partially backported. In particular, the below patches are missing from
+>> stable v6.6:
+>> 465cabc97b42 powerpc/code-patching: introduce patch_instructions()
+>> 033ffaf0af1f powerpc/bpf: implement bpf_arch_text_invalidate for bpf_prog_pack
+>> 6efc1675acb8 powerpc/bpf: implement bpf_arch_text_copy
+>> 
+>> It should be sufficient to revert commit f99feda5684a (powerpc/bpf: use
+>> bpf_jit_binary_pack_[alloc|finalize|free]) to allow the above to apply
+>> cleanly, followed by cherry picking commit 90d862f370b6 (powerpc/bpf: use
+>> bpf_jit_binary_pack_[alloc|finalize|free]) from upstream.
+>> 
+>> Alternately, commit f99feda5684a (powerpc/bpf: use
+>> bpf_jit_binary_pack_[alloc|finalize|free]) can be reverted.
+>
+> I'm dropping them all now, if you want to submit a working series for
+> this, I'll be glad to queue them all up.
 
-On Tue, Jun 25, 2024 at 11:40:47PM +1000, Nicholas Piggin wrote:
-> kexec on pseries disables AIL (reloc_on_exc), required for scv
-> instruction support, before other CPUs have been shut down. This means
-> they can execute scv instructions after AIL is disabled, which causes an
-> interrupt at an unexpected entry location that crashes the kernel.
-> 
-> Change the kexec sequence to disable AIL after other CPUs have been
-> brought down.
-> 
-> As a refresher, the real-mode scv interrupt vector is 0x17000, and the
-> fixed-location head code probably couldn't easily deal with implementing
-> such high addresses so it was just decided not to support that interrupt
-> at all.
-> 
-> Reported-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Fixes: 7fa95f9adaee7 ("powerpc/64s: system call support for scv/rfscv instructions")
+Thanks, revert is good for now.
 
-looks like this is only broken by
-commit 2ab2d5794f14 ("powerpc/kasan: Disable address sanitization in kexec paths")
+With the revert there will be a build warning/error, only in stable,
+which I think can be fixed with the diff below. I'll get it tested and
+submit it properly.
 
-This change reverts the kexec parts done in that commit.
+cheers
 
-That is the fix is 5.19+, not 5.9+
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 5f57a8ba3cc8..cdd9db8f8684 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -205,7 +205,10 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
 
-Thanks
-
-Michal
-
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kexec/core_64.c             | 11 +++++++++++
->  arch/powerpc/platforms/pseries/kexec.c   |  8 --------
->  arch/powerpc/platforms/pseries/pseries.h |  1 -
->  arch/powerpc/platforms/pseries/setup.c   |  1 -
->  4 files changed, 11 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
-> index 85050be08a23..72b12bc10f90 100644
-> --- a/arch/powerpc/kexec/core_64.c
-> +++ b/arch/powerpc/kexec/core_64.c
-> @@ -27,6 +27,7 @@
->  #include <asm/paca.h>
->  #include <asm/mmu.h>
->  #include <asm/sections.h>	/* _end */
-> +#include <asm/setup.h>
->  #include <asm/smp.h>
->  #include <asm/hw_breakpoint.h>
->  #include <asm/svm.h>
-> @@ -317,6 +318,16 @@ void default_machine_kexec(struct kimage *image)
->  	if (!kdump_in_progress())
->  		kexec_prepare_cpus();
->  
-> +#ifdef CONFIG_PPC_PSERIES
-> +	/*
-> +	 * This must be done after other CPUs have shut down, otherwise they
-> +	 * could execute the 'scv' instruction, which is not supported with
-> +	 * reloc disabled (see configure_exceptions()).
-> +	 */
-> +	if (firmware_has_feature(FW_FEATURE_SET_MODE))
-> +		pseries_disable_reloc_on_exc();
-> +#endif
-> +
->  	printk("kexec: Starting switchover sequence.\n");
->  
->  	/* switch to a staticly allocated stack.  Based on irq stack code.
-> diff --git a/arch/powerpc/platforms/pseries/kexec.c b/arch/powerpc/platforms/pseries/kexec.c
-> index 096d09ed89f6..431be156ca9b 100644
-> --- a/arch/powerpc/platforms/pseries/kexec.c
-> +++ b/arch/powerpc/platforms/pseries/kexec.c
-> @@ -61,11 +61,3 @@ void pseries_kexec_cpu_down(int crash_shutdown, int secondary)
->  	} else
->  		xics_kexec_teardown_cpu(secondary);
->  }
-> -
-> -void pseries_machine_kexec(struct kimage *image)
-> -{
-> -	if (firmware_has_feature(FW_FEATURE_SET_MODE))
-> -		pseries_disable_reloc_on_exc();
-> -
-> -	default_machine_kexec(image);
-> -}
-> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-> index bba4ad192b0f..3968a6970fa8 100644
-> --- a/arch/powerpc/platforms/pseries/pseries.h
-> +++ b/arch/powerpc/platforms/pseries/pseries.h
-> @@ -38,7 +38,6 @@ static inline void smp_init_pseries(void) { }
->  #endif
->  
->  extern void pseries_kexec_cpu_down(int crash_shutdown, int secondary);
-> -void pseries_machine_kexec(struct kimage *image);
->  
->  extern void pSeries_final_fixup(void);
->  
-> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-> index 284a6fa04b0c..b44de0f0822f 100644
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -1159,7 +1159,6 @@ define_machine(pseries) {
->  	.machine_check_exception = pSeries_machine_check_exception,
->  	.machine_check_log_err	= pSeries_machine_check_log_err,
->  #ifdef CONFIG_KEXEC_CORE
-> -	.machine_kexec          = pseries_machine_kexec,
->  	.kexec_cpu_down         = pseries_kexec_cpu_down,
->  #endif
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> -- 
-> 2.45.1
-> 
+        bpf_flush_icache(bpf_hdr, (u8 *)bpf_hdr + bpf_hdr->size);
+        if (!fp->is_func || extra_pass) {
+-               bpf_jit_binary_lock_ro(bpf_hdr);
++               if (bpf_jit_binary_lock_ro(bpf_hdr)) {
++                       fp = org_fp;
++                       goto out_addrs;
++               }
+                bpf_prog_fill_jited_linfo(fp, addrs);
+ out_addrs:
+                kfree(addrs);
