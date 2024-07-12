@@ -4,57 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 939C4C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2024 12:28:27 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=V5PMfiYd;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72080C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2024 12:54:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WL9qZ1467z3bhD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2024 22:28:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WLBPM0klxz3dVw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2024 22:54:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=V5PMfiYd;
-	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WL9p9181gz3dBv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2024 22:27:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1720787233;
-	bh=4Vofh3nmGXbIRlscqKm0va6vapnmleNLgiTWfYE/btk=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=V5PMfiYdHjm+q2zhG//PSDhbZxYuVaB/yWMCbKSb7YOZfB+YWffV8XUiFqmdJ+g+g
-	 /c6au7q5mVyEiJqj/pof4+FidWHw+Du77hF2RZBUglRFE//ThOFJQoTQqe6IUDIms0
-	 EJtVxRE/YpKncLPLY3tEkgutqHapFx9r3ZbshogxWBeGW6TCDCrXR4R0Buv6MKHije
-	 KTpMYbXdOCztwkqQk6lsuRJIWQqLg3eSog71GgUac4/5NigrRoqMUh20HyBAIopkIP
-	 3nRohakxnY0DT2cFAWUh7IiAjkavAFL6SZk+7SHz47UD7rpIBs0rGhqqwLOIEu+Cdo
-	 m8oeN6kVZK6ZA==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WLBNv5cHcz3c3H
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2024 22:53:51 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WL9p73qQHz4x1V;
-	Fri, 12 Jul 2024 22:27:11 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: LEROY Christophe <christophe.leroy2@cs-soprasteria.com>, Mark Brown
- <broonie@kernel.org>, Herve Codina <herve.codina@bootlin.com>, Arnd
- Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2 07/10] soc: fsl: cpm1: qmc: Introduce functions to
- get a channel from a phandle list
-In-Reply-To: <9423930f-8cb8-4b31-927f-a93b1006fb18@cs-soprasteria.com>
-References: <20240701113038.55144-1-herve.codina@bootlin.com>
- <20240701113038.55144-8-herve.codina@bootlin.com>
- <a8c44188-d5d8-445d-9d64-bbfce6b1b628@sirena.org.uk>
- <87a5ixkghq.fsf@mail.lhotse>
- <9423930f-8cb8-4b31-927f-a93b1006fb18@cs-soprasteria.com>
-Date: Fri, 12 Jul 2024 22:27:11 +1000
-Message-ID: <87v81a4wyo.fsf@mail.lhotse>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WLBNv0dScz4wc1;
+	Fri, 12 Jul 2024 22:53:51 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Artem Savkov <asavkov@redhat.com>
+In-Reply-To: <20240517075650.248801-1-asavkov@redhat.com>
+References: <20240517075650.248801-1-asavkov@redhat.com>
+Subject: Re: [PATCH 0/5] powerpc64/bpf: jit support for cpuv4 instructions
+Message-Id: <172078879459.310795.3299316174968073660.b4-ty@ellerman.id.au>
+Date: Fri, 12 Jul 2024 22:53:14 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,55 +43,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-sound@vger.kernel.org" <linux-sound@vger.kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Shengjiu Wang <shengjiu.wang@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Daniel Borkmann <daniel@iogearbox.net>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, bpf@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-LEROY Christophe <christophe.leroy2@cs-soprasteria.com> writes:
-> Le 04/07/2024 =C3=A0 05:01, Michael Ellerman a =C3=A9crit=C2=A0:
->> Mark Brown <broonie@kernel.org> writes:
->>> On Mon, Jul 01, 2024 at 01:30:34PM +0200, Herve Codina wrote:
->>>> qmc_chan_get_byphandle() and the resource managed version retrieve a
->>>> channel from a simple phandle.
->>>>
->>>> Extend the API and introduce qmc_chan_get_byphandles_index() and the
->>>> resource managed version in order to retrieve a channel from a phandle
->>>> list using the provided index to identify the phandle in the list.
->>>
->>> These two PowerPC patches seem trivial enough and have got no response,
->>> unless someone objects I'll go ahead and apply them.
->>=20
->> Ack.
->>=20
->> MAINTAINERS says:
->>=20
->> FREESCALE QUICC ENGINE LIBRARY
->> M:      Qiang Zhao <qiang.zhao@nxp.com>
->> L:      linuxppc-dev@lists.ozlabs.org
->> S:      Maintained
->> F:      drivers/soc/fsl/qe/
->> F:      include/soc/fsl/qe/
->>=20
->> But I see no email from that address since January 2021:
->>=20
->>    https://lore.kernel.org/all/?q=3Df%3Aqiang.zhao%40nxp.com
->>=20
->> And actually drivers/soc/fsl was marked orphan in April, maybe this
->> should be also.
->>=20
->> Or does Herve want to take over maintaining it?
->
-> We had some discussion about that in April, see=20
-> https://lore.kernel.org/linuxppc-dev/20240219153016.ntltc76bphwrv6hn@skbu=
-f/T/#mf6d4a5eef79e8eae7ae0456a2794c01e630a6756
->
-> Herv=C3=A9 has some of our hardware for a limited period of time because =
-he=20
-> is doing some implementation for us, but he won't keep that hardware on=20
-> the long run.
->
-> I will send a patch to take over maintaining drivers/soc/fsl/
+On Fri, 17 May 2024 09:56:45 +0200, Artem Savkov wrote:
+> Add support for recently added cpuv4 instructions fixing test_bpf module
+> failures. This is mostly based on 8ecf3c1dab1c6 (powerpc/bpf/32: Fix
+> failing test_bpf tests, 2024-03-05)
+> 
+> Artem Savkov (5):
+>   powerpc64/bpf: jit support for 32bit offset jmp instruction
+>   powerpc64/bpf: jit support for unconditional byte swap
+>   powerpc64/bpf: jit support for sign extended load
+>   powerpc64/bpf: jit support for sign extended mov
+>   powerpc64/bpf: jit support for signed division and modulo
+> 
+> [...]
 
-Thanks.
+Applied to powerpc/next.
+
+[1/5] powerpc64/bpf: jit support for 32bit offset jmp instruction
+      https://git.kernel.org/powerpc/c/3c086ce222cefcf16d412faa10d456161d076796
+[2/5] powerpc64/bpf: jit support for unconditional byte swap
+      https://git.kernel.org/powerpc/c/a71c0b09a14db72d59c48a8cda7a73032f4d418b
+[3/5] powerpc64/bpf: jit support for sign extended load
+      https://git.kernel.org/powerpc/c/717756c9c8ddad9f28389185bfb161d4d88e01a4
+[4/5] powerpc64/bpf: jit support for sign extended mov
+      https://git.kernel.org/powerpc/c/597b1710982d10b8629697e4a548b30d0d93eeed
+[5/5] powerpc64/bpf: jit support for signed division and modulo
+      https://git.kernel.org/powerpc/c/fde318326daa48a4bb3ca8ee229bac4d14b5bc2a
 
 cheers
