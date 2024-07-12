@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13E80C2BD09
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2024 12:54:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C075C2BD09
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2024 12:55:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WLBQ95n5Pz3fpH
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2024 22:54:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WLBQb01hnz3fvc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Jul 2024 22:55:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WLBNx071lz3c3H
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WLBNx3T44z3c3H
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jul 2024 22:53:53 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WLBNw5VJRz4x0t;
-	Fri, 12 Jul 2024 22:53:52 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WLBNx2MXkz4x12;
+	Fri, 12 Jul 2024 22:53:53 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <ab30ae302783d8617d407864b92db1b926ab5ab9.1720694914.git.christophe.leroy@csgroup.eu>
-References: <ab30ae302783d8617d407864b92db1b926ab5ab9.1720694914.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Remove 40x leftovers
-Message-Id: <172078879461.310795.8861994461453100289.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20240509121248.270878-1-mpe@ellerman.id.au>
+References: <20240509121248.270878-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/3] powerpc: Drop clang workaround for builtin constant checks
+Message-Id: <172078879459.310795.7175195949837566130.b4-ty@ellerman.id.au>
 Date: Fri, 12 Jul 2024 22:53:14 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -43,17 +43,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 11 Jul 2024 12:49:01 +0200, Christophe Leroy wrote:
+On Thu, 09 May 2024 22:12:46 +1000, Michael Ellerman wrote:
+> The CPU/MMU feature code has build-time checks that the feature value is
+> a builtin constant.
 > 
-
+> Back when the code was added clang wasn't able to compile the
+> checks, so an ifdef was added to avoid the checks for clang builds.
+> See b5fa0f7f88ed ("powerpc: Fix build failure with clang due to
+> BUILD_BUG_ON()")
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Remove 40x leftovers
-      https://git.kernel.org/powerpc/c/3efe19a9b15411119d4a35ec5790ad49f0a0234c
+[1/3] powerpc: Drop clang workaround for builtin constant checks
+      https://git.kernel.org/powerpc/c/489116d784bebec7e441f400715fbfe6edbce66c
+[2/3] powerpc/xmon: Fix disassembly CPU feature checks
+      https://git.kernel.org/powerpc/c/14196e47c5ffe32af7ed5a51c9e421c5ea5bccce
+[3/3] powerpc: Check only single values are passed to CPU/MMU feature checks
+      https://git.kernel.org/powerpc/c/db25a9625dbc3aa6613c0347f574689c248a3d0b
 
 cheers
