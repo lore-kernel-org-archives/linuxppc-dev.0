@@ -4,82 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41B73C3DA42
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2024 17:00:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C3B1C3DA45
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Jul 2024 17:01:12 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cwDcYGGr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XNnc+8hy;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WLvpx5FQLz3cZr
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jul 2024 03:00:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WLvqp5QNSz3cXM
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Jul 2024 03:01:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cwDcYGGr;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XNnc+8hy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WLvk12FTmz3cTv
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2024 02:56:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WLvk4272Wz3cZr
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jul 2024 02:56:12 +1000 (AEST)
 Received: from pps.filterd (m0353728.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 46DFvI9E013294;
-	Sat, 13 Jul 2024 16:55:50 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 46DFvIOW013309;
+	Sat, 13 Jul 2024 16:56:02 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
 	:to:cc:subject:date:message-id:in-reply-to:references
-	:mime-version:content-transfer-encoding; s=pp1; bh=ZLWyrim8sq9wk
-	l3Wd9aeF0vHtdp6oc933d/qiVrNz8M=; b=cwDcYGGr8I/9x75x6VdTHnzNlLn/F
-	HaFW+IcUlG1EkU2PAYwOwCccj9px9mD6/QbacMeI3r9HMWCWUO6eQ43yPoHLOs94
-	yY6oTrWesAudQwYV8Jfgz2OA825w/ixpXh4vwYenLQVWUpeRpqPDKu/f7nFAVKpp
-	gj1YxLnXXKV33RgTDvsqHLEHyfiYPX8HKnHQNV2q/R2P+xAJy3HreMi6vuMSbYS7
-	sJf9Cug95+2aZXZsiPqKZXmuQI3VwPa/7j7esnsW/WzILIbFJw/9GJI/CQJ/F32b
-	+7tGHgGUCW736HvllgDni8y+NiZJE9NUL+IhVDvaEgDTISbw8DFphI55Q==
+	:mime-version:content-transfer-encoding; s=pp1; bh=/dIgtxJFfvaZf
+	W4+PQkdoDXeM1SDlUCRlj7BUAZMP10=; b=XNnc+8hyQH6iJR/LLkXg5l+qNTt+8
+	eQL7oAcZd/AuY7OVDsWY81O3ZXJtbyyR6sE4HhgLouVRmSeXdm/YqO3lo3DEXGOH
+	XqMNvoqtJtx1PZhKYqKjYj9zn5+sPwNgpf1z7pzltbrvhsGKNpjz+1195IZ1Wdgq
+	7qdujLDyLHizY/72FrAsQK5svP2pKtuXbqi/cfIVF3wqUAklcQzOv6scBv5inwRD
+	A7AElZv8PxfhRYQncg1LrzrVNonS0Wl+R4IAGsywYwk1KrbHsWE/sXvZNl/sQ7oB
+	mqb/Aj1y+zR13HjiWZaV7jGheghE3uhH1YLPO4DCtvvp2wtLfEX5T1iQg==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 40bv8gg3uh-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 40bv8gg3x8-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 13 Jul 2024 16:55:50 +0000 (GMT)
+	Sat, 13 Jul 2024 16:56:02 +0000 (GMT)
 Received: from m0353728.ppops.net (m0353728.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 46DGtnNj029572;
-	Sat, 13 Jul 2024 16:55:49 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 40bv8gg3u7-1
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 46DGu17a029805;
+	Sat, 13 Jul 2024 16:56:01 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 40bv8gg3x3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 13 Jul 2024 16:55:49 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 46DFAMio013923;
-	Sat, 13 Jul 2024 16:55:48 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 407gn1cfwn-1
+	Sat, 13 Jul 2024 16:56:01 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 46DDq67B011498;
+	Sat, 13 Jul 2024 16:56:00 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 40bpec1fnf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 13 Jul 2024 16:55:48 +0000
+	Sat, 13 Jul 2024 16:56:00 +0000
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 46DGtgtl17498610
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 46DGttio48955678
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 13 Jul 2024 16:55:44 GMT
+	Sat, 13 Jul 2024 16:55:57 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6FDE920040;
-	Sat, 13 Jul 2024 16:55:42 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 19EE920043;
+	Sat, 13 Jul 2024 16:55:55 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9873E2004B;
-	Sat, 13 Jul 2024 16:55:39 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 48E3720040;
+	Sat, 13 Jul 2024 16:55:52 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.43.49.134])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 13 Jul 2024 16:55:39 +0000 (GMT)
+	Sat, 13 Jul 2024 16:55:52 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
         irogers@google.com, namhyung@kernel.org, segher@kernel.crashing.org,
         christophe.leroy@csgroup.eu
-Subject: [PATCH V7 02/18] tools/perf: Add "update_insn_state" callback function to handle arch specific instruction tracking
-Date: Sat, 13 Jul 2024 22:25:13 +0530
-Message-Id: <20240713165529.59298-3-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH V7 06/18] tools/perf: Update parameters for reg extract functions to use raw instruction on powerpc
+Date: Sat, 13 Jul 2024 22:25:17 +0530
+Message-Id: <20240713165529.59298-7-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20240713165529.59298-1-atrajeev@linux.vnet.ibm.com>
 References: <20240713165529.59298-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: C3i5K9gwlAsVLQFZLVIEVd_ElNwaepiA
-X-Proofpoint-ORIG-GUID: p4zXsfCYtpiN_lLuuv7onTP84lwl97ND
+X-Proofpoint-GUID: a8X50u9NRrXhlvr5UqwP3hbOm-raZBQF
+X-Proofpoint-ORIG-GUID: PujwUGDbDlVcG--PF6CUtdHx1Cb9__Vs
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
  definitions=2024-07-13_13,2024-07-11_01,2024-05-17_01
@@ -103,969 +103,314 @@ Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add "update_insn_state" callback to "struct arch" to handle instruction
-tracking. Currently updating instruction state is handled by static
-function "update_insn_state_x86" which is defined in "annotate-data.c".
-Make this as a callback for specific arch and move to archs specific
-file "arch/x86/annotate/instructions.c" . This will help to add helper
-function for other platforms in file:
-"arch/<platform>/annotate/instructions.c and make changes/updates
-easier.
+Use the raw instruction code and macros to identify memory instructions,
+extract register fields and also offset. The implementation addresses
+the D-form, X-form, DS-form instructions. Adds "mem_ref" field to check
+whether source/target has memory reference. Add function
+"get_powerpc_regs" which will set these fields: reg1, reg2, offset
+depending of where it is source or target ops.
 
-Define callback "update_insn_state" as part of "struct arch", also make
-some of the debug functions non-static so that it can be referenced from
-other places.
+Update "parse" callback for "struct ins_ops" to also pass "struct
+disasm_line" as argument. This is needed in parse functions where opcode
+is used to determine whether to set multi_regs and other fields
 
 Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 ---
- tools/perf/arch/x86/annotate/instructions.c | 377 +++++++++++++++++++
- tools/perf/util/annotate-data.c             | 391 +-------------------
- tools/perf/util/annotate-data.h             |  23 ++
- tools/perf/util/disasm.c                    |   4 +
- tools/perf/util/disasm.h                    |  12 +
- 5 files changed, 424 insertions(+), 383 deletions(-)
+ tools/perf/arch/arm64/annotate/instructions.c |  3 +-
+ .../arch/loongarch/annotate/instructions.c    |  6 ++-
+ tools/perf/arch/powerpc/util/dwarf-regs.c     | 44 +++++++++++++++++++
+ tools/perf/arch/s390/annotate/instructions.c  |  5 ++-
+ tools/perf/util/annotate.c                    | 19 ++++++--
+ tools/perf/util/disasm.c                      | 19 +++++---
+ tools/perf/util/disasm.h                      |  5 ++-
+ tools/perf/util/include/dwarf-regs.h          | 11 +++++
+ 8 files changed, 96 insertions(+), 16 deletions(-)
 
-diff --git a/tools/perf/arch/x86/annotate/instructions.c b/tools/perf/arch/x86/annotate/instructions.c
-index 5cdf457f5cbe..7b7d462c6c6b 100644
---- a/tools/perf/arch/x86/annotate/instructions.c
-+++ b/tools/perf/arch/x86/annotate/instructions.c
-@@ -206,3 +206,380 @@ static int x86__annotate_init(struct arch *arch, char *cpuid)
- 	arch->initialized = true;
- 	return err;
- }
-+
-+#ifdef HAVE_DWARF_SUPPORT
-+static void update_insn_state_x86(struct type_state *state,
-+				  struct data_loc_info *dloc, Dwarf_Die *cu_die,
-+				  struct disasm_line *dl)
-+{
-+	struct annotated_insn_loc loc;
-+	struct annotated_op_loc *src = &loc.ops[INSN_OP_SOURCE];
-+	struct annotated_op_loc *dst = &loc.ops[INSN_OP_TARGET];
-+	struct type_state_reg *tsr;
-+	Dwarf_Die type_die;
-+	u32 insn_offset = dl->al.offset;
-+	int fbreg = dloc->fbreg;
-+	int fboff = 0;
-+
-+	if (annotate_get_insn_location(dloc->arch, dl, &loc) < 0)
-+		return;
-+
-+	if (ins__is_call(&dl->ins)) {
-+		struct symbol *func = dl->ops.target.sym;
-+
-+		if (func == NULL)
-+			return;
-+
-+		/* __fentry__ will preserve all registers */
-+		if (!strcmp(func->name, "__fentry__"))
-+			return;
-+
-+		pr_debug_dtp("call [%x] %s\n", insn_offset, func->name);
-+
-+		/* Otherwise invalidate caller-saved registers after call */
-+		for (unsigned i = 0; i < ARRAY_SIZE(state->regs); i++) {
-+			if (state->regs[i].caller_saved)
-+				state->regs[i].ok = false;
-+		}
-+
-+		/* Update register with the return type (if any) */
-+		if (die_find_func_rettype(cu_die, func->name, &type_die)) {
-+			tsr = &state->regs[state->ret_reg];
-+			tsr->type = type_die;
-+			tsr->kind = TSR_KIND_TYPE;
-+			tsr->ok = true;
-+
-+			pr_debug_dtp("call [%x] return -> reg%d",
-+				     insn_offset, state->ret_reg);
-+			pr_debug_type_name(&type_die, tsr->kind);
-+		}
-+		return;
-+	}
-+
-+	if (!strncmp(dl->ins.name, "add", 3)) {
-+		u64 imm_value = -1ULL;
-+		int offset;
-+		const char *var_name = NULL;
-+		struct map_symbol *ms = dloc->ms;
-+		u64 ip = ms->sym->start + dl->al.offset;
-+
-+		if (!has_reg_type(state, dst->reg1))
-+			return;
-+
-+		tsr = &state->regs[dst->reg1];
-+
-+		if (src->imm)
-+			imm_value = src->offset;
-+		else if (has_reg_type(state, src->reg1) &&
-+			 state->regs[src->reg1].kind == TSR_KIND_CONST)
-+			imm_value = state->regs[src->reg1].imm_value;
-+		else if (src->reg1 == DWARF_REG_PC) {
-+			u64 var_addr = annotate_calc_pcrel(dloc->ms, ip,
-+							   src->offset, dl);
-+
-+			if (get_global_var_info(dloc, var_addr,
-+						&var_name, &offset) &&
-+			    !strcmp(var_name, "this_cpu_off") &&
-+			    tsr->kind == TSR_KIND_CONST) {
-+				tsr->kind = TSR_KIND_PERCPU_BASE;
-+				imm_value = tsr->imm_value;
-+			}
-+		}
-+		else
-+			return;
-+
-+		if (tsr->kind != TSR_KIND_PERCPU_BASE)
-+			return;
-+
-+		if (get_global_var_type(cu_die, dloc, ip, imm_value, &offset,
-+					&type_die) && offset == 0) {
-+			/*
-+			 * This is not a pointer type, but it should be treated
-+			 * as a pointer.
-+			 */
-+			tsr->type = type_die;
-+			tsr->kind = TSR_KIND_POINTER;
-+			tsr->ok = true;
-+
-+			pr_debug_dtp("add [%x] percpu %#"PRIx64" -> reg%d",
-+				     insn_offset, imm_value, dst->reg1);
-+			pr_debug_type_name(&tsr->type, tsr->kind);
-+		}
-+		return;
-+	}
-+
-+	if (strncmp(dl->ins.name, "mov", 3))
-+		return;
-+
-+	if (dloc->fb_cfa) {
-+		u64 ip = dloc->ms->sym->start + dl->al.offset;
-+		u64 pc = map__rip_2objdump(dloc->ms->map, ip);
-+
-+		if (die_get_cfa(dloc->di->dbg, pc, &fbreg, &fboff) < 0)
-+			fbreg = -1;
-+	}
-+
-+	/* Case 1. register to register or segment:offset to register transfers */
-+	if (!src->mem_ref && !dst->mem_ref) {
-+		if (!has_reg_type(state, dst->reg1))
-+			return;
-+
-+		tsr = &state->regs[dst->reg1];
-+		if (dso__kernel(map__dso(dloc->ms->map)) &&
-+		    src->segment == INSN_SEG_X86_GS && src->imm) {
-+			u64 ip = dloc->ms->sym->start + dl->al.offset;
-+			u64 var_addr;
-+			int offset;
-+
-+			/*
-+			 * In kernel, %gs points to a per-cpu region for the
-+			 * current CPU.  Access with a constant offset should
-+			 * be treated as a global variable access.
-+			 */
-+			var_addr = src->offset;
-+
-+			if (var_addr == 40) {
-+				tsr->kind = TSR_KIND_CANARY;
-+				tsr->ok = true;
-+
-+				pr_debug_dtp("mov [%x] stack canary -> reg%d\n",
-+					     insn_offset, dst->reg1);
-+				return;
-+			}
-+
-+			if (!get_global_var_type(cu_die, dloc, ip, var_addr,
-+						 &offset, &type_die) ||
-+			    !die_get_member_type(&type_die, offset, &type_die)) {
-+				tsr->ok = false;
-+				return;
-+			}
-+
-+			tsr->type = type_die;
-+			tsr->kind = TSR_KIND_TYPE;
-+			tsr->ok = true;
-+
-+			pr_debug_dtp("mov [%x] this-cpu addr=%#"PRIx64" -> reg%d",
-+				     insn_offset, var_addr, dst->reg1);
-+			pr_debug_type_name(&tsr->type, tsr->kind);
-+			return;
-+		}
-+
-+		if (src->imm) {
-+			tsr->kind = TSR_KIND_CONST;
-+			tsr->imm_value = src->offset;
-+			tsr->ok = true;
-+
-+			pr_debug_dtp("mov [%x] imm=%#x -> reg%d\n",
-+				     insn_offset, tsr->imm_value, dst->reg1);
-+			return;
-+		}
-+
-+		if (!has_reg_type(state, src->reg1) ||
-+		    !state->regs[src->reg1].ok) {
-+			tsr->ok = false;
-+			return;
-+		}
-+
-+		tsr->type = state->regs[src->reg1].type;
-+		tsr->kind = state->regs[src->reg1].kind;
-+		tsr->ok = true;
-+
-+		pr_debug_dtp("mov [%x] reg%d -> reg%d",
-+			     insn_offset, src->reg1, dst->reg1);
-+		pr_debug_type_name(&tsr->type, tsr->kind);
-+	}
-+	/* Case 2. memory to register transers */
-+	if (src->mem_ref && !dst->mem_ref) {
-+		int sreg = src->reg1;
-+
-+		if (!has_reg_type(state, dst->reg1))
-+			return;
-+
-+		tsr = &state->regs[dst->reg1];
-+
-+retry:
-+		/* Check stack variables with offset */
-+		if (sreg == fbreg) {
-+			struct type_state_stack *stack;
-+			int offset = src->offset - fboff;
-+
-+			stack = find_stack_state(state, offset);
-+			if (stack == NULL) {
-+				tsr->ok = false;
-+				return;
-+			} else if (!stack->compound) {
-+				tsr->type = stack->type;
-+				tsr->kind = stack->kind;
-+				tsr->ok = true;
-+			} else if (die_get_member_type(&stack->type,
-+						       offset - stack->offset,
-+						       &type_die)) {
-+				tsr->type = type_die;
-+				tsr->kind = TSR_KIND_TYPE;
-+				tsr->ok = true;
-+			} else {
-+				tsr->ok = false;
-+				return;
-+			}
-+
-+			pr_debug_dtp("mov [%x] -%#x(stack) -> reg%d",
-+				     insn_offset, -offset, dst->reg1);
-+			pr_debug_type_name(&tsr->type, tsr->kind);
-+		}
-+		/* And then dereference the pointer if it has one */
-+		else if (has_reg_type(state, sreg) && state->regs[sreg].ok &&
-+			 state->regs[sreg].kind == TSR_KIND_TYPE &&
-+			 die_deref_ptr_type(&state->regs[sreg].type,
-+					    src->offset, &type_die)) {
-+			tsr->type = type_die;
-+			tsr->kind = TSR_KIND_TYPE;
-+			tsr->ok = true;
-+
-+			pr_debug_dtp("mov [%x] %#x(reg%d) -> reg%d",
-+				     insn_offset, src->offset, sreg, dst->reg1);
-+			pr_debug_type_name(&tsr->type, tsr->kind);
-+		}
-+		/* Or check if it's a global variable */
-+		else if (sreg == DWARF_REG_PC) {
-+			struct map_symbol *ms = dloc->ms;
-+			u64 ip = ms->sym->start + dl->al.offset;
-+			u64 addr;
-+			int offset;
-+
-+			addr = annotate_calc_pcrel(ms, ip, src->offset, dl);
-+
-+			if (!get_global_var_type(cu_die, dloc, ip, addr, &offset,
-+						 &type_die) ||
-+			    !die_get_member_type(&type_die, offset, &type_die)) {
-+				tsr->ok = false;
-+				return;
-+			}
-+
-+			tsr->type = type_die;
-+			tsr->kind = TSR_KIND_TYPE;
-+			tsr->ok = true;
-+
-+			pr_debug_dtp("mov [%x] global addr=%"PRIx64" -> reg%d",
-+				     insn_offset, addr, dst->reg1);
-+			pr_debug_type_name(&type_die, tsr->kind);
-+		}
-+		/* And check percpu access with base register */
-+		else if (has_reg_type(state, sreg) &&
-+			 state->regs[sreg].kind == TSR_KIND_PERCPU_BASE) {
-+			u64 ip = dloc->ms->sym->start + dl->al.offset;
-+			u64 var_addr = src->offset;
-+			int offset;
-+
-+			if (src->multi_regs) {
-+				int reg2 = (sreg == src->reg1) ? src->reg2 : src->reg1;
-+
-+				if (has_reg_type(state, reg2) && state->regs[reg2].ok &&
-+				    state->regs[reg2].kind == TSR_KIND_CONST)
-+					var_addr += state->regs[reg2].imm_value;
-+			}
-+
-+			/*
-+			 * In kernel, %gs points to a per-cpu region for the
-+			 * current CPU.  Access with a constant offset should
-+			 * be treated as a global variable access.
-+			 */
-+			if (get_global_var_type(cu_die, dloc, ip, var_addr,
-+						&offset, &type_die) &&
-+			    die_get_member_type(&type_die, offset, &type_die)) {
-+				tsr->type = type_die;
-+				tsr->kind = TSR_KIND_TYPE;
-+				tsr->ok = true;
-+
-+				if (src->multi_regs) {
-+					pr_debug_dtp("mov [%x] percpu %#x(reg%d,reg%d) -> reg%d",
-+						     insn_offset, src->offset, src->reg1,
-+						     src->reg2, dst->reg1);
-+				} else {
-+					pr_debug_dtp("mov [%x] percpu %#x(reg%d) -> reg%d",
-+						     insn_offset, src->offset, sreg, dst->reg1);
-+				}
-+				pr_debug_type_name(&tsr->type, tsr->kind);
-+			} else {
-+				tsr->ok = false;
-+			}
-+		}
-+		/* And then dereference the calculated pointer if it has one */
-+		else if (has_reg_type(state, sreg) && state->regs[sreg].ok &&
-+			 state->regs[sreg].kind == TSR_KIND_POINTER &&
-+			 die_get_member_type(&state->regs[sreg].type,
-+					     src->offset, &type_die)) {
-+			tsr->type = type_die;
-+			tsr->kind = TSR_KIND_TYPE;
-+			tsr->ok = true;
-+
-+			pr_debug_dtp("mov [%x] pointer %#x(reg%d) -> reg%d",
-+				     insn_offset, src->offset, sreg, dst->reg1);
-+			pr_debug_type_name(&tsr->type, tsr->kind);
-+		}
-+		/* Or try another register if any */
-+		else if (src->multi_regs && sreg == src->reg1 &&
-+			 src->reg1 != src->reg2) {
-+			sreg = src->reg2;
-+			goto retry;
-+		}
-+		else {
-+			int offset;
-+			const char *var_name = NULL;
-+
-+			/* it might be per-cpu variable (in kernel) access */
-+			if (src->offset < 0) {
-+				if (get_global_var_info(dloc, (s64)src->offset,
-+							&var_name, &offset) &&
-+				    !strcmp(var_name, "__per_cpu_offset")) {
-+					tsr->kind = TSR_KIND_PERCPU_BASE;
-+
-+					pr_debug_dtp("mov [%x] percpu base reg%d\n",
-+						     insn_offset, dst->reg1);
-+				}
-+			}
-+
-+			tsr->ok = false;
-+		}
-+	}
-+	/* Case 3. register to memory transfers */
-+	if (!src->mem_ref && dst->mem_ref) {
-+		if (!has_reg_type(state, src->reg1) ||
-+		    !state->regs[src->reg1].ok)
-+			return;
-+
-+		/* Check stack variables with offset */
-+		if (dst->reg1 == fbreg) {
-+			struct type_state_stack *stack;
-+			int offset = dst->offset - fboff;
-+
-+			tsr = &state->regs[src->reg1];
-+
-+			stack = find_stack_state(state, offset);
-+			if (stack) {
-+				/*
-+				 * The source register is likely to hold a type
-+				 * of member if it's a compound type.  Do not
-+				 * update the stack variable type since we can
-+				 * get the member type later by using the
-+				 * die_get_member_type().
-+				 */
-+				if (!stack->compound)
-+					set_stack_state(stack, offset, tsr->kind,
-+							&tsr->type);
-+			} else {
-+				findnew_stack_state(state, offset, tsr->kind,
-+						    &tsr->type);
-+			}
-+
-+			pr_debug_dtp("mov [%x] reg%d -> -%#x(stack)",
-+				     insn_offset, src->reg1, -offset);
-+			pr_debug_type_name(&tsr->type, tsr->kind);
-+		}
-+		/*
-+		 * Ignore other transfers since it'd set a value in a struct
-+		 * and won't change the type.
-+		 */
-+	}
-+	/* Case 4. memory to memory transfers (not handled for now) */
-+}
-+#endif
-diff --git a/tools/perf/util/annotate-data.c b/tools/perf/util/annotate-data.c
-index a4c7f98a75e3..7a48c3d72b89 100644
---- a/tools/perf/util/annotate-data.c
-+++ b/tools/perf/util/annotate-data.c
-@@ -39,7 +39,7 @@ do {								\
- 		pr_debug3(fmt, ##__VA_ARGS__);			\
- } while (0)
+diff --git a/tools/perf/arch/arm64/annotate/instructions.c b/tools/perf/arch/arm64/annotate/instructions.c
+index 4af0c3a0f86e..f86d9f4798bd 100644
+--- a/tools/perf/arch/arm64/annotate/instructions.c
++++ b/tools/perf/arch/arm64/annotate/instructions.c
+@@ -11,7 +11,8 @@ struct arm64_annotate {
  
--static void pr_debug_type_name(Dwarf_Die *die, enum type_state_kind kind)
-+void pr_debug_type_name(Dwarf_Die *die, enum type_state_kind kind)
+ static int arm64_mov__parse(struct arch *arch __maybe_unused,
+ 			    struct ins_operands *ops,
+-			    struct map_symbol *ms __maybe_unused)
++			    struct map_symbol *ms __maybe_unused,
++			    struct disasm_line *dl __maybe_unused)
  {
- 	struct strbuf sb;
- 	char *str;
-@@ -390,7 +390,7 @@ static int check_variable(struct data_loc_info *dloc, Dwarf_Die *var_die,
+ 	char *s = strchr(ops->raw, ','), *target, *endptr;
+ 
+diff --git a/tools/perf/arch/loongarch/annotate/instructions.c b/tools/perf/arch/loongarch/annotate/instructions.c
+index 21cc7e4149f7..ab43b1ab51e3 100644
+--- a/tools/perf/arch/loongarch/annotate/instructions.c
++++ b/tools/perf/arch/loongarch/annotate/instructions.c
+@@ -5,7 +5,8 @@
+  * Copyright (C) 2020-2023 Loongson Technology Corporation Limited
+  */
+ 
+-static int loongarch_call__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms)
++static int loongarch_call__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms,
++		struct disasm_line *dl __maybe_unused)
+ {
+ 	char *c, *endptr, *tok, *name;
+ 	struct map *map = ms->map;
+@@ -51,7 +52,8 @@ static struct ins_ops loongarch_call_ops = {
+ 	.scnprintf = call__scnprintf,
+ };
+ 
+-static int loongarch_jump__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms)
++static int loongarch_jump__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms,
++		struct disasm_line *dl __maybe_unused)
+ {
+ 	struct map *map = ms->map;
+ 	struct symbol *sym = ms->sym;
+diff --git a/tools/perf/arch/powerpc/util/dwarf-regs.c b/tools/perf/arch/powerpc/util/dwarf-regs.c
+index 430623ca5612..104c7ae5c433 100644
+--- a/tools/perf/arch/powerpc/util/dwarf-regs.c
++++ b/tools/perf/arch/powerpc/util/dwarf-regs.c
+@@ -107,3 +107,47 @@ int regs_query_register_offset(const char *name)
+ #define PPC_DS(DS)	((DS) & 0xfffc)
+ #define OP_LD	58
+ #define OP_STD	62
++
++static int get_source_reg(u32 raw_insn)
++{
++	return PPC_RA(raw_insn);
++}
++
++static int get_target_reg(u32 raw_insn)
++{
++	return PPC_RT(raw_insn);
++}
++
++static int get_offset_opcode(u32 raw_insn)
++{
++	int opcode = PPC_OP(raw_insn);
++
++	/* DS- form */
++	if ((opcode == OP_LD) || (opcode == OP_STD))
++		return PPC_DS(raw_insn);
++	else
++		return PPC_D(raw_insn);
++}
++
++/*
++ * Fills the required fields for op_loc depending on if it
++ * is a source or target.
++ * D form: ins RT,D(RA) -> src_reg1 = RA, offset = D, dst_reg1 = RT
++ * DS form: ins RT,DS(RA) -> src_reg1 = RA, offset = DS, dst_reg1 = RT
++ * X form: ins RT,RA,RB -> src_reg1 = RA, src_reg2 = RB, dst_reg1 = RT
++ */
++void get_powerpc_regs(u32 raw_insn, int is_source,
++		struct annotated_op_loc *op_loc)
++{
++	if (is_source)
++		op_loc->reg1 = get_source_reg(raw_insn);
++	else
++		op_loc->reg1 = get_target_reg(raw_insn);
++
++	if (op_loc->multi_regs)
++		op_loc->reg2 = PPC_RB(raw_insn);
++
++	/* TODO: Implement offset handling for X Form */
++	if ((op_loc->mem_ref) && (PPC_OP(raw_insn) != 31))
++		op_loc->offset = get_offset_opcode(raw_insn);
++}
+diff --git a/tools/perf/arch/s390/annotate/instructions.c b/tools/perf/arch/s390/annotate/instructions.c
+index da5aa3e1f04c..eeac25cca699 100644
+--- a/tools/perf/arch/s390/annotate/instructions.c
++++ b/tools/perf/arch/s390/annotate/instructions.c
+@@ -2,7 +2,7 @@
+ #include <linux/compiler.h>
+ 
+ static int s390_call__parse(struct arch *arch, struct ins_operands *ops,
+-			    struct map_symbol *ms)
++			    struct map_symbol *ms, struct disasm_line *dl __maybe_unused)
+ {
+ 	char *endptr, *tok, *name;
+ 	struct map *map = ms->map;
+@@ -52,7 +52,8 @@ static struct ins_ops s390_call_ops = {
+ 
+ static int s390_mov__parse(struct arch *arch __maybe_unused,
+ 			   struct ins_operands *ops,
+-			   struct map_symbol *ms __maybe_unused)
++			   struct map_symbol *ms __maybe_unused,
++			   struct disasm_line *dl __maybe_unused)
+ {
+ 	char *s = strchr(ops->raw, ','), *target, *endptr;
+ 
+diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
+index 1451caf25e77..ce99db291c5e 100644
+--- a/tools/perf/util/annotate.c
++++ b/tools/perf/util/annotate.c
+@@ -2123,20 +2123,33 @@ int annotate_get_insn_location(struct arch *arch, struct disasm_line *dl,
+ 	for_each_insn_op_loc(loc, i, op_loc) {
+ 		const char *insn_str = ops->source.raw;
+ 		bool multi_regs = ops->source.multi_regs;
++		bool mem_ref = ops->source.mem_ref;
+ 
+ 		if (i == INSN_OP_TARGET) {
+ 			insn_str = ops->target.raw;
+ 			multi_regs = ops->target.multi_regs;
++			mem_ref = ops->target.mem_ref;
+ 		}
+ 
+ 		/* Invalidate the register by default */
+ 		op_loc->reg1 = -1;
+ 		op_loc->reg2 = -1;
+ 
+-		if (insn_str == NULL)
+-			continue;
++		if (insn_str == NULL) {
++			if (!arch__is(arch, "powerpc"))
++				continue;
++		}
+ 
+-		if (strchr(insn_str, arch->objdump.memory_ref_char)) {
++		/*
++		 * For powerpc, call get_powerpc_regs function which extracts the
++		 * required fields for op_loc, ie reg1, reg2, offset from the
++		 * raw instruction.
++		 */
++		if (arch__is(arch, "powerpc")) {
++			op_loc->mem_ref = mem_ref;
++			op_loc->multi_regs = multi_regs;
++			get_powerpc_regs(dl->raw.raw_insn, !i, op_loc);
++		} else if (strchr(insn_str, arch->objdump.memory_ref_char)) {
+ 			op_loc->mem_ref = true;
+ 			op_loc->multi_regs = multi_regs;
+ 			extract_reg_offset(arch, insn_str, op_loc);
+diff --git a/tools/perf/util/disasm.c b/tools/perf/util/disasm.c
+index 646290b043b2..8e45f0874e03 100644
+--- a/tools/perf/util/disasm.c
++++ b/tools/perf/util/disasm.c
+@@ -256,7 +256,8 @@ bool ins__is_fused(struct arch *arch, const char *ins1, const char *ins2)
+ 	return arch->ins_is_fused(arch, ins1, ins2);
+ }
+ 
+-static int call__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms)
++static int call__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms,
++		struct disasm_line *dl __maybe_unused)
+ {
+ 	char *endptr, *tok, *name;
+ 	struct map *map = ms->map;
+@@ -351,7 +352,8 @@ static inline const char *validate_comma(const char *c, struct ins_operands *ops
+ 	return c;
+ }
+ 
+-static int jump__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms)
++static int jump__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms,
++		struct disasm_line *dl __maybe_unused)
+ {
+ 	struct map *map = ms->map;
+ 	struct symbol *sym = ms->sym;
+@@ -510,7 +512,8 @@ static int comment__symbol(char *raw, char *comment, u64 *addrp, char **namep)
  	return 0;
  }
  
--static struct type_state_stack *find_stack_state(struct type_state *state,
-+struct type_state_stack *find_stack_state(struct type_state *state,
- 						 int offset)
+-static int lock__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms)
++static int lock__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms,
++		struct disasm_line *dl __maybe_unused)
  {
- 	struct type_state_stack *stack;
-@@ -406,7 +406,7 @@ static struct type_state_stack *find_stack_state(struct type_state *state,
- 	return NULL;
+ 	ops->locked.ops = zalloc(sizeof(*ops->locked.ops));
+ 	if (ops->locked.ops == NULL)
+@@ -525,7 +528,7 @@ static int lock__parse(struct arch *arch, struct ins_operands *ops, struct map_s
+ 		goto out_free_ops;
+ 
+ 	if (ops->locked.ins.ops->parse &&
+-	    ops->locked.ins.ops->parse(arch, ops->locked.ops, ms) < 0)
++	    ops->locked.ins.ops->parse(arch, ops->locked.ops, ms, NULL) < 0)
+ 		goto out_free_ops;
+ 
+ 	return 0;
+@@ -596,7 +599,8 @@ static bool check_multi_regs(struct arch *arch, const char *op)
+ 	return count > 1;
  }
  
--static void set_stack_state(struct type_state_stack *stack, int offset, u8 kind,
-+void set_stack_state(struct type_state_stack *stack, int offset, u8 kind,
- 			    Dwarf_Die *type_die)
+-static int mov__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms __maybe_unused)
++static int mov__parse(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms __maybe_unused,
++		struct disasm_line *dl __maybe_unused)
  {
- 	int tag;
-@@ -433,7 +433,7 @@ static void set_stack_state(struct type_state_stack *stack, int offset, u8 kind,
- 	}
- }
+ 	char *s = strchr(ops->raw, ','), *target, *comment, prev;
  
--static struct type_state_stack *findnew_stack_state(struct type_state *state,
-+struct type_state_stack *findnew_stack_state(struct type_state *state,
- 						    int offset, u8 kind,
- 						    Dwarf_Die *type_die)
- {
-@@ -537,7 +537,7 @@ void global_var_type__tree_delete(struct rb_root *root)
- 	}
- }
- 
--static bool get_global_var_info(struct data_loc_info *dloc, u64 addr,
-+bool get_global_var_info(struct data_loc_info *dloc, u64 addr,
- 				const char **var_name, int *var_offset)
- {
- 	struct addr_location al;
-@@ -611,7 +611,7 @@ static void global_var__collect(struct data_loc_info *dloc)
- 	}
- }
- 
--static bool get_global_var_type(Dwarf_Die *cu_die, struct data_loc_info *dloc,
-+bool get_global_var_type(Dwarf_Die *cu_die, struct data_loc_info *dloc,
- 				u64 ip, u64 var_addr, int *var_offset,
- 				Dwarf_Die *type_die)
- {
-@@ -722,381 +722,6 @@ static void update_var_state(struct type_state *state, struct data_loc_info *dlo
- 	}
- }
- 
--static void update_insn_state_x86(struct type_state *state,
--				  struct data_loc_info *dloc, Dwarf_Die *cu_die,
--				  struct disasm_line *dl)
--{
--	struct annotated_insn_loc loc;
--	struct annotated_op_loc *src = &loc.ops[INSN_OP_SOURCE];
--	struct annotated_op_loc *dst = &loc.ops[INSN_OP_TARGET];
--	struct type_state_reg *tsr;
--	Dwarf_Die type_die;
--	u32 insn_offset = dl->al.offset;
--	int fbreg = dloc->fbreg;
--	int fboff = 0;
--
--	if (annotate_get_insn_location(dloc->arch, dl, &loc) < 0)
--		return;
--
--	if (ins__is_call(&dl->ins)) {
--		struct symbol *func = dl->ops.target.sym;
--
--		if (func == NULL)
--			return;
--
--		/* __fentry__ will preserve all registers */
--		if (!strcmp(func->name, "__fentry__"))
--			return;
--
--		pr_debug_dtp("call [%x] %s\n", insn_offset, func->name);
--
--		/* Otherwise invalidate caller-saved registers after call */
--		for (unsigned i = 0; i < ARRAY_SIZE(state->regs); i++) {
--			if (state->regs[i].caller_saved)
--				state->regs[i].ok = false;
--		}
--
--		/* Update register with the return type (if any) */
--		if (die_find_func_rettype(cu_die, func->name, &type_die)) {
--			tsr = &state->regs[state->ret_reg];
--			tsr->type = type_die;
--			tsr->kind = TSR_KIND_TYPE;
--			tsr->ok = true;
--
--			pr_debug_dtp("call [%x] return -> reg%d",
--				     insn_offset, state->ret_reg);
--			pr_debug_type_name(&type_die, tsr->kind);
--		}
--		return;
--	}
--
--	if (!strncmp(dl->ins.name, "add", 3)) {
--		u64 imm_value = -1ULL;
--		int offset;
--		const char *var_name = NULL;
--		struct map_symbol *ms = dloc->ms;
--		u64 ip = ms->sym->start + dl->al.offset;
--
--		if (!has_reg_type(state, dst->reg1))
--			return;
--
--		tsr = &state->regs[dst->reg1];
--
--		if (src->imm)
--			imm_value = src->offset;
--		else if (has_reg_type(state, src->reg1) &&
--			 state->regs[src->reg1].kind == TSR_KIND_CONST)
--			imm_value = state->regs[src->reg1].imm_value;
--		else if (src->reg1 == DWARF_REG_PC) {
--			u64 var_addr = annotate_calc_pcrel(dloc->ms, ip,
--							   src->offset, dl);
--
--			if (get_global_var_info(dloc, var_addr,
--						&var_name, &offset) &&
--			    !strcmp(var_name, "this_cpu_off") &&
--			    tsr->kind == TSR_KIND_CONST) {
--				tsr->kind = TSR_KIND_PERCPU_BASE;
--				imm_value = tsr->imm_value;
--			}
--		}
--		else
--			return;
--
--		if (tsr->kind != TSR_KIND_PERCPU_BASE)
--			return;
--
--		if (get_global_var_type(cu_die, dloc, ip, imm_value, &offset,
--					&type_die) && offset == 0) {
--			/*
--			 * This is not a pointer type, but it should be treated
--			 * as a pointer.
--			 */
--			tsr->type = type_die;
--			tsr->kind = TSR_KIND_POINTER;
--			tsr->ok = true;
--
--			pr_debug_dtp("add [%x] percpu %#"PRIx64" -> reg%d",
--				     insn_offset, imm_value, dst->reg1);
--			pr_debug_type_name(&tsr->type, tsr->kind);
--		}
--		return;
--	}
--
--	if (strncmp(dl->ins.name, "mov", 3))
--		return;
--
--	if (dloc->fb_cfa) {
--		u64 ip = dloc->ms->sym->start + dl->al.offset;
--		u64 pc = map__rip_2objdump(dloc->ms->map, ip);
--
--		if (die_get_cfa(dloc->di->dbg, pc, &fbreg, &fboff) < 0)
--			fbreg = -1;
--	}
--
--	/* Case 1. register to register or segment:offset to register transfers */
--	if (!src->mem_ref && !dst->mem_ref) {
--		if (!has_reg_type(state, dst->reg1))
--			return;
--
--		tsr = &state->regs[dst->reg1];
--		if (dso__kernel(map__dso(dloc->ms->map)) &&
--		    src->segment == INSN_SEG_X86_GS && src->imm) {
--			u64 ip = dloc->ms->sym->start + dl->al.offset;
--			u64 var_addr;
--			int offset;
--
--			/*
--			 * In kernel, %gs points to a per-cpu region for the
--			 * current CPU.  Access with a constant offset should
--			 * be treated as a global variable access.
--			 */
--			var_addr = src->offset;
--
--			if (var_addr == 40) {
--				tsr->kind = TSR_KIND_CANARY;
--				tsr->ok = true;
--
--				pr_debug_dtp("mov [%x] stack canary -> reg%d\n",
--					     insn_offset, dst->reg1);
--				return;
--			}
--
--			if (!get_global_var_type(cu_die, dloc, ip, var_addr,
--						 &offset, &type_die) ||
--			    !die_get_member_type(&type_die, offset, &type_die)) {
--				tsr->ok = false;
--				return;
--			}
--
--			tsr->type = type_die;
--			tsr->kind = TSR_KIND_TYPE;
--			tsr->ok = true;
--
--			pr_debug_dtp("mov [%x] this-cpu addr=%#"PRIx64" -> reg%d",
--				     insn_offset, var_addr, dst->reg1);
--			pr_debug_type_name(&tsr->type, tsr->kind);
--			return;
--		}
--
--		if (src->imm) {
--			tsr->kind = TSR_KIND_CONST;
--			tsr->imm_value = src->offset;
--			tsr->ok = true;
--
--			pr_debug_dtp("mov [%x] imm=%#x -> reg%d\n",
--				     insn_offset, tsr->imm_value, dst->reg1);
--			return;
--		}
--
--		if (!has_reg_type(state, src->reg1) ||
--		    !state->regs[src->reg1].ok) {
--			tsr->ok = false;
--			return;
--		}
--
--		tsr->type = state->regs[src->reg1].type;
--		tsr->kind = state->regs[src->reg1].kind;
--		tsr->ok = true;
--
--		pr_debug_dtp("mov [%x] reg%d -> reg%d",
--			     insn_offset, src->reg1, dst->reg1);
--		pr_debug_type_name(&tsr->type, tsr->kind);
--	}
--	/* Case 2. memory to register transers */
--	if (src->mem_ref && !dst->mem_ref) {
--		int sreg = src->reg1;
--
--		if (!has_reg_type(state, dst->reg1))
--			return;
--
--		tsr = &state->regs[dst->reg1];
--
--retry:
--		/* Check stack variables with offset */
--		if (sreg == fbreg) {
--			struct type_state_stack *stack;
--			int offset = src->offset - fboff;
--
--			stack = find_stack_state(state, offset);
--			if (stack == NULL) {
--				tsr->ok = false;
--				return;
--			} else if (!stack->compound) {
--				tsr->type = stack->type;
--				tsr->kind = stack->kind;
--				tsr->ok = true;
--			} else if (die_get_member_type(&stack->type,
--						       offset - stack->offset,
--						       &type_die)) {
--				tsr->type = type_die;
--				tsr->kind = TSR_KIND_TYPE;
--				tsr->ok = true;
--			} else {
--				tsr->ok = false;
--				return;
--			}
--
--			pr_debug_dtp("mov [%x] -%#x(stack) -> reg%d",
--				     insn_offset, -offset, dst->reg1);
--			pr_debug_type_name(&tsr->type, tsr->kind);
--		}
--		/* And then dereference the pointer if it has one */
--		else if (has_reg_type(state, sreg) && state->regs[sreg].ok &&
--			 state->regs[sreg].kind == TSR_KIND_TYPE &&
--			 die_deref_ptr_type(&state->regs[sreg].type,
--					    src->offset, &type_die)) {
--			tsr->type = type_die;
--			tsr->kind = TSR_KIND_TYPE;
--			tsr->ok = true;
--
--			pr_debug_dtp("mov [%x] %#x(reg%d) -> reg%d",
--				     insn_offset, src->offset, sreg, dst->reg1);
--			pr_debug_type_name(&tsr->type, tsr->kind);
--		}
--		/* Or check if it's a global variable */
--		else if (sreg == DWARF_REG_PC) {
--			struct map_symbol *ms = dloc->ms;
--			u64 ip = ms->sym->start + dl->al.offset;
--			u64 addr;
--			int offset;
--
--			addr = annotate_calc_pcrel(ms, ip, src->offset, dl);
--
--			if (!get_global_var_type(cu_die, dloc, ip, addr, &offset,
--						 &type_die) ||
--			    !die_get_member_type(&type_die, offset, &type_die)) {
--				tsr->ok = false;
--				return;
--			}
--
--			tsr->type = type_die;
--			tsr->kind = TSR_KIND_TYPE;
--			tsr->ok = true;
--
--			pr_debug_dtp("mov [%x] global addr=%"PRIx64" -> reg%d",
--				     insn_offset, addr, dst->reg1);
--			pr_debug_type_name(&type_die, tsr->kind);
--		}
--		/* And check percpu access with base register */
--		else if (has_reg_type(state, sreg) &&
--			 state->regs[sreg].kind == TSR_KIND_PERCPU_BASE) {
--			u64 ip = dloc->ms->sym->start + dl->al.offset;
--			u64 var_addr = src->offset;
--			int offset;
--
--			if (src->multi_regs) {
--				int reg2 = (sreg == src->reg1) ? src->reg2 : src->reg1;
--
--				if (has_reg_type(state, reg2) && state->regs[reg2].ok &&
--				    state->regs[reg2].kind == TSR_KIND_CONST)
--					var_addr += state->regs[reg2].imm_value;
--			}
--
--			/*
--			 * In kernel, %gs points to a per-cpu region for the
--			 * current CPU.  Access with a constant offset should
--			 * be treated as a global variable access.
--			 */
--			if (get_global_var_type(cu_die, dloc, ip, var_addr,
--						&offset, &type_die) &&
--			    die_get_member_type(&type_die, offset, &type_die)) {
--				tsr->type = type_die;
--				tsr->kind = TSR_KIND_TYPE;
--				tsr->ok = true;
--
--				if (src->multi_regs) {
--					pr_debug_dtp("mov [%x] percpu %#x(reg%d,reg%d) -> reg%d",
--						     insn_offset, src->offset, src->reg1,
--						     src->reg2, dst->reg1);
--				} else {
--					pr_debug_dtp("mov [%x] percpu %#x(reg%d) -> reg%d",
--						     insn_offset, src->offset, sreg, dst->reg1);
--				}
--				pr_debug_type_name(&tsr->type, tsr->kind);
--			} else {
--				tsr->ok = false;
--			}
--		}
--		/* And then dereference the calculated pointer if it has one */
--		else if (has_reg_type(state, sreg) && state->regs[sreg].ok &&
--			 state->regs[sreg].kind == TSR_KIND_POINTER &&
--			 die_get_member_type(&state->regs[sreg].type,
--					     src->offset, &type_die)) {
--			tsr->type = type_die;
--			tsr->kind = TSR_KIND_TYPE;
--			tsr->ok = true;
--
--			pr_debug_dtp("mov [%x] pointer %#x(reg%d) -> reg%d",
--				     insn_offset, src->offset, sreg, dst->reg1);
--			pr_debug_type_name(&tsr->type, tsr->kind);
--		}
--		/* Or try another register if any */
--		else if (src->multi_regs && sreg == src->reg1 &&
--			 src->reg1 != src->reg2) {
--			sreg = src->reg2;
--			goto retry;
--		}
--		else {
--			int offset;
--			const char *var_name = NULL;
--
--			/* it might be per-cpu variable (in kernel) access */
--			if (src->offset < 0) {
--				if (get_global_var_info(dloc, (s64)src->offset,
--							&var_name, &offset) &&
--				    !strcmp(var_name, "__per_cpu_offset")) {
--					tsr->kind = TSR_KIND_PERCPU_BASE;
--
--					pr_debug_dtp("mov [%x] percpu base reg%d\n",
--						     insn_offset, dst->reg1);
--				}
--			}
--
--			tsr->ok = false;
--		}
--	}
--	/* Case 3. register to memory transfers */
--	if (!src->mem_ref && dst->mem_ref) {
--		if (!has_reg_type(state, src->reg1) ||
--		    !state->regs[src->reg1].ok)
--			return;
--
--		/* Check stack variables with offset */
--		if (dst->reg1 == fbreg) {
--			struct type_state_stack *stack;
--			int offset = dst->offset - fboff;
--
--			tsr = &state->regs[src->reg1];
--
--			stack = find_stack_state(state, offset);
--			if (stack) {
--				/*
--				 * The source register is likely to hold a type
--				 * of member if it's a compound type.  Do not
--				 * update the stack variable type since we can
--				 * get the member type later by using the
--				 * die_get_member_type().
--				 */
--				if (!stack->compound)
--					set_stack_state(stack, offset, tsr->kind,
--							&tsr->type);
--			} else {
--				findnew_stack_state(state, offset, tsr->kind,
--						    &tsr->type);
--			}
--
--			pr_debug_dtp("mov [%x] reg%d -> -%#x(stack)",
--				     insn_offset, src->reg1, -offset);
--			pr_debug_type_name(&tsr->type, tsr->kind);
--		}
--		/*
--		 * Ignore other transfers since it'd set a value in a struct
--		 * and won't change the type.
--		 */
--	}
--	/* Case 4. memory to memory transfers (not handled for now) */
--}
--
- /**
-  * update_insn_state - Update type state for an instruction
-  * @state: type state table
-@@ -1115,8 +740,8 @@ static void update_insn_state_x86(struct type_state *state,
- static void update_insn_state(struct type_state *state, struct data_loc_info *dloc,
- 			      Dwarf_Die *cu_die, struct disasm_line *dl)
- {
--	if (arch__is(dloc->arch, "x86"))
--		update_insn_state_x86(state, dloc, cu_die, dl);
-+	if (dloc->arch->update_insn_state)
-+		dloc->arch->update_insn_state(state, dloc, cu_die, dl);
- }
- 
- /*
-diff --git a/tools/perf/util/annotate-data.h b/tools/perf/util/annotate-data.h
-index cdb5cd8960bb..6fe8ee8b8410 100644
---- a/tools/perf/util/annotate-data.h
-+++ b/tools/perf/util/annotate-data.h
-@@ -6,6 +6,7 @@
- #include <linux/compiler.h>
- #include <linux/rbtree.h>
- #include <linux/types.h>
-+#include "dwarf-regs.h"
- #include "annotate.h"
- 
- #ifdef HAVE_DWARF_SUPPORT
-@@ -20,6 +21,14 @@ struct hist_entry;
- struct map_symbol;
- struct thread;
- 
-+#define pr_debug_dtp(fmt, ...)					\
-+do {								\
-+	if (debug_type_profile)					\
-+		pr_info(fmt, ##__VA_ARGS__);			\
-+	else							\
-+		pr_debug3(fmt, ##__VA_ARGS__);			\
-+} while (0)
-+
- enum type_state_kind {
- 	TSR_KIND_INVALID = 0,
- 	TSR_KIND_TYPE,
-@@ -216,6 +225,20 @@ void global_var_type__tree_delete(struct rb_root *root);
- int hist_entry__annotate_data_tty(struct hist_entry *he, struct evsel *evsel);
- 
- bool has_reg_type(struct type_state *state, int reg);
-+struct type_state_stack *findnew_stack_state(struct type_state *state,
-+						int offset, u8 kind,
-+						Dwarf_Die *type_die);
-+void set_stack_state(struct type_state_stack *stack, int offset, u8 kind,
-+				Dwarf_Die *type_die);
-+struct type_state_stack *find_stack_state(struct type_state *state,
-+						int offset);
-+bool get_global_var_type(Dwarf_Die *cu_die, struct data_loc_info *dloc,
-+				u64 ip, u64 var_addr, int *var_offset,
-+				Dwarf_Die *type_die);
-+bool get_global_var_info(struct data_loc_info *dloc, u64 addr,
-+				const char **var_name, int *var_offset);
-+void pr_debug_type_name(Dwarf_Die *die, enum type_state_kind kind);
-+
- #else /* HAVE_DWARF_SUPPORT */
- 
- static inline struct annotated_data_type *
-diff --git a/tools/perf/util/disasm.c b/tools/perf/util/disasm.c
-index 72aec8f61b94..d2723ba024bf 100644
---- a/tools/perf/util/disasm.c
-+++ b/tools/perf/util/disasm.c
-@@ -12,6 +12,7 @@
- #include <subcmd/run-command.h>
- 
- #include "annotate.h"
-+#include "annotate-data.h"
- #include "build-id.h"
- #include "debug.h"
- #include "disasm.h"
-@@ -145,6 +146,9 @@ static struct arch architectures[] = {
- 			.memory_ref_char = '(',
- 			.imm_char = '$',
- 		},
-+#ifdef HAVE_DWARF_SUPPORT
-+		.update_insn_state = update_insn_state_x86,
-+#endif
- 	},
- 	{
- 		.name = "powerpc",
-diff --git a/tools/perf/util/disasm.h b/tools/perf/util/disasm.h
-index 3d381a043520..c835759c8e2b 100644
---- a/tools/perf/util/disasm.h
-+++ b/tools/perf/util/disasm.h
-@@ -4,11 +4,18 @@
- 
- #include "map_symbol.h"
- 
-+#ifdef HAVE_DWARF_SUPPORT
-+#include "dwarf-aux.h"
-+#endif
-+
- struct annotation_options;
- struct disasm_line;
- struct ins;
- struct evsel;
- struct symbol;
-+struct data_loc_info;
-+struct type_state;
-+struct disasm_line;
- 
- struct arch {
- 	const char	*name;
-@@ -32,6 +39,11 @@ struct arch {
- 		char memory_ref_char;
- 		char imm_char;
- 	} objdump;
-+#ifdef HAVE_DWARF_SUPPORT
-+	void		(*update_insn_state)(struct type_state *state,
-+				struct data_loc_info *dloc, Dwarf_Die *cu_die,
-+				struct disasm_line *dl);
-+#endif
+@@ -674,7 +678,8 @@ static struct ins_ops mov_ops = {
+ 	.scnprintf = mov__scnprintf,
  };
  
- struct ins {
+-static int dec__parse(struct arch *arch __maybe_unused, struct ins_operands *ops, struct map_symbol *ms __maybe_unused)
++static int dec__parse(struct arch *arch __maybe_unused, struct ins_operands *ops, struct map_symbol *ms __maybe_unused,
++		struct disasm_line *dl __maybe_unused)
+ {
+ 	char *target, *comment, *s, prev;
+ 
+@@ -815,7 +820,7 @@ static void disasm_line__init_ins(struct disasm_line *dl, struct arch *arch, str
+ 	if (!dl->ins.ops)
+ 		return;
+ 
+-	if (dl->ins.ops->parse && dl->ins.ops->parse(arch, &dl->ops, ms) < 0)
++	if (dl->ins.ops->parse && dl->ins.ops->parse(arch, &dl->ops, ms, dl) < 0)
+ 		dl->ins.ops = NULL;
+ }
+ 
+diff --git a/tools/perf/util/disasm.h b/tools/perf/util/disasm.h
+index c835759c8e2b..30be0a94ea04 100644
+--- a/tools/perf/util/disasm.h
++++ b/tools/perf/util/disasm.h
+@@ -62,6 +62,7 @@ struct ins_operands {
+ 		bool	offset_avail;
+ 		bool	outside;
+ 		bool	multi_regs;
++		bool	mem_ref;
+ 	} target;
+ 	union {
+ 		struct {
+@@ -69,6 +70,7 @@ struct ins_operands {
+ 			char	*name;
+ 			u64	addr;
+ 			bool	multi_regs;
++			bool	mem_ref;
+ 		} source;
+ 		struct {
+ 			struct ins	    ins;
+@@ -83,7 +85,8 @@ struct ins_operands {
+ 
+ struct ins_ops {
+ 	void (*free)(struct ins_operands *ops);
+-	int (*parse)(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms);
++	int (*parse)(struct arch *arch, struct ins_operands *ops, struct map_symbol *ms,
++			struct disasm_line *dl);
+ 	int (*scnprintf)(struct ins *ins, char *bf, size_t size,
+ 			 struct ins_operands *ops, int max_ins_name);
+ };
+diff --git a/tools/perf/util/include/dwarf-regs.h b/tools/perf/util/include/dwarf-regs.h
+index 01fb25a1150a..75b28dcc8317 100644
+--- a/tools/perf/util/include/dwarf-regs.h
++++ b/tools/perf/util/include/dwarf-regs.h
+@@ -1,6 +1,7 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ #ifndef _PERF_DWARF_REGS_H_
+ #define _PERF_DWARF_REGS_H_
++#include "annotate.h"
+ 
+ #define DWARF_REG_PC  0xd3af9c /* random number */
+ #define DWARF_REG_FB  0xd3affb /* random number */
+@@ -31,6 +32,16 @@ static inline int get_dwarf_regnum(const char *name __maybe_unused,
+ }
+ #endif
+ 
++#if !defined(__powerpc__) || !defined(HAVE_DWARF_SUPPORT)
++static inline void get_powerpc_regs(u32 raw_insn __maybe_unused, int is_source __maybe_unused,
++		struct annotated_op_loc *op_loc __maybe_unused)
++{
++	return;
++}
++#else
++void get_powerpc_regs(u32 raw_insn, int is_source, struct annotated_op_loc *op_loc);
++#endif
++
+ #ifdef HAVE_ARCH_REGS_QUERY_REGISTER_OFFSET
+ /*
+  * Arch should support fetching the offset of a register in pt_regs
 -- 
 2.43.0
 
