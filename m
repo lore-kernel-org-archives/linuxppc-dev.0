@@ -4,37 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81188C3DA59
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2024 16:50:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 158E2C3DA59
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Jul 2024 16:57:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WQbJt1q2nz3fnR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jul 2024 02:50:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WQbTB4mhkz3dV9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Jul 2024 02:57:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WQbJS16VPz3cdV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jul 2024 02:50:13 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.18.186.231])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WQbG40yg8z689J2;
-	Sat, 20 Jul 2024 00:48:12 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WQbSm1K1kz3cZ9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jul 2024 02:57:28 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.18.186.216])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WQbQ30Sw7z6K8lH;
+	Sat, 20 Jul 2024 00:55:07 +0800 (CST)
 Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
-	by mail.maildlp.com (Postfix) with ESMTPS id CC918140A36;
-	Sat, 20 Jul 2024 00:50:06 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 84DA0140A79;
+	Sat, 20 Jul 2024 00:57:24 +0800 (CST)
 Received: from localhost (10.48.157.16) by lhrpeml500005.china.huawei.com
  (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Fri, 19 Jul
- 2024 17:50:05 +0100
-Date: Fri, 19 Jul 2024 17:50:04 +0100
+ 2024 17:57:23 +0100
+Date: Fri, 19 Jul 2024 17:57:22 +0100
 From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
 To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH 10/17] x86/numa_emu: use a helper function to get
- MAX_DMA32_PFN
-Message-ID: <20240719175004.00004f57@Huawei.com>
-In-Reply-To: <20240716111346.3676969-11-rppt@kernel.org>
+Subject: Re: [PATCH 11/17] x86/numa: numa_{add,remove}_cpu: make cpu
+ parameter unsigned
+Message-ID: <20240719175722.000016f8@Huawei.com>
+In-Reply-To: <20240716111346.3676969-12-rppt@kernel.org>
 References: <20240716111346.3676969-1-rppt@kernel.org>
-	<20240716111346.3676969-11-rppt@kernel.org>
+	<20240716111346.3676969-12-rppt@kernel.org>
 Organization: Huawei Technologies Research and Development (UK) Ltd.
 X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 MIME-Version: 1.0
@@ -63,13 +63,22 @@ Cc: nvdimm@lists.linux.dev, x86@kernel.org, Andreas Larsson <andreas@gaisler.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 16 Jul 2024 14:13:39 +0300
+On Tue, 16 Jul 2024 14:13:40 +0300
 Mike Rapoport <rppt@kernel.org> wrote:
 
 > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 > 
-> This is required to make numa emulation code architecture independent s
-> that it can be moved to generic code in following commits.
+> CPU id cannot be negative.
+> 
+> Making it unsigned also aligns with declarations in
+> include/asm-generic/numa.h used by arm64 and riscv and allows sharing
+> numa emulation code with these architectures.
 > 
 > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Makes sense for both reasons. FWIW given how simple it is.
+
+Maybe worth bringing a few more functions inline with this?
+Probably something for another day given we don't care about the
+inconsistency for this series.
+
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
