@@ -4,84 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07822C3DA59
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2024 17:15:39 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=quicinc.com header.i=@quicinc.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=djbMJbL9;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52D4AC3DA5D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2024 20:47:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WSRkL47qJz3cYG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2024 03:15:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=quicinc.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=quicinc.com header.i=@quicinc.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=djbMJbL9;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=quicinc.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=quic_jjohnson@quicinc.com; receiver=lists.ozlabs.org)
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WSRjX3qcKz2ysg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2024 03:14:54 +1000 (AEST)
-Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 46MAnGu9016652;
-	Mon, 22 Jul 2024 17:14:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=quicinc.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=DJuEf0+ffGnn080Fj8jr6M
-	4q22Ojwqr9XmAvJUN0tcw=; b=djbMJbL98VL/INNvjMmJltsn1RzMovYvqBlg7J
-	i1VEGSRVzjC3TToXfs84+TmpnpDlv0wJ6K/7WzzotKWZzOxlAy8c4OIm2y6VxfZZ
-	tyt4fqlAR0YINb9E6pZMjAHjc12Y9NBK01lULioiNEXiszkt36Ofjc+pbfXKPeHb
-	O4prrhC7DbfvSQqokjBAwobdApk7elLCWt05s7NC8NFnK9j40DJhkFwBqBJdIPLQ
-	2UeDDtkc9Z2XSHJWAT6GhtPy95AgmuDUBwS/lIA9LM8Ph/UMjckjHNAyYF/y3at3
-	2VreLE4twYGchrxER9B2yBB6TtOj/y1YjEwi8gs88iRt9VVA==
-Received: from nalasppmta01.qualcomm.com (Global_NAT1.qualcomm.com [129.46.96.20])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 40g5m6vgjh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 22 Jul 2024 17:14:35 +0000 (GMT)
-Received: from nalasex01a.na.qualcomm.com (nalasex01a.na.qualcomm.com [10.47.209.196])
-	by NALASPPMTA01.qualcomm.com (8.17.1.19/8.17.1.19) with ESMTPS id 46MHEY69007338
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 22 Jul 2024 17:14:34 GMT
-Received: from [169.254.0.1] (10.49.16.6) by nalasex01a.na.qualcomm.com
- (10.47.209.196) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.9; Mon, 22 Jul
- 2024 10:14:33 -0700
-From: Jeff Johnson <quic_jjohnson@quicinc.com>
-Date: Mon, 22 Jul 2024 10:14:32 -0700
-Subject: [PATCH v2] cpufreq: powerpc: add missing MODULE_DESCRIPTION()
- macros
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WSXQS0W2wz3dB7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2024 06:47:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
+X-Greylist: delayed 371 seconds by postgrey-1.37 at boromir; Tue, 23 Jul 2024 06:46:48 AEST
+Received: from angie.orcam.me.uk (angie.orcam.me.uk [78.133.224.34])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WSXQ03mlCz2yvk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2024 06:46:48 +1000 (AEST)
+Received: by angie.orcam.me.uk (Postfix, from userid 500)
+	id 3F9AC92009C; Mon, 22 Jul 2024 22:40:29 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by angie.orcam.me.uk (Postfix) with ESMTP id 38AC992009B;
+	Mon, 22 Jul 2024 21:40:29 +0100 (BST)
+Date: Mon, 22 Jul 2024 21:40:29 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@orcam.me.uk>
+To: Matthew W Carlis <mattc@purestorage.com>
+Subject: Re: PCI: Work around PCIe link training failures
+In-Reply-To: <20240722193407.23255-1-mattc@purestorage.com>
+Message-ID: <alpine.DEB.2.21.2407222117300.51207@angie.orcam.me.uk>
+References: <alpine.DEB.2.21.2306111619570.64925@angie.orcam.me.uk> <20240722193407.23255-1-mattc@purestorage.com>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20240722-md-powerpc-drivers-cpufreq-v2-1-bb84d715eb3d@quicinc.com>
-X-B4-Tracking: v=1; b=H4sIAHiTnmYC/42OQQ6CMBBFr2K6dgyFisSV9zAsSjvIJNLCFCqGc
- HcLJ3D5kv/f/6sIyIRB3E+rYIwUyLsE+fkkTKfdC4FsYpFnucpKqaC3MPgP8mDAMkXkAGaYW8Y
- RSluoK6pKlgpFEgyMLS2H/FknbnRAaFg70+3KN7l5gV6HCXmPdxQmz9/jSpR76a/VKEGCRZUVy
- la31uaPcSZDzlyM70W9bdsP5VQafeUAAAA=
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar
-	<viresh.kumar@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Nicholas
- Piggin" <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
-X-Mailer: b4 0.14.0
-X-Originating-IP: [10.49.16.6]
-X-ClientProxiedBy: nalasex01a.na.qualcomm.com (10.47.209.196) To
- nalasex01a.na.qualcomm.com (10.47.209.196)
-X-QCInternal: smtphost
-X-Proofpoint-Virus-Version: vendor=nai engine=6200 definitions=5800 signatures=585085
-X-Proofpoint-GUID: lFISRuN1Pb2YJbtbhedmbtS_Q1m3UrZf
-X-Proofpoint-ORIG-GUID: lFISRuN1Pb2YJbtbhedmbtS_Q1m3UrZf
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-07-22_11,2024-07-22_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 suspectscore=0
- mlxlogscore=999 adultscore=0 bulkscore=0 mlxscore=0 spamscore=0
- priorityscore=1501 lowpriorityscore=0 clxscore=1015 malwarescore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2407110000 definitions=main-2407220129
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,93 +41,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Jeff
- Johnson <quic_jjohnson@quicinc.com>, linux-pm@vger.kernel.org
+Cc: linux-pci@vger.kernel.org, mahesh@linux.ibm.com, edumazet@google.com, oohall@gmail.com, sr@denx.de, leon@kernel.org, linux-rdma@vger.kernel.org, christophe.leroy@csgroup.eu, kuba@kernel.org, pabeni@redhat.com, Jim Wilson <wilson@tuliptree.org>, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, alex.williamson@redhat.com, =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>, mika.westerberg@linux.intel.com, david.abdurachmanov@gmail.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, lukas@wunner.de, saeedm@nvidia.com, pali@kernel.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With ARCH=powerpc, make allmodconfig && make W=1 C=1 reports:
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/cpufreq/ppc-cbe-cpufreq.o
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/cpufreq/powernv-cpufreq.o
+[+cc Ilpo for his previous involvement here]
 
-Add the missing invocation of the MODULE_DESCRIPTION() macro to all
-files which have a MODULE_LICENSE().
+On Mon, 22 Jul 2024, Matthew W Carlis wrote:
 
-This includes three additional files which, although they did not
-produce a warning with the powerpc allmodconfig configuration, may
-cause this warning with specific options enabled in the kernel
-configuration.
+> Sorry to resurrect this one, but I was wondering why the
+> PCI device ID in drivers/pci/quirks.c for the ASMedia ASM2824
+> isn't checked before forcing the link down to Gen1... We have
+> had to revert this patch during our kernel migration due to it
+> interacting poorly with at least one older Gen3 PLX PCIe switch
+> vendor/generation while using DPC. In another context we have
+> found similar issues during system bringup without DPC while
+> using a more legacy hot-plug model (BIOS defaults for us..).
+> In both contexts our devices are stuck at Gen1 after physical
+> hot-plug/insert, power-cycle.
 
-Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
----
-Changes in v2:
-- Per Michael Ellerman updated maple-cpufreq.c and powernv-cpufreq.c
-  descriptions
-- Did not carry forward Viresh Kumar's Acked-by due to this change
-- Link to v1: https://lore.kernel.org/r/20240614-md-powerpc-drivers-cpufreq-v1-1-de4034d87fd2@quicinc.com
----
- drivers/cpufreq/maple-cpufreq.c   | 1 +
- drivers/cpufreq/pasemi-cpufreq.c  | 1 +
- drivers/cpufreq/pmac64-cpufreq.c  | 1 +
- drivers/cpufreq/powernv-cpufreq.c | 1 +
- drivers/cpufreq/ppc_cbe_cpufreq.c | 1 +
- 5 files changed, 5 insertions(+)
+ Sorry to hear about your problems.  However the workaround is supposed to 
+only trigger if the link has already failed negotiation.  Could you please 
+be more specific as to the actual scenario where it triggers?
 
-diff --git a/drivers/cpufreq/maple-cpufreq.c b/drivers/cpufreq/maple-cpufreq.c
-index f9306410a07f..690da85c4865 100644
---- a/drivers/cpufreq/maple-cpufreq.c
-+++ b/drivers/cpufreq/maple-cpufreq.c
-@@ -238,4 +238,5 @@ static int __init maple_cpufreq_init(void)
- module_init(maple_cpufreq_init);
- 
- 
-+MODULE_DESCRIPTION("cpufreq driver for Maple 970FX/970MP boards");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index ee925b53b6b9..5fc9cb480516 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -269,5 +269,6 @@ static void __exit pas_cpufreq_exit(void)
- module_init(pas_cpufreq_init);
- module_exit(pas_cpufreq_exit);
- 
-+MODULE_DESCRIPTION("cpufreq driver for PA Semi PWRficient");
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Egor Martovetsky <egor@pasemi.com>, Olof Johansson <olof@lixom.net>");
-diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-index 2cd2b06849a2..9d3fe36075f8 100644
---- a/drivers/cpufreq/pmac64-cpufreq.c
-+++ b/drivers/cpufreq/pmac64-cpufreq.c
-@@ -671,4 +671,5 @@ static int __init g5_cpufreq_init(void)
- module_init(g5_cpufreq_init);
- 
- 
-+MODULE_DESCRIPTION("cpufreq driver for SMU & 970FX based G5 Macs");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 50c62929f7ca..bc55723b4d87 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -1160,5 +1160,6 @@ static void __exit powernv_cpufreq_exit(void)
- }
- module_exit(powernv_cpufreq_exit);
- 
-+MODULE_DESCRIPTION("cpufreq driver for IBM/OpenPOWER powernv systems");
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>");
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-index 5ee4c7bfdcc5..98595b3ea13f 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -168,5 +168,6 @@ static void __exit cbe_cpufreq_exit(void)
- module_init(cbe_cpufreq_init);
- module_exit(cbe_cpufreq_exit);
- 
-+MODULE_DESCRIPTION("cpufreq driver for Cell BE processors");
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
+ A scenario was mentioned earlier on, where a downstream device has been 
+removed from a slot and left behind the LBMS bit set in the corresponding 
+downstream port of the upstream device.  It then triggered the workaround 
+where the port was rescanned with the slot still empty, which then left 
+the link capped at 2.5GT/s for a device subsequently inserted.  Is it what 
+happens for you?
 
----
-base-commit: 933069701c1b507825b514317d4edd5d3fd9d417
-change-id: 20240614-md-powerpc-drivers-cpufreq-6d345e48164e
+ As I recall Ilpo has been working on changes that among others should 
+make sure no stale LBMS bit has been left set, but I'm not sure what the 
+state of affairs has been here.  Myself I've been too swamped in the 
+recent months and consequently didn't look into any improvements in this 
+area (and unrelated issues involving the system in question in my remote 
+lab have further impeded me).
 
+> Tried reading through the patch history/review but it was still
+> a little bit unclear to me. Can we add the device ID check as a
+> precondition to forcing link to Gen1?
+
+ The main reason is it is believed that it is the downstream device 
+causing the issue, and obviously you can't fetch its ID if you can't 
+negotiate link so as to talk to it in the first place.
+
+  Maciej
