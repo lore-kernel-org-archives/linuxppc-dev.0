@@ -4,68 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4F05C3DA5D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Jul 2024 21:47:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6830AC3DA70
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2024 00:02:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=purestorage.com header.i=@purestorage.com header.a=rsa-sha256 header.s=google2022 header.b=CI1GupzH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lvyK8ljQ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WSYlx666Yz3cLj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2024 07:47:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=purestorage.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WSclC0FQSz3cYQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2024 10:01:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=purestorage.com header.i=@purestorage.com header.a=rsa-sha256 header.s=google2022 header.b=CI1GupzH;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lvyK8ljQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=purestorage.com (client-ip=2a00:1450:4864:20::62b; helo=mail-ej1-x62b.google.com; envelope-from=mattc@purestorage.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WSVpd3DsFz3bTt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2024 05:34:31 +1000 (AEST)
-Received: by mail-ej1-x62b.google.com with SMTP id a640c23a62f3a-a7a8553db90so649766b.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jul 2024 12:34:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=purestorage.com; s=google2022; t=1721676859; x=1722281659; darn=lists.ozlabs.org;
-        h=references:in-reply-to:message-id:date:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=fi4bLVnPbCJMOh1UmYIW4CBHtEc9QZE9R0H9ArF/eWU=;
-        b=CI1GupzHbxuESycJS1R0JgBI+9OEJWcDkdxwQLzi5lfx4+byK9pExxLDW0kSyQfdBO
-         SkjHQP4CTHhQhzdVhqma92D4Z38hv6Di1KSizg6xt6nXNxo0QdSVmut2KlwXhuyAagYP
-         qMcDxJqKoJ/JrDCd5UX0NkIvkGFLgqjeep2TK15M5ieoQnX+/5mZYHWklT6XBHFdFHIL
-         mOJrmy7aDJszXZVFE65oc31ZrPScOlzSFufVFMmGoHuRz6rZ87+EzcQjlZzeea9U4FKT
-         irV9757fuGkZvUYG4x0BTsh7tgO3uCsiPaHPYr8GQdgWOvsEs5/8m2RS9iw9M+3vP33X
-         /Bxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1721676859; x=1722281659;
-        h=references:in-reply-to:message-id:date:subject:cc:to:from
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=fi4bLVnPbCJMOh1UmYIW4CBHtEc9QZE9R0H9ArF/eWU=;
-        b=BeqWmduPZYOaN4xfu6NYiHSgRH0R1aHyMNASLuDbP7LgBIn7v5Z6iuu6Qn0pwroefI
-         Ds0H62G5TEkdPKFGvIOftCMF9vyxZtxx2f+A0MKlWjniX1m1Hz/u+sHgiqwMKKLXn2To
-         bcywHqfS1DVQmDNTw4wWQDMFLdh/K0uBZSuE6iDcqC5O9Xl6ezK/Yja4n+mqn8M7xLS+
-         FtOVZFM/VdwFtZZ58VVescrGYxG+esEUu8NqqQvOeKtmT5zJDTm6p+6Ngor6cGhlaQBV
-         u9le8dxNK3s+MZTmuT50tV8/4Pj+7kyxS+yeXrOOWZIR+tBP4TpZ4YXI1v8kB0KWeA5/
-         q27w==
-X-Forwarded-Encrypted: i=1; AJvYcCW0HCbYkk12iiTqces+dw16b2MKRqdmbmTU9pDU2DFKh2+MP30oFBEEM3PgvJ3ymckaXLA56kN2ltoeIgUR3gfQnNPuiwniE/C6SFrP4g==
-X-Gm-Message-State: AOJu0YzD5xg7ekYb645C3yPS9dfk3jXbX+0eVAayYDYEnHh7lk2JRUnN
-	kg4uP37yxJmYObRMsFd3OiE2YI1abs7qcHh1Fdtr4GsMV5W4ewhpabmyLv+6Hxg=
-X-Google-Smtp-Source: AGHT+IH0MH/+8seIiuBJ3Gs3Am9JxoYK2yWY1TdfrT/Nm8KdeQf+5AlcM7dCujXTS86xp1i01YFyGw==
-X-Received: by 2002:a17:907:3faa:b0:a72:7d5c:ace0 with SMTP id a640c23a62f3a-a7a4bfa341emr556636166b.11.1721676858606;
-        Mon, 22 Jul 2024 12:34:18 -0700 (PDT)
-Received: from dev-mattc2.dev.purestorage.com ([208.88.159.129])
-        by smtp.googlemail.com with ESMTPSA id a640c23a62f3a-a7a3c7b66ecsm456836466b.51.2024.07.22.12.34.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Jul 2024 12:34:18 -0700 (PDT)
-From: Matthew W Carlis <mattc@purestorage.com>
-To: macro@orcam.me.uk
-Subject: PCI: Work around PCIe link training failures
-Date: Mon, 22 Jul 2024 13:34:07 -0600
-Message-Id: <20240722193407.23255-1-mattc@purestorage.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <alpine.DEB.2.21.2306111619570.64925@angie.orcam.me.uk>
-References: <alpine.DEB.2.21.2306111619570.64925@angie.orcam.me.uk>
-X-Mailman-Approved-At: Tue, 23 Jul 2024 07:46:45 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WSckN5yRhz2yvx
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2024 10:01:16 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1721692876;
+	bh=1ee9dpsEkMVtwnazsE5jJi3meNyVdkAB7jjS0GvSPX4=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=lvyK8ljQXrJ70+MKwGlDyyNdspRGaVFS8sTJqSGUEFVJFCJk6ofjy9aiockxrI8GL
+	 VZlkQ5kA8ALnfJfPn+cTpikrO7xPMAAOQjqRIAOyl4sQpMahgTFtsjrfn21aaH0Uwe
+	 CwBicMo9gCli+tVNjbgIF/unZGFWs1ntjB0DZCpKNajBMwCJdIxT+YkQqX6qy21gQB
+	 WaZhYMEKjZi9UIHV9kAcn2vyPbSxGvCn+JMwFyTN94MiBkXQWjkt1RPAQ4nXiJlNwK
+	 o1chsP9+/HDPycBcKeqAVXWSFlkgB4UsjbeU9bpQz9IXzUrVM5wdASAQBWyQbVdjhw
+	 Uqhg6kHYSkoPA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WSckM1pQBz4wcR;
+	Tue, 23 Jul 2024 10:01:15 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jeff Johnson <quic_jjohnson@quicinc.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Nicholas
+ Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>,
+ "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Subject: Re: [PATCH v2] cpufreq: powerpc: add missing MODULE_DESCRIPTION()
+ macros
+In-Reply-To: <20240722-md-powerpc-drivers-cpufreq-v2-1-bb84d715eb3d@quicinc.com>
+References: <20240722-md-powerpc-drivers-cpufreq-v2-1-bb84d715eb3d@quicinc.com>
+Date: Tue, 23 Jul 2024 10:01:13 +1000
+Message-ID: <875xsxvuwm.fsf@mail.lhotse>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,21 +62,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, mahesh@linux.ibm.com, edumazet@google.com, oohall@gmail.com, sr@denx.de, leon@kernel.org, linux-rdma@vger.kernel.org, christophe.leroy@csgroup.eu, kuba@kernel.org, pabeni@redhat.com, wilson@tuliptree.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, alex.williamson@redhat.com, bhelgaas@google.com, mika.westerberg@linux.intel.com, david.abdurachmanov@gmail.com, saeedm@nvidia.com, linux-kernel@vger.kernel.org, lukas@wunner.de, netdev@vger.kernel.org, pali@kernel.org, davem@davemloft.net
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Jeff Johnson <quic_jjohnson@quicinc.com>, linux-pm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sorry to resurrect this one, but I was wondering why the
-PCI device ID in drivers/pci/quirks.c for the ASMedia ASM2824
-isn't checked before forcing the link down to Gen1... We have
-had to revert this patch during our kernel migration due to it
-interacting poorly with at least one older Gen3 PLX PCIe switch
-vendor/generation while using DPC. In another context we have
-found similar issues during system bringup without DPC while
-using a more legacy hot-plug model (BIOS defaults for us..).
-In both contexts our devices are stuck at Gen1 after physical
-hot-plug/insert, power-cycle.
+Jeff Johnson <quic_jjohnson@quicinc.com> writes:
+> With ARCH=powerpc, make allmodconfig && make W=1 C=1 reports:
+> WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/cpufreq/ppc-cbe-cpufreq.o
+> WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/cpufreq/powernv-cpufreq.o
+>
+> Add the missing invocation of the MODULE_DESCRIPTION() macro to all
+> files which have a MODULE_LICENSE().
+>
+> This includes three additional files which, although they did not
+> produce a warning with the powerpc allmodconfig configuration, may
+> cause this warning with specific options enabled in the kernel
+> configuration.
+>
+> Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
+> ---
+> Changes in v2:
+> - Per Michael Ellerman updated maple-cpufreq.c and powernv-cpufreq.c
+>   descriptions
+> - Did not carry forward Viresh Kumar's Acked-by due to this change
+> - Link to v1: https://lore.kernel.org/r/20240614-md-powerpc-drivers-cpufreq-v1-1-de4034d87fd2@quicinc.com
+> ---
+>  drivers/cpufreq/maple-cpufreq.c   | 1 +
+>  drivers/cpufreq/pasemi-cpufreq.c  | 1 +
+>  drivers/cpufreq/pmac64-cpufreq.c  | 1 +
+>  drivers/cpufreq/powernv-cpufreq.c | 1 +
+>  drivers/cpufreq/ppc_cbe_cpufreq.c | 1 +
+>  5 files changed, 5 insertions(+)
 
-Tried reading through the patch history/review but it was still
-a little bit unclear to me. Can we add the device ID check as a
-precondition to forcing link to Gen1?
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
