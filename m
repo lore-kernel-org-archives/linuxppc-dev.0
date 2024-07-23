@@ -4,92 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6EFEC3DA63
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2024 07:06:23 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mqbj6bbq;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF534C3DA49
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2024 07:57:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WSp8t3S84z3cYr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2024 17:06:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mqbj6bbq;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=disgoel@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WSqHR1rWpz3dJX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Jul 2024 17:57:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huaweicloud.com (client-ip=45.249.212.51; helo=dggsgout11.his.huawei.com; envelope-from=zhengyejian@huaweicloud.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1048 seconds by postgrey-1.37 at boromir; Tue, 23 Jul 2024 16:49:38 AEST
+Received: from dggsgout11.his.huawei.com (dggsgout11.his.huawei.com [45.249.212.51])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WSp845N0Wz30VX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2024 17:05:40 +1000 (AEST)
-Received: from pps.filterd (m0353727.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 46N3uWBi021882;
-	Tue, 23 Jul 2024 07:05:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	message-id:date:mime-version:subject:to:cc:references:from
-	:in-reply-to:content-type:content-transfer-encoding; s=pp1; bh=/
-	L0bLC9Wxty8S0S0fHI+nEfJVqoONx3J0d/1CnrCRCA=; b=mqbj6bbqrXSq6NDFf
-	F9Ob8DRy1vGz5ioseh+9qNsWMmbt5M42TkZiOFxFmIjIt+aZgMX/eQhtrfxK46qL
-	oa6exJZ/bHzh0CHO2Vp7lOdb4tgQ4RltHkEcC//BgJYurCB27I97hsn6AChOCTm3
-	SNSfPaavn7WUTn7J0M/w0a2ZO75sgmv++bT2mmnOMMTnN4Aq+JUfWBtQDKr7PLTX
-	8Ko19SPAuzUHHx2UHabpdedL1K2y1McyWkidu3aqZF5WLqJ5y1Qvs1itQ2bBaiIQ
-	feZVQ/o32noGNHt2vLQFLxvhCjovDiNQ5wVAthaSvOZTQ1houU1QaJIYn9LrWPzQ
-	ACOng==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 40j3rvresa-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 Jul 2024 07:05:26 +0000 (GMT)
-Received: from m0353727.ppops.net (m0353727.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 46N75Q4t024830;
-	Tue, 23 Jul 2024 07:05:26 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 40j3rvres9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 Jul 2024 07:05:26 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 46N51xcg009131;
-	Tue, 23 Jul 2024 07:05:25 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 40gt93a4p3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 23 Jul 2024 07:05:25 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 46N75KmZ15925748
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 23 Jul 2024 07:05:22 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 204A92006A;
-	Tue, 23 Jul 2024 07:05:20 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 262E52006E;
-	Tue, 23 Jul 2024 07:05:18 +0000 (GMT)
-Received: from [9.109.252.211] (unknown [9.109.252.211])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 23 Jul 2024 07:05:17 +0000 (GMT)
-Message-ID: <7ccf31b5-7eaf-4b42-bf9c-b48d1fa5c2cf@linux.ibm.com>
-Date: Tue, 23 Jul 2024 12:35:17 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WSnnZ1Pwxz3cXd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2024 16:49:34 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.19.93.142])
+	by dggsgout11.his.huawei.com (SkyGuard) with ESMTP id 4WSnP544b7z4f3jkV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2024 14:31:53 +0800 (CST)
+Received: from mail02.huawei.com (unknown [10.116.40.75])
+	by mail.maildlp.com (Postfix) with ESMTP id CF04C1A0D93
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jul 2024 14:32:01 +0800 (CST)
+Received: from localhost.localdomain (unknown [10.67.175.61])
+	by APP2 (Coremail) with SMTP id Syh0CgA34wpOTp9mjImuAw--.48686S6;
+	Tue, 23 Jul 2024 14:32:01 +0800 (CST)
+From: Zheng Yejian <zhengyejian@huaweicloud.com>
+To: masahiroy@kernel.org,
+	peterz@infradead.org,
+	rostedt@goodmis.org,
+	mhiramat@kernel.org,
+	mark.rutland@arm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	naveen.n.rao@linux.ibm.com,
+	tglx@linutronix.de,
+	mingo@redhat.com,
+	bp@alien8.de,
+	dave.hansen@linux.intel.com,
+	hpa@zytor.com,
+	mcgrof@kernel.org,
+	mathieu.desnoyers@efficios.com,
+	nathan@kernel.org,
+	nicolas@fjasle.eu,
+	ojeda@kernel.org,
+	akpm@linux-foundation.org,
+	surenb@google.com,
+	pasha.tatashin@soleen.com,
+	kent.overstreet@linux.dev,
+	james.clark@arm.com,
+	jpoimboe@kernel.org
+Subject: [PATCH v2 4/5] ftrace: Fix possible out-of-bound issue in ftrace_process_locs()
+Date: Tue, 23 Jul 2024 14:32:57 +0800
+Message-Id: <20240723063258.2240610-5-zhengyejian@huaweicloud.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240723063258.2240610-1-zhengyejian@huaweicloud.com>
+References: <20240723063258.2240610-1-zhengyejian@huaweicloud.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] perf vendor events power10: Update JSON/events
-To: Kajol Jain <kjain@linux.ibm.com>, acme@kernel.org, irogers@google.com,
-        namhyung@kernel.org
-References: <20240723052154.96202-1-kjain@linux.ibm.com>
-Content-Language: en-GB
-From: Disha Goel <disgoel@linux.ibm.com>
-In-Reply-To: <20240723052154.96202-1-kjain@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: iSrEeDzTdA2ZObxTFiQtYRxNmjL9GBbV
-X-Proofpoint-GUID: Uj-47-lCE80N20ztH-Jdh4xyQQcR2WG4
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-07-22_18,2024-07-23_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 lowpriorityscore=0
- mlxlogscore=999 suspectscore=0 priorityscore=1501 malwarescore=0
- bulkscore=0 clxscore=1011 spamscore=0 phishscore=0 mlxscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2407110000 definitions=main-2407230050
+X-CM-TRANSID: Syh0CgA34wpOTp9mjImuAw--.48686S6
+X-Coremail-Antispam: 1UD129KBjvJXoW7urykXF47Aw15uF47WrWfXwb_yoW8tFWDpF
+	W5Kan3tr4DJa9I9anIga1kWFyfJ3yrG3y8Ga13G3s3Awn3Gr409r12vrnxZr9xJr95trW2
+	kF4jvrsxGFWxXrDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUmS14x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2048vs2IY020E87I2jVAFwI0_JF0E3s1l82xGYI
+	kIc2x26xkF7I0E14v26ryj6s0DM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8wA2
+	z4x0Y4vE2Ix0cI8IcVAFwI0_tr0E3s1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Cr1j6r
+	xdM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s0D
+	M2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjx
+	v20xvE14v26r106r15McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1l
+	F7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxan2
+	IY04v7MxkF7I0En4kS14v26rWY6Fy7MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY
+	6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17
+	CEb7AF67AKxVWrXVW8Jr1lIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI
+	42IY6xIIjxv20xvEc7CjxVAFwI0_Gr1j6F4UJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF
+	4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYxBI
+	daVFxhVjvjDU0xZFpf9x0pR4E__UUUUU=
+X-CM-SenderInfo: x2kh0w51hmxt3q6k3tpzhluzxrxghudrp/
+X-Mailman-Approved-At: Tue, 23 Jul 2024 17:56:45 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,157 +92,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, akanksha@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, hbathini@linux.ibm.com
+Cc: zhengyejian@huaweicloud.com, linux-kbuild@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-modules@vger.kernel.org, linux-trace-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 23/07/24 10:51 am, Kajol Jain wrote:
+In ftrace_process_locs(), a series pages are prepared and linked in
+start_pg, then fentry records are skipped or added, then unused pages
+are freed.
 
-> Update JSON/events for power10 platform with additional events.
-> Also move PM_VECTOR_LD_CMPL event from others.json to
-> frontend.json file.
->
-> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+However, assume that all records are skipped, currently the start_pg
+will still be in list of ftrace_pages_start but without any record.
+Then in ftrace_free_mem() index record by (pg->index - 1) will be out
+of bound.
 
-I have tested the patch on power10 machine. Looks good to me.
+To fix this issue, properly handle with unused start_pg and add
+WARN_ON_ONCE() where the records need to be indexed.
 
-Tested-by: Disha Goel <disgoel@linux.ibm.com>
+Fixes: 26efd79c4624 ("ftrace: Fix possible warning on checking all pages used in ftrace_process_locs()")
+Signed-off-by: Zheng Yejian <zhengyejian@huaweicloud.com>
+---
+ kernel/trace/ftrace.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-> ---
->   .../arch/powerpc/power10/frontend.json        |   5 +
->   .../arch/powerpc/power10/others.json          | 100 +++++++++++++++++-
->   2 files changed, 100 insertions(+), 5 deletions(-)
->
-> diff --git a/tools/perf/pmu-events/arch/powerpc/power10/frontend.json b/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
-> index 5977f5e64212..53660c279286 100644
-> --- a/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
-> +++ b/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
-> @@ -74,6 +74,11 @@
->       "EventName": "PM_ISSUE_KILL",
->       "BriefDescription": "Cycles in which an instruction or group of instructions were cancelled after being issued. This event increments once per occurrence, regardless of how many instructions are included in the issue group."
->     },
-> +  {
-> +    "EventCode": "0x44054",
-> +    "EventName": "PM_VECTOR_LD_CMPL",
-> +    "BriefDescription": "Vector load instruction completed."
-> +  },
->     {
->       "EventCode": "0x44056",
->       "EventName": "PM_VECTOR_ST_CMPL",
-> diff --git a/tools/perf/pmu-events/arch/powerpc/power10/others.json b/tools/perf/pmu-events/arch/powerpc/power10/others.json
-> index fcf8a8ebe7bd..53ca610152fa 100644
-> --- a/tools/perf/pmu-events/arch/powerpc/power10/others.json
-> +++ b/tools/perf/pmu-events/arch/powerpc/power10/others.json
-> @@ -94,11 +94,6 @@
->       "EventName": "PM_L1_ICACHE_RELOADED_ALL",
->       "BriefDescription": "Counts all instruction cache reloads includes demand, prefetch, prefetch turned into demand and demand turned into prefetch."
->     },
-> -  {
-> -    "EventCode": "0x44054",
-> -    "EventName": "PM_VECTOR_LD_CMPL",
-> -    "BriefDescription": "Vector load instruction completed."
-> -  },
->     {
->       "EventCode": "0x4D05E",
->       "EventName": "PM_BR_CMPL",
-> @@ -108,5 +103,100 @@
->       "EventCode": "0x400F0",
->       "EventName": "PM_LD_DEMAND_MISS_L1_FIN",
->       "BriefDescription": "Load missed L1, counted at finish time."
-> +  },
-> +  {
-> +    "EventCode": "0x00000038BC",
-> +    "EventName": "PM_ISYNC_CMPL",
-> +    "BriefDescription": "Isync completion count per thread."
-> +  },
-> +  {
-> +    "EventCode": "0x000000C088",
-> +    "EventName": "PM_LD0_32B_FIN",
-> +    "BriefDescription": "256-bit load finished in the LD0 load execution unit."
-> +  },
-> +  {
-> +    "EventCode": "0x000000C888",
-> +    "EventName": "PM_LD1_32B_FIN",
-> +    "BriefDescription": "256-bit load finished in the LD1 load execution unit."
-> +  },
-> +  {
-> +    "EventCode": "0x000000C090",
-> +    "EventName": "PM_LD0_UNALIGNED_FIN",
-> +    "BriefDescription": "Load instructions in LD0 port that are either unaligned, or treated as unaligned and require an additional recycle through the pipeline using the load gather buffer. This typically adds about 10 cycles to the latency of the instruction. This includes loads that cross the 128 byte boundary, octword loads that are not aligned, and a special forward progress case of a load that does not hit in the L1 and crosses the 32 byte boundary and is launched NTC. Counted at finish time."
-> +  },
-> +  {
-> +    "EventCode": "0x000000C890",
-> +    "EventName": "PM_LD1_UNALIGNED_FIN",
-> +    "BriefDescription": "Load instructions in LD1 port that are either unaligned, or treated as unaligned and require an additional recycle through the pipeline using the load gather buffer. This typically adds about 10 cycles to the latency of the instruction. This includes loads that cross the 128 byte boundary, octword loads that are not aligned, and a special forward progress case of a load that does not hit in the L1 and crosses the 32 byte boundary and is launched NTC. Counted at finish time."
-> +  },
-> +  {
-> +    "EventCode": "0x000000C0A4",
-> +    "EventName": "PM_ST0_UNALIGNED_FIN",
-> +    "BriefDescription": "Store instructions in ST0 port that are either unaligned, or treated as unaligned and require an additional recycle through the pipeline. This typically adds about 10 cycles to the latency of the instruction. This only includes stores that cross the 128 byte boundary. Counted at finish time."
-> +  },
-> +  {
-> +    "EventCode": "0x000000C8A4",
-> +    "EventName": "PM_ST1_UNALIGNED_FIN",
-> +    "BriefDescription": "Store instructions in ST1 port that are either unaligned, or treated as unaligned and require an additional recycle through the pipeline. This typically adds about 10 cycles to the latency of the instruction. This only includes stores that cross the 128 byte boundary. Counted at finish time."
-> +  },
-> +  {
-> +    "EventCode": "0x000000C8B8",
-> +    "EventName": "PM_STCX_SUCCESS_CMPL",
-> +    "BriefDescription": "STCX instructions that completed successfully. Specifically, counts only when a pass status is returned from the nest."
-> +  },
-> +  {
-> +    "EventCode": "0x000000D0B4",
-> +    "EventName": "PM_DC_PREF_STRIDED_CONF",
-> +    "BriefDescription": "A demand load referenced a line in an active strided prefetch stream. The stream could have been allocated through the hardware prefetch mechanism or through software."
-> +  },
-> +  {
-> +    "EventCode": "0x000000F880",
-> +    "EventName": "PM_SNOOP_TLBIE_CYC",
-> +    "BriefDescription": "Cycles in which TLBIE snoops are executed in the LSU."
-> +  },
-> +  {
-> +    "EventCode": "0x000000F084",
-> +    "EventName": "PM_SNOOP_TLBIE_CACHE_WALK_CYC",
-> +    "BriefDescription": "TLBIE snoop cycles in which the data cache is being walked."
-> +  },
-> +  {
-> +    "EventCode": "0x000000F884",
-> +    "EventName": "PM_SNOOP_TLBIE_WAIT_ST_CYC",
-> +    "BriefDescription": "TLBIE snoop cycles in which older stores are still draining."
-> +  },
-> +  {
-> +    "EventCode": "0x000000F088",
-> +    "EventName": "PM_SNOOP_TLBIE_WAIT_LD_CYC",
-> +    "BriefDescription": "TLBIE snoop cycles in which older loads are still draining."
-> +  },
-> +  {
-> +    "EventCode": "0x000000F08C",
-> +    "EventName": "PM_SNOOP_TLBIE_WAIT_MMU_CYC",
-> +    "BriefDescription": "TLBIE snoop cycles in which the Load-Store unit is waiting for the MMU to finish invalidation."
-> +  },
-> +  {
-> +    "EventCode": "0x0000004884",
-> +    "EventName": "PM_NO_FETCH_IBUF_FULL_CYC",
-> +    "BriefDescription": "Cycles in which no instructions are fetched because there is no room in the instruction buffers."
-> +  },
-> +  {
-> +    "EventCode": "0x00000048B4",
-> +    "EventName": "PM_BR_TKN_UNCOND_FIN",
-> +    "BriefDescription": "An unconditional branch finished. All unconditional branches are taken."
-> +  },
-> +  {
-> +    "EventCode": "0x0B0000016080",
-> +    "EventName": "PM_L2_TLBIE_SLBIE_START",
-> +    "BriefDescription": "NCU Master received a TLBIE/SLBIEG/SLBIAG operation from the core. Event count should be multiplied by 2 since the data is coming from a 2:1 clock domain and the data is time sliced across all 4 threads."
-> +  },
-> +  {
-> +    "EventCode": "0x0B0000016880",
-> +    "EventName": "PM_L2_TLBIE_SLBIE_DELAY",
-> +    "BriefDescription": "Cycles when a TLBIE/SLBIEG/SLBIAG command was held in a hottemp condition by the NCU Master. Multiply this count by 1000 to obtain the total number of cycles. This can be divided by PM_L2_TLBIE_SLBIE_SENT to obtain the average time a TLBIE/SLBIEG/SLBIAG command was held. Event count should be multiplied by 2 since the data is coming from a 2:1 clock domain and the data is time sliced across all 4 threads."
-> +  },
-> +  {
-> +    "EventCode": "0x0B0000026880",
-> +    "EventName": "PM_L2_SNP_TLBIE_SLBIE_DELAY",
-> +    "BriefDescription": "Cycles when a TLBIE/SLBIEG/SLBIAG that targets this thread's LPAR was in flight while in a hottemp condition. Multiply this count by 1000 to obtain the total number of cycles. This can be divided by PM_L2_SNP_TLBIE_SLBIE_START to obtain the overall efficiency. Note: ’inflight’ means SnpTLB has been sent to core(ie doesn’t include when SnpTLB is in NCU waiting to be launched serially behind different SnpTLB). The NCU Snooper gets in a ’hottemp’ delay window when it detects it is above its TLBIE/SLBIE threshold for process SnpTLBIE/SLBIE with this core. Event count should be multiplied by 2 since the data is coming from a 2:1 clock domain and the data is time sliced across all 4 threads."
->     }
->   ]
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index fff5d3466c41..6947be8801d9 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -7087,10 +7087,22 @@ static int ftrace_process_locs(struct module *mod,
+ 		rec->ip = addr;
+ 	}
+ 
+-	if (pg->next) {
++	if (pg->index == 0) {
++		/* No record is added on the current page, so it's unused */
++		pg_unuse = pg;
++	} else if (pg->next) {
++		/* Current page has records, so it's next page is unused */
+ 		pg_unuse = pg->next;
+ 		pg->next = NULL;
+ 	}
++	/*
++	 * Even the start_pg hasn't been used, that means, no record has
++	 * been added, so restore state of ftrace_pages and just go out.
++	 */
++	if (pg_unuse == start_pg) {
++		ftrace_pages->next = NULL;
++		goto out;
++	}
+ 
+ 	/* Assign the last page to ftrace_pages */
+ 	ftrace_pages = pg;
+@@ -7306,6 +7318,8 @@ void ftrace_release_mod(struct module *mod)
+ 	 */
+ 	last_pg = &ftrace_pages_start;
+ 	for (pg = ftrace_pages_start; pg; pg = *last_pg) {
++		/* The page should have at lease one record */
++		WARN_ON_ONCE(!pg->index);
+ 		rec = &pg->records[0];
+ 		if (within_module(rec->ip, mod)) {
+ 			/*
+@@ -7685,6 +7699,8 @@ void ftrace_free_mem(struct module *mod, void *start_ptr, void *end_ptr)
+ 		mod_map = allocate_ftrace_mod_map(mod, start, end);
+ 
+ 	for (pg = ftrace_pages_start; pg; last_pg = &pg->next, pg = *last_pg) {
++		/* The page should have at lease one record */
++		WARN_ON_ONCE(!pg->index);
+ 		if (end < pg->records[0].ip ||
+ 		    start >= (pg->records[pg->index - 1].ip + MCOUNT_INSN_SIZE))
+ 			continue;
+-- 
+2.25.1
+
