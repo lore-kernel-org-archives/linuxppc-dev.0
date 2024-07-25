@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA8E6C3DA5D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jul 2024 16:01:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 460B4C3DA5D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Jul 2024 16:01:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WVFxL4tNgz3dVC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2024 02:01:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WVFxq72mDz3fp7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2024 02:01:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dave.martin@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WVFwm0Zx1z3cY9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2024 02:00:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WVFxK6kv2z3dTV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jul 2024 02:01:25 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B2F0F1007;
-	Thu, 25 Jul 2024 09:00:49 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EA2BC1476;
+	Thu, 25 Jul 2024 09:01:19 -0700 (PDT)
 Received: from e133380.arm.com (e133380.arm.com [10.1.197.55])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3FE1C3F5A1;
-	Thu, 25 Jul 2024 09:00:21 -0700 (PDT)
-Date: Thu, 25 Jul 2024 17:00:18 +0100
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7FAA33F5A1;
+	Thu, 25 Jul 2024 09:00:51 -0700 (PDT)
+Date: Thu, 25 Jul 2024 17:00:49 +0100
 From: Dave Martin <Dave.Martin@arm.com>
 To: Joey Gouly <joey.gouly@arm.com>
-Subject: Re: [PATCH v4 18/29] arm64: add POE signal support
-Message-ID: <ZqJ2knGETfS4nfEA@e133380.arm.com>
+Subject: Re: [PATCH v4 19/29] arm64: enable PKEY support for CPUs with S1POE
+Message-ID: <ZqJ2sVQ/iIe42XXF@e133380.arm.com>
 References: <20240503130147.1154804-1-joey.gouly@arm.com>
- <20240503130147.1154804-19-joey.gouly@arm.com>
+ <20240503130147.1154804-20-joey.gouly@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240503130147.1154804-19-joey.gouly@arm.com>
+In-Reply-To: <20240503130147.1154804-20-joey.gouly@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,70 +48,35 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 Hi,
 
-On Fri, May 03, 2024 at 02:01:36PM +0100, Joey Gouly wrote:
-> Add PKEY support to signals, by saving and restoring POR_EL0 from the stackframe.
+On Fri, May 03, 2024 at 02:01:37PM +0100, Joey Gouly wrote:
+> Now that PKEYs support has been implemented, enable it for CPUs that
+> support S1POE.
 > 
 > Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 > Cc: Catalin Marinas <catalin.marinas@arm.com>
 > Cc: Will Deacon <will@kernel.org>
-> Reviewed-by: Mark Brown <broonie@kernel.org>
-> Acked-by: Szabolcs Nagy <szabolcs.nagy@arm.com>
+> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 > ---
->  arch/arm64/include/uapi/asm/sigcontext.h |  7 ++++
->  arch/arm64/kernel/signal.c               | 52 ++++++++++++++++++++++++
->  2 files changed, 59 insertions(+)
+>  arch/arm64/include/asm/pkeys.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/arch/arm64/include/uapi/asm/sigcontext.h b/arch/arm64/include/uapi/asm/sigcontext.h
-> index 8a45b7a411e0..e4cba8a6c9a2 100644
-> --- a/arch/arm64/include/uapi/asm/sigcontext.h
-> +++ b/arch/arm64/include/uapi/asm/sigcontext.h
-
-[...]
-
-> @@ -980,6 +1013,13 @@ static int setup_sigframe_layout(struct rt_sigframe_user_layout *user,
->  			return err;
->  	}
+> diff --git a/arch/arm64/include/asm/pkeys.h b/arch/arm64/include/asm/pkeys.h
+> index a284508a4d02..3ea928ec94c0 100644
+> --- a/arch/arm64/include/asm/pkeys.h
+> +++ b/arch/arm64/include/asm/pkeys.h
+> @@ -17,7 +17,7 @@ int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
 >  
-> +	if (system_supports_poe()) {
-> +		err = sigframe_alloc(user, &user->poe_offset,
-> +				     sizeof(struct poe_context));
-> +		if (err)
-> +			return err;
-> +	}
-> +
->  	return sigframe_alloc_end(user);
+>  static inline bool arch_pkeys_enabled(void)
+>  {
+> -	return false;
+> +	return system_supports_poe();
 >  }
->  
-> @@ -1020,6 +1060,15 @@ static int setup_sigframe(struct rt_sigframe_user_layout *user,
->  		__put_user_error(current->thread.fault_code, &esr_ctx->esr, err);
->  	}
->  
-> +	if (system_supports_poe() && err == 0 && user->poe_offset) {
-> +		struct poe_context __user *poe_ctx =
-> +			apply_user_offset(user, user->poe_offset);
-> +
-> +		__put_user_error(POE_MAGIC, &poe_ctx->head.magic, err);
-> +		__put_user_error(sizeof(*poe_ctx), &poe_ctx->head.size, err);
-> +		__put_user_error(read_sysreg_s(SYS_POR_EL0), &poe_ctx->por_el0, err);
-> +	}
-> +
 
-Does the AArch64 procedure call standard say anything about whether
-POR_EL0 is caller-saved?
+Nit: maybe push this later in the series, at least to after the POE/PIE
+patch, since pkeys won't work right otherwise on PIE-enabled platforms?
 
-<bikeshed>
-
-In theory we could skip saving this register if it is already
-POR_EL0_INIT (which it often will be), and if the signal handler is not
-supposed to modify and leave the modified value in the register when
-returning.
-
-The complexity of the additional check my be a bit pointless though,
-and the the handler might theoretically want to change the interrupted
-code's POR_EL0 explicitly, which would be complicated if POE_MAGIC is
-sometimes there and sometimes not.
-
-</bikeshed>
+(I know it makes no difference without final Kconfig update, but it
+feels more logical.)
 
 [...]
 
