@@ -4,72 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 962ACC3DA49
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2024 15:10:57 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ch9Q6v//;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ch9Q6v//;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22329C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Jul 2024 16:15:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WVrmc1sDQz3dTs
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2024 01:10:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ch9Q6v//;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ch9Q6v//;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WVrjd5xmDz3dSW
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2024 01:08:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1722006498;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=h2hZ5iaP0GGncGDVruB29gu4r9/BL7FMsu+FThy8pbQ=;
-	b=Ch9Q6v//DDxHdznw+1h+enlnwrSWKrT5pamFq1cTqJ6UJmnXpiwGS02qFTeBaS3mzBwAoE
-	rO5geQcc6sT1ULGaJoYITu4nkZ8l9kjJT6kOjojQmKqS6LnQrIf4mriATzuqeXdAPWKhhh
-	PGnLLiNXonjdRHLrhyKra/4khZHJvJQ=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1722006498;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=h2hZ5iaP0GGncGDVruB29gu4r9/BL7FMsu+FThy8pbQ=;
-	b=Ch9Q6v//DDxHdznw+1h+enlnwrSWKrT5pamFq1cTqJ6UJmnXpiwGS02qFTeBaS3mzBwAoE
-	rO5geQcc6sT1ULGaJoYITu4nkZ8l9kjJT6kOjojQmKqS6LnQrIf4mriATzuqeXdAPWKhhh
-	PGnLLiNXonjdRHLrhyKra/4khZHJvJQ=
-Received: from mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-672-HOHS8bHhPF-HxdWbNQ7urA-1; Fri,
- 26 Jul 2024 11:08:13 -0400
-X-MC-Unique: HOHS8bHhPF-HxdWbNQ7urA-1
-Received: from mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.15])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 1CD891955BF7;
-	Fri, 26 Jul 2024 15:08:10 +0000 (UTC)
-Received: from t14s.redhat.com (unknown [10.39.193.153])
-	by mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id BB2841955D48;
-	Fri, 26 Jul 2024 15:08:00 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v1 3/3] powerpc/8xx: document and enforce that split PT locks are not used
-Date: Fri, 26 Jul 2024 17:07:28 +0200
-Message-ID: <20240726150728.3159964-4-david@redhat.com>
-In-Reply-To: <20240726150728.3159964-1-david@redhat.com>
-References: <20240726150728.3159964-1-david@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WVtBk4TY1z3dTx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Jul 2024 02:15:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dave.martin@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WVtBH5rFQz3dHm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jul 2024 02:14:43 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D2C1E1007;
+	Fri, 26 Jul 2024 09:14:35 -0700 (PDT)
+Received: from e133380.arm.com (e133380.arm.com [10.1.197.55])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3E7AB3F766;
+	Fri, 26 Jul 2024 09:14:07 -0700 (PDT)
+Date: Fri, 26 Jul 2024 17:14:01 +0100
+From: Dave Martin <Dave.Martin@arm.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v4 18/29] arm64: add POE signal support
+Message-ID: <ZqPLSRjjE+SRoGAQ@e133380.arm.com>
+References: <20240503130147.1154804-1-joey.gouly@arm.com>
+ <20240503130147.1154804-19-joey.gouly@arm.com>
+ <229bd367-466e-4bf9-9627-24d2d0821ff4@arm.com>
+ <7789da64-34e2-49db-b203-84b80e5831d5@sirena.org.uk>
+ <cf7de572-420a-4d59-a8dd-effaff002e12@arm.com>
+ <ZqJ2I3f2qdiD2DfP@e133380.arm.com>
+ <a13c3d5e-6517-4632-b20d-49ce9f0d8e58@sirena.org.uk>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.15
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a13c3d5e-6517-4632-b20d-49ce9f0d8e58@sirena.org.uk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,43 +47,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, "H. Peter Anvin" <hpa@zytor.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Christophe Leroy <christophe.leroy@csgroup.eu>, Ingo Molnar <mingo@redhat.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, xen-devel@lists.xenproject.org, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Alexander Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Oscar Salvador <osalvador@suse.de>, Juergen Gross <jgross@suse.com>, Christian Brauner <brauner@kernel.org>, Muchun Song <muchun.song@linux.dev>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: szabolcs.nagy@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com, Joey Gouly <joey.gouly@arm.com>, linux-mm@kvack.org, hpa@zytor.com, shuah@kernel.org, Amit Daniel Kachhap <amitdaniel.kachhap@arm.com>, maz@kernel.org, x86@kernel.org, christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org, mingo@redhat.com, aneesh.kumar@linux.ibm.com, naveen.n.rao@linux.ibm.com, will@kernel.org, npiggin@gmail.com, bp@alien8.de, kvmarm@lists.linux.dev, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, oliver.upton@linux.dev, linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Right now, we cannot have split PT locks because 8xx does not support
-SMP.
+On Thu, Jul 25, 2024 at 07:11:41PM +0100, Mark Brown wrote:
+> On Thu, Jul 25, 2024 at 04:58:27PM +0100, Dave Martin wrote:
+> 
+> > I'll post a draft patch separately, since I think the update could
+> > benefit from separate discussion, but my back-of-the-envelope
+> > calculation suggests that (before this patch) we are down to 0x90
+> > bytes of free space (i.e., over 96% full).
+> 
+> > I wonder whether it is time to start pushing back on adding a new
+> > _foo_context for every individual register, though?
+> 
+> > Maybe we could add some kind of _misc_context for miscellaneous 64-bit
+> > regs.
+> 
+> That'd have to be a variably sized structure with pairs of sysreg
+> ID/value items in it I think which would be a bit of a pain to implement
+> but doable.  The per-record header is 64 bits, we'd get maximal saving
+> by allocating a byte for the IDs.
 
-But for the sake of documentation *why* 8xx is fine regarding what
-we documented in huge_pte_lockptr(), let's just add code to enforce it
-at the same time as documenting it.
+Or possibly the regs could be identified positionally, avoiding the
+need for IDs.  Space would be at a premium, and we would have to think
+carefully about what should and should not be allowed in there.
 
-This should also make everybody who wants to copy from the 8xx approach of
-supporting such unusual ways of mapping hugetlb folios aware that it gets
-tricky once multiple page tables are involved.
+> It would be very unfortunate timing to start gating things on such a
+> change though (I'm particularly worried about GCS here, at this point
+> the kernel changes are blocking the entire ecosystem).
 
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- arch/powerpc/mm/pgtable.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+For GCS, I wonder whether it should be made a strictly opt-in feature:
+i.e., if you use it then you must tolerate large sigframes, and if it
+is turned off then its state is neither dumped nor restored.  Since GCS
+requires an explict prctl to turn it on, the mechanism seems partly
+there already in your series.
 
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index ab0656115424f..7316396e452d8 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -297,6 +297,12 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- }
- 
- #if defined(CONFIG_PPC_8xx)
-+
-+#if defined(CONFIG_SPLIT_PTE_PTLOCKS) || defined(CONFIG_SPLIT_PMD_PTLOCKS)
-+/* We need the same lock to protect the PMD table and the two PTE tables. */
-+#error "8M hugetlb folios are incompatible with split page table locks"
-+#endif
-+
- static void __set_huge_pte_at(pmd_t *pmd, pte_t *ptep, pte_basic_t val)
- {
- 	pte_basic_t *entry = (pte_basic_t *)ptep;
--- 
-2.45.2
+I guess the GCS thread is the better place to discuss that, though.
 
+Cheers
+---Dave
