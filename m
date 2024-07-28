@@ -4,53 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D7E4C3DA49
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2024 16:10:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A507CC3DA49
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2024 16:11:00 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AStcpVkE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UVjP2bDn;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WX6025hyvz3c54
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 02:10:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WX60y6Cvnz3cYq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 02:10:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AStcpVkE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UVjP2bDn;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WX5zF2cBkz2xWY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2024 02:09:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WX6096nsLz2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2024 02:10:17 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 8A8B761221;
-	Sun, 28 Jul 2024 16:09:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F25CC4AF10;
-	Sun, 28 Jul 2024 16:09:26 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 270A161228;
+	Sun, 28 Jul 2024 16:10:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DEBB8C32782;
+	Sun, 28 Jul 2024 16:10:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1722182967;
-	bh=jyoZ/dDEF8f69zvwUwGshgaX9lEN9Oai6RGlHu36DwE=;
+	s=k20201202; t=1722183016;
+	bh=Mbi6RhR6aJ+6JApKJEYaRlVBNaqkSekKs3pFS5l7UzA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=AStcpVkExpSfzzwqvx+GGOgFCjSKghOM5Wue8aiRiRgliFH6kCuCBfWlfFlMorv55
-	 E1qzaCadYNfSsDjXECgSgCcPVkjY7aQT5QaGFYmejo/GUhl6aPnLZvNyH0LRqKuCjC
-	 SYZ2MHb6TwmOWibnJU/4+h5kSAAPUGikELwrg4IQEYPAyDt7Xe/tmZDRi+Hnq3mICE
-	 L9EpJw6NE4UEI7CizEwMHGQtcQaH8knNYS4oVfGbUpzaDdEnCPSfLMz+Xm2Qt7DU1w
-	 o+QPkej1Bhj+rf5N1zQQSW6QNREJwsR92nWDVnnax61wa1kOUaywb0EEgdDROjfB3x
-	 GCMQ8grwkIW0g==
+	b=UVjP2bDnVIC0LyT2VvWKkUm9JkJDGx1rXYg2kWFkvzSK7QOE3N6wm4xHETHCXTAyJ
+	 z4tSjZKL9rGO+QQqmawl+ToUytdgH/nOOg47FFrq06U43L87FmFkEJYGQjUIAIH6A3
+	 ZtZtnGQHV8VZAH2cC+JtGsiKUX6MUqQj+a0rE67XEkVifQ2MJhADjQ/JQb5amgcDwS
+	 uQU/d45ACUmQX7nty8f3/jw54+SLwELzK+SoMa9F7zanZLPDl83jtyLFfWP6pXHOxx
+	 IT6CWhA8WBrfCTtZE1CpsSsWYOIjZUUjm/kCOtfgLC8G2wve5WGT2hYx8rr6OAyTqX
+	 3zLiWEJu+mt3A==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.15 08/13] PCI/AER: Disable AER service on suspend
-Date: Sun, 28 Jul 2024 12:08:50 -0400
-Message-ID: <20240728160907.2053634-8-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.10 08/11] PCI/AER: Disable AER service on suspend
+Date: Sun, 28 Jul 2024 12:09:41 -0400
+Message-ID: <20240728160954.2054068-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240728160907.2053634-1-sashal@kernel.org>
-References: <20240728160907.2053634-1-sashal@kernel.org>
+In-Reply-To: <20240728160954.2054068-1-sashal@kernel.org>
+References: <20240728160954.2054068-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.15.164
+X-stable-base: Linux 5.10.223
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,10 +92,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 18 insertions(+)
 
 diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 4f7744aab6c72..2908bfda88804 100644
+index d58b02237075c..974d56644973f 100644
 --- a/drivers/pci/pcie/aer.c
 +++ b/drivers/pci/pcie/aer.c
-@@ -1382,6 +1382,22 @@ static int aer_probe(struct pcie_device *dev)
+@@ -1373,6 +1373,22 @@ static int aer_probe(struct pcie_device *dev)
  	return 0;
  }
  
@@ -116,9 +116,9 @@ index 4f7744aab6c72..2908bfda88804 100644
 +}
 +
  /**
-  * aer_root_reset - reset Root Port hierarchy, RCEC, or RCiEP
-  * @dev: pointer to Root Port, RCEC, or RCiEP
-@@ -1453,6 +1469,8 @@ static struct pcie_port_service_driver aerdriver = {
+  * aer_root_reset - reset Root Port hierarchy or RCEC
+  * @dev: pointer to Root Port or RCEC
+@@ -1431,6 +1447,8 @@ static struct pcie_port_service_driver aerdriver = {
  	.service	= PCIE_PORT_SERVICE_AER,
  
  	.probe		= aer_probe,
