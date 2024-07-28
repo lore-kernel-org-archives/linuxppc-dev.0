@@ -4,53 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A59FC3DA49
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2024 16:11:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53857C3DA64
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Jul 2024 16:12:21 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LYCbOvKF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S/94ZdHx;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WX61l57Mvz3cM7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 02:11:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WX62W5gWRz3cBb
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 02:12:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LYCbOvKF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S/94ZdHx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WX60h6Ww1z3cYj
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2024 02:10:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WX6131Py9z3cXy
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jul 2024 02:11:03 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 3047E61228;
-	Sun, 28 Jul 2024 16:10:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4ADBC4AF0F;
-	Sun, 28 Jul 2024 16:10:41 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 7972CCE0957;
+	Sun, 28 Jul 2024 16:11:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F50DC32782;
+	Sun, 28 Jul 2024 16:10:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1722183043;
-	bh=vn66BbcHqOBfybRR+KiMPzhueZa+Csk42gnPhnH454Y=;
+	s=k20201202; t=1722183059;
+	bh=X6s4I4eC7Wnz1I6pC3l7IG/ytFfYQlSgaxQq0s4xUyU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=LYCbOvKF3nkvSCwX8b+JcQnfveEFUdBmD1enlSeu3IYUCeJTKprTd4tjX/8tnDDse
-	 vpFnfXKCGRQ5ApXm4mXc+kEgQ+oBwaM+kng4Juh22W7F2NYtI7nCIM0rNtR2e6lHAm
-	 5NYwPKEn+AurpzsJYnCFHKmY+zsvB9mWJaVRVDKQ5i405ycIL5GyZ+sD7+4XoiZH3D
-	 Kyoiefw7FcJgo0hl6GfnNR3GY8xnkFxzMDSRTJkkpl2Q74KaQRt20NCA33MapAMc8u
-	 huzo/RRiIf9/WYwzs7QcC1bbWRMGXYxRmxueYz9qocgqYIKWJ1hUBf5hFs9AmUur6Z
-	 yxeq0KIluKNlw==
+	b=S/94ZdHx0EPrzI+MJST8/39WYrcsZy0hyto6G0UxuOEnKNrIo99G8OPul7ysrS7oV
+	 ToEguQb3B698FrlDyU1i2p9ru8ejNyhrdFd9XymA2HG7AV41d1kczVo51IBh2BcbxK
+	 HpciGu/D27RP5GmpmlXHBauX8xf68tPmwJmVakyPjJTLjP4bW6j91BJx/nwaqHaqDz
+	 kDl/6KUrIgtkbjdw7uRJjfLqu21BSGWSUvpUzp5VuS0guX0NUGJ6WiBSe6hC17Zbh3
+	 hd4IxuuPfJh9BiBdfxyuXEvfLcQb36PKmy7My1bxHNlmr94TK2ZuJpOrmtXAHdLA/L
+	 bHW/FMA+Hhoig==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 4/7] PCI/AER: Disable AER service on suspend
-Date: Sun, 28 Jul 2024 12:10:24 -0400
-Message-ID: <20240728161033.2054341-4-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 2/4] PCI/AER: Disable AER service on suspend
+Date: Sun, 28 Jul 2024 12:10:51 -0400
+Message-ID: <20240728161055.2054513-2-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240728161033.2054341-1-sashal@kernel.org>
-References: <20240728161033.2054341-1-sashal@kernel.org>
+In-Reply-To: <20240728161055.2054513-1-sashal@kernel.org>
+References: <20240728161055.2054513-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.4.281
+X-stable-base: Linux 4.19.319
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -92,10 +92,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 18 insertions(+)
 
 diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 6b5c9f7916fac..ee38ca162a7c8 100644
+index 1563e22600eca..49680f83d8c37 100644
 --- a/drivers/pci/pcie/aer.c
 +++ b/drivers/pci/pcie/aer.c
-@@ -1407,6 +1407,22 @@ static int aer_probe(struct pcie_device *dev)
+@@ -1509,6 +1509,22 @@ static int aer_probe(struct pcie_device *dev)
  	return 0;
  }
  
@@ -118,15 +118,15 @@ index 6b5c9f7916fac..ee38ca162a7c8 100644
  /**
   * aer_root_reset - reset link on Root Port
   * @dev: pointer to Root Port's pci_dev data structure
-@@ -1447,6 +1463,8 @@ static struct pcie_port_service_driver aerdriver = {
+@@ -1561,6 +1577,8 @@ static struct pcie_port_service_driver aerdriver = {
  	.service	= PCIE_PORT_SERVICE_AER,
  
  	.probe		= aer_probe,
 +	.suspend	= aer_suspend,
 +	.resume		= aer_resume,
  	.remove		= aer_remove,
+ 	.error_resume	= aer_error_resume,
  	.reset_link	= aer_root_reset,
- };
 -- 
 2.43.0
 
