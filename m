@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D96FC3DA7E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:39:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC271C3DA7E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:40:10 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ab63qm3S;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=hKlLMA4I;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgwv5zw4z3cXy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:39:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgxj2jtyz2y8h
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:40:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ab63qm3S;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=hKlLMA4I;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.193; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [217.70.183.193])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXK5zRYz3cYq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:37 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id CEE8B240009;
-	Mon, 29 Jul 2024 14:21:34 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXM36Lpz3cZm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:39 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 2D9C224000C;
+	Mon, 29 Jul 2024 14:21:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1722262895;
+	t=1722262896;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ZrOLWiN4Z4gUXHz3D+P5LAM+sQ2zdU0ZhJY0pukQIhM=;
-	b=ab63qm3SgdCprnyo4hXCO7oG8HathVoPoFQp5BU4mqmZ0XJ1rT24AcMYSdCFbfWwPiBm8P
-	kTUwQDK528dd/GbwgyCYQGkjHI6lSHtEi5xLcGQdYNmv5YMREf3bZXdb5mt78gjJ9+ivEW
-	BO9PLzsSLAGi0vCKGLaYhx3XZcC0bhyti6Qw6wcOVUEEy4GmjUzG3jSpWZpZHwLSIypXq8
-	fsLZcRfH9bHvaUMm92R9uSE2TVswmti9EnWHna/3U/VTN3rLLb6FhJci80qU9c5rGWFcfb
-	vtdd6bKEYYwVaCAuRT+bp/dbRV44K1CkLrLzMmtF/j0XxOIlil3BPO46rd3enw==
+	bh=bhHLsIpdGYfQTXJIMda4RgH3fpRoHJARlbP68m37GfE=;
+	b=hKlLMA4IU2x2n4HBnN8iY1/eRzSEa9AHf091qccnEmtNIN3SS8Cy9pAUkPFlMnxxogYPJH
+	KaEwDYnak3jkd4o7iDYstR9YRCS3Z4P4oH1r7MH+HwNRbwG151zDrYaYJsvI3DCEFd62jn
+	qprtEcjYOP3Fob+Y9itQgMJpBWwaaXkkzzQ0a0s8xXjKvWxbxDIeimJEfgYNSOjQqZSu7h
+	k1oYN0go0dSGnLEE46HSRIv47MTW75qkL1vU4eMhGPNZDgPrb24V3Z3dzIAZkheQOZnbvM
+	HAwdvDtENW1Hh9PxdjVQfBqIQv/Q/hEczZsoE0Oy/SmLRDJ1XCVm4j75hQTDjA==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v1 28/36] soc: fsl: cpm1: qmc: Rename qmc_chan_command()
-Date: Mon, 29 Jul 2024 16:20:57 +0200
-Message-ID: <20240729142107.104574-29-herve.codina@bootlin.com>
+Subject: [PATCH v1 30/36] soc: fsl: cpm1: qmc: Rename SCC_GSMRL_MODE_QMC
+Date: Mon, 29 Jul 2024 16:20:59 +0200
+Message-ID: <20240729142107.104574-31-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240729142107.104574-1-herve.codina@bootlin.com>
 References: <20240729142107.104574-1-herve.codina@bootlin.com>
@@ -69,48 +69,42 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Current code handles CPM1 version of QMC and qmc_chan_command() is
-clearly CPM1 specific.
+Current code handles CPM1 version of QMC. Even if GSMRL is specific to
+the CPM1 version, the exact same purpose and format register (GUMRL) is
+present in the QUICC Engine (QE) version of QMC. Compared to the QE
+version, the values defined for the mode bitfield are different and the
+0x0A value defined for the QMC mode is CPM1 specific.
 
-In order to prepare the support for the QUICC Engine (QE) version,
-rename qmc_chan_command() to reflect that point.
+In order to prepare the support for the QE version, rename this bitfield
+value to clearly identify it as CPM1 specific.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/qmc.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index b95227378f97..272da250a763 100644
+index 63af2608c3cd..062477b7426e 100644
 --- a/drivers/soc/fsl/qe/qmc.c
 +++ b/drivers/soc/fsl/qe/qmc.c
-@@ -794,7 +794,7 @@ static int qmc_chan_setup_tsa_rx(struct qmc_chan *chan, bool enable)
- 	return qmc_chan_setup_tsa_32rx(chan, &info, enable);
- }
+@@ -27,7 +27,7 @@
+ #define SCC_GSMRL_ENR		BIT(5)
+ #define SCC_GSMRL_ENT		BIT(4)
+ #define SCC_GSMRL_MODE_MASK	GENMASK(3, 0)
+-#define SCC_GSMRL_MODE_QMC	FIELD_PREP_CONST(SCC_GSMRL_MODE_MASK, 0x0A)
++#define SCC_CPM1_GSMRL_MODE_QMC	FIELD_PREP_CONST(SCC_GSMRL_MODE_MASK, 0x0A)
  
--static int qmc_chan_command(struct qmc_chan *chan, u8 qmc_opcode)
-+static int qmc_chan_cpm1_command(struct qmc_chan *chan, u8 qmc_opcode)
- {
- 	return cpm_command(chan->id << 2, (qmc_opcode << 4) | 0x0E);
- }
-@@ -813,7 +813,7 @@ static int qmc_chan_stop_rx(struct qmc_chan *chan)
- 	}
+ /* SCC general mode register low (32 bits) */
+ #define SCC_GSMRH	0x04
+@@ -1642,7 +1642,7 @@ static int qmc_cpm1_init_scc(struct qmc *qmc)
+ 	qmc_write32(qmc->scc_regs + SCC_GSMRH, val);
  
- 	/* Send STOP RECEIVE command */
--	ret = qmc_chan_command(chan, 0x0);
-+	ret = qmc_chan_cpm1_command(chan, 0x0);
- 	if (ret) {
- 		dev_err(chan->qmc->dev, "chan %u: Send STOP RECEIVE failed (%d)\n",
- 			chan->id, ret);
-@@ -850,7 +850,7 @@ static int qmc_chan_stop_tx(struct qmc_chan *chan)
- 	}
+ 	/* enable QMC mode */
+-	qmc_write32(qmc->scc_regs + SCC_GSMRL, SCC_GSMRL_MODE_QMC);
++	qmc_write32(qmc->scc_regs + SCC_GSMRL, SCC_CPM1_GSMRL_MODE_QMC);
  
- 	/* Send STOP TRANSMIT command */
--	ret = qmc_chan_command(chan, 0x1);
-+	ret = qmc_chan_cpm1_command(chan, 0x1);
- 	if (ret) {
- 		dev_err(chan->qmc->dev, "chan %u: Send STOP TRANSMIT failed (%d)\n",
- 			chan->id, ret);
+ 	/* Disable and clear interrupts */
+ 	qmc_write16(qmc->scc_regs + SCC_SCCM, 0x0000);
 -- 
 2.45.0
 
