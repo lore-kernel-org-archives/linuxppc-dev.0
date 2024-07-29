@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3021C3DA61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F2CBC3DA61
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:27:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=P6VwFSKe;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=kVYrv20k;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgfJ4MMFz3cYq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:26:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgg45Cj0z3cXN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:27:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=P6VwFSKe;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=kVYrv20k;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgX44h53z2yvx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:23 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 69F4024000E;
-	Mon, 29 Jul 2024 14:21:16 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgX45283z3cNB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:24 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 80A11240013;
+	Mon, 29 Jul 2024 14:21:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1722262877;
+	t=1722262879;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=0UTWDzz2CSi9594bsioUgKxsyX0iygtz1joM8J6wTqE=;
-	b=P6VwFSKeNFRSfHeZeDQlilHGy7HvfNNvRBUGGz5G2ghJ6QYYuNOxNc9KxoF2A9wggV60sp
-	IstR9obpPlbrNbQqgyR6wAgj+hUQiePxAvur2b6Xb1t0gRefivdWpPjDxpF5hv7TwL9M3Y
-	p0OZOMsWE4YV8Ih8CxBp+LGzi0ehR5JklSJoHAZxOMi0uWhrdAHuvm+ObabKR7jB9lx462
-	PQVRUfpmUjCdRx2g9s+qgvqyw+z4K/sQJNMahkLv5FykBUtqy1EdnlcQAvhtDgmbmXk7dI
-	/sJk8ToTtwmaAVdEedQ9doGLXQs3ilGKXwEsPa6qAlXu83SxT6Y2RWYO5Lgv2A==
+	bh=APwAy045+0bwsYWXWzWi8kg7IB9CU666Ib602lP5Ma0=;
+	b=kVYrv20k9mDyvJa3yczKwdZwYx75K97npjDH5zsl2GPd2zsjhu2NlrlS2T2YOrEQbsgiDt
+	V0rXu+s8ckXoYEdKSqB5UMYn2J2ZoHe2f4wamw65BKlI2sjCWuplDcENM1MPPIW4ZWkbl6
+	AR5WSdky/9yQxQDjc4mYIygzUT4Rk1O9MurEv/k+9piH5h9bTUNVropze7ofL/vBwOrnvA
+	AGbWV8JYqfbz1bily/WJqFoslXeF0mTwOQtklpjqxKC0bgdfaln6CziMZZ7AsYDRn2SZOI
+	1iwJzL/htTGBoWZE1afdSRCZF7P9vaxD6xi/aU6Hy5zqAN3Amhu9EahczScnOQ==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v1 02/36] soc: fsl: cpm1: qmc: Enable TRNSYNC only when needed
-Date: Mon, 29 Jul 2024 16:20:31 +0200
-Message-ID: <20240729142107.104574-3-herve.codina@bootlin.com>
+Subject: [PATCH v1 05/36] soc: fsl: cpm1: tsa: Fix blank line and spaces
+Date: Mon, 29 Jul 2024 16:20:34 +0200
+Message-ID: <20240729142107.104574-6-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240729142107.104574-1-herve.codina@bootlin.com>
 References: <20240729142107.104574-1-herve.codina@bootlin.com>
@@ -69,60 +69,51 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The TRNSYNC feature is enabled whatever the number of time-slots used.
-The feature is needed only when more than one time-slot is used.
+checkpatch.pl raises the following issues
+  CHECK: Please don't use multiple blank lines
+  CHECK: spaces preferred around that '/' (ctx:VxV)
+  CHECK: spaces preferred around that '+' (ctx:VxV)
+  CHECK: spaces preferred around that '-' (ctx:VxV)
 
-Improve the driver enabling TRNSYNC only when it is needed.
+Fix them.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/qmc.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/soc/fsl/qe/tsa.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index bacabf731dcb..916395745850 100644
---- a/drivers/soc/fsl/qe/qmc.c
-+++ b/drivers/soc/fsl/qe/qmc.c
-@@ -889,6 +889,7 @@ EXPORT_SYMBOL(qmc_chan_stop);
- static int qmc_setup_chan_trnsync(struct qmc *qmc, struct qmc_chan *chan)
- {
- 	struct tsa_serial_info info;
-+	unsigned int w_rx, w_tx;
- 	u16 first_rx, last_tx;
- 	u16 trnsync;
- 	int ret;
-@@ -898,6 +899,14 @@ static int qmc_setup_chan_trnsync(struct qmc *qmc, struct qmc_chan *chan)
- 	if (ret)
- 		return ret;
+diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
+index dc4dda17dab8..7b1032fb1572 100644
+--- a/drivers/soc/fsl/qe/tsa.c
++++ b/drivers/soc/fsl/qe/tsa.c
+@@ -18,7 +18,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
  
-+	w_rx = hweight64(chan->rx_ts_mask);
-+	w_tx = hweight64(chan->tx_ts_mask);
-+	if (w_rx <= 1 && w_tx <= 1) {
-+		dev_dbg(qmc->dev, "only one or zero ts -> disable trnsync\n");
-+		qmc_clrbits16(chan->s_param + QMC_SPE_CHAMR, QMC_SPE_CHAMR_TRANSP_SYNC);
-+		return 0;
-+	}
-+
- 	/* Find the first Rx TS allocated to the channel */
- 	first_rx = chan->rx_ts_mask ? __ffs64(chan->rx_ts_mask) + 1 : 0;
+-
+ /* TSA SI RAM routing tables entry */
+ #define TSA_SIRAM_ENTRY_LAST		BIT(16)
+ #define TSA_SIRAM_ENTRY_BYTE		BIT(17)
+@@ -244,8 +243,8 @@ static void tsa_init_entries_area(struct tsa *tsa, struct tsa_entries_area *area
+ 	resource_size_t quarter;
+ 	resource_size_t half;
  
-@@ -911,6 +920,7 @@ static int qmc_setup_chan_trnsync(struct qmc *qmc, struct qmc_chan *chan)
- 		trnsync |= QMC_SPE_TRNSYNC_TX((last_tx % info.nb_tx_ts) * 2);
+-	quarter = tsa->si_ram_sz/4;
+-	half = tsa->si_ram_sz/2;
++	quarter = tsa->si_ram_sz / 4;
++	half = tsa->si_ram_sz / 2;
  
- 	qmc_write16(chan->s_param + QMC_SPE_TRNSYNC, trnsync);
-+	qmc_setbits16(chan->s_param + QMC_SPE_CHAMR, QMC_SPE_CHAMR_TRANSP_SYNC);
+ 	if (tdms == BIT(TSA_TDMA)) {
+ 		/* Only TDMA */
+@@ -408,7 +407,7 @@ static int tsa_of_parse_tdm_route(struct tsa *tsa, struct device_node *tdm_np,
+ 		}
  
- 	dev_dbg(qmc->dev, "chan %u: trnsync=0x%04x, rx %u/%u 0x%llx, tx %u/%u 0x%llx\n",
- 		chan->id, trnsync,
-@@ -1378,7 +1388,7 @@ static int qmc_setup_chan(struct qmc *qmc, struct qmc_chan *chan)
- 	if (chan->mode == QMC_TRANSPARENT) {
- 		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x18000080);
- 		qmc_write16(chan->s_param + QMC_SPE_TMRBLR, 60);
--		val = QMC_SPE_CHAMR_MODE_TRANSP | QMC_SPE_CHAMR_TRANSP_SYNC;
-+		val = QMC_SPE_CHAMR_MODE_TRANSP;
- 		if (chan->is_reverse_data)
- 			val |= QMC_SPE_CHAMR_TRANSP_RD;
- 		qmc_write16(chan->s_param + QMC_SPE_CHAMR, val);
+ 		dev_dbg(tsa->dev, "tdm_id=%u, %s ts %u..%u -> %s\n",
+-			tdm_id, route_name, ts, ts+count-1, serial_name);
++			tdm_id, route_name, ts, ts + count - 1, serial_name);
+ 		ts += count;
+ 
+ 		ret = tsa_add_entry(tsa, &area, count, serial_id);
 -- 
 2.45.0
 
