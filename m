@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F2CBC3DA61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:27:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B3E1C3DA61
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:28:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=kVYrv20k;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WGI9iWGX;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgg45Cj0z3cXN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:27:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WXggr1Zf3z3cbF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:28:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=kVYrv20k;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WGI9iWGX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgX45283z3cNB
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgX45Dw9z3cTG
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:24 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 80A11240013;
-	Mon, 29 Jul 2024 14:21:18 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 4A950240002;
+	Mon, 29 Jul 2024 14:21:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1722262879;
+	t=1722262881;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=APwAy045+0bwsYWXWzWi8kg7IB9CU666Ib602lP5Ma0=;
-	b=kVYrv20k9mDyvJa3yczKwdZwYx75K97npjDH5zsl2GPd2zsjhu2NlrlS2T2YOrEQbsgiDt
-	V0rXu+s8ckXoYEdKSqB5UMYn2J2ZoHe2f4wamw65BKlI2sjCWuplDcENM1MPPIW4ZWkbl6
-	AR5WSdky/9yQxQDjc4mYIygzUT4Rk1O9MurEv/k+9piH5h9bTUNVropze7ofL/vBwOrnvA
-	AGbWV8JYqfbz1bily/WJqFoslXeF0mTwOQtklpjqxKC0bgdfaln6CziMZZ7AsYDRn2SZOI
-	1iwJzL/htTGBoWZE1afdSRCZF7P9vaxD6xi/aU6Hy5zqAN3Amhu9EahczScnOQ==
+	bh=2CMTNP6nIDlPN6mndO+22CDidWRq33DXdG24hHtwqOs=;
+	b=WGI9iWGXuYuJgKNp12X9G1lvRUkSv8XXk9oR7Og9j5CpEERltmgiYlAXBz0U9pN7uKmvbT
+	0hc7ZbzQLChp7hw027Rx2BEW0pqNLhckpGXneA6L6dP34kOESGAqyaCBzgrIx3IeFWBBYS
+	vUxUTurkrW2pOW0DMBx6o/gNIbcP2wpXU4JiIDVZdmCM509s+xBOGhxHHvOMFKAzkCpVF4
+	eEs4oybJ7eFsUpvQ1olAT++s+/sxFrIyU02f28Hoa1XMUtIUb9bLnEG60LL2uNe95FIXOb
+	E68kh5UV+RH16Z66flSkr3ot6u2ATvvDSSmCxWmgLiCS3wf56lxABEnPxeriwQ==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v1 05/36] soc: fsl: cpm1: tsa: Fix blank line and spaces
-Date: Mon, 29 Jul 2024 16:20:34 +0200
-Message-ID: <20240729142107.104574-6-herve.codina@bootlin.com>
+Subject: [PATCH v1 09/36] soc: fsl: cpm1: tsa: Use ARRAY_SIZE() instead of hardcoded integer values
+Date: Mon, 29 Jul 2024 16:20:38 +0200
+Message-ID: <20240729142107.104574-10-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240729142107.104574-1-herve.codina@bootlin.com>
 References: <20240729142107.104574-1-herve.codina@bootlin.com>
@@ -69,51 +69,50 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-checkpatch.pl raises the following issues
-  CHECK: Please don't use multiple blank lines
-  CHECK: spaces preferred around that '/' (ctx:VxV)
-  CHECK: spaces preferred around that '+' (ctx:VxV)
-  CHECK: spaces preferred around that '-' (ctx:VxV)
+Loops handling the tdm array use hardcoded size and the initialization
+part uses hardcoded indexes to initialize the array.
 
-Fix them.
+Use ARRAY_SIZE() to avoid the hardcoded size and initialize the array
+using a loop.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/tsa.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/soc/fsl/qe/tsa.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
-index dc4dda17dab8..7b1032fb1572 100644
+index 244d521d8780..3d0c31a62dbb 100644
 --- a/drivers/soc/fsl/qe/tsa.c
 +++ b/drivers/soc/fsl/qe/tsa.c
-@@ -18,7 +18,6 @@
- #include <linux/platform_device.h>
- #include <linux/slab.h>
+@@ -448,8 +448,8 @@ static int tsa_of_parse_tdms(struct tsa *tsa, struct device_node *np)
+ 	int i;
  
--
- /* TSA SI RAM routing tables entry */
- #define TSA_SIRAM_ENTRY_LAST		BIT(16)
- #define TSA_SIRAM_ENTRY_BYTE		BIT(17)
-@@ -244,8 +243,8 @@ static void tsa_init_entries_area(struct tsa *tsa, struct tsa_entries_area *area
- 	resource_size_t quarter;
- 	resource_size_t half;
+ 	tsa->tdms = 0;
+-	tsa->tdm[0].is_enable = false;
+-	tsa->tdm[1].is_enable = false;
++	for (i = 0; i < ARRAY_SIZE(tsa->tdm); i++)
++		tsa->tdm[i].is_enable = false;
  
--	quarter = tsa->si_ram_sz/4;
--	half = tsa->si_ram_sz/2;
-+	quarter = tsa->si_ram_sz / 4;
-+	half = tsa->si_ram_sz / 2;
+ 	for_each_available_child_of_node(np, tdm_np) {
+ 		ret = of_property_read_u32(tdm_np, "reg", &tdm_id);
+@@ -609,7 +609,7 @@ static int tsa_of_parse_tdms(struct tsa *tsa, struct device_node *np)
+ 	return 0;
  
- 	if (tdms == BIT(TSA_TDMA)) {
- 		/* Only TDMA */
-@@ -408,7 +407,7 @@ static int tsa_of_parse_tdm_route(struct tsa *tsa, struct device_node *tdm_np,
- 		}
+ err:
+-	for (i = 0; i < 2; i++) {
++	for (i = 0; i < ARRAY_SIZE(tsa->tdm); i++) {
+ 		if (tsa->tdm[i].l1rsync_clk) {
+ 			clk_disable_unprepare(tsa->tdm[i].l1rsync_clk);
+ 			clk_put(tsa->tdm[i].l1rsync_clk);
+@@ -710,7 +710,7 @@ static void tsa_remove(struct platform_device *pdev)
+ 	struct tsa *tsa = platform_get_drvdata(pdev);
+ 	int i;
  
- 		dev_dbg(tsa->dev, "tdm_id=%u, %s ts %u..%u -> %s\n",
--			tdm_id, route_name, ts, ts+count-1, serial_name);
-+			tdm_id, route_name, ts, ts + count - 1, serial_name);
- 		ts += count;
- 
- 		ret = tsa_add_entry(tsa, &area, count, serial_id);
+-	for (i = 0; i < 2; i++) {
++	for (i = 0; i < ARRAY_SIZE(tsa->tdm); i++) {
+ 		if (tsa->tdm[i].l1rsync_clk) {
+ 			clk_disable_unprepare(tsa->tdm[i].l1rsync_clk);
+ 			clk_put(tsa->tdm[i].l1rsync_clk);
 -- 
 2.45.0
 
