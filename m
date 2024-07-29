@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B3E1C3DA61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:28:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 415D0C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:28:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WGI9iWGX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=jIbxCO4o;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WXggr1Zf3z3cbF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:28:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WXghk6w5wz3cNB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:28:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=WGI9iWGX;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=jIbxCO4o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.193; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [217.70.183.193])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgX45Dw9z3cTG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:24 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 4A950240002;
-	Mon, 29 Jul 2024 14:21:21 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgX74qyDz3cY5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:27 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 09396240017;
+	Mon, 29 Jul 2024 14:21:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1722262881;
+	t=1722262884;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=2CMTNP6nIDlPN6mndO+22CDidWRq33DXdG24hHtwqOs=;
-	b=WGI9iWGXuYuJgKNp12X9G1lvRUkSv8XXk9oR7Og9j5CpEERltmgiYlAXBz0U9pN7uKmvbT
-	0hc7ZbzQLChp7hw027Rx2BEW0pqNLhckpGXneA6L6dP34kOESGAqyaCBzgrIx3IeFWBBYS
-	vUxUTurkrW2pOW0DMBx6o/gNIbcP2wpXU4JiIDVZdmCM509s+xBOGhxHHvOMFKAzkCpVF4
-	eEs4oybJ7eFsUpvQ1olAT++s+/sxFrIyU02f28Hoa1XMUtIUb9bLnEG60LL2uNe95FIXOb
-	E68kh5UV+RH16Z66flSkr3ot6u2ATvvDSSmCxWmgLiCS3wf56lxABEnPxeriwQ==
+	bh=Lnsu/Wi7dGj1nJVAQ+x0DLiP3zgedc4tHolE2i3TsXs=;
+	b=jIbxCO4oG7wm2lbIMUDqM4FGW33R5m+Wx+bt9eT4XSej5NCngci4tYAd1K1lbnlnMPOvoy
+	NxEdfrKdNzlHlK8ZyGo2NdnyhzMggftF8RiQUjzIZtjswTtDansXOwhhvod562UT4hZHri
+	E4T9A/octqZV7WkA85rSXEHnlnPDzCePegDF+Hfq6tfTwhDU0EyWbBL7VdYAMWORyhfznS
+	lyW3MGNHAlP4+xGYlfHv6dPmlXG7tDl4Vf1PCaKSx+/BcH4Hz98y5jPs/q0Dgiy39TK3Du
+	efUP8E/CfpJcxrGQITKMNwoml/sHhQutWrogYxHICyLAioxqBKT/NvifQJfXKQ==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v1 09/36] soc: fsl: cpm1: tsa: Use ARRAY_SIZE() instead of hardcoded integer values
-Date: Mon, 29 Jul 2024 16:20:38 +0200
-Message-ID: <20240729142107.104574-10-herve.codina@bootlin.com>
+Subject: [PATCH v1 13/36] soc: fsl: cpm1: tsa: Introduce tsa_version
+Date: Mon, 29 Jul 2024 16:20:42 +0200
+Message-ID: <20240729142107.104574-14-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240729142107.104574-1-herve.codina@bootlin.com>
 References: <20240729142107.104574-1-herve.codina@bootlin.com>
@@ -69,50 +69,64 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Loops handling the tdm array use hardcoded size and the initialization
-part uses hardcoded indexes to initialize the array.
+Current code handles CPM1 version of TSA.
 
-Use ARRAY_SIZE() to avoid the hardcoded size and initialize the array
-using a loop.
+In order to prepare the support for the QUICC Engine (QE) version of
+TSA, introduce tsa_version to identify versions. This will enable the
+code to make the distinction between several TSA implementations.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/tsa.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/soc/fsl/qe/tsa.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
-index 244d521d8780..3d0c31a62dbb 100644
+index 48a176cece86..3b7c9766e25c 100644
 --- a/drivers/soc/fsl/qe/tsa.c
 +++ b/drivers/soc/fsl/qe/tsa.c
-@@ -448,8 +448,8 @@ static int tsa_of_parse_tdms(struct tsa *tsa, struct device_node *np)
- 	int i;
+@@ -114,12 +114,17 @@ struct tsa_tdm {
+ #define TSA_TDMA	0
+ #define TSA_TDMB	1
  
- 	tsa->tdms = 0;
--	tsa->tdm[0].is_enable = false;
--	tsa->tdm[1].is_enable = false;
-+	for (i = 0; i < ARRAY_SIZE(tsa->tdm); i++)
-+		tsa->tdm[i].is_enable = false;
++enum tsa_version {
++	TSA_CPM1 = 1, /* Avoid 0 value */
++};
++
+ struct tsa {
+ 	struct device *dev;
+ 	void __iomem *si_regs;
+ 	void __iomem *si_ram;
+ 	resource_size_t si_ram_sz;
+ 	spinlock_t	lock; /* Lock for read/modify/write sequence */
++	enum tsa_version version;
+ 	int tdms; /* TSA_TDMx ORed */
+ 	struct tsa_tdm tdm[2]; /* TDMa and TDMb */
+ 	struct tsa_serial {
+@@ -685,6 +690,15 @@ static int tsa_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
  
- 	for_each_available_child_of_node(np, tdm_np) {
- 		ret = of_property_read_u32(tdm_np, "reg", &tdm_id);
-@@ -609,7 +609,7 @@ static int tsa_of_parse_tdms(struct tsa *tsa, struct device_node *np)
- 	return 0;
+ 	tsa->dev = &pdev->dev;
++	tsa->version = (enum tsa_version)of_device_get_match_data(&pdev->dev);
++	switch (tsa->version) {
++	case TSA_CPM1:
++		dev_info(tsa->dev, "CPM1 version\n");
++		break;
++	default:
++		dev_err(tsa->dev, "Unknown version (%d)\n", tsa->version);
++		return -EINVAL;
++	}
  
- err:
--	for (i = 0; i < 2; i++) {
-+	for (i = 0; i < ARRAY_SIZE(tsa->tdm); i++) {
- 		if (tsa->tdm[i].l1rsync_clk) {
- 			clk_disable_unprepare(tsa->tdm[i].l1rsync_clk);
- 			clk_put(tsa->tdm[i].l1rsync_clk);
-@@ -710,7 +710,7 @@ static void tsa_remove(struct platform_device *pdev)
- 	struct tsa *tsa = platform_get_drvdata(pdev);
- 	int i;
+ 	for (i = 0; i < ARRAY_SIZE(tsa->serials); i++)
+ 		tsa->serials[i].id = i;
+@@ -746,7 +760,7 @@ static void tsa_remove(struct platform_device *pdev)
+ }
  
--	for (i = 0; i < 2; i++) {
-+	for (i = 0; i < ARRAY_SIZE(tsa->tdm); i++) {
- 		if (tsa->tdm[i].l1rsync_clk) {
- 			clk_disable_unprepare(tsa->tdm[i].l1rsync_clk);
- 			clk_put(tsa->tdm[i].l1rsync_clk);
+ static const struct of_device_id tsa_id_table[] = {
+-	{ .compatible = "fsl,cpm1-tsa" },
++	{ .compatible = "fsl,cpm1-tsa", .data = (void *)TSA_CPM1 },
+ 	{} /* sentinel */
+ };
+ MODULE_DEVICE_TABLE(of, tsa_id_table);
 -- 
 2.45.0
 
