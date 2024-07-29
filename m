@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD18DC3DA7E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:38:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D96FC3DA7E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:39:29 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=CoM3pBGP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ab63qm3S;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgw73HXwz3cbX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:38:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgwv5zw4z3cXy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:39:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=CoM3pBGP;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ab63qm3S;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.193; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [217.70.183.193])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXJ5cJFz3cYq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:36 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id AD7E5240010;
-	Mon, 29 Jul 2024 14:21:32 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXK5zRYz3cYq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:37 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id CEE8B240009;
+	Mon, 29 Jul 2024 14:21:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1722262893;
+	t=1722262895;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Uj6MLd6KFTJCdXGfBKX12l8E7lzam+wSv5WhfHx4wCU=;
-	b=CoM3pBGPJ2hyuxKCH6UPNV4MzbNI4KL9bdDsGxLzw5Tk1ZR+/UwTgNyQ68LaeOlFRKnuIU
-	bywjgvAHJ5GeI7F9kJbQawakP+91s+xfgqH9UaBmjduPW+ekfXg14jvbk353EYZ6nWYWbJ
-	JsyfLrfMQvlrrKnl19XlY3xel3cF5ejTTCco28hwUD2tDah7ApqNcTIam3E/k6QNbVAe8G
-	fV7pDjgrOeA/sUd/ovnnqoimE40ORu/Z8Ge32Umz6vQe2Kdg2riFHtRE+5XdhdfK6FrZPL
-	h/aW/CK3977AwoTHnuB0JvwqgG6HrUdJX+1u67zEsfiKrFLsP8Q/xzTKka2WAA==
+	bh=ZrOLWiN4Z4gUXHz3D+P5LAM+sQ2zdU0ZhJY0pukQIhM=;
+	b=ab63qm3SgdCprnyo4hXCO7oG8HathVoPoFQp5BU4mqmZ0XJ1rT24AcMYSdCFbfWwPiBm8P
+	kTUwQDK528dd/GbwgyCYQGkjHI6lSHtEi5xLcGQdYNmv5YMREf3bZXdb5mt78gjJ9+ivEW
+	BO9PLzsSLAGi0vCKGLaYhx3XZcC0bhyti6Qw6wcOVUEEy4GmjUzG3jSpWZpZHwLSIypXq8
+	fsLZcRfH9bHvaUMm92R9uSE2TVswmti9EnWHna/3U/VTN3rLLb6FhJci80qU9c5rGWFcfb
+	vtdd6bKEYYwVaCAuRT+bp/dbRV44K1CkLrLzMmtF/j0XxOIlil3BPO46rd3enw==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v1 25/36] soc: fsl: cpm1: qmc: Re-order probe() operations
-Date: Mon, 29 Jul 2024 16:20:54 +0200
-Message-ID: <20240729142107.104574-26-herve.codina@bootlin.com>
+Subject: [PATCH v1 28/36] soc: fsl: cpm1: qmc: Rename qmc_chan_command()
+Date: Mon, 29 Jul 2024 16:20:57 +0200
+Message-ID: <20240729142107.104574-29-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240729142107.104574-1-herve.codina@bootlin.com>
 References: <20240729142107.104574-1-herve.codina@bootlin.com>
@@ -69,132 +69,48 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Current code handles CPM1 version of QMC. In the QUICC Engine (QE)
-version, some operations done at probe() need to be done in a different
-order.
+Current code handles CPM1 version of QMC and qmc_chan_command() is
+clearly CPM1 specific.
 
-In order to prepare the support for the QE version, changed the sequence
-of operation done at probe():
-- Retrieve the tsa_serial earlier, before initializing resources.
-- Group SCC initialisation and do this initialization when it is really
-  needed in the probe() sequence.
-
-Having the QE compatible sequence in the CPM1 version does not lead to
-any issue and works correctly without any regressions.
+In order to prepare the support for the QUICC Engine (QE) version,
+rename qmc_chan_command() to reflect that point.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/qmc.c | 54 +++++++++++++++++++---------------------
- 1 file changed, 26 insertions(+), 28 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 85fc86f91806..8dd0f8fc7b08 100644
+index b95227378f97..272da250a763 100644
 --- a/drivers/soc/fsl/qe/qmc.c
 +++ b/drivers/soc/fsl/qe/qmc.c
-@@ -1614,6 +1614,12 @@ static int qmc_probe(struct platform_device *pdev)
+@@ -794,7 +794,7 @@ static int qmc_chan_setup_tsa_rx(struct qmc_chan *chan, bool enable)
+ 	return qmc_chan_setup_tsa_32rx(chan, &info, enable);
+ }
+ 
+-static int qmc_chan_command(struct qmc_chan *chan, u8 qmc_opcode)
++static int qmc_chan_cpm1_command(struct qmc_chan *chan, u8 qmc_opcode)
+ {
+ 	return cpm_command(chan->id << 2, (qmc_opcode << 4) | 0x0E);
+ }
+@@ -813,7 +813,7 @@ static int qmc_chan_stop_rx(struct qmc_chan *chan)
  	}
- 	INIT_LIST_HEAD(&qmc->chan_head);
  
-+	qmc->tsa_serial = devm_tsa_serial_get_byphandle(qmc->dev, np, "fsl,tsa-serial");
-+	if (IS_ERR(qmc->tsa_serial)) {
-+		return dev_err_probe(qmc->dev, PTR_ERR(qmc->tsa_serial),
-+				     "Failed to get TSA serial\n");
-+	}
-+
- 	qmc->scc_regs = devm_platform_ioremap_resource_byname(pdev, "scc_regs");
- 	if (IS_ERR(qmc->scc_regs))
- 		return PTR_ERR(qmc->scc_regs);
-@@ -1630,33 +1636,13 @@ static int qmc_probe(struct platform_device *pdev)
- 	if (IS_ERR(qmc->dpram))
- 		return PTR_ERR(qmc->dpram);
- 
--	qmc->tsa_serial = devm_tsa_serial_get_byphandle(qmc->dev, np, "fsl,tsa-serial");
--	if (IS_ERR(qmc->tsa_serial)) {
--		return dev_err_probe(qmc->dev, PTR_ERR(qmc->tsa_serial),
--				     "Failed to get TSA serial\n");
--	}
--
--	/* Connect the serial (SCC) to TSA */
--	ret = tsa_serial_connect(qmc->tsa_serial);
--	if (ret) {
--		dev_err(qmc->dev, "Failed to connect TSA serial\n");
--		return ret;
--	}
--
- 	/* Parse channels informationss */
- 	ret = qmc_of_parse_chans(qmc, np);
- 	if (ret)
--		goto err_tsa_serial_disconnect;
-+		return ret;
- 
- 	nb_chans = qmc_nb_chans(qmc);
- 
--	/* Init GMSR_H and GMSR_L registers */
--	qmc_write32(qmc->scc_regs + SCC_GSMRH,
--		    SCC_GSMRH_CDS | SCC_GSMRH_CTSS | SCC_GSMRH_CDP | SCC_GSMRH_CTSP);
--
--	/* enable QMC mode */
--	qmc_write32(qmc->scc_regs + SCC_GSMRL, SCC_GSMRL_MODE_QMC);
--
- 	/*
- 	 * Allocate the buffer descriptor table
- 	 * 8 rx and 8 tx descriptors per channel
-@@ -1666,8 +1652,7 @@ static int qmc_probe(struct platform_device *pdev)
- 					    &qmc->bd_dma_addr, GFP_KERNEL);
- 	if (!qmc->bd_table) {
- 		dev_err(qmc->dev, "Failed to allocate bd table\n");
--		ret = -ENOMEM;
--		goto err_tsa_serial_disconnect;
-+		return -ENOMEM;
+ 	/* Send STOP RECEIVE command */
+-	ret = qmc_chan_command(chan, 0x0);
++	ret = qmc_chan_cpm1_command(chan, 0x0);
+ 	if (ret) {
+ 		dev_err(chan->qmc->dev, "chan %u: Send STOP RECEIVE failed (%d)\n",
+ 			chan->id, ret);
+@@ -850,7 +850,7 @@ static int qmc_chan_stop_tx(struct qmc_chan *chan)
  	}
- 	memset(qmc->bd_table, 0, qmc->bd_size);
  
-@@ -1679,8 +1664,7 @@ static int qmc_probe(struct platform_device *pdev)
- 					     &qmc->int_dma_addr, GFP_KERNEL);
- 	if (!qmc->int_table) {
- 		dev_err(qmc->dev, "Failed to allocate interrupt table\n");
--		ret = -ENOMEM;
--		goto err_tsa_serial_disconnect;
-+		return -ENOMEM;
- 	}
- 	memset(qmc->int_table, 0, qmc->int_size);
- 
-@@ -1699,18 +1683,32 @@ static int qmc_probe(struct platform_device *pdev)
- 
- 	ret = qmc_init_tsa(qmc);
- 	if (ret)
--		goto err_tsa_serial_disconnect;
-+		return ret;
- 
- 	qmc_write16(qmc->scc_pram + QMC_GBL_QMCSTATE, 0x8000);
- 
- 	ret = qmc_setup_chans(qmc);
- 	if (ret)
--		goto err_tsa_serial_disconnect;
-+		return ret;
- 
- 	/* Init interrupts table */
- 	ret = qmc_setup_ints(qmc);
- 	if (ret)
--		goto err_tsa_serial_disconnect;
-+		return ret;
-+
-+	/* Connect the serial (SCC) to TSA */
-+	ret = tsa_serial_connect(qmc->tsa_serial);
-+	if (ret) {
-+		dev_err(qmc->dev, "Failed to connect TSA serial\n");
-+		return ret;
-+	}
-+
-+	/* Init GMSR_H and GMSR_L registers */
-+	qmc_write32(qmc->scc_regs + SCC_GSMRH,
-+		    SCC_GSMRH_CDS | SCC_GSMRH_CTSS | SCC_GSMRH_CDP | SCC_GSMRH_CTSP);
-+
-+	/* enable QMC mode */
-+	qmc_write32(qmc->scc_regs + SCC_GSMRL, SCC_GSMRL_MODE_QMC);
- 
- 	/* Disable and clear interrupts,  set the irq handler */
- 	qmc_write16(qmc->scc_regs + SCC_SCCM, 0x0000);
+ 	/* Send STOP TRANSMIT command */
+-	ret = qmc_chan_command(chan, 0x1);
++	ret = qmc_chan_cpm1_command(chan, 0x1);
+ 	if (ret) {
+ 		dev_err(chan->qmc->dev, "chan %u: Send STOP TRANSMIT failed (%d)\n",
+ 			chan->id, ret);
 -- 
 2.45.0
 
