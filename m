@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C213EC3DA61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:24:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3D53C3DA7E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:24:49 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=BBk2migj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=HFG/IGQG;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgbD0dlJz3ckP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:24:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgc00TRcz3cWN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:24:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=BBk2migj;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=HFG/IGQG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgX40Q1qz2ypm
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgX40Ks2z2y8q
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:23 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 9EAE4240006;
-	Mon, 29 Jul 2024 14:21:15 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 8D29924000B;
+	Mon, 29 Jul 2024 14:21:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1722262876;
+	t=1722262881;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=O1sNai9Jq2u7qPOllWQVrRFQ040G46WCUggP4JjIwzw=;
-	b=BBk2migjJPNgARSb4Y4tPh2TLnxHPLRxm9BEPmeTLeG+L+T98j321Hj7cfqcUtA17n+fIX
-	xCDNe2ZbNnPx9AhvjbRZsQk/RdLeHa6pwWkN/okkSNgIJLSSgxys53HStMEcs4QeGs4Bgr
-	PzzazAB8ZFiu/5BI+Z1mLi1AmNTx9VOOQ24rKkjcjPJxTq1mdORW6oUkQGhKHgIHFDEIlf
-	VbLCvPXcMXhwpskSFH5U27ENRUtWH9TmiQgFLn1UoZkTRI2yQdHFXjeISfvae36vFgYBaQ
-	Qup5Y7RTNBy6lruh9qNhZ3D7pktlHNwNH5o6a6JwLi8ES6LhOfAfhP8IbRQmmw==
+	bh=G8PJVZbpZeHvhUUqQp4BvbX25vcoHX3SZ5FqCu0M2s8=;
+	b=HFG/IGQG9+9470K1tbqF3g1O2Ds8KvcaXAFZETTbHZJrlMXT9G0jJy67cmsaIJEgr2doA5
+	9tCpTaOQYJLv4l4pIWjnL9jlniU/7ORtcsPikVlGK+dwl962vUIAgbzewsqQd5ZWDK5xj5
+	NMpSEeWk+IA9UI1QwOIISHQkND42dtPOQyhe+Bt9r5+uLF95e5HMoGQuZJEVCHQ360qp6J
+	/oq79rIwH+3Nw/znhzW4o5rzLeSljaeb3/k94oZS0u43NEBztpSrFNFAmHJV0h6Amz20Ht
+	IMG1RhJg0cVuHiUdX7x1TiVFCgIaRk9/B2LIry7raoygBr42Ne9xDzWufjizbA==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v1 01/36] soc: fsl: cpm1: qmc: Update TRNSYNC only in transparent mode
-Date: Mon, 29 Jul 2024 16:20:30 +0200
-Message-ID: <20240729142107.104574-2-herve.codina@bootlin.com>
+Subject: [PATCH v1 08/36] soc: fsl: cpm1: tsa: Remove unused registers offset definition
+Date: Mon, 29 Jul 2024 16:20:37 +0200
+Message-ID: <20240729142107.104574-9-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240729142107.104574-1-herve.codina@bootlin.com>
 References: <20240729142107.104574-1-herve.codina@bootlin.com>
@@ -65,70 +65,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The TRNSYNC feature is available (and enabled) only in transparent mode.
+SISTR, SICMR and SIRP registers offset definitions are not used.
 
-Since commit 7cc9bda9c163 ("soc: fsl: cpm1: qmc: Handle timeslot entries
-at channel start() and stop()") TRNSYNC register is updated in
-transparent and hdlc mode. In hdlc mode, the address of the TRNSYNC
-register is used by the QMC for other internal purpose. Even if no weird
-results were observed in hdlc mode, touching this register in this mode
-is wrong.
+In order to avoid unneeded code, remove them.
 
-Update TRNSYNC only in transparent mode.
-
-Fixes: 7cc9bda9c163 ("soc: fsl: cpm1: qmc: Handle timeslot entries at channel start() and stop()")
-Cc: stable@vger.kernel.org
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/qmc.c | 24 ++++++++++++++----------
- 1 file changed, 14 insertions(+), 10 deletions(-)
+ drivers/soc/fsl/qe/tsa.c | 9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 76bb496305a0..bacabf731dcb 100644
---- a/drivers/soc/fsl/qe/qmc.c
-+++ b/drivers/soc/fsl/qe/qmc.c
-@@ -940,11 +940,13 @@ static int qmc_chan_start_rx(struct qmc_chan *chan)
- 		goto end;
- 	}
+diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
+index a9d35b44489d..244d521d8780 100644
+--- a/drivers/soc/fsl/qe/tsa.c
++++ b/drivers/soc/fsl/qe/tsa.c
+@@ -66,12 +66,6 @@
+ #define   TSA_SIGMR_RDM_STATIC_TDMAB	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x2)
+ #define   TSA_SIGMR_RDM_DYN_TDMAB	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x3)
  
--	ret = qmc_setup_chan_trnsync(chan->qmc, chan);
--	if (ret) {
--		dev_err(chan->qmc->dev, "chan %u: setup TRNSYNC failed (%d)\n",
--			chan->id, ret);
--		goto end;
-+	if (chan->mode == QMC_TRANSPARENT) {
-+		ret = qmc_setup_chan_trnsync(chan->qmc, chan);
-+		if (ret) {
-+			dev_err(chan->qmc->dev, "chan %u: setup TRNSYNC failed (%d)\n",
-+				chan->id, ret);
-+			goto end;
-+		}
- 	}
+-/* SI status register (8 bits) */
+-#define TSA_SISTR	0x06
+-
+-/* SI command register (8 bits) */
+-#define TSA_SICMR	0x07
+-
+ /* SI clock route register (32 bits) */
+ #define TSA_SICR	0x0C
+ #define   TSA_SICR_SCC2_MASK		GENMASK(15, 8)
+@@ -102,9 +96,6 @@
+ #define       TSA_SICR_SCC_TXCS_CLK37	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x6)
+ #define       TSA_SICR_SCC_TXCS_CLK48	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x7)
  
- 	/* Restart the receiver */
-@@ -982,11 +984,13 @@ static int qmc_chan_start_tx(struct qmc_chan *chan)
- 		goto end;
- 	}
- 
--	ret = qmc_setup_chan_trnsync(chan->qmc, chan);
--	if (ret) {
--		dev_err(chan->qmc->dev, "chan %u: setup TRNSYNC failed (%d)\n",
--			chan->id, ret);
--		goto end;
-+	if (chan->mode == QMC_TRANSPARENT) {
-+		ret = qmc_setup_chan_trnsync(chan->qmc, chan);
-+		if (ret) {
-+			dev_err(chan->qmc->dev, "chan %u: setup TRNSYNC failed (%d)\n",
-+				chan->id, ret);
-+			goto end;
-+		}
- 	}
- 
- 	/*
+-/* Serial interface RAM pointer register (32 bits) */
+-#define TSA_SIRP	0x10
+-
+ struct tsa_entries_area {
+ 	void __iomem *entries_start;
+ 	void __iomem *entries_next;
 -- 
 2.45.0
 
