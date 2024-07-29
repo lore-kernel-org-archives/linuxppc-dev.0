@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4542C3DA61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:44:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA583C3DA61
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:44:59 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bU3JUNgk;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=SNO7kAQb;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WXh2V2ZMVz3dHm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:44:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WXh3G2wWjz30Tp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:44:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bU3JUNgk;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=SNO7kAQb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXT5xk7z3cW3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:45 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 7689B24000E;
-	Mon, 29 Jul 2024 14:21:35 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXV34sBz3cbL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:46 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 9F7C924000D;
+	Mon, 29 Jul 2024 14:21:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1722262896;
+	t=1722262888;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Ns1shNAo8zEhYUmPszlirWDSVtM9okYPzpFYT+pVz24=;
-	b=bU3JUNgkUqlPbva+MXU/zy03oMGduuv8HCfdDpHuhWLsxfmKt8R7+/fkPzomjdJR4ldOcA
-	s9hMJyDCmz8Jgyu+MCCShzE+KGMdqhNu04MAvjUZfegG7KDoG5J2HtqpMeTT020fVODxSt
-	3KVe6ASotboK2wxWrqcrAZubbvShOlcsLg5klpd6/Tl2u6dCumawkOI29E27/XGiGdcDHC
-	Jz1ZmUb7K920ZdODD8EL2wCA14tCFdrrhPRwr6T5QIfqs5ZVi1nDD1ZEJljgWnnII+gblg
-	TEk35pAl1Lz/LXF1OLmRdMRlJgHZrZpDUPAg9Z5iIBmCApvq0hEj0LXr1MYgzg==
+	bh=MHg3HP7c5auUlRoAbWHwCc/VjOiwCEiJpIw8nensMgk=;
+	b=SNO7kAQbs54/dK5WsWxSUQTNaswuOmifb8KAPug03sBhDHSbl3bmZci3PNL3o0qedjwVE8
+	ZwKAZlGS5Xr4PLH0hFv/3R4EkSi9pzcq34P4HEgjWifE29nKyHitK+O7rFlfmRZ99p6HMf
+	vgjneYXerkEaZbO28aJf8XMDcK9fPEQJ7CB11pDro/xD6ZFHZYt/Tqe4dT+6uK8LSmEBvg
+	hCzeN1JON7MZb6+HEog8C5+oAdYpXw3sh9QQrVueyC5amOzhu9BaYLLsz9vMSQOIH6yPPD
+	GURYwdn6fZN3GoK16FU58D0w77G+kwV9J6cDU1+EcJrfzzhmvECaCn4heYHL2w==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v1 29/36] soc: fsl: cpm1: qmc: Handle RPACK initialization
-Date: Mon, 29 Jul 2024 16:20:58 +0200
-Message-ID: <20240729142107.104574-30-herve.codina@bootlin.com>
+Subject: [PATCH v1 18/36] soc: fsl: cpm1: qmc: Use BIT(), GENMASK() and FIELD_PREP() macros
+Date: Mon, 29 Jul 2024 16:20:47 +0200
+Message-ID: <20240729142107.104574-19-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240729142107.104574-1-herve.codina@bootlin.com>
 References: <20240729142107.104574-1-herve.codina@bootlin.com>
@@ -69,73 +69,217 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Current code handles the CPM1 version of QMC, RPACK does not need to
-be initialized. This is not the case in the QUICC Engine (QE) version.
+checkpatch.pl signals the following improvement for qmc.c
+  CHECK: Prefer using the BIT macro
 
-In preparation of the support for QE, initialize the RPACK register
-when the receiver is initialized and each time it is restarted.
-
-This additional RPACK initialization has no impact in the CPM1 version
-of QMC.
+Follow its suggestion and convert the code to BIT() and related macros.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/qmc.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/soc/fsl/qe/qmc.c | 132 +++++++++++++++++++++------------------
+ 1 file changed, 72 insertions(+), 60 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 272da250a763..63af2608c3cd 100644
+index 721e0770510c..e2ac3e59bb79 100644
 --- a/drivers/soc/fsl/qe/qmc.c
 +++ b/drivers/soc/fsl/qe/qmc.c
-@@ -221,6 +221,7 @@ struct qmc_data {
- 	u32 zistate; /* Initial ZISTATE value */
- 	u32 zdstate_hdlc; /* Initial ZDSTATE value (HDLC mode) */
- 	u32 zdstate_transp; /* Initial ZDSTATE value (Transparent mode) */
-+	u32 rpack; /* Initial RPACK value */
- };
+@@ -8,6 +8,7 @@
+  */
  
- struct qmc {
-@@ -552,6 +553,7 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
- 	/* Restart receiver if needed */
- 	if (chan->is_rx_halted && !chan->is_rx_stopped) {
- 		/* Restart receiver */
-+		qmc_write32(chan->s_param + QMC_SPE_RPACK, chan->qmc->data->rpack);
- 		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE,
- 			    chan->mode == QMC_TRANSPARENT ?
- 				chan->qmc->data->zdstate_transp :
-@@ -980,6 +982,7 @@ static int qmc_chan_start_rx(struct qmc_chan *chan)
+ #include <soc/fsl/qe/qmc.h>
++#include <linux/bitfield.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/hdlc.h>
+ #include <linux/interrupt.h>
+@@ -23,23 +24,24 @@
+ 
+ /* SCC general mode register high (32 bits) */
+ #define SCC_GSMRL	0x00
+-#define SCC_GSMRL_ENR		(1 << 5)
+-#define SCC_GSMRL_ENT		(1 << 4)
+-#define SCC_GSMRL_MODE_QMC	(0x0A << 0)
++#define SCC_GSMRL_ENR		BIT(5)
++#define SCC_GSMRL_ENT		BIT(4)
++#define SCC_GSMRL_MODE_MASK	GENMASK(3, 0)
++#define SCC_GSMRL_MODE_QMC	FIELD_PREP_CONST(SCC_GSMRL_MODE_MASK, 0x0A)
+ 
+ /* SCC general mode register low (32 bits) */
+ #define SCC_GSMRH	0x04
+-#define   SCC_GSMRH_CTSS	(1 << 7)
+-#define   SCC_GSMRH_CDS		(1 << 8)
+-#define   SCC_GSMRH_CTSP	(1 << 9)
+-#define   SCC_GSMRH_CDP		(1 << 10)
++#define   SCC_GSMRH_CTSS	BIT(7)
++#define   SCC_GSMRH_CDS		BIT(8)
++#define   SCC_GSMRH_CTSP	BIT(9)
++#define   SCC_GSMRH_CDP		BIT(10)
+ 
+ /* SCC event register (16 bits) */
+ #define SCC_SCCE	0x10
+-#define   SCC_SCCE_IQOV		(1 << 3)
+-#define   SCC_SCCE_GINT		(1 << 2)
+-#define   SCC_SCCE_GUN		(1 << 1)
+-#define   SCC_SCCE_GOV		(1 << 0)
++#define   SCC_SCCE_IQOV		BIT(3)
++#define   SCC_SCCE_GINT		BIT(2)
++#define   SCC_SCCE_GUN		BIT(1)
++#define   SCC_SCCE_GOV		BIT(0)
+ 
+ /* SCC mask register (16 bits) */
+ #define SCC_SCCM	0x14
+@@ -75,25 +77,31 @@
+ #define QMC_GBL_C_MASK16	0xA0
+ 
+ /* TSA entry (16bit entry in TSATRX and TSATTX) */
+-#define QMC_TSA_VALID		(1 << 15)
+-#define QMC_TSA_WRAP		(1 << 14)
+-#define QMC_TSA_MASK_8BIT	(0x303F)
+-#define QMC_TSA_CHANNEL(x)	((x) << 6)
++#define QMC_TSA_VALID		BIT(15)
++#define QMC_TSA_WRAP		BIT(14)
++#define QMC_TSA_MASK_MASKH	GENMASK(13, 12)
++#define QMC_TSA_MASK_MASKL	GENMASK(5, 0)
++#define QMC_TSA_MASK_8BIT	(FIELD_PREP_CONST(QMC_TSA_MASK_MASKH, 0x3) | \
++				 FIELD_PREP_CONST(QMC_TSA_MASK_MASKL, 0x3F))
++#define QMC_TSA_CHANNEL_MASK	GENMASK(11, 6)
++#define QMC_TSA_CHANNEL(x)	FIELD_PREP(QMC_TSA_CHANNEL_MASK, x)
+ 
+ /* Tx buffer descriptor base address (16 bits, offset from MCBASE) */
+ #define QMC_SPE_TBASE	0x00
+ 
+ /* Channel mode register (16 bits) */
+ #define QMC_SPE_CHAMR	0x02
+-#define   QMC_SPE_CHAMR_MODE_HDLC	(1 << 15)
+-#define   QMC_SPE_CHAMR_MODE_TRANSP	((0 << 15) | (1 << 13))
+-#define   QMC_SPE_CHAMR_ENT		(1 << 12)
+-#define   QMC_SPE_CHAMR_POL		(1 << 8)
+-#define   QMC_SPE_CHAMR_HDLC_IDLM	(1 << 13)
+-#define   QMC_SPE_CHAMR_HDLC_CRC	(1 << 7)
+-#define   QMC_SPE_CHAMR_HDLC_NOF	(0x0f << 0)
+-#define   QMC_SPE_CHAMR_TRANSP_RD	(1 << 14)
+-#define   QMC_SPE_CHAMR_TRANSP_SYNC	(1 << 10)
++#define   QMC_SPE_CHAMR_MODE_MASK	GENMASK(15, 15)
++#define   QMC_SPE_CHAMR_MODE_HDLC	FIELD_PREP_CONST(QMC_SPE_CHAMR_MODE_MASK, 1)
++#define   QMC_SPE_CHAMR_MODE_TRANSP	(FIELD_PREP_CONST(QMC_SPE_CHAMR_MODE_MASK, 0) | BIT(13))
++#define   QMC_SPE_CHAMR_ENT		BIT(12)
++#define   QMC_SPE_CHAMR_POL		BIT(8)
++#define   QMC_SPE_CHAMR_HDLC_IDLM	BIT(13)
++#define   QMC_SPE_CHAMR_HDLC_CRC	BIT(7)
++#define   QMC_SPE_CHAMR_HDLC_NOF_MASK	GENMASK(3, 0)
++#define   QMC_SPE_CHAMR_HDLC_NOF(x)	FIELD_PREP(QMC_SPE_CHAMR_HDLC_NOF_MASK, x)
++#define   QMC_SPE_CHAMR_TRANSP_RD	BIT(14)
++#define   QMC_SPE_CHAMR_TRANSP_SYNC	BIT(10)
+ 
+ /* Tx internal state (32 bits) */
+ #define QMC_SPE_TSTATE	0x04
+@@ -120,43 +128,47 @@
+ 
+ /* Transparent synchronization (16 bits) */
+ #define QMC_SPE_TRNSYNC 0x3C
+-#define   QMC_SPE_TRNSYNC_RX(x)	((x) << 8)
+-#define   QMC_SPE_TRNSYNC_TX(x)	((x) << 0)
++#define   QMC_SPE_TRNSYNC_RX_MASK	GENMASK(15, 8)
++#define   QMC_SPE_TRNSYNC_RX(x)		FIELD_PREP(QMC_SPE_TRNSYNC_RX_MASK, x)
++#define   QMC_SPE_TRNSYNC_TX_MASK	GENMASK(7, 0)
++#define   QMC_SPE_TRNSYNC_TX(x)		FIELD_PREP(QMC_SPE_TRNSYNC_TX_MASK, x)
+ 
+ /* Interrupt related registers bits */
+-#define QMC_INT_V		(1 << 15)
+-#define QMC_INT_W		(1 << 14)
+-#define QMC_INT_NID		(1 << 13)
+-#define QMC_INT_IDL		(1 << 12)
+-#define QMC_INT_GET_CHANNEL(x)	(((x) & 0x0FC0) >> 6)
+-#define QMC_INT_MRF		(1 << 5)
+-#define QMC_INT_UN		(1 << 4)
+-#define QMC_INT_RXF		(1 << 3)
+-#define QMC_INT_BSY		(1 << 2)
+-#define QMC_INT_TXB		(1 << 1)
+-#define QMC_INT_RXB		(1 << 0)
++#define QMC_INT_V		BIT(15)
++#define QMC_INT_W		BIT(14)
++#define QMC_INT_NID		BIT(13)
++#define QMC_INT_IDL		BIT(12)
++#define QMC_INT_CHANNEL_MASK	GENMASK(11, 6)
++#define QMC_INT_GET_CHANNEL(x)	FIELD_GET(QMC_INT_CHANNEL_MASK, x)
++#define QMC_INT_MRF		BIT(5)
++#define QMC_INT_UN		BIT(4)
++#define QMC_INT_RXF		BIT(3)
++#define QMC_INT_BSY		BIT(2)
++#define QMC_INT_TXB		BIT(1)
++#define QMC_INT_RXB		BIT(0)
+ 
+ /* BD related registers bits */
+-#define QMC_BD_RX_E	(1 << 15)
+-#define QMC_BD_RX_W	(1 << 13)
+-#define QMC_BD_RX_I	(1 << 12)
+-#define QMC_BD_RX_L	(1 << 11)
+-#define QMC_BD_RX_F	(1 << 10)
+-#define QMC_BD_RX_CM	(1 << 9)
+-#define QMC_BD_RX_UB	(1 << 7)
+-#define QMC_BD_RX_LG	(1 << 5)
+-#define QMC_BD_RX_NO	(1 << 4)
+-#define QMC_BD_RX_AB	(1 << 3)
+-#define QMC_BD_RX_CR	(1 << 2)
+-
+-#define QMC_BD_TX_R	(1 << 15)
+-#define QMC_BD_TX_W	(1 << 13)
+-#define QMC_BD_TX_I	(1 << 12)
+-#define QMC_BD_TX_L	(1 << 11)
+-#define QMC_BD_TX_TC	(1 << 10)
+-#define QMC_BD_TX_CM	(1 << 9)
+-#define QMC_BD_TX_UB	(1 << 7)
+-#define QMC_BD_TX_PAD	(0x0f << 0)
++#define QMC_BD_RX_E	BIT(15)
++#define QMC_BD_RX_W	BIT(13)
++#define QMC_BD_RX_I	BIT(12)
++#define QMC_BD_RX_L	BIT(11)
++#define QMC_BD_RX_F	BIT(10)
++#define QMC_BD_RX_CM	BIT(9)
++#define QMC_BD_RX_UB	BIT(7)
++#define QMC_BD_RX_LG	BIT(5)
++#define QMC_BD_RX_NO	BIT(4)
++#define QMC_BD_RX_AB	BIT(3)
++#define QMC_BD_RX_CR	BIT(2)
++
++#define QMC_BD_TX_R		BIT(15)
++#define QMC_BD_TX_W		BIT(13)
++#define QMC_BD_TX_I		BIT(12)
++#define QMC_BD_TX_L		BIT(11)
++#define QMC_BD_TX_TC		BIT(10)
++#define QMC_BD_TX_CM		BIT(9)
++#define QMC_BD_TX_UB		BIT(7)
++#define QMC_BD_TX_PAD_MASK	GENMASK(3, 0)
++#define QMC_BD_TX_PAD(x)	FIELD_PREP(QMC_BD_TX_PAD_MASK, x)
+ 
+ /* Numbers of BDs and interrupt items */
+ #define QMC_NB_TXBDS	8
+@@ -662,7 +674,7 @@ static int qmc_chan_setup_tsa_64rxtx(struct qmc_chan *chan, const struct tsa_ser
+ 			continue;
+ 
+ 		qmc_clrsetbits16(chan->qmc->scc_pram + QMC_GBL_TSATRX + (i * 2),
+-				 ~QMC_TSA_WRAP, enable ? val : 0x0000);
++				 (u16)~QMC_TSA_WRAP, enable ? val : 0x0000);
  	}
  
- 	/* Restart the receiver */
-+	qmc_write32(chan->s_param + QMC_SPE_RPACK, chan->qmc->data->rpack);
- 	qmc_write32(chan->s_param + QMC_SPE_ZDSTATE,
- 		    chan->mode == QMC_TRANSPARENT ?
- 			chan->qmc->data->zdstate_transp :
-@@ -1405,6 +1408,7 @@ static int qmc_setup_chan(struct qmc *qmc, struct qmc_chan *chan)
- 	qmc_write32(chan->s_param + QMC_SPE_TSTATE, chan->qmc->data->tstate);
- 	qmc_write32(chan->s_param + QMC_SPE_RSTATE, chan->qmc->data->rstate);
- 	qmc_write32(chan->s_param + QMC_SPE_ZISTATE, chan->qmc->data->zistate);
-+	qmc_write32(chan->s_param + QMC_SPE_RPACK, chan->qmc->data->rpack);
- 	if (chan->mode == QMC_TRANSPARENT) {
- 		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, chan->qmc->data->zdstate_transp);
- 		qmc_write16(chan->s_param + QMC_SPE_TMRBLR, 60);
-@@ -1544,6 +1548,8 @@ static void qmc_irq_gint(struct qmc *qmc)
- 			/* Restart the receiver if needed */
- 			spin_lock_irqsave(&chan->rx_lock, flags);
- 			if (chan->rx_pending && !chan->is_rx_stopped) {
-+				qmc_write32(chan->s_param + QMC_SPE_RPACK,
-+					    chan->qmc->data->rpack);
- 				qmc_write32(chan->s_param + QMC_SPE_ZDSTATE,
- 					    chan->mode == QMC_TRANSPARENT ?
- 						chan->qmc->data->zdstate_transp :
-@@ -1810,6 +1816,7 @@ static const struct qmc_data qmc_data_cpm1 = {
- 	.zistate = 0x00000100,
- 	.zdstate_hdlc = 0x00000080,
- 	.zdstate_transp = 0x18000080,
-+	.rpack = 0x00000000,
- };
+ 	return 0;
+@@ -698,7 +710,7 @@ static int qmc_chan_setup_tsa_32rx(struct qmc_chan *chan, const struct tsa_seria
+ 			continue;
  
- static const struct of_device_id qmc_id_table[] = {
+ 		qmc_clrsetbits16(chan->qmc->scc_pram + QMC_GBL_TSATRX + (i * 2),
+-				 ~QMC_TSA_WRAP, enable ? val : 0x0000);
++				 (u16)~QMC_TSA_WRAP, enable ? val : 0x0000);
+ 	}
+ 
+ 	return 0;
+@@ -734,7 +746,7 @@ static int qmc_chan_setup_tsa_32tx(struct qmc_chan *chan, const struct tsa_seria
+ 			continue;
+ 
+ 		qmc_clrsetbits16(chan->qmc->scc_pram + QMC_GBL_TSATTX + (i * 2),
+-				 ~QMC_TSA_WRAP, enable ? val : 0x0000);
++				 (u16)~QMC_TSA_WRAP, enable ? val : 0x0000);
+ 	}
+ 
+ 	return 0;
 -- 
 2.45.0
 
