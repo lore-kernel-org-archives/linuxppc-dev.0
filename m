@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0072C3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:42:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38338C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:43:33 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=KtuVtq+Q;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=j545JTc6;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WXh0p4Z6jz3d36
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:42:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WXh1b6Wzlz3cZ5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:43:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=KtuVtq+Q;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=j545JTc6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.193; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [217.70.183.193])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXR4nXnz3cXw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:43 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 62277240009;
-	Mon, 29 Jul 2024 14:21:40 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXS2R8Gz3cZm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:44 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 2AE6D240002;
+	Mon, 29 Jul 2024 14:21:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1722262900;
+	t=1722262894;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=mxhVI5cINOPlLM9ZHr8aejS0o32n/nWcepwPUyLTegw=;
-	b=KtuVtq+Q0c/lU5+zmBceS/FUeiqQVG+3KxqDZjwIttlPB99AWFJSVqgvZ1bIb3udjmTUnX
-	KbcEP0OcvAXMBhizqikvZszwh19iwgRFaNSIFYAXvh6MPq6wzM/CnZq74ENrA0w8FOMwvs
-	aSL9yLLd924RgSrqIV1Venh+GXIUjcO3lSerq6I01xU4TNWyjtT5kadBkFnEx3Yu3FPrXp
-	T7nCC7yRPJ43rqQl+Qj7Py+7CAvks79Pzl5MLTeFBQl3uk17g8gzBq4oqYZDZhtpQWkqTF
-	P3BHdPWVLJ7l1obiShL0NrY63XZVfaQyV6EKZHLIpEavXwhQJzUBCZtzMjVyfg==
+	bh=q0ALEqS0/8Af8b8qGfb/mhvY12MduAyn1Em0H/DF/dY=;
+	b=j545JTc6DMQ509ra5sIWEhd3v4/UFn+xPWZpICikIt3HQaQFpCxaCG0SmrNQyVZxvnSudS
+	iAZCW4ux4Pvw3NKBrDh/gekLbW6jrVxWxuRPuYJGxSnE4gpNlnQjtL+EKoRYJSTGSzXr34
+	3JAvs95TeBGmkd4ejPr80YFmADOT/ujWmkiBwq4THYI7We2joj6tdY/6ZqmWqmNyOT6p7R
+	qQNa0u528cJt5Bnaw+q6LBJ6WCeezQXmTH2PWANX5HwObuiWegLF6VzaYf5+Dfli51cD4A
+	WzKW1EYeOIlS9m4bFQB86uTDDA2ZvnrPS0IIOwbNPoO/byI2mgoq2MpwdpgYTg==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v1 36/36] MAINTAINERS: Add QE files related to the Freescale QMC controller
-Date: Mon, 29 Jul 2024 16:21:05 +0200
-Message-ID: <20240729142107.104574-37-herve.codina@bootlin.com>
+Subject: [PATCH v1 27/36] soc: fsl: cpm1: qmc: Introduce qmc_{init,exit}_xcc() and their CPM1 version
+Date: Mon, 29 Jul 2024 16:20:56 +0200
+Message-ID: <20240729142107.104574-28-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240729142107.104574-1-herve.codina@bootlin.com>
 References: <20240729142107.104574-1-herve.codina@bootlin.com>
@@ -69,27 +69,129 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Freescale QMC controller driver supports both QE and CPM1.
+Current code handles the CPM1 version of QMC and initialize the QMC used
+SCC. The QUICC Engine (QE) version uses an UCC (Unified Communication
+Controllers) instead of the SCC (Serial Communication Controllers) used
+in the CPM1 version. These controllers serve the same purpose and are
+used in the same way but their inializations are slightly different.
 
-Add the newly introduced QE files to the existing entry.
+In order to prepare the support for QE version of QMC, introduce
+qmc_init_xcc() to initialize theses controllers (UCC in QE and SCC in
+CPM1) and isolate the CPM1 specific SCC initialization in a specific
+function.
+
+Also introduce qmc_exit_xcc() for consistency to revert operations done
+in qmc_init_xcc().
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/soc/fsl/qe/qmc.c | 66 +++++++++++++++++++++++++++-------------
+ 1 file changed, 45 insertions(+), 21 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 1d32d38f2247..1331bdeb7386 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8996,6 +8996,7 @@ M:	Herve Codina <herve.codina@bootlin.com>
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Maintained
- F:	Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,cpm1-scc-qmc.yaml
-+F:	Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ucc-qmc.yaml
- F:	drivers/soc/fsl/qe/qmc.c
- F:	include/soc/fsl/qe/qmc.h
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index eacc7dd2be53..b95227378f97 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -1621,6 +1621,41 @@ static int qmc_init_resources(struct qmc *qmc, struct platform_device *pdev)
+ 	return qmc_cpm1_init_resources(qmc, pdev);
+ }
  
++static int qmc_cpm1_init_scc(struct qmc *qmc)
++{
++	u32 val;
++	int ret;
++
++	/* Connect the serial (SCC) to TSA */
++	ret = tsa_serial_connect(qmc->tsa_serial);
++	if (ret)
++		return dev_err_probe(qmc->dev, ret, "Failed to connect TSA serial\n");
++
++	/* Init GMSR_H and GMSR_L registers */
++	val = SCC_GSMRH_CDS | SCC_GSMRH_CTSS | SCC_GSMRH_CDP | SCC_GSMRH_CTSP;
++	qmc_write32(qmc->scc_regs + SCC_GSMRH, val);
++
++	/* enable QMC mode */
++	qmc_write32(qmc->scc_regs + SCC_GSMRL, SCC_GSMRL_MODE_QMC);
++
++	/* Disable and clear interrupts */
++	qmc_write16(qmc->scc_regs + SCC_SCCM, 0x0000);
++	qmc_write16(qmc->scc_regs + SCC_SCCE, 0x000F);
++
++	return 0;
++}
++
++static int qmc_init_xcc(struct qmc *qmc)
++{
++	return qmc_cpm1_init_scc(qmc);
++}
++
++static void qmc_exit_xcc(struct qmc *qmc)
++{
++	/* Disconnect the serial from TSA */
++	tsa_serial_disconnect(qmc->tsa_serial);
++}
++
+ static int qmc_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+@@ -1711,29 +1746,18 @@ static int qmc_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	/* Connect the serial (SCC) to TSA */
+-	ret = tsa_serial_connect(qmc->tsa_serial);
+-	if (ret) {
+-		dev_err(qmc->dev, "Failed to connect TSA serial\n");
++	/* Init SCC */
++	ret = qmc_init_xcc(qmc);
++	if (ret)
+ 		return ret;
+-	}
+ 
+-	/* Init GMSR_H and GMSR_L registers */
+-	qmc_write32(qmc->scc_regs + SCC_GSMRH,
+-		    SCC_GSMRH_CDS | SCC_GSMRH_CTSS | SCC_GSMRH_CDP | SCC_GSMRH_CTSP);
+-
+-	/* enable QMC mode */
+-	qmc_write32(qmc->scc_regs + SCC_GSMRL, SCC_GSMRL_MODE_QMC);
+-
+-	/* Disable and clear interrupts,  set the irq handler */
+-	qmc_write16(qmc->scc_regs + SCC_SCCM, 0x0000);
+-	qmc_write16(qmc->scc_regs + SCC_SCCE, 0x000F);
++	/* Set the irq handler */
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0)
+-		goto err_tsa_serial_disconnect;
++		goto err_exit_xcc;
+ 	ret = devm_request_irq(qmc->dev, irq, qmc_irq_handler, 0, "qmc", qmc);
+ 	if (ret < 0)
+-		goto err_tsa_serial_disconnect;
++		goto err_exit_xcc;
+ 
+ 	/* Enable interrupts */
+ 	qmc_write16(qmc->scc_regs + SCC_SCCM,
+@@ -1761,8 +1785,8 @@ static int qmc_probe(struct platform_device *pdev)
+ err_disable_intr:
+ 	qmc_write16(qmc->scc_regs + SCC_SCCM, 0);
+ 
+-err_tsa_serial_disconnect:
+-	tsa_serial_disconnect(qmc->tsa_serial);
++err_exit_xcc:
++	qmc_exit_xcc(qmc);
+ 	return ret;
+ }
+ 
+@@ -1776,8 +1800,8 @@ static void qmc_remove(struct platform_device *pdev)
+ 	/* Disable interrupts */
+ 	qmc_write16(qmc->scc_regs + SCC_SCCM, 0);
+ 
+-	/* Disconnect the serial from TSA */
+-	tsa_serial_disconnect(qmc->tsa_serial);
++	/* Exit SCC */
++	qmc_exit_xcc(qmc);
+ }
+ 
+ static const struct qmc_data qmc_data_cpm1 = {
 -- 
 2.45.0
 
