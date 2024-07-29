@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56BCAC3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:37:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20A5DC3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Jul 2024 14:38:08 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ZBUUtOFQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Am3RTP+E;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgtS0GX9z3cXw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:37:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WXgvL64BTz3cb1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 00:38:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ZBUUtOFQ;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Am3RTP+E;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.193; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [217.70.183.193])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXH0M5kz2yvh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:34 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 0612E240006;
-	Mon, 29 Jul 2024 14:21:31 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WXgXJ59zsz3cZ9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 00:21:36 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 69BFC240011;
+	Mon, 29 Jul 2024 14:21:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1722262892;
+	t=1722262894;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=QMfEiRmSRkX/pBoCz01B9PXrobVJrcp4KetogWxNR/M=;
-	b=ZBUUtOFQ8SFGjFY3X2fnmSHouUeMuj/jwtcKOIHojHN/ttdqMIMat1BGBIKsZW9wkhwU4V
-	pIXJaTatfsWmYpaxjgOTrDdBggksFCafHPOqo2JokVRJEneOYTEmkH0fzYe6iRlgvjgVNB
-	6sjpadb/6YW9p5h9HlkTbTrQSiVv3pZSM6C0z+HwrqctnPADj50QkUmxZY++/QSf68QWRU
-	794DnmUXs0OiVZVnRIpQBFvEwHYL7KFXLHPRaOdf2Snt6AsCRvCpcR+B6N66jw8Hso7Au2
-	wPGMlwT5RtVPZ/9rD8Rz8HQNfTn9b2odwHWfQ7K8PbMc5yU9g2I3jNVc/F+PJw==
+	bh=WRWRYsao//QuuKGXh5Qe/5pgiQSleHHmlQQU/Eyhza0=;
+	b=Am3RTP+E4YbrCY3oEaeF8ad51Rk6rJhX/K0bOFF+TBcf1blrWvfyVZxrbyTnXrO7bj0RtT
+	D36SK0I7KdtNWfJeB++moMP294tqZJXPuExUkfULbK6dFyqN0psggIJPH+Y/X/+zgS1RBC
+	X1pZeuy1rV5KyPlllHqQofMBM137LfFzg66aaedwqKZ+f/IBF0Si0yy81DvnUxK7FEW0ZJ
+	JDZanzz6sdTQfpN8lsWWRTKcl+yzWCpgPgg+UyGLWyCfh6MyNoJBgYdcpFwXTY3B8bA8KT
+	grCRYsMoGAmjc/TUnClnvSkR8eHb+L0H4mjw+iZwmLcIhtMa4neFuLnxgmixFA==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v1 24/36] soc: fsl: cpm1: qmc: Introduce qmc_data structure
-Date: Mon, 29 Jul 2024 16:20:53 +0200
-Message-ID: <20240729142107.104574-25-herve.codina@bootlin.com>
+Subject: [PATCH v1 26/36] soc: fsl: cpm1: qmc: Introduce qmc_init_resource() and its CPM1 version
+Date: Mon, 29 Jul 2024 16:20:55 +0200
+Message-ID: <20240729142107.104574-27-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240729142107.104574-1-herve.codina@bootlin.com>
 References: <20240729142107.104574-1-herve.codina@bootlin.com>
@@ -69,159 +69,90 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Current code handles CPM1 version of QMC. Some hardcoded values are used
-several times to initialize the QMC state machine. In the QUICC Engine
-(QE) version of QMC, these values are different.
+Current code handles the CPM1 version of QMC. Resources initialisations
+(i.e. retrieving base addresses and offsets of different parts) will
+be slightly different in the QUICC Engine (QE) version. Indeed, in QE
+version, some resources need to be allocated and are no more "staticaly"
+defined.
 
-In order to prepare the support for the QE version of QMC and avoid the
-copy of the hardcoded values, introduce the qmc_data structure to define
-these version specific values.
+In order to prepare the support for QE version, introduce
+qmc_init_resource() to initialize those resources and isolate the CPM1
+specific operations in a specific function.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/qmc.c | 69 ++++++++++++++++++++++++++--------------
- 1 file changed, 46 insertions(+), 23 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 47 ++++++++++++++++++++++++++--------------
+ 1 file changed, 31 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 3736a8e4575e..85fc86f91806 100644
+index 8dd0f8fc7b08..eacc7dd2be53 100644
 --- a/drivers/soc/fsl/qe/qmc.c
 +++ b/drivers/soc/fsl/qe/qmc.c
-@@ -215,8 +215,17 @@ struct qmc_chan {
- 	bool	is_rx_stopped;
- };
- 
-+struct qmc_data {
-+	u32 tstate; /* Initial TSTATE value */
-+	u32 rstate; /* Initial RSTATE value */
-+	u32 zistate; /* Initial ZISTATE value */
-+	u32 zdstate_hdlc; /* Initial ZDSTATE value (HDLC mode) */
-+	u32 zdstate_transp; /* Initial ZDSTATE value (Transparent mode) */
-+};
-+
- struct qmc {
- 	struct device *dev;
-+	const struct qmc_data *data;
- 	struct tsa_serial *tsa_serial;
- 	void __iomem *scc_regs;
- 	void __iomem *scc_pram;
-@@ -543,11 +552,11 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
- 	/* Restart receiver if needed */
- 	if (chan->is_rx_halted && !chan->is_rx_stopped) {
- 		/* Restart receiver */
--		if (chan->mode == QMC_TRANSPARENT)
--			qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x18000080);
--		else
--			qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x00000080);
--		qmc_write32(chan->s_param + QMC_SPE_RSTATE, 0x31000000);
-+		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE,
-+			    chan->mode == QMC_TRANSPARENT ?
-+				chan->qmc->data->zdstate_transp :
-+				chan->qmc->data->zdstate_hdlc);
-+		qmc_write32(chan->s_param + QMC_SPE_RSTATE, chan->qmc->data->rstate);
- 		chan->is_rx_halted = false;
- 	}
- 	chan->rx_pending++;
-@@ -971,11 +980,11 @@ static int qmc_chan_start_rx(struct qmc_chan *chan)
- 	}
- 
- 	/* Restart the receiver */
--	if (chan->mode == QMC_TRANSPARENT)
--		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x18000080);
--	else
--		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x00000080);
--	qmc_write32(chan->s_param + QMC_SPE_RSTATE, 0x31000000);
-+	qmc_write32(chan->s_param + QMC_SPE_ZDSTATE,
-+		    chan->mode == QMC_TRANSPARENT ?
-+			chan->qmc->data->zdstate_transp :
-+			chan->qmc->data->zdstate_hdlc);
-+	qmc_write32(chan->s_param + QMC_SPE_RSTATE, chan->qmc->data->rstate);
- 	chan->is_rx_halted = false;
- 
- 	chan->is_rx_stopped = false;
-@@ -1121,8 +1130,8 @@ static void qmc_chan_reset_tx(struct qmc_chan *chan)
- 		    qmc_read16(chan->s_param + QMC_SPE_TBASE));
- 
- 	/* Reset TSTATE and ZISTATE to their initial value */
--	qmc_write32(chan->s_param + QMC_SPE_TSTATE, 0x30000000);
--	qmc_write32(chan->s_param + QMC_SPE_ZISTATE, 0x00000100);
-+	qmc_write32(chan->s_param + QMC_SPE_TSTATE, chan->qmc->data->tstate);
-+	qmc_write32(chan->s_param + QMC_SPE_ZISTATE, chan->qmc->data->zistate);
- 
- 	spin_unlock_irqrestore(&chan->tx_lock, flags);
+@@ -1593,11 +1593,38 @@ static irqreturn_t qmc_irq_handler(int irq, void *priv)
+ 	return IRQ_HANDLED;
  }
-@@ -1393,11 +1402,11 @@ static int qmc_setup_chan(struct qmc *qmc, struct qmc_chan *chan)
- 	val = ((chan->id * (QMC_NB_TXBDS + QMC_NB_RXBDS)) + QMC_NB_TXBDS) * sizeof(cbd_t);
- 	qmc_write16(chan->s_param + QMC_SPE_RBASE, val);
- 	qmc_write16(chan->s_param + QMC_SPE_RBPTR, val);
--	qmc_write32(chan->s_param + QMC_SPE_TSTATE, 0x30000000);
--	qmc_write32(chan->s_param + QMC_SPE_RSTATE, 0x31000000);
--	qmc_write32(chan->s_param + QMC_SPE_ZISTATE, 0x00000100);
-+	qmc_write32(chan->s_param + QMC_SPE_TSTATE, chan->qmc->data->tstate);
-+	qmc_write32(chan->s_param + QMC_SPE_RSTATE, chan->qmc->data->rstate);
-+	qmc_write32(chan->s_param + QMC_SPE_ZISTATE, chan->qmc->data->zistate);
- 	if (chan->mode == QMC_TRANSPARENT) {
--		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x18000080);
-+		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, chan->qmc->data->zdstate_transp);
- 		qmc_write16(chan->s_param + QMC_SPE_TMRBLR, 60);
- 		val = QMC_SPE_CHAMR_MODE_TRANSP;
- 		if (chan->is_reverse_data)
-@@ -1407,7 +1416,7 @@ static int qmc_setup_chan(struct qmc *qmc, struct qmc_chan *chan)
- 		if (ret)
- 			return ret;
- 	} else {
--		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x00000080);
-+		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, chan->qmc->data->zdstate_hdlc);
- 		qmc_write16(chan->s_param + QMC_SPE_MFLR, 60);
- 		qmc_write16(chan->s_param + QMC_SPE_CHAMR,
- 			    QMC_SPE_CHAMR_MODE_HDLC | QMC_SPE_CHAMR_HDLC_IDLM);
-@@ -1535,11 +1544,12 @@ static void qmc_irq_gint(struct qmc *qmc)
- 			/* Restart the receiver if needed */
- 			spin_lock_irqsave(&chan->rx_lock, flags);
- 			if (chan->rx_pending && !chan->is_rx_stopped) {
--				if (chan->mode == QMC_TRANSPARENT)
--					qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x18000080);
--				else
--					qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x00000080);
--				qmc_write32(chan->s_param + QMC_SPE_RSTATE, 0x31000000);
-+				qmc_write32(chan->s_param + QMC_SPE_ZDSTATE,
-+					    chan->mode == QMC_TRANSPARENT ?
-+						chan->qmc->data->zdstate_transp :
-+						chan->qmc->data->zdstate_hdlc);
-+				qmc_write32(chan->s_param + QMC_SPE_RSTATE,
-+					    chan->qmc->data->rstate);
- 				chan->is_rx_halted = false;
- 			} else {
- 				chan->is_rx_halted = true;
-@@ -1597,6 +1607,11 @@ static int qmc_probe(struct platform_device *pdev)
- 		return -ENOMEM;
  
- 	qmc->dev = &pdev->dev;
-+	qmc->data = of_device_get_match_data(&pdev->dev);
-+	if (!qmc->data) {
-+		dev_err(qmc->dev, "Missing match data\n");
++static int qmc_cpm1_init_resources(struct qmc *qmc, struct platform_device *pdev)
++{
++	struct resource *res;
++
++	qmc->scc_regs = devm_platform_ioremap_resource_byname(pdev, "scc_regs");
++	if (IS_ERR(qmc->scc_regs))
++		return PTR_ERR(qmc->scc_regs);
++
++	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "scc_pram");
++	if (!res)
 +		return -EINVAL;
-+	}
- 	INIT_LIST_HEAD(&qmc->chan_head);
- 
- 	qmc->scc_regs = devm_platform_ioremap_resource_byname(pdev, "scc_regs");
-@@ -1752,8 +1767,16 @@ static void qmc_remove(struct platform_device *pdev)
- 	tsa_serial_disconnect(qmc->tsa_serial);
- }
- 
-+static const struct qmc_data qmc_data_cpm1 = {
-+	.tstate = 0x30000000,
-+	.rstate = 0x31000000,
-+	.zistate = 0x00000100,
-+	.zdstate_hdlc = 0x00000080,
-+	.zdstate_transp = 0x18000080,
-+};
++	qmc->scc_pram_offset = res->start - get_immrbase();
++	qmc->scc_pram = devm_ioremap_resource(qmc->dev, res);
++	if (IS_ERR(qmc->scc_pram))
++		return PTR_ERR(qmc->scc_pram);
 +
- static const struct of_device_id qmc_id_table[] = {
--	{ .compatible = "fsl,cpm1-scc-qmc" },
-+	{ .compatible = "fsl,cpm1-scc-qmc", .data = &qmc_data_cpm1 },
- 	{} /* sentinel */
- };
- MODULE_DEVICE_TABLE(of, qmc_id_table);
++	qmc->dpram  = devm_platform_ioremap_resource_byname(pdev, "dpram");
++	if (IS_ERR(qmc->dpram))
++		return PTR_ERR(qmc->dpram);
++
++	return 0;
++}
++
++static int qmc_init_resources(struct qmc *qmc, struct platform_device *pdev)
++{
++	return qmc_cpm1_init_resources(qmc, pdev);
++}
++
+ static int qmc_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+ 	unsigned int nb_chans;
+-	struct resource *res;
+ 	struct qmc *qmc;
+ 	int irq;
+ 	int ret;
+@@ -1620,21 +1647,9 @@ static int qmc_probe(struct platform_device *pdev)
+ 				     "Failed to get TSA serial\n");
+ 	}
+ 
+-	qmc->scc_regs = devm_platform_ioremap_resource_byname(pdev, "scc_regs");
+-	if (IS_ERR(qmc->scc_regs))
+-		return PTR_ERR(qmc->scc_regs);
+-
+-	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "scc_pram");
+-	if (!res)
+-		return -EINVAL;
+-	qmc->scc_pram_offset = res->start - get_immrbase();
+-	qmc->scc_pram = devm_ioremap_resource(qmc->dev, res);
+-	if (IS_ERR(qmc->scc_pram))
+-		return PTR_ERR(qmc->scc_pram);
+-
+-	qmc->dpram  = devm_platform_ioremap_resource_byname(pdev, "dpram");
+-	if (IS_ERR(qmc->dpram))
+-		return PTR_ERR(qmc->dpram);
++	ret = qmc_init_resources(qmc, pdev);
++	if (ret)
++		return ret;
+ 
+ 	/* Parse channels informationss */
+ 	ret = qmc_of_parse_chans(qmc, np);
 -- 
 2.45.0
 
