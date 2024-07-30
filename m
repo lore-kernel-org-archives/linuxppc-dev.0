@@ -4,48 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8ED1FC3DA49
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 16:52:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A8ADC3DA49
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 18:35:30 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=V6IjUfZl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KtQLx3vt;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WYLr76Q8Vz3d97
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 02:52:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WYP6m3ktsz3dBZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 04:35:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=V6IjUfZl;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KtQLx3vt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WYLqM2kzlz3cdy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2024 02:51:58 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id EF3AF61FF5;
-	Tue, 30 Jul 2024 16:51:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37EA4C32782;
-	Tue, 30 Jul 2024 16:51:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1722358315;
-	bh=BJV3QLEA/AdECFmss7esuyk98F2mBcMG847FAFHZzfc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=V6IjUfZlDopGwDRq8i/VaAzop/fQ0EwJatFPVGvMXc6U0/BHHN6tE6TYSWN/hZRg5
-	 kV2j+sxcUF8uH8DfYx+WyF2aiyDEYhrhubojWyp1MUh+SVVC+E5EFg8hosxT7Lb6Wt
-	 +vs2NOAVXWg8Y6oct6WA+n5bpmY8ZiLdthfvanV0=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Subject: [PATCH 6.10 345/809] tools/perf: Fix the string match for "/tmp/perf-$PID.map" files in dso__load
-Date: Tue, 30 Jul 2024 17:43:41 +0200
-Message-ID: <20240730151738.260500822@linuxfoundation.org>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20240730151724.637682316@linuxfoundation.org>
-References: <20240730151724.637682316@linuxfoundation.org>
-User-Agent: quilt/0.67
-X-stable: review
-X-Patchwork-Hint: ignore
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WYP5x6FlSz3cH2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2024 04:34:44 +1000 (AEST)
+Received: by mail-pg1-x52a.google.com with SMTP id 41be03b00d2f7-7a1843b4cdbso2827076a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 11:34:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1722364481; x=1722969281; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XJF28MhC2MiqvCUOHdECUHJyNP06dmnDOSRczPxFDXg=;
+        b=KtQLx3vtZZrbVG3GZdTa6VWY4spqrviiSe9wBhJ5MGWKoccoV8+1Hl2C5jSLO3gFBS
+         JNU0BK5bbdUd+4dUecAVhwdAqdK3PMQRpstiGCWA5/RXlRyk+E0vPb3i7wLALbAwAzHf
+         Yn360n2lsdBgl5Dc7IYWRAJviRFyB7oFfy1gKhDgM/J1P2NiSt42mvqjVWgWXLQq4o1Y
+         tOKAUCp0ZI4kqdWYM7jjLKPEfOEz342U1Wj1Fgmf97/owaA2jK2OjqtbkTyJ7s8TN/On
+         YCejHGxfTYBqis9LviyeqenvJDlrMZQKb4n7SwKUP7fUWPmaFLV3kKC7uS0CpS945EYL
+         pi8Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1722364481; x=1722969281;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XJF28MhC2MiqvCUOHdECUHJyNP06dmnDOSRczPxFDXg=;
+        b=dOL8uPAlg73WjH5nhRr9Ebs5Dy8zdFcUCIjImL8sF7ikqezDF0xCSUyadHNpqvZMJl
+         65MS/DC7MT6Q6FqzFXslYZzPktCUhtW0DPL/oPMr7fHAUCPK+yUS+0+k0OOALCKWhzF9
+         p/yZCPqTQ9dfiAEVcK78/0FFcktVmUqDjs8MVKTDHAcNf0LCQGrSZ7CZczmnVzyGwjXA
+         UtAftN5iwFsjuPTiNSGfRo2s4XQIerl5q8foi1RWrdLpKKnq+b3xPMRFqsEvw84r+2+U
+         saD6kFlZinj83oktfDvjw4uVNGmUKuP1IvizbOg00UdzEkUnStq+4RwQPjUEIcUevsL1
+         LyIQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVs0jq2PMpGBBfD6lzWu8Tvxos8L6C1IMRuT/UwiCGwaE5hH0igsht9l95g92cYaB8RA/Qk1Rr9fsh/EvliQObidnA7LkxgqmM77vZXwA==
+X-Gm-Message-State: AOJu0Yxx7cAcdXD3XKkWwVKA4taPqvuUMUYBT1ZBYEG720sWwe8z9eKs
+	LeLiuggvZDnuzwNgARhxBKtg6DwMh6H+o6QFpiKdPU9J27AEbYfQ
+X-Google-Smtp-Source: AGHT+IGo7lrGjbCeYJR8CgOHZdoGXq6ysooeIc5UeAEWFCJBQ9LFDG+NCFqdDOvXEN4PPr122ZUWMw==
+X-Received: by 2002:a05:6a20:7347:b0:1c2:97cd:94d8 with SMTP id adf61e73a8af0-1c4a12cbcccmr11576550637.20.1722364481320;
+        Tue, 30 Jul 2024 11:34:41 -0700 (PDT)
+Received: from apais-devbox.. ([2001:569:766d:6500:f2df:af9:e1f6:390e])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7a9f817f5a2sm7837763a12.24.2024.07.30.11.34.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 30 Jul 2024 11:34:40 -0700 (PDT)
+From: Allen Pais <allen.lkml@gmail.com>
+To: kuba@kernel.org,
+	Haren Myneni <haren@linux.ibm.com>,
+	Rick Lindsley <ricklind@linux.ibm.com>,
+	Nick Child <nnac123@linux.ibm.com>,
+	Thomas Falcon <tlfalcon@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Paolo Abeni <pabeni@redhat.com>
+Subject: [net-next v3 12/15] net: ibmvnic: Convert tasklet API to new bottom half workqueue mechanism
+Date: Tue, 30 Jul 2024 11:34:00 -0700
+Message-Id: <20240730183403.4176544-13-allen.lkml@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20240730183403.4176544-1-allen.lkml@gmail.com>
+References: <20240730183403.4176544-1-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -59,153 +91,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Athira Rajeev <atrajeev@linux.vnet.ibm.com>, Chaitanya S Prakash <chaitanyas.prakash@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, patches@lists.linux.dev, disgoel@linux.vnet.ibm.com, akanksha@linux.ibm.com, maddy@linux.ibm.com, kjain@linux.ibm.com, Namhyung Kim <namhyung@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>, linuxppc-dev@lists.ozlabs.org
+Cc: marcin.s.wojtas@gmail.com, kda@linux-powerpc.org, Allen Pais <allen.lkml@gmail.com>, linux-acenic@sunsite.dk, louis.peens@corigine.com, linux-rdma@vger.kernel.org, cooldavid@cooldavid.org, aneesh.kumar@kernel.org, naveen.n.rao@linux.ibm.com, mlindner@marvell.com, lorenzo@kernel.org, Mark-MC.Lee@mediatek.com, jes@trained-monkey.org, richardcochran@gmail.com, sean.wang@mediatek.com, linux-net-drivers@amd.com, cai.huoqing@linux.dev, matthias.bgg@gmail.com, angelogioacchino.delregno@collabora.com, bryan.whitehead@microchip.com, dougmill@linux.ibm.com, linux-kernel@vger.kernel.org, UNGLinuxDriver@microchip.com, stephen@networkplumber.org, borisp@nvidia.com, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, nbd@nbd.name
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-6.10-stable review patch.  If anyone has any objections, please let me know.
+Migrate tasklet APIs to the new bottom half workqueue mechanism. It
+replaces all occurrences of tasklet usage with the appropriate workqueue
+APIs throughout the ibmvnic driver. This transition ensures compatibility
+with the latest design and enhances performance.
 
-------------------
-
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-
-[ Upstream commit b0979f008f1352a44cd3c8877e3eb8a1e3e1c6f3 ]
-
-Perf test for perf probe of function from different CU fails
-as below:
-
-	./perf test -vv "test perf probe of function from different CU"
-	116: test perf probe of function from different CU:
-	--- start ---
-	test child forked, pid 2679
-	Failed to find symbol foo in /tmp/perf-uprobe-different-cu-sh.Msa7iy89bx/testfile
-	  Error: Failed to add events.
-	--- Cleaning up ---
-	"foo" does not hit any event.
-	  Error: Failed to delete events.
-	---- end(-1) ----
-	116: test perf probe of function from different CU                   : FAILED!
-
-The test does below to probe function "foo" :
-
-	# gcc -g -Og -flto -c /tmp/perf-uprobe-different-cu-sh.XniNxNEVT7/testfile-foo.c
-	-o /tmp/perf-uprobe-different-cu-sh.XniNxNEVT7/testfile-foo.o
-	# gcc -g -Og -c /tmp/perf-uprobe-different-cu-sh.XniNxNEVT7/testfile-main.c
-	-o /tmp/perf-uprobe-different-cu-sh.XniNxNEVT7/testfile-main.o
-	# gcc -g -Og -o /tmp/perf-uprobe-different-cu-sh.XniNxNEVT7/testfile
-	/tmp/perf-uprobe-different-cu-sh.XniNxNEVT7/testfile-foo.o
-	/tmp/perf-uprobe-different-cu-sh.XniNxNEVT7/testfile-main.o
-
-	# ./perf probe -x /tmp/perf-uprobe-different-cu-sh.XniNxNEVT7/testfile foo
-	Failed to find symbol foo in /tmp/perf-uprobe-different-cu-sh.XniNxNEVT7/testfile
-	   Error: Failed to add events.
-
-Perf probe fails to find symbol foo in the executable placed in
-/tmp/perf-uprobe-different-cu-sh.XniNxNEVT7
-
-Simple reproduce:
-
- # mktemp -d /tmp/perf-checkXXXXXXXXXX
-   /tmp/perf-checkcWpuLRQI8j
-
- # gcc -g -o test test.c
- # cp test /tmp/perf-checkcWpuLRQI8j/
- # nm /tmp/perf-checkcWpuLRQI8j/test | grep foo
-   00000000100006bc T foo
-
- # ./perf probe -x /tmp/perf-checkcWpuLRQI8j/test foo
-   Failed to find symbol foo in /tmp/perf-checkcWpuLRQI8j/test
-      Error: Failed to add events.
-
-But it works with any files like /tmp/perf/test. Only for
-patterns with "/tmp/perf-", this fails.
-
-Further debugging, commit 80d496be89ed ("perf report: Add support
-for profiling JIT generated code") added support for profiling JIT
-generated code. This patch handles dso's of form
-"/tmp/perf-$PID.map" .
-
-The check used "if (strncmp(self->name, "/tmp/perf-", 10) == 0)"
-to match "/tmp/perf-$PID.map". With this commit, any dso in
-/tmp/perf- folder will be considered separately for processing
-(not only JIT created map files ). Fix this by changing the
-string pattern to check for "/tmp/perf-%d.map". Add a helper
-function is_perf_pid_map_name to do this check. In "struct dso",
-dso->long_name holds the long name of the dso file. Since the
-/tmp/perf-$PID.map check uses the complete name, use dso___long_name for
-the string name.
-
-With the fix,
-	# ./perf test "test perf probe of function from different CU"
-	117: test perf probe of function from different CU                   : Ok
-
-Fixes: 56cbeacf1435 ("perf probe: Add test for regression introduced by switch to die_get_decl_file()")
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Reviewed-by: Chaitanya S Prakash <chaitanyas.prakash@arm.com>
-Reviewed-by: Adrian Hunter <adrian.hunter@intel.com>
-Cc: akanksha@linux.ibm.com
-Cc: kjain@linux.ibm.com
-Cc: maddy@linux.ibm.com
-Cc: disgoel@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Namhyung Kim <namhyung@kernel.org>
-Link: https://lore.kernel.org/r/20240623064850.83720-1-atrajeev@linux.vnet.ibm.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
- tools/perf/util/dso.c    | 12 ++++++++++++
- tools/perf/util/dso.h    |  4 ++++
- tools/perf/util/symbol.c |  3 ++-
- 3 files changed, 18 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/ibm/ibmvnic.c | 24 ++++++++++++------------
+ drivers/net/ethernet/ibm/ibmvnic.h |  2 +-
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/tools/perf/util/dso.c b/tools/perf/util/dso.c
-index dde706b71da7b..2340c4f6d0c24 100644
---- a/tools/perf/util/dso.c
-+++ b/tools/perf/util/dso.c
-@@ -1652,3 +1652,15 @@ int dso__strerror_load(struct dso *dso, char *buf, size_t buflen)
- 	scnprintf(buf, buflen, "%s", dso_load__error_str[idx]);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 23ebeb143987..0156efeff96a 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -2737,7 +2737,7 @@ static const char *reset_reason_to_string(enum ibmvnic_reset_reason reason)
+ /*
+  * Initialize the init_done completion and return code values. We
+  * can get a transport event just after registering the CRQ and the
+- * tasklet will use this to communicate the transport event. To ensure
++ * bh work will use this to communicate the transport event. To ensure
+  * we don't miss the notification/error, initialize these _before_
+  * regisering the CRQ.
+  */
+@@ -4447,7 +4447,7 @@ static void send_request_cap(struct ibmvnic_adapter *adapter, int retry)
+ 	int cap_reqs;
+ 
+ 	/* We send out 6 or 7 REQUEST_CAPABILITY CRQs below (depending on
+-	 * the PROMISC flag). Initialize this count upfront. When the tasklet
++	 * the PROMISC flag). Initialize this count upfront. When the bh work
+ 	 * receives a response to all of these, it will send the next protocol
+ 	 * message (QUERY_IP_OFFLOAD).
+ 	 */
+@@ -4983,7 +4983,7 @@ static void send_query_cap(struct ibmvnic_adapter *adapter)
+ 	int cap_reqs;
+ 
+ 	/* We send out 25 QUERY_CAPABILITY CRQs below.  Initialize this count
+-	 * upfront. When the tasklet receives a response to all of these, it
++	 * upfront. When the bh work receives a response to all of these, it
+ 	 * can send out the next protocol messaage (REQUEST_CAPABILITY).
+ 	 */
+ 	cap_reqs = 25;
+@@ -5495,7 +5495,7 @@ static int handle_login_rsp(union ibmvnic_crq *login_rsp_crq,
+ 	int i;
+ 
+ 	/* CHECK: Test/set of login_pending does not need to be atomic
+-	 * because only ibmvnic_tasklet tests/clears this.
++	 * because only ibmvnic_bh_work tests/clears this.
+ 	 */
+ 	if (!adapter->login_pending) {
+ 		netdev_warn(netdev, "Ignoring unexpected login response\n");
+@@ -6081,13 +6081,13 @@ static irqreturn_t ibmvnic_interrupt(int irq, void *instance)
+ {
+ 	struct ibmvnic_adapter *adapter = instance;
+ 
+-	tasklet_schedule(&adapter->tasklet);
++	queue_work(system_bh_wq, &adapter->bh_work);
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void ibmvnic_tasklet(struct tasklet_struct *t)
++static void ibmvnic_bh_work(struct work_struct *work)
+ {
+-	struct ibmvnic_adapter *adapter = from_tasklet(adapter, t, tasklet);
++	struct ibmvnic_adapter *adapter = from_work(adapter, work, bh_work);
+ 	struct ibmvnic_crq_queue *queue = &adapter->crq;
+ 	union ibmvnic_crq *crq;
+ 	unsigned long flags;
+@@ -6168,7 +6168,7 @@ static void release_crq_queue(struct ibmvnic_adapter *adapter)
+ 
+ 	netdev_dbg(adapter->netdev, "Releasing CRQ\n");
+ 	free_irq(vdev->irq, adapter);
+-	tasklet_kill(&adapter->tasklet);
++	cancel_work_sync(&adapter->bh_work);
+ 	do {
+ 		rc = plpar_hcall_norets(H_FREE_CRQ, vdev->unit_address);
+ 	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
+@@ -6219,7 +6219,7 @@ static int init_crq_queue(struct ibmvnic_adapter *adapter)
+ 
+ 	retrc = 0;
+ 
+-	tasklet_setup(&adapter->tasklet, (void *)ibmvnic_tasklet);
++	INIT_WORK(&adapter->bh_work, (void *)ibmvnic_bh_work);
+ 
+ 	netdev_dbg(adapter->netdev, "registering irq 0x%x\n", vdev->irq);
+ 	snprintf(crq->name, sizeof(crq->name), "ibmvnic-%x",
+@@ -6241,12 +6241,12 @@ static int init_crq_queue(struct ibmvnic_adapter *adapter)
+ 	spin_lock_init(&crq->lock);
+ 
+ 	/* process any CRQs that were queued before we enabled interrupts */
+-	tasklet_schedule(&adapter->tasklet);
++	queue_work(system_bh_wq, &adapter->bh_work);
+ 
+ 	return retrc;
+ 
+ req_irq_failed:
+-	tasklet_kill(&adapter->tasklet);
++	cancel_work_sync(&adapter->bh_work);
+ 	do {
+ 		rc = plpar_hcall_norets(H_FREE_CRQ, vdev->unit_address);
+ 	} while (rc == H_BUSY || H_IS_LONG_BUSY(rc));
+@@ -6639,7 +6639,7 @@ static int ibmvnic_resume(struct device *dev)
+ 	if (adapter->state != VNIC_OPEN)
+ 		return 0;
+ 
+-	tasklet_schedule(&adapter->tasklet);
++	queue_work(system_bh_wq, &adapter->bh_work);
+ 
  	return 0;
  }
-+
-+bool perf_pid_map_tid(const char *dso_name, int *tid)
-+{
-+	return sscanf(dso_name, "/tmp/perf-%d.map", tid) == 1;
-+}
-+
-+bool is_perf_pid_map_name(const char *dso_name)
-+{
-+	int tid;
-+
-+	return perf_pid_map_tid(dso_name, &tid);
-+}
-diff --git a/tools/perf/util/dso.h b/tools/perf/util/dso.h
-index df2c98402af3e..d72f3b8c37f6a 100644
---- a/tools/perf/util/dso.h
-+++ b/tools/perf/util/dso.h
-@@ -809,4 +809,8 @@ void reset_fd_limit(void);
- u64 dso__find_global_type(struct dso *dso, u64 addr);
- u64 dso__findnew_global_type(struct dso *dso, u64 addr, u64 offset);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+index 94ac36b1408b..b65b210a8059 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.h
++++ b/drivers/net/ethernet/ibm/ibmvnic.h
+@@ -1036,7 +1036,7 @@ struct ibmvnic_adapter {
+ 	u32 cur_rx_buf_sz;
+ 	u32 prev_rx_buf_sz;
  
-+/* Check if dso name is of format "/tmp/perf-%d.map" */
-+bool perf_pid_map_tid(const char *dso_name, int *tid);
-+bool is_perf_pid_map_name(const char *dso_name);
-+
- #endif /* __PERF_DSO */
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 9e5940b5bc591..aee0a4cfb3836 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -1799,7 +1799,8 @@ int dso__load(struct dso *dso, struct map *map)
- 	const char *map_path = dso__long_name(dso);
- 
- 	mutex_lock(dso__lock(dso));
--	perfmap = strncmp(dso__name(dso), "/tmp/perf-", 10) == 0;
-+	perfmap = is_perf_pid_map_name(map_path);
-+
- 	if (perfmap) {
- 		if (dso__nsinfo(dso) &&
- 		    (dso__find_perf_map(newmapname, sizeof(newmapname),
+-	struct tasklet_struct tasklet;
++	struct work_struct bh_work;
+ 	enum vnic_state state;
+ 	/* Used for serialization of state field. When taking both state
+ 	 * and rwi locks, take state lock first.
 -- 
-2.43.0
-
-
+2.34.1
 
