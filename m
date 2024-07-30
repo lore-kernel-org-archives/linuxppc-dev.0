@@ -4,137 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C021AC3DA7E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 11:53:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A5CDC3DA49
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 13:54:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hf5X5npP;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hf5X5npP;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ctPJ8ghQ;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WYDBT2tb1z3cnt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 21:53:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WYGv24x2wz3cmp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Jul 2024 23:54:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hf5X5npP;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hf5X5npP;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ctPJ8ghQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WYD9j4gnRz3cgl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 21:52:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1722340341;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=kBFBIKd1rJgOI9YcivSLfU1/eAHX+x0Dw4M+NCBYe5U=;
-	b=Hf5X5npPCSB3TJunaCO7/yEglHaWSbpLOg7or/hkRqXSVOyYZtkyK6hgC1QIR1Kbxl8Vqh
-	TAmCGanWbuTWf/HB4k3YG4ySXy0RM62Cu7nTnqsSuEzg/YyaEz/ndYnKnuOsKhnvfwY/CH
-	HR23bPkVSPAn+IKNNdhRtEu0J5XT5X0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1722340341;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=kBFBIKd1rJgOI9YcivSLfU1/eAHX+x0Dw4M+NCBYe5U=;
-	b=Hf5X5npPCSB3TJunaCO7/yEglHaWSbpLOg7or/hkRqXSVOyYZtkyK6hgC1QIR1Kbxl8Vqh
-	TAmCGanWbuTWf/HB4k3YG4ySXy0RM62Cu7nTnqsSuEzg/YyaEz/ndYnKnuOsKhnvfwY/CH
-	HR23bPkVSPAn+IKNNdhRtEu0J5XT5X0=
-Received: from mail-ed1-f69.google.com (mail-ed1-f69.google.com
- [209.85.208.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-584-WlJ4FkvlOK-nZfkW9lSQCQ-1; Tue, 30 Jul 2024 07:52:19 -0400
-X-MC-Unique: WlJ4FkvlOK-nZfkW9lSQCQ-1
-Received: by mail-ed1-f69.google.com with SMTP id 4fb4d7f45d1cf-5a7661b251aso4674166a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 04:52:19 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1722340338; x=1722945138;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=kBFBIKd1rJgOI9YcivSLfU1/eAHX+x0Dw4M+NCBYe5U=;
-        b=TbsvJ/Pr+qUX3aYtnwNJaBYjDOI9SpJpZcNKwolMKaPKuJTHcp839326LS7qvvLWvT
-         14EPOiGpFvpW/YR4wLMqIYwTYNyU5cozCJ+LSxFB7j9eJ9T+cBt8BM+XgT530BC7tScp
-         v3F5HfrL7JEZkzpQJUG4jmDt1NwZ4pIK94RohHegYaFoQ3KTt2ew/slVoMiqYs8AdD6D
-         mNXGY4x/nFE4P94ED529tb3AHkL9WAxICR8VOa1xKHstY6jkSpMWZDGzfz8uo3ep5eQQ
-         yIHj0ArolnOBpmp7FrBGbPOrvYTUv9cz6GXfdEULEXsajh04OM8DQFAd7SH1WQeOA2sE
-         nGIQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUYkEbJtVBWt/C6AcRWA3W2b7JOQM33FV1LtFeInx6qqyGaftOrZI2PiZsGGCgOLWvNrsxzyOAOuppxgUKaqWHHXoAg3DkGzSSFCLITJQ==
-X-Gm-Message-State: AOJu0YwXw2T+4SwytHX20tQE30eKXi/FFtAdOiq+2Ubdrd3IV99CJtlw
-	7G0/6DuHImCrPQTyWrcCKGaTPJrYNOv0pAZU/C9GwZ6DgiBAjTC2EnP/4ezSd8vMVJMbHfuWiLO
-	dB+rNq7M9ePbXaDLDxjEWd3NJ8RWWmOcDsfxO/xZC/lMUcUnJfyGzuvb8zrZGrJ4=
-X-Received: by 2002:a50:d742:0:b0:5a1:6c50:a35 with SMTP id 4fb4d7f45d1cf-5b022b8cd30mr5926679a12.37.1722340338219;
-        Tue, 30 Jul 2024 04:52:18 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGBJKwuTl3GcCc5YuDbeqMD1zDkMcs4VmkJUQMAj6w6PoPQ2QTlBUJ4IvJ66qrB4FTpUDSGzA==
-X-Received: by 2002:a50:d742:0:b0:5a1:6c50:a35 with SMTP id 4fb4d7f45d1cf-5b022b8cd30mr5926669a12.37.1722340337692;
-        Tue, 30 Jul 2024 04:52:17 -0700 (PDT)
-Received: from [192.168.10.47] ([151.95.101.29])
-        by smtp.googlemail.com with ESMTPSA id 4fb4d7f45d1cf-5b0044c72d4sm5211327a12.70.2024.07.30.04.52.16
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 30 Jul 2024 04:52:17 -0700 (PDT)
-Message-ID: <419ea6ce-83ca-413e-936c-1935e2c51497@redhat.com>
-Date: Tue, 30 Jul 2024 13:52:15 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WYGtC5dJ6z3cgd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jul 2024 23:54:10 +1000 (AEST)
+Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 46UDSraG026065;
+	Tue, 30 Jul 2024 13:54:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	message-id:date:mime-version:subject:to:cc:references:from
+	:in-reply-to:content-type:content-transfer-encoding; s=pp1; bh=g
+	ZHSpDNLW7/ic3xX2uCFv3XHxzx42EWTKrK3ivaCBuE=; b=ctPJ8ghQS5lD8fJx2
+	WMHJktvyFz0pl/PEdNpWFqqIDcRvPIeLunmFGIstZC9kVm8/TnmDX/q5fON/vF3s
+	Ca2k8du/89mK1WUt8AdVOZ3dyddU5x0sVKA2XSp1T6Tupv7FsutMzsOgKn1AU0Kj
+	Nj0GXSRHbWAjQL3VP9aoS35+zCgg7PzFGR4Og5RyApExpBMT/PyOlNnT8RCWTE1J
+	weWJxPNS+MNZnJcU2K7hsTRtRudSnJtEOt//Sub5Pwb2eFJ06WlKMaBlyaiSM2f/
+	qNgXv433VCCb9c8kMSNaRLk/BprhKBjvIpY7WFkXqnDkn19BUn63YjPyrzgzTWnm
+	yrrUw==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 40q13a81s3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 30 Jul 2024 13:54:04 +0000 (GMT)
+Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 46UDs3HF004250;
+	Tue, 30 Jul 2024 13:54:03 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 40q13a81s2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 30 Jul 2024 13:54:03 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 46UAmJQV018928;
+	Tue, 30 Jul 2024 13:54:02 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 40nc7pmxtv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 30 Jul 2024 13:54:02 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 46UDrvuj54919622
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 30 Jul 2024 13:53:59 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EA8B520043;
+	Tue, 30 Jul 2024 13:53:56 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 083FD20040;
+	Tue, 30 Jul 2024 13:53:54 +0000 (GMT)
+Received: from [9.179.1.74] (unknown [9.179.1.74])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 30 Jul 2024 13:53:53 +0000 (GMT)
+Message-ID: <6a737273-3ab5-44eb-8aea-55cd66ea33b4@linux.ibm.com>
+Date: Tue, 30 Jul 2024 19:23:53 +0530
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v12 00/84] KVM: Stop grabbing references to PFNMAP'd pages
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
- Oliver Upton <oliver.upton@linux.dev>, Tianrui Zhao
- <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
- Huacai Chen <chenhuacai@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anup Patel <anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Janosch Frank <frankja@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>
-References: <20240726235234.228822-1-seanjc@google.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Autocrypt: addr=pbonzini@redhat.com; keydata=
- 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
-In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
+Subject: Re: [PATCH] perf vendor events power10: Update JSON/events
+To: Disha Goel <disgoel@linux.ibm.com>, acme@kernel.org, irogers@google.com,
+        namhyung@kernel.org
+References: <20240723052154.96202-1-kjain@linux.ibm.com>
+ <7ccf31b5-7eaf-4b42-bf9c-b48d1fa5c2cf@linux.ibm.com>
 Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: kajoljain <kjain@linux.ibm.com>
+In-Reply-To: <7ccf31b5-7eaf-4b42-bf9c-b48d1fa5c2cf@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 1kJSINnPJJRAZRR0tBEsGNIe3nHlVOPv
+X-Proofpoint-GUID: pMJ6nwo3dMBm0N3x2aaS2CW7aYkDA1zQ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-07-30_11,2024-07-30_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 impostorscore=0
+ adultscore=0 mlxlogscore=999 priorityscore=1501 phishscore=0
+ lowpriorityscore=0 bulkscore=0 spamscore=0 mlxscore=0 suspectscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2407110000 definitions=main-2407300095
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -146,43 +102,228 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, David Matlack <dmatlack@google.com>, David Stevens <stevensd@chromium.org>, loongarch@lists.linux.dev, kvmarm@lists.linux.dev, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: atrajeev@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, akanksha@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/27/24 01:51, Sean Christopherson wrote:
-> arm64 folks, the first two patches are bug fixes, but I have very low
-> confidence that they are correct and/or desirable.  If they are more or
-> less correct, I can post them separately if that'd make life easier.  I
-> included them here to avoid conflicts, and because I'm pretty sure how
-> KVM deals with MTE tags vs. dirty logging will impact what APIs KVM needs
-> to provide to arch code.
+
+
+On 7/23/24 12:35, Disha Goel wrote:
+> On 23/07/24 10:51 am, Kajol Jain wrote:
 > 
-> On to the series...  The TL;DR is that I would like to get input on two
-> things:
+>> Update JSON/events for power10 platform with additional events.
+>> Also move PM_VECTOR_LD_CMPL event from others.json to
+>> frontend.json file.
+>>
+>> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
 > 
->   1. Marking folios dirty/accessed only on the intial stage-2 page fault
->   2. The new APIs for faulting, prefetching, and doing "lookups" on pfns
+> I have tested the patch on power10 machine. Looks good to me.
+> 
 
-Wow!
+Hi Disha,
+   Thanks for testing this patch.
 
-Splitting out prefetching makes a lot of sense, as it's the only one 
-with npages > 1 and it doesn't need all the complexity of hva_to_pfn().
+Thanks,
+Kajol Jain
 
-I've left a comment on the lookup API, which is probably the only one 
-that can be simplified further.
-
-The faulting API looks good as a first iteration.  Code-wise, 
-kvm_resolve_pfn() is probably unnecessary at the end of the series but I 
-can see why you had to restrain yourself and declare it done. :)
-
-An interesting evolution of the API could be to pass a struct 
-kvm_follow_pfn pointer to {,__}kvm_faultin_pfn() and __gfn_to_page() 
-(the "constructors"); and on the other side to 
-kvm_release_faultin_page() and kvm_release_page_*().  The struct 
-kvm_follow_pfn could be embedded in the (x86) kvm_page_fault and 
-(generic) kvm_host_map structs.  But certainly not as part of this 
-already huge work.
-
-Paolo
-
+> Tested-by: Disha Goel <disgoel@linux.ibm.com>
+> 
+>> ---
+>>   .../arch/powerpc/power10/frontend.json        |   5 +
+>>   .../arch/powerpc/power10/others.json          | 100 +++++++++++++++++-
+>>   2 files changed, 100 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
+>> b/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
+>> index 5977f5e64212..53660c279286 100644
+>> --- a/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
+>> +++ b/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
+>> @@ -74,6 +74,11 @@
+>>       "EventName": "PM_ISSUE_KILL",
+>>       "BriefDescription": "Cycles in which an instruction or group of
+>> instructions were cancelled after being issued. This event increments
+>> once per occurrence, regardless of how many instructions are included
+>> in the issue group."
+>>     },
+>> +  {
+>> +    "EventCode": "0x44054",
+>> +    "EventName": "PM_VECTOR_LD_CMPL",
+>> +    "BriefDescription": "Vector load instruction completed."
+>> +  },
+>>     {
+>>       "EventCode": "0x44056",
+>>       "EventName": "PM_VECTOR_ST_CMPL",
+>> diff --git a/tools/perf/pmu-events/arch/powerpc/power10/others.json
+>> b/tools/perf/pmu-events/arch/powerpc/power10/others.json
+>> index fcf8a8ebe7bd..53ca610152fa 100644
+>> --- a/tools/perf/pmu-events/arch/powerpc/power10/others.json
+>> +++ b/tools/perf/pmu-events/arch/powerpc/power10/others.json
+>> @@ -94,11 +94,6 @@
+>>       "EventName": "PM_L1_ICACHE_RELOADED_ALL",
+>>       "BriefDescription": "Counts all instruction cache reloads
+>> includes demand, prefetch, prefetch turned into demand and demand
+>> turned into prefetch."
+>>     },
+>> -  {
+>> -    "EventCode": "0x44054",
+>> -    "EventName": "PM_VECTOR_LD_CMPL",
+>> -    "BriefDescription": "Vector load instruction completed."
+>> -  },
+>>     {
+>>       "EventCode": "0x4D05E",
+>>       "EventName": "PM_BR_CMPL",
+>> @@ -108,5 +103,100 @@
+>>       "EventCode": "0x400F0",
+>>       "EventName": "PM_LD_DEMAND_MISS_L1_FIN",
+>>       "BriefDescription": "Load missed L1, counted at finish time."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x00000038BC",
+>> +    "EventName": "PM_ISYNC_CMPL",
+>> +    "BriefDescription": "Isync completion count per thread."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000C088",
+>> +    "EventName": "PM_LD0_32B_FIN",
+>> +    "BriefDescription": "256-bit load finished in the LD0 load
+>> execution unit."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000C888",
+>> +    "EventName": "PM_LD1_32B_FIN",
+>> +    "BriefDescription": "256-bit load finished in the LD1 load
+>> execution unit."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000C090",
+>> +    "EventName": "PM_LD0_UNALIGNED_FIN",
+>> +    "BriefDescription": "Load instructions in LD0 port that are
+>> either unaligned, or treated as unaligned and require an additional
+>> recycle through the pipeline using the load gather buffer. This
+>> typically adds about 10 cycles to the latency of the instruction. This
+>> includes loads that cross the 128 byte boundary, octword loads that
+>> are not aligned, and a special forward progress case of a load that
+>> does not hit in the L1 and crosses the 32 byte boundary and is
+>> launched NTC. Counted at finish time."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000C890",
+>> +    "EventName": "PM_LD1_UNALIGNED_FIN",
+>> +    "BriefDescription": "Load instructions in LD1 port that are
+>> either unaligned, or treated as unaligned and require an additional
+>> recycle through the pipeline using the load gather buffer. This
+>> typically adds about 10 cycles to the latency of the instruction. This
+>> includes loads that cross the 128 byte boundary, octword loads that
+>> are not aligned, and a special forward progress case of a load that
+>> does not hit in the L1 and crosses the 32 byte boundary and is
+>> launched NTC. Counted at finish time."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000C0A4",
+>> +    "EventName": "PM_ST0_UNALIGNED_FIN",
+>> +    "BriefDescription": "Store instructions in ST0 port that are
+>> either unaligned, or treated as unaligned and require an additional
+>> recycle through the pipeline. This typically adds about 10 cycles to
+>> the latency of the instruction. This only includes stores that cross
+>> the 128 byte boundary. Counted at finish time."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000C8A4",
+>> +    "EventName": "PM_ST1_UNALIGNED_FIN",
+>> +    "BriefDescription": "Store instructions in ST1 port that are
+>> either unaligned, or treated as unaligned and require an additional
+>> recycle through the pipeline. This typically adds about 10 cycles to
+>> the latency of the instruction. This only includes stores that cross
+>> the 128 byte boundary. Counted at finish time."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000C8B8",
+>> +    "EventName": "PM_STCX_SUCCESS_CMPL",
+>> +    "BriefDescription": "STCX instructions that completed
+>> successfully. Specifically, counts only when a pass status is returned
+>> from the nest."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000D0B4",
+>> +    "EventName": "PM_DC_PREF_STRIDED_CONF",
+>> +    "BriefDescription": "A demand load referenced a line in an active
+>> strided prefetch stream. The stream could have been allocated through
+>> the hardware prefetch mechanism or through software."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000F880",
+>> +    "EventName": "PM_SNOOP_TLBIE_CYC",
+>> +    "BriefDescription": "Cycles in which TLBIE snoops are executed in
+>> the LSU."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000F084",
+>> +    "EventName": "PM_SNOOP_TLBIE_CACHE_WALK_CYC",
+>> +    "BriefDescription": "TLBIE snoop cycles in which the data cache
+>> is being walked."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000F884",
+>> +    "EventName": "PM_SNOOP_TLBIE_WAIT_ST_CYC",
+>> +    "BriefDescription": "TLBIE snoop cycles in which older stores are
+>> still draining."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000F088",
+>> +    "EventName": "PM_SNOOP_TLBIE_WAIT_LD_CYC",
+>> +    "BriefDescription": "TLBIE snoop cycles in which older loads are
+>> still draining."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x000000F08C",
+>> +    "EventName": "PM_SNOOP_TLBIE_WAIT_MMU_CYC",
+>> +    "BriefDescription": "TLBIE snoop cycles in which the Load-Store
+>> unit is waiting for the MMU to finish invalidation."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x0000004884",
+>> +    "EventName": "PM_NO_FETCH_IBUF_FULL_CYC",
+>> +    "BriefDescription": "Cycles in which no instructions are fetched
+>> because there is no room in the instruction buffers."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x00000048B4",
+>> +    "EventName": "PM_BR_TKN_UNCOND_FIN",
+>> +    "BriefDescription": "An unconditional branch finished. All
+>> unconditional branches are taken."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x0B0000016080",
+>> +    "EventName": "PM_L2_TLBIE_SLBIE_START",
+>> +    "BriefDescription": "NCU Master received a TLBIE/SLBIEG/SLBIAG
+>> operation from the core. Event count should be multiplied by 2 since
+>> the data is coming from a 2:1 clock domain and the data is time sliced
+>> across all 4 threads."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x0B0000016880",
+>> +    "EventName": "PM_L2_TLBIE_SLBIE_DELAY",
+>> +    "BriefDescription": "Cycles when a TLBIE/SLBIEG/SLBIAG command
+>> was held in a hottemp condition by the NCU Master. Multiply this count
+>> by 1000 to obtain the total number of cycles. This can be divided by
+>> PM_L2_TLBIE_SLBIE_SENT to obtain the average time a
+>> TLBIE/SLBIEG/SLBIAG command was held. Event count should be multiplied
+>> by 2 since the data is coming from a 2:1 clock domain and the data is
+>> time sliced across all 4 threads."
+>> +  },
+>> +  {
+>> +    "EventCode": "0x0B0000026880",
+>> +    "EventName": "PM_L2_SNP_TLBIE_SLBIE_DELAY",
+>> +    "BriefDescription": "Cycles when a TLBIE/SLBIEG/SLBIAG that
+>> targets this thread's LPAR was in flight while in a hottemp condition.
+>> Multiply this count by 1000 to obtain the total number of cycles. This
+>> can be divided by PM_L2_SNP_TLBIE_SLBIE_START to obtain the overall
+>> efficiency. Note: ’inflight’ means SnpTLB has been sent to core(ie
+>> doesn’t include when SnpTLB is in NCU waiting to be launched serially
+>> behind different SnpTLB). The NCU Snooper gets in a ’hottemp’ delay
+>> window when it detects it is above its TLBIE/SLBIE threshold for
+>> process SnpTLBIE/SLBIE with this core. Event count should be
+>> multiplied by 2 since the data is coming from a 2:1 clock domain and
+>> the data is time sliced across all 4 threads."
+>>     }
+>>   ]
