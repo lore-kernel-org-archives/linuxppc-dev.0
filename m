@@ -4,119 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32CD8C3DA7F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 13:08:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AD8CC3DA64
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 13:17:53 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VJkKviDQ;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Ecu2Gy1e;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VJkKviDQ;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Ecu2Gy1e;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G27ewY3j;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=vOy3jZj4;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G27ewY3j;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=vOy3jZj4;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WYspw46BGz3d8M
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 23:08:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WYt1q5VqCz3dD2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 23:17:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VJkKviDQ;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Ecu2Gy1e;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VJkKviDQ;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Ecu2Gy1e;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G27ewY3j;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=vOy3jZj4;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=G27ewY3j;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=vOy3jZj4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 567 seconds by postgrey-1.37 at boromir; Wed, 31 Jul 2024 23:17:08 AEST
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WYsp42R90z30T7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2024 23:07:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WYt102SKKz3c03
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2024 23:17:07 +1000 (AEST)
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 7B8CD210F7;
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 3C2F41F833;
 	Wed, 31 Jul 2024 13:07:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1722431251; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QCSIp8RL4bWLysKBXmsoCoVokQz4CSuFgzM4zvc5pGM=;
-	b=VJkKviDQeyxhPfuN4upOqh4sDYxPbk04sFdmSTZYDgzLW7Ud+zHcEscEQrGak0bUrSQuRn
-	xrhhoD46ZjaE6v8gfbBrFPALc/l5fffnxjfCIPT2xeD4qYlKdeq5oy8Bkh33ni8fzVTqqe
-	4zxsXO61hYZ0rBkGz1+wo8nflUYFg88=
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=9mtTlykP2yVR6xLO7lasWv7wWIN05CSoMgvoEwM+Sf8=;
+	b=G27ewY3jWmBqD74arua4/atrIl7/Un68J203J9TzuOpnqnAwlsXx8LEp1z1mqJBaQHLylZ
+	Y1p7EWNHQ9/ZEO0yZcLFDzQ1aVU6IIkOjpg3tYMWtRt0iwN0Sd+lppWha5xhP5/0uR1NjP
+	gTCxhVU40AfDvYMZuhjFKZafi9HRAo4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1722431251;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QCSIp8RL4bWLysKBXmsoCoVokQz4CSuFgzM4zvc5pGM=;
-	b=Ecu2Gy1e96GNv33Y27n9H9k5rLpRfJNT++yM56t5Lid+oR++Wqfb8mvyCm2DHJRDG1dYaq
-	7x9HJK2UsPMk3cAA==
-Authentication-Results: smtp-out1.suse.de;
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=9mtTlykP2yVR6xLO7lasWv7wWIN05CSoMgvoEwM+Sf8=;
+	b=vOy3jZj4fnW0AacO3Jt+mLGCdFCzNuSsgqiyR5SMh905QDL4tdErYPnz+BvfCAgS41kDYh
+	nfCUwc+tFiZkzSDw==
+Authentication-Results: smtp-out2.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
 	t=1722431251; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QCSIp8RL4bWLysKBXmsoCoVokQz4CSuFgzM4zvc5pGM=;
-	b=VJkKviDQeyxhPfuN4upOqh4sDYxPbk04sFdmSTZYDgzLW7Ud+zHcEscEQrGak0bUrSQuRn
-	xrhhoD46ZjaE6v8gfbBrFPALc/l5fffnxjfCIPT2xeD4qYlKdeq5oy8Bkh33ni8fzVTqqe
-	4zxsXO61hYZ0rBkGz1+wo8nflUYFg88=
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=9mtTlykP2yVR6xLO7lasWv7wWIN05CSoMgvoEwM+Sf8=;
+	b=G27ewY3jWmBqD74arua4/atrIl7/Un68J203J9TzuOpnqnAwlsXx8LEp1z1mqJBaQHLylZ
+	Y1p7EWNHQ9/ZEO0yZcLFDzQ1aVU6IIkOjpg3tYMWtRt0iwN0Sd+lppWha5xhP5/0uR1NjP
+	gTCxhVU40AfDvYMZuhjFKZafi9HRAo4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
 	s=susede2_ed25519; t=1722431251;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QCSIp8RL4bWLysKBXmsoCoVokQz4CSuFgzM4zvc5pGM=;
-	b=Ecu2Gy1e96GNv33Y27n9H9k5rLpRfJNT++yM56t5Lid+oR++Wqfb8mvyCm2DHJRDG1dYaq
-	7x9HJK2UsPMk3cAA==
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=9mtTlykP2yVR6xLO7lasWv7wWIN05CSoMgvoEwM+Sf8=;
+	b=vOy3jZj4fnW0AacO3Jt+mLGCdFCzNuSsgqiyR5SMh905QDL4tdErYPnz+BvfCAgS41kDYh
+	nfCUwc+tFiZkzSDw==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 40E4A13AD8;
-	Wed, 31 Jul 2024 13:07:31 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id F022F13297;
+	Wed, 31 Jul 2024 13:07:30 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id cFqGDhM3qmYQWwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 31 Jul 2024 13:07:31 +0000
+	id 0RunOBI3qmYQWwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 31 Jul 2024 13:07:30 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: mpe@ellerman.id.au,
 	christophe.leroy@csgroup.eu,
 	npiggin@gmail.com,
 	naveen@kernel.org
-Subject: [PATCH 1/2] arch: powerpc: Use backlight power constants
-Date: Wed, 31 Jul 2024 15:06:14 +0200
-Message-ID: <20240731130720.1148872-2-tzimmermann@suse.de>
+Subject: [PATCH 0/2] arch: powerpc: Use backlight power constants
+Date: Wed, 31 Jul 2024 15:06:13 +0200
+Message-ID: <20240731130720.1148872-1-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20240731130720.1148872-1-tzimmermann@suse.de>
-References: <20240731130720.1148872-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-6.60 / 50.00];
-	REPLY(-4.00)[];
+X-Spamd-Result: default: False [-2.60 / 50.00];
 	BAYES_HAM(-3.00)[100.00%];
 	MID_CONTAINS_FROM(1.00)[];
 	NEURAL_HAM_LONG(-1.00)[-1.000];
 	R_MISSING_CHARSET(0.50)[];
 	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FROM_HAS_DN(0.00)[];
+	FREEMAIL_TO(0.00)[ellerman.id.au,csgroup.eu,gmail.com,kernel.org];
 	ARC_NA(0.00)[];
 	TO_DN_SOME(0.00)[];
 	MIME_TRACE(0.00)[0:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,imap1.dmz-prg2.suse.org:helo];
-	FREEMAIL_TO(0.00)[ellerman.id.au,csgroup.eu,gmail.com,kernel.org];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	RCPT_COUNT_FIVE(0.00)[6];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
 	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_FIVE(0.00)[6];
+	RCVD_TLS_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
 	FREEMAIL_ENVRCPT(0.00)[gmail.com]
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -133,28 +123,22 @@ Cc: linuxppc-dev@lists.ozlabs.org, Thomas Zimmermann <tzimmermann@suse.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Replace FB_BLANK_ constants with their counterparts from the
-backlight subsystem. The values are identical, so there's no
-change in functionality or semantics.
+Commit a1cacb8a8e70 ("backlight: Add BACKLIGHT_POWER_ constants for
+power states") introduced dedicated constants for backlight power states.
+Convert PowerPC code to the new constants.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- arch/powerpc/kernel/traps.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The new constants replace the fbdev constants. This is part of a larger
+effort to make kernel subsystems more independent from fbdev code and
+headers.
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 28d6472c380a..edf5cabe5dfd 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -121,7 +121,7 @@ static void pmac_backlight_unblank(void)
- 
- 		props = &pmac_backlight->props;
- 		props->brightness = props->max_brightness;
--		props->power = FB_BLANK_UNBLANK;
-+		props->power = BACKLIGHT_POWER_ON;
- 		backlight_update_status(pmac_backlight);
- 	}
- 	mutex_unlock(&pmac_backlight_mutex);
+Thomas Zimmermann (2):
+  arch: powerpc: Use backlight power constants
+  macintosh/pmubl: Use backlight power constants
+
+ arch/powerpc/kernel/traps.c           | 2 +-
+ drivers/macintosh/via-pmu-backlight.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
 -- 
 2.45.2
 
