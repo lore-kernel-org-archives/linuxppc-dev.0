@@ -4,89 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 632B3C3DA64
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 12:24:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6334C3DA64
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 12:24:55 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WpTzbINQ;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OHD7pNNI;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=W6oy4baD;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O+hsP6Ml;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WYrqy0fF9z3d8M
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 22:24:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WYrrk2mlzz3dJs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Jul 2024 22:24:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WpTzbINQ;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OHD7pNNI;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=W6oy4baD;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O+hsP6Ml;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WYrpn16Rxz3dFH
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2024 22:23:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WYrqC2pLGz3dDJ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2024 22:23:35 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1722428589;
+	s=mimecast20190719; t=1722428612;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=lfxTcnFebnrWlkOb97VAeZdiPmi1gpc/ztv0geOissE=;
-	b=WpTzbINQHN1Fldow35KJ8Y3jyEmCvgee2wpAPND5zBBvCjUsSAyMF3d2mT6IpaXbg95yaH
-	5YxqR9WMLd+JDjBWJaPkNMqAv5U/ZG17xDu2Dfl8XFS6A7/MFBjC3twyCby4D+QyaRUdqO
-	A1OJ4VeBAPZjFIGqjRTpiBjhytNhQr8=
+	bh=iQqyZTwjFNM4CqRL8YVMi36ltzZ+Eq0nhf1fN4pisog=;
+	b=W6oy4baDpnK4xiKgguJxoNGM9Ccpq0gC8nIBjoe9AozqaTt7kkPvDOUXbpHsq7AhWgZ8OI
+	3pp7j/DEanPUHQaELUNE5pYk3/oKx1CcrqBkFCQC7KoA0O/54Q7mnESIXVGE3jEHOWvVdC
+	ENM/ZJslPJB8a4EX+HUgORm0t6bmx2w=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1722428590;
+	s=mimecast20190719; t=1722428613;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=lfxTcnFebnrWlkOb97VAeZdiPmi1gpc/ztv0geOissE=;
-	b=OHD7pNNIOCCz3q9nmRk3i/QNNuHPNxEY8ctRaHQxVg5UpUqugDQWPFMmIyecjVLsiKLdaE
-	87OIFQAdDEuM1ZwFrWWDGvQpwkAgyRexhcl5vZ0OiDDvv4jciDewYHvpKLx8oQODkZMf3i
-	K5RIb8BcUf61/djFC1dT6JfKQJsXSsA=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=iQqyZTwjFNM4CqRL8YVMi36ltzZ+Eq0nhf1fN4pisog=;
+	b=O+hsP6MlCgdgJoqLXB5I8jM3bKeFsKpNp3PCFAU9lkzBpQdaXalfYX3Q75baES5idpDFTA
+	jU9DuWYNsjmxBNEe2wg4Qs96V5YNnR4OaVTb4Zty7Vc/iP8oeAvnlS19lNOERZ8+r79Mxx
+	qsnNPBoWikNNv1SSw708sSA7t3fdKs8=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-453-kPY6XFSKOrCfl_CM1AadCg-1; Wed, 31 Jul 2024 08:18:29 -0400
-X-MC-Unique: kPY6XFSKOrCfl_CM1AadCg-1
-Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-4281ca9f4dbso28365175e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2024 05:18:29 -0700 (PDT)
+ us-mta-120-AWcYmwjdMIGQgNKsIL27jg-1; Wed, 31 Jul 2024 08:23:31 -0400
+X-MC-Unique: AWcYmwjdMIGQgNKsIL27jg-1
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-4280cf2be19so34427785e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Jul 2024 05:23:31 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1722428309; x=1723033109;
+        d=1e100.net; s=20230601; t=1722428610; x=1723033410;
         h=content-transfer-encoding:in-reply-to:organization:autocrypt
          :content-language:from:references:cc:to:subject:user-agent
          :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to;
-        bh=lfxTcnFebnrWlkOb97VAeZdiPmi1gpc/ztv0geOissE=;
-        b=TcOo/PWf9ifJ+fehyONmb/KMatZakQD/sLETcuen5dPuvMwFjYSxKH8TJe0RmOInak
-         /Tj8eazDP3Oky3EvuBVo3hOG0W4RUm8jXp8gJGn64lq/e5JG7BBJP2YR9od3iOy6fzUf
-         VB/yIv3FVCaRIX2DjNxZjv29Nj74Ere8L71eqjvHFn8QOFJW+UiGAsqvlSOdLoWRCO0m
-         ac0yOwdTHc1dMLBn2QcRIdtvuQkkb4N592V6O8F8i9tvoKsF61jkqJW9xNeHnWPj9xOX
-         2RxIn7E0mAOZ/9a1IHwqZx1dLjDeFGdi4M1hsrB1RBeZFFE40ceYmQkH6oSavOFMhc8i
-         VoUg==
-X-Forwarded-Encrypted: i=1; AJvYcCVXO/zusm9TrCvSU1HvVSeNE9Pl9Cyrw4iAqK1U/iMNkl+9r6vwWja3CBM5nOLSPQ4j+Jb5H1yua07rqco=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywbz7Yxtb08O8FCwY5fkgs+onrYWs/d4tma6Tx6ZacmY/AUlAA2
-	7EVHTeSiNzvhnOo45bWiM9CUhvQ0Adz5kupNvkDbG+K9Ey1oC+CRiN6dmBmoAH3JNZ7X+DwkoXp
-	DpDoxAvUqHoxmZwnA0AmYsUDLviXhMBbeFs5gnYvvQ8Qsya/XUpLVyC3GF8Qe3Lg=
-X-Received: by 2002:a05:600c:4748:b0:428:1799:35e3 with SMTP id 5b1f17b1804b1-4281799370amr87275255e9.21.1722428308739;
-        Wed, 31 Jul 2024 05:18:28 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IHjy90TRpI10k3uzmJp4x6xYArbwGo+0KGNBK+2d60CTkDKtfWsjnoTpqbansB0Zgz4mqaD3Q==
-X-Received: by 2002:a05:600c:4748:b0:428:1799:35e3 with SMTP id 5b1f17b1804b1-4281799370amr87275025e9.21.1722428308281;
-        Wed, 31 Jul 2024 05:18:28 -0700 (PDT)
+        bh=iQqyZTwjFNM4CqRL8YVMi36ltzZ+Eq0nhf1fN4pisog=;
+        b=ByYgUR4CX9MOpQriJ11YzAJYZSK0vvuC5YcZmvAriPqqBCsACLzHrodKGJbLkXEw2w
+         gOgXjE5GwYjXq5Hg0VdfwD+Tr9tAaQmAczptWOnscFElUXUq9D8HQxGMEmMwzNYM/uoF
+         ykqSuYdW+9gRCTev1Vsh7jnSWicr1V0TfkXh/gaLYmq0ZLLa2ZnptC2myGaUi/2tj2+e
+         GIDNXNTKtlgq/XuTj/dMyGuBIWsvqU+IxlLGhumA71lnXGoKMmUeCs49M8H+NQRrEBQP
+         ZGAGUAQHJB3tcUGd5fNXWF2GSgbroXDZEvprKBV25I0P7oSyUrcBjSFHv2JDqdtcmLlH
+         FTbA==
+X-Forwarded-Encrypted: i=1; AJvYcCX5u/iA16mvU5YE9pedhHc97v3L+AjPLCMerdW7D0AGRIah+Ol1sISIy7iUnmMT1vWRFm9GZgDnzFBzuifelzDZJk2wrqIMu5Rc1mLd+Q==
+X-Gm-Message-State: AOJu0YxPBoHP5ss4FRcSkYtGuOyL7Tg4Il8SzLAYtqH2kexvc2r41Lod
+	roH+IZxVSJ0H7leQbACTbxk//IxgxsJXQJ/QBcBbkC5ImXq4YvNjQC/wWgpcdPbSo8CNHimgtQu
+	PfBTbGptHHs/UcY5OvoMmpxbcefDeitbY0QZ2GRbLQFmtbE4nuMEjZIygbTgTkMk=
+X-Received: by 2002:a05:600c:5492:b0:427:b995:5bd0 with SMTP id 5b1f17b1804b1-42811dd08d3mr88343775e9.23.1722428610157;
+        Wed, 31 Jul 2024 05:23:30 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGTt27FwoRWu2RjhLMqAf42tYFvT7WasDm9gSDSzAaF1mBcNTLaA4FbswprNCtpV6EtCoqDvA==
+X-Received: by 2002:a05:600c:5492:b0:427:b995:5bd0 with SMTP id 5b1f17b1804b1-42811dd08d3mr88343385e9.23.1722428609678;
+        Wed, 31 Jul 2024 05:23:29 -0700 (PDT)
 Received: from ?IPV6:2003:cb:c70b:5f00:9b61:28a2:eea1:fa49? (p200300cbc70b5f009b6128a2eea1fa49.dip0.t-ipconnect.de. [2003:cb:c70b:5f00:9b61:28a2:eea1:fa49])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4282b5fec25sm19813185e9.0.2024.07.31.05.18.26
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4282baf3a1csm19088725e9.35.2024.07.31.05.23.28
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 31 Jul 2024 05:18:27 -0700 (PDT)
-Message-ID: <added2d0-b8be-4108-82ca-1367a388d0b1@redhat.com>
-Date: Wed, 31 Jul 2024 14:18:26 +0200
+        Wed, 31 Jul 2024 05:23:29 -0700 (PDT)
+Message-ID: <a9e95e2f-ab58-469c-a66e-30ee4617ad64@redhat.com>
+Date: Wed, 31 Jul 2024 14:23:27 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/8] mm/mprotect: Remove NUMA_HUGE_PTE_UPDATES
+Subject: Re: [PATCH v3 6/8] mm/x86: arch_check_zapped_pud()
 To: Peter Xu <peterx@redhat.com>, linux-mm@kvack.org,
  linux-kernel@vger.kernel.org
 References: <20240715192142.3241557-1-peterx@redhat.com>
- <20240715192142.3241557-3-peterx@redhat.com>
+ <20240715192142.3241557-7-peterx@redhat.com>
 From: David Hildenbrand <david@redhat.com>
 Autocrypt: addr=david@redhat.com; keydata=
  xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
@@ -133,7 +133,7 @@ Autocrypt: addr=david@redhat.com; keydata=
  jPrnvUsUUsjRoRNJjKKA/REq+sAnhkNPPZ/NNMjaZ5b8Tovi8C0tmxiCHaQYqj7G2rgnT0kt
  WNyWQQ==
 Organization: Red Hat
-In-Reply-To: <20240715192142.3241557-3-peterx@redhat.com>
+In-Reply-To: <20240715192142.3241557-7-peterx@redhat.com>
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
@@ -150,86 +150,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Dan Williams <dan.j.williams@intel.com>, Dave Jiang <dave.jiang@intel.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Ingo Molnar <mingo@redhat.com>, Huang Ying <ying.huang@intel.com>, Alex Thorlton <athorlton@sgi.com>, Rik van Riel <riel@surriel.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill@shutemov.name>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, Mel Gorman <mgorman@techsingularity.net>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Dan Williams <dan.j.williams@intel.com>, Dave Jiang <dave.jiang@intel.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Ingo Molnar <mingo@redhat.com>, Huang Ying <ying.huang@intel.com>, Rik van Riel <riel@surriel.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill@shutemov.name>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, Mel Gorman <mgorman@techsingularity.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 15.07.24 21:21, Peter Xu wrote:
-> In 2013, commit 72403b4a0fbd ("mm: numa: return the number of base pages
-> altered by protection changes") introduced "numa_huge_pte_updates" vmstat
-> entry, trying to capture how many huge ptes (in reality, PMD thps at that
-> time) are marked by NUMA balancing.
+> Introduce arch_check_zapped_pud() to sanity check shadow stack on PUD zaps.
+> It has the same logic of the PMD helper.
 > 
-> This patch proposes to remove it for some reasons.
+> One thing to mention is, it might be a good idea to use page_table_check in
+> the future for trapping wrong setups of shadow stack pgtable entries [1].
+> That is left for the future as a separate effort.
 > 
-> Firstly, the name is misleading. We can have more than one way to have a
-> "huge pte" at least nowadays, and that's also the major goal of this patch,
-> where it paves way for PUD handling in change protection code paths.
+> [1] https://lore.kernel.org/all/59d518698f664e07c036a5098833d7b56b953305.camel@intel.com
 > 
-> PUDs are coming not only for dax (which has already came and yet broken..),
-> but also for pfnmaps and hugetlb pages.  The name will simply stop making
-> sense when PUD will start to be involved in mprotect() world.
-> 
-> It'll also make it not reasonable either if we boost the counter for both
-> pmd/puds.  In short, current accounting won't be right when PUD comes, so
-> the scheme was only suitable at that point in time where PUD wasn't even
-> possible.
-> 
-> Secondly, the accounting was simply not right from the start as long as it
-> was also affected by other call sites besides NUMA.  mprotect() is one,
-> while userfaultfd-wp also leverages change protection path to modify
-> pgtables.  If it wants to do right it needs to check the caller but it
-> never did; at least mprotect() should be there even in 2013.
-> 
-> It gives me the impression that nobody is seriously using this field, and
-> it's also impossible to be serious.
+> Cc: "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: Dave Hansen <dave.hansen@linux.intel.com>
+> Cc: x86@kernel.org
+> Signed-off-by: Peter Xu <peterx@redhat.com>
+> ---
 
-It's weird and the implementation is ugly. The intention really was to 
-only consider MM_CP_PROT_NUMA, but that apparently is not the case.
-
-hugetlb/mprotect/... should have never been accounted.
-
-[...]
-
->   
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index 73d791d1caad..53656227f70d 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -1313,7 +1313,6 @@ const char * const vmstat_text[] = {
->   
->   #ifdef CONFIG_NUMA_BALANCING
->   	"numa_pte_updates",
-> -	"numa_huge_pte_updates",
->   	"numa_hint_faults",
->   	"numa_hint_faults_local",
->   	"numa_pages_migrated",
-
-It's a user-visible update. I assume most tools should be prepared for 
-this stat missing (just like handling !CONFIG_NUMA_BALANCING).
-
-Apparently it's documented [1][2] for some distros:
-
-"The amount of transparent huge pages that were marked for NUMA hinting 
-faults. In combination with numa_pte_updates the total address space 
-that was marked can be calculated."
-
-And now I realize that change_prot_numa() would account these PMD 
-updates as well in numa_pte_updates and I am confused about the SUSE 
-documentation: "In combination with numa_pte_updates" doesn't really 
-apply, right?
-
-At this point I don't know what's right or wrong.
-
-If we'd want to fix it instead, the right thing to do would be doing the 
-accounting only with MM_CP_PROT_NUMA. But then, numa_pte_updates is also 
-wrongly updated I believe :(
-
-
-[1] 
-https://documentation.suse.com/de-de/sles/12-SP5/html/SLES-all/cha-tuning-numactl.html
-[2] 
-https://support.oracle.com/knowledge/Oracle%20Linux%20and%20Virtualization/2749259_1.html
+Acked-by: David Hildenbrand <david@redhat.com>
 
 -- 
 Cheers,
