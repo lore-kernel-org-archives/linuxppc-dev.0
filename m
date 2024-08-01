@@ -4,53 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32FBAC52D6D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2024 00:39:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 012BDC3DA64
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2024 00:40:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B2zoYwkc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RN2K7M3U;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WZ98C67TGz3d8Y
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2024 10:39:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WZ99z4Ml5z3dBs
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2024 10:40:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B2zoYwkc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RN2K7M3U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WZ97S6Pzmz2y8d
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2024 10:38:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WZ99C50q4z2y8d
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2024 10:40:15 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id E6D576246A;
-	Thu,  1 Aug 2024 00:38:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 74E4BC4AF0C;
-	Thu,  1 Aug 2024 00:38:41 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 9295961741;
+	Thu,  1 Aug 2024 00:40:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E423C4AF10;
+	Thu,  1 Aug 2024 00:40:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1722472722;
-	bh=kL/XT7JAuxnxELhKNZfCLWr6WyRu/dxm9/mD3/aKmzQ=;
+	s=k20201202; t=1722472813;
+	bh=hDFH0xuVEwXXPx+0//7xppgQ92FJEKmcmTYJrdk8Hrs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=B2zoYwkc4lZdSBFuhbV7el3KZaFHxBEHk0xs8+wX1+MotKUMzxVN3MOGV3b/T1WSG
-	 qxC7IRs6sdcbeSav0YPxDcsXuTnMDuWad5ot0FMApiVfkBZnixTburIKUR2EDUK0ZM
-	 adRga49ldiUky9cuO0yL4qUPP4g//5StjEX6ezKKJ/vmJHI/EpAvftQA5CfFvP6AlN
-	 t7Jxf7z2Xy1Qw5lF+fjUHg43oJ4QNIwNxhiIhS+zzEFvmBXaLSiQyIfgucGg1DlqFg
-	 1aa0+M6bpzYVZ4ANkvuBsNRN794oaZnTL69BlqSv+s+hHmWCJJU1kNMhSd4yw4yVq9
-	 +c/F5ZyFGM55w==
+	b=RN2K7M3U8Qgq2A6iJgKNgsmHLeB1N+zFlYsA8FEzdLlvDBUlu7ru2LpRxrYGVpP/T
+	 QdWkRr9ShCvJ/lZKmEXND89rR25qkp/a1LpwKR4zniuBvcLAffm0wWHbjibW+dAkOq
+	 JAwhJqabHkT0VyORT/dyjIU1piSPwG7PgqIexc9Gn6UuTWAhJuCTqGyHmnDm/yHiaY
+	 uW94kG7z7qp0r8d8ie6bKbYoXVHWFBqlLBTmXixuuFP1jM1d+uDk0zf7VSTKcLMrom
+	 USCeL2d4viVeKFXZjgJWhz6rywJ80Cld9laqgyV89HDrU/Hl4A3t4xWcsaowFnvj7w
+	 rRsKVofXZsJOg==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 34/38] pci/hotplug/pnv_php: Fix hotplug driver crash on Powernv
-Date: Wed, 31 Jul 2024 20:35:40 -0400
-Message-ID: <20240801003643.3938534-34-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 18/22] pci/hotplug/pnv_php: Fix hotplug driver crash on Powernv
+Date: Wed, 31 Jul 2024 20:38:47 -0400
+Message-ID: <20240801003918.3939431-18-sashal@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240801003643.3938534-1-sashal@kernel.org>
-References: <20240801003643.3938534-1-sashal@kernel.org>
+In-Reply-To: <20240801003918.3939431-1-sashal@kernel.org>
+References: <20240801003918.3939431-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 5.10.223
+X-stable-base: Linux 5.4.281
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -97,10 +97,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index 04565162a4495..cf9c0e75f0be4 100644
+index d7b2b47bc33eb..3824942618305 100644
 --- a/drivers/pci/hotplug/pnv_php.c
 +++ b/drivers/pci/hotplug/pnv_php.c
-@@ -38,7 +38,6 @@ static void pnv_php_disable_irq(struct pnv_php_slot *php_slot,
+@@ -35,7 +35,6 @@ static void pnv_php_disable_irq(struct pnv_php_slot *php_slot,
  				bool disable_device)
  {
  	struct pci_dev *pdev = php_slot->pdev;
@@ -108,7 +108,7 @@ index 04565162a4495..cf9c0e75f0be4 100644
  	u16 ctrl;
  
  	if (php_slot->irq > 0) {
-@@ -57,7 +56,7 @@ static void pnv_php_disable_irq(struct pnv_php_slot *php_slot,
+@@ -54,7 +53,7 @@ static void pnv_php_disable_irq(struct pnv_php_slot *php_slot,
  		php_slot->wq = NULL;
  	}
  
