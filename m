@@ -4,52 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DCE1C49EA1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2024 08:27:36 +0000 (UTC)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=tkos.co.il header.i=@tkos.co.il header.a=rsa-sha256 header.s=default header.b=HFyQUvTl;
-	dkim-atps=neutral
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 117C3C3DA64
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2024 08:56:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WZMXQ5nPFz3dJX
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2024 18:27:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=tkos.co.il
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=tkos.co.il header.i=@tkos.co.il header.a=rsa-sha256 header.s=default header.b=HFyQUvTl;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tkos.co.il (client-ip=84.110.109.230; helo=mail.tkos.co.il; envelope-from=baruch@tkos.co.il; receiver=lists.ozlabs.org)
-Received: from mail.tkos.co.il (mail.tkos.co.il [84.110.109.230])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WZNBH58F7z3dGt
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Aug 2024 18:56:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WZMV44dTCz3ck2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2024 18:25:32 +1000 (AEST)
-Received: from tarshish.tkos.co.il (unknown [10.0.8.2])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mail.tkos.co.il (Postfix) with ESMTPS id 864ED440932;
-	Thu,  1 Aug 2024 11:24:07 +0300 (IDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=tkos.co.il;
-	s=default; t=1722500648;
-	bh=Yaa82cqvK/7ZFcSlM9y57cf/s6CJpTcrZlbQ2R51MpE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=HFyQUvTlTTY/eVqJOchHKkcdrdrGmNohf9og26uXHRe5MRgamACVy6P1EEO1MVAh1
-	 II0T6z3ntd4j4LJPyPrQjkGF+KVwjbHDj6f1p31XD7ZDg4siEAAlAqy90hAE3AOKEQ
-	 kfDZc6BxfUE3DB1Ze04ejUdK82dx8Wuu01nPg3VFnD2z6gBadmBRwLLlR4AEFA8JPV
-	 FRAiKSo0+y6o3FQTn67gC63CII16EWCV7sAwsaCZfaXA6F0NrmAOJc7xQLK8POsxo0
-	 aoykzw5fl8o8QJh5LduEATALVyA6vathNBxOzfVlGDILkvJmQOO8u8pCpXR56wm8Tt
-	 VHJdGhIcLRSPQ==
-From: Baruch Siach <baruch@tkos.co.il>
-To: Christoph Hellwig <hch@lst.de>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>
-Subject: [PATCH v4 1/2] dma: improve DMA zone selection
-Date: Thu,  1 Aug 2024 11:25:06 +0300
-Message-ID: <f8f4da7ea3ead153ca21e628ca90e24fd0e7206e.1722499975.git.baruch@tkos.co.il>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1722499975.git.baruch@tkos.co.il>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WZN9r068Fz3cXH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Aug 2024 18:56:31 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 38CF5CE12D4;
+	Thu,  1 Aug 2024 08:56:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E209C32786;
+	Thu,  1 Aug 2024 08:56:26 +0000 (UTC)
+Date: Thu, 1 Aug 2024 09:56:23 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Baruch Siach <baruch@tkos.co.il>
+Subject: Re: [PATCH v4 1/2] dma: improve DMA zone selection
+Message-ID: <ZqtNtxKxBurIQEq0@arm.com>
 References: <cover.1722499975.git.baruch@tkos.co.il>
+ <f8f4da7ea3ead153ca21e628ca90e24fd0e7206e.1722499975.git.baruch@tkos.co.il>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f8f4da7ea3ead153ca21e628ca90e24fd0e7206e.1722499975.git.baruch@tkos.co.il>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,64 +44,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, Ramon Fried <ramon@neureality.ai>, =?UTF-8?q?Petr=20Tesa=C5=99=C3=ADk?= <petr@tesarici.cz>, Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org, iommu@lists.linux.dev, Elad Nachman <enachman@marvell.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-s390@vger.kernel.org, Ramon Fried <ramon@neureality.ai>, Petr =?utf-8?B?VGVzYcWZw61r?= <petr@tesarici.cz>, Will Deacon <will@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, iommu@lists.linux.dev, Elad Nachman <enachman@marvell.com>, Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@lst.de>, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When device DMA limit does not fit in DMA32 zone it should use DMA zone,
-even when DMA zone is stricter than needed.
+On Thu, Aug 01, 2024 at 11:25:06AM +0300, Baruch Siach wrote:
+> When device DMA limit does not fit in DMA32 zone it should use DMA zone,
+> even when DMA zone is stricter than needed.
+> 
+> Same goes for devices that can't allocate from the entire normal zone.
+> Limit to DMA32 in that case.
+> 
+> Reported-by: Catalin Marinas <catalin.marinas@arm.com>
+> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
 
-Same goes for devices that can't allocate from the entire normal zone.
-Limit to DMA32 in that case.
+This looks fine to me now.
 
-Reported-by: Catalin Marinas <catalin.marinas@arm.com>
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
- kernel/dma/direct.c  | 6 +++---
- kernel/dma/swiotlb.c | 4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-index 4480a3cd92e0..3b4be4ca3b08 100644
---- a/kernel/dma/direct.c
-+++ b/kernel/dma/direct.c
-@@ -4,7 +4,7 @@
-  *
-  * DMA operations that map physical memory directly without using an IOMMU.
-  */
--#include <linux/memblock.h> /* for max_pfn */
-+#include <linux/memblock.h>
- #include <linux/export.h>
- #include <linux/mm.h>
- #include <linux/dma-map-ops.h>
-@@ -59,9 +59,9 @@ static gfp_t dma_direct_optimal_gfp_mask(struct device *dev, u64 *phys_limit)
- 	 * zones.
- 	 */
- 	*phys_limit = dma_to_phys(dev, dma_limit);
--	if (*phys_limit <= DMA_BIT_MASK(zone_dma_bits))
-+	if (*phys_limit < DMA_BIT_MASK(32))
- 		return GFP_DMA;
--	if (*phys_limit <= DMA_BIT_MASK(32))
-+	if (*phys_limit < memblock_end_of_DRAM())
- 		return GFP_DMA32;
- 	return 0;
- }
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index df68d29740a0..043b0ecd3e8d 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -629,9 +629,9 @@ static struct page *swiotlb_alloc_tlb(struct device *dev, size_t bytes,
- 	}
- 
- 	gfp &= ~GFP_ZONEMASK;
--	if (phys_limit <= DMA_BIT_MASK(zone_dma_bits))
-+	if (phys_limit < DMA_BIT_MASK(32))
- 		gfp |= __GFP_DMA;
--	else if (phys_limit <= DMA_BIT_MASK(32))
-+	else if (phys_limit < memblock_end_of_DRAM())
- 		gfp |= __GFP_DMA32;
- 
- 	while (IS_ERR(page = alloc_dma_pages(gfp, bytes, phys_limit))) {
--- 
-2.43.0
-
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
