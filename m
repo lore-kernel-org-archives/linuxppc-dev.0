@@ -4,61 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02FB4C3DA49
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 08:11:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lists.ozlabs.org;
-	s=201707; t=1722586294;
-	bh=CuMgTyhRiXFGu/Wk31+CzmYjkWa9oQ3VXwtvzg+PBI0=;
-	h=To:Subject:Date:References:In-Reply-To:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:From:Reply-To:Cc:
-	 From;
-	b=h42wDNwzJmYfEYfF5Hosy950U2qDn32a+G7skRnLiYOI9gn7diiKmC5mXWJeDrzWC
-	 Utli7JlVF2ubSvv9nEIJsO2dUA7HAVUWPSvYchyns6Abj6VaWNf55eV4vrovRlprmu
-	 eIsIye0ncZCZ7Fco2urvg9pvO0Kyg55QxaGHpNkylfqdRbLAncc5XM6WyDFp13iOAV
-	 YnB8l6jhdSnlRHClyQVccDL3W/Lg6KWgzSZlHkx0gtURzViPAGzwkWRE+O8mu1/CCf
-	 d2/n+jIeVMWOP7dX/B+3dP+Qraxy8nVrB90PjwQl89lPVr5Uw1VVl+mFza+Fa3Rn/v
-	 bgEQmZ5LSVKxg==
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 454C5C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 09:38:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WZz7V1GRZz3dTV
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 18:11:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ACULAB.COM
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aculab.com (client-ip=185.58.85.151; helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com; receiver=lists.ozlabs.org)
-Received: from eu-smtp-delivery-151.mimecast.com (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wb13P52yKz3dwr
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 19:38:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WZz6g2lFXz3cW4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2024 18:10:49 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
- relay.mimecast.com with ESMTP with both STARTTLS and AUTH (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- uk-mta-80-s7rDkYwSMoizWbYGjzwnMg-1; Fri, 02 Aug 2024 09:10:42 +0100
-X-MC-Unique: s7rDkYwSMoizWbYGjzwnMg-1
-Received: from AcuMS.Aculab.com (10.202.163.6) by AcuMS.aculab.com
- (10.202.163.6) with Microsoft SMTP Server (TLS) id 15.0.1497.48; Fri, 2 Aug
- 2024 09:10:02 +0100
-Received: from AcuMS.Aculab.com ([::1]) by AcuMS.aculab.com ([::1]) with mapi
- id 15.00.1497.048; Fri, 2 Aug 2024 09:10:02 +0100
-To: 'Simon Horman' <horms@kernel.org>, Herve Codina <herve.codina@bootlin.com>
-Subject: RE: [PATCH net v1] net: wan: fsl_qmc_hdlc: Discard received CRC
-Thread-Topic: [PATCH net v1] net: wan: fsl_qmc_hdlc: Discard received CRC
-Thread-Index: AQHa4yXTTA/3x7b/50KM7uMtkj8Gw7ITnhqw
-Date: Fri, 2 Aug 2024 08:10:02 +0000
-Message-ID: <7659191688194f099cba22cc367c4eda@AcuMS.aculab.com>
-References: <20240730063133.179598-1-herve.codina@bootlin.com>
- <20240731084443.GL1967603@kernel.org>
-In-Reply-To: <20240731084443.GL1967603@kernel.org>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wb12x6xVQz3cVR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2024 19:37:45 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id F0D3561446;
+	Fri,  2 Aug 2024 09:37:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C709C32782;
+	Fri,  2 Aug 2024 09:37:41 +0000 (UTC)
+Date: Fri, 2 Aug 2024 10:37:38 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Baruch Siach <baruch@tkos.co.il>
+Subject: Re: [PATCH v5 2/3] dma: replace zone_dma_bits by zone_dma_limit
+Message-ID: <Zqyo4qjPRHUeUfS5@arm.com>
+References: <cover.1722578375.git.baruch@tkos.co.il>
+ <5821a1b2eb82847ccbac0945da040518d6f6f16b.1722578375.git.baruch@tkos.co.il>
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5821a1b2eb82847ccbac0945da040518d6f6f16b.1722578375.git.baruch@tkos.co.il>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,37 +44,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-From: David Laight via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Reply-To: David Laight <David.Laight@ACULAB.COM>
-Cc: Andy
- Shevchenko <andriy.shevchenko@linux.intel.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>, Eric Dumazet <edumazet@google.com>, "stable@vger.kernel.org" <stable@vger.kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
+Cc: linux-s390@vger.kernel.org, Ramon Fried <ramon@neureality.ai>, Petr =?utf-8?B?VGVzYcWZw61r?= <petr@tesarici.cz>, Will Deacon <will@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, iommu@lists.linux.dev, Elad Nachman <enachman@marvell.com>, Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@lst.de>, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Simon Horman
-> Sent: 31 July 2024 09:45
->=20
-> On Tue, Jul 30, 2024 at 08:31:33AM +0200, Herve Codina wrote:
-> > Received frame from QMC contains the CRC.
-> > Upper layers don't need this CRC and tcpdump mentioned trailing junk
-> > data due to this CRC presence.
-> >
-> > As some other HDLC driver, simply discard this CRC.
->=20
-> It might be nice to specifically site an example.
-> But yes, I see this pattern in hdlc_rx_done().
+On Fri, Aug 02, 2024 at 09:03:47AM +0300, Baruch Siach wrote:
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index 3b4be4ca3b08..62b36fda44c9 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -20,7 +20,7 @@
+>   * it for entirely different regions. In that case the arch code needs to
+>   * override the variable below for dma-direct to work properly.
+>   */
+> -unsigned int zone_dma_bits __ro_after_init = 24;
+> +u64 zone_dma_limit __ro_after_init = DMA_BIT_MASK(24);
 
-Pretty much the only reason you'd want the received CRC is to do
-error recovery assuming a single short error burst.
-Not that I've ever seen a driver contain the required code.
-'Back of envelope' calculation: 32bit crc, 2kbyte frame, so 18bits
-of crc per data bit, sqrt for 'birthday paradox' - I bet you can
-recover 8-bit error bursts.
+u64 here makes sense even if it may be larger than phys_addr_t. It
+matches the phys_limit type in the swiotlb code. The compilers should no
+longer complain.
 
-=09David
+> diff --git a/kernel/dma/pool.c b/kernel/dma/pool.c
+> index d10613eb0f63..7b04f7575796 100644
+> --- a/kernel/dma/pool.c
+> +++ b/kernel/dma/pool.c
+> @@ -70,9 +70,9 @@ static bool cma_in_zone(gfp_t gfp)
+>  	/* CMA can't cross zone boundaries, see cma_activate_area() */
+>  	end = cma_get_base(cma) + size - 1;
+>  	if (IS_ENABLED(CONFIG_ZONE_DMA) && (gfp & GFP_DMA))
+> -		return end <= DMA_BIT_MASK(zone_dma_bits);
+> +		return end <= zone_dma_limit;
+>  	if (IS_ENABLED(CONFIG_ZONE_DMA32) && (gfp & GFP_DMA32))
+> -		return end <= DMA_BIT_MASK(32);
+> +		return end <= max(DMA_BIT_MASK(32), zone_dma_limit);
+>  	return true;
+>  }
+>  
+> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> index 043b0ecd3e8d..bb51bd5335ad 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -450,9 +450,9 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
+>  	if (!remap)
+>  		io_tlb_default_mem.can_grow = true;
+>  	if (IS_ENABLED(CONFIG_ZONE_DMA) && (gfp_mask & __GFP_DMA))
+> -		io_tlb_default_mem.phys_limit = DMA_BIT_MASK(zone_dma_bits);
+> +		io_tlb_default_mem.phys_limit = zone_dma_limit;
+>  	else if (IS_ENABLED(CONFIG_ZONE_DMA32) && (gfp_mask & __GFP_DMA32))
+> -		io_tlb_default_mem.phys_limit = DMA_BIT_MASK(32);
+> +		io_tlb_default_mem.phys_limit = max(DMA_BIT_MASK(32), zone_dma_limit);
+>  	else
+>  		io_tlb_default_mem.phys_limit = virt_to_phys(high_memory - 1);
+>  #endif
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
+These two look correct to me now and it's the least intrusive (the
+alternative would have been a zone_dma32_limit). The arch code, however,
+needs to ensure that zone_dma_limit can always support 32-bit devices
+even if it is above 4GB (with the relevant dma offsets in place for such
+devices).
 
+-- 
+Catalin
