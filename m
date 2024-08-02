@@ -4,36 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CCADC52D6F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 15:08:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1E50C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 15:10:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wb8NZ0Sfpz3fqK
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Aug 2024 01:08:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wb8Qq3qndz3fnf
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Aug 2024 01:10:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wb8N460w3z3dSs
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2024 01:08:01 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.18.186.231])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Wb8JQ56Vvz6K6RP;
-	Fri,  2 Aug 2024 23:04:54 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wb8QK2Dkrz3cjX
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Aug 2024 01:10:01 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.18.186.216])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Wb8MC74Tkz6K8xd;
+	Fri,  2 Aug 2024 23:07:19 +0800 (CST)
 Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
-	by mail.maildlp.com (Postfix) with ESMTPS id 959BE140A08;
-	Fri,  2 Aug 2024 23:07:33 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 91613140A86;
+	Fri,  2 Aug 2024 23:09:57 +0800 (CST)
 Received: from localhost (10.203.177.66) by lhrpeml500005.china.huawei.com
  (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Fri, 2 Aug
- 2024 16:07:32 +0100
-Date: Fri, 2 Aug 2024 16:07:31 +0100
+ 2024 16:09:56 +0100
+Date: Fri, 2 Aug 2024 16:09:55 +0100
 From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
 To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH v3 24/26] arch_numa: switch over to numa_memblks
-Message-ID: <20240802160731.00005f79@Huawei.com>
-In-Reply-To: <20240801060826.559858-25-rppt@kernel.org>
+Subject: Re: [PATCH v3 26/26] docs: move numa=fake description to
+ kernel-parameters.txt
+Message-ID: <20240802160955.00001093@Huawei.com>
+In-Reply-To: <20240801060826.559858-27-rppt@kernel.org>
 References: <20240801060826.559858-1-rppt@kernel.org>
-	<20240801060826.559858-25-rppt@kernel.org>
+	<20240801060826.559858-27-rppt@kernel.org>
 Organization: Huawei Technologies Research and Development (UK) Ltd.
 X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 MIME-Version: 1.0
@@ -60,24 +61,18 @@ Cc: nvdimm@lists.linux.dev, x86@kernel.org, Andreas Larsson <andreas@gaisler.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu,  1 Aug 2024 09:08:24 +0300
+On Thu,  1 Aug 2024 09:08:26 +0300
 Mike Rapoport <rppt@kernel.org> wrote:
 
 > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 > 
-> Until now arch_numa was directly translating firmware NUMA information
-> to memblock.
+> NUMA emulation can be now enabled on arm64 and riscv in addition to x86.
 > 
-> Using numa_memblks as an intermediate step has a few advantages:
-> * alignment with more battle tested x86 implementation
-> * availability of NUMA emulation
-> * maintaining node information for not yet populated memory
+> Move description of numa=fake parameters from x86 documentation of
+> admin-guide/kernel-parameters.txt
 > 
-> Replace current functionality related to numa_add_memblk() and
-> __node_distance() with the implementation based on numa_memblks and add
-> functions required by numa_emulation.
-> 
+> Suggested-by: Zi Yan <ziy@nvidia.com>
 > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Tested-by: Zi Yan <ziy@nvidia.com> # for x86_64 and arm64
-
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+
