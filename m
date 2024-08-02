@@ -4,48 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0A7DC52D70
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 06:06:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F07DCC3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 06:06:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lists.ozlabs.org;
-	s=201707; t=1722578767;
-	bh=9I9PRJK1eA/oZpcuetiypzDvBEF1ZsnK+kG9vlKQTi0=;
-	h=To:Subject:Date:In-Reply-To:References:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:From:Reply-To:Cc:
-	 From;
-	b=mEg6w6j/EKr7gyBLCEknfgO1wvxbydTfUA6D80/hNUjW/5DT1w/1zK61J5zpwKbJs
-	 6TWFCgoOerOEgexA5PagR6T0tOeSKhrMGer6l/NCYj7eSRKH+odC0o1lXguLOJslNI
-	 Ct7jbxNAriV1rSYJWg/cEBhsddDf/lBipiwJj9WKPkgJDGZy2uNlfDoeonDJ5nN7oK
-	 hyJCWc5yGTgSdY0klI+A9isqpByXgrqI2l168F3YBi4uOhuNa2pzscKk97/25bqAfB
-	 U67j+8CD+O/UIxJOJYfssm7KSPQz6rDXYQ9NWug2JKmzydMsFczNnZD9uyoYOCchRc
-	 lLtbDQ37UxQ4Q==
+	s=201707; t=1722578808;
+	bh=gV36URVWmw7CY7+M/fDSEbV9mGD1fUadgkI2OS2csFg=;
+	h=To:Subject:Date:List-Id:List-Unsubscribe:List-Archive:List-Post:
+	 List-Help:List-Subscribe:From:Reply-To:Cc:From;
+	b=N1b/2anlq/3qi45yacROcFljA7kZxehbLjK6C8K+HVnQ/LKp3KiTKHFmpBJbdZ9MU
+	 KwuzCwjU2/STYLwfVT//ZNyIRYSHgWgcrnNROlYODVWeXP3hjA28WeTiZHaHlvQ+ML
+	 8MpxTHKUF6JlS9W5hV542LXP2IxAKpLPmfm4KOt9nsw0ZAn7m4Iukr4R/amre8OlNU
+	 DL8SWP1ijCFg93SpEB0boyPV9m6UkvXiaU3WM3uFzNFHYZNFDMqYIZyiRwosgUJjsD
+	 eQMlmsItfGdoaPRkFt+u17R8FdMPiw+GK1LQIIKvxkxMBkGmAg8tW8BowAECzYcIoq
+	 znWplfaxfXu9w==
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WZwLl4BnGz3dTP
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 16:06:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WZwMX509Vz3dSp
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 16:06:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=tkos.co.il
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=tkos.co.il header.i=@tkos.co.il header.a=rsa-sha256 header.s=default header.b=jxw4ewpc;
+	dkim=pass (2048-bit key; secure) header.d=tkos.co.il header.i=@tkos.co.il header.a=rsa-sha256 header.s=default header.b=laksWbYU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tkos.co.il (client-ip=84.110.109.230; helo=mail.tkos.co.il; envelope-from=baruch@tkos.co.il; receiver=lists.ozlabs.org)
-Received: from mail.tkos.co.il (golan.tkos.co.il [84.110.109.230])
+Received: from mail.tkos.co.il (hours.tkos.co.il [84.110.109.230])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WZwJP2H19z3cK8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2024 16:04:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WZwJR0zY4z3cSd
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2024 16:04:07 +1000 (AEST)
 Received: from tarshish.tkos.co.il (unknown [10.0.8.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.tkos.co.il (Postfix) with ESMTPS id 67FEC440781;
-	Fri,  2 Aug 2024 09:02:40 +0300 (IDT)
+	by mail.tkos.co.il (Postfix) with ESMTPS id 9BC03440478;
+	Fri,  2 Aug 2024 09:02:39 +0300 (IDT)
 To: Christoph Hellwig <hch@lst.de>,
 	Marek Szyprowski <m.szyprowski@samsung.com>,
 	Catalin Marinas <catalin.marinas@arm.com>,
 	Will Deacon <will@kernel.org>
-Subject: [PATCH v5 3/3] arm64: support DMA zone above 4GB
-Date: Fri,  2 Aug 2024 09:03:48 +0300
-Message-ID: <517ef5af643bbc258b53c95b443ffe9678a95af3.1722578375.git.baruch@tkos.co.il>
+Subject: [PATCH v5 0/3] dma: support DMA zone starting above 4GB
+Date: Fri,  2 Aug 2024 09:03:45 +0300
+Message-ID: <cover.1722578375.git.baruch@tkos.co.il>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1722578375.git.baruch@tkos.co.il>
-References: <cover.1722578375.git.baruch@tkos.co.il>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -65,66 +62,91 @@ Cc: linux-s390@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, Ramon Fried <r
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Catalin Marinas <catalin.marinas@arm.com>
+DMA zones code assumes that DMA lower limit is zero. When there is no RAM 
+below 4GB, arm64 platform code sets DMA/DMA32 zone limits to cover the entire 
+RAM[0].
 
-Commit 791ab8b2e3db ("arm64: Ignore any DMA offsets in the
-max_zone_phys() calculation") made arm64 DMA/DMA32 zones span the entire
-RAM when RAM starts above 32-bits. This breaks hardware with DMA area
-that start above 32-bits. But the commit log says that "we haven't
-noticed any such hardware". It turns out that such hardware does exist.
+My target platform has RAM starting at 32GB. Devices with 30-bit DMA mask are 
+mapped to 1GB at the bottom of RAM, between 32GB - 33GB. DMA zone over the 
+entire RAM breaks DMA allocation for these devices.
 
-One such platform has RAM starting at 32GB with an internal bus that has
-the following DMA limits:
+In response to a previous RFC hack[1] Catalin Marinas suggested to add a
+separate offset value as base address for the DMA zone, and then refined the 
+suggestion to use start of RAM[3]. This series attempts to implement that 
+suggestion.
 
-  #address-cells = <2>;
-  #size-cells = <2>;
-  dma-ranges = <0x00 0xc0000000 0x08 0x00000000 0x00 0x40000000>;
+With this series applied, the DMA zone covers the right RAM range for my 
+platform.
 
-That is, devices under this bus see 1GB of DMA range between 3GB-4GB in
-their address space. This range is mapped to CPU memory at 32GB-33GB.
-With current code DMA allocations for devices under this bus are not
-limited to DMA area, leading to run-time allocation failure.
+v5:
 
-This commit reinstates DMA zone at the bottom of RAM. The result is DMA
-zone that properly reflects the hardware constraints as follows:
+  * Test the correct kernel
 
-[    0.000000] Zone ranges:
-[    0.000000]   DMA      [mem 0x0000000800000000-0x000000083fffffff]
-[    0.000000]   DMA32    empty
-[    0.000000]   Normal   [mem 0x0000000840000000-0x0000000bffffffff]
+  * Add missing patch that actually makes DMA zone work
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-[baruch: split off the original patch]
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
- arch/arm64/mm/init.c | 12 ------------
- 1 file changed, 12 deletions(-)
+  * Extend the treatment of zone_dma_limit > DMA_BIT_MASK(32)
 
-diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-index c45e2152ca9e..bfb10969cbf0 100644
---- a/arch/arm64/mm/init.c
-+++ b/arch/arm64/mm/init.c
-@@ -114,20 +114,8 @@ static void __init arch_reserve_crashkernel(void)
- 				    low_size, high);
- }
- 
--/*
-- * Return the maximum physical address for a zone given its limit.
-- * If DRAM starts above 32-bit, expand the zone to the maximum
-- * available memory, otherwise cap it at 32-bit.
-- */
- static phys_addr_t __init max_zone_phys(phys_addr_t zone_limit)
- {
--	phys_addr_t phys_start = memblock_start_of_DRAM();
--
--	if (phys_start > U32_MAX)
--		zone_limit = PHYS_ADDR_MAX;
--	else if (phys_start > zone_limit)
--		zone_limit = U32_MAX;
--
- 	return min(zone_limit, memblock_end_of_DRAM() - 1) + 1;
- }
- 
+  * Use max() to make the code somewhat more readable
+
+  * Change zone_dma_limit type to u64 to match DMA_BIT_MASK()
+
+v4:
+
+  * Drop last patch. zone_dma_limit includes RAM base address.
+
+  * Adjust DMA zone selection in swiotlb as well.
+
+  * Don't change max_zone_phys() behaviour
+
+  * Update code to fallback to DMA zone when zone_dma_limit > DMA_BIT_MASK(32)
+
+v3:
+
+  * Rebase on v6.11-rc1.
+
+  * Drop zone_dma_base. Use memblock_start_of_DRAM() instead.
+
+  * Drop DT patches. Low DMA range limit no longer needed.
+
+  * Add patch to improve dma_direct_optimal_gfp_mask() heuristics as Catalin 
+    suggested.
+
+RFC v2:
+
+  * Add patch from Catalin[2] changing zone_dma_bits to zone_dma_limit to 
+    simplify subsequent patches
+
+  * Test on real hardware
+
+RFC v1: https://lore.kernel.org/all/cover.1703683642.git.baruch@tkos.co.il/
+
+[0] See commit 791ab8b2e3db ("arm64: Ignore any DMA offsets in the 
+    max_zone_phys() calculation")
+
+[1] https://lore.kernel.org/all/9af8a19c3398e7dc09cfc1fbafed98d795d9f83e.1699464622.git.baruch@tkos.co.il/
+
+[2] https://lore.kernel.org/all/ZZ2HnHJV3gdzu1Aj@arm.com/
+
+[3] https://lore.kernel.org/all/ZnH-VU2iz9Q2KLbr@arm.com/
+
+Baruch Siach (1):
+  dma: improve DMA zone selection
+
+Catalin Marinas (2):
+  dma: replace zone_dma_bits by zone_dma_limit
+  arm64: support DMA zone above 4GB
+
+ arch/arm64/mm/init.c       | 32 ++++++++++----------------------
+ arch/powerpc/mm/mem.c      |  9 ++++-----
+ arch/s390/mm/init.c        |  2 +-
+ include/linux/dma-direct.h |  2 +-
+ kernel/dma/direct.c        | 10 +++++-----
+ kernel/dma/pool.c          |  4 ++--
+ kernel/dma/swiotlb.c       |  8 ++++----
+ 7 files changed, 27 insertions(+), 40 deletions(-)
+
+
+base-commit: 8400291e289ee6b2bf9779ff1c83a291501f017b
 -- 
 2.43.0
 
