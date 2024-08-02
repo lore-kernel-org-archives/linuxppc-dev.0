@@ -4,37 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17BDBC52D70
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 07:37:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29289C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 07:54:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lists.ozlabs.org;
-	s=201707; t=1722584250;
-	bh=Xzh64qwaa45Hvg89XOCE6AV0anqJ3OLRAHsZ6IZXMqM=;
+	s=201707; t=1722585278;
+	bh=lQ2Ps6i1BmkIKKyj11Lgvqoe2FbnplAavxz7k3fsiOE=;
 	h=Subject:To:References:Date:In-Reply-To:List-Id:List-Unsubscribe:
 	 List-Archive:List-Post:List-Help:List-Subscribe:From:Reply-To:Cc:
 	 From;
-	b=WHAcgQQ2Uv3YJxr1ajfyd37Q5+kHS/SJOhinVDaCZ1sWmAn6RlXZQtGJUm48qF5rQ
-	 H2bFjIv9znO56zBzQmma2Mt4Hz9hDpO8PyzXZEYl45ntWcGZJiq9DUwoLHVmNPpskS
-	 TNePzL4LYPrvL5lDTFOLmnfBh9J+kWs6QHI2GYwZlPsFepo3XlyFJNmgeFQNOILHTz
-	 66gfQZ1fkxHM7Ij+09C6tg+0lilM5AUfcChvmAo4vQHkaIGoN4/biQml5VpwNAwg/g
-	 R04hcp69MDfP87NLIXSRfjBryb6P1jds9BRNxX/RJ4er72JCXRx6CtoSyy+43XBtK6
-	 5MNY6IXqL47FQ==
+	b=I4S15yGuB4i8iYSYlDEjfeXVs6g7M/3wUHwTbeHw+Tr+EIMw4lZoRsF38zaOIOY1O
+	 x4oXySZBc+lUYY1LRU0OT4oUIIwskWvlLbDpj6OAQ2XMIr1suUgnEXP3rGrEfR7hPr
+	 uBy5X2jx2d0Adqvsb/otMj7k6Gc2lJ7Jhc062bFGuxQ0tBcu0vpvhPLw9ZAeCTzMk2
+	 O8aJAuAG6lkPqemL+12ju7cdosyJ6kQkWyc/IXriyotf4sdMBtLNBsrcsBdMxq0ytn
+	 4FMhhSgkzoY/0BZoLcazC11WQTw6GCS+jkwFgULmk/LWqne5hPtk6SbUFy/2Qps4UB
+	 IPre9BxrWi4Lg==
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WZyNB2blbz3dW3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 17:37:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WZyly4cq9z3dVR
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 17:54:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=loongson.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=loongson.cn (client-ip=114.242.206.163; helo=mail.loongson.cn; envelope-from=maobibo@loongson.cn; receiver=lists.ozlabs.org)
-X-Greylist: delayed 119 seconds by postgrey-1.37 at boromir; Fri, 02 Aug 2024 17:36:47 AEST
 Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WZyMM2wrBz3c9c
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2024 17:36:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WZyl90GHlz3cQM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2024 17:53:54 +1000 (AEST)
 Received: from loongson.cn (unknown [10.20.42.62])
-	by gateway (Coremail) with SMTP id _____8DxSuoQjKxmA1oGAA--.22230S3;
-	Fri, 02 Aug 2024 15:34:40 +0800 (CST)
+	by gateway (Coremail) with SMTP id _____8CxuOmRkKxmilwGAA--.22635S3;
+	Fri, 02 Aug 2024 15:53:53 +0800 (CST)
 Received: from [10.20.42.62] (unknown [10.20.42.62])
-	by front1 (Coremail) with SMTP id qMiowMCxbuUPjKxm0GILAA--.55848S3;
-	Fri, 02 Aug 2024 15:34:39 +0800 (CST)
-Subject: Re: [PATCH v12 65/84] KVM: LoongArch: Mark "struct page" pfns
- accessed only in "slow" page fault path
+	by front1 (Coremail) with SMTP id qMiowMCxbuWNkKxmIGcLAA--.55918S3;
+	Fri, 02 Aug 2024 15:53:50 +0800 (CST)
+Subject: Re: [PATCH v12 64/84] KVM: LoongArch: Mark "struct page" pfns dirty
+ only in "slow" page fault path
 To: Sean Christopherson <seanjc@google.com>,
  Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
  Oliver Upton <oliver.upton@linux.dev>, Tianrui Zhao
@@ -46,21 +45,21 @@ To: Sean Christopherson <seanjc@google.com>,
  Janosch Frank <frankja@linux.ibm.com>,
  Claudio Imbrenda <imbrenda@linux.ibm.com>
 References: <20240726235234.228822-1-seanjc@google.com>
- <20240726235234.228822-66-seanjc@google.com>
-Message-ID: <d5405245-edd3-9bc5-0c40-282a30e46fae@loongson.cn>
-Date: Fri, 2 Aug 2024 15:34:38 +0800
+ <20240726235234.228822-65-seanjc@google.com>
+Message-ID: <a039b758-d4e3-3798-806f-25bceb2f33a5@loongson.cn>
+Date: Fri, 2 Aug 2024 15:53:48 +0800
 User-Agent: Mozilla/5.0 (X11; Linux loongarch64; rv:68.0) Gecko/20100101
  Thunderbird/68.7.0
 MIME-Version: 1.0
-In-Reply-To: <20240726235234.228822-66-seanjc@google.com>
+In-Reply-To: <20240726235234.228822-65-seanjc@google.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: qMiowMCxbuUPjKxm0GILAA--.55848S3
+X-CM-TRANSID: qMiowMCxbuWNkKxmIGcLAA--.55918S3
 X-CM-SenderInfo: xpdruxter6z05rqj20fqof0/
-X-Coremail-Antispam: 1Uk129KBj93XoW7WFWUJw1rKF47AFWUZFWfCrX_yoW8ZF1xpF
-	ZxCwsrtr4rtrn093srta4qvF17Gw4DKr1xX3W2q34FkFnIqw1Y93W8W397WFyUJ392ya1S
-	vF1rt3WUWan0vacCm3ZEXasCq-sJn29KB7ZKAUJUUUUP529EdanIXcx71UUUUU7KY7ZEXa
+X-Coremail-Antispam: 1Uk129KBj93XoW7WFW8JryfWw13KFy5Xw4kKrX_yoW8ZFWxpF
+	W7CrZrCrWrtrnav39rt3sF9rs0yrs8Kr1xX3W7G34rKF1qqr1Yq3W0grZ7WF1fJ3s3AayS
+	qF1rKa4q9Fs5AwbCm3ZEXasCq-sJn29KB7ZKAUJUUUUd529EdanIXcx71UUUUU7KY7ZEXa
 	sCq-sGcSsGvfJ3Ic02F40EFcxC0VAKzVAqx4xG6I80ebIjqfuFe4nvWSU5nxnvy29KBjDU
 	0xBIdaVrnRJUUUPab4IE77IF4wAFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2
 	IYs7xG6rWj6s0DM7CIcVAFz4kK6r1Y6r17M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48v
@@ -96,68 +95,65 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 
 On 2024/7/27 上午7:52, Sean Christopherson wrote:
-> Mark pages accessed only in the slow path, before dropping mmu_lock when
-> faulting in guest memory so that LoongArch can convert to
-> kvm_release_faultin_page() without tripping its lockdep assertion on
-> mmu_lock being held.
+> Mark pages/folios dirty only the slow page fault path, i.e. only when
+> mmu_lock is held and the operation is mmu_notifier-protected, as marking a
+> page/folio dirty after it has been written back can make some filesystems
+> unhappy (backing KVM guests will such filesystem files is uncommon, and
+> the race is minuscule, hence the lack of complaints).
 > 
+> See the link below for details.
+> 
+> Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes@gmail.com
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->   arch/loongarch/kvm/mmu.c | 20 ++------------------
->   1 file changed, 2 insertions(+), 18 deletions(-)
+>   arch/loongarch/kvm/mmu.c | 18 ++++++++++--------
+>   1 file changed, 10 insertions(+), 8 deletions(-)
 > 
 > diff --git a/arch/loongarch/kvm/mmu.c b/arch/loongarch/kvm/mmu.c
-> index 364dd35e0557..52b5c16cf250 100644
+> index 2634a9e8d82c..364dd35e0557 100644
 > --- a/arch/loongarch/kvm/mmu.c
 > +++ b/arch/loongarch/kvm/mmu.c
-> @@ -552,12 +552,10 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
->   static int kvm_map_page_fast(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
->   {
->   	int ret = 0;
-> -	kvm_pfn_t pfn = 0;
->   	kvm_pte_t *ptep, changed, new;
->   	gfn_t gfn = gpa >> PAGE_SHIFT;
->   	struct kvm *kvm = vcpu->kvm;
->   	struct kvm_memory_slot *slot;
-> -	struct page *page;
+> @@ -608,13 +608,13 @@ static int kvm_map_page_fast(struct kvm_vcpu *vcpu, unsigned long gpa, bool writ
+>   		if (kvm_pte_young(changed))
+>   			kvm_set_pfn_accessed(pfn);
 >   
->   	spin_lock(&kvm->mmu_lock);
->   
-> @@ -570,8 +568,6 @@ static int kvm_map_page_fast(struct kvm_vcpu *vcpu, unsigned long gpa, bool writ
->   
->   	/* Track access to pages marked old */
->   	new = kvm_pte_mkyoung(*ptep);
-> -	/* call kvm_set_pfn_accessed() after unlock */
-> -
->   	if (write && !kvm_pte_dirty(new)) {
->   		if (!kvm_pte_write(new)) {
->   			ret = -EFAULT;
-> @@ -595,23 +591,11 @@ static int kvm_map_page_fast(struct kvm_vcpu *vcpu, unsigned long gpa, bool writ
+> -		if (kvm_pte_dirty(changed)) {
+> -			mark_page_dirty(kvm, gfn);
+> -			kvm_set_pfn_dirty(pfn);
+> -		}
+>   		if (page)
+>   			put_page(page);
 >   	}
+> +
+> +	if (kvm_pte_dirty(changed))
+> +		mark_page_dirty(kvm, gfn);
+> +
+>   	return ret;
+>   out:
+>   	spin_unlock(&kvm->mmu_lock);
+> @@ -915,12 +915,14 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+>   	else
+>   		++kvm->stat.pages;
+>   	kvm_set_pte(ptep, new_pte);
+> -	spin_unlock(&kvm->mmu_lock);
 >   
->   	changed = new ^ (*ptep);
-> -	if (changed) {
-> +	if (changed)
->   		kvm_set_pte(ptep, new);
-> -		pfn = kvm_pte_pfn(new);
-> -		page = kvm_pfn_to_refcounted_page(pfn);
-> -		if (page)
-> -			get_page(page);
+> -	if (prot_bits & _PAGE_DIRTY) {
+> -		mark_page_dirty_in_slot(kvm, memslot, gfn);
+> +	if (writeable)
+Is it better to use write or (prot_bits & _PAGE_DIRTY) here?  writable 
+is pte permission from function hva_to_pfn_slow(), write is fault action.
+
+Regards
+Bibo Mao
+>   		kvm_set_pfn_dirty(pfn);
 > -	}
 > +
->   	spin_unlock(&kvm->mmu_lock);
+> +	spin_unlock(&kvm->mmu_lock);
+> +
+> +	if (prot_bits & _PAGE_DIRTY)
+> +		mark_page_dirty_in_slot(kvm, memslot, gfn);
 >   
-> -	if (changed) {
-> -		if (kvm_pte_young(changed))
-> -			kvm_set_pfn_accessed(pfn);
-> -
-> -		if (page)
-> -			put_page(page);
-> -	}
-> -
->   	if (kvm_pte_dirty(changed))
->   		mark_page_dirty(kvm, gfn);
->   
+>   	kvm_release_pfn_clean(pfn);
+>   out:
 > 
-Reviewed-by: Bibo Mao <maobibo@loongson.cn>
 
