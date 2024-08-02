@@ -4,36 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3783C52D6D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 11:08:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D758BC3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 11:10:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wb3483qcsz3fpf
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 21:08:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wb36G4Gxxz3fps
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Aug 2024 21:10:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wb33j0Sjnz3dLS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2024 21:08:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wb35r4DzJz3dLS
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Aug 2024 21:10:24 +1000 (AEST)
 Received: from mail.maildlp.com (unknown [172.18.186.231])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Wb30V2qmDz6K69d;
-	Fri,  2 Aug 2024 19:05:46 +0800 (CST)
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Wb32l3LPdz6K9BV;
+	Fri,  2 Aug 2024 19:07:43 +0800 (CST)
 Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
-	by mail.maildlp.com (Postfix) with ESMTPS id C3E0C140A08;
-	Fri,  2 Aug 2024 19:08:24 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id CF3FF140A08;
+	Fri,  2 Aug 2024 19:10:20 +0800 (CST)
 Received: from localhost (10.203.177.66) by lhrpeml500005.china.huawei.com
  (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Fri, 2 Aug
- 2024 12:08:23 +0100
-Date: Fri, 2 Aug 2024 12:08:22 +0100
+ 2024 12:10:13 +0100
+Date: Fri, 2 Aug 2024 12:10:10 +0100
 From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
 To: Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH v3 20/26] mm: numa_memblks: introduce numa_memblks_init
-Message-ID: <20240802120822.0000214d@Huawei.com>
-In-Reply-To: <20240801060826.559858-21-rppt@kernel.org>
+Subject: Re: [PATCH v3 21/26] mm: numa_memblks: make several functions and
+ variables static
+Message-ID: <20240802121010.00000113@Huawei.com>
+In-Reply-To: <20240801060826.559858-22-rppt@kernel.org>
 References: <20240801060826.559858-1-rppt@kernel.org>
-	<20240801060826.559858-21-rppt@kernel.org>
+	<20240801060826.559858-22-rppt@kernel.org>
 Organization: Huawei Technologies Research and Development (UK) Ltd.
 X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 MIME-Version: 1.0
@@ -60,20 +61,20 @@ Cc: nvdimm@lists.linux.dev, x86@kernel.org, Andreas Larsson <andreas@gaisler.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu,  1 Aug 2024 09:08:20 +0300
+On Thu,  1 Aug 2024 09:08:21 +0300
 Mike Rapoport <rppt@kernel.org> wrote:
 
 > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 > 
-> Move most of x86::numa_init() to numa_memblks so that the latter will be
-> more self-contained.
+> Make functions and variables that are exclusively used by numa_memblks
+> static.
 > 
-> With this numa_memblk data structures should not be exposed to the
-> architecture specific code.
+> Move numa_nodemask_from_meminfo() before its callers to avoid forward
+> declaration.
 > 
 > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 > Tested-by: Zi Yan <ziy@nvidia.com> # for x86_64 and arm64
-
-Just code motion as expected.
+Good. I was wondering why some of this internal detail was in the header.
+Much nicer after this.
 
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
