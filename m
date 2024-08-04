@@ -4,71 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96E77C3DA64
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Aug 2024 11:21:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E9D6C3DA64
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Aug 2024 15:07:05 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=mXpJniDY;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q9bqMHcK;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q9bqMHcK;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WcHFw5M94z3cBd
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Aug 2024 21:21:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WcNFz3sQlz3ccf
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Aug 2024 01:07:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=mXpJniDY;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q9bqMHcK;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q9bqMHcK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2a00:1450:4864:20::12a; helo=mail-lf1-x12a.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WcHF650xsz30Vh
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Aug 2024 21:20:55 +1000 (AEST)
-Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-52efd855adbso13185546e87.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Aug 2024 04:20:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1722770448; x=1723375248; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=naFt/2TPrEyespmkdK+r5W6mEbQja09GmX+F0G7slfE=;
-        b=mXpJniDYJwPuycUw0mfiy9a3bn6RZWRUHSFCiLCqFOy20Vh6I2WVpqZzDNY7U68VUH
-         ZrGFooNR84P+WEiK1YVn9cth7Zrr3ZNldi0TWZm7e6R5CBnygGE43Fl4QlUvMy3JGzpB
-         RN9UaPtwmw/RKn9ypwcx3NMwge2PF8rnG501gMpTsMMMRady2lFIC7gxmtRAA/IJlvAm
-         r9V5Ut/xF0s3kzfgkpRQCfUVHrmYWqGeVdIZfaOjtU8c7VEYJBpVkJMNQuLEiOpwC3CJ
-         LErbJXcz8H80mXr3Y2y2UUf7+OKvjcip0PVh6KBhUAkXYwGJzrr4AxdfBNGENhx5NQH/
-         s1WQ==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WcNF71t6dz30Wh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Aug 2024 01:06:16 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1722783971;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=SvbvcFjU58ktq+KRI5iYfFYfuh6LM7bmOviBHt03oLI=;
+	b=Q9bqMHcKQ3vGFx4oo0ujLHiRdYIOGlyLmr4NbSFznzuupBzaSInM70xwWxWDxEE9wSnzmd
+	MD7bxuZj+offm4sJSpsg9Kt1PmwhZVegZxa6WfdDl2LItJJ1vasIB4EBScol9lK+T5GKKe
+	1D1Qyq6JHOqvpFFs36nKEJggZXKUlgM=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1722783971;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=SvbvcFjU58ktq+KRI5iYfFYfuh6LM7bmOviBHt03oLI=;
+	b=Q9bqMHcKQ3vGFx4oo0ujLHiRdYIOGlyLmr4NbSFznzuupBzaSInM70xwWxWDxEE9wSnzmd
+	MD7bxuZj+offm4sJSpsg9Kt1PmwhZVegZxa6WfdDl2LItJJ1vasIB4EBScol9lK+T5GKKe
+	1D1Qyq6JHOqvpFFs36nKEJggZXKUlgM=
+Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
+ [209.85.219.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-298-_0HEBMchMq6AZCsV1EG94g-1; Sun, 04 Aug 2024 11:06:10 -0400
+X-MC-Unique: _0HEBMchMq6AZCsV1EG94g-1
+Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-6b7973ab9cbso24769446d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Aug 2024 08:06:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1722770448; x=1723375248;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=naFt/2TPrEyespmkdK+r5W6mEbQja09GmX+F0G7slfE=;
-        b=ZUtwruXgh8bwPT0E51VCu0qouT0a7db9U0IPz6N+mrazfVRn6z08lGxB089bbEVrS9
-         hmCIgtvrk0CHLT8ITY0WKskzQBDNvKJLjHW0EyKlNjipzw6pJ6MMN+q65My6MxwGGj3y
-         5VfUeSfC6IgkWWscNOp2WZ3aTuwPIdgOUrAmPcwTuog4wNr32pU+4QufDehW+8b/XhM+
-         8xWDuMLg4P4F0r6JOl5EYjy0m3nz0Sjx5SkLeyFmaEUt1I8Gv0Vi+9rv9mb2RPu64QqM
-         gs45bHExDk1o7pLk9FcycqVsOd87bxa3SM/7qJGHnWt6+biqxh7qYp2bR+jqiGlzTkOi
-         m/oQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVbY0P4sllP3p4E1k3c9lf079S0YzHx0mOAF63m0J5HtrDIhqYO5k4s/Ljr+tdewUJb+qtqaK6tHphoWsNOXDfPV0LC3YguonRz49P2Pg==
-X-Gm-Message-State: AOJu0Yz3X3ByYg3uwplo2Y7b66okKY0pMnhDrOIHZJo4FQP9cqGngEYN
-	NoOBNcYp/ZRMEg+JuaYeKX4+6/cOIO2DU/QExyQGWiQbcjzI2iJ024H6yFjxvkU=
-X-Google-Smtp-Source: AGHT+IEHe/6seqXfqn42WjLsKMvex/gmkgM/thAq3H7Adr078nULgpEFm5oaDNI8wXsWquQ9nKsg4Q==
-X-Received: by 2002:a05:6512:2208:b0:52e:8475:7c2a with SMTP id 2adb3069b0e04-530bb36f8e8mr5290950e87.15.1722770447925;
-        Sun, 04 Aug 2024 04:20:47 -0700 (PDT)
-Received: from localhost ([2a02:8071:b783:6940:36f3:9aff:fec2:7e46])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a7dc9e849a0sm319025566b.186.2024.08.04.04.20.46
+        d=1e100.net; s=20230601; t=1722783969; x=1723388769;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=SvbvcFjU58ktq+KRI5iYfFYfuh6LM7bmOviBHt03oLI=;
+        b=vuHE0GtPC4/gJH5PtktFyZNPxvl9D1OS6SCJR+0uBKSl4gwnhcrrkutgpjR0DdRQPf
+         WCySLn1xEFiH7dH0QJGTzsVXwZJM6+GiOuNy2Rdw/mxWHhNmbcrVJKAWP6TNdfrceE00
+         nq6Pultwvt/btfmJR+Op3zXIu6tKQf1UX85C1MGhQsGY1hQKDaH5pMinrzYV0seEMyJT
+         pPWOgsMcZSYEojF0jGhgcxXsZO+eCad5ttwwzTOju0P6dqDZnG7KDcEfVHfNLDDIsmEF
+         okdrXf40+Uv3Ynekjxs0BDpOfv8ViwVt/QJWp9gPnXWMgpXSEQhMCD7sYOZQ7DjXL2RX
+         Hitw==
+X-Forwarded-Encrypted: i=1; AJvYcCVrZARqbOjbqLd4fIKuolDTLB6sRzcl/4xp6U0LoPwLTqrmCIaRxBlMOouQKpkJ9mX/AhEbQPRI/M3pXXjxmX0efrEsPfQEakqCM174bw==
+X-Gm-Message-State: AOJu0Yybdwz8/YLlmeOhlDTTIDr+DDaqU0SZ0tUEgOzbempO8pUjOuKc
+	uqluGj0NnLUrhjHwn/A9xUF7tVs1gwm8yjIWuJAOwuqJpbcn8XgrWLKXDx7wXjCZ2RbtPAor2rJ
+	/J7BZWMl6Hg5wHmIucFjqAM0OhWvo1ySM8w78Rbh7akSJZR2HUVI3xlPvkMnouXw=
+X-Received: by 2002:ad4:4ee1:0:b0:6b7:b2fb:7dcd with SMTP id 6a1803df08f44-6bb98408bc3mr68328726d6.8.1722783969534;
+        Sun, 04 Aug 2024 08:06:09 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFAHSZ75g6qzRAE6XgtCfAsaJachILokCvd/ttfnqNGQLClyVvD5fN6U4DiFXAwrTwReCdoYA==
+X-Received: by 2002:ad4:4ee1:0:b0:6b7:b2fb:7dcd with SMTP id 6a1803df08f44-6bb98408bc3mr68328306d6.8.1722783969070;
+        Sun, 04 Aug 2024 08:06:09 -0700 (PDT)
+Received: from x1n (pool-99-254-121-117.cpe.net.cable.rogers.com. [99.254.121.117])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6bb9c797741sm26466216d6.44.2024.08.04.08.06.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 04 Aug 2024 04:20:47 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/476: Drop explicit initialization of struct i2c_device_id::driver_data to 0
-Date: Sun,  4 Aug 2024 13:20:31 +0200
-Message-ID: <20240804112032.3628645-2-u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.45.2
+        Sun, 04 Aug 2024 08:06:08 -0700 (PDT)
+Date: Sun, 4 Aug 2024 11:06:06 -0400
+From: Peter Xu <peterx@redhat.com>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v3 2/8] mm/mprotect: Remove NUMA_HUGE_PTE_UPDATES
+Message-ID: <Zq-Y3qs5_PZW04bt@x1n>
+References: <20240715192142.3241557-1-peterx@redhat.com>
+ <20240715192142.3241557-3-peterx@redhat.com>
+ <added2d0-b8be-4108-82ca-1367a388d0b1@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=919; i=u.kleine-koenig@baylibre.com; h=from:subject; bh=HFIQE70Wsli1FhtMIKGsruMMilKtz27VZKS1nHQOi1k=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBmr2QA70BnoUcgjSR4pSyiyiKTK8LGX8/ACljrX WlEcsd8mxSJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCZq9kAAAKCRCPgPtYfRL+ TgnJCACP5UjthvLxSwCPBVuIuwfAcD4D0w6AL0QOqQj4aUWy+Jml8CPemsceoXCDiGWcGX9pJyA yV4FIcKyj9cVa+/55NvG3us9WbwXGnVkE6ca/YH4/Za8N7aD2kQ7Y7tzs4/ye94sbkIqGLTGRbs oCGgWsAhF7372FALA0BeH0IhGTMcMtXh58lsQzA09j06W2FrE9vvz+p9sUiy4Luv03f7EMi3g5M 7u8gsnPjLIQtby2AQQjTlWE1qodMAdkXvtrDhUXIRbZGgc1r2WURI+xR5/25+JJ/URm4gV2qeSg 9zWVHUpvbdy7YfkqKxiAZUPbp8Fbz2FfYaIfL9Jr4Jprt8Sk
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <added2d0-b8be-4108-82ca-1367a388d0b1@redhat.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,37 +100,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org, Christophe Leroy <christophe.leroy@csgroup.eu>, Dan Williams <dan.j.williams@intel.com>, Dave Jiang <dave.jiang@intel.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Ingo Molnar <mingo@redhat.com>, Huang Ying <ying.huang@intel.com>, Alex Thorlton <athorlton@sgi.com>, Rik van Riel <riel@surriel.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill@shutemov.name>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, Mel Gorman <mgorman@techsingularity.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This driver doesn't use the driver_data member of struct i2c_device_id,
-so don't explicitly initialize this member.
+On Wed, Jul 31, 2024 at 02:18:26PM +0200, David Hildenbrand wrote:
+> On 15.07.24 21:21, Peter Xu wrote:
+> > In 2013, commit 72403b4a0fbd ("mm: numa: return the number of base pages
+> > altered by protection changes") introduced "numa_huge_pte_updates" vmstat
+> > entry, trying to capture how many huge ptes (in reality, PMD thps at that
+> > time) are marked by NUMA balancing.
+> > 
+> > This patch proposes to remove it for some reasons.
+> > 
+> > Firstly, the name is misleading. We can have more than one way to have a
+> > "huge pte" at least nowadays, and that's also the major goal of this patch,
+> > where it paves way for PUD handling in change protection code paths.
+> > 
+> > PUDs are coming not only for dax (which has already came and yet broken..),
+> > but also for pfnmaps and hugetlb pages.  The name will simply stop making
+> > sense when PUD will start to be involved in mprotect() world.
+> > 
+> > It'll also make it not reasonable either if we boost the counter for both
+> > pmd/puds.  In short, current accounting won't be right when PUD comes, so
+> > the scheme was only suitable at that point in time where PUD wasn't even
+> > possible.
+> > 
+> > Secondly, the accounting was simply not right from the start as long as it
+> > was also affected by other call sites besides NUMA.  mprotect() is one,
+> > while userfaultfd-wp also leverages change protection path to modify
+> > pgtables.  If it wants to do right it needs to check the caller but it
+> > never did; at least mprotect() should be there even in 2013.
+> > 
+> > It gives me the impression that nobody is seriously using this field, and
+> > it's also impossible to be serious.
+> 
+> It's weird and the implementation is ugly. The intention really was to only
+> consider MM_CP_PROT_NUMA, but that apparently is not the case.
+> 
+> hugetlb/mprotect/... should have never been accounted.
+> 
+> [...]
+> 
+> > diff --git a/mm/vmstat.c b/mm/vmstat.c
+> > index 73d791d1caad..53656227f70d 100644
+> > --- a/mm/vmstat.c
+> > +++ b/mm/vmstat.c
+> > @@ -1313,7 +1313,6 @@ const char * const vmstat_text[] = {
+> >   #ifdef CONFIG_NUMA_BALANCING
+> >   	"numa_pte_updates",
+> > -	"numa_huge_pte_updates",
+> >   	"numa_hint_faults",
+> >   	"numa_hint_faults_local",
+> >   	"numa_pages_migrated",
+> 
+> It's a user-visible update. I assume most tools should be prepared for this
+> stat missing (just like handling !CONFIG_NUMA_BALANCING).
+> 
+> Apparently it's documented [1][2] for some distros:
 
-This prepares putting driver_data in an anonymous union which requires
-either no initialization or named designators. But it's also a nice
-cleanup on its own.
+Yes, and AFAIU, [2] is a document to explain an issue relevant to numa
+balancing, and I'd highly doubt [2] referenced [1] here; even the order of
+the parameters are the same to be listed.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
----
- arch/powerpc/platforms/44x/ppc476.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> "The amount of transparent huge pages that were marked for NUMA hinting
+> faults. In combination with numa_pte_updates the total address space that
+> was marked can be calculated."
+> 
+> And now I realize that change_prot_numa() would account these PMD updates as
+> well in numa_pte_updates and I am confused about the SUSE documentation: "In
+> combination with numa_pte_updates" doesn't really apply, right?
+> 
+> At this point I don't know what's right or wrong.
 
-diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
-index 164cbcd4588e..e7b7bdaad341 100644
---- a/arch/powerpc/platforms/44x/ppc476.c
-+++ b/arch/powerpc/platforms/44x/ppc476.c
-@@ -95,7 +95,7 @@ static int avr_probe(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id avr_id[] = {
--	{ "akebono-avr", 0 },
-+	{ "akebono-avr" },
- 	{ }
- };
- 
+Me neither, even without PUD involvement.
 
-base-commit: f524a5e4dfb75b277c9a5ad819ca5f035f490f14
+Talking about numa_pte_updates, hugetlb_change_protection() returns "number
+of huge ptes", so one 2M hugetlb page is accounted once; while comparing to
+the generic THP (change_protection_range()) it's HPAGE_PUD_NR.  It'll make
+more sense to me if it sticks with PAGE_SIZE.  So all these counters look a
+bit confusing.
+
+> 
+> If we'd want to fix it instead, the right thing to do would be doing the
+> accounting only with MM_CP_PROT_NUMA. But then, numa_pte_updates is also
+> wrongly updated I believe :(
+
+Right.
+
+I don't have a reason to change numa_pte_updates semantics yet so far, but
+here there's the problem where numa_huge_pte_updates can be ambiguous when
+there is even PUD involved.
+
+In general, I don't know how I should treat this counter in PUD path even
+if NUMA isn't involved in dax yet; it can be soon involved if we move on
+with using this same path for hugetlb, or when 1G thp can be possible (with
+Yu Zhao's TAO?).
+
+One other thing I can do is I drop this patch, ignore NUMA_HUGE_PTE_UPDATES
+in PUD dax processing for now.  It'll work for this series, but it'll still
+be a problem later.  I figured maybe we should simply drop it from now.
+
+Thanks,
+
+> 
+> 
+> [1] https://documentation.suse.com/de-de/sles/12-SP5/html/SLES-all/cha-tuning-numactl.html
+> [2] https://support.oracle.com/knowledge/Oracle%20Linux%20and%20Virtualization/2749259_1.html
+> 
+> -- 
+> Cheers,
+> 
+> David / dhildenb
+> 
+
 -- 
-2.45.2
+Peter Xu
 
