@@ -4,38 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADF32C3DA64
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 09:17:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA312C3DA64
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 09:17:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WdSPG2x5qz3d32
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 19:17:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WdSQG2ps9z3dTV
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 19:17:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1002 seconds by postgrey-1.37 at boromir; Tue, 06 Aug 2024 19:16:23 AEST
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WdSNR0ff1z301T
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2024 19:16:17 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.19.88.105])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4WdRyn2YkRzfZkB;
-	Tue,  6 Aug 2024 16:57:37 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WdSPr3w7xz301T
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2024 19:17:36 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.19.163.48])
+	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4WdRvv15sVzQngm;
+	Tue,  6 Aug 2024 16:55:07 +0800 (CST)
 Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
-	by mail.maildlp.com (Postfix) with ESMTPS id AA8EA14011B;
-	Tue,  6 Aug 2024 16:59:30 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id A30A118009B;
+	Tue,  6 Aug 2024 16:59:32 +0800 (CST)
 Received: from localhost.localdomain (10.50.165.33) by
  kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1258.34; Tue, 6 Aug 2024 16:59:29 +0800
+ 15.2.1258.34; Tue, 6 Aug 2024 16:59:31 +0800
 From: Yicong Yang <yangyicong@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
 	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
 	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
 	<dave.hansen@linux.intel.com>
-Subject: [PATCH v5 0/4] Support SMT control on arm64
-Date: Tue, 6 Aug 2024 16:53:16 +0800
-Message-ID: <20240806085320.63514-1-yangyicong@huawei.com>
+Subject: [PATCH v5 3/4] arm64: topology: Support SMT control on ACPI based system
+Date: Tue, 6 Aug 2024 16:53:19 +0800
+Message-ID: <20240806085320.63514-4-yangyicong@huawei.com>
 X-Mailer: git-send-email 2.31.0
+In-Reply-To: <20240806085320.63514-1-yangyicong@huawei.com>
+References: <20240806085320.63514-1-yangyicong@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -59,51 +60,80 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Yicong Yang <yangyicong@hisilicon.com>
 
-The core CPU control framework supports runtime SMT control which
-is not yet supported on arm64. Besides the general vulnerabilities
-concerns we want this runtime control on our arm64 server for:
+For ACPI we'll build the topology from PPTT and we cannot directly
+get the SMT number of each core. Instead using a temporary xarray
+to record the SMT number of each core when building the topology
+and we can know the largest SMT number in the system. Then we can
+enable the support of SMT control.
 
-- better single CPU performance in some cases
-- saving overall power consumption
+Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
+---
+ arch/arm64/kernel/topology.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-This patchset implements it in the following aspects:
-
-- Provides a default topology_is_primary_thread()
-- support retrieve SMT thread number on OF based system
-- support retrieve SMT thread number on ACPI based system
-- select HOTPLUG_SMT for arm64
-
-Tests has been done on our real ACPI based arm64 server and on
-ACPI/OF based QEMU VMs.
-
-Change since v4:
-- Provide a default topology_is_primary_thread() in the framework, Per Will
-Link: https://lore.kernel.org/linux-arm-kernel/20231121092602.47792-1-yangyicong@huawei.com/
-
-Change since v3:
-- Fix some build and kconfig error reported by kernel test robot <lkp@intel.com>
-Link: https://lore.kernel.org/linux-arm-kernel/20231114040110.54590-1-yangyicong@huawei.com/
-
-Change since v2:
-- Detect SMT thread number at topology build from ACPI/DT, avoid looping CPUs
-- Split patches into ACPI/OF/arch_topology path and enable the kconfig for arm64
-Link: https://lore.kernel.org/linux-arm-kernel/20231010115335.13862-1-yangyicong@huawei.com/
-
-
-Yicong Yang (4):
-  cpu/SMT: Provide a default topology_is_primary_thread()
-  arch_topology: Support SMT control for OF based system
-  arm64: topology: Support SMT control on ACPI based system
-  arm64: Kconfig: Enable HOTPLUG_SMT
-
- arch/arm64/Kconfig                  |  1 +
- arch/arm64/kernel/topology.c        | 24 ++++++++++++++++++++++++
- arch/powerpc/include/asm/topology.h |  1 +
- arch/x86/include/asm/topology.h     |  2 +-
- drivers/base/arch_topology.c        | 13 +++++++++++++
- include/linux/topology.h            | 14 ++++++++++++++
- 6 files changed, 54 insertions(+), 1 deletion(-)
-
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 1a2c72f3e7f8..f72e1e55b05e 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -15,8 +15,10 @@
+ #include <linux/arch_topology.h>
+ #include <linux/cacheinfo.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_smt.h>
+ #include <linux/init.h>
+ #include <linux/percpu.h>
++#include <linux/xarray.h>
+ 
+ #include <asm/cpu.h>
+ #include <asm/cputype.h>
+@@ -43,11 +45,16 @@ static bool __init acpi_cpu_is_threaded(int cpu)
+  */
+ int __init parse_acpi_topology(void)
+ {
++	int thread_num, max_smt_thread_num = 1;
++	struct xarray core_threads;
+ 	int cpu, topology_id;
++	void *entry;
+ 
+ 	if (acpi_disabled)
+ 		return 0;
+ 
++	xa_init(&core_threads);
++
+ 	for_each_possible_cpu(cpu) {
+ 		topology_id = find_acpi_cpu_topology(cpu, 0);
+ 		if (topology_id < 0)
+@@ -57,6 +64,20 @@ int __init parse_acpi_topology(void)
+ 			cpu_topology[cpu].thread_id = topology_id;
+ 			topology_id = find_acpi_cpu_topology(cpu, 1);
+ 			cpu_topology[cpu].core_id   = topology_id;
++
++			entry = xa_load(&core_threads, topology_id);
++			if (!entry) {
++				xa_store(&core_threads, topology_id,
++					 xa_mk_value(1), GFP_KERNEL);
++			} else {
++				thread_num = xa_to_value(entry);
++				thread_num++;
++				xa_store(&core_threads, topology_id,
++					 xa_mk_value(thread_num), GFP_KERNEL);
++
++				if (thread_num > max_smt_thread_num)
++					max_smt_thread_num = thread_num;
++			}
+ 		} else {
+ 			cpu_topology[cpu].thread_id  = -1;
+ 			cpu_topology[cpu].core_id    = topology_id;
+@@ -67,6 +88,9 @@ int __init parse_acpi_topology(void)
+ 		cpu_topology[cpu].package_id = topology_id;
+ 	}
+ 
++	cpu_smt_set_num_threads(max_smt_thread_num, max_smt_thread_num);
++
++	xa_destroy(&core_threads);
+ 	return 0;
+ }
+ #endif
 -- 
 2.24.0
 
