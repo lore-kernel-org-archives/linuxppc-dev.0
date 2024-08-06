@@ -4,69 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8758DC52D6D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 08:26:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7FA3C3DA64
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 08:56:11 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=JAuVCdH8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TvyE56tY;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WdRGV6M05z3cT8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 18:26:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WdRx63MbLz3cY8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 18:56:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=JAuVCdH8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TvyE56tY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=tabba@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WdRFj4Yvgz30T6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2024 18:25:28 +1000 (AEST)
-Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-368526b1333so3800513f8f.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Aug 2024 01:25:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1722932721; x=1723537521; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=mJJmve+UBZqWHPzqvXAkYx9wHC1+4s/jebXaeWpKSm4=;
-        b=JAuVCdH8YgliPqlL5MkQV5+lq1PZpjDzoc/AMnuU2MkyyhFEO2djkk3D+iikSqQczg
-         IO+Jm7leOTKjecBaAcrhXLE4fWEyp+baClWGBOxG0Pi/9OCDV7kRexYq8Dnf2BMRdCBH
-         IW0jHhHxVBfERTh1EvpYuDhrlLSjPnT71hGnRqD6kGD//CrCnTxE4iKDth8QZTnSnbDr
-         0uoGJEdPA2jwHLoljts7rpV149y0AwE+YPXpE5xvO2LO28bIMAeirs0NvqYOOIX3SOmf
-         mGsxrM05TmS7tIVkcECexyUhb4KbcxizmriOaUs1+hR/qS28q8k9s91Wezn4IsspS1e1
-         7hbw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1722932721; x=1723537521;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=mJJmve+UBZqWHPzqvXAkYx9wHC1+4s/jebXaeWpKSm4=;
-        b=tRnp4AzcOTumXvPNWutAWqc3pThsL/A9INrN6LEtV1/WGqm71APkXsaiF4eDBtyvIY
-         CV9fvz11sjcusCQA3mpWAzA6YrOQLmvNRRLN36aeFFgxjsDrABIeT8ukusx5QUnvVfr5
-         WK/eq3/ENY7hpGDNDYfyM8IkDP3n90p4ai7bADExnhKSqbgZXgNFSx/7zEiJ9Qj5EEZM
-         LSUOzlbES/8qQbx4kSmKx2MdYGFEbDQB1dQvUV/BhMcisponGMyY1NAyYQ8eLyZskpt0
-         cbnVeqwpsXUvhPLW12FEq9xc7/wzrZP+KAwAOZOHx20nJPjopZ5ctFnnhBUo6C1GxepE
-         HkSA==
-X-Forwarded-Encrypted: i=1; AJvYcCV8ll0Ms604bp7+uHCJBvN110qQ+Ie65OP+PGS904riiG/QfUY62GS7/RiHAvUGiHG2msPTOr0QTGpVXbffBN6tdVAc9iUf4Eorbvs59w==
-X-Gm-Message-State: AOJu0Yw0Gm+wTfUfMiUZeQBYn7lLNqTiv1iq+cQ0K06lUsAOWb4LPC1a
-	YxsCRDHWUwAF40ro0YsePGE64XaKy6IhG0pxYSSATlQ5DO7MoLuLdKvgu10oSYp7ySVbHpipGAI
-	ZnozFLW0f47vVd2UNbUjDzlNF9a88Ztud91uo
-X-Google-Smtp-Source: AGHT+IEuJVBQVgvvzdKoA/IljQMVSQQCy4ILUfIi4PfR2IcPP3crNOUdNiIGa90I2U+SlhluocGZ2/3ZifLac4nEAJY=
-X-Received: by 2002:a05:6000:1151:b0:362:2af4:43cc with SMTP id
- ffacd0b85a97d-36bbbe5be99mr9354068f8f.19.1722932721184; Tue, 06 Aug 2024
- 01:25:21 -0700 (PDT)
-MIME-Version: 1.0
-References: <20240726235234.228822-1-seanjc@google.com> <20240726235234.228822-55-seanjc@google.com>
- <ZrFfgzRbiqT-Zi2O@linux.dev>
-In-Reply-To: <ZrFfgzRbiqT-Zi2O@linux.dev>
-From: Fuad Tabba <tabba@google.com>
-Date: Tue, 6 Aug 2024 09:24:43 +0100
-Message-ID: <CA+EHjTxZwDOeC94Y1otxcp-mcwUZA=TpQp4pav-E8Xvb2MA64Q@mail.gmail.com>
-Subject: Re: [PATCH v12 54/84] KVM: arm64: Mark "struct page" pfns
- accessed/dirty before dropping mmu_lock
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WdRwL54gFz2yVP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2024 18:55:30 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sin.source.kernel.org (Postfix) with ESMTP id 7AB70CE0DA2;
+	Tue,  6 Aug 2024 08:55:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AADD4C32786;
+	Tue,  6 Aug 2024 08:55:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1722934525;
+	bh=fNf9KpbqDQ65Rk4oRZ3GXyFRT5bkqehalm3Q1gthkSc=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=TvyE56tYK3MKji+0edYs5FwYHls/3UPSKwVbaoXysQtem6W2x+AET4eygFoJ270tI
+	 6is1jeOuW5z+PbS7fnA27BMCC3phJInVGslO8AhaKB9ivP5S2ZBEhteFvegf0sNC07
+	 YuYNAYg3Ep0MduJiROIWjoOmIH55ccwgUfSuNAPNx6hoXS8jgGo2ML5Y+EbSKa//H6
+	 qXIOM/QqJNB7uUWkG7Of8+R8HbDap7Dq1ryl/W6Vm+HeJRqfR1e4JB09R8xYefspTt
+	 olHjIDWbI3frln7WrTDqsLUJrFNhb1Dd1/4PSD3AIjdlmZxoljfb5rTBMMtrJ7t0uu
+	 cPa7Eq2CqB8qw==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.95)
+	(envelope-from <maz@kernel.org>)
+	id 1sbFyV-001J7s-7B;
+	Tue, 06 Aug 2024 09:55:23 +0100
+Date: Tue, 06 Aug 2024 09:55:22 +0100
+Message-ID: <86ikwe2fph.wl-maz@kernel.org>
+From: Marc Zyngier <maz@kernel.org>
 To: Oliver Upton <oliver.upton@linux.dev>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH v12 54/84] KVM: arm64: Mark "struct page" pfns accessed/dirty before dropping mmu_lock
+In-Reply-To: <ZrFfvjy_-Tyx4xUV@linux.dev>
+References: <20240726235234.228822-1-seanjc@google.com>
+	<20240726235234.228822-55-seanjc@google.com>
+	<ZrFfgzRbiqT-Zi2O@linux.dev>
+	<ZrFfvjy_-Tyx4xUV@linux.dev>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
+ FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/29.3
+ (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: oliver.upton@linux.dev, seanjc@google.com, pbonzini@redhat.com, zhaotianrui@loongson.cn, maobibo@loongson.cn, chenhuacai@kernel.org, mpe@ellerman.id.au, anup@brainfault.org, paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu, borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, dmatlack@google.com, stevensd@chromium.org, tabba@google.com
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,83 +74,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, David Matlack <dmatlack@google.com>, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Janosch Frank <frankja@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Sean Christopherson <seanjc@google.com>, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, David Stevens <stevensd@chromium.org>, kvm-riscv@lists.infradead.org, Paolo Bonzini <pbonzini@redhat.com>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, David Matlack <dmatlack@google.com>, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Huacai Chen <chenhuacai@kernel.org>, Fuad Tabba <tabba@google.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Bibo Mao <maobibo@loongson.cn>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, kvmarm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Sean Christopherson <seanjc@google.com>, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, David Stevens <stevensd@chromium.org>, kvm-riscv@lists.infradead.org, Paolo Bonzini <pbonzini@redhat.com>, Tianrui Zhao <zhaotianrui@loongson.cn>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Oliver,
+On Tue, 06 Aug 2024 00:26:54 +0100,
+Oliver Upton <oliver.upton@linux.dev> wrote:
+> 
+> On Mon, Aug 05, 2024 at 11:26:03PM +0000, Oliver Upton wrote:
+> > [+cc Fuad]
+> 
+> Take 2!
+> 
+> > Fuad, you mentioned in commit 9c30fc615daa ("KVM: arm64: Move setting
+> > the page as dirty out of the critical section") that restructuring
+> > around the MMU lock was helpful for reuse (presumably for pKVM), but I
+> > lack the context there.
+> > 
+> > On Fri, Jul 26, 2024 at 04:52:03PM -0700, Sean Christopherson wrote:
+> > > Mark pages/folios accessed+dirty prior to dropping mmu_lock, as marking a
+> > > page/folio dirty after it has been written back can make some filesystems
+> > > unhappy (backing KVM guests will such filesystem files is uncommon, and
+> > 
+> > typo: s/will/with/
+> > 
+> > > the race is minuscule, hence the lack of complaints).  See the link below
+> > > for details.
 
-On Tue, 6 Aug 2024 at 00:26, Oliver Upton <oliver.upton@linux.dev> wrote:
->
-> [+cc Fuad]
->
-> Fuad, you mentioned in commit 9c30fc615daa ("KVM: arm64: Move setting
-> the page as dirty out of the critical section") that restructuring
-> around the MMU lock was helpful for reuse (presumably for pKVM), but I
-> lack the context there.
-
-That was for some refactoring I'd done later on for mem_aborts in
-pKVM. That said, I didn't know at the time that there might be a race
-with some filesystems. I'll keep this in mind for the pKVM code we
-have for now, and when upstreaming.
+Should we consider reverting 9c30fc615daa then?
 
 Thanks,
-/fuad
 
-> On Fri, Jul 26, 2024 at 04:52:03PM -0700, Sean Christopherson wrote:
-> > Mark pages/folios accessed+dirty prior to dropping mmu_lock, as marking a
-> > page/folio dirty after it has been written back can make some filesystems
-> > unhappy (backing KVM guests will such filesystem files is uncommon, and
->
-> typo: s/will/with/
->
-> > the race is minuscule, hence the lack of complaints).  See the link below
-> > for details.
-> >
-> > This will also allow converting arm64 to kvm_release_faultin_page(), which
-> > requires that mmu_lock be held (for the aforementioned reason).
-> >
-> > Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes@gmail.com
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > ---
-> >  arch/arm64/kvm/mmu.c | 10 ++++++----
-> >  1 file changed, 6 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-> > index 22ee37360c4e..ce13c3d884d5 100644
-> > --- a/arch/arm64/kvm/mmu.c
-> > +++ b/arch/arm64/kvm/mmu.c
-> > @@ -1685,15 +1685,17 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
-> >       }
-> >
-> >  out_unlock:
-> > +     if (writable && !ret)
-> > +             kvm_set_pfn_dirty(pfn);
->
-> I'm guessing you meant kvm_release_pfn_dirty() here, because this leaks
-> a reference.
->
-> > +     else
-> > +             kvm_release_pfn_clean(pfn);
-> > +
-> >       read_unlock(&kvm->mmu_lock);
-> >
-> >       /* Mark the page dirty only if the fault is handled successfully */
-> > -     if (writable && !ret) {
-> > -             kvm_set_pfn_dirty(pfn);
-> > +     if (writable && !ret)
-> >               mark_page_dirty_in_slot(kvm, memslot, gfn);
-> > -     }
-> >
-> > -     kvm_release_pfn_clean(pfn);
-> >       return ret != -EAGAIN ? ret : 0;
-> >  }
-> >
-> > --
-> > 2.46.0.rc1.232.g9752f9e123-goog
-> >
->
-> --
-> Thanks,
-> Oliver
->
+	M.
+
+-- 
+Without deviation from the norm, progress is not possible.
