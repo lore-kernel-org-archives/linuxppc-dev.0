@@ -4,45 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC98AC3DA64
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 09:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD0D6C3DA64
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 10:05:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WdSTX3r9mz3cmV
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 19:20:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WdST700sWz30T6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2024 19:20:26 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.19.88.105])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4WdS0f1f9Wz1L9tY;
-	Tue,  6 Aug 2024 16:59:14 +0800 (CST)
-Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
-	by mail.maildlp.com (Postfix) with ESMTPS id 507E11400D8;
-	Tue,  6 Aug 2024 16:59:33 +0800 (CST)
-Received: from localhost.localdomain (10.50.165.33) by
- kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1258.34; Tue, 6 Aug 2024 16:59:32 +0800
-From: Yicong Yang <yangyicong@huawei.com>
-To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
-	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
-	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>
-Subject: [PATCH v5 4/4] arm64: Kconfig: Enable HOTPLUG_SMT
-Date: Tue, 6 Aug 2024 16:53:20 +0800
-Message-ID: <20240806085320.63514-5-yangyicong@huawei.com>
-X-Mailer: git-send-email 2.31.0
-In-Reply-To: <20240806085320.63514-1-yangyicong@huawei.com>
-References: <20240806085320.63514-1-yangyicong@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WdTSr60qTz3dHR
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Aug 2024 20:05:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WdTSQ03cqz30Tk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Aug 2024 20:04:50 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 82D53DA7;
+	Tue,  6 Aug 2024 03:04:44 -0700 (PDT)
+Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C837F3F6A8;
+	Tue,  6 Aug 2024 03:04:15 -0700 (PDT)
+Date: Tue, 6 Aug 2024 11:04:13 +0100
+From: Joey Gouly <joey.gouly@arm.com>
+To: Dave Martin <Dave.Martin@arm.com>
+Subject: Re: [PATCH v4 04/29] arm64: disable trapping of POR_EL0 to EL2
+Message-ID: <20240806100413.GE841837@e124191.cambridge.arm.com>
+References: <20240503130147.1154804-1-joey.gouly@arm.com>
+ <20240503130147.1154804-5-joey.gouly@arm.com>
+ <ZqJyzZB8Y8GLzYIA@e133380.arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.50.165.33]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- kwepemd200014.china.huawei.com (7.221.188.8)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ZqJyzZB8Y8GLzYIA@e133380.arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,31 +43,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: xuwei5@huawei.com, rafael@kernel.org, gregkh@linuxfoundation.org, x86@kernel.org, guohanjun@huawei.com, linux-kernel@vger.kernel.org, linuxarm@huawei.com, prime.zeng@hisilicon.com, jonathan.cameron@huawei.com, yangyicong@hisilicon.com, linuxppc-dev@lists.ozlabs.org, dietmar.eggemann@arm.com
+Cc: szabolcs.nagy@arm.com, catalin.marinas@arm.com, dave.hansen@linux.intel.com, linux-mm@kvack.org, hpa@zytor.com, shuah@kernel.org, maz@kernel.org, x86@kernel.org, christophe.leroy@csgroup.eu, aneesh.kumar@kernel.org, mingo@redhat.com, naveen.n.rao@linux.ibm.com, will@kernel.org, npiggin@gmail.com, broonie@kernel.org, bp@alien8.de, kvmarm@lists.linux.dev, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, oliver.upton@linux.dev, aneesh.kumar@linux.ibm.com, linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Yicong Yang <yangyicong@hisilicon.com>
+On Thu, Jul 25, 2024 at 04:44:13PM +0100, Dave Martin wrote:
+> Hi,
+> 
+> On Fri, May 03, 2024 at 02:01:22PM +0100, Joey Gouly wrote:
+> > Allow EL0 or EL1 to access POR_EL0 without being trapped to EL2.
+> > 
+> > Signed-off-by: Joey Gouly <joey.gouly@arm.com>
+> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Will Deacon <will@kernel.org>
+> > Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+> > ---
+> >  arch/arm64/include/asm/el2_setup.h | 10 +++++++++-
+> >  1 file changed, 9 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/arm64/include/asm/el2_setup.h b/arch/arm64/include/asm/el2_setup.h
+> > index b7afaa026842..df5614be4b70 100644
+> > --- a/arch/arm64/include/asm/el2_setup.h
+> > +++ b/arch/arm64/include/asm/el2_setup.h
+> > @@ -184,12 +184,20 @@
+> >  .Lset_pie_fgt_\@:
+> >  	mrs_s	x1, SYS_ID_AA64MMFR3_EL1
+> >  	ubfx	x1, x1, #ID_AA64MMFR3_EL1_S1PIE_SHIFT, #4
+> > -	cbz	x1, .Lset_fgt_\@
+> > +	cbz	x1, .Lset_poe_fgt_\@
+> >  
+> >  	/* Disable trapping of PIR_EL1 / PIRE0_EL1 */
+> >  	orr	x0, x0, #HFGxTR_EL2_nPIR_EL1
+> >  	orr	x0, x0, #HFGxTR_EL2_nPIRE0_EL1
+> >  
+> > +.Lset_poe_fgt_\@:
+> > +	mrs_s	x1, SYS_ID_AA64MMFR3_EL1
+> > +	ubfx	x1, x1, #ID_AA64MMFR3_EL1_S1POE_SHIFT, #4
+> > +	cbz	x1, .Lset_fgt_\@
+> > +
+> > +	/* Disable trapping of POR_EL0 */
+> > +	orr	x0, x0, #HFGxTR_EL2_nPOR_EL0
+> 
+> Do I understand correctly that this is just to allow the host to access
+> its own POR_EL0, before (or unless) KVM starts up?
 
-Enable HOTPLUG_SMT for SMT control.
+Yup.
 
-Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
----
- arch/arm64/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+> 
+> KVM always overrides all the EL2 trap controls while running a guest,
+> right?  We don't want this bit still set when running in a guest just
+> because KVM doesn't know about POE yet.
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index a2f8ff354ca6..bd3bc2f5e0ec 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -238,6 +238,7 @@ config ARM64
- 	select HAVE_KRETPROBES
- 	select HAVE_GENERIC_VDSO
- 	select HOTPLUG_CORE_SYNC_DEAD if HOTPLUG_CPU
-+	select HOTPLUG_SMT if (SMP && HOTPLUG_CPU)
- 	select IRQ_DOMAIN
- 	select IRQ_FORCED_THREADING
- 	select KASAN_VMALLOC if KASAN
--- 
-2.24.0
+KVM currently unconditionally traps POE regs currently, this series makes that
+conditional.
 
+> 
+> (Hopefully this follows naturally from the way the KVM code works, but
+> my KVM-fu is a bit rusty.)
+> 
+> Also, what about POR_EL1?  Do we have to reset that to something sane
+> (and so untrap it here), or it is sufficient if we never turn on POE
+> support in the host, via TCR2_EL1.POE?
+
+Since the host isn't using it, we don't need to reset it. It will be reset to an unknown value for guests.
+
+In patch 7:
+
++	{ SYS_DESC(SYS_POR_EL1), NULL, reset_unknown, POR_EL1 },
+
+> 
+> [...]
+> 
+> Cheers
+> ---Dave
+
+Thanks,
+Joey
