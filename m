@@ -4,93 +4,172 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 128ADC3DA7F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2024 19:53:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16E86C52D7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2024 20:29:43 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ItOjf3t6;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MBADa7Hs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SJE1loew;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WfLTZ4C0vz3d2S
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 05:53:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WfMGs5FsCz3dKV
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 06:29:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ItOjf3t6;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MBADa7Hs;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SJE1loew;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.mailfrom=intel.com (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=dan.j.williams@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfLMS0dZjz3dHV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 05:48:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1723060112;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=A/6PEtzQTa+drbYKkEnodTZuUMYm4tSA4vStMaJG0Ro=;
-	b=ItOjf3t6DCj11voM/a7dWGDp0KOMK9De9u6szfhL9mdDakEyB8/wGEUO1gmPFx4YTMWZ2o
-	Alib2V7drqOYM3p+TOSL41kv2EJA3jrgTlsE5Cx4yD26WxCnO6W0HzDmUCQ7QfFoTsmpw7
-	Fxh3+c+zUx0lRvB3BWHx46aT7weqoWw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1723060113;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=A/6PEtzQTa+drbYKkEnodTZuUMYm4tSA4vStMaJG0Ro=;
-	b=MBADa7HsXwZ4dezjd7aQnCYzHlTnZxbcLiJFPNGb5rkQHEOPHyey3pi2KIzFNbCqkRnDT8
-	PPi9D5qws50yr5qK0F/0m/wOVdna3V1wr0n2HccpfCmf3Vl04P51SCSA46c/Jd0RN8UNC1
-	+QTx7w+8FFJA/oA0uKWMzvGabm/qAJc=
-Received: from mail-qv1-f69.google.com (mail-qv1-f69.google.com
- [209.85.219.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-577-NVDkJUPoPMy8X0uC4Yv8gA-1; Wed, 07 Aug 2024 15:48:31 -0400
-X-MC-Unique: NVDkJUPoPMy8X0uC4Yv8gA-1
-Received: by mail-qv1-f69.google.com with SMTP id 6a1803df08f44-6b7ad98c1f8so389786d6.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Aug 2024 12:48:31 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1723060111; x=1723664911;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=A/6PEtzQTa+drbYKkEnodTZuUMYm4tSA4vStMaJG0Ro=;
-        b=dDg6C3Ph7G9Iw1BoOwPdysDq48i4ltDMWaiDs+0YY6M1+W3MutlEuNxQO2r8YWUuT7
-         Nrf3jvKih8rVuPeE5LOVtRSXMTAz5Z6iAiHYX65lXsEm/FLadt2pYmu7PoNGiVYhhHdV
-         hZvtN250sg2z8dJLpJxeCivVZMGAMQBOvDuKIWcN89HQ3lJQHlggrVx32LnhZeRNqnMx
-         5VACBsy24fz04G5KXrLDZGxV6G8AvW+B/nAklBs7vvsrT9+ZP0pp3mQWgtHf+nf4srxN
-         APpoz/p8rEeTt7uKsP4sRSkNxyJiXyZsOB/AR0dtP9PnHrSW4b8AYE5Q0+OOya1Urdk3
-         WBxA==
-X-Forwarded-Encrypted: i=1; AJvYcCUdbssA74cxw1LzRliqISyjPJc6Dt+m0PxbQ93yXzoJSvSXuIHhgOKy1thrKvmTBcwroAw40uJl/U7z0iA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzz7FwljABn1CYvfEbSvImEteCluUnNfgYxt6RWC66ozQGv/7E6
-	1t2sU5i8CKTDtjAc4CPYOggk6D/1VQ+SB9kUOtBCukoO1PoZOuahnVkT44hwJoCcievUdexR2X4
-	y4g6UNl9FqC4MbG56QTdFGGbMqixk0A0PufoslfdS7dAPjjbonTCbf4/kqFO7B6g=
-X-Received: by 2002:a05:6214:e64:b0:6b0:8202:5c4e with SMTP id 6a1803df08f44-6bb983f0fa6mr145729316d6.5.1723060110597;
-        Wed, 07 Aug 2024 12:48:30 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFjs/meRFYsBYhQNSwMvbRLZa9/TlQmQfQAUysM61b8jRz23PUki/2rojCFyrJzg3cPY3hNlw==
-X-Received: by 2002:a05:6214:e64:b0:6b0:8202:5c4e with SMTP id 6a1803df08f44-6bb983f0fa6mr145728896d6.5.1723060110042;
-        Wed, 07 Aug 2024 12:48:30 -0700 (PDT)
-Received: from x1n.redhat.com (pool-99-254-121-117.cpe.net.cable.rogers.com. [99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6bb9c78ae4asm59853256d6.33.2024.08.07.12.48.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Aug 2024 12:48:29 -0700 (PDT)
-From: Peter Xu <peterx@redhat.com>
-To: linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org
-Subject: [PATCH v4 7/7] mm/mprotect: fix dax pud handlings
-Date: Wed,  7 Aug 2024 15:48:11 -0400
-Message-ID: <20240807194812.819412-8-peterx@redhat.com>
-X-Mailer: git-send-email 2.45.0
-In-Reply-To: <20240807194812.819412-1-peterx@redhat.com>
-References: <20240807194812.819412-1-peterx@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfMG32Xm5z2xjw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 06:28:38 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1723062539; x=1754598539;
+  h=date:from:to:cc:subject:message-id:references:
+   in-reply-to:mime-version;
+  bh=rG7a9oNYH7iALs0OG6bNPS46FD6hupfk0ThmKa1uRm4=;
+  b=SJE1loew0Qq1WhSNqK5u95y7WXv5jMG27Bu8IHRGQ5I1GZbRWarpM5rP
+   CgcxbCMJs7CBEWXY6uLZfec06Fgz1Rtu9ZSD+xrZe07NO2Iard6/W1i6L
+   eJoWBj5QuKo4+c30VWUbNobuZN4lp0EygQdcBzgfvHo9cy7422tfGyivR
+   AoJdWoH5ptvuxoARZKe3g7Qm7nlMuURz/rvezOShIb4toaG5MWmJAoiZN
+   w0mOxLu6wQVebP38T4akq/PQug2qB/hU+pHgkz4tpbQJTXsodxx+QPH2m
+   iTIRVYohfMjJAkbfiywjvKdo5YhLWStokqwKl/2DAhUO5wSG+maOndAsA
+   g==;
+X-CSE-ConnectionGUID: PaQcPvH1Rq6mMc7z+hhDtw==
+X-CSE-MsgGUID: LJgNJJXESk2dHQkrxM7Pgg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11157"; a="21280068"
+X-IronPort-AV: E=Sophos;i="6.09,270,1716274800"; 
+   d="scan'208";a="21280068"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Aug 2024 13:28:35 -0700
+X-CSE-ConnectionGUID: c0fbuxKwSmmFfZZvdGdb8w==
+X-CSE-MsgGUID: Rx3bawQERJKbAEPXzJO9Qg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.09,270,1716274800"; 
+   d="scan'208";a="56907761"
+Received: from orsmsx602.amr.corp.intel.com ([10.22.229.15])
+  by orviesa009.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 07 Aug 2024 13:28:36 -0700
+Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39; Wed, 7 Aug 2024 13:28:34 -0700
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39; Wed, 7 Aug 2024 13:28:34 -0700
+Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
+ orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39 via Frontend Transport; Wed, 7 Aug 2024 13:28:34 -0700
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.168)
+ by edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.39; Wed, 7 Aug 2024 13:28:33 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=aYPPW2ho1iPtbZXZnoAfQGuei7a81uNGhKm+cniDLTfjb4FeZldt/lggRVeE9lhDA/LQ97kEzb7I8ujt5w0FYqIBSrFzLqAa/7dWeyw1Zuole2UmGYaKvAmOahGUJPS6vHbK1hiDTNvx7NtQFxtFVLUnmCPsweWW5w3JEpPJHOVKrIuvfprrUGX//g3/pVtlWyUsinm0Y33/S7naY94MmfQPzuxB6R70GwuJIL3+JEb3e+WpEcBRz6MUIKHDPA4t+N5ZFDusr5mfdTEo/o66STeLJmOGhx8gje+t6iyCtH/4tNfAee4e8tY3F5jES1Vl5Uy4cDgHws0nGMLk0ip2Qg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=TRe15pECEbrv6rBaetnahzQoYpj38NYdmoN1YTV/2Ds=;
+ b=YFbWOlHcF/MaQzjDF7ineELXZ2NTpmc0eqj2502jhej67DJGiCaZCGgngRCYNjQOFqXO9uT/WAtovpbCDmpukEv8AnmVFC0BttsVIa/msiWNsbMuX8scJrkIjmZEBXxSjMg2PZF2qcD8B8O1Xafujpu4r4UQi2ysWcSNDDZbn10jm+EU7gmAGgNlC3z6uQTWYxoaZ+IgVri/KUfXDkY4/LrA7D/YFJaV02dL40SkBIsoMa3azVmWSOMd3FHGbXA84TkSfM6InhCaMMJGpiYtMLd/kX2OhatPf7NKWCzMy0IfeUi3tWz/KJXIYTjYKMdtFAU10ZliZJo2u0QmBBu/0A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by SA1PR11MB5900.namprd11.prod.outlook.com (2603:10b6:806:238::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7828.22; Wed, 7 Aug
+ 2024 20:28:31 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::6b05:74cf:a304:ecd8]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::6b05:74cf:a304:ecd8%4]) with mapi id 15.20.7828.021; Wed, 7 Aug 2024
+ 20:28:31 +0000
+Date: Wed, 7 Aug 2024 13:28:28 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+To: Bjorn Helgaas <helgaas@kernel.org>, "Fabio M. De Francesco"
+	<fabio.m.de.francesco@linux.intel.com>
+Subject: Re: [PATCH 2/2] ACPI: extlog: Trace CPER PCI Express Error Section
+Message-ID: <66b3d8ec30e74_2142c2945d@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+References: <20240527144356.246220-3-fabio.m.de.francesco@linux.intel.com>
+ <20240806213118.GA78822@bhelgaas>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20240806213118.GA78822@bhelgaas>
+X-ClientProxiedBy: MW2PR16CA0025.namprd16.prod.outlook.com (2603:10b6:907::38)
+ To PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="US-ASCII"; x-default=true
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|SA1PR11MB5900:EE_
+X-MS-Office365-Filtering-Correlation-Id: 89936126-78a5-45d5-5d4b-08dcb71f8093
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|376014|7416014;
+X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?LOw6wwH7dZOyTt0Vbwnjd5aCqj1bPw3FTFEjLI8Vt1b7CH3PWWFTqmg95hTc?=
+ =?us-ascii?Q?RshlVSFARdPPgcIgkE9HNsbRJU8TZ5k8AqHnweZyE3cKhvBU3JH7gxRGOkTU?=
+ =?us-ascii?Q?HtvbK9PLQPwH8chvsQ/xyETW6tUnoXisHHMDOOrs2IKAuoCbiOO2aha/T1VG?=
+ =?us-ascii?Q?mUb9w6DBy+S5t+FJQ6Iq6EzYctCG4V+Z6OnjHKtSh9+NYND1oj/yRlCk4NPi?=
+ =?us-ascii?Q?y4CsVkgFkBHxwxVBnHGZ9JVS7T0HVSP2eNk7aqRzbYyruRI0dAIrUNKoqUYX?=
+ =?us-ascii?Q?xTbtSPx6U77sVn2LRVw8NAHUveegsEogyiJeAPF79PNTrBVD3q/jTukAv14M?=
+ =?us-ascii?Q?q33H2vX//FdpOS0+tq/Iq/CTA3c+Xfc6POsEbQpBz38oqJACUGm91xGrgQpx?=
+ =?us-ascii?Q?kKUpo/MDkl0G1SV96oR/sq1rBlX9wzp7hNj0YUSo6zWTJ3xw23Rq3B9bcrmT?=
+ =?us-ascii?Q?rak4Z99DFQGkufIUhGSR8VnWlt9bAD8KvlLCKN7D3+U361xjgj7C/g7a2Xb6?=
+ =?us-ascii?Q?6Sc7P88ntLXwrM6XQUgug4wiZKrtlFi6X7no0GZAOaIjWPKULiPX3ioRaZBe?=
+ =?us-ascii?Q?CGAFCO+Lfa8BIS8dyAWfkHnMjISBYqchGIaw9zbdCfplenDFSMyu0K4Ewuzf?=
+ =?us-ascii?Q?So4JDTtrBo75UrR2PY5Bm/PsuFIltNHHUNDTsVI7OJxfCueYAgEKe/U6mwmr?=
+ =?us-ascii?Q?ucfJCMjWPOyxeCwW8etz720AwDskzbw29Rt1hjwFc5t0qWSZJaLOD7hkF99J?=
+ =?us-ascii?Q?SI6pA3Qcsi6iCM6gOOaPT6gPa7Gjzdgtnuq70koO0t6jYXG3prhDJSnKbm2g?=
+ =?us-ascii?Q?cdSycPpJ7w8mIPFi44hc2Ik5qWg31goKmjJW0e6CXmUA2HTuSb41aEjhMNuj?=
+ =?us-ascii?Q?19T6ZmwIMEyFW6eLVkSIhV4aYg3B4mvXecBgfzpvzx3wHMr/ninvdiz9HII1?=
+ =?us-ascii?Q?zuTYGDWbWofgZLUK/nVG18blPtdrhu0Ta5CUwy1RzmkcZc1U2WNXOJVhFbry?=
+ =?us-ascii?Q?jnSIK9KDlyAWwe1F8yN8D23bXPtx7QBueT69q3CR0mX/JYgu+uS0N8lqFDl1?=
+ =?us-ascii?Q?UrdNHY66fTpuxfFG8xKUBk9xOuKsnz1XoZ//qmMu7wwpSNDtyi9dvb2uPiDN?=
+ =?us-ascii?Q?QNgwGBLnUsM4lPagbGiQYvTH4yqWAVdf6stMNdcgk9wZXUk/zc/EK+fWrtsj?=
+ =?us-ascii?Q?y+v0xm9Ea9d+EbiHl8/BKEdOxlIWtPvYfw3MSm37EUBJLMwSyKbx5J4J00xp?=
+ =?us-ascii?Q?RRd8+ncgv0IeBtvuWPPjH+25NnSRD9vIEAZtTdxS6HDacwdJrfKp6q3lUEHs?=
+ =?us-ascii?Q?99LsDHnJNV7kAnEHbyHz7abM8EQL6tpYqg06PlCJxfdNMA=3D=3D?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?fTD/n3ctw6Uv4VIiD9YGJX1MGBv+ZJMDTJNWRrPNF7fPnPYIpdAXwDPunLp/?=
+ =?us-ascii?Q?wmlByFjD6n9DDAr61foOerNn/2cyzPvsKLA+C7KNX+TaF5xvQCxK7SvMpLTd?=
+ =?us-ascii?Q?Q5WyyECBvpwZjp/CvNC8/zTNSp4K0PRNZIfQFr9vRMtXj4j0Noeo6BugcT9Q?=
+ =?us-ascii?Q?sNpWuafo3fVf6du3rUL/FMxEkMbzAOWhnLuNEwEUXorWqaMX3KNOH5REiMwP?=
+ =?us-ascii?Q?pEHps19iryO56kHf38tlxkJHSUtYnlFnKnuQo+6WMWInpW21FmS+0rbULwsL?=
+ =?us-ascii?Q?tNwYG20kETVWI4z5iRquRkIu27QgDjI6lAco9tejNS0JQ4nQKAO0E6XVPctV?=
+ =?us-ascii?Q?x924XHwl6bOwGSRgfXl+/t22+uxZDo1wbmx76DdqDTuSxsXgN7dBJLpmhVuZ?=
+ =?us-ascii?Q?OJmn5MbPuEKrxfYELKy/JgdMTK1Wy0qQ4DMzMa2cNS3r2gQBom5pSdh++TC0?=
+ =?us-ascii?Q?LvcljQWKR0RQXt++DhU1CwZyPQz2Ut1ZFjLwjNaWjU6eVvPQKbwxbwSTgr7I?=
+ =?us-ascii?Q?d7TO4hLdcdszMYqTBbw3lzY2MWXRN1U7NuUE72G9wLbkKdHRFrJcogGSV5+M?=
+ =?us-ascii?Q?X0xWVet49jbzWU7PKxwgnvuKWb47qFwtndbM9bjWOHrRl9tACzZUFEGCWtAU?=
+ =?us-ascii?Q?KYBxpEDOX8EZMkD/KYUfVs82wBkaSNGKCQD/CV1LMYJd/1ClerMIFEJtLGnz?=
+ =?us-ascii?Q?/w3sGyZeI3DVNVq5jjXtZEm4BRpExF1aAnWhxAOoHr28MAr0MckyJcy69zip?=
+ =?us-ascii?Q?kfJiRePGaA4GemeMl0cr27yg7Bnehus598K0RjbGUdEJ2MSSSsOb5aTeDODG?=
+ =?us-ascii?Q?/u7YnmRiXOOniaChMDpQH5MKFHOC1bAPEaoZCnCr9ATA46PWP7HUUVFH3haP?=
+ =?us-ascii?Q?lWX8j07wCF9ADz5ARd7RyKghDn/y1O+N7MyGrgVxeRfoIzkB1bIjzZnJZZkS?=
+ =?us-ascii?Q?lQmHGYTEYAGbr+wTYAcCWmEWrJb13Pj9LlApW3PFuXtUGHZxwJlH7FMOrCqF?=
+ =?us-ascii?Q?mYwEGuDwVGNH/RlAvLCjQRIUCSJj/2xftfnHb+h9JBB4frd9tGRKzynzkMX4?=
+ =?us-ascii?Q?R/dC5W9qZW2b3A2taLV7v9F6XC6wFWPsPztiaMnRWLgXYO1/Tnqho/uQ7sT6?=
+ =?us-ascii?Q?KdmvFAdp2cxuVP2b1Nte9LyBMN8pTjW6ps67hkmT5LYdqByR/p16gPLhBw1n?=
+ =?us-ascii?Q?YIizxI5kkxxbnQ1FfO9BXM+bbtSxsqcTa9LMlhNUxK7ygmQ0uZacf5sGAV7p?=
+ =?us-ascii?Q?iOIaf2PUVg1lGp6Ke4mFHqJsCx0YuCd1c84DNZ99FUwWTb+fOvThLr1PMWKw?=
+ =?us-ascii?Q?pXPsggc99PvzXI4W9xdsRp/2q21/6vFIlFvPv2F9rj1gGIKT62sgZ3dbFTAR?=
+ =?us-ascii?Q?aTHIasOBNlZH0M9RUjt0coonPTVohOuFK3vazLejfjrXgX4Nxg356pu4SGQ3?=
+ =?us-ascii?Q?BufGv20BywqcF4oZItLGLJafF7mDekxGIKlfaqolhB/o6Hmii9Ia9LhVoSJK?=
+ =?us-ascii?Q?jDD6Lu62vzccsFwC2AXrdjPkywyIQ5C+xOI2S6WfB6GkhlSWX7HjwgOrbX1J?=
+ =?us-ascii?Q?WKQjein0DllVp2zS0SkWNGYMPvg86rnakj7Mz4v2bVSyAHsX9nT9B46KOzz6?=
+ =?us-ascii?Q?1w=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 89936126-78a5-45d5-5d4b-08dcb71f8093
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Aug 2024 20:28:30.9956
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: JJ94lGEDzrJXvxVeRz8c3dcdUlS2+6VB1oXjrtmPVVTHL5MNQMhGvDq2mfVNabmdApGXXv28Epy8PR+dG+YGjC0mBVAhbCOwrm9m0MDY5Xs=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR11MB5900
+X-OriginatorOrg: intel.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,265 +181,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: James Houghton <jthoughton@google.com>, David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, peterx@redhat.com, Christophe Leroy <christophe.leroy@csgroup.eu>, Dan Williams <dan.j.williams@intel.com>, Dave Jiang <dave.jiang@intel.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Ingo Molnar <mingo@redhat.com>, Huang Ying <ying.huang@intel.com>, Rik van Riel <riel@surriel.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill@shutemov.name>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, Mel Gorman <mgorman@techsingularity.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-acpi@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org, Len Brown <lenb@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is only relevant to the two archs that support PUD dax, aka, x86_64
-and ppc64.  PUD THPs do not yet exist elsewhere, and hugetlb PUDs do not
-count in this case.
+[ add Boris ]
 
-DAX have had PUD mappings for years, but change protection path never
-worked.  When the path is triggered in any form (a simple test program
-would be: call mprotect() on a 1G dev_dax mapping), the kernel will report
-"bad pud".  This patch should fix that.
+Bjorn Helgaas wrote:
+> On Mon, May 27, 2024 at 04:43:41PM +0200, Fabio M. De Francesco wrote:
+> > Currently, extlog_print() (ELOG) only reports CPER PCIe section (UEFI
+> > v2.10, Appendix N.2.7) to the kernel log via print_extlog_rcd(). Instead,
+> > the similar ghes_do_proc() (GHES) prints to kernel log and calls
+> > pci_print_aer() to report via the ftrace infrastructure.
+> > 
+> > Add support to report the CPER PCIe Error section also via the ftrace
+> > infrastructure by calling pci_print_aer() to make ELOG act consistently
+> > with GHES.
+> > 
+> > Cc: Dan Williams <dan.j.williams@intel.com>
+> > Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.com>
+> > ---
+> >  drivers/acpi/acpi_extlog.c | 30 ++++++++++++++++++++++++++++++
+> >  drivers/pci/pcie/aer.c     |  2 +-
+> >  include/linux/aer.h        | 13 +++++++++++--
+> >  3 files changed, 42 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/acpi/acpi_extlog.c b/drivers/acpi/acpi_extlog.c
+> > index e025ae390737..007ce96f8672 100644
+> > --- a/drivers/acpi/acpi_extlog.c
+> > +++ b/drivers/acpi/acpi_extlog.c
+> > @@ -131,6 +131,32 @@ static int print_extlog_rcd(const char *pfx,
+> >  	return 1;
+> >  }
+> >  
+> > +static void extlog_print_pcie(struct cper_sec_pcie *pcie_err,
+> > +			      int severity)
+> > +{
+> > +	struct aer_capability_regs *aer;
+> > +	struct pci_dev *pdev;
+> > +	unsigned int devfn;
+> > +	unsigned int bus;
+> > +	int aer_severity;
+> > +	int domain;
+> > +
+> > +	if (pcie_err->validation_bits & CPER_PCIE_VALID_DEVICE_ID &&
+> > +	    pcie_err->validation_bits & CPER_PCIE_VALID_AER_INFO) {
+> > +		aer_severity = cper_severity_to_aer(severity);
+> > +		aer = (struct aer_capability_regs *)pcie_err->aer_info;
+> > +		domain = pcie_err->device_id.segment;
+> > +		bus = pcie_err->device_id.bus;
+> > +		devfn = PCI_DEVFN(pcie_err->device_id.device,
+> > +				  pcie_err->device_id.function);
+> > +		pdev = pci_get_domain_bus_and_slot(domain, bus, devfn);
+> > +		if (!pdev)
+> > +			return;
+> > +		pci_print_aer(pdev, aer_severity, aer);
+> > +		pci_dev_put(pdev);
+> > +	}
+> 
+> I'm 100% in favor of making error reporting work and look the same
+> across GHES and ELOG.  But I do have to gripe a bit...
+> 
+> It's already unfortunate that GHES and the native AER handling are
+> separate paths that lead to the same place (__aer_print_error()).
+> 
+> I'm sorry that we need to add a third path that again does
+> fundamentally the same thing.  The fact that they're separate means
+> all the design, reviewing, testing, and maintenance effort is diluted,
+> and error handling always gets too little love in the first place.
+> I think this is a recipe for confusion.
+> 
+>   ghes_do_proc                                        # GHES
+>     apei_estatus_for_each_section
+>       ...
+>       if (guid_equal(sec_type, &CPER_SEC_PCIE))
+>         ghes_handle_aer
+>           cper_severity_to_aer
+>           aer_recover_queue
+>             kfifo_in_spinlocked(&aer_recover_ring)    # add to queue
+>           aer_recover_work_func                       # another thread
+>             kfifo_get(&aer_recover_ring)              # remove from queue
+>             pci_print_aer
+>               __aer_print_error         <---
+> 
+>   aer_irq                                             # native AER
+>     kfifo_put(&aer_fifo)                              # add to queue
+>   aer_isr                                             # another thread
+>     kfifo_get(&aer_fifo)                              # remove from queue
+>     ...
+>     aer_isr_one_error
+>       aer_process_err_devices
+>         aer_print_error
+>           __aer_print_error             <---
+> 
+>   extlog_print                                        # extlog (x86 only)
+>     apei_estatus_for_each_section
+>       ...
+>       if (guid_equal(sec_type, &CPER_SEC_PCIE))
+>         extlog_print_pcie
+>           cper_severity_to_aer
+>           pci_get_domain_bus_and_slot
+>           pci_print_aer
+>             __aer_print_error           <---
+> 
+> And we also have CXL paths that lead to __aer_print_error(), although
+> it seems like they at least start in the native AER (and maybe GHES?)
+> path and branch out somewhere.  My head is spinning.
+> 
+> Do I *object* to this patch?  No, not really; it's a trivial change in
+> drivers/pci/, and Rafael can add my
+> 
+>   Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> as needed.  But I am afraid we're making ourselves a maintenance
+> headache.
 
-The new change_huge_pud() tries to keep everything simple.  For example, it
-doesn't optimize write bit as that will need even more PUD helpers.  It's
-not too bad anyway to have one more write fault in the worst case once for
-1G range; may be a bigger thing for each PAGE_SIZE, though.  Neither does
-it support userfault-wp bits, as there isn't such PUD mappings that is
-supported; file mappings always need a split there.
+To be honest, I am too. Upon discovering that extlog_print() behaves
+differently than ghes_do_proc(), I had the snarky thought "great, can we
+now just go ahead and deprecate the extlog path, it's just a source of
+maintenance pain.".
 
-The same to TLB shootdown: the pmd path (which was for x86 only) has the
-trick of using _ad() version of pmdp_invalidate*() which can avoid one
-redundant TLB, but let's also leave that for later.  Again, the larger the
-mapping, the smaller of such effect.
+So *if*we keep acpi_extlog it then I definitely think it should be
+consistent with other CPER handlers (needs this patch). But, I am also
+open to entertaining "deprecate it".
 
-There's some difference on handling "retry" for change_huge_pud() (where it
-can return 0): it isn't like change_huge_pmd(), as the pmd version is safe
-with all conditions handled in change_pte_range() later, thanks to Hugh's
-new pte_offset_map_lock().  In short, change_pte_range() is simply smarter.
-For that, change_pud_range() will need proper retry if it races with
-something else when a huge PUD changed from under us.
-
-The last thing to mention is currently the PUD path ignores the huge pte
-numa counter (NUMA_HUGE_PTE_UPDATES), not only because DAX is not
-applicable to NUMA, but also that it's ambiguous on its own to decide how
-to account pud in this case.  In one earlier version of this patchset I
-proposed to remove the counter as it doesn't even look right to do the
-accounting as of now [1], but then a further discussion suggests we can
-leave that for later, as that doesn't block this series if we choose to
-ignore that counter.  That's what this patch does, by ignoring it.
-
-When at it, touch up the comment in pgtable_split_needed() to make it
-generic to either pmd or pud file THPs.
-
-[1] https://lore.kernel.org/all/20240715192142.3241557-3-peterx@redhat.com/
-[2] https://lore.kernel.org/r/added2d0-b8be-4108-82ca-1367a388d0b1@redhat.com
-
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Dave Jiang <dave.jiang@intel.com>
-Cc: Hugh Dickins <hughd@google.com>
-Cc: Kirill A. Shutemov <kirill@shutemov.name>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Cc: Oscar Salvador <osalvador@suse.de>
-Cc: x86@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Fixes: a00cc7d9dd93 ("mm, x86: add support for PUD-sized transparent hugepages")
-Fixes: 27af67f35631 ("powerpc/book3s64/mm: enable transparent pud hugepage")
-Signed-off-by: Peter Xu <peterx@redhat.com>
----
- include/linux/huge_mm.h | 24 +++++++++++++++++++
- mm/huge_memory.c        | 52 +++++++++++++++++++++++++++++++++++++++++
- mm/mprotect.c           | 39 ++++++++++++++++++++++++-------
- 3 files changed, 107 insertions(+), 8 deletions(-)
-
-diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
-index ce44caa40eed..6370026689e0 100644
---- a/include/linux/huge_mm.h
-+++ b/include/linux/huge_mm.h
-@@ -342,6 +342,17 @@ void split_huge_pmd_address(struct vm_area_struct *vma, unsigned long address,
- void __split_huge_pud(struct vm_area_struct *vma, pud_t *pud,
- 		unsigned long address);
- 
-+#ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
-+int change_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
-+		    pud_t *pudp, unsigned long addr, pgprot_t newprot,
-+		    unsigned long cp_flags);
-+#else
-+static inline int
-+change_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
-+		pud_t *pudp, unsigned long addr, pgprot_t newprot,
-+		unsigned long cp_flags) { return 0; }
-+#endif
-+
- #define split_huge_pud(__vma, __pud, __address)				\
- 	do {								\
- 		pud_t *____pud = (__pud);				\
-@@ -585,6 +596,19 @@ static inline int next_order(unsigned long *orders, int prev)
- {
- 	return 0;
- }
-+
-+static inline void __split_huge_pud(struct vm_area_struct *vma, pud_t *pud,
-+				    unsigned long address)
-+{
-+}
-+
-+static inline int change_huge_pud(struct mmu_gather *tlb,
-+				  struct vm_area_struct *vma, pud_t *pudp,
-+				  unsigned long addr, pgprot_t newprot,
-+				  unsigned long cp_flags)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
- 
- static inline int split_folio_to_list_to_order(struct folio *folio,
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 81c5da0708ed..0aafd26d7a53 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -2114,6 +2114,53 @@ int change_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 	return ret;
- }
- 
-+/*
-+ * Returns:
-+ *
-+ * - 0: if pud leaf changed from under us
-+ * - 1: if pud can be skipped
-+ * - HPAGE_PUD_NR: if pud was successfully processed
-+ */
-+#ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
-+int change_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
-+		    pud_t *pudp, unsigned long addr, pgprot_t newprot,
-+		    unsigned long cp_flags)
-+{
-+	struct mm_struct *mm = vma->vm_mm;
-+	pud_t oldpud, entry;
-+	spinlock_t *ptl;
-+
-+	tlb_change_page_size(tlb, HPAGE_PUD_SIZE);
-+
-+	/* NUMA balancing doesn't apply to dax */
-+	if (cp_flags & MM_CP_PROT_NUMA)
-+		return 1;
-+
-+	/*
-+	 * Huge entries on userfault-wp only works with anonymous, while we
-+	 * don't have anonymous PUDs yet.
-+	 */
-+	if (WARN_ON_ONCE(cp_flags & MM_CP_UFFD_WP_ALL))
-+		return 1;
-+
-+	ptl = __pud_trans_huge_lock(pudp, vma);
-+	if (!ptl)
-+		return 0;
-+
-+	/*
-+	 * Can't clear PUD or it can race with concurrent zapping.  See
-+	 * change_huge_pmd().
-+	 */
-+	oldpud = pudp_invalidate(vma, addr, pudp);
-+	entry = pud_modify(oldpud, newprot);
-+	set_pud_at(mm, addr, pudp, entry);
-+	tlb_flush_pud_range(tlb, addr, HPAGE_PUD_SIZE);
-+
-+	spin_unlock(ptl);
-+	return HPAGE_PUD_NR;
-+}
-+#endif
-+
- #ifdef CONFIG_USERFAULTFD
- /*
-  * The PT lock for src_pmd and dst_vma/src_vma (for reading) are locked by
-@@ -2344,6 +2391,11 @@ void __split_huge_pud(struct vm_area_struct *vma, pud_t *pud,
- 	spin_unlock(ptl);
- 	mmu_notifier_invalidate_range_end(&range);
- }
-+#else
-+void __split_huge_pud(struct vm_area_struct *vma, pud_t *pud,
-+		unsigned long address)
-+{
-+}
- #endif /* CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD */
- 
- static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index d423080e6509..446f8e5f10d9 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -302,8 +302,9 @@ pgtable_split_needed(struct vm_area_struct *vma, unsigned long cp_flags)
- {
- 	/*
- 	 * pte markers only resides in pte level, if we need pte markers,
--	 * we need to split.  We cannot wr-protect shmem thp because file
--	 * thp is handled differently when split by erasing the pmd so far.
-+	 * we need to split.  For example, we cannot wr-protect a file thp
-+	 * (e.g. 2M shmem) because file thp is handled differently when
-+	 * split by erasing the pmd so far.
- 	 */
- 	return (cp_flags & MM_CP_UFFD_WP) && !vma_is_anonymous(vma);
- }
-@@ -430,31 +431,53 @@ static inline long change_pud_range(struct mmu_gather *tlb,
- 		unsigned long end, pgprot_t newprot, unsigned long cp_flags)
- {
- 	struct mmu_notifier_range range;
--	pud_t *pud;
-+	pud_t *pudp, pud;
- 	unsigned long next;
- 	long pages = 0, ret;
- 
- 	range.start = 0;
- 
--	pud = pud_offset(p4d, addr);
-+	pudp = pud_offset(p4d, addr);
- 	do {
-+again:
- 		next = pud_addr_end(addr, end);
--		ret = change_prepare(vma, pud, pmd, addr, cp_flags);
-+		ret = change_prepare(vma, pudp, pmd, addr, cp_flags);
- 		if (ret) {
- 			pages = ret;
- 			break;
- 		}
--		if (pud_none_or_clear_bad(pud))
-+
-+		pud = READ_ONCE(*pudp);
-+		if (pud_none(pud))
- 			continue;
-+
- 		if (!range.start) {
- 			mmu_notifier_range_init(&range,
- 						MMU_NOTIFY_PROTECTION_VMA, 0,
- 						vma->vm_mm, addr, end);
- 			mmu_notifier_invalidate_range_start(&range);
- 		}
--		pages += change_pmd_range(tlb, vma, pud, addr, next, newprot,
-+
-+		if (pud_leaf(pud)) {
-+			if ((next - addr != PUD_SIZE) ||
-+			    pgtable_split_needed(vma, cp_flags)) {
-+				__split_huge_pud(vma, pudp, addr);
-+				goto again;
-+			} else {
-+				ret = change_huge_pud(tlb, vma, pudp,
-+						      addr, newprot, cp_flags);
-+				if (ret == 0)
-+					goto again;
-+				/* huge pud was handled */
-+				if (ret == HPAGE_PUD_NR)
-+					pages += HPAGE_PUD_NR;
-+				continue;
-+			}
-+		}
-+
-+		pages += change_pmd_range(tlb, vma, pudp, addr, next, newprot,
- 					  cp_flags);
--	} while (pud++, addr = next, addr != end);
-+	} while (pudp++, addr = next, addr != end);
- 
- 	if (range.start)
- 		mmu_notifier_invalidate_range_end(&range);
--- 
-2.45.0
-
+To me, the fact that ras_userspace_consumers() is only honored for
+acpi_extlog is clear evidence that the kernel has already painted itself
+into a confusing user ABI corner and maybe the proper path forward at
+this point is to cut acpi_extlog loose.
