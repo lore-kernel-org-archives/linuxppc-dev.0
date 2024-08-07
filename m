@@ -4,89 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2947AC52D7B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2024 19:49:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91010C3DA7F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2024 19:49:45 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WxMo9jRx;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WxMo9jRx;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XGAWFOvG;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PODobSHL;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WfLN03XwHz3d2S
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 05:49:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WfLNm1nN6z3dK3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 05:49:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WxMo9jRx;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WxMo9jRx;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XGAWFOvG;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=PODobSHL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfLMD2zj6z3d88
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 05:48:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfLMD4XFGz3d8K
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 05:48:24 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1723060099;
+	s=mimecast20190719; t=1723060101;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=o3OFHAXa4GjeJOqHDNlzpJASvE7zIeu8ivvI2pMYR/w=;
-	b=WxMo9jRxZ/VM2rpvSmnaejK76UAnCINi9U87ga8bLPhEcgVWgeXxg8jaHO8CKvMBJme4DN
-	04+Uy9NVKDZ6yOlFf3WcFjK8Pe7Bazn360SyzVFV6GTsAx8Ye/OAWPuf0Cf1h/cXmv2Dyx
-	q2LeOB5ihQk/CIDs47pfTx0sXCU2zJU=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6aC2RF+//p0GJfjgH/iZrlW9ATLJl4mVfe8Rdc4jHgk=;
+	b=XGAWFOvG4zuw1lxUHs7LeSvHNCITA/C2mNJZXN9EGvTUgcye0ReTxjX7whZ71KtY/Usvhz
+	NnogIvD+pOob5/EbH9RUIJFIl38Lsd3Ml01rQmDuaJhpiDvQbZsQizJ75e1oj1Hw4ZZR93
+	hXkSMymI5PhkkM15GGtLleUIE7AYeyk=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1723060099;
+	s=mimecast20190719; t=1723060102;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=o3OFHAXa4GjeJOqHDNlzpJASvE7zIeu8ivvI2pMYR/w=;
-	b=WxMo9jRxZ/VM2rpvSmnaejK76UAnCINi9U87ga8bLPhEcgVWgeXxg8jaHO8CKvMBJme4DN
-	04+Uy9NVKDZ6yOlFf3WcFjK8Pe7Bazn360SyzVFV6GTsAx8Ye/OAWPuf0Cf1h/cXmv2Dyx
-	q2LeOB5ihQk/CIDs47pfTx0sXCU2zJU=
-Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
- [209.85.219.72]) by relay.mimecast.com with ESMTP with STARTTLS
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6aC2RF+//p0GJfjgH/iZrlW9ATLJl4mVfe8Rdc4jHgk=;
+	b=PODobSHL9U/z+Itf4YhoZ/dBLtHitahnMQqNSlrQuYMJxxQV3svaChA4tUsbR5shpZUGVl
+	V61dGf9mgUtQqPvg6kd/LCQFGjlhuORrmTmG2mvaL4D4SHvWKPUHuKL5S7uSqt1Uqri63b
+	dhHB9kUdGkK16gkybykW/tZtX60DTmk=
+Received: from mail-ua1-f71.google.com (mail-ua1-f71.google.com
+ [209.85.222.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-494-itksBBHQNmqahMRREz8JTA-1; Wed, 07 Aug 2024 15:48:15 -0400
-X-MC-Unique: itksBBHQNmqahMRREz8JTA-1
-Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-6b7ad98c1f8so389286d6.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Aug 2024 12:48:15 -0700 (PDT)
+ us-mta-335-GvuIPZ8xNsSd5UoA1UA4vQ-1; Wed, 07 Aug 2024 15:48:20 -0400
+X-MC-Unique: GvuIPZ8xNsSd5UoA1UA4vQ-1
+Received: by mail-ua1-f71.google.com with SMTP id a1e0cc1a2514c-8257c3b4904so17715241.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Aug 2024 12:48:20 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1723060095; x=1723664895;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=o3OFHAXa4GjeJOqHDNlzpJASvE7zIeu8ivvI2pMYR/w=;
-        b=HgdMXVSdsywE9eZu4bPAGBRSX6TgXPj6QPofWTAbKL4cZzFHZsfUETJAqyWDoSIDr6
-         jnrIxiyNjTXpqc5rB2NQWvXGPjxNlIe7939XP8FzdNHjxWHHHOQxm5iyRRLqd4TYc3/6
-         Mbdto83YSiVd/79/9O32FagwbyEBgOr8yxwIGjVHWxtLpv5nVPFBDXdQHgaGe1f/lQa0
-         Y58dOTeMNZ74KKbqjRc3ZLB5F07RAMdcMhaMNTwU11gk63Zxhtp7+l2xuwiicjGOrG/Z
-         FwzaCkz8vs7UVGEPLyiALxktepiQ9PJinTEWwIJIVTAq8btKJYgdt46vWHs8W0aJwRYm
-         ZXYg==
-X-Forwarded-Encrypted: i=1; AJvYcCUXPvsDKozPxtJbkEvA4d2CQHBhx/6AspqltvaZrVVAq1u8OotSL+IX9SrN8qCn6d+JZrrlI4i07zOb9yc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywv143UNOt1TcOufwo0yWxekqMZVAire94fMYkI++gHhoFUbu5J
-	u9hAVh9DMraF8n3o8G6OuqicCgLQ7frYCei9mBR9yUQnytPunSzdG6ivzkvOCCniM4WAf76HjPd
-	MYgNarM2gLxHKn7lEamZ8kBgsdDBzEtbP6eG/dxg2Snspjk2Hb0SREUeetP1lTus=
-X-Received: by 2002:ad4:5ba4:0:b0:6b7:9295:3cce with SMTP id 6a1803df08f44-6bb984ae596mr143755126d6.8.1723060095069;
-        Wed, 07 Aug 2024 12:48:15 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IHCjDJrPHIrMzNYMf7G/SdTGJGIyVor+2t/BXveAxufE9NNL2pow6YcQrqmHncd+BDg/Ri9nA==
-X-Received: by 2002:ad4:5ba4:0:b0:6b7:9295:3cce with SMTP id 6a1803df08f44-6bb984ae596mr143754916d6.8.1723060094671;
-        Wed, 07 Aug 2024 12:48:14 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1723060099; x=1723664899;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=6aC2RF+//p0GJfjgH/iZrlW9ATLJl4mVfe8Rdc4jHgk=;
+        b=na51piB9kETl2Rh+9qiu9wUVORoHiyt7wA0fdmqWXBR8rKZEFxzccJt5PpoMjhys+D
+         dM4CFvfWkRvVWfyTXPnj4BXUIqI6hiMvRL42cbeHMjwk+cvhsf0ORH3yO+83eYgylmlC
+         MU9UM9owzNjYFAtXcb0xm0xU+aQjOczYKQdKqsz+hN4qhEkoLfBUKKdxDPiOu1ZMRVXD
+         /KPvZ4CYiCPYlAA59TJmh/z15AQjK42gI+pzaX9sdCXay8zpBGye7v6irbw7wHyu3BRh
+         Hjzlb/XPuJU3JccDLe/nfuWQ73oxvIgEreYxhG/KUK5d9m1PFM9u+rcFnvZ1KWpZFXfw
+         O+sQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVk2CL+FRuPCngkxtgDvsjiJOl5uQWia8Hic8/LrE8g/ja9h3XQoT3ryfQXS5Ys+mkvV9Xm4r7ggUvlxr8o8F4U9bUrKJhOwXszIjfH4Q==
+X-Gm-Message-State: AOJu0YwbbPHsflkz5lNlOFDxYIH96bSX7GX+kzLUvDqHYs3D+OuyJl97
+	PqdABk21t1MAT8cZvdx8enHAII6ujQoDZWuafVE3Ffn4r9D8ULH6aLmyb4p8GXUHh6l3VnAhWOu
+	DU2E35WU0h74oZt4YD2kLFtsEEYuqPci9xDj0X52i/Noo6LUqpRmDz4Fl4phIrYU=
+X-Received: by 2002:a67:f445:0:b0:493:c75f:4c71 with SMTP id ada2fe7eead31-4945bf7f9bemr10182699137.4.1723060099540;
+        Wed, 07 Aug 2024 12:48:19 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IExnSrOtwcHXkdqrS3UwyseZPMUb/72Vd4NIKyn9I98RgoSLE2TM2KVGSHUSlSxMHs5MS4l7Q==
+X-Received: by 2002:a67:f445:0:b0:493:c75f:4c71 with SMTP id ada2fe7eead31-4945bf7f9bemr10182670137.4.1723060099151;
+        Wed, 07 Aug 2024 12:48:19 -0700 (PDT)
 Received: from x1n.redhat.com (pool-99-254-121-117.cpe.net.cable.rogers.com. [99.254.121.117])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6bb9c78ae4asm59853256d6.33.2024.08.07.12.48.12
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6bb9c78ae4asm59853256d6.33.2024.08.07.12.48.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Aug 2024 12:48:14 -0700 (PDT)
+        Wed, 07 Aug 2024 12:48:18 -0700 (PDT)
 From: Peter Xu <peterx@redhat.com>
 To: linux-kernel@vger.kernel.org,
 	linux-mm@kvack.org
-Subject: [PATCH v4 0/7] mm/mprotect: Fix dax puds
-Date: Wed,  7 Aug 2024 15:48:04 -0400
-Message-ID: <20240807194812.819412-1-peterx@redhat.com>
+Subject: [PATCH v4 2/7] mm/mprotect: Push mmu notifier to PUDs
+Date: Wed,  7 Aug 2024 15:48:06 -0400
+Message-ID: <20240807194812.819412-3-peterx@redhat.com>
 X-Mailer: git-send-email 2.45.0
+In-Reply-To: <20240807194812.819412-1-peterx@redhat.com>
+References: <20240807194812.819412-1-peterx@redhat.com>
 MIME-Version: 1.0
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"; x-default=true
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,101 +102,141 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: James Houghton <jthoughton@google.com>, David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, peterx@redhat.com, Christophe Leroy <christophe.leroy@csgroup.eu>, Dan Williams <dan.j.williams@intel.com>, Dave Jiang <dave.jiang@intel.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Ingo Molnar <mingo@redhat.com>, Huang Ying <ying.huang@intel.com>, Rik van Riel <riel@surriel.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill@shutemov.name>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, Mel Gorman <mgorman@techsingularity.net>
+Cc: James Houghton <jthoughton@google.com>, kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, peterx@redhat.com, Christophe Leroy <christophe.leroy@csgroup.eu>, Dan Williams <dan.j.williams@intel.com>, David Rientjes <rientjes@google.com>, Dave Jiang <dave.jiang@intel.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Ingo Molnar <mingo@redhat.com>, Huang Ying <ying.huang@intel.com>, Rik van Riel <riel@surriel.com>, Sean Christopherson <seanjc@google.com>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill@shutemov.name>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Oscar Salvador <osalvador@suse.de>, linuxppc-dev@lists.ozlabs.org, Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Rick P Edgecombe <rick.p.edgecombe@intel.com>, Mel Gorman <mgorman@techsingularity.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[Based on mm-unstable, commit 98808d08fc0f, Aug 7th]
+mprotect() does mmu notifiers in PMD levels.  It's there since 2014 of
+commit a5338093bfb4 ("mm: move mmu notifier call from change_protection to
+change_pmd_range").
 
-v4:
-- Added tags
-- Dropped patch "mm/mprotect: Remove NUMA_HUGE_PTE_UPDATES" [DavidH]
-- Touched up comment in pgtable_split_needed() [James]
+At that time, the issue was that NUMA balancing can be applied on a huge
+range of VM memory, even if nothing was populated.  The notification can be
+avoided in this case if no valid pmd detected, which includes either THP or
+a PTE pgtable page.
 
-v1: https://lore.kernel.org/r/20240621142504.1940209-1-peterx@redhat.com
-v2: https://lore.kernel.org/r/20240703212918.2417843-1-peterx@redhat.com
-v3: https://lore.kernel.org/r/20240715192142.3241557-1-peterx@redhat.com
+Now to pave way for PUD handling, this isn't enough.  We need to generate
+mmu notifications even on PUD entries properly.  mprotect() is currently
+broken on PUD (e.g., one can easily trigger kernel error with dax 1G
+mappings already), this is the start to fix it.
 
-Dax supports pud pages for a while, but mprotect on puds was missing since
-the start.  This series tries to fix that by providing pud handling in
-mprotect().  The goal is to add more types of pud mappings like hugetlb or
-pfnmaps.  This series paves way for it by fixing known pud entries.
+To fix that, this patch proposes to push such notifications to the PUD
+layers.
 
-Considering nobody reported this until when I looked at those other types
-of pud mappings, I am thinking maybe it doesn't need to be a fix for stable
-and this may not need to be backported.  I would guess whoever cares about
-mprotect() won't care 1G dax puds yet, vice versa.  I hope fixing that in
-new kernels would be fine, but I'm open to suggestions.
+There is risk on regressing the problem Rik wanted to resolve before, but I
+think it shouldn't really happen, and I still chose this solution because
+of a few reasons:
 
-There're a few small things changed to teach mprotect work on PUDs. E.g. it
-will need to start with dropping NUMA_HUGE_PTE_UPDATES which may stop
-making sense when there can be more than one type of huge pte.  OTOH, we'll
-also need to push the mmu notifiers from pmd to pud layers, which might
-need some attention but so far I think it's safe.  For such details, please
-refer to each patch's commit message.
+  1) Consider a large VM that should definitely contain more than GBs of
+  memory, it's highly likely that PUDs are also none.  In this case there
+  will have no regression.
 
-The mprotect() pud process should be straightforward, as I kept it as
-simple as possible.  There's no NUMA handled as dax simply doesn't support
-that.  There's also no userfault involvements as file memory (even if work
-with userfault-wp async mode) will need to split a pud, so pud entry
-doesn't need to yet know userfault's existance (but hugetlb entries will;
-that's also for later).
+  2) KVM has evolved a lot over the years to get rid of rmap walks, which
+  might be the major cause of the previous soft-lockup.  At least TDP MMU
+  already got rid of rmap as long as not nested (which should be the major
+  use case, IIUC), then the TDP MMU pgtable walker will simply see empty VM
+  pgtable (e.g. EPT on x86), the invalidation of a full empty region in
+  most cases could be pretty fast now, comparing to 2014.
 
-Tests
-=====
+  3) KVM has explicit code paths now to even give way for mmu notifiers
+  just like this one, e.g. in commit d02c357e5bfa ("KVM: x86/mmu: Retry
+  fault before acquiring mmu_lock if mapping is changing").  It'll also
+  avoid contentions that may also contribute to a soft-lockup.
 
-What I did test:
+  4) Stick with PMD layer simply don't work when PUD is there...  We need
+  one way or another to fix PUD mappings on mprotect().
 
-- cross-build tests that I normally cover [1]
+Pushing it to PUD should be the safest approach as of now, e.g. there's yet
+no sign of huge P4D coming on any known archs.
 
-- smoke tested on x86_64 the simplest program [2] on dev_dax 1G PUD
-  mprotect() using QEMU's nvdimm emulations [3] and ndctl to create
-  namespaces with proper alignments, which used to throw "bad pud" but now
-  it'll run through all fine.  I checked sigbus happens if with illegal
-  access on protected puds.
+Cc: kvm@vger.kernel.org
+Cc: Sean Christopherson <seanjc@google.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Rik van Riel <riel@surriel.com>
+Signed-off-by: Peter Xu <peterx@redhat.com>
+---
+ mm/mprotect.c | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
-- vmtests.
-
-What I didn't test:
-
-- fsdax: I wanted to also give it a shot, but only until then I noticed it
-  doesn't seem to be supported (according to dax_iomap_fault(), which will
-  always fallback on PUD_ORDER).  I did remember it was supported before, I
-  could miss something important there.. please shoot if so.
-
-- userfault wp-async: I also wanted to test userfault-wp async be able to
-  split huge puds (here it's simply a clear_pud.. though), but it won't
-  work for devdax anyway due to not allowed to do smaller than 1G faults in
-  this case. So skip too.
-
-- Power, as no hardware on hand.
-
-Thanks,
-
-[1] https://gitlab.com/peterx/lkb-harness/-/blob/main/config.json
-[2] https://github.com/xzpeter/clibs/blob/master/misc/dax.c
-[3] https://github.com/qemu/qemu/blob/master/docs/nvdimm.txt
-
-Peter Xu (7):
-  mm/dax: Dump start address in fault handler
-  mm/mprotect: Push mmu notifier to PUDs
-  mm/powerpc: Add missing pud helpers
-  mm/x86: Make pud_leaf() only care about PSE bit
-  mm/x86: arch_check_zapped_pud()
-  mm/x86: Add missing pud helpers
-  mm/mprotect: fix dax pud handlings
-
- arch/powerpc/include/asm/book3s/64/pgtable.h |  3 +
- arch/powerpc/mm/book3s64/pgtable.c           | 20 ++++++
- arch/x86/include/asm/pgtable.h               | 68 ++++++++++++++++---
- arch/x86/mm/pgtable.c                        | 19 ++++++
- drivers/dax/device.c                         |  6 +-
- include/linux/huge_mm.h                      | 24 +++++++
- include/linux/pgtable.h                      |  7 ++
- mm/huge_memory.c                             | 56 ++++++++++++++-
- mm/mprotect.c                                | 71 +++++++++++++-------
- 9 files changed, 236 insertions(+), 38 deletions(-)
-
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index 37cf8d249405..d423080e6509 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -363,9 +363,6 @@ static inline long change_pmd_range(struct mmu_gather *tlb,
+ 	unsigned long next;
+ 	long pages = 0;
+ 	unsigned long nr_huge_updates = 0;
+-	struct mmu_notifier_range range;
+-
+-	range.start = 0;
+ 
+ 	pmd = pmd_offset(pud, addr);
+ 	do {
+@@ -383,14 +380,6 @@ static inline long change_pmd_range(struct mmu_gather *tlb,
+ 		if (pmd_none(*pmd))
+ 			goto next;
+ 
+-		/* invoke the mmu notifier if the pmd is populated */
+-		if (!range.start) {
+-			mmu_notifier_range_init(&range,
+-				MMU_NOTIFY_PROTECTION_VMA, 0,
+-				vma->vm_mm, addr, end);
+-			mmu_notifier_invalidate_range_start(&range);
+-		}
+-
+ 		_pmd = pmdp_get_lockless(pmd);
+ 		if (is_swap_pmd(_pmd) || pmd_trans_huge(_pmd) || pmd_devmap(_pmd)) {
+ 			if ((next - addr != HPAGE_PMD_SIZE) ||
+@@ -431,9 +420,6 @@ static inline long change_pmd_range(struct mmu_gather *tlb,
+ 		cond_resched();
+ 	} while (pmd++, addr = next, addr != end);
+ 
+-	if (range.start)
+-		mmu_notifier_invalidate_range_end(&range);
+-
+ 	if (nr_huge_updates)
+ 		count_vm_numa_events(NUMA_HUGE_PTE_UPDATES, nr_huge_updates);
+ 	return pages;
+@@ -443,22 +429,36 @@ static inline long change_pud_range(struct mmu_gather *tlb,
+ 		struct vm_area_struct *vma, p4d_t *p4d, unsigned long addr,
+ 		unsigned long end, pgprot_t newprot, unsigned long cp_flags)
+ {
++	struct mmu_notifier_range range;
+ 	pud_t *pud;
+ 	unsigned long next;
+ 	long pages = 0, ret;
+ 
++	range.start = 0;
++
+ 	pud = pud_offset(p4d, addr);
+ 	do {
+ 		next = pud_addr_end(addr, end);
+ 		ret = change_prepare(vma, pud, pmd, addr, cp_flags);
+-		if (ret)
+-			return ret;
++		if (ret) {
++			pages = ret;
++			break;
++		}
+ 		if (pud_none_or_clear_bad(pud))
+ 			continue;
++		if (!range.start) {
++			mmu_notifier_range_init(&range,
++						MMU_NOTIFY_PROTECTION_VMA, 0,
++						vma->vm_mm, addr, end);
++			mmu_notifier_invalidate_range_start(&range);
++		}
+ 		pages += change_pmd_range(tlb, vma, pud, addr, next, newprot,
+ 					  cp_flags);
+ 	} while (pud++, addr = next, addr != end);
+ 
++	if (range.start)
++		mmu_notifier_invalidate_range_end(&range);
++
+ 	return pages;
+ }
+ 
 -- 
 2.45.0
 
