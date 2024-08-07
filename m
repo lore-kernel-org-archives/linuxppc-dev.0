@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4B0EC52D6F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2024 06:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2527DC52D6F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2024 06:45:09 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I2jRjvea;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hQ4mZ12N;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wf0yg2RG6z3cXy
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2024 16:44:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wf0zR4Z9kz3ck2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Aug 2024 16:45:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I2jRjvea;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hQ4mZ12N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wf0w16yTTz3ckc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2024 16:42:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wf0wJ0Gqsz3cfg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Aug 2024 16:42:23 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 4996761170;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 20AEC61053;
+	Wed,  7 Aug 2024 06:42:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8230DC4AF0D;
 	Wed,  7 Aug 2024 06:42:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9BA56C4AF13;
-	Wed,  7 Aug 2024 06:41:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1723012928;
-	bh=LVBztKoD4Oos/dRCyJv8IyacBKgi/uP7EFt5SSfn4a0=;
+	s=k20201202; t=1723012940;
+	bh=idsHhwKxCydMIEYW67Mi8IEYDtCQDaQ99uA3YpCABEE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=I2jRjveass/Sr4fsPaQDnFtXj2z4gevpdNEgzGdEseIlHAxuwSuQYPiQfPhhgBWhM
-	 rAduvcPbLcK+jxYfsD/mcBzf5Luuu8dvffnfcCgG2muccVvtiPUexZAjpWVgigBcuE
-	 1yAEMGDIP5Meo4LzO8aCmhz2kP1X0lNaqqjxLBXfDE4oajhxFMDhUAuuLhXSbK54Nf
-	 dGnqC4Z3C4OlwnZoF3cb/FNUSDigkIDjNp17lKazgjaiA8NYGs2rf/3tlMddZhKxC3
-	 i5KL8CSmnaYpGL5fSOhpGmNIThyVqRBqjLup++iZAKfZ/eYLpDN28xTOKN3oYQpemE
-	 pk3ekebZv23tA==
+	b=hQ4mZ12NkBXSfE0hhYdc5i9KQJBCyI1M5WrRev+NtKWDGPSaE8Wmtl2i3VESVG2xg
+	 Y5Ub1jLCzE5idKc6FUYwbselD+u4diobwITTAK4bvtOm6qBXHMP1Fz0Znf6+iTCyYi
+	 JJBg28lFO4lVodBcKj9T7Hv2b5Jp95ie+eYfBxVstxofJSZnKI6t4VaskYxv36YHbQ
+	 ASshRfDYXdY494etcdP22k2YkiYKeg1nR38nXmBhnfAtenk55tcm9BCU4MpzZuxjbD
+	 WTtoemNkM82xpYaKODYIpaWEWe/5z8KX706XNAEWvXVCFYljiiswPwrriIJruk9IHn
+	 36hliCUlm3ZWw==
 From: Mike Rapoport <rppt@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v4 03/26] MIPS: sgi-ip27: ensure node_possible_map only contains valid nodes
-Date: Wed,  7 Aug 2024 09:40:47 +0300
-Message-ID: <20240807064110.1003856-4-rppt@kernel.org>
+Subject: [PATCH v4 04/26] MIPS: sgi-ip27: drop HAVE_ARCH_NODEDATA_EXTENSION
+Date: Wed,  7 Aug 2024 09:40:48 +0300
+Message-ID: <20240807064110.1003856-5-rppt@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240807064110.1003856-1-rppt@kernel.org>
 References: <20240807064110.1003856-1-rppt@kernel.org>
@@ -65,10 +65,15 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 
-For SGI IP27 machines node_possible_map is statically set to
-NODE_MASK_ALL and it is not updated during NUMA initialization.
+Commit f8f9f21c7848 ("MIPS: Fix build error for loongson64 and
+sgi-ip27") added HAVE_ARCH_NODEDATA_EXTENSION to sgi-ip27 to silence a
+compilation error that happened because sgi-ip27 didn't define array of
+pg_data_t as node_data like most other architectures did.
 
-Ensure that it only contains nodes present in the system.
+After addition of node_data array that matches other architectures and
+after ensuring that offline nodes do not appear on node_possible_map, it
+is safe to drop arch_alloc_nodedata() and HAVE_ARCH_NODEDATA_EXTENSION
+from sgi-ip27.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
@@ -76,27 +81,40 @@ Tested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com> [arm64 + CXL via QEMU]
 Acked-by: Dan Williams <dan.j.williams@intel.com>
 Acked-by: David Hildenbrand <david@redhat.com>
 ---
- arch/mips/sgi-ip27/ip27-smp.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/mips/Kconfig                |  1 -
+ arch/mips/sgi-ip27/ip27-memory.c | 10 ----------
+ 2 files changed, 11 deletions(-)
 
-diff --git a/arch/mips/sgi-ip27/ip27-smp.c b/arch/mips/sgi-ip27/ip27-smp.c
-index 5d2652a1d35a..62733e049570 100644
---- a/arch/mips/sgi-ip27/ip27-smp.c
-+++ b/arch/mips/sgi-ip27/ip27-smp.c
-@@ -70,11 +70,13 @@ void cpu_node_probe(void)
- 	gda_t *gdap = GDA;
- 
- 	nodes_clear(node_online_map);
-+	nodes_clear(node_possible_map);
- 	for (i = 0; i < MAX_NUMNODES; i++) {
- 		nasid_t nasid = gdap->g_nasidtable[i];
- 		if (nasid == INVALID_NASID)
- 			break;
- 		node_set_online(nasid);
-+		node_set(nasid, node_possible_map);
- 		highest = node_scan_cpus(nasid, highest);
- 	}
- 
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 60077e576935..ea5f3c3c31f6 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -735,7 +735,6 @@ config SGI_IP27
+ 	select WAR_R10000_LLSC
+ 	select MIPS_L1_CACHE_SHIFT_7
+ 	select NUMA
+-	select HAVE_ARCH_NODEDATA_EXTENSION
+ 	help
+ 	  This are the SGI Origin 200, Origin 2000 and Onyx 2 Graphics
+ 	  workstations.  To compile a Linux kernel that runs on these, say Y
+diff --git a/arch/mips/sgi-ip27/ip27-memory.c b/arch/mips/sgi-ip27/ip27-memory.c
+index c30ef6958b97..eb6d2fa41a8a 100644
+--- a/arch/mips/sgi-ip27/ip27-memory.c
++++ b/arch/mips/sgi-ip27/ip27-memory.c
+@@ -426,13 +426,3 @@ void __init mem_init(void)
+ 	memblock_free_all();
+ 	setup_zero_pages();	/* This comes from node 0 */
+ }
+-
+-pg_data_t * __init arch_alloc_nodedata(int nid)
+-{
+-	return memblock_alloc(sizeof(pg_data_t), SMP_CACHE_BYTES);
+-}
+-
+-void arch_refresh_nodedata(int nid, pg_data_t *pgdat)
+-{
+-	__node_data[nid] = (struct node_data *)pgdat;
+-}
 -- 
 2.43.0
 
