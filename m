@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C48E5C52D73
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:18:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82803C52D73
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:19:01 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=n9ythkk4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=MgYGFE6m;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WfdgJ37brz3dSW
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:18:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wfdh41StZz3dSv
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:19:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=n9ythkk4;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=MgYGFE6m;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::226; helo=relay6-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::226])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdWm4Vn8z3dKG
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdWm4fjcz3dKJ
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 17:11:48 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 722C1C0010;
-	Thu,  8 Aug 2024 07:11:42 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 5FD27C0008;
+	Thu,  8 Aug 2024 07:11:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1723101103;
+	t=1723101100;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=AtWIrdliZOmk8NGcbWjUR4YnnqWzac5bc0tUFTTDrBg=;
-	b=n9ythkk4tPk0SkNnLb94KE9A50bNV96RbYFZxM828pb0A6tEsWZ9x0Om6HU34reSr9TcR8
-	vw6yQyR9Vx6cEP02+7+QHzZd8gVTqUjqQSefDNSpsA0XGzVRlVlTA0thE4vRbDeqIH/kdv
-	Vupe6M85lctOD9vuZjcYUHIMtL83G9JRiA1uAEzeB4aVRJDJTUybsPM2FAv2IeLvfoqNn/
-	WnfdDAwIaphvMCbYka99zMaUuwNPG4MjTDi+g0zG+ao5pWFlXL+nI3TOfSGdTOfVGcOeRJ
-	lHPpvSzBrQ5pb5vAcOKilSv8YgB4Y8vzzMzeBjdQIE5mFmVFDkQHJrpBQcN3DQ==
+	bh=0UTWDzz2CSi9594bsioUgKxsyX0iygtz1joM8J6wTqE=;
+	b=MgYGFE6m2CQqivcWTNt8e8kbYA8hNR/WOja6lnwocpT2hOVYbYTzcKlQgAR1P1cYUNv+yC
+	antjbKsTPj150V5VYjIl3e86cQMcNRW82fUnuw5qrEqaju7u4yQ3fHGL/RmghN+Wf7Gk8W
+	oEPB0SBkQ/O1jTQ0oZtJKEIY3SH2p1HWf8zJFbYLbP+O4lUqmDbvkMA1w6kXVCuN5ZJz1E
+	EOLYUEW6rfYG7dlGe0CPY79aXW+X1K1atAt5Ds1uRIAHF/pbZp2+rJpsI7q/V3FaLPDv9Y
+	e/AeSPEV56hAohDGbLw38f+cxBf5GamRCQlD0kRMhg57fpFiDHIJO5IT07aHbQ==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v2 06/36] soc: fsl: cpm1: tsa: Add missing spinlock comment
-Date: Thu,  8 Aug 2024 09:10:59 +0200
-Message-ID: <20240808071132.149251-7-herve.codina@bootlin.com>
+Subject: [PATCH v2 02/36] soc: fsl: cpm1: qmc: Enable TRNSYNC only when needed
+Date: Thu,  8 Aug 2024 09:10:55 +0200
+Message-ID: <20240808071132.149251-3-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240808071132.149251-1-herve.codina@bootlin.com>
 References: <20240808071132.149251-1-herve.codina@bootlin.com>
@@ -69,29 +69,60 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-checkpatch.pl raises the following issue
-  CHECK: spinlock_t definition without comment
+The TRNSYNC feature is enabled whatever the number of time-slots used.
+The feature is needed only when more than one time-slot is used.
 
-Add the missing comment.
+Improve the driver enabling TRNSYNC only when it is needed.
 
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/tsa.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/soc/fsl/qe/qmc.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
-index 7b1032fb1572..a9d35b44489d 100644
---- a/drivers/soc/fsl/qe/tsa.c
-+++ b/drivers/soc/fsl/qe/tsa.c
-@@ -128,7 +128,7 @@ struct tsa {
- 	void __iomem *si_regs;
- 	void __iomem *si_ram;
- 	resource_size_t si_ram_sz;
--	spinlock_t	lock;
-+	spinlock_t	lock; /* Lock for read/modify/write sequence */
- 	int tdms; /* TSA_TDMx ORed */
- 	struct tsa_tdm tdm[2]; /* TDMa and TDMb */
- 	struct tsa_serial {
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index bacabf731dcb..916395745850 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -889,6 +889,7 @@ EXPORT_SYMBOL(qmc_chan_stop);
+ static int qmc_setup_chan_trnsync(struct qmc *qmc, struct qmc_chan *chan)
+ {
+ 	struct tsa_serial_info info;
++	unsigned int w_rx, w_tx;
+ 	u16 first_rx, last_tx;
+ 	u16 trnsync;
+ 	int ret;
+@@ -898,6 +899,14 @@ static int qmc_setup_chan_trnsync(struct qmc *qmc, struct qmc_chan *chan)
+ 	if (ret)
+ 		return ret;
+ 
++	w_rx = hweight64(chan->rx_ts_mask);
++	w_tx = hweight64(chan->tx_ts_mask);
++	if (w_rx <= 1 && w_tx <= 1) {
++		dev_dbg(qmc->dev, "only one or zero ts -> disable trnsync\n");
++		qmc_clrbits16(chan->s_param + QMC_SPE_CHAMR, QMC_SPE_CHAMR_TRANSP_SYNC);
++		return 0;
++	}
++
+ 	/* Find the first Rx TS allocated to the channel */
+ 	first_rx = chan->rx_ts_mask ? __ffs64(chan->rx_ts_mask) + 1 : 0;
+ 
+@@ -911,6 +920,7 @@ static int qmc_setup_chan_trnsync(struct qmc *qmc, struct qmc_chan *chan)
+ 		trnsync |= QMC_SPE_TRNSYNC_TX((last_tx % info.nb_tx_ts) * 2);
+ 
+ 	qmc_write16(chan->s_param + QMC_SPE_TRNSYNC, trnsync);
++	qmc_setbits16(chan->s_param + QMC_SPE_CHAMR, QMC_SPE_CHAMR_TRANSP_SYNC);
+ 
+ 	dev_dbg(qmc->dev, "chan %u: trnsync=0x%04x, rx %u/%u 0x%llx, tx %u/%u 0x%llx\n",
+ 		chan->id, trnsync,
+@@ -1378,7 +1388,7 @@ static int qmc_setup_chan(struct qmc *qmc, struct qmc_chan *chan)
+ 	if (chan->mode == QMC_TRANSPARENT) {
+ 		qmc_write32(chan->s_param + QMC_SPE_ZDSTATE, 0x18000080);
+ 		qmc_write16(chan->s_param + QMC_SPE_TMRBLR, 60);
+-		val = QMC_SPE_CHAMR_MODE_TRANSP | QMC_SPE_CHAMR_TRANSP_SYNC;
++		val = QMC_SPE_CHAMR_MODE_TRANSP;
+ 		if (chan->is_reverse_data)
+ 			val |= QMC_SPE_CHAMR_TRANSP_RD;
+ 		qmc_write16(chan->s_param + QMC_SPE_CHAMR, val);
 -- 
 2.45.0
 
