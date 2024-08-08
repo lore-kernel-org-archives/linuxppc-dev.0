@@ -4,37 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94F9CC3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:19:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF239C52D73
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:20:19 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Ey0H8fSc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=eOLs6cIe;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wfdhq23jSz3dKJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:19:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WfdjZ4kQXz3c5X
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:20:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Ey0H8fSc;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=eOLs6cIe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::226; helo=relay6-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::226])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.198; helo=relay6-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net [217.70.183.198])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdWm44NJz3dJV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 17:11:48 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id CAD03C0003;
-	Thu,  8 Aug 2024 07:11:35 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdWn6B2Rz3dRP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 17:11:49 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 9700AC0016;
+	Thu,  8 Aug 2024 07:11:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1723101098;
+	t=1723101106;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=0t/o0co0d1KQA15WVvII8idKUoygO67sZkZArazSEUc=;
-	b=Ey0H8fScvVWHJDOw4UD96x/pxP0Mvii7cO2j8RzqYOed14eVRrc+EQaMahc9azEqb6+GGI
-	ymwgCyZEWAr1vr1iqrhzElJWNWn2EsTOYPUYVTqv0MVSYyrFGI54HmxqOnk5EM5CKmKkyn
-	bMQNYRqf5yu8oLkwOBYeGHO1ZuC1xs2fxSh+i3/VQ8nGib1nNKqgeqAHABAfEkhuFRpqmC
-	mzTTKU8411WW4fLodKecEhSwiCuY4X0rp/e0PRbey7UM8phfaJXzWAIMcV/ww6m4Vb+Y3D
-	Mnp2pw5Fnt1E7pNq6Ro3eLvdOAXqwy9DCA9VupSXXV3maiHukulTzPiYvWzDkA==
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=XF7ZThYLSlIm1RWwY+vjDfKpa9VxBTeErEIk/Q4bWKk=;
+	b=eOLs6cIekuq5hgZkjL1+PIlbFtELmd+l4W+HjQi3Sl0lWavaMvPbIZZslpGzjEIHr6Dinu
+	arVHur9dMaefWSePklQb+dek5oY9xWeechCuM8IkK4eIXBzCUp24kP8QpqqsggsRZveL+t
+	G6m6nOCjJNAXmRJsvBrfry3zA1D012gECDtckTAo9KA2Idg2yFmSpaHs/4t2kW6GkLvDLm
+	MLdcIk4Dy360tdMsvpHVJN6D5LhdlVd8HinNaV1RjPRsOuLf0dJdZiy489hHtepdHB5aJX
+	31Q60TM2IKzAY3Ad4NKt3pMqz+TMBj1ro6iDLL9CPt2kWcYHjnD1JRboxw2srA==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -44,12 +45,13 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v2 00/36] soc: fsl: Add support for QUICC Engine TSA and QMC
-Date: Thu,  8 Aug 2024 09:10:53 +0200
-Message-ID: <20240808071132.149251-1-herve.codina@bootlin.com>
+Subject: [PATCH v2 10/36] soc: fsl: cpm1: tsa: Make SIRAM entries specific to CPM1
+Date: Thu,  8 Aug 2024 09:11:03 +0200
+Message-ID: <20240808071132.149251-11-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
+In-Reply-To: <20240808071132.149251-1-herve.codina@bootlin.com>
+References: <20240808071132.149251-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,123 +69,163 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Current code handles the CPM1 version of TSA. Compared against QUICC
+Engine (QE) version of TSA, CPM1 SIRAM entries are slightly different.
 
-This series add support for the QUICC Engine (QE) version of TSA and QMC
-components.
+In order to prepare the support for the QE version, clearly identify
+these entries and functions handling them as CPM1 compatible.
 
-CPM1 version is already supported and, as the QE version of those
-component are pretty similar to the CPM1 version, the series extend
-the already existing drivers to support for the QE version.
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+---
+ drivers/soc/fsl/qe/tsa.c | 75 ++++++++++++++++++++++++----------------
+ 1 file changed, 46 insertions(+), 29 deletions(-)
 
-The TSA and QMC components are tightly coupled and so the series
-provides modifications on both components.
-Of course, this series can be split if it is needed. Let me know.
-
-The series is composed of:
-- Patches 1 and 2: Fixes related to TRNSYNC in the QMC driver
-- Patches 3..6: Fixes of checkpatch detected issues in the TSA driver
-- Patch 7: The QE TSA device-tree binding
-- Patches 8..13: TSA driver preparations for adding support for QE
-- Patches 14 and 15: The support for QE in TSA + MAINTAINERS update
-- Patch 16: A TSA API improvement needed for the QE QMC driver
-- Patch 17: A clarification in the QE QMC driver
-- Patches 18..22: Fixes of checkpatch detected issues in the QMC driver
-- Patch 23: The QE QMC device-tree binding
-- Patches 24..31: QMC driver preparations for adding support for QE
-- Patches 32 and 33: Missing features additions in QE code
-- Patches 34..36: The QMC support for QE in QMC + MAINTAINERS update
-
-Compared to the previous iteration, this v2 series updates device-tree
-bindings and fixes issues detected by kernel test robots.
-
-Related to the QE QMC device-tree binding, I kept the unit address in
-decimal and the 3 compatible strings in order to avoid blocking the
-review waiting for a confirmation. Of course, this can be change in a
-next iteration.
-
-Best regards,
-Hervé
-
-Changes v1 -> v2
-v1: https://lore.kernel.org/lkml/20240729142107.104574-1-herve.codina@bootlin.com/
-  - patch 7
-    Removed redundant sentences
-    Removed unneeded property names from property descriptions.
-
-  - patch 13
-    Fixed issue detected by a kernel test robot:
-    cast to smaller integer type 'enum tsa_version' from 'const void *'
-
-  - patch 23
-    Moved channel compatible string to the first item in the channel
-    property list.
-
-  - patch 32
-    Added missing device.h header for devres_* function declarations
-    (issue detected by kernel test robots).
-
-  - Other patches
-    No changes
-
-Herve Codina (36):
-  soc: fsl: cpm1: qmc: Update TRNSYNC only in transparent mode
-  soc: fsl: cpm1: qmc: Enable TRNSYNC only when needed
-  soc: fsl: cpm1: tsa: Fix tsa_write8()
-  soc: fsl: cpm1: tsa: Use BIT(), GENMASK() and FIELD_PREP() macros
-  soc: fsl: cpm1: tsa: Fix blank line and spaces
-  soc: fsl: cpm1: tsa: Add missing spinlock comment
-  dt-bindings: soc: fsl: cpm_qe: Add QUICC Engine (QE) TSA controller
-  soc: fsl: cpm1: tsa: Remove unused registers offset definition
-  soc: fsl: cpm1: tsa: Use ARRAY_SIZE() instead of hardcoded integer
-    values
-  soc: fsl: cpm1: tsa: Make SIRAM entries specific to CPM1
-  soc: fsl: cpm1: tsa: Introduce tsa_setup() and its CPM1 compatible
-    version
-  soc: fsl: cpm1: tsa: Isolate specific CPM1 part from
-    tsa_serial_{dis}connect()
-  soc: fsl: cpm1: tsa: Introduce tsa_version
-  soc: fsl: cpm1: tsa: Add support for QUICC Engine (QE) implementation
-  MAINTAINERS: Add QE files related to the Freescale TSA controller
-  soc: fsl: cpm1: tsa: Introduce tsa_serial_get_num()
-  soc: fsl: cpm1: qmc: Rename QMC_TSA_MASK
-  soc: fsl: cpm1: qmc: Use BIT(), GENMASK() and FIELD_PREP() macros
-  soc: fsl: cpm1: qmc: Fix blank line and spaces
-  soc: fsl: cpm1: qmc: Remove unneeded parenthesis
-  soc: fsl: cpm1: qmc: Fix 'transmiter' typo
-  soc: fsl: cpm1: qmc: Add missing spinlock comment
-  dt-bindings: soc: fsl: cpm_qe: Add QUICC Engine (QE) QMC controller
-  soc: fsl: cpm1: qmc: Introduce qmc_data structure
-  soc: fsl: cpm1: qmc: Re-order probe() operations
-  soc: fsl: cpm1: qmc: Introduce qmc_init_resource() and its CPM1
-    version
-  soc: fsl: cpm1: qmc: Introduce qmc_{init,exit}_xcc() and their CPM1
-    version
-  soc: fsl: cpm1: qmc: Rename qmc_chan_command()
-  soc: fsl: cpm1: qmc: Handle RPACK initialization
-  soc: fsl: cpm1: qmc: Rename SCC_GSMRL_MODE_QMC
-  soc: fsl: cpm1: qmc: Introduce qmc_version
-  soc: fsl: qe: Add resource-managed muram allocators
-  soc: fsl: qe: Add missing PUSHSCHED command
-  soc: fsl: cpm1: qmc: Add support for QUICC Engine (QE) implementation
-  soc: fsl: cpm1: qmc: Handle QUICC Engine (QE) soft-qmc firmware
-  MAINTAINERS: Add QE files related to the Freescale QMC controller
-
- .../bindings/soc/fsl/cpm_qe/fsl,qe-tsa.yaml   | 210 ++++++
- .../soc/fsl/cpm_qe/fsl,qe-ucc-qmc.yaml        | 197 ++++++
- MAINTAINERS                                   |   3 +
- drivers/soc/fsl/qe/Kconfig                    |  18 +-
- drivers/soc/fsl/qe/qe_common.c                |  80 +++
- drivers/soc/fsl/qe/qmc.c                      | 667 +++++++++++++-----
- drivers/soc/fsl/qe/tsa.c                      | 659 ++++++++++++-----
- drivers/soc/fsl/qe/tsa.h                      |   3 +
- include/dt-bindings/soc/qe-fsl,tsa.h          |  13 +
- include/soc/fsl/qe/qe.h                       |  23 +-
- 10 files changed, 1549 insertions(+), 324 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-tsa.yaml
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ucc-qmc.yaml
- create mode 100644 include/dt-bindings/soc/qe-fsl,tsa.h
-
+diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
+index 3d0c31a62dbb..bf7354ebaca4 100644
+--- a/drivers/soc/fsl/qe/tsa.c
++++ b/drivers/soc/fsl/qe/tsa.c
+@@ -18,18 +18,18 @@
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+ 
+-/* TSA SI RAM routing tables entry */
+-#define TSA_SIRAM_ENTRY_LAST		BIT(16)
+-#define TSA_SIRAM_ENTRY_BYTE		BIT(17)
+-#define TSA_SIRAM_ENTRY_CNT_MASK	GENMASK(21, 18)
+-#define TSA_SIRAM_ENTRY_CNT(x)		FIELD_PREP(TSA_SIRAM_ENTRY_CNT_MASK, x)
+-#define TSA_SIRAM_ENTRY_CSEL_MASK	GENMASK(24, 22)
+-#define TSA_SIRAM_ENTRY_CSEL_NU		FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x0)
+-#define TSA_SIRAM_ENTRY_CSEL_SCC2	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x2)
+-#define TSA_SIRAM_ENTRY_CSEL_SCC3	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x3)
+-#define TSA_SIRAM_ENTRY_CSEL_SCC4	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x4)
+-#define TSA_SIRAM_ENTRY_CSEL_SMC1	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x5)
+-#define TSA_SIRAM_ENTRY_CSEL_SMC2	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x6)
++/* TSA SI RAM routing tables entry (CPM1) */
++#define TSA_CPM1_SIRAM_ENTRY_LAST	BIT(16)
++#define TSA_CPM1_SIRAM_ENTRY_BYTE	BIT(17)
++#define TSA_CPM1_SIRAM_ENTRY_CNT_MASK	GENMASK(21, 18)
++#define TSA_CPM1_SIRAM_ENTRY_CNT(x)	FIELD_PREP(TSA_CPM1_SIRAM_ENTRY_CNT_MASK, x)
++#define TSA_CPM1_SIRAM_ENTRY_CSEL_MASK	GENMASK(24, 22)
++#define TSA_CPM1_SIRAM_ENTRY_CSEL_NU	FIELD_PREP_CONST(TSA_CPM1_SIRAM_ENTRY_CSEL_MASK, 0x0)
++#define TSA_CPM1_SIRAM_ENTRY_CSEL_SCC2	FIELD_PREP_CONST(TSA_CPM1_SIRAM_ENTRY_CSEL_MASK, 0x2)
++#define TSA_CPM1_SIRAM_ENTRY_CSEL_SCC3	FIELD_PREP_CONST(TSA_CPM1_SIRAM_ENTRY_CSEL_MASK, 0x3)
++#define TSA_CPM1_SIRAM_ENTRY_CSEL_SCC4	FIELD_PREP_CONST(TSA_CPM1_SIRAM_ENTRY_CSEL_MASK, 0x4)
++#define TSA_CPM1_SIRAM_ENTRY_CSEL_SMC1	FIELD_PREP_CONST(TSA_CPM1_SIRAM_ENTRY_CSEL_MASK, 0x5)
++#define TSA_CPM1_SIRAM_ENTRY_CSEL_SMC2	FIELD_PREP_CONST(TSA_CPM1_SIRAM_ENTRY_CSEL_MASK, 0x6)
+ 
+ /* SI mode register (32 bits) */
+ #define TSA_SIMODE	0x00
+@@ -228,8 +228,8 @@ int tsa_serial_get_info(struct tsa_serial *tsa_serial, struct tsa_serial_info *i
+ }
+ EXPORT_SYMBOL(tsa_serial_get_info);
+ 
+-static void tsa_init_entries_area(struct tsa *tsa, struct tsa_entries_area *area,
+-				  u32 tdms, u32 tdm_id, bool is_rx)
++static void tsa_cpm1_init_entries_area(struct tsa *tsa, struct tsa_entries_area *area,
++				       u32 tdms, u32 tdm_id, bool is_rx)
+ {
+ 	resource_size_t quarter;
+ 	resource_size_t half;
+@@ -280,7 +280,13 @@ static void tsa_init_entries_area(struct tsa *tsa, struct tsa_entries_area *area
+ 	}
+ }
+ 
+-static const char *tsa_serial_id2name(struct tsa *tsa, u32 serial_id)
++static void tsa_init_entries_area(struct tsa *tsa, struct tsa_entries_area *area,
++				  u32 tdms, u32 tdm_id, bool is_rx)
++{
++	tsa_cpm1_init_entries_area(tsa, area, tdms, tdm_id, is_rx);
++}
++
++static const char *tsa_cpm1_serial_id2name(struct tsa *tsa, u32 serial_id)
+ {
+ 	switch (serial_id) {
+ 	case FSL_CPM_TSA_NU:	return "Not used";
+@@ -295,22 +301,27 @@ static const char *tsa_serial_id2name(struct tsa *tsa, u32 serial_id)
+ 	return NULL;
+ }
+ 
+-static u32 tsa_serial_id2csel(struct tsa *tsa, u32 serial_id)
++static const char *tsa_serial_id2name(struct tsa *tsa, u32 serial_id)
++{
++	return tsa_cpm1_serial_id2name(tsa, serial_id);
++}
++
++static u32 tsa_cpm1_serial_id2csel(struct tsa *tsa, u32 serial_id)
+ {
+ 	switch (serial_id) {
+-	case FSL_CPM_TSA_SCC2:	return TSA_SIRAM_ENTRY_CSEL_SCC2;
+-	case FSL_CPM_TSA_SCC3:	return TSA_SIRAM_ENTRY_CSEL_SCC3;
+-	case FSL_CPM_TSA_SCC4:	return TSA_SIRAM_ENTRY_CSEL_SCC4;
+-	case FSL_CPM_TSA_SMC1:	return TSA_SIRAM_ENTRY_CSEL_SMC1;
+-	case FSL_CPM_TSA_SMC2:	return TSA_SIRAM_ENTRY_CSEL_SMC2;
++	case FSL_CPM_TSA_SCC2:	return TSA_CPM1_SIRAM_ENTRY_CSEL_SCC2;
++	case FSL_CPM_TSA_SCC3:	return TSA_CPM1_SIRAM_ENTRY_CSEL_SCC3;
++	case FSL_CPM_TSA_SCC4:	return TSA_CPM1_SIRAM_ENTRY_CSEL_SCC4;
++	case FSL_CPM_TSA_SMC1:	return TSA_CPM1_SIRAM_ENTRY_CSEL_SMC1;
++	case FSL_CPM_TSA_SMC2:	return TSA_CPM1_SIRAM_ENTRY_CSEL_SMC2;
+ 	default:
+ 		break;
+ 	}
+-	return TSA_SIRAM_ENTRY_CSEL_NU;
++	return TSA_CPM1_SIRAM_ENTRY_CSEL_NU;
+ }
+ 
+-static int tsa_add_entry(struct tsa *tsa, struct tsa_entries_area *area,
+-			 u32 count, u32 serial_id)
++static int tsa_cpm1_add_entry(struct tsa *tsa, struct tsa_entries_area *area,
++			      u32 count, u32 serial_id)
+ {
+ 	void __iomem *addr;
+ 	u32 left;
+@@ -328,21 +339,21 @@ static int tsa_add_entry(struct tsa *tsa, struct tsa_entries_area *area,
+ 
+ 	if (area->last_entry) {
+ 		/* Clear last flag */
+-		tsa_clrbits32(area->last_entry, TSA_SIRAM_ENTRY_LAST);
++		tsa_clrbits32(area->last_entry, TSA_CPM1_SIRAM_ENTRY_LAST);
+ 	}
+ 
+ 	left = count;
+ 	while (left) {
+-		val = TSA_SIRAM_ENTRY_BYTE | tsa_serial_id2csel(tsa, serial_id);
++		val = TSA_CPM1_SIRAM_ENTRY_BYTE | tsa_cpm1_serial_id2csel(tsa, serial_id);
+ 
+ 		if (left > 16) {
+ 			cnt = 16;
+ 		} else {
+ 			cnt = left;
+-			val |= TSA_SIRAM_ENTRY_LAST;
++			val |= TSA_CPM1_SIRAM_ENTRY_LAST;
+ 			area->last_entry = addr;
+ 		}
+-		val |= TSA_SIRAM_ENTRY_CNT(cnt - 1);
++		val |= TSA_CPM1_SIRAM_ENTRY_CNT(cnt - 1);
+ 
+ 		tsa_write32(addr, val);
+ 		addr += 4;
+@@ -352,6 +363,12 @@ static int tsa_add_entry(struct tsa *tsa, struct tsa_entries_area *area,
+ 	return 0;
+ }
+ 
++static int tsa_add_entry(struct tsa *tsa, struct tsa_entries_area *area,
++			 u32 count, u32 serial_id)
++{
++	return tsa_cpm1_add_entry(tsa, area, count, serial_id);
++}
++
+ static int tsa_of_parse_tdm_route(struct tsa *tsa, struct device_node *tdm_np,
+ 				  u32 tdms, u32 tdm_id, bool is_rx)
+ {
+@@ -636,7 +653,7 @@ static void tsa_init_si_ram(struct tsa *tsa)
+ 
+ 	/* Fill all entries as the last one */
+ 	for (i = 0; i < tsa->si_ram_sz; i += 4)
+-		tsa_write32(tsa->si_ram + i, TSA_SIRAM_ENTRY_LAST);
++		tsa_write32(tsa->si_ram + i, TSA_CPM1_SIRAM_ENTRY_LAST);
+ }
+ 
+ static int tsa_probe(struct platform_device *pdev)
 -- 
 2.45.0
 
