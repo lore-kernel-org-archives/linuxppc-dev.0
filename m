@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AC11C52D71
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 09:55:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D980FC3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 09:55:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wfj8b6hSCz2yPq
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 19:55:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wfj914KQWz3026
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 19:55:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=steven.price@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wfj882v7gz2xjM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 19:55:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wfj8B52XKz2xjY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 19:55:06 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0E8C0DA7;
-	Thu,  8 Aug 2024 02:54:55 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AA0441042;
+	Thu,  8 Aug 2024 02:55:01 -0700 (PDT)
 Received: from [10.1.26.21] (e122027.cambridge.arm.com [10.1.26.21])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 632F73F6A8;
-	Thu,  8 Aug 2024 02:54:23 -0700 (PDT)
-Message-ID: <34468ff8-2159-4adb-b680-c6048eecee80@arm.com>
-Date: Thu, 8 Aug 2024 10:54:20 +0100
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A95173F6A8;
+	Thu,  8 Aug 2024 02:54:29 -0700 (PDT)
+Message-ID: <fbcbd4da-cab5-420e-b8b6-bf04e27bf69c@arm.com>
+Date: Thu, 8 Aug 2024 10:54:24 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v12 01/84] KVM: arm64: Release pfn, i.e. put page, if
- copying MTE tags hits ZONE_DEVICE
+Subject: Re: [PATCH v12 02/84] KVM: arm64: Disallow copying MTE to guest
+ memory while KVM is dirty logging
 To: Catalin Marinas <catalin.marinas@arm.com>,
  Sean Christopherson <seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
- <20240726235234.228822-2-seanjc@google.com> <ZrOBg70pCnv7PHyK@arm.com>
+ <20240726235234.228822-3-seanjc@google.com> <ZrOfB8bOdSJVcWFr@arm.com>
 From: Steven Price <steven.price@arm.com>
 Content-Language: en-GB
-In-Reply-To: <ZrOBg70pCnv7PHyK@arm.com>
+In-Reply-To: <ZrOfB8bOdSJVcWFr@arm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -50,44 +50,47 @@ Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, David Matlack <dmatlack@g
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 07/08/2024 15:15, Catalin Marinas wrote:
-> On Fri, Jul 26, 2024 at 04:51:10PM -0700, Sean Christopherson wrote:
->> Put the page reference acquired by gfn_to_pfn_prot() if
->> kvm_vm_ioctl_mte_copy_tags() runs into ZONE_DEVICE memory.  KVM's less-
->> than-stellar heuristics for dealing with pfn-mapped memory means that KVM
->> can get a page reference to ZONE_DEVICE memory.
+On 07/08/2024 17:21, Catalin Marinas wrote:
+> On Fri, Jul 26, 2024 at 04:51:11PM -0700, Sean Christopherson wrote:
+>> Disallow copying MTE tags to guest memory while KVM is dirty logging, as
+>> writing guest memory without marking the gfn as dirty in the memslot could
+>> result in userspace failing to migrate the updated page.  Ideally (maybe?),
+>> KVM would simply mark the gfn as dirty, but there is no vCPU to work with,
+>> and presumably the only use case for copy MTE tags _to_ the guest is when
+>> restoring state on the target.
 >>
 >> Fixes: f0376edb1ddc ("KVM: arm64: Add ioctl to fetch/store tags in a guest")
 >> Signed-off-by: Sean Christopherson <seanjc@google.com>
 >> ---
->>  arch/arm64/kvm/guest.c | 1 +
->>  1 file changed, 1 insertion(+)
+>>  arch/arm64/kvm/guest.c | 5 +++++
+>>  1 file changed, 5 insertions(+)
 >>
 >> diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
->> index 11098eb7eb44..e1f0ff08836a 100644
+>> index e1f0ff08836a..962f985977c2 100644
 >> --- a/arch/arm64/kvm/guest.c
 >> +++ b/arch/arm64/kvm/guest.c
->> @@ -1059,6 +1059,7 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
->>  		page = pfn_to_online_page(pfn);
->>  		if (!page) {
->>  			/* Reject ZONE_DEVICE memory */
->> +			kvm_release_pfn_clean(pfn);
->>  			ret = -EFAULT;
->>  			goto out;
->>  		}
+>> @@ -1045,6 +1045,11 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
+>>  
+>>  	mutex_lock(&kvm->slots_lock);
+>>  
+>> +	if (write && atomic_read(&kvm->nr_memslots_dirty_logging)) {
+>> +		ret = -EBUSY;
+>> +		goto out;
+>> +	}
 > 
-> This patch makes sense irrespective of whether the above pfn is a
-> ZONE_DEVICE or not. gfn_to_pfn_prot() increased the page refcount via
-> GUP, so it must be released before bailing out of this loop.
+> There are ways to actually log the page dirtying but I don't think
+> it's worth it. AFAICT, reading the tags still works and that's what's
+> used during migration (on the VM where dirty tracking takes place).
 > 
 > Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 > 
 
-Yep, as Catalin says, this is an 'obviously' correct fix - the reference
-needs releasing before bailing out. The comment there is perhaps
-misleading - it's not just ZONE_DEVICE memory that will be rejected, but
-this is the case that was in my mind when I wrote it. Although clearly I
-wasn't thinking hard enough when writing the code in the first place... ;)
+Looks sensible to me - my initial thought was "why would a VMM do
+that?". But it would make sense to actually return a failure rather than
+letting the VMM shoot itself in the foot.
+
+If there's actually a use-case then we could look at making the dirty
+tracking work, but I'm not convinced there is a good reason.
 
 Reviewed-by: Steven Price <steven.price@arm.com>
 
