@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31FE0C3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:12:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93392C52D7B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:13:07 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=YIyD+2Xy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=gN0Uk/uq;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WfdXV6GhSz3dTD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:12:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WfdYG1j2qz3dTV
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:13:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=YIyD+2Xy;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=gN0Uk/uq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.198; helo=relay6-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net [217.70.183.198])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdWj6Sl7z3d8M
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdWk38KFz3dBt
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 17:11:43 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id 0057EC000C;
-	Thu,  8 Aug 2024 07:11:40 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 90A4EC0009;
+	Thu,  8 Aug 2024 07:11:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1723101101;
+	t=1723101099;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=FedGXBbxZS85QIbKrUIqDEcBbjDFn92tK2MtTO/ElYU=;
-	b=YIyD+2Xy+fDnZkHlX93E7CsEPEw+MB9zrg4gL4VhwDukhyUr9STvaatDp7737M/AAn2OgW
-	0oNgsZ0mDsRGa8lnmbydvTFD0GJ8snXbabyBgXMy1Q7YKDe5gLeoRJDXM0ivbscbp5O01+
-	8S1kLvaU3CEJIKsUhELQBgvsJi5hl3keUEpQ4WMXTNctFmUpse5YZVtCX1FxcTpnj9sUq0
-	XJ7VUMxlXDPcAybDmS77e55itJM5sVZ0WU1XZH/TH1PMT+RXqoP87kUYSpJEB2W4WYWiI3
-	b2sl6NZcnwnMHy3niCVJIM1gJ5A9+ctMsdwXcuGtcgUMi9ZpW/C1S169lz27ag==
+	bh=O1sNai9Jq2u7qPOllWQVrRFQ040G46WCUggP4JjIwzw=;
+	b=gN0Uk/uqPGnTJ6esXWrtABtNBxnV4yIYif8QxXp/26PxdMvJIF8+ln3j2iWbJExBMXWwdv
+	EUqX566FoQ7JYaGSTsUc5q27vmLFMqURO6dDWKjtXv1zvTU+pib0UncbHMXpb/Wy9ypA2D
+	f2Eifo/uWZpMOoPIv9BLZhmnE8WfYsMKDl9UbpP8kc4UEbNADAkqgJ2kUEEn0uesVDXuFt
+	LJKyvkZBpBuhY06XT8xKLgiTkVM9M44jHsPecZRtP9bdUQfnfJ9REoo4PayPcbuuudW3z7
+	tuW79gJL2vSc7kJx9JNDWKyupzpwyZdOTgjeSd+1BWH5NyfwmddTH1a2gOOMkA==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v2 04/36] soc: fsl: cpm1: tsa: Use BIT(), GENMASK() and FIELD_PREP() macros
-Date: Thu,  8 Aug 2024 09:10:57 +0200
-Message-ID: <20240808071132.149251-5-herve.codina@bootlin.com>
+Subject: [PATCH v2 01/36] soc: fsl: cpm1: qmc: Update TRNSYNC only in transparent mode
+Date: Thu,  8 Aug 2024 09:10:54 +0200
+Message-ID: <20240808071132.149251-2-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240808071132.149251-1-herve.codina@bootlin.com>
 References: <20240808071132.149251-1-herve.codina@bootlin.com>
@@ -65,178 +65,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-checkpatch.pl signals the following improvement for tsa.c
-  CHECK: Prefer using the BIT macro
+The TRNSYNC feature is available (and enabled) only in transparent mode.
 
-Follow its suggestion and convert the code to BIT() and related macros.
+Since commit 7cc9bda9c163 ("soc: fsl: cpm1: qmc: Handle timeslot entries
+at channel start() and stop()") TRNSYNC register is updated in
+transparent and hdlc mode. In hdlc mode, the address of the TRNSYNC
+register is used by the QMC for other internal purpose. Even if no weird
+results were observed in hdlc mode, touching this register in this mode
+is wrong.
 
+Update TRNSYNC only in transparent mode.
+
+Fixes: 7cc9bda9c163 ("soc: fsl: cpm1: qmc: Handle timeslot entries at channel start() and stop()")
+Cc: stable@vger.kernel.org
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/tsa.c | 127 +++++++++++++++++++++------------------
- 1 file changed, 68 insertions(+), 59 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 24 ++++++++++++++----------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
-index 53968ea84c88..dc4dda17dab8 100644
---- a/drivers/soc/fsl/qe/tsa.c
-+++ b/drivers/soc/fsl/qe/tsa.c
-@@ -9,6 +9,7 @@
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index 76bb496305a0..bacabf731dcb 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -940,11 +940,13 @@ static int qmc_chan_start_rx(struct qmc_chan *chan)
+ 		goto end;
+ 	}
  
- #include "tsa.h"
- #include <dt-bindings/soc/cpm1-fsl,tsa.h>
-+#include <linux/bitfield.h>
- #include <linux/clk.h>
- #include <linux/io.h>
- #include <linux/module.h>
-@@ -19,47 +20,52 @@
+-	ret = qmc_setup_chan_trnsync(chan->qmc, chan);
+-	if (ret) {
+-		dev_err(chan->qmc->dev, "chan %u: setup TRNSYNC failed (%d)\n",
+-			chan->id, ret);
+-		goto end;
++	if (chan->mode == QMC_TRANSPARENT) {
++		ret = qmc_setup_chan_trnsync(chan->qmc, chan);
++		if (ret) {
++			dev_err(chan->qmc->dev, "chan %u: setup TRNSYNC failed (%d)\n",
++				chan->id, ret);
++			goto end;
++		}
+ 	}
  
+ 	/* Restart the receiver */
+@@ -982,11 +984,13 @@ static int qmc_chan_start_tx(struct qmc_chan *chan)
+ 		goto end;
+ 	}
  
- /* TSA SI RAM routing tables entry */
--#define TSA_SIRAM_ENTRY_LAST		(1 << 16)
--#define TSA_SIRAM_ENTRY_BYTE		(1 << 17)
--#define TSA_SIRAM_ENTRY_CNT(x)		(((x) & 0x0f) << 18)
--#define TSA_SIRAM_ENTRY_CSEL_MASK	(0x7 << 22)
--#define TSA_SIRAM_ENTRY_CSEL_NU		(0x0 << 22)
--#define TSA_SIRAM_ENTRY_CSEL_SCC2	(0x2 << 22)
--#define TSA_SIRAM_ENTRY_CSEL_SCC3	(0x3 << 22)
--#define TSA_SIRAM_ENTRY_CSEL_SCC4	(0x4 << 22)
--#define TSA_SIRAM_ENTRY_CSEL_SMC1	(0x5 << 22)
--#define TSA_SIRAM_ENTRY_CSEL_SMC2	(0x6 << 22)
-+#define TSA_SIRAM_ENTRY_LAST		BIT(16)
-+#define TSA_SIRAM_ENTRY_BYTE		BIT(17)
-+#define TSA_SIRAM_ENTRY_CNT_MASK	GENMASK(21, 18)
-+#define TSA_SIRAM_ENTRY_CNT(x)		FIELD_PREP(TSA_SIRAM_ENTRY_CNT_MASK, x)
-+#define TSA_SIRAM_ENTRY_CSEL_MASK	GENMASK(24, 22)
-+#define TSA_SIRAM_ENTRY_CSEL_NU		FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x0)
-+#define TSA_SIRAM_ENTRY_CSEL_SCC2	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x2)
-+#define TSA_SIRAM_ENTRY_CSEL_SCC3	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x3)
-+#define TSA_SIRAM_ENTRY_CSEL_SCC4	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x4)
-+#define TSA_SIRAM_ENTRY_CSEL_SMC1	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x5)
-+#define TSA_SIRAM_ENTRY_CSEL_SMC2	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x6)
+-	ret = qmc_setup_chan_trnsync(chan->qmc, chan);
+-	if (ret) {
+-		dev_err(chan->qmc->dev, "chan %u: setup TRNSYNC failed (%d)\n",
+-			chan->id, ret);
+-		goto end;
++	if (chan->mode == QMC_TRANSPARENT) {
++		ret = qmc_setup_chan_trnsync(chan->qmc, chan);
++		if (ret) {
++			dev_err(chan->qmc->dev, "chan %u: setup TRNSYNC failed (%d)\n",
++				chan->id, ret);
++			goto end;
++		}
+ 	}
  
- /* SI mode register (32 bits) */
- #define TSA_SIMODE	0x00
--#define   TSA_SIMODE_SMC2			0x80000000
--#define   TSA_SIMODE_SMC1			0x00008000
--#define   TSA_SIMODE_TDMA(x)			((x) << 0)
--#define   TSA_SIMODE_TDMB(x)			((x) << 16)
--#define     TSA_SIMODE_TDM_MASK			0x0fff
--#define     TSA_SIMODE_TDM_SDM_MASK		0x0c00
--#define       TSA_SIMODE_TDM_SDM_NORM		0x0000
--#define       TSA_SIMODE_TDM_SDM_ECHO		0x0400
--#define       TSA_SIMODE_TDM_SDM_INTL_LOOP	0x0800
--#define       TSA_SIMODE_TDM_SDM_LOOP_CTRL	0x0c00
--#define     TSA_SIMODE_TDM_RFSD(x)		((x) << 8)
--#define     TSA_SIMODE_TDM_DSC			0x0080
--#define     TSA_SIMODE_TDM_CRT			0x0040
--#define     TSA_SIMODE_TDM_STZ			0x0020
--#define     TSA_SIMODE_TDM_CE			0x0010
--#define     TSA_SIMODE_TDM_FE			0x0008
--#define     TSA_SIMODE_TDM_GM			0x0004
--#define     TSA_SIMODE_TDM_TFSD(x)		((x) << 0)
-+#define   TSA_SIMODE_SMC2			BIT(31)
-+#define   TSA_SIMODE_SMC1			BIT(15)
-+#define   TSA_SIMODE_TDMA_MASK			GENMASK(11, 0)
-+#define   TSA_SIMODE_TDMA(x)			FIELD_PREP(TSA_SIMODE_TDMA_MASK, x)
-+#define   TSA_SIMODE_TDMB_MASK			GENMASK(27, 16)
-+#define   TSA_SIMODE_TDMB(x)			FIELD_PREP(TSA_SIMODE_TDMB_MASK, x)
-+#define     TSA_SIMODE_TDM_MASK			GENMASK(11, 0)
-+#define     TSA_SIMODE_TDM_SDM_MASK		GENMASK(11, 10)
-+#define       TSA_SIMODE_TDM_SDM_NORM		FIELD_PREP_CONST(TSA_SIMODE_TDM_SDM_MASK, 0x0)
-+#define       TSA_SIMODE_TDM_SDM_ECHO		FIELD_PREP_CONST(TSA_SIMODE_TDM_SDM_MASK, 0x1)
-+#define       TSA_SIMODE_TDM_SDM_INTL_LOOP	FIELD_PREP_CONST(TSA_SIMODE_TDM_SDM_MASK, 0x2)
-+#define       TSA_SIMODE_TDM_SDM_LOOP_CTRL	FIELD_PREP_CONST(TSA_SIMODE_TDM_SDM_MASK, 0x3)
-+#define     TSA_SIMODE_TDM_RFSD_MASK		GENMASK(9, 8)
-+#define     TSA_SIMODE_TDM_RFSD(x)		FIELD_PREP(TSA_SIMODE_TDM_RFSD_MASK, x)
-+#define     TSA_SIMODE_TDM_DSC			BIT(7)
-+#define     TSA_SIMODE_TDM_CRT			BIT(6)
-+#define     TSA_SIMODE_TDM_STZ			BIT(5)
-+#define     TSA_SIMODE_TDM_CE			BIT(4)
-+#define     TSA_SIMODE_TDM_FE			BIT(3)
-+#define     TSA_SIMODE_TDM_GM			BIT(2)
-+#define     TSA_SIMODE_TDM_TFSD_MASK		GENMASK(1, 0)
-+#define     TSA_SIMODE_TDM_TFSD(x)		FIELD_PREP(TSA_SIMODE_TDM_TFSD_MASK, x)
- 
- /* SI global mode register (8 bits) */
- #define TSA_SIGMR	0x04
--#define TSA_SIGMR_ENB			(1<<3)
--#define TSA_SIGMR_ENA			(1<<2)
--#define TSA_SIGMR_RDM_MASK		0x03
--#define   TSA_SIGMR_RDM_STATIC_TDMA	0x00
--#define   TSA_SIGMR_RDM_DYN_TDMA	0x01
--#define   TSA_SIGMR_RDM_STATIC_TDMAB	0x02
--#define   TSA_SIGMR_RDM_DYN_TDMAB	0x03
-+#define TSA_SIGMR_ENB			BIT(3)
-+#define TSA_SIGMR_ENA			BIT(2)
-+#define TSA_SIGMR_RDM_MASK		GENMASK(1, 0)
-+#define   TSA_SIGMR_RDM_STATIC_TDMA	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x0)
-+#define   TSA_SIGMR_RDM_DYN_TDMA	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x1)
-+#define   TSA_SIGMR_RDM_STATIC_TDMAB	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x2)
-+#define   TSA_SIGMR_RDM_DYN_TDMAB	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x3)
- 
- /* SI status register (8 bits) */
- #define TSA_SISTR	0x06
-@@ -69,30 +75,33 @@
- 
- /* SI clock route register (32 bits) */
- #define TSA_SICR	0x0C
--#define   TSA_SICR_SCC2(x)		((x) << 8)
--#define   TSA_SICR_SCC3(x)		((x) << 16)
--#define   TSA_SICR_SCC4(x)		((x) << 24)
--#define     TSA_SICR_SCC_MASK		0x0ff
--#define     TSA_SICR_SCC_GRX		(1 << 7)
--#define     TSA_SICR_SCC_SCX_TSA	(1 << 6)
--#define     TSA_SICR_SCC_RXCS_MASK	(0x7 << 3)
--#define       TSA_SICR_SCC_RXCS_BRG1	(0x0 << 3)
--#define       TSA_SICR_SCC_RXCS_BRG2	(0x1 << 3)
--#define       TSA_SICR_SCC_RXCS_BRG3	(0x2 << 3)
--#define       TSA_SICR_SCC_RXCS_BRG4	(0x3 << 3)
--#define       TSA_SICR_SCC_RXCS_CLK15	(0x4 << 3)
--#define       TSA_SICR_SCC_RXCS_CLK26	(0x5 << 3)
--#define       TSA_SICR_SCC_RXCS_CLK37	(0x6 << 3)
--#define       TSA_SICR_SCC_RXCS_CLK48	(0x7 << 3)
--#define     TSA_SICR_SCC_TXCS_MASK	(0x7 << 0)
--#define       TSA_SICR_SCC_TXCS_BRG1	(0x0 << 0)
--#define       TSA_SICR_SCC_TXCS_BRG2	(0x1 << 0)
--#define       TSA_SICR_SCC_TXCS_BRG3	(0x2 << 0)
--#define       TSA_SICR_SCC_TXCS_BRG4	(0x3 << 0)
--#define       TSA_SICR_SCC_TXCS_CLK15	(0x4 << 0)
--#define       TSA_SICR_SCC_TXCS_CLK26	(0x5 << 0)
--#define       TSA_SICR_SCC_TXCS_CLK37	(0x6 << 0)
--#define       TSA_SICR_SCC_TXCS_CLK48	(0x7 << 0)
-+#define   TSA_SICR_SCC2_MASK		GENMASK(15, 8)
-+#define   TSA_SICR_SCC2(x)		FIELD_PREP(TSA_SICR_SCC2_MASK, x)
-+#define   TSA_SICR_SCC3_MASK		GENMASK(23, 16)
-+#define   TSA_SICR_SCC3(x)		FIELD_PREP(TSA_SICR_SCC3_MASK, x)
-+#define   TSA_SICR_SCC4_MASK		GENMASK(31, 24)
-+#define   TSA_SICR_SCC4(x)		FIELD_PREP(TSA_SICR_SCC4_MASK, x)
-+#define     TSA_SICR_SCC_MASK		GENMASK(7, 0)
-+#define     TSA_SICR_SCC_GRX		BIT(7)
-+#define     TSA_SICR_SCC_SCX_TSA	BIT(6)
-+#define     TSA_SICR_SCC_RXCS_MASK	GENMASK(5, 3)
-+#define       TSA_SICR_SCC_RXCS_BRG1	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x0)
-+#define       TSA_SICR_SCC_RXCS_BRG2	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x1)
-+#define       TSA_SICR_SCC_RXCS_BRG3	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x2)
-+#define       TSA_SICR_SCC_RXCS_BRG4	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x3)
-+#define       TSA_SICR_SCC_RXCS_CLK15	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x4)
-+#define       TSA_SICR_SCC_RXCS_CLK26	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x5)
-+#define       TSA_SICR_SCC_RXCS_CLK37	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x6)
-+#define       TSA_SICR_SCC_RXCS_CLK48	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x7)
-+#define     TSA_SICR_SCC_TXCS_MASK	GENMASK(2, 0)
-+#define       TSA_SICR_SCC_TXCS_BRG1	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x0)
-+#define       TSA_SICR_SCC_TXCS_BRG2	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x1)
-+#define       TSA_SICR_SCC_TXCS_BRG3	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x2)
-+#define       TSA_SICR_SCC_TXCS_BRG4	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x3)
-+#define       TSA_SICR_SCC_TXCS_CLK15	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x4)
-+#define       TSA_SICR_SCC_TXCS_CLK26	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x5)
-+#define       TSA_SICR_SCC_TXCS_CLK37	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x6)
-+#define       TSA_SICR_SCC_TXCS_CLK48	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x7)
- 
- /* Serial interface RAM pointer register (32 bits) */
- #define TSA_SIRP	0x10
+ 	/*
 -- 
 2.45.0
 
