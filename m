@@ -4,51 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B66E2C52D73
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:06:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31FE0C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:12:28 +0000 (UTC)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=YIyD+2Xy;
+	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WfdP720F1z3dSv
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:06:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WfdXV6GhSz3dTD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:12:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=YIyD+2Xy;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.198; helo=relay6-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net [217.70.183.198])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdNh66QMz3cmV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 17:05:39 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4WfdNc0VhZz9sRr;
-	Thu,  8 Aug 2024 09:05:36 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ZLoR8mi0BSnf; Thu,  8 Aug 2024 09:05:35 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4WfdNb6q2Wz9sRk;
-	Thu,  8 Aug 2024 09:05:35 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DB9358B76C;
-	Thu,  8 Aug 2024 09:05:35 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id vLYXuY9PM9sq; Thu,  8 Aug 2024 09:05:35 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.234.168])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 78D1D8B763;
-	Thu,  8 Aug 2024 09:05:35 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>
-Subject: [PATCH] powerpc/mm: Fix boot warning with hugepages and CONFIG_DEBUG_VIRTUAL
-Date: Thu,  8 Aug 2024 09:05:08 +0200
-Message-ID: <62b69c4baad067093f39e7e60df0fe27a86b8d2a.1723100702.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.44.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdWj6Sl7z3d8M
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 17:11:43 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 0057EC000C;
+	Thu,  8 Aug 2024 07:11:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1723101101;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=FedGXBbxZS85QIbKrUIqDEcBbjDFn92tK2MtTO/ElYU=;
+	b=YIyD+2Xy+fDnZkHlX93E7CsEPEw+MB9zrg4gL4VhwDukhyUr9STvaatDp7737M/AAn2OgW
+	0oNgsZ0mDsRGa8lnmbydvTFD0GJ8snXbabyBgXMy1Q7YKDe5gLeoRJDXM0ivbscbp5O01+
+	8S1kLvaU3CEJIKsUhELQBgvsJi5hl3keUEpQ4WMXTNctFmUpse5YZVtCX1FxcTpnj9sUq0
+	XJ7VUMxlXDPcAybDmS77e55itJM5sVZ0WU1XZH/TH1PMT+RXqoP87kUYSpJEB2W4WYWiI3
+	b2sl6NZcnwnMHy3niCVJIM1gJ5A9+ctMsdwXcuGtcgUMi9ZpW/C1S169lz27ag==
+From: Herve Codina <herve.codina@bootlin.com>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>,
+	Mark Brown <broonie@kernel.org>
+Subject: [PATCH v2 04/36] soc: fsl: cpm1: tsa: Use BIT(), GENMASK() and FIELD_PREP() macros
+Date: Thu,  8 Aug 2024 09:10:57 +0200
+Message-ID: <20240808071132.149251-5-herve.codina@bootlin.com>
+X-Mailer: git-send-email 2.45.0
+In-Reply-To: <20240808071132.149251-1-herve.codina@bootlin.com>
+References: <20240808071132.149251-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1723100709; l=3355; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=yDhLQT58XQ9H75ZVgt4ZEnipmLHB4Cn0Xmmvh+pIOYE=; b=3NMqOslcyZcToWCJG8nhzGuIz4ujiA7Ye2ExgLuz8E5I40OLIwW2k5fDyoPUwjTojJ+axxGJ0 kDHN+fPvzkvAghrUmgc19CcVFRUHoS9CDF1WkFuOlxTt3jbnuQ7GmBX
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,80 +65,178 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Booting with CONFIG_DEBUG_VIRTUAL leads to following warning when
-passing hugepage reservation on command line:
+checkpatch.pl signals the following improvement for tsa.c
+  CHECK: Prefer using the BIT macro
 
-  Kernel command line: hugepagesz=1g hugepages=1 hugepagesz=64m hugepages=1 hugepagesz=256m hugepages=1 noreboot
-  HugeTLB: allocating 1 of page size 1.00 GiB failed.  Only allocated 0 hugepages.
-  ------------[ cut here ]------------
-  WARNING: CPU: 0 PID: 0 at arch/powerpc/include/asm/io.h:948 __alloc_bootmem_huge_page+0xd4/0x284
-  Modules linked in:
-  CPU: 0 PID: 0 Comm: swapper Not tainted 6.10.0-rc6-00396-g6b0e82791bd0-dirty #936
-  Hardware name: MPC8544DS e500v2 0x80210030 MPC8544 DS
-  NIP:  c1020240 LR: c10201d0 CTR: 00000000
-  REGS: c13fdd30 TRAP: 0700   Not tainted  (6.10.0-rc6-00396-g6b0e82791bd0-dirty)
-  MSR:  00021000 <CE,ME>  CR: 44084288  XER: 20000000
+Follow its suggestion and convert the code to BIT() and related macros.
 
-  GPR00: c10201d0 c13fde20 c130b560 e8000000 e8001000 00000000 00000000 c1420000
-  GPR08: 00000000 00028001 00000000 00000004 44084282 01066ac0 c0eb7c9c efffe149
-  GPR16: c0fc4228 0000005f ffffffff c0eb7d0c c0eb7cc0 c0eb7ce0 ffffffff 00000000
-  GPR24: c1441cec efffe153 e8001000 c14240c0 00000000 c1441d64 00000000 e8000000
-  NIP [c1020240] __alloc_bootmem_huge_page+0xd4/0x284
-  LR [c10201d0] __alloc_bootmem_huge_page+0x64/0x284
-  Call Trace:
-  [c13fde20] [c10201d0] __alloc_bootmem_huge_page+0x64/0x284 (unreliable)
-  [c13fde50] [c10207b8] hugetlb_hstate_alloc_pages+0x8c/0x3e8
-  [c13fdeb0] [c1021384] hugepages_setup+0x240/0x2cc
-  [c13fdef0] [c1000574] unknown_bootoption+0xfc/0x280
-  [c13fdf30] [c0078904] parse_args+0x200/0x4c4
-  [c13fdfa0] [c1000d9c] start_kernel+0x238/0x7d0
-  [c13fdff0] [c0000434] set_ivor+0x12c/0x168
-  Code: 554aa33e 7c042840 3ce0c142 80a7427c 5109a016 50caa016 7c9a2378 7fdcf378 4180000c 7c052040 41810160 7c095040 <0fe00000> 38c00000 40800108 3c60c0eb
-  ---[ end trace 0000000000000000 ]---
-
-This is due to virt_addr_valid() using high_memory before it is set.
-
-high_memory is set in mem_init() using max_low_pfn, but max_low_pfn
-is available long before, it is set in mem_topology_setup(). So just
-like commit daa9ada2093e ("powerpc/mm: Fix boot crash with FLATMEM")
-moved the setting of max_mapnr immediately after the call to
-mem_topology_setup(), the same can be done for high_memory.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- arch/powerpc/kernel/setup-common.c | 1 +
- arch/powerpc/mm/mem.c              | 2 --
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/soc/fsl/qe/tsa.c | 127 +++++++++++++++++++++------------------
+ 1 file changed, 68 insertions(+), 59 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 4bd2f87616ba..943430077375 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -959,6 +959,7 @@ void __init setup_arch(char **cmdline_p)
- 	mem_topology_setup();
- 	/* Set max_mapnr before paging_init() */
- 	set_max_mapnr(max_pfn);
-+	high_memory = (void *)__va(max_low_pfn * PAGE_SIZE);
+diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
+index 53968ea84c88..dc4dda17dab8 100644
+--- a/drivers/soc/fsl/qe/tsa.c
++++ b/drivers/soc/fsl/qe/tsa.c
+@@ -9,6 +9,7 @@
  
- 	/*
- 	 * Release secondary cpus out of their spinloops at 0x60 now that
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index d325217ab201..da21cb018984 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -290,8 +290,6 @@ void __init mem_init(void)
- 	swiotlb_init(ppc_swiotlb_enable, ppc_swiotlb_flags);
- #endif
+ #include "tsa.h"
+ #include <dt-bindings/soc/cpm1-fsl,tsa.h>
++#include <linux/bitfield.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+@@ -19,47 +20,52 @@
  
--	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
--
- 	kasan_late_init();
  
- 	memblock_free_all();
+ /* TSA SI RAM routing tables entry */
+-#define TSA_SIRAM_ENTRY_LAST		(1 << 16)
+-#define TSA_SIRAM_ENTRY_BYTE		(1 << 17)
+-#define TSA_SIRAM_ENTRY_CNT(x)		(((x) & 0x0f) << 18)
+-#define TSA_SIRAM_ENTRY_CSEL_MASK	(0x7 << 22)
+-#define TSA_SIRAM_ENTRY_CSEL_NU		(0x0 << 22)
+-#define TSA_SIRAM_ENTRY_CSEL_SCC2	(0x2 << 22)
+-#define TSA_SIRAM_ENTRY_CSEL_SCC3	(0x3 << 22)
+-#define TSA_SIRAM_ENTRY_CSEL_SCC4	(0x4 << 22)
+-#define TSA_SIRAM_ENTRY_CSEL_SMC1	(0x5 << 22)
+-#define TSA_SIRAM_ENTRY_CSEL_SMC2	(0x6 << 22)
++#define TSA_SIRAM_ENTRY_LAST		BIT(16)
++#define TSA_SIRAM_ENTRY_BYTE		BIT(17)
++#define TSA_SIRAM_ENTRY_CNT_MASK	GENMASK(21, 18)
++#define TSA_SIRAM_ENTRY_CNT(x)		FIELD_PREP(TSA_SIRAM_ENTRY_CNT_MASK, x)
++#define TSA_SIRAM_ENTRY_CSEL_MASK	GENMASK(24, 22)
++#define TSA_SIRAM_ENTRY_CSEL_NU		FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x0)
++#define TSA_SIRAM_ENTRY_CSEL_SCC2	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x2)
++#define TSA_SIRAM_ENTRY_CSEL_SCC3	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x3)
++#define TSA_SIRAM_ENTRY_CSEL_SCC4	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x4)
++#define TSA_SIRAM_ENTRY_CSEL_SMC1	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x5)
++#define TSA_SIRAM_ENTRY_CSEL_SMC2	FIELD_PREP_CONST(TSA_SIRAM_ENTRY_CSEL_MASK, 0x6)
+ 
+ /* SI mode register (32 bits) */
+ #define TSA_SIMODE	0x00
+-#define   TSA_SIMODE_SMC2			0x80000000
+-#define   TSA_SIMODE_SMC1			0x00008000
+-#define   TSA_SIMODE_TDMA(x)			((x) << 0)
+-#define   TSA_SIMODE_TDMB(x)			((x) << 16)
+-#define     TSA_SIMODE_TDM_MASK			0x0fff
+-#define     TSA_SIMODE_TDM_SDM_MASK		0x0c00
+-#define       TSA_SIMODE_TDM_SDM_NORM		0x0000
+-#define       TSA_SIMODE_TDM_SDM_ECHO		0x0400
+-#define       TSA_SIMODE_TDM_SDM_INTL_LOOP	0x0800
+-#define       TSA_SIMODE_TDM_SDM_LOOP_CTRL	0x0c00
+-#define     TSA_SIMODE_TDM_RFSD(x)		((x) << 8)
+-#define     TSA_SIMODE_TDM_DSC			0x0080
+-#define     TSA_SIMODE_TDM_CRT			0x0040
+-#define     TSA_SIMODE_TDM_STZ			0x0020
+-#define     TSA_SIMODE_TDM_CE			0x0010
+-#define     TSA_SIMODE_TDM_FE			0x0008
+-#define     TSA_SIMODE_TDM_GM			0x0004
+-#define     TSA_SIMODE_TDM_TFSD(x)		((x) << 0)
++#define   TSA_SIMODE_SMC2			BIT(31)
++#define   TSA_SIMODE_SMC1			BIT(15)
++#define   TSA_SIMODE_TDMA_MASK			GENMASK(11, 0)
++#define   TSA_SIMODE_TDMA(x)			FIELD_PREP(TSA_SIMODE_TDMA_MASK, x)
++#define   TSA_SIMODE_TDMB_MASK			GENMASK(27, 16)
++#define   TSA_SIMODE_TDMB(x)			FIELD_PREP(TSA_SIMODE_TDMB_MASK, x)
++#define     TSA_SIMODE_TDM_MASK			GENMASK(11, 0)
++#define     TSA_SIMODE_TDM_SDM_MASK		GENMASK(11, 10)
++#define       TSA_SIMODE_TDM_SDM_NORM		FIELD_PREP_CONST(TSA_SIMODE_TDM_SDM_MASK, 0x0)
++#define       TSA_SIMODE_TDM_SDM_ECHO		FIELD_PREP_CONST(TSA_SIMODE_TDM_SDM_MASK, 0x1)
++#define       TSA_SIMODE_TDM_SDM_INTL_LOOP	FIELD_PREP_CONST(TSA_SIMODE_TDM_SDM_MASK, 0x2)
++#define       TSA_SIMODE_TDM_SDM_LOOP_CTRL	FIELD_PREP_CONST(TSA_SIMODE_TDM_SDM_MASK, 0x3)
++#define     TSA_SIMODE_TDM_RFSD_MASK		GENMASK(9, 8)
++#define     TSA_SIMODE_TDM_RFSD(x)		FIELD_PREP(TSA_SIMODE_TDM_RFSD_MASK, x)
++#define     TSA_SIMODE_TDM_DSC			BIT(7)
++#define     TSA_SIMODE_TDM_CRT			BIT(6)
++#define     TSA_SIMODE_TDM_STZ			BIT(5)
++#define     TSA_SIMODE_TDM_CE			BIT(4)
++#define     TSA_SIMODE_TDM_FE			BIT(3)
++#define     TSA_SIMODE_TDM_GM			BIT(2)
++#define     TSA_SIMODE_TDM_TFSD_MASK		GENMASK(1, 0)
++#define     TSA_SIMODE_TDM_TFSD(x)		FIELD_PREP(TSA_SIMODE_TDM_TFSD_MASK, x)
+ 
+ /* SI global mode register (8 bits) */
+ #define TSA_SIGMR	0x04
+-#define TSA_SIGMR_ENB			(1<<3)
+-#define TSA_SIGMR_ENA			(1<<2)
+-#define TSA_SIGMR_RDM_MASK		0x03
+-#define   TSA_SIGMR_RDM_STATIC_TDMA	0x00
+-#define   TSA_SIGMR_RDM_DYN_TDMA	0x01
+-#define   TSA_SIGMR_RDM_STATIC_TDMAB	0x02
+-#define   TSA_SIGMR_RDM_DYN_TDMAB	0x03
++#define TSA_SIGMR_ENB			BIT(3)
++#define TSA_SIGMR_ENA			BIT(2)
++#define TSA_SIGMR_RDM_MASK		GENMASK(1, 0)
++#define   TSA_SIGMR_RDM_STATIC_TDMA	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x0)
++#define   TSA_SIGMR_RDM_DYN_TDMA	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x1)
++#define   TSA_SIGMR_RDM_STATIC_TDMAB	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x2)
++#define   TSA_SIGMR_RDM_DYN_TDMAB	FIELD_PREP_CONST(TSA_SIGMR_RDM_MASK, 0x3)
+ 
+ /* SI status register (8 bits) */
+ #define TSA_SISTR	0x06
+@@ -69,30 +75,33 @@
+ 
+ /* SI clock route register (32 bits) */
+ #define TSA_SICR	0x0C
+-#define   TSA_SICR_SCC2(x)		((x) << 8)
+-#define   TSA_SICR_SCC3(x)		((x) << 16)
+-#define   TSA_SICR_SCC4(x)		((x) << 24)
+-#define     TSA_SICR_SCC_MASK		0x0ff
+-#define     TSA_SICR_SCC_GRX		(1 << 7)
+-#define     TSA_SICR_SCC_SCX_TSA	(1 << 6)
+-#define     TSA_SICR_SCC_RXCS_MASK	(0x7 << 3)
+-#define       TSA_SICR_SCC_RXCS_BRG1	(0x0 << 3)
+-#define       TSA_SICR_SCC_RXCS_BRG2	(0x1 << 3)
+-#define       TSA_SICR_SCC_RXCS_BRG3	(0x2 << 3)
+-#define       TSA_SICR_SCC_RXCS_BRG4	(0x3 << 3)
+-#define       TSA_SICR_SCC_RXCS_CLK15	(0x4 << 3)
+-#define       TSA_SICR_SCC_RXCS_CLK26	(0x5 << 3)
+-#define       TSA_SICR_SCC_RXCS_CLK37	(0x6 << 3)
+-#define       TSA_SICR_SCC_RXCS_CLK48	(0x7 << 3)
+-#define     TSA_SICR_SCC_TXCS_MASK	(0x7 << 0)
+-#define       TSA_SICR_SCC_TXCS_BRG1	(0x0 << 0)
+-#define       TSA_SICR_SCC_TXCS_BRG2	(0x1 << 0)
+-#define       TSA_SICR_SCC_TXCS_BRG3	(0x2 << 0)
+-#define       TSA_SICR_SCC_TXCS_BRG4	(0x3 << 0)
+-#define       TSA_SICR_SCC_TXCS_CLK15	(0x4 << 0)
+-#define       TSA_SICR_SCC_TXCS_CLK26	(0x5 << 0)
+-#define       TSA_SICR_SCC_TXCS_CLK37	(0x6 << 0)
+-#define       TSA_SICR_SCC_TXCS_CLK48	(0x7 << 0)
++#define   TSA_SICR_SCC2_MASK		GENMASK(15, 8)
++#define   TSA_SICR_SCC2(x)		FIELD_PREP(TSA_SICR_SCC2_MASK, x)
++#define   TSA_SICR_SCC3_MASK		GENMASK(23, 16)
++#define   TSA_SICR_SCC3(x)		FIELD_PREP(TSA_SICR_SCC3_MASK, x)
++#define   TSA_SICR_SCC4_MASK		GENMASK(31, 24)
++#define   TSA_SICR_SCC4(x)		FIELD_PREP(TSA_SICR_SCC4_MASK, x)
++#define     TSA_SICR_SCC_MASK		GENMASK(7, 0)
++#define     TSA_SICR_SCC_GRX		BIT(7)
++#define     TSA_SICR_SCC_SCX_TSA	BIT(6)
++#define     TSA_SICR_SCC_RXCS_MASK	GENMASK(5, 3)
++#define       TSA_SICR_SCC_RXCS_BRG1	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x0)
++#define       TSA_SICR_SCC_RXCS_BRG2	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x1)
++#define       TSA_SICR_SCC_RXCS_BRG3	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x2)
++#define       TSA_SICR_SCC_RXCS_BRG4	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x3)
++#define       TSA_SICR_SCC_RXCS_CLK15	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x4)
++#define       TSA_SICR_SCC_RXCS_CLK26	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x5)
++#define       TSA_SICR_SCC_RXCS_CLK37	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x6)
++#define       TSA_SICR_SCC_RXCS_CLK48	FIELD_PREP_CONST(TSA_SICR_SCC_RXCS_MASK, 0x7)
++#define     TSA_SICR_SCC_TXCS_MASK	GENMASK(2, 0)
++#define       TSA_SICR_SCC_TXCS_BRG1	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x0)
++#define       TSA_SICR_SCC_TXCS_BRG2	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x1)
++#define       TSA_SICR_SCC_TXCS_BRG3	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x2)
++#define       TSA_SICR_SCC_TXCS_BRG4	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x3)
++#define       TSA_SICR_SCC_TXCS_CLK15	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x4)
++#define       TSA_SICR_SCC_TXCS_CLK26	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x5)
++#define       TSA_SICR_SCC_TXCS_CLK37	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x6)
++#define       TSA_SICR_SCC_TXCS_CLK48	FIELD_PREP_CONST(TSA_SICR_SCC_TXCS_MASK, 0x7)
+ 
+ /* Serial interface RAM pointer register (32 bits) */
+ #define TSA_SIRP	0x10
 -- 
-2.44.0
+2.45.0
 
