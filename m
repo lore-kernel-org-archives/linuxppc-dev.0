@@ -4,38 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F340C3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:15:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02E0DC3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 07:16:56 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Z7tiPkSq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Yo9vHN7n;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WfdcN1m76z3dLB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:15:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wfddf1pVMz3bnL
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Aug 2024 17:16:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Z7tiPkSq;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Yo9vHN7n;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::226; helo=relay6-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay6-d.mail.gandi.net (relay6-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::226])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdWm3vT8z3dFS
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WfdWm4Gxwz3dJX
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Aug 2024 17:11:48 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPA id B3F2BC0011;
-	Thu,  8 Aug 2024 07:11:41 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 2450BC000B;
+	Thu,  8 Aug 2024 07:11:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1723101102;
+	t=1723101100;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=APwAy045+0bwsYWXWzWi8kg7IB9CU666Ib602lP5Ma0=;
-	b=Z7tiPkSquBYuysxXVyvnS9cQv0S9JOZc0m99D1zPD4Kz0WEfFEdnXqPBXOzbQb85DXcOPq
-	QsceVUyNMTiOwMSmy60NPYobMWjMU9ahw/WhinD5FG592Kw+HNmn14JU6hF4mPsCr64Zgn
-	34kO83WM9/Q4VlzRmJ945YavC+rnB2vmJgnQ8gNpvjr+0m/GnVUXGkCXWqSgLOKhLT9bdS
-	Lf7N1SbfDD1dAET1BVj/nSAarFB/HbVOO/KI6pYgXiKzoRnxe81dCw1gRTFEa5TZ/Ith9f
-	chjTTe25XYzIl9ts9EXCxrG3K2JeqFyDwiwYoRC28jjXFwcOeMHV6o/z7o6f7w==
+	bh=ECDVzrgNjvjBjKFw+cXG3YV6tgCkVLoJ7Bm/DlpwBr8=;
+	b=Yo9vHN7nmd4VkeU6GeILhcMizkAzJN86kyOIXQK932ouZtwNLBmb6u+FupyEMVVQJO8bty
+	y7pQ3AddojSxEDSDQ0HQCMIkuAkZ1RtdAYBHfPWtogtSU0B6fRZQcqnXay5kaUuJmIieKO
+	/bXfz+a5xYzGs8eVBF95f7cdXhVzy6y14IZLPcGfFoCyaAvSArr2YZgubMjFsu6RFRsYOq
+	yPWstOGv23O8XOHyoB4C0BGhwJdO4zANeq3yu0rzD3OG6B3r7aWAU+kS9PvG8RXQ6F05Ob
+	lcAQZ9+Wyl1pzxutwznqWWacdG3ndxgd9EgpjL5zstaPMbTGkqosMHQpOYPx+A==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
@@ -45,9 +45,9 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
 	Li Yang <leoyang.li@nxp.com>,
 	Mark Brown <broonie@kernel.org>
-Subject: [PATCH v2 05/36] soc: fsl: cpm1: tsa: Fix blank line and spaces
-Date: Thu,  8 Aug 2024 09:10:58 +0200
-Message-ID: <20240808071132.149251-6-herve.codina@bootlin.com>
+Subject: [PATCH v2 03/36] soc: fsl: cpm1: tsa: Fix tsa_write8()
+Date: Thu,  8 Aug 2024 09:10:56 +0200
+Message-ID: <20240808071132.149251-4-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.45.0
 In-Reply-To: <20240808071132.149251-1-herve.codina@bootlin.com>
 References: <20240808071132.149251-1-herve.codina@bootlin.com>
@@ -65,55 +65,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-checkpatch.pl raises the following issues
-  CHECK: Please don't use multiple blank lines
-  CHECK: spaces preferred around that '/' (ctx:VxV)
-  CHECK: spaces preferred around that '+' (ctx:VxV)
-  CHECK: spaces preferred around that '-' (ctx:VxV)
+The tsa_write8() parameter is an u32 value. This is not consistent with
+the function itself. Indeed, tsa_write8() writes an 8bits value.
 
-Fix them.
+Be consistent and use an u8 parameter value.
 
+Fixes: 1d4ba0b81c1c ("soc: fsl: cpm1: Add support for TSA")
+Cc: stable@vger.kernel.org
 Signed-off-by: Herve Codina <herve.codina@bootlin.com>
 ---
- drivers/soc/fsl/qe/tsa.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/soc/fsl/qe/tsa.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
-index dc4dda17dab8..7b1032fb1572 100644
+index 6c5741cf5e9d..53968ea84c88 100644
 --- a/drivers/soc/fsl/qe/tsa.c
 +++ b/drivers/soc/fsl/qe/tsa.c
-@@ -18,7 +18,6 @@
- #include <linux/platform_device.h>
- #include <linux/slab.h>
+@@ -140,7 +140,7 @@ static inline void tsa_write32(void __iomem *addr, u32 val)
+ 	iowrite32be(val, addr);
+ }
  
--
- /* TSA SI RAM routing tables entry */
- #define TSA_SIRAM_ENTRY_LAST		BIT(16)
- #define TSA_SIRAM_ENTRY_BYTE		BIT(17)
-@@ -244,8 +243,8 @@ static void tsa_init_entries_area(struct tsa *tsa, struct tsa_entries_area *area
- 	resource_size_t quarter;
- 	resource_size_t half;
- 
--	quarter = tsa->si_ram_sz/4;
--	half = tsa->si_ram_sz/2;
-+	quarter = tsa->si_ram_sz / 4;
-+	half = tsa->si_ram_sz / 2;
- 
- 	if (tdms == BIT(TSA_TDMA)) {
- 		/* Only TDMA */
-@@ -408,7 +407,7 @@ static int tsa_of_parse_tdm_route(struct tsa *tsa, struct device_node *tdm_np,
- 		}
- 
- 		dev_dbg(tsa->dev, "tdm_id=%u, %s ts %u..%u -> %s\n",
--			tdm_id, route_name, ts, ts+count-1, serial_name);
-+			tdm_id, route_name, ts, ts + count - 1, serial_name);
- 		ts += count;
- 
- 		ret = tsa_add_entry(tsa, &area, count, serial_id);
+-static inline void tsa_write8(void __iomem *addr, u32 val)
++static inline void tsa_write8(void __iomem *addr, u8 val)
+ {
+ 	iowrite8(val, addr);
+ }
 -- 
 2.45.0
 
