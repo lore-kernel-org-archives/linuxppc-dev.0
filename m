@@ -1,35 +1,35 @@
-Return-Path: <linuxppc-dev+bounces-16-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 057DFC3DA7F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2024 12:22:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B85D0C3DA7F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2024 12:22:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WjDDX4W9Kz2y65;
-	Mon, 12 Aug 2024 22:22:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WjDDn1kcsz2xjN;
+	Mon, 12 Aug 2024 22:22:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WjCl61mLLz2xXV
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2024 22:00:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WjCmg2ZKDz2xXV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2024 22:01:55 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WjCl42fKCz4x9G;
-	Mon, 12 Aug 2024 22:00:32 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WjCmf6t4jz4wcF;
+	Mon, 12 Aug 2024 22:01:54 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: sean.anderson@linux.dev, camelia.groza@nxp.com, linux@treblig.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20240528231123.136664-1-linux@treblig.org>
-References: <20240528231123.136664-1-linux@treblig.org>
-Subject: Re: [PATCH] soc/fsl/qbman: remove unused struct 'cgr_comp'
-Message-Id: <172346398138.772106.1480775033029305821.b4-ty@ellerman.id.au>
-Date: Mon, 12 Aug 2024 21:59:41 +1000
+To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, "Rob Herring (Arm)" <robh@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20240731191312.1710417-9-robh@kernel.org>
+References: <20240731191312.1710417-9-robh@kernel.org>
+Subject: Re: [PATCH] powerpc: Use of_property_present()
+Message-Id: <172346406496.772934.9733735582676595864.b4-ty@ellerman.id.au>
+Date: Mon, 12 Aug 2024 22:01:04 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -42,20 +42,20 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 29 May 2024 00:11:23 +0100, linux@treblig.org wrote:
-> 'cgr_comp' has been unused since
-> commit 96f413f47677 ("soc/fsl/qbman: fix issue in
-> qman_delete_cgr_safe()").
-> 
-> Remove it.
+On Wed, 31 Jul 2024 13:12:47 -0600, Rob Herring (Arm) wrote:
+> Use of_property_present() to test for property presence rather than
+> of_get_property(). This is part of a larger effort to remove callers
+> of of_get_property() and similar functions. of_get_property() leaks
+> the DT property data pointer which is a problem for dynamically
+> allocated nodes which may be freed.
 > 
 > 
 > [...]
 
-Applied to powerpc/fixes.
+Applied to powerpc/next.
 
-[1/1] soc/fsl/qbman: remove unused struct 'cgr_comp'
-      https://git.kernel.org/powerpc/c/06ce0af34177a110d6a5cf71f924965b9b230691
+[1/1] powerpc: Use of_property_present()
+      https://git.kernel.org/powerpc/c/8a93960abed960b9f6097b6471b7fb34120ffc6a
 
 cheers
 
