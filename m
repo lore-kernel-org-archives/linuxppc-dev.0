@@ -1,43 +1,35 @@
-Return-Path: <linuxppc-dev+bounces-13-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B9E8C52D7C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2024 11:48:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C2B6C52D7C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2024 12:22:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WjCTQ3dlvz2xWc;
-	Mon, 12 Aug 2024 21:48:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WjDD60Pqlz2xcX;
+	Mon, 12 Aug 2024 22:22:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WjBtx70lKz2xT9
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2024 21:22:17 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id A3A7B60C17;
-	Mon, 12 Aug 2024 11:22:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0886CC32782;
-	Mon, 12 Aug 2024 11:22:12 +0000 (UTC)
-Date: Mon, 12 Aug 2024 12:22:10 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: Christoph Hellwig <hch@lst.de>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Will Deacon <will@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
-	iommu@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	Petr =?utf-8?B?VGVzYcWZw61r?= <petr@tesarici.cz>,
-	Ramon Fried <ramon@neureality.ai>,
-	Elad Nachman <enachman@marvell.com>
-Subject: Re: [PATCH v6 RESED 1/2] dma: replace zone_dma_bits by zone_dma_limit
-Message-ID: <ZrnwYrZiHJ11xrlr@arm.com>
-References: <cover.1723359916.git.baruch@tkos.co.il>
- <17c067618b93e5d71f19c37826d54db4299621a3.1723359916.git.baruch@tkos.co.il>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WjCl327Hgz2xXV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Aug 2024 22:00:31 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WjCl30rGXz4wcF;
+	Mon, 12 Aug 2024 22:00:31 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <62b69c4baad067093f39e7e60df0fe27a86b8d2a.1723100702.git.christophe.leroy@csgroup.eu>
+References: <62b69c4baad067093f39e7e60df0fe27a86b8d2a.1723100702.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/mm: Fix boot warning with hugepages and CONFIG_DEBUG_VIRTUAL
+Message-Id: <172346398146.772106.14579247166492257362.b4-ty@ellerman.id.au>
+Date: Mon, 12 Aug 2024 21:59:41 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -47,28 +39,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17c067618b93e5d71f19c37826d54db4299621a3.1723359916.git.baruch@tkos.co.il>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 
-On Sun, Aug 11, 2024 at 10:09:35AM +0300, Baruch Siach wrote:
-> From: Catalin Marinas <catalin.marinas@arm.com>
+On Thu, 08 Aug 2024 09:05:08 +0200, Christophe Leroy wrote:
+> Booting with CONFIG_DEBUG_VIRTUAL leads to following warning when
+> passing hugepage reservation on command line:
 > 
-> Hardware DMA limit might not be power of 2. When RAM range starts above
-> 0, say 4GB, DMA limit of 30 bits should end at 5GB. A single high bit
-> can not encode this limit.
+>   Kernel command line: hugepagesz=1g hugepages=1 hugepagesz=64m hugepages=1 hugepagesz=256m hugepages=1 noreboot
+>   HugeTLB: allocating 1 of page size 1.00 GiB failed.  Only allocated 0 hugepages.
+>   ------------[ cut here ]------------
+>   WARNING: CPU: 0 PID: 0 at arch/powerpc/include/asm/io.h:948 __alloc_bootmem_huge_page+0xd4/0x284
+>   Modules linked in:
+>   CPU: 0 PID: 0 Comm: swapper Not tainted 6.10.0-rc6-00396-g6b0e82791bd0-dirty #936
+>   Hardware name: MPC8544DS e500v2 0x80210030 MPC8544 DS
+>   NIP:  c1020240 LR: c10201d0 CTR: 00000000
+>   REGS: c13fdd30 TRAP: 0700   Not tainted  (6.10.0-rc6-00396-g6b0e82791bd0-dirty)
+>   MSR:  00021000 <CE,ME>  CR: 44084288  XER: 20000000
 > 
-> Use plain address for DMA zone limit.
-> 
-> Since DMA zone can now potentially span beyond 4GB physical limit of
-> DMA32, make sure to use DMA zone for GFP_DMA32 allocations in that case.
-> 
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Co-developed-by: Baruch Siach <baruch@tkos.co.il>
-> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+> [...]
 
-You might want to say that no functional change is expected with this
-patch. The patch looks fine.
+Applied to powerpc/fixes.
 
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+[1/1] powerpc/mm: Fix boot warning with hugepages and CONFIG_DEBUG_VIRTUAL
+      https://git.kernel.org/powerpc/c/e7e846dc6c73fbc94ae8b4ec20d05627646416f2
+
+cheers
 
