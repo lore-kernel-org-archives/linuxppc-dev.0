@@ -1,61 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-639-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-640-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 271B1C5474A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 06:52:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CC71C5474A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 06:53:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wtw8m56mFz2yVT;
-	Wed, 28 Aug 2024 16:52:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=43.154.197.177
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724827976;
-	cv=none; b=ivuDvxExoy8JMITkjIzaVVQq/IP9X/YQ/EOntgRZDlFQ1iUpvLxbCvtnwHYfxuaRhfcuIMHafHpofahPWncROeJUO6UH4lj53T2INKpOqsXi2/DuHZb3AGXE8fKVbznu3z8Y3AbHJXEyar7MYfW6PKDblchYVUTLGqeSee3UsuyPHmlxpl4fBluCwHCyXUJk0ufB5WygrbMUPWFEXbbi1m2F1G2p2+6Wnu6qnYuC8htiMxHDe/J11kPzjBf6jf5mOhkrSPbQQxKw9wFgjygL9AYJ/enzr/iHgu7DnhsAAvGlR6EeJ0lFg2/gdtqdUYYzAxFfAUAO/uuXa9vLF5pV6w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wtw930ks6z2ydQ;
+	Wed, 28 Aug 2024 16:53:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724827991;
+	cv=none; b=Nj7xuFLRnsXe5tbv45cEo697eopTeL+ehMnK24a9+vSZcG0186vUGsMZUKHa5nzv2ZlgezuUIVrwOExxadkUH4f/PPOd74h0BMn24h3VO7J6pBJbxZkDkW6mPevOWwsDrKnizUvckw0vtgkZWzjVO/HtjRf+Xvmp3yasyICM6W5f9sjng+ZUHoTAhOu7mHhnBsS47oWjvnHs1ByWgvsSICrinIX3ama1AOELdYl6ZkWXpVngrFAMLyfXRjb51vje3hqoOhpSqbWvBZfYDIW6Fpbhz4byAbm3j4fbclPkxzwvWFWEEW/196Z1m4HmjGtFFpjrvIlLRYLEgh9lrXDz+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724827976; c=relaxed/relaxed;
-	bh=nPInF6T6RzDCnRPVdCv4mvGI1i9ybpdgsq3Rn+KFTjk=;
-	h=X-QQ-mid:X-QQ-Originating-IP:Received:X-QQ-SSF:X-QQ-GoodBg:
-	 X-BIZMAIL-ID:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:
-	 Content-Transfer-Encoding:In-Reply-To:X-QQ-SENDSIZE:Feedback-ID;
-	b=KBGfLQboB8rd+E3osdM6vVL6GQJWPnjSIVrIq6Cg9weRCAG0t2m4mavbkU5A6tYCEZuYTBxkckHVGvZnnR03a9nFN8PpWOylSIr2JNrJC2pnbQI04KUO1hxwJ73RwdBn7awwGlKz00Si0Wm749sCs6cmxp5XSIBEwyp/8LddfBMtw/cYPMfQoapYLyCuGglbzECUyWPqHcbq1b0P1ayDti2ts5XN1C+bwAeS3VU5jIsqGDXCxVPSAAOkUL/VcDfG7wouoRT1b5uohFAWF352KGKRJgZcywJB5D2sS7gLJsUrmFjJEj+RJVo8yYZ1urw98CsdrnhfCyKwGdOq1TJTSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn; spf=pass (client-ip=43.154.197.177; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org) smtp.mailfrom=shingroup.cn
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.154.197.177; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
-Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.154.197.177])
+	t=1724827991; c=relaxed/relaxed;
+	bh=bsnxeBU3GWy7xz8iBn1Z+4dktQMsXj48dVCjl5yuv+k=;
+	h=Received:DKIM-Signature:Received:Received:Received:Received:
+	 Received:Received:Received:Received:Message-ID:Subject:From:To:Cc:
+	 In-Reply-To:References:Content-Type:Content-Transfer-Encoding:
+	 MIME-Version:Date:User-Agent:X-TM-AS-GCONF:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details; b=ogoOp50+xa13G5U4iDgROkGpV8dcS2OgCLU0nZiM2qUIiu8aWSNO8jHeitV58orZ+qIZ3Ey4ZBRjGHJtPVckP3uvbuR5V7I1MpMmM1QNU0IDIiBMMThxdKMmUw8vbblNQtckk6IhmH1SDfU1KRFx3OY8Xz6UCjT/wWQ4e7CkCrb8xt3Ex/f45iL50Oh9MS2xXlQaalkA5AzVMVEbu6jQ0WTYZ2l//3U2yXqvwlUme8LJ7ikPezqAq+uOwpajkZY6cLsdLH6x9O5TB7iPfOCjFPbtqdFnkmF8lBowL1vmxlF8Jx9H5MEwZmxC2wiOT97JKzvKe5XF5j6M+Kuplzafxw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lbIEdOXE; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lbIEdOXE;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wtw8l54d0z2y8l
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 16:52:55 +1000 (AEST)
-X-QQ-mid: bizesmtpsz10t1724827845t6u5sv
-X-QQ-Originating-IP: 4XErUzAeegOpAt/Xye4CSKyfGp6AsUdsR7koKUx/JO8=
-Received: from HX09040029.powercore.com.cn ( [58.34.117.194])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Wed, 28 Aug 2024 14:50:33 +0800 (CST)
-X-QQ-SSF: 0000000000000000000000000000000
-X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 6561852366445271597
-Date: Wed, 28 Aug 2024 14:50:19 +0800
-From: Luming Yu <luming.yu@shingroup.cn>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: "shenghui.qu@shingroup.cn" <shenghui.qu@shingroup.cn>,
-	npiggin <npiggin@gmail.com>,
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
-	mpe <mpe@ellerman.id.au>, "luming.yu" <luming.yu@gmail.com>,
-	=?utf-8?B?5p2o5L2z6b6Z?= <jialong.yang@shingroup.cn>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v1 2/2] powerpc/debug: hook to user return notifier
- infrastructure
-Message-ID: <B6A4506E3DD1F93F+Zs7Iq_EF799NyWHK@HX09040029.powercore.com.cn>
-References: <B375A36C9C4D73FF+20231218031338.2084-1-luming.yu@shingroup.cn>
- <8734vzsw0q.fsf@kernel.org>
- <8734vyn1ky.fsf@mail.lhotse>
- <2acd6623-952b-4659-bc26-c632e94560a8@csgroup.eu>
- <0638f0a2-782b-411f-9937-c62d99e9562b@csgroup.eu>
- <tencent_4F2B3C0025D5A1722470D582@qq.com>
- <bd4908d2-cea9-406b-902f-618626e74c88@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wtw921k5yz2y8l
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 16:53:10 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47RM3KJm003270;
+	Wed, 28 Aug 2024 06:53:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	message-id:subject:from:to:cc:in-reply-to:references
+	:content-type:content-transfer-encoding:mime-version:date; s=
+	pp1; bh=bsnxeBU3GWy7xz8iBn1Z+4dktQMsXj48dVCjl5yuv+k=; b=lbIEdOXE
+	e0c/pwaafZfd6pAs6Fy6xEdKiDnFkWMLTgrwV7ZYyLskEcoFcXpIIyCak02gJ6hR
+	yVxADNpy2Dtw6Z/SOi2r/EniZjWcAB0KBg88I1vgrSHyb7b4jxhwUTbwEkYuJRfG
+	4AlKwWnRev6rxiUQ4d+rpGbTIWuqttBuuQQcytof37VihmYEvtq8obaWx4rv8EPy
+	xuTns3QG6wPjhyZKJqQMwAiDGyJZUcx0kVXa6H9Pw2ih7OOjvZ4ruKOO2m4vqryB
+	/srTcHJFvl766gYa7fs3Mbdfb5/ulCYytHClU6vzX5zLeWcKBCt5OXafu+6asbc9
+	3T7FpWudgr4Ang==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 419q8p1fn0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 28 Aug 2024 06:53:01 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 47S2bDav024611;
+	Wed, 28 Aug 2024 06:53:00 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 417vj3e19m-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 28 Aug 2024 06:53:00 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47S6qx6M18612644
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 28 Aug 2024 06:52:59 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F30BC20043;
+	Wed, 28 Aug 2024 06:52:58 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2F10020040;
+	Wed, 28 Aug 2024 06:52:58 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.63.197.14])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 28 Aug 2024 06:52:58 +0000 (GMT)
+Received: from jarvis.ozlabs.ibm.com (haven.au.ibm.com [9.63.198.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 87EC9602F4;
+	Wed, 28 Aug 2024 16:52:54 +1000 (AEST)
+Message-ID: <2b345a08daceebb324e730e5f187acba3d388aff.camel@linux.ibm.com>
+Subject: Re: [PATCH 1/2] cxl: Drop printing of DT properties
+From: Andrew Donnellan <ajd@linux.ibm.com>
+To: "Rob Herring (Arm)" <robh@kernel.org>,
+        Frederic Barrat
+	 <fbarrat@linux.ibm.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman
+	 <gregkh@linuxfoundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20240729-dt-cxl-cleanup-v1-1-a75eea80d231@kernel.org>
+References: <20240729-dt-cxl-cleanup-v1-0-a75eea80d231@kernel.org>
+	 <20240729-dt-cxl-cleanup-v1-1-a75eea80d231@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,205 +98,275 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <bd4908d2-cea9-406b-902f-618626e74c88@csgroup.eu>
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtpsz:shingroup.cn:qybglogicsvrgz:qybglogicsvrgz8a-1
+Date: Tue, 13 Aug 2024 20:14:15 +1000
+User-Agent: Evolution 3.52.3 (3.52.3-1.fc40) 
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 7sXhPrKmvq_nPAa-3TcMwnMw6nC2MTYN
+X-Proofpoint-ORIG-GUID: 7sXhPrKmvq_nPAa-3TcMwnMw6nC2MTYN
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-28_03,2024-08-27_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxlogscore=999
+ mlxscore=0 phishscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ lowpriorityscore=0 suspectscore=0 spamscore=0 impostorscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2407110000
+ definitions=main-2408280041
 
-On Wed, Aug 28, 2024 at 07:46:52AM +0200, Christophe Leroy wrote:
-> Hi,
-> 
-> Le 28/08/2024 à 05:17, 虞陆铭 a écrit :
-> > Hi,
-> > 
-> > it appears the little feature might require a little bit more work to find its value of the patch.
-> > 
-> > Using the following debug module ,  some debugging shows the TIF_USER_RETURN_NOTIFY
-> > bit is propagated in __switch_to among tasks , but USER_RETURN_NOTIFY call back seems to
-> > be dropped somewhere on somone who carries the bit return to user space.
-> > side notes:
-> > there is an issue that the module symbols is not appended to /sys/kernel/debug/tracing/available_filter_functions
-> > which should be sovled first to make it easier for further debuggig.
-> 
-> As far as I can see, user return notifier infrastructure was implemented in
-> 2009 for KVM on x86, see
-> https://lore.kernel.org/all/1253105134-8862-1-git-send-email-avi@redhat.com/
-> 
-> Can you explain what is your usage of that infrastructure with your patch ?
-> You are talking about debug, what's the added value, what is it used for ?
-one example: I was thinking to live patch kernel at the moment that all cpus are
-either returning to user space or going into idle. But I'm not sure if it is truly
-valuable. secondly, it can help us get more accurate user/system time 
-accounting via tracing rather than through sampling technique. 
-The third: it could have similar usages in kvm for ppc as x86 for tsc_aux. 
-etc :-)
-> 
-> Thanks
-> Christophe
-> 
-> > 
-> > [root@localhost linux]# cat lib/user-return-test.c
-> > #include <linux/module.h>
-> > #include <linux/kernel.h>
-> > #include <linux/init.h>
-> > #include <linux/container_of.h>
-> > #include <linux/user-return-notifier.h>
-> > #include <linux/delay.h>
-> > #include <linux/kthread.h>
-> > #include <linux/sched.h>
-> > 
-> > MODULE_LICENSE("GPL");
-> > 
-> > 
-> > struct test_user_return {
-> >          struct user_return_notifier urn;
-> >          bool registered;
-> >          int urn_value_changed;
-> >          struct task_struct *worker;
-> > };
-> > 
-> > static struct test_user_return __percpu *user_return_test;
-> > 
-> > static void test_user_return_cb(struct user_return_notifier *urn)
-> > {
-> >          struct test_user_return *tur =
-> >                  container_of(urn, struct test_user_return, urn);
-> >          unsigned long flags;
-> > 
-> >          local_irq_save(flags);
-> >          tur->urn_value_changed++;
-> >          local_irq_restore(flags);
-> >          return;
-> > }
-> > 
-> > static int test_user_return_worker(void *tur)
-> > {
-> >          struct test_user_return *t;
-> >          t = (struct test_user_return *) tur;
-> >          preempt_disable();
-> >          user_return_notifier_register(&t->urn);
-> >          preempt_enable();
-> >          t->registered = true;
-> >          while (!kthread_should_stop()) {
-> >                  static int err_rate = 0;
-> > 
-> >                  msleep (1000);
-> >                  if (!test_thread_flag(TIF_USER_RETURN_NOTIFY) && (err_rate == 0)) {
-> >                          pr_err("TIF_USER_RETURN_NOTIFY is lost");
-> >                          err_rate++;
-> >                  }
-> >          }
-> >          return 0;
-> > }
-> > static int init_test_user_return(void)
-> > {
-> >          int r = 0;
-> > 
-> >          user_return_test = alloc_percpu(struct test_user_return);
-> >          if (!user_return_test) {
-> >                  pr_err("failed to allocate percpu test_user_return\n");
-> >                  r = -ENOMEM;
-> >                  goto exit;
-> >          }
-> >          {
-> >                  unsigned int cpu;
-> >                  struct task_struct *task;
-> >                  struct test_user_return *tur;
-> > 
-> >                  for_each_online_cpu(cpu) {
-> >                          tur = per_cpu_ptr(user_return_test, cpu);
-> >                          if (!tur->registered) {
-> >                                  tur->urn.on_user_return = test_user_return_cb;
-> >                                  task = kthread_create(test_user_return_worker,
-> >                                          tur, "test_user_return");
-> >                                  if (IS_ERR(task))
-> >                                          pr_err("no test_user_return kthread created for cpu %d",cpu);
-> >                                  else {
-> >                                          tur->worker = task;
-> >                                          wake_up_process(task);
-> >                                  }
-> >                          }
-> >                  }
-> >          }
-> > 
-> > exit:
-> >          return r;
-> > }
-> > static void exit_test_user_return(void)
-> > {
-> >          struct test_user_return *tur;
-> >          int i,ret=0;
-> > 
-> >          for_each_online_cpu(i) {
-> >                  tur = per_cpu_ptr(user_return_test, i);
-> >                  if (tur->registered) {
-> >                          pr_info("[cpu=%d, %d] ", i, tur->urn_value_changed);
-> >                          user_return_notifier_unregister(&tur->urn);
-> >                          tur->registered = false;
-> >                  }
-> >                  if (tur->worker) {
-> >                          ret = kthread_stop(tur->worker);
-> >                          if (ret)
-> >                                  pr_err("can't stop test_user_return kthread for cpu %d", i);
-> >                  }
-> >          }
-> >          free_percpu(user_return_test);
-> >          return;
-> > }
-> > 
-> > module_init(init_test_user_return);
-> > module_exit(exit_test_user_return);
-> > 
-> > ------------------ Original ------------------
-> > From:  "Christophe Leroy"<christophe.leroy@csgroup.eu>;
-> > Date:  Tue, Feb 20, 2024 05:02 PM
-> > To:  "mpe"<mpe@ellerman.id.au>; "Aneesh Kumar K.V"<aneesh.kumar@kernel.org>; "虞陆铭"<luming.yu@shingroup.cn>; "linuxppc-dev"<linuxppc-dev@lists.ozlabs.org>; "linux-kernel"<linux-kernel@vger.kernel.org>; "npiggin"<npiggin@gmail.com>;
-> > Cc:  "shenghui.qu@shingroup.cn"<shenghui.qu@shingroup.cn>; "dawei.li@shingroup.cn"<dawei.li@shingroup.cn>; "ke.zhao@shingroup.cn"<ke.zhao@shingroup.cn>; "luming.yu"<luming.yu@gmail.com>;
-> > Subject:  Re: [PATCH v1 2/2] powerpc/debug: hook to user return notifier infrastructure
-> > 
-> > 
-> > 
-> > 
-> > Le 20/02/2024 à 09:51, Christophe Leroy a écrit :
-> > > 
-> > > 
-> > > Le 19/12/2023 à 07:33, Michael Ellerman a écrit :
-> > > > Aneesh Kumar K.V <aneesh.kumar@kernel.org> writes:
-> > > > > Luming Yu <luming.yu@shingroup.cn> writes:
-> > > > > 
-> > > > > > Before we have powerpc to use the generic entry infrastructure,
-> > > > > > the call to fire user return notifier is made temporarily in powerpc
-> > > > > > entry code.
-> > > > > > 
-> > > > > 
-> > > > > It is still not clear what will be registered as user return notifier.
-> > > > > Can you summarize that here?
-> > > > 
-> > > > fire_user_return_notifiers() is defined in kernel/user-return-notifier.c
-> > > > 
-> > > > That's built when CONFIG_USER_RETURN_NOTIFIER=y.
-> > > > 
-> > > > That is not user selectable, it's only enabled by:
-> > > > 
-> > > > arch/x86/kvm/Kconfig:        select USER_RETURN_NOTIFIER
-> > > > 
-> > > > So it looks to me like (currently) it's always a nop and does nothing.
-> > > > 
-> > > > Which makes me wonder what the point of wiring this feature up is :)
-> > > > Maybe it's needed for some other feature I don't know about?
-> > > > 
-> > > > Arguably we could just enable it because we can, and it currently does
-> > > > nothing so it's unlikely to break anything. But that also makes it
-> > > > impossible to test the implementation is correct, and runs the risk that
-> > > > one day in the future when it does get enabled only then do we discover
-> > > > it doesn't work.
-> > > 
-> > > Opened an "issue" for the day we need it:
-> > > https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2FKSPP%2Flinux%2Fissues%2F348&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7Cd9e9b6315413430cfba108dcc7100633%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638604118862628419%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=iIYQTodb9zrGdfmzvnZrIVZ%2BKh2qZjMjT29ddkUpGIw%3D&reserved=0
-> > 
-> > Correct one is https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Flinuxppc%2Fissues%2Fissues%2F477&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7Cd9e9b6315413430cfba108dcc7100633%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638604118862637095%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=aJRVdRWu%2F7NQ13jQ6yFLBynXIIfPPPQ3nS4FxiXGNyw%3D&reserved=0
-> 
+On Mon, 2024-07-29 at 16:36 -0600, Rob Herring (Arm) wrote:
+> There's little reason to dump DT property values when they can be
+> read
+> at any time from the DT in /proc/device-tree. If such a feature is
+> needed, then it really should be implemented in the DT core such that
+> any module/driver can use it.
+>=20
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 
+I'm okay with this, I think this level of dmesg verbosity was more
+useful in the early days of implementing guest support than it is now,
+and I'm hoping to rip the cxl driver out completely at some point
+anyway.
+
+Acked-by: Andrew Donnellan <ajd@linux.ibm.com>
+
+> ---
+> =C2=A0drivers/misc/cxl/of.c | 101 ++-------------------------------------=
+-
+> ----------
+> =C2=A01 file changed, 3 insertions(+), 98 deletions(-)
+>=20
+> diff --git a/drivers/misc/cxl/of.c b/drivers/misc/cxl/of.c
+> index bcc005dff1c0..21ecce0f9403 100644
+> --- a/drivers/misc/cxl/of.c
+> +++ b/drivers/misc/cxl/of.c
+> @@ -19,8 +19,6 @@ static const __be32 *read_prop_string(const struct
+> device_node *np,
+> =C2=A0	const __be32 *prop;
+> =C2=A0
+> =C2=A0	prop =3D of_get_property(np, prop_name, NULL);
+> -	if (cxl_verbose && prop)
+> -		pr_info("%s: %s\n", prop_name, (char *) prop);
+> =C2=A0	return prop;
+> =C2=A0}
+> =C2=A0
+> @@ -32,8 +30,6 @@ static const __be32 *read_prop_dword(const struct
+> device_node *np,
+> =C2=A0	prop =3D of_get_property(np, prop_name, NULL);
+> =C2=A0	if (prop)
+> =C2=A0		*val =3D be32_to_cpu(prop[0]);
+> -	if (cxl_verbose && prop)
+> -		pr_info("%s: %#x (%u)\n", prop_name, *val, *val);
+> =C2=A0	return prop;
+> =C2=A0}
+> =C2=A0
+> @@ -45,8 +41,6 @@ static const __be64 *read_prop64_dword(const struct
+> device_node *np,
+> =C2=A0	prop =3D of_get_property(np, prop_name, NULL);
+> =C2=A0	if (prop)
+> =C2=A0		*val =3D be64_to_cpu(prop[0]);
+> -	if (cxl_verbose && prop)
+> -		pr_info("%s: %#llx (%llu)\n", prop_name, *val,
+> *val);
+> =C2=A0	return prop;
+> =C2=A0}
+> =C2=A0
+> @@ -100,9 +94,6 @@ static int read_phys_addr(struct device_node *np,
+> char *prop_name,
+> =C2=A0					type, prop_name);
+> =C2=A0				return -EINVAL;
+> =C2=A0			}
+> -			if (cxl_verbose)
+> -				pr_info("%s: %#x %#llx (size
+> %#llx)\n",
+> -					prop_name, type, addr,
+> size);
+> =C2=A0		}
+> =C2=A0	}
+> =C2=A0	return 0;
+> @@ -139,27 +130,13 @@ int cxl_of_read_afu_handle(struct cxl_afu *afu,
+> struct device_node *afu_np)
+> =C2=A0
+> =C2=A0int cxl_of_read_afu_properties(struct cxl_afu *afu, struct
+> device_node *np)
+> =C2=A0{
+> -	int i, len, rc;
+> -	char *p;
+> +	int i, rc;
+> =C2=A0	const __be32 *prop;
+> =C2=A0	u16 device_id, vendor_id;
+> =C2=A0	u32 val =3D 0, class_code;
+> =C2=A0
+> =C2=A0	/* Properties are read in the same order as listed in PAPR
+> */
+> =C2=A0
+> -	if (cxl_verbose) {
+> -		pr_info("Dump of the 'ibm,coherent-platform-
+> function' node properties:\n");
+> -
+> -		prop =3D of_get_property(np, "compatible", &len);
+> -		i =3D 0;
+> -		while (i < len) {
+> -			p =3D (char *) prop + i;
+> -			pr_info("compatible: %s\n", p);
+> -			i +=3D strlen(p) + 1;
+> -		}
+> -		read_prop_string(np, "name");
+> -	}
+> -
+> =C2=A0	rc =3D read_phys_addr(np, "reg", afu);
+> =C2=A0	if (rc)
+> =C2=A0		return rc;
+> @@ -173,19 +150,10 @@ int cxl_of_read_afu_properties(struct cxl_afu
+> *afu, struct device_node *np)
+> =C2=A0	else
+> =C2=A0		afu->psa =3D true;
+> =C2=A0
+> -	if (cxl_verbose) {
+> -		read_prop_string(np, "ibm,loc-code");
+> -		read_prop_string(np, "device_type");
+> -	}
+> -
+> =C2=A0	read_prop_dword(np, "ibm,#processes", &afu-
+> >max_procs_virtualised);
+> =C2=A0
+> -	if (cxl_verbose) {
+> -		read_prop_dword(np, "ibm,scratchpad-size", &val);
+> -		read_prop_dword(np, "ibm,programmable", &val);
+> -		read_prop_string(np, "ibm,phandle");
+> +	if (cxl_verbose)
+> =C2=A0		read_vpd(NULL, afu);
+> -	}
+> =C2=A0
+> =C2=A0	read_prop_dword(np, "ibm,max-ints-per-process", &afu->guest-
+> >max_ints);
+> =C2=A0	afu->irqs_max =3D afu->guest->max_ints;
+> @@ -199,17 +167,9 @@ int cxl_of_read_afu_properties(struct cxl_afu
+> *afu, struct device_node *np)
+> =C2=A0		afu->pp_irqs--;
+> =C2=A0	}
+> =C2=A0
+> -	if (cxl_verbose) {
+> -		read_prop_dword(np, "ibm,max-ints", &val);
+> -		read_prop_dword(np, "ibm,vpd-size", &val);
+> -	}
+> -
+> =C2=A0	read_prop64_dword(np, "ibm,error-buffer-size", &afu-
+> >eb_len);
+> =C2=A0	afu->eb_offset =3D 0;
+> =C2=A0
+> -	if (cxl_verbose)
+> -		read_prop_dword(np, "ibm,config-record-type", &val);
+> -
+> =C2=A0	read_prop64_dword(np, "ibm,config-record-size", &afu-
+> >crs_len);
+> =C2=A0	afu->crs_offset =3D 0;
+> =C2=A0
+> @@ -235,15 +195,6 @@ int cxl_of_read_afu_properties(struct cxl_afu
+> *afu, struct device_node *np)
+> =C2=A0					i, class_code);
+> =C2=A0			}
+> =C2=A0		}
+> -
+> -		read_prop_dword(np, "ibm,function-number", &val);
+> -		read_prop_dword(np, "ibm,privileged-function",
+> &val);
+> -		read_prop_dword(np, "vendor-id", &val);
+> -		read_prop_dword(np, "device-id", &val);
+> -		read_prop_dword(np, "revision-id", &val);
+> -		read_prop_dword(np, "class-code", &val);
+> -		read_prop_dword(np, "subsystem-vendor-id", &val);
+> -		read_prop_dword(np, "subsystem-id", &val);
+> =C2=A0	}
+> =C2=A0	/*
+> =C2=A0	 * if "ibm,process-mmio" doesn't exist then per-process mmio
+> is
+> @@ -256,12 +207,6 @@ int cxl_of_read_afu_properties(struct cxl_afu
+> *afu, struct device_node *np)
+> =C2=A0	else
+> =C2=A0		afu->pp_psa =3D false;
+> =C2=A0
+> -	if (cxl_verbose) {
+> -		read_prop_dword(np, "ibm,supports-aur", &val);
+> -		read_prop_dword(np, "ibm,supports-csrp", &val);
+> -		read_prop_dword(np, "ibm,supports-prr", &val);
+> -	}
+> -
+> =C2=A0	prop =3D read_prop_dword(np, "ibm,function-error-interrupt",
+> &val);
+> =C2=A0	if (prop)
+> =C2=A0		afu->serr_hwirq =3D val;
+> @@ -343,49 +288,15 @@ int cxl_of_read_adapter_handle(struct cxl
+> *adapter, struct device_node *np)
+> =C2=A0
+> =C2=A0int cxl_of_read_adapter_properties(struct cxl *adapter, struct
+> device_node *np)
+> =C2=A0{
+> -	int rc, len, naddr, i;
+> -	char *p;
+> +	int rc;
+> =C2=A0	const __be32 *prop;
+> =C2=A0	u32 val =3D 0;
+> =C2=A0
+> =C2=A0	/* Properties are read in the same order as listed in PAPR
+> */
+> =C2=A0
+> -	naddr =3D of_n_addr_cells(np);
+> -
+> -	if (cxl_verbose) {
+> -		pr_info("Dump of the 'ibm,coherent-platform-
+> facility' node properties:\n");
+> -
+> -		read_prop_dword(np, "#address-cells", &val);
+> -		read_prop_dword(np, "#size-cells", &val);
+> -
+> -		prop =3D of_get_property(np, "compatible", &len);
+> -		i =3D 0;
+> -		while (i < len) {
+> -			p =3D (char *) prop + i;
+> -			pr_info("compatible: %s\n", p);
+> -			i +=3D strlen(p) + 1;
+> -		}
+> -		read_prop_string(np, "name");
+> -		read_prop_string(np, "model");
+> -
+> -		prop =3D of_get_property(np, "reg", NULL);
+> -		if (prop) {
+> -			pr_info("reg: addr:%#llx size:%#x\n",
+> -				of_read_number(prop, naddr),
+> -				be32_to_cpu(prop[naddr]));
+> -		}
+> -
+> -		read_prop_string(np, "ibm,loc-code");
+> -	}
+> -
+> =C2=A0	if ((rc =3D read_adapter_irq_config(adapter, np)))
+> =C2=A0		return rc;
+> =C2=A0
+> -	if (cxl_verbose) {
+> -		read_prop_string(np, "device_type");
+> -		read_prop_string(np, "ibm,phandle");
+> -	}
+> -
+> =C2=A0	prop =3D read_prop_dword(np, "ibm,caia-version", &val);
+> =C2=A0	if (prop) {
+> =C2=A0		adapter->caia_major =3D (val & 0xFF00) >> 8;
+> @@ -411,12 +322,6 @@ int cxl_of_read_adapter_properties(struct cxl
+> *adapter, struct device_node *np)
+> =C2=A0	if (prop)
+> =C2=A0		adapter->guest->device =3D val;
+> =C2=A0
+> -	if (cxl_verbose) {
+> -		read_prop_dword(np, "ibm,privileged-facility",
+> &val);
+> -		read_prop_dword(np, "revision-id", &val);
+> -		read_prop_dword(np, "class-code", &val);
+> -	}
+> -
+> =C2=A0	prop =3D read_prop_dword(np, "subsystem-vendor-id", &val);
+> =C2=A0	if (prop)
+> =C2=A0		adapter->guest->subsystem_vendor =3D val;
+>=20
+
+--=20
+Andrew Donnellan    OzLabs, ADL Canberra
+ajd@linux.ibm.com   IBM Australia Limited
 
