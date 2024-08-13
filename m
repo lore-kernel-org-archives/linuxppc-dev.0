@@ -1,58 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-68-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-69-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A9B7C52D7C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2024 19:12:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 532FCC52D7C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2024 22:20:13 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oVgCS5WS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tVfL9Vxa;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wk1Gc44xsz2xy8;
-	Wed, 14 Aug 2024 05:12:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wk5Rb5Sc3z2xHw;
+	Wed, 14 Aug 2024 08:20:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oVgCS5WS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tVfL9Vxa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wk1Gc2GFpz2xHg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2024 05:12:08 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 84014CE1757;
-	Tue, 13 Aug 2024 19:12:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5909DC32782;
-	Tue, 13 Aug 2024 19:12:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1723576324;
-	bh=XnRaNWmfuA37T6kFbZH5AEOTlDGtmJaVQzGZavvbDy4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=oVgCS5WSz629yWKGvbfERWpRApwaykfbBNLKiFHzl81EVFDuqmU97dBGVoq2r4lRN
-	 /K/zTPfAUusChm2KT2tccVNA9UJZl2DS+8fAueSInsifkfNQ517/BZaZnkXac5ZjWL
-	 2Lm5dGPZUMdsvmkMEIDRxxr1Kcu+e/ui0orf0ZTZuCHb6JEhrs/NGQspA+OAYa6JFJ
-	 2gWfJertSb3cw+NAheJF2iZszUyOn8yNIUja9jqdksnW5YjNrvxCHZEm5NAFAFM6vS
-	 r54hrqal8OovlYrHLS/CBsscSzeA0j4WCyUQT3nN/hQ+PmbEClx773yfg2R7F5Vggv
-	 m5Kgz14zKEt+w==
-Date: Tue, 13 Aug 2024 13:12:02 -0600
-From: Rob Herring <robh@kernel.org>
-To: Herve Codina <herve.codina@bootlin.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>,
-	Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-Subject: Re: [PATCH v2 23/36] dt-bindings: soc: fsl: cpm_qe: Add QUICC Engine
- (QE) QMC controller
-Message-ID: <20240813191202.GA1495576-robh@kernel.org>
-References: <20240808071132.149251-1-herve.codina@bootlin.com>
- <20240808071132.149251-24-herve.codina@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wk4nF4fNXz2yGX
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Aug 2024 07:50:24 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47DKWaPI022397;
+	Tue, 13 Aug 2024 21:50:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:in-reply-to:references
+	:mime-version:content-type:content-transfer-encoding; s=pp1; bh=
+	cT9bAuyQhj64lwPsANzh3It+9SS/uyRNAg/fy9grIyk=; b=tVfL9VxanMpoW7dP
+	xj4yrtTL2gQmn0DXErmTXj2QVNkUXOdykcBFXSGnlmu5yJ2bLVLM3CWWTPDZDrnw
+	RnbiNhUPcYUdN7eXhHSVLnB10KRsN5WOaTOHo1SpH3dIKv0bVLVt8TstSUCoP7Jc
+	ABP3F1a+YnqruNQSjdvxh24xa6VOKUhmxWfVIzdz67kMqlvM7qHhvT+It8m85twz
+	Wa1bPpeaoKSVLkxEHWm1vP9/3fqE9kixr5aWDsodowWoWbDMSQB1LiNTgWPl9c2X
+	Znr1PE2eFhfnpcfA0zPWr7aG2+y5jFYfgN3yK6QDUUrYcJ8zcvV5Qz9pZfp1gsu5
+	GcBotg==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 410em2rcta-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Aug 2024 21:50:18 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 47DLoIPR021731;
+	Tue, 13 Aug 2024 21:50:18 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 410em2rct9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Aug 2024 21:50:18 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 47DLh2um011523;
+	Tue, 13 Aug 2024 21:50:17 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 40xjhu65ur-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Aug 2024 21:50:17 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47DLoBxT5243418
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 13 Aug 2024 21:50:13 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6B5E85805B;
+	Tue, 13 Aug 2024 21:50:11 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 60F1358063;
+	Tue, 13 Aug 2024 21:50:10 +0000 (GMT)
+Received: from li-4910aacc-2eed-11b2-a85c-d93b702d4d28.ibm.com.com (unknown [9.61.0.230])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 13 Aug 2024 21:50:10 +0000 (GMT)
+From: Haren Myneni <haren@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, tyreld@linux.ibm.com,
+        brking@linux.ibm.com, hbabu@us.ibm.com,
+        Haren Myneni <haren@linux.ibm.com>,
+        Scott Cheloha <cheloha@linux.ibm.com>
+Subject: [PATCH 2/2] powerpc/pseries/dlpar: Add device tree nodes for DLPAR IO add
+Date: Tue, 13 Aug 2024 14:50:02 -0700
+Message-ID: <20240813215002.64030-2-haren@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <20240813215002.64030-1-haren@linux.ibm.com>
+References: <20240813215002.64030-1-haren@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,257 +87,210 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240808071132.149251-24-herve.codina@bootlin.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: wvXYPob2mrRmYUebVN6by5AZwxS63M-t
+X-Proofpoint-GUID: k5Q1rdPHwdW_lapRVBI0uGkt_tadvWf5
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-13_12,2024-08-13_02,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 spamscore=0
+ impostorscore=0 mlxscore=0 priorityscore=1501 clxscore=1015 adultscore=0
+ lowpriorityscore=0 phishscore=0 mlxlogscore=999 bulkscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2407110000
+ definitions=main-2408130156
 
-On Thu, Aug 08, 2024 at 09:11:16AM +0200, Herve Codina wrote:
-> Add support for the QMC (QUICC Multichannel Controller) available in
-> some PowerQUICC SoC that uses a QUICC Engine (QE) block such as MPC8321.
-> 
-> This QE QMC is similar to the CPM QMC except that it uses UCCs (Unified
-> Communication Controllers) instead of SCCs (Serial Communication
-> Controllers). Also, compared against the CPM QMC, this QE QMC does not
-> use a fixed area for the UCC/SCC parameters area but it uses a dynamic
-> area allocated and provided to the hardware at runtime.
-> Last point, the QE QMC can use a firmware to have the QMC working in
-> 'soft-qmc' mode.
-> 
-> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-> ---
->  .../soc/fsl/cpm_qe/fsl,qe-ucc-qmc.yaml        | 197 ++++++++++++++++++
->  1 file changed, 197 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ucc-qmc.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ucc-qmc.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ucc-qmc.yaml
-> new file mode 100644
-> index 000000000000..71ae64cb8a4f
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ucc-qmc.yaml
-> @@ -0,0 +1,197 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/soc/fsl/cpm_qe/fsl,qe-ucc-qmc.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: PowerQUICC QE QUICC Multichannel Controller (QMC)
-> +
-> +maintainers:
-> +  - Herve Codina <herve.codina@bootlin.com>
-> +
-> +description:
-> +  The QMC (QUICC Multichannel Controller) emulates up to 64 channels within one
-> +  serial controller using the same TDM physical interface routed from TSA.
-> +
-> +properties:
-> +  compatible:
-> +    items:
-> +      - enum:
-> +          - fsl,mpc8321-ucc-qmc
-> +      - const: fsl,qe-ucc-qmc
-> +
-> +  reg:
-> +    items:
-> +      - description: UCC (Unified communication controller) register base
-> +      - description: Dual port ram base
-> +
-> +  reg-names:
-> +    items:
-> +      - const: ucc_regs
+For the DLPAR IO ADD, the corresponding device tree nodes and
+properties will be added to the device tree after enable the
+device. The user space (drmgr tool) uses configure_connector
+RTAS call with the DRC index to retrieve the corresponding
+device nodes but this RTAS call needs /dev/mem access. Also
+updates the device tree by writing to /proc/ppc64/ofdt.
+Under system lockdown, /dev/mem access is restricted which means
+the user space can not issue configure_connector RTAS call and
+also can not access to /proc/ppc64/ofdt.
 
-_regs is redundant.
+This patch extends the /sys/kernel/dlpar interface and provides
+‘dt add index <drc_index>’ to the user space. The drmgr tool uses
+this interface to update the device tree whenever the device is
+added. This interface retrieves device tree nodes for the
+corresponding DRC index using configure_connector RTAS call and
+adds new device nodes / properties to the device tree.
 
-> +      - const: dpram
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +    description: UCC interrupt line in the QE interrupt controller
-> +
-> +  fsl,tsa-serial:
-> +    $ref: /schemas/types.yaml#/definitions/phandle-array
-> +    items:
-> +      - items:
-> +          - description: phandle to TSA node
-> +          - enum: [1, 2, 3, 4, 5]
-> +            description: |
-> +              TSA serial interface (dt-bindings/soc/qe-fsl,tsa.h defines these
-> +              values)
-> +               - 1: UCC1
-> +               - 2: UCC2
-> +               - 3: UCC3
-> +               - 4: UCC4
-> +               - 5: UCC5
-> +    description:
-> +      Should be a phandle/number pair. The phandle to TSA node and the TSA
-> +      serial interface to use.
-> +
-> +  fsl,soft-qmc:
-> +    $ref: /schemas/types.yaml#/definitions/string
-> +    description:
-> +      Soft QMC firmware name to load. If this property is omitted, no firmware
-> +      are used.
+Signed-off-by: Scott Cheloha <cheloha@linux.ibm.com>
+Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c | 134 +++++++++++++++++++++++++
+ 1 file changed, 134 insertions(+)
 
-"firmware-name" doesn't work here?
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 993fd3e8f6ea..fb34d5859da8 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -23,6 +23,7 @@
+ #include <linux/uaccess.h>
+ #include <asm/rtas.h>
+ #include <asm/rtas-work-area.h>
++#include <asm/prom.h>
+ 
+ static struct workqueue_struct *pseries_hp_wq;
+ 
+@@ -264,6 +265,22 @@ int dlpar_detach_node(struct device_node *dn)
+ 
+ 	return 0;
+ }
++static int dlpar_changeset_attach_cc_nodes(struct of_changeset *ocs,
++					struct device_node *dn)
++{
++	int rc;
++
++	pr_info("%s: %pOF\n", __func__, dn);
++
++	rc = of_changeset_attach_node(ocs, dn);
++
++	if (!rc && dn->child)
++		rc = dlpar_changeset_attach_cc_nodes(ocs, dn->child);
++	if (!rc && dn->sibling)
++		rc = dlpar_changeset_attach_cc_nodes(ocs, dn->sibling);
++
++	return rc;
++}
+ 
+ #define DR_ENTITY_SENSE		9003
+ #define DR_ENTITY_PRESENT	1
+@@ -330,6 +347,120 @@ int dlpar_unisolate_drc(u32 drc_index)
+ 	return 0;
+ }
+ 
++static struct device_node *
++get_device_node_with_drc_index(u32 index)
++{
++	struct device_node *np = NULL;
++	u32 node_index;
++	int rc;
++
++	for_each_node_with_property(np, "ibm,my-drc-index") {
++		rc = of_property_read_u32(np, "ibm,my-drc-index",
++					     &node_index);
++		if (rc) {
++			pr_err("%s: %pOF: of_property_read_u32 %s: %d\n",
++			       __func__, np, "ibm,my-drc-index", rc);
++			of_node_put(np);
++			return NULL;
++		}
++
++		if (index == node_index)
++			break;
++	}
++
++	return np;
++}
++
++static struct device_node *
++get_device_node_with_drc_info(u32 index)
++{
++	struct device_node *np = NULL;
++	struct of_drc_info drc;
++	struct property *info;
++	const __be32 *value;
++	u32 node_index;
++	int i, j, count;
++
++	for_each_node_with_property(np, "ibm,drc-info") {
++		info = of_find_property(np, "ibm,drc-info", NULL);
++		if (info == NULL) {
++			/* XXX can this happen? */
++			of_node_put(np);
++			return NULL;
++		}
++		value = of_prop_next_u32(info, NULL, &count);
++		if (value == NULL)
++			continue;
++		value++;
++		for (i = 0; i < count; i++) {
++			if (of_read_drc_info_cell(&info, &value, &drc))
++				break;
++			if (index > drc.last_drc_index)
++				continue;
++			node_index = drc.drc_index_start;
++			for (j = 0; j < drc.num_sequential_elems; j++) {
++				if (index == node_index)
++					return np;
++				node_index += drc.sequential_inc;
++			}
++		}
++	}
++
++	return NULL;
++}
++
++static int dlpar_hp_dt_add(u32 index)
++{
++	struct device_node *np, *nodes;
++	struct of_changeset ocs;
++	int rc;
++
++	/*
++	 * Do not add device node(s) if already exists in the
++	 * device tree.
++	 */
++	np = get_device_node_with_drc_index(index);
++	if (np) {
++		pr_err("%s: Adding device node for index (%d), but "
++				"already exists in the device tree\n",
++				__func__, index);
++		rc = -EINVAL;
++		goto out;
++	}
++
++	np = get_device_node_with_drc_info(index);
++
++	if (!np)
++		return -EIO;
++
++	pr_info("%s: %pOF\n", __func__, np);
++
++	/* Next, configure the connector. */
++	nodes = dlpar_configure_connector(cpu_to_be32(index), np);
++	if (!nodes) {
++		rc = -EIO;
++		goto out;
++	}
++
++	/*
++	 * Add the new nodes from dlpar_configure_connector() onto
++	 * the device-tree.
++	 */
++	of_changeset_init(&ocs);
++	rc = dlpar_changeset_attach_cc_nodes(&ocs, nodes);
++
++	if (!rc)
++		rc = of_changeset_apply(&ocs);
++	else
++		dlpar_free_cc_nodes(nodes);
++
++	of_changeset_destroy(&ocs);
++
++out:
++	of_node_put(np);
++	return rc;
++}
++
+ static int changeset_detach_node_recursive(struct of_changeset *ocs,
+ 					struct device_node *node)
+ {
+@@ -396,6 +527,9 @@ static int dlpar_hp_dt(struct pseries_hp_errorlog *phpe)
+ 	lock_device_hotplug();
+ 
+ 	switch (phpe->action) {
++	case PSERIES_HP_ELOG_ACTION_ADD:
++		rc = dlpar_hp_dt_add(phpe->_drc_u.drc_index);
++		break;
+ 	case PSERIES_HP_ELOG_ACTION_REMOVE:
+ 		rc = dlpar_hp_dt_remove(phpe->_drc_u.drc_index);
+ 		break;
+-- 
+2.43.5
 
-> +
-> +  '#address-cells':
-> +    const: 1
-> +
-> +  '#size-cells':
-> +    const: 0
-> +
-> +patternProperties:
-> +  '^channel@([0-9]|[1-5][0-9]|6[0-3])$':
-
-Unit-addresses are typically hex.
-
-> +    description:
-> +      A channel managed by this controller
-> +    type: object
-> +    additionalProperties: false
-> +
-> +    properties:
-> +      compatible:
-> +        items:
-> +          - enum:
-> +              - fsl,mpc8321-ucc-qmc-hdlc
-> +          - const: fsl,qe-ucc-qmc-hdlc
-> +          - const: fsl,qmc-hdlc
-> +
-> +      reg:
-> +        minimum: 0
-> +        maximum: 63
-> +        description:
-> +          The channel number
-> +
-> +      fsl,operational-mode:
-> +        $ref: /schemas/types.yaml#/definitions/string
-> +        enum: [transparent, hdlc]
-> +        default: transparent
-> +        description: |
-> +          The channel operational mode
-> +            - hdlc: The channel handles HDLC frames
-> +            - transparent: The channel handles raw data without any processing
-> +
-> +      fsl,reverse-data:
-> +        $ref: /schemas/types.yaml#/definitions/flag
-> +        description:
-> +          The bit order as seen on the channels is reversed,
-> +          transmitting/receiving the MSB of each octet first.
-> +          This flag is used only in 'transparent' mode.
-> +
-> +      fsl,tx-ts-mask:
-> +        $ref: /schemas/types.yaml#/definitions/uint64
-> +        description:
-> +          Channel assigned Tx time-slots within the Tx time-slots routed by the
-> +          TSA to this cell.
-> +
-> +      fsl,rx-ts-mask:
-> +        $ref: /schemas/types.yaml#/definitions/uint64
-> +        description:
-> +          Channel assigned Rx time-slots within the Rx time-slots routed by the
-> +          TSA to this cell.
-> +
-> +      fsl,framer:
-> +        $ref: /schemas/types.yaml#/definitions/phandle
-> +        description:
-> +          phandle to the framer node. The framer is in charge of an E1/T1 line
-> +          interface connected to the TDM bus. It can be used to get the E1/T1 line
-> +          status such as link up/down.
-> +
-> +    allOf:
-> +      - if:
-> +          properties:
-> +            compatible:
-> +              not:
-> +                contains:
-> +                  const: fsl,qmc-hdlc
-
-"fsl,qmc-hdlc" is always present in compatible. This is only true if 
-compatible is not present. If that's what you wanted, just do:
-
-if:
-  not:
-    required: [compatible]
-
-
-> +        then:
-> +          properties:
-> +            fsl,framer: false
-
-Err, actually, you can do 1 better with just:
-
-dependencies:
-  fsl,framer: [compatible]
-
-
-> +
-> +    required:
-> +      - reg
-> +      - fsl,tx-ts-mask
-> +      - fsl,rx-ts-mask
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - reg-names
-> +  - interrupts
-> +  - fsl,tsa-serial
-> +  - '#address-cells'
-> +  - '#size-cells'
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/soc/qe-fsl,tsa.h>
-> +
-> +    qmc@a60 {
-> +        compatible = "fsl,mpc8321-ucc-qmc", "fsl,qe-ucc-qmc";
-> +        reg = <0x3200 0x200>,
-> +              <0x10000 0x1000>;
-> +        reg-names = "ucc_regs", "dpram";
-> +        interrupts = <35>;
-> +        interrupt-parent = <&qeic>;
-> +        fsl,soft-qmc = "fsl_qe_ucode_qmc_8321_11.bin";
-> +
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +
-> +        fsl,tsa-serial = <&tsa FSL_QE_TSA_UCC4>;
-> +
-> +        channel@16 {
-> +            /* Ch16 : First 4 even TS from all routed from TSA */
-> +            reg = <16>;
-> +            fsl,operational-mode = "transparent";
-> +            fsl,reverse-data;
-> +            fsl,tx-ts-mask = <0x00000000 0x000000aa>;
-> +            fsl,rx-ts-mask = <0x00000000 0x000000aa>;
-> +        };
-> +
-> +        channel@17 {
-> +            /* Ch17 : First 4 odd TS from all routed from TSA */
-> +            reg = <17>;
-> +            fsl,operational-mode = "transparent";
-> +            fsl,reverse-data;
-> +            fsl,tx-ts-mask = <0x00000000 0x00000055>;
-> +            fsl,rx-ts-mask = <0x00000000 0x00000055>;
-> +        };
-> +
-> +        channel@19 {
-> +            /* Ch19 : 8 TS (TS 8..15) from all routed from TSA */
-> +            compatible = "fsl,mpc8321-ucc-qmc-hdlc",
-> +                         "fsl,qe-ucc-qmc-hdlc",
-> +                         "fsl,qmc-hdlc";
-> +            reg = <19>;
-> +            fsl,operational-mode = "hdlc";
-> +            fsl,tx-ts-mask = <0x00000000 0x0000ff00>;
-> +            fsl,rx-ts-mask = <0x00000000 0x0000ff00>;
-> +            fsl,framer = <&framer>;
-> +        };
-> +    };
-> -- 
-> 2.45.0
-> 
 
