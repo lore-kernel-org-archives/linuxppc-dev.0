@@ -1,52 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-39-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-40-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7355C3DA7F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Aug 2024 23:32:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49836C3DA7F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Aug 2024 01:04:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=SOr3pMJQ;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=V7bKXIBC;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WjW581GRNz2yGh;
-	Tue, 13 Aug 2024 09:32:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=canb.auug.org.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WjY883p29z2yGF;
+	Tue, 13 Aug 2024 11:04:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=SOr3pMJQ;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=V7bKXIBC;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WjW546RnTz2yGX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2024 09:32:08 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
-	s=201702; t=1723505528;
-	bh=eAIDKGVnf0mMlP4+my08U5Bt1rMk1xyHUF3WfoB2m+A=;
-	h=Date:From:To:Cc:Subject:From;
-	b=SOr3pMJQPPUSQ0MnfYJfin4gsug3ZL3UqJP4VLR0Ka/eEh7Qzgg3W8b4RsaQtuj9K
-	 SPDJFISs/YVR+no6EAZ+GCyFRRWJa/U+iZSrNvcOF1DVS1r41L78eBXrN6go25zPwS
-	 Vrktutw/cmoqboAahKLak+vS/zXBNFChEuKee68k/RRJXjVI9cda4kIssZVyGAKv/d
-	 GaZdPpgBvd7kIk4LWV3wcoGY+YI3FfL/fouuEAneWm5bV4Gibj9q0bmMiqq02ejpeH
-	 svNemmdvkOcnCErN6HuoIw+MWyDTLt/ooHLgsRFsvuYmOMrYTPckzu0y0yMaVIYUGe
-	 hTFI9KHnilpgg==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WjW54182Gz4x8N;
-	Tue, 13 Aug 2024 09:32:08 +1000 (AEST)
-Date: Tue, 13 Aug 2024 09:32:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Andrew Morton
- <akpm@linux-foundation.org>
-Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, Linux Next Mailing List
- <linux-next@vger.kernel.org>
-Subject: linux-next: duplicate patch in the powerpc-fixes tree
-Message-ID: <20240813093207.77fc03d8@canb.auug.org.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WjY8652Xvz2xJF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Aug 2024 11:04:51 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1723511095; x=1755047095;
+  h=date:from:to:cc:subject:message-id;
+  bh=+ubQTTTW1BiiiG50hLsvCDzb+yoDFhRjX3mqRTPfa6U=;
+  b=V7bKXIBCRzyQdhSeKzRXj8nuj7Ly2oqLKgOXTU2+gg5bG8pFaMkElUxk
+   X/I6E89dh+MFGi63+S+LhrAW8T9NR41osKFZYvRFjN2zR13B/x4m56UhH
+   liO+Uf8sKUOCsLPtgySl6Pg7fz7NLEBmBkDsqEVy8+B9yl3nJRLOqXrnp
+   NMdXSwyUeZT41dj9pzjtqcat3Nh9vrJyXQQp4V3InxHbKslyhO3KlTq0K
+   7xpNt3S/e0g4pyCrgtxelqc6NDcQ8OjpSDb/xDnhQQo5FQ3OTOlVNQ+8U
+   YibY5+IEapksbJRJ9xaryRf8lzbYmwEe+xMuF7rAauqU+5VOlh2rUvwuJ
+   g==;
+X-CSE-ConnectionGUID: qfAQeQ/gSnO1vq5OzlMHbw==
+X-CSE-MsgGUID: EE7ORGUOR4WA21cBhEN/4Q==
+X-IronPort-AV: E=McAfee;i="6700,10204,11162"; a="21461666"
+X-IronPort-AV: E=Sophos;i="6.09,284,1716274800"; 
+   d="scan'208";a="21461666"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Aug 2024 18:04:47 -0700
+X-CSE-ConnectionGUID: wfwQmcNUSUCrrxMqE9gOGA==
+X-CSE-MsgGUID: JLLBjduQRI2DjcGkLX9AiQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.09,284,1716274800"; 
+   d="scan'208";a="62891668"
+Received: from unknown (HELO b6bf6c95bbab) ([10.239.97.151])
+  by fmviesa005.fm.intel.com with ESMTP; 12 Aug 2024 18:04:45 -0700
+Received: from kbuild by b6bf6c95bbab with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1sdfxq-000CHn-34;
+	Tue, 13 Aug 2024 01:04:42 +0000
+Date: Tue, 13 Aug 2024 09:04:17 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ e7e846dc6c73fbc94ae8b4ec20d05627646416f2
+Message-ID: <202408130914.EnqbU8GU-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,46 +68,229 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/YAXQnHqS60nMiM5HU4yGyTr";
- protocol="application/pgp-signature"; micalg=pgp-sha256
 
---Sig_/YAXQnHqS60nMiM5HU4yGyTr
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+branch HEAD: e7e846dc6c73fbc94ae8b4ec20d05627646416f2  powerpc/mm: Fix boot warning with hugepages and CONFIG_DEBUG_VIRTUAL
 
-Hi all,
+elapsed time: 728m
 
-The following commit is also in the mm-hotfixes tree as a different commit
-(but the same patch):
+configs tested: 208
+configs skipped: 6
 
-  e7a9af8c93aa ("powerpc/mm: Fix size of allocated PGDIR")
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-This is commit
+tested configs:
+alpha                             allnoconfig   gcc-13.2.0
+alpha                             allnoconfig   gcc-13.3.0
+alpha                            allyesconfig   gcc-13.3.0
+alpha                               defconfig   gcc-13.2.0
+arc                              allmodconfig   gcc-13.2.0
+arc                               allnoconfig   gcc-13.2.0
+arc                              allyesconfig   gcc-13.2.0
+arc                                 defconfig   gcc-13.2.0
+arc                   randconfig-001-20240813   gcc-13.2.0
+arc                   randconfig-002-20240813   gcc-13.2.0
+arm                              allmodconfig   gcc-14.1.0
+arm                               allnoconfig   clang-20
+arm                               allnoconfig   gcc-13.2.0
+arm                              allyesconfig   gcc-14.1.0
+arm                                 defconfig   gcc-13.2.0
+arm                   randconfig-001-20240813   gcc-14.1.0
+arm                   randconfig-002-20240813   gcc-14.1.0
+arm                   randconfig-003-20240813   gcc-14.1.0
+arm                   randconfig-004-20240813   gcc-14.1.0
+arm64                            allmodconfig   clang-20
+arm64                             allnoconfig   gcc-13.2.0
+arm64                             allnoconfig   gcc-14.1.0
+arm64                               defconfig   gcc-13.2.0
+arm64                 randconfig-001-20240813   gcc-14.1.0
+arm64                 randconfig-002-20240813   gcc-14.1.0
+arm64                 randconfig-003-20240813   clang-20
+arm64                 randconfig-004-20240813   gcc-14.1.0
+csky                              allnoconfig   gcc-13.2.0
+csky                              allnoconfig   gcc-14.1.0
+csky                                defconfig   gcc-13.2.0
+csky                  randconfig-001-20240813   gcc-14.1.0
+csky                  randconfig-002-20240813   gcc-14.1.0
+hexagon                          allmodconfig   clang-20
+hexagon                           allnoconfig   clang-20
+hexagon                          allyesconfig   clang-20
+hexagon               randconfig-001-20240813   clang-20
+hexagon               randconfig-002-20240813   clang-20
+i386                             allmodconfig   clang-18
+i386                             allmodconfig   gcc-12
+i386                              allnoconfig   clang-18
+i386                              allnoconfig   gcc-12
+i386                             allyesconfig   clang-18
+i386                             allyesconfig   gcc-12
+i386         buildonly-randconfig-001-20240812   clang-18
+i386         buildonly-randconfig-001-20240813   gcc-12
+i386         buildonly-randconfig-002-20240812   clang-18
+i386         buildonly-randconfig-002-20240813   gcc-12
+i386         buildonly-randconfig-003-20240812   clang-18
+i386         buildonly-randconfig-003-20240813   gcc-12
+i386         buildonly-randconfig-004-20240812   clang-18
+i386         buildonly-randconfig-004-20240813   gcc-12
+i386         buildonly-randconfig-005-20240812   gcc-12
+i386         buildonly-randconfig-005-20240813   gcc-12
+i386         buildonly-randconfig-006-20240812   clang-18
+i386         buildonly-randconfig-006-20240813   gcc-12
+i386                                defconfig   clang-18
+i386                  randconfig-001-20240812   gcc-12
+i386                  randconfig-001-20240813   gcc-12
+i386                  randconfig-002-20240812   gcc-12
+i386                  randconfig-002-20240813   gcc-12
+i386                  randconfig-003-20240812   gcc-12
+i386                  randconfig-003-20240813   gcc-12
+i386                  randconfig-004-20240812   clang-18
+i386                  randconfig-004-20240813   gcc-12
+i386                  randconfig-005-20240812   clang-18
+i386                  randconfig-005-20240813   gcc-12
+i386                  randconfig-006-20240812   gcc-12
+i386                  randconfig-006-20240813   gcc-12
+i386                  randconfig-011-20240812   gcc-12
+i386                  randconfig-011-20240813   gcc-12
+i386                  randconfig-012-20240812   clang-18
+i386                  randconfig-012-20240813   gcc-12
+i386                  randconfig-013-20240812   clang-18
+i386                  randconfig-013-20240813   gcc-12
+i386                  randconfig-014-20240812   clang-18
+i386                  randconfig-014-20240813   gcc-12
+i386                  randconfig-015-20240812   clang-18
+i386                  randconfig-015-20240813   gcc-12
+i386                  randconfig-016-20240812   clang-18
+i386                  randconfig-016-20240813   gcc-12
+loongarch                        allmodconfig   gcc-14.1.0
+loongarch                         allnoconfig   gcc-13.2.0
+loongarch                         allnoconfig   gcc-14.1.0
+loongarch                           defconfig   gcc-13.2.0
+loongarch             randconfig-001-20240813   gcc-14.1.0
+loongarch             randconfig-002-20240813   gcc-14.1.0
+m68k                             allmodconfig   gcc-14.1.0
+m68k                              allnoconfig   gcc-13.2.0
+m68k                              allnoconfig   gcc-14.1.0
+m68k                             allyesconfig   gcc-14.1.0
+m68k                                defconfig   gcc-13.2.0
+microblaze                       allmodconfig   gcc-14.1.0
+microblaze                        allnoconfig   gcc-13.2.0
+microblaze                        allnoconfig   gcc-14.1.0
+microblaze                       allyesconfig   gcc-14.1.0
+microblaze                          defconfig   gcc-13.2.0
+mips                              allnoconfig   gcc-13.2.0
+mips                              allnoconfig   gcc-14.1.0
+nios2                             allnoconfig   gcc-13.2.0
+nios2                             allnoconfig   gcc-14.1.0
+nios2                               defconfig   gcc-13.2.0
+nios2                 randconfig-001-20240813   gcc-14.1.0
+nios2                 randconfig-002-20240813   gcc-14.1.0
+openrisc                          allnoconfig   gcc-14.1.0
+openrisc                         allyesconfig   gcc-14.1.0
+openrisc                            defconfig   gcc-14.1.0
+parisc                           allmodconfig   gcc-14.1.0
+parisc                            allnoconfig   gcc-14.1.0
+parisc                           allyesconfig   gcc-14.1.0
+parisc                              defconfig   gcc-14.1.0
+parisc                randconfig-001-20240813   gcc-14.1.0
+parisc                randconfig-002-20240813   gcc-14.1.0
+parisc64                            defconfig   gcc-13.2.0
+powerpc                          allmodconfig   gcc-14.1.0
+powerpc                           allnoconfig   gcc-14.1.0
+powerpc                          allyesconfig   clang-20
+powerpc                          allyesconfig   gcc-14.1.0
+powerpc               randconfig-001-20240813   clang-20
+powerpc               randconfig-002-20240813   gcc-14.1.0
+powerpc               randconfig-003-20240813   gcc-14.1.0
+powerpc64             randconfig-001-20240813   gcc-14.1.0
+powerpc64             randconfig-002-20240813   gcc-14.1.0
+powerpc64             randconfig-003-20240813   gcc-14.1.0
+riscv                            allmodconfig   clang-20
+riscv                            allmodconfig   gcc-14.1.0
+riscv                             allnoconfig   gcc-14.1.0
+riscv                            allyesconfig   clang-20
+riscv                            allyesconfig   gcc-14.1.0
+riscv                               defconfig   clang-20
+riscv                 randconfig-001-20240813   gcc-14.1.0
+riscv                 randconfig-002-20240813   gcc-14.1.0
+s390                             allmodconfig   clang-20
+s390                              allnoconfig   clang-20
+s390                             allyesconfig   gcc-14.1.0
+s390                                defconfig   clang-20
+s390                  randconfig-001-20240813   clang-20
+s390                  randconfig-002-20240813   gcc-14.1.0
+sh                               allmodconfig   gcc-14.1.0
+sh                                allnoconfig   gcc-13.2.0
+sh                                allnoconfig   gcc-14.1.0
+sh                               allyesconfig   gcc-14.1.0
+sh                                  defconfig   gcc-14.1.0
+sh                    randconfig-001-20240813   gcc-14.1.0
+sh                    randconfig-002-20240813   gcc-14.1.0
+sparc                            allmodconfig   gcc-14.1.0
+sparc64                             defconfig   gcc-14.1.0
+sparc64               randconfig-001-20240813   gcc-14.1.0
+sparc64               randconfig-002-20240813   gcc-14.1.0
+um                               allmodconfig   clang-20
+um                               allmodconfig   gcc-13.3.0
+um                                allnoconfig   clang-17
+um                               allyesconfig   gcc-12
+um                               allyesconfig   gcc-13.3.0
+um                                  defconfig   clang-20
+um                             i386_defconfig   gcc-12
+um                    randconfig-001-20240813   gcc-12
+um                    randconfig-002-20240813   clang-14
+um                           x86_64_defconfig   clang-15
+x86_64                            allnoconfig   clang-18
+x86_64                           allyesconfig   clang-18
+x86_64       buildonly-randconfig-001-20240813   clang-18
+x86_64       buildonly-randconfig-002-20240813   clang-18
+x86_64       buildonly-randconfig-002-20240813   gcc-11
+x86_64       buildonly-randconfig-003-20240813   clang-18
+x86_64       buildonly-randconfig-004-20240813   clang-18
+x86_64       buildonly-randconfig-004-20240813   gcc-12
+x86_64       buildonly-randconfig-005-20240813   clang-18
+x86_64       buildonly-randconfig-005-20240813   gcc-12
+x86_64       buildonly-randconfig-006-20240813   clang-18
+x86_64       buildonly-randconfig-006-20240813   gcc-12
+x86_64                              defconfig   clang-18
+x86_64                              defconfig   gcc-11
+x86_64                randconfig-001-20240813   clang-18
+x86_64                randconfig-001-20240813   gcc-12
+x86_64                randconfig-002-20240813   clang-18
+x86_64                randconfig-003-20240813   clang-18
+x86_64                randconfig-003-20240813   gcc-12
+x86_64                randconfig-004-20240813   clang-18
+x86_64                randconfig-004-20240813   gcc-12
+x86_64                randconfig-005-20240813   clang-18
+x86_64                randconfig-005-20240813   gcc-12
+x86_64                randconfig-006-20240813   clang-18
+x86_64                randconfig-011-20240813   clang-18
+x86_64                randconfig-011-20240813   gcc-12
+x86_64                randconfig-012-20240813   clang-18
+x86_64                randconfig-012-20240813   gcc-12
+x86_64                randconfig-013-20240813   clang-18
+x86_64                randconfig-013-20240813   gcc-12
+x86_64                randconfig-014-20240813   clang-18
+x86_64                randconfig-014-20240813   gcc-11
+x86_64                randconfig-015-20240813   clang-18
+x86_64                randconfig-015-20240813   gcc-11
+x86_64                randconfig-016-20240813   clang-18
+x86_64                randconfig-016-20240813   gcc-12
+x86_64                randconfig-071-20240813   clang-18
+x86_64                randconfig-072-20240813   clang-18
+x86_64                randconfig-073-20240813   clang-18
+x86_64                randconfig-073-20240813   gcc-11
+x86_64                randconfig-074-20240813   clang-18
+x86_64                randconfig-074-20240813   gcc-12
+x86_64                randconfig-075-20240813   clang-18
+x86_64                randconfig-075-20240813   gcc-12
+x86_64                randconfig-076-20240813   clang-18
+x86_64                          rhel-8.3-rust   clang-18
+xtensa                            allnoconfig   gcc-13.2.0
+xtensa                            allnoconfig   gcc-14.1.0
+xtensa                randconfig-001-20240813   gcc-14.1.0
+xtensa                randconfig-002-20240813   gcc-14.1.0
 
-  6cd04a440f57 ("powerpc/mm: fix size of allocated PGDIR")
-
-in the mm-hot-fixes-unstable branch of the mm-hotfixes tree.
-
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/YAXQnHqS60nMiM5HU4yGyTr
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAma6m3cACgkQAVBC80lX
-0Gz5zAf/cN9zUcfFEdmW1rhyExLH2M63KQvepkHJS8FoeUYpKeL3AfF3yZUjDR7K
-sMHR4tUDaWe3IGqN5SuV0vZSxlHYrwz0Ll+zRC3P++/UJI/7xquH/LGCr8izwUDr
-kUXRrsSKsY8yCweS9A6+AMN6p220gwcXIXEsTCH6mBhqlfO7vIeMLXQTXYlkl0mv
-dZX9v5xNB1RzPN2gBeP5mSOFJaf2kmueu2VRBpTN4eUq1AUUGfgQNh2j+GhEvYZ3
-dhuMJ9S+nhVlnnUSxJgxCDqW7O7NJMOfKfVvSsCCwV0SGeQ97/uGE/jKmT2emW70
-pBCm3jEqp6dWt5GbHm5TkSRVRwpzlw==
-=06Ma
------END PGP SIGNATURE-----
-
---Sig_/YAXQnHqS60nMiM5HU4yGyTr--
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
