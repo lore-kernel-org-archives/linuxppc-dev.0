@@ -1,58 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-114-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-115-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A836AC531DC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Aug 2024 09:56:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E59B3C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Aug 2024 11:25:51 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=127.0.0.1
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aXlIJ5Or;
-	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wlcnq0khqz2yLg;
-	Fri, 16 Aug 2024 19:56:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aXlIJ5Or;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=alexs@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WlfnB13Ttz2yYK;
+	Fri, 16 Aug 2024 21:25:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=92.121.34.13
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wlc9L2Nzjz2xst
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2024 19:28:06 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 5F64E62128;
-	Fri, 16 Aug 2024 09:28:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04744C32782;
-	Fri, 16 Aug 2024 09:27:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1723800482;
-	bh=wSUG6N0b072xD6DUFsCdzV84E/s31xj3kcg6qaEVlJk=;
-	h=From:To:Cc:Subject:Date:From;
-	b=aXlIJ5OrC84qslmThKj7xICdmqYSO20BsMqjM5iD/2rYV7QECLQVrqjo6Rl8ImC6P
-	 OXGhi8nDwUhBSh0DqqgZVIGedy1053Nn1p8KDRl1Z3GG9AL+6A4CZo31fwo6eMLgY6
-	 F8SMXlNokEo8p0Xgpo4Eiirgw7LmPq/WycQIy5dkTbbZyxdCWqyDtAxOH6pjN0d+9B
-	 P/Btx23deA/QEDgbyscr0jU+DCoTs0ApXYrH8Pn40zl6Wvu4eL4oj90dOdGeywiJ3w
-	 +Lwvt+uQEFasExrXQsa+OFPcKKyuPa0BZcPVnlFzoFSOsvQ5dHCflwdgz0LBgNXwc7
-	 33HD+WNcrbyEw==
-From: alexs@kernel.org
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org (open list)
-Cc: Alex Shi <alexs@kernel.org>
-Subject: [PATCH] KVM: PPC: remove unused varible
-Date: Fri, 16 Aug 2024 17:33:12 +0800
-Message-ID: <20240816093313.327268-1-alexs@kernel.org>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WlfH82MB3z2yYK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Aug 2024 21:03:16 +1000 (AEST)
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B33561A0DD3;
+	Fri, 16 Aug 2024 13:03:13 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 68A2C1A01D1;
+	Fri, 16 Aug 2024 13:03:13 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 7865F181D0FF;
+	Fri, 16 Aug 2024 19:03:11 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: vkoul@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH v2 1/6] ALSA: compress: reserve space in snd_compr_metadata.key for private usage
+Date: Fri, 16 Aug 2024 18:42:34 +0800
+Message-Id: <1723804959-31921-2-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1723804959-31921-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1723804959-31921-1-git-send-email-shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,50 +56,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-From: Alex Shi <alexs@kernel.org>
+Reserve the key value which is larger than 0x80000000 for driver
+private usage. Driver may define its own key values which are not
+public in ALSA header
 
-During build testing, we found a error:
-/arch/powerpc/kvm/book3s_hv.c:4052:17: error: variable 'loops' set but not used [-Werror,-Wunused-but-set-variable]
-                unsigned long loops = 0;
-1 error generated.
-
-Remove the unused variable could fix this.
-
-Signed-off-by: Alex Shi <alexs@kernel.org>
-Cc: kvm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Naveen N Rao <naveen@kernel.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- arch/powerpc/kvm/book3s_hv.c | 2 --
- 1 file changed, 2 deletions(-)
+ include/uapi/sound/compress_offload.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 8f7d7e37bc8c..ac27ca4385e4 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4049,7 +4049,6 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 	/* Return to whole-core mode if we split the core earlier */
- 	if (cmd_bit) {
- 		unsigned long hid0 = mfspr(SPRN_HID0);
--		unsigned long loops = 0;
+diff --git a/include/uapi/sound/compress_offload.h b/include/uapi/sound/compress_offload.h
+index 98772b0cbcb7..7e9190538df2 100644
+--- a/include/uapi/sound/compress_offload.h
++++ b/include/uapi/sound/compress_offload.h
+@@ -120,7 +120,7 @@ enum sndrv_compress_encoder {
  
- 		hid0 &= ~HID0_POWER8_DYNLPARDIS;
- 		stat_bit = HID0_POWER8_2LPARMODE | HID0_POWER8_4LPARMODE;
-@@ -4061,7 +4060,6 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
- 			if (!(hid0 & stat_bit))
- 				break;
- 			cpu_relax();
--			++loops;
- 		}
- 		split_info.do_nap = 0;
- 	}
+ /**
+  * struct snd_compr_metadata - compressed stream metadata
+- * @key: key id
++ * @key: key id, value larger than 0x80000000 reserved for driver private usage
+  * @value: key value
+  */
+ struct snd_compr_metadata {
 -- 
-2.43.0
+2.34.1
 
 
