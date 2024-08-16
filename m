@@ -1,75 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-146-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-147-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10515C3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Aug 2024 23:45:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A49E1C52D7D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Aug 2024 23:46:36 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=127.0.0.1
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YTiFNcuD;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=qvaoaxNg;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WlzB72vJsz2ysc;
-	Sat, 17 Aug 2024 09:45:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WlzCv2hS6z2ysf;
+	Sat, 17 Aug 2024 09:46:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YTiFNcuD;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=qvaoaxNg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WlpH02XFsz2xGt
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2024 03:03:39 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47GEDxPV003524;
-	Fri, 16 Aug 2024 17:03:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	message-id:date:mime-version:subject:to:cc:references:from
-	:in-reply-to:content-type:content-transfer-encoding; s=pp1; bh=N
-	YwvZk+5mNAickrzJRjaPdeporeE+DX1soeB/tEeuDE=; b=YTiFNcuDrgh7nt7sd
-	Yqy5qJ6I6GbODIxJwioeepF5jMx7wMG5t+9bbXo+iAHQgMH1wzqOPVmOflGRJbt8
-	ltJkQn5sGeOsy/+tiKQdaF/E/aeSZD8FEk0RD+ESawsURGr7dTLoSpRipQly0kgx
-	d827Ss2d5v66byk1/sHjZUyWlweQiSl5G/R0h4h0JuViqUmz28WtbIEr/T3xgwdK
-	dkBd4Xmtev1RSktnpGdD98EY+4N+qcDwlXarEL6HjTD6lo3i6UVExusS/y1j2Uhu
-	iB/HqLvgorCskb2kg5j4suf6icGzQM/u3DHm2QyiXPpa4qe9GehW8Oi/fs1X1htA
-	+R67Q==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4111d6sdjr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Aug 2024 17:03:31 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 47GH3VLv026071;
-	Fri, 16 Aug 2024 17:03:31 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4111d6sdjm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Aug 2024 17:03:31 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 47GF2HvP010122;
-	Fri, 16 Aug 2024 17:03:30 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 40xjx14r1r-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Aug 2024 17:03:30 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47GH3OGR54264264
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 16 Aug 2024 17:03:26 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A12FB20043;
-	Fri, 16 Aug 2024 17:03:24 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3692420040;
-	Fri, 16 Aug 2024 17:03:23 +0000 (GMT)
-Received: from [9.124.214.156] (unknown [9.124.214.156])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 16 Aug 2024 17:03:23 +0000 (GMT)
-Message-ID: <252ed56a-cec7-4d3e-b90e-fa8798856ee2@linux.ibm.com>
-Date: Fri, 16 Aug 2024 22:33:22 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WlzCv0h9dz2xFq
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2024 09:46:35 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1723851995;
+	bh=ZMZbIojl7FpylGqV64BXYP8kTFTEQ6oAfPllyZLp8pc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=qvaoaxNgnv80fP+qTi+04woa7oNYPquPEU+WRub/c0MGgl9zPp1W+4OFzEggYu46V
+	 ANnVvM8wRX3epbmhWOYHYH8l04YQmQI9HOi/O0oIj9i42OWzizVB1WVR/6PiQNd1wY
+	 p4L0JYcFEhFhUy8DB24+siBSOREdJ9G9wUI6XMPm/K9tRxWTFSU/PTwTqa9lChz6SE
+	 0hUiT+r1J0aSZ6bVsxrSkIOO1nB12ziOq5cN+Ic+SdtCJfrbeFZqQzl2Csrcyi2AK9
+	 SfDx/+GzR04Weu7clsaXqnlzqPEe/WTRqIMwyDCK/qZetxgWBT2ClXjltE9qct0SkP
+	 E30jx5sVURs0A==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WlzCq3ZT0z4wbv;
+	Sat, 17 Aug 2024 09:46:31 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Niklas Cassel <cassel@kernel.org>
+Cc: =?utf-8?Q?Kolbj=C3=B8rn?= Barmen <linux-ppc@kolla.no>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, =?utf-8?B?Sm9u?=
+ =?utf-8?B?w6HFoQ==?= Vidra
+ <vidra@ufal.mff.cuni.cz>, Christoph Hellwig <hch@lst.de>,
+ linux@roeck-us.net
+Subject: Re: Since 6.10 - kernel oops/panics on G4 macmini due to change in
+ drivers/ata/pata_macio.c
+In-Reply-To: <Zry58qB80V80uS38@ryzen.lan>
+References: <62d248bb-e97a-25d2-bcf2-9160c518cae5@kolla.no>
+ <3b6441b8-06e6-45da-9e55-f92f2c86933e@ufal.mff.cuni.cz>
+ <Zrstcei9WN9sRfdX@x1-carbon.wireless.wdc> <87sev81u3f.fsf@mail.lhotse>
+ <Zrt028rSVT5hVPbU@ryzen.lan> <87jzgj1ejc.fsf@mail.lhotse>
+ <Zry58qB80V80uS38@ryzen.lan>
+Date: Sat, 17 Aug 2024 09:46:31 +1000
+Message-ID: <87jzgg2fqg.fsf@mail.lhotse>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,122 +67,184 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/2] powerpc/pseries: Add failure related checks for
- h_get_mpp and h_get_ppp
-To: =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>
-Cc: mpe@ellerman.id.au, nathanl@linux.ibm.com, tyreld@linux.ibm.com,
-        npiggin@gmail.com, mahesh@linux.ibm.com, naveen.n.rao@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org
-References: <20240412092047.455483-1-sshegde@linux.ibm.com>
- <20240412092047.455483-3-sshegde@linux.ibm.com>
- <20240815195355.GW26466@kitsune.suse.cz>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <20240815195355.GW26466@kitsune.suse.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 8XOM7eTpC-3Sr2cPZWVrG2eO6uFYi54U
-X-Proofpoint-GUID: dlkRi8ghyCfWoAPWBYr_krDjUdhFuPMy
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-08-16_11,2024-08-16_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0
- lowpriorityscore=0 clxscore=1015 spamscore=0 impostorscore=0
- priorityscore=1501 suspectscore=0 malwarescore=0 mlxlogscore=999
- phishscore=0 mlxscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2407110000 definitions=main-2408160120
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
+Niklas Cassel <cassel@kernel.org> writes:
+> On Wed, Aug 14, 2024 at 10:20:55PM +1000, Michael Ellerman wrote:
+>> Niklas Cassel <cassel@kernel.org> writes:
+>> > On Tue, Aug 13, 2024 at 10:32:36PM +1000, Michael Ellerman wrote:
+>> >> Niklas Cassel <cassel@kernel.org> writes:
+>> >> > On Tue, Aug 13, 2024 at 07:49:34AM +0200, Jon=C3=A1=C5=A1 Vidra wro=
+te:
+>> ...
+>> >> >> ------------[ cut here ]------------
+>> >> >> kernel BUG at drivers/ata/pata_macio.c:544!
+>> >> >
+>> >> > https://github.com/torvalds/linux/blob/v6.11-rc3/drivers/ata/pata_m=
+acio.c#L544
+>> >> >
+>> >> > It seems that the
+>> >> > while (sg_len) loop does not play nice with the new .max_segment_si=
+ze.
+>> >>=20
+>> >> Right, but only for 4KB kernels for some reason. Is there some limit
+>> >> elsewhere that prevents the bug tripping on 64KB kernels, or is it ju=
+st
+>> >> luck that no one has hit it?
+>> >
+>> > Have your tried running fio (flexible I/O tester), with reads with a v=
+ery
+>> > large block sizes?
+>> >
+>> > I would be surprised if it isn't possible to trigger the same bug with
+>> > 64K page size.
+>> >
+>> > max segment size =3D 64K
+>> > MAX_DCMDS =3D 256
+>> > 256 * 64K =3D 16 MiB
+>> > What happens if you run fio with a 16 MiB blocksize?
+>> >
+>> > Something like:
+>> > $ sudo fio --name=3Dtest --filename=3D/dev/sdX --direct=3D1 --runtime=
+=3D60 --ioengine=3Dio_uring --rw=3Dread --iodepth=3D4 --bs=3D16M
+>>=20
+>> Nothing interesting happens, fio succeeds.
+>>=20
+>> The largest request that comes into pata_macio_qc_prep() is 1280KB,
+>> which results in 40 DMA list entries.
+>>=20
+>> I tried with a larger block size but it doesn't change anything. I guess
+>> there's some limit somewhere else in the stack?
+>>=20
+>> That was testing on qemu, but I don't think it should matter?
+>>=20
+>> I guess there's no way to run the fio test against a file, ie. without a
+>> raw partition? My real G5 doesn't have any spare disks/partitions in it.
+>
+>
+> You can definitely run fio against a file.
+>
+> e.g.
+> $ dd if=3D/dev/random of=3D/tmp/my_file bs=3D1M count=3D1024
+>
+> $ sudo fio --name=3Dtest --filename=3D/tmp/my_file --direct=3D1 --runtime=
+=3D60 --ioengine=3Dio_uring --rw=3Dread --iodepth=3D4 --bs=3D16M
+>
+>
+> Perhaps try with 32M block size, so that it is larger than
+> max segment size =3D 64K
+> MAX_DCMDS =3D 256
+> 256 * 64K =3D 16 MiB
+>
+> Perhaps also try with and without --direct.
+> It could be interesting to use the page cache if you do --rw=3Dreadwrite
+> that might possibly result in larger bios.
 
+Changing the fio settings didn't help.
 
-On 8/16/24 01:23, Michal Suchánek wrote:
-> On Fri, Apr 12, 2024 at 02:50:47PM +0530, Shrikanth Hegde wrote:
->> Couple of Minor fixes:
->>
->> - hcall return values are long. Fix that for h_get_mpp, h_get_ppp and
->> parse_ppp_data
->>
->> - If hcall fails, values set should be at-least zero. It shouldn't be
->> uninitialized values. Fix that for h_get_mpp and h_get_ppp
->>
->> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
->> ---
->>   arch/powerpc/include/asm/hvcall.h        | 2 +-
->>   arch/powerpc/platforms/pseries/lpar.c    | 6 +++---
->>   arch/powerpc/platforms/pseries/lparcfg.c | 6 +++---
->>   3 files changed, 7 insertions(+), 7 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
->> index a41e542ba94d..3d642139b900 100644
->> --- a/arch/powerpc/include/asm/hvcall.h
->> +++ b/arch/powerpc/include/asm/hvcall.h
->> @@ -570,7 +570,7 @@ struct hvcall_mpp_data {
->>   	unsigned long backing_mem;
->>   };
->>
->> -int h_get_mpp(struct hvcall_mpp_data *);
->> +long h_get_mpp(struct hvcall_mpp_data *mpp_data);
->>
->>   struct hvcall_mpp_x_data {
->>   	unsigned long coalesced_bytes;
->> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
->> index 4e9916bb03d7..c1d8bee8f701 100644
->> --- a/arch/powerpc/platforms/pseries/lpar.c
->> +++ b/arch/powerpc/platforms/pseries/lpar.c
->> @@ -1886,10 +1886,10 @@ notrace void __trace_hcall_exit(long opcode, long retval, unsigned long *retbuf)
->>    * h_get_mpp
->>    * H_GET_MPP hcall returns info in 7 parms
->>    */
->> -int h_get_mpp(struct hvcall_mpp_data *mpp_data)
->> +long h_get_mpp(struct hvcall_mpp_data *mpp_data)
->>   {
->> -	int rc;
->> -	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
->> +	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
->> +	long rc;
->>
->>   	rc = plpar_hcall9(H_GET_MPP, retbuf);
->>
->> diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
->> index 5c2a3e802a02..ed2176d8a866 100644
->> --- a/arch/powerpc/platforms/pseries/lparcfg.c
->> +++ b/arch/powerpc/platforms/pseries/lparcfg.c
->> @@ -113,8 +113,8 @@ struct hvcall_ppp_data {
->>    */
->>   static unsigned int h_get_ppp(struct hvcall_ppp_data *ppp_data)
-> Hello,
-> 
-> Shouldn't the      ^^^ return value also be long?
-> 
-> Thanks
-> 
+I did some tracing and noticed it was always splitting the bio in
+__bio_split_to_limits() based on get_max_io_size().
 
-Yes. You are right. missed to notice that. Thanks for pointing it out.
+That eventually lead me to max_sectors_kb in sysfs, which is by default
+(on my system at least) 1280 (KB) - which is exactly the size I see in
+pata-macio.
 
-There might be other places where similar pattern maybe there.
-Will fix it.
+Increasing max_sectors_kb with:
 
-> Michal
->>   {
->> -	unsigned long rc;
->> -	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
->> +	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
->> +	long rc;
->>
->>   	rc = plpar_hcall9(H_GET_PPP, retbuf);
->>
->> @@ -197,7 +197,7 @@ static void parse_ppp_data(struct seq_file *m)
->>   	struct hvcall_ppp_data ppp_data;
->>   	struct device_node *root;
->>   	const __be32 *perf_level;
->> -	int rc;
->> +	long rc;
->>
->>   	rc = h_get_ppp(&ppp_data);
->>   	if (rc)
->> --
->> 2.39.3
->>
+  # echo 16384 > /sys/devices/pci0000:f0/0000:f0:0c.0/0.80000000:mac-io/0.0=
+0020000:ata-3/ata1/host0/target0:0:0/0:0:0:0/block/sda/queue/max_sectors_kb
 
+Allows me to trip the bug (I turned it into a WARN to keep the system alive=
+):
+
+  [ 1804.988552] ------------[ cut here ]------------
+  [ 1804.988963] DMA table overflow!
+  [ 1804.989781] WARNING: CPU: 0 PID: 299 at drivers/ata/pata_macio.c:546 p=
+ata_macio_qc_prep+0x27c/0x2a4
+  [ 1804.991157] Modules linked in:
+  [ 1804.991945] CPU: 0 PID: 299 Comm: iou-wrk-298 Not tainted 6.10.4-dirty=
+ #242
+  [ 1804.992688] Hardware name: PowerMac3,1 PPC970FX 0x3c0301 PowerMac
+  [ 1804.993512] NIP:  c0000000008bcfb4 LR: c0000000008bcfb0 CTR: 000000000=
+0000000
+  [ 1804.994244] REGS: c0000000052d6fb0 TRAP: 0700   Not tainted  (6.10.4-d=
+irty)
+  [ 1804.994998] MSR:  800000000202b032 <SF,VEC,EE,FP,ME,IR,DR,RI>  CR: 444=
+84240  XER: 00000000
+  [ 1804.996178] IRQMASK: 1
+  [ 1804.996178] GPR00: c0000000008bcfb0 c0000000052d7250 c000000000f50b00 =
+0000000000000013
+  [ 1804.996178] GPR04: 0000000100000282 c0000000014806c0 fffffffffffec230 =
+000000003ed10000
+  [ 1804.996178] GPR08: 0000000000000027 c00000003fe02410 0000000000000001 =
+0000000044484240
+  [ 1804.996178] GPR12: c0000000014806a8 c0000000017b0000 c0000000006c9488 =
+c000000005026b40
+  [ 1804.996178] GPR16: 0000000000000000 0000000002000000 c000000000cecaa8 =
+c000000000e44ac8
+  [ 1804.996178] GPR20: 0000000000800000 0000000000000080 000000000000ff00 =
+c000000000d12730
+  [ 1804.996178] GPR24: c000000000e20788 c00000000330eae8 0000000000000000 =
+0000000000000020
+  [ 1804.996178] GPR28: c0000000036c8130 0000000000000100 0000000000000000 =
+c000000003fb1000
+  [ 1805.003085] NIP [c0000000008bcfb4] pata_macio_qc_prep+0x27c/0x2a4
+  [ 1805.003715] LR [c0000000008bcfb0] pata_macio_qc_prep+0x278/0x2a4
+  [ 1805.004564] Call Trace:
+  [ 1805.004963] [c0000000052d7250] [c0000000008bcfb0] pata_macio_qc_prep+0=
+x278/0x2a4 (unreliable)
+  [ 1805.005974] [c0000000052d7310] [c00000000089840c] ata_qc_issue+0x170/0=
+x390
+  [ 1805.006719] [c0000000052d7390] [c0000000008a5160] __ata_scsi_queuecmd+=
+0x220/0x7d4
+  [ 1805.007472] [c0000000052d7410] [c000000000 8a5778] ata_scsi_queuecmd+0=
+x64/0xe8
+  [ 1805.008194] [c0000000052d7450] [c00000000085b450] scsi_queue_rq+0x408/=
+0xd74
+  [ 1805.008904] [c0000000052d7500] [c00000000067bfc8] blk_mq_dispatch_rq_l=
+ist+0x160/0x914
+  [ 1805.009696] [c0000000052d75b0] [c000000000683d50] __blk_mq_sched_dispa=
+tch_requests+0x5fc/0x77c
+  [ 1805.010551] [c0000000052d7680] [c000000000683f68] blk_mq_sched_dispatc=
+h_requests+0x44/0x90
+  [ 1805.011371] [c0000000052d76b0] [c000000000677328] blk_mq_run_hw_queue+=
+0x220/0x240
+  [ 1805.012138] [c0000000052d76f0] [c00000000067b084] blk_mq_flush_plug_li=
+st.part.0+0x214/0x75c
+  [ 1805.012975] [c0000000052d77a0] [c00000000067b664] blk_add_rq_to_plug+0=
+x98/0x1f0
+  [ 1805.013717] [c0000000052d77e0] [c00000000067cd4c] blk_mq_submit_bio+0x=
+5b0/0x888
+  [ 1805.014457] [c0000000052d7890] [c000000000667bf0] __submit_bio+0xa4/0x=
+2e4
+  [ 1805.015149] [c0000000052d7910] [c0000000006680bc] submit_bio_noacct_no=
+check+0x28c/0x404
+  [ 1805.015952] [c0000000052d7980] [c00000000065bf68] blkdev_direct_IO+0x6=
+3c/0x824
+  [ 1805.016688] [c0000000052d7aa0] [c00000000065c614] blkdev_read_iter+0x1=
+0c/0x1c8
+  [ 1805.017423] [c0000000052d7af0] [c0000000006b2cdc] __io_read+0xe0/0x5a0
+  [ 1805.018091] [c0000000052d7b50] [c0000000006b3a70] io_read+0x30/0x74
+  [ 1805.018733] [c0000000052d7b80] [c0000000006a9040] io_issue_sqe+0x8c/0x=
+768
+  [ 1805.019419] [c0000000052d7c00] [c0000000006a9850] io_wq_submit_work+0x=
+118/0x518
+  [ 1805.020153] [c0000000052d7c60] [c0000000006c8ebc] io_worker_handle_wor=
+k+0x23c/0x800
+  [ 1805.020923] [c0000000052d7d00] [c0000000006c95f8] io_wq_worker+0x178/0=
+x51c
+  [ 1805.021621] [c0000000052d7e50] [c00000000000bd94] ret_from_kernel_user=
+_thread+0x14/0x1c
+=20=20
+
+Same behaviour on a kernel with PAGE_SIZE =3D 4KB.
+
+I don't know why max_sectors_kb starts out with a different value on my
+system, but anyway the bug is lurking there, even if it doesn't trip by
+default in some configurations.
+
+I'll clean up and send my patch from earlier in the thread.
+
+cheers
 
