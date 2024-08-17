@@ -1,38 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-153-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-154-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59210C52D7D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Aug 2024 11:24:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 511F8C52D7D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Aug 2024 11:55:58 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=127.0.0.1
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WmGj65g36z2xfC;
-	Sat, 17 Aug 2024 21:24:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WmHPS69Wdz2xjY;
+	Sat, 17 Aug 2024 21:55:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=144.6.53.87
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=144.6.53.87; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
+Received: from abb.hmeau.com (abb.hmeau.com [144.6.53.87])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wm4Dr2KC5z2x99
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2024 13:32:42 +1000 (AEST)
-Received: by verein.lst.de (Postfix, from userid 2407)
-	id 2521D68AA6; Sat, 17 Aug 2024 05:32:36 +0200 (CEST)
-Date: Sat, 17 Aug 2024 05:32:35 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Niklas Cassel <cassel@kernel.org>,
-	=?iso-8859-1?Q?Kolbj=F8rn?= Barmen <linux-ppc@kolla.no>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org,
-	=?utf-8?B?Sm9uw6HFoQ==?= Vidra <vidra@ufal.mff.cuni.cz>,
-	Christoph Hellwig <hch@lst.de>, linux@roeck-us.net
-Subject: Re: Since 6.10 - kernel oops/panics on G4 macmini due to change in
- drivers/ata/pata_macio.c
-Message-ID: <20240817033235.GA28774@lst.de>
-References: <62d248bb-e97a-25d2-bcf2-9160c518cae5@kolla.no> <3b6441b8-06e6-45da-9e55-f92f2c86933e@ufal.mff.cuni.cz> <Zrstcei9WN9sRfdX@x1-carbon.wireless.wdc> <87sev81u3f.fsf@mail.lhotse> <Zrt028rSVT5hVPbU@ryzen.lan> <87jzgj1ejc.fsf@mail.lhotse> <Zry58qB80V80uS38@ryzen.lan> <87jzgg2fqg.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wm92H3SpCz2xWV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2024 17:08:53 +1000 (AEST)
+Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
+	by formenos.hmeau.com with smtp (Exim 4.96 #2 (Debian))
+	id 1sfDPh-005IKB-0g;
+	Sat, 17 Aug 2024 15:08:35 +0800
+Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Sat, 17 Aug 2024 15:08:34 +0800
+Date: Sat, 17 Aug 2024 15:08:34 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: Haren Myneni <haren@us.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH][next] crypto: nx - Use static_assert() to check struct
+ sizes
+Message-ID: <ZsBMckWJ_GXaBFme@gondor.apana.org.au>
+References: <ZrVCAqGrl+5prW1Y@cute>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -44,16 +49,26 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87jzgg2fqg.fsf@mail.lhotse>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <ZrVCAqGrl+5prW1Y@cute>
 
-On Sat, Aug 17, 2024 at 09:46:31AM +1000, Michael Ellerman wrote:
-> Same behaviour on a kernel with PAGE_SIZE = 4KB.
+On Thu, Aug 08, 2024 at 04:09:06PM -0600, Gustavo A. R. Silva wrote:
+> Commit 1e6b251ce175 ("crypto: nx - Avoid -Wflex-array-member-not-at-end
+> warning") introduced tagged `struct nx842_crypto_header_hdr`. We want
+> to ensure that when new members need to be added to the flexible
+> structure, they are always included within this tagged struct.
 > 
-> I don't know why max_sectors_kb starts out with a different value on my
-> system, but anyway the bug is lurking there, even if it doesn't trip by
-> default in some configurations.
+> So, we use `static_assert()` to ensure that the memory layout for
+> both the flexible structure and the tagged struct is the same after
+> any changes.
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> ---
+>  drivers/crypto/nx/nx-842.h | 3 +++
+>  1 file changed, 3 insertions(+)
 
-Various distributions use udev rules to increase it.
-
+Patch applied.  Thanks.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
 
