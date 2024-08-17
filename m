@@ -1,67 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-150-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-151-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81ABBC3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Aug 2024 23:48:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ACC2C531DC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Aug 2024 03:54:26 +0000 (UTC)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=127.0.0.1
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=Vx6udTu1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EyWqQ+n5;
 	dkim-atps=neutral
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WlzGK1Ttgz2yNf;
-	Sat, 17 Aug 2024 09:48:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wm4jr5X9sz2yLB;
+	Sat, 17 Aug 2024 13:54:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=Vx6udTu1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EyWqQ+n5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=duvf=pp=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wlx5p0nZGz2xT9
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2024 08:11:10 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id BDAC2622CE;
-	Fri, 16 Aug 2024 22:11:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9112DC32782;
-	Fri, 16 Aug 2024 22:11:05 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="Vx6udTu1"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1723846264;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=nvXQQW5h0YhuEWfavkvTqchHGfd4wLDh0p1IgH0TPF0=;
-	b=Vx6udTu1kdOom/Ify2C6I2Nocu8Ylvr4Bn4kVfZ/HlGh6p0Yz55yApnf6XOAIvVppg00Hx
-	9ILLygbPqJlGxpxobQtIFjBl01lAWoeBA95uhw226C6t1PhtvghVLK3tKExPDwuHApACv9
-	tyBQ5Jp5XQ8y5VxUuBA6usDPNg2s6j0=
-Received: 
-	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 5126d285 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Fri, 16 Aug 2024 22:11:03 +0000 (UTC)
-Date: Fri, 16 Aug 2024 22:10:56 +0000
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Theodore Ts'o <tytso@mit.edu>,
-	Andy Lutomirski <luto@kernel.org>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 0/9] Wire up getrandom() vDSO implementation on powerpc
-Message-ID: <Zr_OcF0Da9fgfKtS@zx2c4.com>
-References: <cover.1723817900.git.christophe.leroy@csgroup.eu>
- <Zr_LUQzb6KB6I448@zx2c4.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wm4jr223Fz2xyB
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Aug 2024 13:54:23 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47H3ptZB007798;
+	Sat, 17 Aug 2024 03:54:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:in-reply-to:references
+	:mime-version:content-type:content-transfer-encoding; s=pp1; bh=
+	gMS0pVHIUB6QV6ZOyFNn564Q8LOXX/Hvtm7rub5cCrE=; b=EyWqQ+n5ozIuIOOb
+	i25OELeQqNzAMmaMSYLlQV46Tzc5bnUBCc7HglxUJm/65P+iVfiIJioe4AlGtntb
+	/rW2QhZ+D1DQVEbdmykayK3uyRLpvSqmpHoti5iIPBITLRaoixxf/IjyC7I5eMoC
+	zl5k0ZBRcZ7ex9zgdfQ7U8OVCIINJu2r4cAfZr+MIC6Z9u61Xmv0y1bW72/qp/B3
+	8cUmcQukgZLkIm/kMGiplfHqTxUe8lRyPxqmJkPesQa5TDlCrPOQn44FjEo1dc+o
+	sJAm2Y62VxYj1RbySUYCcEDw9U2oxjMZahc6S8xvvaYbgE2nbY2THsKrmd9Fv84M
+	705q1A==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 412mb5803u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 17 Aug 2024 03:54:16 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 47H3sGIt012233;
+	Sat, 17 Aug 2024 03:54:16 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 412mb5803s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 17 Aug 2024 03:54:16 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 47H3rl4S007417;
+	Sat, 17 Aug 2024 03:54:15 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 412mbv001f-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 17 Aug 2024 03:54:15 +0000
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47H3s8JF16122510
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 17 Aug 2024 03:54:10 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 04D3158058;
+	Sat, 17 Aug 2024 03:54:08 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 30EA258059;
+	Sat, 17 Aug 2024 03:54:07 +0000 (GMT)
+Received: from li-4910aacc-2eed-11b2-a85c-d93b702d4d28.ibm.com.com (unknown [9.61.75.9])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Sat, 17 Aug 2024 03:54:07 +0000 (GMT)
+From: Haren Myneni <haren@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, tyreld@linux.ibm.com,
+        brking@linux.ibm.com, hbabu@us.ibm.com, haren@linux.ibm.com
+Subject: [PATCH v2 2/2] powerpc/pseries/dlpar: Add device tree nodes for DLPAR IO add
+Date: Fri, 16 Aug 2024 20:54:01 -0700
+Message-ID: <20240817035401.125833-2-haren@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <20240817035401.125833-1-haren@linux.ibm.com>
+References: <20240817035401.125833-1-haren@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,12 +87,212 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Zr_LUQzb6KB6I448@zx2c4.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Wh29FPL2XajFBR-6acxBKrSxgp_eyjxs
+X-Proofpoint-GUID: qnCjnRZgat7H3WCifbtd5koftxU18fuy
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-16_18,2024-08-16_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 spamscore=0
+ priorityscore=1501 adultscore=0 bulkscore=0 impostorscore=0 malwarescore=0
+ mlxlogscore=999 phishscore=0 mlxscore=0 lowpriorityscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2407110000
+ definitions=main-2408170022
 
-On Fri, Aug 16, 2024 at 09:57:37PM +0000, Jason A. Donenfeld wrote:
-> On first glance, patch number 7 isn't okay. If you want this to work on
+In the powerpc-pseries specific implementation, the IO hotplug
+event is handled in the user space (drmgr tool). For the DLPAR
+IO ADD, the corresponding device tree nodes and properties will
+be added to the device tree after the device enable. The user
+space (drmgr tool) uses configure_connector RTAS call with the
+DRC index to retrieve the device nodes and updates the device
+tree by writing to /proc/ppc64/ofdt. Under system lockdown,
+/dev/mem access to allocate buffers for configure_connector RTAS
+call is restricted which means the user space can not issue this
+RTAS call and also can not access to /proc/ppc64/ofdt. The
+pseries implementation need user interaction to power-on and add
+device to the slot during the ADD event handling. So adds
+complexity if the complete hotplug ADD event handling moved to
+the kernel.
 
-Sorry, I meant 6.
+To overcome /dev/mem access restriction, this patch extends the
+/sys/kernel/dlpar interface and provides ‘dt add index <drc_index>’
+to the user space. The drmgr tool uses this interface to update
+the device tree whenever the device is added. This interface
+retrieves device tree nodes for the corresponding DRC index using
+the configure_connector RTAS call and adds new device nodes /
+properties to the device tree.
+
+Signed-off-by: Scott Cheloha <cheloha@linux.ibm.com>
+Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c | 130 +++++++++++++++++++++++++
+ 1 file changed, 130 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 59f2a8961946..2d960918cba8 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -23,6 +23,7 @@
+ #include <linux/uaccess.h>
+ #include <asm/rtas.h>
+ #include <asm/rtas-work-area.h>
++#include <asm/prom.h>
+ 
+ static struct workqueue_struct *pseries_hp_wq;
+ 
+@@ -264,6 +265,20 @@ int dlpar_detach_node(struct device_node *dn)
+ 
+ 	return 0;
+ }
++static int dlpar_changeset_attach_cc_nodes(struct of_changeset *ocs,
++					struct device_node *dn)
++{
++	int rc;
++
++	rc = of_changeset_attach_node(ocs, dn);
++
++	if (!rc && dn->child)
++		rc = dlpar_changeset_attach_cc_nodes(ocs, dn->child);
++	if (!rc && dn->sibling)
++		rc = dlpar_changeset_attach_cc_nodes(ocs, dn->sibling);
++
++	return rc;
++}
+ 
+ #define DR_ENTITY_SENSE		9003
+ #define DR_ENTITY_PRESENT	1
+@@ -330,6 +345,118 @@ int dlpar_unisolate_drc(u32 drc_index)
+ 	return 0;
+ }
+ 
++static struct device_node *
++get_device_node_with_drc_index(u32 index)
++{
++	struct device_node *np = NULL;
++	u32 node_index;
++	int rc;
++
++	for_each_node_with_property(np, "ibm,my-drc-index") {
++		rc = of_property_read_u32(np, "ibm,my-drc-index",
++					     &node_index);
++		if (rc) {
++			pr_err("%s: %pOF: of_property_read_u32 %s: %d\n",
++			       __func__, np, "ibm,my-drc-index", rc);
++			of_node_put(np);
++			return NULL;
++		}
++
++		if (index == node_index)
++			break;
++	}
++
++	return np;
++}
++
++static struct device_node *
++get_device_node_with_drc_info(u32 index)
++{
++	struct device_node *np = NULL;
++	struct of_drc_info drc;
++	struct property *info;
++	const __be32 *value;
++	u32 node_index;
++	int i, j, count;
++
++	for_each_node_with_property(np, "ibm,drc-info") {
++		info = of_find_property(np, "ibm,drc-info", NULL);
++		if (info == NULL) {
++			/* XXX can this happen? */
++			of_node_put(np);
++			return NULL;
++		}
++		value = of_prop_next_u32(info, NULL, &count);
++		if (value == NULL)
++			continue;
++		value++;
++		for (i = 0; i < count; i++) {
++			if (of_read_drc_info_cell(&info, &value, &drc))
++				break;
++			if (index > drc.last_drc_index)
++				continue;
++			node_index = drc.drc_index_start;
++			for (j = 0; j < drc.num_sequential_elems; j++) {
++				if (index == node_index)
++					return np;
++				node_index += drc.sequential_inc;
++			}
++		}
++	}
++
++	return NULL;
++}
++
++static int dlpar_hp_dt_add(u32 index)
++{
++	struct device_node *np, *nodes;
++	struct of_changeset ocs;
++	int rc;
++
++	/*
++	 * Do not add device node(s) if already exists in the
++	 * device tree.
++	 */
++	np = get_device_node_with_drc_index(index);
++	if (np) {
++		pr_err("%s: Adding device node for index (%d), but "
++				"already exists in the device tree\n",
++				__func__, index);
++		rc = -EINVAL;
++		goto out;
++	}
++
++	np = get_device_node_with_drc_info(index);
++
++	if (!np)
++		return -EIO;
++
++	/* Next, configure the connector. */
++	nodes = dlpar_configure_connector(cpu_to_be32(index), np);
++	if (!nodes) {
++		rc = -EIO;
++		goto out;
++	}
++
++	/*
++	 * Add the new nodes from dlpar_configure_connector() onto
++	 * the device-tree.
++	 */
++	of_changeset_init(&ocs);
++	rc = dlpar_changeset_attach_cc_nodes(&ocs, nodes);
++
++	if (!rc)
++		rc = of_changeset_apply(&ocs);
++	else
++		dlpar_free_cc_nodes(nodes);
++
++	of_changeset_destroy(&ocs);
++
++out:
++	of_node_put(np);
++	return rc;
++}
++
+ static int changeset_detach_node_recursive(struct of_changeset *ocs,
+ 					struct device_node *node)
+ {
+@@ -394,6 +521,9 @@ static int dlpar_hp_dt(struct pseries_hp_errorlog *phpe)
+ 	lock_device_hotplug();
+ 
+ 	switch (phpe->action) {
++	case PSERIES_HP_ELOG_ACTION_ADD:
++		rc = dlpar_hp_dt_add(phpe->_drc_u.drc_index);
++		break;
+ 	case PSERIES_HP_ELOG_ACTION_REMOVE:
+ 		rc = dlpar_hp_dt_remove(phpe->_drc_u.drc_index);
+ 		break;
+-- 
+2.43.5
+
 
