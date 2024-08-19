@@ -1,33 +1,33 @@
-Return-Path: <linuxppc-dev+bounces-177-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-178-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3983C3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2024 11:43:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40B29C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2024 11:56:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WnW1t1jl5z2y0B;
-	Mon, 19 Aug 2024 21:43:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WnWJq69wVz2y0K;
+	Mon, 19 Aug 2024 21:56:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WnW1s2FtXz2xvR
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2024 21:43:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WnWJp6hT5z2xy3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2024 21:56:08 +1000 (AEST)
 Received: from mail.maildlp.com (unknown [172.18.186.31])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WnVxZ2DT9z6K6GP;
-	Mon, 19 Aug 2024 19:39:30 +0800 (CST)
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WnWFL2mDwz6K9Hd;
+	Mon, 19 Aug 2024 19:53:10 +0800 (CST)
 Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
-	by mail.maildlp.com (Postfix) with ESMTPS id 711CF1400C9;
-	Mon, 19 Aug 2024 19:43:02 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 6A8AA140B2F;
+	Mon, 19 Aug 2024 19:56:03 +0800 (CST)
 Received: from localhost (10.203.177.66) by lhrpeml500005.china.huawei.com
  (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Mon, 19 Aug
- 2024 12:43:01 +0100
-Date: Mon, 19 Aug 2024 12:43:00 +0100
+ 2024 12:56:02 +0100
+Date: Mon, 19 Aug 2024 12:56:01 +0100
 From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
 To: Tong Tiangen <tongtiangen@huawei.com>
 CC: Mark Rutland <mark.rutland@arm.com>, Catalin Marinas
@@ -46,12 +46,11 @@ CC: Mark Rutland <mark.rutland@arm.com>, Catalin Marinas
 	<linux-mm@kvack.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-kernel@vger.kernel.org>, <wangkefeng.wang@huawei.com>, Guohanjun
 	<guohanjun@huawei.com>
-Subject: Re: [PATCH v12 3/6] mm/hwpoison: return -EFAULT when copy fail in
- copy_mc_[user]_highpage()
-Message-ID: <20240819124300.0000421e@Huawei.com>
-In-Reply-To: <20240528085915.1955987-4-tongtiangen@huawei.com>
+Subject: Re: [PATCH v12 4/6] arm64: support copy_mc_[user]_highpage()
+Message-ID: <20240819125601.0000687b@Huawei.com>
+In-Reply-To: <20240528085915.1955987-5-tongtiangen@huawei.com>
 References: <20240528085915.1955987-1-tongtiangen@huawei.com>
-	<20240528085915.1955987-4-tongtiangen@huawei.com>
+	<20240528085915.1955987-5-tongtiangen@huawei.com>
 Organization: Huawei Technologies Research and Development (UK) Ltd.
 X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -69,78 +68,108 @@ X-Originating-IP: [10.203.177.66]
 X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
  lhrpeml500005.china.huawei.com (7.191.163.240)
 
-On Tue, 28 May 2024 16:59:12 +0800
+On Tue, 28 May 2024 16:59:13 +0800
 Tong Tiangen <tongtiangen@huawei.com> wrote:
 
-> If hardware errors are encountered during page copying, returning the bytes
-> not copied is not meaningful, and the caller cannot do any processing on
-> the remaining data. Returning -EFAULT is more reasonable, which represents
-> a hardware error encountered during the copying.
+> Currently, many scenarios that can tolerate memory errors when copying page
+> have been supported in the kernel[1~5], all of which are implemented by
+> copy_mc_[user]_highpage(). arm64 should also support this mechanism.
+> 
+> Due to mte, arm64 needs to have its own copy_mc_[user]_highpage()
+> architecture implementation, macros __HAVE_ARCH_COPY_MC_HIGHPAGE and
+> __HAVE_ARCH_COPY_MC_USER_HIGHPAGE have been added to control it.
+> 
+> Add new helper copy_mc_page() which provide a page copy implementation with
+> hardware memory error safe. The code logic of copy_mc_page() is the same as
+> copy_page(), the main difference is that the ldp insn of copy_mc_page()
+> contains the fixup type EX_TYPE_KACCESS_ERR_ZERO_ME_SAFE, therefore, the
+> main logic is extracted to copy_page_template.S.
+> 
+> [1] commit d302c2398ba2 ("mm, hwpoison: when copy-on-write hits poison, take page offline")
+> [2] commit 1cb9dc4b475c ("mm: hwpoison: support recovery from HugePage copy-on-write faults")
+> [3] commit 6b970599e807 ("mm: hwpoison: support recovery from ksm_might_need_to_copy()")
+> [4] commit 98c76c9f1ef7 ("mm/khugepaged: recover from poisoned anonymous memory")
+> [5] commit 12904d953364 ("mm/khugepaged: recover from poisoned file-backed memory")
 > 
 > Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
+Trivial stuff inline.
 
-LGTM
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Jonathan
 
-> ---
->  include/linux/highmem.h | 8 ++++----
->  mm/khugepaged.c         | 4 ++--
->  2 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-> index 00341b56d291..64a567d5ad6f 100644
-> --- a/include/linux/highmem.h
-> +++ b/include/linux/highmem.h
-> @@ -335,8 +335,8 @@ static inline void copy_highpage(struct page *to, struct page *from)
+
+> diff --git a/arch/arm64/lib/mte.S b/arch/arm64/lib/mte.S
+> index 5018ac03b6bf..50ef24318281 100644
+> --- a/arch/arm64/lib/mte.S
+> +++ b/arch/arm64/lib/mte.S
+> @@ -80,6 +80,35 @@ SYM_FUNC_START(mte_copy_page_tags)
+>  	ret
+>  SYM_FUNC_END(mte_copy_page_tags)
+>  
+> +#ifdef CONFIG_ARCH_HAS_COPY_MC
+> +/*
+> + * Copy the tags from the source page to the destination one wiht machine check safe
+Spell check.
+with
+
+Also, maybe reword given machine check doesn't make sense on arm64.
+
+
+> + *   x0 - address of the destination page
+> + *   x1 - address of the source page
+> + * Returns:
+> + *   x0 - Return 0 if copy success, or
+> + *        -EFAULT if anything goes wrong while copying.
+> + */
+> +SYM_FUNC_START(mte_copy_mc_page_tags)
+> +	mov	x2, x0
+> +	mov	x3, x1
+> +	multitag_transfer_size x5, x6
+> +1:
+> +KERNEL_ME_SAFE(2f, ldgm	x4, [x3])
+> +	stgm	x4, [x2]
+> +	add	x2, x2, x5
+> +	add	x3, x3, x5
+> +	tst	x2, #(PAGE_SIZE - 1)
+> +	b.ne	1b
+> +
+> +	mov x0, #0
+> +	ret
+> +
+> +2:	mov x0, #-EFAULT
+> +	ret
+> +SYM_FUNC_END(mte_copy_mc_page_tags)
+> +#endif
+> +
 >  /*
->   * If architecture supports machine check exception handling, define the
->   * #MC versions of copy_user_highpage and copy_highpage. They copy a memory
-> - * page with #MC in source page (@from) handled, and return the number
-> - * of bytes not copied if there was a #MC, otherwise 0 for success.
-> + * page with #MC in source page (@from) handled, and return -EFAULT if there
-> + * was a #MC, otherwise 0 for success.
->   */
->  static inline int copy_mc_user_highpage(struct page *to, struct page *from,
->  					unsigned long vaddr, struct vm_area_struct *vma)
-> @@ -352,7 +352,7 @@ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
->  	kunmap_local(vto);
->  	kunmap_local(vfrom);
->  
-> -	return ret;
-> +	return ret ? -EFAULT : 0;
->  }
->  
->  static inline int copy_mc_highpage(struct page *to, struct page *from)
-> @@ -368,7 +368,7 @@ static inline int copy_mc_highpage(struct page *to, struct page *from)
->  	kunmap_local(vto);
->  	kunmap_local(vfrom);
->  
-> -	return ret;
-> +	return ret ? -EFAULT : 0;
->  }
->  #else
->  static inline int copy_mc_user_highpage(struct page *to, struct page *from,
-> diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-> index 774a97e6e2da..cce838e85967 100644
-> --- a/mm/khugepaged.c
-> +++ b/mm/khugepaged.c
-> @@ -798,7 +798,7 @@ static int __collapse_huge_page_copy(pte_t *pte, struct folio *folio,
->  			continue;
->  		}
->  		src_page = pte_page(pteval);
-> -		if (copy_mc_user_highpage(page, src_page, src_addr, vma) > 0) {
-> +		if (copy_mc_user_highpage(page, src_page, src_addr, vma)) {
->  			result = SCAN_COPY_MC;
->  			break;
->  		}
-> @@ -2042,7 +2042,7 @@ static int collapse_file(struct mm_struct *mm, unsigned long addr,
->  			index++;
->  			dst++;
->  		}
-> -		if (copy_mc_highpage(dst, folio_page(folio, 0)) > 0) {
-> +		if (copy_mc_highpage(dst, folio_page(folio, 0))) {
->  			result = SCAN_COPY_MC;
->  			goto rollback;
->  		}
+>   * Read tags from a user buffer (one tag per byte) and set the corresponding
+>   * tags at the given kernel address. Used by PTRACE_POKEMTETAGS.
+> diff --git a/arch/arm64/mm/copypage.c b/arch/arm64/mm/copypage.c
+> index a7bb20055ce0..ff0d9ceea2a4 100644
+> --- a/arch/arm64/mm/copypage.c
+> +++ b/arch/arm64/mm/copypage.c
+> @@ -40,3 +40,48 @@ void copy_user_highpage(struct page *to, struct page *from,
+
+> +
+> +int copy_mc_user_highpage(struct page *to, struct page *from,
+> +			unsigned long vaddr, struct vm_area_struct *vma)
+> +{
+> +	int ret;
+> +
+> +	ret = copy_mc_highpage(to, from);
+> +	if (!ret)
+> +		flush_dcache_page(to);
+Personally I'd always keep the error out of line as it tends to be
+more readable when reviewing a lot of code.
+	if (ret)
+		return ret;
+
+	flush_dcache_page(to);
+
+	return 0;
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(copy_mc_user_highpage);
+> +#endif
 
 
