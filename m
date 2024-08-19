@@ -1,54 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-167-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-168-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 397A3C3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2024 07:42:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 241E1C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2024 08:26:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WnPgh5cfPz2xtc;
-	Mon, 19 Aug 2024 17:42:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.14
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mUJYcdka;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=pierre-louis.bossart@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WnQg63PGBz2xwc;
+	Mon, 19 Aug 2024 18:26:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.191
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WnPgf2Tglz2xjv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2024 17:42:04 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1724053327; x=1755589327;
-  h=message-id:date:mime-version:subject:to:references:from:
-   in-reply-to:content-transfer-encoding;
-  bh=XhaDNYPtumre+DlT/8KrzFiXd1NiecHLNyAbKknf9t4=;
-  b=mUJYcdkavnmJ6ivtL58RJBRsVcStBMVMz12Xv36p8qjSHEnMWRUX8L3c
-   bof/Lcgwfq0zOT2qKAxlfVnuCHQ17D6XyTZUonp9l3aur9QaQ9BrOaG6M
-   X+l4KSE/njKD0nYvNdoqxWvdv9ZMY5ZAxLBZoeL9Tyd99JqYraljJKdKT
-   4KysDF3+p71HLOL6UabvXO+ecgmuIwhGqNgkIqmD3bBzfnzEVRhQVqdRn
-   1d8vMbujeFtdjXl9Zl5BUVi0Z1BXtO6wdY44TG1khwEf2vIscQpE3OeYD
-   9iJ79HHHskM3k2dtRiuU7vo8ZE5kNqZA/HZ26g8R6LqyySLEihbt0gm9F
-   Q==;
-X-CSE-ConnectionGUID: MvT2hhX9TQ+iY1i8sMCduQ==
-X-CSE-MsgGUID: ExByKu8rRqyGscGJkGAPAQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11168"; a="26079153"
-X-IronPort-AV: E=Sophos;i="6.10,158,1719903600"; 
-   d="scan'208";a="26079153"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Aug 2024 00:42:02 -0700
-X-CSE-ConnectionGUID: 319Dz4XwQjqHxkKp+UQMeA==
-X-CSE-MsgGUID: PrS+ec61QxCHcWL8Trew/A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,158,1719903600"; 
-   d="scan'208";a="64677106"
-Received: from slindbla-desk.ger.corp.intel.com (HELO [10.245.246.57]) ([10.245.246.57])
-  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Aug 2024 00:41:57 -0700
-Message-ID: <6d83cd58-5f02-414b-b627-a0022e071052@linux.intel.com>
-Date: Mon, 19 Aug 2024 08:42:32 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WnP8m5HxLz2xjv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2024 17:18:44 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.19.88.234])
+	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4WnP2q02Xfz1j6dL;
+	Mon, 19 Aug 2024 15:13:39 +0800 (CST)
+Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
+	by mail.maildlp.com (Postfix) with ESMTPS id 1176114022E;
+	Mon, 19 Aug 2024 15:18:37 +0800 (CST)
+Received: from [10.67.121.177] (10.67.121.177) by
+ kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1258.34; Mon, 19 Aug 2024 15:18:36 +0800
+CC: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
+	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
+	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <yangyicong@hisilicon.com>,
+	<linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
+	<linux-kernel@vger.kernel.org>, <gregkh@linuxfoundation.org>,
+	<rafael@kernel.org>, <jonathan.cameron@huawei.com>,
+	<prime.zeng@hisilicon.com>, <linuxarm@huawei.com>, <xuwei5@huawei.com>,
+	<guohanjun@huawei.com>
+Subject: Re: [PATCH v5 2/4] arch_topology: Support SMT control for OF based
+ system
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+References: <20240806085320.63514-1-yangyicong@huawei.com>
+ <20240806085320.63514-3-yangyicong@huawei.com>
+ <a7636c4b-f449-4018-a890-08412e3ec779@arm.com>
+From: Yicong Yang <yangyicong@huawei.com>
+Message-ID: <85c1501c-f398-bf96-f8b9-383fbb32d12f@huawei.com>
+Date: Mon, 19 Aug 2024 15:18:35 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,118 +56,122 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH v2 4/6] ASoC: fsl_asrc_m2m: Add memory to memory
- function
-To: Shengjiu Wang <shengjiu.wang@nxp.com>, vkoul@kernel.org, perex@perex.cz,
- tiwai@suse.com, alsa-devel@alsa-project.org, linux-sound@vger.kernel.org,
- linux-kernel@vger.kernel.org, shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, nicoleotsuka@gmail.com, lgirdwood@gmail.com,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <1723804959-31921-1-git-send-email-shengjiu.wang@nxp.com>
- <1723804959-31921-5-git-send-email-shengjiu.wang@nxp.com>
-Content-Language: en-US
-From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-In-Reply-To: <1723804959-31921-5-git-send-email-shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <a7636c4b-f449-4018-a890-08412e3ec779@arm.com>
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.121.177]
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ kwepemd200014.china.huawei.com (7.221.188.8)
 
-
-
-On 8/16/24 12:42, Shengjiu Wang wrote:
-> Implement the ASRC memory to memory function using
-> the compress framework, user can use this function with
-> compress ioctl interface.
+On 2024/8/16 23:55, Dietmar Eggemann wrote:
+> On 06/08/2024 10:53, Yicong Yang wrote:
+>> From: Yicong Yang <yangyicong@hisilicon.com>
+>>
+>> On building the topology from the devicetree, we've already
+>> gotten the SMT thread number of each core. Update the largest
+>> SMT thread number to enable the SMT control.
 > 
-> Define below private metadata key value for output
-> format, output rate and ratio modifier configuration.
-> ASRC_OUTPUT_FORMAT 0x80000001
-> ASRC_OUTPUT_RATE   0x80000002
-> ASRC_RATIO_MOD     0x80000003
+> Do we have SMT Device Tree (DT) systems out there? But you right that DT
+> at least supports SMT.
+> 
 
-Can the output format/rate change at run-time?
+My system's based on ACPI. For DT part it's emulated and tested on the QEMU VM.
 
-If no, then these parameters should be moved somewhere else - e.g.
-hw_params or something.
+>> Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
+>> ---
+>>  drivers/base/arch_topology.c | 13 +++++++++++++
+>>  1 file changed, 13 insertions(+)
+>>
+>> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+>> index 75fcb75d5515..95513abd664f 100644
+>> --- a/drivers/base/arch_topology.c
+>> +++ b/drivers/base/arch_topology.c
+>> @@ -11,6 +11,7 @@
+>>  #include <linux/cleanup.h>
+>>  #include <linux/cpu.h>
+>>  #include <linux/cpufreq.h>
+>> +#include <linux/cpu_smt.h>
+>>  #include <linux/device.h>
+>>  #include <linux/of.h>
+>>  #include <linux/slab.h>
+>> @@ -531,6 +532,16 @@ static int __init get_cpu_for_node(struct device_node *node)
+>>  	return cpu;
+>>  }
+>>  
+>> +static void __init update_smt_num_threads(unsigned int num_threads)
+>> +{
+>> +	static unsigned int max_smt_thread_num = 1;
+>> +
+>> +	if (num_threads > max_smt_thread_num) {
+>> +		max_smt_thread_num = num_threads;
+>> +		cpu_smt_set_num_threads(max_smt_thread_num, max_smt_thread_num);
+>> +	}
+> 
+> This could theoretically (unlikely though) call
+> cpu_smt_set_num_threads() multiple times (on heterogeneous systems with
+> different numbers of SMT threads).
 
-I am still not very clear on the expanding the SET_METADATA ioctl to
-deal with the ratio changes. This isn't linked to the control layer as
-suggested before, and there's no precedent of calling it multiple times
-during streaming.
+Yes indeed. Was doing this purposely since I think this doing nothing unexpectedly but
+only update the max threads recorded in the framework.
 
-I also wonder how it was tested since tinycompress does not support this?
+>> +}
+>> +
+>>  static int __init parse_core(struct device_node *core, int package_id,
+>>  			     int cluster_id, int core_id)
+>>  {
+>> @@ -561,6 +572,8 @@ static int __init parse_core(struct device_node *core, int package_id,
+>>  		i++;
+>>  	} while (1);
+>>  
+>> +	update_smt_num_threads(i);
+>> +
+>>  	cpu = get_cpu_for_node(core);
+>>  	if (cpu >= 0) {
+>>  		if (!leaf) {
+> 
+> Why not simply do this:
+> 
+> -->8--
+> 
+> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+> index 75fcb75d5515..806537419715 100644
+> --- a/drivers/base/arch_topology.c
+> +++ b/drivers/base/arch_topology.c
+> @@ -30,6 +30,7 @@ static struct cpumask scale_freq_counters_mask;
+>  static bool scale_freq_invariant;
+>  DEFINE_PER_CPU(unsigned long, capacity_freq_ref) = 1;
+>  EXPORT_PER_CPU_SYMBOL_GPL(capacity_freq_ref);
+> +static unsigned int max_smt_thread_num = 1;
+>  
 
+This fine with me and this avoid calling cpu_smt_set_num_threads() multiple
+times. We can switch to this implementation.
 
-> +static int fsl_asrc_m2m_fill_codec_caps(struct fsl_asrc *asrc,
-> +					struct snd_compr_codec_caps *codec)
-> +{
-> +	struct fsl_asrc_m2m_cap cap;
-> +	__u32 rates[MAX_NUM_BITRATES];
-> +	snd_pcm_format_t k;
-> +	int i = 0, j = 0;
-> +	int ret;
+Thanks.
+
+>  static bool supports_scale_freq_counters(const struct cpumask *cpus)
+>  {
+> @@ -577,6 +578,9 @@ static int __init parse_core(struct device_node *core, int package_id,
+>  		return -EINVAL;
+>  	}
+>  
+> +	if (max_smt_thread_num < i)
+> +		max_smt_thread_num = i;
 > +
-> +	ret = asrc->m2m_get_cap(&cap);
-> +	if (ret)
-> +		return -EINVAL;
+>  	return 0;
+>  }
+>  
+> @@ -673,6 +677,9 @@ static int __init parse_socket(struct device_node *socket)
+>  	if (!has_socket)
+>  		ret = parse_cluster(socket, 0, -1, 0);
+>  
+> +	if (max_smt_thread_num > 1)
+> +		cpu_smt_set_num_threads(max_smt_thread_num, max_smt_thread_num);
 > +
-> +	if (cap.rate_in & SNDRV_PCM_RATE_5512)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_5512);
-
-this doesn't sound compatible with the patch2 definitions?
-
-cap->rate_in = SNDRV_PCM_RATE_8000_768000;
-
-> +	if (cap.rate_in & SNDRV_PCM_RATE_8000)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_8000);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_11025)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_11025);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_16000)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_16000);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_22050)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_22050);
-
-missing 24 kHz
-
-> +	if (cap.rate_in & SNDRV_PCM_RATE_32000)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_32000);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_44100)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_44100);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_48000)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_48000);
-
-missing 64kHz
-
-> +	if (cap.rate_in & SNDRV_PCM_RATE_88200)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_88200);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_96000)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_96000);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_176400)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_176400);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_192000)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_192000);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_352800)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_352800);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_384000)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_384000);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_705600)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_705600);
-> +	if (cap.rate_in & SNDRV_PCM_RATE_768000)
-> +		rates[i++] = snd_pcm_rate_bit_to_rate(SNDRV_PCM_RATE_768000);
-> +
-> +	pcm_for_each_format(k) {
-> +		if (pcm_format_to_bits(k) & cap.fmt_in) {
-> +			codec->descriptor[j].max_ch = cap.chan_max;
-> +			memcpy(codec->descriptor[j].sample_rates, rates, i * sizeof(__u32));
-> +			codec->descriptor[j].num_sample_rates = i;
-> +			codec->descriptor[j].formats = k;
-> +			j++;
-> +		}
-> +	}
-> +
-> +	codec->codec = SND_AUDIOCODEC_PCM;
-> +	codec->num_descriptors = j;
-> +	return 0;
-
-
+>  	return ret;
+>  }
+> 
+> 
+> .
+> 
 
