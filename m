@@ -1,71 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-169-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-170-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C193C5321D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2024 09:37:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41D0CC3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2024 10:18:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WnSDR0nnlz2xxp;
-	Mon, 19 Aug 2024 19:37:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WnT7k3DLhz2xy2;
+	Mon, 19 Aug 2024 20:18:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JFOIDz7Y;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JFOIDz7Y;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=C0GX8mMM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WnSDQ4Nhzz2xYl
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2024 19:37:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1724060225;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gyhLuQueNQMuCrXYvkTRAcV5urEhM9QfwcqzGwlpWMQ=;
-	b=JFOIDz7YqaYVaOhxGGZ+LdDSlloJr1pYgtyRQs3cIcIE+MXoSPiEHCB31uCMXyLLzYvldK
-	M1DJB0nAVyhWvi0qhYXAN2EXgLXtuymHup9FhcrY50gVY4ryPUX3rGI8tD9TjkcbZ3pvt4
-	UPSIPGsl1bDIdbb31FkdEkV3c7foGUA=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1724060225;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gyhLuQueNQMuCrXYvkTRAcV5urEhM9QfwcqzGwlpWMQ=;
-	b=JFOIDz7YqaYVaOhxGGZ+LdDSlloJr1pYgtyRQs3cIcIE+MXoSPiEHCB31uCMXyLLzYvldK
-	M1DJB0nAVyhWvi0qhYXAN2EXgLXtuymHup9FhcrY50gVY4ryPUX3rGI8tD9TjkcbZ3pvt4
-	UPSIPGsl1bDIdbb31FkdEkV3c7foGUA=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-170-La9A1Bm1MZWN8njVw2B94Q-1; Mon,
- 19 Aug 2024 05:37:01 -0400
-X-MC-Unique: La9A1Bm1MZWN8njVw2B94Q-1
-Received: from mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.40])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WnT7j23v0z2xxr
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2024 20:18:09 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1724062687;
+	bh=mpZOcZghaATkINZgHYKogiq38L86o5NZCksImbrz8Mc=;
+	h=From:To:Cc:Subject:Date:From;
+	b=C0GX8mMMe7U3Hx+eHAeBMkFVaqmFh2RslDNgnpfJx3boSvq6JOnVCx8ncT2pw6Xgq
+	 UK38zNQnoVooly7zBveuj+K0B00AduiS5/fr08+oRVirT3KSU5uJ+RTgZ99aoO1M1M
+	 Nz8GPJAasKV9r+AeaUUlkJKiCQKUtFjlG+MhVZ4GpszCGaxmicOi1JyAnBUHAvddzD
+	 LNIqmu8OJY92D2Td+HO1j4A0ms/k7w4yPOuh9DCdLCKtKZIMmtFVspGR9hVPO462Af
+	 xADSlLDr/z2ST3HT6kIHRyttCwCgPNXBx6hh+edTI8d8pASoRNRKWeRq95webWdPz+
+	 NzmyEGy5NNazg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 949E4195608A;
-	Mon, 19 Aug 2024 09:36:58 +0000 (UTC)
-Received: from localhost (unknown [10.72.112.51])
-	by mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id DE2301956054;
-	Mon, 19 Aug 2024 09:36:55 +0000 (UTC)
-Date: Mon, 19 Aug 2024 17:36:51 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, corbet@lwn.net,
-	akpm@linux-foundation.org
-Cc: Petr Tesarik <petr@tesarici.cz>, Hari Bathini <hbathini@linux.ibm.com>,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
-	linux-doc@vger.kernel.org
-Subject: Re: [PATCH v2] Document/kexec: Generalize crash hotplug description
-Message-ID: <ZsMSM4Hgfm7yxFdj@MiWiFi-R3L-srv>
-References: <20240812041651.703156-1-sourabhjain@linux.ibm.com>
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WnT7c1J6qz4w2N;
+	Mon, 19 Aug 2024 20:18:04 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: cassel@kernel.org
+Cc: dlemoal@kernel.org,
+	linux-ide@vger.kernel.org,
+	<linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>,
+	<hch@lst.de>,
+	linux-ppc@kolla.no,
+	vidra@ufal.mff.cuni.cz
+Subject: [PATCH] ata: pata_macio: Fix DMA table overflow
+Date: Mon, 19 Aug 2024 20:17:55 +1000
+Message-ID: <20240819101755.489078-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.46.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,187 +58,113 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240812041651.703156-1-sourabhjain@linux.ibm.com>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.40
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Add Jonathan and Andew.
+Kolbjørn and Jonáš reported that their 32-bit PowerMacs were crashing
+in pata-macio since commit 09fe2bfa6b83 ("ata: pata_macio: Fix
+max_segment_size with PAGE_SIZE == 64K").
 
-On 08/12/24 at 09:46am, Sourabh Jain wrote:
-> Commit 79365026f869 ("crash: add a new kexec flag for hotplug support")
-> generalizes the crash hotplug support to allow architectures to update
-> multiple kexec segments on CPU/Memory hotplug and not just elfcorehdr.
-> Therefore, update the relevant kernel documentation to reflect the same.
+For example:
 
-Hi Jonathan and Andew,
+  kernel BUG at drivers/ata/pata_macio.c:544!
+  Oops: Exception in kernel mode, sig: 5 [#1]
+  BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 DEBUG_PAGEALLOC PowerMac
+  ...
+  NIP pata_macio_qc_prep+0xf4/0x190
+  LR  pata_macio_qc_prep+0xfc/0x190
+  Call Trace:
+    0xc1421660 (unreliable)
+    ata_qc_issue+0x14c/0x2d4
+    __ata_scsi_queuecmd+0x200/0x53c
+    ata_scsi_queuecmd+0x50/0xe0
+    scsi_queue_rq+0x788/0xb1c
+    __blk_mq_issue_directly+0x58/0xf4
+    blk_mq_plug_issue_direct+0x8c/0x1b4
+    blk_mq_flush_plug_list.part.0+0x584/0x5e0
+    __blk_flush_plug+0xf8/0x194
+    __submit_bio+0x1b8/0x2e0
+    submit_bio_noacct_nocheck+0x230/0x304
+    btrfs_work_helper+0x200/0x338
+    process_one_work+0x1a8/0x338
+    worker_thread+0x364/0x4c0
+    kthread+0x100/0x104
+    start_kernel_thread+0x10/0x14
 
-Could any of you pick this into your tree?
+That commit increased max_segment_size to 64KB, with the justification
+that the SCSI core was already using that size when PAGE_SIZE == 64KB,
+and that there was existing logic to split over-sized requests.
 
-Thanks
-Baoquan
+However with a sufficiently large request, the splitting logic causes
+each sg to be split into two commands in the DMA table, leading to
+overflow of the DMA table, triggering the BUG_ON().
 
-> 
-> Cc: Petr Tesarik <petr@tesarici.cz>
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> Cc: kexec@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: x86@kernel.org
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> ---
-> 
-> Changelog:
-> 
-> Since v1: https://lore.kernel.org/all/20240805050829.297171-1-sourabhjain@linux.ibm.com/
->   - Update crash_hotplug sysfs document as suggested by Petr T
->   - Update an error message in crash_handle_hotplug_event and
->     crash_check_hotplug_support function.
-> 
-> ---
->  .../ABI/testing/sysfs-devices-memory          |  6 ++--
->  .../ABI/testing/sysfs-devices-system-cpu      |  6 ++--
->  .../admin-guide/mm/memory-hotplug.rst         |  5 +--
->  Documentation/core-api/cpu_hotplug.rst        | 10 +++---
->  kernel/crash_core.c                           | 33 +++++++++++--------
->  5 files changed, 35 insertions(+), 25 deletions(-)
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-devices-memory b/Documentation/ABI/testing/sysfs-devices-memory
-> index a95e0f17c35a..cec65827e602 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-memory
-> +++ b/Documentation/ABI/testing/sysfs-devices-memory
-> @@ -115,6 +115,6 @@ What:		/sys/devices/system/memory/crash_hotplug
->  Date:		Aug 2023
->  Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
->  Description:
-> -		(RO) indicates whether or not the kernel directly supports
-> -		modifying the crash elfcorehdr for memory hot un/plug and/or
-> -		on/offline changes.
-> +		(RO) indicates whether or not the kernel updates relevant kexec
-> +		segments on memory hot un/plug and/or on/offline events, avoiding the
-> +		need to reload kdump kernel.
-> diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> index 325873385b71..1a31b7c71676 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-> +++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-> @@ -703,9 +703,9 @@ What:		/sys/devices/system/cpu/crash_hotplug
->  Date:		Aug 2023
->  Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
->  Description:
-> -		(RO) indicates whether or not the kernel directly supports
-> -		modifying the crash elfcorehdr for CPU hot un/plug and/or
-> -		on/offline changes.
-> +		(RO) indicates whether or not the kernel updates relevant kexec
-> +		segments on memory hot un/plug and/or on/offline events, avoiding the
-> +		need to reload kdump kernel.
->  
->  What:		/sys/devices/system/cpu/enabled
->  Date:		Nov 2022
-> diff --git a/Documentation/admin-guide/mm/memory-hotplug.rst b/Documentation/admin-guide/mm/memory-hotplug.rst
-> index 098f14d83e99..cb2c080f400c 100644
-> --- a/Documentation/admin-guide/mm/memory-hotplug.rst
-> +++ b/Documentation/admin-guide/mm/memory-hotplug.rst
-> @@ -294,8 +294,9 @@ The following files are currently defined:
->  ``crash_hotplug``      read-only: when changes to the system memory map
->  		       occur due to hot un/plug of memory, this file contains
->  		       '1' if the kernel updates the kdump capture kernel memory
-> -		       map itself (via elfcorehdr), or '0' if userspace must update
-> -		       the kdump capture kernel memory map.
-> +		       map itself (via elfcorehdr and other relevant kexec
-> +		       segments), or '0' if userspace must update the kdump
-> +		       capture kernel memory map.
->  
->  		       Availability depends on the CONFIG_MEMORY_HOTPLUG kernel
->  		       configuration option.
-> diff --git a/Documentation/core-api/cpu_hotplug.rst b/Documentation/core-api/cpu_hotplug.rst
-> index dcb0e379e5e8..a21dbf261be7 100644
-> --- a/Documentation/core-api/cpu_hotplug.rst
-> +++ b/Documentation/core-api/cpu_hotplug.rst
-> @@ -737,8 +737,9 @@ can process the event further.
->  
->  When changes to the CPUs in the system occur, the sysfs file
->  /sys/devices/system/cpu/crash_hotplug contains '1' if the kernel
-> -updates the kdump capture kernel list of CPUs itself (via elfcorehdr),
-> -or '0' if userspace must update the kdump capture kernel list of CPUs.
-> +updates the kdump capture kernel list of CPUs itself (via elfcorehdr and
-> +other relevant kexec segment), or '0' if userspace must update the kdump
-> +capture kernel list of CPUs.
->  
->  The availability depends on the CONFIG_HOTPLUG_CPU kernel configuration
->  option.
-> @@ -750,8 +751,9 @@ file can be used in a udev rule as follows:
->   SUBSYSTEM=="cpu", ATTRS{crash_hotplug}=="1", GOTO="kdump_reload_end"
->  
->  For a CPU hot un/plug event, if the architecture supports kernel updates
-> -of the elfcorehdr (which contains the list of CPUs), then the rule skips
-> -the unload-then-reload of the kdump capture kernel.
-> +of the elfcorehdr (which contains the list of CPUs) and other relevant
-> +kexec segments, then the rule skips the unload-then-reload of the kdump
-> +capture kernel.
->  
->  Kernel Inline Documentations Reference
->  ======================================
-> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-> index 63cf89393c6e..c1048893f4b6 100644
-> --- a/kernel/crash_core.c
-> +++ b/kernel/crash_core.c
-> @@ -505,7 +505,7 @@ int crash_check_hotplug_support(void)
->  	crash_hotplug_lock();
->  	/* Obtain lock while reading crash information */
->  	if (!kexec_trylock()) {
-> -		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
-> +		pr_info("kexec_trylock() failed, kdump image may be inaccurate\n");
->  		crash_hotplug_unlock();
->  		return 0;
->  	}
-> @@ -520,18 +520,25 @@ int crash_check_hotplug_support(void)
->  }
->  
->  /*
-> - * To accurately reflect hot un/plug changes of cpu and memory resources
-> - * (including onling and offlining of those resources), the elfcorehdr
-> - * (which is passed to the crash kernel via the elfcorehdr= parameter)
-> - * must be updated with the new list of CPUs and memories.
-> + * To accurately reflect hot un/plug changes of CPU and Memory resources
-> + * (including onling and offlining of those resources), the relevant
-> + * kexec segments must be updated with latest CPU and Memory resources.
->   *
-> - * In order to make changes to elfcorehdr, two conditions are needed:
-> - * First, the segment containing the elfcorehdr must be large enough
-> - * to permit a growing number of resources; the elfcorehdr memory size
-> - * is based on NR_CPUS_DEFAULT and CRASH_MAX_MEMORY_RANGES.
-> - * Second, purgatory must explicitly exclude the elfcorehdr from the
-> - * list of segments it checks (since the elfcorehdr changes and thus
-> - * would require an update to purgatory itself to update the digest).
-> + * Architectures must ensure two things for all segments that need
-> + * updating during hotplug events:
-> + *
-> + * 1. Segments must be large enough to accommodate a growing number of
-> + *    resources.
-> + * 2. Exclude the segments from SHA verification.
-> + *
-> + * For example, on most architectures, the elfcorehdr (which is passed
-> + * to the crash kernel via the elfcorehdr= parameter) must include the
-> + * new list of CPUs and memory. To make changes to the elfcorehdr, it
-> + * should be large enough to permit a growing number of CPU and Memory
-> + * resources. One can estimate the elfcorehdr memory size based on
-> + * NR_CPUS_DEFAULT and CRASH_MAX_MEMORY_RANGES. The elfcorehdr is
-> + * excluded from SHA verification by default if the architecture
-> + * supports crash hotplug.
->   */
->  static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu, void *arg)
->  {
-> @@ -540,7 +547,7 @@ static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu,
->  	crash_hotplug_lock();
->  	/* Obtain lock while changing crash information */
->  	if (!kexec_trylock()) {
-> -		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
-> +		pr_info("kexec_trylock() failed, kdump image may be inaccurate\n");
->  		crash_hotplug_unlock();
->  		return;
->  	}
-> -- 
-> 2.45.2
-> 
+With default settings the bug doesn't trigger, because the request size
+is limited by max_sectors_kb == 1280, however max_sectors_kb can be
+increased, and apparently some distros do that by default using udev
+rules.
+
+Fix the bug for 4KB kernels by reverting to the old max_segment_size.
+
+For 64KB kernels the sg_tablesize needs to be halved, to allow for the
+possibility that each sg will be split into two.
+
+Fixes: 09fe2bfa6b83 ("ata: pata_macio: Fix max_segment_size with PAGE_SIZE == 64K")
+Cc: stable@vger.kernel.org # v6.10+
+Reported-by: Kolbjørn Barmen <linux-ppc@kolla.no>
+Closes: https://lore.kernel.org/all/62d248bb-e97a-25d2-bcf2-9160c518cae5@kolla.no/
+Reported-by: Jonáš Vidra <vidra@ufal.mff.cuni.cz>
+Closes: https://lore.kernel.org/all/3b6441b8-06e6-45da-9e55-f92f2c86933e@ufal.mff.cuni.cz/
+Tested-by: Kolbjørn Barmen <linux-ppc@kolla.no>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ drivers/ata/pata_macio.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/ata/pata_macio.c b/drivers/ata/pata_macio.c
+index 1b85e8bf4ef9..eaffa510de49 100644
+--- a/drivers/ata/pata_macio.c
++++ b/drivers/ata/pata_macio.c
+@@ -208,6 +208,19 @@ static const char* macio_ata_names[] = {
+ /* Don't let a DMA segment go all the way to 64K */
+ #define MAX_DBDMA_SEG		0xff00
+ 
++#ifdef CONFIG_PAGE_SIZE_64KB
++/*
++ * The SCSI core requires the segment size to cover at least a page, so
++ * for 64K page size kernels it must be at least 64K. However the
++ * hardware can't handle 64K, so pata_macio_qc_prep() will split large
++ * requests. To handle the split requests the tablesize must be halved.
++ */
++#define MAX_SEGMENT_SIZE SZ_64K
++#define SG_TABLESIZE (MAX_DCMDS / 2)
++#else
++#define MAX_SEGMENT_SIZE MAX_DBDMA_SEG
++#define SG_TABLESIZE MAX_DCMDS
++#endif
+ 
+ /*
+  * Wait 1s for disk to answer on IDE bus after a hard reset
+@@ -912,16 +925,10 @@ static int pata_macio_do_resume(struct pata_macio_priv *priv)
+ 
+ static const struct scsi_host_template pata_macio_sht = {
+ 	__ATA_BASE_SHT(DRV_NAME),
+-	.sg_tablesize		= MAX_DCMDS,
++	.sg_tablesize		= SG_TABLESIZE,
+ 	/* We may not need that strict one */
+ 	.dma_boundary		= ATA_DMA_BOUNDARY,
+-	/*
+-	 * The SCSI core requires the segment size to cover at least a page, so
+-	 * for 64K page size kernels this must be at least 64K. However the
+-	 * hardware can't handle 64K, so pata_macio_qc_prep() will split large
+-	 * requests.
+-	 */
+-	.max_segment_size	= SZ_64K,
++	.max_segment_size	= MAX_SEGMENT_SIZE,
+ 	.device_configure	= pata_macio_device_configure,
+ 	.sdev_groups		= ata_common_sdev_groups,
+ 	.can_queue		= ATA_DEF_QUEUE,
+-- 
+2.46.0
 
 
