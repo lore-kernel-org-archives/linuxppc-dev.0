@@ -1,54 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-171-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-172-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25860C5320E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2024 10:19:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D93B9C5320E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Aug 2024 10:56:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WnT964VPrz2xy6;
-	Mon, 19 Aug 2024 20:19:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Uhqe6piA;
-	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WnTzs0lYSz2xy8;
+	Mon, 19 Aug 2024 20:56:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WnT964NTNz2xxr
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2024 20:19:22 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1724062758;
-	bh=LK7wkpPSnBuGzhxGUxSmpc4/F155DFfTozWzyWzCmxc=;
-	h=From:To:Cc:Subject:Date:From;
-	b=Uhqe6piAwiCldj5DGb+CeWuX9vI7vJvQqWj48r0RhE2ynRo1eZhssPJv3YmzHI3JR
-	 nIXVImJBw3kRF8O7lUQ5CaIJ0jAHAHX5BI+b9n07DRIdKJB/tTjk3PATmDl2Ojd0c3
-	 Ddy1mrw6xGaO5TCK4rEDr9Wde1y+DUBw6DqnnoBOoLkWE51ThGsK9xDyCrVXY5j9g3
-	 /6KkZibg0T2v8gkwb2P4cQNY132/htHQfSkLLdp/MVdxS4RAStO2NcJ2pmaB9IuSOn
-	 PPc/BcXP3Bd5tC1lhfWsZKFJ/+2hrn5RAoPj4AMU2MB46vlOP2q4jIVlZQ6CaZYnID
-	 KFupb+Oymw10A==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WnT9203KRz4w2N;
-	Mon, 19 Aug 2024 20:19:17 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: cassel@kernel.org
-Cc: dlemoal@kernel.org,
-	linux-ide@vger.kernel.org,
-	<linux-kernel@vger.kernel.org>,
-	<linuxppc-dev@lists.ozlabs.org>,
-	<hch@lst.de>,
-	linux-ppc@kolla.no,
-	vidra@ufal.mff.cuni.cz
-Subject: [RFC PATCH] ata: pata_macio: Use WARN instead of BUG
-Date: Mon, 19 Aug 2024 20:19:13 +1000
-Message-ID: <20240819101913.489513-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.46.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WnShS3p2cz2xbC
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Aug 2024 19:57:57 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.18.186.231])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WnScz4lGNz6K94c;
+	Mon, 19 Aug 2024 17:54:59 +0800 (CST)
+Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
+	by mail.maildlp.com (Postfix) with ESMTPS id 6331E1400DB;
+	Mon, 19 Aug 2024 17:57:52 +0800 (CST)
+Received: from localhost (10.203.177.66) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Mon, 19 Aug
+ 2024 10:57:51 +0100
+Date: Mon, 19 Aug 2024 10:57:50 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Tong Tiangen <tongtiangen@huawei.com>
+CC: Mark Rutland <mark.rutland@arm.com>, Catalin Marinas
+	<catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Andrew Morton
+	<akpm@linux-foundation.org>, James Morse <james.morse@arm.com>, "Robin
+ Murphy" <robin.murphy@arm.com>, Andrey Konovalov <andreyknvl@gmail.com>,
+	Dmitry Vyukov <dvyukov@google.com>, Vincenzo Frascino
+	<vincenzo.frascino@arm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
+ Piggin <npiggin@gmail.com>, Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+	Alexander Potapenko <glider@google.com>, Christophe Leroy
+	<christophe.leroy@csgroup.eu>, Aneesh Kumar K.V <aneesh.kumar@kernel.org>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Thomas Gleixner
+	<tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+	<bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, <x86@kernel.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-mm@kvack.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, <wangkefeng.wang@huawei.com>, Guohanjun
+	<guohanjun@huawei.com>
+Subject: Re: [PATCH v12 1/6] uaccess: add generic fallback version of
+ copy_mc_to_user()
+Message-ID: <20240819105750.00001269@Huawei.com>
+In-Reply-To: <20240528085915.1955987-2-tongtiangen@huawei.com>
+References: <20240528085915.1955987-1-tongtiangen@huawei.com>
+	<20240528085915.1955987-2-tongtiangen@huawei.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,50 +63,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.203.177.66]
+X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
 
-The overflow/underflow conditions in pata_macio_qc_prep() should never
-happen. But if they do there's no need to kill the system entirely, a
-WARN and failing the IO request should be sufficient and might allow the
-system to keep running.
+On Tue, 28 May 2024 16:59:10 +0800
+Tong Tiangen <tongtiangen@huawei.com> wrote:
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- drivers/ata/pata_macio.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+> x86/powerpc has it's implementation of copy_mc_to_user(), we add generic
+> fallback in include/linux/uaccess.h prepare for other architechures to
+> enable CONFIG_ARCH_HAS_COPY_MC.
+> 
+> Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Seems like a sensible approach to me given existing fallbacks in x86
+if the relevant features are disabled.
 
-Not sure if AC_ERR_OTHER is the right error code to use?
+It may be worth exploring at some point if some of the special casing
+in the callers of this function can also be remove now there
+is a default version. There are some small differences but I've
+not analyzed if they matter or not.
 
-diff --git a/drivers/ata/pata_macio.c b/drivers/ata/pata_macio.c
-index eaffa510de49..552e3ac0d391 100644
---- a/drivers/ata/pata_macio.c
-+++ b/drivers/ata/pata_macio.c
-@@ -554,7 +554,8 @@ static enum ata_completion_errors pata_macio_qc_prep(struct ata_queued_cmd *qc)
- 
- 		while (sg_len) {
- 			/* table overflow should never happen */
--			BUG_ON (pi++ >= MAX_DCMDS);
-+			if (WARN_ON_ONCE(pi >= MAX_DCMDS))
-+				return AC_ERR_OTHER;
- 
- 			len = (sg_len < MAX_DBDMA_SEG) ? sg_len : MAX_DBDMA_SEG;
- 			table->command = cpu_to_le16(write ? OUTPUT_MORE: INPUT_MORE);
-@@ -566,11 +567,13 @@ static enum ata_completion_errors pata_macio_qc_prep(struct ata_queued_cmd *qc)
- 			addr += len;
- 			sg_len -= len;
- 			++table;
-+			++pi;
- 		}
- 	}
- 
- 	/* Should never happen according to Tejun */
--	BUG_ON(!pi);
-+	if (WARN_ON_ONCE(!pi))
-+		return AC_ERR_OTHER;
- 
- 	/* Convert the last command to an input/output */
- 	table--;
--- 
-2.46.0
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+
+> ---
+>  arch/powerpc/include/asm/uaccess.h | 1 +
+>  arch/x86/include/asm/uaccess.h     | 1 +
+>  include/linux/uaccess.h            | 8 ++++++++
+>  3 files changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+> index de10437fd206..df42e6ad647f 100644
+> --- a/arch/powerpc/include/asm/uaccess.h
+> +++ b/arch/powerpc/include/asm/uaccess.h
+> @@ -381,6 +381,7 @@ copy_mc_to_user(void __user *to, const void *from, unsigned long n)
+>  
+>  	return n;
+>  }
+> +#define copy_mc_to_user copy_mc_to_user
+>  #endif
+>  
+>  extern long __copy_from_user_flushcache(void *dst, const void __user *src,
+> diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+> index 0f9bab92a43d..309f2439327e 100644
+> --- a/arch/x86/include/asm/uaccess.h
+> +++ b/arch/x86/include/asm/uaccess.h
+> @@ -497,6 +497,7 @@ copy_mc_to_kernel(void *to, const void *from, unsigned len);
+>  
+>  unsigned long __must_check
+>  copy_mc_to_user(void __user *to, const void *from, unsigned len);
+> +#define copy_mc_to_user copy_mc_to_user
+>  #endif
+>  
+>  /*
+> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+> index 3064314f4832..0dfa9241b6ee 100644
+> --- a/include/linux/uaccess.h
+> +++ b/include/linux/uaccess.h
+> @@ -205,6 +205,14 @@ copy_mc_to_kernel(void *dst, const void *src, size_t cnt)
+>  }
+>  #endif
+>  
+> +#ifndef copy_mc_to_user
+> +static inline unsigned long __must_check
+> +copy_mc_to_user(void *dst, const void *src, size_t cnt)
+> +{
+> +	return copy_to_user(dst, src, cnt);
+> +}
+> +#endif
+> +
+>  static __always_inline void pagefault_disabled_inc(void)
+>  {
+>  	current->pagefault_disabled++;
 
 
