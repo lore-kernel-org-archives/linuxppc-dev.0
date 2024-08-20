@@ -1,14 +1,14 @@
-Return-Path: <linuxppc-dev+bounces-240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-241-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 953DCC531DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2024 17:25:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8AE9C531DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Aug 2024 17:25:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WpGYl0CYxz2xPc;
-	Wed, 21 Aug 2024 03:24:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WpGYq0r83z2yHD;
+	Wed, 21 Aug 2024 03:25:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
@@ -16,28 +16,28 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WpGYk5F0bz2yHD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2024 03:24:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WpGYp5kqXz2yF7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2024 03:25:02 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4WpGYD28fbz9sSK;
-	Tue, 20 Aug 2024 19:24:32 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4WpGYG0QSsz9sSH;
+	Tue, 20 Aug 2024 19:24:34 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id RrWW9xR0OynL; Tue, 20 Aug 2024 19:24:32 +0200 (CEST)
+	with ESMTP id Xvm4j3keclx1; Tue, 20 Aug 2024 19:24:33 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4WpGY81ckQz9sSH;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4WpGY84f0jz9sSW;
 	Tue, 20 Aug 2024 19:24:28 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 236178B763;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 89B0A8B763;
 	Tue, 20 Aug 2024 19:24:28 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 6wQq5cqY-1b6; Tue, 20 Aug 2024 19:24:28 +0200 (CEST)
+	with ESMTP id T4N_HjS8JNnF; Tue, 20 Aug 2024 19:24:28 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.232.72])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B9B718B778;
-	Tue, 20 Aug 2024 19:24:27 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 244048B779;
+	Tue, 20 Aug 2024 19:24:28 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: CASAUBON Jean Michel <jean-michel.casaubon@cs-soprasteria.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
@@ -46,9 +46,9 @@ To: CASAUBON Jean Michel <jean-michel.casaubon@cs-soprasteria.com>,
 Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 07/14] powerpc/8xx: Preallocate execmem page tables
-Date: Tue, 20 Aug 2024 19:23:51 +0200
-Message-ID: <a7180cc1ba59dec4502af39b4e9f3ff91c57280d.1724173828.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH 08/14] powerpc/8xx: Inconditionally use task PGDIR in ITLB misses
+Date: Tue, 20 Aug 2024 19:23:52 +0200
+Message-ID: <774fd766a8b9bcb9173b5e677d5dad0df2d3970f.1724173828.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.44.0
 In-Reply-To: <cover.1724173828.git.christophe.leroy@csgroup.eu>
 References: <cover.1724173828.git.christophe.leroy@csgroup.eu>
@@ -61,53 +61,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1724174648; l=1364; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=QghUhOLt+fDy9xXI8MShWpF744dR2KvB7NG7dru6wKs=; b=p35/7MeKFXvgWyw2nEkxBbdlQ/EimXZx64Q3oIz5HccSchZVwnSLo9VqIT+2ie4PJqnwy0CBM wGbwiXC+Im9DQU8vhoxf5GVY4XAn8kKqGJLJAZj38ttVcn5z0ZgbKfR
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1724174648; l=1061; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=nwR9CoHpbJRQlif0McwHkWP0mV6sxqRZS0kN/UNtF7M=; b=i8JOyF1jdPa5ODtRED2AVFuKrmxcGAJ9STmsBuaPu7V0vn0D+ip+TZmTZW4cFhxoACPPefi+D new1uXyYGnvBqSvx9hx5EzFkJJFMuUIVPD5Bqjute5j0ofu7HuPCg2J
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-Preallocate execmem page tables before creating new PGDs so that
-all PGD entries related to execmem can be copied in pgd_alloc().
-
-On 8xx there are 32 Mbytes for execmem by default so this will use
-32 kbytes.
+Now that modules exec page tables are preallocated, the instruction
+TLBmiss handler can use task PGDIR inconditionally.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/mm/mem.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ arch/powerpc/kernel/head_8xx.S | 11 -----------
+ 1 file changed, 11 deletions(-)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index da21cb018984..5495572b42e6 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -410,6 +410,18 @@ EXPORT_SYMBOL_GPL(walk_system_ram_range);
- #ifdef CONFIG_EXECMEM
- static struct execmem_info execmem_info __ro_after_init;
- 
-+#ifdef CONFIG_PPC_8xx
-+static void prealloc_execmem_pgtable(void)
-+{
-+	unsigned long va;
-+
-+	for (va = ALIGN_DOWN(MODULES_VADDR, PGDIR_SIZE); va < MODULES_END; va += PGDIR_SIZE)
-+		pte_alloc_kernel(pmd_off_k(va), va);
-+}
-+#else
-+static void prealloc_execmem_pgtable(void) { }
-+#endif
-+
- struct execmem_info __init *execmem_arch_setup(void)
- {
- 	pgprot_t kprobes_prot = strict_module_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
-@@ -441,6 +453,8 @@ struct execmem_info __init *execmem_arch_setup(void)
- 	end = VMALLOC_END;
- #endif
- 
-+	prealloc_execmem_pgtable();
-+
- 	execmem_info = (struct execmem_info){
- 		.ranges = {
- 			[EXECMEM_DEFAULT] = {
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 66ee0a31d99d..f9a05648a522 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -199,18 +199,7 @@ instruction_counter:
+ 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+ 	INVALIDATE_ADJACENT_PAGES_CPU15(r10, r11)
+ 	mtspr	SPRN_MD_EPN, r10
+-#ifdef CONFIG_EXECMEM
+-	mfcr	r11
+-	compare_to_kernel_boundary r10, r10
+-#endif
+ 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table */
+-#ifdef CONFIG_EXECMEM
+-	blt+	3f
+-	rlwinm	r10, r10, 0, 20, 31
+-	oris	r10, r10, (swapper_pg_dir - PAGE_OFFSET)@ha
+-3:
+-	mtcr	r11
+-#endif
+ 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r10)	/* Get level 1 entry */
+ 	mtspr	SPRN_MD_TWC, r11
+ 	mfspr	r10, SPRN_MD_TWC
 -- 
 2.44.0
 
