@@ -1,64 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-283-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-284-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E0CFC52D7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2024 10:48:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83BA3C52D7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2024 11:29:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wpjjm0j14z2yhD;
-	Wed, 21 Aug 2024 20:48:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42d"
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=QB7qDML0;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wpkcb0nP6z2yQn;
+	Wed, 21 Aug 2024 21:29:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=Huawei.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wphk66gBBz2y1l
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2024 20:03:39 +1000 (AEST)
-Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-713dc00cf67so3680963b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2024 03:03:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1724234617; x=1724839417; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Hc9KXq9HiCmVA6sa8jp61udoxCJLWx+IYCHX8J3fcJQ=;
-        b=QB7qDML0C5N89hHXq0JMmOx0C0yMMRdT0ppAnnV9NIoWpwnAm0H4Foq+R5NnDjCWcD
-         6sc7FBPlnJHOJb/uAE7MLdqqZDFFBUq6rcJ/O/c/9ghN3BvPC09okWX0EYNn8f0nzBh5
-         yHJNlrQILhctG2iuedBgVqiZMJvlkKQD7K95bATGrjPoEZaWP/WyEoNbxuelRsU8n4O2
-         +j11QyOPlDl8fKfyoNG9ON58jGP/zC5EcR/Tp0TTxxmUIvpgJipGpZHgUbi13QzlZLWH
-         amNJBN0ZtKwkh+0UOtroS6yCLAupX+Et0YMlnqcHGj5/1sCfWY5MFHRwc2tgK39B/HGP
-         Y5Og==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724234617; x=1724839417;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Hc9KXq9HiCmVA6sa8jp61udoxCJLWx+IYCHX8J3fcJQ=;
-        b=uZPC9TRhwqv2CJWITheNX2mY/2Cu2BBDI9/7/xjGQzMViSjvL1lK2mo/jDAchOa1F3
-         LwPxrJ0O7/TRhpevmekCRvckWBfQ5qHGxRqsBk86nKKQso6TE1Jjudb/Ju0N+5tcXPVd
-         XcDm51Rjf7gnAc4u6wYKpN0J9Ds3tbkHJGlzjU0X6PP9X8ysogvbA8j+0iGQQ9IfqCAq
-         agVnJ5g15dV884y7FFjlgIi162rjxcZrHU+kF35swLddvZrNG5FW6sWlJBOHOCywjrIn
-         r//ZI6DCZkjvUCefaU5bbGkO55Agzj/acnprdjd+LU5mXSthMHb4GR5UCnp2Gij/J1PP
-         yL1Q==
-X-Forwarded-Encrypted: i=1; AJvYcCURzWnNwzRqpL6UjSTSoj/t+W/VrTXfRndqBwVegzdxoTz+fHTSvDtVSDBB/fMMS8xNR+4Z9j4MBWgV9MI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyJwaDltVFJwdn0tJ00dUl9BCehaI4HJJE3saDewzhB0Tw64T8y
-	bOrEOaHGR1JsuTZjDE5+7VLmjECkYoXz0EixibBR6GkeCVrbf6EQpdO3IYOnU0c=
-X-Google-Smtp-Source: AGHT+IHzEyIAn5BZKdsgEF+tkgsjaGhBmdzJxEgxGtA7eOAAo7NB0TYXIZ9VX90RiBa6VatggNPMRg==
-X-Received: by 2002:a05:6a20:9f4e:b0:1c4:a531:bafd with SMTP id adf61e73a8af0-1cad7f8b77dmr2391092637.18.1724234617078;
-        Wed, 21 Aug 2024 03:03:37 -0700 (PDT)
-Received: from [10.84.144.49] ([203.208.167.150])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7127aef610esm9588632b3a.129.2024.08.21.03.03.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 21 Aug 2024 03:03:36 -0700 (PDT)
-Message-ID: <83142dc8-edcf-4e47-8215-8b359a2b7156@bytedance.com>
-Date: Wed, 21 Aug 2024 18:03:30 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WpkcY2w3Pz2yPj
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2024 21:28:56 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.18.186.216])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4WpkXm5yH7z6D9Bh;
+	Wed, 21 Aug 2024 19:25:44 +0800 (CST)
+Received: from lhrpeml500005.china.huawei.com (unknown [7.191.163.240])
+	by mail.maildlp.com (Postfix) with ESMTPS id A576D140B18;
+	Wed, 21 Aug 2024 19:28:50 +0800 (CST)
+Received: from localhost (10.203.177.66) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Wed, 21 Aug
+ 2024 12:28:49 +0100
+Date: Wed, 21 Aug 2024 12:28:48 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Tong Tiangen <tongtiangen@huawei.com>
+CC: Mark Rutland <mark.rutland@arm.com>, Catalin Marinas
+	<catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Andrew Morton
+	<akpm@linux-foundation.org>, James Morse <james.morse@arm.com>, "Robin
+ Murphy" <robin.murphy@arm.com>, Andrey Konovalov <andreyknvl@gmail.com>,
+	Dmitry Vyukov <dvyukov@google.com>, Vincenzo Frascino
+	<vincenzo.frascino@arm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
+ Piggin <npiggin@gmail.com>, Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+	Alexander Potapenko <glider@google.com>, Christophe Leroy
+	<christophe.leroy@csgroup.eu>, Aneesh Kumar K.V <aneesh.kumar@kernel.org>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Thomas Gleixner
+	<tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+	<bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, <x86@kernel.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-mm@kvack.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, <wangkefeng.wang@huawei.com>, Guohanjun
+	<guohanjun@huawei.com>
+Subject: Re: [PATCH v12 4/6] arm64: support copy_mc_[user]_highpage()
+Message-ID: <20240821122848.00004047@Huawei.com>
+In-Reply-To: <8257d76b-c700-89a6-0e29-f194d2e1cd61@huawei.com>
+References: <20240528085915.1955987-1-tongtiangen@huawei.com>
+	<20240528085915.1955987-5-tongtiangen@huawei.com>
+	<20240819125601.0000687b@Huawei.com>
+	<8257d76b-c700-89a6-0e29-f194d2e1cd61@huawei.com>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,101 +64,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 06/14] mm: handle_pte_fault() use
- pte_offset_map_maywrite_nolock()
-Content-Language: en-US
-To: David Hildenbrand <david@redhat.com>
-Cc: LEROY Christophe <christophe.leroy2@cs-soprasteria.com>,
- "hughd@google.com" <hughd@google.com>,
- "willy@infradead.org" <willy@infradead.org>,
- "muchun.song@linux.dev" <muchun.song@linux.dev>,
- "vbabka@kernel.org" <vbabka@kernel.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "rppt@kernel.org" <rppt@kernel.org>,
- "vishal.moola@gmail.com" <vishal.moola@gmail.com>,
- "peterx@redhat.com" <peterx@redhat.com>,
- "ryan.roberts@arm.com" <ryan.roberts@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <cover.1724226076.git.zhengqi.arch@bytedance.com>
- <239432a0bc56464e58a6baf3622fdc72526c8d57.1724226076.git.zhengqi.arch@bytedance.com>
- <6a586524-5116-4eaf-b4f3-c1aea290d7c1@cs-soprasteria.com>
- <b4bf605a-d31a-40ad-8cee-fe505e45dc64@bytedance.com>
- <4b867535-8481-4fa1-bed1-ad25a76682f0@redhat.com>
- <ef40c2ef-e4a4-4b02-85b8-a930285a3d0e@bytedance.com>
- <61c05197-0baa-4680-ad24-5965ba37dc35@redhat.com>
-From: Qi Zheng <zhengqi.arch@bytedance.com>
-In-Reply-To: <61c05197-0baa-4680-ad24-5965ba37dc35@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Originating-IP: [10.203.177.66]
+X-ClientProxiedBy: lhrpeml500005.china.huawei.com (7.191.163.240) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+
+On Tue, 20 Aug 2024 11:02:05 +0800
+Tong Tiangen <tongtiangen@huawei.com> wrote:
+
+> =E5=9C=A8 2024/8/19 19:56, Jonathan Cameron =E5=86=99=E9=81=93:
+> > On Tue, 28 May 2024 16:59:13 +0800
+> > Tong Tiangen <tongtiangen@huawei.com> wrote:
+> >  =20
+> >> Currently, many scenarios that can tolerate memory errors when copying=
+ page
+> >> have been supported in the kernel[1~5], all of which are implemented by
+> >> copy_mc_[user]_highpage(). arm64 should also support this mechanism.
+> >>
+> >> Due to mte, arm64 needs to have its own copy_mc_[user]_highpage()
+> >> architecture implementation, macros __HAVE_ARCH_COPY_MC_HIGHPAGE and
+> >> __HAVE_ARCH_COPY_MC_USER_HIGHPAGE have been added to control it.
+> >>
+> >> Add new helper copy_mc_page() which provide a page copy implementation=
+ with
+> >> hardware memory error safe. The code logic of copy_mc_page() is the sa=
+me as
+> >> copy_page(), the main difference is that the ldp insn of copy_mc_page()
+> >> contains the fixup type EX_TYPE_KACCESS_ERR_ZERO_ME_SAFE, therefore, t=
+he
+> >> main logic is extracted to copy_page_template.S.
+> >>
+> >> [1] commit d302c2398ba2 ("mm, hwpoison: when copy-on-write hits poison=
+, take page offline")
+> >> [2] commit 1cb9dc4b475c ("mm: hwpoison: support recovery from HugePage=
+ copy-on-write faults")
+> >> [3] commit 6b970599e807 ("mm: hwpoison: support recovery from ksm_migh=
+t_need_to_copy()")
+> >> [4] commit 98c76c9f1ef7 ("mm/khugepaged: recover from poisoned anonymo=
+us memory")
+> >> [5] commit 12904d953364 ("mm/khugepaged: recover from poisoned file-ba=
+cked memory")
+> >>
+> >> Signed-off-by: Tong Tiangen <tongtiangen@huawei.com> =20
+> > Trivial stuff inline.
+> >=20
+> > Jonathan =20
+>=20
+> I'm sorry, I may not have understood what you meant. Where is the better
+> place to do inline? :)
+Oops. All I meant was:
+
+My comments are inline - as in within the patch later in the email.
 
 
 
-On 2024/8/21 17:53, David Hildenbrand wrote:
-> On 21.08.24 11:51, Qi Zheng wrote:
->>
->>
->> On 2024/8/21 17:41, David Hildenbrand wrote:
->>> On 21.08.24 11:24, Qi Zheng wrote:
->>>>
->>>>
->>>> On 2024/8/21 17:17, LEROY Christophe wrote:
->>>>>
->>>>>
->>>>> Le 21/08/2024 à 10:18, Qi Zheng a écrit :
->>>>>> In handle_pte_fault(), we may modify the vmf->pte after acquiring the
->>>>>> vmf->ptl, so convert it to using pte_offset_map_maywrite_nolock(). 
->>>>>> But
->>>>>> since we already do the pte_same() check, so there is no need to get
->>>>>> pmdval to do pmd_same() check, just pass NULL to pmdvalp parameter.
->>>>>>
->>>>>> Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
->>>>>> ---
->>>>>>      mm/memory.c | 9 +++++++--
->>>>>>      1 file changed, 7 insertions(+), 2 deletions(-)
->>>>>>
->>>>>> diff --git a/mm/memory.c b/mm/memory.c
->>>>>> index 93c0c25433d02..d3378e98faf13 100644
->>>>>> --- a/mm/memory.c
->>>>>> +++ b/mm/memory.c
->>>>>> @@ -5504,9 +5504,14 @@ static vm_fault_t handle_pte_fault(struct
->>>>>> vm_fault *vmf)
->>>>>>               * pmd by anon khugepaged, since that takes mmap_lock in
->>>>>> write
->>>>>>               * mode; but shmem or file collapse to THP could still
->>>>>> morph
->>>>>>               * it into a huge pmd: just retry later if so.
->>>>>> +         *
->>>>>> +         * Use the maywrite version to indicate that vmf->pte 
->>>>>> will be
->>>>>> +         * modified, but since we will use pte_same() to detect the
->>>>>> +         * change of the pte entry, there is no need to get pmdval.
->>>>>>               */
->>>>>> -        vmf->pte = pte_offset_map_nolock(vmf->vma->vm_mm, vmf->pmd,
->>>>>> -                         vmf->address, &vmf->ptl);
->>>>>> +        vmf->pte = pte_offset_map_maywrite_nolock(vmf->vma->vm_mm,
->>>>>> +                              vmf->pmd, vmf->address,
->>>>>> +                              NULL, &vmf->ptl);
->>>
->>> I think we discussed that passing NULL should be forbidden for that
->>> function.
->>
->> Yes, but for some maywrite case, there is no need to get pmdval to
->> do pmd_same() check. So I passed NULL and added a comment to
->> explain this.
-> 
-> I wonder if it's better to pass a dummy variable instead. One has to 
-> think harder why that is required compared to blindly passing "NULL" :)
-
-You are afraid that subsequent caller will abuse this function, right?
-My initial concern was that this would add a useless local vaiable, but
-perhaps that is not a big deal.
-
-Both are fine for me. ;)
-
-> 
 
