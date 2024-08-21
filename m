@@ -1,43 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-253-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-254-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20DCFC52D7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2024 05:36:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03989C52D6F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Aug 2024 05:39:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WpZp50rNfz2xfP;
-	Wed, 21 Aug 2024 15:36:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WpZsp3ktVz2y8q;
+	Wed, 21 Aug 2024 15:39:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Zz10EpcH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nrDZUMZF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=dlemoal@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WpZp44xlkz2xfK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2024 15:36:44 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 7D78160FB3;
-	Wed, 21 Aug 2024 05:36:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2994BC32786;
-	Wed, 21 Aug 2024 05:36:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1724218602;
-	bh=R23aIBz2yqL9qGSiJVxvnOGYZ7dS2UbIctnrc6vIiEA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Zz10EpcHidYx6bZwfmixlBpj7nXI/6mVY5uX/wWWR7394hI3us5nLUrXfFEuAze9E
-	 rlctTDymoJtcPwPX+RjYIodox0Dd6yezhrF6AuC4Qtws3ieGcPFqQBYtcUBwpnFSGq
-	 DFmCc351rsZ6k9cL4ANfvupgGkewEa36ZXUK/wcaw3tNEHYQvaFpTHlTwziYhrbBoP
-	 2tkYh34tOVYFi/Z2Db5pVKmvX7ZX5rKrJ0YEFT9GEtiilCdifSivludm7PqCNOXB2e
-	 aJlA2zY/W5BjMvheWEfIbAoDQ8RSH64wfMigZAc0UEfjv65mInfI6EcKGcTPx7gH7d
-	 dhWkoK2apRPYw==
-Message-ID: <f1fffaac-bea2-43d0-a003-f701694f5bb9@kernel.org>
-Date: Wed, 21 Aug 2024 14:36:39 +0900
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WpZsn6Tb4z2xfK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Aug 2024 15:39:57 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47L4dAYe014068;
+	Wed, 21 Aug 2024 05:39:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:content-transfer-encoding
+	:mime-version; s=pp1; bh=1jVQCyMHDTQ+hVX9qJcOcr36+WapSAmAQpeTgwb
+	XthQ=; b=nrDZUMZFOoi87Y0WHcim4I3C3hb54ea8qRhqWuB04XK770Qrsn6LVVr
+	YTW6Z0uQH8SglaPM0BD0JP0cxdlS27aoU9YtMvFgRbsHhOZf+8h2Gy8JYDvxmVoJ
+	D/EuwkMV4/Puj+tpMgb3NcJU7BlJ7PZceCWvVAvF+Bw2dyJXxhQOEVVMvMmK9flY
+	nD2rp4qkQ+pUTOFGQ/d+OmCG9c0B47Oiqvr++iW6X86HbZdJJlyGGOZCwFKWoBed
+	IgDKGC4rSMImMoa8Dw+S89UTIhvL/f2FYxIYgLeVJXHDmYxQh7zDFI4ReVPpuAVq
+	jHcp0L6Xidv99DrhX1+26vNgWtFte7Q==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 412mcyghux-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 21 Aug 2024 05:39:49 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 47L5dmC3006097;
+	Wed, 21 Aug 2024 05:39:49 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 412mcyghut-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 21 Aug 2024 05:39:48 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 47L1cVjP017666;
+	Wed, 21 Aug 2024 05:39:48 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4138w35xn2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 21 Aug 2024 05:39:48 +0000
+Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47L5dhiL46399796
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 21 Aug 2024 05:39:45 GMT
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4096358059;
+	Wed, 21 Aug 2024 05:39:43 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9B3A158057;
+	Wed, 21 Aug 2024 05:39:42 +0000 (GMT)
+Received: from li-4910aacc-2eed-11b2-a85c-d93b702d4d28.ibm.com.com (unknown [9.61.89.84])
+	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 21 Aug 2024 05:39:42 +0000 (GMT)
+From: Haren Myneni <haren@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, tyreld@linux.ibm.com,
+        brking@linux.ibm.com, hbabu@us.ibm.com,
+        Haren Myneni <haren@linux.ibm.com>, kernel test robot <lkp@intel.com>
+Subject: [PATCH] powerpc/pseries: Use correct data types from pseries_hp_errorlog struct
+Date: Tue, 20 Aug 2024 22:39:39 -0700
+Message-ID: <20240821053939.803169-1-haren@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 3MtLQTNMframxmOsXczyNlDg6vynO7OH
+X-Proofpoint-GUID: l-uZmzQOcFV4uAvxV2K9gQW4FD_lvXip
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -47,82 +86,174 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] ata: pata_macio: Fix DMA table overflow
-To: Michael Ellerman <mpe@ellerman.id.au>, cassel@kernel.org
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, hch@lst.de, linux-ppc@kolla.no,
- vidra@ufal.mff.cuni.cz
-References: <20240820030358.627711-1-mpe@ellerman.id.au>
-From: Damien Le Moal <dlemoal@kernel.org>
-Content-Language: en-US
-Organization: Western Digital Research
-In-Reply-To: <20240820030358.627711-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-21_05,2024-08-19_03,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
+ priorityscore=1501 phishscore=0 mlxscore=0 bulkscore=0 malwarescore=0
+ mlxlogscore=787 spamscore=0 lowpriorityscore=0 clxscore=1011
+ suspectscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2407110000 definitions=main-2408210038
 
-On 8/20/24 12:03 PM, Michael Ellerman wrote:
-> Kolbjørn and Jonáš reported that their 32-bit PowerMacs were crashing
-> in pata-macio since commit 09fe2bfa6b83 ("ata: pata_macio: Fix
-> max_segment_size with PAGE_SIZE == 64K").
-> 
-> For example:
-> 
->   kernel BUG at drivers/ata/pata_macio.c:544!
->   Oops: Exception in kernel mode, sig: 5 [#1]
->   BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 DEBUG_PAGEALLOC PowerMac
->   ...
->   NIP pata_macio_qc_prep+0xf4/0x190
->   LR  pata_macio_qc_prep+0xfc/0x190
->   Call Trace:
->     0xc1421660 (unreliable)
->     ata_qc_issue+0x14c/0x2d4
->     __ata_scsi_queuecmd+0x200/0x53c
->     ata_scsi_queuecmd+0x50/0xe0
->     scsi_queue_rq+0x788/0xb1c
->     __blk_mq_issue_directly+0x58/0xf4
->     blk_mq_plug_issue_direct+0x8c/0x1b4
->     blk_mq_flush_plug_list.part.0+0x584/0x5e0
->     __blk_flush_plug+0xf8/0x194
->     __submit_bio+0x1b8/0x2e0
->     submit_bio_noacct_nocheck+0x230/0x304
->     btrfs_work_helper+0x200/0x338
->     process_one_work+0x1a8/0x338
->     worker_thread+0x364/0x4c0
->     kthread+0x100/0x104
->     start_kernel_thread+0x10/0x14
-> 
-> That commit increased max_segment_size to 64KB, with the justification
-> that the SCSI core was already using that size when PAGE_SIZE == 64KB,
-> and that there was existing logic to split over-sized requests.
-> 
-> However with a sufficiently large request, the splitting logic causes
-> each sg to be split into two commands in the DMA table, leading to
-> overflow of the DMA table, triggering the BUG_ON().
-> 
-> With default settings the bug doesn't trigger, because the request size
-> is limited by max_sectors_kb == 1280, however max_sectors_kb can be
-> increased, and apparently some distros do that by default using udev
-> rules.
-> 
-> Fix the bug for 4KB kernels by reverting to the old max_segment_size.
-> 
-> For 64KB kernels the sg_tablesize needs to be halved, to allow for the
-> possibility that each sg will be split into two.
-> 
-> Fixes: 09fe2bfa6b83 ("ata: pata_macio: Fix max_segment_size with PAGE_SIZE == 64K")
-> Cc: stable@vger.kernel.org # v6.10+
-> Reported-by: Kolbjørn Barmen <linux-ppc@kolla.no>
-> Closes: https://lore.kernel.org/all/62d248bb-e97a-25d2-bcf2-9160c518cae5@kolla.no/
-> Reported-by: Jonáš Vidra <vidra@ufal.mff.cuni.cz>
-> Closes: https://lore.kernel.org/all/3b6441b8-06e6-45da-9e55-f92f2c86933e@ufal.mff.cuni.cz/
-> Tested-by: Kolbjørn Barmen <linux-ppc@kolla.no>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+_be32 type is defined for some elements in pseries_hp_errorlog
+struct but also used them u32 after be32_to_cpu() conversion.
 
-Applied to for-6.11-fixes. Thanks !
+Example: In handle_dlpar_errorlog()
+hp_elog->_drc_u.drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
 
+And later assigned to u32 type
+dlpar_cpu() - u32 drc_index = hp_elog->_drc_u.drc_index;
+
+This incorrect usage is giving the following warnings and the
+patch resolve these warnings with the correct assignment.
+
+arch/powerpc/platforms/pseries/dlpar.c:398:53: sparse: sparse:
+incorrect type in argument 1 (different base types) @@
+expected unsigned int [usertype] drc_index @@
+got restricted __be32 [usertype] drc_index @@
+...
+arch/powerpc/platforms/pseries/dlpar.c:418:43: sparse: sparse:
+incorrect type in assignment (different base types) @@
+expected restricted __be32 [usertype] drc_count @@
+got unsigned int [usertype] @@
+
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202408182142.wuIKqYae-lkp@intel.com/
+Closes: https://lore.kernel.org/oe-kbuild-all/202408182302.o7QRO45S-lkp@intel.com/
+Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c        | 24 ++++---------------
+ arch/powerpc/platforms/pseries/hotplug-cpu.c  |  2 +-
+ .../platforms/pseries/hotplug-memory.c        | 16 ++++++-------
+ arch/powerpc/platforms/pseries/pmem.c         |  2 +-
+ 4 files changed, 15 insertions(+), 29 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 2d960918cba8..6f0bc3ddbf85 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -513,19 +513,22 @@ static int dlpar_hp_dt_remove(u32 drc_index)
+ 
+ static int dlpar_hp_dt(struct pseries_hp_errorlog *phpe)
+ {
++	u32 drc_index;
+ 	int rc;
+ 
+ 	if (phpe->id_type != PSERIES_HP_ELOG_ID_DRC_INDEX)
+ 		return -EINVAL;
+ 
++	drc_index = be32_to_cpu(phpe->_drc_u.drc_index);
++
+ 	lock_device_hotplug();
+ 
+ 	switch (phpe->action) {
+ 	case PSERIES_HP_ELOG_ACTION_ADD:
+-		rc = dlpar_hp_dt_add(phpe->_drc_u.drc_index);
++		rc = dlpar_hp_dt_add(drc_index);
+ 		break;
+ 	case PSERIES_HP_ELOG_ACTION_REMOVE:
+-		rc = dlpar_hp_dt_remove(phpe->_drc_u.drc_index);
++		rc = dlpar_hp_dt_remove(drc_index);
+ 		break;
+ 	default:
+ 		pr_err("Invalid action (%d) specified\n", phpe->action);
+@@ -542,23 +545,6 @@ int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
+ {
+ 	int rc;
+ 
+-	/* pseries error logs are in BE format, convert to cpu type */
+-	switch (hp_elog->id_type) {
+-	case PSERIES_HP_ELOG_ID_DRC_COUNT:
+-		hp_elog->_drc_u.drc_count =
+-				be32_to_cpu(hp_elog->_drc_u.drc_count);
+-		break;
+-	case PSERIES_HP_ELOG_ID_DRC_INDEX:
+-		hp_elog->_drc_u.drc_index =
+-				be32_to_cpu(hp_elog->_drc_u.drc_index);
+-		break;
+-	case PSERIES_HP_ELOG_ID_DRC_IC:
+-		hp_elog->_drc_u.ic.count =
+-				be32_to_cpu(hp_elog->_drc_u.ic.count);
+-		hp_elog->_drc_u.ic.index =
+-				be32_to_cpu(hp_elog->_drc_u.ic.index);
+-	}
+-
+ 	switch (hp_elog->resource) {
+ 	case PSERIES_HP_ELOG_RESOURCE_MEM:
+ 		rc = dlpar_memory(hp_elog);
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index e62835a12d73..6838a0fcda29 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -757,7 +757,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ 	u32 drc_index;
+ 	int rc;
+ 
+-	drc_index = hp_elog->_drc_u.drc_index;
++	drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+ 
+ 	lock_device_hotplug();
+ 
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 3fe3ddb30c04..38dc4f7c9296 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -817,16 +817,16 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 	case PSERIES_HP_ELOG_ACTION_ADD:
+ 		switch (hp_elog->id_type) {
+ 		case PSERIES_HP_ELOG_ID_DRC_COUNT:
+-			count = hp_elog->_drc_u.drc_count;
++			count = be32_to_cpu(hp_elog->_drc_u.drc_count);
+ 			rc = dlpar_memory_add_by_count(count);
+ 			break;
+ 		case PSERIES_HP_ELOG_ID_DRC_INDEX:
+-			drc_index = hp_elog->_drc_u.drc_index;
++			drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+ 			rc = dlpar_memory_add_by_index(drc_index);
+ 			break;
+ 		case PSERIES_HP_ELOG_ID_DRC_IC:
+-			count = hp_elog->_drc_u.ic.count;
+-			drc_index = hp_elog->_drc_u.ic.index;
++			count = be32_to_cpu(hp_elog->_drc_u.ic.count);
++			drc_index = be32_to_cpu(hp_elog->_drc_u.ic.index);
+ 			rc = dlpar_memory_add_by_ic(count, drc_index);
+ 			break;
+ 		default:
+@@ -838,16 +838,16 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 	case PSERIES_HP_ELOG_ACTION_REMOVE:
+ 		switch (hp_elog->id_type) {
+ 		case PSERIES_HP_ELOG_ID_DRC_COUNT:
+-			count = hp_elog->_drc_u.drc_count;
++			count = be32_to_cpu(hp_elog->_drc_u.drc_count);
+ 			rc = dlpar_memory_remove_by_count(count);
+ 			break;
+ 		case PSERIES_HP_ELOG_ID_DRC_INDEX:
+-			drc_index = hp_elog->_drc_u.drc_index;
++			drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+ 			rc = dlpar_memory_remove_by_index(drc_index);
+ 			break;
+ 		case PSERIES_HP_ELOG_ID_DRC_IC:
+-			count = hp_elog->_drc_u.ic.count;
+-			drc_index = hp_elog->_drc_u.ic.index;
++			count = be32_to_cpu(hp_elog->_drc_u.ic.count);
++			drc_index = be32_to_cpu(hp_elog->_drc_u.ic.index);
+ 			rc = dlpar_memory_remove_by_ic(count, drc_index);
+ 			break;
+ 		default:
+diff --git a/arch/powerpc/platforms/pseries/pmem.c b/arch/powerpc/platforms/pseries/pmem.c
+index 3c290b9ed01b..0f1d45f32e4a 100644
+--- a/arch/powerpc/platforms/pseries/pmem.c
++++ b/arch/powerpc/platforms/pseries/pmem.c
+@@ -121,7 +121,7 @@ int dlpar_hp_pmem(struct pseries_hp_errorlog *hp_elog)
+ 		return -EINVAL;
+ 	}
+ 
+-	drc_index = hp_elog->_drc_u.drc_index;
++	drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+ 
+ 	lock_device_hotplug();
+ 
 -- 
-Damien Le Moal
-Western Digital Research
+2.43.5
 
 
