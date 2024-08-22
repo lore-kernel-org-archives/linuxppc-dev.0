@@ -1,77 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-314-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-315-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89585C531DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:15:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF6B9C531DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:15:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwP2Syvz2ykT;
-	Thu, 22 Aug 2024 17:14:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwQ5bq0z2yLT;
+	Thu, 22 Aug 2024 17:14:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=EXAv4B3b;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwN3cxyz2yLT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:28 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4WqDvG1Hfxz9sSX;
-	Thu, 22 Aug 2024 09:13:30 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id cfcB8-hHUiZb; Thu, 22 Aug 2024 09:13:30 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4WqDvG0NQrz9sSH;
-	Thu, 22 Aug 2024 09:13:30 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id ED0E58B77D;
-	Thu, 22 Aug 2024 09:13:29 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id mLRSvJmx548r; Thu, 22 Aug 2024 09:13:29 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (PO16920.IDSI0.si.c-s.fr [192.168.232.181])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D75308B77E;
-	Thu, 22 Aug 2024 09:13:28 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Theodore Ts'o" <tytso@mit.edu>,
-	"Jason A. Donenfeld" <Jason@zx2c4.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Shuah Khan <shuah@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-arch@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwQ2SmQz2yks
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:30 +1000 (AEST)
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-70cec4aa1e4so342424b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 00:14:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1724310868; x=1724915668; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=jy8AvBGPXewIN0f06tSdN0J5TZbHLAwXxEIbEfEZm70=;
+        b=EXAv4B3b0nds3d7opW+skIbhZBQUFH7EsjqvDcmwPO+5CD+sjq/B0LhJNpeNFmomtt
+         WVfGdXjuhwx/blq7cVTMbMvpNp3w14v/MW2NVxfnOpjkBKKqJzRNi4FwGijnNe4B6RWJ
+         Lxq1lWa7qisLRgM4imtmfakaKE5voERau/IOplfCOfO8xGtu03b7I4oQ2XNXTAdNPiSM
+         r/VyIBzIxLVcHbgTXo+vcY7k7fCm7RGCSIV3KZoTQLF7HC14f8d0c26DObB/8ioN51XB
+         S4k3j78WQmxgXr2r72SCm4ZjRIhUlm81MAxN/l3AC8kr/slIShdipRfTkxUolXhbOYKR
+         yfbw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724310868; x=1724915668;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=jy8AvBGPXewIN0f06tSdN0J5TZbHLAwXxEIbEfEZm70=;
+        b=KeTqnPrCRI6BESeqN/r+KMJ5k6eG3m3D/XvTYLtSLhCWrtbhDXkV1jdEztLJkZukWG
+         uOGv5fC7w27Nl8b25Cmhj3oA3b8TAajWcTb71Nkgf0AW+/Hq0TNzEQ/rox4KQ5HiYbDd
+         O1yHxBku7bgzQrZTGmBVMGSdq58tu9yfRf3seMUwgMZP/aqKlUsGNiuhjdx56ZUTX7ik
+         c+pU9VEVONWvCjxN8QG/aKosUOg+gGPHxFX7uDaaJqDhR/zxIOlMV7YuW5zLS5tADIHy
+         ycJXDvJ18vlo4ClOFhPAhqYgCNAQFzcvFURJeHKMJgE+IymgxiTLxARrvu/SFv7u2qe3
+         yZlQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWyXuS2LReSoNret/N9GipJYpML477nHbX0Oa52311nM+/n6zx6FgIfqTcBKuNErY6VuPZoDrSHkUV9/t8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyPkbrt+nxqyB3QY/8K1rNsPUVZQnxDfU2YfzSefaidgxwKDcXD
+	N/7hciqzjRgkSs2+I9JaA9CzBqSn+MBwUB+pKEGcjsH/lftSlDXbtAkofOMfomA=
+X-Google-Smtp-Source: AGHT+IEV/3obR+4TCbDGR6rVI1h9FT7v1/u/+fxVcK1o1ztnph09CHD4OJqmjxMXnPNwi8/vaSiIPQ==
+X-Received: by 2002:a05:6a21:6b0a:b0:1c0:e728:a99e with SMTP id adf61e73a8af0-1cada078d94mr5247385637.26.1724310868515;
+        Thu, 22 Aug 2024 00:14:28 -0700 (PDT)
+Received: from C02DW0BEMD6R.bytedance.net ([240e:473:c90:f96:d029:ea8a:4e6d:d272])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7cd9ac994a3sm695095a12.16.2024.08.22.00.14.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Aug 2024 00:14:28 -0700 (PDT)
+From: Qi Zheng <zhengqi.arch@bytedance.com>
+To: david@redhat.com,
+	hughd@google.com,
+	willy@infradead.org,
+	muchun.song@linux.dev,
+	vbabka@kernel.org,
+	akpm@linux-foundation.org,
+	rppt@kernel.org,
+	vishal.moola@gmail.com,
+	peterx@redhat.com,
+	ryan.roberts@arm.com,
+	christophe.leroy2@cs-soprasteria.com
+Cc: linux-kernel@vger.kernel.org,
 	linux-mm@kvack.org,
-	linux-trace-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org
-Subject: [PATCH v2 07/17] mm: Define VM_DROPPABLE for powerpc/32
-Date: Thu, 22 Aug 2024 09:13:15 +0200
-Message-ID: <315e3a268b165b6edad7dcb723b0d8a506a56c4e.1724309198.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <cover.1724309198.git.christophe.leroy@csgroup.eu>
-References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Qi Zheng <zhengqi.arch@bytedance.com>
+Subject: [PATCH v2 07/14] mm: khugepaged: collapse_pte_mapped_thp() use pte_offset_map_rw_nolock()
+Date: Thu, 22 Aug 2024 15:13:22 +0800
+Message-Id: <c377dab2bf55950e6155ea051aba3887ed5a2773.1724310149.git.zhengqi.arch@bytedance.com>
+X-Mailer: git-send-email 2.24.3 (Apple Git-128)
+In-Reply-To: <cover.1724310149.git.zhengqi.arch@bytedance.com>
+References: <cover.1724310149.git.zhengqi.arch@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,87 +89,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1724310794; l=2716; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=OlEqmFYyA/zYCHsi3M5a6YAHLTZymd8rahW36+TnP9o=; b=0KtX+75e5aHacqDKWQzqJJ0c3IpXSB6kgpJ4hqMZLLHdQ8eM9uPGFxsA9pxzj08bhyJT2vwTC Mzj8u0pdGU1Avply/I3zb6bed28Vac+xMEzM29FNgP7xAAaRupkUHDN
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-Commit 9651fcedf7b9 ("mm: add MAP_DROPPABLE for designating always
-lazily freeable mappings") only adds VM_DROPPABLE for 64 bits
-architectures.
+In collapse_pte_mapped_thp(), we may modify the pte and pmd entry after
+acquring the ptl, so convert it to using pte_offset_map_rw_nolock(). At
+this time, the write lock of mmap_lock is not held, and the pte_same()
+check is not performed after the PTL held. So we should get pgt_pmd and do
+pmd_same() check after the ptl held.
 
-In order to also use the getrandom vDSO implementation on powerpc/32,
-use VM_ARCH_1 for VM_DROPPABLE on powerpc/32. This is possible because
-VM_ARCH_1 is used for VM_SAO on powerpc and VM_SAO is only for
-powerpc/64.
+For the case where the ptl is released first and then the pml is acquired,
+the PTE page may have been freed, so we must do pmd_same() check before
+reacquiring the ptl.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
 ---
- fs/proc/task_mmu.c             | 4 +++-
- include/linux/mm.h             | 4 +++-
- include/trace/events/mmflags.h | 4 ++--
- 3 files changed, 8 insertions(+), 4 deletions(-)
+ mm/khugepaged.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 5f171ad7b436..4a3fe961cbf6 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -987,8 +987,10 @@ static void show_smap_vma_flags(struct seq_file *m, struct vm_area_struct *vma)
- #ifdef CONFIG_X86_USER_SHADOW_STACK
- 		[ilog2(VM_SHADOW_STACK)] = "ss",
- #endif
--#ifdef CONFIG_64BIT
-+#if VM_DROPPABLE != VM_NONE
- 		[ilog2(VM_DROPPABLE)] = "dp",
-+#endif
-+#ifdef CONFIG_64BIT
- 		[ilog2(VM_SEALED)] = "sl",
- #endif
- 	};
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index c4b238a20b76..865d3e21ee5e 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -359,7 +359,7 @@ extern unsigned int kobjsize(const void *objp);
+diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+index 53bfa7f4b7f82..15d3f7f3c65f2 100644
+--- a/mm/khugepaged.c
++++ b/mm/khugepaged.c
+@@ -1604,7 +1604,7 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+ 	if (userfaultfd_armed(vma) && !(vma->vm_flags & VM_SHARED))
+ 		pml = pmd_lock(mm, pmd);
  
- #if defined(CONFIG_X86)
- # define VM_PAT		VM_ARCH_1	/* PAT reserves whole VMA at once (x86) */
--#elif defined(CONFIG_PPC)
-+#elif defined(CONFIG_PPC64)
- # define VM_SAO		VM_ARCH_1	/* Strong Access Ordering (powerpc) */
- #elif defined(CONFIG_PARISC)
- # define VM_GROWSUP	VM_ARCH_1
-@@ -409,6 +409,8 @@ extern unsigned int kobjsize(const void *objp);
- #ifdef CONFIG_64BIT
- #define VM_DROPPABLE_BIT	40
- #define VM_DROPPABLE		BIT(VM_DROPPABLE_BIT)
-+#elif defined(CONFIG_PPC32)
-+#define VM_DROPPABLE		VM_ARCH_1
- #else
- #define VM_DROPPABLE		VM_NONE
- #endif
-diff --git a/include/trace/events/mmflags.h b/include/trace/events/mmflags.h
-index b63d211bd141..9820cbfbcb14 100644
---- a/include/trace/events/mmflags.h
-+++ b/include/trace/events/mmflags.h
-@@ -143,7 +143,7 @@ IF_HAVE_PG_ARCH_X(arch_3)
+-	start_pte = pte_offset_map_nolock(mm, pmd, haddr, &ptl);
++	start_pte = pte_offset_map_rw_nolock(mm, pmd, haddr, &pgt_pmd, &ptl);
+ 	if (!start_pte)		/* mmap_lock + page lock should prevent this */
+ 		goto abort;
+ 	if (!pml)
+@@ -1612,6 +1612,9 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+ 	else if (ptl != pml)
+ 		spin_lock_nested(ptl, SINGLE_DEPTH_NESTING);
  
- #if defined(CONFIG_X86)
- #define __VM_ARCH_SPECIFIC_1 {VM_PAT,     "pat"           }
--#elif defined(CONFIG_PPC)
-+#elif defined(CONFIG_PPC64)
- #define __VM_ARCH_SPECIFIC_1 {VM_SAO,     "sao"           }
- #elif defined(CONFIG_PARISC)
- #define __VM_ARCH_SPECIFIC_1 {VM_GROWSUP,	"growsup"	}
-@@ -165,7 +165,7 @@ IF_HAVE_PG_ARCH_X(arch_3)
- # define IF_HAVE_UFFD_MINOR(flag, name)
- #endif
- 
--#ifdef CONFIG_64BIT
-+#if VM_DROPPABLE != VM_NONE
- # define IF_HAVE_VM_DROPPABLE(flag, name) {flag, name},
- #else
- # define IF_HAVE_VM_DROPPABLE(flag, name)
++	if (unlikely(!pmd_same(pgt_pmd, pmdp_get_lockless(pmd))))
++		goto abort;
++
+ 	/* step 2: clear page table and adjust rmap */
+ 	for (i = 0, addr = haddr, pte = start_pte;
+ 	     i < HPAGE_PMD_NR; i++, addr += PAGE_SIZE, pte++) {
+@@ -1657,6 +1660,16 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+ 	/* step 4: remove empty page table */
+ 	if (!pml) {
+ 		pml = pmd_lock(mm, pmd);
++		/*
++		 * We called pte_unmap() and release the ptl before acquiring
++		 * the pml, which means we left the RCU critical section, so the
++		 * PTE page may have been freed, so we must do pmd_same() check
++		 * before reacquiring the ptl.
++		 */
++		if (unlikely(!pmd_same(pgt_pmd, pmdp_get_lockless(pmd)))) {
++			spin_unlock(pml);
++			goto pmd_change;
++		}
+ 		if (ptl != pml)
+ 			spin_lock_nested(ptl, SINGLE_DEPTH_NESTING);
+ 	}
+@@ -1688,6 +1701,7 @@ int collapse_pte_mapped_thp(struct mm_struct *mm, unsigned long addr,
+ 		pte_unmap_unlock(start_pte, ptl);
+ 	if (pml && pml != ptl)
+ 		spin_unlock(pml);
++pmd_change:
+ 	if (notified)
+ 		mmu_notifier_invalidate_range_end(&range);
+ drop_folio:
 -- 
-2.44.0
+2.20.1
 
 
