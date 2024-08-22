@@ -1,85 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-325-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-326-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ED43C531DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:16:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB5BFC531DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:16:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwz1SBkz2ytm;
-	Thu, 22 Aug 2024 17:14:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=LtgK/lsJ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDx05v5pz2yvn;
+	Thu, 22 Aug 2024 17:15:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwy6Mh9z2ysd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:58 +1000 (AEST)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-202089e57d8so3197855ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 00:14:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1724310897; x=1724915697; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=TKuz+eT/BjM4oBQXjKjArJ5u0hGAcRe4llal02NX1d4=;
-        b=LtgK/lsJk3/ahGjfxuGiDFPOCt1n9xIpLit235SLiM0S+NmTxV1dIALR2G9prhtOkp
-         HWDBGLuijGo/NeHPgUbSi5k4xCInkfeNkJvlzGkjR3qopton0uZ4URvSRRKR9cNg98yJ
-         Ia9SH9lA+PRGDyG0S1e/WtHh3ts4QV+mqIVIpnp6pN7T7SyzO/W0unJoxY2zDFQaAvNo
-         TRY8Ipv+6cGDVOx3818mJ5Yv4gujIFQW1rZeP7NmA9QvMflqAhKf6w09Ewu+bcG3iW5C
-         ma1uWqb4gw7ueH4r0Cy0S6mYC7U09vU61gH1QBpXOEaFzeDh6DIuZa6VcieuVWx+zCp1
-         1scQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724310897; x=1724915697;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=TKuz+eT/BjM4oBQXjKjArJ5u0hGAcRe4llal02NX1d4=;
-        b=F3W3e23r1BVk3zGSQwdu0B1PIncL7i/JMEuQGIuxG+vkxH540FXbJgj+Fyb8penPOj
-         TJJxQ+QoYLX/mMalmsP/EGP8eG8eelnPUMNp/4uaFlykZPtZJr72qth2ZejTTMBC9pXC
-         nHjNj6a7Xl5DlBdn8bVpXOywirYOU0LizS42s3F5dIXxMvCM6EB0mRCJeSpp8SyCLsu6
-         +/3dVZ9KPQUK9/KF0V+FtjvZlnGLVR0J9IMFFgMiP56cBhNggIpNAaVEA06bOEgdKQX5
-         dnosIA7BrU+iIs3yLE8tVlXxr3bXupfhvkK/wlRW3/xqNZlQLT3O1q9E9RIX1bzSQBg5
-         Yuhw==
-X-Forwarded-Encrypted: i=1; AJvYcCXJjb0vXT33XOaQn4Ij0zylui4hMeNmeK24CnWyd55g9o670c39Phh+pGjfNFnYA9j4QoZtttM+nh7pmLA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz4eUSqEKRmO/dUk72DnpcyrU9mrXOBeTGjLXne3Lg/DwFyXEmu
-	vl7BBDLcJgu6T0FqFB7ILXcB/bohOD7m1o2cdIP5TvXFDBXw74lh705V0JoC6/k=
-X-Google-Smtp-Source: AGHT+IF6H0tDfgQqKcPaVFXqnNnvtvkdaP6bepcTCK17Vph5rD33YztktUCyS9gQ0weOULsun7jJQw==
-X-Received: by 2002:a17:902:e88d:b0:1ff:43a8:22f2 with SMTP id d9443c01a7336-2037fe188b8mr31159405ad.24.1724310896888;
-        Thu, 22 Aug 2024 00:14:56 -0700 (PDT)
-Received: from C02DW0BEMD6R.bytedance.net ([240e:473:c90:f96:d029:ea8a:4e6d:d272])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7cd9ac994a3sm695095a12.16.2024.08.22.00.14.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 22 Aug 2024 00:14:56 -0700 (PDT)
-From: Qi Zheng <zhengqi.arch@bytedance.com>
-To: david@redhat.com,
-	hughd@google.com,
-	willy@infradead.org,
-	muchun.song@linux.dev,
-	vbabka@kernel.org,
-	akpm@linux-foundation.org,
-	rppt@kernel.org,
-	vishal.moola@gmail.com,
-	peterx@redhat.com,
-	ryan.roberts@arm.com,
-	christophe.leroy2@cs-soprasteria.com
-Cc: linux-kernel@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDx03mRTz2ysd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:15:00 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4WqDvP4Td1z9sT1;
+	Thu, 22 Aug 2024 09:13:37 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 09leES4wh1IT; Thu, 22 Aug 2024 09:13:37 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4WqDvP3ZyDz9sSy;
+	Thu, 22 Aug 2024 09:13:37 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 677238B77E;
+	Thu, 22 Aug 2024 09:13:37 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id RlobwgkX-7ZS; Thu, 22 Aug 2024 09:13:37 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (PO16920.IDSI0.si.c-s.fr [192.168.232.181])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 57A568B763;
+	Thu, 22 Aug 2024 09:13:36 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Andy Lutomirski <luto@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Theodore Ts'o" <tytso@mit.edu>,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Shuah Khan <shuah@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-arch@vger.kernel.org,
 	linux-mm@kvack.org,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Qi Zheng <zhengqi.arch@bytedance.com>
-Subject: [PATCH v2 12/14] mm: multi-gen LRU: walk_pte_range() use pte_offset_map_rw_nolock()
-Date: Thu, 22 Aug 2024 15:13:27 +0800
-Message-Id: <0e2980e9a31d3503a5dfb350c04f4ede4d05220e.1724310149.git.zhengqi.arch@bytedance.com>
-X-Mailer: git-send-email 2.24.3 (Apple Git-128)
-In-Reply-To: <cover.1724310149.git.zhengqi.arch@bytedance.com>
-References: <cover.1724310149.git.zhengqi.arch@bytedance.com>
+	linux-trace-kernel@vger.kernel.org,
+	linux-kselftest@vger.kernel.org
+Subject: [PATCH v2 14/17] selftests: vdso: Make test_vdso_getrandom look for the right vDSO function
+Date: Thu, 22 Aug 2024 09:13:22 +0200
+Message-ID: <04d1de23a2ff14e2709edd8b75e27b81d703bc57.1724309198.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.44.0
+In-Reply-To: <cover.1724309198.git.christophe.leroy@csgroup.eu>
+References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,48 +81,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1724310794; l=2750; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=XmrEpCsMzE9+kz6qQUG5kHUCZS2KlgNDovuZDzi1tW8=; b=OQ+cTCj7yV9Xo8q0GnJliOhCQVzFZ+ijay4M06NYygaEBLMtMi7pCe4Q4I/Ci+O/oMyq9e4UF iUvY6HCYUMlDrWIesk4eenuoXEY5x27+R68IZY9KDwMCYTEXHBIsX+v
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-In walk_pte_range(), we may modify the pte entry after holding the ptl, so
-convert it to using pte_offset_map_rw_nolock(). At this time, the write
-lock of mmap_lock is not held, and the pte_same() check is not performed
-after the ptl held, so we should get pmdval and do pmd_same() check to
-ensure the stability of pmd entry.
+Don't hard-code x86 specific names, use vdso_config definitions
+to find the correct function matching the architecture.
 
-Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
+Add random VDSO function names in names[][]. Remove the #ifdef
+CONFIG_VDSO32, having the name there all the time is harmless
+and guaranties a steady index for following strings.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- mm/vmscan.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ tools/testing/selftests/vDSO/vdso_config.h         | 8 +++-----
+ tools/testing/selftests/vDSO/vdso_test_getrandom.c | 8 ++++++--
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 5dc96a843466a..89ef1ac8eb1a6 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -3396,8 +3396,10 @@ static bool walk_pte_range(pmd_t *pmd, unsigned long start, unsigned long end,
- 	struct pglist_data *pgdat = lruvec_pgdat(walk->lruvec);
- 	DEFINE_MAX_SEQ(walk->lruvec);
- 	int old_gen, new_gen = lru_gen_from_seq(max_seq);
-+	pmd_t pmdval;
+diff --git a/tools/testing/selftests/vDSO/vdso_config.h b/tools/testing/selftests/vDSO/vdso_config.h
+index 00bfed6e4922..740ce8c98d2e 100644
+--- a/tools/testing/selftests/vDSO/vdso_config.h
++++ b/tools/testing/selftests/vDSO/vdso_config.h
+@@ -68,16 +68,15 @@ static const char *versions[7] = {
+ 	"LINUX_5.10"
+ };
  
--	pte = pte_offset_map_nolock(args->mm, pmd, start & PMD_MASK, &ptl);
-+	pte = pte_offset_map_rw_nolock(args->mm, pmd, start & PMD_MASK, &pmdval,
-+				       &ptl);
- 	if (!pte)
- 		return false;
- 	if (!spin_trylock(ptl)) {
-@@ -3405,6 +3407,11 @@ static bool walk_pte_range(pmd_t *pmd, unsigned long start, unsigned long end,
- 		return false;
- 	}
+-static const char *names[2][6] = {
++static const char *names[2][7] = {
+ 	{
+ 		"__kernel_gettimeofday",
+ 		"__kernel_clock_gettime",
+ 		"__kernel_time",
+ 		"__kernel_clock_getres",
+ 		"__kernel_getcpu",
+-#if defined(VDSO_32BIT)
+ 		"__kernel_clock_gettime64",
+-#endif
++		"__kernel_getrandom",
+ 	},
+ 	{
+ 		"__vdso_gettimeofday",
+@@ -85,9 +84,8 @@ static const char *names[2][6] = {
+ 		"__vdso_time",
+ 		"__vdso_clock_getres",
+ 		"__vdso_getcpu",
+-#if defined(VDSO_32BIT)
+ 		"__vdso_clock_gettime64",
+-#endif
++		"__vdso_getrandom",
+ 	},
+ };
  
-+	if (unlikely(!pmd_same(pmdval, pmdp_get_lockless(pmd)))) {
-+		pte_unmap_unlock(pte, ptl);
-+		return false;
-+	}
+diff --git a/tools/testing/selftests/vDSO/vdso_test_getrandom.c b/tools/testing/selftests/vDSO/vdso_test_getrandom.c
+index 05122425a873..02bcffc23e0c 100644
+--- a/tools/testing/selftests/vDSO/vdso_test_getrandom.c
++++ b/tools/testing/selftests/vDSO/vdso_test_getrandom.c
+@@ -21,6 +21,7 @@
+ 
+ #include "../kselftest.h"
+ #include "parse_vdso.h"
++#include "vdso_config.h"
+ 
+ #ifndef timespecsub
+ #define	timespecsub(tsp, usp, vsp)					\
+@@ -107,6 +108,9 @@ static void vgetrandom_put_state(void *state)
+ 
+ static void vgetrandom_init(void)
+ {
++	const char *version = versions[VDSO_VERSION];
++	const char **name = (const char **)&names[VDSO_NAMES];
 +
- 	arch_enter_lazy_mmu_mode();
- restart:
- 	for (i = pte_index(start), addr = start; addr != end; i++, addr += PAGE_SIZE) {
+ 	if (pthread_key_create(&grnd_ctx.key, vgetrandom_put_state) != 0)
+ 		return;
+ 	unsigned long sysinfo_ehdr = getauxval(AT_SYSINFO_EHDR);
+@@ -115,9 +119,9 @@ static void vgetrandom_init(void)
+ 		exit(KSFT_SKIP);
+ 	}
+ 	vdso_init_from_sysinfo_ehdr(sysinfo_ehdr);
+-	grnd_ctx.fn = (__typeof__(grnd_ctx.fn))vdso_sym("LINUX_2.6", "__vdso_getrandom");
++	grnd_ctx.fn = (__typeof__(grnd_ctx.fn))vdso_sym(version, name[6]);
+ 	if (!grnd_ctx.fn) {
+-		printf("__vdso_getrandom is missing!\n");
++		printf("%s is missing!\n", name[6]);
+ 		exit(KSFT_FAIL);
+ 	}
+ 	if (grnd_ctx.fn(NULL, 0, 0, &grnd_ctx.params, ~0UL) != 0) {
 -- 
-2.20.1
+2.44.0
 
 
