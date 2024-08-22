@@ -1,77 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-312-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-313-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64A65C3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:15:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0F64C5320E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:15:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwJ0JF1z2yhr;
-	Thu, 22 Aug 2024 17:14:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwL55ctz2yjV;
+	Thu, 22 Aug 2024 17:14:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=OciNZDeO;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwH3x17z2yLT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:23 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4WqDvH1Lg0z9sSY;
-	Thu, 22 Aug 2024 09:13:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id HrgTAL98uEO3; Thu, 22 Aug 2024 09:13:31 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4WqDvH0Z6sz9sSH;
-	Thu, 22 Aug 2024 09:13:31 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 018F68B77D;
-	Thu, 22 Aug 2024 09:13:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 4Xoul67SwRYa; Thu, 22 Aug 2024 09:13:30 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (PO16920.IDSI0.si.c-s.fr [192.168.232.181])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id EC72A8B763;
-	Thu, 22 Aug 2024 09:13:29 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Theodore Ts'o" <tytso@mit.edu>,
-	"Jason A. Donenfeld" <Jason@zx2c4.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Shuah Khan <shuah@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-arch@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwL1XCYz2yLT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:26 +1000 (AEST)
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-71430e7eaf8so391984b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 00:14:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1724310863; x=1724915663; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=YTJMrM+GLhYLeZwUuiK6dImcBAbTGjqYt196yQPATUA=;
+        b=OciNZDeORUbI63yazH0oDkuhSMpppsE20FtTPXLv4w/liCgRyP1LfAGtiZRfJM77rA
+         S4pZ6n0WBycwWw1EJKiPfgK4DTxbwNk7EEZ2mYgqMqFVV0+JBW//52Q2K/MKhYcJNjyw
+         rVeStUvE6knAeP6ZVTwDknL8iIa/YTpbb0KZ/GTM00QYf9bPxZJ6fWSSlDofU2iogPOr
+         Be1gWKWnjEJvysQL1qgD2L3PDbl/kpdLR27BDRrX0Ldm3JG5SWHTMATSTx6Bl/dENZXb
+         PZIGgZW+8URMzNEtlUxOWxVryrSlXJUK05nB6h2PonwW5ke0EMXuU7R1VLKWHch0jmq+
+         JclQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724310863; x=1724915663;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=YTJMrM+GLhYLeZwUuiK6dImcBAbTGjqYt196yQPATUA=;
+        b=ppRfz6rMVwdgeqOgo0yOP+2Xi2tU2rcxZNMvI4ZHhB1H00SvXvQBOKOWO3956YuFkh
+         n4M2Kw6sAP7wdPFDHXbfWRW2hEBqmsPkzOFspAMmGisnMGbhHBR4QfLvDoipRQc8gS1p
+         oKhgLhaatpMX82NPiGxn+Bl73NqKcBEMno8r/+q457ypmgrDdf8phcIZUrjRckz+XThN
+         eJMLM6ISLlTz48NB1QmesDwqj/HTl5+9wmcW6A8z5lf/weXq97e4YE6HkDyQblZIZD9q
+         ujshILdaYVZASGSEsKVcsfCLwDdl7uU2CYc1zVobQ0pM5hy7PS0XUtUJnmm7a37qVEzg
+         PoPw==
+X-Forwarded-Encrypted: i=1; AJvYcCVBdIPR0nJcQ2Xj8A0SUOZ4ZUZ0JW4VtUn4psjOTieUGZCwxtZNgRiYwmbmctG9xi4h7wRT+5XE83tWNWQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwVVuBXfiNYwc0OpGsWARiTlw1XoQC2vk789qLyI1JYmuklvzrL
+	EgLiFVahAUAjuWUVK4XYWHfbdSHtysGLdJI0DdkKcTwqIxmcV+pYQqG7RY79zkM=
+X-Google-Smtp-Source: AGHT+IEJaUpX6CQIEutPHebqIOZXfyMaKxdLW1UElMR3gb10gY3PgzFG7UEaK+UwdtskMN8KUpfIGw==
+X-Received: by 2002:a05:6a00:cd4:b0:714:1bce:913a with SMTP id d2e1a72fcca58-7142356e960mr5852557b3a.21.1724310862916;
+        Thu, 22 Aug 2024 00:14:22 -0700 (PDT)
+Received: from C02DW0BEMD6R.bytedance.net ([240e:473:c90:f96:d029:ea8a:4e6d:d272])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7cd9ac994a3sm695095a12.16.2024.08.22.00.14.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Aug 2024 00:14:22 -0700 (PDT)
+From: Qi Zheng <zhengqi.arch@bytedance.com>
+To: david@redhat.com,
+	hughd@google.com,
+	willy@infradead.org,
+	muchun.song@linux.dev,
+	vbabka@kernel.org,
+	akpm@linux-foundation.org,
+	rppt@kernel.org,
+	vishal.moola@gmail.com,
+	peterx@redhat.com,
+	ryan.roberts@arm.com,
+	christophe.leroy2@cs-soprasteria.com
+Cc: linux-kernel@vger.kernel.org,
 	linux-mm@kvack.org,
-	linux-trace-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org
-Subject: [PATCH v2 08/17] powerpc: Add little endian variants of LWZX_BE and STWX_BE
-Date: Thu, 22 Aug 2024 09:13:16 +0200
-Message-ID: <cea04e5b971c959d823682e1e338c5c40d134f0c.1724309198.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <cover.1724309198.git.christophe.leroy@csgroup.eu>
-References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Qi Zheng <zhengqi.arch@bytedance.com>
+Subject: [PATCH v2 06/14] mm: handle_pte_fault() use pte_offset_map_rw_nolock()
+Date: Thu, 22 Aug 2024 15:13:21 +0800
+Message-Id: <5acabedfae7ded01b075960b4a91f2e15b4d76b5.1724310149.git.zhengqi.arch@bytedance.com>
+X-Mailer: git-send-email 2.24.3 (Apple Git-128)
+In-Reply-To: <cover.1724310149.git.zhengqi.arch@bytedance.com>
+References: <cover.1724310149.git.zhengqi.arch@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,40 +89,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1724310794; l=906; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=6H7T4OtghNGIKLYUW15IDF5ngiuRyCUv+bUYaWIueQo=; b=hNY+LGr2Rcm1FruX/Pi4TXpEpJ3NK0USBgOJB07umxT2MU3l11Qrgf0kRkvOEtaehX9BImGb3 aPlCV4CucUaA5+VROpxaJP9JVn4u1j8nncN+Akg3rm5xpKRsYhQxEMu
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-To support getrandom in VDSO which is based on little endian storage,
-add macros equivalent to LWZX_BE and STWX_BE for little endian
-accesses.
+In handle_pte_fault(), we may modify the vmf->pte after acquiring the
+vmf->ptl, so convert it to using pte_offset_map_rw_nolock(). But since we
+will do the pte_same() check, so there is no need to get pmdval to do
+pmd_same() check, just pass a dummy variable to it.
 
-Put them outside of __powerpc64__ #ifdef so that they can also be used
-for PPC32.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
 ---
- arch/powerpc/include/asm/asm-compat.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ mm/memory.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
-index 2bc53c646ccd..6e53a80917ef 100644
---- a/arch/powerpc/include/asm/asm-compat.h
-+++ b/arch/powerpc/include/asm/asm-compat.h
-@@ -61,4 +61,12 @@
- 
- #endif
- 
-+#ifdef __BIG_ENDIAN__
-+#define LWZX_LE	stringify_in_c(lwbrx)
-+#define STWX_LE	stringify_in_c(stwbrx)
-+#else
-+#define LWZX_LE	stringify_in_c(lwzx)
-+#define STWX_LE	stringify_in_c(stwx)
-+#endif
+diff --git a/mm/memory.c b/mm/memory.c
+index 93c0c25433d02..7b6071a0e21e2 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -5499,14 +5499,22 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
+ 		vmf->pte = NULL;
+ 		vmf->flags &= ~FAULT_FLAG_ORIG_PTE_VALID;
+ 	} else {
++		pmd_t dummy_pmdval;
 +
- #endif /* _ASM_POWERPC_ASM_COMPAT_H */
+ 		/*
+ 		 * A regular pmd is established and it can't morph into a huge
+ 		 * pmd by anon khugepaged, since that takes mmap_lock in write
+ 		 * mode; but shmem or file collapse to THP could still morph
+ 		 * it into a huge pmd: just retry later if so.
++		 *
++		 * Use the maywrite version to indicate that vmf->pte will be
++		 * modified, but since we will use pte_same() to detect the
++		 * change of the pte entry, there is no need to get pmdval, so
++		 * just pass a dummy variable to it.
+ 		 */
+-		vmf->pte = pte_offset_map_nolock(vmf->vma->vm_mm, vmf->pmd,
+-						 vmf->address, &vmf->ptl);
++		vmf->pte = pte_offset_map_rw_nolock(vmf->vma->vm_mm, vmf->pmd,
++						    vmf->address, &dummy_pmdval,
++						    &vmf->ptl);
+ 		if (unlikely(!vmf->pte))
+ 			return 0;
+ 		vmf->orig_pte = ptep_get_lockless(vmf->pte);
 -- 
-2.44.0
+2.20.1
 
 
