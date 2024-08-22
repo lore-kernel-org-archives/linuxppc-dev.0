@@ -1,62 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-310-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-311-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9928C5320E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:14:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67927C531DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:15:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDw7004pz2yK9;
-	Thu, 22 Aug 2024 17:14:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwC2LKrz2yPj;
+	Thu, 22 Aug 2024 17:14:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::22d"
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Jh46hr6X;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=hkhjhs1w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::22d; helo=mail-oi1-x22d.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-oi1-x22d.google.com (mail-oi1-x22d.google.com [IPv6:2607:f8b0:4864:20::22d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDw64mJqz2ygy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:14 +1000 (AEST)
-Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-7142a93ea9cso394260b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 00:14:14 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwB6l4bz2yLT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:18 +1000 (AEST)
+Received: by mail-oi1-x22d.google.com with SMTP id 5614622812f47-3db1d0fca58so279838b6e.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 00:14:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1724310851; x=1724915651; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1724310857; x=1724915657; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=jnbwyZ8nm7OA7xAj7wrWrabgK1t5zgYyH3DelQTt/t4=;
-        b=Jh46hr6Xw1i3jrNTYvvpAYRvQTeq4fDqTOX6C8hjg9bWXrwSEDmEXEPN+Oz4W/iWJv
-         JpC7AQGB4rlLQxKO1HfnvJ9QtYFPH4yvYez1q5scNK0dMlwnvARovb+fpGuh8ErXYz2W
-         3gOGBF2exieTsSVkgH3bRlljsnBTeNW2wxd7dF8GvVMtU7JzqCm9HdEYq7tD5kzftKBF
-         jxUCAyeiF/qKuHePIxKO3Wg03wCOmvMSj6YoJBl3XK7uaW1G9GUpaY/We5quXAPJrems
-         g+g9APXnQxtGD3ebcZIKve4HM9E6A9MGzjd4psWSMRKDsyDJ3OtuMnnuCs6UOJROmWB1
-         l3Zw==
+        bh=toohyZrQNwk2kNUrhQFlaPWHYnggLi3YB3M65Yq8QzA=;
+        b=hkhjhs1wVytFCBaYErD756Jzgt+B6ppJIz5j15FWmjx8WPntZDghQ0Szbe6pUC+GUy
+         Og0V+ww+fGjGzDgnmtdhZWieE4I7YJT7jKjCrwteRuWCWPQOO3XLK+ABx9B6S6YTAaPT
+         DT1qp18hGKnOuj8EY6C4TQ0JkAab8jpsYGDgRAAZx5LxI3noRB4V4cO29frUO3r0TwD9
+         t+EHRbYG/WpkNAEQbIF/Rv1Rv9F0uKASrh7t2jThtuA08zT6hRkPB9jGfP+AsbSPW9UQ
+         wuu1ODG8Yb8FJtJxEBgmoNR1yE5aAMeAjBGY1Qq9xwordWS2k7o0e/nISosp+RV1BHvA
+         lmCA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724310851; x=1724915651;
+        d=1e100.net; s=20230601; t=1724310857; x=1724915657;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=jnbwyZ8nm7OA7xAj7wrWrabgK1t5zgYyH3DelQTt/t4=;
-        b=mpANmvgDVOs6WaaOGshTjxJPEupbqcjMGN441F7vHHSuPXa8OF7lPkZL6CNITjzInW
-         DpWnPTVwN5HZdMyHX3dIwBVhLr1ZEw5Zr7ARKHUkBOu0ZqSZM8s3jka9wDqoYtFrRtYD
-         Pl5yiaU2QC1m/Xe4PDVbe1aSxbKVYTjmy2dK+xWKhTizyIFPh4ksKLYnXeYX3FAmSv67
-         3dCmiFI+DU4PleuSLJf7OIGnIdP3WXnnTMCJZchgU5XReDvwI02z7tpUegqQGZEL+h1l
-         YKU7iUSBRt+ndZOdgsE/bbHqE1HHHZpQMOaCKhHr3nYO+1U/c11fnNHB2n8vL5gzjGkj
-         HveA==
-X-Forwarded-Encrypted: i=1; AJvYcCWRFI2t0syca0ATkJqqMVlSfmQ9IgIThtv/AtCIL2iDBYfwWn8tBCxCh7Caiz+qzcwIKYX00waj2YmerxM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxw4w9pd60GBBAckGmmLpw+uHH/br+mLDAWMW1dKm98yr1VrLe4
-	H5fq7u4bdJooCpvX/IDWVm3gHhTm7uy6QXRm2qFmP4rsNKQ3mgsVPhKuxRthqSY=
-X-Google-Smtp-Source: AGHT+IGXmNRuv+mQEijx6lEwkmYjHk6XirTogWRG+N5Gk1h3xzTz9eMzqUkZv9fzF0cNQyeHFRUhTA==
-X-Received: by 2002:a05:6a00:c93:b0:70d:3777:da8b with SMTP id d2e1a72fcca58-714235a5404mr6267050b3a.25.1724310851578;
-        Thu, 22 Aug 2024 00:14:11 -0700 (PDT)
+        bh=toohyZrQNwk2kNUrhQFlaPWHYnggLi3YB3M65Yq8QzA=;
+        b=tIY1VtN+24tkSlJNz7L064CUrZkjUomFVe+FiCSkqFHAVXDC36pzqiN9OJLz0QtpZY
+         k+cXdlP1zBbE4MjoveTn/RKY3CIy88X/XhmjRDbVZk2KY+NmL5eApP94lm2v4dpfmerg
+         cvAkN3bANQJgyCetLCz9uDPhLodH2gjBJ+O5snZt6UFxIFfmtnxE20/pTg4VzxfxMybx
+         p7kGD7+JYctnr5FyXv7yjRYaOMVj7/vnwADfScTAojRz5gOcOL2N0nVoxD8oS5Ep8Fot
+         PgWnfWX8jZbtIUXE7sijKyKcZpvIBKohfTF8ia20sgMVS4lhB5JXOtrM3kdgwb/O8vFV
+         U0BA==
+X-Forwarded-Encrypted: i=1; AJvYcCVRv/QwyMNyAydXdoWN1QrPTgPXtnIfZ/Tr8WtyKo8vwfbMiHq3TRxnO1CSEAMZSnwe5B5J/NB5tLyH3G8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx8HF0GjQfduEyG9odszlml/dy7mqQzgYZzyfX0pR/vl2B8Fr6C
+	YuLXzd8aAK+uTVLWuOxM3XVv/zsKypByUU0wOLQ7JObFAnp1h1KGaW+MVnoAX/E=
+X-Google-Smtp-Source: AGHT+IGgjighdWtbrKc2Se12Iutexgq8AwJLXy8Rdygo/b6qt6ZS1aEL6K5S14xFU0XlAJpbImifsA==
+X-Received: by 2002:a05:6808:179b:b0:3d9:38e2:5392 with SMTP id 5614622812f47-3de195c380emr6158328b6e.36.1724310857179;
+        Thu, 22 Aug 2024 00:14:17 -0700 (PDT)
 Received: from C02DW0BEMD6R.bytedance.net ([240e:473:c90:f96:d029:ea8a:4e6d:d272])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7cd9ac994a3sm695095a12.16.2024.08.22.00.14.06
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7cd9ac994a3sm695095a12.16.2024.08.22.00.14.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 22 Aug 2024 00:14:10 -0700 (PDT)
+        Thu, 22 Aug 2024 00:14:16 -0700 (PDT)
 From: Qi Zheng <zhengqi.arch@bytedance.com>
 To: david@redhat.com,
 	hughd@google.com,
@@ -74,9 +74,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org,
 	Qi Zheng <zhengqi.arch@bytedance.com>
-Subject: [PATCH v2 04/14] mm: filemap: filemap_fault_recheck_pte_none() use pte_offset_map_ro_nolock()
-Date: Thu, 22 Aug 2024 15:13:19 +0800
-Message-Id: <d5d4744c87c759a53b5e115a0d59326232696f61.1724310149.git.zhengqi.arch@bytedance.com>
+Subject: [PATCH v2 05/14] mm: khugepaged: __collapse_huge_page_swapin() use pte_offset_map_ro_nolock()
+Date: Thu, 22 Aug 2024 15:13:20 +0800
+Message-Id: <2b7dceaa12da273c6decf92e3bf2ebc4f4e85ec5.1724310149.git.zhengqi.arch@bytedance.com>
 X-Mailer: git-send-email 2.24.3 (Apple Git-128)
 In-Reply-To: <cover.1724310149.git.zhengqi.arch@bytedance.com>
 References: <cover.1724310149.git.zhengqi.arch@bytedance.com>
@@ -91,29 +91,32 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-In filemap_fault_recheck_pte_none(), we just do pte_none() check, so
-convert it to using pte_offset_map_ro_nolock().
+In __collapse_huge_page_swapin(), we just use the ptl for pte_same() check
+in do_swap_page(). In other places, we directly use pte_offset_map_lock(),
+so convert it to using pte_offset_map_ro_nolock().
 
 Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
 ---
- mm/filemap.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ mm/khugepaged.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 0f13126b43b08..c98da9af6b9bd 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -3234,8 +3234,8 @@ static vm_fault_t filemap_fault_recheck_pte_none(struct vm_fault *vmf)
- 	if (!(vmf->flags & FAULT_FLAG_ORIG_PTE_VALID))
- 		return 0;
+diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+index 4a83c40d90538..53bfa7f4b7f82 100644
+--- a/mm/khugepaged.c
++++ b/mm/khugepaged.c
+@@ -1011,7 +1011,11 @@ static int __collapse_huge_page_swapin(struct mm_struct *mm,
+ 		};
  
--	ptep = pte_offset_map_nolock(vma->vm_mm, vmf->pmd, vmf->address,
--				     &vmf->ptl);
-+	ptep = pte_offset_map_ro_nolock(vma->vm_mm, vmf->pmd, vmf->address,
-+					&vmf->ptl);
- 	if (unlikely(!ptep))
- 		return VM_FAULT_NOPAGE;
- 
+ 		if (!pte++) {
+-			pte = pte_offset_map_nolock(mm, pmd, address, &ptl);
++			/*
++			 * Here the ptl is only used to check pte_same() in
++			 * do_swap_page(), so readonly version is enough.
++			 */
++			pte = pte_offset_map_ro_nolock(mm, pmd, address, &ptl);
+ 			if (!pte) {
+ 				mmap_read_unlock(mm);
+ 				result = SCAN_PMD_NULL;
 -- 
 2.20.1
 
