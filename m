@@ -1,77 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C7D8C531DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:16:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62AB5C531DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:16:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwd2H6sz2ypD;
-	Thu, 22 Aug 2024 17:14:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwk4yXzz2xYl;
+	Thu, 22 Aug 2024 17:14:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::36"
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=cs8MKNLk;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2001:4860:4864:20::36; helo=mail-oa1-x36.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-oa1-x36.google.com (mail-oa1-x36.google.com [IPv6:2001:4860:4864:20::36])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwd015Hz2yp9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:40 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4WqDvM3bmJz9sSf;
-	Thu, 22 Aug 2024 09:13:35 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 3zbc0PqHC6BM; Thu, 22 Aug 2024 09:13:35 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4WqDvM2pDGz9sSH;
-	Thu, 22 Aug 2024 09:13:35 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4E20F8B763;
-	Thu, 22 Aug 2024 09:13:35 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Bo4ZQu0kswTZ; Thu, 22 Aug 2024 09:13:35 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (PO16920.IDSI0.si.c-s.fr [192.168.232.181])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 414F98B77E;
-	Thu, 22 Aug 2024 09:13:34 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Theodore Ts'o" <tytso@mit.edu>,
-	"Jason A. Donenfeld" <Jason@zx2c4.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Shuah Khan <shuah@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-arch@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwj6pvtz2yp9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:45 +1000 (AEST)
+Received: by mail-oa1-x36.google.com with SMTP id 586e51a60fabf-2702ed1054fso295141fac.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 00:14:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1724310879; x=1724915679; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=kCwbwV/YmKb9rcRCZPyi2vEyGZwxl6QKnoBllHH347k=;
+        b=cs8MKNLkGr7bmSr1XA06ECR8qdSnOuZnFbLP8OPOLQL3mY6rZ+ZWJaCIjINMuFTFFD
+         K+Dc9m6ZP3k+99y2q4HOVnotrZXkBRY+Hj8MZg27SFKZjuDQ8SU1ym7ZLApfMEC8HZKY
+         6tIRnct2xCOpRh8cuXv5XdzWydPHhIVEuC6c6GSiA9JaWT0M1UZBE2IYhWI+UA/qg6su
+         RnXmD8Jza31vBpQZ/4ebNll+uW5BPUdyVhHxzC9Z4QKsfKLIvRYQeF8VI/Zq2FKF8ae6
+         hj9oo6L6M568uyziduUmUg0RCrSg09IUAr/Chj3nznoPYypzRcEe30yeR4wDb32LsagJ
+         0cqg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724310879; x=1724915679;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=kCwbwV/YmKb9rcRCZPyi2vEyGZwxl6QKnoBllHH347k=;
+        b=kkNs1JqQH6WwRLwk2fIrITsc/keJ/zHSaY27ZwJ8PhonUM197nEWQWcd7r5Q2zNT+6
+         4sP1VquS2C9A74N8H6KQZf1ze+Vj/bU0h1lLGux87r7DlborFNhZ9sBHQcxL3+GIjuwO
+         zk3+ARk4GQ/KwQHGTS7dV9A47untcNPK0DBJPd/8eu4HZMWfaMG1ZU1Oqh8hTrAwtb/6
+         tVvB+3gzqWSikGbjwRAPymJIeOucZdstN9bUVBhvGZzSNqc6l5jJhDUiV8LalOcrIo2j
+         QiugJTGF2iIdGvLbwWWabVkghPWsGWR616QC6Qv0cLHq04dtnUQ7T8+3RJ/PhEZFDc6M
+         /m6w==
+X-Forwarded-Encrypted: i=1; AJvYcCWDW4kJac0/cdJoYRfe2OVNf3VwTKld55HdrV3Ald/6M1Jx6oG1272W52otJKCYCTgLIBemrISYCpUbCzg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxPe0PX5p5DimddKcu9HhVhFoId7vK1zXuYK8aHxoZHO4FaNbCN
+	8RqjyCDIgoLEBC0ycqVmJd52l5I6YCh62UbO/nUfFZZegIWVB0R3FeSKqEUvfhM=
+X-Google-Smtp-Source: AGHT+IFsTn+Q5A1WOhbyPTAjHclYiOvt3nhLZV/Hi5KOu9NOtbxQa/3JykhMvHE3PrFxCVBhO2k7lw==
+X-Received: by 2002:a05:6871:149:b0:268:afc3:648e with SMTP id 586e51a60fabf-273cffcb557mr1073020fac.42.1724310879532;
+        Thu, 22 Aug 2024 00:14:39 -0700 (PDT)
+Received: from C02DW0BEMD6R.bytedance.net ([240e:473:c90:f96:d029:ea8a:4e6d:d272])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7cd9ac994a3sm695095a12.16.2024.08.22.00.14.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Aug 2024 00:14:39 -0700 (PDT)
+From: Qi Zheng <zhengqi.arch@bytedance.com>
+To: david@redhat.com,
+	hughd@google.com,
+	willy@infradead.org,
+	muchun.song@linux.dev,
+	vbabka@kernel.org,
+	akpm@linux-foundation.org,
+	rppt@kernel.org,
+	vishal.moola@gmail.com,
+	peterx@redhat.com,
+	ryan.roberts@arm.com,
+	christophe.leroy2@cs-soprasteria.com
+Cc: linux-kernel@vger.kernel.org,
 	linux-mm@kvack.org,
-	linux-trace-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org
-Subject: [PATCH v2 12/17] selftests: vdso: Fix powerpc64 vdso_config
-Date: Thu, 22 Aug 2024 09:13:20 +0200
-Message-ID: <88431f094c8f24774a19edd345bd4dc0d8cd796a.1724309198.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <cover.1724309198.git.christophe.leroy@csgroup.eu>
-References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Qi Zheng <zhengqi.arch@bytedance.com>
+Subject: [PATCH v2 09/14] mm: mremap: move_ptes() use pte_offset_map_rw_nolock()
+Date: Thu, 22 Aug 2024 15:13:24 +0800
+Message-Id: <12097a187fee5f21860d4f87e7aa103f822e298e.1724310149.git.zhengqi.arch@bytedance.com>
+X-Mailer: git-send-email 2.24.3 (Apple Git-128)
+In-Reply-To: <cover.1724310149.git.zhengqi.arch@bytedance.com>
+References: <cover.1724310149.git.zhengqi.arch@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,41 +89,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1724310794; l=1023; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=o2dSOswubvHE1lTeEuhUcTWvANfg8RAkUzFIjloHUmw=; b=wG3pcxgAF1nbLi883TF7wQztwOLE/+CaiSBYH0QtsYn5HKn8tYwGt+5GosKqV1s5WX1rcxSTR /yezMLtor2zCaWboyDvcqO9YS6XW1oWXuQjs1rrvQU5ZvPpo08igpT8
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-__powerpc__ is also defined on powerpc64 so __powerpc64__ needs to be
-checked first.
+In move_ptes(), we may modify the new_pte after acquiring the new_ptl, so
+convert it to using pte_offset_map_rw_nolock(). But since we already hold
+the exclusive mmap_lock, there is no need to get pmdval to do pmd_same()
+check, just pass a dummy variable to it.
 
-Fixes: 693f5ca08ca0 ("kselftest: Extend vDSO selftest")
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
 ---
- tools/testing/selftests/vDSO/vdso_config.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ mm/mremap.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/vDSO/vdso_config.h b/tools/testing/selftests/vDSO/vdso_config.h
-index 7b543e7f04d7..00bfed6e4922 100644
---- a/tools/testing/selftests/vDSO/vdso_config.h
-+++ b/tools/testing/selftests/vDSO/vdso_config.h
-@@ -18,13 +18,13 @@
- #elif defined(__aarch64__)
- #define VDSO_VERSION		3
- #define VDSO_NAMES		0
--#elif defined(__powerpc__)
-+#elif defined(__powerpc64__)
- #define VDSO_VERSION		1
- #define VDSO_NAMES		0
--#define VDSO_32BIT		1
--#elif defined(__powerpc64__)
-+#elif defined(__powerpc__)
- #define VDSO_VERSION		1
- #define VDSO_NAMES		0
-+#define VDSO_32BIT		1
- #elif defined (__s390__)
- #define VDSO_VERSION		2
- #define VDSO_NAMES		0
+diff --git a/mm/mremap.c b/mm/mremap.c
+index 24712f8dbb6b5..f96b025c09079 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -143,6 +143,7 @@ static int move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
+ 	spinlock_t *old_ptl, *new_ptl;
+ 	bool force_flush = false;
+ 	unsigned long len = old_end - old_addr;
++	pmd_t dummy_pmdval;
+ 	int err = 0;
+ 
+ 	/*
+@@ -175,7 +176,13 @@ static int move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
+ 		err = -EAGAIN;
+ 		goto out;
+ 	}
+-	new_pte = pte_offset_map_nolock(mm, new_pmd, new_addr, &new_ptl);
++	/*
++	 * Use the maywrite version to indicate that new_pte will be modified,
++	 * but since we hold the exclusive mmap_lock, there is no need to
++	 * recheck pmd_same() after acquiring the new_ptl.
++	 */
++	new_pte = pte_offset_map_rw_nolock(mm, new_pmd, new_addr, &dummy_pmdval,
++					   &new_ptl);
+ 	if (!new_pte) {
+ 		pte_unmap_unlock(old_pte, old_ptl);
+ 		err = -EAGAIN;
 -- 
-2.44.0
+2.20.1
 
 
