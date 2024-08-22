@@ -1,86 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-398-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-399-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D7B1C5320E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 20:39:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A627BC3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 21:52:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqZnB5Zjrz2xHb;
-	Fri, 23 Aug 2024 06:39:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::130"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724359166;
-	cv=none; b=eZ5Hq10lulYJisny7PnBkNS6N9EK4zMBjA1c9ZbgoX25y+v0ettVFBGwP364UvU7tPuo2QzEqi8UkCCNbG8lTA0Y3nh2Wz3I+921iINWtQcxD0SEOo1OUqJB9KF2SBx0UPo/FHQ5bBLzDoJ4QKV8XJ/pqfFNhfPncqd1t/3/tUkLLNmjlAuaTEQ2Hb77ODOU81513/ko+upBNMoM3ngWUv7urvFGsIS33chkdMAIkbAf6b58YVEmQS9aTZK7/ZAZHw/GEJlefI8cm7Ow8MVEDwWdBsZI0vTZJxM0tbjEuWY9nSVy1nFxK7wPxh15F5JSagA9hbi1gVUzTGy4cjCGyA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqcPX0yYXz2yYn;
+	Fri, 23 Aug 2024 07:52:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::832"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724349883;
+	cv=none; b=fcK+LeJWbKAcrwqtk4mHm04HUj3td3aGoz3fHaegF8s1Po+3jZwOk6RfcmSDwHj9LqCx1S8UDGdTZBXc+DwepkcoLLe3Jd5F0x/XK9GKbX4/B030VL6JBKa3wT7M8SuXfVSIpKxsQVhoM/UX1+tjsvVbTP0JMWhEU5LXM47U0yATplhuB6Y46dBNDmnrabETE+GIh5PaDFMw9+8GeFTDhu60D6Ich+NN77bHivQv9o6FRJVsiHL9ueOcFzNixvKKofzGqCN98CYIhUiz9PTldv9+p4qAMadm8fiExnO/5zQQETUXCgPr4wr9lEccuq04MVAPCN2DOwHp2CTVBGpsfQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724359166; c=relaxed/relaxed;
-	bh=OkFn0AdhVgyDSLEmCSbk7UuIUs0dBVqwRiVvtrDuc3Y=;
+	t=1724349883; c=relaxed/relaxed;
+	bh=fgakG6Vf5aO7Xmw9qVJPPNl+pSYJRKW/HFF09/qYve0=;
 	h=Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Google-Smtp-Source:
-	 X-Received:Received:Subject:To:Cc:References:From:Message-ID:Date:
-	 User-Agent:MIME-Version:In-Reply-To:Content-Type:Content-Language:
-	 Content-Transfer-Encoding; b=e50wkTak9YLZiaDyK5UyCETT/9b6a0WVKxKP2Z42xTGqS6j+tGXwuD3PTlFNRKFntiadzuaD7rvqO0qoU2uWy6HjqjveO6NfThh9Pje/+1yNWU/oiPF8+wEKqCyQptiPbIefcdz2AlkQQU0ev7MBuzFoUiXhuHfKcJpWzNudHliC9YCy2o9aD1EvL9QaUPy3a37UA26m1imGcf+oabwCPhSB5qbYDAyX0JHLSLuYtsz93ycaU1HJIgnpn3CPBJqIdhpgxq0yNgpAKIFyjxS873/lChS7sAgzmQwe0bT4o2XQhuGW4ZRfX7SXF8HquidK9ezCbDyIZxFxLOFKt1ELMw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FNMbd+vC; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::130; helo=mail-lf1-x130.google.com; envelope-from=sergei.shtylyov@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 X-Received:MIME-Version:References:In-Reply-To:From:Date:
+	 Message-ID:Subject:To:Cc:Content-Type:Content-Transfer-Encoding;
+	b=SqAm26qzBaGe8b71yDJzVSA7GiVBm2pIBQbt3MLFWj+icbHhnmOy3LSyvXDQYesd5YubP6TVMGmWw0RyzxhPB2hYg6CzzsiWuIYDuFVZ8cumPB2f895KIhByee0XOc1CFMgIIiAWRy0ZPakLoR38um177Ta6CjRj8eBsV9VD9Pt64YYfPdNX3AZ1+gn/oMfYWgO/5OU/bkU8VF2iaMjGKHAt3lp2mVmvE7e84R+c3Zeu0z5WsjeHBs2GQqMV2xr8mXc5u1fWwztbPoAlvJzVR9e0Gsd2MqSRG71wGX3d8Nxr/k5tp30HHGgh7Swn3+0WYe45BNlcHz+8d7Zp5ss0ig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=JUgnETme; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FNMbd+vC;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=JUgnETme;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::130; helo=mail-lf1-x130.google.com; envelope-from=sergei.shtylyov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com [IPv6:2607:f8b0:4864:20::832])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqZn95lxgz2xGT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 06:39:25 +1000 (AEST)
-Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-5333b2fbedaso2071635e87.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 13:39:25 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqWLf4fHLz2yhP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 04:04:41 +1000 (AEST)
+Received: by mail-qt1-x832.google.com with SMTP id d75a77b69052e-454b1e08393so37731cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 11:04:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1724359156; x=1724963956; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-language:in-reply-to:mime-version
-         :user-agent:date:message-id:from:references:cc:to:subject:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=OkFn0AdhVgyDSLEmCSbk7UuIUs0dBVqwRiVvtrDuc3Y=;
-        b=FNMbd+vC9PLav+6HhgmjyKGqQJLe02yYLkGIV68GJgqzf04f8GI28sD6QBxoeMJhfq
-         mvTZxpE1rD1Ur1eJ8CcI+0KBp+3AMDHkA/t57DxHanHjqZaefpgEBZn8qPr1mC4IJ6Fy
-         fsVuD2vO2Tlc4o+YmE4TgArIEhbcyuv1eERBL+gLCQksKZImOtVlzVKUTRtOKPe/Cv2q
-         o7afstghNzkCag8UE4iHpRDOtCpRIlWVU/DIUw1GKrcoh2lfN5OGKnwnC2vL4Lrlh++A
-         w2ftGCy5BheyPfNYsxkpPhC4rxWVL/MD/aNhGGkg9C5zcVjlnhAbtVLXMaQiiv9OhWO8
-         rLaw==
+        d=google.com; s=20230601; t=1724349877; x=1724954677; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fgakG6Vf5aO7Xmw9qVJPPNl+pSYJRKW/HFF09/qYve0=;
+        b=JUgnETmeb9TUDmXPecyKPceU3BYahYQJciPQqv9eic4Ern0CK7tmZ3Z/jHeHm7uopf
+         VF5+U/lUMZkmsQVrzFLm8I4DC28MeFLGuE6dspxcaJkE2bGVbpC8Pw1WhoKYA2xc1X7y
+         7MDcQWUe3VY6MHIOTUzpSRARvCWzG+nnc/zRc1TUu9GyuVvf43So383UtM79GbqmTDeh
+         35SbBNjmdE45xqwz5AlmHLJ2KqDRhqxVmREhYNdjMUXVMxLUgDaltlXqbPtrMDEwwmhm
+         MuR/5b2jw9qucw0RI3dFkU+9jbLhczuoIkT9TFbLrbaHlVxBMFDpXEWQ+R5z/cAte5si
+         AtbQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724359156; x=1724963956;
-        h=content-transfer-encoding:content-language:in-reply-to:mime-version
-         :user-agent:date:message-id:from:references:cc:to:subject
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=OkFn0AdhVgyDSLEmCSbk7UuIUs0dBVqwRiVvtrDuc3Y=;
-        b=AwgTolE69Qrn7muMk+6A5na+0dE9ns60BBhIyQqIqanGNay69ncX9tQE7rummgFeeN
-         59JXqYIK43KJJ3qYJMFQpYBR4iO8AjxASnpp5tpzLN/y7LzomJ7EKa2MdbFYJKFhWrKk
-         Wg/K6gDxo/ENwcqPsw/5rJ6jJ9SA3GXVgel1c+eR9uQ4Ng1ccdxFr3rhE0KZBbRfrbKw
-         ZepdF67Mf5oGTWKuGdPvXzi/rbtOl+4aiB36ZCReUPp8prbd/kWTktb/5hTOi/Er3sYX
-         P3RKFpTdU/dpdnaf8TDPvc/06yasJHrjJ4Ulj8973jpnQDpbcwNZRse4onVkX9DEnjom
-         VVWQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXOAa7Z/KeDISeJz8XUGKYWY3174DBXefpfKRkB/CwolkyzEV5x7I3K2Rm4Puhp95JVGjHlY720x90yHNQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyg2H6aMBRbglybDWW4xIoNwyTq5n5utuyOkyKfxE2Kbs63Ocy6
-	8SLBF7cO2HnYx6Pf7/hsD1oSqLr1EJ1xsDJA8fodWED7jakYbxev
-X-Google-Smtp-Source: AGHT+IG7aXm73Ndu+NiqWPAkccFpdhVsfBo5sgR8yeluU7T/U/g51mQZyz4I6LQ6xQXtCJpg3cjjSg==
-X-Received: by 2002:a05:6512:224a:b0:52c:d626:77aa with SMTP id 2adb3069b0e04-534387c290dmr71446e87.58.1724359155604;
-        Thu, 22 Aug 2024 13:39:15 -0700 (PDT)
-Received: from [192.168.1.105] ([31.173.84.20])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5334ea59415sm356805e87.120.2024.08.22.13.39.14
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 22 Aug 2024 13:39:15 -0700 (PDT)
-Subject: Re: [PATCH v2] ata: pata_macio: Use WARN instead of BUG
-To: Christoph Hellwig <hch@lst.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, cassel@kernel.org,
- dlemoal@kernel.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-ppc@kolla.no, vidra@ufal.mff.cuni.cz
-References: <20240820030407.627785-1-mpe@ellerman.id.au>
- <6b2208d1-c18f-14d5-e6d0-acd5c82b4db1@gmail.com>
- <20240822025952.GA32067@lst.de>
-From: Sergei Shtylyov <sergei.shtylyov@gmail.com>
-Message-ID: <95c3cc5d-17e3-d19b-22f6-6a519f480143@gmail.com>
-Date: Thu, 22 Aug 2024 23:39:13 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.10.1
+        d=1e100.net; s=20230601; t=1724349877; x=1724954677;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=fgakG6Vf5aO7Xmw9qVJPPNl+pSYJRKW/HFF09/qYve0=;
+        b=vb0CAw2u3qgUagbS0XQkrE9p7cEhp0bBKgc/LS6sXzcpWyUsGpzFuJhf8YrVGbKeRR
+         m/af9TY2ejmh/YLOo0gUKbZw+JX22zfAoNfM8q72GiWaHgkpgrAgwqKw+UIQO4QoO8QT
+         mBd9mJnpTpx4MFupFDDN3VJ5eX1c1hFKUBq2S7l899HnGvK38Bq4qOTqaTw+ehS6HO+6
+         JdBvYGliulFmx1mz/V1FbGNNTFBc/+R2ZmXCkbBX8hchm5CQquSjUZ4c5SeY9lCZs2Qh
+         N5I3lMP1l8mpbSMroHvhHtpyMRO9Ukc06vALIkzmr6HtPWdesH7SJeHM+I5k7AusI84y
+         qFMQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUkSzLXU96MOrG9l7YBWI4bX8P1o5Hf6CCRY6vuQeiOS2NgnFzDaWKLxrBXBANmZF4y1OrFfNZCrjbysm0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwpM5kJQcJbDI1isZiWLyNPe4iBcsgIKqoLkhRDbOjWBgeFCCV7
+	e1tlHFh1Whp0g/uiKxpcmC/Jrer9vGK+UtzSG3myfx3u3ZLJu/oWI7/a5x8EFVVuPunAJgNA/8i
+	I7tgurvFesjTbP8uGheOZznsIhV0DE/X9qd6q
+X-Google-Smtp-Source: AGHT+IEXJr25zlT2/Or5jyoEG/qxGlU0q4T86mW4zw4Fy3ho9UHUUSDfdVUJceCuGyGcOczXXANaLsG7KyVrMz2kH8o=
+X-Received: by 2002:a05:622a:548b:b0:453:5961:b880 with SMTP id
+ d75a77b69052e-455080f464amr257731cf.10.1724349876431; Thu, 22 Aug 2024
+ 11:04:36 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,31 +75,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-In-Reply-To: <20240822025952.GA32067@lst.de>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <20240629153128.4660755c@yea> <20240721010926.60efacc3@yea> <b5ae7797-7676-4abf-82be-e2ce4d9238a1@cs-soprasteria.com>
+In-Reply-To: <b5ae7797-7676-4abf-82be-e2ce4d9238a1@cs-soprasteria.com>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Thu, 22 Aug 2024 11:04:22 -0700
+Message-ID: <CAJuCfpH9e0zvrBK8A_TEHO=maHqijjPcC21=To7VU-mmp0ZYBQ@mail.gmail.com>
+Subject: Re: Kernel build failure with MEM_ALLOC_PROFILING=y set (Talos II, v6.10-rc5)
+To: LEROY Christophe <christophe.leroy2@cs-soprasteria.com>
+Cc: Erhard Furtner <erhard_f@mailbox.org>, 
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>, 
+	"linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 8/22/24 5:59 AM, Christoph Hellwig wrote:
-[...]
+On Thu, Aug 22, 2024 at 10:18=E2=80=AFAM LEROY Christophe
+<christophe.leroy2@cs-soprasteria.com> wrote:
+>
+>
+>
+> Le 21/07/2024 =C3=A0 01:09, Erhard Furtner a =C3=A9crit :
+> > [Vous ne recevez pas souvent de courriers de erhard_f@mailbox.org. D?co=
+uvrez pourquoi ceci est important ? https://aka.ms/LearnAboutSenderIdentifi=
+cation ]
+> >
+> > On Sat, 29 Jun 2024 15:31:28 +0200
+> > Erhard Furtner <erhard_f@mailbox.org> wrote:
+> >
+> >> I get a build failure on v6.10-rc5 on my Talos II when MEM_ALLOC_PROFI=
+LING=3Dy is enabled:
+> >>
+> >> [...]
+> >>    LD [M]  fs/xfs/xfs.o
+> >>    LD [M]  fs/bcachefs/bcachefs.o
+> >>    AR      built-in.a
+> >>    AR      vmlinux.a
+> >>    LD      vmlinux.o
+> >>    OBJCOPY modules.builtin.modinfo
+> >>    GEN     modules.builtin
+> >>    GEN     .vmlinux.objs
+> >>    MODPOST Module.symvers
+> >> ERROR: modpost: "page_ext_get" [arch/powerpc/kvm/kvm-hv.ko] undefined!
+> >> ERROR: modpost: "mem_alloc_profiling_key" [arch/powerpc/kvm/kvm-hv.ko]=
+ undefined!
+> >> ERROR: modpost: "page_ext_put" [arch/powerpc/kvm/kvm-hv.ko] undefined!
+> >> make[2]: *** [scripts/Makefile.modpost:145: Module.symvers] Fehler 1
+> >> make[1]: *** [/usr/src/linux-stable/Makefile:1886: modpost] Fehler 2
+> >> make: *** [Makefile:240: __sub-make] Fehler 2
+> >>
+> >> Same .config builds fine without MEM_ALLOC_PROFILING set. Kernel .conf=
+ig attached.
+> >
+> > Build problem still there on now released v6.10 with MEM_ALLOC_PROFILIN=
+G=3Dy.
+> >
+> > Can't bisect as build with MEM_ALLOC_PROFILING fails since it's introdu=
+ction in v6.10-rc1.
+> >
+>
+> I guess those three functions are missing EXPORT_SYMBOL_GPL() tagging.
 
->>> The overflow/underflow conditions in pata_macio_qc_prep() should never
->>> happen. But if they do there's no need to kill the system entirely, a
->>> WARN and failing the IO request should be sufficient and might allow the
->>> system to keep running.
->>
->>    WARN*() can kill your system with panic_on_warn -- Android is particularly
->> fond of this kernel parameter but I guess it's not your case... :-)
->>    Greg KH usually advices against using these macros. :-)
-> 
-> And in this case he is simply totally wrong.  The whole poing of WARN_ON
+The issue should have been fixed by
+https://lore.kernel.org/all/20240717181239.2510054-1-surenb@google.com/
+patchset. I probably forgot to CC stable@ for these changes. Let me
+check and follow up.
+Thanks,
+Suren.
 
-   Greg does have a point: on billions of Linux systems (Android phones) that
-all use panic_on_warn=1, WARN*() is pretty much equivalent to panic()... :-/
-
-> is to have a standardized way to assert conditions.
-
-   Hm, makes me remember assert() in C aborts a program... :-)
-
-MBR, Sergey
+>
+> Christophe
 
