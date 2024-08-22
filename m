@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-376-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-377-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE38DC3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:13:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE977C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:14:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRXR6y9lz2yxp;
-	Fri, 23 Aug 2024 01:12:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRXd0jSfz2ygy;
+	Fri, 23 Aug 2024 01:13:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724339575;
-	cv=none; b=iU4AskLEUJpq0y02wObg+K8v0lBPshN0+LFpucMD6VbRbqwt8pQ39+DqOiQZkPmgXG9X24Zt4ANl6Eo0JitKw6rPvwWwYNePMuiVVK9mwPue1dDnN5Tx1wTY2dbkKNGa8U5VH/oE4TZKIH5quINfHAyo5+6D2mFssXRPAPaP7wNlOTi0gGsjsuCfutr+B3qHF4HmasqWVHT4i+bTZQJaAQXxtVYJ7SJWgKAHfll96wxVrMX2VSshlD4DCwRTP8vChnZJ3DWVMK/vPAjR6OUDP3Yj0d9qVOxCQjouhqYaXzKYQSLKlXSBxvXK0dJO1/G1aqP5PO0dI3ZlRFL/sQpFoQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724339585;
+	cv=none; b=nmMYpqE4UMQX2r33lWLfIrlm+AQMGfrlSCvK1vIGKW0z7RVLJVpkZ6VQemjGzeV71K5oTM7JjRFH2aDvmrI9kztWoTSf9rFZBrhDY4pP9CxxiU8BxS4pIlSNh0g82ejF9/BkOTSbDaQAb/r4sO/Jg7ylnIKMkETI6HhrATZNyn9IjkXusjesJuhY7MN2OLaKLJ/4jduhoLLKG5B/2KRJ/XNWTpYWBRZaHqZp5o2pHO3m49DA7xlRq82UzoYsowRdYil3PWmnQO6UQmw93ZCC7GtNpo/GTz2wUvHTWBcDqBliYPJZD2dnvHuhdlTHGcECRZnaJbmn27K9iQh9XWkrIg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724339575; c=relaxed/relaxed;
-	bh=rtB0cFu4yhRz/z4tCR4fwR+sWZaGlGCX641JW7j6vJM=;
+	t=1724339585; c=relaxed/relaxed;
+	bh=PmUc9IZ3QQaMGDGB6yp3qr7QaJz6BkaXbPPESjB5bJ4=;
 	h=Received:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=ns9gVPnnheyp//OWL/+ymiYn+CmKyE5y3/bYOUakZdk1P9aELOxETZ/cLKNCRB75VtW5XHiC79b7c1kNmeF3YqetmEYTltZENoa3aqRJu+YLHUkHAdxEFxFCz/pHjvMmU3xRWUl+civg1bRH2WESORUF3+Ec4Uznc/axlYzZz6r6j2s/iOJpuw7D0Obwnnyq9AZwm0luTAND/EX60ZFllyaUeSdoghtKfR+GDd4os1GeMDAedS3QCw9rNBYIUVOk47f7cK9Zp4QkM0qp/b4NVHxJLLtHvytS+jRA4vx6Cvsev/Gkh+Ek39+1BtA+4qqaEJcVxppHyH2fyt0RxDNZOQ==
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=btJfq9yrRw3Hp2hoeVe8JL+HXfEyvasvjjGzI5Uz/000MiUJQR7ogveBJqR994BaHE2v2iojiUYPfviFfRidHJelY8J0xvcm5bG3U40tWeUClNp3wZJf3JSIMAq6MEOlHIXu2jvjKWKkGMc1zXfwaGuFG+QC40lHH4sdUhGQNy0tdHmmi5CQvsaMp9+xH88tVpOGtitHlucgP+OoNME90V2GvnDN028t2PHsWyGN5CTF2hJmsGxS18kbSQr8ko9m+PTbEZ5oNX7iazphRnglhUVeuS/j4cn6My/WQ6rMe4QJJ7VofZFH9/x6jzAsbO/z/rDAR+ZNv9Ynw5Dhk6t64w==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRXR5VCDz2ygZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 01:12:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRXc46lpz2ygZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 01:13:04 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D16131655;
-	Thu, 22 Aug 2024 08:12:50 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8D58515A1;
+	Thu, 22 Aug 2024 08:12:59 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B2D423F58B;
-	Thu, 22 Aug 2024 08:12:20 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5BB9A3F58B;
+	Thu, 22 Aug 2024 08:12:29 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
 Cc: nd@arm.com,
@@ -60,9 +60,9 @@ Cc: nd@arm.com,
 	x86@kernel.org,
 	kvmarm@lists.linux.dev,
 	linux-kselftest@vger.kernel.org
-Subject: [PATCH v5 14/30] arm64: convert protection key into vm_flags and pgprot values
-Date: Thu, 22 Aug 2024 16:10:57 +0100
-Message-Id: <20240822151113.1479789-15-joey.gouly@arm.com>
+Subject: [PATCH v5 16/30] arm64: handle PKEY/POE faults
+Date: Thu, 22 Aug 2024 16:10:59 +0100
+Message-Id: <20240822151113.1479789-17-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240822151113.1479789-1-joey.gouly@arm.com>
 References: <20240822151113.1479789-1-joey.gouly@arm.com>
@@ -77,67 +77,151 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Modify arch_calc_vm_prot_bits() and vm_get_page_prot() such that the pkey
-value is set in the vm_flags and then into the pgprot value.
+If a memory fault occurs that is due to an overlay/pkey fault, report that to
+userspace with a SEGV_PKUERR.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- arch/arm64/include/asm/mman.h | 10 +++++++++-
- arch/arm64/mm/mmap.c          | 11 +++++++++++
- 2 files changed, 20 insertions(+), 1 deletion(-)
+ arch/arm64/include/asm/traps.h |  1 +
+ arch/arm64/kernel/traps.c      |  6 ++++
+ arch/arm64/mm/fault.c          | 55 +++++++++++++++++++++++++++++++++-
+ 3 files changed, 61 insertions(+), 1 deletion(-)
 
-diff --git arch/arm64/include/asm/mman.h arch/arm64/include/asm/mman.h
-index 5966ee4a6154..52791715f6e6 100644
---- arch/arm64/include/asm/mman.h
-+++ arch/arm64/include/asm/mman.h
-@@ -7,7 +7,7 @@
- #include <uapi/asm/mman.h>
+diff --git arch/arm64/include/asm/traps.h arch/arm64/include/asm/traps.h
+index eefe766d6161..d780d1bd2eac 100644
+--- arch/arm64/include/asm/traps.h
++++ arch/arm64/include/asm/traps.h
+@@ -25,6 +25,7 @@ try_emulate_armv8_deprecated(struct pt_regs *regs, u32 insn)
+ void force_signal_inject(int signal, int code, unsigned long address, unsigned long err);
+ void arm64_notify_segfault(unsigned long addr);
+ void arm64_force_sig_fault(int signo, int code, unsigned long far, const char *str);
++void arm64_force_sig_fault_pkey(unsigned long far, const char *str, int pkey);
+ void arm64_force_sig_mceerr(int code, unsigned long far, short lsb, const char *str);
+ void arm64_force_sig_ptrace_errno_trap(int errno, unsigned long far, const char *str);
  
- static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot,
--	unsigned long pkey __always_unused)
-+	unsigned long pkey)
+diff --git arch/arm64/kernel/traps.c arch/arm64/kernel/traps.c
+index 9e22683aa921..9a11bb0db284 100644
+--- arch/arm64/kernel/traps.c
++++ arch/arm64/kernel/traps.c
+@@ -273,6 +273,12 @@ void arm64_force_sig_fault(int signo, int code, unsigned long far,
+ 		force_sig_fault(signo, code, (void __user *)far);
+ }
+ 
++void arm64_force_sig_fault_pkey(unsigned long far, const char *str, int pkey)
++{
++	arm64_show_signal(SIGSEGV, str);
++	force_sig_pkuerr((void __user *)far, pkey);
++}
++
+ void arm64_force_sig_mceerr(int code, unsigned long far, short lsb,
+ 			    const char *str)
  {
- 	unsigned long ret = 0;
+diff --git arch/arm64/mm/fault.c arch/arm64/mm/fault.c
+index 451ba7cbd5ad..a68055150950 100644
+--- arch/arm64/mm/fault.c
++++ arch/arm64/mm/fault.c
+@@ -23,6 +23,7 @@
+ #include <linux/sched/debug.h>
+ #include <linux/highmem.h>
+ #include <linux/perf_event.h>
++#include <linux/pkeys.h>
+ #include <linux/preempt.h>
+ #include <linux/hugetlb.h>
  
-@@ -17,6 +17,14 @@ static inline unsigned long arch_calc_vm_prot_bits(unsigned long prot,
- 	if (system_supports_mte() && (prot & PROT_MTE))
- 		ret |= VM_MTE;
- 
-+#ifdef CONFIG_ARCH_HAS_PKEYS
-+	if (system_supports_poe()) {
-+		ret |= pkey & BIT(0) ? VM_PKEY_BIT0 : 0;
-+		ret |= pkey & BIT(1) ? VM_PKEY_BIT1 : 0;
-+		ret |= pkey & BIT(2) ? VM_PKEY_BIT2 : 0;
-+	}
-+#endif
-+
- 	return ret;
+@@ -486,6 +487,23 @@ static void do_bad_area(unsigned long far, unsigned long esr,
+ 	}
  }
- #define arch_calc_vm_prot_bits(prot, pkey) arch_calc_vm_prot_bits(prot, pkey)
-diff --git arch/arm64/mm/mmap.c arch/arm64/mm/mmap.c
-index 642bdf908b22..7e3ad97e27d8 100644
---- arch/arm64/mm/mmap.c
-+++ arch/arm64/mm/mmap.c
-@@ -102,6 +102,17 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
- 	if (vm_flags & VM_MTE)
- 		prot |= PTE_ATTRINDX(MT_NORMAL_TAGGED);
  
-+#ifdef CONFIG_ARCH_HAS_PKEYS
-+	if (system_supports_poe()) {
-+		if (vm_flags & VM_PKEY_BIT0)
-+			prot |= PTE_PO_IDX_0;
-+		if (vm_flags & VM_PKEY_BIT1)
-+			prot |= PTE_PO_IDX_1;
-+		if (vm_flags & VM_PKEY_BIT2)
-+			prot |= PTE_PO_IDX_2;
-+	}
-+#endif
++static bool fault_from_pkey(unsigned long esr, struct vm_area_struct *vma,
++			unsigned int mm_flags)
++{
++	unsigned long iss2 = ESR_ELx_ISS2(esr);
 +
- 	return __pgprot(prot);
- }
- EXPORT_SYMBOL(vm_get_page_prot);
++	if (!system_supports_poe())
++		return false;
++
++	if (iss2 & ESR_ELx_Overlay)
++		return true;
++
++	return !arch_vma_access_permitted(vma,
++			mm_flags & FAULT_FLAG_WRITE,
++			mm_flags & FAULT_FLAG_INSTRUCTION,
++			false);
++}
++
+ static bool is_el0_instruction_abort(unsigned long esr)
+ {
+ 	return ESR_ELx_EC(esr) == ESR_ELx_EC_IABT_LOW;
+@@ -511,6 +529,7 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 	unsigned long addr = untagged_addr(far);
+ 	struct vm_area_struct *vma;
+ 	int si_code;
++	int pkey = -1;
+ 
+ 	if (kprobe_page_fault(regs, esr))
+ 		return 0;
+@@ -575,6 +594,16 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
+ 		goto bad_area;
+ 	}
++
++	if (fault_from_pkey(esr, vma, mm_flags)) {
++		pkey = vma_pkey(vma);
++		vma_end_read(vma);
++		fault = 0;
++		si_code = SEGV_PKUERR;
++		count_vm_vma_lock_event(VMA_LOCK_SUCCESS);
++		goto bad_area;
++	}
++
+ 	fault = handle_mm_fault(vma, addr, mm_flags | FAULT_FLAG_VMA_LOCK, regs);
+ 	if (!(fault & (VM_FAULT_RETRY | VM_FAULT_COMPLETED)))
+ 		vma_end_read(vma);
+@@ -610,7 +639,16 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 		goto bad_area;
+ 	}
+ 
++	if (fault_from_pkey(esr, vma, mm_flags)) {
++		pkey = vma_pkey(vma);
++		mmap_read_unlock(mm);
++		fault = 0;
++		si_code = SEGV_PKUERR;
++		goto bad_area;
++	}
++
+ 	fault = handle_mm_fault(vma, addr, mm_flags, regs);
++
+ 	/* Quick path to respond to signals */
+ 	if (fault_signal_pending(fault, regs)) {
+ 		if (!user_mode(regs))
+@@ -669,8 +707,23 @@ static int __kprobes do_page_fault(unsigned long far, unsigned long esr,
+ 
+ 		arm64_force_sig_mceerr(BUS_MCEERR_AR, far, lsb, inf->name);
+ 	} else {
++		/*
++		 * The pkey value that we return to userspace can be different
++		 * from the pkey that caused the fault.
++		 *
++		 * 1. T1   : mprotect_key(foo, PAGE_SIZE, pkey=4);
++		 * 2. T1   : set POR_EL0 to deny access to pkey=4, touches, page
++		 * 3. T1   : faults...
++		 * 4.    T2: mprotect_key(foo, PAGE_SIZE, pkey=5);
++		 * 5. T1   : enters fault handler, takes mmap_lock, etc...
++		 * 6. T1   : reaches here, sees vma_pkey(vma)=5, when we really
++		 *	     faulted on a pte with its pkey=4.
++		 */
+ 		/* Something tried to access memory that out of memory map */
+-		arm64_force_sig_fault(SIGSEGV, si_code, far, inf->name);
++		if (si_code == SEGV_PKUERR)
++			arm64_force_sig_fault_pkey(far, inf->name, pkey);
++		else
++			arm64_force_sig_fault(SIGSEGV, si_code, far, inf->name);
+ 	}
+ 
+ 	return 0;
 -- 
 2.25.1
 
