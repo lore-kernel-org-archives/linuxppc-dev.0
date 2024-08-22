@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-370-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-371-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6282C3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:13:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE80AC3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:13:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWz4jysz2yps;
-	Fri, 23 Aug 2024 01:12:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRX34WBRz2ysv;
+	Fri, 23 Aug 2024 01:12:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724339551;
-	cv=none; b=PEHg+20yNzkHkBMVWfsovcuGcVB0AY1Jnz0KhBf5k4i3OxnAsryIfy5MJp0UD2+dgktjagy1fWWtC2PiM0tAwOCHQLBi0N33MMUHParRXZd1TDlILZu4M230gd3Qa/sCSOwJUUjmGR5yUqssyXVxbjS6PsrP5fBmM46gspCTKzUNW0xBTySTflvqLPNXYoExY9iOAiYtIbwF83j24YZVOiEQQnIgJp5tQl1p771Ss3nVHTcv+ql1s0eTc2oJbFHD+sXmxXs0mrlNs3Qgz/3IbqGBeMxV0iUHM25vCg1GdJm14Q0pSDjHDCGsfERGt5bZSMK8YbC9JjarLYCfXcqxqg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724339555;
+	cv=none; b=I31wVhAC3IQy5vEsM+u1Duxcx3rItGgl4sdGbvpkcEUyBfoACgNulmEefkEhBcpg6tfSNgNRI8E3xi7Gv7bXy20bebJZgKb2HBvL9LHOoloYVWq0+H4XPdvNi6ncnhWNc45gWfRed6JpWhGvhz8r96Txkw5Qeeozac/AISgZUWCBDjFY3gdzBHa79aUvK5PUxugBfiy3UOPgpM2ToXQPI6dTgT3DOH6RbxYYBnmGLDOjzmyUosvkZ8XAZrcx96HyrkOdoji5aG9B7VxR7wKnKgmJRXr1qPGnULqsApsh/rGX9kRz78FctzUzIg/qJe4nPkiosvNQjP4T0hki9B4pPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724339551; c=relaxed/relaxed;
-	bh=XWloCsKInlghkQxh/mo59nFfEBaFhJ6JRXZEr40jxF0=;
+	t=1724339555; c=relaxed/relaxed;
+	bh=tGPcTPPfKkSGaPcxenC1uehrGC+VQwOEc7ex5Jc/eTc=;
 	h=Received:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=aGPBKDkik/IVYExTddxegKb76qdV3462n1ZJDLPdPRvDDptnxHB/7mDcwsXV4YaPWTzycWteatZp9GHUtIsBudafwgmFgyxPDx0uN7cXPreuiji8+7AygzZGi27Udyuktl26d7LTawnZIqPEinurl4g2axfwjL+FBzH2eqjArBhu3gtjwUBO/9fzafri1UZDWZvEawfjZB7Q6ULzNJKYkG8bRVaoYNFPjbq/lgkIa85mamwI3HZNLdOCy8LWXMelxtT9RQ7369/mYA2dnIwzyhctBhfxBDwDQQLSy8QJznqPNc4akVPcRfTPbnpgrVrHfzsKcB16Q3k6+ipPR5hY+w==
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=XA6w/tA++pX+LVWzHQg5cb0F9YV88EEuxMAvBR/00LDzqji/7+D1cOlw9V+Dl3yhUzQLy8LvJeJ0t4hKNx6aaq633+VTdM0n3sdl09DhHl3YdIQFNMX8VSTjAz7XSJN4TkvQmAQ21jbrVrkZNxbgQ87Is4h6W+lL+YOPzv6qIed+U1ZKMuwADfjb/XgxHGwFpuX8tjTEFmBLJhitIE6kQAGrGbQ1tczfhhAkRKU1cCN+8PJprl/eB8s/ovZ4ljKgymzfqLGdn1Mn4yOhjYPSM3d3GHkwcCyZSzRDl2oj1w4V+QzdmbA4S6ZYOwtmJgD1Bk13SEP1QI62ivYyRiwXPA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWz1pHXz2ynr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 01:12:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRX32SnGz2ynr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 01:12:35 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2BF8D165C;
-	Thu, 22 Aug 2024 08:12:55 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5A265DA7;
+	Thu, 22 Aug 2024 08:12:29 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0D3BE3F58B;
-	Thu, 22 Aug 2024 08:12:24 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1F69E3F58B;
+	Thu, 22 Aug 2024 08:11:59 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
 Cc: nd@arm.com,
@@ -60,9 +60,9 @@ Cc: nd@arm.com,
 	x86@kernel.org,
 	kvmarm@lists.linux.dev,
 	linux-kselftest@vger.kernel.org
-Subject: [PATCH v5 15/30] arm64: mask out POIndex when modifying a PTE
-Date: Thu, 22 Aug 2024 16:10:58 +0100
-Message-Id: <20240822151113.1479789-16-joey.gouly@arm.com>
+Subject: [PATCH v5 09/30] KVM: arm64: use `at s1e1a` for POE
+Date: Thu, 22 Aug 2024 16:10:52 +0100
+Message-Id: <20240822151113.1479789-10-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240822151113.1479789-1-joey.gouly@arm.com>
 References: <20240822151113.1479789-1-joey.gouly@arm.com>
@@ -77,31 +77,48 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-When a PTE is modified, the POIndex must be masked off so that it can be modified.
+FEAT_ATS1E1A introduces a new instruction: `at s1e1a`.
+This is an address translation, without permission checks.
+
+POE allows read permissions to be removed from S1 by the guest.  This means
+that an `at` instruction could fail, and not get the IPA.
+
+Switch to using `at s1e1a` so that KVM can get the IPA regardless of S1
+permissions.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
+Cc: Marc Zyngier <maz@kernel.org>
+Cc: Oliver Upton <oliver.upton@linux.dev>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Reviewed-by: Marc Zyngier <maz@kernel.org>
 ---
- arch/arm64/include/asm/pgtable.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm64/kvm/hyp/include/hyp/fault.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git arch/arm64/include/asm/pgtable.h arch/arm64/include/asm/pgtable.h
-index 7a4f5604be3f..1d0f18d30e1e 100644
---- arch/arm64/include/asm/pgtable.h
-+++ arch/arm64/include/asm/pgtable.h
-@@ -1103,7 +1103,8 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+diff --git arch/arm64/kvm/hyp/include/hyp/fault.h arch/arm64/kvm/hyp/include/hyp/fault.h
+index 487c06099d6f..17df94570f03 100644
+--- arch/arm64/kvm/hyp/include/hyp/fault.h
++++ arch/arm64/kvm/hyp/include/hyp/fault.h
+@@ -14,6 +14,7 @@
+ 
+ static inline bool __translate_far_to_hpfar(u64 far, u64 *hpfar)
+ {
++	int ret;
+ 	u64 par, tmp;
+ 
+ 	/*
+@@ -27,7 +28,9 @@ static inline bool __translate_far_to_hpfar(u64 far, u64 *hpfar)
+ 	 * saved the guest context yet, and we may return early...
  	 */
- 	const pteval_t mask = PTE_USER | PTE_PXN | PTE_UXN | PTE_RDONLY |
- 			      PTE_PRESENT_INVALID | PTE_VALID | PTE_WRITE |
--			      PTE_GP | PTE_ATTRINDX_MASK;
-+			      PTE_GP | PTE_ATTRINDX_MASK | PTE_PO_IDX_MASK;
-+
- 	/* preserve the hardware dirty information */
- 	if (pte_hw_dirty(pte))
- 		pte = set_pte_bit(pte, __pgprot(PTE_DIRTY));
+ 	par = read_sysreg_par();
+-	if (!__kvm_at(OP_AT_S1E1R, far))
++	ret = system_supports_poe() ? __kvm_at(OP_AT_S1E1A, far) :
++	                              __kvm_at(OP_AT_S1E1R, far);
++	if (!ret)
+ 		tmp = read_sysreg_par();
+ 	else
+ 		tmp = SYS_PAR_EL1_F; /* back to the guest */
 -- 
 2.25.1
 
