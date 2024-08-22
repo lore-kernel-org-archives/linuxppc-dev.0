@@ -1,85 +1,40 @@
-Return-Path: <linuxppc-dev+bounces-321-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-322-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA64DC531DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:16:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58D46C3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:16:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwl2q68z2yp9;
-	Thu, 22 Aug 2024 17:14:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::22c"
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=gyhe6DEZ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::22c; helo=mail-oi1-x22c.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-oi1-x22c.google.com (mail-oi1-x22c.google.com [IPv6:2607:f8b0:4864:20::22c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDwq0Fgzz2ysf;
+	Thu, 22 Aug 2024 17:14:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwl04g4z2yps
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:47 +1000 (AEST)
-Received: by mail-oi1-x22c.google.com with SMTP id 5614622812f47-3db145c8010so274223b6e.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 00:14:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1724310885; x=1724915685; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Crbz/R3rJcbpbcovfp9fh4ozsAEMZSaAxrx7zvZfRRw=;
-        b=gyhe6DEZSH95h0MAnuhTnzacosoLdJ2D9yDsHcbuX6lCEFDxXAHEaZPKTOUUQ71+Sk
-         Xrx7AtHiiBIQa/iFFzIQYPanq1USiA8wagx3wkXiblVvGrNiwIaVvnJr/5SdznAMdAsi
-         pAjBhwQJ46oIL/6hse7tJaNBwLrBj3XUA3p0pWjyHGGzD4Wkon6QlA0NlSst8mb+n93n
-         3jSm6HiYkGo1QVY4u1sGFJROez+DXVjwOUxZPLgiDc4sXDcoqN5IM03re5p8kwMcXmwm
-         3qdmJtmaLX76zLyd+0i5/1E1OguN9mUGjOB5fH+MNq84hS4tZ4TkUoEGgzXGqzEtAQGn
-         JLKw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724310885; x=1724915685;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Crbz/R3rJcbpbcovfp9fh4ozsAEMZSaAxrx7zvZfRRw=;
-        b=pryqqKOQ1zdjsS0zxscbChpeU0q5TpjZkXcmEEpD9CwAR9buI1jUEwr8vxYdzEf3Xn
-         LFPugTP/BpIBhEoF4Q+ckKDqNvgRUru5a59/pxgS3EmeGIsGUSA3Ghq9YHH6OjT2atdT
-         IOLHaZIuh+/UTX4f/Jr3NJf2NU/rn4tOwts3+hPfsAPogbzekW+P9hz4XleDTUggkkMm
-         JmHKjb+poq9RZhxvSDIHq9aK9l9aDTgBjSMclEvxck8pL5TV5JX9/raicikpmMmtvUQ5
-         vl8EtIWFkhcgbcPNGypBHXm7pfi1qt3BNfu8ahYeo6Gpu1kAva5HakLIXeeZdxXbh+tB
-         dcIw==
-X-Forwarded-Encrypted: i=1; AJvYcCXOTsyvFtRKiaDBUSsLZLKGKWekq1195s7kZfvPS/5zDAUaKMNqEdG4nPKIgF+n2kgP7/eUhdJa3nGjTYM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyETsjQuhmLfGRNdiFukySCwJcxOjlhTCE1tBHYiDg58GT8IwGz
-	SVmUtydNZKuWgKrPvhYMAqESjLYbHZZ9Lswb3pDt4rQmZcUdGqfzGo0I50m2M3w=
-X-Google-Smtp-Source: AGHT+IF73IAzwqsx0nomJCVJryAV7cndKc0EgZ0+2TYoDy25bfQlq+9JSwXFUBQmZZcxXSkt111lxw==
-X-Received: by 2002:a05:6808:d46:b0:3d9:29c1:be5c with SMTP id 5614622812f47-3de194fbf2bmr5329807b6e.12.1724310885053;
-        Thu, 22 Aug 2024 00:14:45 -0700 (PDT)
-Received: from C02DW0BEMD6R.bytedance.net ([240e:473:c90:f96:d029:ea8a:4e6d:d272])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7cd9ac994a3sm695095a12.16.2024.08.22.00.14.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 22 Aug 2024 00:14:44 -0700 (PDT)
-From: Qi Zheng <zhengqi.arch@bytedance.com>
-To: david@redhat.com,
-	hughd@google.com,
-	willy@infradead.org,
-	muchun.song@linux.dev,
-	vbabka@kernel.org,
-	akpm@linux-foundation.org,
-	rppt@kernel.org,
-	vishal.moola@gmail.com,
-	peterx@redhat.com,
-	ryan.roberts@arm.com,
-	christophe.leroy2@cs-soprasteria.com
-Cc: linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Qi Zheng <zhengqi.arch@bytedance.com>
-Subject: [PATCH v2 10/14] mm: page_vma_mapped_walk: map_pte() use pte_offset_map_rw_nolock()
-Date: Thu, 22 Aug 2024 15:13:25 +0800
-Message-Id: <d200bf710fc6f11202ea2d777ac2eb9f7fb0c6c9.1724310149.git.zhengqi.arch@bytedance.com>
-X-Mailer: git-send-email 2.24.3 (Apple Git-128)
-In-Reply-To: <cover.1724310149.git.zhengqi.arch@bytedance.com>
-References: <cover.1724310149.git.zhengqi.arch@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDwn3rtVz2yps
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:48 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+	id 52DA0227AAA; Thu, 22 Aug 2024 09:14:44 +0200 (CEST)
+Date: Thu, 22 Aug 2024 09:14:43 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: LEROY Christophe <christophe.leroy2@cs-soprasteria.com>
+Cc: Christoph Hellwig <hch@lst.de>,
+	Christian Lamparter <christian.lamparter@isd.uni-stuttgart.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Stan Johnson <userm57@yahoo.com>,
+	Finn Thain <fthain@linux-m68k.org>
+Subject: Re: [PATCH v2] powerpc: warn on emulation of dcbz instruction in
+ kernel mode
+Message-ID: <20240822071443.GA6395@lst.de>
+References: <2e3acfe63d289c6fba366e16973c9ab8369e8b75.1631803922.git.christophe.leroy@csgroup.eu> <17fa6450-6613-4c34-804b-e47246e7b39c@isd.uni-stuttgart.de> <9dbf73fe-a459-4956-8dbc-e919d9728f5e@cs-soprasteria.com> <20240822053238.GA2028@lst.de> <e6acf664-5ebd-4273-9330-cbec283ede23@cs-soprasteria.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,94 +44,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <e6acf664-5ebd-4273-9330-cbec283ede23@cs-soprasteria.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 
-In the caller of map_pte(), we may modify the pvmw->pte after acquiring
-the pvmw->ptl, so convert it to using pte_offset_map_rw_nolock(). At
-this time, the write lock of mmap_lock is not held, and the pte_same()
-check is not performed after the pvmw->ptl held, so we should get pmdval
-and do pmd_same() check to ensure the stability of pvmw->pmd.
+On Thu, Aug 22, 2024 at 06:39:33AM +0000, LEROY Christophe wrote:
+> powerpc has a magic instruction 'dcbz' which clears a full cacheline in 
+> one go. It is far more efficient than a loop to store zeros, and since 
+> 2015 memset(0) has been implemented with that instruction (commit 
+> 5b2a32e80634 ("powerpc/32: memset(0): use cacheable_memzero"))
+> 
+> But that instruction generates an alignment exception when used on 
+> non-cached memory (whether it is RAM or not doesn't matter). It is then 
+> emulated by the kernel but it of course leads to a serious performance 
+> degradation, hence the warning added by commit cbe654c77961 ("powerpc: 
+> warn on emulation of dcbz instruction in kernel mode"). Until now it 
+> helped identify and fix use of memset() on IO memory.
+> 
+> But if memset() is expected to be used with non-cached RAM, then I don't 
+> know what to do. Any suggestion ?
 
-Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
----
- mm/page_vma_mapped.c | 24 ++++++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
+I'd suggest two things:
 
-diff --git a/mm/page_vma_mapped.c b/mm/page_vma_mapped.c
-index ae5cc42aa2087..f1d73fd448708 100644
---- a/mm/page_vma_mapped.c
-+++ b/mm/page_vma_mapped.c
-@@ -13,9 +13,11 @@ static inline bool not_found(struct page_vma_mapped_walk *pvmw)
- 	return false;
- }
+ 1) remove the warning.  The use case is perfectly valid and everything
+    using uncached memory is already slow, so people will just have to
+    deal with it.  Maybe offer a trace point instead if people care about
+    it.
+ 2) figure out a way to avoid this case in the dma-coherent allocator,
+    which is probably the only case where it happens frequently
+    (a few drivers also zero or re-zero coherent memory, but most of the
+     time that is cargo cult programming and not actually needed)
+
+For 2 I can think of two options:
+
+ a) provide a arch hook for zeroing the dma memory that defaults to
+    memset, but which powerpc can override
+ a) figure out a way to clear the memory before marking it uncached
+    if we can
+
+a) it obviously easier to verify, but b) is probably going to give
+   way better performance.
+
+Below is an untested implementation of b) for dma-direct, I just need to
+find out if there is any architecture that requires the memory to be
+zeroed after it іt has been remapped.  The iommu drivers might also
+need similar treatment.
+
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index 4480a3cd92e087..66e94b32ab0081 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -275,6 +275,9 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+ 		if (force_dma_unencrypted(dev))
+ 			prot = pgprot_decrypted(prot);
  
--static bool map_pte(struct page_vma_mapped_walk *pvmw, spinlock_t **ptlp)
-+static bool map_pte(struct page_vma_mapped_walk *pvmw, pmd_t *pmdvalp,
-+		    spinlock_t **ptlp)
- {
- 	pte_t ptent;
-+	pmd_t pmdval;
++		if (!PageHighMem(page))
++			memset(page_address(page), 0, size);
++
+ 		/* remove any dirty cache lines on the kernel alias */
+ 		arch_dma_prep_coherent(page, size);
  
- 	if (pvmw->flags & PVMW_SYNC) {
- 		/* Use the stricter lookup */
-@@ -25,6 +27,7 @@ static bool map_pte(struct page_vma_mapped_walk *pvmw, spinlock_t **ptlp)
- 		return !!pvmw->pte;
+@@ -283,14 +286,15 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+ 				__builtin_return_address(0));
+ 		if (!ret)
+ 			goto out_free_pages;
++		if (PageHighMem(page))
++			memset(ret, 0, size);
+ 	} else {
+ 		ret = page_address(page);
+ 		if (dma_set_decrypted(dev, ret, size))
+ 			goto out_leak_pages;
++		memset(ret, 0, size);
  	}
  
-+again:
- 	/*
- 	 * It is important to return the ptl corresponding to pte,
- 	 * in case *pvmw->pmd changes underneath us; so we need to
-@@ -32,10 +35,11 @@ static bool map_pte(struct page_vma_mapped_walk *pvmw, spinlock_t **ptlp)
- 	 * proceeds to loop over next ptes, and finds a match later.
- 	 * Though, in most cases, page lock already protects this.
- 	 */
--	pvmw->pte = pte_offset_map_nolock(pvmw->vma->vm_mm, pvmw->pmd,
--					  pvmw->address, ptlp);
-+	pvmw->pte = pte_offset_map_rw_nolock(pvmw->vma->vm_mm, pvmw->pmd,
-+					     pvmw->address, &pmdval, ptlp);
- 	if (!pvmw->pte)
- 		return false;
-+	*pmdvalp = pmdval;
- 
- 	ptent = ptep_get(pvmw->pte);
- 
-@@ -69,6 +73,12 @@ static bool map_pte(struct page_vma_mapped_walk *pvmw, spinlock_t **ptlp)
- 	}
- 	pvmw->ptl = *ptlp;
- 	spin_lock(pvmw->ptl);
-+
-+	if (unlikely(!pmd_same(pmdval, pmdp_get_lockless(pvmw->pmd)))) {
-+		spin_unlock(pvmw->ptl);
-+		goto again;
-+	}
-+
- 	return true;
- }
- 
-@@ -278,7 +288,7 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
- 			step_forward(pvmw, PMD_SIZE);
- 			continue;
- 		}
--		if (!map_pte(pvmw, &ptl)) {
-+		if (!map_pte(pvmw, &pmde, &ptl)) {
- 			if (!pvmw->pte)
- 				goto restart;
- 			goto next_pte;
-@@ -307,6 +317,12 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
- 		if (!pvmw->ptl) {
- 			pvmw->ptl = ptl;
- 			spin_lock(pvmw->ptl);
-+			if (unlikely(!pmd_same(pmde, pmdp_get_lockless(pvmw->pmd)))) {
-+				pte_unmap_unlock(pvmw->pte, pvmw->ptl);
-+				pvmw->ptl = NULL;
-+				pvmw->pte = NULL;
-+				goto restart;
-+			}
- 		}
- 		goto this_pte;
- 	} while (pvmw->address < end);
--- 
-2.20.1
-
+-	memset(ret, 0, size);
+-
+ 	if (set_uncached) {
+ 		arch_dma_prep_coherent(page, size);
+ 		ret = arch_dma_set_uncached(ret, size);
 
