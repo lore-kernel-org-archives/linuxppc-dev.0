@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-365-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-366-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA19AC52D7C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:12:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60DC6C52D7C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:12:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWc5XTTz2ykt;
-	Fri, 23 Aug 2024 01:12:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWy626mz2ymf;
+	Fri, 23 Aug 2024 01:12:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724339532;
-	cv=none; b=kLj/wxTmTQ/ghdWvgMK00gDwuyzkYVbm+o47RASDKFvbwO1kDCMXGIEvDLtDRtUFLqWXeRhCg9IkMOqteoSbl/fl5u4MX7GbktZfxzrelWkeDxmPg/h/GOibglJx7/ebvvcwrQZzrouq8jf/0dfIRYsXjbRVx9qKHC1ZGaDWFyzFPPjX8Ioju8QNQ+aVss7wiU8POo6tg6K2eSWAFraRhRMMo5+QYs22g6XvrebzeEaVfViv3MljuBuYkzA+NduUP2Wpd8b1Zsydm6a8U93WIcJZ/gIIAPWcD4p1Nor1Cd9MgSaq+bTAgCUoLjeopJmRaVBJRDcXMbo5bLx9nZ8sxA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724339550;
+	cv=none; b=maakic8J7wMDfgDwt4lVfYOUQCvHmyjM7qsoYo22NPE6rHhX8TVnzShUTGAaq1T7lAK+MliBKQloq0Q9brp84bG9TYbZ6F59RuA1ke9Uw7LHhOJw7dqvoNa6GaXHHGMpAZfkeQxNtlb1I3DnFybV3eTB1d2DljN7UmPy2wtl8idjIGc27dD64fPg9xHzSi5Ifdt/2HfzlrFvlCnlWc5c5tzcgNKiV/C05EZth2fIDGAXUuJqso2abtdDpZ/XUD8UNpR448U81dsTirK2MaaaUZxWCvFMwpOQHH7plaw6QNy30Yb6OzqWvocpxY3HANBOVJ5o8EByrMuyed5eTNyTfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724339532; c=relaxed/relaxed;
-	bh=BEcWZioiXtHX8rackaBoYWZiwxpHMb6CvKiSOd8uBKQ=;
+	t=1724339550; c=relaxed/relaxed;
+	bh=OpQ2k58t6nEQbtkgVhwz3rLdStOXjxbUhiBjdUnicRA=;
 	h=Received:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=EOYn2c/kUKGrEJkfKP3kVRfaPP5LxWj5288q02YkwHcFMJ888ABCJKmU/j87zoC9Z76OjVnc3cDgMCVXKuqrqfPaoTmSx4zkyJFXCGZYS2hlYc+756A+8KDo3/pDL0DwlpogvIwaFAvpEMSh8kxDOsEx/Qv1CNH0dyyj76qAMFD5LbbTmHxapQ4VgwsKa/+d6YA/1CEdVCVD7IbdH4wVGhHu15h1TPHzB1bweK9wZ9/F8agOrqBaHeH8vRAa5l8gyDaxiAcM+LI9TgSAgkWyqSh99ee+yNI7Og6rKaWhqimQ8/9ClcjE2qnTXH/hjpCitoQyCqK7IOhipK/x3IdClw==
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=evXuhu2Nz89zUKb+u4Jleb7JPiZ96s0Ny3/wA9Y8B9O3ao/ZfCztO7z7ky9RM/mxxQxnwJE2PPJFYYd9Ebjdm23ogfervIFzoNoQVCSEwAZy3YPUKRE5dojxjpppfE9rf2ZFS+iO3PCF4J8CFcFZIRHsgybkR4rlwVr98hySxaf45TGZXX/Mbc+flT5ZT0Y1lXqqhCtRuMWekP5RB7B6jfKL771gcdcV5rtCpHnHjCbQsSAK2eI6uG1NszUcOFLwQwiJDynzecOJ3Wc1Iv3eSMG2Qzs9SzZcf8cNJcQhx5S8H37eZ7hSnoByoaItZxO11vdnuRZs+lQliDkOPqlLMQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWc43s5z2yhG
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 01:12:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWy38JCz2yhG
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 01:12:30 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9FA9F1596;
-	Thu, 22 Aug 2024 08:12:07 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4605B15BF;
+	Thu, 22 Aug 2024 08:12:16 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 819CA3F58B;
-	Thu, 22 Aug 2024 08:11:37 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 275E73F58B;
+	Thu, 22 Aug 2024 08:11:46 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
 Cc: nd@arm.com,
@@ -60,9 +60,9 @@ Cc: nd@arm.com,
 	x86@kernel.org,
 	kvmarm@lists.linux.dev,
 	linux-kselftest@vger.kernel.org
-Subject: [PATCH v5 04/30] arm64: disable trapping of POR_EL0 to EL2
-Date: Thu, 22 Aug 2024 16:10:47 +0100
-Message-Id: <20240822151113.1479789-5-joey.gouly@arm.com>
+Subject: [PATCH v5 06/30] arm64: context switch POR_EL0 register
+Date: Thu, 22 Aug 2024 16:10:49 +0100
+Message-Id: <20240822151113.1479789-7-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240822151113.1479789-1-joey.gouly@arm.com>
 References: <20240822151113.1479789-1-joey.gouly@arm.com>
@@ -77,43 +77,129 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Allow EL0 or EL1 to access POR_EL0 without being trapped to EL2.
+POR_EL0 is a register that can be modified by userspace directly,
+so it must be context switched.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- arch/arm64/include/asm/el2_setup.h | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ arch/arm64/include/asm/cpufeature.h |  6 ++++++
+ arch/arm64/include/asm/processor.h  |  1 +
+ arch/arm64/include/asm/sysreg.h     |  3 +++
+ arch/arm64/kernel/process.c         | 28 ++++++++++++++++++++++++++++
+ 4 files changed, 38 insertions(+)
 
-diff --git arch/arm64/include/asm/el2_setup.h arch/arm64/include/asm/el2_setup.h
-index fd87c4b8f984..212191ecad40 100644
---- arch/arm64/include/asm/el2_setup.h
-+++ arch/arm64/include/asm/el2_setup.h
-@@ -185,12 +185,20 @@
- .Lset_pie_fgt_\@:
- 	mrs_s	x1, SYS_ID_AA64MMFR3_EL1
- 	ubfx	x1, x1, #ID_AA64MMFR3_EL1_S1PIE_SHIFT, #4
--	cbz	x1, .Lset_fgt_\@
-+	cbz	x1, .Lset_poe_fgt_\@
+diff --git arch/arm64/include/asm/cpufeature.h arch/arm64/include/asm/cpufeature.h
+index 558434267271..3d261cc123c1 100644
+--- arch/arm64/include/asm/cpufeature.h
++++ arch/arm64/include/asm/cpufeature.h
+@@ -832,6 +832,12 @@ static inline bool system_supports_lpa2(void)
+ 	return cpus_have_final_cap(ARM64_HAS_LPA2);
+ }
  
- 	/* Disable trapping of PIR_EL1 / PIRE0_EL1 */
- 	orr	x0, x0, #HFGxTR_EL2_nPIR_EL1
- 	orr	x0, x0, #HFGxTR_EL2_nPIRE0_EL1
++static inline bool system_supports_poe(void)
++{
++	return IS_ENABLED(CONFIG_ARM64_POE) &&
++		alternative_has_cap_unlikely(ARM64_HAS_S1POE);
++}
++
+ int do_emulate_mrs(struct pt_regs *regs, u32 sys_reg, u32 rt);
+ bool try_emulate_mrs(struct pt_regs *regs, u32 isn);
  
-+.Lset_poe_fgt_\@:
-+	mrs_s	x1, SYS_ID_AA64MMFR3_EL1
-+	ubfx	x1, x1, #ID_AA64MMFR3_EL1_S1POE_SHIFT, #4
-+	cbz	x1, .Lset_fgt_\@
+diff --git arch/arm64/include/asm/processor.h arch/arm64/include/asm/processor.h
+index f77371232d8c..e6376f979273 100644
+--- arch/arm64/include/asm/processor.h
++++ arch/arm64/include/asm/processor.h
+@@ -184,6 +184,7 @@ struct thread_struct {
+ 	u64			sctlr_user;
+ 	u64			svcr;
+ 	u64			tpidr2_el0;
++	u64			por_el0;
+ };
+ 
+ static inline unsigned int thread_get_vl(struct thread_struct *thread,
+diff --git arch/arm64/include/asm/sysreg.h arch/arm64/include/asm/sysreg.h
+index 4a9ea103817e..494e9efd856f 100644
+--- arch/arm64/include/asm/sysreg.h
++++ arch/arm64/include/asm/sysreg.h
+@@ -1077,6 +1077,9 @@
+ #define POE_RXW		UL(0x7)
+ #define POE_MASK	UL(0xf)
+ 
++/* Initial value for Permission Overlay Extension for EL0 */
++#define POR_EL0_INIT	POE_RXW
 +
-+	/* Disable trapping of POR_EL0 */
-+	orr	x0, x0, #HFGxTR_EL2_nPOR_EL0
+ #define ARM64_FEATURE_FIELD_BITS	4
+ 
+ /* Defined for compatibility only, do not add new users. */
+diff --git arch/arm64/kernel/process.c arch/arm64/kernel/process.c
+index 4ae31b7af6c3..a3a61ecdb165 100644
+--- arch/arm64/kernel/process.c
++++ arch/arm64/kernel/process.c
+@@ -271,12 +271,23 @@ static void flush_tagged_addr_state(void)
+ 		clear_thread_flag(TIF_TAGGED_ADDR);
+ }
+ 
++static void flush_poe(void)
++{
++	if (!system_supports_poe())
++		return;
 +
- .Lset_fgt_\@:
- 	msr_s	SYS_HFGRTR_EL2, x0
- 	msr_s	SYS_HFGWTR_EL2, x0
++	write_sysreg_s(POR_EL0_INIT, SYS_POR_EL0);
++	/* ISB required for kernel uaccess routines when changing POR_EL0 */
++	isb();
++}
++
+ void flush_thread(void)
+ {
+ 	fpsimd_flush_thread();
+ 	tls_thread_flush();
+ 	flush_ptrace_hw_breakpoint(current);
+ 	flush_tagged_addr_state();
++	flush_poe();
+ }
+ 
+ void arch_release_task_struct(struct task_struct *tsk)
+@@ -371,6 +382,9 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ 		if (system_supports_tpidr2())
+ 			p->thread.tpidr2_el0 = read_sysreg_s(SYS_TPIDR2_EL0);
+ 
++		if (system_supports_poe())
++			p->thread.por_el0 = read_sysreg_s(SYS_POR_EL0);
++
+ 		if (stack_start) {
+ 			if (is_compat_thread(task_thread_info(p)))
+ 				childregs->compat_sp = stack_start;
+@@ -495,6 +509,19 @@ static void erratum_1418040_new_exec(void)
+ 	preempt_enable();
+ }
+ 
++static void permission_overlay_switch(struct task_struct *next)
++{
++	if (!system_supports_poe())
++		return;
++
++	current->thread.por_el0 = read_sysreg_s(SYS_POR_EL0);
++	if (current->thread.por_el0 != next->thread.por_el0) {
++		write_sysreg_s(next->thread.por_el0, SYS_POR_EL0);
++		/* ISB required for kernel uaccess routines when chaning POR_EL0 */
++		isb();
++	}
++}
++
+ /*
+  * __switch_to() checks current->thread.sctlr_user as an optimisation. Therefore
+  * this function must be called with preemption disabled and the update to
+@@ -530,6 +557,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	ssbs_thread_switch(next);
+ 	erratum_1418040_thread_switch(next);
+ 	ptrauth_thread_switch_user(next);
++	permission_overlay_switch(next);
+ 
+ 	/*
+ 	 * Complete any pending TLB or cache maintenance on this CPU in case
 -- 
 2.25.1
 
