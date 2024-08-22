@@ -1,77 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-307-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-308-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 594BAC531DF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:14:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70838C531DF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 07:14:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDvw4WKXz2yYf;
-	Thu, 22 Aug 2024 17:14:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqDw071kcz2yZ3;
+	Thu, 22 Aug 2024 17:14:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::22c"
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=TWZPtvue;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::22c; helo=mail-oi1-x22c.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-oi1-x22c.google.com (mail-oi1-x22c.google.com [IPv6:2607:f8b0:4864:20::22c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDvw2MCFz2xDM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:04 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4WqDvF1Dg6z9sSW;
-	Thu, 22 Aug 2024 09:13:29 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id RkC5cLxZ4aFG; Thu, 22 Aug 2024 09:13:29 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4WqDvD6yC3z9sSH;
-	Thu, 22 Aug 2024 09:13:28 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D585A8B763;
-	Thu, 22 Aug 2024 09:13:28 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 6SSl1lnhD-ee; Thu, 22 Aug 2024 09:13:28 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (PO16920.IDSI0.si.c-s.fr [192.168.232.181])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id CBB698B77D;
-	Thu, 22 Aug 2024 09:13:27 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"Theodore Ts'o" <tytso@mit.edu>,
-	"Jason A. Donenfeld" <Jason@zx2c4.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Shuah Khan <shuah@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-arch@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqDw051jPz2yZ5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 17:14:08 +1000 (AEST)
+Received: by mail-oi1-x22c.google.com with SMTP id 5614622812f47-3db14339fb0so294269b6e.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 00:14:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1724310846; x=1724915646; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=O1mpKMHwwZ1CFkcRRT4IxjhKZ5nh5A3TknIoqewquLI=;
+        b=TWZPtvueDriJIMI6gtUVEu7qiK1ZbgeQjRaNdAxxh4I4++Dl23p10U4iHNrvnJsARx
+         ejfBcA7cdqPBMQx/Hdxtg3yZiiv1Nc8js3X1bVEjyGklwzJsHRWXajf0PGra+OQIH+eI
+         kxSgBXdP9SeK0c34pRi6D7gPg8NA33rMno+sb8//FU+2LChvYuSSUAnWUzgVAp8ebAEv
+         FCutsfAm1ETJ6/K3VvK4XFr6wayrtQTZIzYQsfAIbZvkk6AVHqoN/ioKkFb0KDwRN7EY
+         eq6yFfOadPO9yuFbvPvFqHwrAnugjp6ctk7GVGXZGJentXFp1wlaoWpKaegloZMvmmKu
+         3pkQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724310846; x=1724915646;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=O1mpKMHwwZ1CFkcRRT4IxjhKZ5nh5A3TknIoqewquLI=;
+        b=g9ZZWGxtvfyf2FQYZw+b3tBLYyVx5gwOMIlduC+wWSNWlQ0MfNRoPIo7ZCvpOtsM1z
+         euVXtx88GRUiDIZsqcCIlj59Ja1rJpyvyJjiltz3f6g3FTrjHpHaLxZxdfesbnAcq8PP
+         iB20Fil2WTyySQcDE0WoLeytvPS0CDwG3+DakC3enaopQA9AH+iECI5R9AVnJEEbaiER
+         X2iYC0AIS040jmPR+eF/KiP210+6sVytsh1ZhXlc0xpoZq/d8Std7YZMyC2CR0d9ItqW
+         Jtafeh8F9LsItg0/y7iFsk0LQ5+/a/SB+dJUSSDvoHXNG0eTEJISDLspCjw+WXpc6Fu8
+         WVtw==
+X-Forwarded-Encrypted: i=1; AJvYcCVF28MoDqmE9sAcJLaWpxe9IybqjKGRWvmCTSACBeKNSimLAA5VHGQ6Qbsnr7UidvtL7MdTC70L1j8pqW4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxA6tzgdMc67PNeROpRw5R8bVjh0W0/SG2skaz+YJxkzXbE0ocz
+	HMMBD050tU9QdGWSU726zlpgDKDv6dc0n1dA1zuQGvEHDPGvVnkrKP1ruyjH4g8=
+X-Google-Smtp-Source: AGHT+IFDX2PqWoIoI6wCA8pFxmw/BmBf/PDUvtd9hijDBvTgLhn0KCKCIBnod1yVuIa/+/M4c6qbig==
+X-Received: by 2002:a05:6808:1a08:b0:3da:a16e:1764 with SMTP id 5614622812f47-3de194e0e97mr6243309b6e.4.1724310845744;
+        Thu, 22 Aug 2024 00:14:05 -0700 (PDT)
+Received: from C02DW0BEMD6R.bytedance.net ([240e:473:c90:f96:d029:ea8a:4e6d:d272])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7cd9ac994a3sm695095a12.16.2024.08.22.00.14.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 22 Aug 2024 00:14:05 -0700 (PDT)
+From: Qi Zheng <zhengqi.arch@bytedance.com>
+To: david@redhat.com,
+	hughd@google.com,
+	willy@infradead.org,
+	muchun.song@linux.dev,
+	vbabka@kernel.org,
+	akpm@linux-foundation.org,
+	rppt@kernel.org,
+	vishal.moola@gmail.com,
+	peterx@redhat.com,
+	ryan.roberts@arm.com,
+	christophe.leroy2@cs-soprasteria.com
+Cc: linux-kernel@vger.kernel.org,
 	linux-mm@kvack.org,
-	linux-trace-kernel@vger.kernel.org,
-	linux-kselftest@vger.kernel.org
-Subject: [PATCH v2 06/17] vdso: Change getrandom's generation to unsigned long
-Date: Thu, 22 Aug 2024 09:13:14 +0200
-Message-ID: <525b48eb79978ddba2d1b8ee23b27bd6c5b0b4ee.1724309198.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.44.0
-In-Reply-To: <cover.1724309198.git.christophe.leroy@csgroup.eu>
-References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Qi Zheng <zhengqi.arch@bytedance.com>
+Subject: [PATCH v2 03/14] powerpc: assert_pte_locked() use pte_offset_map_ro_nolock()
+Date: Thu, 22 Aug 2024 15:13:18 +0800
+Message-Id: <89ae94f722996b4ee7ef20d44cd7f5e2f0495c47.1724310149.git.zhengqi.arch@bytedance.com>
+X-Mailer: git-send-email 2.24.3 (Apple Git-128)
+In-Reply-To: <cover.1724310149.git.zhengqi.arch@bytedance.com>
+References: <cover.1724310149.git.zhengqi.arch@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,52 +89,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1724310794; l=1276; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=DHKz0nvjKBEZw1qFdyeiMuLRmQ0ExqxUlDOlPsu+3EA=; b=6rTkR9UfUapFGijZerpzLYHhj4PimSMK+GNZzXry6VAozVYosYDA1h8oocTbDByNjWJQ8Sh+H SV2G/Pz6kbDAVsKqsh13uCcc2q8jEtNaLgRwvLicmTZ4KYZyiB5QJXR
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-Performing SMP atomic operations on u64 fails on powerpc32.
+In assert_pte_locked(), we just get the ptl and assert if it was already
+held, so convert it to using pte_offset_map_ro_nolock().
 
-Random driver generation is handled as unsigned long not u64,
-see for instance base_cnrg or struct crng.
-
-Use the same type for vDSO's getrandom as it gets copied
-from the above. This is also in line with the local
-current_generation which is already an unsigned long.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
 ---
- include/vdso/datapage.h  | 2 +-
- include/vdso/getrandom.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/pgtable.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/vdso/datapage.h b/include/vdso/datapage.h
-index b85f24cac3f5..00b66a9b5778 100644
---- a/include/vdso/datapage.h
-+++ b/include/vdso/datapage.h
-@@ -123,7 +123,7 @@ struct vdso_data {
-  * @is_ready:	boolean signaling whether the RNG is initialized
-  */
- struct vdso_rng_data {
--	u64	generation;
-+	unsigned long	generation;
- 	u8	is_ready;
- };
- 
-diff --git a/include/vdso/getrandom.h b/include/vdso/getrandom.h
-index a8b7c14b0ae0..36fd166bf330 100644
---- a/include/vdso/getrandom.h
-+++ b/include/vdso/getrandom.h
-@@ -38,7 +38,7 @@ struct vgetrandom_state {
- 		};
- 		u8		batch_key[CHACHA_BLOCK_SIZE * 2];
- 	};
--	u64			generation;
-+	unsigned long		generation;
- 	u8			pos;
- 	bool 			in_use;
- };
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 7316396e452d8..61df5aed79894 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -398,7 +398,7 @@ void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+ 	 */
+ 	if (pmd_none(*pmd))
+ 		return;
+-	pte = pte_offset_map_nolock(mm, pmd, addr, &ptl);
++	pte = pte_offset_map_ro_nolock(mm, pmd, addr, &ptl);
+ 	BUG_ON(!pte);
+ 	assert_spin_locked(ptl);
+ 	pte_unmap(pte);
 -- 
-2.44.0
+2.20.1
 
 
