@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-367-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-368-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B17FAC3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:12:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAE9CC5321D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:12:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWz0djvz2ync;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWz0qRvz2yng;
 	Fri, 23 Aug 2024 01:12:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724339551;
-	cv=none; b=dk4wRO/bvKYxRPWlWkR3kdloS+w37IThm/KyrINVt2JbKymMiOB8kRoTwlXuYQW177jtiNFCm88wGCtVNmRRdHLRpPl2L+zyNXnpAcDMR0WIW6uDunNuk98JV9Xwpl6zRqG0AkEbHZWAQCgSnMlfqepwIhipRSF5NlRafDEv128/E+ErU1iBqmv9x361V8hH54FVRcDpBrxl++Dj9wb+794ul7rSAdoa8YpCIJkVc7EdTP76jFPSCDrD/0T7+9HRuXAdln+/dhNBljY116FY+1kJ8LDY7zXAAgW0I57Kr+8HP5HgXIaWrFqWet3akPF5/FFPV5HoGUWmaBlZyu05MQ==
+	cv=none; b=aTJyLGRB1V+rcfj4k0UzC5ELyzigPi74TBMyMiuAD5ksvXVnqLoBFQm9hQimPl4USmD33Q+zhQQKfMMx+MoeOJrPGf3pOS21xHq7b7o9Vsh0aBrggvu/jvGj/gO1RpgBaEyJnJ83G0tFfVBq+2kOrG5xAxIWueC1jjvdSpbwxn/QicJalTiUTTAKah0Pk+ZWuIUQsAFlfgQrss2wS80R5HehSf1RdM+KlRl2rHfC7DGZYELIb//nz6i6hkETbP4Epezm1JyjdWpWZORsBEasEfJHMkJxWprdXQS1uCGUTqkdoxyIDbU2zi/fdfIBQ7IDFy0gQTiOk5FiEdl7snqJWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1724339551; c=relaxed/relaxed;
-	bh=MNrTMGsD5+rmAx8lQBjnHgQzdbxN8x//itlGnFpXYu0=;
+	bh=t/GyyKQjhnvuOt3BOc8RNJrfkkM+4199Rp4lYae/2nQ=;
 	h=Received:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=X+DMkA8WVxrrCq5oGfrHknMWUSn0Fz8LydzuJz1hmaJZLGnPSYMyH+0cLAglwMT420cJd6wJDy/shSpc8hg+oNiQwdYSU3tRj6qSdS03Hfz4IhZjhjFfhULdkf/0cwPq4fYEqN63LJpgH3XGvSggGVGc2dv8RmzW4ts5SfYqeErScWLshur/1kvH3lbJZJyssxgo2N+G7lkijVxmDBXuJywM9nbdoRIkoUEwrFFvA7WbWtVFlHZl/o5R/z4KvP9bXXgh8JcWhyhnqibogx7oHR24y+8NDWPVo17no5zOOBf2vF/bscfdCtPByWL3jxGAx8huODV/pU1MaE6VXAFyHA==
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=EylMzoDUWgWXshxCqXEHt141TB3DVmNb4kJh899j937ZHt8v6AF9gs9smUYwQfmGgM+fcONcCWZgVPB8IwCJpO2M+I8evqhDUObk43RsvPU78qb+3n+z4d7i+PBT8/oDNyW9ptc40HKrYzFcH1JfkHEX835CzBfXs31SRbFuFOhTIZ7gHASSmOOYXhVFbySdjHHTacUhhNHvWIQfm0IzMzxrErQQVNseRNTc0Zn4X2ZnArAA4yxTzfCWjey0CRkf2E2JDWdmCxFF72FeQbvE7nWiicEeHcMvCND6nWvbhHg8s+wsM/wtiIL+LliWP5SJN9OHCnRDEhE+0FOBsC6o2g==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWy5qZQz2yhn
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRWy3hcHz2yhP
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 01:12:30 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EE16915A1;
-	Thu, 22 Aug 2024 08:12:11 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 955EA15DB;
+	Thu, 22 Aug 2024 08:12:20 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CF9E83F58B;
-	Thu, 22 Aug 2024 08:11:41 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 76AB93F58B;
+	Thu, 22 Aug 2024 08:11:50 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
 Cc: nd@arm.com,
@@ -60,9 +60,9 @@ Cc: nd@arm.com,
 	x86@kernel.org,
 	kvmarm@lists.linux.dev,
 	linux-kselftest@vger.kernel.org
-Subject: [PATCH v5 05/30] arm64: cpufeature: add Permission Overlay Extension cpucap
-Date: Thu, 22 Aug 2024 16:10:48 +0100
-Message-Id: <20240822151113.1479789-6-joey.gouly@arm.com>
+Subject: [PATCH v5 07/30] KVM: arm64: Save/restore POE registers
+Date: Thu, 22 Aug 2024 16:10:50 +0100
+Message-Id: <20240822151113.1479789-8-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240822151113.1479789-1-joey.gouly@arm.com>
 References: <20240822151113.1479789-1-joey.gouly@arm.com>
@@ -77,52 +77,182 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This indicates if the system supports POE. This is a CPUCAP_BOOT_CPU_FEATURE
-as the boot CPU will enable POE if it has it, so secondary CPUs must also
-have this feature.
+Define the new system registers that POE introduces and context switch them.
 
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
+Cc: Marc Zyngier <maz@kernel.org>
+Cc: Oliver Upton <oliver.upton@linux.dev>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Reviewed-by: Marc Zyngier <maz@kernel.org>
 ---
- arch/arm64/kernel/cpufeature.c | 9 +++++++++
- arch/arm64/tools/cpucaps       | 1 +
- 2 files changed, 10 insertions(+)
+ arch/arm64/include/asm/kvm_host.h          |  4 ++++
+ arch/arm64/include/asm/vncr_mapping.h      |  1 +
+ arch/arm64/kvm/hyp/include/hyp/sysreg-sr.h | 27 ++++++++++++++++++++++
+ arch/arm64/kvm/sys_regs.c                  | 19 +++++++++++++--
+ 4 files changed, 49 insertions(+), 2 deletions(-)
 
-diff --git arch/arm64/kernel/cpufeature.c arch/arm64/kernel/cpufeature.c
-index 646ecd3069fd..2daf5597cd65 100644
---- arch/arm64/kernel/cpufeature.c
-+++ arch/arm64/kernel/cpufeature.c
-@@ -2870,6 +2870,15 @@ static const struct arm64_cpu_capabilities arm64_features[] = {
- 		.matches = has_nv1,
- 		ARM64_CPUID_FIELDS_NEG(ID_AA64MMFR4_EL1, E2H0, NI_NV1)
- 	},
-+#ifdef CONFIG_ARM64_POE
-+	{
-+		.desc = "Stage-1 Permission Overlay Extension (S1POE)",
-+		.capability = ARM64_HAS_S1POE,
-+		.type = ARM64_CPUCAP_BOOT_CPU_FEATURE,
-+		.matches = has_cpuid_feature,
-+		ARM64_CPUID_FIELDS(ID_AA64MMFR3_EL1, S1POE, IMP)
-+	},
-+#endif
- 	{},
- };
+diff --git arch/arm64/include/asm/kvm_host.h arch/arm64/include/asm/kvm_host.h
+index a33f5996ca9f..5c9de7692201 100644
+--- arch/arm64/include/asm/kvm_host.h
++++ arch/arm64/include/asm/kvm_host.h
+@@ -446,6 +446,8 @@ enum vcpu_sysreg {
+ 	GCR_EL1,	/* Tag Control Register */
+ 	TFSRE0_EL1,	/* Tag Fault Status Register (EL0) */
  
-diff --git arch/arm64/tools/cpucaps arch/arm64/tools/cpucaps
-index ac3429d892b9..eedb5acc21ed 100644
---- arch/arm64/tools/cpucaps
-+++ arch/arm64/tools/cpucaps
-@@ -45,6 +45,7 @@ HAS_MOPS
- HAS_NESTED_VIRT
- HAS_PAN
- HAS_S1PIE
-+HAS_S1POE
- HAS_RAS_EXTN
- HAS_RNG
- HAS_SB
++	POR_EL0,	/* Permission Overlay Register 0 (EL0) */
++
+ 	/* 32bit specific registers. */
+ 	DACR32_EL2,	/* Domain Access Control Register */
+ 	IFSR32_EL2,	/* Instruction Fault Status Register */
+@@ -517,6 +519,8 @@ enum vcpu_sysreg {
+ 	VNCR(PIR_EL1),	 /* Permission Indirection Register 1 (EL1) */
+ 	VNCR(PIRE0_EL1), /*  Permission Indirection Register 0 (EL1) */
+ 
++	VNCR(POR_EL1),	/* Permission Overlay Register 1 (EL1) */
++
+ 	VNCR(HFGRTR_EL2),
+ 	VNCR(HFGWTR_EL2),
+ 	VNCR(HFGITR_EL2),
+diff --git arch/arm64/include/asm/vncr_mapping.h arch/arm64/include/asm/vncr_mapping.h
+index df2c47c55972..06f8ec0906a6 100644
+--- arch/arm64/include/asm/vncr_mapping.h
++++ arch/arm64/include/asm/vncr_mapping.h
+@@ -52,6 +52,7 @@
+ #define VNCR_PIRE0_EL1		0x290
+ #define VNCR_PIRE0_EL2		0x298
+ #define VNCR_PIR_EL1		0x2A0
++#define VNCR_POR_EL1		0x2A8
+ #define VNCR_ICH_LR0_EL2        0x400
+ #define VNCR_ICH_LR1_EL2        0x408
+ #define VNCR_ICH_LR2_EL2        0x410
+diff --git arch/arm64/kvm/hyp/include/hyp/sysreg-sr.h arch/arm64/kvm/hyp/include/hyp/sysreg-sr.h
+index 4c0fdabaf8ae..1579a3c08a36 100644
+--- arch/arm64/kvm/hyp/include/hyp/sysreg-sr.h
++++ arch/arm64/kvm/hyp/include/hyp/sysreg-sr.h
+@@ -16,9 +16,15 @@
+ #include <asm/kvm_hyp.h>
+ #include <asm/kvm_mmu.h>
+ 
++static inline bool ctxt_has_s1poe(struct kvm_cpu_context *ctxt);
++
+ static inline void __sysreg_save_common_state(struct kvm_cpu_context *ctxt)
+ {
+ 	ctxt_sys_reg(ctxt, MDSCR_EL1)	= read_sysreg(mdscr_el1);
++
++	// POR_EL0 can affect uaccess, so must be saved/restored early.
++	if (ctxt_has_s1poe(ctxt))
++		ctxt_sys_reg(ctxt, POR_EL0)	= read_sysreg_s(SYS_POR_EL0);
+ }
+ 
+ static inline void __sysreg_save_user_state(struct kvm_cpu_context *ctxt)
+@@ -66,6 +72,17 @@ static inline bool ctxt_has_tcrx(struct kvm_cpu_context *ctxt)
+ 	return kvm_has_feat(kern_hyp_va(vcpu->kvm), ID_AA64MMFR3_EL1, TCRX, IMP);
+ }
+ 
++static inline bool ctxt_has_s1poe(struct kvm_cpu_context *ctxt)
++{
++	struct kvm_vcpu *vcpu;
++
++	if (!system_supports_poe())
++		return false;
++
++	vcpu = ctxt_to_vcpu(ctxt);
++	return kvm_has_feat(kern_hyp_va(vcpu->kvm), ID_AA64MMFR3_EL1, S1POE, IMP);
++}
++
+ static inline void __sysreg_save_el1_state(struct kvm_cpu_context *ctxt)
+ {
+ 	ctxt_sys_reg(ctxt, SCTLR_EL1)	= read_sysreg_el1(SYS_SCTLR);
+@@ -80,6 +97,9 @@ static inline void __sysreg_save_el1_state(struct kvm_cpu_context *ctxt)
+ 			ctxt_sys_reg(ctxt, PIR_EL1)	= read_sysreg_el1(SYS_PIR);
+ 			ctxt_sys_reg(ctxt, PIRE0_EL1)	= read_sysreg_el1(SYS_PIRE0);
+ 		}
++
++		if (ctxt_has_s1poe(ctxt))
++			ctxt_sys_reg(ctxt, POR_EL1)	= read_sysreg_el1(SYS_POR);
+ 	}
+ 	ctxt_sys_reg(ctxt, ESR_EL1)	= read_sysreg_el1(SYS_ESR);
+ 	ctxt_sys_reg(ctxt, AFSR0_EL1)	= read_sysreg_el1(SYS_AFSR0);
+@@ -120,6 +140,10 @@ static inline void __sysreg_save_el2_return_state(struct kvm_cpu_context *ctxt)
+ static inline void __sysreg_restore_common_state(struct kvm_cpu_context *ctxt)
+ {
+ 	write_sysreg(ctxt_sys_reg(ctxt, MDSCR_EL1),  mdscr_el1);
++
++	// POR_EL0 can affect uaccess, so must be saved/restored early.
++	if (ctxt_has_s1poe(ctxt))
++		write_sysreg_s(ctxt_sys_reg(ctxt, POR_EL0),	SYS_POR_EL0);
+ }
+ 
+ static inline void __sysreg_restore_user_state(struct kvm_cpu_context *ctxt)
+@@ -158,6 +182,9 @@ static inline void __sysreg_restore_el1_state(struct kvm_cpu_context *ctxt)
+ 			write_sysreg_el1(ctxt_sys_reg(ctxt, PIR_EL1),	SYS_PIR);
+ 			write_sysreg_el1(ctxt_sys_reg(ctxt, PIRE0_EL1),	SYS_PIRE0);
+ 		}
++
++		if (ctxt_has_s1poe(ctxt))
++			write_sysreg_el1(ctxt_sys_reg(ctxt, POR_EL1),	SYS_POR);
+ 	}
+ 	write_sysreg_el1(ctxt_sys_reg(ctxt, ESR_EL1),	SYS_ESR);
+ 	write_sysreg_el1(ctxt_sys_reg(ctxt, AFSR0_EL1),	SYS_AFSR0);
+diff --git arch/arm64/kvm/sys_regs.c arch/arm64/kvm/sys_regs.c
+index c90324060436..e7208b59ea12 100644
+--- arch/arm64/kvm/sys_regs.c
++++ arch/arm64/kvm/sys_regs.c
+@@ -2255,6 +2255,15 @@ static bool access_zcr_el2(struct kvm_vcpu *vcpu,
+ 	return true;
+ }
+ 
++static unsigned int s1poe_visibility(const struct kvm_vcpu *vcpu,
++				     const struct sys_reg_desc *rd)
++{
++	if (kvm_has_feat(vcpu->kvm, ID_AA64MMFR3_EL1, S1POE, IMP))
++		return 0;
++
++	return REG_HIDDEN;
++}
++
+ /*
+  * Architected system registers.
+  * Important: Must be sorted ascending by Op0, Op1, CRn, CRm, Op2
+@@ -2492,6 +2501,8 @@ static const struct sys_reg_desc sys_reg_descs[] = {
+ 	{ SYS_DESC(SYS_MAIR_EL1), access_vm_reg, reset_unknown, MAIR_EL1 },
+ 	{ SYS_DESC(SYS_PIRE0_EL1), NULL, reset_unknown, PIRE0_EL1 },
+ 	{ SYS_DESC(SYS_PIR_EL1), NULL, reset_unknown, PIR_EL1 },
++	{ SYS_DESC(SYS_POR_EL1), NULL, reset_unknown, POR_EL1,
++	  .visibility = s1poe_visibility },
+ 	{ SYS_DESC(SYS_AMAIR_EL1), access_vm_reg, reset_amair_el1, AMAIR_EL1 },
+ 
+ 	{ SYS_DESC(SYS_LORSA_EL1), trap_loregion },
+@@ -2578,6 +2589,8 @@ static const struct sys_reg_desc sys_reg_descs[] = {
+ 	  .access = access_pmovs, .reg = PMOVSSET_EL0,
+ 	  .get_user = get_pmreg, .set_user = set_pmreg },
+ 
++	{ SYS_DESC(SYS_POR_EL0), NULL, reset_unknown, POR_EL0,
++	  .visibility = s1poe_visibility },
+ 	{ SYS_DESC(SYS_TPIDR_EL0), NULL, reset_unknown, TPIDR_EL0 },
+ 	{ SYS_DESC(SYS_TPIDRRO_EL0), NULL, reset_unknown, TPIDRRO_EL0 },
+ 	{ SYS_DESC(SYS_TPIDR2_EL0), undef_access },
+@@ -4568,8 +4581,6 @@ void kvm_calculate_traps(struct kvm_vcpu *vcpu)
+ 	kvm->arch.fgu[HFGxTR_GROUP] = (HFGxTR_EL2_nAMAIR2_EL1		|
+ 				       HFGxTR_EL2_nMAIR2_EL1		|
+ 				       HFGxTR_EL2_nS2POR_EL1		|
+-				       HFGxTR_EL2_nPOR_EL1		|
+-				       HFGxTR_EL2_nPOR_EL0		|
+ 				       HFGxTR_EL2_nACCDATA_EL1		|
+ 				       HFGxTR_EL2_nSMPRI_EL1_MASK	|
+ 				       HFGxTR_EL2_nTPIDR2_EL0_MASK);
+@@ -4604,6 +4615,10 @@ void kvm_calculate_traps(struct kvm_vcpu *vcpu)
+ 		kvm->arch.fgu[HFGxTR_GROUP] |= (HFGxTR_EL2_nPIRE0_EL1 |
+ 						HFGxTR_EL2_nPIR_EL1);
+ 
++	if (!kvm_has_feat(kvm, ID_AA64MMFR3_EL1, S1POE, IMP))
++		kvm->arch.fgu[HFGxTR_GROUP] |= (HFGxTR_EL2_nPOR_EL1 |
++						HFGxTR_EL2_nPOR_EL0);
++
+ 	if (!kvm_has_feat(kvm, ID_AA64PFR0_EL1, AMU, IMP))
+ 		kvm->arch.fgu[HAFGRTR_GROUP] |= ~(HAFGRTR_EL2_RES0 |
+ 						  HAFGRTR_EL2_RES1);
 -- 
 2.25.1
 
