@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-371-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-372-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE80AC3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:13:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5824AC3DA4A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 15:13:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRX34WBRz2ysv;
-	Fri, 23 Aug 2024 01:12:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRX64f2yz2ytl;
+	Fri, 23 Aug 2024 01:12:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724339555;
-	cv=none; b=I31wVhAC3IQy5vEsM+u1Duxcx3rItGgl4sdGbvpkcEUyBfoACgNulmEefkEhBcpg6tfSNgNRI8E3xi7Gv7bXy20bebJZgKb2HBvL9LHOoloYVWq0+H4XPdvNi6ncnhWNc45gWfRed6JpWhGvhz8r96Txkw5Qeeozac/AISgZUWCBDjFY3gdzBHa79aUvK5PUxugBfiy3UOPgpM2ToXQPI6dTgT3DOH6RbxYYBnmGLDOjzmyUosvkZ8XAZrcx96HyrkOdoji5aG9B7VxR7wKnKgmJRXr1qPGnULqsApsh/rGX9kRz78FctzUzIg/qJe4nPkiosvNQjP4T0hki9B4pPw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724339558;
+	cv=none; b=DU+HTPOpvQEUKhI2IANPIR2CihdGJXmm5N3OFqrKCowiRxlfDN1SaELPMHDYcyAiOReX9+4Zsp8gaYgZVGXJl74VMxlTReYWwUNypdks/9aOxJTkT3J4lp6pzSRaZpf3/J6Wb9XdSpDa2dm5aDssSxrvNFP7hrgvbcfCdO8RxRdKe4Hl8g7Oi6JrzJ0dxgISd2I4vOSTqIuQfDPEvQrKvklgqlecCk8nu3MNwe0PuoOwVVFcuAzhE75P8cCkfCYyt7vCNRyOl3igc/F72SFXDiQ2Sxb+XIVkBdjyAhYhMzbcBe1c6SPpc5EVYx8257h9YGwpQJ8VcYe8BKticr8hIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724339555; c=relaxed/relaxed;
-	bh=tGPcTPPfKkSGaPcxenC1uehrGC+VQwOEc7ex5Jc/eTc=;
+	t=1724339558; c=relaxed/relaxed;
+	bh=lhYPnmIy9QUOshqY63sjGUWSg8MXgpvHQMLfdS0GHX8=;
 	h=Received:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=XA6w/tA++pX+LVWzHQg5cb0F9YV88EEuxMAvBR/00LDzqji/7+D1cOlw9V+Dl3yhUzQLy8LvJeJ0t4hKNx6aaq633+VTdM0n3sdl09DhHl3YdIQFNMX8VSTjAz7XSJN4TkvQmAQ21jbrVrkZNxbgQ87Is4h6W+lL+YOPzv6qIed+U1ZKMuwADfjb/XgxHGwFpuX8tjTEFmBLJhitIE6kQAGrGbQ1tczfhhAkRKU1cCN+8PJprl/eB8s/ovZ4ljKgymzfqLGdn1Mn4yOhjYPSM3d3GHkwcCyZSzRDl2oj1w4V+QzdmbA4S6ZYOwtmJgD1Bk13SEP1QI62ivYyRiwXPA==
+	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding; b=AZF0Xw6ASB0aiKehFxfmonz2DyU8IvFlVR1N361wHwg8Z90mgkF22eOXZ19rRnxoFMDgtQrobLbN0OKsDi2ijwLdIHFe5cZpquuorNon230ttRWDVx0MJtpZDU/z5lurgiY8CO5PmQJ/SYEhdwSt13KaYGs9k66S9wPghbtIQ51hmniFsSA+IYrQL98GR5EIShx5qxXw1+XmS9n6GK7puGrZ56QiMghH3f/9qa9FH0hfpl82QsTC6XZTo9qJfnyFslY7wtbPbCfUwHxRxZl+zXpOaFIoPxTqhwWZfwxLFzl+TYqU5HKJJXx4vFITepnsTVfgiUs+5qXwMb664FX/RQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRX32SnGz2ynr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 01:12:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqRX638nyz2ytT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Aug 2024 01:12:38 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5A265DA7;
-	Thu, 22 Aug 2024 08:12:29 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8BA89FEC;
+	Thu, 22 Aug 2024 08:12:33 -0700 (PDT)
 Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1F69E3F58B;
-	Thu, 22 Aug 2024 08:11:59 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6CF9D3F58B;
+	Thu, 22 Aug 2024 08:12:03 -0700 (PDT)
 From: Joey Gouly <joey.gouly@arm.com>
 To: linux-arm-kernel@lists.infradead.org
 Cc: nd@arm.com,
@@ -60,9 +60,9 @@ Cc: nd@arm.com,
 	x86@kernel.org,
 	kvmarm@lists.linux.dev,
 	linux-kselftest@vger.kernel.org
-Subject: [PATCH v5 09/30] KVM: arm64: use `at s1e1a` for POE
-Date: Thu, 22 Aug 2024 16:10:52 +0100
-Message-Id: <20240822151113.1479789-10-joey.gouly@arm.com>
+Subject: [PATCH v5 10/30] KVM: arm64: Sanitise ID_AA64MMFR3_EL1
+Date: Thu, 22 Aug 2024 16:10:53 +0100
+Message-Id: <20240822151113.1479789-11-joey.gouly@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20240822151113.1479789-1-joey.gouly@arm.com>
 References: <20240822151113.1479789-1-joey.gouly@arm.com>
@@ -77,48 +77,42 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-FEAT_ATS1E1A introduces a new instruction: `at s1e1a`.
-This is an address translation, without permission checks.
+Add the missing sanitisation of ID_AA64MMFR3_EL1, making sure we
+solely expose S1POE and TCRX (we currently don't support anything
+else).
 
-POE allows read permissions to be removed from S1 by the guest.  This means
-that an `at` instruction could fail, and not get the IPA.
+[joey: Took Marc's patch for S1PIE, and changed it for S1POE]
 
-Switch to using `at s1e1a` so that KVM can get the IPA regardless of S1
-permissions.
-
+Signed-off-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Joey Gouly <joey.gouly@arm.com>
-Cc: Marc Zyngier <maz@kernel.org>
-Cc: Oliver Upton <oliver.upton@linux.dev>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Reviewed-by: Marc Zyngier <maz@kernel.org>
 ---
- arch/arm64/kvm/hyp/include/hyp/fault.h | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/arm64/kvm/sys_regs.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git arch/arm64/kvm/hyp/include/hyp/fault.h arch/arm64/kvm/hyp/include/hyp/fault.h
-index 487c06099d6f..17df94570f03 100644
---- arch/arm64/kvm/hyp/include/hyp/fault.h
-+++ arch/arm64/kvm/hyp/include/hyp/fault.h
-@@ -14,6 +14,7 @@
- 
- static inline bool __translate_far_to_hpfar(u64 far, u64 *hpfar)
- {
-+	int ret;
- 	u64 par, tmp;
- 
- 	/*
-@@ -27,7 +28,9 @@ static inline bool __translate_far_to_hpfar(u64 far, u64 *hpfar)
- 	 * saved the guest context yet, and we may return early...
- 	 */
- 	par = read_sysreg_par();
--	if (!__kvm_at(OP_AT_S1E1R, far))
-+	ret = system_supports_poe() ? __kvm_at(OP_AT_S1E1A, far) :
-+	                              __kvm_at(OP_AT_S1E1R, far);
-+	if (!ret)
- 		tmp = read_sysreg_par();
- 	else
- 		tmp = SYS_PAR_EL1_F; /* back to the guest */
+diff --git arch/arm64/kvm/sys_regs.c arch/arm64/kvm/sys_regs.c
+index e7208b59ea12..0f13378e761c 100644
+--- arch/arm64/kvm/sys_regs.c
++++ arch/arm64/kvm/sys_regs.c
+@@ -1556,6 +1556,9 @@ static u64 __kvm_read_sanitised_id_reg(const struct kvm_vcpu *vcpu,
+ 	case SYS_ID_AA64MMFR2_EL1:
+ 		val &= ~ID_AA64MMFR2_EL1_CCIDX_MASK;
+ 		break;
++	case SYS_ID_AA64MMFR3_EL1:
++		val &= ID_AA64MMFR3_EL1_TCRX | ID_AA64MMFR3_EL1_S1POE;
++		break;
+ 	case SYS_ID_MMFR4_EL1:
+ 		val &= ~ARM64_FEATURE_MASK(ID_MMFR4_EL1_CCIDX);
+ 		break;
+@@ -2427,7 +2430,8 @@ static const struct sys_reg_desc sys_reg_descs[] = {
+ 					ID_AA64MMFR2_EL1_IDS |
+ 					ID_AA64MMFR2_EL1_NV |
+ 					ID_AA64MMFR2_EL1_CCIDX)),
+-	ID_SANITISED(ID_AA64MMFR3_EL1),
++	ID_WRITABLE(ID_AA64MMFR3_EL1, (ID_AA64MMFR3_EL1_TCRX	|
++				       ID_AA64MMFR3_EL1_S1POE)),
+ 	ID_SANITISED(ID_AA64MMFR4_EL1),
+ 	ID_UNALLOCATED(7,5),
+ 	ID_UNALLOCATED(7,6),
 -- 
 2.25.1
 
