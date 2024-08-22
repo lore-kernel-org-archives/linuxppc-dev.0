@@ -1,64 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-350-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-351-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D6FBC3DA4A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 12:22:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C272C52D7C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Aug 2024 13:55:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WqMm82Y3lz2yVG;
-	Thu, 22 Aug 2024 22:22:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Jdh5t5Gj;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WqPq65mwyz2yR9;
+	Thu, 22 Aug 2024 23:55:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.255
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724331982;
+	cv=none; b=EZNQRtBB5gL2zCjH6g7L9seqmBe2ls0ZXaiWWditnhmzNDvN98fzueR6uPmiritk7oC/GYpy9Amtku4/un0rRpWDQqMVOfhzNGdae9ealYPtTfVH/zz66VyJ7W4Q8kTqSJBwZR0nRGhXkt5R0kRn7AAY5tdp2YjvsaCvRDYsOVIub0qkOODNDHYd+uvDfr+2OoR98+HR9jfvSke0Tpu7ULO/z2oLeRIIANKJdzxXEq9Axu6kcKF7ti3y+AiRRC+epuHCXwr9FjRp8UqPGDlLc9PL6mWd0+h3K7vuNqWyOvEyqoTlL+IiRRAhmbiqcg5N4XfYXBvJANfXpNmmR9pMJg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1724331982; c=relaxed/relaxed;
+	bh=zaoBtypygZSI6j4bBgXLowImhXp4LtSLDIuMumd9sps=;
+	h=X-Greylist:Received:Received:Received:From:To:CC:Subject:Date:
+	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:Content-Type:X-Originating-IP:
+	 X-ClientProxiedBy; b=P8PNJ46VMy+CzNLxKoc6gBPxU+Vwvbzan2Pt9JJVIMRBOhDw5I79nrcivwSny4eVjJCtCoVhFYfD//6cNtZNWDc5AbkYTcgXPs/4K4lkN50cffwPztuPZV0aj3YAXHufj+9oG/CXHYVeWdFXDbaaJvnDhTO0CAi6xRGILl/F6EbJ8Q/yCWTbfITZPqdB1G7EDvH35eEX4oRVYmwlheuke8rJA59z4yQVac/pfjSpYawn5lsuXnVEkZtexUYBTKXb1vyippQW4ftg0w0+NXen+ItMTcrm56q5bQcDZcrFkuTiozAFrLo0vMLpBEb36IskWXa/3kIZwVJUdx/rXZGb1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; spf=pass (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=cuigaosheng1@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=cuigaosheng1@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 323 seconds by postgrey-1.37 at boromir; Thu, 22 Aug 2024 23:06:22 AEST
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqMm80PjHz2yR3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 22:22:47 +1000 (AEST)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-71423273c62so619133b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 05:22:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1724329366; x=1724934166; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=kIwgebdH51yKuSjq8P43yv3p3Sz45IN9GInZ+H0UIGw=;
-        b=Jdh5t5GjyY3MhW2NzaPxPHhr7EubM6SGkFApIBhma9B7LNELvY+ruwHBKucYN9XEAC
-         jIxQv+hQTevCFgYTDtUR7Olms9dUPp3Y4/QS2iM3Hn2CBmP4ixYPvQs4/E4VN3/y6o3k
-         8bYPMrqCIRjWZJoEkv4X/JRwwChFnoBCnD+Z87Nrgggf39M5dDS8vnSBd5Xtvh0JWac9
-         cRWF9ggLd1ZdrqOJFUcMgjsA9LNliWtdM6ooh32tcIiVQIE8VNitP8q6tcWFoyCJH7HS
-         XNj96wzs11NbpbeENp5poqaO+NibYcF7ijdcSsP3p+3wuPGLAHkdEUY4JkXJnXDcAamW
-         Evlw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724329366; x=1724934166;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=kIwgebdH51yKuSjq8P43yv3p3Sz45IN9GInZ+H0UIGw=;
-        b=BoY+yW3ykE+40SpaT3iFHFFOeEtRecwYFqCpcCa4uib0LILnoQ/9sIzvS5IF+2ds9j
-         f2IWbSDA7Ih2FCu9Xw2+hKNAvqMa9LFG7OOsgaIErJkNdcFPR5o3gIu3M3t1Q8RhGRHC
-         Jb4GCgFQu//lxRuw4ropTo7zYlNtRlbbo+l/WMM6pHO79l+1QRcbjYVgkLhsNXrCx7CY
-         nM3L8Z9qMXR7f30vDCClsTTkYWyBwuKLtW0wMmEdn25Edw8Zh+W83NNuPY9nopOZwoDJ
-         cNkLGPcruU6y8RzOpvx0z6ozLFgx+VRcUMsgd1g45ScqLCokXosYpKQ0j70/bkrfi0hK
-         hGxw==
-X-Forwarded-Encrypted: i=1; AJvYcCWpuZcy6ZnCWuMz+U6a3gBkiaN/+u8eXWbyFo00G5wnNy1gJgu4aYdPFuSwkfRfjRl+WMRg6VBg3y9tfIw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzEwO7PMORRJNqiNQyW6+LZj/c5XkfHkqARXMt13wvxY5Pp4wl4
-	Eu77g1X3AGmGWd8WheyzRyIWWEJn9XtFDWK2s4K1CaD2b/GSySlqtQwDybjXSXU=
-X-Google-Smtp-Source: AGHT+IEHSce2yik5ch9+ibHBlKnOikhH85uimhD6rYu5vvuVwwprOpDF1vUeRBo9cEYE2Tjb138rnA==
-X-Received: by 2002:a05:6a21:a4c1:b0:1c8:95c9:307c with SMTP id adf61e73a8af0-1caeb250138mr1625404637.28.1724329365986;
-        Thu, 22 Aug 2024 05:22:45 -0700 (PDT)
-Received: from [10.255.182.243] ([139.177.225.253])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7143422eda4sm1259383b3a.35.2024.08.22.05.22.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 22 Aug 2024 05:22:45 -0700 (PDT)
-Message-ID: <7e83f87b-703b-4f7c-9d42-78845acb41c6@bytedance.com>
-Date: Thu, 22 Aug 2024 20:22:37 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WqNkQ3412z2yN1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Aug 2024 23:06:22 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.19.163.48])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4WqNjR626gz13lgB;
+	Thu, 22 Aug 2024 21:05:31 +0800 (CST)
+Received: from kwepemd200011.china.huawei.com (unknown [7.221.188.251])
+	by mail.maildlp.com (Postfix) with ESMTPS id 3A8B018009B;
+	Thu, 22 Aug 2024 21:06:12 +0800 (CST)
+Received: from cgs.huawei.com (10.244.148.83) by
+ kwepemd200011.china.huawei.com (7.221.188.251) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1258.34; Thu, 22 Aug 2024 21:06:11 +0800
+From: Gaosheng Cui <cuigaosheng1@huawei.com>
+To: <mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
+	<naveen@kernel.org>, <akpm@linux-foundation.org>, <david@redhat.com>,
+	<Liam.Howlett@oracle.com>, <tglx@linutronix.de>, <cuigaosheng1@huawei.com>,
+	<bgray@linux.ibm.com>, <joel@jms.id.au>, <bhelgaas@google.com>
+CC: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH -next 2/4] powerpc: Remove obsoleted declaration for maple_calibrate_decr
+Date: Thu, 22 Aug 2024 21:06:07 +0800
+Message-ID: <20240822130609.786431-3-cuigaosheng1@huawei.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20240822130609.786431-1-cuigaosheng1@huawei.com>
+References: <20240822130609.786431-1-cuigaosheng1@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,99 +59,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 06/14] mm: handle_pte_fault() use
- pte_offset_map_maywrite_nolock()
-Content-Language: en-US
-To: David Hildenbrand <david@redhat.com>
-Cc: LEROY Christophe <christophe.leroy2@cs-soprasteria.com>,
- "hughd@google.com" <hughd@google.com>,
- "willy@infradead.org" <willy@infradead.org>,
- "muchun.song@linux.dev" <muchun.song@linux.dev>,
- "vbabka@kernel.org" <vbabka@kernel.org>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "rppt@kernel.org" <rppt@kernel.org>,
- "vishal.moola@gmail.com" <vishal.moola@gmail.com>,
- "peterx@redhat.com" <peterx@redhat.com>,
- "ryan.roberts@arm.com" <ryan.roberts@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <cover.1724226076.git.zhengqi.arch@bytedance.com>
- <239432a0bc56464e58a6baf3622fdc72526c8d57.1724226076.git.zhengqi.arch@bytedance.com>
- <6a586524-5116-4eaf-b4f3-c1aea290d7c1@cs-soprasteria.com>
- <b4bf605a-d31a-40ad-8cee-fe505e45dc64@bytedance.com>
- <4b867535-8481-4fa1-bed1-ad25a76682f0@redhat.com>
- <ef40c2ef-e4a4-4b02-85b8-a930285a3d0e@bytedance.com>
- <61c05197-0baa-4680-ad24-5965ba37dc35@redhat.com>
- <83142dc8-edcf-4e47-8215-8b359a2b7156@bytedance.com>
- <04dccff9-87dd-4e97-a712-b62fa51b32f7@redhat.com>
- <da7aa8d2-098c-431b-86d0-b817981a9a5f@bytedance.com>
- <38d6caeb-1aba-43d2-8daf-12b9aaba77bd@redhat.com>
-From: Qi Zheng <zhengqi.arch@bytedance.com>
-In-Reply-To: <38d6caeb-1aba-43d2-8daf-12b9aaba77bd@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.244.148.83]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ kwepemd200011.china.huawei.com (7.221.188.251)
 
+The maple_calibrate_decr() have been removed since
+commit 10f7e7c15e6c ("[PATCH] ppc64: consolidate calibrate_decr
+implementations"), and now it is useless, so remove it.
 
+Signed-off-by: Gaosheng Cui <cuigaosheng1@huawei.com>
+---
+ arch/powerpc/platforms/maple/maple.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-On 2024/8/22 20:19, David Hildenbrand wrote:
-> On 22.08.24 14:17, Qi Zheng wrote:
->> Hi David,
->>
->> On 2024/8/22 17:29, David Hildenbrand wrote:
->>> On 21.08.24 12:03, Qi Zheng wrote:
->>>>
->>>>
->>
->> [...]
->>
->>>>>>>>>> -        vmf->pte = pte_offset_map_nolock(vmf->vma->vm_mm,
->>>>>>>>>> vmf->pmd,
->>>>>>>>>> -                         vmf->address, &vmf->ptl);
->>>>>>>>>> +        vmf->pte = 
->>>>>>>>>> pte_offset_map_maywrite_nolock(vmf->vma->vm_mm,
->>>>>>>>>> +                              vmf->pmd, vmf->address,
->>>>>>>>>> +                              NULL, &vmf->ptl);
->>>>>>>
->>>>>>> I think we discussed that passing NULL should be forbidden for that
->>>>>>> function.
->>>>>>
->>>>>> Yes, but for some maywrite case, there is no need to get pmdval to
->>>>>> do pmd_same() check. So I passed NULL and added a comment to
->>>>>> explain this.
->>>>>
->>>>> I wonder if it's better to pass a dummy variable instead. One has to
->>>>> think harder why that is required compared to blindly passing 
->>>>> "NULL" :)
->>>>
->>>> You are afraid that subsequent caller will abuse this function, right?
->>>
->>> Yes! "oh, I don't need a pmdval, why would I? let's just pass NULL,
->>> easy" :)
->>>
->>>> My initial concern was that this would add a useless local vaiable, but
->>>> perhaps that is not a big deal.
->>>
->>> How many of these "special" instances do we have?
->>
->> We have 5 such special instances.
->>
->>>
->>>>
->>>> Both are fine for me. ;)
->>>
->>> Also no strong opinion, but having to pass a variable makes you think
->>> what you are supposed to do with it and why it is not optional.
->>
->> Yeah, I added 'BUG_ON(!pmdvalp);' in pte_offset_map_ro_nolock(), and
->> have updated the v2 version [1].
-> 
-> No BUG_ON please :) VM_WARN_ON_ONCE() is good enough.
+diff --git a/arch/powerpc/platforms/maple/maple.h b/arch/powerpc/platforms/maple/maple.h
+index 4f358b55c341..8ddbaa4ebd0b 100644
+--- a/arch/powerpc/platforms/maple/maple.h
++++ b/arch/powerpc/platforms/maple/maple.h
+@@ -7,7 +7,6 @@
+ extern int maple_set_rtc_time(struct rtc_time *tm);
+ extern void maple_get_rtc_time(struct rtc_time *tm);
+ extern time64_t maple_get_boot_time(void);
+-extern void maple_calibrate_decr(void);
+ extern void maple_pci_init(void);
+ extern void maple_pci_irq_fixup(struct pci_dev *dev);
+ extern int maple_pci_get_legacy_ide_irq(struct pci_dev *dev, int channel);
+-- 
+2.25.1
 
-Got it. Will do in the next version.
-
-> 
 
