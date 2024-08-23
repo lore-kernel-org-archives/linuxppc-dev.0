@@ -1,74 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-481-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-482-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81B1BC52D6F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Aug 2024 14:53:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C1E2C52D6F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Aug 2024 14:55:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wrg1Q1VQjz2y06;
-	Sun, 25 Aug 2024 00:53:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724422305;
-	cv=none; b=aJ6MYmPw+5Sx6OkSts69OdjSP9MA8z7tDP4mOLd2jc6NsHvbc8YRg37mfkLpIhvwFazEPOUGmw7ciFD3lGgD10rTCk1Y5kd04oyjz7Gtra3SR+AGWha0ZwckSe3M6g3IHU5eOV9XuGRHtaPaRySdfpcS5RBUXcwncxVTZFLqIBJhE3d8cXnS7qUIMS8aorsTSZas5gYVZJiI/8pg4GoQD5flwY/kicLMc2f6qrnzTiCtEQx49JVdQKnO0EfzagUZ2xDejJQKET8KiwlVIGKLtX8To9632GCkUcF8ZJOK6comswUE1hK/5yyz4b/r64Q36xwXigW0uDOa4cel6igFyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wrg2w4ddtz2y0B;
+	Sun, 25 Aug 2024 00:55:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.178.240
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724428744;
+	cv=none; b=KkY6Qie4WzJg1fGhNtE/JmVLPQllzoilYgfLklX597Rs5p/KJB6Wr5xNJJ1jMq6lIPtXwDzof/8ld/usVdQjDXaCLN++0xhEZhj99ZqQ0SxP+DlSQ7QyNjMFKzj/BEy/eRh6uoUNtSfHkMwt/ZHuRckKvFDqu+aKZPFGTPXXoxNQfTnDOlUQgue87/bFmyr58QW2SH0ArBV+gHd7XNUnkHtEx88xfIAM1NHgiQx8B9WHdHJzaFTNdjbXF7p121L78huGSodibtfMt7AkdXDvodzhb+CYqgKmH8i5s6x0oTYU9Kgr/ojXhXsHLxxeMO7jThFOTgu6YmgrHhU4Y3vEcQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724422305; c=relaxed/relaxed;
-	bh=xTzVSI839AyH5SaDHizehgMouNRyS5B7xpiKr2jzx20=;
-	h=X-Greylist:Received:Received:DKIM-Signature:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 X-stable:X-Patchwork-Hint:X-stable-base:Content-Transfer-Encoding;
-	b=Zbz/VJJw2bktHk/WKVxvdGCFLGrfywmmXtphygsJF3aDHUKGzRUNlsv5lSDRY0+S5LVQy07oRLsrL70G315EInP8kNFQXMpZmuEAx+RZzTulXWADUVhdFIleEAMtIDfloa2Vax/d4yJTwo7dMoP/+EUVKMRTaYHpdniJVZ5MlUEhQgDgMQSkw/QO28BXYH8owyS0bl0ZwHjeSjugvmtIh9Wsrxa/oN8CBvDQ43FBzLdwwVAG15daWiZ5c1cd03L94kXnMARsGZCK2c4LcIeYsc4bxyEvPKgO1FPNqHA0gepv3dCElDLVPte2vpg/6iqbUPk8ded/2mJpJqYIapyqvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VCdMj/+d; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1724428744; c=relaxed/relaxed;
+	bh=7CutgodhxN+FJr5V+VHWsJBhY68LFF7RKhgiCY4alWI=;
+	h=X-Greylist:Received:Received:DKIM-Signature:Date:From:To:Cc:
+	 Subject:Message-ID:In-Reply-To:References:Organization:X-Mailer:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-GND-Sasl; b=cMdD+xAiBtm+cpmJY1aLOWM18fxjAKj9tGQhoFaElCy5Wk1AsJtAHFtJztVKQMY8jXez7x0z7zrdLOa0scRXZeV09KsmUUldHhiIFNtRt9dDH6KZzdZW4YR33BGVV8kvxh2rhiSD2C/3PNIcdEYMlYqKZUeub2K+MOhqSrK6tJvuG+VkPB8eSRkoBOIgL3qrIiOF+aGpqEqtZFI3vAinMnfVuHo5OA5pIdjOzPVLgWNyQPgvCK6p7DjJ3C4liKtbfHoOCOCCgBdO1cmh5TCloyF/CZTMpXuoiNHlSW8/Xdt1Y5cIG/t/m9yhWiIeFUJvYa9PWLO8aQVwjCZTim6hDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=EQgdhHc1; dkim-atps=neutral; spf=pass (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VCdMj/+d;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=EQgdhHc1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 472 seconds by postgrey-1.37 at boromir; Sat, 24 Aug 2024 00:11:45 AEST
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1240 seconds by postgrey-1.37 at boromir; Sat, 24 Aug 2024 01:59:01 AEST
+Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wr27P2K4wz2ynj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Aug 2024 00:11:45 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id BF253A40435;
-	Fri, 23 Aug 2024 14:03:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90CB2C4AF09;
-	Fri, 23 Aug 2024 14:03:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1724421828;
-	bh=Pf5doyZj52sYU4ZkPBSvPV+8vO0qg1sLFS+ArTntM9U=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=VCdMj/+dpinNjVQRIjaF8ETG5e28uQsJj1yLZQbZC10aXoBNzKa7Tmji4ayvbiEZn
-	 JFwig4yCBefVY4aIhfEgtkTjVxGt0pg3L/kp/RBIWLIbDS8tzhfh0NoqyUuR/ncHbm
-	 kge0U6Gd5nsEiGEmjm9ZBWlTzgdEmiyJ55abf14hNCFJR8GS9qdC3c9zP51tkicNKz
-	 gAJ4kxpdhJwjpAqQZBqsNcjx/0yCA7M4NXdwtBogudeAxhUUxa8j4yf0II9AlsKb1a
-	 TYvnhDO8D3d9CCE86CVU6cPZe1GXxLwgWBID129bFv8rEVz88H//7XBfx15q47L9eb
-	 o4zDg4t0+hFGg==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Sasha Levin <sashal@kernel.org>,
-	hbathini@linux.ibm.com,
-	thorsten.blum@toblux.com,
-	rostedt@goodmis.org,
-	bhe@redhat.com,
-	arnd@arndb.de,
-	philmd@linaro.org,
-	rppt@kernel.org,
-	kent.overstreet@linux.dev,
-	tzimmermann@suse.de,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH AUTOSEL 6.6 14/20] powerpc/mm: Fix boot warning with hugepages and CONFIG_DEBUG_VIRTUAL
-Date: Fri, 23 Aug 2024 10:02:28 -0400
-Message-ID: <20240823140309.1974696-14-sashal@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240823140309.1974696-1-sashal@kernel.org>
-References: <20240823140309.1974696-1-sashal@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wr4W96rJ3z2yvj;
+	Sat, 24 Aug 2024 01:58:57 +1000 (AEST)
+Received: from relay8-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::228])
+	by mslow1.mail.gandi.net (Postfix) with ESMTP id C9B9FC66E7;
+	Fri, 23 Aug 2024 15:38:16 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id DCDC41BF206;
+	Fri, 23 Aug 2024 15:37:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1724427477;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7CutgodhxN+FJr5V+VHWsJBhY68LFF7RKhgiCY4alWI=;
+	b=EQgdhHc1vU0jHveAWULFKVBKA5K/Reu7E11e/ThNq9x2gK+seD0B13sWiulonMlwdOssZ+
+	k+eOdW0o2tv4Ud7+Sc+JOMrfETHvLbvlgyy+kMY6NXxlMbsUmLZ7/FAN5WXqj27n4bSlr+
+	dmDpxLQ/Z+1AQ01pr9Z1lBOL3BCycoIwydon6a7UJIbtuAqynLhzcVgS7Tyw1JXQgEmX0x
+	VOnCrmUGt8M8ZePqnH/ue6a4gvzyEDN1u3bA6Elhg+jRCgsbvMd5Mx/JhrjqIxq4e6ckw+
+	detDzZoFkx9y82FATvoOoDjp178jqdsLKA7rVAVuQiUuWcQl3YXaclc2dwkXfg==
+Date: Fri, 23 Aug 2024 17:37:48 +0200
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+To: Marco Felsch <m.felsch@pengutronix.de>
+Cc: Maxime Ripard <mripard@kernel.org>, Pratyush Yadav
+ <pratyush@kernel.org>, Tudor Ambarus <tudor.ambarus@linaro.org>, Richard
+ Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, Arnd
+ Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Bartosz Golaszewski <brgl@bgdev.pl>, Russell King <linux@armlinux.org.uk>,
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+ <andrew@codeconstruct.com.au>, Nicolas Ferre <nicolas.ferre@microchip.com>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea
+ <claudiu.beznea@tuxon.dev>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer
+ <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>,
+ Andrew Lunn <andrew@lunn.ch>, Gregory Clement
+ <gregory.clement@bootlin.com>, Sebastian Hesselbarth
+ <sebastian.hesselbarth@gmail.com>, Tony Lindgren <tony@atomide.com>, Geert
+ Uytterhoeven <geert+renesas@glider.be>, Magnus Damm
+ <magnus.damm@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Thierry Reding
+ <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>,
+ Jonathan =?UTF-8?B?TmV1c2Now6RmZXI=?= <j.neuschaefer@gmx.net>, Michael
+ Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, "Naveen N. Rao"
+ <naveen.n.rao@linux.ibm.com>, Thomas Bogendoerfer
+ <tsbogend@alpha.franken.de>, Huacai Chen <chenhuacai@kernel.org>, WANG
+ Xuerui <kernel@xen0n.name>, linux-mtd@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ imx@lists.linux.dev, linux-omap@vger.kernel.org,
+ linux-renesas-soc@vger.kernel.org, linux-tegra@vger.kernel.org,
+ openbmc@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mips@vger.kernel.org, loongarch@lists.linux.dev, Michael Walle
+ <michael@walle.cc>
+Subject: Re: [PATCH 4/9] mtd: devices: add AT24 eeprom support
+Message-ID: <20240823173748.2b3a364a@xps-13>
+In-Reply-To: <20240718091753.apwsrvmekn2vvo4k@pengutronix.de>
+References: <07b701a9-7b52-45b7-8dba-1c25d77cbf15@linaro.org>
+	<mafs0ikxnykpr.fsf@kernel.org>
+	<20240702-congenial-vigilant-boar-aeae44@houat>
+	<mafs0ed8byj5z.fsf@kernel.org>
+	<20240702-mighty-brilliant-eel-b0d9fa@houat>
+	<20240708084440.70186564@xps-13>
+	<20240709092214.omr7ccphdzdk7z7j@pengutronix.de>
+	<20240709114302.3c604ef3@xps-13>
+	<20240709103841.7x7n4hdtqrunyoc3@pengutronix.de>
+	<20240717101948.2e99f472@xps-13>
+	<20240718091753.apwsrvmekn2vvo4k@pengutronix.de>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.2.0 (GTK 3.24.41; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,89 +105,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.6.47
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-GND-Sasl: miquel.raynal@bootlin.com
 
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Hi Marco,
 
-[ Upstream commit e7e846dc6c73fbc94ae8b4ec20d05627646416f2 ]
+m.felsch@pengutronix.de wrote on Thu, 18 Jul 2024 11:17:53 +0200:
 
-Booting with CONFIG_DEBUG_VIRTUAL leads to following warning when
-passing hugepage reservation on command line:
+> Hi Miquel,
+>=20
+> On 24-07-17, Miquel Raynal wrote:
+> > Hi Marco,
+> >  =20
+> > > > > > Overall I think the idea of getting rid of these misc/ drivers =
+is goes
+> > > > > > into the right direction, but registering directly into NVMEM m=
+akes
+> > > > > > more sense IMO.     =20
+> > > > >=20
+> > > > > So you propose to have two places for the partition handling (one=
+ for
+> > > > > MTD and one for NVMEM) instead of one and moving the code into NV=
+MEM
+> > > > > directly?   =20
+> > > >=20
+> > > > Why two places for the partitions handling? Just one, in NVMEM. Als=
+o   =20
+> > >=20
+> > > Without checking the details I think that converting the MTD
+> > > partitioning code into NVMEM partitioning code is a bigger task. As y=
+ou
+> > > said below there are many legacy code paths you need to consider so t=
+hey
+> > > still work afterwards as well.
+> > >  =20
+> > > > usually EEPROMs don't require very advanced partitioning schemes,
+> > > > unlike flashes (which are the most common MTD devices today).   =20
+> > >=20
+> > > As said in my cover letter EEPROMs can become quite large and MTD
+> > > supports partitioning storage devices which is very handy for large
+> > > EEPROMs as well. =20
+> >=20
+> > Did you had a look at nvmem-layouts ? In particular the fixed-layout. =
+=20
+>=20
+> Yes I had a look at nvmem-layouts and we use them within a
+> mtd-partition. Using them instead of a mtd-partition is not sufficient
+> since they:
+>  1) don't support user-space write (I send a patch for it but it doesn't
+>     seem to be accepted soon).
 
-  Kernel command line: hugepagesz=1g hugepages=1 hugepagesz=64m hugepages=1 hugepagesz=256m hugepages=1 noreboot
-  HugeTLB: allocating 1 of page size 1.00 GiB failed.  Only allocated 0 hugepages.
-  ------------[ cut here ]------------
-  WARNING: CPU: 0 PID: 0 at arch/powerpc/include/asm/io.h:948 __alloc_bootmem_huge_page+0xd4/0x284
-  Modules linked in:
-  CPU: 0 PID: 0 Comm: swapper Not tainted 6.10.0-rc6-00396-g6b0e82791bd0-dirty #936
-  Hardware name: MPC8544DS e500v2 0x80210030 MPC8544 DS
-  NIP:  c1020240 LR: c10201d0 CTR: 00000000
-  REGS: c13fdd30 TRAP: 0700   Not tainted  (6.10.0-rc6-00396-g6b0e82791bd0-dirty)
-  MSR:  00021000 <CE,ME>  CR: 44084288  XER: 20000000
+Yes, this needed improvements maybe but was not refused either.
 
-  GPR00: c10201d0 c13fde20 c130b560 e8000000 e8001000 00000000 00000000 c1420000
-  GPR08: 00000000 00028001 00000000 00000004 44084282 01066ac0 c0eb7c9c efffe149
-  GPR16: c0fc4228 0000005f ffffffff c0eb7d0c c0eb7cc0 c0eb7ce0 ffffffff 00000000
-  GPR24: c1441cec efffe153 e8001000 c14240c0 00000000 c1441d64 00000000 e8000000
-  NIP [c1020240] __alloc_bootmem_huge_page+0xd4/0x284
-  LR [c10201d0] __alloc_bootmem_huge_page+0x64/0x284
-  Call Trace:
-  [c13fde20] [c10201d0] __alloc_bootmem_huge_page+0x64/0x284 (unreliable)
-  [c13fde50] [c10207b8] hugetlb_hstate_alloc_pages+0x8c/0x3e8
-  [c13fdeb0] [c1021384] hugepages_setup+0x240/0x2cc
-  [c13fdef0] [c1000574] unknown_bootoption+0xfc/0x280
-  [c13fdf30] [c0078904] parse_args+0x200/0x4c4
-  [c13fdfa0] [c1000d9c] start_kernel+0x238/0x7d0
-  [c13fdff0] [c0000434] set_ivor+0x12c/0x168
-  Code: 554aa33e 7c042840 3ce0c142 80a7427c 5109a016 50caa016 7c9a2378 7fdcf378 4180000c 7c052040 41810160 7c095040 <0fe00000> 38c00000 40800108 3c60c0eb
-  ---[ end trace 0000000000000000 ]---
+>  2) If write would be supported the user-space need to write the
+>     complete cell e.g. no partial writes.
 
-This is due to virt_addr_valid() using high_memory before it is set.
+Maybe that can also be brought to nvmem. Again, nvmem was introduced
+for handling EEPROMs in the first place.
 
-high_memory is set in mem_init() using max_low_pfn, but max_low_pfn
-is available long before, it is set in mem_topology_setup(). So just
-like commit daa9ada2093e ("powerpc/mm: Fix boot crash with FLATMEM")
-moved the setting of max_mapnr immediately after the call to
-mem_topology_setup(), the same can be done for high_memory.
+Anyway, if other people in Cc: want to share some thoughts, they are
+also welcomed, I don't want to block this series for bad reasons. I'm
+also adding Michael Walle in Cc: who might have an opinion on that.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://msgid.link/62b69c4baad067093f39e7e60df0fe27a86b8d2a.1723100702.git.christophe.leroy@csgroup.eu
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/powerpc/kernel/setup-common.c | 1 +
- arch/powerpc/mm/mem.c              | 2 --
- 2 files changed, 1 insertion(+), 2 deletions(-)
+Link: https://lore.kernel.org/linux-mtd/20240701-b4-v6-10-topic-usbc-tcpci-=
+v1-4-3fd5f4a193cc@pengutronix.de/
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 20f72cd1d8138..03eaad5949f14 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -950,6 +950,7 @@ void __init setup_arch(char **cmdline_p)
- 	mem_topology_setup();
- 	/* Set max_mapnr before paging_init() */
- 	set_max_mapnr(max_pfn);
-+	high_memory = (void *)__va(max_low_pfn * PAGE_SIZE);
- 
- 	/*
- 	 * Release secondary cpus out of their spinloops at 0x60 now that
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 07e8f4f1e07f8..9dbef559af4cb 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -287,8 +287,6 @@ void __init mem_init(void)
- 	swiotlb_init(ppc_swiotlb_enable, ppc_swiotlb_flags);
- #endif
- 
--	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE);
--
- 	kasan_late_init();
- 
- 	memblock_free_all();
--- 
-2.43.0
-
+Thanks,
+Miqu=C3=A8l
 
