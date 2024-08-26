@@ -1,50 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-506-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-507-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60CB3C5321D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:35:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A2D5C5321E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:35:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WsjBR0Sdpz2yHD;
-	Mon, 26 Aug 2024 17:35:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=145.40.73.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724655739;
-	cv=none; b=hqg6QvH3QC0Yxng2r5O/YM6dSuUjxTd3GdHr+ti0nVdyCSZ23xAiU7HLM3/8vvfVW/LG/oIMiCcHHXC9Io/dKTE/b1MplA8ZxU7/MTV3TWjZUHNVJCH35fZNnUmBJbK4TwyjdKxsDjuBvFv/nw/JcjkPB7dtUZmfJm4OT6YfkexIO+dPuPF9eh52yy7PewMnl29G02bIIYYHlnOVQI8z7YNPHtujoUlN5vJkPfKrZOvTA+gb3AGS4KHVXnSuWdJX2fFLbrzygtUfqCLLDQVYUKw+EVtnTpNryGb4EQ5Nrry7LSAX84BrAcmlOZc36Hvji1iWRA1mu3Qs2ZSOP90HLA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WsjBb0zzrz2yPM;
+	Mon, 26 Aug 2024 17:35:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:40e1:4800::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724655741;
+	cv=none; b=J1OtNAWS3bXehWiA/328O2A9pKYMwgMoH1DotKo/R/MWu+u+NkZHv/iuJZ1PbR0Hefvpej9vI8hRYQDNN8FA3mKMuMK1mztsiv7n5ufc9NfSBoRpqJnomz8ICcfdB8Kmo48AEU1j2Ryshd4lEBv36coh86El55pz3TUE9ST3N20XP2eqyeUGOw11ysd9+bQXS0+SP/8nUMQXzKd2/2YZpozZhaG5USJNGNO1yZxiu5CaB0NwRdeCt+NHq0B5W3alm1jCStUZatSCJz71HFSFhUhn5ow01RpHTf+RjClnNBlaoE/rcUT6mmM00gxxgg5bRbkLx6gFkQqm+WaYPCJ0FQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724655739; c=relaxed/relaxed;
-	bh=0ipojPJka61m/dDVaL1rj5Xz8WsXALdkbVZGJd5RdxE=;
+	t=1724655741; c=relaxed/relaxed;
+	bh=UYSxl/9Hhh9F/ym4ul2mF4s8hWOayr6ueox01WgS3Jw=;
 	h=Received:Received:DKIM-Signature:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding; b=aralF30J/MMexqFslsXYbNfMirn6jNqWxrsZSFSUiUl0CM/JXaiR7UWVgXjAPxvv1OzBh1IfjYRmu80HoDUeVENtQ/oPu25rjZHbWytZAIb0BVuXcVqWO8y9mA0Dl4Lmt6odiYWgdJkxjS3rYImf6jz3Pk028/jGfNPMfvq2rpFcpr9Uwu/0o9QBAKU1F2aoUkhraioFXNQiIyXUuAYr5OuYVh4BqyDY+4MFllg8hqqfgigU4TGnDYgrOb5Xwl9RMO/Q/7iy2E1Jl2YadPs7Qzjiet6IIKJOYc5jfw0lxq+7XPMu5HlCnTV4JTJnXh59Lh4R7L1c36L49G5Gf3CTng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DYK9oNeM; dkim-atps=neutral; spf=pass (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding; b=gRnIDU0+9ZJ4NlEqgl2n0qg0XYUx/xQphGVT9IpI7orMQ5C+J/znmz0oCiMauYMcv1DX2SOjudlEGAWjk9krTMBztjytQ2tVfktXBCOTo5PgSozhPUoIc+9q4WPwbuYpXrIE1NULkTE0D5Ys5RSkmqcAxKE/voRS7kgJIlRE+JWOBlWsNgeB5Hm+Rup/6qolHib4Cgh1LIOjbz/SqCGt2v/R2Zx+sYYTJLPXlMj9n/AI9pd+2kVjg0sT5jZGJNPyuuZBtgKTstXoond683EDNItCxM70U/z+yJy/FTkyfx1UqrJDce7c6HeTU4MBjRDJg5K50rBOhNb5Cwh9Ima70A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T/n0cfR9; dkim-atps=neutral; spf=pass (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DYK9oNeM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T/n0cfR9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WshSW2tZbz2xSM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:02:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WshSY10Rxz2xSM
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:02:21 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 4AD9ACE0B9F;
-	Mon, 26 Aug 2024 07:02:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E073C521E0;
-	Mon, 26 Aug 2024 06:56:42 +0000 (UTC)
+	by sin.source.kernel.org (Postfix) with ESMTP id 3C99BCE0B85;
+	Mon, 26 Aug 2024 07:02:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C266C9303E;
+	Mon, 26 Aug 2024 06:55:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1724655416;
-	bh=r822LaZRSo48kh1hH5WoG20uCbxKP6lu+ngNzNWB1aE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=DYK9oNeMv3/VMADQKPjCojtZBfz9RuwZwds9R0avsETK/hiJ48/NmAdPUuLyylz7w
-	 6+d1+Viqdarxcw2qygDqcIzxOB89mv22pkZ7jmQeRBIjFdFL+sPkAcsK75SA7Cl68K
-	 LWspJaAQiUlCQCTId5Fm/c9iHwvxY2+F69No7D2KvwHQOERk0yaCx8qDPsl+9qvsAk
-	 iILGxprzy+kNT7Efacq4WICC1ssWjOLPoCc+l6nwAV+IC0eH4bzt2soEhB5CaZIXke
-	 5y9fZ7a+Ox2xqigNBk/V7YAZFdsD4Othq+DHAQY8jfW1gNwY201ZJT08FIZQRS56Vp
-	 gUFbTLvgCXNcA==
+	s=k20201202; t=1724655356;
+	bh=L/aook0QwHcdg37wGphar1mRAzQLD0+59DpQQhC48dI=;
+	h=From:To:Cc:Subject:Date:From;
+	b=T/n0cfR9L7TYz6mB1xehBPXcOYHc5dmouBtvHl2TTn5DDOswnhgESuEPcK8q37K9g
+	 xYpo93KvR7ZQkbQHu1QubINO37+DX8tYfsCdbq/c0dIX5rQUs9hNBV95JC2R8TCnl8
+	 M+qhqET3G8uiJk7hxbIaIROgfIMVKAu7C8KxMYZGtz0NwT9YjfKnBxN1SQN6NZhzAQ
+	 cMTS21PqbQUT7Mi73Y02XweCRbmJXkJZIPsOGztY5xzcYfc7gIRojDohOl/3vMrnKC
+	 IYREW4GAVVjMYbbGq8bxDj203wj1T3Rnyj6Cc+viddK8Fb8pXQFN01Rj13nPDXayqo
+	 9zhHMcT23xBvg==
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andreas Larsson <andreas@gaisler.com>,
@@ -109,12 +108,10 @@ Cc: Andreas Larsson <andreas@gaisler.com>,
 	loongarch@lists.linux.dev,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org
-Subject: [PATCH v2 4/8] module: prepare to handle ROX allocations for text
-Date: Mon, 26 Aug 2024 09:55:28 +0300
-Message-ID: <20240826065532.2618273-5-rppt@kernel.org>
+Subject: [PATCH v2 0/8] x86/module: use large ROX pages for text allocations
+Date: Mon, 26 Aug 2024 09:55:24 +0300
+Message-ID: <20240826065532.2618273-1-rppt@kernel.org>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240826065532.2618273-1-rppt@kernel.org>
-References: <20240826065532.2618273-1-rppt@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -128,313 +125,174 @@ Content-Transfer-Encoding: 8bit
 
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 
-In order to support ROX allocations for module text, it is necessary to
-handle modifications to the code, such as relocations and alternatives
-patching, without write access to that memory.
+Hi,
 
-One option is to use text patching, but this would make module loading
-extremely slow and will expose executable code that is not finally formed.
+These patches add support for using large ROX pages for allocations of
+executable memory on x86.
 
-A better way is to have memory allocated with ROX permissions contain
-invalid instructions and keep a writable, but not executable copy of the
-module text. The relocations and alternative patches would be done on the
-writable copy using the addresses of the ROX memory.
-Once the module is completely ready, the updated text will be copied to ROX
-memory using text patching in one go and the writable copy will be freed.
+They address Andy's comments [1] about having executable mappings for code
+that was not completely formed.
 
-Add support for that to module initialization code and provide necessary
-interfaces in execmem.
+The approach taken is to allocate ROX memory along with writable but not
+executable memory and use the writable copy to perform relocations and
+alternatives patching. After the module text gets into its final shape, the
+contents of the writable memory is copied into the actual ROX location
+using text poking.
 
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- include/linux/execmem.h      | 23 +++++++++++
- include/linux/module.h       | 11 ++++++
- include/linux/moduleloader.h |  4 ++
- kernel/module/main.c         | 77 ++++++++++++++++++++++++++++++++----
- kernel/module/strict_rwx.c   |  3 ++
- mm/execmem.c                 | 11 ++++++
- 6 files changed, 122 insertions(+), 7 deletions(-)
+The allocations of the ROX memory use vmalloc(VMAP_ALLOW_HUGE_MAP) to
+allocate PMD aligned memory, fill that memory with invalid instructions and
+in the end remap it as ROX. Portions of these large pages are handed out to
+execmem_alloc() callers without any changes to the permissions. When the
+memory is freed with execmem_free() it is invalidated again so that it
+won't contain stale instructions.
 
-diff --git a/include/linux/execmem.h b/include/linux/execmem.h
-index 32cef1144117..dfdf19f8a5e8 100644
---- a/include/linux/execmem.h
-+++ b/include/linux/execmem.h
-@@ -46,9 +46,11 @@ enum execmem_type {
- /**
-  * enum execmem_range_flags - options for executable memory allocations
-  * @EXECMEM_KASAN_SHADOW:	allocate kasan shadow
-+ * @EXECMEM_ROX_CACHE:		allocations should use ROX cache of huge pages
-  */
- enum execmem_range_flags {
- 	EXECMEM_KASAN_SHADOW	= (1 << 0),
-+	EXECMEM_ROX_CACHE	= (1 << 1),
- };
- 
- /**
-@@ -123,6 +125,27 @@ void *execmem_alloc(enum execmem_type type, size_t size);
-  */
- void execmem_free(void *ptr);
- 
-+/**
-+ * execmem_update_copy - copy an update to executable memory
-+ * @dst:  destination address to update
-+ * @src:  source address containing the data
-+ * @size: how many bytes of memory shold be copied
-+ *
-+ * Copy @size bytes from @src to @dst using text poking if the memory at
-+ * @dst is read-only.
-+ *
-+ * Return: a pointer to @dst or NULL on error
-+ */
-+void *execmem_update_copy(void *dst, const void *src, size_t size);
-+
-+/**
-+ * execmem_is_rox - check if execmem is read-only
-+ * @type - the execmem type to check
-+ *
-+ * Return: %true if the @type is read-only, %false if it's writable
-+ */
-+bool execmem_is_rox(enum execmem_type type);
-+
- #if defined(CONFIG_EXECMEM) && !defined(CONFIG_ARCH_WANTS_EXECMEM_LATE)
- void execmem_init(void);
- #else
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 88ecc5e9f523..7039f609c6ef 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -367,6 +367,8 @@ enum mod_mem_type {
- 
- struct module_memory {
- 	void *base;
-+	void *rw_copy;
-+	bool is_rox;
- 	unsigned int size;
- 
- #ifdef CONFIG_MODULES_TREE_LOOKUP
-@@ -374,6 +376,15 @@ struct module_memory {
- #endif
- };
- 
-+#ifdef CONFIG_MODULES
-+void *module_writable_address(struct module *mod, void *loc);
-+#else
-+static inline void *module_writable_address(struct module *mod, void *loc)
-+{
-+	return loc;
-+}
-+#endif
-+
- #ifdef CONFIG_MODULES_TREE_LOOKUP
- /* Only touch one cacheline for common rbtree-for-core-layout case. */
- #define __module_memory_align ____cacheline_aligned
-diff --git a/include/linux/moduleloader.h b/include/linux/moduleloader.h
-index e395461d59e5..1f5507ba5a12 100644
---- a/include/linux/moduleloader.h
-+++ b/include/linux/moduleloader.h
-@@ -108,6 +108,10 @@ int module_finalize(const Elf_Ehdr *hdr,
- 		    const Elf_Shdr *sechdrs,
- 		    struct module *mod);
- 
-+int module_post_finalize(const Elf_Ehdr *hdr,
-+			 const Elf_Shdr *sechdrs,
-+			 struct module *mod);
-+
- #ifdef CONFIG_MODULES
- void flush_module_init_free_work(void);
- #else
-diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 71396e297499..55f53f0095d4 100644
---- a/kernel/module/main.c
-+++ b/kernel/module/main.c
-@@ -1189,6 +1189,21 @@ void __weak module_arch_freeing_init(struct module *mod)
- {
- }
- 
-+void *module_writable_address(struct module *mod, void *loc)
-+{
-+	if (!mod)
-+		return loc;
-+
-+	for_class_mod_mem_type(type, text) {
-+		struct module_memory *mem = &mod->mem[type];
-+
-+		if (loc >= mem->base && loc < mem->base + mem->size)
-+			return loc + (mem->rw_copy - mem->base);
-+	}
-+
-+	return loc;
-+}
-+
- static int module_memory_alloc(struct module *mod, enum mod_mem_type type)
- {
- 	unsigned int size = PAGE_ALIGN(mod->mem[type].size);
-@@ -1206,6 +1221,23 @@ static int module_memory_alloc(struct module *mod, enum mod_mem_type type)
- 	if (!ptr)
- 		return -ENOMEM;
- 
-+	mod->mem[type].base = ptr;
-+
-+	if (execmem_is_rox(execmem_type)) {
-+		ptr = vzalloc(size);
-+
-+		if (!ptr) {
-+			execmem_free(mod->mem[type].base);
-+			return -ENOMEM;
-+		}
-+
-+		mod->mem[type].rw_copy = ptr;
-+		mod->mem[type].is_rox = true;
-+	} else {
-+		mod->mem[type].rw_copy = mod->mem[type].base;
-+		memset(mod->mem[type].base, 0, size);
-+	}
-+
- 	/*
- 	 * The pointer to these blocks of memory are stored on the module
- 	 * structure and we keep that around so long as the module is
-@@ -1219,16 +1251,17 @@ static int module_memory_alloc(struct module *mod, enum mod_mem_type type)
- 	 */
- 	kmemleak_not_leak(ptr);
- 
--	memset(ptr, 0, size);
--	mod->mem[type].base = ptr;
--
- 	return 0;
- }
- 
- static void module_memory_free(struct module *mod, enum mod_mem_type type,
- 			       bool unload_codetags)
- {
--	void *ptr = mod->mem[type].base;
-+	struct module_memory *mem = &mod->mem[type];
-+	void *ptr = mem->base;
-+
-+	if (mem->is_rox)
-+		vfree(mem->rw_copy);
- 
- 	if (!unload_codetags && mod_mem_type_is_core_data(type))
- 		return;
-@@ -2251,6 +2284,7 @@ static int move_module(struct module *mod, struct load_info *info)
- 	for_each_mod_mem_type(type) {
- 		if (!mod->mem[type].size) {
- 			mod->mem[type].base = NULL;
-+			mod->mem[type].rw_copy = NULL;
- 			continue;
- 		}
- 
-@@ -2267,11 +2301,14 @@ static int move_module(struct module *mod, struct load_info *info)
- 		void *dest;
- 		Elf_Shdr *shdr = &info->sechdrs[i];
- 		enum mod_mem_type type = shdr->sh_entsize >> SH_ENTSIZE_TYPE_SHIFT;
-+		unsigned long offset = shdr->sh_entsize & SH_ENTSIZE_OFFSET_MASK;
-+		unsigned long addr;
- 
- 		if (!(shdr->sh_flags & SHF_ALLOC))
- 			continue;
- 
--		dest = mod->mem[type].base + (shdr->sh_entsize & SH_ENTSIZE_OFFSET_MASK);
-+		addr = (unsigned long)mod->mem[type].base + offset;
-+		dest = mod->mem[type].rw_copy + offset;
- 
- 		if (shdr->sh_type != SHT_NOBITS) {
- 			/*
-@@ -2293,7 +2330,7 @@ static int move_module(struct module *mod, struct load_info *info)
- 		 * users of info can keep taking advantage and using the newly
- 		 * minted official memory area.
- 		 */
--		shdr->sh_addr = (unsigned long)dest;
-+		shdr->sh_addr = addr;
- 		pr_debug("\t0x%lx 0x%.8lx %s\n", (long)shdr->sh_addr,
- 			 (long)shdr->sh_size, info->secstrings + shdr->sh_name);
- 	}
-@@ -2441,8 +2478,17 @@ int __weak module_finalize(const Elf_Ehdr *hdr,
- 	return 0;
- }
- 
-+int __weak module_post_finalize(const Elf_Ehdr *hdr,
-+				const Elf_Shdr *sechdrs,
-+				struct module *me)
-+{
-+	return 0;
-+}
-+
- static int post_relocation(struct module *mod, const struct load_info *info)
- {
-+	int ret;
-+
- 	/* Sort exception table now relocations are done. */
- 	sort_extable(mod->extable, mod->extable + mod->num_exentries);
- 
-@@ -2454,7 +2500,24 @@ static int post_relocation(struct module *mod, const struct load_info *info)
- 	add_kallsyms(mod, info);
- 
- 	/* Arch-specific module finalizing. */
--	return module_finalize(info->hdr, info->sechdrs, mod);
-+	ret = module_finalize(info->hdr, info->sechdrs, mod);
-+	if (ret)
-+		return ret;
-+
-+	for_each_mod_mem_type(type) {
-+		struct module_memory *mem = &mod->mem[type];
-+
-+		if (mem->is_rox) {
-+			if (!execmem_update_copy(mem->base, mem->rw_copy,
-+						 mem->size))
-+				return -ENOMEM;
-+
-+			vfree(mem->rw_copy);
-+			mem->rw_copy = NULL;
-+		}
-+	}
-+
-+	return module_post_finalize(info->hdr, info->sechdrs, mod);
- }
- 
- /* Call module constructors. */
-diff --git a/kernel/module/strict_rwx.c b/kernel/module/strict_rwx.c
-index c45caa4690e5..239e5013359d 100644
---- a/kernel/module/strict_rwx.c
-+++ b/kernel/module/strict_rwx.c
-@@ -34,6 +34,9 @@ int module_enable_text_rox(const struct module *mod)
- 	for_class_mod_mem_type(type, text) {
- 		int ret;
- 
-+		if (mod->mem[type].is_rox)
-+			continue;
-+
- 		if (IS_ENABLED(CONFIG_STRICT_MODULE_RWX))
- 			ret = module_set_memory(mod, type, set_memory_rox);
- 		else
-diff --git a/mm/execmem.c b/mm/execmem.c
-index 0c4b36bc6d10..0f6691e9ffe6 100644
---- a/mm/execmem.c
-+++ b/mm/execmem.c
-@@ -10,6 +10,7 @@
- #include <linux/vmalloc.h>
- #include <linux/execmem.h>
- #include <linux/moduleloader.h>
-+#include <linux/text-patching.h>
- 
- static struct execmem_info *execmem_info __ro_after_init;
- static struct execmem_info default_execmem_info __ro_after_init;
-@@ -69,6 +70,16 @@ void execmem_free(void *ptr)
- 	vfree(ptr);
- }
- 
-+void *execmem_update_copy(void *dst, const void *src, size_t size)
-+{
-+	return text_poke_copy(dst, src, size);
-+}
-+
-+bool execmem_is_rox(enum execmem_type type)
-+{
-+	return !!(execmem_info->ranges[type].flags & EXECMEM_ROX_CACHE);
-+}
-+
- static bool execmem_validate(struct execmem_info *info)
- {
- 	struct execmem_range *r = &info->ranges[EXECMEM_DEFAULT];
+The module memory allocation, x86 code dealing with relocations and
+alternatives patching take into account the existence of the two copies,
+the writable memory and the ROX memory at the actual allocated virtual
+address.
+
+The patches are available at git:
+https://git.kernel.org/pub/scm/linux/kernel/git/rppt/linux.git/log/?h=execmem/x86-rox/v2
+
+[1] https://lore.kernel.org/all/a17c65c6-863f-4026-9c6f-a04b659e9ab4@app.fastmail.com
+
+Since RFC: https://lore.kernel.org/all/20240411160526.2093408-1-rppt@kernel.org
+* update changelog about HUGE_VMAP allocations (Christophe) 
+* move module_writable_address() from x86 to modules core (Ingo)
+* rename execmem_invalidate() to execmem_fill_trapping_insns() (Peter)
+* call alternatives_smp_unlock() after module text in-place is up to
+  date (Nadav)
+
+Mike Rapoport (Microsoft) (7):
+  mm: vmalloc: group declarations depending on CONFIG_MMU together
+  mm: vmalloc: don't account for number of nodes for HUGE_VMAP allocations
+  asm-generic: introduce text-patching.h
+  module: prepare to handle ROX allocations for text
+  x86/module: perpare module loading for ROX allocations of text
+  execmem: add support for cache of large ROX pages
+  x86/module: enable ROX caches for module text
+
+Song Liu (1):
+  ftrace: Add swap_func to ftrace_process_locs()
+
+ arch/alpha/include/asm/Kbuild                 |   1 +
+ arch/arc/include/asm/Kbuild                   |   1 +
+ .../include/asm/{patch.h => text-patching.h}  |   0
+ arch/arm/kernel/ftrace.c                      |   2 +-
+ arch/arm/kernel/jump_label.c                  |   2 +-
+ arch/arm/kernel/kgdb.c                        |   2 +-
+ arch/arm/kernel/patch.c                       |   2 +-
+ arch/arm/probes/kprobes/core.c                |   2 +-
+ arch/arm/probes/kprobes/opt-arm.c             |   2 +-
+ .../asm/{patching.h => text-patching.h}       |   0
+ arch/arm64/kernel/ftrace.c                    |   2 +-
+ arch/arm64/kernel/jump_label.c                |   2 +-
+ arch/arm64/kernel/kgdb.c                      |   2 +-
+ arch/arm64/kernel/patching.c                  |   2 +-
+ arch/arm64/kernel/probes/kprobes.c            |   2 +-
+ arch/arm64/kernel/traps.c                     |   2 +-
+ arch/arm64/net/bpf_jit_comp.c                 |   2 +-
+ arch/csky/include/asm/Kbuild                  |   1 +
+ arch/hexagon/include/asm/Kbuild               |   1 +
+ arch/loongarch/include/asm/Kbuild             |   1 +
+ arch/m68k/include/asm/Kbuild                  |   1 +
+ arch/microblaze/include/asm/Kbuild            |   1 +
+ arch/mips/include/asm/Kbuild                  |   1 +
+ arch/nios2/include/asm/Kbuild                 |   1 +
+ arch/openrisc/include/asm/Kbuild              |   1 +
+ .../include/asm/{patch.h => text-patching.h}  |   0
+ arch/parisc/kernel/ftrace.c                   |   2 +-
+ arch/parisc/kernel/jump_label.c               |   2 +-
+ arch/parisc/kernel/kgdb.c                     |   2 +-
+ arch/parisc/kernel/kprobes.c                  |   2 +-
+ arch/parisc/kernel/patch.c                    |   2 +-
+ arch/powerpc/include/asm/kprobes.h            |   2 +-
+ .../asm/{code-patching.h => text-patching.h}  |   0
+ arch/powerpc/kernel/crash_dump.c              |   2 +-
+ arch/powerpc/kernel/epapr_paravirt.c          |   2 +-
+ arch/powerpc/kernel/jump_label.c              |   2 +-
+ arch/powerpc/kernel/kgdb.c                    |   2 +-
+ arch/powerpc/kernel/kprobes.c                 |   2 +-
+ arch/powerpc/kernel/module_32.c               |   2 +-
+ arch/powerpc/kernel/module_64.c               |   2 +-
+ arch/powerpc/kernel/optprobes.c               |   2 +-
+ arch/powerpc/kernel/process.c                 |   2 +-
+ arch/powerpc/kernel/security.c                |   2 +-
+ arch/powerpc/kernel/setup_32.c                |   2 +-
+ arch/powerpc/kernel/setup_64.c                |   2 +-
+ arch/powerpc/kernel/static_call.c             |   2 +-
+ arch/powerpc/kernel/trace/ftrace.c            |   2 +-
+ arch/powerpc/kernel/trace/ftrace_64_pg.c      |   2 +-
+ arch/powerpc/lib/code-patching.c              |   2 +-
+ arch/powerpc/lib/feature-fixups.c             |   2 +-
+ arch/powerpc/lib/test-code-patching.c         |   2 +-
+ arch/powerpc/lib/test_emulate_step.c          |   2 +-
+ arch/powerpc/mm/book3s32/mmu.c                |   2 +-
+ arch/powerpc/mm/book3s64/hash_utils.c         |   2 +-
+ arch/powerpc/mm/book3s64/slb.c                |   2 +-
+ arch/powerpc/mm/kasan/init_32.c               |   2 +-
+ arch/powerpc/mm/mem.c                         |   2 +-
+ arch/powerpc/mm/nohash/44x.c                  |   2 +-
+ arch/powerpc/mm/nohash/book3e_pgtable.c       |   2 +-
+ arch/powerpc/mm/nohash/tlb.c                  |   2 +-
+ arch/powerpc/net/bpf_jit_comp.c               |   2 +-
+ arch/powerpc/perf/8xx-pmu.c                   |   2 +-
+ arch/powerpc/perf/core-book3s.c               |   2 +-
+ arch/powerpc/platforms/85xx/smp.c             |   2 +-
+ arch/powerpc/platforms/86xx/mpc86xx_smp.c     |   2 +-
+ arch/powerpc/platforms/cell/smp.c             |   2 +-
+ arch/powerpc/platforms/powermac/smp.c         |   2 +-
+ arch/powerpc/platforms/powernv/idle.c         |   2 +-
+ arch/powerpc/platforms/powernv/smp.c          |   2 +-
+ arch/powerpc/platforms/pseries/smp.c          |   2 +-
+ arch/powerpc/xmon/xmon.c                      |   2 +-
+ arch/riscv/errata/andes/errata.c              |   2 +-
+ arch/riscv/errata/sifive/errata.c             |   2 +-
+ arch/riscv/errata/thead/errata.c              |   2 +-
+ .../include/asm/{patch.h => text-patching.h}  |   0
+ arch/riscv/include/asm/uprobes.h              |   2 +-
+ arch/riscv/kernel/alternative.c               |   2 +-
+ arch/riscv/kernel/cpufeature.c                |   3 +-
+ arch/riscv/kernel/ftrace.c                    |   2 +-
+ arch/riscv/kernel/jump_label.c                |   2 +-
+ arch/riscv/kernel/patch.c                     |   2 +-
+ arch/riscv/kernel/probes/kprobes.c            |   2 +-
+ arch/riscv/net/bpf_jit_comp64.c               |   2 +-
+ arch/riscv/net/bpf_jit_core.c                 |   2 +-
+ arch/sh/include/asm/Kbuild                    |   1 +
+ arch/sparc/include/asm/Kbuild                 |   1 +
+ arch/um/kernel/um_arch.c                      |  16 +-
+ arch/x86/entry/vdso/vma.c                     |   3 +-
+ arch/x86/include/asm/alternative.h            |  14 +-
+ arch/x86/include/asm/text-patching.h          |   1 +
+ arch/x86/kernel/alternative.c                 | 160 ++++++----
+ arch/x86/kernel/ftrace.c                      |  41 ++-
+ arch/x86/kernel/module.c                      |  45 ++-
+ arch/x86/mm/init.c                            |  26 +-
+ arch/xtensa/include/asm/Kbuild                |   1 +
+ include/asm-generic/text-patching.h           |   5 +
+ include/linux/execmem.h                       |  25 ++
+ include/linux/ftrace.h                        |   2 +
+ include/linux/module.h                        |   9 +
+ include/linux/moduleloader.h                  |   4 +
+ include/linux/text-patching.h                 |  15 +
+ include/linux/vmalloc.h                       |  60 ++--
+ kernel/module/main.c                          |  77 ++++-
+ kernel/module/strict_rwx.c                    |   3 +
+ kernel/trace/ftrace.c                         |  13 +-
+ mm/execmem.c                                  | 301 +++++++++++++++++-
+ mm/vmalloc.c                                  |   9 +-
+ 107 files changed, 746 insertions(+), 235 deletions(-)
+ rename arch/arm/include/asm/{patch.h => text-patching.h} (100%)
+ rename arch/arm64/include/asm/{patching.h => text-patching.h} (100%)
+ rename arch/parisc/include/asm/{patch.h => text-patching.h} (100%)
+ rename arch/powerpc/include/asm/{code-patching.h => text-patching.h} (100%)
+ rename arch/riscv/include/asm/{patch.h => text-patching.h} (100%)
+ create mode 100644 include/asm-generic/text-patching.h
+ create mode 100644 include/linux/text-patching.h
+
+
+base-commit: 47ac09b91befbb6a235ab620c32af719f8208399
 -- 
 2.43.0
 
