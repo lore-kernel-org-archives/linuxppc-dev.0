@@ -1,80 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-498-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-499-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20400C5472D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:29:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17AFDC5321E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:32:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wsj3G4T3Sz2yFD;
-	Mon, 26 Aug 2024 17:28:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724657338;
-	cv=none; b=jBzqbfV42sQzBUIZlkZdDeumyYfXqgua7qQfbAyd0bMJoK9KgBL5b/JFj/UL+xbTjGHSUJWR0k3shaU4c7+SgCohPGK0Gox12mrabPvQzNtiQXNIdqRn8V49qD3FBzaSCYs8FMZ4wH776fQ4BRGy5iggyTjZY0g5HfJfn3F2SKnqrB8yX7tnVci18/nCoQKjaGLvyYVve19wLI228+CXYZkz6bw8X1pj8hG7EzWaxmyDs2pa9hx+3Bkir+o4fIbaVJ0oov8j4iRjpHSUqM/UVP1QH2Skv35E3ipD88n8ofW2Ah6cwUoOulx1a7fi+faTLSuW2ZDkkG5yo72F6dRUNQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wsj7K56JWz2yFP;
+	Mon, 26 Aug 2024 17:32:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724653021;
+	cv=none; b=kqlw4bJ2+k4WFaKv2Y5lCmYQ50TlKe8mCvgy6ilm2hkVERfpVJkhUErCoodwlu2TonZWuetVTt7yLqM2J0kvJukXVn3B/gY3DBetX2vCLZZhTslcHTT14yF0h+9hkuVeBF52PQTJYHkhs3q0DpeZDig+AvFrbhyPm8/RGj02wtlQCrwOP2iE3+pOiDNhghyoRSBfTclKHUTr7Xnoup1a8giiGnZOqXaMqdIT7gxiE5qWbdr8COcGNFuHjs05bBQlnaiXBFEEANloG7r6+r1qW3QcjvbFW+QbMIggCWjmhlyuN+Ubkn9Ox7pf3ptu/lVaMRHmDFafWwMhMQC4oIP6AA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724657338; c=relaxed/relaxed;
-	bh=cIIjB88DbOJOvuZ2jjU6lJJKiyoqxEyU/0md06aOA9Y=;
-	h=X-Greylist:Received:Received:DKIM-Signature:Received:Date:From:To:
-	 Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=h6HNlF6qS/Wb2O1z5jxstxf+uud8Tr4+g5Dng9229pXgUA04ouqEOv2psS722418Fy87fuLBYt/F4fWHfY/PCgLKi4jCFK1FgUxbZ6EeUuG2/mmD9A3I4BQ4HNdN6p/M2BJWYUFp0rtHqeE0r33gjU8s87lo74yI+gg8JtwxhNkyavlQ/2O9dYK4NKLoJnKAA2TmufKL9UjxNbP582pdx6sQE1Ce1HuSFxOL0r5HFx1e6KKBgaONoJGZyHAj3JdEHPptBkPE/lEBklU0JPrVhuy/ZE2PwVn4KN9V9TCqIcChPANZela+IHHfZPxT9iHJEbtrc2CvaEXiKaBFY08acA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=fGS4lsQP; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=srs0=kq7x=pz=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
+	t=1724653021; c=relaxed/relaxed;
+	bh=dB1NfwLF4sboQ9oAiJsmEAd6cRRc4sOW3f5DA5Z/91g=;
+	h=DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:Received:
+	 X-Google-DKIM-Signature:X-Forwarded-Encrypted:X-Gm-Message-State:
+	 X-Received:X-Google-Smtp-Source:X-Received:MIME-Version:References:
+	 In-Reply-To:From:Date:Message-ID:Subject:To:Cc:
+	 X-Mimecast-Spam-Score:X-Mimecast-Originator:Content-Type:
+	 Content-Transfer-Encoding; b=RqRAth230wO1ORzVliw+df+3ewmpfAdXPQ93m4GWD58IbMBdlgybueNlSp+769//iL426FBgwI+i9HJiTLmceQCOn4AxvIdSGnlCj9YIpLaQcJr9e3vpp1KoBFK4Oi8qbY3728pMYVnHZP3es6EzejQvwFxYqqavpMYIByiOqjNcXhB7PPBHL4dqUT5l3Vu5sivvTWr1QBdZAxZSx8Bg4YS2AOxD1kVx2EwwiGPn8RyZf9HoVueLD9pPsu0CTkhOE52j7qvrKqHdW13IE8CKY6Axmd2+y1xY1zHZd6x+Ixy5inpgh4xaMRUH9USq6kpfgPQ9SDNCq7jvkiW3786DLw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MY/sKCaT; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Lq/xZKh9; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jasowang@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=fGS4lsQP;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MY/sKCaT;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Lq/xZKh9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=srs0=kq7x=pz=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 100 seconds by postgrey-1.37 at boromir; Mon, 26 Aug 2024 17:28:58 AEST
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jasowang@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wsj3G2hkjz2yF6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:28:58 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 3C13CA41197;
-	Mon, 26 Aug 2024 07:28:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 880B9C8CDC1;
-	Mon, 26 Aug 2024 07:28:53 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="fGS4lsQP"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1724657332;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WsgSD6kKgz2xYq
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 16:16:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1724653011;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=cIIjB88DbOJOvuZ2jjU6lJJKiyoqxEyU/0md06aOA9Y=;
-	b=fGS4lsQPmJ47S4KPzgxk3QvyNtKhSk0/NSOVe7mmBsaTQCOpf8LdeOZ8NRFSZVGvJlo+6S
-	zya3q8/MC3vnj7W6QkSb/tQ7ibwWIO7gaTmCFFEUbZBJZ4gTKo0ADc09YExEQZvcI0SprG
-	MnhV/Nlqebjptb73hPDfjdwYVd0Acps=
-Received: 
-	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 087983a8 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Mon, 26 Aug 2024 07:28:51 +0000 (UTC)
-Date: Mon, 26 Aug 2024 09:28:42 +0200
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>, Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Theodore Ts'o <tytso@mit.edu>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Shuah Khan <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-mm@kvack.org,
-	linux-trace-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v2 14/17] selftests: vdso: Make test_vdso_getrandom look
- for the right vDSO function
-Message-ID: <ZswuqjC8T8TwF8LJ@zx2c4.com>
-References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
- <04d1de23a2ff14e2709edd8b75e27b81d703bc57.1724309198.git.christophe.leroy@csgroup.eu>
+	bh=dB1NfwLF4sboQ9oAiJsmEAd6cRRc4sOW3f5DA5Z/91g=;
+	b=MY/sKCaTjrBl8RIwTRt5lROwGlvJy1hjkLtRdC5LcqW5orl0kRGm4pr+30eActr3c3HICe
+	lg1aiRhcPkqwke68sdAUGmpOh7T/a0peC4r0OiIxo8y5PkhY/tEgQzlRhlBZHoPV98QYHj
+	B01PVTjOfiPp4IdnVg1iAJ6GommMvEE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1724653012;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dB1NfwLF4sboQ9oAiJsmEAd6cRRc4sOW3f5DA5Z/91g=;
+	b=Lq/xZKh9UM/uD3X7Mlt2ym5KqVlIvwEfacro/EOvMFix5PoF1YbjxZ2n4LsF957dthLdUF
+	X+ZCx5cIp2rgLZQDggL0CNLC6ErwqAFVU0t223hbpeyL2RIqnq3Xur7x89KTU3hUuIxkUq
+	o5zs1C3AwLBnlMCB+Eq3eYEuNyYZx+4=
+Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com
+ [209.85.216.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-444-qn3DtpnqOHqOzXkK3zqCzA-1; Mon, 26 Aug 2024 02:16:49 -0400
+X-MC-Unique: qn3DtpnqOHqOzXkK3zqCzA-1
+Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-2d404dffd54so4668694a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2024 23:16:49 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724653009; x=1725257809;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=dB1NfwLF4sboQ9oAiJsmEAd6cRRc4sOW3f5DA5Z/91g=;
+        b=FN+niTznuhIhwrRKpLb12V9nl2WPLFlEIYlx9N0t5bKt68hAddW5BTwjD+cwvUQrLB
+         dFvRZVgHm8AyHlnYX1QuOD/mdANU/YRHiQXrZM3UizmK35p5yWlYO6Neh0src6J+03FF
+         RkN8ooIuvhTW/gBNkMipNIjlkxPtd20hKfqV7jtj55PRI3Fz3H9JK06v9wE61su+j55g
+         PIWG8d6gd+qbHrhrQBu9S7J2K3GD6LQL3fALsTaMqZlT8+pMCSYK3WxvwNqwNtkYcu/g
+         iJzZeqOeQIDEi6WrBnKuuGtpOQHpJpMVREFKeeyKBCLX7esD7Va4joZ69L2bpr2nK32t
+         XtWA==
+X-Forwarded-Encrypted: i=1; AJvYcCVfcgynG8g0iEmVEYv6EEQJ3Jvz1nVPlKyBVhMYXrpyChR8m7XbuAIcM4eE/q5fQHUgdEh3EKa5KegCKXQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx2a33HPcKwT/3MR0ZSYTxckWHJCBMrSuIIgkvM7CvZc9U/DEM+
+	SKJ5Lce7XvFbhEVj1AJMv3MtiCaJAcsnqfUxND9hC0894ykOb8rIJ9qyN5oinOqeL0KPq+ymVGw
+	E7qFbIhbkaakkDyV7O5FycyytyJj9NtOC0ecoguY5YinPpoE/J0y7jWADhXvjMAGgPafPMHMkJy
+	91xEb4i/00ENDLT2neW6zUVv7eTIf/8j44QChvrA==
+X-Received: by 2002:a17:90a:6287:b0:2d3:cd27:c480 with SMTP id 98e67ed59e1d1-2d646d247f9mr9809265a91.33.1724653008869;
+        Sun, 25 Aug 2024 23:16:48 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IE0WjIzDYmdUX7OY9EeJBLH76SMB2mi2zdVZl4NauXJ/eBoNO23zRck1BCKv7ZS6PzenwJTH61bASpm1vxRFd8=
+X-Received: by 2002:a17:90a:6287:b0:2d3:cd27:c480 with SMTP id
+ 98e67ed59e1d1-2d646d247f9mr9809253a91.33.1724653008351; Sun, 25 Aug 2024
+ 23:16:48 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,30 +93,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <04d1de23a2ff14e2709edd8b75e27b81d703bc57.1724309198.git.christophe.leroy@csgroup.eu>
+References: <20240824035817.1163502-1-hch@lst.de>
+In-Reply-To: <20240824035817.1163502-1-hch@lst.de>
+From: Jason Wang <jasowang@redhat.com>
+Date: Mon, 26 Aug 2024 14:16:36 +0800
+Message-ID: <CACGkMEsK8k=yX2ZytMJQhdZi4PS9-7KLUYmf2oGLu-UvNEYzug@mail.gmail.com>
+Subject: Re: clearly mark DMA_OPS support as an architecture feasture
+To: Christoph Hellwig <hch@lst.de>
+Cc: iommu@lists.linux.dev, Marek Szyprowski <m.szyprowski@samsung.com>, 
+	Robin Murphy <robin.murphy@arm.com>, Sakari Ailus <sakari.ailus@linux.intel.com>, 
+	Bingbu Cao <bingbu.cao@intel.com>, "Michael S . Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org, 
+	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	sparclinux@vger.kernel.org, linux-media@vger.kernel.org, 
+	virtualization@lists.linux.dev, xen-devel@lists.xenproject.org
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Aug 22, 2024 at 09:13:22AM +0200, Christophe Leroy wrote:
-> Don't hard-code x86 specific names, use vdso_config definitions
-> to find the correct function matching the architecture.
-> 
-> Add random VDSO function names in names[][]. Remove the #ifdef
-> CONFIG_VDSO32, having the name there all the time is harmless
-> and guaranties a steady index for following strings.
+On Sat, Aug 24, 2024 at 11:58=E2=80=AFAM Christoph Hellwig <hch@lst.de> wro=
+te:
+>
+> Hi all,
+>
+> we've had a long standing problems where drivers try to hook into the
+> DMA_OPS mechanisms to override them for something that is not DMA, or
+> to introduce additional dispatching.
+>
+> Now that we are not using DMA_OPS support for dma-iommu and can build
+> kernels without DMA_OPS support on many common setups this becomes even
+> more problematic.
+>
+> This series renames the option to ARCH_DMA_OPS and adds very explicit
+> comment to not use it in drivers.  The ipu6 and vdpa_sim/user drivers
+> that abuse the mechanism are made to depend on the option instead of
+> selecting it with a big comment, but I expect this to be fixed rather
+> sooner than later (I know the ipu6 maintainers are on it based on a
+> previous discussion).
+>
 
-This is indeed the right way of doing it. Thanks. I'll take this now,
-though with one small fixup:
+I will try to fix the simulator considering virtio has already had
+mapping ops now.
 
-> +	const char *version = versions[VDSO_VERSION];
-> +	const char **name = (const char **)&names[VDSO_NAMES];
+Thanks
 
-I'll just do:
-
-        const char *name = names[VDSO_NAMES][6];
-
-Instead of referring to name[6] everywhere after. Seems more straight
-forward.
-
-Jason
 
