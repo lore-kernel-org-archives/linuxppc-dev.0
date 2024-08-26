@@ -1,93 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-493-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-494-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE210C5321E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 06:43:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFE97C5321E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:24:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wsh2C2sRnz2y8P;
-	Mon, 26 Aug 2024 16:42:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724654579;
-	cv=none; b=ODVJzhcpi++a7f7BmYuSUDuZg1GHysPouxqaNtlIm6XWFgYtdFDIf3n5KGabb8gjkU82KgmmRXuctdKkTiHGc/fDLDz4/TrX+NK1po/NRWcLfSM6ClhRW2PJijRzupxkp1S5362YjPr7U6CT5DGt5pTw1avqLK/hXe2jAAQinUL9/RWBCEJDvdXx/CewyT65GY8VXYfAbxxSacp7aAtyOHa7ntVmNjovarcViZ4qG4spwmsO1Cty57Yn6pYPmscl+3WfEs3WRdUnSRoOzDVSWBglO0ltLGaA5Gtg6SFuWXjgBxG7qNKqL3d+BzPnF2SaQhPAv4Y9yN/5Et1wYjAvdg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WshyB2J5Kz2yDk;
+	Mon, 26 Aug 2024 17:24:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724657074;
+	cv=none; b=Qa/8dQN4PFiySLADQ6vnGQdoFUdo0TKO+4xICbNLkF6E3SsdpSoPqCwH1Hfd3AVNuAMM3S0b/pJgJkjUVloMSYYNPlAhsdrXog0o35YJNDh+Fsx4sKJE8Rz3TyBAM8cXdk2Hq2jLRdeiqTkwUqr67TDQg20Pa9SHEymAIlXS+v7QT5B/x9vuPPN8TjsZ2CHzVffH93xKaRgAUBBswffBQohyk9qxlDGsXd/TFAY6lDR0WEYAKEW0VJVRK15oRJjShs+vDFWUmertJdwlPTM8rcbFKQEKxM7LgmBi9NxhgIHp51Zq5U0b+AH3nnpG0xcEXoKN3X60Gz2euOFkCS7+jA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724654579; c=relaxed/relaxed;
-	bh=3z0B1zrBMWR8LLz2sD3gOwuBnkRnEIOdGdeATNu2Tus=;
-	h=Received:DKIM-Signature:Received:Received:Received:Received:
-	 Received:Received:Received:Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:X-TM-AS-GCONF:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-GUID:Content-Transfer-Encoding:X-Proofpoint-UnRewURL:
-	 MIME-Version:X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
-	b=QT0MuAaqZPqLlDBgxV1rPn0Nb1BOcLETRTRVeCIDo0M43EsJh/RfkFZxN98g0713sceEXseJUdxhg5E1nPbdrHwsDN8/UvW+PC33laznwPArTZab1uknqV2rg/AL2N3Jc0tP6RJCvr96aKM1X3io+EaSr+K9DSP7sHeETBbxrcMSPk7R5wBIa3UVb+OTgSb+BBI70dJK6XCxa9sqFRvYLqWFzXHJzBed6LSaGkN/mb7XtSzO7W6kw1EBIGnInBcGJXj6xZ3mKS/HrWPWLk27heNbF250YwFXbjeFQvT4vwIL/tyuBgnlHCBTwvodXLEDxdyc1az3F1uu2O7K/nGw7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=huq+UVUa; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1724657074; c=relaxed/relaxed;
+	bh=4XYrcqllZpLLj+sqSt83ZS4OGpB+ny/dHDpTQVKEcw0=;
+	h=Received:Received:DKIM-Signature:Received:Date:From:To:Cc:Subject:
+	 Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=l2XO5au+/m0UNj0lov+hTSgZs9vMAPRdDlhYt1VM3dQgx7Bpi39f55bfPYIaaN1O+K+YWJakrODzUmakvP/QpcE43goGxkQXmn2kcE2JruVeErob6dHUNti58wgJhSnqg8m2e/WrIlrAWrngQEKwtXb69hoXLZA/Uwx2K2NfvjooM0os8UbqXz6NihyV/MYqxXU1o8ux7W7lOPqtAfBIP8P06IwE4XQrYKBD2KquEgaGrVSFtQzYNOCxHb9uk1Dtan6IMYXnYbRf3Fi2rjAM/KPoWk7/JvazAIWCeqiaKWWUUw2j2nvw3o9GGWartL6DWWYhAejSyhNMs2+2339r6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=WRvWNHkl; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=srs0=kq7x=pz=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=huq+UVUa;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=WRvWNHkl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=srs0=kq7x=pz=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wsh2B4lHqz2xxw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 16:42:57 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47PEcnnM017901;
-	Mon, 26 Aug 2024 06:42:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
-	:to:cc:subject:date:message-id:content-transfer-encoding
-	:mime-version; s=pp1; bh=3z0B1zrBMWR8LLz2sD3gOwuBnkRnEIOdGdeATNu
-	2Tus=; b=huq+UVUaMZaoWZWZ6P7YwbuOftz5r8vrYvMBT/cw/hYwUU2oQPN3jmF
-	6yEv6N9tahOGPBT5Ht5WF1jBkbFB01qjgAW1ed8kN82P7YlwcBFnSYX99xq9nzAi
-	LOlSYR4J0bEIR6ZrnK2q9osFCb9y1aFFt4RS8rEtgf6Gq7TgQU/GWTCQuQTRTtXa
-	10vCru4c55cv6+wS54ixQ6wSuIgVeI1WrTMcOtWyCvIvHl/HGl2i5+V1ugYJo7Ci
-	kc3MhKSgrO0JR2FliCYOZKpHRB1YN9Blk2NvZ2CYlbGTm7cW2tRqP4XMi6WvAs0q
-	IuDqze1gIMTHAGyVWauCAPDSmhzp3iQ==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 417ged5a79-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 Aug 2024 06:42:48 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 47Q6gmGD029889;
-	Mon, 26 Aug 2024 06:42:48 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 417ged5a76-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 Aug 2024 06:42:48 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 47Q42e1i003114;
-	Mon, 26 Aug 2024 06:42:47 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 417tupmuk3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 Aug 2024 06:42:47 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47Q6ghQF35062340
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 26 Aug 2024 06:42:45 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9568A20049;
-	Mon, 26 Aug 2024 06:42:43 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 573EF20040;
-	Mon, 26 Aug 2024 06:42:41 +0000 (GMT)
-Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.52.55])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 26 Aug 2024 06:42:41 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Subject: [PATCH v3] powerpc/xmon: Fix tmpstr length check in scanhex
-Date: Mon, 26 Aug 2024 12:12:17 +0530
-Message-ID: <20240826064217.46658-1-maddy@linux.ibm.com>
-X-Mailer: git-send-email 2.45.2
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: NWl_-h72Cml3HIDNqYDC-HN4rVGehhfy
-X-Proofpoint-GUID: mS8H0td92Pu-1MbcGWA7TUEQYtWnrFbJ
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wshy80zrrz2yDS
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:24:32 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id D1238A41C61;
+	Mon, 26 Aug 2024 07:24:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20AFAC4FDFE;
+	Mon, 26 Aug 2024 07:24:27 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="WRvWNHkl"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1724657065;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=4XYrcqllZpLLj+sqSt83ZS4OGpB+ny/dHDpTQVKEcw0=;
+	b=WRvWNHkl3kMGmPVF84AOTFbuLtotKvO5WMOvOcjiQTO5GGt6yxvAvXfJ5NC3ABH4Au/AaH
+	lXGxAvyyPehGMUl9Mc67zHgogobiWleqNKnOoQ+iYXZybbgRN4TFpXcnAnXpsJUY6u7XVU
+	ZC6nTPIX+X1v5ceKtm4RmJaWa03cBCQ=
+Received: 
+	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 9e51e9de (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Mon, 26 Aug 2024 07:24:25 +0000 (UTC)
+Date: Mon, 26 Aug 2024 09:24:16 +0200
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>, Andy Lutomirski <luto@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Theodore Ts'o <tytso@mit.edu>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Shuah Khan <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-mm@kvack.org,
+	linux-trace-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v2 03/17] vdso: Add __arch_get_k_vdso_rng_data()
+Message-ID: <ZswtoMbWC3se1su3@zx2c4.com>
+References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
+ <30560b394eaa00fded11fa5bbe5f679c7ffe1714.1724309198.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,89 +82,32 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-08-26_03,2024-08-23_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxlogscore=853
- priorityscore=1501 phishscore=0 mlxscore=0 clxscore=1015 impostorscore=0
- spamscore=0 adultscore=0 malwarescore=0 lowpriorityscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2407110000
- definitions=main-2408260052
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <30560b394eaa00fded11fa5bbe5f679c7ffe1714.1724309198.git.christophe.leroy@csgroup.eu>
 
-If a function name is greater than 63 char long, xmon command
-may not find them. For example, here is a test that
-executed an illegal instruction in a kernel function and one of
-call stack function has name >63 char long,
+On Thu, Aug 22, 2024 at 09:13:11AM +0200, Christophe Leroy wrote:
+> _vdso_data is specific to x86 and __arch_get_k_vdso_data() is provided
+> so that all architectures can provide the requested pointer.
+> 
+> Do the same with _vdso_rng_data, provide __arch_get_k_vdso_rng_data()
+> and don't use x86 _vdso_rng_data directly.
+> 
+> Until now vdso/vsyscall.h was only included by time/vsyscall.c but now
+> it will also be included in char/random.c, leading to a duplicate
+> declaration of _vdso_data and _vdso_rng_data.
+> 
+> To fix this issue, move declaration in a C file. vma.c looks like the
+> most appropriate candidate. Don't need to replace the definitions in
+> vsyscall.h by declarations as declarations are already in asm/vvar.h
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+> v2: Move x86 DEFINE_VVAR(_vdso_data) and DEFINE_VVAR(_vdso_rng_data) in vma.c
 
-cpu 0x0: Vector: 700 (Program Check) at [c00000000a6577e0]
-    pc: c0000000001aacb8: check__allowed__function__name__for__symbol__r4+0x8/0x10
-    lr: c00000000019c1e0: check__allowed__function__name__for__symbol__r1+0x20/0x40
-    sp: c00000000a657a80
-   msr: 800000000288b033
-  current = 0xc00000000a439900
-  paca    = 0xc000000003e90000	 irqmask: 0x03	 irq_happened: 0x01
-.....
-[link register   ] c00000000019c1e0 check__allowed__function__name__for__symbol__r1+0x20/0x40
-[c00000000a657a80] c00000000a439900 (unreliable)
-[c00000000a657aa0] c0000000001021d8 check__allowed__function__name__for__symbol__r2_resolution_symbol+0x38/0x4c
-[c00000000a657ac0] c00000000019b424 power_pmu_event_init+0xa4/0xa50
+Thanks, this seems sane to me. I'll apply this now to random.git as a
+fix; it should have been done this way before and is going to be a
+headache to coordinate later.
 
-and when executing a dump instruction (di) command for long function name,
-xmon fails to find the function symbol
-
-0:mon> di $check__allowed__function__name__for__symbol__r2_resolution_symbol
-unknown symbol 'check__allowed__function__name__for__symbol__r2_resolution_symb'
-0000000000000000  ********
-
-This is because, in the scanhex(), tmpstr loop index is checked only for a upper bound
-of 63. Proposed fix is to replace the upper bound value with "(KSYM_NAME_LEN-1)"
-
-With fix:
-
-0:mon> di $check__allowed__function__name__for__symbol__r2_resolution_symbol
-c0000000001021a0  3c4c0249	addis   r2,r12,585
-c0000000001021a4  3842ae60	addi    r2,r2,-20896
-c0000000001021a8  7c0802a6	mflr    r0
-c0000000001021ac  60000000	nop
-.....
-
-Reported-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Closes: https://lore.kernel.org/linuxppc-dev/CANiq72=QeTgtZL4k9=4CJP6C_Hv=rh3fsn3B9S3KFoPXkyWk3w@mail.gmail.com/
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
----
-Changelog v2:
-- Fixed the loop upper limit from KSYM_NAME_LEN to
-  (KSYM_NAME_LEN - 1) since last index is initialized
-  with zero at the end of the loop. Thanks mpe for
-  pointing it out. 
-- Checkpatch script was complaining about the format style 
-
-	ERROR: spaces required around that '=' (ctx:VxV)
-	#67: FILE: arch/powerpc/xmon/xmon.c:3546:
-	+		for (i=0; i < (KSYM_NAME_LEN - 1); i++) {
-			      ^
-   so have fixed the same. 
-
-Changelog v1:
-- Updated commit message based on Miguel's review comments
-
- arch/powerpc/xmon/xmon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index bd4813bad317..e6cddbb2305f 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -3543,7 +3543,7 @@ scanhex(unsigned long *vp)
- 		}
- 	} else if (c == '$') {
- 		int i;
--		for (i=0; i<63; i++) {
-+		for (i = 0; i < (KSYM_NAME_LEN - 1); i++) {
- 			c = inchar();
- 			if (isspace(c) || c == '\0') {
- 				termch = c;
--- 
-2.45.2
-
+Jason
 
