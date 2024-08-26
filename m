@@ -1,89 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-499-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-500-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17AFDC5321E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:32:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 578BDC5321E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:32:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wsj7K56JWz2yFP;
-	Mon, 26 Aug 2024 17:32:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724653021;
-	cv=none; b=kqlw4bJ2+k4WFaKv2Y5lCmYQ50TlKe8mCvgy6ilm2hkVERfpVJkhUErCoodwlu2TonZWuetVTt7yLqM2J0kvJukXVn3B/gY3DBetX2vCLZZhTslcHTT14yF0h+9hkuVeBF52PQTJYHkhs3q0DpeZDig+AvFrbhyPm8/RGj02wtlQCrwOP2iE3+pOiDNhghyoRSBfTclKHUTr7Xnoup1a8giiGnZOqXaMqdIT7gxiE5qWbdr8COcGNFuHjs05bBQlnaiXBFEEANloG7r6+r1qW3QcjvbFW+QbMIggCWjmhlyuN+Ubkn9Ox7pf3ptu/lVaMRHmDFafWwMhMQC4oIP6AA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wsj7n0C3cz2yGX;
+	Mon, 26 Aug 2024 17:32:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724657573;
+	cv=none; b=TjlSJ+x7MNBgpqNnO3SRTdQMUtRxjeeyk9atNgmJe9aW3Rue4TX611z7TGdCyTKTdhSKH3xXyuHnnrDILXsW3cx1gLeU+aOEmEPvHN5/B3HAx6CS0x08OOUq30ai8rEgSk2R7NjYtrOdVeeRKNBUAEyEyAneVI8Lf22zDBKgUpIWGh9B41zVnesNp4Ikm6Oa2vkB2+UN3wdPOEkoW2/OwRtMCY3gUX/1QyW1CcTEjIGcfTG0XoJH4rt8buKA3JJSc+/DwlIXp6IxcbnokKFoI/hw7308x/6M9qaSBXPfDjcW2+kpxMZSSr7eJGSsp4I1FzuRLOIHxtFSKieWREDDMw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724653021; c=relaxed/relaxed;
-	bh=dB1NfwLF4sboQ9oAiJsmEAd6cRRc4sOW3f5DA5Z/91g=;
-	h=DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:Received:
-	 X-Google-DKIM-Signature:X-Forwarded-Encrypted:X-Gm-Message-State:
-	 X-Received:X-Google-Smtp-Source:X-Received:MIME-Version:References:
-	 In-Reply-To:From:Date:Message-ID:Subject:To:Cc:
-	 X-Mimecast-Spam-Score:X-Mimecast-Originator:Content-Type:
-	 Content-Transfer-Encoding; b=RqRAth230wO1ORzVliw+df+3ewmpfAdXPQ93m4GWD58IbMBdlgybueNlSp+769//iL426FBgwI+i9HJiTLmceQCOn4AxvIdSGnlCj9YIpLaQcJr9e3vpp1KoBFK4Oi8qbY3728pMYVnHZP3es6EzejQvwFxYqqavpMYIByiOqjNcXhB7PPBHL4dqUT5l3Vu5sivvTWr1QBdZAxZSx8Bg4YS2AOxD1kVx2EwwiGPn8RyZf9HoVueLD9pPsu0CTkhOE52j7qvrKqHdW13IE8CKY6Axmd2+y1xY1zHZd6x+Ixy5inpgh4xaMRUH9USq6kpfgPQ9SDNCq7jvkiW3786DLw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MY/sKCaT; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Lq/xZKh9; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jasowang@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MY/sKCaT;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Lq/xZKh9;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jasowang@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	t=1724657573; c=relaxed/relaxed;
+	bh=Z8Owwa95G/E6DZIZ0DnKnIa3YcdQc/wFAXIGY1Nw2HE=;
+	h=Received:X-Virus-Scanned:Received:Received:Received:
+	 X-Virus-Scanned:Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding; b=BPk7f9Mhu6dSCGVqe1Dnpv3wA79nTf+0Amfv3EPh4Viabe13tmUqOAOgdCadI6HStmIkNxnpAfTf0Tb49v+fCOsUzLiAqMSgy/YAH3LOcfmm+l1A0Z3Qz6DU+TUBbd1cd+4ohhK9jklXtufqwVs7XEFi9UIpJ2aqFCeE0rw/mo0EWEJUI4eumFkpfiZhJwelrUVzubBGb0O8CmNdMYes1HJeAJxuiTd+MS13yTffRd2xrk9wJgSDYzSJkEoq/YOH3ndRoQ8SKmHwWSsAorY5mjbiJ7vVz4myjtNiDhM+B7WXP7NFz9pGt/mRVGFTcsqWgy5ipAc8kUF5yIeLyZuS4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WsgSD6kKgz2xYq
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 16:16:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1724653011;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=dB1NfwLF4sboQ9oAiJsmEAd6cRRc4sOW3f5DA5Z/91g=;
-	b=MY/sKCaTjrBl8RIwTRt5lROwGlvJy1hjkLtRdC5LcqW5orl0kRGm4pr+30eActr3c3HICe
-	lg1aiRhcPkqwke68sdAUGmpOh7T/a0peC4r0OiIxo8y5PkhY/tEgQzlRhlBZHoPV98QYHj
-	B01PVTjOfiPp4IdnVg1iAJ6GommMvEE=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1724653012;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=dB1NfwLF4sboQ9oAiJsmEAd6cRRc4sOW3f5DA5Z/91g=;
-	b=Lq/xZKh9UM/uD3X7Mlt2ym5KqVlIvwEfacro/EOvMFix5PoF1YbjxZ2n4LsF957dthLdUF
-	X+ZCx5cIp2rgLZQDggL0CNLC6ErwqAFVU0t223hbpeyL2RIqnq3Xur7x89KTU3hUuIxkUq
-	o5zs1C3AwLBnlMCB+Eq3eYEuNyYZx+4=
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com
- [209.85.216.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-444-qn3DtpnqOHqOzXkK3zqCzA-1; Mon, 26 Aug 2024 02:16:49 -0400
-X-MC-Unique: qn3DtpnqOHqOzXkK3zqCzA-1
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-2d404dffd54so4668694a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Aug 2024 23:16:49 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724653009; x=1725257809;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=dB1NfwLF4sboQ9oAiJsmEAd6cRRc4sOW3f5DA5Z/91g=;
-        b=FN+niTznuhIhwrRKpLb12V9nl2WPLFlEIYlx9N0t5bKt68hAddW5BTwjD+cwvUQrLB
-         dFvRZVgHm8AyHlnYX1QuOD/mdANU/YRHiQXrZM3UizmK35p5yWlYO6Neh0src6J+03FF
-         RkN8ooIuvhTW/gBNkMipNIjlkxPtd20hKfqV7jtj55PRI3Fz3H9JK06v9wE61su+j55g
-         PIWG8d6gd+qbHrhrQBu9S7J2K3GD6LQL3fALsTaMqZlT8+pMCSYK3WxvwNqwNtkYcu/g
-         iJzZeqOeQIDEi6WrBnKuuGtpOQHpJpMVREFKeeyKBCLX7esD7Va4joZ69L2bpr2nK32t
-         XtWA==
-X-Forwarded-Encrypted: i=1; AJvYcCVfcgynG8g0iEmVEYv6EEQJ3Jvz1nVPlKyBVhMYXrpyChR8m7XbuAIcM4eE/q5fQHUgdEh3EKa5KegCKXQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx2a33HPcKwT/3MR0ZSYTxckWHJCBMrSuIIgkvM7CvZc9U/DEM+
-	SKJ5Lce7XvFbhEVj1AJMv3MtiCaJAcsnqfUxND9hC0894ykOb8rIJ9qyN5oinOqeL0KPq+ymVGw
-	E7qFbIhbkaakkDyV7O5FycyytyJj9NtOC0ecoguY5YinPpoE/J0y7jWADhXvjMAGgPafPMHMkJy
-	91xEb4i/00ENDLT2neW6zUVv7eTIf/8j44QChvrA==
-X-Received: by 2002:a17:90a:6287:b0:2d3:cd27:c480 with SMTP id 98e67ed59e1d1-2d646d247f9mr9809265a91.33.1724653008869;
-        Sun, 25 Aug 2024 23:16:48 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IE0WjIzDYmdUX7OY9EeJBLH76SMB2mi2zdVZl4NauXJ/eBoNO23zRck1BCKv7ZS6PzenwJTH61bASpm1vxRFd8=
-X-Received: by 2002:a17:90a:6287:b0:2d3:cd27:c480 with SMTP id
- 98e67ed59e1d1-2d646d247f9mr9809253a91.33.1724653008351; Sun, 25 Aug 2024
- 23:16:48 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wsj7m4zhnz2yF6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:32:51 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4Wsj7f1sMnz9sRr;
+	Mon, 26 Aug 2024 09:32:46 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id zJY02ESYjtRG; Mon, 26 Aug 2024 09:32:46 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4Wsj7f0yXmz9sRk;
+	Mon, 26 Aug 2024 09:32:46 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0EC928B76C;
+	Mon, 26 Aug 2024 09:32:46 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id bh1CtcFXx0CH; Mon, 26 Aug 2024 09:32:45 +0200 (CEST)
+Received: from [172.25.230.108] (unknown [172.25.230.108])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B745C8B763;
+	Mon, 26 Aug 2024 09:32:45 +0200 (CEST)
+Message-ID: <a8b4c72d-07bd-4d14-aaa9-44fa332fd13e@csgroup.eu>
+Date: Mon, 26 Aug 2024 09:32:45 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,50 +59,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20240824035817.1163502-1-hch@lst.de>
-In-Reply-To: <20240824035817.1163502-1-hch@lst.de>
-From: Jason Wang <jasowang@redhat.com>
-Date: Mon, 26 Aug 2024 14:16:36 +0800
-Message-ID: <CACGkMEsK8k=yX2ZytMJQhdZi4PS9-7KLUYmf2oGLu-UvNEYzug@mail.gmail.com>
-Subject: Re: clearly mark DMA_OPS support as an architecture feasture
-To: Christoph Hellwig <hch@lst.de>
-Cc: iommu@lists.linux.dev, Marek Szyprowski <m.szyprowski@samsung.com>, 
-	Robin Murphy <robin.murphy@arm.com>, Sakari Ailus <sakari.ailus@linux.intel.com>, 
-	Bingbu Cao <bingbu.cao@intel.com>, "Michael S . Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org, 
-	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	sparclinux@vger.kernel.org, linux-media@vger.kernel.org, 
-	virtualization@lists.linux.dev, xen-devel@lists.xenproject.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 01/17] asm-generic/unaligned.h: Extract common header
+ for vDSO
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Theodore Ts'o <tytso@mit.edu>,
+ Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>, Shuah Khan
+ <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ linux-trace-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
+References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
+ <a583352e8ae8f6a9a08f9b84a2c543fe43ef94db.1724309198.git.christophe.leroy@csgroup.eu>
+ <Zsws0AkFnFDYo5p6@zx2c4.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <Zsws0AkFnFDYo5p6@zx2c4.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Sat, Aug 24, 2024 at 11:58=E2=80=AFAM Christoph Hellwig <hch@lst.de> wro=
-te:
->
-> Hi all,
->
-> we've had a long standing problems where drivers try to hook into the
-> DMA_OPS mechanisms to override them for something that is not DMA, or
-> to introduce additional dispatching.
->
-> Now that we are not using DMA_OPS support for dma-iommu and can build
-> kernels without DMA_OPS support on many common setups this becomes even
-> more problematic.
->
-> This series renames the option to ARCH_DMA_OPS and adds very explicit
-> comment to not use it in drivers.  The ipu6 and vdpa_sim/user drivers
-> that abuse the mechanism are made to depend on the option instead of
-> selecting it with a big comment, but I expect this to be fixed rather
-> sooner than later (I know the ipu6 maintainers are on it based on a
-> previous discussion).
->
 
-I will try to fix the simulator considering virtio has already had
-mapping ops now.
 
-Thanks
+Le 26/08/2024 à 09:20, Jason A. Donenfeld a écrit :
+> On Thu, Aug 22, 2024 at 09:13:09AM +0200, Christophe Leroy wrote:
+>>   include/asm-generic/unaligned.h | 11 +----------
+>>   include/vdso/unaligned.h        | 15 +++++++++++++++
+>>   2 files changed, 16 insertions(+), 10 deletions(-)
+>>   create mode 100644 include/vdso/unaligned.h
+> 
+> Do you need to also adjust the `#include <asm/unaligned.h>` inside of
+> lib/vdso/getrandom.c to instead read `#include <vdso/unaligned.h>`?
 
+Yes, all adjustments to lib/vdso/getrandom.c are in patch 2.
+
+Christophe
 
