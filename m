@@ -1,120 +1,194 @@
-Return-Path: <linuxppc-dev+bounces-511-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-512-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A1F4C5321D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:35:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 923E4C5321D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:36:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WsjCF6Jttz2yYs;
-	Mon, 26 Aug 2024 17:35:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724655745;
-	cv=none; b=bK8K9Em+RlKf1D5IMW6YYrQMbwJLcUORObw1AZjfcRU/YVuiKIIbLdhtu1ZTfom9X+hBmsbSZ3GsnPoS2+HWeM+6On6Sn018xJCYMqUtPVU1E4KpsbIF+/Vx033Ie6+IN/A9mKLscCN3N4MK2h6DhaDtHvfV0toNRaROKRcBIrtuIv/uYIxqG5rZtDcih7WFj8i+ezVuVbtu/KzYCKfjn6Lf7xYOhS0NC95kjBcPeiwsTyCrNDm3Avu6vVXRo5OZHUUhyuC61q3z4h5Lo2oAwCYCW0ZSdRBXWjkmXkglY6OALrTNuYQ1JCwFyC8IzDCvIzGZn9hwQV5tVnXSh1Xwfg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724655745; c=relaxed/relaxed;
-	bh=BVzOvvB4NeobjjdcV+M0j5oPXpziLyfwFkksVvG2qkQ=;
-	h=Received:Received:DKIM-Signature:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding; b=KXna/g37QYYGdgHUw0aY7Cu+mc6Rz5zcDORHKhaOcZsJl8SzBK5eG9TyQIVXYGr6o+IIJlSk+OjY/W73lTeKu04Rb8YMWGbmeVvXNxduZZKXXRdoTvLc1QIQ7IrszmeTPua28niXigasHBV7pPjEsv1lsYWJRtzQ+PGpG8bfVLOFpGkgYr82pf9MPa/R6YOgNQK5/zSkOfx+n5C9iCMaJiqY4wzOsmN+YRuqdOqLBlStXdP5Kf6UaGfjv837Z7M27RRC8hd5U1nz5DI0ERyEmloUAiAzmOiHu9fLqVrXH4+gZM97CK8JgsgE9M7td+sZr/NSjSjezPYyZQZOU+TIbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U7UFIrY1; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WsjCM29Hpz2yh2;
+	Mon, 26 Aug 2024 17:35:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2612::624" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724657759;
+	cv=pass; b=XrN9D6TuqJXHIiQ1X5Q2YWdxU/Y5dR4JbyPgeImkYs39KrNJ3kWGdkI5aLRIFlkPLobYgunqxt1ik8iYLXcLOdX4SD3QZVPVbeGQLAWNurKECfUsBauVoRN9nbxkM8kr/ZhgKPFmMFHHpUULP9QhLtGA8+mK5dP9lEjPEgYvUp5AimMUxpcYBcoG3ua115TKwym2UJZqmXGhrGO9Fi8TW0kMspmXOdygg/xIcHbHBSVA7aNpU4Ey6Plg3k+x3RZJ8FeTrGG+7to4DN+1QwpAqw0Yo1GXQrxbXRlg+jM3c2nqTMNS+5tK0asaKDP3RYCGrf+tl9ivJW8LWmgCBWKc6w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1724657759; c=relaxed/relaxed;
+	bh=dhkr7dryrZsXGZsj/wQvcXChlEyzj/6pRtFt0E/ePok=;
+	h=ARC-Message-Signature:ARC-Authentication-Results:DKIM-Signature:
+	 Received:Received:From:To:CC:Subject:Thread-Topic:Thread-Index:
+	 Date:Message-ID:References:In-Reply-To:Accept-Language:
+	 Content-Language:X-MS-Has-Attach:X-MS-TNEF-Correlator:user-agent:
+	 x-ms-publictraffictype:x-ms-traffictypediagnostic:
+	 x-ms-office365-filtering-correlation-id:
+	 x-ms-exchange-senderadcheck:x-ms-exchange-antispam-relay:
+	 x-microsoft-antispam:x-microsoft-antispam-message-info:
+	 x-forefront-antispam-report:
+	 x-ms-exchange-antispam-messagedata-chunkcount:
+	 x-ms-exchange-antispam-messagedata-0:Content-Type:Content-ID:
+	 Content-Transfer-Encoding:MIME-Version:X-OriginatorOrg:
+	 X-MS-Exchange-CrossTenant-AuthAs:
+	 X-MS-Exchange-CrossTenant-AuthSource:
+	 X-MS-Exchange-CrossTenant-Network-Message-Id:
+	 X-MS-Exchange-CrossTenant-originalarrivaltime:
+	 X-MS-Exchange-CrossTenant-fromentityhea
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=cs-soprasteria.com; dkim=pass (2048-bit key; unprotected) header.d=cs-soprasteria.com header.i=@cs-soprasteria.com header.a=rsa-sha256 header.s=selector1 header.b=ErOvkNCK; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2612::624; helo=eur05-am6-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy2@cs-soprasteria.com; receiver=lists.ozlabs.org) smtp.mailfrom=cs-soprasteria.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=cs-soprasteria.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U7UFIrY1;
+	dkim=pass (2048-bit key; unprotected) header.d=cs-soprasteria.com header.i=@cs-soprasteria.com header.a=rsa-sha256 header.s=selector1 header.b=ErOvkNCK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs-soprasteria.com (client-ip=2a01:111:f403:2612::624; helo=eur05-am6-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy2@cs-soprasteria.com; receiver=lists.ozlabs.org)
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on20624.outbound.protection.outlook.com [IPv6:2a01:111:f403:2612::624])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WshSc2vXsz2xSM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:02:24 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 64788A4137F;
-	Mon, 26 Aug 2024 07:02:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B82BC51CD7;
-	Mon, 26 Aug 2024 06:56:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1724655401;
-	bh=q+53PiBfV7KWc5zMTRPH+qwlooVMOQhmzzmNh3VtVAA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=U7UFIrY1Wki4CIAtxKsDH9Ethyh2pioqUUKCJ2LrnbXE/MHXSYNuNHBNxj/kGcug9
-	 2oLlfp9vNII/iB216rpp/vH6wZDgAX7qSWUcEGtPgVTQOwSrGYFw2gjTonp8qfiKEo
-	 s4sKCQcpj2m3jdY5D04jSA5GkndMq4MSemPQ2kwYmbqk1h+zhhkzmqjPm1qgS8dRnV
-	 pHtg+GOMsjArNPxxclYONqbpUYOvqnbipCqKYLWJgWh3cQaCJD45GOlEi2YFEsWjul
-	 xYOg6r1bLP2jrM1WkogIxDZveGnwW4QCAC73Rc0MtKMJTLXfzh27f//lArm9WNAAzC
-	 jCgfBUaXR4/TQ==
-From: Mike Rapoport <rppt@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andreas Larsson <andreas@gaisler.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Borislav Petkov <bp@alien8.de>,
-	Brian Cain <bcain@quicinc.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Guo Ren <guoren@kernel.org>,
-	Helge Deller <deller@gmx.de>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Kent Overstreet <kent.overstreet@linux.dev>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Matt Turner <mattst88@gmail.com>,
-	Max Filippov <jcmvbkbc@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Michal Simek <monstr@monstr.eu>,
-	Mike Rapoport <rppt@kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Richard Weinberger <richard@nod.at>,
-	Russell King <linux@armlinux.org.uk>,
-	Song Liu <song@kernel.org>,
-	Stafford Horne <shorne@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Vineet Gupta <vgupta@kernel.org>,
-	Will Deacon <will@kernel.org>,
-	bpf@vger.kernel.org,
-	linux-alpha@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-csky@vger.kernel.org,
-	linux-hexagon@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-modules@vger.kernel.org,
-	linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	linux-sh@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-trace-kernel@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	loongarch@lists.linux.dev,
-	sparclinux@vger.kernel.org,
-	x86@kernel.org
-Subject: [PATCH v2 3/8] asm-generic: introduce text-patching.h
-Date: Mon, 26 Aug 2024 09:55:27 +0300
-Message-ID: <20240826065532.2618273-4-rppt@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20240826065532.2618273-1-rppt@kernel.org>
-References: <20240826065532.2618273-1-rppt@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WsjCL5Hdrz2yWK
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:35:58 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=TbDYD960bkweMwwhEwCPLWy7P21bZVFlOhFuV9a8bGqZo4AH76EWAoGwA7zOy4b+Ummyi6knRwOjOVy+5j3lfsMb3r3aXxoeGWOR5/kK7kIM/jneffWma/WxwuXVOscbiwooPIf+Mny0nzWqw3HHQkx867afPUBNt8TwUFEA5UDuDJRpwxoKUI5h2d9zJQ3Mr6/YNQCay6sNyfPX28+u9c7VDbnsoQdb4VMCX2djrSn1YbGazZ2WQqZGUQ0v+haeAqzKJFyvHqxX9wxucCyeqHuZUzMc87K0eC3q0C+oF7Fd7irqXJYs/5YXuOOkKzx/n8rWfIcdMOKj02lXTQh4dw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=dhkr7dryrZsXGZsj/wQvcXChlEyzj/6pRtFt0E/ePok=;
+ b=zE7PkHxGeUZeCm+FDTu0ZualOypqew/07voWoylbh/z6ucR/oKEtfb2PDA4SKkfpbIyzWNL0TSSEEHf5q2p1LNTTInxUbLHPzDMgsiSp3Wb01Xpma/6NdGygi4wBOAgj2l7ej5hQYJXYnqwGEEtEcW/3K/Gjv37uYCV1T7qf93KdY/UC925xvrJ5nTL43ly3EsNMXRkRYmTQn0GpPvS415jwQJfZB3xBqWtKfucibr2m4A8Uhu7OrW9qCfRhIdXnYm46G2T8BfmPyMMx9c8UQgE2qb3KmvZ5JPOAxGLfLk2tDYJEo73a7hdpwbJL+HXSKBhv0NMwHlM+eEn/bn1rsw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=cs-soprasteria.com; dmarc=pass action=none
+ header.from=cs-soprasteria.com; dkim=pass header.d=cs-soprasteria.com;
+ arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cs-soprasteria.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=dhkr7dryrZsXGZsj/wQvcXChlEyzj/6pRtFt0E/ePok=;
+ b=ErOvkNCKWVmRIFhulP11AAVMBr1wepVbfv88Etfl8o+hZyLwiRwaAfAFlnd5v5fUZ2IrG8bcW6iR49OQ/LuM28NjOB5pcOu+MB0AGrt+TljtfHYQloJcKqgf7J0HnykezzMJfzEsfSakHPqys7ohDM4yOwnFXpZg41tnQRQNSymncL6h6LFU9znJmiZK/UV6pFNGBBg+PrInrxG91gen5sCTF/4pKJR/XqzBhcjGC1k9JnjSqG4x19QW1iszI2L6Q88BYdWh3iMQzx8LG2VKqlz2vcx6LU0pvhYO8BI+JLUCarYbSbhe8UdwOJ0TfPM8cSQGAI+3xIJTctoJPcnflQ==
+Received: from AM0PR07MB4962.eurprd07.prod.outlook.com (2603:10a6:208:f3::19)
+ by AS2PR07MB9231.eurprd07.prod.outlook.com (2603:10a6:20b:5e8::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7897.24; Mon, 26 Aug
+ 2024 07:35:38 +0000
+Received: from AM0PR07MB4962.eurprd07.prod.outlook.com
+ ([fe80::6724:2919:9cbb:2bb2]) by AM0PR07MB4962.eurprd07.prod.outlook.com
+ ([fe80::6724:2919:9cbb:2bb2%4]) with mapi id 15.20.7897.021; Mon, 26 Aug 2024
+ 07:35:38 +0000
+From: LEROY Christophe <christophe.leroy2@cs-soprasteria.com>
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
+CC: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+	<npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, Andy Lutomirski
+	<luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
+	<mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+	<dave.hansen@linux.intel.com>, "x86@kernel.org" <x86@kernel.org>, "H. Peter
+ Anvin" <hpa@zytor.com>, Theodore Ts'o <tytso@mit.edu>, Arnd Bergmann
+	<arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Steven Rostedt
+	<rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, Mathieu
+ Desnoyers <mathieu.desnoyers@efficios.com>, Vincenzo Frascino
+	<vincenzo.frascino@arm.com>, Shuah Khan <shuah@kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+	"linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+	"linux-mm@kvack.org" <linux-mm@kvack.org>,
+	"linux-trace-kernel@vger.kernel.org" <linux-trace-kernel@vger.kernel.org>,
+	"linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>
+Subject: Re: [PATCH v2 14/17] selftests: vdso: Make test_vdso_getrandom look
+ for the right vDSO function
+Thread-Topic: [PATCH v2 14/17] selftests: vdso: Make test_vdso_getrandom look
+ for the right vDSO function
+Thread-Index: AQHa9GLVdeO2A8ki90Kh8hSwc26V2LI5KmEAgAAB74A=
+Date: Mon, 26 Aug 2024 07:35:38 +0000
+Message-ID: <07ec9ebb-eab6-4350-9353-a58ebb06000e@cs-soprasteria.com>
+References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
+ <04d1de23a2ff14e2709edd8b75e27b81d703bc57.1724309198.git.christophe.leroy@csgroup.eu>
+ <ZswuqjC8T8TwF8LJ@zx2c4.com>
+In-Reply-To: <ZswuqjC8T8TwF8LJ@zx2c4.com>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+user-agent: Mozilla Thunderbird
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=cs-soprasteria.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: AM0PR07MB4962:EE_|AS2PR07MB9231:EE_
+x-ms-office365-filtering-correlation-id: bcbb0ae7-4e15-447f-db1c-08dcc5a1ae35
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|1800799024|366016|7416014|376014|38070700018;
+x-microsoft-antispam-message-info:
+ =?utf-8?B?T0pEVkQ0cllYNzhXcWN2NmFtZVAxN3pnQzUrSGN5Y0FKdlJYeDNGODJtVWJl?=
+ =?utf-8?B?bWxENFJRQXlCMVRibmRjaHBMQ1hXa3lkeGREanNJSk5yTzYzeXBqNVdFNXdl?=
+ =?utf-8?B?eU5jTzhRcnVyU2g1QkhUTWNLUXdsYjdyMjBzTytuSElhOE9IOEtJSWs3Um1a?=
+ =?utf-8?B?Z2xYSkYwdmwwZjJaUDZrbEdXUWJqVUVpOWhpblBqWnZqbnRkSVVQeFpETXpy?=
+ =?utf-8?B?S2JTYWZaZUwvb3NDT1FHVldnUG9HNVZIblIwMTlGQVM0TEVVQURIYWJYb0JT?=
+ =?utf-8?B?bFllZE5VdnFVcFYreWV5WS9UUm1RZjBWY3lpVFlIVlVjdmpOcnNIeWloZVI4?=
+ =?utf-8?B?MHZYam5hMWh3bEZKSHh3V0ptK0hSRTBOUyt5L3dnRmNmMEw2ZS9sb21Za2VV?=
+ =?utf-8?B?TXRnNEI1b24ycGMvUlgvbEZCK3lkWFBtZ3Y2UXcrTm9IZkNPQlRVbCtUOUpv?=
+ =?utf-8?B?N2VkUmgrL2NzOXBVa09HdlJlTDA3L2VoVlFnK1NZZFBmRUFnTUwxMGEwR04w?=
+ =?utf-8?B?aGMwYTJDejUzMldBU3FWWXo5cVh0aHZYclp1WlRrTUU5WUdZVWZkaFhjYXhs?=
+ =?utf-8?B?dEtvR0dFZFBFWDNOUjRqeWVWRHJGTkx0S0todEE0ZHRjeHk2enAxUDJqODZm?=
+ =?utf-8?B?cld3WEhBNHJIZ0ZFMTM1NEprT0hoaXVXdTBwT21wYytHQjFiV1JtbkxXWHNW?=
+ =?utf-8?B?L1AwSU1nRHB2TWMwWjRMY0J1NHFNd213bnFqbUdzYzU2OVl6RlpxeUtCVEJn?=
+ =?utf-8?B?WGk2RW01M2diWWZDdVNFb3VTRmxTN2t5QU15dWpOMG92Qm5GWmUyaEd6UGhT?=
+ =?utf-8?B?ZzNyMW1rVnZoQ3RBeVByY2FmRTMzMk1IOWV6NmhBdDM4UlVyVVlndjRwY1Nz?=
+ =?utf-8?B?cVdaRUEvWWRSQmNtZXNpTFFMb0ZHS2d1WWFNelJzelBjdVVSZjVvemtETlZO?=
+ =?utf-8?B?MHFsOFdjUlkyWDJvYUdBOFM0cDVuMjArY1U0OE1GaGxpenJ4ZDh3d2RMcThl?=
+ =?utf-8?B?UDduM0tPUXBBUUxEQkFlTnVBSW81QSs1TTRJZGlCWktlUE9aTGkySTlRK1NG?=
+ =?utf-8?B?QWo0dU84MTJJZVFINks4VGJXV09rVHo1M0RvVXRrOVRHa1JlR1JSYjBoMklS?=
+ =?utf-8?B?MlhYQjhTVW9TNUZtSERSMlVxeWxRb3pkdEtSRjJRWkpNR1FoUDNBem9hd1pw?=
+ =?utf-8?B?SEUzV3pVd1E5b1g4WnBDd09XTWs4NTVYb3lhWFhSWm51cmJKb2xvaWxxcHJP?=
+ =?utf-8?B?dWpHZVd6VW1yU0prQjhDN3VxM01aa0tXYTIxblhpd2lOU0Z2VkxsTFUwcnky?=
+ =?utf-8?B?RUh2SXZLWjlEYWRvaWszYU9rY2JQNjUrV2E1MU1FVDZQdGdieElGdW81YUx2?=
+ =?utf-8?B?U1duR2IzdmdkeVJNMzQ1Sk9QQ2FUcDM3WThteGxwNndpbVI5L2I5VGpUazZw?=
+ =?utf-8?B?bXErZU1kY2JOeHlRRnlzU0dXcWJ0aGVTM3NSNjNha0F3QlN5K2ZSZDQvcmtL?=
+ =?utf-8?B?Z0ljaG5HaHZrS0FWQ2FTSFNhaEtEZ0swMHNGZzJKR09yZ0VzRmFlaDZ6bkdl?=
+ =?utf-8?B?WXhGYmttRDVyYnNYVlpzZHVic3FRQktTMFhxSnVDd2xmMWdHTlY4b0w5blNU?=
+ =?utf-8?B?Sno0L3NJcVo2UWdwNUNDd2tDTHYxRW8zVVo2d3VQaktDN0VNNGZJMHhCRnUx?=
+ =?utf-8?B?YlVYZG5ieWxIWFc5ZzhocjRKblF2Ui9jekl6RGttWXJ3alhEbGNadUp5Y3Yy?=
+ =?utf-8?B?SS9SR0Y5VHZhOFdvQVBRbkNMM1MvS0FDbUJUYjgrcmh0cFl1ZjE0Q0dVUWJF?=
+ =?utf-8?B?QkZsSS9UMld5RGduakI2bk9LSExpSDFqTFBtYkNTQ1BYR3NPbHl6U2M3VTll?=
+ =?utf-8?B?VEQ3Nk1rdURDOS9hT2JKd3FBOVdWWk9Ody96ZVVlNE5tM0E9PQ==?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR07MB4962.eurprd07.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(38070700018);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?N0hQLy94UFdqY1ZvTytCeGE2MmpxOEEydytZRFZ5bGJ6QXRYVjFvTUYwMjhY?=
+ =?utf-8?B?eTFlalg4N2JTcGxjN2NPLytLRDRvNlN4WHZPbjVxNlNEOHdremtZeGVqSUI1?=
+ =?utf-8?B?NC9WZVdKSHQ1eTZvRTRYby9Ia1p2eFBlWmVLdUVHcWRGV2pSZFpJYUhYNUlv?=
+ =?utf-8?B?aEwxL0pMTENlVU5DcGx0STAybEl6R3Q2WTdid3ZqbTdhQnZ2a0l2enNNSVJa?=
+ =?utf-8?B?SE5YQ0tmUmJaTlVGUll4UDluMVUrbWVLTTdBRVo4b1FDR2Q1eXRNS1o3UGd4?=
+ =?utf-8?B?L1VZWUpNcGVnT2xuME5RcVBHMmp6MGg4SHpoaHNLVnU5NHJvSnU5cUd4eXla?=
+ =?utf-8?B?ZzJNWTZLZGFqSU5EUStQb2xoZkN1VmdoRUhhbmxCU3Bwcks5WWdsNytybjM1?=
+ =?utf-8?B?OGFrMVQxeWdMcmFXNk9PY2JXbnJyS3RkelFqWDdMNHA4aXQvZk1HbjlTc0ND?=
+ =?utf-8?B?MkFaaDVrQVVoV0RwZlRPS09WY1oraEEyaFo3bmljaDByYVR4Y2RXdGt2QzNQ?=
+ =?utf-8?B?S1FhOTFJbmdKNzRTR0NtcVVyRUtUTXVXOU1DaXAyV0QrNTJYNmZwYUVGVDNL?=
+ =?utf-8?B?b1Zsamx1czZCRE5yUVhGMXBPaDVKK1h0N1UyYVJOTHFFV1dSREhmVDlMY3ZS?=
+ =?utf-8?B?ZzR3MmxNanVNZC9uejgzYUxsSEI5MEFYRytHSld4Nmszb2NUVGtDNGdQRGor?=
+ =?utf-8?B?aVFjN2NQeGxlaHAxMHVVTDNFUCtOY1E3VmdjNUFyS09XR3dERzFyN0pvVUE3?=
+ =?utf-8?B?S1RFcDNWRDQ5d3lUVHlWdnBHcG54V2U0QWF5S1BIbDRKNWdQZ0o3WWRmNXE3?=
+ =?utf-8?B?aW16N1k4VkZjTnR6eHo0OHlQQmVmdzNBOXNWYnRxMmpwbkFnbnl1cWdvWjlI?=
+ =?utf-8?B?UncxRTQyRW1UL2ljL0N0dEYwMlY1Wmt3dG8yOHlZdnpheGRGZXR4dEkwZkh3?=
+ =?utf-8?B?MVhwTERFOE5tbEYxK3Y0SktOMHczeHZpODZQOEVKcjhMcHNCWmlUK2RVWVBH?=
+ =?utf-8?B?anJMUXN3Mlp3cHByR3JCMVF5ZDFSZTVHOWR3VkcxS211NUZzampVb2Q0UFZZ?=
+ =?utf-8?B?N3UvQTNaRzlkQVZ5K0pQU1RScTlSTUI3N2I5SVIyeXA2ckh5VHUySithejNu?=
+ =?utf-8?B?M0tkbitOL1pCQW1hZC84U3VKZUJPZCtKRjd3UVc1MUFtK2tTQzQ1cGM3ZWxQ?=
+ =?utf-8?B?Wk9LT3VRS3RQcE9ENURVYWwwYmt2STgvRFgyN2kyMUt2bGNjQmpEMXdBMEkw?=
+ =?utf-8?B?dXBvVm1vcVBaRVhOMHEzRWpkZDJWbjc3Um9VVW80cWhtYjR2TlJXWHBQRlQ4?=
+ =?utf-8?B?ck5DNWJObFJLZUZuNk41WmJ3VUhVWHJQOW44ejRTeVhvU3ZRNFpCWEFuWFJ2?=
+ =?utf-8?B?Z2lHRDhVWGlrRlM0NWhyRW5NZjlrQzdlb0trajNVVi9zYXdKYXdoOVlEYmN5?=
+ =?utf-8?B?aTZVWEc2TEltWWplekVoUUNLWkNMMU9HMUhGQUVhcFpMS2lCUnJLMy9ZOGdi?=
+ =?utf-8?B?K3Q5SCsyeXBKcUEwUHNHWEZuQm1mSlE2L1lkZDRsMzdicWRPVzA4bkZYUlZM?=
+ =?utf-8?B?VVkzc1ROcy9XN3dOVGdmeGR0VTJmdWtYdmtTb25kbE9uVS85VFBSeHNZMUxS?=
+ =?utf-8?B?Z0s3azFtZGVuUjNIR3p1OURieG9GNkNocE1yU25MU2ZwMllHbWxURW1JbmdS?=
+ =?utf-8?B?Qk1wOWppZ1ArTGo5aElRK2k3NnZmZ0p4R1ZqR294Y3k2SG1NNjU5VVdqaDhQ?=
+ =?utf-8?B?U1g2UlZpNlR4REhSemhXcFFzcTBCZERhdy85b0dPWXBRbnRUUHRCZW1obTZI?=
+ =?utf-8?B?eURxVlRPd242YXdSY1g0RThqVzkzSE1KcnlIbUF0ekFlRWFpNFpQZkhjLzZz?=
+ =?utf-8?B?UkNCUUNQbUFrbmhLNy9aMmgybUcySlI4VEYrV0FlRis0V09ZRTA2aFljQ05a?=
+ =?utf-8?B?bHZyYU1JbFljZSt1M05GSFdLdzdKalYxcmhtdjVjeWhqU1JvcmpYRVlhVFhV?=
+ =?utf-8?B?MzRtaGZSaEZXb3FZTkxBMjJNTmY2WHRxT3RTbUdHUGtPNVZvZkI2WGdWQXl3?=
+ =?utf-8?B?aHR5cUFwQmwxbmZjenJVN1c1aTRlSktuTS9VUFArNjhGS1lWZjZnWXZjRVIv?=
+ =?utf-8?B?bnkyL3I4bXRaeFdqZmJYbW5JVkhtQkp0MUsxeDRKWnd0SWx0Y0N4RzAwblNu?=
+ =?utf-8?B?Tnc9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <444325FACA25A84396F5A9163F67A69B@eurprd07.prod.outlook.com>
+Content-Transfer-Encoding: base64
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,1214 +198,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: cs-soprasteria.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR07MB4962.eurprd07.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bcbb0ae7-4e15-447f-db1c-08dcc5a1ae35
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Aug 2024 07:35:38.2837
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 8b87af7d-8647-4dc7-8df4-5f69a2011bb5
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: BP1KE5eYlOotxo6D215H3SCs6s4zaPd52NMLbFEWBVv6InvL0taFdpTchbu1lgalYwF4TUnZueiNJargxykBFqzVzy/b8duHHi3W3gmmhzy459BD8i7o0J1JbvUwHloY
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR07MB9231
+X-MS-Exchange-CrossPremises-AuthAs: Internal
+X-MS-Exchange-CrossPremises-AuthMechanism: 04
+X-MS-Exchange-CrossPremises-AuthSource: AM0PR07MB4962.eurprd07.prod.outlook.com
+X-MS-Exchange-CrossPremises-TransportTrafficType: Email
+X-MS-Exchange-CrossPremises-SCL: 1
+X-MS-Exchange-CrossPremises-messagesource: StoreDriver
+X-MS-Exchange-CrossPremises-BCC:
+X-MS-Exchange-CrossPremises-originalclientipaddress: 93.17.236.2
+X-MS-Exchange-CrossPremises-transporttraffictype: Email
+X-MS-Exchange-CrossPremises-antispam-scancontext: DIR:Originating;SFV:NSPM;SKIP:0;
+X-MS-Exchange-CrossPremises-processed-by-journaling: Journal Agent
+X-OrganizationHeadersPreserved: AS2PR07MB9231.eurprd07.prod.outlook.com
 
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-
-Several architectures support text patching, but they name the header
-files that declare patching functions differently.
-
-Make all such headers consistently named text-patching.h and add an empty
-header in asm-generic for architectures that do not support text patching.
-
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- arch/alpha/include/asm/Kbuild                     |  1 +
- arch/arc/include/asm/Kbuild                       |  1 +
- arch/arm/include/asm/{patch.h => text-patching.h} |  0
- arch/arm/kernel/ftrace.c                          |  2 +-
- arch/arm/kernel/jump_label.c                      |  2 +-
- arch/arm/kernel/kgdb.c                            |  2 +-
- arch/arm/kernel/patch.c                           |  2 +-
- arch/arm/probes/kprobes/core.c                    |  2 +-
- arch/arm/probes/kprobes/opt-arm.c                 |  2 +-
- .../include/asm/{patching.h => text-patching.h}   |  0
- arch/arm64/kernel/ftrace.c                        |  2 +-
- arch/arm64/kernel/jump_label.c                    |  2 +-
- arch/arm64/kernel/kgdb.c                          |  2 +-
- arch/arm64/kernel/patching.c                      |  2 +-
- arch/arm64/kernel/probes/kprobes.c                |  2 +-
- arch/arm64/kernel/traps.c                         |  2 +-
- arch/arm64/net/bpf_jit_comp.c                     |  2 +-
- arch/csky/include/asm/Kbuild                      |  1 +
- arch/hexagon/include/asm/Kbuild                   |  1 +
- arch/loongarch/include/asm/Kbuild                 |  1 +
- arch/m68k/include/asm/Kbuild                      |  1 +
- arch/microblaze/include/asm/Kbuild                |  1 +
- arch/mips/include/asm/Kbuild                      |  1 +
- arch/nios2/include/asm/Kbuild                     |  1 +
- arch/openrisc/include/asm/Kbuild                  |  1 +
- .../include/asm/{patch.h => text-patching.h}      |  0
- arch/parisc/kernel/ftrace.c                       |  2 +-
- arch/parisc/kernel/jump_label.c                   |  2 +-
- arch/parisc/kernel/kgdb.c                         |  2 +-
- arch/parisc/kernel/kprobes.c                      |  2 +-
- arch/parisc/kernel/patch.c                        |  2 +-
- arch/powerpc/include/asm/kprobes.h                |  2 +-
- .../asm/{code-patching.h => text-patching.h}      |  0
- arch/powerpc/kernel/crash_dump.c                  |  2 +-
- arch/powerpc/kernel/epapr_paravirt.c              |  2 +-
- arch/powerpc/kernel/jump_label.c                  |  2 +-
- arch/powerpc/kernel/kgdb.c                        |  2 +-
- arch/powerpc/kernel/kprobes.c                     |  2 +-
- arch/powerpc/kernel/module_32.c                   |  2 +-
- arch/powerpc/kernel/module_64.c                   |  2 +-
- arch/powerpc/kernel/optprobes.c                   |  2 +-
- arch/powerpc/kernel/process.c                     |  2 +-
- arch/powerpc/kernel/security.c                    |  2 +-
- arch/powerpc/kernel/setup_32.c                    |  2 +-
- arch/powerpc/kernel/setup_64.c                    |  2 +-
- arch/powerpc/kernel/static_call.c                 |  2 +-
- arch/powerpc/kernel/trace/ftrace.c                |  2 +-
- arch/powerpc/kernel/trace/ftrace_64_pg.c          |  2 +-
- arch/powerpc/lib/code-patching.c                  |  2 +-
- arch/powerpc/lib/feature-fixups.c                 |  2 +-
- arch/powerpc/lib/test-code-patching.c             |  2 +-
- arch/powerpc/lib/test_emulate_step.c              |  2 +-
- arch/powerpc/mm/book3s32/mmu.c                    |  2 +-
- arch/powerpc/mm/book3s64/hash_utils.c             |  2 +-
- arch/powerpc/mm/book3s64/slb.c                    |  2 +-
- arch/powerpc/mm/kasan/init_32.c                   |  2 +-
- arch/powerpc/mm/mem.c                             |  2 +-
- arch/powerpc/mm/nohash/44x.c                      |  2 +-
- arch/powerpc/mm/nohash/book3e_pgtable.c           |  2 +-
- arch/powerpc/mm/nohash/tlb.c                      |  2 +-
- arch/powerpc/net/bpf_jit_comp.c                   |  2 +-
- arch/powerpc/perf/8xx-pmu.c                       |  2 +-
- arch/powerpc/perf/core-book3s.c                   |  2 +-
- arch/powerpc/platforms/85xx/smp.c                 |  2 +-
- arch/powerpc/platforms/86xx/mpc86xx_smp.c         |  2 +-
- arch/powerpc/platforms/cell/smp.c                 |  2 +-
- arch/powerpc/platforms/powermac/smp.c             |  2 +-
- arch/powerpc/platforms/powernv/idle.c             |  2 +-
- arch/powerpc/platforms/powernv/smp.c              |  2 +-
- arch/powerpc/platforms/pseries/smp.c              |  2 +-
- arch/powerpc/xmon/xmon.c                          |  2 +-
- arch/riscv/errata/andes/errata.c                  |  2 +-
- arch/riscv/errata/sifive/errata.c                 |  2 +-
- arch/riscv/errata/thead/errata.c                  |  2 +-
- .../include/asm/{patch.h => text-patching.h}      |  0
- arch/riscv/include/asm/uprobes.h                  |  2 +-
- arch/riscv/kernel/alternative.c                   |  2 +-
- arch/riscv/kernel/cpufeature.c                    |  3 ++-
- arch/riscv/kernel/ftrace.c                        |  2 +-
- arch/riscv/kernel/jump_label.c                    |  2 +-
- arch/riscv/kernel/patch.c                         |  2 +-
- arch/riscv/kernel/probes/kprobes.c                |  2 +-
- arch/riscv/net/bpf_jit_comp64.c                   |  2 +-
- arch/riscv/net/bpf_jit_core.c                     |  2 +-
- arch/sh/include/asm/Kbuild                        |  1 +
- arch/sparc/include/asm/Kbuild                     |  1 +
- arch/um/kernel/um_arch.c                          |  5 +++++
- arch/x86/include/asm/text-patching.h              |  1 +
- arch/xtensa/include/asm/Kbuild                    |  1 +
- include/asm-generic/text-patching.h               |  5 +++++
- include/linux/text-patching.h                     | 15 +++++++++++++++
- 91 files changed, 109 insertions(+), 69 deletions(-)
- rename arch/arm/include/asm/{patch.h => text-patching.h} (100%)
- rename arch/arm64/include/asm/{patching.h => text-patching.h} (100%)
- rename arch/parisc/include/asm/{patch.h => text-patching.h} (100%)
- rename arch/powerpc/include/asm/{code-patching.h => text-patching.h} (100%)
- rename arch/riscv/include/asm/{patch.h => text-patching.h} (100%)
- create mode 100644 include/asm-generic/text-patching.h
- create mode 100644 include/linux/text-patching.h
-
-diff --git a/arch/alpha/include/asm/Kbuild b/arch/alpha/include/asm/Kbuild
-index 396caece6d6d..483965c5a4de 100644
---- a/arch/alpha/include/asm/Kbuild
-+++ b/arch/alpha/include/asm/Kbuild
-@@ -5,3 +5,4 @@ generic-y += agp.h
- generic-y += asm-offsets.h
- generic-y += kvm_para.h
- generic-y += mcs_spinlock.h
-+generic-y += text-patching.h
-diff --git a/arch/arc/include/asm/Kbuild b/arch/arc/include/asm/Kbuild
-index 49285a3ce239..4c69522e0328 100644
---- a/arch/arc/include/asm/Kbuild
-+++ b/arch/arc/include/asm/Kbuild
-@@ -6,3 +6,4 @@ generic-y += kvm_para.h
- generic-y += mcs_spinlock.h
- generic-y += parport.h
- generic-y += user.h
-+generic-y += text-patching.h
-diff --git a/arch/arm/include/asm/patch.h b/arch/arm/include/asm/text-patching.h
-similarity index 100%
-rename from arch/arm/include/asm/patch.h
-rename to arch/arm/include/asm/text-patching.h
-diff --git a/arch/arm/kernel/ftrace.c b/arch/arm/kernel/ftrace.c
-index e61591f33a6c..845acf9ce21e 100644
---- a/arch/arm/kernel/ftrace.c
-+++ b/arch/arm/kernel/ftrace.c
-@@ -23,7 +23,7 @@
- #include <asm/insn.h>
- #include <asm/set_memory.h>
- #include <asm/stacktrace.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- /*
-  * The compiler emitted profiling hook consists of
-diff --git a/arch/arm/kernel/jump_label.c b/arch/arm/kernel/jump_label.c
-index eb9c24b6e8e2..a06a92d0f550 100644
---- a/arch/arm/kernel/jump_label.c
-+++ b/arch/arm/kernel/jump_label.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <linux/kernel.h>
- #include <linux/jump_label.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/insn.h>
- 
- static void __arch_jump_label_transform(struct jump_entry *entry,
-diff --git a/arch/arm/kernel/kgdb.c b/arch/arm/kernel/kgdb.c
-index 22f937e6f3ff..ab76c55fd610 100644
---- a/arch/arm/kernel/kgdb.c
-+++ b/arch/arm/kernel/kgdb.c
-@@ -15,7 +15,7 @@
- #include <linux/kgdb.h>
- #include <linux/uaccess.h>
- 
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/traps.h>
- 
- struct dbg_reg_def_t dbg_reg_def[DBG_MAX_REG_NUM] =
-diff --git a/arch/arm/kernel/patch.c b/arch/arm/kernel/patch.c
-index e9e828b6bb30..4d45e60cd46d 100644
---- a/arch/arm/kernel/patch.c
-+++ b/arch/arm/kernel/patch.c
-@@ -9,7 +9,7 @@
- #include <asm/fixmap.h>
- #include <asm/smp_plat.h>
- #include <asm/opcodes.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- struct patch {
- 	void *addr;
-diff --git a/arch/arm/probes/kprobes/core.c b/arch/arm/probes/kprobes/core.c
-index d8238da095df..9fd877c87a38 100644
---- a/arch/arm/probes/kprobes/core.c
-+++ b/arch/arm/probes/kprobes/core.c
-@@ -25,7 +25,7 @@
- #include <asm/cacheflush.h>
- #include <linux/percpu.h>
- #include <linux/bug.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/sections.h>
- 
- #include "../decode-arm.h"
-diff --git a/arch/arm/probes/kprobes/opt-arm.c b/arch/arm/probes/kprobes/opt-arm.c
-index 7f65048380ca..966c6042c5ad 100644
---- a/arch/arm/probes/kprobes/opt-arm.c
-+++ b/arch/arm/probes/kprobes/opt-arm.c
-@@ -14,7 +14,7 @@
- /* for arm_gen_branch */
- #include <asm/insn.h>
- /* for patch_text */
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- #include "core.h"
- 
-diff --git a/arch/arm64/include/asm/patching.h b/arch/arm64/include/asm/text-patching.h
-similarity index 100%
-rename from arch/arm64/include/asm/patching.h
-rename to arch/arm64/include/asm/text-patching.h
-diff --git a/arch/arm64/kernel/ftrace.c b/arch/arm64/kernel/ftrace.c
-index a650f5e11fc5..3575d03d60af 100644
---- a/arch/arm64/kernel/ftrace.c
-+++ b/arch/arm64/kernel/ftrace.c
-@@ -15,7 +15,7 @@
- #include <asm/debug-monitors.h>
- #include <asm/ftrace.h>
- #include <asm/insn.h>
--#include <asm/patching.h>
-+#include <asm/text-patching.h>
- 
- #ifdef CONFIG_DYNAMIC_FTRACE_WITH_ARGS
- struct fregs_offset {
-diff --git a/arch/arm64/kernel/jump_label.c b/arch/arm64/kernel/jump_label.c
-index f63ea915d6ad..b345425193d2 100644
---- a/arch/arm64/kernel/jump_label.c
-+++ b/arch/arm64/kernel/jump_label.c
-@@ -9,7 +9,7 @@
- #include <linux/jump_label.h>
- #include <linux/smp.h>
- #include <asm/insn.h>
--#include <asm/patching.h>
-+#include <asm/text-patching.h>
- 
- bool arch_jump_label_transform_queue(struct jump_entry *entry,
- 				     enum jump_label_type type)
-diff --git a/arch/arm64/kernel/kgdb.c b/arch/arm64/kernel/kgdb.c
-index 4e1f983df3d1..f3c4d3a8a20f 100644
---- a/arch/arm64/kernel/kgdb.c
-+++ b/arch/arm64/kernel/kgdb.c
-@@ -17,7 +17,7 @@
- 
- #include <asm/debug-monitors.h>
- #include <asm/insn.h>
--#include <asm/patching.h>
-+#include <asm/text-patching.h>
- #include <asm/traps.h>
- 
- struct dbg_reg_def_t dbg_reg_def[DBG_MAX_REG_NUM] = {
-diff --git a/arch/arm64/kernel/patching.c b/arch/arm64/kernel/patching.c
-index 945df74005c7..7f99723fbb8c 100644
---- a/arch/arm64/kernel/patching.c
-+++ b/arch/arm64/kernel/patching.c
-@@ -10,7 +10,7 @@
- #include <asm/fixmap.h>
- #include <asm/insn.h>
- #include <asm/kprobes.h>
--#include <asm/patching.h>
-+#include <asm/text-patching.h>
- #include <asm/sections.h>
- 
- static DEFINE_RAW_SPINLOCK(patch_lock);
-diff --git a/arch/arm64/kernel/probes/kprobes.c b/arch/arm64/kernel/probes/kprobes.c
-index 4268678d0e86..01dbe9a56956 100644
---- a/arch/arm64/kernel/probes/kprobes.c
-+++ b/arch/arm64/kernel/probes/kprobes.c
-@@ -27,7 +27,7 @@
- #include <asm/debug-monitors.h>
- #include <asm/insn.h>
- #include <asm/irq.h>
--#include <asm/patching.h>
-+#include <asm/text-patching.h>
- #include <asm/ptrace.h>
- #include <asm/sections.h>
- #include <asm/system_misc.h>
-diff --git a/arch/arm64/kernel/traps.c b/arch/arm64/kernel/traps.c
-index 9e22683aa921..3086c45f6eed 100644
---- a/arch/arm64/kernel/traps.c
-+++ b/arch/arm64/kernel/traps.c
-@@ -41,7 +41,7 @@
- #include <asm/extable.h>
- #include <asm/insn.h>
- #include <asm/kprobes.h>
--#include <asm/patching.h>
-+#include <asm/text-patching.h>
- #include <asm/traps.h>
- #include <asm/smp.h>
- #include <asm/stack_pointer.h>
-diff --git a/arch/arm64/net/bpf_jit_comp.c b/arch/arm64/net/bpf_jit_comp.c
-index dd0bb069df4b..f7f3715eb745 100644
---- a/arch/arm64/net/bpf_jit_comp.c
-+++ b/arch/arm64/net/bpf_jit_comp.c
-@@ -19,7 +19,7 @@
- #include <asm/cacheflush.h>
- #include <asm/debug-monitors.h>
- #include <asm/insn.h>
--#include <asm/patching.h>
-+#include <asm/text-patching.h>
- #include <asm/set_memory.h>
- 
- #include "bpf_jit.h"
-diff --git a/arch/csky/include/asm/Kbuild b/arch/csky/include/asm/Kbuild
-index 9a9bc65b57a9..3a5c7f6e5aac 100644
---- a/arch/csky/include/asm/Kbuild
-+++ b/arch/csky/include/asm/Kbuild
-@@ -11,3 +11,4 @@ generic-y += qspinlock.h
- generic-y += parport.h
- generic-y += user.h
- generic-y += vmlinux.lds.h
-+generic-y += text-patching.h
-diff --git a/arch/hexagon/include/asm/Kbuild b/arch/hexagon/include/asm/Kbuild
-index 8c1a78c8f527..1efa1e993d4b 100644
---- a/arch/hexagon/include/asm/Kbuild
-+++ b/arch/hexagon/include/asm/Kbuild
-@@ -5,3 +5,4 @@ generic-y += extable.h
- generic-y += iomap.h
- generic-y += kvm_para.h
- generic-y += mcs_spinlock.h
-+generic-y += text-patching.h
-diff --git a/arch/loongarch/include/asm/Kbuild b/arch/loongarch/include/asm/Kbuild
-index 2bb3676429c0..c60d21b7ebc3 100644
---- a/arch/loongarch/include/asm/Kbuild
-+++ b/arch/loongarch/include/asm/Kbuild
-@@ -11,3 +11,4 @@ generic-y += user.h
- generic-y += ioctl.h
- generic-y += statfs.h
- generic-y += param.h
-+generic-y += text-patching.h
-diff --git a/arch/m68k/include/asm/Kbuild b/arch/m68k/include/asm/Kbuild
-index 0dbf9c5c6fae..b282e0dd8dc1 100644
---- a/arch/m68k/include/asm/Kbuild
-+++ b/arch/m68k/include/asm/Kbuild
-@@ -4,3 +4,4 @@ generic-y += extable.h
- generic-y += kvm_para.h
- generic-y += mcs_spinlock.h
- generic-y += spinlock.h
-+generic-y += text-patching.h
-diff --git a/arch/microblaze/include/asm/Kbuild b/arch/microblaze/include/asm/Kbuild
-index a055f5dbe00a..7178f990e8b3 100644
---- a/arch/microblaze/include/asm/Kbuild
-+++ b/arch/microblaze/include/asm/Kbuild
-@@ -8,3 +8,4 @@ generic-y += parport.h
- generic-y += syscalls.h
- generic-y += tlb.h
- generic-y += user.h
-+generic-y += text-patching.h
-diff --git a/arch/mips/include/asm/Kbuild b/arch/mips/include/asm/Kbuild
-index 7ba67a0d6c97..684569b2ecd6 100644
---- a/arch/mips/include/asm/Kbuild
-+++ b/arch/mips/include/asm/Kbuild
-@@ -13,3 +13,4 @@ generic-y += parport.h
- generic-y += qrwlock.h
- generic-y += qspinlock.h
- generic-y += user.h
-+generic-y += text-patching.h
-diff --git a/arch/nios2/include/asm/Kbuild b/arch/nios2/include/asm/Kbuild
-index 0d09829ed144..28004301c236 100644
---- a/arch/nios2/include/asm/Kbuild
-+++ b/arch/nios2/include/asm/Kbuild
-@@ -7,3 +7,4 @@ generic-y += kvm_para.h
- generic-y += mcs_spinlock.h
- generic-y += spinlock.h
- generic-y += user.h
-+generic-y += text-patching.h
-diff --git a/arch/openrisc/include/asm/Kbuild b/arch/openrisc/include/asm/Kbuild
-index cef49d60d74c..2b1a6b00cdac 100644
---- a/arch/openrisc/include/asm/Kbuild
-+++ b/arch/openrisc/include/asm/Kbuild
-@@ -9,3 +9,4 @@ generic-y += spinlock.h
- generic-y += qrwlock_types.h
- generic-y += qrwlock.h
- generic-y += user.h
-+generic-y += text-patching.h
-diff --git a/arch/parisc/include/asm/patch.h b/arch/parisc/include/asm/text-patching.h
-similarity index 100%
-rename from arch/parisc/include/asm/patch.h
-rename to arch/parisc/include/asm/text-patching.h
-diff --git a/arch/parisc/kernel/ftrace.c b/arch/parisc/kernel/ftrace.c
-index c91f9c2e61ed..3e34b4473d3a 100644
---- a/arch/parisc/kernel/ftrace.c
-+++ b/arch/parisc/kernel/ftrace.c
-@@ -20,7 +20,7 @@
- #include <asm/assembly.h>
- #include <asm/sections.h>
- #include <asm/ftrace.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- #define __hot __section(".text.hot")
- 
-diff --git a/arch/parisc/kernel/jump_label.c b/arch/parisc/kernel/jump_label.c
-index e253b134500d..ea51f15bf0e6 100644
---- a/arch/parisc/kernel/jump_label.c
-+++ b/arch/parisc/kernel/jump_label.c
-@@ -8,7 +8,7 @@
- #include <linux/jump_label.h>
- #include <linux/bug.h>
- #include <asm/alternative.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- static inline int reassemble_17(int as17)
- {
-diff --git a/arch/parisc/kernel/kgdb.c b/arch/parisc/kernel/kgdb.c
-index b16fa9bac5f4..fee81f877525 100644
---- a/arch/parisc/kernel/kgdb.c
-+++ b/arch/parisc/kernel/kgdb.c
-@@ -16,7 +16,7 @@
- #include <asm/ptrace.h>
- #include <asm/traps.h>
- #include <asm/processor.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/cacheflush.h>
- 
- const struct kgdb_arch arch_kgdb_ops = {
-diff --git a/arch/parisc/kernel/kprobes.c b/arch/parisc/kernel/kprobes.c
-index 6e0b86652f30..9255adba67a3 100644
---- a/arch/parisc/kernel/kprobes.c
-+++ b/arch/parisc/kernel/kprobes.c
-@@ -12,7 +12,7 @@
- #include <linux/kprobes.h>
- #include <linux/slab.h>
- #include <asm/cacheflush.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- DEFINE_PER_CPU(struct kprobe *, current_kprobe) = NULL;
- DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
-diff --git a/arch/parisc/kernel/patch.c b/arch/parisc/kernel/patch.c
-index e59574f65e64..35dd764b871e 100644
---- a/arch/parisc/kernel/patch.c
-+++ b/arch/parisc/kernel/patch.c
-@@ -13,7 +13,7 @@
- 
- #include <asm/cacheflush.h>
- #include <asm/fixmap.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- struct patch {
- 	void *addr;
-diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-index 4525a9c68260..dfe2e5ad3b21 100644
---- a/arch/powerpc/include/asm/kprobes.h
-+++ b/arch/powerpc/include/asm/kprobes.h
-@@ -21,7 +21,7 @@
- #include <linux/percpu.h>
- #include <linux/module.h>
- #include <asm/probes.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- 
- #ifdef CONFIG_KPROBES
- #define  __ARCH_WANT_KPROBES_INSN_SLOT
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/text-patching.h
-similarity index 100%
-rename from arch/powerpc/include/asm/code-patching.h
-rename to arch/powerpc/include/asm/text-patching.h
-diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index 2086fa6cdc25..103b6605dd68 100644
---- a/arch/powerpc/kernel/crash_dump.c
-+++ b/arch/powerpc/kernel/crash_dump.c
-@@ -13,7 +13,7 @@
- #include <linux/io.h>
- #include <linux/memblock.h>
- #include <linux/of.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/kdump.h>
- #include <asm/firmware.h>
- #include <linux/uio.h>
-diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
-index d4b8aff20815..247ab2acaccc 100644
---- a/arch/powerpc/kernel/epapr_paravirt.c
-+++ b/arch/powerpc/kernel/epapr_paravirt.c
-@@ -9,7 +9,7 @@
- #include <linux/of_fdt.h>
- #include <asm/epapr_hcalls.h>
- #include <asm/cacheflush.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/machdep.h>
- #include <asm/inst.h>
- 
-diff --git a/arch/powerpc/kernel/jump_label.c b/arch/powerpc/kernel/jump_label.c
-index 5277cf582c16..2659e1ac8604 100644
---- a/arch/powerpc/kernel/jump_label.c
-+++ b/arch/powerpc/kernel/jump_label.c
-@@ -5,7 +5,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/jump_label.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/inst.h>
- 
- void arch_jump_label_transform(struct jump_entry *entry,
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index 7a8bc03a00af..5081334b7bd2 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -21,7 +21,7 @@
- #include <asm/processor.h>
- #include <asm/machdep.h>
- #include <asm/debug.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <linux/slab.h>
- #include <asm/inst.h>
- 
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 14c5ddec3056..9dff58143720 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -21,7 +21,7 @@
- #include <linux/slab.h>
- #include <linux/set_memory.h>
- #include <linux/execmem.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/cacheflush.h>
- #include <asm/sstep.h>
- #include <asm/sections.h>
-diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
-index 816a63fd71fb..f930e3395a7f 100644
---- a/arch/powerpc/kernel/module_32.c
-+++ b/arch/powerpc/kernel/module_32.c
-@@ -18,7 +18,7 @@
- #include <linux/bug.h>
- #include <linux/sort.h>
- #include <asm/setup.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- 
- /* Count how many different relocations (different symbol, different
-    addend) */
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 7112adc597a8..2f07071229a3 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -17,7 +17,7 @@
- #include <linux/kernel.h>
- #include <asm/module.h>
- #include <asm/firmware.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <linux/sort.h>
- #include <asm/setup.h>
- #include <asm/sections.h>
-diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-index 004fae2044a3..a540f13210fb 100644
---- a/arch/powerpc/kernel/optprobes.c
-+++ b/arch/powerpc/kernel/optprobes.c
-@@ -13,7 +13,7 @@
- #include <asm/kprobes.h>
- #include <asm/ptrace.h>
- #include <asm/cacheflush.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/sstep.h>
- #include <asm/ppc-opcode.h>
- #include <asm/inst.h>
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 3b506d4c55f3..8596c8793285 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -54,7 +54,7 @@
- #include <asm/firmware.h>
- #include <asm/hw_irq.h>
- #endif
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/exec.h>
- #include <asm/livepatch.h>
- #include <asm/cpu_has_feature.h>
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 4856e1a5161c..fbb7ebd8aa08 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -14,7 +14,7 @@
- #include <linux/debugfs.h>
- 
- #include <asm/asm-prototypes.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/security_features.h>
- #include <asm/sections.h>
- #include <asm/setup.h>
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index e515c1f7d8d3..75dbf3e0d9c4 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -40,7 +40,7 @@
- #include <asm/time.h>
- #include <asm/serial.h>
- #include <asm/udbg.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/cpu_has_feature.h>
- #include <asm/asm-prototypes.h>
- #include <asm/kdump.h>
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 22f83fbbc762..3ebf5b9fbe98 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -60,7 +60,7 @@
- #include <asm/xmon.h>
- #include <asm/udbg.h>
- #include <asm/kexec.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/ftrace.h>
- #include <asm/opal.h>
- #include <asm/cputhreads.h>
-diff --git a/arch/powerpc/kernel/static_call.c b/arch/powerpc/kernel/static_call.c
-index 863a7aa24650..f1875b55f0a6 100644
---- a/arch/powerpc/kernel/static_call.c
-+++ b/arch/powerpc/kernel/static_call.c
-@@ -2,7 +2,7 @@
- #include <linux/memory.h>
- #include <linux/static_call.h>
- 
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- 
- void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
- {
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index d8d6b4fd9a14..be1a245241b3 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -23,7 +23,7 @@
- #include <linux/list.h>
- 
- #include <asm/cacheflush.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/ftrace.h>
- #include <asm/syscall.h>
- #include <asm/inst.h>
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_pg.c b/arch/powerpc/kernel/trace/ftrace_64_pg.c
-index 12fab1803bcf..9e862ba55263 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_pg.c
-+++ b/arch/powerpc/kernel/trace/ftrace_64_pg.c
-@@ -23,7 +23,7 @@
- #include <linux/list.h>
- 
- #include <asm/cacheflush.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/ftrace.h>
- #include <asm/syscall.h>
- #include <asm/inst.h>
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 0d1f3ee91115..d750c631ccb0 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -17,7 +17,7 @@
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
- #include <asm/page.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/inst.h>
- 
- static int __patch_instruction(u32 *exec_addr, ppc_inst_t instr, u32 *patch_addr)
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index b7201ba50b2e..587c8cf1230f 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -16,7 +16,7 @@
- #include <linux/sched/mm.h>
- #include <linux/stop_machine.h>
- #include <asm/cputable.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/interrupt.h>
- #include <asm/page.h>
- #include <asm/sections.h>
-diff --git a/arch/powerpc/lib/test-code-patching.c b/arch/powerpc/lib/test-code-patching.c
-index f76030087f98..64cc4cceb22c 100644
---- a/arch/powerpc/lib/test-code-patching.c
-+++ b/arch/powerpc/lib/test-code-patching.c
-@@ -6,7 +6,7 @@
- #include <linux/vmalloc.h>
- #include <linux/init.h>
- 
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- 
- static int __init instr_is_branch_to_addr(const u32 *instr, unsigned long addr)
- {
-diff --git a/arch/powerpc/lib/test_emulate_step.c b/arch/powerpc/lib/test_emulate_step.c
-index 23c7805fb7b3..66b5b4fa1686 100644
---- a/arch/powerpc/lib/test_emulate_step.c
-+++ b/arch/powerpc/lib/test_emulate_step.c
-@@ -11,7 +11,7 @@
- #include <asm/cpu_has_feature.h>
- #include <asm/sstep.h>
- #include <asm/ppc-opcode.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/inst.h>
- 
- #define MAX_SUBTESTS	16
-diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
-index 625fe7d08e06..bc44066ec9f8 100644
---- a/arch/powerpc/mm/book3s32/mmu.c
-+++ b/arch/powerpc/mm/book3s32/mmu.c
-@@ -25,7 +25,7 @@
- 
- #include <asm/mmu.h>
- #include <asm/machdep.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/sections.h>
- 
- #include <mm/mmu_decl.h>
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index 6727a15ab94f..2abd64dd3f24 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -57,7 +57,7 @@
- #include <asm/sections.h>
- #include <asm/copro.h>
- #include <asm/udbg.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/fadump.h>
- #include <asm/firmware.h>
- #include <asm/tm.h>
-diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
-index f2708c8629a5..6b783552403c 100644
---- a/arch/powerpc/mm/book3s64/slb.c
-+++ b/arch/powerpc/mm/book3s64/slb.c
-@@ -24,7 +24,7 @@
- #include <linux/pgtable.h>
- 
- #include <asm/udbg.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- 
- #include "internal.h"
- 
-diff --git a/arch/powerpc/mm/kasan/init_32.c b/arch/powerpc/mm/kasan/init_32.c
-index aa9aa11927b2..03666d790a53 100644
---- a/arch/powerpc/mm/kasan/init_32.c
-+++ b/arch/powerpc/mm/kasan/init_32.c
-@@ -7,7 +7,7 @@
- #include <linux/memblock.h>
- #include <linux/sched/task.h>
- #include <asm/pgalloc.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <mm/mmu_decl.h>
- 
- static pgprot_t __init kasan_prot_ro(void)
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index da21cb018984..991878ec948b 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -26,7 +26,7 @@
- #include <asm/svm.h>
- #include <asm/mmzone.h>
- #include <asm/ftrace.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/setup.h>
- #include <asm/fixmap.h>
- 
-diff --git a/arch/powerpc/mm/nohash/44x.c b/arch/powerpc/mm/nohash/44x.c
-index 1beae802bb1c..6d10c6d8be71 100644
---- a/arch/powerpc/mm/nohash/44x.c
-+++ b/arch/powerpc/mm/nohash/44x.c
-@@ -24,7 +24,7 @@
- #include <asm/mmu.h>
- #include <asm/page.h>
- #include <asm/cacheflush.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/smp.h>
- 
- #include <mm/mmu_decl.h>
-diff --git a/arch/powerpc/mm/nohash/book3e_pgtable.c b/arch/powerpc/mm/nohash/book3e_pgtable.c
-index ad2a7c26f2a0..062e8785c1bb 100644
---- a/arch/powerpc/mm/nohash/book3e_pgtable.c
-+++ b/arch/powerpc/mm/nohash/book3e_pgtable.c
-@@ -10,7 +10,7 @@
- #include <asm/pgalloc.h>
- #include <asm/tlb.h>
- #include <asm/dma.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- 
- #include <mm/mmu_decl.h>
- 
-diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
-index b653a7be4cb1..0a650742f3a0 100644
---- a/arch/powerpc/mm/nohash/tlb.c
-+++ b/arch/powerpc/mm/nohash/tlb.c
-@@ -37,7 +37,7 @@
- #include <asm/pgalloc.h>
- #include <asm/tlbflush.h>
- #include <asm/tlb.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/cputhreads.h>
- #include <asm/hugetlb.h>
- #include <asm/paca.h>
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 2a36cc2e7e9e..68c6a13e6acb 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -18,7 +18,7 @@
- #include <linux/bpf.h>
- 
- #include <asm/kprobes.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- 
- #include "bpf_jit.h"
- 
-diff --git a/arch/powerpc/perf/8xx-pmu.c b/arch/powerpc/perf/8xx-pmu.c
-index 308a2e40d7be..1d2972229e3a 100644
---- a/arch/powerpc/perf/8xx-pmu.c
-+++ b/arch/powerpc/perf/8xx-pmu.c
-@@ -14,7 +14,7 @@
- #include <asm/machdep.h>
- #include <asm/firmware.h>
- #include <asm/ptrace.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/inst.h>
- 
- #define PERF_8xx_ID_CPU_CYCLES		1
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 42867469752d..a727cd111cac 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -16,7 +16,7 @@
- #include <asm/machdep.h>
- #include <asm/firmware.h>
- #include <asm/ptrace.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/hw_irq.h>
- #include <asm/interrupt.h>
- 
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index e52b848b64b7..32fa5fb557c0 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -23,7 +23,7 @@
- #include <asm/mpic.h>
- #include <asm/cacheflush.h>
- #include <asm/dbell.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/cputhreads.h>
- #include <asm/fsl_pm.h>
- 
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_smp.c b/arch/powerpc/platforms/86xx/mpc86xx_smp.c
-index 8a7e55acf090..9be33e41af6d 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_smp.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_smp.c
-@@ -12,7 +12,7 @@
- #include <linux/delay.h>
- #include <linux/pgtable.h>
- 
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/page.h>
- #include <asm/pci-bridge.h>
- #include <asm/mpic.h>
-diff --git a/arch/powerpc/platforms/cell/smp.c b/arch/powerpc/platforms/cell/smp.c
-index fee638fd8970..0e8f20ecca08 100644
---- a/arch/powerpc/platforms/cell/smp.c
-+++ b/arch/powerpc/platforms/cell/smp.c
-@@ -35,7 +35,7 @@
- #include <asm/firmware.h>
- #include <asm/rtas.h>
- #include <asm/cputhreads.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- 
- #include "interrupt.h"
- #include <asm/udbg.h>
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index 15644be31990..6a50f6c408d1 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -35,7 +35,7 @@
- 
- #include <asm/ptrace.h>
- #include <linux/atomic.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/irq.h>
- #include <asm/page.h>
- #include <asm/sections.h>
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index ad41dffe4d92..d98b933e4984 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -18,7 +18,7 @@
- #include <asm/opal.h>
- #include <asm/cputhreads.h>
- #include <asm/cpuidle.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/smp.h>
- #include <asm/runlatch.h>
- #include <asm/dbell.h>
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 8f14f0581a21..6b746feeabe4 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -28,7 +28,7 @@
- #include <asm/xive.h>
- #include <asm/opal.h>
- #include <asm/runlatch.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/dbell.h>
- #include <asm/kvm_ppc.h>
- #include <asm/ppc-opcode.h>
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index c597711ef20a..db99725e752b 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -39,7 +39,7 @@
- #include <asm/xive.h>
- #include <asm/dbell.h>
- #include <asm/plpar_wrappers.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/svm.h>
- #include <asm/kvm_guest.h>
- 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index bd4813bad317..228af77283ca 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -50,7 +50,7 @@
- #include <asm/xive.h>
- #include <asm/opal.h>
- #include <asm/firmware.h>
--#include <asm/code-patching.h>
-+#include <asm/text-patching.h>
- #include <asm/sections.h>
- #include <asm/inst.h>
- #include <asm/interrupt.h>
-diff --git a/arch/riscv/errata/andes/errata.c b/arch/riscv/errata/andes/errata.c
-index fc1a34faa5f3..dcc9d1ee5ffd 100644
---- a/arch/riscv/errata/andes/errata.c
-+++ b/arch/riscv/errata/andes/errata.c
-@@ -13,7 +13,7 @@
- #include <asm/alternative.h>
- #include <asm/cacheflush.h>
- #include <asm/errata_list.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/processor.h>
- #include <asm/sbi.h>
- #include <asm/vendorid_list.h>
-diff --git a/arch/riscv/errata/sifive/errata.c b/arch/riscv/errata/sifive/errata.c
-index cea3b96ade11..38aac2c47845 100644
---- a/arch/riscv/errata/sifive/errata.c
-+++ b/arch/riscv/errata/sifive/errata.c
-@@ -8,7 +8,7 @@
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/bug.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/alternative.h>
- #include <asm/vendorid_list.h>
- #include <asm/errata_list.h>
-diff --git a/arch/riscv/errata/thead/errata.c b/arch/riscv/errata/thead/errata.c
-index f5120e07c318..e24770a77932 100644
---- a/arch/riscv/errata/thead/errata.c
-+++ b/arch/riscv/errata/thead/errata.c
-@@ -16,7 +16,7 @@
- #include <asm/errata_list.h>
- #include <asm/hwprobe.h>
- #include <asm/io.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/vendorid_list.h>
- #include <asm/vendor_extensions.h>
- 
-diff --git a/arch/riscv/include/asm/patch.h b/arch/riscv/include/asm/text-patching.h
-similarity index 100%
-rename from arch/riscv/include/asm/patch.h
-rename to arch/riscv/include/asm/text-patching.h
-diff --git a/arch/riscv/include/asm/uprobes.h b/arch/riscv/include/asm/uprobes.h
-index 3fc7deda9190..5008f76cdc27 100644
---- a/arch/riscv/include/asm/uprobes.h
-+++ b/arch/riscv/include/asm/uprobes.h
-@@ -4,7 +4,7 @@
- #define _ASM_RISCV_UPROBES_H
- 
- #include <asm/probes.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/bug.h>
- 
- #define MAX_UINSN_BYTES		8
-diff --git a/arch/riscv/kernel/alternative.c b/arch/riscv/kernel/alternative.c
-index 0128b161bfda..7eb3cb1215c6 100644
---- a/arch/riscv/kernel/alternative.c
-+++ b/arch/riscv/kernel/alternative.c
-@@ -18,7 +18,7 @@
- #include <asm/sbi.h>
- #include <asm/csr.h>
- #include <asm/insn.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- struct cpu_manufacturer_info_t {
- 	unsigned long vendor_id;
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index b427188b28fc..de1e88328c36 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -20,7 +20,8 @@
- #include <asm/cacheflush.h>
- #include <asm/cpufeature.h>
- #include <asm/hwcap.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
-+#include <asm/hwprobe.h>
- #include <asm/processor.h>
- #include <asm/sbi.h>
- #include <asm/vector.h>
-diff --git a/arch/riscv/kernel/ftrace.c b/arch/riscv/kernel/ftrace.c
-index 4b95c574fd04..a7620ef93b6c 100644
---- a/arch/riscv/kernel/ftrace.c
-+++ b/arch/riscv/kernel/ftrace.c
-@@ -10,7 +10,7 @@
- #include <linux/memory.h>
- #include <linux/stop_machine.h>
- #include <asm/cacheflush.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
- void ftrace_arch_code_modify_prepare(void) __acquires(&text_mutex)
-diff --git a/arch/riscv/kernel/jump_label.c b/arch/riscv/kernel/jump_label.c
-index 11ad789c60c6..6eee6f736f68 100644
---- a/arch/riscv/kernel/jump_label.c
-+++ b/arch/riscv/kernel/jump_label.c
-@@ -10,7 +10,7 @@
- #include <linux/mutex.h>
- #include <asm/bug.h>
- #include <asm/cacheflush.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- #define RISCV_INSN_NOP 0x00000013U
- #define RISCV_INSN_JAL 0x0000006fU
-diff --git a/arch/riscv/kernel/patch.c b/arch/riscv/kernel/patch.c
-index 34ef522f07a8..db13c9ddf9e3 100644
---- a/arch/riscv/kernel/patch.c
-+++ b/arch/riscv/kernel/patch.c
-@@ -13,7 +13,7 @@
- #include <asm/cacheflush.h>
- #include <asm/fixmap.h>
- #include <asm/ftrace.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/sections.h>
- 
- struct patch_insn {
-diff --git a/arch/riscv/kernel/probes/kprobes.c b/arch/riscv/kernel/probes/kprobes.c
-index 474a65213657..380a0e8cecc0 100644
---- a/arch/riscv/kernel/probes/kprobes.c
-+++ b/arch/riscv/kernel/probes/kprobes.c
-@@ -12,7 +12,7 @@
- #include <asm/sections.h>
- #include <asm/cacheflush.h>
- #include <asm/bug.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- 
- #include "decode-insn.h"
- 
-diff --git a/arch/riscv/net/bpf_jit_comp64.c b/arch/riscv/net/bpf_jit_comp64.c
-index 99f34409fb60..c9f6c4d56012 100644
---- a/arch/riscv/net/bpf_jit_comp64.c
-+++ b/arch/riscv/net/bpf_jit_comp64.c
-@@ -10,7 +10,7 @@
- #include <linux/filter.h>
- #include <linux/memory.h>
- #include <linux/stop_machine.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/cfi.h>
- #include <asm/percpu.h>
- #include "bpf_jit.h"
-diff --git a/arch/riscv/net/bpf_jit_core.c b/arch/riscv/net/bpf_jit_core.c
-index 6de753c667f4..f8cd2f70a7fb 100644
---- a/arch/riscv/net/bpf_jit_core.c
-+++ b/arch/riscv/net/bpf_jit_core.c
-@@ -9,7 +9,7 @@
- #include <linux/bpf.h>
- #include <linux/filter.h>
- #include <linux/memory.h>
--#include <asm/patch.h>
-+#include <asm/text-patching.h>
- #include <asm/cfi.h>
- #include "bpf_jit.h"
- 
-diff --git a/arch/sh/include/asm/Kbuild b/arch/sh/include/asm/Kbuild
-index fc44d9c88b41..4d3f10ed8275 100644
---- a/arch/sh/include/asm/Kbuild
-+++ b/arch/sh/include/asm/Kbuild
-@@ -3,3 +3,4 @@ generated-y += syscall_table.h
- generic-y += kvm_para.h
- generic-y += mcs_spinlock.h
- generic-y += parport.h
-+generic-y += text-patching.h
-diff --git a/arch/sparc/include/asm/Kbuild b/arch/sparc/include/asm/Kbuild
-index 43b0ae4c2c21..17ee8a273aa6 100644
---- a/arch/sparc/include/asm/Kbuild
-+++ b/arch/sparc/include/asm/Kbuild
-@@ -4,3 +4,4 @@ generated-y += syscall_table_64.h
- generic-y += agp.h
- generic-y += kvm_para.h
- generic-y += mcs_spinlock.h
-+generic-y += text-patching.h
-diff --git a/arch/um/kernel/um_arch.c b/arch/um/kernel/um_arch.c
-index 8e594cda6d77..f8de31a0c5d1 100644
---- a/arch/um/kernel/um_arch.c
-+++ b/arch/um/kernel/um_arch.c
-@@ -468,6 +468,11 @@ void *text_poke(void *addr, const void *opcode, size_t len)
- 	return memcpy(addr, opcode, len);
- }
- 
-+void *text_poke_copy(void *addr, const void *opcode, size_t len)
-+{
-+	return text_poke(addr, opcode, len);
-+}
-+
- void text_poke_sync(void)
- {
- }
-diff --git a/arch/x86/include/asm/text-patching.h b/arch/x86/include/asm/text-patching.h
-index 6259f1937fe7..ab9e143ec9fe 100644
---- a/arch/x86/include/asm/text-patching.h
-+++ b/arch/x86/include/asm/text-patching.h
-@@ -35,6 +35,7 @@ extern void *text_poke(void *addr, const void *opcode, size_t len);
- extern void text_poke_sync(void);
- extern void *text_poke_kgdb(void *addr, const void *opcode, size_t len);
- extern void *text_poke_copy(void *addr, const void *opcode, size_t len);
-+#define text_poke_copy text_poke_copy
- extern void *text_poke_copy_locked(void *addr, const void *opcode, size_t len, bool core_ok);
- extern void *text_poke_set(void *addr, int c, size_t len);
- extern int poke_int3_handler(struct pt_regs *regs);
-diff --git a/arch/xtensa/include/asm/Kbuild b/arch/xtensa/include/asm/Kbuild
-index fa07c686cbcc..cc5dba738389 100644
---- a/arch/xtensa/include/asm/Kbuild
-+++ b/arch/xtensa/include/asm/Kbuild
-@@ -8,3 +8,4 @@ generic-y += parport.h
- generic-y += qrwlock.h
- generic-y += qspinlock.h
- generic-y += user.h
-+generic-y += text-patching.h
-diff --git a/include/asm-generic/text-patching.h b/include/asm-generic/text-patching.h
-new file mode 100644
-index 000000000000..2245c641b741
---- /dev/null
-+++ b/include/asm-generic/text-patching.h
-@@ -0,0 +1,5 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_GENERIC_TEXT_PATCHING_H
-+#define _ASM_GENERIC_TEXT_PATCHING_H
-+
-+#endif /* _ASM_GENERIC_TEXT_PATCHING_H */
-diff --git a/include/linux/text-patching.h b/include/linux/text-patching.h
-new file mode 100644
-index 000000000000..ad5877ab0855
---- /dev/null
-+++ b/include/linux/text-patching.h
-@@ -0,0 +1,15 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _LINUX_TEXT_PATCHING_H
-+#define _LINUX_TEXT_PATCHING_H
-+
-+#include <asm/text-patching.h>
-+
-+#ifndef text_poke_copy
-+static inline void *text_poke_copy(void *dst, const void *src, size_t len)
-+{
-+	return memcpy(dst, src, len);
-+}
-+#define text_poke_copy text_poke_copy
-+#endif
-+
-+#endif /* _LINUX_TEXT_PATCHING_H */
--- 
-2.43.0
-
+DQoNCkxlIDI2LzA4LzIwMjQgw6AgMDk6MjgsIEphc29uIEEuIERvbmVuZmVsZCBhIMOpY3JpdMKg
+Og0KPiBPbiBUaHUsIEF1ZyAyMiwgMjAyNCBhdCAwOToxMzoyMkFNICswMjAwLCBDaHJpc3RvcGhl
+IExlcm95IHdyb3RlOg0KPj4gRG9uJ3QgaGFyZC1jb2RlIHg4NiBzcGVjaWZpYyBuYW1lcywgdXNl
+IHZkc29fY29uZmlnIGRlZmluaXRpb25zDQo+PiB0byBmaW5kIHRoZSBjb3JyZWN0IGZ1bmN0aW9u
+IG1hdGNoaW5nIHRoZSBhcmNoaXRlY3R1cmUuDQo+Pg0KPj4gQWRkIHJhbmRvbSBWRFNPIGZ1bmN0
+aW9uIG5hbWVzIGluIG5hbWVzW11bXS4gUmVtb3ZlIHRoZSAjaWZkZWYNCj4+IENPTkZJR19WRFNP
+MzIsIGhhdmluZyB0aGUgbmFtZSB0aGVyZSBhbGwgdGhlIHRpbWUgaXMgaGFybWxlc3MNCj4+IGFu
+ZCBndWFyYW50aWVzIGEgc3RlYWR5IGluZGV4IGZvciBmb2xsb3dpbmcgc3RyaW5ncy4NCj4gDQo+
+IFRoaXMgaXMgaW5kZWVkIHRoZSByaWdodCB3YXkgb2YgZG9pbmcgaXQuIFRoYW5rcy4gSSdsbCB0
+YWtlIHRoaXMgbm93LA0KPiB0aG91Z2ggd2l0aCBvbmUgc21hbGwgZml4dXA6DQo+IA0KPj4gKwlj
+b25zdCBjaGFyICp2ZXJzaW9uID0gdmVyc2lvbnNbVkRTT19WRVJTSU9OXTsNCj4+ICsJY29uc3Qg
+Y2hhciAqKm5hbWUgPSAoY29uc3QgY2hhciAqKikmbmFtZXNbVkRTT19OQU1FU107DQo+IA0KPiBJ
+J2xsIGp1c3QgZG86DQo+IA0KPiAgICAgICAgICBjb25zdCBjaGFyICpuYW1lID0gbmFtZXNbVkRT
+T19OQU1FU11bNl07DQo+IA0KPiBJbnN0ZWFkIG9mIHJlZmVycmluZyB0byBuYW1lWzZdIGV2ZXJ5
+d2hlcmUgYWZ0ZXIuIFNlZW1zIG1vcmUgc3RyYWlnaHQNCj4gZm9yd2FyZC4NCg0KWWVzIHlvdSBh
+cmUgcmlnaHQgdGhhdCdzIG1vcmUgc3RyYWlnaHQgZm9yd2FyZCB3aGVuIHVzaW5nIG9ubHkgb25l
+IG9mIA0KdGhlIG5hbWVzLg0KSSBjb3B5LXBhc3RlZCBpdCBmcm9tIHRoZSBnZXR0aW1lb2ZkYXkg
+dGVzdCB3aGljaCB1c2VzIHNldmVyYWwgbmFtZXMgDQpmcm9tIHRoZSB0YWJsZS4NCg0KQ2hyaXN0
+b3BoZQ0K
 
