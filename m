@@ -1,78 +1,120 @@
-Return-Path: <linuxppc-dev+bounces-503-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-504-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7ACA3C5472D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:33:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56641C5321E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:34:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wsj8t0yJyz2yMX;
-	Mon, 26 Aug 2024 17:33:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724657630;
-	cv=none; b=nPQON+O1GXXQ9eMwEEDydagVL40rFQN3E2FweVgUrExMAvvLslgmcLZqMghokIleW8lSfqq+CEW+X0MrFmjBVeSGluzJlDfOWDKq+74p9L4Qzcab93x9zPPx/6RyHGDJ+WR8xgFcDR8i3al5VeJSIvrbyvmtZg4ysu/jAWpySb4AC3sogJycFNoJ7ZRnFOsKY4ITJV3+JsFb5j4xVSMSSw2aRscLz3xpALyxOt5tu/X/oeNsM7pXCzqjwN0+e73t8EkT3c15HoDNVs6FvlNFk6PcGEkOiVYyETyw7kLmGWact/HAFGUpTWriDfxkvkfySpHFN5YcKGs3rMq3NbZiPw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wsj9C0Rt1z2yLB;
+	Mon, 26 Aug 2024 17:34:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=145.40.73.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724655465;
+	cv=none; b=PF2QSWaS5IstZB4/Y34408wA2YPSt9DSeoCJ8UpSDF8cu/vD5PXBsWv+seb5V7mTZhL9Dru+JVtCt0KXL2ql6yVUMIDB1p/pBLk0unXvarpS+kho0Ciq8pO2V1zWKqfBdm2nge5Jp1L0yW539o8WJOiX46bvElTY1uk4uINYH0ujbFF1G1T7CcCCmU2TVq8swEeSQoXdKLm0gbM0ITu4tt4lFn+jhVJItydg0Fg26/EEscZyvl8CxveUVlRsisTd1t0t0jE0LUy6zZoFngl2JchofSymggNC+Gxq/X0S/7kMMPqJALpzmDYgb2ZTa0tSI0OAITgkGtPoDosyO8WBGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724657630; c=relaxed/relaxed;
-	bh=7352A08UdB7RMlKrf9ghuchmIx/aoSaJhuAqBuZsFcc=;
-	h=Received:Received:DKIM-Signature:Received:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=bmXzFLb+AOzMxPCTleYQCCkG7aDU/lKY0/hvvO08szjXwfBNmnLEUg2ogIPVdyEr9/NTmCHeOqE3pu88l3OZEVYUOJo1PG/2/b9u4Lk/aSoTY36kgOyIGsDPcZR35fUIr9ws4FZNm4MwzVCufjXla4nTLbYksO8S2/eU0eniOO7TxQk/wOyVe0Z0YZ0+QQLFDGRPvDqdS58ckR53/gnwhDwpeb3xVQIxboogd+hwoW0Rf8SV/HCxoXPL3xZYcEKikvFhydHYLcm8n7yb1aQB7oPqgLFNEcWltp4Eypi/Hh6XnMHqrayiYrSIHyBSIy8nzFhcEXnhdkyIrB7iF+d8Fg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=DBRZ6XWD; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=srs0=kq7x=pz=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
+	t=1724655465; c=relaxed/relaxed;
+	bh=n5kXRl+dSghM9uaB3dT4KX3E2VK4jV7hFUGqQ2ppz/4=;
+	h=Received:Received:DKIM-Signature:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding; b=eW2K0Y/d/DBf+TprbJ475kPm9GQaFp0p8aWfVqH2zcfEnYc2aMu6GCUaXnpDH83BAQLQNLtbrQDLTz/qiD1/vEXdDo9flUmx939xjUrQNSOLcLLjY1bHD4/BLe3vdxwzHT5CDU5Kmji72AGizKuXfTLicn229Re5CkULv0lOu3m+Y95uud2pfqfSy8aE5XDtJUYKhaGdEUXyR+EAnFp+FNAq9+KccHUWeiv8qudssWkVwsMblvD+rkUKZTKhcF9eZjFkB4HeTrGg6xcW00++URLIvxX1sE0EMFLm6en4oQ+70k8uuf0qIMhh0S7V6j5g+fOwvb70oseuInfMThGKOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q6ZyVdwI; dkim-atps=neutral; spf=pass (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=DBRZ6XWD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q6ZyVdwI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=srs0=kq7x=pz=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wsj8s6M43z2yLB
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:33:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WshMF2VHKz2y8p
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 16:57:45 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id C192CA41C78;
-	Mon, 26 Aug 2024 07:33:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 23C2BC8CDC1;
-	Mon, 26 Aug 2024 07:33:45 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="DBRZ6XWD"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1724657623;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7352A08UdB7RMlKrf9ghuchmIx/aoSaJhuAqBuZsFcc=;
-	b=DBRZ6XWDvXjnYuYhxFXXFEdwYvgjA29BBUQVXRAglzQXZPgBoyT+pscRKjlI8wD1B6oehQ
-	eDbbUGzgcthjGXmofT3JoCTTGtGTgN59VX/jWtlqknExCrO9TPUYQcV1VqXc7cECI/ckoW
-	WbweiaFinCYbI/Owc4VJr6Cbd4DY0XY=
-Received: 
-	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 35c98243 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Mon, 26 Aug 2024 07:33:43 +0000 (UTC)
-Date: Mon, 26 Aug 2024 09:33:34 +0200
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>, Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Theodore Ts'o <tytso@mit.edu>,
+	by sin.source.kernel.org (Postfix) with ESMTP id E134FCE0B1F;
+	Mon, 26 Aug 2024 06:57:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C3B96C5819A;
+	Mon, 26 Aug 2024 06:57:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1724655461;
+	bh=60YTzdSE6i7e5nDrzqtUhMVWFwXnvzse4OY0JvgSqFk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Q6ZyVdwIdlrhEC6VjJZ0fgcKrogmO8tbfwBw/ARW3MBm8b5naeSJO870VG/7Zc0Sx
+	 z8xklW4iH2BY/ocnk31e8T3HGA5Lsu6v0dGc0Ywxgq9qRiqq+kxoeFEvwBPzgm9W+l
+	 +RpneR3sVLQRf1q36xGh2c0HbQzqJrF0JCM/67VWkE7sGVz0vcNqXhnPQDBIT8PnqX
+	 /3N7DWwyo3yfbCRm7TkkewmQ9Fwxhe6ubFFpBEyncgzMZBymzlW/HYMseTjJnOBZIB
+	 ev/JwfnKwLexycTlHfnkA8oyj80FTg22qkCIhfXBQnf/RAkVOhD58H/yq0ZDvFp5Cx
+	 ao8cUX++cRVfQ==
+From: Mike Rapoport <rppt@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andreas Larsson <andreas@gaisler.com>,
+	Andy Lutomirski <luto@kernel.org>,
 	Arnd Bergmann <arnd@arndb.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
+	Borislav Petkov <bp@alien8.de>,
+	Brian Cain <bcain@quicinc.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Guo Ren <guoren@kernel.org>,
+	Helge Deller <deller@gmx.de>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Kent Overstreet <kent.overstreet@linux.dev>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
 	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Shuah Khan <shuah@kernel.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-mm@kvack.org,
-	linux-trace-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v2 15/17] selftests: vdso: Fix build of test_vdso_chacha
-Message-ID: <Zswvzq11-0LARaR2@zx2c4.com>
-References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
- <50cc36936b310d8dd6d7539c552cc8dd84052020.1724309198.git.christophe.leroy@csgroup.eu>
+	Matt Turner <mattst88@gmail.com>,
+	Max Filippov <jcmvbkbc@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Michal Simek <monstr@monstr.eu>,
+	Mike Rapoport <rppt@kernel.org>,
+	Oleg Nesterov <oleg@redhat.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Richard Weinberger <richard@nod.at>,
+	Russell King <linux@armlinux.org.uk>,
+	Song Liu <song@kernel.org>,
+	Stafford Horne <shorne@gmail.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Vineet Gupta <vgupta@kernel.org>,
+	Will Deacon <will@kernel.org>,
+	bpf@vger.kernel.org,
+	linux-alpha@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-modules@vger.kernel.org,
+	linux-openrisc@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-sh@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-trace-kernel@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	loongarch@lists.linux.dev,
+	sparclinux@vger.kernel.org,
+	x86@kernel.org
+Subject: [PATCH v2 7/8] execmem: add support for cache of large ROX pages
+Date: Mon, 26 Aug 2024 09:55:31 +0300
+Message-ID: <20240826065532.2618273-8-rppt@kernel.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240826065532.2618273-1-rppt@kernel.org>
+References: <20240826065532.2618273-1-rppt@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,29 +124,390 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <50cc36936b310d8dd6d7539c552cc8dd84052020.1724309198.git.christophe.leroy@csgroup.eu>
+Content-Transfer-Encoding: 8bit
 
-On Thu, Aug 22, 2024 at 09:13:23AM +0200, Christophe Leroy wrote:
-> Replace -isystem by -idirafter
-> 
-> But this implies that now tools/include/linux/linkage.h is
-> included instead of include/linux/linkage.h, so define a stub
-> for SYM_FUNC_START() and SYM_FUNC_END().
+From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 
-Thanks! I got step 1, but didn't figure out step 2, and tried to do
-things the lazy way instead:
+Using large pages to map text areas reduces iTLB pressure and improves
+performance.
 
--#include <sodium/crypto_stream_chacha20.h>
- #include <sys/random.h>
- #include <string.h>
- #include <stdint.h>
- #include "../kselftest.h"
+Extend execmem_alloc() with an ability to use PMD_SIZE'ed pages with ROX
+permissions as a cache for smaller allocations.
 
- extern void __arch_chacha20_blocks_nostack(uint8_t *dst_bytes, const uint8_t *key, uint32_t *counter, size_t nblocks);
-+extern int crypto_stream_chacha20(uint8_t *dst_bytes, uint64_t dst_len, const uint8_t *nonce, const uint8_t *key);
+To populate the cache, a writable large page is allocated from vmalloc with
+VM_ALLOW_HUGE_VMAP, filled with invalid instructions and then remapped as
+ROX.
 
+Portions of that large page are handed out to execmem_alloc() callers
+without any changes to the permissions.
 
-Yours is obviously much better, so I'll queue that up instead.
+When the memory is freed with execmem_free() it is invalidated again so
+that it won't contain stale instructions.
+
+The cache is enabled when an architecture sets EXECMEM_ROX_CACHE flag in
+definition of an execmem_range.
+
+Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+---
+ include/linux/execmem.h |   2 +
+ mm/execmem.c            | 290 +++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 287 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/execmem.h b/include/linux/execmem.h
+index dfdf19f8a5e8..7436aa547818 100644
+--- a/include/linux/execmem.h
++++ b/include/linux/execmem.h
+@@ -77,12 +77,14 @@ struct execmem_range {
+ 
+ /**
+  * struct execmem_info - architecture parameters for code allocations
++ * @fill_trapping_insns: set memory to contain instructions that will trap
+  * @ranges: array of parameter sets defining architecture specific
+  * parameters for executable memory allocations. The ranges that are not
+  * explicitly initialized by an architecture use parameters defined for
+  * @EXECMEM_DEFAULT.
+  */
+ struct execmem_info {
++	void (*fill_trapping_insns)(void *ptr, size_t size, bool writable);
+ 	struct execmem_range	ranges[EXECMEM_TYPE_MAX];
+ };
+ 
+diff --git a/mm/execmem.c b/mm/execmem.c
+index 0f6691e9ffe6..3bde0863c50a 100644
+--- a/mm/execmem.c
++++ b/mm/execmem.c
+@@ -7,28 +7,88 @@
+  */
+ 
+ #include <linux/mm.h>
++#include <linux/mutex.h>
+ #include <linux/vmalloc.h>
+ #include <linux/execmem.h>
++#include <linux/maple_tree.h>
+ #include <linux/moduleloader.h>
+ #include <linux/text-patching.h>
+ 
++#include <asm/tlbflush.h>
++
++#include "internal.h"
++
+ static struct execmem_info *execmem_info __ro_after_init;
+ static struct execmem_info default_execmem_info __ro_after_init;
+ 
+-static void *__execmem_alloc(struct execmem_range *range, size_t size)
++#ifdef CONFIG_MMU
++struct execmem_cache {
++	struct mutex mutex;
++	struct maple_tree busy_areas;
++	struct maple_tree free_areas;
++};
++
++static struct execmem_cache execmem_cache = {
++	.mutex = __MUTEX_INITIALIZER(execmem_cache.mutex),
++	.busy_areas = MTREE_INIT_EXT(busy_areas, MT_FLAGS_LOCK_EXTERN,
++				     execmem_cache.mutex),
++	.free_areas = MTREE_INIT_EXT(free_areas, MT_FLAGS_LOCK_EXTERN,
++				     execmem_cache.mutex),
++};
++
++static void execmem_cache_clean(struct work_struct *work)
++{
++	struct maple_tree *free_areas = &execmem_cache.free_areas;
++	struct mutex *mutex = &execmem_cache.mutex;
++	MA_STATE(mas, free_areas, 0, ULONG_MAX);
++	void *area;
++
++	mutex_lock(mutex);
++	mas_for_each(&mas, area, ULONG_MAX) {
++		size_t size;
++
++		if (!xa_is_value(area))
++			continue;
++
++		size = xa_to_value(area);
++
++		if (IS_ALIGNED(size, PMD_SIZE) &&
++		    IS_ALIGNED(mas.index, PMD_SIZE)) {
++			void *ptr = (void *)mas.index;
++
++			mas_erase(&mas);
++			vfree(ptr);
++		}
++	}
++	mutex_unlock(mutex);
++}
++
++static DECLARE_WORK(execmem_cache_clean_work, execmem_cache_clean);
++
++static void execmem_fill_trapping_insns(void *ptr, size_t size, bool writable)
++{
++	if (execmem_info->fill_trapping_insns)
++		execmem_info->fill_trapping_insns(ptr, size, writable);
++	else
++		memset(ptr, 0, size);
++}
++
++static void *execmem_vmalloc(struct execmem_range *range, size_t size,
++			     pgprot_t pgprot, unsigned long vm_flags)
+ {
+ 	bool kasan = range->flags & EXECMEM_KASAN_SHADOW;
+-	unsigned long vm_flags  = VM_FLUSH_RESET_PERMS;
+ 	gfp_t gfp_flags = GFP_KERNEL | __GFP_NOWARN;
++	unsigned int align = range->alignment;
+ 	unsigned long start = range->start;
+ 	unsigned long end = range->end;
+-	unsigned int align = range->alignment;
+-	pgprot_t pgprot = range->pgprot;
+ 	void *p;
+ 
+ 	if (kasan)
+ 		vm_flags |= VM_DEFER_KMEMLEAK;
+ 
++	if (vm_flags & VM_ALLOW_HUGE_VMAP)
++		align = PMD_SIZE;
++
+ 	p = __vmalloc_node_range(size, align, start, end, gfp_flags,
+ 				 pgprot, vm_flags, NUMA_NO_NODE,
+ 				 __builtin_return_address(0));
+@@ -50,8 +110,226 @@ static void *__execmem_alloc(struct execmem_range *range, size_t size)
+ 		return NULL;
+ 	}
+ 
++	return p;
++}
++
++static int execmem_cache_add(void *ptr, size_t size)
++{
++	struct maple_tree *free_areas = &execmem_cache.free_areas;
++	struct mutex *mutex = &execmem_cache.mutex;
++	unsigned long addr = (unsigned long)ptr;
++	MA_STATE(mas, free_areas, addr - 1, addr + 1);
++	unsigned long lower, lower_size = 0;
++	unsigned long upper, upper_size = 0;
++	unsigned long area_size;
++	void *area = NULL;
++	int err;
++
++	lower = addr;
++	upper = addr + size - 1;
++
++	mutex_lock(mutex);
++	area = mas_walk(&mas);
++	if (area && xa_is_value(area) && mas.last == addr - 1) {
++		lower = mas.index;
++		lower_size = xa_to_value(area);
++	}
++
++	area = mas_next(&mas, ULONG_MAX);
++	if (area && xa_is_value(area) && mas.index == addr + size) {
++		upper = mas.last;
++		upper_size = xa_to_value(area);
++	}
++
++	mas_set_range(&mas, lower, upper);
++	area_size = lower_size + upper_size + size;
++	err = mas_store_gfp(&mas, xa_mk_value(area_size), GFP_KERNEL);
++	mutex_unlock(mutex);
++	if (err)
++		return -ENOMEM;
++
++	return 0;
++}
++
++static bool within_range(struct execmem_range *range, struct ma_state *mas,
++			 size_t size)
++{
++	unsigned long addr = mas->index;
++
++	if (addr >= range->start && addr + size < range->end)
++		return true;
++
++	if (range->fallback_start &&
++	    addr >= range->fallback_start && addr + size < range->fallback_end)
++		return true;
++
++	return false;
++}
++
++static void *__execmem_cache_alloc(struct execmem_range *range, size_t size)
++{
++	struct maple_tree *free_areas = &execmem_cache.free_areas;
++	struct maple_tree *busy_areas = &execmem_cache.busy_areas;
++	MA_STATE(mas_free, free_areas, 0, ULONG_MAX);
++	MA_STATE(mas_busy, busy_areas, 0, ULONG_MAX);
++	struct mutex *mutex = &execmem_cache.mutex;
++	unsigned long addr, last, area_size = 0;
++	void *area, *ptr = NULL;
++	int err;
++
++	mutex_lock(mutex);
++	mas_for_each(&mas_free, area, ULONG_MAX) {
++		area_size = xa_to_value(area);
++
++		if (area_size >= size && within_range(range, &mas_free, size))
++			break;
++	}
++
++	if (area_size < size)
++		goto out_unlock;
++
++	addr = mas_free.index;
++	last = mas_free.last;
++
++	/* insert allocated size to busy_areas at range [addr, addr + size) */
++	mas_set_range(&mas_busy, addr, addr + size - 1);
++	err = mas_store_gfp(&mas_busy, xa_mk_value(size), GFP_KERNEL);
++	if (err)
++		goto out_unlock;
++
++	mas_erase(&mas_free);
++	if (area_size > size) {
++		/*
++		 * re-insert remaining free size to free_areas at range
++		 * [addr + size, last]
++		 */
++		mas_set_range(&mas_free, addr + size, last);
++		size = area_size - size;
++		err = mas_store_gfp(&mas_free, xa_mk_value(size), GFP_KERNEL);
++		if (err) {
++			mas_erase(&mas_busy);
++			goto out_unlock;
++		}
++	}
++	ptr = (void *)addr;
++
++out_unlock:
++	mutex_unlock(mutex);
++	return ptr;
++}
++
++static int execmem_cache_populate(struct execmem_range *range, size_t size)
++{
++	unsigned long vm_flags = VM_FLUSH_RESET_PERMS | VM_ALLOW_HUGE_VMAP;
++	unsigned long start, end;
++	struct vm_struct *vm;
++	size_t alloc_size;
++	int err = -ENOMEM;
++	void *p;
++
++	alloc_size = round_up(size, PMD_SIZE);
++	p = execmem_vmalloc(range, alloc_size, PAGE_KERNEL, vm_flags);
++	if (!p)
++		return err;
++
++	vm = find_vm_area(p);
++	if (!vm)
++		goto err_free_mem;
++
++	/* fill memory with instructions that will trap */
++	execmem_fill_trapping_insns(p, alloc_size, /* writable = */ true);
++
++	start = (unsigned long)p;
++	end = start + alloc_size;
++
++	vunmap_range_noflush(start, end);
++	flush_tlb_kernel_range(start, end);
++
++	err = vmap_pages_range_noflush(start, end, range->pgprot, vm->pages,
++				       PMD_SHIFT);
++	if (err)
++		goto err_free_mem;
++
++	err = execmem_cache_add(p, alloc_size);
++	if (err)
++		goto err_free_mem;
++
++	return 0;
++
++err_free_mem:
++	vfree(p);
++	return err;
++}
++
++static void *execmem_cache_alloc(struct execmem_range *range, size_t size)
++{
++	void *p;
++	int err;
++
++	p = __execmem_cache_alloc(range, size);
++	if (p)
++		return p;
++
++	err = execmem_cache_populate(range, size);
++	if (err)
++		return NULL;
++
++	return __execmem_cache_alloc(range, size);
++}
++
++static bool execmem_cache_free(void *ptr)
++{
++	struct maple_tree *busy_areas = &execmem_cache.busy_areas;
++	struct mutex *mutex = &execmem_cache.mutex;
++	unsigned long addr = (unsigned long)ptr;
++	MA_STATE(mas, busy_areas, addr, addr);
++	size_t size;
++	void *area;
++
++	mutex_lock(mutex);
++	area = mas_walk(&mas);
++	if (!area) {
++		mutex_unlock(mutex);
++		return false;
++	}
++	size = xa_to_value(area);
++	mas_erase(&mas);
++	mutex_unlock(mutex);
++
++	execmem_fill_trapping_insns(ptr, size, /* writable = */ false);
++
++	execmem_cache_add(ptr, size);
++
++	schedule_work(&execmem_cache_clean_work);
++
++	return true;
++}
++
++static void *__execmem_alloc(struct execmem_range *range, size_t size)
++{
++	bool use_cache = range->flags & EXECMEM_ROX_CACHE;
++	unsigned long vm_flags = VM_FLUSH_RESET_PERMS;
++	pgprot_t pgprot = range->pgprot;
++	void *p;
++
++	if (use_cache)
++		p = execmem_cache_alloc(range, size);
++	else
++		p = execmem_vmalloc(range, size, pgprot, vm_flags);
++
+ 	return kasan_reset_tag(p);
+ }
++#else
++static void *__execmem_alloc(struct execmem_range *range, size_t size)
++{
++	return vmalloc(size);
++}
++
++static bool execmem_cache_free(void *ptr)
++{
++	return false;
++}
++#endif
+ 
+ void *execmem_alloc(enum execmem_type type, size_t size)
+ {
+@@ -67,7 +345,9 @@ void execmem_free(void *ptr)
+ 	 * supported by vmalloc.
+ 	 */
+ 	WARN_ON(in_interrupt());
+-	vfree(ptr);
++
++	if (!execmem_cache_free(ptr))
++		vfree(ptr);
+ }
+ 
+ void *execmem_update_copy(void *dst, const void *src, size_t size)
+-- 
+2.43.0
+
 
