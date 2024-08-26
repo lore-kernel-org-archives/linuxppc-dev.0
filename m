@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-509-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-510-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70959C5321E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:35:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C15DDC5321E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Aug 2024 07:35:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WsjBx10v2z2yVM;
-	Mon, 26 Aug 2024 17:35:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:40e1:4800::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724655742;
-	cv=none; b=j6flmewTSq3UciqSxa+1h8A6WpLipMj8rnoc34JxoH02K8fpUUfJQrQvrTxdxNw8Zt6/VOwB95CGFCqPKhUNNvlRwpkOT71zKG0w4VxKLDDqfjtvpSakgxmebdEwFihgKvVy5REj+aHShevjKyBX83ATp3yP3OGMwL3ZKe1lQV68Db5VtAIZLXrP+ib6CeFONfGJBPT0cB8RsDDv7JcEDpEIz/9Gmfx16qApKk+nRPwJvZW9SpaUohMPU20lXigSM6MDw6C0h1OiXrRJ8rc2CmFeZXYjcm96hDcGonX53RoLa3f/n6PJDS9OR8i6FiZ0fH/xX+jwQGbF8pWzEi3GbQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WsjC53djLz2yWr;
+	Mon, 26 Aug 2024 17:35:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724655743;
+	cv=none; b=Y6fsrqisVzNWwq32fTIzs/eycR7xk1fYVlDMvZgit2pUjNStvRShkbvhP9TyERLlLcpGtMPgOLR4Hf0qqB5WweAd0EXh/Jt4uPx8cZNqor2gF9DDG3GtJoudYaoAqj4o6dFquNAIefc0jvjBPGtoGofcwgy7Q3ee9aiY/ISKj867QMFaoQfFlmsItjNc33U7lJFnXGraoj5vYw0RLxFkfSHIohdNYfbIDztzSXwBWqF696zZT9zt3cKFT289cCrtP+QJ0Tu8fTaqJRxR9HJHd90ZjLHpJwyP0FBUeLvxZ3J9C8ord/xb+4NKz2wLJJjMSfsm2fqRxbKGLOSRVTAeFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724655742; c=relaxed/relaxed;
-	bh=LxF225/K/unP9JE6t/pV9AyRKMos1QHjLabCCQuOXXY=;
+	t=1724655743; c=relaxed/relaxed;
+	bh=t1oKofdsKxK0ldQ2tCa0yio0SYsDFNlLCnwbaE19ST0=;
 	h=Received:Received:DKIM-Signature:From:To:Cc:Subject:Date:
 	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding; b=bzUawe2AgPaq3FtRW66PPUE9w0pgtp3vI/3kn0FM+mRIpU6T4pvRNb0gbyRD9hj3tR3nw4Bqa9mt0VGcTNxzWElwDU4S5LVHuZB3sKGyPt69FNW1f/R3EnUYFNCxUUPzlnaqpqlfIqHzjJUEwMW9qYU33r0zN6c+lZ4rLVbfD2yL/G5Tm7HEXasO6on9VJw8jsUteDiLKkokQV7cwbhj95CmXy1lPE+qSnVPiEH4qLfidrqEq4ZS6+/ZIYi2IcgrhgsCvXZKsLyKK0vBXhPaQspgawAUnj8/191BRwTsqEAkNmF/s7ex1LYESyweljhBhl6FMhNPSGQfj5f3uBrFuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eEXWu1rK; dkim-atps=neutral; spf=pass (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Transfer-Encoding; b=Bre+rzVqUbeMmrXEOXpuAphg4WKl3Ex8M/3U0WPaAWgjccx8ywTuJlmuEv3Aktltuk7Oni19+/32Jy2eZb2w6QludjAZjranPtoGlZU5xMkCz8JTVW9MEQAzcUW4UxBXYGlE2Fwqeq60Xh54aq2WaCHRAO/TVcLe1zrQzRm3Gg9ChVpDvg0wUVSaiGKX4egXtfq4lK02PZmesjwfSzz+/y1eodV7Blm7QS9ecG0sRhoec/LqnXevEotb+SL4Xg0CPGFn8aD4yjTb69uKHyEvmMMxcYMjmQAsn7QvWegLIg1Tm6WUD8R4E9BRILaE8Lp2V8C4cQJklPWTfeNEyn3b5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhbSmxe0; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eEXWu1rK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YhbSmxe0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WshSZ4HPzz2xSM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:02:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WshSb0xY9z2xSM
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 17:02:23 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id BCB08CE0D07;
-	Mon, 26 Aug 2024 07:02:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7310EC4CC21;
-	Mon, 26 Aug 2024 06:55:57 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 70A5AA41C59;
+	Mon, 26 Aug 2024 07:02:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17547C52771;
+	Mon, 26 Aug 2024 06:56:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1724655371;
-	bh=1IVaPMd4I4fDfGF1ACfZ1lO9QxF1trpdGcxo9QBF4dI=;
+	s=k20201202; t=1724655431;
+	bh=V5vgSKLMNC5xDauNsA8Q9sUWVFSHgPBigpP0dkRNui8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=eEXWu1rKRnZ648Ah+x/1BHnotq5Ln0fHqGprrk/r5JBNYEHatBGvJrJociOpwu76B
-	 aZf6asJPDlGZg/jbjaINxlgmRQgSqtzNvMEGQW1yfKDx/eRPw4h5498wpkylKQMGwF
-	 6ik8WsFe6xb4iUQGRa6QVkB48hCx3+0QVmX1P1sO40K5nOnoLaCUvsYe9tt8SMyXJN
-	 NX7HI9ihImLp5tA/BMIzq0nTRJMAdNRlk5OyHkilumvLHOyzu3rzeAoFqtfiiRbQqp
-	 qizWmDiaWIyxFsVcbhSIUXn1ghK+zdzLlqjG04+bjJA0HiiGMEo9ORCQvDuCHXAmSr
-	 KUgJwhh6Ckf6Q==
+	b=YhbSmxe07BA1yJFRiZKO2RvsIZALsjMSoPns6+ARiwj5IzU0ASkQGmtoKb+hh90hS
+	 J6BDgg1zhpqDu4VFALJrA8keVSlzcNnojJmSrtAHrdm0i3g+EHsP35vTP7f7gfe6fj
+	 upMbgJciteuQOoh50BNTPMeykyZKVoF4YMAanalap68kfwGpncXqPEpJY0yKHsNGxg
+	 PaPCzCzmedEwNLxcmR1GbsCwpZ8unLntdigA+zr4dFZmGtAOJ6Ulh6Ng84JE0Ver08
+	 ckebHWlrVw/K6qXHl1fJsZxADBkuR+8dAiAZNb74jQsl55r8nweVnEVhDBSb5n0BnB
+	 aYOVxtMhEaH6A==
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andreas Larsson <andreas@gaisler.com>,
@@ -109,9 +109,9 @@ Cc: Andreas Larsson <andreas@gaisler.com>,
 	loongarch@lists.linux.dev,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org
-Subject: [PATCH v2 1/8] mm: vmalloc: group declarations depending on CONFIG_MMU together
-Date: Mon, 26 Aug 2024 09:55:25 +0300
-Message-ID: <20240826065532.2618273-2-rppt@kernel.org>
+Subject: [PATCH v2 5/8] ftrace: Add swap_func to ftrace_process_locs()
+Date: Mon, 26 Aug 2024 09:55:29 +0300
+Message-ID: <20240826065532.2618273-6-rppt@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20240826065532.2618273-1-rppt@kernel.org>
 References: <20240826065532.2618273-1-rppt@kernel.org>
@@ -126,122 +126,61 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+From: Song Liu <song@kernel.org>
 
-There are a couple of declarations that depend on CONFIG_MMU in
-include/linux/vmalloc.h spread all over the file.
+ftrace_process_locs sorts module mcount, which is inside RO memory. Add a
+ftrace_swap_func so that archs can use RO-memory-poke function to do the
+sorting.
 
-Group them all together to improve code readability.
-
-No functional changes.
-
+Signed-off-by: Song Liu <song@kernel.org>
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- include/linux/vmalloc.h | 60 +++++++++++++++++------------------------
- 1 file changed, 24 insertions(+), 36 deletions(-)
+ include/linux/ftrace.h |  2 ++
+ kernel/trace/ftrace.c  | 13 ++++++++++++-
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
-index e4a631ec430b..c614631a31cb 100644
---- a/include/linux/vmalloc.h
-+++ b/include/linux/vmalloc.h
-@@ -134,12 +134,6 @@ extern void vm_unmap_ram(const void *mem, unsigned int count);
- extern void *vm_map_ram(struct page **pages, unsigned int count, int node);
- extern void vm_unmap_aliases(void);
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index fd5e84d0ec47..b794dcb7cae8 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -1188,4 +1188,6 @@ unsigned long arch_syscall_addr(int nr);
  
--#ifdef CONFIG_MMU
--extern unsigned long vmalloc_nr_pages(void);
--#else
--static inline unsigned long vmalloc_nr_pages(void) { return 0; }
--#endif
--
- extern void *vmalloc_noprof(unsigned long size) __alloc_size(1);
- #define vmalloc(...)		alloc_hooks(vmalloc_noprof(__VA_ARGS__))
+ #endif /* CONFIG_FTRACE_SYSCALLS */
  
-@@ -262,12 +256,29 @@ static inline bool is_vm_area_hugepages(const void *addr)
- #endif
++void ftrace_swap_func(void *a, void *b, int n);
++
+ #endif /* _LINUX_FTRACE_H */
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 4c28dd177ca6..9829979f3a46 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -6989,6 +6989,17 @@ static void test_is_sorted(unsigned long *start, unsigned long count)
  }
- 
-+/* for /proc/kcore */
-+extern long vread_iter(struct iov_iter *iter, const char *addr, size_t count);
-+
-+/*
-+ *	Internals.  Don't use..
-+ */
-+extern __init void vm_area_add_early(struct vm_struct *vm);
-+extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);
-+
-+int register_vmap_purge_notifier(struct notifier_block *nb);
-+int unregister_vmap_purge_notifier(struct notifier_block *nb);
-+
- #ifdef CONFIG_MMU
-+#define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)
-+
-+extern unsigned long vmalloc_nr_pages(void);
-+
- int vm_area_map_pages(struct vm_struct *area, unsigned long start,
- 		      unsigned long end, struct page **pages);
- void vm_area_unmap_pages(struct vm_struct *area, unsigned long start,
- 			 unsigned long end);
- void vunmap_range(unsigned long addr, unsigned long end);
-+
- static inline void set_vm_flush_reset_perms(void *addr)
- {
- 	struct vm_struct *vm = find_vm_area(addr);
-@@ -275,24 +286,14 @@ static inline void set_vm_flush_reset_perms(void *addr)
- 	if (vm)
- 		vm->flags |= VM_FLUSH_RESET_PERMS;
- }
-+#else  /* !CONFIG_MMU */
-+#define VMALLOC_TOTAL 0UL
- 
--#else
--static inline void set_vm_flush_reset_perms(void *addr)
--{
--}
--#endif
--
--/* for /proc/kcore */
--extern long vread_iter(struct iov_iter *iter, const char *addr, size_t count);
--
--/*
-- *	Internals.  Don't use..
-- */
--extern __init void vm_area_add_early(struct vm_struct *vm);
--extern __init void vm_area_register_early(struct vm_struct *vm, size_t align);
-+static inline unsigned long vmalloc_nr_pages(void) { return 0; }
-+static inline void set_vm_flush_reset_perms(void *addr) {}
-+#endif /* CONFIG_MMU */
- 
--#ifdef CONFIG_SMP
--# ifdef CONFIG_MMU
-+#if defined(CONFIG_MMU) && defined(CONFIG_SMP)
- struct vm_struct **pcpu_get_vm_areas(const unsigned long *offsets,
- 				     const size_t *sizes, int nr_vms,
- 				     size_t align);
-@@ -307,22 +308,9 @@ pcpu_get_vm_areas(const unsigned long *offsets,
- 	return NULL;
- }
- 
--static inline void
--pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms)
--{
--}
--# endif
--#endif
--
--#ifdef CONFIG_MMU
--#define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)
--#else
--#define VMALLOC_TOTAL 0UL
-+static inline void pcpu_free_vm_areas(struct vm_struct **vms, int nr_vms) {}
  #endif
  
--int register_vmap_purge_notifier(struct notifier_block *nb);
--int unregister_vmap_purge_notifier(struct notifier_block *nb);
--
- #if defined(CONFIG_MMU) && defined(CONFIG_PRINTK)
- bool vmalloc_dump_obj(void *object);
- #else
++void __weak ftrace_swap_func(void *a, void *b, int n)
++{
++	unsigned long t;
++
++	WARN_ON_ONCE(n != sizeof(t));
++
++	t = *((unsigned long *)a);
++	*(unsigned long *)a = *(unsigned long *)b;
++	*(unsigned long *)b = t;
++}
++
+ static int ftrace_process_locs(struct module *mod,
+ 			       unsigned long *start,
+ 			       unsigned long *end)
+@@ -7016,7 +7027,7 @@ static int ftrace_process_locs(struct module *mod,
+ 	 */
+ 	if (!IS_ENABLED(CONFIG_BUILDTIME_MCOUNT_SORT) || mod) {
+ 		sort(start, count, sizeof(*start),
+-		     ftrace_cmp_ips, NULL);
++		     ftrace_cmp_ips, ftrace_swap_func);
+ 	} else {
+ 		test_is_sorted(start, count);
+ 	}
 -- 
 2.43.0
 
