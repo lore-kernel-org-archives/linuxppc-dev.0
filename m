@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-588-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C6C1C5320E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 08:22:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0CB9C5320E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 08:24:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WtLBf0jFbz2xKQ;
-	Tue, 27 Aug 2024 18:22:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=145.40.73.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724746954;
-	cv=none; b=ezwWgdhD/8hTykfPtNmtGyohPVXMr9NjxvMnUigrInYOPWvubNn9DGsfgfx0rG8ml2dgWvroN8ywsWZmPDzwGc3m39QGHFcE+BKfFyL2VtlFRIY6XjIdL4iX+lE+nlTKAhEQjLO84Dj/Vr1mFveVw8i10UAueUviAt0uQYXkVQc6uoYMHa1eDQrHUY+sSwDJ+n9UfoIlJ0UtuxRu1yZJoec2ZefXKBAZHIFq393I8oAGeaYflQ9mi4edagF4fKeIiifWQA8h8VtXHIL+KvPXQachP5pfyS0wdwGJ/X71eB3Xh2RRDcIg416MiwaC8a385bqVNvAejt2HKXi70ymu5A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WtLDL3KZLz2xT8;
+	Tue, 27 Aug 2024 18:24:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724747042;
+	cv=none; b=n+Cxu7zJD8vH4IeNbxJzDtcbPKN13NAUKdRmsuZD7ip325RYuEDQViMN3sHfsvGQXVRpi+et4ioJKEVobg+Q1FfdTt2AR71CepvsMhIEZR2AJ4Rt7QXoDHI6G7vqQdicq14KVKVzDmr6UjB0LaKLoONQHLiNfkD+7E7ctESmfQlRGKivE6F/6mEd8rsqnDD0rA7kV+v5XrM/AKTTsfM1Sy/F0Ikm2NvGbeRmztps1HTb9RcNVGhXsWzubPXlcM92xbpUF4HOjBHVjpagkJ7vsWTRx65BaOOOsgJv13hB/xbruK7KMswFxwtSDOIMKO/JEaVOCdpwdBTJE5ZGNTlq9w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724746954; c=relaxed/relaxed;
-	bh=Uzmm5ymz9Kdo8U5i2J3vApJuNWGqBvcBgCCp8LWSRoY=;
+	t=1724747042; c=relaxed/relaxed;
+	bh=WmuK606DFi2DMVMI66hSRWyNshgp94GdeNA0AaiDqDE=;
 	h=Received:Received:DKIM-Signature:Received:Date:From:To:Cc:Subject:
 	 Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=lGfjTsIZ2KJQzx/hduCZHBASpoUvX8xqae3UFZ6FbkfpQS6e3LGbdeKTn8e09nktKshQKxYLjYy3HlGNAekZaFXr/F/4I0tkHnFnm5DZz0g4cxFPpmcv/Z8FeNpsWraCvaO+u99Wti3AWHUVFRHuVOSNrey96ptH68z8M0/mHCGwqQe6FvqvI0W02Wl1sTVrC4fU9IEWCmU2VnjkWi7xeUPaQCWOv7Bc5VOHfz2M4DR8rnctH9wYepcqWADcP7q05XLq3c92ZlSopV5VzwHqKyynyBYAIHBPLqTrMm1DX3M8QsdZJ5ZATpmgpxeuhBoFxhkIY6porp1FlEN4xBfogA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=TORGCs/7; dkim-atps=neutral; spf=pass (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=srs0=xpq3=p2=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Disposition:In-Reply-To; b=KTDgQe3yRC2qUM9OnbF7pvO+YJDu3HDqvGOf6YdW67W3OwvScMiYrm5HHOzd5nW0Ub1++kk7cRXG0nhowVo1u6SCL5YiNYUySVowPO9RQi5YzWTyIXEuZ7MTBHiKq8dVjpG274o8zkdafMyBFLNJQk6bc/fz/Bmhixd97oyyDYTmGBlC7Tk/4pwJdScNg/Bg4bnYQ4IdHrA4NUDyDbBcyct7kb6jQNZNMLUdU/46uIYE+sUmXV7mweRKJLIdgna+A6GWOPMQkaRjBlSnmWuDv2q2BHarkEvGSmPz/sBN//AQ5qycZ4oM6w7qsiF3Mfg85jmXfv5PV2mSieWEhQeqKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=eJrITo3p; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=srs0=xpq3=p2=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=TORGCs/7;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=eJrITo3p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=srs0=xpq3=p2=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=srs0=xpq3=p2=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtLBd6t4nz2xHW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 18:22:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtLDL1ZZxz2xHW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 18:24:02 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id B21F4CE10F9;
-	Tue, 27 Aug 2024 08:22:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63334C8B7A1;
-	Tue, 27 Aug 2024 08:03:40 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 3AE71A41674;
+	Tue, 27 Aug 2024 08:23:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CB19C8B7A1;
+	Tue, 27 Aug 2024 08:23:58 +0000 (UTC)
 Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="TORGCs/7"
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="eJrITo3p"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1724745819;
+	t=1724747037;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Uzmm5ymz9Kdo8U5i2J3vApJuNWGqBvcBgCCp8LWSRoY=;
-	b=TORGCs/7gC4HKVFIs54oJJTrqMS5kY0+3ykih9Z6ThQoVZ/vsLyrzOfeVn51GHXKBfwtZ6
-	RiqDIBoNb31ZAgvJXn8l41ee5CELTUFr+Z73k3I/SEWAyJsyL6vaP2Hs4QqHw88LtYnJby
-	synNMhSoaRx1O1AKVH96EVx8KYIEMkE=
+	bh=WmuK606DFi2DMVMI66hSRWyNshgp94GdeNA0AaiDqDE=;
+	b=eJrITo3pS1iTlmVRqXA4ossHQBCcqlsHt8xrxE0R9KhNEW05nlyFHJ7Q5ejNuECbDi0JQL
+	dyZtB2nZ/WNhieoOU8GA6Sh0CZEvlKXGqRVYQTGP9gO5q25pQSZWNFCM1tqp8r5qUzm5kj
+	tdyLngda2WPJXrCNlqQ+6kee5gX21+s=
 Received: 
-	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 4fa0e2f2 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Tue, 27 Aug 2024 08:03:38 +0000 (UTC)
-Date: Tue, 27 Aug 2024 10:03:32 +0200
+	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 865e0cd7 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Tue, 27 Aug 2024 08:23:57 +0000 (UTC)
+Date: Tue, 27 Aug 2024 10:23:50 +0200
 From: "Jason A. Donenfeld" <Jason@zx2c4.com>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>
 Cc: Theodore Ts'o <tytso@mit.edu>, Arnd Bergmann <arnd@arndb.de>,
@@ -60,11 +60,12 @@ Cc: Theodore Ts'o <tytso@mit.edu>, Arnd Bergmann <arnd@arndb.de>,
 	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
 	"H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 4/4] random: vDSO: don't use 64 bits atomics on 32 bits
- architectures
-Message-ID: <Zs2IVIQwZ-8fQGZ4@zx2c4.com>
+Subject: Re: [PATCH 2/4] random: vDSO: Don't use PAGE_SIZE and PAGE_MASK
+Message-ID: <Zs2NFjfBKKjfoI2d@zx2c4.com>
 References: <cover.1724743492.git.christophe.leroy@csgroup.eu>
- <30806cb8d7e0b95dcfb9f81a4583759faa1d8f31.1724743492.git.christophe.leroy@csgroup.eu>
+ <b8f8fb6d1d10386c74f2d8826b737a74c60b76b2.1724743492.git.christophe.leroy@csgroup.eu>
+ <Zs2FJku2hM2bp4ik@zx2c4.com>
+ <55a7d3ba-b384-4fb0-8fbb-e05ddf0d1fb8@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,15 +77,27 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <30806cb8d7e0b95dcfb9f81a4583759faa1d8f31.1724743492.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <55a7d3ba-b384-4fb0-8fbb-e05ddf0d1fb8@csgroup.eu>
 
-On Tue, Aug 27, 2024 at 09:31:50AM +0200, Christophe Leroy wrote:
-> Performing SMP atomic operations on u64 fails on powerpc32:
+On Tue, Aug 27, 2024 at 10:16:18AM +0200, Christophe Leroy wrote:
+> tglx or yourself suggested to put in a one of the vdso headers instead 
+> of directly in getrandom.c. This is too fragile because PAGE_SIZE might 
+> be absent in that header but arrive in getrandom.c through another header.
 
-Thanks for this, and nice catch on the vDSO side checking on big endian.
-I've applied this, fixing up the commit message and the comment,
-maintaining the reverse christmas tree in getrandom.c, and adding tglx's
-suggested-by tag.
+Oh jeeze, yea.
 
-Jason
+FYI, _PAGE_SIZE is defined on s390, so that might not be such a good
+idea (from the previous version).
+
+> The best would be to have an asm-generic definition of
+> PAGE_SIZE and PAGE_MASK that all architectures use, but that's another
+> level of work.
+
+Yea that seems far too large of an operation to do here.
+
+> > I'm really not a fan of making the code less idiomatic...
+> 
+> Ok, I have another idea, let's give it a try.
+
+What's the other idea?
 
