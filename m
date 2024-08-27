@@ -1,58 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-575-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-576-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 619B0C52D6F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 07:14:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C766C52D6F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 07:15:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WtJgx69wKz2xbY;
-	Tue, 27 Aug 2024 17:14:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724742861;
-	cv=none; b=gzl1A+yVsx/GfqBMuqTLbJSyPBsL6Dy2K5rIRPgzNzjzJ+C4sq5NQ8Y1Hrft4KuiJtoVfh64pMnFvRpCIdiMMBukZ9XvfUMsVd/igk7/Q28T52z5TlT6J9V9iv1vuJRiuxIs3hBUJ42dS2e7tfntVgVxQUEsd5kVIJn9GLA8HFZAmyln8pAViD4zWiorHPODXW3VL+T07FrdiP9mnIuJSnwN1Jl5oFrfR63XQUQ+VXPvjDQ8+xxRUTPwdsNQmHZL4Yefj86Yy6pAj3/c/d8XwwlSB7D7A+JiUXtu3TGcEdkZS4c3pUeuJROE7avPkOrKhx/3VPwoqzJ5It0y4Uty7A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WtJj34yz2z2xGH;
+	Tue, 27 Aug 2024 17:15:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724742919;
+	cv=none; b=TEg5XE/AwC7NqgSsYBez9cInFI40yT47Trr8CVVziVCVbmEko5HKPYhNHA6NB5xHQrSUB3ZTdwevy/mVb7w1uOb69bPmMMuMoH5TpW85P2o/xa9UOJAX7QDFg2u9WCu4uz6ztLW3Jl3owX0vKWNQjiFlsWuzGEDs6/IiG7SVhZVdWQSBA6q5r/JLfRhYRs3Vuz1COH3Q8ihXXdrSpGrJ3Q+vc/YIkSZt+uo/REF6fyhXC2Z3jVzdzc+iVtZ3GVqTHnO9tg9vhOsiRGlbA6ayPy2rwUfaMIazEKYpz/uyxg0qj8fK5Sc+OpqLrFW9y8Zbrf9iyp1x3rS1e6KrjRIHWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724742861; c=relaxed/relaxed;
-	bh=ZONpfAn4J/I8AE+o3hedBFPBazPggLrLUOTjUJKE6Nc=;
+	t=1724742919; c=relaxed/relaxed;
+	bh=vV422L4mnpf+hOkJJ5Z0peDj4WQZoCKVdxmLvkpZwrM=;
 	h=DKIM-Signature:Received:From:To:Cc:In-Reply-To:References:Subject:
 	 Message-Id:Date:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding; b=m509Lc0JMK0ymlK9r8XQ7hswmv98cXjwTNbBy3c31aSdtSPsi5mOIJpG0eOmDoKk+NWO4gXt8Mln1eBSKzqnLWs0pU6ORbWG4snQOLHqT9ux3Zfk8qG1TPDjBtjRgvHzq0ibPg3tLJTeq6+MU/NmKws6h9tXxg35LHk54O/P7GmA+g5GzsOBcoaEmwwxXybs5aLVF+rvHN+0KzQsuCMyJvCGWA0siAN/PnjeqZkm0t8yc5q3Iztc2QR+CFPnQCvBMqVLhZWXzBNB7ytQil9IxJln3SrlcCUW8OTrayEH4e3wsT0TsfofODlDP01W/NS73JDJUmEGCwu92Szksy1SPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=WWQ0eP7+; dkim-atps=neutral
+	 Content-Transfer-Encoding; b=PITSLQqDoOk19KV6altc70QOejNUevyEJi9RL6oyXLpPZ9z11jR6R7r+M7a5JBm4tfpDfG71P5Wapl+u0CNj9Q75PR3HW2RAMylev0cQPmVvJ71jZ6x6zj/kcZC2Re1En3cg2WeumuF8x1smfxfNnlpdoOC940phZMKSIUQpwm6SlLhjB+nuVGe75SiomcI2UlzplOCSM3GxXZHiZsmFN7tHcYDu5QKN0uIHZJOmifgAjg5YaWRk6d5Qp6xMomgqA/4OPJEQ9xk8schO/T2FUdzpJTqi53qrdHwOBsoPYR13ySTek2ApCnxp4deI52BHsbpSGJag69xkE4/HySPaIg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UDVxsNos; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=WWQ0eP7+;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UDVxsNos;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtJgx62Dpz2xWZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 17:14:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtJj34nnzz2xG5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 17:15:19 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1724742858;
-	bh=ZONpfAn4J/I8AE+o3hedBFPBazPggLrLUOTjUJKE6Nc=;
+	s=201909; t=1724742919;
+	bh=vV422L4mnpf+hOkJJ5Z0peDj4WQZoCKVdxmLvkpZwrM=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=WWQ0eP7+oBBJO3+DnUs2DJ9M8S69phvtVxv2/jblE5Eu0iR6tvd6J4dqTGuJlMEjE
-	 NnV5n6u1KHngL34b+GEtJdd4YKRaQkTepc9fYc95UH4EX01n5edKhgNgy14jBkD+ev
-	 6MTdTQETC/Bxpp3dyTeQ6hi29kkGU//wKlEe+MPdUR8dd3n5iBHqhZiN5KOESoKKDp
-	 5eEWtYZrKLkhFqFM02rqF1dB72xkuLOcRFwjDUvVsmxDFas0BwStfE51i1PNBC9XfH
-	 Hv3cWchl+xYQKjVzjCSJE87mEs2lpeQ9iEbT5JFuU7kOuKZ6rdahdXDYZDkeSiUeYW
-	 YlYZFsvpY0JgQ==
+	b=UDVxsNosUCVKE+chsQQm8obg19tSKk/5jpFDuz95nAGSVLypK10durKnqxmMALoBP
+	 6p+/LlJ0q6VP9BOMFMCMoQuHgID+6xQASVHT6bHHi13MGNa6Pmx7a0ztdGM7p4MB77
+	 uasb1tNM6sh57wKtbvA/V7LM59fD5hRLS4ClkuXtoQJY3z48Ve6Vc6+GhWfuXJzqdi
+	 bzhvJV6E1z8TB4E2RGHCX23v1ykNQIT8EpHSgOkF2w+oMX28gRN0BAhM3WTGHLglEm
+	 aeCCRHTH3vL7YIdrpNMpoXXjP4Omx1Z0BGt2GFk6UEZvh7y/X3BKaw5Vcu3pcsjrxV
+	 uBHpl2ZWBUSNQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WtJgs30mkz4x6l;
-	Tue, 27 Aug 2024 17:14:17 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WtJj30MJ6z4x6l;
+	Tue, 27 Aug 2024 17:15:19 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-Cc: jk@ozlabs.org, arnd@arndb.de, geoff@infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20240726123322.1165562-1-mpe@ellerman.id.au>
-References: <20240726123322.1165562-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/2] MAINTAINERS: Mark powerpc Cell as orphaned
-Message-Id: <172474280308.31690.5184828859229185339.b4-ty@ellerman.id.au>
-Date: Tue, 27 Aug 2024 17:13:23 +1000
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>
+In-Reply-To: <beb30d280eaa5d857c38a0834b147dffd6b28aa9.1724157750.git.christophe.leroy@csgroup.eu>
+References: <beb30d280eaa5d857c38a0834b147dffd6b28aa9.1724157750.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/64e: Define mmu_pte_psize static
+Message-Id: <172474289342.32718.7307817190802798616.b4-ty@ellerman.id.au>
+Date: Tue, 27 Aug 2024 17:14:53 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,19 +65,15 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 26 Jul 2024 22:33:21 +1000, Michael Ellerman wrote:
-> Arnd is no longer actively maintaining Cell, mark it as orphan.
-> 
-> Also drop the dead developerworks link.
+On Tue, 20 Aug 2024 14:42:38 +0200, Christophe Leroy wrote:
+> mmu_pte_psize is only used in the tlb_64e.c, define it static.
 > 
 > 
 
-Applied to powerpc/next.
+Applied to powerpc/fixes.
 
-[1/2] MAINTAINERS: Mark powerpc Cell as orphaned
-      https://git.kernel.org/powerpc/c/db9a63913fc7aa6ea419c9a787bfa18937515037
-[2/2] MAINTAINERS: Mark powerpc spufs as orphaned
-      https://git.kernel.org/powerpc/c/81695066c76fa74aa00aadbcb360cc7ab9c70c51
+[1/1] powerpc/64e: Define mmu_pte_psize static
+      https://git.kernel.org/powerpc/c/d92b5cc29c792f1d3f0aaa3b29dddfe816c03e88
 
 cheers
 
