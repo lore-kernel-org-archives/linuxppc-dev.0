@@ -1,99 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-594-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-595-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 017DDC5320E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 08:55:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4852C5320E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 09:02:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WtLx03SgZz2yVX;
-	Tue, 27 Aug 2024 18:55:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724748948;
-	cv=none; b=FP4rGlXTnReWojAigr+COn1IaMQrELNVZoCIR/k7rF2GSYVSF9TmhUFKnQSAqFIZk3TtLPmQwYzxht0Y3bL6l8qNE6jTbZ1SphblJYcw82ev2IVUlI6TkaS/a6Ev3SE/KB5WG/vTcofIsc5xK76PneSdVFgZ1/VMeazvvT3wpv1NXnBCGZhs6LYYEWLoGZYBy8qqiOqh7QdAXfIWKDmqLeyCkub5ypaQQ6RuNaQK5fUgslpd1Ys39ic1v2Nf8cJlknK87lY2EOkbgptbc3HQ8fMtkLOwYo60uEg2xiYBufEVybtf0I9bO5WwbAl5/RQC+S4yut1sZG+6ZizPJnAoAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WtM4Z1ylsz2yV3;
+	Tue, 27 Aug 2024 19:02:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724749342;
+	cv=none; b=cP3/zXL4N2v2oZTMJzUiPzDbX4wOseEXm3OI/9HkBLYT9fHbwfcXXzukOF6iqRKsOiVdStsQsw/GqwYmzvvGny6EXPASQLeHyKn4MLGy1KwsKXuZjSkCn/5s4bKzfQqqdg+TI+Ldlv+R/xEcEIarLmOx1gs8nGqrfFh2h7eXEBX8lXfh3iBhzibp+FLAk7Jq56NasKSWZSVbZ5ufDvSzj29xVKhhPu5gQqRAvkquNlomiEFB/KW05iivKBQH4/4BlYzQJLVflY0uUpQ0Pta16Mthmso+edh9LZfiuML8DxCjdZ0+1T2c6vOEx+durpusUCCQ8aIYZhkORgJukYzYtw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724748948; c=relaxed/relaxed;
-	bh=edrvj8N6roPKYMjXImydBvCzJkV/SgZcOb26fB0+T6A=;
-	h=Received:Received:DKIM-Signature:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=l0X35Xi6YZSkcDssL7lJSlffvvYZ6y2rMjDxM24AAJg2GA83R3WfDPfI+GUzLqSfuWMXIb18v8YnK/kvxZ49wSKXUpKlEd6Pw3ano9s3WS62eAecGa1uNjhO/hX1l+ayK2ekqnq4FPmwTX3owcq5cCk4Hm5MMOjVAHupIT3UFK17Fvk59fUaUCvmo6vK2ys3tfWMP2SfbwSjVsLEXmqIKRRxmFLXAblXjPC1efu9NDKbRt1gfqo8gkx6YuI3c3C2uvxZgzTbDrqHW4qqsGutFLMJwIWFOyZ4Hjqt9QFS1zDel9m3C+PLwMn0BW5GuCBUAILQ86eMPjCLV3HFHTj9Lw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DusVZnZ7; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1724749342; c=relaxed/relaxed;
+	bh=outpxqXc6KM2Oo4/0nqD4smTGWGwDj3DOJrNewpgErA=;
+	h=DKIM-Signature:DKIM-Signature:Received:X-MC-Unique:Received:
+	 Received:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
+	 X-Scanned-By; b=cd8Et8x0i4ER1uvte5S04hWACDi9dhjza4V9vo7NQTb9+K/4k1wLwSYyuj9w4hwN/pz5+XGKpfHPDtAYwQJ5uxLUynS5e/nZEQmQD35jf9A2NpBRrdAWx2ObVEpQt1wA/AaOYhEWvivdemwDtqLFBOS2DxzouG5iQQjfP30yjGYJxc9wEgPA39RsfXcZj+4xgVnzGdKKhyUnbry9NMMlOhl68ZhXKRxgmNfTts+C50VcVyXCaI9dni+xHtG0Hr5aRRoM+b5d09p04oI3G45sgCFRsxRHdwCVPVn9VfqeVCewxNR2lHSBaOQV9A4xK/IvA+tMwXKhF3zzN647NV9dwA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=N1Wkvdzz; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WLtO8reA; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DusVZnZ7;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=N1Wkvdzz;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WLtO8reA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtLwz5kHtz2xtt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 18:55:47 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 2CEDCA4168D;
-	Tue, 27 Aug 2024 08:55:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E362BC8B7A5;
-	Tue, 27 Aug 2024 08:55:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1724748944;
-	bh=WLyDwKrTLwxUKO9wLuHMkEx2eqbtMQG2RDk7GrJYDXs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=DusVZnZ7wV2iULh/1avLL75JPrhMhQlBqoECiJtic0bUtwgwuIxQeD5hzgO3OPkyS
-	 dpl+eK1bBgzJJ35WOwwwbfdgq1YQrY2eHAEWUAKnv8OixY+PRJYPtQH9Uh4KDOOHgD
-	 2/VI5iJPwBhdC5LsFDFX73FW+2wIcx/umVi6Bv43EvELDrk40xPn4mIuDGkezsnKRA
-	 xbs+ZNNQqQDTYUIePAvIqd1K0l/VrmBAarQw0NUQwiKK+jAlMR+ifUUyK+I6EB0ATl
-	 0IqZzSdRMeIajz+pVDlkeyPLq3GoGX7ttE4pCEa3ZuqwGkXktl0F6ooJc0ev3A8Yxa
-	 2+SfAAZCXhU+Q==
-Date: Tue, 27 Aug 2024 11:52:55 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Bruno Faccini <bfaccini@nvidia.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@redhat.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Davidlohr Bueso <dave@stgolabs.net>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Jonathan Cameron <jonathan.cameron@huawei.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Samuel Holland <samuel.holland@sifive.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Vasily Gorbik <gor@linux.ibm.com>, Will Deacon <will@kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-	"linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-cxl@vger.kernel.org" <linux-cxl@vger.kernel.org>,
-	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
-	"linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	"linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
-	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
-	"linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"loongarch@lists.linux.dev" <loongarch@lists.linux.dev>,
-	"nvdimm@lists.linux.dev" <nvdimm@lists.linux.dev>,
-	"sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-	"x86@kernel.org" <x86@kernel.org>, Zi Yan <ziy@nvidia.com>
-Subject: Re: [PATCH v4 24/26] arch_numa: switch over to numa_memblks
-Message-ID: <Zs2T5wkSYO9MGcab@kernel.org>
-References: <MW4PR12MB72616723E1A090E315681FF6A38B2@MW4PR12MB7261.namprd12.prod.outlook.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtM4Y5QsRz2yTy
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 19:02:17 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1724749333;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=outpxqXc6KM2Oo4/0nqD4smTGWGwDj3DOJrNewpgErA=;
+	b=N1WkvdzzDZOd8IDkWCvREPDSBaLOj59fzHV5vSPtoY9WDifl8tFHdmq8DDRnqE0d+khI1Z
+	NWXAwpTCTMgtGgKf3CrkTjIMFYT/rqfGYhDgTi5Qt4/0P5s29TBJPvVvq2HuRgD/EhrJcp
+	8/owWw3xyzI5VwFEpwRSzCikIwTAVno=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1724749334;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=outpxqXc6KM2Oo4/0nqD4smTGWGwDj3DOJrNewpgErA=;
+	b=WLtO8reAD9dI6vjKb8G/CJYbIty+JwlRynkohZgoD1AjZV89wKlPryQLXYN+U+uhvelRFr
+	a1f8rICZ3pVBHr4WMqiTlbZrL2yazim1i3dp1jziUOUaJ5Ie3eB3zf0D80oFW63oNbJF7K
+	+qiOzlqkVnGh0ay8CDtr3wWtJV50fzk=
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-468-rv4ABExJM5egEclpNPuyLA-1; Tue,
+ 27 Aug 2024 05:02:08 -0400
+X-MC-Unique: rv4ABExJM5egEclpNPuyLA-1
+Received: from mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.15])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 7B6471955BFE;
+	Tue, 27 Aug 2024 09:02:05 +0000 (UTC)
+Received: from localhost (unknown [10.72.112.42])
+	by mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 416C019560AA;
+	Tue, 27 Aug 2024 09:02:02 +0000 (UTC)
+Date: Tue, 27 Aug 2024 17:01:58 +0800
+From: Baoquan He <bhe@redhat.com>
+To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Dave Vasilevsky <dave@vasilevsky.ca>, linuxppc-dev@lists.ozlabs.org,
+	linux-sh@vger.kernel.org, mpe@ellerman.id.au,
+	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Reimar =?iso-8859-1?Q?D=F6ffinger?= <Reimar.Doeffinger@gmx.de>
+Subject: Re: [PATCH] crash: Default to CRASH_DUMP=n when support for it is
+ unlikely
+Message-ID: <Zs2WBgtADYxzVMyt@MiWiFi-R3L-srv>
+References: <20240823125156.104775-1-dave@vasilevsky.ca>
+ <CAMuHMdVYNhFJ+qBDP3_fi9oeHsgOL0vqPe1YqE18+M8n1onssw@mail.gmail.com>
+ <09c29a3c4879d4ce5d8b97fd60d8ba5e38bed979.camel@physik.fu-berlin.de>
+ <Zs1wpHxfTcwKr517@MiWiFi-R3L-srv>
+ <f355e26eead641f5f281372aadf9dee7de19a4c7.camel@physik.fu-berlin.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,91 +92,34 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <MW4PR12MB72616723E1A090E315681FF6A38B2@MW4PR12MB7261.namprd12.prod.outlook.com>
+In-Reply-To: <f355e26eead641f5f281372aadf9dee7de19a4c7.camel@physik.fu-berlin.de>
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.15
 
-Hi,
-
-On Mon, Aug 26, 2024 at 06:17:22PM +0000, Bruno Faccini wrote:
-> > On 7 Aug 2024, at 2:41, Mike Rapoport wrote:
-> > 
-> > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-> > 
-> > Until now arch_numa was directly translating firmware NUMA information
-> > to memblock.
-> > 
-> > Using numa_memblks as an intermediate step has a few advantages:
-> > * alignment with more battle tested x86 implementation
-> > * availability of NUMA emulation
-> > * maintaining node information for not yet populated memory
-> > 
-> > Adjust a few places in numa_memblks to compile with 32-bit phys_addr_t
-> > and replace current functionality related to numa_add_memblk() and
-> > __node_distance() in arch_numa with the implementation based on
-> > numa_memblks and add functions required by numa_emulation.
-> > 
-> > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> > Tested-by: Zi Yan <ziy@nvidia.com> # for x86_64 and arm64
-> > Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> > Tested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com> [arm64 + CXL via
-> > QEMU]
-> > Acked-by: Dan Williams <dan.j.williams@intel.com>
-> > Acked-by: David Hildenbrand <david@redhat.com>
-> > ---
-> >   drivers/base/Kconfig       |   1 +
-> >   drivers/base/arch_numa.c   | 201 +++++++++++--------------------------
-> >   include/asm-generic/numa.h |   6 +-
-> >   mm/numa_memblks.c          |  17 ++--
-> >   4 files changed, 75 insertions(+), 150 deletions(-)
-> >  
-> > <snip>
-> > 
-> > +
-> > +u64 __init numa_emu_dma_end(void)
-> > +{
-> > +             return PFN_PHYS(memblock_start_of_DRAM() + SZ_4G);
-> > +}
-> > +
+On 08/27/24 at 08:37am, John Paul Adrian Glaubitz wrote:
+> On Tue, 2024-08-27 at 14:22 +0800, Baoquan He wrote:
+> > About why it's enabled by default, as Michael has explained in another
+> > thread, distros usualy needs to enable it by default because vmcore
+> > dumping is a very important feature on servers, even guest instances. 
+> > Even though kdump codes are enabled to built in, not providing
+> > crashkernel= value won't make vmcore dumping take effect, it won't cost
+> > system resources in that case.
 > 
-> PFN_PHYS() translation is unnecessary here, as
-> memblock_start_of_DRAM() + SZ_4G is already a
-> memory size.
+> OK, thanks for the explanation. But as we have found out in the mean time,
+> the assumption was wrong to enable it by default for all architectures as
+> some architectures cannot boot a crash dump kernel with their default bootloader
+> but only through kexec.
 > 
-> This should fix it:
->  
-> diff --git a/drivers/base/arch_numa.c b/drivers/base/arch_numa.c
-> index 8d49893c0e94..e18701676426 100644
-> --- a/drivers/base/arch_numa.c
-> +++ b/drivers/base/arch_numa.c
-> @@ -346,7 +346,7 @@ void __init numa_emu_update_cpu_to_node(int
-> *emu_nid_to_phys,
-> 
-> u64 __init numa_emu_dma_end(void)
-> {
-> -              return PFN_PHYS(memblock_start_of_DRAM() + SZ_4G);
-> +             return memblock_start_of_DRAM() + SZ_4G;
-> }
-> 
-> void debug_cpumask_set_cpu(unsigned int cpu, int node, bool enable)
+> Can we have a follow-up patch to disable crash dump kernels where they're
+> not needed? I mean, not every platform supported by Linux is obviously a
+> x86-based or POWER-based server.
 
-Right, I've missed that. Thanks for the fix!
+Yes, while isn't Dave's patch a good one to fix it? In Dave's patch, the
+default enabling of CRASH_DUMP has been taken off, change to rely on
+ARCH_DEFAULT_CRASH_DUMP provided by each arch.
 
-Andrew, can you please apply this (with fixed formatting)
+ config CRASH_DUMP
+        bool "kernel crash dumps"
+-       default y
++       default ARCH_DEFAULT_CRASH_DUMP
 
-diff --git a/drivers/base/arch_numa.c b/drivers/base/arch_numa.c
-index 8d49893c0e94..e18701676426 100644
---- a/drivers/base/arch_numa.c
-+++ b/drivers/base/arch_numa.c
-@@ -346,7 +346,7 @@ void __init numa_emu_update_cpu_to_node(int *emu_nid_to_phys,
- 
- u64 __init numa_emu_dma_end(void)
- {
--	return PFN_PHYS(memblock_start_of_DRAM() + SZ_4G);
-+	return memblock_start_of_DRAM() + SZ_4G;
- }
- 
- void debug_cpumask_set_cpu(unsigned int cpu, int node, bool enable)
-
--- 
-Sincerely yours,
-Mike.
 
