@@ -1,58 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-578-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CC04C52D6F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 07:15:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D249C52D6F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 07:29:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WtJj50lz7z2yZ1;
-	Tue, 27 Aug 2024 17:15:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724742921;
-	cv=none; b=FBWvSdjB5W3pVChaezI74PADRDJaAOGaYuyaLrwiYXL3dAdrwPY6/wqiRKIAjPPB22/l7bT/I9arCQmy/pL+3n3PfzmEFbVClmYErYIY2ElsVCX24HiNlPZ0+V7Xf3elxD/p9RdwQv+4ZHqVh8Ndnvj/THD6mpAlXZiOugfGRxuEBK7blaGreZatnehLzcTvP1C2Yhs/8Q4eKWOp2d1cptVGgQBaTUvJ9kXBi6deuRk0W5bncSIFTKN/laZi45tKNITQnj3wHk71kTGPULgx07VqeS5lkL4xh+kP9aHolYsjxnXT2FfkZeM559l+NieM//Kw2s7oIcdHsVh9HwS+4w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WtK1t4bxwz2xXW;
+	Tue, 27 Aug 2024 17:29:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724743794;
+	cv=none; b=Ipn6/obgivoaGixMeacPs/TEm6cpLJG1teInV2yY3QZQVLLwBnnWH8a5LEcpyjTGDa3mh1KUWsjPZhsn95fTXAvyPE7Oh7NJ7o54S+O+To1h7rlwpUIVUVwL5SrmQVMgXadzdj0E5kWmD+xa83Qmx+Za1Ew2osV18RAqeeQfFTwZBfpAsEk9RaEXB/fEkeOTzkAQt7mjfaTtTz21lll2aeDRCNOgJu2K/O20xtTDcvTPo+V6x/rC7EkeJH8NeskCGXp1MsLD7AtzMj2C8g6gJtSkD5Xk0hYsBZZXae80DcU7AwLQJGnAt4lUYGqcqloHV9Y6Pu/S5TNkK8AkoSsK1Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724742921; c=relaxed/relaxed;
-	bh=8nSPQsJamaWd7LPmLTr+2JTlH1Cx/OAs4xpRwlVAdnE=;
-	h=DKIM-Signature:Received:From:To:Cc:In-Reply-To:References:Subject:
-	 Message-Id:Date:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding; b=iZiEP7W6UwAFApRTc1q8Hrak6fO1IMN/TkVxDkI/4AfW6M7pkqDc3KnGtICR5ap8zy2YIvSTrQ6EyzSBT/Itj171X2DZCDblpzoai7zjSPsL8neQkRbUIB37GcqA3hSIwk+k9c3l0sf4Qpo4vop3dcUzzs1U1VUI9jjeMSK91df3e3/PPGiNJ2TZFC7nTv8ET6p7LpaVxMbi9/ni3Ptbvz22SwWsTzNRiQ2sl6NKKhTT8+KYVFQB4JmZfABr8tEMZXQLD0AGh5CHczQdjksYcPTN+lqEDJiIdkyVXNl++A/Z0oN/G35sb0XQCmfU7iEeLWBFY6XwzBXcW/go9OI5wg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=XXXqxn8i; dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=XXXqxn8i;
-	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	t=1724743794; c=relaxed/relaxed;
+	bh=ZFpQqqYtZm9wjsN8m0IkwajQEX9Y5SlRHrnKBRCU4mg=;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
+	 User-Agent; b=GpKIwdKh11GwGaPrcfVCXoZlFf1qi0jKWy5jqSiswixmyJPtS4uuHdIeq0U14L38dBTLuYmXPc098SMx/bDIJYyFgBWaJT7icnkQeqxsMSkxcw/jaP7/XQQJ7+KTVOyZxVSniddUuBHjQgHlOvU53eVLGoRyf8vfDRsYux8WbGCmcJXr6IZNpoGLLqLqpuRRS07zgnoSR6ZYMMY4OtX8rOQ3pwoTK1qGpxQhCH/wiPwKz7df1JGxc++8/gxRWU5cp4YsRJW98zCKkwkyeE71Wz1mquweG/YRW/T/W01vnciUDSL/OKVndqao0S0HSwK9Z63Ek1RnT6AXaVtv5LK34A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de; spf=pass (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org) smtp.mailfrom=lst.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtJj50bt8z2yY1
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 17:15:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1724742920;
-	bh=8nSPQsJamaWd7LPmLTr+2JTlH1Cx/OAs4xpRwlVAdnE=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=XXXqxn8iBVpZChuOOiZCSsDd/5f9Ci6MumL+bvFpHlqfMjl8xl2ic/eEjYzntx5HL
-	 bZ+31/r/NIawnN9W9leghNP25f+GNOvQpw8vl1LuWIQpLojUHlAzWhw7RF3lShXj3j
-	 nPP1fpJzIjULdcZzoLwvTMto1GRRpde5Zc8elLnWuwKuR6H+zcSu4Rf+MX0dVICp6d
-	 AcdjolRht9zDhGKPH1laK4LBA0PlB5zHTLo6JcooP82le+OyoIGifjhYIbxJHXrfMj
-	 U4QIVetOQ+U99aZ/fVCEAos6LTkFBkSsnTFlMGLzJ6DdLP1ZsRC/rdSJ2dLrn5RT6M
-	 mxjPjdYKyZKpw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WtJj464Whz4x2M;
-	Tue, 27 Aug 2024 17:15:20 +1000 (AEST)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <45f8fdf298ec3df7573b66d21b03a5cda92e2cb1.1724313510.git.christophe.leroy@csgroup.eu>
-References: <45f8fdf298ec3df7573b66d21b03a5cda92e2cb1.1724313510.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2] powerpc/mm: Fix return type of pgd_val()
-Message-Id: <172474289344.32718.3015990756212968494.b4-ty@ellerman.id.au>
-Date: Tue, 27 Aug 2024 17:14:53 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtK1s5yKWz2xTq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 17:29:52 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+	id CC3AE68BEB; Tue, 27 Aug 2024 09:29:46 +0200 (CEST)
+Date: Tue, 27 Aug 2024 09:29:46 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: LEROY Christophe <christophe.leroy2@cs-soprasteria.com>,
+	Christoph Hellwig <hch@lst.de>,
+	Christian Lamparter <christian.lamparter@isd.uni-stuttgart.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	Stan Johnson <userm57@yahoo.com>,
+	Finn Thain <fthain@linux-m68k.org>
+Subject: Re: [PATCH v2] powerpc: warn on emulation of dcbz instruction in
+ kernel mode
+Message-ID: <20240827072946.GB13080@lst.de>
+References: <2e3acfe63d289c6fba366e16973c9ab8369e8b75.1631803922.git.christophe.leroy@csgroup.eu> <17fa6450-6613-4c34-804b-e47246e7b39c@isd.uni-stuttgart.de> <9dbf73fe-a459-4956-8dbc-e919d9728f5e@cs-soprasteria.com> <20240822053238.GA2028@lst.de> <e6acf664-5ebd-4273-9330-cbec283ede23@cs-soprasteria.com> <20240823130600.GI28254@gate.crashing.org> <20240823135459.GA28487@lst.de> <20240823191924.GK28254@gate.crashing.org> <c8127b03-245b-4eaa-98f5-6e14df094669@cs-soprasteria.com> <20240824171757.GL28254@gate.crashing.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,23 +54,23 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240824171757.GL28254@gate.crashing.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 
-On Thu, 22 Aug 2024 09:58:42 +0200, Christophe Leroy wrote:
-> Commit 6b0e82791bd0 ("powerpc/e500: switch to 64 bits PGD on 85xx
-> (32 bits)") switched PGD entries to 64 bits, but pgd_val() returns
-> an unsigned long which is 32 bits on PPC32. This is not a problem
-> for regular PMD entries because the upper part is always NULL, but
-> when PMD entries are leaf they contain 64 bits values, so pgd_val()
-> must return an unsigned long long instead of an unsigned long.
+On Sat, Aug 24, 2024 at 12:17:57PM -0500, Segher Boessenkool wrote:
+> > Are these functions also used on DMA coherent memory ?
 > 
-> [...]
+> Most won't show up high on most profiles, heh.  Which you already
+> can see from the problem not being attacked yet: if it was so obviously
+> a problem, some people would have wanted to do something about it :-)
 
-Applied to powerpc/fixes.
+Most drivers try to avoid coherent allocations in the fast path if
+they can.  Another good option for Christians problem would be
+to switch the the dmaengine driver to use dma_alloc_pages - it doesn't
+actually need uncached memory as far as I can, dma_alloc_coherent is
+just the only API we had to allocate guaranteed DMAable memory for most
+of Linux's existence.
 
-[1/1] powerpc/mm: Fix return type of pgd_val()
-      https://git.kernel.org/powerpc/c/3b1f7a46977fe2ff9384d08651a6e0d272ae6a60
-
-cheers
 
