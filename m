@@ -1,69 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-591-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-592-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A708C52D6F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 08:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7022C5320E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 08:50:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WtLbp1NFSz2y1j;
-	Tue, 27 Aug 2024 18:40:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:40e1:4800::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724748054;
-	cv=none; b=TsaMOb7bSrz/ohgBsFilEbOjNuNHBo+CSTtWrESGANsnmQRzUtXaNjVgDwypA0G0NojakJq5GH0X1k/JWziU22XcizNnNACwSazYJxA5w9up5XVL9dkIggO/8LmkK1nSVWpyu8QsCuetcKNo3Bh+clEnB+3lqy9ZoBYMBcD5ksrXvaTyXA837UB0FXY9tbkZ9iV/Ry1DeOOrtqzVu5UC/yAEq8x2pN8nFIBLaj5Q71k4EU+ddxJgwl6nmjxJnJHVtK0iY19l1WNBasZU13LbMxvBvL4y4/hbZnN0BIHIzxZNzvuGph8lPHUEqhlR+KQ4mWpgHoW9IJxltCub6TPqUw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WtLpR1GJhz2yS0;
+	Tue, 27 Aug 2024 18:50:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724748607;
+	cv=none; b=B+PWy+oGgbC+4uU0jQTdeRPRniJ61kQwCFe0OVE6MjlYm4NjXQ25cM8veU0K3ndSkzm7R2/P3l3cbzYKJVMQ6v4LN5xmBdN02s9e2X1SzNmtx6eQkUe1O8Fm8IbuIZ/gH5+5vDNO6PKDTIUT29MkZfb4EMMetlFfrip8MPjp6BWV/R1aYZFgMRI+VDaJZmqr5HQgUI0Tdnf+/26AMLxtIPJBSJlK53A/nOPkUhG/Qd3CuSwq+53yrFSIEKeWRfCROLl0wWQvF22UXjm01Uja4p1iwVMEX1AsmD0dBzvNzTnC4XGJej2qHzholFHn6QedFxDlngt+YMPl50KkmoAjXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724748054; c=relaxed/relaxed;
-	bh=3IW+Vsw4CmRgVYu00hgtvuoWLEc9DazJelQLIisOKBM=;
-	h=Received:Received:DKIM-Signature:Received:Date:From:To:Cc:Subject:
-	 Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=La6gDr8ln9cUiZSYmIh8mrXI9VzUZX9g+iSi3i7LG5bbZjYTZQf59jtSBb53SbZkH4+J1qJCpXCk6aWTl6dvWGw7CeF0q6OhJOh3tP/vUWiRwQ9etAZGwbvVYiHpWLjFU+b7LTEJEDj4mjAQDbSjS3OzjKJ6IwcZ7kRxuAbOiD52Ryg2HsIFbbOJXRTR1YCkS3ljMAeAQF2yFSJnROPEIi88Fkc12WMNz6LOJQQORNsa+gIlPXl/UFvGGm193Ggzy77m6CM/vm6+o0puhQ+72vUdiscr9znlsKaMp39dMboM7nEl2yB/aCJ3jf/VfwGZGcVKzWip5ldroiCMtNON5g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=QygvRznO; dkim-atps=neutral; spf=pass (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=srs0=xpq3=p2=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=QygvRznO;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=srs0=xpq3=p2=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
+	t=1724748607; c=relaxed/relaxed;
+	bh=Z44NrRIFjIvMOiwZi/d/I4Tv8shrT6h3mF70sIWGs6A=;
+	h=Received:X-Virus-Scanned:Received:Received:Received:
+	 X-Virus-Scanned:Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding; b=BqY/Q8Qz3UpME/hcPQfTKG6xNz9Wq8IHDm0c30uzV2Mhxrx7FTl4JG0QBWewBtYBSY5ZeBmrzbWo1MZh+Q/Y7e/9JQK4uBoQuL80Mm36ovuZZUKWBgOGWok+biXPYfcPGF4APsoS7X1ctrH8y8O8MfRuQJm99WmTsGCX+1TlufUBZLXa05uzl2Nq3mUS4Hwqap6mGRkc83+bCvcAQkhSj6bGkT5+phKEsfT2lX/xpV4FUb5sY86GJ8Pr33Dc4mSG6rwWaDdb7D8y/2uYt9UScwk1JKDCKUvzShXOILy/bpZmfIdCljNvt5dJIjbdsQqHUgNtY1hsLZ7kPxgqBCearA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtLbn6syWz2xtt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 18:40:53 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sin.source.kernel.org (Postfix) with ESMTP id 4B4D2CE10ED;
-	Tue, 27 Aug 2024 08:40:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E622C8B7AA;
-	Tue, 27 Aug 2024 08:40:49 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="QygvRznO"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1724748047;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=3IW+Vsw4CmRgVYu00hgtvuoWLEc9DazJelQLIisOKBM=;
-	b=QygvRznOzjb6ammlW/OkHzqQLTdHDvM064QgWZqagqk/HdrFfR7M5tRYoUI4fk9bMp2/pj
-	alXklZBSTDzpHVtD6oTy20hZ8DlwO9UHqKCqgE2R5ETBlHUTYlofrDAA4cAPp18XCeLzHI
-	54gsHRdK5uRCTiz8RGh9hP0Nrow3//Q=
-Received: 
-	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 70296b46 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Tue, 27 Aug 2024 08:40:47 +0000 (UTC)
-Date: Tue, 27 Aug 2024 10:40:41 +0200
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Theodore Ts'o <tytso@mit.edu>, Arnd Bergmann <arnd@arndb.de>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] random: vDSO: Redefine PAGE_SIZE and PAGE_MASK
-Message-ID: <Zs2RCfMgfNu_2vos@zx2c4.com>
-References: <b8f8fb6d1d10386c74f2d8826b737a74c60b76b2.1724743492.git.christophe.leroy@csgroup.eu>
- <defab86b7fb897c88a05a33b62ccf38467dda884.1724747058.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtLpQ5rwfz2xtt
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 18:50:05 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4WtL3V5NkGz9sRy;
+	Tue, 27 Aug 2024 10:16:22 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id qOUXLlQcHZNN; Tue, 27 Aug 2024 10:16:22 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4WtL3R6BsYz9rvV;
+	Tue, 27 Aug 2024 10:16:19 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C3B4D8B77B;
+	Tue, 27 Aug 2024 10:16:19 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id nz5gQiZQEV5x; Tue, 27 Aug 2024 10:16:19 +0200 (CEST)
+Received: from [192.168.233.149] (PO19727.IDSI0.si.c-s.fr [192.168.233.149])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 270028B763;
+	Tue, 27 Aug 2024 10:16:19 +0200 (CEST)
+Message-ID: <55a7d3ba-b384-4fb0-8fbb-e05ddf0d1fb8@csgroup.eu>
+Date: Tue, 27 Aug 2024 10:16:18 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,147 +59,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <defab86b7fb897c88a05a33b62ccf38467dda884.1724747058.git.christophe.leroy@csgroup.eu>
-
-I don't love this, but it might be the lesser of evils, so sure, let's
-do it.
-
-I think I'll combine these header fixups so that the whole operation is
-a bit more clear. The commit is still pretty small. Something like
-below:
-
-From 0d9a3d68cd6222395a605abd0ac625c41d4cabfa Mon Sep 17 00:00:00 2001
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/4] random: vDSO: Don't use PAGE_SIZE and PAGE_MASK
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
+Cc: Theodore Ts'o <tytso@mit.edu>, Arnd Bergmann <arnd@arndb.de>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>, Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
+References: <cover.1724743492.git.christophe.leroy@csgroup.eu>
+ <b8f8fb6d1d10386c74f2d8826b737a74c60b76b2.1724743492.git.christophe.leroy@csgroup.eu>
+ <Zs2FJku2hM2bp4ik@zx2c4.com>
+Content-Language: fr-FR
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Date: Tue, 27 Aug 2024 09:31:47 +0200
-Subject: [PATCH] random: vDSO: clean header inclusion in getrandom
+In-Reply-To: <Zs2FJku2hM2bp4ik@zx2c4.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Depending on the architecture, building a 32-bit vDSO on a 64-bit kernel
-is problematic when some system headers are included.
 
-Minimise the amount of headers by moving needed items, such as
-__{get,put}_unaligned_t, into dedicated common headers and in general
-use more specific headers, similar to what was done in commit
-8165b57bca21 ("linux/const.h: Extract common header for vDSO") and
-commit 8c59ab839f52 ("lib/vdso: Enable common headers").
 
-On some architectures this results in missing PAGE_SIZE, as was
-described by commit 8b3843ae3634 ("vdso/datapage: Quick fix - use
-asm/page-def.h for ARM64"), so define this if necessary, in the same way
-as done prior by commit cffaefd15a8f ("vdso: Use CONFIG_PAGE_SHIFT in
-vdso/datapage.h").
+Le 27/08/2024 à 09:49, Jason A. Donenfeld a écrit :
+> On Tue, Aug 27, 2024 at 09:31:48AM +0200, Christophe Leroy wrote:
+>> -	ssize_t ret = min_t(size_t, INT_MAX & PAGE_MASK /* = MAX_RW_COUNT */, len);
+>> +	const unsigned long page_size = 1UL << CONFIG_PAGE_SHIFT;
+>> +	const unsigned long page_mask = ~(page_size - 1);
+>> +	ssize_t ret = min_t(size_t, INT_MAX & page_mask /* = MAX_RW_COUNT */, len);
+> 
+> I'm really not a fan of making the code less idiomatic...
 
-Removing linux/time64.h leads to missing 'struct timespec64' in
-x86's asm/pvclock.h. Add a forward declaration of that struct in
-that file.
+Ok, I have another idea, let's give it a try.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
----
- arch/x86/include/asm/pvclock.h  |  1 +
- include/asm-generic/unaligned.h | 11 +----------
- include/vdso/helpers.h          |  1 +
- include/vdso/unaligned.h        | 15 +++++++++++++++
- lib/vdso/getrandom.c            | 13 ++++++++-----
- 5 files changed, 26 insertions(+), 15 deletions(-)
- create mode 100644 include/vdso/unaligned.h
+> 
+>> An easy solution would be to define PAGE_SIZE and PAGE_MASK in vDSO
+>> when they do not exist already, but this can be misleading.
+> 
+> Why would what tglx and I suggested be misleading? That seems pretty
+> normal... Are you worried they might mismatch somehow? (If so, why?)
 
-diff --git a/arch/x86/include/asm/pvclock.h b/arch/x86/include/asm/pvclock.h
-index 0c92db84469d..6e4f8fae3ce9 100644
---- a/arch/x86/include/asm/pvclock.h
-+++ b/arch/x86/include/asm/pvclock.h
-@@ -5,6 +5,7 @@
- #include <asm/clocksource.h>
- #include <asm/pvclock-abi.h>
+All architectures have their own definition, they are all based on 
+CONFIG_PAGE_SHIFT and should give the same value but with some 
+subtleties. The best would be to have an asm-generic definition of 
+PAGE_SIZE and PAGE_MASK that all architectures use, but that's another 
+level of work.
 
-+struct timespec64;
- /* some helper functions for xen and kvm pv clock sources */
- u64 pvclock_clocksource_read(struct pvclock_vcpu_time_info *src);
- u64 pvclock_clocksource_read_nowd(struct pvclock_vcpu_time_info *src);
-diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
-index a84c64e5f11e..95acdd70b3b2 100644
---- a/include/asm-generic/unaligned.h
-+++ b/include/asm-generic/unaligned.h
-@@ -8,16 +8,7 @@
-  */
- #include <linux/unaligned/packed_struct.h>
- #include <asm/byteorder.h>
--
--#define __get_unaligned_t(type, ptr) ({						\
--	const struct { type x; } __packed *__pptr = (typeof(__pptr))(ptr);	\
--	__pptr->x;								\
--})
--
--#define __put_unaligned_t(type, val, ptr) do {					\
--	struct { type x; } __packed *__pptr = (typeof(__pptr))(ptr);		\
--	__pptr->x = (val);							\
--} while (0)
-+#include <vdso/unaligned.h>
+tglx or yourself suggested to put in a one of the vdso headers instead 
+of directly in getrandom.c. This is too fragile because PAGE_SIZE might 
+be absent in that header but arrive in getrandom.c through another header.
 
- #define get_unaligned(ptr)	__get_unaligned_t(typeof(*(ptr)), (ptr))
- #define put_unaligned(val, ptr) __put_unaligned_t(typeof(*(ptr)), (val), (ptr))
-diff --git a/include/vdso/helpers.h b/include/vdso/helpers.h
-index 73501149439d..3ddb03bb05cb 100644
---- a/include/vdso/helpers.h
-+++ b/include/vdso/helpers.h
-@@ -4,6 +4,7 @@
-
- #ifndef __ASSEMBLY__
-
-+#include <asm/barrier.h>
- #include <vdso/datapage.h>
-
- static __always_inline u32 vdso_read_begin(const struct vdso_data *vd)
-diff --git a/include/vdso/unaligned.h b/include/vdso/unaligned.h
-new file mode 100644
-index 000000000000..eee3d2a4dbe4
---- /dev/null
-+++ b/include/vdso/unaligned.h
-@@ -0,0 +1,15 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef __VDSO_UNALIGNED_H
-+#define __VDSO_UNALIGNED_H
-+
-+#define __get_unaligned_t(type, ptr) ({						\
-+	const struct { type x; } __packed *__pptr = (typeof(__pptr))(ptr);	\
-+	__pptr->x;								\
-+})
-+
-+#define __put_unaligned_t(type, val, ptr) do {					\
-+	struct { type x; } __packed *__pptr = (typeof(__pptr))(ptr);		\
-+	__pptr->x = (val);							\
-+} while (0)
-+
-+#endif /* __VDSO_UNALIGNED_H */
-diff --git a/lib/vdso/getrandom.c b/lib/vdso/getrandom.c
-index 1281fa3546c2..938ca539aaa6 100644
---- a/lib/vdso/getrandom.c
-+++ b/lib/vdso/getrandom.c
-@@ -4,15 +4,18 @@
-  */
-
- #include <linux/array_size.h>
--#include <linux/cache.h>
--#include <linux/kernel.h>
--#include <linux/time64.h>
-+#include <linux/minmax.h>
- #include <vdso/datapage.h>
- #include <vdso/getrandom.h>
-+#include <vdso/unaligned.h>
- #include <asm/vdso/getrandom.h>
--#include <asm/vdso/vsyscall.h>
--#include <asm/unaligned.h>
- #include <uapi/linux/mman.h>
-+#include <uapi/linux/random.h>
-+
-+#undef PAGE_SIZE
-+#undef PAGE_MASK
-+#define PAGE_SIZE (1UL << CONFIG_PAGE_SHIFT)
-+#define PAGE_MASK (~(PAGE_SIZE - 1))
-
- #define MEMCPY_AND_ZERO_SRC(type, dst, src, len) do {				\
- 	while (len >= sizeof(type)) {						\
---
-2.46.0
+Christophe
 
