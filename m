@@ -1,92 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-564-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-565-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EF9AC5320E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 05:33:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 881A0C52D6F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 05:36:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WtGRy55dzz2yP8;
-	Tue, 27 Aug 2024 15:33:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724736830;
-	cv=none; b=d7cV14f4W2i2FiOtUKZu/HPE7/N6J19za56wO6oKS7+kgPNDRT19u2yrzTSMNLIrY8UrFcnMM+CJTYGz2W4TQFAOfmFyVdj80aw2zSRvQ7jLRbWVWohPOyyU5AW9L4wMLrokjQXZkxvR7QBRLRNaLufZ4mQ5DDRx3TUaZEIRtHl4D0n1MGPoL1J/GEEOw/2nP7hrH13kZH2i+n3nN8LmUMaKAN9pMuzQxQGO/kYdiIAuNhh4Lg1oqgSxEH3hQ0fb8RfF0UfxHqJld9jrjQekyxzlDKp+DFmMd6GTo8/9VHZu+EuakALiFe1fA6Y/c5aHNnjttMX61XeKau3YOffAZw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WtGW56dt9z2yPD;
+	Tue, 27 Aug 2024 15:36:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b34"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724736449;
+	cv=none; b=W+lCo+FuOUJ6IDWOupo7alZXKmpEwTv9e6UOJ+1j5Zd56GqaI+nmr/JL/JOEDTkSdA5VXqdnPcFP/L63oWO4nDcZNLAtjnzvM//ZtDu14Godwo/S6aKdwxMKH+LK3Ts/uvrV96shzNB7zf24B3FRAcjw5SonXRYKrCR1GLxWxy//M5rw2hFxc2/m6559jolOTHxYGO12okwjoYGwvRtONP/gJcx9E0rqs+DEmuHZ03L1YAc6WUsi6/x9VOBG8KZxh7krP5YDBD/EWK09B3pKBlSeSHq9sPfWsAFASHoLe+J+6aT5ptMMNP2y8EwUms7SuY+FdLmpfMROgNhSxA0ZCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724736830; c=relaxed/relaxed;
-	bh=L8Sjx5YSltujzI60JahR8FVhesLAlU00v4fqtvSMiGY=;
-	h=Received:DKIM-Signature:Received:Received:Received:Received:
-	 Received:Received:Received:Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-TM-AS-GCONF:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details; b=YNzLpyOOOT3dYbMj73ThqHIrMlbzXZwT1FcO//CidPM2+dLVyKrt8ouoBvvcAMbSIAhPo/OHAZpiE55FLU7M2WyqWCZi0iFW5/LijKNh4ID+Xt+7GIijcxFCNjGzy3w6GxqjcS1TbDy2qMRv4ToDkdS1P5Mn1D0JC6lM1PNGmBT8QzWC1mSg+gyhmExfuCMRhUrGD2yjScF2yhWB/lnc0WG8HzedGXbkFRBk9gcJAk/lJnQJUyj2F50qrSjEExPN/c/zxb2jZbsLPpA3D9sShBElVPC7SjW7PZ8X2jkhyXG87HWE9vZO/zCwaNU3mJcA1iDv9s0hgsad66b1EB5w7Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p2laHNNH; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1724736449; c=relaxed/relaxed;
+	bh=8TM272CqmQHBAPuQBx3v3EUsJXwKFvKHbfQWNUBbbHk=;
+	h=Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Google-Smtp-Source:
+	 X-Received:Received:From:To:Cc:Subject:In-Reply-To:Date:Message-ID:
+	 References:MIME-version:Content-type:Content-Transfer-Encoding; b=N/pP7vFO9dUMqKub8zDfw+iBwdW3q0fAreVlIjysxPR9MbpsqhiCuXeYkEp+jjr4yelaps8msJ1cvEJ1uh1lS3vKA2fT5v935KiqWD0pt0ONZHP0ljPc1VMDMjY232o64aV42FPlvkt0AcetKlI6Xvfn/OjHrba7hTW7bWzc2Xv50iKuaclVUIGDtUAi2ObXTHyun3qcP65nq2oCtVsaYnVRhBJX63qAnyK9YbmuWhnjkPOZol8L9fTlR2GFMjVR2A6KGR0S1Tkums6KA213CDBDLAXZE3fmkjC834pQKXhLBbjuEsdQtBBJKI27Kd1J4hhAJbXKtSiIYxitgvuOYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=l3wmVj45; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b34; helo=mail-yb1-xb34.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p2laHNNH;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=l3wmVj45;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b34; helo=mail-yb1-xb34.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb34.google.com (mail-yb1-xb34.google.com [IPv6:2607:f8b0:4864:20::b34])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtGRy255mz2xtN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 15:33:49 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47R1tVLo015136;
-	Tue, 27 Aug 2024 05:33:45 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
-	:to:cc:subject:date:message-id:in-reply-to:references
-	:mime-version:content-transfer-encoding; s=pp1; bh=L8Sjx5YSltujz
-	I60JahR8FVhesLAlU00v4fqtvSMiGY=; b=p2laHNNHTI/0ykTeuNBTu5GWbb9Kk
-	DrpSNih83djzsCqkomzswBwCAJDagHd/3jY4yBrorY0VZjdOdwwnFbSn3fD+uXoO
-	s2i+I7lTd8Iq7uSaDTE0hTVtYscsxfpTZK89tMgqywDAo7I8OUSXmtqio/27kXBy
-	1NsKHv2xYjadkrIfHYuVMI1Dx66VwHW+CdRmt6GbM6fh+//FesD9K4Eu7Flwlob/
-	OsKBX16y1J7d9tAYC89JrPihXZORvp+1Bn4WEz8GLEEKssffkEonpsWB1PNBS0j5
-	emUDuAgjzFCrBo6DKvSuW3NkCKfGrJmLVt4TByx8ZqBzTCZ18z1YITSaA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 417fvc1tsg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 27 Aug 2024 05:33:45 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 47R5XiDA028487;
-	Tue, 27 Aug 2024 05:33:44 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 417fvc1tsa-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 27 Aug 2024 05:33:44 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 47R3XFZ9008239;
-	Tue, 27 Aug 2024 05:33:41 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 417v2mh4xq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 27 Aug 2024 05:33:40 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47R5Xb9u55509362
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 27 Aug 2024 05:33:37 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7E9512004B;
-	Tue, 27 Aug 2024 05:33:37 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C580B20040;
-	Tue, 27 Aug 2024 05:33:30 +0000 (GMT)
-Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.ustream.lldns.net (unknown [9.200.51.96])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 27 Aug 2024 05:33:30 +0000 (GMT)
-From: Kajol Jain <kjain@linux.ibm.com>
-To: acme@kernel.org, irogers@google.com
-Cc: namhyung@kernel.org, linux-kernel@vger.kernel.org,
-        linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        maddy@linux.ibm.com, atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com,
-        hbathini@linux.ibm.com, disgoel@linux.vnet.ibm.com
-Subject: [PATCH 3/3] perf vendor events: Move PM_BR_MPRED_CMPL event for power10 platform
-Date: Tue, 27 Aug 2024 11:02:06 +0530
-Message-ID: <20240827053206.538814-3-kjain@linux.ibm.com>
-X-Mailer: git-send-email 2.43.5
-In-Reply-To: <20240827053206.538814-1-kjain@linux.ibm.com>
-References: <20240827053206.538814-1-kjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtGJd1wLKz2xs4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 15:27:28 +1000 (AEST)
+Received: by mail-yb1-xb34.google.com with SMTP id 3f1490d57ef6-e116a5c3922so4886441276.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Aug 2024 22:27:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1724736445; x=1725341245; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8TM272CqmQHBAPuQBx3v3EUsJXwKFvKHbfQWNUBbbHk=;
+        b=l3wmVj45+etALYJU5R3IubvInAXynEhCULeuyB5psMvrMiqWhh4iuqvwXbqN++Ujjl
+         rM1SZ7JhRZuW6D2xxlklo8Ud/+TYiy3Vvv1WcJ8FpNolRK5S6hDAcewYG2dwCoN1X0zs
+         vWpFNXvG12x+nFhyhEgmFFzOFC0TfDlh6pYAarx/kwH/dSvEAGDN4sMN74TmYnnqGQ6b
+         MtqG2HvPTkALQXW3cwyPlPlW+pUXBnRiasT+g4/jZIZ2l/+Cx1xBKQ6WVN88HN0WEif6
+         5FbfLnI399jGRQBwp5h5jd5WeWvoLwN/flaH8Vl6Z8wG5OXi6N9JeDUdkmeD3yDTp+Pd
+         B6Xw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1724736445; x=1725341245;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=8TM272CqmQHBAPuQBx3v3EUsJXwKFvKHbfQWNUBbbHk=;
+        b=ARHLAPs/ARRg1J5649v8JkLygve9ivNbR6wvHv6xBDNR/R/iVH1nZD2a2AbjYCIeZj
+         Lv0SWefGsqi20aiFh5GD+i9orNI8QzzF7f9W/zKWVZ03ctsQX26xdapT9e/wrr6IQhzi
+         HAnAq9brmHlO9HQZ0TNgpL6Qe1WqIl/hf8ZUSeqxAHuWAeG2xLGwNVwYerECBAXXaWAo
+         cAkcC+4gGM5HJpwdJkcvUHbzgAXY0jP8zMVPHIOPeuyjKpXnxqqZhcTR2F2s928y4evD
+         vqVmKmflxNfZkJXoagyzSlS5VkH0SbtgZRYHJ+Ltyh5lVA/6akdUryFZR/mCglw+JHJH
+         T9Vw==
+X-Forwarded-Encrypted: i=1; AJvYcCU2sIxDRdaDedZT0JvLmNrYRIOUasOUAewwu9LuBcG7XNhzdvhqAZkV5+w5HXXTtiSrqHFuuAnTG0c7Ljc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxtwBPjlDdLL4G9THgiTNvhnH813GMjyn8CSIkRmfMzNZWAnRLw
+	Hb1uj0vzs80mcXzGRh4XQSSSgck4/Cgiq/R/ajWWWpA+JFz4fGzZZYzPkg==
+X-Google-Smtp-Source: AGHT+IE/x+eNQiL+f3L5I5I1E4tl4eROm28xpp8EC3DBQBTRt4QoRF4Tk78dVd65ZwKwWwpCjGy/pw==
+X-Received: by 2002:a05:6902:a86:b0:e16:5177:758e with SMTP id 3f1490d57ef6-e17a83d4bafmr12881575276.7.1724736445148;
+        Mon, 26 Aug 2024 22:27:25 -0700 (PDT)
+Received: from dw-tp ([49.205.218.89])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-71434335e77sm7788442b3a.202.2024.08.26.22.27.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 26 Aug 2024 22:27:24 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Luis Chamberlain <mcgrof@kernel.org>, "Darrick J. Wong" <djwong@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>, Mike Rapoport <rppt@kernel.org>, Song Liu <song@kernel.org>, Arnd Bergmann <arnd@arndb.de>, "Pankaj Raghav (Samsung)" <kernel@pankajraghav.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Christian Brauner <brauner@kernel.org>, Pankaj Raghav <p.raghav@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Next Mailing List <linux-next@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: linux-next: boot warning after merge of the vfs-brauner tree
+In-Reply-To: <Zsz2gGgORfeVkVfG@bombadil.infradead.org>
+Date: Tue, 27 Aug 2024 10:56:12 +0530
+Message-ID: <878qwisfij.fsf@gmail.com>
+References: <20240826175931.1989f99e@canb.auug.org.au> <20240826154818.hzqnvofdmaxvuwrh@quentin> <b0fe75b4-c1bb-47f7-a7c3-2534b31c1780@csgroup.eu> <ZszrJkFOpiy5rCma@bombadil.infradead.org> <20240826211049.GC6082@frogsfrogsfrogs> <Zsz2gGgORfeVkVfG@bombadil.infradead.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,61 +83,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: _PMNOpisS7R51y7GDlnBtpvGFuTfQJod
-X-Proofpoint-GUID: l8-l_rXsSQmF8Lv2U7hQ4MJIdQl8Lwg_
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-08-27_04,2024-08-26_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 suspectscore=0
- mlxscore=0 priorityscore=1501 mlxlogscore=999 clxscore=1015
- lowpriorityscore=0 adultscore=0 phishscore=0 spamscore=0 bulkscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2407110000 definitions=main-2408270039
 
-Move PM_BR_MPRED_CMPL event from cache.json to frontend.json file
-for power10 platform
+Luis Chamberlain <mcgrof@kernel.org> writes:
 
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
----
- tools/perf/pmu-events/arch/powerpc/power10/cache.json    | 5 -----
- tools/perf/pmu-events/arch/powerpc/power10/frontend.json | 5 +++++
- 2 files changed, 5 insertions(+), 5 deletions(-)
+> On Mon, Aug 26, 2024 at 02:10:49PM -0700, Darrick J. Wong wrote:
+>> On Mon, Aug 26, 2024 at 01:52:54PM -0700, Luis Chamberlain wrote:
+>> > On Mon, Aug 26, 2024 at 07:43:20PM +0200, Christophe Leroy wrote:
+>> > > 
+>> > > 
+>> > > Le 26/08/2024 à 17:48, Pankaj Raghav (Samsung) a écrit :
+>> > > > On Mon, Aug 26, 2024 at 05:59:31PM +1000, Stephen Rothwell wrote:
+>> > > > > Hi all,
+>> > > > > 
+>> > > > > After merging the vfs-brauner tree, today's linux-next boot test (powerpc
+>> > > > > pseries_le_defconfig) produced this warning:
+>> > > > 
+>> > > > iomap dio calls set_memory_ro() on the page that is used for sub block
+>> > > > zeroing.
+>> > > > 
+>> > > > But looking at powerpc code, they don't support set_memory_ro() for
+>> > > > memory region that belongs to the kernel(LINEAR_MAP_REGION_ID).
+>> > > > 
+>> > > > /*
+>> > > >   * On hash, the linear mapping is not in the Linux page table so
+>> > > >   * apply_to_existing_page_range() will have no effect. If in the future
+>> > > >   * the set_memory_* functions are used on the linear map this will need
+>> > > >   * to be updated.
+>> > > >   */
+>> > > > if (!radix_enabled()) {
+>> > > >          int region = get_region_id(addr);
+>> > > > 
+>> > > >          if (WARN_ON_ONCE(region != VMALLOC_REGION_ID && region != IO_REGION_ID))
+>> > > >                  return -EINVAL;
+>> > > > }
+>> > > > 
+>> > > > We call set_memory_ro() on the zero page as a extra security measure.
+>> > > > I don't know much about powerpc, but looking at the comment, is it just
+>> > > > adding the following to support it in powerpc:
+>> > > > 
+>> > > > diff --git a/arch/powerpc/mm/pageattr.c b/arch/powerpc/mm/pageattr.c
+>> > > > index ac22bf28086fa..e6e0b40ba6db4 100644
+>> > > > --- a/arch/powerpc/mm/pageattr.c
+>> > > > +++ b/arch/powerpc/mm/pageattr.c
+>> > > > @@ -94,7 +94,9 @@ int change_memory_attr(unsigned long addr, int numpages, long action)
+>> > > >          if (!radix_enabled()) {
+>> > > >                  int region = get_region_id(addr);
+>> > > > -               if (WARN_ON_ONCE(region != VMALLOC_REGION_ID && region != IO_REGION_ID))
+>> > > > +               if (WARN_ON_ONCE(region != VMALLOC_REGION_ID &&
+>> > > > +                                region != IO_REGION_ID &&
+>> > > > +                                region != LINEAR_MAP_REGION_ID))
+>> > > >                          return -EINVAL;
+>> > > >          }
+>> > > >   #endif
+>> > > 
+>> > > By doing this you will just hide the fact that it didn't work.
+>> > > 
+>> > > See commit 1f9ad21c3b38 ("powerpc/mm: Implement set_memory() routines") for
+>> > > details. The linear memory region is not mapped using page tables so
+>> > > set_memory_ro() will have no effect on it.
+>> > > 
+>> > > You can either use vmalloc'ed pages, or do a const static allocation at
+>> > > buildtime so that it will be allocated in the kernel static rodata area.
+>> > > 
+>> > > By the way, your code should check the value returned by set_memory_ro(),
+>> > > there is some work in progress to make it mandatory, see
+>> > > https://github.com/KSPP/linux/issues/7
+>> > 
+>> > Our users expect contiguous memory [0] and so we use alloc_pages() here,
+>> > so if we're architecture limitted by this I'd rather we just remove the
+>> > set_memory_ro() only for PPC, I don't see why other have to skip this.
 
-diff --git a/tools/perf/pmu-events/arch/powerpc/power10/cache.json b/tools/perf/pmu-events/arch/powerpc/power10/cache.json
-index 9814a59fce31..b7e0be09ff57 100644
---- a/tools/perf/pmu-events/arch/powerpc/power10/cache.json
-+++ b/tools/perf/pmu-events/arch/powerpc/power10/cache.json
-@@ -18,10 +18,5 @@
-     "EventCode": "0x300F4",
-     "EventName": "PM_RUN_INST_CMPL_CONC",
-     "BriefDescription": "PowerPC instruction completed by this thread when all threads in the core had the run-latch set."
--  },
--  {
--    "EventCode": "0x400F6",
--    "EventName": "PM_BR_MPRED_CMPL",
--    "BriefDescription": "A mispredicted branch completed. Includes direction and target."
-   }
- ]
-diff --git a/tools/perf/pmu-events/arch/powerpc/power10/frontend.json b/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
-index 684374fe5699..b6998987ab75 100644
---- a/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
-+++ b/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
-@@ -94,6 +94,11 @@
-     "EventName": "PM_DTLB_HIT_1G",
-     "BriefDescription": "Data TLB hit (DERAT reload) page size 1G. Implies radix translation. When MMCR1[16]=0 this event counts only for demand misses. When MMCR1[16]=1 this event includes demand misses and prefetches."
-   },
-+  {
-+    "EventCode": "0x400F6",
-+    "EventName": "PM_BR_MPRED_CMPL",
-+    "BriefDescription": "A mispredicted branch completed. Includes direction and target."
-+  },
-   {
-     "EventCode": "0x400FC",
-     "EventName": "PM_ITLB_MISS",
--- 
-2.43.5
+Looks like not a standard thing to do for kernel linear memory map
+region then and maybe few other archs could be ignoring too?
 
+>> 
+>> Just drop it, then.
+>
+> OK sent a patch for that.
+>
+
+Thanks for fixing it!
+
+-ritesh
 
