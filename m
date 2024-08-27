@@ -1,42 +1,42 @@
-Return-Path: <linuxppc-dev+bounces-602-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-603-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EE46C54735
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 11:38:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28FFCC54735
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 11:38:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WtQXb3jQmz2yYY;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WtQXb4yWbz2yYq;
 	Tue, 27 Aug 2024 21:38:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.189
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.35
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724758703;
-	cv=none; b=MpXk7Q9BXtsbQ689CutjjQmsvR0RjT5M/kr/3SVRJECJ+qv+Zjo3oxbpsJppLg2jl8tdWuoQlINSk1Tp+iL1LX3MC56R61wb3w1szePYZeqlNFdNTfu3jcli3Cy28X7RJ6djcphljenEbL+F8LW+pwo/1EMLww8MVKb9YZxeCPKzPNNwhtQPLWpwgrrxsuE6vC43rmjrwpZLV/1YB1Ukn3yY1t1052j2Iz4YFH56V/SwCInhxr0UunNQn24naVD8CLDr/p0dpFvRlJPVD4bOtmWZLVGc3UUCAWnofIoB+bcMtErxchK8K2smOaBGAjLs9UjJFGqxOJIdi1cBIEO57w==
+	cv=none; b=h9Czw1rRAYUQF7F77HJrpQxdWEu9K1HI2JiBbY4kBl6zkNYWFyb95jP2HGpBMOKBb1lW8t+RS0J817ek+imNr5su+QO1fT6q3D4ahrKwGkptt1jC//zJONiOFdIvsgZdcKG5TEvRriVYBTO85dLOBKheMUPo9c3hjN+AU7KkckLrtT9sYWKvhmZF02ix+cJOT8jRDutxUE7iMbwEpkDUcnpznJA+KgIkKo6ZYgYJWRVZjMsZEHAoTFGz43XQGEngnMM8h1slmB+ausbUTrp6vtZgbS/nvxgU8p9iw/XRJcY0RlRWZNMNpSEdJJ2R5icXjaaDxp05Avl+MXiFgQsuSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1724758703; c=relaxed/relaxed;
-	bh=1fCgKQIkz/+gi9fV1OrbsnV3X9mQtRzZv7rrrwMCDd8=;
+	bh=kvhSsusYdwfy/ugnFE7LONSgtEPXGqWCQprP7oySnDk=;
 	h=Received:Received:Received:From:To:Subject:Date:Message-ID:
 	 X-Mailer:In-Reply-To:References:MIME-Version:
 	 Content-Transfer-Encoding:Content-Type:X-Originating-IP:
-	 X-ClientProxiedBy; b=ckltt0+xfXAMlm1QYQVv8MYry33cXTe8ZS8hv9D2yEJ9d4MmRP5Yh6vxmbHs0vCxqbk4DbXX08Gv/UG165SHy+h/2InOdS5Qd7ZUl5kf2sJFvrVgyNIhqBcssMW7gHA3gOeidXMKvGhet86mR507RGh4h/iunnQO+cbJf56y+biNiZ4FkI5qE8fxgB3HS0N2x35c4npqBwgqweJpbT9TCWfeWpnspAVHfKcn5stK5hdzTVFMbVYUAeG9v4MBZy9/ebFLFQbJaeZX2gPE2374pru88UG6hemWR68E8ih9F43qPpNE9YLN7F3xrvsuZWqaIvFkqpkZDgBCe/Qn2jicpA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 X-ClientProxiedBy; b=cZmOkd6m3tdp3Mk/gy+6OEY4Xc/+eJlVfrCx8ckWbkOZE+n+sq1pv1bEczE0K/BtZNOxnzQxU66hO2A9YYEvtDn6yr8e4Q1ztO0mn2/5vbkTfAhX10wxZ8+OTLVLBJ8EUP+d2pBEgjtEBddg4TlbL4pIr5Az+NdEmdCff0rfn2oBPdIxkTfPVABF904QH21RupHZMp/CFSI9UL00cfiWevMeRnwr5UWDYa8n7IQW+GdWHZYKEsF7SiJQXzF3Qu32CScTE6UvUDtbxSJczGvuoXHLKH4hS19SSg6oG3TjHz338LoBk+EJ4wLxVWMo6/cmZHzDqLS2Hp6OMjYHBEGuOg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.35; helo=szxga07-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=szxga07-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga07-in.huawei.com (szxga07-in.huawei.com [45.249.212.35])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtQXZ0dM4z2yQG
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtQXZ4D7Yz2yTy
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 21:38:22 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.19.162.254])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4WtQQv39T5zQqgc;
-	Tue, 27 Aug 2024 19:33:27 +0800 (CST)
+Received: from mail.maildlp.com (unknown [172.19.163.17])
+	by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4WtQXB5Y2sz1S8sD;
+	Tue, 27 Aug 2024 19:38:02 +0800 (CST)
 Received: from kwepemh500013.china.huawei.com (unknown [7.202.181.146])
-	by mail.maildlp.com (Postfix) with ESMTPS id 26A9B18010B;
-	Tue, 27 Aug 2024 19:38:16 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 69D4C1A0188;
+	Tue, 27 Aug 2024 19:38:13 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by kwepemh500013.china.huawei.com
  (7.202.181.146) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 27 Aug
- 2024 19:38:15 +0800
+ 2024 19:38:12 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <andrew@lunn.ch>, <sebastian.hesselbarth@gmail.com>,
 	<gregory.clement@bootlin.com>, <herve.codina@bootlin.com>,
@@ -47,9 +47,9 @@ To: <andrew@lunn.ch>, <sebastian.hesselbarth@gmail.com>,
 	<ulf.hansson@linaro.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-tegra@vger.kernel.org>, <krzk@kernel.org>, <jic23@kernel.org>
-Subject: [PATCH -next 6/8] soc: dove: Simplify with scoped for each OF child loop
-Date: Tue, 27 Aug 2024 19:46:05 +0800
-Message-ID: <20240827114607.4019972-7-ruanjinjie@huawei.com>
+Subject: [PATCH -next 2/8] soc: fsl: cpm1: Simplify with dev_err_probe()
+Date: Tue, 27 Aug 2024 19:46:01 +0800
+Message-ID: <20240827114607.4019972-3-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20240827114607.4019972-1-ruanjinjie@huawei.com>
 References: <20240827114607.4019972-1-ruanjinjie@huawei.com>
@@ -68,51 +68,119 @@ X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
  kwepemh500013.china.huawei.com (7.202.181.146)
 
-Use scoped for_each_child_of_node_scoped() when iterating over device
-nodes to make code a bit simpler.
+Use the dev_err_probe() helper to simplify error handling during probe.
+This also handle scenario, when EDEFER is returned and useless error
+is printed.
 
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- drivers/soc/dove/pmu.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/soc/fsl/qe/tsa.c | 62 +++++++++++++++-------------------------
+ 1 file changed, 23 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/soc/dove/pmu.c b/drivers/soc/dove/pmu.c
-index 6202dbcd20a8..75f5fc3cb2c6 100644
---- a/drivers/soc/dove/pmu.c
-+++ b/drivers/soc/dove/pmu.c
-@@ -372,7 +372,7 @@ int __init dove_init_pmu_legacy(const struct dove_pmu_initdata *initdata)
-  */
- int __init dove_init_pmu(void)
- {
--	struct device_node *np_pmu, *domains_node, *np;
-+	struct device_node *np_pmu, *domains_node;
- 	struct pmu_data *pmu;
- 	int ret, parent_irq;
+diff --git a/drivers/soc/fsl/qe/tsa.c b/drivers/soc/fsl/qe/tsa.c
+index 7fa399b7a47c..fc37d23b746d 100644
+--- a/drivers/soc/fsl/qe/tsa.c
++++ b/drivers/soc/fsl/qe/tsa.c
+@@ -453,10 +453,8 @@ static int tsa_of_parse_tdms(struct tsa *tsa, struct device_node *np)
  
-@@ -405,21 +405,18 @@ int __init dove_init_pmu(void)
- 
- 	pmu_reset_init(pmu);
- 
--	for_each_available_child_of_node(domains_node, np) {
-+	for_each_available_child_of_node_scoped(domains_node, np) {
- 		struct of_phandle_args args;
- 		struct pmu_domain *domain;
- 
- 		domain = kzalloc(sizeof(*domain), GFP_KERNEL);
--		if (!domain) {
--			of_node_put(np);
-+		if (!domain)
- 			break;
+ 	for_each_available_child_of_node_scoped(np, tdm_np) {
+ 		ret = of_property_read_u32(tdm_np, "reg", &tdm_id);
+-		if (ret) {
+-			dev_err(tsa->dev, "%pOF: failed to read reg\n", tdm_np);
+-			return ret;
 -		}
- 
- 		domain->pmu = pmu;
- 		domain->base.name = kasprintf(GFP_KERNEL, "%pOFn", np);
- 		if (!domain->base.name) {
- 			kfree(domain);
--			of_node_put(np);
++		if (ret)
++			return dev_err_probe(tsa->dev, ret, "%pOF: failed to read reg\n", tdm_np);
+ 		switch (tdm_id) {
+ 		case 0:
+ 			tsa->tdms |= BIT(TSA_TDMA);
+@@ -465,18 +463,15 @@ static int tsa_of_parse_tdms(struct tsa *tsa, struct device_node *np)
+ 			tsa->tdms |= BIT(TSA_TDMB);
  			break;
+ 		default:
+-			dev_err(tsa->dev, "%pOF: Invalid tdm_id (%u)\n", tdm_np,
+-				tdm_id);
+-			return -EINVAL;
++			return dev_err_probe(tsa->dev, -EINVAL, "%pOF: Invalid tdm_id (%u)\n",
++					     tdm_np, tdm_id);
  		}
+ 	}
  
+ 	for_each_available_child_of_node_scoped(np, tdm_np) {
+ 		ret = of_property_read_u32(tdm_np, "reg", &tdm_id);
+-		if (ret) {
+-			dev_err(tsa->dev, "%pOF: failed to read reg\n", tdm_np);
+-			return ret;
+-		}
++		if (ret)
++			return dev_err_probe(tsa->dev, ret, "%pOF: failed to read reg\n", tdm_np);
+ 
+ 		tdm = &tsa->tdm[tdm_id];
+ 		tdm->simode_tdm = TSA_SIMODE_TDM_SDM_NORM;
+@@ -484,35 +479,26 @@ static int tsa_of_parse_tdms(struct tsa *tsa, struct device_node *np)
+ 		val = 0;
+ 		ret = of_property_read_u32(tdm_np, "fsl,rx-frame-sync-delay-bits",
+ 					   &val);
+-		if (ret && ret != -EINVAL) {
+-			dev_err(tsa->dev,
+-				"%pOF: failed to read fsl,rx-frame-sync-delay-bits\n",
+-				tdm_np);
+-			return ret;
+-		}
+-		if (val > 3) {
+-			dev_err(tsa->dev,
+-				"%pOF: Invalid fsl,rx-frame-sync-delay-bits (%u)\n",
+-				tdm_np, val);
+-			return -EINVAL;
+-		}
++		if (ret && ret != -EINVAL)
++			return dev_err_probe(tsa->dev, ret,
++					     "%pOF: failed to read fsl,rx-frame-sync-delay-bits\n",
++					     tdm_np);
++		if (val > 3)
++			return dev_err_probe(tsa->dev, -EINVAL,
++					     "%pOF: Invalid fsl,rx-frame-sync-delay-bits (%u)\n",
++					     tdm_np, val);
+ 		tdm->simode_tdm |= TSA_SIMODE_TDM_RFSD(val);
+ 
+ 		val = 0;
+ 		ret = of_property_read_u32(tdm_np, "fsl,tx-frame-sync-delay-bits",
+ 					   &val);
+-		if (ret && ret != -EINVAL) {
+-			dev_err(tsa->dev,
+-				"%pOF: failed to read fsl,tx-frame-sync-delay-bits\n",
+-				tdm_np);
+-			return ret;
+-		}
+-		if (val > 3) {
+-			dev_err(tsa->dev,
+-				"%pOF: Invalid fsl,tx-frame-sync-delay-bits (%u)\n",
+-				tdm_np, val);
+-			return -EINVAL;
+-		}
++		if (ret && ret != -EINVAL)
++			return dev_err_probe(tsa->dev, ret,
++				"%pOF: failed to read fsl,tx-frame-sync-delay-bits\n", tdm_np);
++		if (val > 3)
++			return dev_err_probe(tsa->dev, -EINVAL,
++					     "%pOF: Invalid fsl,tx-frame-sync-delay-bits (%u)\n",
++					     tdm_np, val);
+ 		tdm->simode_tdm |= TSA_SIMODE_TDM_TFSD(val);
+ 
+ 		if (of_property_read_bool(tdm_np, "fsl,common-rxtx-pins"))
+@@ -645,10 +631,8 @@ static int tsa_probe(struct platform_device *pdev)
+ 		return PTR_ERR(tsa->si_regs);
+ 
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "si_ram");
+-	if (!res) {
+-		dev_err(tsa->dev, "si_ram resource missing\n");
+-		return -EINVAL;
+-	}
++	if (!res)
++		return dev_err_probe(tsa->dev, -EINVAL, "si_ram resource missing\n");
+ 	tsa->si_ram_sz = resource_size(res);
+ 	tsa->si_ram = devm_ioremap_resource(&pdev->dev, res);
+ 	if (IS_ERR(tsa->si_ram))
 -- 
 2.34.1
 
