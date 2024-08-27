@@ -1,66 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-561-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-562-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F0E0C5320E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 05:06:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DDC0C5320E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Aug 2024 05:33:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WtFrs5Phdz2yLr;
-	Tue, 27 Aug 2024 15:06:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=84.110.109.230
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724734357;
-	cv=none; b=Fy++4QObbU7D70e4p1ktDVGzyltof1IreQAyOOPmfTQBtAU6gG5zmImEKei6/fmCw0ZYTp5vClOBwcm/CniLoVVhmtI4STciZuq3sWPtPx+Utp95EWX8ucVOFHli4jAHKpZoVHj+eMcm5lz7m4AKuEvIlr3CaM3WZW+5psimUlyQkKaLzK398hTscZYrMLivtG8GwE+v0Tr7oXdkzKXnqKGmRqFZipTPgKpHf8KMNOuknWfwyWIHk8uZRCml76hIZYn48KCRqoUbuWddDUnDhILesRlFL4BTuVE+0KLjCsfkjujC+oqw6wKn90HE/7GMu3AJnpg50Iww03MTa86k3w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WtGRP6lRWz2yN2;
+	Tue, 27 Aug 2024 15:33:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724736801;
+	cv=none; b=AFNCuMoqpwPcUULfTchSXz2FGgiH4RZ/0/2TuF2mpbroi/6tCILVwjCzyDjGavCUiVcF4JNTHVoSygLBKcVxZaEQdGIjRn2bu4uDrrKvvtPZsg4iG60WAgRzMGfRXC6tUaXt8HxOisye5u6gXAsGGAsXJlzIccaEMSbBFf9d2oMowMRh/ao3up1GwqcdIYQJiB00zRzkdaQ/y4uRjMYLqRdIebR30BHDpbmzkaSWpODZVf9a+AH2gc0UbFMqbIh6eK/oY+4tKNbiLsvcQWiLT8Ye3BcXvecHuCtP+P+aSuQkDM9vOzNREt3C3ldJmibajtm5nakcKX4NGwT1AdeRzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724734357; c=relaxed/relaxed;
-	bh=0SwBykNyJPRe5aoCf0Ksgdn/5qy8ut9K45QkYjfEJZY=;
-	h=Received:DKIM-Signature:From:To:Cc:Subject:In-Reply-To:References:
-	 Date:Message-ID:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding; b=bZdj+mRlbgKIO19yX9NNrVwP+z0uyMpzQ+5PKeMJteaWha8K07h3f+6oU1kTB5JxDAVzopbqGq7HV2/fPyegRLmgJmpGnMqD3AFRwJxYsob6b5XCkyVu6FwToVToECP1cHHT0bPN9E+rriAYy6aF2Kk+HlOoOBl3Zflj1lETFoB1Q2Kjaf1VYx9KxnVPi/FsvM+Pqz3dXOzGnr9s/fVIAmgXBwIxzEEX8YMPVt864UBr5QrL/I+xgru6cqeGRvnkV3++N+r2C2J9uPQUJPCIItOfByHM3U9/O4j5rlqgUPC0jKbBWPb0Biu5aaDr51+tnwEXyDzJBshHWso9EpKxCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=tkos.co.il; dkim=pass (2048-bit key; secure) header.d=tkos.co.il header.i=@tkos.co.il header.a=rsa-sha256 header.s=default header.b=FI98ZrqF; dkim-atps=neutral; spf=pass (client-ip=84.110.109.230; helo=mail.tkos.co.il; envelope-from=baruch@tkos.co.il; receiver=lists.ozlabs.org) smtp.mailfrom=tkos.co.il
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=tkos.co.il
+	t=1724736801; c=relaxed/relaxed;
+	bh=2oM5tNMaqV9tNItNwpMb48saOy4fHdOqQvszVOZpA+I=;
+	h=Received:DKIM-Signature:Received:Received:Received:Received:
+	 Received:Received:Received:Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-TM-AS-GCONF:X-Proofpoint-GUID:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details; b=kMICdYIf/pxwomcBxgoO44EyfwWAHik/Hu2IkAl1jPsLjFX3xZ0X79p8/FG29WnlSMs0r8aC9jnWygCns2M/ByRHMCpPA/lO3MmHrwG7srwozC/7ihwuvn8z+RTMrF5ylNoEX+/B52ajvJI+98oON1raEHQ49o2+22aI4+38aPtnVx5r7KjEJoXW4WO1vzhEMZhqraTtF+mUI4OpJ/g/jUeP0LlVopKVpCBo815spCL/s46QbJhfVgiAo5Gpu1GpO0o68knLV9RJzodP4cNybYP9XxvwFu3oJ4qVfvR3jmyc5iT/MDjn9edw8JTOKC4BA4MUcORN66K4RhhAngP0qA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eV9LhhMY; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=tkos.co.il header.i=@tkos.co.il header.a=rsa-sha256 header.s=default header.b=FI98ZrqF;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eV9LhhMY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tkos.co.il (client-ip=84.110.109.230; helo=mail.tkos.co.il; envelope-from=baruch@tkos.co.il; receiver=lists.ozlabs.org)
-Received: from mail.tkos.co.il (mail.tkos.co.il [84.110.109.230])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtFXM1c3Gz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 14:52:35 +1000 (AEST)
-Received: from localhost (unknown [10.0.8.3])
-	by mail.tkos.co.il (Postfix) with ESMTP id 07138440FD1;
-	Tue, 27 Aug 2024 07:50:36 +0300 (IDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=tkos.co.il;
-	s=default; t=1724734236;
-	bh=9WyFB9yd3fDx1n71EKn0NOUDm0SNyy+ugmA5x2v2FE8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=FI98ZrqFrkaPZNYHWGvjN821TTsf1l9dasleqTNzWX5CifjFUlZGK/dlYU1Wg2dKf
-	 zRPa8u5HMNs78KaGG3T69/cRMOh8AbRIqBtbFb3o9kWQdLXtIxh+AyFBL9vy+LZ+/2
-	 2A5ycZJPBluf1fAsJ7U7stKNjxdl7nh8+4glxt8l6+kVK+26bXB09aUJzdJQ0wJofQ
-	 gnN4m4CuzwTE9jSfMsVg7bbJ0GKQOD/VJYGVjg+tr6El5tiuQfHN7bV32r06+TDz3a
-	 xv6DGTSn4e5mJ0VZcCom/Wil+aWl44XUvX7OoV66JMhYKIWNnpfMYZ4dGlfc2G5n5a
-	 2DSR3UzHlCrFA==
-From: Baruch Siach <baruch@tkos.co.il>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Christoph Hellwig <hch@lst.de>,  Catalin Marinas
- <catalin.marinas@arm.com>,  Will Deacon <will@kernel.org>,  Robin Murphy
- <robin.murphy@arm.com>,  iommu@lists.linux.dev,
-  linux-arm-kernel@lists.infradead.org,  linux-kernel@vger.kernel.org,
-  linuxppc-dev@lists.ozlabs.org,  linux-s390@vger.kernel.org,  Petr
- =?utf-8?B?VGVzYcWZw61r?=
- <petr@tesarici.cz>,  Ramon Fried <ramon@neureality.ai>,  Elad Nachman
- <enachman@marvell.com>,  linux-rockchip@lists.infradead.org
-Subject: Re: [PATCH v6 RESED 1/2] dma: replace zone_dma_bits by zone_dma_limit
-In-Reply-To: <53d988b1-bdce-422a-ae4e-158f305ad703@samsung.com> (Marek
-	Szyprowski's message of "Mon, 26 Aug 2024 21:28:29 +0200")
-References: <cover.1723359916.git.baruch@tkos.co.il>
-	<CGME20240811070951eucas1p1dc5315e0d710db13ce28fa0a977c7bc1@eucas1p1.samsung.com>
-	<17c067618b93e5d71f19c37826d54db4299621a3.1723359916.git.baruch@tkos.co.il>
-	<53d988b1-bdce-422a-ae4e-158f305ad703@samsung.com>
-Date: Tue, 27 Aug 2024 07:52:27 +0300
-Message-ID: <87mskyva7o.fsf@tarshish>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtGRP4Ch2z2xtN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Aug 2024 15:33:20 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47R1tKOm014300;
+	Tue, 27 Aug 2024 05:33:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:mime-version
+	:content-transfer-encoding; s=pp1; bh=2oM5tNMaqV9tNItNwpMb48saOy
+	4fHdOqQvszVOZpA+I=; b=eV9LhhMYJEjB83J3KJLdNdy93DiHV4LyZmwdywH5I3
+	gWdW/jn/UXVEN/dslQVNSSGf/ebrIEpuOhfKnldMU2glNAKGNLXS0rMOaNNT+Yqm
+	JD2WNkSYeNN+MX+KQRJ88NBfoJ/Ys5lXaBrKeOOFxSZIIoQFER5QVLIR9oHqbj4Y
+	myu7919ml9slXmX9qhr+K/wlBdApPHMXKRQXvdcilhdTETSOMmr47oc2/ZbUBpqE
+	CDb4gZMsLnefHU5bL4d/k/peOUP1ecQ54BkSbOZzYJR1w0I7tYN6Ng5HzG+sjoFS
+	TNKrzHJ0W0l2peSHJ8lr++BAvjvjPvG0eShh/V7C72SQ==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 417h66hwwb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Aug 2024 05:33:16 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 47R5UjX2020962;
+	Tue, 27 Aug 2024 05:33:16 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 417h66hww9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Aug 2024 05:33:15 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 47R2keAq003161;
+	Tue, 27 Aug 2024 05:33:11 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 417tupsbdc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Aug 2024 05:33:11 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47R5X7BY56361378
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 27 Aug 2024 05:33:08 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CE6BE2004B;
+	Tue, 27 Aug 2024 05:33:07 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5BCEF20040;
+	Tue, 27 Aug 2024 05:33:02 +0000 (GMT)
+Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.ustream.lldns.net (unknown [9.200.51.96])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 27 Aug 2024 05:33:01 +0000 (GMT)
+From: Kajol Jain <kjain@linux.ibm.com>
+To: acme@kernel.org, irogers@google.com
+Cc: namhyung@kernel.org, linux-kernel@vger.kernel.org,
+        linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        maddy@linux.ibm.com, atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com,
+        hbathini@linux.ibm.com, disgoel@linux.vnet.ibm.com
+Subject: [PATCH 1/3] perf vendor events power10: Update JSON/events
+Date: Tue, 27 Aug 2024 11:02:04 +0530
+Message-ID: <20240827053206.538814-1-kjain@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,337 +93,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: x2kWkoMjCuWyL5D5xWTb2ll3ih95xh45
+X-Proofpoint-ORIG-GUID: w8N5UCKotcyEbtZli9t8G7EJu4BUBD3w
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-27_04,2024-08-26_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 phishscore=0
+ adultscore=0 malwarescore=0 bulkscore=0 suspectscore=0 impostorscore=0
+ clxscore=1015 spamscore=0 priorityscore=1501 lowpriorityscore=0 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2407110000
+ definitions=main-2408270039
 
-Hi Marek,
+Update JSON/events for power10 platform with additional events.
 
-Thanks for your report.
+Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+---
+ .../arch/powerpc/power10/datasource.json      | 25 +++++++++++++++++++
+ .../arch/powerpc/power10/frontend.json        | 10 ++++++++
+ .../pmu-events/arch/powerpc/power10/pmc.json  |  5 ++++
+ 3 files changed, 40 insertions(+)
 
-On Mon, Aug 26 2024, Marek Szyprowski wrote:
-> On 11.08.2024 09:09, Baruch Siach wrote:
->> From: Catalin Marinas <catalin.marinas@arm.com>
->>
->> Hardware DMA limit might not be power of 2. When RAM range starts above
->> 0, say 4GB, DMA limit of 30 bits should end at 5GB. A single high bit
->> can not encode this limit.
->>
->> Use plain address for DMA zone limit.
->>
->> Since DMA zone can now potentially span beyond 4GB physical limit of
->> DMA32, make sure to use DMA zone for GFP_DMA32 allocations in that case.
->>
->> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
->> Co-developed-by: Baruch Siach <baruch@tkos.co.il>
->> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
->> ---
->
-> This patch landed recently in linux-next as commit ba0fb44aed47=20
-> ("dma-mapping: replace zone_dma_bits by zone_dma_limit"). During my=20
-> tests I found that it introduces the following warning on ARM64/Rockchip=
-=20
-> based Odroid M1 board (arch/arm64/boot/dts/rockchip/rk3568-odroid-m1.dts):
+diff --git a/tools/perf/pmu-events/arch/powerpc/power10/datasource.json b/tools/perf/pmu-events/arch/powerpc/power10/datasource.json
+index 0eeaaf1a95b8..283284745d9c 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power10/datasource.json
++++ b/tools/perf/pmu-events/arch/powerpc/power10/datasource.json
+@@ -14,6 +14,31 @@
+     "EventName": "PM_DATA_FROM_MEMORY",
+     "BriefDescription": "The processor's data cache was reloaded from local, remote, or distant memory due to a demand miss."
+   },
++  {
++    "EventCode": "0x0000004080",
++    "EventName": "PM_INST_FROM_L1",
++    "BriefDescription": "An instruction fetch hit in the L1. Each fetch group contains 8 instructions. The same line can hit 4 times if 32 sequential instructions are fetched."
++  },
++  {
++    "EventCode": "0x000000026080",
++    "EventName": "PM_L2_LD_MISS",
++    "BriefDescription": "All successful D-Side Load dispatches for this thread that missed in the L2. Since the event happens in a 2:1 clock domain and is time-sliced across all 4 threads, the event count should be multiplied by 2."
++  },
++  {
++    "EventCode": "0x000000026880",
++    "EventName": "PM_L2_ST_MISS",
++    "BriefDescription": "All successful D-Side Store dispatches for this thread that missed in the L2. Since the event happens in a 2:1 clock domain and is time-sliced across all 4 threads, the event count should be multiplied by 2."
++  },
++  {
++    "EventCode": "0x010000046880",
++    "EventName": "PM_L2_ST_HIT",
++    "BriefDescription": "All successful D-side store dispatches for this thread that were L2 hits. Since the event happens in a 2:1 clock domain and is time-sliced across all 4 threads, the event count should be multiplied by 2."
++  },
++  {
++    "EventCode": "0x000000036880",
++    "EventName": "PM_L2_INST_MISS",
++    "BriefDescription": "All successful instruction (demand and prefetch) dispatches for this thread that missed in the L2. Since the event happens in a 2:1 clock domain and is time-sliced across all 4 threads, the event count should be multiplied by 2."
++  },
+   {
+     "EventCode": "0x000300000000C040",
+     "EventName": "PM_INST_FROM_L2",
+diff --git a/tools/perf/pmu-events/arch/powerpc/power10/frontend.json b/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
+index 53660c279286..456971f60814 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
++++ b/tools/perf/pmu-events/arch/powerpc/power10/frontend.json
+@@ -93,5 +93,15 @@
+     "EventCode": "0x400FC",
+     "EventName": "PM_ITLB_MISS",
+     "BriefDescription": "Instruction TLB reload (after a miss), all page sizes. Includes only demand misses."
++  },
++  {
++    "EventCode": "0x00000040B8",
++    "EventName": "PM_PRED_BR_TKN_COND_DIR",
++    "BriefDescription": "A conditional branch finished with correctly predicted direction. Resolved taken."
++  },
++  {
++    "EventCode": "0x00000048B8",
++    "EventName": "PM_PRED_BR_NTKN_COND_DIR",
++    "BriefDescription": "A conditional branch finished with correctly predicted direction. Resolved not taken."
+   }
+ ]
+diff --git a/tools/perf/pmu-events/arch/powerpc/power10/pmc.json b/tools/perf/pmu-events/arch/powerpc/power10/pmc.json
+index 0e0253d0e757..04732698d9b2 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power10/pmc.json
++++ b/tools/perf/pmu-events/arch/powerpc/power10/pmc.json
+@@ -104,6 +104,11 @@
+     "EventName": "PM_RUN_CYC",
+     "BriefDescription": "Processor cycles gated by the run latch."
+   },
++  {
++    "EventCode": "0x200F8",
++    "EventName": "PM_EXT_INT",
++    "BriefDescription": "Cycles an external interrupt was active."
++  },
+   {
+     "EventCode": "0x30010",
+     "EventName": "PM_PMC2_OVERFLOW",
+-- 
+2.43.5
 
-Does this warning go away if you revert both 3be9b846896d and ba0fb44aed47?
-
-Upstream rockchip DTs have no dma-ranges property. Is that the case for
-your platform as well?
-
-Can you share kernel report of DMA zones and swiotlb? On my platform I get:
-
-[    0.000000] Zone ranges:
-[    0.000000]   DMA      [mem 0x0000000800000000-0x000000083fffffff]
-[    0.000000]   DMA32    empty
-[    0.000000]   Normal   [mem 0x0000000840000000-0x0000000fffffffff]
-...
-[    0.000000] software IO TLB: area num 8.
-[    0.000000] software IO TLB: mapped [mem 0x000000083be38000-0x000000083f=
-e38000] (64MB)
-
-What do you get at your end?
-
-> ------------[ cut here ]------------
-> dwmmc_rockchip fe2b0000.mmc: swiotlb addr 0x00000001faf00000+4096=20
-> overflow (mask ffffffff, bus limit 0).
-> WARNING: CPU: 3 PID: 1 at kernel/dma/swiotlb.c:1594 swiotlb_map+0x2f0/0x3=
-08
-> Modules linked in:
-> CPU: 3 UID: 0 PID: 1 Comm: swapper/0 Not tainted 6.11.0-rc4+ #15278
-> Hardware name: Hardkernel ODROID-M1 (DT)
-> pstate: 60400009 (nZCv daif +PAN -UAO -TCO -DIT -SSBS BTYPE=3D--)
-> pc : swiotlb_map+0x2f0/0x308
-> lr : swiotlb_map+0x2f0/0x308
-> ...
-> Call trace:
->  =C2=A0swiotlb_map+0x2f0/0x308
->  =C2=A0dma_direct_map_sg+0x9c/0x2e4
->  =C2=A0__dma_map_sg_attrs+0x28/0x94
->  =C2=A0dma_map_sg_attrs+0x10/0x24
->  =C2=A0dw_mci_pre_dma_transfer+0xb8/0xf4
->  =C2=A0dw_mci_pre_req+0x50/0x68
->  =C2=A0mmc_blk_mq_issue_rq+0x3e0/0x964
->  =C2=A0mmc_mq_queue_rq+0x118/0x2b4
->  =C2=A0blk_mq_dispatch_rq_list+0x21c/0x714
->  =C2=A0__blk_mq_sched_dispatch_requests+0x490/0x58c
->  =C2=A0blk_mq_sched_dispatch_requests+0x30/0x6c
->  =C2=A0blk_mq_run_hw_queue+0x284/0x40c
->  =C2=A0blk_mq_flush_plug_list.part.0+0x190/0x974
->  =C2=A0blk_mq_flush_plug_list+0x1c/0x2c
->  =C2=A0__blk_flush_plug+0xe4/0x140
->  =C2=A0blk_finish_plug+0x38/0x4c
->  =C2=A0__ext4_get_inode_loc+0x22c/0x654
->  =C2=A0__ext4_get_inode_loc_noinmem+0x40/0xa8
->  =C2=A0__ext4_iget+0x154/0xcc0
->  =C2=A0ext4_get_journal_inode+0x30/0x110
->  =C2=A0ext4_load_and_init_journal+0x9c/0xaf0
->  =C2=A0ext4_fill_super+0x1fec/0x2d90
->  =C2=A0get_tree_bdev+0x140/0x1d8
->  =C2=A0ext4_get_tree+0x18/0x24
->  =C2=A0vfs_get_tree+0x28/0xe8
->  =C2=A0path_mount+0x3e8/0xb7c
->  =C2=A0init_mount+0x68/0xac
->  =C2=A0do_mount_root+0x108/0x1dc
->  =C2=A0mount_root_generic+0x100/0x330
->  =C2=A0mount_root+0x160/0x2d0
->  =C2=A0initrd_load+0x1f0/0x2a0
->  =C2=A0prepare_namespace+0x4c/0x29c
->  =C2=A0kernel_init_freeable+0x4b4/0x50c
->  =C2=A0kernel_init+0x20/0x1d8
->  =C2=A0ret_from_fork+0x10/0x20
-> irq event stamp: 1305682
-> hardirqs last=C2=A0 enabled at (1305681): [<ffff8000800e332c>]=20
-> console_unlock+0x124/0x130
-> hardirqs last disabled at (1305682): [<ffff80008124e684>] el1_dbg+0x24/0x=
-8c
-> softirqs last=C2=A0 enabled at (1305678): [<ffff80008005be1c>]=20
-> handle_softirqs+0x4cc/0x4e4
-> softirqs last disabled at (1305665): [<ffff8000800105b0>]=20
-> __do_softirq+0x14/0x20
-> ---[ end trace 0000000000000000 ]---
->
-> This "bus limit 0" seems to be a bit suspicious to me as well as the=20
-> fact that swiotlb is used for the MMC DMA. I will investigate this=20
-> further tomorrow. The board boots fine though.
-
-Looking at the code I guess that bus_dma_limit set to 0 means no bus
-limit. But dma_mask for your device indicates 32-bit device limit. This
-can't work with address above 4GB. For some reason DMA code tries to
-allocate from higher address. This is most likely the reason
-dma_capable() returns false.
-
-Thanks,
-baruch
-
->>   arch/arm64/mm/init.c       | 30 +++++++++++++++---------------
->>   arch/powerpc/mm/mem.c      |  5 ++++-
->>   arch/s390/mm/init.c        |  2 +-
->>   include/linux/dma-direct.h |  2 +-
->>   kernel/dma/direct.c        |  6 +++---
->>   kernel/dma/pool.c          |  4 ++--
->>   kernel/dma/swiotlb.c       |  6 +++---
->>   7 files changed, 29 insertions(+), 26 deletions(-)
->>
->> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
->> index 9b5ab6818f7f..c45e2152ca9e 100644
->> --- a/arch/arm64/mm/init.c
->> +++ b/arch/arm64/mm/init.c
->> @@ -115,35 +115,35 @@ static void __init arch_reserve_crashkernel(void)
->>   }
->>=20=20=20
->>   /*
->> - * Return the maximum physical address for a zone accessible by the giv=
-en bits
->> - * limit. If DRAM starts above 32-bit, expand the zone to the maximum
->> + * Return the maximum physical address for a zone given its limit.
->> + * If DRAM starts above 32-bit, expand the zone to the maximum
->>    * available memory, otherwise cap it at 32-bit.
->>    */
->> -static phys_addr_t __init max_zone_phys(unsigned int zone_bits)
->> +static phys_addr_t __init max_zone_phys(phys_addr_t zone_limit)
->>   {
->> -	phys_addr_t zone_mask =3D DMA_BIT_MASK(zone_bits);
->>   	phys_addr_t phys_start =3D memblock_start_of_DRAM();
->>=20=20=20
->>   	if (phys_start > U32_MAX)
->> -		zone_mask =3D PHYS_ADDR_MAX;
->> -	else if (phys_start > zone_mask)
->> -		zone_mask =3D U32_MAX;
->> +		zone_limit =3D PHYS_ADDR_MAX;
->> +	else if (phys_start > zone_limit)
->> +		zone_limit =3D U32_MAX;
->>=20=20=20
->> -	return min(zone_mask, memblock_end_of_DRAM() - 1) + 1;
->> +	return min(zone_limit, memblock_end_of_DRAM() - 1) + 1;
->>   }
->>=20=20=20
->>   static void __init zone_sizes_init(void)
->>   {
->>   	unsigned long max_zone_pfns[MAX_NR_ZONES]  =3D {0};
->> -	unsigned int __maybe_unused acpi_zone_dma_bits;
->> -	unsigned int __maybe_unused dt_zone_dma_bits;
->> -	phys_addr_t __maybe_unused dma32_phys_limit =3D max_zone_phys(32);
->> +	phys_addr_t __maybe_unused acpi_zone_dma_limit;
->> +	phys_addr_t __maybe_unused dt_zone_dma_limit;
->> +	phys_addr_t __maybe_unused dma32_phys_limit =3D
->> +		max_zone_phys(DMA_BIT_MASK(32));
->>=20=20=20
->>   #ifdef CONFIG_ZONE_DMA
->> -	acpi_zone_dma_bits =3D fls64(acpi_iort_dma_get_max_cpu_address());
->> -	dt_zone_dma_bits =3D fls64(of_dma_get_max_cpu_address(NULL));
->> -	zone_dma_bits =3D min3(32U, dt_zone_dma_bits, acpi_zone_dma_bits);
->> -	arm64_dma_phys_limit =3D max_zone_phys(zone_dma_bits);
->> +	acpi_zone_dma_limit =3D acpi_iort_dma_get_max_cpu_address();
->> +	dt_zone_dma_limit =3D of_dma_get_max_cpu_address(NULL);
->> +	zone_dma_limit =3D min(dt_zone_dma_limit, acpi_zone_dma_limit);
->> +	arm64_dma_phys_limit =3D max_zone_phys(zone_dma_limit);
->>   	max_zone_pfns[ZONE_DMA] =3D PFN_DOWN(arm64_dma_phys_limit);
->>   #endif
->>   #ifdef CONFIG_ZONE_DMA32
->> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
->> index d325217ab201..05b7f702b3f7 100644
->> --- a/arch/powerpc/mm/mem.c
->> +++ b/arch/powerpc/mm/mem.c
->> @@ -216,7 +216,7 @@ static int __init mark_nonram_nosave(void)
->>    * everything else. GFP_DMA32 page allocations automatically fall back=
- to
->>    * ZONE_DMA.
->>    *
->> - * By using 31-bit unconditionally, we can exploit zone_dma_bits to inf=
-orm the
->> + * By using 31-bit unconditionally, we can exploit zone_dma_limit to in=
-form the
->>    * generic DMA mapping code.  32-bit only devices (if not handled by a=
-n IOMMU
->>    * anyway) will take a first dip into ZONE_NORMAL and get otherwise se=
-rved by
->>    * ZONE_DMA.
->> @@ -230,6 +230,7 @@ void __init paging_init(void)
->>   {
->>   	unsigned long long total_ram =3D memblock_phys_mem_size();
->>   	phys_addr_t top_of_ram =3D memblock_end_of_DRAM();
->> +	int zone_dma_bits;
->>=20=20=20
->>   #ifdef CONFIG_HIGHMEM
->>   	unsigned long v =3D __fix_to_virt(FIX_KMAP_END);
->> @@ -256,6 +257,8 @@ void __init paging_init(void)
->>   	else
->>   		zone_dma_bits =3D 31;
->>=20=20=20
->> +	zone_dma_limit =3D DMA_BIT_MASK(zone_dma_bits);
->> +
->>   #ifdef CONFIG_ZONE_DMA
->>   	max_zone_pfns[ZONE_DMA]	=3D min(max_low_pfn,
->>   				      1UL << (zone_dma_bits - PAGE_SHIFT));
->> diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
->> index ddcd39ef4346..91fc2b91adfc 100644
->> --- a/arch/s390/mm/init.c
->> +++ b/arch/s390/mm/init.c
->> @@ -97,7 +97,7 @@ void __init paging_init(void)
->>=20=20=20
->>   	vmem_map_init();
->>   	sparse_init();
->> -	zone_dma_bits =3D 31;
->> +	zone_dma_limit =3D DMA_BIT_MASK(31);
->>   	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
->>   	max_zone_pfns[ZONE_DMA] =3D virt_to_pfn(MAX_DMA_ADDRESS);
->>   	max_zone_pfns[ZONE_NORMAL] =3D max_low_pfn;
->> diff --git a/include/linux/dma-direct.h b/include/linux/dma-direct.h
->> index edbe13d00776..d7e30d4f7503 100644
->> --- a/include/linux/dma-direct.h
->> +++ b/include/linux/dma-direct.h
->> @@ -12,7 +12,7 @@
->>   #include <linux/mem_encrypt.h>
->>   #include <linux/swiotlb.h>
->>=20=20=20
->> -extern unsigned int zone_dma_bits;
->> +extern u64 zone_dma_limit;
->>=20=20=20
->>   /*
->>    * Record the mapping of CPU physical to DMA addresses for a given reg=
-ion.
->> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
->> index 4480a3cd92e0..f2ba074a6a54 100644
->> --- a/kernel/dma/direct.c
->> +++ b/kernel/dma/direct.c
->> @@ -20,7 +20,7 @@
->>    * it for entirely different regions. In that case the arch code needs=
- to
->>    * override the variable below for dma-direct to work properly.
->>    */
->> -unsigned int zone_dma_bits __ro_after_init =3D 24;
->> +u64 zone_dma_limit __ro_after_init =3D DMA_BIT_MASK(24);
->>=20=20=20
->>   static inline dma_addr_t phys_to_dma_direct(struct device *dev,
->>   		phys_addr_t phys)
->> @@ -59,7 +59,7 @@ static gfp_t dma_direct_optimal_gfp_mask(struct device=
- *dev, u64 *phys_limit)
->>   	 * zones.
->>   	 */
->>   	*phys_limit =3D dma_to_phys(dev, dma_limit);
->> -	if (*phys_limit <=3D DMA_BIT_MASK(zone_dma_bits))
->> +	if (*phys_limit <=3D zone_dma_limit)
->>   		return GFP_DMA;
->>   	if (*phys_limit <=3D DMA_BIT_MASK(32))
->>   		return GFP_DMA32;
->> @@ -580,7 +580,7 @@ int dma_direct_supported(struct device *dev, u64 mas=
-k)
->>   	 * part of the check.
->>   	 */
->>   	if (IS_ENABLED(CONFIG_ZONE_DMA))
->> -		min_mask =3D min_t(u64, min_mask, DMA_BIT_MASK(zone_dma_bits));
->> +		min_mask =3D min_t(u64, min_mask, zone_dma_limit);
->>   	return mask >=3D phys_to_dma_unencrypted(dev, min_mask);
->>   }
->>=20=20=20
->> diff --git a/kernel/dma/pool.c b/kernel/dma/pool.c
->> index d10613eb0f63..7b04f7575796 100644
->> --- a/kernel/dma/pool.c
->> +++ b/kernel/dma/pool.c
->> @@ -70,9 +70,9 @@ static bool cma_in_zone(gfp_t gfp)
->>   	/* CMA can't cross zone boundaries, see cma_activate_area() */
->>   	end =3D cma_get_base(cma) + size - 1;
->>   	if (IS_ENABLED(CONFIG_ZONE_DMA) && (gfp & GFP_DMA))
->> -		return end <=3D DMA_BIT_MASK(zone_dma_bits);
->> +		return end <=3D zone_dma_limit;
->>   	if (IS_ENABLED(CONFIG_ZONE_DMA32) && (gfp & GFP_DMA32))
->> -		return end <=3D DMA_BIT_MASK(32);
->> +		return end <=3D max(DMA_BIT_MASK(32), zone_dma_limit);
->>   	return true;
->>   }
->>=20=20=20
->> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
->> index df68d29740a0..abcf3fa63a56 100644
->> --- a/kernel/dma/swiotlb.c
->> +++ b/kernel/dma/swiotlb.c
->> @@ -450,9 +450,9 @@ int swiotlb_init_late(size_t size, gfp_t gfp_mask,
->>   	if (!remap)
->>   		io_tlb_default_mem.can_grow =3D true;
->>   	if (IS_ENABLED(CONFIG_ZONE_DMA) && (gfp_mask & __GFP_DMA))
->> -		io_tlb_default_mem.phys_limit =3D DMA_BIT_MASK(zone_dma_bits);
->> +		io_tlb_default_mem.phys_limit =3D zone_dma_limit;
->>   	else if (IS_ENABLED(CONFIG_ZONE_DMA32) && (gfp_mask & __GFP_DMA32))
->> -		io_tlb_default_mem.phys_limit =3D DMA_BIT_MASK(32);
->> +		io_tlb_default_mem.phys_limit =3D max(DMA_BIT_MASK(32), zone_dma_limi=
-t);
->>   	else
->>   		io_tlb_default_mem.phys_limit =3D virt_to_phys(high_memory - 1);
->>   #endif
->> @@ -629,7 +629,7 @@ static struct page *swiotlb_alloc_tlb(struct device =
-*dev, size_t bytes,
->>   	}
->>=20=20=20
->>   	gfp &=3D ~GFP_ZONEMASK;
->> -	if (phys_limit <=3D DMA_BIT_MASK(zone_dma_bits))
->> +	if (phys_limit <=3D zone_dma_limit)
->>   		gfp |=3D __GFP_DMA;
->>   	else if (phys_limit <=3D DMA_BIT_MASK(32))
->>   		gfp |=3D __GFP_DMA32;
->
-> Best regards
-
---=20
-                                                     ~. .~   Tk Open Systems
-=3D}------------------------------------------------ooO--U--Ooo------------=
-{=3D
-   - baruch@tkos.co.il - tel: +972.52.368.4656, http://www.tkos.co.il -
 
