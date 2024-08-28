@@ -1,74 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-680-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-681-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91DCDC54E93
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 10:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A1BFC54E93
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 10:27:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wv0vp1hsPz2yhG;
-	Wed, 28 Aug 2024 20:27:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.178.240
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724840044;
-	cv=none; b=Ld6bCr+decQG+G4+H21+oZSg1/v/erdYHAtvDC7HaO25B9cq5uQF+1Hu1Op6HHaPECMZC43zcQHFvNZeXA7e2JjHPOgW33tGl6llHgf7a4fpEehV2bC1ZA84PgCNhD+HRPf1y6rw368fOq5pJm/4joGMujOnM3CWIMm7DsH1QyA7kRtes4SMeE4WRNK8Jp/UdetpsvQBFMa3Wyi1+CcyajR7KnRsRpsW7mK0TZ7CVfdFFA9OLEr3gsQUB/Wy2eiJaT753tuPcGJR8qFg4z60OPYsQnUL3pAZpW311BZKWQ/GhdZjECv6tIXDntlXJTIcW5nJZujzhs5hDBlrRRDzWA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wv0wf244Hz2yZS;
+	Wed, 28 Aug 2024 20:27:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724840866;
+	cv=none; b=EdNR2krrDwX7bmqTDdAJaEK0vAaOoizCfIJCKRpMWYXqPuQe4R/emcdA3uEFPFj9uC6IItleAgG3nwDqrDm0YioaOjvrIFK0O6Gvn6umniJrLR1uiP6OZJYVMdeFzz8Ynt/FyH5hyG40u7scX0kSkgF5Cf/zH5WMqMD01ZG8XrSbWYMcJh4fAajvxV9CSTu6YxmmMhMlCAbkW8aXv8Sxjr0OmtHTARHbBGl2dmBtbxtJQMzFltLADZ8H7JiZXHb3YMg9oOVLfIqGXLcBjqegu4QRbuwN7VejZVxCKv/T1XGCrNNh98eJZN4CC2imlrqcgWJRh7xjPjmzS0jTtNQIjg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724840044; c=relaxed/relaxed;
-	bh=e0hzvG0hZsY1WlPlvceV3QEtbLRs4+O1bK+FGJ2ZLwI=;
-	h=Received:Received:DKIM-Signature:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-GND-Sasl; b=e9higxVJkT3ZLRCEx1Hjlf4HmGjTTPrW5/oFh4D6IAxRnCXk30v/J33UZSerxcynh47e5anNryv2SD3v/M+vUFzpsHsb8qxnttFAA8vvRXIwRQJUevZU+WdM7sWKMNyMVN2gWCV7VvYV/0Cj64xr9CLhF2GBGwfIQ6Xy+MVy23PvBch8BpdBgzFed6TeiNYjF8FaWQZuEKQW6I20fmsWZT0C3YS/wZsHOXIr42HlJ8WxeHYR+su+KNx6jAyFNX5s/tUuiGX1GkfeRvwttEhnRG8jYJ7C65asufdl/agMSJ6nMlnYIQdPtxtx6kzus2quHasnxKlT0srv0IZLB0Lasg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=JEl7GRvj; dkim-atps=neutral; spf=pass (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=JEl7GRvj;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
-Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1724840866; c=relaxed/relaxed;
+	bh=fEnEn5hzgBzl0GTPauhMV5Pr0gYQLV6CNqq0JmVprdQ=;
+	h=Received:X-Virus-Scanned:Received:Received:Received:
+	 X-Virus-Scanned:Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding; b=Cj/GWM9/luPVHbI+rI5PeCMDssgJvNqoBcUXvRd16vnyEtW4Ar6qYMUP6G/8ybwQVthwUW1oddYSHg1EnbgS/wnf7m8HB8aR7mDxkoAA1a9icfIo082jOLPe3IHYxvT6qkblNoUmotnXL831OowDJYkhdA+/z2cGoGtQaQs4egNucOBpWMJk3anlLY9F3gfn3mDrfkC70MTaEVUiX7SLfF4ecxarOFyI0ozTjn5HCdYEO1kbauMdbO4nq8Feztz5y1vl/Fp/hJIofYeQD9tsZTnZKPltCU7k5aOd2SfzuR+/+5d0JmcBaXnSIaSFixKfdVWUFZupJxxZugcR//fAsw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wv0cq6RVcz2y83
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 20:14:03 +1000 (AEST)
-Received: from relay5-d.mail.gandi.net (unknown [217.70.183.197])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id 38553C80D2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 09:51:20 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id ED1BA1C000C;
-	Wed, 28 Aug 2024 09:51:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1724838668;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=e0hzvG0hZsY1WlPlvceV3QEtbLRs4+O1bK+FGJ2ZLwI=;
-	b=JEl7GRvjUa6PAT9bOWi3WscuC5JkXQnnLHtPr8TQdtIO0tYY3ZAU0Q4B63Uws4vCGZVgq5
-	4LsnJjPGv+dZFrchzehXUHV9/H4O9qdEEBXpDtKf92HC5s+COTlIJrXLu9/bDEPweIahh0
-	dBZ2jSFOtjGlbbSi/+5JObsohrcSvW8jA4WZy5xrBy9sHyVcUWHMRYiv2TQm/2CmI4715p
-	F2tw7aZVJqtGCwb8ItRCH8CwDevUCq3OlXHB9Sl62x1f/8YF1GZumHejxmEI6cb0jUrYk/
-	gt2RMs1nBsBlg6Makm5F+LZ5X0Qn5cdXjcT7Z28yGy0r2JVLA8xp2AjXJPa+Iw==
-From: Maxime Chevallier <maxime.chevallier@bootlin.com>
-To: davem@davemloft.net,
-	Pantelis Antoniou <pantelis.antoniou@gmail.com>,
-	Andrew Lunn <andrew@lunn.ch>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Eric Dumazet <edumazet@google.com>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Florian Fainelli <f.fainelli@gmail.com>,
-	Heiner Kallweit <hkallweit1@gmail.com>
-Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
-	netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	thomas.petazzoni@bootlin.com,
-	Herve Codina <herve.codina@bootlin.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next 1/6] net: ethernet: fs_enet: convert to SPDX
-Date: Wed, 28 Aug 2024 11:50:57 +0200
-Message-ID: <20240828095103.132625-2-maxime.chevallier@bootlin.com>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20240828095103.132625-1-maxime.chevallier@bootlin.com>
-References: <20240828095103.132625-1-maxime.chevallier@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wv0wd71CTz2yK7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 20:27:45 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4Wv0wb19Lrz9sRy;
+	Wed, 28 Aug 2024 12:27:43 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id atgXkts7Rrq7; Wed, 28 Aug 2024 12:27:43 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4Wv0wb0BKxz9sRs;
+	Wed, 28 Aug 2024 12:27:43 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id E6DFF8B78F;
+	Wed, 28 Aug 2024 12:27:42 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id kG13dQI6O_yt; Wed, 28 Aug 2024 12:27:42 +0200 (CEST)
+Received: from [172.25.230.108] (unknown [172.25.230.108])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id AA2E98B764;
+	Wed, 28 Aug 2024 12:27:42 +0200 (CEST)
+Message-ID: <7d62064e-c303-4d74-b213-a29ce16dbb39@csgroup.eu>
+Date: Wed, 28 Aug 2024 12:27:42 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,143 +59,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next 5/6] net: ethernet: fs_enet: fcc: use macros for
+ speed and duplex values
+To: Maxime Chevallier <maxime.chevallier@bootlin.com>, davem@davemloft.net,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>, Andrew Lunn
+ <andrew@lunn.ch>, Jakub Kicinski <kuba@kernel.org>,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Russell King <linux@armlinux.org.uk>, Florian Fainelli
+ <f.fainelli@gmail.com>, Heiner Kallweit <hkallweit1@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ thomas.petazzoni@bootlin.com, Herve Codina <herve.codina@bootlin.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20240828095103.132625-1-maxime.chevallier@bootlin.com>
+ <20240828095103.132625-6-maxime.chevallier@bootlin.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20240828095103.132625-6-maxime.chevallier@bootlin.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-GND-Sasl: maxime.chevallier@bootlin.com
 
-The ENET driver has SPDX tags in the header files, but they were missing
-in the C files. Change the licence information to SPDX format.
 
-Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
----
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mac-fcc.c      | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c      | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mac-scc.c      | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c  | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mii-fec.c      | 5 +----
- 6 files changed, 6 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index cf392faa6105..5bfdd43ffdeb 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Combined Ethernet driver for Motorola MPC8xx and MPC82xx.
-  *
-@@ -9,10 +10,6 @@
-  *
-  * Heavily based on original FEC driver by Dan Malek <dan@embeddededge.com>
-  * and modifications by Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
- 
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-index e2ffac9eb2ad..add062928d99 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * FCC driver for Motorola MPC82xx (PQ2).
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
- 
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index cdc89d83cf07..f75acb3b358f 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Freescale Ethernet controllers
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
- 
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-index 9e89ac2b6ce3..29ba0048396b 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Ethernet on Serial Communications Controller (SCC) driver for Motorola MPC8xx and MPC82xx.
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
- 
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-index f965a2329055..2e210a003558 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Combined Ethernet driver for Motorola MPC8xx and MPC82xx.
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
- 
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-fec.c b/drivers/net/ethernet/freescale/fs_enet/mii-fec.c
-index 7bb69727952a..93d91e8ad0de 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mii-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mii-fec.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Combined Ethernet driver for Motorola MPC8xx and MPC82xx.
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
- 
- #include <linux/module.h>
--- 
-2.45.2
+Le 28/08/2024 à 11:51, Maxime Chevallier a écrit :
+> The PHY speed and duplex should be manipulated using the SPEED_XXX and
+> DUPLEX_XXX macros available. Use it in the fcc, fec and scc MAC for fs_enet.
+> 
+> Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
 
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+
+
+> ---
+>   drivers/net/ethernet/freescale/fs_enet/mac-fcc.c | 4 ++--
+>   drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 2 +-
+>   drivers/net/ethernet/freescale/fs_enet/mac-scc.c | 2 +-
+>   3 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
+> index add062928d99..056909156b4f 100644
+> --- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
+> +++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
+> @@ -361,7 +361,7 @@ static void restart(struct net_device *dev)
+>   
+>   	/* adjust to speed (for RMII mode) */
+>   	if (fpi->use_rmii) {
+> -		if (dev->phydev->speed == 100)
+> +		if (dev->phydev->speed == SPEED_100)
+>   			C8(fcccp, fcc_gfemr, 0x20);
+>   		else
+>   			S8(fcccp, fcc_gfemr, 0x20);
+> @@ -387,7 +387,7 @@ static void restart(struct net_device *dev)
+>   		S32(fccp, fcc_fpsmr, FCC_PSMR_RMII);
+>   
+>   	/* adjust to duplex mode */
+> -	if (dev->phydev->duplex)
+> +	if (dev->phydev->duplex == DUPLEX_FULL)
+>   		S32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
+>   	else
+>   		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
+> diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+> index f75acb3b358f..855ee9e3f042 100644
+> --- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+> +++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+> @@ -309,7 +309,7 @@ static void restart(struct net_device *dev)
+>   	/*
+>   	 * adjust to duplex mode
+>   	 */
+> -	if (dev->phydev->duplex) {
+> +	if (dev->phydev->duplex == DUPLEX_FULL) {
+>   		FC(fecp, r_cntrl, FEC_RCNTRL_DRT);
+>   		FS(fecp, x_cntrl, FEC_TCNTRL_FDEN);	/* FD enable */
+>   	} else {
+> diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+> index 29ba0048396b..9e5e29312c27 100644
+> --- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+> +++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+> @@ -338,7 +338,7 @@ static void restart(struct net_device *dev)
+>   	W16(sccp, scc_psmr, SCC_PSMR_ENCRC | SCC_PSMR_NIB22);
+>   
+>   	/* Set full duplex mode if needed */
+> -	if (dev->phydev->duplex)
+> +	if (dev->phydev->duplex == DUPLEX_FULL)
+>   		S16(sccp, scc_psmr, SCC_PSMR_LPB | SCC_PSMR_FDE);
+>   
+>   	/* Restore multicast and promiscuous settings */
 
