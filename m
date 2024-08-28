@@ -1,41 +1,41 @@
-Return-Path: <linuxppc-dev+bounces-691-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-692-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D9E7C54FAA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 12:51:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCD82C54FAD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 12:58:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wv47156zcz2yY9;
-	Wed, 28 Aug 2024 22:51:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wv4GX2xSJz2yKD;
+	Wed, 28 Aug 2024 22:58:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724849517;
-	cv=none; b=aqNBJRa553roe2iov9i4rUoWfbBqOO5Z8ouWzEVL6xo7hb6ahDVC55cp11FiObHtr+7Np+9F+m4aM1pDkxxBFEPyOFEt70SPSvW1m4tBAE6HRuSIT6N0ynWFTbLJSe7zBlMz2VLXhu5ZGMBgfva2BF0W52xtsBNvv3SUIGpfuIsD8bj6qE173+rsSeZ7n2YJ9qsoQlaIiN+5J0l/daIkQjyFgPoiShEQqSNE9Hq6gbgZNJubIKBdAI9naNSEYdiVZF3vsAfIkoo6LodVaQc9ec3hfj31dZA97r3XZnWsUOcONVnY0AJmUBw5FhxWcdfVIrQULToJf6SRPS8r8yJhdA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724849908;
+	cv=none; b=K1D6uHBnya+nvfKrp/NgqSM41v+EcVmiX5zF84t6IF3nEqTl/Z4SCNw5i3mxapumrxOarhncfe6bFDqlksb8U1015NLfjIzNuzqojSXm+omQspAns/kL94mzWLfGecBSPu1aFHMEJeYaYEcac2QeMyOgyXJZlbKmxTW1W/UACg6ehl3sDDfcnNK27O2zBRpdCRlsdYLpvCLmEYVjKK3AtrYfr0h64lxVa97zlJ5h6uhjc1cLwlX+BEL8rgcNG6dHXj6idkm0OzscYimndpnUxi3veq8sxHW5gBabiQDfa6mGhZ8MczUoWyMa6nvxuhrt/oX+Ehk89OTaR02U7UHVgg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724849517; c=relaxed/relaxed;
-	bh=FBPnhwC0ZlgG+MDXjjoJC+KOKIZWd8sQEhxJuByTeDA=;
+	t=1724849908; c=relaxed/relaxed;
+	bh=M5Ol/050kYlS3NVHSEmUPJsNggqEGajbAkSVcjbojFo=;
 	h=Received:Received:X-Authentication-Warning:Date:From:To:Cc:
 	 Subject:Message-ID:References:Mime-Version:Content-Type:
-	 Content-Disposition:In-Reply-To:User-Agent; b=E9mvRiyQFvftxIQ81AD4aGGvbuEpqeATD21Wtr8sr/T3Psx0zVnor99GUexs+0l8zVsFH81MbwYYFQ2KRARRUvH6d73mN2XQYz3n3ZG6GA7wrhQM6mSKbWYpLsaJbrrAGGbi4DJ/NtGnH/zOaROzZ1JnRA6ROFfJU04z4OzdZttITC1nqd7DIOqZ6aJRhA6v/2/RiuL3ZeaNTDWoxIuCNEQhCIJxFe+GrxcB4g/bL9tBpQPFT7dj7hVxJ4BbYeEYHg5YEr8izY1aB55iILDlknkIRWxJG+9hKqNaizaZkduBUwHdy49DIOQUwxSse23GoaikoW1BQU+WMLxOqZaEtg==
+	 Content-Disposition:Content-Transfer-Encoding:In-Reply-To:
+	 User-Agent; b=NGPR3+ZBU6snts1RuvTO212XG0F2xDmzeG/bdUZEmH876sxDyHPA7/QM/brzAyLH8jo1Acy8yHJMWTMEPewVmeUJsBgsPXEggklJ0NYLrbxrxa+UXZmJfZEPm9Iqe14zSk+mT8Q0Yq5OyKe7AV2Tk1KMVhfBQQ7El7QLA2U+0bjo1XE73h7C7tVLKQp+HdGkgdi5I+C/cWJ6Cri3hqSc2e8o1w/BBliGj+6PKAh2wNDcKQ9GndgFmgpFqAcb8Uc9EU5gtMj3VxVFag2ONAsI4nz3E+/dc53Ido/l+ptQlbkyr8HUOYAUnP2r66NffWmR0xUfRakC0uLiT+Jrt2v/sQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wv471119gz2xJy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 22:51:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wv4GW6DQcz2yK7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 22:58:27 +1000 (AEST)
 Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 47SCjLrv031636;
-	Wed, 28 Aug 2024 07:45:21 -0500
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 47SCptJf031924;
+	Wed, 28 Aug 2024 07:51:55 -0500
 Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 47SCjJbM031635;
-	Wed, 28 Aug 2024 07:45:19 -0500
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 47SCpru5031923;
+	Wed, 28 Aug 2024 07:51:53 -0500
 X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Wed, 28 Aug 2024 07:45:19 -0500
+Date: Wed, 28 Aug 2024 07:51:53 -0500
 From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>,
-        Eric Biggers <ebiggers@kernel.org>,
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Eric Biggers <ebiggers@kernel.org>,
         Christophe Leroy <christophe.leroy@csgroup.eu>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
@@ -54,8 +54,8 @@ Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>,
         Linux-Arch <linux-arch@vger.kernel.org>, linux-mm@kvack.org,
         linux-trace-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
 Subject: Re: [PATCH v2 05/17] vdso: Avoid call to memset() by getrandom
-Message-ID: <20240828124519.GE29862@gate.crashing.org>
-References: <cover.1724309198.git.christophe.leroy@csgroup.eu> <5deb67090b214f0e6eae96b7c406546d1a16f89b.1724309198.git.christophe.leroy@csgroup.eu> <20240827180819.GB2049@sol.localdomain> <20240827225330.GC29862@gate.crashing.org> <Zs8HirKLk-SrwTIu@zx2c4.com> <fc19bf63-d519-46e2-be70-80202c85ff92@app.fastmail.com>
+Message-ID: <20240828125153.GF29862@gate.crashing.org>
+References: <cover.1724309198.git.christophe.leroy@csgroup.eu> <5deb67090b214f0e6eae96b7c406546d1a16f89b.1724309198.git.christophe.leroy@csgroup.eu> <20240827180819.GB2049@sol.localdomain> <20240827225330.GC29862@gate.crashing.org> <Zs8HirKLk-SrwTIu@zx2c4.com> <fc19bf63-d519-46e2-be70-80202c85ff92@app.fastmail.com> <CAHmME9rjH4Ek3e8jmBvRp3wy+mrzJAeYxk5=o+OHjoT5sTOQPg@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,47 +65,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <fc19bf63-d519-46e2-be70-80202c85ff92@app.fastmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAHmME9rjH4Ek3e8jmBvRp3wy+mrzJAeYxk5=o+OHjoT5sTOQPg@mail.gmail.com>
 User-Agent: Mutt/1.4.2.3i
 
-On Wed, Aug 28, 2024 at 12:24:12PM +0000, Arnd Bergmann wrote:
-> On Wed, Aug 28, 2024, at 11:18, Jason A. Donenfeld wrote:
-> > On Tue, Aug 27, 2024 at 05:53:30PM -0500, Segher Boessenkool wrote:
-> >> On Tue, Aug 27, 2024 at 11:08:19AM -0700, Eric Biggers wrote:
-> >> > 
-> >> > Is there a compiler flag that could be used to disable the generation of calls
-> >> > to memset?
-> >> 
-> >> -fno-tree-loop-distribute-patterns .  But, as always, read up on it, see
-> >> what it actually does (and how it avoids your problem, and mostly: learn
-> >> what the actual problem *was*!)
+On Wed, Aug 28, 2024 at 02:26:08PM +0200, Jason A. Donenfeld wrote:
+> On Wed, Aug 28, 2024 at 2:24 PM Arnd Bergmann <arnd@arndb.de> wrote:
 > >
-> > This might help with various loops, but it doesn't help with the matter
-> > that this patch fixes, which is struct initialization. I just tried it
-> > with the arm64 patch to no avail.
+> > On Wed, Aug 28, 2024, at 11:18, Jason A. Donenfeld wrote:
+> > > On Tue, Aug 27, 2024 at 05:53:30PM -0500, Segher Boessenkool wrote:
+> > >> On Tue, Aug 27, 2024 at 11:08:19AM -0700, Eric Biggers wrote:
+> > >> >
+> > >> > Is there a compiler flag that could be used to disable the generation of calls
+> > >> > to memset?
+> > >>
+> > >> -fno-tree-loop-distribute-patterns .  But, as always, read up on it, see
+> > >> what it actually does (and how it avoids your problem, and mostly: learn
+> > >> what the actual problem *was*!)
+> > >
+> > > This might help with various loops, but it doesn't help with the matter
+> > > that this patch fixes, which is struct initialization. I just tried it
+> > > with the arm64 patch to no avail.
+> >
+> > Maybe -ffreestanding can help here? That should cause the vdso to be built
+> > with the assumption that there is no libc, so it would neither add nor
+> > remove standard library calls. Not sure if that causes other problems,
+> > e.g. if the calling conventions are different.
 > 
-> Maybe -ffreestanding can help here? That should cause the vdso to be built
-> with the assumption that there is no libc, so it would neither add nor
-> remove standard library calls. Not sure if that causes other problems,
-> e.g. if the calling conventions are different.
+> >From https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90701:
+> 
+> | You need -ffreestanding but that is documented to emit memset and
+> memcpy still.
 
-"GCC requires the freestanding
-environment provide 'memcpy', 'memmove', 'memset' and 'memcmp'."
+Yeah.
 
-This is precisely to implement things like struct initialisation.  Maybe
-we should have a "-ffreeerstanding" or "-ffreefloating" or think of
-something funnier still environment as well, this problem has been there
-since the -ffreestanding flag has existed, but the problem is as old as
-the night.
+'-nostdlib'
+     Do not use the standard system startup files or libraries when
+     linking.
 
--fno-builtin might help a bit more, but just attack the problem at
-its root, like I suggested?
-
-(This isn't a new problem, originally it showed up as "GCC replaces
-(part of) my memcpy() implementation by a (recursive) call to memcpy()"
-and, well, that doesn't quite work!)
+This won't help a bit, the compiler will still optimise your
+initialisation loop to a memset() call, it just won't link to libgcc.a
+and crt*.o and its ilk (which is not where mem* are implemented in the
+first place!)
 
 
 Segher
