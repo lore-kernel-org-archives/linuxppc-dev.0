@@ -1,91 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-663-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-664-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97D12C54753
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 08:53:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07045C54E92
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 10:10:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WtyqB50ksz2yft;
-	Wed, 28 Aug 2024 18:52:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724835174;
-	cv=none; b=libRwHPhiQSiJcyWXjQocyZG4saakaySyj08hokd3fEN39aZVNdxlKdGkEwmD+tUiw2BaBgGmalgR8+BJE6FwzDaFPGF17etn0V7R3IWXAGcaHwx2Fbg/DU5PsNmDdmYtThsC2ndiMx7XdUt8hFtu1vnN30hmc4T1L7bhF1tTyQw4oMCTCUm1O7EWsh+HReSqdBfWzXw1YtiRhjkwAdMt60XM7D9kp6T7l6YDkXQ/cVej1Wc/bkYDjoN4ZXl7mquJVtKtnH5I858xVDIgJbXYux/k8cYu3FbI+C08Cg2BKr9FRYVusXcC1kctQIpVybefZtp+TlDIObiC/X+e9GArQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wv0XN3j1lz2y69;
+	Wed, 28 Aug 2024 20:10:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724839812;
+	cv=none; b=So0aZevIUe6jn26eJZkiR2j+Zl6OHKqf59I8sNvu5AqUMS8g0vXdUUbCtrVcxKkPWMgSktqrm+fYpnEOl/dxgn23D2HsKZdY2y2tlId1cfCaKfAUZNJa1Kmn7zjfg8GBdIkxbLmoY1l2h2MOwL0ZINyQwpIiVzqoPpo4MJGwReweuWYTCnQ3ac5DstGJPnDCqmGtPNGeqiGS1Tr735cEMjQL0FdXhI55q7X+XVW1ht/ztVL9HT+C3ld1o8/Gngr9sRJ20NCA/dTbG9GZJfq3C1bpqNCeHrJ20QgcRn2ziAUAbUl6M1BH/tnbAfkbZvf3UuMhBrhov4R1fp+q7GRC5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724835174; c=relaxed/relaxed;
-	bh=qUPw0JPfXlNMAdR6fh/QhHIyN2/Nco0wODiHHw3qKV4=;
-	h=Received:DKIM-Signature:Received:Received:Received:Received:
-	 Received:Received:Received:Received:Received:From:To:Cc:Subject:
-	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-TM-AS-GCONF:X-Proofpoint-ORIG-GUID:
-	 X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details; b=aJ4XudHEZJb7IV2cj9BuaPe5yTNvp20ygtAJ//1xyp1dP7ZSdr9r2MZZGzAbhvSwhFsncoRswQ39QFmOoabNlcwN5f4M7SOLRs6iFmuMAgoKIYnKrz01yjmvkQrqb8S78XKQHqpVLbcZ+1KPQmR3pExr4d5nprjPwSNzPTS8Soar/Gi55MyZfKL4byIFm/VdRsU7xP/kNI7uBTF0XnMOtSW9ga4fw0gZ8V0Lvphh/iCg3IeHxm0LHlNj39psb1AAK2wgbhgbD5sYu58iTd81KJ4KLFaKED1Mv9FDoeZregx9X6wS+FfvDVF12iyXn7Gzxw4jbg76o2yP/HU+37sFLg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tQE7KULx; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tQE7KULx;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1724839812; c=relaxed/relaxed;
+	bh=hN4Vbm6HlglRSR+0w4gWEJ+Qv9YRlOXezYb+TfxvnWE=;
+	h=Received:X-Virus-Scanned:Received:Received:Received:
+	 X-Virus-Scanned:Received:Received:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:Content-Language:From:
+	 In-Reply-To:Content-Type:Content-Transfer-Encoding; b=MqwclH6Q16JOJK2QJaf6Ev/9j4+Bwx+nVwitJZOfVL3xI2pjUS+u1KhSis7iXHK14JNDby1AawEDA5us+OrzjaoA5r9W+wqDzYUxq+aUQDFYU1RiLs84C7ncRaA/yEHJil8vbXqp7i4hjpd376I0uDIem6uJnJ4hn1YZzoPaRGNCM2aWeEflFMaCp7cfyx1851KFDVN4zWV1Na1MHWiSy+y7ZDKklaugCCVPoYIdlG0+uuHUth8ycoS2zFtqrgndC6akbbWnKFiAT8jp2QfecSxfDyKrdquQlP+h5nJNLo0a4aG0SuO2LbiurkdPjecmUTWyCp2TfIikN7qRjJk5xA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WtyqB2RyXz2xpv
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 18:52:54 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47RM3LmE023813;
-	Wed, 28 Aug 2024 08:52:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
-	:to:cc:subject:date:message-id:in-reply-to:references
-	:mime-version:content-transfer-encoding; s=pp1; bh=qUPw0JPfXlNMA
-	dR6fh/QhHIyN2/Nco0wODiHHw3qKV4=; b=tQE7KULxIMmzWg0pLooSfrpO+uAoZ
-	+jy79kHZyJVTJFUv/M2Q1DTypN9REiaxE+XgsG1RjISJJ00QrjliN7jVp87q/xbV
-	GR6+wCQ1oNXOqypxb/SDKW7a3lj8lgKsNjv/ybxAdgF0uKkwQY4aowd58mrNhr7X
-	KHS/X8sBT8IzB/S0ASm1T688lESHrTrbXLi23/j9xlZ8JZa45inl41cez93mXfeI
-	A+i8gjImh0rSXhLViDXn1H44F8sAnm2zNny6omnr7829oGgMfwlGmTvHusP/xQT7
-	MCdvWcKqy1Q9Zflpi/A8my2QrlnBRw2XAMgqsGUPLRPBW5umOcK3/KrDg==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 419q8phxph-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Aug 2024 08:52:46 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 47S8qkRE009287;
-	Wed, 28 Aug 2024 08:52:46 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 419q8phxpe-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Aug 2024 08:52:46 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 47S8imTE021761;
-	Wed, 28 Aug 2024 08:52:45 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 417suuf0r0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Aug 2024 08:52:45 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47S8qelD51839402
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 28 Aug 2024 08:52:40 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 671AD20043;
-	Wed, 28 Aug 2024 08:52:40 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1045F20040;
-	Wed, 28 Aug 2024 08:52:38 +0000 (GMT)
-Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.122.25])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 28 Aug 2024 08:52:37 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: mpe@ellerman.id.au
-Cc: npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen.n.rao@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-Subject: [PATCH v3 3/3] powerpc: Document details on H_HTM hcall
-Date: Wed, 28 Aug 2024 14:22:23 +0530
-Message-ID: <20240828085223.42177-3-maddy@linux.ibm.com>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20240828085223.42177-1-maddy@linux.ibm.com>
-References: <20240828085223.42177-1-maddy@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wv0XN1V4lz2xdX
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 20:10:11 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4Wv0XJ0Rw7z9sRy;
+	Wed, 28 Aug 2024 12:10:08 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id YXxXD9Qfz31u; Wed, 28 Aug 2024 12:10:07 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4Wv0XH6L39z9sRs;
+	Wed, 28 Aug 2024 12:10:07 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C94CF8B78F;
+	Wed, 28 Aug 2024 12:10:07 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id aeC0cGDuV2bP; Wed, 28 Aug 2024 12:10:07 +0200 (CEST)
+Received: from [172.25.230.108] (unknown [172.25.230.108])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 855978B764;
+	Wed, 28 Aug 2024 12:10:07 +0200 (CEST)
+Message-ID: <b8f628b9-91af-45fa-87f0-55abce9ba947@csgroup.eu>
+Date: Wed, 28 Aug 2024 12:10:07 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,56 +59,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next 0/6] net: ethernet: fs_enet: Cleanup and phylink
+ conversion
+To: Maxime Chevallier <maxime.chevallier@bootlin.com>, davem@davemloft.net,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>, Andrew Lunn
+ <andrew@lunn.ch>, Jakub Kicinski <kuba@kernel.org>,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Russell King <linux@armlinux.org.uk>, Florian Fainelli
+ <f.fainelli@gmail.com>, Heiner Kallweit <hkallweit1@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ thomas.petazzoni@bootlin.com, Herve Codina <herve.codina@bootlin.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20240828095103.132625-1-maxime.chevallier@bootlin.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20240828095103.132625-1-maxime.chevallier@bootlin.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: ctfybHfk-VHliy5_IEsm5Sn09ZvE8WK5
-X-Proofpoint-GUID: 25sZ8wOiL2wSmmkpYeGTgzvFciWstvU7
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
- definitions=2024-08-28_03,2024-08-27_01,2024-05-17_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- priorityscore=1501 adultscore=0 impostorscore=0 suspectscore=0
- clxscore=1015 mlxlogscore=999 bulkscore=0 spamscore=0 mlxscore=0
- lowpriorityscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2407110000 definitions=main-2408280060
 
-Add documentation to 'papr_hcalls.rst' describing the
-input, output and return values of the H_HTM hcall as
-per the internal specification.
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
----
-Changelog v2:
-- No changes
-Changelog v1:
-- Updated commit message to include htmdump folder files 
 
- Documentation/arch/powerpc/papr_hcalls.rst | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Le 28/08/2024 à 11:50, Maxime Chevallier a écrit :
+> This series aims at improving the fs_enet code and port it's PHY
+> handling from direct phylib access to using phylink instead.
+> 
+> Although this driver is quite old, there are still some users out there,
+> running an upstream kernel. The development I'm doing is on an MPC885
+> device, which uses fs_enet, as well as a MPC866-based device.
+> 
+> The main motivation for that work is to eventually support ethernet interfaces
+> that have more than one PHY attached to the MAC upstream, for which
+> phylink might be a pre-requisite. That work isn't submitted yet, and the
+> final solution might not even require phylink.
+> 
+> Regardless, I do believe that this series is relevant, as it does some
+> cleanup to the driver, and having it use phylink brings some nice
+> improvements as it simplifies the DT parsing, fixed-link handling and
+> removes code in that driver that predates even phylib itself.
+> 
+> The series is structured in the following way :
+> 
+> - Patches 1 and 2 are cosmetic changes. The former converts the source
+>    to SPDX, while the latter has fs_enet-main.c pass checkpatch. Patch 2 is
+>    really not mandatory in this series, and I understand that this isn't
+>    the easiest or most pleasant patch to review. OTOH, this allows
+>    getting a clean checkpatch output for the main part of the driver.
+> 
+> - Patches 3, 4 and 5 drop some leftovers from back when the driver didn't
+>    use phylib, and brings the use of phylib macros.
+> 
+> - Patch 6 is the actual phylink port, which also cleans the bits of code
+>    that become irrelevant when using phylink.
+> 
+> Testing was done on an MPC866 and MPC885, any test on other platforms
+> that use fs_enet are more than welcome.
+> 
+> Thanks,
+> 
+> Maxime
+> 
+> Maxime Chevallier (6):
+>    net: ethernet: fs_enet: convert to SPDX
+>    net: ethernet: fs_enet: cosmetic cleanups
+>    net: ethernet: fs_enet: drop the .adjust_link custom fs_ops
+>    net: ethernet: fs_enet: drop unused phy_info and mii_if_info
+>    net: ethernet: fs_enet: fcc: use macros for speed and duplex values
+>    net: ethernet: fs_enet: phylink conversion
 
-diff --git a/Documentation/arch/powerpc/papr_hcalls.rst b/Documentation/arch/powerpc/papr_hcalls.rst
-index 80d2c0aadab5..805e1cb9bab9 100644
---- a/Documentation/arch/powerpc/papr_hcalls.rst
-+++ b/Documentation/arch/powerpc/papr_hcalls.rst
-@@ -289,6 +289,17 @@ to be issued multiple times in order to be completely serviced. The
- subsequent hcalls to the hypervisor until the hcall is completely serviced
- at which point H_SUCCESS or other error is returned by the hypervisor.
- 
-+**H_HTM**
-+
-+| Input: flags, target, operation (op), op-param1, op-param2, op-param3
-+| Out: *dumphtmbufferdata*
-+| Return Value: *H_Success,H_Busy,H_LongBusyOrder,H_Partial,H_Parameter,
-+		 H_P2,H_P3,H_P4,H_P5,H_P6,H_State,H_Not_Available,H_Authority*
-+
-+H_HTM supports setup, configuration, control and dumping of Hardware Trace
-+Macro (HTM) function and its data. HTM buffer stores tracing data for functions
-+like core instruction, core LLAT and nest.
-+
- References
- ==========
- .. [1] "Power Architecture Platform Reference"
--- 
-2.45.2
+For the series,
 
+Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu> # LINUX FOR 
+POWERPC EMBEDDED PPC8XX AND PPC83XX
+
+> 
+>   .../net/ethernet/freescale/fs_enet/Kconfig    |   2 +-
+>   .../ethernet/freescale/fs_enet/fs_enet-main.c | 421 ++++++++----------
+>   .../net/ethernet/freescale/fs_enet/fs_enet.h  |  24 +-
+>   .../net/ethernet/freescale/fs_enet/mac-fcc.c  |  16 +-
+>   .../net/ethernet/freescale/fs_enet/mac-fec.c  |  14 +-
+>   .../net/ethernet/freescale/fs_enet/mac-scc.c  |  10 +-
+>   .../ethernet/freescale/fs_enet/mii-bitbang.c  |   5 +-
+>   .../net/ethernet/freescale/fs_enet/mii-fec.c  |   5 +-
+>   8 files changed, 209 insertions(+), 288 deletions(-)
+> 
 
