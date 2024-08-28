@@ -1,123 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-704-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-705-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC555C7114C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 21:40:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08596C7114C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Aug 2024 21:59:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WvHrN2737z2yZZ;
-	Thu, 29 Aug 2024 07:40:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724881204;
-	cv=none; b=gUnWYJl10UDxhpkB8BwJ2BWZZdc/kfLPmXM1v7v2QQSq9qW7cciJBcr1asTOSeukRt5x1b3WqDT6KQ/YZwXgyriMcwu/iGz6ZN1LBSAAHyAYnL0YAhEYdA4Z7nJF7r2ZDlvX3qWTPpzbRQ5dlS7KfIfE49/WnFfQ5CFFhNrJcOUaAtWh4EgC12b1jWNd2FJQgzpFfnQCGB5nSvVTHhy5lU/OvEaTPxot/gpZbN8Xlbm+EQ+h4FkJ0JaLWoEaFHEarHmhr1Ux5vb1yob/QiGFDhuRrW9QVhHazLMBXn91oJzL+sf38G5/5GdFSCnyvraae/2woN3zXIuZgvAHajAZOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WvJGv413rz2yhg;
+	Thu, 29 Aug 2024 07:59:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724859642;
+	cv=none; b=BMBhTftYyWKetvKG9v3vsrfRmkpo9eRU6ABjo2JS2Q/5zOSbX3UP+ICZNMPOK+yPdDVG0pqelLEH65RaVOhke8u1neZN1lAO880jVCVFDWLT4LRi11pts1azc1tuOucIXH/53yNmSGwHQrZROlKL4h2MRsBp4zzTwpOBlMEjtkcnPVPa1UREZjtP7oNz5EaFUjD2eV5c+sU95sWbwkrQ8PnMFc1pfAZDUVf/tyOOHLgq75pB4uoXGnanWf9aTittyNmtUEGZnVPLhIC3Anl51NhrdoofXrEYo0mvY6tK+aSczIpuaKc2v3YPDaiTGBWZDdJhH5mpSOl1SbFDMKoUiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724881204; c=relaxed/relaxed;
-	bh=XeNJBfO0ja/8g6kzTOhNFElQs2waKVPJgdUV/DsW4nc=;
-	h=Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Google-Smtp-Source:
-	 X-Received:Received:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=INhwKvbgyEGKMU6pD6UuYKqzO/pNJjfqTLFD5FUtU98Kz4M5yOAmLvx3Cz6NQx6Hl30xkE+8YYFZPEWMPYgmdO10Bi3/Eg8sCyG2PazHYsGebipJQtX3z6cQrQXExf1WUO30S+3sQ/kblkdxx4qKghS5srQz2IDkpTEMm9hbiBxu+gmSd2V0p5GSGdGNwazLqxHy1OdXSZ6t6MSZKZGqqnyb1iD6t5PD6BS5k8RLCC6S/+7ZbVxAs4rnFR54I/+nyJhzKKHb0M0b6d0uZ2eYxy/kWbvR9yy7lJ/ZC/TerCXlXMopn5oTuqiPflRVfg/67Nre3Y9wv+JKIFGxc42NOQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rivosinc.com; dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20230601.gappssmtp.com header.i=@rivosinc-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=r8uhcOtI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=charlie@rivosinc.com; receiver=lists.ozlabs.org) smtp.mailfrom=rivosinc.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rivosinc.com
+	t=1724859642; c=relaxed/relaxed;
+	bh=klIv7pWG9BE2EusGcZ3vs44rN7czUHKrTo3cjwQ3jKs=;
+	h=Received:Received:DKIM-Signature:Received:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Google-Smtp-Source:X-Received:MIME-Version:
+	 References:In-Reply-To:From:Date:X-Gmail-Original-Message-ID:
+	 Message-ID:Subject:To:Cc:Content-Type; b=nBl72NbyPgl7RydPZpwwqSJ30qnfwudC0h0D7EiSyCWyGaLcGMlud48Q2BLYAyftqHQkufkKvQheQghCBixn5bMiPNp6ijFhfJn/Uk8UefTjiMM02onlvj5uqUwfHqbm10PpgYN7AfChH3lBuKGAJLtlWY4tt7PDq8QnHPvkskil4GCMcrImDDp+NVWmPTJyIQbmbfGWl0nPOuqWAtdyDBmvIWfubPGr06RZKAzSixU/qhkea6VaJziFdmrVFYmNm4CRyz7AAo9eL3SOPHEvb2n8DqMf5OK88QUqtQ+86mTHWLYcEMjbpTmBdYmv0VuSmB44TMWayBFtzPD0/U4b/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hDdad5/I; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20230601.gappssmtp.com header.i=@rivosinc-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=r8uhcOtI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hDdad5/I;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rivosinc.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=charlie@rivosinc.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WvHrM3Lmrz2yVv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2024 07:40:02 +1000 (AEST)
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-7142a93ea9cso5301455b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 14:40:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1724881200; x=1725486000; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=XeNJBfO0ja/8g6kzTOhNFElQs2waKVPJgdUV/DsW4nc=;
-        b=r8uhcOtIWvUKL5ZDsIa7l1oqLx2uTH9QunYWDlSidMZF6wO6LD3huILvuFPr76WveB
-         ligWF+kfZxWWwMNKjXb67A7PJcXMBXSuD9o0wyTkYPWtetZSWEuZf2BediK0ZlEoCfQz
-         zCItG6Z+gH8rjcdB64m1YoRrDkvP9MvdWwjaa8fkBAd+Rrcb6TE85kZZlW7jb2748a3e
-         1YfvlOWk/7c07Ogk6zA3upBF3W+dKi9fyXX9CCe3C3WqCSLKiJnMlkVX0mihwbS6YQma
-         t5aS2NYE69g29T57KMb9KVpz19Arq+kj8IBzOb/mmrC0ChD8D6AY+cinRiGTpPB3zIBQ
-         hkXw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724881200; x=1725486000;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XeNJBfO0ja/8g6kzTOhNFElQs2waKVPJgdUV/DsW4nc=;
-        b=cFoD0Madvxrc/wi3dL1ZHCluk2usCx30mNCiqsyJgS2M7mqNckuL2xPMQKRVCpN5ex
-         79JJwOrvXIZ2pdOfbgqOfKItlt71MMwVZqRcVMtbxU2CQzmn4yN0qPpsrpcMnjWdkmYd
-         ePv3wHTzLDSWI7B5F63vU47jWC4GfgtqzmVCa5KUv+Q9Z74xEv9H3XbTmB/A58uoJUlp
-         zMZJr2QJ3lzoJg/Nqpdmgpb/+xAj/6FjwLiN5fKUWAhXjMwxLivdkgqBYUtr9sLf6wd2
-         qlsQJnQMzysV6CuhC13zbTXnMVh1CpPZgx9ZGYWrU7uK3Fk6u/TWGYnszzsqpGYhiS7f
-         nuQA==
-X-Forwarded-Encrypted: i=1; AJvYcCUASOPAAVPOm0DCg1ibVSO7MlXZ/5l1YuTctFPJCDHrCH5BbvhGiwYjfvdtUz7/QUTr8dQ2BxhDQvi6XF0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzoiMwFNGmIr21zhzX7AJn6dejCo51P7cK+SD/J0TRujhCTdtHZ
-	aAiWj+HmM+5tSTBURN+O0mOXeOuFCkFdd/UmEHAh72CWi18acg6V5NObM6UXkrw=
-X-Google-Smtp-Source: AGHT+IFaC7yLAKucAQ+jfC2ojeS1SzrNuL0Qf0TeCvZ+3dsJBG9fozmVtsZvCPOeq6REFPvrFRD1LQ==
-X-Received: by 2002:a05:6a00:2e87:b0:714:2ba6:e5c9 with SMTP id d2e1a72fcca58-715dfaf1fddmr1045535b3a.7.1724881200137;
-        Wed, 28 Aug 2024 14:40:00 -0700 (PDT)
-Received: from ghost ([50.145.13.30])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7cd9ac98286sm9939173a12.5.2024.08.28.14.39.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Aug 2024 14:39:59 -0700 (PDT)
-Date: Wed, 28 Aug 2024 14:39:55 -0700
-From: Charlie Jenkins <charlie@rivosinc.com>
-To: "Liam R. Howlett" <Liam.Howlett@oracle.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Muchun Song <muchun.song@linux.dev>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Russell King <linux@armlinux.org.uk>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Helge Deller <deller@gmx.de>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Shuah Khan <shuah@kernel.org>,
-	Alexandre Ghiti <alexghiti@rivosinc.com>,
-	linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Palmer Dabbelt <palmer@rivosinc.com>,
-	linux-riscv@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	linux-mm@kvack.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	sparclinux@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH 00/16] mm: Introduce MAP_BELOW_HINT
-Message-ID: <Zs+ZK6Q2U9dm19yR@ghost>
-References: <20240827-patches-below_hint_mmap-v1-0-46ff2eb9022d@rivosinc.com>
- <dbqqojpvqodfxavt4fxugoj3a2ppk5b4b3sp77qsmbg33sc2em@fhjccbxaihrh>
- <Zs+Ppk0ANaUah7p9@ghost>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wv7sj6hd0z2xdY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2024 01:40:41 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 9EF75A41AC8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 15:40:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83488C4CECC
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 15:40:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1724859637;
+	bh=+z7/VLAc5zAKqxwt9kQI0vxm8x7sulgvUDeMTRfB+wo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=hDdad5/IY68zkrft/92YWfFtjDz6TFndSmnpp5pqAtaDdhgaQHXnMYujF2CwZtAvo
+	 s1dVBctohqByWUo15KsHC1yXOsb3CsxrVYgXiTlMrxSNBqKSRHb2u/dgFnWDlyP45P
+	 kmzBzCQlLYmgzPMvmTlIEcYXhkLufuTJDpchreYUAd0yoHp8hJGCENnAbHqZR1NUMB
+	 63ZyNil+E22vWl4w+ZhugE7V8Y5RiBnHkIJ248WfFc80AZtPJMZpvtsLhvJEQmQQ7b
+	 rjS4mie2g2VPxttgup163SLxFXlpDbWSy4ple6kkn/VZnDNkSEFpYi5cJmSqRwT5Qa
+	 F/BVlj/jrU5iw==
+Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-2f4f24263acso91142451fa.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Aug 2024 08:40:37 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXY0O1Pkpm+EIWljfSnnJPMdxZLjuIrGL+llOw8BsPIuOxn8lPe93YtMQi+Tk9+9VnGAPt/0P4sdeKTpN0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywi2eJj+TmK5UoKS5QqHND5xLy6jSkr473x4qr+H64uMuy4wBhA
+	o+eeDKdKg2VEyt+LEo6ooCo4O2y5fwyrek+efn543qVHf9TZf8sYX6le+kxe/7skTUGTvpysqiT
+	mor22rJqwB5XScUhdDMtDEnKnCk0=
+X-Google-Smtp-Source: AGHT+IHIXIHDcxvkoioWarqDfEAwvoOHHvvDveL69dLtIdivksLO7ybL0XqtoFeExKbS+796rHsbT/SXItR1tBLUGxI=
+X-Received: by 2002:a2e:461a:0:b0:2f3:f182:49f3 with SMTP id
+ 38308e7fff4ca-2f6106e36e6mr594741fa.22.1724859635743; Wed, 28 Aug 2024
+ 08:40:35 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -127,253 +65,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Zs+Ppk0ANaUah7p9@ghost>
+References: <cover.1724309198.git.christophe.leroy@csgroup.eu>
+ <5deb67090b214f0e6eae96b7c406546d1a16f89b.1724309198.git.christophe.leroy@csgroup.eu>
+ <20240827180819.GB2049@sol.localdomain> <20240827225330.GC29862@gate.crashing.org>
+ <Zs8HirKLk-SrwTIu@zx2c4.com> <fc19bf63-d519-46e2-be70-80202c85ff92@app.fastmail.com>
+ <20240828124519.GE29862@gate.crashing.org>
+In-Reply-To: <20240828124519.GE29862@gate.crashing.org>
+From: Ard Biesheuvel <ardb@kernel.org>
+Date: Wed, 28 Aug 2024 17:40:23 +0200
+X-Gmail-Original-Message-ID: <CAMj1kXGmDmxy75eP=rf_fzKmg0g_FeKV43jk2G_gibnKZBtVww@mail.gmail.com>
+Message-ID: <CAMj1kXGmDmxy75eP=rf_fzKmg0g_FeKV43jk2G_gibnKZBtVww@mail.gmail.com>
+Subject: Re: [PATCH v2 05/17] vdso: Avoid call to memset() by getrandom
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, "Jason A . Donenfeld" <Jason@zx2c4.com>, Eric Biggers <ebiggers@kernel.org>, 
+	Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, Andy Lutomirski <luto@kernel.org>, 
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, "Theodore Ts'o" <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>, 
+	Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
+	Vincenzo Frascino <vincenzo.frascino@arm.com>, shuah <shuah@kernel.org>, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	linux-fsdevel@vger.kernel.org, Linux-Arch <linux-arch@vger.kernel.org>, 
+	linux-mm@kvack.org, linux-trace-kernel@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Wed, Aug 28, 2024 at 01:59:18PM -0700, Charlie Jenkins wrote:
-> On Wed, Aug 28, 2024 at 02:31:42PM -0400, Liam R. Howlett wrote:
-> > * Charlie Jenkins <charlie@rivosinc.com> [240828 01:49]:
-> > > Some applications rely on placing data in free bits addresses allocated
-> > > by mmap. Various architectures (eg. x86, arm64, powerpc) restrict the
-> > > address returned by mmap to be less than the maximum address space,
-> > > unless the hint address is greater than this value.
-> > 
-> > Wait, what arch(s) allows for greater than the max?  The passed hint
-> > should be where we start searching, but we go to the lower limit then
-> > start at the hint and search up (or vice-versa on the directions).
-> > 
-> 
-> I worded this awkwardly. On arm64 there is a page-table boundary at 48
-> bits and at 52 bits. On x86 the boundaries are at 48 bits and 57 bits.
-> The max value mmap is able to return on arm64 is 48 bits if the hint
-> address uses 48 bits or less, even if the architecture supports 5-level
-> paging and thus addresses can be 52 bits. Applications can opt-in to
-> using up to 52-bits in an address by using a hint address greater than
-> 48 bits. x86 has the same behavior but with 57 bits instead of 52.
-> 
-> This reason this exists is because some applications arbitrarily replace
-> bits in virtual addresses with data with an assumption that the address
-> will not be using any of the bits above bit 48 in the virtual address.
-> As hardware with larger address spaces was released, x86 decided to
-> build safety guards into the kernel to allow the applications that made
-> these assumptions to continue to work on this different hardware.
-> 
-> This causes all application that use a hint address to silently be
-> restricted to 48-bit addresses. The goal of this flag is to have a way
-> for applications to explicitly request how many bits they want mmap to
-> use.
-> 
-> > I don't understand how unmapping works on a higher address; we would
-> > fail to free it on termination of the application.
-> > 
-> > Also, there are archs that map outside of the VMAs, which are freed by
-> > freeing from the prev->vm_end to next->vm_start, so I don't understand
-> > what that looks like in this reality as well.
-> > 
-> > > 
-> > > On arm64 this barrier is at 52 bits and on x86 it is at 56 bits. This
-> > > flag allows applications a way to specify exactly how many bits they
-> > > want to be left unused by mmap. This eliminates the need for
-> > > applications to know the page table hierarchy of the system to be able
-> > > to reason which addresses mmap will be allowed to return.
-> > 
-> > But, why do they need to know today?  We have a limit for this don't we?
-> 
-> The limit is different for different architectures. On x86 the limit is
-> 57 bits, and on arm64 it is 52 bits. So in the theoretical case that an
-> application requires 10 bits free in a virtual address, the application
-> would always work on arm64 regardless of the hint address, but on x86 if
-> the hint address is greater than 48 bits then the application will not
-> work.
-> 
-> The goal of this flag is to have consistent and tunable behavior of
-> mmap() when it is desired to ensure that mmap() only returns addresses
-> that use some number of bits.
-> 
-> > 
-> > Also, these upper limits are how some archs use the upper bits that you
-> > are trying to use.
-> > 
-> 
-> It does not eliminate the existing behavior of the architectures to
-> place this upper limits, it instead provides a way to have consistent
-> behavior across all architectures.
-> 
-> > > 
-> > > ---
-> > > riscv made this feature of mmap returning addresses less than the hint
-> > > address the default behavior. This was in contrast to the implementation
-> > > of x86/arm64 that have a single boundary at the 5-level page table
-> > > region. However this restriction proved too great -- the reduced
-> > > address space when using a hint address was too small.
-> > 
-> > Yes, the hint is used to group things close together so it would
-> > literally be random chance on if you have enough room or not (aslr and
-> > all).
-> > 
-> > > 
-> > > A patch for riscv [1] reverts the behavior that broke userspace. This
-> > > series serves to make this feature available to all architectures.
-> > 
-> > I don't fully understand this statement, you say it broke userspace so
-> > now you are porting it to everyone?  This reads as if you are braking
-> > the userspace on all architectures :)
-> 
-> It was the default for mmap on riscv. The difference here is that it is now
-> enabled by a flag instead. Instead of making the flag specific to riscv,
-> I figured that other architectures might find it useful as well.
-> 
-> > 
-> > If you fail to find room below, then your application fails as there is
-> > no way to get the upper bits you need.  It would be better to fix this
-> > in userspace - if your application is returned too high an address, then
-> > free it and exit because it's going to fail anyways.
-> > 
-> 
-> This flag is trying to define an API that is more robust than the
-> current behavior on that x86 and arm64 which implicitly restricts mmap()
-> addresses to 48 bits. A solution could be to just write in the docs that
-> mmap() will always exhaust all addresses below the hint address before
-> returning an address that is above the hint address. However a flag that
-> defines this behavior seems more intuitive.
-> 
-> > > 
-> > > I have only tested on riscv and x86.
-> > 
-> > This should be an RFC then.
-> 
-> Fair enough.
-> 
-> > 
-> > > There is a tremendous amount of
-> > > duplicated code in mmap so the implementations across architectures I
-> > > believe should be mostly consistent. I added this feature to all
-> > > architectures that implement either
-> > > arch_get_mmap_end()/arch_get_mmap_base() or
-> > > arch_get_unmapped_area_topdown()/arch_get_unmapped_area(). I also added
-> > > it to the default behavior for arch_get_mmap_end()/arch_get_mmap_base().
-> > 
-> > Way too much duplicate code.  We should be figuring out how to make this
-> > all work with the same code.
-> > 
-> > This is going to make the cloned code problem worse.
-> 
-> That would require standardizing every architecture with the generic
-> mmap() framework that arm64 has developed. That is far outside the scope
-> of this patch, but would be a great area to research for each of the
-> architectures that do not use the generic framework.
+On Wed, 28 Aug 2024 at 14:57, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+>
+> On Wed, Aug 28, 2024 at 12:24:12PM +0000, Arnd Bergmann wrote:
+> > On Wed, Aug 28, 2024, at 11:18, Jason A. Donenfeld wrote:
+> > > On Tue, Aug 27, 2024 at 05:53:30PM -0500, Segher Boessenkool wrote:
+> > >> On Tue, Aug 27, 2024 at 11:08:19AM -0700, Eric Biggers wrote:
+> > >> >
+> > >> > Is there a compiler flag that could be used to disable the generation of calls
+> > >> > to memset?
+> > >>
+> > >> -fno-tree-loop-distribute-patterns .  But, as always, read up on it, see
+> > >> what it actually does (and how it avoids your problem, and mostly: learn
+> > >> what the actual problem *was*!)
+> > >
+> > > This might help with various loops, but it doesn't help with the matter
+> > > that this patch fixes, which is struct initialization. I just tried it
+> > > with the arm64 patch to no avail.
+> >
+> > Maybe -ffreestanding can help here? That should cause the vdso to be built
+> > with the assumption that there is no libc, so it would neither add nor
+> > remove standard library calls. Not sure if that causes other problems,
+> > e.g. if the calling conventions are different.
+>
+> "GCC requires the freestanding
+> environment provide 'memcpy', 'memmove', 'memset' and 'memcmp'."
+>
+> This is precisely to implement things like struct initialisation.  Maybe
+> we should have a "-ffreeerstanding" or "-ffreefloating" or think of
+> something funnier still environment as well, this problem has been there
+> since the -ffreestanding flag has existed, but the problem is as old as
+> the night.
+>
+> -fno-builtin might help a bit more, but just attack the problem at
+> its root, like I suggested?
+>
 
-Thinking about this again, I could drop support for all architectures
-that do not implement arch_get_mmap_base()/arch_get_mmap_end().
+In my experience, this is likely to do the opposite: it causes the
+compiler to 'forget' the semantics of memcpy() and memset(), so that
+explicit trivial calls will no longer be elided and replaced with
+plain loads and stores (as it can no longer guarantee the equivalence)
 
-> 
-> - Charlie
-> 
-> > 
-> > > 
-> > > Link: https://lore.kernel.org/lkml/20240826-riscv_mmap-v1-2-cd8962afe47f@rivosinc.com/T/ [1]
-> > > 
-> > > To: Arnd Bergmann <arnd@arndb.de>
-> > > To: Paul Walmsley <paul.walmsley@sifive.com>
-> > > To: Palmer Dabbelt <palmer@dabbelt.com>
-> > > To: Albert Ou <aou@eecs.berkeley.edu>
-> > > To: Catalin Marinas <catalin.marinas@arm.com>
-> > > To: Will Deacon <will@kernel.org>
-> > > To: Michael Ellerman <mpe@ellerman.id.au>
-> > > To: Nicholas Piggin <npiggin@gmail.com>
-> > > To: Christophe Leroy <christophe.leroy@csgroup.eu>
-> > > To: Naveen N Rao <naveen@kernel.org>
-> > > To: Muchun Song <muchun.song@linux.dev>
-> > > To: Andrew Morton <akpm@linux-foundation.org>
-> > > To: Liam R. Howlett <Liam.Howlett@oracle.com>
-> > > To: Vlastimil Babka <vbabka@suse.cz>
-> > > To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-> > > To: Thomas Gleixner <tglx@linutronix.de>
-> > > To: Ingo Molnar <mingo@redhat.com>
-> > > To: Borislav Petkov <bp@alien8.de>
-> > > To: Dave Hansen <dave.hansen@linux.intel.com>
-> > > To: x86@kernel.org
-> > > To: H. Peter Anvin <hpa@zytor.com>
-> > > To: Huacai Chen <chenhuacai@kernel.org>
-> > > To: WANG Xuerui <kernel@xen0n.name>
-> > > To: Russell King <linux@armlinux.org.uk>
-> > > To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-> > > To: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
-> > > To: Helge Deller <deller@gmx.de>
-> > > To: Alexander Gordeev <agordeev@linux.ibm.com>
-> > > To: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-> > > To: Heiko Carstens <hca@linux.ibm.com>
-> > > To: Vasily Gorbik <gor@linux.ibm.com>
-> > > To: Christian Borntraeger <borntraeger@linux.ibm.com>
-> > > To: Sven Schnelle <svens@linux.ibm.com>
-> > > To: Yoshinori Sato <ysato@users.sourceforge.jp>
-> > > To: Rich Felker <dalias@libc.org>
-> > > To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-> > > To: David S. Miller <davem@davemloft.net>
-> > > To: Andreas Larsson <andreas@gaisler.com>
-> > > To: Shuah Khan <shuah@kernel.org>
-> > > To: Alexandre Ghiti <alexghiti@rivosinc.com>
-> > > Cc: linux-arch@vger.kernel.org
-> > > Cc: linux-kernel@vger.kernel.org
-> > > Cc: Palmer Dabbelt <palmer@rivosinc.com>
-> > > Cc: linux-riscv@lists.infradead.org
-> > > Cc: linux-arm-kernel@lists.infradead.org
-> > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > Cc: linux-mm@kvack.org
-> > > Cc: loongarch@lists.linux.dev
-> > > Cc: linux-mips@vger.kernel.org
-> > > Cc: linux-parisc@vger.kernel.org
-> > > Cc: linux-s390@vger.kernel.org
-> > > Cc: linux-sh@vger.kernel.org
-> > > Cc: sparclinux@vger.kernel.org
-> > > Cc: linux-kselftest@vger.kernel.org
-> > > Signed-off-by: Charlie Jenkins <charlie@rivosinc.com>
-> > > 
-> > > ---
-> > > Charlie Jenkins (16):
-> > >       mm: Add MAP_BELOW_HINT
-> > >       riscv: mm: Do not restrict mmap address based on hint
-> > >       mm: Add flag and len param to arch_get_mmap_base()
-> > >       mm: Add generic MAP_BELOW_HINT
-> > >       riscv: mm: Support MAP_BELOW_HINT
-> > >       arm64: mm: Support MAP_BELOW_HINT
-> > >       powerpc: mm: Support MAP_BELOW_HINT
-> > >       x86: mm: Support MAP_BELOW_HINT
-> > >       loongarch: mm: Support MAP_BELOW_HINT
-> > >       arm: mm: Support MAP_BELOW_HINT
-> > >       mips: mm: Support MAP_BELOW_HINT
-> > >       parisc: mm: Support MAP_BELOW_HINT
-> > >       s390: mm: Support MAP_BELOW_HINT
-> > >       sh: mm: Support MAP_BELOW_HINT
-> > >       sparc: mm: Support MAP_BELOW_HINT
-> > >       selftests/mm: Create MAP_BELOW_HINT test
-> > > 
-> > >  arch/arm/mm/mmap.c                           | 10 ++++++++
-> > >  arch/arm64/include/asm/processor.h           | 34 ++++++++++++++++++++++----
-> > >  arch/loongarch/mm/mmap.c                     | 11 +++++++++
-> > >  arch/mips/mm/mmap.c                          |  9 +++++++
-> > >  arch/parisc/include/uapi/asm/mman.h          |  1 +
-> > >  arch/parisc/kernel/sys_parisc.c              |  9 +++++++
-> > >  arch/powerpc/include/asm/task_size_64.h      | 36 +++++++++++++++++++++++-----
-> > >  arch/riscv/include/asm/processor.h           | 32 -------------------------
-> > >  arch/s390/mm/mmap.c                          | 10 ++++++++
-> > >  arch/sh/mm/mmap.c                            | 10 ++++++++
-> > >  arch/sparc/kernel/sys_sparc_64.c             |  8 +++++++
-> > >  arch/x86/kernel/sys_x86_64.c                 | 25 ++++++++++++++++---
-> > >  fs/hugetlbfs/inode.c                         |  2 +-
-> > >  include/linux/sched/mm.h                     | 34 ++++++++++++++++++++++++--
-> > >  include/uapi/asm-generic/mman-common.h       |  1 +
-> > >  mm/mmap.c                                    |  2 +-
-> > >  tools/arch/parisc/include/uapi/asm/mman.h    |  1 +
-> > >  tools/include/uapi/asm-generic/mman-common.h |  1 +
-> > >  tools/testing/selftests/mm/Makefile          |  1 +
-> > >  tools/testing/selftests/mm/map_below_hint.c  | 29 ++++++++++++++++++++++
-> > >  20 files changed, 216 insertions(+), 50 deletions(-)
-> > > ---
-> > > base-commit: 5be63fc19fcaa4c236b307420483578a56986a37
-> > > change-id: 20240827-patches-below_hint_mmap-b13d79ae1c55
-> > > -- 
-> > > - Charlie
-> > > 
+> (This isn't a new problem, originally it showed up as "GCC replaces
+> (part of) my memcpy() implementation by a (recursive) call to memcpy()"
+> and, well, that doesn't quite work!)
+>
+
+This needs to be fixed for Clang as well, so throwing GCC specific
+flags at it will at best be a partial solution.
+
+Omitting the struct assignment is a reasonable way to reduce the
+likelihood that a memset() will be emitted, so for this patch
+
+Acked-by: Ard Biesheuvel <ardb@kernel.org>
+
+It is not a complete solution, unfortunately, and I guess there may be
+other situations (compiler/arch combinations) where this might pop up
+again.
 
