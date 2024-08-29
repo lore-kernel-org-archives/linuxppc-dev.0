@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-755-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-756-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93084C83F16
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2024 16:15:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41FF1C83F2D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2024 16:15:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wvmbf04h4z2ytV;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wvmbf0NXRz2ytp;
 	Fri, 30 Aug 2024 02:15:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.183.196
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724948141;
-	cv=none; b=EebQKGS1lTaOQZ+Y+LfbJSPPhxFmpEIKTZx0Vs5RXan7JQ/ivGdEnsvVY97xzLyNd4xiALasjJkkuuqPKS5LEesAs1zE9yFxs/Hz9wpDcu4xvhJ8vqCaGZhVdLrZPmhi90DMPG2+kPeim9jsU/mpCHrGypl0gaoGEHgQTzt8yztE/gHJfOzWkin6ReTYy0nusNzbNKtmxDe0tu/ImLomqfR3e+SMRHET2P+PxTEbtAycvkJ6UFi3Pg93wbljzxfCb/1eLkPyTFCg4op0hk2EWkqxBVJq1/cv74rFvNClxHlw7Clbc3U5dPB8705htESJxKTas6eOYMBt0t7XzUptOA==
+	cv=none; b=M/TZ9DSjVv+SdgRwiZ8s1G873NBGMTloQ9f/OZj1Of/QK17aU/iQkEbjccocEUlQOHLKjU0LOvSexOgUOMRTJZK1oP9c73CiPwoqiFLbdVl/B6/r6JUP1gSqZo3YHaBbKeGFwEYB+oVV/Ctau8IjkQyzNlL1F6QT8SGTfGi459VKkvtzmyZoKFKzxntGBtKiXSmmPxaWCiXkpl5gw3QQOF4S+ODBI2xpgAPMttslbO5vYd4/Oq0LQILmgNmXQq2jG1+24fYhOLbo1xuYLsEhhfZXVaHUpBn2q57bZKNO9M4KsrJi4zL51clNjMRe0smwZKiDV7cPC25kciFTCbQKDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1724948141; c=relaxed/relaxed;
-	bh=dikhKHIOkEIPXGWcRLGhXSpACwbwEwFF3Ey6JTJR82I=;
-	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:
-	 X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding:X-GND-Sasl; b=X672MOWRifSa13cDKqMpNk8jiCxSLlr81u/7o7ldePHw7Voktu48MZyMD05HqbudO0fI3fgzpbDtkwOf4gbaZN/uTCjladPPpo+XzQ2opjh5b5qzp3jGhGAi9rcGbJVne7V9qdj2IEObTrdSNMlrJQKbbpR5jper8nVBq8r2j3yhvC0zoD2dPkzHpQxCElhfTeMa0OIhRcvlUggU1EFjtypHPyGQfFPnlJZgjfBTpVY0s/X6gZ3kd67oGgh6hqG3cUuNsa6++kKX1QwKigHflKkzSoU069bOgjSYxN7mg9pT78Xe65iIVkngX8S2DprwQ5tzqm0hlBcFQEOx8VBw5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=e8VISQ1G; dkim-atps=neutral; spf=pass (client-ip=217.70.183.196; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	bh=fAR7srL4v3bw18EUN9RLJmZwLTb+oDsz1Nnj3gW1ymc=;
+	h=X-Greylist:Received:DKIM-Signature:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-GND-Sasl; b=VBOgxNxPluUVrNy8TjrdIAc6meifli52yuDgQcqAXHKGDMxMQvgvKtECil7kJePprJdE+osrcYWNqHsR8qf9y+bIK6bFoRpkv9hU5rEsivVpTu+Rb9YOa/TFcScvM6ZqXLFZC3KDQ+zD6OlY5nFcLn7aGlSnGyuU7aTKWhQLEW06iCt7pnk466zrxBg3nKTmyMWOr2amWhGxY6qkewtwbfKNOwZ3IILFYV6dwbcQ1/KAcYXKEP/WWIVTn6o9byYj3/nrQtpJY0OigbQqxQyAJecF4rbegmJkc80qBi4JR7EwH4uTopTR5VaPpTBURSrgCvH3rKybB1+mYWfRRW5Zkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ZahHLt/h; dkim-atps=neutral; spf=pass (client-ip=217.70.183.196; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=e8VISQ1G;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ZahHLt/h;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.196; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 109467 seconds by postgrey-1.37 at boromir; Fri, 30 Aug 2024 02:15:41 AEST
 Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [217.70.183.196])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wvmbd0dncz2ytJ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2024 02:15:39 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 9FAAFE000D;
-	Thu, 29 Aug 2024 16:15:36 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wvmbd0DDvz2yt0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2024 02:15:38 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 24B5EE0007;
+	Thu, 29 Aug 2024 16:15:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1724948137;
+	t=1724948134;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=dikhKHIOkEIPXGWcRLGhXSpACwbwEwFF3Ey6JTJR82I=;
-	b=e8VISQ1GtrSQhVtoN35M4u1mxjTx/5DzcSIu7PiYLZkIiuNG3KSdnNRev4Ret56FRIBufd
-	uiqPuyc92XKxrtpIYzqDDeCtkIgApV5rrznf+76RXQoU0NcbmJSKyY9VXIOwGJb9diGchZ
-	bmsnSpkH3FYKvJxhPlRUZ3S0OYVPf9AOI6sroQCQGMUYoUdqnzLdCX/Tj3DCSx6o4nckQB
-	khtaKznwsIGSSmY/sQWECcGZT+SgMHgkku3Y+mWPkPFN3VXsMNJTT75dFOAxiFxF8rnvOi
-	ZaIBAUjYwkIiacSghaNrIEqQcp9posiw91ndY2rJNXLrgmCr+asCNx3aMpGF8g==
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=fAR7srL4v3bw18EUN9RLJmZwLTb+oDsz1Nnj3gW1ymc=;
+	b=ZahHLt/hMMvB70eolNrnzQfCt60xp/OVIN+BPDRNyq56Fu9cIeA5JHT7KnwsBalT7zHkTC
+	qlDFyue9rT9Qz52/2LFduHvbjQ0lsK83GWHy6OiqGJnngjRLAzMAuvTVDRfs6iVBpItlC1
+	lOVLOLp+H2ZfJkrWvjc8/UIPK3sif9fj2e0ORwfZtsKCwQY1kpBlay5RzzOld4mK6azHYs
+	RhQHvX+PtHtlXA/bGAnAij8NCwc5qkDL0aeohgm1KLCUP4nNJwr9WzxzIOKnE0MjmNF+A/
+	GXCc6AgzqxPFGBTPzrUEYi+DzJjSGPKbq8UfsZC0DXza1oikCOg3plIjrbAGfw==
 From: Maxime Chevallier <maxime.chevallier@bootlin.com>
 To: davem@davemloft.net,
 	Pantelis Antoniou <pantelis.antoniou@gmail.com>,
@@ -61,12 +61,10 @@ Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
 	Herve Codina <herve.codina@bootlin.com>,
 	Simon Horman <horms@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next v2 3/7] net: ethernet: fs_enet: drop the .adjust_link custom fs_ops
-Date: Thu, 29 Aug 2024 18:15:26 +0200
-Message-ID: <20240829161531.610874-4-maxime.chevallier@bootlin.com>
+Subject: [PATCH net-next v2 0/7] net: ethernet: fs_enet: Cleanup and phylink conversion
+Date: Thu, 29 Aug 2024 18:15:23 +0200
+Message-ID: <20240829161531.610874-1-maxime.chevallier@bootlin.com>
 X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20240829161531.610874-1-maxime.chevallier@bootlin.com>
-References: <20240829161531.610874-1-maxime.chevallier@bootlin.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,47 +77,44 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: maxime.chevallier@bootlin.com
 
-There's no in-tree user for the fs_ops .adjust_link() function, so we
-can always use the generic one in fe_enet-main.
+Hi everyone,
 
-Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
----
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 7 +------
- drivers/net/ethernet/freescale/fs_enet/fs_enet.h      | 1 -
- 2 files changed, 1 insertion(+), 7 deletions(-)
+This is V2 of the fs_enet cleanup and phylink conversion series. The
+main difference from V1 is the introduction of patch 6, that uses
+devm_get_clk_enabled to manage the register clock, a cleanup of the
+probe error sequence, and the removal of the netif_running checks.
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 2b48a2a5e32d..caca81b3ccb6 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -649,12 +649,7 @@ static void fs_adjust_link(struct net_device *dev)
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&fep->lock, flags);
--
--	if (fep->ops->adjust_link)
--		fep->ops->adjust_link(dev);
--	else
--		generic_adjust_link(dev);
--
-+	generic_adjust_link(dev);
- 	spin_unlock_irqrestore(&fep->lock, flags);
- }
- 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-index 21c07ac05225..abe4dc97e52a 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-@@ -77,7 +77,6 @@ struct fs_ops {
- 	void (*free_bd)(struct net_device *dev);
- 	void (*cleanup_data)(struct net_device *dev);
- 	void (*set_multicast_list)(struct net_device *dev);
--	void (*adjust_link)(struct net_device *dev);
- 	void (*restart)(struct net_device *dev);
- 	void (*stop)(struct net_device *dev);
- 	void (*napi_clear_event)(struct net_device *dev);
+I also gathered Christophe's reviews and Acks (except on patch 6 that is
+new).
+
+This series is made of some cosmetic and cleanup patches to FS enet, the
+last patch converts it to phylink for the PHY handling.
+
+Link to V1: https://lore.kernel.org/netdev/20240828095103.132625-1-maxime.chevallier@bootlin.com/
+
+Thanks,
+
+Maxime
+
+Maxime Chevallier (7):
+  net: ethernet: fs_enet: convert to SPDX
+  net: ethernet: fs_enet: cosmetic cleanups
+  net: ethernet: fs_enet: drop the .adjust_link custom fs_ops
+  net: ethernet: fs_enet: drop unused phy_info and mii_if_info
+  net: ethernet: fs_enet: fcc: use macros for speed and duplex values
+  net: ethernet: fs_enet: simplify clock handling with devm accessors
+  net: ethernet: fs_enet: phylink conversion
+
+ .../net/ethernet/freescale/fs_enet/Kconfig    |   2 +-
+ .../ethernet/freescale/fs_enet/fs_enet-main.c | 434 ++++++++----------
+ .../net/ethernet/freescale/fs_enet/fs_enet.h  |  26 +-
+ .../net/ethernet/freescale/fs_enet/mac-fcc.c  |  16 +-
+ .../net/ethernet/freescale/fs_enet/mac-fec.c  |  14 +-
+ .../net/ethernet/freescale/fs_enet/mac-scc.c  |  10 +-
+ .../ethernet/freescale/fs_enet/mii-bitbang.c  |   5 +-
+ .../net/ethernet/freescale/fs_enet/mii-fec.c  |   5 +-
+ 8 files changed, 210 insertions(+), 302 deletions(-)
+
 -- 
 2.45.2
 
