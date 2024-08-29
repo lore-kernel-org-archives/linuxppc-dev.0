@@ -1,120 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-739-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A63DC8300F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2024 08:57:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 164A9C71135
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2024 09:07:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WvZtX23GBz2xqc;
-	Thu, 29 Aug 2024 18:57:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::433"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724920266;
-	cv=none; b=WeB5g/QpbhKuZdp0zt/sZ5TM6uu2ZkE5PbpthUP0BCeekVMI5V+C9cKohyfgG7HzYugWOA4TlRqL8ooeD5ys3IW1ax66F3fCHYrR4gxk4QDX4QcpUmkSHKZV01aaK6rueoPhwHVO8jEQkoTydorZ6SqahVMopHOrYybdSFbYvVdEveDrqbSmwmyFclL+7uCGjdAVvrU4fgqLrgmQ8AVWE+1OYgPa0tUrLZ1Pvoqyk2jfeikfrbnMgQhQmgFKsV+HyXLHHeOenHepaiDvTY414qhRJReBAae2KpxSivMITRxNAC8DA442PqY2eV+/ThMwH/0TzbBx7QEcaC0P4X8vwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wvb5Y56F7z2ytd;
+	Thu, 29 Aug 2024 19:07:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724922449;
+	cv=none; b=PhfOd4TGIjtpxgovnxNLDa7Cqmlr7BvZvtdX1dD7VWfc+u/XG6Lv3LK5x1RHDe7fkv+OHqZv64rt2He4VT9Z7+PL6rDPx3VfLlcTjp7qXK7/n5WhoqZ6bodZkb7XGQgX+KNRaSxiObFh2qjT+zBkHtNNf3pv6qPYpCT7W8VZ1mPfNfOY9Dx6oh7d4BzXwjMcKCyuRCcCKJx556Y5wGeUdZOaappv1hkTQ3t70C4Ge/mYBpwBbfoT5IvBgXGEDVVgOQyQG5zs+ToVTwIDwFI74xJjBZh+pBWwU0tTdvcyrRLOVOQ7tU1mHT3xCmihjCT5oFYu25NXDMQBKam33yv1zA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724920266; c=relaxed/relaxed;
-	bh=mhnlNgvuSYKooCUA3K3P7Rvv1F/ipLIuFC4LArX03WU=;
-	h=Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Google-Smtp-Source:
-	 X-Received:Received:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=gk9KhcTdpJS42XJwJL1GmSDBIQf5CNOO+mB9IYNRzoKbJhFWhRJamQRBPrHPx0vwG0gTyWPn8uV6+xRjPklDJv1Tr/U7lpekO35yOk/7vBKijycZ2g8tjaKwFPxZpBrrIztLeT2rHodtKWeF7y9OhXOI3GfQmGQAyIW886TSGgpst2GiL8ok0txCIuFGwE30CD/hPgOc5nt5tBVF2euwYA0AGHI+HO21EZITelUOUXahzh/25Mo2yUECbEWrk3l3zncY2kM6fn+o8sYnxLxATNLfvwrxkxbeVv5K2fVctSskMnJePlzV38rCDN3Ug20hC9kcQl8ImTsEZ4xasUrt1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=VNXwTpxn; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com; envelope-from=mhocko@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1724922449; c=relaxed/relaxed;
+	bh=jEima/U9FKakYBr/4b8z/cWQ828mok13pTdAAncPLoI=;
+	h=Received:DKIM-Signature:Received:Received:Received:Received:
+	 Received:Received:Received:Received:Message-ID:Subject:From:To:
+	 Date:In-Reply-To:References:Content-Type:Content-Transfer-Encoding:
+	 User-Agent:MIME-Version:X-TM-AS-GCONF:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details; b=BiDVDEKwMDP6Zfgr9qq+a7BO5E5ghnHRM8XlNj4Qdw6AUB2S1jlG/hig7xYevO7nKZxk3pvmPrvs2CEVhBBMsck9bpFgDXhJYjf9Oo8Pd/l2fV+yORX58xfN2gPgmDhE7z/W5QC3zjauu7WCRnIPx1LCEwxHUCjZgPfVqLURa0T0zKOR3/KrbOTHjZCNdwWX5x1pAdxYQkVg6lhC9OOUtIke58l6409W1jG8wb9Ou6EdVb105MWeq74CbJMBflIbpIWXHOJC3Kr2POiRSVrfBB5YKXocIBG8h833n13Wn/a1lqCtcwj73q/PU+4zVYuNzuVoY3+KRcPFv9mYqQ6RLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bdBssbNL; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=VNXwTpxn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bdBssbNL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com; envelope-from=mhocko@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WvZHY6S8fz2ypW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2024 18:31:05 +1000 (AEST)
-Received: by mail-wr1-x433.google.com with SMTP id ffacd0b85a97d-371afae614aso236081f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2024 01:31:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1724920258; x=1725525058; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=mhnlNgvuSYKooCUA3K3P7Rvv1F/ipLIuFC4LArX03WU=;
-        b=VNXwTpxnlMkIuu8OcMGZUVBTXbMwuYb5J8ZvEkG0bIucPdUEiYf1sH3CTVXKyYgUUp
-         9pg0TP+hhxeE9hTfkyBPATrcQVWoLIs2ta9t++gd4zBypYCtkkghpTfroVVM9RCICSvZ
-         DZlYTawLOmb84joXB7qDSApjnUXAfN1HKTwcFbmHBd//17vncoH+a73bXNSIOnLhvojy
-         oDUWKZPdmeuajuTQxO2bpWIfVFJXvhUaH4P8VQyKVxvoFTlvSQwdKMdFIEi7Mo5wERio
-         ad3rqwah816TjJNcVc9rHY7Ac9+sPdb6UlEgKqJ/lqhK72SyDu/0IOA10l1XGnhEOHw1
-         U4RA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1724920258; x=1725525058;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=mhnlNgvuSYKooCUA3K3P7Rvv1F/ipLIuFC4LArX03WU=;
-        b=MRwm39AmKveF1Vm4IRIyZmpFSr5gs9SBdeplK7GHL7+p9oI3hTsruXX1JZq1IPqgyQ
-         lrrRk7g8oh7mmGAs5l2AdxgrR8qbMzo56AG8hbLU6NoD87MWM4WBYSIYSgYMHjdKLeVl
-         xjr8e8/wyWvReYUC7KUxyWhi5ygMAi0SaxNthTpN/NlwvRBrOxW5Msayhpv9FCw7inPD
-         neKD0xjtrslt/upkGVOXgeLn7pXaLs302Hmz5XVttuETa2xYEpi98TaC+06AnJEvV7GI
-         J6LHWvP6vV0eib1PQ7CjEMTvbPxoC2yIXEbEXp9ysHsdPhOajiV5MOdrDor1NLzht21J
-         L9PQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUMxE9BvSBg6Vq0gcwgZBQJbHKdb/kjspTjkxFdy2unYTvDHuebmi6soh2A670ElOARRhIXc1201Qrpm/g=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzbwARbf5D66VUgxo/HIwo9TQJWrET7XEZX/5RJARioO//xQAq1
-	S3uyHzLp8ctAlDYBrXXdHhbtFM4ATQBrgmSzVFRstMUUJEgQ7feTI5NFYVzsTcA=
-X-Google-Smtp-Source: AGHT+IH7DF9ylXdsuqLih7sACGDNUKmPe9OYfvQtJgi5uGMLK6sqxI9YIz1ijmJ7+1Xtw2Y0sxRMNg==
-X-Received: by 2002:adf:ecd0:0:b0:371:8a49:f206 with SMTP id ffacd0b85a97d-3749b54ece3mr1331552f8f.30.1724920258302;
-        Thu, 29 Aug 2024 01:30:58 -0700 (PDT)
-Received: from localhost (109-81-82-19.rct.o2.cz. [109.81.82.19])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3749eeabbc1sm802650f8f.63.2024.08.29.01.30.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Aug 2024 01:30:57 -0700 (PDT)
-Date: Thu, 29 Aug 2024 10:30:56 +0200
-From: Michal Hocko <mhocko@suse.com>
-To: Charlie Jenkins <charlie@rivosinc.com>
-Cc: Arnd Bergmann <arnd@arndb.de>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
-	Russell King <linux@armlinux.org.uk>, Guo Ren <guoren@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Muchun Song <muchun.song@linux.dev>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Shuah Khan <shuah@kernel.org>, linux-arch@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	sparclinux@vger.kernel.org, linux-mm@kvack.org,
-	linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH RFC v2 0/4] mm: Introduce MAP_BELOW_HINT
-Message-ID: <ZtAxwJFH_hAh1BPG@tiehlicka>
-References: <20240829-patches-below_hint_mmap-v2-0-638a28d9eae0@rivosinc.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wvb5Y00xdz2ysD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2024 19:07:28 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47SN9IqW011867;
+	Thu, 29 Aug 2024 09:07:14 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	message-id:subject:from:to:date:in-reply-to:references
+	:content-type:content-transfer-encoding:mime-version; s=pp1; bh=
+	jEima/U9FKakYBr/4b8z/cWQ828mok13pTdAAncPLoI=; b=bdBssbNLuYFZeUIG
+	bxRsVpDxpRYDAzsPI1ww//3X+C68zJvGYmIJ6zjrVrMcmwJQ14PuJdGZq39Lor0C
+	gnMJ0u4ut7+yMxWHazIo8DAqP4h0ZKyMjwMZVScDS+GSvlqmyKTGCyLl6PJpteJy
+	2uUErjNKy+d6wRAzexQ3pgglp151LmP4nXRE96P0rD/ti/PO9Y/tkhVVRA/HKFMJ
+	OBdGNm5A4ztqe4WNUwFptAjYvqoLS+Ylue/4wAcv7tXbYRiRCtUd2l5p3de7tEtj
+	AnFU5x2TPUAVr+c5p8odJ3TqhZnKtEcyWDjDc19NuclLMk5YSU9adT7m7qcBaYPq
+	dap/jg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 419q8nyck4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Aug 2024 09:07:13 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 47T82XNe024673;
+	Thu, 29 Aug 2024 09:07:13 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 417vj3kmcf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Aug 2024 09:07:12 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47T97B9149021354
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 29 Aug 2024 09:07:11 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 56C8620043;
+	Thu, 29 Aug 2024 09:07:11 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DCE7520040;
+	Thu, 29 Aug 2024 09:07:10 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.63.197.14])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 29 Aug 2024 09:07:10 +0000 (GMT)
+Received: from jarvis.ozlabs.ibm.com (haven.au.ibm.com [9.63.198.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 22794602F3;
+	Thu, 29 Aug 2024 19:07:07 +1000 (AEST)
+Message-ID: <c2b6eb9e9a1477d73ed7b5835e61d0f4eb53afd8.camel@linux.ibm.com>
+Subject: Re: [PATCH -next] cxl: Remove unused cxl_pci_to_cfg_record()
+From: Andrew Donnellan <ajd@linux.ibm.com>
+To: Jinjie Ruan <ruanjinjie@huawei.com>, fbarrat@linux.ibm.com, arnd@arndb.de,
+        gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Date: Thu, 29 Aug 2024 19:07:06 +1000
+In-Reply-To: <20240828103807.3683308-1-ruanjinjie@huawei.com>
+References: <20240828103807.3683308-1-ruanjinjie@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.52.4 (3.52.4-1.fc40) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,40 +95,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240829-patches-below_hint_mmap-v2-0-638a28d9eae0@rivosinc.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: pM5YN0VfgxiuouhrKkx3MJ6A6pe2fyx4
+X-Proofpoint-ORIG-GUID: pM5YN0VfgxiuouhrKkx3MJ6A6pe2fyx4
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-29_02,2024-08-29_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 bulkscore=0
+ priorityscore=1501 adultscore=0 lowpriorityscore=0 clxscore=1011
+ spamscore=0 impostorscore=0 phishscore=0 suspectscore=0 mlxlogscore=793
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2407110000 definitions=main-2408290066
 
-On Thu 29-08-24 00:15:57, Charlie Jenkins wrote:
-> Some applications rely on placing data in free bits addresses allocated
-> by mmap. Various architectures (eg. x86, arm64, powerpc) restrict the
-> address returned by mmap to be less than the 48-bit address space,
-> unless the hint address uses more than 47 bits (the 48th bit is reserved
-> for the kernel address space).
-> 
-> The riscv architecture needs a way to similarly restrict the virtual
-> address space. On the riscv port of OpenJDK an error is thrown if
-> attempted to run on the 57-bit address space, called sv57 [1].  golang
-> has a comment that sv57 support is not complete, but there are some
-> workarounds to get it to mostly work [2].
-> 
-> These applications work on x86 because x86 does an implicit 47-bit
-> restriction of mmap() address that contain a hint address that is less
-> than 48 bits.
-> 
-> Instead of implicitly restricting the address space on riscv (or any
-> current/future architecture), a flag would allow users to opt-in to this
-> behavior rather than opt-out as is done on other architectures. This is
-> desirable because it is a small class of applications that do pointer
-> masking.
+On Wed, 2024-08-28 at 18:38 +0800, Jinjie Ruan wrote:
+> cxl_pci_to_cfg_record() is not used anywhere, and its function can be
+> replacd with PCI_DEVID(), so remove it.
+>=20
+> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 
-IIRC this has been discussed at length when 5-level page tables support
-has been proposed for x86. Sorry I do not have a link handy but lore
-should help you. Linus was not really convinced and in the end vetoed it
-and prefer that those few applications that benefit from greater address
-space would do that explicitly than other way around.
+This description is inaccurate - this removes both
+cxl_pci_to_cfg_record() (which is unused), and replaces
+cxl_pcie_cfg_record() with PCI_DEVID().
 
--- 
-Michal Hocko
-SUSE Labs
+The patch itself looks fine.
+
+Note that I am planning to remove this driver soon anyway.
+
+> ---
+> =C2=A0drivers/misc/cxl/vphb.c | 12 +-----------
+> =C2=A0include/misc/cxl.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 4 ----
+> =C2=A02 files changed, 1 insertion(+), 15 deletions(-)
+>=20
+> diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+> index 6332db8044bd..1cf614bf104d 100644
+> --- a/drivers/misc/cxl/vphb.c
+> +++ b/drivers/misc/cxl/vphb.c
+> @@ -72,11 +72,6 @@ static void cxl_pci_reset_secondary_bus(struct
+> pci_dev *dev)
+> =C2=A0	/* Should we do an AFU reset here ? */
+> =C2=A0}
+> =C2=A0
+> -static int cxl_pcie_cfg_record(u8 bus, u8 devfn)
+> -{
+> -	return (bus << 8) + devfn;
+> -}
+> -
+> =C2=A0static inline struct cxl_afu *pci_bus_to_afu(struct pci_bus *bus)
+> =C2=A0{
+> =C2=A0	struct pci_controller *phb =3D bus ? pci_bus_to_host(bus) :
+> NULL;
+> @@ -99,7 +94,7 @@ static inline int cxl_pcie_config_info(struct
+> pci_bus *bus, unsigned int devfn,
+> =C2=A0{
+> =C2=A0	int record;
+> =C2=A0
+> -	record =3D cxl_pcie_cfg_record(bus->number, devfn);
+> +	record =3D PCI_DEVID(bus->number, devfn);
+> =C2=A0	if (record > afu->crs_num)
+> =C2=A0		return PCIBIOS_DEVICE_NOT_FOUND;
+> =C2=A0
+> @@ -302,8 +297,3 @@ struct cxl_afu *cxl_pci_to_afu(struct pci_dev
+> *dev)
+> =C2=A0}
+> =C2=A0EXPORT_SYMBOL_GPL(cxl_pci_to_afu);
+> =C2=A0
+> -unsigned int cxl_pci_to_cfg_record(struct pci_dev *dev)
+> -{
+> -	return cxl_pcie_cfg_record(dev->bus->number, dev->devfn);
+> -}
+> -EXPORT_SYMBOL_GPL(cxl_pci_to_cfg_record);
+> diff --git a/include/misc/cxl.h b/include/misc/cxl.h
+> index d8044299d654..5ffa6e02bb07 100644
+> --- a/include/misc/cxl.h
+> +++ b/include/misc/cxl.h
+> @@ -23,10 +23,6 @@
+> =C2=A0/* Get the AFU associated with a pci_dev */
+> =C2=A0struct cxl_afu *cxl_pci_to_afu(struct pci_dev *dev);
+> =C2=A0
+> -/* Get the AFU conf record number associated with a pci_dev */
+> -unsigned int cxl_pci_to_cfg_record(struct pci_dev *dev);
+> -
+> -
+> =C2=A0/*
+> =C2=A0 * Context lifetime overview:
+> =C2=A0 *
+
+--=20
+Andrew Donnellan    OzLabs, ADL Canberra
+ajd@linux.ibm.com   IBM Australia Limited
 
