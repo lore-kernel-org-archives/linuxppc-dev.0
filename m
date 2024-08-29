@@ -1,88 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-733-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41F93C7EE3A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2024 08:26:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F858C8300F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Aug 2024 08:46:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WvZBm6HYmz2ypP;
-	Thu, 29 Aug 2024 18:26:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724920016;
-	cv=none; b=Jjv61ieHX9fzPD61JdnCFxiJvMLmxTqRPBzXfZVVZmEbRVQ1ACwPMXTrs0GTkklKKeeghaOkkAML44ZloLfRx17FJQ43arOC2gjpBOq0S/4BPHsrvdWZJYkUiZiURSgaqThLK9TRpjdmpY66HZPv+kjp1sbEZ8NqImJFhq60so3+qMRUxYJFpmSCpKCWgXet9NZR/OaQ1fzjBw4R1EGEsKh6IO5dLhEo3B3Un0BgvPxeYQG358Fxf84Vg6TLBfYGjCCti4ZJXuku8Jk8epJAQNC8Lh6lN8tbUkLVn/7jNNI7tMu70Daejpn0gZvsvOtHLA9ZlHFcm+Z4iJkw42++HA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WvZdC03fhz2ysv;
+	Thu, 29 Aug 2024 18:46:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::225"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1724921182;
+	cv=none; b=oWmujFXZSk/gPFxtfZHbnez5HXlkQInHrIRzGbujMBxJsO5rfmyge2jlL5TC0a7xuSpJGDo7KL9SO3pFxC4D3nPg6RC5+wzTX2Z3D8CA66ATdDv5leAshkt7GKeLTlJ/GNhhzRgLhNhkA07BEWL0dpS01htD337/7ERc/pPisWhLPClrDXWrO+kdBHc4bHsxcSKoVBLPzMOuPdNecaV6SW8eL61PmW2ubqov8fRLmhVTk7iSE9lq1UEiIy7TVUQSUo37WBrYhh83SFOXEALgy1AVhUQ7OBO8o/bxK649RmZRL8BUC/72iV86FvKZ78ybB1DdJdTAQnZuuSFqvlEPVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1724920016; c=relaxed/relaxed;
-	bh=CzX6lvuIolyjXVJmi/cVG/X6CAC23HjxHju8uHsztN0=;
-	h=DKIM-Signature:Received:From:To:Cc:Subject:In-Reply-To:References:
-	 Date:Message-ID:MIME-Version:Content-Type; b=hszclkFJsa03nBFdoQH+HEAYlBdEvhnKLEqyarwdnWR8FaaNdL9d3uPZKSrgN59/5SwLWa4aUtPdTNYlDTA4MVpPqX7kM8Ld1qxeVi4L43gzjNViIS78KmlWvrV6drh2SjAmt5dSn88IYpb0rp8HuKlyltNTuXKEG0d2cLEzAWvoXuqvgykPJ7c44zVxfWGF6lmUBBOFZBxSsMFMin7kh8o08K1wXCTHAhlrg1vE618lHdLeHGniC52v0tJcvb/4biPrBHjPiqUFAW09qdt5HrEpuaTZ7amNI28RyT/FuKMRh2umgxw564gqdEOiMIJxkio9jkS7+W90ZUZRsWwgsA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ifdmLA2Z; dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	t=1724921182; c=relaxed/relaxed;
+	bh=+T3omComrLDAWmGbNggJCqX9A019Fxez+XjpgJiOBzo=;
+	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
+	 In-Reply-To:References:Organization:X-Mailer:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-GND-Sasl; b=cyOpe1P5hImp0C/S7RCLbV+94pR0+cgCmOdiZi0y7YH0s/APw4cKzB/nameDZTgIkrOGag2jHWN/WxtSRIc1GpZIRFu9Sgr2ufw0Jv0Wy61SweXhO2Qpy6BeaK0SY5VMt1YLK+dWVWrYG3VknYuidkH96gkDBz2dtrDacHU9xhecO/XkQ3hTrmBhSeCvsykRxLkAHyVWy8TD35+ubRRALNj9iV7dMFlOUXHInaKMPcRHlSnPuygfWcfqOMvSYBDdGf91Y1Ejr7OFMG6X3PsNHc53ulGP8ymWG6fwnUJEKz9/d8a1IzeGOkl4lzDpEu2NOlk0y844WJjDBHb2up1fOg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PjexuK6r; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::225; helo=relay5-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ifdmLA2Z;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PjexuK6r;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::225; helo=relay5-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::225])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WvZBm04qCz2ypD
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2024 18:26:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1724920014;
-	bh=CzX6lvuIolyjXVJmi/cVG/X6CAC23HjxHju8uHsztN0=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=ifdmLA2ZirGiQQ8DKH6A6ZHgCMR1ss7zyDFp3CptPsdwMvp/3YGG5gBHGQUEUKUzg
-	 ITO14BjJMTtMSVhv+OWGvxvVRuqV/uDr1qMTHrjCXpCA4AhG+fXdppjYRKj1SYalDA
-	 c5OEvTytT2HGK7FuARoCOz0vu+NPkuwhztoGR1vEusip5cUw9u2oaNaTthykDEP4om
-	 aG2SxS1UuJhaWBae0UnoEaKnIcych9qgh1+wLPD/3IrbnzUQZgDwgKUPmcIv0mATKK
-	 PtmYiyKLMkmTsA/rAyMlTUsbJAoexgEIiM3ollUIPnJsv6rs7t3Jl4HY46paJVrakT
-	 7gCuXwLBau9iw==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4WvZBV0vd6z4wd6;
-	Thu, 29 Aug 2024 18:26:42 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Charlie Jenkins <charlie@rivosinc.com>, Arnd Bergmann <arnd@arndb.de>,
- Richard Henderson <richard.henderson@linaro.org>, Ivan Kokshaysky
- <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>, Vineet Gupta
- <vgupta@kernel.org>, Russell King <linux@armlinux.org.uk>, Guo Ren
- <guoren@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
- <kernel@xen0n.name>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, Helge
- Deller <deller@gmx.de>, Nicholas Piggin <npiggin@gmail.com>, Christophe
- Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>,
- Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer
- <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Christian Borntraeger
- <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker
- <dalias@libc.org>, John Paul Adrian Glaubitz
- <glaubitz@physik.fu-berlin.de>, "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>, Thomas Gleixner
- <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
- <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, Peter
- Zijlstra <peterz@infradead.org>, Muchun Song <muchun.song@linux.dev>,
- Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett"
- <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@suse.cz>, Lorenzo
- Stoakes <lorenzo.stoakes@oracle.com>, Shuah Khan <shuah@kernel.org>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-mm@kvack.org,
- linux-kselftest@vger.kernel.org, Charlie Jenkins <charlie@rivosinc.com>
-Subject: Re: [PATCH RFC v2 1/4] mm: Add MAP_BELOW_HINT
-In-Reply-To: <20240829-patches-below_hint_mmap-v2-1-638a28d9eae0@rivosinc.com>
-References: <20240829-patches-below_hint_mmap-v2-0-638a28d9eae0@rivosinc.com>
- <20240829-patches-below_hint_mmap-v2-1-638a28d9eae0@rivosinc.com>
-Date: Thu, 29 Aug 2024 18:26:41 +1000
-Message-ID: <87mskvenum.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WvZd96MYcz2ypx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Aug 2024 18:46:19 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 6CFF01C000E;
+	Thu, 29 Aug 2024 08:46:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1724921170;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=+T3omComrLDAWmGbNggJCqX9A019Fxez+XjpgJiOBzo=;
+	b=PjexuK6rbszk7oaGN2/pHSDc4v+HR/T3nq+tk5ETvg/N0EiaTPwdoDaCgywoEma6CLQ3ii
+	eqbUIkDSvBGoCfpS6h2tyC1HCDuu0Gzz2tA9axCqf0VFpuuxML4LdERD5D/sBG+/EihoKY
+	9mVoYexdOzraQVHbYS391BcpTmUbDP6Pu4iE6yg09M2in+l3Ux22bFceXXkRCKEdI07qSc
+	JioFW/sHo6SY1C0tqUUnWnCgvbOEahufon9hqTdtcQkI6JjiaAgkntSFHZe8wNLd7+NkF2
+	12UQ1/omVjmUrmOfF65to9XU854JOshShxqvrOwrcVAwZCwrc4daedYkVOBF6A==
+Date: Thu, 29 Aug 2024 10:46:06 +0200
+From: Maxime Chevallier <maxime.chevallier@bootlin.com>
+To: Simon Horman <horms@kernel.org>
+Cc: davem@davemloft.net, Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Andrew Lunn <andrew@lunn.ch>, Jakub Kicinski <kuba@kernel.org>, Eric
+ Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, Russell
+ King <linux@armlinux.org.uk>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>, Florian Fainelli <f.fainelli@gmail.com>,
+ Heiner Kallweit <hkallweit1@gmail.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, thomas.petazzoni@bootlin.com, Herve Codina
+ <herve.codina@bootlin.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH net-next 6/6] net: ethernet: fs_enet: phylink conversion
+Message-ID: <20240829104606.4ba68402@device-28.home>
+In-Reply-To: <20240828163224.GT1368797@kernel.org>
+References: <20240828095103.132625-1-maxime.chevallier@bootlin.com>
+	<20240828095103.132625-7-maxime.chevallier@bootlin.com>
+	<20240828163224.GT1368797@kernel.org>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-redhat-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,43 +71,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-GND-Sasl: maxime.chevallier@bootlin.com
 
-Charlie Jenkins <charlie@rivosinc.com> writes:
-> Some applications rely on placing data in free bits addresses allocated
-> by mmap. Various architectures (eg. x86, arm64, powerpc) restrict the
-> address returned by mmap to be less than the 48-bit address space,
-> unless the hint address uses more than 47 bits (the 48th bit is reserved
-> for the kernel address space).
->
-> To make this behavior explicit and more versatile across all
-> architectures, define a mmap flag that allows users to define an
-> arbitrary upper limit on addresses returned by mmap.
->
-> Signed-off-by: Charlie Jenkins <charlie@rivosinc.com>
-> ---
->  include/uapi/asm-generic/mman-common.h       | 1 +
->  tools/include/uapi/asm-generic/mman-common.h | 1 +
-  
-You're not meant to update the headers in tools/ directly. There's a
-mail somewhere from acme somewhere describing the proper process, but
-the tldr is leave it up to him.
+Hello Simon,
 
-> diff --git a/include/uapi/asm-generic/mman-common.h b/include/uapi/asm-generic/mman-common.h
-> index 6ce1f1ceb432..03ac13d9aa37 100644
-> --- a/include/uapi/asm-generic/mman-common.h
-> +++ b/include/uapi/asm-generic/mman-common.h
-> @@ -32,6 +32,7 @@
->  
->  #define MAP_UNINITIALIZED 0x4000000	/* For anonymous mmap, memory could be
->  					 * uninitialized */
-> +#define MAP_BELOW_HINT	  0x8000000	/* give out address that is below (inclusive) hint address */
+On Wed, 28 Aug 2024 17:32:24 +0100
+Simon Horman <horms@kernel.org> wrote:
 
-IMHO the API would be clearer if this actually forced the address to be
-below the hint. That's what the flag name implies after all.
+> On Wed, Aug 28, 2024 at 11:51:02AM +0200, Maxime Chevallier wrote:
+> > fs_enet is a quite old but still used Ethernet driver found on some NXP
+> > devices. It has support for 10/100 Mbps ethernet, with half and full
+> > duplex. Some variants of it can use RMII, while other integrations are
+> > MII-only.
+> > 
+> > Add phylink support, thus removing custom fixed-link hanldling.
+> > 
+> > This also allows removing some internal flags such as the use_rmii flag.
+> > 
+> > Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>  
+> 
+> Hi Maxime,
+> 
+> Some minor issues from my side: not a full review by any stretch of
+> the imagination.
+> 
+> ...
+> 
+> > @@ -911,7 +894,7 @@ static int fs_enet_probe(struct platform_device *ofdev)
+> >  	if (!IS_ERR(clk)) {
+> >  		ret = clk_prepare_enable(clk);
+> >  		if (ret)
+> > -			goto out_deregister_fixed_link;
+> > +			goto out_phylink;
+> >  
+> >  		fpi->clk_per = clk;
+> >  	}  
+> 
+> This goto will result in a dereference of fep.
+> But fep is not initialised until the following line,
+> which appears a little below this hunk.
+> 
+> 	fep = netdev_priv(ndev);
 
-It would also mean the application doesn't need to take into account the
-length of the mapping when passing the hint.
+Nice catch, the goto should rather go to out_free_fpi.
 
-cheers
+> 
+> This goto will also result in the function returning without
+> releasing clk.
+
+ah yes, it's never disabled_unprepared, the phylink cleanup label is at
+the wrong spot. I'll include a patch in the next iteration to make use
+of devm_clk_get_enabled(), that should simplify all of that.
+
+> Both flagged by Smatch.
+> 
+> > @@ -936,6 +919,26 @@ static int fs_enet_probe(struct platform_device *ofdev)
+> >  	fep->fpi = fpi;
+> >  	fep->ops = ops;
+> >  
+> > +	fep->phylink_config.dev = &ndev->dev;
+> > +	fep->phylink_config.type = PHYLINK_NETDEV;
+> > +	fep->phylink_config.mac_capabilities = MAC_10 | MAC_100;
+> > +
+> > +	__set_bit(PHY_INTERFACE_MODE_MII,
+> > +		  fep->phylink_config.supported_interfaces);
+> > +
+> > +	if (of_device_is_compatible(ofdev->dev.of_node, "fsl,mpc5125-fec"))
+> > +		__set_bit(PHY_INTERFACE_MODE_RMII,
+> > +			  fep->phylink_config.supported_interfaces);
+> > +
+> > +	phylink = phylink_create(&fep->phylink_config, dev_fwnode(fep->dev),
+> > +				 phy_mode, &fs_enet_phylink_mac_ops);
+> > +	if (IS_ERR(phylink)) {
+> > +		ret = PTR_ERR(phylink);
+> > +		goto out_free_fpi;  
+> 
+> This also appears to leak clk, as well as ndev.
+
+Thanks, will be addressed in V2.
+
+> I didn't look for other cases.
+
+I'll go over the cleanup path, thanks for checking this !
+
+Thanks,
+
+Maxime
 
