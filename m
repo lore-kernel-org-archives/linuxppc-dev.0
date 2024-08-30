@@ -1,95 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-806-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-807-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42C98CA0EFC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2024 11:24:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F99FCA0FE0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2024 11:32:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WwG4r5wQKz308V;
-	Fri, 30 Aug 2024 21:24:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f400:feae::619" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725013265;
-	cv=pass; b=ZxYOEoIWrZOPO4uogpEBlXxZFLoFPG4iyOe12sub4mUmckJKnUiv2lCxE5AKNaT4siq5qGHgFQ2PakGap9VDIZVakYlgU9aEfvao+AuAawAsZoe63GLq23kLYjMSXWHrfH67JEwLy1KEHM62tE/2jUEVtFLElcA/owezKt993kLL/2LW245eu2695iEZrHXEl/0hansX8NkseM3/ueL3IzNgSLB+WMHX93O+xXpffJkA6gpHvY98HNnhwDW4vBDZhYn7vZ6vq8Pev3KUvt7sBf99x7/ykUB3tKGYgD00WqP0t32rLF/+jIxkdtP/b2DRbNitgtDqp9t/141qy5dfvw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725013265; c=relaxed/relaxed;
-	bh=10hKJMizoceae8yqobwsAlwB1qikcpJPLHVXv8OKcOU=;
-	h=ARC-Message-Signature:ARC-Authentication-Results:DKIM-Signature:
-	 Received:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 Content-Type:X-ClientProxiedBy:MIME-Version:X-MS-PublicTrafficType:
-	 X-MS-TrafficTypeDiagnostic:X-MS-Office365-Filtering-Correlation-Id:
-	 X-MS-Exchange-SenderADCheck:X-MS-Exchange-AntiSpam-Relay:
-	 X-Microsoft-Antispam:X-Microsoft-Antispam-Message-Info:
-	 X-Forefront-Antispam-Report:
-	 X-MS-Exchange-AntiSpam-MessageData-ChunkCount:
-	 X-MS-Exchange-AntiSpam-MessageData-0:X-OriginatorOrg:
-	 X-MS-Exchange-CrossTenant-Network-Message-Id:
-	 X-MS-Exchange-CrossTenant-AuthSource:
-	 X-MS-Exchange-CrossTenant-AuthAs:
-	 X-MS-Exchange-CrossTenant-OriginalArrivalTime:
-	 X-MS-Exchange-CrossTenant-FromEntityHeader:
-	 X-MS-Exchange-CrossTenant-Id:X-MS-Exchange-CrossTenant-MailboxType:
-	 X-MS-Exchange-CrossTenant-UserPrincipalName:
-	 X-MS-Exchange-Transport-C
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; dkim=pass (2048-bit key; unprotected) header.d=vivo.com header.i=@vivo.com header.a=rsa-sha256 header.s=selector2 header.b=oZ8W5Mri; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f400:feae::619; helo=apc01-psa-obe.outbound.protection.outlook.com; envelope-from=shenlichuan@vivo.com; receiver=lists.ozlabs.org) smtp.mailfrom=vivo.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WwGG55lm0z309h;
+	Fri, 30 Aug 2024 21:32:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725017533;
+	cv=none; b=TbjJ94ikFFMQTJne+lXw/jF6MwZrSnunIJDDaWowdiQJH5h661pZ2BnsDhIa01iMiB6Y5fo9Glv0n3harnqI+ak9vMvAcQjaj+cQF+021PcbfNpbai/NRfAb3UOGBvUnQ4bGQS2Q2cYXsK7/UHsR5jLh2Cf88HfqWCSa1gH8yhkMe9RhgSULBelyuVf3ejMsCNCpoYbiVDdgz92BH4SzKD+lFokIMm4e/eMQpvJeqAB2uCvSIFezGkX7PHbPU5GWTag39AGlKYyhI+yfeos/1WPuiN99270jalykhtm+2Y9NtmlQF/aqe0wjz7F9U6tHeta0K+H2NaOFYwnBYp7wjw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1725017533; c=relaxed/relaxed;
+	bh=yXZKztjgv9qKJyP7XRqG92pJbCD5IyljeB3zlOeX+bw=;
+	h=Received:DKIM-Signature:Received:Received:Received:Received:
+	 Received:Received:Received:Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:X-TM-AS-GCONF:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-GUID:Content-Transfer-Encoding:X-Proofpoint-UnRewURL:
+	 MIME-Version:X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	b=KluKdbMX85SNuN737sG88EsJBhhO9lU691hS4NL+ceOuOBRQt94/96aaE/RtZ1E2R+sz+PTRtv9FuMqquEweuyVOFuwf+8DKP12OT80abjc7D46sGvQytOKPvwytl1fTlRLpz9r50/h2BABQoISaxg5leaAYpc4B0ZJ464i/ykx6gbPJPerqCLifUeU4mcU4Gg9auXW5TJ5AaUlhWxeT60tiyVddeLgLd170RENB3GM/itDritVZPWcdhyaNjCrjOVayyUdRjn1vqIQaC5O7XXz6xKsMMiSc0iBA0mr9Nw+lRraiDvJn9WscB3wtyBcTFCXyVgMpIK7SQ3Zf4Zx0gQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Jwd3/+zj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=vivo.com header.i=@vivo.com header.a=rsa-sha256 header.s=selector2 header.b=oZ8W5Mri;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Jwd3/+zj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=vivo.com (client-ip=2a01:111:f400:feae::619; helo=apc01-psa-obe.outbound.protection.outlook.com; envelope-from=shenlichuan@vivo.com; receiver=lists.ozlabs.org)
-Received: from APC01-PSA-obe.outbound.protection.outlook.com (mail-psaapc01on20619.outbound.protection.outlook.com [IPv6:2a01:111:f400:feae::619])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WwDh00Sslz302T
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2024 20:21:02 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=DSh8cg/hqQvRImHUknmFpR9bo8fHo4q9aW1rgC5gdl9mSmnKuBi/5Qzy/2xlp61xQnpfKKZ37EFpWZ66R47ELGd38q0QdmyySis1de97ED4RioL885HEoif0G81wC0iQV2Z3zpTEr7mo0uyj4bvDPnTQBiySQ3Nt6aiR2sMe5fZnxuIOl235+yCRm2e6nwC2SjNMIGZH0M4YdSoN9TvdQX8/44/FjhbNUwf+2Nu4o5bvyAgJS3eClMOQR0RE8sZ+8aBXNW7KTLsbOEHV+K3LYBKj49MjtBhb5aGPVEC2GHJKm6dXfMTxmGYG1PUwvfeGeU9kIU/oZFuB8HLwr+Kbgw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=10hKJMizoceae8yqobwsAlwB1qikcpJPLHVXv8OKcOU=;
- b=R4XHU8lPzlY97W7yVJlTRBDEpFwh+q8kXHn71FXl2vjb0Lu337+uviJbwd0W9qMtJ383RXYZ0RQVQocnrv/iL6Ee4H7TgHaPESY5jLaPGjpiIiU/IVkA1id9b68H3kBNU1FC1ca0t/FKToESC3ZHl+TkwZh3JjxY/ZZFaF3QionOTFCIKSZTnIAPJ7NieheOHpTzCxdxpGPN2prM4quKB7G9SK1csU49f8jmiBCl4ac3qfCrLmLkZuwS6IGZEeLxaqV1J1ytAhcOF1ZFg3YpgVQGRshij75jS2ySAjd8bs92V8DQEHQ+EuZZsvqaXVnO/QtatNh18cqu6/guLd8UuA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=10hKJMizoceae8yqobwsAlwB1qikcpJPLHVXv8OKcOU=;
- b=oZ8W5MriXjq6wEHpAaUrrgnKw6rCNxD213/cZWcEgoTPEhKu6auj/DwKXx3MTgSrzkQCDQIyXwzV0yuIpY6BAvrvUEK5rLJQ4UAYMnGl7exm0Q2FLVXTp/f0Qxvp2og+KHwReuN0k2IfLP0/aTXapF4srAkEIt1hWawSKOIergT/AVl+wlJBaOKzPJxvZxusUyAMmNEVdnFUtjzseU3HBeHezU/suJBFORYNzvoo3RmRJjpjjrEqRaZ45XR9272XIPr4FFfKSW91K6XdWyPnX1qVYWVvq4hBOZzCNHg/2uuN3paCrWd0EPQ4R+ckew0I+EgWC/+8Plskl5t07wRwyw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=vivo.com;
-Received: from SEZPR06MB5899.apcprd06.prod.outlook.com (2603:1096:101:e3::16)
- by SEYPR06MB6062.apcprd06.prod.outlook.com (2603:1096:101:d4::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7875.21; Fri, 30 Aug
- 2024 10:20:35 +0000
-Received: from SEZPR06MB5899.apcprd06.prod.outlook.com
- ([fe80::8bfc:f1ee:8923:77ce]) by SEZPR06MB5899.apcprd06.prod.outlook.com
- ([fe80::8bfc:f1ee:8923:77ce%3]) with mapi id 15.20.7897.027; Fri, 30 Aug 2024
- 10:20:35 +0000
-From: Shen Lichuan <shenlichuan@vivo.com>
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com
-Cc: festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	alsa-devel@alsa-project.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	opensource.kernel@vivo.com,
-	Shen Lichuan <shenlichuan@vivo.com>
-Subject: [PATCH v1] ASoC: fsl_ssi: Simplify with dev_err_probe()
-Date: Fri, 30 Aug 2024 18:20:19 +0800
-Message-Id: <20240830102019.33086-1-shenlichuan@vivo.com>
-X-Mailer: git-send-email 2.17.1
-Content-Type: text/plain
-X-ClientProxiedBy: SGBP274CA0016.SGPP274.PROD.OUTLOOK.COM (2603:1096:4:b0::28)
- To SEZPR06MB5899.apcprd06.prod.outlook.com (2603:1096:101:e3::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WwGG45471z309W
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2024 21:32:11 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 47U3hkgV017461;
+	Fri, 30 Aug 2024 11:31:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:content-transfer-encoding
+	:mime-version; s=pp1; bh=yXZKztjgv9qKJyP7XRqG92pJbCD5IyljeB3zlOe
+	X+bw=; b=Jwd3/+zj6zwmbkBUQLD0oVB5XVLVzQ96gO3CoKjk42tlpITAbE8TYeb
+	m6iMozXN2L/rQMCa/y3KJhw89bJesHHnyHgF6qDvMF77n85djr4tI62tnTyjMgWs
+	T1xElC/knj7FFKwWJkxsh6DiKaxRRnVs+rfHsFuvmYGJE35bLx4lHrTBYBHwNysW
+	eBTQ8I/CbLOq+owUBak7HFDapV1oFJ0qtY9MWlwkQDlYniglD4ot9TQvX/Gf2J4B
+	kzM4TOKY14Y2hQRKM5Fw1ylFqCt9eZGw+SGiR7zqUUGxiQzzNUciecguemz4pDXs
+	gFmZkosk76qaKDAOC/pHwYIURSHsohg==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 419q8py202-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 Aug 2024 11:31:56 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 47UBUcG1004045;
+	Fri, 30 Aug 2024 11:31:55 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 419q8py1yy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 Aug 2024 11:31:55 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 47UAeQkq021761;
+	Fri, 30 Aug 2024 11:31:54 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 417suuup65-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 Aug 2024 11:31:54 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 47UBVmfA54067570
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 30 Aug 2024 11:31:48 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3317720040;
+	Fri, 30 Aug 2024 11:31:48 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AD35220043;
+	Fri, 30 Aug 2024 11:31:46 +0000 (GMT)
+Received: from ltcden3-lp14.aus.stglabs.ibm.com (unknown [9.53.174.165])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 30 Aug 2024 11:31:46 +0000 (GMT)
+From: Abhishek Dubey <adubey@linux.ibm.com>
+To: ltc-india-dev@lists.linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: naveen@kernel.org, hbathini@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com, mhiramat@kernel.org, bpf@vger.kernel.org,
+        Abhishek Dubey <adubey@linux.ibm.com>
+Subject: [PATCH v4 RESEND] powerpc: Replace kretprobe code with rethook on powerpc
+Date: Fri, 30 Aug 2024 07:31:31 -0400
+Message-ID: <20240830113131.7597-1-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.44.0
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: IlP7anRbAkGYa1A7UTWVqYbBHDOMi9_C
+X-Proofpoint-GUID: V8_3WMVZFLK-4n-wnrWCXHYkx7_y2Xtb
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,180 +98,290 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SEZPR06MB5899:EE_|SEYPR06MB6062:EE_
-X-MS-Office365-Filtering-Correlation-Id: a0b024f9-1d61-4833-1702-08dcc8dd62ac
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|52116014|7416014|376014|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?oDUvfrjZ043YmyV9PxxejMDRnF9IBWW0WuNrGDtA28yMl5KcGfVaCe3zZ52q?=
- =?us-ascii?Q?Sx9XEQ3OelSw1RQkxo4X/1GRENJLBik2Gqm1iRV7xyZzFjjuIqaaCCKS8xxZ?=
- =?us-ascii?Q?eUdH4DATWJI9WkPg2jExfmkkzTXp7v+k/OhB0e9l4rft5qWmTwCh901VaE+S?=
- =?us-ascii?Q?5M4kVCIL7wNlFuPZDlcHvcpaaPNq6ixTQiKjcg/pOMsnIbSwwiiIbDRF2/47?=
- =?us-ascii?Q?g4vDNbbDHrMHUOZHU1Pj55lvz/f88l9aZmRDJUe/mMU+1aNXgaXJ6yZY8VTh?=
- =?us-ascii?Q?VbTPNNTWofqqwNzs/HnwN+eEcSOJbOTsV3IdXeZpc8GmZqcZIfjZ4HRxf1yn?=
- =?us-ascii?Q?nNgyBJLcKskyypSGiPbXVARL0KuRXnpPd+dz27sEeyuGg7mkl1hmzV/HTJG8?=
- =?us-ascii?Q?P/ndJHdcqsYqyUZi6lsJxJQCwmHXzcRbHffJtPkHQ2b2v/WYUnL9hRxcnoUO?=
- =?us-ascii?Q?NtFIk34HhWSjRPEY6+O+W/M/vlNGzKrf/8gQCgBuN3LSczMEeRi8T42+VLnu?=
- =?us-ascii?Q?8u4z+7qicCGzUP4Fh3mLaQJOFgfsqtXW6ad1Z5GmlTNlBd91qnxKpJGyDMS1?=
- =?us-ascii?Q?eWKwr9p1IUvAowV7/fXtnJOW4BaqrEWF1Ll1/uS5n9dT0Lm0AqZ2VUEcWzE3?=
- =?us-ascii?Q?rqu5ZK2FwGexcUdDiZ4j+riSq/WMRxGqyB7QZck0XisusgZM9Fo2HypjYg3D?=
- =?us-ascii?Q?AmiUGHtENROMGgxriq5SjW8hk8btYjd2oVKT7D9hdxpLxXI8BCax4c3N3cYi?=
- =?us-ascii?Q?7iOEgxBUQY2UApNkI4qz3ebOA02MyIEFnElGlDnjIChsgWkYGQ7R5vBLCN0t?=
- =?us-ascii?Q?Qw7Kc3NihU1A3VMXp1Qkx9/Ku8s47AKA1U8LEqsysswtaxDyWI3KZUbJrvnL?=
- =?us-ascii?Q?+mpI38EGeXuScRaWRMyBDTxLFVgewPNt6xnvPOg1eKfUVEMBosT/WJazPSM4?=
- =?us-ascii?Q?taeKuzhoy5drJkyHbiGeiM79xDLuUdyjjSV0np3NCNrACjqx0UoNzFn+x+xG?=
- =?us-ascii?Q?bgeHhmQn81rCJ6nQB+vP3LqaeG7Ymtu1gR/JPRCtxhFzdCis78zvcUx24NiN?=
- =?us-ascii?Q?FM5Pten7N9ua6StAqCAvBF53J5geErLOIPz8Uxp6YxdqqBMCe0UoBf7wvIC4?=
- =?us-ascii?Q?e8Nmkt6PVV8QEKIwNlXZxDeS0c7k3Dr64YZ7aIFWhzPuS7lh2VRPXm+SQuVe?=
- =?us-ascii?Q?SGipHPGOqRZCfATfmijKy/CV9MuFAbxMgQJ2S/mKOYQUO23c7ypkpNi4rKaY?=
- =?us-ascii?Q?nC+BGzmjcJAOIXjSsOdVNsoXmfyL4c8KFVmY506bC7qXAszDUXTaFO7EUJHS?=
- =?us-ascii?Q?wUtdJ6HLvRXmq8xCA2lHdueT8pTmOwcMBpjQPGBINymcl8SEOp4DI3i0kt3w?=
- =?us-ascii?Q?OYkNIQqr7gvsndfSSF+y9S5et8XoLILvgQ/0XdHwA0khvGp5Uw=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEZPR06MB5899.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(52116014)(7416014)(376014)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?O5+T5SnXOCh9imZzzmv9//K+UNSRt8rDakjcPbWu1p1nDec9N846E+60EjSE?=
- =?us-ascii?Q?Z9cxuCBo2G7BrQzVhEfa2HuTAsKIxMYmi/D0TtTi4+xbzK1PLJxPiX80q5Sf?=
- =?us-ascii?Q?u7jzMLN04qHEtpmhhxXVHAcvEdn2uP8mQnKiBMwy91DyTZnLjup+0VXcjUlw?=
- =?us-ascii?Q?5JNftVtHjriWEGacVSqFqanVxzZTLU/IjdDaZXRCL836NN3IKUNmcek0kIMn?=
- =?us-ascii?Q?+2ESM2u0zhjx4f+Gvi8vJUQ9sYQOQmIrgjnH5izyqDqQg2l04sC1RGx4yypm?=
- =?us-ascii?Q?RYFugvekmkL49u2LGHE+KA3bEZKHLWAEb89o2AbLV0kNmzN8Ghi4ZCUC6jrv?=
- =?us-ascii?Q?CUKMMlYzO3CQcAjfRFO4gaEklqJLYCNsteei+j80ah+Vatb18MtG+TBrpdTW?=
- =?us-ascii?Q?F7docdR7yE4ghlkiJzAWmPOr41bDpnhrh28eY/7CMA5rkvJ7G+xEdPbUG5TX?=
- =?us-ascii?Q?o7aPPYMvYnPiC26/TKYKKSSqydBvrW/QruaZEPyXzpdqcb4FHFUznOJpvdLn?=
- =?us-ascii?Q?VTe2fj6Kf/g4nNjtN2hj0Ur6a0FEl6x9w+ea4TjlnGc97ZANRfpI8nJlXEdr?=
- =?us-ascii?Q?vPHdYgLyqTwEbQ0jwR0fwBLvypZYPNmo4qhryDibuIMex6XaHf4GS9dRQxQt?=
- =?us-ascii?Q?O9NB7E0sZr+b6aFRuqYYZNDSzr3k4Vn3uq3a9rVIcsQ+WEYbEGMfh7MP4OcB?=
- =?us-ascii?Q?zL9kDF5D3iMJ+I4dQGpNrb1hHRt/oQwqOgwO3lxX59bfOOijdXEvVYmMgUVY?=
- =?us-ascii?Q?HGjBImvkDVabSnajGGsNwYJIQbIdtymkYododIfM+yHLtjPXxvEUQZELcwoc?=
- =?us-ascii?Q?BQ7xl5U0x4MQX06nMhR8TxyAkBi+VfkY75NgvQDtSzgMjXCCjS7Y1VHZZkxJ?=
- =?us-ascii?Q?eLQUlVwZ8VYA/EMGLEwZXt8Uf0ySIoiLiZRlpE7b9tj8c2xJLJAHvrgK9JK0?=
- =?us-ascii?Q?o1SBWV49BH69in9TkhgHEMtcBrMSl0TbOmop6sZI5avVWf6Ihg0MmD9hQIG/?=
- =?us-ascii?Q?s0wctLy6tW4hytjZ+7+TqJm9Zlkbcaa3urYD55MpWh0RnIkfFIoDs4gMp73+?=
- =?us-ascii?Q?jPyqo5vpMDbzXoSxoq01ARf9+wLN3HrgP79eIBmij2S5m4+3TZ0a5RXWuJpN?=
- =?us-ascii?Q?3p2BjFUaSgpjbNGPJuGRxDbPfuDAoTxLdB2UiAM3Sv6An1Qkq3uh3e4SE490?=
- =?us-ascii?Q?ShUTAFIFq/3/m9xjboNM2gX4urB3QBInYvR4Z2BiRTshwcxOAPMbdDJoGI/z?=
- =?us-ascii?Q?jmKN983Yiy+2rCaML+OLGw03DUFiCxILvLB9fQHFTyPu48WsVTfvcEzJkZa/?=
- =?us-ascii?Q?HJ1wcNw0vpRJsq9iU/m0rWcDqHVdKravUuDmOGqc/dplCmEgngH/Odlowp2P?=
- =?us-ascii?Q?a2HX/lVluexN/ERzvRtCwbweTdPm1smabsx3JnvhFQ6++G843SeCdAvmAmhN?=
- =?us-ascii?Q?XRP/Ssq51lIH38cfl2Q0DIxxjcSSFgXBRjTM2bBhKL0YisbE5a276CFJggob?=
- =?us-ascii?Q?uKxmeAXvnQOgpk0VW89vIDftl9kCWZvmjpGc0QApU/MK59gWzDLdlzkU0QCP?=
- =?us-ascii?Q?gmIXpT/JUg4nF4yk65c34NbwMTHV1GQ4lB3LydiO?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a0b024f9-1d61-4833-1702-08dcc8dd62ac
-X-MS-Exchange-CrossTenant-AuthSource: SEZPR06MB5899.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Aug 2024 10:20:35.1020
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: AS8SGfUbv0Pknh6OCTSs4MFjA1eMMf3aPJJAROiZt2wKuWSCpEH/4jQR2ad2C99UxGe9Hx26YNOBtZZgLs/81w==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR06MB6062
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.28.16
+ definitions=2024-08-30_06,2024-08-30_01,2024-05-17_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ priorityscore=1501 adultscore=0 impostorscore=0 suspectscore=0
+ clxscore=1011 mlxlogscore=999 bulkscore=0 spamscore=0 mlxscore=0
+ lowpriorityscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2407110000 definitions=main-2408300083
 
-Use dev_err_probe() to simplify the error path and unify a message
-template.
+This is an adaptation of commit f3a112c0c40d ("x86,rethook,kprobes:
+Replace kretprobe with rethook on x86") to powerpc.
 
-Using this helper is totally fine even if err is known to never
-be -EPROBE_DEFER.
+Rethook follows the existing kretprobe implementation, but separates
+it from kprobes so that it can be used by fprobe (ftrace-based
+function entry/exit probes). As such, this patch also enables fprobe
+to work on powerpc. The only other change compared to the existing
+kretprobe implementation is doing the return address fixup in
+arch_rethook_fixup_return().
 
-The benefit compared to a normal dev_err() is the standardized format
-of the error code, it being emitted symbolically and the fact that
-the error code is returned which allows more compact error paths.
+Reference to other archs:
+commit b57c2f124098 ("riscv: add riscv rethook implementation")
+commit 7b0a096436c2 ("LoongArch: Replace kretprobe with rethook")
 
-Signed-off-by: Shen Lichuan <shenlichuan@vivo.com>
+Note:
+=====
+
+In future, rethook will be only for kretprobe, and kretprobe
+will be replaced by fprobe.
+
+https://lore.kernel.org/all/172000134410.63468.13742222887213469474.stgit@devnote2/
+
+We will	adapt the above	implementation for powerpc once its upstream.
+Until then, we can have	this implementation of rethook to serve
+current	kretprobe usecases.
+
+Reviewed-by: Naveen Rao <naveen@kernel.org>
+Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
 ---
- sound/soc/fsl/fsl_ssi.c | 33 +++++++++++++++------------------
- 1 file changed, 15 insertions(+), 18 deletions(-)
+ arch/powerpc/Kconfig             |  1 +
+ arch/powerpc/kernel/Makefile     |  1 +
+ arch/powerpc/kernel/kprobes.c    | 65 +---------------------------
+ arch/powerpc/kernel/optprobes.c  |  2 +-
+ arch/powerpc/kernel/rethook.c    | 73 ++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/stacktrace.c |  6 ++-
+ 6 files changed, 81 insertions(+), 67 deletions(-)
+ create mode 100644 arch/powerpc/kernel/rethook.c
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index c4c1d9c44056..51927f89241f 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -1354,19 +1354,16 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 		ssi->clk = devm_clk_get(dev, "ipg");
- 	else
- 		ssi->clk = devm_clk_get(dev, NULL);
--	if (IS_ERR(ssi->clk)) {
--		ret = PTR_ERR(ssi->clk);
--		dev_err(dev, "failed to get clock: %d\n", ret);
--		return ret;
--	}
-+	if (IS_ERR(ssi->clk))
-+		return dev_err_probe(dev, PTR_ERR(ssi->clk),
-+				     "failed to get clock\n");
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d7b09b064a8a..dfe87c2f4872 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -269,6 +269,7 @@ config PPC
+ 	select HAVE_PERF_EVENTS_NMI		if PPC64
+ 	select HAVE_PERF_REGS
+ 	select HAVE_PERF_USER_STACK_DUMP
++	select HAVE_RETHOOK			if KPROBES
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_RELIABLE_STACKTRACE
+ 	select HAVE_RSEQ
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 1784b6a6ca1d..f43c1198768c 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -139,6 +139,7 @@ obj-$(CONFIG_KPROBES)		+= kprobes.o
+ obj-$(CONFIG_OPTPROBES)		+= optprobes.o optprobes_head.o
+ obj-$(CONFIG_KPROBES_ON_FTRACE)	+= kprobes-ftrace.o
+ obj-$(CONFIG_UPROBES)		+= uprobes.o
++obj-$(CONFIG_RETHOOK)           += rethook.o
+ obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
+ obj-$(CONFIG_SWIOTLB)		+= dma-swiotlb.o
+ obj-$(CONFIG_ARCH_HAS_DMA_SET_MASK) += dma-mask.o
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 14c5ddec3056..f8aa91bc3b17 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -228,16 +228,6 @@ static nokprobe_inline void set_current_kprobe(struct kprobe *p, struct pt_regs
+ 	kcb->kprobe_saved_msr = regs->msr;
+ }
  
- 	/* Enable the clock since regmap will not handle it in this case */
- 	if (!ssi->has_ipg_clk_name) {
- 		ret = clk_prepare_enable(ssi->clk);
--		if (ret) {
--			dev_err(dev, "clk_prepare_enable failed: %d\n", ret);
--			return ret;
--		}
-+		if (ret)
-+			return dev_err_probe(dev, ret,
-+					     "clk_prepare_enable failed\n");
- 	}
+-void arch_prepare_kretprobe(struct kretprobe_instance *ri, struct pt_regs *regs)
+-{
+-	ri->ret_addr = (kprobe_opcode_t *)regs->link;
+-	ri->fp = NULL;
+-
+-	/* Replace the return addr with trampoline addr */
+-	regs->link = (unsigned long)__kretprobe_trampoline;
+-}
+-NOKPROBE_SYMBOL(arch_prepare_kretprobe);
+-
+ static int try_to_emulate(struct kprobe *p, struct pt_regs *regs)
+ {
+ 	int ret;
+@@ -394,49 +384,6 @@ int kprobe_handler(struct pt_regs *regs)
+ }
+ NOKPROBE_SYMBOL(kprobe_handler);
  
- 	/* Do not error out for consumer cases that live without a baud clock */
-@@ -1552,10 +1549,9 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 						      &regconfig);
- 	else
- 		ssi->regs = devm_regmap_init_mmio(dev, iomem, &regconfig);
--	if (IS_ERR(ssi->regs)) {
--		dev_err(dev, "failed to init register map\n");
--		return PTR_ERR(ssi->regs);
--	}
-+	if (IS_ERR(ssi->regs))
-+		return dev_err_probe(dev, PTR_ERR(ssi->regs),
-+				     "failed to init register map\n");
+-/*
+- * Function return probe trampoline:
+- * 	- init_kprobes() establishes a probepoint here
+- * 	- When the probed function returns, this probe
+- * 		causes the handlers to fire
+- */
+-asm(".global __kretprobe_trampoline\n"
+-	".type __kretprobe_trampoline, @function\n"
+-	"__kretprobe_trampoline:\n"
+-	"nop\n"
+-	"blr\n"
+-	".size __kretprobe_trampoline, .-__kretprobe_trampoline\n");
+-
+-/*
+- * Called when the probe at kretprobe trampoline is hit
+- */
+-static int trampoline_probe_handler(struct kprobe *p, struct pt_regs *regs)
+-{
+-	unsigned long orig_ret_address;
+-
+-	orig_ret_address = __kretprobe_trampoline_handler(regs, NULL);
+-	/*
+-	 * We get here through one of two paths:
+-	 * 1. by taking a trap -> kprobe_handler() -> here
+-	 * 2. by optprobe branch -> optimized_callback() -> opt_pre_handler() -> here
+-	 *
+-	 * When going back through (1), we need regs->nip to be setup properly
+-	 * as it is used to determine the return address from the trap.
+-	 * For (2), since nip is not honoured with optprobes, we instead setup
+-	 * the link register properly so that the subsequent 'blr' in
+-	 * __kretprobe_trampoline jumps back to the right instruction.
+-	 *
+-	 * For nip, we should set the address to the previous instruction since
+-	 * we end up emulating it in kprobe_handler(), which increments the nip
+-	 * again.
+-	 */
+-	regs_set_return_ip(regs, orig_ret_address - 4);
+-	regs->link = orig_ret_address;
+-
+-	return 0;
+-}
+-NOKPROBE_SYMBOL(trampoline_probe_handler);
+-
+ /*
+  * Called after single-stepping.  p->addr is the address of the
+  * instruction whose first byte has been replaced by the "breakpoint"
+@@ -539,19 +486,9 @@ int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
+ }
+ NOKPROBE_SYMBOL(kprobe_fault_handler);
  
- 	ssi->irq = platform_get_irq(pdev, 0);
- 	if (ssi->irq < 0)
-@@ -1607,7 +1603,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 		mutex_init(&ssi->ac97_reg_lock);
- 		ret = snd_soc_set_ac97_ops_of_reset(&fsl_ssi_ac97_ops, pdev);
- 		if (ret) {
--			dev_err(dev, "failed to set AC'97 ops\n");
-+			dev_err_probe(dev, ret, "failed to set AC'97 ops\n");
- 			goto error_ac97_ops;
- 		}
- 	}
-@@ -1615,7 +1611,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 	ret = devm_snd_soc_register_component(dev, &fsl_ssi_component,
- 					      &ssi->cpu_dai_drv, 1);
- 	if (ret) {
--		dev_err(dev, "failed to register DAI: %d\n", ret);
-+		dev_err_probe(dev, ret, "failed to register DAI\n");
- 		goto error_asoc_register;
- 	}
+-static struct kprobe trampoline_p = {
+-	.addr = (kprobe_opcode_t *) &__kretprobe_trampoline,
+-	.pre_handler = trampoline_probe_handler
+-};
+-
+-int __init arch_init_kprobes(void)
+-{
+-	return register_kprobe(&trampoline_p);
+-}
+-
+ int arch_trampoline_kprobe(struct kprobe *p)
+ {
+-	if (p->addr == (kprobe_opcode_t *)&__kretprobe_trampoline)
++	if (p->addr == (kprobe_opcode_t *)&arch_rethook_trampoline)
+ 		return 1;
  
-@@ -1623,7 +1619,8 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 		ret = devm_request_irq(dev, ssi->irq, fsl_ssi_isr, 0,
- 				       dev_name(dev), ssi);
- 		if (ret < 0) {
--			dev_err(dev, "failed to claim irq %u\n", ssi->irq);
-+			dev_err_probe(dev, ret, "failed to claim irq %u\n",
-+				      ssi->irq);
- 			goto error_asoc_register;
- 		}
- 	}
-@@ -1649,8 +1646,8 @@ static int fsl_ssi_probe(struct platform_device *pdev)
- 				ssi->card_name, ssi->card_idx, NULL, 0);
- 		if (IS_ERR(ssi->card_pdev)) {
- 			ret = PTR_ERR(ssi->card_pdev);
--			dev_err(dev, "failed to register %s: %d\n",
--				ssi->card_name, ret);
-+			dev_err_probe(dev, ret, "failed to register %s\n",
-+				      ssi->card_name);
- 			goto error_sound_card;
- 		}
- 	}
+ 	return 0;
+diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+index 004fae2044a3..c0b351d61058 100644
+--- a/arch/powerpc/kernel/optprobes.c
++++ b/arch/powerpc/kernel/optprobes.c
+@@ -56,7 +56,7 @@ static unsigned long can_optimize(struct kprobe *p)
+ 	 * has a 'nop' instruction, which can be emulated.
+ 	 * So further checks can be skipped.
+ 	 */
+-	if (p->addr == (kprobe_opcode_t *)&__kretprobe_trampoline)
++	if (p->addr == (kprobe_opcode_t *)&arch_rethook_trampoline)
+ 		return addr + sizeof(kprobe_opcode_t);
+ 
+ 	/*
+diff --git a/arch/powerpc/kernel/rethook.c b/arch/powerpc/kernel/rethook.c
+new file mode 100644
+index 000000000000..5f5f47ae82cf
+--- /dev/null
++++ b/arch/powerpc/kernel/rethook.c
+@@ -0,0 +1,73 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * PowerPC implementation of rethook. This depends on kprobes.
++ */
++
++#include <linux/kprobes.h>
++#include <linux/rethook.h>
++
++/*
++ * Function return trampoline:
++ *     - init_kprobes() establishes a probepoint here
++ *     - When the probed function returns, this probe
++ *         causes the handlers to fire
++ */
++asm(".global arch_rethook_trampoline\n"
++	".type arch_rethook_trampoline, @function\n"
++	"arch_rethook_trampoline:\n"
++	"nop\n"
++	"blr\n"
++	".size arch_rethook_trampoline, .-arch_rethook_trampoline\n");
++
++/*
++ * Called when the probe at kretprobe trampoline is hit
++ */
++static int trampoline_rethook_handler(struct kprobe *p, struct pt_regs *regs)
++{
++	return !rethook_trampoline_handler(regs, regs->gpr[1]);
++}
++NOKPROBE_SYMBOL(trampoline_rethook_handler);
++
++void arch_rethook_prepare(struct rethook_node *rh, struct pt_regs *regs, bool mcount)
++{
++	rh->ret_addr = regs->link;
++	rh->frame = regs->gpr[1];
++
++	/* Replace the return addr with trampoline addr */
++	regs->link = (unsigned long)arch_rethook_trampoline;
++}
++NOKPROBE_SYMBOL(arch_rethook_prepare);
++
++/* This is called from rethook_trampoline_handler(). */
++void arch_rethook_fixup_return(struct pt_regs *regs, unsigned long orig_ret_address)
++{
++	/*
++	 * We get here through one of two paths:
++	 * 1. by taking a trap -> kprobe_handler() -> here
++	 * 2. by optprobe branch -> optimized_callback() -> opt_pre_handler() -> here
++	 *
++	 * When going back through (1), we need regs->nip to be setup properly
++	 * as it is used to determine the return address from the trap.
++	 * For (2), since nip is not honoured with optprobes, we instead setup
++	 * the link register properly so that the subsequent 'blr' in
++	 * arch_rethook_trampoline jumps back to the right instruction.
++	 *
++	 * For nip, we should set the address to the previous instruction since
++	 * we end up emulating it in kprobe_handler(), which increments the nip
++	 * again.
++	 */
++	regs_set_return_ip(regs, orig_ret_address - 4);
++	regs->link = orig_ret_address;
++}
++NOKPROBE_SYMBOL(arch_rethook_fixup_return);
++
++static struct kprobe trampoline_p = {
++	.addr = (kprobe_opcode_t *) &arch_rethook_trampoline,
++	.pre_handler = trampoline_rethook_handler
++};
++
++/* rethook initializer */
++int __init arch_init_kprobes(void)
++{
++	return register_kprobe(&trampoline_p);
++}
+diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+index e6a958a5da27..90882b5175cd 100644
+--- a/arch/powerpc/kernel/stacktrace.c
++++ b/arch/powerpc/kernel/stacktrace.c
+@@ -21,6 +21,7 @@
+ #include <asm/processor.h>
+ #include <linux/ftrace.h>
+ #include <asm/kprobes.h>
++#include <linux/rethook.h>
+ 
+ #include <asm/paca.h>
+ 
+@@ -133,12 +134,13 @@ int __no_sanitize_address arch_stack_walk_reliable(stack_trace_consume_fn consum
+ 		 * arch-dependent code, they are generic.
+ 		 */
+ 		ip = ftrace_graph_ret_addr(task, &graph_idx, ip, stack);
+-#ifdef CONFIG_KPROBES
++
+ 		/*
+ 		 * Mark stacktraces with kretprobed functions on them
+ 		 * as unreliable.
+ 		 */
+-		if (ip == (unsigned long)__kretprobe_trampoline)
++#ifdef CONFIG_RETHOOK
++		if (ip == (unsigned long)arch_rethook_trampoline)
+ 			return -EINVAL;
+ #endif
+ 
 -- 
-2.17.1
+2.44.0
 
 
