@@ -1,72 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-817-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-818-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99368CA0FFD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2024 14:57:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6595DCA0FFD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Aug 2024 14:57:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WwLpX25M0z30CL;
-	Sat, 31 Aug 2024 00:57:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::82b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725024936;
-	cv=none; b=IVwqHenB3MzoxMalBSC30C51Ki9RIFO9qzWKfPBrrwuZKlaw8ahAT0WAXEqhO+qJgfThpxuHSPCta2igAUzWqbGA+GxKAnpBjai3z1s3dzXnezRm8ZflJ7pSTJPbCDaHrY9/4BsDkkGEs8VYWsKZ91Y5agH1GgRWHtGSkQjKgGwS4dpdobEionP+OhlImGYlP/eQJ3x+cST2Am8L8Ke34B9ejzOVGE76OuztKtahrmwYvf8qcmBS0yueBzYGQ/R3wHlalD6pzcj7lZ20uaoBSL5eAKeHqZxAOwlsffUwaJVS8fXykKrKnd09msFiwdi9DJu1V081M7wI6kt/ueLHUg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WwLqB6Tfyz30Bp;
+	Sat, 31 Aug 2024 00:57:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.84
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725028101;
+	cv=none; b=ftEzSkJ28jkbuZSYPl5EZaxB8ot6HdYEWG+KzfJQk66uQkFlUWFfUd4vk8yFPW+fuf4o+eVXmv36U8icDQwIeQkLWZ2pxBIJRiu33FrDPJSV2VxiLnvhX6h3XC5XFbm1JDBLaA3rKs1kIg0NZeUYTACcARPgGBC0msEqEOwKo1NGL3m/1Kq+2OOJzvpeTKcLlZrJxvAjhH59uz+xUllc4rIDv4dUsDxNbWDDIpkx4aOVI7y+LK+38gz8IrKpEBqN3CRWPJj4uRCBnQXzATmJ+XP/6PmL8JcpkVmGqvJ0Ql2t7wfk0BZTug+SRGMcCQEFQbsynzhjpjKSpBUYlNwtbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725024936; c=relaxed/relaxed;
-	bh=lHvnH/4zOuzzT8TCzaUdUbOM1uEXUpCOxCXYL3PqkuU=;
-	h=Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Google-Smtp-Source:
-	 X-Received:Received:Message-ID:Date:MIME-Version:User-Agent:
-	 Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding; b=oBRc0bVDA1rD+w6IgGtujPJnQIXXJiuqc908CByBGM4JD7aXIuiWdUCKALr8RKR8Q4EOlEwz3BXJRHIVyS64itdZh1yhEosy9SD2oHKX7Ai3gEJNLs211Xz/qw0yWI4oHT0Qm5ldEcOVpewXqEfpGriwRcTqB0LuhZx8knv2mZ44g+/HOkeT/D7b/2rh9BypvvcOHDr7Q1cmrQvey5A3jnDGqMAF+jh7Zpi4c7z5+PN6V3ZTFG/gTEcB/jLxVhydIyFLtuu5toO8TGzzuiZZGPQLyNOMuq+sPv+Xza715wDi8UPmpvbfS59Xxa9o1nMduqRKVHn0NMrU/pqHVgVRSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=Shzvo8Hd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=skhan@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=Shzvo8Hd;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=skhan@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com [IPv6:2607:f8b0:4864:20::82b])
+	t=1725028101; c=relaxed/relaxed;
+	bh=ruqW9VPyy+1mLQAyh1V0yLZihyccQ9bYsUtmbQxeGyk=;
+	h=X-Greylist:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
+	 MIME-Version:Content-Transfer-Encoding:X-CM-TRANSID:
+	 X-Coremail-Antispam:X-Originating-IP:X-CM-SenderInfo; b=hAI2FEpBPgsdKbsgVqorTdvBhYNoOmPyfKROG4BFcGbt6SXDtHDa3yBDZl1SSllQO+Pbow9YzX5KW0EXJ2wBVQacrbReX4aLCaHrmEHeN+MqNR2JycoMA+GLPYnW7P0PtuiNTHfwah19RH70CHiAa07KjRK1NuOGYh0rXrjWyc1Xn7TO5/QYruUJCv9i3H8267AQXoIzq//hIChB0RzDx1CfNDrIM2HWgD5TwUXQiSX9SjsY/2qfKIdD/Qdsgiq7hFut6AXJszm60C2Ye57rPi0KMVmI+s7JA58ShaKveyWjjzifi0iBBD8RntAxQPxbS8AwLWw1NGbTmu+kumeXfw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=make24@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=make24@iscas.ac.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 389 seconds by postgrey-1.37 at boromir; Sat, 31 Aug 2024 00:28:20 AEST
+Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WwK0R27v7z2ywR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2024 23:35:33 +1000 (AEST)
-Received: by mail-qt1-x82b.google.com with SMTP id d75a77b69052e-451a0b04f6bso10056861cf.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Aug 2024 06:35:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google; t=1725024928; x=1725629728; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=lHvnH/4zOuzzT8TCzaUdUbOM1uEXUpCOxCXYL3PqkuU=;
-        b=Shzvo8HdumRqWLDDV08vHQFeaukmznDuurFw+ssDX4Ha674GEwcCcBo/b+khrL0yxY
-         +hCB6nEqm26vNscFh6DvL8IT1rwFFZE5gfjkRqVapVxxyroifdTC9L/iHHjRpRRGAhy/
-         +bOjvySJWnIIbIltpyroQVK4AtxRictvD1YnM=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725024928; x=1725629728;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=lHvnH/4zOuzzT8TCzaUdUbOM1uEXUpCOxCXYL3PqkuU=;
-        b=oMc3FafZ6DWbBN6Z/TvI4HVJ1qEiKwhTMYKQe2FSgaemLwNSNn9yq08PnmwIxViVao
-         yHIgty87sN8nztgjLvXfcn1Lwp4z4SO0qhVhwdB7vpyQeZcxVLb0MzvZeomX9/WvLfQG
-         M0A7msIfNXQe0Gn3Mx01/1HFx6aqL2+g0zMzfHRv8wmOmVvYsDuBjBt/6s0Dt01MJQSf
-         +HSwP1uLsBh2O/x7W86A8jttWv7/lIixBCqEQDrS167JIe+PM6X90keLgwGiG9EVq6RM
-         P3OEktjdA8/OOyM1aMoQI5gWEaEJgkSSLzu9QzfIBsLnIPBoY38GN4DG0k6bA+VsK2P3
-         OvzQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWaqze5Vp1LQ7kOtjqccT5oaXMaFgDoFPX+wI5+kiFmJ/d1EcyI5wkutw+8/iUVTiWrYxz4EsOkHc25eiM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywey+hfVEO9v9mXr5ptk8CQCZedFkirmWV810iBnOCuju4O1quk
-	DTq7uNAA+FXW9cNspNV/ByjDmrc9QqW5A3eEn3nK8Q7oOgtk3xufRmSFeVhsEk4=
-X-Google-Smtp-Source: AGHT+IG8cg3+iwNoBRjX29bHUWGerLYZqb/2lmBI6h5IfvZ9WYS6tunfEvRS+bcOhw4pt4KgG5PXtw==
-X-Received: by 2002:a05:622a:40c8:b0:456:4688:d70b with SMTP id d75a77b69052e-4567f71c204mr79224871cf.61.1725024928201;
-        Fri, 30 Aug 2024 06:35:28 -0700 (PDT)
-Received: from [172.19.248.149] ([205.220.129.17])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-45682d66c9dsm13869521cf.76.2024.08.30.06.35.01
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 30 Aug 2024 06:35:27 -0700 (PDT)
-Message-ID: <af63ebb4-af0c-4b0d-9b58-691be5087868@linuxfoundation.org>
-Date: Fri, 30 Aug 2024 07:34:53 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WwL9J4yV0z2yjV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Aug 2024 00:28:19 +1000 (AEST)
+Received: from icess-ProLiant-DL380-Gen10.. (unknown [183.174.60.14])
+	by APP-05 (Coremail) with SMTP id zQCowADHcEBu1dFmz5R+Cw--.3389S2;
+	Fri, 30 Aug 2024 22:21:36 +0800 (CST)
+From: Ma Ke <make24@iscas.ac.cn>
+To: jochen@scram.de,
+	andi.shyti@kernel.org,
+	grant.likely@linaro.org,
+	thierry.reding@gmail.com,
+	rob.herring@calxeda.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-i2c@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Ma Ke <make24@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] of/irq: handle irq_of_parse_and_map() errors
+Date: Fri, 30 Aug 2024 22:21:27 +0800
+Message-Id: <20240830142127.3446406-1-make24@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,40 +55,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/5] selftests: vdso: Fix vDSO name for powerpc
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>, Shuah Khan <shuah@kernel.org>
-Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Andy Lutomirski <luto@mit.edu>,
- "H. Peter Anvin" <hpa@linux.intel.com>, Mark Brown <broonie@kernel.org>,
- linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Shuah Khan <skhan@linuxfoundation.org>
-References: <6c5da802e72befecfa09046c489aa45d934d611f.1725020674.git.christophe.leroy@csgroup.eu>
- <ZtG-DqWo8kBMocVh@zx2c4.com>
-Content-Language: en-US
-From: Shuah Khan <skhan@linuxfoundation.org>
-In-Reply-To: <ZtG-DqWo8kBMocVh@zx2c4.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:zQCowADHcEBu1dFmz5R+Cw--.3389S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7JrWfuF17Kr4DCr4kuFWktFb_yoWfArgEgw
+	1kXa9xArWUGFnxXw15AFWfZry5KFy8WF1kAF1vvr9xC34DWw17JF1DZrn3JrsrXry3KFyq
+	9w1qvF4S9wnrJjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbfAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
+	Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
+	0DM2vYz4IE04k24VAvwVAKI4IrM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
+	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8Jw
+	Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAG
+	YxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxkF7I0En4kS14v26r1q6r43MxAIw28IcxkI7V
+	AKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCj
+	r7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6x
+	IIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVWUJVW8JwCI42IY6xAI
+	w20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x
+	0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUbQVy7UUUUU==
+X-Originating-IP: [183.174.60.14]
+X-CM-SenderInfo: ppdnvj2u6l2u1dvotugofq/
 
-On 8/30/24 06:41, Jason A. Donenfeld wrote:
-> Hi Shuah,
-> 
-> No 0/5 patch, so replying to the first one.
-> 
-> These are fixes to the vDSO selftests that Christophe is ostensibly
-> providing as a preamble to his work porting vgetrandom to PPC. Do you
-> mind if I take these via my random tree so his PPC vgetrandom code can
-> go on top of it?
-> 
-> Jason
-> 
+Zero and negative number is not a valid IRQ for in-kernel code and the
+irq_of_parse_and_map() function returns zero on error.  So this check for
+valid IRQs should only accept values > 0.
 
-Yes - here is the Ack to apply to all patches in the series:
+Cc: stable@vger.kernel.org
+Fixes: f7578496a671 ("of/irq: Use irq_of_parse_and_map()")
+Signed-off-by: Ma Ke <make24@iscas.ac.cn>
+---
+ drivers/i2c/busses/i2c-cpm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Acked-by: Shuah Khan <skhan@linuxfoundation.org>
+diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+index 4794ec066eb0..41e3c95c0ef7 100644
+--- a/drivers/i2c/busses/i2c-cpm.c
++++ b/drivers/i2c/busses/i2c-cpm.c
+@@ -435,7 +435,7 @@ static int cpm_i2c_setup(struct cpm_i2c *cpm)
+ 	init_waitqueue_head(&cpm->i2c_wait);
+ 
+ 	cpm->irq = irq_of_parse_and_map(ofdev->dev.of_node, 0);
+-	if (!cpm->irq)
++	if (cpm->irq <= 0)
+ 		return -EINVAL;
+ 
+ 	/* Install interrupt handler. */
+-- 
+2.25.1
 
-thanks,
--- Shuah
 
