@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-884-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-885-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A262CA0ED3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2024 18:52:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFAF8CA0ED3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2024 19:08:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WyHtb29Kyz2yHL;
-	Tue,  3 Sep 2024 04:52:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725303143;
-	cv=none; b=UxF/3C+guz+UX3njGD1hqoUhDZFa00IW+WKncIVDAsCmS0bX8Oz7jV2s8I4S+Tr8ivX2+aXUyQ+JqMhmv+IR8sgiIuDPFzS3xtTcTwchSCEQGplOSdTTVkuVTwnaqX/A2TkvRv7SqT2seu2YHwr+jzL5s+hCe0Hb+Oqu4QW+QfeW5a7i8ATTzxXOS5sLycJH18klKPrmW0BHzzBWYdrHBvMBzNuc/K0mGZ4kJovxmlJwB3Jdhi07kpM6eCbvFz1C2tlF0pXRfv0c0tWdqv7GDaKvkSE33KJ836p+SwOGOrdsSyIhljIXGz/gKP89whkMdyJ3QVOSyT1EzvAfeNR/CQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WyJF02MQMz2yHj;
+	Tue,  3 Sep 2024 05:08:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725304100;
+	cv=none; b=atmEqWg4kBKZdT8ivTLQ/4Xut5Wix56MPmjHFeCt7xPRPA3bhmd9SQX8F//TOnG+UYfHgahmwMBoS3HTXqPBlhPgKcNzWq/4vM71H68+so/Z85smlDUiT7HCYHstbWa0Hk+OyobQ9voYnYPX1I0WM9R78P0H8sjLS/VI+EqywdNILrNy6+nmvoqfH6ftVPCaIGg4d8PKxR7qUxj2XzjCRm14lAOCv5pv0BVMOMpMrXSAexWwSgJ3XTRDfmpgnBkKqCNi5sucRLp1PlMw2rLtgDRShEss28C7CPS3JvgnA/lCyPzdEPOcQEsIXECEUh0dF+0RLw+I1LdQnry5lwQmiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725303143; c=relaxed/relaxed;
-	bh=2eWXMYwrhzdrR+haEWvCNrRFdYdTPm+X8fLPnJHOG64=;
-	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fo+Fe8Q/MjsLAn2CeI1UStZlcM2uwmT7p7q9gpwjTXveyLoqw8BJpCc0/HEtyzDeD1JcAjZLqLU06J4SCJxaZoUgl2tbp6xvrDS6GUTWXUCfImZdWwHKQzHi9grKn6ruy/v9i/X31r9YWQGJ8X0U7AqlzFEDdHvUMQzhOiSlmjWdBQJCwbCxmolUczBtceQwB9ljnyqmsslQCMG5KlPkBnnIoBq4J8+82eVu6YEl0PNLxtkbwBmIlq+Bnm3Io8y9NsSSL5MSaVLK6/X1uOwNtPgtdR6ZciWZWLDVQYoDHYNRspqKKyWb++8qbq9XHzdXLAuo8BZpfaixc4HBon4F4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CRGqqhaJ; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CRGqqhaJ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	t=1725304100; c=relaxed/relaxed;
+	bh=pn2nVuJ3P3f/HSlVJLpRyhFtgyUbvXYluAUxlc8oLnk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XAcdZv0PZMBR6vbMbVUdfviQTQqApIPnrSiU8QQpXJVky2z/ufbfE2kfplTcmSm7HuVJUJTWohZqoahW/r50FZyLNCCNK2B8JoCsiLrs3teHWWUEJbaXNWrwX19unp2rLfhdW8lAT0lQSr4BTamzeb4/35wco+eeZzGUGGR4fiJ/ch4FkUKDmGLyS74ATTOR02/JhXrOfGH9eQW/Zou5Ab8dfpxlV+EkweMpmt+dBM5ODBaxCxeXTW6cr2ya99y+HtmB+cjrM2cT+s2IqHiwJQ7lSuk5NalOQsbjgYRpgF45TNGrAwV7Jkt3lCeEk2yYF5UzQImuXz9BWGxw4oO9/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WyHtZ4qbhz2xtt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2024 04:52:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WyJDz3Npvz2xbF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2024 05:08:19 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 28B9D5C5930;
-	Mon,  2 Sep 2024 18:52:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2504C4CEC2;
-	Mon,  2 Sep 2024 18:52:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1725303138;
-	bh=ZTBb1Jqv4twqEPqg4WYll7AU68w80SabtLii7Xfp5q8=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=CRGqqhaJWczUqsStEvPv+f7+ot0eBEsbKPjGsicNjQC/PnmqrdNclo0PCUtDQGBSH
-	 YPbXBjfJsp7VOk87+VPFUQSK3VnyhXM552C8mqLDxNBofsqJ/uNh6xKkMvKdJPNjp6
-	 HoPEn8X79NLULTI824zSgtd6ZuhO5E1cH+PZB+itAr3iCWu0ECnMoxHru1SDGicgB1
-	 XX8fYmsvRdwnPEuNNcoxCFrHtDjQ92QCI8cxb8m5ql5NeLk7xHPZq9O9fyioOM3fem
-	 6/ran3AAbq6Wm6g/qnNVB9I0WqaF+EgdjPWFL2y1hZl6KbZ2pvlnKk1N/244hAiUbn
-	 EONolYYT7V7Gg==
-Date: Mon, 2 Sep 2024 13:52:15 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Lukas Wunner <lukas@wunner.de>, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 7/7] PCI: Create helper to print TLP Header and Prefix
- Log
-Message-ID: <20240902185215.GA223280@bhelgaas>
+	by nyc.source.kernel.org (Postfix) with ESMTP id 6BE76A431C9;
+	Mon,  2 Sep 2024 19:08:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7FCD8C4CEC2;
+	Mon,  2 Sep 2024 19:08:10 +0000 (UTC)
+Date: Mon, 2 Sep 2024 20:08:08 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Will Deacon <will@kernel.org>
+Cc: Joey Gouly <joey.gouly@arm.com>, linux-arm-kernel@lists.infradead.org,
+	nd@arm.com, akpm@linux-foundation.org, aneesh.kumar@kernel.org,
+	aneesh.kumar@linux.ibm.com, anshuman.khandual@arm.com, bp@alien8.de,
+	broonie@kernel.org, christophe.leroy@csgroup.eu,
+	dave.hansen@linux.intel.com, hpa@zytor.com,
+	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, maz@kernel.org, mingo@redhat.com,
+	mpe@ellerman.id.au, naveen.n.rao@linux.ibm.com, npiggin@gmail.com,
+	oliver.upton@linux.dev, shuah@kernel.org, skhan@linuxfoundation.org,
+	szabolcs.nagy@arm.com, tglx@linutronix.de, x86@kernel.org,
+	kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v5 06/30] arm64: context switch POR_EL0 register
+Message-ID: <ZtYNGBrcE-j35fpw@arm.com>
+References: <20240822151113.1479789-1-joey.gouly@arm.com>
+ <20240822151113.1479789-7-joey.gouly@arm.com>
+ <20240823144531.GH32156@willie-the-truck>
+ <Zsi7ovLOfuFdfuuz@arm.com>
+ <20240823170835.GA1181@willie-the-truck>
+ <ZsjXtE7Kg0LQwNAL@arm.com>
+ <20240827113803.GB4318@willie-the-truck>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,90 +63,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b0484353-8ba5-02c2-e78c-d51aba55bbb7@linux.intel.com>
+In-Reply-To: <20240827113803.GB4318@willie-the-truck>
 
-On Mon, Sep 02, 2024 at 08:20:41PM +0300, Ilpo Järvinen wrote:
-> On Fri, 30 Aug 2024, Bjorn Helgaas wrote:
+On Tue, Aug 27, 2024 at 12:38:04PM +0100, Will Deacon wrote:
+> On Fri, Aug 23, 2024 at 07:40:52PM +0100, Catalin Marinas wrote:
+> > On Fri, Aug 23, 2024 at 06:08:36PM +0100, Will Deacon wrote:
+> > > On Fri, Aug 23, 2024 at 05:41:06PM +0100, Catalin Marinas wrote:
+> > > > On Fri, Aug 23, 2024 at 03:45:32PM +0100, Will Deacon wrote:
+> > > > > On Thu, Aug 22, 2024 at 04:10:49PM +0100, Joey Gouly wrote:
+> > > > > > +static void permission_overlay_switch(struct task_struct *next)
+> > > > > > +{
+> > > > > > +	if (!system_supports_poe())
+> > > > > > +		return;
+> > > > > > +
+> > > > > > +	current->thread.por_el0 = read_sysreg_s(SYS_POR_EL0);
+> > > > > > +	if (current->thread.por_el0 != next->thread.por_el0) {
+> > > > > > +		write_sysreg_s(next->thread.por_el0, SYS_POR_EL0);
+> > > > > > +		/* ISB required for kernel uaccess routines when chaning POR_EL0 */
+> > > > > 
+> > > > > nit: typo "chaning".
+> > > > > 
+> > > > > But more substantially, is this just to prevent spurious faults in the
+> > > > > context of a new thread using a stale value for POR_EL0?
+> > > > 
+> > > > Not just prevent faults but enforce the permissions from the new
+> > > > thread's POR_EL0. The kernel may continue with a uaccess routine from
+> > > > here, we can't tell.
+[...]
+> > > So what do we actually gain by having the uaccess routines honour this?
+> > 
+> > I guess where it matters is more like not accidentally faulting because
+> > the previous thread had more restrictive permissions.
 > 
-> > On Tue, May 14, 2024 at 02:31:09PM +0300, Ilpo Järvinen wrote:
-> > > Add pcie_print_tlp_log() helper to print TLP Header and Prefix Log.
-> > > Print End-End Prefixes only if they are non-zero.
-> > > 
-> > > Consolidate the few places which currently print TLP using custom
-> > > formatting.
-> > > 
-> > > The first attempt used pr_cont() instead of building a string first but
-> > > it turns out pr_cont() is not compatible with pci_err() and prints on a
-> > > separate line. When I asked about this, Andy Shevchenko suggested
-> > > pr_cont() should not be used in the first place (to eventually get rid
-> > > of it) so pr_cont() is now replaced with building the string first.
-> > > 
-> > > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
-> > > ---
-> > >  drivers/pci/pci.h      |  2 ++
-> > >  drivers/pci/pcie/aer.c | 10 ++--------
-> > >  drivers/pci/pcie/dpc.c |  5 +----
-> > >  drivers/pci/pcie/tlp.c | 31 +++++++++++++++++++++++++++++++
-> > >  4 files changed, 36 insertions(+), 12 deletions(-)
-> > > 
-> > > diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-> > > index 7afdd71f9026..45083e62892c 100644
-> > > --- a/drivers/pci/pci.h
-> > > +++ b/drivers/pci/pci.h
-> > > @@ -423,6 +423,8 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info);
-> > >  int pcie_read_tlp_log(struct pci_dev *dev, int where, int where2,
-> > >  		      unsigned int tlp_len, struct pcie_tlp_log *log);
-> > >  unsigned int aer_tlp_log_len(struct pci_dev *dev);
-> > > +void pcie_print_tlp_log(const struct pci_dev *dev,
-> > > +			const struct pcie_tlp_log *log, const char *pfx);
-> > >  #endif	/* CONFIG_PCIEAER */
-> > >  
-> > >  #ifdef CONFIG_PCIEPORTBUS
-> > > diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> > > index ecc1dea5a208..efb9e728fe94 100644
-> > > --- a/drivers/pci/pcie/aer.c
-> > > +++ b/drivers/pci/pcie/aer.c
-> > > @@ -664,12 +664,6 @@ static void pci_rootport_aer_stats_incr(struct pci_dev *pdev,
-> > >  	}
-> > >  }
-> > >  
-> > > -static void __print_tlp_header(struct pci_dev *dev, struct pcie_tlp_log *t)
-> > > -{
-> > > -	pci_err(dev, "  TLP Header: %08x %08x %08x %08x\n",
-> > > -		t->dw[0], t->dw[1], t->dw[2], t->dw[3]);
-> > > -}
-> > > -
-> > >  static void __aer_print_error(struct pci_dev *dev,
-> > >  			      struct aer_err_info *info)
-> > >  {
-> > > @@ -724,7 +718,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
-> > >  	__aer_print_error(dev, info);
-> > >  
-> > >  	if (info->tlp_header_valid)
-> > > -		__print_tlp_header(dev, &info->tlp);
-> > > +		pcie_print_tlp_log(dev, &info->tlp, "  ");
-> > 
-> > I see you went to some trouble to preserve the previous output, down
-> > to the number of spaces prefixing it.
-> > 
-> > But more than the leading spaces, I think what people will notice is
-> > that previously AER and DPC dmesgs contain the "AER: " or "DPC: "
-> > prefixes implicitly added by the dev_fmt definitions [1], where now
-> > IIUC they won't.
-> > 
-> > I think adding dev_fmt("") here should take care of that, e.g.,
-> > 
-> >   pcie_print_tlp_log(dev, &info->tlp, dev_fmt(""));
-> > 
-> > [1] https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1990272
-> 
-> Okay, I'll fix it and resend but looking into that output, it doesn't 
-> look very consistent when it comes to prefixes as the lines in between do 
-> not start with "AER: " either. Perhaps those lines should be changed as 
-> well?
+> That's what I wondered initially, but won't the fault handler retry in
+> that case?
 
-True.  Possibility for future patches.
+Yes, it will retry and this should be fine (I assume you are only
+talking about the dropping ISB in the context switch).
+
+For the case of running with a more permissive stale POR_EL0, arguably it's
+slightly more predictable for the user but, OTOH, some syscalls like
+readv() could be routed through GUP with no checks. As with MTE, we
+don't guarantee uaccesses honour the user permissions.
+
+That said, at some point we should sanitise this path anyway and have a
+single ISB at the end. In the meantime, I'm fine with dropping the ISB
+here.
+
+-- 
+Catalin
 
