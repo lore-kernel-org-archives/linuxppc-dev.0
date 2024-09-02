@@ -1,58 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-864-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-865-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D77DCD13CF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2024 09:17:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1743ECD13CF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Sep 2024 10:16:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wy37N4xcPz2xX4;
-	Mon,  2 Sep 2024 19:17:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=111.22.67.139
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725265886;
-	cv=none; b=VolACBtBiyZ4H/8Moy4ZFTdJKOtz/CvKUODATMdnpYJdkEUwH+vlUL1tY4wLsxZVCzIVoBndWlUQWF14iJbtQh1PdenqNA+WhE998PHhaEpWM0EO6DljL2ETN8aqG4zPAWfVwuisnlIsTmxzJsOsu0p8ejTH5EoN5xKbC6NUuH3oVYYzSSJMMsN6SaMLznCr9ffSfsO/qz8/l9TJVtDFUjE3BGn8k1uRVWR9xuG7Jnm/as3AMYji6LTm16b3nqWlL/HWPBgMxmszQ2GxfRibANScuvdD0MbsSXGr670X9zEJ3phLL0e91zhpezSdwDOLA/VlWDwfdw6JJhEjAIrSug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wy4R52pWgz2xsd;
+	Mon,  2 Sep 2024 20:16:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.147
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725272177;
+	cv=none; b=J+kxleiZUaqjlfiW/kXi+vnbePPSCx5jtKZFnugS+/zqH7V02T5qUZ0dgehuoLCEpMU/yswGzyT38U6myPxliXENoEDmpk5tDmvhIyqEFXk/4LUUZVeBerH1m6VcVoBGQyYh2s+kbK47hCDAdQVG0qkFKyS8az7giaDfYEM5mg21TYkPtJ+Mr/4Fuk+68SB8geBT80MJRZODzvPVDKY8WgDoc/Qp9m1ZkYPHuSZESzNK5DCVDr1Vk5Omup/0UMtBEkKNIo6rXvpnkEXyFbuysP8JFyGqgO3b9hQhVrgyV4OlkpC6euhsW3R6Hay292fvXG6kj11HJpYOU/z7RjLyHg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725265886; c=relaxed/relaxed;
-	bh=KbzJJMR5KU9X4bJ73VMqZ9QSm+HNQa4dSpds+VSRgmI=;
-	h=X-Greylist:X-RM-TagInfo:X-RM-SPAM-FLAG:Received:X-RM-TRANSID:
-	 X-RM-TagInfo:X-RM-SPAM-FLAG:Received:X-RM-TRANSID:From:To:Cc:
-	 Subject:Date:Message-Id:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding; b=ZOmNo8qDiKlzZFo1kwP07EGM9weFOEUNNvGQ4YQWs8Q8YCVl21ePuCvEWNNNrhu1vOB4V+uElc+fnosuVZpNjp5xPCkPYhuIZzIRaEC56BE/CAPLXvmCind1ZP0IvyGs2jlWbNIxRiTkv8XTCE6AVSRFcS/rJViGQJtojqpB+T2lGncBnYZMlEJgjjKDHSITFLt44xda92QSDlfLY4uo+2cWOC3S1T48C2mPnpHtpQFWcGPFYlormsmYV1H+9I1P2BYnlFrK5tdrAhMZWffCxireh9TzWLtN5NNrrPOLvhr1sCZVHWPNYyS/zWUL3WptUYenu2CdTkZbLMwEDY1Cfg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=cmss.chinamobile.com; spf=pass (client-ip=111.22.67.139; helo=cmccmta3.chinamobile.com; envelope-from=liujing@cmss.chinamobile.com; receiver=lists.ozlabs.org) smtp.mailfrom=cmss.chinamobile.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=cmss.chinamobile.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cmss.chinamobile.com (client-ip=111.22.67.139; helo=cmccmta3.chinamobile.com; envelope-from=liujing@cmss.chinamobile.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 182 seconds by postgrey-1.37 at boromir; Mon, 02 Sep 2024 18:31:25 AEST
-Received: from cmccmta3.chinamobile.com (cmccmta6.chinamobile.com [111.22.67.139])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wy2652m85z2xb9
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2024 18:31:25 +1000 (AEST)
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from spf.mail.chinamobile.com (unknown[10.188.0.87])
-	by rmmx-syy-dmz-app09-12009 (RichMail) with SMTP id 2ee966d57723b76-d7b7a;
-	Mon, 02 Sep 2024 16:28:19 +0800 (CST)
-X-RM-TRANSID:2ee966d57723b76-d7b7a
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from localhost.localdomain.localdomain (unknown[10.54.5.255])
-	by rmsmtp-syy-appsvr08-12008 (RichMail) with SMTP id 2ee866d577213ed-915e4;
-	Mon, 02 Sep 2024 16:28:18 +0800 (CST)
-X-RM-TRANSID:2ee866d577213ed-915e4
-From: Liu Jing <liujing@cmss.chinamobile.com>
-To: rafael@kernel.org
-Cc: viresh.kumar@linaro.org,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	naveen@kernel.org,
-	linux-pm@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Liu Jing <liujing@cmss.chinamobile.com>
-Subject: [PATCH] cpufreq: Fix the cacography in powernv-cpufreq.c
-Date: Mon,  2 Sep 2024 16:28:16 +0800
-Message-Id: <20240902082816.2599-1-liujing@cmss.chinamobile.com>
-X-Mailer: git-send-email 2.33.0
+	t=1725272177; c=relaxed/relaxed;
+	bh=3RNolP0Fo/GSx4B9IVA751JpgSB5qu66Jzzq2ZzhW5o=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=KG/RLmnRsufjE/tyTC4yur5S4wvGgrhwB6l/kDjieF8RWVU1S5rhYLo+sEWE2r7umEzDeH8yIyqLf+A6KUQZHTRozqxm8p0dmwLSnEJhEZMnixq9nHUVvwu3KxRAETkgZ6J7hstz71wqyu2YIAGGn05061PwIU9heCQUVgUUaGXk+KiouEuEw04v5MTfRGsBPftz+HDwO54J3NFMGe7tVLMoszKPmm08qALIoxOuGyXavDjNICnPhp4HMIQ/nCSXXVx0M7bR5V1T6lULTFJz7B+ZNfR1Dha6raqi7IKZb230PnepIDoKKftN7TtXJkpGBuQ05z684wHlRXNHgrV6TA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=eswqT4+k; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=e+ExLf/f; dkim-atps=neutral; spf=pass (client-ip=103.168.172.147; helo=fout4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=eswqT4+k;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=e+ExLf/f;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.147; helo=fout4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from fout4-smtp.messagingengine.com (fout4-smtp.messagingengine.com [103.168.172.147])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wy4R2088Vz2xZY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Sep 2024 20:16:12 +1000 (AEST)
+Received: from phl-compute-04.internal (phl-compute-04.nyi.internal [10.202.2.44])
+	by mailfout.nyi.internal (Postfix) with ESMTP id C92021380366;
+	Mon,  2 Sep 2024 06:16:08 -0400 (EDT)
+Received: from phl-imap-11 ([10.202.2.101])
+  by phl-compute-04.internal (MEProxy); Mon, 02 Sep 2024 06:16:08 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1725272168;
+	 x=1725358568; bh=3RNolP0Fo/GSx4B9IVA751JpgSB5qu66Jzzq2ZzhW5o=; b=
+	eswqT4+kmM9y1ZYn3In9gFzhOS2csprktMPRjMHRe/gaK25CIc6SgXNQXTjo8Wa6
+	jXmC2wkMn5BtLXhHHt+6xNogKhOvkO6AUAAQsOiZ5nssDIiVYzdakHa1x3rAXl22
+	bA6DTspqAz53Dbl3SKNjf3fhn11sxjtMBBF8qwOgJSlx6gwpf3l/00PfOudUyJOD
+	N62jErUHi3spuhKABZyv4uKFCZBOYePT+vLDideOnSkYH+nNZOzQf8QERsYm6/6z
+	YF7vX2u6krQg9HJA5XgZqsVLNWLBbghGXpmwlSBbjEplONaJyCuC2nYppHf3OXi4
+	lAANex0FtnYzPfx47tLLYg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1725272168; x=
+	1725358568; bh=3RNolP0Fo/GSx4B9IVA751JpgSB5qu66Jzzq2ZzhW5o=; b=e
+	+ExLf/fMAWshxJVvPU1X5yEAdOHmK9hNB/yqQ8kxmmyTLD9dpvXsUA9mt0wMpRBR
+	B4QmKgK8Egjn6RxhnaL9URjmo66lCeEnwLLsEHmsPXIR9lQkQZswPrb+GbLyEjuF
+	T/AfVyywjsTrFM2lQfzFag0I4DWVjbAmEBviZeeD/1S4bL4HjqWmvpSvxnTg2JuF
+	EdUYQvyhYVV3hAgINmXuKz44cQ4sIJoRa6lzwNVOaFk/fDzVtQypNHdmKQYbYivV
+	cvdU2uxnoM5IrJAEqai7L6UtWdV2Ib/lph2qViDl4WnAp22ysWUbQYIqXRWkJMd5
+	rPYDYkIKoWfAPwGkXPK5w==
+X-ME-Sender: <xms:aJDVZm5k9mjxtlOIpXK9ChinEhWo609Ro2nvgiHoILV06Mjeyy7MiQ>
+    <xme:aJDVZv6ygVCfotEnPBexS1EfrO2vKvnkwttQLJ1F-hEwbxrbra3n1coDUtGzwHpAa
+    p2_qaojohSkRvOwirg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeftddrudehfedgvdeiucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggvpdfu
+    rfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnh
+    htshculddquddttddmnecujfgurhepofggfffhvfevkfgjfhfutgfgsehtqhertdertdej
+    necuhfhrohhmpedftehrnhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrd
+    guvgeqnecuggftrfgrthhtvghrnhepudeffeetfeekveffkeeuheffteevuefhvdeuteeg
+    udfghefhffehffejhfdugeeinecuffhomhgrihhnpehgihhthhhusgdrtghomhdpkhgvrh
+    hnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhf
+    rhhomheprghrnhgusegrrhhnuggsrdguvgdpnhgspghrtghpthhtohepjedpmhhouggvpe
+    hsmhhtphhouhhtpdhrtghpthhtohephhgvrhhvvgdrtghoughinhgrsegsohhothhlihhn
+    rdgtohhmpdhrtghpthhtoheptghhrhhishhtohhphhgvrdhlvghrohihsegtshhgrhhouh
+    hprdgvuhdprhgtphhtthhopehsohgtsehkvghrnhgvlhdrohhrghdprhgtphhtthhopegs
+    rgholhhurdhluheslhhinhhugidrihhnthgvlhdrtghomhdprhgtphhtthhopehlihhnuh
+    igqdgrrhhmqdhkvghrnhgvlheslhhishhtshdrihhnfhhrrgguvggrugdrohhrghdprhgt
+    phhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpd
+    hrtghpthhtohepgihirgholhgvihdrfigrnhhgseifihhnughrihhvvghrrdgtohhm
+X-ME-Proxy: <xmx:aJDVZlfCkQv5YD1df9WF3UxV8-73LSebwlij2g30dyCjtygfi9GwJw>
+    <xmx:aJDVZjJVwcDSlCvpIjUMNajK4iw7UrvwyBsL1SfT0JoBDGE-8E5TBg>
+    <xmx:aJDVZqL2N-eo5zr8upQI_c6H1_jYkgDdHfM34Vxk1I5Srhf9VL9Kxw>
+    <xmx:aJDVZkwrqBQecRS2uMx6CwFSTma0df7hJs2WjIA-zQ6hHauyqYgw7g>
+    <xmx:aJDVZrr41cGF5Hg3e63WAQOgDseqUDR6ogJbcjhun26z1kfb7FSYBlGZ>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id 471F92220087; Mon,  2 Sep 2024 06:16:08 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,31 +96,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Date: Mon, 02 Sep 2024 10:15:34 +0000
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Christophe Leroy" <christophe.leroy@csgroup.eu>, soc@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Cc: "Herve Codina" <herve.codina@bootlin.com>,
+ "Xiaolei Wang" <xiaolei.wang@windriver.com>,
+ "Baolu Lu" <baolu.lu@linux.intel.com>
+Message-Id: <cc725b99-12f3-4476-948c-8b00af563dfd@app.fastmail.com>
+In-Reply-To: <dfafbd92-1e61-4e80-aa5c-2bfbe1defbeb@csgroup.eu>
+References: <dfafbd92-1e61-4e80-aa5c-2bfbe1defbeb@csgroup.eu>
+Subject: Re: [GIT PULL] SOC FSL for 6.12
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-The word 'swtich' is wrong, so fix it.
+On Wed, Aug 28, 2024, at 13:44, Christophe Leroy wrote:
+> Hi Arnd,
+>
+> Please pull the following Freescale Soc Drivers changes for 6.12:
+> - A series from Herv=C3=A9 Codina that bring support for the newer ver=
+sion of=20
+> QMC (QUICC Multi-channel Controller) and TSA (Time Slots Assigner) fou=
+nd=20
+> on MPC 83xx micro-controllers.
+> - Misc changes for qbman freescale drivers
+>
+> There are no conflicts with latest linux-next tree.
 
-Signed-off-by: Liu Jing <liujing@cmss.chinamobile.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Hi Christophe,
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index fddbd1ea1635..64fa92623a51 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -692,7 +692,7 @@ static void gpstate_timer_handler(struct timer_list *t)
- 	}
- 
- 	/*
--	 * If PMCR was last updated was using fast_swtich then
-+	 * If PMCR was last updated was using fast_switch then
- 	 * We may have wrong in gpstate->last_lpstate_idx
- 	 * value. Hence, read from PMCR to get correct data.
- 	 */
--- 
-2.33.0
+I've tried pulling this but ran into a few issues here, none of which
+are related to the actual patches in your branch that look totally
+fine to me:
 
+> The following changes since commit 5be63fc19fcaa4c236b307420483578a569=
+86a37:
+>
+>    Linux 6.11-rc5 (2024-08-25 19:07:11 +1200)
+>
+> are available in the Git repository at:
+>
+>    https://github.com/chleroy/linux.git tags/soc_fsl-6.12-1
+>
+> for you to fetch changes up to 1fe683bf6113da3cb694bc18ae655b2ee10ba39=
+3:
+>
+>    Merge branch 'support-for-quicc-engine-tsa-and-qmc' (2024-08-25=20
+> 20:48:47 +0200)
 
+- There is no tag description in here, which would give me an empty
+  changelog text for the merge commit, or force me to summarize your
+  contents myself. Please describe the contents of your branch in a coup=
+le
+  of short paragraphs, in a way that helps me and future readers of
+  the changelog understand what kind of work is being done. Don't
+  repeat the oneline commit messages of the individual patches though,
+  as they show up right under your summary anyway.
 
+- You have not signed the tag, so there is no way for me to verify that
+  you are actually the person that uploaded the branch. Ideally this
+  should be signed with a gpg key that is on the kernel keyring, but
+  even a brand new key is better than nothing because that way I can
+  at least check that your next pull requests are signed by the same
+  account as this one. Since you use a github.com account, this is
+  even more important, as I can't easily see if you are the only person
+  that is able to push to the github user 'chleroy'.
+  Using a git tree on either git.kernel.org or your own domain would
+  be ideal here, but github works if that is all you can easily do.
+
+- My branch is based on 6.11-rc4, while your tag is on top of 6.11-rc5,
+  so pulling it into my tree would require a backmerge that I try to
+  avoid (it shows up when Linus pulls from me). Please rebase on
+  an earlier -rc, ideally 6.11-rc1 unless you have a reason to need
+  something later.
+
+- Please add the linux-arm-kernel and powerpc mailing lists to cc
+  for the pull request, so the PR gets properly archived. I saw this
+  was missing because I could not apply it using
+
+    b4 pr dfafbd92-1e61-4e80-aa5c-2bfbe1defbeb@csgroup.eu
+
+  This command failed as none of the mailing list archives have
+  your message ID.
+
+Please resend with all of the above changed.
+
+       Arnd
 
