@@ -1,59 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-905-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-906-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 667E1CD342F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2024 06:51:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6146DCD342F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2024 07:27:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wybql4snmz2yLB;
-	Tue,  3 Sep 2024 16:50:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725346259;
-	cv=none; b=WgebitN9VJzrxXl4kMvcjfd+70m319DmpmnX4lWz40WXgqcSlH3C2YrcpKYOIsum9kmFF/kQWzwPKZMfALj277e9lDfVpu5dLR3PFOEFTuORAqdxmhLVLlbJVBmZFJWzuUsIgdJRdnJtc5hbHK4KuXa3+pWusDaj5W6QJ19eZ0Vn9QjvKskpNAIjM/LDD/VXZlubW9Npl1e1e28a1SWcSa69VeTHpB5ItlIbf1F0NO1ykGDCpdylz0q5fZKT+mzIleQUGDfCeIomYFgDIgRkfhC/DfMpSxcU/+2k4txjjpmk8G1oGSs+S8XefYreyYTSLcGqTu9h9ALiWPZ5rGuoXw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WycfM3zZMz2xbY;
+	Tue,  3 Sep 2024 17:27:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725348475;
+	cv=none; b=gTz9vPPtbj5alDM5tF0YKGEI99tQDkxbv/5yMOljTgUodZIlRObNmkMquyqUr9W12vaL4mdaItNBmU4mN6FRVEzKPj8S99FjpfzKiaaXq1ooqmh6q8QN+/atX1LcQFux5574r+GgkopHTBeJaxYA/+si+30qV/hFKAXbgPRdmxKGa5udNIllTIjd2qN/bF8nrMHllvco2Bz/0BNp7XvJ6yQ8/vpnkp7JqvRgHd4+ASqefIy3AoTfIW71Mq2ByItTF0DQn44PJnsfUt1pPojECE/JE0DgRjpe3qbr9Cn7793xnJfSOap3wrhRH6kBM++n2Idpt4tV/kB5lH8p41Lg7Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725346259; c=relaxed/relaxed;
-	bh=CQh0HwbwudB1Ww2VJkCueArmMI0AZXpCTMdiFdJKXpI=;
-	h=DKIM-Signature:From:To:Cc:Subject:In-Reply-To:References:Date:
-	 Message-ID:MIME-Version:Content-Type; b=ZBVlLCOTZW0QXlWH/emoG7mald/XWEOdq+w5PBCa06DDUxNGkeTcj6Fk3q7P+Pv5hkO9Yb9LNjFxZZ5ycuwigqtzqKnwbxwVs9ONuWGQJPvWxb+4jW0J4J4BRGZI3xtOD4OXS39ek65+pwnaNsfhK7w/aHyuY1DCUNMJPNIBYtf3wB8apvEGs5VDQvCgp4UGt3yu6ipG8PSaXFW+5Bkpbq0YecZ8MSIysvzjCF5AkjhO1YCihNJzrksK6pz8qgmveRm4B43A/u711GSYXlpHIkOMjF2tXrLV8ZhBqeTDOXOBjo6OWqLKAHj+70CsbbT7z/dnJhbEQxp9KUPbKXChXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TJkkp3Er; dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TJkkp3Er;
-	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1725348475; c=relaxed/relaxed;
+	bh=166Aw0xPi9Hy02yLSJA4pIz6S7Y3Yj/bimJ0SL1PUpE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BLJ6LsFAMdpEy+yqobusGcbB+NofO2HaeDELl3qin44ZmdqlCBTscAEJy4eLmyOxKGYeiqY/oq9RZb0dJemZ1l4yvskd37g60/vyHfqVD4VH+1W976eodELTdEh5bLNGLdZ1uHmM91Zw/kgHg4w4QGX6Tjarz1J38WUe2nq4N77LDSILIJCFW+i7r8STCkSngLHvpJKn20vTq+g74lkEKdumvQKC0r/q7GDoRaC2lA+ZfC0KgYELMWT6nEx23g/BxUIa9VELfsztQaTu7Lw6FBvq44qcqquZHIJhYOU8ZdIGcnOJTtsYcdCuLvXN0iXdfhyhqf27EJCeMydRwZZctA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de; spf=pass (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org) smtp.mailfrom=lst.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wybql4dksz2yL5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2024 16:50:59 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1725346259;
-	bh=CQh0HwbwudB1Ww2VJkCueArmMI0AZXpCTMdiFdJKXpI=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=TJkkp3ErSASQvhmMaTnHtityUB+krmJD4Y3zwvw6vlTumSrwmJStye9dB1DwAPiRO
-	 xcdsxaYqL7NAnSy0J7S565BeSD17qUpIFYfb0o83u+kXV/FGFvDZ3VL1FD3sxCbuHm
-	 Vs0hY/tI/8Iu0z92RQH64V156VoHgCkOOiK5Jpo4l+TvolJ26gL9yA0mL7KUOkFc26
-	 oeUaQjbd0lsBh+7y1JmjFfFK3bovuuL4kZ2uRAeSBYOuGmnVJy/nv0VnSd2Hl7H3Lz
-	 kEvjRiVx5UHmnqbu0Svdei7SvKBdhVf0HXjsV6G7u0746zt1QQ/3vnqmG80RI4N/Z/
-	 oY6CKnKhr6exQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Wybql3cL7z4w2F;
-	Tue,  3 Sep 2024 16:50:59 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Chen Ni <nichen@iscas.ac.cn>, gregkh@linuxfoundation.org,
- jirislaby@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-serial@vger.kernel.org, Chen Ni <nichen@iscas.ac.cn>
-Subject: Re: [PATCH] tty: hvc: convert comma to semicolon
-In-Reply-To: <20240903023001.491055-1-nichen@iscas.ac.cn>
-References: <20240903023001.491055-1-nichen@iscas.ac.cn>
-Date: Tue, 03 Sep 2024 16:50:58 +1000
-Message-ID: <87y1495iy5.fsf@mail.lhotse>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WycfL5BTZz2xbF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2024 17:27:53 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+	id C1D91227A8E; Tue,  3 Sep 2024 09:27:44 +0200 (CEST)
+Date: Tue, 3 Sep 2024 09:27:44 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: iommu@lists.linux.dev
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Bingbu Cao <bingbu.cao@intel.com>,
+	"Michael S . Tsirkin " <mst@redhat.com>,
+	Jason Wang <jasowang@redhat.com>, linux-kernel@vger.kernel.org,
+	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-media@vger.kernel.org,
+	virtualization@lists.linux.dev, xen-devel@lists.xenproject.org
+Subject: Re: clearly mark DMA_OPS support as an architecture feature v2
+Message-ID: <20240903072744.GA2082@lst.de>
+References: <20240828061104.1925127-1-hch@lst.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,33 +53,13 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240828061104.1925127-1-hch@lst.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 
-Chen Ni <nichen@iscas.ac.cn> writes:
-> Replace a comma between expression statements by a semicolon.
->
-> Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
-> ---
->  drivers/tty/hvc/hvsi_lib.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+I've pulled this into the dma-mapping for-next tree, although I'd
+love to see one of the vdpa maintainers look over patch 1.  I'm
+pretty sure it's correct, but a confirmation would be good.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-
-cheers
-
-> diff --git a/drivers/tty/hvc/hvsi_lib.c b/drivers/tty/hvc/hvsi_lib.c
-> index 22e1bc4d8a66..b35c44caf3d7 100644
-> --- a/drivers/tty/hvc/hvsi_lib.c
-> +++ b/drivers/tty/hvc/hvsi_lib.c
-> @@ -303,7 +303,7 @@ int hvsilib_write_mctrl(struct hvsi_priv *pv, int dtr)
->  	pr_devel("HVSI@%x: %s DTR...\n", pv->termno,
->  		 dtr ? "Setting" : "Clearing");
->  
-> -	ctrl.hdr.type = VS_CONTROL_PACKET_HEADER,
-> +	ctrl.hdr.type = VS_CONTROL_PACKET_HEADER;
->  	ctrl.hdr.len = sizeof(struct hvsi_control);
->  	ctrl.verb = cpu_to_be16(VSV_SET_MODEM_CTL);
->  	ctrl.mask = cpu_to_be32(HVSI_TSDTR);
-> -- 
-> 2.25.1
 
