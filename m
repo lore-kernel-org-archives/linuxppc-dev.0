@@ -1,54 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-912-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-913-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28F67CD3420
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2024 11:19:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8A0BCD13CF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2024 12:12:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wyjp45VZGz2xZj;
-	Tue,  3 Sep 2024 21:19:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725362396;
-	cv=none; b=j1d9IB/KjAIZVGxE7Zs7hVkoi3DidjH08oUDHrpy3YN5BXHkE+ddW2JMw+0hWqVe5CW26TY0sS/516PM6QZaGKWX3ZHzjY+5gN/0Dh2zwU8UDtXzqzo7nh65FaGt5xW7B21xpnp1Fpo3fvNTE8xFdZ6oqlDM0bMpHNxGy5kmiY+kJ20Cjst5VGndkEOZlVGQzzR+aSeYDVLD6+I5XvlWkiNf/TOOLysJ9Cj/hZmBxUBbP8OyLdo96KbTqVWQhAWxpVzjIw5OsEK2ze6DHG/8Lm4vatliAMrZz8dvxd729KpQozjPyLHW/n67WHw93a0XcykcoOBi5dM9x7KmeG3FfQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WykyH0tMRz2xSl;
+	Tue,  3 Sep 2024 22:12:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725354193;
+	cv=none; b=FtiD3S+/JL+xSUH7GGvrDhny/yzLRXlgRww+zOeXC1MVWlt/6pKJO14xtrEVYY3dmPZbys0MYFBERmtMgtYfyBp6kTxF3eSy7BFwXs7WFORbpYdSrKfk+g4z32dXNSGaIJGepg4951rm369pSVajhhqzVvkXwcN6A8AUl8qJ7wm97ush809wWL2ckmrWph1E0A9HosnXXSU7gGsUCNVHOCY1nc0FxZDueI66exLjL/KIo2cPj88IAXC3c4mTBUspG01QahwlGJU+gKnu3kL8tBrTeghq6S0ixt2uQQRMahNddk/ZieMrC0Y8xYjCYWmG/i6xBCGGLPs30ctDznkFSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725362396; c=relaxed/relaxed;
-	bh=0XWe4jlkjRvvT5OZDQf9KggcfIeIrKPURNrmTo4iNzg=;
-	h=DKIM-Signature:From:To:Subject:Date:Message-ID:MIME-Version; b=NC2rK60E25B8hQBKc6a90ygbxirPoPwjxahQhYB0H3318UdbpNBy+UCsNR+NpUd8u9HZwqtn4kkwjfbAJW1kp+CR5zXGvVgiL2Cv5ilikHHRL4LQRXWo4+6PD6mlF+rTb2/tPzV2CDdq3BjEfChdjDx0JjDUm+u8rL2GVF+FUYb3c6d7ZIcH+4wNq0uaMyF1sUmeyoIUTRlqWZtb68V39n3iyKRibPgJZ7Ty/JZS36vc+7AZOi6J84YyYyWKTUmK9JE8Fqm78Gm6fCD3kSamjF8+pkIDfKLKxqNcFwuyZKGGByUkxA8/mWvVsUKQAS/GberuZv8u5gXJp7KLHsNFnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lTBizGzn; dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	t=1725354193; c=relaxed/relaxed;
+	bh=vXMjQRozUzAfZtDGQl5kmRCarCMdJrz35wUmsxbqBGY=;
+	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=E61oZxrWRzv9Hesq1UyD3Ej69HnZ7oV1VT4ugP+oOXQl2Fo4DQEGid1O7dJrTfAbE3VtulJBCS3voyT/umLaYiMmIgZ1q2bV271bzskMJc40Qh3b3UiK38F0tL7e73u8uTt2u07ptTMqidNOuO4vuTIlkisJ3FywE+zHs4ZnGyS3KsLGUxkFROELyD/jPVTDw3UJc26h4IgdDFIs66UsuqqVfL3ohHNGf9VfHYf/Ygojm8v5ap5cPLjrrEm8j25Bs7zSckWr82cS98+i2JgLg+mDS5meC7wEeoIgQw9m8M95oZ6F9kny3o0U7HMUwJjU/RXUe5QIxhymFYtmtqCvMw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=swOLosvC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=viresh.kumar@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lTBizGzn;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=swOLosvC;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=viresh.kumar@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wyjp34kHDz2xZK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2024 21:19:55 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1725362395;
-	bh=0XWe4jlkjRvvT5OZDQf9KggcfIeIrKPURNrmTo4iNzg=;
-	h=From:To:Subject:Date:From;
-	b=lTBizGznFRaxenmCe0NW2a53KBfwzWtQtR9oDGNLyRU0BIEZixZccOlaLpSCNbh6M
-	 CuiJ9kDNsg817l15b09ObF1PCJVrNtA5KvP1rM+Zpp8PQYMDzfaB+QsZV6k6meSlL7
-	 yaPoBU4UCB0gTM5gv+o1Cz9BRKM7i3FQfI1wiOPDkApYiSfoSkTID5Z9h3/NXBS6PW
-	 WIuMliFCryTvf6boJvDmi36eN1IJY4BjxqHzmrIc7G6XYAUGcW4LVdNlJPxrWt2ru8
-	 X36w+dc95DzReNXKxn1aNwJ/IMeGRG45N/XKYHBiohCUN253CNyScNvt1/UhekJhLn
-	 pDLQ+6hOIKcDQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Wyjp26y9Rz4wnt;
-	Tue,  3 Sep 2024 21:19:54 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: Stop using no_llseek
-Date: Tue,  3 Sep 2024 21:19:51 +1000
-Message-ID: <20240903111951.141376-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.46.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WyfmJ4pWSz2xTR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2024 19:03:10 +1000 (AEST)
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-7cb3db0932cso3810884a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Sep 2024 02:03:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1725354185; x=1725958985; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=vXMjQRozUzAfZtDGQl5kmRCarCMdJrz35wUmsxbqBGY=;
+        b=swOLosvCiiiCRPthvTuuT2+gLpwlHJQpj1RtTTtZuivxt+oELEbzO0tuAGU1b5yspG
+         hq+z5x/4s96aRePFleGIQ1LQN6ukyi8t4d+ELnunIpj9ha0CLbUTr77BJlJQM7G0LxZB
+         jvOeAHjayYMJrmYxd/n1Ha9o03b0XnsIw92z5Xx7BEhrjMp5+Bn+tqJy40qZGLAjGQVs
+         b/lpnl5G0H3kWKv7s5dOylu5vc7BO7jpDhoF1mkyL3Tp9QB6d5lzzU6mUR/mFpC2FefT
+         euku7rwOnCOJu4qXHuEd03otJj29XkbzKrSUoW1vaSF+m7kJHJmAUsK/fzoFq9zyrw6E
+         MTKQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725354185; x=1725958985;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vXMjQRozUzAfZtDGQl5kmRCarCMdJrz35wUmsxbqBGY=;
+        b=AIZp21j7EixhNyS3NXUvZl7lw+Xn1Sz9aaC6OwRHJokLV1WrKYW//166YK5RidwpX5
+         rZObhAgCVfUEb563CrqesHt4ATg77oU1PLJfzHD11pOz8k9+w384zgCStwLuGEalClLr
+         KvvrApRW3lZEmeurxxMdkXveVQNg5w7gVR5cqcJSS0SQ7riz8v0KoUUXNa1x3eviptb5
+         WJw3IP+pnAhH1aKZ7VNy5n9VZE+ZYizC9ifrFVXii4+FxfR4S3p4TxGPc582IhCUDKMQ
+         w3lbENWjSwSjyHZ7OPeM3Pu/AFzmZIkZR7gFlwK1tLqE8zQYmYgQc2uNTyXg71dGRTBR
+         c/Bw==
+X-Forwarded-Encrypted: i=1; AJvYcCVD1q7V8qvj4XXeU5dn/5dNbwQqdfzFMw5/pO69UyjtPbYq0KvN/kD2S7RJPRIrJrbHlg0cEo/3Hk0Zj44=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyqGs0wUcYzTO6OzapJaF6TGftupxgMNYbvC+2oJ8N4JfZOH1Xv
+	A09yvev+NZsif7ZWJIydx+0M0NBhRdBqpXiQ/rxx7VWj+Z7ULFZC1eqGZnPD0ws=
+X-Google-Smtp-Source: AGHT+IGbzt8vUGrEk6tocF11V7cRb1xoAuI7nhEIChNefDbTXr8mJQYLikgxuEKN2ui2+XiiLzZpXw==
+X-Received: by 2002:a17:90a:2c9:b0:2c9:7219:1db0 with SMTP id 98e67ed59e1d1-2d85616ed48mr19057360a91.3.1725354185405;
+        Tue, 03 Sep 2024 02:03:05 -0700 (PDT)
+Received: from localhost ([122.172.83.237])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2da5932d1ecsm1320793a91.43.2024.09.03.02.03.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Sep 2024 02:03:04 -0700 (PDT)
+Date: Tue, 3 Sep 2024 14:33:02 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Liu Jing <liujing@cmss.chinamobile.com>
+Cc: rafael@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
+	christophe.leroy@csgroup.eu, naveen@kernel.org,
+	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: Fix the cacography in powernv-cpufreq.c
+Message-ID: <20240903090302.j7znk6icmztf3dnf@vireshk-i7>
+References: <20240902082816.2599-1-liujing@cmss.chinamobile.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,237 +83,20 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240902082816.2599-1-liujing@cmss.chinamobile.com>
 
-Since commit 868941b14441 ("fs: remove no_llseek"), no_llseek() is
-simply defined to be NULL, and a NULL llseek means seeking is
-unsupported.
+On 02-09-24, 16:28, Liu Jing wrote:
+> The word 'swtich' is wrong, so fix it.
+> 
+> Signed-off-by: Liu Jing <liujing@cmss.chinamobile.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-So for statically defined file_operations, such as all these, there's no
-need or benefit to set llseek = no_llseek.
+Applied. Thanks.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/eeh.c                    |  4 ----
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c    |  1 -
- arch/powerpc/platforms/cell/spufs/file.c     | 17 -----------------
- arch/powerpc/platforms/powernv/eeh-powernv.c |  1 -
- arch/powerpc/platforms/pseries/dtl.c         |  1 -
- 5 files changed, 24 deletions(-)
-
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index d03f17987fca..2f7f0efd564a 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1682,7 +1682,6 @@ static ssize_t eeh_force_recover_write(struct file *filp,
- 
- static const struct file_operations eeh_force_recover_fops = {
- 	.open	= simple_open,
--	.llseek	= no_llseek,
- 	.write	= eeh_force_recover_write,
- };
- 
-@@ -1726,7 +1725,6 @@ static ssize_t eeh_dev_check_write(struct file *filp,
- 
- static const struct file_operations eeh_dev_check_fops = {
- 	.open	= simple_open,
--	.llseek	= no_llseek,
- 	.write	= eeh_dev_check_write,
- 	.read   = eeh_debugfs_dev_usage,
- };
-@@ -1846,7 +1844,6 @@ static ssize_t eeh_dev_break_write(struct file *filp,
- 
- static const struct file_operations eeh_dev_break_fops = {
- 	.open	= simple_open,
--	.llseek	= no_llseek,
- 	.write	= eeh_dev_break_write,
- 	.read   = eeh_debugfs_dev_usage,
- };
-@@ -1893,7 +1890,6 @@ static ssize_t eeh_dev_can_recover(struct file *filp,
- 
- static const struct file_operations eeh_dev_can_recover_fops = {
- 	.open	= simple_open,
--	.llseek	= no_llseek,
- 	.write	= eeh_dev_can_recover,
- 	.read   = eeh_debugfs_dev_usage,
- };
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-index 2bd6abcdc113..1ea591ec6083 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -644,7 +644,6 @@ static int mpc52xx_wdt_release(struct inode *inode, struct file *file)
- 
- static const struct file_operations mpc52xx_wdt_fops = {
- 	.owner		= THIS_MODULE,
--	.llseek		= no_llseek,
- 	.write		= mpc52xx_wdt_write,
- 	.unlocked_ioctl = mpc52xx_wdt_ioctl,
- 	.compat_ioctl	= compat_ptr_ioctl,
-diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
-index 7f4e0db8eb08..d5a2c77bc908 100644
---- a/arch/powerpc/platforms/cell/spufs/file.c
-+++ b/arch/powerpc/platforms/cell/spufs/file.c
-@@ -453,7 +453,6 @@ static const struct file_operations spufs_cntl_fops = {
- 	.release = spufs_cntl_release,
- 	.read = simple_attr_read,
- 	.write = simple_attr_write,
--	.llseek	= no_llseek,
- 	.mmap = spufs_cntl_mmap,
- };
- 
-@@ -634,7 +633,6 @@ static ssize_t spufs_mbox_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_mbox_fops = {
- 	.open	= spufs_pipe_open,
- 	.read	= spufs_mbox_read,
--	.llseek	= no_llseek,
- };
- 
- static ssize_t spufs_mbox_stat_read(struct file *file, char __user *buf,
-@@ -664,7 +662,6 @@ static ssize_t spufs_mbox_stat_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_mbox_stat_fops = {
- 	.open	= spufs_pipe_open,
- 	.read	= spufs_mbox_stat_read,
--	.llseek = no_llseek,
- };
- 
- /* low-level ibox access function */
-@@ -769,7 +766,6 @@ static const struct file_operations spufs_ibox_fops = {
- 	.open	= spufs_pipe_open,
- 	.read	= spufs_ibox_read,
- 	.poll	= spufs_ibox_poll,
--	.llseek = no_llseek,
- };
- 
- static ssize_t spufs_ibox_stat_read(struct file *file, char __user *buf,
-@@ -797,7 +793,6 @@ static ssize_t spufs_ibox_stat_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_ibox_stat_fops = {
- 	.open	= spufs_pipe_open,
- 	.read	= spufs_ibox_stat_read,
--	.llseek = no_llseek,
- };
- 
- /* low-level mailbox write */
-@@ -901,7 +896,6 @@ static const struct file_operations spufs_wbox_fops = {
- 	.open	= spufs_pipe_open,
- 	.write	= spufs_wbox_write,
- 	.poll	= spufs_wbox_poll,
--	.llseek = no_llseek,
- };
- 
- static ssize_t spufs_wbox_stat_read(struct file *file, char __user *buf,
-@@ -929,7 +923,6 @@ static ssize_t spufs_wbox_stat_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_wbox_stat_fops = {
- 	.open	= spufs_pipe_open,
- 	.read	= spufs_wbox_stat_read,
--	.llseek = no_llseek,
- };
- 
- static int spufs_signal1_open(struct inode *inode, struct file *file)
-@@ -1056,7 +1049,6 @@ static const struct file_operations spufs_signal1_fops = {
- 	.read = spufs_signal1_read,
- 	.write = spufs_signal1_write,
- 	.mmap = spufs_signal1_mmap,
--	.llseek = no_llseek,
- };
- 
- static const struct file_operations spufs_signal1_nosched_fops = {
-@@ -1064,7 +1056,6 @@ static const struct file_operations spufs_signal1_nosched_fops = {
- 	.release = spufs_signal1_release,
- 	.write = spufs_signal1_write,
- 	.mmap = spufs_signal1_mmap,
--	.llseek = no_llseek,
- };
- 
- static int spufs_signal2_open(struct inode *inode, struct file *file)
-@@ -1195,7 +1186,6 @@ static const struct file_operations spufs_signal2_fops = {
- 	.read = spufs_signal2_read,
- 	.write = spufs_signal2_write,
- 	.mmap = spufs_signal2_mmap,
--	.llseek = no_llseek,
- };
- 
- static const struct file_operations spufs_signal2_nosched_fops = {
-@@ -1203,7 +1193,6 @@ static const struct file_operations spufs_signal2_nosched_fops = {
- 	.release = spufs_signal2_release,
- 	.write = spufs_signal2_write,
- 	.mmap = spufs_signal2_mmap,
--	.llseek = no_llseek,
- };
- 
- /*
-@@ -1343,7 +1332,6 @@ static const struct file_operations spufs_mss_fops = {
- 	.open	 = spufs_mss_open,
- 	.release = spufs_mss_release,
- 	.mmap	 = spufs_mss_mmap,
--	.llseek  = no_llseek,
- };
- 
- static vm_fault_t
-@@ -1401,7 +1389,6 @@ static const struct file_operations spufs_psmap_fops = {
- 	.open	 = spufs_psmap_open,
- 	.release = spufs_psmap_release,
- 	.mmap	 = spufs_psmap_mmap,
--	.llseek  = no_llseek,
- };
- 
- 
-@@ -1732,7 +1719,6 @@ static const struct file_operations spufs_mfc_fops = {
- 	.flush	 = spufs_mfc_flush,
- 	.fsync	 = spufs_mfc_fsync,
- 	.mmap	 = spufs_mfc_mmap,
--	.llseek  = no_llseek,
- };
- 
- static int spufs_npc_set(void *data, u64 val)
-@@ -2102,7 +2088,6 @@ static ssize_t spufs_dma_info_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_dma_info_fops = {
- 	.open = spufs_info_open,
- 	.read = spufs_dma_info_read,
--	.llseek = no_llseek,
- };
- 
- static void spufs_get_proxydma_info(struct spu_context *ctx,
-@@ -2159,7 +2144,6 @@ static ssize_t spufs_proxydma_info_read(struct file *file, char __user *buf,
- static const struct file_operations spufs_proxydma_info_fops = {
- 	.open = spufs_info_open,
- 	.read = spufs_proxydma_info_read,
--	.llseek = no_llseek,
- };
- 
- static int spufs_show_tid(struct seq_file *s, void *private)
-@@ -2442,7 +2426,6 @@ static const struct file_operations spufs_switch_log_fops = {
- 	.read		= spufs_switch_log_read,
- 	.poll		= spufs_switch_log_poll,
- 	.release	= spufs_switch_log_release,
--	.llseek		= no_llseek,
- };
- 
- /**
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 3d072a7455bf..db3370d1673c 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -99,7 +99,6 @@ static ssize_t pnv_eeh_ei_write(struct file *filp,
- 
- static const struct file_operations pnv_eeh_ei_fops = {
- 	.open	= simple_open,
--	.llseek	= no_llseek,
- 	.write	= pnv_eeh_ei_write,
- };
- 
-diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
-index 3f1cdccebc9c..8cb9d36ea491 100644
---- a/arch/powerpc/platforms/pseries/dtl.c
-+++ b/arch/powerpc/platforms/pseries/dtl.c
-@@ -325,7 +325,6 @@ static const struct file_operations dtl_fops = {
- 	.open		= dtl_file_open,
- 	.release	= dtl_file_release,
- 	.read		= dtl_file_read,
--	.llseek		= no_llseek,
- };
- 
- static struct dentry *dtl_dir;
 -- 
-2.46.0
-
+viresh
 
