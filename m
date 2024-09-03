@@ -1,93 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-907-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-908-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45151CD342E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2024 08:06:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 579EDCD3420
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Sep 2024 08:44:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WydVW6R2vz2xf2;
-	Tue,  3 Sep 2024 18:06:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725350771;
-	cv=none; b=cFwf5K2vC+c7awKb2URk490PpwuNAvJfyQbPxDecyeG9JlMVkhnaSA3Jjjmi1KGhv+2JVpyPsDW5jTrrt9JnpTsaJf3ucwSr/5mM+mjuL64S6Qz44rtJfiI7By43ZVx7wBCunTRC6FKNj48Q/NU1f2ieNLp1gMVNVsVavUHcdRA8LpBEjdv+Wsja2O6UFkcY4bJpPGMQslXI3Z/xpjjd/uhHO4yTA8OBz4F5rfWLQ82RO/W8oNfJA8JoGrq6bieaMKcCGrg5wO4RUqAAOOsPvsQ7DSWX9IYGMXdty7r+yLcHdOiQ+hOsVOsCnw+fBordxxdcD1/yDaKXGb9GV6vlNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WyfLh2y05z2xJy;
+	Tue,  3 Sep 2024 18:44:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725353068;
+	cv=none; b=SIEn8PFbLG8lCkKlUxknvNBVPI7RbFwp/YSD21sbtgiXkwpJn2ihnY16Fwxg7OUVZw6KqMoEQpI2wF8rCFPlGbbZi1/gV5EMgxqYtc7XpYHqMr9abV7XQf8qBqNgz79kWr8LVh+xYu9leYRLK6zKkW4lBHp3S4kb0S+GMQGbO5Ssada9U15BhordJFQUmevUdoPYbjd6T41AmfGIaFWiS22FqaSKcZZ8xMoeLKz/RtAE8t47nK8zHCIA9qrlFlZOY3q6djTE19fz0KmSIVtwnUFlYwdKEmR09CEEXHz/j4ba+ymiuEkd4NTvli+6n0EnjmuXQ0KnCqOIurePilT7+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725350771; c=relaxed/relaxed;
-	bh=5r93MWaJJQSMO5oail0RmsFtM4vGFRa2fu0nxIJMlgg=;
-	h=DKIM-Signature:DKIM-Signature:MIME-Version:Date:From:To:Cc:
-	 Message-Id:In-Reply-To:References:Subject:Content-Type; b=CzccUs3gdPoovcDt1AoRITE8AwgTnI2OMSHCK/aiB6osnp78dhrFlaPVRjxTgpyjApfkvryAyx3duutiCnEWWB/IJX4RbGdanOk7xF7GEHSGsRmu1O6oMnls9rz1in+I/ngaxrHTeVtH3/JgBUzWMwOz/Bl1yPI4cUyB7A3s5mQ7FDj1jCyv+4j+V8UOtMIHfyIMELBCzK4tqIoqW2tzsTRLbfR0B6HROqMlYLLRNesGGI5woTLHrZg0B0TZkqBSfbLav8JsBFz5Lawl9leKTPqwioS/WV6y1dxpqJ3WRpS3wDalrijoJwJNGqtNRmiqR0/MoSJ25BA+bmRfg9m8OA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=CcASwc66; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=iUjAj74E; dkim-atps=neutral; spf=pass (client-ip=103.168.172.157; helo=pfhigh6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=CcASwc66;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=iUjAj74E;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.157; helo=pfhigh6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from pfhigh6-smtp.messagingengine.com (fhigh6-smtp.messagingengine.com [103.168.172.157])
+	t=1725353068; c=relaxed/relaxed;
+	bh=jvbHEin6/4UD0IVZdsGD3DqDHUjDC1ocCPKN1tXhdCU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IXlRD4vrWliB56lFV8LIAhaFnGKxqZZmgd5fyxWpwyvCcjjo2gMlg2s9poNK+eSzrZ1PKDGLl9jrD3+cgUiV2t0MErZUKwHS8b1RdS4ojXsWDb4ppkMacONL+zIw6TnSKnS7DkD6DFsg2qzjIWfL2+Go/WYJGDuKD3FeEir26cjiVQgraYANOe1gXDlv2bHL51GpAFVh+2erqHiMTi8ojl3tg8h5wu27TVR7G8sNFxQQ4bT66dHmj/8NpTqT89fN9R8HO8DwoOBnGs5a15YkdQjKsqs9tEIU4z0GQkUISvfmLLdxeXY5JZ1lnKH6j4KCH1Tv8nt/P5xmlHYJGNWMjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WydVT1PDKz2xck
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2024 18:06:08 +1000 (AEST)
-Received: from phl-compute-01.internal (phl-compute-01.phl.internal [10.202.2.41])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id 868D811401E9;
-	Tue,  3 Sep 2024 04:06:05 -0400 (EDT)
-Received: from phl-imap-11 ([10.202.2.101])
-  by phl-compute-01.internal (MEProxy); Tue, 03 Sep 2024 04:06:05 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1725350765;
-	 x=1725437165; bh=5r93MWaJJQSMO5oail0RmsFtM4vGFRa2fu0nxIJMlgg=; b=
-	CcASwc66w65rrfPDWz2b3SruDBIOppw36WzPT4bwEJWBmXJ9lUjqLWeXQohgpVjN
-	mhvsW130XSbCClvYXUm3dWcetDwUNNog+NTQala830a69hIGUUX5ZaJVtsZQs/8R
-	q+zUU2wJWewMpdAK2r6Vr/a47NQjWZ+tPEYVRpWroLHEEXP9dx/UAWh/jYEAYBWj
-	7jBFSu6N1MvdaEnO2ilDoK42pAwhjjn18ZxlJVFDB3jLOE2O4qyoTCoCPZ2uU/hZ
-	otEQcqTRZGguPWu76HOmdFvhRONHxg2x0QyNkxuySrEgH/8KpC9RWCAFe2EvoJTM
-	RtIxR5JM2qDiDEJ+eEk6BQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1725350765; x=
-	1725437165; bh=5r93MWaJJQSMO5oail0RmsFtM4vGFRa2fu0nxIJMlgg=; b=i
-	UjAj74EOU5tFHf7eGIe93aS8YDUNUs0oSiQcT6bciu6tkxieWOBXaAEVBFqJBsIf
-	6ZHs6MjQ4qdGLYwP5f67sXj7iuCImHAM5efVtjWzSS6jFF9U0WijlLhwBCszv/l1
-	spu5VJYA/kXcGTfNEbEOOGW7l2le5Cb5q7zkL2X+UQbeltj5kxmzz/2tQz+RxFPB
-	q/WikrTPArQSNeVMyuLuw6OHZOSiG5inUtjkTzDlelzDB1r3G1RYdp6p0WAgrO9d
-	Kvinb55pUND8G/7lwkzeSSCsRclWnK3JK6yNrUZwPpYtI/otP7K2H/koYf8V6Fs6
-	77+/i7V+4SQqSd6kJmyag==
-X-ME-Sender: <xms:bcPWZuVXhOzOuucmpaBTj9L9RNbsTiavjNvovY5IZ9BYELKoAAL-8w>
-    <xme:bcPWZoY4jRHKEB8JE2uTnsHcfV0vEFf8iBkaS7zJCRSqC6qkMtLtYnNo4LuGttDMW
-    PDqUnWijeTqPwgEcP0>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeftddrudehgedgudeftdcutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpggftfghnshhusghstghrihgsvgdp
-    uffrtefokffrpgfnqfghnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivg
-    hnthhsucdlqddutddtmdenucfjughrpefoggffhffvvefkjghfufgtgfesthejredtredt
-    tdenucfhrhhomhepfdetrhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusg
-    druggvqeenucggtffrrghtthgvrhhnpefhtdfhvddtfeehudekteeggffghfejgeegteef
-    gffgvedugeduveelvdekhfdvieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmh
-    epmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggvpdhnsggprhgtphhtthhopeek
-    pdhmohguvgepshhmthhpohhuthdprhgtphhtthhopehhvghrvhgvrdgtohguihhnrgessg
-    hoohhtlhhinhdrtghomhdprhgtphhtthhopegthhhrihhsthhophhhvgdrlhgvrhhohies
-    tghsghhrohhuphdrvghupdhrtghpthhtohepshhotgeskhgvrhhnvghlrdhorhhgpdhrtg
-    hpthhtohepsggrohhluhdrlhhusehlihhnuhigrdhinhhtvghlrdgtohhmpdhrtghpthht
-    oheplhhinhhugidqrghrmhdqkhgvrhhnvghlsehlihhsthhsrdhinhhfrhgruggvrggurd
-    horhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggs
-    shdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnh
-    gvlhdrohhrghdprhgtphhtthhopeigihgrohhlvghirdifrghnghesfihinhgurhhivhgv
-    rhdrtghomh
-X-ME-Proxy: <xmx:bcPWZs2qslYJ2EH4QUzntUrsIdITPsIqFaMX7ZhO5I45bYUABOvHqA>
-    <xmx:bcPWZig1GfkWF5gTEJ5fA2Ejcz8FAwVhP6Jze7Gygsw_Ae-uWx2MQw>
-    <xmx:bcPWZoalSO7pT5yfbFhlI6lkqFfFgjhTe_JjdZMUaPcpzynxoE97Uw>
-    <xmx:bcPWZqTEWaByDSNVPeMTFfSZBk0XmEt3xmboOudgPOfzB9wfhDUULQ>
-    <xmx:bcPWZoDfF_ktGnKJ-0CKQia_rjw0bQeHcOaMTG8yrZZKUfHztqFDzY5G>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id 7C4A022202A0; Tue,  3 Sep 2024 03:04:33 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WyfLg3Clgz2xBb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Sep 2024 18:44:25 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4WyfLZ5NCCz9sSC;
+	Tue,  3 Sep 2024 10:44:22 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ei9JIriNpoNU; Tue,  3 Sep 2024 10:44:22 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4WyfLZ4Xrtz9sS7;
+	Tue,  3 Sep 2024 10:44:22 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 85BDC8B76E;
+	Tue,  3 Sep 2024 10:44:22 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 7IFIJofcuulb; Tue,  3 Sep 2024 10:44:22 +0200 (CEST)
+Received: from [172.25.230.108] (unknown [172.25.230.108])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 55B0E8B768;
+	Tue,  3 Sep 2024 10:44:22 +0200 (CEST)
+Message-ID: <7688f95f-3f08-404b-8c01-813ca5e23a3d@csgroup.eu>
+Date: Tue, 3 Sep 2024 10:44:22 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,30 +57,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Date: Tue, 03 Sep 2024 07:04:13 +0000
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Christophe Leroy" <christophe.leroy@csgroup.eu>, soc@kernel.org
-Cc: "Herve Codina" <herve.codina@bootlin.com>,
- "Xiaolei Wang" <xiaolei.wang@windriver.com>,
- "Baolu Lu" <baolu.lu@linux.intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Linux ARM" <linux-arm-kernel@lists.infradead.org>
-Message-Id: <3c8bd8bb-36d0-4265-a6d9-95b4767c911d@app.fastmail.com>
-In-Reply-To: <326d9a7d-7674-4c28-aa40-dd2c190244dd@csgroup.eu>
-References: <326d9a7d-7674-4c28-aa40-dd2c190244dd@csgroup.eu>
-Subject: Re: [GIT PULL] SOC FSL for 6.12 (retry)
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 00/36] soc: fsl: Add support for QUICC Engine TSA and
+ QMC
+To: Herve Codina <herve.codina@bootlin.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>,
+ Li Yang <leoyang.li@nxp.com>, Mark Brown <broonie@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+References: <20240808071132.149251-1-herve.codina@bootlin.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20240808071132.149251-1-herve.codina@bootlin.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Tue, Sep 3, 2024, at 06:36, Christophe Leroy wrote:
-> Hi Arnd,
->
-> Please pull the following Freescale Soc Drivers changes for 6.12
->
-> There are no conflicts with latest linux-next tree.
 
-Thanks, pulled now.
 
-     Arnd
+Le 08/08/2024 à 09:10, Herve Codina a écrit :
+> Hi,
+> 
+> This series add support for the QUICC Engine (QE) version of TSA and QMC
+> components.
+> 
+> CPM1 version is already supported and, as the QE version of those
+> component are pretty similar to the CPM1 version, the series extend
+> the already existing drivers to support for the QE version.
+> 
+> The TSA and QMC components are tightly coupled and so the series
+> provides modifications on both components.
+> Of course, this series can be split if it is needed. Let me know.
+> 
+> The series is composed of:
+> - Patches 1 and 2: Fixes related to TRNSYNC in the QMC driver
+> - Patches 3..6: Fixes of checkpatch detected issues in the TSA driver
+> - Patch 7: The QE TSA device-tree binding
+> - Patches 8..13: TSA driver preparations for adding support for QE
+> - Patches 14 and 15: The support for QE in TSA + MAINTAINERS update
+> - Patch 16: A TSA API improvement needed for the QE QMC driver
+> - Patch 17: A clarification in the QE QMC driver
+> - Patches 18..22: Fixes of checkpatch detected issues in the QMC driver
+> - Patch 23: The QE QMC device-tree binding
+> - Patches 24..31: QMC driver preparations for adding support for QE
+> - Patches 32 and 33: Missing features additions in QE code
+> - Patches 34..36: The QMC support for QE in QMC + MAINTAINERS update
+> 
+> Compared to the previous iteration, this v2 series updates device-tree
+> bindings and fixes issues detected by kernel test robots.
+> 
+> Related to the QE QMC device-tree binding, I kept the unit address in
+> decimal and the 3 compatible strings in order to avoid blocking the
+> review waiting for a confirmation. Of course, this can be change in a
+> next iteration.
+
+Series applied for 6.12
+
+Thanks
+Christophe
 
