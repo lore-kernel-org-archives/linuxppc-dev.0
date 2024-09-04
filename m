@@ -1,70 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-1008-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1009-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1455DCD4853
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 17:19:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EC7DCD4F21
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 18:31:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WzTjV5gFFz2ysc;
-	Thu,  5 Sep 2024 03:18:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::228"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725470318;
-	cv=none; b=YJVV1iJHiCBYev08At3jT7t0mCRBpJ5abq7u4mAZ4MFc+UZl2AnvJZzqwmVOoLEjiY8Gp3bma6mTndA/BVt11IOJ5cFR6MgLJXPQ+T3Cd5hpYdxVtE0PL6aMXS+Awl5ZHnYeVMbuloSWdwMUAWnjS70tI19WTQGPZvLB7Ta4EodxCLYgE3S4SKG6mV8WLvnYuwcDG2IbdkQEsPaStU40/nfVCVWZlmWXkmHeVlMREwuIeaJukqq+sn2Hb5TKAXC4sdyza1z8I7+L0mCYaf9TQbIPmPSsVu5KzOVJhUPiR7gJCxRjBVE2fxPzxchBbsbWC+qVNQzMO1N8f/x7OkIPlA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzWK41LTKz2xtK;
+	Thu,  5 Sep 2024 04:31:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::436"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725474664;
+	cv=none; b=mkSQSwQl/PWemxvGa3XzPYosKgk+q836C3dqACLtonI0CSYOA8YHq56803WxRNvvkQe4y6e0PGkmwBzUXIBdJ4YETDgSvs9Z4VhtnyERN8JMGUFhWdMjFDoLdRppMI0pB3XlFO8qlBSiQk4Th3n6EdyDyv56xu/K3a02lAOWNxJaMi4YhUDdtXKu/WgySfTeXT8wbZFFmxh5CHLzdbT7VVwq9pBoCMa0EUFqochB4YKtOkeUSiv4LZX6laNeUgmwXZ6Th1M3ZM6hDUbyIotAwhAnjlyCJUP590u2elHUq9J0r6wQ2mwvZm5Lh1wrviIEfPH0gXcOr9Aw3JK7b6R+YQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725470318; c=relaxed/relaxed;
-	bh=Bk1fyWjuAOX2npTkzedEJmStz9C1KpBm4OMnXM/joPg=;
-	h=DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:In-Reply-To:
-	 References:MIME-Version; b=QiCMKkQ7oE6jw6KwnNyP2R402BH36EgND5Ne2fpju+JBXQFqvR/GXwONcJugXuqTgpgxwX563p9Vz7HDHvCLc4QV+mmQt2QSqAWj2iWcTtKumeSbUxzTbLQw+FIx3Rg08W4pmOSeaRVToDHgEDwpnzjZSYTp644VJhzQ+hOvW7DgmhduDAyS6fG787Rl5A6gd0C85X+GQn74w4+VB3fRk8hkydbHw2aIo0c75aJRrZHMIZJLGXiJsCx8ORaVuHVu7ewopQAO453Vmb//N5hWiuqdpLM3xyvYLGMI08tggkBPVrg9w9lpB+aemqwO9XLQAy246TAGGjcV65MA8WNJrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=UPrgz8sc; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1725474664; c=relaxed/relaxed;
+	bh=oQA1j/vyOiYGDZLLl2f9HVBR0MU2RF4wR2B6TuQXkgg=;
+	h=DKIM-Signature:From:To:Cc:Subject:In-Reply-To:Date:Message-ID:
+	 References:MIME-version:Content-type; b=NEHhpC14ByGf7vE1pAl+sKlLP4josLN0j7dvZhhJvETLeOwIgMX3XizgSEHi1orT8yziKlf0iPllq7gsqa+k/P/3aguuLmQHm98+Pdqwn9Wf/aKErmBaZxpf3ufqfUisi9ET5ec44tfUJDnGZZxQQaQkAkk0BEZkeE8h83jyK6KycdGNS4sRGP7BdpDfBfbY/iLeZKPoSo0eCcZbJ56rBB31mEf8lEoZZ3NeUC7NJvSuGTI/WG8+lkPicott0ujRxV2p56vvrlpc6nvmnX/6NFyY6N43dHVTptwret8uxcy9gEwvlQOyT3bKvdgvw0y5W0Q9iAwEvdwOeMv40zSlQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=T3bfQAMy; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=UPrgz8sc;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=T3bfQAMy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::228])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzTjT5qWjz2yps
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 03:18:37 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id B62C21BF20B;
-	Wed,  4 Sep 2024 17:18:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1725470310;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Bk1fyWjuAOX2npTkzedEJmStz9C1KpBm4OMnXM/joPg=;
-	b=UPrgz8scPZZ2Smhz4tvaFmq9lmaRBnaiCtFYznixbjcrclk00OEMIRmAuOJynduD6jDpFS
-	fA4/UFE19QrxEq2ptqwquUmYrjPbdg2tEVjny3K/atMgQOaY2P8qe9bI2j1imN7IyG9TtA
-	bNb5tia2Lwce1+Kzr6P+QB1U8UeAQl2liisTzzNaHVgPTvjnHa8HsgDIRHUsDcgZFwtX8w
-	32NCg2obaJM2npvOoRTJXAHYx2HZKAbajIOunsfj2bx4UnF6zRIuBK/6UPZMGrIJ9vGpP2
-	jyJdOAB5Bvfe7FXoGK4Q2YWEsDX2dllvDmOXtYhUvBH62t7BfRk3o5UVQbNM+w==
-From: Maxime Chevallier <maxime.chevallier@bootlin.com>
-To: davem@davemloft.net,
-	Pantelis Antoniou <pantelis.antoniou@gmail.com>,
-	Andrew Lunn <andrew@lunn.ch>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Eric Dumazet <edumazet@google.com>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Florian Fainelli <f.fainelli@gmail.com>,
-	Heiner Kallweit <hkallweit1@gmail.com>
-Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
-	netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	thomas.petazzoni@bootlin.com,
-	Herve Codina <herve.codina@bootlin.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next v3 6/8] net: ethernet: fs_enet: use macros for speed and duplex values
-Date: Wed,  4 Sep 2024 19:18:19 +0200
-Message-ID: <20240904171822.64652-7-maxime.chevallier@bootlin.com>
-X-Mailer: git-send-email 2.46.0
-In-Reply-To: <20240904171822.64652-1-maxime.chevallier@bootlin.com>
-References: <20240904171822.64652-1-maxime.chevallier@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzWK32dS7z2xYr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 04:31:02 +1000 (AEST)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-71434174201so5659283b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Sep 2024 11:31:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1725474658; x=1726079458; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=oQA1j/vyOiYGDZLLl2f9HVBR0MU2RF4wR2B6TuQXkgg=;
+        b=T3bfQAMy99TYuu8rzf6di57IA0TRH5T/FLtIpJtrDnH7rW6pj3xQ2Xw4OLeqAVki4+
+         sSQkNlQIEi0mvoNX/G8Lhtu/0punZt2sFCF+ibSG0Y1dqMyNHR8Uofb8z/FkYJcXBdsI
+         j0zMwTX66GR6I1zwlYvl3kQEqx3ybDnS59nWmj1479/mAPQUjGftFe66Rcz0N/zkHLCH
+         B0b2gl0FPfdomWHUdQIuNMFSH3iBY5xUSIEd+Vohvum3A+8qPWK5Xe+0UbJ15ZrAKhnz
+         A0NmFNdG7iJx+wb9Ru2TzSB3IWcwdmGtDnLibITN1vtO0fpLTEtK44bq5otEhsk2D19W
+         Dunw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725474658; x=1726079458;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=oQA1j/vyOiYGDZLLl2f9HVBR0MU2RF4wR2B6TuQXkgg=;
+        b=UEJVYSGnlC8JXyRxVAG3JAfmDpW+SREhElC/nRhBUzByCCZWontthMvbYCY5EY9Mh6
+         93PvvrmHCdyDy+SpV7qnZUhRKSZ6nchyvd08wUqYG6+8BR75pXgaSi660lEju43832OS
+         2YutMMxxv7NGUhK9lvMAp36dXpZ21aJbWzawtCLR8Ps3Kyvd9QlvIqJgfD5FX8HSK+t8
+         Cj0iZeiwMLmDIx1ffg9q98IBLFxDKgdwA9lQw+ZyuMt3SFQ7L4q7NBLQl6B4zb0zv52H
+         x9nEDF1JWqYN/Yd8tlvX5UFQXakXUqFpkGinp6xutEkAvw0hZaXJZ/oz0AJSEXwlkHuK
+         nsYw==
+X-Forwarded-Encrypted: i=1; AJvYcCX4lZp17YJjmppOKg9ZfMZLaLNJPewrOn5LGZSidgLTKAuBcngBXhOmXIS6fUPtPemJoZKs/CgRYug1D/s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwDt3BCojq5eqOEt8Z6LRsfJzbz6nVng/xFTSzfhuo2aDNE+vmE
+	mKnMQ71CgAZTJQ/brIRqtS+syixuAFrF3pU4PUhax6JAIVW3WXjI
+X-Google-Smtp-Source: AGHT+IHZcT63E7cWHqijv03WrUy8adVUctQaEhU8KzN5Y2oA6KO+/giMLtwjUwbqus8F3YDBq4CovA==
+X-Received: by 2002:a05:6a21:3a82:b0:1cc:e969:a772 with SMTP id adf61e73a8af0-1cecf4dbd91mr18000347637.20.1725474658341;
+        Wed, 04 Sep 2024 11:30:58 -0700 (PDT)
+Received: from dw-tp ([171.76.86.74])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-717785a940dsm1924527b3a.186.2024.09.04.11.30.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Sep 2024 11:30:57 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Hari Bathini <hbathini@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Donet Tom <donettom@linux.vnet.ibm.com>, Pavithra Prakash <pavrampu@linux.vnet.ibm.com>
+Subject: Re: [RFC v1 01/10] book3s64/hash: Remove kfence support temporarily
+In-Reply-To: <898f4c98-f72a-4ade-b5c6-8efaa852da4d@csgroup.eu>
+Date: Wed, 04 Sep 2024 23:57:54 +0530
+Message-ID: <87bk132s0l.fsf@gmail.com>
+References: <cover.1722408881.git.ritesh.list@gmail.com> <b6a09a2f5495b144048929280a11338a2e70ba33.1722408881.git.ritesh.list@gmail.com> <898f4c98-f72a-4ade-b5c6-8efaa852da4d@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,73 +81,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-X-GND-Sasl: maxime.chevallier@bootlin.com
 
-The PHY speed and duplex should be manipulated using the SPEED_XXX and
-DUPLEX_XXX macros available. Use it in the fcc, fec and scc MAC for
-fs_enet.
 
-Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
-Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
----
- drivers/net/ethernet/freescale/fs_enet/mac-fcc.c | 4 ++--
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 2 +-
- drivers/net/ethernet/freescale/fs_enet/mac-scc.c | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+Sorry for the delayed response. Was pulled into something else.
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-index 159a384813b3..666a54d6e667 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-@@ -360,7 +360,7 @@ static void restart(struct net_device *dev)
- 
- 	/* adjust to speed (for RMII mode) */
- 	if (fpi->use_rmii) {
--		if (dev->phydev->speed == 100)
-+		if (dev->phydev->speed == SPEED_100)
- 			C8(fcccp, fcc_gfemr, 0x20);
- 		else
- 			S8(fcccp, fcc_gfemr, 0x20);
-@@ -386,7 +386,7 @@ static void restart(struct net_device *dev)
- 		S32(fccp, fcc_fpsmr, FCC_PSMR_RMII);
- 
- 	/* adjust to duplex mode */
--	if (dev->phydev->duplex)
-+	if (dev->phydev->duplex == DUPLEX_FULL)
- 		S32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
- 	else
- 		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index cf4c49e884ba..c1b7877178b9 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -308,7 +308,7 @@ static void restart(struct net_device *dev)
- 	/*
- 	 * adjust to duplex mode
- 	 */
--	if (dev->phydev->duplex) {
-+	if (dev->phydev->duplex == DUPLEX_FULL) {
- 		FC(fecp, r_cntrl, FEC_RCNTRL_DRT);
- 		FS(fecp, x_cntrl, FEC_TCNTRL_FDEN);	/* FD enable */
- 	} else {
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-index 6edc9f66ae83..d061092ced6c 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-@@ -337,7 +337,7 @@ static void restart(struct net_device *dev)
- 	W16(sccp, scc_psmr, SCC_PSMR_ENCRC | SCC_PSMR_NIB22);
- 
- 	/* Set full duplex mode if needed */
--	if (dev->phydev->duplex)
-+	if (dev->phydev->duplex == DUPLEX_FULL)
- 		S16(sccp, scc_psmr, SCC_PSMR_LPB | SCC_PSMR_FDE);
- 
- 	/* Restore multicast and promiscuous settings */
--- 
-2.46.0
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
 
+> Le 31/07/2024 à 09:56, Ritesh Harjani (IBM) a écrit :
+>> [Vous ne recevez pas souvent de courriers de ritesh.list@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+>> 
+>> Kfence on book3s Hash on pseries is anyways broken. It fails to boot
+>> due to RMA size limitation. That is because, kfence with Hash uses
+>> debug_pagealloc infrastructure. debug_pagealloc allocates linear map
+>> for entire dram size instead of just kfence relevant objects.
+>> This means for 16TB of DRAM it will require (16TB >> PAGE_SHIFT)
+>> which is 256MB which is half of RMA region on P8.
+>> crash kernel reserves 256MB and we also need 2048 * 16KB * 3 for
+>> emergency stack and some more for paca allocations.
+>> That means there is not enough memory for reserving the full linear map
+>> in the RMA region, if the DRAM size is too big (>=16TB)
+>> (The issue is seen above 8TB with crash kernel 256 MB reservation).
+>> 
+>> Now Kfence does not require linear memory map for entire DRAM.
+>> It only needs for kfence objects. So this patch temporarily removes the
+>> kfence functionality since debug_pagealloc code needs some refactoring.
+>> We will bring in kfence on Hash support in later patches.
+>> 
+>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> ---
+>>   arch/powerpc/include/asm/kfence.h     |  5 +++++
+>>   arch/powerpc/mm/book3s64/hash_utils.c | 16 +++++++++++-----
+>>   2 files changed, 16 insertions(+), 5 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/include/asm/kfence.h b/arch/powerpc/include/asm/kfence.h
+>> index fab124ada1c7..f3a9476a71b3 100644
+>> --- a/arch/powerpc/include/asm/kfence.h
+>> +++ b/arch/powerpc/include/asm/kfence.h
+>> @@ -10,6 +10,7 @@
+>> 
+>>   #include <linux/mm.h>
+>>   #include <asm/pgtable.h>
+>> +#include <asm/mmu.h>
+>> 
+>>   #ifdef CONFIG_PPC64_ELF_ABI_V1
+>>   #define ARCH_FUNC_PREFIX "."
+>> @@ -25,6 +26,10 @@ static inline void disable_kfence(void)
+>> 
+>>   static inline bool arch_kfence_init_pool(void)
+>>   {
+>> +#ifdef CONFIG_PPC64
+>> +       if (!radix_enabled())
+>> +               return false;
+>> +#endif
+>
+> Avoid #ifdefs whenever possible. Here you can do:
+>
+> 	if (IS_ENABLED(CONFIG_PPC64) && !radix_enabled())
+> 		return false;
+>
+
+Sure. I will change it.
+
+>>          return !kfence_disabled;
+>>   }
+>>   #endif
+>> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+>> index 01c3b4b65241..1a1b50735fa0 100644
+>> --- a/arch/powerpc/mm/book3s64/hash_utils.c
+>> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
+>> @@ -431,7 +431,7 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
+>>                          break;
+>> 
+>>                  cond_resched();
+>> -               if (debug_pagealloc_enabled_or_kfence() &&
+>> +               if (debug_pagealloc_enabled() &&
+>>                          (paddr >> PAGE_SHIFT) < linear_map_hash_count)
+>>                          linear_map_hash_slots[paddr >> PAGE_SHIFT] = ret | 0x80;
+>>          }
+>> @@ -814,7 +814,7 @@ static void __init htab_init_page_sizes(void)
+>>          bool aligned = true;
+>>          init_hpte_page_sizes();
+>> 
+>> -       if (!debug_pagealloc_enabled_or_kfence()) {
+>> +       if (!debug_pagealloc_enabled()) {
+>>                  /*
+>>                   * Pick a size for the linear mapping. Currently, we only
+>>                   * support 16M, 1M and 4K which is the default
+>> @@ -1134,7 +1134,7 @@ static void __init htab_initialize(void)
+>> 
+>>          prot = pgprot_val(PAGE_KERNEL);
+>> 
+>> -       if (debug_pagealloc_enabled_or_kfence()) {
+>> +       if (debug_pagealloc_enabled()) {
+>>                  linear_map_hash_count = memblock_end_of_DRAM() >> PAGE_SHIFT;
+>>                  linear_map_hash_slots = memblock_alloc_try_nid(
+>>                                  linear_map_hash_count, 1, MEMBLOCK_LOW_LIMIT,
+>> @@ -2117,7 +2117,7 @@ void hpt_do_stress(unsigned long ea, unsigned long hpte_group)
+>>          }
+>>   }
+>> 
+>> -#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KFENCE)
+>> +#if defined(CONFIG_DEBUG_PAGEALLOC)
+>
+> Use #ifdef
+>
+
+Sure. Thanks!
+
+-ritesh
 
