@@ -1,118 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-1019-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1020-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50DCFCD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 22:34:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA7A0CD4F3C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 22:35:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzcjl6WRNz2yDY;
-	Thu,  5 Sep 2024 08:34:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725476841;
-	cv=none; b=KP7CrtoTPE6M1v3hUVc400K6DHm4Uu4VpQ+PaZPuy4I3mimlZWjkrjer0ZJLgUi3t6hvdFlWH/f57Q52Ebkq7Cu7WKJw2Uid4CwU7AQAl0i27wB2MBp9NIQPCJwmSbk8nOLMKx5DEpY+45YT4JiBHRTfISnFU5eo2qbHetqDcmg2q2GWvDXxDx/xVqn48w6Cb8onFcJFlUkAfftbSf/NnoHGjQBjTjsu49OeE5xoQorA4ywKqkLIjL2sATO+cnVr4a5WZSJLQKt8NFKCqPOa6bGXSfRFe1n10U2fOlDOte396cBXKJWFWprjabT1uL5SCqMMSgYWc9sC5fnauqXxsA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzclF1MGNz2yGN;
+	Thu,  5 Sep 2024 08:35:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::d4a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725482551;
+	cv=none; b=Ka63E20TctpfwLABjnfAIUW/lgvmlRJCp0VQyKwg3YcXW3xsqRTt2lOP4xwyhkm0PpmvUraQ4EblRJrEHfTC0GhpYnovMggRxwsViMkaq5X2BGXU++4RfUsyI9O2tjL3H+BVr1zSu3TQ/TiJ8H7GaSkTaPy5VT6fSCc737uM/8g8PCvME5n6l4lMZ7auP/PLqi5FK1PxrBidxUGfZLqmJc4X3Mj+zxPXfPJqbtlY75xqri6EjCymJPRBYaE4HnadlQsTC3KtdkCZUOqrEwbyqO3pKp4LrPoT+ByzPVTiIjt07UIj/aDw6vwzCrGyfJFvBAAz6SsoAiiKUCVoSdJ8HA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725476841; c=relaxed/relaxed;
-	bh=o2U7wgEbLS4i4a8ingcWCBDQrhNmwXrz+ffgx64j+qE=;
-	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=b8Ru+jIJpAHGPli0SEVaErfVa2BzbBos24GMGqkwNC1KUuM8kWXrjKAGiP2fw7YJLop3T0VEMTrLQYiSlkVBd04OEgvKt1Wax4mjErkFc0j4hpqmP4sHZESzIm+822dig4q/M4fZ0j6dqRS8qIpDON9l6Ae84PK2Kb/VHSa46JKUmoLAYZcOMmTUui2nfXr4Wb9g8T3StHBErbsH7Ek6cKRrkrp/TPVlwdEhPVMGQVDB7pO3rVVH9JpzLODHdOYgunjNHU42TCcPD6aDrw3WnwRNfkZ6LrPb/1FkUgt2H8+P9cCJVkr8ErJS/CU7i9udXi1REmpqUhzGuXWvQvIThA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rivosinc.com; dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20230601.gappssmtp.com header.i=@rivosinc-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=l8lB/l0d; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=debug@rivosinc.com; receiver=lists.ozlabs.org) smtp.mailfrom=rivosinc.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rivosinc.com
+	t=1725482551; c=relaxed/relaxed;
+	bh=da1VGWoVEM0srL8pak+5iYqVi4U1+WdMmmo+Uby7jLQ=;
+	h=DKIM-Signature:Date:In-Reply-To:Mime-Version:References:
+	 Message-ID:Subject:From:To:Cc:Content-Type; b=AtWuRqYREc8XI6gFsfkN4ND9EjyyQCiIHo9O+IO2ZJpqFA59uqbE3bavyS1WYpJivT4KwwVIh0GXJMTt04jXfpkJPy02DQNwOSz9BASi2EQVpJ0MIuye6+OPBcD+ihCkgsRUhmeJqpYExrBAfo5P8olTIdZV5N8XaVOH3wC04i4y+ktjZ2mo3oeWHxoKewS1XNI+74CDTKgwDoKeqktIuU8T6WrP4aDoNMsr6/BcFit67UH90bSbvY/UUPT5Re1ZLQFlXRCQA6jvMmzQ2egREewJf0AcnebM0DuPbji+YE/evBwcn+q/I1fcy++onBaEZILSp161N1Smx06v3JkH8w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=0gIcYf1I; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::d4a; helo=mail-io1-xd4a.google.com; envelope-from=3m8byzgskdgaamjrmljcugqemmejc.amkjglsvnna-bctjgqrq.mxj89q.mpe@flex--coltonlewis.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--coltonlewis.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20230601.gappssmtp.com header.i=@rivosinc-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=l8lB/l0d;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=0gIcYf1I;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rivosinc.com (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=debug@rivosinc.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--coltonlewis.bounces.google.com (client-ip=2607:f8b0:4864:20::d4a; helo=mail-io1-xd4a.google.com; envelope-from=3m8byzgskdgaamjrmljcugqemmejc.amkjglsvnna-bctjgqrq.mxj89q.mpe@flex--coltonlewis.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-io1-xd4a.google.com (mail-io1-xd4a.google.com [IPv6:2607:f8b0:4864:20::d4a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzX6x0YXMz2xjd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 05:07:19 +1000 (AEST)
-Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-2d8a4bad409so3098235a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Sep 2024 12:07:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzZDk1KZzz2xy0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 06:42:29 +1000 (AEST)
+Received: by mail-io1-xd4a.google.com with SMTP id ca18e2360f4ac-82a2109c355so869695839f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Sep 2024 13:42:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1725476837; x=1726081637; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=o2U7wgEbLS4i4a8ingcWCBDQrhNmwXrz+ffgx64j+qE=;
-        b=l8lB/l0daNW4RcmdlmcidgGXdedCY6Rc9UWYxo18EbzN8u8MFJrFgeGQvIW0ZwuSLO
-         8H4dflEkriyNh6P+yGS16eUWkuT+0y5/G6qzO5aG2aaaXcKuDFSiGgBcd2FJc8ZjXVXL
-         khRJ9uN8AAfFoKQHzX447Exk6i8sr3Pwwn8tkGzS048gNZBhzvfRM4MbDOrLmEgnXH7z
-         ptEuArT+QFU4T5Hii/3qELLVYZA+9736aXvIgfBySmSd8GEu2XyJRHZabjxgMNzeRNKP
-         2RD+lwBrFQcX9isLh4vgCTTabCu9/NLFzGeucCHmetkJRqdzHRYeJUPGDckLIJbmLVJs
-         sGLw==
+        d=google.com; s=20230601; t=1725482547; x=1726087347; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=da1VGWoVEM0srL8pak+5iYqVi4U1+WdMmmo+Uby7jLQ=;
+        b=0gIcYf1I/cO0/EGkjmC8+WPr9t3NVUW4y5Q/dU6VlycmsQ3fCEnFar8UeWx9rqYXGB
+         A/yCA7z6depB+5ohqKTC3BiMpWVxWSXz4p3RTkHBRrwhCj6IbEGKKRbaW/+2Ww72FJHG
+         d9F7x81c1in0k4iAzYUVGUtIMTObJwWz8rZ0ve72c3rxxNVPxFCy0d/ZWev3bYbsTOcr
+         XxaanDGf4a7tKMqWNGapjYAfKMoPDUqp0ajcb3l3A2PR8ON6xC8JzZqqkaqTQaiDjIzD
+         poqO8DXK9e2BxQHSo9NeNlWpAosETZ31oPm6BnyeT/FmadMtExJbmEo0iF2c8Nrf6W4R
+         sgWw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725476837; x=1726081637;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=o2U7wgEbLS4i4a8ingcWCBDQrhNmwXrz+ffgx64j+qE=;
-        b=k2QBzs0O4nc9nx8McOCGY/zygnoStl1hNRttbwslqpIQcLn8qKTAxvgRyk9pBIEuum
-         jnXz6CRomLl51rwW+S7zywR9txnLUU5l7DJX8LnfHnEaFcUekNxvunWxc8lEzT/faRA0
-         rUYkPiPD6pu0U5olMvwrsGRdekjpxyqWFdYLGwnXlD4++RMhc4KC2ASX5VQ2Q2ZDVShl
-         YNxJwdKGvN1ZysZvZEfe4/VGZpwAT/I3L1VJXyh6eapuRjGOwgOY+utyXzIBHMDs2/qr
-         zKKS4EeQDLq61ZXM49U1GUczgWqb0L/7Ch985hENX6xe/GiyNAFH9k6PhgMz9ZrbFmj6
-         qlBg==
-X-Forwarded-Encrypted: i=1; AJvYcCVOcAe+sL4dd48Z7sgYWJwYAaYlUdhLBAvzij/skRvAu5FhkG1BKWozdpw2rqgACjy8/D3ZIN1ge4Ex0ro=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyOReKtUf9OmAgeZG4XqOBDq3YO4BZfmS07MO+GA/1qM+8zM03X
-	z8p9wxrc1dx2nzc4B05liDrBU+stb+CX1jKUd7/som2QHVhN7cSP3eIhcKOZ2Ac=
-X-Google-Smtp-Source: AGHT+IGRXMFw8eODDeHuSZGixob1QmbWy894YR3dac/q8kTYt2afjYPzXJiDq5qdDnRm4AHLgT4d4Q==
-X-Received: by 2002:a17:90b:300e:b0:2d8:27c3:87d7 with SMTP id 98e67ed59e1d1-2d893284ebdmr13545892a91.8.1725476836620;
-        Wed, 04 Sep 2024 12:07:16 -0700 (PDT)
-Received: from debug.ba.rivosinc.com ([64.71.180.162])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2da53740084sm4858056a91.32.2024.09.04.12.07.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Sep 2024 12:07:16 -0700 (PDT)
-Date: Wed, 4 Sep 2024 12:07:12 -0700
-From: Deepak Gupta <debug@rivosinc.com>
-To: Mark Brown <broonie@kernel.org>
-Cc: "Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
-	Russell King <linux@armlinux.org.uk>, Guo Ren <guoren@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>,
-	Max Filippov <jcmvbkbc@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, linux-arm-kernel@lists.infradead.org,
-	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org, linux-csky@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
-	linux-mm@kvack.org, Rick Edgecombe <rick.p.edgecombe@intel.com>
-Subject: Re: [PATCH 3/3] mm: Care about shadow stack guard gap when getting
- an unmapped area
-Message-ID: <Ztiv4NtsIkKnyiLO@debug.ba.rivosinc.com>
-References: <20240902-mm-generic-shadow-stack-guard-v1-0-9acda38b3dd3@kernel.org>
- <20240902-mm-generic-shadow-stack-guard-v1-3-9acda38b3dd3@kernel.org>
- <is6ewj3bhtqy3zadj6lbdv6maupx4kmduvhny66ntifkji6hoj@xmhcf5jt4o66>
- <dbaf5653-df46-4e17-bce1-aec7fb168197@sirena.org.uk>
+        d=1e100.net; s=20230601; t=1725482547; x=1726087347;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=da1VGWoVEM0srL8pak+5iYqVi4U1+WdMmmo+Uby7jLQ=;
+        b=UPwT8GU0MXOzDgJh+JGbYzted6VPK3ynwdkpZoF+oCbEDRviKzHbq8ffoq5wBYDXp7
+         ycMVbevdTMBUaxzn2DtqwjAViRtM1c8csn4lsngCag7Xh/AjuAFH0nYDsuYDJ0Ro52Uy
+         tOEvd6Pvnolbmsn8EupNO2MT//0OPjuCbdc2UNyEmnkAPMwC56tK7uPWA3Fq2z2nfV3F
+         ytCa3BO2277hdjkdgUwxSAfWpxj5vK4DbiahjJr2zDb60cOyMdqJsSl8bUtOS6sWvHpP
+         jfEONKJ4wLOIrdzZlGjUtrCQjhSmmSfHD62LGDS5oT41QoP63grdg2lnXhDvBzkzwP2r
+         0fXA==
+X-Forwarded-Encrypted: i=1; AJvYcCUVKvxlpK/VNVcShnp8oSwc4gB9HV2UbdsO0+j+hTU4QXR85kDPIPN3UBhFQb1KvY6VFQJdS0SdMD0LziY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YySDk7bBDES3MA6bSqTQesd6sEVtHoV4MS2XxT3XwuvXW9BeRt8
+	r/IoiCnLLVrr40OH8L15RvBtoag1UWFb0oFdKRjMG5AS/ydxr8X+gsyMnsWVAxIJ7GQbZfQsyvp
+	QSy2eS0ey+FW7aL6Wa/2WWQ==
+X-Google-Smtp-Source: AGHT+IF5VwhfDwFkkz0RNP4hdicHfuNY6pJqQwTSSeUmfbLEP1/IRR0I2ApAClPpKugjZhskT8IDcbh94c8otLZ8KA==
+X-Received: from coltonlewis-kvm.c.googlers.com ([fda3:e722:ac3:cc00:2b:ff92:c0a8:14ce])
+ (user=coltonlewis job=sendgmr) by 2002:a05:6638:2396:b0:4c0:9a05:44d0 with
+ SMTP id 8926c6da1cb9f-4d017d7b001mr570237173.1.1725482547230; Wed, 04 Sep
+ 2024 13:42:27 -0700 (PDT)
+Date: Wed,  4 Sep 2024 20:41:29 +0000
+In-Reply-To: <20240904204133.1442132-1-coltonlewis@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,27 +72,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <dbaf5653-df46-4e17-bce1-aec7fb168197@sirena.org.uk>
+Mime-Version: 1.0
+References: <20240904204133.1442132-1-coltonlewis@google.com>
+X-Mailer: git-send-email 2.46.0.469.g59c65b2a67-goog
+Message-ID: <20240904204133.1442132-2-coltonlewis@google.com>
+Subject: [PATCH 1/5] arm: perf: Drop unused functions
+From: Colton Lewis <coltonlewis@google.com>
+To: kvm@vger.kernel.org
+Cc: Oliver Upton <oliver.upton@linux.dev>, Sean Christopherson <seanjc@google.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, 
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, 
+	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
+	Kan Liang <kan.liang@linux.intel.com>, Will Deacon <will@kernel.org>, 
+	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H . Peter Anvin" <hpa@zytor.com>, linux-perf-users@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	Colton Lewis <coltonlewis@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Tue, Sep 03, 2024 at 08:57:20PM +0100, Mark Brown wrote:
->On Tue, Sep 03, 2024 at 03:41:49PM -0400, Liam R. Howlett wrote:
->> * Mark Brown <broonie@kernel.org> [240902 15:09]:
->
->> > +static inline unsigned long stack_guard_placement(vm_flags_t vm_flags)
->> > +{
->> > +	if (vm_flags & VM_SHADOW_STACK)
->> > +		return PAGE_SIZE;
->
->> Is PAGE_SIZE is enough?
->
->It's what x86 currently uses so it'll be no worse off if it gets moved
->to the generic code (there's a comment in the arch code explaing what's
->needed there) and it's enough for arm64, we only do single record
->pushes/pops or (optionally) writes to unconstrained addresses.
+perf_instruction_pointer() and perf_misc_flags() aren't used anywhere
+in this particular perf implementation. Drop them.
 
-It's enough for RISC-V too.
+Signed-off-by: Colton Lewis <coltonlewis@google.com>
+---
+ arch/arm/include/asm/perf_event.h |  7 -------
+ arch/arm/kernel/perf_callchain.c  | 17 -----------------
+ 2 files changed, 24 deletions(-)
+
+diff --git a/arch/arm/include/asm/perf_event.h b/arch/arm/include/asm/perf_event.h
+index bdbc1e590891..c08f16f2e243 100644
+--- a/arch/arm/include/asm/perf_event.h
++++ b/arch/arm/include/asm/perf_event.h
+@@ -8,13 +8,6 @@
+ #ifndef __ARM_PERF_EVENT_H__
+ #define __ARM_PERF_EVENT_H__
+ 
+-#ifdef CONFIG_PERF_EVENTS
+-struct pt_regs;
+-extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+-extern unsigned long perf_misc_flags(struct pt_regs *regs);
+-#define perf_misc_flags(regs)	perf_misc_flags(regs)
+-#endif
+-
+ #define perf_arch_fetch_caller_regs(regs, __ip) { \
+ 	(regs)->ARM_pc = (__ip); \
+ 	frame_pointer((regs)) = (unsigned long) __builtin_frame_address(0); \
+diff --git a/arch/arm/kernel/perf_callchain.c b/arch/arm/kernel/perf_callchain.c
+index 1d230ac9d0eb..a2601b1ef318 100644
+--- a/arch/arm/kernel/perf_callchain.c
++++ b/arch/arm/kernel/perf_callchain.c
+@@ -96,20 +96,3 @@ perf_callchain_kernel(struct perf_callchain_entry_ctx *entry, struct pt_regs *re
+ 	arm_get_current_stackframe(regs, &fr);
+ 	walk_stackframe(&fr, callchain_trace, entry);
+ }
+-
+-unsigned long perf_instruction_pointer(struct pt_regs *regs)
+-{
+-	return instruction_pointer(regs);
+-}
+-
+-unsigned long perf_misc_flags(struct pt_regs *regs)
+-{
+-	int misc = 0;
+-
+-	if (user_mode(regs))
+-		misc |= PERF_RECORD_MISC_USER;
+-	else
+-		misc |= PERF_RECORD_MISC_KERNEL;
+-
+-	return misc;
+-}
+-- 
+2.46.0.469.g59c65b2a67-goog
 
 
