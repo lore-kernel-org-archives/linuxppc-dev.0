@@ -1,59 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-982-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63795CD3431
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 11:19:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A2B9CD3431
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 11:33:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WzKkl0Dhlz2yNJ;
-	Wed,  4 Sep 2024 21:19:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.183.196
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725438803;
-	cv=none; b=L/HVqwECQuvaCmr/W496d3ixXOvJ2t+/cC0b+I131DEaWsDSPNF0rKNomR177l0KBT96yJCUduGK9PgaFyohe2+yHjwNd7VrPNii8UGnRe6sh0UYbSj0n/E9F/R53lbr2LNU/sTCWNbS0Bu3TWDvLX5SK+jEmmH23m5Vo2ShAnpAgz3sMXTbnnAxm0n4MDTMEID9x7ljyaxvArQxoUIOSh+gV0tIlgpPYinbtLGCvjaSf5KJOnnRkz9h637ZV9vlEEfC+SmoRS2+tItOmPyhgtCNFGfXBDTdrGOqM0Kk3ocGeNzAcpyiu7WtcWEJ2vd5vEPPmBnxlXwj91kA5Udogg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzL2n6XFQz2yQn;
+	Wed,  4 Sep 2024 21:33:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725449585;
+	cv=none; b=CTWC+QB9cX5y/UTzorNTHXEpPfdLyOw9qSHyAKjuCFCXsi6gzZXE/tQEts2p6wI1A0J2HXN5rreUe4WkZFmkul9emJoNnRb+Zf/BTu9TOuTir3vZ8JixYm96NF+bDtmAXI7DEmdoJDkMadn4uvwbV6lSx27GSsmU9kDEmdqouvOSsXRvV0o5eaCgbP0SZXSrtPvU1JtunnFzh8Pg0GuCLq21g6zH4BKAB/LUHVo4QD2yMZn2QQWR+A0r6lBfInJ8rG1PUuxae8kJDHgJZDFHITz9Xr9COSB5co40nXRsuIVrVT36QaQxCI8GorCLQj8E4Kbm7PPt89ezj9S/lnjGnA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725438803; c=relaxed/relaxed;
-	bh=TUGv9wHevgRZb5cc15QcdSSIcNgojKzy+jo82zKMyNc=;
-	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:
-	 References:MIME-Version:Content-Type; b=lh+zabOitPr8M3RG4oZYGcJFAD5ghGZvqUxrRIuSFuNnCpeaG5XqJ2YY+xV0tpBBC+hqmN/LCTwkIqYrymarJKC/C9sU2OgV1Fe2EE4twcBZyby2XKHS7YQQfLGZfrAUo9xEGUbZ4UFY/y8g/FVm86JSKrUctnYJUhSw9h3soxhd1D2v+Fo4sbVawlxAUYjncPaVtU07AqASe0oT8uIx7pHvIqv64kyYTRi9a1n8OZMzj0ZqbKfTMT081KyQEh7+0HRoALUWPBJZ9D7jWFzjDG7JkM01nTsdGoZNnXOCRvNv1MJrD+PJ6gSKENnrfp8tBB5tXQQz5iF/x9+aXpm1vQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=eGVbKqY1; dkim-atps=neutral; spf=pass (client-ip=217.70.183.196; helo=relay4-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=eGVbKqY1;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.196; helo=relay4-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [217.70.183.196])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzG3Q5pxrz2xZK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2024 18:33:21 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 6A26AE0002;
-	Wed,  4 Sep 2024 08:33:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1725438797;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TUGv9wHevgRZb5cc15QcdSSIcNgojKzy+jo82zKMyNc=;
-	b=eGVbKqY1J+/gbeDzfyyEbvjwQtZ/8Gz6/IvBdLy9Z7ZMyo/3mmyPyiQYv+f7P0fCtK50AL
-	ji6uVTvvZ8lZPOjkb8l9US43KD7pugQf+XszbkD2i73SKjZsy3DIuETg2t0ry/4CmFyQRq
-	aOFJl1rYEQ3v4xXsLClVU/Qvev41Dklh/Zi7lJl31HcrTz9tytd8d6xGS2rUP1ZqajP2bP
-	czUUX6rmfRRlnk7QK5ndVnndzHCG2v0w4xvzSNJzEKvAxI3EfD6Wd45jS1B6dIAXe0o+Aj
-	g7IO5Tmm9H9cc91OU5zUkSkwPBLhf97o6taIa+QkbuBk5rx5j7h86NNoZgq6AQ==
-Date: Wed, 4 Sep 2024 10:33:13 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Arnd Bergmann <arnd@arndb.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, Qiang Zhao <qiang.zhao@nxp.com>
-Subject: Re: [PATCH] soc: fsl: cpm1: qmc: Fix dependency on fsl_soc.h
-Message-ID: <20240904103313.21aed2de@bootlin.com>
-In-Reply-To: <fcca0369d0bcd527aa77bccdfc0894faa029cead.1725431771.git.christophe.leroy@csgroup.eu>
-References: <fcca0369d0bcd527aa77bccdfc0894faa029cead.1725431771.git.christophe.leroy@csgroup.eu>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-redhat-linux-gnu)
+	t=1725449585; c=relaxed/relaxed;
+	bh=XaneE4Zm9viCUwI2i30AJN1KzU9QhV+FZIiB7VAfzHQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nyYuMsL7LUnJfSDIlQbFb6gtoZzEk2U3gyIVWA6GdYIOdgCO1toe+GB5RP7vm+hE3L9KP8+Zz2PnU2t38sYwYH2jdHf/k1FsPAKSkft/G63A1wR6Qrgrr5yQP6oWuQOhOzL6yaveXTLS2hn8hb4+pmk+nPIJ+g2KDrJCR+HYXvB4luThHfLgXETjmHU5fq/EvXdveyaJ7y7UohK1klfwy37ABlXgUJwisco+B86SY8Fd+mPZm92Ik6fDiXe5VrqNZ9kww+BjgfLgsvJKr5hE6XMbmfmtLiyoYAGNcZO1QfUS9Bxao3d1ro7O4v/ZUZ5kLTd7fHnr/QmelAd4nKyrWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzL2n06rGz2xGg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2024 21:33:02 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CDB9DFEC;
+	Wed,  4 Sep 2024 04:32:56 -0700 (PDT)
+Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 356413F73F;
+	Wed,  4 Sep 2024 04:32:27 -0700 (PDT)
+Date: Wed, 4 Sep 2024 12:32:21 +0100
+From: Joey Gouly <joey.gouly@arm.com>
+To: Will Deacon <will@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+	linux-arm-kernel@lists.infradead.org, nd@arm.com,
+	akpm@linux-foundation.org, aneesh.kumar@kernel.org,
+	aneesh.kumar@linux.ibm.com, anshuman.khandual@arm.com, bp@alien8.de,
+	broonie@kernel.org, christophe.leroy@csgroup.eu,
+	dave.hansen@linux.intel.com, hpa@zytor.com,
+	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, maz@kernel.org, mingo@redhat.com,
+	mpe@ellerman.id.au, naveen.n.rao@linux.ibm.com, npiggin@gmail.com,
+	oliver.upton@linux.dev, shuah@kernel.org, skhan@linuxfoundation.org,
+	szabolcs.nagy@arm.com, tglx@linutronix.de, x86@kernel.org,
+	kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v5 06/30] arm64: context switch POR_EL0 register
+Message-ID: <20240904113221.GA3891700@e124191.cambridge.arm.com>
+References: <20240822151113.1479789-1-joey.gouly@arm.com>
+ <20240822151113.1479789-7-joey.gouly@arm.com>
+ <20240823144531.GH32156@willie-the-truck>
+ <Zsi7ovLOfuFdfuuz@arm.com>
+ <20240823170835.GA1181@willie-the-truck>
+ <ZsjXtE7Kg0LQwNAL@arm.com>
+ <20240827113803.GB4318@willie-the-truck>
+ <ZtYNGBrcE-j35fpw@arm.com>
+ <20240903145413.GB3669886@e124191.cambridge.arm.com>
+ <20240904102254.GA13280@willie-the-truck>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,52 +65,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: herve.codina@bootlin.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240904102254.GA13280@willie-the-truck>
 
-Hi Christophe,
+On Wed, Sep 04, 2024 at 11:22:54AM +0100, Will Deacon wrote:
+> On Tue, Sep 03, 2024 at 03:54:13PM +0100, Joey Gouly wrote:
+> > On Mon, Sep 02, 2024 at 08:08:08PM +0100, Catalin Marinas wrote:
+> > > On Tue, Aug 27, 2024 at 12:38:04PM +0100, Will Deacon wrote:
+> > > > On Fri, Aug 23, 2024 at 07:40:52PM +0100, Catalin Marinas wrote:
+> > > > > On Fri, Aug 23, 2024 at 06:08:36PM +0100, Will Deacon wrote:
+> > > > > > On Fri, Aug 23, 2024 at 05:41:06PM +0100, Catalin Marinas wrote:
+> > > > > > > On Fri, Aug 23, 2024 at 03:45:32PM +0100, Will Deacon wrote:
+> > > > > > > > On Thu, Aug 22, 2024 at 04:10:49PM +0100, Joey Gouly wrote:
+> > > > > > > > > +static void permission_overlay_switch(struct task_struct *next)
+> > > > > > > > > +{
+> > > > > > > > > +	if (!system_supports_poe())
+> > > > > > > > > +		return;
+> > > > > > > > > +
+> > > > > > > > > +	current->thread.por_el0 = read_sysreg_s(SYS_POR_EL0);
+> > > > > > > > > +	if (current->thread.por_el0 != next->thread.por_el0) {
+> > > > > > > > > +		write_sysreg_s(next->thread.por_el0, SYS_POR_EL0);
+> > > > > > > > > +		/* ISB required for kernel uaccess routines when chaning POR_EL0 */
+> > > > > > > >
+> > > > > > > > nit: typo "chaning".
+> > > > > > > >
+> > > > > > > > But more substantially, is this just to prevent spurious faults in the
+> > > > > > > > context of a new thread using a stale value for POR_EL0?
+> > > > > > >
+> > > > > > > Not just prevent faults but enforce the permissions from the new
+> > > > > > > thread's POR_EL0. The kernel may continue with a uaccess routine from
+> > > > > > > here, we can't tell.
+> > > [...]
+> > > > > > So what do we actually gain by having the uaccess routines honour this?
+> > > > >
+> > > > > I guess where it matters is more like not accidentally faulting because
+> > > > > the previous thread had more restrictive permissions.
+> > > >
+> > > > That's what I wondered initially, but won't the fault handler retry in
+> > > > that case?
+> > >
+> > > Yes, it will retry and this should be fine (I assume you are only
+> > > talking about the dropping ISB in the context switch).
+> > >
+> > > For the case of running with a more permissive stale POR_EL0, arguably it's
+> > > slightly more predictable for the user but, OTOH, some syscalls like
+> > > readv() could be routed through GUP with no checks. As with MTE, we
+> > > don't guarantee uaccesses honour the user permissions.
+> > >
+> > > That said, at some point we should sanitise this path anyway and have a
+> > > single ISB at the end. In the meantime, I'm fine with dropping the ISB
+> > > here.
+> > >
+> > 
+> > commit 3141fb86bee8d48ae47cab1594dad54f974a8899
+> > Author: Joey Gouly <joey.gouly@arm.com>
+> > Date:   Tue Sep 3 15:47:26 2024 +0100
+> > 
+> >     fixup! arm64: context switch POR_EL0 register
+> > 
+> > diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
+> > index a3a61ecdb165..c224b0955f1a 100644
+> > --- a/arch/arm64/kernel/process.c
+> > +++ b/arch/arm64/kernel/process.c
+> > @@ -515,11 +515,8 @@ static void permission_overlay_switch(struct task_struct *next)
+> >                 return;
+> > 
+> >         current->thread.por_el0 = read_sysreg_s(SYS_POR_EL0);
+> > -       if (current->thread.por_el0 != next->thread.por_el0) {
+> > +       if (current->thread.por_el0 != next->thread.por_el0)
+> >                 write_sysreg_s(next->thread.por_el0, SYS_POR_EL0);
+> > -               /* ISB required for kernel uaccess routines when chaning POR_EL0 */
+> > -               isb();
+> > -       }
+> >  }
+> 
+> What about the one in flush_poe()? I'm inclined to drop that as well.
 
-On Wed,  4 Sep 2024 09:51:09 +0200
-Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
+Yes I guess that one can be removed too. Catalin any comments?
 
-> QMC driver requires fsl_soc.h to use function get_immrbase().
-> This header is provided by powerpc architecture and the functions
-> it declares are defined only when FSL_SOC is selected.
 > 
-> Today the dependency is the following:
+> > Will, do you want me to re-send the series with this and the permissions
+> > diff from the other thread [1],
+> > or you ok with applying them when you pull it in?
 > 
-> 	depends on CPM1 || QUICC_ENGINE || \
-> 		   (FSL_SOC && (CPM || QUICC_ENGINE) && COMPILE_TEST)
-> 
-> This dependency tentatively ensure that FSL_SOC is there when doing a
-> COMPILE_TEST.
-> 
-> CPM1 is only selected by PPC_8xx and cannot be selected manually.
-> CPM1 selects FSL_SOC
-> 
-> QUICC_ENGINE on the other hand can be selected by ARM or ARM64 which
-> doesn't select FSL_SOC. QUICC_ENGINE can also be selected with just
-> COMPILE_TEST.
-> 
-> It is therefore possible to end up with CPM_QMC selected
-> without FSL_SOC.
-> 
-> So fix it by making it depend on FSL_SOC at all time.
-> 
-> The rest of the above dependency is the same as the one for CPM_TSA on
-> which CPM_QMC also depends, so it can go away, leaving only a simple
-> dependency on FSL_SOC.
-> 
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Closes: https://lore.kernel.org/lkml/20240904104859.020fe3a9@canb.auug.org.au/
-> Fixes: 8655b76b7004 ("soc: fsl: cpm1: qmc: Handle QUICC Engine (QE) soft-qmc firmware")
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> I'll have a crack now, but if it fails miserably then I'll let you know.
 
-Thanks for this patch!
+Thanks! Just to make sure, you should pick the patch up from
 
-Acked-by: Herve Codina <herve.codina@bootlin.com>
+	https://lore.kernel.org/linux-arm-kernel/20240903152937.GA3768522@e124191.cambridge.arm.com/
 
-Best regards,
-Hervé
+Not the one I linked to in [1] in my previous e-mail.
+
+Thanks,
+Joey
 
