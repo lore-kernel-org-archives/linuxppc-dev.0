@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-1007-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1008-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1289ACD4857
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 17:19:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1455DCD4853
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 17:19:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WzTjV4jHXz2ysb;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzTjV5gFFz2ysc;
 	Thu,  5 Sep 2024 03:18:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::228"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725470318;
-	cv=none; b=LvIw1KfQGM72gUTuIt3lkOZ1Hq8gVE1W60eMWKanSvCm9kvfjMMT4Z+zFx7RZIpjnOfZrsi0Kch0KOr2MQ8npZlVPVYibBMoi8hiv901AxlRWTlwbc9bbxRFR7X5DviV3dDfxN1UFv+U0Ic8cc1b1/NynanjFaYR8QQ2jkaEg3+dB3DxPO60PAyrBQGTFAEzOMqeaZbrrbhCF5oP1zEP/DdbablXRnDB50UGrRZ7Ww7Rjle0xRa/cVCQeqrvYjGQ47Ec9pnltKcacAmvuxbzkj8dD2dv24W2unBdkcF//AJFNjNfIdvff4HiylGcg/bAu8wN/r9FICJXsH9K1IVGDg==
+	cv=none; b=YJVV1iJHiCBYev08At3jT7t0mCRBpJ5abq7u4mAZ4MFc+UZl2AnvJZzqwmVOoLEjiY8Gp3bma6mTndA/BVt11IOJ5cFR6MgLJXPQ+T3Cd5hpYdxVtE0PL6aMXS+Awl5ZHnYeVMbuloSWdwMUAWnjS70tI19WTQGPZvLB7Ta4EodxCLYgE3S4SKG6mV8WLvnYuwcDG2IbdkQEsPaStU40/nfVCVWZlmWXkmHeVlMREwuIeaJukqq+sn2Hb5TKAXC4sdyza1z8I7+L0mCYaf9TQbIPmPSsVu5KzOVJhUPiR7gJCxRjBVE2fxPzxchBbsbWC+qVNQzMO1N8f/x7OkIPlA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1725470318; c=relaxed/relaxed;
-	bh=Xi/2j6epi1DgRRp0ubkSToTbKTHn7XZyH1dUXV/WNsI=;
+	bh=Bk1fyWjuAOX2npTkzedEJmStz9C1KpBm4OMnXM/joPg=;
 	h=DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:In-Reply-To:
-	 References:MIME-Version; b=C2OQeV3SdibZyVbNPvqACy3V6bksIpzMkPr4TZjqhIXBFKaspGVNBXCL3bAFoNIgo+XdiWaLBRlnfDboIkE20yLq5PisgTIHiCyyV7SYfXV/8F8l/3M7XyPi5qvN5A6RTt5/a1P580GEcxC6LWrHtFu6v8NsAcK/EzPT8t3ymS1HN6zlq3yc3Da9Hv56fIV3SnPJrBpG0XYZ5MTrWGQ1TTmIYv5IdyydP+UfrRIGGqVMeGLFO93CkSWG5gqSscU7T+fY4AbJws7KoRHTw0kaZZefuN42qofN2G/d8Tz77+Pc6yJhk6dqn8IjZNXoZHolt2PUfB0r6SDCMTvRCS42sA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=FbRiGVxp; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 References:MIME-Version; b=QiCMKkQ7oE6jw6KwnNyP2R402BH36EgND5Ne2fpju+JBXQFqvR/GXwONcJugXuqTgpgxwX563p9Vz7HDHvCLc4QV+mmQt2QSqAWj2iWcTtKumeSbUxzTbLQw+FIx3Rg08W4pmOSeaRVToDHgEDwpnzjZSYTp644VJhzQ+hOvW7DgmhduDAyS6fG787Rl5A6gd0C85X+GQn74w4+VB3fRk8hkydbHw2aIo0c75aJRrZHMIZJLGXiJsCx8ORaVuHVu7ewopQAO453Vmb//N5hWiuqdpLM3xyvYLGMI08tggkBPVrg9w9lpB+aemqwO9XLQAy246TAGGjcV65MA8WNJrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=UPrgz8sc; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=FbRiGVxp;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=UPrgz8sc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::228])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzTjT5gc4z2ypm
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzTjT5qWjz2yps
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 03:18:37 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 3111A1BF203;
-	Wed,  4 Sep 2024 17:18:28 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id B62C21BF20B;
+	Wed,  4 Sep 2024 17:18:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1725470308;
+	t=1725470310;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Xi/2j6epi1DgRRp0ubkSToTbKTHn7XZyH1dUXV/WNsI=;
-	b=FbRiGVxpjPae3eW0/kOH4zJOBcCMHI5RSz4kVAShkxChU4ba+zclaC9ZxrVOYUWR+4Qb0g
-	S7l08fY7T/r/6SpdIbPD0JQVIAISlC3BcquEgGW/6u0Pa9kJyn6cnFPSuXw8gSFlmGl8qX
-	G6K1wbwFx8bM8wN9G/BbIOVNEVBzjD/2pn+xFfCnyW8fk4Z4q4M5kuMG9bwznlOq9v594C
-	FZBG6+qYSN5ISxStT01N39066J+LXYTfqAOYmzm1b7+dt/T15A/ChWL1a3pI7sTy1Q+7Os
-	pgN7keaGwN//FhiRixE4RpnF6VgQboLzk1k1KYVs5nBbNyezdkaVDbAEEY4nUA==
+	bh=Bk1fyWjuAOX2npTkzedEJmStz9C1KpBm4OMnXM/joPg=;
+	b=UPrgz8scPZZ2Smhz4tvaFmq9lmaRBnaiCtFYznixbjcrclk00OEMIRmAuOJynduD6jDpFS
+	fA4/UFE19QrxEq2ptqwquUmYrjPbdg2tEVjny3K/atMgQOaY2P8qe9bI2j1imN7IyG9TtA
+	bNb5tia2Lwce1+Kzr6P+QB1U8UeAQl2liisTzzNaHVgPTvjnHa8HsgDIRHUsDcgZFwtX8w
+	32NCg2obaJM2npvOoRTJXAHYx2HZKAbajIOunsfj2bx4UnF6zRIuBK/6UPZMGrIJ9vGpP2
+	jyJdOAB5Bvfe7FXoGK4Q2YWEsDX2dllvDmOXtYhUvBH62t7BfRk3o5UVQbNM+w==
 From: Maxime Chevallier <maxime.chevallier@bootlin.com>
 To: davem@davemloft.net,
 	Pantelis Antoniou <pantelis.antoniou@gmail.com>,
@@ -59,9 +59,9 @@ Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
 	thomas.petazzoni@bootlin.com,
 	Herve Codina <herve.codina@bootlin.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next v3 4/8] net: ethernet: fs_enet: only protect the .restart() call in .adjust_link
-Date: Wed,  4 Sep 2024 19:18:17 +0200
-Message-ID: <20240904171822.64652-5-maxime.chevallier@bootlin.com>
+Subject: [PATCH net-next v3 6/8] net: ethernet: fs_enet: use macros for speed and duplex values
+Date: Wed,  4 Sep 2024 19:18:19 +0200
+Message-ID: <20240904171822.64652-7-maxime.chevallier@bootlin.com>
 X-Mailer: git-send-email 2.46.0
 In-Reply-To: <20240904171822.64652-1-maxime.chevallier@bootlin.com>
 References: <20240904171822.64652-1-maxime.chevallier@bootlin.com>
@@ -77,69 +77,68 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: maxime.chevallier@bootlin.com
 
-When .adjust_link() gets called, it runs in thread context, with the
-phydev->lock held. We only need to protect the fep->fecp/fccp/sccp
-register that are accessed within the .restart() function from
-concurrent access from the interrupts.
+The PHY speed and duplex should be manipulated using the SPEED_XXX and
+DUPLEX_XXX macros available. Use it in the fcc, fec and scc MAC for
+fs_enet.
 
-These registers are being protected by the fep->lock spinlock, so we can
-move the spinlock protection around the .restart() call instead of the
-entire adjust_link() call. By doing so, we can simplify further the
-.adjust_link() callback and avoid the intermediate helper.
-
-Suggested-by: Andrew Lunn <andrew@lunn.ch>
+Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
 ---
- .../ethernet/freescale/fs_enet/fs_enet-main.c  | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/freescale/fs_enet/mac-fcc.c | 4 ++--
+ drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 2 +-
+ drivers/net/ethernet/freescale/fs_enet/mac-scc.c | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index caca81b3ccb6..b320e55dcb81 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -607,10 +607,11 @@ static void fs_timeout(struct net_device *dev, unsigned int txqueue)
- }
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
+index 159a384813b3..666a54d6e667 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
+@@ -360,7 +360,7 @@ static void restart(struct net_device *dev)
  
- /* generic link-change handler - should be sufficient for most cases */
--static void generic_adjust_link(struct  net_device *dev)
-+static void fs_adjust_link(struct  net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	struct phy_device *phydev = dev->phydev;
-+	unsigned long flags;
- 	int new_state = 0;
+ 	/* adjust to speed (for RMII mode) */
+ 	if (fpi->use_rmii) {
+-		if (dev->phydev->speed == 100)
++		if (dev->phydev->speed == SPEED_100)
+ 			C8(fcccp, fcc_gfemr, 0x20);
+ 		else
+ 			S8(fcccp, fcc_gfemr, 0x20);
+@@ -386,7 +386,7 @@ static void restart(struct net_device *dev)
+ 		S32(fccp, fcc_fpsmr, FCC_PSMR_RMII);
  
- 	if (phydev->link) {
-@@ -630,8 +631,11 @@ static void generic_adjust_link(struct  net_device *dev)
- 			fep->oldlink = 1;
- 		}
+ 	/* adjust to duplex mode */
+-	if (dev->phydev->duplex)
++	if (dev->phydev->duplex == DUPLEX_FULL)
+ 		S32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
+ 	else
+ 		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+index cf4c49e884ba..c1b7877178b9 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+@@ -308,7 +308,7 @@ static void restart(struct net_device *dev)
+ 	/*
+ 	 * adjust to duplex mode
+ 	 */
+-	if (dev->phydev->duplex) {
++	if (dev->phydev->duplex == DUPLEX_FULL) {
+ 		FC(fecp, r_cntrl, FEC_RCNTRL_DRT);
+ 		FS(fecp, x_cntrl, FEC_TCNTRL_FDEN);	/* FD enable */
+ 	} else {
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+index 6edc9f66ae83..d061092ced6c 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
+@@ -337,7 +337,7 @@ static void restart(struct net_device *dev)
+ 	W16(sccp, scc_psmr, SCC_PSMR_ENCRC | SCC_PSMR_NIB22);
  
--		if (new_state)
-+		if (new_state) {
-+			spin_lock_irqsave(&fep->lock, flags);
- 			fep->ops->restart(dev);
-+			spin_unlock_irqrestore(&fep->lock, flags);
-+		}
- 	} else if (fep->oldlink) {
- 		new_state = 1;
- 		fep->oldlink = 0;
-@@ -643,16 +647,6 @@ static void generic_adjust_link(struct  net_device *dev)
- 		phy_print_status(phydev);
- }
+ 	/* Set full duplex mode if needed */
+-	if (dev->phydev->duplex)
++	if (dev->phydev->duplex == DUPLEX_FULL)
+ 		S16(sccp, scc_psmr, SCC_PSMR_LPB | SCC_PSMR_FDE);
  
--static void fs_adjust_link(struct net_device *dev)
--{
--	struct fs_enet_private *fep = netdev_priv(dev);
--	unsigned long flags;
--
--	spin_lock_irqsave(&fep->lock, flags);
--	generic_adjust_link(dev);
--	spin_unlock_irqrestore(&fep->lock, flags);
--}
--
- static int fs_init_phy(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
+ 	/* Restore multicast and promiscuous settings */
 -- 
 2.46.0
 
