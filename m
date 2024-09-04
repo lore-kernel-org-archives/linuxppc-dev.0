@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-1006-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1007-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 469CFCD4F21
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 17:19:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1289ACD4857
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 17:19:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WzTjV4QnKz2ysB;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzTjV4jHXz2ysb;
 	Thu,  5 Sep 2024 03:18:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::228"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725470318;
-	cv=none; b=lpgthE5ErFbU1cC+3dPUDbM0zqrcfD6pGl0o4b+rNCBZa034UvAn/mwsGv5orqir51Mr6c9euK+TJZh/3qU22A0IYZ+ZalcSVIFmVBZCdck8shFyICsMvt/D6otCDIVRuvjUHEn6NUI4JztF67Su7BUVixmOW9B3Z3I10FtdVKZWrV2J5GvHtd0z6qrpK6kHnDgusAK0PfOKRoet1dEUHMTGQ5AISg/Cq8Qx6h7YywDU9DO/EoVKvPqfmhGCtmGku58+fCVdJA9GyhsjrZFc/54LmF+F9teIf4s0NGqQK36qXXhGFHZ7Hp141QNC3ZOyC143q0v2eogNm3LxirP6Jw==
+	cv=none; b=LvIw1KfQGM72gUTuIt3lkOZ1Hq8gVE1W60eMWKanSvCm9kvfjMMT4Z+zFx7RZIpjnOfZrsi0Kch0KOr2MQ8npZlVPVYibBMoi8hiv901AxlRWTlwbc9bbxRFR7X5DviV3dDfxN1UFv+U0Ic8cc1b1/NynanjFaYR8QQ2jkaEg3+dB3DxPO60PAyrBQGTFAEzOMqeaZbrrbhCF5oP1zEP/DdbablXRnDB50UGrRZ7Ww7Rjle0xRa/cVCQeqrvYjGQ47Ec9pnltKcacAmvuxbzkj8dD2dv24W2unBdkcF//AJFNjNfIdvff4HiylGcg/bAu8wN/r9FICJXsH9K1IVGDg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1725470318; c=relaxed/relaxed;
-	bh=itWlvP5P5XgxiQ6iKEXH6a9ldcid6vjBdW4WsWfjArY=;
+	bh=Xi/2j6epi1DgRRp0ubkSToTbKTHn7XZyH1dUXV/WNsI=;
 	h=DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:In-Reply-To:
-	 References:MIME-Version; b=c29Yb4Y/isZAGKcX40Sad+VB76DQWaevrzKYbFBeHdzPGXP6PJLRBAbCaHyryE4akEr5Yf7Uk+wQGH0THS1fOd9wRFQDUTBdn7BJE4qvk5xUlYVrZEjg8KhMBpNxrV2RX6aXqprumcX6qbTAowv1sa2AlvQqXllxMb2uNWoPpwIPp6jiTQQ2YaTIuflVxIGgZLcc0o5gYDxqYuf4SaTh14M8/Ke5JjEcxfO23RUqd7aW1vjm9p4Tb12FpsAxrZmsxhnbFO/2zE6rhXgBkksh07MnrPCKVBZr31opPnlM2Ger6ijKvulUnldbMqhuHoqrnJntaVcRM0xYZWERQx8lgw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=buReFsYY; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 References:MIME-Version; b=C2OQeV3SdibZyVbNPvqACy3V6bksIpzMkPr4TZjqhIXBFKaspGVNBXCL3bAFoNIgo+XdiWaLBRlnfDboIkE20yLq5PisgTIHiCyyV7SYfXV/8F8l/3M7XyPi5qvN5A6RTt5/a1P580GEcxC6LWrHtFu6v8NsAcK/EzPT8t3ymS1HN6zlq3yc3Da9Hv56fIV3SnPJrBpG0XYZ5MTrWGQ1TTmIYv5IdyydP+UfrRIGGqVMeGLFO93CkSWG5gqSscU7T+fY4AbJws7KoRHTw0kaZZefuN42qofN2G/d8Tz77+Pc6yJhk6dqn8IjZNXoZHolt2PUfB0r6SDCMTvRCS42sA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=FbRiGVxp; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=buReFsYY;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=FbRiGVxp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::228])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzTjT5RGnz2ypj
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzTjT5gc4z2ypm
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 03:18:37 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id B74D41BF206;
-	Wed,  4 Sep 2024 17:18:25 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 3111A1BF203;
+	Wed,  4 Sep 2024 17:18:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1725470306;
+	t=1725470308;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=itWlvP5P5XgxiQ6iKEXH6a9ldcid6vjBdW4WsWfjArY=;
-	b=buReFsYYQE5lqUkBGnRWK0lIoCrccS34ioCzRcaYWEiPvr92+nD5Yp90tR14QbftUfsji2
-	/WGOw4FeVMnZmPXwxDCP7YyTItBN1CggaldEXiryAuoCTTupTXITjTS09hFySOsnH9XhNB
-	FXK+ZHC4cIlhmyXSZcIz2Pi6/fgc1whNjitP8XIb/Ux8+DqUQTnCy++Hdbj7pNMZ7QkmjZ
-	NlliFLC3GK688vmUaGKF68QMEE41guqIuRabYIWVR/NMkC/fuMifZyQZ9X6Sb3+udQ5jks
-	icZ3XNCPzHduCTUddUJFoptYffj8aDjO8ikqkKyyfTFhaaE3FIfb0uNvbk5wNw==
+	bh=Xi/2j6epi1DgRRp0ubkSToTbKTHn7XZyH1dUXV/WNsI=;
+	b=FbRiGVxpjPae3eW0/kOH4zJOBcCMHI5RSz4kVAShkxChU4ba+zclaC9ZxrVOYUWR+4Qb0g
+	S7l08fY7T/r/6SpdIbPD0JQVIAISlC3BcquEgGW/6u0Pa9kJyn6cnFPSuXw8gSFlmGl8qX
+	G6K1wbwFx8bM8wN9G/BbIOVNEVBzjD/2pn+xFfCnyW8fk4Z4q4M5kuMG9bwznlOq9v594C
+	FZBG6+qYSN5ISxStT01N39066J+LXYTfqAOYmzm1b7+dt/T15A/ChWL1a3pI7sTy1Q+7Os
+	pgN7keaGwN//FhiRixE4RpnF6VgQboLzk1k1KYVs5nBbNyezdkaVDbAEEY4nUA==
 From: Maxime Chevallier <maxime.chevallier@bootlin.com>
 To: davem@davemloft.net,
 	Pantelis Antoniou <pantelis.antoniou@gmail.com>,
@@ -59,9 +59,9 @@ Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
 	thomas.petazzoni@bootlin.com,
 	Herve Codina <herve.codina@bootlin.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next v3 1/8] net: ethernet: fs_enet: convert to SPDX
-Date: Wed,  4 Sep 2024 19:18:14 +0200
-Message-ID: <20240904171822.64652-2-maxime.chevallier@bootlin.com>
+Subject: [PATCH net-next v3 4/8] net: ethernet: fs_enet: only protect the .restart() call in .adjust_link
+Date: Wed,  4 Sep 2024 19:18:17 +0200
+Message-ID: <20240904171822.64652-5-maxime.chevallier@bootlin.com>
 X-Mailer: git-send-email 2.46.0
 In-Reply-To: <20240904171822.64652-1-maxime.chevallier@bootlin.com>
 References: <20240904171822.64652-1-maxime.chevallier@bootlin.com>
@@ -77,142 +77,69 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: maxime.chevallier@bootlin.com
 
-The ENET driver has SPDX tags in the header files, but they were missing
-in the C files. Change the licence information to SPDX format.
+When .adjust_link() gets called, it runs in thread context, with the
+phydev->lock held. We only need to protect the fep->fecp/fccp/sccp
+register that are accessed within the .restart() function from
+concurrent access from the interrupts.
 
-Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+These registers are being protected by the fep->lock spinlock, so we can
+move the spinlock protection around the .restart() call instead of the
+entire adjust_link() call. By doing so, we can simplify further the
+.adjust_link() callback and avoid the intermediate helper.
+
+Suggested-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
 ---
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mac-fcc.c      | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c      | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mac-scc.c      | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c  | 5 +----
- drivers/net/ethernet/freescale/fs_enet/mii-fec.c      | 5 +----
- 6 files changed, 6 insertions(+), 24 deletions(-)
+ .../ethernet/freescale/fs_enet/fs_enet-main.c  | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index cf392faa6105..5bfdd43ffdeb 100644
+index caca81b3ccb6..b320e55dcb81 100644
 --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
 +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Combined Ethernet driver for Motorola MPC8xx and MPC82xx.
-  *
-@@ -9,10 +10,6 @@
-  *
-  * Heavily based on original FEC driver by Dan Malek <dan@embeddededge.com>
-  * and modifications by Joakim Tjernlund <joakim.tjernlund@lumentis.se>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
+@@ -607,10 +607,11 @@ static void fs_timeout(struct net_device *dev, unsigned int txqueue)
+ }
  
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-index e2ffac9eb2ad..add062928d99 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fcc.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * FCC driver for Motorola MPC82xx (PQ2).
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
+ /* generic link-change handler - should be sufficient for most cases */
+-static void generic_adjust_link(struct  net_device *dev)
++static void fs_adjust_link(struct  net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+ 	struct phy_device *phydev = dev->phydev;
++	unsigned long flags;
+ 	int new_state = 0;
  
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index cdc89d83cf07..f75acb3b358f 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Freescale Ethernet controllers
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
+ 	if (phydev->link) {
+@@ -630,8 +631,11 @@ static void generic_adjust_link(struct  net_device *dev)
+ 			fep->oldlink = 1;
+ 		}
  
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-index 9e89ac2b6ce3..29ba0048396b 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Ethernet on Serial Communications Controller (SCC) driver for Motorola MPC8xx and MPC82xx.
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
+-		if (new_state)
++		if (new_state) {
++			spin_lock_irqsave(&fep->lock, flags);
+ 			fep->ops->restart(dev);
++			spin_unlock_irqrestore(&fep->lock, flags);
++		}
+ 	} else if (fep->oldlink) {
+ 		new_state = 1;
+ 		fep->oldlink = 0;
+@@ -643,16 +647,6 @@ static void generic_adjust_link(struct  net_device *dev)
+ 		phy_print_status(phydev);
+ }
  
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-index f965a2329055..2e210a003558 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Combined Ethernet driver for Motorola MPC8xx and MPC82xx.
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
- 
- #include <linux/module.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-fec.c b/drivers/net/ethernet/freescale/fs_enet/mii-fec.c
-index 7bb69727952a..93d91e8ad0de 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mii-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mii-fec.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Combined Ethernet driver for Motorola MPC8xx and MPC82xx.
-  *
-@@ -6,10 +7,6 @@
-  *
-  * 2005 (c) MontaVista Software, Inc.
-  * Vitaly Bordug <vbordug@ru.mvista.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-  */
- 
- #include <linux/module.h>
+-static void fs_adjust_link(struct net_device *dev)
+-{
+-	struct fs_enet_private *fep = netdev_priv(dev);
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&fep->lock, flags);
+-	generic_adjust_link(dev);
+-	spin_unlock_irqrestore(&fep->lock, flags);
+-}
+-
+ static int fs_init_phy(struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
 -- 
 2.46.0
 
