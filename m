@@ -1,59 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-1013-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1014-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62AA1CD4F3C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 22:26:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B31ECD37B6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Sep 2024 22:26:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WzcX86Mwyz2y8B;
-	Thu,  5 Sep 2024 08:26:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725455686;
-	cv=none; b=gtS6WCiyCbxTGqM4Hl4beI+85FJ3lC3qMw+frbr27ng216Y4A5adYk7vX6shA/H8A4biZGfuTUiHr8nrHCFgeGhERojKPAks/EMgS2SZXlMu60h+YHy7FE/gAfO1QoJrYhGtxT6VUL2ovJRE9VlZs2eWqUHHWKc+LsrNUGi3JGQ1xVeOAigTAeoXxbDp1w69wzdijcInTKRYzl9+niX7u3aBqPyNVUSdDFLWizz2AHqb+tD1KfxklcVHECgkTYLAaThYXjJQDCCQl2xSQoDXUufXRWGvi3jl++3eifS2gX6O5tRw1XwphTeIApSHHn1ykKT5SgERftaRq3RHvaqwQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzcXW5ZrGz2y8q;
+	Thu,  5 Sep 2024 08:26:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725456113;
+	cv=none; b=kP+nGYywwg2h3sqZAu3/P8wi3/U/bjFFHPoeOGbp2zTHqTvo6s7H8JbO8+By2XNOhZPlb0JLnM+jrOK3QICX66sj+9Sc40dJuieezWg1rG6VXJMmUTDgtOi8D18UWI/xxeyBAA1OzhfWk5w4nv2nP2nt++CwEUUmtKm1II1W5rbv5/GQPNlutjznIdTXLgInM49BiraqOZ5907qPS5fKcgbeN77LN8MGtnXhL+vBqc03sCvzlRuSTRo6ZarX8QzQg/LKQJ3YNjDzX9DNbNSCMRu+FEaMt8BVDQIDDL9Ugb/eMq+J4gvd4I0zbUth2+pY59fJP0z1zv0ygs9kOeexZw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725455686; c=relaxed/relaxed;
-	bh=IcwSc34LvXMP/cT7noBpbT1jqfRVjScu2K4oFpyriwE=;
-	h=From:DKIM-Signature:DKIM-Signature:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:To:Cc; b=gLhJHGXo4Vjm3m1YhDXKONxlfi32awfjWWNCoQ4xePSYh3hQrKNwq9LEWIvRX+JA9lQargnLbkywAOj3WHhoQU49yOcA2npRwbNb9wy2dr8LF31qMjPjRq08jSxTZVwV67RasbEYTFhmeNcvlUKCQgR12uMMZHtV92XSXl8vgR08H7Lnn4C+1bWouoDYFR+aIEuT+aJVnNrppzOfIThtOKQUv7M7VIyQ07j0P8HD7yyaP5N2Y9uqCh8Yzp6sRtgh2myPIRwhw0ekDQKkX3pV0uWvElHWX2BrNriLE5MsR7ph3MtRt231djGTyEKLiR9YhrEcYDrUb4bG3FHfzy9s7g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=pKIctVY4; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=E+eXvp9U; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=anna-maria@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1725456113; c=relaxed/relaxed;
+	bh=Vd2ZYCNG0SqbW6OjTbIGTZ++FMQuVNRn0puOuY80IA4=;
+	h=DKIM-Signature:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type; b=V+7QfY4kAELaJ5onKHu3124Eu61DAsfEsFvAF1mgUVuXBLMGZqhauNOGMYoD5I1+6GknTphD47DqNouEGvGs8Rmp+46InMcfurd6RTA6ngf8p6nG75OGXWSoySwhwP/gAM3ExVrVvrjlCl7JZi2j+ZRVuyBpyQX2sipfpE539tjiF16QlIljPBMC5FALnJw564930ySK4C20nzcEYgN7iARYbzUcU39jlyoXSpV3bjpIStBApuuhYdy1iPJmx8Kiji7G6cYkwl6uUZDpvzkBMI9TbLALKOhPG9pxVUaYYjkO77rzIbgUza7vooQuh0TAtaW0OnSj9nXFNrLSwmkmHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=cSc5mpms; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=adhemerval.zanella@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=pKIctVY4;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=E+eXvp9U;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=cSc5mpms;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=anna-maria@linutronix.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 538 seconds by postgrey-1.37 at boromir; Wed, 04 Sep 2024 23:14:45 AEST
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=adhemerval.zanella@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzNJ55gCrz2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2024 23:14:45 +1000 (AEST)
-From: Anna-Maria Behnsen <anna-maria@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1725455132;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=IcwSc34LvXMP/cT7noBpbT1jqfRVjScu2K4oFpyriwE=;
-	b=pKIctVY4axfpzaDAkuW89nfEerNMQNXGr4oRrZz38wPjBOmrxBuAnOBWaEizzBAwauAjPh
-	iSPCWacRZvzl6CCp1is+uBZAeRqXH7FmxMsCNUd2XW7fLBRd3R2v/gVjNOtuOAe97g20n4
-	iyKyv4M3SsAHlQyN0Bb5+/WPEPJl38gvPLOQnPCVAYjWpdHo54oO5T6wTZVXJJDlbqXkkE
-	3oyAKI4DEAwwq/8zn1lI0pDDGpx/h1p9ThiWQxIDIVUHt673XGvyw0iUaWqSDLv7yLyqpo
-	Anfa2HXMo+/DXNdDrHE8hi9N5LqhVKzPFFuFJBaC1IHamnKd3WZ2Kp5fjH9bRQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1725455132;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=IcwSc34LvXMP/cT7noBpbT1jqfRVjScu2K4oFpyriwE=;
-	b=E+eXvp9UB9r1HGGHMLtT0w+geizfWK2j8vOahsM5RXh4xyoJXjN+XNIwwk0C+aPRWMYALP
-	cm7NexPhzPCUw2DQ==
-Subject: [PATCH 00/15] timers: Cleanup delay/sleep related mess
-Date: Wed, 04 Sep 2024 15:04:50 +0200
-Message-Id: <20240904-devel-anna-maria-b4-timers-flseep-v1-0-e98760256370@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzNSJ5S73z2xKQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Sep 2024 23:21:50 +1000 (AEST)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-20570b42f24so33308965ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Sep 2024 06:21:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1725456109; x=1726060909; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:organization:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=Vd2ZYCNG0SqbW6OjTbIGTZ++FMQuVNRn0puOuY80IA4=;
+        b=cSc5mpmsw02MCVDbHfLFmAfmV3tXykS+UqadkpUeITCvP93Mh8F6863YFiDN23C/Fc
+         S4ABJDZBgkvBNO5qvCm4rOh8mPHYA1wOatwOF2HVBoz/ZT4DdVIEB4xgMb6WJd/JeCCU
+         SOvjJ5Dh2mV78XIHVGrF6j+nEUXRN1EJtbYXSAXxlz1QlXcv20u5nrGljl+p3FJEDI1c
+         2UkAQ7tEFka9pw3AjV9wIpyZOaCUr68zVfSBDHypvlD0MLfoQIMCFLaY/d4Qp+hIlf1O
+         nnkxFFb5YhIB3QucckboERDoYFzrMDOlsjzaZqa/wX92MVDqVxWf/GKVvTOEEBNQbST9
+         vusQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725456109; x=1726060909;
+        h=content-transfer-encoding:in-reply-to:organization:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Vd2ZYCNG0SqbW6OjTbIGTZ++FMQuVNRn0puOuY80IA4=;
+        b=m0KnYtI7G+J18/7+87hQ7bZIbmsvmXBTewvgIgAVmlGP6ABK0tnd+73rIyOEvvkPJ2
+         5eqNGr8pMn4UvGfaX1SQts3I6p6/hwQa3PoEsTl9NOq0BZMupJlL4rec0fOaJASmBcAc
+         9rf609kCzHw1zGM1ZOppRZMRDLmsZWTapqm1t7SXWEx5JXkeA9RHayICWyz8SmjtUuOs
+         4f2O3O8f6yxD0PLPjKCDjhBEJq81OhIsWrnFbQZHbXoq8haJKdalVesK+y4jV0zU7hrb
+         x2pyWMiWAt0WlJMBA17NeEHnhRGlWG9bt8Lf4e7YNK3VeZ9yBV9kkwNW9QHaHBHKbEeo
+         nAdg==
+X-Forwarded-Encrypted: i=1; AJvYcCXppvYXghN66XZLbTwdUVf5nM/MdOK7TjdCLmhD/0HpK86kNdFPG2feFZDbJqtxysn2KfMY+zO4JEwawvQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyFFwuESUTOXsZcRTR2DgxPiOKf7141oYuC2kUdFJH3Bc5v6lSP
+	BvrQW/yzEgt7meTncKW1nx3t29Mgu4BCplQROBitf38I65OIC7QKBf7laNLP1XA=
+X-Google-Smtp-Source: AGHT+IHNpwkCP+QEkYIrMc7mghHUBa8dyZ0ef4WmVGXl0vpaZbDnwcxB6gw+kSB/ilBIMALmK26aeQ==
+X-Received: by 2002:a17:903:234e:b0:206:94f5:c312 with SMTP id d9443c01a7336-20699af10a7mr74145445ad.28.1725456108954;
+        Wed, 04 Sep 2024 06:21:48 -0700 (PDT)
+Received: from ?IPV6:2804:1b3:a7c3:e912:6904:dd5a:7f0d:ac77? ([2804:1b3:a7c3:e912:6904:dd5a:7f0d:ac77])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-206ae912bf3sm13555005ad.24.2024.09.04.06.21.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 04 Sep 2024 06:21:48 -0700 (PDT)
+Message-ID: <45fbd9a2-78f7-4697-b3f7-b26b72f4a795@linaro.org>
+Date: Wed, 4 Sep 2024 10:21:45 -0300
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,131 +77,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAPJa2GYC/x3NQQqDMBBG4avIrDsQ07QkvUrpYtTfdkBTmYgUx
- Ls3uPw27+1UYIpCj2Ynw6ZFv7mivTTUfyS/wTpUk3c+uOQCD9gwseQsPIupcBd41RlWeJwKsHC
- 8xltqfZfuKVLtLIZRf+fj+TqOPzF6qSBzAAAA
-To: Frederic Weisbecker <frederic@kernel.org>, 
- Thomas Gleixner <tglx@linutronix.de>, Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Anna-Maria Behnsen <anna-maria@linutronix.de>, 
- Peter Zijlstra <peterz@infradead.org>, SeongJae Park <sj@kernel.org>, 
- Andrew Morton <akpm@linux-foundation.org>, damon@lists.linux.dev, 
- linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>, 
- linux-arch@vger.kernel.org, Heiner Kallweit <hkallweit1@gmail.com>, 
- "David S. Miller" <davem@davemloft.net>, Andy Whitcroft <apw@canonical.com>, 
- Joe Perches <joe@perches.com>, Dwaipayan Ray <dwaipayanray1@gmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Andrew Lunn <andrew@lunn.ch>, Jaroslav Kysela <perex@perex.cz>, 
- Takashi Iwai <tiwai@suse.com>, netdev@vger.kernel.org, 
- linux-sound@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, 
- Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
- Mauro Carvalho Chehab <mchehab@kernel.org>, linux-media@vger.kernel.org
+User-Agent: Mozilla Thunderbird
+Subject: Re: Profiling of vdso_test_random
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>, Xi Ruoyao <xry111@xry111.site>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <30e9575c-a53e-4e17-bbbd-7127798efb05@csgroup.eu>
+Content-Language: en-US
+From: Adhemerval Zanella Netto <adhemerval.zanella@linaro.org>
+Organization: Linaro
+In-Reply-To: <30e9575c-a53e-4e17-bbbd-7127798efb05@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hi,
 
-a question about which sleeping function should be used in acpi_os_sleep()
-started a discussion and examination about the existing documentation and
-implementation of functions which insert a sleep/delay.
 
-The result of the discussion was, that the documentation is outdated and
-the implemented fsleep() reflects the outdated documentation but doesn't
-help to reflect reality which in turns leads to the queue which covers the
-following things:
+On 04/09/24 08:41, Christophe Leroy wrote:
+> Hi,
+> 
+> I'm done a 'perf record' on vdso_test_random reduced to vdso test only, and I get the following function usage profile.
+> 
+> Do you see the same type of percentage on your platforms ?
+> 
+> I would have expected most of the time to be spent in __arch_chacha20_blocks_nostack() but that's in fact not the case.
+> 
+> # Samples: 61K of event 'task-clock:ppp'
+> # Event count (approx.): 15463500000
+> #
+> # Overhead  Command          Shared Object        Symbol
+> # ........  ...............  ................... ....................................
+> #
+>     57.74%  vdso_test_getra  [vdso]               [.] __c_kernel_getrandom
+>     22.49%  vdso_test_getra  [vdso]               [.] __arch_chacha20_blocks_nostack
+>     10.80%  vdso_test_getra  vdso_test_getrandom  [.] test_vdso_getrandom
+>      8.89%  vdso_test_getra  [vdso]               [.] __kernel_getrandom
+>      0.01%  vdso_test_getra  [kernel.kallsyms]    [k] finish_task_switch.isra.0
+> 
 
-- Minor changes (naming and typo fixes)
+After tinkering with vDSO build parameters (I had to remove the '-Bsymbolic'
+and 'objdump -S') to get perf show the symbols I see on aarch64 with a reduced
+vdso_test_random:
 
-- Split out all timeout and sleep related functions from hrtimer.c and timer.c
-  into a separate file
+$ perf record ./vdso_test_getrandom bench-single
+$ perf report
+[...]
+# Samples: 305  of event 'cycles:P'
+# Event count (approx.): 5583551
+#
+# Overhead  Command          Shared Object        Symbol
+# ........  ...............  ...................  .........................................
+#
+    44.27%  vdso_test_getra  [vdso]               [.] __arch_chacha20_blocks_nostack
+    21.16%  vdso_test_getra  [vdso]               [.] __kernel_getrandom
+     6.19%  vdso_test_getra  [kernel.kallsyms]    [k] task_mm_cid_work
+     3.14%  vdso_test_getra  [kernel.kallsyms]    [k] perf_iterate_ctx
+     2.96%  vdso_test_getra  vdso_test_getrandom  [.] test_vdso_getrandom
+     2.48%  vdso_test_getra  [kernel.kallsyms]    [k] __memcg_slab_free_hook
+     2.28%  vdso_test_getra  [kernel.kallsyms]    [k] next_uptodate_folio
+     2.05%  vdso_test_getra  [kernel.kallsyms]    [k] _raw_spin_unlock_irq
 
-- Update function descriptions of sleep related functions
-
-- Change fsleep() to reflect reality
-
-- Rework all comments or users which obviously rely on the outdated
-  documentation as they reference "Documentation/timers/timers-howto.rst"
-
-- Last but not least (as there are no more references): Update the outdated
-  documentation and move it into a file with a self explaining file name
-
-The queue is available here and applies on top of tip/timers/core:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/anna-maria/linux-devel.git timers/misc
-
-Cc: linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
-Cc: Rafael J. Wysocki <rafael@kernel.org>
-To: Frederic Weisbecker <frederic@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-To: Jonathan Corbet <corbet@lwn.net>
-Signed-off-by: Anna-Maria Behnsen <anna-maria@linutronix.de>
-
-Thanks,
-
-Anna-Maria
-
----
-Anna-Maria Behnsen (15):
-      timers: Rename next_expiry_recalc() to be unique
-      cpu: Use already existing usleep_range()
-      Comments: Fix wrong singular form of jiffies
-      timers: Move *sleep*() and timeout functions into a separate file
-      timers: Rename sleep_idle_range() to sleep_range_idle()
-      timers: Update function descriptions of sleep/delay related functions
-      timers: Adjust flseep() to reflect reality
-      mm/damon/core: Use generic upper bound recommondation for usleep_range()
-      timers: Add a warning to usleep_range_state() for wrong order of arguments
-      checkpatch: Remove broken sleep/delay related checks
-      regulator: core: Use fsleep() to get best sleep mechanism
-      iopoll/regmap/phy/snd: Fix comment referencing outdated timer documentation
-      powerpc/rtas: Use fsleep() to minimize additional sleep duration
-      media: anysee: Fix link to outdated sleep function documentation
-      timers/Documentation: Cleanup delay/sleep documentation
-
- Documentation/admin-guide/media/vivid.rst          |   2 +-
- Documentation/dev-tools/checkpatch.rst             |   6 -
- Documentation/timers/delay_sleep_functions.rst     | 122 +++++++
- Documentation/timers/index.rst                     |   2 +-
- Documentation/timers/timers-howto.rst              | 115 -------
- .../sp_SP/scheduler/sched-design-CFS.rst           |   2 +-
- MAINTAINERS                                        |   2 +
- arch/arm/mach-versatile/spc.c                      |   2 +-
- arch/m68k/q40/q40ints.c                            |   2 +-
- arch/powerpc/kernel/rtas.c                         |  21 +-
- arch/x86/kernel/cpu/mce/dev-mcelog.c               |   2 +-
- drivers/char/ipmi/ipmi_ssif.c                      |   2 +-
- drivers/dma-buf/st-dma-fence.c                     |   2 +-
- drivers/gpu/drm/i915/gem/i915_gem_wait.c           |   2 +-
- drivers/gpu/drm/i915/gt/selftest_execlists.c       |   4 +-
- drivers/gpu/drm/i915/i915_utils.c                  |   2 +-
- drivers/gpu/drm/v3d/v3d_bo.c                       |   2 +-
- drivers/isdn/mISDN/dsp_cmx.c                       |   2 +-
- drivers/media/usb/dvb-usb-v2/anysee.c              |   6 +-
- drivers/net/ethernet/marvell/mvmdio.c              |   2 +-
- drivers/regulator/core.c                           |  33 +-
- fs/xfs/xfs_buf.h                                   |   2 +-
- include/asm-generic/delay.h                        |  46 ++-
- include/linux/delay.h                              |  79 ++++-
- include/linux/iopoll.h                             |  24 +-
- include/linux/jiffies.h                            |   2 +-
- include/linux/phy.h                                |   7 +-
- include/linux/regmap.h                             |  18 +-
- include/linux/timekeeper_internal.h                |   2 +-
- kernel/cpu.c                                       |   2 +-
- kernel/time/Makefile                               |   2 +-
- kernel/time/alarmtimer.c                           |   2 +-
- kernel/time/clockevents.c                          |   2 +-
- kernel/time/hrtimer.c                              | 122 +------
- kernel/time/posix-timers.c                         |   4 +-
- kernel/time/sleep_timeout.c                        | 363 +++++++++++++++++++++
- kernel/time/timer.c                                | 210 +-----------
- lib/Kconfig.debug                                  |   2 +-
- mm/damon/core.c                                    |   5 +-
- net/batman-adv/types.h                             |   2 +-
- scripts/checkpatch.pl                              |  38 ---
- sound/soc/sof/ops.h                                |   6 +-
- 42 files changed, 668 insertions(+), 607 deletions(-)
-
+It is what I would expect, so I am not sure why might be different on powerpc.
 
