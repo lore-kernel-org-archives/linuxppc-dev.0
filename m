@@ -1,73 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-1070-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1071-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04ECACE7A9F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 21:16:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73FF3CE7AA0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 21:44:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X0BxL3pHrz300g;
-	Fri,  6 Sep 2024 07:16:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::535"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725570982;
-	cv=none; b=cNjNbBPwltvQrqYEr95W6zoUbfFGcflzlWMbKegPiTrSBbku3IF7hU/pUbEeCqDft5D61X/DfPeo1CJC6FO4YfKEtfUHtvjG5P3986RQgxSQVonv3u+Hz2aKOPG1MT/08ORaFLtpHoVVvWS+uxp4Z1zT7ll8Wi7PxL1gSW9NWRtzgnSogEIXPxuDRfyEJGcFWPyeZNQOYrfiz2ncsq/+TDR31N5ACRLuz9kRAje4X5O4ooZlV1DYh+nKs44XN+6PyjAt0PTlPM1gm3A+n3H2v+J5oTJFIhHdwZJNwVmWO5FWN6tLsArWTpWzpl804WLiVBwjjSAWTOD1jJnvmmnUeQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X0CYL09x3z300Y;
+	Fri,  6 Sep 2024 07:44:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=89.208.246.23
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725556162;
+	cv=none; b=b/ZMtMYiDFxt4wQ05thwVUYcSalKZNTILrIE9Omn/hnugqrM4GyyzmTpMSj2ch8L9WbcSuuTgRWhEqBryj9/xV7RKsyBkWXSNvC31v7VZpIYN9VXQdIblpVJoOGTXpD/cBBOMaY091sdjhkoad99HXC6uXezGvYZOGm8k64wLwpsGfDQ7Y2laUO8+v0//YrOXBBeG0IuajbXsSPIKWGFMfBQdEXz6AeiYq679zxpS1jgHaZ9t8EnzH9AaAsA7xHTQBCeq9UJyvP1OMo9hoc9/BhhMWXhak7irrLrqaS6dTuIjVOFq1iHRJm0tkLLLgpW5LyU8D4+stCdBxOdOSBSXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725570982; c=relaxed/relaxed;
-	bh=BC+wwN1fePLvWLzJkRJwUgtVdOqgdkSuyAR2hC6nLRw=;
-	h=DKIM-Signature:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc; b=PPq91mimRdFS5qTPYqxSDaxm6dek1bDil33wt3ckOnzNwvRZB/eGoRlKyIB/w8CvQSR/NHvva128Q94GEL35iWsh0lFo5VaQoP1sVzB8KNpzTQxtgkiq5PEFDfcKz9+LqEjdUYtKOoHGYzJN0RYVnBohO76XJ/ocerDYI9gQDFCEkZAXkux/W9zBm7RpS0fjSh9HtEwvSe/wDacKmxZz+2e1hbNpuQSPtr6q0gFG3svxfjcnAw/9uprlNQf2lL6qEF01TBv/ynCbhdObFvSzonBX8RmNw/Kc1TB4ZMCjxrFRBuptYSYYQX7arExgUFn7z+GNiJuFvgCxFaWNufj20g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rivosinc.com; dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20230601.gappssmtp.com header.i=@rivosinc-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=bzXUFzZk; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=charlie@rivosinc.com; receiver=lists.ozlabs.org) smtp.mailfrom=rivosinc.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rivosinc.com
+	t=1725556162; c=relaxed/relaxed;
+	bh=m7o5UxMVj4tZHSmvKnKAAWvKE9fBkiFe1G6UTAXy5Zo=;
+	h=DKIM-Signature:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
+	 References:Content-Type:MIME-Version; b=FakzUtpUEuHAA3RJ3iIGjgTorakiHa0ce2CexB+PJ+FpfZXy1r/+GiuKES4EVfQw+i+hLOYxASd6OeCxTM1vVTdg2NxmgNa0RXhiIhdwMgq5jMUzse/Uojz0FTu5Pu88d2voQrib90H5wuc/l2eT/YH7FCRa618BmCrVioFiYi/vi1p1yYDShjdGcYegNJF6pQrxYn3IPlOD2MhzoPSz2bYD39e8viDPoA1Rzh77jVHvoVIUN+InAcUmdpJZQNAEDg0bJcq1RIN0Iv9EYBugIJoKpK6nAdzArfVG/zAVpFx/jVfjpjph770M/IPwJphN/iU4mN+17ZP23nU4sl1Ekg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xry111.site; dkim=pass (1024-bit key; unprotected) header.d=xry111.site header.i=@xry111.site header.a=rsa-sha256 header.s=default header.b=eQnfTq5B; dkim-atps=neutral; spf=pass (client-ip=89.208.246.23; helo=xry111.site; envelope-from=xry111@xry111.site; receiver=lists.ozlabs.org) smtp.mailfrom=xry111.site
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xry111.site
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20230601.gappssmtp.com header.i=@rivosinc-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=bzXUFzZk;
+	dkim=pass (1024-bit key; unprotected) header.d=xry111.site header.i=@xry111.site header.a=rsa-sha256 header.s=default header.b=eQnfTq5B;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rivosinc.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=charlie@rivosinc.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xry111.site (client-ip=89.208.246.23; helo=xry111.site; envelope-from=xry111@xry111.site; receiver=lists.ozlabs.org)
+X-Greylist: delayed 466 seconds by postgrey-1.37 at boromir; Fri, 06 Sep 2024 03:09:22 AEST
+Received: from xry111.site (xry111.site [89.208.246.23])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0BxL2Bh4z2yVV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 07:16:22 +1000 (AEST)
-Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-7c6aee8e8daso997196a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Sep 2024 14:16:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1725570979; x=1726175779; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BC+wwN1fePLvWLzJkRJwUgtVdOqgdkSuyAR2hC6nLRw=;
-        b=bzXUFzZk1dcausQZV3YsG8iiH/17ICcsNskCgs7CgM9KIXtwuiWgN1sU7FSG2JjaAI
-         6bHPo1n90Mu1SVp5mw3qBEJVqmD1AcyFfkGztCeyGrCwtLE/0yi8KglU5FzBIL+KD2dd
-         2Q3ddW/wpTsSeIAq+6J7EDvcyclbojKZQBx+KluHqTk0fqLIfDHgxNl4aIOeej5KWFfE
-         OKtCGpIL/2w9CYOKFvRL+05SwxoKA4OkdN+8S3QHs7JkE1jHZWTlh4OuazNvftHidu72
-         tgnQ9z0lEscw3UJpUytSdtt0yZO+x+vrjGaP/nLDWMpGk6K62j0mF7JCN1GhLVfF2T4t
-         dZAg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725570979; x=1726175779;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=BC+wwN1fePLvWLzJkRJwUgtVdOqgdkSuyAR2hC6nLRw=;
-        b=YyYWPCUYkGPTs6HIjbiWc6adb7ZAof76Mvw/MOocawbZ50Bgg7ZYNJdhc0vMqylNXR
-         yYZ2Ui9E4EBag6ZXiUk/BrPrNj5gi3zA0fQaUfb4qb9fz2csBfwuRUlsPT46s0Bo+WT8
-         lVvSEbv6/rPEa+7DpZV7JsKJoZvIU5z2d6uyERm/v5/A9WrtVBkjI+fxB8ZC6WdVuqwh
-         HXm5HAreAs4heQV1DfBAR7fMq2lWOBHC59/DAk7yaAe4U7P+fEDoAL0Ry7bwCLpYcY25
-         TSJIP7ZsmR8/V67qfjJbzmyEKEWQRIDiMd+leSzqZGdhatytqP/vB6LdVV8sRplsbB4L
-         swqg==
-X-Forwarded-Encrypted: i=1; AJvYcCVUr/acYJNtYC0JSGlV6UXiId4C4p6vtJpGDnVW/J6TCsSWnYgFLeI68cew8cndvCrpiWodlN21kZnubC8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyVA1GR3glfwOlpXi+px+iuixAtLpXPtbOxmGTE9j4EJ8BMObA8
-	Ntyd8dCLYi7+dGAzMlfbPhqeYCxWPi3MDM6fOnDAgEEmUX59cqrJjtkcUsMzKs8=
-X-Google-Smtp-Source: AGHT+IEZNTxfv2Eh4MhBvC/nCmC/+9uGBr1mJ2SunSW5zA4oMdQE9dzvz6pYsZBAUp5dcakacvTYeg==
-X-Received: by 2002:a05:6a20:6f08:b0:1c6:a680:ef3d with SMTP id adf61e73a8af0-1cf1d13329emr317665637.28.1725570979059;
-        Thu, 05 Sep 2024 14:16:19 -0700 (PDT)
-Received: from charlie.ba.rivosinc.com ([64.71.180.162])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7d4fbda7abesm3775746a12.61.2024.09.05.14.16.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Sep 2024 14:16:18 -0700 (PDT)
-From: Charlie Jenkins <charlie@rivosinc.com>
-Date: Thu, 05 Sep 2024 14:15:52 -0700
-Subject: [PATCH RFC v3 2/2] selftests/mm: Create ADDR_LIMIT_47BIT test
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X05SL0w1xz2ykf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 03:09:21 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=xry111.site;
+	s=default; t=1725555689;
+	bh=m7o5UxMVj4tZHSmvKnKAAWvKE9fBkiFe1G6UTAXy5Zo=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+	b=eQnfTq5BofF4mjxLeycsVbeLthlkeKdeBFy6kb6apgzF2KPRhoEmrbxm4Pt15YLpl
+	 J6AB/gQdRsAEdR8B/fS5bK1Z52/xaWinCKV1s5TaL2dGA47Vu0O9PMHDxdnygC2BBV
+	 GpYLCmIMD28MIbLsPfcXaLYXxb10KQbzRkrANP5U=
+Received: from [IPv6:240e:358:11a3:ba00:dc73:854d:832e:2] (unknown [IPv6:240e:358:11a3:ba00:dc73:854d:832e:2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature ECDSA (secp384r1) server-digest SHA384)
+	(Client did not present a certificate)
+	(Authenticated sender: xry111@xry111.site)
+	by xry111.site (Postfix) with ESMTPSA id 9F4141A3F87;
+	Thu,  5 Sep 2024 13:01:18 -0400 (EDT)
+Message-ID: <edd9356165393818b4f1c9d4a4f3af4e561127e5.camel@xry111.site>
+Subject: Re: [PATCH v5 4/5] powerpc/vdso: Wire up getrandom() vDSO
+ implementation on VDSO32
+From: Xi Ruoyao <xry111@xry111.site>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, "Jason A. Donenfeld"
+	 <Jason@zx2c4.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Steven Rostedt
+ <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, Mathieu
+ Desnoyers <mathieu.desnoyers@efficios.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao
+ <naveen@kernel.org>, Nathan Chancellor <nathan@kernel.org>, Nick
+ Desaulniers <ndesaulniers@google.com>, Bill Wendling <morbo@google.com>,
+ Justin Stitt <justinstitt@google.com>, Shuah Khan <shuah@kernel.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kselftest@vger.kernel.org, llvm@lists.linux.dev, 
+ linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, 
+ linux-trace-kernel@vger.kernel.org, Adhemerval Zanella
+ <adhemerval.zanella@linaro.org>
+Date: Fri, 06 Sep 2024 01:01:13 +0800
+In-Reply-To: <85c02620-e8b2-4c97-9905-685a9a4e556d@csgroup.eu>
+References: <cover.1725304404.git.christophe.leroy@csgroup.eu>
+	 <1f49c2ce009f8b007ab0676fb41187b2d54f28b2.1725304404.git.christophe.leroy@csgroup.eu>
+	 <ZtnYqZI-nrsNslwy@zx2c4.com>
+	 <85c02620-e8b2-4c97-9905-685a9a4e556d@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.52.3 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,139 +80,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20240905-patches-below_hint_mmap-v3-2-3cd5564efbbb@rivosinc.com>
-References: <20240905-patches-below_hint_mmap-v3-0-3cd5564efbbb@rivosinc.com>
-In-Reply-To: <20240905-patches-below_hint_mmap-v3-0-3cd5564efbbb@rivosinc.com>
-To: Arnd Bergmann <arnd@arndb.de>, 
- Richard Henderson <richard.henderson@linaro.org>, 
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, 
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>, 
- Russell King <linux@armlinux.org.uk>, Guo Ren <guoren@kernel.org>, 
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>, 
- Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Naveen N Rao <naveen@kernel.org>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, 
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- "David S. Miller" <davem@davemloft.net>, 
- Andreas Larsson <andreas@gaisler.com>, Thomas Gleixner <tglx@linutronix.de>, 
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, 
- Peter Zijlstra <peterz@infradead.org>, Muchun Song <muchun.song@linux.dev>, 
- Andrew Morton <akpm@linux-foundation.org>, 
- "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
- Vlastimil Babka <vbabka@suse.cz>, 
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Shuah Khan <shuah@kernel.org>, 
- Christoph Hellwig <hch@infradead.org>, Michal Hocko <mhocko@suse.com>, 
- "Kirill A. Shutemov" <kirill@shutemov.name>, 
- Chris Torek <chris.torek@gmail.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
- linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, 
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
- sparclinux@vger.kernel.org, linux-mm@kvack.org, 
- linux-kselftest@vger.kernel.org, linux-abi-devel@lists.sourceforge.net, 
- Charlie Jenkins <charlie@rivosinc.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2582; i=charlie@rivosinc.com;
- h=from:subject:message-id; bh=v+6JyaTNEum7sQVRfCLlZa2h0GjRhYNybjctqPTjXjI=;
- b=owGbwMvMwCHWx5hUnlvL8Y3xtFoSQ9ot+RkaGxaJ/61aKCWQFuW4/RLXZ/ZytuJlXCePW/lm/
- BEMfPmgo5SFQYyDQVZMkYXnWgNz6x39sqOiZRNg5rAygQxh4OIUgIl8VmJkmJ40y3j9/d1mFyvf
- My3sVpqs+9/6YNER2ftWy07b31r7azfDfzfJmfzFLLNYSxYW7GExLQoUvbVs9j2GHob0FXfdby4
- 9wwcA
-X-Developer-Key: i=charlie@rivosinc.com; a=openpgp;
- fpr=7D834FF11B1D8387E61C776FFB10D1F27D6B1354
 
-Add a selftest for the ADDR_LIMIT_47BIT personality flag that mmaps
-until it runs out of space and ensures no addresses are allocated above
-47 bits.
+On Thu, 2024-09-05 at 18:55 +0200, Christophe Leroy wrote:
+> > Normal single thread
+> > =C2=A0=C2=A0=C2=A0=C2=A0 vdso: 25000000 times in 12.494133131 seconds
+> > =C2=A0=C2=A0=C2=A0=C2=A0 libc: 25000000 times in 69.594625188 seconds
+> > syscall: 25000000 times in 67.349243972 seconds
+> > Time namespace single thread
+> > =C2=A0=C2=A0=C2=A0=C2=A0 vdso: 25000000 times in 71.673057436 seconds
+> > =C2=A0=C2=A0=C2=A0=C2=A0 libc: 25000000 times in 71.712774121 seconds
+> > syscall: 25000000 times in 66.902318080 seconds
+> >=20
+> > I'm seeing this on ppc, ppc64, and ppc64le.
+>=20
+> What is the command to use to test with time namespace ?
 
-Signed-off-by: Charlie Jenkins <charlie@rivosinc.com>
----
- tools/testing/selftests/mm/.gitignore              |  1 +
- tools/testing/selftests/mm/Makefile                |  1 +
- tools/testing/selftests/mm/map_47bit_personality.c | 34 ++++++++++++++++++++++
- 3 files changed, 36 insertions(+)
+Assuming user namespace and time namespace are available:
 
-diff --git a/tools/testing/selftests/mm/.gitignore b/tools/testing/selftests/mm/.gitignore
-index da030b43e43b..918ef05e180d 100644
---- a/tools/testing/selftests/mm/.gitignore
-+++ b/tools/testing/selftests/mm/.gitignore
-@@ -32,6 +32,7 @@ mlock-random-test
- virtual_address_range
- gup_test
- va_128TBswitch
-+map_47bit_personality
- map_fixed_noreplace
- write_to_hugetlbfs
- hmm-tests
-diff --git a/tools/testing/selftests/mm/Makefile b/tools/testing/selftests/mm/Makefile
-index cfad627e8d94..2e95fd545409 100644
---- a/tools/testing/selftests/mm/Makefile
-+++ b/tools/testing/selftests/mm/Makefile
-@@ -50,6 +50,7 @@ TEST_GEN_FILES += hugepage-shm
- TEST_GEN_FILES += hugepage-vmemmap
- TEST_GEN_FILES += khugepaged
- TEST_GEN_FILES += madv_populate
-+TEST_GEN_FILES += map_47bit_personality
- TEST_GEN_FILES += map_fixed_noreplace
- TEST_GEN_FILES += map_hugetlb
- TEST_GEN_FILES += map_populate
-diff --git a/tools/testing/selftests/mm/map_47bit_personality.c b/tools/testing/selftests/mm/map_47bit_personality.c
-new file mode 100644
-index 000000000000..453412990c21
---- /dev/null
-+++ b/tools/testing/selftests/mm/map_47bit_personality.c
-@@ -0,0 +1,34 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Test the ADDR_LIMIT_47BIT personality flag.
-+ */
-+#include <sys/syscall.h>
-+#include <sys/mman.h>
-+#include <errno.h>
-+#include "../kselftest.h"
-+
-+#define LENGTH (100000000)
-+
-+#define ADDR_LIMIT_47BIT	0x10000000
-+#define BIT47			1UL << 47
-+
-+/*
-+ * Map memory with ADDR_LIMIT_47BIT until no memory left. Ensure that all returned
-+ * addresses are below 47 bits.
-+ */
-+int main(int argc, char **argv)
-+{
-+	void *addr;
-+
-+	syscall(__NR_personality, ADDR_LIMIT_47BIT);
-+
-+	do {
-+		addr = mmap(0, LENGTH, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-+	} while (addr != MAP_FAILED && (unsigned long)addr < BIT47);
-+
-+	if (errno == ENOMEM)
-+		ksft_test_result_pass("ADDR_LIMIT_47BIT works\n");
-+	else
-+		ksft_test_result_fail("mmap returned address above 47 bits with ADDR_LIMIT_47BIT with addr: %p and err: %s\n",
-+				      addr, strerror(errno));
-+}
+$ unshare -r -T --boottime $((365*24*3600))
 
--- 
-2.45.0
+It'll start a new shell where you are pretended to be the root (i.e. the
+root in the separated user namespace).  Then:
 
+# uptime
+ 00:57:17 up 365 days, 57 min,  2 users,  load average: 0.19, 0.30, 0.32
+
+So in the separated time namespace the system is pretended to have been
+booted for 1 year.  Now:
+
+# /path/to/linux.git/tools/testing/selftests/vDSO/vdso_test_getrandom bench=
+_single
+   vdso: 25000000 times in 0.419125373 seconds
+   libc: 25000000 times in 5.985498234 seconds
+syscall: 25000000 times in 5.993506773 seconds
+
+This is on x86_64, indicating vDSO getrandom is fine for x86_64 in a
+separated time namespace.
+
+If user namespace isn't available (disabled building the kernel or
+disabled by the security policy of some distros) use
+
+$ sudo unshare -T --boottime $((365*24*3600))
+
+to create the time namespace instead.  But note that with this approach
+you'll be operating as the real root user and be careful not to break
+things.
+
+--=20
+Xi Ruoyao <xry111@xry111.site>
+School of Aerospace Science and Technology, Xidian University
 
