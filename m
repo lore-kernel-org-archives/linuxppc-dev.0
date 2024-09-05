@@ -1,93 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-1040-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1041-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DFAECD5BA0
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 09:23:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 992A0CD4F5F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 09:25:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzv6z55Lgz2y92;
-	Thu,  5 Sep 2024 19:23:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.156
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725528219;
-	cv=none; b=O0Y/KYalN6bqnJ8f9FU7OOL8A9SCu5dTo7eTjUwpXkF3xohmsFZ3Azq3hccl3e+ouB93XAgHaW4DxYRe2N6DtRPObghh6JM+tpjqC+xU9HF5/iLe8jX8EASWOosVnTxQcBBB7C92BidX1xgTIPjSQr/N9kOh8EWm3WpjSbIQ2fMmXhGqaLayr1YxMl7ycZsj9xhC9q5s+y8TyD4kUHdlY+hVUkn6O4u5WE6eYcaDkDAEGO/EZU+FfW0NUkxiNOVJ9wZuH7A2Q3HdbIF6LFGZPk9FIJujHOwy1Dk4tdeNZpgGfyNWL2Y4tds6FNa68wXDHSs+fE61jyMWo1UKzrO3bw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzv8X2CcGz2yYk;
+	Thu,  5 Sep 2024 19:25:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=51.81.35.219
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725526916;
+	cv=none; b=GRsJhF5YhV2vwBaoYbx5hNPDeHTtLAhJUHkqeMdH1i5L9L2O++4F1GFOfluEfMSrY6eCoy6GF25MVmRy90ENj6LEEvr2Kf+3mPUTMqFXUGDCu3SqrpxmXksLF9rXOul7daqMUaKb/16gkXVFpS7V+Vr8rHrfFjPjhONgnEXh2+kWjCh6RZB4JUS3EIZBf733Xf3cg0bQtgwfW+a3ihittCW6Jl7xnfmQFWqv+LhZuZLzdW+JHWfAO44aZCsTsL+vMZ/1LITslmxMatQluQck+qdc97o8p9HozfL7as+ExBys6Q9a0IRq/9xa07R+q+vBzn729Me7P1l+wAywwnC0+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725528219; c=relaxed/relaxed;
-	bh=/kd72puemH7HG5k90wuxIWlVONqVTbIySxjDZBLyORg=;
-	h=DKIM-Signature:DKIM-Signature:MIME-Version:Date:From:To:Cc:
-	 Message-Id:In-Reply-To:References:Subject:Content-Type; b=TuhMMI6GvBHiNiHqy+RWCWSW14LAIIc3NHKoHGTgLFxgQlM7gh9ZA0cG66teHU0eD2eEsoVgcJY39I2PgGruGd4qt9LvZ/HdNwv70Jon7adlUdyHDcffwv4HEW/cq8vLr1JCPnkfvpzKmQMHtsI//TLeMUW7ZiUbOMbPw9BOPNshBmGikBVngYymY8AUZxpoOWMOuPzFIb1qiiOI9iQTiWk1EabdH1a0/pvfzMJmvpHwkA81Fd4khdllFxq/B4UL2PQlYB+5SYBfPNEAjAKujn7mp014WikYQ5uM6m1rWymjEwAMX17TXHZIla9ey7DwARNSxtlh3K/4qY2TwDPSjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=BkwxLa2W; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=mc/5r8qk; dkim-atps=neutral; spf=pass (client-ip=103.168.172.156; helo=fhigh5-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1725526916; c=relaxed/relaxed;
+	bh=H9MpIYSRcEX+VD9OMp2crHKTWLp2ChM3Wcl4xbI1QDs=;
+	h=DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:MIME-Version;
+	b=XSjDiDB8sGBw4Kzdkew/0rWFfU2CRYYWvO/jmJCdYgWCkWQwaioT4ULj8vXKuwcCxdh/lcqjjCAtsj96s+TahYVANFrJ1uvQw3sBvMa1i6rysPoI0vMMI74beYk88pnYdRZHk4va9+iwyFnPRYYL+NEDQ1gHHPK7mv46MUT59DStq9Yf+xdv2WxE7/UWAfdSHkE41uBzdLwg4I1E+VX46NMgalOQOfOGdCCpvLidoBCO2c/nQLbIxt6NkAi5UyGlE9755TxG+eFpu5i3+q7uIXwFJYuDih6OHBAIkSiT55XcgWaoj8hMVgOUzhHHPauj3h2zZi7IbW8CyrgmIji8/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=aosc.io; dkim=pass (1024-bit key; unprotected) header.d=aosc.io header.i=@aosc.io header.a=rsa-sha256 header.s=default header.b=w3IN+vsm; dkim-atps=neutral; spf=pass (client-ip=51.81.35.219; helo=relay-us1.mymailcheap.com; envelope-from=kexybiscuit@aosc.io; receiver=lists.ozlabs.org) smtp.mailfrom=aosc.io
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=aosc.io
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=BkwxLa2W;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=mc/5r8qk;
+	dkim=pass (1024-bit key; unprotected) header.d=aosc.io header.i=@aosc.io header.a=rsa-sha256 header.s=default header.b=w3IN+vsm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.156; helo=fhigh5-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from fhigh5-smtp.messagingengine.com (fhigh5-smtp.messagingengine.com [103.168.172.156])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aosc.io (client-ip=51.81.35.219; helo=relay-us1.mymailcheap.com; envelope-from=kexybiscuit@aosc.io; receiver=lists.ozlabs.org)
+X-Greylist: delayed 383 seconds by postgrey-1.37 at boromir; Thu, 05 Sep 2024 19:01:55 AEST
+Received: from relay-us1.mymailcheap.com (relay-us1.mymailcheap.com [51.81.35.219])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wztdv6sQmz2xnc
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 19:01:55 +1000 (AEST)
+Received: from relay5.mymailcheap.com (relay5.mymailcheap.com [159.100.248.207])
+	by relay-us1.mymailcheap.com (Postfix) with ESMTPS id D252F202DD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 08:55:28 +0000 (UTC)
+Received: from relay3.mymailcheap.com (relay3.mymailcheap.com [217.182.119.157])
+	by relay5.mymailcheap.com (Postfix) with ESMTPS id 201332619F
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 08:55:22 +0000 (UTC)
+Received: from nf2.mymailcheap.com (nf2.mymailcheap.com [54.39.180.165])
+	by relay3.mymailcheap.com (Postfix) with ESMTPS id 96F293E970;
+	Thu,  5 Sep 2024 10:55:16 +0200 (CEST)
+Received: from mail20.mymailcheap.com (mail20.mymailcheap.com [51.83.111.147])
+	by nf2.mymailcheap.com (Postfix) with ESMTPSA id 91B81400B3;
+	Thu,  5 Sep 2024 08:55:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=aosc.io; s=default;
+	t=1725526514; bh=f1MPAD4O/d2BtmRLp4/BYgjptMhBAm5TS4m5Ii3NVJY=;
+	h=From:To:Cc:Subject:Date:From;
+	b=w3IN+vsmPVD4TLlGAVgh4wAY9Bqv2QZbp8Oj/VVoDmNq6/9tyh4jXwVK6JAzQ/LVF
+	 8uQeyoQK7+wn1+qwvO6gy5cOT2U1uHPL1qEAP22SWNT8bbwYFwhtipACq8SzjrU2E8
+	 GQ/nP3k13J5pz/FrVkhMNSb55MnWeqkqwxHWitsw=
+Received: from localhost.localdomain (unknown [58.32.40.121])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wzv6w3DVDz2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 19:23:35 +1000 (AEST)
-Received: from phl-compute-04.internal (phl-compute-04.phl.internal [10.202.2.44])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id 75D99114012C;
-	Thu,  5 Sep 2024 05:23:32 -0400 (EDT)
-Received: from phl-imap-11 ([10.202.2.101])
-  by phl-compute-04.internal (MEProxy); Thu, 05 Sep 2024 05:23:32 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1725528212;
-	 x=1725614612; bh=/kd72puemH7HG5k90wuxIWlVONqVTbIySxjDZBLyORg=; b=
-	BkwxLa2WEoy8SOhL4ZQfEBGnMx9iUu4JMtVeQtWn8xwCPMDarpkqPPLbGHlxCuId
-	v0Sh0g3opi/cbrUcFgD8lentdBESbNyTZjLAEsoj7qJ6JVaHKikyuOo0f7ceOpca
-	XvwOqM/C1iNrdz5b0w58Jwo0jifr6UtKmRuVMpB1AGleMf8eC2MkpCNS0URKTLFQ
-	oCaRr+r1egywwKu9crfzlMtE5ki+iW/a4yx9cZdk60A1E+WzOPWuaIDARChrOtgz
-	/NZLHcWuAdLnv/IKukNseXfhiVCs52Rk+BYxwuDa0zIirzPW+H4xfMNxxrZzEks1
-	+2kYyknF70Tnn/uhAslWBg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1725528212; x=
-	1725614612; bh=/kd72puemH7HG5k90wuxIWlVONqVTbIySxjDZBLyORg=; b=m
-	c/5r8qk0GYWh2cw3TsbKB3aNZIXLr8CTLhciWmeQNmT0jvyYD8Wxm8tToAU4OR9H
-	06s5dLq3S3826SHP8k53hfasyJLnHdFFZ+akMJ/ngg7bGcpuaNqH7W5HgOGmvoE4
-	Z6OvYCoukTgaiDWeA7ZUi1mXMusqXSREpwIwT2h1Pg93KKWqPWOhyUj9i05Ps3s2
-	tHGEI7ZaaWI0ccJnILAEW18kPSSkHsMOksWMnp5C3lfE+Y/1RUbTGAAD3NmdkgYP
-	T08qFnPDq7lJmwlplrRmkpcMe8xj1e1ob0OLwpq5KPwtythqcxOtRzylsx5p5U4K
-	u1ivnMlQgNWYvgnCixvXA==
-X-ME-Sender: <xms:lHjZZlQQ2Qw3yVmlRqsbAFDjpai9VPp69EbjE71ej2RDlSQapf0pGg>
-    <xme:lHjZZuyHfapqOLfVsJkivhV8EB6ik-GlVcrqSeoSaowd6IEB6oAKO7xzqe3L2ycz6
-    Z9-QT78PIbG8aS9c3E>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeftddrudehledgudehucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggvpdfu
-    rfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnh
-    htshculddquddttddmnecujfgurhepofggfffhvfevkfgjfhfutgfgsehtqhertdertdej
-    necuhfhrohhmpedftehrnhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrd
-    guvgeqnecuggftrfgrthhtvghrnhepkedvuefhiedtueeijeevtdeiieejfeelvefffeel
-    keeiteejffdvkefgteeuhffgnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucevlh
-    hushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnugesrghr
-    nhgusgdruggvpdhnsggprhgtphhtthhopeekpdhmohguvgepshhmthhpohhuthdprhgtph
-    htthhopehhvghrvhgvrdgtohguihhnrgessghoohhtlhhinhdrtghomhdprhgtphhtthho
-    pehthhhomhgrshdrphgvthgriiiiohhnihessghoohhtlhhinhdrtghomhdprhgtphhtth
-    hopegthhhrihhsthhophhhvgdrlhgvrhhohiestghsghhrohhuphdrvghupdhrtghpthht
-    oheplhhkphesihhnthgvlhdrtghomhdprhgtphhtthhopehlihhnuhigqdgrrhhmqdhkvg
-    hrnhgvlheslhhishhtshdrihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehlihhn
-    uhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdhrtghpthhtohepqh
-    hirghnghdriihhrghosehngihprdgtohhmpdhrtghpthhtoheplhhinhhugidqkhgvrhhn
-    vghlsehvghgvrhdrkhgvrhhnvghlrdhorhhg
-X-ME-Proxy: <xmx:lHjZZq0_gUxdYs52_lYFfs3Gcxe_laL-EPCwRgcl5860KAfu4aUH8g>
-    <xmx:lHjZZtD2nLCV2YRN4VsCWKoFP28K-xSwNB1y5UG9WINURKSJo5OySA>
-    <xmx:lHjZZui6l1yvfHJMIJpoeezgW0M48_GP4OGXTmsByBywf97izulwBw>
-    <xmx:lHjZZhqhTb3ztlLlAaU5MQciyiTve5aBAPO2hIR1dDi8M7J60cY-nQ>
-    <xmx:lHjZZijlSE6Ptrs17NVCvIjDgdPUK0t3wyiXfewthpeyB9d73kfRJNpq>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 2A2312220071; Thu,  5 Sep 2024 05:23:32 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by mail20.mymailcheap.com (Postfix) with ESMTPSA id ECFFF42639;
+	Thu,  5 Sep 2024 08:55:07 +0000 (UTC)
+From: Kexy Biscuit <kexybiscuit@aosc.io>
+To: stefanb@linux.ibm.com,
+	jarkko@kernel.org,
+	linux-integrity@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org,
+	mpe@ellerman.id.au,
+	naveen.n.rao@linux.ibm.com,
+	zohar@linux.ibm.com,
+	Kexy Biscuit <kexybiscuit@aosc.io>,
+	stable@vger.kernel.org,
+	kernel test robot <lkp@intel.com>,
+	Mingcong Bai <jeffbai@aosc.io>
+Subject: [PATCH v2 RESEND] tpm: export tpm2_sessions_init() to fix ibmvtpm building
+Date: Thu,  5 Sep 2024 16:52:20 +0800
+Message-ID: <20240905085219.77240-2-kexybiscuit@aosc.io>
+X-Mailer: git-send-email 2.46.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,46 +80,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Date: Thu, 05 Sep 2024 09:23:10 +0000
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Christophe Leroy" <christophe.leroy@csgroup.eu>,
- "Herve Codina" <herve.codina@bootlin.com>, "Qiang Zhao" <qiang.zhao@nxp.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org,
- "Thomas Petazzoni" <thomas.petazzoni@bootlin.com>,
- "kernel test robot" <lkp@intel.com>
-Message-Id: <24dd3479-6fef-43ec-bcec-e70474128e53@app.fastmail.com>
-In-Reply-To: <7091c023-c7e6-4b3a-b306-12d73b8f6698@csgroup.eu>
-References: <20240905072215.337010-1-herve.codina@bootlin.com>
- <7091c023-c7e6-4b3a-b306-12d73b8f6698@csgroup.eu>
-Subject: Re: [PATCH] soc: fsl: qe: ucc: Export ucc_mux_set_grant_tsa_bkpt
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Queue-Id: 91B81400B3
+X-Rspamd-Server: nf2.mymailcheap.com
+X-Spamd-Result: default: False [1.40 / 10.00];
+	MID_CONTAINS_FROM(1.00)[];
+	R_MISSING_CHARSET(0.50)[];
+	MIME_GOOD(-0.10)[text/plain];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_TWELVE(0.00)[12];
+	RCVD_COUNT_ONE(0.00)[1];
+	ASN(0.00)[asn:16276, ipnet:51.83.0.0/16, country:FR];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_ALL(0.00)[]
+X-Rspamd-Action: no action
 
-On Thu, Sep 5, 2024, at 07:31, Christophe Leroy wrote:
-> Le 05/09/2024 =C3=A0 09:22, Herve Codina a =C3=A9crit=C2=A0:
->> When TSA is compiled as module the following error is reported:
->>    "ucc_mux_set_grant_tsa_bkpt" [drivers/soc/fsl/qe/tsa.ko] undefined!
->>=20
->> Indeed, the ucc_mux_set_grant_tsa_bkpt symbol is not exported.
->>=20
->> Simply export ucc_mux_set_grant_tsa_bkpt.
->>=20
->> Reported-by: kernel test robot <lkp@intel.com>
->> Closes: https://lore.kernel.org/oe-kbuild-all/202409051409.fszn8rEo-l=
-kp@intel.com/
->> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
->
-> Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->
-> Arnd, it is ok for you to take this patch directly ?
+Commit 08d08e2e9f0a ("tpm: ibmvtpm: Call tpm2_sessions_init() to
+initialize session support") adds call to tpm2_sessions_init() in ibmvtpm,
+which could be built as a module. However, tpm2_sessions_init() wasn't
+exported, causing libmvtpm to fail to build as a module:
 
-I've applied this one directly, but I'm not always paying attention
-to patches flying by, so if you have more fixes like this in the future,
-I recommend that you forward those to soc@kernel.org, either as a patch
-or a pull request.
+ERROR: modpost: "tpm2_sessions_init" [drivers/char/tpm/tpm_ibmvtpm.ko] undefined!
 
-That way, I see them in patchwork and will apply them from there.
+Export tpm2_sessions_init() to resolve the issue.
 
-      Arnd
+Cc: stable@vger.kernel.org # v6.10+
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202408051735.ZJkAPQ3b-lkp@intel.com/
+Fixes: 08d08e2e9f0a ("tpm: ibmvtpm: Call tpm2_sessions_init() to initialize session support")
+Signed-off-by: Kexy Biscuit <kexybiscuit@aosc.io>
+Signed-off-by: Mingcong Bai <jeffbai@aosc.io>
+---
+V1 -> V2: Added Fixes tag and fixed email format
+RESEND: The previous email was sent directly to stable-rc review
+
+ drivers/char/tpm/tpm2-sessions.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/char/tpm/tpm2-sessions.c b/drivers/char/tpm/tpm2-sessions.c
+index d3521aadd43e..44f60730cff4 100644
+--- a/drivers/char/tpm/tpm2-sessions.c
++++ b/drivers/char/tpm/tpm2-sessions.c
+@@ -1362,4 +1362,5 @@ int tpm2_sessions_init(struct tpm_chip *chip)
+ 
+ 	return rc;
+ }
++EXPORT_SYMBOL(tpm2_sessions_init);
+ #endif /* CONFIG_TCG_TPM2_HMAC */
+-- 
+2.46.0
+
 
