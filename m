@@ -1,46 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-1055-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1056-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94653CD5BAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 12:24:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64BE6CD5BB7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 12:24:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzz79224Tz2yvx;
-	Thu,  5 Sep 2024 22:24:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.181
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725539045;
-	cv=none; b=mKgM5PQNsDyldho/rNVkf8eWEcn9Y0NZj94iVOxQPyEkiI100vXkB/mj1u4JAjvbG4+tWPrBnGLF+95dwl0trrH2IK/rGIOcn7r6cVkzZlMsX6KtAX3E5iBzOs5s0lBvVwTMQkIyvNdoMl1gnLIvv7ArrANw7JMmIb3D63fu/GgM/9ye234jce4yJGyTRBu/f6FkU5nk8YPkrjoRFrAjPYrat4nDzZnUknjNAVtsZvY/xFXUT9aVEMOR54FAC2R4b0aUSVGMtW2GwGeM7hkqF5nvgWURKolSbp//6+GFVKukER2S9Gsiys01KupP60P0p5BLiY6ZNzKX5KFSgxFA5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzz7C0DhXz2ywq;
+	Thu,  5 Sep 2024 22:24:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725539047;
+	cv=none; b=AeNljOlSAg7E2VZk+rdSvqHHwVhModo7Ks4Wtd1OLMbNW2tUfm26XxDPhTz31lBW6GaR/nfC75MemDF/Gp/vjpRroeBXPFtMleMvDEwPOUP3qNe1fQAZsq0hYKYhDIpBzDKzOUXupbr3r5yYDFCAhvjg3cMzZ+rQE49gKgl7M6prf8OLhWlME03q0M8iaUWwaVOlVQMWCBVbjZzqyh3ETjGhrrYTeSGGpRN8I3rcklxDgis6oo1T/y6RXOlhtrpOdUbezZSoVhuvAJLRrV2++KPIT0uABZ8jR9sebVnxV8t+CQ522Qs5NZE1VJ2G8bQflt8HZ13HfBaLYPZ6yXsOQQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725539045; c=relaxed/relaxed;
-	bh=lLByLv8rw/zOL3j4lfqH8Y8PpLKTX3K0pHjcs2rvP4s=;
-	h=Content-Type:DKIM-Signature:Mime-Version:Subject:From:In-Reply-To:
-	 Date:Cc:Message-Id:References:To; b=cXVEcYHrTUOMNPujzNlTl/+cJmRFW+fg3YW8m/wocXQnx4p0BAfnqaUZatQ2KlwKhu/L5DeqKEGcnOCKsoLTgagN+0wntrsTNAJg+wMJ2yzvjBfNNONijPNu8NJ/ETGKK8lNloV9wyJv0kQxBiWVEHEXVd7hdo7xGY7RRfpxXJSd1GAPfMaCeWsciUDFWYN9dRD34nBadHUdDX88JbzD4Lm+kMFP5hPVhp39qCN3uyQev0vRZmIHB7gEjKz1PwJ+Y5l3eijOTSpPqnBCbePxcsNgMh9p9OYIkAO3+qeciqjfjHVtfKixJ9z8PTdt+qmDVYOimS0vKN6COX/zwINSMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=qIprDKky; dkim-atps=neutral; spf=pass (client-ip=91.218.175.181; helo=out-181.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1725539047; c=relaxed/relaxed;
+	bh=mUdYVDhcBbnbe8Qnsh0MBGJ/CuaR+SGTw9WGn1Sesjw=;
+	h=DKIM-Signature:From:To:Cc:Subject:In-Reply-To:References:Date:
+	 Message-ID:MIME-Version:Content-Type; b=B7hUZV2tcbTWa2tooxYtYcwU5Bvgrh8LhSHqd2QHpgwLap0AINBdnFzm5sqEZA2eX0Ez3gMT1nqS+OyYbM6mn6idtHifj0Um50tETKkUMh5MjNhQ/4StkAUxO7TiR3HSmCIHGOIs5VTbCW38wG4CDNUIjaSLP87Hti1hCUljh3aRW7qdzZ7J/lJ/8z9Tpz8dSlTvlTHr1ez9tfpDO0g6V09Niub2cZUDvyw01WGJe64j1sLPtC7m9QbeRlWvzKYt+dQKnDhIgu25M1T+De/dZzr+XpnxbcEeB3v86YESAS48SdWY62a/WcHmQGIhBOTEiFEdBkw9yKLPY+NTm4LI3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aNE0hW3k; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=qIprDKky;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aNE0hW3k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.181; helo=out-181.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-181.mta0.migadu.com (out-181.mta0.migadu.com [91.218.175.181])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wzz7873fXz2ysg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 22:24:04 +1000 (AEST)
-Content-Type: text/plain;
-	charset=us-ascii
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1725539026;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=lLByLv8rw/zOL3j4lfqH8Y8PpLKTX3K0pHjcs2rvP4s=;
-	b=qIprDKky84jYBcTOlWU0VsCg3PCkUABBoUNoabNnPl/kHYtmLYn6JrjyHwQZD2PlANABeN
-	SWQT3EbNY1AeZs6F/KKpmrJh7OKyFFzsvYVx4NEjaerCpC5YiPojpdrWYArdGSJX3H6yJE
-	rdLsViLeoTGcKRE4dGRvnpDBrtxgxck=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wzz7B3xMDz2ysg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 22:24:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1725539046;
+	bh=mUdYVDhcBbnbe8Qnsh0MBGJ/CuaR+SGTw9WGn1Sesjw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=aNE0hW3ktB5ARsICz/sDICJpPHa+7JLjwZbfyZgZ3pBirixCFOKOHsJlHJKueCT+4
+	 oO/jlji0rW5pNKsVEZb9l1e+vrwuXvXHlzxe3cW/CD+/DxV2M5RhbL/mu/Pxk+02P9
+	 qsipRyRV0PDMs0nXFL0649/B2oYRSZgVw2QMf74t1tyGqR0SZL1fjy6VA2WsTdDrJZ
+	 nFFHe+UBoIVY4RgE3JcARKeeLqK1M/Ui2reF+e1tAZ92g0d32LXyubGymdFC3d3Fuc
+	 iqGnn6qGk8pQ972Et1Be/4tzXT7uvXw6+nDOIi3J5F7PsxjXKcp9OpButWBGUjKxsh
+	 Rbiu1u9E3GfiA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Wzz795cY6z4x0H;
+	Thu,  5 Sep 2024 22:24:05 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anna-Maria Behnsen <anna-maria@linutronix.de>, Frederic Weisbecker
+ <frederic@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jonathan
+ Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael
+ J. Wysocki" <rafael@kernel.org>, Anna-Maria Behnsen
+ <anna-maria@linutronix.de>, Nathan Lynch <nathanl@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 13/15] powerpc/rtas: Use fsleep() to minimize additional
+ sleep duration
+In-Reply-To: <20240904-devel-anna-maria-b4-timers-flseep-v1-13-e98760256370@linutronix.de>
+References: <20240904-devel-anna-maria-b4-timers-flseep-v1-0-e98760256370@linutronix.de>
+ <20240904-devel-anna-maria-b4-timers-flseep-v1-13-e98760256370@linutronix.de>
+Date: Thu, 05 Sep 2024 22:24:05 +1000
+Message-ID: <87cyli5lwa.fsf@mail.lhotse>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -49,47 +67,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3776.700.51\))
-Subject: Re: [PATCH v3 12/14] mm: multi-gen LRU: walk_pte_range() use
- pte_offset_map_rw_nolock()
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <20240904084022.32728-13-zhengqi.arch@bytedance.com>
-Date: Thu, 5 Sep 2024 20:23:05 +0800
-Cc: David Hildenbrand <david@redhat.com>,
- Hugh Dickins <hughd@google.com>,
- Matthew Wilcox <willy@infradead.org>,
- "Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
- akpm@linux-foundation.org,
- rppt@kernel.org,
- vishal.moola@gmail.com,
- peterx@redhat.com,
- ryan.roberts@arm.com,
- christophe.leroy2@cs-soprasteria.com,
- linux-kernel@vger.kernel.org,
- linux-mm@kvack.org,
- linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Content-Transfer-Encoding: 7bit
-Message-Id: <6867F624-A83C-4A3C-947D-ECFA4925130F@linux.dev>
-References: <20240904084022.32728-1-zhengqi.arch@bytedance.com>
- <20240904084022.32728-13-zhengqi.arch@bytedance.com>
-To: Qi Zheng <zhengqi.arch@bytedance.com>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+Content-Type: text/plain
+
+Anna-Maria Behnsen <anna-maria@linutronix.de> writes:
+> When commit 38f7b7067dae ("powerpc/rtas: rtas_busy_delay() improvements")
+> was introduced, documentation about proper usage of sleep realted functions
+> was outdated.
+>
+...
+> Use fsleep() directly instead of using an own heuristic for the best
+> sleeping mechanism to use..
+
+Thanks for tidying this up. I only learnt about fsleep() in the last ~year.
+
+Two minor nits ...
+
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index f7e86e09c49f..0794ca28e51e 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -1390,21 +1390,14 @@ bool __ref rtas_busy_delay(int status)
+>  		 */
+>  		ms = clamp(ms, 1U, 1000U);
+>  		/*
+> -		 * The delay hint is an order-of-magnitude suggestion, not
+> -		 * a minimum. It is fine, possibly even advantageous, for
+> -		 * us to pause for less time than hinted. For small values,
+> -		 * use usleep_range() to ensure we don't sleep much longer
+> -		 * than actually needed.
+> -		 *
+> -		 * See Documentation/timers/timers-howto.rst for
+> -		 * explanation of the threshold used here. In effect we use
+> -		 * usleep_range() for 9900 and 9901, msleep() for
+> -		 * 9902-9905.
+> +		 * The delay hint is an order-of-magnitude suggestion, not a
+> +		 * minimum. It is fine, possibly even advantageous, for us to
+> +		 * pause for less time than hinted. To make sure pause time will
+> +		 * not be a way longer than requested independent of HZ
+ 
+"not be way longer" reads better I think?
+
+> +		 * configuration, use fsleep(). See fsleep() for detailes of
+                                                                 ^
+                                                                 details
+> +		 * used sleeping functions.
+>  		 */
+> -		if (ms <= 20)
+> -			usleep_range(ms * 100, ms * 1000);
+> -		else
+> -			msleep(ms);
+> +		fsleep(ms * 1000);
+>  		break;
+>  	case RTAS_BUSY:
+>  		ret = true;
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
 
-
-> On Sep 4, 2024, at 16:40, Qi Zheng <zhengqi.arch@bytedance.com> wrote:
-> 
-> In walk_pte_range(), we may modify the pte entry after holding the ptl, so
-> convert it to using pte_offset_map_rw_nolock(). At this time, the
-> pte_same() check is not performed after the ptl held, so we should get
-> pmdval and do pmd_same() check to ensure the stability of pmd entry.
-> 
-> Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
-
-Reviewed-by: Muchun Song <muchun.song@linux.dev>
-
-Thanks.
-
+cheers
 
