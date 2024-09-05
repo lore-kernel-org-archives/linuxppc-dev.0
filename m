@@ -1,68 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-1044-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1045-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8497BCD5BA7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 10:25:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CE28CD5BA7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 10:33:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WzwVs5t5cz2ysZ;
-	Thu,  5 Sep 2024 20:25:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725531957;
-	cv=none; b=nulsyi9GBq34z++PgyURvRv4+iObQq5tBJ2bvpIhFhVTV6sCVR3nxphN/6NfF+ZiGjGBiJ5YK8tvkOxAjDs2H5cyNa1oEpP7IgKdBtWnbczDd7+xe+WvZdyhGDNbVeTw5gU0B3e+RpksHabqEsFvEuaDDn+35WWmMf8XD1u9zB5Lzf+JvpYLQqDpGO0xsQFnpULO9ehW+YivFZyDdsY3x+jJS/OnSDQPTPjgBCvQRFuSvGHwe64AlsectytV1Oj0dPyTBNb0UeUwYZzMXps8Glc45NqxTjOrDwo7hfptyKReLDA0EZKmB/AdYKCH+InY+VTDAMOGRsLfArWl7gMS8A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzwg61h0Jz2yst;
+	Thu,  5 Sep 2024 20:33:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725530770;
+	cv=none; b=HuXtt5uV5LG8uOEuTbBP/HxSnWfikhoiD9PH29oCBrYhe5clt2jciyAl6YLpbbBdbD4cNUK/Mtyd9dNphMUZMtQ2sdk9QiDONYKKxH03KcDBQwjBYUQLQ9kDZQADiImVkTViMnQg+rXvQXYN64Eyo1eaupmhcUmVACHzGfmCzrJ1pjaLNKyqWUsw22Un0SJjYYuOcRzwpHdXWe604Eld2/t5LE0i1osKggQAw81D3UkcI2CqKP+rNJUMY6Jw+88fClsqq4IVGwFqRFxD55kb8suIRaweeRH9wkdrIAetbRRyH9AWaZR76FfTVxpJ8cs6urDsz2KGBrN+B1Wxev2rgw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725531957; c=relaxed/relaxed;
-	bh=hGydPClaVhqw2S5vCswOCjjVlmQnbG3pYGIShOaVj2I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cA+soerYeAKmdja6YHRSl/21Nu891Hyl5pwqBsTLPMncI/iwPxJGILA+EcIa6HLmHdmeZyDmDkoA+kRw09ta6e88WyFAyUdiCtln/314JwT0o8zgX8TDEb6RBXLeOGqi0GhtaRVw7SYLw7ebmYnVB5Doqgf507Pe3H9fm0Chw7Iyq2DAvtZI9df7wfQmsAPLHw6VgahwjjPgqN2tHL/viO0qJggBtdrudaXwQaLKeAdHZvPwCt3X1ou7ZXlfCGOCNF4d7Nhf8IWBfCJWdXI56bB0tB2YxMO9pJahZn2iVDT8McYSqmDPSCFy4G3f2xefZTn9Rl2x5VpBHzPDj80oKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4WzwVr6yD7z2yn2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 20:25:54 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 06AA5FEC;
-	Thu,  5 Sep 2024 03:25:49 -0700 (PDT)
-Received: from J2N7QTR9R3 (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BBA503F73F;
-	Thu,  5 Sep 2024 03:25:16 -0700 (PDT)
-Date: Thu, 5 Sep 2024 11:25:10 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Colton Lewis <coltonlewis@google.com>
-Cc: kvm@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>,
-	Sean Christopherson <seanjc@google.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Arnaldo Carvalho de Melo <acme@kernel.org>,
-	Namhyung Kim <namhyung@kernel.org>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	Kan Liang <kan.liang@linux.intel.com>,
-	Will Deacon <will@kernel.org>, Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
+	t=1725530770; c=relaxed/relaxed;
+	bh=FssOZMkL4EI9Dg7029SIMlcBVh5AI88igqnT1wzgpi8=;
+	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=FfZce0sGVcTMv5AbDE30GwT43LUZDamv30PsLAt4xUq8AzqxUSyBUIcO7ISpSLb4fclGCSE35sVyOCv/71VlDm+AK2WKtytjoZOSxwsIX7eXNPUhPcSvdJG7XNSwhFpbzO5PBvLEo9sOC1IGi9WhmC+3KHnQ3zl/nYxRfZuuxdgqf5S60myVz+SuS/7xeil0zaN5X+t9hSnwKPUeIBegIAD9lixuuvAvlXqiIfFoA6jmsk7IbpXJb/wsMptvFuQdyH5lbHqN2M0586tw557+SDcyFSk/MFP4vEXVNDsQ7D0g2WM6JXJAcfwHyNr3/p47zlYrv2LYHxVw27n0QjWkGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=cmpxchg.org; dkim=pass (2048-bit key; unprotected) header.d=cmpxchg-org.20230601.gappssmtp.com header.i=@cmpxchg-org.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=T5zGJRPA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72d; helo=mail-qk1-x72d.google.com; envelope-from=hannes@cmpxchg.org; receiver=lists.ozlabs.org) smtp.mailfrom=cmpxchg.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=cmpxchg.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=cmpxchg-org.20230601.gappssmtp.com header.i=@cmpxchg-org.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=T5zGJRPA;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cmpxchg.org (client-ip=2607:f8b0:4864:20::72d; helo=mail-qk1-x72d.google.com; envelope-from=hannes@cmpxchg.org; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x72d.google.com (mail-qk1-x72d.google.com [IPv6:2607:f8b0:4864:20::72d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wzw414X0sz2xYk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 20:06:07 +1000 (AEST)
+Received: by mail-qk1-x72d.google.com with SMTP id af79cd13be357-7a802deeb9aso40137985a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Sep 2024 03:06:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=cmpxchg-org.20230601.gappssmtp.com; s=20230601; t=1725530764; x=1726135564; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=FssOZMkL4EI9Dg7029SIMlcBVh5AI88igqnT1wzgpi8=;
+        b=T5zGJRPAG4toUmWI/Lnw7AArB3aTnAqFqYNr+r2loS8KjkX4PI7AWZOc5uLIju/Hja
+         u4K4ZoYA8q+zjl+rzGHVauVhVVcL7rEKAWbnQy3/F9Rn5lcKbDnoAGQW1CC3TVqEo6GL
+         Xxb0mNDoEHSdzApFRWiFthQ3zKcm6e02cXb42hgvcwH5sjVRi79J7nBDJk13VHKwjOyo
+         fRn+Qdrrv5V0FXvYLcVkRZpn0PWlt96PFGNltfUhAknG4/9MGVUhvJI0VGT9lJK/UcTJ
+         VNpTD+n2dIRvdyUChrGu1oQSir4KPkg/DCLymY/uzVvPuPX7/fClUtnWLUuZd7PTzeAa
+         UPsA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1725530764; x=1726135564;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FssOZMkL4EI9Dg7029SIMlcBVh5AI88igqnT1wzgpi8=;
+        b=cArYk9Cl1FN1z5gxWE51s0Wo67i7mN0N7CQJ8vY6HnlpX9na3zsBPxR0ZGw0HpQ8Vn
+         R9CDdeR45hmusWaBm1atQQHtBR7EuYh+oYrlopbx4maFkfxorfp8RSk1HbynNl4Dzcvf
+         nypqQwqEPMs482K1iKWsevAPIPq5FhOAtdyzSOOgXJIV4RelA+8klUL9TxPCmrjvtQb/
+         q7VKpXpI9HwNtuNI7D8Uh4TKVYo6WH5ymjuKN7NeiDWrVJw1k5MjdVHWYyFuikCmaOgv
+         x8dRi30voBAUZaur7uydCNAepavokaO620JgMBYff+usOppI83movVzxelXaZg9XTkLs
+         ZGjw==
+X-Forwarded-Encrypted: i=1; AJvYcCVRTiH+l1t/lwkXV4MYaTUqf5jMtrslzFJE69yTkUpGyLDXrIZloiOXGp8o6nF+0YCl0Rx2fpGX4Z+bEIo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwlA03q9gBUsX88awVEQIsqeEzKMZ43PeXgmZ7Gr/ZWPHoR++dl
+	Jnwoah4LNCDxGai5fo1Huw/LkiV0ikUV1YHxVfItVGHE+Uiug+5aPxTd4/hPiOM=
+X-Google-Smtp-Source: AGHT+IFqlUnb0R4Tnf7fLDfR9u43Xt0rwLhVu8SYQjcg8VJmKtyiXjLAvjhl0Q1+nPJDIOI+VCzqpQ==
+X-Received: by 2002:a05:6214:5b09:b0:6c5:1707:7159 with SMTP id 6a1803df08f44-6c517077d53mr70665036d6.33.1725530764171;
+        Thu, 05 Sep 2024 03:06:04 -0700 (PDT)
+Received: from localhost ([2603:7000:c01:2716:da5e:d3ff:fee7:26e7])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6c52019407fsm6350906d6.0.2024.09.05.03.06.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 Sep 2024 03:06:03 -0700 (PDT)
+Date: Thu, 5 Sep 2024 06:05:57 -0400
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Yosry Ahmed <yosryahmed@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Vitaly Wool <vitaly.wool@konsulko.com>,
+	Miaohe Lin <linmiaohe@huawei.com>, Nhat Pham <nphamcs@gmail.com>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H . Peter Anvin" <hpa@zytor.com>, linux-perf-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH 1/5] arm: perf: Drop unused functions
-Message-ID: <ZtmHBuggqUr3ncw6@J2N7QTR9R3>
-References: <20240904204133.1442132-1-coltonlewis@google.com>
- <20240904204133.1442132-2-coltonlewis@google.com>
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
+	Chris Down <chris@chrisdown.name>, loongarch@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] mm: z3fold: deprecate CONFIG_Z3FOLD
+Message-ID: <20240905100557.GA2748692@cmpxchg.org>
+References: <20240904233343.933462-1-yosryahmed@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,75 +96,62 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240904204133.1442132-2-coltonlewis@google.com>
+In-Reply-To: <20240904233343.933462-1-yosryahmed@google.com>
 
-On Wed, Sep 04, 2024 at 08:41:29PM +0000, Colton Lewis wrote:
-> perf_instruction_pointer() and perf_misc_flags() aren't used anywhere
-> in this particular perf implementation. Drop them.
-
-I think it'd be better to say that arch/arm's implementation of these is
-equivalent to the generic versions in include/linux/perf_event.h, and so
-arch/arm doesn't need to provide its own versions. It doesn't matter if
-arch/arm uses them itself since they're being provided for the core perf
-code.
-
-With words to that effect:
-
-Acked-by: Mark Rutland <mark.rutland@arm.com>
-
-Mark.
-
+On Wed, Sep 04, 2024 at 11:33:43PM +0000, Yosry Ahmed wrote:
+> The z3fold compressed pages allocator is rarely used, most users use
+> zsmalloc. The only disadvantage of zsmalloc in comparison is the
+> dependency on MMU, and zbud is a more common option for !MMU as it was
+> the default zswap allocator for a long time.
 > 
-> Signed-off-by: Colton Lewis <coltonlewis@google.com>
-> ---
->  arch/arm/include/asm/perf_event.h |  7 -------
->  arch/arm/kernel/perf_callchain.c  | 17 -----------------
->  2 files changed, 24 deletions(-)
+> Historically, zsmalloc had worse latency than zbud and z3fold but
+> offered better memory savings. This is no longer the case as shown by
+> a simple recent analysis [1]. That analysis showed that z3fold does not
+> have any advantage over zsmalloc or zbud considering both performance
+> and memory usage. In a kernel build test on tmpfs in a limited cgroup,
+> z3fold took 3% more time and used 1.8% more memory. The latency of
+> zswap_load() was 7% higher, and that of zswap_store() was 10% higher.
+> Zsmalloc is better in all metrics.
 > 
-> diff --git a/arch/arm/include/asm/perf_event.h b/arch/arm/include/asm/perf_event.h
-> index bdbc1e590891..c08f16f2e243 100644
-> --- a/arch/arm/include/asm/perf_event.h
-> +++ b/arch/arm/include/asm/perf_event.h
-> @@ -8,13 +8,6 @@
->  #ifndef __ARM_PERF_EVENT_H__
->  #define __ARM_PERF_EVENT_H__
->  
-> -#ifdef CONFIG_PERF_EVENTS
-> -struct pt_regs;
-> -extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
-> -extern unsigned long perf_misc_flags(struct pt_regs *regs);
-> -#define perf_misc_flags(regs)	perf_misc_flags(regs)
-> -#endif
-> -
->  #define perf_arch_fetch_caller_regs(regs, __ip) { \
->  	(regs)->ARM_pc = (__ip); \
->  	frame_pointer((regs)) = (unsigned long) __builtin_frame_address(0); \
-> diff --git a/arch/arm/kernel/perf_callchain.c b/arch/arm/kernel/perf_callchain.c
-> index 1d230ac9d0eb..a2601b1ef318 100644
-> --- a/arch/arm/kernel/perf_callchain.c
-> +++ b/arch/arm/kernel/perf_callchain.c
-> @@ -96,20 +96,3 @@ perf_callchain_kernel(struct perf_callchain_entry_ctx *entry, struct pt_regs *re
->  	arm_get_current_stackframe(regs, &fr);
->  	walk_stackframe(&fr, callchain_trace, entry);
->  }
-> -
-> -unsigned long perf_instruction_pointer(struct pt_regs *regs)
-> -{
-> -	return instruction_pointer(regs);
-> -}
-> -
-> -unsigned long perf_misc_flags(struct pt_regs *regs)
-> -{
-> -	int misc = 0;
-> -
-> -	if (user_mode(regs))
-> -		misc |= PERF_RECORD_MISC_USER;
-> -	else
-> -		misc |= PERF_RECORD_MISC_KERNEL;
-> -
-> -	return misc;
-> -}
-> -- 
-> 2.46.0.469.g59c65b2a67-goog
+> Moreover, z3fold apparently has latent bugs, which was made noticeable
+> by a recent soft lockup bug report with z3fold [2]. Switching to
+> zsmalloc not only fixed the problem, but also reduced the swap usage
+> from 6~8G to 1~2G. Other users have also reported being bitten by
+> mistakenly enabling z3fold.
 > 
+> Other than hurting users, z3fold is repeatedly causing wasted
+> engineering effort. Apart from investigating the above bug, it came up
+> in multiple development discussions (e.g. [3]) as something we need to
+> handle, when there aren't any legit users (at least not intentionally).
+> 
+> The natural course of action is to deprecate z3fold, and remove in a few
+> cycles if no objections are raised from active users. Next on the list
+> should be zbud, as it offers marginal latency gains at the cost of huge
+> memory waste when compared to zsmalloc. That one will need to wait until
+> zsmalloc does not depend on MMU.
+> 
+> Rename the user-visible config option from CONFIG_Z3FOLD to
+> CONFIG_Z3FOLD_DEPRECATED so that users with CONFIG_Z3FOLD=y get a new
+> prompt with explanation during make oldconfig. Also, remove
+> CONFIG_Z3FOLD=y from defconfigs.
+> 
+> [1]https://lore.kernel.org/lkml/CAJD7tkbRF6od-2x_L8-A1QL3=2Ww13sCj4S3i4bNndqF+3+_Vg@mail.gmail.com/
+> [2]https://lore.kernel.org/lkml/EF0ABD3E-A239-4111-A8AB-5C442E759CF3@gmail.com/
+> [3]https://lore.kernel.org/lkml/CAJD7tkbnmeVugfunffSovJf9FAgy9rhBVt_tx=nxUveLUfqVsA@mail.gmail.com/
+> 
+> Acked-by: Chris Down <chris@chrisdown.name>
+> Acked-by: Nhat Pham <nphamcs@gmail.com>
+> Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
+
+zsmalloc's CONFIG_MMU requirement was a concern in the past, but
+z3fold appears so bitrotted at this point that it's simply not a
+usable option anymore.
+
+> I think it should actually be fine to remove z3fold without deprecating
+> it first, but I am doing the due diligence.
+
+Yeah, you never know for sure if users exist. Deprecating it for a few
+cycles is the safer option.
+
+Acked-by: Johannes Weiner <hannes@cmpxchg.org>
 
