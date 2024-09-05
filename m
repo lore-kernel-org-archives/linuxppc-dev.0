@@ -1,65 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-1046-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1047-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84F32CD5BA6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 10:34:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 370BDCD5BA7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 10:36:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzwh71Styz2ysv;
-	Thu,  5 Sep 2024 20:33:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725531594;
-	cv=none; b=OsSfCwDBMnkwfShYYWWUAmfpIvpEcC9+2xcAAhmF66OqixkeGs9q95F+ffuZhkBWodxsLV8yBmQzoS6DfxsyqFhGvPuqtIiWmTGmMZrJClcc6GP50SG+TAsVVQa97nezSOHkKmw04W6EbwI9Vw0b3s8RebvAuD2dFJweXIRmVe+upJU3wBZmEsZ+diyoIuFHdhruTCs5rSxMM4ZGQI8goRXYyWF28KZyxYaH/2cx6hW7c6nv3G5+e3IPlY1xC29D1eP73tfytrvcKxyECucdf2f3RxqDnofeOHyjAu613b1XgoNLn5iccb58YMLH0A+KD7vqfuulv0KVjHq6LrcrCg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzwlL6DlQz2xJ5;
+	Thu,  5 Sep 2024 20:36:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725532606;
+	cv=none; b=OthmPjhme5/VA8tc/MS5qG4feMfqgDXfYa30FiJZ/XNSQUdUUG55d+DK0WpXhHIWTckZOegvW96BEJ0FU5vCW8w5ik0y9oAPp3KiBq2caP2CSk/G0uKJj4cHjALf1Yxkq8KbKFVLsei29udZ/C0TIEj2FWD7haBtHn2sfRWAg//az1MaAxfK2+n6VnY9hc2SdSbgcjC/9qb1oSOr/wHFuGkrS64sBQmIEJq+KhreMM7OlbR4sga16VKbjLv/uh8zNXXrPHlF+57HLMCghXx6oVXBCKKk6GZr+A8w/8fIwFzrqQVLFFH6WbP6Cdb9+6s+uYb8MmLFhJwIiShw1CTSDQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725531594; c=relaxed/relaxed;
-	bh=PA7JIemCyiEdqILj6UaKRiRobVb7jaWwTSUCykQJ3Wk=;
-	h=DKIM-Signature:MIME-Version:References:In-Reply-To:From:Date:
-	 Message-ID:Subject:To:Cc:Content-Type; b=gANGr5KgdHnu+2lCWS1fZImFH823S5wZnq00PrTNRpe2r+qOsqQvmXkXjuDC9+J+b4M9oGC+BV+XU+fUrRT3ghI+Kyh7OgC657R8JYcQkuHzFyK5AVPFyDzcAr2Q3FP/asXkhbqJi9UHZZnzhoorTs05vyjoJ3VZYg4fDj9iLK622rUE5DrJr/X90tvGQCUrf55vtiD9Hv06U/cOVeW3DzIKQYM/gX8dFB78YfNwLhri0jhSYm6SCFumqAUzeXyDFzYmPLyhhnv1QoDlcJ20ne8kPdiCHUtq5u9BNICPBW+NwVbrS3lFhfoJZxHdRyGCaaT3Yw0aybuqyDUDXQDtbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=konsulko.com; dkim=pass (1024-bit key; unprotected) header.d=konsulko.com header.i=@konsulko.com header.a=rsa-sha256 header.s=google header.b=m0fQ51Vg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=vitaly.wool@konsulko.com; receiver=lists.ozlabs.org) smtp.mailfrom=konsulko.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=konsulko.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=konsulko.com header.i=@konsulko.com header.a=rsa-sha256 header.s=google header.b=m0fQ51Vg;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=konsulko.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=vitaly.wool@konsulko.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4WzwMt2YLnz2yn2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 20:19:52 +1000 (AEST)
-Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-2d877dab61fso408619a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Sep 2024 03:19:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=konsulko.com; s=google; t=1725531591; x=1726136391; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PA7JIemCyiEdqILj6UaKRiRobVb7jaWwTSUCykQJ3Wk=;
-        b=m0fQ51VgxZEEhrUo1IPPwDShwUAaPulriKZuX5zMUfVYtg5ojIbMfYumZImn120O76
-         4on0cexRULHRA031gOaWtHnkKQ3AP8mSl9mVy7Umjftv97So3kofeQ2EpMVLliuAoNsL
-         w/iOgXlz/XBResP+sHKW/otJMshxrQRNhdAmU=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725531591; x=1726136391;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=PA7JIemCyiEdqILj6UaKRiRobVb7jaWwTSUCykQJ3Wk=;
-        b=Aye/IziwRImiVcemim6+AKJdm0RL+vWfjcNwYfWMWypGsxErSY1pymf8RC7ZhSTz9P
-         3WXhg99xM5lAplKCMEXwpdduyWLTjIVAC5fq68O/3oNwJz5MpiRzP5tXKGs6pQ0d3Ozi
-         ALihitX+uh3tf50OP9jFSeFiUkd9QIOC4inNEMCqHhQ18Oba+Gsxa0/a2OdXDxGqbVnx
-         cSP6s9UnQ5lfuuTflbuIzOX73tq5X8wyKk5t0+0tXDr7HKSIJk+dMyyI80NqxCiXfDUi
-         iq9UjW6D/V9JZB7PcKsKX0YzTv6CehEmrzGaEdQ2rjrnb+VdqijHR6E1RgKwVCtTZuRr
-         hs5Q==
-X-Forwarded-Encrypted: i=1; AJvYcCXswWhfIH1RWGjR+e/tlLqaDYm329h/XVqnW8Hi9K/iRAY0zWyWMKc5N6J8KlzRiNSnNANRPe4UJVAnqn0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw+Ry2VwCU1l4lXbNyaGvL21RKsIT8dYaapbyg46lKH7RIB6AfI
-	mR5+wqFPE0JjocV21T8K8f1CTlZeKuEgBtgpHLasHOeIFOtW0wj41ir5/nYTRuDxPX6oyfBuL0b
-	9isJiy44LDZs8ICzPHFYyhxOmymjKX7KzX0fwGw==
-X-Google-Smtp-Source: AGHT+IHyTnBl3/mA7BCy8C7Mdrgi4kraU3T2YISEDkiQ+C22fRtuX7dRpdTavjnbTJxnBQ32e09vaczZ2IZyJiMaQuo=
-X-Received: by 2002:a17:90a:ba94:b0:2d8:cd04:c8f0 with SMTP id
- 98e67ed59e1d1-2da55a78cb0mr10646151a91.39.1725531590333; Thu, 05 Sep 2024
- 03:19:50 -0700 (PDT)
+	t=1725532606; c=relaxed/relaxed;
+	bh=L5pSH3MV3akZj9vAODkthPSwZUhi1r5WiwKkj5V7qJA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=UhnbPhzxyFR72C1DS50JEE+z4I6qVHX6Pri6Zakb5lYPtGg99wOX78KfLnwTBo/BHekaEREetsTSI7zjCeol19ohfoeMVuS5cJhu5qewv722KxENyJ+sXzssrcK4OWD2kMj6JOXSVRg93lDdMPUpWvis8P9vCJwMw6oL6i2QWRbXwj7oCpiBjsEHpqerq4HkFc50RUe0NLFH+v3oBbxHTvZswahBxhy9CwM38ra1ArzWaFKnfKytvMMyJklLMbQO9xNcWZivpF12ALlZzzS2PNzztF6I3En+HhOx6qbNHgSyN04+tAQIdRd0s+eO+vInqgLQ5DeR3zdYpRDQGJ4TBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=joey.gouly@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzwlL4c8gz2xGs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 20:36:46 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BBFABFEC;
+	Thu,  5 Sep 2024 03:36:41 -0700 (PDT)
+Received: from e124191.cambridge.arm.com (e124191.cambridge.arm.com [10.1.197.45])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 40AB93F73F;
+	Thu,  5 Sep 2024 03:36:11 -0700 (PDT)
+Date: Thu, 5 Sep 2024 11:36:06 +0100
+From: Joey Gouly <joey.gouly@arm.com>
+To: Will Deacon <will@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+	linux-arm-kernel@lists.infradead.org, nd@arm.com,
+	akpm@linux-foundation.org, aneesh.kumar@kernel.org,
+	aneesh.kumar@linux.ibm.com, anshuman.khandual@arm.com, bp@alien8.de,
+	broonie@kernel.org, christophe.leroy@csgroup.eu,
+	dave.hansen@linux.intel.com, hpa@zytor.com,
+	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, maz@kernel.org, mingo@redhat.com,
+	mpe@ellerman.id.au, naveen.n.rao@linux.ibm.com, npiggin@gmail.com,
+	oliver.upton@linux.dev, shuah@kernel.org, skhan@linuxfoundation.org,
+	szabolcs.nagy@arm.com, tglx@linutronix.de, x86@kernel.org,
+	kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v5 06/30] arm64: context switch POR_EL0 register
+Message-ID: <20240905103606.GA4063653@e124191.cambridge.arm.com>
+References: <20240823170835.GA1181@willie-the-truck>
+ <ZsjXtE7Kg0LQwNAL@arm.com>
+ <20240827113803.GB4318@willie-the-truck>
+ <ZtYNGBrcE-j35fpw@arm.com>
+ <20240903145413.GB3669886@e124191.cambridge.arm.com>
+ <20240904102254.GA13280@willie-the-truck>
+ <20240904113221.GA3891700@e124191.cambridge.arm.com>
+ <20240904114301.GA13550@willie-the-truck>
+ <20240904125503.GA3901671@e124191.cambridge.arm.com>
+ <20240904161758.GA14323@willie-the-truck>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,158 +65,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20240904233343.933462-1-yosryahmed@google.com>
-In-Reply-To: <20240904233343.933462-1-yosryahmed@google.com>
-From: Vitaly Wool <vitaly.wool@konsulko.com>
-Date: Thu, 5 Sep 2024 12:19:38 +0200
-Message-ID: <CAM4kBBKotR4qc3jTsp3McgDCj18FTL6VETWRkfL-FgSYkFbiXg@mail.gmail.com>
-Subject: Re: [PATCH v2] mm: z3fold: deprecate CONFIG_Z3FOLD
-To: Yosry Ahmed <yosryahmed@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Miaohe Lin <linmiaohe@huawei.com>, 
-	Johannes Weiner <hannes@cmpxchg.org>, Nhat Pham <nphamcs@gmail.com>, 
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
-	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Christoph Hellwig <hch@infradead.org>, 
-	Sergey Senozhatsky <senozhatsky@chromium.org>, Chris Down <chris@chrisdown.name>, 
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240904161758.GA14323@willie-the-truck>
 
-On Thu, Sep 5, 2024 at 1:33=E2=80=AFAM Yosry Ahmed <yosryahmed@google.com> =
-wrote:
->
-> The z3fold compressed pages allocator is rarely used, most users use
-> zsmalloc. The only disadvantage of zsmalloc in comparison is the
-> dependency on MMU, and zbud is a more common option for !MMU as it was
-> the default zswap allocator for a long time.
->
-> Historically, zsmalloc had worse latency than zbud and z3fold but
-> offered better memory savings. This is no longer the case as shown by
-> a simple recent analysis [1]. That analysis showed that z3fold does not
-> have any advantage over zsmalloc or zbud considering both performance
-> and memory usage. In a kernel build test on tmpfs in a limited cgroup,
-> z3fold took 3% more time and used 1.8% more memory. The latency of
-> zswap_load() was 7% higher, and that of zswap_store() was 10% higher.
-> Zsmalloc is better in all metrics.
->
-> Moreover, z3fold apparently has latent bugs, which was made noticeable
-> by a recent soft lockup bug report with z3fold [2]. Switching to
-> zsmalloc not only fixed the problem, but also reduced the swap usage
-> from 6~8G to 1~2G. Other users have also reported being bitten by
-> mistakenly enabling z3fold.
->
-> Other than hurting users, z3fold is repeatedly causing wasted
-> engineering effort. Apart from investigating the above bug, it came up
-> in multiple development discussions (e.g. [3]) as something we need to
-> handle, when there aren't any legit users (at least not intentionally).
->
-> The natural course of action is to deprecate z3fold, and remove in a few
-> cycles if no objections are raised from active users. Next on the list
-> should be zbud, as it offers marginal latency gains at the cost of huge
-> memory waste when compared to zsmalloc. That one will need to wait until
-> zsmalloc does not depend on MMU.
->
-> Rename the user-visible config option from CONFIG_Z3FOLD to
-> CONFIG_Z3FOLD_DEPRECATED so that users with CONFIG_Z3FOLD=3Dy get a new
-> prompt with explanation during make oldconfig. Also, remove
-> CONFIG_Z3FOLD=3Dy from defconfigs.
->
-> [1]https://lore.kernel.org/lkml/CAJD7tkbRF6od-2x_L8-A1QL3=3D2Ww13sCj4S3i4=
-bNndqF+3+_Vg@mail.gmail.com/
-> [2]https://lore.kernel.org/lkml/EF0ABD3E-A239-4111-A8AB-5C442E759CF3@gmai=
-l.com/
-> [3]https://lore.kernel.org/lkml/CAJD7tkbnmeVugfunffSovJf9FAgy9rhBVt_tx=3D=
-nxUveLUfqVsA@mail.gmail.com/
->
-> Acked-by: Chris Down <chris@chrisdown.name>
-> Acked-by: Nhat Pham <nphamcs@gmail.com>
-> Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
+On Wed, Sep 04, 2024 at 05:17:58PM +0100, Will Deacon wrote:
+> On Wed, Sep 04, 2024 at 01:55:03PM +0100, Joey Gouly wrote:
+> > On Wed, Sep 04, 2024 at 12:43:02PM +0100, Will Deacon wrote:
+> > > Right, there's quite a lot I need to do:
+> > > 
+> > > - Uncorrupt your patches
+> > > - Fix the conflict in the kvm selftests
+> > > - Drop the unnecessary ISBs
+> > > - Fix the ESR checking
+> > > - Fix the el2_setup labels
+> > > - Reorder the patches
+> > > - Drop the patch that is already in kvmarm
+> > > 
+> > > Working on it...
+> > 
+> > Sorry! I'm happy to rebase onto some arm64 branch if that will help, just let me know.
+> 
+> Please have a look at for-next/poe (also merged into for-next/core and
+> for-kernelci) and let me know what I got wrong!
 
-Acked-by: Vitaly Wool <vitaly.wool@konsulko.com>
+I pulled for-next/poe and ran the test and it works fine. Also looked at the
+diff of my branch against your branch, and it looks fine too.
 
-> ---
->
-> I think it should actually be fine to remove z3fold without deprecating
-> it first, but I am doing the due diligence.
->
-> v1: https://lore.kernel.org/linux-mm/20240112193103.3798287-1-yosryahmed@=
-google.com/
-> v1 -> v2:
-> - Make CONFIG_Z3FOLD_DEPRECATED a tristate option to match
->   CONFIG_Z3FOLD.
-> - Update commit subject and log.
->
-> ---
->  arch/loongarch/configs/loongson3_defconfig |  1 -
->  arch/powerpc/configs/ppc64_defconfig       |  1 -
->  mm/Kconfig                                 | 14 ++++++++++++--
->  3 files changed, 12 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/loongarch/configs/loongson3_defconfig b/arch/loongarch/=
-configs/loongson3_defconfig
-> index b4252c357c8e2..75b366407a60a 100644
-> --- a/arch/loongarch/configs/loongson3_defconfig
-> +++ b/arch/loongarch/configs/loongson3_defconfig
-> @@ -96,7 +96,6 @@ CONFIG_ZPOOL=3Dy
->  CONFIG_ZSWAP=3Dy
->  CONFIG_ZSWAP_COMPRESSOR_DEFAULT_ZSTD=3Dy
->  CONFIG_ZBUD=3Dy
-> -CONFIG_Z3FOLD=3Dy
->  CONFIG_ZSMALLOC=3Dm
->  # CONFIG_COMPAT_BRK is not set
->  CONFIG_MEMORY_HOTPLUG=3Dy
-> diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/=
-ppc64_defconfig
-> index 544a65fda77bc..d39284489aa26 100644
-> --- a/arch/powerpc/configs/ppc64_defconfig
-> +++ b/arch/powerpc/configs/ppc64_defconfig
-> @@ -81,7 +81,6 @@ CONFIG_MODULE_SIG_SHA512=3Dy
->  CONFIG_PARTITION_ADVANCED=3Dy
->  CONFIG_BINFMT_MISC=3Dm
->  CONFIG_ZSWAP=3Dy
-> -CONFIG_Z3FOLD=3Dy
->  CONFIG_ZSMALLOC=3Dy
->  # CONFIG_SLAB_MERGE_DEFAULT is not set
->  CONFIG_SLAB_FREELIST_RANDOM=3Dy
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index b23913d4e47e2..536679d726417 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -177,15 +177,25 @@ config ZBUD
->           deterministic reclaim properties that make it preferable to a h=
-igher
->           density approach when reclaim will be used.
->
-> -config Z3FOLD
-> -       tristate "3:1 compression allocator (z3fold)"
-> +config Z3FOLD_DEPRECATED
-> +       tristate "3:1 compression allocator (z3fold) (DEPRECATED)"
->         depends on ZSWAP
->         help
-> +         Deprecated and scheduled for removal in a few cycles. If you ha=
-ve
-> +         a good reason for using Z3FOLD over ZSMALLOC, please contact
-> +         linux-mm@kvack.org and the zswap maintainers.
-> +
->           A special purpose allocator for storing compressed pages.
->           It is designed to store up to three compressed pages per physic=
-al
->           page. It is a ZBUD derivative so the simplicity and determinism=
- are
->           still there.
->
-> +config Z3FOLD
-> +       tristate
-> +       default y if Z3FOLD_DEPRECATED=3Dy
-> +       default m if Z3FOLD_DEPRECATED=3Dm
-> +       depends on Z3FOLD_DEPRECATED
-> +
->  config ZSMALLOC
->         tristate
->         prompt "N:1 compression allocator (zsmalloc)" if ZSWAP
-> --
-> 2.46.0.469.g59c65b2a67-goog
->
+Thanks for your work to get this merged!
+
+> 
+> For Marc: I reordered the series so the KVM bits (and deps) are all the
+> beginning, should you need them. The branch is based on a merge of the
+> shared branch you created previously.
+> 
+> Cheers,
+> 
+> Will
+> 
 
