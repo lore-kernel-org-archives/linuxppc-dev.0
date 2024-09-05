@@ -1,73 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-1043-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1044-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7163CD5BA2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 09:46:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8497BCD5BA7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 10:25:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzvdm3dYxz2xGW;
-	Thu,  5 Sep 2024 19:46:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725529612;
-	cv=none; b=RY3WgW0ntX1UXoflhYbfn61oxpldD8qMJ0HUxAXlPBhahyv6io+r3DqZTgNZf9rtc+l1A1KozdvyEj97dSfaPBGT2A0rjhXeyidiNnLVTkXZAf5VENvAc5J+fNzgvBDg7+SAvfUblQpbSMx0mtSEQDAQ9OkgBfSslKtpjcXdML3OXbcranifCFKcnRfFLP898RMs9omziJDl0oKOiuP+PcpSjdOsuYoh0M7T6LWI9olhE4f3WzidoQotR2L37EU/x6fAdbYZjvIPhLkGZ3CF84SspLKbmZEtCdMOo+fCgpMP6ocBS5x7BGuD5uJ+ehnfcNdxbe4X5Fw2cwfy+TyP2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzwVs5t5cz2ysZ;
+	Thu,  5 Sep 2024 20:25:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725531957;
+	cv=none; b=nulsyi9GBq34z++PgyURvRv4+iObQq5tBJ2bvpIhFhVTV6sCVR3nxphN/6NfF+ZiGjGBiJ5YK8tvkOxAjDs2H5cyNa1oEpP7IgKdBtWnbczDd7+xe+WvZdyhGDNbVeTw5gU0B3e+RpksHabqEsFvEuaDDn+35WWmMf8XD1u9zB5Lzf+JvpYLQqDpGO0xsQFnpULO9ehW+YivFZyDdsY3x+jJS/OnSDQPTPjgBCvQRFuSvGHwe64AlsectytV1Oj0dPyTBNb0UeUwYZzMXps8Glc45NqxTjOrDwo7hfptyKReLDA0EZKmB/AdYKCH+InY+VTDAMOGRsLfArWl7gMS8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725529612; c=relaxed/relaxed;
-	bh=a3A+0OEpset36zqQ8dSnuPMDIA8aciodye1/vukDHAs=;
-	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=RPy4mRMH1uZN11g2sZvgAbrNkEsh7MLXffPJotDRdpfBc7Son6K8BQA4wz9WwPFIS7/4XChnRqArSICwGTgYBhaXCBSNcc/yMULHbL5jlO89JMSLNDk5Oo2TQ4bWJXbX6e4k06gf2No2vfOXC8rUih6p9OEsvaNScBoPP83+TWnIE9iV0SyiQCKKvBCOPZNf40ZR7hkdA490gk4ep0w9BwGPT5hCJbUvwq5SCZ+fd/Dl82+e0TsHLxCz83McHRLkZ4pDJ53BVGUPokC/9YATLPhyyFEE9h9dQ0pr7GUvec5lRHwro0gk+Cdt3WYngrK9jID+17pk7qaekOFiVnpVnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=je+cpfK8; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=mingo.kernel.org@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=je+cpfK8;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=mingo.kernel.org@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wzvdl6Km2z2xGg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 19:46:50 +1000 (AEST)
-Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-374c8cef906so314344f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Sep 2024 02:46:50 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1725529607; x=1726134407; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=a3A+0OEpset36zqQ8dSnuPMDIA8aciodye1/vukDHAs=;
-        b=je+cpfK8iAYIFZqH+4+u9fbR8N6z3Se04xjjncDmYxEsrzwmsobUTksZdA9Z379e6I
-         ORG4+cW83wggiY+8/KVn2vDzA0FJkJ3WIwD0p5LDNmS/va8HXsL+0m8Z2F3nFgfUdnCS
-         yoT4z5zxjiJd1DQOKX2cUaoImFV4WDxiA10/858I0IKXdProwcSONrh3cBZ/FUE2HZvx
-         xkaL6mkmdKOBrpXzar21aqph1bbOgE2Fjs5hzzD5tqpFDe0u8TVki6tAVzBmzBOgAM7R
-         tA30bQUmmg4rRWOn0LdzwB6fuvkGn3BWTwrA+u3njVWE3F+xx9l2XoSMKyu4mBON92g1
-         6yRQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1725529607; x=1726134407;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=a3A+0OEpset36zqQ8dSnuPMDIA8aciodye1/vukDHAs=;
-        b=NcojRUY7PiKloS2x4/o0kuKNu3uh/B0Grr1HWM5TonGRnlLqr2V9K7DWUi715T77SH
-         ryDuxDcC2B41CPE9FmeBzTWcZ9OfgWC/8EOxS/DXITwZm4SKvI6WmCjE/37hz7RFEPFw
-         OAxS51C1XyRONIvzS4Q1CLyZ4+E460y95S5ZGztAwzqMEJ6hSBq7QUdjBDDgfNji+bFI
-         QwcoUj5oWijBuHna/Q2k3d7E5UFeInwTYgGHvGTiZOZxGBfH8Lo39yXTaPeGSX6FNaYg
-         S03USanDSPZEzmRUbeyKkwKaWeJe6a7jzv7Wx0pnEhsKyNgqoQ2jO3lzFHvs91T5NELq
-         tM6A==
-X-Forwarded-Encrypted: i=1; AJvYcCWdK7sBxSxWIIJGhUcybl90Xdk/0FVe/YWhrMZHd6Dqk1GDA0tB6o3OjUonA4UlliLxl3HuaBt8GUxU3fA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyJYCqQvaOxNwaOEms6bxr8M9B/6tuEeXtU890Gp1nX0XLKjztJ
-	RaGubqTiL6w1DC+GTvQKqwK6InUFqT8rAfDCQdHPvadzB3rqSE4C
-X-Google-Smtp-Source: AGHT+IGwAx2QSUfLDZ+tfaLzM6jDxYn1gijqzhfBCWl8wJV2u0GTNpP6gbYbb2bM1aZJ2WyRNkSboA==
-X-Received: by 2002:a05:6000:1f8d:b0:374:c29f:8ddc with SMTP id ffacd0b85a97d-376dea47192mr5800262f8f.40.1725529606275;
-        Thu, 05 Sep 2024 02:46:46 -0700 (PDT)
-Received: from gmail.com (1F2EF525.nat.pool.telekom.hu. [31.46.245.37])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-374c1de81b2sm13382624f8f.30.2024.09.05.02.46.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Sep 2024 02:46:45 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Thu, 5 Sep 2024 11:46:42 +0200
-From: Ingo Molnar <mingo@kernel.org>
+	t=1725531957; c=relaxed/relaxed;
+	bh=hGydPClaVhqw2S5vCswOCjjVlmQnbG3pYGIShOaVj2I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cA+soerYeAKmdja6YHRSl/21Nu891Hyl5pwqBsTLPMncI/iwPxJGILA+EcIa6HLmHdmeZyDmDkoA+kRw09ta6e88WyFAyUdiCtln/314JwT0o8zgX8TDEb6RBXLeOGqi0GhtaRVw7SYLw7ebmYnVB5Doqgf507Pe3H9fm0Chw7Iyq2DAvtZI9df7wfQmsAPLHw6VgahwjjPgqN2tHL/viO0qJggBtdrudaXwQaLKeAdHZvPwCt3X1ou7ZXlfCGOCNF4d7Nhf8IWBfCJWdXI56bB0tB2YxMO9pJahZn2iVDT8McYSqmDPSCFy4G3f2xefZTn9Rl2x5VpBHzPDj80oKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WzwVr6yD7z2yn2
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 20:25:54 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 06AA5FEC;
+	Thu,  5 Sep 2024 03:25:49 -0700 (PDT)
+Received: from J2N7QTR9R3 (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BBA503F73F;
+	Thu,  5 Sep 2024 03:25:16 -0700 (PDT)
+Date: Thu, 5 Sep 2024 11:25:10 +0100
+From: Mark Rutland <mark.rutland@arm.com>
 To: Colton Lewis <coltonlewis@google.com>
 Cc: kvm@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>,
 	Sean Christopherson <seanjc@google.com>,
@@ -75,7 +38,6 @@ Cc: kvm@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>,
 	Ingo Molnar <mingo@redhat.com>,
 	Arnaldo Carvalho de Melo <acme@kernel.org>,
 	Namhyung Kim <namhyung@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
 	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
 	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
 	Adrian Hunter <adrian.hunter@intel.com>,
@@ -97,11 +59,10 @@ Cc: kvm@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>,
 	"H . Peter Anvin" <hpa@zytor.com>, linux-perf-users@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH 2/5] perf: Hoist perf_instruction_pointer() and
- perf_misc_flags()
-Message-ID: <Ztl-AjEEbIbX4lnm@gmail.com>
+Subject: Re: [PATCH 1/5] arm: perf: Drop unused functions
+Message-ID: <ZtmHBuggqUr3ncw6@J2N7QTR9R3>
 References: <20240904204133.1442132-1-coltonlewis@google.com>
- <20240904204133.1442132-3-coltonlewis@google.com>
+ <20240904204133.1442132-2-coltonlewis@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,30 +74,75 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240904204133.1442132-3-coltonlewis@google.com>
+In-Reply-To: <20240904204133.1442132-2-coltonlewis@google.com>
 
+On Wed, Sep 04, 2024 at 08:41:29PM +0000, Colton Lewis wrote:
+> perf_instruction_pointer() and perf_misc_flags() aren't used anywhere
+> in this particular perf implementation. Drop them.
 
-* Colton Lewis <coltonlewis@google.com> wrote:
+I think it'd be better to say that arch/arm's implementation of these is
+equivalent to the generic versions in include/linux/perf_event.h, and so
+arch/arm doesn't need to provide its own versions. It doesn't matter if
+arch/arm uses them itself since they're being provided for the core perf
+code.
 
-> --- a/kernel/events/core.c
-> +++ b/kernel/events/core.c
-> @@ -6915,6 +6915,16 @@ void perf_unregister_guest_info_callbacks(struct perf_guest_info_callbacks *cbs)
->  EXPORT_SYMBOL_GPL(perf_unregister_guest_info_callbacks);
->  #endif
+With words to that effect:
+
+Acked-by: Mark Rutland <mark.rutland@arm.com>
+
+Mark.
+
+> 
+> Signed-off-by: Colton Lewis <coltonlewis@google.com>
+> ---
+>  arch/arm/include/asm/perf_event.h |  7 -------
+>  arch/arm/kernel/perf_callchain.c  | 17 -----------------
+>  2 files changed, 24 deletions(-)
+> 
+> diff --git a/arch/arm/include/asm/perf_event.h b/arch/arm/include/asm/perf_event.h
+> index bdbc1e590891..c08f16f2e243 100644
+> --- a/arch/arm/include/asm/perf_event.h
+> +++ b/arch/arm/include/asm/perf_event.h
+> @@ -8,13 +8,6 @@
+>  #ifndef __ARM_PERF_EVENT_H__
+>  #define __ARM_PERF_EVENT_H__
 >  
-> +unsigned long perf_misc_flags(unsigned long pt_regs *regs)
-> +{
-> +	return perf_arch_misc_flags(regs);
-> +}
-> +
-> +unsigned long perf_instruction_pointer(unsigned long pt_regs *regs)
-> +{
-> +	return perf_arch_instruction_pointer(regs);
-> +}
-
-What's an 'unsigned long pt_regs' ??
-
-Thanks,
-
-	Ingo
+> -#ifdef CONFIG_PERF_EVENTS
+> -struct pt_regs;
+> -extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+> -extern unsigned long perf_misc_flags(struct pt_regs *regs);
+> -#define perf_misc_flags(regs)	perf_misc_flags(regs)
+> -#endif
+> -
+>  #define perf_arch_fetch_caller_regs(regs, __ip) { \
+>  	(regs)->ARM_pc = (__ip); \
+>  	frame_pointer((regs)) = (unsigned long) __builtin_frame_address(0); \
+> diff --git a/arch/arm/kernel/perf_callchain.c b/arch/arm/kernel/perf_callchain.c
+> index 1d230ac9d0eb..a2601b1ef318 100644
+> --- a/arch/arm/kernel/perf_callchain.c
+> +++ b/arch/arm/kernel/perf_callchain.c
+> @@ -96,20 +96,3 @@ perf_callchain_kernel(struct perf_callchain_entry_ctx *entry, struct pt_regs *re
+>  	arm_get_current_stackframe(regs, &fr);
+>  	walk_stackframe(&fr, callchain_trace, entry);
+>  }
+> -
+> -unsigned long perf_instruction_pointer(struct pt_regs *regs)
+> -{
+> -	return instruction_pointer(regs);
+> -}
+> -
+> -unsigned long perf_misc_flags(struct pt_regs *regs)
+> -{
+> -	int misc = 0;
+> -
+> -	if (user_mode(regs))
+> -		misc |= PERF_RECORD_MISC_USER;
+> -	else
+> -		misc |= PERF_RECORD_MISC_KERNEL;
+> -
+> -	return misc;
+> -}
+> -- 
+> 2.46.0.469.g59c65b2a67-goog
+> 
 
