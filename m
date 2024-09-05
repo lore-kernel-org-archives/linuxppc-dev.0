@@ -1,46 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-1057-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1058-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46B73CD5BAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 12:24:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 273A4CD5BC5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 12:56:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzz7p6sJYz2yw7;
-	Thu,  5 Sep 2024 22:24:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b5"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725539078;
-	cv=none; b=Hve+DzlHEOWT5ChJrqHnEuQ48/0pf6wXBoADuiIMyb0Y43MPl1F4suW8eq88h58g5K/glfjGi5b97s2gtsPBOA2NPvehwZotHWlQIJcUCHXEnwSNwt6pff1WAxkWopAnvQVb2SG/Dw9fXzjwBVpC9GJa2IrqjoQdq0fO0gspf3QFynTMw1P6KhgV038c46Pas6kmJyaSaDVZvH4T3//lLN7JuEGB1MOcjXHexVndmgXCixSh097NWhV8ppccCScuPfex4pzJFov4j98VR4znDD89odNm7Wbjuc+bI/cIXbeM03hsTSP0s8iVRrzItIlEsPVWUZ+EnvZxPFovny2+cw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzzrh2ZGPz2yXd;
+	Thu,  5 Sep 2024 22:56:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725540996;
+	cv=none; b=YxRtHVb9R0sLePeSTscEXKSeyqPEHTjAETdlIcIaR77XN9/53hh4Uu8wrh3YWdMm2i5a9e/bravX2LC3x/Mt8LLQpaSp0bnynYW6bw52qNBlY0+8+xgWBSwPSTgF5TDnouMO3naYWdCt/Inq4xfcn6WK5avmeyYAfT3Ah6E1oQni6myMhcbSuFjvGWgRnabKPv88Gi1Dvqu30/REwlUwU84i7xVFU8KZGIc0PMmUcRxiPFv7eqMHFY065a0IuDCwOKG2Ozi1EinqFqVulkjn5CVC7PTgbCLZG2hDEJ8rsLMs5cYI62SKGq+5D8Y+lOy25rNOQ3gfIlJQfAdA6nUzcg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725539078; c=relaxed/relaxed;
-	bh=gz1yGhbZpgLoXsIxhz2uE7McRGPNwSJIR5f5xqDCVYw=;
-	h=Content-Type:DKIM-Signature:Mime-Version:Subject:From:In-Reply-To:
-	 Date:Cc:Message-Id:References:To; b=EPpR/SNBH1ELGxx8znDVlfY62nf8mzGTgpT5F/AbIEz4l3IAZfH7v7sPcRhI/xLZNqsK9z6h+Peddu9NTJIzAio3D/ozDDJn6KuoruWNQTGoyyIj0mJ+RX+Zf4waIvQrz48/3+CGYoHmAs52C5w6wqHkVzZBGJfjrReHW+Rx/f8ayWdzfzOlGDIAJRj4KFw4pnUEFSSPgzl6cEXEUI/HVw6iRD3MZcOdCSVx8vOewYwhbmgYYjzyyUa/30TCk0jgFuhFUpGOu08BmFVB+WYLoOcP/bDF+nZzMEdq/NqyR4tzMDIQ72+BuyqxIGvS3xe8i35qiYvH/+7atkw430dKZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=IbfmN4E+; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b5; helo=out-181.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1725540996; c=relaxed/relaxed;
+	bh=6MTRMH1950H7pYJdyL+qM9S+/x9T4aarJ3EpbvZXG0c=;
+	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=k7qOiiLEP+p8Gq/0Db+Y6EWAAZjC/lR3furEZanS6kuDBdGt8ptU88kHW+mPS0t/LE6mSKXB3xk+1dzZyrQg6R9qAlmNWgwUPKitsWhYvEO5rHqiOyeh+btgTw2bdUlbAkVt/AR535HcFMkhd1djHyQ6nobPYVJMgR0Z3mSqiziRc8CfJ1UHsgWzluOVS9D1bn7HpZQHCBEsPkX8dccT1FqQOPfMCr81OcxAeFBFlabD0RednDhajQNxlzVt1O9ygLu0Jwiwzxx6tU/bttyPVGlkeWzXLyBIz4T58zpd2thnIfC4vC+wLT/58OVrP7g1MxlHvOranauukDdEgd/aMw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=A9I5x1EB; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=srs0=ehjl=qd=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=IbfmN4E+;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=A9I5x1EB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b5; helo=out-181.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-181.mta0.migadu.com (out-181.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=srs0=ehjl=qd=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wzz7p4tDrz2ysg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 22:24:38 +1000 (AEST)
-Content-Type: text/plain;
-	charset=us-ascii
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1725539058;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wzzrf5DKQz2xFq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 22:56:34 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id BC1CCA4497B;
+	Thu,  5 Sep 2024 12:56:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B06BC4CEC7;
+	Thu,  5 Sep 2024 12:56:29 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="A9I5x1EB"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1725540987;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=gz1yGhbZpgLoXsIxhz2uE7McRGPNwSJIR5f5xqDCVYw=;
-	b=IbfmN4E+hY5GdZdW3kzN35EwKMbO/B59nTdimCMm7n7hbuasFapv9oc/4nSaHcdtDM9AZl
-	fl+4kluQcnMSAxiEJUtwokk7fx7aQyKc4TpoWLrENMSinKQ7nLlEi5VTvJw0abWcdChzYX
-	0ZUBr/L4TFbDm9dAPKU4Q1+r3jTRrLg=
+	bh=6MTRMH1950H7pYJdyL+qM9S+/x9T4aarJ3EpbvZXG0c=;
+	b=A9I5x1EBzjWpsyVHdJmPYjDYEuQpDwByqVQ89KOcyYwjwC/5UglJ7bOVFCORH/KKdLDSsj
+	hE0+FEYI1HzmSRsLBGvjoYX+tvf6Yr6IvTYdDzNBFgQnOfkYAjE0L/FEuSL0rfcnnK/EpH
+	wvrGrZzEfhJC/aKxpXKjrA1SYDA0ufM=
+Received: 
+	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 83f56dc6 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Thu, 5 Sep 2024 12:56:27 +0000 (UTC)
+Date: Thu, 5 Sep 2024 14:56:22 +0200
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+	llvm@lists.linux.dev, linux-fsdevel@vger.kernel.org,
+	linux-mm@kvack.org, linux-trace-kernel@vger.kernel.org,
+	Adhemerval Zanella <adhemerval.zanella@linaro.org>,
+	Xi Ruoyao <xry111@xry111.site>
+Subject: Re: [PATCH v5 0/5] Wire up getrandom() vDSO implementation on powerpc
+Message-ID: <Ztmqdr01_idiz64-@zx2c4.com>
+References: <cover.1725304404.git.christophe.leroy@csgroup.eu>
+ <Zthr1nB_RJ56YD3O@zx2c4.com>
+ <87frqe5m5b.fsf@mail.lhotse>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -49,43 +81,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3776.700.51\))
-Subject: Re: [PATCH v3 13/14] mm: pgtable: remove pte_offset_map_nolock()
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <20240904084022.32728-14-zhengqi.arch@bytedance.com>
-Date: Thu, 5 Sep 2024 20:23:44 +0800
-Cc: David Hildenbrand <david@redhat.com>,
- Hugh Dickins <hughd@google.com>,
- Matthew Wilcox <willy@infradead.org>,
- "Vlastimil Babka (SUSE)" <vbabka@kernel.org>,
- akpm@linux-foundation.org,
- rppt@kernel.org,
- vishal.moola@gmail.com,
- peterx@redhat.com,
- ryan.roberts@arm.com,
- christophe.leroy2@cs-soprasteria.com,
- linux-kernel@vger.kernel.org,
- linux-mm@kvack.org,
- linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Content-Transfer-Encoding: 7bit
-Message-Id: <13E28978-C156-45CA-A57B-15C4AE668C9B@linux.dev>
-References: <20240904084022.32728-1-zhengqi.arch@bytedance.com>
- <20240904084022.32728-14-zhengqi.arch@bytedance.com>
-To: Qi Zheng <zhengqi.arch@bytedance.com>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <87frqe5m5b.fsf@mail.lhotse>
+
+On Thu, Sep 05, 2024 at 10:18:40PM +1000, Michael Ellerman wrote:
+> There is an existing comment in the a/p/vdso/Makefile about the
+> fixed-r30 thing, tldr is it's a workaround to avoid breaking old
+> versions of Go.
+
+Thanks. Indeed, following Christophe's links yesterday, I tumbled down
+that rabbit hole for a bit. Interesting how ABIs ossify unintentionally.
 
 
-
-> On Sep 4, 2024, at 16:40, Qi Zheng <zhengqi.arch@bytedance.com> wrote:
+> For the series:
 > 
-> Now no users are using the pte_offset_map_nolock(), remove it.
-> 
-> Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-Reviewed-by: Muchun Song <muchun.song@linux.dev>
+Excellent, queued up now.
 
-Thanks.
+> If you can include Maddy's test results from Power9 in the change log
+> for patch 5 that'd be nice.
 
+Was my plan exactly. I replaced the QEMU result with the PowerNV one.
+
+Jason
 
