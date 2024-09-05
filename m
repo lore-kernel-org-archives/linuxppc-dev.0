@@ -1,79 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-1037-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1038-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47D4ECD4F59
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 08:38:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06564CD4F59
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Sep 2024 08:58:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Wzt6n5hHkz2yT0;
-	Thu,  5 Sep 2024 18:38:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725525505;
-	cv=none; b=Xb6Dx6csbndsxOBxuxexBIzbb092yEVD8lPxJ7yWi6C+dShNn6G9rZEGNEcOUgdxBoZX47ZT/QIGGV/nis/ZoS0H6cvYPke3BG0xmL+dW+4WAiu1G7ljtf0ZsRKYQCZ22F1ofrg6/buVC7zyZCzPEajFBbU0UKRH0O3jJhkA++O8XL5O6Kjfj7W99z8dE5hPqMylVt+lulqOWl76FF/M2qdFUO1yF8gHUkdM3ieFZVNLo4QlYj4jgKsFZptq9Jf97syHAvwdLdHyh5+CVbdRR2h9l1lDPrIIySl+PcxTarKRgWiSca5mLsUEM+pD8/u2IcdoCd3xrZlucDjDXSwVXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4WztYn4hW8z2ypV;
+	Thu,  5 Sep 2024 18:58:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.178
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725526701;
+	cv=none; b=PoCBZjq8CwplOECEENlp+FsWYqm7+mbfNQhmICBp/6qt6lPeNXHDR21QkXz6EFfRAcQCUD7jvskIS9EHsUs6Kq/aHnrlQvmhK80GGus2SQWSAsiEc0WoaLDzBRDBjRPHl802NQgkR9mdUy7GtwQBSvh77FY2OpnDtoOAtGdFi3CYqOZvvpf1NiuRl5X0guHQSWYV19ugpXOS6vuhwf88Geddd19XumH5yqW6cuZVV1wGsfOPZOXUHZFf14EMQddsICLNLOKHx9GzbqNC+eEfXj42piIY1iAWQa6Uhc9XHzu3EEdVPIsQPunbdJf3VfDhlRapq/brFIWLhNj6jsvz1w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725525505; c=relaxed/relaxed;
-	bh=P9ADIHjRXj1WJsIRfcpdcdI+TM8EPlLvEY98Zxn8VVk=;
-	h=DKIM-Signature:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type; b=hIK+OHAEfLaGwhHR6NnvjHoFXMUisC+vog1p70NYQkvW5OaVSPWwT06ffVHT1St+3nKwOEXme9PBcssEhO8dknSUC5nWR/rzcJ5lbyJgMZOzIDv8D8WTN+3v3Il/7B46pcYdjw/3IeSfwCfmScA5C/pvzp5sOzGVd6stykLS5/4SndLNc5PCiiycljghFYuLCt5ZOjxoiiMKU06hdkg6qmnf877r5yFJX4833bf9GnbncDGPgtO/WaPtvjqBW/BJR/C2lVKr45UMVugq29aIAlBWNHp9iKCJ5/To3BSr2mlCb0U+OZvdKUoK4D5GiZEVHWaUwyK9O4SMr5bt8evVkg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LuyNdk5o; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1725526701; c=relaxed/relaxed;
+	bh=CZtqExsDOIYp5HqPgrPdq+CzPwDzSkiYY8yvT9Jxwhw=;
+	h=Message-ID:DKIM-Signature:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type; b=SiDVPdC4gs+0IjyOZKFc+wcxOaxcBgg0ZVj4CZ05xWjCcS5b7zckuwQozVUFpwKkEbB6q+DoBojNKL6mQ18hmETGKFTbVt8IHsZ5ubdi6EHyihDCzFy6OhsCN5/f6P/3dOU+2FtBfEh6wXV9gv9o+NBo2Cw3bg3pVPFHVt6pgyqJLje0b9LRJjzCMixxNU4doCbDFkSgiZAFC3eGTojMonPQ7EXg6JSidhZ8ypTtNOk2CYg4jh9WRwgxEusBo+fdTThdQR3qfRaBQv/QlNd3/nfWIuNcyEdMcajkSZAmRsADuOYqxA0hSqYw+kbxThR+PNU30buauMTXv4A3OskbUg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=hHL2mCMb; dkim-atps=neutral; spf=pass (client-ip=91.218.175.178; helo=out-178.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LuyNdk5o;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=hHL2mCMb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.178; helo=out-178.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-178.mta0.migadu.com (out-178.mta0.migadu.com [91.218.175.178])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Wzt6n01R5z2yRZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 18:38:24 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4853NF5a018187;
-	Thu, 5 Sep 2024 08:38:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	message-id:date:mime-version:subject:to:cc:references:from
-	:in-reply-to:content-type:content-transfer-encoding; s=pp1; bh=P
-	9ADIHjRXj1WJsIRfcpdcdI+TM8EPlLvEY98Zxn8VVk=; b=LuyNdk5oCTEB4An5o
-	jfiLCTtfzXlCIPovMi8tpFj+lroHcSdiPiURhwxuv+1wBvn5DwlGsXIaCZujFhAh
-	BQmUqEzH8aqEnRCYzMHeTGEycBv8FYYRaG2XCZbVc62e/VpnhWvsJp+n6kBlcp6u
-	nbIUf1XfJwjfOPIO5+0Bq0k0vM4nrQtEfKjfSOMKwys+258nDoWLi4Ti6hF7Hlzf
-	u4AcT9XiIssb9EOSdpVqpSOVohSIsIOhhGABfOn8ypLxgBHbH3KH2akckOYDc1Hj
-	62u8xk0e/AqN1e7dOAPSEbqAX0/m/+tIXO2EpzS6lrMjseO37IDSurCZiNRN1JnA
-	PiWLQ==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41brkr02mj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 05 Sep 2024 08:38:09 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4858U5SO023730;
-	Thu, 5 Sep 2024 08:38:09 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41brkr02mg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 05 Sep 2024 08:38:08 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4855vRsS018672;
-	Thu, 5 Sep 2024 08:38:08 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 41cdw1c0ga-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 05 Sep 2024 08:38:08 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4858c5Uv15335874
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 5 Sep 2024 08:38:05 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C9B9420063;
-	Thu,  5 Sep 2024 08:38:05 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D1EF320043;
-	Thu,  5 Sep 2024 08:38:00 +0000 (GMT)
-Received: from [9.43.125.148] (unknown [9.43.125.148])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  5 Sep 2024 08:38:00 +0000 (GMT)
-Message-ID: <c6f30e31-69fe-4ece-b251-c49f1ab59a04@linux.ibm.com>
-Date: Thu, 5 Sep 2024 14:07:58 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4WztYl4gCCz2yn4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Sep 2024 18:58:17 +1000 (AEST)
+Message-ID: <d8e2ef66-c345-43f0-9989-f20f16df34d3@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1725526676;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=CZtqExsDOIYp5HqPgrPdq+CzPwDzSkiYY8yvT9Jxwhw=;
+	b=hHL2mCMbuNK+Hs/O408hs/N7aassZHQuWT3l/9qpf3OwEqwDoq18fUNQy7T4vQkPAhr7Ip
+	KhS7GNRdIL7YXvr4Kwk1nBVf05wbZgGwqSvv3B9YBaijU8YfoK9B1DhEgjDylQD3XI58dx
+	j3oiLIpOO5R1TF/4CpCnFRK2Hn4WWvc=
+Date: Thu, 5 Sep 2024 16:57:44 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,134 +50,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] kexec/crash: no crash update when kexec in progress
-To: Baoquan He <bhe@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-        Hari Bathini <hbathini@linux.ibm.com>, kexec@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        x86@kernel.org, Sachin P Bappalige <sachinpb@linux.vnet.ibm.com>
-References: <20240731152738.194893-1-sourabhjain@linux.ibm.com>
- <87v80lnf8d.fsf@mail.lhotse>
- <10c666ae-d528-4f49-82e9-8e0fee7099e0@linux.ibm.com>
- <355b58b1-6c51-4c42-b6ea-dcd6b1617a18@linux.ibm.com>
- <ZsLjGJvAUIaxrG6x@MiWiFi-R3L-srv>
- <1e4a8e18-cda9-45f5-a842-8ffcd725efc9@linux.ibm.com>
- <ZtGqTSMvx6Ljf5Xi@MiWiFi-R3L-srv>
- <0dd94920-b13f-4da7-9ea6-4f008af1f4b3@linux.ibm.com>
- <ZtkkIoUIu8shp/ut@MiWiFi-R3L-srv>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <ZtkkIoUIu8shp/ut@MiWiFi-R3L-srv>
+Subject: Re: [PATCH v3 08/14] mm: copy_pte_range() use
+ pte_offset_map_rw_nolock()
+To: Qi Zheng <zhengqi.arch@bytedance.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ david@redhat.com, hughd@google.com, willy@infradead.org, vbabka@kernel.org,
+ akpm@linux-foundation.org, rppt@kernel.org, vishal.moola@gmail.com,
+ peterx@redhat.com, ryan.roberts@arm.com, christophe.leroy2@cs-soprasteria.com
+References: <20240904084022.32728-1-zhengqi.arch@bytedance.com>
+ <20240904084022.32728-9-zhengqi.arch@bytedance.com>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <20240904084022.32728-9-zhengqi.arch@bytedance.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 3E_zICSznpiTbAsJp_vUj6gzJGxIoAtF
-X-Proofpoint-ORIG-GUID: hIqrKRw-KLK960E0ks9WsRAv3WYC4C5x
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-05_04,2024-09-04_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- clxscore=1011 mlxscore=0 impostorscore=0 malwarescore=0 suspectscore=0
- priorityscore=1501 adultscore=0 mlxlogscore=992 bulkscore=0 spamscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2407110000 definitions=main-2409050063
+X-Migadu-Flow: FLOW_OUT
 
-Hello Baoquan,
 
-On 05/09/24 08:53, Baoquan He wrote:
-> On 09/04/24 at 02:55pm, Sourabh Jain wrote:
->> Hello Baoquan,
->>
->> On 30/08/24 16:47, Baoquan He wrote:
->>> On 08/20/24 at 12:10pm, Sourabh Jain wrote:
->>>> Hello Baoquan,
->>>>
-> ......snip...
->>>> 2. A patch to return early from the `crash_handle_hotplug_event()` function
->>>> if `kexec_in_progress` is
->>>>      set to True. This is essentially my original patch.
->>> There's a race gap between the kexec_in_progress checking and the
->>> setting it to true which Michael has mentioned.
->> The window where kernel is holding kexec_lock to do kexec boot
->> but kexec_in_progress is yet not set to True.
->>
->> If kernel needs to handle crash hotplug event, the function
->> crash_handle_hotplug_event()  will not get the kexec_lock and
->> error out by printing error message about not able to update
->> kdump image.
-> But you wanted to avoid the erroring out if it's being in
-> kernel_kexec().  Now you are seeing at least one the noising
-> message, aren't you?
 
-Yes, but it is very rare to encounter.
+On 2024/9/4 16:40, Qi Zheng wrote:
+> In copy_pte_range(), we may modify the src_pte entry after holding the
+> src_ptl, so convert it to using pte_offset_map_rw_nolock(). Since we may
+> free the PTE page in retract_page_tables() without holding the read lock
+> of mmap_lock, so we still need to get pmdval and do pmd_same() check after
+> the ptl is held.
 
-My comments on your updated code are inline below.
+See commit 3db82b9374ca92, copy_pte_range and retract_page_tables
+are using vma->anon_vma to be exclusive.
 
+retract_page_tables()                    copy_page_range()
+     vma_interval_tree_foreach()              if (!vma_needs_copy())
+         if (READ_ONCE(vma->anon_vma))            return 0;
+             continue;                        copy_pte_range()
+
+So I think mmap write lock here is also used for keeping ->anon_vma stable.
+And we do not need pmd_same().
+
+Muchun,
+Thanks.
 >
->> I think it should be fine. Given that lock is already taken for
->> kexec kernel boot.
->>
->> Am I missing something major?
->>
->>> That's why I think
->>> maybe checking kexec_in_progress after failing to retriving
->>> __kexec_lock is a little better, not very sure.
->> Try for kexec lock before kexec_in_progress check will not solve
->> the original problem this patch trying to solve.
->>
->> You proposed the below changes earlier:
->>
->> -	if (!kexec_trylock()) {
->> +	if (!kexec_trylock() && kexec_in_progress) {
->>   		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
->>   		crash_hotplug_unlock();
-> Ah, I meant as below, but wrote it mistakenly.
+> Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
+> ---
+> Hi Muchun, since the code has changed, I dropped your Reviewed-by tag here.
 >
-> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-> index 63cf89393c6e..e7c7aa761f46 100644
-> --- a/kernel/crash_core.c
-> +++ b/kernel/crash_core.c
-> @@ -504,7 +504,7 @@ int crash_check_hotplug_support(void)
->   
->   	crash_hotplug_lock();
->   	/* Obtain lock while reading crash information */
-> -	if (!kexec_trylock()) {
-> +	if (!kexec_trylock() && !kexec_in_progress) {
->   		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
->   		crash_hotplug_unlock();
->   		return 0;
+>   mm/memory.c | 18 +++++++++++++++++-
+>   1 file changed, 17 insertions(+), 1 deletion(-)
 >
->
->>
->> Once the kexec_in_progress is set to True there is no way one can get
->> kexec_lock. So kexec_trylock() before kexec_in_progress is not helpful
->> for the problem I am trying to solve.
-> With your patch, you could still get the error message if the race gap
-> exist. With above change, you won't get it. Please correct me if I am
-> wrong.
-
-The above code will print an error message during the race gap. Here's why:
-
-Let’s say the kexec lock is acquired in the kernel_kexec() function,
-but kexec_in_progress is not yet set to True. In this scenario, the code 
-will print
-an error message.
-
-There is another issue I see with the above code:
-
-Consider that the system is on the kexec kernel boot path, and 
-kexec_in_progress
-is set to True. If crash_hotplug_unlock() is called, the kernel will not 
-only update
-the kdump image without acquiring the kexec lock, but it will also 
-release the
-kexec lock in the out label. I believe this is incorrect.
-
-Please share your thoughts.
-
-Thanks,
-Sourabh Jain
-
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 06674f94b7a4e..47974cc4bd7f2 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1082,6 +1082,7 @@ copy_pte_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
+>   	struct mm_struct *src_mm = src_vma->vm_mm;
+>   	pte_t *orig_src_pte, *orig_dst_pte;
+>   	pte_t *src_pte, *dst_pte;
+> +	pmd_t pmdval;
+>   	pte_t ptent;
+>   	spinlock_t *src_ptl, *dst_ptl;
+>   	int progress, max_nr, ret = 0;
+> @@ -1107,13 +1108,28 @@ copy_pte_range(struct vm_area_struct *dst_vma, struct vm_area_struct *src_vma,
+>   		ret = -ENOMEM;
+>   		goto out;
+>   	}
+> -	src_pte = pte_offset_map_nolock(src_mm, src_pmd, addr, &src_ptl);
+> +
+> +	/*
+> +	 * Since we may free the PTE page in retract_page_tables() without
+> +	 * holding the read lock of mmap_lock, so we still need to do a
+> +	 * pmd_same() check after holding the PTL.
+> +	 */
+> +	src_pte = pte_offset_map_rw_nolock(src_mm, src_pmd, addr, &pmdval,
+> +					   &src_ptl);
+>   	if (!src_pte) {
+>   		pte_unmap_unlock(dst_pte, dst_ptl);
+>   		/* ret == 0 */
+>   		goto out;
+>   	}
+>   	spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
+> +
+> +	if (unlikely(!pmd_same(pmdval, pmdp_get_lockless(src_pmd)))) {
+> +		pte_unmap_unlock(src_pte, src_ptl);
+> +		pte_unmap_unlock(dst_pte, dst_ptl);
+> +		/* ret == 0 */
+> +		goto out;
+> +	}
+> +
+>   	orig_src_pte = src_pte;
+>   	orig_dst_pte = dst_pte;
+>   	arch_enter_lazy_mmu_mode();
 
 
