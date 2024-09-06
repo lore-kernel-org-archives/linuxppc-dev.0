@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-1119-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1120-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C5E2CD5BDD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 11:57:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B37F4CD5BDD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 11:57:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X0ZRv41V8z3c58;
-	Fri,  6 Sep 2024 21:55:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725623739;
-	cv=none; b=klTk3pOHRYNkXFL7C5wygMujBM0fEI1rBACd01k8e9U2LcXIZbK8Zb4T92v+EVb0HdmytPCU9fBC2vTfi7NB3O+9Cx9l/Kd0cHFHXLSbqub35KyypCjD27OnmJ1FjN882ywLSqcBU4u3qPtlsSolbPY2BTq5StfGICd+ThgT1Ous8tS1XhXJk19a7SwBS1ChHo67qg7l+rz+zS2Wg2cFDys7+RW9FF6Tw7DUVT8bz0qVPxPkCl/HBvraZJGGqgwoxj2IbtRkU1XpntjSLSIlB2XU7b/yIZugxfy0VKbcq41jQIt/KdA3WltKScQT0whv06VI8jNDFMBKCw6YhXR/1Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X0ZRw3v72z3c5h;
+	Fri,  6 Sep 2024 21:55:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725623740;
+	cv=none; b=NnlxWmXPV6puK/8kJ6km1/GifO5eKyrnKAmevqYgVdOz8tKv5cmCaS2j6inVDb6gGQfFu8x13raaZe/kSNsQuZiFGgEqQ6svt8wumLWACfzCHMz4FMQfgpxmshuk6STWRMxS4hb7vEZaZj1YAUNyYFZ47w9FEb4rBBkKYe/+CIJBhl+auEQ9gWn51gtjAS9z4WZRtUzNzrPKqpjMmXzbWTVHnBrjE2HxIV2qScchT9EQl+seNWbIxE7xUGIxPMrUd6ZlD58fQ2A2hiGa6l2n5oNshzU7bGXt+dVTRMIvIyi2D900JH9r9qO1jovhhGW104pr7XCXefVEOcwLGpYUhw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725623739; c=relaxed/relaxed;
-	bh=xm9oPvSxnx+j2S8rfz1zspmYYZ7rHrYmPAfeZ7JS1tU=;
+	t=1725623740; c=relaxed/relaxed;
+	bh=q4+5OBBCLEenVP1yKe6CohEDLCCwiap2I6hvNkW55fo=;
 	h=DKIM-Signature:From:To:In-Reply-To:References:Subject:Message-Id:
-	 Date:MIME-Version:Content-Type; b=Ox4rXOKh3N4U/LXb1pjiJdZudgL+8h5pD83w+97bYcKRt2k11hVnkb7K2n6AJP0WR3NXKBAMGx6JFIthLwnzH/EZ6gBRzzOGDLKIA6BH3RSjzgZBBObQ/oo/vSooZQuSoOmK7QIz4Hfqg55jdf4M4iXDiOPdAm8EGESi46CrCtLwD0g7GnsixU6uLB6TYyRJUMspEonMYWnMfHwFgCoDmqNfb8aFkveZPh0CN09wWixQ8zXHKPlhvRdT8dVvbwwvt865k9Y3BZ5fkVFU43IfWG1WwMKceYgWN+zUsngrG6WMprroF54kHKHHuqAPFtxtUfvZmibRq3LT89qOKDVmbw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=eINYVe7l; dkim-atps=neutral
+	 Date:MIME-Version:Content-Type; b=jkxwxsd69svZLFtTXFmJtoQQpO/tVYSYtDaMBlNvVHEu0kWb3qBOEcnU5fWx48btePwUgKLrDpIzJm0fcgsA+wLyy2RFkdR7LkhNwprxDZJrBvrZRBNyW8wm27NyrBHc0ZiD6Q7UP3enGIMZmhkk6Jjj9ChSQtlSla1aY+XV6HhfJUQVcXVeStLnb6xm+N30qu3PjUbws9Tn9HLqeFjrdRNZJKCzSOJz+jszux+SWVQ2y5ZWfQPmUPSMtm3wN9E5x2m9x7EOdzjj7JNbjNdo1MbtAqmnjQxDSv9ZsprmycE4WIq/hSTktzRx1b2gi/Z45Z6GoLzQgrQil7CCfsKy9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KXY7e0EB; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=eINYVe7l;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KXY7e0EB;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0ZRv3qF5z30Np
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 21:55:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0ZRw3lwSz3c5Z
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 21:55:40 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1725623736;
-	bh=xm9oPvSxnx+j2S8rfz1zspmYYZ7rHrYmPAfeZ7JS1tU=;
+	s=201909; t=1725623737;
+	bh=q4+5OBBCLEenVP1yKe6CohEDLCCwiap2I6hvNkW55fo=;
 	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=eINYVe7lxAVXqZv7Ocea6HZyLAND5/Vj1+Ss2kupcQbwfeQfKUGvdO6KVZGZQTi4w
-	 xlQo99Zn0W1ruXdYZJgLY8SiPrxilivQdlQ05RA16MO6VeHHl1tYG6lZtO05gNFSaO
-	 sB9dOm5aHpx9wMTP2qsRqPogADJJYGfj9895HJr48eJ/fChDfFrsuVKh0CjRI2R2nq
-	 69ArIWWoIE1lmsoPk1n+n9auHx5DlrtwA6XqJrQEzamUovU+ADslZuSwf/fGG4Wpp4
-	 ENtXJGomD4oar3QOJf+54pKiVarpAcossBZnOYN5TggOa1zC5mmGABq4RygIzFv0sg
-	 pbYlZp12f1oAQ==
+	b=KXY7e0EB3BGx5E7XVHv82MJcs3ASoB51ptvWN076nuAeH590G8ZfEN/q7Ab9EA8CW
+	 Khjwl2bL3+yFRp0APTP9vsC2Ht0PLScaaGXR29foHsrRoxKqJt1txz/5G67NWSsuQD
+	 mqS32ZkI2Kwehg1ggfQlXulhwDMtURE3L3jch+Fj7JWdTtoDP9+KRrl4P93w2LRPMC
+	 mNkN3SKCwd1bB1jGYCuw+BWbX9tapFUjnyiZb+VgrCgAFRkuRVYlO9fvc0//RFPkmn
+	 JkGAbKFA2yg73p7ue0JCfJCP0FIYFqzX4+vXb7Yt05isB3E7P9LmxbInOPBEfo6Zgy
+	 TFSN0OrY0n9nQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X0ZRr2FRCz4xM4;
-	Fri,  6 Sep 2024 21:55:36 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X0ZRs2GXHz4x8m;
+	Fri,  6 Sep 2024 21:55:37 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20240821080729.872034-1-mpe@ellerman.id.au>
-References: <20240821080729.872034-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s/mm: Move __real_pte stubs into hash-4k.h
-Message-Id: <172562357189.467568.16028658312206280756.b4-ty@ellerman.id.au>
+In-Reply-To: <20240820065705.660812-1-mpe@ellerman.id.au>
+References: <20240820065705.660812-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/configs/64s: Enable DEFERRED_STRUCT_PAGE_INIT
+Message-Id: <172562357189.467568.5618868163096881920.b4-ty@ellerman.id.au>
 Date: Fri, 06 Sep 2024 21:52:51 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -63,16 +63,16 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 21 Aug 2024 18:07:29 +1000, Michael Ellerman wrote:
-> The stub versions of __real_pte() etc are only used with HPT & 4K pages,
-> so move them into the hash-4k.h header.
+On Tue, 20 Aug 2024 16:57:05 +1000, Michael Ellerman wrote:
+> It can speed up initialisation of page structs at boot on large
+> machines.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s/mm: Move __real_pte stubs into hash-4k.h
-      https://git.kernel.org/powerpc/c/8ae4f16f7d7b59cca55aeca6db7c9636ffe7fbaa
+[1/1] powerpc/configs/64s: Enable DEFERRED_STRUCT_PAGE_INIT
+      https://git.kernel.org/powerpc/c/d6b34416b08895a7457c53630595ce84e4aa904c
 
 cheers
 
