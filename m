@@ -1,57 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-1109-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1110-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B560CE7B02
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 11:56:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B43DECE7B02
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 11:56:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X0ZRm6v8mz304N;
-	Fri,  6 Sep 2024 21:55:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725623732;
-	cv=none; b=PA8ziHggFSe80rm9QnbUoWuEolXe37UyG2dlEps6DifWOA9Y1o72pDj8x7neFCKdUwsZ6wvOMalVzkksVOrDK42S2FdGT32NDGppkebIDbdorx+w2qv+71yel2RG333DXtREZls043KXoLv2QmTHZJyUM9yiqI9xTqxl4cYuYuc+BiImwWovuIE/h1VqgtpzepMO250zP6/m5QLn/pROmb5aJTfG051urVCh8zs8/lFqxlVMvd2XHqlUPVmPnLPK1SUZImPcv2q9fo0bijAyqX3TvSfyDvBaDdJKM5wPsPl0FFqXu1J8WCgMwwhFVh0vej9JaWi7SZjyeMW7W4zDmA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X0ZRn2SZVz30H7;
+	Fri,  6 Sep 2024 21:55:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725623733;
+	cv=none; b=PyM1KVuuUenCrtuClF/7Upj2DAXiEsiESVDITbICi/Nv25ACBKDMhY0VyCo67vf8QedTHGCA/ERH7/tlapnrbJJzejlfh8a0EbCnfbbQJwyh6XML0JjERKlLcjdZS/atjnXJoiSItZm13R39yi4I29atUt1o8W1OFIjzqnqscRu8VMeWadrRypVWOMuJwauJGkn+HvQ1g06tCG2Wse9EM9O8wiUBd2JVYXQkjVXcDM2g1ME3jVFBwX5m9995Gr4/SnVQ6wrIZrldO5mHYq2WjNiiXp/IRFzjvhzAfsnUz2P/38WLt1ZkAnSYBnJUb690AhKqRU6KSmpg/AWnBqMPyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725623732; c=relaxed/relaxed;
-	bh=DegYF6L0xrPJs/W3yhej8GCjtAFx5fG7XOMdZXndKx0=;
+	t=1725623733; c=relaxed/relaxed;
+	bh=XD5S7wtRfSmpajM5vt2XcsQTSnGwAlSGuzX0SDRteqQ=;
 	h=DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
-	 Message-Id:Date:MIME-Version:Content-Type; b=FkTTc+6dGqI+9fus02Z1WHvE/8iSQBX0qeDdbX0kQNWv0/Woo4SipFlyj0WQ3uUQcaDUVLB4b5U5qMc823KD5j1ReGdlVxp//BwkmZNWPGiHD4vyiSQqGoLIA+6dQwLgN+kSTCNcy0hJBEoXNG8WnfFb1cR6IEezvrVLoZdoAryyuZaYUxIvDfNFxNpmlBotwj6aVrSJN0nJHrOrdZvhsBnz6KNH5bCy/twpb8disvtrcPC/1auZxIAT1+wcR6jeqtg3sbDi62VB6tyGScp99KTtIg3v2WVEbaxZUe0dI2caMh+Zm5sLJDgub+bRVEnAw6pIL+w0KPmKWL0wGNLYbQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Q77AT84y; dkim-atps=neutral
+	 Message-Id:Date:MIME-Version:Content-Type; b=l2fi/Clh/e6/hV7LJZSLZ7qxRnJIH1TIKPsamQODHDX/ZMH8423NwZ+JSNdFdeA4pE4nRsv3U9MFYwCctRf0S/go9I8ihuO6q4qlL/oLYd5aC1dlbZcbpEGybuVjSJCoLrHkdoW1FCVkCniO+YdUtBBZSFS8QqRXj65Pzd4Of5xub2z31SKaU+GKQMK99kEcjG9v/s4MAfl8Uz9yD5zC15+79gDMQ4qyc4cEGPAprukMRfYLIayfJa2lcMJ9tbYUrooUWuOY6hoshEdgprGtYE0yum6+1TYEwG8yESrDmr+TqxV9IxSLHUMD+gDRw7TSS5T7vap3L0U9czHtLHJq/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=r9Gvw1T9; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Q77AT84y;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=r9Gvw1T9;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0ZRm5pcxz30DL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 21:55:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0ZRn239Kz30Gh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 21:55:33 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1725623732;
-	bh=DegYF6L0xrPJs/W3yhej8GCjtAFx5fG7XOMdZXndKx0=;
+	s=201909; t=1725623733;
+	bh=XD5S7wtRfSmpajM5vt2XcsQTSnGwAlSGuzX0SDRteqQ=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=Q77AT84ys3ukPRI64ZuNm8PziTIUkrHmIjc0o4RsY2Slq3Mq6W1b09tYP34JFloFi
-	 1CIQlqDwtDPvJuEOUwUOCaDqvBUjPu7EXrn07LS6nNhtq7lJxUdtOvAIZQHA/9e2Nd
-	 O+cHWaehRrIZCXmLwHWFjJlYmzm++tQfOcsCRZG2Ak4yQ7nUJ2rrh1tbBp11B8aHp/
-	 oqps2ImKuZccLsmK9S2fOoS3gM24Gl0S/vpBKpV+UNEAlFqVHawpdQQ3ZIwlI/QN7n
-	 f5MqrYWo2cKeZILP9eahQy16/V2EMt4DVpVsP+HrONxoqzyCe4480thTYpo8LocYn8
-	 oVelWeySocw4A==
+	b=r9Gvw1T9xVKtQcgSQejkO74vTirB8ULaI8BSvBG1vF0P/5QnsekLn8yWWXE3eZapM
+	 3grqpJNtEXBLChk4YjLAl2uYdwOqNpD410DjN71Fkm9MVsYNNQf6GJqdmI3aSgMUyc
+	 pm7l8D2P1VGkpiSc/r/FftWZp3joD1+itprwwz/pMxeN3CNfOPreR5+OCwYM9ptAZH
+	 ElH2j36TVpLX6exiPvGIVdQoLtMt4qX8X2NEIrT5mRruffTfKNs5RpBbOWGhBDXDcv
+	 9vVV7vwuFnKq384x+U4p2HHlkLb7pbbPSp1YnThd7Y9MLFX8v3AHvr1IEun5fcMRbG
+	 xRe8lz3DGinKw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X0ZRm4Hf9z4x8w;
-	Fri,  6 Sep 2024 21:55:32 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X0ZRn0csYz4x9G;
+	Fri,  6 Sep 2024 21:55:33 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, Gaosheng Cui <cuigaosheng1@huawei.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20240822130043.783756-1-cuigaosheng1@huawei.com>
-References: <20240822130043.783756-1-cuigaosheng1@huawei.com>
-Subject: Re: [PATCH -next] powerpc/powernv/pci: Remove obsoleted declaration for pnv_pci_init_ioda_hub
-Message-Id: <172562357199.467568.16977065972735898774.b4-ty@ellerman.id.au>
-Date: Fri, 06 Sep 2024 21:52:51 +1000
+To: linuxppc-dev@lists.ozlabs.org, Haren Myneni <haren@linux.ibm.com>
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, tyreld@linux.ibm.com, brking@linux.ibm.com, hbabu@us.ibm.com, kernel test robot <lkp@intel.com>
+In-Reply-To: <20240822025028.938332-1-haren@linux.ibm.com>
+References: <20240822025028.938332-1-haren@linux.ibm.com>
+Subject: Re: [PATCH v3 1/3] powerpc/pseries: Use correct data types from pseries_hp_errorlog struct
+Message-Id: <172562357208.467568.6562213165745120464.b4-ty@ellerman.id.au>
+Date: Fri, 06 Sep 2024 21:52:52 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,17 +64,26 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 22 Aug 2024 21:00:43 +0800, Gaosheng Cui wrote:
-> The pnv_pci_init_ioda_hub() have been removed since
-> commit 5ac129cdb50b ("powerpc/powernv/pci: Remove ioda1 support"),
-> and now it is useless, so remove it.
+On Wed, 21 Aug 2024 19:50:26 -0700, Haren Myneni wrote:
+> _be32 type is defined for some elements in pseries_hp_errorlog
+> struct but also used them u32 after be32_to_cpu() conversion.
 > 
+> Example: In handle_dlpar_errorlog()
+> hp_elog->_drc_u.drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
 > 
+> And later assigned to u32 type
+> dlpar_cpu() - u32 drc_index = hp_elog->_drc_u.drc_index;
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/powernv/pci: Remove obsoleted declaration for pnv_pci_init_ioda_hub
-      https://git.kernel.org/powerpc/c/10c8ac13395a087c90ba6acd11f793588ba5609e
+[1/3] powerpc/pseries: Use correct data types from pseries_hp_errorlog struct
+      https://git.kernel.org/powerpc/c/b76e0d4215b6b622127ebcceaa7f603313ceaec4
+[2/3] powerpc/pseries/dlpar: Remove device tree node for DLPAR IO remove
+      https://git.kernel.org/powerpc/c/17a51171c20d590d3d3c632bcdd946f5fc3c0061
+[3/3] powerpc/pseries/dlpar: Add device tree nodes for DLPAR IO add
+      https://git.kernel.org/powerpc/c/02b98ff44a57c1376c5a92a8518fda5c82bb5a91
 
 cheers
 
