@@ -1,57 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-1112-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1113-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A3CDCE7AA3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 11:56:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35D36CE7AA3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 11:56:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X0ZRp2Nh7z30NP;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X0ZRp5P8Rz30RK;
 	Fri,  6 Sep 2024 21:55:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725623734;
-	cv=none; b=Zi/O332PnzJI5KvCtmbliZBTX680rCMvoELr5TNK3PkjcMHTIpnDmpckskpdMFCzla2dHQDtbu4dy08OnhRbfaxYn2Gy1Xobksl3IB6t6HoCpN0ektteOgOCUJRReex4OUS6RlKsmy0wyeI8CnIdninnNjir4c5+tQsKfKPn2p5N1/iUjAN6qtx+cvgZO0SIZ2zQGjJADntW5YE/oKJgG6kPdJtRUlZ8aMtRTbJQVQsHxZ+plJbShUcaZGZn7Dmp0KERW1clSIZ3qDpBf1uW4HvuRaITOwqWUmBCIKasREkvIRdjjQc77LSf6gG8KLR0ZxKSzU/mFz+urr+jD4CM2A==
+	cv=none; b=N7Q8kekzByLlLDf9wzdhpP3/Cjcrc/NPDYO0uDiuDlsogtvN5Ml5up2qD5BPpGMGMgjrIrZ1mZl3O+0loD2fUhhLUFCJqyA/lqqt0o+wnO7V81hZcOYNiV/QoIIHvw3RvQ/T1e5IJwQIydo3Rgki4FJP6oCo/G8/Vz+MgsG5CcZSNlKZUlBQVggfAU8ysmwDQ7afVYn2tmxNQKx0KYKxVvuO8FPoRRcc3TmPlSPGBtMXTO5oCmfYG1IadAq1D5qOnASWsx8BiINIkEzVomIZ+d/dWPKgI83vco8drdrvwwCR9wuU+Tdd7Fp1e+kTxpjnf7DTepCpLXl4NQpLODIfvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1725623734; c=relaxed/relaxed;
-	bh=4bG/qw/te9D/TKEgsI8s5Qxc9BCTjNC5kN7Z76OZy7o=;
+	bh=HbLSLDwtNtHBvubA7eoLA/XeUtucQLAa2/TXy3ZwGRQ=;
 	h=DKIM-Signature:From:To:Cc:In-Reply-To:References:Subject:
-	 Message-Id:Date:MIME-Version:Content-Type; b=dYeeWB5FmzlZZx8C2fPeim7izOLzu8Bs+xY/4rw5rvDOuMaUuGY/iy7y8BcTD5VwnYQh5P5dCnLLdr/YGCuT6n5sJjYeVeaM9yx6vgmPmOVLj4QnFzFDP7N+PhPVhnTAD4ZXNjnU/G4PouwpY7/c0uZPfnF/gSyFNgWghJsNUXxrzNfciUKJXujOoNYrm7QhfOPypPywu60/xYpuAI/cj49wnPObYAcdijBVP1aphm3v/p4AMmXpy83WVHrqVB0APtC1jWaCyX53+TYF+v+P2NVyr+FSFG6Kkftrmpl7t9dJ3+cngd4oc8H805v6LOi9Un9nae8FdaynRnZClzf6/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=X2R5ny3Q; dkim-atps=neutral
+	 Message-Id:Date:MIME-Version:Content-Type; b=YCiFfToC4HezDHHXpJByWCHlguQtWekpOT/VTZA1kAH+hAnJougIaR6dVxa4BfBYfgX5qKLzLfQoKFxco0g04TTyvoPQro/w62iqj5N5sd1Z5q7yz6jj5ywN/5L5gvXLCYXqXh5PXDuMwf5M8N/abmOaT2m0JwXMX492pypLglqA96W/Hdj9Q1jkMeu2Ifksxun07ahzsEfvyreax2kiDy/PlUWGklI0qJ7SmJo7R/K+c1PU+tHdYNZulrtmReRqI/9EZoj8QnpNACJKsIQljhiSh/3WHew9Zt+b/io0qnLH7AU1Q/3kPoMejOUOlACAlvjc/64KRhjGEHUVfhyiDw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Rgu0NKxJ; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=X2R5ny3Q;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Rgu0NKxJ;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0ZRp2BVcz30J8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0ZRp5Ckvz30Np
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 21:55:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1725623734;
-	bh=4bG/qw/te9D/TKEgsI8s5Qxc9BCTjNC5kN7Z76OZy7o=;
+	bh=HbLSLDwtNtHBvubA7eoLA/XeUtucQLAa2/TXy3ZwGRQ=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=X2R5ny3QA5RsLYRQTb9ja8oF49nBpCpuq0YYeYsJmldCw8hOeyXkCWtqDxOPjehxc
-	 aDNIOlhmZmKpIvdkxJ8GV8e4GMtG27o2z+rLppC/SmblNjvNM96kUKmSL6P2XjUk1A
-	 YRzS1mBsI6FenunUBNneX82c7WPNVzJZgUyHo9uy376C+78lg075Tf82anm0C+1d5D
-	 RTB1YE0n9tzOCFRFMx/+7XuRXy8qfewhwo6spLOATmP/FUW2nx1GbWkt8rHKzWCx9B
-	 dvHiM8NeS8+KtKEqFq5E6cxnMcBviOG89OPVa3DGbBlyWU4T7yXoE2cMol+3R63Hoi
-	 4SkJ+iTm2HuDQ==
+	b=Rgu0NKxJgrGyefSWAvTmKS7gaFjEvGkpgeswCpQ4RlVDhgWR54/hPjyotar8JmIbF
+	 MX2/ArJ+qwgFlVfD/jySUXj/EjpygJyddqRqTiUmyr8eyMGpg4MNCQCazJRefULYxr
+	 T0fpV0w/axyqLpFAZ1iH2pfEu/Wa7m0yYNfS7LjJSSLN0flRk1ZGBz9KRxLpU7yMMZ
+	 ilzjEyPxaLnbOdc5x3ADIwkWmnP2WJQtGY1zfOVbXjJ/OngDlE5kRz6zFbI9x/psgy
+	 QwS7aWtO3DvjsbCZ7gk5N7uTlgYUOZNx968n2ueaPn/bo4UXIlfgJ2uAN5GX6jOCO3
+	 daFHgBHJQDxew==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X0ZRp0qfdz4x89;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X0ZRp4Bqqz4x3q;
 	Fri,  6 Sep 2024 21:55:34 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Miguel Ojeda <ojeda@kernel.org>
-In-Reply-To: <20240826064217.46658-1-maddy@linux.ibm.com>
-References: <20240826064217.46658-1-maddy@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/xmon: Fix tmpstr length check in scanhex
-Message-Id: <172562357188.467568.1682181691215108322.b4-ty@ellerman.id.au>
-Date: Fri, 06 Sep 2024 21:52:51 +1000
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Cc: aneesh.kumar@kernel.org
+In-Reply-To: <20240823032911.1238471-1-mpe@ellerman.id.au>
+References: <20240823032911.1238471-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc/mm/64s: Move THP reqs into a separate symbol
+Message-Id: <172562357218.467568.14363675526657403608.b4-ty@ellerman.id.au>
+Date: Fri, 06 Sep 2024 21:52:52 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,31 +64,22 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 26 Aug 2024 12:12:17 +0530, Madhavan Srinivasan wrote:
-> If a function name is greater than 63 char long, xmon command
-> may not find them. For example, here is a test that
-> executed an illegal instruction in a kernel function and one of
-> call stack function has name >63 char long,
+On Fri, 23 Aug 2024 13:29:10 +1000, Michael Ellerman wrote:
+> Move the Kconfig symbols related to transparent hugepages (THP) under a
+> separate config symbol, separate from CONFIG_PPC_BOOK3S_64.
 > 
-> cpu 0x0: Vector: 700 (Program Check) at [c00000000a6577e0]
->     pc: c0000000001aacb8: check__allowed__function__name__for__symbol__r4+0x8/0x10
->     lr: c00000000019c1e0: check__allowed__function__name__for__symbol__r1+0x20/0x40
->     sp: c00000000a657a80
->    msr: 800000000288b033
->   current = 0xc00000000a439900
->   paca    = 0xc000000003e90000	 irqmask: 0x03	 irq_happened: 0x01
-> .....
-> [link register   ] c00000000019c1e0 check__allowed__function__name__for__symbol__r1+0x20/0x40
-> [c00000000a657a80] c00000000a439900 (unreliable)
-> [c00000000a657aa0] c0000000001021d8 check__allowed__function__name__for__symbol__r2_resolution_symbol+0x38/0x4c
-> [c00000000a657ac0] c00000000019b424 power_pmu_event_init+0xa4/0xa50
+> The new symbol is automatically enabled if CONFIG_PPC_BOOK3S_64 is
+> enabled, so there is no behaviour change, except for the existence of
+> the new PPC_THP symbol.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/xmon: Fix tmpstr length check in scanhex
-      https://git.kernel.org/powerpc/c/0405e128110d47a40443936e68dc32d7bc4ccc0b
+[1/2] powerpc/mm/64s: Move THP reqs into a separate symbol
+      https://git.kernel.org/powerpc/c/f61d413a1c1feaa4cd04fca840564ab90124bec4
+[2/2] powerpc/mm/64s: Restrict THP to Radix or HPT w/64K pages
+      https://git.kernel.org/powerpc/c/87def77bb5f4b61d47538a34bb2b2cb7db3c037b
 
 cheers
 
