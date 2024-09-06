@@ -1,53 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-1075-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1076-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7E4ECE7AAE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 04:53:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85432CE7AB6
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 06:09:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X0P4s0Ypnz2ygB;
-	Fri,  6 Sep 2024 14:53:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725598413;
-	cv=none; b=cCDsC7Yk8Qh0ocModXeE9l6sKj3pwhl5ze94hKVOi9xUj/HsSmI+NEL6giEXYYngRxXVQKpz+JnPkToPj2etXaf39Juym8apYou/cjjX6TK4BmRE025S9GwLoya/Ih1qtrGr9yTjmBtwwbOk4aGSXMsE9m8eFSCvC3Fh7b2ckVUSFFxBeZM6RD7vAzBZRQkK6QRYGj6nh5Z7SFKyMh9Pm6YFsIbFQRRXrL8Z5dKojxz+0Cup7f/sAOdT74RLE15euffG8/fXAu7kZTc3wVAMFfdlQu+lnnUDFcOESZjm9dOcf88cHcJIR2Y91x6VACiv3NK59OWtFZJKLQBDoAc56g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X0Qlv4Nd5z3013;
+	Fri,  6 Sep 2024 16:08:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725602939;
+	cv=none; b=G0/xAiavpHJNM1Gw8AkoYpHk5mgkjJvdwN1UKQPw19tYkNmnHV1Ew9Y7jNGusAt701wDWR5xdI9Nw2vx+JaxN+Tx0OwrCOadBzCVdS5iEG2VO/j52yDk/EqVs+ScxPDHD83K99Dq3SNmGlBvBcWS2ehu/FEw9HgFMmBDVGhoL3U9PrXJQeA21GFlKdM0k4s/hH8L1LhTQw9DyT8hUv4qatBUbtKq/0JoxDQCRncj+pH4dmuWHYsqKQQFn+wyAxroEMSlRJipd14UwcTE82Cr/OekVqoxohNA2GVPbkTR9qfRxNOaTJwOzKLWQ5dXniy8MdphWVeZkz0XpT2iy9+9pg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725598413; c=relaxed/relaxed;
-	bh=LpphzAncrNAhbp68+MlAHJ/QbSS+Voj8bxowdXMcXnM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KMsOjl7bLgSCyMo0d58eua00yiG+JPdb9RRBlQe+6JE+wQuqGljbfnRnEttbTVwOnC7VZJjW9o8JSCEp8RX8BpnKTEDvL64xdf3CUWaeE/LkBwHxhcsBQKobAZ3q6Sp2v8TY084NzSSYo7jyiOcb7mI/5Sl169BUJMEJL97nyjou/osXbKFkzLeW1pfeiBQ3vn+nGszpie+TAcS6ZWsWnW7T9mJcM5lJ3JNZ2XTM8ExpPzm8BAVOvpL9H4YBYuoa8MQFdHbrJDLrAOtd4BFftmvafVMboKD0t8Bd8/Aacj2eXjlmbUGu4CZBPXpXiY3YSICLApoVRs4GK2J2wNWJ5g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	t=1725602939; c=relaxed/relaxed;
+	bh=KoDC8byJaDeNriYQvbHrbg6UlJkCxONYM11UgK73y7s=;
+	h=DKIM-Signature:MIME-Version:References:In-Reply-To:From:Date:
+	 Message-ID:Subject:To:Cc:Content-Type; b=JpQuTzPdreTAdOlFFypt9qivdlp5Xd9DKtKzLkSDLcCdihmcL+mxPAFtPOboSDEW1xngljgD2bGHz2JbrId6ZZvMhE/wUd3CN0YqxItMa4jqlR8Lg9T4kfsE4vKGVAmI+vg4XmVCAa5OZc1Zhe6XJZd777Rjnh3NlTzLygbZxWTdvKzYqR0B8WAGA3SfryGxTmmu+PVeYG0I1E3FDfjypnnzhDnQ6nmHe5snEdDGvXIwEh9JeYwZPvqMlKpe/iGbRt+kdnf+GCOHIN9vdMh+/52FiEskg74f3KsWk1CLWM7cXZM12BLVwidVM7LyP9m0VddR8UUQl6Dd2ASCZi/+hw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mMW64gLm; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=guoren@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mMW64gLm;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=guoren@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0P4r5D9Gz2yNj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 14:53:30 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4X0P4l4sMRz9sRy;
-	Fri,  6 Sep 2024 06:53:27 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id cGNa5ow0wQLB; Fri,  6 Sep 2024 06:53:27 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4X0P4l3spgz9sRs;
-	Fri,  6 Sep 2024 06:53:27 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 739B98B778;
-	Fri,  6 Sep 2024 06:53:27 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id X35N0C8uKPzN; Fri,  6 Sep 2024 06:53:27 +0200 (CEST)
-Received: from [192.168.235.70] (unknown [192.168.235.70])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7D03E8B764;
-	Fri,  6 Sep 2024 06:53:26 +0200 (CEST)
-Message-ID: <45f7170d-a209-4079-9384-274b0c413a4b@csgroup.eu>
-Date: Fri, 6 Sep 2024 06:53:26 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0Qlv0gGZz2yNj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 16:08:59 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id CBA595C5B3E
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 06:08:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C7EEC4AF0E
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 06:08:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1725602934;
+	bh=imDUvx1Hii43SnkhK8GwTQs26eTyhJYRfhTDRAtZziQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=mMW64gLmWYwNHxfzlvaoGMBLGF0ueWOxcjrWhSUrtIlP4vdUd7xae5JPy3JKqIExz
+	 HFuiZx6oWJmovq63/cl+v1ZU19PDWFCuqMas6d7gV33rwhbsIjf/6jKgtDJi0CjkaM
+	 nAyscQokSqYPIUNn+/TkhSXvtu24dJ3kiLF2CEDvIPyPBbHH7uk6zFOptSZYge3L0P
+	 rhjznSkw4UEu9OgtKgG+WNoivArvnTJTCqu9mRUL1aD6wfECi7osbo4z5PCvKLIQRB
+	 x3CsUjPvuNXAShUQV2Y5AaW8FjjBy+AWygG7+uu3f9QIpIxTL3VXFknAtoxQuKUuS7
+	 CI+n8mob5I75g==
+Received: by mail-ej1-f45.google.com with SMTP id a640c23a62f3a-a8a7596b7dfso233313766b.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Sep 2024 23:08:54 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCW+jsHrqfZ6MEWpCuZvNrHmunS6L2sRCeR6+q/++pLAhEKqj/SOtq1PPfbZSGbo9L7bS1OGI5NUxmEt2as=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzulcJ4/nbbinukQYytvMQ7x4ITYol1BakW9X4bmwvYu1IjyzKb
+	lqGqs6scl1nF5u5MJPnEM2gAA7/wpj7FrdDWlOrCkgXshwBs2Rvv0A1hheIokwXk9hQQA9d2nrn
+	tRYM/7WRxlC2vsH7kOMPy3Jlfkw8=
+X-Google-Smtp-Source: AGHT+IHmDTwta2M/ptJ8I+HJGlz0i22zQ861L/VtKZzzihvpyO7sN1xzTAGALtM9rjMcOlsIyxzfNUzFUkdZe9E/qYg=
+X-Received: by 2002:a17:907:7d94:b0:a86:beb2:1d6d with SMTP id
+ a640c23a62f3a-a8a431c7214mr876305366b.26.1725602932791; Thu, 05 Sep 2024
+ 23:08:52 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,154 +63,188 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 4/5] powerpc/vdso: Wire up getrandom() vDSO
- implementation on VDSO32
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu
- <mhiramat@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>, Nathan Chancellor <nathan@kernel.org>,
- Nick Desaulniers <ndesaulniers@google.com>, Bill Wendling
- <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
- Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
- llvm@lists.linux.dev, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
- linux-trace-kernel@vger.kernel.org,
- Adhemerval Zanella <adhemerval.zanella@linaro.org>,
- Xi Ruoyao <xry111@xry111.site>
-References: <cover.1725304404.git.christophe.leroy@csgroup.eu>
- <1f49c2ce009f8b007ab0676fb41187b2d54f28b2.1725304404.git.christophe.leroy@csgroup.eu>
- <ZtnYqZI-nrsNslwy@zx2c4.com> <ZtoXhGYflBNR74g0@zx2c4.com>
- <ZtptfOicjZU3k3ZV@zx2c4.com> <Ztp16FkqG0ALlXnh@zx2c4.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <Ztp16FkqG0ALlXnh@zx2c4.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20240905-patches-below_hint_mmap-v3-0-3cd5564efbbb@rivosinc.com>
+In-Reply-To: <20240905-patches-below_hint_mmap-v3-0-3cd5564efbbb@rivosinc.com>
+From: Guo Ren <guoren@kernel.org>
+Date: Fri, 6 Sep 2024 14:08:40 +0800
+X-Gmail-Original-Message-ID: <CAJF2gTS4=8dMypnWe2dpuQfdfV3+XLq5fZeGbJWZPDN_ypfuvQ@mail.gmail.com>
+Message-ID: <CAJF2gTS4=8dMypnWe2dpuQfdfV3+XLq5fZeGbJWZPDN_ypfuvQ@mail.gmail.com>
+Subject: Re: [PATCH RFC v3 0/2] mm: Introduce ADDR_LIMIT_47BIT personality flag
+To: Charlie Jenkins <charlie@rivosinc.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Richard Henderson <richard.henderson@linaro.org>, 
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>, 
+	Vineet Gupta <vgupta@kernel.org>, Russell King <linux@armlinux.org.uk>, 
+	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "David S. Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Muchun Song <muchun.song@linux.dev>, Andrew Morton <akpm@linux-foundation.org>, 
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@suse.cz>, 
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Shuah Khan <shuah@kernel.org>, 
+	Christoph Hellwig <hch@infradead.org>, Michal Hocko <mhocko@suse.com>, 
+	"Kirill A. Shutemov" <kirill@shutemov.name>, Chris Torek <chris.torek@gmail.com>, linux-arch@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, 
+	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-csky@vger.kernel.org, loongarch@lists.linux.dev, 
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org, 
+	linux-kselftest@vger.kernel.org, linux-abi-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Jason,
+On Fri, Sep 6, 2024 at 5:16=E2=80=AFAM Charlie Jenkins <charlie@rivosinc.co=
+m> wrote:
+>
+> Some applications rely on placing data in free bits addresses allocated
+> by mmap. Various architectures (eg. x86, arm64, powerpc) restrict the
+> address returned by mmap to be less than the 48-bit address space,
+> unless the hint address uses more than 47 bits (the 48th bit is reserved
+> for the kernel address space).
+>
+> The riscv architecture needs a way to similarly restrict the virtual
+> address space. On the riscv port of OpenJDK an error is thrown if
+> attempted to run on the 57-bit address space, called sv57 [1].  golang
+> has a comment that sv57 support is not complete, but there are some
+> workarounds to get it to mostly work [2].
+>
+> These applications work on x86 because x86 does an implicit 47-bit
+> restriction of mmap() address that contain a hint address that is less
+> than 48 bits.
+>
+> Instead of implicitly restricting the address space on riscv (or any
+> current/future architecture), provide a flag to the personality syscall
+> that can be used to ensure an application works in any arbitrary VA
+> space. A similar feature has already been implemented by the personality
+> syscall in ADDR_LIMIT_32BIT.
+>
+> This flag will also allow seemless compatibility between all
+> architectures, so applications like Go and OpenJDK that use bits in a
+> virtual address can request the exact number of bits they need in a
+> generic way. The flag can be checked inside of vm_unmapped_area() so
+> that this flag does not have to be handled individually by each
+> architecture.
+Acked-by: Guo Ren <guoren@kernel.org>
 
-Le 06/09/2024 à 05:24, Jason A. Donenfeld a écrit :
-> On Fri, Sep 06, 2024 at 04:48:28AM +0200, Jason A. Donenfeld wrote:
->> On Thu, Sep 05, 2024 at 10:41:40PM +0200, Jason A. Donenfeld wrote:
->>> On Thu, Sep 05, 2024 at 06:13:29PM +0200, Jason A. Donenfeld wrote:
->>>>> +/*
->>>>> + * The macro sets two stack frames, one for the caller and one for the callee
->>>>> + * because there are no requirement for the caller to set a stack frame when
->>>>> + * calling VDSO so it may have omitted to set one, especially on PPC64
->>>>> + */
->>>>> +
->>>>> +.macro cvdso_call funct
->>>>> +  .cfi_startproc
->>>>> +	PPC_STLU	r1, -PPC_MIN_STKFRM(r1)
->>>>> +  .cfi_adjust_cfa_offset PPC_MIN_STKFRM
->>>>> +	mflr		r0
->>>>> +	PPC_STLU	r1, -PPC_MIN_STKFRM(r1)
->>>>> +  .cfi_adjust_cfa_offset PPC_MIN_STKFRM
->>>>> +	PPC_STL		r0, PPC_MIN_STKFRM + PPC_LR_STKOFF(r1)
->>>>> +  .cfi_rel_offset lr, PPC_MIN_STKFRM + PPC_LR_STKOFF
->>>>> +	get_datapage	r8
->>>>> +	addi		r8, r8, VDSO_RNG_DATA_OFFSET
->>>>> +	bl		CFUNC(DOTSYM(\funct))
->>>>> +	PPC_LL		r0, PPC_MIN_STKFRM + PPC_LR_STKOFF(r1)
->>>>> +	cmpwi		r3, 0
->>>>> +	mtlr		r0
->>>>> +	addi		r1, r1, 2 * PPC_MIN_STKFRM
->>>>> +  .cfi_restore lr
->>>>> +  .cfi_def_cfa_offset 0
->>>>> +	crclr		so
->>>>> +	bgelr+
->>>>> +	crset		so
->>>>> +	neg		r3, r3
->>>>> +	blr
->>>>> +  .cfi_endproc
->>>>> +.endm
->>>>
->>>> Can you figure out what's going on and send a fix, which I'll squash
->>>> into this commit?
->>>
->>> This doesn't work, but I wonder if something like it is what we want. I
->>> need to head out for the day, but here's what I've got. It's all wrong
->>> but might be of interest.
->>
->> Oh, I just got one small detail wrong before. The below actually works,
->> and uses the same strategy as on arm64.
->>
->> Let me know if you'd like me to fix up this commit with the below patch,
->> or if you have another way you'd like to go about it.
-> 
-> And here's the much shorter version in assembly, which maybe you prefer.
-> Also works, and is a bit less invasive than the other thing.
-> 
-> diff --git a/arch/powerpc/kernel/vdso/getrandom.S b/arch/powerpc/kernel/vdso/getrandom.S
-> index a957cd2b2b03..070daba2d547 100644
-> --- a/arch/powerpc/kernel/vdso/getrandom.S
-> +++ b/arch/powerpc/kernel/vdso/getrandom.S
-> @@ -32,6 +32,14 @@
->     .cfi_rel_offset r2, PPC_MIN_STKFRM + STK_GOT
->   #endif
->   	get_datapage	r8
-> +#ifdef CONFIG_TIME_NS
-> +	lis		r10, 0x7fff
-> +	ori		r10, r10, 0xffff
-> +	lwz		r9, VDSO_DATA_OFFSET + 4(r8)
-> +	cmpw		r9, r10
-> +	bne		+8
-> +	addi		r8, r8, (1 << CONFIG_PAGE_SHIFT)
-> +#endif
->   	addi		r8, r8, VDSO_RNG_DATA_OFFSET
->   	bl		CFUNC(DOTSYM(\funct))
->   	PPC_LL		r0, PPC_MIN_STKFRM + PPC_LR_STKOFF(r1)
-> 
+Sv57's pain finds its cure in this antidote.
 
-Thanks for looking.
+>
+> Link:
+> https://github.com/openjdk/jdk/blob/f080b4bb8a75284db1b6037f8c00ef3b1ef1a=
+dd1/src/hotspot/cpu/riscv/vm_version_riscv.cpp#L79
+> [1]
+> Link:
+> https://github.com/golang/go/blob/9e8ea567c838574a0f14538c0bbbd83c3215aa5=
+5/src/runtime/tagptr_64bit.go#L47
+> [2]
+>
+> To: Arnd Bergmann <arnd@arndb.de>
+> To: Richard Henderson <richard.henderson@linaro.org>
+> To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+> To: Matt Turner <mattst88@gmail.com>
+> To: Vineet Gupta <vgupta@kernel.org>
+> To: Russell King <linux@armlinux.org.uk>
+> To: Guo Ren <guoren@kernel.org>
+> To: Huacai Chen <chenhuacai@kernel.org>
+> To: WANG Xuerui <kernel@xen0n.name>
+> To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> To: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+> To: Helge Deller <deller@gmx.de>
+> To: Michael Ellerman <mpe@ellerman.id.au>
+> To: Nicholas Piggin <npiggin@gmail.com>
+> To: Christophe Leroy <christophe.leroy@csgroup.eu>
+> To: Naveen N Rao <naveen@kernel.org>
+> To: Alexander Gordeev <agordeev@linux.ibm.com>
+> To: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+> To: Heiko Carstens <hca@linux.ibm.com>
+> To: Vasily Gorbik <gor@linux.ibm.com>
+> To: Christian Borntraeger <borntraeger@linux.ibm.com>
+> To: Sven Schnelle <svens@linux.ibm.com>
+> To: Yoshinori Sato <ysato@users.sourceforge.jp>
+> To: Rich Felker <dalias@libc.org>
+> To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+> To: David S. Miller <davem@davemloft.net>
+> To: Andreas Larsson <andreas@gaisler.com>
+> To: Thomas Gleixner <tglx@linutronix.de>
+> To: Ingo Molnar <mingo@redhat.com>
+> To: Borislav Petkov <bp@alien8.de>
+> To: Dave Hansen <dave.hansen@linux.intel.com>
+> To: x86@kernel.org
+> To: H. Peter Anvin <hpa@zytor.com>
+> To: Andy Lutomirski <luto@kernel.org>
+> To: Peter Zijlstra <peterz@infradead.org>
+> To: Muchun Song <muchun.song@linux.dev>
+> To: Andrew Morton <akpm@linux-foundation.org>
+> To: Liam R. Howlett <Liam.Howlett@oracle.com>
+> To: Vlastimil Babka <vbabka@suse.cz>
+> To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+> To: Shuah Khan <shuah@kernel.org>
+> To: Christoph Hellwig <hch@infradead.org>
+> To: Michal Hocko <mhocko@suse.com>
+> To: "Kirill A. Shutemov" <kirill@shutemov.name>
+> To: Chris Torek <chris.torek@gmail.com>
+> Cc: linux-arch@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-alpha@vger.kernel.org
+> Cc: linux-snps-arc@lists.infradead.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-csky@vger.kernel.org
+> Cc: loongarch@lists.linux.dev
+> Cc: linux-mips@vger.kernel.org
+> Cc: linux-parisc@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-s390@vger.kernel.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: sparclinux@vger.kernel.org
+> Cc: linux-mm@kvack.org
+> Cc: linux-kselftest@vger.kernel.org
+> Cc: linux-abi-devel@lists.sourceforge.net
+> Signed-off-by: Charlie Jenkins <charlie@rivosinc.com>
+>
+> Changes in v2:
+> - Added much greater detail to cover letter
+> - Removed all code that touched architecture specific code and was able
+>   to factor this out into all generic functions, except for flags that
+>   needed to be added to vm_unmapped_area_info
+> - Made this an RFC since I have only tested it on riscv and x86
+> - Link to v1: https://lore.kernel.org/r/20240827-patches-below_hint_mmap-=
+v1-0-46ff2eb9022d@rivosinc.com
+>
+> Changes in v3:
+> - Use a personality flag instead of an mmap flag
+> - Link to v2: https://lore.kernel.org/r/20240829-patches-below_hint_mmap-=
+v2-0-638a28d9eae0@rivosinc.com
+>
+> ---
+> Charlie Jenkins (2):
+>       mm: Add personality flag to limit address to 47 bits
+>       selftests/mm: Create ADDR_LIMIT_47BIT test
+>
+>  include/uapi/linux/personality.h                   |  1 +
+>  mm/mmap.c                                          |  3 ++
+>  tools/testing/selftests/mm/.gitignore              |  1 +
+>  tools/testing/selftests/mm/Makefile                |  1 +
+>  tools/testing/selftests/mm/map_47bit_personality.c | 34 ++++++++++++++++=
+++++++
+>  5 files changed, 40 insertions(+)
+> ---
+> base-commit: 5be63fc19fcaa4c236b307420483578a56986a37
+> change-id: 20240827-patches-below_hint_mmap-b13d79ae1c55
+> --
+> - Charlie
+>
 
-I came to more or less the same solutions thnt you with the following 
-that seems to work:
 
-diff --git a/arch/powerpc/kernel/vdso/vgetrandom.c 
-b/arch/powerpc/kernel/vdso/vgetrandom.c
-index 5f855d45fb7b..9705344d39d0 100644
---- a/arch/powerpc/kernel/vdso/vgetrandom.c
-+++ b/arch/powerpc/kernel/vdso/vgetrandom.c
-@@ -4,11 +4,19 @@
-   *
-   * Copyright (C) 2024 Christophe Leroy <christophe.leroy@csgroup.eu>, 
-CS GROUP France
-   */
-+#include <linux/container_of.h>
-  #include <linux/time.h>
-  #include <linux/types.h>
-
-+#include <asm/vdso_datapage.h>
-+
-  ssize_t __c_kernel_getrandom(void *buffer, size_t len, unsigned int 
-flags, void *opaque_state,
-  			     size_t opaque_len, const struct vdso_rng_data *vd)
-  {
-+	struct vdso_arch_data *arch_data = container_of(vd, struct 
-vdso_arch_data, rng_data);
-+
-+	if (IS_ENABLED(CONFIG_TIME_NS) && arch_data->data[0].clock_mode == 
-VDSO_CLOCKMODE_TIMENS)
-+		vd = (void *)vd + (1UL << CONFIG_PAGE_SHIFT);
-+
-  	return __cvdso_getrandom_data(vd, buffer, len, flags, opaque_state, 
-opaque_len);
-  }
-
-
-However, if we have this problem with __kernel_getrandom, don't we also 
-have it with: ?
-		__kernel_get_syscall_map;
-		__kernel_get_tbfreq;
-		__kernel_sync_dicache;
-
-If they are also affected, then get_page macro is the place to fix.
-
-I will check all of this now and keep you updated before noon (Paris Time).
-
-Christophe
+--=20
+Best Regards
+ Guo Ren
 
