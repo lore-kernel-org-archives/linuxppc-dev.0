@@ -1,61 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-1100-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1101-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42B61CE7AFD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 10:30:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F367CE7AFE
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 10:42:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X0XY666FZz3054;
-	Fri,  6 Sep 2024 20:30:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725618602;
-	cv=none; b=RJcdi449HCmQOYf3bxuOYNAkLxdJP/nAlfubwDEczCB8CmaFoCVurYL7Tzvl1SfqdjhW837jheFYyuypLa7H5I9aLRlfN+dyHEplU5P7Zx+WmVKCFJkn9MCedqdXcHH7J7CCEDUCx4cGYHM50LhJ8044Y6qudfcjw1tKYfAn8RdB/vWQ24zT5pQ1CE+GWctm+vZq3Z4ODFgkIOAuKQiZdm4lcVqn4sjUBloL03Bn+rfU7zLRkA0GkDW3fxwAIUTH9pVBQv4X9FdlR+aWejSJk9aK4Dr7N0OY0EJ2Yet/LrK5sJEGoXv3JdG/b2roX4nQC3SlWYtOPpSFqYVhGysDcg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X0Xqq3JvFz304B;
+	Fri,  6 Sep 2024 20:42:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725606440;
+	cv=none; b=eLAQ2e4L3zkfijAHWRWSL8J+8Z4fSgnVWwtqDFU7bL5+7bIDxmv9Rt/H2STFkOqot7AfKay8zdx5oZmfUL2LEohsVZo2qU1PgJLdIRA6oYhXGAwb91AV6tZEPVSoiPAbHSyKM0QX+WEb8wLxRGS5LXP32ze6SuFqZD9Icai4GxxmM1/NRRaXdTtrt45V7138Lzcy4syvR5RaQshzjH5wehfmc9fYeJOSK8qcrBm4mvBh5OBJnEVBfWwri9sATagQ0hW+gFRBxY6pEn2sgmTZnP1rNXVFi4OPBDXh/B5aTZ6oKg8S/l46ISL6ZaIDVX3dsQHPmUdYJUaub/3SWtq44Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725618602; c=relaxed/relaxed;
-	bh=C+7VKlBLUM+gRO+v7q/DNa240NdaVdhGABTToZbBcJU=;
-	h=DKIM-Signature:From:To:Cc:Subject:In-Reply-To:References:Date:
-	 Message-ID:MIME-Version:Content-Type; b=O4I6jU+TrePmafFZGSxLLfw0EFvycWzxjU6/9ekOJKr3ryvoO1kbPrD+TET/XH0JfLbR9AuXPvY6FWSr8qmvwn8DwQ7KF+bfqGB9cjhlcKNFmvC7EWp1pSSnLbD8DzvhoczsZ5ZkcfVqN52+GtCziZqTQ0DXO/EeeAkgH7IWW8I5A8Qt/9bGtBPwxE1+w7BuktWnLQxneis0GmRnwiOoYn2dBIpd4QEUHiL1oQewFkzn7BsblDVhEhycHmpLw5miF0ssAiWrIDgnLjJVAfVmWUkUDXYMezPZxYFhaVSehXnHK5VUjW20A3rqVey0Hn9g8AwsGpnvA/VjDV8ahSShGw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QtbQzhfd; dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QtbQzhfd;
-	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0XY55V4Bz304N
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 20:30:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1725618601;
-	bh=C+7VKlBLUM+gRO+v7q/DNa240NdaVdhGABTToZbBcJU=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=QtbQzhfdU9KrOkcN98cSlcIJQfPgPXyEPQ5R31cuNvxQX5Cowen108ylCMHKzzzD2
-	 R1ChFXF5cJghBNCtJMq6c4AkOIO1oQXYCvfKnyT45ZxEe9mteF4mUe4fyrrzC7iF7t
-	 4T1sRJHlCiwWkLOM6OmMINKchQnFOhgSe4IOKR/HcWrilvcpGklvZtAXEAk+qMEo/W
-	 teZG8oLkZb+z82p3cehLGbFXCcLFLAqhC+/c8N4ObzBvWaxpbvdpyJqdh3ZnZRpn8O
-	 Fjk1ehBx18I/9cJ4y82g6rW90ug3yBzlDyUamMtKkiPX8S4NRD0aqGIHWJjNN+m+6T
-	 iyHNSo0bF4y6w==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X0XY45291z4wyh;
-	Fri,  6 Sep 2024 20:30:00 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Solar Designer <solar@openwall.com>, oss-security@lists.openwall.com
-Cc: 2639161967 <2639161967@qq.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [oss-security] Linux kernel: memory leak in
- arch/powerpc/platforms/powernv/opal-irqchip.c: opal_event_init()
-In-Reply-To: <20240902133435.GA29502@openwall.com>
-References: <tencent_BB0764F9635412BA90A36B3B19EDEEF09905@qq.com>
- <20240902133435.GA29502@openwall.com>
-Date: Fri, 06 Sep 2024 20:29:59 +1000
-Message-ID: <87wmjp3wig.fsf@mail.lhotse>
+	t=1725606440; c=relaxed/relaxed;
+	bh=JzHuzwYv1A4WZNysYS65N8PwpinTo4zkrx7lnPByC8M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mA5Xc5aWN7ZVaY3+sNUk39Na0rsxjAH+StR34HV3O74i4U5qJuBhts4Un7Q/UckvcoWYy4v4lI+k7sfxuVPcnWqdvu1hzFdgWE8n1qZnUByJ3xOZJr+TwRiTfzvcs+4x83C7b1Vp84yg0aYVwQQihQEtf02gcyQFPxMaAd9HIfVq058Andioc2TUBoqJFa9uh/2CpvAcRRsYA063LdL3RIuZm1JQ4/LGCnhLvdHCwO0MaPWkd+6AgHP3mel4iy8vbKfuv2rtMU24ztM0MVwvu4Xc48KKZeXlLnicrQHDW7SaBr6HLj9xqf8SMWrn8pV3tg8IfOTbMLTBuvQs/MmXGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=morten.rasmussen@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=morten.rasmussen@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X0S3D0sTtz301Y
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 17:07:17 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 69D0EFEC;
+	Fri,  6 Sep 2024 00:07:12 -0700 (PDT)
+Received: from R5WKVNH4JW (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4D6703F66E;
+	Fri,  6 Sep 2024 00:06:41 -0700 (PDT)
+Date: Fri, 6 Sep 2024 09:06:33 +0200
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+To: Yicong Yang <yangyicong@huawei.com>
+Cc: Pierre Gondois <pierre.gondois@arm.com>, yangyicong@hisilicon.com,
+	linuxppc-dev@lists.ozlabs.org, bp@alien8.de,
+	dave.hansen@linux.intel.com, mingo@redhat.com,
+	linux-arm-kernel@lists.infradead.org, mpe@ellerman.id.au,
+	peterz@infradead.org, tglx@linutronix.de, sudeep.holla@arm.com,
+	will@kernel.org, catalin.marinas@arm.com, x86@kernel.org,
+	linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com,
+	gregkh@linuxfoundation.org, rafael@kernel.org,
+	jonathan.cameron@huawei.com, prime.zeng@hisilicon.com,
+	linuxarm@huawei.com, xuwei5@huawei.com, guohanjun@huawei.com
+Subject: Re: [PATCH v5 3/4] arm64: topology: Support SMT control on ACPI
+ based system
+Message-ID: <Ztqp-SUinu8C9a-P@R5WKVNH4JW>
+References: <20240806085320.63514-1-yangyicong@huawei.com>
+ <20240806085320.63514-4-yangyicong@huawei.com>
+ <a998c723-7451-439a-9c88-7c8b5c1b890b@arm.com>
+ <00e6110a-462a-c117-0292-e88b57d27a05@huawei.com>
+ <3947cb79-3199-4cd6-b784-51a245084581@arm.com>
+ <1a7b5ac7-f040-672f-07a0-d7f3dc170c88@huawei.com>
+ <6c05e39c-41f3-451c-b119-7b8662c1ceee@arm.com>
+ <7f722af2-2969-aae5-1fb5-68d353eb95b9@huawei.com>
+ <277bd093-422b-4301-92a3-d0a58eb41af5@arm.com>
+ <10082e64-b00a-a30b-b9c5-1401a54f6717@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,68 +64,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <10082e64-b00a-a30b-b9c5-1401a54f6717@huawei.com>
 
-Solar Designer <solar@openwall.com> writes:
-> Hi,
->
-> This bug report is misaddressed.  Per upstream's preference and common
-> sense (given how many issue reports there are against the Linux kernel),
-> most Linux kernel (maybe-)issues should first be reported to Linux
-> kernel maintainers/lists or (if you're reasonably sure of significant
-> security relevance) to the Linux kernel security team, and only then (if
-> relevant) maybe also to general security lists.  Occasional exceptions
-> exist, such as for publicly exploited issues, but if you're new to this
-> chances are that you should play by the rules, not claim an exception.
+Hi Yicong,
 
-This was also reported to security@kernel.org, and I replied saying
-there was no real security impact and that it should be reported to
-linuxppc-dev@lists.ozlabs.org.
+On Thu, Sep 05, 2024 at 08:02:20PM +0800, Yicong Yang wrote:
+> On 2024/9/5 16:34, Pierre Gondois wrote:
+> > Hello Yicong,
+> > 
+> > If a platform has CPUs with:
+> > - 1 thread
+> > - X (!= 1) threads
+> > Then I think that the asymmetry is not detected
+> 
+> Ah ok, I only handle the case where there are several thread numbers except no SMT CPUs in the
+> system. For this case I was thinking we don't need to handle this since there's only one kind
+> of SMT core in the system, control should works fine for the SMT CPU clusters and we may not
+> care about the CPUs with no SMT.
+> 
+> Below code should handle the case if we initialize the max_smt_thread_num to 0. I also
+> reword the warning messages to match the fact. For heterogeneous SMT topology we still
+> support control SMT by on/off toggle but not fully support setting the thread number.
+> 
+> 	int max_smt_thread_num = 0;
+> 	[...]
+> 	/*
+> 	 * This should be a short loop depending on the number of heterogeneous
+> 	 * CPU clusters. Typically on a homogeneous system there's only one
+> 	 * entry in the XArray.
+> 	 */
+> 	xa_for_each(&hetero_cpu, hetero_id, entry) {
+> 		/*
+> 		 * If max_smt_thread_num has been initialized and doesn't match
+> 		 * the thread number of this entry, then the system has
+> 		 * heterogeneous SMT topology.
+> 		 */
+> 		if (entry->thread_num != max_smt_thread_num && max_smt_thread_num)
+> 			pr_warn_once("Heterogeneous SMT topology is partly supported by SMT control\n");
 
-> On Mon, Sep 02, 2024 at 09:54:52AM +0800, 2639161967 wrote:
->> in the newest linux release version, in&nbsp;/arch/powerpc/platforms/powernv/opal-irqchip.c&nbsp;file , the&nbsp;
->> opal_event_init function, the variable "name"defined in line 270, and is alloced memory in line 274 or 276, but not free, cause many times memory leak, and most old release versions have the problem.
->
-> The code in question is:
->
-> int __init opal_event_init(void)
-> {
-> [...]
-> 	/* Install interrupt handlers */
-> 	for (i = 0; i < opal_irq_count; i++) {
-> 		struct resource *r = &opal_irqs[i];
-> 		const char *name;
->
-> 		/* Prefix name */
-> 		if (r->name && strlen(r->name))
-> 			name = kasprintf(GFP_KERNEL, "opal-%s", r->name);
-> 		else
-> 			name = kasprintf(GFP_KERNEL, "opal");
->
-> 		if (!name)
-> 			continue;
-> 		/* Install interrupt handler */
-> 		rc = request_irq(r->start, opal_interrupt, r->flags & IRQD_TRIGGER_MASK,
-> 				 name, NULL);
-> 		if (rc) {
-> 			pr_warn("Error %d requesting OPAL irq %d\n", rc, (int)r->start);
-> 			continue;
-> 		}
-> 	}
-...
->
-> I'm CC'ing this to some maintainers in case they want to add to the "if
-> (rc) {" block, if only to silence static analysis tools, but other than
-> that I see nothing to do on this report.
+What does 'partly supported' mean here?
 
-If the request_irq() fails it's either some sort of firmware
-misconfiguration, or ENOMEM, both which are possibly fatal to the
-machine.
+If the SMT control doesn't work as intended for this topology, I don't
+think it should be enabled for it.
 
-But still, it would be reasonable to kfree() name in the error path, as
-you say if only to keep the static analysis clean.
-
-Thanks for looking at it and sorry for the noise on your lists.
-
-cheers
+Morten
 
