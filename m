@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-1116-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1117-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B291CD5BDD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 11:56:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C202CE7AA3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 11:57:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X0ZRs08q0z30Wd;
-	Fri,  6 Sep 2024 21:55:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725623736;
-	cv=none; b=T9vMz9sDeK9GOuQVmTK6q6E8zY08MTJfjheMRcsKcXLGxsnVQbMstJxT3nNinwJvQZrD/6LtP/dGqikRZuuiX1S6ZTfdC8CAD+cTTakp1Ho3XlWr4HnIcJ9MZZbN0/8mbUKCngCHligLXrjszRsfgosO7wiZciDWSUgjOvGo//EmjTc2Y21Y2URmHka0DJfCG8XXkF2MJV7sB1Vs5i2p78bq0hhYMePs93mgw3siUXD7IUCJcj0kCqrVcSU1vkpbTNeGwQlfnCrO4ImGTwwZXqWpmGQon5P7FmJ1sLrUyRV4g8S7kIOKnX3bo7U//mmsIVtpMXnbNlB1GQHqofBuug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X0ZRt05p5z3bkT;
+	Fri,  6 Sep 2024 21:55:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725623737;
+	cv=none; b=Aw7kbYz7s1Udh8QdCCQyU+0/SrL4TqSsmjPXLa9hwBsHxqP3T6LuDZ/Iq05KC5KKssjrXEdUdXmtVQ+SLA26johHfU4/XMOUCPOEsF5n/IKeG0jlmbw8DfxSEpDAPsFpjoig2Qo7ACrepudWGZhhJzPOI1hMJ/L6n0ChoRgR3CRQKpqJcZ4If8oJv9zQEnnN7JpbnVQs5lmmi9zUBdKejWAoahIRHbqOpd1tLOUmmU9GFSH1NXX6fP5TuFhngk9H9FzfFlWJb0L3nyrBwhHXuoBJGoW5CFXBBbd8UoRC1935z+WCdpeUUkaqepbpAFCr+5vAfAyshR5XptKvPVbvNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725623736; c=relaxed/relaxed;
-	bh=3lsSqdNCC1OUjixuju7xkKJBjmqsQCfRK2KinVIS4OQ=;
+	t=1725623737; c=relaxed/relaxed;
+	bh=XCOV6R4Lc8pODzw7F70rIOwE/VaFBPys2s2ehe4n3RA=;
 	h=DKIM-Signature:From:To:In-Reply-To:References:Subject:Message-Id:
-	 Date:MIME-Version:Content-Type; b=jYMcs0lX0tqWChraaIAflq5DE6paI52pfWggMGgJlg6Fe/tD8DqBeCpy2Snl1ip4JKitzfBtCEyzd4tzpkiG+SZFv47r93avAwFZV6+sYDpMCKI2XL8Tcx9CaBY5nSDp210T88AA4Xxumc+aDJugCRa8hXpeJssrIEb7b3N59fdQFztzCjH6Lby2uswa7tTw/2a/dcxal9jdYCLDocd8rudpGcSnQYvL+F4SK2uUhUz918VzvU8rrGbq4TmPgOJX81NkMBpbWcWzR0l1rSLGd1NYlxju0pTklLs2/W/dOwng7sZKeIBMzIRPQJMChZikiU4V6dnUHCiLCdk4o/bsZg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iJCei7HW; dkim-atps=neutral
+	 Date:MIME-Version:Content-Type; b=CL6Erh/Eob1si0881yT+xHtOZSbqt7RIUSsbowpVMUNTsK1tyKRMK5hb8y4ZuGkcJWWWkk36kxF6zPfcLt4LehScSSzqbB/2dM47iXqvV/L2Mzw0Dc+JPnypnTqAKScHKKvrAL1y7ad5PvByhW4CYmPCUnsE0NgvHgV3HODV3U5pnGras+9Yv8PX8z/HZ/9C92VNJG6uDEoaqM+/RKWbs4HTz1+2tHwh5mqZ5ZkszZj+O8Pc2F1SvH9mDOaIprEuol7x51lNzHxF8PFs6J0V3zD/bShiTRUShYoq5VyPcx0+pTZSF0CLyTDi4zvjWypKcji6XtBEXmgTtc3wPi+vjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UEeRdjut; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iJCei7HW;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UEeRdjut;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0ZRr728Vz30Np
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 21:55:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0ZRs73Vwz30Np
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 21:55:37 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1725623736;
-	bh=3lsSqdNCC1OUjixuju7xkKJBjmqsQCfRK2KinVIS4OQ=;
+	s=201909; t=1725623737;
+	bh=XCOV6R4Lc8pODzw7F70rIOwE/VaFBPys2s2ehe4n3RA=;
 	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=iJCei7HWUgo3ZmW5CHXnj/imw0IWPVPQOjpi48hI5hJJLZviMtWWxkdd2xumzOlDO
-	 etJ0bimzdnDBjSLP20TWYoMX2iUS/01GNvkRVLNLvMUujPkoseNs+335vozNleFK/+
-	 Lvuk0v9RD0cBQYqHZiSIcJ1k6PfK5ZI6ynyp8xQ2Xw5clraz0B0A7UAAFc52gN5xkD
-	 ETWFvcit7N4zHSn1dxboVQ7k3sgK4Ibsf7oXaEn0QNb2fO7DhmIm8pzbeoqdOa1O/q
-	 W0GkGZAf7mqS1lrNuiOf2niXp8aQ0O/he4Nlhf7DWEWLGsZ9abUWE0uZVbSl4034tQ
-	 oIvAcPcxPFHwA==
+	b=UEeRdjutnis8CEymfD+PqNU6d/NpQ/JMHHOjHsxW+N2xKEwu91ih8lOyzIlZcrViz
+	 Ykid7lGVNCN46bp91hO84ak/2WUnMM65Z87RFa9IyZYELuptC9T0Dt8m2e0Z+/i8/d
+	 bvAnhDMIJFnWqmG8QOCEfQ4NVQajTiiITDrGlnPzsERhpUSJO/ogHu7ZAq4MIDLyUT
+	 RiE+Sb4m0pmQ51/Rzq3MpAHsODJEtGU1/V/OqoF6wGMbwuFdMYhp1fgtYNPClW76QT
+	 eA3RkgVUNo7Ccom/y6xYWYTpYTubUPik2cbePDCmPF39/OZ5A1drErFdrgAQTgksSZ
+	 +8NQ+XCvKAsxQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X0ZRr60NWz4wnw;
-	Fri,  6 Sep 2024 21:55:36 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X0ZRs61njz4xPc;
+	Fri,  6 Sep 2024 21:55:37 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20240823070830.1269033-1-mpe@ellerman.id.au>
-References: <20240823070830.1269033-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s: Remove the "fast endian switch" syscall
-Message-Id: <172562357218.467568.9033024669391607824.b4-ty@ellerman.id.au>
+In-Reply-To: <20240903111951.141376-1-mpe@ellerman.id.au>
+References: <20240903111951.141376-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Stop using no_llseek
+Message-Id: <172562357219.467568.206380891394643682.b4-ty@ellerman.id.au>
 Date: Fri, 06 Sep 2024 21:52:52 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -63,21 +63,20 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 23 Aug 2024 17:08:30 +1000, Michael Ellerman wrote:
-> The non-standard "fast endian switch" syscall was added in 2008[1],
-> but was never widely used. It was disabled by default in 2017[2], and
-> there's no evidence it's ever been used since.
+On Tue, 03 Sep 2024 21:19:51 +1000, Michael Ellerman wrote:
+> Since commit 868941b14441 ("fs: remove no_llseek"), no_llseek() is
+> simply defined to be NULL, and a NULL llseek means seeking is
+> unsupported.
 > 
-> Remove it entirely.
-> 
-> A normal endian switch syscall was added in 2015[3].
+> So for statically defined file_operations, such as all these, there's no
+> need or benefit to set llseek = no_llseek.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s: Remove the "fast endian switch" syscall
-      https://git.kernel.org/powerpc/c/29dbb984496daa490f3c1181b734b538a6f7b534
+[1/1] powerpc: Stop using no_llseek
+      https://git.kernel.org/powerpc/c/5b4bc44a4854ccd41eef9aa9f47677f7d136c294
 
 cheers
 
