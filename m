@@ -1,81 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-1073-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1074-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6D56CE7AA9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 03:24:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CDF7CE7AA9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Sep 2024 03:26:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X0M6D1fGsz2yvq;
-	Fri,  6 Sep 2024 13:24:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725593076;
-	cv=none; b=dLV2KL3POD/FUk2IOFzEd3GxMAdr/NB2lBbA2YjQnNTDiZFazwioG0SOASJUFKF7f2mC5OSH8+P/hp3AwY4/OoM9u88yGUDrt4Qtm+w8gJdDKjDxm+zHXe7bhzmjVCrWt0Pez1tPKLZfZ713yAng9DQia4UtCDlVUDktaeq8byD45FHO0/bUbMDhW5IMZyvKJN7SDwWWaIHc+aOdrX3Nbt4dY3ccpeY52N2MUhFkqZlfrMGHi//O8opNCe63BuB1X80CZtJGBNkhCll4VBnnCDw9Awmre+YeXpTLJeQn45iNiLyUuTQ5y1Dba/168tnbFMKu6WeXmH7F/MTY+XC54Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X0M8V0KM9z2yyR;
+	Fri,  6 Sep 2024 13:26:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.188
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725590617;
+	cv=none; b=ceyhEwnjnufoTuqDmKXfMXI7rdihTXK0qVaFLk9vwZqe2jQQaxA9Vsxu9Aa09nrm3Z1KaQBMk4g/euzX23ucIqBRi8qoVkWSliGhJ3NYihlKo7dRzc+TCVkVrpsjv6ccywORyISwE6flrZ6/PiTro/mHKf5NOgD57y/UbrVsO0oRhzrzFMyluIAW07POTT147DhZfZkr0wMAaJFUKq9zyWQhPHF3fYkRGfXL0nEZG/gQU8QKiVBdMlx3hl10nYxmzlYn0TAof1dKpuS5FHvhE+V7QMVLdSYGxSOQYS+tRhn7NOiBxCkppk9DsKA0l9xCzdQFjRHabF31Iop+cr1zSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725593076; c=relaxed/relaxed;
-	bh=Z2dxDPKKa2YK6AR5mLMyQ8i6dADRrELxYn6efyeudEY=;
-	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=kEIm/F3WPa0iZtI1In4DYa05nnC+yJtdBpOmk71lDITaI+npdWpEAPdah6rQzYlTrcd9h/GYUm7DyE+TQ1huJmH6gEeLRAPHuD2czu8B1gtfUlkN9jSaYbwf2w8C4BUQO1/hm1R6SiS/2jb3EwE0Pzn527CIg40DXDedzShC8kQmBcFMWNzAqdcxDj+RHDhEE488eN0cK1NmiEBrFydz/xNpOVS+SPLj+jC7gU0KiidvTaI2f+TYUq8F1YS6oE2iOpJp9OpOn53v2K78A0dlheBvDa4VxZlZLU3xiOA2Zvx+0wIR2GKYv03Ei5/VXTKR9/4QAMDbDAyIDA2Q5am1qQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=lWXUkZvb; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=v4y+=qe=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=lWXUkZvb;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=v4y+=qe=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1725590617; c=relaxed/relaxed;
+	bh=eVE+ZXFI9Vp/HJ91UVhpgF70PzsVvMLWdcrEBDSFAB4=;
+	h=Subject:To:CC:References:From:Message-ID:Date:MIME-Version:
+	 In-Reply-To:Content-Type; b=ZwZg6oVI1piIRfcB9KsXY8RL1nBrBSE/nkHc9glq2Kq/wXeP2c9x8Ys9oZ1pLCuX/WhYkV861AH8dLvxncPWa9bawMeR40vzOH820H09jWqWebPXXccVumEqX9/HdeWiUWtt6UDnfUemX8Bam8Rs8SQxuOH0D/VjJ0j2V2qhhU6MI2rbFjwqNaauCMc0UkFixpcq2EtHhMeKKlEQKji+yGcBeXu7X7oLAxCHsfoQc5J702GCKRdQXmHFxxnIwqTYtj0p6mccwgH08uFRYx25ZSrZQHpLawg50uQPZ3ZfbqnhUefGiOoSQMkMfOGCPCnMnYVkziLy4QTNWYrN8qiw5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=linmiaohe@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=linmiaohe@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1157 seconds by postgrey-1.37 at boromir; Fri, 06 Sep 2024 12:43:36 AEST
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0M6C5lmvz2y65
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 13:24:35 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 27E575C5A9F;
-	Fri,  6 Sep 2024 03:24:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC162C4CEC3;
-	Fri,  6 Sep 2024 03:24:30 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="lWXUkZvb"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1725593069;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Z2dxDPKKa2YK6AR5mLMyQ8i6dADRrELxYn6efyeudEY=;
-	b=lWXUkZvbvlbUyOMCWA1zuc7ad4c+I0UJcawqwTucUHLSLfjSoDcXGiWc2V7qkYM6p9qDOE
-	xqMX7fe/Xfh9D0076bwd4NPqJu9BUto8QUy3Vo/4JDK4c4+j1HrSQbP9/ilbY+G0btPrj7
-	0Zg0qZDITzK9zGSnoBQ0QQgntbqq/qk=
-Received: 
-	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 182a6eb3 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Fri, 6 Sep 2024 03:24:28 +0000 (UTC)
-Date: Fri, 6 Sep 2024 05:24:24 +0200
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
-	llvm@lists.linux.dev, linux-fsdevel@vger.kernel.org,
-	linux-mm@kvack.org, linux-trace-kernel@vger.kernel.org,
-	Adhemerval Zanella <adhemerval.zanella@linaro.org>,
-	Xi Ruoyao <xry111@xry111.site>
-Subject: Re: [PATCH v5 4/5] powerpc/vdso: Wire up getrandom() vDSO
- implementation on VDSO32
-Message-ID: <Ztp16FkqG0ALlXnh@zx2c4.com>
-References: <cover.1725304404.git.christophe.leroy@csgroup.eu>
- <1f49c2ce009f8b007ab0676fb41187b2d54f28b2.1725304404.git.christophe.leroy@csgroup.eu>
- <ZtnYqZI-nrsNslwy@zx2c4.com>
- <ZtoXhGYflBNR74g0@zx2c4.com>
- <ZtptfOicjZU3k3ZV@zx2c4.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X0LBw26Tbz2ytR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Sep 2024 12:43:32 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.19.88.194])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4X0KkK2RxczpVSm;
+	Fri,  6 Sep 2024 10:22:17 +0800 (CST)
+Received: from kwepemd200019.china.huawei.com (unknown [7.221.188.193])
+	by mail.maildlp.com (Postfix) with ESMTPS id 790B81400DC;
+	Fri,  6 Sep 2024 10:24:12 +0800 (CST)
+Received: from [10.173.127.72] (10.173.127.72) by
+ kwepemd200019.china.huawei.com (7.221.188.193) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Fri, 6 Sep 2024 10:24:11 +0800
+Subject: Re: [PATCH v2] mm: z3fold: deprecate CONFIG_Z3FOLD
+To: Yosry Ahmed <yosryahmed@google.com>, Andrew Morton
+	<akpm@linux-foundation.org>
+CC: Vitaly Wool <vitaly.wool@konsulko.com>, Johannes Weiner
+	<hannes@cmpxchg.org>, Nhat Pham <nphamcs@gmail.com>, Huacai Chen
+	<chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Michael Ellerman
+	<mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
+	<christophe.leroy@csgroup.eu>, Aneesh Kumar K.V <aneesh.kumar@kernel.org>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Christoph Hellwig
+	<hch@infradead.org>, Sergey Senozhatsky <senozhatsky@chromium.org>, Chris
+ Down <chris@chrisdown.name>, <loongarch@lists.linux.dev>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-mm@kvack.org>,
+	<linux-kernel@vger.kernel.org>
+References: <20240904233343.933462-1-yosryahmed@google.com>
+From: Miaohe Lin <linmiaohe@huawei.com>
+Message-ID: <1d3a5751-8af7-8ca9-8dff-4de2597f9751@huawei.com>
+Date: Fri, 6 Sep 2024 10:24:10 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.6.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,79 +64,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <ZtptfOicjZU3k3ZV@zx2c4.com>
+In-Reply-To: <20240904233343.933462-1-yosryahmed@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.173.127.72]
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ kwepemd200019.china.huawei.com (7.221.188.193)
 
-On Fri, Sep 06, 2024 at 04:48:28AM +0200, Jason A. Donenfeld wrote:
-> On Thu, Sep 05, 2024 at 10:41:40PM +0200, Jason A. Donenfeld wrote:
-> > On Thu, Sep 05, 2024 at 06:13:29PM +0200, Jason A. Donenfeld wrote:
-> > > > +/*
-> > > > + * The macro sets two stack frames, one for the caller and one for the callee
-> > > > + * because there are no requirement for the caller to set a stack frame when
-> > > > + * calling VDSO so it may have omitted to set one, especially on PPC64
-> > > > + */
-> > > > +
-> > > > +.macro cvdso_call funct
-> > > > +  .cfi_startproc
-> > > > +	PPC_STLU	r1, -PPC_MIN_STKFRM(r1)
-> > > > +  .cfi_adjust_cfa_offset PPC_MIN_STKFRM
-> > > > +	mflr		r0
-> > > > +	PPC_STLU	r1, -PPC_MIN_STKFRM(r1)
-> > > > +  .cfi_adjust_cfa_offset PPC_MIN_STKFRM
-> > > > +	PPC_STL		r0, PPC_MIN_STKFRM + PPC_LR_STKOFF(r1)
-> > > > +  .cfi_rel_offset lr, PPC_MIN_STKFRM + PPC_LR_STKOFF
-> > > > +	get_datapage	r8
-> > > > +	addi		r8, r8, VDSO_RNG_DATA_OFFSET
-> > > > +	bl		CFUNC(DOTSYM(\funct))
-> > > > +	PPC_LL		r0, PPC_MIN_STKFRM + PPC_LR_STKOFF(r1)
-> > > > +	cmpwi		r3, 0
-> > > > +	mtlr		r0
-> > > > +	addi		r1, r1, 2 * PPC_MIN_STKFRM
-> > > > +  .cfi_restore lr
-> > > > +  .cfi_def_cfa_offset 0
-> > > > +	crclr		so
-> > > > +	bgelr+
-> > > > +	crset		so
-> > > > +	neg		r3, r3
-> > > > +	blr
-> > > > +  .cfi_endproc
-> > > > +.endm
-> > > 
-> > > Can you figure out what's going on and send a fix, which I'll squash
-> > > into this commit?
-> > 
-> > This doesn't work, but I wonder if something like it is what we want. I
-> > need to head out for the day, but here's what I've got. It's all wrong
-> > but might be of interest.
+On 2024/9/5 7:33, Yosry Ahmed wrote:
+> The z3fold compressed pages allocator is rarely used, most users use
+> zsmalloc. The only disadvantage of zsmalloc in comparison is the
+> dependency on MMU, and zbud is a more common option for !MMU as it was
+> the default zswap allocator for a long time.
 > 
-> Oh, I just got one small detail wrong before. The below actually works,
-> and uses the same strategy as on arm64.
+> Historically, zsmalloc had worse latency than zbud and z3fold but
+> offered better memory savings. This is no longer the case as shown by
+> a simple recent analysis [1]. That analysis showed that z3fold does not
+> have any advantage over zsmalloc or zbud considering both performance
+> and memory usage. In a kernel build test on tmpfs in a limited cgroup,
+> z3fold took 3% more time and used 1.8% more memory. The latency of
+> zswap_load() was 7% higher, and that of zswap_store() was 10% higher.
+> Zsmalloc is better in all metrics.
 > 
-> Let me know if you'd like me to fix up this commit with the below patch,
-> or if you have another way you'd like to go about it.
+> Moreover, z3fold apparently has latent bugs, which was made noticeable
+> by a recent soft lockup bug report with z3fold [2]. Switching to
+> zsmalloc not only fixed the problem, but also reduced the swap usage
+> from 6~8G to 1~2G. Other users have also reported being bitten by
+> mistakenly enabling z3fold.
+> 
+> Other than hurting users, z3fold is repeatedly causing wasted
+> engineering effort. Apart from investigating the above bug, it came up
+> in multiple development discussions (e.g. [3]) as something we need to
+> handle, when there aren't any legit users (at least not intentionally).
+> 
+> The natural course of action is to deprecate z3fold, and remove in a few
+> cycles if no objections are raised from active users. Next on the list
+> should be zbud, as it offers marginal latency gains at the cost of huge
+> memory waste when compared to zsmalloc. That one will need to wait until
+> zsmalloc does not depend on MMU.
+> 
+> Rename the user-visible config option from CONFIG_Z3FOLD to
+> CONFIG_Z3FOLD_DEPRECATED so that users with CONFIG_Z3FOLD=y get a new
+> prompt with explanation during make oldconfig. Also, remove
+> CONFIG_Z3FOLD=y from defconfigs.
+> 
+> [1]https://lore.kernel.org/lkml/CAJD7tkbRF6od-2x_L8-A1QL3=2Ww13sCj4S3i4bNndqF+3+_Vg@mail.gmail.com/
+> [2]https://lore.kernel.org/lkml/EF0ABD3E-A239-4111-A8AB-5C442E759CF3@gmail.com/
+> [3]https://lore.kernel.org/lkml/CAJD7tkbnmeVugfunffSovJf9FAgy9rhBVt_tx=nxUveLUfqVsA@mail.gmail.com/
+> 
+> Acked-by: Chris Down <chris@chrisdown.name>
+> Acked-by: Nhat Pham <nphamcs@gmail.com>
+> Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
 
-And here's the much shorter version in assembly, which maybe you prefer.
-Also works, and is a bit less invasive than the other thing.
+LGTM. Thanks for your patch.
 
-diff --git a/arch/powerpc/kernel/vdso/getrandom.S b/arch/powerpc/kernel/vdso/getrandom.S
-index a957cd2b2b03..070daba2d547 100644
---- a/arch/powerpc/kernel/vdso/getrandom.S
-+++ b/arch/powerpc/kernel/vdso/getrandom.S
-@@ -32,6 +32,14 @@
-   .cfi_rel_offset r2, PPC_MIN_STKFRM + STK_GOT
- #endif
- 	get_datapage	r8
-+#ifdef CONFIG_TIME_NS
-+	lis		r10, 0x7fff
-+	ori		r10, r10, 0xffff
-+	lwz		r9, VDSO_DATA_OFFSET + 4(r8)
-+	cmpw		r9, r10
-+	bne		+8
-+	addi		r8, r8, (1 << CONFIG_PAGE_SHIFT)
-+#endif
- 	addi		r8, r8, VDSO_RNG_DATA_OFFSET
- 	bl		CFUNC(DOTSYM(\funct))
- 	PPC_LL		r0, PPC_MIN_STKFRM + PPC_LR_STKOFF(r1)
-
+Reviewed-by: Miaohe Lin <linmiaohe@huawei.com>
+Thanks.
+.
 
