@@ -1,90 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-1149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1150-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 263D6E6FE49
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2024 10:30:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F3F8E6FE49
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2024 11:20:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X1mTB25MNz2xYr;
-	Sun,  8 Sep 2024 20:30:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725791454;
-	cv=none; b=WGRux6WBgUQLVHfXUxb1g8fvd1OoUJ+CVft4UFeV80ksne5DGBmmpZkKCgbF5NFmtx8ulHkM5IhRPQkrP/s/WlY0DbqBpirmbH2X76M99ND5GjHrr2iTLebMNNGB6Q2eOJwTEjuk5wsNwniphIRleT4ggfyMRF/GLrlhbIOH+ir7vH1QAV9kiVfxjLtkNhF+GkJY8o4CJW3qUHM0wBREovsNISpoKKXPoDOoAZcxRsi9MR7nKbfla/cFKidTRoVaWn/IDOFlQ7QV2PTTLzhL2ouWin/iERY+FjCiB+vwERKTmVXGwzxAqi/OMvQKFPNeclQc3IUS9a+SmofmTts6TQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X1nZl3MDYz2xjd;
+	Sun,  8 Sep 2024 21:20:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725794447;
+	cv=none; b=RgUhywqpqlwSP1v+x/9stK0zJg1OocriDvg3oW32WwZpTvYLJ1+zlOJjX2VkA1TkRdSu26R+wXM5FmP4ui/uKnL47PxAL1AsLxvdpffewIkeEPxICuzPeAKNjSDxyyfAdEuBJUHqeQFCusRzv91hyGVBQYf7iVmnFREtluW0kzgnoTbZPuGVdQhjtty8XYAF38hocWkcSNeHvNtZQqdmkCd37szZ6rtrI+YF2bNlK0tf7yHiHVpzXj15L/PYgh38oHisN27J6VTmWHniaUMXoGdEy6AcFCFmYIsVQ6KJu2xPSs4EmfSfCMgfKYDGTE8kJIN9n63z/+9eJlN4yU5sKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725791454; c=relaxed/relaxed;
-	bh=i5OMd23lOq0TQ1xex/NXYk3jY8jVWK0MlC2mTgfKJm8=;
-	h=DKIM-Signature:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To; b=dRxjph1Tu7a2fPD9ZidbHWn+s2XSHoiAD1cIYfJQ6VWNm23+V9WAe7txMWfxsv+G7lZhz+ABh68ixhsY+FJ6A/WWTBFOgz9B0rFrpu9nYl5h9CzAlF5K2U59QuqudknPLEomH7UjwIMnparHXEgrkTOaXavO9EU8nDD4x4Jvb44zovpmjB5kiBlDxXJzButEa0NtPCM+zBYjnPjjsQqlg2Qfqgst7ZPy/GijVVQTrccLt89hka12AZuIUhLSI9oBWEGotE4xkBE/6vJE48k3kzPyA1noieLbQlDDrJGqPHiMvPSlJ5RYHuYhuLn4mT9CpMzBYk+y2PCvnjggcEf2hQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q6cN6j5x; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GyRBvpfs; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q6cN6j5x;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GyRBvpfs;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	t=1725794447; c=relaxed/relaxed;
+	bh=3kJ7O/XWTpmvTccn4OSuJsTwOrdVSJDFb460GfrXroM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=YFzaGJhWpxTJwiq8GDFiRL2qSMl2Q3roMYqhjD4n/ntMYg4hLWVdExTRVpZ0t3qMi1MwZ1pABI1poYnjSjVKxUksuGIoi/646LHhPQXq8UUqccBHmzRwhBC3bZRagOnz0avOmFvqEaZB3dszSiod9d1R7x15SNzUadlL4JSlPny0V5TiXq7gUbVXm0KNr/BP8woKMSxF0OqUoWZb/uygpqFHHuVXqQTiZvGbM0DMnr8doNYsLSUt9a+BJ3ay6BRmkljwWi+mkbtJKs36qMH/bNSLapg+oEhMZcFn1YWWuGzZOluEu4AO82nGpWD5LwrP76DrftIirLjpfktxgQi3Kg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X1mT95d7Xz2xYl
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Sep 2024 20:30:52 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1725791448;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=i5OMd23lOq0TQ1xex/NXYk3jY8jVWK0MlC2mTgfKJm8=;
-	b=Q6cN6j5xe/dca4pANw0S8LnMrOme0Sl8EWEMqCecrMKe66vc0mLcsbFGCAeKnAAoPWpagF
-	6E/LbQeL1DjiZtn70+ZpZxE8A/HOb9YxqdsTevpcwACrgHUY0cDUVyGsnP5sK6ZVlgncSG
-	FkBCJCQ7svaF0wP56R2g2QniLNsV9y4=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1725791449;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=i5OMd23lOq0TQ1xex/NXYk3jY8jVWK0MlC2mTgfKJm8=;
-	b=GyRBvpfsmoHa6WE0+wtc51yRAUaIv0dihYy9buZU59aH08tkFK0Jxp0eZfZ+5UQACHwGtS
-	fLLFfBBJkDLxqICY0V65+UPUTLLRKMh+UthULQ9FkMnCadfIhZn3fF+s69e00Gjpg2Yuvo
-	dFN/CrOF5jU8AkBuSmCTaIuQvSojF50=
-Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-66-3_IErx1HNZWPkhjP_PcxIQ-1; Sun,
- 08 Sep 2024 06:30:43 -0400
-X-MC-Unique: 3_IErx1HNZWPkhjP_PcxIQ-1
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 76F5F19560B5;
-	Sun,  8 Sep 2024 10:30:41 +0000 (UTC)
-Received: from localhost (unknown [10.72.112.58])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 91F211956056;
-	Sun,  8 Sep 2024 10:30:39 +0000 (UTC)
-Date: Sun, 8 Sep 2024 18:30:33 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Hari Bathini <hbathini@linux.ibm.com>, kexec@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	x86@kernel.org, Sachin P Bappalige <sachinpb@linux.vnet.ibm.com>
-Subject: Re: [PATCH] kexec/crash: no crash update when kexec in progress
-Message-ID: <Zt18yUCWRK8178uv@MiWiFi-R3L-srv>
-References: <20240731152738.194893-1-sourabhjain@linux.ibm.com>
- <87v80lnf8d.fsf@mail.lhotse>
- <10c666ae-d528-4f49-82e9-8e0fee7099e0@linux.ibm.com>
- <355b58b1-6c51-4c42-b6ea-dcd6b1617a18@linux.ibm.com>
- <ZsLjGJvAUIaxrG6x@MiWiFi-R3L-srv>
- <1e4a8e18-cda9-45f5-a842-8ffcd725efc9@linux.ibm.com>
- <ZtGqTSMvx6Ljf5Xi@MiWiFi-R3L-srv>
- <0dd94920-b13f-4da7-9ea6-4f008af1f4b3@linux.ibm.com>
- <ZtkkIoUIu8shp/ut@MiWiFi-R3L-srv>
- <c6f30e31-69fe-4ece-b251-c49f1ab59a04@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X1nZl0z2Xz2xg3
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Sep 2024 21:20:46 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4X1nZc2pXwz9sRr;
+	Sun,  8 Sep 2024 13:20:40 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id lTt-JMNitmU4; Sun,  8 Sep 2024 13:20:40 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4X1nZR1nXQz9rvV;
+	Sun,  8 Sep 2024 13:20:31 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D78618CBF0;
+	Sat,  7 Sep 2024 17:15:17 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id F3l8t7uw49Lx; Sat,  7 Sep 2024 17:15:17 +0200 (CEST)
+Received: from [192.168.232.96] (unknown [192.168.232.96])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 60FEB8CBEF;
+	Sat,  7 Sep 2024 17:15:17 +0200 (CEST)
+Message-ID: <c187369e-a034-4d32-bbed-cacb41ddd65e@csgroup.eu>
+Date: Sat, 7 Sep 2024 17:15:17 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,130 +57,158 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] Fixup for 3279be36b671 ("powerpc/vdso: Wire up
+ getrandom() vDSO implementation on VDSO32")
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Naveen N Rao <naveen@kernel.org>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ Andrei Vagin <avagin@gmail.com>
+References: <700dbf296d02e32376329774be35cfbead08041d.1725611321.git.christophe.leroy@csgroup.eu>
+ <ffd7fc255e194d1e2b0aa3d9d129e826c53219d4.1725611321.git.christophe.leroy@csgroup.eu>
+ <ZtsMpcV7iLYoytdJ@zx2c4.com>
+ <795db5f1-c266-4fb3-a51b-c2b3745d334b@csgroup.eu>
+ <ZtsVry_LL2jjeLJ3@zx2c4.com>
+ <8d0a8d03-95b3-40a8-85cd-5c2e6f92eb6b@csgroup.eu>
+ <ZttP-SU9i6iOyfnG@zx2c4.com> <ZtxkzjvHyaCWTsSf@zx2c4.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <ZtxkzjvHyaCWTsSf@zx2c4.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <c6f30e31-69fe-4ece-b251-c49f1ab59a04@linux.ibm.com>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
 
-On 09/05/24 at 02:07pm, Sourabh Jain wrote:
-> Hello Baoquan,
-> 
-> On 05/09/24 08:53, Baoquan He wrote:
-> > On 09/04/24 at 02:55pm, Sourabh Jain wrote:
-> > > Hello Baoquan,
-> > > 
-> > > On 30/08/24 16:47, Baoquan He wrote:
-> > > > On 08/20/24 at 12:10pm, Sourabh Jain wrote:
-> > > > > Hello Baoquan,
-> > > > > 
-> > ......snip...
-> > > > > 2. A patch to return early from the `crash_handle_hotplug_event()` function
-> > > > > if `kexec_in_progress` is
-> > > > >      set to True. This is essentially my original patch.
-> > > > There's a race gap between the kexec_in_progress checking and the
-> > > > setting it to true which Michael has mentioned.
-> > > The window where kernel is holding kexec_lock to do kexec boot
-> > > but kexec_in_progress is yet not set to True.
-> > > 
-> > > If kernel needs to handle crash hotplug event, the function
-> > > crash_handle_hotplug_event()  will not get the kexec_lock and
-> > > error out by printing error message about not able to update
-> > > kdump image.
-> > But you wanted to avoid the erroring out if it's being in
-> > kernel_kexec().  Now you are seeing at least one the noising
-> > message, aren't you?
-> 
-> Yes, but it is very rare to encounter.
-> 
-> My comments on your updated code are inline below.
-> 
-> > 
-> > > I think it should be fine. Given that lock is already taken for
-> > > kexec kernel boot.
-> > > 
-> > > Am I missing something major?
-> > > 
-> > > > That's why I think
-> > > > maybe checking kexec_in_progress after failing to retriving
-> > > > __kexec_lock is a little better, not very sure.
-> > > Try for kexec lock before kexec_in_progress check will not solve
-> > > the original problem this patch trying to solve.
-> > > 
-> > > You proposed the below changes earlier:
-> > > 
-> > > -	if (!kexec_trylock()) {
-> > > +	if (!kexec_trylock() && kexec_in_progress) {
-> > >   		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
-> > >   		crash_hotplug_unlock();
-> > Ah, I meant as below, but wrote it mistakenly.
-> > 
-> > diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-> > index 63cf89393c6e..e7c7aa761f46 100644
-> > --- a/kernel/crash_core.c
-> > +++ b/kernel/crash_core.c
-> > @@ -504,7 +504,7 @@ int crash_check_hotplug_support(void)
-> >   	crash_hotplug_lock();
-> >   	/* Obtain lock while reading crash information */
-> > -	if (!kexec_trylock()) {
-> > +	if (!kexec_trylock() && !kexec_in_progress) {
-> >   		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
-> >   		crash_hotplug_unlock();
-> >   		return 0;
-> > 
-> > 
-> > > 
-> > > Once the kexec_in_progress is set to True there is no way one can get
-> > > kexec_lock. So kexec_trylock() before kexec_in_progress is not helpful
-> > > for the problem I am trying to solve.
-> > With your patch, you could still get the error message if the race gap
-> > exist. With above change, you won't get it. Please correct me if I am
-> > wrong.
-> 
-> The above code will print an error message during the race gap. Here's why:
-> 
-> Let’s say the kexec lock is acquired in the kernel_kexec() function,
-> but kexec_in_progress is not yet set to True. In this scenario, the code
-> will print
-> an error message.
-> 
-> There is another issue I see with the above code:
-> 
-> Consider that the system is on the kexec kernel boot path, and
-> kexec_in_progress
-> is set to True. If crash_hotplug_unlock() is called, the kernel will not
-> only update
-> the kdump image without acquiring the kexec lock, but it will also release
-> the
-> kexec lock in the out label. I believe this is incorrect.
-> 
-> Please share your thoughts.
 
-How about this?
 
-diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-index 63cf89393c6e..8ba7b1da0ded 100644
---- a/kernel/crash_core.c
-+++ b/kernel/crash_core.c
-@@ -505,7 +505,8 @@ int crash_check_hotplug_support(void)
- 	crash_hotplug_lock();
- 	/* Obtain lock while reading crash information */
- 	if (!kexec_trylock()) {
--		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
-+		if (!kexec_in_progress)
-+			pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
- 		crash_hotplug_unlock();
- 		return 0;
- 	}
-@@ -540,7 +541,8 @@ static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu,
- 	crash_hotplug_lock();
- 	/* Obtain lock while changing crash information */
- 	if (!kexec_trylock()) {
--		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
-+		if (!kexec_in_progress)
-+			pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
- 		crash_hotplug_unlock();
- 		return;
- 	}
+Le 07/09/2024 à 16:35, Jason A. Donenfeld a écrit :
+> On Fri, Sep 06, 2024 at 08:54:49PM +0200, Jason A. Donenfeld wrote:
+>> On Fri, Sep 06, 2024 at 05:14:43PM +0200, Christophe Leroy wrote:
+>>>
+>>>
+>>> Le 06/09/2024 à 16:46, Jason A. Donenfeld a écrit :
+>>>> On Fri, Sep 06, 2024 at 04:26:32PM +0200, Christophe Leroy wrote:
+>>>>
+>>>>> On the long run I wonder if we should try to find a more generic
+>>>>> solution for getrandom instead of requiring each architecture to handle
+>>>>> it. On gettimeofday the selection of the right page is embeded in the
+>>>>> generic part, see for instance :
+>>>>>
+>>>>> static __maybe_unused __kernel_old_time_t
+>>>>> __cvdso_time_data(const struct vdso_data *vd, __kernel_old_time_t *time)
+>>>>> {
+>>>>> 	__kernel_old_time_t t;
+>>>>>
+>>>>> 	if (IS_ENABLED(CONFIG_TIME_NS) &&
+>>>>> 	    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
+>>>>> 		vd = __arch_get_timens_vdso_data(vd);
+>>>>>
+>>>>> 	t = READ_ONCE(vd[CS_HRES_COARSE].basetime[CLOCK_REALTIME].sec);
+>>>>>
+>>>>> 	if (time)
+>>>>> 		*time = t;
+>>>>>
+>>>>> 	return t;
+>>>>> }
+>>>>>
+>>>>> and powerpc just provides:
+>>>>>
+>>>>> static __always_inline
+>>>>> const struct vdso_data *__arch_get_timens_vdso_data(const struct
+>>>>> vdso_data *vd)
+>>>>> {
+>>>>> 	return (void *)vd + (1U << CONFIG_PAGE_SHIFT);
+>>>>> }
+>>>>
+>>>> It's tempting, but maybe a bit tricky. LoongArch, for example, doesn't
+>>>> have this problem at all, because the layout of their vvars doesn't
+>>>> require it. So the vd->clock_mode access is unnecessary.
+>>>>
+>>>>> Or another solution could be to put random data in a third page that is
+>>>>> always at the same place regardless of timens ?
+>>>>
+>>>> Maybe that's the easier way, yea. Potentially wasteful, though.
+>>>>
+>>>
+>>> Indeed I just looked at Loongarch and that's exactly what they do: they
+>>> have a third page after the two pages dedicated to TIME for arch
+>>> specific data, and they have added getrandom data there.
+>>>
+>>> The third page is common to every process so it won't waste more than a
+>>> few bytes. It doesn't worry me even on the older boards that only have
+>>> 32 Mbytes of RAM.
+>>>
+>>> So yes, I may have a look at that in the future, what we have at the
+>>> moment is good enough to move forward.
+>>
+>> My x86 code is kind of icky for this:
+>>
+>> static __always_inline const struct vdso_rng_data *__arch_get_vdso_rng_data(void)
+>> {
+>>          if (IS_ENABLED(CONFIG_TIME_NS) && __vdso_data->clock_mode == VDSO_CLOCKMODE_TIMENS)
+>>                  return (void *)&__vdso_rng_data + ((void *)&__timens_vdso_data - (void *)&__vdso_data);
+>>          return &__vdso_rng_data;
+>> }
+>>
+>> Doing the subtraction like that means that this is more clearly correct.
+>> But it also makes the compiler insert two jumps for the branch, and then
+>> reads the addresses of those variables and such.
+>>
+>> If I change it to:
+>>
+>> static __always_inline const struct vdso_rng_data *__arch_get_vdso_rng_data(void)
+>> {
+>>          if (IS_ENABLED(CONFIG_TIME_NS) && __vdso_data->clock_mode == VDSO_CLOCKMODE_TIMENS)
+>>                  return (void *)&__vdso_rng_data + (3UL << CONFIG_PAGE_SHIFT);
+>>          return &__vdso_rng_data;
+>> }
+>>
+>> Then there's a much nicer single `cmov` with no branching.
+>>
+>> But if I want to do that for real, I'll have to figure out what set of
+>> nice compile-time constants I can use. I haven't looked into this yet.
+> 
+> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F20240906190655.2777023-1-Jason%40zx2c4.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C3ee8b35fe848434e72fd08dccf4a67ff%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638613165688600378%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=g4zcMonjJNYhwrUWeCDoL5Ri7Mbg5hVQJyZNU2zH4Pc%3D&reserved=0
 
+Looks good.
+
+Allthough other architectures don't use defines but enums for that:
+
+arch/arm64/kernel/vdso.c-36-
+arch/arm64/kernel/vdso.c-37-enum vvar_pages {
+arch/arm64/kernel/vdso.c:38:	VVAR_DATA_PAGE_OFFSET,
+arch/arm64/kernel/vdso.c:39:	VVAR_TIMENS_PAGE_OFFSET,
+arch/arm64/kernel/vdso.c-40-	VVAR_NR_PAGES,
+arch/arm64/kernel/vdso.c-41-};
+--
+arch/loongarch/include/asm/vdso/vdso.h-36-
+arch/loongarch/include/asm/vdso/vdso.h-37-enum vvar_pages {
+arch/loongarch/include/asm/vdso/vdso.h:38:	VVAR_GENERIC_PAGE_OFFSET,
+arch/loongarch/include/asm/vdso/vdso.h:39:	VVAR_TIMENS_PAGE_OFFSET,
+arch/loongarch/include/asm/vdso/vdso.h-40-	VVAR_LOONGARCH_PAGES_START,
+arch/loongarch/include/asm/vdso/vdso.h-41-	VVAR_LOONGARCH_PAGES_END = 
+VVAR_LOONGARCH_PAGES_START + LOONGARCH_VDSO_DATA_PAGES - 1,
+--
+arch/powerpc/kernel/vdso.c-54-
+arch/powerpc/kernel/vdso.c-55-enum vvar_pages {
+arch/powerpc/kernel/vdso.c:56:	VVAR_DATA_PAGE_OFFSET,
+arch/powerpc/kernel/vdso.c:57:	VVAR_TIMENS_PAGE_OFFSET,
+arch/powerpc/kernel/vdso.c-58-	VVAR_NR_PAGES,
+arch/powerpc/kernel/vdso.c-59-};
+--
+arch/riscv/kernel/vdso.c-19-
+arch/riscv/kernel/vdso.c-20-enum vvar_pages {
+arch/riscv/kernel/vdso.c:21:	VVAR_DATA_PAGE_OFFSET,
+arch/riscv/kernel/vdso.c:22:	VVAR_TIMENS_PAGE_OFFSET,
+arch/riscv/kernel/vdso.c-23-	VVAR_NR_PAGES,
+arch/riscv/kernel/vdso.c-24-};
+--
+arch/s390/kernel/vdso.c-31-
+arch/s390/kernel/vdso.c-32-enum vvar_pages {
+arch/s390/kernel/vdso.c:33:	VVAR_DATA_PAGE_OFFSET,
+arch/s390/kernel/vdso.c:34:	VVAR_TIMENS_PAGE_OFFSET,
+arch/s390/kernel/vdso.c-35-	VVAR_NR_PAGES,
+arch/s390/kernel/vdso.c-36-};
+
+Christophe
 
