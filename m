@@ -1,49 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-1146-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1147-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11F06EB64C5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2024 12:03:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1645AEB64C8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2024 14:36:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X1BZW3B0lz2yGh;
-	Sat,  7 Sep 2024 22:03:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=114.242.206.163
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725697650;
-	cv=none; b=EjgPWUPWFxPNbw49smsAaeZoDrqC0pH7SRzQSYDS3xp+R+nIlrBW77mlXP5Bc+NbZueFjeRbVcMkEcqSii/vOyjpYrYVlmrl5nqBFXtae/Dg0qdmpXMcmTN06iJGXzvvVIe60XhibDBlwYBG/+e5StgA/ixjOUiMUtlmiUsMGd7r5kpD7qnS1h21Q/B8gcZT5P4nCkMCAV9sBNpNpmN0jdne5WpsDepX03HfAv9rhW4bNVpP4Cx/Zv+JEAr27lL9eitHbEX8uo7/PXY90WH9wzcaGTVD5j8qdUK/iHLtB+/lqPZEPSRCd81NUEeS/wlyWZ8gGvytux63IA+qLFkuPA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X1Fyd0pFJz2xtQ;
+	Sun,  8 Sep 2024 00:36:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725719769;
+	cv=none; b=MXr+JPqm6XLn9C39/uV9Frln8BKQX4VcDRE11mdjeYE6Bpd0uPTIT78ZP5oRUGpPeVDs4YQtsi1Da5BCXBFTkS34TM/lGPTrdo0TwxgY3fZ7YAu6u6gLKM2FIIOooJdbl52mVhqnxBG+2K6C05wNZZJNYaG1QYAGj73NVqbILcvxkSlPrCPmDMX4M6mDP7pP3T7sLvFiVsbgm9WItZT3elGZSeAfsmSvR5hw0XDwkr7yba8tFbl0GdwPNMSV3VSRYtlwmwGj2VcYc5F9CJPHU/obyabZcgaPChmqsoORKMWxrHevcQf55v173czk9I580KX2sKMSoCHgYQaCPRubuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725697650; c=relaxed/relaxed;
-	bh=n0V2CVYvjQo2hxKK/X5uurr9LHjPXieQlSn+vNAwmxM=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZxG1ezvPkglGuE52ziJ27twHmE1E74cafpGD6fe7qtRO0CC1LAg+ONv2cIaNfCfqCkpx1EchBVRK9iptG1hjiC2hy5dCU1zrBNI0nRRpDmMlhTNL9GPl3KtFQLYGFGAXDP2ypJ22HmxyDitOyuAD7w2p7MRrJg65wnQxfu+6LPs1lLP8vkCu0gTpqYs2pm7NQMVUk89rQE5BCYuf4yvtPnd+6RJg3O2DsagnmJs+gTDpgwtsGtoEOOZqvj9TBDB+lQSoNf5lJgYDqezB9RIIknREGihpK7nHgaYgonhUy9tTvkDtWcvZbpYKt0osB4gBwNWrwhJ2iWzwRsNV4s3R9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=loongson.cn; spf=pass (client-ip=114.242.206.163; helo=mail.loongson.cn; envelope-from=maobibo@loongson.cn; receiver=lists.ozlabs.org) smtp.mailfrom=loongson.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=loongson.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=loongson.cn (client-ip=114.242.206.163; helo=mail.loongson.cn; envelope-from=maobibo@loongson.cn; receiver=lists.ozlabs.org)
-Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X15nF2McLz2yLg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2024 18:27:27 +1000 (AEST)
-Received: from loongson.cn (unknown [10.2.5.213])
-	by gateway (Coremail) with SMTP id _____8DxlehpDtxmxhMBAA--.1755S3;
-	Sat, 07 Sep 2024 16:27:21 +0800 (CST)
-Received: from localhost.localdomain (unknown [10.2.5.213])
-	by front1 (Coremail) with SMTP id qMiowMDxcNZoDtxmd+0AAA--.5018S2;
-	Sat, 07 Sep 2024 16:27:21 +0800 (CST)
-From: Bibo Mao <maobibo@loongson.cn>
-To: Huacai Chen <chenhuacai@kernel.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	t=1725719769; c=relaxed/relaxed;
+	bh=zaEo8gilrmxogMmzsNMScJpOwzlO2ivQy8zmDfqEv4A=;
+	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
+	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=kmrq4GKbpVyNTdK03SESwUdLBKt1810nWhgGxLfLKM7f7m3VWX9L5ZFwnkSrKxyB6PWNcK0OCQgMv/iiHHE8rtFXJUnmipuRwke7rC8yK9klimzO9t22M8Qi58gy2/ivhI0SsXDWp1o9q8S0KOde+U5zi5zCPJPReJJxuhI8LzPvXL80zdohnpJ9HqYsNk60QBhk4XP5U6zaLCuLp2MIzi2c+W67Sq6Cz6DZCrBXBbZj76qMysnLxCSEbdzqeHMSQGF1oZtykQzRmrWOqNIG9/eHudhZQi1qGwjRvJz8fdeQBpexWX5Sc6ltmVs3CRcng/evsN7k2vBjE3BFhX+kjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=cgY7SHp1; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=+fej=qf=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=cgY7SHp1;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=+fej=qf=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X1Fyb0blFz2xtN
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Sep 2024 00:36:07 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id B8AC05C48CF;
+	Sat,  7 Sep 2024 14:36:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18471C4CECA;
+	Sat,  7 Sep 2024 14:36:03 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="cgY7SHp1"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1725719760;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=zaEo8gilrmxogMmzsNMScJpOwzlO2ivQy8zmDfqEv4A=;
+	b=cgY7SHp1xO5oPO5RsEP47PF73VB+d0FY23/q67jdWND6uXjRx0pjw091wozLwxTM67sfgo
+	G+pFQr56sf6mr4hw5zxBn2Th+pLJXT8J493ic5hi2mZo50MOpx5fg7zBvvYUvBgfXIgM7x
+	wEtG6GPUnraNdvCfRfTKwL8wQRpVLvM=
+Received: 
+	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 1d2759ad (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Sat, 7 Sep 2024 14:36:00 +0000 (UTC)
+Date: Sat, 7 Sep 2024 16:35:58 +0200
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Thomas Gleixner <tglx@linutronix.de>
-Cc: Naveen N Rao <naveen@kernel.org>,
-	loongarch@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] smp: Mark smp_prepare_boot_cpu() __init
-Date: Sat,  7 Sep 2024 16:27:20 +0800
-Message-Id: <20240907082720.452148-1-maobibo@loongson.cn>
-X-Mailer: git-send-email 2.39.3
+	Naveen N Rao <naveen@kernel.org>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Andrei Vagin <avagin@gmail.com>
+Subject: Re: [PATCH 2/2] Fixup for 3279be36b671 ("powerpc/vdso: Wire up
+ getrandom() vDSO implementation on VDSO32")
+Message-ID: <ZtxkzjvHyaCWTsSf@zx2c4.com>
+References: <700dbf296d02e32376329774be35cfbead08041d.1725611321.git.christophe.leroy@csgroup.eu>
+ <ffd7fc255e194d1e2b0aa3d9d129e826c53219d4.1725611321.git.christophe.leroy@csgroup.eu>
+ <ZtsMpcV7iLYoytdJ@zx2c4.com>
+ <795db5f1-c266-4fb3-a51b-c2b3745d334b@csgroup.eu>
+ <ZtsVry_LL2jjeLJ3@zx2c4.com>
+ <8d0a8d03-95b3-40a8-85cd-5c2e6f92eb6b@csgroup.eu>
+ <ZttP-SU9i6iOyfnG@zx2c4.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,79 +77,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qMiowMDxcNZoDtxmd+0AAA--.5018S2
-X-CM-SenderInfo: xpdruxter6z05rqj20fqof0/
-X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
-	ZEXasCq-sGcSsGvfJ3UbIjqfuFe4nvWSU5nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2Kfnx
-	nUUI43ZEXa7xR_UUUUUUUUU==
+In-Reply-To: <ZttP-SU9i6iOyfnG@zx2c4.com>
 
-Function smp_prepare_boot_cpu() is only called at boot stage, here
-mark it as __init.
+On Fri, Sep 06, 2024 at 08:54:49PM +0200, Jason A. Donenfeld wrote:
+> On Fri, Sep 06, 2024 at 05:14:43PM +0200, Christophe Leroy wrote:
+> > 
+> > 
+> > Le 06/09/2024 à 16:46, Jason A. Donenfeld a écrit :
+> > > On Fri, Sep 06, 2024 at 04:26:32PM +0200, Christophe Leroy wrote:
+> > > 
+> > >> On the long run I wonder if we should try to find a more generic
+> > >> solution for getrandom instead of requiring each architecture to handle
+> > >> it. On gettimeofday the selection of the right page is embeded in the
+> > >> generic part, see for instance :
+> > >>
+> > >> static __maybe_unused __kernel_old_time_t
+> > >> __cvdso_time_data(const struct vdso_data *vd, __kernel_old_time_t *time)
+> > >> {
+> > >> 	__kernel_old_time_t t;
+> > >>
+> > >> 	if (IS_ENABLED(CONFIG_TIME_NS) &&
+> > >> 	    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
+> > >> 		vd = __arch_get_timens_vdso_data(vd);
+> > >>
+> > >> 	t = READ_ONCE(vd[CS_HRES_COARSE].basetime[CLOCK_REALTIME].sec);
+> > >>
+> > >> 	if (time)
+> > >> 		*time = t;
+> > >>
+> > >> 	return t;
+> > >> }
+> > >>
+> > >> and powerpc just provides:
+> > >>
+> > >> static __always_inline
+> > >> const struct vdso_data *__arch_get_timens_vdso_data(const struct
+> > >> vdso_data *vd)
+> > >> {
+> > >> 	return (void *)vd + (1U << CONFIG_PAGE_SHIFT);
+> > >> }
+> > > 
+> > > It's tempting, but maybe a bit tricky. LoongArch, for example, doesn't
+> > > have this problem at all, because the layout of their vvars doesn't
+> > > require it. So the vd->clock_mode access is unnecessary.
+> > > 
+> > >> Or another solution could be to put random data in a third page that is
+> > >> always at the same place regardless of timens ?
+> > > 
+> > > Maybe that's the easier way, yea. Potentially wasteful, though.
+> > > 
+> > 
+> > Indeed I just looked at Loongarch and that's exactly what they do: they 
+> > have a third page after the two pages dedicated to TIME for arch 
+> > specific data, and they have added getrandom data there.
+> > 
+> > The third page is common to every process so it won't waste more than a 
+> > few bytes. It doesn't worry me even on the older boards that only have 
+> > 32 Mbytes of RAM.
+> > 
+> > So yes, I may have a look at that in the future, what we have at the 
+> > moment is good enough to move forward.
+> 
+> My x86 code is kind of icky for this:
+> 
+> static __always_inline const struct vdso_rng_data *__arch_get_vdso_rng_data(void)
+> {
+>         if (IS_ENABLED(CONFIG_TIME_NS) && __vdso_data->clock_mode == VDSO_CLOCKMODE_TIMENS)
+>                 return (void *)&__vdso_rng_data + ((void *)&__timens_vdso_data - (void *)&__vdso_data);
+>         return &__vdso_rng_data;
+> }
+> 
+> Doing the subtraction like that means that this is more clearly correct.
+> But it also makes the compiler insert two jumps for the branch, and then
+> reads the addresses of those variables and such.
+> 
+> If I change it to:
+> 
+> static __always_inline const struct vdso_rng_data *__arch_get_vdso_rng_data(void)
+> {
+>         if (IS_ENABLED(CONFIG_TIME_NS) && __vdso_data->clock_mode == VDSO_CLOCKMODE_TIMENS)
+>                 return (void *)&__vdso_rng_data + (3UL << CONFIG_PAGE_SHIFT);
+>         return &__vdso_rng_data;
+> }
+> 
+> Then there's a much nicer single `cmov` with no branching.
+> 
+> But if I want to do that for real, I'll have to figure out what set of
+> nice compile-time constants I can use. I haven't looked into this yet.
 
-Signed-off-by: Bibo Mao <maobibo@loongson.cn>
----
- arch/loongarch/kernel/smp.c | 2 +-
- arch/mips/kernel/smp.c      | 2 +-
- arch/powerpc/kernel/smp.c   | 2 +-
- include/linux/smp.h         | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/loongarch/kernel/smp.c b/arch/loongarch/kernel/smp.c
-index ca405ab86aae..be2655c4c414 100644
---- a/arch/loongarch/kernel/smp.c
-+++ b/arch/loongarch/kernel/smp.c
-@@ -476,7 +476,7 @@ core_initcall(ipi_pm_init);
- #endif
- 
- /* Preload SMP state for boot cpu */
--void smp_prepare_boot_cpu(void)
-+void __init smp_prepare_boot_cpu(void)
- {
- 	unsigned int cpu, node, rr_node;
- 
-diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
-index 0362fc5df7b0..39e193cad2b9 100644
---- a/arch/mips/kernel/smp.c
-+++ b/arch/mips/kernel/smp.c
-@@ -439,7 +439,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- }
- 
- /* preload SMP state for boot cpu */
--void smp_prepare_boot_cpu(void)
-+void __init smp_prepare_boot_cpu(void)
- {
- 	if (mp_ops->prepare_boot_cpu)
- 		mp_ops->prepare_boot_cpu();
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 46e6d2cd7a2d..4ab9b8cee77a 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -1166,7 +1166,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- 	cpu_smt_set_num_threads(num_threads, threads_per_core);
- }
- 
--void smp_prepare_boot_cpu(void)
-+void __init smp_prepare_boot_cpu(void)
- {
- 	BUG_ON(smp_processor_id() != boot_cpuid);
- #ifdef CONFIG_PPC64
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index fcd61dfe2af3..6a0813c905d0 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -109,7 +109,7 @@ static inline void on_each_cpu_cond(smp_cond_func_t cond_func,
-  * Architecture specific boot CPU setup.  Defined as empty weak function in
-  * init/main.c. Architectures can override it.
-  */
--void smp_prepare_boot_cpu(void);
-+void __init smp_prepare_boot_cpu(void);
- 
- #ifdef CONFIG_SMP
- 
-
-base-commit: b31c4492884252a8360f312a0ac2049349ddf603
--- 
-2.39.3
-
+https://lore.kernel.org/all/20240906190655.2777023-1-Jason@zx2c4.com/
 
