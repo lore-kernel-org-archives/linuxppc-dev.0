@@ -1,70 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-1145-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1146-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEDB6EB64C5
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2024 11:43:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11F06EB64C5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Sep 2024 12:03:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X1B7h29Bwz2yDk;
-	Sat,  7 Sep 2024 21:43:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725709424;
-	cv=none; b=c1b38g92v/et6gpvdCR6Pox+Ryycf+9+W+4jk5jKnyCt2gPFxhBwAcYI92TLJDESGOx5hv9wEMqbpO5Ye8CZpd+T/IoDPb/thce52VuWfnvH5jwitfv8fQW6cxFfkXfGXaSXcJGvS7TI9OdRPKC5CrVqTBbRi475CzXQFJ9N0oN6jkk6IPYkvOIDbksje8veRza+r3qysCsr7WVLq20zymyeBdLtaay1Zq+Kvz7K9IR12kC0xWEzFBBiot67VlTTYX9TtOu5MCSKVxDJWXTyggUH7qzt2B7xPZeeP9fBiAxefez68tPbnzru18NVOWGV1KF8ZvuAX3MMLAA7MlC8yA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X1BZW3B0lz2yGh;
+	Sat,  7 Sep 2024 22:03:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=114.242.206.163
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725697650;
+	cv=none; b=EjgPWUPWFxPNbw49smsAaeZoDrqC0pH7SRzQSYDS3xp+R+nIlrBW77mlXP5Bc+NbZueFjeRbVcMkEcqSii/vOyjpYrYVlmrl5nqBFXtae/Dg0qdmpXMcmTN06iJGXzvvVIe60XhibDBlwYBG/+e5StgA/ixjOUiMUtlmiUsMGd7r5kpD7qnS1h21Q/B8gcZT5P4nCkMCAV9sBNpNpmN0jdne5WpsDepX03HfAv9rhW4bNVpP4Cx/Zv+JEAr27lL9eitHbEX8uo7/PXY90WH9wzcaGTVD5j8qdUK/iHLtB+/lqPZEPSRCd81NUEeS/wlyWZ8gGvytux63IA+qLFkuPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725709424; c=relaxed/relaxed;
-	bh=RvuMVvwQtyBFO/Molap8u4ZjUJZ3YPjhFRGjogWQVJs=;
-	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID; b=eopHdGLJRKSsZvU8tV5w2POZe9jR/6U+WNUauVq7rTBsOh6E+Ry9eS/oXaH3J4P6s3U+G3L7CZce1aSgUTRcuY7S4uYIUMgHBLBL8sr1yrVn5yQZj2yUwSCz+bY6Ewh2QLt6YcHAlfe/wfRgNM7JSo7lC62cIQtw2vVjhnWyOCKGbQsgquodqP5jJPG8QqeCH0if7J4TsPpUJnIqIHrYSYYceXVxm8FxtG/G8ooKsttT+7am9GYbw8gigjrT8u+muEsMigp8lqHLr5QsYmfp9dtcy645DF6oLyZo8fJ0ZFP8NrAjQDcDLRUA9erhPazvgG2ZyGmDW9tcyXXBBMB69w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cl43R46T; dkim-atps=neutral; spf=pass (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cl43R46T;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X1B7f3P38z2y6G
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2024 21:43:40 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1725709423; x=1757245423;
-  h=date:from:to:cc:subject:message-id;
-  bh=bE12JE0pjimuz9DCUuslR3jaok/vnHPcbXu9hC6InaU=;
-  b=Cl43R46TO5QOV2oD/hfoy411GMacq+V+J0AnYL6TSQquG8IDmQOk9XOs
-   jBpPVbWrMrvMzp7ZTEnm1TJERVPbgjIVx9gzZnmt1CMZa3MmwYN0W470m
-   LGIgVWhl6GbMyxoXTndWXNdzuf1aqZTW+B/KS5f+b3z44oISPnrBQIje0
-   KL4l1/hUMVUl2U4eRG/4fkYBn3GR0d8JuNH3dyNnd5Z+opLemeHxOWbTt
-   KSE2ryytuw7zvRpKt8cIJyoqcj0X9DZeTYjhkS5uZ04GrW7QU4UvsyAgK
-   GdxOC+iDW9qQYb5WUg4thDrILAV7O8yK2rt4Wcw3dk5cG7o2bqHco57L1
-   g==;
-X-CSE-ConnectionGUID: D/aYNZxlTVSxb0ZV28IReQ==
-X-CSE-MsgGUID: e7ZfU7h4Q0OQHgJXv4TFfQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11187"; a="28339951"
-X-IronPort-AV: E=Sophos;i="6.10,210,1719903600"; 
-   d="scan'208";a="28339951"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Sep 2024 04:43:37 -0700
-X-CSE-ConnectionGUID: NvqhlQmaQBCora1K7Duu4w==
-X-CSE-MsgGUID: FG0jZLyzQB+uXDnrhZv6oA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.10,210,1719903600"; 
-   d="scan'208";a="65841213"
-Received: from lkp-server01.sh.intel.com (HELO 9c6b1c7d3b50) ([10.239.97.150])
-  by fmviesa006.fm.intel.com with ESMTP; 07 Sep 2024 04:43:35 -0700
-Received: from kbuild by 9c6b1c7d3b50 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1smtqn-000CWJ-2f;
-	Sat, 07 Sep 2024 11:43:33 +0000
-Date: Sat, 07 Sep 2024 19:43:00 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:merge] BUILD SUCCESS
- 56e2adc93b44956d70cf304524567a223842ec39
-Message-ID: <202409071958.odey3UQk-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+	t=1725697650; c=relaxed/relaxed;
+	bh=n0V2CVYvjQo2hxKK/X5uurr9LHjPXieQlSn+vNAwmxM=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZxG1ezvPkglGuE52ziJ27twHmE1E74cafpGD6fe7qtRO0CC1LAg+ONv2cIaNfCfqCkpx1EchBVRK9iptG1hjiC2hy5dCU1zrBNI0nRRpDmMlhTNL9GPl3KtFQLYGFGAXDP2ypJ22HmxyDitOyuAD7w2p7MRrJg65wnQxfu+6LPs1lLP8vkCu0gTpqYs2pm7NQMVUk89rQE5BCYuf4yvtPnd+6RJg3O2DsagnmJs+gTDpgwtsGtoEOOZqvj9TBDB+lQSoNf5lJgYDqezB9RIIknREGihpK7nHgaYgonhUy9tTvkDtWcvZbpYKt0osB4gBwNWrwhJ2iWzwRsNV4s3R9A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=loongson.cn; spf=pass (client-ip=114.242.206.163; helo=mail.loongson.cn; envelope-from=maobibo@loongson.cn; receiver=lists.ozlabs.org) smtp.mailfrom=loongson.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=loongson.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=loongson.cn (client-ip=114.242.206.163; helo=mail.loongson.cn; envelope-from=maobibo@loongson.cn; receiver=lists.ozlabs.org)
+Received: from mail.loongson.cn (mail.loongson.cn [114.242.206.163])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X15nF2McLz2yLg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Sep 2024 18:27:27 +1000 (AEST)
+Received: from loongson.cn (unknown [10.2.5.213])
+	by gateway (Coremail) with SMTP id _____8DxlehpDtxmxhMBAA--.1755S3;
+	Sat, 07 Sep 2024 16:27:21 +0800 (CST)
+Received: from localhost.localdomain (unknown [10.2.5.213])
+	by front1 (Coremail) with SMTP id qMiowMDxcNZoDtxmd+0AAA--.5018S2;
+	Sat, 07 Sep 2024 16:27:21 +0800 (CST)
+From: Bibo Mao <maobibo@loongson.cn>
+To: Huacai Chen <chenhuacai@kernel.org>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Thomas Gleixner <tglx@linutronix.de>
+Cc: Naveen N Rao <naveen@kernel.org>,
+	loongarch@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] smp: Mark smp_prepare_boot_cpu() __init
+Date: Sat,  7 Sep 2024 16:27:20 +0800
+Message-Id: <20240907082720.452148-1-maobibo@loongson.cn>
+X-Mailer: git-send-email 2.39.3
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,150 +52,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:qMiowMDxcNZoDtxmd+0AAA--.5018S2
+X-CM-SenderInfo: xpdruxter6z05rqj20fqof0/
+X-Coremail-Antispam: 1Uk129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7KY7
+	ZEXasCq-sGcSsGvfJ3UbIjqfuFe4nvWSU5nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2Kfnx
+	nUUI43ZEXa7xR_UUUUUUUUU==
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 56e2adc93b44956d70cf304524567a223842ec39  Automatic merge of 'next' into merge (2024-09-06 20:41)
+Function smp_prepare_boot_cpu() is only called at boot stage, here
+mark it as __init.
 
-elapsed time: 1467m
+Signed-off-by: Bibo Mao <maobibo@loongson.cn>
+---
+ arch/loongarch/kernel/smp.c | 2 +-
+ arch/mips/kernel/smp.c      | 2 +-
+ arch/powerpc/kernel/smp.c   | 2 +-
+ include/linux/smp.h         | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-configs tested: 129
-configs skipped: 2
+diff --git a/arch/loongarch/kernel/smp.c b/arch/loongarch/kernel/smp.c
+index ca405ab86aae..be2655c4c414 100644
+--- a/arch/loongarch/kernel/smp.c
++++ b/arch/loongarch/kernel/smp.c
+@@ -476,7 +476,7 @@ core_initcall(ipi_pm_init);
+ #endif
+ 
+ /* Preload SMP state for boot cpu */
+-void smp_prepare_boot_cpu(void)
++void __init smp_prepare_boot_cpu(void)
+ {
+ 	unsigned int cpu, node, rr_node;
+ 
+diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
+index 0362fc5df7b0..39e193cad2b9 100644
+--- a/arch/mips/kernel/smp.c
++++ b/arch/mips/kernel/smp.c
+@@ -439,7 +439,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ }
+ 
+ /* preload SMP state for boot cpu */
+-void smp_prepare_boot_cpu(void)
++void __init smp_prepare_boot_cpu(void)
+ {
+ 	if (mp_ops->prepare_boot_cpu)
+ 		mp_ops->prepare_boot_cpu();
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 46e6d2cd7a2d..4ab9b8cee77a 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1166,7 +1166,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ 	cpu_smt_set_num_threads(num_threads, threads_per_core);
+ }
+ 
+-void smp_prepare_boot_cpu(void)
++void __init smp_prepare_boot_cpu(void)
+ {
+ 	BUG_ON(smp_processor_id() != boot_cpuid);
+ #ifdef CONFIG_PPC64
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+index fcd61dfe2af3..6a0813c905d0 100644
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -109,7 +109,7 @@ static inline void on_each_cpu_cond(smp_cond_func_t cond_func,
+  * Architecture specific boot CPU setup.  Defined as empty weak function in
+  * init/main.c. Architectures can override it.
+  */
+-void smp_prepare_boot_cpu(void);
++void __init smp_prepare_boot_cpu(void);
+ 
+ #ifdef CONFIG_SMP
+ 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                             allnoconfig   gcc-14.1.0
-alpha                               defconfig   gcc-14.1.0
-arc                              allmodconfig   clang-20
-arc                               allnoconfig   gcc-14.1.0
-arc                              allyesconfig   clang-20
-arc                                 defconfig   gcc-14.1.0
-arm                              allmodconfig   clang-20
-arm                               allnoconfig   gcc-14.1.0
-arm                              allyesconfig   clang-20
-arm                                 defconfig   gcc-14.1.0
-arm                        neponset_defconfig   clang-15
-arm                          pxa168_defconfig   clang-15
-arm64                            allmodconfig   clang-20
-arm64                             allnoconfig   gcc-14.1.0
-arm64                               defconfig   gcc-14.1.0
-csky                              allnoconfig   gcc-14.1.0
-csky                                defconfig   gcc-14.1.0
-hexagon                           allnoconfig   gcc-14.1.0
-hexagon                             defconfig   gcc-14.1.0
-i386                             allmodconfig   clang-18
-i386                              allnoconfig   clang-18
-i386                             allyesconfig   clang-18
-i386         buildonly-randconfig-001-20240907   gcc-12
-i386         buildonly-randconfig-002-20240907   gcc-12
-i386         buildonly-randconfig-003-20240907   gcc-12
-i386         buildonly-randconfig-004-20240907   gcc-12
-i386         buildonly-randconfig-005-20240907   gcc-12
-i386         buildonly-randconfig-006-20240907   gcc-12
-i386                                defconfig   clang-18
-i386                  randconfig-001-20240907   gcc-12
-i386                  randconfig-002-20240907   gcc-12
-i386                  randconfig-003-20240907   gcc-12
-i386                  randconfig-004-20240907   gcc-12
-i386                  randconfig-005-20240907   gcc-12
-i386                  randconfig-006-20240907   gcc-12
-i386                  randconfig-011-20240907   gcc-12
-i386                  randconfig-012-20240907   gcc-12
-i386                  randconfig-013-20240907   gcc-12
-i386                  randconfig-014-20240907   gcc-12
-i386                  randconfig-015-20240907   gcc-12
-i386                  randconfig-016-20240907   gcc-12
-loongarch                        alldefconfig   clang-15
-loongarch                        allmodconfig   gcc-14.1.0
-loongarch                         allnoconfig   gcc-14.1.0
-loongarch                           defconfig   gcc-14.1.0
-m68k                             allmodconfig   gcc-14.1.0
-m68k                              allnoconfig   gcc-14.1.0
-m68k                             allyesconfig   gcc-14.1.0
-m68k                          atari_defconfig   clang-15
-m68k                                defconfig   gcc-14.1.0
-m68k                        m5407c3_defconfig   clang-15
-m68k                       m5475evb_defconfig   clang-15
-microblaze                       allmodconfig   gcc-14.1.0
-microblaze                        allnoconfig   gcc-14.1.0
-microblaze                       allyesconfig   gcc-14.1.0
-microblaze                          defconfig   gcc-14.1.0
-mips                              allnoconfig   gcc-14.1.0
-mips                        vocore2_defconfig   clang-15
-nios2                             allnoconfig   gcc-14.1.0
-nios2                               defconfig   gcc-14.1.0
-openrisc                          allnoconfig   clang-20
-openrisc                         allyesconfig   gcc-14.1.0
-openrisc                            defconfig   gcc-12
-parisc                           allmodconfig   gcc-14.1.0
-parisc                            allnoconfig   clang-20
-parisc                           allyesconfig   gcc-14.1.0
-parisc                              defconfig   gcc-12
-parisc64                            defconfig   gcc-14.1.0
-powerpc                          allmodconfig   gcc-14.1.0
-powerpc                           allnoconfig   clang-20
-powerpc                          allyesconfig   gcc-14.1.0
-powerpc                      cm5200_defconfig   clang-15
-powerpc                       eiger_defconfig   clang-15
-powerpc                  iss476-smp_defconfig   clang-15
-powerpc                         ps3_defconfig   clang-15
-powerpc                     tqm8555_defconfig   clang-15
-riscv                            allmodconfig   gcc-14.1.0
-riscv                             allnoconfig   clang-20
-riscv                            allyesconfig   gcc-14.1.0
-riscv                               defconfig   gcc-12
-riscv             nommu_k210_sdcard_defconfig   clang-15
-s390                             allmodconfig   gcc-14.1.0
-s390                              allnoconfig   clang-20
-s390                             allyesconfig   gcc-14.1.0
-s390                                defconfig   gcc-12
-sh                               allmodconfig   gcc-14.1.0
-sh                                allnoconfig   gcc-14.1.0
-sh                               allyesconfig   gcc-14.1.0
-sh                                  defconfig   gcc-12
-sh                               j2_defconfig   clang-15
-sh                           se7750_defconfig   clang-15
-sparc                            allmodconfig   gcc-14.1.0
-sparc64                             defconfig   gcc-12
-um                                allnoconfig   clang-20
-um                                  defconfig   gcc-12
-um                             i386_defconfig   clang-15
-um                             i386_defconfig   gcc-12
-um                           x86_64_defconfig   gcc-12
-x86_64                            allnoconfig   clang-18
-x86_64                           allyesconfig   clang-18
-x86_64       buildonly-randconfig-001-20240907   gcc-12
-x86_64       buildonly-randconfig-002-20240907   gcc-12
-x86_64       buildonly-randconfig-003-20240907   gcc-12
-x86_64       buildonly-randconfig-004-20240907   gcc-12
-x86_64       buildonly-randconfig-005-20240907   gcc-12
-x86_64       buildonly-randconfig-006-20240907   gcc-12
-x86_64                              defconfig   clang-18
-x86_64                                  kexec   gcc-12
-x86_64                randconfig-001-20240907   gcc-12
-x86_64                randconfig-002-20240907   gcc-12
-x86_64                randconfig-003-20240907   gcc-12
-x86_64                randconfig-004-20240907   gcc-12
-x86_64                randconfig-005-20240907   gcc-12
-x86_64                randconfig-006-20240907   gcc-12
-x86_64                randconfig-011-20240907   gcc-12
-x86_64                randconfig-012-20240907   gcc-12
-x86_64                randconfig-013-20240907   gcc-12
-x86_64                randconfig-014-20240907   gcc-12
-x86_64                randconfig-015-20240907   gcc-12
-x86_64                randconfig-016-20240907   gcc-12
-x86_64                randconfig-071-20240907   gcc-12
-x86_64                randconfig-072-20240907   gcc-12
-x86_64                randconfig-073-20240907   gcc-12
-x86_64                randconfig-074-20240907   gcc-12
-x86_64                randconfig-075-20240907   gcc-12
-x86_64                randconfig-076-20240907   gcc-12
-x86_64                          rhel-8.3-rust   clang-18
-x86_64                               rhel-8.3   gcc-12
-xtensa                            allnoconfig   gcc-14.1.0
-
+base-commit: b31c4492884252a8360f312a0ac2049349ddf603
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.39.3
+
 
