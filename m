@@ -1,80 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-1148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF0B7CD4F4C
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2024 10:04:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 263D6E6FE49
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Sep 2024 10:30:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X1lv00lTXz2xdw;
-	Sun,  8 Sep 2024 20:04:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725789884;
-	cv=none; b=JWe20j+HgRYkvcpFwm3h9h+EaFiOA1TmzqhQQ/6op927N5YnbwToeTSO9Spa13zRnj4xM/FqWLhCrNF3NMFovWyt/fyp6Eo6i9KSsuEubuFJqD2RUeMOHeJRSXcvaqaO33SOVgKTkTaUsDYP5L8ioa1buIUSFwiYhJ+a7fbEdaGFZxJx1pxfXYcaFtkYKLHosXP85WAOg2qDNipqr5/1M4miRZW8JPpW3FvZf5OQbtmrTqWgPRiAU75CJ/hKxB/Eszlr8I9FdVlPVfVxtBY3FO5q6PYEiFbafjItpq0OGRNx71q90IQY9XthGonTumbaB10uuG1CbGWlQBwTURhrOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X1mTB25MNz2xYr;
+	Sun,  8 Sep 2024 20:30:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725791454;
+	cv=none; b=WGRux6WBgUQLVHfXUxb1g8fvd1OoUJ+CVft4UFeV80ksne5DGBmmpZkKCgbF5NFmtx8ulHkM5IhRPQkrP/s/WlY0DbqBpirmbH2X76M99ND5GjHrr2iTLebMNNGB6Q2eOJwTEjuk5wsNwniphIRleT4ggfyMRF/GLrlhbIOH+ir7vH1QAV9kiVfxjLtkNhF+GkJY8o4CJW3qUHM0wBREovsNISpoKKXPoDOoAZcxRsi9MR7nKbfla/cFKidTRoVaWn/IDOFlQ7QV2PTTLzhL2ouWin/iERY+FjCiB+vwERKTmVXGwzxAqi/OMvQKFPNeclQc3IUS9a+SmofmTts6TQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725789884; c=relaxed/relaxed;
-	bh=H4s6L1b6UTWwXIgN+h2ZkyoLWzDj1bmp+8k4owaes3c=;
+	t=1725791454; c=relaxed/relaxed;
+	bh=i5OMd23lOq0TQ1xex/NXYk3jY8jVWK0MlC2mTgfKJm8=;
 	h=DKIM-Signature:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
 	 References:MIME-Version:Content-Type:Content-Disposition:
-	 In-Reply-To; b=NQxpTDrJhXu0KhYyhJLl2AXlsGIX33WEgpBmn7qwHKXg6E44bcrmO3vROdMLccfnZAcTcWt6fLTGxVyLMp+Ht9cZluJTqJtMsR7GFs2mSJrK/VfQ6r6XiJyfIv2/e15Wfjz9l0bcWIM5yQNY/JpDz5UOAAIca3syUsNgcQMOlHMRMLEeTvVf3tbalx8xOuAq9gtfTaWUAMIcv1CXiDwvki7SYNAwfhtUia7evPSr0WBQm6HGssL9Qhl1yPeLsvAJFAoMcK5Ix9YGde3ojXpY+JmMBCK22Etk4xJsSvE1mgCcMMdSneEmVwV1+oDpVOvzOje3kDT+GeJpgzb8/EEP/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iVBtGwtW; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D956TBb0; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	 In-Reply-To; b=dRxjph1Tu7a2fPD9ZidbHWn+s2XSHoiAD1cIYfJQ6VWNm23+V9WAe7txMWfxsv+G7lZhz+ABh68ixhsY+FJ6A/WWTBFOgz9B0rFrpu9nYl5h9CzAlF5K2U59QuqudknPLEomH7UjwIMnparHXEgrkTOaXavO9EU8nDD4x4Jvb44zovpmjB5kiBlDxXJzButEa0NtPCM+zBYjnPjjsQqlg2Qfqgst7ZPy/GijVVQTrccLt89hka12AZuIUhLSI9oBWEGotE4xkBE/6vJE48k3kzPyA1noieLbQlDDrJGqPHiMvPSlJ5RYHuYhuLn4mT9CpMzBYk+y2PCvnjggcEf2hQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q6cN6j5x; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GyRBvpfs; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iVBtGwtW;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D956TBb0;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q6cN6j5x;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GyRBvpfs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X1ltz3Vqtz2xdX
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Sep 2024 20:04:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X1mT95d7Xz2xYl
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Sep 2024 20:30:52 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1725789874;
+	s=mimecast20190719; t=1725791448;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=H4s6L1b6UTWwXIgN+h2ZkyoLWzDj1bmp+8k4owaes3c=;
-	b=iVBtGwtWbb4Kkn21lpzGdFNEvsa69oO5hMK6ywJ8P+qY1duIH7KenQWo/+Y+SW4r/o4ZyI
-	I4JVSSCKFjrYEWrPRx38SH+mlgZprRtx7NK/26CVg0tksznBVZlsXiovUWHu6cfKa/xNXz
-	JsgHLlNdoiA1eAm5eBaCPo/5RfxnKk4=
+	bh=i5OMd23lOq0TQ1xex/NXYk3jY8jVWK0MlC2mTgfKJm8=;
+	b=Q6cN6j5xe/dca4pANw0S8LnMrOme0Sl8EWEMqCecrMKe66vc0mLcsbFGCAeKnAAoPWpagF
+	6E/LbQeL1DjiZtn70+ZpZxE8A/HOb9YxqdsTevpcwACrgHUY0cDUVyGsnP5sK6ZVlgncSG
+	FkBCJCQ7svaF0wP56R2g2QniLNsV9y4=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1725789875;
+	s=mimecast20190719; t=1725791449;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=H4s6L1b6UTWwXIgN+h2ZkyoLWzDj1bmp+8k4owaes3c=;
-	b=D956TBb0VP/dRX/fTJZU8iMhtg1h8plDz2sGZajzobdWrZ/0AhL/nbD3q4/5D5DaGKsswR
-	FHNJOs0uoSCerD4Q719euW6oMLDfJKw8UujmdV7zpEz0K4+84I6Ybh+QYl3XxSqLIz9Z+t
-	SdraCfgE/VoSB/OUTVbRYc6YpPDdfQU=
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+	bh=i5OMd23lOq0TQ1xex/NXYk3jY8jVWK0MlC2mTgfKJm8=;
+	b=GyRBvpfsmoHa6WE0+wtc51yRAUaIv0dihYy9buZU59aH08tkFK0Jxp0eZfZ+5UQACHwGtS
+	fLLFfBBJkDLxqICY0V65+UPUTLLRKMh+UthULQ9FkMnCadfIhZn3fF+s69e00Gjpg2Yuvo
+	dFN/CrOF5jU8AkBuSmCTaIuQvSojF50=
+Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-517-ADwoEIdTNxK39xifeSiilQ-1; Sun,
- 08 Sep 2024 06:04:33 -0400
-X-MC-Unique: ADwoEIdTNxK39xifeSiilQ-1
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-66-3_IErx1HNZWPkhjP_PcxIQ-1; Sun,
+ 08 Sep 2024 06:30:43 -0400
+X-MC-Unique: 3_IErx1HNZWPkhjP_PcxIQ-1
 Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 1466119560AB;
-	Sun,  8 Sep 2024 10:04:31 +0000 (UTC)
+	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 76F5F19560B5;
+	Sun,  8 Sep 2024 10:30:41 +0000 (UTC)
 Received: from localhost (unknown [10.72.112.58])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id E6D951956048;
-	Sun,  8 Sep 2024 10:04:28 +0000 (UTC)
-Date: Sun, 8 Sep 2024 18:04:23 +0800
+	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 91F211956056;
+	Sun,  8 Sep 2024 10:30:39 +0000 (UTC)
+Date: Sun, 8 Sep 2024 18:30:33 +0800
 From: Baoquan He <bhe@redhat.com>
 To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Hari Bathini <hbathini@linux.ibm.com>,
-	Mahesh Salgaonkar <mahesh@linux.ibm.com>, kexec@lists.infradead.org,
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+	Hari Bathini <hbathini@linux.ibm.com>, kexec@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH] [RFC] crash: Lock-free crash hotplug support reporting
-Message-ID: <Zt12p/eOCO0D5/e6@MiWiFi-R3L-srv>
-References: <20240823115226.835865-1-sourabhjain@linux.ibm.com>
- <641be54a-440f-475b-a62d-fac157ecbbcb@linux.ibm.com>
+	x86@kernel.org, Sachin P Bappalige <sachinpb@linux.vnet.ibm.com>
+Subject: Re: [PATCH] kexec/crash: no crash update when kexec in progress
+Message-ID: <Zt18yUCWRK8178uv@MiWiFi-R3L-srv>
+References: <20240731152738.194893-1-sourabhjain@linux.ibm.com>
+ <87v80lnf8d.fsf@mail.lhotse>
+ <10c666ae-d528-4f49-82e9-8e0fee7099e0@linux.ibm.com>
+ <355b58b1-6c51-4c42-b6ea-dcd6b1617a18@linux.ibm.com>
+ <ZsLjGJvAUIaxrG6x@MiWiFi-R3L-srv>
+ <1e4a8e18-cda9-45f5-a842-8ffcd725efc9@linux.ibm.com>
+ <ZtGqTSMvx6Ljf5Xi@MiWiFi-R3L-srv>
+ <0dd94920-b13f-4da7-9ea6-4f008af1f4b3@linux.ibm.com>
+ <ZtkkIoUIu8shp/ut@MiWiFi-R3L-srv>
+ <c6f30e31-69fe-4ece-b251-c49f1ab59a04@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,154 +94,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <641be54a-440f-475b-a62d-fac157ecbbcb@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c6f30e31-69fe-4ece-b251-c49f1ab59a04@linux.ibm.com>
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
 
-On 09/07/24 at 10:30am, Sourabh Jain wrote:
+On 09/05/24 at 02:07pm, Sourabh Jain wrote:
 > Hello Baoquan,
 > 
-> Do you think this patch would help reduce lock contention when
-> CPU/Memory resources are removed in bulk from a system?
-.....snip...
---
-> >   include/linux/kexec.h | 11 ++++-------
-> >   kernel/crash_core.c   | 27 +++++++++------------------
-> >   kernel/kexec.c        |  5 ++++-
-> >   kernel/kexec_file.c   |  7 ++++++-
-> >   4 files changed, 23 insertions(+), 27 deletions(-)
+> On 05/09/24 08:53, Baoquan He wrote:
+> > On 09/04/24 at 02:55pm, Sourabh Jain wrote:
+> > > Hello Baoquan,
+> > > 
+> > > On 30/08/24 16:47, Baoquan He wrote:
+> > > > On 08/20/24 at 12:10pm, Sourabh Jain wrote:
+> > > > > Hello Baoquan,
+> > > > > 
+> > ......snip...
+> > > > > 2. A patch to return early from the `crash_handle_hotplug_event()` function
+> > > > > if `kexec_in_progress` is
+> > > > >      set to True. This is essentially my original patch.
+> > > > There's a race gap between the kexec_in_progress checking and the
+> > > > setting it to true which Michael has mentioned.
+> > > The window where kernel is holding kexec_lock to do kexec boot
+> > > but kexec_in_progress is yet not set to True.
+> > > 
+> > > If kernel needs to handle crash hotplug event, the function
+> > > crash_handle_hotplug_event()  will not get the kexec_lock and
+> > > error out by printing error message about not able to update
+> > > kdump image.
+> > But you wanted to avoid the erroring out if it's being in
+> > kernel_kexec().  Now you are seeing at least one the noising
+> > message, aren't you?
+> 
+> Yes, but it is very rare to encounter.
+> 
+> My comments on your updated code are inline below.
+> 
 > > 
-> > diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> > index f0e9f8eda7a3..bd755ba6bac4 100644
-> > --- a/include/linux/kexec.h
-> > +++ b/include/linux/kexec.h
-> > @@ -318,13 +318,6 @@ struct kimage {
-> >   	unsigned int preserve_context : 1;
-> >   	/* If set, we are using file mode kexec syscall */
-> >   	unsigned int file_mode:1;
-> > -#ifdef CONFIG_CRASH_HOTPLUG
-> > -	/* If set, it is safe to update kexec segments that are
-> > -	 * excluded from SHA calculation.
-> > -	 */
-> > -	unsigned int hotplug_support:1;
-> > -#endif
-> > -
-> >   #ifdef ARCH_HAS_KIMAGE_ARCH
-> >   	struct kimage_arch arch;
-> >   #endif
-> > @@ -370,6 +363,10 @@ struct kimage {
-> >   	unsigned long elf_load_addr;
-> >   };
-> > +#ifdef CONFIG_CRASH_HOTPLUG
-> > +extern unsigned int crash_hotplug_support;
-> > +#endif
-> > +
-> >   /* kexec interface functions */
-> >   extern void machine_kexec(struct kimage *image);
-> >   extern int machine_kexec_prepare(struct kimage *image);
+> > > I think it should be fine. Given that lock is already taken for
+> > > kexec kernel boot.
+> > > 
+> > > Am I missing something major?
+> > > 
+> > > > That's why I think
+> > > > maybe checking kexec_in_progress after failing to retriving
+> > > > __kexec_lock is a little better, not very sure.
+> > > Try for kexec lock before kexec_in_progress check will not solve
+> > > the original problem this patch trying to solve.
+> > > 
+> > > You proposed the below changes earlier:
+> > > 
+> > > -	if (!kexec_trylock()) {
+> > > +	if (!kexec_trylock() && kexec_in_progress) {
+> > >   		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
+> > >   		crash_hotplug_unlock();
+> > Ah, I meant as below, but wrote it mistakenly.
+> > 
 > > diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-> > index 63cf89393c6e..3428deba0070 100644
+> > index 63cf89393c6e..e7c7aa761f46 100644
 > > --- a/kernel/crash_core.c
 > > +++ b/kernel/crash_core.c
-> > @@ -30,6 +30,13 @@
-> >   #include "kallsyms_internal.h"
-> >   #include "kexec_internal.h"
-> > +#ifdef CONFIG_CRASH_HOTPLUG
-> > +/* if set, it is safe to update kexec segments that are
-> > + * excluded from sha calculation.
-> > + */
-> > +unsigned int crash_hotplug_support;
-> > +#endif
-> > +
-> >   /* Per cpu memory for storing cpu states in case of system crash. */
-> >   note_buf_t __percpu *crash_notes;
-> > @@ -500,23 +507,7 @@ static DEFINE_MUTEX(__crash_hotplug_lock);
-> >    */
-> >   int crash_check_hotplug_support(void)
-> >   {
-> > -	int rc = 0;
-> > -
-> > -	crash_hotplug_lock();
-> > -	/* Obtain lock while reading crash information */
+> > @@ -504,7 +504,7 @@ int crash_check_hotplug_support(void)
+> >   	crash_hotplug_lock();
+> >   	/* Obtain lock while reading crash information */
 > > -	if (!kexec_trylock()) {
-> > -		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
-> > -		crash_hotplug_unlock();
-> > -		return 0;
-> > -	}
-> > -	if (kexec_crash_image) {
-> > -		rc = kexec_crash_image->hotplug_support;
-> > -	}
-> > -	/* Release lock now that update complete */
-> > -	kexec_unlock();
-> > -	crash_hotplug_unlock();
-> > -
-> > -	return rc;
-> > +	return crash_hotplug_support;
-
-
-I may not understand this well. Both kexec_load and kexec_file_load set
-hotplug_support, crash_check_hotplug_support and
-crash_handle_hotplug_event are to check the flag. How do you guarantee
-the cpu/memory sysfs checking won't have race with kexec_load and
-kexec_file_load?
-
-And here I see taking crash_hotplug_lock() is unnecessary in
-crash_check_hotplug_support() because it does't have race with
-crash_handle_hotplug_event().
-
-> >   }
-> >   /*
-> > @@ -552,7 +543,7 @@ static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu,
-> >   	image = kexec_crash_image;
-> >   	/* Check that kexec segments update is permitted */
-> > -	if (!image->hotplug_support)
-> > +	if (!crash_hotplug_support)
-> >   		goto out;
-> >   	if (hp_action == KEXEC_CRASH_HP_ADD_CPU ||
-> > diff --git a/kernel/kexec.c b/kernel/kexec.c
-> > index a6b3f96bb50c..d5c6b51eaa8b 100644
-> > --- a/kernel/kexec.c
-> > +++ b/kernel/kexec.c
-> > @@ -116,6 +116,9 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
-> >   		/* Uninstall image */
-> >   		kimage_free(xchg(dest_image, NULL));
-> >   		ret = 0;
-> > +#ifdef CONFIG_CRASH_HOTPLUG
-> > +		crash_hotplug_support = 0;
-> > +#endif
-> >   		goto out_unlock;
-> >   	}
-> >   	if (flags & KEXEC_ON_CRASH) {
-> > @@ -136,7 +139,7 @@ static int do_kexec_load(unsigned long entry, unsigned long nr_segments,
-> >   #ifdef CONFIG_CRASH_HOTPLUG
-> >   	if ((flags & KEXEC_ON_CRASH) && arch_crash_hotplug_support(image, flags))
-> > -		image->hotplug_support = 1;
-> > +		crash_hotplug_support = 1;
-> >   #endif
-> >   	ret = machine_kexec_prepare(image);
-> > diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-> > index 3d64290d24c9..b326edb90fd7 100644
-> > --- a/kernel/kexec_file.c
-> > +++ b/kernel/kexec_file.c
-> > @@ -378,7 +378,7 @@ SYSCALL_DEFINE5(kexec_file_load, int, kernel_fd, int, initrd_fd,
-> >   #ifdef CONFIG_CRASH_HOTPLUG
-> >   	if ((flags & KEXEC_FILE_ON_CRASH) && arch_crash_hotplug_support(image, flags))
-> > -		image->hotplug_support = 1;
-> > +		crash_hotplug_support = 1;
-> >   #endif
-> >   	ret = machine_kexec_prepare(image);
-> > @@ -432,6 +432,11 @@ SYSCALL_DEFINE5(kexec_file_load, int, kernel_fd, int, initrd_fd,
-> >   		arch_kexec_protect_crashkres();
-> >   #endif
-> > +#ifdef CONFIG_CRASH_HOTPLUG
-> > +	if (flags & KEXEC_FILE_UNLOAD)
-> > +		crash_hotplug_support = 0;
-> > +#endif
-> > +
-> >   	kexec_unlock();
-> >   	kimage_free(image);
-> >   	return ret;
+> > +	if (!kexec_trylock() && !kexec_in_progress) {
+> >   		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
+> >   		crash_hotplug_unlock();
+> >   		return 0;
+> > 
+> > 
+> > > 
+> > > Once the kexec_in_progress is set to True there is no way one can get
+> > > kexec_lock. So kexec_trylock() before kexec_in_progress is not helpful
+> > > for the problem I am trying to solve.
+> > With your patch, you could still get the error message if the race gap
+> > exist. With above change, you won't get it. Please correct me if I am
+> > wrong.
 > 
+> The above code will print an error message during the race gap. Here's why:
+> 
+> Let’s say the kexec lock is acquired in the kernel_kexec() function,
+> but kexec_in_progress is not yet set to True. In this scenario, the code
+> will print
+> an error message.
+> 
+> There is another issue I see with the above code:
+> 
+> Consider that the system is on the kexec kernel boot path, and
+> kexec_in_progress
+> is set to True. If crash_hotplug_unlock() is called, the kernel will not
+> only update
+> the kdump image without acquiring the kexec lock, but it will also release
+> the
+> kexec lock in the out label. I believe this is incorrect.
+> 
+> Please share your thoughts.
+
+How about this?
+
+diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+index 63cf89393c6e..8ba7b1da0ded 100644
+--- a/kernel/crash_core.c
++++ b/kernel/crash_core.c
+@@ -505,7 +505,8 @@ int crash_check_hotplug_support(void)
+ 	crash_hotplug_lock();
+ 	/* Obtain lock while reading crash information */
+ 	if (!kexec_trylock()) {
+-		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
++		if (!kexec_in_progress)
++			pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
+ 		crash_hotplug_unlock();
+ 		return 0;
+ 	}
+@@ -540,7 +541,8 @@ static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu,
+ 	crash_hotplug_lock();
+ 	/* Obtain lock while changing crash information */
+ 	if (!kexec_trylock()) {
+-		pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
++		if (!kexec_in_progress)
++			pr_info("kexec_trylock() failed, elfcorehdr may be inaccurate\n");
+ 		crash_hotplug_unlock();
+ 		return;
+ 	}
 
 
