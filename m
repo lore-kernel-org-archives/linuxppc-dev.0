@@ -1,97 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-1177-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1178-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AB39ECE57A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2024 11:05:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D135ECE57A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Sep 2024 12:12:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X2PBd6fxbz2xrJ;
-	Mon,  9 Sep 2024 21:05:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725874226;
-	cv=none; b=oKmy/xJOpszxLevWbGzdVg+m+ccQ/M3PWg8FaBSo9j5PsyEbY+lqwXugAWasVQMuOK3kuDF6rEdqnET8SADSN2hwZQX4D3WFq9F+KRlChs1OuMO5LJMDb1/Ix0ZNjTidjuLVWbpIn5atJwfXV2WX05Upi4nC+DdkM69SA+lRl2xa11ex2RkebXcoOyubiMp0+cwfMRXVuf3v7fENSiLzj257ZQTNpA2EpvZxXgQQeurIBSkrfSNfwFraPu2tzKwUjhuFSJo+PPsbuspixFUlNmA0AKMX6UvkguuD7HbqexhvrpNq7uTEJgMQxROhdsVtXlJANT0H7TDZeILB7H6/5A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X2QgL4nG2z2xxt;
+	Mon,  9 Sep 2024 22:11:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::228"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1725883918;
+	cv=none; b=QOPCDDyBNkny42cYXHdEgLrUMHKIOUYEI3pmj454ZbBm0DJ7vft90v2YYxSSfoWshNKz0+0oDzlgG6qoElSFwNwdTQoR+0wnnXEXJjDxFd9276PXi5oQt294z3SZWcFWgJxjHRjRj6Y/+nKmjr7ABCbJFvfhoayr2k9Jzedqx+yfVkse+4JmHARSX/WI76ZJgvENWugz08mGhbN1w2fV+bv4V3Bj9po49q0QfrUVHGB4HN+mMyPRqbLG8SXXJO1xSdLMfAcPuoCo8XxD3WCwsAwSgSe84GrFiaKBmKm+bgSW/OdCiqozbzRWbDzq7OvBbzOqhuy5ZCg5UuAU4JvIDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1725874226; c=relaxed/relaxed;
-	bh=f16Hum48X2/PRv+OYRnrqWvXhbLKUUXP4MBg4DPZdlQ=;
-	h=DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:References:
-	 MIME-Version:Content-Type:Content-Disposition:In-Reply-To; b=VdUjOTCvghMCL0mwTtd4wZzfa0CjkAD0wf01BSoveoyDMV/aLP3I+7q320iCwejBno6y+/aFi1+ImDNrEcnVsS9vTcygrkQSb3OzkBn5j6TcVs8VY6lY1V2/+uqsw4NIQWitLHPz3R5P9GsEzTLD4XTVsqHZ4zTPqKX1FI8oiHzyeT+lqfUHI2OXu7Tn4JIRARyCBjfRe79BNe1/PbE2+EnBAhQA/1QgWowii6P9B17robHpU+ZYlLKpCuFIVOhHt+dnFfIQu/EDRte9JSAfxc0JezqfMV3sOj3l+5XQ8aU56O02VdGtt8SR1aNACb7kUcOKDC8O3siC5sn909pSKQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1725883918; c=relaxed/relaxed;
+	bh=afjW2HbfOkKhSUvBb1KpugqYFb+VlNLEMmHfBzTMbUc=;
+	h=DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:MIME-Version;
+	b=LVjI97pEAU75eWygOZdtVJUnzDOY7tjjw0g1u5/m4iyeGyLuFp0m8GyK9ccTCSONHy2A9D1B+tbKx5cEmwZI0S8rmjxXSq/OQqJ5r/IDOX24Zaj680lck7fB7+eR4Da2cRVY1EHoIRrelTA2R0HqAaA/0HnU1wT+vFCGnUsXV+Sdti0IelkUbXtORlkj7qzN3x9d0ryYnytFhgMJBT/BIuzCoCJOqgQtWqjjv9SsxEiUjmXD0WzNwvMNrCVJ+Q05L5iT9f9I67zzA8H3F/U8txVOdfSUYKud9R/EWOwe/O5PzB38Zyr3Hur9dJitxy3baP1pLabF9SHUmRZf7UNL4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=F8eAawXj; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=F8eAawXj;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::228])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X2M4r3bcyz2yDM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2024 19:30:17 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=f16Hum48X2/PRv+OYRnrqWvXhbLKUUXP4MBg4DPZdlQ=; b=PHcK1SUWaNK+mGL/l3LU81VEdD
-	D9nBb1lF9fC+k5KduxINliKCuQNtwOV9r3VV7JhDFojWrMZqtjtzwsWQR7ymjqHMdZK4/Tzo1krQG
-	l72L0TWbRaFKsNxIJEvL02K4akN/vihdxELVqTsQPMZh102jhI0PE6Yrqkpm+R5bTxUWvCjPykmtq
-	WlbddJH0odsLTU/9pMOdxn+PkTNa49n7N5ZvM4UD0maObK3Zd9qj9kNJXbjqHQeNmT1JTuolvrtNi
-	Vpta2pPXprvf8lrp/xLulCdRHeE9tzU/AQ/jRdr1yi09xwhjfkgynp4ly+k7LQoKGQqGefX9PFflQ
-	rxIuTYAw==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
-	id 1snai3-0000000AlXL-0vBQ;
-	Mon, 09 Sep 2024 09:29:24 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id 80F5330047C; Mon,  9 Sep 2024 11:29:23 +0200 (CEST)
-Date: Mon, 9 Sep 2024 11:29:23 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mike Rapoport <rppt@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andy Lutomirski <luto@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-	Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@quicinc.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Guo Ren <guoren@kernel.org>, Helge Deller <deller@gmx.de>,
-	Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Kent Overstreet <kent.overstreet@linux.dev>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Michal Simek <monstr@monstr.eu>, Oleg Nesterov <oleg@redhat.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Richard Weinberger <richard@nod.at>,
-	Russell King <linux@armlinux.org.uk>, Song Liu <song@kernel.org>,
-	Stafford Horne <shorne@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Vineet Gupta <vgupta@kernel.org>, Will Deacon <will@kernel.org>,
-	bpf@vger.kernel.org, linux-alpha@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-mm@kvack.org,
-	linux-modules@vger.kernel.org, linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
-	linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-	linux-trace-kernel@vger.kernel.org, linux-um@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
-	sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH v3 6/8] x86/module: perpare module loading for ROX
- allocations of text
-Message-ID: <20240909092923.GB4723@noisy.programming.kicks-ass.net>
-References: <20240909064730.3290724-1-rppt@kernel.org>
- <20240909064730.3290724-7-rppt@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X2QgK0LjNz2xYq
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Sep 2024 22:11:53 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPA id 72AA81BF204;
+	Mon,  9 Sep 2024 12:11:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1725883902;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=afjW2HbfOkKhSUvBb1KpugqYFb+VlNLEMmHfBzTMbUc=;
+	b=F8eAawXjVdvdQglkIS1te66pz6gB4LnLU6IVQ7BflkBY8Sywmw90NfiQrJQsf5x6Apeyfv
+	iP9OPhLI6eB+kS4EwyLIih814oi+98l5SL1XegBNbmzDxCJqxGUzh42Ioi9oPg695+aroL
+	tlr5COqF68sniaFyQDGmzHKHpEbO4sK0U/foqB7ZpP1V9auuBY3Bos/Oif2PTSqBjdFxY8
+	iJr/g7X1xsOOAM3uQqY9iv4Nn0urhotGwsZvcrka8xg9Tz+Q1EZ8myVeytOJbUoD/SrGlM
+	8J9KDv18ChOOZdxBNMBbMbJE8pRUwIN1X7xSVW246FIOwnyldvU+aDLKf0GCwg==
+From: Herve Codina <herve.codina@bootlin.com>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+	kernel test robot <lkp@intel.com>
+Subject: [PATCH] soc: fsl: cpm1: qmc: Fix unused data compilation warning
+Date: Mon,  9 Sep 2024 14:11:29 +0200
+Message-ID: <20240909121129.57067-1-herve.codina@bootlin.com>
+X-Mailer: git-send-email 2.46.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,30 +63,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240909064730.3290724-7-rppt@kernel.org>
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: herve.codina@bootlin.com
 
-On Mon, Sep 09, 2024 at 09:47:28AM +0300, Mike Rapoport wrote:
-> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> index 8da0e66ca22d..563d9a890ce2 100644
-> --- a/arch/x86/kernel/ftrace.c
-> +++ b/arch/x86/kernel/ftrace.c
+In some configuration, compilation raises warnings related to unused
+data. Indeed, depending on configuration, those data can be unused.
 
-> @@ -654,4 +656,15 @@ void ftrace_graph_func(unsigned long ip, unsigned long parent_ip,
->  }
->  #endif
->  
-> +void ftrace_swap_func(void *a, void *b, int n)
-> +{
-> +	unsigned long t;
-> +
-> +	WARN_ON_ONCE(n != sizeof(t));
-> +
-> +	t = *((unsigned long *)a);
-> +	text_poke_copy(a, b, sizeof(t));
-> +	text_poke_copy(b, &t, sizeof(t));
-> +}
+mark those data as __maybe_unused to avoid compilation warnings.
 
-This is insane, just force BUILDTIME_MCOUNT_SORT
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202409071707.ou2KFNKO-lkp@intel.com/
+Fixes: eb680d563089 ("soc: fsl: cpm1: qmc: Add support for QUICC Engine (QE) implementation")
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+---
+ drivers/soc/fsl/qe/qmc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index 3dffebb48b0d..5e38be6530f9 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -2056,7 +2056,7 @@ static void qmc_remove(struct platform_device *pdev)
+ 	qmc_exit_xcc(qmc);
+ }
+ 
+-static const struct qmc_data qmc_data_cpm1 = {
++static const struct qmc_data qmc_data_cpm1 __maybe_unused = {
+ 	.version = QMC_CPM1,
+ 	.tstate = 0x30000000,
+ 	.rstate = 0x31000000,
+@@ -2066,7 +2066,7 @@ static const struct qmc_data qmc_data_cpm1 = {
+ 	.rpack = 0x00000000,
+ };
+ 
+-static const struct qmc_data qmc_data_qe = {
++static const struct qmc_data qmc_data_qe __maybe_unused = {
+ 	.version = QMC_QE,
+ 	.tstate = 0x30000000,
+ 	.rstate = 0x30000000,
+-- 
+2.46.0
+
 
