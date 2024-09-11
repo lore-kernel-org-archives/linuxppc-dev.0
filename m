@@ -1,36 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-1270-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1271-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95356EE4993
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2024 23:35:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FDE0EE4993
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2024 23:46:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X3xlN12jCz2xxw;
-	Thu, 12 Sep 2024 09:35:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726066956;
-	cv=none; b=cMg8EldkJRpFeU6i10FRSx27KJopMHvFYi8dkki039d9F0ATzaaZfCUuvdOv/HHPCnqyUeHtZ/XSKrSm6J0UsU8idqoWQBPCol605bq872fWLILoAE6yUeNEXj/RShNGzFWkxy/DpzmZu5NmAPAPsuk6IoKHRx29iHvTDUz0zAPqd9UTFI0i8L6vxHTcr9O1914Yu4TJYk0Ycpb2ipas4lm+7Zu7Wms0Y1Ne7DQlJ/JCmcoKNz6RTQB35o/ANdxTfUmLMLpPR6kV84CsqGEvFSLnz4lFLzjz/AGjLRDZ7UaF9QwocrY7x/9y8HciqtXBeVE8dx5TTTn19KnJf7Ci8Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X3xzj0ZNvz2yDt;
+	Thu, 12 Sep 2024 09:46:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b49"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726095385;
+	cv=none; b=NdMYg3tjXV7jXkLpQU2xUL0wToFXAXQNhCidVLOEUEQjeyT73izRo+7pFXXhjkQMr748xhDhKw7XTvcROuuShiK2bKhlvhJMyHUPpsxqCqSAP7aXHKWc7HH6HZOeDootyRuAb/HpsNxDNQRq8OdbiZNgzzb05HPxa9VIQLPhohOCOaMlhVggb3O3ovOgi7gtYpAg6ZLvdrO7zrupyfGJE/t3KsKTkbR7PVwglhzSoMtO33Cj7fHfSscXtxa5iStm1O+9HIDqwn1bw/lEpHlrq4FB2i5K1je8n94fJ0C92HZel2rnNKwz7vLdkmogzok6rc8LhqMElB8+9tw5o9Rw0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726066956; c=relaxed/relaxed;
-	bh=EYbGKm1870+1flzJfJIV1AUuqRBsBPnqdKUWToQbszU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Hb68FHflmdb7UF9xzsvpA0AGsKYzx1ZteNigFE73rk8zJs0aW9cc7c6v37VIE2FHZnntsDwfnbLU3D88NTeppvJ0ZKnHGF66KJ6aF/2Ak98MEW4HBETBSyg1blqiZLF9PMwA+7/XwX348QPt16XGdUfiwvRROj6+JbF2m3p/bMrRPCeS7F0xWHEwVcg2U3PMKcFFhTMTWwCbkO90MulXfgwCMCerkB1aSmZqzFA9ldFZI00d4FDIAjv8VkxiTQ53AJz8l5Zi0sxo7o8C0DpJfQTSatvqE1E6YtIUc7TVECNl2WpJmNvHFjXl051mxVkQAKbxXBjFpezlMhuYIc7C2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X3kMJ0t1Vz2xGp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2024 01:02:33 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DBAFD1007;
-	Wed, 11 Sep 2024 08:02:30 -0700 (PDT)
-Received: from [10.57.74.200] (unknown [10.57.74.200])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BE3AF3F73B;
-	Wed, 11 Sep 2024 08:01:55 -0700 (PDT)
-Message-ID: <425b8f8c-b6b5-422a-b5f4-41dd2d1ae3bb@arm.com>
-Date: Wed, 11 Sep 2024 17:01:53 +0200
+	t=1726095385; c=relaxed/relaxed;
+	bh=mBS3D2KdJA6HsOBF2WNnyBQbckZXPd9OPRyAx0Hk9Is=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=EmZOqBWTY1D1r1Jaw0t2p/0ls9CUbQmuiyXwuseLfYLLRtPrUKyrOut1jbljvuNybTemLMyvyFLVZTWWXrltaBe6azmjcASeCH9Z6OQkR9zEbOPndlrlkGocTJnlB++dYElTcNg9mm+buWB2GppHaS4egfI2rgM/7ilIj1d3KQkCkNObnqrkaWx0Wcm5DCs3sO+prBBRC1nrB9ud4HZ/el6exfaOCrJh43lshKD7o85x8zU8HyPIWsVGIhb3dkYjiwf+/RJBTZY/ks/501IPhr/i61UvxIDBpmIAKxHjB8pOgDwmmhC3cfS+y41i5nhyJAa6Iu54UYtT7u3ExLaFGw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=H4LIdnxV; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3fcdizgykdbsj51ea37ff7c5.3fdc9elogg3-45mc9jkj.fqc12j.fi7@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=H4LIdnxV;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3fcdizgykdbsj51ea37ff7c5.3fdc9elogg3-45mc9jkj.fqc12j.fi7@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X3wt11rb0z2xjP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2024 08:56:23 +1000 (AEST)
+Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-e1a892d8438so990247276.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2024 15:56:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1726095381; x=1726700181; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=mBS3D2KdJA6HsOBF2WNnyBQbckZXPd9OPRyAx0Hk9Is=;
+        b=H4LIdnxVSLQvbezf6LNRJbeSHt04PUeE2m94T8wqaqJ+P/jYbi72IBc7KwACRN7BOq
+         oCCuRKtri8MQuZ9auhrEegWGDzSevlj8R7DSg0g9w6T5mvdD/rqvbDWBTMFuOR5zUd/p
+         kkFupNXCiBjYJD4MknYaUIsQ9bTaxhVmvrakaZmBRjm6KaPd+6dSasILAGLDQGN+VEA6
+         jPJsXehIbUbEt8rKN7XcxcWf8LdZ1CM3MUK8CGvHh/gXYJHnIR3UxVV+VDTJiF4dGzow
+         Ha4bnonlxIZU7cRZ4yv/6bPAzlk1nCx1Vg0RjlsCRdbXhbQAiCRGeqfZLeW1zSI4PH1N
+         +ohQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1726095381; x=1726700181;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=mBS3D2KdJA6HsOBF2WNnyBQbckZXPd9OPRyAx0Hk9Is=;
+        b=vrOpjXGPbNvoqhpcyMOai2mcLOQvYHqqD4rvO2jbBber+ufkiA5AxzKu2uzQpIKvIO
+         OH136xuQK7Wj+u3rFiCGRxRmvG11G3vyK3pN2WvfhgJk9+VHF258v5zkM+ndMAxZD9hi
+         0+9KCHXAN1zeRYsvrUfY9qbqSpG9xiqwGO3NIOwp8vUogKIaWnCwhEyzvCZNyGdKJ5dR
+         P7sDdnA/Z8V5wryjJoDX/xm/FuO8hELfPzyKaNYtuaT6Xz1/csYRDgzDo4Lte0sT9bWI
+         dYJ8dSrshUDBy31vcJHdNhpPD81lkuOMjHhfF6uc+oAofRYc4IghjMXyyRsSggKGSTsz
+         suIA==
+X-Forwarded-Encrypted: i=1; AJvYcCUjvcdESmbY5eFJjsj3fN9O9HEgHF8+mwF3IMeYN3k3eXKHLQwNj9NowfEoBOtm00qlU1czbsE+aV/l+oY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx1pFhpDlzHgtXNo+q3uQPHixgaTiDREq2Denov3lllglBC7/vi
+	Hf83iP/AT56/ImYXN3+dMA6dAKsCrnZBjhr1wqUW6QFLLlcmurTLzFxWw8h6Ov9Gf9J9ZnPbMgG
+	z/w==
+X-Google-Smtp-Source: AGHT+IEoqmUAJ1tvpPAJVzioyGi+fn8A8xKnd0a1Zk3H0MPaPxV6IznaYWnB2Res1beHC7Hgla2hvlhylw8=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a25:2946:0:b0:e13:e775:5a3c with SMTP id
+ 3f1490d57ef6-e1d9db9e484mr1092276.2.1726095380603; Wed, 11 Sep 2024 15:56:20
+ -0700 (PDT)
+Date: Wed, 11 Sep 2024 15:56:19 -0700
+In-Reply-To: <20240911222433.3415301-6-coltonlewis@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -39,50 +72,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 06/30] arm64: context switch POR_EL0 register
-To: Joey Gouly <joey.gouly@arm.com>, linux-arm-kernel@lists.infradead.org
-Cc: nd@arm.com, akpm@linux-foundation.org, aneesh.kumar@kernel.org,
- aneesh.kumar@linux.ibm.com, anshuman.khandual@arm.com, bp@alien8.de,
- broonie@kernel.org, catalin.marinas@arm.com, christophe.leroy@csgroup.eu,
- dave.hansen@linux.intel.com, hpa@zytor.com, linux-fsdevel@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, maz@kernel.org,
- mingo@redhat.com, mpe@ellerman.id.au, naveen.n.rao@linux.ibm.com,
- npiggin@gmail.com, oliver.upton@linux.dev, shuah@kernel.org,
- skhan@linuxfoundation.org, szabolcs.nagy@arm.com, tglx@linutronix.de,
- will@kernel.org, x86@kernel.org, kvmarm@lists.linux.dev,
- linux-kselftest@vger.kernel.org
-References: <20240822151113.1479789-1-joey.gouly@arm.com>
- <20240822151113.1479789-7-joey.gouly@arm.com>
-Content-Language: en-GB
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-In-Reply-To: <20240822151113.1479789-7-joey.gouly@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
+References: <20240911222433.3415301-1-coltonlewis@google.com> <20240911222433.3415301-6-coltonlewis@google.com>
+Message-ID: <ZuIgE2-GElzSGztH@google.com>
+Subject: Re: [PATCH v2 5/5] perf: Correct perf sampling with guest VMs
+From: Sean Christopherson <seanjc@google.com>
+To: Colton Lewis <coltonlewis@google.com>
+Cc: kvm@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, 
+	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, 
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, 
+	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
+	Kan Liang <kan.liang@linux.intel.com>, Will Deacon <will@kernel.org>, 
+	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H . Peter Anvin" <hpa@zytor.com>, linux-perf-users@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
 
-On 22/08/2024 17:10, Joey Gouly wrote:
-> @@ -371,6 +382,9 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
->  		if (system_supports_tpidr2())
->  			p->thread.tpidr2_el0 = read_sysreg_s(SYS_TPIDR2_EL0);
->  
-> +		if (system_supports_poe())
-> +			p->thread.por_el0 = read_sysreg_s(SYS_POR_EL0);
+On Wed, Sep 11, 2024, Colton Lewis wrote:
+> Previously any PMU overflow interrupt that fired while a VCPU was
+> loaded was recorded as a guest event whether it truly was or not. This
+> resulted in nonsense perf recordings that did not honor
+> perf_event_attr.exclude_guest and recorded guest IPs where it should
+> have recorded host IPs.
+> 
+> Rework the sampling logic to only record guest samples for events with
+> exclude_guest clear. This way any host-only events with exclude_guest
+> set will never see unexpected guest samples. The behaviour of events
+> with exclude_guest clear is unchanged.
 
-Here we are only reloading POR_EL0's value if the target is a user
-thread. However, as this series stands, POR_EL0 is also relevant to
-kthreads, because any uaccess or GUP done from a kthread will also be
-checked against POR_EL0. This is especially important in cases like the
-io_uring kthread, which accesses the memory of the user process that
-spawned it. To prevent such a kthread from inheriting a stale value of
-POR_EL0, it seems that we should reload POR_EL0's value in all cases
-(user and kernel thread).
+Nit, "with exclude_guest clear" is easy to misread as simply "with exclude_guest"
+(I did so at least three times).  Maybe 
 
-Other approaches could also be considered (e.g. resetting POR_EL0 to
-unrestricted when creating a kthread), see my reply on v4 [1].
+  The behavior of exclude_guest=0 events is unchanged.
 
-Kevin
+or
 
-[1]
-https://lore.kernel.org/linux-arm-kernel/b4f8b351-4c83-43b4-bfbe-8f67f3f56fb9@arm.com/
+  The behavior of events without exclude_guest is unchanged.
+
+I think it's also worth explicitly calling out that events that are configured
+to sample both host and guest may still be prone to misattributing a PMI that
+arrived in the host as a guest event, depending on the KVM arch and/or vendor
+behavior.
 
