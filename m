@@ -1,52 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-1230-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1231-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 714B3EE01FB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2024 01:30:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72E91EE020B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Sep 2024 05:13:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X3NLg5mQlz2yYq;
-	Wed, 11 Sep 2024 11:30:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=204.191.154.188
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726017954;
-	cv=none; b=blMM9261stkf/G0qs4wVw6mfxFZAmAl2GJfkx6kZMhtOIoJhUH49AwTEG0+UaMIgIscxaNPFsuurDh10MaSA+1+BmAsa8Qbq2FY1cpVDUG+38kr5SpVO2xwWyU+t/JARqXo132Fz2iAQSeROSDW9IGVT4kESrwQURd/chkzjsDsw+8hX5bBmiJbf7qejiSa28NvW3EKJnntP2hltsfO4A4n+ssyC4YCb+/l2v2c7JXOAFFEBJD2mp4TG1YFlO4qX5fPp6O5iL7aci3SDp9r4rj69sbJ71DsFhlgt+2K/6RpeCxuAQJqLTVtjlDO6Rs+gMUttgmIOi1ipbYg2mPmM9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X3TJ45nWGz2yQL;
+	Wed, 11 Sep 2024 15:13:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726031636;
+	cv=none; b=gqck/I2rLTsT1MFRVB0c4i/x64xk3wy1ebN6ZP3hLYfNC6XQ1kbEg/6dZg9eEr1iKIM7A8bh6tXMJJ/I6iROPfGpYMyKN6FkFFUeKIa98PqDrmOeOhRZthc8BlxDZPV8egq9j7uvJLEluK59Tyk3k74YU4D1tifcsqed3s7BGlnT44yrZJmK1nwYI+6GgKrDWdx1rSa0fBK5IVSo42VUkgBWpcWzSnr6rmtSbyCG03ETKpxAQ6W3iVjHCcbsAobel46epYLJKpbExoaxYXC2yrhM+uim4PyLbAYLkvg7F3SCDIh1Kyo6q/jvn7LCC7qleVu1w6ughUy8QNLKRsNvnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726017954; c=relaxed/relaxed;
-	bh=nTtMb9H3dXUpUSnSef+Be8oMvAgnwIOToyszkwVy8e4=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:From:In-Reply-To:
-	 Content-Type:Subject; b=CGCJG+jP4CI0+KDvMYysAU8ngfW9M9OzmeFLx3+GpTiuA59PwmIpZLh1gsaNVlxIe3jEFpsmJK+PS/1cMpZ9zKeSje0I1vr525R+Es2oxk5/AXE+yv34WA4H0PSYjwQpoVSsfjnlP09XgyV8O4v/3Shb7EnYFV3zAWJTGnGCH8/t0imzzhhlxNlMnNmo6JiHc+OPOhmYyEuENq8Y10mrVG+liVdm/IuZQOEMFuaOSk11eGWsJKiHN6WeIWSEU91O5ZjV85U7+8M5c9FGcaz9Yop2oMp+VIx+K7ths7ncaP/4tgNyit3ghDdLSTfYb+Xx2NPNWTSw6GX5PJTe9xVRlA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=deltatee.com; dkim=pass (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=PfU+CRym; dkim-atps=neutral; spf=pass (client-ip=204.191.154.188; helo=ale.deltatee.com; envelope-from=logang@deltatee.com; receiver=lists.ozlabs.org) smtp.mailfrom=deltatee.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=deltatee.com
+	t=1726031636; c=relaxed/relaxed;
+	bh=+M63sb+alCucSQJ7tlC6FTNMfLDiWgRAcRl5msr836k=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=eI2BB+iQsEKCNYhdrt6HGLcVJxZ5V5ZNXa7egelmo2nT7jSU5qTwEvG834WGIpmD5e0O9eGBzviFQoJwOCLBzGrOQH4QpAov9E1ZR/BHfPHvmDlBGjnNyX/DTNjAJTJH74LuNCBrt/qlkM4ycxvwM8y9prdtjjPJnU0zPmNI3Db/RldWabojkU5gj+ZfnL8cPsFOMv8QitAiyKkar3TvMmMhBb7URkYUMU3xRNqt2PSQsqqqiPewr5GK7bMZlmezkG/BzjNY63WZUr6PyzqjSK9++Hj88omj0Hjlrb9gebHmena1BV5eFLkWdQkIT7UQnjimMzFTdUZ+hVWkQO95Cw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=zcjOUdE5; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=gknwvNYQ; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=anna-maria@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=deltatee.com header.i=@deltatee.com header.a=rsa-sha256 header.s=20200525 header.b=PfU+CRym;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=zcjOUdE5;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=gknwvNYQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=deltatee.com (client-ip=204.191.154.188; helo=ale.deltatee.com; envelope-from=logang@deltatee.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 2167 seconds by postgrey-1.37 at boromir; Wed, 11 Sep 2024 11:25:53 AEST
-Received: from ale.deltatee.com (ale.deltatee.com [204.191.154.188])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=anna-maria@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X3NDx0hn4z2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2024 11:25:52 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=deltatee.com; s=20200525; h=Subject:In-Reply-To:From:References:Cc:To:
-	MIME-Version:Date:Message-ID:content-disposition;
-	bh=nTtMb9H3dXUpUSnSef+Be8oMvAgnwIOToyszkwVy8e4=; b=PfU+CRymWcXZGU8mYwkDuJY5Nt
-	KxhnN6hTdnUpKK6c3FLfnreXMcwDl5uXgI0f+QVr9IAL/a7U4alJzvox0Hu/jx8FdVvfCvk6K23RF
-	lK8vn7f2TcsKwePi8XAAm+Do+v3+uwGtpS1ailTPFQB4bfs203NzQnnCCUXb/sMVlet5HU1E6m9vy
-	zcwHt8C4DgCDQe3olE14BG0oSvKMkpTZrdceJIxDReKKpwni+aYI+Z20uWIsMZDYZ8HVFkh+hCtJv
-	YV4oSurTolqbMlZJN15P2PVDkvC2Zg5xnEPszFLT8tR9OOrTm8xYZG/nJd2oKo02MXEmzvmD9xZuB
-	l6TfHBVA==;
-Received: from d104-157-31-28.abhsia.telus.net ([104.157.31.28] helo=[192.168.1.250])
-	by ale.deltatee.com with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-	(Exim 4.96)
-	(envelope-from <logang@deltatee.com>)
-	id 1soBXi-000ozM-2O;
-	Tue, 10 Sep 2024 18:49:11 -0600
-Message-ID: <6f3402ae-01ad-4764-8941-f88bc77f5227@deltatee.com>
-Date: Tue, 10 Sep 2024 18:48:48 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X3TJ35NF0z2y72
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Sep 2024 15:13:55 +1000 (AEST)
+From: Anna-Maria Behnsen <anna-maria@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1726031630;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=+M63sb+alCucSQJ7tlC6FTNMfLDiWgRAcRl5msr836k=;
+	b=zcjOUdE5uYOzG3zMWEysbHES79qDB4JSVXHCvX7jvX038hWJ6E1a9zmS+8gu8PUIVCCpAB
+	MFWXJ7p6LXXj4ROo0dAOnsRZIxnowxknJJEhm4BWG0Oo+2egK0RgI2vlxZMdxkEWOAx7i1
+	d2brlK5z8VGIsQ1JjenUCJxy45eLQdU0pqQ8FCEgHTyk615kiOsGJtMGW8lZ6bPKCRxcPo
+	uFDQn+ByIPqS23hKA0bubN5nF5pDTo6IRnyxDc/mXB4TF8q39GIubPyo2pmQ4LXywN2So1
+	g6YS43ZHIDqqJIWssbA6Ql0ocvqSfcNJxMiLCpxJ7Mksmpr5QBVYTaU10mmzmQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1726031630;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=+M63sb+alCucSQJ7tlC6FTNMfLDiWgRAcRl5msr836k=;
+	b=gknwvNYQnzUM0poa0HzYHQbR2GF9YzVdCcLwSMZwtPEgGL8vK1OkJldGBzIqqkkvp4MOMX
+	P63ejNE/kCRZ18DA==
+Subject: [PATCH v2 00/15] timers: Cleanup delay/sleep related mess
+Date: Wed, 11 Sep 2024 07:13:26 +0200
+Message-Id: <20240911-devel-anna-maria-b4-timers-flseep-v2-0-b0d3f33ccfe0@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,76 +61,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Alistair Popple <apopple@nvidia.com>, dan.j.williams@intel.com,
- linux-mm@kvack.org
-Cc: vishal.l.verma@intel.com, dave.jiang@intel.com, bhelgaas@google.com,
- jack@suse.cz, jgg@ziepe.ca, catalin.marinas@arm.com, will@kernel.org,
- mpe@ellerman.id.au, npiggin@gmail.com, dave.hansen@linux.intel.com,
- ira.weiny@intel.com, willy@infradead.org, djwong@kernel.org, tytso@mit.edu,
- linmiaohe@huawei.com, david@redhat.com, peterx@redhat.com,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
- linux-xfs@vger.kernel.org, jhubbard@nvidia.com, hch@lst.de,
- david@fromorbit.com
-References: <cover.9f0e45d52f5cff58807831b6b867084d0b14b61c.1725941415.git-series.apopple@nvidia.com>
- <4f8326d9d9e81f1cb893c2bd6f17878b138cf93d.1725941415.git-series.apopple@nvidia.com>
-Content-Language: en-CA
-From: Logan Gunthorpe <logang@deltatee.com>
-In-Reply-To: <4f8326d9d9e81f1cb893c2bd6f17878b138cf93d.1725941415.git-series.apopple@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 104.157.31.28
-X-SA-Exim-Rcpt-To: apopple@nvidia.com, dan.j.williams@intel.com, linux-mm@kvack.org, vishal.l.verma@intel.com, dave.jiang@intel.com, bhelgaas@google.com, jack@suse.cz, jgg@ziepe.ca, catalin.marinas@arm.com, will@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com, dave.hansen@linux.intel.com, ira.weiny@intel.com, willy@infradead.org, djwong@kernel.org, tytso@mit.edu, linmiaohe@huawei.com, david@redhat.com, peterx@redhat.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org, linux-xfs@vger.kernel.org, jhubbard@nvidia.com, hch@lst.de, david@fromorbit.com
-X-SA-Exim-Mail-From: logang@deltatee.com
-Subject: Re: [PATCH 02/12] pci/p2pdma: Don't initialise page refcount to one
-X-SA-Exim-Version: 4.2.1 (built Wed, 06 Jul 2022 17:57:39 +0000)
-X-SA-Exim-Scanned: Yes (on ale.deltatee.com)
+X-B4-Tracking: v=1; b=H4sIAPYm4WYC/5WNSw6CMBQAr0Le2mdK+bWuvIdhUeQhL4GWtNhgC
+ He3cgOXM4uZHQJ5pgC3bAdPkQM7m0BeMniOxr4IuU8MUshSaFFiT5EmNNYanI1ng12JK8/kAw5
+ TIFpQFarSuex0rRWkzuJp4O18PNrEI4fV+c+5jPnP/lOPOQokrZpayKouGnGf2L5X7yxv156gP
+ Y7jC2ndop/WAAAA
+To: Frederic Weisbecker <frederic@kernel.org>, 
+ Thomas Gleixner <tglx@linutronix.de>, Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Anna-Maria Behnsen <anna-maria@linutronix.de>, 
+ Andrew Morton <akpm@linux-foundation.org>, damon@lists.linux.dev, 
+ linux-mm@kvack.org, SeongJae Park <sj@kernel.org>, 
+ Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org, 
+ Heiner Kallweit <hkallweit1@gmail.com>, 
+ "David S. Miller" <davem@davemloft.net>, Andy Whitcroft <apw@canonical.com>, 
+ Joe Perches <joe@perches.com>, Dwaipayan Ray <dwaipayanray1@gmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+ Andrew Lunn <andrew@lunn.ch>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, netdev@vger.kernel.org, 
+ linux-sound@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, 
+ Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
+ Mauro Carvalho Chehab <mchehab@kernel.org>, linux-media@vger.kernel.org
 
+Hi,
 
+a question about which sleeping function should be used in acpi_os_sleep()
+started a discussion and examination about the existing documentation and
+implementation of functions which insert a sleep/delay.
 
-On 2024-09-09 22:14, Alistair Popple wrote:
-> The reference counts for ZONE_DEVICE private pages should be
-> initialised by the driver when the page is actually allocated by the
-> driver allocator, not when they are first created. This is currently
-> the case for MEMORY_DEVICE_PRIVATE and MEMORY_DEVICE_COHERENT pages
-> but not MEMORY_DEVICE_PCI_P2PDMA pages so fix that up.
-> 
-> Signed-off-by: Alistair Popple <apopple@nvidia.com>
-> ---
->  drivers/pci/p2pdma.c |  6 ++++++
->  mm/memremap.c        | 17 +++++++++++++----
->  mm/mm_init.c         | 22 ++++++++++++++++++----
->  3 files changed, 37 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/pci/p2pdma.c b/drivers/pci/p2pdma.c
-> index 4f47a13..210b9f4 100644
-> --- a/drivers/pci/p2pdma.c
-> +++ b/drivers/pci/p2pdma.c
-> @@ -129,6 +129,12 @@ static int p2pmem_alloc_mmap(struct file *filp, struct kobject *kobj,
->  	}
->  
->  	/*
-> +	 * Initialise the refcount for the freshly allocated page. As we have
-> +	 * just allocated the page no one else should be using it.
-> +	 */
-> +	set_page_count(virt_to_page(kaddr), 1);
-> +
-> +	/*
->  	 * vm_insert_page() can sleep, so a reference is taken to mapping
->  	 * such that rcu_read_unlock() can be done before inserting the
->  	 * pages
-This seems to only set reference count to the first page, when there can
-be more than one page referenced by kaddr.
+The result of the discussion was, that the documentation is outdated and
+the implemented fsleep() reflects the outdated documentation but doesn't
+help to reflect reality which in turns leads to the queue which covers the
+following things:
 
-I suspect the page count adjustment should be done in the for loop
-that's a few lines lower than this.
+- Split out all timeout and sleep related functions from hrtimer.c and timer.c
+  into a separate file
 
-I think a similar mistake was made by other recent changes.
+- Update function descriptions of sleep related functions
+
+- Change fsleep() to reflect reality
+
+- Rework all comments or users which obviously rely on the outdated
+  documentation as they reference "Documentation/timers/timers-howto.rst"
+
+- Last but not least (as there are no more references): Update the outdated
+  documentation and move it into a file with a self explaining file name
+
+The queue is available here and applies on top of tip/timers/core:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/anna-maria/linux-devel.git timers/misc
+
+Signed-off-by: Anna-Maria Behnsen <anna-maria@linutronix.de>
+---
+Changes in v2:
+- change udelay() and ndelay() as suggested by Thomas
+- Update some formatting in the new sleep_timeout.c file
+- minor typo changes and other small review remarks
 
 Thanks,
 
-Logan
+        Anna-Maria
+
+---
+Anna-Maria Behnsen (15):
+      MAINTAINERS: Add missing file include/linux/delay.h
+      timers: Move *sleep*() and timeout functions into a separate file
+      timers: Update schedule_[hr]timeout*() related function descriptions
+      timers: Rename usleep_idle_range() to usleep_range_idle()
+      timers: Update function descriptions of sleep/delay related functions
+      delay: Rework udelay and ndelay
+      timers: Adjust flseep() to reflect reality
+      mm/damon/core: Use generic upper bound recommondation for usleep_range()
+      timers: Add a warning to usleep_range_state() for wrong order of arguments
+      checkpatch: Remove broken sleep/delay related checks
+      regulator: core: Use fsleep() to get best sleep mechanism
+      iopoll/regmap/phy/snd: Fix comment referencing outdated timer documentation
+      powerpc/rtas: Use fsleep() to minimize additional sleep duration
+      media: anysee: Fix link to outdated sleep function documentation
+      timers/Documentation: Cleanup delay/sleep documentation
+
+ Documentation/dev-tools/checkpatch.rst         |   6 -
+ Documentation/timers/delay_sleep_functions.rst | 122 ++++++++
+ Documentation/timers/index.rst                 |   2 +-
+ Documentation/timers/timers-howto.rst          | 115 --------
+ MAINTAINERS                                    |   2 +
+ arch/powerpc/kernel/rtas.c                     |  21 +-
+ drivers/media/usb/dvb-usb-v2/anysee.c          |   6 +-
+ drivers/regulator/core.c                       |  47 +---
+ include/asm-generic/delay.h                    |  95 +++++--
+ include/linux/delay.h                          |  79 ++++--
+ include/linux/iopoll.h                         |  52 ++--
+ include/linux/phy.h                            |   9 +-
+ include/linux/regmap.h                         |  38 +--
+ kernel/time/Makefile                           |   2 +-
+ kernel/time/hrtimer.c                          | 120 --------
+ kernel/time/sleep_timeout.c                    | 376 +++++++++++++++++++++++++
+ kernel/time/timer.c                            | 192 -------------
+ mm/damon/core.c                                |   5 +-
+ scripts/checkpatch.pl                          |  38 ---
+ sound/soc/sof/ops.h                            |   8 +-
+ 20 files changed, 701 insertions(+), 634 deletions(-)
+
 
