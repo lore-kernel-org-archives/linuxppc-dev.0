@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-1289-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1290-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98FD2EEB59F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2024 12:02:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDD0FEE644F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2024 12:02:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X4GJk5nntz2yR9;
-	Thu, 12 Sep 2024 22:02:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X4GJl0LxSz2yHL;
+	Thu, 12 Sep 2024 22:02:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726142534;
-	cv=none; b=kjSTtGJnbYJezkwavA/SvqbzIdTiLVQLwAuH6zFE3vPSTUX/VBAyKCNd0j5QG9deeTxHoPdrCqecByYfJeDAzYi2i7sTRbOKO1+jhLIjSng4iff1xIvGE8iEVf0cNsfGnLoqif7D5NKwVKNTqE9zP5MN71ODTrFypAMRg862/P5IPWzh+Ofar1Mtc1IAZB0bizw9Qe8+o1rRgxfWAgnM36EVKIQH9Jgq58IGby1dtJnN9epTALaeGvsOP5YOnpWQWEW/m3rgkNEKKnpsmy5VaKMMQV8UtFmij2x4RlPjv08qEj3uEZEQH1GvfDXGQcx09hAonpwTVJmN2qU8qGN3Uw==
+	cv=none; b=WQ7QvuPnA2e0ksrt7K/bfwEW8ZoeSjw1jOC7N++y16iYSGMfjt+2uiDVsoLWAVVM7DuXj9UHaDvEHt7OrVrvkxKcqhHoRQO7fKXqFEpXH/ewXJOZ1RVkvblgNRTY8r+lxv85QQeYlA2PLCPhxeBV9VU1q5q/Tp+JcT1BIFM2ATWxBskOXRXWAIPcydQ9Q4Pj3gQX9EnJM6XEO98l4Qy2BCDWWC6ohAw0LedMsdJgU/fM0TKU62bXxTjlWWIUTgfWOXP7adSbgql6RYuirBP2NsStzb5WL4lmMRQeVqvcPZmx0/sd/CrbSYjIczlwttrqWlgvh3QuSbw1E0vHUoBpZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1726142534; c=relaxed/relaxed;
-	bh=6g+RS/ylqdCqbB1Q2c6Fgvs+SDVVzoZ5Xt7vtRMzVfY=;
+	bh=Qseo0Yqr6orQS3uCv+D/o++NlUJfRYMYDXP8ZsNAymg=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=f2zjYeu/FP97wZOEzq7cLQ2ZzYTiSFuGNhXcbs22gaP7BviApRNnvg6YrxJlJ+g8ExbJLVaKf4kfnMnjMT6nzvYaJID6zJqjeznj5jid+XFnZVTG9e2Tfibe9egz2l3FK2yxssRDsiPZw3CRG8ay0rIjHkFjrgsn8sMLxw38bdKC7mhiM+7Sk3YvIkXdGkpuDEuLozYTMnkBV9HIqPGLMdBS3zklDxdEBEnpIhYsA441CfZ6jbeif43k+vWGdy0xfz1AvfbLDcVtBxyK4gCID0Ie724rE3vNbwLBR3T6wF1LKEIgPIGld9l8j/AKjJ/gKLB2t7BgcGe+7r2DUc3WKw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=W0Smut2v; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=Pvk1087QmHNu2bz5adnrV9sZBIHpOLDIS8nGLGZTFgItb/XzLFQug44kGk5SKaAEySRO26JkRnRXnTozMDkItxRlvkEzaSX6kIfOdbf/KMgewhJbbGqEa9XroxKd87wQRl4dt1eqfpRGXu7uLOwbiANp5MF9IBlgP3hif/LULp5+w2DQAyrmK0Eo5D646IWeXcW6TUJAhHCSqUyYzcYmuzmBwauxpxtHLDUDWi0PgdRSoexbw0o/TdEcUWxN/EwaiEwzk+2kZQk0gYUL/gF3QsrWHghjW9oFMpwwG+x1KAJj+4/aUspvr7zc4CDKsx19/ucyozQsvpKfSYM5lb9DdQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QgwmhWWa; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=W0Smut2v;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QgwmhWWa;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X4GJj6lmTz2yHj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2024 22:02:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X4GJk6xXTz2yV8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2024 22:02:14 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1726142533;
-	bh=6g+RS/ylqdCqbB1Q2c6Fgvs+SDVVzoZ5Xt7vtRMzVfY=;
+	s=201909; t=1726142534;
+	bh=Qseo0Yqr6orQS3uCv+D/o++NlUJfRYMYDXP8ZsNAymg=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=W0Smut2vTkBBqPUdcFdkT86zl744E6yyGywYsoAUv0jqhYF7DpI3Mk5KtlpvnIR0t
-	 JunMv7VZXkbNGgVuneCJUdb/O2WRYba6Cmi9Xfs7BgigeNAgQ3Lr8anSfxYhENH9Wd
-	 Cg5F6mFF7whMzzN74iTupN3Cw/D3t9w9+2NfYmOqmlMvqNB0wOE5CJC97H/4cCXXbN
-	 c8iHUHmLCcenCJ2xdUUVW/AKRioUryfPhudk74WzDloUfUqb326NcuXjUeGZEXNkpx
-	 TKWG3xdT73wEoj4xMxsTC3QNQGM7SEaY+StyS2egFI73M3ix0H105h/gTyUGY42Zdg
-	 49BGDjHZqla3A==
+	b=QgwmhWWaI9Jt3RBQy7Wflez3rKJOUBjs+PBJOfClXjRegvG2eHqWfP1fth+Vrv/aK
+	 lUWPpGPFl51havneggrKk195qWXTlD65XqMM4aJwITOnW44GBoaDxInW0BnFa+IHeA
+	 QmaZrP9C/ypPeAX3ru34Ac4TvqspWBFECI7NkaedSKeeF1/asC9SzEP1MA6KlRPruw
+	 s6DVLclwfQFjfqthr56WakSvfUCZG686L2S8uv0LASA7ArbuAlER7uyR2YylHRINcd
+	 sN1TciQdsni+4BwZTtA6D0mBJraCdA6/QyOVghGbtAcOOeF2ogT8DU31PYcugmpD+L
+	 Sp2nYUbsSFNEQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X4GJj5WrHz4x5M;
-	Thu, 12 Sep 2024 22:02:13 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X4GJk1vmDz4x7G;
+	Thu, 12 Sep 2024 22:02:14 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, linux-kernel@vger.kernel.org, Narayana Murty N <nnmlinux@linux.ibm.com>
-Cc: mahesh@linux.ibm.com, oohall@gmail.com, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, vaibhav@linux.ibm.com, ganeshgr@linux.ibm.com, sbhat@linux.ibm.com
-In-Reply-To: <20240909140220.529333-1-nnmlinux@linux.ibm.com>
-References: <20240909140220.529333-1-nnmlinux@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/pseries/eeh: Fix pseries_eeh_err_inject
-Message-Id: <172614240960.1297852.3298377330545085248.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Uwe Kleine-König <u.kleine-koenig@baylibre.com>
+Cc: Anatolij Gustschin <agust@denx.de>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Scott Wood <oss@buserror.net>, Haoran Liu <liuhaoran14@163.com>, Vaibhav Jain <vaibhav@linux.ibm.com>, Shivaprasad G Bhat <sbhat@linux.ibm.com>, Ira Weiny <ira.weiny@intel.com>, Jeff Johnson <quic_jjohnson@quicinc.com>, Arnd Bergmann <arnd@arndb.de>, Rob Herring <robh@kernel.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20240909130902.851274-2-u.kleine-koenig@baylibre.com>
+References: <20240909130902.851274-2-u.kleine-koenig@baylibre.com>
+Subject: Re: [PATCH] powerpc: Switch back to struct platform_driver::remove()
+Message-Id: <172614240967.1297852.10594594715132101715.b4-ty@ellerman.id.au>
 Date: Thu, 12 Sep 2024 22:00:09 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -62,27 +62,24 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On Mon, 09 Sep 2024 09:02:20 -0500, Narayana Murty N wrote:
-> VFIO_EEH_PE_INJECT_ERR ioctl is currently failing on pseries
-> due to missing implementation of err_inject eeh_ops for pseries.
-> This patch implements pseries_eeh_err_inject in eeh_ops/pseries
-> eeh_ops. Implements support for injecting MMIO load/store error
-> for testing from user space.
+On Mon, 09 Sep 2024 15:09:02 +0200, Uwe Kleine-König wrote:
+> After commit 0edb555a65d1 ("platform: Make platform_driver::remove()
+> return void") .remove() is (again) the right callback to implement for
+> platform drivers.
 > 
-> The check on PCI error type (bus type) code is moved to platform
-> code, since the eeh_pe_inject_err can be allowed to more error
-> types depending on platform requirement. Removal of the check for
-> 'type' in eeh_pe_inject_err() doesn't impact PowerNV as
-> pnv_eeh_err_inject() already has an equivalent check in place.
+> Convert all pwm drivers to use .remove(), with the eventual goal to drop
+> struct platform_driver::remove_new(). As .remove() and .remove_new() have
+> the same prototypes, conversion is done by just changing the structure
+> member name in the driver initializer.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries/eeh: Fix pseries_eeh_err_inject
-      https://git.kernel.org/powerpc/c/b0e2b828dfca645a228f8c89d12fbc2baecfb7ea
+[1/1] powerpc: Switch back to struct platform_driver::remove()
+      https://git.kernel.org/powerpc/c/01d34cc93639172272c3e47edd5cf1a3ffc6dc7a
 
 cheers
 
