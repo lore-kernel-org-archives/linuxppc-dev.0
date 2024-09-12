@@ -1,60 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-1287-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1288-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80D39EEB59B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2024 12:00:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB212EEB59B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Sep 2024 12:02:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X4GGF10C8z2xpv;
-	Thu, 12 Sep 2024 22:00:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726142405;
-	cv=none; b=Xh4qfMVYKvTbzToC2qAKiDBtfgz6Z4U8Z1UpPtGSdRRBJoGWZ1QeublPV8Qqndnc++fa6uS9GCyyfg2zfoWlp3X4LdMLv3kXp64Uqil7zgfJwvdH+5ZQhUrxMYE8SPAju1FMI/F7bAUwCtQwYwDFuDUfDcl3myiVlwvEltySRM8nbsv1bm6pxTdQ23kU6zYdlvQuAkIERIfkFh+mztShXl+r6yLdUwjoFze//47OBZ2pkgnwHIkNaJuTTUvK8eGcMT9jJgRE8x3yd9582fysh2bZfyti6gvmgs0+XirhZu4LXo7x1IBvQb8HekJWrrlqTvCU+rHUYW5J3sLoaFkEBQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X4GJk3cqdz2yLg;
+	Thu, 12 Sep 2024 22:02:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726142534;
+	cv=none; b=bxqusMKIMCmSom6AxjEJtUEQVOZ/C4bUxTndV9VdsfTJYvnxEHVG9qDnvI1E9QJUeMSUPqrSWsf8RJBUZJE33ieLyxd+YiXjvuVg/9Fv4UzSigU1K0Ox//uYr4h+3bQZEz5gw1ADi8TfVQ5dwqFavNKYnZUq0UwLPlfPqKsHjt5QQHV0xk9zsDT3f4U4N6LFt//Yp8D01PD4FEyCjEn9lMxZ6L3QOpUIqaGKkbVRfgCkN3g680wKxYFtky4fQrTrBUA0a6l2vqr+wwq72v9LswGkaN1qrq99ZENfLYK2Ep5KYc3CpIoxk/S0h6Dibf5Ymh+6ijy8nAGSwQ2N/Jn4QQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726142405; c=relaxed/relaxed;
-	bh=vAADt586xCKw0PRkD5hXRBBdE5jQmBMuZsOGgSCDPY4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Q3A7j+VKyX508P2C51Jwq+rJuw4SDn92jX+9GNmdURyxxqy7yR5hoUvcmg23flH3F3Hr/zW/kijbPyy1KBWFcAfWVyvyQfohuSYL5zKk/7ZrjAY9bCk85aV9V6hdHfPcFJjPaN+/uzyaDgLvmNQtKA7986lT22ibO9HsrOAFdg0pBWGEt2GCSmus0kMiNTZ8qqEG1dhIBV8i3DSuwDjGpxaSfGqYaX7Fs8gfjFU1sAwecnmVhbg25dyYmyH4OfZFLMzAoMLPVqR2OY4q+qwGHA0P+9VVB7evhhr/Ek/dauK0/sGuasZrAT8ZhOftBDD9sxYdfrTsQrUlfBOhxQfT0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=morten.rasmussen@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=morten.rasmussen@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X4GGD25Lzz2yHL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2024 22:00:02 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 26E96DA7;
-	Thu, 12 Sep 2024 04:59:57 -0700 (PDT)
-Received: from R5WKVNH4JW (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2EE0D3F73B;
-	Thu, 12 Sep 2024 04:59:24 -0700 (PDT)
-Date: Thu, 12 Sep 2024 13:59:16 +0200
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-To: Yicong Yang <yangyicong@huawei.com>
-Cc: yangyicong@hisilicon.com, Pierre Gondois <pierre.gondois@arm.com>,
-	linuxppc-dev@lists.ozlabs.org, bp@alien8.de,
-	dave.hansen@linux.intel.com, mingo@redhat.com,
-	linux-arm-kernel@lists.infradead.org, mpe@ellerman.id.au,
-	peterz@infradead.org, tglx@linutronix.de, sudeep.holla@arm.com,
-	will@kernel.org, catalin.marinas@arm.com, x86@kernel.org,
-	linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com,
-	gregkh@linuxfoundation.org, rafael@kernel.org,
-	jonathan.cameron@huawei.com, prime.zeng@hisilicon.com,
-	linuxarm@huawei.com, xuwei5@huawei.com, guohanjun@huawei.com
-Subject: Re: [PATCH v5 3/4] arm64: topology: Support SMT control on ACPI
- based system
-Message-ID: <ZuLXlOe0CyiH5eXd@R5WKVNH4JW>
-References: <a998c723-7451-439a-9c88-7c8b5c1b890b@arm.com>
- <00e6110a-462a-c117-0292-e88b57d27a05@huawei.com>
- <3947cb79-3199-4cd6-b784-51a245084581@arm.com>
- <1a7b5ac7-f040-672f-07a0-d7f3dc170c88@huawei.com>
- <6c05e39c-41f3-451c-b119-7b8662c1ceee@arm.com>
- <7f722af2-2969-aae5-1fb5-68d353eb95b9@huawei.com>
- <277bd093-422b-4301-92a3-d0a58eb41af5@arm.com>
- <10082e64-b00a-a30b-b9c5-1401a54f6717@huawei.com>
- <Ztqp-SUinu8C9a-P@R5WKVNH4JW>
- <bb2bd7f4-e0ea-a771-7960-e35949ec9e03@huawei.com>
+	t=1726142534; c=relaxed/relaxed;
+	bh=BMGO0Q5c6i08GrxSwq0x1WRfiK8gP9JXFevm1J/Ncdk=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=WTDBRh+JQK+IWToq29Sv91nretr/crzzoKjnT/pDxzWyxOSzoySndb+Xr6Is/PtMkjP8wQdK/hf4yvOFS6LICM2tKwLWl4xFNkcMoH9WPdwkE4w/s3Fe5CkrmtufFwCJqZZl4HVTQVhjEXIx4mFIblrzgBC4gJ/h8FyyR6sryjC9WVcKo3Xp+3HiyDX8P1aZK1JEQR1SHmNVb6VSogE3KqmRoYi2/ar4Ia5v15tXbRh7dmlLK1ta/q1bOyiTHJ6Lfed5mhjeUp09ApnrCJcGvoXFvVq9BT9OPdDihNoe8pcgkG3KFahTuQhebUb7CcFFMKTPPo1hBz4ACbYDheGDSg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=h2tOyOeK; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=h2tOyOeK;
+	dkim-atps=neutral
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X4GJj3BN8z2yHL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Sep 2024 22:02:13 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1726142533;
+	bh=BMGO0Q5c6i08GrxSwq0x1WRfiK8gP9JXFevm1J/Ncdk=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=h2tOyOeKw28shchITfPuRD1sFkbC0sy57QsN/hN1iNUDdiH/y6AFd6CjHbMFxiz/z
+	 x2Wg2QAGkfkPv7yhK/BlOf/RPo/e0KJ71kJV74vYfHTE1mCMjel3956OPLUGhR2fFm
+	 /BGzU+C9uNSF9Ge7ntEePz90Wp/twtcIT26u2jdb91w95r8PRZLXnZewTMWTz22rF0
+	 +mh4YDpRnUc1VgicXvcN5Aj5EM9for68ZqztHrUDBhPpYI3rYg0EmRy5uLKd+Tga/m
+	 olQ+R0e+VreNcabK1iYG4VzMGBuplYj9KXF/3TsXiSwCVhA3PfdW7NTqkezVo9+2y1
+	 8QF0dzxECzD1Q==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X4GJj1GY1z4wb5;
+	Thu, 12 Sep 2024 22:02:13 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, shuah@kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org
+In-Reply-To: <20240812094152.418586-1-maddy@linux.ibm.com>
+References: <20240812094152.418586-1-maddy@linux.ibm.com>
+Subject: Re: [PATCH v2] selftest/powerpc/benchmark: remove requirement libc-dev
+Message-Id: <172614240959.1297852.18225617540845109128.b4-ty@ellerman.id.au>
+Date: Thu, 12 Sep 2024 22:00:09 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,82 +61,24 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bb2bd7f4-e0ea-a771-7960-e35949ec9e03@huawei.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 06, 2024 at 04:36:30PM +0800, Yicong Yang wrote:
-> On 2024/9/6 15:06, Morten Rasmussen wrote:
-> > Hi Yicong,
-> > 
-> > On Thu, Sep 05, 2024 at 08:02:20PM +0800, Yicong Yang wrote:
-> >> On 2024/9/5 16:34, Pierre Gondois wrote:
-> >>> Hello Yicong,
-> >>>
-> >>> If a platform has CPUs with:
-> >>> - 1 thread
-> >>> - X (!= 1) threads
-> >>> Then I think that the asymmetry is not detected
-> >>
-> >> Ah ok, I only handle the case where there are several thread numbers except no SMT CPUs in the
-> >> system. For this case I was thinking we don't need to handle this since there's only one kind
-> >> of SMT core in the system, control should works fine for the SMT CPU clusters and we may not
-> >> care about the CPUs with no SMT.
-> >>
-> >> Below code should handle the case if we initialize the max_smt_thread_num to 0. I also
-> >> reword the warning messages to match the fact. For heterogeneous SMT topology we still
-> >> support control SMT by on/off toggle but not fully support setting the thread number.
-> >>
-> >> 	int max_smt_thread_num = 0;
-> >> 	[...]
-> >> 	/*
-> >> 	 * This should be a short loop depending on the number of heterogeneous
-> >> 	 * CPU clusters. Typically on a homogeneous system there's only one
-> >> 	 * entry in the XArray.
-> >> 	 */
-> >> 	xa_for_each(&hetero_cpu, hetero_id, entry) {
-> >> 		/*
-> >> 		 * If max_smt_thread_num has been initialized and doesn't match
-> >> 		 * the thread number of this entry, then the system has
-> >> 		 * heterogeneous SMT topology.
-> >> 		 */
-> >> 		if (entry->thread_num != max_smt_thread_num && max_smt_thread_num)
-> >> 			pr_warn_once("Heterogeneous SMT topology is partly supported by SMT control\n");
-> > 
-> > What does 'partly supported' mean here?
-> > 
-> > If the SMT control doesn't work as intended for this topology, I don't
-> > think it should be enabled for it.
-> > 
+On Mon, 12 Aug 2024 15:11:52 +0530, Madhavan Srinivasan wrote:
+> Currently exec-target.c file is linked as static and this
+> post a requirement to install libc dev package to build.
+> Without it, build-break when compiling selftest/powerpc/benchmark.
 > 
-> The /sys/devices/system/cpu/smt/control supports 2 kind of controls [1]
-> (a) enable/disable SMT entirely by writing on/off
-> (b) enable/disable SMT partially by writing a valid thread number (CONFIG_SMT_NUM_THREADS_DYNAMIC)
+>   CC       exec_target
+> /usr/bin/ld: cannot find -lc: No such file or directory
+> collect2: error: ld returned 1 exit status
 > 
-> We assume 3 kind of SMT topology:
-> 1. homogeneous SMT topology, all the CPUs support SMT or not
-> 2.1 heterogeneous SMT topology, part of CPU clusters have SMT and others not. Clusters support SMT
->     have the same SMT thread number
-> 2.2 heterogeneous SMT topology, part of CPU clusters have SMT and the thread number may differs
->     (e.g. cluster 1 is of SMT 2 and cluster 2 is of SMT 4. not sure there's such a real system)
-> 
-> For any of above SMT topology, control (a) should work as expected. When enabling SMT by writing "on"
-> the SMT is disabled for those CPU clusters who have SMT. Same for disabling SMT by writing "off".
-> But control (b) may not work for case 2.2 since the SMT thread number is not the same across
-> the system.
-> 
-> For this series alone we won't met this since CONFIG_SMT_NUM_THREADS_DYNAMIC is not enabled.
-> So control (b) only supports write 1/max_thread which behaves same as write off/on and will
-> work as intended for all the 3 cases. As discussed Pierre will add support for
->  CONFIG_SMT_NUM_THREADS_DYNAMIC since thunderX2 is a symmetric SMT4 machine and
-> CONFIG_SMT_NUM_THREADS_DYNAMIC would be useful. We thought a warning should be useful
-> if running on a system of case 2.2.
+> [...]
 
-Thanks for explaining the situation.
+Applied to powerpc/next.
 
-So IIUC, for case 2.2 there will be _no_ failures if someone writes a
-value different from 1 or max_threads?
+[1/1] selftest/powerpc/benchmark: remove requirement libc-dev
+      https://git.kernel.org/powerpc/c/8c9c01ce695eea84d19482e7429e3d54ceb7585c
 
-The SMT control code can handle that max_threads isn't the correct
-number of threads for all cores in the system?
+cheers
 
