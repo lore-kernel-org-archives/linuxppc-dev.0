@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-1332-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1333-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73DE3FA3757
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Sep 2024 14:37:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EED3FA3759
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Sep 2024 14:37:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X4xjC5nMkz2ypP;
-	Sat, 14 Sep 2024 00:37:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726238239;
-	cv=none; b=GG6I5IOwwKDH/wea1+MeejsSQEhbzwBipTWI5dPXLwnBM9WFHmpgmyR28Be7nIyjWIxQ9lkKNnEHrAiQKnOTf2nlAJGXkX+VhKD2CuPaJ/sEPN8iHKP6gicq8CX+hiHLGGzngqBzqrr9dqTnFCWRJkXmtFz6BVhG6+c2Ngg/sxQvCVZXo+2+p2q5IhP8+afSWB6JKklRDvBYFsbyXSNNNtd98MLmIlAnaXc2ajYfooMSQKBosaLt3iFHfx31aczjsUKKPLlhaHrFnnBQolRVTXox6pFKCkDi5FB1zqFeSRcgQwW1sVstr3DwOSNXWpvYkTyiX8X8C9dmwpVvU1cD2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X4xjH31Cnz2yqB;
+	Sat, 14 Sep 2024 00:37:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.15
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726238243;
+	cv=none; b=FiLwpsyYREmdz9RJPlfdj+N8Rfqbda9iJkvEYM2ifPimAdkDn2og8xC05JFy9QkYsDnfVnGCPQ443nHu7GK59uKxwezIGY4uTpHfOxoDpAKogOQWhg8ufJ4kCjYlGCwWIZUzfDki9BES1AiWdexHG1HmSooe+1RfQ1ylU+Zxw1MAR5TBWKUZQzzLXHJ4aX1fGXHD4Pi9Fxnpu9wYFSokbs+hVjxJaoZYr/fu/pvxB/ACmuX3CJydB8XR3In42J7ba0Ow8JbIPyWmOa9scmy71O+pQ0qhME6e9mXGdkS6LW2ccjKvi/7HLVLsXm06GVsg4S+cVuGWaD+syw4jyHZ6Hg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726238239; c=relaxed/relaxed;
-	bh=s5FffyG1S7445s7mSZ1tui3dsuhPZhAZkqpoo4Bxx6I=;
+	t=1726238243; c=relaxed/relaxed;
+	bh=CubNJN1Jc6E8nOqNs+evJ61HRcBxcneNbj7CJL1z1oc=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Eja9axPe+MxKZpt/IThe0tpJn1j+XQZD39UdTgMvcKQ5axATdEr1BHuaMGzxZ2Tj2mxF/lOWlIqnhuYL3HpZad3zt5KG8QquFDKyOps5H2wcbtXJ3NwrTCSukfy/0tEHfKYILOm2yXSfR4x4dg5tut2XCOPZwGfvZC8jwboiIaJ2FbPWatUkEkVkE71AOgly72ZWqFljre12hFHpi9rEgC1jjUBmZ/W+CXPbFGOVE37Mb+4aqNL//8KslpwqQtPapRwP5xfiAYe90t4Kq1a6aT4j/agQEhxHT/gIAbeUWNzmnLOcWynd7CwK6M4AWF29zxSwusveom9kPhvtQhS05g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JF4TukYP; dkim-atps=neutral; spf=none (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version:Content-Type; b=mb12LyXZJuEl4k4Va1NzkUzKSZso4Uxj/7cLzaWEnLwhDfACAbxvQPV2dK/u3pfZIrRwpKl6ypFkj5un4fsMjRMveGMYOQYc38aGD+zuMRVt6sVr5diDEqRoYF4rK94nFTRIL1v2+otdgJ3eDd4cZEPmi9A2L59IQiJth+iY1pchdVkwGlCft9vOPdBXb/vMLsHDKdfiiAkP57b7hBtQ1/gI3Fd4rl1Mpab5kNMUxVFzcScZ9ZQz/8U9Ivd5sm7K+PQNQdF17EHwqhnfVoTYD6H8UkK8TJGjxFEdIhj9KIUoW8e13oKJThHQqXBXcy7qX2M83hoksXW08rN5odrpqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NArw+B19; dkim-atps=neutral; spf=none (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JF4TukYP;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NArw+B19;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X4xjC1hS6z2yk8
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Sep 2024 00:37:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X4xjG6CYVz2yq4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Sep 2024 00:37:22 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1726238239; x=1757774239;
+  t=1726238243; x=1757774243;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=rmowYVP90W5PjAggGv14Nfgu8Yajmz7PSCOXKoFwGlM=;
-  b=JF4TukYPEDj1nq/KYlMJK8eA/GxfRrsziDx9no0VEl+qGCuVeZOkA9YI
-   TcF8XICoxUkLVkuIDbAsuPdmFdbFOSr5QbA08hk4qGNncopVmMk80mLPx
-   FpfHLtgzHqJVKWUraHkTfPGXPwP56pKl2cSFX9rjYXLRY5eir+1rfYBiU
-   mFFYGfUojkm0wEGKep/3yqochFddKOZ53ivX9n6Yp4gnP6E+TRnW3W3JY
-   hbVGLuopkloRWeA0/rXLdEpzNeGnxH567eoe8b+4oqNl8IdrCVU5rP6Ly
-   kcvnBrROoTNUnOgOgXS/z5xk0KY7yZMoxDBZfoxFOdJ62dEflI8fI4PzT
-   g==;
-X-CSE-ConnectionGUID: dP9ksjWZTLKpMSK5AGIk0w==
-X-CSE-MsgGUID: 43+lGgrvTEaz/k2rIqlH/A==
-X-IronPort-AV: E=McAfee;i="6700,10204,11194"; a="25075316"
+  bh=vrR9lSZtbojiA2EubTfEXC7NUqhoH2bBkEIK7kkkTFA=;
+  b=NArw+B1976Y6018c4z+ZC/4HjqGjtLy5eWfjJIIS97TYFwseEDsJZiun
+   5GhRkWtOjX/iIrbIIpJu6VKA4Geu7xqo71lo7GzC8qz/g/+XBpdW9Z0Am
+   S5TBLLVdtx6PrmRMdDJ55D1xlTEcH4r/DsjGMXQ9pwv0vYroPMv7UQmpB
+   tdMcRKw/SKH2zi5EVdjBLNb9p0mMhbVV9gDD+YVeK1NRf4DqEiEt0MraM
+   Dh+x0ZljKZ4LjbKc/QI3N6xohNXt+miLT0k+tHTgn8NdMP33hjT+qYlkg
+   S7lRpc8Bk17n1zgVgnejn9prn2kSGIJd4/KXLuED82sbLHFhlM8nqPSnt
+   Q==;
+X-CSE-ConnectionGUID: 8QxJgA3kSBOKc2MjYqDDuA==
+X-CSE-MsgGUID: LdQkWstdSAq7oqX9di8V2g==
+X-IronPort-AV: E=McAfee;i="6700,10204,11194"; a="28886524"
 X-IronPort-AV: E=Sophos;i="6.10,226,1719903600"; 
-   d="scan'208";a="25075316"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Sep 2024 07:37:04 -0700
-X-CSE-ConnectionGUID: gsjwvdyzTwiA/NaJx00Dmg==
-X-CSE-MsgGUID: wr/+I2lLRU+97M1XthA42Q==
+   d="scan'208";a="28886524"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Sep 2024 07:37:21 -0700
+X-CSE-ConnectionGUID: 4Ad/XL1YSjipkJFyp6pVbg==
+X-CSE-MsgGUID: a6/9cR+jSM+V6/nc+ovmxg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.10,226,1719903600"; 
-   d="scan'208";a="67934691"
+   d="scan'208";a="68400273"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.154])
-  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Sep 2024 07:37:00 -0700
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Sep 2024 07:37:18 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To: linux-pci@vger.kernel.org,
 	Bjorn Helgaas <bhelgaas@google.com>,
@@ -65,9 +65,9 @@ To: linux-pci@vger.kernel.org,
 	linux-kernel@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org,
 	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH v6 2/8] PCI: Move TLP Log handling to own file
-Date: Fri, 13 Sep 2024 17:36:26 +0300
-Message-Id: <20240913143632.5277-3-ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH v6 4/8] PCI: Use unsigned int i in pcie_read_tlp_log()
+Date: Fri, 13 Sep 2024 17:36:28 +0300
+Message-Id: <20240913143632.5277-5-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20240913143632.5277-1-ilpo.jarvinen@linux.intel.com>
 References: <20240913143632.5277-1-ilpo.jarvinen@linux.intel.com>
@@ -83,134 +83,28 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-TLP Log is PCIe feature and is processed only by AER and DPC.
-Configwise, DPC depends AER being enabled. In lack of better place, the
-TLP Log handling code was initially placed into pci.c but it can be
-easily placed in a separate file.
-
-Move TLP Log handling code to own file under pcie/ subdirectory and
-include it only when AER is enabled.
+Loop variable i counting from 0 upwards does not need to be signed so
+make it unsigned int.
 
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- drivers/pci/pci.c         | 27 ---------------------------
- drivers/pci/pci.h         |  2 +-
- drivers/pci/pcie/Makefile |  2 +-
- drivers/pci/pcie/tlp.c    | 39 +++++++++++++++++++++++++++++++++++++++
- 4 files changed, 41 insertions(+), 29 deletions(-)
- create mode 100644 drivers/pci/pcie/tlp.c
+ drivers/pci/pcie/tlp.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 378fc645424f..47969712afe1 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1095,33 +1095,6 @@ static void pci_enable_acs(struct pci_dev *dev)
- 	pci_write_config_word(dev, pos + PCI_ACS_CTRL, caps.ctrl);
- }
- 
--/**
-- * pcie_read_tlp_log - read TLP Header Log
-- * @dev: PCIe device
-- * @where: PCI Config offset of TLP Header Log
-- * @tlp_log: TLP Log structure to fill
-- *
-- * Fill @tlp_log from TLP Header Log registers, e.g., AER or DPC.
-- *
-- * Return: 0 on success and filled TLP Log structure, <0 on error.
-- */
--int pcie_read_tlp_log(struct pci_dev *dev, int where,
--		      struct pcie_tlp_log *tlp_log)
--{
--	int i, ret;
--
--	memset(tlp_log, 0, sizeof(*tlp_log));
--
--	for (i = 0; i < 4; i++) {
--		ret = pci_read_config_dword(dev, where + i * 4,
--					    &tlp_log->dw[i]);
--		if (ret)
--			return pcibios_err_to_errno(ret);
--	}
--
--	return 0;
--}
--
- /**
-  * pci_restore_bars - restore a device's BAR values (e.g. after wake-up)
-  * @dev: PCI device to have its BARs restored
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index b4fc6726eab3..532bb05a0411 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -482,9 +482,9 @@ struct aer_err_info {
- 
- int aer_get_device_error_info(struct pci_dev *dev, struct aer_err_info *info);
- void aer_print_error(struct pci_dev *dev, struct aer_err_info *info);
--#endif	/* CONFIG_PCIEAER */
- 
- int pcie_read_tlp_log(struct pci_dev *dev, int where, struct pcie_tlp_log *log);
-+#endif	/* CONFIG_PCIEAER */
- 
- #ifdef CONFIG_PCIEPORTBUS
- /* Cached RCEC Endpoint Association */
-diff --git a/drivers/pci/pcie/Makefile b/drivers/pci/pcie/Makefile
-index 6461aa93fe76..591ef3177777 100644
---- a/drivers/pci/pcie/Makefile
-+++ b/drivers/pci/pcie/Makefile
-@@ -7,7 +7,7 @@ pcieportdrv-y			:= portdrv.o rcec.o
- obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv.o
- 
- obj-y				+= aspm.o
--obj-$(CONFIG_PCIEAER)		+= aer.o err.o
-+obj-$(CONFIG_PCIEAER)		+= aer.o err.o tlp.o
- obj-$(CONFIG_PCIEAER_INJECT)	+= aer_inject.o
- obj-$(CONFIG_PCIE_PME)		+= pme.o
- obj-$(CONFIG_PCIE_DPC)		+= dpc.o
 diff --git a/drivers/pci/pcie/tlp.c b/drivers/pci/pcie/tlp.c
-new file mode 100644
-index 000000000000..3f053cc62290
---- /dev/null
+index 2bf15749cd31..65ac7b5d8a87 100644
+--- a/drivers/pci/pcie/tlp.c
 +++ b/drivers/pci/pcie/tlp.c
-@@ -0,0 +1,39 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * PCIe TLP Log handling
-+ *
-+ * Copyright (C) 2024 Intel Corporation
-+ */
-+
-+#include <linux/aer.h>
-+#include <linux/pci.h>
-+#include <linux/string.h>
-+
-+#include "../pci.h"
-+
-+/**
-+ * pcie_read_tlp_log - read TLP Header Log
-+ * @dev: PCIe device
-+ * @where: PCI Config offset of TLP Header Log
-+ * @tlp_log: TLP Log structure to fill
-+ *
-+ * Fill @tlp_log from TLP Header Log registers, e.g., AER or DPC.
-+ *
-+ * Return: 0 on success and filled TLP Log structure, <0 on error.
-+ */
-+int pcie_read_tlp_log(struct pci_dev *dev, int where,
-+		      struct pcie_tlp_log *tlp_log)
-+{
-+	int i, ret;
-+
-+	memset(tlp_log, 0, sizeof(*tlp_log));
-+
-+	for (i = 0; i < 4; i++) {
-+		ret = pci_read_config_dword(dev, where + i * 4,
-+					    &tlp_log->dw[i]);
-+		if (ret)
-+			return pcibios_err_to_errno(ret);
-+	}
-+
-+	return 0;
-+}
+@@ -24,7 +24,8 @@
+ int pcie_read_tlp_log(struct pci_dev *dev, int where,
+ 		      struct pcie_tlp_log *log)
+ {
+-	int i, ret;
++	unsigned int i;
++	int ret;
+ 
+ 	memset(log, 0, sizeof(*log));
+ 
 -- 
 2.39.2
 
