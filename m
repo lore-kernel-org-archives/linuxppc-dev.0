@@ -1,21 +1,22 @@
-Return-Path: <linuxppc-dev+bounces-1309-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1310-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B9B7EEEC0E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Sep 2024 06:14:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EC3AEEEC31
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Sep 2024 06:30:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X4kYF5MkKz2yDp;
-	Fri, 13 Sep 2024 16:14:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X4kvp4wNsz2yVP;
+	Fri, 13 Sep 2024 16:30:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726208081;
-	cv=none; b=fPdRWpJEepcujrmU+rMqMuEgGG5MgKYLEmQaiWQHmyE1qttTKt/E9G9wB8Ieo3diPMJyQYC1nAXId0J0jGzHfWAamvvR0069EB27tosvn+fmDCz+MRQ8YbTEcxRB5+rDEYV2DsxRonMjbcHOEAseX3bbf/lRc7oOPWFCcjqzj/BYfwrjGAiqsj7Dgb2TGsUygAJkwaHF9KqtJ0bxEXYbI3Eef27ONhj8Po955PXoxD1Ely+PW8YOEMNwp/8YTGzRPVxfB7BTFZSMYGDGSsTrbt+zfIzdskthAxik6uJcgjswwsSwnqenklheLy2XiRLn/i9JddHZ+FnaMRE8lehq/Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726209046;
+	cv=none; b=UVMxToFEImILmF8rCACd/o8s0UDQpkymzqbmAwXZgu1TZjK6RX2nRw2Mg9WuM0lg6JM03tWpQN7+JFch6l273l/DZvlHgF+x0QJQOnzqHtNW80RuXnM5dq8l/v4uzSwEcqiOa9Rg6BJXjMkT46ZQ4ENKhV1W07uTXz/wtnLWzeXeoER06i7MWPaHSNUuHZc0/N5AXFX6XVJPw2Lu4QjvLsJjkhqWZQWsdcBoA62JkmIaLFB/xghBXBP9uaQPuol+arHcbHRSgY++7uM61icoqzjhmMJM4DHWIpS0iI35kvLwPAlJz6o/Z2szuSrnDqtKJpfsdNRxMtRATGPfmymo0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726208081; c=relaxed/relaxed;
-	bh=pv14U27lZwvmjQ2nrB1sdkH7AzMnFdE3Edq0sg90Zws=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=XG+YFsPngQoe3LjTGvsdA8RpUNIwO4LHtwOhJjwkE8yxYeC1l4966gVpzDgD6dMcCv/LrAPhmJ4bVhqMS9E6dMEdIkcUtCETU0KlWBi+Gt7xmTQ39X8/Og0V86IhLt27bXj4a4hqxxDMdrmhdt66RMn87BfbV1rIORT66w7xgCDnTJAr+UT6bKWlAGaAS7mLw8h0p8vwZDP7ShgAybWf7E4BemnGBvNPS3E35aDRjJBwQRvmQDFg/0173lW1YbkqRNw/pe0jJ41SZ6C+N+bXzbFKbb8pwjIVoGHcJ7+qSL1DGWoytDiLzxNQci8m2SAtQWyl1jc5ELZ7FRFQMeFweQ==
+	t=1726209046; c=relaxed/relaxed;
+	bh=jylDzQCitBSPeTVqmxm4OSycX0/yXnoI2vcMG+gJKdA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IcdKwoQ2eVQrGYhXD6cJJjVbVWyrUtZ3IID1auxoanH/yrsdW68QQxGrNgcKIpjylbcu2AMVM9fxICnYsIj3rpn18K0q9eSYgnl7+eJR4/e2AWhWp26EFtIJIpURkJmCJ6tmIynr3eXRssozkP9iqzCg3zHhXNmecELf4vjV9M9tG8Z0dvFptpCVYlFNZGkBbYLB2KwgUDMbSo4u2ZrmDf4jqw355eOGEADbG2olMmBAwMdzVHVk4D/RcZai9KQXb60M45QhGO8/DXLsZaGooTmNn66BGL3hIJwi3tAlDl8bxE0wUu/AeSNeij72OWr8+NwcRadN1kaTFgSU4vwwWg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
@@ -23,39 +24,30 @@ Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X4kYF36Cmz2xpp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2024 16:14:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X4kvp2fnbz2yVD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Sep 2024 16:30:45 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4X4kY85Gs0z9sxD;
-	Fri, 13 Sep 2024 08:14:36 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4X4kvl1mYcz9sxD;
+	Fri, 13 Sep 2024 08:30:43 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id qFt_Fj9D9qCj; Fri, 13 Sep 2024 08:14:36 +0200 (CEST)
+	with ESMTP id KPoVoPcVMXmd; Fri, 13 Sep 2024 08:30:43 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4X4kY848K4z9sx8;
-	Fri, 13 Sep 2024 08:14:36 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4X4kvl0pksz9sxB;
+	Fri, 13 Sep 2024 08:30:43 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7D2EE8B77A;
-	Fri, 13 Sep 2024 08:14:36 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 093388B77A;
+	Fri, 13 Sep 2024 08:30:43 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id BwLdywYuVOlU; Fri, 13 Sep 2024 08:14:36 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.233.70])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 1A8C68B766;
-	Fri, 13 Sep 2024 08:14:36 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH] powerpc/vdso: Should VDSO64 functions be flagged as functions like VDSO32 ?
-Date: Fri, 13 Sep 2024 08:14:33 +0200
-Message-ID: <6fa86f3de610ffc180ae0f5dbd511453e7473b36.1726208058.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.44.0
+	with ESMTP id r0dE7jHRRDpY; Fri, 13 Sep 2024 08:30:42 +0200 (CEST)
+Received: from [192.168.233.70] (unknown [192.168.233.70])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 511308B766;
+	Fri, 13 Sep 2024 08:30:42 +0200 (CEST)
+Message-ID: <56b53876-0838-416f-adce-b1ffbd0916fc@csgroup.eu>
+Date: Fri, 13 Sep 2024 08:30:41 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,93 +57,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1726208074; l=3666; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=ue4rH+i1tHnl4doLUOAue2Eqx2y0vQEBqittaq3A0AI=; b=x1ACUxhbKyS0F6m6D9/E+pdOtiUKCKgyq+c+UoEIEdJ784NuDI8QVbGYviqXwWUzp2IixT2Nm TDxkPaan0lcDAJdyhnAPGE9uyUxA35gFhTayTPr9Glc2mlyJr+YYede
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] powerpc/vpa_pmu: Add interface to expose vpa counters
+ via perf
+To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au
+Cc: atrajeev@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, maddy@linux.ibm.com,
+ disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ hbathini@linux.ibm.com, adubey@linux.ibm.com
+References: <20240828102141.1052332-1-kjain@linux.ibm.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20240828102141.1052332-1-kjain@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-On powerpc64 as shown below by readelf, vDSO functions symbols have
-type NOTYPE.
 
-$ powerpc64-linux-gnu-readelf -a arch/powerpc/kernel/vdso/vdso64.so.dbg
-ELF Header:
-  Magic:   7f 45 4c 46 02 02 01 00 00 00 00 00 00 00 00 00
-  Class:                             ELF64
-  Data:                              2's complement, big endian
-  Version:                           1 (current)
-  OS/ABI:                            UNIX - System V
-  ABI Version:                       0
-  Type:                              DYN (Shared object file)
-  Machine:                           PowerPC64
-  Version:                           0x1
-...
 
-Symbol table '.dynsym' contains 12 entries:
-   Num:    Value          Size Type    Bind   Vis      Ndx Name
-...
-     1: 0000000000000524    84 NOTYPE  GLOBAL DEFAULT    8 __[...]@@LINUX_2.6.15
-...
-     4: 0000000000000000     0 OBJECT  GLOBAL DEFAULT  ABS LINUX_2.6.15
-     5: 00000000000006c0    48 NOTYPE  GLOBAL DEFAULT    8 __[...]@@LINUX_2.6.15
+Le 28/08/2024 à 12:21, Kajol Jain a écrit :
+> The pseries Shared Processor Logical Partition(SPLPAR) machines
+> can retrieve a log of dispatch and preempt events from the
+> hypervisor using data from Disptach Trace Log(DTL) buffer.
+> With this information, user can retrieve when and why each dispatch &
+> preempt has occurred. Added an interface to expose the Virtual Processor
+> Area(VPA) DTL counters via perf.
+> 
+> The following events are available and exposed in sysfs:
+> 
+>   vpa_dtl/dtl_cede/ - Trace voluntary (OS initiated) virtual processor waits
+>   vpa_dtl/dtl_preempt/ - Trace time slice preempts
+>   vpa_dtl/dtl_fault/ - Trace virtual partition memory page faults.
+>   vpa_dtl/dtl_all/ - Trace all (dtl_cede/dtl_preempt/dtl_fault)
+> 
+> Added interface defines supported event list, config fields for the
+> event attributes and their corresponding bit values which are exported
+> via sysfs. User could use the standard perf tool to access perf events
+> exposed via vpa-dtl pmu.
+> 
+> The VPA DTL PMU counters do not interrupt on overflow or generate any
+> PMI interrupts. Therefore, the kernel needs to poll the counters, added
+> hrtimer code to do that. The timer interval can be provided by user via
+> sample_period field in nano seconds.
+> 
+> Result on power10 SPLPAR system with 656 cpu threads.
+> In the below perf record command with vpa_dtl pmu, -c option is used
+> to provide sample_period whch corresponding to 1000000000ns i.e; 1sec
+> and the workload time is also 1 second, hence we are getting 656 samples:
+> 
+> [command] perf record -a -R -e vpa_dtl/dtl_all/ -c 1000000000 sleep 1
+> [ perf record: Woken up 1 times to write data ]
+> [ perf record: Captured and wrote 0.828 MB perf.data (656 samples) ]
+> 
+> There is one hrtimer added per vpa-dtl pmu thread. Code added to handle
+> addition of dtl buffer data in the raw sample. Since DTL does not provide
+> IP address for a sample and it just have traces on reason of
+> dispatch/preempt, we directly saving DTL buffer data to perf.data file as
+> raw sample. For each hrtimer restart call, interface will dump all the
+> new dtl entries added to dtl buffer as a raw sample.
+> 
+> To ensure there are no other conflicting dtl users (example: debugfs dtl
+> or /proc/powerpc/vcpudispatch_stats), interface added code to use
+> "down_write_trylock" call to take the dtl_access_lock. The dtl_access_lock
+> is defined in dtl.h file. Also added global reference count variable called
+> "dtl_global_refc", to ensure dtl data can be captured per-cpu. Code also
+> added global lock called "dtl_global_lock" to avoid race condition.
+> 
+> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+> ---
+> Notes:
+> 
+> - Made code changes on top of recent fix sent by Michael Ellerman.
+>    Link to the patch: https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20240819122401.513203-1-mpe@ellerman.id.au/
+> 
+>   arch/powerpc/perf/Makefile  |   2 +-
+>   arch/powerpc/perf/vpa-pmu.c | 469 ++++++++++++++++++++++++++++++++++++
+>   include/linux/cpuhotplug.h  |   1 +
+>   3 files changed, 471 insertions(+), 1 deletion(-)
+>   create mode 100644 arch/powerpc/perf/vpa-pmu.c
 
-Symbol table '.symtab' contains 56 entries:
-   Num:    Value          Size Type    Bind   Vis      Ndx Name
-...
-    45: 0000000000000000     0 OBJECT  GLOBAL DEFAULT  ABS LINUX_2.6.15
-    46: 00000000000006c0    48 NOTYPE  GLOBAL DEFAULT    8 __kernel_getcpu
-    47: 0000000000000524    84 NOTYPE  GLOBAL DEFAULT    8 __kernel_clock_getres
 
-To overcome that, commit ba83b3239e65 ("selftests: vDSO: fix vDSO
-symbols lookup for powerpc64") was proposed to make selftests also
-look for NOTYPE symbols, but is it the correct fix ?
+Seems like it doesn't build on PPC64:
 
-VDSO32 functions are flagged as functions, why not VDSO64 functions ?
-Is it because VDSO functions are not traditional C functions using
-the standard API ? But it is exactly the same for VDSO32 functions,
-allthough they are flagged as functions.
+arch/powerpc/perf/vpa-pmu.c#L212
+passing argument 1 of 'up_write' from incompatible pointer type 
+[-Wincompatible-pointer-types]
 
-So lets flag them as functions and revert the selftest change.
+arch/powerpc/perf/vpa-pmu.c#L261
+passing argument 1 of 'down_write_trylock' from incompatible pointer 
+type [-Wincompatible-pointer-types]
 
-What's your opinion on that ?
-
-It predates git kernel history and both VDSO32 and VDSO64 were brough by
-arch/ppc64/ with that difference already.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
-commit ba83b3239e65 is in random git tree at the moment : https://git.kernel.org/pub/scm/linux/kernel/git/crng/random.git/commit/?id=ba83b3239e657469709d15dcea5f9b65bf9dbf34
-On the list at : https://lore.kernel.org/lkml/fc1a0862516b1e11b336d409f2cb8aab10a97337.1725020674.git.christophe.leroy@csgroup.eu/T/#u
----
- arch/powerpc/include/asm/vdso.h           | 1 +
- tools/testing/selftests/vDSO/parse_vdso.c | 3 +--
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/vdso.h b/arch/powerpc/include/asm/vdso.h
-index 7650b6ce14c8..8d972bc98b55 100644
---- a/arch/powerpc/include/asm/vdso.h
-+++ b/arch/powerpc/include/asm/vdso.h
-@@ -25,6 +25,7 @@ int vdso_getcpu_init(void);
- #ifdef __VDSO64__
- #define V_FUNCTION_BEGIN(name)		\
- 	.globl name;			\
-+	.type name,@function; 		\
- 	name:				\
- 
- #define V_FUNCTION_END(name)		\
-diff --git a/tools/testing/selftests/vDSO/parse_vdso.c b/tools/testing/selftests/vDSO/parse_vdso.c
-index d9ccc5acac18..4ae417372e9e 100644
---- a/tools/testing/selftests/vDSO/parse_vdso.c
-+++ b/tools/testing/selftests/vDSO/parse_vdso.c
-@@ -216,8 +216,7 @@ void *vdso_sym(const char *version, const char *name)
- 		ELF(Sym) *sym = &vdso_info.symtab[chain];
- 
- 		/* Check for a defined global or weak function w/ right name. */
--		if (ELF64_ST_TYPE(sym->st_info) != STT_FUNC &&
--		    ELF64_ST_TYPE(sym->st_info) != STT_NOTYPE)
-+		if (ELF64_ST_TYPE(sym->st_info) != STT_FUNC)
- 			continue;
- 		if (ELF64_ST_BIND(sym->st_info) != STB_GLOBAL &&
- 		    ELF64_ST_BIND(sym->st_info) != STB_WEAK)
--- 
-2.44.0
-
+arch/powerpc/perf/vpa-pmu.c#L402
+passing argument 1 of 'up_write' from incompatible pointer type 
+[-Wincompatible-pointer-types]
 
