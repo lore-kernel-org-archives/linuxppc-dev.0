@@ -1,53 +1,102 @@
-Return-Path: <linuxppc-dev+bounces-1381-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1382-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25119C3ABA0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Sep 2024 16:01:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3758C3ABAA
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Sep 2024 20:57:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X6CTR2G1hz2xk7;
-	Mon, 16 Sep 2024 02:01:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726416091;
-	cv=none; b=DHDfEmI8gQxjeF8D0+wqwk2q3DUbQQZt6rM755r1i+7SC0TXGxzKm4zr4QcocuHKR3xEOeqYnjAWU7q0iLDVUtzf0aGNHtgrshg/+UxzlBW5muMdDulyRb6zsrqVZyNF29J46+ZTFKpAm07irQ8ODD0xzp0OsUzEEUUfSGhMpAgmorUwmx1EvTWERw6qbE8bRuBLXi4qxB1xk2wRHAS7/O/C5QDJh69ZC9sJfkJi52+72wvOpL6dpMCLpbxfXCnPZN3sQtJNs9Pn5wSf+KKL8uc63t9VGBMYJVwl9KB4JYUwH8OttUnT87nXjeuVSe03TR6h/murKkljBk9ClxqmOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X6L2x0tMgz2yK7;
+	Mon, 16 Sep 2024 06:57:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726433849;
+	cv=none; b=CcEbp5u2vfLW8FhhJ3LkfpPFAh+pm727eLDiftTbZ+eTQAdGKjXv1zrWTTnsQ4vuEHtwBUdalyM88u4JxjUomXoH7wmGsy1ejEJKjbpOdDOC4X5kOT32TUQUrQ2rOOnorytzLYZVAELmrro9si0NGy8kptqUiHH9O/LEOdfhEApuywmSjT5jCsf7dMaXcbTf9SZp7jN0b14IOBCVWMC7sQ2AgDNWOzHruVFmfyDxW43hNowh/90+ib68hlqwm95/+xg+F5eI0flJyhdLce9MdeV9J2+Yd+QgQMyjd1ytV7FgsbDWLGV950Y3pYSO61H3Dwy4/5JFVckBROFpKTbNAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726416091; c=relaxed/relaxed;
-	bh=rvU7RY6BSHuGO7deGhW4A+gfiIYnHxMKHkDACiyQyMc=;
-	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=YbC+9YQUQe+v/J5kx5yseX4QHJyq1vCdrLkgKwxzmEqoQaWIAX2zVtox7mYaP/Z0kRjULEpHNfw05rJNqeDJcoAmldRDiG5v22w9olt16QqhJp0PmWEzlNa2TLKYESt2OEGp1mTT8c0QLsuFTXrWN9wpkRf5VHLfXjh7fG/Xtbigvj44Fw5EHMXVqAE5TK0ObYlB5YCBruUH2gjhhqnq3UmygOo5nJ5ccvjpHF9gkGYPgmlO0J/7LNhov1QVQ8kJcRwI1fxJ0pTjDLdAR/74ZilG/FZkb4NMiRzeYFtl08n/b+LcbZP15VyT6pqRsCJCtcpMrK2ReAGjH7aSooqsRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZHkWk0JA; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1726433849; c=relaxed/relaxed;
+	bh=waWpz8xwhGVvJuEu8/ny4anTG7Fjfqg3qieq+thmI5g=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=afgBuAvuSQrcRhmjmiKfsBcyacetQXAaWNEyPeoolY/sMj3U4LCyPYOcB+Rb0GvZF9QjsedOJbHUVGNO/bo3XK/0nQBfyhSiyC92hDRtF/p5uvOcfkdfjSKrXiEry9aOB1u0GAYNZLmhbLPza7WX0KpnWACRCpknXtpJp8nNxCTCG45rYoCyiVlBx87whlJ3epKSlMAGK+yozc4CLTf9j7CkwOKyRz7a1VNMKwLTQJld/TlbV1NrwmP7DFfocn+Ur9Dc89ZwoffTENEHaY0SqDG2X8prKMpxFU8PV2inUkuw5xBUr1kQaWS7giXb9zO+6tMm1VElq4n3xpHYtJoKbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iH6LrJDD; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZHkWk0JA;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iH6LrJDD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X6CTR0RRMz2xLR
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2024 02:01:30 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 371E55C59B5;
-	Sun, 15 Sep 2024 16:01:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 878FAC4CEC6;
-	Sun, 15 Sep 2024 16:01:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1726416087;
-	bh=Y8QP24CKHUvxLYd6VZy5Fp3zHnNGYYSNewltGROYn34=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=ZHkWk0JA/Ib6KBKxL+0HxbEwiOP+hmS3CZCOYnTJOS5KKOfuVxrG83DRGloVa2hMl
-	 XjrOrOu3mZdFpJL9JOdX1oHsBWfHa0SBcMWeNQePdpZpo0mGKWJcyo9nftFyLg/MCV
-	 qOTjCzlVKTUk5yyai9tIZRDIRiR+ozqu+qUXhPKFZ8csxkbxFkWCR3J+NNMGlj73s/
-	 RcNJil1qYQV4wOWsrSEEnAGVZBIUQZvRIKkbVttB4F/5iAAnxTqfcsLKFc/cnnl59L
-	 cUY4E8VgFBQMeH1UEXwPZGO3nKBFQnU73dfmyBEHeYb0D9n7yu+4JLAsRHuieWgboj
-	 jwzOuBM6qNRVg==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 33D6B3804C85;
-	Sun, 15 Sep 2024 16:01:30 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X6L2w1b3nz2xxp
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2024 06:57:27 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48F1LLB2011130;
+	Sun, 15 Sep 2024 20:57:03 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:in-reply-to:references
+	:content-transfer-encoding:mime-version; s=pp1; bh=waWpz8xwhGVvJ
+	uEu8/ny4anTG7Fjfqg3qieq+thmI5g=; b=iH6LrJDD+W8a1lW2v+GFUCIa5kCyJ
+	sY6Etnp31G6kCBqO0ZY1Uc37dbr+yhin6n32vJQqEKLhotzG4E3VT3f3gkRzWmmB
+	/zpgdJV1W/uzTrHglgYdDN2jxCD6Pe/G+S4i1cRCmcZwB17tEIbjd/3o9q7d70v4
+	XNH+LWSob/+vRNM2nksKbxnmV6sSygL+s5hcRAdVHbNLBZtRYVAP9CovCNPU9rVz
+	rNnbiWRx8Vrpa/CAU1UEXmKzU3QulQ8Lkj84ygCT4C3gI0LErJhfp676yXPvX9EW
+	KO10meyNRiuYInAOBRkPl1MTP4k0xFtksItQ8bXWvpQFhnlISEEJACklw==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41n3ucxeq7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 15 Sep 2024 20:57:03 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 48FKv29W015279;
+	Sun, 15 Sep 2024 20:57:02 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41n3ucxeq4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 15 Sep 2024 20:57:02 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 48FIUIMt000620;
+	Sun, 15 Sep 2024 20:57:01 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 41nn70uw69-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 15 Sep 2024 20:57:01 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 48FKuvGv52560220
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 15 Sep 2024 20:56:57 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 83E5020049;
+	Sun, 15 Sep 2024 20:56:57 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D929B20040;
+	Sun, 15 Sep 2024 20:56:53 +0000 (GMT)
+Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.ibm.com.com (unknown [9.43.68.55])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 15 Sep 2024 20:56:53 +0000 (GMT)
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org,
+        linux-trace-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc: "Naveen N. Rao" <naveen@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+        Daniel Borkmann <daniel@iogearbox.net>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Alexei Starovoitov <ast@kernel.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Andrii Nakryiko <andrii@kernel.org>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Vishal Chourasia <vishalc@linux.ibm.com>,
+        Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+        Masami Hiramatsu <mhiramat@kernel.org>
+Subject: [PATCH v5 01/17] powerpc/trace: Account for -fpatchable-function-entry support by toolchain
+Date: Mon, 16 Sep 2024 02:26:32 +0530
+Message-ID: <20240915205648.830121-2-hbathini@linux.ibm.com>
+X-Mailer: git-send-email 2.46.0
+In-Reply-To: <20240915205648.830121-1-hbathini@linux.ibm.com>
+References: <20240915205648.830121-1-hbathini@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: aZ_GtpDHWh34DsMhabNGdOvIjwwslp4M
+X-Proofpoint-ORIG-GUID: letKLsOlqst6X8tT7gc5OKXepEksA447
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,47 +106,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH net-next] net: ethernet: fs_enet: Make the per clock optional
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <172641608876.3111582.12752959256186522702.git-patchwork-notify@kernel.org>
-Date: Sun, 15 Sep 2024 16:01:28 +0000
-References: <20240914081821.209130-1-maxime.chevallier@bootlin.com>
-In-Reply-To: <20240914081821.209130-1-maxime.chevallier@bootlin.com>
-To: Maxime Chevallier <maxime.chevallier@bootlin.com>
-Cc: davem@davemloft.net, pantelis.antoniou@gmail.com, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- thomas.petazzoni@bootlin.com, andrew@lunn.ch, kuba@kernel.org,
- edumazet@google.com, pabeni@redhat.com, linux-arm-kernel@lists.infradead.org,
- christophe.leroy@csgroup.eu, herve.codina@bootlin.com,
- christophe.jaillet@wanadoo.fr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-15_12,2024-09-13_02,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 bulkscore=0
+ phishscore=0 impostorscore=0 spamscore=0 priorityscore=1501 suspectscore=0
+ adultscore=0 mlxscore=0 lowpriorityscore=0 malwarescore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2408220000
+ definitions=main-2409150159
 
-Hello:
+From: Naveen N Rao <naveen@kernel.org>
 
-This patch was applied to netdev/net-next.git (main)
-by Jakub Kicinski <kuba@kernel.org>:
+So far, we have relied on the fact that gcc supports both
+-mprofile-kernel, as well as -fpatchable-function-entry, and clang
+supports neither. Our Makefile only checks for CONFIG_MPROFILE_KERNEL to
+decide which files to build. Clang has a feature request out [*] to
+implement -fpatchable-function-entry, and is unlikely to support
+-mprofile-kernel.
 
-On Sat, 14 Sep 2024 10:18:20 +0200 you wrote:
-> Some platforms that use fs_enet don't have the PER register clock. This
-> optional dependency on the clock was incorrectly made mandatory when
-> switching to devm_ accessors.
-> 
-> Reported-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> Closes: https://lore.kernel.org/netdev/4e4defa9-ef2f-4ff1-95ca-6627c24db20c@wanadoo.fr/
-> Fixes: c614acf6e8e1 ("net: ethernet: fs_enet: simplify clock handling with devm accessors")
-> Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
-> 
-> [...]
+Update our Makefile checks so that we pick up the correct files to build
+once clang picks up support for -fpatchable-function-entry.
 
-Here is the summary with links:
-  - [net-next] net: ethernet: fs_enet: Make the per clock optional
-    https://git.kernel.org/netdev/net-next/c/c209847b8974
+[*] https://github.com/llvm/llvm-project/issues/57031
 
-You are awesome, thank you!
+Signed-off-by: Naveen N Rao <naveen@kernel.org>
+---
+ arch/powerpc/kernel/trace/Makefile | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/trace/Makefile b/arch/powerpc/kernel/trace/Makefile
+index 125f4ca588b9..d6c3885453bd 100644
+--- a/arch/powerpc/kernel/trace/Makefile
++++ b/arch/powerpc/kernel/trace/Makefile
+@@ -9,12 +9,15 @@ CFLAGS_REMOVE_ftrace.o = $(CC_FLAGS_FTRACE)
+ CFLAGS_REMOVE_ftrace_64_pg.o = $(CC_FLAGS_FTRACE)
+ endif
+ 
+-obj32-$(CONFIG_FUNCTION_TRACER)		+= ftrace.o ftrace_entry.o
+-ifdef CONFIG_MPROFILE_KERNEL
+-obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace.o ftrace_entry.o
++ifdef CONFIG_FUNCTION_TRACER
++obj32-y					+= ftrace.o ftrace_entry.o
++ifeq ($(CONFIG_MPROFILE_KERNEL)$(CONFIG_ARCH_USING_PATCHABLE_FUNCTION_ENTRY),)
++obj64-y					+= ftrace_64_pg.o ftrace_64_pg_entry.o
+ else
+-obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace_64_pg.o ftrace_64_pg_entry.o
++obj64-y					+= ftrace.o ftrace_entry.o
++endif
+ endif
++
+ obj-$(CONFIG_TRACING)			+= trace_clock.o
+ 
+ obj-$(CONFIG_PPC64)			+= $(obj64-y)
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.46.0
 
 
