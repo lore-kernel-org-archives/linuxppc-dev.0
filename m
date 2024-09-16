@@ -1,53 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-1413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFD62C3ABB2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2024 21:33:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C2AFC3ABCB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2024 21:34:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X6ynS0h7Qz2y3b;
-	Tue, 17 Sep 2024 07:33:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.14
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726508834;
-	cv=none; b=ES+QV/YYtqFXUDhQLJVd2MhsUuE9cu93qtU0F+sDJhTa7bECCaUg5dXBlNCXK0pwXSAwnrg245UK04aruQ4WgVmEre7hK/edX2numMC5wFpuHMDO/xaunZ+uaXU8YGbiKhh4TDldwL0TANCfyiWEt8tVwD6W74g33sUH140+MtUvwc9bMcijk16A3Wuy0qkKKTw6oOzYbBHqqDH2kCcEOU7TbS/3oHgI8aiqnXxdwgRiBprgA0p8C2g9haR+SMsc5m5biFy7MVMQEcD8b0f9VtAFd82V3gKZd8mIiVfExMOy7a8u2QIi71fl+HvHkkkalnB6DfVmd1QcWTbfvSaUaQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X6ypv3wKBz2yFQ;
+	Tue, 17 Sep 2024 07:34:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726511769;
+	cv=none; b=MwnzSm+JDVTfTg9rnh6k0tU3/Sm/wRqCKTlPcJHzdukMfGSxp3r8WmzUs2R6K7N6ssE/nxmKXhXLBQcOaHqQD+sG1Drw0sE8yPdiDBexuCPq/JQ3ljy2X9sqn2EmXCREs2CU6+X7+rBOZdQ7G6SeaJ0MkbZvQZnt7yVVZ0Pq8+lUcFGUYX3Zh2IYXXARftQofhnNNjO3egaII8ICS6UqRM0bhS/CJ96oGmSMF4KEJeU2p4jL3VgL6GSAGwxIN+clLZ7SXi2EhwrVqnzO/zicetFu7CP4Xq26IuJgEIPTAEYuAHWu4EQFF8dHnW0CHmWBrofhL4xHfEtnphjGWiTgcw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726508834; c=relaxed/relaxed;
-	bh=5SGK/TY72KmFyRsQhuci5dBJyuneuqu3SiP14BigZGA=;
-	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=IZG19oMaUQ3iE4JMgGrq9zPpLYs6LrfCXqKm3oRfn01ggbzw1cBjQLJpz0QoR5MGgBFushIamZjNLUUzVZMPP/ZBUQTKgQuN/ubu57Bg9aFHh5hBTa+/k/BNaPHjfSmIB601BHc9gwLkQHNM/enS9204qjFSEPsx0HUSIal1jvR3s2hP6UjMNFky0VL9tSze5e4cvL5isNWHRyHd5v3BsdYM5uufR27+o7XK24tbeUgLt8QvcEFX2/ORnVTLOFJhgLbfdMqLccy93jaSOCB1geVTWOeW7RJYaLCizWTll6J0xI0MjxCZO19P8wcIRe7HZ/jVnEP8jsFaNcCGsdC4Gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=dWMAYLxC; dkim-atps=neutral; spf=pass (client-ip=212.227.15.14; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+	t=1726511769; c=relaxed/relaxed;
+	bh=A4xTVjIAJOyLBlRcJFvKJNObv3yBThLCPXFlb+2AULo=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=blrAh8+J/zkS98l6Te0mrGn4/zjUZNrkWdwKq/UGaOZH++yOwx7kvcs7iz/pC0PJSL+nH+pJGsRKFVl1QE9//9Ga43/bmWganagkFzHittFdjMgUbSplFq8ofOKEyjOlM2uHCUlOOCtEaLUpO+qAsegw8IjtjSCHMxdUatuDhHOAyyW89EL8+tVHS5NUX3XFG5t4p7/vlQw84vgWExaB3BE2C82leCu/u3QQ2JjKavGAFjkQzi0lUKxjAgl9+qLByMRXhp5c81RzZNdw9w443wVkod8+44ZLRDKV+qfO9DviSdCtv2nFRRtBXaiYEDaLZhTsU3lYEAKnZ6QHROFPBw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G5Hghr/j; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=dWMAYLxC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G5Hghr/j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.14; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 341 seconds by postgrey-1.37 at boromir; Tue, 17 Sep 2024 03:47:11 AEST
-Received: from mout.web.de (mout.web.de [212.227.15.14])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X6smv6v3gz2xrv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2024 03:47:11 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1726508821; x=1727113621; i=markus.elfring@web.de;
-	bh=5SGK/TY72KmFyRsQhuci5dBJyuneuqu3SiP14BigZGA=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:From:
-	 Subject:Content-Type:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=dWMAYLxCuwPK0ZnnbL08bkqn2GeoX66+mt7Bkwq0OMh4VAb0gZRd+ZhMp9jJll4s
-	 l79oPikqYIrzmo/+F6CVibWZCsD5qhQwE12Fiv6Qd7ChvU4OJfobOCOrBiolW2RBA
-	 72FmkU+PikVPpPxkOjgjnM+PRkNd/seJSyTQNk2X23pNslkPBke1+JTS1ZIlwz8Wh
-	 saTjkkybCLT8OdQjN05F4ZLOCj46g51Gx9pv94RKTmc4WFy6OxVkgrFG8cJHH9TB9
-	 V++IkDQCU/yUL1C4Qrw2XMdoMlMOMdVJ6z14588gABFwAyp5BCU2b0+iBp6/+yyI6
-	 /uNra3eA+TUcQLNQFQ==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.21] ([94.31.85.95]) by smtp.web.de (mrweb005
- [213.165.67.108]) with ESMTPSA (Nemesis) id 1MYtwy-1sUAV41JHE-00LYSq; Mon, 16
- Sep 2024 19:40:30 +0200
-Message-ID: <096fc4ee-8ffe-4eb6-88f8-28dc944b079f@web.de>
-Date: Mon, 16 Sep 2024 19:40:19 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X6tsN5FTxz2xYw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2024 04:36:07 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48GIV7mY023222;
+	Mon, 16 Sep 2024 18:36:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:mime-version
+	:content-transfer-encoding; s=pp1; bh=A4xTVjIAJOyLBlRcJFvKJNObv3
+	yBThLCPXFlb+2AULo=; b=G5Hghr/jujEomuuHVeGjxiNL6cQ2Uh4reZwim/WeMn
+	is2/YxhEbTdNg54G0iaZBywwhUymkr39Xmr5aR8I8fNxt6Y7JPU0WSBtPyqpYNJO
+	kNF+R71h+VUsnVZCxJg93r0gMdbx1iyHpbnKcaYPSrJX39IJMoFbr5QnN6KuGbVy
+	SbshGRP+8rrY8m8Lb5tm1SwqxAVPE0qct9APv5upWPHmimQskCWKC1KDI+2kfkQP
+	L6VPEM62JV4cSv84/2E4dnxsXnjUHiiVmDzDr+/zbK+6m5qH8dJsv6M55ZysETWL
+	kT6MC5FUgPs1MeNzSUw8vOVffM12CXzoC1voz1f1hAzA==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41n3ud3rhj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 16 Sep 2024 18:36:01 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 48GH08Dv000641;
+	Mon, 16 Sep 2024 18:36:00 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 41nn7116bk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 16 Sep 2024 18:36:00 +0000
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 48GIZxYf47579602
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 16 Sep 2024 18:35:59 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9C79658052;
+	Mon, 16 Sep 2024 18:35:59 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 46C1358045;
+	Mon, 16 Sep 2024 18:35:59 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.61.251.176])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 16 Sep 2024 18:35:59 +0000 (GMT)
+From: Gaurav Batra <gbatra@linux.ibm.com>
+To: mpe@ellerman.id.au
+Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        Gaurav Batra <gbatra@linux.ibm.com>
+Subject: [PATCH] powerpc/pseries/iommu: Wait until all TCEs are unmapped before deleting DDW
+Date: Mon, 16 Sep 2024 13:35:58 -0500
+Message-Id: <20240916183558.89919-1-gbatra@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,348 +80,165 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: linuxppc-dev@lists.ozlabs.org, Anjali K <anjalik@linux.ibm.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Kan Liang <kan.liang@linux.intel.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Naveen N Rao <naveen@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>
-Content-Language: en-GB
-Cc: LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia.lawall@inria.fr>
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: [PATCH] powerpc/perf: Use guard(irqsave)() in eight functions
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:4itjh4f1YOCmJfNLXxyV6dv0Z7b50VyILMhOp4u68y7IQBDcsMR
- pwUORGisP/0PIfUll6L4iv4icDhWaZDvI3DsHAbGSQ3eOTUzzqcT7sLeOdC7NJZoA4LMOP4
- EHXnc4H1P7QZJ2xhdrRf/owE1B8btyWB4vAqC2CeACOnBKj9KrotFLl+ptZhUtRfxyui9KE
- XKmFASJ6MZKhUD/dGnEog==
-UI-OutboundReport: notjunk:1;M01:P0:o8R8TjX5ZSI=;77YALcK+D6cYvBbU2OhVqXUMig8
- BG28x1pGqbkKG3vaywxIXzoteUinFOQ/hgkPY+PG8HQvaaDN0T3l6mUp0tu4icfYqtGwlrmxY
- UPYmtx/pIcCjestHIoQ2rv+bQDity5CsP6GHdTCFyPVtyqeTX42OOuFex3XByxkOmQxJ3FCGb
- tUhzxSU55LmtVOkbIotfiAtoUXn4WEbpUMq6uFiTiBMTWvTJeJAMYYJ+IciVs4tToyWLfdwbG
- oCd0NTBA1x259bToHZXg+ovmoiV456BPoAmKBPk0spc0ATLDRjDziM337bBvexjnVVksCK3Ib
- OnfaCR91ULFf9yBhNTRKeg0yfTRUOYzWVEHowyl9xEUMO+paQpK2+iNMFYoXdpn7ROSgUqlky
- rdaE1N5lL6aWnEDeOltrQNRcvVKTyQpNtwddrfKiZZpkkv3mev3DMoyKrjtr2UQsSdXNvJicJ
- iR1+eTJaD3v6ipm+OMDMC3HxTmOKf6bmsZvkwOXe7B+E980NBtqrxcVESBsuz2NPvVzNRkxzn
- tUmPdgNs+kpgijOgQloDyYSyII4JrSGwcAC8LauJlV6AbFaPL4vzIZFufB+5mOh5Df1pqW+uS
- GV2BtYYxivIPMcMtmpelktu6V2pG7rxMlzx52hUuzaN1ADZZMhZCQZTyB04GO8+wZl6XZtXeu
- lsh7oeiHElLcAemvpZthnj5oJI2yjgDT53l0QG+0q8IhLB/E235hLMp6ZiSKjxYzRWeUI7tv1
- ZaAgVSrlVZHYOEnwyNbRF6aHetAVca4HSLeBmagIsrJLJj8LUDj3dHu9uZYYTBcLVQyhH7H27
- U41Do/xPj+68/C1A1L+sUOuQ==
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: xY961e8zYxSddK86fOFLmGkItuuT-xA6
+X-Proofpoint-ORIG-GUID: xY961e8zYxSddK86fOFLmGkItuuT-xA6
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1039,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-16_14,2024-09-16_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 bulkscore=0
+ phishscore=0 impostorscore=0 spamscore=0 priorityscore=1501 suspectscore=0
+ adultscore=0 mlxscore=0 lowpriorityscore=0 malwarescore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2408220000
+ definitions=main-2409160123
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 16 Sep 2024 19:25:00 +0200
+Some of the network drivers, like Mellanox, use core linux page_pool APIs
+to manage DMA buffers. These page_pool APIs cache DMA buffers with
+infrequent map/unmap calls for DMA mappings, thus increasing performance.
 
-Scope-based resource management became supported for some
-programming interfaces by contributions of Peter Zijlstra on 2023-05-26.
-See also the commit 54da6a0924311c7cf5015533991e44fb8eb12773 ("locking:
-Introduce __cleanup() based infrastructure").
+When a device is initialized, the drivers makes a call to the page_pool API
+to create a DMA buffer pool. Hence forth DMA buffers are allocated and
+freed from this pool by the driver. The DMA map/unmap is done by the core
+page_pool infrastructure.
 
-* Thus replace local_irq_save() and local_irq_restore() calls by calls
-  of the macro =E2=80=9Cguard(irqsave)=E2=80=9D.
+These DMA buffers could be allocated for RX/TX buffer rings for the device
+or could be in-process by the network stack.
 
-* Omit the local variables =E2=80=9Cflags=E2=80=9D and =E2=80=9Cirq_flags=
-=E2=80=9D.
+When a network device is closed, driver will release all DMA mapped
+buffers. All the DMA buffers allocated to the RX/TX rings are released back
+to the page_pool by the driver. Some of the DMA mapped buffers could still
+be allocated and in-process by the network stack.
 
-* Replace selected usage of the label =E2=80=9Cout=E2=80=9D by a few retur=
-n statements.
+DMA buffers that are relased by the Network driver are synchronously
+unmapped by the page_pool APIs. But, DMA buffers that are passed to the
+network stack and still in-process are unmapped later asynchronously by the
+page_pool infrastructure.
 
+This asynchronous unmapping of the DMA buffers, by the page_pool, can lead
+to issues when a network device is dynamically removed in PowerPC
+architecture.  When a network device is DLPAR removed, the driver releases
+all the mapped DMA buffers and stops using the device. Driver returns
+successfully. But, at this stage there still could be mapped DMA buffers
+which are in-process by the network stack.
 
-This issue was detected by using the Coccinelle software.
+DLPAR code proceeds to remove the device from the device tree, deletes
+Dynamic DMA Window (DDW) and associated IOMMU tables. DLPAR of the device
+succeeds.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-=2D--
- arch/powerpc/perf/core-book3s.c | 102 +++++++++++++-------------------
- 1 file changed, 42 insertions(+), 60 deletions(-)
+Later, when network stack release some of the DMA buffers, page_pool
+proceeds to unmap them. The page_pool relase path calls into PowerPC TCE
+management to release the TCE. This is where the LPAR OOPses since the DDW
+and associated resources for the device are already free'ed.
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book=
-3s.c
-index 42867469752d..6416c629a2b1 100644
-=2D-- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -895,7 +895,7 @@ static int any_pmc_overflown(struct cpu_hw_events *cpu=
-hw)
- /* Called from sysrq_handle_showregs() */
- void perf_event_print_debug(void)
+This issue was exposed during LPM from a Power9 to Power10 machine with HNV
+configuration. The bonding device is Virtual Ethernet with SR-IOV. During
+LPM, I/O is switched from SR-IOV to passive Virtual Ethernet and DLPAR
+remove of SR-IOV is initiated. This lead to the above mentioned scenario.
+
+It is possible to hit this issue by just Dynamically removing SR-IOV device
+which is under heavy I/O load, a scenario where some of the mapped DMA
+buffers are in-process somewhere in the network stack and not mapped to the
+RX/TX ring of the device.
+
+The issue is only encountered when TCEs are dynamically managed. In this
+scenario map/unmap of TCEs goes into the PowerPC TCE management path as and
+when DMA bufffers are mapped/unmaped and accesses DDW resources. When RAM
+is directly mapped during device initialization, this dynamic TCE
+management is by-passed and LPAR doesn't OOPses.
+
+Solution:
+
+During DLPAR remove of the device, before deleting the DDW and associated
+resources, check to see if there are any outstanding TCEs. If there are
+outstanding TCEs, sleep for 50ms and check again, until all the TCEs are
+unmapped.
+
+Once all the TCEs are unmapped, DDW is removed and DLPAR succeeds. This
+ensures there will be no reference to the DDW after it is deleted.
+
+Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
+---
+ arch/powerpc/kernel/iommu.c            | 22 ++++++++++++++++++++--
+ arch/powerpc/platforms/pseries/iommu.c |  8 ++++----
+ 2 files changed, 24 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 76381e14e800..af7511a8f480 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -14,6 +14,7 @@
+ #include <linux/types.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
++#include <linux/delay.h>
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
+ #include <linux/dma-mapping.h>
+@@ -803,6 +804,7 @@ bool iommu_table_in_use(struct iommu_table *tbl)
+ static void iommu_table_free(struct kref *kref)
  {
--	unsigned long sdar, sier, flags;
-+	unsigned long sdar, sier;
- 	u32 pmcs[MAX_HWEVENTS];
- 	int i;
-
-@@ -907,7 +907,7 @@ void perf_event_print_debug(void)
- 	if (!ppmu->n_counter)
- 		return;
-
--	local_irq_save(flags);
-+	guard(irqsave)();
-
- 	pr_info("CPU: %d PMU registers, ppmu =3D %s n_counters =3D %d",
- 		 smp_processor_id(), ppmu->name, ppmu->n_counter);
-@@ -949,8 +949,6 @@ void perf_event_print_debug(void)
- #endif
- 	pr_info("SIAR:  %016lx SDAR:  %016lx SIER:  %016lx\n",
- 		mfspr(SPRN_SIAR), sdar, sier);
--
--	local_irq_restore(flags);
- }
-
- /*
-@@ -1298,11 +1296,12 @@ static void write_mmcr0(struct cpu_hw_events *cpuh=
-w, unsigned long mmcr0)
- static void power_pmu_disable(struct pmu *pmu)
- {
- 	struct cpu_hw_events *cpuhw;
--	unsigned long flags, mmcr0, val, mmcra;
-+	unsigned long mmcr0, val, mmcra;
-
- 	if (!ppmu)
- 		return;
--	local_irq_save(flags);
+ 	struct iommu_table *tbl;
++	unsigned long start_time;
+ 
+ 	tbl = container_of(kref, struct iommu_table, it_kref);
+ 
+@@ -817,8 +819,24 @@ static void iommu_table_free(struct kref *kref)
+ 	iommu_debugfs_del(tbl);
+ 
+ 	/* verify that table contains no entries */
+-	if (iommu_table_in_use(tbl))
+-		pr_warn("%s: Unexpected TCEs\n", __func__);
++	start_time = jiffies;
++	while (iommu_table_in_use(tbl)) {
++		int sec;
 +
-+	guard(irqsave)();
- 	cpuhw =3D this_cpu_ptr(&cpu_hw_events);
-
- 	if (!cpuhw->disabled) {
-@@ -1398,8 +1397,6 @@ static void power_pmu_disable(struct pmu *pmu)
- 		}
- #endif
- 	}
--
--	local_irq_restore(flags);
- }
-
- /*
-@@ -1411,7 +1408,6 @@ static void power_pmu_enable(struct pmu *pmu)
- {
- 	struct perf_event *event;
- 	struct cpu_hw_events *cpuhw;
--	unsigned long flags;
- 	long i;
- 	unsigned long val, mmcr0;
- 	s64 left;
-@@ -1422,15 +1418,16 @@ static void power_pmu_enable(struct pmu *pmu)
-
- 	if (!ppmu)
- 		return;
--	local_irq_save(flags);
++		pr_info("%s: Unexpected TCEs, wait for 50ms\n", __func__);
++		msleep(50);
 +
-+	guard(irqsave)();
-
- 	cpuhw =3D this_cpu_ptr(&cpu_hw_events);
- 	if (!cpuhw->disabled)
--		goto out;
-+		return;
-
- 	if (cpuhw->n_events =3D=3D 0) {
- 		ppc_set_pmu_inuse(0);
--		goto out;
-+		return;
- 	}
-
- 	cpuhw->disabled =3D 0;
-@@ -1474,7 +1471,7 @@ static void power_pmu_enable(struct pmu *pmu)
- 			       &cpuhw->mmcr, cpuhw->event, ppmu->flags)) {
- 		/* shouldn't ever get here */
- 		printk(KERN_ERR "oops compute_mmcr failed\n");
--		goto out;
-+		return;
- 	}
-
- 	if (!(ppmu->flags & PPMU_ARCH_207S)) {
-@@ -1577,10 +1574,6 @@ static void power_pmu_enable(struct pmu *pmu)
- 		mb();
- 		mtspr(SPRN_MMCRA, cpuhw->mmcr.mmcra);
- 	}
--
-- out:
--
--	local_irq_restore(flags);
- }
-
- static int collect_events(struct perf_event *group, int max_count,
-@@ -1619,11 +1612,10 @@ static int collect_events(struct perf_event *group=
-, int max_count,
- static int power_pmu_add(struct perf_event *event, int ef_flags)
- {
- 	struct cpu_hw_events *cpuhw;
--	unsigned long flags;
- 	int n0;
- 	int ret =3D -EAGAIN;
-
--	local_irq_save(flags);
-+	guard(irqsave)();
- 	perf_pmu_disable(event->pmu);
-
- 	/*
-@@ -1685,7 +1677,6 @@ static int power_pmu_add(struct perf_event *event, i=
-nt ef_flags)
- 	}
-
- 	perf_pmu_enable(event->pmu);
--	local_irq_restore(flags);
- 	return ret;
- }
-
-@@ -1696,9 +1687,8 @@ static void power_pmu_del(struct perf_event *event, =
-int ef_flags)
- {
- 	struct cpu_hw_events *cpuhw;
- 	long i;
--	unsigned long flags;
-
--	local_irq_save(flags);
-+	guard(irqsave)();
- 	perf_pmu_disable(event->pmu);
-
- 	power_pmu_read(event);
-@@ -1740,7 +1730,6 @@ static void power_pmu_del(struct perf_event *event, =
-int ef_flags)
- 		power_pmu_bhrb_disable(event);
-
- 	perf_pmu_enable(event->pmu);
--	local_irq_restore(flags);
- }
-
- /*
-@@ -1750,7 +1739,6 @@ static void power_pmu_del(struct perf_event *event, =
-int ef_flags)
-
- static void power_pmu_start(struct perf_event *event, int ef_flags)
- {
--	unsigned long flags;
- 	s64 left;
- 	unsigned long val;
-
-@@ -1763,7 +1751,7 @@ static void power_pmu_start(struct perf_event *event=
-, int ef_flags)
- 	if (ef_flags & PERF_EF_RELOAD)
- 		WARN_ON_ONCE(!(event->hw.state & PERF_HES_UPTODATE));
-
--	local_irq_save(flags);
-+	guard(irqsave)();
- 	perf_pmu_disable(event->pmu);
-
- 	event->hw.state =3D 0;
-@@ -1777,20 +1765,17 @@ static void power_pmu_start(struct perf_event *eve=
-nt, int ef_flags)
-
- 	perf_event_update_userpage(event);
- 	perf_pmu_enable(event->pmu);
--	local_irq_restore(flags);
- }
-
- static void power_pmu_stop(struct perf_event *event, int ef_flags)
- {
--	unsigned long flags;
--
- 	if (!event->hw.idx || !event->hw.sample_period)
- 		return;
-
- 	if (event->hw.state & PERF_HES_STOPPED)
- 		return;
-
--	local_irq_save(flags);
-+	guard(irqsave)();
- 	perf_pmu_disable(event->pmu);
-
- 	power_pmu_read(event);
-@@ -1799,7 +1784,6 @@ static void power_pmu_stop(struct perf_event *event,=
- int ef_flags)
-
- 	perf_event_update_userpage(event);
- 	perf_pmu_enable(event->pmu);
--	local_irq_restore(flags);
- }
-
- /*
-@@ -1996,7 +1980,7 @@ static bool is_event_blacklisted(u64 ev)
- static int power_pmu_event_init(struct perf_event *event)
- {
- 	u64 ev;
--	unsigned long flags, irq_flags;
-+	unsigned long flags;
- 	struct perf_event *ctrs[MAX_HWEVENTS];
- 	u64 events[MAX_HWEVENTS];
- 	unsigned int cflags[MAX_HWEVENTS];
-@@ -2115,43 +2099,41 @@ static int power_pmu_event_init(struct perf_event =
-*event)
- 	if (check_excludes(ctrs, cflags, n, 1))
- 		return -EINVAL;
-
--	local_irq_save(irq_flags);
--	cpuhw =3D this_cpu_ptr(&cpu_hw_events);
-+	{
-+		guard(irqsave)();
-+		cpuhw =3D this_cpu_ptr(&cpu_hw_events);
-
--	err =3D power_check_constraints(cpuhw, events, cflags, n + 1, ctrs);
-+		err =3D power_check_constraints(cpuhw, events, cflags, n + 1, ctrs);
-
--	if (has_branch_stack(event)) {
--		u64 bhrb_filter =3D -1;
-+		if (has_branch_stack(event)) {
-+			u64 bhrb_filter =3D -1;
-
--		/*
--		 * Currently no PMU supports having multiple branch filters
--		 * at the same time. Branch filters are set via MMCRA IFM[32:33]
--		 * bits for Power8 and above. Return EOPNOTSUPP when multiple
--		 * branch filters are requested in the event attr.
--		 *
--		 * When opening event via perf_event_open(), branch_sample_type
--		 * gets adjusted in perf_copy_attr(). Kernel will automatically
--		 * adjust the branch_sample_type based on the event modifier
--		 * settings to include PERF_SAMPLE_BRANCH_PLM_ALL. Hence drop
--		 * the check for PERF_SAMPLE_BRANCH_PLM_ALL.
--		 */
--		if (hweight64(event->attr.branch_sample_type & ~PERF_SAMPLE_BRANCH_PLM_=
-ALL) > 1) {
--			local_irq_restore(irq_flags);
--			return -EOPNOTSUPP;
--		}
-+			/*
-+			 * Currently no PMU supports having multiple branch filters
-+			 * at the same time. Branch filters are set via MMCRA IFM[32:33]
-+			 * bits for Power8 and above. Return EOPNOTSUPP when multiple
-+			 * branch filters are requested in the event attr.
-+			 *
-+			 * When opening event via perf_event_open(), branch_sample_type
-+			 * gets adjusted in perf_copy_attr(). Kernel will automatically
-+			 * adjust the branch_sample_type based on the event modifier
-+			 * settings to include PERF_SAMPLE_BRANCH_PLM_ALL. Hence drop
-+			 * the check for PERF_SAMPLE_BRANCH_PLM_ALL.
-+			 */
-+			if (hweight64(event->attr.branch_sample_type & ~PERF_SAMPLE_BRANCH_PLM=
-_ALL)
-+			    > 1)
-+				return -EOPNOTSUPP;
-
--		if (ppmu->bhrb_filter_map)
--			bhrb_filter =3D ppmu->bhrb_filter_map(
--					event->attr.branch_sample_type);
-+			if (ppmu->bhrb_filter_map)
-+				bhrb_filter =3D ppmu->bhrb_filter_map(event->attr.branch_sample_type)=
-;
-
--		if (bhrb_filter =3D=3D -1) {
--			local_irq_restore(irq_flags);
--			return -EOPNOTSUPP;
-+			if (bhrb_filter =3D=3D -1)
-+				return -EOPNOTSUPP;
++		/* Come out of the loop if we have already waited for 120 seconds
++		 * for the TCEs to be free'ed. TCE are being free'ed
++		 * asynchronously by some DMA buffer management API - like
++		 * page_pool.
++		 */
++		sec = (s32)((u32)jiffies - (u32)start_time) / HZ;
++		if (sec >= 120) {
++			pr_warn("%s: TCEs still mapped even after 120 seconds\n", __func__);
++			break;
++		}
++	}
+ 
+ 	/* free bitmap */
+ 	vfree(tbl->it_map);
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 534cd159e9ab..925494b6fafb 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -2390,6 +2390,10 @@ static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long acti
+ 
+ 	switch (action) {
+ 	case OF_RECONFIG_DETACH_NODE:
++		if (pci && pci->table_group)
++			iommu_pseries_free_group(pci->table_group,
++					np->full_name);
 +
-+			cpuhw->bhrb_filter =3D bhrb_filter;
- 		}
--		cpuhw->bhrb_filter =3D bhrb_filter;
- 	}
+ 		/*
+ 		 * Removing the property will invoke the reconfig
+ 		 * notifier again, which causes dead-lock on the
+@@ -2400,10 +2404,6 @@ static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long acti
+ 		if (remove_dma_window_named(np, false, DIRECT64_PROPNAME, true))
+ 			remove_dma_window_named(np, false, DMA64_PROPNAME, true);
+ 
+-		if (pci && pci->table_group)
+-			iommu_pseries_free_group(pci->table_group,
+-					np->full_name);
+-
+ 		spin_lock(&dma_win_list_lock);
+ 		list_for_each_entry(window, &dma_win_list, list) {
+ 			if (window->device == np) {
 
--	local_irq_restore(irq_flags);
- 	if (err)
- 		return -EINVAL;
-
-=2D-
-2.46.0
+base-commit: 6e4436539ae182dc86d57d13849862bcafaa4709
+-- 
+2.39.3 (Apple Git-146)
 
 
