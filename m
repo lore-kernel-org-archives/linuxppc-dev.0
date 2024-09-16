@@ -1,67 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-1410-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34FA8C3ABA2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2024 14:49:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1986AC3ABB2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Sep 2024 17:49:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X6nqq5hbpz2y72;
-	Tue, 17 Sep 2024 00:49:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::82f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726498167;
-	cv=none; b=NtrOLSMELJg2sdv0qY9vi2/wSWI0335UVdAZlcDEgCOJyemuy4mjR585ZOpMS5kFx+n6qn0XevIb+rI27TeU4RpbxCWjR+58GqbBryMRHqQg3ZL9K0bxsROryD3t9cC/Hxh8281gBKY2K58mOdcBAQuwQpQZaDcvuhX7fCrZRmS50Xf9OxxSAIHvocMIZfdPvsx0LyYnGXmgxXLaLvZhzq5LpQaSGCktSArSltHBqz3UzvMK/+VYL0naSA46jpqXgHAFvVlBkhcKviudQPxl8Sq02SKTErkOYA4EKK42r58CPtlEtPz2AKbamoDAuAyKUT+sv5Q39axKHL2Gz6q7kQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X6sr34LzXz2yDx;
+	Tue, 17 Sep 2024 03:49:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4d48:ad52:32c8:5054:ff:fe00:142"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726508995;
+	cv=none; b=H67SadoDEmz+yLjfJtEF6L+sWPPtNdVXBou14S9aO5EJTC/txOEc6a+hyitCs6LJ7Yk6fnWL7NzaBXKIThDDxvj0l2eQkKt1wzYQG1TmIhjwMUKj9FhrvWQBWsta/sS9cm4TBBRblJ8bT1MQ7ipBTeb244sG6I1aCVswqzKBmtOUcFcS/M+zzgYc8GXTc7d7595gjE05z5LBXCZ4Pi0NciG6IS728dZ/FKfjQaWpsYF/UJgnd/hE8++/2Ddrbvg8EtnI4wNXiQCulog5yKmIUJ0zYV2ZcnS3n26u15q4htYRPANAU1QvTx++VZEM2vuGUAZJ3V8eDQ2wjnwvf8i5+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726498167; c=relaxed/relaxed;
-	bh=EMelMzTkoJmecj8Ec280QAFHRxkxEeMzZsfbZtByo7k=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=QufOc5QMIP2K6CY8ie4VHVqt06UUHcm2psl6vxZmBLkqhHpKavoAEP41WGu7eCYcBTr0XjlJk9FieJu9y0U2QuNXIDNlfOdcxYsigQpcWbo0cl/IslXOqRaeR6rLRnEwONr7M2DRIU1yCBc3UrfZgUfac4AL31A1JUDEBQtitqi4a4zmvijFoq3kK4bPTPSjAuPZuTzBeAXRE2qBQQvEoOsqpRfB5xSCaOyRjRGYdmerhbtizS1mpPYjiNDUiydPq9//uPST9H/JU1jLCv+nDEHjKaCC7QhrtsIess5bN+OTemxLgOd8490zSQaVZrWdqNhBg9oBeTCn8nqadoyrOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=Q+3b5uki; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82f; helo=mail-qt1-x82f.google.com; envelope-from=almasrymina@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1726508995; c=relaxed/relaxed;
+	bh=SbEcTwTiZECfedSamHPXD2T6PDmIOEI7aJtQ5uqY4i4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mmkqXGjZgFI3q0BgDsnxHU84kM6iXVgH/AZd2XMA1CY2AZGeJAdIM22ElOvXkFmuaby3F88y5l6qskYaBpdEBz81RpyOaoxGVDnADJFhNrIFETEifjzwsvp2fHEB2IGoRMuYe9QQflQY37LtyvivFbzaNkkzt2Nb89O/13lV62kw8wySz973tmERZ2glMfmCuDFsJhJyzB9LzyyvMcngBEylzxGscMu2hqPJkEYhO+mPbVB5AhMNCNw6XdsCL5purPBx+Zu03RNy3Icw8o/5oLDzVbvVvzIv/j4QuCtI/L2B+LiNDm9PSJdc56ggZqfNWgznlKdCDnvUeWkuUBCwhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk; dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=Lz56ntB8; dkim-atps=neutral; spf=none (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=armlinux.org.uk
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=Q+3b5uki;
+	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=Lz56ntB8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82f; helo=mail-qt1-x82f.google.com; envelope-from=almasrymina@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82f.google.com (mail-qt1-x82f.google.com [IPv6:2607:f8b0:4864:20::82f])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org)
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X6nqq03k7z2y71
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2024 00:49:25 +1000 (AEST)
-Received: by mail-qt1-x82f.google.com with SMTP id d75a77b69052e-4582b71df40so609711cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Sep 2024 07:49:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1726498161; x=1727102961; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=EMelMzTkoJmecj8Ec280QAFHRxkxEeMzZsfbZtByo7k=;
-        b=Q+3b5uki2cr3J3YFLsZjyouY0/pxrYTve8gq3jCOQuxjr/eDHOSUQMULEoS3hlWs8o
-         jWPBO7P90rq2yshCI/DW/MUTTODe6s/Y9cWKYXFffpc0zigFr7T6uBrZnitfkpIlnaI+
-         EvvXVIMjgT9JVAENL0bbuhtjLjuwRTuYo1Y+zkMOLBSWVgOuMBv2NWb9Q7v/w+Bxvytp
-         pgdqsy0fHTB+G2IE+hIqQnqiSaUOw35/zWB/jHFXViMMrGowMGbFuBs4B9kNOdzFN9b2
-         pEy/DnAI29d5P2hLSfXMb7TOYRev1Y4F0VslW51Io/8q6xRhgrAOmYDsdES+i0XUa9I7
-         3flw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1726498161; x=1727102961;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=EMelMzTkoJmecj8Ec280QAFHRxkxEeMzZsfbZtByo7k=;
-        b=Z5Fx2NAqB+d3EZiE0l4c1NWZ0epVK326Wd3ikvpu0LLaOo7sXtfKqYZL//nqQ1PVc1
-         nx/8OpvNbjjrAc/nr4AD5BqhfR4PQAKw5z9aZmxIuvfWNgU13qPYOETyxOUCEEljEJVU
-         9h3kVaIhsUewB5oS2c1rovDb6pXXY52n/kTiJlaAdjvV31JreOGE0lh1uWah4aK3UAIY
-         hgBSB28V6oIrkusrUeyz1XiQfIlhTQowjauixH1ZsA6WjdT+ZJuZJkmNWZEG8891Y7lk
-         Zl/YG+wa1UPEPyO6v+5VyuVKovLH6zESOCLqB5wvia851GZJFAPDea2SUj153UZ7LxcI
-         4BOg==
-X-Gm-Message-State: AOJu0YwYEcuNF5A7+0blUbXxJNg6Wa7QSDoPv0E0Nhq2/MRaI2ohCtbS
-	jJjD3xG2AOynkabiwy3jmt+ZKBE/z0J/6xYr1m3WaH3eSGr0A+ZbdjU5a+XaRnftyOkRy4rG+y2
-	7gEp24mTprpAn2cdjp+58Qlda0L58U0FjfyGo
-X-Google-Smtp-Source: AGHT+IGG1zTJv0c5bKWcBL6ppyd+R0pFs7s6AY9gInCgYJM1VZD4gWzAvaBlLTTRQ29SZSznByKAx07pm4J3HlYVrNA=
-X-Received: by 2002:a05:622a:413:b0:456:77a8:ea2d with SMTP id
- d75a77b69052e-458644f9fd7mr12223071cf.17.1726498160849; Mon, 16 Sep 2024
- 07:49:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X6sr146V0z2xrv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2024 03:49:50 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=SbEcTwTiZECfedSamHPXD2T6PDmIOEI7aJtQ5uqY4i4=; b=Lz56ntB8+9y7vM0XQ6VRkP4Gne
+	yz7GbtAcc6mdafpNcoT44OAYl1GkrpFHkqkntHaxt6Nr+aR12f1n4MCSeRpdo3M6Lzz+OLGd2qZlK
+	nmMww7Iplk/cUYDv/V1pAVeZVMUGp+AjiJow1QoEvxJfiIz9XyfrrreUYvphKgdAsHy73nXPA1vSN
+	gF8YD4P+2h5633/EFAF2WQ/2+2yrwTryRA5AOd8nuytOjNF7o7AGbA8RcsIRuFuBrEJ1WZ9zWsflc
+	5oMBUDTCq9YOStps6zVMKaivD0rHJ42nS/VD65WrpMQf8TciWVjH0DkQ1bjWs5UpnM48A90umfM9P
+	PdDKRoZQ==;
+Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:49730)
+	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <linux@armlinux.org.uk>)
+	id 1sqFqt-0006G8-30;
+	Mon, 16 Sep 2024 18:49:31 +0100
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.96)
+	(envelope-from <linux@shell.armlinux.org.uk>)
+	id 1sqFqp-00079e-2c;
+	Mon, 16 Sep 2024 18:49:27 +0100
+Date: Mon, 16 Sep 2024 18:49:27 +0100
+From: "Russell King (Oracle)" <linux@armlinux.org.uk>
+To: Maxime Chevallier <maxime.chevallier@bootlin.com>
+Cc: davem@davemloft.net, Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+	Andrew Lunn <andrew@lunn.ch>, Jakub Kicinski <kuba@kernel.org>,
+	Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Florian Fainelli <f.fainelli@gmail.com>,
+	Heiner Kallweit <hkallweit1@gmail.com>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, thomas.petazzoni@bootlin.com,
+	Herve Codina <herve.codina@bootlin.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH net-next v3 4/8] net: ethernet: fs_enet: only protect the
+ .restart() call in .adjust_link
+Message-ID: <Zuhvp5Y3w5Ukdb0C@shell.armlinux.org.uk>
+References: <20240904171822.64652-1-maxime.chevallier@bootlin.com>
+ <20240904171822.64652-5-maxime.chevallier@bootlin.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,60 +77,26 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20240916120510.2017749-1-mpe@ellerman.id.au>
-In-Reply-To: <20240916120510.2017749-1-mpe@ellerman.id.au>
-From: Mina Almasry <almasrymina@google.com>
-Date: Mon, 16 Sep 2024 07:49:09 -0700
-Message-ID: <CAHS8izM-3DSw+hvFasu=xge5st9cE9MrwJ3FOOHpYHsj5r0Ydg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/atomic: Use YZ constraints for DS-form instructions
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, christophe.leroy@csgroup.eu, 
-	segher@kernel.crashing.org, sfr@canb.auug.org.au, 
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kuba@kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20240904171822.64652-5-maxime.chevallier@bootlin.com>
+Sender: Russell King (Oracle) <linux@armlinux.org.uk>
 
-On Mon, Sep 16, 2024 at 5:05=E2=80=AFAM Michael Ellerman <mpe@ellerman.id.a=
-u> wrote:
->
-> The 'ld' and 'std' instructions require a 4-byte aligned displacement
-> because they are DS-form instructions. But the "m" asm constraint
-> doesn't enforce that.
->
-> That can lead to build errors if the compiler chooses a non-aligned
-> displacement, as seen with GCC 14:
->
->   /tmp/ccuSzwiR.s: Assembler messages:
->   /tmp/ccuSzwiR.s:2579: Error: operand out of domain (39 is not a multipl=
-e of 4)
->   make[5]: *** [scripts/Makefile.build:229: net/core/page_pool.o] Error 1
->
-> Dumping the generated assembler shows:
->
->   ld 8,39(8)       # MEM[(const struct atomic64_t *)_29].counter, t
->
-> Use the YZ constraints to tell the compiler either to generate a DS-form
-> displacement, or use an X-form instruction, either of which prevents the
-> build error.
->
-> See commit 2d43cc701b96 ("powerpc/uaccess: Fix build errors seen with
-> GCC 13/14") for more details on the constraint letters.
->
-> Fixes: 9f0cbea0d8cc ("[POWERPC] Implement atomic{, 64}_{read, write}() wi=
-thout volatile")
-> Cc: stable@vger.kernel.org # v2.6.24+
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Closes: https://lore.kernel.org/all/20240913125302.0a06b4c7@canb.auug.org=
-.au
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Wed, Sep 04, 2024 at 07:18:17PM +0200, Maxime Chevallier wrote:
+>  /* generic link-change handler - should be sufficient for most cases */
+> -static void generic_adjust_link(struct  net_device *dev)
+> +static void fs_adjust_link(struct  net_device *dev)
 
-I'm not familiar enough with the code around the changes, but I have
-been able to confirm cherry-picking this resolves the build issue I'm
-seeing on net-next, so, FWIW,
+As you're changing the function name, I think getting rid of the double
+space in 'struct  net_device' would be worthwhile.
 
-Tested-by: Mina Almasry <almasrymina@google.com>
+Thanks.
 
---=20
-Thanks,
-Mina
+-- 
+*** please note that I probably will only be occasionally responsive
+*** for an unknown period of time due to recent eye surgery making
+*** reading quite difficult.
+
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 80Mbps down 10Mbps up. Decent connectivity at last!
 
