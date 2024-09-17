@@ -1,44 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-1420-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1421-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA00CC35FEE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2024 07:44:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DE6AC36018
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2024 12:23:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X7DMN1NqRz2xrC;
-	Tue, 17 Sep 2024 17:44:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726559088;
-	cv=none; b=GwdNZN7rt+PC2Atx3i9GWfMqIsROUOrhq8hTtgjyE3sVS78akwv3cbN421/L6BX3fCkUTf1iBpExGVyaXz+npScClOLPaFubQbP3cMWXj8ShMQqUEQgPkBDJhIOL3mUo3G/vWvj8B5lNTeLRqDjcJAYRLIFCAKhjY7/PCiGkOcupVOAZGVgDTn+4y/E25ohnLd6jLdKrFX+SX+YEPXLJOG9kj/8hZJ5PRj0EvehLBqnmIIkpflCWNU5LWXNDEQmLQvJ6wgqbah2ppD4/MSauluRGbRvPT4T2cdSEUKJ0BJcCgpSPXMMgJp5aDBocU6Al+kTo9Vl4UFfi+pJ1lkHZ6A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X7LXg2rN1z2xHr;
+	Tue, 17 Sep 2024 22:23:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726575795;
+	cv=none; b=KD54N/ZpvQmqLsecj8/qFd+aTpOtfzRH7UUmn0Go5I05ROL6nVpmwZ4CWM+l99IjthUY9amUOr303MGC3EHCRyBSahn2gzTFTI/Eh6FIb/B/eDyMI5u9B4TzRm4qwjez1GHKln3vFcwrTAo+ypze2xzHR1P9VNaGUGTaisfpHSWFGDknP6G/NbHcTbwWz3fogQZCf+BG0fiOwGyH1eC9IcbO5PSgC5h5JIM6ZZpfCYQ9q93RIWcdoG2Gu/XwJgo1//288QvnmuMou6taF6J5fuf6Is5IYkclenVmxx1MUnIbyPYkORMwfMoqarzDDvR1Kq/mfKELW+4HIb8Wi+Mftg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726559088; c=relaxed/relaxed;
-	bh=HXtH2eVTQf4rqXucFnUKrcwkS/DSICdVqtIc6U1KH5s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Mime-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aRflHY6x0f99b7CvIX68I3K37B04V4sG+XIUrDBHhOGF7JeOdJ2Y8VsDiWB56YtMm7IcTtMbzjtblgzAwMMpMowKCZD1juVFwH7CIrQFJ4FvdUGJh8uqRDBIUT7rkmx4380i6kFns5yFvODYFRzksHYOGwN0N04ihieylzVMz31F8q7sx3NaFf4gtzHog91AtZY9jWP+N0wwpLbHCgF/MlLRp9uARMLqOjkwiqnhjqjlnC97xtSpqWk3niU6wOS/eTSVDjdXEPMyltqallKT17+CHJ3FsJ475UVz+k8jElvcAZxcqf67idr5Ccr4QXkvlxnFpiXNfesM8otSvX2Ncg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X7DMM3nShz2xb9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2024 17:44:46 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 48H7bs3P021626;
-	Tue, 17 Sep 2024 02:37:54 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 48H7bpcE021625;
-	Tue, 17 Sep 2024 02:37:51 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Tue, 17 Sep 2024 02:37:50 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, christophe.leroy@csgroup.eu,
-        sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-        netdev@vger.kernel.org, almasrymina@google.com, kuba@kernel.org
-Subject: Re: [PATCH] powerpc/atomic: Use YZ constraints for DS-form instructions
-Message-ID: <20240917073750.GZ29862@gate.crashing.org>
-References: <20240916120510.2017749-1-mpe@ellerman.id.au>
+	t=1726575795; c=relaxed/relaxed;
+	bh=0bi3sJBjfynW3WRvY/YGmOO8QFbRlU3vuAc8jYbMyEk=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=ZOViuCV38SlMmgLns9DU4/WU6NEnOpcW5IM+N8wABsloCrxPlv4Zrc4UHnZWu3DXRRnLf2b18hZdyC4DQYb4SXY6nmeyYhF+VMZYnGkgu7Q5BkD6PSmuMKnXdJQAU9nYsWI8XKolikpb5DJNtPmnEsDmA9LCaAz+CdcCmA/6cSpoLpiIRV2HhzPWkimMlen2IKS4TZtlR1MQrk9facfPlspGzavnrEOA+JnkaF+kPoXeZubbCGKnXUpWH2aIWMzTEWZBhytxO1ijNXi61WUZ0PzP3ZpTwgEZuTIaiPvHXziQKhODvyOsnxdeG5wiFVhvf2AkITCW6Maq8pQ402MsTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mPPjWi5w; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mPPjWi5w;
+	dkim-atps=neutral
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X7LXf3kkkz2xHb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2024 22:23:14 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1726575793;
+	bh=0bi3sJBjfynW3WRvY/YGmOO8QFbRlU3vuAc8jYbMyEk=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=mPPjWi5wVA+k+8lSVo+2j+RhsB6zuSt6/ZF1HThWEveQsbr9FbAUpIIqkIPO7nrVT
+	 i6FS3RKhMTvyYsGcwvYkUhVE9hD9IsbFk7/qYhdhB8fuNh8PmfyX7GrL8XiI4oimyn
+	 FckbwCUMSfdD3WyWaCa5aXO/77DJwa6k4fpwTYdftSHoAVKUBsLEAq53RodwskOZNK
+	 /SwRsyXz70TQrEPuZfZqHTp245LG+oIiD7ryJ+F92hXgJI8S6yw/COom0qgz0BksXZ
+	 cAjwZGLfqo4EGuLPjsY5Ngsfoedib00BBnp2hXRe6+sW4erpYIAHF+VbLazsOJsg/C
+	 bAyHLjT+pA73g==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X7LXd07qVz4wd0;
+	Tue, 17 Sep 2024 22:23:12 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20240827063651.28985-1-mpe@ellerman.id.au>
+References: <20240827063651.28985-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] MAINTAINERS: powerpc: Add Maddy
+Message-Id: <172657576220.2195991.5150370893686687282.b4-ty@ellerman.id.au>
+Date: Tue, 17 Sep 2024 22:22:42 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -47,47 +60,20 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240916120510.2017749-1-mpe@ellerman.id.au>
-User-Agent: Mutt/1.4.2.3i
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 
-Hi!
-
-On Mon, Sep 16, 2024 at 10:05:10PM +1000, Michael Ellerman wrote:
-> The 'ld' and 'std' instructions require a 4-byte aligned displacement
-> because they are DS-form instructions. But the "m" asm constraint
-> doesn't enforce that.
+On Tue, 27 Aug 2024 16:36:51 +1000, Michael Ellerman wrote:
+> Maddy will be helping out with upstream maintenance, add him as a
+> reviewer.
 > 
-> That can lead to build errors if the compiler chooses a non-aligned
-> displacement, as seen with GCC 14:
 > 
->   /tmp/ccuSzwiR.s: Assembler messages:
->   /tmp/ccuSzwiR.s:2579: Error: operand out of domain (39 is not a multiple of 4)
->   make[5]: *** [scripts/Makefile.build:229: net/core/page_pool.o] Error 1
-> 
-> Dumping the generated assembler shows:
-> 
->   ld 8,39(8)       # MEM[(const struct atomic64_t *)_29].counter, t
-> 
-> Use the YZ constraints to tell the compiler either to generate a DS-form
-> displacement, or use an X-form instruction, either of which prevents the
-> build error.
 
-Great explanation text, a perfect commit!  :-)
+Applied to powerpc/next.
 
-> See commit 2d43cc701b96 ("powerpc/uaccess: Fix build errors seen with
-> GCC 13/14") for more details on the constraint letters.
-> 
-> Fixes: 9f0cbea0d8cc ("[POWERPC] Implement atomic{, 64}_{read, write}() without volatile")
-> Cc: stable@vger.kernel.org # v2.6.24+
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Closes: https://lore.kernel.org/all/20240913125302.0a06b4c7@canb.auug.org.au
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+[1/1] MAINTAINERS: powerpc: Add Maddy
+      https://git.kernel.org/powerpc/c/b77d36bb9a3de774950ba712a0e47f9d33c6f6d7
 
-Reviewed-By: Segher Boessenkool <segher@kernel.crashing.org>
-
-
-Segher
+cheers
 
