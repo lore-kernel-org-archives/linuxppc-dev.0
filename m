@@ -1,67 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-1425-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1426-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EFFACAC598
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Sep 2024 19:08:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6E0CCAC5B2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Sep 2024 02:33:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X7WXm3t2qz2xwH;
-	Wed, 18 Sep 2024 05:08:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726559453;
-	cv=none; b=OJnq2DHlmKDm51lLkJ3vA01IicBnBmH2+RbxskDlH6eQt4BPHq6y3lNHLRoYX6dT78kUemUM9dHzwLraAcomoYm8EDKHUonFxPdTadD78ipT5vq0bKImdDLXs96VENwmmwDoTEw21G9O4bz+IwuscZSYUomQ3+BhLjc5tYK7zfkS8AYMDHMg4zsvIXfObQDgE+PKenVnO4ZPWlq4E0SK1P2rK387xLQN4dtYk1WAoiubg4ummXkML5UcvX9Jp2QUtZnQxlxAa90eC/bEWOj2SRmPdzOzyqS+QuuMUXcc2KOcqN6asz4pJlPvoCfPT8Rwlr5Jcf8oPM8UxuYU95nQ+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X7jPp5nq0z2yDM;
+	Wed, 18 Sep 2024 12:33:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726626814;
+	cv=none; b=YgH9oa6FQkQSFUxRYml0GvPsTdkUxEJ6lg++YixdM8b6Vj5owCP/VNSMG7C1VSuE913Sb5CpU7QcXvvtl1pUfIUvK6rOImF9XvqfNuphO5+bOqSbtQwoLRdGkALuEQr7XUU/aOre6knX4pzHddeTIzjJrhkVgvYcHe21VGdcoTAcITpbdQprHkmqHRVUYXR4NA933fmlfINO8BvbZqTurFtQLIQNHhPYJHHAUKjJQRFyKiVjY62vCkb0aUUPpJ7P6GTtgivFUFoKFSUhrrbqoIp6/UZX3vaoqnU/Nn8Q4pq/lTkXPIsujqW9JT4wG10n5ehkZv58ZebFoaST0P40ZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726559453; c=relaxed/relaxed;
-	bh=tOUiZZqfeKnAUWXSdwDzahgPVUGaVsj6hbmrJ1t/ZYI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BklQdAmAe1p5c2SopE578t5NODzPBSlDcUCLBdk633hOVj7hdB9fhlGU+O0cpve7p5aLXZzZFGCGLIQQEhkEuPywikKRykvitAqqRSJOR0pmAaxXS9WuCCnWdLs1Y/DvzPhjFC+ria3s0t3cX8VX7gEZztgG7EFGV6QFRCpmkkbuXlXetRFF1qsnOs3ajIx7FN5tnwuyMqvjTzSxva2I+YtTXmNATGw86qGkdzMTx6fZ0vDUpbrf0mn8QVjDBu3awirDmg9RxnMSbc1RZ1aQfrOLEPD5Y5kbJiIFlGtS90Xl+CO6memIrG9aShOjHc/ExG/1U0h4XiyeW4TzZUP3Xg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=UsHaXFpV; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=alexei.starovoitov@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1726626814; c=relaxed/relaxed;
+	bh=nTH4cSKPkyYveYR5hN8FWjwVaXptyW8BZiIACU0AG/Y=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=EkMjQxOmOak4puZRpWDZ1XSZGfGmSZ6JiIoON18/I96rmNGdN/ZLNahi961mxAxdDdoscW1kDy1S5+MeodiXaYea1i6FJlXWVaFJTe5kc+Ss3Az5YNAqv1uLaVmCd0KiCuRq5xqT1os8B8nw3BJoRdg65Le26kJz2RY8N5lAjRiy3bs019t3ZLEFs5xmXyDJfLuwGjAmLYoTfGUuRY0MuxBnPQ8piaCfmmIEtX2XUjG2WZLut197mDk492X/H6/45uOhb5eu9F2PIXHf3xDHLWhCi2eKmTvWy95rnpMLgiqodazpRHKPbdDvh4+x/dFkrsTjdIFuwsvASYY+AQ7GKQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=IZVfUi4q; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=UsHaXFpV;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=IZVfUi4q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=alexei.starovoitov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X7DVN30JFz2xb9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2024 17:50:51 +1000 (AEST)
-Received: by mail-wr1-x42d.google.com with SMTP id ffacd0b85a97d-374ba78f192so3993185f8f.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Sep 2024 00:50:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1726559445; x=1727164245; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tOUiZZqfeKnAUWXSdwDzahgPVUGaVsj6hbmrJ1t/ZYI=;
-        b=UsHaXFpVG5OimjZzo6mWefht1/xr9A9RNwB/ZRRG1BtwUgvLXfbu6NtCeFhKRw1vSX
-         qijkoavzcgXaQ658zNgy6fMHQJjlwztXUSTrPYJB3A6w/KGQlbHa/I7dHGG6Ll1AkiTn
-         4k/MFRZ5fvlUyKCjrisP4lUT7lHiPzk7BYamfiBx/QG16u6FoJW+b6zZWrEa2C8cm1qL
-         04OuNScIdc8JIMpCSn+laPqH7z35GPIlQ9xcREWxjEiOmf95PCrB1M0af+ZyGokk+/4I
-         ZiaGdpNiimKt9X8s9CaHjWGyb0+z0rpbYuaVwr2bdojIcVQZ9Syg6vLOwDnxDbv070nI
-         GOqQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1726559445; x=1727164245;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=tOUiZZqfeKnAUWXSdwDzahgPVUGaVsj6hbmrJ1t/ZYI=;
-        b=LhgM2/ORDlxI141OP3dF4HTW1wKRhZpBe1Nl54imF1FsFKd2YSjv8owZCQH2O8wW5S
-         M00vz+DnPGg37DdedsDO1u/1dPw6FTLNdMculFG2vNB7dr/ifgUeiNNeZ3pSk0LnVHrK
-         fkZFywtxhoMWCEcH/ObNDC3ZQ9P6LmSzfpgPlqPs8+GX0ioTFesRM24uBHTPWalxdMDG
-         bkyILYaDD4TF/mDjhT7MlBONINm+ByBcdIgfKjbpv5CwxJAafkc/NUJrteJV2wdWmH4s
-         m2KHA2B+wt79HtPmIejhRJpkaDUlXX1Xhqs5Ro2C8ESkKrgm4q3tbEIIi9NrXu80GqJt
-         RZMA==
-X-Gm-Message-State: AOJu0Yy2k3UnMLavLRenp7xwKdnc6K4F1ZLrArBxL4XqcLUVEYXQsCos
-	LFSLLh2ILSE+68KUqkjbWqC/3yHAX0yVQAFv8Dkktn0MXuo4Qt4tq4TyncnG114OdnSkw4TMZ87
-	nj7axRlHFr9K7mT4e1ZpaBmpnkqw=
-X-Google-Smtp-Source: AGHT+IFUHNwJD1rrVSNnhBUjozimr/IRIRFM5+UiXaaxNqJx5qpXzHSNwoRONcrku8KUyImYw3I7mWhNqeuUD/xJVUk=
-X-Received: by 2002:a5d:4248:0:b0:374:c847:866 with SMTP id
- ffacd0b85a97d-378c2d06352mr11130199f8f.23.1726559445170; Tue, 17 Sep 2024
- 00:50:45 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X7jPn2D7lz2xYl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Sep 2024 12:33:33 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1726626811;
+	bh=nTH4cSKPkyYveYR5hN8FWjwVaXptyW8BZiIACU0AG/Y=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=IZVfUi4qsnAdIKkAtZcG2JdzpmXjE6seVDSNsIrrxavUQl0TMF/PfePlH9Ghc+k25
+	 /kbSEW8+RswLDcA4DUdT7T17RW/knaMT4gdH62IOkLtBbivOm+VowCGgsqcaZjehEm
+	 XWfVp5Un8fMU3Is5LrnaOGsvUBGusq7vdChOtsM9UawIVSMuIWbYnPhRjHTe3EehrA
+	 U0Mxs+GzhpdcJ/sslUd9TfsTcI+CtF+wgWIJflTMCiytBTji8WFgWCSbJJTN7ell+b
+	 Uqv8YOONEtyCu66R0ETwREElfA2T2bBc+SQbPmfk72FhxfASHZX1scthO+ZH/F4L9/
+	 Y+sm8drVOroXA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X7jPl1HxQz4wcL;
+	Wed, 18 Sep 2024 12:33:30 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin
+ <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, Peter Bergner
+ <bergner@linux.ibm.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH] powerpc/vdso: Should VDSO64 functions be flagged as
+ functions like VDSO32 ?
+In-Reply-To: <6fa86f3de610ffc180ae0f5dbd511453e7473b36.1726208058.git.christophe.leroy@csgroup.eu>
+References: <6fa86f3de610ffc180ae0f5dbd511453e7473b36.1726208058.git.christophe.leroy@csgroup.eu>
+Date: Wed, 18 Sep 2024 12:33:27 +1000
+Message-ID: <875xqtr8qw.fsf@mail.lhotse>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,45 +65,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20240915205648.830121-1-hbathini@linux.ibm.com> <20240915205648.830121-18-hbathini@linux.ibm.com>
-In-Reply-To: <20240915205648.830121-18-hbathini@linux.ibm.com>
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Date: Tue, 17 Sep 2024 09:50:33 +0200
-Message-ID: <CAADnVQL60XXW95tgwKn3kVgSQAN7gr1STy=APuO1xQD7mz-aXA@mail.gmail.com>
-Subject: Re: [PATCH v5 17/17] powerpc64/bpf: Add support for bpf trampolines
-To: Hari Bathini <hbathini@linux.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf <bpf@vger.kernel.org>, 
-	linux-trace-kernel <linux-trace-kernel@vger.kernel.org>, 
-	Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
-	"Naveen N. Rao" <naveen@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-	Daniel Borkmann <daniel@iogearbox.net>, Masahiro Yamada <masahiroy@kernel.org>, 
-	Nicholas Piggin <npiggin@gmail.com>, Alexei Starovoitov <ast@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, 
-	Andrii Nakryiko <andrii@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Vishal Chourasia <vishalc@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-	Masami Hiramatsu <mhiramat@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 
-On Sun, Sep 15, 2024 at 10:58=E2=80=AFPM Hari Bathini <hbathini@linux.ibm.c=
-om> wrote:
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> On powerpc64 as shown below by readelf, vDSO functions symbols have
+> type NOTYPE.
 >
-> +
-> +       /*
-> +        * Generated stack layout:
-> +        *
-> +        * func prev back chain         [ back chain        ]
-> +        *                              [                   ]
-> +        * bpf prog redzone/tailcallcnt [ ...               ] 64 bytes (6=
-4-bit powerpc)
-> +        *                              [                   ] --
-...
-> +
-> +       /* Dummy frame size for proper unwind - includes 64-bytes red zon=
-e for 64-bit powerpc */
-> +       bpf_dummy_frame_size =3D STACK_FRAME_MIN_SIZE + 64;
+> $ powerpc64-linux-gnu-readelf -a arch/powerpc/kernel/vdso/vdso64.so.dbg
+> ELF Header:
+>   Magic:   7f 45 4c 46 02 02 01 00 00 00 00 00 00 00 00 00
+>   Class:                             ELF64
+>   Data:                              2's complement, big endian
+>   Version:                           1 (current)
+>   OS/ABI:                            UNIX - System V
+>   ABI Version:                       0
+>   Type:                              DYN (Shared object file)
+>   Machine:                           PowerPC64
+>   Version:                           0x1
+> ...
+>
+> Symbol table '.dynsym' contains 12 entries:
+>    Num:    Value          Size Type    Bind   Vis      Ndx Name
+> ...
+>      1: 0000000000000524    84 NOTYPE  GLOBAL DEFAULT    8 __[...]@@LINUX_2.6.15
+> ...
+>      4: 0000000000000000     0 OBJECT  GLOBAL DEFAULT  ABS LINUX_2.6.15
+>      5: 00000000000006c0    48 NOTYPE  GLOBAL DEFAULT    8 __[...]@@LINUX_2.6.15
+>
+> Symbol table '.symtab' contains 56 entries:
+>    Num:    Value          Size Type    Bind   Vis      Ndx Name
+> ...
+>     45: 0000000000000000     0 OBJECT  GLOBAL DEFAULT  ABS LINUX_2.6.15
+>     46: 00000000000006c0    48 NOTYPE  GLOBAL DEFAULT    8 __kernel_getcpu
+>     47: 0000000000000524    84 NOTYPE  GLOBAL DEFAULT    8 __kernel_clock_getres
+>
+> To overcome that, commit ba83b3239e65 ("selftests: vDSO: fix vDSO
+> symbols lookup for powerpc64") was proposed to make selftests also
+> look for NOTYPE symbols, but is it the correct fix ?
+>
+> VDSO32 functions are flagged as functions, why not VDSO64 functions ?
+> Is it because VDSO functions are not traditional C functions using
+> the standard API ?
 
-What is the goal of such a large "red zone" ?
-The kernel stack is a limited resource.
-Why reserve 64 bytes ?
-tail call cnt can probably be optional as well.
+Yes. There's some explanation in the original commit:
+
+    Note that the symbols exposed by the vDSO aren't "normal" function symbols, apps
+    can't be expected to link against them directly, the vDSO's are both seen
+    as if they were linked at 0 and the symbols just contain offsets to the
+    various functions.  This is done on purpose to avoid a relocation step
+    (ppc64 functions normally have descriptors with abs addresses in them).
+    When glibc uses those functions, it's expected to use it's own trampolines
+    that know how to reach them.
+
+From https://github.com/mpe/linux-fullhistory/commit/5f2dd691b62da9d9cc54b938f8b29c22c93cb805
+
+The descriptors it's talking about are the OPD function descriptors used
+on ABI v1 (big endian).
+
+> But it is exactly the same for VDSO32 functions, allthough they are
+> flagged as functions.
+ 
+It's not quite the same because of the function descriptors.
+
+On ppc64/ABIv1 a function pointer for "F" points to an opd, which then
+points to ".F" which has the actual text. It's the ".F" symbol that has
+type "function".
+
+> So lets flag them as functions and revert the selftest change.
+>
+> What's your opinion on that ?
+
+I think it's fine on ppc64le, I worry slightly that it risks breaking
+glibc or something else on big endian.
+
+It is more correct for the text symbol to have type function, even if
+there's no function descriptor for it.
+
+glibc has a special case already for handling the VDSO symbols which
+creates a fake opd pointing at the kernel symbol. So changing the VDSO
+symbol type to function shouldn't affect that AFAICS.
+
+I think the only cause of breakage would be if something is explicitly
+looking for NOTYPE symbols, which seems unlikely, but you never know.
+
+So I think we could attempt to take this change for v6.13, giving it
+lots of time to get some test coverage in next before going to mainline.
+
+cheers
+
+
+
+> It predates git kernel history and both VDSO32 and VDSO64 were brough by
+> arch/ppc64/ with that difference already.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+> commit ba83b3239e65 is in random git tree at the moment : https://git.kernel.org/pub/scm/linux/kernel/git/crng/random.git/commit/?id=ba83b3239e657469709d15dcea5f9b65bf9dbf34
+> On the list at : https://lore.kernel.org/lkml/fc1a0862516b1e11b336d409f2cb8aab10a97337.1725020674.git.christophe.leroy@csgroup.eu/T/#u
+> ---
+>  arch/powerpc/include/asm/vdso.h           | 1 +
+>  tools/testing/selftests/vDSO/parse_vdso.c | 3 +--
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/vdso.h b/arch/powerpc/include/asm/vdso.h
+> index 7650b6ce14c8..8d972bc98b55 100644
+> --- a/arch/powerpc/include/asm/vdso.h
+> +++ b/arch/powerpc/include/asm/vdso.h
+> @@ -25,6 +25,7 @@ int vdso_getcpu_init(void);
+>  #ifdef __VDSO64__
+>  #define V_FUNCTION_BEGIN(name)		\
+>  	.globl name;			\
+> +	.type name,@function; 		\
+>  	name:				\
+>  
+>  #define V_FUNCTION_END(name)		\
+> diff --git a/tools/testing/selftests/vDSO/parse_vdso.c b/tools/testing/selftests/vDSO/parse_vdso.c
+> index d9ccc5acac18..4ae417372e9e 100644
+> --- a/tools/testing/selftests/vDSO/parse_vdso.c
+> +++ b/tools/testing/selftests/vDSO/parse_vdso.c
+> @@ -216,8 +216,7 @@ void *vdso_sym(const char *version, const char *name)
+>  		ELF(Sym) *sym = &vdso_info.symtab[chain];
+>  
+>  		/* Check for a defined global or weak function w/ right name. */
+> -		if (ELF64_ST_TYPE(sym->st_info) != STT_FUNC &&
+> -		    ELF64_ST_TYPE(sym->st_info) != STT_NOTYPE)
+> +		if (ELF64_ST_TYPE(sym->st_info) != STT_FUNC)
+>  			continue;
+>  		if (ELF64_ST_BIND(sym->st_info) != STB_GLOBAL &&
+>  		    ELF64_ST_BIND(sym->st_info) != STB_WEAK)
+> -- 
+> 2.44.0
 
