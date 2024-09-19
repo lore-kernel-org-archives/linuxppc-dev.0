@@ -1,98 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-1465-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1466-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15B6BCF3959
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Sep 2024 15:01:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 187E1CF3959
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Sep 2024 15:16:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X8dyk6ySBz2yHs;
-	Fri, 20 Sep 2024 01:01:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726758110;
-	cv=none; b=NEqFrT1JMRb8VhCfy39FuibVN10tdZE0MsgKcoFMVNduqTgIG9ZtseSEur98CyWpAlKSV0E/hEeZ3VyFnw5SbxZOhHumcUrTbh17Y7Ms+Lj2T1dmm7eH41IRzbIU6m1zQkbEzjVZbh8xX5VCorvJE3qPM05Eodiinyx0lwQBj9Xfukf+IeWgwSnZCp8brSApzy67gcxge+WHkHIAWmNyqBrsjFWS6oDmWsgpBvplS2OghuXNQeWzNWDGLtK5dOMD519pideTEpdjrer/PmDHFricFq8o00ShF3fam1rNgJ+D6s2BTSCqjQ+Y7O5uaoW1Vxins2YSHOrCrw3wanQqGA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X8fH75SMGz2yF1;
+	Fri, 20 Sep 2024 01:16:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726758963;
+	cv=none; b=hGrBqc3I96f1Af4XeeH37zFxg6c2jZqNgzNdZ3cO8MwPdLZCsK0EY0oIYCHDqpL409FRKrrKlnkZl4eR85oDkE8UzF0qaMJI6SGZ4eLUy66E3Cs9PxFmdohshACgm8Ol414xhLcNUX5c7PxCwDWsCfX7lqpLTpA9/zUWQjyNrfdw8tLocWN5zIHTevXOTe7j1K9miz1jdFyGwYULxuYMq0ZECmE9k2z97xUgiraEHzHX5iA1eObUpBWYdY1iIAu5KJ5moh/Ywa3CklBbBlzC/CpA5QjaKsmAL9jK447j/DhPQ+1+z1FtvDUuw9IDwMNncXld6ZkaZYdqH+dBIlGXPQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726758110; c=relaxed/relaxed;
-	bh=3/QMlVBloIHFi2ohshUULd/kYl48od3sFeUczC9S+jg=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 Content-Type:MIME-Version; b=dP0tuvOKD8isVI3cNw7i4cG5Q4yIcdboRJ2s9gjAxFYXdSf3Tk8CYViike/MgiAnlzZTZIt4mMpopkiKDwNh90oDbn4aI2pDalaN5Bjz0z6C8+GQ/9uV6t84O1Nx3Iax4H8+oezQjfsg3uxMaR3L9IrrxGoFmZY4wXyA7n/bBh0aQkRFTLYyKX7DvVeLX/Y3ZiGmyM6HUo062eS2/oL+QkrEJlsz5mFjZACGH2kJFzolH3ud68EVGew9wD7nBnnEc/5hHzTEDpvJSpmOSuIS4sLLqd/pugeQFN97hdKfrygU3ARZEI/hX/WJQL6Pvw+UDHZkgYx1Ebrl1HjoxwWkjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OjMeDP3F; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OjMeDP3F;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1726758963; c=relaxed/relaxed;
+	bh=/64YFQLg5dWd0QHaRS3LIYALMVRLqGIcnTDOEMnNc4Q=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=D1mFEOgyYHE71S47kyEhlI+ugWlSkBaLQznZ+2LHDntuuc87Ew4DL0A9iSkHxmxA3LZfUMa6p5wqnONY9icBThRMS5tvmlIU8pdb3zLzUx3uFIGI2FWzvLPQNeRkVTHMYqlE/8NH7ZqO7erKzq+tACkLTojdPHPb9BSlQdespSyJ+PldhRrG2H7nJngQ4LVcYexbSwGjxeEQLM2+a8msEXEt/BblUhlGea5TBWxcGjH/m/o3DiojAr4tNEMpip9MFzScAaa2DwHOBygqwq3A0GRnmgPjzAW+fmKiMFZf70D3+/uq6OJoLz32cVka5M8gqdcOIZRGhohmGcW4XNFIFg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X8dyk3RLCz2yHj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2024 01:01:49 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48JEMfDr027076;
-	Thu, 19 Sep 2024 15:01:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
-	:to:cc:subject:in-reply-to:references:date:message-id
-	:content-type:mime-version; s=pp1; bh=3/QMlVBloIHFi2ohshUULd/kYl
-	48od3sFeUczC9S+jg=; b=OjMeDP3FZsUMyGHmRwBILr8JXdCBKMj4VASxMVG+pa
-	cd+5w2uKmhJuo1KsGmyIajJuD0dd4pNeyfhc5J7fmV3rt+eDk/JZiG+2+iaGby1U
-	3wF0KBldgT/ReaoOQSzAIDhBxQYp9W7vKysGv9LprFrgXggXUSRGgHe6ADxnJVyJ
-	NsiT58ejfKJqBM9T7/tQ4pJklw4piRKY9rPlJxA4iBMxHs9aBUNTbptgIDGJRl5+
-	0qjfjgXC2AnMDhbPBAVthlxoSGLVqIpgctYUvNph/FlD+1GVmBaPOgKAda+yfdHr
-	ubMUJ+qNhIep1w3nz0yrd/M+q/9e5pi8gZMz9BbhOuaA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41n3udmaxf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Sep 2024 15:01:25 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 48JF1P5L032265;
-	Thu, 19 Sep 2024 15:01:25 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41n3udmaub-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Sep 2024 15:01:24 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 48JD1QAb001187;
-	Thu, 19 Sep 2024 15:00:57 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 41nntqj1se-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Sep 2024 15:00:57 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 48JF0rkw54788396
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 19 Sep 2024 15:00:53 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9861F2004F;
-	Thu, 19 Sep 2024 15:00:53 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EBFE32004E;
-	Thu, 19 Sep 2024 15:00:49 +0000 (GMT)
-Received: from vaibhav?linux.ibm.com (unknown [9.39.30.22])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Thu, 19 Sep 2024 15:00:49 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Thu, 19 Sep 2024 20:30:48 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>,
-        Narayana Murty N
- <nnmlinux@linux.ibm.com>,
-        linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
-        linux-kernel@vger.kernel.org
-Cc: mahesh@linux.ibm.com, oohall@gmail.com, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, naveen@kernel.org, ganeshgr@linux.ibm.com,
-        sbhat@linux.ibm.com
-Subject: Re: [PATCH] powerpc/pseries/eeh: move pseries_eeh_err_inject()
- outside CONFIG_DEBUG_FS block
-In-Reply-To: <871q1hbsh7.fsf@gmail.com>
-References: <20240917132445.3868016-1-nnmlinux@linux.ibm.com>
- <871q1hbsh7.fsf@gmail.com>
-Date: Thu, 19 Sep 2024 20:30:48 +0530
-Message-ID: <87bk0jbsdb.fsf@vajain21.in.ibm.com>
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Rb4gT66GOt97oYcD8pdorqZDXA2fElrU
-X-Proofpoint-ORIG-GUID: lj7VS7Tl7p8Rj5GEgCqR_hmiEBJfYDf2
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X8fH735njz2xpm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2024 01:16:02 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4X8fH00lMfz9tQx;
+	Thu, 19 Sep 2024 17:15:56 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Rdjj_y7Skjiu; Thu, 19 Sep 2024 17:15:56 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4X8fH001bzz9tQw;
+	Thu, 19 Sep 2024 17:15:56 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id E25878B77E;
+	Thu, 19 Sep 2024 17:15:55 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id IRwUsOkm0OKo; Thu, 19 Sep 2024 17:15:55 +0200 (CEST)
+Received: from [192.168.234.38] (unknown [192.168.234.38])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8EC568B77D;
+	Thu, 19 Sep 2024 17:15:55 +0200 (CEST)
+Message-ID: <047b7503-af0c-4bb0-b12a-2f6b1e461752@csgroup.eu>
+Date: Thu, 19 Sep 2024 17:15:55 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,172 +57,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-19_12,2024-09-19_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 bulkscore=0
- phishscore=0 impostorscore=0 spamscore=0 priorityscore=1501 suspectscore=0
- adultscore=0 mlxscore=0 lowpriorityscore=0 malwarescore=0 mlxlogscore=932
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2408220000
- definitions=main-2409190099
+User-Agent: Mozilla Thunderbird
+Subject: Re: [FSL P50x0] [GIT KERNEL] [VDSO] compiling issue
+To: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Trevor Dickinson <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>,
+ Darren Stevens <darren@stevens-zone.net>
+References: <de2d1e74-52e5-4d74-8228-4aaea61cad51@xenosoft.de>
+ <0C6E937D-A322-4B76-96E8-2C239241F049@xenosoft.de>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <0C6E937D-A322-4B76-96E8-2C239241F049@xenosoft.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Hi Ritesh,
+Hi Christian,
 
-Thanks for looking into this patch. My responses your review inline
-below:
+Le 19/09/2024 à 17:02, Christian Zigotzky a écrit :
+> Hi All,
+> 
+> The compiling of the latest Git kernel doesn’t work anymore for our FSL P5020/P5040 boards [1] since the random-6.12-rc1 updates [2].
+> 
+> Error messages:
+> 
+> arch/powerpc/kernel/vdso/vdso32.so.dbg: dynamic relocations are not supported
+> 
+> make[2]: *** [arch/powerpc/kernel/vdso/Makefile:75: arch/powerpc/kernel/vdso/vdso32.so.dbg]
+> 
+> Reverting of the vdso updates has solved the compiing issue.
+> 
+> Could you please check the random-6.12-rc1 updates? [2]
+> 
+> Thanks,
+> Christian
+> 
+> [1] https://eur01.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwiki.amiga.org%2Findex.php%3Ftitle%3DX5000&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4b327823a8d843f5dc8d08dcd8bc2600%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638623549830455660%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=xtne08CcJdt0jF0eir8q%2F5CeMcCv6JN4Uj4LDKqUiog%3D&reserved=0
+> 
+> [2] https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgit.kernel.org%2Fpub%2Fscm%2Flinux%2Fkernel%2Fgit%2Ftorvalds%2Flinux.git%2Fcommit%2F%3Fid%3D4a39ac5b7d62679c07a3e3d12b0f6982377d8a7d&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4b327823a8d843f5dc8d08dcd8bc2600%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638623549830472839%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=sVQ9FhoXe9YDrqFrwb4a1rmMlN7Kegg7z1yMQ4uAFvo%3D&reserved=0
+> 
+> + Kernel config
+> 
+> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fchzigotzky%2Fkernels%2Frefs%2Fheads%2Fmain%2Fconfigs%2Fx5000_defconfig&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4b327823a8d843f5dc8d08dcd8bc2600%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638623549830486185%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C0%7C%7C%7C&sdata=SQi%2B9R4TM59QB8Msxq3KuKPvvJEBMVUdyOhoY6ndzVU%3D&reserved=0
+> 
+> + Christophe Leroy
+> + Michael Ellerman
 
-Ritesh Harjani (IBM) <ritesh.list@gmail.com> writes:
+Can you try with the following change:
 
-> Narayana Murty N <nnmlinux@linux.ibm.com> writes:
->
->> Makes pseries_eeh_err_inject() available even when debugfs
->> is disabled (CONFIG_DEBUG_FS=n). It moves eeh_debugfs_break_device()
->> and eeh_pe_inject_mmio_error() out of the CONFIG_DEBUG_FS block
->> and renames it as eeh_break_device().
->>
->> Reported-by: kernel test robot <lkp@intel.com>
->> Closes: https://lore.kernel.org/oe-kbuild-all/202409170509.VWC6jadC-lkp@intel.com/
->> Fixes: b0e2b828dfca ("powerpc/pseries/eeh: Fix pseries_eeh_err_inject")
->> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
->> ---
->>  arch/powerpc/kernel/eeh.c | 198 +++++++++++++++++++-------------------
->>  1 file changed, 99 insertions(+), 99 deletions(-)
->
-> Ok, so in your original patch you implemented eeh_inject ops for pseries
-> using mmio based eeh error injection (eeh_pe_inject_mmio_error()), which
-> uses the functions defined under debugfs -> eeh_debugfs_break_device(). 
->
-> This was failing when CONFIG_DEBUGFS is not defined, thus referring to
-> undefined function definition. 
->
-> Minor nit below.
->
->>
->> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->> index 49ab11a287a3..0fe25e907ea6 100644
->> --- a/arch/powerpc/kernel/eeh.c
->> +++ b/arch/powerpc/kernel/eeh.c
->> @@ -1574,6 +1574,104 @@ static int proc_eeh_show(struct seq_file *m, void *v)
->>  }
->>  #endif /* CONFIG_PROC_FS */
->>  
->> +static int eeh_break_device(struct pci_dev *pdev)
->> +{
->> +	struct resource *bar = NULL;
->> +	void __iomem *mapped;
->> +	u16 old, bit;
->> +	int i, pos;
->> +
->> +	/* Do we have an MMIO BAR to disable? */
->> +	for (i = 0; i <= PCI_STD_RESOURCE_END; i++) {
->> +		struct resource *r = &pdev->resource[i];
->> +
->> +		if (!r->flags || !r->start)
->> +			continue;
->> +		if (r->flags & IORESOURCE_IO)
->> +			continue;
->> +		if (r->flags & IORESOURCE_UNSET)
->> +			continue;
->> +
->> +		bar = r;
->> +		break;
->> +	}
->> +
->> +	if (!bar) {
->> +		pci_err(pdev, "Unable to find Memory BAR to cause EEH with\n");
->> +		return -ENXIO;
->> +	}
->> +
->> +	pci_err(pdev, "Going to break: %pR\n", bar);
->> +
->> +	if (pdev->is_virtfn) {
->> +#ifndef CONFIG_PCI_IOV
->> +		return -ENXIO;
->> +#else
->> +		/*
->> +		 * VFs don't have a per-function COMMAND register, so the best
->> +		 * we can do is clear the Memory Space Enable bit in the PF's
->> +		 * SRIOV control reg.
->> +		 *
->> +		 * Unfortunately, this requires that we have a PF (i.e doesn't
->> +		 * work for a passed-through VF) and it has the potential side
->> +		 * effect of also causing an EEH on every other VF under the
->> +		 * PF. Oh well.
->> +		 */
->> +		pdev = pdev->physfn;
->> +		if (!pdev)
->> +			return -ENXIO; /* passed through VFs have no PF */
->> +
->> +		pos  = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
->> +		pos += PCI_SRIOV_CTRL;
->> +		bit  = PCI_SRIOV_CTRL_MSE;
->> +#endif /* !CONFIG_PCI_IOV */
->> +	} else {
->> +		bit = PCI_COMMAND_MEMORY;
->> +		pos = PCI_COMMAND;
->> +	}
->> +
->> +	/*
->> +	 * Process here is:
->> +	 *
->> +	 * 1. Disable Memory space.
->> +	 *
->> +	 * 2. Perform an MMIO to the device. This should result in an error
->> +	 *    (CA  / UR) being raised by the device which results in an EEH
->> +	 *    PE freeze. Using the in_8() accessor skips the eeh detection hook
->> +	 *    so the freeze hook so the EEH Detection machinery won't be
->> +	 *    triggered here. This is to match the usual behaviour of EEH
->> +	 *    where the HW will asynchronously freeze a PE and it's up to
->> +	 *    the kernel to notice and deal with it.
->> +	 *
->> +	 * 3. Turn Memory space back on. This is more important for VFs
->> +	 *    since recovery will probably fail if we don't. For normal
->> +	 *    the COMMAND register is reset as a part of re-initialising
->> +	 *    the device.
->> +	 *
->> +	 * Breaking stuff is the point so who cares if it's racy ;)
->> +	 */
->> +	pci_read_config_word(pdev, pos, &old);
->> +
->> +	mapped = ioremap(bar->start, PAGE_SIZE);
->> +	if (!mapped) {
->> +		pci_err(pdev, "Unable to map MMIO BAR %pR\n", bar);
->> +		return -ENXIO;
->> +	}
->> +
->> +	pci_write_config_word(pdev, pos, old & ~bit);
->> +	in_8(mapped);
->> +	pci_write_config_word(pdev, pos, old);
->> +
->> +	iounmap(mapped);
->> +
->> +	return 0;
->> +}
->> +
->> +int eeh_pe_inject_mmio_error(struct pci_dev *pdev)
->> +{
->> +	return eeh_break_device(pdev);
->> +}
->> +
->
-> Why have an extra eeh_pe_inject_mmio_error() function which only calls
-> eeh_break_device()?
->
-> Maybe we can rename eeh_break_device() to eeh_mmio_break_device() and use
-> this function itself at both call sites?
+diff --git a/arch/powerpc/lib/crtsavres.S b/arch/powerpc/lib/crtsavres.S
+index 7e5e1c28e56a..8967903c15e9 100644
+--- a/arch/powerpc/lib/crtsavres.S
++++ b/arch/powerpc/lib/crtsavres.S
+@@ -46,7 +46,7 @@
 
-Fair suggestion,
+  	.section ".text"
 
-However we want to keep the method debugfs interface uses
-to inject EEH (thats ppc platform agonistic), decoupled from what pseries
-uses. Right now to support as initial work VFIO EEH injection on
-pseries, we are piggy backing on eeh_debugfs_break_device().
+-#ifndef CONFIG_PPC64
++#ifndef __powerpc64__
 
-This will change in future as we add more capabilities to pseries EEH
-injection and this will change working of eeh_pe_inject_mmio_error()
-without impacting the semantics of existing eeh_break_device().
-
--- 
-Cheers
-~ Vaibhav
+  /* Routines for saving integer registers, called by the compiler.  */
+  /* Called with r11 pointing to the stack header word of the caller of 
+the */
 
