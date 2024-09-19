@@ -1,82 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-1458-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1459-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9933CE8D5F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Sep 2024 08:58:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 925DFCE8D78
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Sep 2024 11:13:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X8Ttt5BNtz2y3Z;
-	Thu, 19 Sep 2024 18:57:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726736278;
-	cv=none; b=A1xhJ63GIhpsRoA0QuM3Wz10ewNhuM4ZLOdeOq4tVNlDAw4zRpNtxhP2jloDM7wHLx7Ix7locALH25h0TaEUvBFuuGPIC/X6IVv9+I7PtGDz2w2jSu59IMA6cRz9sCaJQl2pwOemw54BgWAdo7grg79MbyDknT+f867OC18cExVhS3k83dg3LMVUmKclBdCes7hBMRZ6NAWPHnhIR/Pnv8Ha1Ectg+AMy2xiZ0qQBsoinudy4qG89rt9UMwVTWDN3qD41aI2VnIlRRPeRznQ4jXSE43b2u06ciqFA8RlwrwSl4+aaRuUeCH80Kxh3bwzL6WQmjrA0hqHpyIT/lZbFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X8XvL1ZD1z2yDS;
+	Thu, 19 Sep 2024 21:13:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726744414;
+	cv=none; b=XaPzBAjjzdSkQaOzkOb8t8i3S8J9pES7kA4GLu1IrCMXrkkcDEsAidh5QH/GpIP5dWc0tH/mJ0RqwedcCoOCBOCOW2quurtrv60SsfzKr0ElXBaoui31+JokXHXEi4/rhoy6nnZpDG9Ws6cyiC8txbUaIfv1obRmiV9jHDREpMeICm8DWixfXRGJHFmJYRwbljivC0ZD7+RFdmtRGy/Gg0oTXVVxhkTe+XmmA7Ns9BD5J4bzft61ToJ2Xw6j0ztpSbB9FvgkKvKL1KW6Bgi5hVL4MxNEWqwMjHzo4Z55vzDXECjcWub2eFNYu3Yzry85MU1pqSZ07Ra4IZtq6MAa6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726736278; c=relaxed/relaxed;
-	bh=YDlb9HHKZ7ppggUTFJeczVT++JQqxU+9AUY020deop4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oFFp6wF6yXqoOTOtqnILlvjSOzXmLCEO/zijuG0pm1nx0Amz//8Bufqme8DwDwyvedQDBtbMEXVvgbQvxl4nOcoOrdPSzvyJaUdkruLx4c3ezZduoAn+3VD42OaOR0kpkAnDVYK0vJh7pXOgi8VZzMd88+X8poXOhpFJoQ9psxn5dBr0kl2JQMqHSQJSPzicaGGp5BZezzVNMqlNCgBTza6goWnC3cTFh8HA+Lj00uIexQ03IYVoWpg4o3FaltoMUow5MViqgY+2r1rw/zLkCc6kYqbenh4gjFkBXf4V13v/ftID2zWnDWIDzqMVJLYNhDYnnaaC6qYU+4Hh5NgLEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cdn3wr4q; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cdn3wr4q; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	t=1726744414; c=relaxed/relaxed;
+	bh=rfTOEAXZNZarvbG2AF5ajeIf7S3tcYldEG1+ILtAxS8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=V+475nyHx3Jk7nq7l3QuQhXfLJUHRnHVaJ5bDQwLP5mIqIwPJXRzUdt1bpcAWOCOqnO97cmffILODgftqd39khODr0X/9CVrUFJWKyi2V2w3o9DPLh9A5A6e0hN1Tp245kYNbfGE44213Htx1CPyrl5myb4dXV57I57cBxR7uRuqqS/wJEWZ3Y3gRlNotjsfO5SzPtT7sdmWBY1T8c6FwOjRH9wVrjgGYMWyGQA+SsyAbOxP2qSdkgcqzWq4NU4nZABEon+HzCLscV5UwSEjTX60SEFj4Yzl/BQr03encuzLEonRuz1PSRzq1+2LpIz+hVVp4psPPfrNWwtYxkAuWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nfNp3Jat; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cdn3wr4q;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=cdn3wr4q;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nfNp3Jat;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X8Tts6rmWz2xmk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2024 18:57:54 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1726736270;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=YDlb9HHKZ7ppggUTFJeczVT++JQqxU+9AUY020deop4=;
-	b=cdn3wr4qCX4bt28j0/zSMtDoiyYuHhPhO8T9kNzqlr467cM99l38FeSyNFJzRWf9hzO4sq
-	lZLqUPVnawXMibVk56RQvHAPmnozMzaSB2sqjKwReX8ohiH0KlyxYykHVvxx4dLO+9nZqx
-	klIGAnqUx2ilpBI4Dj1p5rtJrCF54cg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1726736270;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=YDlb9HHKZ7ppggUTFJeczVT++JQqxU+9AUY020deop4=;
-	b=cdn3wr4qCX4bt28j0/zSMtDoiyYuHhPhO8T9kNzqlr467cM99l38FeSyNFJzRWf9hzO4sq
-	lZLqUPVnawXMibVk56RQvHAPmnozMzaSB2sqjKwReX8ohiH0KlyxYykHVvxx4dLO+9nZqx
-	klIGAnqUx2ilpBI4Dj1p5rtJrCF54cg=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-518-PHncvciHNp20_laqddd98Q-1; Thu,
- 19 Sep 2024 04:57:48 -0400
-X-MC-Unique: PHncvciHNp20_laqddd98Q-1
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 4E13C1956083;
-	Thu, 19 Sep 2024 08:57:46 +0000 (UTC)
-Received: from localhost (unknown [10.45.226.3])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 5F9C819560AA;
-	Thu, 19 Sep 2024 08:57:44 +0000 (UTC)
-Date: Thu, 19 Sep 2024 10:57:41 +0200
-From: Baoquan He <bhe@redhat.com>
-To: Dave Vasilevsky <dave@vasilevsky.ca>
-Cc: akpm@linux-foundation.org, glaubitz@physik.fu-berlin.de,
-	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
-	mpe@ellerman.id.au, kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-	Reimar =?iso-8859-1?Q?D=F6ffinger?= <Reimar.Doeffinger@gmx.de>
-Subject: Re: [PATCH v2] crash, powerpc: Default to CRASH_DUMP=n on
- PPC_BOOK3S_32
-Message-ID: <ZuvnhSvVMIGgAVNj@fedora>
-References: <20240917163720.1644584-1-dave@vasilevsky.ca>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X8XvK2sqhz2y66
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Sep 2024 21:13:32 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48J6GKgl030026;
+	Thu, 19 Sep 2024 11:06:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	message-id:date:mime-version:subject:to:cc:references:from
+	:in-reply-to:content-type:content-transfer-encoding; s=pp1; bh=r
+	fTOEAXZNZarvbG2AF5ajeIf7S3tcYldEG1+ILtAxS8=; b=nfNp3JatxK7CrVZdh
+	1tRJiujGQ7yVv6IiviOr2r/96PFplZzRo9ChwyZ3cU9FXinTUiJ1ptvLOkQazj1I
+	U2fszw8SaodAhIB+XqHTgpFl4ZNQmuylN8adkkM9nm6AZzmncsOiYnFw/dgedJTG
+	xMHAJg6g8dCJO1xOpxzCSL++XYZiIj/4hlG5NluPk19bYT6LZT62IXD1Z28pxIVh
+	izV7HvHOI2jJ/wbQWZ7pQaaImFnVkIB7IXgpEduiPiesEXLJKBtVxnGG6+9q2LOt
+	YRFKnyrEct/weRVyovRNk6qd/QlUP0sEjnXGHt/qWgoqOmj6X7M5Nj+VBR4DEgIX
+	pI1Hw==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41n3udk82x-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 19 Sep 2024 11:06:57 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 48JA3but001187;
+	Thu, 19 Sep 2024 11:06:56 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 41nntqgxbh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 19 Sep 2024 11:06:56 +0000
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 48JB6sRd45220240
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 19 Sep 2024 11:06:55 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C14225805E;
+	Thu, 19 Sep 2024 11:06:54 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3741958059;
+	Thu, 19 Sep 2024 11:06:54 +0000 (GMT)
+Received: from [9.61.250.246] (unknown [9.61.250.246])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 19 Sep 2024 11:06:54 +0000 (GMT)
+Message-ID: <1d8bb55a-a498-44b8-a29a-f0916518e483@linux.ibm.com>
+Date: Thu, 19 Sep 2024 06:06:53 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,188 +76,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20240917163720.1644584-1-dave@vasilevsky.ca>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] crypto: Removing CRYPTO_AES_GCM_P10.
+To: Michael Ellerman <mpe@ellerman.id.au>, linux-crypto@vger.kernel.org
+Cc: herbert@gondor.apana.org.au, leitao@debian.org, nayna@linux.ibm.com,
+        appro@cryptogams.org, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, ltcgcw@linux.vnet.ibm.com,
+        dtsen@us.ibm.com
+References: <20240913123043.1636183-1-dtsen@linux.ibm.com>
+ <87r09gp7ho.fsf@mail.lhotse>
+Content-Language: en-US
+From: Danny Tsen <dtsen@linux.ibm.com>
+In-Reply-To: <87r09gp7ho.fsf@mail.lhotse>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: oB3dgjWHfI2Hj--1h9fBAB0_MbHmV2Ho
+X-Proofpoint-ORIG-GUID: oB3dgjWHfI2Hj--1h9fBAB0_MbHmV2Ho
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.60.29
+ definitions=2024-09-19_08,2024-09-18_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 bulkscore=0
+ phishscore=0 impostorscore=0 spamscore=0 priorityscore=1501 suspectscore=0
+ adultscore=0 mlxscore=0 lowpriorityscore=0 malwarescore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2408220000
+ definitions=main-2409190071
 
-On 09/17/24 at 12:37pm, Dave Vasilevsky wrote:
-> Fixes boot failures on 6.9 on PPC_BOOK3S_32 machines using
-> Open Firmware. On these machines, the kernel refuses to boot
-> from non-zero PHYSICAL_START, which occurs when CRASH_DUMP is on.
-> 
-> Since most PPC_BOOK3S_32 machines boot via Open Firmware, it should
-> default to off for them. Users booting via some other mechanism
-> can still turn it on explicitly.
-> 
-> Does not change the default on any other architectures for the
-> time being.
-> 
-> Signed-off-by: Dave Vasilevsky <dave@vasilevsky.ca>
-> Reported-by: Reimar Döffinger <Reimar.Doeffinger@gmx.de>
-> Closes: https://lists.debian.org/debian-powerpc/2024/07/msg00001.html
-> Fixes: 75bc255a7444 ("crash: clean up kdump related config items")
-> ---
->  arch/arm/Kconfig       | 3 +++
->  arch/arm64/Kconfig     | 3 +++
->  arch/loongarch/Kconfig | 3 +++
->  arch/mips/Kconfig      | 3 +++
->  arch/powerpc/Kconfig   | 4 ++++
->  arch/riscv/Kconfig     | 3 +++
->  arch/s390/Kconfig      | 3 +++
->  arch/sh/Kconfig        | 3 +++
->  arch/x86/Kconfig       | 3 +++
->  kernel/Kconfig.kexec   | 2 +-
->  10 files changed, 29 insertions(+), 1 deletion(-)
+Thanks Michael.
 
-Thanks for the effort.
-
-Acked-by: Baoquan He <bhe@redhat.com>
-
-> 
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 0ec034933cae..4cc31467298b 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -1598,6 +1598,9 @@ config ATAGS_PROC
->  config ARCH_SUPPORTS_CRASH_DUMP
->  	def_bool y
->  
-> +config ARCH_DEFAULT_CRASH_DUMP
-> +	def_bool y
-> +
->  config AUTO_ZRELADDR
->  	bool "Auto calculation of the decompressed kernel image address" if !ARCH_MULTIPLATFORM
->  	default !(ARCH_FOOTBRIDGE || ARCH_RPC || ARCH_SA1100)
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index ed15b876fa74..8c67b76347d3 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -1559,6 +1559,9 @@ config ARCH_DEFAULT_KEXEC_IMAGE_VERIFY_SIG
->  config ARCH_SUPPORTS_CRASH_DUMP
->  	def_bool y
->  
-> +config ARCH_DEFAULT_CRASH_DUMP
-> +	def_bool y
-> +
->  config ARCH_HAS_GENERIC_CRASHKERNEL_RESERVATION
->  	def_bool CRASH_RESERVE
->  
-> diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
-> index 0e3abf7b0bd3..7ba3baee859e 100644
-> --- a/arch/loongarch/Kconfig
-> +++ b/arch/loongarch/Kconfig
-> @@ -600,6 +600,9 @@ config ARCH_SUPPORTS_KEXEC
->  config ARCH_SUPPORTS_CRASH_DUMP
->  	def_bool y
->  
-> +config ARCH_DEFAULT_CRASH_DUMP
-> +	def_bool y
-> +
->  config ARCH_SELECTS_CRASH_DUMP
->  	def_bool y
->  	depends on CRASH_DUMP
-> diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-> index 60077e576935..b547f4304d0c 100644
-> --- a/arch/mips/Kconfig
-> +++ b/arch/mips/Kconfig
-> @@ -2881,6 +2881,9 @@ config ARCH_SUPPORTS_KEXEC
->  config ARCH_SUPPORTS_CRASH_DUMP
->  	def_bool y
->  
-> +config ARCH_DEFAULT_CRASH_DUMP
-> +	def_bool y
-> +
->  config PHYSICAL_START
->  	hex "Physical address where the kernel is loaded"
->  	default "0xffffffff84000000"
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 8a4ee57cd4ef..c04f7bb543cc 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -682,6 +682,10 @@ config RELOCATABLE_TEST
->  config ARCH_SUPPORTS_CRASH_DUMP
->  	def_bool PPC64 || PPC_BOOK3S_32 || PPC_85xx || (44x && !SMP)
->  
-> +config ARCH_DEFAULT_CRASH_DUMP
-> +	bool
-> +	default y if !PPC_BOOK3S_32
-> +
->  config ARCH_SELECTS_CRASH_DUMP
->  	def_bool y
->  	depends on CRASH_DUMP
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index 86d1f1cea571..341ef759870a 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -882,6 +882,9 @@ config ARCH_SUPPORTS_KEXEC_PURGATORY
->  config ARCH_SUPPORTS_CRASH_DUMP
->  	def_bool y
->  
-> +config ARCH_DEFAULT_CRASH_DUMP
-> +	def_bool y
-> +
->  config ARCH_HAS_GENERIC_CRASHKERNEL_RESERVATION
->  	def_bool CRASH_RESERVE
->  
-> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-> index c60e699e99f5..fff371b89e41 100644
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -275,6 +275,9 @@ config ARCH_SUPPORTS_CRASH_DUMP
->  	  This option also enables s390 zfcpdump.
->  	  See also <file:Documentation/arch/s390/zfcpdump.rst>
->  
-> +config ARCH_DEFAULT_CRASH_DUMP
-> +	def_bool y
-> +
->  menu "Processor type and features"
->  
->  config HAVE_MARCH_Z10_FEATURES
-> diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-> index e9103998cca9..04ff5fb9242e 100644
-> --- a/arch/sh/Kconfig
-> +++ b/arch/sh/Kconfig
-> @@ -550,6 +550,9 @@ config ARCH_SUPPORTS_KEXEC
->  config ARCH_SUPPORTS_CRASH_DUMP
->  	def_bool BROKEN_ON_SMP
->  
-> +config ARCH_DEFAULT_CRASH_DUMP
-> +	def_bool y
-> +
->  config ARCH_SUPPORTS_KEXEC_JUMP
->  	def_bool y
->  
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index d1fe732979d4..7f39db779574 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -2092,6 +2092,9 @@ config ARCH_SUPPORTS_KEXEC_JUMP
->  config ARCH_SUPPORTS_CRASH_DUMP
->  	def_bool X86_64 || (X86_32 && HIGHMEM)
->  
-> +config ARCH_DEFAULT_CRASH_DUMP
-> +	def_bool y
-> +
->  config ARCH_SUPPORTS_CRASH_HOTPLUG
->  	def_bool y
->  
-> diff --git a/kernel/Kconfig.kexec b/kernel/Kconfig.kexec
-> index 6c34e63c88ff..4d111f871951 100644
-> --- a/kernel/Kconfig.kexec
-> +++ b/kernel/Kconfig.kexec
-> @@ -97,7 +97,7 @@ config KEXEC_JUMP
->  
->  config CRASH_DUMP
->  	bool "kernel crash dumps"
-> -	default y
-> +	default ARCH_DEFAULT_CRASH_DUMP
->  	depends on ARCH_SUPPORTS_CRASH_DUMP
->  	depends on KEXEC_CORE
->  	select VMCORE_INFO
-> -- 
-> 2.43.0
-> 
-
+On 9/18/24 11:55 PM, Michael Ellerman wrote:
+> Danny Tsen <dtsen@linux.ibm.com> writes:
+>> Removing CRYPTO_AES_GCM_P10 in Kconfig first so that we can apply the
+>> subsequent patches to fix data mismatch over ipsec tunnel.
+> This change log needs to stand on its own. ie. it needs to explain what
+> the problem is and why the feature is being disabled, without reference
+> to subsequent patches (which will probably be merged separately).
+>
+> It should also have a Fixes/stable tag.
+>
+> And as Christophe said, just adding a dependency on BROKEN is
+> sufficient.
+>
+> cheers
+>
+>
+>> diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
+>> index 09ebcbdfb34f..96ca2c4c8827 100644
+>> --- a/arch/powerpc/crypto/Kconfig
+>> +++ b/arch/powerpc/crypto/Kconfig
+>> @@ -105,22 +105,22 @@ config CRYPTO_AES_PPC_SPE
+>>   	  architecture specific assembler implementations that work on 1KB
+>>   	  tables or 256 bytes S-boxes.
+>>   
+>> -config CRYPTO_AES_GCM_P10
+>> -	tristate "Stitched AES/GCM acceleration support on P10 or later CPU (PPC)"
+>> -	depends on PPC64 && CPU_LITTLE_ENDIAN && VSX
+>> -	select CRYPTO_LIB_AES
+>> -	select CRYPTO_ALGAPI
+>> -	select CRYPTO_AEAD
+>> -	select CRYPTO_SKCIPHER
+>> -	help
+>> -	  AEAD cipher: AES cipher algorithms (FIPS-197)
+>> -	  GCM (Galois/Counter Mode) authenticated encryption mode (NIST SP800-38D)
+>> -	  Architecture: powerpc64 using:
+>> -	    - little-endian
+>> -	    - Power10 or later features
+>> -
+>> -	  Support for cryptographic acceleration instructions on Power10 or
+>> -	  later CPU. This module supports stitched acceleration for AES/GCM.
+>> +#config CRYPTO_AES_GCM_P10
+>> +#	tristate "Stitched AES/GCM acceleration support on P10 or later CPU (PPC)"
+>> +#	depends on PPC64 && CPU_LITTLE_ENDIAN && VSX
+>> +#	select CRYPTO_LIB_AES
+>> +#	select CRYPTO_ALGAPI
+>> +#	select CRYPTO_AEAD
+>> +#	select CRYPTO_SKCIPHER
+>> +#	help
+>> +#	  AEAD cipher: AES cipher algorithms (FIPS-197)
+>> +#	  GCM (Galois/Counter Mode) authenticated encryption mode (NIST SP800-38D)
+>> +#	  Architecture: powerpc64 using:
+>> +#	    - little-endian
+>> +#	    - Power10 or later features
+>> +#
+>> +#	  Support for cryptographic acceleration instructions on Power10 or
+>> +#	  later CPU. This module supports stitched acceleration for AES/GCM.
+>>   
+>>   config CRYPTO_CHACHA20_P10
+>>   	tristate "Ciphers: ChaCha20, XChacha20, XChacha12 (P10 or later)"
+>> -- 
+>> 2.43.0
 
