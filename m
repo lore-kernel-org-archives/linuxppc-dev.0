@@ -1,75 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-1495-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1496-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB2B8CF9C5E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2024 16:49:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A795CF9C60
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2024 17:47:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X9JJH1lZTz2y64;
-	Sat, 21 Sep 2024 02:49:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::436"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726850959;
-	cv=none; b=Kf90KgzMfskyGxAw5DH40InakghCoVL2ml7fJx3ESTOhV3DHnNGQbaZJKM8AhFQWoMF840lFA2bVSea2vKGL5JOF1C7j6g78yyyI2//GJ/Mo3Y05JZS8L3fn2qTXF/7nBVL77V2VPw3K6/9RvnVlsUchJPR0EMhAPnZgbLxvPxeAsNDNJdhDuazOMt350B1HAkbIYD0WGcPhfGqN/bFEVKuC3WxpUHKCIpSOCI061m2ITvfaIYxMZB8Ia0pYy8Q+zMbZB6J/IYwtnQVGxdUURmLu+7m6gu48Yrdl98P0H9CJj5v/oO8I5f5bY2oil2+Y5MriHzIVphvyJg5whZtVww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X9Kbq12bgz2yV3;
+	Sat, 21 Sep 2024 03:47:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b49"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726854471;
+	cv=none; b=Be7JicVgJGsdOfFXTj4fBFp7oC42BZ3UXGxQ5dncwo8+wdldNnNjKfP1uhMVzd6wyMJ7c4SLlUX0ckV4JynNyzZN1D5K4ZaFwf2OlXvzdi3Cc7eVPpsgaen9jrOLrpIDH8MjjFG5RlBFqHSGDxjsWouOofmkE0CKVZiNp1AilKF2f4/wtuBbN/EKPRSu6yP1x88p3oQBGq17JFj0yqy/aEsyLtYKyJ0JS8DD2hMzVsSUGkoHIAoPDUaYsXhzcQs9I8SleEKfg4IS+U3XS6+pILZpGYEs2AqU42plv160DOspTemtn1YSiA/bSJJo4B7GEjY6nMw4zvSP4M2Y0YEkzg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726850959; c=relaxed/relaxed;
-	bh=2kHoXGpQxL3XPYrnN2xMP9YX8PHpsgIJNgRochE1QWs=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=GoW6Y4FSeyvCb4vrX/wg5KMjM0GU2yTL2qe4wnMFUNDgTs8oKQSFoK8RGvfaVPPbr7D0IAUqUoaZionDmZN6pw66zm+gSpjGwpIhAz3iGLhhrTigv9YRYX7SE4t620ZoAD5aIFxHIxFh2b34z/EOveKgoAVdqRoVtQiv8DFIo2kKSpuzn4Mt/S+M2GxgrgheDgACKPJsLn6RPoHA0UtxHI09Jq86kxnJ9VyKgUl6uqfxMb2UoG8bWNCZVR7qr9psVn1oVAti3AdlbO+7uI0VuqIE5A5pKDLbTmPOzAnH8o5lvMTEv7xJthhetBSh7OKaseeWpcUECMDGWNy53qXfZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WiRY5Q/x; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1726854471; c=relaxed/relaxed;
+	bh=1u8+tIRQu1/+Yzznd3YfSwPNzKiT5HV8vjSuz+hJEoI=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=di/k5zXq00x0xWgEhh3wxPwEXZuOfBVLRR5qlCECN8Ns4B9Ae2FYaYhnq5NlYiISxTKb9mb1ZuqqEftVERiU8lCz/5oF9bAKjUogj/YHlfpr/rwkq6Pz/2OxYydIDi1jpTkx5EPvcznIVkcuQv1N3lVdhbElwWzIBmSohJdnq5QKTomQPy3alIAFYOKjjjTKmJGV9XYxsAS/jJGDCwlO4h+qNSffEcya2BfFJQxMYTwEu5ixC/8mK38nxQ7xT1Nxw1OZvdXri4Ajydz4RUhF416G8298mtB2mXU9xaQSHY4bNA1Pbq6fnuFfX78IsDsH+R6Pl1yeO3LWsUa9V5+Wkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=xmszmW0l; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3qbxtzgskdkacoltonlewisgoogle.comlinuxppc-devlists.ozlabs.org@flex--coltonlewis.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--coltonlewis.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WiRY5Q/x;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=xmszmW0l;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--coltonlewis.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3qbxtzgskdkacoltonlewisgoogle.comlinuxppc-devlists.ozlabs.org@flex--coltonlewis.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X9JJG3MJDz2xxy
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2024 02:49:17 +1000 (AEST)
-Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-71781f42f75so2147136b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2024 09:49:17 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X9Kbp44hTz2xs7
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2024 03:47:48 +1000 (AEST)
+Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-e17bb508bb9so3659317276.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2024 10:47:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1726850955; x=1727455755; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=2kHoXGpQxL3XPYrnN2xMP9YX8PHpsgIJNgRochE1QWs=;
-        b=WiRY5Q/x2OE64X+8Z53OBYI4hUOAqNkl90c5QYoGsXYNwUNro99BfWKGAmLeYh4YKO
-         p9RLSyliKOxEx6/J2l6DeXJZUMgkj28MRtWxSeraAifRcIQTxlLDJqL5/o9ideMbz3B/
-         GtryvIaBlPhr8fv+QO6+s3fef5m6bb97V88ZTsECjfBtH1HzB182QLk8M/Z7TLqLjw3M
-         ACMYe88vKsthPWGCjudYsSxqARxYof/hmBpMd+BKuxhkxBiYCyATv5s2Ja61Jd1mqKer
-         gS/HdQHCfL8FNn7mz0N9fXqs04W+Il78ZpxJMYmJ5kLUpY4wsnQrsq1x1rlPo/y8ePWz
-         CKAw==
+        d=google.com; s=20230601; t=1726854465; x=1727459265; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=1u8+tIRQu1/+Yzznd3YfSwPNzKiT5HV8vjSuz+hJEoI=;
+        b=xmszmW0lgw1URzuyU9N4mCj3qHzgjvwMQr45gYyI5T40GkRlSxlRKOCEHl4+Wt2rYD
+         osP0K9sZiK6qND/3O7zuNNiY2BkVQGQtDsfFJxAxXkzQFHMoqMozoxpXBcrqw0QsDB9V
+         zBuSffI8PdO5If+B/g62sOkS9zbs9JXQFwQWPT4YkTJiK5ycy1YztZtkfqpx931OnodT
+         lqXZOrCw/JA1PV760q6cv0Cr3st02HDxtoR4/CSbx5jE1S/aX0T+EjSMQhVdc9pKjHE5
+         BpVtC81yEAUtuA0CvazHsfgc3J+g4HDpRSzqImFg3Qm8gXogEO4aCr5/jhjsAe/HhHnm
+         iRDQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1726850955; x=1727455755;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2kHoXGpQxL3XPYrnN2xMP9YX8PHpsgIJNgRochE1QWs=;
-        b=KUTFu1DGgkBIWVBP0ZuFJDfh/mpbNtn3l1i6DT64qvNj9jAz8D+hQQ2Tm50VvTxXy+
-         Zbi/brdh/yudYJ2mh90ye+trOPYH+ezF6GJuuxKeCuXROvwPz1uXo49lGI7wuf/hflhi
-         40N0hKOeIAbtilIR+WKwKf6Gr0ijfFUN2CBh2iOtFJ2xRRgoK23C4AV7GFWLpyRXujdU
-         aENduE4sYGTLcaRs/bqM5r7Z/ePVAmzeVFBOMqIZhsRiJDeJvAf6yr6NTxDFcyxPVEdJ
-         +zUV7gGDUW8TdOKnLiAt2jro4jNm0iKRiYXQYxafplZ+w79LR2m2doJ7dxr1WSWrOZRP
-         X/iQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUBUgW3CeZIJJvSwV4dk1vuW3ZtsRGyVVqwPHEYt6/Vx5bkkAYfEemKMEt/+Y26DrHpRzlillQW6zqLCWw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyRK2BrJbDuQeMajHSmlpPBr8efvKFiEnuhucf5FDrCH1bA/6vs
-	RH1zYaefAjqYY+UyhApURtVccXAjgYNzB0tnntW3zLGOVwHcvv+Z/YsXZQ==
-X-Google-Smtp-Source: AGHT+IEaLnUVQi14uhzAIV/oKw0aTeDl8Mg00K+8OH3Z0MaLH6c6ck+hi6sLK7oZWN6FVNh1iQfPKA==
-X-Received: by 2002:a05:6a21:4d8a:b0:1cf:9a86:73e4 with SMTP id adf61e73a8af0-1d30c9fa444mr5021347637.14.1726850954961;
-        Fri, 20 Sep 2024 09:49:14 -0700 (PDT)
-Received: from dw-tp ([49.205.218.89])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-71944b970f6sm10359449b3a.143.2024.09.20.09.49.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Sep 2024 09:49:14 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, mpe@ellerman.id.au
-Cc: npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
-Subject: Re: [PATCH v3 2/3] powerpc/pseries: Export hardware trace macro dump via debugfs
-In-Reply-To: <20240828085223.42177-2-maddy@linux.ibm.com>
-Date: Fri, 20 Sep 2024 21:45:55 +0530
-Message-ID: <87frpugv2c.fsf@gmail.com>
-References: <20240828085223.42177-1-maddy@linux.ibm.com> <20240828085223.42177-2-maddy@linux.ibm.com>
+        d=1e100.net; s=20230601; t=1726854465; x=1727459265;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=1u8+tIRQu1/+Yzznd3YfSwPNzKiT5HV8vjSuz+hJEoI=;
+        b=Mf8DRrtwd+Gd5CXvM7bcGp5QvqOaofsq3QpfNTX4xgcmIMDcXfqNXKxX2E8ikc/qDl
+         nqvkLHjQGXFuMziygv4qhfzq8IuRjn+ylFkVcZQFoxG79EpptJ+Gii1/TKUtmVvUgxzv
+         eECBfnjTPTJB0Yes6ejdvcDE5ffNMOD2QNZT7onbEVwCGVSm2GbvPVa8enr+DbK80Zeu
+         oWKdoO89Onqr5MRzoEDSUHJEe5gUmsuj7X+sTkIgHo9Vvgh4vurC69czHaKkecyAkpGu
+         fbwF5fCK7ev2QzZrwr0zoQF8bColCyKYatbQrQM8+MeMWurul+bz6UnV52F15YlFk/Xe
+         DMVQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUwi7wwq/qlT+g61ScE10Yxq/WzuZcJ2neAQVRoCsx39dyxwdJ8nNRfZdCV3lbNS3/69hmpQZo3NaRWs0E=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxN7Fkf7fEsdHUfH8E5rf4LSWIozAUSQSKT0xkqpyXhsIxafh/H
+	yr771iPka+hmGaWINJLCsKJcgzRKxOL6hIDwzCpr5yzZaZojqbZ5wofUjl4HwPT/0UsNadNG2XG
+	LaloGHy3BnO2L8dY05rmPjg==
+X-Google-Smtp-Source: AGHT+IEMZpgFL+UVav7e6/78nxxqsZh8RtB34P8KhO4E9lrAtqCCPkLcHN7A2NJ63pZVH3cqvvVs3DKnxU1JZod0ig==
+X-Received: from coltonlewis-kvm.c.googlers.com ([fda3:e722:ac3:cc00:11b:3898:ac11:fa18])
+ (user=coltonlewis job=sendgmr) by 2002:a25:c503:0:b0:e17:8e4f:981a with SMTP
+ id 3f1490d57ef6-e2250cd6079mr6801276.11.1726854465133; Fri, 20 Sep 2024
+ 10:47:45 -0700 (PDT)
+Date: Fri, 20 Sep 2024 17:47:36 +0000
+In-Reply-To: <20240920174740.781614-1-coltonlewis@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,253 +72,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+Mime-Version: 1.0
+References: <20240920174740.781614-1-coltonlewis@google.com>
+X-Mailer: git-send-email 2.46.0.792.g87dc391469-goog
+Message-ID: <20240920174740.781614-2-coltonlewis@google.com>
+Subject: [PATCH v5 1/5] arm: perf: Drop unused functions
+From: Colton Lewis <coltonlewis@google.com>
+To: kvm@vger.kernel.org
+Cc: Oliver Upton <oliver.upton@linux.dev>, Sean Christopherson <seanjc@google.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, 
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, 
+	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
+	Kan Liang <kan.liang@linux.intel.com>, Will Deacon <will@kernel.org>, 
+	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H . Peter Anvin" <hpa@zytor.com>, linux-perf-users@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	Colton Lewis <coltonlewis@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Madhavan Srinivasan <maddy@linux.ibm.com> writes:
+For arm's implementation, perf_instruction_pointer() and
+perf_misc_flags() are equivalent to the generic versions in
+include/linux/perf_event.h so arch/arm doesn't need to provide its
+own versions. Drop them here.
 
-> This patch adds debugfs interface to export Hardware Trace Macro (HTM)
-> function data in a LPAR. New hypervisor call "H_HTM" has been
-> defined to setup, configure, control and dump the HTM data.
-> This patch supports only dumping of HTM data in a LPAR.
-> New debugfs folder called "htmdump" has been added under
-> /sys/kernel/debug/arch path which contains files need to
-> pass required parameters for the H_HTM dump function. New Kconfig
-> option called "CONFIG_HTMDUMP" has been in platform/pseries for the same.
->
-> With this module loaded, list of files in debugfs path
->
-> /sys/kernel/debug/powerpc/htmdump
-> coreindexonchip  htmtype  nodalchipindex  nodeindex  trace
->
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-> ---
-> Changelog v2:
-> - Made driver as modules based on review comments
-> Changelog v1:
-> - Changed from tristate to bool with dependency flags
-> - Trimmed the include headers
->
->  arch/powerpc/platforms/pseries/Kconfig   |   9 ++
->  arch/powerpc/platforms/pseries/Makefile  |   1 +
->  arch/powerpc/platforms/pseries/htmdump.c | 130 +++++++++++++++++++++++
->  3 files changed, 140 insertions(+)
->  create mode 100644 arch/powerpc/platforms/pseries/htmdump.c
->
-> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-> index afc0f6a61337..a66be66d690e 100644
-> --- a/arch/powerpc/platforms/pseries/Kconfig
-> +++ b/arch/powerpc/platforms/pseries/Kconfig
-> @@ -128,6 +128,15 @@ config CMM
->  	  will be reused for other LPARs. The interface allows firmware to
->  	  balance memory across many LPARs.
->  
-> +config HTMDUMP
-> +	tristate "PHYP HTM data dumper"
-> +	depends on PPC_PSERIES && DEBUG_FS
-> +	default m
-> +	help
-> +	  Select this option, if you want to enable the kernel debugfs
-> +	  interface to dump the Hardware Trace Macro (HTM) function data
-> +	  in the LPAR.
-> +
->  config HV_PERF_CTRS
->  	bool "Hypervisor supplied PMU events (24x7 & GPCI)"
->  	default y
-> diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-> index 7bf506f6b8c8..3f3e3492e436 100644
-> --- a/arch/powerpc/platforms/pseries/Makefile
-> +++ b/arch/powerpc/platforms/pseries/Makefile
-> @@ -19,6 +19,7 @@ obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
->  obj-$(CONFIG_HVCS)		+= hvcserver.o
->  obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst.o
->  obj-$(CONFIG_CMM)		+= cmm.o
-> +obj-$(CONFIG_HTMDUMP)		+= htmdump.o
->  obj-$(CONFIG_IO_EVENT_IRQ)	+= io_event_irq.o
->  obj-$(CONFIG_LPARCFG)		+= lparcfg.o
->  obj-$(CONFIG_IBMVIO)		+= vio.o
-> diff --git a/arch/powerpc/platforms/pseries/htmdump.c b/arch/powerpc/platforms/pseries/htmdump.c
-> new file mode 100644
-> index 000000000000..54c28525c4a7
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/pseries/htmdump.c
-> @@ -0,0 +1,130 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +/*
-> + * Copyright (C) IBM Corporation, 2024
-> + */
-> +
-> +#define pr_fmt(fmt) "htmdump: " fmt
-> +
-> +#include <linux/debugfs.h>
-> +
-> +#include <asm/machdep.h>
-> +#include <asm/plpar_wrappers.h>
-> +
-> +/* This enables us to keep track of the memory removed from each node. */
-> +struct htmdump_entry {
-> +	void *buf;
-> +	struct dentry *dir;
-> +	char name[16];
-> +};
->
+Signed-off-by: Colton Lewis <coltonlewis@google.com>
+---
+ arch/arm/include/asm/perf_event.h |  7 -------
+ arch/arm/kernel/perf_callchain.c  | 17 -----------------
+ 2 files changed, 24 deletions(-)
 
-How does dir and name gets used?
-It isn't that obvious, so maybe a comment will be gr8.
+diff --git a/arch/arm/include/asm/perf_event.h b/arch/arm/include/asm/perf_event.h
+index bdbc1e590891..c08f16f2e243 100644
+--- a/arch/arm/include/asm/perf_event.h
++++ b/arch/arm/include/asm/perf_event.h
+@@ -8,13 +8,6 @@
+ #ifndef __ARM_PERF_EVENT_H__
+ #define __ARM_PERF_EVENT_H__
+ 
+-#ifdef CONFIG_PERF_EVENTS
+-struct pt_regs;
+-extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+-extern unsigned long perf_misc_flags(struct pt_regs *regs);
+-#define perf_misc_flags(regs)	perf_misc_flags(regs)
+-#endif
+-
+ #define perf_arch_fetch_caller_regs(regs, __ip) { \
+ 	(regs)->ARM_pc = (__ip); \
+ 	frame_pointer((regs)) = (unsigned long) __builtin_frame_address(0); \
+diff --git a/arch/arm/kernel/perf_callchain.c b/arch/arm/kernel/perf_callchain.c
+index 1d230ac9d0eb..a2601b1ef318 100644
+--- a/arch/arm/kernel/perf_callchain.c
++++ b/arch/arm/kernel/perf_callchain.c
+@@ -96,20 +96,3 @@ perf_callchain_kernel(struct perf_callchain_entry_ctx *entry, struct pt_regs *re
+ 	arm_get_current_stackframe(regs, &fr);
+ 	walk_stackframe(&fr, callchain_trace, entry);
+ }
+-
+-unsigned long perf_instruction_pointer(struct pt_regs *regs)
+-{
+-	return instruction_pointer(regs);
+-}
+-
+-unsigned long perf_misc_flags(struct pt_regs *regs)
+-{
+-	int misc = 0;
+-
+-	if (user_mode(regs))
+-		misc |= PERF_RECORD_MISC_USER;
+-	else
+-		misc |= PERF_RECORD_MISC_KERNEL;
+-
+-	return misc;
+-}
+-- 
+2.46.0.792.g87dc391469-goog
 
-> +static u32 nodeindex;
-> +static u32 nodalchipindex;
-> +static u32 coreindexonchip;
-> +static u32 htmtype;
-> +static struct dentry *htmdump_debugfs_dir;
-> +static struct htmdump_entry *ent;
-> +
-> +#define BUFFER_SIZE PAGE_SIZE
-> +
-> +static ssize_t htmdump_read(struct file *filp, char __user *ubuf,
-> +			     size_t count, loff_t *ppos)
-> +{
-> +	struct htmdump_entry *ent = filp->private_data;
-> +	unsigned long page, read_size, available;
-> +	loff_t offset;
-> +	long rc;
-> +
-> +	page = ALIGN_DOWN(*ppos, BUFFER_SIZE);
-> +	offset = (*ppos) % BUFFER_SIZE;
-> +
-> +	rc = htm_get_dump_hardware(nodeindex, nodalchipindex, coreindexonchip,
-> +				   htmtype, virt_to_phys(ent->buf), BUFFER_SIZE, page);
-> +
-> +	switch (rc) {
-> +	case H_SUCCESS:
-> +	case H_PARTIAL:
-> +		break;
-> +	case H_NOT_AVAILABLE:
-> +		return 0;
-
-Minor nits for error returns here...
-
-Is returning 0 correct here? Maybe it is (since 0 means no data read),
-but wanted to confirm if we should return -ENODATA, or -ENODEV 
-(not sure what does H_NOT_AVAILABLE here means)
-
-#define	ENODATA		61	/* No data available */
-
-> +	case H_BUSY:
-> +	case H_LONG_BUSY_ORDER_1_MSEC:
-> +	case H_LONG_BUSY_ORDER_10_MSEC:
-> +	case H_LONG_BUSY_ORDER_100_MSEC:
-> +	case H_LONG_BUSY_ORDER_1_SEC:
-> +	case H_LONG_BUSY_ORDER_10_SEC:
-> +	case H_LONG_BUSY_ORDER_100_SEC:
-
-Similarly for above maybe -EBUSY perhaps, instead of -EINVAL
-
-#define	EBUSY		16	/* Device or resource busy */
-
-> +	case H_PARAMETER:
-> +	case H_P2:
-> +	case H_P3:
-> +	case H_P4:
-> +	case H_P5:
-> +	case H_P6:
-> +	case H_STATE:
-> +	case H_AUTHORITY:
-> +		return -EINVAL;
-> +	}
-> +
-> +	available = BUFFER_SIZE - offset;
-> +	read_size = min(count, available);
-> +	*ppos += read_size;
-> +	return simple_read_from_buffer(ubuf, count, &offset, ent->buf, available);
-> +}
-> +
-> +static const struct file_operations htmdump_fops = {
-> +	.llseek = default_llseek,
-> +	.read	= htmdump_read,
-> +	.open	= simple_open,
-> +};
-> +
-> +static int htmdump_init_debugfs(void)
-> +{
-> +	ent = kcalloc(1, sizeof(struct htmdump_entry), GFP_KERNEL);
-> +	if (!ent) {
-> +		pr_err("Failed to allocate ent\n");
-> +		return -EINVAL;
-
-return value can be -ENOMEM;
-
-> +	}
-> +
-> +	ent->buf = kmalloc(BUFFER_SIZE, GFP_KERNEL);
-> +	if (!ent->buf) {
-> +		pr_err("Failed to allocate htmdump buf\n");
-> +		return -ENOMEM;
-
-kfree(ent)?
-
-
-> +	}
-> +
-> +	pr_debug("%s: ent:%lx buf:%lx\n",
-> +			__func__, (long unsigned int)ent, (long unsigned int)ent->buf);
-> +
-
-maybe %p perhaps? 
-
-
-<Documentation/core-api/printk-formats.rst>
-Plain Pointers
---------------
-
-::
-
-	%p	abcdef12 or 00000000abcdef12
-
-Pointers printed without a specifier extension (i.e unadorned %p) are
-hashed to prevent leaking information about the kernel memory layout. This
-has the added benefit of providing a unique identifier.
-<...>
-...the aim of printing the address is to provide
-more information for debugging, use %p and boot the kernel with the
-``no_hash_pointers`` parameter during debugging, which will print all %p
-addresses unmodified. If you *really* always want the unmodified address, see
-%px below.
-
-
-> +	htmdump_debugfs_dir = debugfs_create_dir("htmdump",
-> +						  arch_debugfs_dir);
-> +
-> +	debugfs_create_u32("nodeindex", 0600,
-> +			htmdump_debugfs_dir, &nodeindex);
-> +	debugfs_create_u32("nodalchipindex", 0600,
-> +			htmdump_debugfs_dir, &nodalchipindex);
-> +	debugfs_create_u32("coreindexonchip", 0600,
-> +			htmdump_debugfs_dir, &coreindexonchip);
-> +	debugfs_create_u32("htmtype", 0600,
-> +			htmdump_debugfs_dir, &htmtype);
-> +	debugfs_create_file("trace", 0400, htmdump_debugfs_dir, ent, &htmdump_fops);
-> +
-> +	return 0;
-> +}
-> +
-> +static int __init htmdump_init(void)
-> +{
-> +	if (htmdump_init_debugfs())
-> +		return -EINVAL;
-> +
-> +	return 0;
-> +}
-> +
-> +static void __exit htmdump_exit(void)
-> +{
-> +	debugfs_remove_recursive(htmdump_debugfs_dir);
-> +	kfree(ent->buf);
-> +	kfree(ent);
-> +}
-> +
-> +module_init(htmdump_init);
-> +module_exit(htmdump_exit);
-> +MODULE_DESCRIPTION("PHYP Hardware Trace Macro (HTM) data dumper");
-> +MODULE_LICENSE("GPL");
-> -- 
-> 2.45.2
 
