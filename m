@@ -1,86 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-1480-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1481-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 832ADCF3973
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2024 00:34:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E392CF3964
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2024 02:21:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X8tgw19m2z2yMF;
-	Fri, 20 Sep 2024 10:34:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.163 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726758367;
-	cv=pass; b=PX1WU5Wc0tx7e1XqkQX83QrpStKmggd5sANzvAzzEpkzmiCP4J0cxI4I0R+2+pl1DO1m8Hc9aP95LRLvnMe5vk4lvg2vfJfgSdSt46To8kbGuQs9yj92Ea86/utdbjm5ZQyWEfw6FxogqCaTAacrxy7O8ahRbiHrlvqwF3Ntb+rRWcClK5Rh//5FS9iTYnVsG9ZhLM0nZGJQMS3OKWakiA3+vnf3PlFSMa55xJE+ypuNVTDXTY7xj97kFYc4dcFJ1JXjJo9rUS/ZWV0KCmILi7Wee8Ztc06jzgcEp5ISV11Auy1X5+uPc/508LXXpuW0U8DOgvBldZTL7Jal1fLl6w==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726758367; c=relaxed/relaxed;
-	bh=wCWZ4Vqkz/3rgoo+tDgPY4HRVEkM82xD4L1fSPN3fDM=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Cc:Date:
-	 Message-Id:References:To; b=WQLgXuhdl7mkjYs6bsuNlTc0/3L7ADC9dvtQ0iLV9q+At7LvI53Dl/NewnFRWrBHgNZI1SkclhOT5vi2o6VLEsMFjXWDsIjMrkf1cXRnYygVJtqJABU3JUTZ2BQ62Dspw4JlliOR1MSgSvMEf5UuBfcPvYAuY3/Gw47YdSzjRavAsWcD7Y83uz9fqazOYFPrl4fr3UzE7nvd4RixHm+hp+VSX0HGy4SQokUguvYG1WieVesc9yfwS7MtQeEZQO+2Y6MG65YRR+hi6bChpPM83kJWdiOuXbDEgNSd9FdS6AbnDstPhqEQRdRTASJOtF/AKkasRtL+iJZhfgY3h5TJqA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=dqQkMU2H; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=FVB7cUjc; dkim-atps=neutral; spf=pass (client-ip=81.169.146.163; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p00-ob.smtp.rzone.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X8x334rdMz2xmk;
+	Fri, 20 Sep 2024 12:21:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.19
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726798895;
+	cv=none; b=cE4qeoXFHdHJNWcMxH407BB0leCvEHs+x3+4JCKUmgGL7RB747JIAFxZ8Sy+9q7/iGzGgFn804E+Vmj9kG97Ua3T5B5exGlIbmRBgq18WNIMt/Ij4XY8RVXuM0fRRHiye10BXyRxPkJmTyswXUVQ+6mxbpyr0zNUTUFvFBjIF/MS08Eu0WMDlv+IIfQlZsb299NtfUKR3KIS3El4jHbLAjFLbLDUeYMW8TpKJtbZatIBIoIPGUw8l7X7B202s3VxqL/ZzkdV6KV6dVi/nYHWG9KdZBwj9FodrasT42qJowP0W8i7sS5Kn378GFW9X2/ydMMl3hFz565UmZjdtD8Zxw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1726798895; c=relaxed/relaxed;
+	bh=77Gj7np+ZKHtU14T/xiajXIjnpe8O//Izjbw4Cr9qXs=;
+	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=G/Ze56i+Soe3LM1ExY5K+eEc9J2yocK5oYgQIImhvyyVWwMJb6kvhSkOlE//98yQBc3WNcYmIl8VmkJMBQ16g1A741/+GlNRKwuRFlzxV2Vk43fHmYj96D8edoNL6p7xc38U6oce2pEa4Wo2dtDcpLJwdeIcbytHYTLKmZzqi01cgcPJS1ZdHgYYAfnvf93tNmWDMugmFyUPNLHio+FTOLabHs4nupr2JfP+YYzq68P/hyhVFYNk9i4vfhML+j4Zr2b5fEld+wbxaXo8r9J9J27cDMB1bD/D6LJg/3U6G6+1UFhWOeWhBtRNRnOqE18NhUg3d9GxRSqT2fvgz68ocg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=efault@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=Zhh25imj; dkim-atps=neutral; spf=pass (client-ip=212.227.15.19; helo=mout.gmx.net; envelope-from=efault@gmx.de; receiver=lists.ozlabs.org) smtp.mailfrom=gmx.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=dqQkMU2H;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=FVB7cUjc;
+	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=efault@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=Zhh25imj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p00-ob.smtp.rzone.de (client-ip=81.169.146.163; helo=mo4-p00-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 178 seconds by postgrey-1.37 at boromir; Fri, 20 Sep 2024 01:06:05 AEST
-Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de [81.169.146.163])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.15.19; helo=mout.gmx.net; envelope-from=efault@gmx.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 333 seconds by postgrey-1.37 at boromir; Fri, 20 Sep 2024 12:21:34 AEST
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X8f3d1gXWz2yHj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2024 01:06:04 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1726758176; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=iK5skUWPVikW9qFzY7jMrkK+dbRS9a+5UM1rHX56rREst3OclDnLPp307jU/xDCrjR
-    XDoxWZOtyV6PZMsKtTGALo6PcrfpHa5nykyMjUBXDdNGWyrYjKHvamoxsB9wD1BStGx8
-    Y5MBOtwBtKsbtWBECbc06i8EnCRPs8jXoRG3jPPhMseLAqXUbnsnM06ZUUDOkUp5+NZB
-    SEzL7vZpQoLdKedFDXN0PpXe9828cvjg1QDhYcdphj49boaZ42S7Ay2Z30DuwkE37rvV
-    AhWXxm7cIXm72HguTukVfgAZzBFqNSZEwpvo50S+IMEjZVl355S8qOiEI5wIMPbaJhwQ
-    HQyA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1726758176;
-    s=strato-dkim-0002; d=strato.com;
-    h=To:References:Message-Id:Date:Cc:In-Reply-To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=wCWZ4Vqkz/3rgoo+tDgPY4HRVEkM82xD4L1fSPN3fDM=;
-    b=R6VxfWbb+/QHCTecwfWz2BHTy79zcawjc6a8ROYBq2EAMW7Yr+9MlXONqVvPBtt2wd
-    DrZ8g6FVuLdIu8L1Nzy4Sr2oav4WqqBcbvCORWb1+fC5dKORJq/MfNHr1fASBUQznmu/
-    txboBecjvoJth9f1qKk7DPsM9r9JaTWA96Ad8utOO6uE3l4hA16+X/0Wj2dUsnKtdt11
-    geEvQV1St0QQHssj8+Jfp0YLW3wFthPVljOr/GAn3jNQk4lhmioJ76bVRqIwF/ye4WH7
-    AIqiu3PQ67fySKZY4Fzv8Gx042tIC5G+8/EEGK6WHSt/9olkG6p4YbKbhlhvvEQJYcqz
-    SMsw==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo00
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1726758176;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=To:References:Message-Id:Date:Cc:In-Reply-To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=wCWZ4Vqkz/3rgoo+tDgPY4HRVEkM82xD4L1fSPN3fDM=;
-    b=dqQkMU2H5t2fjZRH0+l2MNzJwcDftsnGrrAi5rBwlV19H50OnhR/KLyfnuCnGVcMmF
-    WnkADwX7QlpVYQNBD4U7r1xVGEV+b/eju4IuZiYOLIIzsgYWMR5vgd2m2f8mwVWUZ+8W
-    WvzD523OfTQafyNS0dALHat+IqUEmUfBBD/f2EAr80J4T78/8golu8ZKCDRVSGrcgyv0
-    QkkM5Qn7zECq3u1GMJwq8avwzDGNy5HMzqSfiId8n10a2AZJRxBFPwPD+Gq7aJB/KOJt
-    fiesTlAM0wGm66XtsA1MPN+blnjccWk1jgh4gTh7mwm1gKYZFuh8HddN0FProuRWehIt
-    yEeA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1726758176;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=To:References:Message-Id:Date:Cc:In-Reply-To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=wCWZ4Vqkz/3rgoo+tDgPY4HRVEkM82xD4L1fSPN3fDM=;
-    b=FVB7cUjc+uyf2FCBhA/4QyhKwx3iu8tjJsmLprsgjBquQaoEQvPpOvv3lZGfiJXjhb
-    P3+MVSneSy286mnWWPBg==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5mxs3jHWypQjdLaWAruPhWzujn2eRzB2bdbjf4="
-Received: from smtpclient.apple
-    by smtp.strato.de (RZmta 51.2.3 AUTH)
-    with ESMTPSA id e9670808JF2tfCr
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Thu, 19 Sep 2024 17:02:55 +0200 (CEST)
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X8x322vDBz2xmZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Sep 2024 12:21:33 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1726798890; x=1727403690; i=efault@gmx.de;
+	bh=77Gj7np+ZKHtU14T/xiajXIjnpe8O//Izjbw4Cr9qXs=;
+	h=X-UI-Sender-Class:Message-ID:Subject:From:To:Date:In-Reply-To:
+	 References:Content-Type:MIME-Version:Content-Transfer-Encoding:cc:
+	 content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=Zhh25imj3X7IruBss1+Hb2fGZ3AdiB10qTZ1qOoLKmN0GLuFnQmVcQt6AIhFqC5b
+	 pALUL+q/06jLZy1zf6WMcRoL9hbPuC4R2m803mP1QynCxYrO6YwBpVqYOl1dDXap0
+	 z60xP1ctIVDrpBL7DxGK/RNKpFmQ7KpJNYvHc31WQhuNA+xrI0ClI+JzdI74goVK5
+	 mo4+COmt+52CPQBHwlX9ae4YwIb5GdrVPeER6aehjvfMU+1LMjyD/VVGzLV/0aY4S
+	 J1VssSiKSWcuvLKbOILNjknVVEVchKCTyyfzxLwcOLu4cVR4RLN7dXfXowI2LxCrA
+	 hz2BYZK9IiLBg7ooow==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from homer.fritz.box ([91.212.106.56]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MaJ3n-1sUbFm41Mz-00PLir; Fri, 20
+ Sep 2024 04:15:32 +0200
+Message-ID: <177646b0c427786c90a8ccb67f5b956a12759d3a.camel@gmx.de>
+Subject: Re: [patch] Re: [PowerPC][Linux-next][6.11.0-rc4-next-20240820]
+ OOPs while running LTP FS Stress
+From: Mike Galbraith <efault@gmx.de>
+To: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>, 
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ peterz@infradead.org, vschneid@redhat.com, mingo@kernel.org,
+ sfr@canb.auug.org.au
+Date: Fri, 20 Sep 2024 04:15:30 +0200
+In-Reply-To: <c8c28050-8c6e-45b1-8b70-06cf5e0921e6@linux.vnet.ibm.com>
+References: <82b9c434-a0fd-4488-95be-a45b8cd4b6e6@linux.vnet.ibm.com>
+	 <2fb24ab402d9de45e3cf16e6ba0ad23a7843e5c1.camel@gmx.de>
+	 <c8c28050-8c6e-45b1-8b70-06cf5e0921e6@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.42.4 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,51 +70,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0 (1.0)
-Subject: [FSL P50x0] [GIT KERNEL] [VDSO] compiling issue
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-In-Reply-To: <de2d1e74-52e5-4d74-8228-4aaea61cad51@xenosoft.de>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Trevor Dickinson <rtd2@xtra.co.nz>, mad skateman <madskateman@gmail.com>,
- Darren Stevens <darren@stevens-zone.net>
-Date: Thu, 19 Sep 2024 17:02:45 +0200
-Message-Id: <0C6E937D-A322-4B76-96E8-2C239241F049@xenosoft.de>
-References: <de2d1e74-52e5-4d74-8228-4aaea61cad51@xenosoft.de>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-X-Mailer: iPhone Mail (21G93)
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:dsBviHucoPVCIAkRArCXYTRRur6moHQ5PlWxYDaBZ/fY83nVrrz
+ PpGRUkO2aYEq04jy2P6KV61taffA/FL1dP3Ddl/QYoQQygpZWYXqEjX19bZIlBl9H0vI8Fr
+ Bb3X1azisbO0yzKFabdrMc6m9Na0+qdgsngTYcd45yZLLUg+dJMYhdnHSlEvgHTBKam33VV
+ 0z5mri6YzM0GfjmCJppBQ==
+UI-OutboundReport: notjunk:1;M01:P0:Z7LK3j1vvi8=;vhpgIoYqbeOwMza2brpmCQ8gfnf
+ dqJeSnSP04ZTvJo5mvCLOso3qVQiLsq5vIH4/NLv2hNejkPhSSJRcktTvDCuuyGIqoxVA5NZE
+ w5I4p3o7Djq/sa1sL6BmxDPTXF2UC1aqQHBUv/3ax5xVRHT7UZmhxsFHmm01geycAzVTrsQE7
+ ccMCRTMkbkApeIL+gzypmI5vDtZdQDqR4xnbZ3mmd5frOgFHIWA/owP9vvvbsasI2Zg0krTS7
+ OZOXqk7pr6nAFbx23/RCfSTXsaF18McgOMvr9cNXC+Gv3Hr9nLSg2mYikRr+T1hfxmtrSZM7S
+ TMystNrk0XOll71WcGmquY8ClFWcPZgrkteBrI0ljUaFZ8cn0xLbdU49+efWRF3JRRALgYOoO
+ vBWtqmExAK7SHyXJAbhtOJfvAN9FncG6IHeJjI0BriA6zLvq9DvLV2U7J0snVj/wN/M5vmNPQ
+ UnL1nILRXtlkA/3fJx9JWOs0c0O3MS9rBs/AHINVG8inI+WPM4JpMhtVIUMxbPai0YdwnWfpM
+ bHUYvM7go1jPC1Y/UQjQKxKN0Jfg3CvaaKjPUvlBRRrTzyVZLVzeoK5yD0MfBhegHDQWxcaPk
+ mmV4bOh4tDryktKaYeGY9iWdOOt56Z0LWdyY1k5Dp15ANcZ5jYFwyeEdn56zIUin15qTW+ceu
+ Z3V9XZkbrH4CxYV03/8gXtUsw6uKDYydB3+ABnRMLwv714A7nV0KZJkUcrfU0Kep/i5SyVsYx
+ jrS1VzB0foJAqr8vvsE7n1T/skQvtqnnSUHxXc/aK9Mu7ImirFMGjlcHvApXWiOQzADosAQ1V
+ DJEykGUMtD0tljTHZRgjfELg==
 
-Hi All,
+On Thu, 2024-09-19 at 20:09 +0530, Venkat Rao Bagalkote wrote:
+>
+> Please add the below tags.
+>
+>
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>
+>
+> Tested-by: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>
 
-The compiling of the latest Git kernel doesn=E2=80=99t work anymore for our =
-FSL P5020/P5040 boards [1] since the random-6.12-rc1 updates [2].
+Sure, and while at it I can brush patchlet's rather scruffy fur.
 
-Error messages:
+1. on_rq being implied by sched_delayed, redundant check can go.
+2. no tasks anywhere in sight, DEQUEUE_SPECIAL can go.
+3. use of unlikely in an unlikely path can also go.
+No functional change.  Too bad everything around there fits in 80
+characters, or a couple useless diffstat plus signs could go too.
 
-arch/powerpc/kernel/vdso/vdso32.so.dbg: dynamic relocations are not supporte=
-d
+sched: Fix sched_delayed vs cfs_bandwidth
 
-make[2]: *** [arch/powerpc/kernel/vdso/Makefile:75: arch/powerpc/kernel/vdso=
-/vdso32.so.dbg]
+Meeting an unfinished DELAY_DEQUEUE treated entity in unthrottle_cfs_rq()
+leads to a couple terminal scenarios.  Finish it first, so ENQUEUE_WAKEUP
+can proceed as it would have sans DELAY_DEQUEUE treatment.
 
-Reverting of the vdso updates has solved the compiing issue.
+Fixes: 152e11f6df29 ("sched/fair: Implement delayed dequeue")
+Reported-by: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+=2D--
+ kernel/sched/fair.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Could you please check the random-6.12-rc1 updates? [2]
+=2D-- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -6049,10 +6049,13 @@ void unthrottle_cfs_rq(struct cfs_rq *cf
+ 	for_each_sched_entity(se) {
+ 		struct cfs_rq *qcfs_rq =3D cfs_rq_of(se);
 
-Thanks,
-Christian
+-		if (se->on_rq) {
+-			SCHED_WARN_ON(se->sched_delayed);
++		/* Handle any unfinished DELAY_DEQUEUE business first. */
++		if (se->sched_delayed) {
++			int flags =3D DEQUEUE_SLEEP | DEQUEUE_DELAYED;
++
++			dequeue_entity(qcfs_rq, se, flags);
++		} else if (se->on_rq)
+ 			break;
+-		}
+ 		enqueue_entity(qcfs_rq, se, ENQUEUE_WAKEUP);
 
-[1] http://wiki.amiga.org/index.php?title=3DX5000
-
-[2] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commi=
-t/?id=3D4a39ac5b7d62679c07a3e3d12b0f6982377d8a7d
-
-+ Kernel config
-
-Link: https://raw.githubusercontent.com/chzigotzky/kernels/refs/heads/main/c=
-onfigs/x5000_defconfig
-
-+ Christophe Leroy
-+ Michael Ellerman=
+ 		if (cfs_rq_is_idle(group_cfs_rq(se)))
 
 
