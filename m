@@ -1,71 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-1504-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1505-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81EBDCF9C5C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Sep 2024 23:43:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B939CF9C68
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Sep 2024 05:16:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X9TV40ncwz2yNB;
-	Sat, 21 Sep 2024 09:43:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726847687;
-	cv=none; b=c1eRO3PBDrYS3o/aVKpFSvc07Pq96Hmnkmeui6L3bTZihv+2tmiaQuFgKc3KRm4/x7sJ5EoBv5BB1QoXe4kRFIRCCdOr9jya2mkLdRpM+aX1eJMpGYLlzGmK3SLdS7GDBIxnoBkJ3EzGKyO6bJVLyfYC9M7ilVgRzZOppSBfcdppzAUF6SdZQBBPSpdt8Zrf9c/radfkHTy44Y0vhSvq0rk/to2J6ZWFV6/pQxLUmb1yw0hh7P+qzXnXs7tuwUhS1TliX1NF/OcTW9G5BDchHGBmGMTobUPmAlANMm7styRp/Y6tUNOsROUTRCFuYLXGw35/+cQS8oIYpSsFMDM3CQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4X9ctq4p6Gz2y8Z;
+	Sat, 21 Sep 2024 15:16:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726895811;
+	cv=none; b=WCrOfkH9YpUh/29ohBs6x41qkhPmgXqqRBycMVYdpd68llRBHQLniU1MYvCdOcar8G7KGatziADUN+evSITnJQ4TdWnWeMfezeE2BSTsH3nzSWCjOznPV+3MV3S5kEj9vRkJjc5OvjGd2gBZctoMfK6TMQknUa+eEWDXUUeX7J29Xv3agKUVXUwd4mvuGDVb3IVDYn9LOIvlvhOkqNtmR7FLRZjBh7qBxsmQfKekcnoFZTcn92qqFuQce+TjGg5rn5XEHsVE90PrvCkmt6s81v/06gSRrI4fwmk5ThnEl1zT9Q8aOAmSt5exR5lgSr42ajUyQZA8vEocA7DsJV1w2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726847687; c=relaxed/relaxed;
-	bh=rCD/QsG0Xo4UKv1MPeE4+wDq+pLvtC4iH5hpxA1/l3M=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VrdZ0PFPGIkt9O92aYBaKiU4hiHtgIy1WMjZZNi0WTgHhtQtIDWlKsS44s01MKT7eWT+1MVlYkaVouhBsRb7kXCWdUF8hWm5ndhQW/eh2RmXfx0LIzw31za80HS8K4C9VSFf128jKs9hoMNp5MFROYvwoKZ6PmCB3finTDHUpT59q2QgizoGrCkPEsVrtaMtEr4DZ+hdckXv19spsu2VGvrM7gizkpAn7qO6o0NIVyjWUzByVNkL29CyKQYPql3/Q8DFmpXOLWddMQo0QSXA4N+yCFkkF+ZbnMorro1nF1oWyBjX4OjrzgwKWxmYXTElHVNKIhxlPs7mWyZojI8WiA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 588 seconds by postgrey-1.37 at boromir; Sat, 21 Sep 2024 01:54:47 AEST
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+	t=1726895811; c=relaxed/relaxed;
+	bh=qyx/dHX7YUt7tYPdVE5RWKeFUCXghcIpaCAzPuASVKA=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=UlnQfYHMwFiTcVy6bcX1bmveelzs0HECSDh6+WWzi07ugsroA1gjDboPgSrSPW+Z5P02D5wDnEvbj9+FYrwBkUYFFUGsvWbhRENeeqkx3J3hf2+xXQ9hAGxVjLOtC90a9TJZfuL8vxjPg8eAFrLrk5ajlzCDaUY8DTn0Qyt695acP1PNGkySnJaat70ZeGeF2OafjH2t9dbdE2EDlfNI4LNTEorIZQKSqtxeBBi36SRHS9sKBVRXLV3AzfnGZjFx17bOZD9mqnmVrha4DB3xqLTNfp+J+YxcEiNPHT2ICnkjgDOPZYU/pC/99yEasgGBvX8ECf0quVN1vfEBeGfm1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=canb.auug.org.au; dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=Id95Uh0T; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=Id95Uh0T;
+	dkim-atps=neutral
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X9H5M1hMMz2yMX
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2024 01:54:46 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4X9ctm0VNnz2xxm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2024 15:16:48 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
+	s=201702; t=1726895806;
+	bh=qyx/dHX7YUt7tYPdVE5RWKeFUCXghcIpaCAzPuASVKA=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=Id95Uh0TMdJVZiDEBKIrjFEpwJCF9A1H/c/voUcjFf9gh5bnQcyoiu77PbCHWvM3W
+	 07SUJ5XFJ8nnlFheNhmmfp67Edcp66LSRIN+sZtk6Dx7qT/FKHKN4U2uBdr9ptL2TI
+	 i2l/2ihF0fwG2U1K7e+zjqDAVcGdzywGlICGZSYVoPd08ashLz7hRLEG9uP0eKD4et
+	 WnrPQk8az/kxSzG1Zcx0HtL+3UahEY0p1xW2HUb5SOlfBnB+84L/VJkKd+7CUttfHS
+	 hkQjphjGLYEu1d41Yc+Lds62wBd7ORIZgL4MmDam0uJX2o0Pjuqb67bI8Vw2P9H9uV
+	 988q5puR1c9TQ==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 7A2801F7F1;
-	Fri, 20 Sep 2024 15:44:53 +0000 (UTC)
-Authentication-Results: smtp-out2.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1FBC413AE1;
-	Fri, 20 Sep 2024 15:44:53 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id izqLBnWY7WZuYwAAD6G6ig
-	(envelope-from <tiwai@suse.de>); Fri, 20 Sep 2024 15:44:53 +0000
-Date: Fri, 20 Sep 2024 17:45:44 +0200
-Message-ID: <87ed5enxav.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>
-Cc: Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	David Rhodes <david.rhodes@cirrus.com>,
-	Richard Fitzgerald <rf@opensource.cirrus.com>,
-	Shenghao Ding <shenghao-ding@ti.com>,
-	Kevin Lu <kevin-lu@ti.com>,
-	Baojun Xu <baojun.xu@ti.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	alsa-devel@alsa-project.org,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	patches@opensource.cirrus.com
-Subject: Re: [PATCH] ALSA: Drop explicit initialization of struct i2c_device_id::driver_data to 0
-In-Reply-To: <20240920151009.499188-2-u.kleine-koenig@baylibre.com>
-References: <20240920151009.499188-2-u.kleine-koenig@baylibre.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4X9ctj1Syrz4x8Y;
+	Sat, 21 Sep 2024 15:16:44 +1000 (AEST)
+Date: Sat, 21 Sep 2024 15:16:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kamlesh Gurudasani <kamlesh@ti.com>
+Cc: Danny Tsen <dtsen@linux.ibm.com>, <linux-crypto@vger.kernel.org>,
+ <stable@vger.kernel.org>, <herbert@gondor.apana.org.au>,
+ <leitao@debian.org>, <nayna@linux.ibm.com>, <appro@cryptogams.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <mpe@ellerman.id.au>, <ltcgcw@linux.vnet.ibm.com>, <dtsen@us.ibm.com>
+Subject: Re: [PATCH v3] crypto: Removing CRYPTO_AES_GCM_P10.
+Message-ID: <20240921151642.60b89e86@canb.auug.org.au>
+In-Reply-To: <87ldzmll80.fsf@kamlesh.i-did-not-set--mail-host-address--so-tickle-me>
+References: <20240919113637.144343-1-dtsen@linux.ibm.com>
+	<87ldzmll80.fsf@kamlesh.i-did-not-set--mail-host-address--so-tickle-me>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,35 +65,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Rspamd-Queue-Id: 7A2801F7F1
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/jhSltXngbv+WsRpVn7yvHAs";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 
-On Fri, 20 Sep 2024 17:10:08 +0200,
-Uwe Kleine-König wrote:
-> 
-> These drivers don't use the driver_data member of struct i2c_device_id,
-> so don't explicitly initialize this member.
-> 
-> This prepares putting driver_data in an anonymous union which requires
-> either no initialization or named designators. But it's also a nice
-> cleanup on its own.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
+--Sig_/jhSltXngbv+WsRpVn7yvHAs
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Thanks, applied.
+Hi Kamlesh,
 
+On Fri, 20 Sep 2024 15:07:19 +0530 Kamlesh Gurudasani <kamlesh@ti.com> wrot=
+e:
+>
+> Danny Tsen <dtsen@linux.ibm.com> writes:
+>=20
+> > Data mismatch found when testing ipsec tunnel with AES/GCM crypto.
+> > Disabling CRYPTO_AES_GCM_P10 in Kconfig for this feature.
+> >
+> > Fixes: fd0e9b3e2ee6 ("crypto: p10-aes-gcm - An accelerated AES/GCM stit=
+ched implementation")
+> > Fixes: cdcecfd9991f ("crypto: p10-aes-gcm - Glue code for AES/GCM stitc=
+hed implementation")
+> > Fixes: 45a4672b9a6e2 ("crypto: p10-aes-gcm - Update Kconfig and Makefil=
+e")
+> >
+> > Signed-off-by: Danny Tsen <dtsen@linux.ibm.com> =20
+> nitpick
+> checkpatch complains
+> Please use correct Fixes: style 'Fixes: <12 chars of sha1> ("<title line>=
+")' -
+> ie: 'Fixes: 45a4672b9a6e ("crypto: p10-aes-gcm - Update Kconfig and
+> Makefile")'
+>=20
+> There is no rule for 12 characters, but it is generally preferred.
+> I guess it is just a typo for you as you have correctly added other
+> Fixes tag.
 
-Takashi
+It should be at least 12 hex digits i.e. more is fine.  It is possible
+that some commits need more than 12 hex digits of the SHA1 to be
+uniquely identified in some git repositories already.  I guess
+checkpatch needs a patch.
+
+> Also, just to understand,
+>=20
+> "A Fixes: tag indicates that the patch fixes an issue in a previous
+>  commit. It is used to make it easy to determine where a bug originated,
+>  which can help review a bug fix"
+>=20
+> from=20
+> https://docs.kernel.org/process/submitting-patches.html
+>=20
+> should there not be just single Fixes tag? as bug originated from one
+> commit, may be the commit that actually broke the functionality.
+
+While we generally prefer that a patch only fix one bug, it is very
+possible that the bug may have been introduced in more than one commit
+e.g. in different files.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/jhSltXngbv+WsRpVn7yvHAs
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmbuVroACgkQAVBC80lX
+0GzFnwf/e23oe9Qw1Ca7dvh9xkyu30hNMVeham1rhS6bKpc17gT0szzMz8eWWdln
+m4DiWnBXv3x7L07rJ22+fiEtO9N6KZMKW5PWJzEQElsBzmMJfrSwgo/eUnODTZZx
+3LpE0RV0scL9+XdTaM1nOjy5nOHXG33QR3llmtXuJ/PG+RrEARjBXctl6tF/8uzp
+UI8R/NmiDozwvMXb+xGaTfxemK9CDZX0HRgY28XdRlz+Tz8j3FwEJQ7vdAJanzgp
+poRsA7urS2fg2KQBRVFL2oFaW/9OVWuoYmB4eXF971g0qOyBCMg8smG5n4TdRKsM
+8uHloMPT9uun/CL6E4onHEIgjddfvQ==
+=S5Bm
+-----END PGP SIGNATURE-----
+
+--Sig_/jhSltXngbv+WsRpVn7yvHAs--
 
