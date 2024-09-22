@@ -1,91 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-1509-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1510-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19BC3CF9C64
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Sep 2024 10:38:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C42FCF9C6C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Sep 2024 05:49:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4X9m1g37fnz2xGs;
-	Sat, 21 Sep 2024 20:38:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726915095;
-	cv=none; b=ItohModYqjwnt7M+B6ZXQyEX7iPf1faE2706KPcdrdB82suM/uxzvpdFqS4mbFRpVM/ZtgkjZ7uZArgMiQ0e+WKtORjQwm+QVd504AWPvmBMWuXUPggC+qqpmGSWXKmoRj5qBZf1GEgdI6rOoZdfv9cuLRQGaWIUWPaqPmT/+2bMsPnPT27Ue+v8vCr9DmMpgwNDjlJbW2QbVPta7GgJLg80s5FuEZz6zmNp1RzsDesARgENUZ3gyhez1bKSSwdGF/IRL/f5Nk37iBvU3jsF7GAlCCVGsxyAmUmewgGSCQj9JIoWpKr5JmA1UtG9rLlVKHctL+AtDhDWo2Fj34Kvzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XBFYx5RN0z2xfq;
+	Sun, 22 Sep 2024 15:49:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726984165;
+	cv=none; b=dWbPs5m79fNB+9S2BR2gH39pzxNAXExrAEo6rTmK6rvMeLJDdq7fFYlUsi7tI3zDrnVRJoZ3/Px5lawuQnaXlZCb2wT22H280Q1tiVtj++lOtrJN7LvFIuVQcy1zZh/PN4xY5EXEgh09LDsEmgnREVLB1t8svCm/jrc0sFWjpOrnl9GXciLxVho932GrRL7qhzkZeVRoHR90Hri7CFND9nCLZ4wbEMMa2foIORITfWeJvnGrAR/NeGagTOmZbeJyuX/j6C7BRqFG2LOuqCUsn0j10bgogMjfXR3KzyozvUk3XsJBKZETplUKuFzBtsrtraAVKBMxt6MIw8EecryH1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1726915095; c=relaxed/relaxed;
-	bh=+KWORPeSJNnYHKPUC/+D2RgrnP4L87qsmYvEGxnGsGI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QtZOK6QQUf0D/BP1VZ7ranZ7EYPNtNL20hHBp1BKdpuvY/z3rhs6AICsTotRO4/bhP2xX2VQaUNcen8Bh1P0w/WhqgAmeDWGiUmE3pmyjY6bdcPf/knsaBObfy1Kstvf0NBZHYnf1SqvX+hhXZWOmevu3goc6V+9Ajldrwp5oHq+n+98x8M/zD23djE5XcMJy/teAB9dvC2ham6gLPIleQzZuI2ZJXJD38QWdOEat5OHWF2S9wB/0tFYlLAUQWdv57lVTIqR5ojDBe2YlLEKAbC8OJl3/GYOIvghEzD8yKlDRZDsZ4w6HvCBheF1m6hcSIC8aGvDcvSBCP4LFLeoug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Soq95gx9; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1726984165; c=relaxed/relaxed;
+	bh=KJ8GAuvRoBE4TDtP68hjGmNnnkm8bz6sL6UDzZVIijI=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=eV+HAa1uVte533m0HFK9wNw2GD7BImpare705jP7b5WsC6cm/bj36dUxgSkSfgj65yN/Y96NE1nE5qZ9ndTR6VZccLDBmtG2aFQQ+uSDdIm2efO9Z3vrIAHSjPlVNAoGPaJPTM4Fn+jfLGBzMhFOWyUnlbg8g+e7wwc/f3uM6pwDFIxR/qmAYOUyyOht0SDDvUuYbemZFDdqXBENoYBdzSBPp9XCFP46ZEQmu4lFmpyVE6tZOtIcNsD0hbdJtgNierAqy79zlEexnKcRyQ10w0Cy5CmAtpxwzCd4ueeyHBYTQrlb0ESkkSC+bmWcDwL/y6hlAjU4cHh2lSxs+OLH6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GMzlE5wf; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Soq95gx9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GMzlE5wf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=aneesh.kumar@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4X9m1f4ppLz2xCp
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Sep 2024 20:38:14 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48L3ZSoH020639;
-	Sat, 21 Sep 2024 10:38:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
-	:to:cc:subject:date:message-id:content-transfer-encoding
-	:mime-version; s=pp1; bh=+KWORPeSJNnYHKPUC/+D2RgrnP4L87qsmYvEGxn
-	GsGI=; b=Soq95gx9HXNUpxWjJQ/o9OrZ9fG1fJhnN3Erfe3u5zW0//OiKHboscC
-	+gQmt2cijb0qt3c4WDrhvJ09hV2QgpdO7XnwY+nKHE50tZSWyEe1yGPAxlfou/l8
-	Sos7n5Tbgp0SNMHuLxRkECBGvJXL4nq+ovi/6yBRg+y5nEgjhAF3odpC2pxjMMcb
-	9kT/o/6KlPTSmd0r/XW59uFaOjlC6+uaYxSnzZL+qcT0YO10Ij6+tGzg6zjrXomU
-	nXYm3Kkv1Dj8JIz9V0QsAEBKPrZpSAsbeKnxvWlPjcbV9fvf+ubUsOCTIWPyy4jX
-	WkcgnIZnTb6wrzZ+YgVaR3TaUD7Wnqg==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41sntvsa7p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 21 Sep 2024 10:37:59 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 48LAbwDK030568;
-	Sat, 21 Sep 2024 10:37:58 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41sntvsa7k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 21 Sep 2024 10:37:58 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 48L6UbIE030625;
-	Sat, 21 Sep 2024 10:37:57 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 41npanv0b3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 21 Sep 2024 10:37:57 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 48LAbtkD53543276
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 21 Sep 2024 10:37:55 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 466EF20043;
-	Sat, 21 Sep 2024 10:37:55 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 436A420040;
-	Sat, 21 Sep 2024 10:37:50 +0000 (GMT)
-Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.43.3.44])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 21 Sep 2024 10:37:49 +0000 (GMT)
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-To: akpm@linux-foundation.org
-Cc: Hari Bathini <hbathini@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>, kexec@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        x86@kernel.org, Baoquan he <bhe@redhat.com>,
-        Sachin P Bappalige <sachinpb@linux.vnet.ibm.com>
-Subject: [PATCH linux-next v3] kexec/crash: no crash update when kexec in progress
-Date: Sat, 21 Sep 2024 16:07:45 +0530
-Message-ID: <20240921103745.560430-1-sourabhjain@linux.ibm.com>
-X-Mailer: git-send-email 2.46.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: wMAXGuOH2kq_dOGs8E5y7uv0SrYy_m_Z
-X-Proofpoint-GUID: YKaJhgw807CeiwvpUPvZCy5Emqg2xOId
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XBFYx16pxz2xdR
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2024 15:49:25 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 7F4D45C4BF4;
+	Sun, 22 Sep 2024 05:49:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E85BBC4CEC3;
+	Sun, 22 Sep 2024 05:49:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1726984160;
+	bh=jJW9B3d+KU2/i9btemTRtY7T483RJ0ApDaKU8HYkSB0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=GMzlE5wf59FKARtlJgGs2n6P5kt5vtAqTeuh9OzKTGqWA0YNUSM/use4EZK3Gg3TN
+	 0xlIRGf6HUJRm/EOzi9BsTj8f3/JaQhU76dvvIGb5K+P3oQvXr5gC260w+FOMGsqGA
+	 B0dLfWBFoen4Sdr91RK2j18kS7kz6ve/pGOnaB0vdKo9NItHCOlavdg5GfnPWwZwk4
+	 w2kQ6rNTlWA26ls+omY8Jj5l7bg1VpYAwB/dHmY31O0qpj0ekunANrkaW1UVsxvc9O
+	 lIdu08TLrfzzxfRfV24zyAboJdh0Avrop6trmGiu2sl5KLRNbDjmyNWFk/bdqVRukb
+	 gdn7eRvixtCOA==
+X-Mailer: emacs 31.0.50 (via feedmail 11-beta-1 I)
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+To: Dave Hansen <dave.hansen@intel.com>,
+	Kevin Brodsky <kevin.brodsky@arm.com>,
+	Joey Gouly <joey.gouly@arm.com>,
+	linux-arm-kernel@lists.infradead.org
+Cc: nd@arm.com, akpm@linux-foundation.org, aneesh.kumar@linux.ibm.com,
+	anshuman.khandual@arm.com, bp@alien8.de, broonie@kernel.org,
+	catalin.marinas@arm.com, christophe.leroy@csgroup.eu,
+	dave.hansen@linux.intel.com, hpa@zytor.com,
+	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, maz@kernel.org, mingo@redhat.com,
+	mpe@ellerman.id.au, naveen.n.rao@linux.ibm.com, npiggin@gmail.com,
+	oliver.upton@linux.dev, shuah@kernel.org, skhan@linuxfoundation.org,
+	szabolcs.nagy@arm.com, tglx@linutronix.de, will@kernel.org,
+	x86@kernel.org, kvmarm@lists.linux.dev,
+	linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v5 06/30] arm64: context switch POR_EL0 register
+In-Reply-To: <6c8ad091-a56b-41ba-b403-2e3c2e578100@intel.com>
+References: <20240822151113.1479789-1-joey.gouly@arm.com>
+ <20240822151113.1479789-7-joey.gouly@arm.com>
+ <425b8f8c-b6b5-422a-b5f4-41dd2d1ae3bb@arm.com>
+ <6c8ad091-a56b-41ba-b403-2e3c2e578100@intel.com>
+Date: Sun, 22 Sep 2024 11:19:05 +0530
+Message-ID: <yq5awmj4tezy.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,99 +78,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-21_05,2024-09-19_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 spamscore=0
- mlxscore=0 lowpriorityscore=0 suspectscore=0 clxscore=1015
- priorityscore=1501 adultscore=0 mlxlogscore=999 bulkscore=0 phishscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2408220000 definitions=main-2409210078
+Content-Type: text/plain
 
-The following errors are observed when kexec is done with SMT=off on
-powerpc.
+Dave Hansen <dave.hansen@intel.com> writes:
 
-[  358.458385] Removing IBM Power 842 compression device
-[  374.795734] kexec_core: Starting new kernel
-[  374.795748] kexec: Waking offline cpu 1.
-[  374.875695] crash hp: kexec_trylock() failed, elfcorehdr may be inaccurate
-[  374.935833] kexec: Waking offline cpu 2.
-[  375.015664] crash hp: kexec_trylock() failed, elfcorehdr may be inaccurate
-snip..
-[  375.515823] kexec: Waking offline cpu 6.
-[  375.635667] crash hp: kexec_trylock() failed, elfcorehdr may be inaccurate
-[  375.695836] kexec: Waking offline cpu 7.
+> On 9/11/24 08:01, Kevin Brodsky wrote:
+>> On 22/08/2024 17:10, Joey Gouly wrote:
+>>> @@ -371,6 +382,9 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+>>>  		if (system_supports_tpidr2())
+>>>  			p->thread.tpidr2_el0 = read_sysreg_s(SYS_TPIDR2_EL0);
+>>>  
+>>> +		if (system_supports_poe())
+>>> +			p->thread.por_el0 = read_sysreg_s(SYS_POR_EL0);
+>> Here we are only reloading POR_EL0's value if the target is a user
+>> thread. However, as this series stands, POR_EL0 is also relevant to
+>> kthreads, because any uaccess or GUP done from a kthread will also be
+>> checked against POR_EL0. This is especially important in cases like the
+>> io_uring kthread, which accesses the memory of the user process that
+>> spawned it. To prevent such a kthread from inheriting a stale value of
+>> POR_EL0, it seems that we should reload POR_EL0's value in all cases
+>> (user and kernel thread).
+>
+> The problem with this is trying to figure out which POR_EL0 to use.  The
+> kthread could have been spawned ages ago and might not have a POR_EL0
+> which is very different from the current value of any of the threads in
+> the process right now.
+>
+> There's also no great way for a kthread to reach out and grab an updated
+> value.  It's all completely inherently racy.
+>
+>> Other approaches could also be considered (e.g. resetting POR_EL0 to
+>> unrestricted when creating a kthread), see my reply on v4 [1].
+>
+> I kinda think this is the only way to go.  It's the only sensible,
+> predictable way.  I _think_ it's what x86 will end up doing with PKRU,
+> but there's been enough churn there that I'd need to go double check
+> what happens in practice.
+>
 
-To avoid kexec kernel boot failure on PowerPC, all the present CPUs that
-are offline are brought online during kexec. For more information, refer
-to commit e8e5c2155b00 ("powerpc/kexec: Fix orphaned offline CPUs across
-kexec"). Bringing the CPUs online triggers the crash hotplug handler,
-crash_handle_hotplug_event(), to update the kdump image. Since the
-system is on the kexec kernel boot path and the kexec lock is held, the
-crash_handle_hotplug_event() function fails to acquire the same lock to
-update the kdump image, resulting in the error messages mentioned above.
 
-To fix this, return from crash_handle_hotplug_event() without printing
-the error message if kexec is in progress.
+that is also what powerpc does. 
 
-The same applies to the crash_check_hotplug_support() function. Return
-0 if kexec is in progress because kernel is not in a position to update
-the kdump image.
+/* usage of kthread_use_mm() should inherit the
+ * AMR value of the operating address space. But, the AMR value is
+ * thread-specific and we inherit the address space and not thread
+ * access restrictions. Because of this ignore AMR value when accessing
+ * userspace via kernel thread.
+ */
+static __always_inline u64 current_thread_amr(void)
+{
+	if (current->thread.regs)
+		return current->thread.regs->amr;
+	return default_amr;
+}
 
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: kexec@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Cc: x86@kernel.org
-Acked-by: Baoquan he <bhe@redhat.com>
-Reported-by: Sachin P Bappalige <sachinpb@linux.vnet.ibm.com>
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
----
-Changelog:
 
-Since v1:
- - Keep the kexec_in_progress check within kexec_trylock() - Baoquan He
- - Include the reason why PowerPC brings offline CPUs online
-   during the kexec kernel boot path - Baoquan He
- - Rebased on top of #next-20240910 to avoid conflict with the patch below
-   https://lore.kernel.org/all/20240812041651.703156-1-sourabhjain@linux.ibm.com/T/#u
-
-V2 RESEND: https://lore.kernel.org/all/20240911112111.108056-1-sourabhjain@linux.ibm.com/
- - Update linuxppc-dev mailing list address
-
-Since v2:
- - Rebased it on top of #next-20240920
-
----
- kernel/crash_core.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-index c1048893f4b6..078fe5bc5a74 100644
---- a/kernel/crash_core.c
-+++ b/kernel/crash_core.c
-@@ -505,7 +505,8 @@ int crash_check_hotplug_support(void)
- 	crash_hotplug_lock();
- 	/* Obtain lock while reading crash information */
- 	if (!kexec_trylock()) {
--		pr_info("kexec_trylock() failed, kdump image may be inaccurate\n");
-+		if (!kexec_in_progress)
-+			pr_info("kexec_trylock() failed, kdump image may be inaccurate\n");
- 		crash_hotplug_unlock();
- 		return 0;
- 	}
-@@ -547,7 +548,8 @@ static void crash_handle_hotplug_event(unsigned int hp_action, unsigned int cpu,
- 	crash_hotplug_lock();
- 	/* Obtain lock while changing crash information */
- 	if (!kexec_trylock()) {
--		pr_info("kexec_trylock() failed, kdump image may be inaccurate\n");
-+		if (!kexec_in_progress)
-+			pr_info("kexec_trylock() failed, kdump image may be inaccurate\n");
- 		crash_hotplug_unlock();
- 		return;
- 	}
--- 
-2.46.0
-
+-aneesh
 
