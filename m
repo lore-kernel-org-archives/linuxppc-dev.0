@@ -1,75 +1,122 @@
-Return-Path: <linuxppc-dev+bounces-1512-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1513-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D30EACF9C6C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Sep 2024 11:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10DACCF9C6C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Sep 2024 12:38:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XBNtv0yw1z2xpv;
-	Sun, 22 Sep 2024 21:19:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727003975;
-	cv=none; b=R6KaYhO6TEADICJ9oRWb668T3gclmWC5bnOKFv8OKZN4cx3HLiaKiACjjfG2PxAdFkWA74oe8iMwmq+vWRbjgp7wK+wYih5mc9aibCy2ipk5ZSHFdQCVQuK1+7ill/JTlsFO6DV/mh1moRYIW3tpE26ae7Vh9b+EhBdGVVd2jvDb+sfsJa3e4u7a7ilJ/6Oub4KUDZL+CVy4+SWXSRm0FUcANBUQz0+48sQlFb5Y94xfl3HZl/xx9+qOd9KEdJxcijGD5DyEvN8RKbE6bVAEwdu+mA92Mlh8SykUP1ALecfdzltcf6UPW9zwFzyvxhnmPtMBskPaJmdHDCk9sZOnhg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727003975; c=relaxed/relaxed;
-	bh=0XGOYj44mxYlAIPacdVz2Xqqf2VHJVuoXCavyaxAiLM=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=WXfREKdOz7tR0aIqIh6RFtFwt7oLih90B5SgkSm08DlJhp8ssGjr1IFObIs6lAiAphNdjQdf7Gj4X75pzbarNrNly3G+Zh1tR9kG+xGXQz7soaU7n+KGzb5rkbCvXeeY7lzKWLNyic3RTf1jMR0wq7lO54Ub1Ab8QNZ6vNEj5XrQ7tR/ufiJUJTmnj1M21t7VoHnPtUqmsqYJWW4xKsKjqfxwsPvjcynN9s8Gp3VNAkrbMv3N+YBiF7dZAy9CIHezvqDdDDlU/5hOwAfvbCYnU8cIUXAXsO2P0lZ7XM7DVTVubxnIppMazZGtN7Vlmy3Y5WlRIz2+fGHo3AywjLrqQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gyOIt0A7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XBQfS0xvbz2xjM;
+	Sun, 22 Sep 2024 22:38:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=198.175.65.9
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1726966908;
+	cv=fail; b=kqUwuV5jat7fejEp5ktoZajdncvguhQ8XcnY7yoQoWBUMAtnLKpEZqinTzbkBseM7mH3Jn34710Q4YOCvhlR1nUCbbL/oZz5ZjJMJnLH4stM4U9qA7PzzAtrbJ69XMZzze9yo/VkFlf/Q7PoLMQ42O++GYtlQrh4Rxk4XuXtri5k5dlMejIFOVY8dHyEj8c4/T+j0hoCM0U/nVZMWU9PtaIzxWbocdi4VUhBTNhqVkPIPK3R/g37k5+g17yQ/ODiYpOjnwo1Iir16IQrYmh+acEWsaJQNfsJWHuyRLjzmYl2B+wXCX/3lNn4dysKRAzZVkvIF8EPLfafcJlcn9zWtw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1726966908; c=relaxed/relaxed;
+	bh=LRsC191aWeX7WfxUiROMBLasKK+U0tMCg8VlYC5S7ps=;
+	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=MgpwOuDdVODvjd47opS+C9CAuyfZTkD16IuJPisR7/OPBuTQKTRv6m8FD0zBawhV0s7APoHOamgNWP2VbGXuFvmJ9IW9A/H3DR/1th1yMhq67UE8UE0jNm0I9eZfGCNs8jhmHKcjiIzXb7dAzGW9RFuwwYtFuH55N+YfwQTddJcDIGXQAsi5GtRGenyTuEt4ke7mbtN5g6WvV8PODIVGJVXe22OzjV3F1V0OIqPJOm0CrR+5cd0pmxGJZAZaet+DOVZ3mi4NWUjjXcQzTUBfO8gryMMNlk0i0+WclSL3dKDlmE9k6W/nKCPlG3GAMrNYXlJuc/eUAZhujagah2426w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lzz8e6vG; dkim-atps=neutral; spf=pass (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=dan.j.williams@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gyOIt0A7;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lzz8e6vG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=dan.j.williams@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Sun, 22 Sep 2024 11:01:47 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XBNtt2PqWz2xfT
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2024 21:19:32 +1000 (AEST)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-71781f42f75so3323340b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2024 04:19:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1727003970; x=1727608770; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=0XGOYj44mxYlAIPacdVz2Xqqf2VHJVuoXCavyaxAiLM=;
-        b=gyOIt0A7wlm2CRc/yq7j94JytfQVAoYxprM4tvp8L7IBmu0ZwNbAQju4/msi1QCRQ2
-         qLLJ3vQFUdf1Sfp3MrwVc9tF248bld/XIhmdj7JwYje+npNqouXSwY8RTc9yy25B+IBX
-         YJu7ah52m9Z4IOo97baz6O2tqkt0+02CWAHlw3nmYyBfQwoxXwrxxG+53vzM6E8FTRda
-         LEe7n00DYatGZKy6RWde1WvWNLKp0QA39HRj4o6QBUrCitoD+5M+lB6cco3ym1mHH5+j
-         c2bLiiupu7c3exsEdbBsh84buedqSqODmG8JH1KMwvI6UQqc+syxB73D1lh0+XyZgyDm
-         ywAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727003970; x=1727608770;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=0XGOYj44mxYlAIPacdVz2Xqqf2VHJVuoXCavyaxAiLM=;
-        b=gPfx9g6ihF7PsNLjIjzCRbtyispr3s5E56OIXLsiLZ7KFE9yxun9AloYMPoQqt9m5A
-         m0qrKVGXhmfZpmNoKCSsFSsE0j7mczmJEM5Xl7Ceo3qWBvqrGVdhYl/hfBLvONn+Gxjm
-         PEecLpBsEWF99zNpdHhWR8oJcI7yJbDfHMIoOETUrWnI62Gv3MtH/F8eWrGEDmAmv0Zc
-         ObHKF/bnWyyJy/LZcqHIdDdS3ZvvpsBSUOydRM0mHoPZO4HekD2JhSMxZoL3iN63uKjk
-         hIAAGym7Xl9I5/ZV/Aew/bKX/T+2T1Se9quzb28e00S6YguQZHbv5mWCQW3UOPe9DZ9C
-         YB2Q==
-X-Forwarded-Encrypted: i=1; AJvYcCWJQO4jxohbTcBDMPKhsQluMp2FmYUNFSsBMXgcwwDgkIAmdduHtrARQt+Ty0J9AH0C0pw66UwgG6D6Rv0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwO7/8apjKDuPhfq7f7XZf0ZJyXJYxvFRXKhYFQz5HTeOFGWEWg
-	Zwrbg27SnK894JiUNqKsRD4N6vX8gfFS9CO6tc9V35qgAJFTTsCd
-X-Google-Smtp-Source: AGHT+IEarJPEGCPBYFymlyfwJIi6kol8+OpmLQWTv1Xlfmdw6aA8QyOeHPPTb+TJxBDxV5NMZGWPRg==
-X-Received: by 2002:a05:6a00:4b0c:b0:717:8deb:c195 with SMTP id d2e1a72fcca58-7199ce0c432mr12177581b3a.21.1727003970167;
-        Sun, 22 Sep 2024 04:19:30 -0700 (PDT)
-Received: from dw-tp ([171.76.87.135])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-71944a974dcsm12412341b3a.32.2024.09.22.04.19.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Sep 2024 04:19:29 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Luming Yu <luming.yu@shingroup.cn>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, jialong.yang@shingroup.cn, luming.yu@gmail.com
-Cc: Luming Yu <luming.yu@shingroup.cn>
-Subject: Re: [RFC PATCH] powerpc/tlb: enable arch want batched unmap tlb flush
-In-Reply-To: <9BC3D1299ECE8428+20240918092515.2121-2-luming.yu@shingroup.cn>
-Date: Sun, 22 Sep 2024 16:39:53 +0530
-Message-ID: <87frpsymf2.fsf@gmail.com>
-References: <9BC3D1299ECE8428+20240918092515.2121-2-luming.yu@shingroup.cn>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XB7B30sfPz2xxr
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Sep 2024 11:01:46 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1726966907; x=1758502907;
+  h=date:from:to:cc:subject:message-id:references:
+   in-reply-to:mime-version;
+  bh=1iQQwRWO3nZ+RF3m5sZtNGsVNdgcpbuSxyZD7UIuMTE=;
+  b=lzz8e6vG32dGfvxJxtA7+y7P7JCZAVGZGtvnqANZ3jRjqaLBaKGVD2nT
+   qOtIJS2UzP985p9pS++/XYxSCiZmK7AaOs7hZjomMbp1vNWs1kg95igFB
+   9uEyqdzcsJc5Bh9WmPYndvxRv/NVYHuWgi7X1hkDghLwYT4MlD3HmEyZF
+   glOhZbwYOh9UGb8NQtRlvzB4k3tjldX3tSwSMlVTOx0qVyMVc2K33G1yV
+   KDDPmFgySrjUbXf2GjpBBtgVrrCPceRSoMJu0lGh0jxBuNn4wueTqv2Ws
+   KnUiUE+k5ZYd5YJM4VGEJV6GT7Xnxe5myUxnwkaQcnXBXLKnvFA4hL9v2
+   g==;
+X-CSE-ConnectionGUID: R3o+eAcgR1OHA5QFxDnI/A==
+X-CSE-MsgGUID: AwUJHl20QYip0HlXfetmUA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11202"; a="48465871"
+X-IronPort-AV: E=Sophos;i="6.10,248,1719903600"; 
+   d="scan'208";a="48465871"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Sep 2024 18:00:35 -0700
+X-CSE-ConnectionGUID: UBeovkMHSxG6Kdyv5xioZg==
+X-CSE-MsgGUID: Jo2g8gGjTtqyR0STCj72Vw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.10,248,1719903600"; 
+   d="scan'208";a="75243216"
+Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
+  by fmviesa004.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 21 Sep 2024 18:00:35 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39; Sat, 21 Sep 2024 18:00:34 -0700
+Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.39 via Frontend Transport; Sat, 21 Sep 2024 18:00:34 -0700
+Received: from NAM02-BN1-obe.outbound.protection.outlook.com (104.47.51.43) by
+ edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.39; Sat, 21 Sep 2024 18:00:34 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Alw8f1yyMijLedgPhTsyUDZ+px3vu9Oow+nnjsrADzebJF8z4Ss/h6fJYxIxC3kskWvb5PdZWQY9cSxOVkkohUOgX6xy3iRQiuZF5WWZafolBZXAXYgUoedDz9RzUHVP3AJgDqKlBDo1VjWaiFThBiTR/4y/YQfmLED30eZkXlRz1GHB9gSYiJq66JIWGa3sru655I30Du215xRp525QdxClTdGblNeiSE6lktvsGPRz/UT6pzgt2Xr3yniFH7zl78sn5JVyblPnUeaOjT0mzJUaX65iDoBBB/VkwL9KYNrt/1mZfBCnky7ovgtDElNwhfLvJhx2sCsRmt+gWFsHvg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LRsC191aWeX7WfxUiROMBLasKK+U0tMCg8VlYC5S7ps=;
+ b=SRFSyBIodMntQAWjElSdbB0ZKnku1RFyCrr1Xdifpb9IXG3odNM4wPuQN7p6ho/RDAXQo1Mqk0GdAWD5Lz+7lIlSae8wlRGV3kLmAUlIrFaSGi9srL4Rhi3BdGhvHc/oDiV3T846dZlM1BXnDq18+wkGZou0iLZY9E7+6c04H3C2NdxK8LpryxBxx/d94FPgko/sc+bqyltk+iqCe/7bzjhkdIbLuqdXsdiDjsSY1k3hqF+80GVeZx6JaVbBEtPUzKKNApVGWgG55NypAKZvSQB+vwBcTAoc6KZa0LrhBqPeqceUjtNZLgZmkj8Sp6hMRDMjWOoeu00di3oXKTC8kQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by DM3PR11MB8684.namprd11.prod.outlook.com (2603:10b6:0:4a::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7982.24; Sun, 22 Sep
+ 2024 01:00:32 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::6b05:74cf:a304:ecd8]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::6b05:74cf:a304:ecd8%7]) with mapi id 15.20.7962.027; Sun, 22 Sep 2024
+ 01:00:31 +0000
+Date: Sun, 22 Sep 2024 03:00:27 +0200
+From: Dan Williams <dan.j.williams@intel.com>
+To: Alistair Popple <apopple@nvidia.com>, <dan.j.williams@intel.com>,
+	<linux-mm@kvack.org>
+CC: Alistair Popple <apopple@nvidia.com>, <vishal.l.verma@intel.com>,
+	<dave.jiang@intel.com>, <logang@deltatee.com>, <bhelgaas@google.com>,
+	<jack@suse.cz>, <jgg@ziepe.ca>, <catalin.marinas@arm.com>, <will@kernel.org>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <dave.hansen@linux.intel.com>,
+	<ira.weiny@intel.com>, <willy@infradead.org>, <djwong@kernel.org>,
+	<tytso@mit.edu>, <linmiaohe@huawei.com>, <david@redhat.com>,
+	<peterx@redhat.com>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linuxppc-dev@lists.ozlabs.org>, <nvdimm@lists.linux.dev>,
+	<linux-cxl@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>,
+	<linux-ext4@vger.kernel.org>, <linux-xfs@vger.kernel.org>,
+	<jhubbard@nvidia.com>, <hch@lst.de>, <david@fromorbit.com>, Jason Gunthorpe
+	<jgg@nvidia.com>
+Subject: Re: [PATCH 01/12] mm/gup.c: Remove redundant check for PCI P2PDMA
+ page
+Message-ID: <66ef6c2bb7f9_edc02946b@dwillia2-mobl3.amr.corp.intel.com.notmuch>
+References: <cover.9f0e45d52f5cff58807831b6b867084d0b14b61c.1725941415.git-series.apopple@nvidia.com>
+ <2ebba7a606ef78084d6c8869dc18580c56de810f.1725941415.git-series.apopple@nvidia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <2ebba7a606ef78084d6c8869dc18580c56de810f.1725941415.git-series.apopple@nvidia.com>
+X-ClientProxiedBy: MW4PR03CA0247.namprd03.prod.outlook.com
+ (2603:10b6:303:b4::12) To PH8PR11MB8107.namprd11.prod.outlook.com
+ (2603:10b6:510:256::6)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,83 +125,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|DM3PR11MB8684:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7174a89b-836b-45c7-90ff-08dcdaa1f506
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|7416014|376014;
+X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?nusA1ho/HWWWNsKZ6EOnrQwETitYJOgk4namvewBCjpTsvDa/SNOaMom0JnT?=
+ =?us-ascii?Q?IsQ+VIErMLqMI9PbaUpBL1YBuRbmsw+IcXg087x198jh/lRgTjYQm//x9Qgr?=
+ =?us-ascii?Q?/Y4vClPg1Dp+Oa9dbCU0j8JTJAJ5JfW/7ANRrcSszD6rTfKlUwykWB8BJiqj?=
+ =?us-ascii?Q?RZOYrL8KuLXJAmCGkr3ENu59y9YoxmciVdpkRi0VqCOhOYZVd6eeYz80fgv2?=
+ =?us-ascii?Q?QO7X0vl6V7x3DcbLAcwlfPxRN+DftOjFE7y0Ns9N2iV23+6V204BsguHWoeD?=
+ =?us-ascii?Q?juBHPEqmQlE1PpPoLUl/u0KgWUj9GOkCnFSDpjJDKknGm4Sl95XMU2pIRUc/?=
+ =?us-ascii?Q?h0m/YCYXt8b4i8kpVYVCLh8R1chwLSUhQj3Wonx29OvXNeu1gHjfrAspN/AO?=
+ =?us-ascii?Q?oS6P8gezOf9TfK1uNCBhIOaks9WVIWYlC570tsKLxhDRcAMs6x1FNdOfF3Af?=
+ =?us-ascii?Q?NvTs6s3VhCTgbv5HYCcR2IqOeOBHs8HRVA4dXO8IpYVaU2mqZ+B6od4V8Mgp?=
+ =?us-ascii?Q?+ah80J6gkejwcifecuoT6eaZXkbMVzJolm+WTcNI+xjRP2LxC8DtLflg2QRY?=
+ =?us-ascii?Q?EePWQYVQJf4TZwnN/AOb4mA3avfZirn3ZmRq0ZGv9CuB4rOok5hvMcVsej7d?=
+ =?us-ascii?Q?PFy2zH55fcm0I4uTzuUpV6msdZPlYMyH6c3ABq8R5g+qy0keCSE+Ny3I+T8c?=
+ =?us-ascii?Q?YuiaJBiq48khL3TrTMHnIIMZrzm3pAPOjlbyV8V2ODdini37iKnzXq6NWdzO?=
+ =?us-ascii?Q?23Abd9Q9Gq8Xd7qc8QT6iyfs9A+3Vgr4oZSef+vyk90tggBW/nSHKGsGnO2U?=
+ =?us-ascii?Q?27QWqDWIiMdK15b1IWMueb4gW6hF+xPfjT3iDR+r9XJThx0GnOgVGoSpiD3z?=
+ =?us-ascii?Q?fLXaC45bm9DzKf5JILltFSsAPj9qxWPhrA6Mt4OMwIjGiU1rqxYHQm+8e3/G?=
+ =?us-ascii?Q?tq9K7a+Jxet0GSxgrrttQ7o7CwhVWyJ8CvWI6SDSh707khTvkkMb/xXvgAP1?=
+ =?us-ascii?Q?L/wuCQ/XZXXRP/CR5hhzWvbOs4B3AQ5saY4qFEuRSikNL67PHguI+ZD+1vXE?=
+ =?us-ascii?Q?JW3exM8Cxfc4RdmdV170v/wjaP4YHu8mKu3hoA2VWrUIBgx/xEx5qZ8PoiYS?=
+ =?us-ascii?Q?sKT28ihzxpFwZ0A2ZunRWtg7IWDt0q049IywBKzmCc7Ujy6hijbZJQ3+FI/K?=
+ =?us-ascii?Q?9b/jDHpCODj0y1MTqgUqBnx6eKEhd2bVM0XI5Wk3ztrLF+SgFvhXT7LKSssr?=
+ =?us-ascii?Q?suTYxc+1OD+aEahTtHcx0e5Yt/N0Kg29qFQt31ub1DfZmDAfXzwgrptXlGa7?=
+ =?us-ascii?Q?xZgACt0B8+gi89NIc+5XjrQW2KqkLfisEnZhIZ3XIP62CA=3D=3D?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?+Yh5e9WxUZwbt0TC2PFjTU2fceJmZCVsnbn3PsoDX8/PSRVX+Q/cRa9YTroj?=
+ =?us-ascii?Q?QbxF/womFGyXel4ODiTh6o09MoWU0XUPBg60ilzIN94EH5b9lofa+K+VhHpc?=
+ =?us-ascii?Q?O4GmSZpm9Jav7+hTT4o8ap3lMbQ4RftulmRax0b3wKVWYwYl3vmAPJMG+MtH?=
+ =?us-ascii?Q?OZRVyOfRNhtfyBiPm/7NocbavQPP8CWrZv4LU8P17BCfjLoRAr/8Mmh64JFo?=
+ =?us-ascii?Q?qsvVFxgkwSc+zmr6vqgK3J6/+vIPKz0OwbCOQjD/Z6IOfHcqgszIS3DeYMjl?=
+ =?us-ascii?Q?pLNUrg/c/BxD8G6d48wyywSHxwv0WJbweGZsYuNQL10j9U8bN3N4blOedl89?=
+ =?us-ascii?Q?efcay/IYDEbDBmaOMkg9V8q01JTmWJyA32Jn6cJwygBWRXwwgDvQ/xpjSilY?=
+ =?us-ascii?Q?QaGtjt+RzrUcBgk1gc0Gs4ZMNrJ4RmGxd9WcyzXZ05OmIDHCoTrxcw3ISJZx?=
+ =?us-ascii?Q?Kezowa4/tPY+vH7VNh8n3Hp+I6/8fP1QouPSyncp9Jha/rGo6V8E/iZo8Jrh?=
+ =?us-ascii?Q?RFqwEZYZqYKNGAXebGHmhewzhA1OTK1n8n6sW19p9WBG37EIf3YT1f25iv3p?=
+ =?us-ascii?Q?QdoY8bafd7fa4tUeYBCEMMLnwRbCzOwG5YXdUW/8lOEP10Eo8dE9TZ/CLYIA?=
+ =?us-ascii?Q?fwmKOf/yUm9Q30YHTAvhNRjUSc+kTfl4OmpROjzgbMV4JQu+GKkNO3UwzCy9?=
+ =?us-ascii?Q?hee/r/QFWlVxchtkcyxj+JOAyXB+uBzV91jmm6rRAyWrBboCkTKc7NliYxP5?=
+ =?us-ascii?Q?I2hsWINBaljU6UXEkiZBvF9SLAIsyEv7IRxnulC1Glxj/BUtvD1Pejks8HlZ?=
+ =?us-ascii?Q?Lq4WOFIUyWrfAXlUdQ2GwXeHsARoOWzVehK1Xigt+UdhJZ/HUYvlji5CpPyO?=
+ =?us-ascii?Q?2QI82UCeE/i8eZMvnUXGeIYjhACMclLrycW1II9/wxmtvegfvAbcnA6pFDL9?=
+ =?us-ascii?Q?JZiGrNUF4CHIezLRsayMaRaYHBW/wq3Q/4TxHnGE/ex5pEh6+HkxkJG1eBfd?=
+ =?us-ascii?Q?Le6gegbG60ZPdCvkthWRlkda3WydS5tArMXBVtbjzXfm2rC6/JwCqIyvTh4O?=
+ =?us-ascii?Q?e5aW+nnEjUwgGqMxEW8jfceolHmF48ZE4BGbTy9sFyMEv1wq2Zj/9Z0xITi2?=
+ =?us-ascii?Q?mOAKV6OjWRdQusDv+yRC05xGyNvHRghNECOJrbfgKww0CW0nzSvCRNa7HSCN?=
+ =?us-ascii?Q?Egsb5O5kExffBtC8XRKgNtXOB6YWlwl/zSTRTwFFkt2lRjI62XEtb+ZFZ1CC?=
+ =?us-ascii?Q?BsPGgM5LQGKWPzNCZtWhYRPBKa1ZlHv0zsu0SJ9Bl3txOyTn3HPoJYRzc8tk?=
+ =?us-ascii?Q?np46yEG79VNWi8IIn57hGv/sQOBKXRtui/Kr+uj2djy/gM7GSIRsjJ29tzH/?=
+ =?us-ascii?Q?Bmf5BffcTj9dNIt83ZhGMXAa5WBf1whOt74BdjIsFVtjjvIZ8MxnaKcVAgdH?=
+ =?us-ascii?Q?Nz6/4wuHt9aIkBYIEm13wJUtPSR9yqIhH4TAKU9XTMxld/N53vbtfNMkBaKJ?=
+ =?us-ascii?Q?UOQHpr3ffw/1uDWcJL328ghwHj1BHAi+TvBoiV1bWRhBnBV3/YkC6VnYZY1Z?=
+ =?us-ascii?Q?P6g6ywibh6Sd7b/byd/VYbzYd8fwpev2qoCb1eWLD2Mu3F/f1rqLNyk/aWxH?=
+ =?us-ascii?Q?fQ=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7174a89b-836b-45c7-90ff-08dcdaa1f506
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Sep 2024 01:00:31.7353
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: pvfpW0wuLZEaH67JetQFo+q0vjy/+l+TU4ALS5Lh/dtQ5cq2iDDwVBW2+tpxWye54q357NY95QLBpBD8PFh0qoKLj/DO1b/XCF+NQDPWllU=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM3PR11MB8684
+X-OriginatorOrg: intel.com
 
-Luming Yu <luming.yu@shingroup.cn> writes:
-
-> From: Yu Luming <luming.yu@gmail.com>
->
-> ppc always do its own tracking for batch tlb. By trivially enabling
-> the ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH in ppc, ppc arch can re-use
-> common code in rmap and reduce overhead and do optimization it could not
-> have without a tlb flushing context at low architecture level.
-
-I looked at this patch and other than the compile failure, this patch
-still won't optimize anything. The idea of this config is that we want
-to batch all the tlb flush operation at the end. By returning false from
-should_defer_flush() (in this patch), we are saying we cannot defer
-the flush and hence we do tlb flush in the same context of unmap.
-
-Anyway, I took a quick look at ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
-and I have a quick PoC for the same. I will soon post it.
-
--ritesh
-
->
-> Signed-off-by: Luming Yu <luming.yu@shingroup.cn>
+Alistair Popple wrote:
+> PCI P2PDMA pages are not mapped with pXX_devmap PTEs therefore the
+> check in __gup_device_huge() is redundant. Remove it
+> 
+> Signed-off-by: Alistair Popple <apopple@nvidia.com>
+> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+> Acked-by: David Hildenbrand <david@redhat.com>
 > ---
->  arch/powerpc/Kconfig                |  1 +
->  arch/powerpc/include/asm/tlbbatch.h | 30 +++++++++++++++++++++++++++++
->  2 files changed, 31 insertions(+)
->  create mode 100644 arch/powerpc/include/asm/tlbbatch.h
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index e94e7e4bfd40..e6db84dd014a 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -175,6 +175,7 @@ config PPC
->  	select ARCH_WANT_IPC_PARSE_VERSION
->  	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
->  	select ARCH_WANT_LD_ORPHAN_WARN
-> +	select ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
->  	select ARCH_WANT_OPTIMIZE_DAX_VMEMMAP	if PPC_RADIX_MMU
->  	select ARCH_WANTS_MODULES_DATA_IN_VMALLOC	if PPC_BOOK3S_32 || PPC_8xx
->  	select ARCH_WEAK_RELEASE_ACQUIRE
-> diff --git a/arch/powerpc/include/asm/tlbbatch.h b/arch/powerpc/include/asm/tlbbatch.h
-> new file mode 100644
-> index 000000000000..484628460057
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/tlbbatch.h
-> @@ -0,0 +1,30 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef _ARCH_PPC_TLBBATCH_H
-> +#define _ARCH_PPC_TLBBATCH_H
-> +
-> +struct arch_tlbflush_unmap_batch {
-> +	/*
-> +         *
-> +	 */
-> +};
-> +
-> +static inline void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch)
-> +{
-> +}
-> +
-> +static inline void arch_tlbbatch_add_pending(struct arch_tlbflush_unmap_batch *batch,
-> +						struct mm_struct *mm,
-> +						unsigned long uarddr)
-> +{
-> +}
-> +
-> +static inline bool arch_tlbbatch_should_defer(struct mm_struct *mm)
-> +{
-> +	/*ppc always do tlb flush in batch*/
-> +	return false;
-> +}
-> +
-> +static inline void arch_flush_tlb_batched_pending(struct mm_struct *mm)
-> +{
-> +}
-> +#endif /* _ARCH_PPC_TLBBATCH_H */
-> -- 
-> 2.42.0.windows.2
+>  mm/gup.c | 5 -----
+>  1 file changed, 5 deletions(-)
+> 
+> diff --git a/mm/gup.c b/mm/gup.c
+> index d19884e..5d2fc9a 100644
+> --- a/mm/gup.c
+> +++ b/mm/gup.c
+> @@ -2954,11 +2954,6 @@ static int gup_fast_devmap_leaf(unsigned long pfn, unsigned long addr,
+>  			break;
+>  		}
+>  
+> -		if (!(flags & FOLL_PCI_P2PDMA) && is_pci_p2pdma_page(page)) {
+> -			gup_fast_undo_dev_pagemap(nr, nr_start, flags, pages);
+> -			break;
+> -		}
+> -
+
+Looks good.
+
+Reviewed-by: Dan Wiliams <dan.j.williams@intel.com>
 
