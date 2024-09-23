@@ -1,79 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-1527-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1528-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75D76CF9C6F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Sep 2024 08:55:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84214CF9C69
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Sep 2024 13:31:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XBxdn3TwBz2yK7;
-	Mon, 23 Sep 2024 18:55:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727080591;
-	cv=none; b=n2347Y1DmlyGact62r5dNAk2/wpGQ0qt6Eu4H0QeNbCBOVcoSkWhYQ1Q/9tA6Rq+Z6VlCadkFcn19SFBdmvc7F1BV3k+Iwu1S2ovmDIOhw4yVH4tsFtJbocJc6GEd9iH6mvNlY1+fdWLse9IpCQ16GjZMMTgniT3+wnNXwppay+H5KvTAWvzqeegPG39F5PJApxjllOQPNRj1IvKWbuqRHK3w10XTo8hf0y+8btvRVJH7S03VQnms+IqIlnVGlBAeQaBzxNBRA+D9lfhOVrvKh1NT/ndHNgzG6y6m64kEucz8hqH/ZxKu+hCyFplcwb3QWVw/YgeqySgtJLEc03uZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XC3m54Sttz2yGs;
+	Mon, 23 Sep 2024 23:31:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727098261;
+	cv=none; b=RblX21QbHHmDd6gxtmYK5yIq1OcSSYJQOB3Hf5Svg+8u0emmI9VqVoQ9Ga99Pf4U2DZGCQoRf1UW3XhsqdN9QS8oW1Pv+hyUfhbux7RUbtOm0wD+qjXBvn6u9OmJvntef0J6NZ4g037dHWfZjbIr2BXkIHJiHRpr03DOX1+3xlkLHIOgUwnLeGYsF2c3BxU+Tp+xZ2R9DHrjVOI5qOtUzAR9q6uY7fh2vSyZ6GqjPw+RsWjAX3xMyIq6FLk0Og/CAno5ZJOJUdNiREw75v3k+VF6xTPFjIpJcD4Gob9qgI361iECkLCrWAcYoeJDJEBGMxPkaR86lFxAx3yBkxYPhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727080591; c=relaxed/relaxed;
-	bh=ZebgRWJ/R8+CfS0Y5IXDHC2bQ2zqs76xP45fSGYgpho=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Pnd5VYqVODedttIGrw2X35nwVeT5KOznxbuZhcGriW/4hayjob9LsW3O11SB1xo5VEsIB+UhxXV1KdzV7ltSi15pS+tak1eM3xliozBahStGT0xP42WZ8pgSbTBydHwRMzXl5DVRrj86QSbqL16wVOl/SDAJpc+CIta8lrKfibbaWGfPd5vIjnqGF8jE9oPQV2aazKBWQu7+fhesDcKXcMkrI/GKvb+BLrheQuPGN0GGLHhfUGDVwAo+ARMHBCYLjBJghXznJGX1IX8KIpUbOLq+QQQom5ZLc4C2eqV84D7O6Qt5arTWjqrwOiQHiMuk6qJOTY3h/pIO6pAlofZvwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XresYnVN; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tmricht@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1727098261; c=relaxed/relaxed;
+	bh=zLl16kE989YcR8bnlTCXmIqUA8qnBy6nvqU+S+AC7ak=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=IgPGH2h8OZGTj91LN/yogBwzQoi0rgQFDB0puvilijMqWQd3LJ6tpxHsh6/mVqjtgMdkYy/Ye+vrzzdRTh1AlXZnx2DZrJksUaK20ifsRWNwgI72qSK3QMmM1X9fHXq+2lmevfnduEGIcAJAFutvbHUHJk3T/KoVpIfMISHNc+dcWIWmMLBKqgY00q+BsN7or1LcUwgUJaKeoIymIbbSUnxfSw2nJpIVsRNvQ/tvUJwNyRBb29EWtvpUAoeMIaH5HsHqmYeIkShqtdsSf41oSW0OwKEe1OzlpSQc4PlQQ3YofZbvnRiQ2Zn5FB7dhFKdN0MRTz02YbQ3wiG/zlZFoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Fi3wJ3db; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XresYnVN;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Fi3wJ3db;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tmricht@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XBxDG3Wt5z2yDM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2024 18:36:29 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48MLtR3D028184;
-	Mon, 23 Sep 2024 08:35:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	message-id:date:mime-version:subject:to:cc:references:from
-	:in-reply-to:content-type:content-transfer-encoding; s=pp1; bh=Z
-	ebgRWJ/R8+CfS0Y5IXDHC2bQ2zqs76xP45fSGYgpho=; b=XresYnVNvfjS8q25n
-	exIowGTcyNfPFLSf3njKFhkmtThO79Rn/l7bbDHY5upOMZ+GXc0ZNJTpfRNx3UhG
-	44r5rosQUrKJQZ1hak5YCIEaeI7KPk0HLlS/sw+TPodoA37waRXazoYyY/xPXCqq
-	AxB8S1T/7i6fdkKUH4BHHpRz+FX7etse1GGweODWy7XZ3yNn8bpysFkmJOAYLooy
-	Wc93e4uRc3SZhEmMVqGL0HO5CGVAnkQgo8ca9EVWcYW7xQlbHCJf0syievl22SaG
-	RbwQiMqlzD3Lpi9rGRz9qxTMBS7sONGm/gXX9+JNJb82jsDxIBwXYRU7WQ7dGJvQ
-	UXnwg==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41snvathjk-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XC3m45ysrz2xk7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2024 23:31:00 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48NAIFDh027592;
+	Mon, 23 Sep 2024 13:30:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from
+	:to:cc:subject:date:message-id:in-reply-to:references
+	:mime-version:content-transfer-encoding; s=pp1; bh=zLl16kE989YcR
+	8bnlTCXmIqUA8qnBy6nvqU+S+AC7ak=; b=Fi3wJ3db/jOUYcFSQwCLx4iNth4La
+	k6aJxtpJc5hke86Y5y10Y7JAj6/SS9qSuoCCJHOysMdvserG93GhPRoWppOXuiEV
+	uQV4mSR5ac8xmtZR/ceI2PSpo5G7Ob7BU3c1KVTbDWe0jeKTfpKHbbT0ezoQxKSu
+	iDodZsk8A81UfwJPLJ7w9ZPOi3JReWjBemHSH5diBWCwCAxK51ka4pnUNcNDhrHx
+	gxUvBcJRKa2JmhxUS0wFWV0hhgeK2GSQZeGfkNcDiTQSsTkI7C+TQG5spU9yJAJm
+	GxNInSOiieGxY5l0gnO/ceK7G4WrcvwGLGGTwPstRk40Zcklf+pvew7/g==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41snt13rt9-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Sep 2024 08:35:11 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 48N8ZAoU000989;
-	Mon, 23 Sep 2024 08:35:10 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41snvathj9-1
+	Mon, 23 Sep 2024 13:30:50 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 48NC2AVY005862;
+	Mon, 23 Sep 2024 13:30:49 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 41tapm6j3f-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Sep 2024 08:35:10 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 48N7YNhe008712;
-	Mon, 23 Sep 2024 08:35:09 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 41t8v0wjv3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Sep 2024 08:35:09 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 48N8Z5tI34800204
+	Mon, 23 Sep 2024 13:30:49 +0000
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 48NDUm8s42795328
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 23 Sep 2024 08:35:05 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E8E0220040;
-	Mon, 23 Sep 2024 08:35:04 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 72FBD20043;
-	Mon, 23 Sep 2024 08:35:03 +0000 (GMT)
-Received: from [9.171.48.71] (unknown [9.171.48.71])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 23 Sep 2024 08:35:03 +0000 (GMT)
-Message-ID: <24b8e9b5-32b9-4989-b932-67c20b55377c@linux.ibm.com>
-Date: Mon, 23 Sep 2024 10:35:02 +0200
+	Mon, 23 Sep 2024 13:30:48 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 097475805D;
+	Mon, 23 Sep 2024 13:30:48 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5C9FA5805F;
+	Mon, 23 Sep 2024 13:30:47 +0000 (GMT)
+Received: from ltcden12-lp3.aus.stglabs.ibm.com (unknown [9.40.195.53])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 23 Sep 2024 13:30:47 +0000 (GMT)
+From: Danny Tsen <dtsen@linux.ibm.com>
+To: linux-crypto@vger.kernel.org
+Cc: stable@vger.kernel.org, herbert@gondor.apana.org.au, leitao@debian.org,
+        nayna@linux.ibm.com, appro@cryptogams.org,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        mpe@ellerman.id.au, ltcgcw@linux.vnet.ibm.com, dtsen@us.ibm.com,
+        Danny Tsen <dtsen@linux.ibm.com>
+Subject: [PATCH 2/3] crypto: Register modules as SIMD modules for ppcle64 AES/GCM algs.
+Date: Mon, 23 Sep 2024 09:30:39 -0400
+Message-ID: <20240923133040.4630-3-dtsen@linux.ibm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240923133040.4630-1-dtsen@linux.ibm.com>
+References: <20240923133040.4630-1-dtsen@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,301 +86,316 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 2/5] perf: Hoist perf_instruction_pointer() and
- perf_misc_flags()
-To: Colton Lewis <coltonlewis@google.com>, kvm@vger.kernel.org
-Cc: Oliver Upton <oliver.upton@linux.dev>,
-        Sean Christopherson <seanjc@google.com>,
-        Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-        Arnaldo Carvalho de Melo <acme@kernel.org>,
-        Namhyung Kim <namhyung@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Kan Liang <kan.liang@linux.intel.com>, Will Deacon <will@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Naveen N Rao <naveen@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev
- <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        "H . Peter Anvin" <hpa@zytor.com>, linux-perf-users@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
-References: <20240920174740.781614-1-coltonlewis@google.com>
- <20240920174740.781614-3-coltonlewis@google.com>
-Content-Language: en-US
-From: Thomas Richter <tmricht@linux.ibm.com>
-Organization: IBM
-In-Reply-To: <20240920174740.781614-3-coltonlewis@google.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: i312l3CDmy59jmZF1hS3jjvQU0cJGfMh
-X-Proofpoint-GUID: 7QKql6PTDhcYSEWqd73Ox4EIpbAler4w
+X-Proofpoint-ORIG-GUID: NTL3eF3ft11gaUdDkJb7uHsRkAQ97uvO
+X-Proofpoint-GUID: NTL3eF3ft11gaUdDkJb7uHsRkAQ97uvO
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-23_05,2024-09-19_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- priorityscore=1501 phishscore=0 clxscore=1011 spamscore=0 mlxscore=0
- adultscore=0 impostorscore=0 bulkscore=0 malwarescore=0 suspectscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2408220000 definitions=main-2409230062
+ definitions=2024-09-23_10,2024-09-23_01,2024-09-02_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxlogscore=999
+ priorityscore=1501 suspectscore=0 mlxscore=0 clxscore=1015 impostorscore=0
+ malwarescore=0 bulkscore=0 spamscore=0 phishscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2408220000
+ definitions=main-2409230099
 
-On 9/20/24 19:47, Colton Lewis wrote:
-> For clarity, rename the arch-specific definitions of these functions
-> to perf_arch_* to denote they are arch-specifc. Define the
-> generic-named functions in one place where they can call the
-> arch-specific ones as needed.
-> 
-> Signed-off-by: Colton Lewis <coltonlewis@google.com>
-> ---
->  arch/arm64/include/asm/perf_event.h          |  6 +++---
->  arch/arm64/kernel/perf_callchain.c           |  4 ++--
->  arch/powerpc/include/asm/perf_event_server.h |  6 +++---
->  arch/powerpc/perf/core-book3s.c              |  4 ++--
->  arch/s390/include/asm/perf_event.h           |  6 +++---
->  arch/s390/kernel/perf_event.c                |  4 ++--
->  arch/x86/events/core.c                       |  4 ++--
->  arch/x86/include/asm/perf_event.h            | 10 +++++-----
->  include/linux/perf_event.h                   |  9 ++++++---
->  kernel/events/core.c                         | 10 ++++++++++
->  10 files changed, 38 insertions(+), 25 deletions(-)
-> 
-> diff --git a/arch/arm64/include/asm/perf_event.h b/arch/arm64/include/asm/perf_event.h
-> index eb7071c9eb34..31a5584ed423 100644
-> --- a/arch/arm64/include/asm/perf_event.h
-> +++ b/arch/arm64/include/asm/perf_event.h
-> @@ -11,9 +11,9 @@
->  
->  #ifdef CONFIG_PERF_EVENTS
->  struct pt_regs;
-> -extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
-> -extern unsigned long perf_misc_flags(struct pt_regs *regs);
-> -#define perf_misc_flags(regs)	perf_misc_flags(regs)
-> +extern unsigned long perf_arch_instruction_pointer(struct pt_regs *regs);
-> +extern unsigned long perf_arch_misc_flags(struct pt_regs *regs);
-> +#define perf_arch_misc_flags(regs)	perf_misc_flags(regs)
->  #define perf_arch_bpf_user_pt_regs(regs) &regs->user_regs
->  #endif
->  
-> diff --git a/arch/arm64/kernel/perf_callchain.c b/arch/arm64/kernel/perf_callchain.c
-> index e8ed5673f481..01a9d08fc009 100644
-> --- a/arch/arm64/kernel/perf_callchain.c
-> +++ b/arch/arm64/kernel/perf_callchain.c
-> @@ -39,7 +39,7 @@ void perf_callchain_kernel(struct perf_callchain_entry_ctx *entry,
->  	arch_stack_walk(callchain_trace, entry, current, regs);
->  }
->  
-> -unsigned long perf_instruction_pointer(struct pt_regs *regs)
-> +unsigned long perf_arch_instruction_pointer(struct pt_regs *regs)
->  {
->  	if (perf_guest_state())
->  		return perf_guest_get_ip();
-> @@ -47,7 +47,7 @@ unsigned long perf_instruction_pointer(struct pt_regs *regs)
->  	return instruction_pointer(regs);
->  }
->  
-> -unsigned long perf_misc_flags(struct pt_regs *regs)
-> +unsigned long perf_arch_misc_flags(struct pt_regs *regs)
->  {
->  	unsigned int guest_state = perf_guest_state();
->  	int misc = 0;
-> diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-> index 5995614e9062..af0f46e2373b 100644
-> --- a/arch/powerpc/include/asm/perf_event_server.h
-> +++ b/arch/powerpc/include/asm/perf_event_server.h
-> @@ -102,8 +102,8 @@ struct power_pmu {
->  int __init register_power_pmu(struct power_pmu *pmu);
->  
->  struct pt_regs;
-> -extern unsigned long perf_misc_flags(struct pt_regs *regs);
-> -extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
-> +extern unsigned long perf_arch_misc_flags(struct pt_regs *regs);
-> +extern unsigned long perf_arch_instruction_pointer(struct pt_regs *regs);
->  extern unsigned long int read_bhrb(int n);
->  
->  /*
-> @@ -111,7 +111,7 @@ extern unsigned long int read_bhrb(int n);
->   * if we have hardware PMU support.
->   */
->  #ifdef CONFIG_PPC_PERF_CTRS
-> -#define perf_misc_flags(regs)	perf_misc_flags(regs)
-> +#define perf_arch_misc_flags(regs)	perf_arch_misc_flags(regs)
->  #endif
->  
->  /*
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 42867469752d..dc01aa604cc1 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -2332,7 +2332,7 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
->   * Called from generic code to get the misc flags (i.e. processor mode)
->   * for an event_id.
->   */
-> -unsigned long perf_misc_flags(struct pt_regs *regs)
-> +unsigned long perf_arch_misc_flags(struct pt_regs *regs)
->  {
->  	u32 flags = perf_get_misc_flags(regs);
->  
-> @@ -2346,7 +2346,7 @@ unsigned long perf_misc_flags(struct pt_regs *regs)
->   * Called from generic code to get the instruction pointer
->   * for an event_id.
->   */
-> -unsigned long perf_instruction_pointer(struct pt_regs *regs)
-> +unsigned long perf_arch_instruction_pointer(struct pt_regs *regs)
->  {
->  	unsigned long siar = mfspr(SPRN_SIAR);
->  
-> diff --git a/arch/s390/include/asm/perf_event.h b/arch/s390/include/asm/perf_event.h
-> index 9917e2717b2b..f6c7b611a212 100644
-> --- a/arch/s390/include/asm/perf_event.h
-> +++ b/arch/s390/include/asm/perf_event.h
-> @@ -37,9 +37,9 @@ extern ssize_t cpumf_events_sysfs_show(struct device *dev,
->  
->  /* Perf callbacks */
->  struct pt_regs;
-> -extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
-> -extern unsigned long perf_misc_flags(struct pt_regs *regs);
-> -#define perf_misc_flags(regs) perf_misc_flags(regs)
-> +extern unsigned long perf_arch_instruction_pointer(struct pt_regs *regs);
-> +extern unsigned long perf_arch_misc_flags(struct pt_regs *regs);
-> +#define perf_arch_misc_flags(regs) perf_arch_misc_flags(regs)
->  #define perf_arch_bpf_user_pt_regs(regs) &regs->user_regs
->  
->  /* Perf pt_regs extension for sample-data-entry indicators */
-> diff --git a/arch/s390/kernel/perf_event.c b/arch/s390/kernel/perf_event.c
-> index 5fff629b1a89..f9000ab49f4a 100644
-> --- a/arch/s390/kernel/perf_event.c
-> +++ b/arch/s390/kernel/perf_event.c
-> @@ -57,7 +57,7 @@ static unsigned long instruction_pointer_guest(struct pt_regs *regs)
->  	return sie_block(regs)->gpsw.addr;
->  }
->  
-> -unsigned long perf_instruction_pointer(struct pt_regs *regs)
-> +unsigned long perf_arch_instruction_pointer(struct pt_regs *regs)
->  {
->  	return is_in_guest(regs) ? instruction_pointer_guest(regs)
->  				 : instruction_pointer(regs);
-> @@ -84,7 +84,7 @@ static unsigned long perf_misc_flags_sf(struct pt_regs *regs)
->  	return flags;
->  }
->  
-> -unsigned long perf_misc_flags(struct pt_regs *regs)
-> +unsigned long perf_arch_misc_flags(struct pt_regs *regs)
->  {
->  	/* Check if the cpum_sf PMU has created the pt_regs structure.
->  	 * In this case, perf misc flags can be easily extracted.  Otherwise,
-> diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
-> index be01823b1bb4..760ad067527c 100644
-> --- a/arch/x86/events/core.c
-> +++ b/arch/x86/events/core.c
-> @@ -2940,7 +2940,7 @@ static unsigned long code_segment_base(struct pt_regs *regs)
->  	return 0;
->  }
->  
-> -unsigned long perf_instruction_pointer(struct pt_regs *regs)
-> +unsigned long perf_arch_instruction_pointer(struct pt_regs *regs)
->  {
->  	if (perf_guest_state())
->  		return perf_guest_get_ip();
-> @@ -2948,7 +2948,7 @@ unsigned long perf_instruction_pointer(struct pt_regs *regs)
->  	return regs->ip + code_segment_base(regs);
->  }
->  
-> -unsigned long perf_misc_flags(struct pt_regs *regs)
-> +unsigned long perf_arch_misc_flags(struct pt_regs *regs)
->  {
->  	unsigned int guest_state = perf_guest_state();
->  	int misc = 0;
-> diff --git a/arch/x86/include/asm/perf_event.h b/arch/x86/include/asm/perf_event.h
-> index 91b73571412f..feb87bf3d2e9 100644
-> --- a/arch/x86/include/asm/perf_event.h
-> +++ b/arch/x86/include/asm/perf_event.h
-> @@ -536,15 +536,15 @@ struct x86_perf_regs {
->  	u64		*xmm_regs;
->  };
->  
-> -extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
-> -extern unsigned long perf_misc_flags(struct pt_regs *regs);
-> -#define perf_misc_flags(regs)	perf_misc_flags(regs)
-> +extern unsigned long perf_arch_instruction_pointer(struct pt_regs *regs);
-> +extern unsigned long perf_arch_misc_flags(struct pt_regs *regs);
-> +#define perf_arch_misc_flags(regs)	perf_arch_misc_flags(regs)
->  
->  #include <asm/stacktrace.h>
->  
->  /*
-> - * We abuse bit 3 from flags to pass exact information, see perf_misc_flags
-> - * and the comment with PERF_EFLAGS_EXACT.
-> + * We abuse bit 3 from flags to pass exact information, see
-> + * perf_arch_misc_flags() and the comment with PERF_EFLAGS_EXACT.
->   */
->  #define perf_arch_fetch_caller_regs(regs, __ip)		{	\
->  	(regs)->ip = (__ip);					\
-> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-> index 1a8942277dda..d061e327ad54 100644
-> --- a/include/linux/perf_event.h
-> +++ b/include/linux/perf_event.h
-> @@ -1633,10 +1633,13 @@ extern void perf_tp_event(u16 event_type, u64 count, void *record,
->  			  struct task_struct *task);
->  extern void perf_bp_event(struct perf_event *event, void *data);
->  
-> -#ifndef perf_misc_flags
-> -# define perf_misc_flags(regs) \
-> +extern unsigned long perf_misc_flags(struct pt_regs *regs);
-> +extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
-> +
-> +#ifndef perf_arch_misc_flags
-> +# define perf_arch_misc_flags(regs) \
->  		(user_mode(regs) ? PERF_RECORD_MISC_USER : PERF_RECORD_MISC_KERNEL)
-> -# define perf_instruction_pointer(regs)	instruction_pointer(regs)
-> +# define perf_arch_instruction_pointer(regs)	instruction_pointer(regs)
->  #endif
->  #ifndef perf_arch_bpf_user_pt_regs
->  # define perf_arch_bpf_user_pt_regs(regs) regs
-> diff --git a/kernel/events/core.c b/kernel/events/core.c
-> index 8a6c6bbcd658..eeabbf791a8c 100644
-> --- a/kernel/events/core.c
-> +++ b/kernel/events/core.c
-> @@ -6921,6 +6921,16 @@ void perf_unregister_guest_info_callbacks(struct perf_guest_info_callbacks *cbs)
->  EXPORT_SYMBOL_GPL(perf_unregister_guest_info_callbacks);
->  #endif
->  
-> +unsigned long perf_misc_flags(struct pt_regs *regs)
-> +{
-> +	return perf_arch_misc_flags(regs);
-> +}
-> +
-> +unsigned long perf_instruction_pointer(struct pt_regs *regs)
-> +{
-> +	return perf_arch_instruction_pointer(regs);
-> +}
-> +
->  static void
->  perf_output_sample_regs(struct perf_output_handle *handle,
->  			struct pt_regs *regs, u64 mask)
+This patch is to fix an issue when simd is not usable that data mismatch
+may occur. The fix is to register algs as SIMD modules so that the
+algorithm is excecuted when SIMD instructions is usable.  Called
+gcm_update() to generate the final digest if needed.
 
-For the s390 changes:
-Acked-by: Thomas Richter <tmricht@linux.ibm.com>
+A new module rfc4106(gcm(aes)) is also added.
+
+Fixes: cdcecfd9991f ("crypto: p10-aes-gcm - Glue code for AES/GCM stitched implementation")
+
+Signed-off-by: Danny Tsen <dtsen@linux.ibm.com>
+---
+ arch/powerpc/crypto/aes-gcm-p10-glue.c | 141 +++++++++++++++++++++----
+ 1 file changed, 118 insertions(+), 23 deletions(-)
+
+diff --git a/arch/powerpc/crypto/aes-gcm-p10-glue.c b/arch/powerpc/crypto/aes-gcm-p10-glue.c
+index f62ee54076c0..e52629334cf8 100644
+--- a/arch/powerpc/crypto/aes-gcm-p10-glue.c
++++ b/arch/powerpc/crypto/aes-gcm-p10-glue.c
+@@ -8,6 +8,7 @@
+ #include <asm/unaligned.h>
+ #include <asm/simd.h>
+ #include <asm/switch_to.h>
++#include <crypto/gcm.h>
+ #include <crypto/aes.h>
+ #include <crypto/algapi.h>
+ #include <crypto/b128ops.h>
+@@ -24,6 +25,7 @@
+ 
+ #define	PPC_ALIGN		16
+ #define GCM_IV_SIZE		12
++#define RFC4106_NONCE_SIZE	4
+ 
+ MODULE_DESCRIPTION("PPC64le AES-GCM with Stitched implementation");
+ MODULE_AUTHOR("Danny Tsen <dtsen@linux.ibm.com");
+@@ -31,7 +33,7 @@ MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS_CRYPTO("aes");
+ 
+ asmlinkage int aes_p10_set_encrypt_key(const u8 *userKey, const int bits,
+-				      void *key);
++				       void *key);
+ asmlinkage void aes_p10_encrypt(const u8 *in, u8 *out, const void *key);
+ asmlinkage void aes_p10_gcm_encrypt(u8 *in, u8 *out, size_t len,
+ 				    void *rkey, u8 *iv, void *Xi);
+@@ -39,7 +41,8 @@ asmlinkage void aes_p10_gcm_decrypt(u8 *in, u8 *out, size_t len,
+ 				    void *rkey, u8 *iv, void *Xi);
+ asmlinkage void gcm_init_htable(unsigned char htable[], unsigned char Xi[]);
+ asmlinkage void gcm_ghash_p10(unsigned char *Xi, unsigned char *Htable,
+-		unsigned char *aad, unsigned int alen);
++			      unsigned char *aad, unsigned int alen);
++asmlinkage void gcm_update(u8 *iv, void *Xi);
+ 
+ struct aes_key {
+ 	u8 key[AES_MAX_KEYLENGTH];
+@@ -52,6 +55,7 @@ struct gcm_ctx {
+ 	u8 aad_hash[16];
+ 	u64 aadLen;
+ 	u64 Plen;	/* offset 56 - used in aes_p10_gcm_{en/de}crypt */
++	u8 pblock[16];
+ };
+ struct Hash_ctx {
+ 	u8 H[16];	/* subkey */
+@@ -60,17 +64,20 @@ struct Hash_ctx {
+ 
+ struct p10_aes_gcm_ctx {
+ 	struct aes_key enc_key;
++	u8 nonce[RFC4106_NONCE_SIZE];
+ };
+ 
+ static void vsx_begin(void)
+ {
+ 	preempt_disable();
++	pagefault_disable();
+ 	enable_kernel_vsx();
+ }
+ 
+ static void vsx_end(void)
+ {
+ 	disable_kernel_vsx();
++	pagefault_enable();
+ 	preempt_enable();
+ }
+ 
+@@ -185,7 +192,7 @@ static int set_authsize(struct crypto_aead *tfm, unsigned int authsize)
+ }
+ 
+ static int p10_aes_gcm_setkey(struct crypto_aead *aead, const u8 *key,
+-			     unsigned int keylen)
++			      unsigned int keylen)
+ {
+ 	struct crypto_tfm *tfm = crypto_aead_tfm(aead);
+ 	struct p10_aes_gcm_ctx *ctx = crypto_tfm_ctx(tfm);
+@@ -198,7 +205,8 @@ static int p10_aes_gcm_setkey(struct crypto_aead *aead, const u8 *key,
+ 	return ret ? -EINVAL : 0;
+ }
+ 
+-static int p10_aes_gcm_crypt(struct aead_request *req, int enc)
++static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
++			     int assoclen, int enc)
+ {
+ 	struct crypto_tfm *tfm = req->base.tfm;
+ 	struct p10_aes_gcm_ctx *ctx = crypto_tfm_ctx(tfm);
+@@ -210,7 +218,6 @@ static int p10_aes_gcm_crypt(struct aead_request *req, int enc)
+ 	struct skcipher_walk walk;
+ 	u8 *assocmem = NULL;
+ 	u8 *assoc;
+-	unsigned int assoclen = req->assoclen;
+ 	unsigned int cryptlen = req->cryptlen;
+ 	unsigned char ivbuf[AES_BLOCK_SIZE+PPC_ALIGN];
+ 	unsigned char *iv = PTR_ALIGN((void *)ivbuf, PPC_ALIGN);
+@@ -218,11 +225,12 @@ static int p10_aes_gcm_crypt(struct aead_request *req, int enc)
+ 	unsigned long auth_tag_len = crypto_aead_authsize(__crypto_aead_cast(tfm));
+ 	u8 otag[16];
+ 	int total_processed = 0;
++	int nbytes;
+ 
+ 	memset(databuf, 0, sizeof(databuf));
+ 	memset(hashbuf, 0, sizeof(hashbuf));
+ 	memset(ivbuf, 0, sizeof(ivbuf));
+-	memcpy(iv, req->iv, GCM_IV_SIZE);
++	memcpy(iv, riv, GCM_IV_SIZE);
+ 
+ 	/* Linearize assoc, if not already linear */
+ 	if (req->src->length >= assoclen && req->src->length) {
+@@ -257,19 +265,25 @@ static int p10_aes_gcm_crypt(struct aead_request *req, int enc)
+ 	if (ret)
+ 		return ret;
+ 
+-	while (walk.nbytes > 0 && ret == 0) {
++	while ((nbytes = walk.nbytes) > 0 && ret == 0) {
++		u8 *src = walk.src.virt.addr;
++		u8 *dst = walk.dst.virt.addr;
++		u8 buf[AES_BLOCK_SIZE];
++
++		if (unlikely(nbytes > 0 && nbytes < AES_BLOCK_SIZE))
++			src = dst = memcpy(buf, src, nbytes);
+ 
+ 		vsx_begin();
+ 		if (enc)
+-			aes_p10_gcm_encrypt(walk.src.virt.addr,
+-					    walk.dst.virt.addr,
+-					    walk.nbytes,
++			aes_p10_gcm_encrypt(src, dst, nbytes,
+ 					    &ctx->enc_key, gctx->iv, hash->Htable);
+ 		else
+-			aes_p10_gcm_decrypt(walk.src.virt.addr,
+-					    walk.dst.virt.addr,
+-					    walk.nbytes,
++			aes_p10_gcm_decrypt(src, dst, nbytes,
+ 					    &ctx->enc_key, gctx->iv, hash->Htable);
++
++		if (unlikely(nbytes > 0 && nbytes < AES_BLOCK_SIZE))
++			memcpy(walk.dst.virt.addr, buf, nbytes);
++
+ 		vsx_end();
+ 
+ 		total_processed += walk.nbytes;
+@@ -281,6 +295,7 @@ static int p10_aes_gcm_crypt(struct aead_request *req, int enc)
+ 
+ 	/* Finalize hash */
+ 	vsx_begin();
++	gcm_update(gctx->iv, hash->Htable);
+ 	finish_tag(gctx, hash, total_processed);
+ 	vsx_end();
+ 
+@@ -302,17 +317,63 @@ static int p10_aes_gcm_crypt(struct aead_request *req, int enc)
+ 	return 0;
+ }
+ 
++static int rfc4106_setkey(struct crypto_aead *tfm, const u8 *inkey,
++			  unsigned int keylen)
++{
++	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
++	int err;
++
++	keylen -= RFC4106_NONCE_SIZE;
++	err = p10_aes_gcm_setkey(tfm, inkey, keylen);
++	if (err)
++		return err;
++
++	memcpy(ctx->nonce, inkey + keylen, RFC4106_NONCE_SIZE);
++	return 0;
++}
++
++static int rfc4106_setauthsize(struct crypto_aead *tfm, unsigned int authsize)
++{
++	return crypto_rfc4106_check_authsize(authsize);
++}
++
++static int rfc4106_encrypt(struct aead_request *req)
++{
++	struct crypto_aead *aead = crypto_aead_reqtfm(req);
++	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(aead);
++	u8 iv[AES_BLOCK_SIZE];
++
++	memcpy(iv, ctx->nonce, RFC4106_NONCE_SIZE);
++	memcpy(iv + RFC4106_NONCE_SIZE, req->iv, GCM_RFC4106_IV_SIZE);
++
++	return crypto_ipsec_check_assoclen(req->assoclen) ?:
++	       p10_aes_gcm_crypt(req, iv, req->assoclen - GCM_RFC4106_IV_SIZE, 1);
++}
++
++static int rfc4106_decrypt(struct aead_request *req)
++{
++	struct crypto_aead *aead = crypto_aead_reqtfm(req);
++	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(aead);
++	u8 iv[AES_BLOCK_SIZE];
++
++	memcpy(iv, ctx->nonce, RFC4106_NONCE_SIZE);
++	memcpy(iv + RFC4106_NONCE_SIZE, req->iv, GCM_RFC4106_IV_SIZE);
++
++	return crypto_ipsec_check_assoclen(req->assoclen) ?:
++	       p10_aes_gcm_crypt(req, iv, req->assoclen - GCM_RFC4106_IV_SIZE, 0);
++}
++
+ static int p10_aes_gcm_encrypt(struct aead_request *req)
+ {
+-	return p10_aes_gcm_crypt(req, 1);
++	return p10_aes_gcm_crypt(req, req->iv, req->assoclen, 1);
+ }
+ 
+ static int p10_aes_gcm_decrypt(struct aead_request *req)
+ {
+-	return p10_aes_gcm_crypt(req, 0);
++	return p10_aes_gcm_crypt(req, req->iv, req->assoclen, 0);
+ }
+ 
+-static struct aead_alg gcm_aes_alg = {
++static struct aead_alg gcm_aes_algs[] = {{
+ 	.ivsize			= GCM_IV_SIZE,
+ 	.maxauthsize		= 16,
+ 
+@@ -321,23 +382,57 @@ static struct aead_alg gcm_aes_alg = {
+ 	.encrypt		= p10_aes_gcm_encrypt,
+ 	.decrypt		= p10_aes_gcm_decrypt,
+ 
+-	.base.cra_name		= "gcm(aes)",
+-	.base.cra_driver_name	= "aes_gcm_p10",
++	.base.cra_name		= "__gcm(aes)",
++	.base.cra_driver_name	= "__aes_gcm_p10",
+ 	.base.cra_priority	= 2100,
+ 	.base.cra_blocksize	= 1,
+-	.base.cra_ctxsize	= sizeof(struct p10_aes_gcm_ctx),
++	.base.cra_ctxsize	= sizeof(struct p10_aes_gcm_ctx)+
++				  4 * sizeof(u64[2]),
+ 	.base.cra_module	= THIS_MODULE,
+-};
++	.base.cra_flags		= CRYPTO_ALG_INTERNAL,
++}, {
++	.ivsize			= GCM_RFC4106_IV_SIZE,
++	.maxauthsize		= 16,
++	.setkey			= rfc4106_setkey,
++	.setauthsize		= rfc4106_setauthsize,
++	.encrypt		= rfc4106_encrypt,
++	.decrypt		= rfc4106_decrypt,
++
++	.base.cra_name		= "__rfc4106(gcm(aes))",
++	.base.cra_driver_name	= "__rfc4106_aes_gcm_p10",
++	.base.cra_priority	= 2100,
++	.base.cra_blocksize	= 1,
++	.base.cra_ctxsize	= sizeof(struct p10_aes_gcm_ctx) +
++				  4 * sizeof(u64[2]),
++	.base.cra_module	= THIS_MODULE,
++	.base.cra_flags		= CRYPTO_ALG_INTERNAL,
++}};
++
++static struct simd_aead_alg *p10_simd_aeads[ARRAY_SIZE(gcm_aes_algs)];
+ 
+ static int __init p10_init(void)
+ {
+-	return crypto_register_aead(&gcm_aes_alg);
++	int ret;
++
++	if (!cpu_has_feature(PPC_FEATURE2_ARCH_3_1))
++		return 0;
++
++	ret = simd_register_aeads_compat(gcm_aes_algs,
++					 ARRAY_SIZE(gcm_aes_algs),
++					 p10_simd_aeads);
++	if (ret) {
++		simd_unregister_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs),
++				      p10_simd_aeads);
++		return ret;
++	}
++	return 0;
+ }
+ 
+ static void __exit p10_exit(void)
+ {
+-	crypto_unregister_aead(&gcm_aes_alg);
++	simd_unregister_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs),
++			      p10_simd_aeads);
+ }
+ 
+-module_cpu_feature_match(PPC_MODULE_FEATURE_P10, p10_init);
++module_init(p10_init);
+ module_exit(p10_exit);
 -- 
-Thomas Richter, Dept 3303, IBM s390 Linux Development, Boeblingen, Germany
---
-IBM Deutschland Research & Development GmbH
-
-Vorsitzender des Aufsichtsrats: Wolfgang Wendt
-
-Geschäftsführung: David Faller
-
-Sitz der Gesellschaft: Böblingen / Registergericht: Amtsgericht Stuttgart, HRB 243294
+2.43.0
 
 
