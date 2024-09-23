@@ -1,72 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-1522-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1523-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B566FCF9C6D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Sep 2024 20:54:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72528CF9C6E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Sep 2024 02:59:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XBdfT61R4z2xs4;
-	Mon, 23 Sep 2024 06:54:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727038481;
-	cv=none; b=a71WZ057g7+iCjsbRnWNEz7EITBT5nfwdsGL4TPx2Tcj5pp3+eeXbdXHEGmXJmQdrrjcoihZNyv80WBhyYhxhGc8UD/yB/JxCFxuEOlOkbsKvyNLJztMMYFNBtpLQtB7NecHQ90RRSblyiG4RmYCQjk3Y2vJO/b3CxOoOxPrcjCkehFEHvQSvOQ1sxlPBLQEEDg0iQbwbK40ivAYWipNq3+8e1FX190mPBzk1tTzS96MBKkMv4Yy0SpoekUJTGFJ2m9Z2yK9QpIAzjnxEq6Gf75BRI73JpX2PHK0k2GdEJeFcKxt8ZcPcEpjil56mZHW9LKwX6bV158cQlH6BuY6nA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XBnlG5LnFz2xnc;
+	Mon, 23 Sep 2024 12:59:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=114.132.58.6
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727060362;
+	cv=none; b=Av7iyw1g6lTdXKSAsY5efS/twbyWXzGG+420tC9tB65/jjGU22OJAzQunbvWs0m7T8YM7jwDN29Hpnygyjo4vXxSPKEX2viernwH8OKlh060MTfKZIqw5KQHrYw77+CN5jQynzCsEbVn6cbAxMKK8xKI3No3i8qySgb/PV+1jvLTpt02j4CEIH1EY2nQMOtCwE2fC3k9Cyty2dtrkeNLNLzKi/x9ACTUAsYuiweWJ5d38MY6G/vpILUizc3I3SjACR39hddY9r+utg74cwH87SuSbB7dzz6DfOMB/TkMzajf85xN+7bpYwiDPbyEBMhwLGvuaDqMnP6f5wKyFPbTJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727038481; c=relaxed/relaxed;
-	bh=SXtEovATvwsh/6WdQwPpFVGwM2WcxRBkXVMZxUz43oA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=f10bi0yqWc/ESMGJ6/WM1GaH7D2MeR9y2YQM6elKpSwXPvCZTOZZVSXV9+e7Q5udRNAxL1QOWJB/QXqZx6j2hR9fAdgbMje/37FT9lYIAUB48KkBIkIajF08Z/SSjcVfdfwdLrlbnCbTyLyt2spKSipfLbdpI/pf9U0tn9sZ6v55VUoKiJr/s/6x+3qDNSv9e6B06m4W3Fjtq/qne/0pyIJ+fjo20OPAJIB6ez4hT9MqwJ6KoXzxemouFiRNLh09HlktwvoQC9KkQVobj1TRt/4ZdsbNoRhOblS/SOj/RbGm4QJfVtK6yYuIvF8T6NCewVGRGOErHucoFnqZw2W8oQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DsLE08ok; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DsLE08ok;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	t=1727060362; c=relaxed/relaxed;
+	bh=MRk+STlxowGMELIu7tAVtdGnM8sGeXLAfNLT02F9xfU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bgiMbvB6Efvj+w8fLFQeyl565wwOtS7tPv8Rvfu0vrUgZYQWdIT8Jp455v5N77mIygbyeFwKCMCVMLC+ujO0Ek9jvbrbdtTZF6mcaZ7gXuiMFVqnXqJwxPUc1+3M20PAnSiZ9ip8oJz9+tuT3JhzEsRCO0Vn0wb/AiBef5Nf0EeBJYmPAwEMA27zUKurLmRqfd+7R2RLqEaKWBqqmKwKHb6SrjoGiNb0loQ+CJASdEHrYyroUneutJAqQE504emuZ7Cgkdb1zRre0gXNaW3xHYGF0x+GgeiPQ3wGYvdeKhy6io/my5yx/410nwoUF3Aq06406teKo5QfTiLzg2ik/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn; spf=pass (client-ip=114.132.58.6; helo=bg1.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org) smtp.mailfrom=shingroup.cn
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=114.132.58.6; helo=bg1.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
+Received: from bg1.exmail.qq.com (bg1.exmail.qq.com [114.132.58.6])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XBdfT1LHYz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2024 06:54:40 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48MIlQHO025857;
-	Sun, 22 Sep 2024 20:49:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	message-id:date:mime-version:subject:to:cc:references:from
-	:in-reply-to:content-type:content-transfer-encoding; s=pp1; bh=S
-	XtEovATvwsh/6WdQwPpFVGwM2WcxRBkXVMZxUz43oA=; b=DsLE08okN6xtCTybL
-	ITkxg4h6eiu2/Lf+ziNTb5OkC0H7uDYhsz87HeJg4jhsaZqhTDrHWCAeMsiWrY0t
-	2H9G6hNnrShe/XGl6kqOpsrowbe97+wj05z9ThJN0CpnrYLt7CpTEoPxB7uWiGhw
-	h2yqZCY/A3/hsr+Y2z/ftVUPVmy5Frfk6MkQcJE/FqPzf9f9DLILnIVL56nT7iw9
-	7qUKUL1TIF8Vaay5869EUpF2zXidZBGAZa2vWUyVy975iQv7BEmb1uR5yVw2gxKn
-	B0PTwz4OQGyUQjofKxGmuLJ2s+2CG/XtYgZnS4kLBHYkoD/akMMbjmOH8AHnTQJn
-	BiM3w==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41snt0yydv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 22 Sep 2024 20:49:23 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 48MG63vu008684;
-	Sun, 22 Sep 2024 20:49:22 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 41t8v0uejw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 22 Sep 2024 20:49:22 +0000
-Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 48MKnLci22807128
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 22 Sep 2024 20:49:21 GMT
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3533358056;
-	Sun, 22 Sep 2024 20:49:21 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AAB8F58045;
-	Sun, 22 Sep 2024 20:49:20 +0000 (GMT)
-Received: from [9.61.255.78] (unknown [9.61.255.78])
-	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 22 Sep 2024 20:49:20 +0000 (GMT)
-Message-ID: <4dbb0949-02a9-4f52-b9c5-5939d9004455@linux.ibm.com>
-Date: Sun, 22 Sep 2024 15:49:20 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XBnlF25vyz2xHg
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2024 12:59:20 +1000 (AEST)
+X-QQ-mid: bizesmtp86t1727060282tghpij9e
+X-QQ-Originating-IP: z6kSYKOZj9tF/CadInEk8vWIdrNPbqJLGykFKaAzUAw=
+Received: from HX09040029.powercore.com.cn ( [180.171.104.254])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Mon, 23 Sep 2024 10:58:00 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 17443238697871441029
+Date: Mon, 23 Sep 2024 10:57:27 +0800
+From: Luming Yu <luming.yu@shingroup.cn>
+To: Ritesh Harjani <ritesh.list@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+	jialong.yang@shingroup.cn, luming.yu@gmail.com
+Subject: Re: [RFC PATCH] powerpc/tlb: enable arch want batched unmap tlb flush
+Message-ID: <3A7F514D32DFA545+ZvDZF58z6KTRqRjG@HX09040029.powercore.com.cn>
+References: <9BC3D1299ECE8428+20240918092515.2121-2-luming.yu@shingroup.cn>
+ <87frpsymf2.fsf@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,48 +52,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] crypto: Removing CRYPTO_AES_GCM_P10.
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-crypto@vger.kernel.org, stable@vger.kernel.org, leitao@debian.org,
-        nayna@linux.ibm.com, appro@cryptogams.org,
-        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        mpe@ellerman.id.au, ltcgcw@linux.vnet.ibm.com, dtsen@us.ibm.com
-References: <20240919113637.144343-1-dtsen@linux.ibm.com>
- <Zu6SeXGNAqzVJuPS@gondor.apana.org.au>
-Content-Language: en-US
-From: Danny Tsen <dtsen@linux.ibm.com>
-In-Reply-To: <Zu6SeXGNAqzVJuPS@gondor.apana.org.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 8WOwtgfHcfk_26zwTLDhRuQUOaJF18-m
-X-Proofpoint-GUID: 8WOwtgfHcfk_26zwTLDhRuQUOaJF18-m
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-22_20,2024-09-19_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxlogscore=850
- priorityscore=1501 suspectscore=0 mlxscore=0 clxscore=1015 impostorscore=0
- malwarescore=0 bulkscore=0 spamscore=0 phishscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2408220000
- definitions=main-2409220159
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87frpsymf2.fsf@gmail.com>
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:shingroup.cn:qybglogicsvrgz:qybglogicsvrgz8a-1
 
-Thanks Herbert.
+On Sun, Sep 22, 2024 at 04:39:53PM +0530, Ritesh Harjani wrote:
+> Luming Yu <luming.yu@shingroup.cn> writes:
+> 
+> > From: Yu Luming <luming.yu@gmail.com>
+> >
+> > ppc always do its own tracking for batch tlb. By trivially enabling
+> > the ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH in ppc, ppc arch can re-use
+> > common code in rmap and reduce overhead and do optimization it could not
+> > have without a tlb flushing context at low architecture level.
+> 
+> I looked at this patch and other than the compile failure, this patch
+> still won't optimize anything. The idea of this config is that we want
+> to batch all the tlb flush operation at the end. By returning false from
+> should_defer_flush() (in this patch), we are saying we cannot defer
+> the flush and hence we do tlb flush in the same context of unmap.
+not exactly, as false return implies, we currently do nothing but relying on
+book3S_64's tlb batch implementation which contains a bit of defer optimization
+that we need to use a real benchmark to do some performance characterization.
 
--Danny
+And I need to get my test bed ready for patch testing first. So I have to
+defer the real optimization in this area.
+> 
+> Anyway, I took a quick look at ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
+> and I have a quick PoC for the same. I will soon post it.
+thanks for picking up the barton for the future collaboration on the
+potential common performance benefits among us for powerpc arch.
+> 
+> -ritesh
+> 
+> >
+> > Signed-off-by: Luming Yu <luming.yu@shingroup.cn>
+> > ---
+> >  arch/powerpc/Kconfig                |  1 +
+> >  arch/powerpc/include/asm/tlbbatch.h | 30 +++++++++++++++++++++++++++++
+> >  2 files changed, 31 insertions(+)
+> >  create mode 100644 arch/powerpc/include/asm/tlbbatch.h
+> >
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index e94e7e4bfd40..e6db84dd014a 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -175,6 +175,7 @@ config PPC
+> >  	select ARCH_WANT_IPC_PARSE_VERSION
+> >  	select ARCH_WANT_IRQS_OFF_ACTIVATE_MM
+> >  	select ARCH_WANT_LD_ORPHAN_WARN
+> > +	select ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH
+> >  	select ARCH_WANT_OPTIMIZE_DAX_VMEMMAP	if PPC_RADIX_MMU
+> >  	select ARCH_WANTS_MODULES_DATA_IN_VMALLOC	if PPC_BOOK3S_32 || PPC_8xx
+> >  	select ARCH_WEAK_RELEASE_ACQUIRE
+> > diff --git a/arch/powerpc/include/asm/tlbbatch.h b/arch/powerpc/include/asm/tlbbatch.h
+> > new file mode 100644
+> > index 000000000000..484628460057
+> > --- /dev/null
+> > +++ b/arch/powerpc/include/asm/tlbbatch.h
+> > @@ -0,0 +1,30 @@
+> > +/* SPDX-License-Identifier: GPL-2.0 */
+> > +#ifndef _ARCH_PPC_TLBBATCH_H
+> > +#define _ARCH_PPC_TLBBATCH_H
+> > +
+> > +struct arch_tlbflush_unmap_batch {
+> > +	/*
+> > +         *
+> > +	 */
+> > +};
+> > +
+> > +static inline void arch_tlbbatch_flush(struct arch_tlbflush_unmap_batch *batch)
+> > +{
+> > +}
+> > +
+> > +static inline void arch_tlbbatch_add_pending(struct arch_tlbflush_unmap_batch *batch,
+> > +						struct mm_struct *mm,
+> > +						unsigned long uarddr)
+> > +{
+> > +}
+> > +
+> > +static inline bool arch_tlbbatch_should_defer(struct mm_struct *mm)
+> > +{
+> > +	/*ppc always do tlb flush in batch*/
+> > +	return false;
+> > +}
+> > +
+> > +static inline void arch_flush_tlb_batched_pending(struct mm_struct *mm)
+> > +{
+> > +}
+> > +#endif /* _ARCH_PPC_TLBBATCH_H */
+> > -- 
+> > 2.42.0.windows.2
+> 
 
-On 9/21/24 4:31 AM, Herbert Xu wrote:
-> On Thu, Sep 19, 2024 at 07:36:37AM -0400, Danny Tsen wrote:
->> Data mismatch found when testing ipsec tunnel with AES/GCM crypto.
->> Disabling CRYPTO_AES_GCM_P10 in Kconfig for this feature.
->>
->> Fixes: fd0e9b3e2ee6 ("crypto: p10-aes-gcm - An accelerated AES/GCM stitched implementation")
->> Fixes: cdcecfd9991f ("crypto: p10-aes-gcm - Glue code for AES/GCM stitched implementation")
->> Fixes: 45a4672b9a6e2 ("crypto: p10-aes-gcm - Update Kconfig and Makefile")
->>
->> Signed-off-by: Danny Tsen <dtsen@linux.ibm.com>
->> ---
->>   arch/powerpc/crypto/Kconfig | 1 +
->>   1 file changed, 1 insertion(+)
-> Patch applied.  Thanks.
 
