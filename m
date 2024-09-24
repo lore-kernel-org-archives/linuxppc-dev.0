@@ -1,53 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-1536-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1537-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB2A5CF9C71
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Sep 2024 22:30:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B695CF9C5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Sep 2024 02:56:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XCHkm0fklz2xbY;
-	Tue, 24 Sep 2024 08:30:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.17.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727110370;
-	cv=none; b=aWbx8wGBbVcfqE5yI/HXSGQNKkSSdo59G4stHMExlnH6mwRrKCM12ILp97iiNwnkiHl63qZmqzoxmZXRXPcV/HNm9vqCv1ZZlgbvV1JV1qMa5jZSpoZJOstDZqJWOgsLz/OdGsXFi40q5gNjSg32QpbE8cIbzH+yWLwTq0b8HJKRuYqHBgWudkipX17ynaHKHRgqex+x4vldETkpLeKLnC/qSaeZ2sjpv3QUeCLnTdtAJCBYXD99tMtzp9S9tHS4lkR4i9i8eFzQfkSVef0mZpJt0WfnvHqB61b7FLnfsZh8Rc3JzBQ7S6dpH7M/ajbgnONW/No62Ff9IDdB8u/kkA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XCPdg6Ll4z2xpk;
+	Tue, 24 Sep 2024 12:56:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727146599;
+	cv=none; b=YYPpyXTBdSYEu17PdmZm6oDtNGLAChJ8rGGUZh5NajrGyRpZb4SiVUTMhzufytlMwGeHmHEambIM7z01RaxgLFykUuqBXfuxpnLmQHpgERAs9F9lJQibTMqys3/4RJlB8HcjaEX/gvKChB+7UeQKDVaZAyDdmH4gw7fVxsijO+ck/MiEHOGK7BLxOFEDtXHxdXS8EfMqxMAHOwWqECeWLABojoBDHO5hfYaCn/qCXpbxVCppFfXRP3GtQqhlS2uSO1Iz7WAaXRPAx7e4lnpIIsJRE9+RFyv24uMqlLrH2DEQ/uDA1OgC5L1WFLdzBsPoV9mPt/g7VEAhwlyO1lUJ5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727110370; c=relaxed/relaxed;
-	bh=cLl2PIYMfeKrxIuDVB1meXKJeIwGbLWbFBXhJWFwUWM=;
-	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=acF2da8K9fbZq/pnwnkKKI2Ok/1t/pz+SihbRrzmWAbnPlpABSkNCd66JUSXNRjzgR2c3kuzfkncuVnpzVqBQfRkkJZ5SFGso/D1qpywbEuZ9DdL9M0oRRR87tXJUzx39ZKlKyn4mhbO9fwsF9a1yN3y503OGEOTx+HTB7rMB57EFqPPIm0CvhTSJSpAkhD+0iqSmGnPTQghMSDzWdLHJvDI3ep0pb5cJMTCFop3cCyUsVjtnKadyF3iTglitpko+cBYxIMG5YDIeVxONEJrQfZZgkGf1wVlm28seMMLqw7f69Nqk1jfLVawjScf3WCwgkpqHmDXniEHdejGFdxHuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=Qw0Rsn7U; dkim-atps=neutral; spf=pass (client-ip=212.227.17.12; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+	t=1727146599; c=relaxed/relaxed;
+	bh=On9oGsvIZfjem73sGq+MqJdM2U+WXxLGXRq4IkAZ4Lo=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=c531ijbFvHXlgw0hWDzjsNxjPqV33fS5VPNSlb/gf16Wtw4/mRKH3ggyqMao3VYGY6cqFTspRbLwfbKom52SGqbr6weWoikDvWMbrgBAGItiJuPqo+z3IIXhUTfjz9GSrHVPga0/kIeplUyrCb6Qkfkp9QEHzQlubvtsMWuica5QDs9wAgROnLxSrtB0xgi3VwUl5riVyhdMq+/6iIIWVMYRd/vIGq3s/0c2aKbdVDReZq6UdmbrivPaoPBnNb2Q9zNcnWl0FmQoB99b8JCn7/tZTMVhrsTe8lRM4WjjHr/6A5qVET1797py06kJvgKL1BTPcQxnBKJVMcOuIXUfbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=aoYozNvk; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52b; helo=mail-pg1-x52b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=Qw0Rsn7U;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=aoYozNvk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.17.12; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 332 seconds by postgrey-1.37 at boromir; Tue, 24 Sep 2024 02:52:48 AEST
-Received: from mout.web.de (mout.web.de [212.227.17.12])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52b; helo=mail-pg1-x52b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com [IPv6:2607:f8b0:4864:20::52b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XC8Dw34hxz2xb9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2024 02:52:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1727110359; x=1727715159; i=markus.elfring@web.de;
-	bh=cLl2PIYMfeKrxIuDVB1meXKJeIwGbLWbFBXhJWFwUWM=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:From:
-	 Subject:Content-Type:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=Qw0Rsn7U2XhhaOxh0hVTwpbtRpoCbCXf3huN0NzoWIxDQSZ9thTgVBJi2N9onVr8
-	 yoqk5VoAWdTzmNiWwMC0tQals0HREASXBPJ+RcqZI+71AlJzNE7Smc7AbQYKYrhCB
-	 ox+sgkHzN4Dmu5PdXJHb+qHCD0HI9tdLeP5oAPZdxOVyOsqlHfeA0sh6fzu3SKFgK
-	 BZGVA45fa7b5sIwph9HjRHldhkpc/gIRjbqddjEEG/T+dYSSd2myTFxiGfi39xixn
-	 6VOPvI3hCpMrDK5meVfIyFXeR7qgS9j+1T5DrSrNA9ehAhbBMGg2bUunUW03fX1we
-	 VuViTdR6wa6U5QqOwQ==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.21] ([94.31.90.95]) by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MEUW8-1siKjz3NCE-004LHi; Mon, 23
- Sep 2024 18:46:33 +0200
-Message-ID: <95114539-d177-4be7-81bd-a10ef9dd64f2@web.de>
-Date: Mon, 23 Sep 2024 18:46:27 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XCPdf2rpsz2xfR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2024 12:56:37 +1000 (AEST)
+Received: by mail-pg1-x52b.google.com with SMTP id 41be03b00d2f7-7db0fb03df5so3426352a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Sep 2024 19:56:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1727146596; x=1727751396; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=On9oGsvIZfjem73sGq+MqJdM2U+WXxLGXRq4IkAZ4Lo=;
+        b=aoYozNvkiuGmJLXuD40UNzKOBSBnZtnfllUjupcbKfXqUN7EEFUPlzY6FyejowbeTw
+         JSicX5DbISKCywjvBnJ98Z8A7KmoIDzayRVoAmrq3Iu4nmoGVOf+NCZnx+TiuZXqNpB+
+         dBa+1enp+UObgRJf7HF6N3ONHXnVXArdp4t8gnxkY6tpweLlocEfaKVcRcnZQI+NefVd
+         OcD27v5QWiO0rDFRXqMtax+hkZ8wexvHtjSMRB+nZXxkW0VfzHRL53ubXSMCXwoBgzPs
+         GyJeJED6oXdyX3i8yINULThJ02Vxqkm93Nx+IWWHb7WfvY6I7g5mtesXaeCzJGpEe4AQ
+         eH6Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1727146596; x=1727751396;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=On9oGsvIZfjem73sGq+MqJdM2U+WXxLGXRq4IkAZ4Lo=;
+        b=Km8ruCmpOGE8EaX5LXsNj/0c8UgJM4tuo7dC6m5aP3xPBRIaHzcYbhmm1MKDR51zkT
+         KAroV1rbNSYM5+XYemCPBNCteNI0yr0mEvZASYQp+IAM7CGdusrwOPgcE+VXn+ue2Gsk
+         aSSvG6EAZ0sUf/gC6vztqhubb/AftnCVoUsHEeePdqUOYq8+bQpn4w6u/lasTeeJcMge
+         WRkayPp9ZhP8LF2yME/phxKctpYOfyexLJugYer00885+zKGZbNAWxAwa2Ew2xFqYS/j
+         AbVFe2hCiVrBY5Hht7cM58aqf2utna8NEQrQR8u/tdLqXehaC1RuT0hIObOaJ+zhZFxf
+         spVw==
+X-Gm-Message-State: AOJu0YwPbHLDdwgG0y5pWpKNRnlVn83v4fYAhP/7lJAGpjqKTL+T3NQH
+	Gb5zCB4/XCeSdpfRQRSb+ELSllXkGf4G/0DgvSxtcC5l8xFNoKvX
+X-Google-Smtp-Source: AGHT+IGCM/yRJ3B8EHDlCv/yrPfabD25tlj3A/kHgW0/fWrGcWy5BoiszT2hpqv3WpjdbmjtaZnRow==
+X-Received: by 2002:a17:90a:fa8f:b0:2d8:53f8:77c0 with SMTP id 98e67ed59e1d1-2dd80c05452mr18655444a91.7.1727146595600;
+        Mon, 23 Sep 2024 19:56:35 -0700 (PDT)
+Received: from dw-tp ([171.76.82.70])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2e058f6ed30sm348649a91.25.2024.09.23.19.56.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 23 Sep 2024 19:56:34 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Guenter Roeck <linux@roeck-us.net>, Narayana Murty N <nnmlinux@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, linux-kernel@vger.kernel.org, mahesh@linux.ibm.com, oohall@gmail.com, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, vaibhav@linux.ibm.com, ganeshgr@linux.ibm.com, sbhat@linux.ibm.com
+Subject: Re: [PATCH v3] powerpc/pseries/eeh: Fix pseries_eeh_err_inject
+In-Reply-To: <c474f56f-af74-479d-9db6-fbbfdb287604@roeck-us.net>
+Date: Tue, 24 Sep 2024 08:23:18 +0530
+Message-ID: <87a5fxbw4h.fsf@gmail.com>
+References: <20240909140220.529333-1-nnmlinux@linux.ibm.com> <c474f56f-af74-479d-9db6-fbbfdb287604@roeck-us.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,75 +77,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Bjorn Helgaas <bhelgaas@google.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Naveen N Rao <naveen@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>
-Content-Language: en-GB
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
- Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: [PATCH] pci/hotplug/pnv_php: Reduce of_node_put(dn) calls in
- pnv_php_register_slot()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:4mCo/RU42zxNcsXGSzibyvIeiV2BzIe9Aa534X8UIIfGsmSXiCo
- 5mEOeVPUkp9CQ3cTsBKMR+P0Vw39x2t80SxhlRc7aL44PFv20PS/2gNsJb85lV1epa9ifwF
- J/L/woOOkj6zxuOK+2Ui+0M1tLnBnur7FfSrHi/ot2xnGtb+/9g21y62SLFVrdBH+mFq+/N
- PUeZt57Szc9Kn4k1NyGng==
-UI-OutboundReport: notjunk:1;M01:P0:Y45TeBcINis=;+NDXRK/kqjtxVstnXh6NB1ZZgDo
- BzOnqxzWcYtW4i46jIEdg375HhNojJu/qRWWSzwlgA7WBVUKhfvDIDGl0IizZxZxiku+CDibA
- qXVOIDkPuGJNwlq3SbWgIJ7rM3ckEeX+siJLR9vLdMTR9FaSeDaMM21dupIhzU/GaoSCzwmAU
- Qa5nrkQULWeLiMP2EwijFUeECdMwxEaE6BnIM0AmzqVnftqHnr7fkohPbYq8FN5qeTR+j19sv
- VWeiEn89v35gTpUTrC7AYOlVvAK/6mWmgOCd/LZzl9S/FpYUy7bXDVQQnxxI7sfEFSyZHumyy
- AEzyRFqdhvNQu23Eg80g5hgecCPJe9gsR420lxgeIEpnbsoSmmWs5GE51j7Y0B+HUde8rkrpy
- an7IYhakfdFAnZKXqQE1MCIgd4H3mJyBwq4pFSLDOYfPHskGGqUvCXUd4wGplNVO9Xp+FQ3Hh
- +wd3KA43GGtONu6weu2KErBAaHn1NcTx9CvTWyTW3ZSIAr2F0s5JVjIiOifSKoPHJTatlfnmF
- SFcLQFjnL8bnk7D4LCpJnYrb/DBbq78st0YOwSYzYWqj85VxfSS5CNQHSSyPSqpYE3m3kApj7
- 08x9CzVuduBOgsfwfYA2Mltosj3j8TEV591DmZib/yl5SjYhP+kN8uwW8ix04qBIFl3Lf/fH+
- AO4ui4AiqUSawGuZj5XFaVBfcVsWIRgCEJobsxbYQRfyx346WaE3IOwOkYwC3Woa725n/Kk9D
- w81WA30gWmPi+mqXI6Zufyjd9gFzT9iJoKXGj+ES6CaSeM+lRvpsn2wT0nUrDzyqq0metkYLr
- NIWazh1UFQyT3QAiAHLiE+ZA==
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 23 Sep 2024 18:32:21 +0200
+Guenter Roeck <linux@roeck-us.net> writes:
 
-An of_node_put(dn) call was immediately used after a pointer check
-for a pnv_php_find_slot() call in this function implementation.
-Thus call such a function instead directly before the check.
+> Hi,
+>
+> On Mon, Sep 09, 2024 at 09:02:20AM -0500, Narayana Murty N wrote:
+>> VFIO_EEH_PE_INJECT_ERR ioctl is currently failing on pseries
+>> due to missing implementation of err_inject eeh_ops for pseries.
+>> This patch implements pseries_eeh_err_inject in eeh_ops/pseries
+>> eeh_ops. Implements support for injecting MMIO load/store error
+>> for testing from user space.
+>> 
+>> The check on PCI error type (bus type) code is moved to platform
+>> code, since the eeh_pe_inject_err can be allowed to more error
+>> types depending on platform requirement. Removal of the check for
+>> 'type' in eeh_pe_inject_err() doesn't impact PowerNV as
+>> pnv_eeh_err_inject() already has an equivalent check in place.
+>> 
+>> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+>> Reviewed-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+>> 
+>> ---
+>>  arch/powerpc/include/asm/eeh.h               |  2 +-
+>>  arch/powerpc/kernel/eeh.c                    |  9 +++--
+>>  arch/powerpc/platforms/pseries/eeh_pseries.c | 39 +++++++++++++++++++-
+>>  3 files changed, 44 insertions(+), 6 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>> index 91a9fd53254f..317b12fc1fe4 100644
+>> --- a/arch/powerpc/include/asm/eeh.h
+>> +++ b/arch/powerpc/include/asm/eeh.h
+>> @@ -308,7 +308,7 @@ int eeh_pe_reset(struct eeh_pe *pe, int option, bool include_passed);
+>>  int eeh_pe_configure(struct eeh_pe *pe);
+>>  int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
+>>  		      unsigned long addr, unsigned long mask);
+>> -
+>> +int eeh_pe_inject_mmio_error(struct pci_dev *pdev);
+>>  /**
+>>   * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
+>>   *
+>> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>> index d03f17987fca..49ab11a287a3 100644
+>> --- a/arch/powerpc/kernel/eeh.c
+>> +++ b/arch/powerpc/kernel/eeh.c
+>> @@ -1537,10 +1537,6 @@ int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
+>>  	if (!eeh_ops || !eeh_ops->err_inject)
+>>  		return -ENOENT;
+>>  
+>> -	/* Check on PCI error type */
+>> -	if (type != EEH_ERR_TYPE_32 && type != EEH_ERR_TYPE_64)
+>> -		return -EINVAL;
+>> -
+>>  	/* Check on PCI error function */
+>>  	if (func < EEH_ERR_FUNC_MIN || func > EEH_ERR_FUNC_MAX)
+>>  		return -EINVAL;
+>> @@ -1851,6 +1847,11 @@ static const struct file_operations eeh_dev_break_fops = {
+>>  	.read   = eeh_debugfs_dev_usage,
+>>  };
+>>  
+>> +int eeh_pe_inject_mmio_error(struct pci_dev *pdev)
+>> +{
+>> +	return eeh_debugfs_break_device(pdev);
+>> +}
+>> +
+>
+> The new function, as the context suggests, is only compiled if CONFIG_DEBUG_FS=y.
+> However, it is called unconditionally. With CONFIG_DEBUG_FS=n, this results in
+>
+> powerpc64-linux-ld: arch/powerpc/platforms/pseries/eeh_pseries.o: in function `pseries_eeh_err_inject':
+> /opt/buildbot/slave/qemu-ppc64/build/arch/powerpc/platforms/pseries/eeh_pseries.c:814:(.text+0x554): undefined reference to `eeh_pe_inject_mmio_error'
+> make[3]: *** [/opt/buildbot/slave/qemu-ppc64/build/scripts/Makefile.vmlinux:34: vmlinux] Error 1
+> make[2]: *** [/opt/buildbot/slave/qemu-ppc64/build/Makefile:1157: vmlinux] Error 2
+>
+> I'll enable CONFIG_DEBUG_FS in my tests and won't report this further,
+> but you might want to consider fixing the problem at some point.
+>
 
-This issue was transformed by using the Coccinelle software.
+Yes, this is fixed and picked up in powerpc tree.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-=2D--
- drivers/pci/hotplug/pnv_php.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=merge&id=3af2e2f68cc6baf0a11f662d30b0bf981f77bfea
 
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index 573a41869c15..fcbf20db136b 100644
-=2D-- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -697,12 +697,9 @@ static int pnv_php_register_slot(struct pnv_php_slot =
-*php_slot)
- 		}
-
- 		parent =3D pnv_php_find_slot(dn);
--		if (parent) {
--			of_node_put(dn);
--			break;
--		}
--
- 		of_node_put(dn);
-+		if (parent)
-+			break;
- 	}
-
- 	spin_lock_irqsave(&pnv_php_lock, flags);
-=2D-
-2.46.1
-
+-ritesh
 
