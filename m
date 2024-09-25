@@ -1,68 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-1583-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1584-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CBF1C369D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2024 11:50:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0499C369D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Sep 2024 11:52:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XDFRH3wXSz2xy2;
-	Wed, 25 Sep 2024 21:50:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::62a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727246983;
-	cv=none; b=BhOPKeg7DvwqeJBiPIyvmEG0CMYDGNl4oOqeHsD3HZH84kWsBfuHyP8sEkIRjBL5wwr0O1jVD63OazsmhT/7+HtBM+kuwSdQOn0uaDbhBzB7AFWrlCk+4oIitJ4ZHWe0/bigS1LXGcGMLj1yvptk2krCpCZPZGqpoOCcfiuX4t74Mws8YdYu99k/8wRaC14AqCaqTdhFK20OdPP5oKCB8nuZIylUan2IKUoV84ty0XX3SaWcrTbOobSYy6oDUQgiyVLGGFxSHk8nd+eNrRAFb9hw9y60r+gsNMv7qN1rhimLnKbVhb5PxFnimFVKOF/rA26FAGiBpntdt1FMk3+3Wg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XDFTn44Xfz2y8l;
+	Wed, 25 Sep 2024 21:52:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727265165;
+	cv=none; b=i+7LdjpGzh2yQE2Y7eYy9S3ftkXnVNiPsRNVxcvxmWAZ0VpKqqBQhEJJPfVXT4+epgAnhiwgf9EIvcqThJFHpFMWXrWQxdTOTGMTQZHjRx1++7juZpH+HtagHQZ/s/kHmVNw2+ApipxWgWob01aYXNcwJAQakVxHOJWJz8rCOk0HTHKT2ZcXKl6Wgwu2iAG9j6RC/LX05+9T1JuuT7bJqEG/BxoBG/hAhsqF5V/1PAv+hvdsx9iPYXOfEok5ZJ3y4wwH7GqtYiNAXCMcalauottfdE2Yqihg4BV0FvLPAIZcJ4sQ5DvDVgnvVl2u+FjzLuaYaMtnrJdnnBzGUtY1Qg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727246983; c=relaxed/relaxed;
-	bh=kk0Mt/+Hyj4BQOBJfxHEcKPbnwRr+BiwB73GhiBhJzc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=O9cX5HW8VZhSeOV0H9u1a5hMWWr/NdjBeNLk6+cVUcwE9hKbiTMUMiBCh5Flmf/MzJZqARWTfaE/VXXfercKZFc2P8QU8HnjAiXLXLcsLM56SFx8DhT+XkbOV4vKVOcT7mUaarZ11/7TuEDW4SoMdgzml53AoaiBHV1B91EGe5S5r8qJD1gGuqjDpIJY1k9DovneTbpeuRGaqMQZe0P3Hv3zSrr58Y8nIUdcbI7U8jXma3DReGBcswPwi13lS6jwU6K0gMXUztEGid7ocjLDKLPPQ5ZrobsG96TgOBNKIiu7lfmzbCdkyJatjK8GFdkGl0uLoQ+uDFyekjmUw5Ko0w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lSDre6Ni; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1727265165; c=relaxed/relaxed;
+	bh=m3RUqadWXx1a/47arDRgAjYVT0SBSelO4eFMcbm+vLU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=jYEYYARyYkHRhbvwHABbSe4njdmUJ7d+uW5R0c4r87NzL1+T3OxywvdGqde2Rz+Fnj/Iso7Yubmq/Ot+M0SeQGw7M63S5TkGIMcCfJtCdKnjB9fm5bMfd4Uuc0yDSM3bDpPe7eXPkh0jDHTZ5WdTliVjnHotuDgbtcSEAUZ6uQ4S9P8aLc4jsP4txHFd07MDNRK2FYew28LXIoeJnK6YGR6wo4/FwwekBG9s5XccvUKoZafWCrgSaAbQ0LiJIlTOn5GBfxZ0vv2XR/DeLPvp+6W0Le/+dFJRkbY5nTqxd0r6wPF6uID8L+5eUeYCV6vRMTFc8Y+5w/Ohzi5D+G/51A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Fl2iBLTr; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lSDre6Ni;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Fl2iBLTr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XD6m64sjVz2xtc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2024 16:49:41 +1000 (AEST)
-Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-a8a7cdfdd80so880955566b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Sep 2024 23:49:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1727246977; x=1727851777; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kk0Mt/+Hyj4BQOBJfxHEcKPbnwRr+BiwB73GhiBhJzc=;
-        b=lSDre6NiCjuzqsoc+i1Ngdha9VpV6dlqut3aNe0ge8M+MtP4IuU3zQMHA0PFT/CyRn
-         dpc7snkrHsGDv3meyqyJ5YiBbH1dQ2DHp2P2QedSvfwfsfPXXvLdKZhrGO7Qvulje0NU
-         t0rIE5ibE6KgS4YTzdHbAa3eC2HRSVakhPlCKnyiT3F61vFUIgEqx6vfwh36Zk9uZ0pZ
-         lIgiBLyX8KAFc0LLNjdemFYAnR918+WIxC5AyDP9wX7Budp7RZmqQIKcDDAfJEblCY2Y
-         zQjgpAVl95Z+44sI9oDavaWLU50MSmTbzv89kgflMieiakkPB9yfEuaT3JJruJwtCX3+
-         i24g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1727246977; x=1727851777;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=kk0Mt/+Hyj4BQOBJfxHEcKPbnwRr+BiwB73GhiBhJzc=;
-        b=vG6Tei051Wu4cJ1SHsXId6N5fveDHYS3KZbOxgc+jVhQrXEyYhW9yOqX3ojhb2JOwG
-         KKTQIbev43bJK8OsDISJ7e4b929LLGRcrVnIn+xfAR71+05iUcVDbB2zjHu/mRboV10m
-         GgprKpApt3Sel6zrMNHdGZPdA0KKb5u95YDzC6BWjg1VXoi4r0nXgfgrJMhp5muevZpt
-         /fVVOF+gC3Z/V1AGxwqCvbuog2aDgcox2W+KmeIy1VEkv0hwasdiFrTwro7+U+LtuKgU
-         op+ELyFh+Ym1BOvCIG0yCqg3IjITJXcNDe8bzCB8ZQ6AYGtW0TTgxKa2gVvcCk8nOfGN
-         I6tw==
-X-Forwarded-Encrypted: i=1; AJvYcCUyd6uJsLi+lZNUusdD7gw9QUNb5NF1i5yAbB8w2IbeJhH/N/xQveXPlLWZCPs1kJMiVxVvzplu2p59hW4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxT0Wk8pvyezWbiH1Z1qux62PgjzX3FhvENch+JchVd93aaow8X
-	fAX8gtZj9YLTtXvSsWv7awTq2JpMVPDo56XUH8/tUxQXZ/+gbaX6b1XmRXIcMCvihdbDnNJMbC+
-	tbrYFE5eabIpfWx2OwfpVGiGgNQQ=
-X-Google-Smtp-Source: AGHT+IG4EhVNx4ZXTlcmLKwxSpAi+1Cc6wEcJlS0M5tzYd1bPulq0A8B/RQMJgdldFEu+s5xV1faX8OGR4qz9F9spEc=
-X-Received: by 2002:a17:907:c7d5:b0:a86:86d7:2890 with SMTP id
- a640c23a62f3a-a93a05d6507mr137992666b.50.1727246976510; Tue, 24 Sep 2024
- 23:49:36 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XDFTn16ZRz2xjK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Sep 2024 21:52:45 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id CF76A5C5B02;
+	Wed, 25 Sep 2024 11:52:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E64E5C4CECD;
+	Wed, 25 Sep 2024 11:52:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1727265161;
+	bh=dbDoaenS2JiEt3m25szAgyBcrRLV6AE6DACT1SCRILc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Fl2iBLTrbOT2X2MIdK7i7WTTBakFS67UhcXXa6wQyOu7f5QEcomp+xvBQ8HVHbqeq
+	 djSUfVALLKDoFbxNemghPAFV22ABHM2K47Q2xq09QbKdswGmyUsr5aLzX3gp6BByin
+	 ycSvbfywzG8ymKZluaHEjvnLS2fylzYWKhSukDsS5ow6CVSnAUTtbH1m2wJrWJzRm9
+	 S1UzAfNV33IT0artlSAXS3UgkDsBRRapOXmJuo7E1F+xctuCatCUcJ17pSNrOu8BdG
+	 /PdOSTAdufBk4iNJaGBfHhLrRT8QNBEaxS1I/C9+Ms6RTGEgBHgFxg6sZnvRU6FnIS
+	 kCfyr0WeMwpKA==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Haren Myneni <haren@linux.ibm.com>,
+	kernel test robot <lkp@intel.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Sasha Levin <sashal@kernel.org>,
+	nathanl@linux.ibm.com,
+	bgray@linux.ibm.com,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH AUTOSEL 6.11 221/244] powerpc/pseries: Use correct data types from pseries_hp_errorlog struct
+Date: Wed, 25 Sep 2024 07:27:22 -0400
+Message-ID: <20240925113641.1297102-221-sashal@kernel.org>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20240925113641.1297102-1-sashal@kernel.org>
+References: <20240925113641.1297102-1-sashal@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,33 +69,160 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20240924-asoc-imx-maple-v1-1-8b993901f71e@kernel.org>
-In-Reply-To: <20240924-asoc-imx-maple-v1-1-8b993901f71e@kernel.org>
-From: Daniel Baluta <daniel.baluta@gmail.com>
-Date: Wed, 25 Sep 2024 09:50:35 +0300
-Message-ID: <CAEnQRZBde3AV7Dvu-jtXCTbZnBg60COdp7eheSdyfE_6mP9GQw@mail.gmail.com>
-Subject: Re: [PATCH] ASoC: fsl: Use maple tree register cache
-To: Mark Brown <broonie@kernel.org>
-Cc: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
-	Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
-	Liam Girdwood <lgirdwood@gmail.com>, alsa-devel@alsa-project.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-sound@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.11
+Content-Transfer-Encoding: 8bit
 
-On Tue, Sep 24, 2024 at 4:59=E2=80=AFPM Mark Brown <broonie@kernel.org> wro=
-te:
->
-> Several of the NXP drivers use regmaps with a rbtree register cache. Sinc=
-e
-> the maple tree cache is uisng a generally more modern data structure whic=
-h
-> makes implementation choices more suitable for modern systems let's conve=
-rt
-> these drivers to it. This should have no practical impact.
->
-> Signed-off-by: Mark Brown <broonie@kernel.org>
+From: Haren Myneni <haren@linux.ibm.com>
 
-Reviewed-by: Daniel Baluta <daniel.baluta@nxp.com>
+[ Upstream commit b76e0d4215b6b622127ebcceaa7f603313ceaec4 ]
+
+_be32 type is defined for some elements in pseries_hp_errorlog
+struct but also used them u32 after be32_to_cpu() conversion.
+
+Example: In handle_dlpar_errorlog()
+hp_elog->_drc_u.drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+
+And later assigned to u32 type
+dlpar_cpu() - u32 drc_index = hp_elog->_drc_u.drc_index;
+
+This incorrect usage is giving the following warnings and the
+patch resolve these warnings with the correct assignment.
+
+arch/powerpc/platforms/pseries/dlpar.c:398:53: sparse: sparse:
+incorrect type in argument 1 (different base types) @@
+expected unsigned int [usertype] drc_index @@
+got restricted __be32 [usertype] drc_index @@
+...
+arch/powerpc/platforms/pseries/dlpar.c:418:43: sparse: sparse:
+incorrect type in assignment (different base types) @@
+expected restricted __be32 [usertype] drc_count @@
+got unsigned int [usertype] @@
+
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202408182142.wuIKqYae-lkp@intel.com/
+Closes: https://lore.kernel.org/oe-kbuild-all/202408182302.o7QRO45S-lkp@intel.com/
+Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+
+v3:
+- Fix warnings from using incorrect data types in pseries_hp_errorlog
+  struct
+v2:
+- Remove pr_info() and TODO comments
+- Update more information in the commit logs
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://msgid.link/20240822025028.938332-1-haren@linux.ibm.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/platforms/pseries/dlpar.c          | 17 -----------------
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |  2 +-
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 16 ++++++++--------
+ arch/powerpc/platforms/pseries/pmem.c           |  2 +-
+ 4 files changed, 10 insertions(+), 27 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 47f8eabd1bee3..9873b916b2370 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -334,23 +334,6 @@ int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
+ {
+ 	int rc;
+ 
+-	/* pseries error logs are in BE format, convert to cpu type */
+-	switch (hp_elog->id_type) {
+-	case PSERIES_HP_ELOG_ID_DRC_COUNT:
+-		hp_elog->_drc_u.drc_count =
+-				be32_to_cpu(hp_elog->_drc_u.drc_count);
+-		break;
+-	case PSERIES_HP_ELOG_ID_DRC_INDEX:
+-		hp_elog->_drc_u.drc_index =
+-				be32_to_cpu(hp_elog->_drc_u.drc_index);
+-		break;
+-	case PSERIES_HP_ELOG_ID_DRC_IC:
+-		hp_elog->_drc_u.ic.count =
+-				be32_to_cpu(hp_elog->_drc_u.ic.count);
+-		hp_elog->_drc_u.ic.index =
+-				be32_to_cpu(hp_elog->_drc_u.ic.index);
+-	}
+-
+ 	switch (hp_elog->resource) {
+ 	case PSERIES_HP_ELOG_RESOURCE_MEM:
+ 		rc = dlpar_memory(hp_elog);
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index e62835a12d73f..6838a0fcda296 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -757,7 +757,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ 	u32 drc_index;
+ 	int rc;
+ 
+-	drc_index = hp_elog->_drc_u.drc_index;
++	drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+ 
+ 	lock_device_hotplug();
+ 
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 3fe3ddb30c04b..38dc4f7c9296b 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -817,16 +817,16 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 	case PSERIES_HP_ELOG_ACTION_ADD:
+ 		switch (hp_elog->id_type) {
+ 		case PSERIES_HP_ELOG_ID_DRC_COUNT:
+-			count = hp_elog->_drc_u.drc_count;
++			count = be32_to_cpu(hp_elog->_drc_u.drc_count);
+ 			rc = dlpar_memory_add_by_count(count);
+ 			break;
+ 		case PSERIES_HP_ELOG_ID_DRC_INDEX:
+-			drc_index = hp_elog->_drc_u.drc_index;
++			drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+ 			rc = dlpar_memory_add_by_index(drc_index);
+ 			break;
+ 		case PSERIES_HP_ELOG_ID_DRC_IC:
+-			count = hp_elog->_drc_u.ic.count;
+-			drc_index = hp_elog->_drc_u.ic.index;
++			count = be32_to_cpu(hp_elog->_drc_u.ic.count);
++			drc_index = be32_to_cpu(hp_elog->_drc_u.ic.index);
+ 			rc = dlpar_memory_add_by_ic(count, drc_index);
+ 			break;
+ 		default:
+@@ -838,16 +838,16 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 	case PSERIES_HP_ELOG_ACTION_REMOVE:
+ 		switch (hp_elog->id_type) {
+ 		case PSERIES_HP_ELOG_ID_DRC_COUNT:
+-			count = hp_elog->_drc_u.drc_count;
++			count = be32_to_cpu(hp_elog->_drc_u.drc_count);
+ 			rc = dlpar_memory_remove_by_count(count);
+ 			break;
+ 		case PSERIES_HP_ELOG_ID_DRC_INDEX:
+-			drc_index = hp_elog->_drc_u.drc_index;
++			drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+ 			rc = dlpar_memory_remove_by_index(drc_index);
+ 			break;
+ 		case PSERIES_HP_ELOG_ID_DRC_IC:
+-			count = hp_elog->_drc_u.ic.count;
+-			drc_index = hp_elog->_drc_u.ic.index;
++			count = be32_to_cpu(hp_elog->_drc_u.ic.count);
++			drc_index = be32_to_cpu(hp_elog->_drc_u.ic.index);
+ 			rc = dlpar_memory_remove_by_ic(count, drc_index);
+ 			break;
+ 		default:
+diff --git a/arch/powerpc/platforms/pseries/pmem.c b/arch/powerpc/platforms/pseries/pmem.c
+index 3c290b9ed01b3..0f1d45f32e4a4 100644
+--- a/arch/powerpc/platforms/pseries/pmem.c
++++ b/arch/powerpc/platforms/pseries/pmem.c
+@@ -121,7 +121,7 @@ int dlpar_hp_pmem(struct pseries_hp_errorlog *hp_elog)
+ 		return -EINVAL;
+ 	}
+ 
+-	drc_index = hp_elog->_drc_u.drc_index;
++	drc_index = be32_to_cpu(hp_elog->_drc_u.drc_index);
+ 
+ 	lock_device_hotplug();
+ 
+-- 
+2.43.0
+
 
