@@ -1,46 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-1659-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1660-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2486BCDD1B8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0666FCDD1B8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:47:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYGj5W8jz3cKT;
-	Sat, 28 Sep 2024 00:47:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.130.137.80
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727441490;
-	cv=none; b=XRf1oPNJgTQxM3ndoymDgwqpzblTzlMqRxW1VAIUId/BexQMlGaYnTjRtXrgRp6PWmG4PrecVsgqf+9bhZoWVNLvpR6+KwqLb4YracneSypNrJNSfWGj6Yegq+hh9ePjhSfPA8ZnOz2s7i4V9B2P5o9mbi4xkGOQtebbY1oXdIJidHXIL8QnKgDeoWo/68sAM9ruWmNtB9tBqvtID8THQK9Droma0Iy3BS4tO2m1ZcmkuhoroQTVN/f9k7RGPPb772aeAn7Vxh/YngqXErwAt31r/+Px5GfwCTLt48VMleTraDHRpfOzkqvyU/I7ynysg58aQi9pdaggUBYZUPOgJA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYGr4nxWz3cLN;
+	Sat, 28 Sep 2024 00:47:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.130.132.49
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727441500;
+	cv=none; b=AF4LoqYRy2gKdxxTkOvTeeOYefWSmWAzO5gld7sGfOinlEk15qqoj3Ua8UYft7x+FSqM2+p5pZqDk9YboMCJng7MT8ia7D3kIZwqOvyy/QcJR4Ggx+4jkI/zP+BEWofb/dcdcZLh6cBOd9L7uRfVJNclKa8ipHhQaaH43yQ/XwLUl91zqH3glFHjOj1emyccU/XrHXgrjZR24vK1QyCa9+LXCTEpbxqcD2o1WtJaOx2wN5YtX6VCkXQD9fXARQHEtkRImALjZn3aCi5HABKzwKDHYJeESaoSBmN0XJ26/mrErARDtNO5dumD+ktc78SQmjEfpFrebpWmXx8SICVF5Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727441490; c=relaxed/relaxed;
-	bh=8pEVAyku7Uijs/sJuSjwc2lCYvUnilSD+t79lm1ciFk=;
+	t=1727441500; c=relaxed/relaxed;
+	bh=+0+zCePXNc+rE/8h2AC/DEq4DCkjTNDcXegmOtv89q0=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=h9wHubJXn7DsUfLr+RyqTk2ZgiIJl6ZmB/jwCajXZRI7FKSUYgygLpxNNStWv+f0r8UxGFWdUqbq3JFOp8P3YFLWtSslUJX3PDDglzzxQm5u91G2yJAjPgz1X8nk4R1vb7j1hv0TOUo6br/F68V4CX5MAvPN78gmh+noFDN5o1fm+/o2D/pQhl/Eh9aOC7GHhSjRK75rZpTkogBfwmI+dyagYKQ+DKpcrIB/NxhcgcaWVbgYtRJ42ArLPYjdKGNc9fvHc3i71PTGMxnyS/LHEYQXKTEb32dME8t7/LOcHy9KGEZML94jq2EG4ck6STmE/ClrWttAhUFWWbll6Q9jtA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=195.130.137.80; helo=riemann.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=riemann.telenet-ops.be
+	 MIME-Version; b=V4k4egqsejle0deGyyV24vaSK1n2BLPl+/y92CT8a8/OiDBtkswo5hyNNHTvnwQ/FAbDRGtYx77tKeHwuP2IGiQ7YNzfHiY+LKceA1PkmhYFdi1IzGDOfedo4YNCQ38UqF62YBamjMlggA6GbhVZPoTeXYPO6YDl0/xm8yCZLyHn9XvWam21ZDBHq081UdgFUoP2BTBjh4Z1G8ST4SkwZjtmtCaLa+o2BjT1kz4gfJ904tYmIc7oSZeHvVicUSX+MHWz+dNtaRwj1dMDSkEA/qap0PoL+7DKvJNvb4PdkIUCjlNdtMqLrntgFZK2G3ZO4Jp3kYsLNveAXOwAh20b2Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=195.130.132.49; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=gauss.telenet-ops.be
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=riemann.telenet-ops.be (client-ip=195.130.137.80; helo=riemann.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
-Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [195.130.137.80])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=gauss.telenet-ops.be (client-ip=195.130.132.49; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
+Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [195.130.132.49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVhf2nZVz3c7Q
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:51:30 +1000 (AEST)
-Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
-	by riemann.telenet-ops.be (Postfix) with ESMTPS id 4XFVVv1N8lz4xNnw
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVhq5Tqjz3c7Q
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:51:39 +1000 (AEST)
+Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
+	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4XFVVv0Kwkz4xRWs
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 14:43:03 +0200 (CEST)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:b47d:fd74:3975:15b7])
-	by albert.telenet-ops.be with cmsmtp
-	id HQic2D00E3BfLyr06Qiclu; Fri, 27 Sep 2024 14:43:02 +0200
+	by michel.telenet-ops.be with cmsmtp
+	id HQic2D00L3BfLyr06Qicqj; Fri, 27 Sep 2024 14:43:02 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1suAIj-000fPu-HI;
+	id 1suAIj-000fPv-HG;
 	Fri, 27 Sep 2024 14:42:31 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1suAIp-008IDm-0M;
-	Fri, 27 Sep 2024 14:42:31 +0200
+	id 1suAIo-008IDd-UI;
+	Fri, 27 Sep 2024 14:42:30 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Liam Girdwood <lgirdwood@gmail.com>,
 	Mark Brown <broonie@kernel.org>,
@@ -77,9 +77,9 @@ Cc: linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH treewide 04/11] arm64: dts: freescale: imx: Switch to simple-audio-card,hp-det-gpios
-Date: Fri, 27 Sep 2024 14:42:19 +0200
-Message-Id: <b38545c29d6cbf0b394ddb4747ce810c679f95d1.1727438777.git.geert+renesas@glider.be>
+Subject: [PATCH treewide 01/11] ASoC: fsl-asoc-card: Add missing handling of {hp,mic}-dt-gpios
+Date: Fri, 27 Sep 2024 14:42:16 +0200
+Message-Id: <dbcb5bfea005a468ec6dc38374fe6d02bc693c22.1727438777.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1727438777.git.geert+renesas@glider.be>
 References: <cover.1727438777.git.geert+renesas@glider.be>
@@ -94,41 +94,56 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Replace the deprecated "simple-audio-card,hp-det-gpio" property by
-"simple-audio-card,hp-det-gpios" in Simple Audio Card device nodes.
+The DT bindings deprecated the "hp-det-gpio" and "mic-det-gpio"
+properties in favor of "hp-det-gpios" and "mic-det-gpios", but the
+driver was never updated to support the latter.
 
+Even before, there existed users of "hp-det-gpios" and "mic-det-gpios".
+While this may have been handled fine by the ASoC core, this was missed
+by the Freescale-specific part.
+
+Fixes: 4189b54220e5af15 ("ASoC: dt-bindings: fsl-asoc-card: convert to YAML")
+Fixes: 40ba2eda0a7b727f ("arm64: dts: imx8mm-nitrogen-r2: add audio")
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts | 2 +-
- arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi       | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Noticed accidentally.
+Compile-tested only.
+---
+ sound/soc/fsl/fsl-asoc-card.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts b/arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts
-index b268ba7a0e12a3f8..9d8e7231b7c63742 100644
---- a/arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts
-+++ b/arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts
-@@ -172,7 +172,7 @@ sound {
- 			"Headphones", "HP_OUT",
- 			"Builtin Speaker", "Speaker Amp OUTR",
- 			"Speaker Amp INR", "LINE_OUT";
--		simple-audio-card,hp-det-gpio = <&gpio3 20 GPIO_ACTIVE_HIGH>;
-+		simple-audio-card,hp-det-gpios = <&gpio3 20 GPIO_ACTIVE_HIGH>;
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index f6c3aeff0d8eafd7..a0c2ce84c32b1d06 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -1033,14 +1033,15 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 	}
  
- 		simple-audio-card,cpu {
- 			sound-dai = <&sai2>;
-diff --git a/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi b/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi
-index 1b39514d5c12aafc..bb37a32ce4616d9f 100644
---- a/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi
-@@ -241,7 +241,7 @@ sound {
- 			"Headset Mic", "MICBIAS",
- 			"IN3R", "Headset Mic",
- 			"DMICDAT", "Digital Mic";
--		simple-audio-card,hp-det-gpio = <&gpio3 9 GPIO_ACTIVE_HIGH>;
-+		simple-audio-card,hp-det-gpios = <&gpio3 9 GPIO_ACTIVE_HIGH>;
+ 	/*
+-	 * Properties "hp-det-gpio" and "mic-det-gpio" are optional, and
++	 * Properties "hp-det-gpios" and "mic-det-gpios" are optional, and
+ 	 * simple_util_init_jack() uses these properties for creating
+ 	 * Headphone Jack and Microphone Jack.
+ 	 *
+ 	 * The notifier is initialized in snd_soc_card_jack_new(), then
+ 	 * snd_soc_jack_notifier_register can be called.
+ 	 */
+-	if (of_property_read_bool(np, "hp-det-gpio")) {
++	if (of_property_read_bool(np, "hp-det-gpios") ||
++	    of_property_read_bool(np, "hp-det-gpio") /* deprecated */) {
+ 		ret = simple_util_init_jack(&priv->card, &priv->hp_jack,
+ 					    1, NULL, "Headphone Jack");
+ 		if (ret)
+@@ -1049,7 +1050,8 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 		snd_soc_jack_notifier_register(&priv->hp_jack.jack, &hp_jack_nb);
+ 	}
  
- 		simple-audio-card,cpu {
- 			sound-dai = <&sai2>;
+-	if (of_property_read_bool(np, "mic-det-gpio")) {
++	if (of_property_read_bool(np, "mic-det-gpios") ||
++	    of_property_read_bool(np, "mic-det-gpio") /* deprecated */) {
+ 		ret = simple_util_init_jack(&priv->card, &priv->mic_jack,
+ 					    0, NULL, "Mic Jack");
+ 		if (ret)
 -- 
 2.34.1
 
