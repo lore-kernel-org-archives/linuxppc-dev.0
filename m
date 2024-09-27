@@ -1,88 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-1663-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1664-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEB9ECDD1B8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:48:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52BDDCDD1B8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:48:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYHJ3Rx6z3cMH;
-	Sat, 28 Sep 2024 00:48:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.130.132.49
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727441501;
-	cv=none; b=kE0deOqn+7c3wLUwqSlwNM29gDgDMW/3G1gEnHIhRTUxKuZQiaDameOrybvfj/TUtJV7S9M6Y3u9CA4wh/ZD96O5yoY3/y83/Kczg+S4RzXQC3YZFIF621ojw8H7C7WHxH64geY66Ln/Um2tytuynj0jzsIOQj2LdAg316Jwh9Ee+aI4atdesmy0boTxUqxia4Y1PL5IS1aLy4oHLSNm9jbik1iDRl2SRp1M7dHCx05e/H+UlkusgiiTZGHNADEuCHEQ8mikgRLcd4DSXXIijFcf3OBrFcG2iyA2vYsW6Z+j9Ti8wBUK0AMZaTg+Hz0S0AORuaCQstNqZe40jE5ldg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYHX6h5fz3cN4;
+	Sat, 28 Sep 2024 00:48:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727441987;
+	cv=none; b=iROxRE9yaHyag8h6Bp/ldrEGFhYb1gLSgSbrewxjLZxkBuMnhMomjLrvFwyJ8vrL347C3KvfRKe99Gnbcqpiuo55OUbIEiCYY++9qThyZI3zzzdYs2JRZTi0m6Wf4Yfe6mmqp9MJKLBY2SLqTSaMrLu1LtiGQ1uSlXFdqaViSv+0sIBSGeOKaqmRfZFlwEnufs7/UHvUPLx09VMeRNTxxKlCVhRvoXGcVcTk16S34c4u5RmT+Rvg6hKF78q5yEhTQK3DKmvgtb3NhwKoF+PE37iPCH7ix2QB0mVA62TZ12y4kfbdx+b23rKvB4hNV4mIbxcMMWYNl6X8ndv+ZDhxeQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727441501; c=relaxed/relaxed;
-	bh=K7pV5Y/sFhhLAO0s8NN/c0NcQ2mTLmeUO2pos349x+Y=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=T+PL4YxMI1XRFlh7xSZHFvx1P8VAampLXiAhL8Ud+J1SnkNxX5Hra4vb7QtuIEwHOh3gU3xHHXJ76oeNbdn9LWWJAEZy+o0hGrqOxqhbUiDK1XwEQr6NntY3vl6K+X4rYwRtJWMvfG6fx8Nj+fIYZ8IbX9qba4jHlBcmrxYEo/LJAE1JzXuSn5yRrvpZFXITlRZ8djwtAqwFM4WerMmQW2lTC6qoOYEqH717GfL+89AlRsFLSRhWWkaMs6C3Fz9cmG9YN/UagdCB5dBFnJxtBk2mOjUGHIkN5JhTEXoFi1QsQgBGSceFkm0gCYe+WGaaigmuzRumY7gA3VTAK5zJjA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=195.130.132.49; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=gauss.telenet-ops.be
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=gauss.telenet-ops.be (client-ip=195.130.132.49; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
-Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [195.130.132.49])
+	t=1727441987; c=relaxed/relaxed;
+	bh=5kRvQYqrDxlyQ/4IJ60voMIp6Qt/AmF1WSn0sGcC0t0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=h8xQV7VCEg+XZerQ81wr5AVW4mXxPoFB94FPXK6hhzRN8U3DFvRbhczkPLon+zpaz0j+xyMphVJloLx+rMpNZs4yLB8hSpYzbWy4ZmB2qKbiwjXnZXVXBFibpLckXE5oDNUVFZ5NkXecSCsa+62dE0RILOHEXzv/JlVxgKfxfUrIrUe8hUqBhM4XZ37K4Rr/X3hcU0udeqI8+3ENAstIDxoNggmmGWmosFEncg71IXJeQFQFPT/t1yWjoDZq5DJCoXSZZUYbj7qnCDqf49g7oC8Srj0dzmOUqP6svlbjDN5cAst8wv2bRxvy8ODVHKyCuQtzM3+cRRLPVYILOnpI5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=P7ytwmFN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=aford173@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=P7ytwmFN;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=aford173@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVhs1zLZz3c8H
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:51:41 +1000 (AEST)
-Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be [IPv6:2a02:1800:120:4::f00:13])
-	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4XFVVt6vJKz4x9J8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 14:43:02 +0200 (CEST)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:b47d:fd74:3975:15b7])
-	by baptiste.telenet-ops.be with cmsmtp
-	id HQic2D00D3BfLyr01Qicjt; Fri, 27 Sep 2024 14:43:02 +0200
-Received: from rox.of.borg ([192.168.97.57])
-	by ramsan.of.borg with esmtp (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1suAIj-000fPs-HD;
-	Fri, 27 Sep 2024 14:42:31 +0200
-Received: from geert by rox.of.borg with local (Exim 4.95)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1suAIo-008IDj-Vr;
-	Fri, 27 Sep 2024 14:42:30 +0200
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Lubomir Rintel <lkundrak@v3.sk>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Paul Cercueil <paul@crapouillou.net>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Adrien Grassein <adrien.grassein@gmail.com>,
-	Adam Ford <aford173@gmail.com>
-Cc: linux-sound@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev,
-	linux-renesas-soc@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	linux-mips@vger.kernel.org,
-	alsa-devel@alsa-project.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH treewide 03/11] ARM: dts: marvell: mmp2-olpc-xo-1-75: Switch to {hp,mic}-det-gpios
-Date: Fri, 27 Sep 2024 14:42:18 +0200
-Message-Id: <7b4d7d735189fb346175a95e29db33f01c8cf93d.1727438777.git.geert+renesas@glider.be>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <cover.1727438777.git.geert+renesas@glider.be>
-References: <cover.1727438777.git.geert+renesas@glider.be>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVtC03qNz3cCM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:59:46 +1000 (AEST)
+Received: by mail-pj1-x102a.google.com with SMTP id 98e67ed59e1d1-2e09a276ec6so1574553a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 05:59:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1727441984; x=1728046784; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5kRvQYqrDxlyQ/4IJ60voMIp6Qt/AmF1WSn0sGcC0t0=;
+        b=P7ytwmFNxiYlLwNyZ+Ne/bANtejv+urOrc2DnECtttJbrV3tRxwq9HiO9RTi4/FgsY
+         P+oJeU0JJoNPwY2EuE2nx3Wgw7nCOTpzvdHlSD+KUA9AM8cH2exLxmTp3rH6e6Az1xFl
+         gG2I75eCkXhBAPDBXCGRKIPtjfC6LSkYVwy+AMWs0QNJrdaOEiDTQuuPHqDQs2iUecik
+         QYtRoOfQU5imSWvCWi6k6/Ml/JQFk133LEXVNgv4izYFnuPW4VEP94zI3dMjCATv1zwz
+         j456M9FDBohwv8XavJswAOUkuENU6AZKUAc3xP2lRvZ+Rn0G+AVOD/7DXhCIpQx0fCgg
+         nLLA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1727441984; x=1728046784;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5kRvQYqrDxlyQ/4IJ60voMIp6Qt/AmF1WSn0sGcC0t0=;
+        b=RTI/wNf0WH4z8IcsxsQ0fKnA7Zn1OiBfW2oKzqYKb+kEjX38Vf5i4doG9ZRMP2cCdP
+         u9mI18ctbkHwIFkuV/dRvcn+EEsbbQ/86QTM9h7uRWST196VqXV6+z+hvbzjOJnZObzp
+         TcztXb19g47zKfPpjqBix8tK1v6okCVufBpPAAd/hMti8jFFnY/t7/PfJL7eHiAgbWwu
+         hrRZDD8N+D7VfTP9kPHXi9uxuZv1QMAW+SfY7S44vCZaA5JsSnoGULx1UUbvP6P8j2jB
+         MIjZXtx2qqxvFSSQdyTBgYvkUaifoaEJir+LQBrPtq+qD1EBfBqVK4sTDjf5XwSlqg9c
+         yrPQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVgCr2An9fz09/6NM6GdlC8LBsAcYTehBpR1PgnlbX1++Z2skASO07iGBlyix9kkeWJh9P0uoltorjY23g=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwVrox2x6cqasL64RvD/IRhFwFLZaP1tsE0gs6gz/8IqHityew8
+	5WFaRdkwuA8kU8tckGNEfimE623E+LZHtqosWfYO+rY6SiKlJhzQMwASZzc3DtOlKQS3vw5bdtv
+	p4PCVxz8UTdzkMGn7wIjFI3FSU28=
+X-Google-Smtp-Source: AGHT+IHCtWkk/m0gIJI4HjMGIxf6HDCRDpOESUdGt/5A/Krn13z9jK+YnLyf6mEmoZB4cokgO5ouczhwAV6HyE5bjfY=
+X-Received: by 2002:a17:90b:1896:b0:2de:ec70:837 with SMTP id
+ 98e67ed59e1d1-2e0b876f84bmr4254037a91.1.1727441983559; Fri, 27 Sep 2024
+ 05:59:43 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,32 +72,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <cover.1727438777.git.geert+renesas@glider.be> <750d6ac7911aef9a461dca6d07e5c1fab6211ecb.1727438777.git.geert+renesas@glider.be>
+ <0bd21761-a81f-494a-9934-877f24b7fe0a@kernel.org>
+In-Reply-To: <0bd21761-a81f-494a-9934-877f24b7fe0a@kernel.org>
+From: Adam Ford <aford173@gmail.com>
+Date: Fri, 27 Sep 2024 07:59:32 -0500
+Message-ID: <CAHCN7xKKs9mUvnqZaLE2gCsDau4QtZ706LLoYcS_47-U86-nfA@mail.gmail.com>
+Subject: Re: [PATCH treewide 05/11] arm64: dts: renesas: beacon-renesom:
+ Switch to mic-det-gpios
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Lubomir Rintel <lkundrak@v3.sk>, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, 
+	Heiko Stuebner <heiko@sntech.de>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, Paul Cercueil <paul@crapouillou.net>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Shengjiu Wang <shengjiu.wang@gmail.com>, 
+	Xiubo Li <Xiubo.Lee@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
+	Adrien Grassein <adrien.grassein@gmail.com>, linux-sound@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	imx@lists.linux.dev, linux-renesas-soc@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org, linux-mips@vger.kernel.org, 
+	alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Replace the deprecated "hp-det-gpio" and "mic-det-gpio" properties by
-"hp-det-gpios" resp. "mic-det-gpios" in Audio Graph Card device nodes.
+On Fri, Sep 27, 2024 at 7:56=E2=80=AFAM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
+>
+> On 27/09/2024 14:42, Geert Uytterhoeven wrote:
+> > Replace the deprecated "mic-det-gpio" property by "mic-det-gpios" in
+> > Audio Graph Card device nodes.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- arch/arm/boot/dts/marvell/mmp2-olpc-xo-1-75.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Thanks!
 
-diff --git a/arch/arm/boot/dts/marvell/mmp2-olpc-xo-1-75.dts b/arch/arm/boot/dts/marvell/mmp2-olpc-xo-1-75.dts
-index 55ea87870af3e039..86c425b72fa711b5 100644
---- a/arch/arm/boot/dts/marvell/mmp2-olpc-xo-1-75.dts
-+++ b/arch/arm/boot/dts/marvell/mmp2-olpc-xo-1-75.dts
-@@ -113,8 +113,8 @@ sound-card {
- 			  "Headphones", "HPOR",
- 			  "MIC2", "Mic Jack";
- 		widgets = "Headphone", "Headphones", "Microphone", "Mic Jack";
--		hp-det-gpio = <&gpio 97 GPIO_ACTIVE_HIGH>;
--		mic-det-gpio = <&gpio 96 GPIO_ACTIVE_HIGH>;
-+		hp-det-gpios = <&gpio 97 GPIO_ACTIVE_HIGH>;
-+		mic-det-gpios = <&gpio 96 GPIO_ACTIVE_HIGH>;
- 	};
- 
- 	soc {
--- 
-2.34.1
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > ---
+> >  arch/arm64/boot/dts/renesas/beacon-renesom-baseboard.dtsi | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Reviewed-by: Adam Ford <aford173@gmail.com>
 
+>
+> Best regards,
+> Krzysztof
+>
 
