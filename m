@@ -1,95 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-1651-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1652-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCB58CDD1B4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:44:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 683C5CDD1B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:45:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYCT0xPgz30Tc;
-	Sat, 28 Sep 2024 00:44:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727440217;
-	cv=none; b=fhPIyr+RLT+p0TNOrjZKbLG9trbYfXxrGM0TlHIF76+9G4W0w3AVa+tYStdUccf8ykedTz+N2H+M5UPXEvLjHwGp3vSXQYWbL2d9ET61yKtO+Wmalpk8BKSosQJSu13hDBnUCADd5/30bl40PzrZHZU6u23/VY/eXZQX+tCyyRPFfJ7mA+6YkVDx9qDaeQS4RzJ1ubPYW1Kdy5NX+LqshGn4CMOZg743N7txWS3wDCs7HZ8NAU7J0MsMK5PFe4up8gXfNBGKgfkyQJArEbYQ2lyuOJpZ+VzvZWHPdOf701M4SRhk2Dov2HFdQlSGyb723W1CI6C1yUX2FAm8//8yKg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYDj6n5Jz3cDt;
+	Sat, 28 Sep 2024 00:45:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a02:1800:120:4::f00:10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727441361;
+	cv=none; b=HdvnfPKSv2/qoPb4l3vh0JdT9ARUGyWBssXXnZ/0dIFNMLgkBP24j/A3Pr1lGX6fYrW1WeWE0P1NaMeNKnzSKHsk9LwkJPe/Ji13ZKpfb8t+eORl6bhy1bNNcG9hxYM/F2fbYwynEPvMW/T69zzfy1x5Zyg1kUmTFZEe4xbMwR35Skogh9kC4lqkKTJ1dCSEpILREic26UQ9DTm07w0IsysYeyDNyMIf7cpAqP/DcFyGJ/iZhRiY6lJsAjOlYBvHO4jPbbbwBPwMwyeXV39ti1bA4lrcB48W9aWDEmURH9zSlnah6se7ug3k/cm1R+EaAi8s/J3Cekay2ZUk8QL8AQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727440217; c=relaxed/relaxed;
-	bh=X3KPffXxGN0FIhLP5f2K/FrqF2RGS6QdxDbR1ndTZX0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dWx5/UbkUBgcbZZSJ09v+eTiOFXAKltNhGAvu7FgSK2ePyoN2dfr4jSf8kgesKsvNNjtFKXS54GqiDvHwHb9IvbGVF4TPkIQ21HWRy5KjbUTDY+V2tZHK/QM9XvIm9qa7FnycrBd3ahOqpwb8yv7qvaLUYcWwWmLUuKnVps3nf41TK2+EZBDS4V2HdgPEYCOnkVbC6VDyVFqBDyJojXTf8uEpCM47h7Y0gUALbA47BB4xo2O4KiYGJ0sGpcOdKyUiaXDufxe1BKcYSAYiOxj/kFv/7MZDeP7kJio0vrZb1HvUnJeSwoud3KHBEQJe0Fio0JAPaFHnDOzcdS56FIYiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sGYFe9qA; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sGYFe9qA;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1727441361; c=relaxed/relaxed;
+	bh=MlDCpUQNPw7J+S4WassYg8f46MHICg07rFHIAHcwSfQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=lZiXb19VHmkaNFstg90iLx07C5xvtQKwUPDBoLIpu1i34RZDMHd6PMzQx17dsjddc1qH02SzOiPGhzyebTl7fP7/WNBoJn1rN9TqhvLNu7BFisQTRH3b2So41xyU/Hyyw/O87WjUiSOUPcVEBRKsMsYa5Jl0qhn8tvfEWQffR8JoOVfUEUcVrXBcjKfxII/Gtj5HgbQbGECkF+5nLtJfQilAEG5PRQoOt2g41eblBnGO6jGo58mkNkTajpRqnOkgJI/qzNi1ZDR+hHGR5uFNLttOiur1FA/px149UCwRnAQwxPeiumfMa/kIXAqyfEqRDm06+W+vMXfESCl7bKmDGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2a02:1800:120:4::f00:10; helo=cantor.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=cantor.telenet-ops.be
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=cantor.telenet-ops.be (client-ip=2a02:1800:120:4::f00:10; helo=cantor.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
+Received: from cantor.telenet-ops.be (cantor.telenet-ops.be [IPv6:2a02:1800:120:4::f00:10])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVD81qT7z3c72
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:30:15 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 48R26XTD005581;
-	Fri, 27 Sep 2024 12:29:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date
-	:from:to:cc:subject:message-id:references:mime-version
-	:content-type:in-reply-to; s=pp1; bh=X3KPffXxGN0FIhLP5f2K/FrqF2R
-	GS6QdxDbR1ndTZX0=; b=sGYFe9qAb/CiVmT4JsSABkFSS1iewD180v/BmBSG1tx
-	aSMKrjKxF+MOqGzv+5hc9KigJpdY2e3K6eIumU1MNSsK3qB/HOnHeajJNqxzg/a5
-	MdnYFUPK5gKSRKskepU17H87XqAn+5YL0VPxKQU7A2/8wQTfMPFqEh9fu4+HSGgg
-	lSASwpn9GFduHZfSXDk5jxHMZTUVh0yFNcPcLflHvzF3qTGM2L/WTtKDL9z6BSWE
-	74VHjrADXjwIlBVQKNHGGRvOjcUWwj8MvY+3OE/BCW7a12s8ToSgpHIcGqPctGiw
-	kMyoDCNnxrSVlcxM+SqQMS8KkROb7e8ZQs1dJKXEh5Q==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41wkmnjgx6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Sep 2024 12:29:35 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 48RCTYnK016144;
-	Fri, 27 Sep 2024 12:29:35 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 41wkmnjgx0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Sep 2024 12:29:34 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 48RA8lXn008722;
-	Fri, 27 Sep 2024 12:29:33 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 41t8v1mxbj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Sep 2024 12:29:33 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 48RCTV7v15270396
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 27 Sep 2024 12:29:31 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3FFF520043;
-	Fri, 27 Sep 2024 12:29:31 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5867C20040;
-	Fri, 27 Sep 2024 12:29:29 +0000 (GMT)
-Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.171.79.55])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 27 Sep 2024 12:29:29 +0000 (GMT)
-Date: Fri, 27 Sep 2024 14:29:27 +0200
-From: Alexander Gordeev <agordeev@linux.ibm.com>
-To: Alistair Popple <apopple@nvidia.com>
-Cc: dan.j.williams@intel.com, linux-mm@kvack.org, vishal.l.verma@intel.com,
-        dave.jiang@intel.com, logang@deltatee.com, bhelgaas@google.com,
-        jack@suse.cz, jgg@ziepe.ca, catalin.marinas@arm.com, will@kernel.org,
-        mpe@ellerman.id.au, npiggin@gmail.com, dave.hansen@linux.intel.com,
-        ira.weiny@intel.com, willy@infradead.org, djwong@kernel.org,
-        tytso@mit.edu, linmiaohe@huawei.com, david@redhat.com,
-        peterx@redhat.com, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev,
-        linux-cxl@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        linux-ext4@vger.kernel.org, linux-xfs@vger.kernel.org,
-        jhubbard@nvidia.com, hch@lst.de, david@fromorbit.com
-Subject: Re: [PATCH 11/12] mm: Remove pXX_devmap callers
-Message-ID: <ZvalJ9O/SV9Riiws@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
-References: <cover.9f0e45d52f5cff58807831b6b867084d0b14b61c.1725941415.git-series.apopple@nvidia.com>
- <4511465a4f8429f45e2ac70d2e65dc5e1df1eb47.1725941415.git-series.apopple@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVf91rz0z3c78
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:49:20 +1000 (AEST)
+Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
+	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4XFVVv0Kx8z4xMgj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 14:43:03 +0200 (CEST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:b47d:fd74:3975:15b7])
+	by laurent.telenet-ops.be with cmsmtp
+	id HQic2D00F3BfLyr01QicDy; Fri, 27 Sep 2024 14:43:02 +0200
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1suAIj-000fPt-HH;
+	Fri, 27 Sep 2024 14:42:31 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1suAIp-008IDp-17;
+	Fri, 27 Sep 2024 14:42:31 +0200
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Lubomir Rintel <lkundrak@v3.sk>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Paul Cercueil <paul@crapouillou.net>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+	Adrien Grassein <adrien.grassein@gmail.com>,
+	Adam Ford <aford173@gmail.com>
+Cc: linux-sound@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev,
+	linux-renesas-soc@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	linux-mips@vger.kernel.org,
+	alsa-devel@alsa-project.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH treewide 05/11] arm64: dts: renesas: beacon-renesom: Switch to mic-det-gpios
+Date: Fri, 27 Sep 2024 14:42:20 +0200
+Message-Id: <750d6ac7911aef9a461dca6d07e5c1fab6211ecb.1727438777.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <cover.1727438777.git.geert+renesas@glider.be>
+References: <cover.1727438777.git.geert+renesas@glider.be>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,41 +92,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4511465a4f8429f45e2ac70d2e65dc5e1df1eb47.1725941415.git-series.apopple@nvidia.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: oFQh9Q3qdgOsP-PvuakR2OvYRSStdcRF
-X-Proofpoint-ORIG-GUID: 9y1XQY94BFekLXDgIVhFUpi4XYvsL7VN
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.60.29
- definitions=2024-09-27_06,2024-09-27_01,2024-09-02_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxlogscore=771
- priorityscore=1501 suspectscore=0 malwarescore=0 mlxscore=0
- impostorscore=0 bulkscore=0 spamscore=0 lowpriorityscore=0 phishscore=0
- clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2408220000 definitions=main-2409270086
+Content-Transfer-Encoding: 8bit
 
-On Tue, Sep 10, 2024 at 02:14:36PM +1000, Alistair Popple wrote:
+Replace the deprecated "mic-det-gpio" property by "mic-det-gpios" in
+Audio Graph Card device nodes.
 
-Hi Alistair,
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ arch/arm64/boot/dts/renesas/beacon-renesom-baseboard.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-> index 5a4a753..4537a29 100644
-> --- a/arch/powerpc/mm/book3s64/pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/pgtable.c
-> @@ -193,7 +192,7 @@ pmd_t pmdp_huge_get_and_clear_full(struct vm_area_struct *vma,
->  	pmd_t pmd;
->  	VM_BUG_ON(addr & ~HPAGE_PMD_MASK);
->  	VM_BUG_ON((pmd_present(*pmdp) && !pmd_trans_huge(*pmdp) &&
-> -		   !pmd_devmap(*pmdp)) || !pmd_present(*pmdp));
-> +		   || !pmd_present(*pmdp));
+diff --git a/arch/arm64/boot/dts/renesas/beacon-renesom-baseboard.dtsi b/arch/arm64/boot/dts/renesas/beacon-renesom-baseboard.dtsi
+index 5a14f116f7a1eedf..9436b249ebdd9dcd 100644
+--- a/arch/arm64/boot/dts/renesas/beacon-renesom-baseboard.dtsi
++++ b/arch/arm64/boot/dts/renesas/beacon-renesom-baseboard.dtsi
+@@ -200,7 +200,7 @@ sound_card {
+ 		widgets = "Microphone", "Mic Jack",
+ 			  "Line", "Line In Jack",
+ 			  "Headphone", "Headphone Jack";
+-		mic-det-gpio = <&gpio0 2 GPIO_ACTIVE_LOW>;
++		mic-det-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+ 		routing = "Headphone Jack", "HPOUTL",
+ 			 "Headphone Jack", "HPOUTR",
+ 			 "IN3R", "MICBIAS",
+-- 
+2.34.1
 
-That looks broken.
-
->  	pmd = pmdp_huge_get_and_clear(vma->vm_mm, addr, pmdp);
->  	/*
->  	 * if it not a fullmm flush, then we can possibly end up converting
-
-Thanks!
 
