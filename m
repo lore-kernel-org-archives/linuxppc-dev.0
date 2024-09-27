@@ -1,22 +1,22 @@
-Return-Path: <linuxppc-dev+bounces-1660-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1661-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0666FCDD1B8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:47:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6045ACDD1B4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:47:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYGr4nxWz3cLN;
-	Sat, 28 Sep 2024 00:47:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYH10FMgz3cLr;
+	Sat, 28 Sep 2024 00:47:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.130.132.49
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727441500;
-	cv=none; b=AF4LoqYRy2gKdxxTkOvTeeOYefWSmWAzO5gld7sGfOinlEk15qqoj3Ua8UYft7x+FSqM2+p5pZqDk9YboMCJng7MT8ia7D3kIZwqOvyy/QcJR4Ggx+4jkI/zP+BEWofb/dcdcZLh6cBOd9L7uRfVJNclKa8ipHhQaaH43yQ/XwLUl91zqH3glFHjOj1emyccU/XrHXgrjZR24vK1QyCa9+LXCTEpbxqcD2o1WtJaOx2wN5YtX6VCkXQD9fXARQHEtkRImALjZn3aCi5HABKzwKDHYJeESaoSBmN0XJ26/mrErARDtNO5dumD+ktc78SQmjEfpFrebpWmXx8SICVF5Q==
+	cv=none; b=E0EqhmN0h7nhN5xkYEkBs5E70FdJqqUB+Qf9OTShZhvqwEw3v2xCBtsbjYBFFQ43e+orWSltdkx+DskbhSPpdU53iYOJQ42OMPGCflLhboAL5ATN0s+Lysd3gD0VJc5XIB7+j1Xoke8oBw3LGrlKFwgxIJe/JXake3mFfDdKQ/QN5iOOqBvReHOYAAiHMLwjYUO80fGDQFmDWqDklg+Crn6WDUOlFhW+TTlmAe/OAAvN9BSfEYXw+suC6g91F5KEh6lKLXe+uH2J42rAOj/PyRQ88XTa1EukL6VdrI88oH1snp8o4Qojb6JKl7DHymTnPqZOlxO+/4UuihsABa6tng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1727441500; c=relaxed/relaxed;
-	bh=+0+zCePXNc+rE/8h2AC/DEq4DCkjTNDcXegmOtv89q0=;
+	bh=iDIsAwKZVHiVkHRPHnLoc0igoRvck38/kdLZbYWCEAY=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=V4k4egqsejle0deGyyV24vaSK1n2BLPl+/y92CT8a8/OiDBtkswo5hyNNHTvnwQ/FAbDRGtYx77tKeHwuP2IGiQ7YNzfHiY+LKceA1PkmhYFdi1IzGDOfedo4YNCQ38UqF62YBamjMlggA6GbhVZPoTeXYPO6YDl0/xm8yCZLyHn9XvWam21ZDBHq081UdgFUoP2BTBjh4Z1G8ST4SkwZjtmtCaLa+o2BjT1kz4gfJ904tYmIc7oSZeHvVicUSX+MHWz+dNtaRwj1dMDSkEA/qap0PoL+7DKvJNvb4PdkIUCjlNdtMqLrntgFZK2G3ZO4Jp3kYsLNveAXOwAh20b2Q==
+	 MIME-Version; b=garLdfotOsgfBJj82SRXp/G6ZMS/1lV1aGuTZ7I2m8auEDFMRGQoH66BFvKsqVA5ut4tC/j1SriMgJK9+VoS5nPHVwx2FDOVFHtIqEwsb++1kXjYwZiPXpFP3jP8zZBAGXKBQ29p5pDjdvYVt9wnHGlxpXdNrQHYjyfBxfG/BQ0TzUdAgbSK6oV+pHBH6ZElnNkbvb5tyiCBLnsKj97VKnlKb4SvMrQCAPboZJRLsHhgdF3eci+HlqMTCQcDzT00aOtvqeDelJ687TRGvLD6epmDXzvSvJibjb6NsPW5cP/wcx1TJP3M+Cad9Rx4O9NBk6i+8/hafiXse6relOCzRA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=195.130.132.49; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=gauss.telenet-ops.be
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=gauss.telenet-ops.be (client-ip=195.130.132.49; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
@@ -24,23 +24,23 @@ Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [195.130.132.49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVhq5Tqjz3c7Q
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:51:39 +1000 (AEST)
-Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
-	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4XFVVv0Kwkz4xRWs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVhr4BmWz3c7Q
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:51:40 +1000 (AEST)
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
+	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4XFVVv14YYz4x40F
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 14:43:03 +0200 (CEST)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:b47d:fd74:3975:15b7])
-	by michel.telenet-ops.be with cmsmtp
-	id HQic2D00L3BfLyr06Qicqj; Fri, 27 Sep 2024 14:43:02 +0200
+	by andre.telenet-ops.be with cmsmtp
+	id HQic2D0053BfLyr01Qicif; Fri, 27 Sep 2024 14:43:02 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1suAIj-000fPv-HG;
+	id 1suAIj-000fQB-JD;
 	Fri, 27 Sep 2024 14:42:31 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1suAIo-008IDd-UI;
-	Fri, 27 Sep 2024 14:42:30 +0200
+	id 1suAIp-008IED-5c;
+	Fri, 27 Sep 2024 14:42:31 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Liam Girdwood <lgirdwood@gmail.com>,
 	Mark Brown <broonie@kernel.org>,
@@ -77,9 +77,9 @@ Cc: linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH treewide 01/11] ASoC: fsl-asoc-card: Add missing handling of {hp,mic}-dt-gpios
-Date: Fri, 27 Sep 2024 14:42:16 +0200
-Message-Id: <dbcb5bfea005a468ec6dc38374fe6d02bc693c22.1727438777.git.geert+renesas@glider.be>
+Subject: [PATCH treewide 10/11] ARM: dts: nxp: imx: Switch to {hp,mic}-det-gpios
+Date: Fri, 27 Sep 2024 14:42:25 +0200
+Message-Id: <7ff1bfb73a6d6fc71f3d751dbb7133b045853f64.1727438777.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1727438777.git.geert+renesas@glider.be>
 References: <cover.1727438777.git.geert+renesas@glider.be>
@@ -94,56 +94,103 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The DT bindings deprecated the "hp-det-gpio" and "mic-det-gpio"
-properties in favor of "hp-det-gpios" and "mic-det-gpios", but the
-driver was never updated to support the latter.
+Replace the deprecated "hp-det-gpio" and "mic-det-gpio" properties by
+"hp-det-gpios" resp. "mic-det-gpios" in Freescale Generic ASoC Sound
+Card device nodes.
 
-Even before, there existed users of "hp-det-gpios" and "mic-det-gpios".
-While this may have been handled fine by the ASoC core, this was missed
-by the Freescale-specific part.
-
-Fixes: 4189b54220e5af15 ("ASoC: dt-bindings: fsl-asoc-card: convert to YAML")
-Fixes: 40ba2eda0a7b727f ("arm64: dts: imx8mm-nitrogen-r2: add audio")
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Noticed accidentally.
-Compile-tested only.
+This has a run-time dependency on "ASoC: fsl-asoc-card: Add missing
+handling of {hp,mic}-dt-gpios".
 ---
- sound/soc/fsl/fsl-asoc-card.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/arm/boot/dts/nxp/imx/imx6qdl-sabresd.dtsi  | 4 ++--
+ arch/arm/boot/dts/nxp/imx/imx6sl-evk.dts        | 2 +-
+ arch/arm/boot/dts/nxp/imx/imx6sll-evk.dts       | 2 +-
+ arch/arm/boot/dts/nxp/imx/imx6sx-sdb.dtsi       | 2 +-
+ arch/arm/boot/dts/nxp/imx/imx6ul-14x14-evk.dtsi | 2 +-
+ arch/arm/boot/dts/nxp/imx/imx7d-sdb.dts         | 2 +-
+ 6 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index f6c3aeff0d8eafd7..a0c2ce84c32b1d06 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -1033,14 +1033,15 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 	}
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6qdl-sabresd.dtsi b/arch/arm/boot/dts/nxp/imx/imx6qdl-sabresd.dtsi
+index 8f4f5fba68cc5f4f..86a86dc370c4a9fb 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6qdl-sabresd.dtsi
++++ b/arch/arm/boot/dts/nxp/imx/imx6qdl-sabresd.dtsi
+@@ -113,8 +113,8 @@ sound {
+ 			"DMICDAT", "DMIC";
+ 		mux-int-port = <2>;
+ 		mux-ext-port = <3>;
+-		hp-det-gpio = <&gpio7 8 GPIO_ACTIVE_LOW>;
+-		mic-det-gpio = <&gpio1 9 GPIO_ACTIVE_LOW>;
++		hp-det-gpios = <&gpio7 8 GPIO_ACTIVE_LOW>;
++		mic-det-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+ 	};
  
- 	/*
--	 * Properties "hp-det-gpio" and "mic-det-gpio" are optional, and
-+	 * Properties "hp-det-gpios" and "mic-det-gpios" are optional, and
- 	 * simple_util_init_jack() uses these properties for creating
- 	 * Headphone Jack and Microphone Jack.
- 	 *
- 	 * The notifier is initialized in snd_soc_card_jack_new(), then
- 	 * snd_soc_jack_notifier_register can be called.
- 	 */
--	if (of_property_read_bool(np, "hp-det-gpio")) {
-+	if (of_property_read_bool(np, "hp-det-gpios") ||
-+	    of_property_read_bool(np, "hp-det-gpio") /* deprecated */) {
- 		ret = simple_util_init_jack(&priv->card, &priv->hp_jack,
- 					    1, NULL, "Headphone Jack");
- 		if (ret)
-@@ -1049,7 +1050,8 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 		snd_soc_jack_notifier_register(&priv->hp_jack.jack, &hp_jack_nb);
- 	}
+ 	backlight_lvds: backlight-lvds {
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6sl-evk.dts b/arch/arm/boot/dts/nxp/imx/imx6sl-evk.dts
+index 7c899291ab0dada4..542d633651f24575 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6sl-evk.dts
++++ b/arch/arm/boot/dts/nxp/imx/imx6sl-evk.dts
+@@ -108,7 +108,7 @@ sound {
+ 			"IN3R", "AMIC";
+ 		mux-int-port = <2>;
+ 		mux-ext-port = <3>;
+-		hp-det-gpio = <&gpio4 19 GPIO_ACTIVE_LOW>;
++		hp-det-gpios = <&gpio4 19 GPIO_ACTIVE_LOW>;
+ 	};
  
--	if (of_property_read_bool(np, "mic-det-gpio")) {
-+	if (of_property_read_bool(np, "mic-det-gpios") ||
-+	    of_property_read_bool(np, "mic-det-gpio") /* deprecated */) {
- 		ret = simple_util_init_jack(&priv->card, &priv->mic_jack,
- 					    0, NULL, "Mic Jack");
- 		if (ret)
+ 	panel {
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6sll-evk.dts b/arch/arm/boot/dts/nxp/imx/imx6sll-evk.dts
+index febc2dd9967de69e..c5383158e25c959b 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6sll-evk.dts
++++ b/arch/arm/boot/dts/nxp/imx/imx6sll-evk.dts
+@@ -157,7 +157,7 @@ sound {
+ 			"IN3R", "AMIC";
+ 		mux-int-port = <2>;
+ 		mux-ext-port = <3>;
+-		hp-det-gpio = <&gpio4 24 GPIO_ACTIVE_LOW>;
++		hp-det-gpios = <&gpio4 24 GPIO_ACTIVE_LOW>;
+ 	};
+ };
+ 
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6sx-sdb.dtsi b/arch/arm/boot/dts/nxp/imx/imx6sx-sdb.dtsi
+index 277a6e039045b575..ddd01b6dee5a9976 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6sx-sdb.dtsi
++++ b/arch/arm/boot/dts/nxp/imx/imx6sx-sdb.dtsi
+@@ -167,7 +167,7 @@ sound {
+ 			"IN3R", "AMIC";
+ 		mux-int-port = <2>;
+ 		mux-ext-port = <6>;
+-		hp-det-gpio = <&gpio1 17 GPIO_ACTIVE_LOW>;
++		hp-det-gpios = <&gpio1 17 GPIO_ACTIVE_LOW>;
+ 	};
+ 
+ 	panel {
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6ul-14x14-evk.dtsi b/arch/arm/boot/dts/nxp/imx/imx6ul-14x14-evk.dtsi
+index b74ee8948a781762..0e839bbfea082140 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6ul-14x14-evk.dtsi
++++ b/arch/arm/boot/dts/nxp/imx/imx6ul-14x14-evk.dtsi
+@@ -68,7 +68,7 @@ sound-wm8960 {
+ 		audio-cpu = <&sai2>;
+ 		audio-codec = <&codec>;
+ 		audio-asrc = <&asrc>;
+-		hp-det-gpio = <&gpio5 4 0>;
++		hp-det-gpios = <&gpio5 4 0>;
+ 		audio-routing =
+ 			"Headphone Jack", "HP_L",
+ 			"Headphone Jack", "HP_R",
+diff --git a/arch/arm/boot/dts/nxp/imx/imx7d-sdb.dts b/arch/arm/boot/dts/nxp/imx/imx7d-sdb.dts
+index f712537fca161ab9..6cde84636900bb00 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx7d-sdb.dts
++++ b/arch/arm/boot/dts/nxp/imx/imx7d-sdb.dts
+@@ -169,7 +169,7 @@ sound {
+ 		model = "wm8960-audio";
+ 		audio-cpu = <&sai1>;
+ 		audio-codec = <&codec>;
+-		hp-det-gpio = <&gpio2 28 GPIO_ACTIVE_HIGH>;
++		hp-det-gpios = <&gpio2 28 GPIO_ACTIVE_HIGH>;
+ 		audio-routing =
+ 			"Headphone Jack", "HP_L",
+ 			"Headphone Jack", "HP_R",
 -- 
 2.34.1
 
