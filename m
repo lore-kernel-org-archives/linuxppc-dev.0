@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-1658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1659-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE924CDD1B8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:47:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2486BCDD1B8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Sep 2024 14:47:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYGY1crWz3cJk;
-	Sat, 28 Sep 2024 00:47:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a02:1800:110:4::f00:10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727441489;
-	cv=none; b=UK+/7wQV/tv75ojcpQE7vhB398me79KsRU79evJSBexRLR9upqMybMsaCJbFqcqAm4YaIwaH9oUR3wurn9uc1PAP/+Tf8cP81/Y49U6MGq2rSzthkHbxGAjRBIQ7k6oEsEKOhffnUYno5yN0cmGdj+3YUTYwc3uwpVsrStk+eOrHmxoqRyfSEMaIzk+jFKK5C0Ozvz2c2uHhqVtEXiAjKLqwIAjvRGii+3/2zhAoiBrOtmEmaC+V3L9nBuGn6gtMzhHKxkCp5dwNRzHf57wMukXIyI5fHfuAkjha0jYL1STsKVET+fWVfCPiaIHtmgAOZyCefwCTU5Syc9NhIF6trg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XFYGj5W8jz3cKT;
+	Sat, 28 Sep 2024 00:47:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.130.137.80
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727441490;
+	cv=none; b=XRf1oPNJgTQxM3ndoymDgwqpzblTzlMqRxW1VAIUId/BexQMlGaYnTjRtXrgRp6PWmG4PrecVsgqf+9bhZoWVNLvpR6+KwqLb4YracneSypNrJNSfWGj6Yegq+hh9ePjhSfPA8ZnOz2s7i4V9B2P5o9mbi4xkGOQtebbY1oXdIJidHXIL8QnKgDeoWo/68sAM9ruWmNtB9tBqvtID8THQK9Droma0Iy3BS4tO2m1ZcmkuhoroQTVN/f9k7RGPPb772aeAn7Vxh/YngqXErwAt31r/+Px5GfwCTLt48VMleTraDHRpfOzkqvyU/I7ynysg58aQi9pdaggUBYZUPOgJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727441489; c=relaxed/relaxed;
-	bh=B7KbloNVyLuoanz/5gdQu36+S+V5IMbl5mmpRzL6zqQ=;
+	t=1727441490; c=relaxed/relaxed;
+	bh=8pEVAyku7Uijs/sJuSjwc2lCYvUnilSD+t79lm1ciFk=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=jJJnXjNhgRKi+qOZ6XqIOgf/j02Gj9tOKC9EUzAKLhN3seT3xcgVSBq5J+MpZe1Bd30AtvOD7NgZSz9zUnmEDKbKMBvMnbMJq9YOJTUKhB9ozI1JO9Idx0L75sggeSBypkclpu5px7NoBjWi26OFpxw4HyH2G2WQB+XMTdOFKMQqizEIZJyJP4mrpEvgJUpkd8+iOYS4engVCNsHQjVLGvhwHGc1afc6GdNU6cPfrtZslVh24U+glxXUYw2Js9E2l4As6mkm3MCZcqcVEeOkRn7ycx+jX08Q5RrzaixN1EsW6yTrawpMVF1/lEBiONumbseI4A9QVmeLJ97FF5SDYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2a02:1800:110:4::f00:10; helo=riemann.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=riemann.telenet-ops.be
+	 MIME-Version; b=h9wHubJXn7DsUfLr+RyqTk2ZgiIJl6ZmB/jwCajXZRI7FKSUYgygLpxNNStWv+f0r8UxGFWdUqbq3JFOp8P3YFLWtSslUJX3PDDglzzxQm5u91G2yJAjPgz1X8nk4R1vb7j1hv0TOUo6br/F68V4CX5MAvPN78gmh+noFDN5o1fm+/o2D/pQhl/Eh9aOC7GHhSjRK75rZpTkogBfwmI+dyagYKQ+DKpcrIB/NxhcgcaWVbgYtRJ42ArLPYjdKGNc9fvHc3i71PTGMxnyS/LHEYQXKTEb32dME8t7/LOcHy9KGEZML94jq2EG4ck6STmE/ClrWttAhUFWWbll6Q9jtA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=195.130.137.80; helo=riemann.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=riemann.telenet-ops.be
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=riemann.telenet-ops.be (client-ip=2a02:1800:110:4::f00:10; helo=riemann.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
-Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [IPv6:2a02:1800:110:4::f00:10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=riemann.telenet-ops.be (client-ip=195.130.137.80; helo=riemann.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
+Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [195.130.137.80])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVhd1Sm7z3c7Q
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:51:29 +1000 (AEST)
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
-	by riemann.telenet-ops.be (Postfix) with ESMTPS id 4XFVVv02xDz4xJP5
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XFVhf2nZVz3c7Q
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 22:51:30 +1000 (AEST)
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
+	by riemann.telenet-ops.be (Postfix) with ESMTPS id 4XFVVv1N8lz4xNnw
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Sep 2024 14:43:03 +0200 (CEST)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:b47d:fd74:3975:15b7])
-	by xavier.telenet-ops.be with cmsmtp
-	id HQic2D0083BfLyr01QicD2; Fri, 27 Sep 2024 14:43:02 +0200
+	by albert.telenet-ops.be with cmsmtp
+	id HQic2D00E3BfLyr06Qiclu; Fri, 27 Sep 2024 14:43:02 +0200
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1suAIj-000fQ0-IM;
+	id 1suAIj-000fPu-HI;
 	Fri, 27 Sep 2024 14:42:31 +0200
 Received: from geert by rox.of.borg with local (Exim 4.95)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1suAIp-008IE1-4R;
+	id 1suAIp-008IDm-0M;
 	Fri, 27 Sep 2024 14:42:31 +0200
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Liam Girdwood <lgirdwood@gmail.com>,
@@ -77,9 +77,9 @@ Cc: linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH treewide 09/11] mips: dts: ingenic: Switch to simple-audio-card,hp-det-gpios
-Date: Fri, 27 Sep 2024 14:42:24 +0200
-Message-Id: <0466c746d6276842d6993fae41efb315188e1f3f.1727438777.git.geert+renesas@glider.be>
+Subject: [PATCH treewide 04/11] arm64: dts: freescale: imx: Switch to simple-audio-card,hp-det-gpios
+Date: Fri, 27 Sep 2024 14:42:19 +0200
+Message-Id: <b38545c29d6cbf0b394ddb4747ce810c679f95d1.1727438777.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <cover.1727438777.git.geert+renesas@glider.be>
 References: <cover.1727438777.git.geert+renesas@glider.be>
@@ -99,36 +99,36 @@ Replace the deprecated "simple-audio-card,hp-det-gpio" property by
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- arch/mips/boot/dts/ingenic/gcw0.dts | 2 +-
- arch/mips/boot/dts/ingenic/rs90.dts | 2 +-
+ arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts | 2 +-
+ arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi       | 2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/mips/boot/dts/ingenic/gcw0.dts b/arch/mips/boot/dts/ingenic/gcw0.dts
-index 5d33f26fd28c8bd8..8455778928b71cee 100644
---- a/arch/mips/boot/dts/ingenic/gcw0.dts
-+++ b/arch/mips/boot/dts/ingenic/gcw0.dts
-@@ -91,7 +91,7 @@ sound {
- 			"MIC1N", "Built-in Mic";
- 		simple-audio-card,pin-switches = "Speaker", "Headphones";
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts b/arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts
+index b268ba7a0e12a3f8..9d8e7231b7c63742 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-librem5-devkit.dts
+@@ -172,7 +172,7 @@ sound {
+ 			"Headphones", "HP_OUT",
+ 			"Builtin Speaker", "Speaker Amp OUTR",
+ 			"Speaker Amp INR", "LINE_OUT";
+-		simple-audio-card,hp-det-gpio = <&gpio3 20 GPIO_ACTIVE_HIGH>;
++		simple-audio-card,hp-det-gpios = <&gpio3 20 GPIO_ACTIVE_HIGH>;
  
--		simple-audio-card,hp-det-gpio = <&gpf 21 GPIO_ACTIVE_LOW>;
-+		simple-audio-card,hp-det-gpios = <&gpf 21 GPIO_ACTIVE_LOW>;
- 		simple-audio-card,aux-devs = <&speaker_amp>, <&headphones_amp>;
+ 		simple-audio-card,cpu {
+ 			sound-dai = <&sai2>;
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi b/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi
+index 1b39514d5c12aafc..bb37a32ce4616d9f 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mq-librem5.dtsi
+@@ -241,7 +241,7 @@ sound {
+ 			"Headset Mic", "MICBIAS",
+ 			"IN3R", "Headset Mic",
+ 			"DMICDAT", "Digital Mic";
+-		simple-audio-card,hp-det-gpio = <&gpio3 9 GPIO_ACTIVE_HIGH>;
++		simple-audio-card,hp-det-gpios = <&gpio3 9 GPIO_ACTIVE_HIGH>;
  
- 		simple-audio-card,bitclock-master = <&dai_codec>;
-diff --git a/arch/mips/boot/dts/ingenic/rs90.dts b/arch/mips/boot/dts/ingenic/rs90.dts
-index e8df70dd42bf8e4c..6d2c8aea5f499d34 100644
---- a/arch/mips/boot/dts/ingenic/rs90.dts
-+++ b/arch/mips/boot/dts/ingenic/rs90.dts
-@@ -148,7 +148,7 @@ sound {
- 			"Speaker", "OUTR";
- 		simple-audio-card,pin-switches = "Speaker";
- 
--		simple-audio-card,hp-det-gpio = <&gpd 16 GPIO_ACTIVE_LOW>;
-+		simple-audio-card,hp-det-gpios = <&gpd 16 GPIO_ACTIVE_LOW>;
- 		simple-audio-card,aux-devs = <&amp>;
- 
- 		simple-audio-card,bitclock-master = <&dai_codec>;
+ 		simple-audio-card,cpu {
+ 			sound-dai = <&sai2>;
 -- 
 2.34.1
 
