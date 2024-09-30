@@ -1,60 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-1697-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1698-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B97F7CEB2C9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Sep 2024 21:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF1A9CEB2C9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Sep 2024 22:11:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XHYzr0CLDz301G;
-	Tue,  1 Oct 2024 07:26:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727731607;
-	cv=none; b=VQ368cT1RoGm6lWJMb4EHTDbD3bzuL+v17QU84RbDDXILM2LmHEhim+yf+W7Z3Bgmby57vWLVJefVbHilHDXhYJ2w4aegqhFLphDNlNAmd28CslmhjXW+D+JCJyIAtKq3Na9vpkW8ZLyds2qC6dzlJymbnxOEizoZw3GXA/3ZOf45dbOmmu2T9aakJoPK8LumNuQ2mUpU9qL5uCvBCQvZKZPhXmp5hxOtJXQJ0omnGN40ZPUI5CDyJNYSNeJYFc5GYrvhYeqKuSjNJMOJ/UEMG0WiQNCVfvhvDXDVXmqAC2UWTMps/qFtkSB1wm0QzcvuvkV2k4VOWVhEwFpwevE7A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XHZzf2c1vz2xMQ;
+	Tue,  1 Oct 2024 08:11:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a02:1800:120:4::f00:11"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727708930;
+	cv=none; b=PLzeHy6xBnp+t8ygCANW34Z+2zJB54WwXNFrhRwx43rw8JZrobdspnNAZ1t66VXydLfiMZ0/Kvcb0LtEngraRkL40oXS5GHXbcDWb1Kd1lXMRdcpEzFJPvllHBUFyegmxoKrC5xVjS8lp3QnxJnImD4XOEysGfwNzJ4WaA0EpzLOj3SeMizYRzqemFHZV+0ReNQb25AlFmIVbkrmJanP33PgAS5oAXTLRiNtpVd96iBwP5xQveB6zY4bbt6QBus2BzNwtQQsV7T/jwa7FUARwW5MzIS2oe42q5UxFem8o9FCXh5eRX31iAmSFOXk52pE/q2e/WHYnJQXrMS7WTpocA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727731607; c=relaxed/relaxed;
-	bh=8U+PR0Olc6pa82L7saTEX3cuvOrpLiqj4a3YfY3UsSg=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=EiXJUuqKgQtC+i/NQDMh2HpOZqp74U60Fwn8B9brZ0vZa7O+lNpFf4hK5H9hv2u1fAPuH6HGcFsY8jK12n/1DQQds/ZIKkUcFi/vSi6E836eWQ6SkF1/EhnZ1jZhGNE05sGjVBFnJ+P+KB6ReBScg/sutNUg7A51h9m8rOwwb0NucbvfOTxeEEvbjJBslJ/wM0EOm8JvB4IV2M2a25pR0h3TR6fswBPjoluJrvykgjd8/QmMGi77i2uX3bKg9MHmHm3y8V85u5OjQJnQ5WPrSplkYJkER/8OWh6M3lBS+1hgr27a/GliRxzuS456F9rw4l9MMHZCMQZl9ZZSCvlzJQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Qx9+ijmC; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Qx9+ijmC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+	t=1727708930; c=relaxed/relaxed;
+	bh=3v2n15fuRXu8yFTBL0ZAJ/mu4EO8nwPGK3Xc8xqXrfI=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=Um0cU9jcW0YVqvQPfI4cJRSGXOG5gT51P7yrjGWNek1rOR3T7eQENtITnBV37tdz0ENPHW2EfVEPnHcty3YcMnBdBsQzFyFKQRxszSo+c7HH4pJxENPcu876SUKDOPCcUUbRwxJ7QsU1t2gx+CMjenMCb+m2DAEAHOTssPWO9fIzSyCZZAMPw5xYtwjt/GQP+s9m3gazbUX68P47CAg6Qyrv3gOkeCSoGRx0wn1MrctHb1wCwxaBKbG+PvaSs1POaMbsYIIJm83gjM9sQKasyoN40elDo/jFtDA6XkdGPxumk/h7L0cZB946rjTGzWlBf3nTsXp/krRr54WOcT1t5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2a02:1800:120:4::f00:11; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=gauss.telenet-ops.be
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=gauss.telenet-ops.be (client-ip=2a02:1800:120:4::f00:11; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
+Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [IPv6:2a02:1800:120:4::f00:11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XHYzq07Tbz300g
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2024 07:26:46 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 5F8FFA416D9;
-	Mon, 30 Sep 2024 21:26:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8B21C4CEC7;
-	Mon, 30 Sep 2024 21:26:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1727731602;
-	bh=NkRqiuMzhon0316LV3Kd2sU6eM23gxXjReXGVuES79I=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=Qx9+ijmCV0QWEi1Y3/I0BppzWyFZVGTnGK/kuxt4amCNYMWAAhex2Ojp/1Ipd9w6j
-	 Zu1EdY6/lt9gWstfSbToWwF/U0xEqJL5FQNpw9tIQ1btd/ffNA1LphbiwBMaykzNQc
-	 5W+JJWj9I/6Jt4IkmgZG2zLhZDJJ+Y8t9B/VyxzY8ied3nAfZqBqQO+k6Ej2I6Nl7Q
-	 JZS08jHRK9gfNiigzZrtzKjMgApPH3zvwQwmArLAm+qnO6TjSNS2i9UzYTbDwFFXo1
-	 n7DoD4qEZXHUktUmxCMz9EewyNE7yBHCrYyI4CeCzjQULmZxZuRg143ACLMmJdP4aM
-	 1hs7qx0qdQn+g==
-From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, 
- linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20240924-asoc-imx-maple-v1-1-8b993901f71e@kernel.org>
-References: <20240924-asoc-imx-maple-v1-1-8b993901f71e@kernel.org>
-Subject: Re: [PATCH] ASoC: fsl: Use maple tree register cache
-Message-Id: <172773160047.2197048.13783696550298838000.b4-ty@kernel.org>
-Date: Mon, 30 Sep 2024 22:26:40 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XHPbj42H6z2xH9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2024 01:08:47 +1000 (AEST)
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
+	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4XHPbV2wtZz4xCRW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Sep 2024 17:08:38 +0200 (CEST)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:99bb:7ad4:7fac:370a])
+	by albert.telenet-ops.be with cmsmtp
+	id Jf8b2D00E4pGYif06f8biQ; Mon, 30 Sep 2024 17:08:37 +0200
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1svI0h-000wdt-PO;
+	Mon, 30 Sep 2024 17:08:35 +0200
+Received: from geert by rox.of.borg with local (Exim 4.95)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1svI0p-000acd-68;
+	Mon, 30 Sep 2024 17:08:35 +0200
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] soc: fsl: cpm1: qmc: Do not use IS_ERR_VALUE() on error pointers
+Date: Mon, 30 Sep 2024 17:08:31 +0200
+Message-Id: <8b113596b2c8cdda6655346232cc603efdeb935a.1727708905.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,44 +61,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-99b12
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, 24 Sep 2024 15:58:42 +0200, Mark Brown wrote:
-> Several of the NXP drivers use regmaps with a rbtree register cache. Since
-> the maple tree cache is uisng a generally more modern data structure which
-> makes implementation choices more suitable for modern systems let's convert
-> these drivers to it. This should have no practical impact.
-> 
-> 
+ppc64_book3e_allmodconfig:
 
-Applied to
+    drivers/soc/fsl/qe/qmc.c: In function ‘qmc_qe_init_resources’:
+    include/linux/err.h:28:49: error: cast to pointer from integer of different size [-Werror=int-to-pointer-cast]
+       28 | #define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
+	  |                                                 ^
+    include/linux/compiler.h:77:45: note: in definition of macro ‘unlikely’
+       77 | # define unlikely(x)    __builtin_expect(!!(x), 0)
+	  |                                             ^
+    drivers/soc/fsl/qe/qmc.c:1764:13: note: in expansion of macro ‘IS_ERR_VALUE’
+     1764 |         if (IS_ERR_VALUE(info)) {
+	  |             ^~~~~~~~~~~~
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+IS_ERR_VALUE() is only meant for pointers.  Fix this by checking for a
+negative error value instead, which matches the documented behavior of
+devm_qe_muram_alloc() aka devm_cpm_muram_alloc().
+While at it, remove the unneeded print in case of a memory allocation
+failure, and propagate the returned error code.
 
-Thanks!
+Fixes: eb680d563089e55b ("soc: fsl: cpm1: qmc: Add support for QUICC Engine (QE) implementation")
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Compile-tested only.
+---
+ drivers/soc/fsl/qe/qmc.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-[1/1] ASoC: fsl: Use maple tree register cache
-      commit: bbeffdda5f26a56072cb8cf741f4c52bc2174838
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index 3dffebb48b0daced..659c579d751d7240 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -1761,10 +1761,9 @@ static int qmc_qe_init_resources(struct qmc *qmc, struct platform_device *pdev)
+ 	 */
+ 	info = devm_qe_muram_alloc(qmc->dev, UCC_SLOW_PRAM_SIZE + 2 * 64,
+ 				   ALIGNMENT_OF_UCC_SLOW_PRAM);
+-	if (IS_ERR_VALUE(info)) {
+-		dev_err(qmc->dev, "cannot allocate MURAM for PRAM");
+-		return -ENOMEM;
+-	}
++	if (info < 0)
++		return info;
++
+ 	if (!qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, qmc->qe_subblock,
+ 			  QE_CR_PROTOCOL_UNSPECIFIED, info)) {
+ 		dev_err(qmc->dev, "QE_ASSIGN_PAGE_TO_DEVICE cmd failed");
+-- 
+2.34.1
 
 
