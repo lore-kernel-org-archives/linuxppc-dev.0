@@ -1,62 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-1696-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1697-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B54DCE836F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Sep 2024 16:26:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B97F7CEB2C9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Sep 2024 21:26:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XHRKd6XpVz3013;
-	Tue,  1 Oct 2024 02:26:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::221"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727713603;
-	cv=none; b=OxYTsnPztfMYoyKngryuC9+4aq3OY4CK7hVN42JcSF7xBGL4mNWOfINuHQ6/iLVbq08fbZqM507DOZtawtlM++G+dVMB0utIyEnoMwRR4WJnKKcZyUGc7fCXv285aMRhHpGB5fh3Bx00bHLDiYcJsObCrVXSHOSWFwUpBKm6r8RyMjM2SL4dX5DNaYvr9vWd1h7Q3yv+d8VF2w+fWNZBTlBlwRsqbceHejh23ByjF6XpNAmRsdJMBmh52TvKyptKllWIzPqHHjQ1AyyNX3tH0hL7A4u7CXD/Vl2fIqTrmv/T/P3efcleaHelI9nX7DwnF4O64NdY2sGSfCNnF6DrcQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XHYzr0CLDz301G;
+	Tue,  1 Oct 2024 07:26:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727731607;
+	cv=none; b=VQ368cT1RoGm6lWJMb4EHTDbD3bzuL+v17QU84RbDDXILM2LmHEhim+yf+W7Z3Bgmby57vWLVJefVbHilHDXhYJ2w4aegqhFLphDNlNAmd28CslmhjXW+D+JCJyIAtKq3Na9vpkW8ZLyds2qC6dzlJymbnxOEizoZw3GXA/3ZOf45dbOmmu2T9aakJoPK8LumNuQ2mUpU9qL5uCvBCQvZKZPhXmp5hxOtJXQJ0omnGN40ZPUI5CDyJNYSNeJYFc5GYrvhYeqKuSjNJMOJ/UEMG0WiQNCVfvhvDXDVXmqAC2UWTMps/qFtkSB1wm0QzcvuvkV2k4VOWVhEwFpwevE7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727713603; c=relaxed/relaxed;
-	bh=F5fY6vmbXZmGi/YFQGI3QYA0A4g0No5R3ujeFb7Po5Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Rfu5V9nZCd7uUtYNEs1xJ99cEtIPSVUZs4VsdZGgVSlLZ4/Av4XAX8R/X6OEmRKTHmJKC2nRfM915pBjvlXVkW370mqzynbKAxeVmAvKWvOfaxyxm1We5scztyDdFnBsHEdAeKnXPRiCw37DIvNZjbunTjyqbOWd/KBBqkOZp0RJNSk25bYbS6VuXdU5sgFdsqDOCZ+Y/kazLeX/7mUgT7jAxt7EumviMebJi+n065nsk8JIl2bZS/9fULphEwSX0whPoTf+LgSARLx+9m3Nsxr9KMBcTgXykUg99du99rHZAFUKibs1ucVpA899PlVOVZOCJFggGNpffg0hL64S3Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bOQbwi1e; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1727731607; c=relaxed/relaxed;
+	bh=8U+PR0Olc6pa82L7saTEX3cuvOrpLiqj4a3YfY3UsSg=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=EiXJUuqKgQtC+i/NQDMh2HpOZqp74U60Fwn8B9brZ0vZa7O+lNpFf4hK5H9hv2u1fAPuH6HGcFsY8jK12n/1DQQds/ZIKkUcFi/vSi6E836eWQ6SkF1/EhnZ1jZhGNE05sGjVBFnJ+P+KB6ReBScg/sutNUg7A51h9m8rOwwb0NucbvfOTxeEEvbjJBslJ/wM0EOm8JvB4IV2M2a25pR0h3TR6fswBPjoluJrvykgjd8/QmMGi77i2uX3bKg9MHmHm3y8V85u5OjQJnQ5WPrSplkYJkER/8OWh6M3lBS+1hgr27a/GliRxzuS456F9rw4l9MMHZCMQZl9ZZSCvlzJQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Qx9+ijmC; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bOQbwi1e;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Qx9+ijmC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::221; helo=relay1-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::221])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XHRKb122Mz300Y
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2024 02:26:41 +1000 (AEST)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 444CF240003;
-	Mon, 30 Sep 2024 16:26:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1727713595;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=F5fY6vmbXZmGi/YFQGI3QYA0A4g0No5R3ujeFb7Po5Y=;
-	b=bOQbwi1e2Fqr7/xgoKfZhzl3gbXgMl+Fkdsw3N9swZcz4LBPYCVVetRz8bBgBTJk3twC2l
-	/VB4lAzR1x6hFSg0jlNyVT/WR50YMzhA49j3/ck+QLodWDkINb/r/H/HvUZ6onNNaXy8BT
-	yqIGPy1+1Nh+bhBh47UoW7rOcLniquF1MvD4ipyifhBuGQw9HkGcHJNDLShlW6teLLnGbu
-	qb3vkhzBQghNDLIRtdw7SmA38Au69UztL+qPcRjAHgKdaWPehnD31RNh0J6lFk0VRi8PrL
-	QjqbHWYg6ooZIwUAsonoihw5/IT+2gpco60vlaV6vlwmI520eM/IbOoVpozbVA==
-Date: Mon, 30 Sep 2024 18:26:33 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, Kent Overstreet
- <kent.overstreet@linux.dev>, Christophe Leroy
- <christophe.leroy@csgroup.eu>, linux-bcache@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: Build regressions/improvements in v6.12-rc1
-Message-ID: <20240930182633.6b5ce8ed@bootlin.com>
-In-Reply-To: <6464b079-372d-d3f-d774-a7c05916fbe2@linux-m68k.org>
-References: <CAHk-=wiwVOCZsC6a4dLdb1UjL2fS_CnLNjrPL0XGFbDd9C26Cg@mail.gmail.com>
-	<20240930145322.129875-1-geert@linux-m68k.org>
-	<6464b079-372d-d3f-d774-a7c05916fbe2@linux-m68k.org>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XHYzq07Tbz300g
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Oct 2024 07:26:46 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 5F8FFA416D9;
+	Mon, 30 Sep 2024 21:26:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8B21C4CEC7;
+	Mon, 30 Sep 2024 21:26:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1727731602;
+	bh=NkRqiuMzhon0316LV3Kd2sU6eM23gxXjReXGVuES79I=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=Qx9+ijmCV0QWEi1Y3/I0BppzWyFZVGTnGK/kuxt4amCNYMWAAhex2Ojp/1Ipd9w6j
+	 Zu1EdY6/lt9gWstfSbToWwF/U0xEqJL5FQNpw9tIQ1btd/ffNA1LphbiwBMaykzNQc
+	 5W+JJWj9I/6Jt4IkmgZG2zLhZDJJ+Y8t9B/VyxzY8ied3nAfZqBqQO+k6Ej2I6Nl7Q
+	 JZS08jHRK9gfNiigzZrtzKjMgApPH3zvwQwmArLAm+qnO6TjSNS2i9UzYTbDwFFXo1
+	 n7DoD4qEZXHUktUmxCMz9EewyNE7yBHCrYyI4CeCzjQULmZxZuRg143ACLMmJdP4aM
+	 1hs7qx0qdQn+g==
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+ Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20240924-asoc-imx-maple-v1-1-8b993901f71e@kernel.org>
+References: <20240924-asoc-imx-maple-v1-1-8b993901f71e@kernel.org>
+Subject: Re: [PATCH] ASoC: fsl: Use maple tree register cache
+Message-Id: <172773160047.2197048.13783696550298838000.b4-ty@kernel.org>
+Date: Mon, 30 Sep 2024 22:26:40 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,38 +64,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: herve.codina@bootlin.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-99b12
 
-Hi Geert,
-
-On Mon, 30 Sep 2024 17:11:09 +0200 (CEST)
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-
-> On Mon, 30 Sep 2024, Geert Uytterhoeven wrote:
-> > Below is the list of build error/warning regressions/improvements in
-> > v6.12-rc1[1] compared to v6.11[2].  
-
-...
-
- powerpc-gcc13/ppc64_book3e_allmodconfig
+On Tue, 24 Sep 2024 15:58:42 +0200, Mark Brown wrote:
+> Several of the NXP drivers use regmaps with a rbtree register cache. Since
+> the maple tree cache is uisng a generally more modern data structure which
+> makes implementation choices more suitable for modern systems let's convert
+> these drivers to it. This should have no practical impact.
 > 
-> drivers/soc/fsl/qe/qmc.c: In function 'qmc_qe_init_resources':
-> include/linux/err.h:28:49: error: cast to pointer from integer of different size [-Werror=int-to-pointer-cast]
->     28 | #define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
->        |                                                 ^
-> include/linux/compiler.h:77:45: note: in definition of macro 'unlikely'
->     77 | # define unlikely(x)    __builtin_expect(!!(x), 0)
->        |                                             ^
-> drivers/soc/fsl/qe/qmc.c:1764:13: note: in expansion of macro 'IS_ERR_VALUE'
->   1764 |         if (IS_ERR_VALUE(info)) {
->        |             ^~~~~~~~~~~~
 > 
-> IS_ERR_VALUE() is meant for pointers (fix available)
 
-I saw your patch, tested and acked it.
-Thanks for the patch.
+Applied to
 
-Hervé
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+
+Thanks!
+
+[1/1] ASoC: fsl: Use maple tree register cache
+      commit: bbeffdda5f26a56072cb8cf741f4c52bc2174838
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
 
