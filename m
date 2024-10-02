@@ -1,54 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-1728-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1729-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FA2BCF31AF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Oct 2024 10:18:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3C2ECF31AF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Oct 2024 10:21:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XJW3z4g5Cz2xHg;
-	Wed,  2 Oct 2024 20:18:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=77.48.224.245
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727864318;
-	cv=none; b=jrnKKdC7tyDl3KmRiDexcU38gqpQEMYu+yNf1ws2a0jNvIV8a9vW18TkKQltyFjKBR4pCKuARG7OmGMDOl9+KpnuL+7ncowgL0q0AH1c2NMrXqscWtnRpUHNbn6PK91iy9fxolnI40nh7Af1pSUgvzGW77/JaTWaAO1qCjXtsBkhuk92q8wDzn7sr8rayTS8jTlcgI0RTcriJVj5CdCHJndGRn1dvmDI7G4D/X7TdeGa953ApXGCQ4fFl0mCtrFkSkbjnie54kd21p4oQTMW2tzbUPWJFfWjNLXD7Q9vkdIPcziA/sVonWZhPZyU2ceM2t+XpCcDSEw+lIrIHf3WGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XJW7H36g9z2xJy;
+	Wed,  2 Oct 2024 20:21:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727864490;
+	cv=none; b=kc8DOmTR6/hbXu01NvUEqzn/6DMkDK9xl0Yryzt/+NCMgBXw6gPnLhz1YUE1mDv3qUqjhq3FkcFHk6SEgGN9PfaTN+G1YgNizwvTVkjoLFmX4+MoXKi5w/CyzoJCZvyysfZYNQQLG5M9Cyd4w1fGxsm/tX3P+rxniJe9OR4Y1+kjMl/hnmLPGN5GPoQfR3C+NFUurLkp4WCOStn8XUJvLO9j81zsi3SIfO4RM7OEspxye+GHkgJp0g7yZhdVuMp00LJR7pTcoSWd/GBx7FuirmhJADNZM37AoGolfwEKr6Gy3fXY82nuEdY+B3V6YNoTv4W19lw8hDpJ6xR7I4Qnkw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727864318; c=relaxed/relaxed;
-	bh=oktZjSwAxoceyAQwv1wEgKMR1X1IglMEIpAh7o6zz84=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=e7502WWc33FHJ0s/PtXTM4PrvnVr8csPWgqZJctQAMN7RsWhd7Bx0hIC7fVaEHnov5889PmUjr4BTQXSwG8evVkx2Qy7CGQzGxSJs+d49mf+sQZOZ6TBknM05CUYp4kA3USedcKulTyvaoCt6E+alp3xDOlpXxkgIadppLdHL0M49hL8JqA1zOoeV2HOhkkyPHam3a6yH9vFDCGIFnAQWtW/uEA422N1gaiwoYiv7pQXWsvt6l6yluYkORGc4I/j6WXRyOco8Fe2gKtDyhsESTh0gS01D6XnxzujK3sJLYLVTbCfUqEaG1XsxRREl8gBXu9K+GIzmupp2j8JZdMaYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=perex.cz; dkim=pass (1024-bit key; secure) header.d=perex.cz header.i=@perex.cz header.a=rsa-sha256 header.s=default header.b=QbtuYoUO; dkim-atps=neutral; spf=pass (client-ip=77.48.224.245; helo=mail1.perex.cz; envelope-from=perex@perex.cz; receiver=lists.ozlabs.org) smtp.mailfrom=perex.cz
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=perex.cz
+	t=1727864490; c=relaxed/relaxed;
+	bh=RhD25htocjLaJhhw/FN1jPZB8HhN+tD6ZhBBhAifomQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mHE+U9XAstx6A0MV6Emc5xinJ1aBlkOp61Yo4FwlLhaKv5+54QtTHFgFsUMDzcrmQJx+3QWk4nwE2maiULuCf7l1A5oqQdy4j2otwMjy0Ke6KYxI+9v634LRAjfqst2vy4cY1u1Cz5dw07kpUl93KG4PvLq8r0IL8XN5Mk4Eigv2A2euX8HQ4k2k8sAJ0R6Hznp8bmaqEWA48P/pIC1Ktjc67SgwVDZTXn3s/xUeUykJvIh89e2p8MYFt2IzUKYKn638mpFCR1JjeET7yzCLnHrPC404umPYPK36voAcHgle0kes7melUTeI8EyTMlQo9fe/T4gnf2PQHkx+mw0WYA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=BnHe16rL; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=RdHU7Mt2; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=perex.cz header.i=@perex.cz header.a=rsa-sha256 header.s=default header.b=QbtuYoUO;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=BnHe16rL;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=RdHU7Mt2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=perex.cz (client-ip=77.48.224.245; helo=mail1.perex.cz; envelope-from=perex@perex.cz; receiver=lists.ozlabs.org)
-X-Greylist: delayed 488 seconds by postgrey-1.37 at boromir; Wed, 02 Oct 2024 20:18:36 AEST
-Received: from mail1.perex.cz (mail1.perex.cz [77.48.224.245])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 5216 seconds by postgrey-1.37 at boromir; Wed, 02 Oct 2024 20:21:30 AEST
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XJW3w3Pcxz2xHb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2024 20:18:36 +1000 (AEST)
-Received: from mail1.perex.cz (localhost [127.0.0.1])
-	by smtp1.perex.cz (Perex's E-mail Delivery System) with ESMTP id 5E5DD4484;
-	Wed,  2 Oct 2024 12:10:21 +0200 (CEST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.perex.cz 5E5DD4484
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=perex.cz; s=default;
-	t=1727863821; bh=oktZjSwAxoceyAQwv1wEgKMR1X1IglMEIpAh7o6zz84=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=QbtuYoUO2qqOHyqmjGDQljNvQsZJ2TGUQX6IPzzW/FPjRzw1xjhn0otmVKDRIEta+
-	 nEFRm+5hJjRe0TP4isMQaGOGGzOBFNvFFnarl8H3iv3mwjhTQd2xe79FUhk1eiMYj6
-	 o96VVsc1HYtVLLHmenyKxPJz975SjgEzS/Fr6E14=
-Received: from [192.168.100.98] (unknown [192.168.100.98])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: perex)
-	by mail1.perex.cz (Perex's E-mail Delivery System) with ESMTPSA;
-	Wed,  2 Oct 2024 12:10:08 +0200 (CEST)
-Message-ID: <24806109-16a5-4180-8b5d-a36b0a549a7b@perex.cz>
-Date: Wed, 2 Oct 2024 12:10:07 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XJW7G3p3jz2xJJ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Oct 2024 20:21:30 +1000 (AEST)
+Date: Wed, 2 Oct 2024 12:21:27 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1727864487;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=RhD25htocjLaJhhw/FN1jPZB8HhN+tD6ZhBBhAifomQ=;
+	b=BnHe16rL1tG8Y46BcKHdCWnMzIDHeM4kxsXos+WJq3VsWoGjgWmBpv1zv+Imj16+o4HSZV
+	lIVE0kHplh4ZmM730AoTQ69DNB+1hX08//ELR92GjCRsUv9RunJzZblgC17mRvs+iX6bDq
+	UgJxhtfx/u9kBFIpQBHNCjSBgK3DhZuS1zg3/0v5fqu5l12mq7lqvC2fRVZGAerXUm9gn4
+	sr/aQag6hzSu3uMuA3vZnDGgVGO2cVTzdplp1TAQp58PlItYrnG+BrkbGac7MHqci1EiEY
+	y8ZsWyQzkrngajsZnWkXWlVaDasRJHU0PTBi6jmr0f9NlHqFPhBFfXipjGCBmQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1727864487;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=RhD25htocjLaJhhw/FN1jPZB8HhN+tD6ZhBBhAifomQ=;
+	b=RdHU7Mt2IXp/zUN+hFhk2mjuCxd7zuMbvi/6WGPSE4HWRPXQQxPUNrmey5qPZAWOt+fbYt
+	2PLF+0N0PRAxSSCw==
+From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, Jason@zx2c4.com
+Subject: Re: [PATCH 1/2] powerpc/vdso: Add a page for non-time data
+Message-ID: <20241002121330-50b996cf-e296-4f0c-908d-300948728d1f@linutronix.de>
+References: <0557d3ec898c1d0ea2fc59fa8757618e524c5d94.1727858295.git.christophe.leroy@csgroup.eu>
+ <20241002104334-b655500b-901b-42db-a2c8-582e10826889@linutronix.de>
+ <368e38d3-5883-4192-b9cf-f66d0f558528@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,92 +72,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH v3 0/6] ASoC: fsl: add memory to memory function for
- ASRC
-To: Shengjiu Wang <shengjiu.wang@nxp.com>, vkoul@kernel.org, tiwai@suse.com,
- alsa-devel@alsa-project.org, linux-sound@vger.kernel.org,
- linux-kernel@vger.kernel.org, shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com,
- festevam@gmail.com, nicoleotsuka@gmail.com, lgirdwood@gmail.com,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <1725615837-24872-1-git-send-email-shengjiu.wang@nxp.com>
-From: Jaroslav Kysela <perex@perex.cz>
-Content-Language: en-US
-Autocrypt: addr=perex@perex.cz; keydata=
- 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
-In-Reply-To: <1725615837-24872-1-git-send-email-shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <368e38d3-5883-4192-b9cf-f66d0f558528@csgroup.eu>
 
-On 06. 09. 24 11:43, Shengjiu Wang wrote:
-> This function is base on the accelerator implementation
-> for compress API:
-> https://patchwork.kernel.org/project/alsa-devel/patch/20240731083843.59911-1-perex@perex.cz/
-> 
-> Audio signal processing also has the requirement for memory to
-> memory similar as Video.
-> 
-> This asrc memory to memory (memory ->asrc->memory) case is a non
-> real time use case.
-> 
-> User fills the input buffer to the asrc module, after conversion, then asrc
-> sends back the output buffer to user. So it is not a traditional ALSA playback
-> and capture case.
-> 
-> Because we had implemented the "memory -> asrc ->i2s device-> codec"
-> use case in ALSA.  Now the "memory->asrc->memory" needs
-> to reuse the code in asrc driver, so the patch 1 and patch 2 is for refining
-> the code to make it can be shared by the "memory->asrc->memory"
-> driver.
-> 
-> Other change is to add memory to memory support for two kinds of i.MX ASRC
-> modules.
+Hi Christophe,
 
-Acked-by: Jaroslav Kysela <perex@perex.cz>
+On Wed, Oct 02, 2024 at 12:10:08PM GMT, Christophe Leroy wrote:
+> Le 02/10/2024 à 10:54, Thomas Weißschuh a écrit :
+> > On Wed, Oct 02, 2024 at 10:39:28AM GMT, Christophe Leroy wrote:
+> > > The page containing VDSO time data is swapped with the one containing
+> > > TIME namespace data when a process uses a non-root time namespace.
+> > > For other data like powerpc specific data and RNG data, it means
+> > > tracking whether time namespace is the root one or not to know which
+> > > page to use.
+> > > 
+> > > Simplify the logic behind by moving time data out of first data page
+> > > so that the first data page which contains everything else always
+> > > remains the first page. Time data is in the second or third page
+> > > depending on selected time namespace.
+> > > 
+> > > While we are playing with get_datapage macro, directly take into
+> > > account the data offset inside the macro instead of adding that offset
+> > > afterwards.
+> > 
+> > FYI
+> > 
+> > I am currently working on a series to unify the storage of the
+> > VDSO data for most architectures, including powerpc.
+> > This will also include a dedicated rng data page.
+> > 
+> > That generic infrastructure would replace the need for Patch 1.
+> > Obviously, if your series gets applied, I can adapt mine for that.
+> > 
+> > If you are about to also modify other architectures in a similar way,
+> > we may want to coordinate.
+> > 
+> 
+> I'm not going to do anything on other architectures.
 
--- 
-Jaroslav Kysela <perex@perex.cz>
-Linux Sound Maintainer; ALSA Project; Red Hat, Inc.
+Ack.
 
+> Indeed my patch is an outcome of the discussion at
+> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/ffd7fc255e194d1e2b0aa3d9d129e826c53219d4.1725611321.git.christophe.leroy@csgroup.eu/
+>
+> I'm all fine if you are doing something generic for all architectures. For
+> powerpc will it handle the entire non-time data, not only rng ? The purpose
+> being to revert https://github.com/torvalds/linux/commit/c73049389e58c01e2e3bbfae900c8daeee177191
+
+Yes, it can handle arbitrary arch-specific non-time-related data in
+addition to the rng data.
+(In addition it also handles arch-specific time-related data)
+The code introduced by the linked patch is gone in my series.
+
+
+Thomas
 
