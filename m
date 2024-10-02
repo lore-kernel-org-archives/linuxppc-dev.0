@@ -1,65 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-1736-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1737-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0213BCF8541
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Oct 2024 20:55:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 908F0CF8542
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Oct 2024 21:13:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XJnBn2ZJ6z2yV8;
-	Thu,  3 Oct 2024 06:55:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727902528;
-	cv=none; b=NdiTiHAaIR1QvUJACUfSqgEBVDoqF0KDeqon2pbit5APNSY/8fH68jFVEr4lUpCxy1fI16kKN8cDAE4MlyXtjTka3L5kWdgsts76zmUgCIcVA6vKggVadl3wMJfDPDrZocAtRy9V7joz4RSyus+ZK59f4LaaZGrC7eUjJOgjMY8xBd/0nFCEiO4frZSdIWFfKN+v6x4yTVZ3/06VqdW9SXBGpooAmJim6ImjKttNDNtDf8kiqlB4v4H2smD6buXreYV71tANQOJLlan9VZpWzDPgn09QunTGBUH1gYsOX6Cx4NqI1g3JwwEETdaaIjhyimhtIlHTQ0UwmGN6Vh0vjQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XJnbl6LW2z2yVF;
+	Thu,  3 Oct 2024 07:13:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.14
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1727899399;
+	cv=none; b=RRYNISfTdQw6sPVaFVaqaAR+Peg7bXGtdNa0OwxeD4npwCZiXZFaNT6OJ5qdSIi9LOPVJgZhcMBvqqSX8S3eBC4nXaX4ZrTdzKsgSqZhE/xPKuEz5T42EiSNMJc1AEM4cfOWclv5UxIc3S6einGhNuhXJbh90up1R7mBpsd+VioUmJi8PNMRV3zBHv4ahrUJ7Br8rP5zjAoaE7N/DeawgLJmq+8VzPjUD5gytnG9QAUYVJJ0u8qIJsqCA0xbLL1kGcjcddMQnkPrLH3GQopY7dBRxYTlXQ0GL6T7vcci+DMD3/Sl7WFWdq+RQ6uJtJjMdZOxtZBjj63vlCKUctSSEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1727902528; c=relaxed/relaxed;
-	bh=YiWHn9ebe7KQepDtfabAS6iaU52G8drPBbAXCsmV36c=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=e81nJKnQgZO5asYcIclHNtXGneqBDmCbqRxZCnf+mlRQ4PsKbtFX/t6Vkyq3aSUBCXkCCoSLGn7cU0CGiDxH1RyaUnILjqr4YGnkboB0IJAJgdhk/xZIjPHaR4AeadTAr9UDczk3E3ST/buFznVozFz4uEyPs04n+Fy9C2oCZJHlsjJyr4n1GYrRpzAA5najOGS/trQhzb0ByDVtf2bjzlIyKljyY8TYNx6B/5mOPeLXYZs9hsshhatRTfrf99It1/cJiWcq0Qw4brHKgtSlOZDC6EVx+vU+fXUDxtKZJE1WtZxNYzEdTuGC7wiOd4SjLUFDDZjrXDKxrD/xFdItDg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c7noUOEm; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1727899399; c=relaxed/relaxed;
+	bh=yk/JBSOBkQ1LKGKPJgjsG+d2d+2WBIGfUs3k8xorprg=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=Yj6ygmevPf/3IdCGKp0PvrlyMdxt5nbFVKome2vsDNPHs0BMVcVse86XSqR5JF/njux3H32ss9SXsL/9Y5+1v2KN8atV95YpkKKEXe/7nins29FIJB0pAL8jkfSz90HyOpLJce9x0L6Si0B20DqhoA+L5sTuKZI2AjBdFMBeyFEZ0jQe5R6g0v/Lv9mfbrY1huPzabZsq8g4iYqkeYjiO5ettWk6xlYjbWM+uR5XkngJbW740/RIv6rWYCdxrAvRV5jHYB8qLfDbK23my/in2cAqbxeNR5HR+gInhDRj9tQCSGEcD+1RF/6zioV9xkG/0bNsmglasDeEi2UFjGfdBQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=vJh3uWvY; dkim-atps=neutral; spf=pass (client-ip=212.227.15.14; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c7noUOEm;
+	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=vJh3uWvY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.14; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
+Received: from mout.web.de (mout.web.de [212.227.15.14])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XJnBl6XWbz2yS0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2024 06:55:27 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 8F415A43F8D;
-	Wed,  2 Oct 2024 20:55:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 418ACC4CEC2;
-	Wed,  2 Oct 2024 20:55:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1727902524;
-	bh=TuGJcLjFSc56+Q/eaA2wEGKI+ciNhNV4JQafPOI71fQ=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=c7noUOEm+BauPgS1f2MCN6MaaLa1cM46uUgxC8nE9HBAO3sEGV99HNNaLNWs047EH
-	 /d05+dMftjH5oeauu7EFpU2NcDd38eZk6FhZWy/ioymRZnc0L1ZAvX9on430YyEB8Y
-	 iBFl1FEhoMvylioKynPaIEIYY7rDMTAEkZwNaMXOM+jjIlon+eONfgCtZNqGgVs7rM
-	 RiD8QFBdMI/B7A2blmSc1OrbchoSL9Yk1HfrzJbgilVzPzxGIcJaV/uCqDur2l1W69
-	 dGXS0OcRwupnHwprVDyvloOyFlQbSD4HrG8zBiwiUt6cReD6Gc1/7QNPpgLHx3mRHy
-	 HLwixwt62hcCA==
-Date: Wed, 2 Oct 2024 15:55:21 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: "Maciej W. Rozycki" <macro@orcam.me.uk>
-Cc: Matthew W Carlis <mattc@purestorage.com>, alex.williamson@redhat.com,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	david.abdurachmanov@gmail.com, edumazet@google.com, kuba@kernel.org,
-	leon@kernel.org, linux-kernel@vger.kernel.org,
-	linux-pci@vger.kernel.org, linux-rdma@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, lukas@wunner.de,
-	mahesh@linux.ibm.com, mika.westerberg@linux.intel.com,
-	netdev@vger.kernel.org, npiggin@gmail.com, oohall@gmail.com,
-	pabeni@redhat.com, pali@kernel.org, saeedm@nvidia.com, sr@denx.de,
-	Jim Wilson <wilson@tuliptree.org>
-Subject: Re: PCI: Work around PCIe link training failures
-Message-ID: <20241002205521.GA270435@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XJm2X6wwLz2yQn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Oct 2024 06:03:14 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
+	s=s29768273; t=1727899342; x=1728504142; i=markus.elfring@web.de;
+	bh=yk/JBSOBkQ1LKGKPJgjsG+d2d+2WBIGfUs3k8xorprg=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:From:
+	 Subject:Content-Type:Content-Transfer-Encoding:cc:
+	 content-transfer-encoding:content-type:date:from:message-id:
+	 mime-version:reply-to:subject:to;
+	b=vJh3uWvY+YI4HwG+Oop6AdrCMM/hC36uMebPO+Z/0+2j5obO0oaV+VEoEEypGxf4
+	 K1fHJNZB1pF5m+rwMUANcpzvZawtGsRapzTV5BeDm1GHH0L20GjyMFb5IQJpD2S03
+	 vonCVDWDDLjwHNicMTKwFzxihVTegFmexgJmAJViy+cjnrev6fcwSjmGqXaB+8PTE
+	 nIJ/yWtaXmcFZm6GX9Xy5y2E+5u3LDtECmCtnwoQ/i7dM3tlb3SFND9dDnJXjY4hz
+	 z0VSvqHX10a/tkGG2I38nDCNnedG0GjHCfIMigr9uWlolXcpU/93UgwlPUITgPZV9
+	 2E/+iBVuRq+glIY7HA==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.21] ([94.31.81.95]) by smtp.web.de (mrweb005
+ [213.165.67.108]) with ESMTPSA (Nemesis) id 1Mav6t-1sKpr33AIV-00d27Y; Wed, 02
+ Oct 2024 22:02:22 +0200
+Message-ID: <b7e69e04-e15c-41ec-b62b-37253debc654@web.de>
+Date: Wed, 2 Oct 2024 22:02:20 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,25 +56,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.21.2410021355540.45128@angie.orcam.me.uk>
+User-Agent: Mozilla Thunderbird
+To: linuxppc-dev@lists.ozlabs.org,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Jani Nikula <jani.nikula@intel.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Naveen N Rao <naveen@kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Thomas Zimmermann <tzimmermann@suse.de>
+Content-Language: en-GB
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+From: Markus Elfring <Markus.Elfring@web.de>
+Subject: [PATCH] powermac: Call of_node_put(bk_node) only once in
+ pmac_has_backlight_type()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:hKihFzh+xQoapC4KB1f813ixscEmHDPGUzMwuYAGUbLDglss0wb
+ aW1DRTpfjmTzAnntPjK4MUjjYybAkBJsvTKYbf4BiOL1MIfuY+vOQC4V8VuMjXrM8OeMu7K
+ /YnNfHSJaBVEQSyddEI15nrtpuVaNLW+IpzMvcjtsNH1IUPdyxetpjcQGjAD2/ohTb28UrV
+ S2d7mD6JlNhWOuly+q0nA==
+UI-OutboundReport: notjunk:1;M01:P0:i5Qz6h6TJGI=;vi/+cqtGm3/O6HJzmQA8MyVuEcJ
+ gnYaMhZqJzvwOLwF+Y8odsmfGi0zMGEJ+jIV430l1sse3ntrvjGfQ1YoXDGZ3ybIIjyG+Jwf0
+ tapsJNQqHFFFJTXztb+oYwXm9ifnmxd2qp1BlS1ROvH1TxlIjgn2/V6gvBFgkXIGh7o/Wi1bN
+ nTjvwAIxlDdzk2ll0V246EHCEtOyYJdzXBcUbHEhiCST+2gymhY6tDq9UAsXWspBHy0AjPixQ
+ GNnIoStVgXi3jhbMEDPIZcWgbCytgVAI8qGC6gU9N5lRkdA9gwne4uHM9LV1yxPSM2888jfui
+ 13Nig+mIFTBu4IlJLFKM8JommUTVPguflFHjDZwJRIQZmegta25NJT8MsHFWTe1h+UK6AoLn2
+ jKGwkEeKcQl0tlPUqJZnUxex2V9FvSGhe8DSgOMyYzCo7rfteczvgeYCyNOySr3wVcst9B9zf
+ Ta29slZPO+tYiGGJpzd1tbY78cE8IX8i0zZrsM5wCtEmMZoRwtBeXhhPlE3NCFKXAGDClQ45s
+ XJvCzRffCS6lxzwz8PnKZzyAfHy42uj+jY0mYm9ylFH2GVl5wTF2KWKk7RLrgNFxnbYHt75KU
+ PFxXp2GZqYabtgKIRHjYRz3D2mOcyWH/71R7VZoEB0lmzejIbrX2iiln5TDar9HXA3rLPZtBF
+ asQdpVbd0CB5xwzeKsooemCRBkk6dQ3y1bGGwmuG8gFsmozG5KTR4uvVHoFjxhnWupdV2X9ue
+ 0pqh760jpB4Ls1+VuoUT1jwcg02jQlP+K0ed9GtcywbuoST3JBILwUY9Ckrv+iOg3qmxV7lW0
+ ux5vDQ19KuZHrPIPMMkOZsDA==
 
-On Wed, Oct 02, 2024 at 01:58:15PM +0100, Maciej W. Rozycki wrote:
-> On Tue, 1 Oct 2024, Matthew W Carlis wrote:
-> 
-> > I just wanted to follow up with our testing results for the mentioned
-> > patches. It took me a while to get them running in our test pool, but
-> > we just got it going yesterday and the initial results look really good.
-> > We will continue running them in our testing from now on & if any issues
-> > come up I'll try to report them, but otherwise I wanted to say thank you
-> > for entertaining the discussion & reacting so quickly with new patches.
-> 
->  My pleasure.  I'm glad that the solution works for you.  Let me know if 
-> you need anything else.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 2 Oct 2024 21:50:27 +0200
 
-If there's anything missing that still needs to be added to v6.13-rc1,
-can somebody repost those?  I lost track of what's still outstanding.
+An of_node_put(bk_node) call was immediately used after a pointer check
+for an of_get_property() call in this function implementation.
+Thus call such a function only once instead directly before the check.
 
-Bjorn
+This issue was transformed by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+=2D--
+ arch/powerpc/platforms/powermac/backlight.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powermac/backlight.c b/arch/powerpc/pl=
+atforms/powermac/backlight.c
+index 12bc01353bd3..d3666595a62e 100644
+=2D-- a/arch/powerpc/platforms/powermac/backlight.c
++++ b/arch/powerpc/platforms/powermac/backlight.c
+@@ -61,11 +61,9 @@ int pmac_has_backlight_type(const char *type)
+ 	if (bk_node) {
+ 		const char *prop =3D of_get_property(bk_node,
+ 				"backlight-control", NULL);
+-		if (prop && strncmp(prop, type, strlen(type)) =3D=3D 0) {
+-			of_node_put(bk_node);
+-			return 1;
+-		}
+ 		of_node_put(bk_node);
++		if (prop && strncmp(prop, type, strlen(type)) =3D=3D 0)
++			return 1;
+ 	}
+
+ 	return 0;
+=2D-
+2.46.1
+
 
