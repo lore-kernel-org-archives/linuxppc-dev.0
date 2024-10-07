@@ -1,93 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-1793-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1794-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DE37CFB440
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Oct 2024 08:06:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 423F2CFB440
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Oct 2024 11:07:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XMWtr3nGPz2yVX;
-	Mon,  7 Oct 2024 19:06:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.11.138.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728288372;
-	cv=none; b=OinN/ugLrHLfgl/SQedfRP6x3e1WANIMLYFXpZiFHyE5jH1Ik+anpGL/rYpHCSQG6FletEjgad1tYjiZAvEVRVoe25sNczoULOI9F7heP+Fvy3NbWXdh/mkFmJiC/1q3iq4kLOlVUTTtNxhq27BrM4l1NKtASqNvf7LkxkK2dExA4AHtcEEsz7e4YOaHJPQdd8JAoMbS0RkJQqrrNHcPxiIod+Qh+VUPyrDVh4iVv/8J16EL5MoH0PfqjYYs8j7AqIoR28JlQZYMnW5ROvQHy7TjOTZVEsFlo/DktbUeAbaNKzL3AyMGbLr4rX6R0CdvaztMmpgr+lsT79pZ1Wr3uQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XMbvw5pbYz2xm5;
+	Mon,  7 Oct 2024 22:07:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728299244;
+	cv=none; b=HsVYI+/+jn/n/YQzVWZ8oUHfcb6yrh6N7PpUXzP8/Fw+KZ9TORkCh08MHwJ2PioE7/Qn0Y7h96oPoU8fNLNall4nXdyabEFGrUqkLLeK2wbx7jAqltWGFc7srNBr49tgYcg0vsSCkZAcCcjvXyoONj+aaPYyBjIYiJRHO1ddfimgBSsrffAswf+WTsSxPm9VQJ/z1e5EHCBRUBWmr0U6cypGLQ64IxglxA2XZUmDGjE4A5xeZwgOspKRsGwBm8Y2+KZDzaWD6uFpLlrYdl4//VZmo5DLVEXDSGUYy/PDOE3uGwdfRfrImkxAO7NL8qTw7YjM7kDaNC+0EsiCnEtikQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728288372; c=relaxed/relaxed;
-	bh=ZkOxRoRypHAVQgVjyqb7heF/q9DLPK8SmPxFVAuphQI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Dir7XBn7KoNL3DgtQ1X8HiIIv7DdGOZJsyk9++RHnTvn96Ola/VXT+HlwWIw6zlZpK4ua83BZ6i1WD1seyUD13JrOrTf6OYbwXBg3QF/4+O7vCnL4rV7OuExM0lPGIboIl1JXDlLwzLbkavHzTLoSQpeaxq4ChKzn6VouIaxZAxgMRebEt2S8QuHynIDhYGZh0vMXBuWWCkjnUQtRBuIEnySjv2iU7nOLslI0GsFbfs5naoo0UfzuWs1gQdk8waAbIZMDrZ3oUK98pADGx2f/suMMlZ1Z8uYdpWpJr5shcrXkFNahJKpuVvKt5QKitXULTr0ifxj+ZO5zhFTc4qLzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sntech.de; dkim=pass (2048-bit key; secure) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=G/k1s40U; dkim-atps=neutral; spf=pass (client-ip=185.11.138.130; helo=gloria.sntech.de; envelope-from=heiko@sntech.de; receiver=lists.ozlabs.org) smtp.mailfrom=sntech.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sntech.de
+	t=1728299244; c=relaxed/relaxed;
+	bh=HlfaUppSnhlYTBtOdNhHzLyqLgKPEpMIJGf6GhYDUFw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=B2fKgeR3IyQdmp/rw71+4tCvn5QnbvDdo0J5lFYZP9PmyGFWmW7IrMy72rrbQtq95mUE4HrobowvMyPyoWL34f3TYbzSteYeTwnjFi17ZrX0bPi4FcX+ByRGUFXlf6/H2cpxjKBpTOurbIiBXUEO/L4qQ56zT3iPnFCJnmGuJ9iv/CfZBavyDd5nhpAkcvM3kafkXAHlxr7k4tN6Kn46KYG5B3vDG4BOvzcf4yE1NZ+hM43U5pCHQpXTVQX4Sxe8ztgm2iK2t5/zVHyyaCN4Pc82IiR5kuBLJNiz/2rdvAwJlSLFMvBdpCASRLMmGQ3nCxYN0FUWJwGABaCYAi9Bxg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bkfsrNLI; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=G/k1s40U;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bkfsrNLI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sntech.de (client-ip=185.11.138.130; helo=gloria.sntech.de; envelope-from=heiko@sntech.de; receiver=lists.ozlabs.org)
-Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XMWtk1dRQz2yVT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Oct 2024 19:06:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
-	s=gloria202408; h=Content-Transfer-Encoding:Content-Type:MIME-Version:
-	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=ZkOxRoRypHAVQgVjyqb7heF/q9DLPK8SmPxFVAuphQI=; b=G/k1s40Ulb10wWe2CvPP9H8zku
-	QyoRAgzReOYMUcvY1lT5FklGPJb9trwS8HWM5iKC2m2ws7E5TBIouShElZ6rUqd7aL1NY7tFFpVKE
-	wqInKhrzG35pjz7jHf4OdIyFp3xZtpyrQXwDcYsiY6x/GxEZc2Jw5mZA5rcEBBcKbM2WHNg1Fdfs2
-	kNbk1NVQV/19IsFaacmsHaoCamjIA1H2jsOPU65USw0roLxH03+ZCKnQBXaVtJ7nLQr2BB8WSp9q/
-	pK0Qc7UupO3XNZW14pv9HT2V5bQRXcSXjTwLYdsqnGept/bPGsRtLZYkPMGkRaEsXJw7YIF5kf8hC
-	Rg1jWntw==;
-Received: from i5e860d18.versanet.de ([94.134.13.24] helo=phil.lan)
-	by gloria.sntech.de with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <heiko@sntech.de>)
-	id 1sxik7-0004Pv-F9; Mon, 07 Oct 2024 10:05:23 +0200
-From: Heiko Stuebner <heiko@sntech.de>
-To: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Adam Ford <aford173@gmail.com>,
-	Rob Herring <robh@kernel.org>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Adrien Grassein <adrien.grassein@gmail.com>,
-	Lubomir Rintel <lkundrak@v3.sk>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Takashi Iwai <tiwai@suse.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Paul Cercueil <paul@crapouillou.net>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Mark Brown <broonie@kernel.org>
-Cc: Heiko Stuebner <heiko@sntech.de>,
-	linux-sound@vger.kernel.org,
-	alsa-devel@alsa-project.org,
-	linux-kernel@vger.kernel.org,
-	linux-mips@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	imx@lists.linux.dev,
-	linux-renesas-soc@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: (subset) [PATCH treewide 00/11] ASoC: Clean up {hp,mic}-det-gpio handling
-Date: Mon,  7 Oct 2024 10:05:20 +0200
-Message-ID: <172814935870.2376693.17979672250689687487.b4-ty@sntech.de>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1727438777.git.geert+renesas@glider.be>
-References: <cover.1727438777.git.geert+renesas@glider.be>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XMbvv326yz2xHx
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Oct 2024 22:07:23 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4979nq3s003196;
+	Mon, 7 Oct 2024 11:02:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	message-id:date:mime-version:subject:to:cc:references:from
+	:in-reply-to:content-type:content-transfer-encoding; s=pp1; bh=H
+	lfaUppSnhlYTBtOdNhHzLyqLgKPEpMIJGf6GhYDUFw=; b=bkfsrNLIIeP81w49E
+	sxCVoSfOA7o54mDxq4BSn4bML01kfdUMKoCShlwoOa15wuNnxA3sgyyST7y9qkHu
+	+f8xWn16qZ0+yF38M8MjKCAaaHxg+mKjQuRIU2X+B/rWbg4Du92yGBZyriPAWgny
+	ohZbqT+c/Vl2giYVVpNjNuAxv2s+9A0o5l/U18MwD6MpDsCLq+m8YwJRjrYTwLr0
+	5nNqyxbxLrRZCWIsxKF8WeH4fuR84sxHuLC9VZ7rxiaNpZV0Urot/wXaWBMoxDBm
+	4wJZrCkSr7m3s+yM4eNouk/0lr2VOmp+3U+yn4N6dxNFVhHbdwkb3Jp33P5XcWWI
+	3LB4w==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 424dbv8bkk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 07 Oct 2024 11:02:05 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 497Au0CT011512;
+	Mon, 7 Oct 2024 11:02:05 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 423g5xe745-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 07 Oct 2024 11:02:05 +0000
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 497B23iW41812290
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 7 Oct 2024 11:02:03 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CC56958056;
+	Mon,  7 Oct 2024 11:02:03 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9CF4B58052;
+	Mon,  7 Oct 2024 11:02:03 +0000 (GMT)
+Received: from [9.61.253.216] (unknown [9.61.253.216])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  7 Oct 2024 11:02:03 +0000 (GMT)
+Message-ID: <e1b6c598-0200-49b3-b1af-176826a5e83f@linux.ibm.com>
+Date: Mon, 7 Oct 2024 06:02:03 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,29 +76,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/3] crypto: Fix data mismatch over ipsec tunnel
+ encrypted/decrypted with ppc64le AES/GCM module.
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-crypto@vger.kernel.org, stable@vger.kernel.org, leitao@debian.org,
+        nayna@linux.ibm.com, appro@cryptogams.org,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        mpe@ellerman.id.au, ltcgcw@linux.vnet.ibm.com, dtsen@us.ibm.com
+References: <20240923133040.4630-1-dtsen@linux.ibm.com>
+ <ZwDQLmwA1LvWx5Dg@gondor.apana.org.au>
+Content-Language: en-US
+From: Danny Tsen <dtsen@linux.ibm.com>
+In-Reply-To: <ZwDQLmwA1LvWx5Dg@gondor.apana.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Fh1jG0QpfSRCnmdfj-GbvttqGPMGgb90
+X-Proofpoint-GUID: Fh1jG0QpfSRCnmdfj-GbvttqGPMGgb90
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-07_01,2024-10-07_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
+ priorityscore=1501 spamscore=0 phishscore=0 bulkscore=0 lowpriorityscore=0
+ mlxscore=0 malwarescore=0 mlxlogscore=999 impostorscore=0 adultscore=0
+ clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2410070076
 
-On Fri, 27 Sep 2024 14:42:15 +0200, Geert Uytterhoeven wrote:
-> 	Hi all,
-> 
-> The "gpio" suffix for GPIO consumers was deprecated a while ago, in
-> favor of the "gpios" suffix.  However, there are still several users of
-> the "hp-det-gpio" and "mic-det-gpio" properties, in DT bindings,
-> drivers, and DT source files.
-> 
-> [...]
+Thanks Herbert.
 
-Applied, thanks!
+-Danny
 
-[06/11] arm64: dts: rockchip: Switch to simple-audio-card,hp-det-gpios
-        commit: 7ac5c0a592f73fdc52393f6469ce8211ff3e771f
-[07/11] arm64: dts: rockchip: Switch to hp-det-gpios
-        commit: 3ca743f8a5b568dc5e5d5f1bab0298a4a43c2360
-
-after the binding change from patch 02 got merged into the sound tree
-
-Best regards,
--- 
-Heiko Stuebner <heiko@sntech.de>
+On 10/5/24 12:35 AM, Herbert Xu wrote:
+> On Mon, Sep 23, 2024 at 09:30:37AM -0400, Danny Tsen wrote:
+>> Fix data mismatch over ipsec tunnel encrypted/decrypted with ppc64le AES/GCM module.
+>>
+>> This patch is to fix an issue when simd is not usable that data mismatch
+>> may occur. The fix is to register algs as SIMD modules so that the
+>> algorithm is excecuted when SIMD instructions is usable.
+>>
+>> A new module rfc4106(gcm(aes)) is also added. Re-write AES/GCM assembly
+>> codes with smaller footprints and small performance gain.
+>>
+>> This patch has been tested with the kernel crypto module tcrypt.ko and
+>> has passed the selftest.  The patch is also tested with
+>> CONFIG_CRYPTO_MANAGER_EXTRA_TESTS enabled.
+>>
+>> Fixes: fd0e9b3e2ee6 ("crypto: p10-aes-gcm - An accelerated AES/GCM stitched implementation")
+>> Fixes: cdcecfd9991f ("crypto: p10-aes-gcm - Glue code for AES/GCM stitched implementation")
+>> Fixes: 45a4672b9a6e2 ("crypto: p10-aes-gcm - Update Kconfig and Makefile")
+>>
+>> Signed-off-by: Danny Tsen <dtsen@linux.ibm.com>
+>>
+>> Danny Tsen (3):
+>>    crypto: Re-write AES/GCM stitched implementation for ppcle64.
+>>    crypto: Register modules as SIMD modules for ppcle64 AES/GCM algs.
+>>    crypto: added CRYPTO_SIMD in Kconfig for CRYPTO_AES_GCM_P10.
+>>
+>>   arch/powerpc/crypto/Kconfig            |    2 +-
+>>   arch/powerpc/crypto/aes-gcm-p10-glue.c |  141 +-
+>>   arch/powerpc/crypto/aes-gcm-p10.S      | 2421 +++++++++++-------------
+>>   3 files changed, 1187 insertions(+), 1377 deletions(-)
+>>
+>> -- 
+>> 2.43.0
+> All applied.  Thanks.
 
