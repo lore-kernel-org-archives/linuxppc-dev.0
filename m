@@ -1,53 +1,41 @@
-Return-Path: <linuxppc-dev+bounces-1812-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1813-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8188CED26E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2024 06:24:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B3B0CED26F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Oct 2024 06:33:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XN5b23Kmsz2xGX;
-	Tue,  8 Oct 2024 17:24:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728368670;
-	cv=none; b=aOiZ3WoNlyPhweBhaZKGI2CtPJlReLLzCzsCrzl+IPyKdffvKa3X0docah5MkoL69curaxx71FcYGQzp96bkjM/dEeKHeQamKATE6gOtJZ3hHPsmHXFgxEte4aZpWb+eQwlYErnmD2BbEJo9B7I7Za/IqcMqAmSVugjnnGiXKhdnGDTKMmeehRmlZg0Dw5gtE1yaxpnRJ7Aa5l98DXwswaXxPG4duTztRfQugTXjJKXYZe0TLIlgx+ev6YR3BlTsY9A/AkutQtV3d7FeW3hNSMBYNyhhnPvHqU5+dEXk6srlDzxJLtz1Xsq0bZfnw+KSww6WiwMtgyVRdqpoRf/zXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XN5n96Y6zz2xHt;
+	Tue,  8 Oct 2024 17:33:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728369197;
+	cv=none; b=YXVm1rG8Bob6PZcdb0l/9r0E9r5A6zO39UMoOnKAFFWhIut8mMkVQmz1FfMVoEKeZPsg94YgPT6CoWDxQnZf3uTu641kOCnzI0iagDzphY/pxaBge9XRSuDJdQxU8kmmbDuIMvl7OmzrGsPuIYii8Y2c5ykbVgT58NuODhSm5yyZoIVy2bHnxildlAtM6kDmMFztu05R3l5TqPHl1kQBDHw+WrCmQE8Vr9Eav8FA0sRGPq7ncIwVvBLFTXQ1BrfSiWvZYdtMc9w/d/JPn7GL8wFGZPULFZ1CuyLc57bi0PIOdpnoo7kp2wAb8mPbFWVuq7nnupw9erP3iY/fKFdjJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728368670; c=relaxed/relaxed;
-	bh=t/k+xLDuYv3OroiT3rOCCXtk5GvlauA45xjNg18mkHo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QqF5QKMCvqmXLkqsjxgq7gsOZ35JD+F4ddsN4dPy6uaJScRRUF2ggOOLv6MxI8KArOECg9KwD01eosLbv22YwLHdh5ibeXlsPQjEpFzEE1+T95U4XFXE0zLbZKChadoOlHMJR42YvuZPTerk7yd8GMtfvDpnGBZQ3zePYGJZE32L6UBQpTivIFxo5Gsv/7JbkeRvCy78E6lYXq7MxsnBbu1mb2jZI9Wv70M0ii78w+TiPyCsinNPRx44IIq8gM9o9KnDegh3CJGfc26lM/ASn7BJDsop5EvRRHPtUPfazSuqW+XVmoEbKfIszAA8LgSxelPllODxSekLcuUc3cxzgg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1728369197; c=relaxed/relaxed;
+	bh=uwV10IJZeQnf1cK10vvFWzrCG6D1nZse6Z7j/E6+ibg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TpfUql/qVfKtsHS0cakqfgcDRMvXMuAcw/iZ2aQxsItVSnCedRMJrr2UNbQFTvlz5jMpMnlULuPtQuYhfF4dYixsM2SQessxYcXRCmpU+RsMyJ1+hO28HQcyUR/och7HwokSvjbgEbGV2F4/CpH4cbZK2tDz5iBnSWw51jJF5HgA6F63Xo1Bs+scd6XpIcFCcidzmOMvPw86td+gBaGri3ZVOZVHg3i21HlZreDyHT4rvewBC7Udkeku4B58JpU0nW6Jj/F5v1weE0W7lTP0x0+Gq1Sch5WCIcYxtdN0Mlxie0N+Karz4LZ8FH39uzbothQBjJxEpsHEQMt3R9Es3w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de; spf=pass (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org) smtp.mailfrom=lst.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XN5b13Cw0z2xCp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2024 17:24:28 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4XN5Zw3r7hz9sPd;
-	Tue,  8 Oct 2024 08:24:24 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 83WsnfrASkNO; Tue,  8 Oct 2024 08:24:24 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4XN5Zw2vlKz9rvV;
-	Tue,  8 Oct 2024 08:24:24 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4F4488B788;
-	Tue,  8 Oct 2024 08:24:24 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id WqcteU_NOog8; Tue,  8 Oct 2024 08:24:24 +0200 (CEST)
-Received: from [192.168.233.14] (unknown [192.168.233.14])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0CB258B763;
-	Tue,  8 Oct 2024 08:24:23 +0200 (CEST)
-Message-ID: <8e99826f-b38a-4cb3-ba5e-a20512248853@csgroup.eu>
-Date: Tue, 8 Oct 2024 08:24:22 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XN5n812ZNz2xHr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Oct 2024 17:33:15 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+	id 8E083227A8E; Tue,  8 Oct 2024 08:33:08 +0200 (CEST)
+Date: Tue, 8 Oct 2024 08:33:07 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, hch@lst.de,
+	brauner@kernel.org, sfr@canb.auug.org.au
+Subject: Re: [linux-next][20241004]BUG: KFENCE: memory corruption in
+ xfs_iext_remove+0x288/0x2c8 [xfs]
+Message-ID: <20241008063307.GA22312@lst.de>
+References: <ae6217b4-7b62-4722-9afe-f8379201cc9e@linux.vnet.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,71 +45,18 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] ftrace: Make ftrace_regs abstract from direct use
-To: Steven Rostedt <rostedt@goodmis.org>, LKML
- <linux-kernel@vger.kernel.org>,
- Linux Trace Kernel <linux-trace-kernel@vger.kernel.org>,
- linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>
-References: <20241007204743.41314f1d@gandalf.local.home>
- <20241007205458.2bbdf736@gandalf.local.home>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20241007205458.2bbdf736@gandalf.local.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ae6217b4-7b62-4722-9afe-f8379201cc9e@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 
+On Mon, Oct 07, 2024 at 07:34:18PM +0530, Venkat Rao Bagalkote wrote:
+> Greetings!!!
+>
+>
+> Observing Kfence errors, while running fsstress test on Power PC platform
 
+Is this new or is this the first time you run kfence?  Any chance you
+could bisect it?
 
-Le 08/10/2024 à 02:54, Steven Rostedt a écrit :
-> On Mon, 7 Oct 2024 20:47:43 -0400
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
->> +#ifndef CONFIG_HAVE_DYNAMIC_FTRACE_WITH_ARGS
->> +struct __arch_ftrace_regs {
->> +	struct pt_regs		regs;
->> +};
->> +
->> +#define arch_ftrace_get_regs(fregs)					\
->> +	({ struct __arch_fregs_regs *__f = (struct __arch_ftrace_regs *)(fregs); \
->> +		&__f->regs;						\
->> +	})
-> 
-> I wrote the arch_ftrace_get_regs() at the start of creating this patch.
-> 
->> +
->> +struct ftrace_regs;
->> +#define arch_ftrace_regs(fregs) ((struct __arch_ftrace_regs *)(fregs))
->> +
-> 
-> I just realized I can simplify it with:
-> 
-> #define arch_ftrace_get_regs(fregs)	({ &arch_ftrace_regs(fregs)->regs; })
-
-Is it possible to write it as a static inline function to enforce type 
-checking ?
-
-> 
-> I may send a v2 (tomorrow).
-> 
-> -- Steve
 
