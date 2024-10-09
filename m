@@ -1,86 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-1887-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1888-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D58BCEDD9E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2024 14:32:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62E58CEDDA0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Oct 2024 14:33:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XNwMk1sBqz3bbW;
-	Thu, 10 Oct 2024 01:32:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.165.32 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728484354;
-	cv=pass; b=daHQAgBfEkVY4ji2O52+JDmsZrd0p2LOnxA1g4spsliPTsGf7EukebYZNXWiVCkDJKyixN1q9zKucX+dof4DgvMVJ9Alo8eVTBPbcCxgj7s7Sh6ZcmsaCF7c+24dAtPitPIIyGKRauMqaF5R36kWiRZbZxKNNgSVPeqNEP2Q+cpVTdkLz+9/syQxiImt4E9yW3fbefqft0wRWBVeeWF1gIA59k+QAX5XGCpKTCN7fGfdoJhXc6mTjDQwjXFApsmDIDQH+LKrUQvSPcI4RdqPSGtFP/dRu/YmKquzRuo4Z+Mv3gIUbhQW8Y8YLwl5ovkPYZImgwC+8UdMR57tvIb9Hw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XNwNq75FHz3bbn;
+	Thu, 10 Oct 2024 01:33:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.177.32 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728484411;
+	cv=pass; b=UtMbcsFJAUhXl4sJIyvrqGGGCtq9tsiw9XWLx4WPcvJbfecTGPH9UU9Zv9rMRQbo7dR3fckb9UBKGXu5TwWuofLqC/999rYoU7vd8aomFe9H9N20oNGODBWDBoQo/qzOqIIejfIm3NpXe2IFxZ7yfCpTRTXhcy+PPSVCq+61F9oLkzxs2nlsxc/qDCTKDrbSbn18OQ8Pqta1tjiHAK83xjmSEb/0QgiOh5Nrvl5zxbmZkD4N80QoHWQLN/CjhgzAkL6Q35ohAQMbymg0wR57ge3592XLylQ2fKUz97kGj9UYCMa282SnGlmNOnY8RnB7iKpZhTA9YlMXjX9eaMEnmw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728484354; c=relaxed/relaxed;
-	bh=2lDuO5UY9Anp/5LG1Ov6PAPu35ofnxeUr7EgSPtM1gw=;
+	t=1728484411; c=relaxed/relaxed;
+	bh=/x8wBvaPpjmHHwKUdRvLLISstp7VXcDCRWcub3zAciA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=Nkez1CzG2/Ks2sZRPt3ewRxyjbLdsGQCQuRorhxHqQbzsz5GGrDvPHwrdloy34fb6JwOyCcdiOgdgRaEjDl23pK3JbWW2tUVw3HPyG2yQvuIk1AiCsfkDd85ENXSZR44jr4FPQEWrGEghnBMqkQ7l1oFy6oiDIIlo9UnzNFyG+qyTGe9kmO/ZZh9ggRmCL7CApB7qtQM4QgWwIxEeMJW7X5Kux9ebk+tZ3Kh3iU6R5ugK3iy3cnRWqlzDIR9CnyouEkD3uygGyJbKh8EuFxlm6Vtmp1rExwIlaXrVt3/LXGzGTy+WQ2TUJR3h+6vhy8I4CZ2aGjlk9kSyO05XuXaZg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=etBYyOkj; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=ca6OtwPp; dkim-atps=neutral; spf=pass (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
+	 Content-Disposition:In-Reply-To:MIME-Version; b=i89UxRFpio9b5k8/HwSgOsEVwrrTdvPIXxauNvS7eMEzKyIF96hvvNNcluv6K7r4JNkekAZh8nZU6QXKXnAPYqyGvRbIkVNMuMmdXLYMfbnpy+0DxolaSa9mzStVHjZkMpb3vVdd8AtgS4TehnaNDl03geG/MpZVdj3TjPfW2vhIsgrzqfvsCpSf6h1/WNRkEYte37AJTGKfgtrgTc87OZhQx60R9ROyZTlCOa1Hn5kypAbEXwrYv0zfEvB5G+dRSYZuz78WFT6ZmLoYDB9rCFcpE7HyBZ7fOzRfpZpIgyGB53SlJ02Q+8CkXYyA0X+BO1LsTuD3oZd8zGg9gvZP9A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=C4BAQQI7; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=TertyEBa; dkim-atps=neutral; spf=pass (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=etBYyOkj;
-	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=ca6OtwPp;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=C4BAQQI7;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=TertyEBa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org)
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org)
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XNwMj1BwNz3005
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2024 01:32:32 +1100 (AEDT)
-Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 499Dfmvj030873;
-	Wed, 9 Oct 2024 14:31:31 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XNwNp3vD3z3bbm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2024 01:33:29 +1100 (AEDT)
+Received: from pps.filterd (m0333520.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 499DfdBV004619;
+	Wed, 9 Oct 2024 14:32:57 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
 	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=corp-2023-11-20; bh=2lDuO5UY9Anp/5LG1O
-	v6PAPu35ofnxeUr7EgSPtM1gw=; b=etBYyOkj0SctZT8qAwlwml3Uro+3nYpud/
-	v07qmSrdk5XrT+DQ5nZfZMMTJFK/PqsU3s2CbqAPqJR+ROXq+k1fjseC4YJ3IKsc
-	WJmdxOVAr1xLgCRjNj6YfiDo2UXvCtc/1UdkZfH8rEYP8ZAcYKdZsVoWtOCxOsOj
-	OlPuzEoCvxtEbXOOvYi+g8XFJHuXB3yluD7bXXWfLJm324nMuGLxqKvf4YOmSw3R
-	4//ju+/xhz459kejIXgHj551AdK3KEKPBkFMtFq+arqSD1yqf1i5KezKKLwbLzHm
-	ykfAVV6gefS3NinQwfHIfhnsK2ck+/7+kAdaFfKdk236FTHlRwDQ==
-Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 42306egebj-1
+	:references:subject:to; s=corp-2023-11-20; bh=/x8wBvaPpjmHHwKUdR
+	vLLISstp7VXcDCRWcub3zAciA=; b=C4BAQQI7GSGT5qeel0JcaOoFq+roE8kVgR
+	snvtkgkQzqzJGazrwXqZ70/PIjkeMc4O7Gd1Qr1PFC3sPwRwxtH/agRrARncau0x
+	Qs6aO09fDIAaFpr76hCwGHCUVK91lwURuzhfAwkcB0pT1sg6ipexssmbHHmW+6Rp
+	f51aIkNW7ChHeHzQ8n+Gze7dg2aCJmYfxyGSn+GDii84Yha83TLmgbZo/sX6cYD4
+	/BRiV3+Eq3GjTCZ1ZwNlNgKDeI30Rb/2KmVYZMiAgfpsFOZYFmkEhtPuZp0hQSHA
+	ykgWhvCMVTbxZfGRB7TIXNBXEQG/dJqlQWsH+Yrr48oES83pN1LA==
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 423034rq4t-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 09 Oct 2024 14:31:30 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 499DjYPx038363;
-	Wed, 9 Oct 2024 14:31:12 GMT
-Received: from nam12-bn8-obe.outbound.protection.outlook.com (mail-bn8nam12lp2177.outbound.protection.outlook.com [104.47.55.177])
-	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 422uw8qt0e-1
+	Wed, 09 Oct 2024 14:32:56 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 499DqiZv019130;
+	Wed, 9 Oct 2024 14:32:55 GMT
+Received: from nam11-dm6-obe.outbound.protection.outlook.com (mail-dm6nam11lp2176.outbound.protection.outlook.com [104.47.57.176])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 422uweyfym-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 09 Oct 2024 14:31:12 +0000
+	Wed, 09 Oct 2024 14:32:55 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=hcz6EJhPsS19pr6NyiMvXGvJw7cLpXVhU4cefYl2nYIu5XVpxrnvUuVT1lyvrCKfkxyrjo9z7ORwun1PZqukveUk1gAjibl3ZuJSKN7SmF41qsf1n2dDCF79UWhwqExXIFcmGR4YzqeN/5Y/2QQk/L8dCbN0pFlwyfAsh9dc0CtHg94mLQEjAaRfz3wDUmLqkJKDrhdx9VacznIafvuuqf08yR559/zcwH0gmMpvQHEYZi0jYni49uQpabJuAhNRlGOypD1iWaPnOIddwHPDAOVuieThfMGZLaWhWuTYEDnbgLCWk0h1KZcLYMFPuwd1kfEwiSSzTTCx9A95HDwMag==
+ b=km0kRC08812ZoVxwZA5wfh0bRxxFAc8UvSBiafsOb7VnwTLhlSUvhuqR/r2neW/8YUsTPWd8lXWZ4XtOPOWRPXPRqtcT8h08GxE8dpvndruWKRhOhe0ZzRE9dxwta8vVT3qXM5kOc+deqHou9m+2Cnkih0ZTPygr0mHYYdBaEeP3WyOxOJcmDI5Xgaqe89X3eItCIjqot2lHJCd+0hzMwlCIEJkq+PCfhTFz8E844/iSHlOo3SjizAcvXbfFvslipxYqA5h1nSYd8pBsRg6x8P+6nJ6EEzPZspWm/PH3TsCZx1QdA2+N1up4dQixdnMlpqcmbgK3euGWYx6x42vCqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=2lDuO5UY9Anp/5LG1Ov6PAPu35ofnxeUr7EgSPtM1gw=;
- b=V8xFhhiqcxEDEYibaKkBjmZPEtezaSp2NN4F2oDa+FL0Qk5U6QT96P2J7HGJgIV2MPQrcojTooKYyLSDDEMFgTIylto+WHM5lUtt+hRLp+x+Cb5UShI7BliA7mqlOKIM0fSqmNd80lCo5ltG9dV7aA2wJ9MS2NwaDrH3RRT+RURZmVzz4a/8uGhGzkFPPZO3t5ApOooGxGwCskvY+NmM71hyioqX4tWkbflvT8KeJVJR7NFKiiPsvS79icaSyr3xPMIUYTaUckzCxrOuoeK4QcBPbIK8G5rJaj4c2BeaVLuPsCV5XBnHBhIMOX2ubTuktRswC351/Kxhlewbac/pEw==
+ bh=/x8wBvaPpjmHHwKUdRvLLISstp7VXcDCRWcub3zAciA=;
+ b=xa2HGqKgJDzJP0/KagEAs+RR9BKnjTVeCNP0iQGlI3JU12VEeZFnvpOqIfmD3PycwnLUIrabIBYBr6hh0sJyDp2VYMkTygg6K2ayQucLiXrc/2hm+apkP4u3OEEwBGIWPmdWt+vxy3oIAiBPOHu3DusM4vGR1qzWG9pUmsbw7ZGXEvV/yJt0+JHeEkDqvWjeQwoPYDy+5f1lj2Rxi6OaG/PnzLVf4Y5wXAt2O80RFlewTzGOp+EqYoFKAyj6ByxKnfklGf7/lDOpxWpn1GuDzq5VW7mtzTessWltLCuzAsE60f5HpXc8s8BoCQn/fEzcP1HIP6SlX1M5+SgI1XsdZA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
  dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=2lDuO5UY9Anp/5LG1Ov6PAPu35ofnxeUr7EgSPtM1gw=;
- b=ca6OtwPplicRPxq+g9Zw0asbx3jUkG637vTp+wqWdOoK4buTpZxoPorM00e0rxx6+Eo9N0OR38SQSHw9jEvRVjxZAo4/4Ku/EK2daC471kaPx76Yro/GePYIQqy4NqoErELObqCUZiniIuDstULejkwck61mPvyQ5JGXvpHf9FI=
+ bh=/x8wBvaPpjmHHwKUdRvLLISstp7VXcDCRWcub3zAciA=;
+ b=TertyEBaa5YlD4tnpOkcvcPv2wyzRCF7Bdxj2xZnYnWXMGfh433cMWCmIBA9pc5w2lYHRACiRiM+wajYxkuSnx1xENAh480dHVCGkQCVpKUaxt11W8raGXKkG+pTLk5iffQyOa8PTFHcnC6aHYaSNPDeuBJ05Bxn1ZD5z88ZucU=
 Received: from SJ0PR10MB5613.namprd10.prod.outlook.com (2603:10b6:a03:3d0::5)
- by MN2PR10MB4349.namprd10.prod.outlook.com (2603:10b6:208:1d4::9) with
+ by IA0PR10MB7370.namprd10.prod.outlook.com (2603:10b6:208:3dd::11) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8048.16; Wed, 9 Oct
- 2024 14:31:05 +0000
+ 2024 14:32:48 +0000
 Received: from SJ0PR10MB5613.namprd10.prod.outlook.com
  ([fe80::4239:cf6f:9caa:940e]) by SJ0PR10MB5613.namprd10.prod.outlook.com
  ([fe80::4239:cf6f:9caa:940e%5]) with mapi id 15.20.8026.020; Wed, 9 Oct 2024
- 14:31:04 +0000
-Date: Wed, 9 Oct 2024 15:31:01 +0100
+ 14:32:48 +0000
+Date: Wed, 9 Oct 2024 15:32:46 +0100
 From: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>,
-        "Jason A. Donenfeld" <Jason@zx2c4.com>,
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: David Hildenbrand <david@redhat.com>, Arnd Bergmann <arnd@kernel.org>,
+        linux-mm@kvack.org, "Jason A . Donenfeld" <Jason@zx2c4.com>,
         Alexander Viro <viro@zeniv.linux.org.uk>,
         Alexandre Torgue <alexandre.torgue@foss.st.com>,
         Andreas Larsson <andreas@gaisler.com>,
@@ -89,10 +89,9 @@ Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>,
         Christian Brauner <brauner@kernel.org>, Christoph Hellwig <hch@lst.de>,
         Christophe Leroy <christophe.leroy@csgroup.eu>,
         Damien Le Moal <dlemoal@kernel.org>,
-        David Hildenbrand <david@redhat.com>,
         Greg Ungerer <gerg@linux-m68k.org>, Helge Deller <deller@gmx.de>,
         Kees Cook <kees@kernel.org>,
-        "Liam R . Howlett" <Liam.Howlett@oracle.com>,
+        "Liam R. Howlett" <Liam.Howlett@oracle.com>,
         Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>,
         Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
         Nicholas Piggin <npiggin@gmail.com>,
@@ -102,17 +101,18 @@ Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>,
         Vlastimil Babka <vbabka@suse.cz>,
         linux-stm32@st-md-mailman.stormreply.com, linux-kernel@vger.kernel.org,
         linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 4/5] asm-generic: use asm-generic/mman-common.h on parisc
- and alpha
-Message-ID: <1cf8c09f-6b36-4650-a017-707f4bc41ca7@lucifer.local>
+        linuxppc-dev@lists.ozlabs.org, Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH 5/5] [RFC] mm: Remove MAP_UNINITIALIZED support
+Message-ID: <fcd1afe6-16f6-4a51-8bb4-08ece80337f4@lucifer.local>
 References: <20240925210615.2572360-1-arnd@kernel.org>
- <20240925210615.2572360-5-arnd@kernel.org>
+ <20240925210615.2572360-6-arnd@kernel.org>
+ <b7f7f849-00d1-49e5-8455-94eb9b45e273@redhat.com>
+ <1a1f118e-9a7c-4c66-b956-d21eb36fce48@app.fastmail.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20240925210615.2572360-5-arnd@kernel.org>
-X-ClientProxiedBy: LO4P123CA0200.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:600:1a5::7) To SJ0PR10MB5613.namprd10.prod.outlook.com
+In-Reply-To: <1a1f118e-9a7c-4c66-b956-d21eb36fce48@app.fastmail.com>
+X-ClientProxiedBy: LO4P265CA0023.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:2ae::13) To SJ0PR10MB5613.namprd10.prod.outlook.com
  (2603:10b6:a03:3d0::5)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -124,324 +124,139 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR10MB5613:EE_|MN2PR10MB4349:EE_
-X-MS-Office365-Filtering-Correlation-Id: e0cd4e5a-224d-405e-96de-08dce86f015d
+X-MS-TrafficTypeDiagnostic: SJ0PR10MB5613:EE_|IA0PR10MB7370:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3802db9f-4932-4d35-b49a-08dce86f3f8e
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?C9nFDa2T6TiBxa1Yu8MTXrQ2L4Rc8mkR4FUmLUiF6zfpy9cRYIOUKjnJa9bC?=
- =?us-ascii?Q?coFWO3gvSjsJc0bGeMiwFOtXIydVERnj2eBRxKNgJulj3szFYW1y8KBcj3iP?=
- =?us-ascii?Q?wqXOuIss8Spb49U2FZIU2nSvxHBt6cZJLPd+7IhvX3rge/ncMtfarJK/WYnh?=
- =?us-ascii?Q?wRzFD3S+roU6zKpdW6MY43vXLTkPBD3GvpGfuOKGOOP6zuNmFXxvoV53yzY4?=
- =?us-ascii?Q?DJWXqj4aqipc4nCadIz/u/PLZUZycxQyLvXQ8yLZsj1evW0/kWfMY/A/k71g?=
- =?us-ascii?Q?81iuozCItrt6l8m4z+RWs8/Z3gkrOzpQNPDaW787KpRxpFZWE10ioQAtQMwz?=
- =?us-ascii?Q?2RYA9kMk7UkgO7v4r0XJNIZwvLEpRbwSM4OxOif9RRaUyaxghx0C7qPfB9nU?=
- =?us-ascii?Q?5HjH0DPa+RJE5YC7Ztb0J5cOTb2UQeLsiyYLzrEyIvZpG6dtfjbL2/AnbrS1?=
- =?us-ascii?Q?iXkRGfLDWLFh94XMjUfXT7WlbG+EaCBAyEOqrJSZwTK2D2qrpJWnucMsL0TL?=
- =?us-ascii?Q?SmDXEI4ke9TIW0lS1htCCtV9K8gu1k3NmC2nLFpacmnL4eu1epJbRcRaeXc2?=
- =?us-ascii?Q?XCLuCTQEKXGmZMyPa90VWVL/XnfaFJW+bBthUVCpOxSlcq2+ToYDpvb7RgyW?=
- =?us-ascii?Q?TN3crXzOiw7cYAbq+kpM9OwlNWGUK6gebwFyEO9dXwEkOch2o4hbLuBrw8w0?=
- =?us-ascii?Q?PX5kL6yJ9wKbCkPtZHXqK7p7yznBkcDnbyhfvK7EsTmfRat9R/HEBNASZtfh?=
- =?us-ascii?Q?grr6FIJu2IRkHeytg+EkhwmnIeCWzgWD00MeqdF6p0y3S/pvPxRllAC43cz8?=
- =?us-ascii?Q?MPsfKId2guvVRdm89lZb17jHmeqVAFPNFUFiDcAt9Eo4qx2GmqkHzC3LluFT?=
- =?us-ascii?Q?HmhFcnjOz3CQZTfhlyogIDwtY8Xp7xfR0eQJhis5nsWlHRlzh9ISigTab9QH?=
- =?us-ascii?Q?QpwLbR90OUV5oxIKA/PFzWuI2FhifgnH1o5xp2NVbYCr+fdnBUynL39SWi3K?=
- =?us-ascii?Q?tQ71CErxhQmU9YUyBANuU6NVajO1yiHl3h/MkgpMVxB/2zA4jjHQO+8nCyJD?=
- =?us-ascii?Q?Ytg5es+Dt/fKcDBe1ll9U+0bXQc+Ld8Ngy7bUndFyzHjcIwIj6nivFjzotCT?=
- =?us-ascii?Q?/Nwo12lNv7Z/9E7TviDnsqzoxbOJruZz8NbDqdtuHfXz2NbAqfbYf/VXE/B6?=
- =?us-ascii?Q?jSNPnGZkFfa8BKJ2drc5Es1J6qPnQfU24Th8n/Lpv7H4pK4hxVEWQHPhlvhf?=
- =?us-ascii?Q?Qp9bSySaS26Bcj3yj3ZTlzI4VGUKz5FNz7UKYogZ+g=3D=3D?=
+	=?us-ascii?Q?7N/M2g5aQ6AoKg5/kd9rwV9imS3w1u41fKu43dE6q76t7KB8iUoICxwSn8jJ?=
+ =?us-ascii?Q?TBihNEDEvvtlpE+uDIRc3PMe7utv9hOLJ25qaQ87egGIi+yXOwhGTY2MqeVo?=
+ =?us-ascii?Q?HPmzkMOZC6DscyyjXG2MThLqZ3nWl9tl5oeKwWuORPTTseWfQiNkGEqjxSQ0?=
+ =?us-ascii?Q?QAjrPV8dC+m6Tu17XCNSsUXHd+mOkP4nvoebl0N2JoV11e5DAZfIUnZBD/aU?=
+ =?us-ascii?Q?5S87/vQdo59BInQkb1HRui4qT2ro4PenCQzI0Yq21zPBY9YTRORU94HAisjX?=
+ =?us-ascii?Q?jNg8MosnqqWsFrEjaXwydeYPRuzQTIWlt75RBsqSDLfTGOKNHMALvBpd70VL?=
+ =?us-ascii?Q?WbepA350oUpkpeFYfFh1GYCkvcbF+L43X/CKwC4N/tA8Ez1cvIGqYvEYxRD2?=
+ =?us-ascii?Q?W8nmtavQZconLJaPPZQvdSdpnPK9uP4QjNJN5xW4gWeiX+gL9froXp4Pv7p/?=
+ =?us-ascii?Q?N7skAV2JLM8wP7xdwJU9ISEk+v2dUG3wNVNlOHtM8THiRBBXrljfEcVmAlUB?=
+ =?us-ascii?Q?EN8ZBGnX2sRrGuuFyaZgwWYMJ3mC6mDlDiWO/q1Q1Xc+USJzWdYF4j7KGfSz?=
+ =?us-ascii?Q?fUPEQK2DZzmSDdABXD4ISr1x/vcBwVLWQ5xeojnIa+d6SSguGSTUpEgjZWV0?=
+ =?us-ascii?Q?qrvy8ClJ+JjFgsl1rpX4ZkzS0DzYxGU6txejmr44rVYwqm1TdBT5XyX1awii?=
+ =?us-ascii?Q?T07MQ2t/rL4vT8SKVwrYdH3XfAroBrncUTGxVaImG+NVnPSPXyxgNWqU483s?=
+ =?us-ascii?Q?uWcCOszgsqjHRSadQDkwkTxN6tbm647jfL+b3g6h1TgBJRFqu5hGsLQnnm09?=
+ =?us-ascii?Q?gbq/LDUC/CCjO57HHimRacZ5sYLQVdmds1nDc30zBIemkrzrYtBj6hSYJHXo?=
+ =?us-ascii?Q?NEoBR2zruYthKNv9lXCDfGclw079DENE0e8YNhf9+dvzqeiuW1AaVJAEtT7u?=
+ =?us-ascii?Q?vTtQBm/Q5k5WuwSV12USIvyccRARKSenz6KJ8CDbgMEsJRjUsB3AchpKcvab?=
+ =?us-ascii?Q?dT+W7Ewl+utga8c5QG3VlS7ZtIxlLgLM/8rroqXnEwP8pQ3DAzL+YF6dEjMu?=
+ =?us-ascii?Q?L36maGUU6EfKh85BSNuzYpZ2C75oc9Yjh4wxf4EFr3JLPBg6JhAHeshHVioC?=
+ =?us-ascii?Q?C7szbLZpxeUV50ySQqekenKXsMueUpPQqunDIKGnFanxu2JxUon1R5sBaVOg?=
+ =?us-ascii?Q?seVscXRjpsfDXZLdbS36oK1/T50/SBLsRdKVWlLoDUc1z97Mlx2hBVZSYuo/?=
+ =?us-ascii?Q?FCI5mgJQDLZTEq8I1/1xnMuAH78pWppJYdLqtj45iw=3D=3D?=
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR10MB5613.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?w07tJl8W4ojbuOOb73wRLuArjlQ106xgKfQHO9y+ACS3zFCWjKiwceajCPAQ?=
- =?us-ascii?Q?JBA/DfM7ERzjGc65/H6ZoOo6J8nBrYjtKhPsRIdl0QkKCs7Q3R6x6dOpUnVq?=
- =?us-ascii?Q?Tk+kXkK2SeRVJS1MWTURWa5V4uoICTCM5L0c52Bvxpsi5atNylSYyd93nw6n?=
- =?us-ascii?Q?DXzXv6Klj4QcmBSz4ouigmIK9YvQJ8miCwtO2FCijTshZAOCbAvJRZ0lcfai?=
- =?us-ascii?Q?N+BaggNHTp3IRwm34m6cCVdbpmv/6/NDm0VeK3mf7Ecc4p3lLDQGbYef1fMY?=
- =?us-ascii?Q?4LeRI73QRonWlDyEFyh4CE2fPgbcTifbfzphVwlmYz72PmKjnWjVoNyUMu3v?=
- =?us-ascii?Q?jGwpFaBvw8AX6Wgjv5HGWz+43vnID/1Hnf4CJBf0IPbzPRaa0EwH+orH/dyi?=
- =?us-ascii?Q?hxuy6uaBXDodoFp8fOFbciwepI1VlJN1IejZvZidrr1zjqYVZI12Vk0xobeZ?=
- =?us-ascii?Q?mY74zjZX/Q0gAOdDut23Z6FAboDvo2aGRuh/b9MRn13ScBRQhqRYO+z+/6VQ?=
- =?us-ascii?Q?DoXaGOhn3WO599nIPQihG7ikqtDyFDHoJMY9Gx4bcp/wIPj1xlm1UHKovIbq?=
- =?us-ascii?Q?u/xbNRQ4uZ4QZuWldvdYMJRnRJ8grHHugcvKRcwusymWakVESe6nZLeQPliw?=
- =?us-ascii?Q?a06Xzf1lcqCumNFxmcb4IFLnwE+XINet1nxyx0keWRKHYvgECzL4BZC2hVdM?=
- =?us-ascii?Q?x5qFZOTD4N2DTFuAsvgqCiyu4EXqEhKoi17pWXdWhJq4JzLRLQIpkfzGdy46?=
- =?us-ascii?Q?ZxNSbmkdDoRH6nHDDO92JEz/caykLjIPCLyEzaaYBZGHoFei79nE5tYHC3xj?=
- =?us-ascii?Q?2Z7C3S85lXL6ZfvFx1hKWZFJP7YI+veCyKMEYeX0zIEKpsY6eddQ9IMlK4hV?=
- =?us-ascii?Q?RdU8oje9iqtkd6Q9kUbnTObWvzxKytthMNM+zcgoH7ZMusZljbWQMa0pAfQ/?=
- =?us-ascii?Q?Rft2OGY5Np9RGnwV5Mbg6cIOxCxmA+Ze+t81ie20vcffoypKOTF7iq3DdwAu?=
- =?us-ascii?Q?399D8kq8iljQlwVlKJaeZQ6gGmppp8mJG4pkSOSD0PxMvgbaPbbtIQ30Ep40?=
- =?us-ascii?Q?O/r1OMOl+/zDPNimuzAwo2Z3KJ4WGckxTRcNq0Qa2GBsboaC3FA1rG9PNSle?=
- =?us-ascii?Q?sKqN9x1QNZADovjMZfwuyfhobaYr4Y+q6HYKR7fAX2a6OfCF5VwU2SFJCbSC?=
- =?us-ascii?Q?jJz7oAw8bmdUfhoRCdaI86jy3/g6NpqRzhyT4k5WieHChhxsHWwDxCzkXr/w?=
- =?us-ascii?Q?bGeUZpguA18mvocnKGuiZPwUzeMZGf+iSDmFfQmelDc0ekJSvXndGLOPAnRL?=
- =?us-ascii?Q?/n17mB1i7WZW7ksxnill19ijCUtqIjQUg5+jnkoCBuB2pwBxECl9JtqZR6Ok?=
- =?us-ascii?Q?vYVqSNaNJ5PUG53O/+imnaBF6IkrF7ev4S7+l3Z3sXL1OmpXo9xafkXRjOIu?=
- =?us-ascii?Q?EDG9cGBQw+MPSmouxfDdfxRv53aFCrt6ppJoJvSCvjmiUO11AkoUlgW2QfgF?=
- =?us-ascii?Q?MU4e5H1ECPDvyMR+JfHeJpNUQf3ajKnibds7+PX2i1VM2SFwSsZCvcVI8BO1?=
- =?us-ascii?Q?l2Vgy1mw6j9veME+IkkliO3ew4bsS2sGp+qwF/ymKLZw6C3KcsU6482Qn5H5?=
- =?us-ascii?Q?CA=3D=3D?=
+	=?us-ascii?Q?7TKMfW8DmRgAQAfVU1YAy+rqRds6e6RLtNRtNEEFdGzZH07xBU0+Xs+ujM2G?=
+ =?us-ascii?Q?HT/L5mUlJQS5sH/qzidGWW0qc3IaOlnNnn/2HaJdTpOK07Xzp/Asxo+NFEkp?=
+ =?us-ascii?Q?sHoSSl9kRLjo3r3XnnQga0MPIEwQfVHuWRlJFZq+NC3CzvBaZK1nLO1fBEwX?=
+ =?us-ascii?Q?yDFbqdMEw2dooxsuSN+gkT7PLljsy8NrEm7T+rH/a4B5JsfPSxtLnND35SpU?=
+ =?us-ascii?Q?xwUwXNpdxJfrfo1xMbPa1lgcSHs5/fq5oh7/wpdq1e6eC0AFKHryOfrE+i/C?=
+ =?us-ascii?Q?kePTqJTpSP7M+nNkgb433jL9+qzm0fhp0Iz6MNvTBdipxq1qWM2UjhPjINT0?=
+ =?us-ascii?Q?NM/YUFQTgu7NAqMSWQaZdY4dC8RXKSSFWoib9SsS00MYvjDg446kY4NEVYcJ?=
+ =?us-ascii?Q?/quwv1gNGKm1JxH+/JFuAR3CEHs2wls6iyt03YPbUjVTo5137gn8xTKK8Y64?=
+ =?us-ascii?Q?oDoZU0M64c9hXRhWJ2/HpVgGXdklYtqne3cmwm5l5ZgmV5zqreNxalmkYJxZ?=
+ =?us-ascii?Q?xe7Sumz4jyMN60+1oxTiCTn4kYB8RrtBtioORAZ8WmLWw6BVBHsM/Kd5Gbyu?=
+ =?us-ascii?Q?vlpUZpyRUUUvBvaZ6vblqdNTZzkf/8GlMehcUjlNtomTpjVDEwxpz8azJ9S2?=
+ =?us-ascii?Q?sa61osnNzYOEZkJVPJvKTth6aWgZcWUJLuAAxVt/wXUc9BYKReLArdtywHdK?=
+ =?us-ascii?Q?+2PsVrHQ6dNGG9IcJWxtkuuM5TAWeTV1X/C9UtG4TltVm/X0ev2F0kd3RHPS?=
+ =?us-ascii?Q?Gm1R5elZo+vr/VQRpeVsWQgEH+RvEBIpOduzwKkyP/n59Ch+QnsWPW0jbdAi?=
+ =?us-ascii?Q?JSoSjr9NLl1Iy1kGeSVxd2NhDknb08QHGBMS+Whn3tOqMv4hihWFk/PD16m7?=
+ =?us-ascii?Q?X+OW+Fq2o+0I8ww8vaWMcck818GdFwXAEAgY5b7tYOiycBDFgcQ7H0gbtY+p?=
+ =?us-ascii?Q?xLyl2opmEqS2NE+AkmkYvgBCiDqKnOY0XzXlYLsAICgcTRpx3rImsocd/+hP?=
+ =?us-ascii?Q?hJqOG3TTB+il7LQQsmLHb3Vv05cWtqgg1Up4MLkFDSJUlNw29Vem9EYmk3QG?=
+ =?us-ascii?Q?m1rhxaGpMfVkufiKVEe+SKVw7SDc2iIXXzq6cYd7oIKD2EHkr4lPGHvF3Xwo?=
+ =?us-ascii?Q?myvQWT0PBrHfSxQMy03us1MI9+2z9V6C1wxper7/5Qo6emeGALQzNs2OEEJZ?=
+ =?us-ascii?Q?7+fvSO9THRULKfwHd+mHzFhNGCpp4Sunwme99ca73fO8eaCDZ8eSdcrEgE2r?=
+ =?us-ascii?Q?0p7bcip9SlOP6RwTLz8ecNwrdNrhOVt7IqezUvLHWEe8WDXX/3AIMIhN2j1N?=
+ =?us-ascii?Q?tXlvleeu8NQ8ZYCK+jafyM3eyIqM5a4qET9Z+QIe81VOhgTfgcyPXs+BBoi0?=
+ =?us-ascii?Q?sefjQfMHo1wUKTJxoWw3ZXQNK7rQxW0wPKRfqr1iRd/Vj9YY+OfUH5XUUEyw?=
+ =?us-ascii?Q?/lA53pZ5w0iUSElV88oQkSK7m5DHh8+y6O/9PRQVnjzDLz8ElydRN5ztNe3j?=
+ =?us-ascii?Q?lxT7+TiXVotblX4Kc6roVYjhuvoOeEpY8O3XHzKqwsYOLP4kcAZXq371NGHK?=
+ =?us-ascii?Q?2oadHu6GUbcUxmocCJKZ/FhD0jBBBkbAAUBznISvZQiHgb5lbXPU7RAvD1zN?=
+ =?us-ascii?Q?Ng=3D=3D?=
 X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	eZTI+fVRnAI2vznILZqA0ZrSi2pffz+mpKyUWkWrpu03K+6rB8zhz74Eb2i9XLHyssMUPk424TCilW0Dkmfy57hbyF7+NmBeyBp6TLiqa121MoFmAkcn3WJDyvvaUMlCQs0PPw0fKnQP9C/bmnu0d4UafDtP61TlPWTrke+JTIT3B/c+I36o9hbyo794oiYM8Rd62zpjBDcBmPSmMoFHbuAqBHduoOBk3DP9xYbLh6Tgap//mhaq4w8SS9bSP0OMSwDbEC0TuLanoRG3fICdtSvZpiDvBhFLin7lYuRkXryLMlbIWgRZejeNL8Z51lc/qstIYB0lGOPITyxGRLu9KzX1HnXgl1tCfjjqQ6SXCVrgX0HJEgKQ9WjhtkQrqPjZy/b6vghLt6N87RW6jWAGoo+SjikpXdO9YE6FdETBrA8L1G0Yz60KkS6VIQju7BnLctK1GbVNk7pNhYgmTWXoe4zfLsXwsWszxTEdlpq5acCc8R7qTIqiv5VTvP9Y3GunORfCOb5NfSSV5ZurBZSl1xWTv21EEvhu+IxJHuUU9HM9t1uwW5gwWXLzlVigo+CwvI3Ch3g8wZfIwifZ8HXJr4Y6k4Z9DVT2oWdrvkVuAzQ=
+	n1ZjaYGcxhlrfnybMim6imnPPMamuArFxkVrt51ixlBxg6Y023IbbAuVGPrVi2kcnKqclAOMLWfKzdACgB60pvuIleVIs5l+FC9lWDnHaRCmY8LyU9wDYjL9yBzTlMEUuM7zmsuctYAgaEobapb2ksRh2B6PReoSuesLW2K//s4Gv7LldfTZLV7FaNE6Z6ae2+bDH3VsLqoE9tANBQ7aQE9ZT86QwXfJMmYGjbMpviL4s/Rc7E1A2N9IQzolqrUO9kX+gRo+FwJ+r3EJxu5YW8cR3Er8GmTRPJt4BEpxUcSNYKa9WO1ucxRguK6igpQIErDGL7SbROMK9iUt15JNMowGI897bQMB80hRNfypMWn8XnSZpJLCovVR7IooEQIs3O/NMca8jepf1L1CL/laiyJA6QR7ABBGTwjl1sfzrNhmlaLfH0bkYxuWwyHR/q/gjZG9Pczw03tqBPFzF2pSZeejH6BP1PU9xZGkL/m0NJ2FzyTIOXE30igfRa87de1M+iZAVIvKXV2ogGfAZScvRqYDsg4Zgw9zSArXYkVUkJ6Oxv2Nl3dW/HEvjYhfbsSqCsdFQgt+sDlblQ5qupT1ZjhJXb2lUh7DQHRFaf4+Xpg=
 X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e0cd4e5a-224d-405e-96de-08dce86f015d
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3802db9f-4932-4d35-b49a-08dce86f3f8e
 X-MS-Exchange-CrossTenant-AuthSource: SJ0PR10MB5613.namprd10.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Oct 2024 14:31:04.4136
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Oct 2024 14:32:48.5893
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: QwmnExWKXmnHivWGgmGe11XZdsMvUYeFdDh4NP1Ba5dWaa9scmkjOOmN9++cHD4BHilLBE+zHp1ypvZEiM04YJOrYgUN9cH5GPg9jgSH3/c=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR10MB4349
+X-MS-Exchange-CrossTenant-UserPrincipalName: hvL42HVkZlRIO5pZfcpCI0uVQGxRHsnSRLeY9Xjp1wk526ou1bvWMKxffe/hiBitWHEEGXhYDKpiS6z1wpBuyZNQpVwxTEGdanffPtHv+W4=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR10MB7370
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
  definitions=2024-10-09_12,2024-10-09_02,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 malwarescore=0
- suspectscore=0 mlxscore=0 phishscore=0 adultscore=0 spamscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2409260000 definitions=main-2410090089
-X-Proofpoint-GUID: ghh5LZgEx122beEUFDqOSeMdfE2G7w6-
-X-Proofpoint-ORIG-GUID: ghh5LZgEx122beEUFDqOSeMdfE2G7w6-
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 phishscore=0 mlxscore=0
+ malwarescore=0 bulkscore=0 mlxlogscore=900 suspectscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2409260000
+ definitions=main-2410090089
+X-Proofpoint-GUID: EWmiXcNgyZcG3bW_48ouBLDLJCcMo8DG
+X-Proofpoint-ORIG-GUID: EWmiXcNgyZcG3bW_48ouBLDLJCcMo8DG
 
-On Wed, Sep 25, 2024 at 09:06:14PM +0000, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+On Thu, Sep 26, 2024 at 01:54:09PM +0000, Arnd Bergmann wrote:
+> On Thu, Sep 26, 2024, at 08:46, David Hildenbrand wrote:
+> > On 25.09.24 23:06, Arnd Bergmann wrote:
+> >
+> > The first, uncontroversial step could indeed be to make
+> > MAP_UNINITIALIZED a nop, but still leave the definitions in mman.h etc
+> > around.
+> >
+> > This is the same we did with MAP_DENYWRITE. There might be some weird
+> > user out there, and carelessly reusing the bit could result in trouble.
+> > (people might argue that they are not using it with MAP_HUGETLB, so it
+> > would work)
+> >
+> > Going forward and removing MAP_UNINITIALIZED is a bit more
+> > controversial, but maybe there really isn't any other user around.
+> > Software that is not getting recompiled cannot be really identified by
+> > letting it rest in -next only.
+> >
+> > My take would be to leave MAP_UNINITIALIZED in the headers in some form
+> > for documentation purposes.
 >
-> These two architectures each have their own set of MAP_* flags, like
-> powerpc, mips and others do. In addition, the msync() flags are also
-> different, here both define the same flags but in a different order.
-> Finally, alpha also has a custom MADV_DONTNEED flag for madvise.
+> I don't think there is much point in doing this in multiple
+> steps, either we want to break it at compile time or leave
+> it silently doing nothing. There is also very little
+> difference in practice because applications almost always
+> use sys/mman.h instead of linux/mman.h.
 >
-> Make the generic MADV_DONTNEED and MS_* definitions conditional on
-> them already being defined and then include the common header
-> header from both architectures, to remove the bulk of the contents.
+> FWIW, the main user appears to be the uClibc and uclibc-ng
+> malloc() implementation for NOMMU targets:
 >
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> https://git.uclibc.org/uClibc/commit/libc/stdlib/malloc/malloc.c?id=00673f93826bf1f
+>
+> Both of these also define this constant itself as 0x4000000
+> for all architectures.
+>
+> There are a few others that I could find with Debian codesearch:
+>
+> https://sources.debian.org/src/monado/21.0.0+git2905.e26a272c1~dfsg1-2/src/external/tracy/client/tracy_rpmalloc.cpp/?hl=890#L889
+> https://sources.debian.org/src/systemtap/5.1-4/testsuite/systemtap.syscall/mmap.c/?hl=224#L224
+> https://sources.debian.org/src/fuzzel/1.11.1+ds-1/shm.c/?hl=488#L488
+> https://sources.debian.org/src/notcurses/3.0.7+dfsg.1-1/src/lib/fbuf.h/?hl=35#L35
+> https://sources.debian.org/src/lmms/1.2.2+dfsg1-6/src/3rdparty/rpmalloc/rpmalloc/rpmalloc/rpmalloc.c/?hl=1753#L1753
+>
+> All of these will fall back to not passing MAP_UNINITIALIZED
+> if it's not defined, which is what happens on glibc and musl.
+>
+>        Arnd
 
-Lovely! Look at all that red :) Great work!
-
-Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-
-> ---
->  arch/alpha/include/uapi/asm/mman.h     | 68 +++-----------------------
->  arch/parisc/include/uapi/asm/mman.h    | 66 +------------------------
->  include/uapi/asm-generic/mman-common.h |  5 ++
->  3 files changed, 13 insertions(+), 126 deletions(-)
->
-> diff --git a/arch/alpha/include/uapi/asm/mman.h b/arch/alpha/include/uapi/asm/mman.h
-> index 1f1c03c047ce..fc8b74aa3f89 100644
-> --- a/arch/alpha/include/uapi/asm/mman.h
-> +++ b/arch/alpha/include/uapi/asm/mman.h
-> @@ -2,18 +2,6 @@
->  #ifndef __ALPHA_MMAN_H__
->  #define __ALPHA_MMAN_H__
->
-> -#define PROT_READ	0x1		/* page can be read */
-> -#define PROT_WRITE	0x2		/* page can be written */
-> -#define PROT_EXEC	0x4		/* page can be executed */
-> -#ifndef PROT_SEM /* different on mips and xtensa */
-> -#define PROT_SEM	0x8		/* page may be used for atomic ops */
-> -#endif
-> -/*			0x10		   reserved for arch-specific use */
-> -/*			0x20		   reserved for arch-specific use */
-> -#define PROT_NONE	0x0		/* page can not be accessed */
-> -#define PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
-> -#define PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
-> -
->  /* 0x01 - 0x03 are defined in linux/mman.h */
->  #define MAP_TYPE	0x0f		/* Mask for type of mapping (OSF/1 is _wrong_) */
->  #define MAP_FIXED	0x100		/* Interpret addr exactly */
-> @@ -43,62 +31,18 @@
->  #define MCL_ONFAULT	32768		/* lock all pages that are faulted in */
->
->  /*
-> - * Flags for mlock
-> - */
-> -#define MLOCK_ONFAULT	0x01		/* Lock pages in range after they are faulted in, do not prefault */
-> -
-> -/*
-> - * Flags for msync
-> + * Flags for msync, order is different from all others
->   */
->  #define MS_ASYNC	1		/* sync memory asynchronously */
->  #define MS_SYNC		2		/* synchronous memory sync */
->  #define MS_INVALIDATE	4		/* invalidate the caches */
->
-> -#define MADV_NORMAL	0		/* no further special treatment */
-> -#define MADV_RANDOM	1		/* expect random page references */
-> -#define MADV_SEQUENTIAL	2		/* expect sequential page references */
-> -#define MADV_WILLNEED	3		/* will need these pages */
-> -#define MADV_DONTNEED	6		/* don't need these pages */
-> +/*
-> + * Flags for madvise, 1 through 3 are normal
-> + */
->  /* originally MADV_SPACEAVAIL 5 */
-> +#define MADV_DONTNEED	6		/* don't need these pages */
->
-> -/* common parameters: try to keep these consistent across architectures */
-> -#define MADV_FREE	8		/* free pages only if memory pressure */
-> -#define MADV_REMOVE	9		/* remove these pages & resources */
-> -#define MADV_DONTFORK	10		/* don't inherit across fork */
-> -#define MADV_DOFORK	11		/* do inherit across fork */
-> -
-> -#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
-> -#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
-> -
-> -#define MADV_HUGEPAGE	14		/* Worth backing with hugepages */
-> -#define MADV_NOHUGEPAGE	15		/* Not worth backing with hugepages */
-> -
-> -#define MADV_DONTDUMP   16		/* Explicity exclude from the core dump,
-> -					   overrides the coredump filter bits */
-> -#define MADV_DODUMP	17		/* Clear the MADV_DONTDUMP flag */
-> -
-> -#define MADV_WIPEONFORK 18		/* Zero memory on fork, child only */
-> -#define MADV_KEEPONFORK 19		/* Undo MADV_WIPEONFORK */
-> -
-> -#define MADV_COLD	20		/* deactivate these pages */
-> -#define MADV_PAGEOUT	21		/* reclaim these pages */
-> -
-> -#define MADV_POPULATE_READ	22	/* populate (prefault) page tables readable */
-> -#define MADV_POPULATE_WRITE	23	/* populate (prefault) page tables writable */
-> -
-> -#define MADV_DONTNEED_LOCKED	24	/* like DONTNEED, but drop locked pages too */
-> -
-> -#define MADV_COLLAPSE	25		/* Synchronous hugepage collapse */
-> -
-> -#define MADV_HWPOISON	100		/* poison a page for testing */
-> -#define MADV_SOFT_OFFLINE 101		/* soft offline page for testing */
-> -
-> -/* compatibility flags */
-> -#define MAP_FILE	0
-> -
-> -#define PKEY_DISABLE_ACCESS	0x1
-> -#define PKEY_DISABLE_WRITE	0x2
-> -#define PKEY_ACCESS_MASK	(PKEY_DISABLE_ACCESS |\
-> -				 PKEY_DISABLE_WRITE)
-> +#include <asm-generic/mman-common.h>
->
->  #endif /* __ALPHA_MMAN_H__ */
-> diff --git a/arch/parisc/include/uapi/asm/mman.h b/arch/parisc/include/uapi/asm/mman.h
-> index 1cd5d816d4cf..3732950a5cd8 100644
-> --- a/arch/parisc/include/uapi/asm/mman.h
-> +++ b/arch/parisc/include/uapi/asm/mman.h
-> @@ -2,19 +2,6 @@
->  #ifndef __PARISC_MMAN_H__
->  #define __PARISC_MMAN_H__
->
-> -
-> -#define PROT_READ	0x1		/* page can be read */
-> -#define PROT_WRITE	0x2		/* page can be written */
-> -#define PROT_EXEC	0x4		/* page can be executed */
-> -#ifndef PROT_SEM /* different on mips and xtensa */
-> -#define PROT_SEM	0x8		/* page may be used for atomic ops */
-> -#endif
-> -/*			0x10		   reserved for arch-specific use */
-> -/*			0x20		   reserved for arch-specific use */
-> -#define PROT_NONE	0x0		/* page can not be accessed */
-> -#define PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
-> -#define PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
-> -
->  /* 0x01 - 0x03 are defined in linux/mman.h */
->  #define MAP_TYPE	0x2b		/* Mask for type of mapping, includes bits 0x08 and 0x20 */
->  #define MAP_FIXED	0x04		/* Interpret addr exactly */
-> @@ -43,61 +30,12 @@
->  #define MCL_ONFAULT	4		/* lock all pages that are faulted in */
->
->  /*
-> - * Flags for mlock
-> - */
-> -#define MLOCK_ONFAULT	0x01		/* Lock pages in range after they are faulted in, do not prefault */
-> -
-> -/*
-> - * Flags for msync
-> + * Flags for msync, order is different from all others
->   */
->  #define MS_SYNC		1		/* synchronous memory sync */
->  #define MS_ASYNC	2		/* sync memory asynchronously */
->  #define MS_INVALIDATE	4		/* invalidate the caches */
->
-> -#define MADV_NORMAL	0		/* no further special treatment */
-> -#define MADV_RANDOM	1		/* expect random page references */
-> -#define MADV_SEQUENTIAL	2		/* expect sequential page references */
-> -#define MADV_WILLNEED	3		/* will need these pages */
-> -#define MADV_DONTNEED	4		/* don't need these pages */
-> -
-> -/* common parameters: try to keep these consistent across architectures */
-> -#define MADV_FREE	8		/* free pages only if memory pressure */
-> -#define MADV_REMOVE	9		/* remove these pages & resources */
-> -#define MADV_DONTFORK	10		/* don't inherit across fork */
-> -#define MADV_DOFORK	11		/* do inherit across fork */
-> -
-> -#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
-> -#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
-> -
-> -#define MADV_HUGEPAGE	14		/* Worth backing with hugepages */
-> -#define MADV_NOHUGEPAGE	15		/* Not worth backing with hugepages */
-> -
-> -#define MADV_DONTDUMP   16		/* Explicity exclude from the core dump,
-> -					   overrides the coredump filter bits */
-> -#define MADV_DODUMP	17		/* Clear the MADV_DONTDUMP flag */
-> -
-> -#define MADV_WIPEONFORK 18		/* Zero memory on fork, child only */
-> -#define MADV_KEEPONFORK 19		/* Undo MADV_WIPEONFORK */
-> -
-> -#define MADV_COLD	20		/* deactivate these pages */
-> -#define MADV_PAGEOUT	21		/* reclaim these pages */
-> -
-> -#define MADV_POPULATE_READ	22	/* populate (prefault) page tables readable */
-> -#define MADV_POPULATE_WRITE	23	/* populate (prefault) page tables writable */
-> -
-> -#define MADV_DONTNEED_LOCKED	24	/* like DONTNEED, but drop locked pages too */
-> -
-> -#define MADV_COLLAPSE	25		/* Synchronous hugepage collapse */
-> -
-> -#define MADV_HWPOISON	100		/* poison a page for testing */
-> -#define MADV_SOFT_OFFLINE 101		/* soft offline page for testing */
-> -
-> -/* compatibility flags */
-> -#define MAP_FILE	0
-> -
-> -#define PKEY_DISABLE_ACCESS	0x1
-> -#define PKEY_DISABLE_WRITE	0x2
-> -#define PKEY_ACCESS_MASK	(PKEY_DISABLE_ACCESS |\
-> -				 PKEY_DISABLE_WRITE)
-> +#include <asm-generic/mman-common.h>
->
->  #endif /* __PARISC_MMAN_H__ */
-> diff --git a/include/uapi/asm-generic/mman-common.h b/include/uapi/asm-generic/mman-common.h
-> index 2911dd14ef2a..81a14ed99197 100644
-> --- a/include/uapi/asm-generic/mman-common.h
-> +++ b/include/uapi/asm-generic/mman-common.h
-> @@ -27,15 +27,20 @@
->  /*
->   * Flags for msync
->   */
-> +#ifndef MS_ASYNC /* different order on alpha and parisc */
->  #define MS_ASYNC	1		/* sync memory asynchronously */
->  #define MS_INVALIDATE	2		/* invalidate the caches */
->  #define MS_SYNC		4		/* synchronous memory sync */
-> +#endif
->
->  #define MADV_NORMAL	0		/* no further special treatment */
->  #define MADV_RANDOM	1		/* expect random page references */
->  #define MADV_SEQUENTIAL	2		/* expect sequential page references */
->  #define MADV_WILLNEED	3		/* will need these pages */
-> +/* 4 through 6 are different on alpha */
-> +#ifndef MADV_DONTNEED
->  #define MADV_DONTNEED	4		/* don't need these pages */
-> +#endif
-
-Rather nice to have these differences both de-duplicated and documented
-here...
-
->
->  /* common parameters: try to keep these consistent across architectures */
->  #define MADV_FREE	8		/* free pages only if memory pressure */
-> --
-> 2.39.2
->
+My point of view on this basis is to rip the bandaid off and get rid. Agree
+with DavidH it's worth keeping some kind of documentation that these
+existed around so somebody grepping and confused can see what happened...
 
