@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-1929-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1930-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B5E0CF07B8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2024 07:02:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B002CF07B6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2024 07:03:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XPLKb3vmVz3bpm;
-	Thu, 10 Oct 2024 18:02:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XPLKc55C5z3bqM;
+	Thu, 10 Oct 2024 18:02:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728543731;
-	cv=none; b=mbxkJMPQrQHLnREPPIDHw0iSJdLIhX15Rcgcr2NuAMGVqQFn9gRibI5sR6MEiYDUQUeoRNvKYgaC4p7WLE5mvULTQkvkqBvnsEWPz/wK0Noq509u8irMFdbUn2xFZj9ekxx2veJYtkejA/BJasckTm4CL6PSMe/Fnn47XaP5WlHGRhuOBltz6mfA/WUno9bVlv4/s2NCWeWG1Vlw35MNgFBYBHo7vErpPUs9+XJZ/kqber9SuqruzwvWSH0Z9VkBN173xcsEXpB4m1EVmo1bCOCPm9owwyxs6Lln7dQHkeoISg8Iy3aQTym7OSaHYtT8lUBioNOAUeCOGswSK8euMw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728543732;
+	cv=none; b=c9gM1i4bNr8zUuXpMdNuzpPO2p/y7xNosRH9JFqaCnDZIoR/HzkiATrBjy7R4DOW2UxxNl/zwzBWqE8cAUHcguR8HtHTsnnzirclU6aV//Cx5zmmm9fW3Czi0eUJ/pwKEblXbn7sddIipatQQdboShbF1C9/6dCCMBL/VHuestOTsqWjQGd5kigHRS+pmZdzkMokU+n3gGLRcMm6ijTjeEZ09GSm7+DT9H1GBPI0IobfOXLgVOzkPZ0Ykj7KjQfefVi74f3kfPCIoaw05ghofl687TzHRZvqI01YD6+2gUqmmotLaRqVCIFOCKTFCj5ULXY3LfudTTrukqg0CF0p3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728543731; c=relaxed/relaxed;
-	bh=KF1X3F6ARHGxF8oaxKdzOM4GysZzGmQKcnkswWuBTx0=;
+	t=1728543732; c=relaxed/relaxed;
+	bh=i+0Ixkoq+3kCnb3BLWSof6YiJ2FC6UBnlc7AlGu3hjs=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=PfvtGB+/DS8OJLXicHgIIkiVEpNF+Ido2VeiAhZgzXKlJQrLXZ2rwycnz8Yd/PoHre3qQHn1Or1hoEw0vEOxrh1Gp6jY24WYtpt67KY3WAZhc/PlS5l287/HX6u7yDwQCXy+6gFc6+afN4qO4gzBXWrQhGMVW60NzKpLAQFWIHumuhb0VJOBOM74h91Vn2sPdSNEXeW6nx1pqv8l4utj4ibxiVTwnePApl0cJxvB3qORSXRNHKKVQRYf77cgnq5jbG/jvGDmYF/9Q5Zsr1L2gVd/mhtzWYfQZ0Sf1MxM/6bi0gZ4MoVswnIv2FRfY9wFMV+brbi1X87JcdiEEwfeuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ndJGHPfL; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=MH2T81Ao; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=LaWKGOsX8oc1M8KZtl9t4VkpAFQkA6f4/eAWRdEo5ol6AhcDA/I+KTXSrZ2tddCYOQ5tewnEOlqeyqmL82ldaG4GjNA/4PRozQezcjq5sowDkGTfXbL2NvWWWEd6wWOud32F8xmadbO8/DVHOVIxwt7uBpUTA2krbr58DPC0NBBZVkJR9HWPB5UN6JoX3eMk4Vnmcnhejx9Z1TN9/ntPXRSTf1oH6rKik3NqLD9zl7ZD6FjqfAncbr/qcsl8rmKiRTWvP35JMP+/dc9qU4+TPE+Sxjl2v2sF4CnNXm4h9UQEteeUXhKLMJXfgJKorxCMRu8rscI1ygdFDk8Ng8Rlsg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tklXBa7x; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=4KV9SqG+; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ndJGHPfL;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=MH2T81Ao;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tklXBa7x;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=4KV9SqG+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XPLKX4m41z3bnJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2024 18:02:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XPLKb5SLsz3bn9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2024 18:02:11 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1728543723;
+	s=2020; t=1728543725;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=KF1X3F6ARHGxF8oaxKdzOM4GysZzGmQKcnkswWuBTx0=;
-	b=ndJGHPfLf2ExpAJ4MbxYj5J+P8wuFGPA7VYN9NrXrNAlUm/CGVxUrauYkG7TikMLhcJxcW
-	iYwYdcNH5zfSrEBIy6lQMphOmnfJCE2iBKi76iPIHzw2lm67oIBLKMmGv4o6xsuENV3Myh
-	ZMy30US0WZjW3qpAQMEbjjivpvqZ3CQcPPdqXQZq90KEIthe4wDpFw5ctRf6kBi/tz2cMk
-	1RzXAnqR9sZVO/JiMKcJ/Qtv0ZKmrNnOsqgOQMvHaNQaERMQ0LRmxDFNnlG1ehHvcq5RqB
-	di01YHTH1z+vMFEWL+Gj0vn08Yfy+H+PsfKAjPiZtv6I/8MsShEMUFQVU7F7Fw==
+	bh=i+0Ixkoq+3kCnb3BLWSof6YiJ2FC6UBnlc7AlGu3hjs=;
+	b=tklXBa7xWPl+94ERFSx5VYFVU6R2SM+ueh7GGooFNR6Mp7U7q+HRsvN4m5KNEiANvjBB32
+	8bo3I3tg+ABsVYW3oWyHT48H0ysVjbAC4Xy51Sty7YUC9+/eOMfH7BDXI9d4wghh8FLABS
+	YjH2GLE3On43Z3aBpofYG2nQUmPAdm6dup09L3ZaRfeJJI2OnA0Y54Lpl05YZpIUtWybL9
+	+MTHCX3NKefTyQQXjbWoFEVVCVX0klqqcDGcmaITXKcLnmVvtf3nsXkMKn4SoQnNIKqBG5
+	v9bnr3FOLLd/zj8gKdKRFHfjToA67jwOVYMa8bN5Vz2YWXJ5Q5uDbXUS2qKfrg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1728543723;
+	s=2020e; t=1728543725;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=KF1X3F6ARHGxF8oaxKdzOM4GysZzGmQKcnkswWuBTx0=;
-	b=MH2T81AojO0jKuneSuCD3w8FdNX+OeGnOT9yCnWr3ROkgtmsAPXlTHrQQkIrlSnbh7IvlZ
-	nzv+XX0BfnW2BKAQ==
-Date: Thu, 10 Oct 2024 09:01:08 +0200
-Subject: [PATCH 06/28] riscv: vdso: Use only one single vvar mapping
+	bh=i+0Ixkoq+3kCnb3BLWSof6YiJ2FC6UBnlc7AlGu3hjs=;
+	b=4KV9SqG+okf/1Ooh0DC9aya12Po7rP+0eNk/wrqju5ibqZTy9FUvHZqgGqiLHiD8XPBHt0
+	Hn5PUudGn66tgQAw==
+Date: Thu, 10 Oct 2024 09:01:12 +0200
+Subject: [PATCH 10/28] x86/mm/mmap: Remove arch_vma_name()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,7 +65,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241010-vdso-generic-base-v1-6-b64f0842d512@linutronix.de>
+Message-Id: <20241010-vdso-generic-base-v1-10-b64f0842d512@linutronix.de>
 References: <20241010-vdso-generic-base-v1-0-b64f0842d512@linutronix.de>
 In-Reply-To: <20241010-vdso-generic-base-v1-0-b64f0842d512@linutronix.de>
 To: Guo Ren <guoren@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, 
@@ -95,138 +95,38 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
  linux-riscv@lists.infradead.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1728543717; l=3820;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1728543717; l=796;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=WIPUW1+5c4OWUexEOYHAu/zDSui+TD1Rmwt6KNpKs/A=;
- b=rP6ASr+p5qtSseOgybXaXYykoMDxYyz+tu1FXrx8Y3WZD4L2xbuIpAuT0PAHKcEkh9WZFigt/
- RdDK+Gfq3LhADBTLK1iLgcDK80l4VS/omBd9TTZ4wW4ybQLNN2a7Sud
+ bh=dMMe+I6fcjh0GGIC72EgiCzXdt0VcHRiCFHYCaqC+kg=;
+ b=m9t57qVudUvQD7qumicgQPp+/WUG5fIfqupzAy4yMaYthYPm9/oO8yU7qpoE5ULp19HrG7r/s
+ +zUDjxBFvCqBxs4uey8HDMXMTjnS0wBto/zlOtGPRIl8B5vfTM+9eGR
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-The vvar mapping is the same for all processes. Use a single mapping to
-simplify the logic and align it with the other architectures.
-
-In addition this will enable the move of the vvar handling into generic code.
+This function does not contain any logic, delete it so the equivalent
+weak definition from kernel/signal.c is used instead.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/riscv/kernel/vdso.c | 52 ++++++++++++++++--------------------------------
- 1 file changed, 17 insertions(+), 35 deletions(-)
+ arch/x86/mm/mmap.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/arch/riscv/kernel/vdso.c b/arch/riscv/kernel/vdso.c
-index 98315b98256df412d48479c0114b5a5b49a7b583..3ca3ae4277e187e790a8bf513a9e80d8b6290bb2 100644
---- a/arch/riscv/kernel/vdso.c
-+++ b/arch/riscv/kernel/vdso.c
-@@ -23,11 +23,6 @@ enum vvar_pages {
- 	VVAR_NR_PAGES,
- };
+diff --git a/arch/x86/mm/mmap.c b/arch/x86/mm/mmap.c
+index a2cabb1c81e1aec2fc82339c1092bf8b8167908a..b8a6ffffb4519cd77f6a540562ef6d3efa4e7b0f 100644
+--- a/arch/x86/mm/mmap.c
++++ b/arch/x86/mm/mmap.c
+@@ -163,11 +163,6 @@ unsigned long get_mmap_base(int is_legacy)
+ 	return is_legacy ? mm->mmap_legacy_base : mm->mmap_base;
+ }
  
--enum rv_vdso_map {
--	RV_VDSO_MAP_VVAR,
--	RV_VDSO_MAP_VDSO,
--};
+-const char *arch_vma_name(struct vm_area_struct *vma)
+-{
+-	return NULL;
+-}
 -
- #define VVAR_SIZE  (VVAR_NR_PAGES << PAGE_SHIFT)
- 
- static union vdso_data_store vdso_data_store __page_aligned_data;
-@@ -38,8 +33,6 @@ struct __vdso_info {
- 	const char *vdso_code_start;
- 	const char *vdso_code_end;
- 	unsigned long vdso_pages;
--	/* Data Mapping */
--	struct vm_special_mapping *dm;
- 	/* Code Mapping */
- 	struct vm_special_mapping *cm;
- };
-@@ -92,6 +85,8 @@ struct vdso_data *arch_get_vdso_data(void *vvar_page)
- 	return (struct vdso_data *)(vvar_page);
- }
- 
-+static const struct vm_special_mapping rv_vvar_map;
-+
- /*
-  * The vvar mapping contains data for a specific time namespace, so when a task
-  * changes namespace we must unmap its vvar data for the old namespace.
-@@ -108,12 +103,8 @@ int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
- 	mmap_read_lock(mm);
- 
- 	for_each_vma(vmi, vma) {
--		if (vma_is_special_mapping(vma, vdso_info.dm))
--			zap_vma_pages(vma);
--#ifdef CONFIG_COMPAT
--		if (vma_is_special_mapping(vma, compat_vdso_info.dm))
-+		if (vma_is_special_mapping(vma, &rv_vvar_map))
- 			zap_vma_pages(vma);
--#endif
- 	}
- 
- 	mmap_read_unlock(mm);
-@@ -155,43 +146,34 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
- 	return vmf_insert_pfn(vma, vmf->address, pfn);
- }
- 
--static struct vm_special_mapping rv_vdso_maps[] __ro_after_init = {
--	[RV_VDSO_MAP_VVAR] = {
--		.name   = "[vvar]",
--		.fault = vvar_fault,
--	},
--	[RV_VDSO_MAP_VDSO] = {
--		.name   = "[vdso]",
--		.mremap = vdso_mremap,
--	},
-+static const struct vm_special_mapping rv_vvar_map = {
-+	.name   = "[vvar]",
-+	.fault = vvar_fault,
-+};
-+
-+static struct vm_special_mapping rv_vdso_map __ro_after_init = {
-+	.name   = "[vdso]",
-+	.mremap = vdso_mremap,
- };
- 
- static struct __vdso_info vdso_info __ro_after_init = {
- 	.name = "vdso",
- 	.vdso_code_start = vdso_start,
- 	.vdso_code_end = vdso_end,
--	.dm = &rv_vdso_maps[RV_VDSO_MAP_VVAR],
--	.cm = &rv_vdso_maps[RV_VDSO_MAP_VDSO],
-+	.cm = &rv_vdso_map,
- };
- 
- #ifdef CONFIG_COMPAT
--static struct vm_special_mapping rv_compat_vdso_maps[] __ro_after_init = {
--	[RV_VDSO_MAP_VVAR] = {
--		.name   = "[vvar]",
--		.fault = vvar_fault,
--	},
--	[RV_VDSO_MAP_VDSO] = {
--		.name   = "[vdso]",
--		.mremap = vdso_mremap,
--	},
-+static struct vm_special_mapping rv_compat_vdso_map __ro_after_init = {
-+	.name   = "[vdso]",
-+	.mremap = vdso_mremap,
- };
- 
- static struct __vdso_info compat_vdso_info __ro_after_init = {
- 	.name = "compat_vdso",
- 	.vdso_code_start = compat_vdso_start,
- 	.vdso_code_end = compat_vdso_end,
--	.dm = &rv_compat_vdso_maps[RV_VDSO_MAP_VVAR],
--	.cm = &rv_compat_vdso_maps[RV_VDSO_MAP_VDSO],
-+	.cm = &rv_compat_vdso_map,
- };
- #endif
- 
-@@ -227,7 +209,7 @@ static int __setup_additional_pages(struct mm_struct *mm,
- 	}
- 
- 	ret = _install_special_mapping(mm, vdso_base, VVAR_SIZE,
--		(VM_READ | VM_MAYREAD | VM_PFNMAP), vdso_info->dm);
-+		(VM_READ | VM_MAYREAD | VM_PFNMAP), &rv_vvar_map);
- 	if (IS_ERR(ret))
- 		goto up_fail;
- 
+ /**
+  * mmap_address_hint_valid - Validate the address hint of mmap
+  * @addr:	Address hint
 
 -- 
 2.47.0
