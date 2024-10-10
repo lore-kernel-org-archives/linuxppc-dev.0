@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-1934-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1935-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6F3CCF07B8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2024 07:03:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18220CF07B8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2024 07:03:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XPLKf5ZW9z3bqW;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XPLKf6Zqwz3bsJ;
 	Thu, 10 Oct 2024 18:02:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728543734;
-	cv=none; b=iqVX8yB85ihTnZPBloeMqgHsZ1kEFdPR6GeYyHulOPLGGEzqjXof7M056QrK81EFPNorFIw5Bu/T/PI52Ft60xJ3/kdRSIr6NTTFuMd+bnhfB7RBaXGXRgfQRncebQl8yYlAt3RvdbxBF3I5xyiVSj/WAIQPsgrxuYMXywSaCcYff5rIlCDE/Efgk5670hGAtBRwrIm2+b+9SDk0kw4CxM6zYee+emkKzKq/7fDV8YNFBgLlDSRmdmCdtoanHQiwIU/7PGsiily6LdaDW+gH4AQ3f3aFrLkBDDk33+I0Gk5ia2/YW0KhHHxXo/4HgJpkDmurtKe2W9K1xNBhYKDUuQ==
+	cv=none; b=EvUFC7eYcydlBX8QF4D/2pyG4JB/c1Juxqh0yTVbsDM1DmiDyCndUaoqRtnEBswwyDOHfVUJRQ6dnIlJ1k/25YWZIRlCrjX1wmGpZnIvH/qETcV9RzgL0GlsUoaJBRyPGEUC6L5krQDjOhjlCsMlQCSWXjG7t0sIDzqSg+Zsl7dW8NJbg1jW6KOiyfwM0C3vQQY3Nh1zX82N2CFoVnS/m6Pk5sA/b1ApIaU3Z0QoOlJMIAp31/W5qZJvF12ZnhME3HAv/lZ3m6/wgyV8EgB+TS6FiXV5vV+vrl2v7bcaIoiHYgieaC6EiIMB0x98QCiMU1n5rHEllv3NE+IcDrMljA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1728543734; c=relaxed/relaxed;
-	bh=fSNmDOR8mNkMRWq28GYqTKs82l0VUrUkubx6cM1vMzU=;
+	bh=jm/2CrqDEYeYltPOiqfTVHvM9k41RoVb5XrgMrSt7cU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=I/865+BvgZ8/1b+TcpvvUXHCxUCAkaeQ8fwLPPStorAlqYwI+luf1slj0jgE7hReuUCnYzkksKi83RC4RAZAaKvpNBbiRSHWLB4+Nl/i0CXYgZUadzbA+gxi9cBhwNV4GKr6p5dG9Rmc4GmQqutqTFbfvh9aNPs/xBTa5f5Qt+D/eE1n8xgIPZXGA7zRvXlwnNvra7asK5QzPRrIy2PEzsWEwfAdUOlOdK8sWKp6eCgs6kkhqzG/Hs9G91ZCf5losVuEfvlERzySjRsExmgVMMIwyNeDwJ00o2a2q+NzpZu5khakLGWwpWyMDe9FSTHgcKQIj3+yhZbJ2vpttYQlKw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=JOkVyuu8; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AVwC1K9c; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=iQRhLQos74sFLnmvP9qI3DrNjdHpjHNVvHkOI4gfKxrW6yOxLCBcYqwVZ8ssKKNDw9dgNbhwx4/cbvtog0jJGKagRCeILoQC08sbjsIVVqAc5n7t3wX32TVIz7P+/48VVwl0JQp/90h/iYEjonFqaG0muio7QBav1SqP5/MJ7daSXmyBgeRmsMZ4xfqcWf6ClQehr7iHuJmEWYTCIgGR3cpsZByihtS8gPmsTdYYUDCvJzSodV5onczJCYGniqttUQ5Vlju721iqfkYw2m0A5ApT7CFD7Q1jg1xK8WL7KtoU+yn1WbZ0m1CTgXTW68yccHl5Fz5s/xtecbPdGPYo4A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=iMS7PJJH; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TV4unc1u; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=JOkVyuu8;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AVwC1K9c;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=iMS7PJJH;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TV4unc1u;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XPLKd06Drz3bqp
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XPLKd6FQ2z3brT
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2024 18:02:13 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1728543724;
+	s=2020; t=1728543727;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=fSNmDOR8mNkMRWq28GYqTKs82l0VUrUkubx6cM1vMzU=;
-	b=JOkVyuu8+7haw1iCeHChIsq68EC1aZ52K0BIUTFKSbeQBBJEUxi312+lOZEntDZeRqi55i
-	uPfwqC6MUWoo1hIr/jOFy6UINkmmLclazsQfxOlNbU20Cp81nv/mQXg5Lw9HDsOQdNHFCP
-	LpJfynDUc4QyF7vVaG8T1GCx8XEi7L6alOQghxtEvPLNw1z779j7IhCnusT1ZSoki2sRyl
-	Q+SPTwcLo2JzuNFf/IM/k2hrg1g2PwSHv6M76K5bNbp4sftQFnCi2Fx9uCCLYINR/NIVdz
-	ki/30EscNkMx57JeSpOGozsepAcPW63TEvULocoEomkcVzyTqUWmvWvwqpJ88g==
+	bh=jm/2CrqDEYeYltPOiqfTVHvM9k41RoVb5XrgMrSt7cU=;
+	b=iMS7PJJHjGGyQAOWkIhx3mGK1ARhnmCDpqbH+A7Ol3abKmvtUbIKI09X8sqoRtM0ZKQ7mx
+	VkqlO+WxdeLwlEadLlMyXEIF6llFbYK2Hwg61Pb5O5A5Q1AKY16r/jM4pX3rF7VSA/DF9y
+	IZwtcrMl2rDxxcWTxMz/yqj7U4R/9tRCBHnPW39lEYu75V26scajMqFl/aK8kDco9B48ax
+	eL2ChHRfRKdTEesLgyw+IkdE0OH5P4818N5UKXA8qVlrfPXHd2AoG1CygP3avo9LH/5iW8
+	ILP/eB0/R/rA4pUVmPPCXr0ktkDqJweoX+/URwLfNXXFsTyEOKjYvlTiPb0NmA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1728543724;
+	s=2020e; t=1728543727;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=fSNmDOR8mNkMRWq28GYqTKs82l0VUrUkubx6cM1vMzU=;
-	b=AVwC1K9c5Whn9Va23Yb9J5KSgfAiDM4xWIG2FptaGnWTq9kCeAxZSYBEP2n6BjXznVhhK2
-	c+8VOjydf1tjswAw==
-Date: Thu, 10 Oct 2024 09:01:10 +0200
-Subject: [PATCH 08/28] LoongArch: vDSO: Use vdso/datapage.h to access vDSO
- data
+	bh=jm/2CrqDEYeYltPOiqfTVHvM9k41RoVb5XrgMrSt7cU=;
+	b=TV4unc1uGTXtFkaS6TTazfjrGgCVpgn8oa3T0LlB5xj7tiIHkUCT6ic8gdd7YU+gxUremR
+	Fx/l51wAvwr0ydBw==
+Date: Thu, 10 Oct 2024 09:01:15 +0200
+Subject: [PATCH 13/28] x86: vdso: Access rng data from kernel without vvar
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,7 +65,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241010-vdso-generic-base-v1-8-b64f0842d512@linutronix.de>
+Message-Id: <20241010-vdso-generic-base-v1-13-b64f0842d512@linutronix.de>
 References: <20241010-vdso-generic-base-v1-0-b64f0842d512@linutronix.de>
 In-Reply-To: <20241010-vdso-generic-base-v1-0-b64f0842d512@linutronix.de>
 To: Guo Ren <guoren@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, 
@@ -96,156 +95,77 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
  linux-riscv@lists.infradead.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1728543717; l=5262;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1728543717; l=2500;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=FYM4tk82QHVuu/f72Iv7XeP9evNNkMSpW3FoFzuNH7o=;
- b=3bKRUZ5iIdKtZuSy+qOYQwMpqk7fk6/fhq1nYjszxR3DIB4+fVnS5JyZWYVwlBQHQ3aq2KaGg
- dwVWIKtF6RjBgsj72diQERGVQ6Iyc3ErSTAx+eZvjNZs2RfAquBYG3J
+ bh=duktGpmPPCjca1hUrFko89iKyD9xPwp39MHzOJo7rR4=;
+ b=WV9xCByoqmjr2WpGGsix0xq+nmoYDqmnBGL1soMUsv5PBqkCJwXCKiSkCvmLtX8v8ZY4rieFc
+ b8m03BVeYmVDGGnR2GuimURiEeBvWIXoti102NiyP/UhkqFrnOZTg3K
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-vdso/datapage.h provides symbols and functions to ease the access to
-shared vDSO data from both the kernel and the vDSO.
-Make use of it to simplify the current code and also prepare for further
-changes unifying the vDSO data storage between architectures.
+Remove the usage of the vvar _vdso_rng_data from the kernel-space code,
+as the x86 vvar machinery is about to be removed.
+The definition of the structure is unnecessary, as the data lives in a
+page pre-allocated by the linker anyways.
+The vdso user-space access to the rng data will be switched soon.
+
+DEFINE_VVAR_SINGLE() is now unused. It will be removed later togehter
+with the rest of vvar.h.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/loongarch/include/asm/vdso/getrandom.h    |  3 +--
- arch/loongarch/include/asm/vdso/gettimeofday.h |  4 ++--
- arch/loongarch/include/asm/vdso/vdso.h         | 18 +-----------------
- arch/loongarch/kernel/asm-offsets.c            |  9 +++++++++
- arch/loongarch/vdso/vdso.lds.S                 |  8 +++++++-
- arch/loongarch/vdso/vgetcpu.c                  |  2 +-
- 6 files changed, 21 insertions(+), 23 deletions(-)
+ arch/x86/entry/vdso/vma.c            | 1 -
+ arch/x86/include/asm/vdso/vsyscall.h | 2 +-
+ arch/x86/include/asm/vvar.h          | 4 +++-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/loongarch/include/asm/vdso/getrandom.h b/arch/loongarch/include/asm/vdso/getrandom.h
-index 02f36772541b7deb89aa294f13e4d539d6e6626d..e80f3c4ac7481ba7f9f5d9210fefa78c3293243b 100644
---- a/arch/loongarch/include/asm/vdso/getrandom.h
-+++ b/arch/loongarch/include/asm/vdso/getrandom.h
-@@ -30,8 +30,7 @@ static __always_inline ssize_t getrandom_syscall(void *_buffer, size_t _len, uns
+diff --git a/arch/x86/entry/vdso/vma.c b/arch/x86/entry/vdso/vma.c
+index b8fed8b8b9ccdb2cdd9912d5ec4cfd6366a6012e..8437906fd4b353ad0fe208d811817a1b6f8f8dcb 100644
+--- a/arch/x86/entry/vdso/vma.c
++++ b/arch/x86/entry/vdso/vma.c
+@@ -39,7 +39,6 @@ struct vdso_data *arch_get_vdso_data(void *vvar_page)
+ #undef EMIT_VVAR
  
- static __always_inline const struct vdso_rng_data *__arch_get_vdso_rng_data(void)
- {
--	return (const struct vdso_rng_data *)(get_vdso_data() + VVAR_LOONGARCH_PAGES_START *
--	       PAGE_SIZE + offsetof(struct loongarch_vdso_data, rng_data));
-+	return &_loongarch_data.rng_data;
- }
+ DEFINE_VVAR(struct vdso_data, _vdso_data);
+-DEFINE_VVAR_SINGLE(struct vdso_rng_data, _vdso_rng_data);
  
- #endif /* !__ASSEMBLY__ */
-diff --git a/arch/loongarch/include/asm/vdso/gettimeofday.h b/arch/loongarch/include/asm/vdso/gettimeofday.h
-index 89e6b222c2f2d1ce240198f2fbc14553d0d6b94d..7eb3f041af764d141b005f821593a358096874ba 100644
---- a/arch/loongarch/include/asm/vdso/gettimeofday.h
-+++ b/arch/loongarch/include/asm/vdso/gettimeofday.h
-@@ -91,14 +91,14 @@ static inline bool loongarch_vdso_hres_capable(void)
+ unsigned int vclocks_used __read_mostly;
  
- static __always_inline const struct vdso_data *__arch_get_vdso_data(void)
- {
--	return (const struct vdso_data *)get_vdso_data();
-+	return _vdso_data;
- }
- 
- #ifdef CONFIG_TIME_NS
+diff --git a/arch/x86/include/asm/vdso/vsyscall.h b/arch/x86/include/asm/vdso/vsyscall.h
+index 67fedf1698b5e2b710e0504686318949c738bf29..2cbb32a8a45e2f5c7bc02172af0fa09173f33924 100644
+--- a/arch/x86/include/asm/vdso/vsyscall.h
++++ b/arch/x86/include/asm/vdso/vsyscall.h
+@@ -22,7 +22,7 @@ struct vdso_data *__x86_get_k_vdso_data(void)
  static __always_inline
- const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
+ struct vdso_rng_data *__x86_get_k_vdso_rng_data(void)
  {
--	return (const struct vdso_data *)(get_vdso_data() + VVAR_TIMENS_PAGE_OFFSET * PAGE_SIZE);
-+	return _timens_data;
+-	return &_vdso_rng_data;
++	return (void *)&__vvar_page + __VDSO_RND_DATA_OFFSET;
  }
+ #define __arch_get_k_vdso_rng_data __x86_get_k_vdso_rng_data
+ 
+diff --git a/arch/x86/include/asm/vvar.h b/arch/x86/include/asm/vvar.h
+index 01e60e0f671e9625669dc8fdacf3cdddf8cbf4fb..fe3434d3b5b1eef806e8328b86650e001b177de2 100644
+--- a/arch/x86/include/asm/vvar.h
++++ b/arch/x86/include/asm/vvar.h
+@@ -19,6 +19,8 @@
+ #ifndef _ASM_X86_VVAR_H
+ #define _ASM_X86_VVAR_H
+ 
++#define __VDSO_RND_DATA_OFFSET  640
++
+ #ifdef EMIT_VVAR
+ /*
+  * EMIT_VVAR() is used by the kernel linker script to put vvars in the
+@@ -62,7 +64,7 @@ DECLARE_VVAR(0, struct vdso_data, _vdso_data)
+ 
+ #if !defined(_SINGLE_DATA)
+ #define _SINGLE_DATA
+-DECLARE_VVAR_SINGLE(640, struct vdso_rng_data, _vdso_rng_data)
++DECLARE_VVAR_SINGLE(__VDSO_RND_DATA_OFFSET, struct vdso_rng_data, _vdso_rng_data)
  #endif
- #endif /* !__ASSEMBLY__ */
-diff --git a/arch/loongarch/include/asm/vdso/vdso.h b/arch/loongarch/include/asm/vdso/vdso.h
-index e31ac7474513c737fcc0071d6f2554dc4d447101..1c183a9b2115a29a997ec8db0e788d87fb191dce 100644
---- a/arch/loongarch/include/asm/vdso/vdso.h
-+++ b/arch/loongarch/include/asm/vdso/vdso.h
-@@ -48,23 +48,7 @@ enum vvar_pages {
  
- #define VVAR_SIZE (VVAR_NR_PAGES << PAGE_SHIFT)
- 
--static inline unsigned long get_vdso_base(void)
--{
--	unsigned long addr;
--
--	__asm__(
--	" la.pcrel %0, _start\n"
--	: "=r" (addr)
--	:
--	:);
--
--	return addr;
--}
--
--static inline unsigned long get_vdso_data(void)
--{
--	return get_vdso_base() - VVAR_SIZE;
--}
-+extern struct loongarch_vdso_data _loongarch_data __attribute__((visibility("hidden")));
- 
- #endif /* __ASSEMBLY__ */
- 
-diff --git a/arch/loongarch/kernel/asm-offsets.c b/arch/loongarch/kernel/asm-offsets.c
-index bee9f7a3108f0e6f6d8251651d12df677529bda7..049c5c3e370cbb00fdaf6730f7777847c7325fb4 100644
---- a/arch/loongarch/kernel/asm-offsets.c
-+++ b/arch/loongarch/kernel/asm-offsets.c
-@@ -14,6 +14,7 @@
- #include <asm/ptrace.h>
- #include <asm/processor.h>
- #include <asm/ftrace.h>
-+#include <vdso/datapage.h>
- 
- static void __used output_ptreg_defines(void)
- {
-@@ -321,3 +322,11 @@ static void __used output_kvm_defines(void)
- 	OFFSET(KVM_GPGD, kvm, arch.pgd);
- 	BLANK();
- }
-+
-+static void __used output_vdso_defines(void)
-+{
-+	COMMENT("LoongArch vDSO offsets.");
-+
-+	DEFINE(__VVAR_PAGES, VVAR_NR_PAGES);
-+	BLANK();
-+}
-diff --git a/arch/loongarch/vdso/vdso.lds.S b/arch/loongarch/vdso/vdso.lds.S
-index 6b441bde4026ea8acda969e7c3205a9350a76cd7..160cfaef2de45b1243502c7356f8a913658548fe 100644
---- a/arch/loongarch/vdso/vdso.lds.S
-+++ b/arch/loongarch/vdso/vdso.lds.S
-@@ -3,6 +3,8 @@
-  * Author: Huacai Chen <chenhuacai@loongson.cn>
-  * Copyright (C) 2020-2022 Loongson Technology Corporation Limited
-  */
-+#include <asm/page.h>
-+#include <generated/asm-offsets.h>
- 
- OUTPUT_FORMAT("elf64-loongarch", "elf64-loongarch", "elf64-loongarch")
- 
-@@ -10,7 +12,11 @@ OUTPUT_ARCH(loongarch)
- 
- SECTIONS
- {
--	PROVIDE(_start = .);
-+	PROVIDE(_vdso_data = . - __VVAR_PAGES * PAGE_SIZE);
-+#ifdef CONFIG_TIME_NS
-+	PROVIDE(_timens_data = _vdso_data + PAGE_SIZE);
-+#endif
-+	PROVIDE(_loongarch_data = _vdso_data + 2 * PAGE_SIZE);
- 	. = SIZEOF_HEADERS;
- 
- 	.hash		: { *(.hash) }			:text
-diff --git a/arch/loongarch/vdso/vgetcpu.c b/arch/loongarch/vdso/vgetcpu.c
-index 9e445be39763aebc75e9e97d77b40e14a018deea..0db51258b2a7ca7e44d2eb68ea514face48393f7 100644
---- a/arch/loongarch/vdso/vgetcpu.c
-+++ b/arch/loongarch/vdso/vgetcpu.c
-@@ -21,7 +21,7 @@ static __always_inline int read_cpu_id(void)
- 
- static __always_inline const struct vdso_pcpu_data *get_pcpu_data(void)
- {
--	return (struct vdso_pcpu_data *)(get_vdso_data() + VVAR_LOONGARCH_PAGES_START * PAGE_SIZE);
-+	return _loongarch_data.pdata;
- }
- 
- extern
+ #undef DECLARE_VVAR
 
 -- 
 2.47.0
