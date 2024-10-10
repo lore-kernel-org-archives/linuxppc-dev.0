@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-1975-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1976-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B4B9CF11FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2024 15:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C4B1CF11FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2024 15:45:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XPYwr0ZX2z2yXm;
-	Fri, 11 Oct 2024 02:45:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XPYwt5pb9z3bl5;
+	Fri, 11 Oct 2024 02:45:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728575100;
-	cv=none; b=kGta2VvximPdOUlVoKXjiFvxoqq5qUC4ZKIEcA9TCnoaBZlaJmXxWvVnZ4Uyt15MGs/OoOEcMfA+kb6YC8eNvxDid9dNaYCh9ZTGAQ+9G1frLivzIEiEMWpeekwaJ/XSlzZMRiXuMKAUBguRejcmfc2Uc87zJUo253r2Kg58HKdvr0si59qCpjVsDROr5JoRPI2WdI2dwUqayPJEa6gOp0ZP1CWMetiA/TBNN98qmBv1pFqNbqcObwWTtb02bivOuDqVrME4Ktk4H2jn3gYfbhLG6BZ5o/WQq++aaM6TfRb1QUWuL7BcadNKR/QslizgSdQB0+GUAQKSekdLsmyQeg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728575102;
+	cv=none; b=PVpo4ngn9p8vvQyrDz09mOwnv+haY90p8+bCjMIpF9bwJ2cw9BzYKuzTNLk44Q/LMCnL3SsBbDmirhRK+10iUUI0wQp4tm+IEVnpwtD/p05OuIhdSS3rD+C+HqdpFP2gKqnv45uLEtCmUINeizTFCVx8VKbuYfhw2cLVMcFNRiqNCWyV8DsIGxlIyBYN4tv/6NVjqzy9J3zqoTJhuxdeWNJJgsNnVN94CHrDuJgYaH0kO59Qo1LvvQDbWGTJA66e3beFl8lH2t/lhlYd7nJdWw4FQVngDpKr53A2orLtUEDg7m//Pje+rGTqyqn88TjMmkORQjJr+EOFsbtFm5o1dQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728575100; c=relaxed/relaxed;
-	bh=Tbw860Y8cRi5xxA/qi1H6FVRcI5Ca4sRKMG/9Wo+Ih8=;
+	t=1728575102; c=relaxed/relaxed;
+	bh=8CaseVhBtdpQtjTcTpmIfibKjxpzap/T9WUWXl9xwak=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=kJWZkwBade7FWTph9hOXtI+r6AFOcx3zkh5Yf3uomLAyC1figbojekj6qDxUDO256MTWtHfk0DKi6N0cps6j9xF1LA7dOiZqZ9OntSBlVI3Q9VJGqLaITZ3P7jPNIshxK0hjpYZ3sgJEnPuSo4NAvp8QUq10Z4n571ICcZsm+CARa35n5mAd7QjdDQKA5h0CNxw75oti7HcS96z+8wwSU+HZXz/2oy9VUS4arUEs3aB9l+Zm8MSa7iIGvBm82C4jQmFbc3xHpWeDV+BjgXOeFZsv8SCahV1QWpV4R54tTObwiZ5t0QgBE/LUtceBdXlm5kVXxfpJKIOFt5y4Yer9cA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=UJo35Z9S; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=8B7wL2Et; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=TYiXNy3jj6oDrXgn7JYCuP1xu0vSZRc832U972DOmBdk12P7os9DwpRpzhCPB5aHaVBxqBQHdKlcd8O5XWzy2yVl3iaTGyK/zkyIsvsLTYwVuy10MHImkQXKq6S/3w0j67JAHkIq7YtWuXAG/4jxXfiTudQdPYkU7ZJaF0/8XMBLrT1yTe8VWyX7v5pOlsFQ20Vm+9CQGRXPoCEUvzWM3JUxyy/KjKz0OC4uti5DJ55Vr2KF43mo9GxmEG2XpxjRH5lYFphJ7l3uT6MpIyApm1+KaBUUg+y/F8gEmqAw0OvLZC7OQvvghGUzkje8sXhjoZGK2h2NoD/zETLTDRb4bA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=pMtaSsQ8; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=aF5YLex6; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=UJo35Z9S;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=8B7wL2Et;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=pMtaSsQ8;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=aF5YLex6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XPYwp0ClLz2yfj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2024 02:44:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XPYws57shz3bkg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Oct 2024 02:45:01 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1728575093;
+	s=2020; t=1728575096;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Tbw860Y8cRi5xxA/qi1H6FVRcI5Ca4sRKMG/9Wo+Ih8=;
-	b=UJo35Z9SJbVvJPEtwXQTx640hZGNYd0yx369ZyIlfIt49f3c0x/SjL/N6mlKrtSjlg4mKm
-	j/sqpAyhDBuAugTWJ8KWafd7X3EtfHEGBGQ6ptpv3Ls8pkj/g8+l9PlsANmS6SvFRkN97D
-	Kon3OvbvB8U59sEuUrx8hhkTfCDfXvtQ5EixPaFMir23HXlcss3yflyAqw1HsFZ/Uwn4zB
-	MT2EsHiPspQHHSAmEwOCTRHoE3fDziowLWBbuGwQT0zkhNYyBUe4V0FVlPnMXwtRrADaLX
-	Mq6zst83FF1WS0p0ObFMXC0E+hEqbmyU/BYYxdVPrnBo+DSn/+03qzP+zKeZZw==
+	bh=8CaseVhBtdpQtjTcTpmIfibKjxpzap/T9WUWXl9xwak=;
+	b=pMtaSsQ8UrCsbp0jWIphuw/8nDX6xrSAMhkuRxGYx7ednp2ZohFYZNLSwmRC6nGSe96v2R
+	myIxY30VOOL+YKTv4KEKjTFAQTFXZxKDzvwO0vdUUx1QOQbBpCECJmfsfCyqDvsc5ltoSf
+	sxlDi8TJSOv1F5Xd+LjfoHO7JYjK2etzhLqqeqj4MV6ncu885QuT2gk989A8np/TdqjLeJ
+	sAi5Fuo7FllnsTpDwTgpwZDaBvRpi59Lio6+uH2rkZaGgKPjDroa4CVten3bk1oOk52Hzw
+	23NiNwtZgS+25/KXZ/e4rP7stFRyMr/IejAb2q1gfs4+vnoDCdiO/hPnPzLaFg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1728575093;
+	s=2020e; t=1728575096;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Tbw860Y8cRi5xxA/qi1H6FVRcI5Ca4sRKMG/9Wo+Ih8=;
-	b=8B7wL2EthakSTpTkhWHWWbhqFPddFlgbdTyAxK8V1/rzHtm4Gdl+zZqr3iY43yE3KnKYV6
-	XvBPZpKZ/PJfdTAw==
-Date: Thu, 10 Oct 2024 17:44:44 +0200
-Subject: [PATCH 1/9] vdso: Remove timekeeper argument of
- __arch_update_vsyscall()
+	bh=8CaseVhBtdpQtjTcTpmIfibKjxpzap/T9WUWXl9xwak=;
+	b=aF5YLex66+lKNdsdoeGgHL1V07NVdOH+rxgXzLe0/EuBdxw2xWHmfdy3blPVHY68rEImru
+	Q6CrxNOILwfKytBg==
+Date: Thu, 10 Oct 2024 17:44:49 +0200
+Subject: [PATCH 6/9] s390/vdso: Remove timekeeper includes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,7 +65,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241010-vdso-generic-arch_update_vsyscall-v1-1-7fe5a3ea4382@linutronix.de>
+Message-Id: <20241010-vdso-generic-arch_update_vsyscall-v1-6-7fe5a3ea4382@linutronix.de>
 References: <20241010-vdso-generic-arch_update_vsyscall-v1-0-7fe5a3ea4382@linutronix.de>
 In-Reply-To: <20241010-vdso-generic-arch_update_vsyscall-v1-0-7fe5a3ea4382@linutronix.de>
 To: Catalin Marinas <catalin.marinas@arm.com>, 
@@ -94,74 +93,63 @@ Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, loongarch@lists.linux.dev, 
  linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1728575090; l=2431;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1728575090; l=1648;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=P9OFc8LoZinuHPdD6G8mUCCAPZekDQoc9eNGYe6RM5M=;
- b=rRX2lt1HBT3/u9x9JvlnflNmRDWsy5jscJ4NTC/lrOHnd2lofDJUSy4Brb/2qyoNuIuirmMpQ
- EQ5r/daGrFlB91mXesIGTiy54olcuu6phkOtEZCAbUlBJIlrxz2PwJG
+ bh=Yn7KlHbEU0MJ+dl8y9vpCiJdVRBNRAPzXohBNMI7g0A=;
+ b=U2qMs1WEZtI+3Gz7n0ZlWNu0+kuRgmXI0J5su635wqTf1yCSL0UPUdTMPKc+UQDEA1H6FwQAV
+ QZnsg/j8477BGlLQZ+LPIOF96Iz9MwCJvbWAUGHv/zuGibQhhFvb0Mo
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-No implementation of this hook uses the passed in timekeeper anymore.
+Since the generic VDSO clock mode storage is used, this header file is
+unused and can be removed.
 
 This avoids including a non-VDSO header while building the VDSO,
 which can lead to compilation errors.
 
+Also drop the comment which is out of date and in the wrong place.
+
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/arm64/include/asm/vdso/vsyscall.h | 3 +--
- include/asm-generic/vdso/vsyscall.h    | 3 +--
- kernel/time/vsyscall.c                 | 2 +-
- 3 files changed, 3 insertions(+), 5 deletions(-)
+ arch/s390/include/asm/vdso/vsyscall.h | 5 -----
+ arch/s390/kernel/time.c               | 1 -
+ 2 files changed, 6 deletions(-)
 
-diff --git a/arch/arm64/include/asm/vdso/vsyscall.h b/arch/arm64/include/asm/vdso/vsyscall.h
-index 5b6d0dd3cef5483ab8166a24ab3c7ca956927350..eea51946d45a2f8c7eebfff971d74878be53a798 100644
---- a/arch/arm64/include/asm/vdso/vsyscall.h
-+++ b/arch/arm64/include/asm/vdso/vsyscall.h
-@@ -6,7 +6,6 @@
- 
+diff --git a/arch/s390/include/asm/vdso/vsyscall.h b/arch/s390/include/asm/vdso/vsyscall.h
+index 3c5d5e47814e16dcfc20f9901481127246e8f348..3eb576ecd3bd998daf9372a52befa8b76d52f2bf 100644
+--- a/arch/s390/include/asm/vdso/vsyscall.h
++++ b/arch/s390/include/asm/vdso/vsyscall.h
+@@ -7,7 +7,6 @@
  #ifndef __ASSEMBLY__
  
+ #include <linux/hrtimer.h>
 -#include <linux/timekeeper_internal.h>
  #include <vdso/datapage.h>
+ #include <asm/vdso.h>
  
- enum vvar_pages {
-@@ -37,7 +36,7 @@ struct vdso_rng_data *__arm64_get_k_vdso_rnd_data(void)
- #define __arch_get_k_vdso_rng_data __arm64_get_k_vdso_rnd_data
+@@ -17,10 +16,6 @@ enum vvar_pages {
+ 	VVAR_NR_PAGES
+ };
  
- static __always_inline
--void __arm64_update_vsyscall(struct vdso_data *vdata, struct timekeeper *tk)
-+void __arm64_update_vsyscall(struct vdso_data *vdata)
+-/*
+- * Update the vDSO data page to keep in sync with kernel timekeeping.
+- */
+-
+ static __always_inline struct vdso_data *__s390_get_k_vdso_data(void)
  {
- 	vdata[CS_HRES_COARSE].mask	= VDSO_PRECISION_MASK;
- 	vdata[CS_RAW].mask		= VDSO_PRECISION_MASK;
-diff --git a/include/asm-generic/vdso/vsyscall.h b/include/asm-generic/vdso/vsyscall.h
-index c835607f78ae990e7479878767b05cccd3a99837..01dafd604188fb0512d21c4ce4b027f7da54f5a0 100644
---- a/include/asm-generic/vdso/vsyscall.h
-+++ b/include/asm-generic/vdso/vsyscall.h
-@@ -12,8 +12,7 @@ static __always_inline struct vdso_data *__arch_get_k_vdso_data(void)
- #endif /* __arch_get_k_vdso_data */
- 
- #ifndef __arch_update_vsyscall
--static __always_inline void __arch_update_vsyscall(struct vdso_data *vdata,
--						   struct timekeeper *tk)
-+static __always_inline void __arch_update_vsyscall(struct vdso_data *vdata)
- {
- }
- #endif /* __arch_update_vsyscall */
-diff --git a/kernel/time/vsyscall.c b/kernel/time/vsyscall.c
-index 9193d6133e5d688342be8485b9a0efb7af9ee148..28706a13c222df29635fd22d23f21eacb068855c 100644
---- a/kernel/time/vsyscall.c
-+++ b/kernel/time/vsyscall.c
-@@ -119,7 +119,7 @@ void update_vsyscall(struct timekeeper *tk)
- 	if (clock_mode != VDSO_CLOCKMODE_NONE)
- 		update_vdso_data(vdata, tk);
- 
--	__arch_update_vsyscall(vdata, tk);
-+	__arch_update_vsyscall(vdata);
- 
- 	vdso_write_end(vdata);
- 
+ 	return vdso_data;
+diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
+index b713effe057967623f64da8297314fcc42ff1af2..4fae6c701784746519bab0b295429082529e4501 100644
+--- a/arch/s390/kernel/time.c
++++ b/arch/s390/kernel/time.c
+@@ -36,7 +36,6 @@
+ #include <linux/profile.h>
+ #include <linux/timex.h>
+ #include <linux/notifier.h>
+-#include <linux/timekeeper_internal.h>
+ #include <linux/clockchips.h>
+ #include <linux/gfp.h>
+ #include <linux/kprobes.h>
 
 -- 
 2.47.0
