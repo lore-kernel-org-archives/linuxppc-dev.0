@@ -1,35 +1,35 @@
-Return-Path: <linuxppc-dev+bounces-1942-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-1943-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B366FCF07B9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2024 07:04:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A392CF07B9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Oct 2024 07:04:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XPLKl5pZCz3btl;
-	Thu, 10 Oct 2024 18:02:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728543739;
-	cv=none; b=LroFD46Z7FKPgFCNWXmpQZOOhJB9JqZKE7BHRUF6JTrCcz3RnBm1uJmGe6XtEikLzAhecmi56h1PpCzchtOwg+95lRa6QWSQJ46R/hSULd/mjXihzqJpdmW5YJs0kTXii8rgXQPmPrAChsedOdLKrr6tqvvH983nYXSydnpDQSeKOX1t4SLoWFZSV2MwFAd7xAEz2FeN1NAfVcOmWG6B9UMlJ+SdWuX40MUi6aoIh3ikGEEceQdbMayiqVKDwKRcGLh+VyKKNLt5UGc0E5kxnXCw8YXnnGIsMDiyJCQnarJ+3OlygBt+G39VpbDoCM5pOuDyPwpwx10whSLDwSFsdg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XPLKm6gj0z3bxC;
+	Thu, 10 Oct 2024 18:02:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728543740;
+	cv=none; b=A5clv9SAZFaC5c6Mqzkt+1g42TWVFJgLI1hx4X36eW5/hrb7JOPESvNtnX/tpCoGBSshpCYCc/AkFH42xdQVOKUOi2MYMYabKpNLbkTHv3W+vIVzpP2VQXNDdEhM/1noNr/A2Zz+AKIXo02S0/geUvLZC62t5+5uemZ23SMmDkN8M8Z1zgmaujhrx9YbrYTMc/6D60uZfOzs860ShQD8Ik3PDcpXzh1vLh+sxRuiW/AU6A4Fc7Db5OLIbsVPO0at776sbW/Tb0qRY5HpGY03YM7SgjJgFWzlBxHx9Izqw/KvR8ax/J+B3a3ELs+kVGj1iRGy21/gJQ5JYw2rsYS3Fw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728543739; c=relaxed/relaxed;
-	bh=9IUwLjLb5Rv+Z3rKO8x7unJr00Ts0LBgoCGki607yuU=;
+	t=1728543740; c=relaxed/relaxed;
+	bh=H3pxKJZa6Dz9N7KL0fbqaL5NdHUudM6Tn8tfqCrpw3A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KuydaX3TxrpxKa4+fKZ6q25hmxCWHsV3i0mls+o+ZkWfBbazhJ2n5rpjJDug4zOTqFqXjCR9RCAZyIlenAsVGziajkzmPhNq7500BffqVRwRsbtCDRO25p4ldrCq2Wj+SuXMK+aaNMEY3tkwOAmnroblwviIteth1rn0KkdYF9M13ObNytZi5p9O4FlXoMY3EsbnegwWvN6UZkJYhTkLqklQWghI4HnXwUERF5yOLgdCidbnCkTIvFMzk3GLPE/XQlao2U1I2PH7PslwXeaBjKj7VsYowaNJtuHZnziOjUjCaSbGV8wqg4LhS0MYADeiMlFMebwX8nZyd/1E3EJcGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=VUkjSFBk; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=d3/0sfbJ; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=fXrz3gJVVkg9cRAI9m8a5oaGBx1xlQEjO5OBYTYjhglu+xSpXZxByDTC56hr8BreV8Ej8Le1yPg/1eHgqRjJ3T2Q3ayNxJZomuxwdf5jbQeuyYl73OJ83hBQ+SQvo/GATf4z1Z5P4j8DnZR/UmY/a/ReVmnpuuqig7+rE34HBwA5t8EYwFDVr7tAXpKWD/sbzvhzOkcX1mnkJK7+K4qhwHQLCTjRotHpVrna/SOgarekOb5FtGmAxiyCli88S4mkkM60Ud9ZtZ1gxGvQzdwGNbYdrZIC7tY+ewWGn/frb4r2v3Cgm5uCGiK09nsZnFDXT8AOrYH36uaNmEhyrgBtrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=2DTRy1A1; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=IV/lmQLC; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=VUkjSFBk;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=d3/0sfbJ;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=2DTRy1A1;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=IV/lmQLC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XPLKl0wlYz3bwd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2024 18:02:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XPLKm0crZz3bx1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Oct 2024 18:02:20 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1728543733;
@@ -37,24 +37,24 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=9IUwLjLb5Rv+Z3rKO8x7unJr00Ts0LBgoCGki607yuU=;
-	b=VUkjSFBk2MQwzN+ejztrVxQKhRHQ+9Yl/6wxSFJwKQcH9II+0ehbH0LPd0MM6vQoZ/HDO3
-	AQEr2gejOYAR2XAGB/sSNVekevUe6V1wcGFw/QL+DLmC9N99X8j5fyvXaPipiVRRc5Yf4O
-	2pSZstOJBdCblxxzLGpOQ4jtJFNtb0KRN+2tpga3h86cWvTE6FK95XshBy3V5sBp1pQfAw
-	lD8vKj8R6WKLzfjFUkxp6JxMmVY9z2fhJ2R8eY9/ZtCjHbSjayyacu2J3HORJcdf18+jz4
-	VXyUxfxScOWvjlPDHn6Gwvam4Q+L7qGpCm+XbyjKpJEpwm1H+HJi1H8JSzzFgw==
+	bh=H3pxKJZa6Dz9N7KL0fbqaL5NdHUudM6Tn8tfqCrpw3A=;
+	b=2DTRy1A1Cjt3N6qDqe5K0BoAWO29rvBuX3lWT/Kmdq6y6DUlcu+o5N8xMasJzUVFMAo323
+	UCWJxZJB7uVwh7vYgi3rL2c0aF10kiV40gO86n/FY/Gs6ELFI+WXw7034+C6fvjVBU9+Km
+	6cUj/yfxOGAwsXhHSJ2qvlw1ok88sEREx8RQhGYFJOIsTdYbYDwaEVkcsxgTzLpxI+TDis
+	xeE+Yt3rVnUBreZ8INH6EZmxAjW4tIgl5jkaqNfISJLN0D4il65wDYfLb8f+yqiR/btJX7
+	U8AKYv47UGDAMFlRmMSXU4DnS4ffmBoiLEGkqWweLFrxuGgKyqZ62pR70p4NYA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1728543733;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=9IUwLjLb5Rv+Z3rKO8x7unJr00Ts0LBgoCGki607yuU=;
-	b=d3/0sfbJfcCoywGbj+ofl3ZPzDeWOe3+X1t86Ir5PG/WJxdDRPOcIBAdlleGtqmDvX4E/l
-	LIXafBtIM6E7x2CA==
-Date: Thu, 10 Oct 2024 09:01:24 +0200
-Subject: [PATCH 22/28] powerpc: procfs: Propagate error of
- remap_pfn_range()
+	bh=H3pxKJZa6Dz9N7KL0fbqaL5NdHUudM6Tn8tfqCrpw3A=;
+	b=IV/lmQLC+tb6/qwPperJNfOrXaHrcDq0MS4XMYW93SesVIBdhcL1FpwRI9clUaqYuSppji
+	GOyanx7CMHQtKaDQ==
+Date: Thu, 10 Oct 2024 09:01:25 +0200
+Subject: [PATCH 23/28] powerpc/pseries/lparcfg: Fix printing of
+ system_active_processors
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,7 +66,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241010-vdso-generic-base-v1-22-b64f0842d512@linutronix.de>
+Message-Id: <20241010-vdso-generic-base-v1-23-b64f0842d512@linutronix.de>
 References: <20241010-vdso-generic-base-v1-0-b64f0842d512@linutronix.de>
 In-Reply-To: <20241010-vdso-generic-base-v1-0-b64f0842d512@linutronix.de>
 To: Guo Ren <guoren@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, 
@@ -96,40 +96,38 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
  linux-riscv@lists.infradead.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1728543717; l=1079;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1728543717; l=1056;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=ILVVV4C4Cn6a/ycb+VwQKK6Cv18zEgAwyS7MEYqbXP8=;
- b=rFDW1DuF1EN9zH9ReKWGHDOnqsiH+sp/YP1SF/BKn15kPFCLbQRqr8F1aO3GxLRfzj/ugXTr9
- m+/fZDMJUB6DZ3liFKdAy994YFnGHbTZc+LlsXSeuQdIxLarPfK3zOJ
+ bh=HfYxZYn096ZmYlxVv66aK8g/TgQVVJxm5uuInCFA/Ag=;
+ b=oZA7lqIB0ZYZamYJTdMLiIdxhQ9YAXkJRqSzP0DH/sWgj/BV0RrnPmuB+2EWqY1XHIcr4xxVG
+ 83Z3yTTuW7NAeyn0FiM1R3/kFvm4xnMGIAGj4qfIF/57BcVneBBZgVP
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-If the operation fails and userspace is unaware it will access unmapped
-memory, crashing the process.
+When printing the information "system_active_processors", the variable
+partition_potential_processors is used instead of
+partition_active_processors. The wrong value is displayed.
+
+Use partition_active_processors instead.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/powerpc/kernel/proc_powerpc.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/pseries/lparcfg.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/proc_powerpc.c b/arch/powerpc/kernel/proc_powerpc.c
-index b109cd7b5d01fbe6870b60e60965effa86ecf3b6..910d2082e05fd86bd1146815d4b67633a6f2b459 100644
---- a/arch/powerpc/kernel/proc_powerpc.c
-+++ b/arch/powerpc/kernel/proc_powerpc.c
-@@ -33,10 +33,9 @@ static int page_map_mmap( struct file *file, struct vm_area_struct *vma )
- 	if ((vma->vm_end - vma->vm_start) > PAGE_SIZE)
- 		return -EINVAL;
+diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+index 62da20f9700a974200c05a9d5de908746f2f151d..acc640fccca17b54c42eca1a242b37ad4299f685 100644
+--- a/arch/powerpc/platforms/pseries/lparcfg.c
++++ b/arch/powerpc/platforms/pseries/lparcfg.c
+@@ -553,7 +553,7 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
+ 	} else {		/* non SPLPAR case */
  
--	remap_pfn_range(vma, vma->vm_start,
--			__pa(pde_data(file_inode(file))) >> PAGE_SHIFT,
--			PAGE_SIZE, vma->vm_page_prot);
--	return 0;
-+	return remap_pfn_range(vma, vma->vm_start,
-+			       __pa(pde_data(file_inode(file))) >> PAGE_SHIFT,
-+			       PAGE_SIZE, vma->vm_page_prot);
- }
+ 		seq_printf(m, "system_active_processors=%d\n",
+-			   partition_potential_processors);
++			   partition_active_processors);
  
- static const struct proc_ops page_map_proc_ops = {
+ 		seq_printf(m, "system_potential_processors=%d\n",
+ 			   partition_potential_processors);
 
 -- 
 2.47.0
