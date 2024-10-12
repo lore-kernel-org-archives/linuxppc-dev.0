@@ -1,37 +1,38 @@
-Return-Path: <linuxppc-dev+bounces-2139-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2140-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 124F4D1A42F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Oct 2024 04:00:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DD9DD1A434
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Oct 2024 04:01:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XQVCG1Xc9z3c2h;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XQVCG2HQ7z3c2k;
 	Sat, 12 Oct 2024 15:00:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=43.155.80.173
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=43.154.197.177
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728705642;
-	cv=none; b=BwIeMZG6xdwp+42vVtEPIy2jc4CqlTQ9zv2KK3uohEYAuJen5gXp1AVWoGrtEhK7p5y3hnBpVPQshY4PdKoOvzcBPdmzvOgqAfucnRiCwmvmdn5EeE+65ieF2mijR2+2LoXyxVbV0KRR4Ur5WEJQp8aSeHsGYtT6xlA4s1cBi41U69xODnB5C6YS6CqngOco7RadcYhfJXJ9e09EUVfbORiBviZhOkAXLgFSlONbdkBsMVuctoqcoFZbggnvdTffv1uct3Yrstj+DyCH6t34z4eD1uh916DSWOd+xDIlUVQD3yYotsHmnVFo24kt9UFKloM6Ehbro9U8it4F7jfmng==
+	cv=none; b=Nq5Px3D5qVIQU0L4jPvudv0ooM7VOzjiK6H9ybGVhE7UHXpvcwNmwhhKvkxy77ToZqxtojybtIlOpv1xMgKWyi/OJyzqyTk0KZd8NBjRXfv3+DmzPXRZz7jOE9jFMkv7v19i9Uf28H13fEQ05KOkECVClDXZTosJhMDOWO/OMD3CYCKOZpa4r5j+iQq9Xp07lnhyRmvILoM84fIwgHNIine33Gk88mYtzvHGPHyXj4VSXUYiMWLfZpErvewpETfa2ZKoI0+pNhXrw9LhEbEHT/SopUOdq6ymCgIEnqD09oaj+HKiyvYfBOtByvvhG5mkBWH6Ys2reaY8uz/qxcc+MQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1728705642; c=relaxed/relaxed;
-	bh=LjwvbF5vepQE+i5OyYrXQos7cWxwTmlrw/gvzkWIJCM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=H+BEZomfRFY4Z9LSHPeg0aKj47oQeiFpHueLgI68XxS2c1waqJnOIdvYl7sY8r2g84JAmoxOfuBIsrcvY8OKCZclYvLjrlqgtLbeMGQStvyveJP3m2Y4+G6phrI44w9ESk5LzI6UeIy98B6hKwdBdOFUmksDQwnzCVQcv20bGQ+iTWxZuyktOz0BJK1J9PknR+PVkS4igLHefL0RRycbnuE3cnWnwAFdV7uWa5mOPT4IDfaiztbn46oLhoHLqMEBl1bybOYricWMrG/ZXiaoqqOaMywH0AKRMYu+qoT6xv5K7JpJZhPPCb8o1Ih3qyS8fBdIspsrshAq151snVdYtw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn; spf=pass (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org) smtp.mailfrom=shingroup.cn
+	bh=PygPSfrF6/ZPZycNWp0gfxNgipfwun+gFs3PUTgf3Hw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Fc5Kw48r14OwsnsaUM+yNnx6XcprXDPYEpoLjhLrdZScNQir9BKZ1K4hrGXKMmDG8jfleAfuBS39Cuqi8koFr0kf8Abx+FDH450UBT4FFEtn3c/GgI8vOmbwRtIbzDnbKKNwGCU/XAD+V78+QjqKargJ3wrl+U/jTUJ6WgEF+xXRCUskQK1jM37I/BS49jxjQ4G8AxvJ3ZjEHLe2hwQydEqvXHmhLI5toMOX+bqQCzJTGZzcbMrAYKlNL4eMkRYw8pTpo3MGn5pfQ/IFJd/RevdDG1X4Ab6hJ87vcnLXTIxDX3eBHXtBOlsL1UmTRypQ4HGUnsIGByE6iqY9qzvLEg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn; spf=pass (client-ip=43.154.197.177; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org) smtp.mailfrom=shingroup.cn
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
-Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.155.80.173])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.154.197.177; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
+Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.154.197.177])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XQVCD61bjz3brD
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XQVCF0ptfz3c2V
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Oct 2024 15:00:40 +1100 (AEDT)
-X-QQ-mid: bizesmtpsz3t1728705575tbh0my9
-X-QQ-Originating-IP: evgYxnrRA2WGchSnnVqidAQmo6I3OZGYQ4vQkF864E0=
+X-QQ-mid: bizesmtpsz3t1728705580tlyfyuz
+X-QQ-Originating-IP: yVwmqMbLCoQX6+2lfjY3FDbo/wQXr232dPvID4ttcbQ=
 Received: from HX09040029.powercore.com.cn ( [180.171.104.254])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Sat, 12 Oct 2024 11:59:30 +0800 (CST)
+	id ; Sat, 12 Oct 2024 11:59:38 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 10512866763440344402
+X-BIZMAIL-ID: 7210153061131760617
 From: Luming Yu <luming.yu@shingroup.cn>
 To: linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
@@ -41,10 +42,12 @@ To: linuxppc-dev@lists.ozlabs.org,
 	jialong.yang@shingroup.cn,
 	luming.yu@gmail.com
 Cc: Luming Yu <luming.yu@shingroup.cn>
-Subject: [PATCH 1/7] powerpc/entry: convert to common and generic entry
-Date: Sat, 12 Oct 2024 11:56:15 +0800
-Message-ID: <88E2581B1D024E9A+20241012035621.1245-3-luming.yu@shingroup.cn>
+Subject: [PATCH 3/7] powerpc/debug: implement HAVE_USER_RETURN_NOTIFIER
+Date: Sat, 12 Oct 2024 11:56:17 +0800
+Message-ID: <7D68F1E553E8E06D+20241012035621.1245-5-luming.yu@shingroup.cn>
 X-Mailer: git-send-email 2.42.0.windows.2
+In-Reply-To: <20241012035621.1245-3-luming.yu@shingroup.cn>
+References: <20241012035621.1245-3-luming.yu@shingroup.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,162 +60,110 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-QQ-SENDSIZE: 520
 Feedback-ID: bizesmtpsz:shingroup.cn:qybglogicsvrgz:qybglogicsvrgz8a-1
-X-QQ-XMAILINFO: MWsoaJIuuiAXvfnlZfkjgL8PdfQANVHPgRbe2Comh3RuthrH9FeuKqTC
-	mOxK/GrGBxrbh+nZS+KXrON8AK6aZvGZ0XAtmnz6Ses9l/nl8/FsXVnbap3O4eL56df9EST
-	vmvl5LUCeO2UFbJHFdVzPrflzogks2hUtmwbtoMR7R4/YA3wVC4lHuMEH1ToGtG72wnwy3y
-	cb+VJcbqQNgyUE9TH85TsYnYqriufWvQUx0dGNwjDCwjYnNIwEVBi8VJAgg4UZ2HQ5Ud4QT
-	BOkLqQoB237pz/kXdkEYudDVZIfWPeOdRe1s6rErrISk4E5pxK2fmsn2dtamYaYPpqoTE7V
-	hYXdkaOTsngrJ+T05im2HeN2ZxFGSzZLRWx6GmS5qEM3Ben3uxrlhYNRVID749Bh/dM0pZ5
-	VgN/0ExQ5F9bzL77tusqWKjfcIBNcsn2xKNjbIGsQ72w9Ez357KkVPViUaSNBJnJ0K/xw24
-	kboJtooMhoi+lXWBnRN8XNnrIbVbty1tBqY9f1HY1hzyO4idWvoCWdKmTy3AjwiIpfl3nRb
-	TzwKxIjwU8YGjCvJ8wZnu+KrXaNV8FXOiqjWuPaF4oBSAiFy9ltNmfrxqZAy8CEsuoPQezs
-	ehoIOeeu8r5VRn8iqEW1piJKC7ZojDJbuxEW4pRs1dI4rDj4MXLcBIUKMs1RfHait+aY1aM
-	L2vcV5FwwEL955J0w3Fx5cpkCYr8K7TpU8xpK95ADs4wWIWDM95lYKAJm0FBM7w6Q04cLOi
-	79o0kgS8zM2leZzazZtl533Coe4mWy88LC0+vhlW8qWtqHVvJy0xSucZZQjns57IkpdAFAI
-	ARNTnrjlnTRLCpFY+QcjP9f9lBjONEjTfsrVL7CA5sFx85r7ZwByvvO03wQoze0QMJVBHSf
-	jvlNgUOG0nqORoeITiOBU7O2hWvfQck8l9fNVrR+vhHlz3HKqYEzSjt08sYI/QFnkTSoKoL
-	Eh+cREpOrfHP7Qw==
-X-QQ-XMRINFO: MPJ6Tf5t3I/ycC2BItcBVIA=
+X-QQ-XMAILINFO: MFdGPHhuqhNobOzPmY/+W4OuHqcSrgD/oOqbwsEa7/lTHvv9nqmqFVtL
+	iHIbt4TvSplBzMH3hnqjHhX4vW5f6Wwh71E3c+a+YWhih76s0ktKLRJGl9IQco0PksZYdeR
+	XRKB6Hq5uLdM0eN9I9eYyfVSnVlFqYiPTZws/ctVabroO6OaZaeD0J3AbEvFkFVZVTnfuDP
+	8xLYr03y6JqeVXIy5TwHpWX/wctKmGPH/HOhaazNbDyTsSbSq9WDqNCr9rypKwTEe8m/9DY
+	/BMDryeQnhCt5+kQ2T+Uzemb4Es6RDjbfvVsBHFE50Luzx4bZbXOBS5MTnDBlw9mlb2CMvH
+	GXegcMrS70TMNA4jSaPa9q5eCu6E5ZjTGgHsoqc2Sf+IZnE9Yw4xQAgvls/rVklfeVDJpFs
+	a3IodAsKUkFfLr9Qb+4t0+X3YxfrFCo5ip8JADNTF+h1u0cXTBfxeD4qX7af/oItDgvZDsz
+	/Wx1kw/OUA4x2JGcFh2qjkTnYIn7ilN1WAlXLX2ZntbAWOtz+tzFcRFgFxSLyeQ4QVaz9Vu
+	JqeziRRYS6VUdvE5bcNlsNp3qZu8VhahSTjLB3rhGZKci8/FZ43VWcDVtD6OG2ub8fi2qr4
+	l0Hyz3gRL3KmG9X77Gvg+OsSu7ReyruiPVaTYx5LCWt0JKHpvKL3AFYMhTWjXHBPM26mco0
+	yh3SGAyYh/bnuS655L10ZN317HM6lEREX6+144UHlOuoDVMJDv3QNum7JAcOMj7212UEF63
+	CqJr1viDgbv2rCQUqJsmJdifxHywMZPyEKlxV2ShaSaCoyDY9OWfzjh0NYPUZsCtQT7guYM
+	AQtNoWp1iUzurm5j+z0ljIH1IPiqoKiSuaM1FZhasmgTlTNvSKldAatWJo3NBnj4uuGhteY
+	ox9GqUgUK8P5qVtlV74KoRJIHgLmw51p9aajbJXS/I6L68foovAvjB1L09VIO9IAYIWgJqm
+	YHdZeeYskblZqdtvfccJ7TRIAhoBeFL+R3qmoCHld0m90fA==
+X-QQ-XMRINFO: NyFYKkN4Ny6FSmKK/uo/jdU=
 X-QQ-RECHKSPAM: 0
 
-convert powerpc entry code in syscall and fault to use syscall_work
-and irqentry_state as well as common calls implemented in generic
-entry infrastructure.
+enable the common entry of user return notifier for powerpc as
+a debug feature.
 
-Signed-off-by: Luming Yu <luming.yu@shingroup.cn>
+Signed-off-by Luming Yu <luming.yu@shingroup.cn>
 ---
- arch/powerpc/Kconfig                   | 1 +
- arch/powerpc/include/asm/hw_irq.h      | 5 +++++
- arch/powerpc/include/asm/processor.h   | 6 ++++++
- arch/powerpc/include/asm/syscall.h     | 5 +++++
- arch/powerpc/include/asm/thread_info.h | 1 +
- arch/powerpc/kernel/syscall.c          | 5 ++++-
- arch/powerpc/mm/fault.c                | 3 +++
- 7 files changed, 25 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig                    |  1 +
+ arch/powerpc/include/asm/entry-common.h | 16 ++++++++++++++++
+ arch/powerpc/include/asm/thread_info.h  |  2 ++
+ arch/powerpc/kernel/process.c           |  2 ++
+ 4 files changed, 21 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/entry-common.h
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 6f105ee4f3cf..261c9116d6fa 100644
+index 261c9116d6fa..9a1e6669fa24 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -202,6 +202,7 @@ config PPC
- 	select GENERIC_IRQ_SHOW_LEVEL
- 	select GENERIC_PCI_IOMAP		if PCI
- 	select GENERIC_PTDUMP
-+        select GENERIC_ENTRY
- 	select GENERIC_SMP_IDLE_THREAD
- 	select GENERIC_TIME_VSYSCALL
- 	select GENERIC_VDSO_TIME_NS
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 317659fdeacf..a3d591784c95 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -216,6 +216,11 @@ static inline bool arch_irqs_disabled(void)
- 	return arch_irqs_disabled_flags(arch_local_save_flags());
- }
- 
-+/*common entry*/
-+static __always_inline bool regs_irqs_disabled(struct pt_regs *regs)
+@@ -277,6 +277,7 @@ config PPC
+ 	select HAVE_STACKPROTECTOR		if PPC64 && $(cc-option,-mstack-protector-guard=tls -mstack-protector-guard-reg=r13)
+ 	select HAVE_STATIC_CALL			if PPC32
+ 	select HAVE_SYSCALL_TRACEPOINTS
++	select HAVE_USER_RETURN_NOTIFIER
+ 	select HAVE_VIRT_CPU_ACCOUNTING
+ 	select HAVE_VIRT_CPU_ACCOUNTING_GEN
+ 	select HOTPLUG_SMT			if HOTPLUG_CPU
+diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+new file mode 100644
+index 000000000000..51f1eb767696
+--- /dev/null
++++ b/arch/powerpc/include/asm/entry-common.h
+@@ -0,0 +1,16 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef ARCH_POWERPC_ENTRY_COMMON_H
++#define ARCH_POWERPC_ENTRY_COMMON_H
++
++#include <linux/user-return-notifier.h>
++
++static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
++						  unsigned long ti_work)
 +{
-+	return arch_irqs_disabled();
-+}
- static inline void set_pmi_irq_pending(void)
- {
- 	/*
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index b2c51d337e60..1292282f8b0e 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -383,6 +383,12 @@ int validate_sp(unsigned long sp, struct task_struct *p);
- int validate_sp_size(unsigned long sp, struct task_struct *p,
- 		     unsigned long nbytes);
- 
-+/*for common entry*/
-+static __always_inline bool on_thread_stack(void)
-+{
-+	return validate_sp(current_stack_pointer, current);
++	if (ti_work & _TIF_USER_RETURN_NOTIFY)
++		fire_user_return_notifiers();
 +}
 +
- /*
-  * Prefetch macros.
-  */
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 3dd36c5e334a..0e94806c7bfe 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -119,4 +119,9 @@ static inline int syscall_get_arch(struct task_struct *task)
- 	else
- 		return AUDIT_ARCH_PPC64;
- }
++#define arch_exit_to_user_mode_prepare arch_exit_to_user_mode_prepare
 +
-+static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
-+{
-+	return false;
-+}
- #endif	/* _ASM_SYSCALL_H */
++#endif
 diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index bf5dde1a4114..9df2bcf28544 100644
+index 9df2bcf28544..c52ca3aaebb5 100644
 --- a/arch/powerpc/include/asm/thread_info.h
 +++ b/arch/powerpc/include/asm/thread_info.h
-@@ -58,6 +58,7 @@ struct thread_info {
- 	unsigned int	cpu;
+@@ -118,6 +118,7 @@ void arch_setup_new_exec(void);
  #endif
- 	unsigned long	local_flags;		/* private flags for thread */
-+	unsigned long	syscall_work;
- #ifdef CONFIG_LIVEPATCH_64
- 	unsigned long *livepatch_sp;
- #endif
-diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-index 77fedb190c93..e0338bd8d383 100644
---- a/arch/powerpc/kernel/syscall.c
-+++ b/arch/powerpc/kernel/syscall.c
-@@ -3,6 +3,7 @@
- #include <linux/compat.h>
- #include <linux/context_tracking.h>
- #include <linux/randomize_kstack.h>
-+#include <linux/entry-common.h>
+ #define TIF_POLLING_NRFLAG	19	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_32BIT		20	/* 32 bit binary */
++#define TIF_USER_RETURN_NOTIFY	21	/* notify kernel of userspace return */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -126,6 +127,7 @@ void arch_setup_new_exec(void);
+ #define _TIF_NOTIFY_SIGNAL	(1<<TIF_NOTIFY_SIGNAL)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_32BIT		(1<<TIF_32BIT)
++#define _TIF_USER_RETURN_NOTIFY	(1<<TIF_USER_RETURN_NOTIFY)
+ #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
+ #define _TIF_PATCH_PENDING	(1<<TIF_PATCH_PENDING)
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 392404688cec..70a9ea949798 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -38,6 +38,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/pkeys.h>
+ #include <linux/seq_buf.h>
++#include <linux/user-return-notifier.h>
  
  #include <asm/interrupt.h>
- #include <asm/kup.h>
-@@ -131,7 +132,7 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
- 		 * and the test against NR_syscalls will fail and the return
- 		 * value to be used is in regs->gpr[3].
- 		 */
--		r0 = do_syscall_trace_enter(regs);
-+		r0 = syscall_enter_from_user_mode(regs, r0);
- 		if (unlikely(r0 >= NR_syscalls))
- 			return regs->gpr[3];
+ #include <asm/io.h>
+@@ -1386,6 +1387,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	if (current->thread.regs)
+ 		restore_math(current->thread.regs);
+ #endif /* CONFIG_PPC_BOOK3S_64 */
++	propagate_user_return_notify(prev, new);
  
-@@ -184,6 +185,8 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
- 	 * So the resulting 6 or 7 bits of entropy is seen in SP[9:4] or SP[9:3].
- 	 */
- 	choose_random_kstack_offset(mftb());
-+	/*common entry*/
-+	syscall_exit_to_user_mode(regs);
- 
- 	return ret;
+ 	return last;
  }
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 9e49ede2bc1c..6cb923fe4c4d 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -23,6 +23,7 @@
- #include <linux/mman.h>
- #include <linux/mm.h>
- #include <linux/interrupt.h>
-+#include <linux/entry-common.h>
- #include <linux/highmem.h>
- #include <linux/extable.h>
- #include <linux/kprobes.h>
-@@ -577,7 +578,9 @@ static __always_inline void __do_page_fault(struct pt_regs *regs)
- 
- DEFINE_INTERRUPT_HANDLER(do_page_fault)
- {
-+	irqentry_state_t state = irqentry_enter(regs);
- 	__do_page_fault(regs);
-+	irqentry_exit(regs, state);
- }
- 
- #ifdef CONFIG_PPC_BOOK3S_64
 -- 
 2.42.0.windows.2
 
