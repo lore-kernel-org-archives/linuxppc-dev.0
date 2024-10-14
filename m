@@ -1,55 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-2183-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2184-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C52A0CF259D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2024 06:02:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04AE5CF2590
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2024 06:10:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XRmpR2K3Sz3bfj;
-	Mon, 14 Oct 2024 17:02:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=92.121.34.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728885727;
-	cv=none; b=obA1kNETTCBJaRMeXIMC6Vzm1cg4moiL9zf1vr36opFZRxgnVJcjXg7bUK+TNseATv+gDwLxcV04X2SSSpcLhwBKy/ONddha/cPb1TYxNpRb2VJN5K11nJxSHh97gabFO6GeV82h/gkdJPei5b8kRoK2kQP1+Kj4ZhQ5P967n6R3CQfMfmw1APSwzpvJomQYBSdYI+duHMc96Ij/hJNWqIDf8EbM+V0xxNkHh7zGMd8DoUwGZZI7TnyDtS5iCiyRF3h18iIeK1koJVdUFGIBoBCmJY/8F6lm6K3ucAPC1pV+yQWi0z0vEjfEYHT3zE/wdozQOtlEd2Y6Y1VA5bfHUg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XRn0P1glRz3bft;
+	Mon, 14 Oct 2024 17:10:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728886245;
+	cv=none; b=ODEP60gDFTO5JAu8b/dlT3SDstEwCELqR4KluwIJ6D5VSmWKzgpDzv8WYaD/Akuc0/j/Zuf8eWf2U9/K5Y4JgWXe3F7HltsT6pUua3DNbojv81DH9Yer7wXFrnpG1b7ZEqlbl79Qm2GT88u7yUjHLsj5pkXDK7wBGKLDLPpw0VTXguEExOQPBS+BrrN0QVFVEPbXpnb5uR4LYmIijwbuxXhzuTwLa+gzg7oGxIT2eeGPSqrwGqu6gGRKO9brZ1t422n8B0/M/nbaYwFjt5ofX+7txJQDURY9mQqjtJpuv6uy+jsCuxJEf/OihGFiIcdjPGBpqkw3AHrUomhYs10kuA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728885727; c=relaxed/relaxed;
-	bh=37bGOE+1/YukgQOjYvpC5wjBOTT/W8+5WDoNP6gTw+c=;
-	h=From:To:Subject:Date:Message-Id; b=l5KbWZSV2Gex8/XGClKP+COE+xQoutaMlYytf0F6sbP803J90etv2gmzMrHcK+8uOpZTYRdZLsmOZr5rOr1wGX+wws22BZYxzMwmoXADZDm3zU21T0t6ppmcydApCtF7Zyia9056yXJrMvEJS8pHLk1X/+AIhOvOIc26N5oa0VPtPhFZVqZPY/3cxqebXQNYZ7v+y1zCVKjgGQWo9GgRObL52suzuh9QYBMA9uIGzH9lfAHFJoJc4L6PXBWgfoI4fes9RqYO7Y9Gux3+sh3Vx0LbfzajZZvkus8X+iSSSkx8IICz+9rmQ8oGGCXvefcMSS2PzcQfYQ8rgVuzIuIIbQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; spf=pass (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.13; helo=inva020.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1728886245; c=relaxed/relaxed;
+	bh=VXl8K9R+AsPQzajgHopX1HC5YVYkDkfG3JHXOUDVO0w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JPMNOCJeegoR1UjQM7yQqhHFJ/UJTmepBYp9Gxfxay1pS2YYoxgMXZGmpZiWG+7fKSJbEKcnIeZb/GZsZjL+BmOmzhkZ85zbH5Xgt/2G6Fuub7Ef6R7EyX9wSHv4EA3Ep9FrU4044/VM6Rq/orvWobibd94IcsbL63x8bj7Z5c46soay817LDlPkxhkDSY0eNCZcsHJqejjg5UmE8aqYhMtXiccKJE5dbF1/XAAhDKz9hpZS6HLH2DwYriZ6or7M0JYS1pKhje1/a0SI9esvCGdRiNtc61SGZqzO/1oQZ2IC/mvAP+SpuCvcP6wJTgjKmbO3DOONg0jCUsjuzr2x3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=e5kxh8wd; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=e5kxh8wd;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XRmpP6bBSz3bdX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2024 17:02:05 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 590D51A1440;
-	Mon, 14 Oct 2024 08:02:02 +0200 (CEST)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 1F2501A1281;
-	Mon, 14 Oct 2024 08:02:02 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 906AF183DC03;
-	Mon, 14 Oct 2024 14:02:00 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] ASoC: fsl_micfil: Add sample rate constraint
-Date: Mon, 14 Oct 2024 13:38:33 +0800
-Message-Id: <1728884313-6778-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XRn0M52Bvz3bdX
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2024 17:10:42 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id C73955C5990;
+	Mon, 14 Oct 2024 06:10:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44453C4CEC3;
+	Mon, 14 Oct 2024 06:10:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1728886239;
+	bh=vtOULXzKh1W2zjoRRH7MNf2bpYcEKecnN3dY3aNLMSE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=e5kxh8wdesQJ0pTug01/NkZeExuwthoVgZUktUVr+s/szlFweo7jeFGN5DGAw641X
+	 1HqC/vulNeN0xjiBXuGBENKV/QLDFKwV/tobl31ROkTUGKA/9r+x/rAa1R/qNGU/b1
+	 mJIYxxMrwmdXVJ2c+gJB78DB7j/keAhi5pGYExM4=
+Date: Mon, 14 Oct 2024 08:10:37 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Jisheng Zhang <jszhang@kernel.org>
+Cc: Jiri Slaby <jirislaby@kernel.org>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+	linux-riscv@lists.infradead.org
+Subject: Re: [PATCH] tty: hvc: riscv_sbi: instantiate the legcay console
+ earlier
+Message-ID: <2024101402-starlet-riverside-02d4@gregkh>
+References: <20241014000857.3032-1-jszhang@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,101 +62,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241014000857.3032-1-jszhang@kernel.org>
 
-On some platforms, for example i.MX93, there is only one
-audio PLL source, so some sample rate can't be supported.
-If the PLL source is used for 8kHz series rates, then 11kHz
-series rates can't be supported.
+On Mon, Oct 14, 2024 at 08:08:57AM +0800, Jisheng Zhang wrote:
+> The hvc_instantiate() is an early console discovery mechanism, it is
+> usually called before allocating hvc terminal devices. In fact, if
+> we check hvc_riscv_sbi's hvc_instantiate() return value, we'll find
+> that it's -1. So the calling hvc_instantiate() is too late.
+> 
+> We can remove the hvc_instantiate() to only rely on the hvc_alloc() to
+> register the kernel console. We can also move its calling earlier so
+> the kernel console is registered earlier, so that we can get kernel
+> console msg earlier. We take the 2nd choice in this patch.
+> 
+> Before the patch:
+> [    0.367440] printk: legacy console [hvc0] enabled
+> [    0.401397] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+> 
+> After the patch:
+> 
+> [    0.004665] printk: legacy console [hvc0] enabled
+> [    0.050183] Calibrating delay loop (skipped), value calculated using timer frequency.. 20.00 BogoMIPS (lpj=100000)
+> 
+> As can be seen, now the kernel console is registered much earlier before
+> the BogoMIPS calibrating.
+> 
+> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 
-So add constraints according to the frequency of available
-clock sources, then alsa-lib will help to convert the
-unsupported rate for the driver.
+What commit id does this fix?
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl_micfil.c | 38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+> ---
+>  drivers/tty/hvc/hvc_riscv_sbi.c | 17 +++++++++++++++--
+>  1 file changed, 15 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/tty/hvc/hvc_riscv_sbi.c b/drivers/tty/hvc/hvc_riscv_sbi.c
+> index cede8a572594..d2ecfbf7c84a 100644
+> --- a/drivers/tty/hvc/hvc_riscv_sbi.c
+> +++ b/drivers/tty/hvc/hvc_riscv_sbi.c
+> @@ -68,12 +68,10 @@ static int __init hvc_sbi_init(void)
+>  		err = PTR_ERR_OR_ZERO(hvc_alloc(0, 0, &hvc_sbi_dbcn_ops, 256));
+>  		if (err)
+>  			return err;
+> -		hvc_instantiate(0, 0, &hvc_sbi_dbcn_ops);
+>  	} else if (IS_ENABLED(CONFIG_RISCV_SBI_V01)) {
+>  		err = PTR_ERR_OR_ZERO(hvc_alloc(0, 0, &hvc_sbi_v01_ops, 256));
+>  		if (err)
+>  			return err;
+> -		hvc_instantiate(0, 0, &hvc_sbi_v01_ops);
+>  	} else {
+>  		return -ENODEV;
+>  	}
+> @@ -81,3 +79,18 @@ static int __init hvc_sbi_init(void)
+>  	return 0;
+>  }
+>  device_initcall(hvc_sbi_init);
+> +
+> +static int __init hvc_sbi_console_init(void)
+> +{
+> +	int err;
+> +
+> +	if (sbi_debug_console_available)
+> +		err = hvc_instantiate(0, 0, &hvc_sbi_dbcn_ops);
+> +	else if (IS_ENABLED(CONFIG_RISCV_SBI_V01))
+> +		err = hvc_instantiate(0, 0, &hvc_sbi_v01_ops);
+> +	else
+> +		return -ENODEV;
+> +
+> +	return err < 0 ? -ENODEV : 0;
 
-diff --git a/sound/soc/fsl/fsl_micfil.c b/sound/soc/fsl/fsl_micfil.c
-index 4e65966d54fc..619ee7a5b867 100644
---- a/sound/soc/fsl/fsl_micfil.c
-+++ b/sound/soc/fsl/fsl_micfil.c
-@@ -28,6 +28,13 @@
- 
- #define MICFIL_OSR_DEFAULT	16
- 
-+#define MICFIL_NUM_RATES	7
-+#define MICFIL_CLK_SRC_NUM	3
-+/* clock source ids */
-+#define MICFIL_AUDIO_PLL1	0
-+#define MICFIL_AUDIO_PLL2	1
-+#define MICFIL_CLK_EXT3		2
-+
- enum quality {
- 	QUALITY_HIGH,
- 	QUALITY_MEDIUM,
-@@ -45,9 +52,12 @@ struct fsl_micfil {
- 	struct clk *mclk;
- 	struct clk *pll8k_clk;
- 	struct clk *pll11k_clk;
-+	struct clk *clk_src[MICFIL_CLK_SRC_NUM];
- 	struct snd_dmaengine_dai_dma_data dma_params_rx;
- 	struct sdma_peripheral_config sdmacfg;
- 	struct snd_soc_card *card;
-+	struct snd_pcm_hw_constraint_list constraint_rates;
-+	unsigned int constraint_rates_list[MICFIL_NUM_RATES];
- 	unsigned int dataline;
- 	char name[32];
- 	int irq[MICFIL_IRQ_LINES];
-@@ -450,12 +460,34 @@ static int fsl_micfil_startup(struct snd_pcm_substream *substream,
- 			      struct snd_soc_dai *dai)
- {
- 	struct fsl_micfil *micfil = snd_soc_dai_get_drvdata(dai);
-+	unsigned int rates[MICFIL_NUM_RATES] = {8000, 11025, 16000, 22050, 32000, 44100, 48000};
-+	int i, j, k = 0;
-+	u64 clk_rate;
- 
- 	if (!micfil) {
- 		dev_err(dai->dev, "micfil dai priv_data not set\n");
- 		return -EINVAL;
- 	}
- 
-+	micfil->constraint_rates.list = micfil->constraint_rates_list;
-+	micfil->constraint_rates.count = 0;
-+
-+	for (j = 0; j < MICFIL_NUM_RATES; j++) {
-+		for (i = 0; i < MICFIL_CLK_SRC_NUM; i++) {
-+			clk_rate = clk_get_rate(micfil->clk_src[i]);
-+			if (clk_rate != 0 && do_div(clk_rate, rates[j]) == 0) {
-+				micfil->constraint_rates_list[k++] = rates[j];
-+				micfil->constraint_rates.count++;
-+				break;
-+			}
-+		}
-+	}
-+
-+	if (micfil->constraint_rates.count > 0)
-+		snd_pcm_hw_constraint_list(substream->runtime, 0,
-+					   SNDRV_PCM_HW_PARAM_RATE,
-+					   &micfil->constraint_rates);
-+
- 	return 0;
- }
- 
-@@ -1160,6 +1192,12 @@ static int fsl_micfil_probe(struct platform_device *pdev)
- 	fsl_asoc_get_pll_clocks(&pdev->dev, &micfil->pll8k_clk,
- 				&micfil->pll11k_clk);
- 
-+	micfil->clk_src[MICFIL_AUDIO_PLL1] = micfil->pll8k_clk;
-+	micfil->clk_src[MICFIL_AUDIO_PLL2] = micfil->pll11k_clk;
-+	micfil->clk_src[MICFIL_CLK_EXT3] = devm_clk_get(&pdev->dev, "clkext3");
-+	if (IS_ERR(micfil->clk_src[MICFIL_CLK_EXT3]))
-+		micfil->clk_src[MICFIL_CLK_EXT3] = NULL;
-+
- 	/* init regmap */
- 	regs = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
- 	if (IS_ERR(regs))
--- 
-2.34.1
+Please spell out a ? : line, it's not required here.
 
+> +}
+> +console_initcall(hvc_sbi_console_init);
+
+Are you sure this will always work properly?  For some reason the
+original code did not do this, you might want to check the
+lore.kernel.org archives to find out why.
+
+thanks,
+
+greg k-h
 
