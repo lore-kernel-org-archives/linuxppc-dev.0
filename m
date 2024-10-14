@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-2205-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2206-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D157CF2594
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2024 10:48:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D006CCF2594
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2024 10:48:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XRv8n1M2yz3bjM;
-	Mon, 14 Oct 2024 21:48:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XRv8q3nPWz3bnK;
+	Mon, 14 Oct 2024 21:48:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728902904;
-	cv=none; b=AHdj6LRFBTiSNu7Q0tc3wiAYGUi3JvJ00zjef9zgYdnLMi89YHJcKmNIB/U27s5IsFJR7PMQT3wn3/UDj6ZoeZtWBeV8X+piS1VPHNKvyISTl5Q9V4u43D/M9pAKt4IgO5H04RtXQCSr8qdObm4Xlwnsyk/6bTSqVYCVPH2aOQ7gm1+rmmO2+o5LzMfYkZxrD8QDsvZNpR/octxdOftgx3SW8nwWYJAChE4Y9NorM6mJDgdoGCLmrJVXE0pE6CqjxFIT3Zu7kfuvPpEHHjyfyaycRafqv6QfOOOiTaB+eeGMjH7mxffN0uBQzBn4xr3D+KjTFUSreQYG3zOEXCZT1g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728902907;
+	cv=none; b=burshhVOC3M2hRpHHchSdkSz1AuyHXGuZlLZbQSddTdttz1aL/cKiyLE3syvaIXoJO7pki7YWllncTBD966XWCRnfiprmc4fpa/t89YlC97ER5l0YW127m7m8PMOHrflBb26jfCrH7J4vAT0mCjCph0qNvknZtnsuwSfcQ3FsQOF0PgtA7njNcu28t/nUD/Y+oDszR6LbbGw92zoNAd/vjKXI3IvTpgOLsmX6O2ukY/qV3G4s10RgcGc5oNckOULi/A0QVO5DO4dhEsR/YhxBVtv8oaoHObazlBUd9vK7QWnnCF9suy8S6KL49ZxlFgXzPP9zTLJNdUfs08hlUw3pA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728902904; c=relaxed/relaxed;
-	bh=RYS+du93+69GukdtgxG4LqQci0I/RXZpcu8Hj5WKYEk=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=kr1bHFavf/80Z5MA3KwDTaSVtKgSCVJNudBsymMDA4N5c05LZjGmjaIXXVaVrs9Tde7MJYgBslwOsxwwjMlVblMh+s5M7BpKnMVOfdSKg4wdM31mvDrriYvysI5bZz8Vw0rMUcad/pAEHD89ucgIVXqWVxGlM5JYlM7ISQ4Oprb3zJ262i+hsKqgzwh4TKtvyemvPz8UDH1O98NP/cmSgc0QAPDsgfQGW/0Ydzks3H9avX0B4W4JphB8kXToLOMwhnQcC5/LnxLEzhcZTc5t9bO0PxIj7XGMJEIDVn6pWTkrAqbmspAPPKQ9MSQpA/jLo2eZiv72W6LQwdK8sEIkQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lDehbRUi; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1728902907; c=relaxed/relaxed;
+	bh=9C6g7Ed9Tz5VafM3PzYV8kPI7hGqBVVAbjMKqSOhmsQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=iT5eP/tc36+ZIIjcMqopGJeh4QDziHbMpeLnPr1g1QCn/b1W6huUbIcqhjfPfAh8SX520DZ12BAUPJJc9hXdEDT7xpVvfezCphSRW2k2T60lin8FPfZ6hii3SccryIBcCNWDr4l40g/GdQNvV+NRoce7e5afScZuTnAcwVn4WESA1Quq/5pJs6HdOS4NecZBL+iwFvLWRCyUW5lPEs4ufu5wkvHIXESdhmRL4cHPNsU1w9BALl0lTTsz8jHwjCXOtsY1KjRh3EwtbUI/BgiYXmJU1VnGgFY8mreqka9Jmyk9T70r/0DfYUJyY47QVEEJ38iJx2wPyl9kAalAsA16eQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UOxdL/l6; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lDehbRUi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UOxdL/l6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XRv8l1cWQz3bjK
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2024 21:48:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XRv8p63dBz3bnJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2024 21:48:26 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id F0E32A419D3;
-	Mon, 14 Oct 2024 10:48:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D7AF4C4CEC3;
-	Mon, 14 Oct 2024 10:48:18 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id E1039A419DF;
+	Mon, 14 Oct 2024 10:48:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 078D3C4CEC7;
+	Mon, 14 Oct 2024 10:48:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1728902900;
-	bh=nyk7KmsjJVeX09LhsxjDfvCwzgNz1+vfkwwUVY+0C/g=;
-	h=From:Subject:Date:To:Cc:From;
-	b=lDehbRUijHK3VViD/M4SotvPenvFUgbjHygLq7PtTA+4wUYOFk0PYzWJ3MPsh1XdR
-	 Z2jBi7HUs+M2OXVJrZYFSU/dpy+BV+wt35g2d15fDTqBzi9lqYZDZf61gnw4NeSwA+
-	 Sdyrxe7Ch/to8A+VconinXXUYSzz4Fv1mieeWg8Hysqj7w7ftZbHJsZ8NthDT1Mrkn
-	 kf4Rj+LbgbHT1738OkBBqjo7VLFeOPUHVklgbNzDR6ap3b77Ht/Nj/lGmvsqR/tsrh
-	 RYSDTKLHsFbyuQ3ZB7OLPWylJ3J6RMFNNc8pWBn0HkvDiWUWersbpfsUOaBeLcJsXC
-	 Jloo1d4yj+BIQ==
+	s=k20201202; t=1728902904;
+	bh=3hLRauEYwJEHZvSFb0NBFQDokIr/VyMCsk6KndYmcGw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=UOxdL/l6+O2m79yN4Mo15zkbT55iP9G4BYeazux6JHcS0srxQr8YKSiXgDl18+HrU
+	 AvfZHqZn7lyMIABT6GAhK5JiXdf3OTBDM/m4WAdGT8uNcEFKG+z3H+q8EjoRY+wC1B
+	 NJfSWO2i/EhaYtZ7HlHsLuNKZvdHrwcgp29Iu0YnFmXc6QPNgkgx3Zd3clG0M5He7s
+	 lvmX3v/HX33pgX9vxIhhFHzAJ3eAx32gl8o0f3FWZ7ca/hlICnL1ByuOfuiJNegDWW
+	 1YHJjQ9Rr89LffyjCfivU5RmG8lb0kqAoM6ZAw75YfGt54SpVyZDG3pA+/ekT3FYaA
+	 kmyI8fEY4uPTg==
 From: Simon Horman <horms@kernel.org>
-Subject: [PATCH 0/2] net: ethernet: freescale: Use %pa to format
+Date: Mon, 14 Oct 2024 11:48:08 +0100
+Subject: [PATCH 2/2] net: ethernet: fs_enet: Use %pa to format
  resource_size_t
-Date: Mon, 14 Oct 2024 11:48:06 +0100
-Message-Id: <20241014-net-pa-fmt-v1-0-dcc9afb8858b@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,9 +59,9 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAOb2DGcC/x3MQQqAIBBA0avErBtQGQi6SrTQGmsWmahEIN49a
- fkW/1fInIQzzEOFxI9kuUOHHgfYThsORtm7wShDWmnCwAWjRX8VZOccaTsReYIexMRe3n+2rK1
- 94+9cQVwAAAA=
+Message-Id: <20241014-net-pa-fmt-v1-2-dcc9afb8858b@kernel.org>
+References: <20241014-net-pa-fmt-v1-0-dcc9afb8858b@kernel.org>
+In-Reply-To: <20241014-net-pa-fmt-v1-0-dcc9afb8858b@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, 
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
  Paolo Abeni <pabeni@redhat.com>
@@ -70,31 +70,49 @@ Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 X-Mailer: b4 0.14.0
 
-Hi,
-
-This short series addersses the formatting of variables of
-type resource_size_t in freescale drivers.
-
 The correct format string for resource_size_t is %pa which
 acts on the address of the variable to be formatted [1].
 
 [1] https://elixir.bootlin.com/linux/v6.11.3/source/Documentation/core-api/printk-formats.rst#L229
 
-These problems were introduced by
-commit 9d9326d3bc0e ("phy: Change mii_bus id field to a string")
+Introduced by commit 9d9326d3bc0e ("phy: Change mii_bus id field to a string")
+
+Flagged by gcc-14 as:
+
+drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c: In function 'fs_mii_bitbang_init':
+drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c:126:46: warning: format '%x' expects argument of type 'unsigned int', but argument 4 has type 'resource_size_t' {aka 'long long unsigned int'} [-Wformat=]
+  126 |         snprintf(bus->id, MII_BUS_ID_SIZE, "%x", res.start);
+      |                                             ~^   ~~~~~~~~~
+      |                                              |      |
+      |                                              |      resource_size_t {aka long long unsigned int}
+      |                                              unsigned int
+      |                                             %llx
+
+No functional change intended.
+Compile tested only.
 
 Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Closes: https://lore.kernel.org/netdev/711d7f6d-b785-7560-f4dc-c6aad2cce99@linux-m68k.org/
-
+Signed-off-by: Simon Horman <horms@kernel.org>
 ---
-Simon Horman (2):
-      net: fec_mpc52xx_phy: Use %pa to format resource_size_t
-      net: ethernet: fs_enet: Use %pa to format resource_size_t
-
- drivers/net/ethernet/freescale/fec_mpc52xx_phy.c     | 2 +-
  drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-base-commit: 6aac56631831e1386b6edd3c583c8afb2abfd267
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
+index e6b2d7452fe7..66038e2a4ae3 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
+@@ -123,7 +123,7 @@ static int fs_mii_bitbang_init(struct mii_bus *bus, struct device_node *np)
+ 	 * we get is an int, and the odds of multiple bitbang mdio buses
+ 	 * is low enough that it's not worth going too crazy.
+ 	 */
+-	snprintf(bus->id, MII_BUS_ID_SIZE, "%x", res.start);
++	snprintf(bus->id, MII_BUS_ID_SIZE, "%pa", &res.start);
+ 
+ 	data = of_get_property(np, "fsl,mdio-pin", &len);
+ 	if (!data || len != 4)
+
+-- 
+2.45.2
 
 
