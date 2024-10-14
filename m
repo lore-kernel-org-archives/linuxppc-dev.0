@@ -1,74 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-2228-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2229-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E59CD1627E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2024 14:45:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AC25D18129
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2024 15:39:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XS0QC4rJdz3bxL;
-	Tue, 15 Oct 2024 01:45:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728917123;
-	cv=none; b=T8enRJFzVgyugCxAzJlsVcOvVKEzx0g85eqYLuJEfSGiUCaMAiUsly0YCog8x4xWe39RJWVaiA9u00svOEWh8N3nJPEE96hFwDp4aATMcPVNj6lw5qQOTZPo8Pj3bP06WZHbl54K/dLApfq6pWPwGLvCY/ilkuaOsRQaQCsUDs0CQe1+9sn53/Nw/Sq1Kmz4x/GFg7obykWsViQgz8Gae4KotkkUQ0ImsnMlHhU9RZIoUlf7Y+an49HW0rsrJAUwjzQCQyQUnleOmhQl+zzVyeAALLAclCfTFc4CPqXAASkpDaetVGaiY/isUZSB45STBkdRnicY2u6aaI7jnpUhzg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XS1ck5FXDz2y64;
+	Tue, 15 Oct 2024 02:39:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::635"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728920374;
+	cv=none; b=AEYGabKc+FKYDD575t8A0rJUYcymhm0+3TduwnLNkNMk/9oA50jrVd0QR5QH4Yj0hlCbaGfoVMG9ZG74SvgYr4Z0rB3GHei3IYXjtAAvRz0KGrvmR2QullMECKlQvsIHgIz03yuoz/+PXCJP9ZA1V22BxAwxYzeiAmPfEiUagg0g4/jHTCbviCP5yX5R/rKyayzYzG5qltTP7ur3K3/MD9WDQJPcDX4PZJbrYmiHijVDXhRgy/q1ORjSLfNN6kmw3smWyW1APKxELHTMHKVgwo4DN5erdh67ARHtt+DL7x+WRPkuRGjUwHG0NHeEbHbV7PKjQNJbZmQ4kI0I8UVkvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728917123; c=relaxed/relaxed;
-	bh=CBx8oOZP7muTRFWdnTWIX1ck/8Je7EEbolhZOJL2Cgo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=h2Af9u91EFxEQ+pTOqEJAP2AluTN/FQh6vm2gZWIDHx8HEC8xiJWT8vPu7vyCxgOFSIib8fPtqvscYQnVhK7gjgfgqF+p1G4CEeaGnMwPC4mX7X9VJLjFaYRSeytDXRFBJ3n/MRErIKylaRnJcrTLrpibL1GSD6dW107OsbpFSWhdXX7OrlHEwK5f6wV5wM4zBzG5kRz/wknxLpUhGfg2Wff3LFQMldODgR4BqcgnFaY/nn+1kXicAydqwqT3eCMU+M1ElzFb2mWFh+xsE2sQ0Iej+Ib83bHcKKHPChtGMOFQNfsPXSSsETHYgIl49yRjuqqrYKlEvpD6G68QlatcQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=zmmr+87Y; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+f913630adc52fe272e7a+7722+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+	t=1728920374; c=relaxed/relaxed;
+	bh=gfM9f+hWey0CtNaI1SUKa6vEq+PwT8U4friQEoRedHw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mjbm66r4+PzG9s1Xdr6O/DOF7MeAHxuiycMsUWkChBBLikMtFudhcLTptk8FsYbxIrRKm3R2e9TmFrvOp+fpROF1zCI0qUJp8sKKtR3yY1IH7RDXq4kCPQIQ8lkVM8PQNPn6C66N6UoGFt28FIFR96z+9Oy40IgciqP65yOVLk9sMbDmoWHfqK43stsg7A97/shPhDQxzcOFEfMvretOIMyAwtUnQXMjdae2O2ebBUaZ6/W5P01gGQxz3QVEk37BztUEPskIywJkWCcHnpNVzwdjxGjU6a7JFV4aPjoeAjf7gt+fZ+11hIgfEJVmpKJtdOOj5JvLSA4f8bJ5ki+k8Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=citrix.com; dkim=pass (1024-bit key; unprotected) header.d=citrix.com header.i=@citrix.com header.a=rsa-sha256 header.s=google header.b=vaoCAk4R; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=andrew.cooper@cloud.com; receiver=lists.ozlabs.org) smtp.mailfrom=cloud.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=citrix.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=zmmr+87Y;
+	dkim=pass (1024-bit key; unprotected) header.d=citrix.com header.i=@citrix.com header.a=rsa-sha256 header.s=google header.b=vaoCAk4R;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+f913630adc52fe272e7a+7722+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cloud.com (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=andrew.cooper@cloud.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XS0QB6Wf0z2yZ4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 01:45:22 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
-	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=CBx8oOZP7muTRFWdnTWIX1ck/8Je7EEbolhZOJL2Cgo=; b=zmmr+87Y9fBB2htyIn2LwLkL5/
-	hsChFqRyxCtK8dSibrcQ8PEvXM7QOaRtaKrym2h6jMMzO77s3lS2hn7Ds42Hha1klRD3lM+Hh+Ouy
-	6aq3QvpikKtFJ2F/rq0qXxEEGv112EOwBW14QmpkYktJfsn/t/8gKm0+NOK8hkF/781sbpX7DAr9e
-	Wy9jviDzgvwT73cOdJu8yjmFDmQnePjJFT32ESCWmE2e+osAYE3e1CM3IpLuxXfIkRN1+7xy2ntbq
-	J2YK67lQQmwotM1BaSYABBbzL+B1EFNJ+UJM7BuNOq5VinAEx1k3YZ+nFmu6LbSobVuhQIjj3RpVT
-	JuhE5rtw==;
-Received: from 2a02-8389-2341-5b80-350d-7b06-b28a-173d.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:350d:7b06:b28a:173d] helo=localhost)
-	by bombadil.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
-	id 1t0MJz-00000005Wzd-3wyi;
-	Mon, 14 Oct 2024 14:45:20 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-alpha@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-csky@vger.kernel.org,
-	linux-hexagon@vger.kernel.org,
-	loongarch@lists.linux.dev,
-	linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org,
-	linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org,
-	sparclinux@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-arch@vger.kernel.org
-Subject: [PATCH 2/2] asm-generic: add an optional pfn_valid check to pfn_valid
-Date: Mon, 14 Oct 2024 16:44:59 +0200
-Message-ID: <20241014144506.51754-3-hch@lst.de>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <20241014144506.51754-1-hch@lst.de>
-References: <20241014144506.51754-1-hch@lst.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XS1cj1Nrlz2xjN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 02:39:31 +1100 (AEDT)
+Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-a99f646ff1bso294351766b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2024 08:39:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=citrix.com; s=google; t=1728920369; x=1729525169; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=gfM9f+hWey0CtNaI1SUKa6vEq+PwT8U4friQEoRedHw=;
+        b=vaoCAk4RJpI0Cx5rtwkMwiLetNQTT4kqgEdrcPTWmLaIdPl+Npp9KMJuzd5pior4CL
+         dpYZ5y+ARRnTqhvdRpiKtw15efP6l9kAY7UfGSExheQOMp67WI4RBmMIdFbAcvzy6vT9
+         Lo7v12MF6n9zJZ5s8PZu1pMmgfKJMoMSKUMrc=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728920369; x=1729525169;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gfM9f+hWey0CtNaI1SUKa6vEq+PwT8U4friQEoRedHw=;
+        b=p5QvlQQDm2KsRjIIcluvay1Y8on/Ya9eUO1Q1M8clYNq1Ohm4dPX/ysB0nJBmRpVKP
+         mzxDO1gaaxcBNeGqa0y6DJzCalWUP28jB8TrizPerEZi6fdybBvXN0XfCCrKvHGQX1U8
+         XMG5LBhzRy2oAE+YMapguHgaIWORtuAz5A3k/wBdB+IhNV1FG4yMnH/D4r7KjS49comC
+         iFWvAUMfNVEKHLpIni9LN9BuYPvvpmxAylp22QF+r+6HAOTbf214t+M+So5HXfXMQLmP
+         v4B+RcMo2nIp0yimZaplTBMRvJramZW/0fOw3qjnbVwbNVndnr5zxMeGF+fkODZ5QeMm
+         c7yQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVD7X9bXQTpr+TGCJKEhHMjY2dp4FHLfigsDGo1xb0j7t35raTA0gX/N7GJojd4eYHhRuJoqI9yG8K/BNA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxV7hYKeJPNJukPiegWlau7j0o4Lv5qnV/Y4maNygBnuWhKOvgs
+	sHgEGoqlTliNNkaH33cNSfPBW0/JMaN/n3QvhpBylibBEKA3tnHjrpMJ9+2vuz8=
+X-Google-Smtp-Source: AGHT+IEzUkVjO7ncb9ymw9qcsq6DJz0zGwRlwK1wbI5e9q3GQVf5RuvEP2gGBmEbBrLkvl05AASo0w==
+X-Received: by 2002:a17:907:9451:b0:a99:5baf:12a4 with SMTP id a640c23a62f3a-a99b937b0bdmr953417366b.17.1728920369027;
+        Mon, 14 Oct 2024 08:39:29 -0700 (PDT)
+Received: from [10.125.226.166] ([185.25.67.249])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a9a0046932csm258956366b.127.2024.10.14.08.39.28
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 14 Oct 2024 08:39:28 -0700 (PDT)
+Message-ID: <064d7068-c666-49f0-b7df-774c2e281abc@citrix.com>
+Date: Mon, 14 Oct 2024 16:39:26 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,44 +74,135 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] x86/uaccess: Avoid barrier_nospec() in copy_from_user()
+To: "Kirill A. Shutemov" <kirill@shutemov.name>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Josh Poimboeuf <jpoimboe@kernel.org>, x86@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+ Waiman Long <longman@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>,
+ Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Mark Rutland <mark.rutland@arm.com>
+References: <b626840e55d4aa86b4b9b377a4cc2cda7038d33d.1728706156.git.jpoimboe@kernel.org>
+ <f6ea59b1-eb59-4d1d-81ed-0e5095102c20@citrix.com>
+ <CAHk-=wg=DovySzKb3=g53DeCwv1ZOa-RebaBpYXNXrdhY=a5Qw@mail.gmail.com>
+ <12c18d86-87b3-4418-a0b0-2844197a3315@citrix.com>
+ <CAHk-=wg341Na_hXFFkc582beXJNi+_tcDu=oMxVPTks-JoQXkQ@mail.gmail.com>
+ <CAHk-=wjAoiCmPSi1OwrJofifmtRYEzecjUeu3UUUELMbJHopUA@mail.gmail.com>
+ <CAHk-=wgDrG-aKVGrd-9gQsC0pMs936oo8XEFmEn6ciaT9=nfDg@mail.gmail.com>
+ <20241014035436.nsleqolyj3xxysrr@treble>
+ <CAHk-=widMFN2wDeS2K65f8FnW8L6gPZa6CNO4OWkv--0G2LXhw@mail.gmail.com>
+ <r5ruxmop7vewd7aq6gu2zve4hfmcu4byhlebygswbqkgz43qfq@rsajyfiypcsd>
+Content-Language: en-GB
+From: Andrew Cooper <andrew.cooper3@citrix.com>
+Autocrypt: addr=andrew.cooper3@citrix.com; keydata=
+ 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
+ 6+ahAA==
+In-Reply-To: <r5ruxmop7vewd7aq6gu2zve4hfmcu4byhlebygswbqkgz43qfq@rsajyfiypcsd>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-page_to_pfn is usually implemented by pointer arithmetics on the memory
-map, which means that bogus input can lead to even more bogus output.
+On 14/10/2024 1:30 pm, Kirill A. Shutemov wrote:
+> On Sun, Oct 13, 2024 at 11:50:55PM -0700, Linus Torvalds wrote:
+>> Anyway, the attached patch
+>>
+>> diff --git a/arch/x86/lib/getuser.S b/arch/x86/lib/getuser.S
+>> index d066aecf8aeb..7d5730aa18b8 100644
+>> --- a/arch/x86/lib/getuser.S
+>> +++ b/arch/x86/lib/getuser.S
+>> @@ -37,11 +37,17 @@
+>>  
+>>  #define ASM_BARRIER_NOSPEC ALTERNATIVE "", "lfence", X86_FEATURE_LFENCE_RDTSC
+>>  
+>> +#define X86_CANONICAL_MASK ALTERNATIVE \
+>> +	"movq $0x80007fffffffffff,%rdx", \
+>> +	"movq $0x80ffffffffffffff,%rdx", X86_FEATURE_LA57
+>> +
+>>  .macro check_range size:req
+>>  .if IS_ENABLED(CONFIG_X86_64)
+>>  	mov %rax, %rdx
+>>  	sar $63, %rdx
+>>  	or %rdx, %rax
+>> +	X86_CANONICAL_MASK
+>> +	and %rdx,%rax
+>>  .else
+>>  	cmp $TASK_SIZE_MAX-\size+1, %eax
+>>  	jae .Lbad_get_user
+> Given that LAM enforces bit 47/56 to be equal to bit 63 I think we can do
+> this unconditionally instead of masking:
+>
+> diff --git a/arch/x86/lib/getuser.S b/arch/x86/lib/getuser.S
+> index d066aecf8aeb..86d4511520b1 100644
+> --- a/arch/x86/lib/getuser.S
+> +++ b/arch/x86/lib/getuser.S
+> @@ -37,9 +37,14 @@
+>  
+>  #define ASM_BARRIER_NOSPEC ALTERNATIVE "", "lfence", X86_FEATURE_LFENCE_RDTSC
+>  
+> +#define SHIFT_LEFT_TO_MSB ALTERNATIVE \
+> +	"shl $(64 - 48), %rdx", \
+> +	"shl $(64 - 57), %rdx", X86_FEATURE_LA57
+> +
+>  .macro check_range size:req
+>  .if IS_ENABLED(CONFIG_X86_64)
+>  	mov %rax, %rdx
+> +	SHIFT_LEFT_TO_MSB
+>  	sar $63, %rdx
+>  	or %rdx, %rax
+>  .else
 
-Powerpc had a pfn_valid check on the regult to it's page_to_phys
-implementation when CONFIG_DEBUG_VIRTUAL is defined, which seems
-generally useful, so add that to the generic version.
+That looks like it ought to DTRT in some cases, but I'll definitely ask
+AMD for confirmation.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- include/asm-generic/memory_model.h | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+But, I expect it will malfunction on newer hardware when
+CONFIG_X86_5LEVEL=n, because it causes Linux to explicitly ignore the
+LA57 bit.  That can be fixed by changing how CONFIG_X86_5LEVEL works.
 
-diff --git a/include/asm-generic/memory_model.h b/include/asm-generic/memory_model.h
-index a73a140cbecdd7..6d1fb6162ac1a6 100644
---- a/include/asm-generic/memory_model.h
-+++ b/include/asm-generic/memory_model.h
-@@ -64,7 +64,17 @@ static inline int pfn_valid(unsigned long pfn)
- #define page_to_pfn __page_to_pfn
- #define pfn_to_page __pfn_to_page
- 
-+#ifdef CONFIG_DEBUG_VIRTUAL
-+#define page_to_phys(page)						\
-+({									\
-+	unsigned long __pfn = page_to_pfn(page);			\
-+									\
-+	WARN_ON_ONCE(!pfn_valid(__pfn));				\
-+	PFN_PHYS(__pfn);						\
-+})
-+#else
- #define page_to_phys(page)	PFN_PHYS(page_to_pfn(page))
-+#endif /* CONFIG_DEBUG_VIRTUAL */
- #define phys_to_page(phys)	pfn_to_page(PHYS_PFN(phys))
- 
- #endif /* __ASSEMBLY__ */
--- 
-2.45.2
+I also expect it will malfunction under virt on an LA57-capable system
+running a VM in LA48 mode (this time, Linux doesn't get to see the
+relevant uarch detail), and I have no good suggestion here.
 
+~Andrew
 
