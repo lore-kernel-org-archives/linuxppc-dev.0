@@ -1,116 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-2244-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2245-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 853F0D18148
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Oct 2024 20:55:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2D50CFC536
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2024 01:33:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XS8dk0cTDz3bdW;
-	Tue, 15 Oct 2024 07:55:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728914075;
-	cv=none; b=Kv+HeL+YCDe6cfFhjNzTuqd+UShlq+tWISxCVaM8zVCgJvJ+ylkAejh5SdXmeIXsIodykPpyCX4yMZ4RDWfATGa5ziUu861pj9jVyau/21w3zzpYj3NcP6dWsNGua6rq3JTqfbTgLTtA6vlGKXr0Jowg2JQS7t0r+hvVQFl7/sEo9lKZLuZvIvokJBvSibbvNsU6xJ729DDef3te1E4K1HJtzdnNvqsBE7Vsm4RZ+axQQfjGHnsEU1L9A7+NuKdCm89P/DyKylI+8GVDyDJeJXWgovYWwD9nKEnI3hbW/Uu5EG0uOaJsuQa4vidISpL9nSmDnkTva0a5nt97ihi7rA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XSGpW0nhDz3bfK;
+	Tue, 15 Oct 2024 12:33:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728956035;
+	cv=none; b=orDV0JJz0Y0355RERiPaAGTMXbgckBUwknMHef5A6UkuMfhF1ke/Mte+leK9zyVjE33d2nF3mSy8etaRlPpkI4hwL/blCV1iZkOERxE5qyN9i+uEh8dRT4U0/QuoPFDRSYGQewmRVQRX7p/8vA0uvZrzHeOHKiUebc6uIOm/iBUxwSEbY458YVyHczaAiJpGSKJEKz6gjF1sDLOHZcj8dYVU5Tqu1VYtqsPPZNuViTyrIcPEWrExdpZv5IClfFBTkmABFapfiDQdv33fXmdmSRZLQ5R3Hvwi24juOwoX8iOacxcO5vkKlErVg0VHDI658FgC2xPR01hJ1X5BbkFCyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728914075; c=relaxed/relaxed;
-	bh=k54nRCFsgq1Vj4XB1atY17nLK0FVq2V/p8Z09CI/bgk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jr8e9qFQem1aA8lCpizvByUhXbgsmpTudo6CgHeTOJclsgZUHXFTE1fL5YlpgKnjd/rv78m72YeTHfCvW0Vf9sBr9V1pP1YHHE0wBi5R0Sgi1rA0L8u4bO88OeqpiNfRdaD84nU8m0nEwSmzIW3Du7wxKUkPI4LC5XYPfP8WtRj5YXXSDXrS7EUCzoQlVpE1IW0asRoA9F+PEzs+1O1CXjHllSAe3eoTy04GNCRrmvFYISnFbH8tqPsHlAYyikCddypD5ZH4cGQAQYgsNoXWoYrK32ByMOww/S9uCsIEYotKqcrg2M4Fq1BvAqvNiAWurqxT3/mitwcjOzKKtE+N1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QG1paxvs; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QG1paxvs; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=piliu@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	t=1728956035; c=relaxed/relaxed;
+	bh=/FgRTRf0le7Jh2w75CMwMOtbUSojhg+y46VXsqNVeW4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dtKQCBJHxAhJefgplwI41UGjfu+95ozCmK8mBphcmx0wUwRjnT6MMwvD7rCMdDH1gWaUT4bSOFeUABRm+3Mk4UK9aHfjAxTgb/ZvUQkyiso9QEUu6NUYtuqq7HYv5OnjJeNzwiBmcyvY4yd2L4hihPRUcmWxhOuCkulMV35Yzp0j54yQl+Ga6+ZExg6Yyiki8geSJMdTwJa53DRCeKB6BT944LF2Mvjkwf/ysbSozI3AlgCtMLDStzqlEM4MtgSl/Ine9tvQGkybBVZhKJQKMimvXaET4tiUEDQLvPvmxvay127g2rNfWTwly2qbupvnFo2M4IpH3ucMgY5JYJlGMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lb0IWAK2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QG1paxvs;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QG1paxvs;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lb0IWAK2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=piliu@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XRzHZ1jlfz3bn8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 00:54:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1728914065;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=k54nRCFsgq1Vj4XB1atY17nLK0FVq2V/p8Z09CI/bgk=;
-	b=QG1paxvsc567+QxHriwuZROrCnExchv87jW9pJncN6ghrXcqypQRc3ed/KiWEg2wfqroGU
-	LnGA2kDqImAu4rPmP0ZShfo6cGYrHAoa07ytOlOSW+ZuBwU8qy/t2nmXqcH3xbuS2NEX6A
-	JM0yHSytEVzYsVtiT+vg22cQI0WZCV0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1728914065;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=k54nRCFsgq1Vj4XB1atY17nLK0FVq2V/p8Z09CI/bgk=;
-	b=QG1paxvsc567+QxHriwuZROrCnExchv87jW9pJncN6ghrXcqypQRc3ed/KiWEg2wfqroGU
-	LnGA2kDqImAu4rPmP0ZShfo6cGYrHAoa07ytOlOSW+ZuBwU8qy/t2nmXqcH3xbuS2NEX6A
-	JM0yHSytEVzYsVtiT+vg22cQI0WZCV0=
-Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-397-Ga48bwKmNzGzJVdqThYljw-1; Mon,
- 14 Oct 2024 09:54:21 -0400
-X-MC-Unique: Ga48bwKmNzGzJVdqThYljw-1
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id F27161955F45;
-	Mon, 14 Oct 2024 13:54:11 +0000 (UTC)
-Received: from localhost (unknown [10.72.112.109])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 7993A3000198;
-	Mon, 14 Oct 2024 13:54:04 +0000 (UTC)
-Date: Mon, 14 Oct 2024 21:54:02 +0800
-From: Pingfan Liu <piliu@redhat.com>
-To: Ryan Roberts <ryan.roberts@arm.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Anshuman Khandual <anshuman.khandual@arm.com>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Ard Biesheuvel <ardb@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-	Borislav Petkov <bp@alien8.de>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Chris Zankel <chris@zankel.net>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@redhat.com>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Greg Marsden <greg.marsden@oracle.com>,
-	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>, Ivan Ivanov <ivan.ivanov@suse.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Jonas Bonn <jonas@southpole.se>,
-	Kalesh Singh <kaleshsingh@google.com>,
-	Marc Zyngier <maz@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
-	Matthias Brugger <mbrugger@suse.com>,
-	Max Filippov <jcmvbkbc@gmail.com>, Miroslav Benes <mbenes@suse.cz>,
-	Rich Felker <dalias@libc.org>, Richard Weinberger <richard@nod.at>,
-	Stafford Horne <shorne@gmail.com>,
-	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org,
-	linux-alpha@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
-	linux-hexagon@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
-	linux-mm@kvack.org, linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
-	sparclinux@vger.kernel.org
-Subject: Re: [RFC PATCH v1 01/57] mm: Add macros ahead of supporting
- boot-time page size selection
-Message-ID: <Zw0iegwMp5ZVGypy@fedora>
-References: <20241014105514.3206191-1-ryan.roberts@arm.com>
- <20241014105912.3207374-1-ryan.roberts@arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XSGpT3qXzz305n
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 12:33:51 +1100 (AEDT)
+Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-7ea12e0dc7aso3044482a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2024 18:33:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1728956027; x=1729560827; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=/FgRTRf0le7Jh2w75CMwMOtbUSojhg+y46VXsqNVeW4=;
+        b=lb0IWAK2x0mOi4a9KTSfXAKX9vrA46ZIRMQM5k+uTb1r9OhTMylUfJ7iveXkvzWYWQ
+         CvVwqYhrtJ7h+PLiERA30NU/Mrv6lQxGy3sMSC4vV3ncfUse1pp4/oUj9Vck18jfyb2e
+         RnK2I7ZozRUwkoRJ1xMkTkZoL/HBlUKsxZwmKpj3VO4ECgLyugYOrDiI+qprYZgEBCdZ
+         SViiCBMEIFHpSdvDePwHOgJOmyweMht9Pf5ystNFoNnm4O3wj0t4YSp7BkbS8q9Pc5M8
+         aijrw7qjJB8/hurZzF6eXkUDvO3dPjDDiuaXpYv7f9Ev12U7vg5jnFrnyVgj4YSG+rOf
+         loTw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1728956027; x=1729560827;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/FgRTRf0le7Jh2w75CMwMOtbUSojhg+y46VXsqNVeW4=;
+        b=KAhl8VV1f/FSlXZPZYPoT9a4j2saHzvsbjy8/Zoh3Ipe1XPAwrriaC5JmGBL9P6ZNV
+         1jxG8bhHpj7YBj8PCmylLUrzOpVwaOOW+/ne5bzHjAdQwGx0IRvL3b+fDAExT8ngaRzC
+         O35K6i1FYMlVn0dq2hohqPfKqWcwj1lTTu2HM1blKjYYOOKBjCsRU+CG7Nu44p5bW7Wa
+         mM8SkhDCTVNUbNd28URJP9HCIbmVb8Uk9J11l06qho4HhSGI4UkoDym+5bjzycY1cSb3
+         UAdqPPCtfdMvOs+BMQ3WjN/wYCPEEaav1k6ad5ZT/LDEYxwrWqtMBNkyMuvw7He0cxtn
+         pDZw==
+X-Gm-Message-State: AOJu0YxuQ96SNV70S8IHNfMgmXDVVGpYi9E/1U5jdQt6jT8xQIsLew1G
+	fkBnjkGBsjlYW8jUDS3baypBLSesDzKlHCz9nD15WpORn/3OxeBjVX5D5w==
+X-Google-Smtp-Source: AGHT+IE2VbhYvinnTtnp8gdiPFs7AssOulNu8P5FQjpDVoCidl6hRwDILWFOZsBNBRYKYFDJk0Ss8Q==
+X-Received: by 2002:a05:6a20:9f4a:b0:1d5:1729:35ec with SMTP id adf61e73a8af0-1d8c955c8ebmr16914023637.7.1728956026633;
+        Mon, 14 Oct 2024 18:33:46 -0700 (PDT)
+Received: from dw-tp.. ([171.76.80.151])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-71e77508562sm189349b3a.186.2024.10.14.18.33.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 14 Oct 2024 18:33:45 -0700 (PDT)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: kasan-dev@googlegroups.com,
+	linux-mm@kvack.org,
+	Marco Elver <elver@google.com>,
+	Alexander Potapenko <glider@google.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	"Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
+	Donet Tom <donettom@linux.vnet.ibm.com>,
+	Pavithra Prakash <pavrampu@linux.vnet.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [RFC RESEND v2 00/13] powerpc/kfence: Improve kfence support
+Date: Tue, 15 Oct 2024 07:03:23 +0530
+Message-ID: <cover.1728954719.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.46.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,498 +92,110 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241014105912.3207374-1-ryan.roberts@arm.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
+Content-Transfer-Encoding: 8bit
 
-Hello Ryan,
+Resending v2 for review comments.
 
-On Mon, Oct 14, 2024 at 11:58:08AM +0100, Ryan Roberts wrote:
-> arm64 can support multiple base page sizes. Instead of selecting a page
-> size at compile time, as is done today, we will make it possible to
-> select the desired page size on the command line.
-> 
-> In this case PAGE_SHIFT and it's derivatives, PAGE_SIZE and PAGE_MASK
-> (as well as a number of other macros related to or derived from
-> PAGE_SHIFT, but I'm not worrying about those yet), are no longer
-> compile-time constants. So the code base needs to cope with that.
-> 
-> As a first step, introduce MIN and MAX variants of these macros, which
-> express the range of possible page sizes. These are always compile-time
-> constants and can be used in many places where PAGE_[SHIFT|SIZE|MASK]
-> were previously used where a compile-time constant is required.
-> (Subsequent patches will do that conversion work). When the arch/build
-> doesn't support boot-time page size selection, the MIN and MAX variants
-> are equal and everything resolves as it did previously.
-> 
+This patch series addresses following to improve kfence support on Powerpc.
 
-MIN and MAX appear to construct a boundary, but it may be not enough.
-Please see the following comment inline.
+1. Usage of copy_from_kernel_nofault() within kernel, such as read from
+   /proc/kcore can cause kfence to report false negatives.
 
-> Additionally, introduce DEFINE_GLOBAL_PAGE_SIZE_VAR[_CONST]() which wrap
-> global variable defintions so that for boot-time page size selection
-> builds, the variable being wrapped is initialized at boot-time, instead
-> of compile-time. This is done by defining a function to do the
-> assignment, which has the "constructor" attribute. Constructor is
-> preferred over initcall, because when compiling a module, the module is
-> limited to a single initcall but constructors are unlimited. For
-> built-in code, constructors are now called earlier to guarrantee that
-> the variables are initialized by the time they are used. Any arch that
-> wants to enable boot-time page size selection will need to select
-> CONFIG_CONSTRUCTORS.
-> 
-> These new macros need to be available anywhere PAGE_SHIFT and friends
-> are available. Those are defined via asm/page.h (although some arches
-> have a sub-include that defines them). Unfortunately there is no
-> reliable asm-generic header we can easily piggy-back on, so let's define
-> a new one, pgtable-geometry.h, which we include near where each arch
-> defines PAGE_SHIFT. Ugh.
-> 
-> -------
-> 
-> Most of the problems that need to be solved over the next few patches
-> fall into these broad categories, which are all solved with the help of
-> these new macros:
-> 
-> 1. Assignment of values derived from PAGE_SIZE in global variables
-> 
->   For boot-time page size builds, we must defer the initialization of
->   these variables until boot-time, when the page size is known. See
->   DEFINE_GLOBAL_PAGE_SIZE_VAR[_CONST]() as described above.
-> 
-> 2. Define static storage in units related to PAGE_SIZE
-> 
->   This static storage will be defined according to PAGE_SIZE_MAX.
-> 
-> 3. Define size of struct so that it is related to PAGE_SIZE
-> 
->   The struct often contains an array that is sized to fill the page. In
->   this case, use a flexible array with dynamic allocation. In other
->   cases, the struct fits exactly over a page, which is a header (e.g.
->   swap file header). In this case, remove the padding, and manually
->   determine the struct pointer within the page.
-> 
+   This is similar to what was reported on s390. [1]
+   [1]: https://lore.kernel.org/all/20230213183858.1473681-1-hca@linux.ibm.com/
 
-About two years ago, I tried to do similar thing in your series, but ran
-into problem at this point, or maybe not exactly as the point you list
-here. I consider this as the most challenged part.
+   Hence this series adds patch-1 as a kfence kunit test to detect
+   copy_from_kernel_nofault() case. I assume the same might be needed for all
+   other archs as well (Please correct if this understanding is wrong).
 
-The scenario is
-struct X {
-	a[size_a];
-	b[size_b];
-	c;
-};
+   Patch-2, thus adds a fix to handle this case in ___do_page_fault() for
+   powerpc.
 
-Where size_a = f(PAGE_SHIFT), size_b=g(PAGE_SHIFT). One of f() and g()
-is proportional to PAGE_SHIFT, the other is inversely proportional.
+2. (book3s64) Kfence depends upon debug_pagealloc infrastructure on Hash.
+   debug_pagealloc allocates a linear map based on the size of the DRAM i.e.
+   1 byte for every 64k page. That means for a 16TB DRAM, it will need 256MB
+   memory for linear map. Memory for linear map on pseries comes from
+   RMA region which has size limitation. On P8 RMA is 512MB, in which we also
+   fit crash kernel at 256MB, paca allocations and emergency stacks.
+   That means there is not enough memory in the RMA region for the linear map
+   based on DRAM size (required by debug_pagealloc).
 
-How can you fix the reference of X.a and X.b?
+   Now kfence only requires memory for it's kfence objects. kfence by default
+   requires only (255 + 1) * 2 i.e. 32 MB for 64k pagesize.
 
-Thanks,
+Summary of patches
+==================
+This series in Patch-1 adds a kfence kunit testcase to detect
+copy_from_kernel_nofault() case. I assume the same should be needed for all
+other archs as well.
 
-Pingfan
+Patch-2 adds a fix to handle this false negatives from copy_from_kernel_nofault().
+
+Patch[3-9] removes the direct dependency of kfence on debug_pagealloc
+infrastructure. We make Hash kernel linear map functions to take linear map array
+as a parameter so that it can support debug_pagealloc and kfence individually.
+That means we don't need to keep the size of the linear map to be
+DRAM_SIZE >> PAGE_SHIFT anymore for kfence.
+
+Patch-10: Adds kfence support with above (abstracted out) kernel linear map
+infrastructure. With it, this also fixes, the boot failure problem when kfence
+gets enabled on Hash with >=16TB of RAM.
+
+Patch-11 & Patch-12: Ensure late initialization of kfence is disabled for both
+Hash and Radix due to linear mapping size limiations. Commit gives more
+description.
+
+Patch-13: Early detects if debug_pagealloc cannot be enabled (due to RMA size
+limitation) so that the linear mapping size can be set correctly during init.
+
+Testing:
+========
+It passes kfence kunit tests with Hash and Radix.
+[   44.355173][    T1] # kfence: pass:27 fail:0 skip:0 total:27
+[   44.358631][    T1] # Totals: pass:27 fail:0 skip:0 total:27
+[   44.365570][    T1] ok 1 kfence
 
 
-> 4. BUILD_BUG_ON() with values derived from PAGE_SIZE
-> 
->   In most cases, we can change these to compare againt the appropriate
->   limit (either MIN or MAX). In other cases, we must change these to
->   run-time BUG_ON().
-> 
-> 5. Ensure page alignment of static data structures
-> 
->   Align instead to PAGE_SIZE_MAX.
-> 
-> 6. #ifdeffery based on PAGE_SIZE
-> 
->   Often these can be changed to c code constructs. e.g. a macro that
->   returns a different value depending on page size can be changed to use
->   the ternary operator and the compiler will dead code strip it for the
->   compile-time constant case and runtime evaluate it for the non-const
->   case. Or #if/#else/#endif within a function can be converted to c
->   if/else blocks, which are also dead code stripped for the const case.
->   Sometimes we can change the c-preprocessor logic to use the
->   appropriate MIN/MAX limit.
-> 
-> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
-> ---
-> 
-> ***NOTE***
-> Any confused maintainers may want to read the cover note here for context:
-> https://lore.kernel.org/all/20241014105514.3206191-1-ryan.roberts@arm.com/
-> 
->  arch/alpha/include/asm/page.h          |  1 +
->  arch/arc/include/asm/page.h            |  1 +
->  arch/arm/include/asm/page.h            |  1 +
->  arch/arm64/include/asm/page-def.h      |  2 +
->  arch/csky/include/asm/page.h           |  3 ++
->  arch/hexagon/include/asm/page.h        |  2 +
->  arch/loongarch/include/asm/page.h      |  2 +
->  arch/m68k/include/asm/page.h           |  1 +
->  arch/microblaze/include/asm/page.h     |  1 +
->  arch/mips/include/asm/page.h           |  1 +
->  arch/nios2/include/asm/page.h          |  2 +
->  arch/openrisc/include/asm/page.h       |  1 +
->  arch/parisc/include/asm/page.h         |  1 +
->  arch/powerpc/include/asm/page.h        |  2 +
->  arch/riscv/include/asm/page.h          |  1 +
->  arch/s390/include/asm/page.h           |  1 +
->  arch/sh/include/asm/page.h             |  1 +
->  arch/sparc/include/asm/page.h          |  3 ++
->  arch/um/include/asm/page.h             |  2 +
->  arch/x86/include/asm/page_types.h      |  2 +
->  arch/xtensa/include/asm/page.h         |  1 +
->  include/asm-generic/pgtable-geometry.h | 71 ++++++++++++++++++++++++++
->  init/main.c                            |  5 +-
->  23 files changed, 107 insertions(+), 1 deletion(-)
->  create mode 100644 include/asm-generic/pgtable-geometry.h
-> 
-> diff --git a/arch/alpha/include/asm/page.h b/arch/alpha/include/asm/page.h
-> index 70419e6be1a35..d0096fb5521b8 100644
-> --- a/arch/alpha/include/asm/page.h
-> +++ b/arch/alpha/include/asm/page.h
-> @@ -88,5 +88,6 @@ typedef struct page *pgtable_t;
->  
->  #include <asm-generic/memory_model.h>
->  #include <asm-generic/getorder.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #endif /* _ALPHA_PAGE_H */
-> diff --git a/arch/arc/include/asm/page.h b/arch/arc/include/asm/page.h
-> index def0dfb95b436..8d56549db7a33 100644
-> --- a/arch/arc/include/asm/page.h
-> +++ b/arch/arc/include/asm/page.h
-> @@ -6,6 +6,7 @@
->  #define __ASM_ARC_PAGE_H
->  
->  #include <uapi/asm/page.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #ifdef CONFIG_ARC_HAS_PAE40
->  
-> diff --git a/arch/arm/include/asm/page.h b/arch/arm/include/asm/page.h
-> index 62af9f7f9e963..417aa8533c718 100644
-> --- a/arch/arm/include/asm/page.h
-> +++ b/arch/arm/include/asm/page.h
-> @@ -191,5 +191,6 @@ extern int pfn_valid(unsigned long);
->  
->  #include <asm-generic/getorder.h>
->  #include <asm-generic/memory_model.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #endif
-> diff --git a/arch/arm64/include/asm/page-def.h b/arch/arm64/include/asm/page-def.h
-> index 792e9fe881dcf..d69971cf49cd2 100644
-> --- a/arch/arm64/include/asm/page-def.h
-> +++ b/arch/arm64/include/asm/page-def.h
-> @@ -15,4 +15,6 @@
->  #define PAGE_SIZE		(_AC(1, UL) << PAGE_SHIFT)
->  #define PAGE_MASK		(~(PAGE_SIZE-1))
->  
-> +#include <asm-generic/pgtable-geometry.h>
-> +
->  #endif /* __ASM_PAGE_DEF_H */
-> diff --git a/arch/csky/include/asm/page.h b/arch/csky/include/asm/page.h
-> index 0ca6c408c07f2..95173d57adc8b 100644
-> --- a/arch/csky/include/asm/page.h
-> +++ b/arch/csky/include/asm/page.h
-> @@ -92,4 +92,7 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
->  #include <asm-generic/getorder.h>
->  
->  #endif /* !__ASSEMBLY__ */
-> +
-> +#include <asm-generic/pgtable-geometry.h>
-> +
->  #endif /* __ASM_CSKY_PAGE_H */
-> diff --git a/arch/hexagon/include/asm/page.h b/arch/hexagon/include/asm/page.h
-> index 8a6af57274c2d..ba7ad5231695f 100644
-> --- a/arch/hexagon/include/asm/page.h
-> +++ b/arch/hexagon/include/asm/page.h
-> @@ -139,4 +139,6 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
->  #endif /* ifdef __ASSEMBLY__ */
->  #endif /* ifdef __KERNEL__ */
->  
-> +#include <asm-generic/pgtable-geometry.h>
-> +
->  #endif
-> diff --git a/arch/loongarch/include/asm/page.h b/arch/loongarch/include/asm/page.h
-> index e85df33f11c77..9862e8fb047a6 100644
-> --- a/arch/loongarch/include/asm/page.h
-> +++ b/arch/loongarch/include/asm/page.h
-> @@ -123,4 +123,6 @@ extern int __virt_addr_valid(volatile void *kaddr);
->  
->  #endif /* !__ASSEMBLY__ */
->  
-> +#include <asm-generic/pgtable-geometry.h>
-> +
->  #endif /* _ASM_PAGE_H */
-> diff --git a/arch/m68k/include/asm/page.h b/arch/m68k/include/asm/page.h
-> index 8cfb84b499751..4df4681b02194 100644
-> --- a/arch/m68k/include/asm/page.h
-> +++ b/arch/m68k/include/asm/page.h
-> @@ -60,5 +60,6 @@ extern unsigned long _ramend;
->  
->  #include <asm-generic/getorder.h>
->  #include <asm-generic/memory_model.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #endif /* _M68K_PAGE_H */
-> diff --git a/arch/microblaze/include/asm/page.h b/arch/microblaze/include/asm/page.h
-> index 8810f4f1c3b02..abc23c3d743bd 100644
-> --- a/arch/microblaze/include/asm/page.h
-> +++ b/arch/microblaze/include/asm/page.h
-> @@ -142,5 +142,6 @@ static inline const void *pfn_to_virt(unsigned long pfn)
->  
->  #include <asm-generic/memory_model.h>
->  #include <asm-generic/getorder.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #endif /* _ASM_MICROBLAZE_PAGE_H */
-> diff --git a/arch/mips/include/asm/page.h b/arch/mips/include/asm/page.h
-> index 4609cb0326cf3..3d91021538f02 100644
-> --- a/arch/mips/include/asm/page.h
-> +++ b/arch/mips/include/asm/page.h
-> @@ -227,5 +227,6 @@ static inline unsigned long kaslr_offset(void)
->  
->  #include <asm-generic/memory_model.h>
->  #include <asm-generic/getorder.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #endif /* _ASM_PAGE_H */
-> diff --git a/arch/nios2/include/asm/page.h b/arch/nios2/include/asm/page.h
-> index 0722f88e63cc7..2e5f93beb42b7 100644
-> --- a/arch/nios2/include/asm/page.h
-> +++ b/arch/nios2/include/asm/page.h
-> @@ -97,4 +97,6 @@ extern struct page *mem_map;
->  
->  #endif /* !__ASSEMBLY__ */
->  
-> +#include <asm-generic/pgtable-geometry.h>
-> +
->  #endif /* _ASM_NIOS2_PAGE_H */
-> diff --git a/arch/openrisc/include/asm/page.h b/arch/openrisc/include/asm/page.h
-> index 1d5913f67c312..a0da2a9842241 100644
-> --- a/arch/openrisc/include/asm/page.h
-> +++ b/arch/openrisc/include/asm/page.h
-> @@ -88,5 +88,6 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
->  
->  #include <asm-generic/memory_model.h>
->  #include <asm-generic/getorder.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #endif /* __ASM_OPENRISC_PAGE_H */
-> diff --git a/arch/parisc/include/asm/page.h b/arch/parisc/include/asm/page.h
-> index 4bea2e95798f0..2a75496237c09 100644
-> --- a/arch/parisc/include/asm/page.h
-> +++ b/arch/parisc/include/asm/page.h
-> @@ -173,6 +173,7 @@ extern int npmem_ranges;
->  
->  #include <asm-generic/memory_model.h>
->  #include <asm-generic/getorder.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  #include <asm/pdc.h>
->  
->  #define PAGE0   ((struct zeropage *)absolute_pointer(__PAGE_OFFSET))
-> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-> index 83d0a4fc5f755..4601c115b6485 100644
-> --- a/arch/powerpc/include/asm/page.h
-> +++ b/arch/powerpc/include/asm/page.h
-> @@ -300,4 +300,6 @@ static inline unsigned long kaslr_offset(void)
->  #include <asm-generic/memory_model.h>
->  #endif /* __ASSEMBLY__ */
->  
-> +#include <asm-generic/pgtable-geometry.h>
-> +
->  #endif /* _ASM_POWERPC_PAGE_H */
-> diff --git a/arch/riscv/include/asm/page.h b/arch/riscv/include/asm/page.h
-> index 7ede2111c5917..e5af7579e45bf 100644
-> --- a/arch/riscv/include/asm/page.h
-> +++ b/arch/riscv/include/asm/page.h
-> @@ -204,5 +204,6 @@ static __always_inline void *pfn_to_kaddr(unsigned long pfn)
->  
->  #include <asm-generic/memory_model.h>
->  #include <asm-generic/getorder.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #endif /* _ASM_RISCV_PAGE_H */
-> diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
-> index 16e4caa931f1f..42157e7690a77 100644
-> --- a/arch/s390/include/asm/page.h
-> +++ b/arch/s390/include/asm/page.h
-> @@ -275,6 +275,7 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
->  
->  #include <asm-generic/memory_model.h>
->  #include <asm-generic/getorder.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #define AMODE31_SIZE		(3 * PAGE_SIZE)
->  
-> diff --git a/arch/sh/include/asm/page.h b/arch/sh/include/asm/page.h
-> index f780b467e75d7..09533d46ef033 100644
-> --- a/arch/sh/include/asm/page.h
-> +++ b/arch/sh/include/asm/page.h
-> @@ -162,5 +162,6 @@ typedef struct page *pgtable_t;
->  
->  #include <asm-generic/memory_model.h>
->  #include <asm-generic/getorder.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  
->  #endif /* __ASM_SH_PAGE_H */
-> diff --git a/arch/sparc/include/asm/page.h b/arch/sparc/include/asm/page.h
-> index 5e44cdf2a8f2b..4327fe2bfa010 100644
-> --- a/arch/sparc/include/asm/page.h
-> +++ b/arch/sparc/include/asm/page.h
-> @@ -9,4 +9,7 @@
->  #else
->  #include <asm/page_32.h>
->  #endif
-> +
-> +#include <asm-generic/pgtable-geometry.h>
-> +
->  #endif
-> diff --git a/arch/um/include/asm/page.h b/arch/um/include/asm/page.h
-> index 9ef9a8aedfa66..f26011808f514 100644
-> --- a/arch/um/include/asm/page.h
-> +++ b/arch/um/include/asm/page.h
-> @@ -119,4 +119,6 @@ extern unsigned long uml_physmem;
->  #define __HAVE_ARCH_GATE_AREA 1
->  #endif
->  
-> +#include <asm-generic/pgtable-geometry.h>
-> +
->  #endif	/* __UM_PAGE_H */
-> diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
-> index 52f1b4ff0cc16..6d2381342047f 100644
-> --- a/arch/x86/include/asm/page_types.h
-> +++ b/arch/x86/include/asm/page_types.h
-> @@ -71,4 +71,6 @@ extern void initmem_init(void);
->  
->  #endif	/* !__ASSEMBLY__ */
->  
-> +#include <asm-generic/pgtable-geometry.h>
-> +
->  #endif	/* _ASM_X86_PAGE_DEFS_H */
-> diff --git a/arch/xtensa/include/asm/page.h b/arch/xtensa/include/asm/page.h
-> index 4db56ef052d22..86952cb32af23 100644
-> --- a/arch/xtensa/include/asm/page.h
-> +++ b/arch/xtensa/include/asm/page.h
-> @@ -200,4 +200,5 @@ static inline unsigned long ___pa(unsigned long va)
->  #endif /* __ASSEMBLY__ */
->  
->  #include <asm-generic/memory_model.h>
-> +#include <asm-generic/pgtable-geometry.h>
->  #endif /* _XTENSA_PAGE_H */
-> diff --git a/include/asm-generic/pgtable-geometry.h b/include/asm-generic/pgtable-geometry.h
-> new file mode 100644
-> index 0000000000000..358e729a6ac37
-> --- /dev/null
-> +++ b/include/asm-generic/pgtable-geometry.h
-> @@ -0,0 +1,71 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef ASM_GENERIC_PGTABLE_GEOMETRY_H
-> +#define ASM_GENERIC_PGTABLE_GEOMETRY_H
-> +
-> +#if   defined(PAGE_SHIFT_MAX) && defined(PAGE_SIZE_MAX) && defined(PAGE_MASK_MAX) && \
-> +      defined(PAGE_SHIFT_MIN) && defined(PAGE_SIZE_MIN) && defined(PAGE_MASK_MIN)
-> +/* Arch supports boot-time page size selection. */
-> +#elif defined(PAGE_SHIFT_MAX) || defined(PAGE_SIZE_MAX) || defined(PAGE_MASK_MAX) || \
-> +      defined(PAGE_SHIFT_MIN) || defined(PAGE_SIZE_MIN) || defined(PAGE_MASK_MIN)
-> +#error Arch must define all or none of the boot-time page size macros
-> +#else
-> +/* Arch does not support boot-time page size selection. */
-> +#define PAGE_SHIFT_MIN	PAGE_SHIFT
-> +#define PAGE_SIZE_MIN	PAGE_SIZE
-> +#define PAGE_MASK_MIN	PAGE_MASK
-> +#define PAGE_SHIFT_MAX	PAGE_SHIFT
-> +#define PAGE_SIZE_MAX	PAGE_SIZE
-> +#define PAGE_MASK_MAX	PAGE_MASK
-> +#endif
-> +
-> +/*
-> + * Define a global variable (scalar or struct), whose value is derived from
-> + * PAGE_SIZE and friends. When PAGE_SIZE is a compile-time constant, the global
-> + * variable is simply defined with the static value. When PAGE_SIZE is
-> + * determined at boot-time, a pure initcall is registered and run during boot to
-> + * initialize the variable.
-> + *
-> + * @type: Unqualified type. Do not include "const"; implied by macro variant.
-> + * @name: Variable name.
-> + * @...:  Initialization value. May be scalar or initializer.
-> + *
-> + * "static" is declared by placing "static" before the macro.
-> + *
-> + * Example:
-> + *
-> + * struct my_struct {
-> + *         int a;
-> + *         char b;
-> + * };
-> + *
-> + * static DEFINE_GLOBAL_PAGE_SIZE_VAR(struct my_struct, my_variable, {
-> + *         .a = 10,
-> + *         .b = 'e',
-> + * });
-> + */
-> +#if PAGE_SIZE_MIN != PAGE_SIZE_MAX
-> +#define __DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, attrib, ...)		\
-> +	type name attrib;						\
-> +	static int __init __attribute__((constructor)) __##name##_init(void)	\
-> +	{								\
-> +		name = (type)__VA_ARGS__;				\
-> +		return 0;						\
-> +	}
-> +
-> +#define DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, ...)			\
-> +	__DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, , __VA_ARGS__)
-> +
-> +#define DEFINE_GLOBAL_PAGE_SIZE_VAR_CONST(type, name, ...)		\
-> +	__DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, __ro_after_init, __VA_ARGS__)
-> +#else /* PAGE_SIZE_MIN == PAGE_SIZE_MAX */
-> +#define __DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, attrib, ...)		\
-> +	type name attrib = __VA_ARGS__;					\
-> +
-> +#define DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, ...)			\
-> +	__DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, , __VA_ARGS__)
-> +
-> +#define DEFINE_GLOBAL_PAGE_SIZE_VAR_CONST(type, name, ...)		\
-> +	__DEFINE_GLOBAL_PAGE_SIZE_VAR(const type, name, , __VA_ARGS__)
-> +#endif
-> +
-> +#endif /* ASM_GENERIC_PGTABLE_GEOMETRY_H */
-> diff --git a/init/main.c b/init/main.c
-> index 206acdde51f5a..ba1515eb20b9d 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -899,6 +899,8 @@ static void __init early_numa_node_init(void)
->  #endif
->  }
->  
-> +static __init void do_ctors(void);
-> +
->  asmlinkage __visible __init __no_sanitize_address __noreturn __no_stack_protector
->  void start_kernel(void)
->  {
-> @@ -910,6 +912,8 @@ void start_kernel(void)
->  	debug_objects_early_init();
->  	init_vmlinux_build_id();
->  
-> +	do_ctors();
-> +
->  	cgroup_init_early();
->  
->  	local_irq_disable();
-> @@ -1360,7 +1364,6 @@ static void __init do_basic_setup(void)
->  	cpuset_init_smp();
->  	driver_init();
->  	init_irq_proc();
-> -	do_ctors();
->  	do_initcalls();
->  }
->  
-> -- 
-> 2.43.0
-> 
+Future TODO:
+============
+When kfence on Hash gets enabled, the kernel linear map uses PAGE_SIZE mapping
+rather than 16MB mapping. This should be improved in future.
+
+v1 -> v2:
+=========
+1. Added a kunit testcase patch-1.
+2. Fixed a false negative with copy_from_kernel_nofault() in patch-2.
+3. Addressed review comments from Christophe Leroy.
+4. Added patch-13.
+
+
+Nirjhar Roy (1):
+  mm/kfence: Add a new kunit test test_use_after_free_read_nofault()
+
+Ritesh Harjani (IBM) (12):
+  powerpc: mm: Fix kfence page fault reporting
+  book3s64/hash: Remove kfence support temporarily
+  book3s64/hash: Refactor kernel linear map related calls
+  book3s64/hash: Add hash_debug_pagealloc_add_slot() function
+  book3s64/hash: Add hash_debug_pagealloc_alloc_slots() function
+  book3s64/hash: Refactor hash__kernel_map_pages() function
+  book3s64/hash: Make kernel_map_linear_page() generic
+  book3s64/hash: Disable debug_pagealloc if it requires more memory
+  book3s64/hash: Add kfence functionality
+  book3s64/radix: Refactoring common kfence related functions
+  book3s64/hash: Disable kfence if not early init
+  book3s64/hash: Early detect debug_pagealloc size requirement
+
+ arch/powerpc/include/asm/kfence.h        |   8 +-
+ arch/powerpc/mm/book3s64/hash_utils.c    | 364 +++++++++++++++++------
+ arch/powerpc/mm/book3s64/pgtable.c       |  13 +
+ arch/powerpc/mm/book3s64/radix_pgtable.c |  12 -
+ arch/powerpc/mm/fault.c                  |  10 +-
+ arch/powerpc/mm/init-common.c            |   1 +
+ mm/kfence/kfence_test.c                  |  17 ++
+ 7 files changed, 318 insertions(+), 107 deletions(-)
+
+--
+2.46.0
 
 
