@@ -1,58 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-2288-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2289-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4231D216A3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2024 13:40:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB3EFD216A7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2024 14:06:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XSZwz29XDz3bqM;
-	Wed, 16 Oct 2024 00:40:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728999635;
-	cv=none; b=VVLVFMOM8j3/ipHgvE3xDH3QEYGUB3gl0qw4Nsc9ZR07aDcbRQwIa8E6OtLvj6iKjeQwN/dr0VI/XBFY4xomy2473RjyYbyJoVi/5ffz9H1uR9kOJadzwG6NU39fK5mqCHTp4rkH4QI3VgJwUFdtNOmbnJEVhUeBxZ4ZdkjSqOLkLTY5deQ4fQL7B2axWUzFH7jPjYnxQuTVohyVmndFF+5L5k+C1XQMocOLInhZS5qmRNEZiPDMGf69iu43/Iko5w0qg8UXHEAG1GtLmtkKSJjVJo03KoMDSgDJE7NTObI/hKu06lf1hWKpiurqI44/LuWmw3NpZcd1ZDuDtr4ugw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XSbW36zn2z3bpn;
+	Wed, 16 Oct 2024 01:06:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729001199;
+	cv=none; b=VAw0riHhWWPtvK8Mah6yXlM7zKfQOHIUCMFWetY+salgRjhBwUJSYuDfFyDGW9dcIOXNXfcI/yC4IKRDaGA6ADDfcMmT4IjrtvbYAgqOc8XRJsppitC0QU8AteVOIrUxKISSDElMaS79hRS/AYO1+LsIRAt1wzogaVwdKfHaUb1cg7BDrnzjVck4DMZHW5vRGYbJAVVXo6+fX5uBLHHl5Cr9+fK9vTjzWYKa+00vffaMwf7U5EUKGk648FioPUksaSKxSSmPnuv2mDMCVLbm0cQZwG9AAXhcsYQ6SQr+7Kuafl9joNjACkVue1PY+/NsaIiJNCt7sgp9/nEXq1cB0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728999635; c=relaxed/relaxed;
-	bh=hwhgeRMk4jyYgedHBOUOc/6CODzmYlrjcK+trw2k++w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Bjtl1ShVGexbo+7y6Z4OSFh96cFEE7wAFfYSWoCJdDlIcR6T5F2jgVwX+VlUZfpub2kGhDnBtfeQjon0X7DG1CUwewV/652YHOqlSC7pjet6dV/kPz1tyIQ5hYap0lXKIjruLFcNR6jsVZs6dPL+bSLdDC80Z1en/8qXYI121D4ONbfAgoU3cIEShw6aL44R8SC6qQlHKcWiKi/lLTTIfLriigC+Tx+FbxZqBz4QRlrecYAWfs6N0yJ8EvZ747/wTSCvnGvvIbBRYUYq/zNPzwqEx3aaCybr5oySw/m7/SUaY5bmMP12XUMT7g1tuso0wAVkSM2S5om7u166gW1ruQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dave.martin@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=dave.martin@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XSZwx2Ylzz3bnm
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2024 00:40:31 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 911ABFEC;
-	Tue, 15 Oct 2024 06:40:28 -0700 (PDT)
-Received: from e133380.arm.com (e133380.arm.com [10.1.197.51])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C40753F51B;
-	Tue, 15 Oct 2024 06:39:54 -0700 (PDT)
-Date: Tue, 15 Oct 2024 14:39:49 +0100
-From: Dave Martin <Dave.Martin@arm.com>
-To: Will Deacon <will@kernel.org>
-Cc: Joey Gouly <joey.gouly@arm.com>, Kevin Brodsky <kevin.brodsky@arm.com>,
-	linux-arm-kernel@lists.infradead.org, nd@arm.com,
-	akpm@linux-foundation.org, aneesh.kumar@kernel.org,
-	aneesh.kumar@linux.ibm.com, anshuman.khandual@arm.com, bp@alien8.de,
-	broonie@kernel.org, catalin.marinas@arm.com,
-	christophe.leroy@csgroup.eu, dave.hansen@linux.intel.com,
-	hpa@zytor.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org, maz@kernel.org, mingo@redhat.com,
-	mpe@ellerman.id.au, naveen.n.rao@linux.ibm.com, npiggin@gmail.com,
-	oliver.upton@linux.dev, shuah@kernel.org, skhan@linuxfoundation.org,
-	szabolcs.nagy@arm.com, tglx@linutronix.de, x86@kernel.org,
-	kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v5 19/30] arm64: add POE signal support
-Message-ID: <Zw5wpTWgNC+aC+Vk@e133380.arm.com>
-References: <20240822151113.1479789-1-joey.gouly@arm.com>
- <20240822151113.1479789-20-joey.gouly@arm.com>
- <47e1537f-5b60-4541-aed1-a20e804c137d@arm.com>
- <20241009144301.GA12453@willie-the-truck>
- <20241014171023.GA18295@willie-the-truck>
- <20241015095911.GA3777204@e124191.cambridge.arm.com>
- <20241015114116.GA19334@willie-the-truck>
+	t=1729001199; c=relaxed/relaxed;
+	bh=gAMkFuurSKWsXKkavscpUQu+wnifZHhrSt0CodqSyYs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mlhtE0O7dw7te1cZ9CKrqUQ5rHPHuopsWczOXkQOxhmLAhHLmsUIuXJgPstY9j9pKvg8ONK6uHnNIGpRVtX1J43WpeMB/FJTfT5fW7s5I4H+SiGJUuJ8rJsAWBuKqnhdd9N4yXZCC4fIvVgUayUz9NBUp8kdjBPqCGn8jJcpzdkjIm9PqiBFElmkl6vHrJJSJzSFRt/QzNrJ3HRqKkjoCfWIF4stCKH7aI48lrLt7CpNc/vs4rNAlNpEewEIugMtvBQ+8gg2cRjyg6W+GJQUWSYGuZvrrB3fUfzLcMO3/XbYDA4VZ0O2PyK+etvA55JJBrYeSlfioiKbewf6QmblRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rNLHZLOv; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rNLHZLOv;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XSbW24hKPz3bpm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Oct 2024 01:06:37 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49FCOVKb011338;
+	Tue, 15 Oct 2024 14:06:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=gAMkFu
+	urSKWsXKkavscpUQu+wnifZHhrSt0CodqSyYs=; b=rNLHZLOvukuSpUg1Ekt2fL
+	nRFDj/FaYoew1FNr1Vq1VOwz2ihwX4dG+Be8Xhrd5c+rLJQ38kbSdFVyYX09g8bO
+	15WqJL1CRzwgCeMKYy/3lCLrLuBRD2NptjwV3LJMIUXammT3VMeV/+C93Il7/GQ1
+	6gR1pHl6Z5TJDoYXl8lxc2Oy1cqxAgr78Sncntxj8dlqUp3PI9QKbn0rDCtSqASP
+	C7aWR/nwgan5G+Ba+yTIDShhDtKyh/1y01wAAR7tBtfNOHHhm2FYLMXJhP2N6r4Q
+	oD9HpHLlXkCSjwsXVDAdHHAuRGiIq5qupwpO1NBiADFe0IFwYv8ouNFqibj1FUtA
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 429rcerhuf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Oct 2024 14:06:25 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49FE6OFp002259;
+	Tue, 15 Oct 2024 14:06:24 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 429rcerhu8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Oct 2024 14:06:24 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49FCFxle004988;
+	Tue, 15 Oct 2024 14:06:23 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4285nj3xsx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Oct 2024 14:06:23 +0000
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49FE6Mwn44368244
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 15 Oct 2024 14:06:22 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C870958060;
+	Tue, 15 Oct 2024 14:06:22 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0B02258051;
+	Tue, 15 Oct 2024 14:06:15 +0000 (GMT)
+Received: from [9.43.42.92] (unknown [9.43.42.92])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 15 Oct 2024 14:06:14 +0000 (GMT)
+Message-ID: <7ae152f0-1887-4862-9173-fe2e9914dbe6@linux.ibm.com>
+Date: Tue, 15 Oct 2024 19:36:12 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,113 +83,161 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241015114116.GA19334@willie-the-truck>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC v3 3/3] fadump: Move fadump_cma_init to setup_arch() after
+ initmem_init()
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Hari Bathini <hbathini@linux.ibm.com>, Zi Yan <ziy@nvidia.com>,
+        David Hildenbrand <david@redhat.com>,
+        "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+        Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
+        Donet Tom <donettom@linux.vnet.ibm.com>,
+        LKML
+ <linux-kernel@vger.kernel.org>,
+        Sachin P Bappalige <sachinpb@linux.ibm.com>
+References: <030b6d46fddac126a6cf7e119bea48055338f0ed.1728658614.git.ritesh.list@gmail.com>
+ <759d0fc37d9fedca6cfe78ea7061447ecbf1bc77.1728658614.git.ritesh.list@gmail.com>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <759d0fc37d9fedca6cfe78ea7061447ecbf1bc77.1728658614.git.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: OrYDgTtVNxs83JroPRt-Qzl2IJZxzi09
+X-Proofpoint-ORIG-GUID: yqy2g7rGIy8HZ1kHEvg7rlWCG3Zm2J3P
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 malwarescore=0
+ suspectscore=0 spamscore=0 lowpriorityscore=0 impostorscore=0
+ mlxlogscore=999 clxscore=1015 phishscore=0 mlxscore=0 priorityscore=1501
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2410150094
 
-On Tue, Oct 15, 2024 at 12:41:16PM +0100, Will Deacon wrote:
-> On Tue, Oct 15, 2024 at 10:59:11AM +0100, Joey Gouly wrote:
-> > On Mon, Oct 14, 2024 at 06:10:23PM +0100, Will Deacon wrote:
-> > > Kevin, Joey,
-> > > 
-> > > On Wed, Oct 09, 2024 at 03:43:01PM +0100, Will Deacon wrote:
-> > > > On Tue, Sep 24, 2024 at 01:27:58PM +0200, Kevin Brodsky wrote:
-> > > > > On 22/08/2024 17:11, Joey Gouly wrote:
-> > > > > > @@ -1178,6 +1237,9 @@ static void setup_return(struct pt_regs *regs, struct k_sigaction *ka,
-> > > > > >  		sme_smstop();
-> > > > > >  	}
-> > > > > >  
-> > > > > > +	if (system_supports_poe())
-> > > > > > +		write_sysreg_s(POR_EL0_INIT, SYS_POR_EL0);
-> > > > > 
-> > > > > At the point where setup_return() is called, the signal frame has
-> > > > > already been written to the user stack. In other words, we write to the
-> > > > > user stack first, and then reset POR_EL0. This may be problematic,
-> > > > > especially if we are using the alternate signal stack, which the
-> > > > > interrupted POR_EL0 may not grant access to. In that situation uaccess
-> > > > > will fail and we'll end up with a SIGSEGV.
-> > > > > 
-> > > > > This issue has already been discussed on the x86 side, and as it happens
-> > > > > patches to reset PKRU early [1] have just landed. I don't think this is
-> > > > > a blocker for getting this series landed, but we should try and align
-> > > > > with x86. If there's no objection, I'm planning to work on a counterpart
-> > > > > to the x86 series (resetting POR_EL0 early during signal delivery).
-> > > > 
-> > > > Did you get a chance to work on that? It would be great to land the
-> > > > fixes for 6.12, if possible, so that the first kernel release with POE
-> > > > support doesn't land with known issues.
-> > > 
-> > > Looking a little more at this, I think we have quite a weird behaviour
-> > > on arm64 as it stands. It looks like we rely on the signal frame to hold
-> > > the original POR_EL0 so, if for some reason we fail to allocate space
-> > > for the POR context, I think we'll return back from the signal with
-> > > POR_EL0_INIT. That seems bad?
-> > 
-> > If we don't allocate space for POR_EL0, I think the program recieves SIGSGEV?
-> > 
-> > setup_sigframe_layout()
-> >         if (system_supports_poe()) {
-> >                 err = sigframe_alloc(user, &user->poe_offset,
-> >                                      sizeof(struct poe_context));
-> >                 if (err)
-> >                         return err;
-> >         }
-> > 
-> > Through get_sigframe() and setup_rt_frame(), that eventually hets here:
-> > 
-> > handle_signal()
-> > 	ret = setup_rt_frame(usig, ksig, oldset, regs);
-> > 
-> > 	[..]
-> > 
-> >         signal_setup_done(ret, ksig, test_thread_flag(TIF_SINGLESTEP));
-> > 
-> > void signal_setup_done(int failed, struct ksignal *ksig, int stepping)                                                                                                                         
-> > {                                                                                                                                                                                              
-> >         if (failed)                                                                                                                                                                            
-> >                 force_sigsegv(ksig->sig);                                                                                                                                                      
-> >         else                                                                                                                                                                                   
-> >                 signal_delivered(ksig, stepping);                                                                                                                                              
-> > }  
-> > 
-> > So I think it's "fine"?
+
+
+On 10/11/24 8:30 PM, Ritesh Harjani (IBM) wrote:
+> During early init CMA_MIN_ALIGNMENT_BYTES can be PAGE_SIZE,
+> since pageblock_order is still zero and it gets initialized
+> later during initmem_init() e.g.
+> setup_arch() -> initmem_init() -> sparse_init() -> set_pageblock_order()
 > 
-> Ah, yes, sorry about that. I got confused by the conditional push in
-> setup_sigframe():
+> One such use case where this causes issues is -
+> early_setup() -> early_init_devtree() -> fadump_reserve_mem() -> fadump_cma_init()
 > 
-> 	if (system_supports_poe() && err == 0 && user->poe_offset) {
-> 		...
+> This causes CMA memory alignment check to be bypassed in
+> cma_init_reserved_mem(). Then later cma_activate_area() can hit
+> a VM_BUG_ON_PAGE(pfn & ((1 << order) - 1)) if the reserved memory
+> area was not pageblock_order aligned.
 > 
-> which gives the wrong impression that the POR is somehow optional, even
-> if the CPU supports POE. So we should drop that check of
-> 'user->poe_offset' as it cannot be NULL here.
+> Fix it by moving the fadump_cma_init() after initmem_init(),
+> where other such cma reservations also gets called.
+> 
+> <stack trace>
+> ==============
+> page: refcount:0 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x10010
+> flags: 0x13ffff800000000(node=1|zone=0|lastcpupid=0x7ffff) CMA
+> raw: 013ffff800000000 5deadbeef0000100 5deadbeef0000122 0000000000000000
+> raw: 0000000000000000 0000000000000000 00000000ffffffff 0000000000000000
+> page dumped because: VM_BUG_ON_PAGE(pfn & ((1 << order) - 1))
+> ------------[ cut here ]------------
+> kernel BUG at mm/page_alloc.c:778!
+> 
+> Call Trace:
+> __free_one_page+0x57c/0x7b0 (unreliable)
+> free_pcppages_bulk+0x1a8/0x2c8
+> free_unref_page_commit+0x3d4/0x4e4
+> free_unref_page+0x458/0x6d0
+> init_cma_reserved_pageblock+0x114/0x198
+> cma_init_reserved_areas+0x270/0x3e0
+> do_one_initcall+0x80/0x2f8
+> kernel_init_freeable+0x33c/0x530
+> kernel_init+0x34/0x26c
+> ret_from_kernel_user_thread+0x14/0x1c
+> 
 
-From memory and a quick glance at the code:
+Changes looks fine to me.
+Reviewed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
 
-For other "conditionally unconditional" things, we don't have a
-corresponding check on user->foo.
+> Fixes: 11ac3e87ce09 ("mm: cma: use pageblock_order as the single alignment")
+> Suggested-by: David Hildenbrand <david@redhat.com>
+> Reported-by: Sachin P Bappalige <sachinpb@linux.ibm.com>
+> Acked-by: Hari Bathini <hbathini@linux.ibm.com>
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> ---
+>  arch/powerpc/include/asm/fadump.h  | 7 +++++++
+>  arch/powerpc/kernel/fadump.c       | 6 +-----
+>  arch/powerpc/kernel/setup-common.c | 6 ++++--
+>  3 files changed, 12 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+> index ef40c9b6972a..3638f04447f5 100644
+> --- a/arch/powerpc/include/asm/fadump.h
+> +++ b/arch/powerpc/include/asm/fadump.h
+> @@ -34,4 +34,11 @@ extern int early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
+>  				      int depth, void *data);
+>  extern int fadump_reserve_mem(void);
+>  #endif
+> +
+> +#if defined(CONFIG_FA_DUMP) && defined(CONFIG_CMA)
+> +void fadump_cma_init(void);
+> +#else
+> +static inline void fadump_cma_init(void) { }
+> +#endif
+> +
+>  #endif /* _ASM_POWERPC_FADUMP_H */
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index ffaec625b7a8..c42f89862893 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -78,7 +78,7 @@ static struct cma *fadump_cma;
+>   * But for some reason even if it fails we still have the memory reservation
+>   * with us and we can still continue doing fadump.
+>   */
+> -static void __init fadump_cma_init(void)
+> +void __init fadump_cma_init(void)
+>  {
+>  	unsigned long long base, size, end;
+>  	int rc;
+> @@ -139,8 +139,6 @@ static void __init fadump_cma_init(void)
+>  		fw_dump.boot_memory_size >> 20);
+>  	return;
+>  }
+> -#else
+> -static void __init fadump_cma_init(void) { }
+>  #endif /* CONFIG_CMA */
+>  
+>  /*
+> @@ -642,8 +640,6 @@ int __init fadump_reserve_mem(void)
+>  
+>  		pr_info("Reserved %lldMB of memory at %#016llx (System RAM: %lldMB)\n",
+>  			(size >> 20), base, (memblock_phys_mem_size() >> 20));
+> -
+> -		fadump_cma_init();
+>  	}
+>  
+>  	return ret;
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index 4bd2f87616ba..9f1e6f2e299e 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -996,9 +996,11 @@ void __init setup_arch(char **cmdline_p)
+>  	initmem_init();
+>  
+>  	/*
+> -	 * Reserve large chunks of memory for use by CMA for KVM and hugetlb. These must
+> -	 * be called after initmem_init(), so that pageblock_order is initialised.
+> +	 * Reserve large chunks of memory for use by CMA for fadump, KVM and
+> +	 * hugetlb. These must be called after initmem_init(), so that
+> +	 * pageblock_order is initialised.
+>  	 */
+> +	fadump_cma_init();
+>  	kvm_cma_reserve();
+>  	gigantic_hugetlb_cma_reserve();
+>  
 
-For conditional stuff, non-NULLness of user->foo is used to track
-whether we decided to dump the corresponding record; for consistency
-here, if we have system_supports_poe() && err == 0, then that's
-sufficient (though in prior versions of this code, POR_EL0 dumping was
-conditional and so the extra check did do something...)
-
-
-In any case, if some allocation fails then we splat out with a SIGSEGV
-before modifying the user task state to deliver the signal (in
-setup_return() etc.)
-
-If The user's POR_EL0 value is being clobbered before we get here, we
-would save the wrong value -- so the code would be broken anyway.
-
-
-So, as Joey says, this is probably fine, but the user->poe_offset check
-looks superfluous.  The kernel will splat on us here and kill the thread
-if it's NULL anyway.
-
-[...]
-
-Cheers
----Dave
 
