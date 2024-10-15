@@ -1,92 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-2258-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2259-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FED0CFC505
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2024 01:35:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 187F9D18140
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2024 02:36:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XSGqd4Qhbz2xBb;
-	Tue, 15 Oct 2024 12:34:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728956093;
-	cv=none; b=H+SgMg0xURpgyirr9/9wM9ASE25i1tQVl1iDclfCRjuDA2IfGIrxn+9P/ixkNjPZEaBaUq+4PGC4PzNZfwB62xrLz3gTH3o/xXa90RWITfFWwvOeA9ZhX5NzfKNIWJ9NZaSB/WYczuy4dotnARtAaWWoNqCJx6QyTIrK0KkOO+EzTw6cvg6OBashdaaZgskBEP7qh6A1TLEVkLIAbe9GlmlsGeln2685upFYAEGToDzR2SGWLl7bmNeWnYW+kEXYeJRvynRG6WXlExohE4eakmmE9AU0JJCoEQngN3DZf3IiPJ6zUtluGfULq9ZIKRi91Ci23kdq06M0F70zzIFjcw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XSJBh0n0vz3c3n;
+	Tue, 15 Oct 2024 13:36:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.191
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728959788;
+	cv=none; b=bzDbOVHCh81Ru6wopEy8PfbA6QF2Gf6vOfeNQ19WLUe2xLxK9JrnZ5HTyIeiCDMilEiVtm7+Kym6hmSiRYv6SEbiV3tVTj+E338imZ3663YvazHfM6srF3WR/kdOwpdVnU8CNkZkn/fzDVhEeUg34x16NesqcCanEbMXQ3xdiNHlHxezdcQTGpQiU5jkTmOhGA0mmvBLh8pPNpabaztACzUmKQISwh/qjQjaXsNRFFV2kJd/fjObOmG4W7V+OOOSavw80LDaWusI1DqXetja4AOqOWSQMWZzYefGgMfeyHqq6IsNN5pO423DlYIPNwIhDDFQ/gHsJJzubFPnzQ4fvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728956093; c=relaxed/relaxed;
-	bh=rG0rlJ7RpNnGy840avhtCY+OIP6FbV4qxEoUkbOoVC0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=buaTnzFlSgIcqlTVJAF+zmPNOQTsNsKr8nyFf9KWmrt2IJEZWiemeA5sDMihlPHYNpXgQTnTyAGN+84ib1TFZOzjhCFCGt1IYmcRpVJlhyDgFA/7EVDhOtBIu8I3hCjZlgvULpp0pUwN8Z2hof4FN2wvelVm1/TQB+k3vD3TnEqMW1dLktGaUL+GwWRKvjHB6xvlrVcq5iBWKfMrtD3VsVbQKl7rl2HOl3LY5RWOqGa1bMuLLvGCTaXI4FXMCSamzUlrD29ZrEEheTHePb0FvB157e8H7ZbqfsIjk3soqpQCeEzTRFzi97a1ZZtRWEOl8+Q5Bak8SIuyM0DhTq6GrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=K3iChlCn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=K3iChlCn;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1728959788; c=relaxed/relaxed;
+	bh=hldZw9KaJPDELoreg639bWDC2G4OhEEBghyJvWtZzDc=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=kuMsxACZlYjNWAkvL3rsjn6bno9gCd/qjkaTtPHqUyOJG1h10Br8vYj/LUIDSUOegDqbtYrSCEDRTwCrHzWRXRLYHsR1l9ldIoe5RAa60kHahZuEgDzkkVzjsEDZGSkazqDWH03bZK79C1JjR4Sowq1CmFqbtbYlMCHyDo312K5iBB5LRgD9Gnu4kXaHAZXHBDN3N+9FpdroajX0g5zm10kxQMa5oyXSSkuyMJHWVOpntykfZMjNMmzk1oM/PWyOUd4qUibcDr2d9KMeXEWB0RcCl3ABxDE8OOExcZj0kKaueix5R08P5jEnFWsKVBQPT1531Mo4WvdmZI2zmHkaaw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1040 seconds by postgrey-1.37 at boromir; Tue, 15 Oct 2024 13:36:26 AEDT
+Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XSGqc4rGsz3bps
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 12:34:52 +1100 (AEDT)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-71e70c32cd7so717921b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Oct 2024 18:34:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1728956090; x=1729560890; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=rG0rlJ7RpNnGy840avhtCY+OIP6FbV4qxEoUkbOoVC0=;
-        b=K3iChlCnLxGG9tWcyYCrmnPYz7uql1SGq/vLIWZtuSpiQA4H++mT4DGaq0FxBM4cmb
-         0qXkisZPvmjR4Gb6N0rq3nOnbcz6/bK43XE5J6LCcyF4b9XVGfIMeHkFghPdj7pwb1bp
-         e+eZCebSwbCKtFcuoUQ5cPWzlUFv8FfGT8b5HtjKHu3LucuplQFs8QkKnQIx4+0OetCB
-         2CS/dY1i3RlY1CO3eEhdRV40K5zfgOyoOL7AIT4O+jnv/MSYTFfKkjGjPb+v4K9IX5UM
-         j3b1qIWcT9hESh+Eux4Ft5FS0j0DfDRHf5u1a3wmN+pzFGoaUro71Z+ANxQtp5NTU1iL
-         Kj7A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1728956090; x=1729560890;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=rG0rlJ7RpNnGy840avhtCY+OIP6FbV4qxEoUkbOoVC0=;
-        b=e9IWJlgqzRc6ros5XIKEqyb3C2KMQZLC66O93rmRZtuZH+gJJL58ZxlBo+d4t90Bms
-         RAzrhh5pNTsZ1YQ12CBZRXDcJMj1lzzgmpsudXYAJ4HRqM8QtO2j1FKymwrZ6VX/73V3
-         K/u8vzWqIgM32dpGg7QudakL8+Q51sjDU32fbXkttu0cIMNMvpQNn4/bRWWXG9ncfNp4
-         olozeEt2ql0hjpEGBFcvE52riu41vCM4m5N2Z3oX8SSC+MlSdFyOybEMZIhmwcyZs3Hw
-         Je2OVV6IDYNZ1eWoMNmrh14NYg3gwHWygIpGxZIqy3BwSdi5NRTDWx3BosiEFKeE35b+
-         RQDA==
-X-Gm-Message-State: AOJu0Yx6OEU98glW56bkbWiUzBvlKN0ERiFeepPP+CXQ1bu1UhgiNOSB
-	R9bCA+xrAJU70R6cnbJGzVigVO+B/FFtke0Fg8VTYX0XMlQUbT8QsMnBVQ==
-X-Google-Smtp-Source: AGHT+IFvESYA3zS1GBFZJxbiWhM237fiGLHeDy47xUMjk/AhsGWJAlSSfmCDieCeQukhtrPpShvuWQ==
-X-Received: by 2002:a05:6a00:1404:b0:71e:5033:c5 with SMTP id d2e1a72fcca58-71e50330377mr13492824b3a.14.1728956090001;
-        Mon, 14 Oct 2024 18:34:50 -0700 (PDT)
-Received: from dw-tp.. ([171.76.80.151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-71e77508562sm189349b3a.186.2024.10.14.18.34.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Oct 2024 18:34:49 -0700 (PDT)
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: kasan-dev@googlegroups.com,
-	linux-mm@kvack.org,
-	Marco Elver <elver@google.com>,
-	Alexander Potapenko <glider@google.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Hari Bathini <hbathini@linux.ibm.com>,
-	"Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
-	Donet Tom <donettom@linux.vnet.ibm.com>,
-	Pavithra Prakash <pavrampu@linux.vnet.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC RESEND v2 13/13] book3s64/hash: Early detect debug_pagealloc size requirement
-Date: Tue, 15 Oct 2024 07:03:36 +0530
-Message-ID: <6b5deb16494e80703577e20fbb150789c83076a9.1728954719.git.ritesh.list@gmail.com>
-X-Mailer: git-send-email 2.46.0
-In-Reply-To: <cover.1728954719.git.ritesh.list@gmail.com>
-References: <cover.1728954719.git.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XSJBf0Qdmz3brB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 13:36:23 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.162.112])
+	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4XSHn84z2Qz1j9wx;
+	Tue, 15 Oct 2024 10:17:48 +0800 (CST)
+Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
+	by mail.maildlp.com (Postfix) with ESMTPS id F26161400D4;
+	Tue, 15 Oct 2024 10:19:00 +0800 (CST)
+Received: from localhost.localdomain (10.50.165.33) by
+ kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1258.34; Tue, 15 Oct 2024 10:19:00 +0800
+From: Yicong Yang <yangyicong@huawei.com>
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
+	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
+	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <pierre.gondois@arm.com>,
+	<dietmar.eggemann@arm.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
+	<linux-kernel@vger.kernel.org>, <morten.rasmussen@arm.com>,
+	<msuchanek@suse.de>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+	<jonathan.cameron@huawei.com>, <prime.zeng@hisilicon.com>,
+	<linuxarm@huawei.com>, <yangyicong@hisilicon.com>, <xuwei5@huawei.com>,
+	<guohanjun@huawei.com>
+Subject: [PATCH v6 3/4] arm64: topology: Support SMT control on ACPI based system
+Date: Tue, 15 Oct 2024 10:18:40 +0800
+Message-ID: <20241015021841.35713-4-yangyicong@huawei.com>
+X-Mailer: git-send-email 2.31.0
+In-Reply-To: <20241015021841.35713-1-yangyicong@huawei.com>
+References: <20241015021841.35713-1-yangyicong@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,73 +64,142 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.50.165.33]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ kwepemd200014.china.huawei.com (7.221.188.8)
 
-Add hash_supports_debug_pagealloc() helper to detect whether
-debug_pagealloc can be supported on hash or not. This checks for both,
-whether debug_pagealloc config is enabled and the linear map should
-fit within rma_size/4 region size.
+From: Yicong Yang <yangyicong@hisilicon.com>
 
-This can then be used early during htab_init_page_sizes() to decide
-linear map pagesize if hash supports either debug_pagealloc or
-kfence.
+For ACPI we'll build the topology from PPTT and we cannot directly
+get the SMT number of each core. Instead using a temporary xarray
+to record the heterogeneous information (from ACPI_PPTT_ACPI_IDENTICAL)
+and SMT information of the first core in its heterogeneous CPU cluster
+when building the topology. Then we can know the largest SMT number
+in the system.
 
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+The core's SMT control provides two interface to the users [1]:
+1) enable/disable SMT by writing on/off
+2) enable/disable SMT by writing thread number 1/max_thread_number
+
+If a system have more than one SMT thread number the 2) may
+not handle it well, since there're multiple thread numbers in the
+system and 2) only accept 1/max_thread_number. So issue a warning
+to notify the users if such system detected.
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/ABI/testing/sysfs-devices-system-cpu#n542
+Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
 ---
- arch/powerpc/mm/book3s64/hash_utils.c | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+ arch/arm64/kernel/topology.c | 61 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 61 insertions(+)
 
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index b6da25719e37..3ffc98b3deb1 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -329,25 +329,26 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long idx,
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 1a2c72f3e7f8..2fa584b932ee 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -15,8 +15,10 @@
+ #include <linux/arch_topology.h>
+ #include <linux/cacheinfo.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_smt.h>
+ #include <linux/init.h>
+ #include <linux/percpu.h>
++#include <linux/xarray.h>
+ 
+ #include <asm/cpu.h>
+ #include <asm/cputype.h>
+@@ -37,17 +39,29 @@ static bool __init acpi_cpu_is_threaded(int cpu)
+ 	return !!is_threaded;
+ }
+ 
++struct cpu_smt_info {
++	int thread_num;
++	int core_id;
++	int cpu;
++};
++
+ /*
+  * Propagate the topology information of the processor_topology_node tree to the
+  * cpu_topology array.
+  */
+ int __init parse_acpi_topology(void)
+ {
++	int max_smt_thread_num = 0;
++	struct cpu_smt_info *entry;
++	struct xarray hetero_cpu;
++	unsigned long hetero_id;
+ 	int cpu, topology_id;
+ 
+ 	if (acpi_disabled)
+ 		return 0;
+ 
++	xa_init(&hetero_cpu);
++
+ 	for_each_possible_cpu(cpu) {
+ 		topology_id = find_acpi_cpu_topology(cpu, 0);
+ 		if (topology_id < 0)
+@@ -57,6 +71,30 @@ int __init parse_acpi_topology(void)
+ 			cpu_topology[cpu].thread_id = topology_id;
+ 			topology_id = find_acpi_cpu_topology(cpu, 1);
+ 			cpu_topology[cpu].core_id   = topology_id;
++
++			/*
++			 * Build up the XArray using the heterogeneous ID of
++			 * the CPU cluster. Store the CPU and SMT information
++			 * of the first appeared CPU in the CPU cluster of this
++			 * heterogeneous ID since the SMT information should be
++			 * the same in this CPU cluster. Then we can know the
++			 * SMT information of each heterogeneous CPUs in the
++			 * system.
++			 */
++			hetero_id = find_acpi_cpu_topology_hetero_id(cpu);
++			entry = (struct cpu_smt_info *)xa_load(&hetero_cpu, hetero_id);
++			if (!entry) {
++				entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++				WARN_ON(!entry);
++
++				entry->cpu = cpu;
++				entry->core_id = topology_id;
++				entry->thread_num = 1;
++				xa_store(&hetero_cpu, hetero_id,
++					 entry, GFP_KERNEL);
++			} else if (entry->core_id == topology_id) {
++				entry->thread_num++;
++			}
+ 		} else {
+ 			cpu_topology[cpu].thread_id  = -1;
+ 			cpu_topology[cpu].core_id    = topology_id;
+@@ -67,6 +105,29 @@ int __init parse_acpi_topology(void)
+ 		cpu_topology[cpu].package_id = topology_id;
+ 	}
+ 
++	/*
++	 * This should be a short loop depending on the number of heterogeneous
++	 * CPU clusters. Typically on a homogeneous system there's only one
++	 * entry in the XArray.
++	 */
++	xa_for_each(&hetero_cpu, hetero_id, entry) {
++		/*
++		 * If max_smt_thread_num has been initialized and doesn't match
++		 * the thread number of this entry, then the system has
++		 * heterogeneous SMT topology.
++		 */
++		if (entry->thread_num != max_smt_thread_num && max_smt_thread_num)
++			pr_warn_once("Heterogeneous SMT topology is partly supported by SMT control\n");
++
++		if (entry->thread_num > max_smt_thread_num)
++			max_smt_thread_num = entry->thread_num;
++
++		xa_erase(&hetero_cpu, hetero_id);
++		kfree(entry);
++	}
++
++	cpu_smt_set_num_threads(max_smt_thread_num, max_smt_thread_num);
++	xa_destroy(&hetero_cpu);
+ 	return 0;
  }
  #endif
- 
-+static inline bool hash_supports_debug_pagealloc(void)
-+{
-+	unsigned long max_hash_count = ppc64_rma_size / 4;
-+	unsigned long linear_map_count = memblock_end_of_DRAM() >> PAGE_SHIFT;
-+
-+	if (!debug_pagealloc_enabled() || linear_map_count > max_hash_count)
-+		return false;
-+	return true;
-+}
-+
- #ifdef CONFIG_DEBUG_PAGEALLOC
- static u8 *linear_map_hash_slots;
- static unsigned long linear_map_hash_count;
- static DEFINE_RAW_SPINLOCK(linear_map_hash_lock);
- static void hash_debug_pagealloc_alloc_slots(void)
- {
--	unsigned long max_hash_count = ppc64_rma_size / 4;
--
--	if (!debug_pagealloc_enabled())
--		return;
--	linear_map_hash_count = memblock_end_of_DRAM() >> PAGE_SHIFT;
--	if (unlikely(linear_map_hash_count > max_hash_count)) {
--		pr_info("linear map size (%llu) greater than 4 times RMA region (%llu). Disabling debug_pagealloc\n",
--			((u64)linear_map_hash_count << PAGE_SHIFT),
--			ppc64_rma_size);
--		linear_map_hash_count = 0;
-+	if (!hash_supports_debug_pagealloc())
- 		return;
--	}
- 
-+	linear_map_hash_count = memblock_end_of_DRAM() >> PAGE_SHIFT;
- 	linear_map_hash_slots = memblock_alloc_try_nid(
- 			linear_map_hash_count, 1, MEMBLOCK_LOW_LIMIT,
- 			ppc64_rma_size,	NUMA_NO_NODE);
-@@ -1076,7 +1077,7 @@ static void __init htab_init_page_sizes(void)
- 	bool aligned = true;
- 	init_hpte_page_sizes();
- 
--	if (!debug_pagealloc_enabled() && !kfence_early_init_enabled()) {
-+	if (!hash_supports_debug_pagealloc() && !kfence_early_init_enabled()) {
- 		/*
- 		 * Pick a size for the linear mapping. Currently, we only
- 		 * support 16M, 1M and 4K which is the default
 -- 
-2.46.0
+2.24.0
 
 
