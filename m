@@ -1,89 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-2275-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2276-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01C92CFC27F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2024 10:01:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC1D6CFC287
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2024 10:56:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XSV3l44lhz3bkb;
-	Tue, 15 Oct 2024 21:01:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=65.109.113.108
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728986467;
-	cv=none; b=bgw/D59m08lQYSLint30UflgLGkpNBCH+HtyAwNACwaTf7ZAP0xJlv1CrzjDOuB1mkN7TlFwjYb5a+OrshGDdaMB6NZShyGQ7sWR1XXvyeHoGCDAn6wnHC9sQaH/LsOZw4kbBM2kqOuQs/fII+THNG4V9mI+8f7LpJf+Mwb79homIcf2aNqtVapVvccThKUzBdtIvhfeE30N5gi1dtYl1TPA9rKV//oCSMRH9Be45CwSU/JspE7WN+eXL2Azowk0Ryvj5opPgAMv5IFX85MrjBYrOjBZb8kRq4YjRhnkRH5d2pH+Q21SNe7TyqdOfOyBvV6lzHoFZxqMq/j/i0a0CA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XSWHq2WWjz3blN;
+	Tue, 15 Oct 2024 21:56:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728989799;
+	cv=none; b=KnbCwhOJe/i/iXxj0odWkOUAgjSxO2+YQOds3fPkhYP4Ddhnt91126a9q+rVH7CF4VAUg+6xi8cp4RCkfVHhBCqwNf7YACSAlcZRdZkD7xavaMsPTcDfMUI8x4P5cAQPJ5WW3w1llfZTKb7OrTQVQRO+fcEaoWyMbHJDIHAVjSjd2lRJHQ66TM6GWE8TNjzfVvmDePrxo1FdNpvwtFaf+56tSoQtbL/t+sh9oR2HnuGx60imtdIsdKSLureWUWR26n9RydeVADM9APp0LOiF1g72niroHTxI+ERtUlPhRVFCXnGqiHvkFkuwKEcJlk0tzyo8XOHAq+X0WsmxNBTj2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1728986467; c=relaxed/relaxed;
-	bh=kd3UR45StSIkqmJZ1SJRyeGHyFRLiBEAJy/jxLUT6D8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kSW+6DNicN57DQlhDP90aTcbnm0uNn34ZmPfMzPlJ+FCR9ZNs3ATMEqx/zL5ZHUPSsoLrafdtPdC18iAsC3nYBOwSd/T499HK2TLcqLQLOpudCgOLyE/XsFtKPGnQrWYz7WEODWyXm/e/FKMi0K9zfi8R4amKANbylvSf2T9edfb/blH5KhAT3oYJNjn8Ab4l85yeKuk8GZWEd0uHO/9KOB1w/Qpvmsww+SgFaplZazlRBk4+p+NGBnf1bAqSv6Lnwsb3wshjsyvAi0kXliepwS/uv12O9phLm2fRsCDBq+Do9s0uIIfWYoVub7eTjobClBRaZDKHsTVRfmH7mXV9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=fail (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=au43u5ld reason="signature verification failed"; dkim-atps=neutral; spf=pass (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
+	t=1728989799; c=relaxed/relaxed;
+	bh=rNGwixYfUUPYg6NjjOEFj7h4gHe7G0ava0pIqhoYWcg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=K2kSHMP/vU+whhMxVJzMg9SBeCY8mMdhiXAmzWSwibQV/iWKaU1AXsDH8GghR7+vabensNGQ4j1l7yOvd+VaBmR9vXz+5LmzBjuqjR+cG9tOtZn1Rz4lHueYCLsqt0S/c2zRyKrLehe40BNlgbLAWIuBL1aVos5tTOyl6CZZpGiazxFMMYfN1/wNrm8R8ZUwToH+O3huY0wOX5mUBciYaAgPmv8QoXGhJ9QgMgBnmHRKSu97ML7o6k4OKRNJ2sfQhfz38N1sfFyq18VHGyBUtUWW9ue5ETvlLZbq3W2x5z6CMQ3NkQTFgORyWoV18NW06DIhCtPGszUp6TgZSToNLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B5oBb7ET; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=au43u5ld;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B5oBb7ET;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
-Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XSV3d1W8Jz2xBk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 21:00:57 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id E43D640E0169;
-	Tue, 15 Oct 2024 10:00:51 +0000 (UTC)
-X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
-Authentication-Results: mail.alien8.de (amavisd-new); dkim=fail (4096-bit key)
-	reason="fail (body has been altered)" header.d=alien8.de
-Received: from mail.alien8.de ([127.0.0.1])
-	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id 1A3lAJlfO1Zr; Tue, 15 Oct 2024 10:00:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
-	t=1728986446; bh=d7UdafglEuJoW1ffOpnBF+TRGVFoELgg8Z190QaONYU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=au43u5ldkdW7L2wvg4eZ42Wv4JWT0K+WlYZHHCdINgENDTfOPzLjEHhWLlI5DW6Re
-	 d0y7iZSoqGGZrH5WWKyUB9bfatihfZxc4ScEMm0R75jYh8Q1Tndw8s9vzz+3Q1MbVu
-	 RsjA7XCCSGV+g+daYRMdeNufy9rXC0bpXTz59wIOSkm3AW/Yqrk94uB9zNj+WnoUqo
-	 YezzpUgATgctj6On4ywOU4nyhhdBq/L+KgYuAtbvkI/BfnDzAE6lXuV/GZ9mpzF5+O
-	 ty/vP/K+igbDVc4SifpE9BF9+4XH2Sjgcxfh/a2FcivJYPjU6zEAnga1G2Lz4aDWW/
-	 ARt3eQ8anJVxBjSO+6nWXwBgeDjJ3jmiP8jEnvc/aogA/tJCxKQBCcImz190UbcfxF
-	 r4KgcUK0Y2RaFuutd06Kq20syJPNXGyLMM7+022b1wxMWn/ycckGXnqebQ3NPZDfgZ
-	 N8IDh5DOTZcRZZF0vZI7w8QYzP0+mDu1UJOpD6Ob0VoIh5weLYcYzHHLYsG00vZyCE
-	 4gzkS6sTHc7/zcVG5Mm+6MP5U08GCf71b6ZdQo8BMvy9euXRyPGZe+7zj/jsrX5iqL
-	 DEZ7EqHRc65jox1raubP0Bi2TvMKHKwX+8RpGsWJ5UFQwNWgGIp2srwIHca1xH+vmt
-	 1gAWkzmGbtDJ8rtWjsluROiE=
-Received: from zn.tnic (p5de8e8eb.dip0.t-ipconnect.de [93.232.232.235])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
-	(No client certificate requested)
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 585A740E0194;
-	Tue, 15 Oct 2024 10:00:32 +0000 (UTC)
-Date: Tue, 15 Oct 2024 12:00:26 +0200
-From: Borislav Petkov <bp@alien8.de>
-To: Andrew Cooper <andrew.cooper3@citrix.com>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Josh Poimboeuf <jpoimboe@kernel.org>, x86@kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-	Waiman Long <longman@redhat.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Ingo Molnar <mingo@redhat.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	linuxppc-dev@lists.ozlabs.org, Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH] x86/uaccess: Avoid barrier_nospec() in copy_from_user()
-Message-ID: <20241015100026.GBZw49OozVOTZat6VO@fat_crate.local>
-References: <f6ea59b1-eb59-4d1d-81ed-0e5095102c20@citrix.com>
- <CAHk-=wg=DovySzKb3=g53DeCwv1ZOa-RebaBpYXNXrdhY=a5Qw@mail.gmail.com>
- <12c18d86-87b3-4418-a0b0-2844197a3315@citrix.com>
- <CAHk-=wg341Na_hXFFkc582beXJNi+_tcDu=oMxVPTks-JoQXkQ@mail.gmail.com>
- <CAHk-=wjAoiCmPSi1OwrJofifmtRYEzecjUeu3UUUELMbJHopUA@mail.gmail.com>
- <CAHk-=wgDrG-aKVGrd-9gQsC0pMs936oo8XEFmEn6ciaT9=nfDg@mail.gmail.com>
- <20241014035436.nsleqolyj3xxysrr@treble>
- <CAHk-=widMFN2wDeS2K65f8FnW8L6gPZa6CNO4OWkv--0G2LXhw@mail.gmail.com>
- <r5ruxmop7vewd7aq6gu2zve4hfmcu4byhlebygswbqkgz43qfq@rsajyfiypcsd>
- <064d7068-c666-49f0-b7df-774c2e281abc@citrix.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XSWHn5f6yz3bkf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 21:56:36 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49F8PHWh023761;
+	Tue, 15 Oct 2024 10:56:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=rNGwixYfUUPYg6Njj
+	OEFj7h4gHe7G0ava0pIqhoYWcg=; b=B5oBb7ETsejPWJsKqAEpV9r9EC6dzQmFo
+	O/DqVIgLSmEoY9LIQdWeDFyiafImd1XW6B+Ma0z1BT32efgtLuHbWu93HlZ/Kpij
+	+pMXnqodKvfE6WfeveOyvFtcHCBF2vQa3sAL48InlkvhbE5qIGy/voLPn4z2vKx1
+	wyoAwsKMlo70i1BHqzulGlM2OFusCg0L/GB2N5QyWeSW00hM3gb8MjD1FMJCYolt
+	nYRuHKLGpv6Zpv0o2QmeAvBWo80j/57XIOkIZEGx/+LKjoz0oIuYZSmvAUPpLuZH
+	cKwPH9mo9/Rzx8cZY3iAm9bW38aSZQamii/mlZ+4f7rJjijVpax9w==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 429mv4rqkg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Oct 2024 10:56:26 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49FAsZFP030322;
+	Tue, 15 Oct 2024 10:56:25 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 429mv4rqkc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Oct 2024 10:56:25 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49F7k1Fv001940;
+	Tue, 15 Oct 2024 10:56:24 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4284emkc62-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 15 Oct 2024 10:56:24 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49FAuK3c54264082
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 15 Oct 2024 10:56:20 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 737412004B;
+	Tue, 15 Oct 2024 10:56:20 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1124120040;
+	Tue, 15 Oct 2024 10:56:18 +0000 (GMT)
+Received: from vishalc-ibm.ibmuc.com (unknown [9.39.24.36])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 15 Oct 2024 10:56:17 +0000 (GMT)
+From: Vishal Chourasia <vishalc@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, herbert@gondor.apana.org.au,
+        davem@davemloft.net, mpe@ellerman.id.au, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
+        linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Vishal Chourasia <vishalc@linux.ibm.com>
+Subject: [v2 PATCH 2/2] crypto/nx: Fix invalid wait context during kexec reboot
+Date: Tue, 15 Oct 2024 16:25:52 +0530
+Message-ID: <20241015105551.1817348-3-vishalc@linux.ibm.com>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241015105551.1817348-2-vishalc@linux.ibm.com>
+References: <20241015105551.1817348-2-vishalc@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,24 +92,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <064d7068-c666-49f0-b7df-774c2e281abc@citrix.com>
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: g16Py42SK_L-rMj-yeOvDFUupNO8oXmW
+X-Proofpoint-ORIG-GUID: fs1dDhFKwsuTRqwwm_EFPCJBgdaU9WZJ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 clxscore=1015
+ mlxscore=0 suspectscore=0 phishscore=0 adultscore=0 priorityscore=1501
+ impostorscore=0 bulkscore=0 malwarescore=0 mlxlogscore=791
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2410150072
 
-On Mon, Oct 14, 2024 at 04:39:26PM +0100, Andrew Cooper wrote:
-> But, I expect it will malfunction on newer hardware when
-> CONFIG_X86_5LEVEL=3Dn, because it causes Linux to explicitly ignore the
-> LA57 bit.=C2=A0 That can be fixed by changing how CONFIG_X86_5LEVEL wor=
-ks.
+nx842_remove() call of_reconfig_notifier_unregister while holding the
+devdata_spinlock. This could lead to an invalid wait context error during
+kexec reboot, as of_reconfig_notifier_unregister tries to acquire a read-write
+semaphore (check logs) while holding a spinlock.
 
-https://lore.kernel.org/all/80734605-1926-4ac7-9c63-006fe3ea6b6a@amd.com/
+Move the of_reconfig_notifier_unregister() call before acquiring the
+spinlock to prevent this race condition invalid wait contexts during system
+shutdown or kexec operations.
 
-But there was some lmbench regression...
+Log:
 
---=20
-Regards/Gruss,
-    Boris.
+[ BUG: Invalid wait context ]
+6.11.0-test2-10547-g684a64bf32b6-dirty #79 Not tainted
+-----------------------------
+kexec/61926 is trying to lock:
+c000000002d8b590 ((of_reconfig_chain).rwsem){++++}-{4:4}, at: blocking_notifier_chain_unregister+0x44/0xa0
+other info that might help us debug this:
+context-{5:5}
+4 locks held by kexec/61926:
+ #0: c000000002926c70 (system_transition_mutex){+.+.}-{4:4}, at: __do_sys_reboot+0xf8/0x2e0
+ #1: c00000000291af30 (&dev->mutex){....}-{4:4}, at: device_shutdown+0x160/0x310
+ #2: c000000051011938 (&dev->mutex){....}-{4:4}, at: device_shutdown+0x174/0x310
+ #3: c000000002d88070 (devdata_mutex){....}-{3:3}, at: nx842_remove+0xac/0x1bc
+stack backtrace:
+CPU: 2 UID: 0 PID: 61926 Comm: kexec Not tainted 6.11.0-test2-10547-g684a64bf32b6-dirty #79
+Hardware name: IBM,9080-HEX POWER10 (architected) 0x800200 0xf000006 of:IBM,FW1060.00 (NH1060_012) hv:phyp pSeries
+Call Trace:
+[c0000000bb577400] [c000000001239704] dump_stack_lvl+0xc8/0x130 (unreliable)
+[c0000000bb577440] [c000000000248398] __lock_acquire+0xb68/0xf00
+[c0000000bb577550] [c000000000248820] lock_acquire.part.0+0xf0/0x2a0
+[c0000000bb577670] [c00000000127faa0] down_write+0x70/0x1e0
+[c0000000bb5776b0] [c0000000001acea4] blocking_notifier_chain_unregister+0x44/0xa0
+[c0000000bb5776e0] [c000000000e2312c] of_reconfig_notifier_unregister+0x2c/0x40
+[c0000000bb577700] [c000000000ded24c] nx842_remove+0x148/0x1bc
+[c0000000bb577790] [c00000000011a114] vio_bus_remove+0x54/0xc0
+[c0000000bb5777c0] [c000000000c1a44c] device_shutdown+0x20c/0x310
+[c0000000bb577850] [c0000000001b0ab4] kernel_restart_prepare+0x54/0x70
+[c0000000bb577870] [c000000000308718] kernel_kexec+0xa8/0x110
+[c0000000bb5778e0] [c0000000001b1144] __do_sys_reboot+0x214/0x2e0
+[c0000000bb577a40] [c000000000032f98] system_call_exception+0x148/0x310
+[c0000000bb577e50] [c00000000000cedc] system_call_vectored_common+0x15c/0x2ec
+--- interrupt: 3000 at 0x7fffa07e7df8
+NIP:  00007fffa07e7df8 LR: 00007fffa07e7df8 CTR: 0000000000000000
+REGS: c0000000bb577e80 TRAP: 3000   Not tainted  (6.11.0-test2-10547-g684a64bf32b6-dirty)
+MSR:  800000000280f033   CR: 48022484  XER: 00000000
+IRQMASK: 0
+GPR00: 0000000000000058 00007ffff961f1e0 00007fffa08f7100 fffffffffee1dead
+GPR04: 0000000028121969 0000000045584543 0000000000000000 0000000000000003
+GPR08: 0000000000000003 0000000000000000 0000000000000000 0000000000000000
+GPR12: 0000000000000000 00007fffa0a9b360 ffffffffffffffff 0000000000000000
+GPR16: 0000000000000001 0000000000000002 0000000000000001 0000000000000001
+GPR20: 000000011710f520 0000000000000000 0000000000000000 0000000000000001
+GPR24: 0000000129be0480 0000000000000003 0000000000000003 00007ffff961f2b0
+GPR28: 00000001170f2d30 00000001170f2d28 00007fffa08f18d0 0000000129be04a0
+NIP [00007fffa07e7df8] 0x7fffa07e7df8
+LR [00007fffa07e7df8] 0x7fffa07e7df8
+--- interrupt: 3000
 
-https://people.kernel.org/tglx/notes-about-netiquette
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Vishal Chourasia <vishalc@linux.ibm.com>
+---
+ drivers/crypto/nx/nx-common-pseries.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/crypto/nx/nx-common-pseries.c b/drivers/crypto/nx/nx-common-pseries.c
+index a0eb900383af7..1660c5cf3641c 100644
+--- a/drivers/crypto/nx/nx-common-pseries.c
++++ b/drivers/crypto/nx/nx-common-pseries.c
+@@ -1122,10 +1122,11 @@ static void nx842_remove(struct vio_dev *viodev)
+ 
+ 	crypto_unregister_alg(&nx842_pseries_alg);
+ 
++	of_reconfig_notifier_unregister(&nx842_of_nb);
++
+ 	spin_lock_irqsave(&devdata_spinlock, flags);
+ 	old_devdata = rcu_dereference_check(devdata,
+ 			lockdep_is_held(&devdata_spinlock));
+-	of_reconfig_notifier_unregister(&nx842_of_nb);
+ 	RCU_INIT_POINTER(devdata, NULL);
+ 	spin_unlock_irqrestore(&devdata_spinlock, flags);
+ 	synchronize_rcu();
+-- 
+2.47.0
+
 
