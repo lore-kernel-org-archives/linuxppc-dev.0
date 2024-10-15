@@ -1,39 +1,40 @@
-Return-Path: <linuxppc-dev+bounces-2260-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2261-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA6E3CFC501
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2024 02:36:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B97FD18140
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Oct 2024 02:36:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XSJBh1LtFz3c4Y;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XSJBh57jNz3cF1;
 	Tue, 15 Oct 2024 13:36:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.190
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1728959788;
-	cv=none; b=nh/bkhnMigf3kJlOi9gQ5J+aD7DkjAkCk7kBlwCUQ7jpK61FtjXqGwnrAlCyVEYTzlylM0G+7n6LK2V0z4W0Y0Q8+9ixQWDoVYkBZUkLV1kTSMdC5QSXNXXSyXSi8k5FBB/BDcZZvCAdmHFW9ji+TtvgM+YSTbM2RW8uwl372/yTHjg4XnZuisTyGWsZ2Va8QDN55eT0Oxw/zmXVEelasRVvb4hlJcMxVjIxJjA15bWBEMUJL1Y94o5dclFaicS+MZ7pKiTJreUeCPhZ/Cc0yPvbWvzOlpO5KKHGL6+oovzqtF0nFcXGixr0e/aebxntidS4nnUqbVMxPyvW3GbmSw==
+	cv=none; b=fngZ2Ff9lMWfpDf2HFu2u9MpWbyc2OA1WYBTa0WWdJNqQxTm7dDCljGBGS5fZkXPkEr0t7128gBEqp3IetPNfMauuW6rrcyDrxq/4s9bVPinfLZbMYklkjmS2+b8ZRH/uwaPhizZZUFOfGKZICuYEPwTw/aHsll+CBatHMrDSPXIfN4ce+JW13s2KbRhR5Zt5HQxtO93/2H3uClWA2XBJvGjWm4ZMzjzClZLWJVCSZC3EPBmvi2qL/ENgQGp9p9HeOL6GcjTEhaGdyC8Z/I+2dM4o5Ny3LrUDWkUAYZNab3jqLzoA3RwIlXyGF9YZkduqGnb30VJSiuQjJsA1yO3tQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1728959788; c=relaxed/relaxed;
-	bh=lBshwZIYGFwv2HKPpf3NWkHRe4/cWjAH+tFufgEMU+w=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=D8ln5zqHdAz9DwAsFagcrUJWt8jNc74U3WwCrfjrImPyWV3QQHCq0TpIkSuQ+j7yLbOq2+63LNFevwRNEDerp1WAojgKJJsEkd2Tgmi0ABskVIrRSP0oGDjVptF1d/6W4z0dYc5vlOJnIdj9joqhHH/OxqRVmK1WzFBC7vWGX2ZO+zG2m459c6VdONGt+Oju+8AzverEcfJ8bkPwhL2hrsyXrMSsizqb0RzWZEeAW2TvAqq8rbgYP/nPZ7PXzMZZjm1Stk1pRUom8B/V88rEr95oNRMGxvXD38L+QmEdXaR0/y8Mbru3s6HfsuK3/ZeA9BZjn7kfSnTCoNJSe1Ybdg==
+	bh=leAN+aFqPT4jXpb4tqXhQ2rZ4C9KVvxY84wRter5ubA=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=X2ca+BlBXv7lQ2O/bEkXO3n+lanlPe5ZUjOoCo1fLSITciBBLxaGN0gXcLDx4pGcG01qdU6vWGL408Q3IDX+DOobHPb5iCTUCaUP9zjDDwVC4Ty1UJ7f4FxTQYQHRHJPy4uCqEiN29fk8Cn57/az1WgFOmq24ee7sMLD+j6gFh95RZPO7d7gjpGk5HTm1WnARH3IDpi0g4mgDMK4GyqFol08/suGm4J9mycvVmP8P5eK2K/zacc4db6Hu8g9biFiTstgo9J7DsrWRbgLQPyM321qlL3jHK76ALch96ECr1xnK6X9iQglDg6MTHkjgWtSGH9jAwiRZx5NiYHG8j8iQw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
 Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XSJBf1G0Rz3btk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 13:36:25 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.162.112])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4XSHn61Wg3z2DdfX;
-	Tue, 15 Oct 2024 10:17:46 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XSJBf3GhQz3c0n
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Oct 2024 13:36:26 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.163.44])
+	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4XSHn91fhkz2Ddfr;
+	Tue, 15 Oct 2024 10:17:49 +0800 (CST)
 Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
-	by mail.maildlp.com (Postfix) with ESMTPS id A961B1400D4;
-	Tue, 15 Oct 2024 10:18:58 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id AE4621400CB;
+	Tue, 15 Oct 2024 10:19:01 +0800 (CST)
 Received: from localhost.localdomain (10.50.165.33) by
  kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1258.34; Tue, 15 Oct 2024 10:18:57 +0800
+ 15.2.1258.34; Tue, 15 Oct 2024 10:19:00 +0800
 From: Yicong Yang <yangyicong@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
 	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
@@ -46,10 +47,12 @@ CC: <linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
 	<jonathan.cameron@huawei.com>, <prime.zeng@hisilicon.com>,
 	<linuxarm@huawei.com>, <yangyicong@hisilicon.com>, <xuwei5@huawei.com>,
 	<guohanjun@huawei.com>
-Subject: [PATCH v6 0/4] Support SMT control on arm64
-Date: Tue, 15 Oct 2024 10:18:37 +0800
-Message-ID: <20241015021841.35713-1-yangyicong@huawei.com>
+Subject: [PATCH v6 4/4] arm64: Kconfig: Enable HOTPLUG_SMT
+Date: Tue, 15 Oct 2024 10:18:41 +0800
+Message-ID: <20241015021841.35713-5-yangyicong@huawei.com>
 X-Mailer: git-send-email 2.31.0
+In-Reply-To: <20241015021841.35713-1-yangyicong@huawei.com>
+References: <20241015021841.35713-1-yangyicong@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,58 +70,25 @@ X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
 
 From: Yicong Yang <yangyicong@hisilicon.com>
 
-The core CPU control framework supports runtime SMT control which
-is not yet supported on arm64. Besides the general vulnerabilities
-concerns we want this runtime control on our arm64 server for:
+Enable HOTPLUG_SMT for SMT control.
 
-- better single CPU performance in some cases
-- saving overall power consumption
+Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
+---
+ arch/arm64/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-This patchset implements it in the following aspects:
-
-- Provides a default topology_is_primary_thread()
-- support retrieve SMT thread number on OF based system
-- support retrieve SMT thread number on ACPI based system
-- select HOTPLUG_SMT for arm64
-
-Tests has been done on our real ACPI based arm64 server and on
-ACPI/OF based QEMU VMs.
-
-Change since v5:
-- Drop the dependency on CONFIG_SMP since it's always on on arm64, per Pierre
-- Avoid potential multiple calls of cpu_smt_set_num_threads() on asymmetric system, per Dietmar
-- Detect heterogenous SMT topology and issue a warning for partly support, per Pierre
-- Thanks Dietmar for testing, didn't pickup the tag due to code changes. Thanks testing by Pierre
-Link: https://lore.kernel.org/linux-arm-kernel/20240806085320.63514-1-yangyicong@huawei.com/
-
-Change since v4:
-- Provide a default topology_is_primary_thread() in the framework, Per Will
-Link: https://lore.kernel.org/linux-arm-kernel/20231121092602.47792-1-yangyicong@huawei.com/
-
-Change since v3:
-- Fix some build and kconfig error reported by kernel test robot <lkp@intel.com>
-Link: https://lore.kernel.org/linux-arm-kernel/20231114040110.54590-1-yangyicong@huawei.com/
-
-Change since v2:
-- Detect SMT thread number at topology build from ACPI/DT, avoid looping CPUs
-- Split patches into ACPI/OF/arch_topology path and enable the kconfig for arm64
-Link: https://lore.kernel.org/linux-arm-kernel/20231010115335.13862-1-yangyicong@huawei.com/
-
-
-Yicong Yang (4):
-  cpu/SMT: Provide a default topology_is_primary_thread()
-  arch_topology: Support SMT control for OF based system
-  arm64: topology: Support SMT control on ACPI based system
-  arm64: Kconfig: Enable HOTPLUG_SMT
-
- arch/arm64/Kconfig                  |  1 +
- arch/arm64/kernel/topology.c        | 61 +++++++++++++++++++++++++++++
- arch/powerpc/include/asm/topology.h |  1 +
- arch/x86/include/asm/topology.h     |  2 +-
- drivers/base/arch_topology.c        | 21 ++++++++++
- include/linux/topology.h            | 14 +++++++
- 6 files changed, 99 insertions(+), 1 deletion(-)
-
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 3e29b44d2d7b..99493fb616c1 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -242,6 +242,7 @@ config ARM64
+ 	select HAVE_KRETPROBES
+ 	select HAVE_GENERIC_VDSO
+ 	select HOTPLUG_CORE_SYNC_DEAD if HOTPLUG_CPU
++	select HOTPLUG_SMT if HOTPLUG_CPU
+ 	select IRQ_DOMAIN
+ 	select IRQ_FORCED_THREADING
+ 	select KASAN_VMALLOC if KASAN
 -- 
 2.24.0
 
