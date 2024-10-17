@@ -1,80 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-2344-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2345-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B8F3D21272
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Oct 2024 11:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 135A5D2127C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Oct 2024 11:29:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XTlNB5jQPz3bgV;
-	Thu, 17 Oct 2024 22:04:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729160560;
-	cv=none; b=LvjgK6hAvGvF+IGpUSaqGTp1YlMojg12YP6dr2uTAmtxPzIM3bDmgyoOjWHJmwC79mwJFJ+ZUiqwzfwKlbY2R76m7yLDoZzuTJMaEcdgBF1Vhy94ZpoRQ2rLo6msvM07w2dL/gaOTcZOhnynrK7oEaVAzQ3+43ZES5QmHBLTrfi/Q4RGt4I/cCyRNDalWJusf241TFhAoJIJiYFLC6Or2xS82nBVWJWSunvIv14688e5G6JAovffP2NH917FR0kbFDR4rO0ut26GGMnDhWREBs6C2Fq4OT4yOTwaWgGFr0bYsbomXzIwGpdj2OpeC8se768xoLoxZgz971mIkgWMRA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XTlwN43K5z30NN;
+	Thu, 17 Oct 2024 22:29:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729164548;
+	cv=none; b=ewddgZl9l1c5GQdYEElGuDZaJSpaXCbgTV9xTD9U+r+dEwL5+zM0djPempKL7uz5sRfWHJSQ89wPS2rxMvQhihuTdFvVdHGUNVQjx7y0QIzbGScwgEJkFrlpbg9KbnTS1Px2i1lW4Fue0jEbc/KVSo9B2QcrAAOt1/OpCqSNHtx3vI4Sh88BMqtaUbkvdvQEgL2aeNGpEGWGJRsnOXW0Z5sNMnrfXAX8sdsE9m4Ek3EDhzvj1swyoVfAnH1e8HJyE7Aoq4j9tx65xxvZCW2eFvmNm9u610nzLAU0uW4v/K57qiT3+I4xlLhRYGk/4XlUFyDfTWPN3ZJs358l/6rp6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729160560; c=relaxed/relaxed;
-	bh=jeCnWl19vc+4E0BG770O0FIIXbyDF4QWNdeyt9jEPmQ=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=My8GPJ2Aou82z56ygzSeyEByhrwP4ZlYThEhdBhs2JksFRJ3cwr0FlvU86jnzNhQSX9J0vFPHFfL2tcLgs2dNKgGQutV+Uv3uoou3jn3ANeJ66MNVreCke5rrPYXy4E9DkeC2lQHI38vBz+G5AweDKUknz4Hy7Me/pt6iGGv9+Rk9f5bmVtEQPoKSSfYG7DqKYW63KUMAvBolrtoq3uSMEiFbihGTUIh/NlQ/7CMJ3joyxiyzo/+R2hAdZyiJTlGYCROojQo3Xcr9gzgdHdXQGySHf6lJqwrxk+QKBG72gK5WzLlvvLMDW+GI3Yw5hyosMOAEuCO0//XUQiyh/P41g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BoCcaf0y; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BoCcaf0y; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mpetlan@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	t=1729164548; c=relaxed/relaxed;
+	bh=5TEnRdFDrGp3g8cb84z8escMU96OZKkwtQ0FRZiWHBE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WGXAHkNXbeCf5yS8tOMMGOGeEaxtEsVweMTDJwZfi/KC8gQDpCnaC4x2clv2syYq/xy/AE0qPSmPClGT2fNMt+/SKBYbagT4fj7d8yBqUIV2s3XtfxWqtvDCe9HmuL1jBEYRMPlRXWH4EVV5jxnzzvdn7kyoeTXriap0pWPH9bLAhncsS5risShcSz7Q16Pr449CDAIi/X+PE9rbwvbpaMlWHCSKbBl8vWYx0I4XwPT1KMqkQW6CW5LU+GGD1gVNs+6o4mKVk6aKd/EnzipYoB5SaW7p7JpHzMnddNQqKacmV5G2U0UzXPGLmK8vTmpeSz8ffDg25W68I/GedIfkKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ot+aEOLg; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BoCcaf0y;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BoCcaf0y;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ot+aEOLg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mpetlan@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XTkRg1XbLz2xfq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2024 21:22:38 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1729160554;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jeCnWl19vc+4E0BG770O0FIIXbyDF4QWNdeyt9jEPmQ=;
-	b=BoCcaf0yFcHILOGKOqJPon4BpBnrvpni0n2racl3V+UGYtzdkv1cTLstopUj1vlUYR3kD9
-	HGaXKuP29KgFRscADTFBCa3O1Z8zzKAk5tNtNY5hnGG0EA3Oegra/ca3dorRjf9UwoWQEG
-	fqx6r2gZXpp5UU6hnLjy75nw6+AW93s=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1729160554;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jeCnWl19vc+4E0BG770O0FIIXbyDF4QWNdeyt9jEPmQ=;
-	b=BoCcaf0yFcHILOGKOqJPon4BpBnrvpni0n2racl3V+UGYtzdkv1cTLstopUj1vlUYR3kD9
-	HGaXKuP29KgFRscADTFBCa3O1Z8zzKAk5tNtNY5hnGG0EA3Oegra/ca3dorRjf9UwoWQEG
-	fqx6r2gZXpp5UU6hnLjy75nw6+AW93s=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-50-tUDJYfdmNweuPub9n2KkFw-1; Thu,
- 17 Oct 2024 06:22:29 -0400
-X-MC-Unique: tUDJYfdmNweuPub9n2KkFw-1
-Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 0D5421955F07;
-	Thu, 17 Oct 2024 10:22:27 +0000 (UTC)
-Received: from Carbon (unknown [10.60.6.32])
-	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 3CAC219560A3;
-	Thu, 17 Oct 2024 10:22:22 +0000 (UTC)
-Date: Thu, 17 Oct 2024 12:22:19 +0200 (CEST)
-From: Michael Petlan <mpetlan@redhat.com>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com, 
-    irogers@google.com, namhyung@kernel.org, linux-perf-users@vger.kernel.org, 
-    linuxppc-dev@lists.ozlabs.org, akanksha@linux.ibm.com, maddy@linux.ibm.com, 
-    kjain@linux.ibm.com, disgoel@linux.vnet.ibm.com, hbathini@linux.ibm.com
-Subject: Re: [PATCH] tools/perf/tests/shell/base_probe: Enhance print_overall_results
- to print summary information
-In-Reply-To: <20241014154025.85564-1-atrajeev@linux.vnet.ibm.com>
-Message-ID: <d7c34f4f-692e-4c1b-c268-582c645a6c33@redhat.com>
-References: <20241014154025.85564-1-atrajeev@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XTlwM2Zn0z2xYs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2024 22:29:07 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id E816CA43D50;
+	Thu, 17 Oct 2024 11:28:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A51E6C4CEC3;
+	Thu, 17 Oct 2024 11:28:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1729164541;
+	bh=rt80HNwYvry4F4GclVQlY1veJ+krWpXQVKReUpcl890=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ot+aEOLgX5JjytFWTSP6bvwXMFkowa3+f8eQ2nWquiQ2RAv0bCvly8HaX5AltuwSG
+	 MSL87zIBHWGLQnCmCdiEfFC7X5ejkFjDqsJRxmUPBDOphZUPBuoh9vgoceix8Psav5
+	 Yvn0UgFKrQvx/wSoy69QgTtp5NCCSdTL6QB1vx3PWWPTlokB4+yqFBJYWypC9U2bHQ
+	 nQtmXd5x7H21VQL4AHHLnM8nJNg1uOm2mWoaE2bjtRwnQ1e9g0HZLSZljRpX0WRG/I
+	 j7Jg7Czseip6435Tp950cr2IcSkIthwfZaEljLp7+y1XWJYi+AU0xcha6M5b6FnQGJ
+	 4UYbNkR0gIbzA==
+Date: Thu, 17 Oct 2024 14:25:05 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Andy Lutomirski <luto@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
+	Brian Cain <bcain@quicinc.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Guo Ren <guoren@kernel.org>, Helge Deller <deller@gmx.de>,
+	Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Kent Overstreet <kent.overstreet@linux.dev>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Michal Simek <monstr@monstr.eu>, Oleg Nesterov <oleg@redhat.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Richard Weinberger <richard@nod.at>,
+	Russell King <linux@armlinux.org.uk>, Song Liu <song@kernel.org>,
+	Stafford Horne <shorne@gmail.com>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Vineet Gupta <vgupta@kernel.org>, Will Deacon <will@kernel.org>,
+	bpf@vger.kernel.org, linux-alpha@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, linux-mm@kvack.org,
+	linux-modules@vger.kernel.org, linux-openrisc@vger.kernel.org,
+	linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
+	linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+	linux-trace-kernel@vger.kernel.org, linux-um@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
+	sparclinux@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH v6 6/8] x86/module: prepare module loading for ROX
+ allocations of text
+Message-ID: <ZxD0EVBoO-jcxEGE@kernel.org>
+References: <20241016122424.1655560-1-rppt@kernel.org>
+ <20241016122424.1655560-7-rppt@kernel.org>
+ <20241016170128.7afeb8b0@gandalf.local.home>
+ <20241017093515.GU16066@noisy.programming.kicks-ass.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,110 +107,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241017093515.GU16066@noisy.programming.kicks-ass.net>
 
-On Mon, 14 Oct 2024, Athira Rajeev wrote:
-> Currently print_overall_results prints the number of
-> fails in the summary, example from base_probe tests in
-> testsuite_probe:
+On Thu, Oct 17, 2024 at 11:35:15AM +0200, Peter Zijlstra wrote:
+> On Wed, Oct 16, 2024 at 05:01:28PM -0400, Steven Rostedt wrote:
+> > On Wed, 16 Oct 2024 15:24:22 +0300
+> > Mike Rapoport <rppt@kernel.org> wrote:
+> > 
+> > > diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> > > index 8da0e66ca22d..b498897b213c 100644
+> > > --- a/arch/x86/kernel/ftrace.c
+> > > +++ b/arch/x86/kernel/ftrace.c
+> > > @@ -118,10 +118,13 @@ ftrace_modify_code_direct(unsigned long ip, const char *old_code,
+> > >  		return ret;
+> > >  
+> > >  	/* replace the text with the new text */
+> > > -	if (ftrace_poke_late)
+> > > +	if (ftrace_poke_late) {
+> > >  		text_poke_queue((void *)ip, new_code, MCOUNT_INSN_SIZE, NULL);
+> > > -	else
+> > > -		text_poke_early((void *)ip, new_code, MCOUNT_INSN_SIZE);
+> > > +	} else {
+> > > +		mutex_lock(&text_mutex);
+> > > +		text_poke((void *)ip, new_code, MCOUNT_INSN_SIZE);
+> > > +		mutex_unlock(&text_mutex);
+> > > +	}
+> > >  	return 0;
+> > >  }
+> > 
+> > So this slows down the boot by over 30ms. That may not sound like much, but
+> > we care very much about boot times. This code is serialized with boot and
+> > runs whenever ftrace is configured in the kernel. The way I measured this,
+> > was that I added:
+> > 
 > 
->  ## [ FAIL ] ## perf_probe :: test_invalid_options SUMMARY ::
-> 	11 failures found
+> > If this is only needed for module load, can we at least still use the
+> > text_poke_early() at boot up?
 > 
-> test_invalid_options contains multiple tests and out
-> of that 11 failed. Sometimes it could happen that it
-> is due to missing dependency in the build or environment
-> dependency.
-> 
-> Example, perf probe -L requires DWARF enabled. otherwise
-> it fails as below:
->  ./perf probe -L
->   Error: switch `L' is not available because NO_DWARF=1
-> 
-> "-L" is tested as one of the option in :
->    for opt in '-a' '-d' '-L' '-V'; do
->    <<perf probe test>>
->    print_results $PERF_EXIT_CODE $CHECK_EXIT_CODE "missing argument
-> 	for $opt"
-> 
-> Here -a and -d doesn't require DWARF. Similarly there
-> are few other tests requiring DWARF. To hint the user that
-> missing dwarf could be one issue, update print_overall_results
-> to print a comment string along with summary hinting the possible
-> cause. Update test_invalid_options.sh and test_line_semantics.sh
-> to pass the info about dwarf requirement since these tests
-> failed when perf is built without DWARF.
-> 
-> With the change:
->  ## [ FAIL ] ## perf_probe :: test_invalid_options SUMMARY ::
->  11 failures found :: Some of the tests need DWARF to run
+> Right, so I don't understand why this is needed at all.
+> ftrace_module_init() runs before complete_formation() which normally
+> switches to ROX, as such ftrace should be able to continue to do direct
+> modifications here.
 
-Hello Athira,
+With this series the module text is allocated as ROX at the first place, so
+the modifications ftrace does to module text have to either use text poking
+even before complete_formation() or deal with a writable copy like I did
+for relocations and alternatives.
 
-I admit that the idea of some hint why the test failed
-might be useful, however a static hint that might or
-might not be related to the particular failure seems to
-be rather misleading to me. If the test fails for any
-other reason, the user is still told about DWARF which
-might not be true.
+I've been carrying the ftrace changes from a very old prototype and
+didn't pay enough attention to them them until Steve's complaint.
 
-I think that such hints would need some test result post-
-processing to determine the actual reason.
-
-Michael
-
-> 
-> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-> ---
->  tools/perf/tests/shell/base_probe/test_invalid_options.sh | 2 +-
->  tools/perf/tests/shell/base_probe/test_line_semantics.sh  | 2 +-
->  tools/perf/tests/shell/common/init.sh                     | 3 ++-
->  3 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/tools/perf/tests/shell/base_probe/test_invalid_options.sh b/tools/perf/tests/shell/base_probe/test_invalid_options.sh
-> index 1fedfd8b0d0d..e133bb0aa949 100755
-> --- a/tools/perf/tests/shell/base_probe/test_invalid_options.sh
-> +++ b/tools/perf/tests/shell/base_probe/test_invalid_options.sh
-> @@ -75,5 +75,5 @@ done
->  
->  
->  # print overall results
-> -print_overall_results "$TEST_RESULT"
-> +print_overall_results "$TEST_RESULT" "Some of the tests need DWARF to run"
->  exit $?
-> diff --git a/tools/perf/tests/shell/base_probe/test_line_semantics.sh b/tools/perf/tests/shell/base_probe/test_line_semantics.sh
-> index d8f4bde0f585..99f4f56a3292 100755
-> --- a/tools/perf/tests/shell/base_probe/test_line_semantics.sh
-> +++ b/tools/perf/tests/shell/base_probe/test_line_semantics.sh
-> @@ -51,5 +51,5 @@ done
->  
->  
->  # print overall results
-> -print_overall_results "$TEST_RESULT"
-> +print_overall_results "$TEST_RESULT" "Some of the tests need DWARF to run"
->  exit $?
-> diff --git a/tools/perf/tests/shell/common/init.sh b/tools/perf/tests/shell/common/init.sh
-> index 075f17623c8e..0862cbc1c6f7 100644
-> --- a/tools/perf/tests/shell/common/init.sh
-> +++ b/tools/perf/tests/shell/common/init.sh
-> @@ -46,10 +46,11 @@ print_results()
->  print_overall_results()
->  {
->  	RETVAL="$1"; shift
-> +	TASK_COMMENT="$*"
->  	if [ $RETVAL -eq 0 ]; then
->  		_echo "$MALLPASS## [ PASS ] ##$MEND $TEST_NAME :: $THIS_TEST_NAME SUMMARY"
->  	else
-> -		_echo "$MALLFAIL## [ FAIL ] ##$MEND $TEST_NAME :: $THIS_TEST_NAME SUMMARY :: $RETVAL failures found"
-> +		_echo "$MALLFAIL## [ FAIL ] ##$MEND $TEST_NAME :: $THIS_TEST_NAME SUMMARY :: $RETVAL failures found :: $TASK_COMMENT"
->  	fi
->  	return $RETVAL
->  }
-> -- 
-> 2.43.5
-> 
-> 
+I'll look into it.
+ 
+> Which reminds me, at some point I did patches adding a
+> MODULE_STATE_UNFORMED callback in order for static_call / jump_label to
+> be able to avoid the expensive patching on module load as well (arguably
+> ftrace should be using that too, instead of a custom callback).
 > 
 
+-- 
+Sincerely yours,
+Mike.
 
