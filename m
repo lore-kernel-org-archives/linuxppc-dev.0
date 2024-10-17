@@ -1,53 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-2335-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2336-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFCD3D2F7EC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Oct 2024 04:41:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75C4FD2F7FC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Oct 2024 07:45:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XTZtG6fl1z2yyR;
-	Thu, 17 Oct 2024 15:41:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729140102;
-	cv=none; b=ez755i6OhQYg6Ii9cS8dtnpzQArK4P9JdQ8BeH/kGeAfLe5AeGovEgTJw6LrHf/eKTlpowe2MTA/gpOLhJow0wibHuNqtazr8JUkzB71LLZDW1qxgn5c0AIeY7oTfeze8yok+DhXPTWiEfeNB+uyUu1fVxys78F6BYskVr3fhkogwoMWnw1Cf0aERMEtHp6oYq++BQHcF2kYGjqEU0ST3yysCb5X4c/7On2qvgEFfgUqxv8CTpCuoJ35PDfvL60lJUI0kAHQaXMkgPvtrsSlXN0ORKMUELE61y1rDfAdXgN7LYDSiupkeZZFmUvxuQXsrqrmTYkSF3wIlFGa7l6BfA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XTfxk75pTz2yTy;
+	Thu, 17 Oct 2024 18:44:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729151098;
+	cv=none; b=XA2OVOpujK6VZJ/Y4Udi05VLp2oRGqcLWGLbBbJa7uj4Px18QeQSzksQ7Ij4B7BmdJ0r44M6VkshI5S439fHGight9o042Zf1JdFTRLXh9U2X8tXc3cphz2lXNx3jmcP4LGoD4HpGyQm3nd4CooDh3ieCwTkFBR9DTptPIGTH+wwhmu3fWCBBXm3ZNRsPcVOdB5HetTEWJkbQd/DTkjxNn+x81kpWQr5einxKqsXzEqHkC4yRuvoqt757Q6r2dvbWCUgqi4WNdT2fqc7nuoNHpCyGk5+xcLnfr2LAjV3LbsoVaDX57aKqzSg4BTsn1LVSy3Z7fnMKnLdZxbuwa2V0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729140102; c=relaxed/relaxed;
-	bh=jf61mCBMHvrH66qg76c5nWI7BGi0ddGxXBp4nkUpntc=;
+	t=1729151098; c=relaxed/relaxed;
+	bh=/UhWQm9eLeR8YNtGPI8a1RnIKQeZCQmW5PVmQJ1rnJg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OtM0n18ekFPrt06qEO8Cg5sHsFDfVzob+Xf2JN//ZO3+PXLyx3CiFhWO8fmUIjC49v42FB58nbu00R88aOArCeQuvXkqQFnXMpxB992FS+O94wSG0nI0mKe2U/MgAJE2LwUMV8/8q0eR0CUj773fuFWNJxy7ErMrQytQkpxZLUWgQWlS0x199qIyGHukgoQDyKR8fkIL0dtbeEoyAGu8gz6ZohVflOEo7Py65xDGRWMjtqt/0lwsR9DSFnCJ7Y0h2/qQ6Euob0OGiCIb19SIVF6AAFxcq7ftBAWSPszKnFeM4rS87mkRhZeiudZnGT3518KmTocAVxEJgkdqGTFlIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XTZtF6Q7Sz2yw7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2024 15:41:41 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4XTZt75P4mz9sPd;
-	Thu, 17 Oct 2024 06:41:35 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 6MMm0su871D5; Thu, 17 Oct 2024 06:41:35 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4XTZt74G4dz9rvV;
-	Thu, 17 Oct 2024 06:41:35 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7DC5D8B770;
-	Thu, 17 Oct 2024 06:41:35 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id fWKN7eEXBxpc; Thu, 17 Oct 2024 06:41:35 +0200 (CEST)
-Received: from [192.168.233.183] (unknown [192.168.233.183])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 45AE88B764;
-	Thu, 17 Oct 2024 06:41:34 +0200 (CEST)
-Message-ID: <526fe185-7077-4b51-8ce1-9ef994aa7025@csgroup.eu>
-Date: Thu, 17 Oct 2024 06:41:32 +0200
+	 In-Reply-To:Content-Type; b=W3a5hh11bkTv72/pU2y+E73SwCipabobZAIM7SIV/KHJiZBSJPp4cP8a43RziN6K9jrkuGuPVOAu0mvDyH6QxaFQU9m59if6VOdQcKzRwmuOwynEU3rhOoibqxCsInLSONHLmFV0B6uLN8VrbS4UZ5h/AHBLTiZ2uIpHig7yHkMJ/XLdxq4m4t8oWDiOja/4rnjzOn3I9j6/6hgq3yhS18w/8YFeX39GTThany3kf5r/JJTGFMVm1NlOhzIrzoy17wKE9j3wBIp5M7dNrjzvFKTOdnTCQtC/kGjAY453b/AbOUcOg+1wWym1oTb5p/FVFmIUQBPZZU2PDQQh/VXkZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XTfxj1vVmz2yHs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Oct 2024 18:44:55 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6602DFEC;
+	Thu, 17 Oct 2024 00:44:52 -0700 (PDT)
+Received: from [10.57.66.61] (unknown [10.57.66.61])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EACE83F528;
+	Thu, 17 Oct 2024 00:44:15 -0700 (PDT)
+Message-ID: <c629869a-0cbf-4f0a-b361-cfb962177aeb@arm.com>
+Date: Thu, 17 Oct 2024 09:44:13 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,73 +41,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 14/16] modules: Support extended MODVERSIONS info
-To: Luis Chamberlain <mcgrof@kernel.org>, Matthew Maurer
- <mmaurer@google.com>, Lucas De Marchi <lucas.demarchi@intel.com>,
- Petr Pavlu <petr.pavlu@suse.com>, Sami Tolvanen <samitolvanen@google.com>,
- Daniel Gomez <da.gomez@samsung.com>, Helge Deller <deller@gmx.de>
-Cc: masahiroy@kernel.org, ndesaulniers@google.com, ojeda@kernel.org,
- gary@garyguo.net, Michael Ellerman <mpe@ellerman.id.au>,
- Alex Gaynor <alex.gaynor@gmail.com>, Benjamin Gray <bgray@linux.ibm.com>,
- Naveen N Rao <naveen@kernel.org>, rust-for-linux@vger.kernel.org,
- linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, neal@gompa.dev,
- marcan@marcan.st, j@jannau.net, asahi@lists.linux.dev,
- linux-modules@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Boqun Feng
- <boqun.feng@gmail.com>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?=
- <bjorn3_gh@protonmail.com>, Benno Lossin <benno.lossin@proton.me>,
- Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
- Trevor Gross <tmgross@umich.edu>, linuxppc-dev@lists.ozlabs.org
-References: <20240925233854.90072-1-mmaurer@google.com>
- <20240925233854.90072-15-mmaurer@google.com>
- <ZwmlEYdS0aPVF32k@bombadil.infradead.org>
- <CAGSQo01o4fWYwSzZHX5dyTUKcaCSZ7z-hPQ8w63tgBPGbM_UCA@mail.gmail.com>
- <ZwmnnMmqVWLaelvQ@bombadil.infradead.org>
- <Zwm4lXdKB9RfPQ5M@bombadil.infradead.org>
- <Zwm4v_1wh5RwuHxF@bombadil.infradead.org>
- <CAGSQo03df-tnmwcz4nh3qtuQPKQ2zLHW0juQyKUXGsdeS7QkLA@mail.gmail.com>
- <ZxBKkJu-XPOGs-NG@bombadil.infradead.org>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <ZxBKkJu-XPOGs-NG@bombadil.infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH v5 19/30] arm64: add POE signal support
+To: Joey Gouly <joey.gouly@arm.com>, Will Deacon <will@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, nd@arm.com,
+ akpm@linux-foundation.org, aneesh.kumar@kernel.org,
+ aneesh.kumar@linux.ibm.com, anshuman.khandual@arm.com, bp@alien8.de,
+ broonie@kernel.org, catalin.marinas@arm.com, christophe.leroy@csgroup.eu,
+ dave.hansen@linux.intel.com, hpa@zytor.com, linux-fsdevel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, maz@kernel.org,
+ mingo@redhat.com, mpe@ellerman.id.au, naveen.n.rao@linux.ibm.com,
+ npiggin@gmail.com, oliver.upton@linux.dev, shuah@kernel.org,
+ skhan@linuxfoundation.org, szabolcs.nagy@arm.com, tglx@linutronix.de,
+ x86@kernel.org, kvmarm@lists.linux.dev, linux-kselftest@vger.kernel.org
+References: <20240822151113.1479789-1-joey.gouly@arm.com>
+ <20240822151113.1479789-20-joey.gouly@arm.com>
+ <47e1537f-5b60-4541-aed1-a20e804c137d@arm.com>
+ <20241009144301.GA12453@willie-the-truck>
+ <20241014171023.GA18295@willie-the-truck>
+ <20241015095911.GA3777204@e124191.cambridge.arm.com>
+ <20241015114116.GA19334@willie-the-truck>
+ <20241015122529.GA3820764@e124191.cambridge.arm.com>
+Content-Language: en-GB
+From: Kevin Brodsky <kevin.brodsky@arm.com>
+In-Reply-To: <20241015122529.GA3820764@e124191.cambridge.arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-
-
-Le 17/10/2024 à 01:21, Luis Chamberlain a écrit :
-> On Tue, Oct 15, 2024 at 04:22:22PM -0700, Matthew Maurer wrote:
->> So, the basic things I can think of to test here are:
+On 15/10/2024 14:25, Joey Gouly wrote:
+> On Tue, Oct 15, 2024 at 12:41:16PM +0100, Will Deacon wrote:
+>> On Tue, Oct 15, 2024 at 10:59:11AM +0100, Joey Gouly wrote:
+>>> On Mon, Oct 14, 2024 at 06:10:23PM +0100, Will Deacon wrote:
+>>>> Kevin, Joey,
+>>>>
+>>>> On Wed, Oct 09, 2024 at 03:43:01PM +0100, Will Deacon wrote:
+>>>>> On Tue, Sep 24, 2024 at 01:27:58PM +0200, Kevin Brodsky wrote:
+>>>>>> On 22/08/2024 17:11, Joey Gouly wrote:
+>>>>>>> @@ -1178,6 +1237,9 @@ static void setup_return(struct pt_regs *regs, struct k_sigaction *ka,
+>>>>>>>  		sme_smstop();
+>>>>>>>  	}
+>>>>>>>  
+>>>>>>> +	if (system_supports_poe())
+>>>>>>> +		write_sysreg_s(POR_EL0_INIT, SYS_POR_EL0);
+>>>>>> At the point where setup_return() is called, the signal frame has
+>>>>>> already been written to the user stack. In other words, we write to the
+>>>>>> user stack first, and then reset POR_EL0. This may be problematic,
+>>>>>> especially if we are using the alternate signal stack, which the
+>>>>>> interrupted POR_EL0 may not grant access to. In that situation uaccess
+>>>>>> will fail and we'll end up with a SIGSEGV.
+>>>>>>
+>>>>>> This issue has already been discussed on the x86 side, and as it happens
+>>>>>> patches to reset PKRU early [1] have just landed. I don't think this is
+>>>>>> a blocker for getting this series landed, but we should try and align
+>>>>>> with x86. If there's no objection, I'm planning to work on a counterpart
+>>>>>> to the x86 series (resetting POR_EL0 early during signal delivery).
+>>>>> Did you get a chance to work on that? It would be great to land the
+>>>>> fixes for 6.12, if possible, so that the first kernel release with POE
+>>>>> support doesn't land with known issues.
+>>>> Looking a little more at this, I think we have quite a weird behaviour
+>>>> on arm64 as it stands. It looks like we rely on the signal frame to hold
+>>>> the original POR_EL0 so, if for some reason we fail to allocate space
+>>>> for the POR context, I think we'll return back from the signal with
+>>>> POR_EL0_INIT. That seems bad?
+>>> If we don't allocate space for POR_EL0, I think the program recieves SIGSGEV?
+>>>
+>>> setup_sigframe_layout()
+>>>         if (system_supports_poe()) {
+>>>                 err = sigframe_alloc(user, &user->poe_offset,
+>>>                                      sizeof(struct poe_context));
+>>>                 if (err)
+>>>                         return err;
+>>>         }
+>>>
+>>> Through get_sigframe() and setup_rt_frame(), that eventually hets here:
+>>>
+>>> handle_signal()
+>>> 	ret = setup_rt_frame(usig, ksig, oldset, regs);
+>>>
+>>> 	[..]
+>>>
+>>>         signal_setup_done(ret, ksig, test_thread_flag(TIF_SINGLESTEP));
+>>>
+>>> void signal_setup_done(int failed, struct ksignal *ksig, int stepping)                                                                                                                         
+>>> {                                                                                                                                                                                              
+>>>         if (failed)                                                                                                                                                                            
+>>>                 force_sigsegv(ksig->sig);                                                                                                                                                      
+>>>         else                                                                                                                                                                                   
+>>>                 signal_delivered(ksig, stepping);                                                                                                                                              
+>>> }  
+>>>
+>>> So I think it's "fine"?
+>> Ah, yes, sorry about that. I got confused by the conditional push in
+>> setup_sigframe():
 >>
->> 1. The kernel can still load the previous MODVERSIONS format
->> 2. The kernel can load the new MODVERSIONS format
->> 3. If we artificially tweak a CRC in the previous format, it will fail to load.
->> 4. If we artificially tweak a CRC in the new format, it will fail to load.
->> 5. With CONFIG_EXTENDED_MODVERSIONS enabled, the kernel will build and
->> load modules with long symbol names, with MODVERSIONS enabled.
+>> 	if (system_supports_poe() && err == 0 && user->poe_offset) {
+>> 		...
 >>
->> Is there anything else you were thinking of here, or are those the
->> kinds of checks you were envisioning?
-> 
-> That sounds great. Yeah, the above would be great to test. A while ago
-> I wrote a new modules selftests in order to test possible improvements
-> on find_symbol() but I also did this due to push the limits of the
-> numbers of symbols we could support. I wrote all this to also test the
-> possible 64-bit alignment benefits of __ksymtab_ sections on
-> architectures without CONFIG_HAVE_ARCH_PREL32_RELOCATIONS (e.g. ppc64,
-> ppc64le, parisc, s390x,...). But come to think of it, you might be
-> able to easily leverage this to also just test long symbols by self
-> generated symbols as another test case. In case its useful to you I've
-> put this in a rebased branch 20241016-modules-symtab branch. Feel free
-> to use as you see fit.
+>> which gives the wrong impression that the POR is somehow optional, even
+>> if the CPU supports POE. So we should drop that check of
+>> 'user->poe_offset' as it cannot be NULL here.
+>>
+>> We also still need to resolve Kevin's concern, which probably means
+>> keeping the thread's original POR around someplace.
+> That was cargo culted (by me) from the rest of the function (apart from TPIDR2
+> and FPMR). I think Kevin is planning on sending his signal changes still, but
+> is on holiday, maybe he can remove the last part of the condition as part of
+> his series.
 
-By reading this, I discovered that was initially added to powerpc by 
-commit 271ca788774a ("arch: enable relative relocations for arm64, power 
-and x86") and then removed due to problem with modules, see commit 
-ff69279a44e9 ("powerpc: disable support for relative ksymtab references")
+Indeed just got back from holiday. I've got the series ready, about to
+send it. I will add a clean-up patch removing this check on poe_offset.
 
-Wouldn't it be better to try and fix modules and activate again 
-CONFIG_HAVE_ARCH_PREL32_RELOCATIONS on powerpc ?
-
-Christophe
+Kevin
 
