@@ -1,80 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-2414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2415-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C296D3DEAB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2024 18:58:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73EF9D3F29F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2024 21:30:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XVYrJ4g2rz3c2C;
-	Sat, 19 Oct 2024 05:58:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XVdD704qWz3bgl;
+	Sat, 19 Oct 2024 08:30:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729277904;
-	cv=none; b=edKQY0YcOgNMah9R0l85QFhwj3YuQ5aIzLtWh+wmOA7bPwR1I8UYnHP002soSf6+819Sp94LkN/SdfPFPhBzvbiunQTlwyjtF/Twc4qrxZLP+RZuhb5I6ODBGPVIBsuXcr2KVMkEvMrcQdDxrqXiIl0Hf1JE7p9mv0W3wgQHg9jdhzHnEtQYDiPmrU05ksBe5dMNNJSHywrkwlx23Bx4EZy51tAG7eJSGk3ng3wqcpGFJAnraQotAYCfkrEiZbjcvntrYsYmIQr5S1JYzdTNUjkP3cQFJUeXX97m34kT+uhmfXvTGVo+piR1+4pdukDbOBPEaCtesfxY62t1VERLFQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729287046;
+	cv=none; b=XhHAq2uHdr9mcCHJBwaquVsP+QzVDFfLTuf3JQIOGZMs9rwOcOz3rwsYyhCMF+e1ljqfJZ8FY5Tr6y61CJNBgJ6NGEuRknuf8AAJeDn6F7kOm7h1yfBYT+562+0ecx3bPuitFb99PQOw5dBzmADEQG8Au0YjlkIqpjTgweMKvIRf6E3Xwfo3PRwKYI6jgkcDjosd+Xozlzh/kZv73mEf69Tqb02683QXU3LuO43x1TUKoWOjdyd3s9zvwiveDLjjGSloGfZsGZwj9N05OtbXqdFJp+6/iB6aMrEdj1D+7zzzTbGwxCOoE4Uto2OrXP10mO41Hb8pgz1xSvwx6cokTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729277904; c=relaxed/relaxed;
-	bh=CYqC2h4NLHyR+o/7MNIAz+vw9QnRHlBDOZXnP3K4b04=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=K5h82ZWdp9VKzjq3UWwjgq9CbG1W2AKhhVA1j6ll8fBmGm5mQI7Ijt341paKiE011anvH74Q2oGRWj6Ij6l2k9u8v5hJXAapSJWA+5hH++g69T1XZY97g98Q8inCxVOjZrAnipg4gPdCch/faEPiYy1tcazecmk0/iFdLO8QMREZ1tRl4oeLNTd/+d5BOmfd30NuUbZ7QuOMlqmifUWySdy33SflvRRunRoSi1G1TiWLcG5EW7WjQLMmiWXC1Zqkt9Plotl4eIGL2dxn0+CXCBPRRvl4gtqZ46W3Tt83gY0kWaTQi4jPpya4diDNF0K/BY8ZOU/VGFmigGoinbb3zA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eLMksYF2; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1729287046; c=relaxed/relaxed;
+	bh=+x40G/RVScqU5RU45r/OHIPWIhZjxuddm6QYzW8olIw=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=AgGe3jlfMertaY7Q8Q8z7rl5Xp4sJXIOcliDkwvZSaVKwYq7oICME5zjoL/Wk8xEajG1RGC7MIyY0hDhJeKxm2mmG76/U5zfUy3jL8wb+Qn6RUUdcGabDnmdhQYX3VCymN2N8siC2KnXWjneS754bp+/Zvw9xVxsWDNtA2g07RQkAF5RO/X+LyN6OHbwSjvJHJIeJXbsugVv5zD+iNWm4OZxCzveFPlYYEuU4bK+mmdY7hAc7XPvKwdyiVL88SCuY5vWjuodWLGI4pygruAUoSgxmID43Ct2x0W4+4mLK3cUAYDEtaa0jy6nFU4omY2vUXdQ+wwBAFowXuNejoGy4w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VbJ9I6Pe; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eLMksYF2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VbJ9I6Pe;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XVYrH61LKz3c1g
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2024 05:58:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XVdD61DWkz3bdD
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2024 08:30:46 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 8B68B5C53A2;
-	Fri, 18 Oct 2024 18:58:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 212B1C4CEC3;
-	Fri, 18 Oct 2024 18:58:14 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 626605C59A9;
+	Fri, 18 Oct 2024 21:30:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60AD2C4CED1;
+	Fri, 18 Oct 2024 21:30:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729277901;
-	bh=uNlY1sb7BVVXCcsMVu8Ynjn1FGT7oBovqYRNZBeSUEk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=eLMksYF2A44sAVvXMLLc1QTO05aMjS+OBbVmUBAl+DMijULjAXZurx2DG/2ulaJIR
-	 JoRrmGIMHs433yhhly72II6CWLzqRAVpX7aKU1mtpg6T0fpj7F2CGdBFMTHC73KR0M
-	 8F7jBP38fFa63M2huQVX1hUtG6EE6PmoyBn8r99Au5V51HZQG1wKGt+XBJra9oGAv2
-	 SEVoy+pa4Wl38FEIXcpvG6eG7DIbtbR/zHF0Hi6hn5WADwn4Sigjjt6iAGl732xv2+
-	 HCewKfZmlZHMdZYDLFUn/NN8FFYPEobIhZ6ZTRSLzI73wByX7vcPT488drJ+4JFOBO
-	 GIYxXYQDKHcTw==
-Date: Fri, 18 Oct 2024 19:58:12 +0100
+	s=k20201202; t=1729287043;
+	bh=bd7zqGrKt29zOyO1cGYsr3FOMFt4VVqROBGt8oxJNRs=;
+	h=From:To:In-Reply-To:References:Subject:Date:From;
+	b=VbJ9I6PeF8RQAviyGZQl6FnjRoFk86rwPMF7ceG5X5rap30uDjPmHrctjo8dQOs9A
+	 ytr3HBuo833OgANJwKVsrSxsuWZzPnRY4Rzmm+2Eq43RkNDXHSonfrhWSIZj5XG8y/
+	 9Rs/rktl6k24rnPSuXlQQAngwThTgqb7d8m1b+FZxACTOFk5noyIJFX/v4NauQkUNN
+	 /UA4meQSQZ6j+Sesj5Q6UsywMOFwiDKtvzeSFBU0bqsi6zPP3XWQoFcJE2f0vSbtKD
+	 jD/V+S45WTHPpJN6U4jNGl38Ap1B3xp3IIaDwav0eNf3OPyZx5NraptjV0qy+aAtQG
+	 xxQk1RhLc+yiA==
 From: Mark Brown <broonie@kernel.org>
-To: Anna-Maria Behnsen <anna-maria@linutronix.de>
-Cc: Frederic Weisbecker <frederic@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-	Len Brown <len.brown@intel.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	rust-for-linux@vger.kernel.org, Alice Ryhl <aliceryhl@google.com>,
-	FUJITA Tomonori <fujita.tomonori@gmail.com>,
-	Andrew Lunn <andrew@lunn.ch>, Miguel Ojeda <ojeda@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>, damon@lists.linux.dev,
-	linux-mm@kvack.org, SeongJae Park <sj@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
-	Heiner Kallweit <hkallweit1@gmail.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>,
-	Dwaipayan Ray <dwaipayanray1@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	netdev@vger.kernel.org, linux-sound@vger.kernel.org,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	linux-media@vger.kernel.org,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: (subset) [PATCH v3 00/16] timers: Cleanup delay/sleep related
- mess
-Message-ID: <8e079f25-658e-4671-9b3e-c3e46f36405b@sirena.org.uk>
-References: <172892295715.1548.770734377772758528.b4-ty@kernel.org>
- <877ca5al86.fsf@somnus>
+To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+ nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org, 
+ Chancel Liu <chancel.liu@nxp.com>
+In-Reply-To: <20241017071507.2577786-1-chancel.liu@nxp.com>
+References: <20241017071507.2577786-1-chancel.liu@nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_micfil: Add a flag to distinguish with
+ different volume control types
+Message-Id: <172928704112.212383.3559380039082750889.b4-ty@kernel.org>
+Date: Fri, 18 Oct 2024 22:30:41 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,43 +65,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="P8JRaMzcXswSHEtS"
-Content-Disposition: inline
-In-Reply-To: <877ca5al86.fsf@somnus>
-X-Cookie: What is the sound of one hand clapping?
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-9b746
 
+On Thu, 17 Oct 2024 16:15:07 +0900, Chancel Liu wrote:
+> On i.MX8MM the register of volume control has positive and negative
+> values. It is different from other platforms like i.MX8MP and i.MX93
+> which only have positive values. Add a volume_sx flag to use SX_TLV
+> volume control for this kind of platform. Use common TLV volume control
+> for other platforms.
+> 
+> 
+> [...]
 
---P8JRaMzcXswSHEtS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Applied to
 
-On Fri, Oct 18, 2024 at 10:06:33AM +0200, Anna-Maria Behnsen wrote:
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
 
-> Would it be ok for you, if the patch is routed through tip tree? kernel
-> test robot triggers a warning for htmldoc that there is a reference to
-> the no longer existing file 'timer-howto.rst':
+Thanks!
 
->   https://lore.kernel.org/r/202410161059.a0f6IBwj-lkp@intel.com
+[1/1] ASoC: fsl_micfil: Add a flag to distinguish with different volume control types
+      commit: da95e891dd5d5de6c5ebc010bd028a2e028de093
 
-Oh, and for that:
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-Reviewed-by: Mark Brown <broonie@kernel.org>
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
---P8JRaMzcXswSHEtS
-Content-Type: application/pgp-signature; name="signature.asc"
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
------BEGIN PGP SIGNATURE-----
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmcSr8MACgkQJNaLcl1U
-h9DpWgf/c8OCSZtN0/AmetsDqa/zvYT//zsqcY10Jl3YSsQgCEAIwkc0GWEdl0Bv
-mAY3s/r8vi5dSXK1YARWoSlvYA0h0R7ysi9oKy/2HyZ4fo6uVT/S95tSH90rL8UD
-IUtMu6N43Pak52+2hhGl4glVX5yDjXT4+8rMZjL8G9F07fXblzftyGP2G/HfkuJS
-FJ36afHCl/AMmoe1TkGpHHOaOXVbPlukUtX6ZQFepWJjUiv/4YgoFxH8SVoyqP8W
-ROEq86SWvagekQ5nzr8Jgn2DaWiFSN/e520uN6Qz8kELdR+fV/NquTsUmszeaZ+z
-tnB/CGQgVUWV17Pn7WAs3w+eDCRuVQ==
-=RPH6
------END PGP SIGNATURE-----
+Thanks,
+Mark
 
---P8JRaMzcXswSHEtS--
 
