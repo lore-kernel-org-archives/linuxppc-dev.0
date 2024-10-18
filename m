@@ -1,92 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-2392-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2393-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80B44D3DEA0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2024 17:31:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8EC3D3DEA3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2024 17:37:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XVWvx3HLKz3bxC;
-	Sat, 19 Oct 2024 04:31:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729272685;
-	cv=none; b=JykUWo+/NSC8HOEztA6K0wTbT3kXWE+xTr7oL72KrEyxm4dOLTrk5HUuoqN8vjnhp2ZUhYdzlIJYxc9CwdbqZwsKrlxCXsrePn66jC7RgNkE+9+bNoB+Y21vfjkqAnZfoYXKD4KlBHKD4gcwfUOtyI+YjIZWzFH7CN5HoOLIllNVxyiCs/OXJmpG5oNynSDddv6bU99JM2bDbFW8LYyHM1G+2dGYSDbRXBMFNtRxIAxiNc4wqJJ/FD96839A24ymX/GerV8cvb8v1GupayujTLwFR7wJ248F9FsfEH+4KtKFaZgAKisbLciOi5H6+StQdt0eC7wwnbce5cj7iaRFaw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XVX2b1ftdz3btP;
+	Sat, 19 Oct 2024 04:37:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729273031;
+	cv=none; b=BZ9oKu6SH5EAVIYdY4+/isjFmRbjjF48X2VQSpnXoab1pg3JZ+K9tzxyqlPnd4kFLl138ZGQVHt9BlWwU1idbLNMKzFMihsBnqkAZjrUAhFTkeYu7+xnjkcBS4i324vMgM3yXrTFf+lePlL38iB9sLyMP1tX62BmryF1yEEB1wqC6e9z3LG6cEek8IqtubNfV3zBOcjp4XNzQYUKu1mbmemla6Y0qpzIPpT7K66mEOnaJfO4fO83fyg2rqiOZ5SwpjmyH04Wvc4mxkPcIZm0wg03vTviQzPvCRp5e4rtvz59XxUk/Kc7KYsl10/DGL1bQx05lygK+DXZsNebsxabVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729272685; c=relaxed/relaxed;
-	bh=1QLaMyzhWv0h56bpJNLe2thoYBckgfAdM8HvqGdr41M=;
+	t=1729273031; c=relaxed/relaxed;
+	bh=oL9IMEzVW/uiWNE331Qsj0y4/iuYLMGRaqR2BGXECGI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mKZm2ARWOFgrrwoz388DAcfvFFsoTMhsfdiVULLgxpogzpfw4heHCnQ/auvL25ofJg8R+EQrhSkWSXm5ovJ5/DkktB/b3kqXu7wXtrW4NYf9FBCKUL8YrqR5s1qs7HjjNEkgPq/WyQ0n09ysFD6wjY6pkm69LmG7oYV39mz7NTMH9eRTvMsvZbeM+u+cPvCnCZpM/hdNd4JaaViMYF43/muXN0zF5obxgo2ABP60ybnqM/MwxjkX8NMrQh/JQuVfkTFwpv0tGifnpsXWHSvAfz3XO5ulbIBtQ5YBqbnHIIzqBW2DqKnyCwyUkkFMF4kz2aYBF8/pOlGAXwfz1dQdwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NzDfps5G; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 MIME-Version; b=BkMGNFNEdJQSZP+aI9xT+bbCxKlLwuonHFFlbZRKh+eShGW8vH9bWgdGaY0EVsEI6KWmv5HSz/7HrmwcLU7ibCvUhTKWr/ZdvklMJDMPYnchPW8sDHuAFG0CozP2MDsLPWT1vkAt3WP0ZIoPr1V4wRfbRawdh3B0YiDiccJ8ax59Co4/+c9mBEarFkJJGBW0OnFlircCEB8rN5CHRiZqub7xBSdWA9fT8iKRYK0N7dHweEzZmLYUEAeRCNbp0CfLjzxrPf8ikaXsTEmTSFQnI2wH0L57kCXijGsHq33gVLfo0Q+eMDZO0ZrSpDQJXwkajFLYjWnptClwXIjKuWWg4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=govUo/QW; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NzDfps5G;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=govUo/QW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XVWvw3Xhdz3btj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2024 04:31:24 +1100 (AEDT)
-Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-71e953f4e7cso1514426b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2024 10:31:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1729272682; x=1729877482; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=1QLaMyzhWv0h56bpJNLe2thoYBckgfAdM8HvqGdr41M=;
-        b=NzDfps5Gk+yjsmA51wxaQfqSdHg2EYhLF/naGHqrgUVMQ7fwrFgA4XPBGzPuloJVje
-         k/hOVJXNxrg3BOaU2N/o6XF8wfVtP7FQFe9oGJh3t69oLB/WJFYoaxYEhUlYEOuO6Csv
-         ADZuurAEnDB9l64YCff7rnDlvSPMJDKQS6ZAg9cnSOI+h8RU/XLjOT+0qgDByu3exPsw
-         b0gxzAl8UGzvxKSYcMGRHTXO/ePH/PnguM2o7M2ZrCGwNvUWbXBBS6NgPpEXhjRBLz/a
-         6TEjRHNyu5J4W8bB2dTPcx9oymiYq63p43Sy2XnDSi83VzZ/vO+K3oSiOFB5Ll05mJ2K
-         sEPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729272682; x=1729877482;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=1QLaMyzhWv0h56bpJNLe2thoYBckgfAdM8HvqGdr41M=;
-        b=oSqBmV1RNCFdmdk7WV1dbRrra5ZIzLrjsYlAs4MgmbHIyKN0jvRhcOZvGaeG6tvYMJ
-         bU08SLLLI3qhuXZFQPSk340e2kC8NeIlfvPz/YdwQewELUXgDZjsogRBV+Ct6KysRZMA
-         0y/Ehre7PzRPCjpKW1aI971b6MBTwnOkDfkqcFnY+t/FkSGaEWzigP7bSt3Az0kYg4Yr
-         mJHnkp968PwDXk7UuMn3SAWfP5hGE+V2ctk2W0rOgS8gyJUqOSgor4ezkswjHyIumx0i
-         cC1PYNgjcHcFbJgUX0wgatEsfdZ314GansD7WzKsjMUM/+0zULC4prV/Eu5t2lKb/ne/
-         zKbw==
-X-Gm-Message-State: AOJu0YzKds8QeDqj3teReovOQZiFEDqbhNtlk7zIXb4y029x53c4MWQF
-	EV+r5DNvpnRW+ctxMgHFpSZ1ENwWA8fTSXoeHtGr6Fv1HVrfI3yMhnXvlOUI
-X-Google-Smtp-Source: AGHT+IFTSMl8QW5ycN4XEBU+MJ3K9NfWvdEojOEp7QlJ+1fDl8flZ96NMrdY+IbWH9uWHYWgBiWu4A==
-X-Received: by 2002:a05:6a00:cd4:b0:71e:cf8:d6f1 with SMTP id d2e1a72fcca58-71ea316bf4emr3925702b3a.14.1729272682003;
-        Fri, 18 Oct 2024 10:31:22 -0700 (PDT)
-Received: from dw-tp.ibmuc.com ([171.76.80.151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-71ea3311f51sm1725242b3a.36.2024.10.18.10.31.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 18 Oct 2024 10:31:21 -0700 (PDT)
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: kasan-dev@googlegroups.com,
-	linux-mm@kvack.org,
-	Marco Elver <elver@google.com>,
-	Alexander Potapenko <glider@google.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Hari Bathini <hbathini@linux.ibm.com>,
-	"Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
-	Donet Tom <donettom@linux.vnet.ibm.com>,
-	Pavithra Prakash <pavrampu@linux.vnet.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCH v3 12/12] book3s64/hash: Early detect debug_pagealloc size requirement
-Date: Fri, 18 Oct 2024 22:59:53 +0530
-Message-ID: <c33c6691b2a2cf619cc74ac100118ca4dbf21a48.1729271995.git.ritesh.list@gmail.com>
-X-Mailer: git-send-email 2.46.0
-In-Reply-To: <cover.1729271995.git.ritesh.list@gmail.com>
-References: <cover.1729271995.git.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XVX2Y4jrjz3bqy
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2024 04:37:09 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49I9m5SF015438;
+	Fri, 18 Oct 2024 17:36:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=oL9IMEzVW/uiWNE33
+	1Qsj0y4/iuYLMGRaqR2BGXECGI=; b=govUo/QWtIxF90G2UJGKTLmlERhRafMVx
+	IfjDkyVwkCQ1smfyqpYHgah1XY0mAbzqeQodBGwMtMqZCRoaQh2tbsjzbStVt5Mr
+	lvdNicvd4QRrX7dbWf/nJVywpnhRpeqlUUCDF8VP9layYK3fgK6q4gxHGscMVC41
+	SS6fUx3kANk1SPuBFLoM5orI2QSIUXRRX9b4MvXnNtf/GwbHqAtBGLdaK5ZE6/d+
+	bJABKd3I7wLVjAPvpn2/S5go1kt+z7DlhUBtyvZeycpqxmM95s/eAicoONpcTC4H
+	yB0Mw0KrhO/qt3QgdBXfA6E0y1m4pZ0Bp/kN1xBgAlZsXIV2o6y5w==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42aqgracf6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 18 Oct 2024 17:36:47 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49IHakP3009380;
+	Fri, 18 Oct 2024 17:36:46 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42aqgracf0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 18 Oct 2024 17:36:46 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49IH7CmD006674;
+	Fri, 18 Oct 2024 17:36:45 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4283ese5ru-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 18 Oct 2024 17:36:45 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49IHaguB32244354
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 18 Oct 2024 17:36:42 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3881420043;
+	Fri, 18 Oct 2024 17:36:42 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2198B20040;
+	Fri, 18 Oct 2024 17:36:38 +0000 (GMT)
+Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.ibm.com.com (unknown [9.43.99.188])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 18 Oct 2024 17:36:37 +0000 (GMT)
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org,
+        linux-trace-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>, "Naveen N. Rao" <naveen@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Daniel Borkmann <daniel@iogearbox.net>,
+        Masahiro Yamada <masahiroy@kernel.org>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Alexei Starovoitov <ast@kernel.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Masami Hiramatsu <mhiramat@kernel.org>,
+        Andrii Nakryiko <andrii@kernel.org>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Vishal Chourasia <vishalc@linux.ibm.com>,
+        Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+Subject: [PATCH v6 01/17] powerpc/trace: Account for -fpatchable-function-entry support by toolchain
+Date: Fri, 18 Oct 2024 23:06:16 +0530
+Message-ID: <20241018173632.277333-2-hbathini@linux.ibm.com>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241018173632.277333-1-hbathini@linux.ibm.com>
+References: <20241018173632.277333-1-hbathini@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: qreVLQ2fwO0r0YyIsFvzm78eaidVgshv
+X-Proofpoint-GUID: 3IpwSKqhGPkW8erZ7fEpG8dlsULJrk7V
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,74 +107,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ phishscore=0 mlxlogscore=999 malwarescore=0 clxscore=1015
+ lowpriorityscore=0 adultscore=0 spamscore=0 mlxscore=0 suspectscore=0
+ impostorscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2409260000 definitions=main-2410180111
 
-Add hash_supports_debug_pagealloc() helper to detect whether
-debug_pagealloc can be supported on hash or not. This checks for both,
-whether debug_pagealloc config is enabled and the linear map should
-fit within rma_size/4 region size.
+From: Naveen N Rao <naveen@kernel.org>
 
-This can then be used early during htab_init_page_sizes() to decide
-linear map pagesize if hash supports either debug_pagealloc or
-kfence.
+So far, we have relied on the fact that gcc supports both
+-mprofile-kernel, as well as -fpatchable-function-entry, and clang
+supports neither. Our Makefile only checks for CONFIG_MPROFILE_KERNEL to
+decide which files to build. Clang has a feature request out [*] to
+implement -fpatchable-function-entry, and is unlikely to support
+-mprofile-kernel.
 
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Update our Makefile checks so that we pick up the correct files to build
+once clang picks up support for -fpatchable-function-entry.
+
+[*] https://github.com/llvm/llvm-project/issues/57031
+
+Signed-off-by: Naveen N Rao <naveen@kernel.org>
 ---
- arch/powerpc/mm/book3s64/hash_utils.c | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/trace/Makefile | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index 2f5dd6310a8f..2674f763f5db 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -329,25 +329,26 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long idx,
- }
- #endif
+diff --git a/arch/powerpc/kernel/trace/Makefile b/arch/powerpc/kernel/trace/Makefile
+index 125f4ca588b9..d6c3885453bd 100644
+--- a/arch/powerpc/kernel/trace/Makefile
++++ b/arch/powerpc/kernel/trace/Makefile
+@@ -9,12 +9,15 @@ CFLAGS_REMOVE_ftrace.o = $(CC_FLAGS_FTRACE)
+ CFLAGS_REMOVE_ftrace_64_pg.o = $(CC_FLAGS_FTRACE)
+ endif
  
-+static inline bool hash_supports_debug_pagealloc(void)
-+{
-+	unsigned long max_hash_count = ppc64_rma_size / 4;
-+	unsigned long linear_map_count = memblock_end_of_DRAM() >> PAGE_SHIFT;
+-obj32-$(CONFIG_FUNCTION_TRACER)		+= ftrace.o ftrace_entry.o
+-ifdef CONFIG_MPROFILE_KERNEL
+-obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace.o ftrace_entry.o
++ifdef CONFIG_FUNCTION_TRACER
++obj32-y					+= ftrace.o ftrace_entry.o
++ifeq ($(CONFIG_MPROFILE_KERNEL)$(CONFIG_ARCH_USING_PATCHABLE_FUNCTION_ENTRY),)
++obj64-y					+= ftrace_64_pg.o ftrace_64_pg_entry.o
+ else
+-obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace_64_pg.o ftrace_64_pg_entry.o
++obj64-y					+= ftrace.o ftrace_entry.o
++endif
+ endif
 +
-+	if (!debug_pagealloc_enabled() || linear_map_count > max_hash_count)
-+		return false;
-+	return true;
-+}
-+
- #ifdef CONFIG_DEBUG_PAGEALLOC
- static u8 *linear_map_hash_slots;
- static unsigned long linear_map_hash_count;
- static DEFINE_RAW_SPINLOCK(linear_map_hash_lock);
- static void hash_debug_pagealloc_alloc_slots(void)
- {
--	unsigned long max_hash_count = ppc64_rma_size / 4;
--
--	if (!debug_pagealloc_enabled())
--		return;
--	linear_map_hash_count = memblock_end_of_DRAM() >> PAGE_SHIFT;
--	if (unlikely(linear_map_hash_count > max_hash_count)) {
--		pr_info("linear map size (%llu) greater than 4 times RMA region (%llu). Disabling debug_pagealloc\n",
--			((u64)linear_map_hash_count << PAGE_SHIFT),
--			ppc64_rma_size);
--		linear_map_hash_count = 0;
-+	if (!hash_supports_debug_pagealloc())
- 		return;
--	}
+ obj-$(CONFIG_TRACING)			+= trace_clock.o
  
-+	linear_map_hash_count = memblock_end_of_DRAM() >> PAGE_SHIFT;
- 	linear_map_hash_slots = memblock_alloc_try_nid(
- 			linear_map_hash_count, 1, MEMBLOCK_LOW_LIMIT,
- 			ppc64_rma_size,	NUMA_NO_NODE);
-@@ -1076,7 +1077,7 @@ static void __init htab_init_page_sizes(void)
- 	bool aligned = true;
- 	init_hpte_page_sizes();
- 
--	if (!debug_pagealloc_enabled() && !kfence_early_init_enabled()) {
-+	if (!hash_supports_debug_pagealloc() && !kfence_early_init_enabled()) {
- 		/*
- 		 * Pick a size for the linear mapping. Currently, we only
- 		 * support 16M, 1M and 4K which is the default
+ obj-$(CONFIG_PPC64)			+= $(obj64-y)
 -- 
-2.46.0
+2.47.0
 
 
