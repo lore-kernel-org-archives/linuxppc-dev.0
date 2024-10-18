@@ -1,67 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-2416-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2417-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26553D3F2B0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2024 22:06:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D077D3E194
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Oct 2024 23:50:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XVf1R3dwzz3bpt;
-	Sat, 19 Oct 2024 09:06:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729285418;
-	cv=none; b=ckPvhRASpvNHx/xCZSEYI+IhFvGYWiszBcVZ2eygx7D93aYfyDRUw1WC+qIx9zNh33GeYDYeNgEmn21q+DOOBeBzkEYTavMofgeNFaBuWTPcbOaI+h+L72rOgWTppA8kqAye7ZDbOsPGK7ow1fmylXJHTM/VMv1vdugCwGOaU/EW+ZHTgCipd8e3h+MU9sWrzqPsApUK2h3kLSswIty+1qfc/4mfTObTVE21QHZxwLF91s3OjDOz61GGpsWyhacJEgvMTQXeqeUZ7yCZqwyqXZY8INBLST6Y+IHPpwU3sXCMKcE1c6y6+W9lxHnJDl1MdJwTvvWwipmgVsQLCyw0mQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XVhKs2FR1z2ytV;
+	Sat, 19 Oct 2024 10:50:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::535"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729295457;
+	cv=none; b=BwdAzp1qjgsAp4iLBHJmiYy++puspbVU9PMQxFXwiHq+3TaSawo5e5O+HNq1xYXDpMsdzB4pkwYhz18ddIK33cMvCNkm/UUe72tPFwAElnt7OfI881dE5ZvKt6egZ27+azPkMXSzlch5e+BE+PqCRFAWwJegcNUoumZaoUNlIlsv5nTMiltkz3ki/DgRFugQR6wed7BUPcUm7x+aPEY/70Z8RRyX39RrKAYYcub5w2JpIR8K22pbIwxVVFh3bSSW7XxRlqW0wZxjz+Otuo2dIW4sRV3bA+w7DaF+SH5WqXmfzU63Czcsc0VPrwhCLxAgf9NRt5oRxX8xDOFDS6XmyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729285418; c=relaxed/relaxed;
-	bh=nt+dAjhuzZ5n+ygaPAn3gZpiBolEQtWHa7Naom0sNUY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JEfJk33zdEvzbL99N/6j8onIcnsM6nUiUzgxswM+SCYQSPqK1Y0iQ4cejL3WhxGDlj8MdXV5wBQzFwPujYfqFySs+Hbzrh5G+lq+YCKou0KsvF151G7NS1x5GJfHFMcKs/0xaetvtZ99BGa8A4hYrGauVseQqd7WUhP533X6kW3loZdGrtK2D/P1ugkYZUJ4nAiMNjcfYR9ya79zbFYT1KtroMts7+hkaiKkeJm8Aa+sDA/AeJvkpNuLtyoEjSczD9k/Rp7kwzz8OJiAYkKRZP39g6GYt+I24ZEAfcFqvhAqq1waH5rTOJzzv8tbcMERfmuBWBASYgwCvlUSYhD7qg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=149Fzrn3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=elver@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1729295457; c=relaxed/relaxed;
+	bh=fQIgcwOpF8GpQsLgj2FtogDbWZde+y8RaY8eMvCGFCQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LzmOr7UiU7rgG785FtdNZOw2F8+DFMWJC3vGQD5DHluss2ayhoTd2Njzie9EIy61oXPOaxFDT0YYWxHeFEeNGF4sw1tiNIzbr+nK7ITlBXIBebyuPWs1B6QMQptFHxD7q8ZkHXlPxfIf2edMIxOeUwZ7nCn/qxKPnWssUJmhpFO8B9r5liZP1JX7ja48JvZnrmPXxiSbimgte/LzbCDMx+QQnCVX4eP2AtGcPupwKHsV9WYU6RtD5dNTFgBrEihN2t3ZOEfJMsljHtrrMw+SRAapCflIoKCBBECCHEWxx3sKSielj3J6/8+9/Q9W1PllkCtG9dKnWYTbdzKrDMyvRQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TBtUz/Mr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=paulo.miguel.almeida.rodenas@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=149Fzrn3;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TBtUz/Mr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=elver@google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=paulo.miguel.almeida.rodenas@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XVccm5wdDz2xrC
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2024 08:03:36 +1100 (AEDT)
-Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-2e2bd347124so1903144a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2024 14:03:35 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XVhKq2lWMz2yVt
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Oct 2024 10:50:54 +1100 (AEDT)
+Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-7ea8ecacf16so1930662a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Oct 2024 16:50:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1729285412; x=1729890212; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=nt+dAjhuzZ5n+ygaPAn3gZpiBolEQtWHa7Naom0sNUY=;
-        b=149Fzrn3QPc6ZcPu1dEj9txH7bEs48w6Wc3mNEnTkCX6UpDgoNljZD3F8ryUC2YGMX
-         E1uA/aoCImFmCOESATtkALn3ZwOIjZs4j4/jA9FAqBbsig2p8DA/xuN4rzmWg1eseCEa
-         GLPFoQFyskFH5X7lR/mSBxSMapV6yN6ySn+SOR2gMt5zaRJ2S/ohkjFF/ol6bY7ot6jD
-         +Qo2W625JwrxH59cHn//yCiC8u+JVbg9eY3AfLmIUsKPFc6oGd/uy5Ll3TXXyRGfXNky
-         BH/oIAKFlvKt5dKwPFzsv7rkRg7pxRsqHa2r4gMsYrmECyk6DxrR5Ja5aO1BeJPN8DZo
-         RKIg==
+        d=gmail.com; s=20230601; t=1729295452; x=1729900252; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=fQIgcwOpF8GpQsLgj2FtogDbWZde+y8RaY8eMvCGFCQ=;
+        b=TBtUz/MrR2eCAKTTbdSEP0q/7r20SZvY+ZGzSjjbdO/4P77gmyDTqoZ0SbvZhXrGLv
+         BfU2bIim3pMgwLNp0sSWBcZ0neGXTcboGDCpn7tSmvC+MVI5lC1SoiVPwcQEIT02DO4I
+         6JrWxGdEIG4un3ATzGItc0M5VtF/eR3lpX7TldNlAXJqWfeD9iiG2M7+1QXL3QyRcHh3
+         c0PVv/wMm3NICsxDU4fUVNBYDJOI5SwoZQYNkVJamYpsZiHX1/X6Ga21T+wXXHImqiW8
+         jKQEJ/5LqX4eOjG33an9YEhtjeVlDPORHEAsw1asfKo86ar4RYqUhFoD5oAYqdcPXZ+w
+         mqjA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729285412; x=1729890212;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=nt+dAjhuzZ5n+ygaPAn3gZpiBolEQtWHa7Naom0sNUY=;
-        b=EbEs474diBIMXcS4koBQTkq8X6YU1wMUfG5yLShziK33KIj1UZpFXrlnrteQ/wNaF9
-         GzAi7RPuJhHDGI4jJC/Hxy4UJYR1R9nhczoKjv5stzW6Lpog8OyDLyivc7Alq+klRvWu
-         FGHivfoKp2BgLGTIOcdIpOijRGR5UcJWd1L02UMUvFZ8QzlRs2cK6WKsoKvweC/45nYu
-         U1SH4VHyp0zvVC1EppGLGKKv3FpgjTF/y5j1LzQOeQn/bFJ2QohnS+kzldPdRNJV3JEF
-         fcZEIYNfQDi2xfYTK5zz1ub6QlI2Y7XthpznuEHiBP4/2rEyMP5HBRMup+2DMuR8WQzO
-         lQkw==
-X-Forwarded-Encrypted: i=1; AJvYcCVNdZNrzDcNxqwhHQASa54jGtdjNtU0v70D8hUoEECakhRZiQpa9RDCKV/Z2IJzO2MrZTCvb9nFFhXWLSE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YynfexWJG6hAJkF/mjJkAzv4MGWSn3LIEHB7kQnnBLdRjJdrWg1
-	o8cxadDoPkEJPrYnmL3tbns85SsSwewLJTSdhbbyYVTjk8NPmP6SZzDAxYFyEusep1smBlEYDSt
-	5UDRQKROzLzPsyVnRpgpnE5y0JcSeXoFXps2N
-X-Google-Smtp-Source: AGHT+IEqtDiQGQ2m97dC1U/b6tmKS9G4+mhtsocnFyilcn7/D2jeuhNf+cYw3AyGzhurPX7BfICfIrDLSl6qK1QdU/s=
-X-Received: by 2002:a17:90b:f87:b0:2e2:d821:1b77 with SMTP id
- 98e67ed59e1d1-2e5616509b4mr4435772a91.24.1729285412125; Fri, 18 Oct 2024
- 14:03:32 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1729295452; x=1729900252;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fQIgcwOpF8GpQsLgj2FtogDbWZde+y8RaY8eMvCGFCQ=;
+        b=kM6kJ/w1ZfTr3GupdGCQyBor3kRFpBlOaEyVzBNOCOQIhOyRFCv4ZPuksMd4CdHfAA
+         tNBejIKWDkWQ1vaPVsUvGNHu1M6ioLKnAieoqPBBHwzHFSaPsFiXRXaCCVCsV/Sv6lqi
+         MUnKH9t63cGVRsAh3hsEwj1lckhenLhEwRiuIwXHQhI3pkSJEyPb95kd/qPU1zoJY07M
+         Phv3rkaEm4vQFUv9wPi3V0zp7ILmSrKhAZo3Cbw4QRasviFbLh6J0JN0Fz8eXWzp/jFA
+         f2+gQ6kl3eBQDdtbVE1EjCDh+5e43z36OhebC1XoRf5ZzsB8uatKQp6KLagRIFiXwiMu
+         BuqQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU9N9Db5ut4HW7hVmFYoJdLY+g6Cb7O3aw3jCfoHioTVWbQv8HAwrMEpTl9bRnGhqbv49O9SMeBsbpeI3o=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw9tOpiW0IW9ik8olgiad0TYj0RCHu/KqIxX/yIeac3qBZfu0NC
+	mfoluACdFmtbnBdZbn7YFxe/V8HOjABBRQ54UbiyeHMGKPyR+Yrw
+X-Google-Smtp-Source: AGHT+IFE9JK6B3y21JfHyOThlSgy/691TKbKrXY/mee9sy3R9mQV71UR397nafsW1x5D8JSGyjZQmw==
+X-Received: by 2002:a05:6a20:ac43:b0:1d9:9c6:5e7f with SMTP id adf61e73a8af0-1d92c49fa1fmr5518445637.4.1729295452467;
+        Fri, 18 Oct 2024 16:50:52 -0700 (PDT)
+Received: from mail.google.com (125-239-144-11-fibre.sparkbb.co.nz. [125.239.144.11])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-71ea34b4b78sm2035852b3a.218.2024.10.18.16.50.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 18 Oct 2024 16:50:52 -0700 (PDT)
+Date: Sat, 19 Oct 2024 12:50:43 +1300
+From: Paulo Miguel Almeida <paulo.miguel.almeida.rodenas@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+	naveen@kernel.org, maddy@linux.ibm.com, arnd@arndb.de,
+	chentao@kylinos.cn, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH][next] powerpc/spufs: Replace snprintf() with the safer
+ scnprintf() variant
+Message-ID: <ZxL0U6bziCxhySUO@mail.google.com>
+References: <ZxIcI0QRFGZLCNRl@mail.google.com>
+ <20241018153843.GJ29862@gate.crashing.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,97 +85,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <210e561f7845697a32de44b643393890f180069f.1729272697.git.ritesh.list@gmail.com>
-In-Reply-To: <210e561f7845697a32de44b643393890f180069f.1729272697.git.ritesh.list@gmail.com>
-From: Marco Elver <elver@google.com>
-Date: Fri, 18 Oct 2024 23:02:51 +0200
-Message-ID: <CANpmjNPQtAMbF2BZbUVOL+Sx2+VSOwxgxzXR8yFvDBH4Euu7Ew@mail.gmail.com>
-Subject: Re: [PATCH v3] mm/kfence: Add a new kunit test test_use_after_free_read_nofault()
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: kasan-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org, 
-	linux-mm@kvack.org, Dmitry Vyukov <dvyukov@google.com>, 
-	Alexander Potapenko <glider@google.com>, Heiko Carstens <hca@linux.ibm.com>, 
-	Nirjhar Roy <nirjhar@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241018153843.GJ29862@gate.crashing.org>
 
-On Fri, 18 Oct 2024 at 19:46, Ritesh Harjani (IBM)
-<ritesh.list@gmail.com> wrote:
->
-> From: Nirjhar Roy <nirjhar@linux.ibm.com>
->
-> Faults from copy_from_kernel_nofault() needs to be handled by fixup
-> table and should not be handled by kfence. Otherwise while reading
-> /proc/kcore which uses copy_from_kernel_nofault(), kfence can generate
-> false negatives. This can happen when /proc/kcore ends up reading an
-> unmapped address from kfence pool.
->
-> Let's add a testcase to cover this case.
->
-> Co-developed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Signed-off-by: Nirjhar Roy <nirjhar@linux.ibm.com>
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> ---
->
-> Will be nice if we can get some feedback on this.
+On Fri, Oct 18, 2024 at 10:38:43AM -0500, Segher Boessenkool wrote:
+> On Fri, Oct 18, 2024 at 09:28:19PM +1300, Paulo Miguel Almeida wrote:
+> > The C99 standard specifies that {v}snprintf() returns the length of the
+> > data that *would have been* written if there were enough space.
+> 
+> Not including the trailing zero byte, and it can also return negative if
+> there was an encoding error.  Yes.
+> 
+> Not that this matters at all for your patch, so why mention it?
+> 
+> 
+> Segher
 
-There was some discussion recently how sanitizers should behave around
-these nofault helpers when accessing invalid memory (including freed
-memory):
-https://lore.kernel.org/all/CANpmjNMAVFzqnCZhEity9cjiqQ9CVN1X7qeeeAp_6yKjwKo8iw@mail.gmail.com/
+Thanks for taking the time to review this patch.
 
-It should be similar for KFENCE, i.e. no report should be generated.
-Definitely a good thing to test.
+Is the objection with the change in itself or just the commit message?
 
-Tested-by: Marco Elver <elver@google.com>
-Reviewed-by: Marco Elver <elver@google.com>
+If it's the later, I'm happy to tweak it to what you would like see.
 
-> v2 -> v3:
-> =========
-> 1. Separated out this kfence kunit test from the larger powerpc+kfence+v3 series.
-> 2. Dropped RFC tag
->
-> [v2]: https://lore.kernel.org/linuxppc-dev/cover.1728954719.git.ritesh.list@gmail.com
-> [powerpc+kfence+v3]: https://lore.kernel.org/linuxppc-dev/cover.1729271995.git.ritesh.list@gmail.com
->
->  mm/kfence/kfence_test.c | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
->
-> diff --git a/mm/kfence/kfence_test.c b/mm/kfence/kfence_test.c
-> index 00fd17285285..f65fb182466d 100644
-> --- a/mm/kfence/kfence_test.c
-> +++ b/mm/kfence/kfence_test.c
-> @@ -383,6 +383,22 @@ static void test_use_after_free_read(struct kunit *test)
->         KUNIT_EXPECT_TRUE(test, report_matches(&expect));
->  }
->
-> +static void test_use_after_free_read_nofault(struct kunit *test)
-> +{
-> +       const size_t size = 32;
-> +       char *addr;
-> +       char dst;
-> +       int ret;
-> +
-> +       setup_test_cache(test, size, 0, NULL);
-> +       addr = test_alloc(test, size, GFP_KERNEL, ALLOCATE_ANY);
-> +       test_free(addr);
-> +       /* Use after free with *_nofault() */
-> +       ret = copy_from_kernel_nofault(&dst, addr, 1);
-> +       KUNIT_EXPECT_EQ(test, ret, -EFAULT);
-> +       KUNIT_EXPECT_FALSE(test, report_available());
-> +}
-> +
->  static void test_double_free(struct kunit *test)
->  {
->         const size_t size = 32;
-> @@ -780,6 +796,7 @@ static struct kunit_case kfence_test_cases[] = {
->         KFENCE_KUNIT_CASE(test_out_of_bounds_read),
->         KFENCE_KUNIT_CASE(test_out_of_bounds_write),
->         KFENCE_KUNIT_CASE(test_use_after_free_read),
-> +       KFENCE_KUNIT_CASE(test_use_after_free_read_nofault),
->         KFENCE_KUNIT_CASE(test_double_free),
->         KFENCE_KUNIT_CASE(test_invalid_addr_free),
->         KFENCE_KUNIT_CASE(test_corruption),
-> --
-> 2.46.0
->
+I added that bit for context so the motivation behind the preference for
+scnprintf is clear, otherwise one would ask me why :)
+
+We are phasing out snprint utilisations in which the result is being
+used [1]. One of possible ways this *might* take form is that in near
+future snprint will have it return void.
+
+[1] https://github.com/KSPP/linux/issues/105#issuecomment-2421244722
+
+- Paulo A.
 
