@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-2428-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2429-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCBFED3C92D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Oct 2024 22:46:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5576D3C92F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Oct 2024 22:51:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XWGsC3Nsbz2yNB;
-	Sun, 20 Oct 2024 09:46:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729377999;
-	cv=none; b=dnGhWJkiXH/Fxnafl3eXLk1830gR1m4FdYkfM12/R22Iro3sNHBVbqVMLA40Mkw17yz9AaFNT5TYdPRyIoH25VzE593bjHOzWsAVvzpIZoDdx/u/iOyDWzdijJ5rqGKE+Q8/AXqdtg3fqBsdLRCex4thxaywxyF2FRSe3GY8cFkQQWvJO6PUS6rk8fFWENTapXmahb2O0EQAXSxZtaoxC0SYzpH1H1lXyQp+Eh1Kq7GW1K5mmD92RHijGe+lgJdyn46FKLvI/EUGWuIZUFI7VDOeq6QBqUNwlvZGa5hzmN99cqJiaMBoLEvx49V/nSQeLSIUNmkU1BZWXCbkvUO/Iw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XWGzC0B3Hz2yN3;
+	Sun, 20 Oct 2024 09:51:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729378310;
+	cv=none; b=GDoN3E8o5NB7pyZP8nx/SvIKv342LCLc+UdOYsG3oC1OUh8bUqbsu1HmcH0V90H3g/8QN/bwaq+OSGeUprRztH/0cJMwjApvcr3bpcB2QL9tN0NGpXg9nt8W3rAcFd/AYVKoYs/vq/kpVMgnB75jEe7YHkA3g9u0eFXciBxZf9F2JfEXfcfzGiVsb+kL+V+szSnKYRzaDLA4B1h5zaJo7nkvm5NgETKL2g3gTkKGNEaTBO1Swk/oYOfY4D2eKXF1ZHfr5aqIE73ubx5U6mUgNY7p/o5njoQcJ6PGwyWbVXLLA7p8sDqjyMOS7xTQ0e8KdyRvG9hi7j7gzqvpSQThnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729377999; c=relaxed/relaxed;
-	bh=i3bCTk43umsvJ74jhOhtJX2DWBX3D6PnZcsnufvcp8o=;
+	t=1729378310; c=relaxed/relaxed;
+	bh=7zUTFOALmvJecWb9wB6YiXPzPNuTlzsgzqq4AD+I6Bk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=G4/gh949mW5uSeNla1uNt8o7R0Tomnnp+50SCXG6WpwjmBccf+4sHolRbRXWU+jA/7TxK6iOBluua3E4xtOi4+uEkhLiAoQXb8eXnUKJ0fX9lxwNJHqdFXhaMPofx7cuOMRYOAC5jZOwTM23mgqIbd7pWvXryHNg/YlTDRWlL1Is0nYWWdoEZZmo/zkFLDskhqUlsmS15kFTZ1Cd9LPKYSQbTqgBNFyLH1m2r6xy1stuvOL6CK/O4oeEaZuV2q0IahxNMTNuiIkNnF0b7Nq/VPuaSJKNrrQVlLbnh4XbYQo1Rdmu6qjudS5Eed9MKXHUAkE7Ruy0zdU0sM2M98pNSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=E/HcNmd7; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=mcgrof@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=bCwuGOkYOlSw+sKuTJLFvjMrUfPKdEwTVzsw9iCa1eSkHvc/oszqWZ/+wH2yYW/isRvlziaL8cB7e7b7gDadTkTBvTYBj6ubOCIO6xR1wZOFtoWXBcIbpZjJExi4El1QalzvC9cRh0BkVIDzozA0A9h4pE4CWtgIBUZgBMmRn6oyKMcdAaB8/bxBb+kymEpvvpOVMIBQOxd2SQh+7B0yxyeqOrQ7y5tnuZCO0ZwDbBjOZleJmqexgyiYIpx4hV8CaYCK2GKI0lRcvt6Rwo+S9w2Lw9NSvDEIH8v+I0tQfmk06P5KmkDzC3kmhJDV5Rn1VO85Om9kflHuta54MoqRhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PWWcwFHR; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=mcgrof@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=E/HcNmd7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PWWcwFHR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=mcgrof@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=mcgrof@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XWGsB3yF5z2yMP
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Oct 2024 09:46:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XWGz96KDpz2yMP
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Oct 2024 09:51:49 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 33F055C4818;
-	Sat, 19 Oct 2024 22:46:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D541DC4CEC5;
-	Sat, 19 Oct 2024 22:46:34 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id D5BAF5C1627;
+	Sat, 19 Oct 2024 22:51:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A509C4CEC5;
+	Sat, 19 Oct 2024 22:51:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729377996;
-	bh=dleiBE3DRHjc0T5DFKoso12VqwoykDzNi68HaltnD+Q=;
+	s=k20201202; t=1729378307;
+	bh=iaKyJYsgDj5oq6LrolQ8TT/cIGmsXYFI9lXbWUpr55Y=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=E/HcNmd7ed6EfnQjDeLvwQq16g+Vsiv91/gyx/y3TItNr4YkOF+9xlSWM0ng70Enb
-	 EfQ6W4qibdSpAat3tAcZGmRc2fYXuiLLcBLOJtlO4aLao4cugNUMhYe3/mMMvmvtmy
-	 krht2xWJJkTziTYXrwNtx86c1tpAc1wx4O+74a08EUURK7gKF4cC83WTcGcLjOwACN
-	 n9SpaJ43uCBmVLtR63Yq/0dZR6w3adjYhhvHR3c4gz6MmpunQYU1/SMh4aCN+n+wuE
-	 IRlpcRBMlqjvJmJuEblyO3hK3/FE9x/BIX1JtKqvt7PVEBtM1ZKA1cHBB7OuMGy6AB
-	 uYsHEV9N9bs9Q==
-Date: Sat, 19 Oct 2024 15:46:33 -0700
+	b=PWWcwFHRKAv10UFeMWidR+oArwiG2+r721GO7uSmTpQx0pOBJf1X5cPUKD4gQg0+v
+	 evgCS5YusRtKfCXFwytoJRX7ZRENJRAMHCt8HvG03nMPWzjaJDvjdrgLKvwNx81i5w
+	 NIzDOiB7M0V+Ul7Gwqxo7hFP4wjCIx8CdeY/s0mZyLShSAGZB3TOEh3ca9PA+vMo3W
+	 q8+DRfeiSbEMT2pfBoZx2+ts1c/ZoMbSDOpbvF1L4SRM4K2S0rC8EknH09OaDU5jzH
+	 5NBzulTpDRDsAwrp/w7GYCrOs4CtagANrNUd5w9SX4IoQrxyUxMdI/Mnop054oa6hH
+	 EFlkfWan9WOpw==
+Date: Sat, 19 Oct 2024 15:51:43 -0700
 From: Luis Chamberlain <mcgrof@kernel.org>
 To: Mike Rapoport <rppt@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -91,11 +91,10 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	linux-trace-kernel@vger.kernel.org, linux-um@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
 	sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH v6 8/8] x86/module: enable ROX caches for module text on
- 64 bit
-Message-ID: <ZxQ2yddv8blWOFDY@bombadil.infradead.org>
+Subject: Re: [PATCH v6 0/8] x86/module: use large ROX pages for text
+ allocations
+Message-ID: <ZxQ3_8xNPYsQA5GH@bombadil.infradead.org>
 References: <20241016122424.1655560-1-rppt@kernel.org>
- <20241016122424.1655560-9-rppt@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,17 +106,30 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20241016122424.1655560-9-rppt@kernel.org>
+In-Reply-To: <20241016122424.1655560-1-rppt@kernel.org>
 
-On Wed, Oct 16, 2024 at 03:24:24PM +0300, Mike Rapoport wrote:
+On Wed, Oct 16, 2024 at 03:24:16PM +0300, Mike Rapoport wrote:
 > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 > 
-> Enable execmem's cache of PMD_SIZE'ed pages mapped as ROX for module
-> text allocations on 64 bit.
+> Hi,
 > 
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> This is an updated version of execmem ROX caches.
+> 
+> Andrew, Luis, there is a conflict with Suren's "page allocation tag
+> compression" patches:
+> 
+> https://lore.kernel.org/all/20241014203646.1952505-1-surenb@google.com
+> 
+> Probably taking this via mmotm would be more convenient.
 
-Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
+Yeah, it's already there on Andrew's tree, fine with me to go through there.
+
+The linux modules KPD [0] has picked this up from the mailing list and
+tested with kdevops, and this series passes our modules test now [1], and so:
+
+Tested-by: kdevops <kdevops@lists.linux.dev> [1]
+
+Link https://github.com/linux-kdevops/linux-modules-kpd/actions/runs/11420097546 # [0]
 
   Luis
 
