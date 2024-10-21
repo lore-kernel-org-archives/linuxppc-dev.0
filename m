@@ -1,74 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-2436-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2437-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85316D3C92D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Oct 2024 23:35:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 654B9D3C935
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2024 00:29:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XWvvR6Tmdz2yGC;
-	Mon, 21 Oct 2024 10:35:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729467347;
-	cv=none; b=fZMLcmFfYD21DjAOsWVnRxlMk8JK7n6FR8zLokUcmyziTy+Lj7zSQuLI/f1ygY4SWGPl8CELwPitw0hzmehk4VjMKqYSokUIIRLxIUDyQeYGyAHm0TYJesttRPO56CAKQ7U69ZLhjpat9jANPjEXI9+7vTFUVxEK47+YvOsooYLBnUf38TtZwYgBToVBFU4C77dCdOmwpLG/DF+oCuN4ZW+rDKC3ndAVDakgmvDGdG93QpBrQyOzrPN6+Lr2WS0ZYMSj3XIRL6vQUusvFF9oY/GqQXjz27/C98tuuxJ5Ker8QI0onhuJH2fctUjfA///ySBFC567hn0ytj9QSHaC1Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XWx5v57kPz2yFJ;
+	Mon, 21 Oct 2024 11:29:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729470595;
+	cv=none; b=ceVsw3uiImgtPHS8g2grmrzNaiTUydOfcaWuDUNCnOeGkEMab8DS7IPl+jDYnDBD0da9rksD8CkYJW5s2jKQtvp7dk4MMphGJdIDutpUJqCx30mPfxGnnG2UbcVreyYu0W8nOIWrAPa3oW4s2NqKji1mYtFJ+gEBh1Lm5xPO1vcaVPTU50WsHeKiV+ZxFHWnU+9Ps7AxBsogxt6wPJbio9lWYdEIH5D7RE5hCL/d5Yi81d8mbwX3ivpLUXf4uv6cR2gGWNL8cQEzaBk15WdAmn774YyCZ9VCZeg6p6fA4T5QyprkjBxu+ZcA3xszr7P2bbbATBV2bveJxl6IxC3sKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729467347; c=relaxed/relaxed;
-	bh=vL6/ox1IGPOBPGAANUn25XPyQj8U8IFpD+XuC/FflFg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XGqdajes1syQOcaFoT0oGi9eEph59BZCS0iQkpAYwOCGv4Y+4Ob2XmfK497zw5p+lwYL1eIr4og1XN7zh5uzMWFH6K2r/0CjIfkN8IQo3Sv7j8laFykrfedzrdJi6tkPDfQL6sNnXJ5UhQPHDmG9LlAr2QMnNI5MYqsW+IicFJ3Fca1iXGYQwF8vQz5sp3nDuVETBulHKkzoVzWuWSnAF5PCyCP2aRyDhq+IpsiDHdzIxTJRYszj9Y54folI7GyDwbMCS2a7LA0Bd2fC2gfq2QEBKTMLtGlYSIft4kmCCle5vZCEBnL5W+3qe6xmM3uLQysnp1Bwo23liefxLqHKpQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=F7XtNgxR; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1729470595; c=relaxed/relaxed;
+	bh=fQ50igwSJrd/WM7TfdsbtVs8aGON2eRB6lbIqdMdWUU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=B65TA/6DsML+Zi6E8KWJ7nRn+jKZVrmbXRF4oPo2OtfmbqN8B8mCPhFuzzYFh2w9SOMH4ga4b7RmspBeji2to/XmCiGsPCcoohTjm/ab55yVv4ekpVjF7bBoRTjXdQ9vBAmUxB00qsD1ZhTm0hWat61fv7lfCpqZ/C2+SOWkPy4iCd5qqo9CXeMPqxwUWlamjf6J1gvpHfojnFnk99k26a/uhS0yH2yFdHyzZE3xK+L2REOpdXVQudvQVL43SN9L37SlRXJLg4628FPZluIQyZ6BrQSLAU+Q6FB5ptO5NlrpYWZ8RWVSwCB40bL3Wsivm38VW5yg4II1Bz+RETjnlw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dkF1gI1T; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=F7XtNgxR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dkF1gI1T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XWvvQ0cwhz2yFJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2024 10:35:44 +1100 (AEDT)
-Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-4314b316495so36758835e9.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Oct 2024 16:35:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1729467341; x=1730072141; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=vL6/ox1IGPOBPGAANUn25XPyQj8U8IFpD+XuC/FflFg=;
-        b=F7XtNgxRIY3SNYlSDEIqZcbdbCAB3A6YRTammSHuXNvMCoQ4UhnKi2k7m7pINNEAsv
-         ushjg1+t74rxDmWjqLlJtpHvBa6dPgy1uYbQSd41GDAq3Z8wT33mJbfHe2NdhUNu6Crt
-         PRBUK74uANLy61+8u2HRpz6+GHRhxHI5h24Ks=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729467341; x=1730072141;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vL6/ox1IGPOBPGAANUn25XPyQj8U8IFpD+XuC/FflFg=;
-        b=E6+alvOLVaVXIr0f+6WCFZ8KMmgNrJYpP52UsSBmBJPmDk7kPxP+i0HwSjdj1h5OOy
-         yQ+WyKgyfOEFSXXFg/hboro91Bu8Nwf1cflK0zOqjxcIOhFx8ai2CLQrh6cb8cdV08b4
-         6F1WwpvFlHDS80opRfvZhSR4ljhLJzuCUDgpi4hnyU1uV0WUmlVmAk12Sgo3Z3pCG0gA
-         65rw8Ttd3p/0oNs5wUsQJChtU/fUFz+Gs6CvKUON2tseNo+QeXGH2tBPno0b2xFqSX1s
-         AV0YicV0NjfAeDZWjwkDPkNUi2QMIj0k/lt+wMW7yxnhIzTO56JnJsJjM7iJyoRu5n8j
-         sOCg==
-X-Forwarded-Encrypted: i=1; AJvYcCU4LJqWSeCfYSSskRF7JIyTSYcKmfiNeOoElBGuasEwK27xgKHUi980C/iIiKgdU/kaXr6TH8kiML+Vdh0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxdJYo8qq3dNZzvXAoqCjZ7npUAMVrBz6wYnZAgb4k7zOltOhP/
-	1YaVLKsJ15Jp6jc/I4kSaOxeyPFdOhP7nj09SrlIkO32xrP4BRpK1qbKaJS4Gh8VMnRZrKbt5Jl
-	m82YD0Q==
-X-Google-Smtp-Source: AGHT+IHrXRmAqF96RNWGLrHe9I0Z6I2Yk73OqYgBx9A/MHR7o+lIKVk2Vhc+bI1u4f+puLSDuKjfLQ==
-X-Received: by 2002:adf:b112:0:b0:37c:cd0d:3437 with SMTP id ffacd0b85a97d-37eab73cf70mr4764788f8f.58.1729467340597;
-        Sun, 20 Oct 2024 16:35:40 -0700 (PDT)
-Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com. [209.85.208.41])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-a9a913706d3sm137373266b.134.2024.10.20.16.35.38
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 20 Oct 2024 16:35:39 -0700 (PDT)
-Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-5c903f5bd0eso7039334a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Oct 2024 16:35:38 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCULI3WiKrYUiI987bCe74SZVSXsrVU/krW2Ul/K51HGDpHTCT1/mjeLZFSxzojwNpbLiEPG53knJQ0iPJQ=@lists.ozlabs.org
-X-Received: by 2002:a17:907:9309:b0:a9a:20f9:a402 with SMTP id
- a640c23a62f3a-a9a6996a68cmr771073266b.13.1729467338458; Sun, 20 Oct 2024
- 16:35:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XWx5s4h8bz2y8V
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2024 11:29:53 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4530A5C580F;
+	Mon, 21 Oct 2024 00:29:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0AC21C4CEC7;
+	Mon, 21 Oct 2024 00:29:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1729470591;
+	bh=4oZ1Q3tWbzwSP9RLFVgxu8DMcPqFYU+tdgCV67sxyr0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=dkF1gI1TEowluxz74dX7OKbuaCDeRq+XpeD/bfQlGdd/ID5XHN7W9L1BrNaGFJkmv
+	 7GDJ7X6cdmxo1p5lXFpXwvCTWfOr+PnCZDgUAc3FwfL0WXZKA+Sh3GmXyK76Ow8LNm
+	 UPZ360jg78H90tFxQCk3DKP5itwXmJrSwZ6eKkHOQM1TQZcCj18DY9joSClQ4Yvh+S
+	 N9xTgDGPTE4Mmt537gJGtS2VTuPEnTM02PpAgSpTZ5ICdbTpqT/RoQvl5N/O0yFdVh
+	 MBDhvKQm8r63D4IIQ0qc744pF1Idy2e8hKBAf189TJlD3+3WzD/8AlM5FSWTtGJgCg
+	 6vmlxD+6wMUhw==
+From: Eric Biggers <ebiggers@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-crypto@vger.kernel.org,
+	linux-ext4@vger.kernel.org,
+	linux-f2fs-devel@lists.sourceforge.net,
+	linux-mips@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	loongarch@lists.linux.dev,
+	sparclinux@vger.kernel.org,
+	x86@kernel.org
+Subject: [PATCH 01/15] lib/crc32: drop leading underscores from __crc32c_le_base
+Date: Sun, 20 Oct 2024 17:29:21 -0700
+Message-ID: <20241021002935.325878-2-ebiggers@kernel.org>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241021002935.325878-1-ebiggers@kernel.org>
+References: <20241021002935.325878-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,44 +73,162 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <12c18d86-87b3-4418-a0b0-2844197a3315@citrix.com>
- <CAHk-=wg341Na_hXFFkc582beXJNi+_tcDu=oMxVPTks-JoQXkQ@mail.gmail.com>
- <CAHk-=wjAoiCmPSi1OwrJofifmtRYEzecjUeu3UUUELMbJHopUA@mail.gmail.com>
- <CAHk-=wgDrG-aKVGrd-9gQsC0pMs936oo8XEFmEn6ciaT9=nfDg@mail.gmail.com>
- <20241014035436.nsleqolyj3xxysrr@treble> <CAHk-=widMFN2wDeS2K65f8FnW8L6gPZa6CNO4OWkv--0G2LXhw@mail.gmail.com>
- <r5ruxmop7vewd7aq6gu2zve4hfmcu4byhlebygswbqkgz43qfq@rsajyfiypcsd>
- <064d7068-c666-49f0-b7df-774c2e281abc@citrix.com> <20241020224444.zhoscljpe7di5yv3@treble>
- <CAHk-=wikKPKDECP=zBEEnxBB44n-uLsnMoOG=aCy6FwDNc9mxA@mail.gmail.com> <20241020231112.erso2jzqwkbin4kh@treble>
-In-Reply-To: <20241020231112.erso2jzqwkbin4kh@treble>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sun, 20 Oct 2024 16:35:21 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wiUaWnHGgusaMOodypgm7bVztMVQkB6JUvQ0HoYJqDNYA@mail.gmail.com>
-Message-ID: <CAHk-=wiUaWnHGgusaMOodypgm7bVztMVQkB6JUvQ0HoYJqDNYA@mail.gmail.com>
-Subject: Re: [PATCH] x86/uaccess: Avoid barrier_nospec() in copy_from_user()
-To: Josh Poimboeuf <jpoimboe@kernel.org>
-Cc: Andrew Cooper <andrew.cooper3@citrix.com>, "Kirill A. Shutemov" <kirill@shutemov.name>, x86@kernel.org, 
-	Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>, Peter Zijlstra <peterz@infradead.org>, 
-	Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, Waiman Long <longman@redhat.com>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, 
-	Mark Rutland <mark.rutland@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Sun, 20 Oct 2024 at 16:11, Josh Poimboeuf <jpoimboe@kernel.org> wrote:
->
-> Until it's s/think/know/ can we please put something in place?
+From: Eric Biggers <ebiggers@google.com>
 
-Honestly, I'm pretty damn fed up with buggy hardware and completely
-theoretical attacks that have never actually shown themselves to be
-used in practice.
+Remove the leading underscores from __crc32c_le_base().
 
-So I think this time we push back on the hardware people and tell them
- it's *THEIR* damn problem, and if they can't even be bothered to say
-yay-or-nay, we just sit tight.
+This is in preparation for adding crc32c_le_arch() and eventually
+renaming __crc32c_le() to crc32c_le().
 
-Because dammit, let's put the onus on where the blame lies, and not
-just take any random shit from bad hardware and say "oh, but it
-*might* be a problem".
+Signed-off-by: Eric Biggers <ebiggers@google.com>
+---
+ arch/arm64/lib/crc32-glue.c | 2 +-
+ arch/riscv/lib/crc32.c      | 2 +-
+ crypto/crc32c_generic.c     | 8 ++++----
+ include/linux/crc32.h       | 2 +-
+ lib/crc32.c                 | 4 ++--
+ lib/crc32test.c             | 2 +-
+ 6 files changed, 10 insertions(+), 10 deletions(-)
 
-                 Linus
+diff --git a/arch/arm64/lib/crc32-glue.c b/arch/arm64/lib/crc32-glue.c
+index 295ae3e6b997a..ad015223d15df 100644
+--- a/arch/arm64/lib/crc32-glue.c
++++ b/arch/arm64/lib/crc32-glue.c
+@@ -42,11 +42,11 @@ u32 __pure crc32_le(u32 crc, unsigned char const *p, size_t len)
+ }
+ 
+ u32 __pure __crc32c_le(u32 crc, unsigned char const *p, size_t len)
+ {
+ 	if (!alternative_has_cap_likely(ARM64_HAS_CRC32))
+-		return __crc32c_le_base(crc, p, len);
++		return crc32c_le_base(crc, p, len);
+ 
+ 	if (len >= min_len && cpu_have_named_feature(PMULL) && crypto_simd_usable()) {
+ 		kernel_neon_begin();
+ 		crc = crc32c_le_arm64_4way(crc, p, len);
+ 		kernel_neon_end();
+diff --git a/arch/riscv/lib/crc32.c b/arch/riscv/lib/crc32.c
+index d7dc599af3ef6..333fb7af11922 100644
+--- a/arch/riscv/lib/crc32.c
++++ b/arch/riscv/lib/crc32.c
+@@ -224,11 +224,11 @@ u32 __pure crc32_le(u32 crc, unsigned char const *p, size_t len)
+ }
+ 
+ u32 __pure __crc32c_le(u32 crc, unsigned char const *p, size_t len)
+ {
+ 	return crc32_le_generic(crc, p, len, CRC32C_POLY_LE,
+-				CRC32C_POLY_QT_LE, __crc32c_le_base);
++				CRC32C_POLY_QT_LE, crc32c_le_base);
+ }
+ 
+ static inline u32 crc32_be_unaligned(u32 crc, unsigned char const *p,
+ 				     size_t len)
+ {
+diff --git a/crypto/crc32c_generic.c b/crypto/crc32c_generic.c
+index 7c2357c30fdf7..635599b255ec0 100644
+--- a/crypto/crc32c_generic.c
++++ b/crypto/crc32c_generic.c
+@@ -83,11 +83,11 @@ static int chksum_setkey(struct crypto_shash *tfm, const u8 *key,
+ static int chksum_update(struct shash_desc *desc, const u8 *data,
+ 			 unsigned int length)
+ {
+ 	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+ 
+-	ctx->crc = __crc32c_le_base(ctx->crc, data, length);
++	ctx->crc = crc32c_le_base(ctx->crc, data, length);
+ 	return 0;
+ }
+ 
+ static int chksum_update_arch(struct shash_desc *desc, const u8 *data,
+ 			      unsigned int length)
+@@ -106,11 +106,11 @@ static int chksum_final(struct shash_desc *desc, u8 *out)
+ 	return 0;
+ }
+ 
+ static int __chksum_finup(u32 *crcp, const u8 *data, unsigned int len, u8 *out)
+ {
+-	put_unaligned_le32(~__crc32c_le_base(*crcp, data, len), out);
++	put_unaligned_le32(~crc32c_le_base(*crcp, data, len), out);
+ 	return 0;
+ }
+ 
+ static int __chksum_finup_arch(u32 *crcp, const u8 *data, unsigned int len,
+ 			       u8 *out)
+@@ -198,16 +198,16 @@ static struct shash_alg algs[] = {{
+ }};
+ 
+ static int __init crc32c_mod_init(void)
+ {
+ 	/* register the arch flavor only if it differs from the generic one */
+-	return crypto_register_shashes(algs, 1 + (&__crc32c_le != &__crc32c_le_base));
++	return crypto_register_shashes(algs, 1 + (&__crc32c_le != &crc32c_le_base));
+ }
+ 
+ static void __exit crc32c_mod_fini(void)
+ {
+-	crypto_unregister_shashes(algs, 1 + (&__crc32c_le != &__crc32c_le_base));
++	crypto_unregister_shashes(algs, 1 + (&__crc32c_le != &crc32c_le_base));
+ }
+ 
+ subsys_initcall(crc32c_mod_init);
+ module_exit(crc32c_mod_fini);
+ 
+diff --git a/include/linux/crc32.h b/include/linux/crc32.h
+index 87f788c0d607b..5b07fc9081c47 100644
+--- a/include/linux/crc32.h
++++ b/include/linux/crc32.h
+@@ -37,11 +37,11 @@ static inline u32 crc32_le_combine(u32 crc1, u32 crc2, size_t len2)
+ {
+ 	return crc32_le_shift(crc1, len2) ^ crc2;
+ }
+ 
+ u32 __pure __crc32c_le(u32 crc, unsigned char const *p, size_t len);
+-u32 __pure __crc32c_le_base(u32 crc, unsigned char const *p, size_t len);
++u32 __pure crc32c_le_base(u32 crc, unsigned char const *p, size_t len);
+ 
+ /**
+  * __crc32c_le_combine - Combine two crc32c check values into one. For two
+  * 			 sequences of bytes, seq1 and seq2 with lengths len1
+  * 			 and len2, __crc32c_le() check values were calculated
+diff --git a/lib/crc32.c b/lib/crc32.c
+index ff587fee3893d..c67059b0082b4 100644
+--- a/lib/crc32.c
++++ b/lib/crc32.c
+@@ -205,12 +205,12 @@ EXPORT_SYMBOL(crc32_le);
+ EXPORT_SYMBOL(__crc32c_le);
+ 
+ u32 __pure crc32_le_base(u32, unsigned char const *, size_t) __alias(crc32_le);
+ EXPORT_SYMBOL(crc32_le_base);
+ 
+-u32 __pure __crc32c_le_base(u32, unsigned char const *, size_t) __alias(__crc32c_le);
+-EXPORT_SYMBOL(__crc32c_le_base);
++u32 __pure crc32c_le_base(u32, unsigned char const *, size_t) __alias(__crc32c_le);
++EXPORT_SYMBOL(crc32c_le_base);
+ 
+ u32 __pure crc32_be_base(u32, unsigned char const *, size_t) __alias(crc32_be);
+ 
+ /*
+  * This multiplies the polynomials x and y modulo the given modulus.
+diff --git a/lib/crc32test.c b/lib/crc32test.c
+index 03cf5c1f2f5dc..30b8da4d8be46 100644
+--- a/lib/crc32test.c
++++ b/lib/crc32test.c
+@@ -824,11 +824,11 @@ static void crc32test_regenerate(void)
+ 	for (i = 0; i < ARRAY_SIZE(test); i++) {
+ 		pr_info("{0x%08x, 0x%08x, 0x%08x, 0x%08x, 0x%08x, 0x%08x},\n",
+ 			test[i].crc, test[i].start, test[i].length,
+ 			crc32_le_base(test[i].crc, test_buf + test[i].start, test[i].length),
+ 			crc32_be_base(test[i].crc, test_buf + test[i].start, test[i].length),
+-			__crc32c_le_base(test[i].crc, test_buf + test[i].start, test[i].length));
++			crc32c_le_base(test[i].crc, test_buf + test[i].start, test[i].length));
+ 	}
+ }
+ 
+ static int __init crc32test_init(void)
+ {
+-- 
+2.47.0
+
 
