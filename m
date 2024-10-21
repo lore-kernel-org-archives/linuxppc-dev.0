@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-2444-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2445-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1DA5D3C935
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2024 00:30:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B62BAD3C927
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Oct 2024 00:30:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XWx665Twdz2yZS;
-	Mon, 21 Oct 2024 11:30:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729470606;
-	cv=none; b=g44hk+ZPiUCo38wGq8e2bSHkoYceOPJ0QduSABi76n5vDOT9seOB83O9IckLxyiO2k2GDUra9u1YNS4SW73oKNS7rFHRAhv+L/TwLBl+P29EwcpHh1k9z2z5ERFlp9l6Tu934lRUJupK+hw31rfDnQLZOAFmvVnXqJ6SQ959yclGBLDsFU5Lm5VaedDtppXTn0/Xx7Suadnl2OhRnS1xZPnPW0owthp0kxKvDnkQjXCikV9dyfanZecOZEkD7Cu52ANZyXV8nTw/KUFn/6DuBxFA/a2K6UCfACgFEAOhSN2HOuO9b6+iAbE0UX5E3X+1iRCrJDjS2OUWXNwRkgiBzQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XWx6769Lgz2yQn;
+	Mon, 21 Oct 2024 11:30:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729470607;
+	cv=none; b=aMLHy1dVjNaZs4nT2KRZGSu5iPJXD+PhUAJvwfMQ8FhrEIECN+XZqNF2A99PWv3BOA/tcL8FQN4YcPPf8qFLh9gA9hzE89gHKM4T8UsJopRezztrqrgjZsrPkOzWXPmh7IgQvGC32S1Iw8EEk8mREywMCXIT5C+qB3Rgkc2OhTCMiS/sSWuCLy4VkKr6548ObAhYwET737lB5Fmsf1NseAOab2INeQzWfMvwDtMhAf2SNC7g/ScFJ6CSUSUf9L56dKmB3CfBSlcB2h/qHAKAuglN7ZpJEw8V6SbvkBJFjUegpRwRX8hm9jV69Nb1QoDlxG876GuhMECWmiU9LEghIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729470606; c=relaxed/relaxed;
-	bh=BDI4jXtx/12D9tEL75pDT8gMuPyZK23cOO73uEHtJEE=;
+	t=1729470607; c=relaxed/relaxed;
+	bh=8fJ2Cp/Tew4hnO5AD1CB+CREX714HDaS8m8Az0Hoo0w=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Hqw5mgMzPUhV/azIVNyMQfEnzVFzF6TAW4Y39Z5M4euS3z0UpKWEtXKMe/xDbSv3gPTFTgg+OS1WOtM4WPkvB/adFgPjYlDYzDMGuQslZze3+v9FlCAP8EQ5RzXFtbzeSoDKBrz6QjKcaTYcH3YgbjLk3iZ1rjVJsFypI2IpKVG26eu2XW1eTyU8TuzVvwJEIyLL88gJ/wL+krkpzXxilt+0oH0Jl8se0H6Fz0xS0nYVY5sdyDn7AbwqDv2lSDICZ1HK2yXALvvsiOxbUQkA1VHbQkutqE17Ane3SakKcMpK+x9MX+4iCYbtWuZ03AvOqdiXcloLZL33hR85YGx2eA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tOlDzGOS; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=UbG5EazY6oN1Vp32mR8VUTxC5gBe5KlAh/S47niwnu8CsuXW8ROCfol57qPl5QYVPfwTzM9wx/gHp1/iPGxiQ2xb7C1fQkniydeMuFdpJMYc0WR3yX+xMweow6ZKrFOesCIAX1xrcaVYRP6AgNtjGdP82pq1qi9WiA7pzg6eyRahlFUgh81/0csjs5XSLaphssmbdj022QDNacGiVDpWRWdtvIQNifIA4EBQ1JjSWp3ZQlzMi31R4qoNbCphclzdDOVsSN2CExhRsApSy5exgemmN5wJYHoEGSfFC80ntHSU+QEYOS04K+fCP3Rl+9xc4Zlj9TujD4Upx8OrBEMbxg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lYrw7aT4; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tOlDzGOS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lYrw7aT4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XWx5y2mtTz2yQn
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2024 11:29:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XWx5z06FRz2yRC
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Oct 2024 11:29:58 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 36BEB5C58FD;
-	Mon, 21 Oct 2024 00:29:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B0104C4AF0F;
-	Mon, 21 Oct 2024 00:29:53 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id E2D85A40C2E;
+	Mon, 21 Oct 2024 00:29:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9DBF5C4CEFA;
+	Mon, 21 Oct 2024 00:29:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729470594;
-	bh=DtPZFpSD91U9S7LuX3aomWvgUsMPS4DYXF/+cnp0adY=;
+	s=k20201202; t=1729470593;
+	bh=DbtNL2z2AejHot2HwaYZBG/fWkGPkHCkAxKCRhDkzwo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=tOlDzGOS1y9t9aDoGUNUlbOmZBlEmFHZ6or8KtIpQtGqU5cd5ZmZegD+lQumRUPJ5
-	 Ho4xbkCu8RhG3x0BJgAih9i45jYkDXsEKLTyq5H2k3K4r1EsJ538tAK9Zo+RjbC6AW
-	 brgkV8moeiTCSu0a1PGd9zRTofp2bWtAIqmSK5mxdId5WIdhbnJA+3w7Bt+IZePuYO
-	 vWnIT3l9ssKt+5dZVOvLsjjlvHV/8BzkAAQnICgO1fkbgP/HnkAxOsHj3aABt6myJy
-	 M9+2SZiGB88s1mxylh8jkHMCVzU+zgPPKr5ue6IR1Lzl1RZycLGjJV6+yeeoimkmOh
-	 JmPpIpBc8XWxw==
+	b=lYrw7aT4unuZs0iY9fkNDY2K2UHAcCMvB5546zVV3vOqKcV9nXsFBTyFi56jwN5OQ
+	 IFrlRxARI+LIy9oN0OaoGxr3fcQIPYLdzF7Ip32WtDP6Zrj4YQZqPpT2j7CQ2ORL+k
+	 6PH+SDHp0Vx72eBUNwBoqt5IP1Bs5Z2otFG7VLEXcCIWIxdBxGOUl2r5r2qXK1iFfe
+	 rzjBLfRTYu6KA1wxTu8B4s7RIpKRqfGKwye9sjTOhqvX3ZVB/yq31yEAQQ11T4lANP
+	 fvoUXXXqmOhVjTjSpinzQnU5knJmJVqIi2l5K/VSWu/Le2LoRlu0sHunW3KBEqwR0q
+	 VUaRclwLHIWTg==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -58,9 +58,9 @@ Cc: linux-arch@vger.kernel.org,
 	loongarch@lists.linux.dev,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org
-Subject: [PATCH 06/15] powerpc/crc32: expose CRC32 functions through lib
-Date: Sun, 20 Oct 2024 17:29:26 -0700
-Message-ID: <20241021002935.325878-7-ebiggers@kernel.org>
+Subject: [PATCH 04/15] loongarch/crc32: expose CRC32 functions through lib
+Date: Sun, 20 Oct 2024 17:29:24 -0700
+Message-ID: <20241021002935.325878-5-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241021002935.325878-1-ebiggers@kernel.org>
 References: <20241021002935.325878-1-ebiggers@kernel.org>
@@ -77,417 +77,513 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Move the powerpc CRC32C assembly code into the lib directory and wire it
-up to the library interface.  This allows it to be used without going
+Move the loongarch CRC32 assembly code into the lib directory and wire
+it up to the library interface.  This allows it to be used without going
 through the crypto API.  It remains usable via the crypto API too via
 the shash algorithms that use the library interface.  Thus all the
 arch-specific "shash" code becomes unnecessary and is removed.
 
-Note: to see the diff from arch/powerpc/crypto/crc32c-vpmsum_glue.c to
-arch/powerpc/lib/crc32-glue.c, view this commit with 'git show -M10'.
+Note: to see the diff from arch/loongarch/crypto/crc32-loongarch.c to
+arch/loongarch/lib/crc32-loongarch.c, view this commit with
+'git show -M10'.
 
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/powerpc/Kconfig                          |   1 +
- arch/powerpc/configs/powernv_defconfig        |   1 -
- arch/powerpc/configs/ppc64_defconfig          |   1 -
- arch/powerpc/crypto/Kconfig                   |  15 +-
- arch/powerpc/crypto/Makefile                  |   2 -
- arch/powerpc/crypto/crc32c-vpmsum_glue.c      | 173 ------------------
- arch/powerpc/crypto/crct10dif-vpmsum_asm.S    |   2 +-
- arch/powerpc/lib/Makefile                     |   3 +
- arch/powerpc/lib/crc32-glue.c                 |  84 +++++++++
- .../{crypto => lib}/crc32-vpmsum_core.S       |   0
- .../{crypto => lib}/crc32c-vpmsum_asm.S       |   0
- 11 files changed, 90 insertions(+), 192 deletions(-)
- delete mode 100644 arch/powerpc/crypto/crc32c-vpmsum_glue.c
- create mode 100644 arch/powerpc/lib/crc32-glue.c
- rename arch/powerpc/{crypto => lib}/crc32-vpmsum_core.S (100%)
- rename arch/powerpc/{crypto => lib}/crc32c-vpmsum_asm.S (100%)
+ arch/loongarch/Kconfig                     |   1 +
+ arch/loongarch/configs/loongson3_defconfig |   1 -
+ arch/loongarch/crypto/Kconfig              |   9 -
+ arch/loongarch/crypto/Makefile             |   2 -
+ arch/loongarch/crypto/crc32-loongarch.c    | 300 ---------------------
+ arch/loongarch/lib/Makefile                |   2 +
+ arch/loongarch/lib/crc32-loongarch.c       | 127 +++++++++
+ 7 files changed, 130 insertions(+), 312 deletions(-)
+ delete mode 100644 arch/loongarch/crypto/crc32-loongarch.c
+ create mode 100644 arch/loongarch/lib/crc32-loongarch.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8094a01974cca..b05889400b04d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -125,10 +125,11 @@ config PPC
- 	select ARCH_DISABLE_KASAN_INLINE	if PPC_RADIX_MMU
- 	select ARCH_DMA_DEFAULT_COHERENT	if !NOT_COHERENT_CACHE
+diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
+index bb35c34f86d23..455f1af0bf88f 100644
+--- a/arch/loongarch/Kconfig
++++ b/arch/loongarch/Kconfig
+@@ -13,10 +13,11 @@ config LOONGARCH
  	select ARCH_ENABLE_MEMORY_HOTPLUG
  	select ARCH_ENABLE_MEMORY_HOTREMOVE
- 	select ARCH_HAS_COPY_MC			if PPC64
-+	select ARCH_HAS_CRC32			if PPC64 && ALTIVEC
+ 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
+ 	select ARCH_HAS_ACPI_TABLE_UPGRADE	if ACPI
+ 	select ARCH_HAS_CPU_FINALIZE_INIT
++	select ARCH_HAS_CRC32
  	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VIRTUAL
  	select ARCH_HAS_DEBUG_VM_PGTABLE
- 	select ARCH_HAS_DEBUG_WX		if STRICT_KERNEL_RWX
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index ee84ade7a0339..4a7ddea05b4db 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -318,11 +318,10 @@ CONFIG_FTR_FIXUP_SELFTEST=y
- CONFIG_MSI_BITMAP_SELFTEST=y
- CONFIG_XMON=y
- CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
--CONFIG_CRYPTO_CRC32C_VPMSUM=m
- CONFIG_CRYPTO_CRCT10DIF_VPMSUM=m
- CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA1_PPC=m
- CONFIG_CRYPTO_SHA256=y
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index a5e3e7f97f4d7..ea01c0d6705f0 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -388,11 +388,10 @@ CONFIG_CRYPTO_TWOFISH=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_LZO=m
--CONFIG_CRYPTO_CRC32C_VPMSUM=m
- CONFIG_CRYPTO_CRCT10DIF_VPMSUM=m
- CONFIG_CRYPTO_VPMSUM_TESTER=m
- CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_SHA1_PPC=m
- CONFIG_CRYPTO_AES_GCM_P10=m
-diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
-index 46a4c85e85e24..5c016ec395300 100644
---- a/arch/powerpc/crypto/Kconfig
-+++ b/arch/powerpc/crypto/Kconfig
-@@ -11,23 +11,10 @@ config CRYPTO_CURVE25519_PPC64
- 	  Curve25519 algorithm
+ 	select ARCH_HAS_FAST_MULTIPLIER
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_KCOV
+diff --git a/arch/loongarch/configs/loongson3_defconfig b/arch/loongarch/configs/loongson3_defconfig
+index 75b366407a60a..0487ac21b38bb 100644
+--- a/arch/loongarch/configs/loongson3_defconfig
++++ b/arch/loongarch/configs/loongson3_defconfig
+@@ -967,11 +967,10 @@ CONFIG_CRYPTO_LZ4=m
+ CONFIG_CRYPTO_LZ4HC=m
+ CONFIG_CRYPTO_USER_API_HASH=m
+ CONFIG_CRYPTO_USER_API_SKCIPHER=m
+ CONFIG_CRYPTO_USER_API_RNG=m
+ CONFIG_CRYPTO_USER_API_AEAD=m
+-CONFIG_CRYPTO_CRC32_LOONGARCH=m
+ CONFIG_CRYPTO_DEV_VIRTIO=m
+ CONFIG_DMA_CMA=y
+ CONFIG_DMA_NUMA_CMA=y
+ CONFIG_CMA_SIZE_MBYTES=0
+ CONFIG_PRINTK_TIME=y
+diff --git a/arch/loongarch/crypto/Kconfig b/arch/loongarch/crypto/Kconfig
+index 200a6e8b43b1e..a0270b3e5b30a 100644
+--- a/arch/loongarch/crypto/Kconfig
++++ b/arch/loongarch/crypto/Kconfig
+@@ -1,14 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
  
- 	  Architecture: PowerPC64
- 	  - Little-endian
+ menu "Accelerated Cryptographic Algorithms for CPU (loongarch)"
  
--config CRYPTO_CRC32C_VPMSUM
--	tristate "CRC32c"
--	depends on PPC64 && ALTIVEC
--	select CRYPTO_HASH
+-config CRYPTO_CRC32_LOONGARCH
+-	tristate "CRC32c and CRC32"
 -	select CRC32
+-	select CRYPTO_HASH
 -	help
--	  CRC32c CRC algorithm with the iSCSI polynomial (RFC 3385 and RFC 3720)
+-	  CRC32c and CRC32 CRC algorithms
 -
--	  Architecture: powerpc64 using
--	  - AltiVec extensions
+-	  Architecture: LoongArch with CRC32 instructions
 -
--	  Enable on POWER8 and newer processors for improved performance.
+ endmenu
+diff --git a/arch/loongarch/crypto/Makefile b/arch/loongarch/crypto/Makefile
+index d22613d27ce9e..ba83755dde2b4 100644
+--- a/arch/loongarch/crypto/Makefile
++++ b/arch/loongarch/crypto/Makefile
+@@ -1,6 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0
+ #
+ # Makefile for LoongArch crypto files..
+ #
 -
- config CRYPTO_CRCT10DIF_VPMSUM
- 	tristate "CRC32T10DIF"
- 	depends on PPC64 && ALTIVEC && CRC_T10DIF
- 	select CRYPTO_HASH
- 	help
-@@ -38,11 +25,11 @@ config CRYPTO_CRCT10DIF_VPMSUM
- 
- 	  Enable on POWER8 and newer processors for improved performance.
- 
- config CRYPTO_VPMSUM_TESTER
- 	tristate "CRC32c and CRC32T10DIF hardware acceleration tester"
--	depends on CRYPTO_CRCT10DIF_VPMSUM && CRYPTO_CRC32C_VPMSUM
-+	depends on CRYPTO_CRCT10DIF_VPMSUM && CRC32_ARCH
- 	help
- 	  Stress test for CRC32c and CRCT10DIF algorithms implemented with
- 	  powerpc64 AltiVec extensions (POWER8 vpmsum instructions).
- 	  Unless you are testing these algorithms, you don't need this.
- 
-diff --git a/arch/powerpc/crypto/Makefile b/arch/powerpc/crypto/Makefile
-index 59808592f0a1b..54486192273c2 100644
---- a/arch/powerpc/crypto/Makefile
-+++ b/arch/powerpc/crypto/Makefile
-@@ -8,11 +8,10 @@
- obj-$(CONFIG_CRYPTO_AES_PPC_SPE) += aes-ppc-spe.o
- obj-$(CONFIG_CRYPTO_MD5_PPC) += md5-ppc.o
- obj-$(CONFIG_CRYPTO_SHA1_PPC) += sha1-powerpc.o
- obj-$(CONFIG_CRYPTO_SHA1_PPC_SPE) += sha1-ppc-spe.o
- obj-$(CONFIG_CRYPTO_SHA256_PPC_SPE) += sha256-ppc-spe.o
--obj-$(CONFIG_CRYPTO_CRC32C_VPMSUM) += crc32c-vpmsum.o
- obj-$(CONFIG_CRYPTO_CRCT10DIF_VPMSUM) += crct10dif-vpmsum.o
- obj-$(CONFIG_CRYPTO_VPMSUM_TESTER) += crc-vpmsum_test.o
- obj-$(CONFIG_CRYPTO_AES_GCM_P10) += aes-gcm-p10-crypto.o
- obj-$(CONFIG_CRYPTO_CHACHA20_P10) += chacha-p10-crypto.o
- obj-$(CONFIG_CRYPTO_POLY1305_P10) += poly1305-p10-crypto.o
-@@ -22,11 +21,10 @@ obj-$(CONFIG_CRYPTO_CURVE25519_PPC64) += curve25519-ppc64le.o
- aes-ppc-spe-y := aes-spe-core.o aes-spe-keys.o aes-tab-4k.o aes-spe-modes.o aes-spe-glue.o
- md5-ppc-y := md5-asm.o md5-glue.o
- sha1-powerpc-y := sha1-powerpc-asm.o sha1.o
- sha1-ppc-spe-y := sha1-spe-asm.o sha1-spe-glue.o
- sha256-ppc-spe-y := sha256-spe-asm.o sha256-spe-glue.o
--crc32c-vpmsum-y := crc32c-vpmsum_asm.o crc32c-vpmsum_glue.o
- crct10dif-vpmsum-y := crct10dif-vpmsum_asm.o crct10dif-vpmsum_glue.o
- aes-gcm-p10-crypto-y := aes-gcm-p10-glue.o aes-gcm-p10.o ghashp10-ppc.o aesp10-ppc.o
- chacha-p10-crypto-y := chacha-p10-glue.o chacha-p10le-8x.o
- poly1305-p10-crypto-y := poly1305-p10-glue.o poly1305-p10le_64.o
- vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes_xts.o ghash.o
-diff --git a/arch/powerpc/crypto/crc32c-vpmsum_glue.c b/arch/powerpc/crypto/crc32c-vpmsum_glue.c
+-obj-$(CONFIG_CRYPTO_CRC32_LOONGARCH) += crc32-loongarch.o
+diff --git a/arch/loongarch/crypto/crc32-loongarch.c b/arch/loongarch/crypto/crc32-loongarch.c
 deleted file mode 100644
-index 63760b7dbb760..0000000000000
---- a/arch/powerpc/crypto/crc32c-vpmsum_glue.c
+index b7d9782827f55..0000000000000
+--- a/arch/loongarch/crypto/crc32-loongarch.c
 +++ /dev/null
-@@ -1,173 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--#include <linux/crc32.h>
--#include <crypto/internal/hash.h>
--#include <crypto/internal/simd.h>
--#include <linux/init.h>
+@@ -1,300 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
+-/*
+- * crc32.c - CRC32 and CRC32C using LoongArch crc* instructions
+- *
+- * Module based on mips/crypto/crc32-mips.c
+- *
+- * Copyright (C) 2014 Linaro Ltd <yazen.ghannam@linaro.org>
+- * Copyright (C) 2018 MIPS Tech, LLC
+- * Copyright (C) 2020-2023 Loongson Technology Corporation Limited
+- */
+-
 -#include <linux/module.h>
--#include <linux/string.h>
--#include <linux/kernel.h>
--#include <linux/cpufeature.h>
--#include <asm/simd.h>
--#include <asm/switch_to.h>
+-#include <crypto/internal/hash.h>
 -
--#define CHKSUM_BLOCK_SIZE	1
--#define CHKSUM_DIGEST_SIZE	4
+-#include <asm/cpu-features.h>
+-#include <linux/unaligned.h>
 -
--#define VMX_ALIGN		16
--#define VMX_ALIGN_MASK		(VMX_ALIGN-1)
+-#define _CRC32(crc, value, size, type)			\
+-do {							\
+-	__asm__ __volatile__(				\
+-		#type ".w." #size ".w" " %0, %1, %0\n\t"\
+-		: "+r" (crc)				\
+-		: "r" (value)				\
+-		: "memory");				\
+-} while (0)
 -
--#define VECTOR_BREAKPOINT	512
+-#define CRC32(crc, value, size)		_CRC32(crc, value, size, crc)
+-#define CRC32C(crc, value, size)	_CRC32(crc, value, size, crcc)
 -
--u32 __crc32c_vpmsum(u32 crc, unsigned char const *p, size_t len);
--
--static u32 crc32c_vpmsum(u32 crc, unsigned char const *p, size_t len)
+-static u32 crc32_loongarch_hw(u32 crc_, const u8 *p, unsigned int len)
 -{
--	unsigned int prealign;
--	unsigned int tail;
+-	u32 crc = crc_;
 -
--	if (len < (VECTOR_BREAKPOINT + VMX_ALIGN) || !crypto_simd_usable())
--		return __crc32c_le(crc, p, len);
+-	while (len >= sizeof(u64)) {
+-		u64 value = get_unaligned_le64(p);
 -
--	if ((unsigned long)p & VMX_ALIGN_MASK) {
--		prealign = VMX_ALIGN - ((unsigned long)p & VMX_ALIGN_MASK);
--		crc = __crc32c_le(crc, p, prealign);
--		len -= prealign;
--		p += prealign;
+-		CRC32(crc, value, d);
+-		p += sizeof(u64);
+-		len -= sizeof(u64);
 -	}
 -
--	if (len & ~VMX_ALIGN_MASK) {
--		preempt_disable();
--		pagefault_disable();
--		enable_kernel_altivec();
--		crc = __crc32c_vpmsum(crc, p, len & ~VMX_ALIGN_MASK);
--		disable_kernel_altivec();
--		pagefault_enable();
--		preempt_enable();
+-	if (len & sizeof(u32)) {
+-		u32 value = get_unaligned_le32(p);
+-
+-		CRC32(crc, value, w);
+-		p += sizeof(u32);
 -	}
 -
--	tail = len & VMX_ALIGN_MASK;
--	if (tail) {
--		p += len & ~VMX_ALIGN_MASK;
--		crc = __crc32c_le(crc, p, tail);
+-	if (len & sizeof(u16)) {
+-		u16 value = get_unaligned_le16(p);
+-
+-		CRC32(crc, value, h);
+-		p += sizeof(u16);
+-	}
+-
+-	if (len & sizeof(u8)) {
+-		u8 value = *p++;
+-
+-		CRC32(crc, value, b);
 -	}
 -
 -	return crc;
 -}
 -
--static int crc32c_vpmsum_cra_init(struct crypto_tfm *tfm)
+-static u32 crc32c_loongarch_hw(u32 crc_, const u8 *p, unsigned int len)
 -{
--	u32 *key = crypto_tfm_ctx(tfm);
+-	u32 crc = crc_;
 -
--	*key = ~0;
+-	while (len >= sizeof(u64)) {
+-		u64 value = get_unaligned_le64(p);
+-
+-		CRC32C(crc, value, d);
+-		p += sizeof(u64);
+-		len -= sizeof(u64);
+-	}
+-
+-	if (len & sizeof(u32)) {
+-		u32 value = get_unaligned_le32(p);
+-
+-		CRC32C(crc, value, w);
+-		p += sizeof(u32);
+-	}
+-
+-	if (len & sizeof(u16)) {
+-		u16 value = get_unaligned_le16(p);
+-
+-		CRC32C(crc, value, h);
+-		p += sizeof(u16);
+-	}
+-
+-	if (len & sizeof(u8)) {
+-		u8 value = *p++;
+-
+-		CRC32C(crc, value, b);
+-	}
+-
+-	return crc;
+-}
+-
+-#define CHKSUM_BLOCK_SIZE	1
+-#define CHKSUM_DIGEST_SIZE	4
+-
+-struct chksum_ctx {
+-	u32 key;
+-};
+-
+-struct chksum_desc_ctx {
+-	u32 crc;
+-};
+-
+-static int chksum_init(struct shash_desc *desc)
+-{
+-	struct chksum_ctx *mctx = crypto_shash_ctx(desc->tfm);
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	ctx->crc = mctx->key;
 -
 -	return 0;
 -}
 -
 -/*
 - * Setting the seed allows arbitrary accumulators and flexible XOR policy
-- * If your algorithm starts with ~0, then XOR with ~0 before you set
-- * the seed.
+- * If your algorithm starts with ~0, then XOR with ~0 before you set the seed.
 - */
--static int crc32c_vpmsum_setkey(struct crypto_shash *hash, const u8 *key,
--			       unsigned int keylen)
+-static int chksum_setkey(struct crypto_shash *tfm, const u8 *key, unsigned int keylen)
 -{
--	u32 *mctx = crypto_shash_ctx(hash);
+-	struct chksum_ctx *mctx = crypto_shash_ctx(tfm);
 -
--	if (keylen != sizeof(u32))
+-	if (keylen != sizeof(mctx->key))
 -		return -EINVAL;
--	*mctx = le32_to_cpup((__le32 *)key);
--	return 0;
--}
 -
--static int crc32c_vpmsum_init(struct shash_desc *desc)
--{
--	u32 *mctx = crypto_shash_ctx(desc->tfm);
--	u32 *crcp = shash_desc_ctx(desc);
--
--	*crcp = *mctx;
+-	mctx->key = get_unaligned_le32(key);
 -
 -	return 0;
 -}
 -
--static int crc32c_vpmsum_update(struct shash_desc *desc, const u8 *data,
--			       unsigned int len)
+-static int chksum_update(struct shash_desc *desc, const u8 *data, unsigned int length)
 -{
--	u32 *crcp = shash_desc_ctx(desc);
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
 -
--	*crcp = crc32c_vpmsum(*crcp, data, len);
--
+-	ctx->crc = crc32_loongarch_hw(ctx->crc, data, length);
 -	return 0;
 -}
 -
--static int __crc32c_vpmsum_finup(u32 *crcp, const u8 *data, unsigned int len,
--				u8 *out)
+-static int chksumc_update(struct shash_desc *desc, const u8 *data, unsigned int length)
 -{
--	*(__le32 *)out = ~cpu_to_le32(crc32c_vpmsum(*crcp, data, len));
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
 -
+-	ctx->crc = crc32c_loongarch_hw(ctx->crc, data, length);
 -	return 0;
 -}
 -
--static int crc32c_vpmsum_finup(struct shash_desc *desc, const u8 *data,
--			      unsigned int len, u8 *out)
+-static int chksum_final(struct shash_desc *desc, u8 *out)
 -{
--	return __crc32c_vpmsum_finup(shash_desc_ctx(desc), data, len, out);
--}
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
 -
--static int crc32c_vpmsum_final(struct shash_desc *desc, u8 *out)
--{
--	u32 *crcp = shash_desc_ctx(desc);
--
--	*(__le32 *)out = ~cpu_to_le32p(crcp);
--
+-	put_unaligned_le32(ctx->crc, out);
 -	return 0;
 -}
 -
--static int crc32c_vpmsum_digest(struct shash_desc *desc, const u8 *data,
--			       unsigned int len, u8 *out)
+-static int chksumc_final(struct shash_desc *desc, u8 *out)
 -{
--	return __crc32c_vpmsum_finup(crypto_shash_ctx(desc->tfm), data, len,
--				     out);
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	put_unaligned_le32(~ctx->crc, out);
+-	return 0;
 -}
 -
--static struct shash_alg alg = {
--	.setkey		= crc32c_vpmsum_setkey,
--	.init		= crc32c_vpmsum_init,
--	.update		= crc32c_vpmsum_update,
--	.final		= crc32c_vpmsum_final,
--	.finup		= crc32c_vpmsum_finup,
--	.digest		= crc32c_vpmsum_digest,
--	.descsize	= sizeof(u32),
--	.digestsize	= CHKSUM_DIGEST_SIZE,
--	.base		= {
--		.cra_name		= "crc32c",
--		.cra_driver_name	= "crc32c-vpmsum",
--		.cra_priority		= 200,
--		.cra_flags		= CRYPTO_ALG_OPTIONAL_KEY,
--		.cra_blocksize		= CHKSUM_BLOCK_SIZE,
--		.cra_ctxsize		= sizeof(u32),
--		.cra_module		= THIS_MODULE,
--		.cra_init		= crc32c_vpmsum_cra_init,
+-static int __chksum_finup(u32 crc, const u8 *data, unsigned int len, u8 *out)
+-{
+-	put_unaligned_le32(crc32_loongarch_hw(crc, data, len), out);
+-	return 0;
+-}
+-
+-static int __chksumc_finup(u32 crc, const u8 *data, unsigned int len, u8 *out)
+-{
+-	put_unaligned_le32(~crc32c_loongarch_hw(crc, data, len), out);
+-	return 0;
+-}
+-
+-static int chksum_finup(struct shash_desc *desc, const u8 *data, unsigned int len, u8 *out)
+-{
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	return __chksum_finup(ctx->crc, data, len, out);
+-}
+-
+-static int chksumc_finup(struct shash_desc *desc, const u8 *data, unsigned int len, u8 *out)
+-{
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	return __chksumc_finup(ctx->crc, data, len, out);
+-}
+-
+-static int chksum_digest(struct shash_desc *desc, const u8 *data, unsigned int length, u8 *out)
+-{
+-	struct chksum_ctx *mctx = crypto_shash_ctx(desc->tfm);
+-
+-	return __chksum_finup(mctx->key, data, length, out);
+-}
+-
+-static int chksumc_digest(struct shash_desc *desc, const u8 *data, unsigned int length, u8 *out)
+-{
+-	struct chksum_ctx *mctx = crypto_shash_ctx(desc->tfm);
+-
+-	return __chksumc_finup(mctx->key, data, length, out);
+-}
+-
+-static int chksum_cra_init(struct crypto_tfm *tfm)
+-{
+-	struct chksum_ctx *mctx = crypto_tfm_ctx(tfm);
+-
+-	mctx->key = 0;
+-	return 0;
+-}
+-
+-static int chksumc_cra_init(struct crypto_tfm *tfm)
+-{
+-	struct chksum_ctx *mctx = crypto_tfm_ctx(tfm);
+-
+-	mctx->key = ~0;
+-	return 0;
+-}
+-
+-static struct shash_alg crc32_alg = {
+-	.digestsize		=	CHKSUM_DIGEST_SIZE,
+-	.setkey			=	chksum_setkey,
+-	.init			=	chksum_init,
+-	.update			=	chksum_update,
+-	.final			=	chksum_final,
+-	.finup			=	chksum_finup,
+-	.digest			=	chksum_digest,
+-	.descsize		=	sizeof(struct chksum_desc_ctx),
+-	.base			=	{
+-		.cra_name		=	"crc32",
+-		.cra_driver_name	=	"crc32-loongarch",
+-		.cra_priority		=	300,
+-		.cra_flags		=	CRYPTO_ALG_OPTIONAL_KEY,
+-		.cra_blocksize		=	CHKSUM_BLOCK_SIZE,
+-		.cra_ctxsize		=	sizeof(struct chksum_ctx),
+-		.cra_module		=	THIS_MODULE,
+-		.cra_init		=	chksum_cra_init,
 -	}
 -};
 -
--static int __init crc32c_vpmsum_mod_init(void)
--{
--	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
--		return -ENODEV;
+-static struct shash_alg crc32c_alg = {
+-	.digestsize		=	CHKSUM_DIGEST_SIZE,
+-	.setkey			=	chksum_setkey,
+-	.init			=	chksum_init,
+-	.update			=	chksumc_update,
+-	.final			=	chksumc_final,
+-	.finup			=	chksumc_finup,
+-	.digest			=	chksumc_digest,
+-	.descsize		=	sizeof(struct chksum_desc_ctx),
+-	.base			=	{
+-		.cra_name		=	"crc32c",
+-		.cra_driver_name	=	"crc32c-loongarch",
+-		.cra_priority		=	300,
+-		.cra_flags		=	CRYPTO_ALG_OPTIONAL_KEY,
+-		.cra_blocksize		=	CHKSUM_BLOCK_SIZE,
+-		.cra_ctxsize		=	sizeof(struct chksum_ctx),
+-		.cra_module		=	THIS_MODULE,
+-		.cra_init		=	chksumc_cra_init,
+-	}
+-};
 -
--	return crypto_register_shash(&alg);
+-static int __init crc32_mod_init(void)
+-{
+-	int err;
+-
+-	if (!cpu_has(CPU_FEATURE_CRC32))
+-		return 0;
+-
+-	err = crypto_register_shash(&crc32_alg);
+-	if (err)
+-		return err;
+-
+-	err = crypto_register_shash(&crc32c_alg);
+-	if (err)
+-		return err;
+-
+-	return 0;
 -}
 -
--static void __exit crc32c_vpmsum_mod_fini(void)
+-static void __exit crc32_mod_exit(void)
 -{
--	crypto_unregister_shash(&alg);
+-	if (!cpu_has(CPU_FEATURE_CRC32))
+-		return;
+-
+-	crypto_unregister_shash(&crc32_alg);
+-	crypto_unregister_shash(&crc32c_alg);
 -}
 -
--module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, crc32c_vpmsum_mod_init);
--module_exit(crc32c_vpmsum_mod_fini);
+-module_init(crc32_mod_init);
+-module_exit(crc32_mod_exit);
 -
--MODULE_AUTHOR("Anton Blanchard <anton@samba.org>");
--MODULE_DESCRIPTION("CRC32C using vector polynomial multiply-sum instructions");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS_CRYPTO("crc32c");
--MODULE_ALIAS_CRYPTO("crc32c-vpmsum");
-diff --git a/arch/powerpc/crypto/crct10dif-vpmsum_asm.S b/arch/powerpc/crypto/crct10dif-vpmsum_asm.S
-index f0b93a0fe168a..0a52261bf8599 100644
---- a/arch/powerpc/crypto/crct10dif-vpmsum_asm.S
-+++ b/arch/powerpc/crypto/crct10dif-vpmsum_asm.S
-@@ -840,6 +840,6 @@
- 	.octa 0x000000000000000000000001f65a57f8	/* x^64 div p(x) */
- 	/* Barrett constant n */
- 	.octa 0x0000000000000000000000018bb70000
+-MODULE_AUTHOR("Min Zhou <zhoumin@loongson.cn>");
+-MODULE_AUTHOR("Huacai Chen <chenhuacai@loongson.cn>");
+-MODULE_DESCRIPTION("CRC32 and CRC32C using LoongArch crc* instructions");
+-MODULE_LICENSE("GPL v2");
+diff --git a/arch/loongarch/lib/Makefile b/arch/loongarch/lib/Makefile
+index ccea3bbd43531..fae77809048b8 100644
+--- a/arch/loongarch/lib/Makefile
++++ b/arch/loongarch/lib/Makefile
+@@ -9,5 +9,7 @@ lib-y	+= delay.o memset.o memcpy.o memmove.o \
+ obj-$(CONFIG_ARCH_SUPPORTS_INT128) += tishift.o
  
- #define CRC_FUNCTION_NAME __crct10dif_vpmsum
--#include "crc32-vpmsum_core.S"
-+#include "../lib/crc32-vpmsum_core.S"
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index f14ecab674a34..da9381a1c95b3 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -76,6 +76,9 @@ obj-$(CONFIG_FTR_FIXUP_SELFTEST) += feature-fixups-test.o
- obj-$(CONFIG_ALTIVEC)	+= xor_vmx.o xor_vmx_glue.o
- CFLAGS_xor_vmx.o += -mhard-float -maltivec $(call cc-option,-mabi=altivec)
- # Enable <altivec.h>
- CFLAGS_xor_vmx.o += -isystem $(shell $(CC) -print-file-name=include)
+ obj-$(CONFIG_CPU_HAS_LSX) += xor_simd.o xor_simd_glue.o
  
-+obj-$(CONFIG_CRC32_ARCH) += crc32-powerpc.o
-+crc32-powerpc-y := crc32-glue.o crc32c-vpmsum_asm.o
+ obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
 +
- obj-$(CONFIG_PPC64) += $(obj64-y)
-diff --git a/arch/powerpc/lib/crc32-glue.c b/arch/powerpc/lib/crc32-glue.c
++obj-$(CONFIG_CRC32_ARCH) += crc32-loongarch.o
+diff --git a/arch/loongarch/lib/crc32-loongarch.c b/arch/loongarch/lib/crc32-loongarch.c
 new file mode 100644
-index 0000000000000..d33bde6641bfd
+index 0000000000000..46eeb23b472bc
 --- /dev/null
-+++ b/arch/powerpc/lib/crc32-glue.c
-@@ -0,0 +1,84 @@
-+// SPDX-License-Identifier: GPL-2.0-only
++++ b/arch/loongarch/lib/crc32-loongarch.c
+@@ -0,0 +1,127 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * crc32.c - CRC32 and CRC32C using LoongArch crc* instructions
++ *
++ * Module based on mips/crypto/crc32-mips.c
++ *
++ * Copyright (C) 2014 Linaro Ltd <yazen.ghannam@linaro.org>
++ * Copyright (C) 2018 MIPS Tech, LLC
++ * Copyright (C) 2020-2023 Loongson Technology Corporation Limited
++ */
++
++#include <asm/cpu-features.h>
 +#include <linux/crc32.h>
-+#include <crypto/internal/simd.h>
-+#include <linux/init.h>
 +#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/cpufeature.h>
-+#include <asm/simd.h>
-+#include <asm/switch_to.h>
++#include <linux/unaligned.h>
 +
-+#define VMX_ALIGN		16
-+#define VMX_ALIGN_MASK		(VMX_ALIGN-1)
++#define _CRC32(crc, value, size, type)			\
++do {							\
++	__asm__ __volatile__(				\
++		#type ".w." #size ".w" " %0, %1, %0\n\t"\
++		: "+r" (crc)				\
++		: "r" (value)				\
++		: "memory");				\
++} while (0)
 +
-+#define VECTOR_BREAKPOINT	512
++#define CRC32(crc, value, size)		_CRC32(crc, value, size, crc)
++#define CRC32C(crc, value, size)	_CRC32(crc, value, size, crcc)
 +
-+static DEFINE_STATIC_KEY_FALSE(have_vec_crypto);
-+
-+u32 __crc32c_vpmsum(u32 crc, const u8 *p, size_t len);
++static DEFINE_STATIC_KEY_FALSE(have_crc32);
 +
 +u32 crc32_le_arch(u32 crc, const u8 *p, size_t len)
 +{
-+	return crc32_le_base(crc, p, len);
++	if (!static_branch_likely(&have_crc32))
++		return crc32_le_base(crc, p, len);
++
++	while (len >= sizeof(u64)) {
++		u64 value = get_unaligned_le64(p);
++
++		CRC32(crc, value, d);
++		p += sizeof(u64);
++		len -= sizeof(u64);
++	}
++
++	if (len & sizeof(u32)) {
++		u32 value = get_unaligned_le32(p);
++
++		CRC32(crc, value, w);
++		p += sizeof(u32);
++	}
++
++	if (len & sizeof(u16)) {
++		u16 value = get_unaligned_le16(p);
++
++		CRC32(crc, value, h);
++		p += sizeof(u16);
++	}
++
++	if (len & sizeof(u8)) {
++		u8 value = *p++;
++
++		CRC32(crc, value, b);
++	}
++
++	return crc;
 +}
 +EXPORT_SYMBOL(crc32_le_arch);
 +
 +u32 crc32c_le_arch(u32 crc, const u8 *p, size_t len)
 +{
-+	unsigned int prealign;
-+	unsigned int tail;
-+
-+	if (len < (VECTOR_BREAKPOINT + VMX_ALIGN) || !crypto_simd_usable() ||
-+	    !static_branch_likely(&have_vec_crypto))
++	if (!static_branch_likely(&have_crc32))
 +		return crc32c_le_base(crc, p, len);
 +
-+	if ((unsigned long)p & VMX_ALIGN_MASK) {
-+		prealign = VMX_ALIGN - ((unsigned long)p & VMX_ALIGN_MASK);
-+		crc = crc32c_le_base(crc, p, prealign);
-+		len -= prealign;
-+		p += prealign;
++	while (len >= sizeof(u64)) {
++		u64 value = get_unaligned_le64(p);
++
++		CRC32C(crc, value, d);
++		p += sizeof(u64);
++		len -= sizeof(u64);
 +	}
 +
-+	if (len & ~VMX_ALIGN_MASK) {
-+		preempt_disable();
-+		pagefault_disable();
-+		enable_kernel_altivec();
-+		crc = __crc32c_vpmsum(crc, p, len & ~VMX_ALIGN_MASK);
-+		disable_kernel_altivec();
-+		pagefault_enable();
-+		preempt_enable();
++	if (len & sizeof(u32)) {
++		u32 value = get_unaligned_le32(p);
++
++		CRC32C(crc, value, w);
++		p += sizeof(u32);
 +	}
 +
-+	tail = len & VMX_ALIGN_MASK;
-+	if (tail) {
-+		p += len & ~VMX_ALIGN_MASK;
-+		crc = crc32c_le_base(crc, p, tail);
++	if (len & sizeof(u16)) {
++		u16 value = get_unaligned_le16(p);
++
++		CRC32C(crc, value, h);
++		p += sizeof(u16);
++	}
++
++	if (len & sizeof(u8)) {
++		u8 value = *p++;
++
++		CRC32C(crc, value, b);
 +	}
 +
 +	return crc;
@@ -500,31 +596,23 @@ index 0000000000000..d33bde6641bfd
 +}
 +EXPORT_SYMBOL(crc32_be_arch);
 +
-+static int __init crc32_powerpc_init(void)
++static int __init crc32_loongarch_init(void)
 +{
-+	if (cpu_has_feature(CPU_FTR_ARCH_207S) &&
-+	    (cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_VEC_CRYPTO))
-+		static_branch_enable(&have_vec_crypto);
++	if (cpu_has(CPU_FEATURE_CRC32))
++		static_branch_enable(&have_crc32);
 +	return 0;
 +}
-+arch_initcall(crc32_powerpc_init);
++arch_initcall(crc32_loongarch_init);
 +
-+static void __exit crc32_powerpc_exit(void)
++static void __exit crc32_loongarch_exit(void)
 +{
 +}
-+module_exit(crc32_powerpc_exit);
++module_exit(crc32_loongarch_exit);
 +
-+MODULE_AUTHOR("Anton Blanchard <anton@samba.org>");
-+MODULE_DESCRIPTION("CRC32C using vector polynomial multiply-sum instructions");
-+MODULE_LICENSE("GPL");
-diff --git a/arch/powerpc/crypto/crc32-vpmsum_core.S b/arch/powerpc/lib/crc32-vpmsum_core.S
-similarity index 100%
-rename from arch/powerpc/crypto/crc32-vpmsum_core.S
-rename to arch/powerpc/lib/crc32-vpmsum_core.S
-diff --git a/arch/powerpc/crypto/crc32c-vpmsum_asm.S b/arch/powerpc/lib/crc32c-vpmsum_asm.S
-similarity index 100%
-rename from arch/powerpc/crypto/crc32c-vpmsum_asm.S
-rename to arch/powerpc/lib/crc32c-vpmsum_asm.S
++MODULE_AUTHOR("Min Zhou <zhoumin@loongson.cn>");
++MODULE_AUTHOR("Huacai Chen <chenhuacai@loongson.cn>");
++MODULE_DESCRIPTION("CRC32 and CRC32C using LoongArch crc* instructions");
++MODULE_LICENSE("GPL v2");
 -- 
 2.47.0
 
