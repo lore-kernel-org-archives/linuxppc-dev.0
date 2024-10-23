@@ -1,67 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-2493-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2494-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3E01D2E009
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2024 02:31:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BC57D2E008
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Oct 2024 02:32:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XYCjX6Swxz2xrv;
-	Wed, 23 Oct 2024 13:31:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::114a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729650704;
-	cv=none; b=EWNeB9fUDAB8MyGLsv/2+uLuxGgnOydPFf27P8iLDW4E2Vjdtkd0uIjl0kbJzTMeIGctLNnSfhbhAY1vBthpSZzhPNGf5BlFsuYRaBRiWvpaJPw6LF7dl8zLZs19NVzRRGTpdZ1+XEOOfeumkhQKmssnroDwYqKshQm55c08/0p/EnDLMBJ3MmyxTbMPPtkUs/lQXPKyaps8kqe1aG/mnzKmgvUnqSe0zqJM9YOfhEwMHIHlho/bHo9BHP0IyJ8kFmRi510Inzp7+r/+TvsyghCA2377m0XVSyAYrIT1UAWtb2PAmKLuzluhKcmbJ7UGTx+plC62priCc9E9hmt4Jw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XYCjY0gxrz2yZ7;
+	Wed, 23 Oct 2024 13:31:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b49"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729650705;
+	cv=none; b=g76n/Q9NPwpkaR4YJA3z0FymSamyoYX+CPg7rMm9buQwXp/hExK/9avXb0LuyaCxMLoNA8osHa/P8QN7mg2pSVntoY5lFeVHlyF9ZIcgGDGqE1IN0nNwdusM83cPVxZ/cbNRyTOLTtCrnuRdpXet0cnnZxok7Dwal7XCzfbUq6v1oe6/H9Ehxet7kiXoxsIx/5oSgQpQw0CK5MqRd/Id2vyYx8oK0jV59yyPURp9cxijJ/86G118IvoCbs3w5WzP7AsQcq3T8vJFaJynzIK1wVnQGSVtSk8hNlZ+/PNiI5maFYeUEV/Vc2qGBoGMq6Y1BYkPbIS99OVQNt6qDrFvjw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729650704; c=relaxed/relaxed;
-	bh=YVm76pegvjtsU2eVkCp0KUVvIC3D2L+QTQ/qD8J0RGc=;
+	t=1729650705; c=relaxed/relaxed;
+	bh=Hbq9lhwWvJbskN7S3Dyi23fd/+x2PT2yp9zr8kQtgoI=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=ct5yKA7sPMqm+A4Db7HftuLKJmBYYcI3S9c8YUJdkBTOxB6u+kaFAXxHYJVtISctcU7PIBGw8dWglIfBUy0W5AfV1VW8TD9ZDLIr9cncsaCRuQExX7PTjoyBq4rJs5sKWofJYLfqz4FOnhTZQw721uOZGEft2KYaSZUvYR3cyBQXnMSoRhd3tLknxrrMGd7u8fSGZZNbh4lVuR3dXN7SmQk/0dIma2a6d7QdUuZhowNGqtqlEq1gNTo63ks8k6his+/zTRjPemcORjDn8rLdEdi9ThzmLxJ1vdjWj49XuQvBdLB3Y1/i+AGbKlJoYJavwv5BfX7vZlYGoR+QKNwsLQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=oFo+qbpR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3dgayzwckdg0xxlfcpcrzzrwp.nzxwtyfiaan-opgwtded.zkwlmd.zcr@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--mmaurer.bounces.google.com
+	 To:Cc:Content-Type; b=TJyl4FPDP2ZLAmpvHqHxhM2XM7B2fSygGgcZ+Jf0ouYtWy+C5QKma6ed2rY3YmCQtAo0cirX0FsFg9NyBQIZqLajF7UtzXzk0M1eIMzFaSi+PrvH893tnVlMJe6VVz99vu3bD4m79U/XZG26lVEaQCJQo+Mo9COeFHweTIS4LBK0KT1xkeD9JoYTNcKx7b51LuFxEOwBRtJ/loRxOWf2YhY0/7n51EnRNyWEENYEVh7SLZ4PwPswNGj1N9FppHVxQBTcFxsYEkRoFjK8kxN4TelLFDOXDxU1I8FZ9kpSd//AzQdiSYjoXcpfAFWoolVYHbM/csAT1OLmhXz7+T7TWw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=T2wf8sg9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3cwayzwckdgouuiczmzowwotm.kwutqvcfxxk-lmdtqaba.whtija.wzo@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--mmaurer.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=oFo+qbpR;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=T2wf8sg9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--mmaurer.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3dgayzwckdg0xxlfcpcrzzrwp.nzxwtyfiaan-opgwtded.zkwlmd.zcr@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--mmaurer.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3cwayzwckdgouuiczmzowwotm.kwutqvcfxxk-lmdtqaba.whtija.wzo@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XYCjV707sz2yLB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2024 13:31:42 +1100 (AEDT)
-Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-6e5bdb9244eso85720697b3.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2024 19:31:42 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XYCjT5rtJz2xm5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Oct 2024 13:31:40 +1100 (AEDT)
+Received: by mail-yb1-xb49.google.com with SMTP id 3f1490d57ef6-e292dbfd834so9637735276.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Oct 2024 19:31:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1729650701; x=1730255501; darn=lists.ozlabs.org;
+        d=google.com; s=20230601; t=1729650698; x=1730255498; darn=lists.ozlabs.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=YVm76pegvjtsU2eVkCp0KUVvIC3D2L+QTQ/qD8J0RGc=;
-        b=oFo+qbpRDX21jRpYDx9hf+/qYYHA0pW+v42ctXaTWLPhXOu8RD9Ataj+u3z/R0sAD+
-         QJbHCrOT9/ScA/V2Ijk0CLlxMdry9VMaqR3F+F6RokOBw8ok1841FlyivLBy/1kMcxEp
-         az8olLpnfLNaAyKNfKxjV4c5WM+koo7igl/1s/4KVI78eE5fwO9tTK3WoqyAjur/MsBi
-         RjDcG8ojNy2WHaMnnZ2MmmVWJBc3tf5kL77Gd+0ADQ7rToewN3nMRo9wibb4WIuCQr2v
-         sLIWzkfuA7xAONMW56K9A8Fl0g0SXBlOO9jh0SoNhUDOSDolNWpmcsZLKZeufwnLLtTa
-         LUjQ==
+        bh=Hbq9lhwWvJbskN7S3Dyi23fd/+x2PT2yp9zr8kQtgoI=;
+        b=T2wf8sg9FWRXxb9qNI6SizvB9hpq9ggkqckdJbmGOxeozq/kPwuilz5O3cTC5XZfAT
+         r2puYq1VUyxVP8lQI/u8W/83z+fie8cSwZGmlzz9Ssm3nnO/iBykOYkNIlsbxKCbl/pm
+         WIKLG+56DQyuqRsdAU1JRT1JbPzqPfqAsXUnsUdhkEyrQwaXl8WblfChwAqFRr802f3O
+         m89hvMZwYLi9lxT0ZOHJwWqpbN8oLKNm506T6zpmTa9h46WYzn1G8FItFU0qbEDo+4ev
+         5+8t3/gmqKjH3F3DZdXAIyAaOEfE6mYonlVWpEz4JQ+pIRFFc3lxZ9DS3+aXpASBw8yh
+         /soQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729650701; x=1730255501;
+        d=1e100.net; s=20230601; t=1729650698; x=1730255498;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=YVm76pegvjtsU2eVkCp0KUVvIC3D2L+QTQ/qD8J0RGc=;
-        b=DcwIVWgs/x6yVmOU9whbAp4MGiKrRe++eDBSI7m50YBV2/TbGY74DUh2BK/T94YjxN
-         Bg5czkiHuhqeRa+B2dAuDDP1Nfw7ml9EK1RX8i1Ek2EKJNqG/96u0zOZkxghJ/GigGYx
-         Yd33bq+77uiBuPTMaMNkxTTruCiyf1GrpcJ4WVYAua1oCdM0Vqh2LyIU9hcQWloK9gEb
-         BJ3l9Ab8jcStRHZuxMiiX7URXFJuvTb+vLBwS5sibPrHNH1z27YIghZUwFxbX9AwT27Q
-         iQ9OZqrJJQuTTx1lFaBQSp7YwbsCl96FLG7GhPEu7Z9LfAIbRLIIJhEoaOrd9UV01HFX
-         crVg==
-X-Gm-Message-State: AOJu0YxMAWqABvqmSZ0pmuc48eVuWI/Ac3etTpJ5/qmoN2H/zGrsSLDE
-	PBAjqa+VwbnEUpA7K6Q4Nf5lIuEGpRxIbTjP+ub4LIfroObkoY8O7+IDwTj7nSY5ZHKZMgFYSo0
-	x67LRfg==
-X-Google-Smtp-Source: AGHT+IEAkeaejmFNh7AdweUswVgSnsnPXI+PIy2hRogub8V/yCkXh4Je5UqAMfghNt8CcH8kkBRMSxNOEULS
+        bh=Hbq9lhwWvJbskN7S3Dyi23fd/+x2PT2yp9zr8kQtgoI=;
+        b=NaasJUbAZQV+ICEaX8ozCAvjaRHkgLhxWGyRaQJpoKwwfSVXAHBRyyc35l1rqfuF2y
+         hMSNdLHizmMvRh8MhXztI9dVGvZJoob3U10UFtgMa8WKBusGzoAFQRUf0aY9WE4RzT45
+         X6deV3GxSRd33PIhyp1LerwOrcqb0nnEvsepI/ZCqhDhaPSO5Lun/8Yd1OPpJYmGNisW
+         8wUyd1NsbN6uWRwXnrfGIQ1X++X5xtoY5bGkMSJ++F7Oy02eebdE4UP8StuWg2v1Hbou
+         wtn0V2P6g32DLvDGc91xp8cXnulPg4KoeW5+kevJTqZHJkJnjVMxJXRYE9g7/odkcFpp
+         CE6w==
+X-Gm-Message-State: AOJu0YyImuuI+PSw2BmQssPcZLMlY9z6oIdQYIwgxoNIEOkgBh3UscjS
+	OtLzxl2bPuMYqIhGfijVQ+gbZUDT+unExrZNTlh/81lIiwM/NJ+aqD5LFqbPSlgOy9ayrGVjI5f
+	fZweYQg==
+X-Google-Smtp-Source: AGHT+IFhhX8TBRGQww8JO0xKyIYxDASHJ99toJhoKZmvsmoqT3Bi2wH2OeZuxTdUsS8uuXVhOAbf7a1f9CWN
 X-Received: from anyblade.c.googlers.com ([fda3:e722:ac3:cc00:20:ed76:c0a8:1791])
- (user=mmaurer job=sendgmr) by 2002:a05:690c:25c9:b0:6e6:38:8567 with SMTP id
- 00721157ae682-6e7f0fdb1ecmr462847b3.8.1729650700838; Tue, 22 Oct 2024
- 19:31:40 -0700 (PDT)
-Date: Wed, 23 Oct 2024 02:31:30 +0000
+ (user=mmaurer job=sendgmr) by 2002:a05:6902:1818:b0:e2e:3131:337f with SMTP
+ id 3f1490d57ef6-e2e3a624ed7mr1020276.4.1729650697346; Tue, 22 Oct 2024
+ 19:31:37 -0700 (PDT)
+Date: Wed, 23 Oct 2024 02:31:28 +0000
 In-Reply-To: <20241023-extended-modversions-v7-0-339787b43373@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -77,8 +77,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Mime-Version: 1.0
 References: <20241023-extended-modversions-v7-0-339787b43373@google.com>
 X-Mailer: b4 0.15-dev
-Message-ID: <20241023-extended-modversions-v7-3-339787b43373@google.com>
-Subject: [PATCH v7 3/3] rust: Use gendwarfksyms + extended modversions for CONFIG_MODVERSIONS
+Message-ID: <20241023-extended-modversions-v7-1-339787b43373@google.com>
+Subject: [PATCH v7 1/3] modules: Support extended MODVERSIONS info
 From: Matthew Maurer <mmaurer@google.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
 	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
@@ -96,121 +96,291 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	rust-for-linux@vger.kernel.org, Matthew Maurer <mmaurer@google.com>
 Content-Type: text/plain; charset="utf-8"
 
-From: Sami Tolvanen <samitolvanen@google.com>
+Adds a new format for MODVERSIONS which stores each field in a separate
+ELF section. This initially adds support for variable length names, but
+could later be used to add additional fields to MODVERSIONS in a
+backwards compatible way if needed. Any new fields will be ignored by
+old user tooling, unlike the current format where user tooling cannot
+tolerate adjustments to the format (for example making the name field
+longer).
 
-Previously, two things stopped Rust from using MODVERSIONS:
-1. Rust symbols are occasionally too long to be represented in the
-   original versions table
-2. Rust types cannot be properly hashed by the existing genksyms
-   approach because:
-	* Looking up type definitions in Rust is more complex than C
-	* Type layout is potentially dependent on the compiler in Rust,
-	  not just the source type declaration.
+Since PPC munges its version records to strip leading dots, we reproduce
+the munging for the new format. Other architectures do not appear to
+have architecture-specific usage of this information.
 
-CONFIG_EXTENDED_MODVERSIONS addresses the first point, and
-CONFIG_GENDWARFKSYMS the second. If Rust wants to use MODVERSIONS, allow
-it to do so by selecting both features.
-
-Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
-Co-developed-by: Matthew Maurer <mmaurer@google.com>
 Signed-off-by: Matthew Maurer <mmaurer@google.com>
 ---
- init/Kconfig  |  3 ++-
- rust/Makefile | 32 ++++++++++++++++++++++++++++++--
- 2 files changed, 32 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/module_64.c | 24 ++++++++++-
+ kernel/module/internal.h        | 11 +++++
+ kernel/module/main.c            | 92 +++++++++++++++++++++++++++++++++++++----
+ kernel/module/version.c         | 45 ++++++++++++++++++++
+ 4 files changed, 162 insertions(+), 10 deletions(-)
 
-diff --git a/init/Kconfig b/init/Kconfig
-index 530a382ee0feb391b4717abdba3672e584a462d0..f5cce579f29b2ed89e97f8075a3bf70e32e71ad0 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1942,7 +1942,8 @@ config RUST
- 	bool "Rust support"
- 	depends on HAVE_RUST
- 	depends on RUST_IS_AVAILABLE
--	depends on !MODVERSIONS
-+	select EXTENDED_MODVERSIONS if MODVERSIONS
-+	depends on (GENDWARFKSYMS || !MODVERSIONS)
- 	depends on !GCC_PLUGIN_RANDSTRUCT
- 	depends on !RANDSTRUCT
- 	depends on !DEBUG_INFO_BTF || PAHOLE_HAS_LANG_EXCLUDE
-diff --git a/rust/Makefile b/rust/Makefile
-index b5e0a73b78f3e58fc8fb8c9fab8fb5792406c6d8..b80bc4eb98202f774c493da89c2caee322cffc91 100644
---- a/rust/Makefile
-+++ b/rust/Makefile
-@@ -303,10 +303,11 @@ $(obj)/bindings/bindings_helpers_generated.rs: private bindgen_target_extra = ;
- $(obj)/bindings/bindings_helpers_generated.rs: $(src)/helpers/helpers.c FORCE
- 	$(call if_changed_dep,bindgen)
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index e9bab599d0c2745e4d2b5cae04f2c56395c24654..02ada0b057cef6b2f29fa7519a5d52acac740ee5 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -355,6 +355,24 @@ static void dedotify_versions(struct modversion_info *vers,
+ 		}
+ }
  
-+rust_exports = $(NM) -p --defined-only $(1) | awk '$$2~/(T|R|D|B)/ && $$3!~/__cfi/ { printf $(2),$(3) }'
++/* Same as normal versions, remove a leading dot if present. */
++static void dedotify_ext_version_names(char *str_seq, unsigned long size)
++{
++	unsigned long out = 0;
++	unsigned long in;
++	char last = '\0';
 +
- quiet_cmd_exports = EXPORTS $@
-       cmd_exports = \
--	$(NM) -p --defined-only $< \
--		| awk '$$2~/(T|R|D|B)/ && $$3!~/__cfi/ {printf "EXPORT_SYMBOL_RUST_GPL(%s);\n",$$3}' > $@
-+	$(call rust_exports,$<,"EXPORT_SYMBOL_RUST_GPL(%s);\n",$$3) > $@
- 
- $(obj)/exports_core_generated.h: $(obj)/core.o FORCE
- 	$(call if_changed,exports)
-@@ -378,11 +379,35 @@ ifneq ($(or $(CONFIG_ARM64),$(and $(CONFIG_RISCV),$(CONFIG_64BIT))),)
- 		__ashlti3 __lshrti3
- endif
- 
-+ifdef CONFIG_MODVERSIONS
-+cmd_gendwarfksyms = $(if $(skip_gendwarfksyms),, \
-+	$(call rust_exports,$@,"%s\n",$$3) | \
-+	scripts/gendwarfksyms/gendwarfksyms \
-+		$(if $(KBUILD_SYMTYPES), --symtypes $(@:.o=.symtypes),) \
-+		$@ >> $(dot-target).cmd)
-+endif
++	for (in = 0; in < size; in++) {
++		/* Skip one leading dot */
++		if (last == '\0' && str_seq[in] == '.')
++			in++;
++		last = str_seq[in];
++		str_seq[out++] = last;
++	}
++	/* Zero the trailing portion of the names table for robustness */
++	memset(&str_seq[out], 0, size - out);
++}
 +
- define rule_rustc_library
- 	$(call cmd_and_fixdep,rustc_library)
- 	$(call cmd,gen_objtooldep)
-+	$(call cmd,gendwarfksyms)
- endef
+ /*
+  * Undefined symbols which refer to .funcname, hack to funcname. Make .TOC.
+  * seem to be defined (value set later).
+@@ -424,10 +442,12 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+ 			me->arch.toc_section = i;
+ 			if (sechdrs[i].sh_addralign < 8)
+ 				sechdrs[i].sh_addralign = 8;
+-		}
+-		else if (strcmp(secstrings+sechdrs[i].sh_name,"__versions")==0)
++		} else if (strcmp(secstrings + sechdrs[i].sh_name, "__versions") == 0)
+ 			dedotify_versions((void *)hdr + sechdrs[i].sh_offset,
+ 					  sechdrs[i].sh_size);
++		else if (strcmp(secstrings + sechdrs[i].sh_name, "__version_ext_names") == 0)
++			dedotify_ext_version_names((void *)hdr + sechdrs[i].sh_offset,
++						   sechdrs[i].sh_size);
  
-+define rule_rust_cc_library
-+	$(call if_changed_rule,cc_o_c)
-+	$(call cmd,force_checksrc)
-+	$(call cmd,gendwarfksyms)
-+endef
+ 		if (sechdrs[i].sh_type == SHT_SYMTAB)
+ 			dedotify((void *)hdr + sechdrs[i].sh_offset,
+diff --git a/kernel/module/internal.h b/kernel/module/internal.h
+index daef2be8390222c22220e2f168baa8d35ad531b9..59959c21b205bf91c0073260885743098c4022cf 100644
+--- a/kernel/module/internal.h
++++ b/kernel/module/internal.h
+@@ -86,6 +86,8 @@ struct load_info {
+ 		unsigned int vers;
+ 		unsigned int info;
+ 		unsigned int pcpu;
++		unsigned int vers_ext_crc;
++		unsigned int vers_ext_name;
+ 	} index;
+ };
+ 
+@@ -389,6 +391,15 @@ void module_layout(struct module *mod, struct modversion_info *ver, struct kerne
+ 		   struct kernel_symbol *ks, struct tracepoint * const *tp);
+ int check_modstruct_version(const struct load_info *info, struct module *mod);
+ int same_magic(const char *amagic, const char *bmagic, bool has_crcs);
++struct modversion_info_ext {
++	size_t remaining;
++	const s32 *crc;
++	const char *name;
++};
++void modversion_ext_start(const struct load_info *info, struct modversion_info_ext *ver);
++void modversion_ext_advance(struct modversion_info_ext *ver);
++#define for_each_modversion_info_ext(ver, info) \
++	for (modversion_ext_start(info, &ver); ver.remaining > 0; modversion_ext_advance(&ver))
+ #else /* !CONFIG_MODVERSIONS */
+ static inline int check_version(const struct load_info *info,
+ 				const char *symname,
+diff --git a/kernel/module/main.c b/kernel/module/main.c
+index b40b632f00a65e66ed73c4b386ef1f323a5b790c..9a9feca344f8bb06408d350e13f759bb909962cd 100644
+--- a/kernel/module/main.c
++++ b/kernel/module/main.c
+@@ -2039,6 +2039,82 @@ static int elf_validity_cache_index_str(struct load_info *info)
+ 	return 0;
+ }
+ 
++/**
++ * elf_validity_cache_index_versions() - Validate and cache version indices
++ * @info:  Load info to cache version indices in.
++ *         Must have &load_info->sechdrs and &load_info->secstrings populated.
++ * @flags: Load flags, relevant to suppress version loading, see
++ *         uapi/linux/module.h
++ *
++ * If we're ignoring modversions based on @flags, zero all version indices
++ * and return validity. Othewrise check:
++ *
++ * * If "__version_ext_crcs" is present, "__version_ext_names" is present
++ * * There is a name present for every crc
++ *
++ * Then populate:
++ *
++ * * &load_info->index.vers
++ * * &load_info->index.vers_ext_crc
++ * * &load_info->index.vers_ext_names
++ *
++ * if present.
++ *
++ * Return: %0 if valid, %-ENOEXEC on failure.
++ */
++static int elf_validity_cache_index_versions(struct load_info *info, int flags)
++{
++	unsigned int vers_ext_crc;
++	unsigned int vers_ext_name;
++	size_t crc_count;
++	size_t remaining_len;
++	size_t name_size;
++	char *name;
 +
-+# helpers.o uses the same export mechanism as Rust libraries, so ensure symbol
-+# versions are calculated for the helpers too.
-+$(obj)/helpers/helpers.o: $(src)/helpers/helpers.c $(recordmcount_source) FORCE
-+	+$(call if_changed_rule,rust_cc_library)
++	/* If modversions were suppressed, pretend we didn't find any */
++	if (flags & MODULE_INIT_IGNORE_MODVERSIONS) {
++		info->index.vers = 0;
++		info->index.vers_ext_crc = 0;
++		info->index.vers_ext_name = 0;
++		return 0;
++	}
 +
-+# Disable symbol versioning for exports.o to avoid conflicts with the actual
-+# symbol versions generated from Rust objects.
-+$(obj)/exports.o: private skip_gendwarfksyms = 1
++	vers_ext_crc = find_sec(info, "__version_ext_crcs");
++	vers_ext_name = find_sec(info, "__version_ext_names");
 +
- $(obj)/core.o: private skip_clippy = 1
- $(obj)/core.o: private skip_flags = -Wunreachable_pub
- $(obj)/core.o: private rustc_objcopy = $(foreach sym,$(redirect-intrinsics),--redefine-sym $(sym)=__rust$(sym))
-@@ -394,6 +419,7 @@ ifneq ($(or $(CONFIG_X86_64),$(CONFIG_X86_32)),)
- $(obj)/core.o: scripts/target.json
- endif
++	/* If we have one field, we must have the other */
++	if (!!vers_ext_crc != !!vers_ext_name) {
++		pr_err("extended version crc+name presence does not match");
++		return -ENOEXEC;
++	}
++
++	/*
++	 * If we have extended version information, we should have the same
++	 * number of entries in every section.
++	 */
++	if (vers_ext_crc) {
++		crc_count = info->sechdrs[vers_ext_crc].sh_size / sizeof(s32);
++		name = (void *)info->hdr +
++			info->sechdrs[vers_ext_name].sh_offset;
++		remaining_len = info->sechdrs[vers_ext_name].sh_size;
++
++		while (crc_count--) {
++			name_size = strnlen(name, remaining_len) + 1;
++			if (name_size > remaining_len) {
++				pr_err("more extended version crcs than names");
++				return -ENOEXEC;
++			}
++			remaining_len -= name_size;
++			name += name_size;
++		}
++	}
++
++	info->index.vers = find_sec(info, "__versions");
++	info->index.vers_ext_crc = vers_ext_crc;
++	info->index.vers_ext_name = vers_ext_name;
++	return 0;
++}
++
+ /**
+  * elf_validity_cache_index() - Resolve, validate, cache section indices
+  * @info:  Load info to read from and update.
+@@ -2053,9 +2129,7 @@ static int elf_validity_cache_index_str(struct load_info *info)
+  * * elf_validity_cache_index_mod()
+  * * elf_validity_cache_index_sym()
+  * * elf_validity_cache_index_str()
+- *
+- * If versioning is not suppressed via flags, load the version index from
+- * a section called "__versions" with no validation.
++ * * elf_validity_cache_index_versions()
+  *
+  * If CONFIG_SMP is enabled, load the percpu section by name with no
+  * validation.
+@@ -2078,11 +2152,9 @@ static int elf_validity_cache_index(struct load_info *info, int flags)
+ 	err = elf_validity_cache_index_str(info);
+ 	if (err < 0)
+ 		return err;
+-
+-	if (flags & MODULE_INIT_IGNORE_MODVERSIONS)
+-		info->index.vers = 0; /* Pretend no __versions section! */
+-	else
+-		info->index.vers = find_sec(info, "__versions");
++	err = elf_validity_cache_index_versions(info, flags);
++	if (err < 0)
++		return err;
  
-+$(obj)/compiler_builtins.o: private skip_gendwarfksyms = 1
- $(obj)/compiler_builtins.o: private rustc_objcopy = -w -W '__*'
- $(obj)/compiler_builtins.o: $(src)/compiler_builtins.rs $(obj)/core.o FORCE
- 	+$(call if_changed_rule,rustc_library)
-@@ -404,6 +430,7 @@ $(obj)/alloc.o: private rustc_target_flags = $(alloc-cfgs)
- $(obj)/alloc.o: $(RUST_LIB_SRC)/alloc/src/lib.rs $(obj)/compiler_builtins.o FORCE
- 	+$(call if_changed_rule,rustc_library)
+ 	info->index.pcpu = find_pcpusec(info);
  
-+$(obj)/build_error.o: private skip_gendwarfksyms = 1
- $(obj)/build_error.o: $(src)/build_error.rs $(obj)/compiler_builtins.o FORCE
- 	+$(call if_changed_rule,rustc_library)
+@@ -2293,6 +2365,10 @@ static int rewrite_section_headers(struct load_info *info, int flags)
  
-@@ -413,6 +440,7 @@ $(obj)/bindings.o: $(src)/bindings/lib.rs \
-     $(obj)/bindings/bindings_helpers_generated.rs FORCE
- 	+$(call if_changed_rule,rustc_library)
+ 	/* Track but don't keep modinfo and version sections. */
+ 	info->sechdrs[info->index.vers].sh_flags &= ~(unsigned long)SHF_ALLOC;
++	info->sechdrs[info->index.vers_ext_crc].sh_flags &=
++		~(unsigned long)SHF_ALLOC;
++	info->sechdrs[info->index.vers_ext_name].sh_flags &=
++		~(unsigned long)SHF_ALLOC;
+ 	info->sechdrs[info->index.info].sh_flags &= ~(unsigned long)SHF_ALLOC;
  
-+$(obj)/uapi.o: private skip_gendwarfksyms = 1
- $(obj)/uapi.o: $(src)/uapi/lib.rs \
-     $(obj)/compiler_builtins.o \
-     $(obj)/uapi/uapi_generated.rs FORCE
+ 	return 0;
+diff --git a/kernel/module/version.c b/kernel/module/version.c
+index 53f43ac5a73e9d537a9e95ff97728a51fad0e797..c246d40879706d4f413fa7ea9bbe2264ea1b2aa8 100644
+--- a/kernel/module/version.c
++++ b/kernel/module/version.c
+@@ -19,11 +19,28 @@ int check_version(const struct load_info *info,
+ 	unsigned int versindex = info->index.vers;
+ 	unsigned int i, num_versions;
+ 	struct modversion_info *versions;
++	struct modversion_info_ext version_ext;
+ 
+ 	/* Exporting module didn't supply crcs?  OK, we're already tainted. */
+ 	if (!crc)
+ 		return 1;
+ 
++	/* If we have extended version info, rely on it */
++	if (info->index.vers_ext_crc) {
++		for_each_modversion_info_ext(version_ext, info) {
++			if (strcmp(version_ext.name, symname) != 0)
++				continue;
++			if (*version_ext.crc == *crc)
++				return 1;
++			pr_debug("Found checksum %X vs module %X\n",
++				 *crc, *version_ext.crc);
++			goto bad_version;
++		}
++		pr_warn_once("%s: no extended symbol version for %s\n",
++			     info->name, symname);
++		return 1;
++	}
++
+ 	/* No versions at all?  modprobe --force does this. */
+ 	if (versindex == 0)
+ 		return try_to_force_load(mod, symname) == 0;
+@@ -87,6 +104,34 @@ int same_magic(const char *amagic, const char *bmagic,
+ 	return strcmp(amagic, bmagic) == 0;
+ }
+ 
++void modversion_ext_start(const struct load_info *info,
++			  struct modversion_info_ext *start)
++{
++	unsigned int crc_idx = info->index.vers_ext_crc;
++	unsigned int name_idx = info->index.vers_ext_name;
++	Elf_Shdr *sechdrs = info->sechdrs;
++
++	/*
++	 * Both of these fields are needed for this to be useful
++	 * Any future fields should be initialized to NULL if absent.
++	 */
++	if (crc_idx == 0 || name_idx == 0) {
++		start->remaining = 0;
++		return;
++	}
++
++	start->crc = (const s32 *)sechdrs[crc_idx].sh_addr;
++	start->name = (const char *)sechdrs[name_idx].sh_addr;
++	start->remaining = sechdrs[crc_idx].sh_size / sizeof(*start->crc);
++}
++
++void modversion_ext_advance(struct modversion_info_ext *vers)
++{
++	vers->remaining--;
++	vers->crc++;
++	vers->name += strlen(vers->name) + 1;
++}
++
+ /*
+  * Generate the signature for all relevant module structures here.
+  * If these change, we don't want to try to parse the module.
 
 -- 
 2.47.0.105.g07ac214952-goog
