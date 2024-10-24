@@ -1,103 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-2540-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2541-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D0B4D0BB70
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2024 08:17:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7868CD0BB71
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2024 08:44:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XYzL75drwz2xCC;
-	Thu, 24 Oct 2024 19:17:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729757855;
-	cv=none; b=Un1mPVQfboSpI3eiKHyaVi/WE55ZwDfePP657hPfk2X71R5MqnBRGLUO+5wVh4JrCVvksYL5sdbcl/JvXAixQxEsWTdm6N3v+8EIhSGrXUEqJyqn4uBWDSaXHIOx5TkAmopLqvtn0y8/OA1GGS02ggkRnzXfu2h8XCIPoH5I8o4Xur5LcI75cKokpv0CINnqrfy/CbGm3tExdaFOCmT2IR5zVCIAEBHUcK5UuPHwPcdpWo+pB+ji+TwQTRqPUkjvMcwu65dAuL4q++8f3O5H8pWB7chLqW2a+fIURabeSlz+N3xJTjWb9moolPdx5G9izoJLgLnJirVw8DPxnRbHdA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XYzxc6xsKz2yGf;
+	Thu, 24 Oct 2024 19:44:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=43.154.197.177
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729759492;
+	cv=none; b=a0y/R1s5DcpgCDejkhUqoDHKRAkoxTuQfi/KX3LMgS/A3+jumg3wB2Xar9XUdWwBwJ2/LaIv3+0QvsDlkHcaCJH7dFgRSAAeSCZEqtA9xDymZ6DIX73eiXwql6vG9b1qCYyyAYl8VmPkBSTCApzalJUYYhq14+qM+E1z6bEkFubXsszEBYd9LpHDA67bL61PiYNztoOK89HaXwc3lN9FjAMxj1V34sjmrNp1YFY32MM5yqEjrX2qhDGVAEaPVeglVQxLyTZfo8HQ93RpnKnvAOuwC5EWBw14sEXRCbB3bdy8LPPFXzhjIizkdY3QBzKUDPkxe4RKQkP18jA9pr29Xg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729757855; c=relaxed/relaxed;
-	bh=g3K4ef/KmpkfeKFv5ppF+rs6b1B8g+A5uc3pZ2O6WU0=;
+	t=1729759492; c=relaxed/relaxed;
+	bh=M8WUGbRikDgcL2Rj1VxUlLrczmaNzlbzuO0erOmva7w=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=akAbjmCO1tW9or2Ag3iCEvbkivCZr3bKxgu+38eVpHrcBrO9i35vRJUabMP38dmcYPK3fcsIbN2viVdFrRYbE6g9TqIbrU03afdCkL1xUSAm87ncPXwnzxB6CyFSFkxg/V66bsGy0xzbt3FKdcv+MBvU9mIn96SagzPgAa+JmUPFi/pdTcVfu3Hnc54EUbGieAJHmjDMyCTMnnsJtUPah0ZUAAWFWGFuWeABuipMHzK/Dp7EdMrr/H5kVb+pWrVtpyN2Blj5VoHDXOM0A/WT5Jfi9u6niizfeEVOZYyX1XHNn9tVHiTp2a+trnDqPbXp1G4TWusftD46oH64HgkYSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kUYTT8Tx; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kUYTT8Tx;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 Content-Type:Content-Disposition:In-Reply-To; b=V8zelljX4ksXiEUyao4CGwop0AItKavGv5CIhmHPSCofbAGOojkKVcxtXBfr4+bF3E+Au+mNLh+ylHwOB/bsLOg8SHjp2y/SIICWHmx0uOVvMdD9lPbarcggEyexMLX9KjabKw/IujriAxexiYtZ6hbcekhpfp9SE5oC7py475ktxWK0pZRy8k7gqQozvraNR+dFCi6tn57LHHY4/7w21aHln8igmm9DuGnTscSfyLKPHFAmbgVGegLK4i40FKO//lyqhFlH/84Ef1yS2Ih1sVzQ3c1a6hLYV0kJ6EArdvGPXUPhuuEaHKipsIoMZTGFKGYAHg1o/Ee7iRF1/qeEMA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn; spf=pass (client-ip=43.154.197.177; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org) smtp.mailfrom=shingroup.cn
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.154.197.177; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
+Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.154.197.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XYzL62Szdz2x9T
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2024 19:17:34 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 5129A5C53EF;
-	Thu, 24 Oct 2024 08:17:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 612D5C4CEC7;
-	Thu, 24 Oct 2024 08:16:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729757849;
-	bh=Ox/ZYsBrrmbPK3A2QSUcQ8QfXoa69FGJYXDNNRcdBnE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=kUYTT8Tx/x5v0ueXFlaIbTgM/tC1LFzcQH/Bk/9E/G27ofyIbDJ7VnB94NYJst0cv
-	 rwM3dJS8U0ddWOUUXyYJ5U2DbjwqikH39DsU8Z9vNeIPIaGV5iltmAX+1Y07CtyHuu
-	 qjH8xAIYsTm3k2jYsPE3Yg78rgh4kjznfSO7VPR6GqKUwnNvv6GGqa5UsKhK6x1lWv
-	 w5QasDDvCUMmBgmW/lX8F5rn9hH0iBupLlusSquog8hp4ocLfovmnzNHmy5eiFqmmK
-	 d1E2Of3Az/DoYE4MNq3gGFDCWEofW+6fRLAOpgssfQgrtruzoRtxJno9OxgV2pJlkI
-	 Cl6tQ0r75+5yg==
-Date: Thu, 24 Oct 2024 11:13:11 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Nathan Chancellor <nathan@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andy Lutomirski <luto@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
-	Brian Cain <bcain@quicinc.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Guo Ren <guoren@kernel.org>, Helge Deller <deller@gmx.de>,
-	Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Kent Overstreet <kent.overstreet@linux.dev>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Michal Simek <monstr@monstr.eu>, Oleg Nesterov <oleg@redhat.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Richard Weinberger <richard@nod.at>,
-	Russell King <linux@armlinux.org.uk>, Song Liu <song@kernel.org>,
-	Stafford Horne <shorne@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Vineet Gupta <vgupta@kernel.org>, Will Deacon <will@kernel.org>,
-	bpf@vger.kernel.org, linux-alpha@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-mm@kvack.org,
-	linux-modules@vger.kernel.org, linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
-	linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-	linux-trace-kernel@vger.kernel.org, linux-um@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
-	sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH v6 6/8] x86/module: prepare module loading for ROX
- allocations of text
-Message-ID: <ZxoBlwkh528r-vef@kernel.org>
-References: <20241016122424.1655560-1-rppt@kernel.org>
- <20241016122424.1655560-7-rppt@kernel.org>
- <20241021221519.GA3567210@thelio-3990X>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XYzxZ5cvnz2xtK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2024 19:44:50 +1100 (AEDT)
+X-QQ-mid: bizesmtpsz9t1729759397tyg969r
+X-QQ-Originating-IP: F4j1YRIOQd8QQeb0FCatxM/m13zHDva7rd0KWi104eI=
+Received: from HX09040029.powercore.com.cn ( [180.171.104.254])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Thu, 24 Oct 2024 16:43:14 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 12981368116427560855
+Date: Thu, 24 Oct 2024 16:43:04 +0800
+From: Luming Yu <luming.yu@shingroup.cn>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	npiggin <npiggin@gmail.com>, "luming.yu" <luming.yu@gmail.com>
+Subject: Re: [PATCH 1/7] powerpc/entry: convert to common and generic entry
+Message-ID: <55B30F12C81A25B9+ZxoGx55aKtK7pSNx@HX09040029.powercore.com.cn>
+References: <88E2581B1D024E9A+20241012035621.1245-3-luming.yu@shingroup.cn>
+ <e9595d8b-d1e2-4c6a-b097-6f4f08d29866@csgroup.eu>
+ <tencent_381ACB160B890CC46678170E@qq.com>
+ <87o73b37pw.fsf@mail.lhotse>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,128 +58,280 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20241021221519.GA3567210@thelio-3990X>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87o73b37pw.fsf@mail.lhotse>
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtpsz:shingroup.cn:qybglogicsvrgz:qybglogicsvrgz8a-1
+X-QQ-XMAILINFO: OO87pPbfd04fXqrus5GM8rNOk7ewXC8ypwJOrvZ5Jdq9pNdqbaTG3CN1
+	9HswsiDDlLiGuyA7vJP4wKR4AAtOR3on1C1zwbtUgadz/+zrsi8Kf3rxNIyTO2pdShgVeOC
+	Zlx81Q7RisPOX9NbTrhGM7BtzSlg63FaT2/0eeyk01NYTZn9I/Jw+cwjKM+/tj83lJA8r6s
+	fNe01e7YzwSZrRpa21r5oLf9U0YO4lD7hxYG6oMnaUrsyOM7t6xUWp9i5LS66492S6NkoFN
+	22PToeLgr424RiNgZIuNg3YhjxT6WvpsmjJ+U/UxkG4/ffIjK4NPbYo/Ak/7xF/aORjgkaj
+	lxeeXo0wOMARHHkLuuZJ91RUAgVhuxQmJvM19pfOt5gFwQhvtAE1rP5hU1t+DU9upoedpZA
+	FcYIBFOOtfaiHwkX6tZoCbvtcAv/2BFllJ51h0FvIEN9i2PcJbm44ZMSc+ecScxNljsydcs
+	GJo6Gq4EoqSWuZWosvNnzWqENY4/YDJywKVC1yvuekICfMqj0FbIsYRTfzJJPO9BkjjQCsW
+	4jZj2LxE708yyZn0vBcAf8UYCmCl65rP75THvKaby4k58k+cAECV6Jwp5Oyt/0BiF/yHk9L
+	1vvWILf0QDqbS53DKoJsBUdXLWIeY43Fn2ZBPWlh6b2WzFKCgYQA4T6X8+FfJ565cLtXH06
+	xG7jgRlsn/+OZV+kwU1vVDgI6bJJLD1ARm9aeZCrgFGXIdIxo2j+VFpyoxN2OX5zRzOtppQ
+	6kCAQbPIMk+ya/uprZEwA+9q5MImIOpgRUtnSCM0DlLfMxLZLnjEP/lzO4igQAftlf7+uDx
+	vbmlA0KVKFSqRu+LNJt+JGtiqrW92Pk9A3Mw0KLn90dUM8OD9I4LTiRPM9Q8x7ptsum3B0H
+	3qSS4iecW8SuJXk+uh+tR7P/Behb8ed7m+r5LXf0wzm15i8wDeVaFTICQJrwZuupNyaZdKA
+	LKG41yP0AW3KvZA==
+X-QQ-XMRINFO: OD9hHCdaPRBwq3WW+NvGbIU=
+X-QQ-RECHKSPAM: 0
 
-Hi Nathan,
+On Wed, Oct 23, 2024 at 12:53:47PM +1100, Michael Ellerman wrote:
+> "虞陆铭" <luming.yu@shingroup.cn> writes:
+> >>Le 12/10/2024 à 05:56, Luming Yu a écrit :
+> >>> convert powerpc entry code in syscall and fault to use syscall_work
+> >>> and irqentry_state as well as common calls implemented in generic
+> >>> entry infrastructure.
+> >>> 
+> >>> Signed-off-by: Luming Yu <luming.yu@shingroup.cn>
+> >>> ---
+> >>>   arch/powerpc/Kconfig                   | 1 +
+> >>>   arch/powerpc/include/asm/hw_irq.h      | 5 +++++
+> >>>   arch/powerpc/include/asm/processor.h   | 6 ++++++
+> >>>   arch/powerpc/include/asm/syscall.h     | 5 +++++
+> >>>   arch/powerpc/include/asm/thread_info.h | 1 +
+> >>>   arch/powerpc/kernel/syscall.c          | 5 ++++-
+> >>>   arch/powerpc/mm/fault.c                | 3 +++
+> >>>   7 files changed, 25 insertions(+), 1 deletion(-)
+> >>> 
+> >>
+> >>...
+> >>
+> >>> diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
+> >>> index 77fedb190c93..e0338bd8d383 100644
+> >>> --- a/arch/powerpc/kernel/syscall.c
+> >>> +++ b/arch/powerpc/kernel/syscall.c
+> >>> @@ -3,6 +3,7 @@
+> >>>   #include <linux/compat.h>
+> >>>   #include <linux/context_tracking.h>
+> >>>   #include <linux/randomize_kstack.h>
+> >>> +#include <linux/entry-common.h>
+> >>>   
+> >>>   #include <asm/interrupt.h>
+> >>>   #include <asm/kup.h>
+> >>> @@ -131,7 +132,7 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+> >>>   		 * and the test against NR_syscalls will fail and the return
+> >>>   		 * value to be used is in regs->gpr[3].
+> >>>   		 */
+> >>> -		r0 = do_syscall_trace_enter(regs);
+> >>> +		r0 = syscall_enter_from_user_mode(regs, r0);
+> >>
+> >>Can you provide details on how this works ?
+> > I assume the common entry would take over th details.
+> > So I just made the switch from the high level call.
+> >
+ > As you said as the subtle ABI requirement about regs->r3 needs to
+> > be restored, I'm wondering which test can capture the lost
+> > ABI feature. As simple Boot test is insufficient, what is the test set
+> > that can capture it?
+> 
+> The seccomp selftest did exercise it back when I originally wrote that
+> code. I don't know for sure that it still does, but that would be a good
+> start.
+> 
+> It's in tools/testing/selftests/seccomp/
+Thanks for the hint.
+It seems to be running into some not ok cases the way hits the bpf test that doesn't return. 
+I will re-run with the same kernel w/o the patch-set to sort out the cases that could be
+caused by the patch Then I will try to debug out the root cause.
+[root@10 seccomp]# make -C tools/testing/selftests TARGETS=seccomp run_tests
+make: Entering directory '/root/linux-ci/tools/testing/selftests/seccomp'
+make: *** tools/testing/selftests: No such file or directory.  Stop.
+make: Leaving directory '/root/linux-ci/tools/testing/selftests/seccomp'
+[root@10 seccomp]# pwd
+/root/linux-ci/tools/testing/selftests/seccomp
+[root@10 seccomp]# cd /root/linux-ci/
+[root@10 linux-ci]# make -C tools/testing/selftests TARGETS=seccomp run_tests
+make: Entering directory '/root/linux-ci/tools/testing/selftests'
+make[1]: Nothing to be done for 'all'.
+TAP version 13
+1..2
+# timeout set to 180
+# selftests: seccomp: seccomp_bpf
+# TAP version 13
+# 1..98
+# # Starting 98 tests from 8 test cases.
+# #  RUN           global.kcmp ...
+# #            OK  global.kcmp
+# ok 1 global.kcmp
+# #  RUN           global.mode_strict_support ...
+# #            OK  global.mode_strict_support
+# ok 2 global.mode_strict_support
+# #  RUN           global.mode_strict_cannot_call_prctl ...
+# # seccomp_bpf.c:359:mode_strict_cannot_call_prctl:Expected 0 (0) == true (1)
+# # seccomp_bpf.c:360:mode_strict_cannot_call_prctl:Unreachable!
+# # mode_strict_cannot_call_prctl: Test exited normally instead of by signal (code: 1)
+# #          FAIL  global.mode_strict_cannot_call_prctl
+# not ok 3 global.mode_strict_cannot_call_prctl
+# #  RUN           global.no_new_privs_support ...
+# #            OK  global.no_new_privs_support
+# ok 4 global.no_new_privs_support
+# #  RUN           global.mode_filter_support ...
+# #            OK  global.mode_filter_support
+# ok 5 global.mode_filter_support
+# #  RUN           global.mode_filter_without_nnp ...
+# #            OK  global.mode_filter_without_nnp
+# ok 6 global.mode_filter_without_nnp
+# #  RUN           global.filter_size_limits ...
+# #            OK  global.filter_size_limits
+# ok 7 global.filter_size_limits
+# #  RUN           global.filter_chain_limits ...
+# #            OK  global.filter_chain_limits
+# ok 8 global.filter_chain_limits
+# #  RUN           global.mode_filter_cannot_move_to_strict ...
+# #            OK  global.mode_filter_cannot_move_to_strict
+# ok 9 global.mode_filter_cannot_move_to_strict
+# #  RUN           global.mode_filter_get_seccomp ...
+# #            OK  global.mode_filter_get_seccomp
+# ok 10 global.mode_filter_get_seccomp
+# #  RUN           global.ALLOW_all ...
+# #            OK  global.ALLOW_all
+# ok 11 global.ALLOW_all
+# #  RUN           global.empty_prog ...
+# #            OK  global.empty_prog
+# ok 12 global.empty_prog
+# #  RUN           global.log_all ...
+# #            OK  global.log_all
+# ok 13 global.log_all
+# #  RUN           global.unknown_ret_is_kill_inside ...
+# # seccomp_bpf.c:621:unknown_ret_is_kill_inside:Expected 0 (0) == syscall(__NR_getpid) (1406)
+# # seccomp_bpf.c:622:unknown_ret_is_kill_inside:getpid() shouldn't ever return
+# # unknown_ret_is_kill_inside: Test exited normally instead of by signal (code: 1)
+# #          FAIL  global.unknown_ret_is_kill_inside
+# not ok 14 global.unknown_ret_is_kill_inside
+# #  RUN           global.unknown_ret_is_kill_above_allow ...
+# # seccomp_bpf.c:643:unknown_ret_is_kill_above_allow:Expected 0 (0) == syscall(__NR_getpid) (1407)
+# # seccomp_bpf.c:644:unknown_ret_is_kill_above_allow:getpid() shouldn't ever return
+# # unknown_ret_is_kill_above_allow: Test exited normally instead of by signal (code: 1)
+# #          FAIL  global.unknown_ret_is_kill_above_allow
+# not ok 15 global.unknown_ret_is_kill_above_allow
+# #  RUN           global.KILL_all ...
+# # KILL_all: Test exited normally instead of by signal (code: 0)
+# #          FAIL  global.KILL_all
+# not ok 16 global.KILL_all
+# #  RUN           global.KILL_one ...
+# # seccomp_bpf.c:690:KILL_one:Expected 0 (0) == syscall(__NR_getpid) (1409)
+# # KILL_one: Test exited normally instead of by signal (code: 1)
+# #          FAIL  global.KILL_one
+# not ok 17 global.KILL_one
+# #  RUN           global.KILL_one_arg_one ...
+# # seccomp_bpf.c:726:KILL_one_arg_one:Expected 0 (0) == syscall(__NR_times, &fatal_address) (4295224651)
+# # KILL_one_arg_one: Test exited normally instead of by signal (code: 1)
+# #          FAIL  global.KILL_one_arg_one
+# not ok 18 global.KILL_one_arg_one
+# #  RUN           global.KILL_one_arg_six ...
+# # KILL_one_arg_six: Test exited normally instead of by signal (code: 0)
+# #          FAIL  global.KILL_one_arg_six
+# not ok 19 global.KILL_one_arg_six
+# #  RUN           global.KILL_thread ...
+# # seccomp_bpf.c:856:KILL_thread:Expected SIBLING_EXIT_FAILURE (195951310) != (unsigned long)status (195951310)
+# # seccomp_bpf.c:881:KILL_thread:Expected 0 (0) != WIFEXITED(status) (0)
+# # KILL_thread: Test terminated by assertion
+# #          FAIL  global.KILL_thread
+# not ok 20 global.KILL_thread
+# #  RUN           global.KILL_process ...
+# # seccomp_bpf.c:856:KILL_process:Expected SIBLING_EXIT_FAILURE (195951310) != (unsigned long)status (195951310)
+# # seccomp_bpf.c:901:KILL_process:Expected SIGSYS (31) == WTERMSIG(status) (6)
+# # KILL_process: Test terminated by assertion
+# #          FAIL  global.KILL_process
+# not ok 21 global.KILL_process
+# #  RUN           global.KILL_unknown ...
+# # seccomp_bpf.c:856:KILL_unknown:Expected SIBLING_EXIT_FAILURE (195951310) != (unsigned long)status (195951310)
+# # seccomp_bpf.c:922:KILL_unknown:Expected SIGSYS (31) == WTERMSIG(status) (6)
+# # KILL_unknown: Test terminated by assertion
+# #          FAIL  global.KILL_unknown
+# not ok 22 global.KILL_unknown
+# #  RUN           global.arg_out_of_range ...
+# #            OK  global.arg_out_of_range
+# ok 23 global.arg_out_of_range
+# #  RUN           global.ERRNO_valid ...
+# # seccomp_bpf.c:974:ERRNO_valid:Expected E2BIG (7) == errno (9)
+# # ERRNO_valid: Test failed
+# #          FAIL  global.ERRNO_valid
+# not ok 24 global.ERRNO_valid
+# #  RUN           global.ERRNO_zero ...
+# # seccomp_bpf.c:992:ERRNO_zero:Expected 0 (0) == read(-1, NULL, 0) (-1)
+# # ERRNO_zero: Test failed
+# #          FAIL  global.ERRNO_zero
+# not ok 25 global.ERRNO_zero
+# #  RUN           global.ERRNO_capped ...
+# # seccomp_bpf.c:1014:ERRNO_capped:Expected 4095 (4095) == errno (9)
+# # ERRNO_capped: Test failed
+# #          FAIL  global.ERRNO_capped
+# not ok 26 global.ERRNO_capped
+# #  RUN           global.ERRNO_order ...
+# # seccomp_bpf.c:1045:ERRNO_order:Expected 12 (12) == errno (9)
+# # ERRNO_order: Test failed
+# #          FAIL  global.ERRNO_order
+# not ok 27 global.ERRNO_order
+# #  RUN           global.negative_ENOSYS ...
+# #            OK  global.negative_ENOSYS
+# ok 28 global.negative_ENOSYS
+# #  RUN           global.seccomp_syscall ...
+# #            OK  global.seccomp_syscall
+# ok 29 global.seccomp_syscall
+# #  RUN           global.seccomp_syscall_mode_lock ...
+# #            OK  global.seccomp_syscall_mode_lock
+# ok 30 global.seccomp_syscall_mode_lock
+# #  RUN           global.detect_seccomp_filter_flags ...
+# #            OK  global.detect_seccomp_filter_flags
+# ok 31 global.detect_seccomp_filter_flags
+# #  RUN           global.TSYNC_first ...
+# #            OK  global.TSYNC_first
+# ok 32 global.TSYNC_first
+# #  RUN           global.syscall_restart ...
+# # syscall_restart: Test terminated by timeout
+# #          FAIL  global.syscall_restart
+# not ok 33 global.syscall_restart
+# #  RUN           global.filter_flag_log ...
+# # seccomp_bpf.c:3239:filter_flag_log:Expected 0 (0) == syscall(__NR_getpid) (1482)
+# # filter_flag_log: Test exited normally instead of by signal (code: 1)
+# #          FAIL  global.filter_flag_log
+# not ok 34 global.filter_flag_log
+# #  RUN           global.get_action_avail ...
+# #            OK  global.get_action_avail
+# ok 35 global.get_action_avail
+# #  RUN           global.get_metadata ...
+# #            OK  global.get_metadata
+# ok 36 global.get_metadata
+# #  RUN           global.user_notification_basic ...
+# # seccomp_bpf.c:3397:user_notification_basic:Expected 0 (0) == WEXITSTATUS(status) (1)
+# # user_notification_basic: Test terminated by timeout
+# #          FAIL  global.user_notification_basic
+# not ok 37 global.user_notification_basic
+# #  RUN           global.user_notification_with_tsync ...
+# #            OK  global.user_notification_with_tsync
+# ok 38 global.user_notification_with_tsync
+# #  RUN           global.user_notification_kill_in_middle ...
+# # user_notification_kill_in_middle: Test terminated by timeout
+# #          FAIL  global.user_notification_kill_in_middle
+# not ok 39 global.user_notification_kill_in_middle
+# #  RUN           global.user_notification_signal ...
+# # user_notification_signal: Test terminated by timeout
+# #          FAIL  global.user_notification_signal
+# not ok 40 global.user_notification_signal
+# #  RUN           global.user_notification_closed_listener ...
+# # seccomp_bpf.c:3647:user_notification_closed_listener:Expected 0 (0) == WEXITSTATUS(status) (1)
+# # user_notification_closed_listener: Test failed
+# #          FAIL  global.user_notification_closed_listener
+# not ok 41 global.user_notification_closed_listener
+# #  RUN           global.user_notification_child_pid_ns ...
+# # user_notification_child_pid_ns: Test terminated by timeout
+# #          FAIL  global.user_notification_child_pid_ns
+# not ok 42 global.user_notification_child_pid_ns
+# #  RUN           global.user_notification_sibling_pid_ns ...
+# # seccomp_bpf.c:3728:user_notification_sibling_pid_ns:Expected 0 (0) == WEXITSTATUS(status) (1)
+# # seccomp_bpf.c:3764:user_notification_sibling_pid_ns:Expected 0 (0) == WEXITSTATUS(status) (1)
 
-On Mon, Oct 21, 2024 at 03:15:19PM -0700, Nathan Chancellor wrote:
-> Hi Mike,
-> 
-> On Wed, Oct 16, 2024 at 03:24:22PM +0300, Mike Rapoport wrote:
-> > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-> > 
-> > When module text memory will be allocated with ROX permissions, the
-> > memory at the actual address where the module will live will contain
-> > invalid instructions and there will be a writable copy that contains the
-> > actual module code.
-> > 
-> > Update relocations and alternatives patching to deal with it.
-> > 
-> > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> 
-> Sorry that you have to hear from me again :) It seems that module
-> loading is still broken with this version of the patch, which is
-> something that I missed in my earlier testing since I only test a
-> monolithic kernel with my regular virtual machine testing. If I build
-> and install the kernel and modules in the VM via a distribution package,
-> I get the following splat at boot:
->
->   Starting systemd-udevd version 256.7-1-arch
->   [    0.882312] SMP alternatives: Something went horribly wrong trying to rewrite the CFI implementation.
->   [    0.883526] CFI failure at do_one_initcall+0x128/0x380 (target: init_module+0x0/0xff0 [crc32c_intel]; expected type: 0x0c7a3a22)
->   [    0.884802] Oops: invalid opcode: 0000 [#1] PREEMPT SMP NOPTI
->   [    0.885434] CPU: 3 UID: 0 PID: 157 Comm: modprobe Tainted: G        W          6.12.0-rc3-debug-next-20241021-06324-g63b3ff03d91a #1 291f0fd70f293827edec681d3c5304f5807a3c7b
->   [    0.887084] Tainted: [W]=WARN
->   [    0.887409] Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS unknown 2/2/2022
->   [    0.888241] RIP: 0010:do_one_initcall+0x128/0x380
->   [    0.888720] Code: f3 0f 1e fa 41 be ff ff ff ff e9 0f 01 00 00 0f 1f 44 00 00 41 81 e7 ff ff ff 7f 49 89 db 41 ba de c5 85 f3 45 03 53 f1 74 02 <0f> 0b 41 ff d3 0f 1f 00 41 89 c6 0f 1f 44 00 00 c6 04 24 00 65 8b
->   [    0.890598] RSP: 0018:ff3f93e5c052f970 EFLAGS: 00010217
->   [    0.891129] RAX: ffffffffb4c105b8 RBX: ffffffffc0602010 RCX: 0000000000000000
->   [    0.891850] RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffffffc0602010
->   [    0.892588] RBP: ff3f93e5c052fc88 R08: 0000000000000020 R09: 0000000000000000
->   [    0.893305] R10: 000000002a378b84 R11: ffffffffc0602010 R12: 00000000000069c6
->   [    0.894003] R13: ff1f0090c5596900 R14: ff1f0090c15a55c0 R15: 0000000000000000
->   [    0.894693] FS:  00007ffb712c0740(0000) GS:ff1f00942fb80000(0000) knlGS:0000000000000000
->   [    0.895453] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->   [    0.896020] CR2: 00007ffffc4424c8 CR3: 0000000100af4002 CR4: 0000000000771ef0
->   [    0.896698] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->   [    0.897391] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
->   [    0.898077] PKRU: 55555554
->   [    0.898337] Call Trace:
->   [    0.898577]  <TASK>
->   [    0.898784]  ? __die_body+0x6a/0xb0
->   [    0.899132]  ? die+0xa4/0xd0
->   [    0.899413]  ? do_trap+0xa6/0x180
->   [    0.899740]  ? do_one_initcall+0x128/0x380
->   [    0.900130]  ? do_one_initcall+0x128/0x380
->   [    0.900523]  ? handle_invalid_op+0x6a/0x90
->   [    0.900917]  ? do_one_initcall+0x128/0x380
->   [    0.901311]  ? exc_invalid_op+0x38/0x60
->   [    0.901679]  ? asm_exc_invalid_op+0x1a/0x20
->   [    0.902081]  ? __cfi_init_module+0x10/0x10 [crc32c_intel 5331566c5540f82df397056699bc4ddac8be1306]
->   [    0.902933]  ? __cfi_init_module+0x10/0x10 [crc32c_intel 5331566c5540f82df397056699bc4ddac8be1306]
->   [    0.903781]  ? __cfi_init_module+0x10/0x10 [crc32c_intel 5331566c5540f82df397056699bc4ddac8be1306]
->   [    0.904634]  ? do_one_initcall+0x128/0x380
->   [    0.905028]  ? idr_alloc_cyclic+0x139/0x1d0
->   [    0.905437]  ? security_kernfs_init_security+0x54/0x190
->   [    0.905958]  ? __kernfs_new_node+0x1ba/0x240
->   [    0.906377]  ? sysfs_create_dir_ns+0x8f/0x140
->   [    0.906795]  ? kernfs_link_sibling+0xf2/0x110
->   [    0.907211]  ? kernfs_activate+0x2c/0x110
->   [    0.907599]  ? kernfs_add_one+0x108/0x150
->   [    0.907981]  ? __kernfs_create_file+0x75/0xa0
->   [    0.908407]  ? sysfs_create_bin_file+0xc6/0x120
->   [    0.908853]  ? __vunmap_range_noflush+0x347/0x420
->   [    0.909313]  ? _raw_spin_unlock+0xe/0x30
->   [    0.909692]  ? free_unref_page+0x22c/0x4c0
->   [    0.910097]  ? __kmalloc_cache_noprof+0x1a8/0x360
->   [    0.910546]  do_init_module+0x60/0x250
->   [    0.910910]  __se_sys_finit_module+0x316/0x420
->   [    0.911351]  do_syscall_64+0x88/0x170
->   [    0.911699]  ? __x64_sys_lseek+0x68/0xb0
->   [    0.912077]  ? syscall_exit_to_user_mode+0x97/0xc0
->   [    0.912538]  ? do_syscall_64+0x94/0x170
->   [    0.912902]  ? syscall_exit_to_user_mode+0x97/0xc0
->   [    0.913353]  ? do_syscall_64+0x94/0x170
->   [    0.913709]  ? clear_bhb_loop+0x45/0xa0
->   [    0.914071]  ? clear_bhb_loop+0x45/0xa0
->   [    0.914428]  ? clear_bhb_loop+0x45/0xa0
->   [    0.914767]  entry_SYSCALL_64_after_hwframe+0x76/0x7e
->   [    0.915089] RIP: 0033:0x7ffb713dc1fd
->   [    0.915316] Code: ff c3 66 2e 0f 1f 84 00 00 00 00 00 90 f3 0f 1e fa 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d e3 fa 0c 00 f7 d8 64 89 01 48
->   [    0.916491] RSP: 002b:00007ffffc4454a8 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
->   [    0.916964] RAX: ffffffffffffffda RBX: 000055f28c6a5420 RCX: 00007ffb713dc1fd
->   [    0.917413] RDX: 0000000000000000 RSI: 000055f26c40cc03 RDI: 0000000000000003
->   [    0.917858] RBP: 00007ffffc445560 R08: 0000000000000001 R09: 00007ffffc4454f0
->   [    0.918302] R10: 0000000000000040 R11: 0000000000000246 R12: 000055f26c40cc03
->   [    0.918748] R13: 0000000000060000 R14: 000055f28c6a4b50 R15: 000055f28c6ac5b0
->   [    0.919211]  </TASK>
->   [    0.919356] Modules linked in: crc32c_intel(+)
->   [    0.919661] ---[ end trace 0000000000000000 ]---
-> 
-> I also see some other WARNs interleaved along the lines of
-> 
->   [    0.982759] no CFI hash found at: 0xffffffffc0608000 ffffffffc0608000 cc cc cc cc cc
->   [    0.982767] WARNING: CPU: 5 PID: 170 at arch/x86/kernel/alternative.c:1204 __apply_fineibt+0xa6d/0xab0
-> 
-> The console appears to be a bit of a mess after that initial message.
-> 
-> If there is any more information I can provide or patches I can test, I
-> am more than happy to do so.
- 
-I've got similar report from kbuild bot a few days ago:
-https://lore.kernel.org/all/202410202257.b7edc376-lkp@intel.com
 
-I fixed fineibt handling in v7:
-https://lore.kernel.org/linux-mm/20241023162711.2579610-1-rppt@kernel.org
-
-> Cheers,
-> Nathan
+> 
+> cheers
 > 
 
--- 
-Sincerely yours,
-Mike.
 
