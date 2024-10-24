@@ -1,55 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-2543-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2544-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A91B9D0BB74
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2024 08:49:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB0BCD0BB7C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Oct 2024 09:22:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XZ0311Wnpz30BW;
-	Thu, 24 Oct 2024 19:49:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::aa"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729759773;
-	cv=none; b=N/Is3C+71DbByGJvWcrH4WxP5Hd3cHxUUdxz1+NjLaD7VargR/OTs6qwI7PoeLCxSWqBGWG9gkxSyNXO0II/oFzT36N+q+6F45LdAyNYRCYkvycQ6kdXsfiKKyh5QEviWiaa3JMLFTVkGe+xDkC6Z+I00bPU5WsFrkY2iqFWbZIjAKK1/LPk5rTzf73PalAImZV0mLfubVjEJ0Pt2cODxN5+P4328turJ8hgmQF4dB82REmocbjsR4SQXT0J1spVuW9wQqFU4cGzhSmWovuYHRBYNCOTgBeNR0ZHCvispN5DG3OqVYl/DDYl19GFcsEvamKQMYVYaI1c9iyLhcXSQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZ0mc6rxTz2yDY;
+	Thu, 24 Oct 2024 20:22:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.58.86.151
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729761728;
+	cv=none; b=Bw6sqRm84+INIr6a3N/lsfXi4O6KVgJN/VpSsr1Aw0LgSXMD0FCRaBovn1UjJN1jvurFXjOWNzpA60LK2Zh3wyXkXVcXpcvJV43Z+RFEl9mbOpvSyanGMfBFwHYud84nP576OZlgFjQrnBcXYHoI8Ogdd1JvW0qj4g/f9vebYMgCTn1eqFrNqITojFeT4XoH+oIziwVbL6KwKh3BgLymJZ2G58lCyy4Mpz8fNfEGCzMt5vuk3ImFeGtBgRMYve1FTECwBukGWqARsWkLrNe9TJISZQRg7D/U4JU+gytr0z31ktPsBnC3+qTwrRKhuYj2M9RWhI4PSYvkfIegEpFl3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729759773; c=relaxed/relaxed;
-	bh=7A7SSI40hPXOoNVasTXPi3W2hqog0qAqPQKBVOcc5W8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NV/LJ+v8RiKiBiVne1LuExnfGY089k12S8YLIKZNi7eLgczUUNbeDge6T0GQhuBvY4qL8DCfsHcfLbSJHG+kuJXh7w9eqEcIR8Dg0Xq2IHnm1ApzP/caR+Q8UXOTn/hIpgA9Ev+9OROQCrpf2BHjCPXPyUGvSsEt0IFQUYpj83jef+SUXFBMmYYbUTLims8AFsy15gt6SlCgVELTjTtA+u7LBnsPJZO5JnQQg+DHzJGDbm+KxGIobW4Il5AMx2yy3fVLGHuG2NuPJ6xCPmywL+1eO3BmJNzXJcAHpvMp8CQNc8V6opnLpYuT0ZIWNlUiA6G8TU7WPusGjZTQkiE10g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=LWyQtjaS; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::aa; helo=out-170.mta1.migadu.com; envelope-from=andrew.jones@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=LWyQtjaS;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::aa; helo=out-170.mta1.migadu.com; envelope-from=andrew.jones@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 602 seconds by postgrey-1.37 at boromir; Thu, 24 Oct 2024 19:49:28 AEDT
-Received: from out-170.mta1.migadu.com (out-170.mta1.migadu.com [IPv6:2001:41d0:203:375::aa])
+	t=1729761728; c=relaxed/relaxed;
+	bh=ot4w3c9hBKlBKby8ZYf/0ibdMapkWvbdHhmI2aM9mvU=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 MIME-Version:Content-Type; b=Mlbq/lhD76zAFdU4n44Anlo2xSP6I8y/oVhz2RL/JE8sfLD981vyF5rDuE5gBL5yFqNjkRiVw5jcWe9jhVVrYooV5ywT95htFIgUr8L4IVfWuONE9aO4aRsKe1n2c8MoYvwLtIMwsHSuCbiY03RMlYCer60cMAR0pQVQqRB8JDuT6FIgb5wlpsc6+9v/FwDGib/gWNh/Bjb083grWP34AsiGSiUSTZB/L8aLwmfGSEVUfW7jtttXHTK8BscSFovCiBGeCDgqKU23kaSWTuz1skFASZBBkEA4A0p1XpxN5RiEJbjBB55mu4sB8qMYfsAEWAg7YgZfco/EIhrvIgTG9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ACULAB.COM; spf=pass (client-ip=185.58.86.151; helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com; receiver=lists.ozlabs.org) smtp.mailfrom=aculab.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ACULAB.COM
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aculab.com (client-ip=185.58.86.151; helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com; receiver=lists.ozlabs.org)
+Received: from eu-smtp-delivery-151.mimecast.com (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZ02w5Z8jz2xtK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2024 19:49:26 +1100 (AEDT)
-Date: Thu, 24 Oct 2024 10:38:51 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1729759135;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7A7SSI40hPXOoNVasTXPi3W2hqog0qAqPQKBVOcc5W8=;
-	b=LWyQtjaSFN8PSZnIMLn7qxaE4w4YSQZzifoc2B8ZTYKBm73KZn13CBkjYqVIaBDua0YJR3
-	Nw4koRUvJJafhZcS9w8kGN2XeLunS+/uoYmAlsC0JKclJLJs5rbjO+1lHR+oMq6UrvgGKt
-	z1GiV3cOFng4MgccmdxpXjIOl8tNPMU=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
-Cc: pbonzini@redhat.com, thuth@redhat.com, lvivier@redhat.com, 
-	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com, atishp@rivosinc.com, 
-	cade.richard@berkeley.edu, jamestiotio@gmail.com
-Subject: Re: [kvm-unit-tests PATCH v3 0/5] Support cross compiling with clang
-Message-ID: <20241024-cecbb361d7e3f21c7053408b@orel>
-References: <20240911091406.134240-7-andrew.jones@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZ0mb17zHz2xjv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2024 20:22:05 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
+ relay.mimecast.com with ESMTP with both STARTTLS and AUTH (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ uk-mta-149-T2Y4QON1NB2bSsVP32ehsQ-1; Thu, 24 Oct 2024 10:21:57 +0100
+X-MC-Unique: T2Y4QON1NB2bSsVP32ehsQ-1
+Received: from AcuMS.Aculab.com (10.202.163.6) by AcuMS.aculab.com
+ (10.202.163.6) with Microsoft SMTP Server (TLS) id 15.0.1497.48; Thu, 24 Oct
+ 2024 10:21:56 +0100
+Received: from AcuMS.Aculab.com ([::1]) by AcuMS.aculab.com ([::1]) with mapi
+ id 15.00.1497.048; Thu, 24 Oct 2024 10:21:56 +0100
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Linus Torvalds' <torvalds@linux-foundation.org>, Borislav Petkov
+	<bp@alien8.de>
+CC: Josh Poimboeuf <jpoimboe@kernel.org>, Andrew Cooper
+	<andrew.cooper3@citrix.com>, "Kirill A. Shutemov" <kirill@shutemov.name>,
+	"x86@kernel.org" <x86@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+	Peter Zijlstra <peterz@infradead.org>, Pawan Gupta
+	<pawan.kumar.gupta@linux.intel.com>, Waiman Long <longman@redhat.com>, "Dave
+ Hansen" <dave.hansen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>,
+	"Michael Ellerman" <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, Mark Rutland <mark.rutland@arm.com>
+Subject: RE: [PATCH] x86/uaccess: Avoid barrier_nospec() in copy_from_user()
+Thread-Topic: [PATCH] x86/uaccess: Avoid barrier_nospec() in copy_from_user()
+Thread-Index: AQHbJYiO0jpEiXw2TU+KrR/vXcxF6bKVniVg
+Date: Thu, 24 Oct 2024 09:21:56 +0000
+Message-ID: <c40199a2a319440d89bfcc5c06ec4b3a@AcuMS.aculab.com>
+References: <CAHk-=wjAoiCmPSi1OwrJofifmtRYEzecjUeu3UUUELMbJHopUA@mail.gmail.com>
+ <CAHk-=wgDrG-aKVGrd-9gQsC0pMs936oo8XEFmEn6ciaT9=nfDg@mail.gmail.com>
+ <20241014035436.nsleqolyj3xxysrr@treble>
+ <CAHk-=widMFN2wDeS2K65f8FnW8L6gPZa6CNO4OWkv--0G2LXhw@mail.gmail.com>
+ <r5ruxmop7vewd7aq6gu2zve4hfmcu4byhlebygswbqkgz43qfq@rsajyfiypcsd>
+ <064d7068-c666-49f0-b7df-774c2e281abc@citrix.com>
+ <20241020224444.zhoscljpe7di5yv3@treble>
+ <CAHk-=wikKPKDECP=zBEEnxBB44n-uLsnMoOG=aCy6FwDNc9mxA@mail.gmail.com>
+ <20241020231112.erso2jzqwkbin4kh@treble>
+ <CAHk-=wiUaWnHGgusaMOodypgm7bVztMVQkB6JUvQ0HoYJqDNYA@mail.gmail.com>
+ <20241023094448.GAZxjFkEOOF_DM83TQ@fat_crate.local>
+ <CAHk-=wgDKPt554sAyzHvW1U+Opx_2Ofu4znjjroMWr1x90SU7A@mail.gmail.com>
+ <CAHk-=wjpE4hgOs0q7-jZ+=RsCD=YX9R=V3SCprzg0GOUQfCHNw@mail.gmail.com>
+In-Reply-To: <CAHk-=wjpE4hgOs0q7-jZ+=RsCD=YX9R=V3SCprzg0GOUQfCHNw@mail.gmail.com>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,50 +83,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20240911091406.134240-7-andrew.jones@linux.dev>
-X-Migadu-Flow: FLOW_OUT
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
 
-On Wed, Sep 11, 2024 at 11:14:07AM +0200, Andrew Jones wrote:
-> Modify configure to allow --cc=clang and a cross-prefix to be specified
-> together (as well as --cflags). This allows compiling with clang, but
-> using cross binutils for everything else, including the linker. So far
-> tested on riscv 32- and 64-bit and aarch64 (with some hacks to the code
-> to get it to compile - which is why there's no gitlab-ci patch for aarch64
-> in this series). I suspect it should work for other architectures too.
-> 
-> v3:
->  - Add README patch for cross-compiling, clang, and cross-clang [Nick]
->  - Add comment to the commenting-out of mstrict-align [Nick]
->  - Add the reason to ignore warnings vs. fix code to commit message of
->    patch2
->  - Picked up Nick's tags
-> v2:
->  - fix building with clang and --config-efi by suppressing a warning
->  - added riscv clang efi build to CI
->  - picked up Thomas's tags
-> 
-> Andrew Jones (5):
->   riscv: Drop mstrict-align
->   Makefile: Prepare for clang EFI builds
->   configure: Support cross compiling with clang
->   riscv: gitlab-ci: Add clang build tests
->   README: Add cross and clang recipes
-> 
->  .gitlab-ci.yml | 43 +++++++++++++++++++++++++++++++++++++++++++
->  Makefile       |  2 ++
->  README.md      | 22 ++++++++++++++++++++++
->  configure      | 11 ++++++++---
->  riscv/Makefile |  4 +++-
->  5 files changed, 78 insertions(+), 4 deletions(-)
-> 
-> -- 
-> 2.46.0
->
+RnJvbTogTGludXMgVG9ydmFsZHMNCj4gU2VudDogMjMgT2N0b2JlciAyMDI0IDIxOjA4DQo+IA0K
+PiBPbiBXZWQsIDIzIE9jdCAyMDI0IGF0IDEyOjE3LCBMaW51cyBUb3J2YWxkcw0KPiA8dG9ydmFs
+ZHNAbGludXgtZm91bmRhdGlvbi5vcmc+IHdyb3RlOg0KPiA+DQo+ID4gTk9URSEgVGhpcyBpcyBv
+YnZpb3VzbHkgdW50ZXN0ZWQgYW5kIEkgZGlkbid0IGNoZWNrIHRoYXQgaXQgZG9lcyB0aGUNCj4g
+PiBjbXAvc2JiL29yIHRoZSByaWdodCB3YXkgYXJvdW5kLg0KPiANCj4gV2VsbCwgaXQgYm9vdHMu
+IFRoZSBjb2RlIGdlbmVyYXRpb24gKGZyb20gc3RybmNweV9mcm9tX3VzZXIoKSkgc2VlbXMgb2s6
+DQo+IA0KPiAgICAgICBtb3ZhYnMgJDB4MTIzNDU2Nzg5YWJjZGVmLCVyY3gNCj4gICAgICAgY21w
+ICAgICVyc2ksJXJjeA0KPiAgICAgICBzYmIgICAgJWVjeCwlZWN4DQo+ICAgICAgIG9yICAgICAl
+cnNpLCVyY3gNCj4gDQo+IHdoZXJlIG9idmlvdXNseSB0aGF0IGNvbnN0YW50IGlzIHRoZSBib2d1
+cyBwcmUtaW5pdGlhbGl6ZWQgdmFsdWUsIG5vdA0KPiB0aGUgYWN0dWFsIHJ1bnRpbWUgdmFsdWUu
+DQoNCldvdWxkIGl0IGJlIGJldHRlciB0byBtYWtlIHRoZSAnYm9ndXMnIGNvbnN0YW50IG9uZSB0
+aGF0IG1ha2VzDQphbGwgYWNjZXNzZXMgZmFpbD8NClNvIHlvdSBzb29uIGZpbmQgb3V0IGl0IGFu
+eSBjb2RlIGRvZXNuJ3QgZ2V0IHBhdGNoZWQuDQoNCkkgYWxzbyB3b25kZXIgaG93IGJpZyB0aGUg
+dGFibGUgb2YgYWRkcmVzc2VzIHRvIHBhdGNoIGlzLg0KSWYgdGhhdCBnZXRzIGludG8gaW5saW5l
+ZCBmdW5jdGlvbnMgaXQgY291bGQgYmUgYmlnLg0KDQpPVE9IIGhhdmluZyBhIHJlYWwgZnVuY3Rp
+b24gdGhhdCBkb2VzIGFjY2Vzc19vaygpLCBjbGFjIGFuZCBhZGRyZXNzDQptYXNraW5nIG1heSBu
+b3QgcHJvYmxlbS4NCg0KRXNwZWNpYWxseSBpZiB0aGVyZSBpcyBhbHdheXMgYSAoUEFHRSBzaXpl
+ZCkgZ2FwIGJldHdlZW4gdGhlIGhpZ2hlc3QNCnVzZXIgYWRkcmVzcyBhbmQgdGhlIGxvd2VzdCBr
+ZXJuZWwgYWRkcmVzcyBzbyB0aGUgJ3NpemUnIGFyZ3VtZW50DQp0byBhY2Nlc3Nfb2soKSBjYW4g
+YmUgaWdub3JlZCBvbiB0aGUgYXNzdW1wdGlvbiB0aGF0IHRoZSBhY2Nlc3Nlcw0KYXJlIChyZWFz
+b25hYmx5KSBsaW5lYXIuDQoNCglEYXZpZA0KDQotDQpSZWdpc3RlcmVkIEFkZHJlc3MgTGFrZXNp
+ZGUsIEJyYW1sZXkgUm9hZCwgTW91bnQgRmFybSwgTWlsdG9uIEtleW5lcywgTUsxIDFQVCwgVUsN
+ClJlZ2lzdHJhdGlvbiBObzogMTM5NzM4NiAoV2FsZXMpDQo=
 
-Merged
-
-Thanks,
-drew
 
