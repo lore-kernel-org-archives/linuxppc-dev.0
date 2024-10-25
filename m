@@ -1,75 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-2573-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2574-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9898D11702
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2024 06:43:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BD18D11717
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2024 07:40:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XZYBp1CPHz2xk1;
-	Fri, 25 Oct 2024 17:43:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729838594;
-	cv=none; b=CKt807X8jqc0uPMsldhR1cUUguZBL2Heh1Z8t6RDGfpLAb0jrwMfHNePjVnntjSgAoGiBtaRpZwZ1WVg32W00pJpeztdiuBcAKilhOZhqhy8FxrCpumXPjrlZ6OFNJpIg7B5k1CZ4hSPqqaTfkIlO6w2icGgQKcagriAgaERwHlD8j1CGFzpuiX4TmDWax/cvRaAhyVtDIo8Dpf/gdVkknY3tTpY/XW2EecogJ64yEwe6iURyuNsvKAcl0DL0We7gJIqzlSUMyyzOhKDzBKVh7l+oV8w+lBWjlkWgtxW6Om3hImBys15Ek0bAnyKgs2XEX9o2CLOk5sZH0ZqUVbIrA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZZSx2YGDz2xnK;
+	Fri, 25 Oct 2024 18:40:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729842033;
+	cv=none; b=OaWe/Xel51MYoHL+Ft+FE+xRuWkJm5HTHCPfeZHWj4xlZXBHd1vDCUBt/mMzHAjPEBjrLMyAMKyMPrrP/Q7J/jxDsNrSEXgPo3MeDJoYeSAs1O0gHn7VynYAsLjba1KmalsMcIfl1pltxLQ8qO6F2pkEWfzJ3sNO/t6FIn9vIxgPBehuWPNfZzH211ODMpoLR6Nigt/5uaWOnmAlq5S6JQs175UU84DvzRWU8HqSs8n6+dS7q7JnBdzij4bbc9nn3eI8LPzxfsN+UvzFh2e19ruZDGu69VGvlDP+ERwBCjo1t5eAtkGnn/UkPH4iFShNU8WzHazSP3qb616I2FlOBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729838594; c=relaxed/relaxed;
-	bh=P47I0gdiUlkn3LmA4ci0Px6PUVaCXe2wtW4m1OPAR8s=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=oh0dyrrt5ZLZ+2a9DrT9jsoBe95OGeIZ28UBkWqJrlUbUwi47CWaMLI82ACLGCXMThI3QwSKRj3hsTz7zTncEPbr0caRfJgNVHtRmVEHv85/lg3mJdrLCKzvSpFMiCuezJGek6mFNT7P8uE9/bILBN41vXYh99K9qgXkUCsNNueLTLNTdgU4EHbid2qk4Gftb37oIEMZSP3yKdqlwhJizDjdBS41LsZweX0NalbmO9atVMrliUZKFjvWZtGxk7Q891Sio+trBiyb3RV8eWk/PbAANHq7MwkO3Igvt4Tq9Lshjco60tWwvme1ONHTIUamx3o1+LJmUm0DZU4Cnj6dPw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FicK357n; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52b; helo=mail-pg1-x52b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1729842033; c=relaxed/relaxed;
+	bh=+Z5ww8tsz14z0EpRv1r8MjOBORCOnzfSXkYCYwpD6ZE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=P8ZaypgDDLzXyVsQ42za5rOJ9IJMD6Dk6QzM3ZTr+ZZMcDna6OZqucNUs8Lgy6dCdUSWulQx3eXeDljylwfQwdMY3j7y0HBC2rxdi7b5B4P9BB/jvThQ3u5vCNXR8fFKRDy5Qg5MAqCs8kleRLUe9iO9AS1Cl2tJt6C83GX6D2HrZb17mGdT3WC24nByeEPLukHuO/hhN4YiFGfXcL6AMN0rQH/6I4n3mo3hdzOUwN3VCBlsgTwrtRMezGKcEvycuYLoPc2P6zFIH0w6SSq0Ut7CiQ8HXvFmO6+RYbAiLYrmEM67/jCNSwwB2VMbe+uR+eUp1LlKth+MfpME26182Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Bns4FpYE; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FicK357n;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Bns4FpYE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52b; helo=mail-pg1-x52b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com [IPv6:2607:f8b0:4864:20::52b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZYBm5CQMz2xWS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2024 17:43:11 +1100 (AEDT)
-Received: by mail-pg1-x52b.google.com with SMTP id 41be03b00d2f7-7eab7622b61so1075799a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Oct 2024 23:43:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1729838589; x=1730443389; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=P47I0gdiUlkn3LmA4ci0Px6PUVaCXe2wtW4m1OPAR8s=;
-        b=FicK357nW9fcLF/EQ+3/L5p9vDOx0MSRPQ3LUFLNTMS0Q9ARFUX3EPh+ZF8gUd+BTr
-         6jHOxZOlB/bv6yli8sNT/lzkxh5MFEk8gYu5EfZWDB20F31dFtpPtoQwpT1BmNX4++r5
-         1O1pmlt2zL4CxvX/4V09VD1MODRhLVtOl+pPF3JHwEMCG1XRHfuMGjfwGQ/VHA+urRWw
-         xOqF/7z1F6H3BwlxpcAzOWSr6dKgSvPvrCiNCzZ3XIlagAx67xF0LxaFi7HZpJaZ/WoC
-         b6m+bsJOZL1fWklsW6roIE76dXch0uRYca0LWlTVvfA1Gb68i9qzrhAMqaHh0sREsSo4
-         FZsQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1729838589; x=1730443389;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=P47I0gdiUlkn3LmA4ci0Px6PUVaCXe2wtW4m1OPAR8s=;
-        b=PHRhlnmscaXjTEHZ95Be0coFjQZrwvsqQC9tUmJvIwVjTAFqiietfHjeEM1E4ATxQn
-         CAeK+dLsV1QTedGppVe5Jl4V7vHqG6CWeP31FCNUTn3QQusHqrhuQ8RwOceN8XuVqsV0
-         1u1IjMeHA+zvcRNApKCJfjvzfqr0xckbHAvHOe0mEPHFIw1yJ43CUsGIB5tAgGvzYkHj
-         vQjMJiQps74I5YjeV1H/jLPBmWDINAFrWU/3eAIRS63tXnw9JRAFJYZDrxPiALL5AyJ7
-         37uAnyohG4rVc8qF/vmaXA75qX8n4cKMxdkhnAb37odhfN5sP1vQsCKNs3Kxyx0gq1mq
-         BXxA==
-X-Forwarded-Encrypted: i=1; AJvYcCVaOQViB6/AkmOUDnbWyXhWDPIvZ25geRdEpzM2Wn702PkvIddMikU/TGoJxHgQ19j056NjQnk0uEtDuxg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwT6w40x+3OF8GnTymmEYBlE9sA4GKeMYy4m4xsDcYLVx6IN2pX
-	PBvzt/TYc21FNvQqInkGpNh8XeGsbYRRngKrzEAGPVsqNEsM7MDhgM6fCw==
-X-Google-Smtp-Source: AGHT+IFxdZwIFKOQNiOIOKlXyUTiHQUYTmMXDxrzgTed1lrPb/WrWs4hS/ZL7SNSfx+CwmEz3d4d5g==
-X-Received: by 2002:a05:6a21:3a82:b0:1d6:5f3d:4ab7 with SMTP id adf61e73a8af0-1d989b3c990mr5577835637.22.1729838588742;
-        Thu, 24 Oct 2024 23:43:08 -0700 (PDT)
-Received: from dw-tp ([171.76.85.20])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72057a1f18esm446345b3a.146.2024.10.24.23.43.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Oct 2024 23:43:07 -0700 (PDT)
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-To: Gautam Menghani <gautam@linux.ibm.com>, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org
-Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] KVM: PPC: Book3S HV: Mask off LPCR_MER for a vCPU before running it to avoid spurious interrupts
-In-Reply-To: <20241024173417.95395-1-gautam@linux.ibm.com>
-Date: Fri, 25 Oct 2024 11:37:52 +0530
-Message-ID: <871q04oguf.fsf@gmail.com>
-References: <20241024173417.95395-1-gautam@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZZSw0lqsz2xjL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2024 18:40:32 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 5ED2E5C413B
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2024 07:39:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 447C8C4CECC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2024 07:40:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1729842028;
+	bh=MU0jg6+43zlNLQVd5aws5IUywfNhZ0pf6SBTcrSFP0A=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=Bns4FpYEweNUDYPWIatTemxTcPXBriNtb6rjMCIGvpZQbQ7/qRGjK2NUk57EKd8ri
+	 Mk7HPhv+F7E7+ne72q/Ef8D3KErbLL714tyOI87uCXXzpqZPjXEj/i4/+9MWReDl8T
+	 31XCgHFlQsFjl2p95RIKGtfYYk1e4JVgIerVkCXXYdafVkZcg3QKpbq5FXjAqZ38fM
+	 DtIUhA6qC/BFjMOrnIVEq9dcd5psyxRFBFdvdxlZAU53TWdpVzWckgliF8es3kpb65
+	 T8IX9T0uVRiGneDDJjNiP5c9pbh4ac6m1We4OCbuxBE3WORWLtjtdEfr9QTbaV9H3L
+	 0RlKKzK9CtgkA==
+Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-539e59dadebso2249465e87.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Oct 2024 00:40:28 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWMIF5CS61zp5aycSgAd0xlfJXujKjitjlW1EnwK8xcOfnACw5UXLDcZ3bCgrbF45pE5YZ53cd9/pEjvy0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwOkNrjqjLqRi7si4xXyTYGa1uE3ZGHLaE1vYnCN7DjwjSF5lm1
+	3GCoTVHqH7aR82UmgHOvx8zycsKebbRQPpCfB0tNk5TRQf7V6GB6suxOXZdnfIcWxGAXIanOoXI
+	x0CjrTXxs3R1erabIwxCxoYybeZ0=
+X-Google-Smtp-Source: AGHT+IEDAFlBfPHEymedMPiV9v2ocdpZeEcg/F0dpwJWqR1hIRTo+DXjnmCVJHCSWsx5j4Mh2CDnA31kbRPsOrauBps=
+X-Received: by 2002:a05:6512:3c8c:b0:539:8f3c:457c with SMTP id
+ 2adb3069b0e04-53b23e9d130mr2447127e87.53.1729842026517; Fri, 25 Oct 2024
+ 00:40:26 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,107 +65,121 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+MIME-Version: 1.0
+References: <20241021002935.325878-1-ebiggers@kernel.org>
+In-Reply-To: <20241021002935.325878-1-ebiggers@kernel.org>
+From: Ard Biesheuvel <ardb@kernel.org>
+Date: Fri, 25 Oct 2024 09:40:15 +0200
+X-Gmail-Original-Message-ID: <CAMj1kXHDo8dijRbSVuHzTddMhp4A+nc1t8AgvoENmS=DZ-kAOQ@mail.gmail.com>
+Message-ID: <CAMj1kXHDo8dijRbSVuHzTddMhp4A+nc1t8AgvoENmS=DZ-kAOQ@mail.gmail.com>
+Subject: Re: [PATCH 00/15] Wire up CRC32 library functions to arch-optimized code
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, 
+	linux-ext4@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, 
+	linux-mips@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	loongarch@lists.linux.dev, sparclinux@vger.kernel.org, x86@kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Gautam Menghani <gautam@linux.ibm.com> writes:
-
-> Mask off the LPCR_MER bit before running a vCPU to ensure that it is not
-> set if there are no pending interrupts. Running a vCPU with LPCR_MER bit
-> set and no pending interrupts results in L2 vCPU getting an infinite flood
-> of spurious interrupts. The 'if check' in kvmhv_run_single_vcpu() sets
-> the LPCR_MER bit if there are pending interrupts.
+On Mon, 21 Oct 2024 at 02:29, Eric Biggers <ebiggers@kernel.org> wrote:
 >
-> The spurious flood problem can be observed in 2 cases:
-> 1. Crashing the guest while interrupt heavy workload is running
->   a. Start a L2 guest and run an interrupt heavy workload (eg: ipistorm)
->   b. While the workload is running, crash the guest (make sure kdump
->      is configured)
->   c. Any one of the vCPUs of the guest will start getting an infinite
->      flood of spurious interrupts.
+> This patchset is also available in git via:
 >
-> 2. Running LTP stress tests in multiple guests at the same time
->    a. Start 4 L2 guests.
->    b. Start running LTP stress tests on all 4 guests at same time.
->    c. In some time, any one/more of the vCPUs of any of the guests will
->       start getting an infinite flood of spurious interrupts.
+>     git fetch https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git crc32-lib-v1
 >
-> The root cause of both the above issues is the same:
-> 1. A NMI is sent to a running vCPU that has LPCR_MER bit set.
-> 2. In the NMI path, all registers are refreshed, i.e, H_GUEST_GET_STATE
->    is called for all the registers.
-> 3. When H_GUEST_GET_STATE is called for lpcr, the vcpu->arch.vcore->lpcr
->    of that vCPU at L1 level gets updated with LPCR_MER set to 1, and this
->    new value is always used whenever that vCPU runs, regardless of whether
->    there was a pending interrupt.
-> 4. Since LPCR_MER is set, the vCPU in L2 always jumps to the external
->    interrupt handler, and this cycle never ends.
+> CRC32 is a family of common non-cryptographic integrity check algorithms
+> that are fairly fast with a portable C implementation and become far
+> faster still with the CRC32 or carryless multiplication instructions
+> that most CPUs have.  9 architectures already have optimized code for at
+> least some CRC32 variants; however, except for arm64 this optimized code
+> was only accessible through the crypto API, not the library functions.
 >
-> Fix the spurious flood by making sure a vCPU's LPCR_MER is always masked
-> before running a vCPU.
+> This patchset fixes that so that the CRC32 library functions use the
+> optimized code.  This allows users to just use the library instead of
+> the crypto API.  This is much simpler and also improves performance due
+> to eliminating the crypto API overhead including an indirect call.  Some
+> examples of updating users are included at the end of the patchset.
 >
-> Fixes: ec0f6639fa88 ("KVM: PPC: Book3S HV nestedv2: Ensure LPCR_MER bit is passed to the L0")
-> Cc: stable@vger.kernel.org # v6.8+
-> Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> ---
-> V1 -> V2:
-> 1. Mask off the LPCR_MER in vcpu->arch.vcore->lpcr instead of resetting
-> it so that we avoid grabbing vcpu->arch.vcore->lock. (Suggested by
-> Ritesh in an internal review)
-
-Thanks Gautam for addressing the review comment. But let me improve the
-changelog a little to make it more accurate for others too.
-
-Removed the macro which was silently clearing LPCR_MER bit from vcore->lpcr
-and instead just mask it off while sending it to kvmhv_run_single_vcpu().
-Added an inline comment describing the reason to avoid anyone tipping
-it over. - (suggested ...)
-
-
-Yes, that would also mean that no need of taking any vcore lock since we
-are not modifying any of the vcore state variables which came up in the
-internal review discussion.
-Having said that it will be good to document the usage of vcore->lock
-above the struct kvmppc_vcore definition. Because it isn't obvious of
-when all it should be taken and/or what all it protects?
-
+> Note: crc32c() was a weird case.  It was a library function layered on
+> top of the crypto API, which in turn is layered on top of the real
+> library functions.  So while it was easy to use, it was still subject to
+> the crypto API overhead.  This patchset provides CRC32C acceleration in
+> the real library functions directly.
 >
->  arch/powerpc/kvm/book3s_hv.c | 12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
+> The updated CRC32 library design is:
 >
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 8f7d7e37bc8c..b8701b5dde50 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -5089,9 +5089,19 @@ static int kvmppc_vcpu_run_hv(struct kvm_vcpu *vcpu)
->  
->  	do {
->  		accumulate_time(vcpu, &vcpu->arch.guest_entry);
-> +		/*
-> +		 * L1's copy of L2's lpcr (vcpu->arch.vcore->lpcr) can get its MER bit
-> +		 * unexpectedly set - for e.g. during NMI handling when all register
-> +		 * states are synchronized from L0 to L1. L1 needs to inform L0 about
-> +		 * MER=1 only when there are pending external interrupts.
-> +		 * kvmhv_run_single_vcpu() anyway sets MER bit if there are pending
-> +		 * external interrupts. Hence, mask off MER bit when passing vcore->lpcr
-> +		 * here as otherwise it may generate spurious interrupts in L2 KVM
-> +		 * causing an endless loop, which results in L2 guest getting hung.
-> +		 */
+> - Each arch's CRC32 code (all variants) is in arch/$ARCH/lib/crc32*.
+>   This adopts what arm64 and riscv already did.  Note, the crypto
+>   directory is not used because CRC32 is not a cryptographic algorithm.
+>
+> - Weak symbols are no longer used.  Instead there are crc32*_base() and
+>   crc32*_arch(), and the appropriate ones are called based on the
+>   kconfig.  This is similar to how the ChaCha20 library code works.
+>
+> - Each arch's CRC32 code is enabled by default when CRC32 is enabled,
+>   but it can now be disabled, controlled by the choice that previously
+>   controlled the base implementation only.  It can also now be built as
+>   a module if CRC32 is a module too.
+>
+> - Instead of lots of pointless glue code that wires up each CRC32
+>   variant to the crypto API for each architecture, we now just rely on
+>   the existing shash algorithms that use the library functions.
+>
+> - As before, the library functions don't provide access to off-CPU
+>   crypto accelerators.  But these appear to have very little, if any,
+>   real-world relevance for CRC32 which is very fast on CPUs.
+>
+> Future work should apply a similar cleanup to crct10dif which is a
+> variant of CRC16.
+>
+> I tested all arches in QEMU using CONFIG_CRC32_SELFTEST and the crypto
+> self-tests, except for mips which I couldn't figure out how to do.
+>
+> This patchset has the following dependencies on recent patches:
+>
+> - "crypto - move crypto_simd_disabled_for_test to lib"
+>   (https://lore.kernel.org/linux-crypto/20241018235343.425758-1-ebiggers@kernel.org/)
+> - "crypto: x86/crc32c - jump table elimination and other cleanups"
+>   (https://lore.kernel.org/linux-crypto/20241014042447.50197-1-ebiggers@kernel.org/)
+> - "arm64: Speed up CRC-32 using PMULL instructions"
+>   (https://lore.kernel.org/linux-crypto/20241018075347.2821102-5-ardb+git@google.com/)
+> - "crypto: Enable fuzz testing for arch code"
+>   (https://lore.kernel.org/linux-crypto/20241016185722.400643-4-ardb+git@google.com/)
+> - "crypto: mips/crc32 - fix the CRC32C implementation"
+>   (https://lore.kernel.org/linux-crypto/20241020180258.8060-1-ebiggers@kernel.org/)
+>
+> Everything can be retrieved from git using the command given earlier.
+>
+> Since this patchset touches many areas, getting it merged may be
+> difficult.  One option is a pull request with the whole patchset
+> directly to Linus.  Another is to have at least patches 1-2 and the
+> above dependencies taken through the crypto tree in v6.13; then the arch
+> patches can land separately afterwards, followed by the rest.
+>
+> Eric Biggers (15):
+>   lib/crc32: drop leading underscores from __crc32c_le_base
+>   lib/crc32: improve support for arch-specific overrides
+>   arm/crc32: expose CRC32 functions through lib
+>   loongarch/crc32: expose CRC32 functions through lib
+>   mips/crc32: expose CRC32 functions through lib
+>   powerpc/crc32: expose CRC32 functions through lib
+>   s390/crc32: expose CRC32 functions through lib
+>   sparc/crc32: expose CRC32 functions through lib
+>   x86/crc32: update prototype for crc_pcl()
+>   x86/crc32: update prototype for crc32_pclmul_le_16()
+>   x86/crc32: expose CRC32 functions through lib
+>   lib/crc32: make crc32c() go directly to lib
+>   ext4: switch to using the crc32c library
+>   jbd2: switch to using the crc32c library
+>   f2fs: switch to using the crc32 library
+>
+...
+>  89 files changed, 1002 insertions(+), 2455 deletions(-)
 
-Thanks for describing this inline.
+Very nice cleanup!
 
->  		if (cpu_has_feature(CPU_FTR_ARCH_300))
->  			r = kvmhv_run_single_vcpu(vcpu, ~(u64)0,
-> -						  vcpu->arch.vcore->lpcr);
-> +						  vcpu->arch.vcore->lpcr & ~LPCR_MER);
+For the series:
 
-While still at it - 
-I too like mpe suggestion to clear the LPCR_MER bit at one place
-itself within kvmhv_run_single_vcpu(). 
-
->  		else
->  			r = kvmppc_run_vcpu(vcpu);
->  
-> -- 
-> 2.47.0
-
--ritesh
+Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
 
