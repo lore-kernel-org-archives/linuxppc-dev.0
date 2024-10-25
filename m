@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-2601-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2602-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FBC8D149E8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2024 19:17:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99094D149E8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2024 19:17:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XZsvM2syRz3bcp;
-	Sat, 26 Oct 2024 06:15:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729883759;
-	cv=none; b=UAWn0/akw8cJSCD0w1/H1T8PqPfQUlC9vPAhfXdOIxC29baW1+6F4iRiKqsKv8+QB2aMjmBAxW5llG6CSat5G5jd4B4WCkYmBOPOPnk0+GzWbT+jhcVnA+GffnF4w+i985YKY5cCHTpT9FPpzr0KIwUNhHEXyniukSJwPCYHUdIQbiEw8Wwh9Bm/RF8Z2cAM00xQxHTjmGIbCtKglbn3BjAvoQ4EyD8U4dXigcHWOdI9k8u1S/m90nTikCY1FNcbepukwm0ye87csdY6VqVe5oFqg0sOdY2u15xp3sqMY3zuQhHb8SRfrsVwZ0StKPtaudeQx9AGO0gVkPgZX6+FBw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZsvN1WDBz3bdK;
+	Sat, 26 Oct 2024 06:16:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729883760;
+	cv=none; b=fYNfjyA0hCb0SBCDMGzwF8z0lXMcK86CqZpCOkn7OeDa0WrJAYDY7wCW0+X4mYetf88ZD2sE02kzj76/CCelPlIzS5fc77FVBRsiXiddXfsHY8n01DgIwCbhFPMt/NTvudjaYtXB2oxZhS0mNYnvoHJSp4kP+eV6qXvlMHROuby8lHGAUW6bI/kkrPswytErb2rnjjQl2yZH9pCprt6HlhMHaaQP+VRVUHj9wTs7+nDtCtvPoLhxe/pzuhmaCBYNLnf+QKIINcgNY910B9U+U+sogvaj1y0o9PjvWt75Nw6Hc2HHnYbGaULDCQiss12FLrXutJCobRZ4eEwtDJgU4g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729883759; c=relaxed/relaxed;
-	bh=KRcBZoCQqGyQ0W5yMS5aiWl2KEVthf2kKul/c6sg/D0=;
+	t=1729883760; c=relaxed/relaxed;
+	bh=rMnm9AwgmDXEuc2yh8LmdqCJvJnHE1qDq44Z13ehTrw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nx/O+EKb3mEOYNZKFQNj2Ej1+CU6KuItSW9cty8LWIqUlTM56gCWywlyY1eswzt/rTo24t/RZmvzYDE89WflWDeSeJZnQSnkhsyK38Yi/nLTut8O8cRXQkhvYGmOX8TgNU0UFtkLXiT7+NaTNqV+/yUPQLm5AJhT0iRTRdvU1jZ0JXlMidT3mbZRR02lw0HBPtdtg1SXfDAKbe3nRwO9aFcc546O3hgz7wWQtF5N9ZEgQ8dXH6Ldv6VNzqXAXJjA7XZCE6z3Qm5rXWBucpTx1f7K2+Xxwm7CEVg2j29a4nDyzpToOjjsc+EqL/l5FqjNhDDPPBc93uG8A28zgs0IBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ipG4szb3; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=BwyfCK1OQwcuW85GW34wHaM94vBeFOv0/d06AEt1ExgN64hk4mD1Dje+3uU5xMBUnU6PyuntK7lRAAG/OH0QzVC2l9bHo5pcDkjuybJk2QLkr7NwFJ6Qywortizj9HCdRjtCVZ3B3N5VJ0gTDmsonC37iejeGcT3ocFXsyr9OnDpPIesRYtb46/LqbMJcPj//LK+TXiwPJigEOyZYPK0UIw3UffF6Zf1d1/wEKsgb9dEM5rwUHGcU/dAPYwbc6zvlcVvvWuyO9dH1ki4fTuBFpGNzo5Yudn7RCBA9jcDigExLiAvHIEoHMjSVEZ1yYHEa3dGow+PNLKrvchBrYEMWg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uCCwJHNY; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ipG4szb3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uCCwJHNY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZsvH1hxTz3bdK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2024 06:15:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZsvK39dhz3bjg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2024 06:15:56 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 7B600A44C10;
-	Fri, 25 Oct 2024 19:13:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1EF92C4CEC3;
-	Fri, 25 Oct 2024 19:15:52 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id CF5535C59B9;
+	Fri, 25 Oct 2024 19:15:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47B18C4CEE5;
+	Fri, 25 Oct 2024 19:15:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729883752;
-	bh=ltl2dzTFUaa7H2aG4AJgeKEj/9DuYykUjD6SD30TiWA=;
+	s=k20201202; t=1729883753;
+	bh=WfN2SwQ1SfAPzqKDOcxOjX9pk3UC1SwykLtsIrx3B8I=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ipG4szb3DG4328MmsVPyJp6+ETWiuIOrRh1RtxIdc52JpjFMZT6C7NnrCDnQJPvB3
-	 wlrM5hFosjiYAbc2aaUxU3qOmClSBUsB7nGQMDItqDwoUVKvP+K/YdBCkf547X/JYV
-	 6v50gEkoVTNLa/JxTA3UEnBP4ZSHulTTMGp5vOng0s/yOMprcrVoREoC+bJBF+1i+k
-	 8WE8jEYf4fYUrl4iCJIxcSrTUNkddQUncrm8MvI6wrxv8Oxxr2jVbgMdXaacAqkbUY
-	 3NmtYwiUZ/fmbK+askwZqVut5AOp4JGVt48bZSX1uHJH4gksL9YSQp7QLBuuSnsCop
-	 txSM9/K3bPbWA==
+	b=uCCwJHNYYf343z6r1gEo9PunPQGR1ODph4209rcKOCpQYQ+Z9cKoDHqLtaqlEYjIN
+	 2z+sKje/XEHhSVs1cW9BMdxxPDBwY/8FQEVauYvT4cXN2A4iOYNINsY5i0l8MCF3Ai
+	 8q8X0FhxnigxeUIMEBJmTPwhzbSWVaA9MFxkKUhwN8wIFBFZxp4tuHQutYqCnUlmWV
+	 cqk5IIIqvbKBQzhnndsielpobBKgJOaBd54yeDLDV1uZhFlv57rqiHuzwNWxJcKnNA
+	 +UiwI5ZIfG85E83/zepiJUyaJTVqaFMCjzmt83JkiUljxXtaIcF4uNjlFC9cXsmWEg
+	 OwXqjgm4rW7jQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -60,9 +60,9 @@ Cc: linux-arch@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH v2 15/18] ext4: switch to using the crc32c library
-Date: Fri, 25 Oct 2024 12:14:51 -0700
-Message-ID: <20241025191454.72616-16-ebiggers@kernel.org>
+Subject: [PATCH v2 17/18] f2fs: switch to using the crc32 library
+Date: Fri, 25 Oct 2024 12:14:53 -0700
+Message-ID: <20241025191454.72616-18-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241025191454.72616-1-ebiggers@kernel.org>
 References: <20241025191454.72616-1-ebiggers@kernel.org>
@@ -82,170 +82,140 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Now that the crc32c() library function directly takes advantage of
+Now that the crc32() library function takes advantage of
 architecture-specific optimizations, it is unnecessary to go through the
-crypto API.  Just use crc32c().  This is much simpler, and it improves
+crypto API.  Just use crc32().  This is much simpler, and it improves
 performance due to eliminating the crypto API overhead.
 
 Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- fs/ext4/Kconfig |  3 +--
- fs/ext4/ext4.h  | 25 +++----------------------
- fs/ext4/super.c | 15 ---------------
- 3 files changed, 4 insertions(+), 39 deletions(-)
+ fs/f2fs/Kconfig |  3 +--
+ fs/f2fs/f2fs.h  | 19 +------------------
+ fs/f2fs/super.c | 15 ---------------
+ 3 files changed, 2 insertions(+), 35 deletions(-)
 
-diff --git a/fs/ext4/Kconfig b/fs/ext4/Kconfig
-index e20d59221fc0..c9ca41d91a6c 100644
---- a/fs/ext4/Kconfig
-+++ b/fs/ext4/Kconfig
-@@ -29,12 +29,11 @@ config EXT3_FS_SECURITY
- config EXT4_FS
- 	tristate "The Extended 4 (ext4) filesystem"
+diff --git a/fs/f2fs/Kconfig b/fs/f2fs/Kconfig
+index 68a1e23e1557..5916a02fb46d 100644
+--- a/fs/f2fs/Kconfig
++++ b/fs/f2fs/Kconfig
+@@ -2,12 +2,11 @@
+ config F2FS_FS
+ 	tristate "F2FS filesystem support"
+ 	depends on BLOCK
  	select BUFFER_HEAD
- 	select JBD2
- 	select CRC16
+ 	select NLS
 -	select CRYPTO
--	select CRYPTO_CRC32C
+-	select CRYPTO_CRC32
 +	select CRC32
- 	select FS_IOMAP
+ 	select F2FS_FS_XATTR if FS_ENCRYPTION
  	select FS_ENCRYPTION_ALGS if FS_ENCRYPTION
- 	help
- 	  This is the next generation of the ext3 filesystem.
+ 	select FS_IOMAP
+ 	select LZ4_COMPRESS if F2FS_FS_LZ4
+ 	select LZ4_DECOMPRESS if F2FS_FS_LZ4
+diff --git a/fs/f2fs/f2fs.h b/fs/f2fs/f2fs.h
+index 33f5449dc22d..1fc5c2743c8d 100644
+--- a/fs/f2fs/f2fs.h
++++ b/fs/f2fs/f2fs.h
+@@ -1761,13 +1761,10 @@ struct f2fs_sb_info {
  
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index 44b0d418143c..99aa512a7de1 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -31,11 +31,11 @@
- #include <linux/wait.h>
- #include <linux/sched/signal.h>
- #include <linux/blockgroup_lock.h>
- #include <linux/percpu_counter.h>
- #include <linux/ratelimit.h>
--#include <crypto/hash.h>
-+#include <linux/crc32c.h>
- #include <linux/falloc.h>
- #include <linux/percpu-rwsem.h>
- #include <linux/fiemap.h>
- #ifdef __KERNEL__
- #include <linux/compat.h>
-@@ -1660,13 +1660,10 @@ struct ext4_sb_info {
- 	struct task_struct *s_mmp_tsk;
- 
- 	/* record the last minlen when FITRIM is called. */
- 	unsigned long s_last_trim_minblks;
+ 	/* For write statistics */
+ 	u64 sectors_written_start;
+ 	u64 kbytes_written;
  
 -	/* Reference to checksum algorithm driver via cryptoapi */
 -	struct crypto_shash *s_chksum_driver;
 -
  	/* Precomputed FS UUID checksum for seeding other checksums */
- 	__u32 s_csum_seed;
+ 	__u32 s_chksum_seed;
  
- 	/* Reclaim extents from extent status tree */
- 	struct shrinker *s_es_shrinker;
-@@ -2465,23 +2462,11 @@ static inline __le16 ext4_rec_len_to_disk(unsigned len, unsigned blocksize)
- #define DX_HASH_LAST 			DX_HASH_SIPHASH
+ 	struct workqueue_struct *post_read_wq;	/* post read workqueue */
  
- static inline u32 ext4_chksum(struct ext4_sb_info *sbi, u32 crc,
+@@ -1941,25 +1938,11 @@ static inline unsigned int f2fs_time_to_wait(struct f2fs_sb_info *sbi,
+  * Inline functions
+  */
+ static inline u32 __f2fs_crc32(struct f2fs_sb_info *sbi, u32 crc,
  			      const void *address, unsigned int length)
  {
 -	struct {
 -		struct shash_desc shash;
 -		char ctx[4];
 -	} desc;
+-	int err;
 -
--	BUG_ON(crypto_shash_descsize(sbi->s_chksum_driver)!=sizeof(desc.ctx));
+-	BUG_ON(crypto_shash_descsize(sbi->s_chksum_driver) != sizeof(desc.ctx));
 -
 -	desc.shash.tfm = sbi->s_chksum_driver;
 -	*(u32 *)desc.ctx = crc;
 -
--	BUG_ON(crypto_shash_update(&desc.shash, address, length));
+-	err = crypto_shash_update(&desc.shash, address, length);
+-	BUG_ON(err);
 -
 -	return *(u32 *)desc.ctx;
-+	return crc32c(crc, address, length);
++	return crc32(crc, address, length);
  }
  
- #ifdef __KERNEL__
- 
- /* hash info structure used by the directory hash */
-@@ -3278,15 +3263,11 @@ extern void ext4_group_desc_csum_set(struct super_block *sb, __u32 group,
- extern int ext4_register_li_request(struct super_block *sb,
- 				    ext4_group_t first_not_zeroed);
- 
- static inline int ext4_has_metadata_csum(struct super_block *sb)
+ static inline u32 f2fs_crc32(struct f2fs_sb_info *sbi, const void *address,
+ 			   unsigned int length)
  {
--	WARN_ON_ONCE(ext4_has_feature_metadata_csum(sb) &&
--		     !EXT4_SB(sb)->s_chksum_driver);
--
--	return ext4_has_feature_metadata_csum(sb) &&
--	       (EXT4_SB(sb)->s_chksum_driver != NULL);
-+	return ext4_has_feature_metadata_csum(sb);
- }
+diff --git a/fs/f2fs/super.c b/fs/f2fs/super.c
+index 87ab5696bd48..003d3bcb0caa 100644
+--- a/fs/f2fs/super.c
++++ b/fs/f2fs/super.c
+@@ -1670,12 +1670,10 @@ static void f2fs_put_super(struct super_block *sb)
  
- static inline int ext4_has_group_desc_csum(struct super_block *sb)
- {
- 	return ext4_has_feature_gdt_csum(sb) || ext4_has_metadata_csum(sb);
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 16a4ce704460..1a821093cc0d 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1371,12 +1371,10 @@ static void ext4_put_super(struct super_block *sb)
- 	 * Now that we are completely done shutting down the
- 	 * superblock, we need to actually destroy the kobject.
- 	 */
- 	kobject_put(&sbi->s_kobj);
- 	wait_for_completion(&sbi->s_kobj_unregister);
+ 	f2fs_destroy_post_read_wq(sbi);
+ 
+ 	kvfree(sbi->ckpt);
+ 
 -	if (sbi->s_chksum_driver)
 -		crypto_free_shash(sbi->s_chksum_driver);
- 	kfree(sbi->s_blockgroup_lock);
- 	fs_put_dax(sbi->s_daxdev, NULL);
- 	fscrypt_free_dummy_policy(&sbi->s_dummy_enc_policy);
- #if IS_ENABLED(CONFIG_UNICODE)
- 	utf8_unload(sb->s_encoding);
-@@ -4586,19 +4584,10 @@ static int ext4_init_metadata_csum(struct super_block *sb, struct ext4_super_blo
- 		return -EINVAL;
+ 	kfree(sbi->raw_super);
+ 
+ 	f2fs_destroy_page_array_cache(sbi);
+ 	f2fs_destroy_xattr_caches(sbi);
+ #ifdef CONFIG_QUOTA
+@@ -4419,19 +4417,10 @@ static int f2fs_fill_super(struct super_block *sb, void *data, int silent)
+ 		INIT_LIST_HEAD(&sbi->inode_list[i]);
+ 		spin_lock_init(&sbi->inode_lock[i]);
  	}
- 	ext4_setup_csum_trigger(sb, EXT4_JTR_ORPHAN_FILE,
- 				ext4_orphan_file_block_trigger);
+ 	mutex_init(&sbi->flush_lock);
  
 -	/* Load the checksum driver */
--	sbi->s_chksum_driver = crypto_alloc_shash("crc32c", 0, 0);
+-	sbi->s_chksum_driver = crypto_alloc_shash("crc32", 0, 0);
 -	if (IS_ERR(sbi->s_chksum_driver)) {
--		int ret = PTR_ERR(sbi->s_chksum_driver);
--		ext4_msg(sb, KERN_ERR, "Cannot load crc32c driver.");
+-		f2fs_err(sbi, "Cannot load crc32 driver.");
+-		err = PTR_ERR(sbi->s_chksum_driver);
 -		sbi->s_chksum_driver = NULL;
--		return ret;
+-		goto free_sbi;
 -	}
 -
- 	/* Check superblock checksum */
- 	if (!ext4_superblock_csum_verify(sb, es)) {
- 		ext4_msg(sb, KERN_ERR, "VFS: Found ext4 filesystem with "
- 			 "invalid superblock checksum.  Run e2fsck?");
- 		return -EFSBADCRC;
-@@ -5638,13 +5627,10 @@ failed_mount8: __maybe_unused
- 	flush_work(&sbi->s_sb_upd_work);
- 	ext4_stop_mmpd(sbi);
- 	del_timer_sync(&sbi->s_err_report);
- 	ext4_group_desc_free(sbi);
- failed_mount:
+ 	/* set a block size */
+ 	if (unlikely(!sb_set_blocksize(sb, F2FS_BLKSIZE))) {
+ 		f2fs_err(sbi, "unable to set blocksize");
+ 		goto free_sbi;
+ 	}
+@@ -4872,12 +4861,10 @@ static int f2fs_fill_super(struct super_block *sb, void *data, int silent)
+ 	fscrypt_free_dummy_policy(&F2FS_OPTION(sbi).dummy_enc_policy);
+ 	kvfree(options);
+ free_sb_buf:
+ 	kfree(raw_super);
+ free_sbi:
 -	if (sbi->s_chksum_driver)
 -		crypto_free_shash(sbi->s_chksum_driver);
--
- #if IS_ENABLED(CONFIG_UNICODE)
- 	utf8_unload(sb->s_encoding);
- #endif
+ 	kfree(sbi);
+ 	sb->s_fs_info = NULL;
  
- #ifdef CONFIG_QUOTA
-@@ -7433,8 +7419,7 @@ static void __exit ext4_exit_fs(void)
- }
+ 	/* give only one another chance */
+ 	if (retry_cnt > 0 && skip_recovery) {
+@@ -5080,7 +5067,5 @@ module_init(init_f2fs_fs)
+ module_exit(exit_f2fs_fs)
  
- MODULE_AUTHOR("Remy Card, Stephen Tweedie, Andrew Morton, Andreas Dilger, Theodore Ts'o and others");
- MODULE_DESCRIPTION("Fourth Extended Filesystem");
+ MODULE_AUTHOR("Samsung Electronics's Praesto Team");
+ MODULE_DESCRIPTION("Flash Friendly File System");
  MODULE_LICENSE("GPL");
--MODULE_SOFTDEP("pre: crc32c");
- module_init(ext4_init_fs)
- module_exit(ext4_exit_fs)
+-MODULE_SOFTDEP("pre: crc32");
+-
 -- 
 2.47.0
 
