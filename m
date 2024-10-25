@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-2599-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2600-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E684CD149E8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2024 19:17:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88697D149E7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2024 19:17:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XZsvK6FhBz3bjt;
-	Sat, 26 Oct 2024 06:15:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZsvM2KbFz301G;
+	Sat, 26 Oct 2024 06:15:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729883757;
-	cv=none; b=emPtZcRbOBOMbhyxL8OfNIe8ZCNdC+r0vpYQP5K2mexpYCGvHDNJWgDG0TKVtMdZPt+WGzpmAzk2qIPzF7IGvGsXlG2Xio+MRbbCb5OxG4/1WQD6SWxhdTx9uEBXeNrUmgeAexJh/1Ucd4ssHkj4CVH3q3CrxQGmS33cJzqxaSbznCi9H5sbJ/QGW1U6Ny3KTJ8iULdLpEzO/eUfOepD5bmWKE20uLNnV/7goE4/o3XHXB1hW7h1dyJlB3V1P0DGChPHUE1PnADoKyjrBJcuo2Z/32FKDlpLQPe+4eThOABiKfZaMl61eeRhZPjVytUgBNkTES9Ct+vCzuxLVmxGlg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729883759;
+	cv=none; b=cXeEIffurBJGExu1tJZuRR2cyWUGvk8sOBsjLd5Top2ZMLuQPU2JvuZMY/ZKXut5toVM88KIgSQQprspzYO7AllaZGx0vS/rEvsBgm5HT5OnRMBRnjgFwsD8d2xDbQMN0DaGs3dHgCGolCPxdOaucWsMEoIcAMqYtFrnRE8121VWEyzSWvE52I4fpKcQuy/lFVzDL3Q0lGcRhfXkYyJgxpreljZrGRUpYL705ATm2EkCawI3RGt28p91GfVr+TdhwIWzAXmCzByurfjRYPQmE/dZ91s/mW9oKIR4JXIptylX3JmmiQb5Yl0s34ZZOhxevVltYghn9l0UNmhswQHdkg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729883757; c=relaxed/relaxed;
-	bh=dvjZkh3zkAhMlbw52j1ldldjhDmcPTBwWYL8Z0l92B8=;
+	t=1729883759; c=relaxed/relaxed;
+	bh=gT68VJg2Ax+gMpOGHi4H3PWPYTj8DTpPT3IZ5CLlAgo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eRhSVnbeVmDeDtwLtH5Vv70OMrqi+GVt0qvkCKuF241jV/vtFCIwgAWDgzHAQogiWculYLQsTXU17HRyMYjFPbqvf2wRqp7dpLfu/L2EAIwZ6z6UpLZcG3J/UU46WBALPdVJzEQx7HhoEyt+mAcX87juKpyFgcG/953pPd17EIeqblRCxgyiL/2OFMtIwcWYsq3Ycz8rBMZSU4ZAuC5cofGzCTE7evWXpIFuYqqjWKHphafTwacCAA5IbgmkQrby3nvFY5xI4sMEMMR8+BXosWK5Pr6eDz7rW9TnU/dn9rTA19/s/Q5C2y+2jBV5XvVvQwDg0I/VPMqsoH45gt0oTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ioauDeBj; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=jiQytmMQL2fQ2VWBekNxurtj4vKFvxb1EIBSFLiWBT7qDIHjWxjpUOZvkNdBqODT26Mto/l5RpHY/90Ks549t0M+5mCVhP56tVs9YtOTuH0R9a3p9ygJFss+Xm/EendXsCQJW8b7vCzEJAFUVva2qaCGUV2UWWNRE2CGzD7TnxB8Pk8DSc0opMomr6Vw3ZE7Uj9+O2NJ8NWrtwr4rmsNzq/ZJNSEhLexCg43pYz5gQr1k4dGWnSpMb2UNJZDLtfW0tDRbeCkvrMH5nYR8kJLnnX9w7Ymb6Nh51/+l24PKhZ6XgZw9xR5DGZ0xWhJOX8X15R1SEB099A0KObHm3YJuA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MzLmD7tt; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ioauDeBj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MzLmD7tt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZsvG5vGBz3bcp
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZsvH0gwpz3bd4
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2024 06:15:54 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id DFB425C59BF;
-	Fri, 25 Oct 2024 19:15:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57F53C4CEC3;
-	Fri, 25 Oct 2024 19:15:50 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 19FFC5C5FCB;
+	Fri, 25 Oct 2024 19:15:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81C0FC4CEE6;
+	Fri, 25 Oct 2024 19:15:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729883750;
-	bh=kHWHhodawY/PaSA95ElCxVPVWHZVNPifFLwbM7bCJig=;
+	s=k20201202; t=1729883752;
+	bh=hmjPSLT23tUvD2mhqpKoKr7fMC5StQtNq+9niGNg1xs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ioauDeBjed5AAxh0JktDhYhi//5q/79Oew//g2sBJO13l2hTcNiaOzFClw1uFOpJl
-	 rez/R7AKxxbYxkaWAyms6YMS+o3pM4bEihrrbv8z8UL37fGqhwnuntxVSI/7f43Wy6
-	 mZw7T3LOw+SABicICJJxn3z8hI/G+4Sa4T67U/vgn8DmjFTay1sHjWvOsj65tmEbes
-	 6pv2MdY4dgWymSofU/faEl+xKBXglzLHDguJlmHKvBSGhErnz15T42CNOP4Uawgm9j
-	 dc/PHWgP+6kLGE9kFH4CvGiW+VriTxcErjLcw+o1XBxiYq0eauhf1GJ5XGdBxHiy0v
-	 rL2YEdWvEgIrQ==
+	b=MzLmD7ttenyc+h9adVW5j/4jD+Z5Z8P0K29t1D9dfAOxvrlJPCCHoSOV4RyYU7mc4
+	 WbPsgIhtjxpkV+XG3nPg3insOC4hRyvrAtB+xHeMx/2sv8+LDxRpRsk16Im+FD7OHK
+	 nUnqYMuKmUS5CAgLS0hmC8rxRCvAFFRQE3a9LQ6mraoZfPE6Wrh/e4XBMcuOck8H93
+	 z3X/p9oxCzXfkf5TfKY2NnJPejTnokSSKn6ncqoMBQtIfZhYm21QYTDKYkDSTcMGhO
+	 Gis9vIIku/f91IqjUzCIoNWZERD7YQMDSWiIIopXXMdNYw+rvaAmqN5dCLvacPtihK
+	 pwFvIaZg4X8kg==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -60,9 +60,9 @@ Cc: linux-arch@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH v2 12/18] x86/crc32: update prototype for crc32_pclmul_le_16()
-Date: Fri, 25 Oct 2024 12:14:48 -0700
-Message-ID: <20241025191454.72616-13-ebiggers@kernel.org>
+Subject: [PATCH v2 14/18] lib/crc32: make crc32c() go directly to lib
+Date: Fri, 25 Oct 2024 12:14:50 -0700
+Message-ID: <20241025191454.72616-15-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241025191454.72616-1-ebiggers@kernel.org>
 References: <20241025191454.72616-1-ebiggers@kernel.org>
@@ -82,92 +82,171 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-- Change the len parameter from unsigned int to size_t, so that the
-  library function which takes a size_t can safely use this code.
+Now that the lower level __crc32c_le() library function is optimized for
+each architecture, make crc32c() just call that instead of taking an
+inefficient and error-prone detour through the shash API.
 
-- Move the crc parameter to the front, as this is the usual convention.
+Note: a future cleanup should make crc32c_le() be the actual library
+function instead of __crc32c_le().  That will require updating callers
+of __crc32c_le() to use crc32c_le() instead, and updating callers of
+crc32c_le() that expect a 'const void *' arg to expect 'const u8 *'
+instead.  Similarly, a future cleanup should remove LIBCRC32C by making
+everyone who is selecting it just select CRC32 directly instead.
 
 Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/x86/crypto/crc32-pclmul_asm.S  | 19 +++++++++----------
- arch/x86/crypto/crc32-pclmul_glue.c |  4 ++--
- 2 files changed, 11 insertions(+), 12 deletions(-)
+ include/linux/crc32c.h |  7 ++--
+ lib/Kconfig            | 10 ++----
+ lib/Makefile           |  1 -
+ lib/libcrc32c.c        | 74 ------------------------------------------
+ 4 files changed, 8 insertions(+), 84 deletions(-)
+ delete mode 100644 lib/libcrc32c.c
 
-diff --git a/arch/x86/crypto/crc32-pclmul_asm.S b/arch/x86/crypto/crc32-pclmul_asm.S
-index 5d31137e2c7d..f9637789cac1 100644
---- a/arch/x86/crypto/crc32-pclmul_asm.S
-+++ b/arch/x86/crypto/crc32-pclmul_asm.S
-@@ -56,30 +56,29 @@
- 	.octa 0x00000001F701164100000001DB710641
+diff --git a/include/linux/crc32c.h b/include/linux/crc32c.h
+index 357ae4611a45..47eb78003c26 100644
+--- a/include/linux/crc32c.h
++++ b/include/linux/crc32c.h
+@@ -1,12 +1,15 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ #ifndef _LINUX_CRC32C_H
+ #define _LINUX_CRC32C_H
  
- #define CONSTANT %xmm0
+-#include <linux/types.h>
++#include <linux/crc32.h>
  
- #ifdef __x86_64__
--#define BUF     %rdi
--#define LEN     %rsi
--#define CRC     %edx
-+#define CRC     %edi
-+#define BUF     %rsi
-+#define LEN     %rdx
- #else
--#define BUF     %eax
--#define LEN     %edx
--#define CRC     %ecx
-+#define CRC     %eax
-+#define BUF     %edx
-+#define LEN     %ecx
- #endif
+-extern u32 crc32c(u32 crc, const void *address, unsigned int length);
++static inline u32 crc32c(u32 crc, const void *address, unsigned int length)
++{
++	return __crc32c_le(crc, address, length);
++}
  
+ /* This macro exists for backwards-compatibility. */
+ #define crc32c_le crc32c
  
+ #endif	/* _LINUX_CRC32C_H */
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 07afcf214f35..b894ee64ff95 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -296,18 +296,14 @@ config CRC7
+ 	  the kernel tree does. Such modules that use library CRC7
+ 	  functions require M here.
  
- .text
- /**
-  *      Calculate crc32
-- *      BUF - buffer (16 bytes aligned)
-- *      LEN - sizeof buffer (16 bytes aligned), LEN should be grater than 63
-  *      CRC - initial crc32
-+ *      BUF - buffer (16 bytes aligned)
-+ *      LEN - sizeof buffer (16 bytes aligned), LEN should be greater than 63
-  *      return %eax crc32
-- *      uint crc32_pclmul_le_16(unsigned char const *buffer,
-- *	                     size_t len, uint crc32)
-+ *      u32 crc32_pclmul_le_16(u32 crc, const u8 *buffer, size_t len);
-  */
+ config LIBCRC32C
+ 	tristate "CRC32c (Castagnoli, et al) Cyclic Redundancy-Check"
+-	select CRYPTO
+-	select CRYPTO_CRC32C
++	select CRC32
+ 	help
+-	  This option is provided for the case where no in-kernel-tree
+-	  modules require CRC32c functions, but a module built outside the
+-	  kernel tree does. Such modules that use library CRC32c functions
+-	  require M here.  See Castagnoli93.
+-	  Module will be libcrc32c.
++	  This option just selects CRC32 and is provided for compatibility
++	  purposes until the users are updated to select CRC32 directly.
  
- SYM_FUNC_START(crc32_pclmul_le_16) /* buffer and buffer size are 16 bytes aligned */
- 	movdqa  (BUF), %xmm1
- 	movdqa  0x10(BUF), %xmm2
-diff --git a/arch/x86/crypto/crc32-pclmul_glue.c b/arch/x86/crypto/crc32-pclmul_glue.c
-index 9f5e342b9845..9d14eac51c5b 100644
---- a/arch/x86/crypto/crc32-pclmul_glue.c
-+++ b/arch/x86/crypto/crc32-pclmul_glue.c
-@@ -44,11 +44,11 @@
- #define PCLMUL_MIN_LEN		64L     /* minimum size of buffer
- 					 * for crc32_pclmul_le_16 */
- #define SCALE_F			16L	/* size of xmm register */
- #define SCALE_F_MASK		(SCALE_F - 1)
+ config CRC8
+ 	tristate "CRC8 function"
+ 	help
+ 	  This option provides CRC8 function. Drivers may select this
+diff --git a/lib/Makefile b/lib/Makefile
+index 773adf88af41..15646679aee2 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -161,11 +161,10 @@ obj-$(CONFIG_CRC_ITU_T)	+= crc-itu-t.o
+ obj-$(CONFIG_CRC32)	+= crc32.o
+ obj-$(CONFIG_CRC64)     += crc64.o
+ obj-$(CONFIG_CRC32_SELFTEST)	+= crc32test.o
+ obj-$(CONFIG_CRC4)	+= crc4.o
+ obj-$(CONFIG_CRC7)	+= crc7.o
+-obj-$(CONFIG_LIBCRC32C)	+= libcrc32c.o
+ obj-$(CONFIG_CRC8)	+= crc8.o
+ obj-$(CONFIG_CRC64_ROCKSOFT) += crc64-rocksoft.o
+ obj-$(CONFIG_XXHASH)	+= xxhash.o
+ obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
  
--u32 crc32_pclmul_le_16(unsigned char const *buffer, size_t len, u32 crc32);
-+u32 crc32_pclmul_le_16(u32 crc, const u8 *buffer, size_t len);
- 
- static u32 __attribute__((pure))
- 	crc32_pclmul_le(u32 crc, unsigned char const *p, size_t len)
- {
- 	unsigned int iquotient;
-@@ -69,11 +69,11 @@ static u32 __attribute__((pure))
- 	}
- 	iquotient = len & (~SCALE_F_MASK);
- 	iremainder = len & SCALE_F_MASK;
- 
- 	kernel_fpu_begin();
--	crc = crc32_pclmul_le_16(p, iquotient, crc);
-+	crc = crc32_pclmul_le_16(crc, p, iquotient);
- 	kernel_fpu_end();
- 
- 	if (iremainder)
- 		crc = crc32_le(crc, p + iquotient, iremainder);
- 
+diff --git a/lib/libcrc32c.c b/lib/libcrc32c.c
+deleted file mode 100644
+index 649e687413a0..000000000000
+--- a/lib/libcrc32c.c
++++ /dev/null
+@@ -1,74 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/* 
+- * CRC32C
+- *@Article{castagnoli-crc,
+- * author =       { Guy Castagnoli and Stefan Braeuer and Martin Herrman},
+- * title =        {{Optimization of Cyclic Redundancy-Check Codes with 24
+- *                 and 32 Parity Bits}},
+- * journal =      IEEE Transactions on Communication,
+- * year =         {1993},
+- * volume =       {41},
+- * number =       {6},
+- * pages =        {},
+- * month =        {June},
+- *}
+- * Used by the iSCSI driver, possibly others, and derived from
+- * the iscsi-crc.c module of the linux-iscsi driver at
+- * http://linux-iscsi.sourceforge.net.
+- *
+- * Following the example of lib/crc32, this function is intended to be
+- * flexible and useful for all users.  Modules that currently have their
+- * own crc32c, but hopefully may be able to use this one are:
+- *  net/sctp (please add all your doco to here if you change to
+- *            use this one!)
+- *  <endoflist>
+- *
+- * Copyright (c) 2004 Cisco Systems, Inc.
+- */
+-
+-#include <crypto/hash.h>
+-#include <linux/err.h>
+-#include <linux/init.h>
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/crc32c.h>
+-
+-static struct crypto_shash *tfm;
+-
+-u32 crc32c(u32 crc, const void *address, unsigned int length)
+-{
+-	SHASH_DESC_ON_STACK(shash, tfm);
+-	u32 ret, *ctx = (u32 *)shash_desc_ctx(shash);
+-	int err;
+-
+-	shash->tfm = tfm;
+-	*ctx = crc;
+-
+-	err = crypto_shash_update(shash, address, length);
+-	BUG_ON(err);
+-
+-	ret = *ctx;
+-	barrier_data(ctx);
+-	return ret;
+-}
+-
+-EXPORT_SYMBOL(crc32c);
+-
+-static int __init libcrc32c_mod_init(void)
+-{
+-	tfm = crypto_alloc_shash("crc32c", 0, 0);
+-	return PTR_ERR_OR_ZERO(tfm);
+-}
+-
+-static void __exit libcrc32c_mod_fini(void)
+-{
+-	crypto_free_shash(tfm);
+-}
+-
+-module_init(libcrc32c_mod_init);
+-module_exit(libcrc32c_mod_fini);
+-
+-MODULE_AUTHOR("Clay Haapala <chaapala@cisco.com>");
+-MODULE_DESCRIPTION("CRC32c (Castagnoli) calculations");
+-MODULE_LICENSE("GPL");
+-MODULE_SOFTDEP("pre: crc32c");
 -- 
 2.47.0
 
