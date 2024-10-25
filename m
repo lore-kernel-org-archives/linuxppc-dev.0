@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-2591-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2592-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 580FED149EB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2024 19:16:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3666D149E8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Oct 2024 19:16:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XZsvF3M0Hz3bc6;
-	Sat, 26 Oct 2024 06:15:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729883753;
-	cv=none; b=eYCJ/uAsudeIgpvp0/GeZmKJe+5h7EJ/fgGweZdGIhTAwBHCNC9uJ8LLrkoVxLgax7G8ljVy79Tg/WXq4DsI8vo6Y8jTcX+rbwYDLdZO0WwwV0EPzdXIV4EnJMQm0eBa5EEAxxWcxwps/vfBcB9dQMAcVdjSEdfMG4yDG1UTdo7sDb/KvZudwVs7b3r7Z9QrwVq4PQ9zkag643wft11I5T1rpJRU42DZFXuHJNCt2/NVB4Ykyc+++sly/ke5gKq99PiYyyVZGztGqQEXO8/HBUfSI9KFe1d+fTOI/60AcTAOIL/prwLsljNkx15wEWgViVmL6sIhnW6AVwQcy1PGFQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZsvG4CxBz2yN8;
+	Sat, 26 Oct 2024 06:15:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729883754;
+	cv=none; b=afQVu8RL2NDNEPPvGM3q1dpKWKWGyou/RrP8JlyDMOnHEkEAVjuXMRc6E8QazoSBxwtCtGPXtASD7PFFfelbAipNWjaQ/IlgR2FET8bgB/equYyqjv7DVh2RjC1ctgARVwSLCUpou07ZMIv09yaBxfdApF4d5g8dNtERwObZ1lh7hp+UpIsxC0P5L7fXQGxwT9NkZeGkJu3Ly+PVn6oVn4EfHyCXmig3InDd3vPYqOZv0piHPwWE2J8yE90M5mvzK+BEBoJXfeL6m+QTeEV7kPiuQzYwW4NvBakWRaUX2ZOBYbYyOa0whzuZeqML61zLuJRaPTeEGpqSMbyepDXEGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729883753; c=relaxed/relaxed;
-	bh=Gx/NPO77z1DtWpg+Wbv7iCZDKWa05k3zv1GiT7ERGPM=;
+	t=1729883754; c=relaxed/relaxed;
+	bh=3z/mt/BnUWvI+sqOze4OGTch39v/4gyNgoCIxOj66cI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cbshn5lUmNMYE346d529v1ZSgEalHdMU2JYomI96ekkV66FpcitxIiVKgyUBmqR+XUa+JSk4OP5TriiS/8eJvprg4X9N0gOiMMFtb3BpHWOag6rJXey/PjgyJEtKilCbOzoHUlmGMhS46WmL8WIbDG8k2bGv6w9TPhBGjsdGRyrD+y8Jj5S8Y9q3FZd3qZ7p5ciMJua4rPoqknykbhAu8BgV4tL/X6vvCywlk8a5XCSNbbPDLHFBr7VfZzSzmw5kYcHW53/ByefF+BQrOvG2P+p8W8sP0a/1039xlZAnnJsbZYdL3LxllWF3BpbqqvKzn8MlKWNUYPp0ON1lBlxj9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ewf3k1fN; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=fuPqH1Jk0J1IqInKqGxX7voT4NtWkIJX0/Pp/FM6YorYGmUo1ufAYMlarqRi1xfzdCFlt8Lsa/lUz5H9h4dhl7LASFS/RJl/QtZxuT0tg5cLXT0VKRaEPvw2DyeenAdfCZhwn30XkF7H+Z5rO3uX5/lsqCOrgvGxmGKqc1ZYLeFUfcfmmaSrLJeT6f+iIc1s9LDwjumcY0o5jHt8sW88aQqEYM0f3SBQqPeAz+A5P07B8QpUABESp7+TnOW0ZPta3xWNw/c0DyoMMSuro5/N57tkaLrGWwWpFpKMPQK6HeqU40GbqQ7evH+QBZH/C1bZCAPlFG9gQYtPcT2MGFdqcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IqWQX7ku; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ewf3k1fN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IqWQX7ku;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZsvB1Smdz2yN8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZsvB0zWLz2yN4
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Oct 2024 06:15:49 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id E2FB1A44C37;
-	Fri, 25 Oct 2024 19:13:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92CA0C4CEF7;
-	Fri, 25 Oct 2024 19:15:45 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4EE225C5FCD;
+	Fri, 25 Oct 2024 19:15:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BCDC0C4CEE6;
+	Fri, 25 Oct 2024 19:15:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729883746;
-	bh=3ki30lOxrwcmmFT8r/BxBSIWiIgjCokra374LPFdTjo=;
+	s=k20201202; t=1729883747;
+	bh=dB34rez1trxTNuWEOCE9fnblV0mVENKJwWvk8upvfKI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Ewf3k1fN8FI5lfS/6w9IFwZ4u6hVpP/Fl0POKQECBxh2jBWAZpuVIzIUxSZROAKf6
-	 BUjn6UW1aFHZHkDdHUd8K46PyIbTrfUHoQVAnyt5ocYS8KAIh7w0dqiIdNyUqxzRXs
-	 zyainnf7I542RMLlffmEuRba9rENa8Z7OkVP+DX2ya/xa1MGrdlZVjVq8FQzNJyl/h
-	 Mm4tHBFwbQvF4SL1U7JRODcZQsniEHUJfOY3PW1AS/6iECR/HXamD+XEIRJ5Ey1leg
-	 3njI7/DQzTwoOyYlyv6Cw/CUe395fJjoiHorj8UnmtJB+th3baQAp1wmJhGKSKDPWV
-	 wa1UzKFgR/x5g==
+	b=IqWQX7kuJ7hdAOKm/CM+5qT+s2WVn5IBNdJp84G8MHIKYl17RgJj+SS5I0T56lv8d
+	 VkBAcc62vVBCVm00T7hIlp3aRo5amGIrbM5Q3/IU0LU66lXGKm6Gtxvl3g6W6W63LB
+	 7A/UR/cYj9+hB50p2OzS77h6S7ogWnZSrw9TUT8a8c7zmJ8pFhClfmL6YXtdAEzhup
+	 Vv0HntwOkRV62sBOSDigzdZ2VS8jTS3B5qaAby9UM8cZL6D6zy7HyV7762eqHHIHSN
+	 J/R7zrzlvZttNulBeKGhtMKQM5qOkTDzICH+mSjZw5oiagpqMeW8MnN+K8uTnPIO6i
+	 hUB5UK6Fbf/PQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -58,10 +58,11 @@ Cc: linux-arch@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	loongarch@lists.linux.dev,
 	sparclinux@vger.kernel.org,
-	x86@kernel.org
-Subject: [PATCH v2 04/18] crypto: crc32 - don't unnecessarily register arch algorithms
-Date: Fri, 25 Oct 2024 12:14:40 -0700
-Message-ID: <20241025191454.72616-5-ebiggers@kernel.org>
+	x86@kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>
+Subject: [PATCH v2 06/18] loongarch/crc32: expose CRC32 functions through lib
+Date: Fri, 25 Oct 2024 12:14:42 -0700
+Message-ID: <20241025191454.72616-7-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241025191454.72616-1-ebiggers@kernel.org>
 References: <20241025191454.72616-1-ebiggers@kernel.org>
@@ -81,83 +82,546 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Instead of registering the crc32-$arch and crc32c-$arch algorithms if
-the arch-specific code was built, only register them when that code was
-built *and* is not falling back to the base implementation at runtime.
+Move the loongarch CRC32 assembly code into the lib directory and wire
+it up to the library interface.  This allows it to be used without going
+through the crypto API.  It remains usable via the crypto API too via
+the shash algorithms that use the library interface.  Thus all the
+arch-specific "shash" code becomes unnecessary and is removed.
 
-This avoids confusing users like btrfs which checks the shash driver
-name to determine whether it is crc32c-generic.
+Note: to see the diff from arch/loongarch/crypto/crc32-loongarch.c to
+arch/loongarch/lib/crc32-loongarch.c, view this commit with
+'git show -M10'.
 
-(It would also make sense to change btrfs to test the crc32_optimization
-flags itself, so that it doesn't have to use the weird hack of parsing
-the driver name.  This change still makes sense either way though.)
-
+Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- crypto/crc32_generic.c  | 8 ++++++--
- crypto/crc32c_generic.c | 8 ++++++--
- 2 files changed, 12 insertions(+), 4 deletions(-)
+ arch/loongarch/Kconfig                     |   1 +
+ arch/loongarch/configs/loongson3_defconfig |   1 -
+ arch/loongarch/crypto/Kconfig              |   9 -
+ arch/loongarch/crypto/Makefile             |   2 -
+ arch/loongarch/crypto/crc32-loongarch.c    | 300 ---------------------
+ arch/loongarch/lib/Makefile                |   2 +
+ arch/loongarch/lib/crc32-loongarch.c       | 130 +++++++++
+ 7 files changed, 133 insertions(+), 312 deletions(-)
+ delete mode 100644 arch/loongarch/crypto/crc32-loongarch.c
+ create mode 100644 arch/loongarch/lib/crc32-loongarch.c
 
-diff --git a/crypto/crc32_generic.c b/crypto/crc32_generic.c
-index cc064ea8240e..cecd01e4d6e6 100644
---- a/crypto/crc32_generic.c
-+++ b/crypto/crc32_generic.c
-@@ -155,19 +155,23 @@ static struct shash_alg algs[] = {{
- 	.base.cra_ctxsize	= sizeof(u32),
- 	.base.cra_module	= THIS_MODULE,
- 	.base.cra_init		= crc32_cra_init,
- }};
+diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
+index bb35c34f86d2..455f1af0bf88 100644
+--- a/arch/loongarch/Kconfig
++++ b/arch/loongarch/Kconfig
+@@ -13,10 +13,11 @@ config LOONGARCH
+ 	select ARCH_ENABLE_MEMORY_HOTPLUG
+ 	select ARCH_ENABLE_MEMORY_HOTREMOVE
+ 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
+ 	select ARCH_HAS_ACPI_TABLE_UPGRADE	if ACPI
+ 	select ARCH_HAS_CPU_FINALIZE_INIT
++	select ARCH_HAS_CRC32
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VM_PGTABLE
+ 	select ARCH_HAS_FAST_MULTIPLIER
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_KCOV
+diff --git a/arch/loongarch/configs/loongson3_defconfig b/arch/loongarch/configs/loongson3_defconfig
+index 75b366407a60..0487ac21b38b 100644
+--- a/arch/loongarch/configs/loongson3_defconfig
++++ b/arch/loongarch/configs/loongson3_defconfig
+@@ -967,11 +967,10 @@ CONFIG_CRYPTO_LZ4=m
+ CONFIG_CRYPTO_LZ4HC=m
+ CONFIG_CRYPTO_USER_API_HASH=m
+ CONFIG_CRYPTO_USER_API_SKCIPHER=m
+ CONFIG_CRYPTO_USER_API_RNG=m
+ CONFIG_CRYPTO_USER_API_AEAD=m
+-CONFIG_CRYPTO_CRC32_LOONGARCH=m
+ CONFIG_CRYPTO_DEV_VIRTIO=m
+ CONFIG_DMA_CMA=y
+ CONFIG_DMA_NUMA_CMA=y
+ CONFIG_CMA_SIZE_MBYTES=0
+ CONFIG_PRINTK_TIME=y
+diff --git a/arch/loongarch/crypto/Kconfig b/arch/loongarch/crypto/Kconfig
+index 200a6e8b43b1..a0270b3e5b30 100644
+--- a/arch/loongarch/crypto/Kconfig
++++ b/arch/loongarch/crypto/Kconfig
+@@ -1,14 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
  
-+static int num_algs;
+ menu "Accelerated Cryptographic Algorithms for CPU (loongarch)"
+ 
+-config CRYPTO_CRC32_LOONGARCH
+-	tristate "CRC32c and CRC32"
+-	select CRC32
+-	select CRYPTO_HASH
+-	help
+-	  CRC32c and CRC32 CRC algorithms
+-
+-	  Architecture: LoongArch with CRC32 instructions
+-
+ endmenu
+diff --git a/arch/loongarch/crypto/Makefile b/arch/loongarch/crypto/Makefile
+index d22613d27ce9..ba83755dde2b 100644
+--- a/arch/loongarch/crypto/Makefile
++++ b/arch/loongarch/crypto/Makefile
+@@ -1,6 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0
+ #
+ # Makefile for LoongArch crypto files..
+ #
+-
+-obj-$(CONFIG_CRYPTO_CRC32_LOONGARCH) += crc32-loongarch.o
+diff --git a/arch/loongarch/crypto/crc32-loongarch.c b/arch/loongarch/crypto/crc32-loongarch.c
+deleted file mode 100644
+index b7d9782827f5..000000000000
+--- a/arch/loongarch/crypto/crc32-loongarch.c
++++ /dev/null
+@@ -1,300 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
+-/*
+- * crc32.c - CRC32 and CRC32C using LoongArch crc* instructions
+- *
+- * Module based on mips/crypto/crc32-mips.c
+- *
+- * Copyright (C) 2014 Linaro Ltd <yazen.ghannam@linaro.org>
+- * Copyright (C) 2018 MIPS Tech, LLC
+- * Copyright (C) 2020-2023 Loongson Technology Corporation Limited
+- */
+-
+-#include <linux/module.h>
+-#include <crypto/internal/hash.h>
+-
+-#include <asm/cpu-features.h>
+-#include <linux/unaligned.h>
+-
+-#define _CRC32(crc, value, size, type)			\
+-do {							\
+-	__asm__ __volatile__(				\
+-		#type ".w." #size ".w" " %0, %1, %0\n\t"\
+-		: "+r" (crc)				\
+-		: "r" (value)				\
+-		: "memory");				\
+-} while (0)
+-
+-#define CRC32(crc, value, size)		_CRC32(crc, value, size, crc)
+-#define CRC32C(crc, value, size)	_CRC32(crc, value, size, crcc)
+-
+-static u32 crc32_loongarch_hw(u32 crc_, const u8 *p, unsigned int len)
+-{
+-	u32 crc = crc_;
+-
+-	while (len >= sizeof(u64)) {
+-		u64 value = get_unaligned_le64(p);
+-
+-		CRC32(crc, value, d);
+-		p += sizeof(u64);
+-		len -= sizeof(u64);
+-	}
+-
+-	if (len & sizeof(u32)) {
+-		u32 value = get_unaligned_le32(p);
+-
+-		CRC32(crc, value, w);
+-		p += sizeof(u32);
+-	}
+-
+-	if (len & sizeof(u16)) {
+-		u16 value = get_unaligned_le16(p);
+-
+-		CRC32(crc, value, h);
+-		p += sizeof(u16);
+-	}
+-
+-	if (len & sizeof(u8)) {
+-		u8 value = *p++;
+-
+-		CRC32(crc, value, b);
+-	}
+-
+-	return crc;
+-}
+-
+-static u32 crc32c_loongarch_hw(u32 crc_, const u8 *p, unsigned int len)
+-{
+-	u32 crc = crc_;
+-
+-	while (len >= sizeof(u64)) {
+-		u64 value = get_unaligned_le64(p);
+-
+-		CRC32C(crc, value, d);
+-		p += sizeof(u64);
+-		len -= sizeof(u64);
+-	}
+-
+-	if (len & sizeof(u32)) {
+-		u32 value = get_unaligned_le32(p);
+-
+-		CRC32C(crc, value, w);
+-		p += sizeof(u32);
+-	}
+-
+-	if (len & sizeof(u16)) {
+-		u16 value = get_unaligned_le16(p);
+-
+-		CRC32C(crc, value, h);
+-		p += sizeof(u16);
+-	}
+-
+-	if (len & sizeof(u8)) {
+-		u8 value = *p++;
+-
+-		CRC32C(crc, value, b);
+-	}
+-
+-	return crc;
+-}
+-
+-#define CHKSUM_BLOCK_SIZE	1
+-#define CHKSUM_DIGEST_SIZE	4
+-
+-struct chksum_ctx {
+-	u32 key;
+-};
+-
+-struct chksum_desc_ctx {
+-	u32 crc;
+-};
+-
+-static int chksum_init(struct shash_desc *desc)
+-{
+-	struct chksum_ctx *mctx = crypto_shash_ctx(desc->tfm);
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	ctx->crc = mctx->key;
+-
+-	return 0;
+-}
+-
+-/*
+- * Setting the seed allows arbitrary accumulators and flexible XOR policy
+- * If your algorithm starts with ~0, then XOR with ~0 before you set the seed.
+- */
+-static int chksum_setkey(struct crypto_shash *tfm, const u8 *key, unsigned int keylen)
+-{
+-	struct chksum_ctx *mctx = crypto_shash_ctx(tfm);
+-
+-	if (keylen != sizeof(mctx->key))
+-		return -EINVAL;
+-
+-	mctx->key = get_unaligned_le32(key);
+-
+-	return 0;
+-}
+-
+-static int chksum_update(struct shash_desc *desc, const u8 *data, unsigned int length)
+-{
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	ctx->crc = crc32_loongarch_hw(ctx->crc, data, length);
+-	return 0;
+-}
+-
+-static int chksumc_update(struct shash_desc *desc, const u8 *data, unsigned int length)
+-{
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	ctx->crc = crc32c_loongarch_hw(ctx->crc, data, length);
+-	return 0;
+-}
+-
+-static int chksum_final(struct shash_desc *desc, u8 *out)
+-{
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	put_unaligned_le32(ctx->crc, out);
+-	return 0;
+-}
+-
+-static int chksumc_final(struct shash_desc *desc, u8 *out)
+-{
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	put_unaligned_le32(~ctx->crc, out);
+-	return 0;
+-}
+-
+-static int __chksum_finup(u32 crc, const u8 *data, unsigned int len, u8 *out)
+-{
+-	put_unaligned_le32(crc32_loongarch_hw(crc, data, len), out);
+-	return 0;
+-}
+-
+-static int __chksumc_finup(u32 crc, const u8 *data, unsigned int len, u8 *out)
+-{
+-	put_unaligned_le32(~crc32c_loongarch_hw(crc, data, len), out);
+-	return 0;
+-}
+-
+-static int chksum_finup(struct shash_desc *desc, const u8 *data, unsigned int len, u8 *out)
+-{
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	return __chksum_finup(ctx->crc, data, len, out);
+-}
+-
+-static int chksumc_finup(struct shash_desc *desc, const u8 *data, unsigned int len, u8 *out)
+-{
+-	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+-
+-	return __chksumc_finup(ctx->crc, data, len, out);
+-}
+-
+-static int chksum_digest(struct shash_desc *desc, const u8 *data, unsigned int length, u8 *out)
+-{
+-	struct chksum_ctx *mctx = crypto_shash_ctx(desc->tfm);
+-
+-	return __chksum_finup(mctx->key, data, length, out);
+-}
+-
+-static int chksumc_digest(struct shash_desc *desc, const u8 *data, unsigned int length, u8 *out)
+-{
+-	struct chksum_ctx *mctx = crypto_shash_ctx(desc->tfm);
+-
+-	return __chksumc_finup(mctx->key, data, length, out);
+-}
+-
+-static int chksum_cra_init(struct crypto_tfm *tfm)
+-{
+-	struct chksum_ctx *mctx = crypto_tfm_ctx(tfm);
+-
+-	mctx->key = 0;
+-	return 0;
+-}
+-
+-static int chksumc_cra_init(struct crypto_tfm *tfm)
+-{
+-	struct chksum_ctx *mctx = crypto_tfm_ctx(tfm);
+-
+-	mctx->key = ~0;
+-	return 0;
+-}
+-
+-static struct shash_alg crc32_alg = {
+-	.digestsize		=	CHKSUM_DIGEST_SIZE,
+-	.setkey			=	chksum_setkey,
+-	.init			=	chksum_init,
+-	.update			=	chksum_update,
+-	.final			=	chksum_final,
+-	.finup			=	chksum_finup,
+-	.digest			=	chksum_digest,
+-	.descsize		=	sizeof(struct chksum_desc_ctx),
+-	.base			=	{
+-		.cra_name		=	"crc32",
+-		.cra_driver_name	=	"crc32-loongarch",
+-		.cra_priority		=	300,
+-		.cra_flags		=	CRYPTO_ALG_OPTIONAL_KEY,
+-		.cra_blocksize		=	CHKSUM_BLOCK_SIZE,
+-		.cra_ctxsize		=	sizeof(struct chksum_ctx),
+-		.cra_module		=	THIS_MODULE,
+-		.cra_init		=	chksum_cra_init,
+-	}
+-};
+-
+-static struct shash_alg crc32c_alg = {
+-	.digestsize		=	CHKSUM_DIGEST_SIZE,
+-	.setkey			=	chksum_setkey,
+-	.init			=	chksum_init,
+-	.update			=	chksumc_update,
+-	.final			=	chksumc_final,
+-	.finup			=	chksumc_finup,
+-	.digest			=	chksumc_digest,
+-	.descsize		=	sizeof(struct chksum_desc_ctx),
+-	.base			=	{
+-		.cra_name		=	"crc32c",
+-		.cra_driver_name	=	"crc32c-loongarch",
+-		.cra_priority		=	300,
+-		.cra_flags		=	CRYPTO_ALG_OPTIONAL_KEY,
+-		.cra_blocksize		=	CHKSUM_BLOCK_SIZE,
+-		.cra_ctxsize		=	sizeof(struct chksum_ctx),
+-		.cra_module		=	THIS_MODULE,
+-		.cra_init		=	chksumc_cra_init,
+-	}
+-};
+-
+-static int __init crc32_mod_init(void)
+-{
+-	int err;
+-
+-	if (!cpu_has(CPU_FEATURE_CRC32))
+-		return 0;
+-
+-	err = crypto_register_shash(&crc32_alg);
+-	if (err)
+-		return err;
+-
+-	err = crypto_register_shash(&crc32c_alg);
+-	if (err)
+-		return err;
+-
+-	return 0;
+-}
+-
+-static void __exit crc32_mod_exit(void)
+-{
+-	if (!cpu_has(CPU_FEATURE_CRC32))
+-		return;
+-
+-	crypto_unregister_shash(&crc32_alg);
+-	crypto_unregister_shash(&crc32c_alg);
+-}
+-
+-module_init(crc32_mod_init);
+-module_exit(crc32_mod_exit);
+-
+-MODULE_AUTHOR("Min Zhou <zhoumin@loongson.cn>");
+-MODULE_AUTHOR("Huacai Chen <chenhuacai@loongson.cn>");
+-MODULE_DESCRIPTION("CRC32 and CRC32C using LoongArch crc* instructions");
+-MODULE_LICENSE("GPL v2");
+diff --git a/arch/loongarch/lib/Makefile b/arch/loongarch/lib/Makefile
+index ccea3bbd4353..fae77809048b 100644
+--- a/arch/loongarch/lib/Makefile
++++ b/arch/loongarch/lib/Makefile
+@@ -9,5 +9,7 @@ lib-y	+= delay.o memset.o memcpy.o memmove.o \
+ obj-$(CONFIG_ARCH_SUPPORTS_INT128) += tishift.o
+ 
+ obj-$(CONFIG_CPU_HAS_LSX) += xor_simd.o xor_simd_glue.o
+ 
+ obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
 +
- static int __init crc32_mod_init(void)
- {
- 	/* register the arch flavor only if it differs from the generic one */
--	return crypto_register_shashes(algs, 1 + IS_ENABLED(CONFIG_CRC32_ARCH));
-+	num_algs = 1 + ((crc32_optimizations & CRC32_LE_OPTIMIZATION) != 0);
++obj-$(CONFIG_CRC32_ARCH) += crc32-loongarch.o
+diff --git a/arch/loongarch/lib/crc32-loongarch.c b/arch/loongarch/lib/crc32-loongarch.c
+new file mode 100644
+index 000000000000..aa03e1a7a7e8
+--- /dev/null
++++ b/arch/loongarch/lib/crc32-loongarch.c
+@@ -0,0 +1,130 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * crc32.c - CRC32 and CRC32C using LoongArch crc* instructions
++ *
++ * Module based on mips/crypto/crc32-mips.c
++ *
++ * Copyright (C) 2014 Linaro Ltd <yazen.ghannam@linaro.org>
++ * Copyright (C) 2018 MIPS Tech, LLC
++ * Copyright (C) 2020-2023 Loongson Technology Corporation Limited
++ */
 +
-+	return crypto_register_shashes(algs, num_algs);
- }
- 
- static void __exit crc32_mod_fini(void)
- {
--	crypto_unregister_shashes(algs, 1 + IS_ENABLED(CONFIG_CRC32_ARCH));
-+	crypto_unregister_shashes(algs, num_algs);
- }
- 
- subsys_initcall(crc32_mod_init);
- module_exit(crc32_mod_fini);
- 
-diff --git a/crypto/crc32c_generic.c b/crypto/crc32c_generic.c
-index 04b03d825cf4..47d694da9d4a 100644
---- a/crypto/crc32c_generic.c
-+++ b/crypto/crc32c_generic.c
-@@ -195,19 +195,23 @@ static struct shash_alg algs[] = {{
- 	.base.cra_ctxsize	= sizeof(struct chksum_ctx),
- 	.base.cra_module	= THIS_MODULE,
- 	.base.cra_init		= crc32c_cra_init,
- }};
- 
-+static int num_algs;
++#include <asm/cpu-features.h>
++#include <linux/crc32.h>
++#include <linux/module.h>
++#include <linux/unaligned.h>
 +
- static int __init crc32c_mod_init(void)
- {
- 	/* register the arch flavor only if it differs from the generic one */
--	return crypto_register_shashes(algs, 1 + IS_ENABLED(CONFIG_CRC32_ARCH));
-+	num_algs = 1 + ((crc32_optimizations & CRC32C_OPTIMIZATION) != 0);
++#define _CRC32(crc, value, size, type)			\
++do {							\
++	__asm__ __volatile__(				\
++		#type ".w." #size ".w" " %0, %1, %0\n\t"\
++		: "+r" (crc)				\
++		: "r" (value)				\
++		: "memory");				\
++} while (0)
 +
-+	return crypto_register_shashes(algs, num_algs);
- }
- 
- static void __exit crc32c_mod_fini(void)
- {
--	crypto_unregister_shashes(algs, 1 + IS_ENABLED(CONFIG_CRC32_ARCH));
-+	crypto_unregister_shashes(algs, num_algs);
- }
- 
- subsys_initcall(crc32c_mod_init);
- module_exit(crc32c_mod_fini);
- 
++#define CRC32(crc, value, size)		_CRC32(crc, value, size, crc)
++#define CRC32C(crc, value, size)	_CRC32(crc, value, size, crcc)
++
++static DEFINE_STATIC_KEY_FALSE(have_crc32);
++
++u32 crc32_le_arch(u32 crc, const u8 *p, size_t len)
++{
++	if (!static_branch_likely(&have_crc32))
++		return crc32_le_base(crc, p, len);
++
++	while (len >= sizeof(u64)) {
++		u64 value = get_unaligned_le64(p);
++
++		CRC32(crc, value, d);
++		p += sizeof(u64);
++		len -= sizeof(u64);
++	}
++
++	if (len & sizeof(u32)) {
++		u32 value = get_unaligned_le32(p);
++
++		CRC32(crc, value, w);
++		p += sizeof(u32);
++	}
++
++	if (len & sizeof(u16)) {
++		u16 value = get_unaligned_le16(p);
++
++		CRC32(crc, value, h);
++		p += sizeof(u16);
++	}
++
++	if (len & sizeof(u8)) {
++		u8 value = *p++;
++
++		CRC32(crc, value, b);
++	}
++
++	return crc;
++}
++EXPORT_SYMBOL(crc32_le_arch);
++
++u32 crc32c_le_arch(u32 crc, const u8 *p, size_t len)
++{
++	if (!static_branch_likely(&have_crc32))
++		return crc32c_le_base(crc, p, len);
++
++	while (len >= sizeof(u64)) {
++		u64 value = get_unaligned_le64(p);
++
++		CRC32C(crc, value, d);
++		p += sizeof(u64);
++		len -= sizeof(u64);
++	}
++
++	if (len & sizeof(u32)) {
++		u32 value = get_unaligned_le32(p);
++
++		CRC32C(crc, value, w);
++		p += sizeof(u32);
++	}
++
++	if (len & sizeof(u16)) {
++		u16 value = get_unaligned_le16(p);
++
++		CRC32C(crc, value, h);
++		p += sizeof(u16);
++	}
++
++	if (len & sizeof(u8)) {
++		u8 value = *p++;
++
++		CRC32C(crc, value, b);
++	}
++
++	return crc;
++}
++EXPORT_SYMBOL(crc32c_le_arch);
++
++u32 crc32_be_arch(u32 crc, const u8 *p, size_t len)
++{
++	return crc32_be_base(crc, p, len);
++}
++EXPORT_SYMBOL(crc32_be_arch);
++
++static int __init crc32_loongarch_init(void)
++{
++	if (cpu_has(CPU_FEATURE_CRC32)) {
++		static_branch_enable(&have_crc32);
++		crc32_optimizations = CRC32_LE_OPTIMIZATION |
++				      CRC32C_OPTIMIZATION;
++	}
++	return 0;
++}
++arch_initcall(crc32_loongarch_init);
++
++static void __exit crc32_loongarch_exit(void)
++{
++}
++module_exit(crc32_loongarch_exit);
++
++MODULE_AUTHOR("Min Zhou <zhoumin@loongson.cn>");
++MODULE_AUTHOR("Huacai Chen <chenhuacai@loongson.cn>");
++MODULE_DESCRIPTION("CRC32 and CRC32C using LoongArch crc* instructions");
++MODULE_LICENSE("GPL v2");
 -- 
 2.47.0
 
