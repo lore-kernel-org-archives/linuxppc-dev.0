@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-2657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B79FCD5B854
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2024 01:56:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CAD0D5B854
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2024 01:57:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XctfM5HX8z2yRG;
-	Tue, 29 Oct 2024 12:56:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730167003;
-	cv=none; b=mRc8OljZCbyU/X9Ji8+QGbFAdNo1ZC69d/NzZVtKAjA9+SSEkPs63n5fo3vHW3jvMKvhgB9smqwN1fuTffJAgkiFchm61xBhHhexTelzltEB655EpLW5lCNDOYKJz3vqqgny5UHQrtwPxVJfESG+/MW3nlcqjeKe1RFuoA/SbsEQzNtvtW2641WkQFIr60NClaBugjFye4axLpe86G5ATTjBvNCzymUJtG/EBvuQUHn+RB/3XEejtFFcBSNLN0JWIEGliYsja0mymZ2F9Izlwp+6wEmS6JFhSTFIWc2Zt507ZN2Z/hrrYWdYLB96FfFB6ZlEqwHzHxj+Gg0m1PBdbg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XctfN1yzQz2yTy;
+	Tue, 29 Oct 2024 12:56:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730167004;
+	cv=none; b=PfnBVwuXfyeESsTZfnWZ+1pJCgjaNWbfFpO7PEbCAOQwpHG6YNS8/V9nh+sezbCiFIlNODYO87UQrvJaxTRqqeN82S8bzf4t0E0cLG4GjQDC7d19fEyUnDdHXfVAflUSTA3LFGsDHAco9aAqmgMxZjUCmOtvbacVoMwzT8qaxF+UYqzKfSsXVes2BReKxrbAGDWys21trTwB4bp7PJRvd9Bn4dMr5hMyeBruTsdcZtjkwc5RJoiXMYgsLi00HwaYOivODFoGC+UhnLI0AZImGbZOhoqU4EDNIgSUfYkLP/y22msytd65nJ1kWlhl8QzZ3K7qoOOd7Y4mF+izeKWVpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730167003; c=relaxed/relaxed;
-	bh=lgS9tTl1x2VY8Ji/gmMgyNrR3r3Mg5RErO5Cb1VYpZ0=;
+	t=1730167004; c=relaxed/relaxed;
+	bh=rF8JJDg6pY4+mlZMwgcywuD4YchOltVF41py6cdS47Q=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZsXtWEbB/JqMh3AHSP7qmxuem1a89iyUCnNyaCD0XK7RX74ZY3CndTmIRWinqhiY1pLqd1GVDmTjBRsXvCDeWZV3GEesMrBUxqbXLgOZfeHJCHJGdG4RDxC1UzcBh5m5zF5tWzeZ2706hb4EHXluMPz5rvU0Kq/YeZq0+KZsAhadEs51ifXPlxqxY7l7/9peP3RWL+eBW+Hr3Aa8HmWjjilNyIT9A0m4ClXm2mhABTaP5bIx7fY+9t5HVA28qULxJ+w1vRxt4aJ3hNAAN18DUVu/UM8UiIis1jqb/kpmPKsr4dYYEQkDwccsPX7DqAeG4QMB+F0vkUCHgRe7IWQOfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p/i3rg0+; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=YFaZl4GtpWk7GZJ7HBtic+tuI9STV7KfezQSIbp32rO7VbOcxGTQtRGeLeiS8HM1GFITpleKTpgjFbbEqzqqOIvMYOfOver55nlaMR0nSnxvgcUczUw55ONHOc3rhSQ0lAuHVsgAlDzLLBdKSR3uIF5bsEGTVaCSwSBezKa8OyCOMwd9gtp+ztTs+H68zvHv5yxGNXA2xu59JD3fwnb90ybPX0+pjGQ/a5E//h/9/rJBuwnikr1pvH6JJ5gMs+HM3r0iP3c3rECWbSICs9ndyuMcmEyglUoelDmKBEegAf3poTVER9111NzRzrqlnVSUzjU4mCdgOZrnUOnvKYkPEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OSr+gpm7; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p/i3rg0+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OSr+gpm7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XctfL2GM0z2yJL
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XctfL2YJXz2yQj
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2024 12:56:41 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 32BA25C596B;
-	Tue, 29 Oct 2024 01:55:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 773E1C4CEED;
-	Tue, 29 Oct 2024 01:56:39 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 24709A4133D;
+	Tue, 29 Oct 2024 01:54:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3516CC4CECD;
+	Tue, 29 Oct 2024 01:56:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1730167000;
-	bh=QREw5gInShg8RlBYBO/KbmEW/aIWpa9O4n4WwbznW28=;
+	s=k20201202; t=1730166997;
+	bh=ShKRJi9mJBJXWguLrtPuEJjUJyfAsPmcAibtmIEOQO8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=p/i3rg0+GcboI8N2njvDewhf3Lx5tOneAJUvhe41ZjYhpb3nvfEGe6J3McphwC/wh
-	 bXu7gyst9fK9MmRzhBOwhUEQrC6FOuzH6CnEuN8wQSqFWo2/WRywMbL+VzO/FRGbLW
-	 ruB6Rjg1NFeygp1gYm7/HQlDhoFVS/XpgBROvm6Do1otTwtq8YuaZxpd0subXgDJz3
-	 11hyZ4dzXXR0XUdgzdSSqCWzENIO6taqHERFvTQ/J6twLdZqbzaZcj5NxQsetiRRMj
-	 yWKT9T/MdJ7VfBPmNVGTY+WcV56uJuL7FEOpFa6d3BwaSk6y2OBZmcUPD8+Yn327At
-	 5QxKLc3K+1nEQ==
+	b=OSr+gpm7MdHVwqQbEDhdHQNjCS6PDXg7RsA6vbfcZ0da+Z2j6mO3IMFt2lpXgGpo+
+	 z3L2qLDgooiXW3IubLxenWWI3QQYVhnXlwzXII+j54gb74ludg2PqnaiNXeRPbZz5H
+	 C3hqFJ4HS9yy8aUUpqkFAOLyNQ512aF5hs/xIjKw2g/vr8yoelLIoRLeWhMrKdBXQe
+	 RBjfryVchA2ZFhm0MJFVCl9KIIrmV6Qu03l65FAPhkFbUJNKx4yHRPQn82EmkCYdIn
+	 d7+n62u9QJdmmAYNZbSkeklIP22DXp1wbYv7A26Fu/eLN32SA3tAYUnDzTXnR9c8Yn
+	 dd3Vm/zhkTVEg==
 From: Josh Poimboeuf <jpoimboe@kernel.org>
 To: x86@kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -60,9 +60,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Andrew Cooper <andrew.cooper3@citrix.com>,
 	Mark Rutland <mark.rutland@arm.com>,
 	"Kirill A . Shutemov" <kirill@shutemov.name>
-Subject: [PATCH v3 4/6] x86/uaccess: Convert 32-bit get_user() to unconditional pointer masking
-Date: Mon, 28 Oct 2024 18:56:17 -0700
-Message-ID: <088fc8f27c278791f3af29f94e09278b5fa07bea.1730166635.git.jpoimboe@kernel.org>
+Subject: [PATCH v3 1/6] x86/uaccess: Avoid barrier_nospec() in 64-bit copy_from_user()
+Date: Mon, 28 Oct 2024 18:56:14 -0700
+Message-ID: <5b887fe4c580214900e21f6c61095adf9a142735.1730166635.git.jpoimboe@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <cover.1730166635.git.jpoimboe@kernel.org>
 References: <cover.1730166635.git.jpoimboe@kernel.org>
@@ -80,126 +80,91 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Convert the 32-bit get_user() implementations to use the new
-unconditional masking scheme for consistency with 64-bit.
+The barrier_nospec() in 64-bit copy_from_user() is slow.  Instead use
+pointer masking to force the user pointer to all 1's if the access_ok()
+mispredicted true for an invalid address.
 
+The kernel test robot reports a 2.6% improvement in the per_thread_ops
+benchmark (see link below).
+
+To avoid regressing powerpc and 32-bit x86, move their barrier_nospec()
+calls to their respective raw_copy_from_user() implementations so
+there's no functional change there.
+
+Note that for safety on some AMD CPUs, this relies on recent commit
+86e6b1547b3d ("x86: fix user address masking non-canonical speculation
+issue").
+
+Link: https://lore.kernel.org/202410281344.d02c72a2-oliver.sang@intel.com
 Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
 ---
- arch/x86/lib/getuser.S | 33 ++++++++++++++-------------------
- 1 file changed, 14 insertions(+), 19 deletions(-)
+ arch/powerpc/include/asm/uaccess.h | 2 ++
+ arch/x86/include/asm/uaccess_32.h  | 1 +
+ arch/x86/include/asm/uaccess_64.h  | 1 +
+ include/linux/uaccess.h            | 6 ------
+ 4 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/lib/getuser.S b/arch/x86/lib/getuser.S
-index 998d5be6b794..5bce27670baa 100644
---- a/arch/x86/lib/getuser.S
-+++ b/arch/x86/lib/getuser.S
-@@ -37,22 +37,19 @@
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 4f5a46a77fa2..12abb8bf5eda 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -7,6 +7,7 @@
+ #include <asm/extable.h>
+ #include <asm/kup.h>
+ #include <asm/asm-compat.h>
++#include <asm/barrier.h>
  
- #define ASM_BARRIER_NOSPEC ALTERNATIVE "", "lfence", X86_FEATURE_LFENCE_RDTSC
+ #ifdef __powerpc64__
+ /* We use TASK_SIZE_USER64 as TASK_SIZE is not constant */
+@@ -341,6 +342,7 @@ static inline unsigned long raw_copy_from_user(void *to,
+ {
+ 	unsigned long ret;
  
--.macro check_range size:req
-+.macro mask_user_address size:req
- .if IS_ENABLED(CONFIG_X86_64)
- 	movq $0x0123456789abcdef,%rdx
-   1:
-   .pushsection runtime_ptr_USER_PTR_MAX,"a"
- 	.long 1b - 8 - .
-   .popsection
--	cmp %rax, %rdx
--	sbb %rdx, %rdx
--	or %rdx, %rax
- .else
--	cmp $TASK_SIZE_MAX-\size+1, %eax
--	jae .Lbad_get_user
--	sbb %edx, %edx		/* array_index_mask_nospec() */
--	and %edx, %eax
-+	mov $TASK_SIZE_MAX-\size, %edx
- .endif
-+	cmp %_ASM_AX, %_ASM_DX
-+	sbb %_ASM_DX, %_ASM_DX
-+	or  %_ASM_DX, %_ASM_AX
- .endm
++	barrier_nospec();
+ 	allow_read_from_user(from, n);
+ 	ret = __copy_tofrom_user((__force void __user *)to, from, n);
+ 	prevent_read_from_user(from, n);
+diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
+index 40379a1adbb8..8393ba104b2c 100644
+--- a/arch/x86/include/asm/uaccess_32.h
++++ b/arch/x86/include/asm/uaccess_32.h
+@@ -23,6 +23,7 @@ raw_copy_to_user(void __user *to, const void *from, unsigned long n)
+ static __always_inline unsigned long
+ raw_copy_from_user(void *to, const void __user *from, unsigned long n)
+ {
++	barrier_nospec();
+ 	return __copy_user_ll(to, (__force const void *)from, n);
+ }
  
- .macro UACCESS op src dst
-@@ -63,7 +60,7 @@
+diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
+index b0a887209400..7ce84090f0ec 100644
+--- a/arch/x86/include/asm/uaccess_64.h
++++ b/arch/x86/include/asm/uaccess_64.h
+@@ -138,6 +138,7 @@ copy_user_generic(void *to, const void *from, unsigned long len)
+ static __always_inline __must_check unsigned long
+ raw_copy_from_user(void *dst, const void __user *src, unsigned long size)
+ {
++	src = mask_user_address(src);
+ 	return copy_user_generic(dst, (__force void *)src, size);
+ }
  
- 	.text
- SYM_FUNC_START(__get_user_1)
--	check_range size=1
-+	mask_user_address size=1
- 	ASM_STAC
- 	UACCESS movzbl (%_ASM_AX),%edx
- 	xor %eax,%eax
-@@ -73,7 +70,7 @@ SYM_FUNC_END(__get_user_1)
- EXPORT_SYMBOL(__get_user_1)
- 
- SYM_FUNC_START(__get_user_2)
--	check_range size=2
-+	mask_user_address size=2
- 	ASM_STAC
- 	UACCESS movzwl (%_ASM_AX),%edx
- 	xor %eax,%eax
-@@ -83,7 +80,7 @@ SYM_FUNC_END(__get_user_2)
- EXPORT_SYMBOL(__get_user_2)
- 
- SYM_FUNC_START(__get_user_4)
--	check_range size=4
-+	mask_user_address size=4
- 	ASM_STAC
- 	UACCESS movl (%_ASM_AX),%edx
- 	xor %eax,%eax
-@@ -93,14 +90,12 @@ SYM_FUNC_END(__get_user_4)
- EXPORT_SYMBOL(__get_user_4)
- 
- SYM_FUNC_START(__get_user_8)
--#ifndef CONFIG_X86_64
--	xor %ecx,%ecx
--#endif
--	check_range size=8
-+	mask_user_address size=8
- 	ASM_STAC
- #ifdef CONFIG_X86_64
- 	UACCESS movq (%_ASM_AX),%rdx
- #else
-+	xor %ecx,%ecx
- 	UACCESS movl (%_ASM_AX),%edx
- 	UACCESS movl 4(%_ASM_AX),%ecx
- #endif
-@@ -113,7 +108,7 @@ EXPORT_SYMBOL(__get_user_8)
- /* .. and the same for __get_user, just without the range checks */
- SYM_FUNC_START(__get_user_nocheck_1)
- #ifdef CONFIG_X86_64
--	check_range size=1
-+	mask_user_address size=1
- #else
- 	ASM_BARRIER_NOSPEC
- #endif
-@@ -127,7 +122,7 @@ EXPORT_SYMBOL(__get_user_nocheck_1)
- 
- SYM_FUNC_START(__get_user_nocheck_2)
- #ifdef CONFIG_X86_64
--	check_range size=2
-+	mask_user_address size=2
- #else
- 	ASM_BARRIER_NOSPEC
- #endif
-@@ -141,7 +136,7 @@ EXPORT_SYMBOL(__get_user_nocheck_2)
- 
- SYM_FUNC_START(__get_user_nocheck_4)
- #ifdef CONFIG_X86_64
--	check_range size=4
-+	mask_user_address size=4
- #else
- 	ASM_BARRIER_NOSPEC
- #endif
-@@ -155,7 +150,7 @@ EXPORT_SYMBOL(__get_user_nocheck_4)
- 
- SYM_FUNC_START(__get_user_nocheck_8)
- #ifdef CONFIG_X86_64
--	check_range size=8
-+	mask_user_address size=8
- #else
- 	ASM_BARRIER_NOSPEC
- #endif
+diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+index 39c7cf82b0c2..dda9725a9559 100644
+--- a/include/linux/uaccess.h
++++ b/include/linux/uaccess.h
+@@ -160,12 +160,6 @@ _inline_copy_from_user(void *to, const void __user *from, unsigned long n)
+ 	unsigned long res = n;
+ 	might_fault();
+ 	if (!should_fail_usercopy() && likely(access_ok(from, n))) {
+-		/*
+-		 * Ensure that bad access_ok() speculation will not
+-		 * lead to nasty side effects *after* the copy is
+-		 * finished:
+-		 */
+-		barrier_nospec();
+ 		instrument_copy_from_user_before(to, from, n);
+ 		res = raw_copy_from_user(to, from, n);
+ 		instrument_copy_from_user_after(to, from, n, res);
 -- 
 2.47.0
 
