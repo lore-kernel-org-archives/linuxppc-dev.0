@@ -1,57 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-2663-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2664-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 148E1D5B861
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2024 02:11:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B438AD5B861
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Oct 2024 02:11:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XctzH4J8vz2yRC;
-	Tue, 29 Oct 2024 13:11:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XctzJ4wTmz2yR9;
+	Tue, 29 Oct 2024 13:11:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:260e::62e" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730167883;
-	cv=pass; b=YGPuWWaVERMtK+qLXAEUmVgTE7JSHuf7rYV7fzVe7CsZcujgZYhOcIul9r6w+O9+Wk2hanBpwBlY6r7CJkgwAWuc/ayjFHeAZ/KBs+5M980rd0otJOz6Lbhj9ePwdcbtvBT+mUlOsJxPSdaYE8u8XNX/g7HSPnf59HbsZRxiPjv0nx1vfXFCi2mp4ke7qUaOpaEoWZ/fbMPWpuXDKV/rSS/179AbLIfWI4xfaXVD0Eo9ypRC9vojEtBMtorpyYLBVrQMcgtL7uBCkT6E3xpXw7+b+II0LZQrSTQxft6lKnmprTd3IqiSSJ4JozI5zoBMAdj0F/gJPCsF9MNvR7V2hw==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730167884;
+	cv=pass; b=VTg505UD5oBvaY8dL8HTTpxulxqYZZRfuMs9NKyb+qZYp+NnJHx4dY58xOQoIKLcWg6OEFn32C+Lx05AAfMYm0gr2uup4m0SfgPbXychf/2a+NXGUSfxSxRQ7/pjF5UVQ8Qo2I+uR7YTZmpcTuWxIG+a0N04w7NpzO7mmozgWEdLDGCFx/4U2GKkVmDPHZuIdMGY7ahSDwS4tpjg0iOEmok6oLl/Bv6osbelO+DOFd3v25T9bWSaiBU9K4alXrGXQF9ISVSDcKu6gquAX87YJLbykufAOGJIRLUC4BpEA/Zxo+1eRKNitME3G8Z/55ZheWTLAdGKjI2xP+GzmSfGww==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730167883; c=relaxed/relaxed;
-	bh=8YyfDaq0FJyGSNVYxtX8WQCfTWhOPFrKKDVZIE93Ruw=;
-	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=dsid8G/KTat9sgvTlrRrUQeSsiCKCddAyWVxfo1Sb/VVxW1aFZof+KmZN08Ewo/m8lDrFabg3WBfTVQaBbptJ2g8IAGTFfNc7bRl0cOmBCRMoTeNM4To0tzSPwugShCCLoIlAHDCvnIOz/h73MlRV93Tqi5kMJjbsN6iPNsa6k/dElIMGfj7bYKXdxoUtDRqrGivGqmpUCGX0ggvfCSmpguKZ52YLprk/f0Nh5V7xgJc3xrGrwbhfplLoVCHNAPupJwnDD8vg2CR+mTx4AKAWO6e2iBWxKGRUU03YLSLI/TVBKI/ks+3AyYsdIJR0DewtxoszlQ2ynGnaYT372L2Yg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=LLtst7H3; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:260e::62e; helo=eur03-am7-obe.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	t=1730167884; c=relaxed/relaxed;
+	bh=8f6ttwYZXSGqEAL54j0qzoFjSj4HqsYoO6Te5HL+rSE=;
+	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=K8QcZoyNxqGxBpgllLER5mqxwa8vNtUxzxTuq/RUJ6WTcpoxvrhOqFJ3uEwNMhdh2h4WZcYZ1NXLLqhNBuH/xWqRfakL7+FRwwhS8yVBGpcYvuIzyNiuua6EGTPtcy8PxFNN/YKmpFmBAjR9//ILmPFx2xfFh0AbMwF/7uM36eri23sNHjzoYpiRk5i4TbqatTV0lcYIHHtbC+AafsAnyh+bra6veDXYFxRiEMX6CN4N5MfFZ5MUla0F3AlEl2s5gNO20TPPljQZ5LuAB1U0HvFH16RSE3bXQHMTCJslvXAR4Wo5D3etbwgdNC8ZMxnO1D54ekbkStEpw2NQgP7sxg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=JFiukXWY; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:260e::62e; helo=eur03-am7-obe.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=LLtst7H3;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=JFiukXWY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:260e::62e; helo=eur03-am7-obe.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
 Received: from EUR03-AM7-obe.outbound.protection.outlook.com (mail-am7eur03on2062e.outbound.protection.outlook.com [IPv6:2a01:111:f403:260e::62e])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XctzC5xmYz2yR9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2024 13:11:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XctzH63FVz2yRZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Oct 2024 13:11:23 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=SaLI09I2TdNIGcAkhooILC4BS0m1ndK5sH68zWGp9sm1R+vaB8l3L2WBRmHElL9R7nSoziJwJjku6t1OumhO2P/89q+GyjeuWYAJARKGH6vCVCf20luaMOh3FOAnVf6Fa/IXWVOfUG4p5rkHns2PgQZ8/wSxDmiLP8mt2a48ItQSyOMTEN1JwLU7iMkYN1NTZx5aNhLobffvMOvtxTkgsyATJ83dvp+m8elAD6rngkZ82OrQ8MGX9qUKDsyh9+gc8AqKR0DuN6aMS6TdpYsotWVgE7bE/8fxvO1WzZ9Bm7cJK1rZ8I00ydsO7mXogau/KcfDtAzDVxyQ5qu6KNoKpA==
+ b=sUdOqpL0fv1pkeEDN1askesJEqFIZtCTuWzVp1R60cIYKISk9KOQgQOmPSHMEYjfHscTyc2Lc9Z/8CBDAHiwpioR1QvtyMMMSRF3eKy6/6Vo3gp63EIyFuKwiY+7KSTueA80xrHLlM5J2qPGA2S+ry04u1jNyIoRv0kFjNQe82Rng0gtGpx11PhLuGSdhaUkSJ5c4Wo9UOm1IecLsi4lU4+5nqrOPljotHGTkvfAPY7Y666oS5tGlzMAQkEaBcD7yrYBGox+8Cl9oLzNZSuNjtzXSpi2I6fzQPa38x7p5O5w4Yy2omz150yf8egVN5QOfNB0X+gy1lD85BNZHa/5JA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8YyfDaq0FJyGSNVYxtX8WQCfTWhOPFrKKDVZIE93Ruw=;
- b=xM3at9dpds2M7OcWIkeJYhHFubY37inODLc5/4G/1XvhjmR0XUT1I9gW6jO593NYYnB96BI49a7MPdNExVfPYVVHqQpsVDuwacqxE8P+h5bDr4/EGRJN/gXtkottOjv+K0z4l1TvQaMsWNS8F2F7dtHo9+DEoGChZsEIecvzRKS+sJrZ6nSLdvO56dKx7X5Ua8cqcf8LAUyQdCu8HEVZ4InABBlDeipccBGHEzScD12t1Ll6Qc/HP6bv8+QMh4GTl4Ia8DqRZDuU8aAgT9M8BZFVBBAM6J3W5Wsqt5ZqRfA+Q1L2adeAmsU3xGS8FDIEZkosZ67fKXL3NewJhSLhYQ==
+ bh=8f6ttwYZXSGqEAL54j0qzoFjSj4HqsYoO6Te5HL+rSE=;
+ b=QPzgZ93zOEbK4T558b+w7l/D9urpZ2iBORw72h3tHD8LMD0o0T6sYB9GnRd8GZ+PLUG0lUhAheMeT+HlhJXHdj1S//1AlcH9I/r5Fer6BthCezPQbirhaDuaAug0aufnvmUSyjsM79UiY8CO0RwZ7C6fAWLyudghu6rEfcZUMl9zolSzJVenvHnkAm/XIOy4BDVsdk2qru2rg06pbXNH1CunC/Ab2XB9ORBq0M0PMo+XqO4Rw4tDse/nW4JBXlro5VAT15PvpFxfuTcA8x3BmfoUvhxxr03rEORBbV8OvLj8OHG2dc7sBQhX8FYpzCeZOXL7MtNQer4mwOjvEtcWHA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=8YyfDaq0FJyGSNVYxtX8WQCfTWhOPFrKKDVZIE93Ruw=;
- b=LLtst7H3FR8JwFb3QjclCJQVZJ4kI0ODmaPIGmfpV7Dd+mQz/3jVdD2rZo28rn+fi8zr8VrOammQBphf1vAAEZ3XAjDOKxPL6mEt2nRhH+vq/IQJ4EBw2kKXCu/uRv9bRFSZoPlVTKAifWC/yI6fKsuo5JjlPgenaF6MXfnQy6h+ZauX0m0xYuhr0nCFZXgjQevvaCqsFLTU0ZDx+ojTJOzlN7TI/6cJo92hwtqMyt0eYDRpnkessju5x0AlaP0mBCliMQzN5kTWuN/p3bXqDshWwtFKcaS6fne3XESXX1e7JceQNqpMP7WHH8KwjKAYSlScfBHrP4miY+358WQoBw==
+ bh=8f6ttwYZXSGqEAL54j0qzoFjSj4HqsYoO6Te5HL+rSE=;
+ b=JFiukXWYatUzHxvq9J3jY8VpT6E2B3yuG7tu6Oe2ZRBgCp9sjoRIM2slmFO941hgtSRxt4KK+xD4kZaFxfwlPA+XNFHjd+XI+vzkrG+pMG7ANQvamAfvuSS57ly/ODA6eVOPR7KB6L6w9eKeSlZL1Q6gm3wA6tCCDTOqfc/mYuLkbscxBWuHRLisNYVZmBY69OYQwwzOoC71Qs7nhcX0eqDXJcPAq+z6aU3Uhd/zEn/m51lhvnWNilEdQwidK0kjBi4JOYzooKpYZ3uWob09l80XWb6p7clEVLfDitRokohUhG599pnqGf18urlRnF9fcnI+ucUwwIvQbo9Xzf6fGg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from AM0PR04MB7044.eurprd04.prod.outlook.com (2603:10a6:208:191::20)
  by DU2PR04MB9147.eurprd04.prod.outlook.com (2603:10a6:10:2f6::17) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.25; Tue, 29 Oct
- 2024 02:10:56 +0000
+ 2024 02:11:04 +0000
 Received: from AM0PR04MB7044.eurprd04.prod.outlook.com
  ([fe80::7be0:296:768c:e891]) by AM0PR04MB7044.eurprd04.prod.outlook.com
  ([fe80::7be0:296:768c:e891%6]) with mapi id 15.20.8093.023; Tue, 29 Oct 2024
- 02:10:56 +0000
+ 02:11:04 +0000
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: vkoul@kernel.org,
 	perex@perex.cz,
@@ -66,10 +67,12 @@ To: vkoul@kernel.org,
 	lgirdwood@gmail.com,
 	broonie@kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 0/6] ASoC: fsl: add memory to memory function for ASRC
-Date: Tue, 29 Oct 2024 10:20:51 +0800
-Message-Id: <20241029022057.816402-1-shengjiu.wang@nxp.com>
+Subject: [PATCH v5 2/6] ASoC: fsl_asrc: define functions for memory to memory usage
+Date: Tue, 29 Oct 2024 10:20:53 +0800
+Message-Id: <20241029022057.816402-3-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.37.1
+In-Reply-To: <20241029022057.816402-1-shengjiu.wang@nxp.com>
+References: <20241029022057.816402-1-shengjiu.wang@nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-ClientProxiedBy: SI2PR01CA0031.apcprd01.prod.exchangelabs.com
@@ -89,147 +92,374 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: AM0PR04MB7044:EE_|DU2PR04MB9147:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1303dab9-dc18-4d12-b9af-08dcf7beec28
+X-MS-Office365-Filtering-Correlation-Id: a048be78-b605-4614-6e86-08dcf7bef12e
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|7416014|376014|52116014|1800799024|366016|38350700014|921020;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?wOQz+pU0k6D7ePZ8Hp60MW8kn1oIZZmbftatWB9CW+5NzmcqICEdcjPegTyQ?=
- =?us-ascii?Q?hasMr7ldi8MhTkp/IBJO2TweLbbGY8ydGfqnGnF6yEuAiYikIzfrJc9MJsm4?=
- =?us-ascii?Q?IYe4tx/m4QqawXX6zuGCD4BejLIMnPmlbKrEG46BeUguxWywZ3mDkfYi8CVs?=
- =?us-ascii?Q?znLYHMyYJniCl0pCRB5eYz7ZrUC4qqR3bg+eGCpK8fAsnDufqN4JaD2dR5zy?=
- =?us-ascii?Q?HE3AB3v8B3yMCl72oz7AmDAKRD4h/50hK/g951iMM7dxSmviJxjN3QSfmYD4?=
- =?us-ascii?Q?XQrgCzV5rxJU4AY4tfz9ypg0+7rUTeY/Y8K/TwsOaGuZtk7tnQbmUR8VmRX0?=
- =?us-ascii?Q?R37ily1NJ5YQjdS1jpoNq3dA0E73B+wRKR5SQIVFU5T8o6kXQbgo9/xYzWGS?=
- =?us-ascii?Q?mBxN59BEMuxuqrzTE9pmiB3D9h+VU25KO25c+tICitlEUZAaFaAUtosAvj7n?=
- =?us-ascii?Q?oRPCLESGkoy4nYHinh1NEOUHcKRcHALfUYrtTNauQJ8NL9EPyszc/nxMqPY8?=
- =?us-ascii?Q?8iHLuCN5waDldySm11vZ1fv9uWGjtdCZSUYXmsZlNPEwC8iVjefK7phFwH78?=
- =?us-ascii?Q?w/ugA4y+pEQlYFqIfoErYGseIBaBLNJQZYlPTfOGaKje9YzmVISfWR9QgXNU?=
- =?us-ascii?Q?Uuwk5q8HrFdvBT6TvAkHNavQDMz1P2sOuTKbPWIjqKPWUh+bcwOjGiAhIvuM?=
- =?us-ascii?Q?X1BWA6SkqGlcqWID3vk/IhESsNPPNpO+X2NzLI/x17DIKnUHbERUOGr4VRpN?=
- =?us-ascii?Q?DwXnkH82kUnvoaCoZuDmcHfVRO0l1jGMnsTtx6JNi5WG0LhdRZr/Mnr7qwMS?=
- =?us-ascii?Q?sNVCjLQBKdIk7KDE1flFyNTF9v1gRZn7KzC3WyA7X/hZQrXM04Y3ozab+HHJ?=
- =?us-ascii?Q?BlVOp4cERWoTUBWuQ6UYDdm3NqwXpec/ZnvZhDy3/m3rQTGISb/zSBmNT7sx?=
- =?us-ascii?Q?BstYxXEclgw47Vpar7MLnIaQz2A+8ffDuunGdEJl4uddHTyEm6bprtgq6/Ze?=
- =?us-ascii?Q?Hqmwp1ovLlNQhoL5TBioXZr524quSfdQY5+CuMAgjOkPKEFjLZe1OQy9OQoI?=
- =?us-ascii?Q?lDLTVV0WQpFt9tXHcXLVJn6goU8wLbrBJClOreigmOAuJTNnWrybFQ0Te8Nw?=
- =?us-ascii?Q?YDw+tDe1A1aQ168v6I+RN5QqwUgkFDPwpwbNvmK8H5szL9X0WDO1xl380D41?=
- =?us-ascii?Q?QDggoEhbL293Gsf1/WS4eD+UnL3eUgN4RvMVkuOhPzY3YbLKIdVSok8KK3Qz?=
- =?us-ascii?Q?IqGD+p4uesjVfsMrfwOVO7SNrRoV0ffC/CWN92ZMD9/egd7E+UmeVIYHAJLk?=
- =?us-ascii?Q?XbRfyERRbGiLBjUUpkskAr3nU6FWbJo5ZsZqPdoYuQUGxwUiH42XQvE1X2ft?=
- =?us-ascii?Q?Rk2vaDrC0multFMbhJ8RijRU4nERR8e2NeScgNVq4hAEN5WLig=3D=3D?=
+	=?us-ascii?Q?/1y+fV/OQfbn33QlD0y+/ATGlh+ThzIOoHZK5hjdnh1aqHYJJEnXHvJWQdW7?=
+ =?us-ascii?Q?CZy++VAdFPavgviJ9ND11/MAwyYR6H0w3U+fR7LKS84Cv/2mtd7UgiYkXp7w?=
+ =?us-ascii?Q?eJ6SxtG6u8XbXxjEdvPodlv5e87y1rizhsLd+Txe+Xa/ACQ7IXMvTI4nRqR7?=
+ =?us-ascii?Q?O9pMDb5VHZMKo/TyU8qcYG74+cd/Bg9wqfoKieflW9MYt4h7DjKZeu12DwqM?=
+ =?us-ascii?Q?xdUM6zLYU1gB0PDUlfvI9Lwhz7Q3ykEr+U7lmpmua6IV6hL1rWaL4R+Wutfc?=
+ =?us-ascii?Q?+ilAAi3aGJMPz9eip0Ic5YZDA8E3dJuh5/2X831uK+v4cpWo6j3myT+38KTY?=
+ =?us-ascii?Q?a8LixnxId7uwTOJu6kpTpDyIY3gcRS7gRMv/K5IXpmpboDwuAojJ3Isg+km2?=
+ =?us-ascii?Q?Zuxm4n/MRDM9YHME4Bjw7UmbQEJhRFW51Yw/CO54Dnmk/SVx3+8/m8xkZSrJ?=
+ =?us-ascii?Q?YoSY93v/Y9G2u89/h0qRD9OW/OVF4Q5ahMf8tY9teTMgVZKKSkYl721HSJVA?=
+ =?us-ascii?Q?UnvOezKEuU1bHmvzkF1Ak8Vv21+20avO7Ob4mE3k9xjoR5v57Nhc0pNeGLgX?=
+ =?us-ascii?Q?ilRTCnILOgl1vNZdD/RTswKZM0xNn3M663bYdGQVifNdKKuRuAAjiDms2l78?=
+ =?us-ascii?Q?4R/hV/4ze0Vi6gMbzmXQ3TmqKWflQY/2Vb7r33Tw0X9gTOHGUgmaA6wNKtwv?=
+ =?us-ascii?Q?1UDovd9llOPTyjBk8XM8R97grsF/kcQ7RyoJQjwKaMUK9LyXMsXRyvwk0Ghh?=
+ =?us-ascii?Q?wUAkE+O3S8G/apm5+zn8fU+U42WaCPQANc/lxeRTjZmFzU9uS2b6/qtj0szH?=
+ =?us-ascii?Q?2SdkP2nGqQVAASPT+2j8rTvtu4VU0yB698xkc32O9ZjfV4RAHwp0CM6B+Adq?=
+ =?us-ascii?Q?oaYgNuzZDt3HDGR8rNdeRJZjUPWt8nSMfeKzrofVRxjgFy+owg36kVhDNtH2?=
+ =?us-ascii?Q?YI+eWKWYOJU45Zc2d75ZxXHor5Bqirs+JJbXOW36MgI93fTHpOSkv+DSpLJ7?=
+ =?us-ascii?Q?yVEOcyHK/2qDI2MKBHnm1/4UL50dZ4/5ZmLqWhQ5VuZSFz6/VV/jHN4u6VDs?=
+ =?us-ascii?Q?r+hHD/skpbB3REMMmAALIHtD5h3i8NCuh5V+tRNblaUC27SITMPOG3zQAl2b?=
+ =?us-ascii?Q?S//oZ8qo7ZnyW7/AUY09FhNoD6fhQpBE3HdL8CqRKcdBpwIXPtdsNwhu3RIM?=
+ =?us-ascii?Q?SEOEqAS/VNWPykyZQBYbitnUtSSO7I4VPSC2B3RbhFT4XjvNQh86PxSCG/Hz?=
+ =?us-ascii?Q?VS3XhjzI/9vnxJUA+PbZNXir0ycd8ejG1JYGrVDsr0cp1tHpDGeFJam1qZ1r?=
+ =?us-ascii?Q?Vx1ymzTJoHBvMsK/r+fj3mZ8B9doKpNq8hW/KL1VLqemyCgk96oOA4ZpbfCq?=
+ =?us-ascii?Q?OeP3iCtKuM8mWZdkghSCK+HxYG3G?=
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB7044.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(52116014)(1800799024)(366016)(38350700014)(921020);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?qgi6DhMV78YqxJgs2bJx510OYLfiq5DV5QoJaLb/Tz5uw+GT6MY3aV7oDKZ+?=
- =?us-ascii?Q?SPPBHUSBk2QBy3pbUXyuIQ0pJqkvniUtUdNbZQcIXhvItdIgBQ52xU/6sBGJ?=
- =?us-ascii?Q?UYqvnowKZj7ZTTZGaeDN3lnXebuBSWZK58FnVu7pyMJAjCZMxJVR1u4pzUKh?=
- =?us-ascii?Q?ri1emKD08J//V9e7dNWMxRjmz5CeUGH/27oSuBrMEnl6828AhkZmkcvrUe1A?=
- =?us-ascii?Q?3yrrCmKPo404tQK7yyjjfvqOkyBFZGiMgRQYWawhetf09F+IkSZd+Gx1R2Pe?=
- =?us-ascii?Q?ds9PGRyxNUV/x6pckQoHt+ZN8LoddToB1OYcoeXwVb5dqXLaqBzhOvcwdMLT?=
- =?us-ascii?Q?RkPUqy2xK/k/NjVFLBhfSDEP+WpGachtIS9IklWkJDhv/onGFchiDnXyemZS?=
- =?us-ascii?Q?6oGnkfI+L9M/uZyEL31WYtmXCA5XAE7/csPypV8DU9KONs35sM5QaifLUXxl?=
- =?us-ascii?Q?s2Mz71r5sxb8tpJ98TTZKqfuWKVqx155rcpe9ApkMHtoHqP1u3gUTr8X/PZl?=
- =?us-ascii?Q?UPVymglSMUebYak+HocUS7msFSCAhTSG38bgdS3QkUL4Y4bwEju1yJLvoYEh?=
- =?us-ascii?Q?+tCyp5tRtiyitCNmX3q5vLY0LGWmt61Z4Lw+fKHi2FzRi/AaDxxcLrmIrl3O?=
- =?us-ascii?Q?/lVonXI0wlGeQetxsn5Ru5asHhqi4sVpe8XUlsVM4lBdD1rzmqIlmbFvvN3I?=
- =?us-ascii?Q?4aFrjQ9xfH1srn1oN2ZCJeRRt8uwOOAUpFXA+d1aMStqL3Z5zgp1lQcELkAF?=
- =?us-ascii?Q?EwgHZ3eJLuRyLBon/Tcp6EDklM55At9KA4eWiOqmV8v6oJHu7zwi86fr9pDD?=
- =?us-ascii?Q?hCX/2f1akAaspZp8W7CDhxIq/1YuWJ49mVBiu+lvIyBM+bUjCUGjiN9Tr1De?=
- =?us-ascii?Q?Q0j2GreBVKfv1Su5PobVT8o6AZv870TdlcMam5zZMOY/iXqZH6w1if2xUgyV?=
- =?us-ascii?Q?Zbzk9O6rMy6B3ebXNPAXNwEMlL9OyCCkUESEKsfPsbeT4O9ZK2HpI8Pa1gKs?=
- =?us-ascii?Q?1WjLMjf6CyVj8QY9GypN37iyarcDhAHKMk/ZTRLw+Vo+fnCiYzNHu5MCCkxY?=
- =?us-ascii?Q?UiQc5UtnqxtViig70BxoR7oZxNSx+WQFAqov6aciRzohXc8ee0c7c6xjLJR2?=
- =?us-ascii?Q?rENaguVkSgNnc9z5j6lbFyyv+5Xhf1FUqDVupOK+ku86jQzUWpjhdcTPJkC+?=
- =?us-ascii?Q?RvhpprtGjLlWgOt3FUn+WpJhxRxkKu+DT/3nw/cXmitjbx21lSCz3ewxJqIZ?=
- =?us-ascii?Q?scQx6jW100RIGGIVvhaLkPJS4HzC6O41K2OQHNCpI+FCMqrlX3Jcqfi/WyA3?=
- =?us-ascii?Q?JuQSDROrZDqGeZ7A1Ftj+acBbgqant5WLB5K6dIXMeRKn4wq78Mu5hxCX3xc?=
- =?us-ascii?Q?KvxqO8zYrn5l9zF8oTZko1TfaGaq4M++hqW2+OQ5z63QXP7cURo7nLvLvd/K?=
- =?us-ascii?Q?Dc16edB5936lU9t04fHvRAeP4Y+vZx2fHSB5w4c9iDlByvqIbXC0HyQKLyKl?=
- =?us-ascii?Q?SIn4mbRgAzxS4vBjNRL/DRTtc691WO85Hm357jT4/Mx65iJvTamNrO+L5fjc?=
- =?us-ascii?Q?SVJjcWUshoftAFVC9iZH5BkNTQZupB5PgUAhjs1g?=
+	=?us-ascii?Q?isG3eBmsSDebdBRXMqXf6ITQbDgwyYtSyQx55RAsQRfzv/nq70KlE+Lac2oN?=
+ =?us-ascii?Q?dsm4aElaFgn6sAyXxRWu7zDVnF75OjNZ1aLck0mlWgxkj1NgYyS/VhkcSGWA?=
+ =?us-ascii?Q?uG/mrp/kpc8rssgEh5W26HZY0YRMbfwU4jlictsCi47FHzLS/rz8dlvGWK+R?=
+ =?us-ascii?Q?/+dzDb/BPh7Yj3nU7moIT/GN+AmrXnGp+y/qH1nuSEWAyDsWyvBbG9TeErfT?=
+ =?us-ascii?Q?22iRv1dq2FD0UVsB/Jz+1Mgph8ROM2z2MmwUyzgimKjh9QIvsYec/U+QlFp5?=
+ =?us-ascii?Q?p5nhyr4xBJOWBISedY2m6KkD8UOswELXeFFjnFgyWEdXsp2NRTR8fiEmVJaF?=
+ =?us-ascii?Q?EXTqAAcBpXq24dmNvPbq+gjrWbn9vXsNvDOvXGluG6GSGbe2ZHDFD8NG1cn4?=
+ =?us-ascii?Q?r2rndOTfOOga1uqZ0+OlHc6fZnL2+1QtYAoTEEzl7bLWaiYHAGOFBSz6G23I?=
+ =?us-ascii?Q?XCpM2BdP0kcJfxxhegXwmsNvztV7Mbl6EHnL8eq3Y+cCHvpAG4NUfD7SrC1/?=
+ =?us-ascii?Q?71yyTI0qIBTNRsHAqTMaT+xn31sdABWGNPdIYx3z8NmKM6S7An/jm/Zrw8Uf?=
+ =?us-ascii?Q?Ntr+U3qipKgjPyzLdGRQDgG1hUOVi52QkOQI6NkcoLI6gaXeYzr2dcVLwqR6?=
+ =?us-ascii?Q?QnQJIjCsAaO58V6kQSE3bzDlEwa2c4cXJHwLG9Yz8vjb2IGnmDzX7t3Hhu0N?=
+ =?us-ascii?Q?12Io8mcjkeh37G5hA24ks5CBwARWxJ6i1MoZ/NfoabJkzxAg+qNIydU13H78?=
+ =?us-ascii?Q?7rnF5tKhvwUCT30+4xgJPTpDLlEmvSF5JjMmU+6yVl8+hVbrPjQ58BSAZVcU?=
+ =?us-ascii?Q?KSkyzp7Xd/EgfHCaPomyZxlMASdpuGXKdLnkHkESNCIfUWUR2eFHA6dHMn7L?=
+ =?us-ascii?Q?AkIEc5J//rgFgzju0wVaD6tMFZIgAemfOe/5bC97KNwFi8zyfS0ztxxO3mwp?=
+ =?us-ascii?Q?eGdYdt6ZRdO3RNpxoKhIpr/8E8kcKZZ5vU6/ARfkmEvp/UGRWajvrvFc7rtQ?=
+ =?us-ascii?Q?yZHO8KlsqBNTYFbkANnmiZvRYIcuMlRMPOZ/8+x7MrpEoa2peVdF1g9DajrT?=
+ =?us-ascii?Q?ADS5IP+rmWW8rynjnZEwbXXhtRVGzbia/9Zbw6VWe9TG8++Jrg4dHdlptR2r?=
+ =?us-ascii?Q?NGwNmpZHMA+aGwf08Sc23NrV1XWgx+12IhaA3bdm/+zkpnHjuHEymsGO3YOE?=
+ =?us-ascii?Q?YPlN+fX1OPnPxQV2NLu3T4aR+vK/I3JKF94LgknFqrIganBGykwqcD7Sp+eD?=
+ =?us-ascii?Q?KZ7egNZwfz92pHvsqiGsbElxIrGKYo0sJRU6zyiTexxA1cnT/AYZ1Xb/WH8/?=
+ =?us-ascii?Q?W4XS+Is2bYjk1NE1CBX5+lYEVAx2POlp6pM7K4ffN/ftjZeTh5/Fx1H3Tfyu?=
+ =?us-ascii?Q?vWkR0bIrprL8wB/3FVtK45mjeU/YGW6x88MNg1t1khzL8gOsBv35JWIAMd6I?=
+ =?us-ascii?Q?espTYfjYEYJtX/4b6Oh8lgWKsqCYz3NNu4YHZjrMbPuQUzYdl8b2H2s8lQYw?=
+ =?us-ascii?Q?dgI93r2a5AsUsAMmdQEOPcHq3OAw7MAB6yU36hp7EzEb63vowcO7B0PL+19P?=
+ =?us-ascii?Q?F8CGLUS5GaQkcvocbLJZFgi9oWsF6yl2q1ll26Id?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1303dab9-dc18-4d12-b9af-08dcf7beec28
+X-MS-Exchange-CrossTenant-Network-Message-Id: a048be78-b605-4614-6e86-08dcf7bef12e
 X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB7044.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Oct 2024 02:10:56.1496
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Oct 2024 02:11:04.5255
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 5T4RLTcQxSxyeoQyxSkUyOXe2TAugUAXxmnwlTQ8sheuQRdBVfXMsxsnGJc8kcYoD3zcHltoAAIpnHP02wP3qA==
+X-MS-Exchange-CrossTenant-UserPrincipalName: 21XftQy0JUf/YBg3qXSxhJG6BvLmLud6/+hsxA5hsp2PQDTc0rAaF9j/pUAxrs06AOBar+ng4VJoNepbr8+wjA==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU2PR04MB9147
 
-This function is base on the accelerator implementation
-for compress API:
-https://patchwork.kernel.org/project/alsa-devel/patch/20241002093904.1809799-1-perex@perex.cz/
+ASRC can be used on memory to memory case, define several
+functions for m2m usage.
 
-Audio signal processing also has the requirement for memory to
-memory similar as Video.
+m2m_prepare: prepare for the start step
+m2m_start: the start step
+m2m_unprepare: unprepare for stop step, optional
+m2m_stop: stop step
+m2m_check_format: check format is supported or not
+m2m_calc_out_len: calculate output length according to input length
+m2m_get_maxburst: burst size for dma
+m2m_pair_suspend: suspend function of pair, optional.
+m2m_pair_resume: resume function of pair
+get_output_fifo_size: get remaining data size in FIFO
 
-This asrc memory to memory (memory ->asrc->memory) case is a non
-real time use case.
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Acked-by: Jaroslav Kysela <perex@perex.cz>
+---
+ sound/soc/fsl/fsl_asrc.c        | 142 ++++++++++++++++++++++++++++++++
+ sound/soc/fsl/fsl_asrc.h        |   2 +
+ sound/soc/fsl/fsl_asrc_common.h |  61 ++++++++++++++
+ 3 files changed, 205 insertions(+)
 
-User fills the input buffer to the asrc module, after conversion, then asrc
-sends back the output buffer to user. So it is not a traditional ALSA playback
-and capture case.
-
-Because we had implemented the "memory -> asrc ->i2s device-> codec"
-use case in ALSA.  Now the "memory->asrc->memory" needs
-to reuse the code in asrc driver, so the patch 1 and patch 2 is for refining
-the code to make it can be shared by the "memory->asrc->memory"
-driver.
-
-Other change is to add memory to memory support for two kinds of i.MX ASRC
-modules.
-
-changes in v5:
-- Drop Jaroslav Kysela's patch as it has been merged.
-- Add Jaroslav Kysela's Acked-by tag, received in v3.
-
-changes in v4:
-- remove the RFC tag, no comments receive in v3
-- Add Jaroslav Kysela's patch in this patch set. because it may be
-  better for reviewing in a full patch set.
-- Fix the list_for_each_entry_reverse to list_for_each_entry_safe_reverse
-- Fix some coding style issues in Jaroslav Kysela's patch
-
-changes in v3:
-- use Jaroslav's suggestion for header file compress_params.h (PATCH 01)
-- remove the ASRC_OUTPUT_FORMAT/ASRC_OUTPUT_RATE definition
-- remove ASRC_RATIO_MOD in this version because it uses .set_metadata()
-  Will wait Jaroslav's update or other better method in the future.
-- Address some comments from Pierre.
-
-changes in v2:
-- Remove the changes in compress API
-- drop the SNDRV_COMPRESS_SRC_RATIO_MOD
-- drop the SND_AUDIOCODEC_SRC and struct snd_dec_src
-- define private metadata key value
-  ASRC_OUTPUT_FORMAT/ASRC_OUTPUT_RATE/ASRC_RATIO_MOD
-
-Shengjiu Wang (6):
-  ALSA: compress: Add output rate and output format support
-  ASoC: fsl_asrc: define functions for memory to memory usage
-  ASoC: fsl_easrc: define functions for memory to memory usage
-  ASoC: fsl_asrc_m2m: Add memory to memory function
-  ASoC: fsl_asrc: register m2m platform device
-  ASoC: fsl_easrc: register m2m platform device
-
- include/uapi/sound/compress_params.h |  23 +-
- sound/soc/fsl/Kconfig                |   1 +
- sound/soc/fsl/Makefile               |   2 +-
- sound/soc/fsl/fsl_asrc.c             | 179 ++++++-
- sound/soc/fsl/fsl_asrc.h             |   2 +
- sound/soc/fsl/fsl_asrc_common.h      |  70 +++
- sound/soc/fsl/fsl_asrc_m2m.c         | 727 +++++++++++++++++++++++++++
- sound/soc/fsl/fsl_easrc.c            | 261 +++++++++-
- sound/soc/fsl/fsl_easrc.h            |   4 +
- 9 files changed, 1260 insertions(+), 9 deletions(-)
- create mode 100644 sound/soc/fsl/fsl_asrc_m2m.c
-
+diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+index bd5c46d763c0..471753276209 100644
+--- a/sound/soc/fsl/fsl_asrc.c
++++ b/sound/soc/fsl/fsl_asrc.c
+@@ -1063,6 +1063,139 @@ static int fsl_asrc_get_fifo_addr(u8 dir, enum asrc_pair_index index)
+ 	return REG_ASRDx(dir, index);
+ }
+ 
++/* Get sample numbers in FIFO */
++static unsigned int fsl_asrc_get_output_fifo_size(struct fsl_asrc_pair *pair)
++{
++	struct fsl_asrc *asrc = pair->asrc;
++	enum asrc_pair_index index = pair->index;
++	u32 val;
++
++	regmap_read(asrc->regmap, REG_ASRFST(index), &val);
++
++	val &= ASRFSTi_OUTPUT_FIFO_MASK;
++
++	return val >> ASRFSTi_OUTPUT_FIFO_SHIFT;
++}
++
++static int fsl_asrc_m2m_prepare(struct fsl_asrc_pair *pair)
++{
++	struct fsl_asrc_pair_priv *pair_priv = pair->private;
++	struct fsl_asrc *asrc = pair->asrc;
++	struct device *dev = &asrc->pdev->dev;
++	struct asrc_config config;
++	int ret;
++
++	/* fill config */
++	config.pair = pair->index;
++	config.channel_num = pair->channels;
++	config.input_sample_rate = pair->rate[IN];
++	config.output_sample_rate = pair->rate[OUT];
++	config.input_format = pair->sample_format[IN];
++	config.output_format = pair->sample_format[OUT];
++	config.inclk = INCLK_NONE;
++	config.outclk = OUTCLK_ASRCK1_CLK;
++
++	pair_priv->config = &config;
++	ret = fsl_asrc_config_pair(pair, true);
++	if (ret) {
++		dev_err(dev, "failed to config pair: %d\n", ret);
++		return ret;
++	}
++
++	pair->first_convert = 1;
++
++	return 0;
++}
++
++static int fsl_asrc_m2m_start(struct fsl_asrc_pair *pair)
++{
++	if (pair->first_convert) {
++		fsl_asrc_start_pair(pair);
++		pair->first_convert = 0;
++	}
++	/*
++	 * Clear DMA request during the stall state of ASRC:
++	 * During STALL state, the remaining in input fifo would never be
++	 * smaller than the input threshold while the output fifo would not
++	 * be bigger than output one. Thus the DMA request would be cleared.
++	 */
++	fsl_asrc_set_watermarks(pair, ASRC_FIFO_THRESHOLD_MIN,
++				ASRC_FIFO_THRESHOLD_MAX);
++
++	/* Update the real input threshold to raise DMA request */
++	fsl_asrc_set_watermarks(pair, ASRC_M2M_INPUTFIFO_WML,
++				ASRC_M2M_OUTPUTFIFO_WML);
++
++	return 0;
++}
++
++static int fsl_asrc_m2m_stop(struct fsl_asrc_pair *pair)
++{
++	if (!pair->first_convert) {
++		fsl_asrc_stop_pair(pair);
++		pair->first_convert = 1;
++	}
++
++	return 0;
++}
++
++/* calculate capture data length according to output data length and sample rate */
++static int fsl_asrc_m2m_calc_out_len(struct fsl_asrc_pair *pair, int input_buffer_length)
++{
++	unsigned int in_width, out_width;
++	unsigned int channels = pair->channels;
++	unsigned int in_samples, out_samples;
++	unsigned int out_length;
++
++	in_width = snd_pcm_format_physical_width(pair->sample_format[IN]) / 8;
++	out_width = snd_pcm_format_physical_width(pair->sample_format[OUT]) / 8;
++
++	in_samples = input_buffer_length / in_width / channels;
++	out_samples = pair->rate[OUT] * in_samples / pair->rate[IN];
++	out_length = (out_samples - ASRC_OUTPUT_LAST_SAMPLE) * out_width * channels;
++
++	return out_length;
++}
++
++static int fsl_asrc_m2m_get_maxburst(u8 dir, struct fsl_asrc_pair *pair)
++{
++	struct fsl_asrc *asrc = pair->asrc;
++	struct fsl_asrc_priv *asrc_priv = asrc->private;
++	int wml = (dir == IN) ? ASRC_M2M_INPUTFIFO_WML : ASRC_M2M_OUTPUTFIFO_WML;
++
++	if (!asrc_priv->soc->use_edma)
++		return wml * pair->channels;
++	else
++		return 1;
++}
++
++static int fsl_asrc_m2m_get_cap(struct fsl_asrc_m2m_cap *cap)
++{
++	cap->fmt_in = FSL_ASRC_FORMATS;
++	cap->fmt_out = FSL_ASRC_FORMATS | SNDRV_PCM_FMTBIT_S8;
++
++	cap->rate_in = supported_asrc_rate;
++	cap->rate_in_count = ARRAY_SIZE(supported_asrc_rate);
++	cap->rate_out = supported_asrc_rate;
++	cap->rate_out_count = ARRAY_SIZE(supported_asrc_rate);
++	cap->chan_min = 1;
++	cap->chan_max = 10;
++
++	return 0;
++}
++
++static int fsl_asrc_m2m_pair_resume(struct fsl_asrc_pair *pair)
++{
++	struct fsl_asrc *asrc = pair->asrc;
++	int i;
++
++	for (i = 0; i < pair->channels * 4; i++)
++		regmap_write(asrc->regmap, REG_ASRDI(pair->index), 0);
++
++	pair->first_convert = 1;
++	return 0;
++}
++
+ static int fsl_asrc_runtime_resume(struct device *dev);
+ static int fsl_asrc_runtime_suspend(struct device *dev);
+ 
+@@ -1147,6 +1280,15 @@ static int fsl_asrc_probe(struct platform_device *pdev)
+ 	asrc->get_fifo_addr = fsl_asrc_get_fifo_addr;
+ 	asrc->pair_priv_size = sizeof(struct fsl_asrc_pair_priv);
+ 
++	asrc->m2m_prepare = fsl_asrc_m2m_prepare;
++	asrc->m2m_start = fsl_asrc_m2m_start;
++	asrc->m2m_stop = fsl_asrc_m2m_stop;
++	asrc->get_output_fifo_size = fsl_asrc_get_output_fifo_size;
++	asrc->m2m_calc_out_len = fsl_asrc_m2m_calc_out_len;
++	asrc->m2m_get_maxburst = fsl_asrc_m2m_get_maxburst;
++	asrc->m2m_pair_resume = fsl_asrc_m2m_pair_resume;
++	asrc->m2m_get_cap = fsl_asrc_m2m_get_cap;
++
+ 	if (of_device_is_compatible(np, "fsl,imx35-asrc")) {
+ 		asrc_priv->clk_map[IN] = input_clk_map_imx35;
+ 		asrc_priv->clk_map[OUT] = output_clk_map_imx35;
+diff --git a/sound/soc/fsl/fsl_asrc.h b/sound/soc/fsl/fsl_asrc.h
+index 86d2422ad606..1c492eb237f5 100644
+--- a/sound/soc/fsl/fsl_asrc.h
++++ b/sound/soc/fsl/fsl_asrc.h
+@@ -12,6 +12,8 @@
+ 
+ #include  "fsl_asrc_common.h"
+ 
++#define ASRC_M2M_INPUTFIFO_WML		0x4
++#define ASRC_M2M_OUTPUTFIFO_WML		0x2
+ #define ASRC_DMA_BUFFER_NUM		2
+ #define ASRC_INPUTFIFO_THRESHOLD	32
+ #define ASRC_OUTPUTFIFO_THRESHOLD	32
+diff --git a/sound/soc/fsl/fsl_asrc_common.h b/sound/soc/fsl/fsl_asrc_common.h
+index 7e1c13ca37f1..3bdd6ea07c09 100644
+--- a/sound/soc/fsl/fsl_asrc_common.h
++++ b/sound/soc/fsl/fsl_asrc_common.h
+@@ -21,6 +21,26 @@ enum asrc_pair_index {
+ 
+ #define PAIR_CTX_NUM  0x4
+ 
++/**
++ * struct fsl_asrc_m2m_cap - capability data
++ * @fmt_in: input sample format
++ * @fmt_out: output sample format
++ * @chan_min: minimum channel number
++ * @chan_max: maximum channel number
++ * @rate_in: minimum rate
++ * @rate_out: maximum rete
++ */
++struct fsl_asrc_m2m_cap {
++	u64 fmt_in;
++	u64 fmt_out;
++	int chan_min;
++	int chan_max;
++	const unsigned int *rate_in;
++	int rate_in_count;
++	const unsigned int *rate_out;
++	int rate_out_count;
++};
++
+ /**
+  * fsl_asrc_pair: ASRC Pair common data
+  *
+@@ -34,6 +54,13 @@ enum asrc_pair_index {
+  * @pos: hardware pointer position
+  * @req_dma_chan: flag to release dev_to_dev chan
+  * @private: pair private area
++ * @complete: dma task complete
++ * @sample_format: format of m2m
++ * @rate: rate of m2m
++ * @buf_len: buffer length of m2m
++ * @dma_buffer: buffer pointers
++ * @first_convert: start of conversion
++ * @ratio_mod: ratio modification
+  */
+ struct fsl_asrc_pair {
+ 	struct fsl_asrc *asrc;
+@@ -49,6 +76,15 @@ struct fsl_asrc_pair {
+ 	bool req_dma_chan;
+ 
+ 	void *private;
++
++	/* used for m2m */
++	struct completion complete[2];
++	snd_pcm_format_t sample_format[2];
++	unsigned int rate[2];
++	unsigned int buf_len[2];
++	struct snd_dma_buffer dma_buffer[2];
++	unsigned int first_convert;
++	unsigned int ratio_mod;
+ };
+ 
+ /**
+@@ -72,6 +108,17 @@ struct fsl_asrc_pair {
+  * @request_pair: function pointer
+  * @release_pair: function pointer
+  * @get_fifo_addr: function pointer
++ * @m2m_get_cap: function pointer
++ * @m2m_prepare: function pointer
++ * @m2m_start: function pointer
++ * @m2m_unprepare: function pointer
++ * @m2m_stop: function pointer
++ * @m2m_calc_out_len: function pointer
++ * @m2m_get_maxburst: function pointer
++ * @m2m_pair_suspend: function pointer
++ * @m2m_pair_resume: function pointer
++ * @m2m_set_ratio_mod: function pointer
++ * @get_output_fifo_size: function pointer
+  * @pair_priv_size: size of pair private struct.
+  * @private: private data structure
+  */
+@@ -97,6 +144,20 @@ struct fsl_asrc {
+ 	int (*request_pair)(int channels, struct fsl_asrc_pair *pair);
+ 	void (*release_pair)(struct fsl_asrc_pair *pair);
+ 	int (*get_fifo_addr)(u8 dir, enum asrc_pair_index index);
++	int (*m2m_get_cap)(struct fsl_asrc_m2m_cap *cap);
++
++	int (*m2m_prepare)(struct fsl_asrc_pair *pair);
++	int (*m2m_start)(struct fsl_asrc_pair *pair);
++	int (*m2m_unprepare)(struct fsl_asrc_pair *pair);
++	int (*m2m_stop)(struct fsl_asrc_pair *pair);
++
++	int (*m2m_calc_out_len)(struct fsl_asrc_pair *pair, int input_buffer_length);
++	int (*m2m_get_maxburst)(u8 dir, struct fsl_asrc_pair *pair);
++	int (*m2m_pair_suspend)(struct fsl_asrc_pair *pair);
++	int (*m2m_pair_resume)(struct fsl_asrc_pair *pair);
++	int (*m2m_set_ratio_mod)(struct fsl_asrc_pair *pair, int val);
++
++	unsigned int (*get_output_fifo_size)(struct fsl_asrc_pair *pair);
+ 	size_t pair_priv_size;
+ 
+ 	void *private;
 -- 
 2.34.1
 
