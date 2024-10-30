@@ -1,56 +1,119 @@
-Return-Path: <linuxppc-dev+bounces-2729-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2730-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3A25D5CCB0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 13:47:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14E29D5CCB0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 13:48:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XdpMV2nJwz2ygx;
-	Thu, 31 Oct 2024 00:47:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730296022;
-	cv=none; b=TCv7onEM0zSSLgpOZCUmWrhZj5kTuQuhUK1J0xa1pk1/0o05q8A5ezFdy2xxubjDKsfpmSwYLRF25uThia9B4Vjztc1GWR9OxnkDI8t3NCDMdbZsu7shn3VswHs+cYWxK7lx5zEm2a1433ZMdxYvolnf4UEBg8v5alPQMKOV9etl2imzFvTkz6koLBi0JqIB/lBL4gSYQqS67vlhxFGK/E+TYppChQAgGH7LiTGGk83zhJNgsCwlZiitZWb8JixYlB/jwK5VShifyisSLCleL1capqrUYhnJFUmgAS8Y8jcoxJEHT7UM3kO6wEXfz/f3dTYPvXn8TTXvOqGc/S8R3Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XdpPZ4Z12z2yh1;
+	Thu, 31 Oct 2024 00:48:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730296130;
+	cv=none; b=l3z9Y3kHeimN5ft74MyDnw350jbPnUxjAorWmkaOliU1GfVU9gVHruE4435/Rzsn+ZQNtHSIbrK660LvKcAWY0hs0VLvov2eOtl7Zd4mNqsrbkgXONU3hxRAaDXE+f4Mk9in3v236tGs01XkT+HQ5y1LfbQ/QI9kwELsRn8JYSn7JkKKjBNsZRemBFh4WMz1GYveWJtt1Lx4Vp6VoVzwOyUy767xTLstc8jX/JBMuEsBpFRa4ymmHROOgoj3XReVN04ZQvs5pza9DVA+Ru/x/nWUeAW7wm8DskRbQnkTctTsAFVqELqkvVhDIeUE95usFZquptcaDUh7jkhofgCk6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730296022; c=relaxed/relaxed;
-	bh=QJw8nbraYtSMTnotHfpfDJuWx3E00xR2tPPyMSWzqzs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Mime-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kiXcPPlpBYK9v+WVJFGyS0JTISXP7V+FKePrvvBCENh/hmPBiPgpd6t9UWp3+skpE4jbnUnarok9sxhUlA6YXizN+xZAH7B/gHfEXftDJwO8nY0v1ak/K9wlkl9i495F8ROmGxDw31Wc+V85FzzCI2ObjyyjvxcMu1gdZHSw+Prgk5/KN0t7rAEy8Xpa4f7HzjzV3zbEcakLxK+EKcSgPTENd+2KutGqOubCide1EGrI7fxBxxi1fCQrmew0VpH5KtvjEGDw7+44pgIRxEYVhI7BV/Gj56BK1W3CkuCwkdQ1vpNZBePFY1v1ut2VH5ViWrbXC3vlUv0XC7XSiSi9vA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XdpMS00KXz2xGw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2024 00:46:58 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 49UDXklJ032424;
-	Wed, 30 Oct 2024 08:33:46 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 49UDXe5O032403;
-	Wed, 30 Oct 2024 08:33:40 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Wed, 30 Oct 2024 08:33:39 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: "Nysal Jan K.A." <nysal@linux.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
-        Nathan Chancellor <nathan@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Bill Wendling <morbo@google.com>,
-        Justin Stitt <justinstitt@google.com>,
-        Vlastimil Babka <vbabka@suse.cz>,
-        "Liam R. Howlett" <Liam.Howlett@Oracle.com>,
-        Mark Brown <broonie@kernel.org>, Michal Hocko <mhocko@suse.com>,
-        Kent Overstreet <kent.overstreet@linux.dev>,
-        Rick Edgecombe <rick.p.edgecombe@intel.com>,
-        linux-kernel@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH v2] sched/membarrier: Fix redundant load of membarrier_state
-Message-ID: <20241030133339.GQ29862@gate.crashing.org>
-References: <20241007053936.833392-1-nysal@linux.ibm.com> <20241029055133.121418-1-nysal@linux.ibm.com>
+	t=1730296130; c=relaxed/relaxed;
+	bh=KujEQvcemIfAE3TfZJ4xsL+24D2dtfUtYqPmGW4GE8g=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=UxP9LUxw5+jUgLDtPm99fRlT2jy3DYhnu4QBNqKePBtarQsllDspZBzzhzIcNFmkAP+Gb4tGH/Ht7FaAI+d7ctT0GycAzfP6X5mxJs//YGo53lRH8X+NoD10BZkXkAL//OzqgxmszlSJ+0zLtCjxlX5Vh5L7x8jSqeNXQi9VpBRuNssakyRZdrPTpf+XHYD4Bo9DW5TdelP9Xznu6yfTAi1u8llwoZGqMxRPgf7liqUGZfTCNp52CTMr7w9+wzsM8fn7R6wK3y3j0JFYzT44br6LFTfan2ChQx1r292mXBHbFQHwqkrzmD9mBx7KjBXVQNWXHlodBdaihqCEM/k1Uw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b85UkjG+; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=n6xdAIGd; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b85UkjG+; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=n6xdAIGd; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b85UkjG+;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=n6xdAIGd;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b85UkjG+;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=n6xdAIGd;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XdpPY0m6dz2xX3
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2024 00:48:48 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id A977221F21;
+	Wed, 30 Oct 2024 13:48:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1730296123; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=KujEQvcemIfAE3TfZJ4xsL+24D2dtfUtYqPmGW4GE8g=;
+	b=b85UkjG+Fw9dOoARUdsSpml+OacZxumFjg49UWHcDnjcLeRJMtrKJbzUbIXB7SMib/t/7b
+	7MGW9LacBsXIAWZtBX9wj8jaXImpcFB0eVpf1iirVAuzSe+jDkpHkNlC+JkIEU71W7d/wF
+	SKXL243SdNksQ8GVsQYrRAhKWbKBjko=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1730296123;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=KujEQvcemIfAE3TfZJ4xsL+24D2dtfUtYqPmGW4GE8g=;
+	b=n6xdAIGdff0vZvxsrUzs4lNayiLsrlaAhPWZ0MXBXz37G/JlcPhYlJjQSLpp6Wq3tMHCio
+	B8vcCFHuEHZEsiAA==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1730296123; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=KujEQvcemIfAE3TfZJ4xsL+24D2dtfUtYqPmGW4GE8g=;
+	b=b85UkjG+Fw9dOoARUdsSpml+OacZxumFjg49UWHcDnjcLeRJMtrKJbzUbIXB7SMib/t/7b
+	7MGW9LacBsXIAWZtBX9wj8jaXImpcFB0eVpf1iirVAuzSe+jDkpHkNlC+JkIEU71W7d/wF
+	SKXL243SdNksQ8GVsQYrRAhKWbKBjko=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1730296123;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=KujEQvcemIfAE3TfZJ4xsL+24D2dtfUtYqPmGW4GE8g=;
+	b=n6xdAIGdff0vZvxsrUzs4lNayiLsrlaAhPWZ0MXBXz37G/JlcPhYlJjQSLpp6Wq3tMHCio
+	B8vcCFHuEHZEsiAA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 35CDD13AD9;
+	Wed, 30 Oct 2024 13:48:43 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id yCb1Czs5ImcJeAAAD6G6ig
+	(envelope-from <tiwai@suse.de>); Wed, 30 Oct 2024 13:48:43 +0000
+Date: Wed, 30 Oct 2024 14:49:46 +0100
+Message-ID: <87sesdya2t.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>
+Cc: Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Daniel Mack <daniel@zonque.org>,
+	Haojian Zhuang <haojian.zhuang@gmail.com>,
+	Robert Jarzmik <robert.jarzmik@free.fr>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Ivan Orlov <ivan.orlov0322@gmail.com>,
+	Thierry Reding <thierry.reding@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-sound@vger.kernel.org,
+	linux-tegra@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] sound: Switch back to struct platform_driver::remove()
+In-Reply-To: <20241029073748.508077-2-u.kleine-koenig@baylibre.com>
+References: <20241029073748.508077-2-u.kleine-koenig@baylibre.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,112 +125,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241029055133.121418-1-nysal@linux.ibm.com>
-User-Agent: Mutt/1.4.2.3i
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-1.80 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCPT_COUNT_TWELVE(0.00)[21];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	TAGGED_RCPT(0.00)[];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FREEMAIL_ENVRCPT(0.00)[free.fr,gmail.com];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	FROM_EQ_ENVFROM(0.00)[];
+	FREEMAIL_CC(0.00)[perex.cz,suse.com,zonque.org,gmail.com,free.fr,microchip.com,bootlin.com,tuxon.dev,nvidia.com,ellerman.id.au,csgroup.eu,kernel.org,linux.ibm.com,lists.infradead.org,vger.kernel.org,lists.ozlabs.org];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCVD_TLS_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[baylibre.com:email,imap1.dmz-prg2.suse.org:helo,suse.de:mid]
 
-Hi!
+On Tue, 29 Oct 2024 08:37:47 +0100,
+Uwe Kleine-König wrote:
+> 
+> After commit 0edb555a65d1 ("platform: Make platform_driver::remove()
+> return void") .remove() is (again) the right callback to implement for
+> platform drivers.
+> 
+> Convert all platform drivers below sound to use .remove(), with
+> the eventual goal to drop struct platform_driver::remove_new(). As
+> .remove() and .remove_new() have the same prototypes, conversion is done
+> by just changing the structure member name in the driver initializer.
+> 
+> On the way do a few whitespace changes to make indention consistent.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
 
-On Tue, Oct 29, 2024 at 11:21:28AM +0530, Nysal Jan K.A. wrote:
-> On architectures where ARCH_HAS_SYNC_CORE_BEFORE_USERMODE
-> is not selected, sync_core_before_usermode() is a no-op.
-> In membarrier_mm_sync_core_before_usermode() the compiler does not
-> eliminate redundant branches and load of mm->membarrier_state
-> for this case as the atomic_read() cannot be optimized away.
-> 
-> Here's a snippet of the code generated for finish_task_switch() on powerpc
-> prior to this change:
-> 
-> 1b786c:   ld      r26,2624(r30)   # mm = rq->prev_mm;
-> .......
-> 1b78c8:   cmpdi   cr7,r26,0
-> 1b78cc:   beq     cr7,1b78e4 <finish_task_switch+0xd0>
-> 1b78d0:   ld      r9,2312(r13)    # current
-> 1b78d4:   ld      r9,1888(r9)     # current->mm
-> 1b78d8:   cmpd    cr7,r26,r9
-> 1b78dc:   beq     cr7,1b7a70 <finish_task_switch+0x25c>
-> 1b78e0:   hwsync
-> 1b78e4:   cmplwi  cr7,r27,128
-> .......
-> 1b7a70:   lwz     r9,176(r26)     # atomic_read(&mm->membarrier_state)
-> 1b7a74:   b       1b78e0 <finish_task_switch+0xcc>
-> 
-> This was found while analyzing "perf c2c" reports on kernels prior
-> to commit c1753fd02a00 ("mm: move mm_count into its own cache line")
-> where mm_count was false sharing with membarrier_state.
-> 
-> There is a minor improvement in the size of finish_task_switch().
-> The following are results from bloat-o-meter for ppc64le:
-> 
-> GCC 7.5.0
-> ---------
-> add/remove: 0/0 grow/shrink: 0/1 up/down: 0/-32 (-32)
-> Function                                     old     new   delta
-> finish_task_switch                           884     852     -32
-> 
-> GCC 12.2.1
-> ----------
-> add/remove: 0/0 grow/shrink: 0/1 up/down: 0/-32 (-32)
-> Function                                     old     new   delta
-> finish_task_switch.isra                      852     820     -32
-> 
-> LLVM 17.0.6
-> -----------
-> add/remove: 0/0 grow/shrink: 0/2 up/down: 0/-36 (-36)
-> Function                                     old     new   delta
-> rt_mutex_schedule                            120     104     -16
-> finish_task_switch                           792     772     -20
-> 
-> Results on aarch64:
-> 
-> GCC 14.1.1
-> ----------
-> add/remove: 0/2 grow/shrink: 1/1 up/down: 4/-60 (-56)
-> Function                                     old     new   delta
-> get_nohz_timer_target                        352     356      +4
-> e843419@0b02_0000d7e7_408                      8       -      -8
-> e843419@01bb_000021d2_868                      8       -      -8
-> finish_task_switch.isra                      592     548     -44
-> 
-> Signed-off-by: Nysal Jan K.A. <nysal@linux.ibm.com>
-> ---
-> V1 -> V2:
-> - Add results for aarch64
-> - Add a comment describing the changes
-> ---
->  include/linux/sched/mm.h | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/include/linux/sched/mm.h b/include/linux/sched/mm.h
-> index 928a626725e6..b13474825130 100644
-> --- a/include/linux/sched/mm.h
-> +++ b/include/linux/sched/mm.h
-> @@ -531,6 +531,13 @@ enum {
->  
->  static inline void membarrier_mm_sync_core_before_usermode(struct mm_struct *mm)
->  {
-> +	/*
-> +	 * The atomic_read() below prevents CSE. The following should
-> +	 * help the compiler generate more efficient code on architectures
-> +	 * where sync_core_before_usermode() is a no-op.
-> +	 */
-> +	if (!IS_ENABLED(CONFIG_ARCH_HAS_SYNC_CORE_BEFORE_USERMODE))
-> +		return;
->  	if (current->mm != mm)
->  		return;
->  	if (likely(!(atomic_read(&mm->membarrier_state) &
-
-I'd say "CSE and similar transformations", but yeah, in this case CSE.
-The point is that any access to a volatile object is a necessary side-
-effect, so it has to be performed on the actual machine just as on the
-abstract machine (on all the same paths, and as often).  It might be
-nice to have an atomic_read (for PowerPC) that can generate better
-machine code.  Not a trivial task though!
-
-Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
+Applied to for-next branch now.
 
 
-Segher
+thanks,
+
+Takashi
 
