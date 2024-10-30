@@ -1,88 +1,152 @@
-Return-Path: <linuxppc-dev+bounces-2726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2727-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00FEED5CCAF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 13:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AEE5D5CCAA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 13:34:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xdp492FzYz2yZ6;
-	Thu, 31 Oct 2024 00:33:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730295225;
-	cv=none; b=D3Y96siY23TMhmR9qX0NI4+2/LMNLXURqg99MlBbE2HuKbsws1KSCpo6U/GmpJA09nHckVDCd4shibEWYxN9PIFjEz2MCThXVWEwGbuWboQI73k3oNgbx+ytl+VBAmuIywP6z9TxwD4EvixlvJ5r6kwcS0tQJdWAQ/OZ2PiNE2v3ET7AemGEC8826si1ELApbbJCGfLpf7wv+OjvTkqBDypmnbewl+a4lpKdu0CjX5NgNgeUH9pbwLo9ct1d2u7EGpU61TxWnW/l1tR+dkC9b0GrXTGswfak2qbjgc5AKW9zG8MJmvKe4zRZEA/9R9wO/9dfXH8hs03l8pOw87glJQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730295225; c=relaxed/relaxed;
-	bh=rIN9NEJdpGA1ijQ9VvtPh7aO1g5PzQxogRMddlUsnUg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MyJsAYSL6nJKHibR8CFhFOSih5XvoQQ4c7qP2Vf3WLwCXRZRgPNFM/ud/7DI2LGBbBNLiFNdjr+oN/cIaBXIqdF2vJYMqgpQrFFj+LLpVwDXfDtSQsD3rK2vIYjdnq9O93NN33YJ69HHZNAp8XDMiPa1JLtIDqUnOC0YF2upo1I8yfaRKeG0a4OFw43Cf8w7aWiX8BBeIbl2osKwJOKnVa62cy2AlUoNWCmfg511B/7Sqw0F+Q8BpUyr+ijDLFNdQ1TMnJIWSgEqv43+PloTh5U3X2RMMvtY/vhqvT9wbnR8qHnLinRtumdihorn4W+fxqmBi3puqdPyjCUQY0vSeg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XMksxIRK; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xdp5835b5z2ygy;
+	Thu, 31 Oct 2024 00:34:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2612::607" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730295276;
+	cv=pass; b=atoGMYNtxUMo2uxFXGf6vTcQVvAbilqKBeXQx1BE3qsTPLfJtMACoLbzTT80ZgvfIcMphaS7+JUwKmiN/Bh6fnxZsptFwFIr/Dj1mksFkWgFZ1YpbTvtMp+wghCYzepKJTYraZ6bf2B8BPR8um56DbtRnjUpfEcunPeRSM4cD2pduM0zuZp9zoKwh8Rg8zf6vKioXpO5OaArxmS6cUm+wQ0KI31ZU+FjT6a7RsdH3G7bTijoi33qQPlGLDgShO7wAsteBV9RNe7nO3bWyYlQ5jetyLftWMqNBJN6vU1dWjF7/VZuVfVtRy+sVTUsi3RFEi5c31dcNzvO+RZ/tdrl0Q==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1730295276; c=relaxed/relaxed;
+	bh=oLDpA0ePaKEkMnyQAEM9AXgIX6ys6pBISYzlVP6v0Wc=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=IbFiYwyaEzPNNHBYIzv+qj9LxDdxLIzebPeIMl+PZdJm2BLFbAr+fQAL3mlS4WrZLfpGGzVwb1n2t1g3Q8257GmDZbthqKtUmSO3DaUeWdsx/r6JL2tzqzw0VT7nM6mqJU85bS37+CS/60UMfnHrqBI5c2iFqJskOagqxxGwVWJvareA0HXkee93cShoNNS153d73LG28tyCbViLU6tfP8gFZjWx/TNvoYj/rBrxSFmcte1O0XH6GUDdFDOeuNxkkvX/+rAVsuVaYoVUpKV0oMSB3agAm/UfZ6K1lJChVPgRQ82tufU22VPbewOp4mhjeZdmd7CvGYRCrJgSEIpR4g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=q14eZd7K; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:2612::607; helo=eur05-am6-obe.outbound.protection.outlook.com; envelope-from=madalin.bucur@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XMksxIRK;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=q14eZd7K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:2612::607; helo=eur05-am6-obe.outbound.protection.outlook.com; envelope-from=madalin.bucur@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on20607.outbound.protection.outlook.com [IPv6:2a01:111:f403:2612::607])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xdp476f0lz2yZ4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2024 00:33:43 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49U2d5dh030110;
-	Wed, 30 Oct 2024 13:33:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=rIN9NEJdpGA1ijQ9VvtPh7aO1g5PzQ
-	xogRMddlUsnUg=; b=XMksxIRKpVClldO1sswFvm3W7qEYoC1DZC4u9Xot5yssHh
-	0xwhxxn1xYCq/jHdUbH/ZcWFVKsVbr7fT8V75KJKD08DJLd9BDTcz/8CKi/9+1Fv
-	y2z3oYKeG5tF09/9WDw4rLlHGXeAfNIosAtWFe1Y+MAr9IpOTognso/Kqqwkw5Q1
-	KMU/jMwHcWVwqo2IWPpslVGUyzieYEbJy+jSEFI9LoYsAeZSXJPJkRLGjLWC2zCa
-	XIFL4tuxxC0607O8yX9qj0aL4HYsIYGBbpN+A30epyVz7wq/XEbYJS610/wg/rJP
-	a8tHp94xwLI77Zg2zhrr/FDRUbzlSYq2aHhYjnFA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h8yq9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 13:33:31 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49UDXUxF014422;
-	Wed, 30 Oct 2024 13:33:30 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h8yq7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 13:33:30 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49UDLV3u024535;
-	Wed, 30 Oct 2024 13:33:29 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 42hcyjfxm6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 13:33:29 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49UDXSH257868608
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 30 Oct 2024 13:33:28 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1E5752004B;
-	Wed, 30 Oct 2024 13:33:28 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 69A382004D;
-	Wed, 30 Oct 2024 13:33:26 +0000 (GMT)
-Received: from li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.ibm.com (unknown [9.39.21.224])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 30 Oct 2024 13:33:26 +0000 (GMT)
-Date: Wed, 30 Oct 2024 19:03:13 +0530
-From: Gautam Menghani <gautam@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
-        naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
-        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 2/2] arch/powerpc/kvm: Fix doorbells for nested KVM
- guests on PowerNV
-Message-ID: <rbx6n7cqmslnj4re44hb6hdqcuhfbqvmxo5ebsrk2dqia3hj2w@jljlwne2nzvf>
-References: <20240627180342.110238-1-gautam@linux.ibm.com>
- <20240627180342.110238-3-gautam@linux.ibm.com>
- <D2GQSGNWNGX4.2R8TH3M64POGJ@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xdp570jHjz2yZ4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2024 00:34:34 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=wChiyd34kcKKoGDRmgKDxrGqcYIfS9CD1XVzA8vPitI2rvGyFFY/b0dgOFlg3N/KAIPJdePwO9ukkOexQI9Mv6fP9B50hzxwuWl+x6hlm2z4m6MSPasRMjX6+1SuinTiIYrx6CP1qiixTlpmoibvGCwcrf9pqAdEISLn0duPw9b8K7Rrf83GPNFM4YzbKrMxsOWzwXrTFVw3GB4+lwLt6KLlhXbD51VW53OBfMAjK/wPXLxlTgYDYKPAdnu2zWpX1bxu3kPTrcpHal0J+FlrgBfPdUfAZkOItt/H5etsJQ3Miih1uc5b+g6ZyNCasC8MvRenl+VzeE/BTS8UNMAIaA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=oLDpA0ePaKEkMnyQAEM9AXgIX6ys6pBISYzlVP6v0Wc=;
+ b=JhPCBDM7lD33gAuoagN56RmTmWFhYD5ykrnQiRr61gSHoT1cJmPgZCNVwBcKa5mUJiwNCOdThWHKNJAFiXf7jM2tBrgGakLSk0DrulNOD1l9D+cOyeG/cvCwZIcAm8EojphhnUamhGDytPVvVi/ixNo1xkut7TKyZxqXIX4R3Rgylz0NeDUyt2jq4MY8OfQoKQ5uGfkeLJf1USv0/OEyhwMmo70k3Sw0YhSzhacQpqnqCuH7xCmaz8vrfbUoD5B9ySVt8jMbHiVICKRLgm3rVSTCh0uV1AfhwhdajurmNOlym+be0fvhZMoFePtP2BV9e9NIknqx9Oo9DPTx6wK8fQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=oLDpA0ePaKEkMnyQAEM9AXgIX6ys6pBISYzlVP6v0Wc=;
+ b=q14eZd7KyPT8wMIc5OmPPnYDQFtxJDdNv0mcmb/j3TsCmFc/BUBTn3Xf77ewvtkES9pMNyq93/x8DU7pHa1BgxrZaM49G6OZL5D4zFMM4Ms02YKjxQb7qncUrHoo/7Dl91nDSCmnlwqjwMmxOTNfd4cVorO3l8KFZnAFSFsuhsjRDcAnllk8Qmw+JmJGWUs3eC9sovT+pl6TzjGRVujIvCteVG8rbX+RULmjRrmfCWfpHihYsVDOJZQbWtzECqHWQPLy9Nqe5ZqGCr4nfoWb/MsXTMpQL2Rjw1Is+JpkY7AufI9CxGPbWt6RrTyzQ6xz/7hSD/cU+9zSQxVcBlbErA==
+Received: from DB9PR04MB8185.eurprd04.prod.outlook.com (2603:10a6:10:240::22)
+ by PA2PR04MB10088.eurprd04.prod.outlook.com (2603:10a6:102:40e::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.25; Wed, 30 Oct
+ 2024 13:34:04 +0000
+Received: from DB9PR04MB8185.eurprd04.prod.outlook.com
+ ([fe80::7cbd:347b:1bfd:fb35]) by DB9PR04MB8185.eurprd04.prod.outlook.com
+ ([fe80::7cbd:347b:1bfd:fb35%5]) with mapi id 15.20.8093.025; Wed, 30 Oct 2024
+ 13:34:04 +0000
+From: "Madalin Bucur (OSS)" <madalin.bucur@oss.nxp.com>
+To: Vladimir Oltean <vladimir.oltean@nxp.com>, "netdev@vger.kernel.org"
+	<netdev@vger.kernel.org>, Radu-Andrei Bulie <radu-andrei.bulie@nxp.com>
+CC: "David S. Miller" <davem@davemloft.net>, Eric Dumazet
+	<edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
+	<pabeni@redhat.com>, Breno Leitao <leitao@debian.org>, Ioana Ciornei
+	<ioana.ciornei@nxp.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Sean
+ Anderson <sean.anderson@linux.dev>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH net] net: dpaa_eth: print FD status in CPU endianness in
+ dpaa_eth_fd tracepoint
+Thread-Topic: [PATCH net] net: dpaa_eth: print FD status in CPU endianness in
+ dpaa_eth_fd tracepoint
+Thread-Index: AQHbKiACIOYFGw8GfUul9ckDno7PtbKfTBxA
+Date: Wed, 30 Oct 2024 13:34:04 +0000
+Message-ID:
+ <DB9PR04MB8185A67AF6393BD2992818DFEC542@DB9PR04MB8185.eurprd04.prod.outlook.com>
+References: <20241029163105.44135-1-vladimir.oltean@nxp.com>
+In-Reply-To: <20241029163105.44135-1-vladimir.oltean@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: DB9PR04MB8185:EE_|PA2PR04MB10088:EE_
+x-ms-office365-filtering-correlation-id: 189141c2-3667-462b-0e77-08dcf8e78592
+x-ms-exchange-sharedmailbox-routingagent-processed: True
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|1800799024|7416014|376014|366016|38070700018;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?HXs2j8gsCPGDzrBOpDzc5fKbTSgoGea+7kwGy8+I6SogkgQYfl97WrxMmguR?=
+ =?us-ascii?Q?HTsnOVDrmNoUNo5/Kf7XFU0lzGLKoX9sHKrKFEwvMPlS9NRuvI64fL5PpFGF?=
+ =?us-ascii?Q?ziojuFryV77IGtFAwv9A1OqBgfKlC0BO/WbyUy7Z2/AEGtiLgnzT1FcxAX/7?=
+ =?us-ascii?Q?l55JX28CfUUdI+ULKJ5obVw4XgUe3Vl8mh2PJGvqHeN1QAIpTapR77nAEjZc?=
+ =?us-ascii?Q?VVunYl07sXSkjEJiCaBejiYmR2DkHodsx6By7+lMP9M4u7YyGl8chqvrzf63?=
+ =?us-ascii?Q?5ValCXGgG0jtzLz0dORz+b01qIMa3+Zohgbes0pab0sa46TcxsRzxcRFLrrn?=
+ =?us-ascii?Q?uzwGxZk16K84wso5YgtDqGjYEkRzXIfo5wwWQFV2FsYynCOzUN17RB3K4jIO?=
+ =?us-ascii?Q?yJ1hsNaXDwFtdVMt7scm55MOUp9O9fxb6faQExm0slr/JoNI5a+BAlm0rPvT?=
+ =?us-ascii?Q?iFKZsHnb4Gu4KLz9oQll9bvIEeIkamZwcwo9PN/fBgzYb+deUBaunufD7Xzt?=
+ =?us-ascii?Q?QKSWpS8yvRyexFVmlecMdi0lCxokHj5SQjuceUmjAeNHkstjDNmdQTPsJZtm?=
+ =?us-ascii?Q?VUxoCuFWMS2LH1CzdIgh3UBLRvvKXXQZK37tUYT1wsCaS/eiLjZKnLQyaE2s?=
+ =?us-ascii?Q?N9JrnjVyKbdKY8TzuUDKxylAhGuQGW4dRGSB98JZB7s5yhApiBS3obxzt8KD?=
+ =?us-ascii?Q?wTA+TnBratLvwsFmcopTETqXOIrZ9SCZG0tLJx4BljAOJtwLi+QwmzR2vbLn?=
+ =?us-ascii?Q?3WJ77uNjKCmkraT0QOHTTOXaIJgSRpq7hSa9Lh7lb6Q7x0kcoC6B7JDMgTX3?=
+ =?us-ascii?Q?S57JVwUftPQdRiOtj5Nx9TibtWqmsx83LvLEG3s8PKAPYPmhWuxTVQjQzwrq?=
+ =?us-ascii?Q?jQGmWHCHQzE/AELTGLJtY5/2D5oFFG6QAe4zQJBHdgyTWGpYIlgxotdWHc8K?=
+ =?us-ascii?Q?Ntjp2TNB4IAc8ajvUEffuxo1/vyTaDso7hPKTHjGTb+1V/UBbfGGLh10IWkF?=
+ =?us-ascii?Q?07NTErTwTInQMnrRSOgwsoYaAbwDYgtJdMO7djYDETc80t9/qUwWz9Qlrz1r?=
+ =?us-ascii?Q?OreQ4g632orhfoal5azMsD67ZhWRkaKTZjXHvJqtZXp6jIV1c40z/JV26FGX?=
+ =?us-ascii?Q?C+04ctxtordaIy5sjRLX0p3FaadVYe8syQC/5Tevm8oESug4ymxHzqSudHMN?=
+ =?us-ascii?Q?O4/7Uu1ZMIj/w7zXdSMjCm++o9aEPWZrATkIgJeYsP9OFBlfNvqDPGHcFY4i?=
+ =?us-ascii?Q?sHDeaRW6HvAvH/0/fPPNvTss+MV4/oCqqnOyf+k0ZURGdz3F2ifdn/06i39Q?=
+ =?us-ascii?Q?F9W3L1LMnAHV9sEsNrP/3UDj+tXBMu+8Wjln6vbu/6DVlBnCmVmUv9hf5tPP?=
+ =?us-ascii?Q?btWcio2FNTSDQh0+sUyGW9I7RSeV?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR04MB8185.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016)(38070700018);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?koWfCS87svAYmVDFnNW1csaVDZj5q0/cfKnfRsK85sepRUDx7hRwc6Pof2mp?=
+ =?us-ascii?Q?6wHVdDfFJr6ASn959eBP8X3rRckz0vppzHXzEVjxIEfbNS8U9OUppYQNJRuU?=
+ =?us-ascii?Q?jmo5grb6PhzzrR96rtvCXFCEMkoeaUnuXaKJIiNOo9J/KfJh0HCRKPvBBejH?=
+ =?us-ascii?Q?zKhJPchnLLuCGrXJF8DExcerSb9YB15WkCao/WwDpPpZLXxvyNtf5BY+pBvs?=
+ =?us-ascii?Q?lXg5hrIruZlxzaWvTyXD80AXLkeB72SijL8NPd/7nB+fTKH303//Q8nx6aI7?=
+ =?us-ascii?Q?ZpLklqodwBmocEU+ngD0xWBGB/qAAjzZYBRRKZD5xloTMZxI2tVs9pMtHrQP?=
+ =?us-ascii?Q?qdc8Y++aauCxuUt08GDKcVJZOfruDAMbopG2VJZrtEiCt/BmIUF0pJVZkwzI?=
+ =?us-ascii?Q?ocwVi9ixT47gif6uQQbfcCCcY9YfVqt3JyqJx0bnihZHlM7vOq5xPOMCuzlO?=
+ =?us-ascii?Q?kbrXBhFpEKOhwwmORcr/8PhRTWoIpW/YejcwFql+i2YJLNvJCyPdrBHqzb5E?=
+ =?us-ascii?Q?WXyO1JxG0JW9cHdBBsk/ZVU2XLmO4pQID/d+Oh4Ot9T+O/RNOjtuhJ6sRlP4?=
+ =?us-ascii?Q?VRu6uiSexK0268g934Olp+zFdpByI0Nv8+/IPfydN4RLJ99s5NynJPUd3ciM?=
+ =?us-ascii?Q?4TReSSOf9639i63S3CHtlHB+sfDvW/BtJJG5B6qeUUPoqfPp8y/R1oGVuQg1?=
+ =?us-ascii?Q?QIBxPQh7qTb6MAGW8vPw8k2YhgLEHLaOfv7PwvhHypdI66mM3Fmde+IQfRpa?=
+ =?us-ascii?Q?u8BX5O8X/FG0rqACdqKeuSiOCYg89G0zD0YoXCV2xxsevFZzjSJxohn6ke4Q?=
+ =?us-ascii?Q?Rk9/tyiX6ddEwuzntN/l3um/km+mvv1wu+jKlLS+MGwF7QwqVXi8/UZzRZlZ?=
+ =?us-ascii?Q?U3ECRql4eiNmX4ZhkCtO9YOVRsF0nX6KGuU5hyBCzrCdP/549u+SrguMsDMF?=
+ =?us-ascii?Q?MknVojcf4QrbAZezKoXGslLbwK9FXLwF3vgFWAQ89Txw84K/cGsU6xb/vR0e?=
+ =?us-ascii?Q?iCbgY84mnWMSCZ5yzK+Hy6gkT3nD/rdChncnWI/jMlSRrmZqyuGHGM/ZR3kn?=
+ =?us-ascii?Q?DvA4/DK+qxRMciRNzTBhEsG4m2RAbBpeJrZV4h0y172uWPKhU5SwHGuN+SlA?=
+ =?us-ascii?Q?j+eQ727g2+5ELQzjKr0ID4DSchyknSsaafNwgqWwSt77t5koJvRHkOEpkVAt?=
+ =?us-ascii?Q?dc3/+q99vdSWZ4zKqpaBo62bjq0hKQryPf8tm8pViqu4fkj+MfN7Kdl7N3hm?=
+ =?us-ascii?Q?8fD92ixEkFYToCano5oCNqG0+UMdO2dElFSFKGBpVtbpe6IfQ8EmPSuu4qnq?=
+ =?us-ascii?Q?VAuyzg467r5oYQxTynQGRPI9PzfiMyEHqYnilrU72DLgLnZQlNCX4PaRSPfK?=
+ =?us-ascii?Q?3w4ziLtj7ToRpcUbXcgybUJd1zEFGx43hwNvJfPrXLLblrKyFd0MWpzFw++T?=
+ =?us-ascii?Q?UwB/bsf/e1IGkKQ7u/q6X13Z+Uq6/AJFccMUHZGD3DfOiT9171L3bS6NP9Mq?=
+ =?us-ascii?Q?JYRk/c3XTfgMLe12miVwPl4+VFQpAjDAZbaaCc5J4n4FfWNcFpYdpi8lOMg/?=
+ =?us-ascii?Q?gDOHldWHmozOt/l07l50jP+8FSMyFktv1T3k7IHe?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,147 +159,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <D2GQSGNWNGX4.2R8TH3M64POGJ@gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: OsRhtwN3hjjbeoIWhQDmj4n-gf4gJK2B
-X-Proofpoint-ORIG-GUID: q9JbYBXF1S6NMphUjl4TMaGARfrZW6cO
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 mlxscore=0
- phishscore=0 impostorscore=0 adultscore=0 clxscore=1015 mlxlogscore=999
- bulkscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2409260000 definitions=main-2410300103
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DB9PR04MB8185.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 189141c2-3667-462b-0e77-08dcf8e78592
+X-MS-Exchange-CrossTenant-originalarrivaltime: 30 Oct 2024 13:34:04.1663
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: wCDCTQ3fDW+cSiYLq4ve+b07lcKXDolxQzW0vb+pA4Z4hfH2aN0Vrw5yqRx+zYR5yzexeS5HwCJ+yLkbKlj7TQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA2PR04MB10088
 
-On Thu, Jul 04, 2024 at 10:10:05PM +1000, Nicholas Piggin wrote:
-> On Fri Jun 28, 2024 at 4:03 AM AEST, Gautam Menghani wrote:
-> > commit 6398326b9ba1("KVM: PPC: Book3S HV P9: Stop using vc->dpdes")
-> > introduced an optimization to use only vcpu->doorbell_request for SMT
-> > emulation for Power9 and above guests, but the code for nested guests 
-> > still relies on the old way of handling doorbells, due to which an L2
-> > guest cannot be booted with XICS with SMT>1. The command to repro
-> > this issue is:
-> >
-> > qemu-system-ppc64 \
-> > 	-drive file=rhel.qcow2,format=qcow2 \
-> > 	-m 20G \
-> > 	-smp 8,cores=1,threads=8 \
-> > 	-cpu  host \
-> > 	-nographic \
-> > 	-machine pseries,ic-mode=xics -accel kvm
-> >
-> > Fix the plumbing to utilize vcpu->doorbell_request instead of vcore->dpdes 
-> > on P9 and above.
-> >
-> > Fixes: 6398326b9ba1 ("KVM: PPC: Book3S HV P9: Stop using vc->dpdes")
-> > Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
-> > ---
-> >  arch/powerpc/kvm/book3s_hv.c        |  9 ++++++++-
-> >  arch/powerpc/kvm/book3s_hv_nested.c | 20 ++++++++++++++++----
-> >  2 files changed, 24 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> > index cea28ac05923..0586fa636707 100644
-> > --- a/arch/powerpc/kvm/book3s_hv.c
-> > +++ b/arch/powerpc/kvm/book3s_hv.c
-> > @@ -4178,6 +4178,9 @@ static int kvmhv_vcpu_entry_p9_nested(struct kvm_vcpu *vcpu, u64 time_limit, uns
-> >  	}
-> >  	hvregs.hdec_expiry = time_limit;
-> >  
-> > +	// clear doorbell bit as hvregs already has the info
-> > +	vcpu->arch.doorbell_request = 0;
-> > +
-> >  	/*
-> >  	 * When setting DEC, we must always deal with irq_work_raise
-> >  	 * via NMI vs setting DEC. The problem occurs right as we
-> > @@ -4694,6 +4697,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
-> >  	struct kvm_nested_guest *nested = vcpu->arch.nested;
-> >  	unsigned long flags;
-> >  	u64 tb;
-> > +	bool doorbell_pending;
-> >  
-> >  	trace_kvmppc_run_vcpu_enter(vcpu);
-> >  
-> > @@ -4752,6 +4756,9 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
-> >  	 */
-> >  	smp_mb();
-> >  
-> > +	doorbell_pending = !cpu_has_feature(CPU_FTR_ARCH_300) &&
-> > +				vcpu->arch.doorbell_request;
-> 
-> Hmm... is the feature test flipped here?
+> -----Original Message-----
+> From: Vladimir Oltean <vladimir.oltean@nxp.com>
+> Sent: Tuesday, October 29, 2024 6:31 PM
+> To: netdev@vger.kernel.org; Radu-Andrei Bulie <radu-andrei.bulie@nxp.com>
+> Cc: David S. Miller <davem@davemloft.net>; Eric Dumazet
+> <edumazet@google.com>; Jakub Kicinski <kuba@kernel.org>; Paolo Abeni
+> <pabeni@redhat.com>; Breno Leitao <leitao@debian.org>; Madalin Bucur
+> <madalin.bucur@nxp.com>; Ioana Ciornei <ioana.ciornei@nxp.com>; Christoph=
+e
+> Leroy <christophe.leroy@csgroup.eu>; Sean Anderson
+> <sean.anderson@linux.dev>; linux-kernel@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org
+> Subject: [PATCH net] net: dpaa_eth: print FD status in CPU endianness in
+> dpaa_eth_fd tracepoint
+>=20
+> Sparse warns:
+>=20
+> note: in included file (through ../include/trace/trace_events.h,
+> ../include/trace/define_trace.h,
+> ../drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h):
+> warning: incorrect type in assignment (different base types)
+>    expected unsigned int [usertype] fd_status
+>    got restricted __be32 const [usertype] status
+>=20
+> We take struct qm_fd :: status, store it and print it as an u32,
+> though it is a big endian field. We should print the FD status in
+> CPU endianness for ease of debug and consistency between PowerPC and
+> Arm systems.
+>=20
+> Though it is a not often used debug feature, it is best to treat it as
+> a bug and backport the format change to all supported stable kernels,
+> for consistency.
+>=20
+> Fixes: eb11ddf36eb8 ("dpaa_eth: add trace points")
+> Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+> ---
+> Context: https://lore.kernel.org/oe-kbuild-all/20241028-sticky-refined-li=
+onfish-
+> b06c0c@leitao/
 
-Sorry for responding late, I got involved in some other things. 
-Yes I think I got that part wrong, I guess it should've been
-
-doorbell_pending = !cpu_has_feature(CPU_FTR_HVMODE) &&
-                        vcpu->arch.doorbell_request;
-
-The objective of introducing this is to avoid returning to L1 midway
-when L0 is about to run L2. The issue is that if L1 does H_ENTER_NESTED
-and there is a doorbell for L2, this condition in kvmhv_run_single_vcpu
-will cause L0 to abort and go back to L1:
-
-	} else if (vcpu->arch.pending_exceptions ||
-		   vcpu->arch.doorbell_request ||
-		   xive_interrupt_pending(vcpu)) {
-		vcpu->arch.ret = RESUME_HOST;
-		goto out;
-	}
-
-Earlier, vc->dpdes was used to pass around doorbell state, that's why
-this condition did not cause problems, until 
-6398326b9ba1 ("KVM: PPC: Book3S HV P9: Stop using vc->dpdes")
-
-> 
-> > +
-> >  	if (!nested) {
-> >  		kvmppc_core_prepare_to_enter(vcpu);
-> >  		if (test_bit(BOOK3S_IRQPRIO_EXTERNAL,
-> > @@ -4769,7 +4776,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
-> >  				lpcr |= LPCR_MER;
-> >  		}
-> >  	} else if (vcpu->arch.pending_exceptions ||
-> > -		   vcpu->arch.doorbell_request ||
-> > +		   doorbell_pending ||
-> >  		   xive_interrupt_pending(vcpu)) {
-> >  		vcpu->arch.ret = RESUME_HOST;
-> >  		goto out;
-> > diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-> > index 05f5220960c6..b34eefa6b268 100644
-> > --- a/arch/powerpc/kvm/book3s_hv_nested.c
-> > +++ b/arch/powerpc/kvm/book3s_hv_nested.c
-> > @@ -32,7 +32,10 @@ void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
-> >  	struct kvmppc_vcore *vc = vcpu->arch.vcore;
-> >  
-> >  	hr->pcr = vc->pcr | PCR_MASK;
-> > -	hr->dpdes = vc->dpdes;
-> > +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> > +		hr->dpdes = vcpu->arch.doorbell_request;
-> > +	else
-> > +		hr->dpdes = vc->dpdes;
-> >  	hr->hfscr = vcpu->arch.hfscr;
-> >  	hr->tb_offset = vc->tb_offset;
-> >  	hr->dawr0 = vcpu->arch.dawr0;
-> 
-> Great find.
-> 
-> Nested is all POWER9 and later only, so I think you can just
-> change to using doorbell_request always.
-
-Noted.
-
-> 
-> And probably don't have to do anything for book3s_hv.c unless
-> I'm mistaken about the feature test.
->
-
-As pointed out above, the intention was to avoid the "else if" part in
-kvmhv_run_single_vcpu(). Please do  point out if I missed something here.
-
-Thanks,
-Gautam
+Acked-by: Madalin Bucur <madalin.bucur@oss.nxp.com>
 
