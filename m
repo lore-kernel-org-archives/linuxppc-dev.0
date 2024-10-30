@@ -1,58 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-2725-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 184DCD5CCA6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 12:55:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00FEED5CCAF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 13:33:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XdnD30XH1z2ywq;
-	Wed, 30 Oct 2024 23:55:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730292931;
-	cv=none; b=TAHR0OkXFOXQ4iTFcInKd7Nd+JDeV2Bq0iB2Va8KUSQL7mENW9pHK7TEYzp9W1knl1TBzp0XoqakjQ0jjUUp3d0XjBIkCeduhQxaf2KgSRqV/usYB/iruMDZPQZK/agGB6grJ8i5qLx7e0XDaHXA2x+lFZXznePAhefjMdvCOfzgMOKPUt5BdTkFYT6qo3RJhoHQdrEOJ6+YSeN0/wxiI8+30eqS7Hyje8NufdgmsBLwhBFWumggzJFedRFoeVMHJ5GX/KdxR4fIjGypECzF4fXKFm2+Z8XTWNGDau9Ql/rX2z7UOZXZtlflNmYBng3zz8E3Dksz12lgRT58nJGqBA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xdp492FzYz2yZ6;
+	Thu, 31 Oct 2024 00:33:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730295225;
+	cv=none; b=D3Y96siY23TMhmR9qX0NI4+2/LMNLXURqg99MlBbE2HuKbsws1KSCpo6U/GmpJA09nHckVDCd4shibEWYxN9PIFjEz2MCThXVWEwGbuWboQI73k3oNgbx+ytl+VBAmuIywP6z9TxwD4EvixlvJ5r6kwcS0tQJdWAQ/OZ2PiNE2v3ET7AemGEC8826si1ELApbbJCGfLpf7wv+OjvTkqBDypmnbewl+a4lpKdu0CjX5NgNgeUH9pbwLo9ct1d2u7EGpU61TxWnW/l1tR+dkC9b0GrXTGswfak2qbjgc5AKW9zG8MJmvKe4zRZEA/9R9wO/9dfXH8hs03l8pOw87glJQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730292931; c=relaxed/relaxed;
-	bh=yxMQkFNJOuqgt5TZoJ5crdWj69vXOCSCWIGzmUSCNws=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=HPft+jykzcB+OmUXFX0dHiXGzLBDemU0B5TVPEfLnuG978UaQCSYptt3QWnsVRCstRqKBBp6SWGqCqbi4AXUizxC/t4C+UI1WqRgm/xsa3yV6MdjshZrNfMxNJpRaY0qb9nbsQdVcjPQi6s3WzT4T/dZFtZdB0xziuh++Ma/Hv7h+jLikyJ2F1D8HXp525EqM6iNrXd8KgfM7j+MJ+bCkCVTFzucqFPV87+ytCwrOXsCIL93uMJYGdSqT3LEm6x9PGtzs3ckSK6DMl9zYm26F/qMICdF5OoMDiM3gcvT/eQb1jhStZRnss3yw4xXBOBUvkKQIn2RZX8Jl1rzkZuUlg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	t=1730295225; c=relaxed/relaxed;
+	bh=rIN9NEJdpGA1ijQ9VvtPh7aO1g5PzQxogRMddlUsnUg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MyJsAYSL6nJKHibR8CFhFOSih5XvoQQ4c7qP2Vf3WLwCXRZRgPNFM/ud/7DI2LGBbBNLiFNdjr+oN/cIaBXIqdF2vJYMqgpQrFFj+LLpVwDXfDtSQsD3rK2vIYjdnq9O93NN33YJ69HHZNAp8XDMiPa1JLtIDqUnOC0YF2upo1I8yfaRKeG0a4OFw43Cf8w7aWiX8BBeIbl2osKwJOKnVa62cy2AlUoNWCmfg511B/7Sqw0F+Q8BpUyr+ijDLFNdQ1TMnJIWSgEqv43+PloTh5U3X2RMMvtY/vhqvT9wbnR8qHnLinRtumdihorn4W+fxqmBi3puqdPyjCUQY0vSeg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XMksxIRK; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XMksxIRK;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XdnD12XlNz2ygx
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2024 23:55:29 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.88.105])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4Xdn8f25pyz10P6Z;
-	Wed, 30 Oct 2024 20:52:34 +0800 (CST)
-Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
-	by mail.maildlp.com (Postfix) with ESMTPS id 7CE251400DC;
-	Wed, 30 Oct 2024 20:54:45 +0800 (CST)
-Received: from localhost.localdomain (10.50.165.33) by
- kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1258.34; Wed, 30 Oct 2024 20:54:44 +0800
-From: Yicong Yang <yangyicong@huawei.com>
-To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
-	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
-	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <pierre.gondois@arm.com>,
-	<dietmar.eggemann@arm.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
-	<linux-kernel@vger.kernel.org>, <morten.rasmussen@arm.com>,
-	<msuchanek@suse.de>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
-	<jonathan.cameron@huawei.com>, <prime.zeng@hisilicon.com>,
-	<linuxarm@huawei.com>, <yangyicong@hisilicon.com>, <xuwei5@huawei.com>,
-	<guohanjun@huawei.com>
-Subject: [PATCH v7 1/4] cpu/SMT: Provide a default topology_is_primary_thread()
-Date: Wed, 30 Oct 2024 20:54:12 +0800
-Message-ID: <20241030125415.18994-2-yangyicong@huawei.com>
-X-Mailer: git-send-email 2.31.0
-In-Reply-To: <20241030125415.18994-1-yangyicong@huawei.com>
-References: <20241030125415.18994-1-yangyicong@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xdp476f0lz2yZ4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2024 00:33:43 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49U2d5dh030110;
+	Wed, 30 Oct 2024 13:33:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=rIN9NEJdpGA1ijQ9VvtPh7aO1g5PzQ
+	xogRMddlUsnUg=; b=XMksxIRKpVClldO1sswFvm3W7qEYoC1DZC4u9Xot5yssHh
+	0xwhxxn1xYCq/jHdUbH/ZcWFVKsVbr7fT8V75KJKD08DJLd9BDTcz/8CKi/9+1Fv
+	y2z3oYKeG5tF09/9WDw4rLlHGXeAfNIosAtWFe1Y+MAr9IpOTognso/Kqqwkw5Q1
+	KMU/jMwHcWVwqo2IWPpslVGUyzieYEbJy+jSEFI9LoYsAeZSXJPJkRLGjLWC2zCa
+	XIFL4tuxxC0607O8yX9qj0aL4HYsIYGBbpN+A30epyVz7wq/XEbYJS610/wg/rJP
+	a8tHp94xwLI77Zg2zhrr/FDRUbzlSYq2aHhYjnFA==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h8yq9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Oct 2024 13:33:31 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49UDXUxF014422;
+	Wed, 30 Oct 2024 13:33:30 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h8yq7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Oct 2024 13:33:30 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49UDLV3u024535;
+	Wed, 30 Oct 2024 13:33:29 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 42hcyjfxm6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Oct 2024 13:33:29 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49UDXSH257868608
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 30 Oct 2024 13:33:28 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1E5752004B;
+	Wed, 30 Oct 2024 13:33:28 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 69A382004D;
+	Wed, 30 Oct 2024 13:33:26 +0000 (GMT)
+Received: from li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.ibm.com (unknown [9.39.21.224])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed, 30 Oct 2024 13:33:26 +0000 (GMT)
+Date: Wed, 30 Oct 2024 19:03:13 +0530
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: mpe@ellerman.id.au, christophe.leroy@csgroup.eu,
+        naveen.n.rao@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 2/2] arch/powerpc/kvm: Fix doorbells for nested KVM
+ guests on PowerNV
+Message-ID: <rbx6n7cqmslnj4re44hb6hdqcuhfbqvmxo5ebsrk2dqia3hj2w@jljlwne2nzvf>
+References: <20240627180342.110238-1-gautam@linux.ibm.com>
+ <20240627180342.110238-3-gautam@linux.ibm.com>
+ <D2GQSGNWNGX4.2R8TH3M64POGJ@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,89 +95,147 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.50.165.33]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- kwepemd200014.china.huawei.com (7.221.188.8)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <D2GQSGNWNGX4.2R8TH3M64POGJ@gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: OsRhtwN3hjjbeoIWhQDmj4n-gf4gJK2B
+X-Proofpoint-ORIG-GUID: q9JbYBXF1S6NMphUjl4TMaGARfrZW6cO
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 mlxscore=0
+ phishscore=0 impostorscore=0 adultscore=0 clxscore=1015 mlxlogscore=999
+ bulkscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2410300103
 
-From: Yicong Yang <yangyicong@hisilicon.com>
+On Thu, Jul 04, 2024 at 10:10:05PM +1000, Nicholas Piggin wrote:
+> On Fri Jun 28, 2024 at 4:03 AM AEST, Gautam Menghani wrote:
+> > commit 6398326b9ba1("KVM: PPC: Book3S HV P9: Stop using vc->dpdes")
+> > introduced an optimization to use only vcpu->doorbell_request for SMT
+> > emulation for Power9 and above guests, but the code for nested guests 
+> > still relies on the old way of handling doorbells, due to which an L2
+> > guest cannot be booted with XICS with SMT>1. The command to repro
+> > this issue is:
+> >
+> > qemu-system-ppc64 \
+> > 	-drive file=rhel.qcow2,format=qcow2 \
+> > 	-m 20G \
+> > 	-smp 8,cores=1,threads=8 \
+> > 	-cpu  host \
+> > 	-nographic \
+> > 	-machine pseries,ic-mode=xics -accel kvm
+> >
+> > Fix the plumbing to utilize vcpu->doorbell_request instead of vcore->dpdes 
+> > on P9 and above.
+> >
+> > Fixes: 6398326b9ba1 ("KVM: PPC: Book3S HV P9: Stop using vc->dpdes")
+> > Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
+> > ---
+> >  arch/powerpc/kvm/book3s_hv.c        |  9 ++++++++-
+> >  arch/powerpc/kvm/book3s_hv_nested.c | 20 ++++++++++++++++----
+> >  2 files changed, 24 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> > index cea28ac05923..0586fa636707 100644
+> > --- a/arch/powerpc/kvm/book3s_hv.c
+> > +++ b/arch/powerpc/kvm/book3s_hv.c
+> > @@ -4178,6 +4178,9 @@ static int kvmhv_vcpu_entry_p9_nested(struct kvm_vcpu *vcpu, u64 time_limit, uns
+> >  	}
+> >  	hvregs.hdec_expiry = time_limit;
+> >  
+> > +	// clear doorbell bit as hvregs already has the info
+> > +	vcpu->arch.doorbell_request = 0;
+> > +
+> >  	/*
+> >  	 * When setting DEC, we must always deal with irq_work_raise
+> >  	 * via NMI vs setting DEC. The problem occurs right as we
+> > @@ -4694,6 +4697,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+> >  	struct kvm_nested_guest *nested = vcpu->arch.nested;
+> >  	unsigned long flags;
+> >  	u64 tb;
+> > +	bool doorbell_pending;
+> >  
+> >  	trace_kvmppc_run_vcpu_enter(vcpu);
+> >  
+> > @@ -4752,6 +4756,9 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+> >  	 */
+> >  	smp_mb();
+> >  
+> > +	doorbell_pending = !cpu_has_feature(CPU_FTR_ARCH_300) &&
+> > +				vcpu->arch.doorbell_request;
+> 
+> Hmm... is the feature test flipped here?
 
-Currently if architectures want to support HOTPLUG_SMT they need to
-provide a topology_is_primary_thread() telling the framework which
-thread in the SMT cannot offline. However arm64 doesn't have a
-restriction on which thread in the SMT cannot offline, a simplest
-choice is that just make 1st thread as the "primary" thread. So
-just make this as the default implementation in the framework and
-let architectures like x86 that have special primary thread to
-override this function (which they've already done).
+Sorry for responding late, I got involved in some other things. 
+Yes I think I got that part wrong, I guess it should've been
 
-There's no need to provide a stub function if !CONFIG_SMP or
-!CONFIG_HOTPLUG_SMP. In such case the testing CPU is already
-the 1st CPU in the SMT so it's always the primary thread.
+doorbell_pending = !cpu_has_feature(CPU_FTR_HVMODE) &&
+                        vcpu->arch.doorbell_request;
 
-Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
----
- arch/powerpc/include/asm/topology.h |  1 +
- arch/x86/include/asm/topology.h     |  2 +-
- include/linux/topology.h            | 14 ++++++++++++++
- 3 files changed, 16 insertions(+), 1 deletion(-)
+The objective of introducing this is to avoid returning to L1 midway
+when L0 is about to run L2. The issue is that if L1 does H_ENTER_NESTED
+and there is a doorbell for L2, this condition in kvmhv_run_single_vcpu
+will cause L0 to abort and go back to L1:
 
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index 16bacfe8c7a2..da15b5efe807 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -152,6 +152,7 @@ static inline bool topology_is_primary_thread(unsigned int cpu)
- {
- 	return cpu == cpu_first_thread_sibling(cpu);
- }
-+#define topology_is_primary_thread topology_is_primary_thread
- 
- static inline bool topology_smt_thread_allowed(unsigned int cpu)
- {
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index aef70336d624..3a7c18851016 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -219,11 +219,11 @@ static inline bool topology_is_primary_thread(unsigned int cpu)
- {
- 	return cpumask_test_cpu(cpu, cpu_primary_thread_mask);
- }
-+#define topology_is_primary_thread topology_is_primary_thread
- 
- #else /* CONFIG_SMP */
- static inline int topology_phys_to_logical_pkg(unsigned int pkg) { return 0; }
- static inline int topology_max_smt_threads(void) { return 1; }
--static inline bool topology_is_primary_thread(unsigned int cpu) { return true; }
- static inline unsigned int topology_amd_nodes_per_pkg(void) { return 1; }
- #endif /* !CONFIG_SMP */
- 
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 52f5850730b3..9c9f6b9f3462 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -240,6 +240,20 @@ static inline const struct cpumask *cpu_smt_mask(int cpu)
- }
- #endif
- 
-+#ifndef topology_is_primary_thread
-+#define topology_is_primary_thread topology_is_primary_thread
-+static inline bool topology_is_primary_thread(unsigned int cpu)
-+{
-+	/*
-+	 * On SMT hotplug the primary thread of the SMT won't be disabled.
-+	 * Architectures do have a special primary thread (e.g. x86) need
-+	 * to override this function. Otherwise just make the first thread
-+	 * in the SMT as the primary thread.
-+	 */
-+	return cpu == cpumask_first(topology_sibling_cpumask(cpu));
-+}
-+#endif
-+
- static inline const struct cpumask *cpu_cpu_mask(int cpu)
- {
- 	return cpumask_of_node(cpu_to_node(cpu));
--- 
-2.24.0
+	} else if (vcpu->arch.pending_exceptions ||
+		   vcpu->arch.doorbell_request ||
+		   xive_interrupt_pending(vcpu)) {
+		vcpu->arch.ret = RESUME_HOST;
+		goto out;
+	}
 
+Earlier, vc->dpdes was used to pass around doorbell state, that's why
+this condition did not cause problems, until 
+6398326b9ba1 ("KVM: PPC: Book3S HV P9: Stop using vc->dpdes")
+
+> 
+> > +
+> >  	if (!nested) {
+> >  		kvmppc_core_prepare_to_enter(vcpu);
+> >  		if (test_bit(BOOK3S_IRQPRIO_EXTERNAL,
+> > @@ -4769,7 +4776,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, u64 time_limit,
+> >  				lpcr |= LPCR_MER;
+> >  		}
+> >  	} else if (vcpu->arch.pending_exceptions ||
+> > -		   vcpu->arch.doorbell_request ||
+> > +		   doorbell_pending ||
+> >  		   xive_interrupt_pending(vcpu)) {
+> >  		vcpu->arch.ret = RESUME_HOST;
+> >  		goto out;
+> > diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+> > index 05f5220960c6..b34eefa6b268 100644
+> > --- a/arch/powerpc/kvm/book3s_hv_nested.c
+> > +++ b/arch/powerpc/kvm/book3s_hv_nested.c
+> > @@ -32,7 +32,10 @@ void kvmhv_save_hv_regs(struct kvm_vcpu *vcpu, struct hv_guest_state *hr)
+> >  	struct kvmppc_vcore *vc = vcpu->arch.vcore;
+> >  
+> >  	hr->pcr = vc->pcr | PCR_MASK;
+> > -	hr->dpdes = vc->dpdes;
+> > +	if (cpu_has_feature(CPU_FTR_ARCH_300))
+> > +		hr->dpdes = vcpu->arch.doorbell_request;
+> > +	else
+> > +		hr->dpdes = vc->dpdes;
+> >  	hr->hfscr = vcpu->arch.hfscr;
+> >  	hr->tb_offset = vc->tb_offset;
+> >  	hr->dawr0 = vcpu->arch.dawr0;
+> 
+> Great find.
+> 
+> Nested is all POWER9 and later only, so I think you can just
+> change to using doorbell_request always.
+
+Noted.
+
+> 
+> And probably don't have to do anything for book3s_hv.c unless
+> I'm mistaken about the feature test.
+>
+
+As pointed out above, the intention was to avoid the "else if" part in
+kvmhv_run_single_vcpu(). Please do  point out if I missed something here.
+
+Thanks,
+Gautam
 
