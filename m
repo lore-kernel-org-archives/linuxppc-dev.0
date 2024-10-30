@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-2701-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A66DFD7495E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 07:09:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD45DD7495E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 07:10:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XddXz24SWz2xb3;
-	Wed, 30 Oct 2024 18:09:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730272179;
-	cv=none; b=jJ9YRBF/PghdTZaEXcXRlFMEQG+ety7CYwcsWMYZl7dovTzrylXb5nghNHDUmAFB0ANrUmf94ZaEqhwCoR38p4nqeR+V4eG0bQrDslPYmbrYbKCGZNPLDYsvGsFIm2gWipKcJHmNQ96PnGvXpT0mqlTJd4l7GoUzZcQ+wVwPLOhs3KTwjG/oz9lGSn2HT+DoF2+nfspsEIg82/KOjBSk0Z+JCvP25uTbyLzOfHL4KKKDsEdbiVR2g1UQPVrW8dCEj4yUkP5WI9ph7IUeZh/kUfMeoV7eGZlnsldkeRFyWLIOeV3BLSOT537l7OIP4VIYT2c5JuSPVjA4IyML99tnvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XddY21WkFz2yZZ;
+	Wed, 30 Oct 2024 18:09:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730272182;
+	cv=none; b=UcgaUDMHlMnTXQPH7Hk2VzaPXniNeWIuhzuQbay0w49jYBVPaUg9Z6gY7f5aSuWLYotTcEjsZxJRtYdyz0rQdIPRliMThF3gfg7VT9yQtJmEp0I01sLo0TJbfYoa5BOX7ZHbGzEzrivlV4co1PJjiAvBhxL9njofiFbwSCoyhSDeJ5ITcr6h3x0SxXuKCtX4+qEbADP2zvZFUsVYprmZtI2Tj5OKZwCbqFcWnp4rgGihJAndViiwQNWaWKZeYdVhgzE337xu37Imwq8A16ddIOsZN2DGkNwMxbsHKc2ZTsRi1yjgWsMhyFiN9S4qJZe74tyvS4YD6yI4Wpv8/zmFgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730272179; c=relaxed/relaxed;
-	bh=oL9IMEzVW/uiWNE331Qsj0y4/iuYLMGRaqR2BGXECGI=;
+	t=1730272182; c=relaxed/relaxed;
+	bh=NBCz3KcpjPp2NZk6QkJH2AEFQre7Vj8TAQLOxgPmAFI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Fiz6637N6helL/VW1KGHplMNbw29pQyXv4szCrp/PbtQqw0WVi/nPQx6c0+isC11tiC2v+h7jeQnQW36Yq0aI79AgFQXw3ozARyvQM6uZ5ksF5wKkZ3pOGbYa9zfI6Qrf/6N1L2PLNF1f7YbrD96COIOU7xEnOyZxL542Ml0FOSnQ3H5kmhOF2WEsRDc9yNZCd0KxRg23Ik3Ky1b4tmEha3s19LtubzzEZVIgFQKr0C+Z5aLFT1BlTAvENyhigyS2RvZ/yZcqJh9AY1NBh3BFKYfyJHEve9gFah8+WrCZCPodoQ9QIrmGI185ZjFRPnWp0i0iZnSnGPaZPbSd9IP5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Lrn6f135; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=Bd2dQcKt8yp1rVZvRqSmn+CEwy8IMYhGlDzhKSr52s6X6FP4TatbvMvEKju2Lrj9MTFji/5R2RrygXF83SjLMi40p9mCdcmWp+UWxvlYYgc4Db2ugZMIZsg4HtgA/KvtyBdv375ah3GJXu7ewktvACOlOLl5eW2A+z+Jly3NAhOGMHbHSJwjCZ5wpZ3gMccMBIct4bdB6h1KnHvAnfGtV1z2eI+UsnwCq48a9sfHUpbjgwdrdjND+fgt0NcmIBJYtQrosocTp8xRP2YTI5dQji+I9nplQvJC/1YVTcXjlD1+BoS+ukPG2YhmwaO7/OoqsDaMDJzGvwLjymTAZX0Eeg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DMe3xRrI; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Lrn6f135;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DMe3xRrI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XddXy3b1mz2yFJ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2024 18:09:38 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49U2d29c030010;
-	Wed, 30 Oct 2024 07:09:06 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XddY1129jz2yFJ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2024 18:09:40 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49U2d3BE024043;
+	Wed, 30 Oct 2024 07:09:13 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=oL9IMEzVW/uiWNE33
-	1Qsj0y4/iuYLMGRaqR2BGXECGI=; b=Lrn6f135qZGb11qXPP5MRudo6VaFLMRQP
-	lWvCw31lmcd3JSqUaMEo81t6+f/q4J6UKtOJL7MxZD8lIclefRFgBEThJh5/hjU7
-	hUo/LfI3aAoUTkEypJ6HIuXnTgJiBY8za1ZPOM2I6RBEw1c0iyZHGue25Cezc8O1
-	pMkh7WYGmufZRpnXd3alQCr1175cc9UCpLUzazkqp6wmfz+UkRsNHua3/eOjB6J0
-	OhWNF5036CO+1Vb6o4OFGH7M+tsw58HeDL3MSxdVnQl1e6XJCvM3GG/J7LPr9991
-	UBcBNtmZ4wmykEgEydyUXKtS2fG8NVJ29hYy9EK/G80gwUR5MBUfA==
+	:mime-version:references:subject:to; s=pp1; bh=NBCz3KcpjPp2NZk6Q
+	kJH2AEFQre7Vj8TAQLOxgPmAFI=; b=DMe3xRrIog+pq4x9QG+06M2qVOt+FN+Ie
+	1zVd1VKqCKgPt0LHxueJ5aX7n8mgYvZheI2MZJA7Ky0pGLLHV0IqjP326/yXUzHc
+	+za+dD6CtcfXiyHgiOapI+UJl51EbyNs9V6+wP7TkJ7w1w49S1hsg7TdnPyMM8iJ
+	RRuBXpZ5ymX5JYq45Zy2xzY0lJWT0rwoNqpiDJzJFG6Z2u/7GY/q9+upx6iPaAkC
+	LemG6hWKwBLnLrhQIAtWldHxwLf2mDp4bGnx/SwPnAa8mDKpMtYWTr79nxpDBDd4
+	lzazZvf56+jF8Wjx0IEM7L+Jjo3AJxZS329uJdC7daRBU1JlkhXsQ==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h740v-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42jyhbmb76-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 07:09:05 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49U795G6031625;
-	Wed, 30 Oct 2024 07:09:05 GMT
+	Wed, 30 Oct 2024 07:09:12 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49U79CBV004738;
+	Wed, 30 Oct 2024 07:09:12 GMT
 Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h740s-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42jyhbmb73-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 07:09:05 +0000 (GMT)
+	Wed, 30 Oct 2024 07:09:12 +0000 (GMT)
 Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49U2vX0s013585;
-	Wed, 30 Oct 2024 07:09:03 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 42hbrmxw4t-1
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49U3A8oB013670;
+	Wed, 30 Oct 2024 07:09:11 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 42hbrmxw55-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 07:09:03 +0000
+	Wed, 30 Oct 2024 07:09:11 +0000
 Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49U78xdY52298166
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49U797PR28902076
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 30 Oct 2024 07:08:59 GMT
+	Wed, 30 Oct 2024 07:09:07 GMT
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C84DA2004B;
-	Wed, 30 Oct 2024 07:08:59 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7A2F22004D;
+	Wed, 30 Oct 2024 07:09:07 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5217E20043;
-	Wed, 30 Oct 2024 07:08:56 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C08F920043;
+	Wed, 30 Oct 2024 07:09:03 +0000 (GMT)
 Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.in.ibm.com (unknown [9.203.115.143])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 30 Oct 2024 07:08:56 +0000 (GMT)
+	Wed, 30 Oct 2024 07:09:03 +0000 (GMT)
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org,
         linux-trace-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
@@ -87,17 +87,12 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>, "Naveen N. Rao" <naveen@kernel.org>,
         Christophe Leroy <christophe.leroy@csgroup.eu>,
         Vishal Chourasia <vishalc@linux.ibm.com>,
         Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-Subject: [PATCH v7 01/17] powerpc/trace: Account for -fpatchable-function-entry support by toolchain
-Date: Wed, 30 Oct 2024 12:38:34 +0530
-Message-ID: <20241030070850.1361304-2-hbathini@linux.ibm.com>
+Subject: [PATCH v7 03/17] powerpc64/ftrace: Nop out additional 'std' instruction emitted by gcc v5.x
+Date: Wed, 30 Oct 2024 12:38:36 +0530
+Message-ID: <20241030070850.1361304-4-hbathini@linux.ibm.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241030070850.1361304-1-hbathini@linux.ibm.com>
 References: <20241030070850.1361304-1-hbathini@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 0OC-NmdUTamivNefnDzh0-_LPMbwNn1b
-X-Proofpoint-ORIG-GUID: hWLytIU6_ef5XItE7c12_4Pod4JJcyUz
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,58 +105,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: qgy0KvjTxbxMRpmk5MFbntDDAWjfDqT_
+X-Proofpoint-ORIG-GUID: 9AYLyruOn_3zT9wtyLDntWCorkdG9MXp
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
  definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 mlxscore=0
- phishscore=0 impostorscore=0 adultscore=0 clxscore=1011 mlxlogscore=999
- bulkscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxscore=0
+ malwarescore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0
+ suspectscore=0 phishscore=0 impostorscore=0 mlxlogscore=941 spamscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2409260000 definitions=main-2410300051
 
 From: Naveen N Rao <naveen@kernel.org>
 
-So far, we have relied on the fact that gcc supports both
--mprofile-kernel, as well as -fpatchable-function-entry, and clang
-supports neither. Our Makefile only checks for CONFIG_MPROFILE_KERNEL to
-decide which files to build. Clang has a feature request out [*] to
-implement -fpatchable-function-entry, and is unlikely to support
--mprofile-kernel.
+Gcc v5.x emits a 3-instruction sequence for -mprofile-kernel:
+	mflr	r0
+	std	r0, 16(r1)
+	bl	_mcount
 
-Update our Makefile checks so that we pick up the correct files to build
-once clang picks up support for -fpatchable-function-entry.
+Gcc v6.x moved to a simpler 2-instruction sequence by removing the 'std'
+instruction. The store saved the return address in the LR save area in
+the caller stack frame for stack unwinding. However, with dynamic
+ftrace, we no longer have a call to _mcount on kernel boot when ftrace
+is not enabled. When ftrace is enabled, that store is performed within
+ftrace_caller(). As such, the additional 'std' instruction is redundant.
+Nop it out on kernel boot.
 
-[*] https://github.com/llvm/llvm-project/issues/57031
+With this change, we now use the same 2-instruction profiling sequence
+with both -mprofile-kernel, as well as -fpatchable-function-entry on
+64-bit powerpc.
 
 Signed-off-by: Naveen N Rao <naveen@kernel.org>
 ---
- arch/powerpc/kernel/trace/Makefile | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/trace/ftrace.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/trace/Makefile b/arch/powerpc/kernel/trace/Makefile
-index 125f4ca588b9..d6c3885453bd 100644
---- a/arch/powerpc/kernel/trace/Makefile
-+++ b/arch/powerpc/kernel/trace/Makefile
-@@ -9,12 +9,15 @@ CFLAGS_REMOVE_ftrace.o = $(CC_FLAGS_FTRACE)
- CFLAGS_REMOVE_ftrace_64_pg.o = $(CC_FLAGS_FTRACE)
- endif
- 
--obj32-$(CONFIG_FUNCTION_TRACER)		+= ftrace.o ftrace_entry.o
--ifdef CONFIG_MPROFILE_KERNEL
--obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace.o ftrace_entry.o
-+ifdef CONFIG_FUNCTION_TRACER
-+obj32-y					+= ftrace.o ftrace_entry.o
-+ifeq ($(CONFIG_MPROFILE_KERNEL)$(CONFIG_ARCH_USING_PATCHABLE_FUNCTION_ENTRY),)
-+obj64-y					+= ftrace_64_pg.o ftrace_64_pg_entry.o
- else
--obj64-$(CONFIG_FUNCTION_TRACER)		+= ftrace_64_pg.o ftrace_64_pg_entry.o
-+obj64-y					+= ftrace.o ftrace_entry.o
-+endif
- endif
-+
- obj-$(CONFIG_TRACING)			+= trace_clock.o
- 
- obj-$(CONFIG_PPC64)			+= $(obj64-y)
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
+index d8d6b4fd9a14..2ef504700e8d 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -246,8 +246,12 @@ int ftrace_init_nop(struct module *mod, struct dyn_ftrace *rec)
+ 		/* Expected sequence: 'mflr r0', ['std r0,16(r1)'], 'bl _mcount' */
+ 		ret = ftrace_read_inst(ip - 4, &old);
+ 		if (!ret && !ppc_inst_equal(old, ppc_inst(PPC_RAW_MFLR(_R0)))) {
++			/* Gcc v5.x emit the additional 'std' instruction, gcc v6.x don't */
+ 			ret = ftrace_validate_inst(ip - 8, ppc_inst(PPC_RAW_MFLR(_R0)));
+-			ret |= ftrace_validate_inst(ip - 4, ppc_inst(PPC_RAW_STD(_R0, _R1, 16)));
++			if (ret)
++				return ret;
++			ret = ftrace_modify_code(ip - 4, ppc_inst(PPC_RAW_STD(_R0, _R1, 16)),
++						 ppc_inst(PPC_RAW_NOP()));
+ 		}
+ 	} else {
+ 		return -EINVAL;
 -- 
 2.47.0
 
