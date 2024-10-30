@@ -1,76 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-2699-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2700-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29A15D7495E
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8819D7497D
 	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 07:09:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XddXy2HsPz2xjY;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XddXy2hP9z2xk1;
 	Wed, 30 Oct 2024 18:09:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730272178;
-	cv=none; b=oZvg5w7Yp8mc2iRHRSwYO+U09vSJXxTWvz3SV6Z9koSg9x9mC/NTNV8EHZH7uKOcEJdNMkMC0aiVuMCaWpzzJeCo1r2u/yYY7IQ8Uw48W2FRM+BDdavv2qxnelOjgKSBhFGWpCZ0uxM3f56oFA8zqLZD8r1P4H9WST6QiAvTzR+JakgGEYzJII2hNpSXeM5mvz0usmpbh9QEyoULdnDxuei11roD8D86aPY7JWWbOJWKsGSIYlRyOynkA1iUsh9Z8673UoEf0zGbNqj63QJ+Fu69gGSBt8b4cxOgRe6yhdasA0atEhnG+zOrxkxOtl0VpMJsqcGod3zRzCZ6hdHgJg==
+	cv=none; b=lbRdLnTYmRR+X5vPpYRaSDnQWqWqP2rNqsuQRH3nFIvzvgEgHzYdImmlmkOuDEpw4YiIVDHqeXq6G8X/rXBnM5QOTCHpE5g4YNbidVwbh8DQ68PQxPz2+sCRFDCQzscpfet51/r/Uph4UVI/vHyWqigxV2QD9wysmM40PdvDo9OmlZz84+E3/pXCCWPi6+pRwdbAc5agC+IB/AMj5qdX73Ww6qC7B8LZ0d4x781tOJlLP2qEM4RyU8ylcyJWuxqwXvvs29qfInX64fZGO+kg9My29wv+7mGBNuAWAa7paDeInTIFcQYwTEA+3FQhAggXxnzlg5AfhDt6GxfewusuSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1730272178; c=relaxed/relaxed;
-	bh=ke58AxBSPUQS3/T4Mvvz9VCq7Eju0gHJsQVTBJZ8QTc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VAL5j8NvXaG0csZqeBE0EW4n3VJ1nB0ClAF4ADiiKzRdzAX5I8F3nRev2klarWs36ghPzbU9noqHVyOm1iScjuFp3xfXPOcFdF3o6sEiV+ZlaMkEaHEOn872GlQP5Y5vZ7/cy7EzAv9MK6B79Zrq7xP9qJK8DnuQSjpzpxToLHBDZJuXDF3vspghL/zc4a1z+YySbXg/Mlnv5fzBPn3FN8AkbcAv0oC/KRX+76OneZ6PQcaqlmMXUKEv7b5TTm80LJB7wCJ0ZHuBya2dd40Yee4xlW7kJeCo1caL6le47cq2ARi4yJGQkQACDX3beiwCBY8butDOmM7aIdZWJaN90Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ao1KVDMM; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	bh=LftNx6hiTtEwvQYBqJ87AysvaLELZSDfv14gxXieGLM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Xv1fahm02gnXfy37Au4f+CUb3b+2sK76UxRTk8kLVWJmzucZFGRkXqEuEdkI8XElJLeZlYB/EVvL8Rs4We+Ull106aqWGzBUqZkqBKqG9z90l12RccuedUIaVCgnmM50IDMxR4gm2dOIIRGeOgbHUEUfhaP2GltUKmTe64ldKGx7+FBMRp/HtWcCImVsFNtekd2qglHfuvVRIZ+UQs88Q59vElyW0upBo+hP8GOB1vNMm8FUI1L+pNXGZFx9kBFgoeTrNxh21URqu7W7AjhXF6KVgJETbZlkNHWIEqSVDxP/NfLx+PNCPe+qjALQQez6v0BLNunrMK51GwfF0XNwNg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PUouqrvG; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ao1KVDMM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PUouqrvG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XddXx0tD4z2xgp
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XddXx0Mqdz2xb3
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2024 18:09:36 +1100 (AEDT)
 Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49U2d4Ws030078;
-	Wed, 30 Oct 2024 07:09:09 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49U2d1Fd029914;
+	Wed, 30 Oct 2024 07:09:01 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=ke58AxBSPUQS3/T4M
-	vvz9VCq7Eju0gHJsQVTBJZ8QTc=; b=ao1KVDMMdeiq4sO5jLKPzVHda9/tNhykD
-	6vawX7spDa8QPpXCE14vLmzUq7MXTewG4zt6CsDSP+qrQriXiPbMQ1hsanmLzsPq
-	qxhQITf8BKl7pWnUSjqHFPG+I5lcMPslFw3spsOC9XmDm30ouo6AqcdO25KBQIQ0
-	TYqL9vCde/dT+KT7zwxke3kzmA5LR6TzbSjRw73ugofNd4nT3fjUPcBe79KMzK37
-	O9wJ4o3MdV0xbsHAjt3B6Eea1cxbstgSDEp38QYXgs+2Z3Kch5Bz99Bda8eZtfro
-	FOPGYFFmxeCQpBLTAfdbgKPPz4gThFuF4WJ5hg6rkiLBO8XeX0UOQ==
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=LftNx6hiTtEwvQYBqJ87AysvaLELZSDfv14gxXieG
+	LM=; b=PUouqrvGAxH5I7hig9Y9sfUDNkh+75ewCx82WrmdsDT+8zu5VHfEGUzCj
+	bIim5wDngdxtdBGtAWurkOHGCoHqDk46DvZ9CnzKAVh3a5QFCOuVlmLJUANvYvw2
+	DT6PgeWwDbobOEMq6TuZQ/yNkFLYl7M2Z6m0VTOylPh0rJlgZLHX/oAyAK6/JxND
+	JLFfNvQg0sKVDonr/4t5hdiddrECC+oB+HG9pZIRX9Bp+k1h4MF6jWM3ZxPjJPuT
+	PunT4n6vyjvUr0weBY8zjGq+anl8qgQZt2JycrwEBhn7YJD0xl5vpFm7cvfue7gl
+	mHC2CfwRKhhlT3y9F8sy55fKINykA==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h7416-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h740m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 07:09:09 +0000 (GMT)
+	Wed, 30 Oct 2024 07:09:01 +0000 (GMT)
 Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49U7989L031650;
-	Wed, 30 Oct 2024 07:09:08 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h7413-1
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49U7907Y030809;
+	Wed, 30 Oct 2024 07:09:00 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h740g-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 07:09:08 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49U2YNQl028216;
-	Wed, 30 Oct 2024 07:09:07 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 42hb4xy11a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 07:09:07 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49U793Zb59769330
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 30 Oct 2024 07:09:03 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7B2382004B;
-	Wed, 30 Oct 2024 07:09:03 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1A4C320043;
 	Wed, 30 Oct 2024 07:09:00 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49U6kFSv017307;
+	Wed, 30 Oct 2024 07:08:59 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 42harsf3mu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Oct 2024 07:08:59 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49U78uMp58917160
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 30 Oct 2024 07:08:56 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E2EDB20043;
+	Wed, 30 Oct 2024 07:08:55 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D518A2004D;
+	Wed, 30 Oct 2024 07:08:51 +0000 (GMT)
 Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.in.ibm.com (unknown [9.203.115.143])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 30 Oct 2024 07:08:59 +0000 (GMT)
+	Wed, 30 Oct 2024 07:08:51 +0000 (GMT)
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org,
         linux-trace-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
@@ -87,12 +86,15 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>, "Naveen N. Rao" <naveen@kernel.org>,
         Christophe Leroy <christophe.leroy@csgroup.eu>,
         Vishal Chourasia <vishalc@linux.ibm.com>,
         Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-Subject: [PATCH v7 02/17] powerpc/kprobes: Use ftrace to determine if a probe is at function entry
-Date: Wed, 30 Oct 2024 12:38:35 +0530
-Message-ID: <20241030070850.1361304-3-hbathini@linux.ibm.com>
+Subject: [PATCH v7 00/17] powerpc: Core ftrace rework, support for ftrace direct and bpf trampolines
+Date: Wed, 30 Oct 2024 12:38:33 +0530
+Message-ID: <20241030070850.1361304-1-hbathini@linux.ibm.com>
 X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20241030070850.1361304-1-hbathini@linux.ibm.com>
-References: <20241030070850.1361304-1-hbathini@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 5BDp5Xcj1bPaExoq2UF0eLvwIEeM1ONO
+X-Proofpoint-ORIG-GUID: VY57FNGPImFqUPbSfFOsu53LvE_YBHcX
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,10 +107,6 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: cSN_0BqS5GeqndSjdmeIvZ7sdqE_Awu0
-X-Proofpoint-ORIG-GUID: pGq8L8qbR_SzWXHotwfv7uk117Nt34Sp
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
  definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
@@ -118,60 +116,132 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamsco
  priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2409260000 definitions=main-2410300051
 
-From: Naveen N Rao <naveen@kernel.org>
+This is v7 of the series posted here:
+https://lore.kernel.org/all/20241018173632.277333-1-hbathini@linux.ibm.com/
 
-Rather than hard-coding the offset into a function to be used to
-determine if a kprobe is at function entry, use ftrace_location() to
-determine the ftrace location within the function and categorize all
-instructions till that offset to be function entry.
+This series reworks core ftrace support on powerpc to have the function
+profiling sequence moved out of line. This enables us to have a single
+nop at kernel function entry virtually eliminating effect of the
+function tracer when it is not enabled. The function profile sequence is
+moved out of line and is allocated at two separate places depending on a
+new config option.
 
-For functions that cannot be traced, we fall back to using a fixed
-offset of 8 (two instructions) to categorize a probe as being at
-function entry for 64-bit elfv2, unless we are using pcrel.
+For 64-bit powerpc, the function profiling sequence is also updated to
+include an additional instruction 'mtlr r0' after the usual
+two-instruction sequence to fix link stack imbalance (return address
+predictor) when ftrace is enabled. This showed an improvement of ~10%
+in null_syscall benchmark (NR_LOOPS=10000000) on a Power 10 system
+with ftrace enabled.
 
-Acked-by: Masami Hiramatsu (Google) <mhiramat@kernel.org>
-Signed-off-by: Naveen N Rao <naveen@kernel.org>
----
- arch/powerpc/kernel/kprobes.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+Finally, support for ftrace direct calls is added based on support for
+DYNAMIC_FTRACE_WITH_CALL_OPS. BPF Trampoline support is added atop this.
 
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index f8aa91bc3b17..bf382c459e1f 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -105,24 +105,22 @@ kprobe_opcode_t *kprobe_lookup_name(const char *name, unsigned int offset)
- 	return addr;
- }
- 
--static bool arch_kprobe_on_func_entry(unsigned long offset)
-+static bool arch_kprobe_on_func_entry(unsigned long addr, unsigned long offset)
- {
--#ifdef CONFIG_PPC64_ELF_ABI_V2
--#ifdef CONFIG_KPROBES_ON_FTRACE
--	return offset <= 16;
--#else
--	return offset <= 8;
--#endif
--#else
-+	unsigned long ip = ftrace_location(addr);
-+
-+	if (ip)
-+		return offset <= (ip - addr);
-+	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2) && !IS_ENABLED(CONFIG_PPC_KERNEL_PCREL))
-+		return offset <= 8;
- 	return !offset;
--#endif
- }
- 
- /* XXX try and fold the magic of kprobe_lookup_name() in this */
- kprobe_opcode_t *arch_adjust_kprobe_addr(unsigned long addr, unsigned long offset,
- 					 bool *on_func_entry)
- {
--	*on_func_entry = arch_kprobe_on_func_entry(offset);
-+	*on_func_entry = arch_kprobe_on_func_entry(addr, offset);
- 	return (kprobe_opcode_t *)(addr + offset);
- }
- 
+Support for ftrace direct calls is added for 32-bit powerpc. There is
+some code to enable bpf trampolines for 32-bit powerpc, but it is not
+complete and will need to be pursued separately.
+
+Patches 1 to 10 are independent of this series and can go in separately
+though. Rest of the patches depend on the series from Benjamin Gray
+adding support for patch_uint() and patch_ulong():
+https://lore.kernel.org/all/172474280311.31690.1489687786264785049.b4-ty@ellerman.id.au/
+
+Changelog v7:
+* Changed 'arch_vmlinux_o=""' to 'arch_vmlinux_o='.
+* Added Masahiro's Acked-by.
+* Added change to avoid ".space repeat count is zero, ignored" warning.
+* Fixed PCREL build failure.
+
+Changelog v6:
+* Shellcheck warnings fixed for arch/powerpc/tools/ftrace_check.sh
+* Masahiro's suggestions incorporated in appropriate patches:
+    - https://lore.kernel.org/all/CAK7LNATzqVAJHFg6OyVR1+YgNKo7S=nN1M7w5GJVG1Ygn0QhUA@mail.gmail.com/
+* Shellcheck warnings fixed for arch/powerpc/tools/ftrace-gen-ool-stubs.sh
+* Fixed https://lore.kernel.org/all/202409170544.6d1odaN2-lkp@intel.com/
+* Updated the stale comment describing redzone usage in ppc64 BPF JIT
+
+Changelog v5:
+* Intermediate files named .vmlinux.arch.* instead of .arch.vmlinux.*
+* Fixed ftrace stack tracer failure due to inadvertent use of
+  'add r7, r3, MCOUNT_INSN_SIZE' instruction instead of
+  'addi r7, r3, MCOUNT_INSN_SIZE'
+* Fixed build error for !CONFIG_MODULES case.
+* .vmlinux.arch.* files compiled under arch/powerpc/tools
+* Resolved checkpatch.pl warnings.
+* Dropped RFC tag.
+
+Changelog v4:
+- Patches 1, 10 and 13 are new.
+- Address review comments from Nick. Numerous changes throughout the 
+  patch series.
+- Extend support for ftrace ool to vmlinux text up to 64MB (patch 13).
+- Address remaining TODOs in support for BPF Trampolines.
+- Update synchronization when patching instructions during trampoline 
+  attach/detach.
+
+
+Naveen N Rao (17):
+  powerpc/trace: Account for -fpatchable-function-entry support by
+    toolchain
+  powerpc/kprobes: Use ftrace to determine if a probe is at function
+    entry
+  powerpc64/ftrace: Nop out additional 'std' instruction emitted by gcc
+    v5.x
+  powerpc32/ftrace: Unify 32-bit and 64-bit ftrace entry code
+  powerpc/module_64: Convert #ifdef to IS_ENABLED()
+  powerpc/ftrace: Remove pointer to struct module from dyn_arch_ftrace
+  powerpc/ftrace: Skip instruction patching if the instructions are the
+    same
+  powerpc/ftrace: Move ftrace stub used for init text before _einittext
+  powerpc64/bpf: Fold bpf_jit_emit_func_call_hlp() into
+    bpf_jit_emit_func_call_rel()
+  powerpc/ftrace: Add a postlink script to validate function tracer
+  kbuild: Add generic hook for architectures to use before the final
+    vmlinux link
+  powerpc64/ftrace: Move ftrace sequence out of line
+  powerpc64/ftrace: Support .text larger than 32MB with out-of-line
+    stubs
+  powerpc/ftrace: Add support for DYNAMIC_FTRACE_WITH_CALL_OPS
+  powerpc/ftrace: Add support for DYNAMIC_FTRACE_WITH_DIRECT_CALLS
+  samples/ftrace: Add support for ftrace direct samples on powerpc
+  powerpc64/bpf: Add support for bpf trampolines
+
+ arch/Kconfig                                |   6 +
+ arch/powerpc/Kbuild                         |   2 +-
+ arch/powerpc/Kconfig                        |  22 +-
+ arch/powerpc/Makefile                       |   8 +
+ arch/powerpc/Makefile.postlink              |   8 +
+ arch/powerpc/include/asm/ftrace.h           |  33 +-
+ arch/powerpc/include/asm/module.h           |   5 +
+ arch/powerpc/include/asm/ppc-opcode.h       |  14 +
+ arch/powerpc/kernel/asm-offsets.c           |  11 +
+ arch/powerpc/kernel/kprobes.c               |  18 +-
+ arch/powerpc/kernel/module_64.c             |  66 +-
+ arch/powerpc/kernel/trace/Makefile          |  11 +-
+ arch/powerpc/kernel/trace/ftrace.c          | 298 ++++++-
+ arch/powerpc/kernel/trace/ftrace_64_pg.c    |  69 +-
+ arch/powerpc/kernel/trace/ftrace_entry.S    | 244 ++++--
+ arch/powerpc/kernel/vmlinux.lds.S           |   3 +-
+ arch/powerpc/net/bpf_jit.h                  |  17 +
+ arch/powerpc/net/bpf_jit_comp.c             | 847 +++++++++++++++++++-
+ arch/powerpc/net/bpf_jit_comp32.c           |   7 +-
+ arch/powerpc/net/bpf_jit_comp64.c           |  72 +-
+ arch/powerpc/tools/.gitignore               |   2 +
+ arch/powerpc/tools/Makefile                 |  10 +
+ arch/powerpc/tools/ftrace-gen-ool-stubs.sh  |  51 ++
+ arch/powerpc/tools/ftrace_check.sh          |  50 ++
+ samples/ftrace/ftrace-direct-modify.c       |  85 +-
+ samples/ftrace/ftrace-direct-multi-modify.c | 101 ++-
+ samples/ftrace/ftrace-direct-multi.c        |  79 +-
+ samples/ftrace/ftrace-direct-too.c          |  83 +-
+ samples/ftrace/ftrace-direct.c              |  69 +-
+ scripts/Makefile.vmlinux                    |   7 +
+ scripts/link-vmlinux.sh                     |   7 +-
+ 31 files changed, 2103 insertions(+), 202 deletions(-)
+ create mode 100644 arch/powerpc/tools/.gitignore
+ create mode 100644 arch/powerpc/tools/Makefile
+ create mode 100755 arch/powerpc/tools/ftrace-gen-ool-stubs.sh
+ create mode 100755 arch/powerpc/tools/ftrace_check.sh
+
 -- 
 2.47.0
 
