@@ -1,98 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-2716-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B763D7495E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 07:11:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88C60D7497D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 08:46:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XddZb0mtkz2yN3;
-	Wed, 30 Oct 2024 18:11:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730272263;
-	cv=none; b=E5UU9CzGSTAmMR+JaGRi6WuzEJGkM1Y3csS7mZxISfuACp0coGHbMsDkv49M2AtMsR/HnE8Be3dczFCsW2s4m/pLfIkbk+OKaKeoPh6a3druxL2tBoG22ZOf4VqAczfTtCwNpw5v1Y8qUg8FbSPVQMyPT5S2nGeJI/PVAeRo3W2cFEyCz7c+0Wh9Gd89OyAu7hjMA0wq5e6oQtt/Uvxu4LD4A5RqAk7pN8e+3D6U96o52YqXZPJX2MokCGBPQTQk7cvMuFJKi4RFde++G9H4j8NMeWWpkdubM09MsSrR5iHBoEVXXe9+WqNYRnzf93oIzkzwpLfBau2nJvUD9lj4Eg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XdghW57Csz2yZ5;
+	Wed, 30 Oct 2024 19:46:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730277979;
+	cv=none; b=WpSThGVBVv+/S4MpQ98l9lk1IcxeEJAumAuxmcOziVlwmulwJwymSUIS/oO7m5rQMHnxIrEIQR1MWTVw0vB8lgsHsT3t9Hz7ehsWjJo78XnBHRYXTs5y+9phbEgy+r2Km+0quR5NiQ1rbhfQDoXngZCikAngGFiaE3PBBuoz41w3gzoU0bfJgQtqxmEY05pexAmqujbjPoVLSBpcw02QIIz0RvPRFbbM7+WOEPVDgT/4oKxoF8M5TMxszBz3hC5bv6juVFocnIR5J5MFKzsbuV5MN/TqG900V0qGOo5fOaoDRAoqYveSIDlku7WOGlROkc7b1hZ0jtjPRzrDdgUg3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730272263; c=relaxed/relaxed;
-	bh=FKMSLshbHdxa+6YhvL2f8RGy8sOar0wmC/rzw/CEz1M=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HQ5ojZ1CRACNP7t7PddyeCwXJWutEvnuS8SKOxslLQLrQk4oUM/vbL0oivu3TOG0apOLJvx2q1H5Es1TfW3OHwCdKTb3qY4yNRUd33gNUHr8m2ZIoon7qA1TcodTn4mrbPXbdNdmfa/jka/+v0nB6H3nAKy0/v1YqYdkot5e2zPLceu3tYtkBC+tIWHbBwguhTocx+jpLA8tAuFDIBB2HOWYrZS2Lw2t0DRvz08ucoCGDhO5IRDfd7LVudbf6q0TUEVAxKeFbnYhHe8S6GCE8QcWfTyvJyCvagfKfFPTLVokDfBE2ZK1tX9n7tRjhkDs1Vx5kG1SmVHnjz2FU9UCJA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tshZbF+I; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tshZbF+I;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XddZZ0q1Dz2yF0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2024 18:11:01 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 49U2d3GW030034;
-	Wed, 30 Oct 2024 07:10:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=FKMSLshbHdxa+6Yhv
-	L2f8RGy8sOar0wmC/rzw/CEz1M=; b=tshZbF+ID1lW6PV6mHPvoCSBuUTve+LgB
-	PEt+/ZQQqIjxPuHuklWpgbMZnr4X6tAiUIt0yItBMC+elGFtAOyde9w+F4nj5qrm
-	6x2wtBXedlxCo/CtU3ofF7DIunriCFgNeNg5h7wjVPc0gXgBIZC/vP7UKqtSzj9J
-	SHoX06s4o852KYe0qXymgH+8/Hn7MxuVXMHelFx772vQ/fhgNmfXk2Xi0oVlbj+e
-	v2xw4AeSJaH2BFVwVLTFsi9QhT36Yp3CNzFOq78w7dIVzolAqZooziuyWOTvo0Wp
-	AifkkshVKkG+h8kkGN1Bo65kFKNnbCTw+BLdOTPiTOSNS9upODF2A==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h747d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 07:10:36 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 49U7AaV1002210;
-	Wed, 30 Oct 2024 07:10:36 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42js0h744v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 07:10:36 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 49U6nqRh028181;
-	Wed, 30 Oct 2024 07:10:00 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 42hb4xy13y-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Oct 2024 07:10:00 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 49U79uMc20971788
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 30 Oct 2024 07:09:56 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 44FBD2004D;
-	Wed, 30 Oct 2024 07:09:56 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AD07520043;
-	Wed, 30 Oct 2024 07:09:52 +0000 (GMT)
-Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.in.ibm.com (unknown [9.203.115.143])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 30 Oct 2024 07:09:52 +0000 (GMT)
-From: Hari Bathini <hbathini@linux.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org,
-        linux-trace-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, "Naveen N. Rao" <naveen@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Daniel Borkmann <daniel@iogearbox.net>,
-        Masahiro Yamada <masahiroy@kernel.org>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Alexei Starovoitov <ast@kernel.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Andrii Nakryiko <andrii@kernel.org>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Vishal Chourasia <vishalc@linux.ibm.com>,
-        Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-Subject: [PATCH v7 15/17] powerpc/ftrace: Add support for DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-Date: Wed, 30 Oct 2024 12:38:48 +0530
-Message-ID: <20241030070850.1361304-16-hbathini@linux.ibm.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20241030070850.1361304-1-hbathini@linux.ibm.com>
-References: <20241030070850.1361304-1-hbathini@linux.ibm.com>
+	t=1730277979; c=relaxed/relaxed;
+	bh=esEbb4UXk63nGWZplOEWIJKzgiWZQFzUsL4Pv53UKPE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=k1Rgb3izjOM1GU/6k5Le5xJPXC9cNL8QXcbJujKRtXcaJ1GARW49Mog0rpD1pnL02FxeBOodhJEsL6s6QMrqTG9qa2FjZ2jE6JUrYQGLflAISfArh+5nZQYdZvyuw7QTGZr/TVM3F24N02uMMgLfE8CY+cRt3hXX43A0xfYnQo1nC6RIVmqjYHvNcjeGKyTBlFWx+uYzDIhIxFcZz9OXcrv9IJ0LRm2T1fTRefr3rn27lk7hMVli4oqGUtnankSzQGfZzjvfltScZb5Kz0QVhWC9kLQjVCqLOO/FAH0S//FHGBCKSqjOC6t+AOWGNGCmMJATyYksMxRNDtbcEKkrXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XdghT6St5z2yPD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2024 19:46:15 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1A737113E;
+	Wed, 30 Oct 2024 01:46:13 -0700 (PDT)
+Received: from [10.57.89.111] (unknown [10.57.89.111])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4B1993F73B;
+	Wed, 30 Oct 2024 01:45:34 -0700 (PDT)
+Message-ID: <e33a8ead-ca36-4570-92ac-b27708f50023@arm.com>
+Date: Wed, 30 Oct 2024 08:45:32 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,358 +43,524 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: zVzGgbxzWCKBP9_0ETtAUOfgmETQ7fMM
-X-Proofpoint-ORIG-GUID: 5_4uo_vGaXEVgQrWeh8qtMkUxXAS7H1P
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 mlxscore=0
- phishscore=0 impostorscore=0 adultscore=0 clxscore=1015 mlxlogscore=720
- bulkscore=0 suspectscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2409260000 definitions=main-2410300055
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH v1 01/57] mm: Add macros ahead of supporting boot-time
+ page size selection
+Content-Language: en-GB
+To: "David S. Miller" <davem@davemloft.net>,
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Anshuman Khandual <anshuman.khandual@arm.com>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Ard Biesheuvel <ardb@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Borislav Petkov <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Chris Zankel <chris@zankel.net>, Dave Hansen <dave.hansen@linux.intel.com>,
+ David Hildenbrand <david@redhat.com>, Dinh Nguyen <dinguyen@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Greg Marsden <greg.marsden@oracle.com>, Helge Deller <deller@gmx.de>,
+ Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Ivan Ivanov <ivan.ivanov@suse.com>, Johannes Berg
+ <johannes@sipsolutions.net>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ Jonas Bonn <jonas@southpole.se>, Kalesh Singh <kaleshsingh@google.com>,
+ Marc Zyngier <maz@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Matthias Brugger <mbrugger@suse.com>, Max Filippov <jcmvbkbc@gmail.com>,
+ Miroslav Benes <mbenes@suse.cz>, Rich Felker <dalias@libc.org>,
+ Richard Weinberger <richard@nod.at>, Stafford Horne <shorne@gmail.com>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org
+Cc: linux-alpha@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+ linux-mm@kvack.org, linux-openrisc@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
+ sparclinux@vger.kernel.org
+References: <20241014105514.3206191-1-ryan.roberts@arm.com>
+ <20241014105912.3207374-1-ryan.roberts@arm.com>
+From: Ryan Roberts <ryan.roberts@arm.com>
+In-Reply-To: <20241014105912.3207374-1-ryan.roberts@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-From: Naveen N Rao <naveen@kernel.org>
+Hi all (especially mm people!),
 
-Add support for DYNAMIC_FTRACE_WITH_DIRECT_CALLS similar to the arm64
-implementation.
 
-ftrace direct calls allow custom trampolines to be called into directly
-from function ftrace call sites, bypassing the ftrace trampoline
-completely. This functionality is currently utilized by BPF trampolines
-to hook into kernel function entries.
+On 14/10/2024 11:58, Ryan Roberts wrote:
+> arm64 can support multiple base page sizes. Instead of selecting a page
+> size at compile time, as is done today, we will make it possible to
+> select the desired page size on the command line.
+> 
+> In this case PAGE_SHIFT and it's derivatives, PAGE_SIZE and PAGE_MASK
+> (as well as a number of other macros related to or derived from
+> PAGE_SHIFT, but I'm not worrying about those yet), are no longer
+> compile-time constants. So the code base needs to cope with that.
+> 
+> As a first step, introduce MIN and MAX variants of these macros, which
+> express the range of possible page sizes. These are always compile-time
+> constants and can be used in many places where PAGE_[SHIFT|SIZE|MASK]
+> were previously used where a compile-time constant is required.
+> (Subsequent patches will do that conversion work). When the arch/build
+> doesn't support boot-time page size selection, the MIN and MAX variants
+> are equal and everything resolves as it did previously.
+> 
+> Additionally, introduce DEFINE_GLOBAL_PAGE_SIZE_VAR[_CONST]() which wrap
+> global variable defintions so that for boot-time page size selection
+> builds, the variable being wrapped is initialized at boot-time, instead
+> of compile-time. This is done by defining a function to do the
+> assignment, which has the "constructor" attribute. Constructor is
+> preferred over initcall, because when compiling a module, the module is
+> limited to a single initcall but constructors are unlimited. For
+> built-in code, constructors are now called earlier to guarrantee that
+> the variables are initialized by the time they are used. Any arch that
+> wants to enable boot-time page size selection will need to select
+> CONFIG_CONSTRUCTORS.
+> 
+> These new macros need to be available anywhere PAGE_SHIFT and friends
+> are available. Those are defined via asm/page.h (although some arches
+> have a sub-include that defines them). Unfortunately there is no
+> reliable asm-generic header we can easily piggy-back on, so let's define
+> a new one, pgtable-geometry.h, which we include near where each arch
+> defines PAGE_SHIFT. Ugh.
 
-Since we have limited relative branch range, we support ftrace direct
-calls through support for DYNAMIC_FTRACE_WITH_CALL_OPS. In this
-approach, ftrace trampoline is not entirely bypassed. Rather, it is
-re-purposed into a stub that reads direct_call field from the associated
-ftrace_ops structure and branches into that, if it is not NULL. For
-this, it is sufficient if we can ensure that the ftrace trampoline is
-reachable from all traceable functions.
+I haven't had any feedback on this particular patch yet. It would be great to
+get this one into v6.13, since once this is in place, the changes in other
+subsystems can go via their respective trees without any dependency issues.
+Although time is getting tight.
 
-When multiple ftrace_ops are associated with a call site, we utilize a
-call back to set pt_regs->orig_gpr3 that can then be tested on the
-return path from the ftrace trampoline to branch into the direct caller.
+If anyone has any feedback for this patch it would be great to hear it now. Then
+I'll re-post on it's own in a couple of days time.
 
-Signed-off-by: Naveen N Rao <naveen@kernel.org>
----
- arch/powerpc/Kconfig                     |   1 +
- arch/powerpc/include/asm/ftrace.h        |  16 ++++
- arch/powerpc/kernel/asm-offsets.c        |   3 +
- arch/powerpc/kernel/trace/ftrace.c       |  11 +++
- arch/powerpc/kernel/trace/ftrace_entry.S | 114 +++++++++++++++++------
- 5 files changed, 116 insertions(+), 29 deletions(-)
+Thanks,
+Ryan
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 79bd5a375527..73e9e42b2e75 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -235,6 +235,7 @@ config PPC
- 	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_DYNAMIC_FTRACE_WITH_ARGS	if ARCH_USING_PATCHABLE_FUNCTION_ENTRY || MPROFILE_KERNEL || PPC32
- 	select HAVE_DYNAMIC_FTRACE_WITH_CALL_OPS if PPC_FTRACE_OUT_OF_LINE || (PPC32 && ARCH_USING_PATCHABLE_FUNCTION_ENTRY)
-+	select HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS if HAVE_DYNAMIC_FTRACE_WITH_CALL_OPS
- 	select HAVE_DYNAMIC_FTRACE_WITH_REGS	if ARCH_USING_PATCHABLE_FUNCTION_ENTRY || MPROFILE_KERNEL || PPC32
- 	select HAVE_EBPF_JIT
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index 1ad1328cf4e3..5eb7631355a1 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -148,6 +148,22 @@ extern unsigned int ftrace_ool_stub_text_end_count, ftrace_ool_stub_text_count,
- #endif
- void ftrace_free_init_tramp(void);
- unsigned long ftrace_call_adjust(unsigned long addr);
-+
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-+/*
-+ * When an ftrace registered caller is tracing a function that is also set by a
-+ * register_ftrace_direct() call, it needs to be differentiated in the
-+ * ftrace_caller trampoline so that the direct call can be invoked after the
-+ * other ftrace ops. To do this, place the direct caller in the orig_gpr3 field
-+ * of pt_regs. This tells ftrace_caller that there's a direct caller.
-+ */
-+static inline void arch_ftrace_set_direct_caller(struct ftrace_regs *fregs, unsigned long addr)
-+{
-+	struct pt_regs *regs = &fregs->regs;
-+
-+	regs->orig_gpr3 = addr;
-+}
-+#endif /* CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS */
- #else
- static inline void ftrace_free_init_tramp(void) { }
- static inline unsigned long ftrace_call_adjust(unsigned long addr) { return addr; }
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 557abe800470..11b83d6788a2 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -682,6 +682,9 @@ int main(void)
- 
- #ifdef CONFIG_DYNAMIC_FTRACE_WITH_CALL_OPS
- 	OFFSET(FTRACE_OPS_FUNC, ftrace_ops, func);
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-+	OFFSET(FTRACE_OPS_DIRECT_CALL, ftrace_ops, direct_call);
-+#endif
- #endif
- 
- 	return 0;
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 9090d1a21600..051f3db14606 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -150,6 +150,17 @@ static int ftrace_get_call_inst(struct dyn_ftrace *rec, unsigned long addr, ppc_
- 	else
- 		ip = rec->ip;
- 
-+	if (!is_offset_in_branch_range(addr - ip) && addr != FTRACE_ADDR &&
-+	    addr != FTRACE_REGS_ADDR) {
-+		/* This can only happen with ftrace direct */
-+		if (!IS_ENABLED(CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS)) {
-+			pr_err("0x%lx (0x%lx): Unexpected target address 0x%lx\n",
-+			       ip, rec->ip, addr);
-+			return -EINVAL;
-+		}
-+		addr = FTRACE_ADDR;
-+	}
-+
- 	if (is_offset_in_branch_range(addr - ip))
- 		/* Within range */
- 		stub = addr;
-diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S b/arch/powerpc/kernel/trace/ftrace_entry.S
-index ff376c990308..2c1b24100eca 100644
---- a/arch/powerpc/kernel/trace/ftrace_entry.S
-+++ b/arch/powerpc/kernel/trace/ftrace_entry.S
-@@ -33,14 +33,38 @@
-  * and then arrange for the ftrace function to be called.
-  */
- .macro	ftrace_regs_entry allregs
--	/* Save the original return address in A's stack frame */
--	PPC_STL		r0, LRSAVE(r1)
- 	/* Create a minimal stack frame for representing B */
- 	PPC_STLU	r1, -STACK_FRAME_MIN_SIZE(r1)
- 
- 	/* Create our stack frame + pt_regs */
- 	PPC_STLU	r1,-SWITCH_FRAME_SIZE(r1)
- 
-+	.if \allregs == 1
-+	SAVE_GPRS(11, 12, r1)
-+	.endif
-+
-+	/* Get the _mcount() call site out of LR */
-+	mflr	r11
-+
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-+	/* Load the ftrace_op */
-+	PPC_LL	r12, -(MCOUNT_INSN_SIZE*2 + SZL)(r11)
-+
-+	/* Load direct_call from the ftrace_op */
-+	PPC_LL	r12, FTRACE_OPS_DIRECT_CALL(r12)
-+	PPC_LCMPI r12, 0
-+	.if \allregs == 1
-+	bne	.Lftrace_direct_call_regs
-+	.else
-+	bne	.Lftrace_direct_call
-+	.endif
-+#endif
-+
-+	/* Save the previous LR in pt_regs->link */
-+	PPC_STL	r0, _LINK(r1)
-+	/* Also save it in A's stack frame */
-+	PPC_STL	r0, SWITCH_FRAME_SIZE+STACK_FRAME_MIN_SIZE+LRSAVE(r1)
-+
- 	/* Save all gprs to pt_regs */
- 	SAVE_GPR(0, r1)
- 	SAVE_GPRS(3, 10, r1)
-@@ -54,7 +78,7 @@
- 
- 	.if \allregs == 1
- 	SAVE_GPR(2, r1)
--	SAVE_GPRS(11, 31, r1)
-+	SAVE_GPRS(13, 31, r1)
- 	.else
- #if defined(CONFIG_LIVEPATCH_64) || defined(CONFIG_PPC_FTRACE_OUT_OF_LINE)
- 	SAVE_GPR(14, r1)
-@@ -67,20 +91,15 @@
- 
- 	.if \allregs == 1
- 	/* Load special regs for save below */
-+	mfcr	r7
- 	mfmsr   r8
- 	mfctr   r9
- 	mfxer   r10
--	mfcr	r11
- 	.else
- 	/* Clear MSR to flag as ftrace_caller versus frace_regs_caller */
- 	li	r8, 0
- 	.endif
- 
--	/* Get the _mcount() call site out of LR */
--	mflr	r7
--	/* Save the read LR in pt_regs->link */
--	PPC_STL	r0, _LINK(r1)
--
- #ifdef CONFIG_PPC64
- 	/* Save callee's TOC in the ABI compliant location */
- 	std	r2, STK_GOT(r1)
-@@ -88,8 +107,8 @@
- #endif
- 
- #ifdef CONFIG_DYNAMIC_FTRACE_WITH_CALL_OPS
--	/* r7 points to the instruction following the call to ftrace */
--	PPC_LL	r5, -(MCOUNT_INSN_SIZE*2 + SZL)(r7)
-+	/* r11 points to the instruction following the call to ftrace */
-+	PPC_LL	r5, -(MCOUNT_INSN_SIZE*2 + SZL)(r11)
- 	PPC_LL	r12, FTRACE_OPS_FUNC(r5)
- 	mtctr	r12
- #else /* !CONFIG_DYNAMIC_FTRACE_WITH_CALL_OPS */
-@@ -105,45 +124,51 @@
- 	/* Save special regs */
- 	PPC_STL	r8, _MSR(r1)
- 	.if \allregs == 1
-+	PPC_STL	r7, _CCR(r1)
- 	PPC_STL	r9, _CTR(r1)
- 	PPC_STL	r10, _XER(r1)
--	PPC_STL	r11, _CCR(r1)
- 	.endif
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-+	/* Clear orig_gpr3 to later detect ftrace_direct call */
-+	li	r7, 0
-+	PPC_STL	r7, ORIG_GPR3(r1)
-+#endif
-+
- #ifdef CONFIG_PPC_FTRACE_OUT_OF_LINE
- 	/* Save our real return address in nvr for return */
- 	.if \allregs == 0
- 	SAVE_GPR(15, r1)
- 	.endif
--	mr	r15, r7
-+	mr	r15, r11
- 	/*
--	 * We want the ftrace location in the function, but our lr (in r7)
-+	 * We want the ftrace location in the function, but our lr (in r11)
- 	 * points at the 'mtlr r0' instruction in the out of line stub.  To
- 	 * recover the ftrace location, we read the branch instruction in the
- 	 * stub, and adjust our lr by the branch offset.
- 	 *
- 	 * See ftrace_init_ool_stub() for the profile sequence.
- 	 */
--	lwz	r8, MCOUNT_INSN_SIZE(r7)
-+	lwz	r8, MCOUNT_INSN_SIZE(r11)
- 	slwi	r8, r8, 6
- 	srawi	r8, r8, 6
--	add	r3, r7, r8
-+	add	r3, r11, r8
- 	/*
- 	 * Override our nip to point past the branch in the original function.
- 	 * This allows reliable stack trace and the ftrace stack tracer to work as-is.
- 	 */
--	addi	r7, r3, MCOUNT_INSN_SIZE
-+	addi	r11, r3, MCOUNT_INSN_SIZE
- #else
- 	/* Calculate ip from nip-4 into r3 for call below */
--	subi    r3, r7, MCOUNT_INSN_SIZE
-+	subi    r3, r11, MCOUNT_INSN_SIZE
- #endif
- 
- 	/* Save NIP as pt_regs->nip */
--	PPC_STL	r7, _NIP(r1)
-+	PPC_STL	r11, _NIP(r1)
- 	/* Also save it in B's stackframe header for proper unwind */
--	PPC_STL	r7, LRSAVE+SWITCH_FRAME_SIZE(r1)
-+	PPC_STL	r11, LRSAVE+SWITCH_FRAME_SIZE(r1)
- #if defined(CONFIG_LIVEPATCH_64) || defined(CONFIG_PPC_FTRACE_OUT_OF_LINE)
--	mr	r14, r7		/* remember old NIP */
-+	mr	r14, r11	/* remember old NIP */
- #endif
- 
- 	/* Put the original return address in r4 as parent_ip */
-@@ -154,14 +179,32 @@
- .endm
- 
- .macro	ftrace_regs_exit allregs
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-+	/* Check orig_gpr3 to detect ftrace_direct call */
-+	PPC_LL	r3, ORIG_GPR3(r1)
-+	PPC_LCMPI cr1, r3, 0
-+	mtctr	r3
-+#endif
-+
-+	/* Restore possibly modified LR */
-+	PPC_LL	r0, _LINK(r1)
-+
- #ifndef CONFIG_PPC_FTRACE_OUT_OF_LINE
- 	/* Load ctr with the possibly modified NIP */
- 	PPC_LL	r3, _NIP(r1)
--	mtctr	r3
--
- #ifdef CONFIG_LIVEPATCH_64
- 	cmpd	r14, r3		/* has NIP been altered? */
- #endif
-+
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-+	beq	cr1,2f
-+	mtlr	r3
-+	b	3f
-+#endif
-+2:	mtctr	r3
-+	mtlr	r0
-+3:
-+
- #else /* !CONFIG_PPC_FTRACE_OUT_OF_LINE */
- 	/* Load LR with the possibly modified NIP */
- 	PPC_LL	r3, _NIP(r1)
-@@ -185,12 +228,6 @@
- #endif
- 	.endif
- 
--	/* Restore possibly modified LR */
--	PPC_LL	r0, _LINK(r1)
--#ifndef CONFIG_PPC_FTRACE_OUT_OF_LINE
--	mtlr	r0
--#endif
--
- #ifdef CONFIG_PPC64
- 	/* Restore callee's TOC */
- 	ld	r2, STK_GOT(r1)
-@@ -203,8 +240,12 @@
-         /* Based on the cmpd above, if the NIP was altered handle livepatch */
- 	bne-	livepatch_handler
- #endif
-+
- 	/* jump after _mcount site */
- #ifdef CONFIG_PPC_FTRACE_OUT_OF_LINE
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-+	bnectr	cr1
-+#endif
- 	/*
- 	 * Return with blr to keep the link stack balanced. The function profiling sequence
- 	 * uses 'mtlr r0' to restore LR.
-@@ -260,6 +301,21 @@ ftrace_no_trace:
- #endif
- #endif
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-+.Lftrace_direct_call_regs:
-+	mtctr	r12
-+	REST_GPRS(11, 12, r1)
-+	addi	r1, r1, SWITCH_FRAME_SIZE+STACK_FRAME_MIN_SIZE
-+	bctr
-+.Lftrace_direct_call:
-+	mtctr	r12
-+	addi	r1, r1, SWITCH_FRAME_SIZE+STACK_FRAME_MIN_SIZE
-+	bctr
-+SYM_FUNC_START(ftrace_stub_direct_tramp)
-+	blr
-+SYM_FUNC_END(ftrace_stub_direct_tramp)
-+#endif
-+
- #ifdef CONFIG_LIVEPATCH_64
- 	/*
- 	 * This function runs in the mcount context, between two functions. As
--- 
-2.47.0
+
+> 
+> -------
+> 
+> Most of the problems that need to be solved over the next few patches
+> fall into these broad categories, which are all solved with the help of
+> these new macros:
+> 
+> 1. Assignment of values derived from PAGE_SIZE in global variables
+> 
+>   For boot-time page size builds, we must defer the initialization of
+>   these variables until boot-time, when the page size is known. See
+>   DEFINE_GLOBAL_PAGE_SIZE_VAR[_CONST]() as described above.
+> 
+> 2. Define static storage in units related to PAGE_SIZE
+> 
+>   This static storage will be defined according to PAGE_SIZE_MAX.
+> 
+> 3. Define size of struct so that it is related to PAGE_SIZE
+> 
+>   The struct often contains an array that is sized to fill the page. In
+>   this case, use a flexible array with dynamic allocation. In other
+>   cases, the struct fits exactly over a page, which is a header (e.g.
+>   swap file header). In this case, remove the padding, and manually
+>   determine the struct pointer within the page.
+> 
+> 4. BUILD_BUG_ON() with values derived from PAGE_SIZE
+> 
+>   In most cases, we can change these to compare againt the appropriate
+>   limit (either MIN or MAX). In other cases, we must change these to
+>   run-time BUG_ON().
+> 
+> 5. Ensure page alignment of static data structures
+> 
+>   Align instead to PAGE_SIZE_MAX.
+> 
+> 6. #ifdeffery based on PAGE_SIZE
+> 
+>   Often these can be changed to c code constructs. e.g. a macro that
+>   returns a different value depending on page size can be changed to use
+>   the ternary operator and the compiler will dead code strip it for the
+>   compile-time constant case and runtime evaluate it for the non-const
+>   case. Or #if/#else/#endif within a function can be converted to c
+>   if/else blocks, which are also dead code stripped for the const case.
+>   Sometimes we can change the c-preprocessor logic to use the
+>   appropriate MIN/MAX limit.
+> 
+> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
+> ---
+> 
+> ***NOTE***
+> Any confused maintainers may want to read the cover note here for context:
+> https://lore.kernel.org/all/20241014105514.3206191-1-ryan.roberts@arm.com/
+> 
+>  arch/alpha/include/asm/page.h          |  1 +
+>  arch/arc/include/asm/page.h            |  1 +
+>  arch/arm/include/asm/page.h            |  1 +
+>  arch/arm64/include/asm/page-def.h      |  2 +
+>  arch/csky/include/asm/page.h           |  3 ++
+>  arch/hexagon/include/asm/page.h        |  2 +
+>  arch/loongarch/include/asm/page.h      |  2 +
+>  arch/m68k/include/asm/page.h           |  1 +
+>  arch/microblaze/include/asm/page.h     |  1 +
+>  arch/mips/include/asm/page.h           |  1 +
+>  arch/nios2/include/asm/page.h          |  2 +
+>  arch/openrisc/include/asm/page.h       |  1 +
+>  arch/parisc/include/asm/page.h         |  1 +
+>  arch/powerpc/include/asm/page.h        |  2 +
+>  arch/riscv/include/asm/page.h          |  1 +
+>  arch/s390/include/asm/page.h           |  1 +
+>  arch/sh/include/asm/page.h             |  1 +
+>  arch/sparc/include/asm/page.h          |  3 ++
+>  arch/um/include/asm/page.h             |  2 +
+>  arch/x86/include/asm/page_types.h      |  2 +
+>  arch/xtensa/include/asm/page.h         |  1 +
+>  include/asm-generic/pgtable-geometry.h | 71 ++++++++++++++++++++++++++
+>  init/main.c                            |  5 +-
+>  23 files changed, 107 insertions(+), 1 deletion(-)
+>  create mode 100644 include/asm-generic/pgtable-geometry.h
+> 
+> diff --git a/arch/alpha/include/asm/page.h b/arch/alpha/include/asm/page.h
+> index 70419e6be1a35..d0096fb5521b8 100644
+> --- a/arch/alpha/include/asm/page.h
+> +++ b/arch/alpha/include/asm/page.h
+> @@ -88,5 +88,6 @@ typedef struct page *pgtable_t;
+>  
+>  #include <asm-generic/memory_model.h>
+>  #include <asm-generic/getorder.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #endif /* _ALPHA_PAGE_H */
+> diff --git a/arch/arc/include/asm/page.h b/arch/arc/include/asm/page.h
+> index def0dfb95b436..8d56549db7a33 100644
+> --- a/arch/arc/include/asm/page.h
+> +++ b/arch/arc/include/asm/page.h
+> @@ -6,6 +6,7 @@
+>  #define __ASM_ARC_PAGE_H
+>  
+>  #include <uapi/asm/page.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #ifdef CONFIG_ARC_HAS_PAE40
+>  
+> diff --git a/arch/arm/include/asm/page.h b/arch/arm/include/asm/page.h
+> index 62af9f7f9e963..417aa8533c718 100644
+> --- a/arch/arm/include/asm/page.h
+> +++ b/arch/arm/include/asm/page.h
+> @@ -191,5 +191,6 @@ extern int pfn_valid(unsigned long);
+>  
+>  #include <asm-generic/getorder.h>
+>  #include <asm-generic/memory_model.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #endif
+> diff --git a/arch/arm64/include/asm/page-def.h b/arch/arm64/include/asm/page-def.h
+> index 792e9fe881dcf..d69971cf49cd2 100644
+> --- a/arch/arm64/include/asm/page-def.h
+> +++ b/arch/arm64/include/asm/page-def.h
+> @@ -15,4 +15,6 @@
+>  #define PAGE_SIZE		(_AC(1, UL) << PAGE_SHIFT)
+>  #define PAGE_MASK		(~(PAGE_SIZE-1))
+>  
+> +#include <asm-generic/pgtable-geometry.h>
+> +
+>  #endif /* __ASM_PAGE_DEF_H */
+> diff --git a/arch/csky/include/asm/page.h b/arch/csky/include/asm/page.h
+> index 0ca6c408c07f2..95173d57adc8b 100644
+> --- a/arch/csky/include/asm/page.h
+> +++ b/arch/csky/include/asm/page.h
+> @@ -92,4 +92,7 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
+>  #include <asm-generic/getorder.h>
+>  
+>  #endif /* !__ASSEMBLY__ */
+> +
+> +#include <asm-generic/pgtable-geometry.h>
+> +
+>  #endif /* __ASM_CSKY_PAGE_H */
+> diff --git a/arch/hexagon/include/asm/page.h b/arch/hexagon/include/asm/page.h
+> index 8a6af57274c2d..ba7ad5231695f 100644
+> --- a/arch/hexagon/include/asm/page.h
+> +++ b/arch/hexagon/include/asm/page.h
+> @@ -139,4 +139,6 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
+>  #endif /* ifdef __ASSEMBLY__ */
+>  #endif /* ifdef __KERNEL__ */
+>  
+> +#include <asm-generic/pgtable-geometry.h>
+> +
+>  #endif
+> diff --git a/arch/loongarch/include/asm/page.h b/arch/loongarch/include/asm/page.h
+> index e85df33f11c77..9862e8fb047a6 100644
+> --- a/arch/loongarch/include/asm/page.h
+> +++ b/arch/loongarch/include/asm/page.h
+> @@ -123,4 +123,6 @@ extern int __virt_addr_valid(volatile void *kaddr);
+>  
+>  #endif /* !__ASSEMBLY__ */
+>  
+> +#include <asm-generic/pgtable-geometry.h>
+> +
+>  #endif /* _ASM_PAGE_H */
+> diff --git a/arch/m68k/include/asm/page.h b/arch/m68k/include/asm/page.h
+> index 8cfb84b499751..4df4681b02194 100644
+> --- a/arch/m68k/include/asm/page.h
+> +++ b/arch/m68k/include/asm/page.h
+> @@ -60,5 +60,6 @@ extern unsigned long _ramend;
+>  
+>  #include <asm-generic/getorder.h>
+>  #include <asm-generic/memory_model.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #endif /* _M68K_PAGE_H */
+> diff --git a/arch/microblaze/include/asm/page.h b/arch/microblaze/include/asm/page.h
+> index 8810f4f1c3b02..abc23c3d743bd 100644
+> --- a/arch/microblaze/include/asm/page.h
+> +++ b/arch/microblaze/include/asm/page.h
+> @@ -142,5 +142,6 @@ static inline const void *pfn_to_virt(unsigned long pfn)
+>  
+>  #include <asm-generic/memory_model.h>
+>  #include <asm-generic/getorder.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #endif /* _ASM_MICROBLAZE_PAGE_H */
+> diff --git a/arch/mips/include/asm/page.h b/arch/mips/include/asm/page.h
+> index 4609cb0326cf3..3d91021538f02 100644
+> --- a/arch/mips/include/asm/page.h
+> +++ b/arch/mips/include/asm/page.h
+> @@ -227,5 +227,6 @@ static inline unsigned long kaslr_offset(void)
+>  
+>  #include <asm-generic/memory_model.h>
+>  #include <asm-generic/getorder.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #endif /* _ASM_PAGE_H */
+> diff --git a/arch/nios2/include/asm/page.h b/arch/nios2/include/asm/page.h
+> index 0722f88e63cc7..2e5f93beb42b7 100644
+> --- a/arch/nios2/include/asm/page.h
+> +++ b/arch/nios2/include/asm/page.h
+> @@ -97,4 +97,6 @@ extern struct page *mem_map;
+>  
+>  #endif /* !__ASSEMBLY__ */
+>  
+> +#include <asm-generic/pgtable-geometry.h>
+> +
+>  #endif /* _ASM_NIOS2_PAGE_H */
+> diff --git a/arch/openrisc/include/asm/page.h b/arch/openrisc/include/asm/page.h
+> index 1d5913f67c312..a0da2a9842241 100644
+> --- a/arch/openrisc/include/asm/page.h
+> +++ b/arch/openrisc/include/asm/page.h
+> @@ -88,5 +88,6 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
+>  
+>  #include <asm-generic/memory_model.h>
+>  #include <asm-generic/getorder.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #endif /* __ASM_OPENRISC_PAGE_H */
+> diff --git a/arch/parisc/include/asm/page.h b/arch/parisc/include/asm/page.h
+> index 4bea2e95798f0..2a75496237c09 100644
+> --- a/arch/parisc/include/asm/page.h
+> +++ b/arch/parisc/include/asm/page.h
+> @@ -173,6 +173,7 @@ extern int npmem_ranges;
+>  
+>  #include <asm-generic/memory_model.h>
+>  #include <asm-generic/getorder.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  #include <asm/pdc.h>
+>  
+>  #define PAGE0   ((struct zeropage *)absolute_pointer(__PAGE_OFFSET))
+> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+> index 83d0a4fc5f755..4601c115b6485 100644
+> --- a/arch/powerpc/include/asm/page.h
+> +++ b/arch/powerpc/include/asm/page.h
+> @@ -300,4 +300,6 @@ static inline unsigned long kaslr_offset(void)
+>  #include <asm-generic/memory_model.h>
+>  #endif /* __ASSEMBLY__ */
+>  
+> +#include <asm-generic/pgtable-geometry.h>
+> +
+>  #endif /* _ASM_POWERPC_PAGE_H */
+> diff --git a/arch/riscv/include/asm/page.h b/arch/riscv/include/asm/page.h
+> index 7ede2111c5917..e5af7579e45bf 100644
+> --- a/arch/riscv/include/asm/page.h
+> +++ b/arch/riscv/include/asm/page.h
+> @@ -204,5 +204,6 @@ static __always_inline void *pfn_to_kaddr(unsigned long pfn)
+>  
+>  #include <asm-generic/memory_model.h>
+>  #include <asm-generic/getorder.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #endif /* _ASM_RISCV_PAGE_H */
+> diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
+> index 16e4caa931f1f..42157e7690a77 100644
+> --- a/arch/s390/include/asm/page.h
+> +++ b/arch/s390/include/asm/page.h
+> @@ -275,6 +275,7 @@ static inline unsigned long virt_to_pfn(const void *kaddr)
+>  
+>  #include <asm-generic/memory_model.h>
+>  #include <asm-generic/getorder.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #define AMODE31_SIZE		(3 * PAGE_SIZE)
+>  
+> diff --git a/arch/sh/include/asm/page.h b/arch/sh/include/asm/page.h
+> index f780b467e75d7..09533d46ef033 100644
+> --- a/arch/sh/include/asm/page.h
+> +++ b/arch/sh/include/asm/page.h
+> @@ -162,5 +162,6 @@ typedef struct page *pgtable_t;
+>  
+>  #include <asm-generic/memory_model.h>
+>  #include <asm-generic/getorder.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  
+>  #endif /* __ASM_SH_PAGE_H */
+> diff --git a/arch/sparc/include/asm/page.h b/arch/sparc/include/asm/page.h
+> index 5e44cdf2a8f2b..4327fe2bfa010 100644
+> --- a/arch/sparc/include/asm/page.h
+> +++ b/arch/sparc/include/asm/page.h
+> @@ -9,4 +9,7 @@
+>  #else
+>  #include <asm/page_32.h>
+>  #endif
+> +
+> +#include <asm-generic/pgtable-geometry.h>
+> +
+>  #endif
+> diff --git a/arch/um/include/asm/page.h b/arch/um/include/asm/page.h
+> index 9ef9a8aedfa66..f26011808f514 100644
+> --- a/arch/um/include/asm/page.h
+> +++ b/arch/um/include/asm/page.h
+> @@ -119,4 +119,6 @@ extern unsigned long uml_physmem;
+>  #define __HAVE_ARCH_GATE_AREA 1
+>  #endif
+>  
+> +#include <asm-generic/pgtable-geometry.h>
+> +
+>  #endif	/* __UM_PAGE_H */
+> diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
+> index 52f1b4ff0cc16..6d2381342047f 100644
+> --- a/arch/x86/include/asm/page_types.h
+> +++ b/arch/x86/include/asm/page_types.h
+> @@ -71,4 +71,6 @@ extern void initmem_init(void);
+>  
+>  #endif	/* !__ASSEMBLY__ */
+>  
+> +#include <asm-generic/pgtable-geometry.h>
+> +
+>  #endif	/* _ASM_X86_PAGE_DEFS_H */
+> diff --git a/arch/xtensa/include/asm/page.h b/arch/xtensa/include/asm/page.h
+> index 4db56ef052d22..86952cb32af23 100644
+> --- a/arch/xtensa/include/asm/page.h
+> +++ b/arch/xtensa/include/asm/page.h
+> @@ -200,4 +200,5 @@ static inline unsigned long ___pa(unsigned long va)
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #include <asm-generic/memory_model.h>
+> +#include <asm-generic/pgtable-geometry.h>
+>  #endif /* _XTENSA_PAGE_H */
+> diff --git a/include/asm-generic/pgtable-geometry.h b/include/asm-generic/pgtable-geometry.h
+> new file mode 100644
+> index 0000000000000..358e729a6ac37
+> --- /dev/null
+> +++ b/include/asm-generic/pgtable-geometry.h
+> @@ -0,0 +1,71 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef ASM_GENERIC_PGTABLE_GEOMETRY_H
+> +#define ASM_GENERIC_PGTABLE_GEOMETRY_H
+> +
+> +#if   defined(PAGE_SHIFT_MAX) && defined(PAGE_SIZE_MAX) && defined(PAGE_MASK_MAX) && \
+> +      defined(PAGE_SHIFT_MIN) && defined(PAGE_SIZE_MIN) && defined(PAGE_MASK_MIN)
+> +/* Arch supports boot-time page size selection. */
+> +#elif defined(PAGE_SHIFT_MAX) || defined(PAGE_SIZE_MAX) || defined(PAGE_MASK_MAX) || \
+> +      defined(PAGE_SHIFT_MIN) || defined(PAGE_SIZE_MIN) || defined(PAGE_MASK_MIN)
+> +#error Arch must define all or none of the boot-time page size macros
+> +#else
+> +/* Arch does not support boot-time page size selection. */
+> +#define PAGE_SHIFT_MIN	PAGE_SHIFT
+> +#define PAGE_SIZE_MIN	PAGE_SIZE
+> +#define PAGE_MASK_MIN	PAGE_MASK
+> +#define PAGE_SHIFT_MAX	PAGE_SHIFT
+> +#define PAGE_SIZE_MAX	PAGE_SIZE
+> +#define PAGE_MASK_MAX	PAGE_MASK
+> +#endif
+> +
+> +/*
+> + * Define a global variable (scalar or struct), whose value is derived from
+> + * PAGE_SIZE and friends. When PAGE_SIZE is a compile-time constant, the global
+> + * variable is simply defined with the static value. When PAGE_SIZE is
+> + * determined at boot-time, a pure initcall is registered and run during boot to
+> + * initialize the variable.
+> + *
+> + * @type: Unqualified type. Do not include "const"; implied by macro variant.
+> + * @name: Variable name.
+> + * @...:  Initialization value. May be scalar or initializer.
+> + *
+> + * "static" is declared by placing "static" before the macro.
+> + *
+> + * Example:
+> + *
+> + * struct my_struct {
+> + *         int a;
+> + *         char b;
+> + * };
+> + *
+> + * static DEFINE_GLOBAL_PAGE_SIZE_VAR(struct my_struct, my_variable, {
+> + *         .a = 10,
+> + *         .b = 'e',
+> + * });
+> + */
+> +#if PAGE_SIZE_MIN != PAGE_SIZE_MAX
+> +#define __DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, attrib, ...)		\
+> +	type name attrib;						\
+> +	static int __init __attribute__((constructor)) __##name##_init(void)	\
+> +	{								\
+> +		name = (type)__VA_ARGS__;				\
+> +		return 0;						\
+> +	}
+> +
+> +#define DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, ...)			\
+> +	__DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, , __VA_ARGS__)
+> +
+> +#define DEFINE_GLOBAL_PAGE_SIZE_VAR_CONST(type, name, ...)		\
+> +	__DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, __ro_after_init, __VA_ARGS__)
+> +#else /* PAGE_SIZE_MIN == PAGE_SIZE_MAX */
+> +#define __DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, attrib, ...)		\
+> +	type name attrib = __VA_ARGS__;					\
+> +
+> +#define DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, ...)			\
+> +	__DEFINE_GLOBAL_PAGE_SIZE_VAR(type, name, , __VA_ARGS__)
+> +
+> +#define DEFINE_GLOBAL_PAGE_SIZE_VAR_CONST(type, name, ...)		\
+> +	__DEFINE_GLOBAL_PAGE_SIZE_VAR(const type, name, , __VA_ARGS__)
+> +#endif
+> +
+> +#endif /* ASM_GENERIC_PGTABLE_GEOMETRY_H */
+> diff --git a/init/main.c b/init/main.c
+> index 206acdde51f5a..ba1515eb20b9d 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -899,6 +899,8 @@ static void __init early_numa_node_init(void)
+>  #endif
+>  }
+>  
+> +static __init void do_ctors(void);
+> +
+>  asmlinkage __visible __init __no_sanitize_address __noreturn __no_stack_protector
+>  void start_kernel(void)
+>  {
+> @@ -910,6 +912,8 @@ void start_kernel(void)
+>  	debug_objects_early_init();
+>  	init_vmlinux_build_id();
+>  
+> +	do_ctors();
+> +
+>  	cgroup_init_early();
+>  
+>  	local_irq_disable();
+> @@ -1360,7 +1364,6 @@ static void __init do_basic_setup(void)
+>  	cpuset_init_smp();
+>  	driver_init();
+>  	init_irq_proc();
+> -	do_ctors();
+>  	do_initcalls();
+>  }
+>  
 
 
