@@ -1,88 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-2720-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2721-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5417D5CC9C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 11:40:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E026BD5CCA8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Oct 2024 12:54:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XdlXy1wSQz2xxx;
-	Wed, 30 Oct 2024 22:40:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730288402;
-	cv=none; b=YiwrscJd3xqBzXcCvvAJOE1SN2mlyPnol1ps89L9qMEVIb7oPaVlUwqYKA9Z8GxN1UU+NligI8bDJmzavP+dTSGTSbQiv0AiIXyqGSalIR/vnbbuccdj2GngJ70RwZavjqTsbDf0RoD+lZE6klzBFFj9cm55+UxGTTDkccHLewCVSDCl4c4fzcJMqfb7nAudjwUm4ULWjTkVgSdixL4L3OinhfZWQCKQ7BE/4dzwejYvA0cCF3LrQnTe2sd4YzcT3+TeyJq6I4bal7pLdda3TPZQ7bB/cL99NyQLcya4DapPMJoAWCplZSRppqHMBXA4MeWJRUELdoWyMbwbZlfkNw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XdnCP2hhZz2ygG;
+	Wed, 30 Oct 2024 23:54:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.255
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730292897;
+	cv=none; b=E/LmzVZJsLY2IVjWwC1NH2gotZbXbNvppGqH9eII1wHkHc1273d/mVyU7UiyczE/PZryqBq+oo+iekIIrMqv5wkEfUucYSsAR4H71DnCM/YIG1MAubVXJr4PgHbfFjLCnNS9oMY5yIT40JxF1aq5wXZk81OjKjMuMqXhyilU3XE5rtGLc+4LVkLaFZWNwc34EDOkmmwSKXK+bpffgE9f2wkqRr6ssyrHIW6QHBseg2pfytWiPJzBfkUVDCRGo152x3XmnuyaF9NJ74vWZBazURC6rOXnRmYdd3DFTUsMBw5x75pOTdEVdbuDKG7VUWJhHOB7hTzex+oIK9FLi61lAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730288402; c=relaxed/relaxed;
-	bh=VeIG/ZcqI3p+nLl4RvpoP3/dtuBOLvCoB03RCodl0P0=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=HGwyJjWUML9qAQiL+Be81jU1v8Icp5UdsHjzxE3od/lJ8n+heyw2xUuQUqMJrgora18awC7pagJ3msljLskcAOWc5hNgieWHERLRKBgzzPd7U6BF8C05fV4uMaFRT7mjnNIkqht0XfAsolzmbpfvhmxlnzh/t6a7cRY5IMExlgaXrsWnljgsmHsRvTm3sfFT0JnRFQQVvjTjip/N8GCP8s965bo7zBrb1tJPfaepBZoXw005yq0Z+0VZXoObS2FJNc51nvJY750cPm4xw3AC2YB01Kp+xa0abSoTvgq6mmolk/N4NCyQ9kBkrJNhR1T5MIQ8pNf1xZiQoSlkcVbcRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rhEg0d1z; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Sf9t6VjH; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rhEg0d1z;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Sf9t6VjH;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (unknown [IPv6:2a0a:51c0:0:12e:550::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1730292897; c=relaxed/relaxed;
+	bh=nCkJxl64TFoivXnjWLAmDpTZu1SPFMNla8fLWwo/+p0=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=FLrU6az2nkUv/Yb762Po+nZuQNpP5+1eDdg2bDnrt24/FXqjnfgjSGA3UJfmZXNT8UIsrAWK6ZS6/R2AYOx1HWWdYeoeXdNQOhvZjNlkZSGZZ8DlcbQyMVmYk9Wc9ZoRnVLgtGTWc0uIOQ4mScTdUnCfuN+iNbv7FguLmh6AswU6aGKZ70mQE2Trdsxxa25BLKbJpM8oOcGSg3bYryXMyFMIMCJcInujACUl2fqN2+SkZjktyWeX8lr19vDH7EdSeMqlNoQEcP0o5eqif5b01qsPjq5Nb3kC0TTj4e6hrWE0GVfVzkCkj8pRYOUc+ffILP+Sdx3bNJ1h76rnuCaGUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XdlXw1cbzz2xs8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2024 22:40:00 +1100 (AEDT)
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1730288386;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VeIG/ZcqI3p+nLl4RvpoP3/dtuBOLvCoB03RCodl0P0=;
-	b=rhEg0d1z87PUbjnSMEsHa2ZTMjm4V7As2oyILf5i4K2VK/32cI0L1o8550RHGdp6sqGjh3
-	ErfD1VAW2o++iRalLhw8wi1ciSvnXToQPU/7Dqz5Wlnc51fuF7yZtMempbYTt2HzLBGqx0
-	Y9YSzHbUO+IR24Yjq+Ny338RBqa0jzNLUw2m9Vrr52kzfVeGJB4+uj1JaJRYCIo3DE6Lly
-	bobxafA+CuOfJYFL3jZUIAtXVESnMTctTppzVthR6fn1ijnvzGIvSfDwZ8yFMWE8zMh75v
-	CjtAzrsY5JQC46+IYsUu5faYS3U6XCuR8hSr6G0+pno9IQ0T9vFbLX0np3OHDQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1730288386;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=VeIG/ZcqI3p+nLl4RvpoP3/dtuBOLvCoB03RCodl0P0=;
-	b=Sf9t6VjHntegt94+/ZST48Lk206fyTt9ZFie/7zblKXgaCtLwerDU5H5dAAiGuPUAe0Y5b
-	9F1eFOTF9JGc5hBw==
-To: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, Guo
- Ren
- <guoren@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
- <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Christian
- Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
- <svens@linux.ibm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will
- Deacon <will@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Palmer
- Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Russell
- King <linux@armlinux.org.uk>, Huacai Chen <chenhuacai@kernel.org>, WANG
- Xuerui <kernel@xen0n.name>, Theodore Ts'o <tytso@mit.edu>, "Jason A.
- Donenfeld" <Jason@zx2c4.com>, Thomas Bogendoerfer
- <tsbogend@alpha.franken.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe
- Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Vincenzo Frascino
- <vincenzo.frascino@arm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
- linux-csky@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-riscv@lists.infradead.org, loongarch@lists.linux.dev,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Thomas
- =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, Nam Cao
- <namcao@linutronix.de>
-Subject: Re: [PATCH 00/28] vdso: Preparations for generic data storage
-In-Reply-To: <20241010-vdso-generic-base-v1-0-b64f0842d512@linutronix.de>
-References: <20241010-vdso-generic-base-v1-0-b64f0842d512@linutronix.de>
-Date: Wed, 30 Oct 2024 12:39:45 +0100
-Message-ID: <871pzxzuny.ffs@tglx>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XdnCM57FRz2yfm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Oct 2024 23:54:54 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.163.252])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4Xdn8h61hPz1T9MM;
+	Wed, 30 Oct 2024 20:52:36 +0800 (CST)
+Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
+	by mail.maildlp.com (Postfix) with ESMTPS id BCDEC1800A5;
+	Wed, 30 Oct 2024 20:54:47 +0800 (CST)
+Received: from localhost.localdomain (10.50.165.33) by
+ kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1258.34; Wed, 30 Oct 2024 20:54:46 +0800
+From: Yicong Yang <yangyicong@huawei.com>
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
+	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
+	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <pierre.gondois@arm.com>,
+	<dietmar.eggemann@arm.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
+	<linux-kernel@vger.kernel.org>, <morten.rasmussen@arm.com>,
+	<msuchanek@suse.de>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+	<jonathan.cameron@huawei.com>, <prime.zeng@hisilicon.com>,
+	<linuxarm@huawei.com>, <yangyicong@hisilicon.com>, <xuwei5@huawei.com>,
+	<guohanjun@huawei.com>
+Subject: [PATCH v7 4/4] arm64: Kconfig: Enable HOTPLUG_SMT
+Date: Wed, 30 Oct 2024 20:54:15 +0800
+Message-ID: <20241030125415.18994-5-yangyicong@huawei.com>
+X-Mailer: git-send-email 2.31.0
+In-Reply-To: <20241030125415.18994-1-yangyicong@huawei.com>
+References: <20241030125415.18994-1-yangyicong@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,38 +65,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.50.165.33]
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ kwepemd200014.china.huawei.com (7.221.188.8)
 
-Folks!
+From: Yicong Yang <yangyicong@hisilicon.com>
 
-On Thu, Oct 10 2024 at 09:01, Thomas Wei=C3=9Fschuh wrote:
-> Historically each architecture defined their own datapage to store the
-> VDSO data. This stands in contrast to the generic nature of the VDSO
-> code itself.
-> We plan to introduce a generic framework for the management of the VDSO
-> data storage that can be used by all architectures and which works
-> together with the existing generic VDSO code.
->
-> Before that is possible align the different architectures by
-> standardizing on the existing generic infrastructure and moving things
-> out of the VDSO data page which does not belong there.
->
-> Patches	 1- 2:	csky
-> Patch	    3:	s390
-> Patches	 4- 5:	arm64
-> Patch	    6:	riscv
-> Patch	    7:	arm
-> Patch	    8:	LoongArch
-> Patch	    9:	MIPS
-> Patches 10-20:	x86
-> Patches 21-27:	powerpc
-> Patch      28: 	Renamings to avoid a name clash with the new code.
+Enable HOTPLUG_SMT for SMT control.
 
-As this has been sitting for two weeks now without major comments, I'm
-planning to merge that through the tip tree tomorrow.
+Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
+---
+ arch/arm64/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks,
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index fd9df6dcc593..cccd0a07c050 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -243,6 +243,7 @@ config ARM64
+ 	select HAVE_KRETPROBES
+ 	select HAVE_GENERIC_VDSO
+ 	select HOTPLUG_CORE_SYNC_DEAD if HOTPLUG_CPU
++	select HOTPLUG_SMT if HOTPLUG_CPU
+ 	select IRQ_DOMAIN
+ 	select IRQ_FORCED_THREADING
+ 	select KASAN_VMALLOC if KASAN
+-- 
+2.24.0
 
-        tglx
 
