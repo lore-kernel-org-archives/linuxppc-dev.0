@@ -1,89 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-2738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2739-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6911D6B6B4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2024 00:13:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4335DE68941
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Oct 2024 01:22:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xf4Fr0zWGz2yDk;
-	Thu, 31 Oct 2024 11:13:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730333583;
-	cv=none; b=bWf83Kq+o7mGPfg+vXqOrOw/enuUF/x4CsY2mgR0WFcj/AclSEJxBP21YSK3CMgZs5B4Ak9qImrehHmnB3e1jkjk2/RSJ4iBdioolWkxB7Gc55zWIpdix/yzGTitYZ07dgywFGt4A1A/fVXA+CJqfllAdJGLlCFYK6wIahIoIlZG/HblzD8xWId7AcW2sOAusuvtRXXEZHMzwOOiUfHNVOTxNARGCVlJr+gnmzUFt0qVlLwsv2a++Cxnqcd+r0XORdmpP9zKgE3zvh5vZYWWgWpQAleso07HwsSldprFJrkT7cJvGZa36OIEaxiuImprmSNxLtZOWifGBv+EsezW/A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xf5pF0vgWz2xs4;
+	Thu, 31 Oct 2024 12:22:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730337765;
+	cv=none; b=KR4UHt9m4y34rBmLNFdtcJxoB9KC3rgRmDFdC9+T440jFugQMJHk/gAhqSutn7aLoI3knOnv4d9dyy/p9bovaVGtZSDrHNdRX7bkSmIjVz4anNu+AIVCXDfpXXZoyUNL/UJL1ZXXHsMCM5iQS2Dauwl4WOotSFT5Om2Wp6/0M0LGkm2U3+q46WLx7UxGcrH0bMf0UtJxrYPUa188NhApsaf+m17IiDttpvpM2kbpNTQSoJgw4VONZf886eYgtq9a4AYccVO7xjxyfXAuqDuYGDUv8r/TPslMNpYZ6yDv5cgUvd2qSpHYxMbW8k2/m2+A8+T1aWFYcd1S3QV6H60/bA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730333583; c=relaxed/relaxed;
-	bh=1gQ9k41W3wMLr1E72MP7qlXIkEHrg2DS7W0/qcJ6WFE=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=iz9U7IE7HrRAi+WgUDzqBaDUwTc0HzjGwXQ48/NjTscg73ICFBCYpLORng8DZPf6UpQ6a4bPjUbhy7HRzyZo3eVWRcaHW84+sr+qDBZH/ebTrAJHvFcXEFPNSnCRXiWhW8lTiqvUEi9nbSUJ5j5J9pXdEQjWASeOPR9YC4eXbz+a8qiEoxSVg9z/ZuQPTAVjh1zaz1bgYK5kOh7QzpfJMH/x0iMgUjeTZGfxv8YINq8134HEwM4Ekj/WTKt/7+/Xzezulx2ThSYNb5/1hL1AmLDfrylJIZFhOLyxN9sp9NhjVF/9Gz60PORuE49NK3xQN64wVSoVE733b/dO4Xbveg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ju76Edax; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1730337765; c=relaxed/relaxed;
+	bh=QjW8Kw5UFmafLnSTxLCguKpJPtpBFspJBqxqy1O825M=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=FfXk3p5qeP1OW4OkWYjiEnYwrXB5qFtVMiYeb503+1+Fg40CBGJJncb9Hh8CIJGBKtf7ZPTwhDThBPjngntoANq0pZbN6OHoDf0I0OB9Ug8CaJ6Z8YK+VnAWGLN/OUiqEv9RuYo1cE/2S3BCgeN+6vTb6+JLSVEZL30xr5J7wbANOrG/dpFSER447XYKSXPFU+HaWgXI+N5iTe2e4QaVtLI2osIJIIoJpW9LBRUrbpyrF2pR7El9sHWREVwUDP6TNUcGOzzxdIgol/l3WdxSf+lXgJdRHLKtLGb4y2ofveHYFEvx17untoXsHA1JmcnPfKvmLp5gk8sO3QKc9OtAgA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=C0Y7jtBx; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ju76Edax;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=C0Y7jtBx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xf4Fp5h7Gz2yD6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2024 11:13:02 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 9B36F5C6FFA;
-	Thu, 31 Oct 2024 00:12:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AEA34C4CEF0;
-	Wed, 30 Oct 2024 23:48:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1730332089;
-	bh=Q0wXyQGBlYip/F0j6/woGSioAXOUzqyfPJJC3tkOLK8=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=ju76EdaxYrc2VgAjivV0KVt2GMgCCgQhkFEfaJJ6/pgDxTefM1lg4Tf1OWyD6kJF1
-	 KPs45HSaTf/dlBDXadIlmKLrd/PTXlvHaEPFN+6htEnDe9la3DhVDjvzJ08pFbHCu1
-	 Mi9Dcrl+rhMsrI94lHkbmm+ltjVTd56lvqQYX2iMsa9T1VhTsDaczRIlDIIrjNFfwV
-	 BJFkhdoI7ChFFbj0fL95fN0enUv6F2jgu70AtVwj6XP/DlYWjcgdm+p8m6To/KCBGH
-	 7u3hKM5vMU2n1gcpbXdQJ1gi5+guUy9KsxG9mMUy4fX4yx/ByjRBAgjJViZhPyf2di
-	 YfF8DVjTLFaVg==
-Date: Wed, 30 Oct 2024 16:48:05 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Caleb Sander Mateos <csander@purestorage.com>
-Cc: Tal Gilboa <talgi@nvidia.com>, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, Simon
- Horman <horms@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Shay Agroskin
- <shayagr@amazon.com>, Arthur Kiyanovski <akiyano@amazon.com>, David Arinzon
- <darinzon@amazon.com>, Noam Dagan <ndagan@amazon.com>, Saeed Bishara
- <saeedb@amazon.com>, Andrew Lunn <andrew+netdev@lunn.ch>, Florian Fainelli
- <florian.fainelli@broadcom.com>, Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Michael Chan
- <michael.chan@broadcom.com>, Doug Berger <opendmb@gmail.com>, Claudiu
- Manoil <claudiu.manoil@nxp.com>, Vladimir Oltean <vladimir.oltean@nxp.com>,
- Jian Shen <shenjian15@huawei.com>, Salil Mehta <salil.mehta@huawei.com>,
- Jijie Shao <shaojijie@huawei.com>, Tony Nguyen
- <anthony.l.nguyen@intel.com>, Przemek Kitszel
- <przemyslaw.kitszel@intel.com>, Sunil Goutham <sgoutham@marvell.com>,
- Geetha sowjanya <gakula@marvell.com>, Subbaraya Sundeep
- <sbhatta@marvell.com>, hariprasad <hkelam@marvell.com>, Felix Fietkau
- <nbd@nbd.name>, Sean Wang <sean.wang@mediatek.com>, Mark Lee
- <Mark-MC.Lee@mediatek.com>, Lorenzo Bianconi <lorenzo@kernel.org>, Matthias
- Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno
- <angelogioacchino.delregno@collabora.com>, Saeed Mahameed
- <saeedm@nvidia.com>, Tariq Toukan <tariqt@nvidia.com>, Leon Romanovsky
- <leon@kernel.org>, Louis Peens <louis.peens@corigine.com>, Shannon Nelson
- <shannon.nelson@amd.com>, Brett Creeley <brett.creeley@amd.com>, "Michael
- S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, Xuan Zhuo
- <xuanzhuo@linux.alibaba.com>, Eugenio =?UTF-8?B?UMOpcmV6?=
- <eperezma@redhat.com>, Roy Pledge <Roy.Pledge@nxp.com>, Christophe Leroy
- <christophe.leroy@csgroup.eu>, netdev@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-arm-kernel@lists.infradead.org,
- linux-mediatek@lists.infradead.org, linux-rdma@vger.kernel.org,
- oss-drivers@corigine.com, virtualization@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] dim: pass dim_sample to net_dim() by reference
-Message-ID: <20241030164805.40408945@kernel.org>
-In-Reply-To: <20241030194914.3268865-2-csander@purestorage.com>
-References: <20241030194914.3268865-1-csander@purestorage.com>
-	<20241030194914.3268865-2-csander@purestorage.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xf5pB3n1Bz2xCC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Oct 2024 12:22:42 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1730337760;
+	bh=QjW8Kw5UFmafLnSTxLCguKpJPtpBFspJBqxqy1O825M=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=C0Y7jtBxM2HrGF3Fgeq4yau1+afHnWMC/ktoKCXAG3lCR82udfE4mVv2/ZXCIQfsx
+	 U5qU7v343LVxSw4qCipn8OU8QAwyBRiCFG9zVjXR76F4UU/FF8w6G2TCzCT87OQitD
+	 255pfCHLZiQHs/HThwTzK+Uk6bzjX6N7NKW0SnDkEionTYsikO76raEoo7MOZ0me97
+	 M4xhiSLeJ8mtmtAFlOkqnii4KTVenm/FixC4kKuxQV5hv5L/M5oXaayzyX8gwfPSNx
+	 wbbYqNvkt9wOBPBmqHTppWKssdZWmoZ17CnWM3SrR6eWPh9+OxEMDOgPnx/E+3vPOx
+	 MD5ALWY2q3Bng==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xf5p503Tfz4xGC;
+	Thu, 31 Oct 2024 12:22:36 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Matthew Maurer <mmaurer@google.com>, Nicholas Piggin
+ <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu
+ <petr.pavlu@suse.com>, Sami Tolvanen <samitolvanen@google.com>, Daniel
+ Gomez <da.gomez@samsung.com>, Masahiro Yamada <masahiroy@kernel.org>,
+ Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas@fjasle.eu>,
+ Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>,
+ Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
+ =?utf-8?Q?Bj=C3=B6rn?= Roy
+ Baron <bjorn3_gh@protonmail.com>, Benno Lossin <benno.lossin@proton.me>,
+ Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl
+ <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-modules@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ rust-for-linux@vger.kernel.org, Matthew Maurer <mmaurer@google.com>
+Subject: Re: [PATCH v8 1/3] modules: Support extended MODVERSIONS info
+In-Reply-To: <20241030-extended-modversions-v8-1-93acdef62ce8@google.com>
+References: <20241030-extended-modversions-v8-0-93acdef62ce8@google.com>
+ <20241030-extended-modversions-v8-1-93acdef62ce8@google.com>
+Date: Thu, 31 Oct 2024 12:22:36 +1100
+Message-ID: <874j4tcbhf.fsf@mpe.ellerman.id.au>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,19 +79,27 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 
-On Wed, 30 Oct 2024 13:49:08 -0600 Caleb Sander Mateos wrote:
-> net_dim() is currently passed a struct dim_sample argument by value.
-> struct dim_sample is 24 bytes. Since this is greater 16 bytes, x86-64
-> passes it on the stack. All callers have already initialized dim_sample
-> on the stack, so passing it by value requires pushing a duplicated copy
-> to the stack. Either witing to the stack and immediately reading it, or
-> perhaps dereferencing addresses relative to the stack pointer in a chain
-> of push instructions, seems to perform quite poorly.
+Matthew Maurer <mmaurer@google.com> writes:
+> Adds a new format for MODVERSIONS which stores each field in a separate
+> ELF section. This initially adds support for variable length names, but
+> could later be used to add additional fields to MODVERSIONS in a
+> backwards compatible way if needed. Any new fields will be ignored by
+> old user tooling, unlike the current format where user tooling cannot
+> tolerate adjustments to the format (for example making the name field
+> longer).
+>
+> Since PPC munges its version records to strip leading dots, we reproduce
+> the munging for the new format. Other architectures do not appear to
+> have architecture-specific usage of this information.
+>
+> Reviewed-by: Sami Tolvanen <samitolvanen@google.com>
+> Signed-off-by: Matthew Maurer <mmaurer@google.com>
+> ---
+>  arch/powerpc/kernel/module_64.c | 24 ++++++++++-
+  
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-Looks like patch 1 didn't get CCed to netdev. Please repost?
--- 
-pw-bot: cr
+cheers
 
