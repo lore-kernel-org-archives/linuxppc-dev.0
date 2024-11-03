@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-2786-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2787-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37B12D11183
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00136D11183
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlR0BdKz2yV8;
-	Mon,  4 Nov 2024 04:13:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlS0pCQz2yNB;
+	Mon,  4 Nov 2024 04:13:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730653986;
-	cv=none; b=OaobLsDXb83E1+XyTvyKO4G+A9ZbMuc7AbEIXyg7vNswqgDb4LjQ15M2OmuSqeg+tBwK2Y7xMU7vVEYhZEeHdI+P0IuNGmrbRO1LVsLnwDeupFgNibO4vK3MFETtPHLekShJHs97rBC/rVl7+tt7qAQbzKvuQbkEb/SvCmMqjCSRQoBTgDL/Dap7H+cQH7zJ+K6X9tTqxuvJNH4f4RtKHe6j0hqqxVp/wFQxWDPWi5jVXg9gfmyxUsEenwv8bDvshE42zVTBeDLwxj8te+Mo7s43jYjQzCRdCspNui8T2HvRfK6xIrGmXvIgLwB8Mg17bMUIxAA06oCo9k7PBt+BMg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730653988;
+	cv=none; b=R93L6vjlDsb7BAEun6sfTlD2BJgSfw65atYo7UOLc/WANSsZ2+O6lwZef8eyJyf5Nnm9DYOO9Y28DE0ss0EKP+qdIIJhb6UMvY6P3+5K6CQ3R/jhNfuuafBFNCXMvoMfImboae1+ycHaUUikl+0gNzyRuC0N1+LH92CWC+Mi2+tqfAgPjgsKfvkJB81oHKS1A1jWl08VG3clW6BXY7xCfJKVHXjNnQCB0MDGVMT66CTqHF6GAFkBMc39z9XrMtOWVaOhBzcRt5dNhxhFfHkA0prvR8ZSPHNh3D903uVaCyCP9NBwjh3kCM1UwemcW5WO5zs3EskXou42BoMAjbq27w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730653986; c=relaxed/relaxed;
-	bh=9HYw53DmrqKpugqVG3nMdMcMXkbRy2TD2QmYRdSsWfU=;
+	t=1730653988; c=relaxed/relaxed;
+	bh=10K/pHYuHRvcb/hQtEfLwKyPC0O5Gkg5XgxShtGh7Kk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=He2crA2Morh6vxlPL5V6nwd6XWTYnPC2SAG/8h0ccmaMEw/Q8Pwm/syG6AQbD2yV5rbdJfXoAYhguEBXBLnMmf30+stA+PLKM/8yYCZfSw38w8U7vSjgfAJKxct3b5pfFDsEbDYcGzkacs6xFX5DAmMgfToPIC/wRYl8+2vTWx7AH9NRTHfG1H/KpykObhVq9UCqjjC+4J1xDUgpb9oY4at45KcVRvtVf8XAFNCUgoq3LXQ9FCyoNWd+ZyRJAKDog4eWSChndJwXUhhUfM30G5iPpTDqg7Qq4uXQcpSzBsH7PndTkDbA7HN43aJdKpZOfzy53fDIDIh0wyA5usb1OQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=FKhFlW+f; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=XeUgRpGUl8lyM2G2RoSTnYMNe5glIu+qiy4onOn6yWurDmUGxNJSjFDUaG+OmJ2jgwNWcl24wN6fKk/YPhVKVxsjLzYaIa14TRRCFcScOLe08HwDFrhlR8ssUzalqFqth9b13mXD27sGZn+g5L82Yw6tXS4nDFKeYhsPeomDf2HbA23x2Ta8D41Liyvyt/SXNiwHpoHAaFQwG9nmWt6HyvTTM0VDn8RvzHIDC2cobBWRA+UnQgql/yRvqUVrohGYi1ZvJjSPN80ln8Hze66w7WsUqEwwZ3o3wW4AxJoebioS8KC71AqO6vdyhrhkpkQV9dccz64VsksvhcN49juobA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=NgM/ElQm; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=FKhFlW+f;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=NgM/ElQm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlM202Fz2yNB
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 04:13:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlP4vLZz2xJ8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 04:13:04 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1730653481;
-	bh=i1lGRcvBSYaAkRCU3PsefBTXEi2eEGtd/RNZhauMerg=;
+	bh=Knwg+Z2CkMm4IK1d+HsEFrKnqSyqDlXFkrBwo+TwWXc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=FKhFlW+fXVU9iiG5WHWrfxqIg2MK5RN4rmEJ6qMm9w3609SWSEqzIiyskpf0F3SE/
-	 5Hue+UAKF4NoE2Q53mkBkJ7j/9iT4JRSPm/DM+o1r+XqpuQf548H1TiWzMDARBYT4p
-	 NmQ6pgjd99tSp5B6B0CVtWY1Wv6AMrStXbMf+hV8=
+	b=NgM/ElQmvf59/YWbjDqRbVuMEl0pDjY+ObTO6d8h7LUcSEHYmSbo42n8NiaNsD+YV
+	 W/SF6kIvUGW+OWHAuixbbmiWBTAsGaJ1bUJJ75TWxvkGrAhk2IGeTOWoy2uiVdU/7n
+	 BT8O0X22pGVKUUwyGIBh7YJIs16haYaygPErOxWs=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sun, 03 Nov 2024 17:03:39 +0000
-Subject: [PATCH v2 10/10] driver core: Constify attribute arguments of
- binary attributes
+Date: Sun, 03 Nov 2024 17:03:36 +0000
+Subject: [PATCH v2 07/10] sysfs: treewide: constify attribute callback of
+ bin_attribute::llseek()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241103-sysfs-const-bin_attr-v2-10-71110628844c@weissschuh.net>
+Message-Id: <20241103-sysfs-const-bin_attr-v2-7-71110628844c@weissschuh.net>
 References: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
 In-Reply-To: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -99,67 +99,53 @@ Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=2330;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=1737;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=i1lGRcvBSYaAkRCU3PsefBTXEi2eEGtd/RNZhauMerg=;
- b=wjQlo57jq0Wj7AlLBOYWjC3NLTcXdQ4S/vHvyo3etlKonEvBK3xDMeXVEI2nFeo1fRBiMSJWq
- 8Dy1FhYi+4pDACqaxOlIcEPw5eL4UaDS9rJJgllbu0x7Wp3mt9dGtys
+ bh=Knwg+Z2CkMm4IK1d+HsEFrKnqSyqDlXFkrBwo+TwWXc=;
+ b=7BBy1cB2402AMdsGbWDhocbKrbJW2MgG/pXJPZgbbTP5a7oCuUuoE2vbVvQiK5iVSTaOOfRv6
+ UmT00qXCNvtDaYwwoMp7tKP4VGZJJQhLqLk6CjFCbnS/F84qc7ejcEm
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-As preparation for the constification of struct bin_attribute,
-constify the arguments of the read and write callbacks.
+The llseek() callbacks should not modify the struct
+bin_attribute passed as argument.
+Enforce this by marking the argument as const.
+
+As there are not many callback implementers perform this change
+throughout the tree at once.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/base/node.c     | 4 ++--
- drivers/base/topology.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/pci/pci-sysfs.c | 2 +-
+ include/linux/sysfs.h   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/node.c b/drivers/base/node.c
-index eb72580288e62727e5b2198a6451cf9c2533225a..3e761633ac75826bedb5dd30b879f7cc1af95ec3 100644
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -27,7 +27,7 @@ static const struct bus_type node_subsys = {
- };
- 
- static inline ssize_t cpumap_read(struct file *file, struct kobject *kobj,
--				  struct bin_attribute *attr, char *buf,
-+				  const struct bin_attribute *attr, char *buf,
- 				  loff_t off, size_t count)
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 0ad3427228b12aa95325c6fc00e9686740559238..49bee70f7d375bca056476acd6528d19ead2c419 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -841,7 +841,7 @@ static const struct attribute_group pci_dev_config_attr_group = {
+ static __maybe_unused loff_t
+ pci_llseek_resource(struct file *filep,
+ 		    struct kobject *kobj __always_unused,
+-		    struct bin_attribute *attr,
++		    const struct bin_attribute *attr,
+ 		    loff_t offset, int whence)
  {
- 	struct device *dev = kobj_to_dev(kobj);
-@@ -48,7 +48,7 @@ static inline ssize_t cpumap_read(struct file *file, struct kobject *kobj,
- static BIN_ATTR_RO(cpumap, CPUMAP_FILE_MAX_BYTES);
- 
- static inline ssize_t cpulist_read(struct file *file, struct kobject *kobj,
--				   struct bin_attribute *attr, char *buf,
-+				   const struct bin_attribute *attr, char *buf,
- 				   loff_t off, size_t count)
- {
- 	struct device *dev = kobj_to_dev(kobj);
-diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-index 89f98be5c5b9915b2974e184bf89c4c25c183095..1090751d7f458ce8d2a50e82d65b8ce31e938f15 100644
---- a/drivers/base/topology.c
-+++ b/drivers/base/topology.c
-@@ -23,7 +23,7 @@ static ssize_t name##_show(struct device *dev,				\
- 
- #define define_siblings_read_func(name, mask)					\
- static ssize_t name##_read(struct file *file, struct kobject *kobj,		\
--			   struct bin_attribute *attr, char *buf,		\
-+			   const struct bin_attribute *attr, char *buf,		\
- 			   loff_t off, size_t count)				\
- {										\
- 	struct device *dev = kobj_to_dev(kobj);                                 \
-@@ -33,7 +33,7 @@ static ssize_t name##_read(struct file *file, struct kobject *kobj,		\
- }										\
- 										\
- static ssize_t name##_list_read(struct file *file, struct kobject *kobj,	\
--				struct bin_attribute *attr, char *buf,		\
-+				const struct bin_attribute *attr, char *buf,	\
- 				loff_t off, size_t count)			\
- {										\
- 	struct device *dev = kobj_to_dev(kobj);					\
+ 	return fixed_size_llseek(filep, offset, whence, attr->size);
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 9fcdc8cd3118f359742bfd8b708d5c3eff511042..cb2a5e277c2384f2e8add8fbf2907e8a819576ec 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -307,7 +307,7 @@ struct bin_attribute {
+ 			char *, loff_t, size_t);
+ 	ssize_t (*write)(struct file *, struct kobject *, struct bin_attribute *,
+ 			 char *, loff_t, size_t);
+-	loff_t (*llseek)(struct file *, struct kobject *, struct bin_attribute *,
++	loff_t (*llseek)(struct file *, struct kobject *, const struct bin_attribute *,
+ 			 loff_t, int);
+ 	int (*mmap)(struct file *, struct kobject *, const struct bin_attribute *attr,
+ 		    struct vm_area_struct *vma);
 
 -- 
 2.47.0
