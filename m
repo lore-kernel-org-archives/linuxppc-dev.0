@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-2785-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2786-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D420CD11183
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37B12D11183
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlQ2VRBz2yS0;
-	Mon,  4 Nov 2024 04:13:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlR0BdKz2yV8;
+	Mon,  4 Nov 2024 04:13:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730653986;
-	cv=none; b=TTymaqmUXIzWFK3sd3G8xeqDAL0OlKiRYeyFbRZcm1SkunOuVvHbn5RiPQjt9YGfkBh+i2wXZjl+ZtSWUhyKQxaIY+gIU2i9lwrbB17eIdo2khKW7oTgx4gsP0NbIg0BSnbpoFdMAVY2yan+6kUX6dVGSCR/BZGpAKkOzK6UeNoCDcoZwQ+TEF2PbpVPU6pE5SEccCmQIa99juNXwBYy8JBoRvJ1slphg985H+lP1GINt8hp6/E0gXd+a3dPav6O7BI9wqxUy5Vdh6R9w11cvkEh0TVNGQKVzOLica6CJCB6E1EshTCc2DNUZpUKBGNuUuHgThCqkX7uT64Dzmp3Dg==
+	cv=none; b=OaobLsDXb83E1+XyTvyKO4G+A9ZbMuc7AbEIXyg7vNswqgDb4LjQ15M2OmuSqeg+tBwK2Y7xMU7vVEYhZEeHdI+P0IuNGmrbRO1LVsLnwDeupFgNibO4vK3MFETtPHLekShJHs97rBC/rVl7+tt7qAQbzKvuQbkEb/SvCmMqjCSRQoBTgDL/Dap7H+cQH7zJ+K6X9tTqxuvJNH4f4RtKHe6j0hqqxVp/wFQxWDPWi5jVXg9gfmyxUsEenwv8bDvshE42zVTBeDLwxj8te+Mo7s43jYjQzCRdCspNui8T2HvRfK6xIrGmXvIgLwB8Mg17bMUIxAA06oCo9k7PBt+BMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1730653986; c=relaxed/relaxed;
-	bh=Sqi+9yPBwnc52qxKzE5d0ZY2IIwQxedd5SqkbLgj8uw=;
+	bh=9HYw53DmrqKpugqVG3nMdMcMXkbRy2TD2QmYRdSsWfU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=CGD9zpwDEzK5v6YWW/L0a1wDvHfCLw525fx5flRsPhmSdiz4ZoFXdqFWuf+RWuESqPU+N5PuNzKfuU8n5rtBTSlO3mAZkVLppb7bcHcekc6LTXIr8vV8xbIhlyyHGhAz/VIBHhVBhWTN01GdmkdAHblJM0pp5jRyawWTBxyBoM83VMBsf6JhsfeFrfDZkqOk72d3h/7N8u+HOJWDhKO7PK0OtcK7EhLi9WnaDmY5pJO2cCrBqw4ptwVjaDV/uizCIislSDgD05nZR9Pgqu+DM1Anx4Ic3AcM/XUyE4pmH7ADdouXQUaYPCvaV8dY+RrzghfxurWtbzG1jC9kDd50XQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=gAex2VJy; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=He2crA2Morh6vxlPL5V6nwd6XWTYnPC2SAG/8h0ccmaMEw/Q8Pwm/syG6AQbD2yV5rbdJfXoAYhguEBXBLnMmf30+stA+PLKM/8yYCZfSw38w8U7vSjgfAJKxct3b5pfFDsEbDYcGzkacs6xFX5DAmMgfToPIC/wRYl8+2vTWx7AH9NRTHfG1H/KpykObhVq9UCqjjC+4J1xDUgpb9oY4at45KcVRvtVf8XAFNCUgoq3LXQ9FCyoNWd+ZyRJAKDog4eWSChndJwXUhhUfM30G5iPpTDqg7Qq4uXQcpSzBsH7PndTkDbA7HN43aJdKpZOfzy53fDIDIh0wyA5usb1OQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=FKhFlW+f; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=gAex2VJy;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=FKhFlW+f;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlM4Wwhz2yNv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 04:13:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlM202Fz2yNB
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 04:13:02 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1730653482;
-	bh=omnzY7OVUHnekZ/bUX8pXaM2rzeR5oe1Izmsxqjd69Q=;
+	s=mail; t=1730653481;
+	bh=i1lGRcvBSYaAkRCU3PsefBTXEi2eEGtd/RNZhauMerg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=gAex2VJyMV+OiFkklrV8IrICkrh78EMUGYE6sgF6izsK/E9bdOLP+ue1pMfx65KEP
-	 daDJhG0bHjOZvxSIVoZOVufQPlLYRdXOaAnYLf8bMNfx7N7rX5CM0q0eWD9GRIOclJ
-	 PZ80lLezOY62im86G8xcV8ntzX7D+eMJVrF5nUUY=
+	b=FKhFlW+fXVU9iiG5WHWrfxqIg2MK5RN4rmEJ6qMm9w3609SWSEqzIiyskpf0F3SE/
+	 5Hue+UAKF4NoE2Q53mkBkJ7j/9iT4JRSPm/DM+o1r+XqpuQf548H1TiWzMDARBYT4p
+	 NmQ6pgjd99tSp5B6B0CVtWY1Wv6AMrStXbMf+hV8=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sun, 03 Nov 2024 17:03:32 +0000
-Subject: [PATCH v2 03/10] PCI/sysfs: Calculate bin_attribute size through
- bin_size()
+Date: Sun, 03 Nov 2024 17:03:39 +0000
+Subject: [PATCH v2 10/10] driver core: Constify attribute arguments of
+ binary attributes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241103-sysfs-const-bin_attr-v2-3-71110628844c@weissschuh.net>
+Message-Id: <20241103-sysfs-const-bin_attr-v2-10-71110628844c@weissschuh.net>
 References: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
 In-Reply-To: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -99,86 +99,67 @@ Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=2359;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=2330;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=omnzY7OVUHnekZ/bUX8pXaM2rzeR5oe1Izmsxqjd69Q=;
- b=QEHmCC4IyJCPeU5OBXq34EhCHkpPKQglOlOaOSow6b0xRNSB6n8UoneN+GL6/CGyBOY6ZhYUm
- LOb4xWNOB8AC0VTvIPxtVY0ZKdQGGSIFQEaRXg1966rzLgUpCbB+31p
+ bh=i1lGRcvBSYaAkRCU3PsefBTXEi2eEGtd/RNZhauMerg=;
+ b=wjQlo57jq0Wj7AlLBOYWjC3NLTcXdQ4S/vHvyo3etlKonEvBK3xDMeXVEI2nFeo1fRBiMSJWq
+ 8Dy1FhYi+4pDACqaxOlIcEPw5eL4UaDS9rJJgllbu0x7Wp3mt9dGtys
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Stop abusing the is_bin_visible() callback to calculate the attribute
-size. Instead use the new, dedicated bin_size() one.
+As preparation for the constification of struct bin_attribute,
+constify the arguments of the read and write callbacks.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/pci/pci-sysfs.c | 28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
+ drivers/base/node.c     | 4 ++--
+ drivers/base/topology.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 5d0f4db1cab78674c5e5906f321bf7a57b742983..040f01b2b999175e8d98b05851edc078bbabbe0d 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -818,21 +818,20 @@ static struct bin_attribute *pci_dev_config_attrs[] = {
- 	NULL,
+diff --git a/drivers/base/node.c b/drivers/base/node.c
+index eb72580288e62727e5b2198a6451cf9c2533225a..3e761633ac75826bedb5dd30b879f7cc1af95ec3 100644
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -27,7 +27,7 @@ static const struct bus_type node_subsys = {
  };
  
--static umode_t pci_dev_config_attr_is_visible(struct kobject *kobj,
--					      struct bin_attribute *a, int n)
-+static size_t pci_dev_config_attr_bin_size(struct kobject *kobj,
-+					   const struct bin_attribute *a,
-+					   int n)
+ static inline ssize_t cpumap_read(struct file *file, struct kobject *kobj,
+-				  struct bin_attribute *attr, char *buf,
++				  const struct bin_attribute *attr, char *buf,
+ 				  loff_t off, size_t count)
  {
- 	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
+ 	struct device *dev = kobj_to_dev(kobj);
+@@ -48,7 +48,7 @@ static inline ssize_t cpumap_read(struct file *file, struct kobject *kobj,
+ static BIN_ATTR_RO(cpumap, CPUMAP_FILE_MAX_BYTES);
  
--	a->size = PCI_CFG_SPACE_SIZE;
- 	if (pdev->cfg_size > PCI_CFG_SPACE_SIZE)
--		a->size = PCI_CFG_SPACE_EXP_SIZE;
--
--	return a->attr.mode;
-+		return PCI_CFG_SPACE_EXP_SIZE;
-+	return PCI_CFG_SPACE_SIZE;
- }
- 
- static const struct attribute_group pci_dev_config_attr_group = {
- 	.bin_attrs = pci_dev_config_attrs,
--	.is_bin_visible = pci_dev_config_attr_is_visible,
-+	.bin_size = pci_dev_config_attr_bin_size,
- };
- 
- /*
-@@ -1330,21 +1329,26 @@ static umode_t pci_dev_rom_attr_is_visible(struct kobject *kobj,
- 					   struct bin_attribute *a, int n)
+ static inline ssize_t cpulist_read(struct file *file, struct kobject *kobj,
+-				   struct bin_attribute *attr, char *buf,
++				   const struct bin_attribute *attr, char *buf,
+ 				   loff_t off, size_t count)
  {
- 	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
--	size_t rom_size;
+ 	struct device *dev = kobj_to_dev(kobj);
+diff --git a/drivers/base/topology.c b/drivers/base/topology.c
+index 89f98be5c5b9915b2974e184bf89c4c25c183095..1090751d7f458ce8d2a50e82d65b8ce31e938f15 100644
+--- a/drivers/base/topology.c
++++ b/drivers/base/topology.c
+@@ -23,7 +23,7 @@ static ssize_t name##_show(struct device *dev,				\
  
- 	/* If the device has a ROM, try to expose it in sysfs. */
--	rom_size = pci_resource_len(pdev, PCI_ROM_RESOURCE);
--	if (!rom_size)
-+	if (!pci_resource_end(pdev, PCI_ROM_RESOURCE))
- 		return 0;
- 
--	a->size = rom_size;
--
- 	return a->attr.mode;
- }
- 
-+static size_t pci_dev_rom_attr_bin_size(struct kobject *kobj,
-+					const struct bin_attribute *a, int n)
-+{
-+	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
-+
-+	return pci_resource_len(pdev, PCI_ROM_RESOURCE);
-+}
-+
- static const struct attribute_group pci_dev_rom_attr_group = {
- 	.bin_attrs = pci_dev_rom_attrs,
- 	.is_bin_visible = pci_dev_rom_attr_is_visible,
-+	.bin_size = pci_dev_rom_attr_bin_size,
- };
- 
- static ssize_t reset_store(struct device *dev, struct device_attribute *attr,
+ #define define_siblings_read_func(name, mask)					\
+ static ssize_t name##_read(struct file *file, struct kobject *kobj,		\
+-			   struct bin_attribute *attr, char *buf,		\
++			   const struct bin_attribute *attr, char *buf,		\
+ 			   loff_t off, size_t count)				\
+ {										\
+ 	struct device *dev = kobj_to_dev(kobj);                                 \
+@@ -33,7 +33,7 @@ static ssize_t name##_read(struct file *file, struct kobject *kobj,		\
+ }										\
+ 										\
+ static ssize_t name##_list_read(struct file *file, struct kobject *kobj,	\
+-				struct bin_attribute *attr, char *buf,		\
++				const struct bin_attribute *attr, char *buf,	\
+ 				loff_t off, size_t count)			\
+ {										\
+ 	struct device *dev = kobj_to_dev(kobj);					\
 
 -- 
 2.47.0
