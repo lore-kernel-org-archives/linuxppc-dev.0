@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-2809-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2810-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07CC8D11194
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 22:34:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 191E3D11194
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 22:34:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhTrD2SFGz3bcJ;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhTrD4gk3z3bcX;
 	Mon,  4 Nov 2024 09:32:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730673164;
-	cv=none; b=S9qD6Svx5uidPiy3AENFDOGaBhTZjeDyGRbPWmWhMTPkuR7F5ox/Fz7J/ODCbFs2g+ivPRmQc6jGfTTyHgEOzXqZukGHsj33goHDQn+RpR1GR81C7eHQG30grw1jWhLbdj5JPqnTa/aKofwvqWCX5SdFV0G4+3xqnycmnfdsfndNG3JSYu8iD5NB6897oyNg2kPcSGD+pglnKqA1IexJZYqCshGiP0/ln/kTEwhbuCGWlgRiSVmoEcH16vz5xmxcFEqcgH+Zg3Oye8798uu3gZn3ctzL9rqPA/jbqP1EYC2zN6lslrsjkFZV7I+2KzRM0Mc1qoDfcoSShAnGJTf9qw==
+	cv=none; b=PFu3M07yphJDnimFO9tT1mkJwJ4jmU985rLmUfLAgsey/ACpBNYdCtgLrndItjwppV9+smc2soCfzDpmRNI9EOVXtxIN6kRoDcUqYAo+Yi3X3IRnfUHs3bL8RUV4DMA9sLg9pBHLi4RMqDVBrg5BG+K8efhTCEjBEK6SkKYmtysBguhwlN1GmfdfjagQB1fkzNoX4YAR1pGFw0+8XDH7uf8T4dAmWqbJCnCNeS4EsWsRNeMUk1TxZbFR6pQODW2PM2IbHtuNIgyAUep+CzXHH5sv1eU7sAfLHn8hZiL0meELY6C97gNIx8lcxThbQ1tfHEpxOJYIG/pI3pvsByTG9w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1730673164; c=relaxed/relaxed;
-	bh=rMnm9AwgmDXEuc2yh8LmdqCJvJnHE1qDq44Z13ehTrw=;
+	bh=+pwnwNHNYBbLRaokl+Y14RyWoWAnqH9omSw/wIqbxRM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EeuBctF8WYQ+/m2rrueaNmZh+VQYzD5ANfkUvM1dKCjAqi8bgDVMQiVRGkpieFkzOcvi3Uamn1qOzGAYFNV0ok9fJ2ZnTOnc7+zIzwDqxOO7zyyRwpQes+U4Z6S0ZEa+e03zPU28ercfdrP2ylMwGHxa19IWlQ9um2rcyCvChNQxUVbnrd/r7lD5s/ZHhIexMf7kCYDCeX81txGvsR29YyuWKEjSFV9ZXz8e2gptSBc4aMfb4KiBDRiBfiNsFew+mmv/IxeFlBdsQwSXOTwVfD9c81ODIvvIX2hfEzf/SycMJpLsnlQYHbVKUgscGk0a/QtfVNWzjg0Qvr7O96Cnnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ncJC7MH9; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=gYyISKaSHXKDjyOJki0oPfpsmrclJe8Kx7G3ajTs8NN6AxwIvILYNwjE0EZeg2pMT9t0dMdxelr99MgybaD3Nkz0Zvv3BIQFI2ccIbalFtot0pDJFGAHJadXIo4l3Wv60JsddcR6jU39c79V1G/ZEjlQZOT6bCtjDDgzPKIzvU/OFQoM/r/suWOI6VBcbAleT23heMVNOAfXb/vxCez1lLN81q01C0WYWboFtE2fFgC3DCydX52/pUuJXshsiSEStvvCkgoqndoXQgf8/xgomIVVzltRvhMpDA/yi22BlFFegysITkltRCtYx+V/nW7JpIdPhbW8L3d9p2Yj7rl87Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gToxexMc; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ncJC7MH9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gToxexMc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhTr81Rjgz2yGs
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 09:32:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhTr73Nn8z2yxj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 09:32:38 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 98297A41F34;
-	Sun,  3 Nov 2024 22:30:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 23D20C4CECD;
-	Sun,  3 Nov 2024 22:32:33 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 4D4B0A41F04;
+	Sun,  3 Nov 2024 22:30:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB7F0C4CED4;
+	Sun,  3 Nov 2024 22:32:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1730673153;
-	bh=WfN2SwQ1SfAPzqKDOcxOjX9pk3UC1SwykLtsIrx3B8I=;
+	s=k20201202; t=1730673150;
+	bh=C1Eoo6ZdwZ6ma+QPnxpHev6POdiDHK4uQ/Pd5lLsWBY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ncJC7MH9f55fhT2iNp4ZGfgqP7KHuE7wemzzV22Z1RB/6rZX0YywjK4cWT6F4kgQu
-	 UCaCPlfmreev/pK63M1sZ7RvNNF5SmFtAQrjpr3KR1BHf9QS7SVy/pj4BVmX3P6VqQ
-	 FrGrQcXq1YnOmAmEQyHq9y4lzpkQKxUUcq9jtL67bjHifb7rexexd24s56L7e2ZMi7
-	 SSwDcJ6PFYFrIJdIhdSFsMB9XoaDWjJu+WTNUIolMnvVQZRQQQZO9jjVE99Tv11X3a
-	 kkYlUNWGwP5shTWE8Us+pJs0v8sX0+Bq3JRf+wpALI+UnuKai7iVjidTYXu362kAZz
-	 dA7qo5/0IeuCA==
+	b=gToxexMc0R2jsOQHVnhOGMVVFr06xUilK0QttWgwoq1sW7LHTE2S1hqoWGAPCbQe9
+	 AqMbGuVKbuq3ygr95ypTB2qCgnCI7y8zbyByKsAcr0vt4ZSHiLiz+pLzmFnpvDu+3n
+	 qFiRhvg8+CocY9l8w/0pwkNgIepDk+cwIpou20/Jcq7iBpEISzOx1G8H4eJEKsa2mX
+	 KMSstl1C8YqoaJ6aQHX3FHhoNn18lRlOY8bN8rTIx/PykY+aCgOc93kDJYMAkx/aaf
+	 q2UqumU1tPj72Y4n7uIariHfq88nVAiIq41HAASdynfIyTLCXHOo7IIvrJygE1DCGj
+	 S24AifbqDm2bg==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -60,9 +60,9 @@ Cc: linux-arch@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH v3 17/18] f2fs: switch to using the crc32 library
-Date: Sun,  3 Nov 2024 14:31:53 -0800
-Message-ID: <20241103223154.136127-18-ebiggers@kernel.org>
+Subject: [PATCH v3 11/18] x86/crc32: update prototype for crc_pcl()
+Date: Sun,  3 Nov 2024 14:31:47 -0800
+Message-ID: <20241103223154.136127-12-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241103223154.136127-1-ebiggers@kernel.org>
 References: <20241103223154.136127-1-ebiggers@kernel.org>
@@ -82,140 +82,249 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Now that the crc32() library function takes advantage of
-architecture-specific optimizations, it is unnecessary to go through the
-crypto API.  Just use crc32().  This is much simpler, and it improves
-performance due to eliminating the crypto API overhead.
+- Change the len parameter from unsigned int to size_t, so that the
+  library function which takes a size_t can safely use this code.
+
+- Rename to crc32c_x86_3way() which is much clearer.
+
+- Move the crc parameter to the front, as this is the usual convention.
 
 Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- fs/f2fs/Kconfig |  3 +--
- fs/f2fs/f2fs.h  | 19 +------------------
- fs/f2fs/super.c | 15 ---------------
- 3 files changed, 2 insertions(+), 35 deletions(-)
+ arch/x86/crypto/crc32c-intel_glue.c       |  7 ++-
+ arch/x86/crypto/crc32c-pcl-intel-asm_64.S | 63 ++++++++++++-----------
+ 2 files changed, 35 insertions(+), 35 deletions(-)
 
-diff --git a/fs/f2fs/Kconfig b/fs/f2fs/Kconfig
-index 68a1e23e1557..5916a02fb46d 100644
---- a/fs/f2fs/Kconfig
-+++ b/fs/f2fs/Kconfig
-@@ -2,12 +2,11 @@
- config F2FS_FS
- 	tristate "F2FS filesystem support"
- 	depends on BLOCK
- 	select BUFFER_HEAD
- 	select NLS
--	select CRYPTO
--	select CRYPTO_CRC32
-+	select CRC32
- 	select F2FS_FS_XATTR if FS_ENCRYPTION
- 	select FS_ENCRYPTION_ALGS if FS_ENCRYPTION
- 	select FS_IOMAP
- 	select LZ4_COMPRESS if F2FS_FS_LZ4
- 	select LZ4_DECOMPRESS if F2FS_FS_LZ4
-diff --git a/fs/f2fs/f2fs.h b/fs/f2fs/f2fs.h
-index 33f5449dc22d..1fc5c2743c8d 100644
---- a/fs/f2fs/f2fs.h
-+++ b/fs/f2fs/f2fs.h
-@@ -1761,13 +1761,10 @@ struct f2fs_sb_info {
- 
- 	/* For write statistics */
- 	u64 sectors_written_start;
- 	u64 kbytes_written;
- 
--	/* Reference to checksum algorithm driver via cryptoapi */
--	struct crypto_shash *s_chksum_driver;
--
- 	/* Precomputed FS UUID checksum for seeding other checksums */
- 	__u32 s_chksum_seed;
- 
- 	struct workqueue_struct *post_read_wq;	/* post read workqueue */
- 
-@@ -1941,25 +1938,11 @@ static inline unsigned int f2fs_time_to_wait(struct f2fs_sb_info *sbi,
-  * Inline functions
+diff --git a/arch/x86/crypto/crc32c-intel_glue.c b/arch/x86/crypto/crc32c-intel_glue.c
+index 52c5d47ef5a1..603d159de400 100644
+--- a/arch/x86/crypto/crc32c-intel_glue.c
++++ b/arch/x86/crypto/crc32c-intel_glue.c
+@@ -39,12 +39,11 @@
+  * size is >= 512 to account
+  * for fpu state save/restore overhead.
   */
- static inline u32 __f2fs_crc32(struct f2fs_sb_info *sbi, u32 crc,
- 			      const void *address, unsigned int length)
+ #define CRC32C_PCL_BREAKEVEN	512
+ 
+-asmlinkage unsigned int crc_pcl(const u8 *buffer, unsigned int len,
+-				unsigned int crc_init);
++asmlinkage u32 crc32c_x86_3way(u32 crc, const u8 *buffer, size_t len);
+ #endif /* CONFIG_X86_64 */
+ 
+ static u32 crc32c_intel_le_hw_byte(u32 crc, unsigned char const *data, size_t length)
  {
--	struct {
--		struct shash_desc shash;
--		char ctx[4];
--	} desc;
--	int err;
--
--	BUG_ON(crypto_shash_descsize(sbi->s_chksum_driver) != sizeof(desc.ctx));
--
--	desc.shash.tfm = sbi->s_chksum_driver;
--	*(u32 *)desc.ctx = crc;
--
--	err = crypto_shash_update(&desc.shash, address, length);
--	BUG_ON(err);
--
--	return *(u32 *)desc.ctx;
-+	return crc32(crc, address, length);
+ 	while (length--) {
+@@ -157,11 +156,11 @@ static int crc32c_pcl_intel_update(struct shash_desc *desc, const u8 *data,
+ 	 * use faster PCL version if datasize is large enough to
+ 	 * overcome kernel fpu state save/restore overhead
+ 	 */
+ 	if (len >= CRC32C_PCL_BREAKEVEN && crypto_simd_usable()) {
+ 		kernel_fpu_begin();
+-		*crcp = crc_pcl(data, len, *crcp);
++		*crcp = crc32c_x86_3way(*crcp, data, len);
+ 		kernel_fpu_end();
+ 	} else
+ 		*crcp = crc32c_intel_le_hw(*crcp, data, len);
+ 	return 0;
  }
- 
- static inline u32 f2fs_crc32(struct f2fs_sb_info *sbi, const void *address,
- 			   unsigned int length)
+@@ -169,11 +168,11 @@ static int crc32c_pcl_intel_update(struct shash_desc *desc, const u8 *data,
+ static int __crc32c_pcl_intel_finup(u32 *crcp, const u8 *data, unsigned int len,
+ 				u8 *out)
  {
-diff --git a/fs/f2fs/super.c b/fs/f2fs/super.c
-index 87ab5696bd48..003d3bcb0caa 100644
---- a/fs/f2fs/super.c
-+++ b/fs/f2fs/super.c
-@@ -1670,12 +1670,10 @@ static void f2fs_put_super(struct super_block *sb)
+ 	if (len >= CRC32C_PCL_BREAKEVEN && crypto_simd_usable()) {
+ 		kernel_fpu_begin();
+-		*(__le32 *)out = ~cpu_to_le32(crc_pcl(data, len, *crcp));
++		*(__le32 *)out = ~cpu_to_le32(crc32c_x86_3way(*crcp, data, len));
+ 		kernel_fpu_end();
+ 	} else
+ 		*(__le32 *)out =
+ 			~cpu_to_le32(crc32c_intel_le_hw(*crcp, data, len));
+ 	return 0;
+diff --git a/arch/x86/crypto/crc32c-pcl-intel-asm_64.S b/arch/x86/crypto/crc32c-pcl-intel-asm_64.S
+index 752812bc4991..9b8770503bbc 100644
+--- a/arch/x86/crypto/crc32c-pcl-intel-asm_64.S
++++ b/arch/x86/crypto/crc32c-pcl-intel-asm_64.S
+@@ -50,19 +50,20 @@
  
- 	f2fs_destroy_post_read_wq(sbi);
+ # Define threshold below which buffers are considered "small" and routed to
+ # regular CRC code that does not interleave the CRC instructions.
+ #define SMALL_SIZE 200
  
- 	kvfree(sbi->ckpt);
+-# unsigned int crc_pcl(const u8 *buffer, unsigned int len, unsigned int crc_init);
++# u32 crc32c_x86_3way(u32 crc, const u8 *buffer, size_t len);
  
--	if (sbi->s_chksum_driver)
--		crypto_free_shash(sbi->s_chksum_driver);
- 	kfree(sbi->raw_super);
+ .text
+-SYM_FUNC_START(crc_pcl)
+-#define    bufp		  %rdi
+-#define    bufp_d	  %edi
+-#define    len		  %esi
+-#define    crc_init	  %edx
+-#define    crc_init_q	  %rdx
++SYM_FUNC_START(crc32c_x86_3way)
++#define    crc0		  %edi
++#define    crc0_q	  %rdi
++#define    bufp		  %rsi
++#define    bufp_d	  %esi
++#define    len		  %rdx
++#define    len_dw	  %edx
+ #define    n_misaligned	  %ecx /* overlaps chunk_bytes! */
+ #define    n_misaligned_q %rcx
+ #define    chunk_bytes	  %ecx /* overlaps n_misaligned! */
+ #define    chunk_bytes_q  %rcx
+ #define    crc1		  %r8
+@@ -83,13 +84,13 @@ SYM_FUNC_START(crc_pcl)
+ 	# Process 1 <= n_misaligned <= 7 bytes individually in order to align
+ 	# the remaining data to an 8-byte boundary.
+ .Ldo_align:
+ 	movq	(bufp), %rax
+ 	add	n_misaligned_q, bufp
+-	sub	n_misaligned, len
++	sub	n_misaligned_q, len
+ .Lalign_loop:
+-	crc32b	%al, crc_init		# compute crc32 of 1-byte
++	crc32b	%al, crc0		# compute crc32 of 1-byte
+ 	shr	$8, %rax		# get next byte
+ 	dec	n_misaligned
+ 	jne     .Lalign_loop
+ .Laligned:
  
- 	f2fs_destroy_page_array_cache(sbi);
- 	f2fs_destroy_xattr_caches(sbi);
- #ifdef CONFIG_QUOTA
-@@ -4419,19 +4417,10 @@ static int f2fs_fill_super(struct super_block *sb, void *data, int silent)
- 		INIT_LIST_HEAD(&sbi->inode_list[i]);
- 		spin_lock_init(&sbi->inode_lock[i]);
- 	}
- 	mutex_init(&sbi->flush_lock);
+@@ -100,11 +101,11 @@ SYM_FUNC_START(crc_pcl)
+ 	cmp	$128*24, len
+ 	jae     .Lfull_block
  
--	/* Load the checksum driver */
--	sbi->s_chksum_driver = crypto_alloc_shash("crc32", 0, 0);
--	if (IS_ERR(sbi->s_chksum_driver)) {
--		f2fs_err(sbi, "Cannot load crc32 driver.");
--		err = PTR_ERR(sbi->s_chksum_driver);
--		sbi->s_chksum_driver = NULL;
--		goto free_sbi;
--	}
--
- 	/* set a block size */
- 	if (unlikely(!sb_set_blocksize(sb, F2FS_BLKSIZE))) {
- 		f2fs_err(sbi, "unable to set blocksize");
- 		goto free_sbi;
- 	}
-@@ -4872,12 +4861,10 @@ static int f2fs_fill_super(struct super_block *sb, void *data, int silent)
- 	fscrypt_free_dummy_policy(&F2FS_OPTION(sbi).dummy_enc_policy);
- 	kvfree(options);
- free_sb_buf:
- 	kfree(raw_super);
- free_sbi:
--	if (sbi->s_chksum_driver)
--		crypto_free_shash(sbi->s_chksum_driver);
- 	kfree(sbi);
- 	sb->s_fs_info = NULL;
+ .Lpartial_block:
+ 	# Compute floor(len / 24) to get num qwords to process from each lane.
+-	imul	$2731, len, %eax	# 2731 = ceil(2^16 / 24)
++	imul	$2731, len_dw, %eax	# 2731 = ceil(2^16 / 24)
+ 	shr	$16, %eax
+ 	jmp	.Lcrc_3lanes
  
- 	/* give only one another chance */
- 	if (retry_cnt > 0 && skip_recovery) {
-@@ -5080,7 +5067,5 @@ module_init(init_f2fs_fs)
- module_exit(exit_f2fs_fs)
+ .Lfull_block:
+ 	# Processing 128 qwords from each lane.
+@@ -123,20 +124,20 @@ SYM_FUNC_START(crc_pcl)
+ 	jl	.Lcrc_3lanes_4x_done
  
- MODULE_AUTHOR("Samsung Electronics's Praesto Team");
- MODULE_DESCRIPTION("Flash Friendly File System");
- MODULE_LICENSE("GPL");
--MODULE_SOFTDEP("pre: crc32");
--
+ 	# Unroll the loop by a factor of 4 to reduce the overhead of the loop
+ 	# bookkeeping instructions, which can compete with crc32q for the ALUs.
+ .Lcrc_3lanes_4x_loop:
+-	crc32q	(bufp), crc_init_q
++	crc32q	(bufp), crc0_q
+ 	crc32q	(bufp,chunk_bytes_q), crc1
+ 	crc32q	(bufp,chunk_bytes_q,2), crc2
+-	crc32q	8(bufp), crc_init_q
++	crc32q	8(bufp), crc0_q
+ 	crc32q	8(bufp,chunk_bytes_q), crc1
+ 	crc32q	8(bufp,chunk_bytes_q,2), crc2
+-	crc32q	16(bufp), crc_init_q
++	crc32q	16(bufp), crc0_q
+ 	crc32q	16(bufp,chunk_bytes_q), crc1
+ 	crc32q	16(bufp,chunk_bytes_q,2), crc2
+-	crc32q	24(bufp), crc_init_q
++	crc32q	24(bufp), crc0_q
+ 	crc32q	24(bufp,chunk_bytes_q), crc1
+ 	crc32q	24(bufp,chunk_bytes_q,2), crc2
+ 	add	$32, bufp
+ 	sub	$4, %eax
+ 	jge	.Lcrc_3lanes_4x_loop
+@@ -144,42 +145,42 @@ SYM_FUNC_START(crc_pcl)
+ .Lcrc_3lanes_4x_done:
+ 	add	$4, %eax
+ 	jz	.Lcrc_3lanes_last_qword
+ 
+ .Lcrc_3lanes_1x_loop:
+-	crc32q	(bufp), crc_init_q
++	crc32q	(bufp), crc0_q
+ 	crc32q	(bufp,chunk_bytes_q), crc1
+ 	crc32q	(bufp,chunk_bytes_q,2), crc2
+ 	add	$8, bufp
+ 	dec	%eax
+ 	jnz	.Lcrc_3lanes_1x_loop
+ 
+ .Lcrc_3lanes_last_qword:
+-	crc32q	(bufp), crc_init_q
++	crc32q	(bufp), crc0_q
+ 	crc32q	(bufp,chunk_bytes_q), crc1
+ # SKIP  crc32q	(bufp,chunk_bytes_q,2), crc2	; Don't do this one yet
+ 
+ 	################################################################
+ 	## 4) Combine three results:
+ 	################################################################
+ 
+ 	lea	(K_table-8)(%rip), %rax		# first entry is for idx 1
+ 	pmovzxdq (%rax,chunk_bytes_q), %xmm0	# 2 consts: K1:K2
+ 	lea	(chunk_bytes,chunk_bytes,2), %eax # chunk_bytes * 3
+-	sub	%eax, len			# len -= chunk_bytes * 3
++	sub	%rax, len			# len -= chunk_bytes * 3
+ 
+-	movq	crc_init_q, %xmm1		# CRC for block 1
++	movq	crc0_q, %xmm1			# CRC for block 1
+ 	pclmulqdq $0x00, %xmm0, %xmm1		# Multiply by K2
+ 
+ 	movq    crc1, %xmm2			# CRC for block 2
+ 	pclmulqdq $0x10, %xmm0, %xmm2		# Multiply by K1
+ 
+ 	pxor    %xmm2,%xmm1
+ 	movq    %xmm1, %rax
+ 	xor	(bufp,chunk_bytes_q,2), %rax
+-	mov	crc2, crc_init_q
+-	crc32	%rax, crc_init_q
++	mov	crc2, crc0_q
++	crc32	%rax, crc0_q
+ 	lea	8(bufp,chunk_bytes_q,2), bufp
+ 
+ 	################################################################
+ 	## 5) If more blocks remain, goto (2):
+ 	################################################################
+@@ -191,38 +192,38 @@ SYM_FUNC_START(crc_pcl)
+ 
+ 	#######################################################################
+ 	## 6) Process any remainder without interleaving:
+ 	#######################################################################
+ .Lsmall:
+-	test	len, len
++	test	len_dw, len_dw
+ 	jz	.Ldone
+-	mov	len, %eax
++	mov	len_dw, %eax
+ 	shr	$3, %eax
+ 	jz	.Ldo_dword
+ .Ldo_qwords:
+-	crc32q	(bufp), crc_init_q
++	crc32q	(bufp), crc0_q
+ 	add	$8, bufp
+ 	dec	%eax
+ 	jnz	.Ldo_qwords
+ .Ldo_dword:
+-	test	$4, len
++	test	$4, len_dw
+ 	jz	.Ldo_word
+-	crc32l	(bufp), crc_init
++	crc32l	(bufp), crc0
+ 	add	$4, bufp
+ .Ldo_word:
+-	test	$2, len
++	test	$2, len_dw
+ 	jz	.Ldo_byte
+-	crc32w	(bufp), crc_init
++	crc32w	(bufp), crc0
+ 	add	$2, bufp
+ .Ldo_byte:
+-	test	$1, len
++	test	$1, len_dw
+ 	jz	.Ldone
+-	crc32b	(bufp), crc_init
++	crc32b	(bufp), crc0
+ .Ldone:
+-	mov	crc_init, %eax
++	mov	crc0, %eax
+         RET
+-SYM_FUNC_END(crc_pcl)
++SYM_FUNC_END(crc32c_x86_3way)
+ 
+ .section	.rodata, "a", @progbits
+ 	################################################################
+ 	## PCLMULQDQ tables
+ 	## Table is 128 entries x 2 words (8 bytes) each
 -- 
 2.47.0
 
