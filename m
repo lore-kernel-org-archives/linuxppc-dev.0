@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-2780-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2781-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0B37D11183
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FF82D11183
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlK2d4Mz2xpk;
-	Mon,  4 Nov 2024 04:13:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlL12LPz2yJL;
+	Mon,  4 Nov 2024 04:13:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730653981;
-	cv=none; b=NlzlMG+NqdSP7ykl5brBNb4ycL+5hWqRclRNohOfDifrHm+2HY2rdaS2zi/Gu4A3EvS2bj5ijaOzgqWiejRhsO6d3qmyi6b3bUbG5FOo2ssLFFReyN2rL2kIRS2uWKZZ2muf09UUS/Kx/2Mc2q+oTvyEGAsWBIFcGroyxfi5nQxHbN6lB3BkdCRtRwFQHusoo1Dfrj8o9KzFo+4VqbizNcQb54fXmaufd4+l8yA6E/sL9zy3FoQ6A+iGf079FDaWZ/6r+vZwZmtcbuFu9ruUfBQbtR73DCM91+0CqwlBSOx63QtlUTPgnGphQeOR9Z9NZEHx6DcYfUL5xYoQp/GHGg==
+	cv=none; b=BCvVKZhiMtYX3qvdmdRk6CLd8xzzVScHluKF63L3YbOsf9HhAiJSN7pP45ihxGvmRKAltV/mdpaNMBjrl2EgjQvfJu/HNtZjAUlN5x3sBHc1dJd1wgu2DUOHKV6gNn2Mk0zSkFX8loJ8iMmBcHULVJ60iQevKa5lQkVJfSexXqmG/bYF89FrJ7V0Sox4tSne26jq4JPYH1W+EJD38aipjkfj0+kxsIxw4URyed+iMkcE5R4CL+yJ10Iuz7trD4yt37wm63GzDSrABLsa/jzPqtojV2Ob/Cucu0DnWilRauCdfxexvqWXQr7Igpy8lE8gND8DGNiQaagGF9rZhZVIZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1730653981; c=relaxed/relaxed;
-	bh=tDW2z4TSp6shSOhGqnFgxSaHQROF10wcn3mHjP6pVTg=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=PPjmtHVsbpdiSqBK98QIr+H9pmQ6NsBt7GylE+zQFuq2dSQnaMiv0J32zNNRa92R53RXxVL2J/Z8pR+IT0Bp3vVm5aPdLU7Ivp+I6gEMqM288wLEGqbwCr3NqZL6kgHOf+egq8QevmYUglWRJSNOk1FPAIjnjgj265ZE+DdFaWchi8t+Sacfo9K8xSnCB0JD4dhgThQGssiaSYtqWeZW10JYEiR4jacSJJVgst2rGrO6yLtkfuyy14glspy/SmWJ8ZCorLWBthO5Mgm7laaC+TZCnyLN5gcaBd6CN43h7K0gwV1JfhQb2LdtZ6WjTrS8wfBSo2UdWXlU5sTYUeFSPA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=LVkLlDoy; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	bh=1/DHiLQ6vlc2BjFhM2SeKyOHXC/Q4Rm8UPXvuK+gbdA=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=XuqkMBl1EGV/eR3zIj3TmQK/tbwqKCe/2J3u8L35tR2dPXEDAG2zTiUvlky5NuEQiK2VPSyhjCyGkn8bZ8jyhuRS+1rKcw3XPgiO3rZq1RvsdUREF9x3wDnfDf5wR7oBPyLPiwZNapT+EEYVsDxWlccY2h6eY/zImp67JeZxYQeqydoWGEMf6XEAhzD/BcwPSWRuuC3e9wbu5q7Dh2XDsAwF6n03wNxUm5AKC6ZeeJPqc3adGgbT5eXvjEt6Vo937BG1kBFUPa+GxYFEowlTBeiPEqhA/rGi5DgIGSqwudAHYXXXuw74kL6RPy+mxmoDTuioLOC1t3yHaT+X9FUBhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SyRnyZMY; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=LVkLlDoy;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SyRnyZMY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 489 seconds by postgrey-1.37 at boromir; Mon, 04 Nov 2024 04:12:55 AEDT
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlC2bzgz2xHP
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlC3b3hz2y8d
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 04:12:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1730653478;
-	bh=vLmXHFQrVeANwVFZr7GPEQiJDwV80UwagiHdL+WieYg=;
-	h=From:Subject:Date:To:Cc:From;
-	b=LVkLlDoyAjxSEKNfss+XSXyWYJJQzcZv2JQqsJCbi9rUIOTJ4RL7OxwixFQenCjjd
-	 rlVUh9qqiGz1yV+aWCGMfosXXIgbUe7lyF1Ond/E8etyVdz8oI4rmOCryfvOvF9wdn
-	 hyWkvUc8pYcWGzPC5QJ3hJWaxe+zEoDAAboNa6yg=
+	s=mail; t=1730653481;
+	bh=GMdVqpFwoDETa/zGkV60zA/YyucohMN7ciiORB0dDFM=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=SyRnyZMYYiuvS05pAbdP2BNw8Ha3Wp0EjLxI/8VZebe+J32OJzQ0FfngSr11pbc3S
+	 3hLaAVDffCbL3wYrk/f1ofcjd6D+cxYnSPaa7E742CRmKRTph9QuWBX2pSm+y7iW5V
+	 1DVHDyNnW5ZmICuH8Tv9nJe+/D6n4jWkebWhVEBk=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Subject: [PATCH v2 00/10] sysfs: constify struct bin_attribute (Part 1)
-Date: Sun, 03 Nov 2024 17:03:29 +0000
-Message-Id: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
+Date: Sun, 03 Nov 2024 17:03:37 +0000
+Subject: [PATCH v2 08/10] sysfs: implement all BIN_ATTR_* macros in terms
+ of __BIN_ATTR()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,11 +54,9 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAOGsJ2cC/22NQQ6CMBBFr2JmbU1bQasr72GIKTC1synaKSgh3
- N2KJm5cvp/89yZgjIQMx9UEEQdi6kIGvV5B4224oqA2M2ipCyW1ETyyY9F0gZOoKVxsSlFYKc1
- hVxjVyhry9RbR0XPRnqsPR7z32Z5+oydOXRyX9KDe67eyVf8rgxJSaG2UdXbvZFmeHkjM3Pjeb
- wImqOZ5fgH1E5+t0gAAAA==
-X-Change-ID: 20241028-sysfs-const-bin_attr-a00896481d0b
+Message-Id: <20241103-sysfs-const-bin_attr-v2-8-71110628844c@weissschuh.net>
+References: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
+In-Reply-To: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
  "Rafael J. Wysocki" <rafael@kernel.org>, 
  Bjorn Helgaas <bhelgaas@google.com>, 
@@ -101,96 +99,79 @@ Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=3861;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=2547;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=vLmXHFQrVeANwVFZr7GPEQiJDwV80UwagiHdL+WieYg=;
- b=Bvbt1J2LqQ69JnMU1VrxxAk0oh5wwQXMdeGiNk0LKpzFZww+HQ7ZSL0xtSH7vjejf+nvXyav9
- 7mYQXMoReN6DBjpqywBjK9Kq5FxOhy2hVOb+j2ENGg6yuLHGvmQRl99
+ bh=GMdVqpFwoDETa/zGkV60zA/YyucohMN7ciiORB0dDFM=;
+ b=G1PulaFbJ1PZH7AnZk220ddkyci6/SVWNb+Rtvwc4kmmjYqzz3Epr6UCHfWP8qbRyhd/TurKs
+ If4brtJxns8CxxC6suNmBgy57hhP6OtLmxJDPf6RSsE1N5AsLzcns6R
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-struct bin_attribute contains a bunch of pointer members, which when
-overwritten by accident or malice can lead to system instability and
-security problems.
-Moving the definitions of struct bin_attribute to read-only memory
-makes these modifications impossible.
-The same change has been performed for many other structures in the
-past. (struct class, struct ctl_table...)
-
-For the structure definitions throughout the core to be moved to
-read-only memory the following steps are necessary.
-
-1) Change all callbacks invoked from the sysfs core to only pass const
-   pointers
-2) Adapt the sysfs core to only work in terms of const pointers
-3) Adapt the sysfs core APIs to allow const pointers
-4) Change all structure definitions through the core to const
-
-This series provides the foundation for step 1) above.
-It converts some callbacks in a single step to const and provides a
-foundation for those callbacks where a single step is not possible.
-
-Patches 1-5 change the bin_attribute callbacks of 'struct
-attribute_group'. The remaining ones touch 'struct bin_attribute' itself.
-
-The techniques employed by this series can later be reused for the
-same change for other sysfs attributes.
-
-This series is intended to be merged through the driver core tree.
+The preparations for the upcoming constification of struct bin_attribute
+requires some logic in the structure definition macros.
+To avoid duplication of that logic in multiple macros, reimplement all
+other macros in terms of __BIN_ATTR().
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
-Changes in v2:
-- Drop RFC state
-- Refuse registration of attributes with both read/read_new or
-  write/write_new
-- Remove don't drop llseek() callback, as it is actually used.
-  Instead also migrate it to "const".
-- _Generic machinery: Simplify and make more robust against misuse
-- Link to v1: https://lore.kernel.org/r/20241031-sysfs-const-bin_attr-v1-0-2281afa7f055@weissschuh.net
+ include/linux/sysfs.h | 27 ++++++++-------------------
+ 1 file changed, 8 insertions(+), 19 deletions(-)
 
----
-Thomas Weißschuh (10):
-      sysfs: explicitly pass size to sysfs_add_bin_file_mode_ns()
-      sysfs: introduce callback attribute_group::bin_size
-      PCI/sysfs: Calculate bin_attribute size through bin_size()
-      nvmem: core: calculate bin_attribute size through bin_size()
-      sysfs: treewide: constify attribute callback of bin_is_visible()
-      sysfs: treewide: constify attribute callback of bin_attribute::mmap()
-      sysfs: treewide: constify attribute callback of bin_attribute::llseek()
-      sysfs: implement all BIN_ATTR_* macros in terms of __BIN_ATTR()
-      sysfs: bin_attribute: add const read/write callback variants
-      driver core: Constify attribute arguments of binary attributes
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index cb2a5e277c2384f2e8add8fbf2907e8a819576ec..d17c473c1ef292875475bf3bdf62d07241c13882 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -333,17 +333,11 @@ struct bin_attribute {
+ 	.size	= _size,						\
+ }
+ 
+-#define __BIN_ATTR_RO(_name, _size) {					\
+-	.attr	= { .name = __stringify(_name), .mode = 0444 },		\
+-	.read	= _name##_read,						\
+-	.size	= _size,						\
+-}
++#define __BIN_ATTR_RO(_name, _size)					\
++	__BIN_ATTR(_name, 0444, _name##_read, NULL, _size)
+ 
+-#define __BIN_ATTR_WO(_name, _size) {					\
+-	.attr	= { .name = __stringify(_name), .mode = 0200 },		\
+-	.write	= _name##_write,					\
+-	.size	= _size,						\
+-}
++#define __BIN_ATTR_WO(_name, _size)					\
++	__BIN_ATTR(_name, 0200, NULL, _name##_write, _size)
+ 
+ #define __BIN_ATTR_RW(_name, _size)					\
+ 	__BIN_ATTR(_name, 0644, _name##_read, _name##_write, _size)
+@@ -364,11 +358,8 @@ struct bin_attribute bin_attr_##_name = __BIN_ATTR_WO(_name, _size)
+ struct bin_attribute bin_attr_##_name = __BIN_ATTR_RW(_name, _size)
+ 
+ 
+-#define __BIN_ATTR_ADMIN_RO(_name, _size) {					\
+-	.attr	= { .name = __stringify(_name), .mode = 0400 },		\
+-	.read	= _name##_read,						\
+-	.size	= _size,						\
+-}
++#define __BIN_ATTR_ADMIN_RO(_name, _size)				\
++	__BIN_ATTR(_name, 0400, _name##_read, NULL, _size)
+ 
+ #define __BIN_ATTR_ADMIN_RW(_name, _size)					\
+ 	__BIN_ATTR(_name, 0600, _name##_read, _name##_write, _size)
+@@ -379,10 +370,8 @@ struct bin_attribute bin_attr_##_name = __BIN_ATTR_ADMIN_RO(_name, _size)
+ #define BIN_ATTR_ADMIN_RW(_name, _size)					\
+ struct bin_attribute bin_attr_##_name = __BIN_ATTR_ADMIN_RW(_name, _size)
+ 
+-#define __BIN_ATTR_SIMPLE_RO(_name, _mode) {				\
+-	.attr	= { .name = __stringify(_name), .mode = _mode },	\
+-	.read	= sysfs_bin_attr_simple_read,				\
+-}
++#define __BIN_ATTR_SIMPLE_RO(_name, _mode)				\
++	__BIN_ATTR(_name, _mode, sysfs_bin_attr_simple_read, NULL, 0)
+ 
+ #define BIN_ATTR_SIMPLE_RO(_name)					\
+ struct bin_attribute bin_attr_##_name = __BIN_ATTR_SIMPLE_RO(_name, 0444)
 
- arch/alpha/kernel/pci-sysfs.c           |  6 +--
- drivers/base/node.c                     |  4 +-
- drivers/base/topology.c                 |  4 +-
- drivers/cxl/port.c                      |  2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_psp.c |  2 +-
- drivers/infiniband/hw/qib/qib_sysfs.c   |  2 +-
- drivers/misc/ocxl/sysfs.c               |  2 +-
- drivers/mtd/spi-nor/sysfs.c             |  2 +-
- drivers/nvmem/core.c                    | 16 ++++--
- drivers/pci/p2pdma.c                    |  2 +-
- drivers/pci/pci-sysfs.c                 | 42 ++++++++-------
- drivers/pci/vpd.c                       |  2 +-
- drivers/platform/x86/amd/hsmp.c         |  2 +-
- drivers/platform/x86/intel/pmt/class.c  |  2 +-
- drivers/platform/x86/intel/sdsi.c       |  2 +-
- drivers/scsi/scsi_sysfs.c               |  2 +-
- drivers/uio/uio_hv_generic.c            |  2 +-
- drivers/usb/core/sysfs.c                |  2 +-
- fs/sysfs/file.c                         | 30 +++++++----
- fs/sysfs/group.c                        |  5 +-
- fs/sysfs/sysfs.h                        |  2 +-
- include/linux/sysfs.h                   | 94 ++++++++++++++++++++-------------
- 22 files changed, 138 insertions(+), 91 deletions(-)
----
-base-commit: 3e5e6c9900c3d71895e8bdeacfb579462e98eba1
-change-id: 20241028-sysfs-const-bin_attr-a00896481d0b
-
-Best regards,
 -- 
-Thomas Weißschuh <linux@weissschuh.net>
+2.47.0
 
 
