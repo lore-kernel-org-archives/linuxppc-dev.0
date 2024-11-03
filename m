@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-2781-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2782-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FF82D11183
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 171C2D11182
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlL12LPz2yJL;
-	Mon,  4 Nov 2024 04:13:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730653981;
-	cv=none; b=BCvVKZhiMtYX3qvdmdRk6CLd8xzzVScHluKF63L3YbOsf9HhAiJSN7pP45ihxGvmRKAltV/mdpaNMBjrl2EgjQvfJu/HNtZjAUlN5x3sBHc1dJd1wgu2DUOHKV6gNn2Mk0zSkFX8loJ8iMmBcHULVJ60iQevKa5lQkVJfSexXqmG/bYF89FrJ7V0Sox4tSne26jq4JPYH1W+EJD38aipjkfj0+kxsIxw4URyed+iMkcE5R4CL+yJ10Iuz7trD4yt37wm63GzDSrABLsa/jzPqtojV2Ob/Cucu0DnWilRauCdfxexvqWXQr7Igpy8lE8gND8DGNiQaagGF9rZhZVIZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlM12D6z2y8d;
+	Mon,  4 Nov 2024 04:13:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730653983;
+	cv=none; b=mXyWaTJMDRONLBoDBh3NRRTzYG8KrOF7MOkvV10GTlhzCZoQ56q41dJNJRBHrCxbX3U6t7hdf1+HPF0MHUpxuzJ8IxruFHHShBHcBE04H/h4uqI+2Ioq7E+pFTKFgiO0a/OmhDMyB7sks+fM31S/GIjU2JeL1k74mNdANgwQaf92/Q/SqkctJEvSKzUG4WUPKWnEcviFkB0s3PQRTW7Md3x6SB/309/mInwRsH9ZsaL6cfy3G/fm30tYiMlB0+tsQc7gWrJW66Ba0qy4d2JcOoJhn8+XnMAib9VCrPvjLipM8OUSqwi2x586Z0LEHReiuM0SP3O8zFdQfKP1vJCTMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730653981; c=relaxed/relaxed;
-	bh=1/DHiLQ6vlc2BjFhM2SeKyOHXC/Q4Rm8UPXvuK+gbdA=;
+	t=1730653983; c=relaxed/relaxed;
+	bh=M36VTqR2mWbQaVQ4Aw14E28PNfouFI3aAv6NzsIcqC4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=XuqkMBl1EGV/eR3zIj3TmQK/tbwqKCe/2J3u8L35tR2dPXEDAG2zTiUvlky5NuEQiK2VPSyhjCyGkn8bZ8jyhuRS+1rKcw3XPgiO3rZq1RvsdUREF9x3wDnfDf5wR7oBPyLPiwZNapT+EEYVsDxWlccY2h6eY/zImp67JeZxYQeqydoWGEMf6XEAhzD/BcwPSWRuuC3e9wbu5q7Dh2XDsAwF6n03wNxUm5AKC6ZeeJPqc3adGgbT5eXvjEt6Vo937BG1kBFUPa+GxYFEowlTBeiPEqhA/rGi5DgIGSqwudAHYXXXuw74kL6RPy+mxmoDTuioLOC1t3yHaT+X9FUBhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SyRnyZMY; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=VM5+wBF3pnc89KzD7MuObNUoFCremidGqEmoTbhGpQhZZPMWiyS32X7M74xA3/DRfu1OgGWEm2a1DTzTnDIzcAkBCKnsAe2OedXbASqxIZsLeYYZWqgrCO//JRHB86i1xyiasU3KX2rajWFnTOjLpm/TWHFFpwfUe43ySlqKYz/pYVxef82PP3bvkXYkLi6BX8LR2PMslNwzSmhzletYUuiYca9pzH+ptDH8THZg/l2M3NI2N4PPV9nPJvzSP5ao6RsFGyZgwrQMptiM1PY82lCW3WvXJEQAHt7K12xlGdTqiapPvIKOz1cRS3MQJEeafmRhY2nxmtrl4o7pRNrxxw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=jnQwjCqu; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SyRnyZMY;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=jnQwjCqu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlC3b3hz2y8d
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlC33kRz2xJK
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 04:12:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1730653481;
-	bh=GMdVqpFwoDETa/zGkV60zA/YyucohMN7ciiORB0dDFM=;
+	s=mail; t=1730653475;
+	bh=vzqsMVfnVQ7g+xXQgYvHKh8WFOGMi08tymfd1lvAle8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=SyRnyZMYYiuvS05pAbdP2BNw8Ha3Wp0EjLxI/8VZebe+J32OJzQ0FfngSr11pbc3S
-	 3hLaAVDffCbL3wYrk/f1ofcjd6D+cxYnSPaa7E742CRmKRTph9QuWBX2pSm+y7iW5V
-	 1DVHDyNnW5ZmICuH8Tv9nJe+/D6n4jWkebWhVEBk=
+	b=jnQwjCquAR0qBDmeS/BwDJVhGZ6sUlQQGbmFuOa4A9M2739yz7dkzMP816T+fVMTN
+	 habdRX2zL4MWpQPB/EZc2fhWd6l5iWr1VitiXAmds7L0pbHnrrKO6nxJP5pGMDdPpU
+	 9SGYolS2xrGzTPAPqNh3lGCxTyletOjJlUB8aEf0=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sun, 03 Nov 2024 17:03:37 +0000
-Subject: [PATCH v2 08/10] sysfs: implement all BIN_ATTR_* macros in terms
- of __BIN_ATTR()
+Date: Sun, 03 Nov 2024 17:03:31 +0000
+Subject: [PATCH v2 02/10] sysfs: introduce callback
+ attribute_group::bin_size
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241103-sysfs-const-bin_attr-v2-8-71110628844c@weissschuh.net>
+Message-Id: <20241103-sysfs-const-bin_attr-v2-2-71110628844c@weissschuh.net>
 References: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
 In-Reply-To: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -99,77 +99,72 @@ Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=2547;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=2296;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=GMdVqpFwoDETa/zGkV60zA/YyucohMN7ciiORB0dDFM=;
- b=G1PulaFbJ1PZH7AnZk220ddkyci6/SVWNb+Rtvwc4kmmjYqzz3Epr6UCHfWP8qbRyhd/TurKs
- If4brtJxns8CxxC6suNmBgy57hhP6OtLmxJDPf6RSsE1N5AsLzcns6R
+ bh=vzqsMVfnVQ7g+xXQgYvHKh8WFOGMi08tymfd1lvAle8=;
+ b=+c8c3AK6YNFtR/f5MlFDxfac5E4AdcTfe/LYH8cKiLv+aN2C4MrR8vpsa2SsTXy5NHtfEpdBh
+ t4Y6vgc31e8BINAGXwLU2VEDayYxRmKzGs5LRvtEfi4Ux875Z1qlOu8
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The preparations for the upcoming constification of struct bin_attribute
-requires some logic in the structure definition macros.
-To avoid duplication of that logic in multiple macros, reimplement all
-other macros in terms of __BIN_ATTR().
+Several drivers need to dynamically calculate the size of an binary
+attribute. Currently this is done by assigning attr->size from the
+is_bin_visible() callback.
+
+This has drawbacks:
+* It is not documented.
+* A single attribute can be instantiated multiple times, overwriting the
+  shared size field.
+* It prevents the structure to be moved to read-only memory.
+
+Introduce a new dedicated callback to calculate the size of the
+attribute.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- include/linux/sysfs.h | 27 ++++++++-------------------
- 1 file changed, 8 insertions(+), 19 deletions(-)
+ fs/sysfs/group.c      | 2 ++
+ include/linux/sysfs.h | 8 ++++++++
+ 2 files changed, 10 insertions(+)
 
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index 45b2e92941da1f49dcc71af3781317c61480c956..8b01a7eda5fb3239e138372417d01967c7a3f122 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -98,6 +98,8 @@ static int create_files(struct kernfs_node *parent, struct kobject *kobj,
+ 				if (!mode)
+ 					continue;
+ 			}
++			if (grp->bin_size)
++				size = grp->bin_size(kobj, *bin_attr, i);
+ 
+ 			WARN(mode & ~(SYSFS_PREALLOC | 0664),
+ 			     "Attribute %s: Invalid permissions 0%o\n",
 diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index cb2a5e277c2384f2e8add8fbf2907e8a819576ec..d17c473c1ef292875475bf3bdf62d07241c13882 100644
+index c4e64dc112063f7cb89bf66059d0338716089e87..4746cccb95898b24df6f53de9421ea7649b5568f 100644
 --- a/include/linux/sysfs.h
 +++ b/include/linux/sysfs.h
-@@ -333,17 +333,11 @@ struct bin_attribute {
- 	.size	= _size,						\
- }
- 
--#define __BIN_ATTR_RO(_name, _size) {					\
--	.attr	= { .name = __stringify(_name), .mode = 0444 },		\
--	.read	= _name##_read,						\
--	.size	= _size,						\
--}
-+#define __BIN_ATTR_RO(_name, _size)					\
-+	__BIN_ATTR(_name, 0444, _name##_read, NULL, _size)
- 
--#define __BIN_ATTR_WO(_name, _size) {					\
--	.attr	= { .name = __stringify(_name), .mode = 0200 },		\
--	.write	= _name##_write,					\
--	.size	= _size,						\
--}
-+#define __BIN_ATTR_WO(_name, _size)					\
-+	__BIN_ATTR(_name, 0200, NULL, _name##_write, _size)
- 
- #define __BIN_ATTR_RW(_name, _size)					\
- 	__BIN_ATTR(_name, 0644, _name##_read, _name##_write, _size)
-@@ -364,11 +358,8 @@ struct bin_attribute bin_attr_##_name = __BIN_ATTR_WO(_name, _size)
- struct bin_attribute bin_attr_##_name = __BIN_ATTR_RW(_name, _size)
- 
- 
--#define __BIN_ATTR_ADMIN_RO(_name, _size) {					\
--	.attr	= { .name = __stringify(_name), .mode = 0400 },		\
--	.read	= _name##_read,						\
--	.size	= _size,						\
--}
-+#define __BIN_ATTR_ADMIN_RO(_name, _size)				\
-+	__BIN_ATTR(_name, 0400, _name##_read, NULL, _size)
- 
- #define __BIN_ATTR_ADMIN_RW(_name, _size)					\
- 	__BIN_ATTR(_name, 0600, _name##_read, _name##_write, _size)
-@@ -379,10 +370,8 @@ struct bin_attribute bin_attr_##_name = __BIN_ATTR_ADMIN_RO(_name, _size)
- #define BIN_ATTR_ADMIN_RW(_name, _size)					\
- struct bin_attribute bin_attr_##_name = __BIN_ATTR_ADMIN_RW(_name, _size)
- 
--#define __BIN_ATTR_SIMPLE_RO(_name, _mode) {				\
--	.attr	= { .name = __stringify(_name), .mode = _mode },	\
--	.read	= sysfs_bin_attr_simple_read,				\
--}
-+#define __BIN_ATTR_SIMPLE_RO(_name, _mode)				\
-+	__BIN_ATTR(_name, _mode, sysfs_bin_attr_simple_read, NULL, 0)
- 
- #define BIN_ATTR_SIMPLE_RO(_name)					\
- struct bin_attribute bin_attr_##_name = __BIN_ATTR_SIMPLE_RO(_name, 0444)
+@@ -87,6 +87,11 @@ do {							\
+  *		SYSFS_GROUP_VISIBLE() when assigning this callback to
+  *		specify separate _group_visible() and _attr_visible()
+  *		handlers.
++ * @bin_size:
++ *		Optional: Function to return the size of a binary attribute
++ *		of the group. Will be called repeatedly for each binary
++ *		attribute in the group. Overwrites the size field embedded
++ *		inside the attribute itself.
+  * @attrs:	Pointer to NULL terminated list of attributes.
+  * @bin_attrs:	Pointer to NULL terminated list of binary attributes.
+  *		Either attrs or bin_attrs or both must be provided.
+@@ -97,6 +102,9 @@ struct attribute_group {
+ 					      struct attribute *, int);
+ 	umode_t			(*is_bin_visible)(struct kobject *,
+ 						  struct bin_attribute *, int);
++	size_t			(*bin_size)(struct kobject *,
++					    const struct bin_attribute *,
++					    int);
+ 	struct attribute	**attrs;
+ 	struct bin_attribute	**bin_attrs;
+ };
 
 -- 
 2.47.0
