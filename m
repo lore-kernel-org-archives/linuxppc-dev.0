@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-2795-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2796-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94B1BD11198
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 22:32:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE05BD11194
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 22:32:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhTr16qbFz2yNR;
-	Mon,  4 Nov 2024 09:32:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhTr26pmQz2yQj;
+	Mon,  4 Nov 2024 09:32:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730673153;
-	cv=none; b=c251FGs4+o6dVkep8cTuPxP6tgje+TSJ15N36QrzYoVw3tFxcVxPCcJfUj9njDeQO6NNy+SzotgEXTxN+cRde0NLsQrKDoGH9/wE929HcNMxYR2E9uiSRSyTPwmyqM3ZhnVzxlrQUtX52ZaD8f9qmfguH6GXLIC57Pvyq5gB06eoDWwmRKE/G4otExYqNOySQE4ju/Y/IaAOX+aPDXZZ6cMiMryi0pHQbOEd90NdHmccDRJNAM+RtmcXZ/YEkJvFb9+yRD+iD13NPHmF2jF2Ak3hVAQq8lSpat/X7I9POAqx9fjGIGaoa5eaXsLDIm7R+UKZP985IvJc1yevfLmJow==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730673154;
+	cv=none; b=krHQ/DBQClt+kEDXlFxh8XCJB4ODFvcTAZEwj0ffp5Vv33dihHrapbdwH1BvSCSMY9r+SwGbrYGddaBlunJpSb+BggEImPpOldvLwXYJxzXwm9re2Ifkcn3G8t3Fhl1OTF6dUnG62HZk/g1GWKfxR8Wp1UujdNfbGwkqc0mEntsUX1x41AyCstH6ZcLIW5HYcRosOoyYnJIX8jauVdn1J76PKzYlk7KXGUJ857AfaOhTa1RwUdiIi0T+pDLh3iV+IuKZ+VHPJkiFuLlByTqmxmnXRqQUjoKaDdls50vf/9lYlovxsjph5zVf1nVKSYzmZhEOR3QR+vTETgV/IKGUvw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730673153; c=relaxed/relaxed;
-	bh=VEpWY4sXA/S1bLoLnoNT9MT92zIxt9Oz+i41XLKt/cM=;
+	t=1730673154; c=relaxed/relaxed;
+	bh=dTZkMYeCkw5nu8nu/VTIgH7oCQpoc/EtF157IDSegNk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dQq63TAUgComti02lU1G6qlFvIa6Fftr9c7SSQeTuyZUxIdS9LmgdB55MouFQuehui4aItJ5AdLAruygnweb1X5o3MMowm0M+FQZVgdZW4XfcXIICRZfCQCiZsc4+2iDZ0YQXqR3LPS0vXX1gg231W9hbEMnGFxjwkzxco61bh/8wVv0Koz+NjUBR+MAh4EDNDzLyl9GVPMy7PPjNZ3wYNl8fdLxScJvDihfHJOFMZW19m7WcC8tUizDVVkzLp9HbyBvrDEg2AxSd5pZdzfbN9TmLlh0Wifx9YZzG50/nry0yQHUrysQFQNyYtatO/zK4SY4oJj/qyyxRYPvHICpDQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WVk0uHfu; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=Cnwzx9tTraULQRCy49vyRhSxj4f4zYHsDCw+Uc2apDBQaqfFGANtxK+Y37qcztksuKSkt36kHOvochBSUR/4lDavKBfSuWph8Y1B3WisDziK/kUuJPkNaFAPvVNCUzVTLO6efnANQmGXSmu4KdvZcVnOEgUUulb/urlB8CzkT9zRunAE+lvOAcUv0VzKqrDTThC8Fwjw03mvqPgRICJDxBsI2tAJGf0byzWtWxyPl+01VmwDpKu2D+qpkE7bfIxlnBy7BhkULUSBVTIrWjAq1GbgewazF3031jC3Pq9hbNxyCn+Ymb4SIbwig5hk89HA1ayN4SUU8V6D53fJi2NFug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TrX8vnYi; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WVk0uHfu;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TrX8vnYi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhTr05Hwgz2yGs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhTr05jPHz2yMt
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 09:32:32 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id BBAC9A41EF8;
-	Sun,  3 Nov 2024 22:30:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 42EC9C4CED3;
-	Sun,  3 Nov 2024 22:32:24 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id A891DA41F21;
+	Sun,  3 Nov 2024 22:30:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F0A3C4AF09;
+	Sun,  3 Nov 2024 22:32:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1730673144;
-	bh=ABiaGm+ovhik7YFigewZFubogtN32tz5BD1p0OQq720=;
+	s=k20201202; t=1730673145;
+	bh=R3RIsL1uK8EQAGi0SGqk7fPI8kAR8rBJM+i88HKwo+I=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=WVk0uHfugLJOnyBhphvAvhRdO9ietw2HwNP1FG0tEe51/9J+ho1lZSwSW5fWWkUbJ
-	 cnx/nwvwkunqtyQfdB6zu5TZYLBOWj+8hIzGXkelZw/EeczfL6dFUH50WsD+A0L6wp
-	 1ea3C8GpKzWp8UGmLqvWkmVACMRW7Hz5uHzbXU2Ekqvq3CV5Hvw+yULjXXbYd5nmM5
-	 evs/zM1913odV1Hs8XVfpJhyXYdLZ/5asXzrkmzN0LR04luqCSG3sPYmAnYNFu82YK
-	 z5A7rR9fIOw7wD5HLScsDlu1CWetycbJKeEEVPCotgB8D+8Nk/ySUHj/DWVvgFqAih
-	 CURkLUSqbIfRQ==
+	b=TrX8vnYi6RABnxqWW60rA5vLS2/aG1Tnc49VRVlwICi9yJ7QBnDWco/Yks+8wcuHa
+	 RJuv3uzU+Z6DTR7yfQGoDUX9bYZhQ8O6Hq7pMkhfl3QqRSKQV3ExIVZu2uhcpBKIjR
+	 fiwyAeVZAnX/xcIlgG4UBHb2UTaDQHawqpOvN2/n/J7uPYSvzXmIV9xhwyN2GFDagS
+	 H4ngn3Fodl7aHmeNPUSVT2tVlOXuaBpibrQaV+wveq6oJO8Y8WsWgddFxjNtz0h7QF
+	 GPGvqV/QcxpUiurjY8UUYUNlQ8oSIkZuJkJ/X9GpLLyNaLm2a8lC9ndMRajJMGOHq2
+	 j8og8QUJ6tDSg==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -58,11 +58,10 @@ Cc: linux-arch@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	loongarch@lists.linux.dev,
 	sparclinux@vger.kernel.org,
-	x86@kernel.org,
-	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH v3 01/18] lib/crc32: drop leading underscores from __crc32c_le_base
-Date: Sun,  3 Nov 2024 14:31:37 -0800
-Message-ID: <20241103223154.136127-2-ebiggers@kernel.org>
+	x86@kernel.org
+Subject: [PATCH v3 03/18] lib/crc32: expose whether the lib is really optimized at runtime
+Date: Sun,  3 Nov 2024 14:31:39 -0800
+Message-ID: <20241103223154.136127-4-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241103223154.136127-1-ebiggers@kernel.org>
 References: <20241103223154.136127-1-ebiggers@kernel.org>
@@ -82,158 +81,96 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Remove the leading underscores from __crc32c_le_base().
+Make the CRC32 library export a function crc32_optimizations() which
+returns flags that indicate which CRC32 functions are actually executing
+optimized code at runtime.
 
-This is in preparation for adding crc32c_le_arch() and eventually
-renaming __crc32c_le() to crc32c_le().
+This will be used to determine whether the crc32[c]-$arch shash
+algorithms should be registered in the crypto API.  btrfs could also
+start using these flags instead of the hack that it currently uses where
+it parses the crypto_shash_driver_name.
 
-Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/arm64/lib/crc32-glue.c | 2 +-
- arch/riscv/lib/crc32.c      | 2 +-
- crypto/crc32c_generic.c     | 8 ++++----
- include/linux/crc32.h       | 2 +-
- lib/crc32.c                 | 4 ++--
- lib/crc32test.c             | 2 +-
- 6 files changed, 10 insertions(+), 10 deletions(-)
+ arch/arm64/lib/crc32-glue.c  | 10 ++++++++++
+ arch/riscv/lib/crc32-riscv.c | 10 ++++++++++
+ include/linux/crc32.h        | 15 +++++++++++++++
+ 3 files changed, 35 insertions(+)
 
 diff --git a/arch/arm64/lib/crc32-glue.c b/arch/arm64/lib/crc32-glue.c
-index 295ae3e6b997..ad015223d15d 100644
+index d7f6e1cbf0d2..15c4c9db573e 100644
 --- a/arch/arm64/lib/crc32-glue.c
 +++ b/arch/arm64/lib/crc32-glue.c
-@@ -42,11 +42,11 @@ u32 __pure crc32_le(u32 crc, unsigned char const *p, size_t len)
+@@ -83,7 +83,17 @@ u32 __pure crc32_be_arch(u32 crc, const u8 *p, size_t len)
+ 
+ 	return crc32_be_arm64(crc, p, len);
  }
+ EXPORT_SYMBOL(crc32_be_arch);
  
- u32 __pure __crc32c_le(u32 crc, unsigned char const *p, size_t len)
- {
- 	if (!alternative_has_cap_likely(ARM64_HAS_CRC32))
--		return __crc32c_le_base(crc, p, len);
-+		return crc32c_le_base(crc, p, len);
- 
- 	if (len >= min_len && cpu_have_named_feature(PMULL) && crypto_simd_usable()) {
- 		kernel_neon_begin();
- 		crc = crc32c_le_arm64_4way(crc, p, len);
- 		kernel_neon_end();
-diff --git a/arch/riscv/lib/crc32.c b/arch/riscv/lib/crc32.c
-index d7dc599af3ef..333fb7af1192 100644
---- a/arch/riscv/lib/crc32.c
-+++ b/arch/riscv/lib/crc32.c
-@@ -224,11 +224,11 @@ u32 __pure crc32_le(u32 crc, unsigned char const *p, size_t len)
++u32 crc32_optimizations(void)
++{
++	if (alternative_has_cap_likely(ARM64_HAS_CRC32))
++		return CRC32_LE_OPTIMIZATION |
++		       CRC32_BE_OPTIMIZATION |
++		       CRC32C_OPTIMIZATION;
++	return 0;
++}
++EXPORT_SYMBOL(crc32_optimizations);
++
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("arm64-optimized CRC32 functions");
+diff --git a/arch/riscv/lib/crc32-riscv.c b/arch/riscv/lib/crc32-riscv.c
+index a3ff7db2a1ce..53d56ab422c7 100644
+--- a/arch/riscv/lib/crc32-riscv.c
++++ b/arch/riscv/lib/crc32-riscv.c
+@@ -295,7 +295,17 @@ u32 __pure crc32_be_arch(u32 crc, const u8 *p, size_t len)
+ legacy:
+ 	return crc32_be_base(crc, p, len);
  }
+ EXPORT_SYMBOL(crc32_be_arch);
  
- u32 __pure __crc32c_le(u32 crc, unsigned char const *p, size_t len)
- {
- 	return crc32_le_generic(crc, p, len, CRC32C_POLY_LE,
--				CRC32C_POLY_QT_LE, __crc32c_le_base);
-+				CRC32C_POLY_QT_LE, crc32c_le_base);
- }
- 
- static inline u32 crc32_be_unaligned(u32 crc, unsigned char const *p,
- 				     size_t len)
- {
-diff --git a/crypto/crc32c_generic.c b/crypto/crc32c_generic.c
-index 7c2357c30fdf..635599b255ec 100644
---- a/crypto/crc32c_generic.c
-+++ b/crypto/crc32c_generic.c
-@@ -83,11 +83,11 @@ static int chksum_setkey(struct crypto_shash *tfm, const u8 *key,
- static int chksum_update(struct shash_desc *desc, const u8 *data,
- 			 unsigned int length)
- {
- 	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
- 
--	ctx->crc = __crc32c_le_base(ctx->crc, data, length);
-+	ctx->crc = crc32c_le_base(ctx->crc, data, length);
- 	return 0;
- }
- 
- static int chksum_update_arch(struct shash_desc *desc, const u8 *data,
- 			      unsigned int length)
-@@ -106,11 +106,11 @@ static int chksum_final(struct shash_desc *desc, u8 *out)
- 	return 0;
- }
- 
- static int __chksum_finup(u32 *crcp, const u8 *data, unsigned int len, u8 *out)
- {
--	put_unaligned_le32(~__crc32c_le_base(*crcp, data, len), out);
-+	put_unaligned_le32(~crc32c_le_base(*crcp, data, len), out);
- 	return 0;
- }
- 
- static int __chksum_finup_arch(u32 *crcp, const u8 *data, unsigned int len,
- 			       u8 *out)
-@@ -198,16 +198,16 @@ static struct shash_alg algs[] = {{
- }};
- 
- static int __init crc32c_mod_init(void)
- {
- 	/* register the arch flavor only if it differs from the generic one */
--	return crypto_register_shashes(algs, 1 + (&__crc32c_le != &__crc32c_le_base));
-+	return crypto_register_shashes(algs, 1 + (&__crc32c_le != &crc32c_le_base));
- }
- 
- static void __exit crc32c_mod_fini(void)
- {
--	crypto_unregister_shashes(algs, 1 + (&__crc32c_le != &__crc32c_le_base));
-+	crypto_unregister_shashes(algs, 1 + (&__crc32c_le != &crc32c_le_base));
- }
- 
- subsys_initcall(crc32c_mod_init);
- module_exit(crc32c_mod_fini);
- 
++u32 crc32_optimizations(void)
++{
++	if (riscv_has_extension_likely(RISCV_ISA_EXT_ZBC))
++		return CRC32_LE_OPTIMIZATION |
++		       CRC32_BE_OPTIMIZATION |
++		       CRC32C_OPTIMIZATION;
++	return 0;
++}
++EXPORT_SYMBOL(crc32_optimizations);
++
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Accelerated CRC32 implementation with Zbc extension");
 diff --git a/include/linux/crc32.h b/include/linux/crc32.h
-index 87f788c0d607..5b07fc9081c4 100644
+index 58c632533b08..e9bd40056687 100644
 --- a/include/linux/crc32.h
 +++ b/include/linux/crc32.h
-@@ -37,11 +37,11 @@ static inline u32 crc32_le_combine(u32 crc1, u32 crc2, size_t len2)
- {
- 	return crc32_le_shift(crc1, len2) ^ crc2;
+@@ -35,10 +35,25 @@ static inline u32 __pure __crc32c_le(u32 crc, const u8 *p, size_t len)
+ 	if (IS_ENABLED(CONFIG_CRC32_ARCH))
+ 		return crc32c_le_arch(crc, p, len);
+ 	return crc32c_le_base(crc, p, len);
  }
  
- u32 __pure __crc32c_le(u32 crc, unsigned char const *p, size_t len);
--u32 __pure __crc32c_le_base(u32 crc, unsigned char const *p, size_t len);
-+u32 __pure crc32c_le_base(u32 crc, unsigned char const *p, size_t len);
- 
++/*
++ * crc32_optimizations() returns flags that indicate which CRC32 library
++ * functions are using architecture-specific optimizations.  Unlike
++ * IS_ENABLED(CONFIG_CRC32_ARCH) it takes into account the different CRC32
++ * variants and also whether any needed CPU features are available at runtime.
++ */
++#define CRC32_LE_OPTIMIZATION	BIT(0) /* crc32_le() is optimized */
++#define CRC32_BE_OPTIMIZATION	BIT(1) /* crc32_be() is optimized */
++#define CRC32C_OPTIMIZATION	BIT(2) /* __crc32c_le() is optimized */
++#if IS_ENABLED(CONFIG_CRC32_ARCH)
++u32 crc32_optimizations(void);
++#else
++static inline u32 crc32_optimizations(void) { return 0; }
++#endif
++
  /**
-  * __crc32c_le_combine - Combine two crc32c check values into one. For two
-  * 			 sequences of bytes, seq1 and seq2 with lengths len1
-  * 			 and len2, __crc32c_le() check values were calculated
-diff --git a/lib/crc32.c b/lib/crc32.c
-index ff587fee3893..c67059b0082b 100644
---- a/lib/crc32.c
-+++ b/lib/crc32.c
-@@ -205,12 +205,12 @@ EXPORT_SYMBOL(crc32_le);
- EXPORT_SYMBOL(__crc32c_le);
- 
- u32 __pure crc32_le_base(u32, unsigned char const *, size_t) __alias(crc32_le);
- EXPORT_SYMBOL(crc32_le_base);
- 
--u32 __pure __crc32c_le_base(u32, unsigned char const *, size_t) __alias(__crc32c_le);
--EXPORT_SYMBOL(__crc32c_le_base);
-+u32 __pure crc32c_le_base(u32, unsigned char const *, size_t) __alias(__crc32c_le);
-+EXPORT_SYMBOL(crc32c_le_base);
- 
- u32 __pure crc32_be_base(u32, unsigned char const *, size_t) __alias(crc32_be);
- 
- /*
-  * This multiplies the polynomials x and y modulo the given modulus.
-diff --git a/lib/crc32test.c b/lib/crc32test.c
-index 03cf5c1f2f5d..30b8da4d8be4 100644
---- a/lib/crc32test.c
-+++ b/lib/crc32test.c
-@@ -824,11 +824,11 @@ static void crc32test_regenerate(void)
- 	for (i = 0; i < ARRAY_SIZE(test); i++) {
- 		pr_info("{0x%08x, 0x%08x, 0x%08x, 0x%08x, 0x%08x, 0x%08x},\n",
- 			test[i].crc, test[i].start, test[i].length,
- 			crc32_le_base(test[i].crc, test_buf + test[i].start, test[i].length),
- 			crc32_be_base(test[i].crc, test_buf + test[i].start, test[i].length),
--			__crc32c_le_base(test[i].crc, test_buf + test[i].start, test[i].length));
-+			crc32c_le_base(test[i].crc, test_buf + test[i].start, test[i].length));
- 	}
- }
- 
- static int __init crc32test_init(void)
- {
+  * crc32_le_combine - Combine two crc32 check values into one. For two
+  * 		      sequences of bytes, seq1 and seq2 with lengths len1
+  * 		      and len2, crc32_le() check values were calculated
+  * 		      for each, crc1 and crc2.
 -- 
 2.47.0
 
