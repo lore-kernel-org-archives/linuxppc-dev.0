@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-2803-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2804-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB903D11194
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 22:33:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 072F0D11195
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 22:33:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhTr85YKxz306d;
-	Mon,  4 Nov 2024 09:32:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhTrB0hDRz2yXm;
+	Mon,  4 Nov 2024 09:32:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730673160;
-	cv=none; b=iqPrh10cJomiEgOl37BslHXHZbNnFpVMcHc0WyzpoVG6FtJSfhvz5St/Y5q4P7Tmz+x75zLkgMeonadxztOBtwug7PG1bPFmkadq0+eIayBdQsMzL/KFSVvHB5+UUkadS2X+Mk5GLCYyWw56QrpQoM1TWYf9Ir4MtRG+nyeWTvG+rYkGTLPBZkMyuKJha/C8fpakIYOuceN+atEn0ODQUEQvuTXI69qZ5LQ3efRE+x36pXYeizeM0fk1C5yPsi2xfagJhTOgWcKb5ufssKmeCnAOXnTM7EH3f6rjHJsYXA63MW5VZbYWiFZ/VNQ15ltECSXwGU9FYGh7+djcu+9yFA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730673162;
+	cv=none; b=UHeRvaCj2RXDRB50Gikyi6ANBpcqhLxWWrpPpm6j+glienJhuMhPBMerwIV+40FHzt2JbSlgTWpB0f25eooW95RhmEmnSsTk2kZ96b/Ou6XWpZ6kyKqkzIrQZ4PdjxUU+jjubwvKHrIxZWN/Z/bYsNcuI+ToPpoTNf5s9SlgbWO+pB1UauVPNqtWwXy5x5M0PDf262Y9Gft7tViNJQJ7y24p8ZlYP5lfJqV2BQ/1fZ5c3iWSfrbnAfNoEiP4EWQfbSPbJPRP23NXH2u9fhtqWsR7zErTjOeROZdh9XJpx9zAZ1/f91Gm7zblQ6qADsYUHWWoQGkBL1yRKHij/UkmBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730673160; c=relaxed/relaxed;
-	bh=dvjZkh3zkAhMlbw52j1ldldjhDmcPTBwWYL8Z0l92B8=;
+	t=1730673162; c=relaxed/relaxed;
+	bh=KRcBZoCQqGyQ0W5yMS5aiWl2KEVthf2kKul/c6sg/D0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oPdFj8JmrP53DtT2IKMMYA3+96t1a5u6Sf+vrhSUEP/Hs/CoSSW46/EDN0gLCAGHc7fAYjyv4kYxesH4iOMtQZeT8wL1XCTU0m9oe3k+VkzlcBWstZgfFjmKXK37O8QsFByeisyJdnN1MoJuxtkZHvYlyyoFLuB02YyaPnjGtkDV8vRrL6PUymT+HGafAOcUgNhXPriLsyYscb/P3k0CUUI0TH8KLnoDMtC7EEKszYG1ilQgDp+pfLBpK50Y1h/kNA3gKgiMTtWUN5s4wWRcFroNV+djIEvH9pkwRFQwaD83fuQP/+BIYbl4wqgK9JhOrKQGX9GI5zdHMtTitZvH+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gDJYU9Vd; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=Lw7zqvrUPswakRKZqo6XXZpvYjJ2zM28/WMx1JCjbA5Y6GFS+74MgRRBf+XnVfwz8L6qksRk5pQo1YfPR0VRrvbSawyyvBBv7nc57GlEzz+HCZHlfdC+RufTM9JhJGBOFkhZMHh4FRBdQpivk+SatfRraUf318FTG6EjrtRQNLwuRJAbs7OqBTl55gdwxRj4x98qyRquyy01FhWWeXNuxcOM3kHkn0eQ7yLV3gxMYWATmcAnCVe1aUozoGcfsgu2fpyUxpLWSzKCdj83wxqw0ZIIVYxdqxnnW+5Q44A8w64N1I/SkLTDKby/G299SZ8d48hfj+yGlQNSCW4n4RwdqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rD284UMd; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gDJYU9Vd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rD284UMd;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhTr54xWxz2yXm
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhTr53zkJz2yWK
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 09:32:37 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id AD645A41F27;
-	Sun,  3 Nov 2024 22:30:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F1B1C4CED5;
-	Sun,  3 Nov 2024 22:32:30 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 5970CA41F20;
+	Sun,  3 Nov 2024 22:30:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0AD84C4CED4;
+	Sun,  3 Nov 2024 22:32:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1730673150;
-	bh=kHWHhodawY/PaSA95ElCxVPVWHZVNPifFLwbM7bCJig=;
+	s=k20201202; t=1730673152;
+	bh=ltl2dzTFUaa7H2aG4AJgeKEj/9DuYykUjD6SD30TiWA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=gDJYU9VdynkbrvLTjDKcTxSufZxtp+Z/zMYrGwL5d2/F5cTIiZu1Wiw+ZESK7zmQS
-	 +FFVnjuv4vyOUFtNqcdFrGqLx5zsxKvE3A/xalMHiUtHdDZkIjSfdPYQrmB+6ySqN+
-	 ddALTCJazXYVXhJOLaKgL3dfJtSCjV81z+BsXvYwPjGClNzLQ4cQVDO2B3vdW7vngf
-	 Ygplb6uFLVhngaCOPYPIZPgRzKkBx/DiAHo4iNxyCSe/0PUKsaXTUY0emAEWvjikbw
-	 EnEr47Hb2cCBNuPm9gE5gZTGCE0N5bdYov6knFp5JgN+MZa5XIQpyBQ3L84i8WidC1
-	 QmT6y3lT/YF/w==
+	b=rD284UMdniBNvOArttrl83MnmXpyNh/nlcC9K5Mm8gjSj26HUT3Ffziql0jIddtV1
+	 xYPXQVBEULCOjAKWHI6hxZEby09LiQAqmJQOZ+2SeubZyJt2ePAgcqq22PnnkBfdLl
+	 iGO7KlATTICQP9q0iuNiW/jY9amA+V+pVQXLwF5M9Px9C/dR3p1nksEL0y3UncKxCw
+	 MWnsyaP5fCmbPQQeasYezXe0FndmKpf/9Xjv4kNUqGvlEda1E0lLqwdglMDaXbGiMz
+	 MBBh+epoSvd6NFLssQi/HYX1EI7ZgicEprfte/z93BzVdbXPatTcmXXYI1TbltQc5u
+	 2Gb3LHgTHi+YA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -60,9 +60,9 @@ Cc: linux-arch@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH v3 12/18] x86/crc32: update prototype for crc32_pclmul_le_16()
-Date: Sun,  3 Nov 2024 14:31:48 -0800
-Message-ID: <20241103223154.136127-13-ebiggers@kernel.org>
+Subject: [PATCH v3 15/18] ext4: switch to using the crc32c library
+Date: Sun,  3 Nov 2024 14:31:51 -0800
+Message-ID: <20241103223154.136127-16-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241103223154.136127-1-ebiggers@kernel.org>
 References: <20241103223154.136127-1-ebiggers@kernel.org>
@@ -82,92 +82,170 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-- Change the len parameter from unsigned int to size_t, so that the
-  library function which takes a size_t can safely use this code.
-
-- Move the crc parameter to the front, as this is the usual convention.
+Now that the crc32c() library function directly takes advantage of
+architecture-specific optimizations, it is unnecessary to go through the
+crypto API.  Just use crc32c().  This is much simpler, and it improves
+performance due to eliminating the crypto API overhead.
 
 Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/x86/crypto/crc32-pclmul_asm.S  | 19 +++++++++----------
- arch/x86/crypto/crc32-pclmul_glue.c |  4 ++--
- 2 files changed, 11 insertions(+), 12 deletions(-)
+ fs/ext4/Kconfig |  3 +--
+ fs/ext4/ext4.h  | 25 +++----------------------
+ fs/ext4/super.c | 15 ---------------
+ 3 files changed, 4 insertions(+), 39 deletions(-)
 
-diff --git a/arch/x86/crypto/crc32-pclmul_asm.S b/arch/x86/crypto/crc32-pclmul_asm.S
-index 5d31137e2c7d..f9637789cac1 100644
---- a/arch/x86/crypto/crc32-pclmul_asm.S
-+++ b/arch/x86/crypto/crc32-pclmul_asm.S
-@@ -56,30 +56,29 @@
- 	.octa 0x00000001F701164100000001DB710641
+diff --git a/fs/ext4/Kconfig b/fs/ext4/Kconfig
+index e20d59221fc0..c9ca41d91a6c 100644
+--- a/fs/ext4/Kconfig
++++ b/fs/ext4/Kconfig
+@@ -29,12 +29,11 @@ config EXT3_FS_SECURITY
+ config EXT4_FS
+ 	tristate "The Extended 4 (ext4) filesystem"
+ 	select BUFFER_HEAD
+ 	select JBD2
+ 	select CRC16
+-	select CRYPTO
+-	select CRYPTO_CRC32C
++	select CRC32
+ 	select FS_IOMAP
+ 	select FS_ENCRYPTION_ALGS if FS_ENCRYPTION
+ 	help
+ 	  This is the next generation of the ext3 filesystem.
  
- #define CONSTANT %xmm0
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index 44b0d418143c..99aa512a7de1 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -31,11 +31,11 @@
+ #include <linux/wait.h>
+ #include <linux/sched/signal.h>
+ #include <linux/blockgroup_lock.h>
+ #include <linux/percpu_counter.h>
+ #include <linux/ratelimit.h>
+-#include <crypto/hash.h>
++#include <linux/crc32c.h>
+ #include <linux/falloc.h>
+ #include <linux/percpu-rwsem.h>
+ #include <linux/fiemap.h>
+ #ifdef __KERNEL__
+ #include <linux/compat.h>
+@@ -1660,13 +1660,10 @@ struct ext4_sb_info {
+ 	struct task_struct *s_mmp_tsk;
  
- #ifdef __x86_64__
--#define BUF     %rdi
--#define LEN     %rsi
--#define CRC     %edx
-+#define CRC     %edi
-+#define BUF     %rsi
-+#define LEN     %rdx
- #else
--#define BUF     %eax
--#define LEN     %edx
--#define CRC     %ecx
-+#define CRC     %eax
-+#define BUF     %edx
-+#define LEN     %ecx
+ 	/* record the last minlen when FITRIM is called. */
+ 	unsigned long s_last_trim_minblks;
+ 
+-	/* Reference to checksum algorithm driver via cryptoapi */
+-	struct crypto_shash *s_chksum_driver;
+-
+ 	/* Precomputed FS UUID checksum for seeding other checksums */
+ 	__u32 s_csum_seed;
+ 
+ 	/* Reclaim extents from extent status tree */
+ 	struct shrinker *s_es_shrinker;
+@@ -2465,23 +2462,11 @@ static inline __le16 ext4_rec_len_to_disk(unsigned len, unsigned blocksize)
+ #define DX_HASH_LAST 			DX_HASH_SIPHASH
+ 
+ static inline u32 ext4_chksum(struct ext4_sb_info *sbi, u32 crc,
+ 			      const void *address, unsigned int length)
+ {
+-	struct {
+-		struct shash_desc shash;
+-		char ctx[4];
+-	} desc;
+-
+-	BUG_ON(crypto_shash_descsize(sbi->s_chksum_driver)!=sizeof(desc.ctx));
+-
+-	desc.shash.tfm = sbi->s_chksum_driver;
+-	*(u32 *)desc.ctx = crc;
+-
+-	BUG_ON(crypto_shash_update(&desc.shash, address, length));
+-
+-	return *(u32 *)desc.ctx;
++	return crc32c(crc, address, length);
+ }
+ 
+ #ifdef __KERNEL__
+ 
+ /* hash info structure used by the directory hash */
+@@ -3278,15 +3263,11 @@ extern void ext4_group_desc_csum_set(struct super_block *sb, __u32 group,
+ extern int ext4_register_li_request(struct super_block *sb,
+ 				    ext4_group_t first_not_zeroed);
+ 
+ static inline int ext4_has_metadata_csum(struct super_block *sb)
+ {
+-	WARN_ON_ONCE(ext4_has_feature_metadata_csum(sb) &&
+-		     !EXT4_SB(sb)->s_chksum_driver);
+-
+-	return ext4_has_feature_metadata_csum(sb) &&
+-	       (EXT4_SB(sb)->s_chksum_driver != NULL);
++	return ext4_has_feature_metadata_csum(sb);
+ }
+ 
+ static inline int ext4_has_group_desc_csum(struct super_block *sb)
+ {
+ 	return ext4_has_feature_gdt_csum(sb) || ext4_has_metadata_csum(sb);
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 16a4ce704460..1a821093cc0d 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1371,12 +1371,10 @@ static void ext4_put_super(struct super_block *sb)
+ 	 * Now that we are completely done shutting down the
+ 	 * superblock, we need to actually destroy the kobject.
+ 	 */
+ 	kobject_put(&sbi->s_kobj);
+ 	wait_for_completion(&sbi->s_kobj_unregister);
+-	if (sbi->s_chksum_driver)
+-		crypto_free_shash(sbi->s_chksum_driver);
+ 	kfree(sbi->s_blockgroup_lock);
+ 	fs_put_dax(sbi->s_daxdev, NULL);
+ 	fscrypt_free_dummy_policy(&sbi->s_dummy_enc_policy);
+ #if IS_ENABLED(CONFIG_UNICODE)
+ 	utf8_unload(sb->s_encoding);
+@@ -4586,19 +4584,10 @@ static int ext4_init_metadata_csum(struct super_block *sb, struct ext4_super_blo
+ 		return -EINVAL;
+ 	}
+ 	ext4_setup_csum_trigger(sb, EXT4_JTR_ORPHAN_FILE,
+ 				ext4_orphan_file_block_trigger);
+ 
+-	/* Load the checksum driver */
+-	sbi->s_chksum_driver = crypto_alloc_shash("crc32c", 0, 0);
+-	if (IS_ERR(sbi->s_chksum_driver)) {
+-		int ret = PTR_ERR(sbi->s_chksum_driver);
+-		ext4_msg(sb, KERN_ERR, "Cannot load crc32c driver.");
+-		sbi->s_chksum_driver = NULL;
+-		return ret;
+-	}
+-
+ 	/* Check superblock checksum */
+ 	if (!ext4_superblock_csum_verify(sb, es)) {
+ 		ext4_msg(sb, KERN_ERR, "VFS: Found ext4 filesystem with "
+ 			 "invalid superblock checksum.  Run e2fsck?");
+ 		return -EFSBADCRC;
+@@ -5638,13 +5627,10 @@ failed_mount8: __maybe_unused
+ 	flush_work(&sbi->s_sb_upd_work);
+ 	ext4_stop_mmpd(sbi);
+ 	del_timer_sync(&sbi->s_err_report);
+ 	ext4_group_desc_free(sbi);
+ failed_mount:
+-	if (sbi->s_chksum_driver)
+-		crypto_free_shash(sbi->s_chksum_driver);
+-
+ #if IS_ENABLED(CONFIG_UNICODE)
+ 	utf8_unload(sb->s_encoding);
  #endif
  
+ #ifdef CONFIG_QUOTA
+@@ -7433,8 +7419,7 @@ static void __exit ext4_exit_fs(void)
+ }
  
- 
- .text
- /**
-  *      Calculate crc32
-- *      BUF - buffer (16 bytes aligned)
-- *      LEN - sizeof buffer (16 bytes aligned), LEN should be grater than 63
-  *      CRC - initial crc32
-+ *      BUF - buffer (16 bytes aligned)
-+ *      LEN - sizeof buffer (16 bytes aligned), LEN should be greater than 63
-  *      return %eax crc32
-- *      uint crc32_pclmul_le_16(unsigned char const *buffer,
-- *	                     size_t len, uint crc32)
-+ *      u32 crc32_pclmul_le_16(u32 crc, const u8 *buffer, size_t len);
-  */
- 
- SYM_FUNC_START(crc32_pclmul_le_16) /* buffer and buffer size are 16 bytes aligned */
- 	movdqa  (BUF), %xmm1
- 	movdqa  0x10(BUF), %xmm2
-diff --git a/arch/x86/crypto/crc32-pclmul_glue.c b/arch/x86/crypto/crc32-pclmul_glue.c
-index 9f5e342b9845..9d14eac51c5b 100644
---- a/arch/x86/crypto/crc32-pclmul_glue.c
-+++ b/arch/x86/crypto/crc32-pclmul_glue.c
-@@ -44,11 +44,11 @@
- #define PCLMUL_MIN_LEN		64L     /* minimum size of buffer
- 					 * for crc32_pclmul_le_16 */
- #define SCALE_F			16L	/* size of xmm register */
- #define SCALE_F_MASK		(SCALE_F - 1)
- 
--u32 crc32_pclmul_le_16(unsigned char const *buffer, size_t len, u32 crc32);
-+u32 crc32_pclmul_le_16(u32 crc, const u8 *buffer, size_t len);
- 
- static u32 __attribute__((pure))
- 	crc32_pclmul_le(u32 crc, unsigned char const *p, size_t len)
- {
- 	unsigned int iquotient;
-@@ -69,11 +69,11 @@ static u32 __attribute__((pure))
- 	}
- 	iquotient = len & (~SCALE_F_MASK);
- 	iremainder = len & SCALE_F_MASK;
- 
- 	kernel_fpu_begin();
--	crc = crc32_pclmul_le_16(p, iquotient, crc);
-+	crc = crc32_pclmul_le_16(crc, p, iquotient);
- 	kernel_fpu_end();
- 
- 	if (iremainder)
- 		crc = crc32_le(crc, p + iquotient, iremainder);
- 
+ MODULE_AUTHOR("Remy Card, Stephen Tweedie, Andrew Morton, Andreas Dilger, Theodore Ts'o and others");
+ MODULE_DESCRIPTION("Fourth Extended Filesystem");
+ MODULE_LICENSE("GPL");
+-MODULE_SOFTDEP("pre: crc32c");
+ module_init(ext4_init_fs)
+ module_exit(ext4_exit_fs)
 -- 
 2.47.0
 
