@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-2784-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2785-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0206BD11183
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D420CD11183
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlP3lpyz2yR3;
-	Mon,  4 Nov 2024 04:13:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730653985;
-	cv=none; b=WMoaajEVfVA/42wFRjiLogmv4kfrPxZWGvs1BWlLHaFUhuRPs0SMuV5r4MJr32cNyLqvfNgARPAw+vZUEMcvKAp7W5MKnsFfulHCrqLn/pep3MuEcTphMH9qv5PfTKnPFKU4SK7PJQ92UhUir7mqwUsd9j5b6cqwez4qEy24RZRaA63LrUGMzBH9NY5+by0mREG0Y/g3FDenYsRZEXVKb6sEkGovgVBvKjNMz1FI4/0XtGGBUjyLzQ46Q4eY6UbA58hywTBiKI7MR7AkjIJd4CWwLGDLI4iPUutAoQ90gi5uOkWS87uSAFwkaRLqgd+4e3tm3U3JTSPMnmWgGXsH9A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlQ2VRBz2yS0;
+	Mon,  4 Nov 2024 04:13:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730653986;
+	cv=none; b=TTymaqmUXIzWFK3sd3G8xeqDAL0OlKiRYeyFbRZcm1SkunOuVvHbn5RiPQjt9YGfkBh+i2wXZjl+ZtSWUhyKQxaIY+gIU2i9lwrbB17eIdo2khKW7oTgx4gsP0NbIg0BSnbpoFdMAVY2yan+6kUX6dVGSCR/BZGpAKkOzK6UeNoCDcoZwQ+TEF2PbpVPU6pE5SEccCmQIa99juNXwBYy8JBoRvJ1slphg985H+lP1GINt8hp6/E0gXd+a3dPav6O7BI9wqxUy5Vdh6R9w11cvkEh0TVNGQKVzOLica6CJCB6E1EshTCc2DNUZpUKBGNuUuHgThCqkX7uT64Dzmp3Dg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730653985; c=relaxed/relaxed;
-	bh=DCpLTTNCyqU1ekd2SC7r2v3ZwdxcgDe4y3/wH/SaXcw=;
+	t=1730653986; c=relaxed/relaxed;
+	bh=Sqi+9yPBwnc52qxKzE5d0ZY2IIwQxedd5SqkbLgj8uw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=cNqsdh9uIhYQ5gcc60tLNb0OMWwQFv3WKB78EHGy1f5gzvDi5QnJuwf8+5flaCBMu6hTOAkNOUhiwMR2ovz5Pn9qMQVOij3oV9a/TKVvrakfXBpYO5lJ8JO9vn6UjUKY6jgyCqYrcVeC+hdvjg+Ogo1eUZqWR3TpdihcwNdPRKHDP2TP+auafrFGe4JrIhe4EfK7WcTpWaVTBvoOwoVkxX5HDnhyDTa6OXSLXsm9EFKgrg9jQP+gfsDmhH19m7Duzog986rvvP+x0lgvP8i/QxGgcvesc3S7WkFJATC+Lyd67MVcmN/kA8BrminYJGcB1UkTKbfW+BpEg5/Ry0d0GA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=jCGf7P5s; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=CGD9zpwDEzK5v6YWW/L0a1wDvHfCLw525fx5flRsPhmSdiz4ZoFXdqFWuf+RWuESqPU+N5PuNzKfuU8n5rtBTSlO3mAZkVLppb7bcHcekc6LTXIr8vV8xbIhlyyHGhAz/VIBHhVBhWTN01GdmkdAHblJM0pp5jRyawWTBxyBoM83VMBsf6JhsfeFrfDZkqOk72d3h/7N8u+HOJWDhKO7PK0OtcK7EhLi9WnaDmY5pJO2cCrBqw4ptwVjaDV/uizCIislSDgD05nZR9Pgqu+DM1Anx4Ic3AcM/XUyE4pmH7ADdouXQUaYPCvaV8dY+RrzghfxurWtbzG1jC9kDd50XQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=gAex2VJy; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=jCGf7P5s;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=gAex2VJy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlL3gsJz2yMP
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 04:13:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlM4Wwhz2yNv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 04:13:03 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1730653474;
-	bh=iCkq/n0ScNs19XGEBHP6SQ4H+TMRU4fkw8iLrhzrW/Q=;
+	s=mail; t=1730653482;
+	bh=omnzY7OVUHnekZ/bUX8pXaM2rzeR5oe1Izmsxqjd69Q=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=jCGf7P5s53Ta360TJbHbjEX0UBWW3nHAglDu578tyRJB0eZgE5NN8zYQ0kFtr1Svt
-	 pCp484/NqdkNGcCiZ9riHzuo/LXlzlPqaqdK9SPb5smzV52zn2yNPWdP3DIa10iyOa
-	 KeTiE8N08tCGK9uD6gJjB4S2MSPfd5jAPy1fJsj8=
+	b=gAex2VJyMV+OiFkklrV8IrICkrh78EMUGYE6sgF6izsK/E9bdOLP+ue1pMfx65KEP
+	 daDJhG0bHjOZvxSIVoZOVufQPlLYRdXOaAnYLf8bMNfx7N7rX5CM0q0eWD9GRIOclJ
+	 PZ80lLezOY62im86G8xcV8ntzX7D+eMJVrF5nUUY=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sun, 03 Nov 2024 17:03:30 +0000
-Subject: [PATCH v2 01/10] sysfs: explicitly pass size to
- sysfs_add_bin_file_mode_ns()
+Date: Sun, 03 Nov 2024 17:03:32 +0000
+Subject: [PATCH v2 03/10] PCI/sysfs: Calculate bin_attribute size through
+ bin_size()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241103-sysfs-const-bin_attr-v2-1-71110628844c@weissschuh.net>
+Message-Id: <20241103-sysfs-const-bin_attr-v2-3-71110628844c@weissschuh.net>
 References: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
 In-Reply-To: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -99,93 +99,86 @@ Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=3118;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=2359;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=iCkq/n0ScNs19XGEBHP6SQ4H+TMRU4fkw8iLrhzrW/Q=;
- b=sZzl6wOvr0Sxq3DUY1GJqR+qhFx4JBDN7tgJGJz8989wTSFCjglU0coA3+lhHK8A4oBqQa8cP
- HbptlDNYnPABVHa2o+5ifoWR29tK6teGa/60gJsy0hPwKXqLXrvxd4C
+ bh=omnzY7OVUHnekZ/bUX8pXaM2rzeR5oe1Izmsxqjd69Q=;
+ b=QEHmCC4IyJCPeU5OBXq34EhCHkpPKQglOlOaOSow6b0xRNSB6n8UoneN+GL6/CGyBOY6ZhYUm
+ LOb4xWNOB8AC0VTvIPxtVY0ZKdQGGSIFQEaRXg1966rzLgUpCbB+31p
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Upcoming changes to the sysfs core require the size of the created file
-to be overridable by the caller.
-Add a parameter to enable this.
-For now keep using attr->size in all cases.
+Stop abusing the is_bin_visible() callback to calculate the attribute
+size. Instead use the new, dedicated bin_size() one.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- fs/sysfs/file.c  | 8 ++++----
- fs/sysfs/group.c | 3 ++-
- fs/sysfs/sysfs.h | 2 +-
- 3 files changed, 7 insertions(+), 6 deletions(-)
+ drivers/pci/pci-sysfs.c | 28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index d1995e2d6c943a644ff9f34cf2488864d57daf81..6d39696b43069010b0ad0bdaadcf9002cb70c92c 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -315,7 +315,7 @@ int sysfs_add_file_mode_ns(struct kernfs_node *parent,
- }
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 5d0f4db1cab78674c5e5906f321bf7a57b742983..040f01b2b999175e8d98b05851edc078bbabbe0d 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -818,21 +818,20 @@ static struct bin_attribute *pci_dev_config_attrs[] = {
+ 	NULL,
+ };
  
- int sysfs_add_bin_file_mode_ns(struct kernfs_node *parent,
--		const struct bin_attribute *battr, umode_t mode,
-+		const struct bin_attribute *battr, umode_t mode, size_t size,
- 		kuid_t uid, kgid_t gid, const void *ns)
+-static umode_t pci_dev_config_attr_is_visible(struct kobject *kobj,
+-					      struct bin_attribute *a, int n)
++static size_t pci_dev_config_attr_bin_size(struct kobject *kobj,
++					   const struct bin_attribute *a,
++					   int n)
  {
- 	const struct attribute *attr = &battr->attr;
-@@ -340,7 +340,7 @@ int sysfs_add_bin_file_mode_ns(struct kernfs_node *parent,
- #endif
+ 	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
  
- 	kn = __kernfs_create_file(parent, attr->name, mode & 0777, uid, gid,
--				  battr->size, ops, (void *)attr, ns, key);
-+				  size, ops, (void *)attr, ns, key);
- 	if (IS_ERR(kn)) {
- 		if (PTR_ERR(kn) == -EEXIST)
- 			sysfs_warn_dup(parent, attr->name);
-@@ -580,8 +580,8 @@ int sysfs_create_bin_file(struct kobject *kobj,
- 		return -EINVAL;
- 
- 	kobject_get_ownership(kobj, &uid, &gid);
--	return sysfs_add_bin_file_mode_ns(kobj->sd, attr, attr->attr.mode, uid,
--					   gid, NULL);
-+	return sysfs_add_bin_file_mode_ns(kobj->sd, attr, attr->attr.mode,
-+					  attr->size, uid, gid, NULL);
+-	a->size = PCI_CFG_SPACE_SIZE;
+ 	if (pdev->cfg_size > PCI_CFG_SPACE_SIZE)
+-		a->size = PCI_CFG_SPACE_EXP_SIZE;
+-
+-	return a->attr.mode;
++		return PCI_CFG_SPACE_EXP_SIZE;
++	return PCI_CFG_SPACE_SIZE;
  }
- EXPORT_SYMBOL_GPL(sysfs_create_bin_file);
  
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index d22ad67a0f3291f4702f494939528d5d13c31fae..45b2e92941da1f49dcc71af3781317c61480c956 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -87,6 +87,7 @@ static int create_files(struct kernfs_node *parent, struct kobject *kobj,
- 	if (grp->bin_attrs) {
- 		for (i = 0, bin_attr = grp->bin_attrs; *bin_attr; i++, bin_attr++) {
- 			umode_t mode = (*bin_attr)->attr.mode;
-+			size_t size = (*bin_attr)->size;
- 
- 			if (update)
- 				kernfs_remove_by_name(parent,
-@@ -104,7 +105,7 @@ static int create_files(struct kernfs_node *parent, struct kobject *kobj,
- 
- 			mode &= SYSFS_PREALLOC | 0664;
- 			error = sysfs_add_bin_file_mode_ns(parent, *bin_attr,
--							   mode, uid, gid,
-+							   mode, size, uid, gid,
- 							   NULL);
- 			if (error)
- 				break;
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 3f28c9af57562f61a00a47935579f0939cbfd4dc..8e012f25e1c06e802c3138cc2715b46c1f67fa48 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -31,7 +31,7 @@ int sysfs_add_file_mode_ns(struct kernfs_node *parent,
- 		const struct attribute *attr, umode_t amode, kuid_t uid,
- 		kgid_t gid, const void *ns);
- int sysfs_add_bin_file_mode_ns(struct kernfs_node *parent,
--		const struct bin_attribute *battr, umode_t mode,
-+		const struct bin_attribute *battr, umode_t mode, size_t size,
- 		kuid_t uid, kgid_t gid, const void *ns);
+ static const struct attribute_group pci_dev_config_attr_group = {
+ 	.bin_attrs = pci_dev_config_attrs,
+-	.is_bin_visible = pci_dev_config_attr_is_visible,
++	.bin_size = pci_dev_config_attr_bin_size,
+ };
  
  /*
+@@ -1330,21 +1329,26 @@ static umode_t pci_dev_rom_attr_is_visible(struct kobject *kobj,
+ 					   struct bin_attribute *a, int n)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
+-	size_t rom_size;
+ 
+ 	/* If the device has a ROM, try to expose it in sysfs. */
+-	rom_size = pci_resource_len(pdev, PCI_ROM_RESOURCE);
+-	if (!rom_size)
++	if (!pci_resource_end(pdev, PCI_ROM_RESOURCE))
+ 		return 0;
+ 
+-	a->size = rom_size;
+-
+ 	return a->attr.mode;
+ }
+ 
++static size_t pci_dev_rom_attr_bin_size(struct kobject *kobj,
++					const struct bin_attribute *a, int n)
++{
++	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
++
++	return pci_resource_len(pdev, PCI_ROM_RESOURCE);
++}
++
+ static const struct attribute_group pci_dev_rom_attr_group = {
+ 	.bin_attrs = pci_dev_rom_attrs,
+ 	.is_bin_visible = pci_dev_rom_attr_is_visible,
++	.bin_size = pci_dev_rom_attr_bin_size,
+ };
+ 
+ static ssize_t reset_store(struct device *dev, struct device_attribute *attr,
 
 -- 
 2.47.0
