@@ -1,79 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-2778-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2779-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9238ED11100
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 15:21:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F07CCD11183
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Nov 2024 17:13:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhJGZ4kx3z2y8B;
-	Mon,  4 Nov 2024 02:21:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730647286;
-	cv=none; b=MXY0N17812YpMiifM6A/WeFqp5rzrhGBY4dK+otjq7isqDQ4kG0P4TYanSREuI/Yej/9vESLDbLTzu257g/SDdRZemVaoGhIKAgTlhZKNghWu+AjPt4ddoGxmml04DtVV7uN8ukZ8wV5WK0C4sh9GMslPniXgYxBJGR8sCYizRuGWfMz2idqZBkAFgxJ+SOIgtwRotZ7gTd9V0sr/KL0Wrh1do7hlvgHkw4F/vTxaciqtmP3tDjQvHONsvzalsKpVbZwoHTlBfbslffnw7vrDkuGBrMk91ojtnyD6dW83IWOkRwtu0XbeTcL9XinKhvXYbBuLAuK94Akub/DnE7v7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhLlJ1g38z2yDY;
+	Mon,  4 Nov 2024 04:13:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730653980;
+	cv=none; b=j5vAMp0o06ya70pZv1Ped/Am4x+VRewcs3lPbnMcIGbtjsOB/5zjtiNSRl2Wo8jAnc8YWDR600dhFGRz6cFjTvasTxGF/ONeT9jS1/HAhGdHealVMCuf7RwOmiV03/B8+p2xI0bKXcZnb5SwhUacBEvmXcoPMDp8JatomcfK/bw7FRm0spOgXCUhGSkefNk/qWu1/iPSlecPzbDFhUlYSM1f7scP2NtdMJxC7+IUsQw23S6k1F1AQeXnHoWjikoYG9VKaxnQegKVM1X1QWMM0gaZLBSBYDd6FOALHxInHY98VM5o4YSCNpkJkamzasLgEW4D7ICz81MRfdvbLePBcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730647286; c=relaxed/relaxed;
-	bh=EOWh4obHX50cGmtH4jRpO/Zb4ZygpudBMOg9rkg9z5c=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=IqZLp8t5g/A1ptThNLMisWzF3ezWnx/fM9CsGWHh+haWHprJjlBCYiSCIn3Ku4TvPoUzoAsYFVNAJme/eW1ElkwISodIcydfWNO0R/7d5IYu6PDv9SeHKgVGOte6nf4Co7xvEcx+TOJ1JsYMY9FzVigRRThbP6zArNJV4+GS9RVwj+tXa975AxbfD1g88REHdps1AKIvjJjxmILI8cyk3urUSWZBXS7EsSmyRKN/SZwTDWQt/i69FzDMr385ylMuiseuIHD+G+MvCW7APDkSa1okhHLbJpd44TZkexszQ8Zh1Rf+4/f/27Hk188hq7ifLDyE83tSKXh8JXXn0ug69A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p9OlbqW/; dkim-atps=neutral; spf=none (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
+	t=1730653980; c=relaxed/relaxed;
+	bh=5Zv6LNuafJvKiqbup05O7gGGy1xXdt0q8I0TgI/LSvQ=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=XnRBbk0+dwPwIqURU2DYXLPMcFQ8xl+9zmu0PEhb+CavuaZQW772Gnl+OBjb8n73caXe+F93OWz6EkrO6AMiFZ1bnF+akExyBi6AjV9TeU65HK1Q2Y30A+yNsPX7R+kzkWx50b0yG5TMM3Aeik5tjB7S9Gqth91bNl0o/oMeyvxwZgcoY9NwCZ2rSL7CFHy0ROntFlqQZoyTfKKZSFb6JxxyI7hOv42aJX5uxJFkkbcS6E2k8rwYzWKroobjHD/v+72oyiDiF/KmkDSHRzNiAwtTN3QE4RGTl/rOd7VaGHswQfg1ojvcprbR6N7EDpxmG9eQ9/9bt5m0pYbYjnGsHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=MrPXyPkE; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p9OlbqW/;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=MrPXyPkE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhJGX2BPcz2xX3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 02:21:23 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4A3EhiAK012841;
-	Sun, 3 Nov 2024 15:21:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=EOWh4o
-	bHX50cGmtH4jRpO/Zb4ZygpudBMOg9rkg9z5c=; b=p9OlbqW/PTjJVDSyR+DO7F
-	kdSIjMkg2UzkdSDpdvSdykuNJT4zRIuVZvTNVNcNWFaT8kOPUGkTS/zhPQTUs6Iu
-	9W5u8zxbNQo92uaeg+OoRNbthlKhFLGh5/gQwCoiDM+PDNMBccgHcmgzSXPfBT4h
-	y0TpNz8Z8pQGd8s/ldBIR+0jdVJutDDmx7iQY5BDrh2cVKRGUzqSt+XziakpSebS
-	MWSTFiOeUwOh79gqyrgD16SqYGbtjW+JSCuf1TDAqZ6kQVaIxOsfIMSIdaUK4LgU
-	FB5p1KKe+B7ND++/PSkezJ7ip8cRMDPObE7Xoicz5YrS0DRtn47m+7vVybNcu+Jw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42pb5ag2s9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 03 Nov 2024 15:21:09 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4A3FL8FN015593;
-	Sun, 3 Nov 2024 15:21:08 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42pb5ag2s8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 03 Nov 2024 15:21:08 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4A31K4d6032050;
-	Sun, 3 Nov 2024 15:21:08 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 42nydmgsj9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 03 Nov 2024 15:21:07 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4A3FL3Q37274952
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 3 Nov 2024 15:21:04 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E19E820043;
-	Sun,  3 Nov 2024 15:21:03 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DFBEE20040;
-	Sun,  3 Nov 2024 15:20:57 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.61.246.86])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Sun,  3 Nov 2024 15:20:57 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhLlC3Fddz2xpk
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Nov 2024 04:12:55 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1730653480;
+	bh=nl79rluqUz7qDqQxR9i496RKtXejrl6t02e4QH5qPJI=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=MrPXyPkEuWuLaArcS1YGVn5YlgOUjnhynRsRbFHftaoVetXelMVaxQkJe+EiL6woE
+	 S+0agGULjab2y5uR+7KKalE5m4IP94H8VkjxsjakcHAZy5VaYR9a0QZZyYQRSiHv+/
+	 ysKDYkOHxRTXhv0Lf2m/q/BbJ0blHSQyXutxkMIo=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Sun, 03 Nov 2024 17:03:38 +0000
+Subject: [PATCH v2 09/10] sysfs: bin_attribute: add const read/write
+ callback variants
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,210 +51,188 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3818.100.11.1.3\))
-Subject: Re: [PATCH] tools/perf/tests/base_probe: Fix check for the count of
- existing probes in test_adding_kernel
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <941c3d6a-fc2-3fcf-5ab2-597dcf712c16@redhat.com>
-Date: Sun, 3 Nov 2024 20:50:43 +0530
-Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        irogers@google.com, namhyung@kernel.org,
-        linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        akanksha@linux.ibm.com, maddy@linux.ibm.com, kjain@linux.ibm.com,
-        disgoel@linux.vnet.ibm.com, hbathini@linux.ibm.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <0FEA83FD-BBC9-4E83-82D6-044141E86F76@linux.vnet.ibm.com>
-References: <20241014153910.85536-1-atrajeev@linux.vnet.ibm.com>
- <941c3d6a-fc2-3fcf-5ab2-597dcf712c16@redhat.com>
-To: Michael Petlan <mpetlan@redhat.com>
-X-Mailer: Apple Mail (2.3818.100.11.1.3)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 6r_fVA75LzzqdfdZBzaDjW__PVcI46iB
-X-Proofpoint-ORIG-GUID: gQo8f99hDv2LATuXkgEx3-H6_o6XJnPz
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxlogscore=999
- spamscore=0 malwarescore=0 impostorscore=0 mlxscore=0 adultscore=0
- phishscore=0 priorityscore=1501 suspectscore=0 bulkscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2409260000 definitions=main-2411030138
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20241103-sysfs-const-bin_attr-v2-9-71110628844c@weissschuh.net>
+References: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
+In-Reply-To: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Bjorn Helgaas <bhelgaas@google.com>, 
+ Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, 
+ Davidlohr Bueso <dave@stgolabs.net>, 
+ Jonathan Cameron <jonathan.cameron@huawei.com>, 
+ Dave Jiang <dave.jiang@intel.com>, 
+ Alison Schofield <alison.schofield@intel.com>, 
+ Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, 
+ Alex Deucher <alexander.deucher@amd.com>, 
+ =?utf-8?q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
+ Xinhui Pan <Xinhui.Pan@amd.com>, David Airlie <airlied@gmail.com>, 
+ Simona Vetter <simona@ffwll.ch>, 
+ Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, 
+ Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
+ Tudor Ambarus <tudor.ambarus@linaro.org>, 
+ Pratyush Yadav <pratyush@kernel.org>, Michael Walle <mwalle@kernel.org>, 
+ Miquel Raynal <miquel.raynal@bootlin.com>, 
+ Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
+ Naveen Krishna Chatradhi <naveenkrishna.chatradhi@amd.com>, 
+ Carlos Bilbao <carlos.bilbao.osdev@gmail.com>, 
+ Hans de Goede <hdegoede@redhat.com>, 
+ =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+ "David E. Box" <david.e.box@linux.intel.com>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <martin.petersen@oracle.com>, 
+ Richard Henderson <richard.henderson@linaro.org>, 
+ Matt Turner <mattst88@gmail.com>, Frederic Barrat <fbarrat@linux.ibm.com>, 
+ Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, 
+ Logan Gunthorpe <logang@deltatee.com>, 
+ "K. Y. Srinivasan" <kys@microsoft.com>, 
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
+ Dexuan Cui <decui@microsoft.com>
+Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org, 
+ linux-pci@vger.kernel.org, linux-cxl@vger.kernel.org, 
+ amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
+ linux-rdma@vger.kernel.org, linux-mtd@lists.infradead.org, 
+ platform-driver-x86@vger.kernel.org, linux-scsi@vger.kernel.org, 
+ linux-usb@vger.kernel.org, linux-alpha@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1730653468; l=4652;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=nl79rluqUz7qDqQxR9i496RKtXejrl6t02e4QH5qPJI=;
+ b=zRu/d/VZWP3doJBfzxqs7giw29YYNYi0iPXD2I6CuiN9W2SIlp8gheE3GiOLS245JLYo+Bia3
+ qTMMFVAORK0D7GC1EfyiEnv7178teL6JXj2G6JdQ8X2UySjLYA2oPsa
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
+To make it possible to put struct bin_attribute into read-only memory,
+the sysfs core has to stop passing mutable pointers to the read() and
+write() callbacks.
+As there are numerous implementors of these callbacks throughout the
+tree it's not possible to change all of them at once.
+To enable a step-by-step transition, add new variants of the read() and
+write() callbacks which differ only in the constness of the struct
+bin_attribute argument.
 
+As most binary attributes are defined through macros, extend these
+macros to transparently handle both variants of callbacks to minimize
+the churn during the transition.
+As soon as all handlers are switch to the const variant, the non-const
+one can be removed together with the transition machinery.
 
-> On 17 Oct 2024, at 3:44=E2=80=AFPM, Michael Petlan =
-<mpetlan@redhat.com> wrote:
->=20
-> On Mon, 14 Oct 2024, Athira Rajeev wrote:
->> perftool-testsuite_probe fails in test_adding_kernel as below:
->> Regexp not found: "probe:inode_permission_11"
->> -- [ FAIL ] -- perf_probe :: test_adding_kernel :: force-adding =
-probes ::
->> second probe adding (with force) (output regexp parsing)
->> event syntax error: 'probe:inode_permission_11'
->>   \___ unknown tracepoint
->>=20
->> Error:  File /sys/kernel/tracing//events/probe/inode_permission_11
->> not found.
->> Hint:   Perhaps this kernel misses some CONFIG_ setting to
->> enable this feature?.
->>=20
->> The test does the following:
->> 1) Adds a probe point first using :
->>    $CMD_PERF probe --add $TEST_PROBE
->> 2) Then tries to add same probe again without =E2=80=94force
->> and expects it to fail. Next tries to add same probe again
->> with =E2=80=94force. In this case, perf probe succeeds and adds
->> the probe with a suffix number. Example:
->>=20
->> ./perf probe --add inode_permission
->> Added new event:
->>  probe:inode_permission (on inode_permission)
->>=20
->> ./perf probe --add inode_permission --force
->> Added new event:
->>  probe:inode_permission_1 (on inode_permission)
->>=20
->>  ./perf probe --add inode_permission --force
->> Added new event:
->>  probe:inode_permission_2 (on inode_permission)
->>=20
->> Each time, suffix is added to existing probe name.
->> To get the suffix number, test cases uses :
->> NO_OF_PROBES=3D`$CMD_PERF probe -l | wc -l`
->>=20
->> This will work if there is no other probe existing
->> in the system. If there are any other probes other than
->> kernel probes or inode_permission, ( example: any probe),
->> "perf probe -l" will include count for other probes too.
->=20
-> Hello.
->=20
-> When designing this test, I was relying on the fact that
-> there are no existing probes, because all should have been
-> removed at line 43 of the same test:
->=20
-> 40 ### basic probe adding
-> 41
-> 42 for opt in "" "-a" "--add"; do
-> --> 43     clear_all_probes
-> 44     $CMD_PERF probe $opt $TEST_PROBE 2> =
-$LOGS_DIR/adding_kernel_add$opt.err
-> 45     PERF_EXIT_CODE=3D$?
-> 46
-> 47 ../common/check_all_patterns_found.pl "Added new events?:" =
-"probe:$TEST_PROBE" "on $TEST_PROBE" < =
-$LOGS_DIR/adding_kernel_add$opt.err
-> 48  CHECK_EXIT_CODE=3D$?
-> 49
-> 50 print_results $PERF_EXIT_CODE $CHECK_EXIT_CODE "adding probe =
-$TEST_PROBE :: $opt"
-> 51  (( TEST_RESULT +=3D $? ))
-> 52 done
-> 53
->=20
-> I am wondering how it could happen that there were other
-> probes in the system?
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+---
+ fs/sysfs/file.c       | 22 +++++++++++++++++-----
+ include/linux/sysfs.h | 25 +++++++++++++++++++++++--
+ 2 files changed, 40 insertions(+), 7 deletions(-)
 
-Hi Michael,
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 6d39696b43069010b0ad0bdaadcf9002cb70c92c..785408861c01c89fc84c787848243a13c1338367 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -91,9 +91,12 @@ static ssize_t sysfs_kf_bin_read(struct kernfs_open_file *of, char *buf,
+ 			count = size - pos;
+ 	}
+ 
+-	if (!battr->read)
++	if (!battr->read && !battr->read_new)
+ 		return -EIO;
+ 
++	if (battr->read_new)
++		return battr->read_new(of->file, kobj, battr, buf, pos, count);
++
+ 	return battr->read(of->file, kobj, battr, buf, pos, count);
+ }
+ 
+@@ -152,9 +155,12 @@ static ssize_t sysfs_kf_bin_write(struct kernfs_open_file *of, char *buf,
+ 	if (!count)
+ 		return 0;
+ 
+-	if (!battr->write)
++	if (!battr->write && !battr->write_new)
+ 		return -EIO;
+ 
++	if (battr->write_new)
++		return battr->write_new(of->file, kobj, battr, buf, pos, count);
++
+ 	return battr->write(of->file, kobj, battr, buf, pos, count);
+ }
+ 
+@@ -323,13 +329,19 @@ int sysfs_add_bin_file_mode_ns(struct kernfs_node *parent,
+ 	const struct kernfs_ops *ops;
+ 	struct kernfs_node *kn;
+ 
++	if (battr->read && battr->read_new)
++		return -EINVAL;
++
++	if (battr->write && battr->write_new)
++		return -EINVAL;
++
+ 	if (battr->mmap)
+ 		ops = &sysfs_bin_kfops_mmap;
+-	else if (battr->read && battr->write)
++	else if ((battr->read || battr->read_new) && (battr->write || battr->write_new))
+ 		ops = &sysfs_bin_kfops_rw;
+-	else if (battr->read)
++	else if (battr->read || battr->read_new)
+ 		ops = &sysfs_bin_kfops_ro;
+-	else if (battr->write)
++	else if (battr->write || battr->write_new)
+ 		ops = &sysfs_bin_kfops_wo;
+ 	else
+ 		ops = &sysfs_file_kfops_empty;
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index d17c473c1ef292875475bf3bdf62d07241c13882..d713a6445a6267145a7014f308df3bb25b8c3287 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -305,8 +305,12 @@ struct bin_attribute {
+ 	struct address_space *(*f_mapping)(void);
+ 	ssize_t (*read)(struct file *, struct kobject *, struct bin_attribute *,
+ 			char *, loff_t, size_t);
++	ssize_t (*read_new)(struct file *, struct kobject *, const struct bin_attribute *,
++			    char *, loff_t, size_t);
+ 	ssize_t (*write)(struct file *, struct kobject *, struct bin_attribute *,
+ 			 char *, loff_t, size_t);
++	ssize_t (*write_new)(struct file *, struct kobject *,
++			     const struct bin_attribute *, char *, loff_t, size_t);
+ 	loff_t (*llseek)(struct file *, struct kobject *, const struct bin_attribute *,
+ 			 loff_t, int);
+ 	int (*mmap)(struct file *, struct kobject *, const struct bin_attribute *attr,
+@@ -325,11 +329,28 @@ struct bin_attribute {
+  */
+ #define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)->attr)
+ 
++typedef ssize_t __sysfs_bin_rw_handler_new(struct file *, struct kobject *,
++					   const struct bin_attribute *, char *, loff_t, size_t);
++
+ /* macros to create static binary attributes easier */
+ #define __BIN_ATTR(_name, _mode, _read, _write, _size) {		\
+ 	.attr = { .name = __stringify(_name), .mode = _mode },		\
+-	.read	= _read,						\
+-	.write	= _write,						\
++	.read = _Generic(_read,						\
++		__sysfs_bin_rw_handler_new * : NULL,			\
++		default : _read						\
++	),								\
++	.read_new = _Generic(_read,					\
++		__sysfs_bin_rw_handler_new * : _read,			\
++		default : NULL						\
++	),								\
++	.write = _Generic(_write,					\
++		__sysfs_bin_rw_handler_new * : NULL,			\
++		default : _write					\
++	),								\
++	.write_new = _Generic(_write,					\
++		__sysfs_bin_rw_handler_new * : _write,			\
++		default : NULL						\
++	),								\
+ 	.size	= _size,						\
+ }
+ 
 
-Sorry for the late response.
-
-Yes, there are uprobes listed as part of =E2=80=9Cperf probe=E2=80=9D in =
-the environment where I saw the test needing this change. Sharing the =
-result below from perf probe:=20
-
-# ./perf probe -l
-  uprobes:p_uprobe_dns_events_osquery4026531841 (on getaddrinfo in XX)
-  uprobes:p_uprobe_dns_events_osquery4026532336 (on 0x129a60 in XX)
-  uprobes:p_uprobe_dns_events_osquery4026532344 (on 0x129a60 in XX)
-  uprobes:p_uprobe_ebpf_compat_check_osquery (on __GI___backtrace in XX)
-  uprobes:p_uprobe_sys_hook_osquery (on backtrace_symbols in XX)
-
-These can=E2=80=99t be removed.
-
-# ./perf probe -d uprobes:p_uprobe_dns_events_osquery4026531841
-Removed event: uprobes:p_uprobe_dns_events_osquery4026531841
-Failed to delete event: Device or resource busy
-  Error: Failed to delete events.
-
-
-Considering above scenario, patch here takes the probe count using:
-NO_OF_PROBES=3D`$CMD_PERF probe -l $TEST_PROBE| wc -l`
-
-Also similarly looks for TEST_PROBE in result log in case of probe =
-=E2=80=94del as well
-
-Any comments Michael ?
-
-Thanks
-Athira
-
->=20
-> Cheers,
->=20
-> Michael
->=20
->>=20
->> Example, in the system where this failed, already some
->> probes were default added. So count became 10
->>  ./perf probe -l | wc -l
->>  10
->>=20
->> So to be specific for "inode_permission", restrict the
->> probe count check to that probe point alone using :
->> NO_OF_PROBES=3D`$CMD_PERF probe -l $TEST_PROBE| wc -l`
->>=20
->> Similarly while removing the probe using "probe --del *",
->> ( removing all probes ), check uses:
->>=20
->> ../common/check_all_lines_matched.pl "Removed event: =
-probe:$TEST_PROBE"
->>=20
->> But if there are other probes in the system, the log will
->> contain reference to other existing probe too. Hence change
->> usage of check_all_lines_matched.pl to check_all_patterns_found.pl
->> This will make sure expecting string comes in the result
->>=20
->> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
->> ---
->> tools/perf/tests/shell/base_probe/test_adding_kernel.sh | 4 ++--
->> 1 file changed, 2 insertions(+), 2 deletions(-)
->>=20
->> diff --git a/tools/perf/tests/shell/base_probe/test_adding_kernel.sh =
-b/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
->> index d541ffd44a93..f8b5f096d0d7 100755
->> --- a/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
->> +++ b/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
->> @@ -169,7 +169,7 @@ print_results $PERF_EXIT_CODE $CHECK_EXIT_CODE =
-"force-adding probes :: second pr
->> (( TEST_RESULT +=3D $? ))
->>=20
->> # adding existing probe with '--force' should pass
->> -NO_OF_PROBES=3D`$CMD_PERF probe -l | wc -l`
->> +NO_OF_PROBES=3D`$CMD_PERF probe -l $TEST_PROBE| wc -l`
->> $CMD_PERF probe --force --add $TEST_PROBE 2> =
-$LOGS_DIR/adding_kernel_forceadd_03.err
->> PERF_EXIT_CODE=3D$?
->>=20
->> @@ -205,7 +205,7 @@ print_results $PERF_EXIT_CODE $CHECK_EXIT_CODE =
-"using doubled probe"
->> $CMD_PERF probe --del \* 2> =
-$LOGS_DIR/adding_kernel_removing_wildcard.err
->> PERF_EXIT_CODE=3D$?
->>=20
->> -../common/check_all_lines_matched.pl "Removed event: =
-probe:$TEST_PROBE" "Removed event: probe:${TEST_PROBE}_1" < =
-$LOGS_DIR/adding_kernel_removing_wildcard.err
->> +../common/check_all_patterns_found.pl "Removed event: =
-probe:$TEST_PROBE" "Removed event: probe:${TEST_PROBE}_1" < =
-$LOGS_DIR/adding_kernel_removing_wildcard.err
->> CHECK_EXIT_CODE=3D$?
->>=20
->> print_results $PERF_EXIT_CODE $CHECK_EXIT_CODE "removing multiple =
-probes"
->> --=20
->> 2.43.5
-
+-- 
+2.47.0
 
 
