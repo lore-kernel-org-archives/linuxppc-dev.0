@@ -1,49 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-2881-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2882-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A25A8D36121
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2024 19:54:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF869D36121
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2024 19:56:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XjfDs63hhz2y8Z;
-	Wed,  6 Nov 2024 06:54:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730836477;
-	cv=none; b=io1Zw+k+EmMVtabQ7hdGDGM0FYZ+d/ljY2N2Q/w69JP/zV2wDKJ6s0zPot9SN/25vQ+CnnLpNQxf070B9Y3nHswqnXtwn9jqZ7cyT7ngH17Lm70SNAbqEfwL+c7LKCaXquoO94uK5C2QmhVcKAr5CAzb2OnTZwW5yOJVNq1nQsfMJmJ/v8469ypt3FlTYiH0hIg7fh4BAYsB6YK8o3kMKEzZ5j/AAx3UkBYnGf0BbaYlLPWmoK3ix/xIFkG0fAd236iYq6lGznTz0o5OR8N/MEKqaoPCBVti7NFUmHjMHKwnDarhfzXRRQjvhOLzRqThRs71Ajm7oVd5Z9NJZBwMpQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XjfHD2rDCz2yZN;
+	Wed,  6 Nov 2024 06:56:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::d49"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730836600;
+	cv=none; b=TObS4YOa1cqQkQfljljvVWJrdft/v6cwERPdslzbMt88HSP9ViRcXdPxNx4fDluylj+PuYC3DsFPJ1ZtkAYvzs90jepubIUQr6dBlVbYr4xJUhdRSE3WsrrW3tlBLDZDgtzUf/16FguKrSl5pAN5GZuRyZJMxw8k+UGFr1Q2pCoOaQYXTfnFX1ys8XCdigxfJmeWDwJ3xe07ZqkQD8MSR7MuUDBOpKZkPcp0fkFyd6fvdVDfLXI0/iVU07ipPqixWO87tRMRracV5abZeAI4FHlZ5ORnZk5mcqiukhwx65OltyO4TMycfLBaIyk/CguBw5IsWmrWnfydDdewNAlmuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730836477; c=relaxed/relaxed;
-	bh=+9ywVMfaAmykexEzJSCVg6JBr4IEiV75Xpgz+Msq0Us=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Mime-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Jtq6pQRIJJReFOJclTzAYhNUrrXes/lL8ks1eA6Z7/S8YNgQUVHWIeoeBaK+aYHfkoVKriaGilgfOLd7Tc9gVBjbqlHoY9K/8UBpsKiHSZFblARDuIEB/P/QAdi54opSiWXRarNyvGozWAmvqqAjyLtQjO//AmRRMJVtyF08z1EEC0nn/cZl/BwcBbmssrOX8w83h+jUVb+vRRedtl6e3soFpMlbqlphfpCbdePwLqa9CTCmae5XkbQNVpm719YfPCzmci6ZHzZF/StBK5rlomyGzpIetzkMv8uMXzKm/iFHveGk7DsuIQ+OHkBxT4jOjlu9595VeAHOPhoJvszQEA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XjfDp0HnNz2xQK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2024 06:54:32 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 4A5Jq94A022745;
-	Tue, 5 Nov 2024 13:52:09 -0600
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 4A5Jq8Ge022742;
-	Tue, 5 Nov 2024 13:52:08 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Tue, 5 Nov 2024 13:52:08 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Hari Bathini <hbathini@linux.ibm.com>, Shuah Khan <shuah@kernel.org>,
-        linux-kselftest@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        "Naveen N. Rao" <naveen@kernel.org>,
-        lkml <linux-kernel@vger.kernel.org>,
-        linux-trace-kernel@vger.kernel.org,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] selftests/ftrace: update kprobe syntax error test for ppc64le
-Message-ID: <20241105195208.GC29862@gate.crashing.org>
-References: <20241101191925.1550493-1-hbathini@linux.ibm.com> <20241101205948.GW29862@gate.crashing.org> <1916cb5c-cb3d-427c-bcf0-2c1b905fd6d1@linux.ibm.com> <20241104094431.GY29862@gate.crashing.org> <245fed6f-5fb4-4925-ba0a-fb2f32e650d0@linux.ibm.com> <20241104103615.GZ29862@gate.crashing.org> <f7e8243a-a4c8-44ce-ad03-7d232df461ed@linux.ibm.com> <20241105082018.GA29862@gate.crashing.org> <20241105181752.74a3d6fa2f06d0adfdf85322@kernel.org>
+	t=1730836600; c=relaxed/relaxed;
+	bh=g+A/E6dh30+B+DuVgwcV18/qvNhG5j8MCeVP9K0OnPU=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=ClGqspHGYNcQx632M6NRTP5YEjudcK2Lu9QPrHxppNeA8xow4uNeJxCcaBi56C5GoX+3CjnTAqtRenUNT2t5gf3RWWt1K/nX2+R8D3QIMTNLDwnY7WNZvBDfCmCGmHuyvVHTB/mpxD9MKVaOb54LvmRz2B0FITCFV1IlviF6aa/jcR5Tzqmi9yMEq8qniBsHA21x9dHdSc01GCVdhYKIhyg2Qev+4zabFqkka6TUoL8CboljhVldENG917vmzMnPUIKcm++ofMIBUkPk0eGXwFO/c+xSz51EEbU+1n7aHwMJIme1jhXbAlgEg8az0LvEnmMa1lELassMWz11ZxEyng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=cMb+vcdF; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::d49; helo=mail-io1-xd49.google.com; envelope-from=3cxgqzwskdewq2z721zsaw6u22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--coltonlewis.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--coltonlewis.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=cMb+vcdF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--coltonlewis.bounces.google.com (client-ip=2607:f8b0:4864:20::d49; helo=mail-io1-xd49.google.com; envelope-from=3cxgqzwskdewq2z721zsaw6u22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--coltonlewis.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-io1-xd49.google.com (mail-io1-xd49.google.com [IPv6:2607:f8b0:4864:20::d49])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XjfHB4wkFz2xQK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2024 06:56:37 +1100 (AEDT)
+Received: by mail-io1-xd49.google.com with SMTP id ca18e2360f4ac-83abb2b6d42so568515139f.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Nov 2024 11:56:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1730836593; x=1731441393; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=g+A/E6dh30+B+DuVgwcV18/qvNhG5j8MCeVP9K0OnPU=;
+        b=cMb+vcdFZ1lFwaQv3bF4AooY9LhaZGp0ErVaVEi/NFGJLHx/cgZdnsDFdWjfn72VJ9
+         u3w9rYdeiHAd7pfj4iQkubbZMGIQw0U0Z6pNi7UtKOWFX8qN+oLjDo7NRI0g+m3K8gDo
+         XhU6lc9tvq0QXH/QIJ4gashiULf4g5FtyATQWup9C6kvLckmWC5mnsDcdRIeXDO7eaMe
+         uXju7RUvBFoWwwxlzTHoJH0ol6epUUsvxuETCWMy+ffdlhGzcBfQEX5tRCGHXJgAFRtZ
+         26S1axS5fMsyd1YYZwEblifSlO7guWluaIpQ2sm8wm5UgG0fr0s70FqxvtNDac/jNQt7
+         PdCQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1730836593; x=1731441393;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=g+A/E6dh30+B+DuVgwcV18/qvNhG5j8MCeVP9K0OnPU=;
+        b=WC5ix3/HEL8AXRRdnCEhFx2sA9ekq96K/9t021vN9GieJuSs0KyCk4hc1ZdXcwgzln
+         zovXZsaeu5XCV2Jt/iA5+tY54Yv3VXLYeftphGGgQDtquPQhlHtBMrlN7Llcto6/TZyc
+         AMho+1iGSoXQEZc8bT9DomglnJ30U8lIagPwSnZov/boBZ5HYyYzgvEpADkWW1aTAKhe
+         T1THbV0B1qlCxNsaOcaNWj8WM+mIvN3lwyIpG5laZZsn0wm3YImldmQ3YWYybADEZR+x
+         tHbofAODZlDpDvD9b/HYljY0r/O7YKRgT3Bkru9ZcPOxbakFpwK8qnGNpO7tniV3IzOP
+         srYA==
+X-Forwarded-Encrypted: i=1; AJvYcCUK7To5bUy9iTfSljgnys3LoPUxD0oXrY7BhsyyFXi2KC6jU60R1uCeMOyqMqEpMWcGmu6A/BiLP0QHKoQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyMUTcdw1/kruqbDHmCzYEFr+BkUONOQUwYd5HzlQOmQI7K0pzM
+	oB+sESvaqOrE6eR+LiO2oobmUTWwr8jBUFbHQh7+6WGTP8Tm2TLlDtcJPg1aMkdnoOTmsovI/dH
+	7m4RqJfMSu7NVFw+Q0DsZ5w==
+X-Google-Smtp-Source: AGHT+IHwq3hF4ElsT4RerqS5KSh2j8l+o/SOi33LC2KdnD9j/u2Nkb6pf++GYEETuSfSuC1nI4Yu4HiUAJoPcaH3GQ==
+X-Received: from coltonlewis-kvm.c.googlers.com ([fda3:e722:ac3:cc00:11b:3898:ac11:fa18])
+ (user=coltonlewis job=sendgmr) by 2002:a05:6638:210d:b0:4db:e5f0:ceaf with
+ SMTP id 8926c6da1cb9f-4de0257ba11mr134988173.0.1730836593213; Tue, 05 Nov
+ 2024 11:56:33 -0800 (PST)
+Date: Tue,  5 Nov 2024 19:56:01 +0000
+In-Reply-To: <20241105195603.2317483-1-coltonlewis@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,112 +76,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241105181752.74a3d6fa2f06d0adfdf85322@kernel.org>
-User-Agent: Mutt/1.4.2.3i
+References: <20241105195603.2317483-1-coltonlewis@google.com>
+X-Mailer: git-send-email 2.47.0.199.ga7371fff76-goog
+Message-ID: <20241105195603.2317483-5-coltonlewis@google.com>
+Subject: [PATCH v6 4/5] x86: perf: Refactor misc flag assignments
+From: Colton Lewis <coltonlewis@google.com>
+To: kvm@vger.kernel.org
+Cc: Oliver Upton <oliver.upton@linux.dev>, Sean Christopherson <seanjc@google.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, 
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, 
+	Ian Rogers <irogers@google.com>, Adrian Hunter <adrian.hunter@intel.com>, 
+	Kan Liang <kan.liang@linux.intel.com>, Will Deacon <will@kernel.org>, 
+	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H . Peter Anvin" <hpa@zytor.com>, linux-perf-users@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	Colton Lewis <coltonlewis@google.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Hi!
+Break the assignment logic for misc flags into their own respective
+functions to reduce the complexity of the nested logic.
 
-On Tue, Nov 05, 2024 at 06:17:51PM +0900, Masami Hiramatsu wrote:
-> On Tue, 5 Nov 2024 02:20:18 -0600
-> Segher Boessenkool <segher@kernel.crashing.org> wrote:
-> > On Mon, Nov 04, 2024 at 11:06:23PM +0530, Hari Bathini wrote:
-> > > Seems like a bit of misunderstanding there. Function entry here intends
-> > > to mean the actual start of function code (function prologue) - after
-> > > GEP and function profiling sequence (mflr r0; bl mcount).
-> > 
-> > What you call "function entry" here simply does not exist.  The compiler
-> > can -- and ***WILL***, ***DOES*** -- mix up all of that.
-> 
-> Here is the "function entry" means the function address.
+Signed-off-by: Colton Lewis <coltonlewis@google.com>
+Reviewed-by: Oliver Upton <oliver.upton@linux.dev>
+---
+ arch/x86/events/core.c            | 31 +++++++++++++++++++++++--------
+ arch/x86/include/asm/perf_event.h |  2 ++
+ 2 files changed, 25 insertions(+), 8 deletions(-)
 
-"Function entry point".  "Function entry" can mean whatever nebulous
-thing done at the start of a function :-)
+diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
+index d19e939f3998..24910c625e3d 100644
+--- a/arch/x86/events/core.c
++++ b/arch/x86/events/core.c
+@@ -3011,16 +3011,34 @@ unsigned long perf_arch_instruction_pointer(struct pt_regs *regs)
+ 	return regs->ip + code_segment_base(regs);
+ }
+ 
++static unsigned long common_misc_flags(struct pt_regs *regs)
++{
++	if (regs->flags & PERF_EFLAGS_EXACT)
++		return PERF_RECORD_MISC_EXACT_IP;
++
++	return 0;
++}
++
++unsigned long perf_arch_guest_misc_flags(struct pt_regs *regs)
++{
++	unsigned long guest_state = perf_guest_state();
++	unsigned long flags = common_misc_flags(regs);
++
++	if (guest_state & PERF_GUEST_USER)
++		flags |= PERF_RECORD_MISC_GUEST_USER;
++	else if (guest_state & PERF_GUEST_ACTIVE)
++		flags |= PERF_RECORD_MISC_GUEST_KERNEL;
++
++	return flags;
++}
++
+ unsigned long perf_arch_misc_flags(struct pt_regs *regs)
+ {
+ 	unsigned int guest_state = perf_guest_state();
+-	int misc = 0;
++	unsigned long misc = common_misc_flags(regs);
+ 
+ 	if (guest_state) {
+-		if (guest_state & PERF_GUEST_USER)
+-			misc |= PERF_RECORD_MISC_GUEST_USER;
+-		else
+-			misc |= PERF_RECORD_MISC_GUEST_KERNEL;
++		misc |= perf_arch_guest_misc_flags(regs);
+ 	} else {
+ 		if (user_mode(regs))
+ 			misc |= PERF_RECORD_MISC_USER;
+@@ -3028,9 +3046,6 @@ unsigned long perf_arch_misc_flags(struct pt_regs *regs)
+ 			misc |= PERF_RECORD_MISC_KERNEL;
+ 	}
+ 
+-	if (regs->flags & PERF_EFLAGS_EXACT)
+-		misc |= PERF_RECORD_MISC_EXACT_IP;
+-
+ 	return misc;
+ }
+ 
+diff --git a/arch/x86/include/asm/perf_event.h b/arch/x86/include/asm/perf_event.h
+index feb87bf3d2e9..d95f902acc52 100644
+--- a/arch/x86/include/asm/perf_event.h
++++ b/arch/x86/include/asm/perf_event.h
+@@ -538,7 +538,9 @@ struct x86_perf_regs {
+ 
+ extern unsigned long perf_arch_instruction_pointer(struct pt_regs *regs);
+ extern unsigned long perf_arch_misc_flags(struct pt_regs *regs);
++extern unsigned long perf_arch_guest_misc_flags(struct pt_regs *regs);
+ #define perf_arch_misc_flags(regs)	perf_arch_misc_flags(regs)
++#define perf_arch_guest_misc_flags(regs)	perf_arch_guest_misc_flags(regs)
+ 
+ #include <asm/stacktrace.h>
+ 
+-- 
+2.47.0.199.ga7371fff76-goog
 
-You're free to use your own terminology of course, but it help to use
-standard names for standard things!
-
-> Not the prologue.
-
-But that is literally what Hari said, so it confused me.
-
-> On some architecture, we are sure fixed sequences
-> right after the function address for ftrace/security. For example,
-> x86 has an `ENDBR` for security. Thus, even if we tend to put a
-> probe on the "function entry", kprobes shifts the probe point
-> forcibly skipping the `ENDBR`. So from the probe callback, the
-> probed address does not look like the function address (shift
-> the sizeof(ENDBR)).
-
-On almmost all architectures and ABIs the prologues aren't so very
-fixed, which is a good thing, because typically the compiler can
-make things better in some way (typically faster or smaller code).  Or
-other parts of the toolchain can, the loader or dynamic loader often.
-
-> However, the ENDBR does nothing from the program point of view, we
-> can still think of that address as the address of the function.
-> That is the reason why I introduced arch_kprobe_on_func_entry().
-
-Understood.
-
-> For the other architecture, it might be misunderstood and
-> could be miss-implemented. In that case, we should fix that.
-> 
-> >  In particular,
-> > "function prologue" does not exist at all (on any architecture worth
-> > its salt, including PowerPC), and all instructions you consider part of
-> > a function prologue might end up anywhere.  The "profiling sequence" is
-> > part of that btw, and that typically ends up *not* the first thing in
-> > the function, not the first thing after the LEP (register saves are
-> > earlier often, they are generated in that order in the first place,
-> > but they can (and will) be moved if that schedules better).
-> > 
-> > > Function arguments can be accessed with kprobe only while setting a
-> > > probe at an address the kernel treats as function start address.
-> > 
-> > That is a silly assumption to make.  There is no guarantee you can
-> > access function arguments *at all*, we're not in 1975 anymore.  You
-> > *need* to look at debug information if you want to deal with anything
-> > about your high-level language program.  Looking at the machine code
-> > can only tell you about the machine state, whatever is in registers
-> > etc.
-> 
-> Yeah, understood. So the `$arg*` here does not guarantee to access
-> arguments, but the best effort to do that. And it fully depends on
-
-Is that GDB syntax?  Or what else?
-
-> regs_get_kernel_argument(). Thus `$arg*` works only where the
-> regs_get_kernel_argument() can return most likely function argument
-> value from `pt_regs`. That is where we call "function entry" in
-> this context.
-> 
-> And since it checks the function entry by arch_kprobe_on_func_entry()
-> this test fails on powerpc because it returns true if the offset from
-> the kallsyms symbol address is less than 8/16 bytes.
-> 
-> > > Note that the test case pass criteria here is setting probe to fail by
-> > > providing an address (sym+offset) beyond the function start address.
-> > > 
-> > > And in this specific test case (with "vfs_read+8", where vfs_read is
-> > > the symbol and '8' is the offset), the test case was failing on powerpc
-> > > because setting the probe at 'sym+8' was succeeding, as anywhere between
-> > > 'sym' to 'sym+16' is treated as function start address on powerpc:
-> > 
-> > Yeah, fragile tests sometimes break.  Changing a randomly chosen number
-> > to some other randomly chosen number will not fix the problem (but you
-> > can postpone having to deal with it, sure!)
-> 
-> Yeah, sorry about the test case. Actually `+8` is also not a good number
-> for x86 too since we are not sure whether the address is an instruction
-> boundary or not. In that case it may report another error and failed.
-
-So what is it that the testcase really wants to test for?
-
-Thanks for explaining the context somewhat, I know nothing (except all
-details about ELFv2 and the other PowerPC ABIs :-) ), it helped :-)
-
-
-Segher
 
