@@ -1,102 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-2851-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2852-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB2D0D1CA09
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Nov 2024 23:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B3A3D1CA13
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2024 01:35:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xj71Q6fszz2xdg;
-	Tue,  5 Nov 2024 10:27:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730762874;
-	cv=none; b=EAOeWb+iCtpVZnMS0BjKq2W+wAgQyVsFPYeUS/vPzHfB0UDmlSZn3SBXJKKFAUdUmyEpIFCDp7hq6xgm1WbqqdRnzd+cNUhpMsKFibrE2JHzsufwsZnXLJXvfmTTJesnXnffC1T1O2+dK9lHeg+h077Z8pcQcGNefajire49JoALTu6yyJF5qn1FJu+OIxwFilq0/kiqtIqdH+d6iEcnq2zufEkUv7Pxm48dMkbauUuSJV9FFgpQz5U/RG263y+HG2nTOA666S6F06Y9kyMGY/2tF53dmUa2oMOxPxMdxF9VXVHhIn8Y6tk8NM8k51DIjODCk2/t2w739YajLI26rw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xj9rc5hgLz2xrb;
+	Tue,  5 Nov 2024 12:35:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730770528;
+	cv=none; b=LMVI40aBpBUlByV7tKn/pFQjxEiGeh4y3LZe/k8xUP094e8aptK53YX4xm74VkAMiP5hKkqMW5GjlGoBiXFd1lF/NlnplXBXqIIEzfwd6K/suSgLBRH+AUPgoqRoDLpim2eJSk3CNGcXlBF8s81VGiPqo8+8ueVGoHOQl4f+3nMoSa9Rs+jPcdeI2ADtVxO27hyLTTqVRH8QAof9LqhOLck9QejPboz4D5qN8k3BoDRxkymK4Ic6fs4Ve9Y+tUcHAyMpdLew9BnWvKmZFmDWXytH3ZLDVq94h7Me/lPLH9VeIEc0UAPNTd2FKWGpq56AAB4wFy3y04jSYPODcRdTkg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730762874; c=relaxed/relaxed;
-	bh=Q2NDL0EIuphmCCwbl0Vy6MrgKt/ZIc9Yf0NK3jfYrbk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EGzlHb3TjagYEq2u8PV9Uo989J+aJEQTetboXkkaRwHj36gC7ph4oQVpPckszgNd6i8hYgm10CUIjYXljffX1bJ3EBmHLPueQDptQQitZ/dD5TZ7lFuo5DF4aoMpzJ1wAiwObRxAkozLuaQ9uHms9blg/I7s6P1+JpOuO3YekV/4m6poLcnp4bLRTH2JixfZDfL04kHkjsKRuFih9pRyBD6kpvuxVCtwbB+/6XID9nnTfj+mzoT5X/y5DiiFIYTvePT78+5lK1MXKefM5ZnmzPFiLYadofml2DvkCr6ItGXXszFG2bGEEyNJ+Chj0vOD6LIMHS8GxnRE2szBcBvPyA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uD6aQVKZ; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1730770528; c=relaxed/relaxed;
+	bh=1olVdcYdpbzAU58yRsPEPtreJytP/ErwpPoWbC/4Weo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SFB43DkQVcf1UZh/fE49lwJKNa5ayU1xdET85scf1cN7me84s8rfUlgy5rVU9ZxcQf75uYmvQbAf9fAOsIN4uY+Qk2UMpysmFr/dnfFVj6CB/4VOA/R1aYGOtRoQM1copyRGyZVk6RsyOKnyWl48nXUMHAqQOsIf2VZcr1jhdDEmyOid2Oy06mildgIMk9NUyRfkyu2sz5wqawCvoyKydCvVtvvfoEcTvBZDYP1zOfDcgBYm6AZFT6nX5AhkEHb5QnO7rJe+8UE/KzvBJFlGy0GNfVCyka321k+KKhgAgTXrC6geIY7hWVlWNgPOxqditLyLmKtopFPod2eO1gxVaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=iuHDM3rD; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112d; helo=mail-yw1-x112d.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uD6aQVKZ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=iuHDM3rD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112d; helo=mail-yw1-x112d.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x112d.google.com (mail-yw1-x112d.google.com [IPv6:2607:f8b0:4864:20::112d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xj71M3t0Bz2xYs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2024 10:27:51 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 8521EA41B3D;
-	Mon,  4 Nov 2024 23:25:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB3A7C4CECE;
-	Mon,  4 Nov 2024 23:27:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1730762866;
-	bh=G7tF/ZaqXBtDJLMTb97Oc+SktZk//Kx3oRVjwm2Gkec=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=uD6aQVKZ8xYi+PTTwYupZ6PGdQoZjGxor3CJ6T/KZlWjFxurKitUGg4OsLqeVl22R
-	 oTMAQXmWqXP0EO6JaBIYZ9VEqoL35XGUitRTwgi+bJtDhjSL6UuAIcLW7XMfz2tbvE
-	 x3MFVpG1yHfJRXfsS6NaRprs6A1rIqEf/OZ8jX2sy+DwUFdsMetTULRZ3iOQoxlOsn
-	 5JoGBx6K0BrtfF9Z0+hxFGtNMWymLR+Dppngi0NxeJnTpYgOWeDN7FHowhaRXk3khA
-	 u6nha7LupF4lzkb6ryYEoHDIxLmpv0DY+XiF9diWn7xWUzJjMMZ/7hbbF3UF0ISQXS
-	 B++nhrf0RE3MQ==
-Date: Mon, 4 Nov 2024 16:27:41 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andy Lutomirski <luto@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
-	Brian Cain <bcain@quicinc.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Guo Ren <guoren@kernel.org>, Helge Deller <deller@gmx.de>,
-	Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Kent Overstreet <kent.overstreet@linux.dev>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Michal Simek <monstr@monstr.eu>, Oleg Nesterov <oleg@redhat.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Richard Weinberger <richard@nod.at>,
-	Russell King <linux@armlinux.org.uk>, Song Liu <song@kernel.org>,
-	Stafford Horne <shorne@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Vineet Gupta <vgupta@kernel.org>, Will Deacon <will@kernel.org>,
-	bpf@vger.kernel.org, linux-alpha@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-mm@kvack.org,
-	linux-modules@vger.kernel.org, linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
-	linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
-	linux-trace-kernel@vger.kernel.org, linux-um@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
-	sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH v7 6/8] x86/module: prepare module loading for ROX
- allocations of text
-Message-ID: <20241104232741.GA3843610@thelio-3990X>
-References: <20241023162711.2579610-1-rppt@kernel.org>
- <20241023162711.2579610-7-rppt@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xj9rb1p6qz2xk7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2024 12:35:25 +1100 (AEDT)
+Received: by mail-yw1-x112d.google.com with SMTP id 00721157ae682-6e5cec98cceso39009937b3.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Nov 2024 17:35:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1730770519; x=1731375319; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1olVdcYdpbzAU58yRsPEPtreJytP/ErwpPoWbC/4Weo=;
+        b=iuHDM3rDLhujVe6sE662zGYyu+EG2JyTaSeFoWrwtQ6kl9WtK25RnNheJc3jD4NGWo
+         DyTuBHkWuRLY/Xf2MuS2QGWAyqfsh68DWKmnzc6MBglF5vjy1LLdjB8vsq0L4fEAnst5
+         SmgBlZlNouN7PGXVuphmQ0JCGbBwDjzrs9XwdbZ0QwiXxCD/gicAXu0JUYDhCWf00E0x
+         HzMLE7y4xnKiY3fczBLE6KJK9rj6Vuvy0+GRVq9ZfuGF0yB6EonCFtum1Gb+jVnbrmNG
+         3L6cs1BlR2YIfjF7A7ysGyXykfKhl7Ro4oWxJ3/RjuQDRZknnHjS21p5ECMY2+zoXdzL
+         GZjQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1730770519; x=1731375319;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1olVdcYdpbzAU58yRsPEPtreJytP/ErwpPoWbC/4Weo=;
+        b=vS0uN3/Oq6T2TFgAvzDVuJdkzZxBL9Rq+mfjC2fZrIOlKrhB+3pDgo3o4Y4dQomfZY
+         fknPjDn+DxdwPdARZ5nc4Agu4VoH8F3sjWQEH+L4ESixkmgClY1/D37INd05pEN6Tmtw
+         m/FoDnL60gaGzcl0SJ4z8sn6XGxhHehbCcHmHITSiE+tghve6LsPxLBP3dHCxYNK/XiH
+         fthHY1Xe1rPQsvb2LeEG1VFEJPIj5QO7Cw8wYktot4kwqSdyzMgJkZHNsDu25WXfVAbR
+         kr1BQJysiU6Opq71B8bqiUqKY1yjxJ2gxM6fI4So/2rpDkSmh39J5BoZnyvcy6Q2+PtE
+         3/Yw==
+X-Forwarded-Encrypted: i=1; AJvYcCUj+m3S8tdEWUfiz2e7jBn6M4P5oslMZIr4obKYTfIhqW2b4I6kpQtWaAVt1BSDJn+NwiS1PVzJEr2aWjA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy3whVWMoGwJbApesCWx8bvWe5caS4X3PErpRWx0M81TsbQG9Hx
+	WtdsZhxE16SMf+IFO9754jlz5JRJBJzP5DvNdklV23zeead/ZgX8JSmH44uduH8ouT5Vo3+pmuC
+	LS4Sh/8Q4iaLrpsTx/kFmY5ogcrg=
+X-Google-Smtp-Source: AGHT+IHumg29ZCvANUFmdwzLHDkWQb+pLrpZmept1M1Rh2XLyhWlPjqmDFclS/BZdxG49yfm/f+VICBmuMl/EwbpAlM=
+X-Received: by 2002:a05:690c:64c6:b0:6e2:1a56:bff8 with SMTP id
+ 00721157ae682-6ea52525bb1mr153943557b3.36.1730770519634; Mon, 04 Nov 2024
+ 17:35:19 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,68 +75,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241023162711.2579610-7-rppt@kernel.org>
+References: <20241104210127.307420-1-rosenp@gmail.com>
+In-Reply-To: <20241104210127.307420-1-rosenp@gmail.com>
+From: Rosen Penev <rosenp@gmail.com>
+Date: Mon, 4 Nov 2024 17:35:08 -0800
+Message-ID: <CAKxU2N_wxh+31VkZAAczVUUVt5duLv=yBj9zyLMDfoYGPq=G5Q@mail.gmail.com>
+Subject: Re: [PATCH net-next 0/4] net: ucc_geth: devm cleanups
+To: netdev@vger.kernel.org
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>, maxime.chevallier@bootlin.com, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	"open list:FREESCALE QUICC ENGINE UCC ETHERNET DRIVER" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Mike,
+On Mon, Nov 4, 2024 at 1:01=E2=80=AFPM Rosen Penev <rosenp@gmail.com> wrote=
+:
+>
+> Also added a small fix for NVMEM mac addresses.
+>
+> This was tested as working on a Watchguard T10 device.
+>
+> Rosen Penev (4):
+>   net: ucc_geth: use devm for kmemdup
+>   net: ucc_geth: use devm for alloc_etherdev
+>   net: ucc_geth: use devm for register_netdev
+>   net: ucc_geth: fix usage with NVMEM MAC address
+oh this is interesting
 
-On Wed, Oct 23, 2024 at 07:27:09PM +0300, Mike Rapoport wrote:
-> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-> 
-> When module text memory will be allocated with ROX permissions, the
-> memory at the actual address where the module will live will contain
-> invalid instructions and there will be a writable copy that contains the
-> actual module code.
-> 
-> Update relocations and alternatives patching to deal with it.
-> 
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Tested-by: kdevops <kdevops@lists.linux.dev>
-
-Hopefully the last time you have to hear from me, as I am only
-experiencing issues with only one of my test machines at this point and
-it is my only machine that supports IBT, so it seems to point to
-something specific with the IBT part of the FineIBT support. I notice
-either a boot hang or an almost immediate reboot (triple fault?). I
-guess this is how I missed reporting this earlier, as my machine was
-falling back to the default distribution kernel after the restart and I
-did not notice I was not actually testing a -next kernel.
-
-Checking out the version of this change that is in next-20241104, commit
-7ca6ed09db62 ("x86/module: prepare module loading for ROX allocations of
-text"), it boots with either 'cfi=off' or 'cfi=kcfi' but it exhibits the
-issues noted above with 'cfi=fineibt'. At the immediate parent, commit
-b575d981092f ("arch: introduce set_direct_map_valid_noflush()"), all
-three combinations boot fine.
-
-  $ uname -r; tr ' ' '\n' </proc/cmdline | grep cfi=
-
-  6.12.0-rc5-debug-00214-g7ca6ed09db62
-  cfi=kcfi
-
-  6.12.0-rc5-debug-00214-g7ca6ed09db62
-  cfi=off
-
-  6.12.0-rc5-debug-00213-gb575d981092f
-  cfi=fineibt
-
-  6.12.0-rc5-debug-00213-gb575d981092f
-  cfi=kcfi
-
-  6.12.0-rc5-debug-00213-gb575d981092f
-  cfi=off
-
-I do not think this machine has an accessible serial port and I do not
-think IBT virtualization is supported via either KVM or TCG in QEMU, so
-I am not sure how to get more information about what is going on here. I
-wanted to try reverting these changes on top of next-20241104 but there
-was a non-trivial conflict in mm/execmem.c due to some changes on top,
-so I just tested in the mm history.
-
-If there is any other information I can provide or patches I can test, I
-am more than happy to do so.
-
-Cheers,
-Nathan
+_remove calls platform_get_drvdata but platform_set_drvdata never gets
+called. I believe that means _remove is operating on a NULL pointer.
+>
+>  drivers/net/ethernet/freescale/ucc_geth.c | 34 ++++++++++-------------
+>  1 file changed, 14 insertions(+), 20 deletions(-)
+>
+> --
+> 2.47.0
+>
 
