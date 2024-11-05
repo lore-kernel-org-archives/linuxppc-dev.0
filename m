@@ -1,64 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-2865-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2866-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32C1ED1266B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2024 09:22:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DD4AD1266B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Nov 2024 09:33:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XjND134jsz2yLJ;
-	Tue,  5 Nov 2024 20:22:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730798577;
-	cv=none; b=WI2jatRv8PWSBrRVu7DqneBhXj5dIrXNTp1A5PcDpGg64xBr+SsNBDp9TJZv9XP+MY/uBtQXJvIoN/BzgUQz8sd0xthfwyNn+Lobo+PXw02ysqKr2rIHqzQjauRJ8kwHTgCPueqWwoJ2CpiEB9dR0Zj7rdFwNkBNZxqV6+dBCIImhMXkHBHBuK6ruod27Vj8FgzPyWF5kTcdSDzCJLqQyGQsvpvW3ShwHLynsOQAg/uiD+xJ1tY1Ncr6bs709s3LIQ++Ao7ZzfYq6oYkSWxEzjp9dHEHErR9oP9vDcaIv2uTRsALOY3UROG+ZwuTAwRIf/eS7u+8BX0iKKLFYww6jg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XjNS22LRNz2yQL;
+	Tue,  5 Nov 2024 20:33:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.189
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730799202;
+	cv=none; b=RFgjGTbq1e59HSsoat6mZ0pDjC8S88xoEAXye8lnj7Cc6ykHObk2vCJzdSoTM2kPdsSkvzj0zqIN3UejL96JA4M5gGQNrkuwM9TdTCep84hXbU2GZXtn66DjGGqKCUjQEI32gsv9fFJSazmrVlliPcgrPLE6eMJkesHRLATuSo1HyNv4KQaaQmlNBKk2ZyWEVLenfJvRtguNxj/DPA7n4VQ5b+dPUJfvfD/bu+WdPvWDojL5tpCIrdeoiqxqdg8RVdy/1ooPKoqOK6UjQghg7eno5du2ACfybwfWlFgTTUN7qZu3lXZrYZ518LCLtjusQpjXURX98e6ftrlnPuRsjw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730798577; c=relaxed/relaxed;
-	bh=xG1HQhXTKL81M9467zhA4KonLLpV3fuL2upt5lJSShY=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=FtUyB7AP2nNDgohzdquZDdDOsZD1btwkssYlgoecrtTJ5bxJH/ftFcQ3NnlLbEidQ2zQ8gpNldo2/7gmImK1L+oKeD/zxjrkMPULePTeno8un2vdqakVkpCsEc38OUe2ZZUibMTwzgq8+ywCk34wCHGkC7LMKzzocHFngRQJ/tMutDZHFWpr0G2sG8oG/ATVyG10BK6ddpxhoboLYXMtXJ/6bIKO3sXxSh83Esg3OTMc4+KKnOS5n20HDGqWs0VPfddz/4TQ3WLjitzhlpKR57r57Os55+91UVJfRo0ram7oB6ORz4+LgSuTKSIS93hxJ6s5H83qlYZow/u6CbHnuQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=abc102v8; dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=abc102v8;
-	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1730799202; c=relaxed/relaxed;
+	bh=gaJyc33YpasxmzVq2msy7/YeZGB80Mh1Vt6dUG0iHBU=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=cybkK6/4ABZSdjP40c3ByBL76w/ycaGMRlifAZc8rmU691RBxAhtyTLgCKlhXl3LLatn9Rzkl4erfDqFlNmY82C5/jr17Dw4ZABMVXB+pqvKDtWEsqopa+uH/ddLXCiZ57hyFAggPMbQWjysIawZDo+EUxEjovgUCXOgVVbhIwpaS5EEJBYKgmaJ7zZpv85/eelCwe0tNncUHz3kQHQJP/sfyHYVaw8nx4xfsbgyc78vuxykTloHwLA4m05xqpSTg6gLRu+kvR00M50EW7GR95CGdUhGbtg6j5h0gCzwEEw2/C7Rtc751PfJi+VjZR1b+hJM8/3LIEhnwowHmlldXA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XjNCz2Nv0z2xHQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2024 20:22:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1730798571;
-	bh=xG1HQhXTKL81M9467zhA4KonLLpV3fuL2upt5lJSShY=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=abc102v8sCEc4rZgo2gcKLbXmwgvq4GWFHOVFO2bCqlfFdeKKcRV4prB0lNuFM+1J
-	 +nLMWJEv9C6S0GLYT8NTq4cofEwz+d0GOszV9URcE2cm6ZF5AylDoN/Z59rll0g/Oq
-	 7WsqGbok2W4NpvuKkzkrDPAQmPNPSM6PFvziT+2hwmqDnVmGWCUcte8UycWZO0fqBM
-	 8/j6kLdVKhMd+2mHPE+WS4RXiOWy1ZCSKS371LN4mAvJuEGSKgRrakUz5kUENSDU9q
-	 PGCTVxGOMH7TPanX3MVM/rMyBsqI05mZE6yiJdVSS0qPm3mWfbV8Bv8MQn/EFJHce9
-	 0DvIPNJTjgI8A==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XjNCv5y3Wz4wcl;
-	Tue,  5 Nov 2024 20:22:51 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Eric Biggers <ebiggers@kernel.org>, linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-crypto@vger.kernel.org, linux-ext4@vger.kernel.org,
- linux-f2fs-devel@lists.sourceforge.net, linux-mips@vger.kernel.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- loongarch@lists.linux.dev, sparclinux@vger.kernel.org, x86@kernel.org, Ard
- Biesheuvel <ardb@kernel.org>
-Subject: Re: [PATCH v3 08/18] powerpc/crc32: expose CRC32 functions through lib
-In-Reply-To: <20241103223154.136127-9-ebiggers@kernel.org>
-References: <20241103223154.136127-1-ebiggers@kernel.org>
- <20241103223154.136127-9-ebiggers@kernel.org>
-Date: Tue, 05 Nov 2024 20:22:53 +1100
-Message-ID: <87zfme826q.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XjNS03H8hz2yQJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Nov 2024 20:33:19 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.163.48])
+	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4XjNQY6b8tzQppk;
+	Tue,  5 Nov 2024 17:32:05 +0800 (CST)
+Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
+	by mail.maildlp.com (Postfix) with ESMTPS id E48321800A0;
+	Tue,  5 Nov 2024 17:33:11 +0800 (CST)
+Received: from localhost.localdomain (10.50.165.33) by
+ kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1258.34; Tue, 5 Nov 2024 17:33:10 +0800
+From: Yicong Yang <yangyicong@huawei.com>
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
+	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
+	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <pierre.gondois@arm.com>,
+	<dietmar.eggemann@arm.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
+	<linux-kernel@vger.kernel.org>, <morten.rasmussen@arm.com>,
+	<msuchanek@suse.de>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+	<jonathan.cameron@huawei.com>, <prime.zeng@hisilicon.com>,
+	<linuxarm@huawei.com>, <yangyicong@hisilicon.com>, <xuwei5@huawei.com>,
+	<guohanjun@huawei.com>
+Subject: [PATCH v8 3/4] arm64: topology: Support SMT control on ACPI based system
+Date: Tue, 5 Nov 2024 17:32:36 +0800
+Message-ID: <20241105093237.63565-4-yangyicong@huawei.com>
+X-Mailer: git-send-email 2.31.0
+In-Reply-To: <20241105093237.63565-1-yangyicong@huawei.com>
+References: <20241105093237.63565-1-yangyicong@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,94 +65,142 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
+X-Originating-IP: [10.50.165.33]
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ kwepemd200014.china.huawei.com (7.221.188.8)
 
-Eric Biggers <ebiggers@kernel.org> writes:
-> From: Eric Biggers <ebiggers@google.com>
->
-> Move the powerpc CRC32C assembly code into the lib directory and wire it
-> up to the library interface.  This allows it to be used without going
-> through the crypto API.  It remains usable via the crypto API too via
-> the shash algorithms that use the library interface.  Thus all the
-> arch-specific "shash" code becomes unnecessary and is removed.
->
-> Note: to see the diff from arch/powerpc/crypto/crc32c-vpmsum_glue.c to
-> arch/powerpc/lib/crc32-glue.c, view this commit with 'git show -M10'.
->
-> Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
-> Signed-off-by: Eric Biggers <ebiggers@google.com>
-> ---
->  arch/powerpc/Kconfig                          |   1 +
->  arch/powerpc/configs/powernv_defconfig        |   1 -
->  arch/powerpc/configs/ppc64_defconfig          |   1 -
->  arch/powerpc/crypto/Kconfig                   |  15 +-
->  arch/powerpc/crypto/Makefile                  |   2 -
->  arch/powerpc/crypto/crc32c-vpmsum_glue.c      | 173 ------------------
->  arch/powerpc/crypto/crct10dif-vpmsum_asm.S    |   2 +-
->  arch/powerpc/lib/Makefile                     |   3 +
->  arch/powerpc/lib/crc32-glue.c                 |  92 ++++++++++
->  .../{crypto => lib}/crc32-vpmsum_core.S       |   0
->  .../{crypto => lib}/crc32c-vpmsum_asm.S       |   0
->  11 files changed, 98 insertions(+), 192 deletions(-)
->  delete mode 100644 arch/powerpc/crypto/crc32c-vpmsum_glue.c
->  create mode 100644 arch/powerpc/lib/crc32-glue.c
->  rename arch/powerpc/{crypto => lib}/crc32-vpmsum_core.S (100%)
->  rename arch/powerpc/{crypto => lib}/crc32c-vpmsum_asm.S (100%)
+From: Yicong Yang <yangyicong@hisilicon.com>
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+For ACPI we'll build the topology from PPTT and we cannot directly
+get the SMT number of each core. Instead using a temporary xarray
+to record the heterogeneous information (from ACPI_PPTT_ACPI_IDENTICAL)
+and SMT information of the first core in its heterogeneous CPU cluster
+when building the topology. Then we can know the largest SMT number
+in the system. If a homogeneous system's using ACPI 6.2 or later,
+all the CPUs should be under the root node of PPTT. There'll be
+only one entry in the xarray and all the CPUs in the system will
+be assumed identical.
 
-...
-> deleted file mode 100644
-> index 63760b7dbb76..000000000000
-> --- a/arch/powerpc/crypto/crc32c-vpmsum_glue.c
-> +++ /dev/null
-> @@ -1,173 +0,0 @@
-> -// SPDX-License-Identifier: GPL-2.0-only
-> -
-...
-> -static int __init crc32c_vpmsum_mod_init(void)
-> -{
-> -	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
-> -		return -ENODEV;
-> -
-> -	return crypto_register_shash(&alg);
-> -}
-> -
-> -static void __exit crc32c_vpmsum_mod_fini(void)
-> -{
-> -	crypto_unregister_shash(&alg);
-> -}
-> -
-> -module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, crc32c_vpmsum_mod_init);
-> -module_exit(crc32c_vpmsum_mod_fini);
-> -
-> -MODULE_AUTHOR("Anton Blanchard <anton@samba.org>");
-> -MODULE_DESCRIPTION("CRC32C using vector polynomial multiply-sum instructions");
-> -MODULE_LICENSE("GPL");
-> -MODULE_ALIAS_CRYPTO("crc32c");
-> -MODULE_ALIAS_CRYPTO("crc32c-vpmsum");
-...
-> new file mode 100644
-> index 000000000000..e9730f028afb
-> --- /dev/null
-> +++ b/arch/powerpc/lib/crc32-glue.c
-> @@ -0,0 +1,92 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-...
-> +
-> +static int __init crc32_powerpc_init(void)
-> +{
-> +	if (cpu_has_feature(CPU_FTR_ARCH_207S) &&
-> +	    (cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_VEC_CRYPTO))
-> +		static_branch_enable(&have_vec_crypto);
+The core's SMT control provides two interface to the users [1]:
+1) enable/disable SMT by writing on/off
+2) enable/disable SMT by writing thread number 1/max_thread_number
 
-For any other reviewers, this looks like a new cpu feature check, but
-it's not. In the old code there was a module feature check:
+If a system have more than one SMT thread number the 2) may
+not handle it well, since there're multiple thread numbers in the
+system and 2) only accept 1/max_thread_number. So issue a warning
+to notify the users if such system detected.
 
-  module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, crc32c_vpmsum_mod_init);
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/ABI/testing/sysfs-devices-system-cpu#n542
+Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
+---
+ arch/arm64/kernel/topology.c | 57 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-And PPC_MODULE_FEATURE_VEC_CRYPTO maps to PPC_FEATURE2_VEC_CRYPTO, so
-the logic is equivalent.
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 1a2c72f3e7f8..47f838d6e823 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -15,8 +15,10 @@
+ #include <linux/arch_topology.h>
+ #include <linux/cacheinfo.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_smt.h>
+ #include <linux/init.h>
+ #include <linux/percpu.h>
++#include <linux/xarray.h>
+ 
+ #include <asm/cpu.h>
+ #include <asm/cputype.h>
+@@ -37,17 +39,28 @@ static bool __init acpi_cpu_is_threaded(int cpu)
+ 	return !!is_threaded;
+ }
+ 
++struct cpu_smt_info {
++	int thread_num;
++	int core_id;
++};
++
+ /*
+  * Propagate the topology information of the processor_topology_node tree to the
+  * cpu_topology array.
+  */
+ int __init parse_acpi_topology(void)
+ {
++	int max_smt_thread_num = 0;
++	struct cpu_smt_info *entry;
++	struct xarray hetero_cpu;
++	unsigned long hetero_id;
+ 	int cpu, topology_id;
+ 
+ 	if (acpi_disabled)
+ 		return 0;
+ 
++	xa_init(&hetero_cpu);
++
+ 	for_each_possible_cpu(cpu) {
+ 		topology_id = find_acpi_cpu_topology(cpu, 0);
+ 		if (topology_id < 0)
+@@ -57,6 +70,32 @@ int __init parse_acpi_topology(void)
+ 			cpu_topology[cpu].thread_id = topology_id;
+ 			topology_id = find_acpi_cpu_topology(cpu, 1);
+ 			cpu_topology[cpu].core_id   = topology_id;
++
++			/*
++			 * In the PPTT, CPUs below a node with the 'identical
++			 * implementation' flag have the same number of threads.
++			 * Count the number of threads for only one CPU (i.e.
++			 * one core_id) among those with the same hetero_id.
++			 * See the comment of find_acpi_cpu_topology_hetero_id()
++			 * for more details.
++			 *
++			 * One entry is created for each node having:
++			 * - the 'identical implementation' flag
++			 * - its parent not having the flag
++			 */
++			hetero_id = find_acpi_cpu_topology_hetero_id(cpu);
++			entry = (struct cpu_smt_info *)xa_load(&hetero_cpu, hetero_id);
++			if (!entry) {
++				entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++				WARN_ON(!entry);
++
++				entry->core_id = topology_id;
++				entry->thread_num = 1;
++				xa_store(&hetero_cpu, hetero_id,
++					 entry, GFP_KERNEL);
++			} else if (entry->core_id == topology_id) {
++				entry->thread_num++;
++			}
+ 		} else {
+ 			cpu_topology[cpu].thread_id  = -1;
+ 			cpu_topology[cpu].core_id    = topology_id;
+@@ -67,6 +106,24 @@ int __init parse_acpi_topology(void)
+ 		cpu_topology[cpu].package_id = topology_id;
+ 	}
+ 
++	/*
++	 * This should be a short loop depending on the number of heterogeneous
++	 * CPU clusters. Typically on a homogeneous system there's only one
++	 * entry in the XArray.
++	 */
++	xa_for_each(&hetero_cpu, hetero_id, entry) {
++		if (entry->thread_num != max_smt_thread_num && max_smt_thread_num)
++			pr_warn_once("Heterogeneous SMT topology is partly supported by SMT control\n");
++
++		if (entry->thread_num > max_smt_thread_num)
++			max_smt_thread_num = entry->thread_num;
++
++		xa_erase(&hetero_cpu, hetero_id);
++		kfree(entry);
++	}
++
++	cpu_smt_set_num_threads(max_smt_thread_num, max_smt_thread_num);
++	xa_destroy(&hetero_cpu);
+ 	return 0;
+ }
+ #endif
+-- 
+2.24.0
 
-cheers
 
