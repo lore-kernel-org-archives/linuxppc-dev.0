@@ -1,60 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-2910-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2911-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F037FD44D57
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2024 12:55:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBE97D44D54
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2024 13:05:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xk4tL3B8Fz304C;
-	Wed,  6 Nov 2024 23:55:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xk55q0kQtz30Ns;
+	Thu,  7 Nov 2024 00:05:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730897706;
-	cv=none; b=Xp2k2Iq6RZ/jtZ4aydK0MBXESGTpTG9xjaCN/9E2tS4rx57ej821xL6I9tltHbD66aYs/PmMteBUHkzfAmcDt9Ku3ZxGc0ejkXXUoFZ1dWtYCm+lk283r4hGXRe2JDqLnR7hbxSfWEoi5cMW8lG9BynrUDQtqv0hUyV45QxG7P8H0DSRQBbP+8s0GE+C1ptQbbzj/ea2VTAYRhiCa7qjOHDCY9lBIApKRjzP6lrITCjqQzqrbqyGHfY9NysjSW65XB1CrGGLNBgX1uGBPijd2QCAf3u6lcm4ai5typTCV371lJ9nkx62b8oxDfGVH+d03SWni1j00A0DfNSDAk9BPg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730898303;
+	cv=none; b=XGMjAqzWIE9IjIH87dn5IF9FslwNL9E+eqh1Tf0tYHQvvGDOYByOKpithICiKrof9UXPET2fz+HyDPLHerVgSw57nLAS4ZLh/FXrU8JLIilfl/7sq3HhKTKuLiRysMEAG7AWvvRxDkUa+hEIgAOl7DZDgkn5Sa6YQn+LeJLU53EmNbC9Rapw+yUrZwgbu6hFD1n0Ak3JZNIIL50pfbffTu2PhKr20+cPbivkW4U75pBCCeHvojBGVrU/5jyp3s4GhepsCh4XOTaC3yT5j9Lq6CVKeWhhK6PjpLAL6PJ4jCSrhOmTsRrPG81NtHEoab7x2C6HTZFIc6A+D8UvmVYHqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730897706; c=relaxed/relaxed;
-	bh=iRLJUrrpvdggs7VLYItdrnY/LsBZ/gUpUlld7wSgZg8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=II8JI5ouxyd9FwT7cMu/Xb5hoctrDrFy6b1DLy0Ti11ys6VLvJm/2EatuGnQ0XzDP7ccIWSq5T8+bUCS8t0XJOXODyt7N9v/tbLyATKZylSepCv8AkLtvzq8eaZrVbQ/qS/NY581eYsM2CeyCaheGkVDc2bHBW3oAvKluQUs+VhkdOBzSXMD3kxomHDTd2btMmNgW31s4fyvG7iTBb2ZnoXR/2YfAwheDWaqrc+q0kjAe9JiJsg3xYuRxkv2fDJ8zDIvIWUabOHPGSTSTup4EFjGo+xDSHakkECpi72c7jFjTPlGt628SL9VWfUGDpEXcFjzw7RcdriBAA/S9LwK+Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=r3i4JO0l; dkim-atps=neutral
+	t=1730898303; c=relaxed/relaxed;
+	bh=WfU8i/z+2ZqvHHntsfTG/VnP0MHf+Z8XIKjhNPJ5fWI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=gHt78IT3eJWEmLAItMUYx5V71LGNM0vdCi4/cO3RDaXY/DXSPfI4vxw4AnAaTKd2tdzSxYGTx4nyzwAEFZMhYWFTQ3Kq17VgAJHGbJ4lW9+TKiUGwrXAM5WrHR2PGk9cXextNPdBYRQpdgurN8FiRX951jlFtTR7FhwX4QJvlmi5eNWzNRQROsfSIsXTVJFoETiUI5arLEFVZXIfOmdtVp8RVyX1Nw+2+eT+6GJtz6uPf0hlJzsnOlC9BeVWGhOOlUqrYMEGxT3l5sWp6Z59dxmXtIU1PFGCdGmCv6KgYgjNBH/DGw2LrrR3VVKjyHSsPJY8cvzmOl/vOUz2ncsdOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iWVeUSPc; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=r3i4JO0l;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iWVeUSPc;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xk4tK0jG1z3005
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2024 23:55:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xk55p25JGz30MR
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2024 00:05:02 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1730897696;
-	bh=iRLJUrrpvdggs7VLYItdrnY/LsBZ/gUpUlld7wSgZg8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=r3i4JO0l9iQ/cxv6XhZ8DpOqJ1j7acgckLxkKMl4bVwXA5RGLe7UDkjwHhojgmrwP
-	 DyZG+tZetPViar+nig97Y1e3NAu0EwOv/NjD9YIC4KKcMvbLrMVIXzuPzcjqLgDovE
-	 XiM9FezvsiY0J/Ty+HMvlufgk1ad3WTlsGYrCIU1Yk/BKEnYjRiJrAmKlkNvcY8j5l
-	 H/+YXKVDwa2XdpIquKUVEghyDfsQ/Y8j7LN3e7GemCZO/Zyj9gas7PIGXGgqu5XD8P
-	 bdqWjxJ8RU72jLFr1PjZPKGKDaQlHM90aHVh9ukfSU1Vu1MCf0lC3u8psiNAsEg0yW
-	 Wh9EveL3Kt/Fw==
+	s=201909; t=1730898299;
+	bh=WfU8i/z+2ZqvHHntsfTG/VnP0MHf+Z8XIKjhNPJ5fWI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=iWVeUSPcHVe9oorAhYOt8dSN9TztcXYRACyYt3LwYLcH+4Pdl0eK9IC9iUWpZnoRV
+	 WQlr2umv/GZntTiD91nbsgKzL5/Qzv6Qy4fQDIe6c+O9nEGmyNiHOjV0gF2DNuKlTY
+	 eBFC4AQux0Hc04NQWNdxbad0loOnTc8aFpI28rr+yTbathxda62hwVD75SuI1tEMXY
+	 1DrrbXxsoCjNMiQXaJ1W9HcadUTq8ZwutrK0dmq+jpKVvRQPJD086OnB78p5V/18E2
+	 feqtbrEdVXkzWxHdSidN5SZKtHNFBqUkpftzIhZQWWzd8IaYSws1iqpPw5dF8wqbXV
+	 BdZWj3It4zkLA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xk4t25VRLz4wyh;
-	Wed,  6 Nov 2024 23:54:50 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xk55l5jxnz4xPQ;
+	Thu,  7 Nov 2024 00:04:59 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Lukas Bulwahn <lbulwahn@redhat.com>, Olivia Mackall
- <olivia@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, Lukas
- Bulwahn <lukas.bulwahn@redhat.com>
-Subject: Re: [PATCH] hwrng: amd - remove reference to removed PPC_MAPLE config
-In-Reply-To: <20241106081343.66479-1-lukas.bulwahn@redhat.com>
-References: <20241106081343.66479-1-lukas.bulwahn@redhat.com>
-Date: Wed, 06 Nov 2024 23:54:52 +1100
-Message-ID: <871pzoldyb.fsf@mpe.ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Cc: <linux-kselftest@vger.kernel.org>
+Subject: [PATCH 2/5] selftests/powerpc: Give all tests 2 minutes timeout
+Date: Thu,  7 Nov 2024 00:04:50 +1100
+Message-ID: <20241106130453.1741013-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241106130453.1741013-1-mpe@ellerman.id.au>
+References: <20241106130453.1741013-1-mpe@ellerman.id.au>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,36 +65,224 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Lukas Bulwahn <lbulwahn@redhat.com> writes:
-> From: Lukas Bulwahn <lukas.bulwahn@redhat.com>
->
-> Commit 62f8f307c80e ("powerpc/64: Remove maple platform") removes the
-> PPC_MAPLE config as a consequence of the platform=E2=80=99s removal.
->
-> The config definition of HW_RANDOM_AMD refers to this removed config opti=
-on
-> in its dependencies.
->
-> Remove the reference to the removed config option.
->
-> Signed-off-by: Lukas Bulwahn <lukas.bulwahn@redhat.com>
-> ---
->  drivers/char/hw_random/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Each of the powerpc selftests runs with a timeout of 2 minutes by
+default (see tools/testing/selftests/powerpc/harness.c).
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+But when tests are run with run_kselftest.sh it uses a timeout of 45
+seconds, meaning some tests run OK standalone but fail when run with the
+test runner.
 
-Thanks for cleaning it up.
+So tell run_kselftest.sh to give each test 130 seconds, that should
+allow the tests to complete, or be killed by the powerpc test harness
+after 2 minutes. If for some reason the harness fails, or for the few
+tests that don't use the harness, the 130 second timeout should catch
+them if they get stuck.
 
-There's also an EDAC and cpufreq driver that need to be removed. I
-posted the patches before [1] but need to resend them to the relevant
-maintainers and with updated change logs.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ tools/testing/selftests/powerpc/alignment/settings       | 1 +
+ tools/testing/selftests/powerpc/cache_shape/settings     | 1 +
+ tools/testing/selftests/powerpc/copyloops/settings       | 1 +
+ tools/testing/selftests/powerpc/dexcr/settings           | 1 +
+ tools/testing/selftests/powerpc/dscr/settings            | 1 +
+ tools/testing/selftests/powerpc/lib/settings             | 1 +
+ tools/testing/selftests/powerpc/math/settings            | 1 +
+ tools/testing/selftests/powerpc/mce/settings             | 1 +
+ tools/testing/selftests/powerpc/mm/settings              | 1 +
+ tools/testing/selftests/powerpc/nx-gzip/settings         | 1 +
+ tools/testing/selftests/powerpc/papr_attributes/settings | 1 +
+ tools/testing/selftests/powerpc/papr_sysparm/settings    | 1 +
+ tools/testing/selftests/powerpc/papr_vpd/settings        | 1 +
+ tools/testing/selftests/powerpc/pmu/settings             | 1 +
+ tools/testing/selftests/powerpc/primitives/settings      | 1 +
+ tools/testing/selftests/powerpc/ptrace/settings          | 1 +
+ tools/testing/selftests/powerpc/scripts/settings         | 1 +
+ tools/testing/selftests/powerpc/security/settings        | 1 +
+ tools/testing/selftests/powerpc/stringloops/settings     | 1 +
+ tools/testing/selftests/powerpc/switch_endian/settings   | 1 +
+ tools/testing/selftests/powerpc/syscalls/settings        | 1 +
+ tools/testing/selftests/powerpc/vphn/settings            | 1 +
+ 22 files changed, 22 insertions(+)
+ create mode 100644 tools/testing/selftests/powerpc/alignment/settings
+ create mode 100644 tools/testing/selftests/powerpc/cache_shape/settings
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/settings
+ create mode 100644 tools/testing/selftests/powerpc/dexcr/settings
+ create mode 100644 tools/testing/selftests/powerpc/dscr/settings
+ create mode 100644 tools/testing/selftests/powerpc/lib/settings
+ create mode 100644 tools/testing/selftests/powerpc/math/settings
+ create mode 100644 tools/testing/selftests/powerpc/mce/settings
+ create mode 100644 tools/testing/selftests/powerpc/mm/settings
+ create mode 100644 tools/testing/selftests/powerpc/nx-gzip/settings
+ create mode 100644 tools/testing/selftests/powerpc/papr_attributes/settings
+ create mode 100644 tools/testing/selftests/powerpc/papr_sysparm/settings
+ create mode 100644 tools/testing/selftests/powerpc/papr_vpd/settings
+ create mode 100644 tools/testing/selftests/powerpc/pmu/settings
+ create mode 100644 tools/testing/selftests/powerpc/primitives/settings
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/settings
+ create mode 100644 tools/testing/selftests/powerpc/scripts/settings
+ create mode 100644 tools/testing/selftests/powerpc/security/settings
+ create mode 100644 tools/testing/selftests/powerpc/stringloops/settings
+ create mode 100644 tools/testing/selftests/powerpc/switch_endian/settings
+ create mode 100644 tools/testing/selftests/powerpc/syscalls/settings
+ create mode 100644 tools/testing/selftests/powerpc/vphn/settings
 
-[1]: https://lore.kernel.org/linuxppc-dev/20240823112134.1314561-2-mpe@elle=
-rman.id.au/
+diff --git a/tools/testing/selftests/powerpc/alignment/settings b/tools/testing/selftests/powerpc/alignment/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/alignment/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/cache_shape/settings b/tools/testing/selftests/powerpc/cache_shape/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/cache_shape/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/copyloops/settings b/tools/testing/selftests/powerpc/copyloops/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/dexcr/settings b/tools/testing/selftests/powerpc/dexcr/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/dexcr/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/dscr/settings b/tools/testing/selftests/powerpc/dscr/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/dscr/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/lib/settings b/tools/testing/selftests/powerpc/lib/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/lib/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/math/settings b/tools/testing/selftests/powerpc/math/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/math/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/mce/settings b/tools/testing/selftests/powerpc/mce/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mce/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/mm/settings b/tools/testing/selftests/powerpc/mm/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/nx-gzip/settings b/tools/testing/selftests/powerpc/nx-gzip/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/nx-gzip/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/papr_attributes/settings b/tools/testing/selftests/powerpc/papr_attributes/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/papr_attributes/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/papr_sysparm/settings b/tools/testing/selftests/powerpc/papr_sysparm/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/papr_sysparm/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/papr_vpd/settings b/tools/testing/selftests/powerpc/papr_vpd/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/papr_vpd/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/pmu/settings b/tools/testing/selftests/powerpc/pmu/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/primitives/settings b/tools/testing/selftests/powerpc/primitives/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/primitives/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/ptrace/settings b/tools/testing/selftests/powerpc/ptrace/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/ptrace/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/scripts/settings b/tools/testing/selftests/powerpc/scripts/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/scripts/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/security/settings b/tools/testing/selftests/powerpc/security/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/security/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/stringloops/settings b/tools/testing/selftests/powerpc/stringloops/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/stringloops/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/switch_endian/settings b/tools/testing/selftests/powerpc/switch_endian/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/switch_endian/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/syscalls/settings b/tools/testing/selftests/powerpc/syscalls/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/syscalls/settings
+@@ -0,0 +1 @@
++timeout=130
+diff --git a/tools/testing/selftests/powerpc/vphn/settings b/tools/testing/selftests/powerpc/vphn/settings
+new file mode 100644
+index 000000000000..2e8566183318
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/vphn/settings
+@@ -0,0 +1 @@
++timeout=130
+-- 
+2.47.0
 
-cheers
 
