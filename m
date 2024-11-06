@@ -1,55 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-2942-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2943-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C10A0D59F75
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2024 21:55:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75687D59F75
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2024 22:20:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XkJsq0L93z2yRZ;
-	Thu,  7 Nov 2024 08:55:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.17.20
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730921773;
-	cv=none; b=g59w1AQ0KpiKZg9mhMmGYwgSwGr7XaeFbv09I/1/y+ITSBFkiNcqWaFW7SU7YA4xgzUQ4xp0lkvrVTKcRQxGuSwVkHpYpn4vxQuBRFaSoxt6BpvPt7d2sWhE5dINdDJWQ4avrYs16HDVcdZgdZnrUtQVG6ZRqVLbk1QLVR+EH7R+dX5T8NV66kWNygpQQdMJNF9Rs2yoGN6/VI40aUJtPR9pMAVXvPvAJeNBF0YNKEC5G9EtFroTyKN2FC01I1OK6KpV5MLoaaGBf7G/uiFCu2DS5zJYZdIYxSS00k6AgsNxsT9EMOgwbx+gT/iMJbUYxoZADE0ddlduLn7V9qBgJQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XkKQB6cKPz2y8k;
+	Thu,  7 Nov 2024 09:20:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730931602;
+	cv=none; b=UBT82PxpKsY3paq7QhN3r3BSISmrk3eQsjjsP4PQnG00ktVJf0KWjfaAkYOF/pJKgJDxB1VeBIZNCAg09ApVL9zrYs7snq3cka7mVqpUydPJT2Fqo7DmBKTCwUuyj3UAcm+ySTtNKYrjHPm18XguPg0hi47daOv5JCuVhL4iczHRiI5ES6dyt/uS6zQnUvilOW8Kard5NHG2wRyvD5UO0DE4h2L2/psp+cfmFC2mAqBNxW/SZ6RGtZuxBPim1bRz3w8oPjSAk4WZWDyRkkFJLNfC3nsDOdTrH9y5gFp3i9vKvd+yLuapXdkcJceuSTC3vc1KTMn/s8KCvJ6vnTAn3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730921773; c=relaxed/relaxed;
-	bh=KPIsoyhsws8Agp7wgFRMdaTpDymEbvSb3Owgwg6CKMI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VwrUNUiEEdwhS5DmXsWQtCmdwKWMXs46jacTizsKVYE1AFM22jOQh7V6iSkkxaIIbFwq/9okntfrIuO7+GFMwoPYgUBj3e3mgMB0yrdFE1XhcA2LswWtYZl0hcCrUnOkL477w2FBgw3gsKP1waeEGDV8dsnHiT/AsUa5aUYFS2Zv+aXWy2uH2/oy1PcwmEK3GD4v1tNiFtSf8bwGcI7Lc5h4PTvBp0NsHV13Dzd33OuTUsshhJScV3LUMscfegBqvE4SEdjFqT/1mfpDeWvd55c7/08UUVgRd0zFVvuvqdiO0Hzw6BbIEEAcbhT+PuxKFPBRKAN2hGnU540kKGAY6w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=w_armin@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=JdOSSW5h; dkim-atps=neutral; spf=pass (client-ip=212.227.17.20; helo=mout.gmx.net; envelope-from=w_armin@gmx.de; receiver=lists.ozlabs.org) smtp.mailfrom=gmx.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
+	t=1730931602; c=relaxed/relaxed;
+	bh=VIfMB0/RRt0Ar1Plzd0i42wcI4LGr6zVtLHR+97rgBY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=AQOYCsyZTjDqbqlLN/40qhpgZFSTI/XcdnvULfSBr/+Vep7gJgj9cVyz4UPrOuKE6Bx1rZieFM0weZs3ud+zWRlAMpo1Hv0f5wkjVCO9r3U7Eb/fkhupaTpomSQm+dV4wQVVI/Jgcr5pxl+0qm70d0goL6LYXeVXW66wP3vNf17N6qhfZI3JNTMM01sN0sZZ2gRBa6H+zYe0hD0+dtQ9CEB9AAMEYieyyNLkJIET/aP8fQOLSqRW5sCKUS72Rvu728OTPbTp8tCO49kkjwivTvkC9Qaq1cXy8DU29vx9yl0z3hKsNw4URYA+QA6WzfP0Z0n7BgkDDNdpTB9MN9lqww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=KlQB6oDy; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=mmaurer@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=w_armin@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=JdOSSW5h;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=KlQB6oDy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.17.20; helo=mout.gmx.net; envelope-from=w_armin@gmx.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 373 seconds by postgrey-1.37 at boromir; Thu, 07 Nov 2024 06:36:07 AEDT
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=mmaurer@google.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkFn31Ybzz3bbn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2024 06:36:06 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
-	s=s31663417; t=1730921755; x=1731526555; i=w_armin@gmx.de;
-	bh=KPIsoyhsws8Agp7wgFRMdaTpDymEbvSb3Owgwg6CKMI=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=JdOSSW5h0qNKRn4UCW3H04dYzy+ISCrSleRHZl9kCGPxRCSDXMHMPIc+oYDMU4T/
-	 1ZxHPsHfXDKcS8wpVlHuIi1ED5R/CHyK/kwhcIEqCOXWm2E0VlgSCvpLsG3GTU5lV
-	 yCVrQe9Ks3R7+YDkMUA95gsJj2tudke1Uwz2uRKPkkulpeaEnV5Z2tx5ppVPEz5rR
-	 cx+/Af0uOVCTArCJQYVMHQVYMLOScb029xYwMxbA/Savg6I9rsblgjhLyhpY7lVPE
-	 I8NxpnRNLE6xOLzaA7n/b3sLJkOjuy38wbudvUXXX3S2cX6vO+Fkk2hgDhiBoRggT
-	 Eoy4ZNmP0iU6f9NWbA==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [141.30.226.129] ([141.30.226.129]) by mail.gmx.net (mrgmx105
- [212.227.17.168]) with ESMTPSA (Nemesis) id 1MG9kC-1t3KhK2USC-003gaQ; Wed, 06
- Nov 2024 20:27:54 +0100
-Message-ID: <da774e71-39f3-43ec-a366-c8c893132447@gmx.de>
-Date: Wed, 6 Nov 2024 20:27:44 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkKQ85F2hz2xnS
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2024 09:19:59 +1100 (AEDT)
+Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-5c934b2c991so7456a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Nov 2024 14:19:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1730931591; x=1731536391; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=VIfMB0/RRt0Ar1Plzd0i42wcI4LGr6zVtLHR+97rgBY=;
+        b=KlQB6oDyGcHET3ejXt0jPIEoG2eJSZyqEhLZgjcbRZ94VX/FraYA8qPZdmaHVazKDY
+         zokl2FWPOgHBhVSHYyIQYctsmN4pIr5UL3GcVofXQ3KZa1IB9WFNUtyUgJ0ACy1lyaag
+         4O0y/HQBKoaHNniaRS0/McOO7GzDy1oiRs7V0E43zXNHmQKx1XCZ7qUtnHJzILRP4Wd5
+         xgLvLA+gMtw50hfB71F63nkZ4T4B21muYAKmzmdgTNtPDxvMjZrqVEFkK8WADXhpi0CZ
+         hryGauIkre6ZL1eLWN6kFg7uI27E7iJPz+ZT8w2Mow8uG2+uw+x+62tEUl4+uq+3axV4
+         b6eA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1730931591; x=1731536391;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=VIfMB0/RRt0Ar1Plzd0i42wcI4LGr6zVtLHR+97rgBY=;
+        b=Bc2SFANNUjFsySTc1elwj+iJBqRJ+DX4lT5ixAwcvWaDRtewkKYgK2Gfxqjhl5lz/c
+         vn8jwE+Ce2NYEJcwl2o3+CRrmLuIoHl7pViOGIqcG93wJ/A6zmyZ6QJdFAojOvikgQ9M
+         Vev5IHcbJKo2+uWoE7ku/xASkjffrSRzNS45eNzaqr2YyM6JaS5OH0saQ8KtgDEbz5Mj
+         RiiZgTdX+VwkLIpXuIpmvronXA9WpIOGz7ow+4GTvJYBCUHex/KfKQbyiFkEQbpEF8Mk
+         7oQd2Yx5uc6GE/XO86pzTq47LF7IGLRNsHgE/L6sSnnZybsbcIy2j5bF6aieclSkq0Lc
+         p39w==
+X-Forwarded-Encrypted: i=1; AJvYcCVlme+VgLg2waCtQTBK8DtRK14QuQGUBEnzlTTE5fQlJi4uhQIQ577IiofAGD//S8IcuCGWBkWpgHvQpro=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yymq0i5aeqn3ktIlWFdQWhJfgK6HIzYNln0Hp8KppVI6zlhBEAd
+	TX284/f4w1VG+oLambNAtzGm5iRa+WMDh8NTBZasIfEjxwKA6OezaT9eAj7V4r4ROAfG4Mnz2e6
+	T4AvWr9pZ7PsgwTEklPcgIFAW9i509D/z0Dhg
+X-Gm-Gg: ASbGncsf1mW3+eGMOFFhLOhw9yaQ3laKZ+Kdh8DaEwVlDnIWXZuc2nwvasrhMrG5ktd
+	RCsRG5g4L0BsLU71q5SYETvWdKXBYpxzckaN072Tz0BPueT+lLm+mY682zo2n
+X-Google-Smtp-Source: AGHT+IHr43cQPFdqXPCZMuhW0YfDPZKYdGnYJyq09Flo3eqNIAHnldTJTztppmJyfXcIKbSiu12OxTpcgO6RCsjM9mo=
+X-Received: by 2002:a50:8d09:0:b0:5cb:6b7e:9634 with SMTP id
+ 4fb4d7f45d1cf-5cefbc29fcfmr233654a12.2.1730931590492; Wed, 06 Nov 2024
+ 14:19:50 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,144 +76,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 02/10] sysfs: introduce callback
- attribute_group::bin_size
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas
- <bhelgaas@google.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
- Davidlohr Bueso <dave@stgolabs.net>,
- Jonathan Cameron <jonathan.cameron@huawei.com>,
- Dave Jiang <dave.jiang@intel.com>,
- Alison Schofield <alison.schofield@intel.com>,
- Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
- Alex Deucher <alexander.deucher@amd.com>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
- Xinhui Pan <Xinhui.Pan@amd.com>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>,
- Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
- Tudor Ambarus <tudor.ambarus@linaro.org>,
- Pratyush Yadav <pratyush@kernel.org>, Michael Walle <mwalle@kernel.org>,
- Miquel Raynal <miquel.raynal@bootlin.com>,
- Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>,
- Naveen Krishna Chatradhi <naveenkrishna.chatradhi@amd.com>,
- Carlos Bilbao <carlos.bilbao.osdev@gmail.com>,
- Hans de Goede <hdegoede@redhat.com>,
- =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
- "David E. Box" <david.e.box@linux.intel.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Richard Henderson <richard.henderson@linaro.org>,
- Matt Turner <mattst88@gmail.com>, Frederic Barrat <fbarrat@linux.ibm.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Logan Gunthorpe <logang@deltatee.com>, "K. Y. Srinivasan"
- <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
- Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>
-Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-cxl@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
- linux-rdma@vger.kernel.org, linux-mtd@lists.infradead.org,
- platform-driver-x86@vger.kernel.org, linux-scsi@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org
-References: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
- <20241103-sysfs-const-bin_attr-v2-2-71110628844c@weissschuh.net>
-Content-Language: en-US
-From: Armin Wolf <W_Armin@gmx.de>
-In-Reply-To: <20241103-sysfs-const-bin_attr-v2-2-71110628844c@weissschuh.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:44YqvEvciDnAZyVj6z6AwMwirIfHL0Pzp3XFOKxQKNiQ7tHWySC
- RxktlrVaqsSUg5C4VvLrzKpoqlhjiHyHgejaek9khmsio9KiFm5QCv2KXv29eAcNsGR1hIr
- /Q5ILnqj229v3epEt6qEr+soHYvezbTam1hICVuVYB5Diy3yXhaNodiu0nfX7EP/suGwHuw
- I6p5H1JUB0YrJzn4YZJQA==
-UI-OutboundReport: notjunk:1;M01:P0:nUIEbYCZKow=;cbF5RAWkqu0FgA7YnwKsrmL3Wq2
- PARPSQ5XdmVH8D13YZ685Aanc0Pp8IBdYuvHrNEJAjDVuoD8bzJeoCw7gES8vQG+5xNVbjUtn
- N16wtsyuJ5hKRvF+JDUxS7DCYXZHujiR2XZ2Wj71Z7GKTZyOFflKKFllGtt7yPStbgKwK8y1e
- kKuxhrrW7g+vGQOqlHUdUFfCqpxUIunaaFrtLf4zKFHLiWURsXDX+/dAubCIi5bnW0tg0q6Mr
- 775Y4mqf02TSWsYjlSpnTSDxNrA22dtZZb7dkvaMkNG/zRSm62KYyFq9v8tr0XR0Zt3gfuGB5
- x41bjuaNWMqrDte/paiVIp9Njn5eSwZzkVzkPOysMwdmCuixPOEBNjfX0bOLZSbfJN3meBe0Z
- vY/Tx6MT/Ruf7F6wNn5CHWqFOciM7Tz58wr+0jc0eNT/kbqfbsgVvqXL3zsUBYpMDuIiA2iIN
- pCBP9Emn4mFDO+k5qI1XYImVaHpF7dwlyKoV7V8DrJ6IVCih4adw4mp0ZC/Istl0pX60MK6a9
- r6fXfr26bRIW7zIqnJcIKqYqX5y0944q8sdsz4O/bphvSpCC6g6SFCvxy06Co4wSZHn5Cj1bM
- pZPpdLXMFI1QtplFXJ9YZCUGmFujWr5gVSKr8yoX5KkiodYq+fbHYF+zppibExYsBEnJAhHvP
- gQuIyYBQCNMcITrdVKzhU4O3kOqDx3yxXoyA2MLBJ0xeWrokgtnYvFA7zCGR/8MoWfPxut96o
- OxJUQs7X1m2G517vWfvXMZaQ1WY0jRpxr+kvAyMP4+JTacbeO/sOccg8HfF/+eOkIWjQIYLk3
- QvzVfatsuxFXp1FVTcN5Vn6g==
-
-Am 03.11.24 um 18:03 schrieb Thomas Wei=C3=9Fschuh:
-
-> Several drivers need to dynamically calculate the size of an binary
-> attribute. Currently this is done by assigning attr->size from the
-> is_bin_visible() callback.
-
-Hi,
-
-i really like your idea of introducing this new callback, it will be very
-useful for the wmi-bmof driver :).
-
-Thanks,
-Armin Wolf
+References: <20241030-extended-modversions-v8-0-93acdef62ce8@google.com>
+ <20241030-extended-modversions-v8-2-93acdef62ce8@google.com>
+ <ZyNr--iMz_6Fj4yq@bombadil.infradead.org> <CAGSQo00F07viDHQkwBS8_1-THxJHYwx9VkS=TXC5rz3i8zSZSw@mail.gmail.com>
+ <ZyVDv0mTm3Bgh1BR@bombadil.infradead.org> <CAGSQo02uDZ5QoRMPOn=3Fa9g5d+VPfKW-vmSsS2H+pOdPYCBFw@mail.gmail.com>
+ <ZyrRYUD0K1f7SwWg@bombadil.infradead.org>
+In-Reply-To: <ZyrRYUD0K1f7SwWg@bombadil.infradead.org>
+From: Matthew Maurer <mmaurer@google.com>
+Date: Wed, 6 Nov 2024 14:19:38 -0800
+Message-ID: <CAGSQo03+1WjUVj-iQ6zdOST6z=p+=OqS2Xk_c4ZUdHOsxa7g2w@mail.gmail.com>
+Subject: Re: [PATCH v8 2/3] modpost: Produce extended MODVERSIONS information
+To: Luis Chamberlain <mcgrof@kernel.org>
+Cc: Lucas De Marchi <lucas.demarchi@intel.com>, Lucas De Marchi <lucas.de.marchi@gmail.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Petr Pavlu <petr.pavlu@suse.com>, 
+	Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez <da.gomez@samsung.com>, 
+	Masahiro Yamada <masahiroy@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
+	Nicolas Schier <nicolas@fjasle.eu>, Miguel Ojeda <ojeda@kernel.org>, 
+	Alex Gaynor <alex.gaynor@gmail.com>, Boqun Feng <boqun.feng@gmail.com>, 
+	Gary Guo <gary@garyguo.net>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <benno.lossin@proton.me>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, linux-modules@vger.kernel.org, 
+	linux-kbuild@vger.kernel.org, rust-for-linux@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
 >
-> This has drawbacks:
-> * It is not documented.
-> * A single attribute can be instantiated multiple times, overwriting the
->    shared size field.
-> * It prevents the structure to be moved to read-only memory.
+> > If booted against an old kernel, it will
+> > behave as though there is no modversions information.
 >
-> Introduce a new dedicated callback to calculate the size of the
-> attribute.
+> Huh? This I don't get. If you have the new libkmod and boot
+> an old kernel, that should just not break becauase well, long
+> symbols were not ever supported properly anyway, so no regression.
+
+Specifically, if you set NO_BASIC_MODVERSIONS, build a module, and
+then load said module with a kernel *before* EXTENDED_MODVERSIONS
+existed, it will see no modversion info on the module to check. This
+will be true regardless of symbol length.
+
 >
-> Signed-off-by: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
-> ---
->   fs/sysfs/group.c      | 2 ++
->   include/linux/sysfs.h | 8 ++++++++
->   2 files changed, 10 insertions(+)
+> I'm not quite sure I understood your last comment here though,
+> can you clarify what you meant?
 >
-> diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-> index 45b2e92941da1f49dcc71af3781317c61480c956..8b01a7eda5fb3239e1383724=
-17d01967c7a3f122 100644
-> --- a/fs/sysfs/group.c
-> +++ b/fs/sysfs/group.c
-> @@ -98,6 +98,8 @@ static int create_files(struct kernfs_node *parent, st=
-ruct kobject *kobj,
->   				if (!mode)
->   					continue;
->   			}
-> +			if (grp->bin_size)
-> +				size =3D grp->bin_size(kobj, *bin_attr, i);
+> Anyway, so now that this is all cleared up, the next question I have
+> is, let's compare a NO_BASIC_MODVERSIONS world now, given that the
+> userspace requirements aren't large at all, what actual benefits does
+> using this new extended mod versions have? Why wouldn't a distro end
+> up preferring this for say a future release for all modules?
+
+I think a distro will end up preferring using this for all modules,
+but was intending to put both in for a transitional period until the
+new format was more accepted.
+
 >
->   			WARN(mode & ~(SYSFS_PREALLOC | 0664),
->   			     "Attribute %s: Invalid permissions 0%o\n",
-> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-> index c4e64dc112063f7cb89bf66059d0338716089e87..4746cccb95898b24df6f53de=
-9421ea7649b5568f 100644
-> --- a/include/linux/sysfs.h
-> +++ b/include/linux/sysfs.h
-> @@ -87,6 +87,11 @@ do {							\
->    *		SYSFS_GROUP_VISIBLE() when assigning this callback to
->    *		specify separate _group_visible() and _attr_visible()
->    *		handlers.
-> + * @bin_size:
-> + *		Optional: Function to return the size of a binary attribute
-> + *		of the group. Will be called repeatedly for each binary
-> + *		attribute in the group. Overwrites the size field embedded
-> + *		inside the attribute itself.
->    * @attrs:	Pointer to NULL terminated list of attributes.
->    * @bin_attrs:	Pointer to NULL terminated list of binary attributes.
->    *		Either attrs or bin_attrs or both must be provided.
-> @@ -97,6 +102,9 @@ struct attribute_group {
->   					      struct attribute *, int);
->   	umode_t			(*is_bin_visible)(struct kobject *,
->   						  struct bin_attribute *, int);
-> +	size_t			(*bin_size)(struct kobject *,
-> +					    const struct bin_attribute *,
-> +					    int);
->   	struct attribute	**attrs;
->   	struct bin_attribute	**bin_attrs;
->   };
->
+>   Luis
 
