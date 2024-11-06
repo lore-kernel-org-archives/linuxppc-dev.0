@@ -1,79 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-2906-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2907-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5432CD44D40
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2024 10:09:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48ED1D44D58
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Nov 2024 12:16:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xk1Bw4f6Lz2yN8;
-	Wed,  6 Nov 2024 21:09:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730887752;
-	cv=none; b=QaBC70FQdBWk4GT+Loge55NKs6CTdiQeD7G68htaZof5pemgeSNxdWrCy2HS5YJL6Hm8lkoHCwl/i21zUGQ6S41Ncj0TJOfs9YT7Pw9ViQKt5QUjhGbkF6bPwU1o+EezMsAaeQbDwMEQsdLrTjQAW1S92CwNC8mcUSNRTVSA3J3Aq53LVVSyPQvRmCg9bvE92JCW+JiytJRzo2pbyJEUv1mRGNC7tnNuGDQZhoEbv6HkfEd7VYEuxJ28KGAEogFqPVn+Ze42INgbN5TF2aYR+UBG58b0s9SkDaJ/21lhcQ7UnV53R3UtK90lfy/1GkYTm83eIReapRRcmSkqrLubkQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xk41Q3TGlz2yTy;
+	Wed,  6 Nov 2024 23:16:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730895370;
+	cv=none; b=cx1C3FlmtF5DkTBIDwZlddWDk5PmtmI3tc1IM/krn5Ljj/EaJfpm+naGeuzOwnMV/IwB5gTHYKjvdNbNPWlHpEfYwgEl1exaHVLyvqrlWg8y+MjIBsWWhAgYCAO2tN3ajcwKpg8teseUR5Bi9yLr/ov9aSisoeGUHjSddFvPxJaSxQAeoInpxUQqSr+jg1LF6d/tjL4E14Yd6VwfyuiJvxdyyUcMANMuhRC3fAET6C4F1Rf5uE8kA4r3WNqfzE8zWPKO6Ht1aYPwWRwUjnh3Ue+ing35vINo3RaiADfOTpqAR5ZGITOdMqteP43h4rJvH8zi7ZFZoXCvV29yuQBUnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730887752; c=relaxed/relaxed;
-	bh=uzAxsW9qe7LGL5fm8R1C+c+yvZP1tPYHwYmHN3cXmH8=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=V4MObewe2Fjglr1zO8etqV3Iv3otNkP1mtCnwg8xS5YGqeOiMa2kjqe8Iw6gFkRuzeqE0hQzsbPPzEuws0a8wriq1PR29S0M9P/q8dZHu+Skzs020RFLhRYEMoTXgUCsWCn6vaOCOe00vn2L+5LQdygyS/nMA24ySL2DajOGa9S6rdj3qYUXDDNqpunC2tvSGLJf6iuEygC4TZE0iK09nsFAVT8X86qC45QYKczgLkCovclx41D7mNnOdmARh3GrXTKSPr9qDg1NY5D0WoIL9h/yhcM2OVTMxX/QEFy70p34x+mXYB/yyredMO+vgJ3P1mt6nVi2MetIvEU+ILIsCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KAlykOW8; dkim-atps=neutral; spf=none (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
+	t=1730895370; c=relaxed/relaxed;
+	bh=8ohwiTc+yZhDyRvRbtXG6pJM+owozZa197xSwSi956s=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=nwnAsKRV2+on8ApPfnj4ehYoHX/3LAxgP6baqiObTkciU5xAcOMD/Bcw5tUE7NE42gTqgkkL7ylPI8d4Uf2l5/14Rl3vgQsNzRDcWqRwqgBrhGrQDOId+r47h21ogEXaBwuDJ3xMVzpKlPBqDDsPflUtzk+MZvFrPNyCMuLhQCeE8Exd/VQIMOTv7A4VgsZlZ9ISKQuzdzApOZEwpu8BweJWhRGeyfe4NB2ihMq0ddE2WgFXQecLds+gotIhenB153TGPPFK9HsEUu1Rbw//RmJqWiKQe7V1TSzSOFWUZ9KpE5bZnsAtgQYv0Xf7yRK/S5lzREaxCXreJcJfPSrJQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pLpXnFk/; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hNLG7Mek; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pLpXnFk/; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hNLG7Mek; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KAlykOW8;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pLpXnFk/;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hNLG7Mek;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=pLpXnFk/;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hNLG7Mek;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 332 seconds by postgrey-1.37 at boromir; Wed, 06 Nov 2024 23:16:05 AEDT
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xk1Bv0tFVz2y89
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2024 21:09:10 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4A69eNHG028661;
-	Wed, 6 Nov 2024 10:09:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=uzAxsW
-	9qe7LGL5fm8R1C+c+yvZP1tPYHwYmHN3cXmH8=; b=KAlykOW8xJAEvp+Sz+CbwW
-	D+g+I2CeHXH85klys6MQEp0WyOWAyQw4oo4LOjZ+Up+w7YKOnGCj6XBmopj/UaDV
-	wCUV2XDj3N3ATicul0IWw5m+HesOYD4Af35udkWGna57NTOoVDOREBOKfHrUHVqL
-	1skxUawCkIu5O/wIViL4BRGc9knSjQYvjkYU7c5Plnespaew5rpocl8E/e5TeaRO
-	6E4mQyPZOr2nAUOBBeZzc8sWOAIhTjA8/Gmyxf3fRhIy9urWNxX7tdYjMjyFCBsf
-	MmrMoNLOyTgI2s2o9w1dNNDFVeLM7zO+yRu2wuKlP9vnA7kvPX+iVvlvPAWpecSQ
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42r61a03d9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 Nov 2024 10:09:01 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4A6A91KX019771;
-	Wed, 6 Nov 2024 10:09:01 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42r61a03d4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 Nov 2024 10:09:01 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4A64C8ux024707;
-	Wed, 6 Nov 2024 09:35:24 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 42nxds5xqs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 06 Nov 2024 09:35:24 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4A69ZLY949545682
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 6 Nov 2024 09:35:21 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1620420043;
-	Wed,  6 Nov 2024 09:35:21 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3147920040;
-	Wed,  6 Nov 2024 09:35:12 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.61.245.90])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed,  6 Nov 2024 09:35:11 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xk41K4S3wz2yGM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Nov 2024 23:16:05 +1100 (AEDT)
+Received: from kitsune.suse.cz (unknown [10.100.12.127])
+	by smtp-out1.suse.de (Postfix) with ESMTP id B212D21CB9;
+	Wed,  6 Nov 2024 12:10:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1730895022; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8ohwiTc+yZhDyRvRbtXG6pJM+owozZa197xSwSi956s=;
+	b=pLpXnFk/ycD+ULfoIakRcKlvXI5oUXDANOX4VJs3LOyoEWXt2wCuNjXLXwEs0fYddQUEcm
+	kVFqrE/cm1N4XnPWdKHxXzbUFmdSxItvKEx8psbvDrxsug35o0yPtAw+o2X2MAdu1mQGuL
+	3or5unDeqOGozBmIXbB0W4o4x3WxAFw=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1730895022;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8ohwiTc+yZhDyRvRbtXG6pJM+owozZa197xSwSi956s=;
+	b=hNLG7MekLxD2oSy9GQ81JHS6Syztv0ET2URzJ2oIrG4qJ9W8/DIHAItGY+v0gWuZ2CsF8Y
+	IP/1fWptmtgTdGBg==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1730895022; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8ohwiTc+yZhDyRvRbtXG6pJM+owozZa197xSwSi956s=;
+	b=pLpXnFk/ycD+ULfoIakRcKlvXI5oUXDANOX4VJs3LOyoEWXt2wCuNjXLXwEs0fYddQUEcm
+	kVFqrE/cm1N4XnPWdKHxXzbUFmdSxItvKEx8psbvDrxsug35o0yPtAw+o2X2MAdu1mQGuL
+	3or5unDeqOGozBmIXbB0W4o4x3WxAFw=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1730895022;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8ohwiTc+yZhDyRvRbtXG6pJM+owozZa197xSwSi956s=;
+	b=hNLG7MekLxD2oSy9GQ81JHS6Syztv0ET2URzJ2oIrG4qJ9W8/DIHAItGY+v0gWuZ2CsF8Y
+	IP/1fWptmtgTdGBg==
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michal Suchanek <msuchanek@suse.de>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Danny Tsen <dtsen@linux.ibm.com>,
+	linux-crypto@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Nicolai Stange <nstange@suse.com>
+Subject: [PATCH] aes-gcm-p10: Use the correct bit to test for P10
+Date: Wed,  6 Nov 2024 13:09:33 +0100
+Message-ID: <20241106121019.25629-1-msuchanek@suse.de>
+X-Mailer: git-send-email 2.46.1
+In-Reply-To: <20240923133040.4630-3-dtsen@linux.ibm.com>
+References: <20240923133040.4630-3-dtsen@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,203 +105,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3818.100.11.1.3\))
-Subject: Re: [PATCH] tools/perf/tests/expr: Make the system_tsc_freq test only
- for intel
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <CAP-5=fXCYURva6Q8ktRVmnf2QCcsr-E3fPn327k0JRCw_9fn3A@mail.gmail.com>
-Date: Wed, 6 Nov 2024 15:04:57 +0530
-Cc: Namhyung Kim <namhyung@kernel.org>, James Clark <james.clark@linaro.org>,
-        tmricht@linux.ibm.com, acme@kernel.org, jolsa@kernel.org,
-        adrian.hunter@intel.com, linux-perf-users@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, akanksha@linux.ibm.com,
-        maddy@linux.ibm.com, kjain@linux.ibm.com, disgoel@linux.vnet.ibm.com,
-        hbathini@linux.ibm.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <BBF1A4DC-3BD9-4377-BE2F-CBEFE55F0497@linux.vnet.ibm.com>
-References: <20241022140156.98854-1-atrajeev@linux.vnet.ibm.com>
- <ZyF2-XNUh38p_5Gg@google.com>
- <B72F330F-2A56-41B0-ABED-FCA7DC9EE711@linux.vnet.ibm.com>
- <CAP-5=fXCYURva6Q8ktRVmnf2QCcsr-E3fPn327k0JRCw_9fn3A@mail.gmail.com>
-To: Ian Rogers <irogers@google.com>
-X-Mailer: Apple Mail (2.3818.100.11.1.3)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: vCs21PnQ_Yy-cy98M-4_ISc85Rw7ajqW
-X-Proofpoint-ORIG-GUID: wh0OOK27BzqAMJwFkxzJpS0din53RmeJ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 mlxlogscore=999
- suspectscore=0 malwarescore=0 adultscore=0 clxscore=1015
- lowpriorityscore=0 spamscore=0 phishscore=0 priorityscore=1501 bulkscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2409260000 definitions=main-2411060082
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCPT_COUNT_TWELVE(0.00)[13];
+	RCVD_COUNT_ZERO(0.00)[0];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[suse.de,gondor.apana.org.au,davemloft.net,ellerman.id.au,gmail.com,csgroup.eu,kernel.org,linux.ibm.com,vger.kernel.org,suse.com];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email,suse.de:mid,suse.de:email];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com]
 
+A hwcap feature bit is passed to cpu_has_feature, resulting in testing
+for CPU_FTR_MMCRA instead of the 3.1 platform revision.
 
+Fixes: c954b252dee9 ("crypto: powerpc/p10-aes-gcm - Register modules as SIMD")
+Reported-by: Nicolai Stange <nstange@suse.com>
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+ arch/powerpc/crypto/aes-gcm-p10-glue.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> On 5 Nov 2024, at 2:14=E2=80=AFAM, Ian Rogers <irogers@google.com> =
-wrote:
->=20
-> On Sun, Nov 3, 2024 at 8:17=E2=80=AFPM Athira Rajeev
-> <atrajeev@linux.vnet.ibm.com> wrote:
->>=20
->>=20
->>=20
->>> On 30 Oct 2024, at 5:29=E2=80=AFAM, Namhyung Kim =
-<namhyung@kernel.org> wrote:
->>>=20
->>> Hello,
->>>=20
->>> On Tue, Oct 22, 2024 at 07:31:56PM +0530, Athira Rajeev wrote:
->>>> The "Simple expression parser" test fails on powerpc
->>>> as below:
->>>>=20
->>>> parsing metric: #system_tsc_freq
->>>> Unrecognized literal '#system_tsc_freq'literal: #system_tsc_freq =3D =
-nan
->>>> syntax error
->>>> FAILED tests/expr.c:247 #system_tsc_freq
->>>> ---- end(-1) ----
->>>> 7: Simple expression parser  : FAILED!
->>>>=20
->>>> In the test, system_tsc_freq is checked as below:
->>>>=20
->>>> if (is_intel)
->>>>   TEST_ASSERT_VAL("#system_tsc_freq > 0", val > 0);
->>>> else
->>>>=20
->>>> But commit 609aa2667f67 ("perf tool_pmu: Switch to standard
->>>> pmu functions and json descriptions")' changed condition in
->>>=20
->>> Probably need to put it as Fixes: tag.
->>>=20
->>>=20
->>>> tool_pmu__skip_event so that system_tsc_freq event should
->>>> only appear on x86
->>>>=20
->>>> +#if !defined(__i386__) && !defined(__x86_64__)
->>>> +       /* The system_tsc_freq event should only appear on x86. */
->>>> +       if (strcasecmp(name, "system_tsc_freq") =3D=3D 0)
->>>> +               return true;
->>>> +#endif
->>>>=20
->>>> After this commit, the testcase breaks for expr__parse of
->>>> system_tsc_freq in powerpc case. Fix the testcase to have
->>>> complete system_tsc_freq test within "is_intel" check.
->>>=20
->>> Ian, are you ok with this?
->>>=20
->>> Thanks,
->>> Namhyung
->>>=20
->>=20
->> Hi Ian
->>=20
->> If the change looks good to you, I will send a V2 with Fixes tag =
-added. Please share your review comments
->>=20
->> Hi James, Thomas
->>=20
->> Looking for help to test since in non-intel platform, this test will =
-fail without the patch
->=20
->=20
-> Hi Athira,
->=20
-> sorry for the breakage and thank you for the detailed explanation. As
-> the code will run on AMD I think your change will break that - . It is
-> probably safest to keep the ".. else { .." for this case but guard it
-> in the ifdef.
->=20
-
-Hi Ian
-
-Thanks for your comments. Does the below change looks good ?
-
-diff --git a/tools/perf/tests/expr.c b/tools/perf/tests/expr.c
-index e3aa9d4fcf3a..f5b2d96bb59b 100644
---- a/tools/perf/tests/expr.c
-+++ b/tools/perf/tests/expr.c
-@@ -74,14 +74,12 @@ static int test__expr(struct test_suite *t =
-__maybe_unused, int subtest __maybe_u
-    double val, num_cpus_online, num_cpus, num_cores, num_dies, =
-num_packages;
-    int ret;
-    struct expr_parse_ctx *ctx;
--    bool is_intel =3D false;
-    char strcmp_cpuid_buf[256];
-    struct perf_pmu *pmu =3D perf_pmus__find_core_pmu();
-    char *cpuid =3D perf_pmu__getcpuid(pmu);
-    char *escaped_cpuid1, *escaped_cpuid2;
-=20
-    TEST_ASSERT_VAL("get_cpuid", cpuid);
--    is_intel =3D strstr(cpuid, "Intel") !=3D NULL;
-=20
-    TEST_ASSERT_EQUAL("ids_union", test_ids_union(), 0);
-=20
-@@ -244,11 +242,13 @@ static int test__expr(struct test_suite *t =
-__maybe_unused, int subtest __maybe_u
-    if (num_dies) // Some platforms do not have CPU die support, for =
-example s390
-        TEST_ASSERT_VAL("#num_dies >=3D #num_packages", num_dies >=3D =
-num_packages);
-=20
-+#if defined(__i386__) && defined(__x86_64__)
-    TEST_ASSERT_VAL("#system_tsc_freq", expr__parse(&val, ctx, =
-"#system_tsc_freq") =3D=3D 0);
--    if (is_intel)
-+    if (strstr(cpuid, "Intel") !=3D NULL)
-        TEST_ASSERT_VAL("#system_tsc_freq > 0", val > 0);
-    else
-        TEST_ASSERT_VAL("#system_tsc_freq =3D=3D 0", fpclassify(val) =3D=3D=
- FP_ZERO);
-+#endif
-=20
-    /*
-     * Source count returns the number of events aggregating in a leader
-
-
-Thanks
-Athira
-> Thanks,
-> Ian
->=20
->> Thanks
->> Athira
->>=20
->>>>=20
->>>> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
->>>> ---
->>>> tools/perf/tests/expr.c | 7 +++----
->>>> 1 file changed, 3 insertions(+), 4 deletions(-)
->>>>=20
->>>> diff --git a/tools/perf/tests/expr.c b/tools/perf/tests/expr.c
->>>> index e3aa9d4fcf3a..eb3bd68fc4ce 100644
->>>> --- a/tools/perf/tests/expr.c
->>>> +++ b/tools/perf/tests/expr.c
->>>> @@ -244,11 +244,10 @@ static int test__expr(struct test_suite *t =
-__maybe_unused, int subtest __maybe_u
->>>> if (num_dies) // Some platforms do not have CPU die support, for =
-example s390
->>>> TEST_ASSERT_VAL("#num_dies >=3D #num_packages", num_dies >=3D =
-num_packages);
->>>>=20
->>>> - TEST_ASSERT_VAL("#system_tsc_freq", expr__parse(&val, ctx, =
-"#system_tsc_freq") =3D=3D 0);
->>>> - if (is_intel)
->>>> + if (is_intel) {
->>>> + TEST_ASSERT_VAL("#system_tsc_freq", expr__parse(&val, ctx, =
-"#system_tsc_freq") =3D=3D 0);
->>>> TEST_ASSERT_VAL("#system_tsc_freq > 0", val > 0);
->>>> - else
->>>> - TEST_ASSERT_VAL("#system_tsc_freq =3D=3D 0", fpclassify(val) =3D=3D=
- FP_ZERO);
->>>> + }
->>>>=20
->>>> /*
->>>> * Source count returns the number of events aggregating in a leader
->>>> --
->>>> 2.43.5
-
+diff --git a/arch/powerpc/crypto/aes-gcm-p10-glue.c b/arch/powerpc/crypto/aes-gcm-p10-glue.c
+index e52629334cf8..1f8b67775658 100644
+--- a/arch/powerpc/crypto/aes-gcm-p10-glue.c
++++ b/arch/powerpc/crypto/aes-gcm-p10-glue.c
+@@ -414,7 +414,7 @@ static int __init p10_init(void)
+ {
+ 	int ret;
+ 
+-	if (!cpu_has_feature(PPC_FEATURE2_ARCH_3_1))
++	if (!cpu_has_feature(CPU_FTR_ARCH_31))
+ 		return 0;
+ 
+ 	ret = simd_register_aeads_compat(gcm_aes_algs,
+-- 
+2.46.1
 
 
