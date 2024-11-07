@@ -1,56 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-2970-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2971-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2668DD5AE71
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2024 08:45:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C35ED5AE71
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2024 08:45:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XkbHW3jLFz3bn0;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XkbHW5BfKz3bn8;
 	Thu,  7 Nov 2024 19:45:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730969111;
-	cv=none; b=MVn4HrvG488VFH6swG29A7TgMqJydLWNfaaGk0pdaVoePMp2NoicEeBerrzPsfPiZYZiW2T/BL1Dk8E52XMlBojnkw1JTn1fZNCvpg3Ptt0HrHXYF4jsXyJl0ptq2Od2ZKkbYyGyKJ85OHEGmjnP0SCgGAEkLzTsmmzWjWWOiaZb8PgXz1cirJknrmsxFIpIeU5e9lXyBIjvCFWXL/pBT98p9QWvsva2vokjE3O5bf95l01ZqJv4CktXjJ+tlUwsUkHAnIlKf24JUEvQtMAxe9juzFHSpfRntQtRWfLVV2HY3F1Q7gMcrcrt5SiVJ/YE25uO0M1rNKQ2gwc/+goq/Q==
+	cv=none; b=iYg7yPI5Y63kpjR2qS4FxragmbmuAx8plTe8eljTfPMpuvgF7WBZS9Vtyr0AfwS3tW0YpF5qm6Ge8QYeVxym1Y17+nJmluUryVxLlbdlWlJOmdCXPteiTAmmvn7OgMxaCjB/5n5/Aty+lVCXuxWWhx4jja/2lqkjBdGy922O8wjVqxpNo5ohn1eGx+gWmMbKWlnlkewxtBWbXY+p3gJA5XbwWH5KWSwi1+l21OZQ1US2+rKV/oDAn+UHh8VAUxuJO0IK/gKnqKHi+WcM7U1OmdG6a8qlTaKZs5AL1wIXxYuw1t+mORQDkYfU9+ockjkEbKvg72COcEFND3AqyNiG8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1730969111; c=relaxed/relaxed;
-	bh=YcoNI6p0eg9WucO81EJRRVqZRfThSLzqgOfGDYEeHkk=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=Y2z238tcajWv5/8qdMpCdjFydtOoxArE+kuxWDWQ4Exv0nBpGovmWdwNjEZFZUbGea7Q+I9JUV6ugJAESV17LKBfepeRriBX2RPkgTSJm1yJMl8fW6FzN6Hi5ehggrVP6/AtyVWxs4DY8bKBi85DXdERJwxswkOI9vbpC/eAnjbulsisJqVkKumq1msrEHjxCFJ3ymkK7vZjY66iYfZv3aYW/Yx4b9fXG8F7WNcfRQ43y2cIhpMuQbjo5pEogiQAseS79lPc2POeSuAWzpvi5C+GxbzI5hCqtbMNo5Jeq8EJlFnN5UMcxP1++qP7aOciNNhVRt3FeEfCBrJ/ewTRMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PrD0Tist; dkim-atps=neutral
+	bh=xuCkB4IT45fiDSen6HBmo5m24raNgR0WbBheuYXHj48=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=dcLOoDC7Ht2oMsimE/nN7pEFsorB7C2Ivu7Twb4KyEqGSRTuKWWYDvMrKGUUbIohJ089SrPVvf93/Snr+ogkoZpRfFqzVzly5p++sGhllHytDdx4wrMJ1IQ1E68Vp3evkyEEzXZePsHrJ12xuIcKB1jqGKYA3VNsyLbby4HXOId024DLLAGrKH5kx/emupM74aWNQll0cnF93z4d1WOQjR/FX0ZhVwP7bxLZQEITCKlJwWT4yf2rgLxM/EYDqfwe4AgfLgwRk1lpjXX6o9gK6gvo1NnAsQqMMDpEfZdFA16SLISYexvlAhKP+bN5dizNZRDF5ZymGt4/c2/rkkWLnw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=C1cGx6WA; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PrD0Tist;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=C1cGx6WA;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (unknown [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkbHV3ndZz3bmH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2024 19:45:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkbHW06S1z3bmf
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2024 19:45:11 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1730969098;
-	bh=YcoNI6p0eg9WucO81EJRRVqZRfThSLzqgOfGDYEeHkk=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=PrD0Tistw/F5QPfDUOtoEoTPZ+rLT2wE11fllXX7ekT8N5ob+MUkT0YKkytTpn8Za
-	 cj34UXCrBZPPFv1QmqmrNTj0Ab1s4JbFTyqC9gblMF6MdIs/7eezeHlZL9qlm2qybk
-	 YkiLp3lKAxkX75wXy+Yba6/jvAUaYYxYh9Vf4mQ1+698KfhjEIq0Ds+WS/z2RE8O5d
-	 MhIzWfe8hu4Kd2PmaD3aCwT48m9MUgP5JARWtbsBjjwDypOTnzgz87M1BqcMPSakP5
-	 aQXBOwOUcrJy7vELn0s0vMXoU1zujFi5LohYs0/ijXsiFYjCRc2TelAIz4PBfqFo00
-	 wGLyFXOFjm+mQ==
+	s=201909; t=1730969099;
+	bh=xuCkB4IT45fiDSen6HBmo5m24raNgR0WbBheuYXHj48=;
+	h=From:To:In-Reply-To:References:Subject:Date:From;
+	b=C1cGx6WA2WXIbxxPWljmss5H/ehl5/wsZCreilGCT2r1R4zjDYFGIUR055+yop2yW
+	 hb4QjTjddYAkqDXUc9Er4C6ovWNKKgjRMWi4EAXDbxyitGBshec3/NAAvSVCJHFE/4
+	 3Z5/jcV3MCYRQ2LMRqXk/wuJKXsInjvhDkw0jvQ46kBRpny6T0iY64CQ+RG9f9ky+u
+	 X3/nWaqTzJTmz8EwOWVCkz4ZBXAvvRYb82Cxp2PrjkkjxLYLe5UJiWe2h7WD89elIh
+	 bHYWvCVxiPzxixOWE7JKfAqfz2rpA43mLB6vJBE5tyDgS7Tr6XXvF7Jeel5/BSajmP
+	 ZYWiJSmAqvOyw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XkbHF5RxMz4wxf;
-	Thu,  7 Nov 2024 19:44:57 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XkbHH3whTz4x8f;
+	Thu,  7 Nov 2024 19:44:59 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Jason@zx2c4.com
-In-Reply-To: <0557d3ec898c1d0ea2fc59fa8757618e524c5d94.1727858295.git.christophe.leroy@csgroup.eu>
-References: <0557d3ec898c1d0ea2fc59fa8757618e524c5d94.1727858295.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/2] powerpc/vdso: Add a page for non-time data
-Message-Id: <173096894627.18315.733580033753983197.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20241009051701.132282-1-mpe@ellerman.id.au>
+References: <20241009051701.132282-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64: Drop IPI_PRIORITY from asm-offsets
+Message-Id: <173096894646.18315.14561851107667021729.b4-ty@ellerman.id.au>
 Date: Thu, 07 Nov 2024 19:42:26 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,26 +66,16 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 02 Oct 2024 10:39:28 +0200, Christophe Leroy wrote:
-> The page containing VDSO time data is swapped with the one containing
-> TIME namespace data when a process uses a non-root time namespace.
-> For other data like powerpc specific data and RNG data, it means
-> tracking whether time namespace is the root one or not to know which
-> page to use.
+On Wed, 09 Oct 2024 16:17:00 +1100, Michael Ellerman wrote:
+> The last use of IPI_PRIORITY in asm was removed in commit 37f55d30df2e
+> ("KVM: PPC: Book3S HV: Convert kvmppc_read_intr to a C function").
 > 
-> Simplify the logic behind by moving time data out of first data page
-> so that the first data page which contains everything else always
-> remains the first page. Time data is in the second or third page
-> depending on selected time namespace.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/vdso: Add a page for non-time data
-      https://git.kernel.org/powerpc/c/c39b1dcf055d420a498d1047c645b776e4d1a7aa
-[2/2] powerpc/vdso: Implement __arch_get_vdso_rng_data()
-      https://git.kernel.org/powerpc/c/4e3fa1aecb2c1f128f7289272fe2947e4396f1ce
+[1/1] powerpc/64: Drop IPI_PRIORITY from asm-offsets
+      https://git.kernel.org/powerpc/c/5e296fc37e1afa3fb38b886fe2bf7737777d0f61
 
 cheers
 
