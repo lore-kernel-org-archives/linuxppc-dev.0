@@ -1,100 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-2989-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2990-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09AD8D43379
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2024 16:27:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D98C7D4337D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2024 17:10:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XknXg41Mvz3bnJ;
-	Fri,  8 Nov 2024 03:27:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730996835;
-	cv=none; b=esL8RROlmij3fi8KffY6R2ER95NCTtBHxdHlH1LmcEXj8OTrlfw4SzXpK0+GZZm1VfmJ7O/vSv3VgfSzTzJ4Ch4kCS9zdHOrNMMs55Nl/6xDs+tHnx7Ln5QvPwdM3uTX0elO+H8tRkFAozSvAFY8z7TPJsOsGYN19osLv2us2JXT7PrSVvFf6558bEC60+Yf3m6ECvf8u4gQA+BFAF1F0nVzChLSiEvUPCnQJVpp5W6LWeweVJK1F//eGIckkTV694XcMyZxJ1A8MzF3fEhUsvotrg4N4b1rj5jpd0rajjhLffoUMcvEPgS8++gmWrDbvcm+hP4IWDEe3gBbKeH22g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XkpV10S4vz3bcp;
+	Fri,  8 Nov 2024 04:10:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.178.240
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730999400;
+	cv=none; b=MPh6sBGM6yHP2/niaMOaW7nHGDZuVZWx4lB4sEZYaIXcT7pgCbIBKakNOf3TncA3UsAvNhjusD15Mx/DC9+G+BjU5Y+uB1tMm/A7gWOm/EL/AFkNehizVlh7Flrtf/BNsNwVrvRknQPRhhLZT0uFFAgvecC3QFLz64UDFRjljpEcyH+7TDLXqoDYVuC6XNNN+EAMv+rl+l9SqL88offYeXysbHVBh2k1oYtZV+lWTbGUmGRmVlJUly/5xLYn0/4eSPaBt+RwyUAMovN6mjsdXqRBOidfxIfRIUKN54NAAz+k51IR6RKPq3ZQlb6z9H66ECSrctFuwCwuh3BQ6dfcyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730996835; c=relaxed/relaxed;
-	bh=H/GsFyEdfZ1v/a1wfltSIW1+9f0RjngAROMHCtg2cAA=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=nNbUbsbWpncYl71GGggB0HD8M3+/wg0cS3x+2f+eVJ3E9odkxaQlpYt0iqeURp9uKDZpxnkGhCFEtsHaBKsHz05sRA9GOqNg/rbtzp/ZZ8AX6AfT6JQ67P65li1uPwixCOunFLmGkUKEkQa7IX9Yx4ZeRr4DN1ZpZ96AhNDzHd7ZpH/uBWjNF4+Z3EPSH/aoFvWxde4o9jP3XuYrlvUX2mHx6paOBaInTwMJEbwiKR1cIuGgDCsxIlBuRt8GDJHA/gsoUzJ/mhwvkFpsAJO1s23FbgoBZ/0c8l2Cs8jteqrEaIAZxvvBkqbbqeYcZ1QiarYFXJ2GcdA8KytejPO8wQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sgq9DuN9; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1730999400; c=relaxed/relaxed;
+	bh=/OIHtLMZkxEV/Oyp2/QAah8NX9N1TbK+edYr1szDhOY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=F09QG8beHoUni74zenQdR/VWbJo3EyX71UtBLMAsBvLyXdi2G03CIH3JPWbc48UTzzVHcKmUVe85CzuxFDiO9Rq4IYV3vJUBlyMHvf7W8buW3MZ9HCgDTvJ3GjqfhqqD99DpBPiENmKAyds5I8e6ae3C8v1kTnSEl9bRCo0ytC49MbNgt2UjZO5CP6JAlrb1Lmwxz4nIAkV+buPPjL8tb5HqIxi+WoP9nTrl1Dw2Dlb9GtqEERjFdfLiAn4DKNd1vuEvF3oGSkbLeh9WmTRRO2c4Ben4qJi2ByRf7NtWz4Ym72oNG4ZLDX+6AAXZ1MiI4qYhMcojaQLx53N3YPqjDA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bCqqahRH; dkim-atps=neutral; spf=pass (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sgq9DuN9;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=bCqqahRH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
+Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XknXf3N3wz3bnB
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2024 03:27:14 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id E2BFAA41F1A;
-	Thu,  7 Nov 2024 16:25:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B3AFC4CECC;
-	Thu,  7 Nov 2024 16:27:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1730996829;
-	bh=RaF/yzDkwC/xI3JHS3wDYezLNgto4gJR15z4QCLcIec=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=sgq9DuN999fo+gF31O1Sog3B6QwMV6OvcPe7VPqi8sJ1TCzU/W1Ez/tliuLSn6HZv
-	 H6WJr617Z9ho3vOtVhPzMb0TyqS+gb2SI7mq/C0wytQj+BYrK8SHegywRApVWEjefm
-	 VrP+Uq41/kYqyiwmALEKXPYG2sF+9dXoP558MEULT3X9CJ2qlfOgYo5XQQ/akQ/Li+
-	 8PC//m2NPppcQqPE5AwaE9VZUm8GEStHJrNdsbBXQj3zX2/Uw70Eqzdl18ZXk0ykpu
-	 Nv3hNeVLx2kThS8Iy5jvLz2TwdYaK/p8look0JzKdaIO94mqldL4oshBd2UJ53q8QV
-	 LBGXXQk7Ujmww==
-Date: Thu, 7 Nov 2024 10:27:07 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-	Davidlohr Bueso <dave@stgolabs.net>,
-	Jonathan Cameron <jonathan.cameron@huawei.com>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Alison Schofield <alison.schofield@intel.com>,
-	Vishal Verma <vishal.l.verma@intel.com>,
-	Ira Weiny <ira.weiny@intel.com>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	Christian =?utf-8?B?S8O2bmln?= <christian.koenig@amd.com>,
-	Xinhui Pan <Xinhui.Pan@amd.com>, David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
-	Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>,
-	Tudor Ambarus <tudor.ambarus@linaro.org>,
-	Pratyush Yadav <pratyush@kernel.org>,
-	Michael Walle <mwalle@kernel.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>,
-	Naveen Krishna Chatradhi <naveenkrishna.chatradhi@amd.com>,
-	Carlos Bilbao <carlos.bilbao.osdev@gmail.com>,
-	Hans de Goede <hdegoede@redhat.com>,
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	"David E. Box" <david.e.box@linux.intel.com>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Matt Turner <mattst88@gmail.com>,
-	Frederic Barrat <fbarrat@linux.ibm.com>,
-	Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
-	Logan Gunthorpe <logang@deltatee.com>,
-	"K. Y. Srinivasan" <kys@microsoft.com>,
-	Haiyang Zhang <haiyangz@microsoft.com>,
-	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-cxl@vger.kernel.org, amd-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org,
-	linux-mtd@lists.infradead.org, platform-driver-x86@vger.kernel.org,
-	linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-hyperv@vger.kernel.org
-Subject: Re: [PATCH v2 03/10] PCI/sysfs: Calculate bin_attribute size through
- bin_size()
-Message-ID: <20241107162707.GA1618544@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkpTy6kDxz3bn9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2024 04:09:57 +1100 (AEDT)
+Received: from relay1-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::221])
+	by mslow1.mail.gandi.net (Postfix) with ESMTP id C4CF4C2E59
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2024 17:03:19 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 7389124000C;
+	Thu,  7 Nov 2024 17:03:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1730998986;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/OIHtLMZkxEV/Oyp2/QAah8NX9N1TbK+edYr1szDhOY=;
+	b=bCqqahRHO3JrBHh0x5HoXxqlYj//i5bNSpDBjfSKwzFm+tGGoyHFpGD4EYGZSvuVL0ZFdv
+	YIZHrOBOznb7CJfampH2O+YsYz9n4o8YJPiN7JzEf3xEOo9TqPyRBGvkSfkIkbCLaOL75y
+	PoQYwQ/sql87eqggXFPV1XPkWqEnK5PQaF1J5EpGmbTkLSk/crJxLzHnNemtB4WREsIRMa
+	K+tJdyXshnzHykX3CmGE+kYYJUw8PkCNzjuOFGyPi3mtgpH9G/hGzbSxespwJKDf7Wocjj
+	mFl9MZ4n0C2cAWxAzNsrXYav0IP0+0YTGqRoyHBMpA54hpx9r8YSC3k29S4gBg==
+From: Maxime Chevallier <maxime.chevallier@bootlin.com>
+To: davem@davemloft.net,
+	Andrew Lunn <andrew@lunn.ch>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Heiner Kallweit <hkallweit1@gmail.com>
+Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
+	netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	thomas.petazzoni@bootlin.com,
+	Herve Codina <herve.codina@bootlin.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH net-next 2/7] net: freescale: ucc_geth: split adjust_link for phylink conversion
+Date: Thu,  7 Nov 2024 18:02:49 +0100
+Message-ID: <20241107170255.1058124-3-maxime.chevallier@bootlin.com>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241107170255.1058124-1-maxime.chevallier@bootlin.com>
+References: <20241107170255.1058124-1-maxime.chevallier@bootlin.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,91 +79,221 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20241103-sysfs-const-bin_attr-v2-3-71110628844c@weissschuh.net>
+X-GND-Sasl: maxime.chevallier@bootlin.com
 
-On Sun, Nov 03, 2024 at 05:03:32PM +0000, Thomas Weißschuh wrote:
-> Stop abusing the is_bin_visible() callback to calculate the attribute
-> size. Instead use the new, dedicated bin_size() one.
-> 
-> Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+Preparing the phylink conversion, split the adjust_link callbaclk, by
+clearly separating the mac configuration, link_up and link_down phases.
 
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
+---
+ drivers/net/ethernet/freescale/ucc_geth.c | 180 +++++++++++-----------
+ 1 file changed, 93 insertions(+), 87 deletions(-)
 
-Thanks for doing this!
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+index 80540c817c4e..6286cd185a35 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.c
++++ b/drivers/net/ethernet/freescale/ucc_geth.c
+@@ -1548,105 +1548,111 @@ static void ugeth_activate(struct ucc_geth_private *ugeth)
+ 	__netdev_watchdog_up(ugeth->ndev);
+ }
+ 
+-/* Called every time the controller might need to be made
+- * aware of new link state.  The PHY code conveys this
+- * information through variables in the ugeth structure, and this
+- * function converts those variables into the appropriate
+- * register values, and can bring down the device if needed.
+- */
+-
+-static void adjust_link(struct net_device *dev)
++static void ugeth_link_up(struct ucc_geth_private *ugeth,
++			  struct phy_device *phy,
++			  phy_interface_t interface, int speed, int duplex)
+ {
+-	struct ucc_geth_private *ugeth = netdev_priv(dev);
+-	struct ucc_geth __iomem *ug_regs;
+-	struct ucc_fast __iomem *uf_regs;
+-	struct phy_device *phydev = ugeth->phydev;
++	struct ucc_geth __iomem *ug_regs = ugeth->ug_regs;
++	struct ucc_fast __iomem *uf_regs = ugeth->uccf->uf_regs;
++	u32 tempval = in_be32(&ug_regs->maccfg2);
++	u32 upsmr = in_be32(&uf_regs->upsmr);
+ 	int new_state = 0;
+ 
+-	ug_regs = ugeth->ug_regs;
+-	uf_regs = ugeth->uccf->uf_regs;
+-
+-	if (phydev->link) {
+-		u32 tempval = in_be32(&ug_regs->maccfg2);
+-		u32 upsmr = in_be32(&uf_regs->upsmr);
+-		/* Now we make sure that we can be in full duplex mode.
+-		 * If not, we operate in half-duplex mode. */
+-		if (phydev->duplex != ugeth->oldduplex) {
+-			new_state = 1;
+-			if (!(phydev->duplex))
+-				tempval &= ~(MACCFG2_FDX);
+-			else
+-				tempval |= MACCFG2_FDX;
+-			ugeth->oldduplex = phydev->duplex;
+-		}
++	/* Now we make sure that we can be in full duplex mode.
++	 * If not, we operate in half-duplex mode.
++	 */
++	if (duplex != ugeth->oldduplex) {
++		new_state = 1;
++		if (duplex == DUPLEX_HALF)
++			tempval &= ~(MACCFG2_FDX);
++		else
++			tempval |= MACCFG2_FDX;
++		ugeth->oldduplex = duplex;
++	}
+ 
+-		if (phydev->speed != ugeth->oldspeed) {
+-			new_state = 1;
+-			switch (phydev->speed) {
+-			case SPEED_1000:
+-				tempval = ((tempval &
+-					    ~(MACCFG2_INTERFACE_MODE_MASK)) |
+-					    MACCFG2_INTERFACE_MODE_BYTE);
+-				break;
+-			case SPEED_100:
+-			case SPEED_10:
+-				tempval = ((tempval &
+-					    ~(MACCFG2_INTERFACE_MODE_MASK)) |
+-					    MACCFG2_INTERFACE_MODE_NIBBLE);
+-				/* if reduced mode, re-set UPSMR.R10M */
+-				if ((ugeth->phy_interface == PHY_INTERFACE_MODE_RMII) ||
+-				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII) ||
+-				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_ID) ||
+-				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_RXID) ||
+-				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_TXID) ||
+-				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RTBI)) {
+-					if (phydev->speed == SPEED_10)
+-						upsmr |= UCC_GETH_UPSMR_R10M;
+-					else
+-						upsmr &= ~UCC_GETH_UPSMR_R10M;
+-				}
+-				break;
+-			default:
+-				if (netif_msg_link(ugeth))
+-					pr_warn(
+-						"%s: Ack!  Speed (%d) is not 10/100/1000!",
+-						dev->name, phydev->speed);
+-				break;
++	if (speed != ugeth->oldspeed) {
++		new_state = 1;
++		switch (speed) {
++		case SPEED_1000:
++			tempval = ((tempval &
++				    ~(MACCFG2_INTERFACE_MODE_MASK)) |
++				    MACCFG2_INTERFACE_MODE_BYTE);
++			break;
++		case SPEED_100:
++		case SPEED_10:
++			tempval = ((tempval &
++				    ~(MACCFG2_INTERFACE_MODE_MASK)) |
++				    MACCFG2_INTERFACE_MODE_NIBBLE);
++			/* if reduced mode, re-set UPSMR.R10M */
++			if (interface == PHY_INTERFACE_MODE_RMII ||
++			    phy_interface_mode_is_rgmii(interface) ||
++			    interface == PHY_INTERFACE_MODE_RTBI) {
++				if (speed == SPEED_10)
++					upsmr |= UCC_GETH_UPSMR_R10M;
++				else
++					upsmr &= ~UCC_GETH_UPSMR_R10M;
+ 			}
+-			ugeth->oldspeed = phydev->speed;
++			break;
++		default:
++			if (netif_msg_link(ugeth))
++				pr_warn("%s:  Speed (%d) is not 10/100/1000!",
++					netdev_name(ugeth->ndev), speed);
++			break;
+ 		}
++		ugeth->oldspeed = speed;
++	}
+ 
+-		if (!ugeth->oldlink) {
+-			new_state = 1;
+-			ugeth->oldlink = 1;
+-		}
++	if (!ugeth->oldlink) {
++		new_state = 1;
++		ugeth->oldlink = 1;
++	}
+ 
+-		if (new_state) {
+-			/*
+-			 * To change the MAC configuration we need to disable
+-			 * the controller. To do so, we have to either grab
+-			 * ugeth->lock, which is a bad idea since 'graceful
+-			 * stop' commands might take quite a while, or we can
+-			 * quiesce driver's activity.
+-			 */
+-			ugeth_quiesce(ugeth);
+-			ugeth_disable(ugeth, COMM_DIR_RX_AND_TX);
++	if (new_state) {
++		/*
++		 * To change the MAC configuration we need to disable
++		 * the controller. To do so, we have to either grab
++		 * ugeth->lock, which is a bad idea since 'graceful
++		 * stop' commands might take quite a while, or we can
++		 * quiesce driver's activity.
++		 */
++		ugeth_quiesce(ugeth);
++		ugeth_disable(ugeth, COMM_DIR_RX_AND_TX);
+ 
+-			out_be32(&ug_regs->maccfg2, tempval);
+-			out_be32(&uf_regs->upsmr, upsmr);
++		out_be32(&ug_regs->maccfg2, tempval);
++		out_be32(&uf_regs->upsmr, upsmr);
+ 
+-			ugeth_enable(ugeth, COMM_DIR_RX_AND_TX);
+-			ugeth_activate(ugeth);
+-		}
+-	} else if (ugeth->oldlink) {
+-			new_state = 1;
+-			ugeth->oldlink = 0;
+-			ugeth->oldspeed = 0;
+-			ugeth->oldduplex = -1;
++		ugeth_enable(ugeth, COMM_DIR_RX_AND_TX);
++		ugeth_activate(ugeth);
+ 	}
+ 
+-	if (new_state && netif_msg_link(ugeth))
+-		phy_print_status(phydev);
++	if (netif_msg_link(ugeth))
++		phy_print_status(phy);
++}
++
++static void ugeth_link_down(struct ucc_geth_private *ugeth)
++{
++	ugeth->oldlink = 0;
++	ugeth->oldspeed = 0;
++	ugeth->oldduplex = -1;
++}
++
++/* Called every time the controller might need to be made
++ * aware of new link state.  The PHY code conveys this
++ * information through variables in the ugeth structure, and this
++ * function converts those variables into the appropriate
++ * register values, and can bring down the device if needed.
++ */
++
++static void adjust_link(struct net_device *dev)
++{
++	struct ucc_geth_private *ugeth = netdev_priv(dev);
++	struct phy_device *phydev = ugeth->phydev;
++
++	if (phydev->link)
++		ugeth_link_up(ugeth, phydev, phydev->interface,
++			      phydev->speed, phydev->duplex);
++	else
++		ugeth_link_down(ugeth);
+ }
+ 
+ /* Initialize TBI PHY interface for communicating with the
+-- 
+2.47.0
 
-> ---
->  drivers/pci/pci-sysfs.c | 28 ++++++++++++++++------------
->  1 file changed, 16 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-> index 5d0f4db1cab78674c5e5906f321bf7a57b742983..040f01b2b999175e8d98b05851edc078bbabbe0d 100644
-> --- a/drivers/pci/pci-sysfs.c
-> +++ b/drivers/pci/pci-sysfs.c
-> @@ -818,21 +818,20 @@ static struct bin_attribute *pci_dev_config_attrs[] = {
->  	NULL,
->  };
->  
-> -static umode_t pci_dev_config_attr_is_visible(struct kobject *kobj,
-> -					      struct bin_attribute *a, int n)
-> +static size_t pci_dev_config_attr_bin_size(struct kobject *kobj,
-> +					   const struct bin_attribute *a,
-> +					   int n)
->  {
->  	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
->  
-> -	a->size = PCI_CFG_SPACE_SIZE;
->  	if (pdev->cfg_size > PCI_CFG_SPACE_SIZE)
-> -		a->size = PCI_CFG_SPACE_EXP_SIZE;
-> -
-> -	return a->attr.mode;
-> +		return PCI_CFG_SPACE_EXP_SIZE;
-> +	return PCI_CFG_SPACE_SIZE;
->  }
->  
->  static const struct attribute_group pci_dev_config_attr_group = {
->  	.bin_attrs = pci_dev_config_attrs,
-> -	.is_bin_visible = pci_dev_config_attr_is_visible,
-> +	.bin_size = pci_dev_config_attr_bin_size,
->  };
->  
->  /*
-> @@ -1330,21 +1329,26 @@ static umode_t pci_dev_rom_attr_is_visible(struct kobject *kobj,
->  					   struct bin_attribute *a, int n)
->  {
->  	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
-> -	size_t rom_size;
->  
->  	/* If the device has a ROM, try to expose it in sysfs. */
-> -	rom_size = pci_resource_len(pdev, PCI_ROM_RESOURCE);
-> -	if (!rom_size)
-> +	if (!pci_resource_end(pdev, PCI_ROM_RESOURCE))
->  		return 0;
->  
-> -	a->size = rom_size;
-> -
->  	return a->attr.mode;
->  }
->  
-> +static size_t pci_dev_rom_attr_bin_size(struct kobject *kobj,
-> +					const struct bin_attribute *a, int n)
-> +{
-> +	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
-> +
-> +	return pci_resource_len(pdev, PCI_ROM_RESOURCE);
-> +}
-> +
->  static const struct attribute_group pci_dev_rom_attr_group = {
->  	.bin_attrs = pci_dev_rom_attrs,
->  	.is_bin_visible = pci_dev_rom_attr_is_visible,
-> +	.bin_size = pci_dev_rom_attr_bin_size,
->  };
->  
->  static ssize_t reset_store(struct device *dev, struct device_attribute *attr,
-> 
-> -- 
-> 2.47.0
-> 
 
