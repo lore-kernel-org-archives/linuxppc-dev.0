@@ -1,74 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-3008-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3009-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD200D5D67D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2024 18:00:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5874D5D67D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2024 18:04:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xkqcd1hTHz3bpn;
-	Fri,  8 Nov 2024 05:00:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4d48:ad52:32c8:5054:ff:fe00:142"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731002449;
-	cv=none; b=Cd+DGuXN90c9nC9SNT00lzsXSB0AOLQ+YDfBe8yr3C9TAoEybvLvtKRweCEqswfGJbUAlRQq48f2iDwiWJOjN9Rohz8rHxDJejoUjJs/dk8/L9kaeSWiAZJEOwOpzCTWxxfst8VfN76DID75lGcSNMoZk0LezzSSXH6JeWarMwZYuJ+A57AxryxKF8x6iy4EXvLT9RkvVh3RZGeHzNeQ1o92znVh1xditrEEKQ14HyZGz+Fgc76vG4oNoDlPmDFzwy6vEN7pwnaU50p/CUhbGzb9vfdL/ZLfLapFF9pLYG2s5HZZRMMymY5mDy/ESoFL65e3D3iYKA8IEwTWVL1E5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XkqhT26Q9z3bpx;
+	Fri,  8 Nov 2024 05:04:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::227"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731002649;
+	cv=none; b=ilNm2Wedsjt+REjDgSqv5deuTNWXv2CIj7mpIv7fRxN/glxm0OjQZh1v9P8uNVdF8vWtAyAZXLmv+O2OMf7sEqOHY/xOoRQjmzrHNquCw5MP9FDDuQcrg5cUJxUQchxIN4+UHyN70/x1nzpXRUosfmwBYx3TpqPl/9hJgh6YXsegUga1ky3GFimA/2Y6EPiu+2xciIv10ZfcRyMESk+v4jRt+iDpkePRIoulXRahmqOOA9FLCx+RaFaubzPVbHpklNGP46HeRi35WKblFiXjJFWRvWeCay9baLndL4yJqYRREvMKatfIihp4ky2NCDmNj40xaTl9cYt6h9ltPusESQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731002449; c=relaxed/relaxed;
-	bh=3ZjI5bVISFgrCE/xP6ZKnp6e6AW65IJOtxsC7dqm3II=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YBnqvbBe/OsGKxMfjXLIRJjiUJAU3emkNFhtmcck6dO5Lz5jSqWzWUwPFoq+GFWOXKSqRXFjqfimAP58SYuNh8xh05RI0LPiL5oe86z6bEQ7zNOuIGbOb8et1lR+JOUErjfgyGnsX2qqOU/mxwaFDbcRN9j/eAhObbLT0pZOULdaEnhfOqX3Au/cb5rTKJpYZF9xla7LJZWElTUryyJNC2OlKeEqtFfV22Uc+o/uJHIq4v9Sv57z4q2hVxQc+K8CBHFvXPiiqFtMyxFd867hE5VNjgAdZMAzHGfwRtoaQ5yUsdd1H76JuA24YGNHGyR44tcYV3xnGMrXo/co/mz0LA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk; dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=XLVZ4gSe; dkim-atps=neutral; spf=none (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=armlinux.org.uk
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk
+	t=1731002649; c=relaxed/relaxed;
+	bh=v9XGExYP+FD5xVE83+PPloi9X/IUrzdreygul4BmLSg=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=H7Jca0davHgJ3WTOrzlndt0HuI4MyFDA/a/ahk6ey44Go4fukC3LB3iFZU/5DBkEYe+4W0oSmR1AgmH3ghOrHEe5phmgima+vf3Miapq4tcmIzr8uLkwpz0Vv73qpt2/8+iwkVTMDqAI+YJDa4H23WJO+JWSl8u8wo3BNdDVA3CngwiCxG4acc9yzmtZdqbYKESDrP+YQy4JYnEujfneRpLDZHCHBQBbPhFItXIbom5mE6ps17PAAoLWXgl/7x8E++1+DCa2Te41bI3QWzMFt5WvcNUk3HQ78EjMz+B6wcVlRDwF1g86zt+iE/QTo0svtnvOT5mcmDxOhOZGKMuv7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=KB4eO8qI; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::227; helo=relay7-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=XLVZ4gSe;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=KB4eO8qI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org)
-X-Greylist: delayed 553 seconds by postgrey-1.37 at boromir; Fri, 08 Nov 2024 05:00:45 AEDT
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::227; helo=relay7-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 3650 seconds by postgrey-1.37 at boromir; Fri, 08 Nov 2024 05:04:07 AEDT
+Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::227])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkqcY08qzz3blc
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2024 05:00:44 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
-	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
-	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=3ZjI5bVISFgrCE/xP6ZKnp6e6AW65IJOtxsC7dqm3II=; b=XLVZ4gSeBQYGLf2fIefGLyZsDy
-	nqeGeXQpxeRgb1XHS3+SkVu8898FvRotg9X1lpbvV6SNqEC7qo9v/3uFy5IOGz5poFykhbQ1gMDHy
-	k7NTwhJwg+t0hztPbCGEA3Q27VOof4QFyh9JcCWWC1jKPkBeyoV6dZ0DFHEGgYX5msqaRADS0CbEi
-	MYna/+GKPnuA6CI/8d2P0En0pHPpQedYGEFytM08SJcRdVLRuHsE7BjdtD/h/hNH1HzuOd1W+LSAO
-	CvmAaVPrnKTgjgSgXhAYOBjihghvb5QEdKChyLgk+L+hAHWWf3XcKuHcAHbkuq3hfJYFaKdsQ5O2R
-	/xIkojSg==;
-Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:48104)
-	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <linux@armlinux.org.uk>)
-	id 1t96ez-0003aF-08;
-	Thu, 07 Nov 2024 17:51:09 +0000
-Received: from linux by shell.armlinux.org.uk with local (Exim 4.96)
-	(envelope-from <linux@shell.armlinux.org.uk>)
-	id 1t96ev-0001TM-1g;
-	Thu, 07 Nov 2024 17:51:05 +0000
-Date: Thu, 7 Nov 2024 17:51:05 +0000
-From: "Russell King (Oracle)" <linux@armlinux.org.uk>
-To: Maxime Chevallier <maxime.chevallier@bootlin.com>
-Cc: davem@davemloft.net, Andrew Lunn <andrew@lunn.ch>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Heiner Kallweit <hkallweit1@gmail.com>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, thomas.petazzoni@bootlin.com,
-	Herve Codina <herve.codina@bootlin.com>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@baylibre.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH net-next 2/7] net: freescale: ucc_geth: split adjust_link
- for phylink conversion
-Message-ID: <Zyz-CcO1inN06mtm@shell.armlinux.org.uk>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkqhR5YxTz3bps
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2024 05:04:06 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 06FB520007;
+	Thu,  7 Nov 2024 18:03:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1731002638;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=v9XGExYP+FD5xVE83+PPloi9X/IUrzdreygul4BmLSg=;
+	b=KB4eO8qIa2MRgT2At0Bdgd+UcoRM2YYL9KjNKlbF8yXXtpwRizS70pLAYRkcXi8dLVomi+
+	3omDI4Zr3vVMcPvLVcYxQ8+dMMa5t10R8cBe9Yn9E7jBEFoH+5uLrgKqxowz/g08KGIVnq
+	WG8rbEYxIS1P/nD20TGfDGuNX8ghZ4kEzMUuPhar1AIPyH5h0vEn9QTWhc5QGh3Tm+Y43M
+	qTlgd9H7dMtGCTJIYWCpnh+zxOwoQNEUmgYqOP39Zs0ojXN3ofFZ2xvMsdQQEx1Buzpq7L
+	vUrs/k/aXYhmd/k4PtLr3lhYTjmzCbSD6QJNoWPQySRXM4U1YzbaMq8WATpgeQ==
+Date: Thu, 7 Nov 2024 19:03:55 +0100
+From: Maxime Chevallier <maxime.chevallier@bootlin.com>
+To: "Russell King (Oracle)" <linux@armlinux.org.uk>
+Cc: davem@davemloft.net, Andrew Lunn <andrew@lunn.ch>, Jakub Kicinski
+ <kuba@kernel.org>, Eric Dumazet <edumazet@google.com>, Paolo Abeni
+ <pabeni@redhat.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Heiner
+ Kallweit <hkallweit1@gmail.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, thomas.petazzoni@bootlin.com, Herve Codina
+ <herve.codina@bootlin.com>, Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?=
+ <u.kleine-koenig@baylibre.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH net-next 2/7] net: freescale: ucc_geth: split
+ adjust_link for phylink conversion
+Message-ID: <20241107190355.7daafc3d@fedora.home>
+In-Reply-To: <Zyz-CcO1inN06mtm@shell.armlinux.org.uk>
 References: <20241107170255.1058124-1-maxime.chevallier@bootlin.com>
- <20241107170255.1058124-3-maxime.chevallier@bootlin.com>
+	<20241107170255.1058124-3-maxime.chevallier@bootlin.com>
+	<Zyz-CcO1inN06mtm@shell.armlinux.org.uk>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-redhat-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,24 +74,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241107170255.1058124-3-maxime.chevallier@bootlin.com>
-Sender: Russell King (Oracle) <linux@armlinux.org.uk>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-GND-Sasl: maxime.chevallier@bootlin.com
 
-On Thu, Nov 07, 2024 at 06:02:49PM +0100, Maxime Chevallier wrote:
-> Preparing the phylink conversion, split the adjust_link callbaclk, by
-> clearly separating the mac configuration, link_up and link_down phases.
+Hello Russell,
 
-I'm not entirely sure what the point of this patch is, given that in
-patch 7, all this code gets deleted, or maybe moved?
+On Thu, 7 Nov 2024 17:51:05 +0000
+"Russell King (Oracle)" <linux@armlinux.org.uk> wrote:
 
-If it's moved, it may be better in patch 7 to ensure that doesn't
-happen, and move it in a separate patch - right now patch 7 is horrible
-to review as there's no way to see what the changes are in these
-link_up()/link_down() functions.
+> On Thu, Nov 07, 2024 at 06:02:49PM +0100, Maxime Chevallier wrote:
+> > Preparing the phylink conversion, split the adjust_link callbaclk, by
+> > clearly separating the mac configuration, link_up and link_down phases.  
+> 
+> I'm not entirely sure what the point of this patch is, given that in
+> patch 7, all this code gets deleted, or maybe moved?
+> 
+> If it's moved, it may be better in patch 7 to ensure that doesn't
+> happen, and move it in a separate patch - right now patch 7 is horrible
+> to review as there's no way to see what the changes are in these
+> link_up()/link_down() functions.
 
--- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTP is here! 80Mbps down 10Mbps up. Decent connectivity at last!
+I agree that it's hard to review indeed... I followed the documented
+approach of splitting-up the adjust_link callback then performing the
+conversion, but it's true that it doesn't really make patch 7 more
+readable.
+
+I can try to move things around and make patch 7 a bit more
+straightforward.
+
+Thanks,
+
+Maxime
+
 
