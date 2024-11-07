@@ -1,72 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-2997-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-2998-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46384D4337F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2024 17:10:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3929AD5D671
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Nov 2024 17:20:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XkpV72p9Yz3bnV;
-	Fri,  8 Nov 2024 04:10:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.178.240
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730999407;
-	cv=none; b=ohxsMFdByLt3QEXtau4YcHHCfCsaaSaGWEXcXr1Frr70c7yKuLE256ZNGWpPlkqhhfe2ll+ajUVpWBBBn+oMy0HKmDexsigW+GvZtL7b8LCGoDZsBl5H/C/3tsbaTHjQTq6cVdOnaxs0z8dNXCa9404i19e24YBTWN3/lTwfgBiwXO5P01IKiTk0yeWi1ZkSeiPubuUD4cAUTyX659PW/UtNEtTyjCkqQRwDwdan3nzVFqFBomHoakbzM6LMl6/vKO3nqnRI6GPZ1c4GqToPqrjMcuiMBuHl0d9r2utzxv9DvCPAoNUctld+fWauFZUkbhSQehRo00ESmodlosispg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XkpkV41HKz3bnx;
+	Fri,  8 Nov 2024 04:20:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731000050;
+	cv=none; b=i2sBnn9SnfbxoIdzTpEwoOLeccC77HdWXD1lubT2n6QZMmFqFm6QwqN2ubChzsVzTu+FSq8cojwZsPj7hXlO7OlPbs0rgMR3n2k+zv706N/La9d2iSwv2HmxEMkhtfE7mN+1d8dCrSJXjrB+cc4HJPVcRmbmc3YVI7mYTjZEojInL5be1L4aFi1pZ0Q2xRVU0RJZaRgUq3d7iuNMf59NYkmOuBPHdtqxnBDKVVqvwNe9WIPXPKc0zloV9w749vpyEC0Qt9QvkoxFJKa3SnjFsFEzC2EtBwnSu7RPL+sb9Y/SIU6VM3GiMKJmJNnnZots+UhfN63q/kahAN9IUi2Bxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730999407; c=relaxed/relaxed;
-	bh=LcmFNs2UjHF2seWXnbhiKrx6T4lA+AWcoBvcBEDQo4w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZfeglA4ti29gbNxJIxxlOFyyBXoKqo9GG6uRgiWGJcRA5aSBNlNdRIGbUursnzRVjCZtgPAVqmZlqkNvN2rlcz+GygT0wfT7BYdva9hdyG9m4Rx8zblmKIYwJYVsDd0SfYTwZSp0Ed8uznmW4AbIHekyoAsgxNLDXuONAO4jHql1MB85SGPWiHjIHnLvmq+ixNE3kZF8I3ZL2E/i1V2hoDzql7sGnMu6vIQ+1Y+wm2BcptVd6LXpHsuE9oGhqt7kZ1PrYXOzysmfHoo7RV0jWEp7/L4aLutmcfUmmTjfifGJAJcjluae947rqF+4EAxxPDCzqv1tTZKKAsBqydIhPg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=gL7HIIkf; dkim-atps=neutral; spf=pass (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1731000050; c=relaxed/relaxed;
+	bh=1znY6XKKQK8t+pe6zGbt91oO7ilftLtE+6Za3bEgxNc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=CvT6MX6v5RoxXBe0cMI5IVfwjK9I4ohpWWSvclq9XElY9ckSM7MbmvOTvuWSBm4EOdsCao9TY98wff0taZuCRDbFmrcmpdwPy4BBKRS7Nt86S0bx0ZcuaLQlZg02abo+qj5R4TBLdMtE9EygOAoZZ6NSDrarQl2KKNOKtTiEuZPz8yQRJTMEvsXF6kN3vukSvPC217KM2I7KuFhLr0c32gb0hZEdKMJFXSCrVYYW837CjMbuGT0MDWxDLa0EBG+nMUS4keguxQD9HW5q9phuW+4Y+jZCPYedmnzCu41/1KGFbdqgwDv9U0KfXFYv5j0HSJglFCmgsmhTeWwK1zDR7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uirXLcMy; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pratyush@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=gL7HIIkf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uirXLcMy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
-Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pratyush@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkpV55vNsz3brd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2024 04:10:05 +1100 (AEDT)
-Received: from relay1-d.mail.gandi.net (unknown [217.70.183.193])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id A7EF1C38F4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Nov 2024 17:03:22 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id AA182240006;
-	Thu,  7 Nov 2024 17:03:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1730998989;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=LcmFNs2UjHF2seWXnbhiKrx6T4lA+AWcoBvcBEDQo4w=;
-	b=gL7HIIkf64DmSq12+2fZFwZNq2BuXb2hWXy3wfx626EcLpbIHw2+ffkNpb6lrLaAA46qtN
-	Cf88txgGVeSsJvPXfh+obTv5d7Zre8jDI99hzOzQDAVqoyz3efyAhRxnmtYKDFv5Cd4p4J
-	aAmnGxxD5FSTCDTPENFiPIN8JyO2sM+wiRG+/b+qFknMj1BeyC0kZyS6UthuDm3j642vMz
-	lEplHQtL7cISPkSx9K8IaLhlGe8Uv5ECbC3xa2GZP4Z+cVuSJCp87Eg2+DgVobbbCneQrP
-	HhPDX+9JxyXsU8TWvIhrDZimjelafml3mAatiRIW4YYP0A5LvyBLHrf6u8RmLA==
-From: Maxime Chevallier <maxime.chevallier@bootlin.com>
-To: davem@davemloft.net,
-	Andrew Lunn <andrew@lunn.ch>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Eric Dumazet <edumazet@google.com>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Heiner Kallweit <hkallweit1@gmail.com>
-Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
-	netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	thomas.petazzoni@bootlin.com,
-	Herve Codina <herve.codina@bootlin.com>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next 6/7] net: freescale: ucc_geth: Hardcode the preamble length to 7 bytes
-Date: Thu,  7 Nov 2024 18:02:53 +0100
-Message-ID: <20241107170255.1058124-7-maxime.chevallier@bootlin.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20241107170255.1058124-1-maxime.chevallier@bootlin.com>
-References: <20241107170255.1058124-1-maxime.chevallier@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkpkS600Mz3bnL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Nov 2024 04:20:48 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 76D2F5C0C36;
+	Thu,  7 Nov 2024 17:20:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E8DA9C4CECC;
+	Thu,  7 Nov 2024 17:20:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731000045;
+	bh=cADn4ARQkTOhflqlIHhNxtca9L54H5LHvOrTgQwQP8c=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=uirXLcMy1Qn//p7lSBnbOlzSbCL5aIT0TqEnGpIZm6Rx23BQJKj1JIwJAP4R6CQ3Y
+	 BGW5ysKmLw5HxKe9TW2Kb0/MrhrtH+FEMuRdl+3jaHMQQkHCavjZQ9xWr31Ghy5ARf
+	 J2TiGOLT8c6IMr+E/gnELx0660oj7VCoNS9utcB0Gb41g2oymp/+1G/7KVgOzIPwxq
+	 q5/0lzC969ZrJFg9aKvlY1ckSKQVQp4pt0o8irIOJAq56q9MDR85uEDv3iCGEqltvk
+	 QeOfANjQFk8pt3o4hyDqn3DINTzEn9s+ZnpBLM2/xaYcEN2lpP63yM+3MX3zh3CiMr
+	 Amp7lQpjSOJ2g==
+From: Pratyush Yadav <pratyush@kernel.org>
+To: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,  "Rafael J. Wysocki"
+ <rafael@kernel.org>,  Bjorn Helgaas <bhelgaas@google.com>,  Srinivas
+ Kandagatla <srinivas.kandagatla@linaro.org>,  Davidlohr Bueso
+ <dave@stgolabs.net>,  Jonathan Cameron <jonathan.cameron@huawei.com>,
+  Dave Jiang <dave.jiang@intel.com>,  Alison Schofield
+ <alison.schofield@intel.com>,  Vishal Verma <vishal.l.verma@intel.com>,
+  Ira Weiny <ira.weiny@intel.com>,  Alex Deucher
+ <alexander.deucher@amd.com>,  Christian =?utf-8?Q?K=C3=B6nig?=
+ <christian.koenig@amd.com>,
+  Xinhui Pan <Xinhui.Pan@amd.com>,  David Airlie <airlied@gmail.com>,
+  Simona Vetter <simona@ffwll.ch>,  Dennis Dalessandro
+ <dennis.dalessandro@cornelisnetworks.com>,  Jason Gunthorpe
+ <jgg@ziepe.ca>,  Leon Romanovsky <leon@kernel.org>,  Tudor Ambarus
+ <tudor.ambarus@linaro.org>,  Pratyush Yadav <pratyush@kernel.org>,
+  Michael Walle <mwalle@kernel.org>,  Miquel Raynal
+ <miquel.raynal@bootlin.com>,  Richard Weinberger <richard@nod.at>,
+  Vignesh Raghavendra <vigneshr@ti.com>,  Naveen Krishna Chatradhi
+ <naveenkrishna.chatradhi@amd.com>,  Carlos Bilbao
+ <carlos.bilbao.osdev@gmail.com>,  Hans de Goede <hdegoede@redhat.com>,
+  Ilpo =?utf-8?Q?J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,  "David E.
+ Box"
+ <david.e.box@linux.intel.com>,  "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>,  "Martin K. Petersen"
+ <martin.petersen@oracle.com>,  Richard Henderson
+ <richard.henderson@linaro.org>,  Matt Turner <mattst88@gmail.com>,
+  Frederic Barrat <fbarrat@linux.ibm.com>,  Andrew Donnellan
+ <ajd@linux.ibm.com>,  Arnd Bergmann <arnd@arndb.de>,  Logan Gunthorpe
+ <logang@deltatee.com>,  "K. Y. Srinivasan" <kys@microsoft.com>,  Haiyang
+ Zhang <haiyangz@microsoft.com>,  Wei Liu <wei.liu@kernel.org>,  Dexuan Cui
+ <decui@microsoft.com>,  Dan Williams <dan.j.williams@intel.com>,
+  linux-kernel@vger.kernel.org,  linux-pci@vger.kernel.org,
+  linux-cxl@vger.kernel.org,  amd-gfx@lists.freedesktop.org,
+  dri-devel@lists.freedesktop.org,  linux-rdma@vger.kernel.org,
+  linux-mtd@lists.infradead.org,  platform-driver-x86@vger.kernel.org,
+  linux-scsi@vger.kernel.org,  linux-usb@vger.kernel.org,
+  linux-alpha@vger.kernel.org,  linuxppc-dev@lists.ozlabs.org,
+  linux-hyperv@vger.kernel.org
+Subject: Re: [PATCH v2 05/10] sysfs: treewide: constify attribute callback
+ of bin_is_visible()
+In-Reply-To: <20241103-sysfs-const-bin_attr-v2-5-71110628844c@weissschuh.net>
+	("Thomas =?utf-8?Q?Wei=C3=9Fschuh=22's?= message of "Sun, 03 Nov 2024
+ 17:03:34 +0000")
+References: <20241103-sysfs-const-bin_attr-v2-0-71110628844c@weissschuh.net>
+	<20241103-sysfs-const-bin_attr-v2-5-71110628844c@weissschuh.net>
+Date: Thu, 07 Nov 2024 17:20:37 +0000
+Message-ID: <mafs08qtv7yfu.fsf@kernel.org>
+User-Agent: Gnus/5.13 (Gnus v5.13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,98 +105,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: maxime.chevallier@bootlin.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-The preamble length can be configured in ucc_geth, however it just
-ends-up always being configured to 7 bytes, as nothing ever changes the
-default value of 7.
+On Sun, Nov 03 2024, Thomas Wei=C3=9Fschuh wrote:
 
-Make that value the default value when the MACCFG2 register gets
-initialized, and remove the code to configure that value altogether.
+> The is_bin_visible() callbacks should not modify the struct
+> bin_attribute passed as argument.
+> Enforce this by marking the argument as const.
+>
+> As there are not many callback implementers perform this change
+> throughout the tree at once.
+>
+> Signed-off-by: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
+> ---
+> diff --git a/drivers/mtd/spi-nor/sysfs.c b/drivers/mtd/spi-nor/sysfs.c
+> index 96064e4babf01f6950c81586764386e7671cbf97..5e9eb268073d18e0a46089000=
+f18a3200b4bf13d 100644
+> --- a/drivers/mtd/spi-nor/sysfs.c
+> +++ b/drivers/mtd/spi-nor/sysfs.c
+> @@ -87,7 +87,7 @@ static umode_t spi_nor_sysfs_is_visible(struct kobject =
+*kobj,
+>  }
+>=20=20
+>  static umode_t spi_nor_sysfs_is_bin_visible(struct kobject *kobj,
+> -					    struct bin_attribute *attr, int n)
+> +					    const struct bin_attribute *attr, int n)
 
-Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
----
- drivers/net/ethernet/freescale/ucc_geth.c | 21 ---------------------
- drivers/net/ethernet/freescale/ucc_geth.h |  4 ++--
- 2 files changed, 2 insertions(+), 23 deletions(-)
+Acked-by: Pratyush Yadav <pratyush@kernel.org> # for spi-nor
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 052f06d6f312..0ec4ea95ad6d 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -132,7 +132,6 @@ static const struct ucc_geth_info ugeth_primary_info = {
- 	.transmitFlowControl = 1,
- 	.maxGroupAddrInHash = 4,
- 	.maxIndAddrInHash = 4,
--	.prel = 7,
- 	.maxFrameLength = 1518+16, /* Add extra bytes for VLANs etc. */
- 	.minFrameLength = 64,
- 	.maxD1Length = 1520+16, /* Add extra bytes for VLANs etc. */
-@@ -1205,18 +1204,6 @@ static int init_mac_station_addr_regs(u8 address_byte_0,
- 	return 0;
- }
- 
--static int init_preamble_length(u8 preamble_length,
--				u32 __iomem *maccfg2_register)
--{
--	if ((preamble_length < 3) || (preamble_length > 7))
--		return -EINVAL;
--
--	clrsetbits_be32(maccfg2_register, MACCFG2_PREL_MASK,
--			preamble_length << MACCFG2_PREL_SHIFT);
--
--	return 0;
--}
--
- static int init_rx_parameters(int reject_broadcast,
- 			      int receive_short_frames,
- 			      int promiscuous, u32 __iomem *upsmr_register)
-@@ -1276,7 +1263,6 @@ static int adjust_enet_interface(struct ucc_geth_private *ugeth)
- 	struct ucc_geth_info *ug_info;
- 	struct ucc_geth __iomem *ug_regs;
- 	struct ucc_fast __iomem *uf_regs;
--	int ret_val;
- 	u32 upsmr, maccfg2;
- 	u16 value;
- 
-@@ -1352,13 +1338,6 @@ static int adjust_enet_interface(struct ucc_geth_private *ugeth)
- 		put_device(&tbiphy->mdio.dev);
- 	}
- 
--	ret_val = init_preamble_length(ug_info->prel, &ug_regs->maccfg2);
--	if (ret_val != 0) {
--		if (netif_msg_probe(ugeth))
--			pr_err("Preamble length must be between 3 and 7 inclusive\n");
--		return ret_val;
--	}
--
- 	return 0;
- }
- 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.h b/drivers/net/ethernet/freescale/ucc_geth.h
-index 11e490398f18..42fbbdf14ff2 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.h
-+++ b/drivers/net/ethernet/freescale/ucc_geth.h
-@@ -921,7 +921,8 @@ struct ucc_geth_hardware_statistics {
- #define UCC_GETH_UPSMR_INIT                     UCC_GETH_UPSMR_RES1
- 
- #define UCC_GETH_MACCFG1_INIT                   0
--#define UCC_GETH_MACCFG2_INIT                   (MACCFG2_RESERVED_1)
-+#define UCC_GETH_MACCFG2_INIT                   (MACCFG2_RESERVED_1 | \
-+						 (7 << MACCFG2_PREL_SHIFT))
- 
- /* Ethernet Address Type. */
- enum enet_addr_type {
-@@ -1113,7 +1114,6 @@ struct ucc_geth_info {
- 	int transmitFlowControl;
- 	u8 maxGroupAddrInHash;
- 	u8 maxIndAddrInHash;
--	u8 prel;
- 	u16 maxFrameLength;
- 	u16 minFrameLength;
- 	u16 maxD1Length;
--- 
-2.47.0
+>  {
+>  	struct spi_device *spi =3D to_spi_device(kobj_to_dev(kobj));
+>  	struct spi_mem *spimem =3D spi_get_drvdata(spi);
 
+--=20
+Regards,
+Pratyush Yadav
 
