@@ -1,37 +1,39 @@
-Return-Path: <linuxppc-dev+bounces-3082-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3084-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D41F4D12D67
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2024 03:22:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5536AD12D63
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2024 03:22:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XmvxL70Mcz2xsW;
-	Mon, 11 Nov 2024 14:22:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=43.155.80.173
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731295350;
-	cv=none; b=aL4Tha2n6AC3QRXIM6cv2EvhDoNJanIbVCcmn6PZTKMwZTMt+kZWbe0NKGXa2yKi/PB0HIYgENBHvt7B5sd9BBS2edPdZAIm06z/557izgwMevJniKhWSGt/CkxuEXKpzvRCW25yi1GaqC82qRww9eksLYFNwaHhIRu4sOlXwJD/voF52B8puPQLgWoSj+vWgBU/5qy+EuhJDKbc4CI7qZS3zX+2I0mtJQZZL6m09uk+INB2OBh5eVJmzxZOmmqsx6xP+IHuQpuSQ7IJse2a7i3VdJAJHq9fzYJugDlqOW80ADzxlUKy1g1EjMxJZugST8g5NlHcXgxOfDJYn2SJMQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XmvxP0LfXz2yMX;
+	Mon, 11 Nov 2024 14:22:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=54.254.200.92
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731295353;
+	cv=none; b=kohAHdzAzHs1hylFt83p2oBu0gb8ziBR5xpZ+sLtKlMz7Y2XKhl2kVrNtKnO0Ifmp4s4wDcRNVD1d1JeP6k6NYrCU1AvU+HWEI775A+rUQ8LQqfuMyf6A1DuJrsLm5YULy6k9G7nxTBiM3K/JwkWMzxDXUSCY0GftvlvF0v8joFEsZBRLPp4Z9r0K1UgVdYKgET4ya6jd6O4cBmiYo1JrSF+QBWB9fLIMlbTvXKZy57bG8kE3nlZO1kZTCyIMM1To6laWUSBPIHjfu/Yd9qRtgvHrjD9knFM1/Xq8lYbGpmV2owhzUmkKRbJZqWG03fBoOysILn9pkt9KKikyOLxkQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731295350; c=relaxed/relaxed;
-	bh=eOa/0vmDlpGwE7os20FrPllQfh4CGlav2F8QSVAbR6o=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MIz/eB/l8LU7wS63e5LwKbnzz3nry64qKPNYuAap8S6cxNMeay5wseBMLQJT+mJico1p/Xblv2yK84naB8HYTZuwsufRJk9tSHJYC8d8JHvsuIYWZvQ89bV9CdBCpGo25/YyYTJV51WSktKD1Hh2JFEcE7WSZqBMK02JCkYRCMiiejFMh6DiJX1nVF5dhiN96nE90mDfj+JUtuoYFXfXh8us9XSGOlP86eicqgZ8VVC1QtVK5g+B2MMgv7tdF0UWN1uh2FkgvhEqUC9CpZM4m5MiVn/2ylz4SV4mOUWH1pCDjPT1aMvBdkWTi18YUquNNR+6UDB8EOwxjf7/TsEz1A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn; spf=pass (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org) smtp.mailfrom=shingroup.cn
+	t=1731295353; c=relaxed/relaxed;
+	bh=PygPSfrF6/ZPZycNWp0gfxNgipfwun+gFs3PUTgf3Hw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=d0y2UabQFip9Pwb+XyQZXRFAtntRfhNpOkfKs6pV8kyWMgYqOY8nQIOehBstUTX3e56/UZNs13Gz8Kg6t2uDjcu98eovNkotkEKZgrEX2asFV+k+Idq8srUnvOCn8OiLmVIvHBmG/3xuyoTNBzyMAJNbHVjCO9SnNdUFuo+M0w2goiXf0iKxoQwuf1xt71igVJxapu4Go13EhL36NjXWvy8pjtC7hi594fBvXEobWsdJquHTIbBhwYLb1x6p0tKnE/2gbUhIUpQcKw2Ogdh9WPGnp8nGHuZeYwycfuy5AkoNAfebabPgq/75p0lEhHqwaCBkLGeo8opxocvXRG6Ytg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn; spf=pass (client-ip=54.254.200.92; helo=smtpbgsg1.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org) smtp.mailfrom=shingroup.cn
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.155.80.173; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
-Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.155.80.173])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=54.254.200.92; helo=smtpbgsg1.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 75005 seconds by postgrey-1.37 at boromir; Mon, 11 Nov 2024 14:22:31 AEDT
+Received: from smtpbgsg1.qq.com (smtpbgsg1.qq.com [54.254.200.92])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XmvxK3BSQz2xs4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2024 14:22:27 +1100 (AEDT)
-X-QQ-mid: bizesmtpsz5t1731295266thwmuwl
-X-QQ-Originating-IP: Q2y7X3cnjFZOhjfAcpkHrhgyw0X7/r3GqnDyvzLJO1M=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XmvxM6YKQz2xs0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2024 14:22:31 +1100 (AEDT)
+X-QQ-mid: bizesmtpsz5t1731295305tmfjooy
+X-QQ-Originating-IP: CGn9UdnFUXVCmJNZjsCPptGYVxeYEqMVov44SNNVocU=
 Received: from HX09040029.powercore.com.cn ( [116.233.136.127])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Mon, 11 Nov 2024 11:21:03 +0800 (CST)
+	id ; Mon, 11 Nov 2024 11:21:29 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 0
-X-BIZMAIL-ID: 11046684575156124262
+X-BIZMAIL-ID: 12849565497526947182
 From: Luming Yu <luming.yu@shingroup.cn>
 To: linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
@@ -40,10 +42,12 @@ To: linuxppc-dev@lists.ozlabs.org,
 	christophe.leroy@csgroup.eu,
 	luming.yu@gmail.com
 Cc: Luming Yu <luming.yu@shingroup.cn>
-Subject: [PATCH v2 1/8] powerpc/entry: convert to common and generic entry
-Date: Mon, 11 Nov 2024 11:19:26 +0800
-Message-ID: <F0AE0A4571CE3126+20241111031934.1579-2-luming.yu@shingroup.cn>
+Subject: [PATCH v2 3/8] powerpc/debug: implement HAVE_USER_RETURN_NOTIFIER
+Date: Mon, 11 Nov 2024 11:19:30 +0800
+Message-ID: <027637B09D70E22F+20241111031934.1579-6-luming.yu@shingroup.cn>
 X-Mailer: git-send-email 2.42.0.windows.2
+In-Reply-To: <20241111031934.1579-2-luming.yu@shingroup.cn>
+References: <20241111031934.1579-2-luming.yu@shingroup.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,164 +63,110 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-QQ-SENDSIZE: 520
 Feedback-ID: bizesmtpsz:shingroup.cn:qybglogicsvrgz:qybglogicsvrgz8a-1
-X-QQ-XMAILINFO: NOnalZjVTVf0PdX+TiWwR5wGXQfDdiUaDSO3CqQsmaX3kcJPiR2QwaG8
-	pVWp7gE3muz6RH37o3sE6VMEYGGAozv/mMzvT5Hcy+3uNUpVY2lHfGLVogPySlU4igZzOZr
-	1g2clOaNceUnaUnk7A42baYn/o7x3GHv6vy0AbXPVyooHef5/AQRaKc/+ul4zh4izmWKwJY
-	e8LQzDXFI3716Tsfo4G4zR+s/iQd13LGMpuqeEdGaC8WE3mLGt5Xg0ujs/4ObSqsPe2U0L6
-	sV2gzWtcIXa8Br2Uy+OPtfYGLaZKwyE0oiBIv0ljQiPr+qGq/4jzGnT1JajeinUCjescykA
-	/j1nhLRnfpk/I0Hm7R7U2g0gRPJr+m7kq2hhxuo2LTtznbKWX3PgK9aW2HO7WRxMhvMCpwi
-	Xu6HG/Rnku2dDjsi4XHQNP/3Zj9hLrzV6wMhah0/xokhQ4qJ9Vw7lBR2ynr8DZhMiK/GpU8
-	xmH1/bKUr2N+inwdNrPkBbE04rAESLy0DmZTefKWSX4gSZL/Es1ShS9K6i2PYqtIVULRldN
-	9/VJWku1j8gk7tyHIjJcjGpamSqS61y9yV/eN/Cqsl4vdniyApqDi12hujcT9cssYI2xYQ6
-	xedXqKiHcMc5i8rIOqIVR+AC4NqkWYylU8RtujEqnfftWtfC+HjYSGyxvW2rjZn+vg1G88+
-	BN5LLrr+Z/tlqsOvaLRMXLA7eUGzhcpoq2NlohV9UqlEQFfI68rDWxq8ASi7Oe/yq+O8bQI
-	VWQf2SPkRBXOpksTjUXaAY1/+FSfoVTTQHXdlt9D3UuUmypHfxEQQp9V/9q2RGy0XT90FSs
-	Oj4UH2HWYjZ1Bmudsyu7hCsV3PUuhfzJlQZWrnU5aHs1eOPDcltjHZbl3DlMEQcFprjGHIc
-	JVmvWpEvo+8enCAPqS5h1O9vFaGWUoZtFfZTKQbCbHiiNiVRsJOHD1ZhDFkBhO1h9k54Pkn
-	g9JnAFUhtzqWkEZPbWi2AA6X6
-X-QQ-XMRINFO: OD9hHCdaPRBwq3WW+NvGbIU=
+X-QQ-XMAILINFO: M28vnsO5i7WeqXDjdTzu5d3NXlP+XBVE252YyNEGs/9wg3WlQPoai9H4
+	7W2cDkcZXK6vwPpos1jzKgdWBGiUHgJgpGc5pk3U4yzqwtJbsznH0wNEEaDiw3r7UHtCNZ/
+	Lg2h+DYIhNvQrnR6V+JHPc6nAn/3UsMiipCwIMmBQJMG7ZRHvyHL1ol5LsPphrQ3YnlPlLt
+	RL7DZuKD2CD1tLGrJWQFYAeyOnBMlZ9qOxJh+x8JOl0cIHn0l1zhy0BRrH6VkA+gX1pgIcm
+	8Jvo9TgWfZJu4G+r+WfTiBre8Hab+4FZEZUAfElsorLKa9+T1SDauGxkbkNaXMeBZMgo7wZ
+	ejj9zaDG6Vy4pWQCu0YL0f2qibVBD5QdOpSCFbRxyFWFO1GWirTO3L1ZOiQuOL69zh2NzaB
+	HJZ3NyiwQtuTbZcvU90svu91OrgJ24nTOdwsKozabRq/0TQ0jxNIUPyFjhVK4PB1+sj9tsp
+	PfUkgkG010FGMTlgYOe+N4yRO6F1wBOJNcYS48byu8+tEuKLBP00OCL7HidcsPgjlmnlMtO
+	90LlzFfNVio6IDhLWlnYRjjCV408mjkfLvckHyeA3fBM6GDGmNCDf04FqS2CPLhq+JjjB9I
+	WzolEIlgLP7n5OrbWMcZqA2PA+YynleBE76HfDhc9DOc+SOx71DfwPfzX7sc23Fp9wbpWvW
+	mg0QoqnNIplfW4I3yh2ZPISO1uKC5U26GMk1AOlykVXt7EeY0NoAuV8HlZoo16Bt0lxU3Bg
+	Qi+1sYe9I/XEfYnXA1dGzaLmim+Ih51RzVDgtSo5RlABJQZ86pfvCYFUhzuBeOz+/qiuxDO
+	OQyPH8MHm45McQjcIGOau0tD7OHr1jx0HeD6KbtesJ2kDQiZqgMuExLcIwpjIna0770eIXz
+	WvfV3WoVO0faKNKcHPKlaiF38am9c80U48M0SuJvMRRAHKEVzBLbBjFTJKPikGH/lrKu/X9
+	/824QA4PSW2+3Uw5M2Lx2cvFW3o/RmgdR2QE=
+X-QQ-XMRINFO: NI4Ajvh11aEj8Xl/2s1/T8w=
 X-QQ-RECHKSPAM: 0
 
-convert powerpc entry code in syscall and fault to use syscall_work
-and irqentry_state as well as common calls implemented in generic
-entry infrastructure.
+enable the common entry of user return notifier for powerpc as
+a debug feature.
 
-Signed-off-by: Luming Yu <luming.yu@shingroup.cn>
+Signed-off-by Luming Yu <luming.yu@shingroup.cn>
 ---
-v1->v2: fix ppc syscall entry seccomp_bpf test errors for common entry conversion.
----
- arch/powerpc/Kconfig                   | 1 +
- arch/powerpc/include/asm/hw_irq.h      | 5 +++++
- arch/powerpc/include/asm/processor.h   | 6 ++++++
- arch/powerpc/include/asm/syscall.h     | 5 +++++
- arch/powerpc/include/asm/thread_info.h | 1 +
- arch/powerpc/kernel/syscall.c          | 5 ++++-
- arch/powerpc/mm/fault.c                | 3 +++
- 7 files changed, 25 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig                    |  1 +
+ arch/powerpc/include/asm/entry-common.h | 16 ++++++++++++++++
+ arch/powerpc/include/asm/thread_info.h  |  2 ++
+ arch/powerpc/kernel/process.c           |  2 ++
+ 4 files changed, 21 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/entry-common.h
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 6f105ee4f3cf..261c9116d6fa 100644
+index 261c9116d6fa..9a1e6669fa24 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -202,6 +202,7 @@ config PPC
- 	select GENERIC_IRQ_SHOW_LEVEL
- 	select GENERIC_PCI_IOMAP		if PCI
- 	select GENERIC_PTDUMP
-+        select GENERIC_ENTRY
- 	select GENERIC_SMP_IDLE_THREAD
- 	select GENERIC_TIME_VSYSCALL
- 	select GENERIC_VDSO_TIME_NS
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 317659fdeacf..a3d591784c95 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -216,6 +216,11 @@ static inline bool arch_irqs_disabled(void)
- 	return arch_irqs_disabled_flags(arch_local_save_flags());
- }
- 
-+/*common entry*/
-+static __always_inline bool regs_irqs_disabled(struct pt_regs *regs)
+@@ -277,6 +277,7 @@ config PPC
+ 	select HAVE_STACKPROTECTOR		if PPC64 && $(cc-option,-mstack-protector-guard=tls -mstack-protector-guard-reg=r13)
+ 	select HAVE_STATIC_CALL			if PPC32
+ 	select HAVE_SYSCALL_TRACEPOINTS
++	select HAVE_USER_RETURN_NOTIFIER
+ 	select HAVE_VIRT_CPU_ACCOUNTING
+ 	select HAVE_VIRT_CPU_ACCOUNTING_GEN
+ 	select HOTPLUG_SMT			if HOTPLUG_CPU
+diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+new file mode 100644
+index 000000000000..51f1eb767696
+--- /dev/null
++++ b/arch/powerpc/include/asm/entry-common.h
+@@ -0,0 +1,16 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef ARCH_POWERPC_ENTRY_COMMON_H
++#define ARCH_POWERPC_ENTRY_COMMON_H
++
++#include <linux/user-return-notifier.h>
++
++static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
++						  unsigned long ti_work)
 +{
-+	return arch_irqs_disabled();
-+}
- static inline void set_pmi_irq_pending(void)
- {
- 	/*
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index b2c51d337e60..1292282f8b0e 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -383,6 +383,12 @@ int validate_sp(unsigned long sp, struct task_struct *p);
- int validate_sp_size(unsigned long sp, struct task_struct *p,
- 		     unsigned long nbytes);
- 
-+/*for common entry*/
-+static __always_inline bool on_thread_stack(void)
-+{
-+	return validate_sp(current_stack_pointer, current);
++	if (ti_work & _TIF_USER_RETURN_NOTIFY)
++		fire_user_return_notifiers();
 +}
 +
- /*
-  * Prefetch macros.
-  */
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 3dd36c5e334a..0e94806c7bfe 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -119,4 +119,9 @@ static inline int syscall_get_arch(struct task_struct *task)
- 	else
- 		return AUDIT_ARCH_PPC64;
- }
++#define arch_exit_to_user_mode_prepare arch_exit_to_user_mode_prepare
 +
-+static inline bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
-+{
-+	return false;
-+}
- #endif	/* _ASM_SYSCALL_H */
++#endif
 diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index bf5dde1a4114..9df2bcf28544 100644
+index 9df2bcf28544..c52ca3aaebb5 100644
 --- a/arch/powerpc/include/asm/thread_info.h
 +++ b/arch/powerpc/include/asm/thread_info.h
-@@ -58,6 +58,7 @@ struct thread_info {
- 	unsigned int	cpu;
+@@ -118,6 +118,7 @@ void arch_setup_new_exec(void);
  #endif
- 	unsigned long	local_flags;		/* private flags for thread */
-+	unsigned long	syscall_work;
- #ifdef CONFIG_LIVEPATCH_64
- 	unsigned long *livepatch_sp;
- #endif
-diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-index 77fedb190c93..e0338bd8d383 100644
---- a/arch/powerpc/kernel/syscall.c
-+++ b/arch/powerpc/kernel/syscall.c
-@@ -3,6 +3,7 @@
- #include <linux/compat.h>
- #include <linux/context_tracking.h>
- #include <linux/randomize_kstack.h>
-+#include <linux/entry-common.h>
+ #define TIF_POLLING_NRFLAG	19	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_32BIT		20	/* 32 bit binary */
++#define TIF_USER_RETURN_NOTIFY	21	/* notify kernel of userspace return */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -126,6 +127,7 @@ void arch_setup_new_exec(void);
+ #define _TIF_NOTIFY_SIGNAL	(1<<TIF_NOTIFY_SIGNAL)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_32BIT		(1<<TIF_32BIT)
++#define _TIF_USER_RETURN_NOTIFY	(1<<TIF_USER_RETURN_NOTIFY)
+ #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
+ #define _TIF_PATCH_PENDING	(1<<TIF_PATCH_PENDING)
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 392404688cec..70a9ea949798 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -38,6 +38,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/pkeys.h>
+ #include <linux/seq_buf.h>
++#include <linux/user-return-notifier.h>
  
  #include <asm/interrupt.h>
- #include <asm/kup.h>
-@@ -131,7 +132,7 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
- 		 * and the test against NR_syscalls will fail and the return
- 		 * value to be used is in regs->gpr[3].
- 		 */
--		r0 = do_syscall_trace_enter(regs);
-+		r0 = syscall_enter_from_user_mode(regs, r0);
- 		if (unlikely(r0 >= NR_syscalls))
- 			return regs->gpr[3];
+ #include <asm/io.h>
+@@ -1386,6 +1387,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	if (current->thread.regs)
+ 		restore_math(current->thread.regs);
+ #endif /* CONFIG_PPC_BOOK3S_64 */
++	propagate_user_return_notify(prev, new);
  
-@@ -184,6 +185,8 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
- 	 * So the resulting 6 or 7 bits of entropy is seen in SP[9:4] or SP[9:3].
- 	 */
- 	choose_random_kstack_offset(mftb());
-+	/*common entry*/
-+	syscall_exit_to_user_mode(regs);
- 
- 	return ret;
+ 	return last;
  }
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 9e49ede2bc1c..6cb923fe4c4d 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -23,6 +23,7 @@
- #include <linux/mman.h>
- #include <linux/mm.h>
- #include <linux/interrupt.h>
-+#include <linux/entry-common.h>
- #include <linux/highmem.h>
- #include <linux/extable.h>
- #include <linux/kprobes.h>
-@@ -577,7 +578,9 @@ static __always_inline void __do_page_fault(struct pt_regs *regs)
- 
- DEFINE_INTERRUPT_HANDLER(do_page_fault)
- {
-+	irqentry_state_t state = irqentry_enter(regs);
- 	__do_page_fault(regs);
-+	irqentry_exit(regs, state);
- }
- 
- #ifdef CONFIG_PPC_BOOK3S_64
 -- 
 2.42.0.windows.2
 
