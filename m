@@ -1,60 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-3081-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3083-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42BBED12D5D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2024 01:11:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 742BDD12D68
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Nov 2024 03:22:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xms2S4GGBz2xy7;
-	Mon, 11 Nov 2024 12:11:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731287504;
-	cv=none; b=fck++xlSaX/pYV4tdqR3f/QykyOppADAR3AxJcUSjwnCthotvN88qFcziL2e/qmR5dJQ1HHY8bfd/tWoa2TDsq5ON48AS44P0sijHiA7f3AkT2DZ1Pb7TLshASDl8+HdihrWajQwREj7gS78EYnudCpmW4YBAONYKqSRD5vMAzBHy+rldVW1Zud1ezjgQmCX5fbLrLJjqriOlcLOS7q4kMDC6gS67Y2OmYeIaIRSXYFZlFlDe195r3bJEU3qDu4uyGPOGwCNbtXnd2z7hEBY15txPXW78Zb2s6isCqFa19VTkypuI6wY94Vd/iGThOf0QDnowdBkWTC4xa09VCeXog==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XmvxM0NB0z2xst;
+	Mon, 11 Nov 2024 14:22:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=43.154.197.177
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731295350;
+	cv=none; b=WeeUgX4xY0OXzAHAPwaXm+oZslQRAzOFzi08kQsYcwnXSVCfaYXiURIhZ107QgEfWWoQ4SpYfeJ/mOsc/dNYUNSakKuId0dLKNc0BpocVpMtdSpdNxxk0zPnhwrwBaK3UeV64gFrVXk48J79/KCGrJS5i4FYBYA7DNowgqJao28eUneG4jXMsudTRGc5MUOQpFqzR+8Y/iC4XaPeiTU4Vsz8ql5dbWKye9n2RASHmNK5CJRymX9xx09FPt2FqNHnolfBW6upRgmqVudsgQaoltasumoGuvw+27gsvfsyKHVYGFTPeqGJLZUB7VLU5/06duOneUaMrRdP4hOoT3aZJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731287504; c=relaxed/relaxed;
-	bh=a/0zm3MDXQoyiuSwhNM/q97OKgNwCzM8MCZdUyeHH08=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=dL/f+zh7S7mXSPiOHzZVjvZC6XC8k7XvVLYJY6CcOctQskqd6akElKZqLnRioB3LFW7hN0CeUYyY1jnimu0emtrY7Hd/F/LqiyALqiRv9Hn1+9vCJVk47+AMW7qvbZQ1auhED2i8qCr4Y9hq9+dcluHuB3BTcJ/xAPHJOa2SyXmRg9pgAss7sdbzMyhnmXSKwHGIZaEk1WVdNkqb4/94N1jZHeVe+fCpiDhcQ2JGJjaFK1VBavEPUlXEzibE6Md6zqsxEgAZbNbRWBXFZXT3377H1wAoZIzADzGO2KbPZyxdqayRtNvT/5s88T3rZUFDJKYbcpFiwK8e1RoLgFmABA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jn9mWKx/; dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jn9mWKx/;
-	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1731295350; c=relaxed/relaxed;
+	bh=v7F76A/IUwLtJwdwp9Vkes3MupdfT/HaDbFy5r18vrI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=jtdW5aNZumH1JLvXGjysMyL6mNoTfwoPumjmvcZheuExFDsEF4cnb50lShYoItJoJk0npzG+ssnpnQeY+K/ce9LnTNg/626bBrRzrlm+e3X475G2TFTdSDyPMrMrgtYeW/ZGYvtni79yg9q64fKDax5pdBs+N52hOEgP0PHvAyX1149XrhnQ8hpIJSI8oDDRpFeW9/zvrmHWUoJadSzPvqlT9UTJUwcheDVmXGT46P/utbzx+vPthVfPf8yObUDruBmH5lyFRkXlVtiS0W7Te/1NDRT2AIdMy7Gsn11K5jezQJoBl7bwVmsWdiZ1apOpLmtaMFslG46G/dHHbdxhzQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn; spf=pass (client-ip=43.154.197.177; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org) smtp.mailfrom=shingroup.cn
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shingroup.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shingroup.cn (client-ip=43.154.197.177; helo=bg5.exmail.qq.com; envelope-from=luming.yu@shingroup.cn; receiver=lists.ozlabs.org)
+Received: from bg5.exmail.qq.com (bg5.exmail.qq.com [43.154.197.177])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xms2Q2Mq3z2xvR
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2024 12:11:42 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731287494;
-	bh=a/0zm3MDXQoyiuSwhNM/q97OKgNwCzM8MCZdUyeHH08=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=jn9mWKx/RaTVuSdEMIkaaWGe9emYy+XspqqHekK+sCMMnM03JnUzsntVfbwWHtwfO
-	 qLo8Z2lVxHK1/lbYloNJbGivOkEXjbZzkqyzRe8+LHnvHue+8Cw8h4TGSYR1JTDoq3
-	 /bwv1kZxoD3yqn+rpNu24wHHaaVhkL1A5JQS7NaiosVQPGczm1iVq48cu/Af259JO3
-	 NTLd0jqiC8p0G3oN3qm7J96seZqrg9iJytCvZoB7MTLgFmVt1b+3FkKhbUGHJH9WZc
-	 vN1UDursvGoBG86QK7J5onghYVgiF9vAint+hpltfOsXxBaTvNmBflgJRc8QpWvX19
-	 NSOklzYy7VFfg==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xms2G0fFRz4wbr;
-	Mon, 11 Nov 2024 12:11:33 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thorsten Blum <thorsten.blum@linux.dev>, Nicholas Piggin
- <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>,
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Thorsten Blum <thorsten.blum@linux.dev>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: Transliterate author name and remove FIXME
-In-Reply-To: <20241110162139.5179-2-thorsten.blum@linux.dev>
-References: <20241110162139.5179-2-thorsten.blum@linux.dev>
-Date: Mon, 11 Nov 2024 12:11:34 +1100
-Message-ID: <87v7wuy3p5.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XmvxJ4Thhz2xs0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Nov 2024 14:22:28 +1100 (AEDT)
+X-QQ-mid: bizesmtpsz5t1731295287t86m7ga
+X-QQ-Originating-IP: /LUL+HLIGB/NES8ocSMYmMlww42rJYMefiuMTCsbuMs=
+Received: from HX09040029.powercore.com.cn ( [116.233.136.127])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Mon, 11 Nov 2024 11:21:07 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 0
+X-BIZMAIL-ID: 13334988639752082623
+From: Luming Yu <luming.yu@shingroup.cn>
+To: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	luming.yu@gmail.com
+Cc: Luming Yu <luming.yu@shingroup.cn>
+Subject: [PATCH v2 2/8] powerpc/entry: cleanup syscall entry
+Date: Mon, 11 Nov 2024 11:19:28 +0800
+Message-ID: <A71D1C71E9993C21+20241111031934.1579-4-luming.yu@shingroup.cn>
+X-Mailer: git-send-email 2.42.0.windows.2
+In-Reply-To: <20241111031934.1579-2-luming.yu@shingroup.cn>
+References: <20241111031934.1579-2-luming.yu@shingroup.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,49 +59,211 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtpsz:shingroup.cn:qybglogicsvrgz:qybglogicsvrgz8a-1
+X-QQ-XMAILINFO: OSUW9vQLVhiZTclshFBubYPkDXTre72zm5Z76+KDIiBHvx7fGO8F35RM
+	BDfwguD52sfRLyiWUlTS4EQCV0tFcb7mnIJjqVcBBN0DiMZiMbdxquh5uWK3QqGRCkb7q26
+	3QN1oxGtuvaMzrs5FadLSQH2Gqo604tu2JNQttfSdFXUWPzdgu3unp5SnZp4wX+KSsGux9w
+	9ngJDgxINebSZZxFzYKoG8nbCp4QeeQeTW+0Qh8bCJLRopxsvJMdCxCpGUQgURa7Tp3zuX1
+	7TQKstB+WxdZ0X7O1elqe2dbYitfmECcQ5lwsa+trXETHwID/unNHEeyY0yXthqYM//r1d9
+	Vyvhp60LCHOHPxvpsEv3N0Oj0PyhLEGWZZ8WtYNEAh7T5zoEomgWHR9RO1FI51okbM3kyzp
+	dqwoO40ZYtkph95g7XRM0wgO/mVPiFzmmtibZAk1BD3XKA8q3wsI0CxL4gQ26ZEvSDeGUjP
+	zy5FbKiOpgJRGesfR3pQ2THOHgkLrfITxg/4zXs8l7NbigsbiE1AAe24IJg+zuP5Kn9658t
+	4gtlppOWlIdczvHVtmn0K0Z9le320/m6phwkA4Ovuz/F8dad+86OLg2+roruyaO9i6huYWP
+	XrM8lst14YBPcH/7RnzFxUxVG2L81OqT1kNcw3K/gbCjN+U7w5lqzc6jBQapImK+w7e8E2y
+	9cEupsHn3HRSxFxiPw8/8evDwptoZCwibR3lSdUS+tY8j5OzRpssmVgYmbQxt+5Kwxswlt8
+	po8vIXGpDQC80o/k8Die7QBa1VL2aaR+wtLKkuL8FtQkeerSahyen/ge7Oe+Js2sXkDVGng
+	1jvmfQ8xoes3IxlU4th3cKQgFHiJXy5FzR0VcAi7Oqoia9oMAVPP69rdsCK5TUPhCnYxsAg
+	EwxJFiiQLNDnfR8qVGop9lAHZ7wVrnLcuGLkmcrqceDBKUFphF9a5JzSoj/OrGzPR3mvD4/
+	J6CAIM1aml4KcC/L7JvFuTFD622l0+Ce8lOA9/+kDoDE1TQ==
+X-QQ-XMRINFO: MPJ6Tf5t3I/ycC2BItcBVIA=
+X-QQ-RECHKSPAM: 0
 
-Thorsten Blum <thorsten.blum@linux.dev> writes:
-> The name is Mimi Phuong-Thao Vo.
-=20
-Is that the correct spelling?
+cleanup do_syscall_trace_enter/leave and do_seccomp.
 
-The github commit below suggests it's Mimi Ph=C3=BB=C3=B4ng-Th=C3=A5o V=C3=
-=B5.
+Signed-off-by: Luming Yu <luming.yu@shingroup.cn>
+---
+ arch/powerpc/kernel/interrupt.c     |   5 -
+ arch/powerpc/kernel/ptrace/ptrace.c | 141 ----------------------------
+ 2 files changed, 146 deletions(-)
 
-And presumably the author preferred that spelling, otherwise they would
-have just written it in ASCII in the first place.
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index c4f6d3c69ba9..8c532cecbc60 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -293,11 +293,6 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
+ 		regs->gpr[3] = r3;
+ 	}
+ 
+-	if (unlikely(ti_flags & _TIF_SYSCALL_DOTRACE)) {
+-		do_syscall_trace_leave(regs);
+-		ret |= _TIF_RESTOREALL;
+-	}
+-
+ 	local_irq_disable();
+ 	ret = interrupt_exit_user_prepare_main(ret, regs);
+ 
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index 727ed4a14545..6cd180bc36ab 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -21,9 +21,6 @@
+ #include <asm/switch_to.h>
+ #include <asm/debug.h>
+ 
+-#define CREATE_TRACE_POINTS
+-#include <trace/events/syscalls.h>
+-
+ #include "ptrace-decl.h"
+ 
+ /*
+@@ -195,144 +192,6 @@ long arch_ptrace(struct task_struct *child, long request,
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_SECCOMP
+-static int do_seccomp(struct pt_regs *regs)
+-{
+-	if (!test_thread_flag(TIF_SECCOMP))
+-		return 0;
+-
+-	/*
+-	 * The ABI we present to seccomp tracers is that r3 contains
+-	 * the syscall return value and orig_gpr3 contains the first
+-	 * syscall parameter. This is different to the ptrace ABI where
+-	 * both r3 and orig_gpr3 contain the first syscall parameter.
+-	 */
+-	regs->gpr[3] = -ENOSYS;
+-
+-	/*
+-	 * We use the __ version here because we have already checked
+-	 * TIF_SECCOMP. If this fails, there is nothing left to do, we
+-	 * have already loaded -ENOSYS into r3, or seccomp has put
+-	 * something else in r3 (via SECCOMP_RET_ERRNO/TRACE).
+-	 */
+-	if (__secure_computing(NULL))
+-		return -1;
+-
+-	/*
+-	 * The syscall was allowed by seccomp, restore the register
+-	 * state to what audit expects.
+-	 * Note that we use orig_gpr3, which means a seccomp tracer can
+-	 * modify the first syscall parameter (in orig_gpr3) and also
+-	 * allow the syscall to proceed.
+-	 */
+-	regs->gpr[3] = regs->orig_gpr3;
+-
+-	return 0;
+-}
+-#else
+-static inline int do_seccomp(struct pt_regs *regs) { return 0; }
+-#endif /* CONFIG_SECCOMP */
+-
+-/**
+- * do_syscall_trace_enter() - Do syscall tracing on kernel entry.
+- * @regs: the pt_regs of the task to trace (current)
+- *
+- * Performs various types of tracing on syscall entry. This includes seccomp,
+- * ptrace, syscall tracepoints and audit.
+- *
+- * The pt_regs are potentially visible to userspace via ptrace, so their
+- * contents is ABI.
+- *
+- * One or more of the tracers may modify the contents of pt_regs, in particular
+- * to modify arguments or even the syscall number itself.
+- *
+- * It's also possible that a tracer can choose to reject the system call. In
+- * that case this function will return an illegal syscall number, and will put
+- * an appropriate return value in regs->r3.
+- *
+- * Return: the (possibly changed) syscall number.
+- */
+-long do_syscall_trace_enter(struct pt_regs *regs)
+-{
+-	u32 flags;
+-
+-	flags = read_thread_flags() & (_TIF_SYSCALL_EMU | _TIF_SYSCALL_TRACE);
+-
+-	if (flags) {
+-		int rc = ptrace_report_syscall_entry(regs);
+-
+-		if (unlikely(flags & _TIF_SYSCALL_EMU)) {
+-			/*
+-			 * A nonzero return code from
+-			 * ptrace_report_syscall_entry() tells us to prevent
+-			 * the syscall execution, but we are not going to
+-			 * execute it anyway.
+-			 *
+-			 * Returning -1 will skip the syscall execution. We want
+-			 * to avoid clobbering any registers, so we don't goto
+-			 * the skip label below.
+-			 */
+-			return -1;
+-		}
+-
+-		if (rc) {
+-			/*
+-			 * The tracer decided to abort the syscall. Note that
+-			 * the tracer may also just change regs->gpr[0] to an
+-			 * invalid syscall number, that is handled below on the
+-			 * exit path.
+-			 */
+-			goto skip;
+-		}
+-	}
+-
+-	/* Run seccomp after ptrace; allow it to set gpr[3]. */
+-	if (do_seccomp(regs))
+-		return -1;
+-
+-	/* Avoid trace and audit when syscall is invalid. */
+-	if (regs->gpr[0] >= NR_syscalls)
+-		goto skip;
+-
+-	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+-		trace_sys_enter(regs, regs->gpr[0]);
+-
+-	if (!is_32bit_task())
+-		audit_syscall_entry(regs->gpr[0], regs->gpr[3], regs->gpr[4],
+-				    regs->gpr[5], regs->gpr[6]);
+-	else
+-		audit_syscall_entry(regs->gpr[0],
+-				    regs->gpr[3] & 0xffffffff,
+-				    regs->gpr[4] & 0xffffffff,
+-				    regs->gpr[5] & 0xffffffff,
+-				    regs->gpr[6] & 0xffffffff);
+-
+-	/* Return the possibly modified but valid syscall number */
+-	return regs->gpr[0];
+-
+-skip:
+-	/*
+-	 * If we are aborting explicitly, or if the syscall number is
+-	 * now invalid, set the return value to -ENOSYS.
+-	 */
+-	regs->gpr[3] = -ENOSYS;
+-	return -1;
+-}
+-
+-void do_syscall_trace_leave(struct pt_regs *regs)
+-{
+-	int step;
+-
+-	audit_syscall_exit(regs);
+-
+-	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+-		trace_sys_exit(regs, regs->result);
+-
+-	step = test_thread_flag(TIF_SINGLESTEP);
+-	if (step || test_thread_flag(TIF_SYSCALL_TRACE))
+-		ptrace_report_syscall_exit(regs, step);
+-}
+-
+ void __init pt_regs_check(void);
+ 
+ /*
+-- 
+2.42.0.windows.2
 
-https://github.com/bminor/binutils-gdb/commit/6603bf38d74409906b3814f6a26c0=
-483a5d32e41
-
-cheers
-
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
-> ---
->  arch/powerpc/boot/rs6000.h | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/boot/rs6000.h b/arch/powerpc/boot/rs6000.h
-> index a9d879155ef9..16df8f3c43f1 100644
-> --- a/arch/powerpc/boot/rs6000.h
-> +++ b/arch/powerpc/boot/rs6000.h
-> @@ -1,11 +1,7 @@
->  /* SPDX-License-Identifier: GPL-2.0 */
->  /* IBM RS/6000 "XCOFF" file definitions for BFD.
->     Copyright (C) 1990, 1991 Free Software Foundation, Inc.
-> -   FIXME: Can someone provide a transliteration of this name into ASCII?
-> -   Using the following chars caused a compiler warning on HIUX (so I rep=
-laced
-> -   them with octal escapes), and isn't useful without an understanding o=
-f what
-> -   character set it is.
-> -   Written by Mimi Ph\373\364ng-Th\345o V\365 of IBM
-> +   Written by Mimi Phuong-Thao Vo of IBM
->     and John Gilmore of Cygnus Support.  */
->=20=20
->  /********************** FILE HEADER **********************/
-> --=20
-> 2.47.0
 
