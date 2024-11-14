@@ -1,90 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-3223-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3224-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39524D68B30
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 15:29:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96F5ED68B31
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 15:36:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xq3wc5PRmz3023;
-	Fri, 15 Nov 2024 02:29:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.154
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731598160;
-	cv=none; b=G8cxrHq6lWXJTleAsi9fbxJI857QXL1yaJ6GMsiGgmFtPEQ+fnLfiTrn7uSarrG654uyTnkw0rQK3wVUTXU/vH4Dwi7I1HyP9qarJvy77nJrQCCRDn+kE5hdAoagUjBvn3mKzhxM6afDiusyl8ycNg5ZHT/tQ6CL4OYIlkcZC0JFtbfULQukTuVnlgU/rzhbKSjH/KawzATpiIew0EaBwwVwjuFuglbzHS1NYMMMmdMs4t4Unn5oot7BbYT5RikrT79C7Reanhu/wIQx2wGjQFp3moAH6hdEYI7HZ+ZDCyKAq7pYU3jHKNRLmgy3bVa0jpQRNr8hqQA3FeBLYTikIg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xq44j5ZNjz307f;
+	Fri, 15 Nov 2024 02:36:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::228"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731598581;
+	cv=none; b=jt8EYDWMd+u9TYQ6cLV3wk943jmsArv3j3Iypdy88I8xIogB8ZVXPBq0YBjojFdDU85hYh2p115MYwnYwIj7/wTBX7zptma/e1v46n7ZK+imyCCOSrY8hweME5iHyFqhzSOnoU+mgCy9yaaZgWuTbO9sOVqaiFqweL+6sBXw5Bjon2Aay6KqzttzlnNtEG7FYF1CrsTCzis8O3nPY7CNHEjDtKsLuGFYc1FDx/YXbY7cYs8qYpf1RP7KxtZSsSbaI/5CsjhSrNyK8QHRIFH5DvOJorfMdYgsp6jop/p9GC6AkXm7Qjgvwc3VB1gSIvk0v64R1xY/MU3EEuEdmiYfbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731598160; c=relaxed/relaxed;
-	bh=JNXio+hFYDSW3CeIUnq8bODDYIvYBVTs341BclxdZkI=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=lT5E0/RsCD7UxD52sVPUYVP4IioSTaNxqwWeQ2flsNdQLChutq1bM92/FW6KFCYrIjLUZAakzdwmy++GfVv4Wvk5MKLRyjwcf5ALnX12EOjh4hP0L6WZJq2ROUf8VXlYsNm2ctvLc4JQf+FxodW8nhYiCIFSF3Z8JHkSqCkwZw7sRdQkuDXtEAGziQNhTL0mrxBfw721GAjkXmYH56lP7iu5BdYBNnsRMnJLkaYZItxZNvU6AszducGr4KorIFILaVZwAhEJewtMGoXPgi/qfKOZtZeNAmhE788jSORkcK1juO2j/eNMFsF4dOTSBkjldHgP6LDw8sqfh5pYaUk4KQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=PJjSsaGA; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Au+VDt7j; dkim-atps=neutral; spf=pass (client-ip=103.168.172.154; helo=fhigh-a3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1731598581; c=relaxed/relaxed;
+	bh=vOe5I5RV009/ewvKsTnVJ8v2QKmxpVyy8K9Vn3nWYhQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=QtqrA3uwlIAacSjm0aCJ51LwPPB4C8K70QioBbN/v5I3XZEbxjQcmsMGCTNmVYMalF2Kag27eQEjJX/OqLu21IvgvNNYFv+ZIJraxZl+UeRD4pbam8S4z80SJ3A2EwPxTuqq5UYjpvUC4TelZrk0R8kkgby7RVcEYA04v+2sQFWQ54soptbN9LIE7ZDtrkcKyvFVljBbHw8VIUj5rQfZmYiWNQLnLXoWCBvs3zp/QJBp0WiaRMJcDRg8vAu769BLTLH0ImBr99SZSs34bFtmzNLdKEV0LJyvsrKgk0CNzhDlwX2Ac0h+A1yzTTv3BVBL/mLijvHuueIdVKbtY6T0Ow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=FhIZd88T; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=PJjSsaGA;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Au+VDt7j;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=FhIZd88T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.154; helo=fhigh-a3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from fhigh-a3-smtp.messagingengine.com (fhigh-a3-smtp.messagingengine.com [103.168.172.154])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::228; helo=relay8-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::228])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xq3wb68F6z2yxP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2024 02:29:19 +1100 (AEDT)
-Received: from phl-compute-10.internal (phl-compute-10.phl.internal [10.202.2.50])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id A184A114017C;
-	Thu, 14 Nov 2024 10:29:17 -0500 (EST)
-Received: from phl-imap-11 ([10.202.2.101])
-  by phl-compute-10.internal (MEProxy); Thu, 14 Nov 2024 10:29:17 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1731598157;
-	 x=1731684557; bh=JNXio+hFYDSW3CeIUnq8bODDYIvYBVTs341BclxdZkI=; b=
-	PJjSsaGAbC3uED6V7+qefxjF3UQbb3pmKIk9AW5Ka/WAcmsWKAGwR5JtfUMCAAKj
-	PrCkS68NeuA08AhiRm8MleRpCKYfSll1OASnHAtNALB9RmCnOxGIWkAeMxf2Rt4k
-	fGeRqx79rizqdZeVAN1dlCP2Wf027KLwOOYzdWq1051Si6Am2bGWPJRgJHRZmwfy
-	PuaebXIwUzdGtyg8pFbgWGJVsk0JEOu6b6rAsy8IuN5X4jM7OIqh9GiQTBR8VTo4
-	KQbwZWE9X2bkIYZ+pXAHtJV22v20s91o9sKO2Bq0yCvRdeaX7n5VOsPK0rwJzKob
-	lK01aKvmrVyiAol80Mx4Wg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1731598157; x=
-	1731684557; bh=JNXio+hFYDSW3CeIUnq8bODDYIvYBVTs341BclxdZkI=; b=A
-	u+VDt7jVrcckF2sIZatNXZURl0ukGFXsFADH49mc7CAFuhgRcrplca97ZUImAhni
-	LWBy3EZOjR5ENPZ/6lTCqqsQAEk7Gx5dZRmu1hT6Fx6BdfhdmAqQ7nCHWSmWCXrX
-	wX2h5a7reRAqLQ6C4Em6m/DZlP78VqBftde4V6s6Ei/L2bYLtM7Mu6yxJOR7EtRH
-	abhFNHxXLe3Mw19MeNc9ud6oeCfUL5kiNAls5Fwp8wuAhg+Ct9v6n3dDjDHu5OT6
-	FTqWiVcGkzIrU9pJNOdsyXP2PaqqmbK3yhxS1gUxhZIJYsn3WIOuBeCaEb1ugUZl
-	EmrtWVIWclEwGJMgdE73A==
-X-ME-Sender: <xms:TRc2Z-jMBNtjQCb-HQa7A1_p_aOR3Tw1shX1YLBh4_VF-l0FiVrX3Q>
-    <xme:TRc2Z_DK-e728oKOpYc8_NJtjoIg_dqvR1QcdKysVpB9Yw7f9MmHKRYTMPha5eiyt
-    yyVDLs6Mzwiij2ys_E>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefuddrvddvgdejiecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpggftfghnshhusghstghrihgsvgdpuffr
-    tefokffrpgfnqfghnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnth
-    hsucdlqddutddtmdenucfjughrpefoggffhffvvefkjghfufgtgfesthejredtredttden
-    ucfhrhhomhepfdetrhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdrug
-    gvqeenucggtffrrghtthgvrhhnpeeufefggeejjeekudeivdfhieeivddvgedtkeeivdek
-    feegffevgfehleehuefhieenucffohhmrghinhepthhhvghrvghgihhsthgvrhdrtghomh
-    dpkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehm
-    rghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvgdpnhgspghrtghpthhtohephedpmh
-    houggvpehsmhhtphhouhhtpdhrtghpthhtohepmhhpvgesvghllhgvrhhmrghnrdhiugdr
-    rghupdhrtghpthhtohepghgvohhffhesihhnfhhrrgguvggrugdrohhrghdprhgtphhtth
-    hopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdhrtghp
-    thhtohepjhhksehoiihlrggsshdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnh
-    gvlhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
-X-ME-Proxy: <xmx:TRc2Z2FgT1kIrz5NjxvlNXDzqCUWmXoLmLybU3ifufI61Pfv6NENdQ>
-    <xmx:TRc2Z3SbspPkgZtoU5U8pT5C_8g5zLgxPVPunPmSvA7C1Z-TpDHd1g>
-    <xmx:TRc2Z7ws6n0h-XN_z0meiUWU-ehcqp7Z23JnhgxfbgsmPcegxTSvlQ>
-    <xmx:TRc2Z16QHMfpdODpaubS8tP-9ZxT6A50JMGFsB1K-OyqrtzFMY7DiQ>
-    <xmx:TRc2Z9uxurvTtHY39hT-3CvSvfLqw_mwGTWfMAiGE-8t0ZtQM-L7bK8X>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 32DA72220072; Thu, 14 Nov 2024 10:29:17 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xq44g67q7z2yxY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2024 02:36:19 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id A8F971BF210;
+	Thu, 14 Nov 2024 15:36:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1731598569;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=vOe5I5RV009/ewvKsTnVJ8v2QKmxpVyy8K9Vn3nWYhQ=;
+	b=FhIZd88TTOZcqjc0guKQCBJMu2N4P6TeOLSV0DXGYcjgtbVGT7jfK3B49OveA0CQdnbVlF
+	Btjvo5r+wgNRn45asVSf8II6FMlqDNNcsGiEqCen5vYvXLUhbGUMimV+ZOSe5Rdw5r+wdB
+	lG3x66GXT373VkmtNgU7O//RjSYHxaHoJjckcLtnyQzwovz5UVEQFj4aGRNIjjrHoP0PWb
+	+BMe6H44oXDl4r8nfQ6ky4YzSRTfq0wXH96DmfqqxyGokLEQmldFhirtMUrW9GX61XCtmj
+	Q7qKbJDiWwDfxz4NXId9R7+aR5Yxcy3Fo5ozQaDIxzodB7yOlZjUZ2CWyL2x+A==
+From: Maxime Chevallier <maxime.chevallier@bootlin.com>
+To: davem@davemloft.net,
+	Andrew Lunn <andrew@lunn.ch>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Heiner Kallweit <hkallweit1@gmail.com>
+Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
+	netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	thomas.petazzoni@bootlin.com,
+	Herve Codina <herve.codina@bootlin.com>,
+	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH net-next v2 04/10] net: freescale: ucc_geth: Fix WOL configuration
+Date: Thu, 14 Nov 2024 16:35:55 +0100
+Message-ID: <20241114153603.307872-5-maxime.chevallier@bootlin.com>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241114153603.307872-1-maxime.chevallier@bootlin.com>
+References: <20241114153603.307872-1-maxime.chevallier@bootlin.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,59 +76,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Date: Thu, 14 Nov 2024 16:28:56 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Michael Ellerman" <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, "Jeremy Kerr" <jk@ozlabs.org>,
- "Geoff Levand" <geoff@infradead.org>
-Message-Id: <9eed5e2a-4ed1-4195-a5b5-511b4d5cd53a@app.fastmail.com>
-In-Reply-To: <20241114125111.599093-1-mpe@ellerman.id.au>
-References: <20241114125111.599093-1-mpe@ellerman.id.au>
-Subject: Re: [RFC PATCH 01/20] powerpc/cell: Remove support for IBM Cell Blades
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: maxime.chevallier@bootlin.com
 
-On Thu, Nov 14, 2024, at 13:50, Michael Ellerman wrote:
-> IBM Cell Blades used the Cell processor and the "blade" server form
-> factor. They were sold as models QS20, QS21 & QS22 from roughly 2006 to
-> 2012 [1]. They were used in a few supercomputers (eg. Roadrunner) that
-> have since been dismantled, and were not that widely used otherwise.
->
-> Until recently I still had a working QS22, which meant I was able to
-> keep the platform support working, but unfortunately that machine has
-> now died.
->
-> I'm not aware of any users. If there is a user that wants to keep the
-> upstream support working, we can look at bringing some of the code back
-> as appropriate.
->
-> See previous discussion at [2].
->
-> Remove the top-level config symbol PPC_IBM_CELL_BLADE, and then
-> the dependent symbols PPC_CELL_NATIVE, PPC_CELL_COMMON, CBE_RAS,
-> PPC_IBM_CELL_RESETBUTTON, PPC_IBM_CELL_POWERBUTTON, CBE_THERM, and
-> AXON_MSI. Then remove the associated C files and headers, and trim
-> unused header content (some is shared with PS3).
->
-> Note that PPC_CELL_COMMON sounds like it would build code shared with
-> PS3, but it does not. It's a relic from when code was shared between the
-> Blade support and QPACE support.
->
-> Most of the primary authors already have CREDITS entries, with the
-> exception of Christian, so add one for him.
->
-> [1]: https://www.theregister.com/2011/06/28/ibm_kills_qs22_blade
-> [2]: 
-> https://lore.kernel.org/linuxppc-dev/60581044-df82-40ad-b94c-56468007a93e@app.fastmail.com
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+The get/set_wol ethtool ops rely on querying the PHY for its WoL
+capabilities, checking for the presence of a PHY and a PHY interrupts
+isn't enough. Address that by cleaning up the WoL configuration
+sequence.
 
-Nice clearnup! Whole series
+Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
+---
+V2: Reworked the whole configuration sequence, and introduced an
+internal attribute to store the PHY wol capabilities
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+ drivers/net/ethernet/freescale/ucc_geth.c     |  4 +--
+ drivers/net/ethernet/freescale/ucc_geth.h     |  1 +
+ .../net/ethernet/freescale/ucc_geth_ethtool.c | 36 +++++++++++++++----
+ 3 files changed, 32 insertions(+), 9 deletions(-)
 
-Everything here looks good, I had a few comments, but those
-are all for follow-up work.
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+index 13b8f8401c81..42254ee64a35 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.c
++++ b/drivers/net/ethernet/freescale/ucc_geth.c
+@@ -3413,11 +3413,11 @@ static int ucc_geth_suspend(struct platform_device *ofdev, pm_message_t state)
+ 	 */
+ 	ugeth_disable(ugeth, COMM_DIR_RX_AND_TX);
+ 
+-	if (ugeth->wol_en & WAKE_MAGIC) {
++	if (ugeth->wol_en & WAKE_MAGIC && !ugeth->phy_wol_en) {
+ 		setbits32(ugeth->uccf->p_uccm, UCC_GETH_UCCE_MPD);
+ 		setbits32(&ugeth->ug_regs->maccfg2, MACCFG2_MPE);
+ 		ucc_fast_enable(ugeth->uccf, COMM_DIR_RX_AND_TX);
+-	} else if (!(ugeth->wol_en & WAKE_PHY)) {
++	} else if (!ugeth->phy_wol_en) {
+ 		phy_stop(ndev->phydev);
+ 	}
+ 
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.h b/drivers/net/ethernet/freescale/ucc_geth.h
+index c08a56b7c9fe..e08cfc8d8904 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.h
++++ b/drivers/net/ethernet/freescale/ucc_geth.h
+@@ -1217,6 +1217,7 @@ struct ucc_geth_private {
+ 	int oldduplex;
+ 	int oldlink;
+ 	int wol_en;
++	u32 phy_wol_en;
+ 
+ 	struct device_node *node;
+ };
+diff --git a/drivers/net/ethernet/freescale/ucc_geth_ethtool.c b/drivers/net/ethernet/freescale/ucc_geth_ethtool.c
+index fb5254d7d1ba..89b323ef8145 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth_ethtool.c
++++ b/drivers/net/ethernet/freescale/ucc_geth_ethtool.c
+@@ -346,26 +346,48 @@ static void uec_get_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
+ 	struct ucc_geth_private *ugeth = netdev_priv(netdev);
+ 	struct phy_device *phydev = netdev->phydev;
+ 
+-	if (phydev && phydev->irq)
+-		wol->supported |= WAKE_PHY;
++	wol->supported = 0;
++	wol->wolopts = 0;
++
++	if (phydev)
++		phy_ethtool_get_wol(phydev, wol);
++
+ 	if (qe_alive_during_sleep())
+ 		wol->supported |= WAKE_MAGIC;
+ 
+-	wol->wolopts = ugeth->wol_en;
++	wol->wolopts |= ugeth->wol_en;
+ }
+ 
+ static int uec_set_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
+ {
+ 	struct ucc_geth_private *ugeth = netdev_priv(netdev);
+ 	struct phy_device *phydev = netdev->phydev;
++	int ret = 0;
+ 
+-	if (wol->wolopts & ~(WAKE_PHY | WAKE_MAGIC))
+-		return -EINVAL;
+-	else if (wol->wolopts & WAKE_PHY && (!phydev || !phydev->irq))
++	if (phydev) {
++		ret = phy_ethtool_set_wol(phydev, wol);
++		if (ret == -EOPNOTSUPP) {
++			ugeth->phy_wol_en = 0;
++		} else if (ret) {
++			return ret;
++		} else {
++			ugeth->phy_wol_en = wol->wolopts;
++			goto out;
++		}
++	}
++
++	/* If the PHY isn't handling the WoL and the MAC is asked to more than
++	 * WAKE_MAGIC, error-out
++	 */
++	if (!ugeth->phy_wol_en &&
++	    wol->wolopts & ~WAKE_MAGIC)
+ 		return -EINVAL;
+-	else if (wol->wolopts & WAKE_MAGIC && !qe_alive_during_sleep())
++
++	if (wol->wolopts & WAKE_MAGIC &&
++	    !qe_alive_during_sleep())
+ 		return -EINVAL;
+ 
++out:
+ 	ugeth->wol_en = wol->wolopts;
+ 	device_set_wakeup_enable(&netdev->dev, ugeth->wol_en);
+ 
+-- 
+2.47.0
 
-      Arnd
 
