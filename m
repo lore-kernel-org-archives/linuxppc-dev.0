@@ -1,53 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-3167-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3168-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 938ACD65C58
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 07:39:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40F3DD65C57
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 08:40:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XpsV10kQKz2yV8;
-	Thu, 14 Nov 2024 18:39:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731569945;
-	cv=none; b=fmt67JrsvetWiMLHE451UeaqzYCf7IozTc7f846VbUGNfHuoJjBvwitVpgWrPYsqSe8wpHafo9d1IgAVj32lAPU3JAiPZl9HvQJSDBbC0Dn9luPnUOdRsThd5z5bWeH+2E7GLPNQ60gf+wcAEhXcOKQpSZx38QWxFXOal7dzb2C+9IfceT76dFhRjtWRgoqVp9GQ+GbOWr+efUHtk/hN3OtYfNU/gsEOKYyWLE/RRrCgY4T8ZVPoKryxPYUSO0qVhM6gywXazAso9kyhKAlxWfl2xjtUW/VvQYP/43iyuE3EBavPx8NUj6YH6CTNf/4yO2N8YP62kKeC82R4zysC9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xpts935Yqz2yNB;
+	Thu, 14 Nov 2024 19:40:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731573645;
+	cv=none; b=TUCFtn6cGkaz0jk9u8/wRYlhdj8eJVrY4GoEs7nyFvh/rW5/u6vbx4h9sxToejkPCHBA6K8D3qhhL1H4GbzSSqn3tb9/OejBu85KF083q/88Tt0F3egF7cnoAIQOhb0yvOw0VaTcTv5np5NOmfVXpBykTIOolWXrDtsy+8livt6EORefx7IFO5mlxHoZidPq1DCmXvyZbyENmnwGwDoXFebeoC80pPBrrHdHefLp/0Q/9atkv3MRK/VAFUM/Ov8qM9mYYvM60etKlnmrOsDK1k827BUWYWmQIf+bDYWbRl1V3aLviT5XtDLqE7htP9Q3SVy6a6mTzLH8Hvr9yBpzuA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731569945; c=relaxed/relaxed;
-	bh=l951S4IYbydSxanTEwIpdoBDufR3qPn1Xqk5u0bjTOM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=POnaQ7zZ6OyjXdLYmke6fVHA4LKzTj9AMSdf6+UkHmH2hJQwDPXrCVx9mKGTR2I5wGO/3MahfFqHVdnnmPtQDxBrN9fOxphMPEClL39uaidiW0cteOtfRagyn4HsmVDkRukbgJPhgpFrrqcYGvUOZfq3/A4HA1RpXIVuQ8Xed8iFJyqL3NqUiUObXK9AYOSCXBEAON0pFW8Jhhiu2LNpqHZde37f6mqGU8pgY4/FR5F2nz75Xbm9DhaCeeW/cZmnyOxK+VGlpbW6Qej2H6qkQS/fGadEt5Q9VX7cBKxRBZF/LXhkiSCG/8wNP2tg8nArx2fO7vuonwS3hvG1j2rjJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	t=1731573645; c=relaxed/relaxed;
+	bh=6xrE/gtThAVFqCKFClL7h8R5FiTofGAnJybX2eQOVFU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=mdx2iPLnoBdnYbxN1gEbmGKfBHNmVezLxkheKFWs1waXIlq1nN4PK5PjPQmY/S5lBX7ExOadgLypnRZMmlowmJnVqQlzNlWj/uYZ4mpp2jURsbevVk708BeRmgFleU/C4zCQyEIxNl+cnOv/FVUNUxnZU4g7UhpFOgyXB59neWHtEftuQULpgTrCk7IKp1W2pu+ZKlW1Cl7pvRVdnI3aAoxIEGpvgUkneMkBPpFfFwrKQ7+LwP5RUbYCVdERVSh5ixsPEFOj8ZelpG7gekO07igjscSQiCqa4mxfciDZXfCdDvI2VZYXTyVfO8IW1t7/9KamQVRkWeyidZL9uvl3FQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gXp5Z3KT; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gXp5Z3KT;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XpsV00JWvz2xs8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2024 18:39:03 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4XpsTw45yvz9sSX;
-	Thu, 14 Nov 2024 08:39:00 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xJoK55fB28wk; Thu, 14 Nov 2024 08:39:00 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4XpsTw3MBWz9sSV;
-	Thu, 14 Nov 2024 08:39:00 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 63BAB8B7A0;
-	Thu, 14 Nov 2024 08:39:00 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id AypRQ-2jg_wh; Thu, 14 Nov 2024 08:39:00 +0100 (CET)
-Received: from [192.168.232.55] (unknown [192.168.232.55])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 283798B763;
-	Thu, 14 Nov 2024 08:39:00 +0100 (CET)
-Message-ID: <b22fb30d-96a5-4455-a0f6-0d7fe564cfa3@csgroup.eu>
-Date: Thu, 14 Nov 2024 08:38:59 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xpts81H9jz2yLV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2024 19:40:43 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4AE6e2kw002152;
+	Thu, 14 Nov 2024 08:40:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=6xrE/gtThAVFqCKFC
+	lL7h8R5FiTofGAnJybX2eQOVFU=; b=gXp5Z3KTexQUjO+SF/UC68WSFM1PnReLz
+	2wvvJ0trYizFdY+BrVy4OFmYL5wSyvdnqds8bfsxvseumUN42ZX1E3/TgCJjnMOI
+	BWB3V0LqfALAmSDejUZy2KlGBbuYWTzZj3U7ZNh517p9e81RpvCKlHaXBF/QS2bd
+	dmbiyLwOHlgqIoT3AEgzDjnsp9KuexLy+fvvx6grQPWIxdUoUcX0e7cRBHAu1oBi
+	h1KQO+a4SH0nHIr4SifDcs7+GB23/kDVe1e6Jc8QntUO6S1ehOc27tEyfo/CP22R
+	fDQALqpDxob4vkK5x7evO2H6BddBKtDOYrU3yuz1x++q1db5Q343g==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42wc4s8xca-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 Nov 2024 08:40:37 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4AE3mTQo021445;
+	Thu, 14 Nov 2024 08:40:36 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 42tms17u10-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 14 Nov 2024 08:40:36 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4AE8eVfO57606558
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 14 Nov 2024 08:40:31 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 83E512004F;
+	Thu, 14 Nov 2024 08:40:31 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3EA2C20043;
+	Thu, 14 Nov 2024 08:40:29 +0000 (GMT)
+Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown [9.43.39.126])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 14 Nov 2024 08:40:29 +0000 (GMT)
+From: Kajol Jain <kjain@linux.ibm.com>
+To: mpe@ellerman.id.au, maddy@linux.ibm.com
+Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, disgoel@linux.ibm.com,
+        hbathini@linux.ibm.com, adubey@linux.ibm.com, gautam@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/4] docs: ABI: sysfs-bus-event_source-devices-vpa-pmu: Document sysfs event format entries for vpa_pmu
+Date: Thu, 14 Nov 2024 14:10:11 +0530
+Message-ID: <20241114084013.1140010-2-kjain@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <20241114084013.1140010-1-kjain@linux.ibm.com>
+References: <20241114084013.1140010-1-kjain@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,32 +87,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH -next v2] soc/fsl/qbman: make use of the helper function
- kthread_run_on_cpu()
-To: Hongbo Li <lihongbo22@huawei.com>,
- Frederic Weisbecker <frederic@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-References: <20240904022633.2079803-1-lihongbo22@huawei.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20240904022633.2079803-1-lihongbo22@huawei.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: ma5GWSP6fJWRUATXD1zioukZMnd3MUDf
+X-Proofpoint-ORIG-GUID: ma5GWSP6fJWRUATXD1zioukZMnd3MUDf
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 phishscore=0
+ suspectscore=0 impostorscore=0 malwarescore=0 mlxlogscore=999
+ clxscore=1015 lowpriorityscore=0 adultscore=0 bulkscore=0
+ priorityscore=1501 spamscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2409260000 definitions=main-2411140065
 
-Hi,
+Details are added for the vpa_pmu event and format
+attributes in the ABI documentation.
 
-Le 04/09/2024 à 04:26, Hongbo Li a écrit :
-> Replace kthread_create/kthread_bind/wake_up_process() with
-> kthread_run_on_cpu() to simplify the code.
-> 
-> Signed-off-by: Hongbo Li <lihongbo22@huawei.com>
+Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+Co-developed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+---
+ .../sysfs-bus-event_source-devices-vpa-pmu    | 24 +++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-vpa-pmu
 
-A similar change is proposed as part of a larger series, see patch 7 in 
-that series 
-https://lore.kernel.org/lkml/20241112142248.20503-1-frederic@kernel.org/
+diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-vpa-pmu b/Documentation/ABI/testing/sysfs-bus-event_source-devices-vpa-pmu
+new file mode 100644
+index 000000000000..8285263ff78d
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-vpa-pmu
+@@ -0,0 +1,24 @@
++What:           /sys/bus/event_source/devices/vpa_pmu/format
++Date:           November 2024
++Contact:        Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
++Description:    Read-only. Attribute group to describe the magic bits
++                that go into perf_event_attr.config for a particular pmu.
++                (See ABI/testing/sysfs-bus-event_source-devices-format).
++
++                Each attribute under this group defines a bit range of the
++                perf_event_attr.config. Supported attribute are listed
++                below::
++			event = "config:0-31" - event ID
++
++		For example::
++
++		  l1_to_l2_lat = "event=0x1"
++
++What:           /sys/bus/event_source/devices/vpa_pmu/events
++Date:           November 2024
++Contact:        Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
++Description:	Read-only. Attribute group to describe performance monitoring
++               events for the Virtual Processor Area events. Each attribute
++		in this group describes a single performance monitoring event
++		supported by vpa_pmu. The name of the file is the name of
++		the event (See ABI/testing/sysfs-bus-event_source-devices-events).
+-- 
+2.43.5
 
-I prefer to leave this patch aside and not interfere with Frederic's work.
-
-Christophe
 
