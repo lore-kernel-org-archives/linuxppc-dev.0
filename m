@@ -1,40 +1,39 @@
-Return-Path: <linuxppc-dev+bounces-3210-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3211-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29912D68B26
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 14:12:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A21E1D68B27
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 14:12:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xq2Cm4bS8z2xvh;
-	Fri, 15 Nov 2024 01:12:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.190
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731593540;
-	cv=none; b=ej90w+IFoGPoQuxujaFr8+8dfdJmPVc/y7PkomtS0JOHDcfPZubpvEb7MGCa39Baeowx5OOFecPFOHgciQioUQ1RNSVS9MtT1aHP+YDNy44w7s/te8W7r611nJY3lxqbLX7aroRyXj0F/MTJuEkCjBmdyyZOJ9ZP4SXDlwBqgh6x2Vf3aky8exXYvXgiVegg/F05+N0d1HCxyvCo5+jMrKAyIpCPGdRwS7uPcF+9k0oJTdhTyv9RSklJHP96UQBZnJLF4RXNfxPidlkz4rJVqkpADdU2BZi9CPrFDTdvnJlmFeXUGjXVMFbcAczTKHgqyOUUFykpgClgAgjIiwlsYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xq2DD7254z3089;
+	Fri, 15 Nov 2024 01:12:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731593564;
+	cv=none; b=n0HvRPlwPuHqhDp1MgzG3fPvgEL57ilMgXtlrltPHh1ZJGJ7mbXR/MG9YKwvKAgSbkCVqwFMvxBevPQfbFehQsSyPaaiMgN28IGTeFK9jXsirooSINhuQ1zFesfiW8oNxs9qdZe6YOZFTRZIVVJb0Ja3i1wHAhRk5NWeExNSP/OPltcjZqX3Zd8S61twO1Z9FV6ED7NVFhD5XaEfyajh3oF014FcVcvi7yrfVIimXR7PorL7To9hQQNCihUjGPXrZ493yO6Cu8JGnQkSfgRlWa5X7wsOowv9JSjn1KtITXJfZLmLQ0SRZg6TerON8gNlsVdqnHgxcaPPStavtTrSVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731593540; c=relaxed/relaxed;
-	bh=tPdVNFNydRkGjxrKLLidVYIO9BYOAKsV1uCBKmqE/m4=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=dA7F0YjaaVFI705B3GSyAfmAvyIl7ZcPRyWKrKZIPiC2A4ns+Kai7r9tG07TYjUn5WCeR3ps/PYDEJwSWQwdev9UdHeYn5mzRPEt+FSF+VWfErUI3lrNiBK3fMNkHRsm6Hb3bGKSd1ZlfkEzi0kYBIPCzn4YxzqvTt51TiOPPDRnIPJgNRfDuNJvlgidVoHw0i2slK5AX0tiVAqnhtpYiry0iwROfnjsoa98vIZFZtwPmXBQhU5U6GB9Hu1QmK9d0zLsGNMGRAzUVO0rHuB09qDbt9A/31Vy2M3E2rDBltZsN5/Pz9ceA8GG+7CearPl6WpmTkUjAPsaBrngRt5CNw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	t=1731593564; c=relaxed/relaxed;
+	bh=+kOAwVJwxk8sa0mMFYERZpQ3PjTXPeH0K4Vxesiog5I=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=jvhGxPfeqoNPHubmd63ZGuGRS4zhu+QMiAsQfs86mlRUOEarAANiirofiYHFLbOcqD846StQkZPdPEEZ1fLXdeMcJNOsdt3jpx/h3VjKj01nlBC51HZ2xbThUs9roQZwr55exYhQIqWjtMnXc1eidcHvUk4tjMajGWdECw7AENOkSCS+YRtnwisMAqvVRa6Me5B1zVgwQXFS1HYP0Zhxpay02vYvHqKxyXbFuAc1lh4pL+1zhlyS0fMrB9fsli/Ov9sJJshubWOhLOSKX5JpYbhngsvg2J3IgwN3ca1m5wFc1lOs6p+KP9lxs4grGUWQYEWXj1Kf8t0Xy92ZmgXPXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xq2Cj5RJTz2ysX
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2024 01:12:15 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.88.214])
-	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4Xq2B432T7z21l8v;
-	Thu, 14 Nov 2024 22:10:52 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xq2DC2fKNz2ysX
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2024 01:12:43 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.162.254])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4Xq29H0Jkrz10V9V;
+	Thu, 14 Nov 2024 22:10:11 +0800 (CST)
 Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
-	by mail.maildlp.com (Postfix) with ESMTPS id 2DDBF1A016C;
-	Thu, 14 Nov 2024 22:12:08 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 8A3B41800F2;
+	Thu, 14 Nov 2024 22:12:06 +0800 (CST)
 Received: from localhost.localdomain (10.50.165.33) by
  kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1258.34; Thu, 14 Nov 2024 22:12:07 +0800
+ 15.2.1258.34; Thu, 14 Nov 2024 22:12:05 +0800
 From: Yicong Yang <yangyicong@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
 	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
@@ -47,12 +46,10 @@ CC: <linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
 	<jonathan.cameron@huawei.com>, <prime.zeng@hisilicon.com>,
 	<linuxarm@huawei.com>, <yangyicong@hisilicon.com>, <xuwei5@huawei.com>,
 	<guohanjun@huawei.com>
-Subject: [PATCH v9 2/4] arch_topology: Support SMT control for OF based system
-Date: Thu, 14 Nov 2024 22:11:25 +0800
-Message-ID: <20241114141127.23232-3-yangyicong@huawei.com>
+Subject: [PATCH v9 0/4] Support SMT control on arm64
+Date: Thu, 14 Nov 2024 22:11:23 +0800
+Message-ID: <20241114141127.23232-1-yangyicong@huawei.com>
 X-Mailer: git-send-email 2.31.0
-In-Reply-To: <20241114141127.23232-1-yangyicong@huawei.com>
-References: <20241114141127.23232-1-yangyicong@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,82 +70,73 @@ X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
 
 From: Yicong Yang <yangyicong@hisilicon.com>
 
-On building the topology from the devicetree, we've already
-gotten the SMT thread number of each core. Update the largest
-SMT thread number and enable the SMT control by the end of
-topology parsing.
+The core CPU control framework supports runtime SMT control which
+is not yet supported on arm64. Besides the general vulnerabilities
+concerns we want this runtime control on our arm64 server for:
 
-The core's SMT control provides two interface to the users [1]:
-1) enable/disable SMT by writing on/off
-2) enable/disable SMT by writing thread number 1/max_thread_number
+- better single CPU performance in some cases
+- saving overall power consumption
 
-If a system have more than one SMT thread number the 2) may
-not handle it well, since there're multiple thread numbers in the
-system and 2) only accept 1/max_thread_number. So issue a warning
-to notify the users if such system detected.
+This patchset implements it in the following aspects:
 
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/ABI/testing/sysfs-devices-system-cpu#n542
-Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
----
- drivers/base/arch_topology.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+- Provides a default topology_is_primary_thread()
+- support retrieve SMT thread number on OF based system
+- support retrieve SMT thread number on ACPI based system
+- select HOTPLUG_SMT for arm64
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 3ebe77566788..31e0291ee660 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -11,6 +11,7 @@
- #include <linux/cleanup.h>
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpu_smt.h>
- #include <linux/device.h>
- #include <linux/of.h>
- #include <linux/slab.h>
-@@ -506,6 +507,10 @@ core_initcall(free_raw_capacity);
- #endif
- 
- #if defined(CONFIG_ARM64) || defined(CONFIG_RISCV)
-+
-+/* Maximum SMT thread number detected used to enable the SMT control */
-+static unsigned int max_smt_thread_num;
-+
- /*
-  * This function returns the logic cpu number of the node.
-  * There are basically three kinds of return values:
-@@ -565,6 +570,17 @@ static int __init parse_core(struct device_node *core, int package_id,
- 		i++;
- 	} while (1);
- 
-+	/*
-+	 * If max_smt_thread_num has been initialized and doesn't match
-+	 * the thread number of this entry, then the system has
-+	 * heterogeneous SMT topology.
-+	 */
-+	if (max_smt_thread_num && max_smt_thread_num != i)
-+		pr_warn_once("Heterogeneous SMT topology is partly supported by SMT control\n");
-+
-+	if (max_smt_thread_num < i)
-+		max_smt_thread_num = i;
-+
- 	cpu = get_cpu_for_node(core);
- 	if (cpu >= 0) {
- 		if (!leaf) {
-@@ -677,6 +693,14 @@ static int __init parse_socket(struct device_node *socket)
- 	if (!has_socket)
- 		ret = parse_cluster(socket, 0, -1, 0);
- 
-+	/*
-+	 * Notify the CPU framework of the SMT support. A thread number of 1
-+	 * can be handled by the framework so we don't need to check
-+	 * max_smt_thread_num to see we support SMT or not.
-+	 */
-+	if (max_smt_thread_num)
-+		cpu_smt_set_num_threads(max_smt_thread_num, max_smt_thread_num);
-+
- 	return ret;
- }
- 
+Tests has been done on our real ACPI based arm64 server and on
+ACPI/OF based QEMU VMs.
+
+Change since v8:
+- Fix WARN on ACPI based non-SMT platform noticed in v7, per Pierre.
+Link: https://lore.kernel.org/all/20241105093237.63565-1-yangyicong@huawei.com/
+
+Change since v7:
+Address the comments from Thomas:
+- Add a newline between the glue define and function of topology_is_primary_thread
+- Explicitly mention the sibling mask won't be empty in the comment
+Link: https://lore.kernel.org/lkml/20241030125415.18994-1-yangyicong@huawei.com/
+
+Change since v6:
+- Fix unused variable if !CONFIG_ARM64 || !CONFIG_RISV found by lkp-test
+- Fix max_smt_thread_num updating in OF path pointed by Pierre
+- Drop unused variable and refine the comments/commit per Pierre
+Link: https://lore.kernel.org/linux-arm-kernel/20241015021841.35713-1-yangyicong@huawei.com/
+
+Change since v5:
+- Drop the dependency on CONFIG_SMP since it's always on on arm64, per Pierre
+- Avoid potential multiple calls of cpu_smt_set_num_threads() on asymmetric system, per Dietmar
+- Detect heterogenous SMT topology and issue a warning for partly support, per Pierre
+- Thanks Dietmar for testing, didn't pickup the tag due to code changes. Thanks testing by Pierre
+Link: https://lore.kernel.org/linux-arm-kernel/20240806085320.63514-1-yangyicong@huawei.com/
+
+Change since v4:
+- Provide a default topology_is_primary_thread() in the framework, Per Will
+Link: https://lore.kernel.org/linux-arm-kernel/20231121092602.47792-1-yangyicong@huawei.com/
+
+Change since v3:
+- Fix some build and kconfig error reported by kernel test robot <lkp@intel.com>
+Link: https://lore.kernel.org/linux-arm-kernel/20231114040110.54590-1-yangyicong@huawei.com/
+
+Change since v2:
+- Detect SMT thread number at topology build from ACPI/DT, avoid looping CPUs
+- Split patches into ACPI/OF/arch_topology path and enable the kconfig for arm64
+Link: https://lore.kernel.org/linux-arm-kernel/20231010115335.13862-1-yangyicong@huawei.com/
+
+Yicong Yang (4):
+  cpu/SMT: Provide a default topology_is_primary_thread()
+  arch_topology: Support SMT control for OF based system
+  arm64: topology: Support SMT control on ACPI based system
+  arm64: Kconfig: Enable HOTPLUG_SMT
+
+ arch/arm64/Kconfig                  |  1 +
+ arch/arm64/kernel/topology.c        | 59 +++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/topology.h |  1 +
+ arch/x86/include/asm/topology.h     |  2 +-
+ drivers/base/arch_topology.c        | 24 ++++++++++++
+ include/linux/topology.h            | 20 ++++++++++
+ 6 files changed, 106 insertions(+), 1 deletion(-)
+
 -- 
 2.24.0
 
