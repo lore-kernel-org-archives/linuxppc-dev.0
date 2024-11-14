@@ -1,58 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-3179-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3180-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 720BFD68B01
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 12:51:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E48CD68B02
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 12:51:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xq0QN2T1hz301Y;
-	Thu, 14 Nov 2024 23:51:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xq0QP709Tz302b;
+	Thu, 14 Nov 2024 23:51:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731588684;
-	cv=none; b=MzxY1kSDMOGJarSYFY3kOM78f0rgay1GADN31fGPU8PhbgEU4FUaDezu6m8cidnV659iABeg1EOXkjEtHDYkUaLU1TYwpu/CJSX4uPMvbwdMKrrsDc3Umz0lCDFngrrr5g+4oI0kt4mwSGa1wgtKJ6OdfnMtxUqrvwkqCEooQRiFp+KZjKqM9DotLEvsw0On9mXIeuHFjAw0oDOeTM+gzSEyYQ5LzougkSUVaxi9xUsywpnhsd+aYPkEPW2MsM2zp0nR0BPrnk1N/nKPKZldOrE/lAabHCr0JiZ32YbyzVnZTQg7hFF1BzqFyttmTSYvI2o4Xp7Ux3aGNjW/5ruflw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731588685;
+	cv=none; b=fvf4lH/mOix1iFv4mPkAg2NMq6pJiYMDszqWSz3LM2zkTOMSwrLSHw931ICCtrQaUV1uYetyMC1b2WS3I1pTyIHmPUy4084CRMCLEo/4eIOchaAJWqGbnX8p/1PRHzTqcu+RDwpt+g+mZ0ZlkX19pQoAo7KkT7hIw/6symu+sBZO51yvrqITLpIZgh4rn/KaHcmi4tTPm+oUT08uzNXwE2znYmI+eQBNodSjWIUUVAw+X3Gjsr1/Fh2Xhr/11RuPc8ON2oB2OfPAWQmny0DwtYFrkRsaCyrOw0+hDXftO62QWCKtzoWAfKyuNicnQQukP2IuWQ5vTNXW8FeIKpdrIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731588684; c=relaxed/relaxed;
-	bh=yZuaM54MomYe+84BCNR93OgCg6wwJOHqxGUzH96G2gk=;
+	t=1731588685; c=relaxed/relaxed;
+	bh=ZUGaNs5IqIAOlBm1IdqFuPq/u1GvPSYCiPGh3HoQ1M8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=i6xOZ6wSMdSyaoIk4VpOGRLyB+qPSQYE64yeTj8Uzu/bvwhKOhqx3R7sM3t8b5jVDtbsfwpeOd2xzFK8gx31J0hK9WmbLIex/py5CbTOfEe4swvMMwsYzFezX/MbMGHN37Rdm0e6hC1VHN9lufSR2R+c+plX6n1IurTf28KWcrA2431R6Hs1Nl5a1Bz2Vbi82yAzLyzRk/onNtobJmJdAVAtaKgIH+lZPEYbHThEaglvm25T6tTyg5tBlKNKEUNp1GBh8WAtatlK4LAhsXOAu0jngq70gk58yNKC8w5C/lXmpsivowwm8rGttt5r/0oZRxwr4Po8kLp8GOJxgEPMnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rLOzQ2FI; dkim-atps=neutral
+	 MIME-Version; b=gcZfR503VoyQ3cAOZXt/1MhUykB5l4oeMSIVOuQ//mm0vFhnrFolMry4t0syVrr4TOP0aFY98Tr+pxmQv1smfLSNSL769d/BxGJL8cMhN2XGc4vOMgjhTkqZx6hv4MdsiyE/dncA6+MH4T+JjGHsCLzVEI/ow/kJM/D659AtOI6em4bt4PBjuD6BM22TQWYPA8AYyk28kKSPcj2O38kVoAtkEnlGZzRsMJQtFAkqtzjL944gHE5usEUNfimRCaDwqJkzW02OqWDt4DAAXnrpUA6Jslz/m+VpcvBp/kQfhfGF6E9T/6ad7QKrX/n+MaHn9jtI9GQzKqNV1lTHu3ebHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=cK0Z+jeI; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rLOzQ2FI;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=cK0Z+jeI;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xq0QL0lVCz2yvq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2024 23:51:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xq0QM44Yjz2yxY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2024 23:51:23 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731588679;
-	bh=yZuaM54MomYe+84BCNR93OgCg6wwJOHqxGUzH96G2gk=;
+	s=201909; t=1731588680;
+	bh=ZUGaNs5IqIAOlBm1IdqFuPq/u1GvPSYCiPGh3HoQ1M8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=rLOzQ2FIxZ/pOm1v3w2XhhlYlGYkKl7S77h5sk7+J/7c53n5dXoA5NmYVzpldZr/r
-	 1OdE7nPjDk69iVUigLh/IxDZm7uobf8vWe8AB/Le6KWzY3A3SXO+kglUwPzMGduWg2
-	 Xh4bPM5lI+mhYrvQ268S+s+ksUR+QmGg6TQcp418Mhvp7X0b8mg0WtXnSHywgNyUqi
-	 0p/EhHwndOvVxmTFduIcPhWT8eWAUuRRa2D4GygyXpB8ELL9Y5HcxfaIovUi9qd0sy
-	 +5XWer538Qqtc9KjHmCGi1uh3PX1Ka/qMzx/Kpphuuabo8iLb/o+ZswN0MkiyTrMS7
-	 mfMu/j3ODFDxw==
+	b=cK0Z+jeIceTyj/siOsMtqtYIexyqXL8/0AZgmDiR9VumqwMpr+2oNzv2UVEi+4TR+
+	 2ggnqicK5DcLE+sUR/oP2s/eKOQEyXNIK+bNrGw1uUvLKOLhIyOEMGlYpEZj876NYI
+	 X0hM9yUq2PVvpgklSLax8xQpwI+QqARawdwA08au84V1siFzN6bQU6QHXty/CA/K7E
+	 IT7aOw37rpMIiOWf9TkMm9pdpe07qyX/F0fRNL6VCUqlW+q8s+MbjeZ6cqmE7l207b
+	 AuQhRg7kvzWWWizkGaRTWZjqhE+eFBMDW8ByA6y9FgVAChb+EHZPItBxbgEaDTS0gH
+	 xXO1p51t2DLpg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xq0QH186Pz4x8H;
-	Thu, 14 Nov 2024 23:51:19 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xq0QJ4dn4z4xG4;
+	Thu, 14 Nov 2024 23:51:20 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
 Cc: <linux-kernel@vger.kernel.org>,
 	<jk@ozlabs.org>,
 	<arnd@arndb.de>,
 	<geoff@infradead.org>
-Subject: [RFC PATCH 05/20] powerpc/cell: Remove CBE_CPUFREQ_SPU_GOVERNOR
-Date: Thu, 14 Nov 2024 23:50:54 +1100
-Message-ID: <20241114125111.599093-5-mpe@ellerman.id.au>
+Subject: [RFC PATCH 08/20] powerpc: Remove PPC_OF_PLATFORM_PCI
+Date: Thu, 14 Nov 2024 23:50:57 +1100
+Message-ID: <20241114125111.599093-8-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241114125111.599093-1-mpe@ellerman.id.au>
 References: <20241114125111.599093-1-mpe@ellerman.id.au>
@@ -68,190 +68,156 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Although this driver is still buildable, it can't actually do anything
-in practice now that the low-level cpufreq driver for Cell has been
-disabled due to the removal of CBE_RAS.
+The Cell blade support was the last user of PPC_OF_PLATFORM_PCI, so
+remove it.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/Kconfig           |   9 --
- arch/powerpc/platforms/cell/Makefile          |   2 -
- .../platforms/cell/cpufreq_spudemand.c        | 134 ------------------
- 3 files changed, 145 deletions(-)
- delete mode 100644 arch/powerpc/platforms/cell/cpufreq_spudemand.c
+ arch/powerpc/Kconfig              |   5 --
+ arch/powerpc/kernel/Makefile      |   2 +-
+ arch/powerpc/kernel/of_platform.c | 102 ------------------------------
+ 3 files changed, 1 insertion(+), 108 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/of_platform.c
 
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index 758dc08a6dde..db65bfcd1e74 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -21,13 +21,4 @@ config SPU_BASE
- 	bool
- 	select PPC_COPRO_BASE
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 00d6cd943a1f..a6bea6788fe1 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -435,11 +435,6 @@ config PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT
+ 	  PCI domain dependent and each PCI controller on own domain can have
+ 	  256 PCI buses, like it is on other Linux architectures.
  
--config CBE_CPUFREQ_SPU_GOVERNOR
--	tristate "CBE frequency scaling based on SPU usage"
--	depends on SPU_FS && CPU_FREQ
--	default m
--	help
--	  This governor checks for spu usage to adjust the cpu frequency.
--	  If no spu is running on a given cpu, that cpu will be throttled to
--	  the minimal possible frequency.
+-config PPC_OF_PLATFORM_PCI
+-	bool
+-	depends on PCI
+-	depends on PPC64 # not supported on 32 bits yet
 -
- endmenu
-diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
-index 1d85c41939f9..7e5ff239c376 100644
---- a/arch/powerpc/platforms/cell/Makefile
-+++ b/arch/powerpc/platforms/cell/Makefile
-@@ -1,6 +1,4 @@
- # SPDX-License-Identifier: GPL-2.0
--obj-$(CONFIG_CBE_CPUFREQ_SPU_GOVERNOR)	+= cpufreq_spudemand.o
--
- obj-$(CONFIG_SPU_BASE)			+= spu_callbacks.o spu_base.o \
- 					   spu_syscalls.o \
- 					   spufs/
-diff --git a/arch/powerpc/platforms/cell/cpufreq_spudemand.c b/arch/powerpc/platforms/cell/cpufreq_spudemand.c
+ config ARCH_SUPPORTS_UPROBES
+ 	def_bool y
+ 
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index f43c1198768c..d6febd297e72 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -70,7 +70,7 @@ obj-y				:= cputable.o syscalls.o switch.o \
+ 				   signal.o sysfs.o cacheinfo.o time.o \
+ 				   prom.o traps.o setup-common.o \
+ 				   udbg.o misc.o io.o misc_$(BITS).o \
+-				   of_platform.o prom_parse.o firmware.o \
++				   prom_parse.o firmware.o \
+ 				   hw_breakpoint_constraints.o interrupt.o \
+ 				   kdebugfs.o stacktrace.o syscall.o
+ obj-y				+= ptrace/
+diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
 deleted file mode 100644
-index 79172ba36eca..000000000000
---- a/arch/powerpc/platforms/cell/cpufreq_spudemand.c
+index adc76fa58d1e..000000000000
+--- a/arch/powerpc/kernel/of_platform.c
 +++ /dev/null
-@@ -1,134 +0,0 @@
+@@ -1,102 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-or-later
 -/*
-- * spu aware cpufreq governor for the cell processor
-- *
-- * © Copyright IBM Corporation 2006-2008
-- *
-- * Author: Christian Krafft <krafft@de.ibm.com>
+- *    Copyright (C) 2006 Benjamin Herrenschmidt, IBM Corp.
+- *			 <benh@kernel.crashing.org>
+- *    and		 Arnd Bergmann, IBM Corp.
 - */
 -
--#include <linux/cpufreq.h>
--#include <linux/sched.h>
--#include <linux/sched/loadavg.h>
--#include <linux/module.h>
--#include <linux/timer.h>
--#include <linux/workqueue.h>
+-#undef DEBUG
+-
+-#include <linux/string.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/export.h>
+-#include <linux/mod_devicetable.h>
+-#include <linux/pci.h>
+-#include <linux/platform_device.h>
 -#include <linux/atomic.h>
--#include <asm/machdep.h>
--#include <asm/spu.h>
 -
--#define POLL_TIME	100000		/* in µs */
--#define EXP		753		/* exp(-1) in fixed-point */
+-#include <asm/errno.h>
+-#include <asm/topology.h>
+-#include <asm/pci-bridge.h>
+-#include <asm/ppc-pci.h>
+-#include <asm/eeh.h>
 -
--struct spu_gov_info_struct {
--	unsigned long busy_spus;	/* fixed-point */
--	struct cpufreq_policy *policy;
--	struct delayed_work work;
--	unsigned int poll_int;		/* µs */
--};
--static DEFINE_PER_CPU(struct spu_gov_info_struct, spu_gov_info);
+-#ifdef CONFIG_PPC_OF_PLATFORM_PCI
 -
--static int calc_freq(struct spu_gov_info_struct *info)
+-/* The probing of PCI controllers from of_platform is currently
+- * 64 bits only, mostly due to gratuitous differences between
+- * the 32 and 64 bits PCI code on PowerPC and the 32 bits one
+- * lacking some bits needed here.
+- */
+-
+-static int of_pci_phb_probe(struct platform_device *dev)
 -{
--	int cpu;
--	int busy_spus;
+-	struct pci_controller *phb;
 -
--	cpu = info->policy->cpu;
--	busy_spus = atomic_read(&cbe_spu_info[cpu_to_node(cpu)].busy_spus);
+-	/* Check if we can do that ... */
+-	if (ppc_md.pci_setup_phb == NULL)
+-		return -ENODEV;
 -
--	info->busy_spus = calc_load(info->busy_spus, EXP, busy_spus * FIXED_1);
--	pr_debug("cpu %d: busy_spus=%d, info->busy_spus=%ld\n",
--			cpu, busy_spus, info->busy_spus);
+-	pr_info("Setting up PCI bus %pOF\n", dev->dev.of_node);
 -
--	return info->policy->max * info->busy_spus / FIXED_1;
--}
+-	/* Alloc and setup PHB data structure */
+-	phb = pcibios_alloc_controller(dev->dev.of_node);
+-	if (!phb)
+-		return -ENODEV;
 -
--static void spu_gov_work(struct work_struct *work)
--{
--	struct spu_gov_info_struct *info;
--	int delay;
--	unsigned long target_freq;
+-	/* Setup parent in sysfs */
+-	phb->parent = &dev->dev;
 -
--	info = container_of(work, struct spu_gov_info_struct, work.work);
--
--	/* after cancel_delayed_work_sync we unset info->policy */
--	BUG_ON(info->policy == NULL);
--
--	target_freq = calc_freq(info);
--	__cpufreq_driver_target(info->policy, target_freq, CPUFREQ_RELATION_H);
--
--	delay = usecs_to_jiffies(info->poll_int);
--	schedule_delayed_work_on(info->policy->cpu, &info->work, delay);
--}
--
--static void spu_gov_init_work(struct spu_gov_info_struct *info)
--{
--	int delay = usecs_to_jiffies(info->poll_int);
--	INIT_DEFERRABLE_WORK(&info->work, spu_gov_work);
--	schedule_delayed_work_on(info->policy->cpu, &info->work, delay);
--}
--
--static void spu_gov_cancel_work(struct spu_gov_info_struct *info)
--{
--	cancel_delayed_work_sync(&info->work);
--}
--
--static int spu_gov_start(struct cpufreq_policy *policy)
--{
--	unsigned int cpu = policy->cpu;
--	struct spu_gov_info_struct *info = &per_cpu(spu_gov_info, cpu);
--	struct spu_gov_info_struct *affected_info;
--	int i;
--
--	if (!cpu_online(cpu)) {
--		printk(KERN_ERR "cpu %d is not online\n", cpu);
--		return -EINVAL;
+-	/* Setup the PHB using arch provided callback */
+-	if (ppc_md.pci_setup_phb(phb)) {
+-		pcibios_free_controller(phb);
+-		return -ENODEV;
 -	}
 -
--	if (!policy->cur) {
--		printk(KERN_ERR "no cpu specified in policy\n");
--		return -EINVAL;
--	}
+-	/* Process "ranges" property */
+-	pci_process_bridge_OF_ranges(phb, dev->dev.of_node, 0);
 -
--	/* initialize spu_gov_info for all affected cpus */
--	for_each_cpu(i, policy->cpus) {
--		affected_info = &per_cpu(spu_gov_info, i);
--		affected_info->policy = policy;
--	}
+-	/* Init pci_dn data structures */
+-	pci_devs_phb_init_dynamic(phb);
 -
--	info->poll_int = POLL_TIME;
+-	/* Create EEH PE for the PHB */
+-	eeh_phb_pe_create(phb);
 -
--	/* setup timer */
--	spu_gov_init_work(info);
+-	/* Scan the bus */
+-	pcibios_scan_phb(phb);
+-	if (phb->bus == NULL)
+-		return -ENXIO;
+-
+-	/* Claim resources. This might need some rework as well depending
+-	 * whether we are doing probe-only or not, like assigning unassigned
+-	 * resources etc...
+-	 */
+-	pcibios_claim_one_bus(phb->bus);
+-
+-	/* Add probed PCI devices to the device model */
+-	pci_bus_add_devices(phb->bus);
 -
 -	return 0;
 -}
 -
--static void spu_gov_stop(struct cpufreq_policy *policy)
--{
--	unsigned int cpu = policy->cpu;
--	struct spu_gov_info_struct *info = &per_cpu(spu_gov_info, cpu);
--	int i;
--
--	/* cancel timer */
--	spu_gov_cancel_work(info);
--
--	/* clean spu_gov_info for all affected cpus */
--	for_each_cpu (i, policy->cpus) {
--		info = &per_cpu(spu_gov_info, i);
--		info->policy = NULL;
--	}
--}
--
--static struct cpufreq_governor spu_governor = {
--	.name = "spudemand",
--	.start = spu_gov_start,
--	.stop = spu_gov_stop,
--	.owner = THIS_MODULE,
+-static const struct of_device_id of_pci_phb_ids[] = {
+-	{ .type = "pci", },
+-	{ .type = "pcix", },
+-	{ .type = "pcie", },
+-	{ .type = "pciex", },
+-	{ .type = "ht", },
+-	{}
 -};
--cpufreq_governor_init(spu_governor);
--cpufreq_governor_exit(spu_governor);
 -
--MODULE_DESCRIPTION("SPU-aware cpufreq governor for the cell processor");
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
+-static struct platform_driver of_pci_phb_driver = {
+-	.probe = of_pci_phb_probe,
+-	.driver = {
+-		.name = "of-pci",
+-		.of_match_table = of_pci_phb_ids,
+-	},
+-};
+-
+-builtin_platform_driver(of_pci_phb_driver);
+-
+-#endif /* CONFIG_PPC_OF_PLATFORM_PCI */
 -- 
 2.47.0
 
