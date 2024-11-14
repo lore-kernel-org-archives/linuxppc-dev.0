@@ -1,58 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-3181-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3182-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAF74D68B01
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 12:51:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ED56D68B02
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Nov 2024 12:52:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xq0QQ0Mwqz303B;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xq0QQ5SV7z304H;
 	Thu, 14 Nov 2024 23:51:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731588685;
-	cv=none; b=YxvAAaF7+dwOpudm/vL+L5hS//HiM0UiayYRMal5UJ8z5Eqv8dsAXi+apiwemXINtyFQMczF67wttyJMF23laJYS8LkhYCeTY1WQNAWS9R8bHkIVKdbOVXItP40QQRd+TI9XNEfIEavsbzouGoX3XkfRd49wjiv/xiNdavTfFV8xfSxBqbjUEiHZaVKfYCKSfVKq7RrLTlQHS2u57GYaFojBYf5f7FvvlUiXEf1Qf9togoMI4ABaLrcfL2jD8tTgkE1fZ0BQKm02koxW4W711AP/OWr7DA+aMAs8ayNUUywXviBHshHpWPBcTW2A1mxz08f1PYoENulqpWsXXOETKw==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731588686;
+	cv=none; b=blRIFrT+b41AedugnO1jY2P4Xti3W702rtUSQp+rBQQkkI4Rmm3NdnCCFfkSkTw0yEKLUDck81doBgjmfQ/DXLCZquMQjVbvvX3j+mpKqS5rZ2nkIGS0MbCkx73+mhzqkZDMYaAO4egKHLE1/3G4/oJgWc6JF5fB8D7RpGUmsp0GNsLlWlcvoXpZXfyiTbs5/Iyl5sawR5KsX4xyqLWzq88OMSlonrxiB4Q30zAxBRWkQmVhOaC7sSgBLRM5h51MCdox+I5pg7LyYx7dQK0rNYmtNgvUKz/uoj0QP3VMgSkaPvOkfo7iYiOuWMSteBhK+qbcmgThdHK+UtEs5yf8sA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731588685; c=relaxed/relaxed;
-	bh=k47xxBuht2qM0OhNM9p3a1YZvaBeQWkbDTtwU+lYzt8=;
+	t=1731588686; c=relaxed/relaxed;
+	bh=KNw9mp3a3oIXwNqDLpHVNtTGvOCQgwVdDAscbVGZevI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Yg4K4OLJDTHSxNlK0lnFSrepyeh53I7JZY9ro4CQTiKDwR6sGnm71GluGKrrEnJhRvllk4V6AKO7hfvmCGah4YkiLKdA7dae/pr6KDU9oA06S/Mydx9TQS2Ha0vrMru0lxVwYCCyPGRjOMldnLfOxy8BVWenz4HnCP7tMt+fDra68MLHQga9OCoHB6QYISYEx1Sgl1qs2zqMb5chIphC+xeWIvEI1FkfOJ5C5MpImFK6ThdHmwAjmnUpFrBlSA/waz105YCKLIUKNgzlfOhmzTuHBshZbOW0lj1sNUdbr8c7CeeLbkWIzmoIpnU83Hw7cA8bAVRnROz+t/jcX7FABg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SxOyDXO1; dkim-atps=neutral
+	 MIME-Version; b=VCZDNb0iaHB+ENg7VVVwf38ZCUNX5Gtnlm+W1QVpp9CKMZFPeK2bSF6aaWl8X1VSFHpI2pkbd0/uvDKQ7ykg2GTpbhGLiAZeJdpu+fMC7o6QgaLpisy1o5gTra/NMbSeNjnlkgtiyvVXAf/80mVbJusxPagyViP2c1WuL5qSxEddR1pXuqiBW13UjncXS1nO5VmhM5O2/xgfEna5Xa7Und0vRlRmnjVz/4bC/mhNq+gp7uMK0BeMGVULHOYZTw87q8U8I8nFt3byRVnbp1xlWYUWeVd40agLZfr1KvbQqr03KzeIw4S/jHH+Gqs4yrztGJbT7bZZ19JW+ku6e0bd5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ioLlK1DT; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SxOyDXO1;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ioLlK1DT;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xq0QM1GyVz2yx5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2024 23:51:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xq0QN40Glz301n
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Nov 2024 23:51:24 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731588680;
-	bh=k47xxBuht2qM0OhNM9p3a1YZvaBeQWkbDTtwU+lYzt8=;
+	s=201909; t=1731588681;
+	bh=KNw9mp3a3oIXwNqDLpHVNtTGvOCQgwVdDAscbVGZevI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=SxOyDXO12WTxOnSHJLZmZYs2tg4LALE8CV9BVMPnx9BMsMq42tc56jkgZOdAwOHDX
-	 keGiSDrgYPQk59XTpNZ2qs1GBy9SF/K34+IC4LgfCWQCs4fk7AQ4131AisQYZKYYMA
-	 AODC2YiLATm5zHhy/nGKlH0pmxLoPPTyCg7F29Qgwi52UJsXR9Tw2IGGEUt+b4/jbe
-	 tZKFqsMlol7h44i4JCyr8n5jxkw+6wxohap/WuBC+aPkzaDl0WEI8wlmBlbIb1vqA2
-	 JISOge+KAtHN3ZTP+5N9pME5t83R+MOUJlVC4St4bHgHz5YS88e+IzDW977OLtzkbs
-	 hvE38Yv67EJPA==
+	b=ioLlK1DTpi7iAELxSsPvi6d/T/OipIm2QNlHta45suT+oxgbJJGzzZ4UoMjsxxdoc
+	 hd7j0nyjD5C+DKMr8+vvlPLI/6ox3KKZLd2lAVQUL2tRECB66FZyCwdLAa0o0OyQav
+	 SV6Qod91JJGEAKau2eVOSDiCgRvyliZ+uh01CRQxIwoEgBwgqvuZn+ye7hbf2baSwP
+	 iZdxHPqWzhQlQESoOXmQAaSDWHg+pPXsllq+OxB842mCbXIns2cXT7SYOYRYXGVWfh
+	 z6HS6PMr67RoRcw281pcz24VsF2pXcq3nBT1tcMK/FdWjSkW15IzCPTs7hBo4fQ67j
+	 VtCpO/YqcfajA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xq0QJ1GQCz4xD7;
-	Thu, 14 Nov 2024 23:51:20 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xq0QK4b0nz4xSX;
+	Thu, 14 Nov 2024 23:51:21 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
 Cc: <linux-kernel@vger.kernel.org>,
 	<jk@ozlabs.org>,
 	<arnd@arndb.de>,
 	<geoff@infradead.org>
-Subject: [RFC PATCH 07/20] powerpc: Remove DCR_MMIO and the DCR generic layer
-Date: Thu, 14 Nov 2024 23:50:56 +1100
-Message-ID: <20241114125111.599093-7-mpe@ellerman.id.au>
+Subject: [RFC PATCH 10/20] powerpc/io: Remove PPC_INDIRECT_MMIO
+Date: Thu, 14 Nov 2024 23:50:59 +1100
+Message-ID: <20241114125111.599093-10-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241114125111.599093-1-mpe@ellerman.id.au>
 References: <20241114125111.599093-1-mpe@ellerman.id.au>
@@ -70,383 +70,137 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The Cell blade support was the last user of DCR_MMIO, so it can now
-be removed.
+The Cell blade support was the last user of PPC_INDIRECT_MMIO, so it can
+now be removed.
 
-That only leaves DCR_NATIVE, meaning the DCR generic layer which allows
-using either DCR_NATIVE or DCR_MMIO is also unnecessary, remove it too.
+PPC_INDIRECT_PIO is still used by Power8 powernv, so it needs to remain.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/Kconfig                   |   5 +-
- arch/powerpc/include/asm/dcr-generic.h |  36 -----
- arch/powerpc/include/asm/dcr-mmio.h    |  44 ------
- arch/powerpc/include/asm/dcr.h         |  32 -----
- arch/powerpc/sysdev/dcr.c              | 182 -------------------------
- 5 files changed, 1 insertion(+), 298 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/dcr-generic.h
- delete mode 100644 arch/powerpc/include/asm/dcr-mmio.h
+ arch/powerpc/include/asm/io.h  | 58 +++-------------------------------
+ arch/powerpc/kernel/setup_64.c |  2 +-
+ arch/powerpc/platforms/Kconfig |  3 --
+ 3 files changed, 6 insertions(+), 57 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index a0ce777f9706..00d6cd943a1f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -407,12 +407,9 @@ config ARCH_HAS_ADD_PAGES
- config PPC_DCR_NATIVE
- 	bool
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index fd92ac450169..fcb4ecca30a4 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -65,8 +65,8 @@ extern resource_size_t isa_mem_base;
+ extern bool isa_io_special;
  
--config PPC_DCR_MMIO
--	bool
--
- config PPC_DCR
- 	bool
--	depends on PPC_DCR_NATIVE || PPC_DCR_MMIO
-+	depends on PPC_DCR_NATIVE
- 	default y
+ #ifdef CONFIG_PPC32
+-#if defined(CONFIG_PPC_INDIRECT_PIO) || defined(CONFIG_PPC_INDIRECT_MMIO)
+-#error CONFIG_PPC_INDIRECT_{PIO,MMIO} are not yet supported on 32 bits
++#ifdef CONFIG_PPC_INDIRECT_PIO
++#error CONFIG_PPC_INDIRECT_PIO is not yet supported on 32 bits
+ #endif
+ #endif
  
- config PPC_PCI_OF_BUS_MAP
-diff --git a/arch/powerpc/include/asm/dcr-generic.h b/arch/powerpc/include/asm/dcr-generic.h
-deleted file mode 100644
-index 099c28dd40b9..000000000000
---- a/arch/powerpc/include/asm/dcr-generic.h
-+++ /dev/null
-@@ -1,36 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * (c) Copyright 2006 Benjamin Herrenschmidt, IBM Corp.
-- *                    <benh@kernel.crashing.org>
-- */
--
--#ifndef _ASM_POWERPC_DCR_GENERIC_H
--#define _ASM_POWERPC_DCR_GENERIC_H
--#ifdef __KERNEL__
--#ifndef __ASSEMBLY__
--
--enum host_type_t {DCR_HOST_MMIO, DCR_HOST_NATIVE, DCR_HOST_INVALID};
--
--typedef struct {
--	enum host_type_t type;
--	union {
--		dcr_host_mmio_t mmio;
--		dcr_host_native_t native;
--	} host;
--} dcr_host_t;
--
--extern bool dcr_map_ok_generic(dcr_host_t host);
--
--extern dcr_host_t dcr_map_generic(struct device_node *dev, unsigned int dcr_n,
--			  unsigned int dcr_c);
--extern void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c);
--
--extern u32 dcr_read_generic(dcr_host_t host, unsigned int dcr_n);
--
--extern void dcr_write_generic(dcr_host_t host, unsigned int dcr_n, u32 value);
--
--#endif /* __ASSEMBLY__ */
--#endif /* __KERNEL__ */
--#endif /* _ASM_POWERPC_DCR_GENERIC_H */
--
--
-diff --git a/arch/powerpc/include/asm/dcr-mmio.h b/arch/powerpc/include/asm/dcr-mmio.h
-deleted file mode 100644
-index fc6d93ef4a13..000000000000
---- a/arch/powerpc/include/asm/dcr-mmio.h
-+++ /dev/null
-@@ -1,44 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * (c) Copyright 2006 Benjamin Herrenschmidt, IBM Corp.
-- *                    <benh@kernel.crashing.org>
-- */
--
--#ifndef _ASM_POWERPC_DCR_MMIO_H
--#define _ASM_POWERPC_DCR_MMIO_H
--#ifdef __KERNEL__
--
--#include <asm/io.h>
--
--typedef struct {
--	void __iomem *token;
--	unsigned int stride;
--	unsigned int base;
--} dcr_host_mmio_t;
--
--static inline bool dcr_map_ok_mmio(dcr_host_mmio_t host)
--{
--	return host.token != NULL;
--}
--
--extern dcr_host_mmio_t dcr_map_mmio(struct device_node *dev,
--				    unsigned int dcr_n,
--				    unsigned int dcr_c);
--extern void dcr_unmap_mmio(dcr_host_mmio_t host, unsigned int dcr_c);
--
--static inline u32 dcr_read_mmio(dcr_host_mmio_t host, unsigned int dcr_n)
--{
--	return in_be32(host.token + ((host.base + dcr_n) * host.stride));
--}
--
--static inline void dcr_write_mmio(dcr_host_mmio_t host,
--				  unsigned int dcr_n,
--				  u32 value)
--{
--	out_be32(host.token + ((host.base + dcr_n) * host.stride), value);
--}
--
--#endif /* __KERNEL__ */
--#endif /* _ASM_POWERPC_DCR_MMIO_H */
--
--
-diff --git a/arch/powerpc/include/asm/dcr.h b/arch/powerpc/include/asm/dcr.h
-index 64030e3a1f30..180021cd0b30 100644
---- a/arch/powerpc/include/asm/dcr.h
-+++ b/arch/powerpc/include/asm/dcr.h
-@@ -10,46 +10,14 @@
- #ifndef __ASSEMBLY__
- #ifdef CONFIG_PPC_DCR
- 
--#ifdef CONFIG_PPC_DCR_NATIVE
- #include <asm/dcr-native.h>
--#endif
- 
--#ifdef CONFIG_PPC_DCR_MMIO
--#include <asm/dcr-mmio.h>
--#endif
--
--
--/* Indirection layer for providing both NATIVE and MMIO support. */
--
--#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
--
--#include <asm/dcr-generic.h>
--
--#define DCR_MAP_OK(host)	dcr_map_ok_generic(host)
--#define dcr_map(dev, dcr_n, dcr_c) dcr_map_generic(dev, dcr_n, dcr_c)
--#define dcr_unmap(host, dcr_c) dcr_unmap_generic(host, dcr_c)
--#define dcr_read(host, dcr_n) dcr_read_generic(host, dcr_n)
--#define dcr_write(host, dcr_n, value) dcr_write_generic(host, dcr_n, value)
--
--#else
--
--#ifdef CONFIG_PPC_DCR_NATIVE
- typedef dcr_host_native_t dcr_host_t;
- #define DCR_MAP_OK(host)	dcr_map_ok_native(host)
- #define dcr_map(dev, dcr_n, dcr_c) dcr_map_native(dev, dcr_n, dcr_c)
- #define dcr_unmap(host, dcr_c) dcr_unmap_native(host, dcr_c)
- #define dcr_read(host, dcr_n) dcr_read_native(host, dcr_n)
- #define dcr_write(host, dcr_n, value) dcr_write_native(host, dcr_n, value)
--#else
--typedef dcr_host_mmio_t dcr_host_t;
--#define DCR_MAP_OK(host)	dcr_map_ok_mmio(host)
--#define dcr_map(dev, dcr_n, dcr_c) dcr_map_mmio(dev, dcr_n, dcr_c)
--#define dcr_unmap(host, dcr_c) dcr_unmap_mmio(host, dcr_c)
--#define dcr_read(host, dcr_n) dcr_read_mmio(host, dcr_n)
--#define dcr_write(host, dcr_n, value) dcr_write_mmio(host, dcr_n, value)
--#endif
--
--#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
+@@ -261,9 +261,9 @@ extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
+  * for PowerPC is as close as possible to the x86 version of these, and thus
+  * provides fairly heavy weight barriers for the non-raw versions
+  *
+- * In addition, they support a hook mechanism when CONFIG_PPC_INDIRECT_MMIO
+- * or CONFIG_PPC_INDIRECT_PIO are set allowing the platform to provide its
+- * own implementation of some or all of the accessors.
++ * In addition, they support a hook mechanism when CONFIG_PPC_INDIRECT_PIO
++ * is set allowing the platform to provide its own implementation of some
++ * of the accessors.
+  */
  
  /*
-  * additional helpers to read the DCR * base from the device-tree
-diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
-index 70ce66eadff1..cb44a69958e7 100644
---- a/arch/powerpc/sysdev/dcr.c
-+++ b/arch/powerpc/sysdev/dcr.c
-@@ -11,107 +11,6 @@
- #include <linux/of_address.h>
- #include <asm/dcr.h>
+@@ -277,51 +277,7 @@ extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
+ /* Shortcut to the MMIO argument pointer */
+ #define PCI_IO_ADDR	volatile void __iomem *
  
--#ifdef CONFIG_PPC_DCR_MMIO
--static struct device_node *find_dcr_parent(struct device_node *node)
--{
--	struct device_node *par, *tmp;
--	const u32 *p;
+-/* Indirect IO address tokens:
+- *
+- * When CONFIG_PPC_INDIRECT_MMIO is set, the platform can provide hooks
+- * on all MMIOs. (Note that this is all 64 bits only for now)
+- *
+- * To help platforms who may need to differentiate MMIO addresses in
+- * their hooks, a bitfield is reserved for use by the platform near the
+- * top of MMIO addresses (not PIO, those have to cope the hard way).
+- *
+- * The highest address in the kernel virtual space are:
+- *
+- *  d0003fffffffffff	# with Hash MMU
+- *  c00fffffffffffff	# with Radix MMU
+- *
+- * The top 4 bits are reserved as the region ID on hash, leaving us 8 bits
+- * that can be used for the field.
+- *
+- * The direct IO mapping operations will then mask off those bits
+- * before doing the actual access, though that only happen when
+- * CONFIG_PPC_INDIRECT_MMIO is set, thus be careful when you use that
+- * mechanism
+- *
+- * For PIO, there is a separate CONFIG_PPC_INDIRECT_PIO which makes
+- * all PIO functions call through a hook.
+- */
 -
--	for (par = of_node_get(node); par;) {
--		if (of_property_read_bool(par, "dcr-controller"))
--			break;
--		p = of_get_property(par, "dcr-parent", NULL);
--		tmp = par;
--		if (p == NULL)
--			par = of_get_parent(par);
--		else
--			par = of_find_node_by_phandle(*p);
--		of_node_put(tmp);
--	}
--	return par;
--}
+-#ifdef CONFIG_PPC_INDIRECT_MMIO
+-#define PCI_IO_IND_TOKEN_SHIFT	52
+-#define PCI_IO_IND_TOKEN_MASK	(0xfful << PCI_IO_IND_TOKEN_SHIFT)
+-#define PCI_FIX_ADDR(addr)						\
+-	((PCI_IO_ADDR)(((unsigned long)(addr)) & ~PCI_IO_IND_TOKEN_MASK))
+-#define PCI_GET_ADDR_TOKEN(addr)					\
+-	(((unsigned long)(addr) & PCI_IO_IND_TOKEN_MASK) >> 		\
+-		PCI_IO_IND_TOKEN_SHIFT)
+-#define PCI_SET_ADDR_TOKEN(addr, token) 				\
+-do {									\
+-	unsigned long __a = (unsigned long)(addr);			\
+-	__a &= ~PCI_IO_IND_TOKEN_MASK;					\
+-	__a |= ((unsigned long)(token)) << PCI_IO_IND_TOKEN_SHIFT;	\
+-	(addr) = (void __iomem *)__a;					\
+-} while(0)
+-#else
+ #define PCI_FIX_ADDR(addr) (addr)
 -#endif
 -
--#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
--
--bool dcr_map_ok_generic(dcr_host_t host)
--{
--	if (host.type == DCR_HOST_NATIVE)
--		return dcr_map_ok_native(host.host.native);
--	else if (host.type == DCR_HOST_MMIO)
--		return dcr_map_ok_mmio(host.host.mmio);
--	else
--		return false;
--}
--EXPORT_SYMBOL_GPL(dcr_map_ok_generic);
--
--dcr_host_t dcr_map_generic(struct device_node *dev,
--			   unsigned int dcr_n,
--			   unsigned int dcr_c)
--{
--	dcr_host_t host;
--	struct device_node *dp;
--	const char *prop;
--
--	host.type = DCR_HOST_INVALID;
--
--	dp = find_dcr_parent(dev);
--	if (dp == NULL)
--		return host;
--
--	prop = of_get_property(dp, "dcr-access-method", NULL);
--
--	pr_debug("dcr_map_generic(dcr-access-method = %s)\n", prop);
--
--	if (!strcmp(prop, "native")) {
--		host.type = DCR_HOST_NATIVE;
--		host.host.native = dcr_map_native(dev, dcr_n, dcr_c);
--	} else if (!strcmp(prop, "mmio")) {
--		host.type = DCR_HOST_MMIO;
--		host.host.mmio = dcr_map_mmio(dev, dcr_n, dcr_c);
--	}
--
--	of_node_put(dp);
--	return host;
--}
--EXPORT_SYMBOL_GPL(dcr_map_generic);
--
--void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c)
--{
--	if (host.type == DCR_HOST_NATIVE)
--		dcr_unmap_native(host.host.native, dcr_c);
--	else if (host.type == DCR_HOST_MMIO)
--		dcr_unmap_mmio(host.host.mmio, dcr_c);
--	else /* host.type == DCR_HOST_INVALID */
--		WARN_ON(true);
--}
--EXPORT_SYMBOL_GPL(dcr_unmap_generic);
--
--u32 dcr_read_generic(dcr_host_t host, unsigned int dcr_n)
--{
--	if (host.type == DCR_HOST_NATIVE)
--		return dcr_read_native(host.host.native, dcr_n);
--	else if (host.type == DCR_HOST_MMIO)
--		return dcr_read_mmio(host.host.mmio, dcr_n);
--	else /* host.type == DCR_HOST_INVALID */
--		WARN_ON(true);
--	return 0;
--}
--EXPORT_SYMBOL_GPL(dcr_read_generic);
--
--void dcr_write_generic(dcr_host_t host, unsigned int dcr_n, u32 value)
--{
--	if (host.type == DCR_HOST_NATIVE)
--		dcr_write_native(host.host.native, dcr_n, value);
--	else if (host.type == DCR_HOST_MMIO)
--		dcr_write_mmio(host.host.mmio, dcr_n, value);
--	else /* host.type == DCR_HOST_INVALID */
--		WARN_ON(true);
--}
--EXPORT_SYMBOL_GPL(dcr_write_generic);
--
--#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
--
- unsigned int dcr_resource_start(const struct device_node *np,
- 				unsigned int index)
- {
-@@ -137,86 +36,5 @@ unsigned int dcr_resource_len(const struct device_node *np, unsigned int index)
- }
- EXPORT_SYMBOL_GPL(dcr_resource_len);
  
--#ifdef CONFIG_PPC_DCR_MMIO
+ /*
+  * Non ordered and non-swapping "raw" accessors
+@@ -632,11 +588,7 @@ __do_out_asm(_rec_outl, "stwbrx")
+ #define DEF_PCI_HOOK_pio(x)	NULL
+ #endif
+ 
+-#ifdef CONFIG_PPC_INDIRECT_MMIO
+-#define DEF_PCI_HOOK_mem(x)	x
+-#else
+ #define DEF_PCI_HOOK_mem(x)	NULL
+-#endif
+ 
+ /* Structure containing all the hooks */
+ extern struct ppc_pci_io {
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index e67f3048611f..7284c8021eeb 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -892,7 +892,7 @@ unsigned long memory_block_size_bytes(void)
+ }
+ #endif
+ 
+-#if defined(CONFIG_PPC_INDIRECT_PIO) || defined(CONFIG_PPC_INDIRECT_MMIO)
++#ifdef CONFIG_PPC_INDIRECT_PIO
+ struct ppc_pci_io ppc_pci_io;
+ EXPORT_SYMBOL(ppc_pci_io);
+ #endif
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index d11ade7cf7b3..b78c132d47ab 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -186,9 +186,6 @@ config PPC_INDIRECT_PIO
+ 	bool
+ 	select GENERIC_IOMAP
+ 
+-config PPC_INDIRECT_MMIO
+-	bool
 -
--static u64 of_translate_dcr_address(struct device_node *dev,
--				    unsigned int dcr_n,
--				    unsigned int *out_stride)
--{
--	struct device_node *dp;
--	const u32 *p;
--	unsigned int stride;
--	u64 ret = OF_BAD_ADDR;
--
--	dp = find_dcr_parent(dev);
--	if (dp == NULL)
--		return OF_BAD_ADDR;
--
--	/* Stride is not properly defined yet, default to 0x10 for Axon */
--	p = of_get_property(dp, "dcr-mmio-stride", NULL);
--	stride = (p == NULL) ? 0x10 : *p;
--
--	/* XXX FIXME: Which property name is to use of the 2 following ? */
--	p = of_get_property(dp, "dcr-mmio-range", NULL);
--	if (p == NULL)
--		p = of_get_property(dp, "dcr-mmio-space", NULL);
--	if (p == NULL)
--		goto done;
--
--	/* Maybe could do some better range checking here */
--	ret = of_translate_address(dp, p);
--	if (ret != OF_BAD_ADDR)
--		ret += (u64)(stride) * (u64)dcr_n;
--	if (out_stride)
--		*out_stride = stride;
--
-- done:
--	of_node_put(dp);
--	return ret;
--}
--
--dcr_host_mmio_t dcr_map_mmio(struct device_node *dev,
--			     unsigned int dcr_n,
--			     unsigned int dcr_c)
--{
--	dcr_host_mmio_t ret = { .token = NULL, .stride = 0, .base = dcr_n };
--	u64 addr;
--
--	pr_debug("dcr_map(%pOF, 0x%x, 0x%x)\n",
--		 dev, dcr_n, dcr_c);
--
--	addr = of_translate_dcr_address(dev, dcr_n, &ret.stride);
--	pr_debug("translates to addr: 0x%llx, stride: 0x%x\n",
--		 (unsigned long long) addr, ret.stride);
--	if (addr == OF_BAD_ADDR)
--		return ret;
--	pr_debug("mapping 0x%x bytes\n", dcr_c * ret.stride);
--	ret.token = ioremap(addr, dcr_c * ret.stride);
--	if (ret.token == NULL)
--		return ret;
--	pr_debug("mapped at 0x%p -> base is 0x%p\n",
--		 ret.token, ret.token - dcr_n * ret.stride);
--	ret.token -= dcr_n * ret.stride;
--	return ret;
--}
--EXPORT_SYMBOL_GPL(dcr_map_mmio);
--
--void dcr_unmap_mmio(dcr_host_mmio_t host, unsigned int dcr_c)
--{
--	dcr_host_mmio_t h = host;
--
--	if (h.token == NULL)
--		return;
--	h.token += host.base * h.stride;
--	iounmap(h.token);
--	h.token = NULL;
--}
--EXPORT_SYMBOL_GPL(dcr_unmap_mmio);
--
--#endif /* defined(CONFIG_PPC_DCR_MMIO) */
--
--#ifdef CONFIG_PPC_DCR_NATIVE
- DEFINE_SPINLOCK(dcr_ind_lock);
- EXPORT_SYMBOL_GPL(dcr_ind_lock);
--#endif	/* defined(CONFIG_PPC_DCR_NATIVE) */
--
+ source "drivers/cpufreq/Kconfig"
+ 
+ menu "CPUIdle driver"
 -- 
 2.47.0
 
