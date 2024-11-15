@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3297-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3298-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 516A8D68BDB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C6CFD68BDA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:16:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XqrvM6wXdz3c6Q;
-	Sat, 16 Nov 2024 09:15:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqrvf5WXxz3c6q;
+	Sat, 16 Nov 2024 09:16:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731706067;
-	cv=none; b=ID6tuWeobL90CtPRo4uy6f2QGLJeibi5S1cTuL5yYWNOrC4Xu/K9LWgea9GgbTSwn9F5lWbBJcE/1RaSWYNqmBzd8e8kCPN38Gf4+PKT/PD3oYgE6uFGd5pGdZx1CNYo6hrKUvZ0uEsEX2UiqalVWbfMH/MWVRczLB3/F1fPZv651EUa4QUARF7BSRKeKG7FWLJp1qjB2n7nAGlFiNbZpp+Mi/b6NQJD+uYKDoMvrK64us+4CSdjVmYUnXVGORiVm5NDisqqUI2Uel5Zh4dhDcy4GQYkybx6nueBzqaT0VIIzDbIY+y5/sGk86awMeImXovkhYS7am0iVFPL2YygSA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731706066;
+	cv=none; b=ZK/aUcWS8oPVLr/Y1pW7wy/G9cvmH6C6Nu9cAHrgi9f/h/96/FPckvUpf3WjgsEvl+5t7e+z9gtNp+Xj4BI4+H608Bsv35trvl/AzNnWmzKG1XqndEtDTbbNf2sni2SDVY8Dnw5ETpzpZio33g2OvaptO4s38g+ZJftXOmK9F+/L2JidwkxrXDdM6u4IrEchBDlt+Jizb554z/2kc2NbnZaLPTcBNuoLi6WBoAfsnMn1Zzgy4HGGNUDmk5lpLsZ9rIkF3S28kmTxPI602z2qXq/tJH1kXrozXK0JhpSkqZT8BNBdIzoB+DfUYRWiBRg1ZbCO5Atp/b1X4vjcuOjxUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731706067; c=relaxed/relaxed;
-	bh=KRAKVqkmYHFKsYpIbPFWmWMGYVvfzvIpOOiOmhExdwo=;
+	t=1731706066; c=relaxed/relaxed;
+	bh=QYs6jKNkSqRMwxas8zTGS0f9EDen03tWxmE1GsbmPvQ=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mtOqBYuzobxbifAKRyqqyH470eJ7mwXNq3+kBz/hwX2lUJf836IzErjmlq0EWpIJH2tlkMvQqww2yPAQiwcoj60wXI7SkKWar5JAm3TEXLa0y41OGmQAraWynwSl3bXUoc12Q8I/PEw2/6q+rIiUnmZa7NR16k/ut3ahr4cnHKrOXWn2c3wc3/ziPTstvGKDhc4UKAFzO38MGNHUhYZtOQHYbWENObLrYC699YU1q7Nhe4AffKvTcovYF6SMOoiaATTN0OP852ZGNfuc1xMUkXJgVUxWsli51ah0BS/d01mnpozwVOg2qhDUzyhjSSvFfpyRwA8NeRnQ7WNUJn1uRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=osivBUZm; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+	 In-Reply-To:To:Cc; b=JNBzIBwU6GtNLArLbC8PJp3LKsp6rH0ySnkCbwjKfb0j/89iyux7vcRQHSK8fPsIB27R9qTfXwpRgMuVoT8w7KVhOAChLr42scHkWePvy+SQoaMr6Zzm9gXWR09oyGy4hWkFIYcGF/nd9LSbHEMxGJ2UhiLz5TWjJLlqPVlGQDY4CPLZs1wgPNGurjWYbg/pN+r2sBV9xc5V7ELEa7pl1G8VtlFl/QIwSS0FkdmK1mqMZMAeVS3KHl16AnCrvBg4Sf1fOYjAR/A0dDYdxij7w6kH64i95qmLefW9hu778+qAXZmSC6GcvqvmOiFzuLgSbo4VaOhxh4sUOYXtVH3tJw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Fqjuy5eS; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=osivBUZm;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Fqjuy5eS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqqqj6NHPz2yHj
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqqqj6SKJz2yK7
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 08:27:45 +1100 (AEDT)
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id B08AC2174E41;
-	Fri, 15 Nov 2024 13:26:43 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com B08AC2174E41
+	by linux.microsoft.com (Postfix) with ESMTPSA id 9A64C206BCFC;
+	Fri, 15 Nov 2024 13:26:42 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 9A64C206BCFC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1731706003;
-	bh=KRAKVqkmYHFKsYpIbPFWmWMGYVvfzvIpOOiOmhExdwo=;
+	s=default; t=1731706002;
+	bh=QYs6jKNkSqRMwxas8zTGS0f9EDen03tWxmE1GsbmPvQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=osivBUZmIsQLl2jL+ZDQlIu+P5dhzLcQCyWk2W1AvFXRp9qFe1ScWwkuHagBoxYIx
-	 W4f74U2umtM+/izGX31p0lh8kwNEI1l5coBYaWK3pMcVhuLLHE4asQeuLREQ90Mb9z
-	 ups8j6Ezd0JumeEqkyYkZ8sddPZGhvHCQNewXQdE=
+	b=Fqjuy5eSiRbnXSL2o0v7YwMA9fZ674Q/Gd+25Z4rP4RwCiu11at2Mv7W7PGMuqY5d
+	 K4P8ORik82r/04knqALaANam5+D1reZvHHMZxADzcYp9l2s2TYV6JJ/Elj8BYsGqr3
+	 W1hOklHhhwD9HLzPgJ9aKxBAHgaV0sBNYgQwU9cU=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Fri, 15 Nov 2024 21:26:29 +0000
-Subject: [PATCH v2 12/21] scsi: pm8001: Convert timeouts to
+Date: Fri, 15 Nov 2024 21:26:24 +0000
+Subject: [PATCH v2 07/21] accel/habanalabs: Convert timeouts to
  secs_to_jiffies()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -55,7 +55,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241115-converge-secs-to-jiffies-v2-12-911fb7595e79@linux.microsoft.com>
+Message-Id: <20241115-converge-secs-to-jiffies-v2-7-911fb7595e79@linux.microsoft.com>
 References: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
 In-Reply-To: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
 To: Pablo Neira Ayuso <pablo@netfilter.org>, 
@@ -139,22 +139,37 @@ Changes made with the following Coccinelle rules:
 
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- drivers/scsi/pm8001/pm8001_init.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/accel/habanalabs/common/device.c         | 2 +-
+ drivers/accel/habanalabs/common/habanalabs_drv.c | 3 +--
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/pm8001/pm8001_init.c b/drivers/scsi/pm8001/pm8001_init.c
-index 33e1eba62ca12c2555419197ecdbebad817e4a6d..be88890716cc152b4687edf5e204d14bd177e188 100644
---- a/drivers/scsi/pm8001/pm8001_init.c
-+++ b/drivers/scsi/pm8001/pm8001_init.c
-@@ -734,7 +734,7 @@ static int pm8001_init_sas_add(struct pm8001_hba_info *pm8001_ha)
- 		return -EIO;
+diff --git a/drivers/accel/habanalabs/common/device.c b/drivers/accel/habanalabs/common/device.c
+index e0cf3b4343bb081638430f2552ed27431b488ff9..30277ae410d4b742ffb7bddc35498564ff96fe62 100644
+--- a/drivers/accel/habanalabs/common/device.c
++++ b/drivers/accel/habanalabs/common/device.c
+@@ -817,7 +817,7 @@ static void device_hard_reset_pending(struct work_struct *work)
+ 		}
+ 
+ 		queue_delayed_work(hdev->reset_wq, &device_reset_work->reset_work,
+-					msecs_to_jiffies(HL_PENDING_RESET_PER_SEC * 1000));
++					secs_to_jiffies(HL_PENDING_RESET_PER_SEC));
  	}
- 	time_remaining = wait_for_completion_timeout(&completion,
--				msecs_to_jiffies(60*1000)); // 1 min
-+				secs_to_jiffies(60)); // 1 min
- 	if (!time_remaining) {
- 		kfree(payload.func_specific);
- 		pm8001_dbg(pm8001_ha, FAIL, "get_nvmd_req timeout\n");
+ }
+ 
+diff --git a/drivers/accel/habanalabs/common/habanalabs_drv.c b/drivers/accel/habanalabs/common/habanalabs_drv.c
+index 708dfd10f39c584a6221c29015f4b0323574145a..5ec13f3a46f915e75b04582b28d51ba8bb50be78 100644
+--- a/drivers/accel/habanalabs/common/habanalabs_drv.c
++++ b/drivers/accel/habanalabs/common/habanalabs_drv.c
+@@ -362,8 +362,7 @@ static void fixup_device_params_per_asic(struct hl_device *hdev, int timeout)
+ 		 * a different default timeout for Gaudi
+ 		 */
+ 		if (timeout == HL_DEFAULT_TIMEOUT_LOCKED)
+-			hdev->timeout_jiffies = msecs_to_jiffies(GAUDI_DEFAULT_TIMEOUT_LOCKED *
+-										MSEC_PER_SEC);
++			hdev->timeout_jiffies = secs_to_jiffies(GAUDI_DEFAULT_TIMEOUT_LOCKED);
+ 
+ 		hdev->reset_upon_device_release = 0;
+ 		break;
 
 -- 
 2.34.1
