@@ -1,61 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-3240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3241-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F3F0D6A25F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 00:30:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10A73D6DDD2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 04:55:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XqHxG027Qz2yyC;
-	Fri, 15 Nov 2024 11:30:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731630641;
-	cv=none; b=CN+ACL7VIVasgJ5k/kYOTs6AB9DBd0dtEaec4LmdyEdngneN96nCkyKXQBCmdLRIzbdTn/33Vm9yTTxM5PqENIiVJ54LFxwlk6UNmiw0sTeyzd99/P9TupX86Aj0vBxo/HzOi6E8yenQmEt/Qc5dS7StZrtdGEF79UEgA+FjYIqIW0V8DhDjAmu4RhhzOWrAdUe3lxEm7fZChR7e3d5UXAZKWwE4dQw9F3eVTAzFuiN7Erxbf7Ge725dT3GejvfUmjC9L7odKddi+MC5g/X3wBLsMCVu628NIEQ6BM5lRaaV8rCGPo8Tzcbw8VGxONXfIzAZIexX525HKYY6m1+qJQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XqPpb39mMz2yPD;
+	Fri, 15 Nov 2024 15:55:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731646519;
+	cv=none; b=Pjbhrojxr+DkFtUQZaOUgTEuT7bWTvNjy+c/N/b0c+PKkckrhsk+csrujOVqknpWhoE5M6iCSHAV6ilW9f9UF14ChxN126M80WKayo8eWVGWMz3d1Wh6rYT9drDNiwkRmzQtgrVhk/jgZoaR1bZmFx9Ge6huKkTO2Xkps/Swgmt+rkTpf05O82J/OoXrRMrV0/DiZP3tFbZwtKYWs9kyKPwMkgtjr+T0bBP0OuxEODGmpdWehs3MH2Pvs8OEbHRW1kmEPCBe4uLc9t4wbU1WNy/B2eE1i2vTbTyIEL3al5ErKSY9YDvDdtjeqzoQ3w+vsowvXxOvA7doYyl0GWL/RQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731630641; c=relaxed/relaxed;
-	bh=a4zPVfXx+Crpt0YpvibCUWUMvHkAdXnWt+x1HwkP4ME=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=IIGxl5QffZEDL5vvupCz/UVKDLaYG4zhlAL0YilMEXJ8Qe0rj2J1PfPKRU9S/e+HAg+7u3b9pm0mqiiTeAX2b+5zzRCJ51NdBVtYzPtVjEa3cQ7ghpaPBPvDaZQ8VlHq3lkh1l2juCCckZX78noLfmy0gzoHwIo1N2VYJmBvwRkA9SVoBDemQ0MYRsV+6iHM9RWP/2zQHd9CfJU9axynQEsv8q8jRdItG8pgeQX1tkjiai53DyfS64fCcS9SBJL2gikmjgm+aW62QKvizyZ8Oq6kqV0sWqUhQCcdfnejr6vFHB2yUfcQLam8aThaq7bGGZqb/FiJsJFf+wMNFx2dIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org; dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=iYeSDixr; dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	t=1731646519; c=relaxed/relaxed;
+	bh=jNeH3olMvMs99YRfKyFmeKO96xEzBxTGQzyamLYOqus=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EM3NwgIA8cCjIJEWd15WDkj1ilJakaPKXSW8FxGHMYzZVPHvjvew+DrMf/GW/Ob0qwTAxk5s9+xPHiF7g54Hs38y4Q5CU+W4oX0IAuwPgFbHXp5F3YeHUgt2S0K8QiLmHxmLeKw5JrR5hNpgNhmjn/r0A83BdEvgZB+v2BED1o76okAGGKkEmKkqvl4WcqKJ0Uw/m8UrWiFLQ8ePVrT/OpQn5E6Ak/jJuPurpZypNE8dL2tKm503Xz7eRw3tVCHQj3OaBbjzf1gSLbdvB1675Sl8J04yq7A6drX06PM24P+ZKuX4SUy3YK4NP1PmKvb4vLaeC4DbIhkJdtx1otymaA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lj98q6Ar; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=iYeSDixr;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lj98q6Ar;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XqHxD30Nzz2yF6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2024 11:30:40 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
-	s=201707; t=1731630637;
-	bh=a4zPVfXx+Crpt0YpvibCUWUMvHkAdXnWt+x1HwkP4ME=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
-	b=iYeSDixrpiK43bsxiTaUgCxI3BJPzHZamA6dbA4BFFESDPztJoZbK7h13Jj6wHoRZ
-	 fv/LG9fZTuQHkcZg+963TZY0uknXy3U6cVvE2YCYfmTJzrlmmBoLSZW8irZVq+3KVr
-	 CIL9YHr9Y41Rlfg8uD/VGudgbamwb6Uu5ON1QzXFDMnrI77OM4nsyKlViIwtbvmP2c
-	 sySWTHdU8eWayLK5/T2wbuNVfylZm4wqVhJ5B5lnaXYjr/B3wyVictTbdKJgNre/4u
-	 ICklwF7KmZB2uB9ApA3jW+pTzuXrA9zeFCXSd9yEUFVVduy+0ivdSYcQaVwWHzl6WP
-	 PfbIlcS4GWglQ==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XqPpY1Q83z2yMP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Nov 2024 15:55:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1731646509;
+	bh=jNeH3olMvMs99YRfKyFmeKO96xEzBxTGQzyamLYOqus=;
+	h=From:To:Cc:Subject:Date:From;
+	b=lj98q6ArEZ167H8D6GkLpfQmMeAEpWeiKuGLepuHNEmAyddxxmnXbANKCPFCoqGt5
+	 hcoHqKfZWuqeYb/FZBGTUACpOnWS2RrYGPvqOgBpVHhH0duWRbI1J6ZwpfZhG03rd9
+	 ipGxIUxs311sJZ1mQPfAj0V3AH+D/n/G5I+krXnEw97JXJm3dpXRKxFU0q3qaE6arX
+	 IwIE5pLy9qUPhlHu5rDCK+ASw1Bnt/K42ir1BcoeK+Cvq6VPJoMuVk29S8/Zo/xbxh
+	 vyQSQg9SAN9MKX3U9uyeJ8SplgTopOFabys+XHf0hqW5NgXV9aY9FkSZ1JZ4lg62GJ
+	 tLoYSblRib7lw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XqHx8588zz4xPy;
-	Fri, 15 Nov 2024 11:30:36 +1100 (AEDT)
-Message-ID: <fa60468bfebb7392bac54454fe196f306f6db97f.camel@ozlabs.org>
-Subject: Re: [RFC PATCH 01/20] powerpc/cell: Remove support for IBM Cell
- Blades
-From: Jeremy Kerr <jk@ozlabs.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, geoff@infradead.org
-Date: Fri, 15 Nov 2024 08:30:37 +0800
-In-Reply-To: <20241114125111.599093-1-mpe@ellerman.id.au>
-References: <20241114125111.599093-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XqPpN386Dz4wcD;
+	Fri, 15 Nov 2024 15:55:08 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Cc: <maddy@linux.ibm.com>,
+	<christophe.leroy@csgroup.eu>,
+	<naveen@kernel.org>,
+	<npiggin@gmail.com>
+Subject: [PATCH] MAINTAINERS: powerpc: Mark Maddy as "M"
+Date: Fri, 15 Nov 2024 15:54:42 +1100
+Message-ID: <20241115045442.675721-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.47.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,32 +65,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Hi Michael,
+Mark Maddy as a co-maintainer, so that he can get a kernel.org account
+and help manage the powerpc tree on kernel.org.
 
-> IBM Cell Blades used the Cell processor and the "blade" server form
-> factor. They were sold as models QS20, QS21 & QS22 from roughly 2006 to
-> 2012 [1]. They were used in a few supercomputers (eg. Roadrunner) that
-> have since been dismantled, and were not that widely used otherwise.
->=20
-> Until recently I still had a working QS22, which meant I was able to
-> keep the platform support working, but unfortunately that machine has
-> now died.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Oh no!
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 21fdaa19229a..4fdb9759f37d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -13071,7 +13071,7 @@ M:	Michael Ellerman <mpe@ellerman.id.au>
+ R:	Nicholas Piggin <npiggin@gmail.com>
+ R:	Christophe Leroy <christophe.leroy@csgroup.eu>
+ R:	Naveen N Rao <naveen@kernel.org>
+-R:	Madhavan Srinivasan <maddy@linux.ibm.com>
++M:	Madhavan Srinivasan <maddy@linux.ibm.com>
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Supported
+ W:	https://github.com/linuxppc/wiki/wiki
+-- 
+2.47.0
 
-> Remove the top-level config symbol PPC_IBM_CELL_BLADE, and then
-> the dependent symbols PPC_CELL_NATIVE, PPC_CELL_COMMON, CBE_RAS,
-> PPC_IBM_CELL_RESETBUTTON, PPC_IBM_CELL_POWERBUTTON, CBE_THERM, and
-> AXON_MSI. Then remove the associated C files and headers, and trim
-> unused header content (some is shared with PS3).
-
-Nice work, thanks for pulling this apart. For the series:
-
-Acked-by: Jeremy Kerr <jk@ozlabs.org>
-
-Cheers,
-
-
-Jeremy
 
