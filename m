@@ -1,46 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3280-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3281-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72F9BD68BDA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:12:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE9A8D68BDA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:12:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XqrqB0pDgz3bpG;
-	Sat, 16 Nov 2024 09:12:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XqrqW4cDzz3bpx;
+	Sat, 16 Nov 2024 09:12:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731705859;
-	cv=none; b=gI87G9llewJp7fAyM3uKhgrw44vgtJadREWCzOvUQgsP2vjfMCVl3Az1CAIKcDEWPwx4QwOXCyBXkMySIDxckL9Gwzc3LvrOik5fwUoeA732X3kRf9pvVOKZWwv17zRhDJiqcSB73GqXcZm2y9/1VV4P6KH9iIByi6oJL0z6rz//v627BsEChlIiWEV9gFkmxgO3uxzb0TzdK0yRz/tJMjK1CLznRs8AiGdKUPKk8iGtUwzd9aG0XO9jxGOSn9mvv8C6FCQIjge8jNSQkfiAD1uVzkxNsYDIKgp9AzkkMdmZFU8F5mBREOO56qq4hE6doQTKkvRrRFh806O1bgukTA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731706033;
+	cv=none; b=NGh/7QvNRpo71KaiEcvBJBKH832JEZ/4uofBnl5cZaF9Gk4qFQaiowP9zQAOO+s4H65fHvoMS2n1J6X5zZa3WcMJnIiBOmqLPKYGnaKMAKmYSxQG5QjjefmmWXAEA5JkC/cyoPoQ92JFzr7OwNpaHuTsgD1Jynxds79Y1kUCuLEO0tfDkVsIFMXG+y2mBQM6Y9TlIKk5CahfZ01d38F3n9F6gPAviIDnYbfl8m/1rQGwmxzitahV7JoBMqE5Rsz24LWtao9EoSubLlVs0WIqQ17g+g/r9+N4GmRbVA6r8OvST0k/dFl5TnVml28GH0IZ/1Zoe31Y5fVlwKq27jrsIg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731705859; c=relaxed/relaxed;
-	bh=QYs6jKNkSqRMwxas8zTGS0f9EDen03tWxmE1GsbmPvQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LDpH9deCTE+eC5yF2WPTBJfbfPgJIrPiJz99rZNpBbgkv4/t9mMtP1m3XwrFPt6mHtu8NE3QvX14rIChWk3ridITo0JqSV+NztreB1w1bQ307IcXL4eyaeAwkuUwOHnavzZVxu0uFoXskiwuYTubuVyRYkRmlSkjfRgxcjVnXgVMQjz3l/3opOcsmgWWy2oyJIKr4vn7Ytv4C3Wm0Mz3w2ed9qxhX90NOyXPlG9Lu4svsCPBpBASmNcVUNgkb8deND4wND6LjXkNAmseFzZ59q8mVz+wai3sttcTH7Wcvn7qoUFAfm3V9SZPwlxcTs6C2/VaiAzI19wgOi8Fa2Ym7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=I95I66Jg; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+	t=1731706033; c=relaxed/relaxed;
+	bh=YykTfzrNsiOcwK2ra+gzipuntreyDWZKmxIft/JBufs=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Y/Vs46baK2/H7vcMO7Jb/zHzp9pXj0vP4Alq7wqRFIt/PKHsCFdodS+YxslO2fi91q3OO2WtV2QN/EL+jsKRfoCt8tO75VXQI+EBKvjtWuL8cZ+ChZnhDCscNxpQfBcYXAiRgb9zUL7HXQh0fRCuWN4aH/9T13GRE7QHYZcpz5qQEIxm3cANp01RHDc6DRtyVOVD6YWl5TL/UHt0JNXKULmXDE9TF7Jj58fifYqUiNMBkvL9krCCqjAvFbA2zq8GttACOyX4kkeZdTDnphpPNgzdhkD/SNSv0/V9zb+cG3uQDt7RzcvdEMBkQUan1CFks7hEMIo11aMrwkMbPC7BwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=WqskY8aZ; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=I95I66Jg;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=WqskY8aZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqqll1sNrz2yDt
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 08:24:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqqq40yh0z2yD8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 08:27:12 +1100 (AEDT)
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 5C04E206BCEA;
-	Fri, 15 Nov 2024 13:22:43 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 5C04E206BCEA
+	by linux.microsoft.com (Postfix) with ESMTPSA id ED203206BCE3;
+	Fri, 15 Nov 2024 13:26:40 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com ED203206BCE3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1731705763;
-	bh=QYs6jKNkSqRMwxas8zTGS0f9EDen03tWxmE1GsbmPvQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=I95I66JgO1E7XQYaEm7ineOx+2MkduTJSN9e4D1cu0/NE7dcCwPndmzh7i/cNGesc
-	 2yzIBCvlbGPZzvMpNA+k96a1ZOGXJ+A0bPOMF6Lmuw/xKRtew/BB44Qgm554Xu3M7K
-	 XgYk3aN7aTdB7omQICy4E1708sGRqDk4h4Xf8u4c=
+	s=default; t=1731706001;
+	bh=YykTfzrNsiOcwK2ra+gzipuntreyDWZKmxIft/JBufs=;
+	h=From:Subject:Date:To:Cc:From;
+	b=WqskY8aZnBCmF3dfwxSLgVobxBO9fmOKJ8FdxV64GRKJyH+NQE4wui7qbxKlFnao4
+	 BPR2hAMwYMqOqBxv5A69nRuXpaXJ0f1nikMlY5jjS8QJVhEj5FSlf1exAy6E/F7mHO
+	 WumIfMdFmtWMw60hujxPTvq6hp3VaQHUHUHLjiOs=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Fri, 15 Nov 2024 21:22:37 +0000
-Subject: [PATCH 07/22] accel/habanalabs: Convert timeouts to
- secs_to_jiffies()
+Subject: [PATCH v2 00/21] Converge on using secs_to_jiffies()
+Date: Fri, 15 Nov 2024 21:26:17 +0000
+Message-Id: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,9 +54,11 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241115-converge-secs-to-jiffies-v1-7-19aadc34941b@linux.microsoft.com>
-References: <20241115-converge-secs-to-jiffies-v1-0-19aadc34941b@linux.microsoft.com>
-In-Reply-To: <20241115-converge-secs-to-jiffies-v1-0-19aadc34941b@linux.microsoft.com>
+X-B4-Tracking: v=1; b=H4sIAHq8N2cC/3WNwQ6CMBAFf4X0bAlb0aSe/A/DAdqtrJEW29JgC
+ P9uxRhPHmeS92ZhAT1hYKdiYR4TBXI2g9gVTPWtvSInnZmJStQAILhyNqHPPqAKPDp+I2PyA9d
+ Saqjg2GkAluejR0Pzdn1pPuzxMeVC/MmeQnT+ueUTvO23dPhfSsArDrJttdrXsobufCc7zeVAy
+ rvgTCyVG1izrusL3G0RRd8AAAA=
+X-Change-ID: 20241112-converge-secs-to-jiffies-d99d1016bd11
 To: Pablo Neira Ayuso <pablo@netfilter.org>, 
  Jozsef Kadlecsik <kadlec@netfilter.org>, 
  "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
@@ -125,53 +126,91 @@ Cc: netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
  Easwar Hariharan <eahariha@linux.microsoft.com>
 X-Mailer: b4 0.14.2
 
-Changes made with the following Coccinelle rules:
+This is a series that follows up on my previous series to introduce
+secs_to_jiffies() and convert a few initial users.[1] In the review for
+that series, Anna-Maria requested converting other users with
+Coccinelle. This is part 1 that converts users of msecs_to_jiffies()
+that use the multiply pattern of either of:
+- msecs_to_jiffies(N*1000), or
+- msecs_to_jiffies(N*MSEC_PER_SEC)
 
-@@ constant C; @@
+The entire conversion is made with Coccinelle in the script added in
+patch 2. Some changes suggested by Coccinelle have been deferred to
+later parts that will address other possible variant patterns.
 
-- msecs_to_jiffies(C * 1000)
-+ secs_to_jiffies(C)
-
-@@ constant C; @@
-
-- msecs_to_jiffies(C * MSEC_PER_SEC)
-+ secs_to_jiffies(C)
-
+CC: Anna-Maria Behnsen <anna-maria@linutronix.de>
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
+
+[1] https://lore.kernel.org/all/20241030-open-coded-timeouts-v3-0-9ba123facf88@linux.microsoft.com/
+[2] https://lore.kernel.org/all/8734kngfni.fsf@somnus/
+
 ---
- drivers/accel/habanalabs/common/device.c         | 2 +-
- drivers/accel/habanalabs/common/habanalabs_drv.c | 3 +--
- 2 files changed, 2 insertions(+), 3 deletions(-)
+Changes in v2:
+- EDITME: describe what is new in this series revision.
+- EDITME: use bulletpoints and terse descriptions.
+- Link to v1: https://lore.kernel.org/r/20241115-converge-secs-to-jiffies-v1-0-19aadc34941b@linux.microsoft.com
 
-diff --git a/drivers/accel/habanalabs/common/device.c b/drivers/accel/habanalabs/common/device.c
-index e0cf3b4343bb081638430f2552ed27431b488ff9..30277ae410d4b742ffb7bddc35498564ff96fe62 100644
---- a/drivers/accel/habanalabs/common/device.c
-+++ b/drivers/accel/habanalabs/common/device.c
-@@ -817,7 +817,7 @@ static void device_hard_reset_pending(struct work_struct *work)
- 		}
- 
- 		queue_delayed_work(hdev->reset_wq, &device_reset_work->reset_work,
--					msecs_to_jiffies(HL_PENDING_RESET_PER_SEC * 1000));
-+					secs_to_jiffies(HL_PENDING_RESET_PER_SEC));
- 	}
- }
- 
-diff --git a/drivers/accel/habanalabs/common/habanalabs_drv.c b/drivers/accel/habanalabs/common/habanalabs_drv.c
-index 708dfd10f39c584a6221c29015f4b0323574145a..5ec13f3a46f915e75b04582b28d51ba8bb50be78 100644
---- a/drivers/accel/habanalabs/common/habanalabs_drv.c
-+++ b/drivers/accel/habanalabs/common/habanalabs_drv.c
-@@ -362,8 +362,7 @@ static void fixup_device_params_per_asic(struct hl_device *hdev, int timeout)
- 		 * a different default timeout for Gaudi
- 		 */
- 		if (timeout == HL_DEFAULT_TIMEOUT_LOCKED)
--			hdev->timeout_jiffies = msecs_to_jiffies(GAUDI_DEFAULT_TIMEOUT_LOCKED *
--										MSEC_PER_SEC);
-+			hdev->timeout_jiffies = secs_to_jiffies(GAUDI_DEFAULT_TIMEOUT_LOCKED);
- 
- 		hdev->reset_upon_device_release = 0;
- 		break;
+---
+Easwar Hariharan (21):
+      netfilter: conntrack: Cleanup timeout definitions
+      coccinelle: misc: Add secs_to_jiffies script
+      arm: pxa: Convert timeouts to use secs_to_jiffies()
+      s390: kernel: Convert timeouts to use secs_to_jiffies()
+      powerpc/papr_scm: Convert timeouts to secs_to_jiffies()
+      mm: kmemleak: Convert timeouts to secs_to_jiffies()
+      accel/habanalabs: Convert timeouts to secs_to_jiffies()
+      drm/xe: Convert timeout to secs_to_jiffies()
+      drm/etnaviv: Convert timeouts to secs_to_jiffies()
+      scsi: lpfc: Convert timeouts to secs_to_jiffies()
+      scsi: arcmsr: Convert timeouts to secs_to_jiffies()
+      scsi: pm8001: Convert timeouts to secs_to_jiffies()
+      xen/blkback: Convert timeouts to secs_to_jiffies()
+      gve: Convert timeouts to secs_to_jiffies()
+      wifi: ath11k: Convert timeouts to secs_to_jiffies()
+      Bluetooth: MGMT: Convert timeouts to secs_to_jiffies()
+      staging: vc04_services: Convert timeouts to secs_to_jiffies()
+      ceph: Convert timeouts to secs_to_jiffies()
+      livepatch: Convert timeouts to secs_to_jiffies()
+      ALSA: line6: Convert timeouts to secs_to_jiffies()
+      nfp: Convert timeouts to secs_to_jiffies()
 
+ arch/arm/mach-pxa/sharpsl_pm.c                      |  6 +++---
+ arch/powerpc/platforms/pseries/papr_scm.c           |  2 +-
+ arch/s390/kernel/lgr.c                              |  3 ++-
+ arch/s390/kernel/time.c                             |  4 ++--
+ arch/s390/kernel/topology.c                         |  2 +-
+ drivers/accel/habanalabs/common/device.c            |  2 +-
+ drivers/accel/habanalabs/common/habanalabs_drv.c    |  3 +--
+ drivers/block/xen-blkback/blkback.c                 |  2 +-
+ drivers/gpu/drm/etnaviv/etnaviv_cmdbuf.c            |  2 +-
+ drivers/gpu/drm/xe/xe_device.c                      |  2 +-
+ drivers/net/ethernet/google/gve/gve_tx_dqo.c        |  6 ++----
+ drivers/net/ethernet/netronome/nfp/nfp_net_common.c |  2 +-
+ drivers/net/wireless/ath/ath11k/debugfs.c           |  2 +-
+ drivers/scsi/arcmsr/arcmsr_hba.c                    |  2 +-
+ drivers/scsi/lpfc/lpfc_init.c                       | 18 +++++++++---------
+ drivers/scsi/lpfc/lpfc_nportdisc.c                  |  8 ++++----
+ drivers/scsi/lpfc/lpfc_nvme.c                       |  2 +-
+ drivers/scsi/lpfc/lpfc_sli.c                        |  4 ++--
+ drivers/scsi/lpfc/lpfc_vmid.c                       |  2 +-
+ drivers/scsi/pm8001/pm8001_init.c                   |  2 +-
+ .../vc04_services/bcm2835-audio/bcm2835-vchiq.c     |  2 +-
+ fs/ceph/quota.c                                     |  2 +-
+ mm/kmemleak.c                                       |  4 ++--
+ net/bluetooth/mgmt.c                                |  2 +-
+ net/netfilter/nf_conntrack_proto_sctp.c             | 21 ++++++++-------------
+ samples/livepatch/livepatch-callbacks-busymod.c     |  2 +-
+ samples/livepatch/livepatch-shadow-fix1.c           |  2 +-
+ samples/livepatch/livepatch-shadow-mod.c            | 10 +++++-----
+ scripts/coccinelle/misc/secs_to_jiffies.cocci       | 21 +++++++++++++++++++++
+ sound/usb/line6/toneport.c                          |  2 +-
+ 30 files changed, 79 insertions(+), 65 deletions(-)
+---
+base-commit: 2d5404caa8c7bb5c4e0435f94b28834ae5456623
+change-id: 20241112-converge-secs-to-jiffies-d99d1016bd11
+
+Best regards,
 -- 
-2.34.1
+Easwar Hariharan <eahariha@linux.microsoft.com>
 
 
