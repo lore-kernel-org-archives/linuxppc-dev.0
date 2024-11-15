@@ -1,46 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3285-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3286-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4D94D68BDB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:13:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B99DD68BDA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:13:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XqrrB435pz3brd;
-	Sat, 16 Nov 2024 09:13:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XqrrW0jtxz3bs2;
+	Sat, 16 Nov 2024 09:13:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731706034;
-	cv=none; b=dHHYFr4w7kkHPwue7HNRPRHCCOZm2zc9sZ8oVrYStU9iz/4Atb+Bu4hDr63jXVIqLddT3sf/jr2P3qwm/c+aFZXbiYNe8UJfcD+hJXv79rnFki6jJGk6sc5EDk/fJpTbpCVPVetSlHOhq/KzAJFAajI/Pgl8AdYR3N+fZA1zRGR7qENCmipimOxGInCbw33d3Y8la0kroQJDVEv6iUfjABI5vH0GaQsDu0RadleoP+BKxLQk5P6q2+wRTFr6O4dFD5/gSQyd+nlYkF9dgpbV73CNKHvee/6AD0/qvip3HyzlFQvY3NHF/FwNNaJJ/wZ4WDed753wSY/HOwz4S0C3Kw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731706064;
+	cv=none; b=i+La3mNsngA3RXlqCFmGyZmIviwBMSerRjNd3av+xWBsRY/SNMyPbso0hycQ8AWg+mecIjHu6WO53VwbPuIOoV9z0bJiJBmv5mvrSH+JIVkqOxVj5atJVEWGvcgjpUpK0iNiQPQGPRXLVBVOJ6DrqUojAqndaqQGllej+quUcuu/4IvZQpetZm7h9u4gGHxv7YE9bYN5KnW+60+Pe6PcUyJHLJtMf8d4Ct6UVTeyPYCa0Lq9lK7vNgvDDn0OWIokM9YizfBGVqAfosv7t63vd29s0UB9lU3f8fa5SSC5D5lIPNvbck5j3RZcxK2PU/qKAVCSeS7kDlKgy/WZYPNZwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731706034; c=relaxed/relaxed;
-	bh=2qNmVTIUPIQHjxG6U+oz3oOJorUpDTvltiEua1kgDGM=;
+	t=1731706064; c=relaxed/relaxed;
+	bh=7RgevXzVOF2wd0QHaqg8sKSXBh3tNnxEZNLAJYHO4/0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mPPDJlRzGEmTZYFQvq1TkhsIBCRHmPuP/6hQD0c8JXwmFWCfPbjkMD5PabNFTP3W9mz72kwBwmHyhbccVnREUnDlVGpIXx2whp+dTg9aNq7y8m7OT/tqQebSwceMhoxlOBUUm+fCYH/hiXFXwDfyQaP9ksdJfhaOL0islInxatm+In1aT8hZ1Nm5gq1WQUg9fWTMX9tTa7E+3KpBqNtWcHXvZGOhoJ8VyOWpSPoHz/GhVf89U7ZitxjPqE+VQOaSiV9lY/n1yYVmxG2zXVFBO6UfAI8JRq4Nwzx/rNmkBh/kTrvrc0DtlBVf/kNThJKlI2+iAfY27dlHPX0NnpC+zg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=iVvLyPnz; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+	 In-Reply-To:To:Cc; b=VDPElVjf/ikUdVafjf5VZ7AtIWW8UEcBJzjBDid2oWceiK5w5AAXRnM92EUzBf7+ZBPMaXjFcLwnxTU2GqXHe07RGOtqEPJhIPH7qseIwDA9Lul7Rgm0UmtlAQv2KfVCttzefr0ffLOeolNsTJYKn9hsbuCfyEDa95hmiQ5KeAQPgBa2rAROpnUZhpLGvrvV9qUY9IL4s5YuRpdqiUogtEKt4gtiSW+ZDRI6U9NFt6LrvtzSv8VAbonSP7oW3QComvUYTuoe9lNTCu/QQau+tWKitlnB7uPjrUl2K5E1Z/M0ccFe9BvwKxyijP2k0lM8N3OFHtpk3sh+N9FSyPv9ow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=UMDCxiMF; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=iVvLyPnz;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=UMDCxiMF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqqq56czVz2yDm
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 08:27:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqqqg5TR2z2yD8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 08:27:43 +1100 (AEDT)
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id CEC70206BCF9;
-	Fri, 15 Nov 2024 13:26:41 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com CEC70206BCF9
+	by linux.microsoft.com (Postfix) with ESMTPSA id 25F9B2064AE0;
+	Fri, 15 Nov 2024 13:26:45 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 25F9B2064AE0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1731706002;
-	bh=2qNmVTIUPIQHjxG6U+oz3oOJorUpDTvltiEua1kgDGM=;
+	s=default; t=1731706005;
+	bh=7RgevXzVOF2wd0QHaqg8sKSXBh3tNnxEZNLAJYHO4/0=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=iVvLyPnzqMDnIVqCr8TaID7h6/EcvZ4uGITdugla/Mpc21N0a+zSOXosYGRpfd2vu
-	 d1MyMoy9U+Z9sd1VeqqtG/myJ7CKMnsPLRLQ8NuKd0YjVEIqU9hZB6KsELpQ9xGs8R
-	 v7zo22n2+S5uyzdobRgvEalMR5SyEYAxTB4IIGU8=
+	b=UMDCxiMFhqj3OlDob3LYx0iO5XeNyfLgAMK6ZmPOVPjyLP8LbvBk/4clux5a7IhZf
+	 SUaWunrnwv/PJO3csx5OWc8mNOgOiHWkD1xkNHfyawuJ/x53ffFQkcrJhZT2Q2aLBA
+	 ECLfhBVQizunL7YqKMclkNruWg4koe1sEVlXuTiY=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Fri, 15 Nov 2024 21:26:21 +0000
-Subject: [PATCH v2 04/21] s390: kernel: Convert timeouts to use
- secs_to_jiffies()
+Date: Fri, 15 Nov 2024 21:26:35 +0000
+Subject: [PATCH v2 18/21] ceph: Convert timeouts to secs_to_jiffies()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241115-converge-secs-to-jiffies-v2-4-911fb7595e79@linux.microsoft.com>
+Message-Id: <20241115-converge-secs-to-jiffies-v2-18-911fb7595e79@linux.microsoft.com>
 References: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
 In-Reply-To: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
 To: Pablo Neira Ayuso <pablo@netfilter.org>, 
@@ -139,57 +138,22 @@ Changes made with the following Coccinelle rules:
 
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- arch/s390/kernel/lgr.c      | 3 ++-
- arch/s390/kernel/time.c     | 4 ++--
- arch/s390/kernel/topology.c | 2 +-
- 3 files changed, 5 insertions(+), 4 deletions(-)
+ fs/ceph/quota.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/s390/kernel/lgr.c b/arch/s390/kernel/lgr.c
-index 6652e54cf3db9fbdd8cfb06f8a0dc1d4c05ae7d7..68021cb38574b122bbe3d9f70e9168305360017b 100644
---- a/arch/s390/kernel/lgr.c
-+++ b/arch/s390/kernel/lgr.c
-@@ -166,7 +166,8 @@ static struct timer_list lgr_timer;
-  */
- static void lgr_timer_set(void)
- {
--	mod_timer(&lgr_timer, jiffies + msecs_to_jiffies(LGR_TIMER_INTERVAL_SECS * MSEC_PER_SEC));
-+	mod_timer(&lgr_timer,
-+		  jiffies + secs_to_jiffies(LGR_TIMER_INTERVAL_SECS));
- }
- 
- /*
-diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-index b713effe057967623f64da8297314fcc42ff1af2..e28c61d39d27c6e89f490e779ff674ba2fe21d3e 100644
---- a/arch/s390/kernel/time.c
-+++ b/arch/s390/kernel/time.c
-@@ -656,12 +656,12 @@ static void stp_check_leap(void)
- 		if (ret < 0)
- 			pr_err("failed to set leap second flags\n");
- 		/* arm Timer to clear leap second flags */
--		mod_timer(&stp_timer, jiffies + msecs_to_jiffies(14400 * MSEC_PER_SEC));
-+		mod_timer(&stp_timer, jiffies + secs_to_jiffies(14400));
+diff --git a/fs/ceph/quota.c b/fs/ceph/quota.c
+index 06ee397e0c3a6172592e62dba95cd267cfff0db1..d90eda19bcc4618f98bfed833c10a6071cf2e2ac 100644
+--- a/fs/ceph/quota.c
++++ b/fs/ceph/quota.c
+@@ -166,7 +166,7 @@ static struct inode *lookup_quotarealm_inode(struct ceph_mds_client *mdsc,
+ 	if (IS_ERR(in)) {
+ 		doutc(cl, "Can't lookup inode %llx (err: %ld)\n", realm->ino,
+ 		      PTR_ERR(in));
+-		qri->timeout = jiffies + msecs_to_jiffies(60 * 1000); /* XXX */
++		qri->timeout = jiffies + secs_to_jiffies(60); /* XXX */
  	} else {
- 		/* The day the leap second is scheduled for hasn't been reached. Retry
- 		 * in one hour.
- 		 */
--		mod_timer(&stp_timer, jiffies + msecs_to_jiffies(3600 * MSEC_PER_SEC));
-+		mod_timer(&stp_timer, jiffies + secs_to_jiffies(3600));
- 	}
- }
- 
-diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
-index 813e5da9a9737e05ec3ef85a495fe38cbb40c49b..99095ff3897c1b5337f7e2abcf10f3fe8219ad7c 100644
---- a/arch/s390/kernel/topology.c
-+++ b/arch/s390/kernel/topology.c
-@@ -370,7 +370,7 @@ static void set_topology_timer(void)
- 	if (atomic_add_unless(&topology_poll, -1, 0))
- 		mod_timer(&topology_timer, jiffies + msecs_to_jiffies(100));
- 	else
--		mod_timer(&topology_timer, jiffies + msecs_to_jiffies(60 * MSEC_PER_SEC));
-+		mod_timer(&topology_timer, jiffies + secs_to_jiffies(60));
- }
- 
- void topology_expect_change(void)
+ 		qri->timeout = 0;
+ 		qri->inode = in;
 
 -- 
 2.34.1
