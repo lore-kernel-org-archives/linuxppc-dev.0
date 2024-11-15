@@ -1,46 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3300-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3301-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A551DD68BDB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:16:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C967D68BDA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:16:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqrw11qmNz3c7S;
-	Sat, 16 Nov 2024 09:16:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqrw86sLrz3c81;
+	Sat, 16 Nov 2024 09:16:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731706096;
-	cv=none; b=Mq3xEFAeAyWTv3tUZV61rrc/rtHPtJ19qf8ql0cLEUQf/8/MXZqs1PDo3XOEzkWeyC18seFB4HprLtbDZqupYv+M9esxVpuNnHIvhKxyOwZlIzhtTnkRvvm8FbbH72SUVAyLh6ZCxee8TTmWJWjFnEtK3kC0DAzJBFwvbGRRFGhzgPRpvYfuvEl23Aa2jLM+YIiqtK8jNVulC3doigfVbLI8KMb+x0z1vtjncNerMTqkhnGq+pD4Z9/MaOgaHJJTADbGpLeIdG53wKh/m/o7VNEa4+xaygSWsQ9KNANG+z7KBGwO1Dgq907to16x2SBvyOw77DHP/XHicEcqOPUu5g==
+	cv=none; b=Roduw4sB/Ci7A1T51ebzvNc4EhbsQwy3/kkmHXGsEgWccQ7F4IhznI9bF5hBMv32tVCrx1T2aQqT1QPCLnE2O7g56AXfB8ZavK9ZQqJIehhx3xlD47h1hBWZ7F3A2rtu1yvLZWTIn/eFfJTq1jNj7xvuS2vKZgLoOmFBKwfS3VTDfVabXDoZoWXGCOnChdgUaqzF1IOVE7ganDdvPq7L0RWnP1wbQD1PhExBqYQhHIJgKchnviNiPZ6g/KMieUE/UTqFEenqhZ73JRn2Id3vfRWR8+MzNQTdj8Xj6YvAg+OL5UjWUdzfZBZkGgm21KNysYHJzV9QJpeUGGOBcvW06w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1731706096; c=relaxed/relaxed;
-	bh=Dy1gfF2eVFD/Tcz72rvAOzLjHn7ysyv4CietmA0q798=;
+	bh=GmA2v8FrQkDc3PawrRu1NLBJUu3qRf/naCkvRhlPz0Q=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=K5vo/dxRphw10RM95WLPt9FFwErrSwAc/evlTpiFWR2uQBYrQJv9MkruC+Spt6EbKd7/LeGYq/NZoc37RMrzIqu9mVuMfrahYpztOMBlA3j5yFvWJVytU8Uw+zIMUzQCUooyxC/Ghcn1dJjFrgoYDPhv/RHaNi3Wgvvjdk1y6ywjEx6B1yjYkmw8ShSR/R3y0ARbx5WHl3AsR3jByhSYZ0Rrp4VmhJHKd8ckRfQ1N2JEugDdStOj0PLBIaH7Se4meEK39hvzBgVf9C2Kbt858f82493e14dbVLsAiX3vL6WQIZmTVof9XhV/xOLXhJVspT8YQUvSxJ/BQk+yNvzHpA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=p+FtT/4X; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+	 In-Reply-To:To:Cc; b=APmY+Ra/sYorbjWP6wPGvNyA2H6quSnzvQz3cazoN6fwQy9JnMaKZ4q5l0gnjxsaiOwLzBtWfms6a9zs5pSpMs2BH4HUEEW1cVStN5X9v1Ur5hO26K25FL5cISRpdmSpwSJoZRmGIs4r7q9IKFtqpSSsKtgEZjMsZNgIOt8PWEdHWNiw5Xnhr7pZF1L1bmQtOv9JsOx8h2OU3UDaugd93lVLJRFMQR+U9GuQkcacI0AaBzwK2HT74ltcoZf3Eo5w9jbunjJlc5GK2Dj7sStiqeXN6TEmyK0qU11xGHvZrl8cevIJFBNXCmMLsz5dr8JV6wR+xx1FENICCqL26Ll3bA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=PLg1Ut3p; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=p+FtT/4X;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=PLg1Ut3p;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XqqrH3BP7z2xgX
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XqqrH3fybz2xjK
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 08:28:15 +1100 (AEDT)
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 7C145212B5B0;
-	Fri, 15 Nov 2024 13:26:43 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 7C145212B5B0
+	by linux.microsoft.com (Postfix) with ESMTPSA id D434E206BCFD;
+	Fri, 15 Nov 2024 13:26:42 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com D434E206BCFD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
 	s=default; t=1731706003;
-	bh=Dy1gfF2eVFD/Tcz72rvAOzLjHn7ysyv4CietmA0q798=;
+	bh=GmA2v8FrQkDc3PawrRu1NLBJUu3qRf/naCkvRhlPz0Q=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=p+FtT/4XQtszN++J1IXw9Qg9gEyc5H8E7fVGDQyv4rc8vpXVJrTKn1ZKVJgsHZbWP
-	 rjXuixLOb+i3KZKhonTBwFBpoEJxLum/RjHrON0Ke//ZO6XKQOf6fpWCnO2rTRIF8v
-	 YazfwYiTUNbn8bgQFWgiljV9mm+EMtTeilLEfIdI=
+	b=PLg1Ut3pMX8AIAjCAjy4bw02khMtlTmOdJICyDZ1qYDkIIeJUIA/Jl8Ax7qK0nzXA
+	 69WpHciXaLS10XUYziHT/1hEXLH04lMhVot2lJeh/b4MNSDj4bBTIfL48/xVYbcOQX
+	 4FHRZuPnT+9sZJ5HuVZVrIr57njKWIxmoNEf7/uw=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Fri, 15 Nov 2024 21:26:28 +0000
-Subject: [PATCH v2 11/21] scsi: arcmsr: Convert timeouts to
- secs_to_jiffies()
+Date: Fri, 15 Nov 2024 21:26:25 +0000
+Subject: [PATCH v2 08/21] drm/xe: Convert timeout to secs_to_jiffies()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241115-converge-secs-to-jiffies-v2-11-911fb7595e79@linux.microsoft.com>
+Message-Id: <20241115-converge-secs-to-jiffies-v2-8-911fb7595e79@linux.microsoft.com>
 References: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
 In-Reply-To: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
 To: Pablo Neira Ayuso <pablo@netfilter.org>, 
@@ -139,22 +138,22 @@ Changes made with the following Coccinelle rules:
 
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- drivers/scsi/arcmsr/arcmsr_hba.c | 2 +-
+ drivers/gpu/drm/xe/xe_device.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c b/drivers/scsi/arcmsr/arcmsr_hba.c
-index 35860c61468b02cdb59aa59376ad5ea9be60d12b..fd797e2785490839713f9242014f0adefccc6ddd 100644
---- a/drivers/scsi/arcmsr/arcmsr_hba.c
-+++ b/drivers/scsi/arcmsr/arcmsr_hba.c
-@@ -1044,7 +1044,7 @@ static void arcmsr_init_get_devmap_timer(struct AdapterControlBlock *pacb)
- static void arcmsr_init_set_datetime_timer(struct AdapterControlBlock *pacb)
- {
- 	timer_setup(&pacb->refresh_timer, arcmsr_set_iop_datetime, 0);
--	pacb->refresh_timer.expires = jiffies + msecs_to_jiffies(60 * 1000);
-+	pacb->refresh_timer.expires = jiffies + secs_to_jiffies(60);
- 	add_timer(&pacb->refresh_timer);
- }
+diff --git a/drivers/gpu/drm/xe/xe_device.c b/drivers/gpu/drm/xe/xe_device.c
+index a1987b554a8d2aa42b29301f2853edddfda7fda5..bb3338ef4191e76128611eeb9531c9d2089db85a 100644
+--- a/drivers/gpu/drm/xe/xe_device.c
++++ b/drivers/gpu/drm/xe/xe_device.c
+@@ -502,7 +502,7 @@ static int wait_for_lmem_ready(struct xe_device *xe)
+ 	drm_dbg(&xe->drm, "Waiting for lmem initialization\n");
  
+ 	start = jiffies;
+-	timeout = start + msecs_to_jiffies(60 * 1000); /* 60 sec! */
++	timeout = start + secs_to_jiffies(60); /* 60 sec! */
+ 
+ 	do {
+ 		if (signal_pending(current))
 
 -- 
 2.34.1
