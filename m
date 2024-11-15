@@ -1,44 +1,112 @@
-Return-Path: <linuxppc-dev+bounces-3304-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3305-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59C56D68BDB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:17:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7008AD68BDA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:35:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqrwt74Mqz3c9M;
-	Sat, 16 Nov 2024 09:17:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731706521;
-	cv=none; b=hroF2Jq3wwzNXeDnLN0B7l4rU9hFACIR0wiTzhWfQVSJodIDhuBR/JVt2D3SVQE4z0zozYMyz1GI5vFPZTzkI3WucpvJog6ykcwQ1RDOr4VyFFkckDbo2x0ruSTvKqd9yUjZeojGQ08DJ0kDz8WsOUfbJhnoED4H5okC+8fzkgkt/k9TA6A7b0RD9TSqKVUtm+WbaesBOOjwrb9i6eVO0izB5bWJr+DtM0tItOg3ygZNkvShe+hIxkWbQKFkYynqFO83JzBHXQAdveeD72cH13ga3taixCuBVbc0F4lwcVJmEPzTmQQE4mD8t/+SoIyDruQKFKpMqo4lv/Zo6vR+Zw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XqsKc0Kvqz3bbn;
+	Sat, 16 Nov 2024 09:35:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731710115;
+	cv=none; b=U0/YHwy3mUT6Mp+v2zWAzBhBA4g3FQWwY8tc8q0ZWQNkyOdD7utJm96uiU+EhEosqrk6wbWZtOUPYHaaU7JZBWNxdKLNEw75lqZLJiOaCcFejAGuYj0SvJlaQD0V3/LLP3LvuWYkpE7bvCabWo2wbkiW4I+0TkIE3dXjh+Gg8QCzS9cEOXqlPTOvTNu3VFC6BWOY2V3iB92N7zclUydkd9U32DVJpkgKBsO2dd5d4dVK2GVaveGluwDoXkIXYk5BgriNBIlbK3vdyAFEJFCK6thOIceKx3v0/LdGt0Ga4YW1B6zmCoCDWleT6IRAJ5m7LQEoFgvseV4iF6j/rEZbyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731706521; c=relaxed/relaxed;
-	bh=OEAxYqndmV97fB2t7JocLL7u1S4ql6E8JdtDlfM98mA=;
-	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=XEI/xO5TLr1CW3mIAlTiB43HYj8VZSBI5jxTJboN57mjRuLYJyW6MZRmpBK/oLORY2eQFmr36XfBZNhZXUyOamZio1COxa1x/XcxcdKq5oppxIEZ6Z3aDnhcmsBYebL3Hmimspu8suR7gEtY/Z6snSWFtoQABePKpqOQbz3JMcsNI4MX3o0ElAdFHQjOiSiz63J02p3ssE75YMdzKbksg5O32ZTQodiEviZSqTdzMbh1EXz5ZsOqhmE25rMfK2p1RZKOFEw9iGVj3qRNf9MeS1t1rNu4aheGPhQPs5YeHrD4p2Bho4U3RD+q+xpaaPSUA4RBMImyubL8xT8z909SEA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Xurk/K9N; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
+	t=1731710115; c=relaxed/relaxed;
+	bh=8q2Y3qiG3ZOOjZQQW66Agp5RO04F9uaeWnu9irwI8zs=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=dCY3SWv6u4zwM3rDtW1UrsheVUb6o7JjgFuNOBu97EmhBNUSAmw5F0CGV02b+wvbs04kRs/glNNgkYtHiS1fIcMWZv5EnTiwIrpuyEYrRwJIctjFFz8/AVrkWgfNHdn5VICzwyk51j7Xvr41XxAcbBPXUCoY8PmUFHApvNm+47yHO0dz/9moq/rLOIPi37+ZIIsH8mWJOnFLuqOr3imnuuwL4zmr9AwL1fK0Ze+mfsDRuu5sHKlrwA1z9UVC6VydM1/ItO+1vDuKKtmZFkkh2Gnx/q/jP9AySFC2xZ8307pcPO5Oib0DVvz/97TWk3oKNx5qOac9GH7ace5zXd6e+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=canb.auug.org.au; dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=TBKjQ+jw; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Xurk/K9N;
+	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=TBKjQ+jw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
-Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqr0S4F0Xz2xjK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 08:35:20 +1100 (AEDT)
-Received: from [192.168.35.166] (c-73-118-245-227.hsd1.wa.comcast.net [73.118.245.227])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 684CD2064AE8;
-	Fri, 15 Nov 2024 13:34:46 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 684CD2064AE8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1731706489;
-	bh=OEAxYqndmV97fB2t7JocLL7u1S4ql6E8JdtDlfM98mA=;
-	h=Date:Cc:Subject:To:References:From:In-Reply-To:From;
-	b=Xurk/K9NZ4Pt7R0qwaS9VSYSKCTMSaNp/aapEsQZCtIT74ft5tvctXWuFivs3Zswx
-	 hrelPOn+ppZ3FOsJiI+79MeaWo7lX97CMgyLO8+gyOebFfO+/iJc5GjxBT3U1ILKzl
-	 NFamFr9+2AnMiAp4lQnkRWbNDRlCI9FqXsyeg14c=
-Message-ID: <ae1f83c3-88fe-4b75-9446-e7e711b954ae@linux.microsoft.com>
-Date: Fri, 15 Nov 2024 13:34:46 -0800
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XqsKY0GbYz30DL
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 09:35:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
+	s=201702; t=1731710109;
+	bh=8q2Y3qiG3ZOOjZQQW66Agp5RO04F9uaeWnu9irwI8zs=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=TBKjQ+jwynGqippSpjmesy2LJHz5G28IT7vT4TaT88JCuw46fBO3BDRAIPv6hRM7/
+	 XbOWv6yTpIGUBOHVpD+GgH5bOcDzYCKCOUCxtFJITpudgYieUI+GdoU8psZqrHYs9B
+	 plWGzIOASib2U9DXo1e9xJXfQHkgKNH8Cirh/o/LRzKV85o+Cp3r3eBc9AZ3AQZa0F
+	 DYP1RPyQiMfC70ZKaMZkgpPnHyLFqXq1SQIh8oIfiAurmRjt4FWX01yMlsvyocz2uk
+	 oad7uD2rsh8nj5e0aZSH5jUluHbC7REOnBIrLNo1QEsXfDYgF3levquGraIQNcBhLm
+	 5y9gdjsr1Cmwg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XqsKD5FnLz4x3p;
+	Sat, 16 Nov 2024 09:34:56 +1100 (AEDT)
+Date: Sat, 16 Nov 2024 09:34:58 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Easwar Hariharan <eahariha@linux.microsoft.com>
+Cc: Pablo Neira Ayuso <pablo@netfilter.org>, Jozsef Kadlecsik
+ <kadlec@netfilter.org>, "David S. Miller" <davem@davemloft.net>, Eric
+ Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
+ Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>, Julia Lawall
+ <Julia.Lawall@inria.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Daniel Mack
+ <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert
+ Jarzmik <robert.jarzmik@free.fr>, Russell King <linux@armlinux.org.uk>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger
+ <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Ofir
+ Bitton <obitton@habana.ai>, Oded Gabbay <ogabbay@kernel.org>, Lucas De
+ Marchi <lucas.demarchi@intel.com>, Thomas =?UTF-8?B?SGVsbHN0csO2bQ==?=
+ <thomas.hellstrom@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
+ <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
+ <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Jeroen de Borst
+ <jeroendb@google.com>, Praveen Kaligineedi <pkaligineedi@google.com>,
+ Shailend Chand <shailend@google.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ James Smart <james.smart@broadcom.com>, Dick Kennedy
+ <dick.kennedy@broadcom.com>, "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
+ <martin.petersen@oracle.com>, Roger Pau =?UTF-8?B?TW9ubsOp?=
+ <roger.pau@citrix.com>, Jens Axboe <axboe@kernel.dk>, Kalle Valo
+ <kvalo@kernel.org>, Jeff Johnson <jjohnson@kernel.org>, Catalin Marinas
+ <catalin.marinas@arm.com>, Andrew Morton <akpm@linux-foundation.org>, Jack
+ Wang <jinpu.wang@cloud.ionos.com>, Marcel Holtmann <marcel@holtmann.org>,
+ Johan Hedberg <johan.hedberg@gmail.com>, Luiz Augusto von Dentz
+ <luiz.dentz@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Florian Fainelli <florian.fainelli@broadcom.com>, Ray Jui
+ <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Broadcom
+ internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Xiubo
+ Li <xiubli@redhat.com>, Ilya Dryomov <idryomov@gmail.com>, Josh Poimboeuf
+ <jpoimboe@kernel.org>, Jiri Kosina <jikos@kernel.org>, Miroslav Benes
+ <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>, Joe Lawrence
+ <joe.lawrence@redhat.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
+ <tiwai@suse.com>, Lucas Stach <l.stach@pengutronix.de>, Russell King
+ <linux+etnaviv@armlinux.org.uk>, Christian Gmeiner
+ <christian.gmeiner@gmail.com>, Louis Peens <louis.peens@corigine.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao
+ <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, cocci@inria.fr,
+ linux-arm-kernel@lists.infradead.org, linux-s390@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
+ linux-scsi@vger.kernel.org, xen-devel@lists.xenproject.org,
+ linux-block@vger.kernel.org, linux-wireless@vger.kernel.org,
+ ath11k@lists.infradead.org, linux-mm@kvack.org,
+ linux-bluetooth@vger.kernel.org, linux-staging@lists.linux.dev,
+ linux-rpi-kernel@lists.infradead.org, ceph-devel@vger.kernel.org,
+ live-patching@vger.kernel.org, linux-sound@vger.kernel.org,
+ etnaviv@lists.freedesktop.org, oss-drivers@corigine.com,
+ linuxppc-dev@lists.ozlabs.org, Anna-Maria Behnsen
+ <anna-maria@linutronix.de>
+Subject: Re: [PATCH v2 01/21] netfilter: conntrack: Cleanup timeout
+ definitions
+Message-ID: <20241116093458.4aa19a0e@canb.auug.org.au>
+In-Reply-To: <20241115-converge-secs-to-jiffies-v2-1-911fb7595e79@linux.microsoft.com>
+References: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
+	<20241115-converge-secs-to-jiffies-v2-1-911fb7595e79@linux.microsoft.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -51,115 +119,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Cc: eahariha@linux.microsoft.com, netfilter-devel@vger.kernel.org,
- coreteam@netfilter.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, cocci@inria.fr,
- linux-arm-kernel@lists.infradead.org, linux-s390@vger.kernel.org,
- dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
- linux-scsi@vger.kernel.org, xen-devel@lists.xenproject.org,
- linux-block@vger.kernel.org, linux-wireless@vger.kernel.org,
- ath11k@lists.infradead.org, linux-mm@kvack.org,
- linux-bluetooth@vger.kernel.org, linux-staging@lists.linux.dev,
- linux-rpi-kernel@lists.infradead.org, ceph-devel@vger.kernel.org,
- live-patching@vger.kernel.org, linux-sound@vger.kernel.org,
- etnaviv@lists.freedesktop.org, oss-drivers@corigine.com,
- linuxppc-dev@lists.ozlabs.org, Anna-Maria Behnsen
- <anna-maria@linutronix.de>, Michael Kelley <mhklinux@outlook.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
-Subject: Re: [PATCH 22/22] jiffies: Define secs_to_jiffies()
-To: Jeff Johnson <quic_jjohnson@quicinc.com>,
- Pablo Neira Ayuso <pablo@netfilter.org>,
- Jozsef Kadlecsik <kadlec@netfilter.org>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, Julia Lawall <Julia.Lawall@inria.fr>,
- Nicolas Palix <nicolas.palix@imag.fr>, Daniel Mack <daniel@zonque.org>,
- Haojian Zhuang <haojian.zhuang@gmail.com>,
- Robert Jarzmik <robert.jarzmik@free.fr>, Russell King
- <linux@armlinux.org.uk>, Heiko Carstens <hca@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
- <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Ofir Bitton <obitton@habana.ai>,
- Oded Gabbay <ogabbay@kernel.org>, Lucas De Marchi
- <lucas.demarchi@intel.com>,
- =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Jeroen de Borst <jeroendb@google.com>,
- Praveen Kaligineedi <pkaligineedi@google.com>,
- Shailend Chand <shailend@google.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- James Smart <james.smart@broadcom.com>,
- Dick Kennedy <dick.kennedy@broadcom.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- =?UTF-8?Q?Roger_Pau_Monn=C3=A9?= <roger.pau@citrix.com>,
- Jens Axboe <axboe@kernel.dk>, Kalle Valo <kvalo@kernel.org>,
- Jeff Johnson <jjohnson@kernel.org>, Catalin Marinas
- <catalin.marinas@arm.com>, Andrew Morton <akpm@linux-foundation.org>,
- Jack Wang <jinpu.wang@cloud.ionos.com>, Marcel Holtmann
- <marcel@holtmann.org>, Johan Hedberg <johan.hedberg@gmail.com>,
- Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Florian Fainelli <florian.fainelli@broadcom.com>, Ray Jui
- <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Xiubo Li <xiubli@redhat.com>,
- Ilya Dryomov <idryomov@gmail.com>, Josh Poimboeuf <jpoimboe@kernel.org>,
- Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
- Petr Mladek <pmladek@suse.com>, Joe Lawrence <joe.lawrence@redhat.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Lucas Stach <l.stach@pengutronix.de>,
- Russell King <linux+etnaviv@armlinux.org.uk>,
- Christian Gmeiner <christian.gmeiner@gmail.com>,
- Louis Peens <louis.peens@corigine.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>
-References: <20241115-converge-secs-to-jiffies-v1-0-19aadc34941b@linux.microsoft.com>
- <20241115-converge-secs-to-jiffies-v1-22-19aadc34941b@linux.microsoft.com>
- <e1ff4b71-7abf-4ac6-8b82-86aad5394de6@quicinc.com>
-Content-Language: en-US
-From: Easwar Hariharan <eahariha@linux.microsoft.com>
-In-Reply-To: <e1ff4b71-7abf-4ac6-8b82-86aad5394de6@quicinc.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="Sig_/gpyLfQXA_rG=N5QDCu3kL6w";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 
-On 11/15/2024 1:30 PM, Jeff Johnson wrote:
-> On 11/15/2024 1:22 PM, Easwar Hariharan wrote:
->> secs_to_jiffies() is defined in hci_event.c and cannot be reused by
->> other call sites. Hoist it into the core code to allow conversion of the
->> ~1150 usages of msecs_to_jiffies() that either:
->>
->>  - use a multiplier value of 1000 or equivalently MSEC_PER_SEC, or
->>  - have timeouts that are denominated in seconds (i.e. end in 000)
->>
->> It's implemented as a macro to allow usage in static initializers.
->>
->> This will also allow conversion of yet more sites that use (sec * HZ)
->> directly, and improve their readability.
->>
->> Suggested-by: Michael Kelley <mhklinux@outlook.com>
->> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
->> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->> Reviewed-by: Luiz Augusto von Dentz <luiz.von.dentz@intel.com>
->> Link: https://lore.kernel.org/all/20241030-open-coded-timeouts-v3-1-9ba123facf88@linux.microsoft.com
-> 
-> your signed-off-by should be last.
-> 
-> and you have a patch ordering problem since this patch must come before all
-> the patches that use secs_to_jiffies(), otherwise this series cannot be bisected
+--Sig_/gpyLfQXA_rG=N5QDCu3kL6w
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for the quick response, indeed this patch is already in tip[1], I
-pulled it in for testing the series but missed out on removing it before
-sending. Please review v2 that excludes this:
-https://lore.kernel.org/all/20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com/
+Hi Easwar,
 
-[1]: https://git.kernel.org/tip/b35108a51cf7bab58d7eace1267d7965978bcdb8
+On Fri, 15 Nov 2024 21:26:18 +0000 Easwar Hariharan <eahariha@linux.microso=
+ft.com> wrote:
+>
+>  static const unsigned int sctp_timeouts[SCTP_CONNTRACK_MAX] =3D {
+> -	[SCTP_CONNTRACK_CLOSED]			=3D 10 SECS,
+> -	[SCTP_CONNTRACK_COOKIE_WAIT]		=3D 3 SECS,
+> -	[SCTP_CONNTRACK_COOKIE_ECHOED]		=3D 3 SECS,
+> -	[SCTP_CONNTRACK_ESTABLISHED]		=3D 210 SECS,
+> -	[SCTP_CONNTRACK_SHUTDOWN_SENT]		=3D 3 SECS,
+> -	[SCTP_CONNTRACK_SHUTDOWN_RECD]		=3D 3 SECS,
+> -	[SCTP_CONNTRACK_SHUTDOWN_ACK_SENT]	=3D 3 SECS,
+> -	[SCTP_CONNTRACK_HEARTBEAT_SENT]		=3D 30 SECS,
+> +	[SCTP_CONNTRACK_CLOSED]			=3D secs_to_jiffies(10),
+> +	[SCTP_CONNTRACK_COOKIE_WAIT]		=3D secs_to_jiffies(3),
+> +	[SCTP_CONNTRACK_COOKIE_ECHOED]		=3D secs_to_jiffies(3),
+> +	[SCTP_CONNTRACK_ESTABLISHED]		=3D secs_to_jiffies(210),
+> +	[SCTP_CONNTRACK_SHUTDOWN_SENT]		=3D secs_to_jiffies(3),
+> +	[SCTP_CONNTRACK_SHUTDOWN_RECD]		=3D secs_to_jiffies(3),
+> +	[SCTP_CONNTRACK_SHUTDOWN_ACK_SENT]	=3D secs_to_jiffies(3),
+> +	[SCTP_CONNTRACK_HEARTBEAT_SENT]		=3D secs_to_jiffies(3),
 
-Thanks,
-Easwar
+You have changed this last timeout from 30 seconds to 3 (presumably
+just a copy and paste error).
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/gpyLfQXA_rG=N5QDCu3kL6w
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmc3zJIACgkQAVBC80lX
+0Gw+jggAlx/FpdCsBUGWHj/3D1FyMKcJOE8x+VIKqw9c10Hqa/DPZEAcUaXlmvJJ
+1NS+WrDFLS34ZiI4SbtosexC7tobHh/TkpamqrN+fG8STjNbtTVLYQ8QiWT/NCDx
+IeMkpH/EiSg0ow+0U1XenGHORnkKPdtLr7lxlRq1R7ylUYNZK0eDlX4r2dwmOLYg
+r0lFld/TwA434BDqTqj8KzVt9p1k2QiHm+LUntdk7Xu/Rlami4y/+Bahn9gmN3ji
+wRFxXLzm6upqhGxP5RYNyz3FB0oQgUvILDpklyPzzLTZW+L+bPkhgY5RZTFXpk9k
+KeR+GZcOjbCNU/RaWT8zDXVC32LJaw==
+=DzpI
+-----END PGP SIGNATURE-----
+
+--Sig_/gpyLfQXA_rG=N5QDCu3kL6w--
 
