@@ -1,45 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-3296-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3297-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE271D68BDA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:15:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 516A8D68BDB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Nov 2024 22:16:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XqrvC36Fnz3c5h;
-	Sat, 16 Nov 2024 09:15:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XqrvM6wXdz3c6Q;
+	Sat, 16 Nov 2024 09:15:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731706066;
-	cv=none; b=NEssVsqGrPBXzST5LJ9YA6IN2ZKwS9DkP0x9xr2/LKbw1ZhI22MRGQJdpD+yFuArS/sJoYNz8CY8EQ4dY087K2l/ZeDhc/dOo+saHqjjoMKhYKR29r/yj33OspMR3YuxEQh0CXOA6lFgSj87xaamqVK6wgj0DRMarxwf0bZZHCyTlDA6/H8p2mpYyprFT+1POncKsYIdilsLHVcONwuRv0buGfCeAmobUqfB3wnsQCLpPFSbzMSYgXtk6wReOMn4Vdg/OJ9zxoT6PqK2cumAa71Oj8zLBko50I7SnTPBJAAeeBt8v54auPChpTOv7Hj75cSYsta/cd9ZKFaotvudPQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731706067;
+	cv=none; b=ID6tuWeobL90CtPRo4uy6f2QGLJeibi5S1cTuL5yYWNOrC4Xu/K9LWgea9GgbTSwn9F5lWbBJcE/1RaSWYNqmBzd8e8kCPN38Gf4+PKT/PD3oYgE6uFGd5pGdZx1CNYo6hrKUvZ0uEsEX2UiqalVWbfMH/MWVRczLB3/F1fPZv651EUa4QUARF7BSRKeKG7FWLJp1qjB2n7nAGlFiNbZpp+Mi/b6NQJD+uYKDoMvrK64us+4CSdjVmYUnXVGORiVm5NDisqqUI2Uel5Zh4dhDcy4GQYkybx6nueBzqaT0VIIzDbIY+y5/sGk86awMeImXovkhYS7am0iVFPL2YygSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731706066; c=relaxed/relaxed;
-	bh=61FzWbZx8SVE6r33ggD3SgPEq3e2wgbU4/WDXmU67Oo=;
+	t=1731706067; c=relaxed/relaxed;
+	bh=KRAKVqkmYHFKsYpIbPFWmWMGYVvfzvIpOOiOmhExdwo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=C/E6CP7TpPvnLUXORjB4AInmAfoOMBtGO0RrGfnaAjKHzWl6SlyRQuv0a8kqlZirgR6WQGIsrN3DGeIgsFDbrZQ5har1qyhd0gmMJEn+0eckGgD9by6ytT25Ski3S0DIRi2u1TaCu4auooTnbYmjvZB1e84wCMmSyKCmR+J8hPuhCi/Z7/dQfgTHGhjMCNeRMBfKzUk24iq4uy45ECq7meGUC3gKKCv8MHo2H5VvEEIG7PnoEhjiXCMnP59KLAF4auwB0v4MjzhV1Ldag8zwyh4aoegjLLvjPHsLk+C1331WL9beSRkrEj4YhDOAQpoxg01Ju8FiWI01hJfPi6oImQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=og1s1yT3; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+	 In-Reply-To:To:Cc; b=mtOqBYuzobxbifAKRyqqyH470eJ7mwXNq3+kBz/hwX2lUJf836IzErjmlq0EWpIJH2tlkMvQqww2yPAQiwcoj60wXI7SkKWar5JAm3TEXLa0y41OGmQAraWynwSl3bXUoc12Q8I/PEw2/6q+rIiUnmZa7NR16k/ut3ahr4cnHKrOXWn2c3wc3/ziPTstvGKDhc4UKAFzO38MGNHUhYZtOQHYbWENObLrYC699YU1q7Nhe4AffKvTcovYF6SMOoiaATTN0OP852ZGNfuc1xMUkXJgVUxWsli51ah0BS/d01mnpozwVOg2qhDUzyhjSSvFfpyRwA8NeRnQ7WNUJn1uRQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=osivBUZm; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=og1s1yT3;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=osivBUZm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqqqj0hJBz2yDm
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xqqqj6NHPz2yHj
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 08:27:45 +1100 (AEDT)
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 499B0206BCFF;
+	by linux.microsoft.com (Postfix) with ESMTPSA id B08AC2174E41;
 	Fri, 15 Nov 2024 13:26:43 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 499B0206BCFF
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com B08AC2174E41
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
 	s=default; t=1731706003;
-	bh=61FzWbZx8SVE6r33ggD3SgPEq3e2wgbU4/WDXmU67Oo=;
+	bh=KRAKVqkmYHFKsYpIbPFWmWMGYVvfzvIpOOiOmhExdwo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=og1s1yT3C7qmGwpXC7BTRjelEYUxv+y/wT3aVo0+4J69TYgfP6zEFIO0yD8KBx7t/
-	 92Gtaxjx6bIrpJr767qFI9u3x1d6CtqjQKQq/ajvUlvLNnm+zvVjUogpR6HNP56Qc4
-	 chNj7CUafA0bTcDqKth0w7CAJ55sYrNQyLSK+jvY=
+	b=osivBUZmIsQLl2jL+ZDQlIu+P5dhzLcQCyWk2W1AvFXRp9qFe1ScWwkuHagBoxYIx
+	 W4f74U2umtM+/izGX31p0lh8kwNEI1l5coBYaWK3pMcVhuLLHE4asQeuLREQ90Mb9z
+	 ups8j6Ezd0JumeEqkyYkZ8sddPZGhvHCQNewXQdE=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Fri, 15 Nov 2024 21:26:27 +0000
-Subject: [PATCH v2 10/21] scsi: lpfc: Convert timeouts to secs_to_jiffies()
+Date: Fri, 15 Nov 2024 21:26:29 +0000
+Subject: [PATCH v2 12/21] scsi: pm8001: Convert timeouts to
+ secs_to_jiffies()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,7 +55,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241115-converge-secs-to-jiffies-v2-10-911fb7595e79@linux.microsoft.com>
+Message-Id: <20241115-converge-secs-to-jiffies-v2-12-911fb7595e79@linux.microsoft.com>
 References: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
 In-Reply-To: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
 To: Pablo Neira Ayuso <pablo@netfilter.org>, 
@@ -138,178 +139,22 @@ Changes made with the following Coccinelle rules:
 
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- drivers/scsi/lpfc/lpfc_init.c      | 18 +++++++++---------
- drivers/scsi/lpfc/lpfc_nportdisc.c |  8 ++++----
- drivers/scsi/lpfc/lpfc_nvme.c      |  2 +-
- drivers/scsi/lpfc/lpfc_sli.c       |  4 ++--
- drivers/scsi/lpfc/lpfc_vmid.c      |  2 +-
- 5 files changed, 17 insertions(+), 17 deletions(-)
+ drivers/scsi/pm8001/pm8001_init.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/lpfc/lpfc_init.c b/drivers/scsi/lpfc/lpfc_init.c
-index 0dd451009b07914450dc70f2c981b690557c1d8c..12666c4c7986ae0bdfaa5c8f040b4ea0be64550d 100644
---- a/drivers/scsi/lpfc/lpfc_init.c
-+++ b/drivers/scsi/lpfc/lpfc_init.c
-@@ -598,7 +598,7 @@ lpfc_config_port_post(struct lpfc_hba *phba)
- 		  jiffies + msecs_to_jiffies(1000 * timeout));
- 	/* Set up heart beat (HB) timer */
- 	mod_timer(&phba->hb_tmofunc,
--		  jiffies + msecs_to_jiffies(1000 * LPFC_HB_MBOX_INTERVAL));
-+		  jiffies + secs_to_jiffies(LPFC_HB_MBOX_INTERVAL));
- 	clear_bit(HBA_HBEAT_INP, &phba->hba_flag);
- 	clear_bit(HBA_HBEAT_TMO, &phba->hba_flag);
- 	phba->last_completion_time = jiffies;
-@@ -1267,7 +1267,7 @@ lpfc_hb_mbox_cmpl(struct lpfc_hba * phba, LPFC_MBOXQ_t * pmboxq)
- 	    !test_bit(FC_UNLOADING, &phba->pport->load_flag))
- 		mod_timer(&phba->hb_tmofunc,
- 			  jiffies +
--			  msecs_to_jiffies(1000 * LPFC_HB_MBOX_INTERVAL));
-+			  secs_to_jiffies(LPFC_HB_MBOX_INTERVAL));
- 	return;
- }
- 
-@@ -1555,7 +1555,7 @@ lpfc_hb_timeout_handler(struct lpfc_hba *phba)
- 		/* If IOs are completing, no need to issue a MBX_HEARTBEAT */
- 		spin_lock_irq(&phba->pport->work_port_lock);
- 		if (time_after(phba->last_completion_time +
--				msecs_to_jiffies(1000 * LPFC_HB_MBOX_INTERVAL),
-+				secs_to_jiffies(LPFC_HB_MBOX_INTERVAL),
- 				jiffies)) {
- 			spin_unlock_irq(&phba->pport->work_port_lock);
- 			if (test_bit(HBA_HBEAT_INP, &phba->hba_flag))
-@@ -3352,7 +3352,7 @@ lpfc_block_mgmt_io(struct lpfc_hba *phba, int mbx_action)
- 	spin_unlock_irqrestore(&phba->hbalock, iflag);
- 	if (mbx_action == LPFC_MBX_NO_WAIT)
- 		return;
--	timeout = msecs_to_jiffies(LPFC_MBOX_TMO * 1000) + jiffies;
-+	timeout = secs_to_jiffies(LPFC_MBOX_TMO) + jiffies;
- 	spin_lock_irqsave(&phba->hbalock, iflag);
- 	if (phba->sli.mbox_active) {
- 		actcmd = phba->sli.mbox_active->u.mb.mbxCommand;
-@@ -4939,14 +4939,14 @@ int lpfc_scan_finished(struct Scsi_Host *shost, unsigned long time)
- 		stat = 1;
- 		goto finished;
+diff --git a/drivers/scsi/pm8001/pm8001_init.c b/drivers/scsi/pm8001/pm8001_init.c
+index 33e1eba62ca12c2555419197ecdbebad817e4a6d..be88890716cc152b4687edf5e204d14bd177e188 100644
+--- a/drivers/scsi/pm8001/pm8001_init.c
++++ b/drivers/scsi/pm8001/pm8001_init.c
+@@ -734,7 +734,7 @@ static int pm8001_init_sas_add(struct pm8001_hba_info *pm8001_ha)
+ 		return -EIO;
  	}
--	if (time >= msecs_to_jiffies(30 * 1000)) {
-+	if (time >= secs_to_jiffies(30)) {
- 		lpfc_printf_log(phba, KERN_INFO, LOG_INIT,
- 				"0461 Scanning longer than 30 "
- 				"seconds.  Continuing initialization\n");
- 		stat = 1;
- 		goto finished;
- 	}
--	if (time >= msecs_to_jiffies(15 * 1000) &&
-+	if (time >= secs_to_jiffies(15) &&
- 	    phba->link_state <= LPFC_LINK_DOWN) {
- 		lpfc_printf_log(phba, KERN_INFO, LOG_INIT,
- 				"0465 Link down longer than 15 "
-@@ -4960,7 +4960,7 @@ int lpfc_scan_finished(struct Scsi_Host *shost, unsigned long time)
- 	if (vport->num_disc_nodes || vport->fc_prli_sent)
- 		goto finished;
- 	if (!atomic_read(&vport->fc_map_cnt) &&
--	    time < msecs_to_jiffies(2 * 1000))
-+	    time < secs_to_jiffies(2))
- 		goto finished;
- 	if ((phba->sli.sli_flag & LPFC_SLI_MBOX_ACTIVE) != 0)
- 		goto finished;
-@@ -5194,8 +5194,8 @@ lpfc_vmid_poll(struct timer_list *t)
- 		lpfc_worker_wake_up(phba);
- 
- 	/* restart the timer for the next iteration */
--	mod_timer(&phba->inactive_vmid_poll, jiffies + msecs_to_jiffies(1000 *
--							LPFC_VMID_TIMER));
-+	mod_timer(&phba->inactive_vmid_poll,
-+		  jiffies + secs_to_jiffies(LPFC_VMID_TIMER));
- }
- 
- /**
-diff --git a/drivers/scsi/lpfc/lpfc_nportdisc.c b/drivers/scsi/lpfc/lpfc_nportdisc.c
-index 4574716c8764fba6d6db103f1f287b7cdb87cebc..4185717f35defbde483b4ff9b1d71c9c3d86a07d 100644
---- a/drivers/scsi/lpfc/lpfc_nportdisc.c
-+++ b/drivers/scsi/lpfc/lpfc_nportdisc.c
-@@ -914,7 +914,7 @@ lpfc_rcv_logo(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
- 		    (ndlp->nlp_state >= NLP_STE_ADISC_ISSUE ||
- 		     ndlp->nlp_state <= NLP_STE_PRLI_ISSUE)) {
- 			mod_timer(&ndlp->nlp_delayfunc,
--				  jiffies + msecs_to_jiffies(1000 * 1));
-+				  jiffies + secs_to_jiffies(1));
- 			spin_lock_irq(&ndlp->lock);
- 			ndlp->nlp_flag |= NLP_DELAY_TMO;
- 			spin_unlock_irq(&ndlp->lock);
-@@ -1355,7 +1355,7 @@ lpfc_rcv_els_plogi_issue(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
- 	}
- 
- 	/* Put ndlp in npr state set plogi timer for 1 sec */
--	mod_timer(&ndlp->nlp_delayfunc, jiffies + msecs_to_jiffies(1000 * 1));
-+	mod_timer(&ndlp->nlp_delayfunc, jiffies + secs_to_jiffies(1));
- 	spin_lock_irq(&ndlp->lock);
- 	ndlp->nlp_flag |= NLP_DELAY_TMO;
- 	spin_unlock_irq(&ndlp->lock);
-@@ -1975,7 +1975,7 @@ lpfc_cmpl_reglogin_reglogin_issue(struct lpfc_vport *vport,
- 
- 		/* Put ndlp in npr state set plogi timer for 1 sec */
- 		mod_timer(&ndlp->nlp_delayfunc,
--			  jiffies + msecs_to_jiffies(1000 * 1));
-+			  jiffies + secs_to_jiffies(1));
- 		spin_lock_irq(&ndlp->lock);
- 		ndlp->nlp_flag |= NLP_DELAY_TMO;
- 		spin_unlock_irq(&ndlp->lock);
-@@ -2798,7 +2798,7 @@ lpfc_rcv_prlo_npr_node(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp,
- 
- 	if ((ndlp->nlp_flag & NLP_DELAY_TMO) == 0) {
- 		mod_timer(&ndlp->nlp_delayfunc,
--			  jiffies + msecs_to_jiffies(1000 * 1));
-+			  jiffies + secs_to_jiffies(1));
- 		spin_lock_irq(&ndlp->lock);
- 		ndlp->nlp_flag |= NLP_DELAY_TMO;
- 		ndlp->nlp_flag &= ~NLP_NPR_ADISC;
-diff --git a/drivers/scsi/lpfc/lpfc_nvme.c b/drivers/scsi/lpfc/lpfc_nvme.c
-index fec23c7237304b471e58194726ff7932b0010385..64d7060e0d4cb628c74c0fa22ece2b956155c1ba 100644
---- a/drivers/scsi/lpfc/lpfc_nvme.c
-+++ b/drivers/scsi/lpfc/lpfc_nvme.c
-@@ -2236,7 +2236,7 @@ lpfc_nvme_lport_unreg_wait(struct lpfc_vport *vport,
- 	 * wait. Print a message if a 10 second wait expires and renew the
- 	 * wait. This is unexpected.
- 	 */
--	wait_tmo = msecs_to_jiffies(LPFC_NVME_WAIT_TMO * 1000);
-+	wait_tmo = secs_to_jiffies(LPFC_NVME_WAIT_TMO);
- 	while (true) {
- 		ret = wait_for_completion_timeout(lport_unreg_cmp, wait_tmo);
- 		if (unlikely(!ret)) {
-diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
-index 2ec6e55771b45ab70320a9ad1934d5ead2371d4c..b6f19c123e25a00c0eb4444476a7194d6b045824 100644
---- a/drivers/scsi/lpfc/lpfc_sli.c
-+++ b/drivers/scsi/lpfc/lpfc_sli.c
-@@ -9024,7 +9024,7 @@ lpfc_sli4_hba_setup(struct lpfc_hba *phba)
- 
- 	/* Start heart beat timer */
- 	mod_timer(&phba->hb_tmofunc,
--		  jiffies + msecs_to_jiffies(1000 * LPFC_HB_MBOX_INTERVAL));
-+		  jiffies + secs_to_jiffies(LPFC_HB_MBOX_INTERVAL));
- 	clear_bit(HBA_HBEAT_INP, &phba->hba_flag);
- 	clear_bit(HBA_HBEAT_TMO, &phba->hba_flag);
- 	phba->last_completion_time = jiffies;
-@@ -13335,7 +13335,7 @@ lpfc_sli_mbox_sys_shutdown(struct lpfc_hba *phba, int mbx_action)
- 		lpfc_sli_mbox_sys_flush(phba);
- 		return;
- 	}
--	timeout = msecs_to_jiffies(LPFC_MBOX_TMO * 1000) + jiffies;
-+	timeout = secs_to_jiffies(LPFC_MBOX_TMO) + jiffies;
- 
- 	/* Disable softirqs, including timers from obtaining phba->hbalock */
- 	local_bh_disable();
-diff --git a/drivers/scsi/lpfc/lpfc_vmid.c b/drivers/scsi/lpfc/lpfc_vmid.c
-index cc3e4736f2fe29e1fd4afe221c9c7c40ecf382d4..14dbfe954e423acc47d1b1c80160ff193783f500 100644
---- a/drivers/scsi/lpfc/lpfc_vmid.c
-+++ b/drivers/scsi/lpfc/lpfc_vmid.c
-@@ -278,7 +278,7 @@ int lpfc_vmid_get_appid(struct lpfc_vport *vport, char *uuid,
- 		if (!(vport->phba->pport->vmid_flag & LPFC_VMID_TIMER_ENBLD)) {
- 			mod_timer(&vport->phba->inactive_vmid_poll,
- 				  jiffies +
--				  msecs_to_jiffies(1000 * LPFC_VMID_TIMER));
-+				  secs_to_jiffies(LPFC_VMID_TIMER));
- 			vport->phba->pport->vmid_flag |= LPFC_VMID_TIMER_ENBLD;
- 		}
- 	}
+ 	time_remaining = wait_for_completion_timeout(&completion,
+-				msecs_to_jiffies(60*1000)); // 1 min
++				secs_to_jiffies(60)); // 1 min
+ 	if (!time_remaining) {
+ 		kfree(payload.func_specific);
+ 		pm8001_dbg(pm8001_ha, FAIL, "get_nvmd_req timeout\n");
 
 -- 
 2.34.1
