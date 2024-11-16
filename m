@@ -1,75 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-3330-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3331-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 522EFD68BEC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2024 12:34:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52465D68BDC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2024 12:45:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrCy24HBtz3bWr;
-	Sat, 16 Nov 2024 23:34:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731760474;
-	cv=none; b=od/4vZyxKretFljWt/VTHqXTZT49uaeufcDIunjph0e8WVg5CE7q7tBE09ebOGKvdUVwM2dehyjgRtmo6G5UJNO1BDL/rJTjHht6xhYUIC+bF5IR0llWcGt6+LVJe09lJrS8zi046BVVCAki5mhfBPO5TbddGpGHL2FmjMf5XfVasiKL+wc/wBK+oMc2xv9V2ZLtupqHX1zQbHwJMJFPRLg4g2av/gSRkrLBA5DX+K/xsGgjEqsXMN/Sloylkk+m6dSZYrmcoaLuuhQhQPmBfLc1kOIT5S+53mL/vZCkfiIFuG/QvVp/4APYhFwY/aNtmWwLkx4fk36QeH2+ULmulQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrDBF6RX5z308V;
+	Sat, 16 Nov 2024 23:45:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.133
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731761109;
+	cv=none; b=Okc76XBKV1W8FBeznA/FnZbmVZTENXwWrRPpoJ7RXz/LIkf8A2tyiZ9ElqROfc0O5ebAYh6d6Q7MpXMY62qHmtBQV6iJx1IAHmMKLHoO0eh6JnF0fbSbmZswyEq/dcMD/BZKElmrxrLjxgyfXB5kSkGLeTrWc1/SQgm4uL7ogls8ewHOBetVBFlK3iSuhqf+CNZa9OJ785C/dKBFaV/Ar3xEn/qLZtHANU9NE/XBX84PmhGUk12Qfx3AbLW1SnaguL9yp0Kg50w5HuSOQkf/87TtCHw7vaUYKH8dNF0hG04xyW01d6RtwuVAi66Gmoi6Mu1XhXjk5W+RUdawwdA+NQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731760474; c=relaxed/relaxed;
-	bh=fEtJp9SSOayGK+bhR6rbytlyGbW7N5dlpS26wnCneKg=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=AK3v4HvRZFTatuBittZu/j7cce9MghQwJVZ2Gt/UlfqjsZdW7oTuSAPnbA070BKHhyVw/B0JlhMZqnF6CcmE3jXDrTs+Db2RNv/uWeGhrNnzZXHO4zy6m++fpNKIwBwvrUElzjSh6gpCmCv76QDO21Gt+pw7L/JCgS3x5B0D5du5BxA60ulPZ9b/QlVhgKQwqLCvNQ6SF7155HaBj2SSEKdbJ7DbueImbwknnZyPEjKDrk7NCgwD3SP6DSzDqz1X0IhlYsWRM14nuks/bag36Hu9pWSQiXSCIx8SUZYg88yo07spPkRsJgSP/w0kZLrFpJAScqXHqdZZxF7xPpjPOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=UdxujRjB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1731761109; c=relaxed/relaxed;
+	bh=vLuh1y2Va46zhl794h3M3rkZHy9DSRfMER9AY/fhJDQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Y9yC1rqnmbSycjAwTlcOGhUGarJ7sPo5w+DvXnpsH1Z0UwGc20xUeAIs4I3V539ntwqV7m+dL7NuLM7HPdRy+mzS+39vPvTqDiceNadzR0gUIeBdBixTe4tK/0qnE9iKXXv+RwKq5ia3keCPCcBhK84uIHAPMkHKhycsmOIBF2It3ebbs5TdoE35lLYYL2c32OdyNF/Pz2ar/z6Esl9khfNiajZy+B504gSJR9PVXTh7fKVscwRe3CwT0DpoNiajrDQ8E7t+dv8U5OXxt2WaTh11dgacu61Ukj4hof4QRA5ISYerK6Tm6Z/RY0v6i6hDZjf+QqL250tgCWEh36xFPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=IJEQfeM0; dkim-atps=neutral; spf=pass (client-ip=115.124.30.133; helo=out30-133.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=UdxujRjB;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=IJEQfeM0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.133; helo=out30-133.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-133.freemail.mail.aliyun.com (out30-133.freemail.mail.aliyun.com [115.124.30.133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrCy01gkSz308V
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 23:34:31 +1100 (AEDT)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-20caea61132so3623225ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 04:34:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1731760467; x=1732365267; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=fEtJp9SSOayGK+bhR6rbytlyGbW7N5dlpS26wnCneKg=;
-        b=UdxujRjBjH4PcWsPplijYQ6tTI9QjvUS4HN0LHy7ofrSFWeYYJULmYn+31MoX4mMcK
-         lsqKSC88Dg021pUHE343xAMqwP0R/w2LzOpOv3XIuBYzcVQqWCpHBYaoeWF0D38scFvG
-         130ackII/IJEE0f2QtMD3DnYWuWS/Z4fAIKUmhXq5ZHYr8br3GutJYbypxQof4oWNBNr
-         aunVsXa/NgZhau378U6PcZKS1mVr83pKVjaWvRjISXS657mqcXuOqMr3S8WkPxyTrMa6
-         E1FHVkR/OeynVRYGCM+BJcBcfqx8mAVHeKfF5eiyPXZAPKcX1p0vDjTQNQrKo/Ru6Y8E
-         JR8w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731760467; x=1732365267;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=fEtJp9SSOayGK+bhR6rbytlyGbW7N5dlpS26wnCneKg=;
-        b=g1Wle/b+xL07okaQ8QPj1LWEdj3WKDaTk91LXz9GCoU4l4XBQbXATCm31qC2+4I9wl
-         rzopweeFD7BEaIMokVqex/rDqCqxqr9XHm2B0Y+p8lbR3N6/m0XUm/d26ArkXaDSxJQB
-         80WrRjuRDhArNQP90TP3kK3GnVhnFwXlWlqImoCwqf3FnktTmyRxot+0NoR4+YLYisqu
-         MjlsR22Lee8AYIYVj0BaJV5UNHuT0hd229tdHKEEfCgJmukDV0fgckR7SLXVrnmOuQgo
-         V2oIq/5Eq4Dr4XyA67esmGsCqrAeKy6IrizWqlREWc/xDpT7xo730m5/jqxIyn0+j6JO
-         83FA==
-X-Forwarded-Encrypted: i=1; AJvYcCU+lTv13MryIP8oD+spn4c8Q/L3wyaPwRX4awTkLY74hvLv1Qq0cBnYtiW+ppJIK69w6fCICar72aTRJb4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy8g+wy7V9mCjiYR5OyFHZBi3yfUNvrcD9WneyF0dliDRexaO/l
-	U/N4jnvyh0DjPpW/ueLFbdusBsPeB7LE4EKv5ZBzZPnUmGMtqeUF
-X-Google-Smtp-Source: AGHT+IGMIdd0MVq9ycS0BwfPAQWlm2CmDCHtZs+52Ag/FtZcI3X0AMiqJ588rNWYIzfyalFel19UQw==
-X-Received: by 2002:a17:902:d50a:b0:20c:8331:cb6e with SMTP id d9443c01a7336-211d0d818c6mr91611965ad.19.1731760466885;
-        Sat, 16 Nov 2024 04:34:26 -0800 (PST)
-Received: from dw-tp ([49.205.218.89])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-211d0f34903sm27031255ad.158.2024.11.16.04.34.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 16 Nov 2024 04:34:26 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, brauner@kernel.org
-Cc: sforshee@kernel.org, linux-fsdevel@vger.kernel.org, linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] selftests/mount_setattr: Fix failures on 64K PAGE_SIZE kernels
-In-Reply-To: <20241115134114.1219555-1-mpe@ellerman.id.au>
-Date: Sat, 16 Nov 2024 17:12:34 +0530
-Message-ID: <87o72fcslx.fsf@gmail.com>
-References: <20241115134114.1219555-1-mpe@ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrDB75QWvz309h
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 23:44:58 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1731761094; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=vLuh1y2Va46zhl794h3M3rkZHy9DSRfMER9AY/fhJDQ=;
+	b=IJEQfeM0zbjNLC5NDCPU+Hy20qYwhYA7APZqh9LT2dkpZFVAvZZfD9ZffAiW3V8X3Ydr6OjgbWATWOfIboe2iusXeXzz/nROB+r1GpZl8qhP6yKntG8U/NHcovLeZhTallNIFRpCT+epFxcDdZlDhElTaK+MLbe06VG5rLcQPXs=
+Received: from 30.246.162.170(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WJWh6vw_1731761090 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Sat, 16 Nov 2024 20:44:51 +0800
+Message-ID: <22d27575-fc68-4a7f-9bce-45b91c7dfb98@linux.alibaba.com>
+Date: Sat, 16 Nov 2024 20:44:49 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,81 +50,151 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/2] PCI/AER: Report fatal errors of RCiEP and EP if
+ link recoverd
+To: "Bowman, Terry" <terry.bowman@amd.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ bhelgaas@google.com, kbusch@kernel.org, Lukas Wunner <lukas@wunner.de>
+Cc: mahesh@linux.ibm.com, oohall@gmail.com,
+ sathyanarayanan.kuppuswamy@linux.intel.com
+References: <20241112135419.59491-1-xueshuai@linux.alibaba.com>
+ <20241112135419.59491-3-xueshuai@linux.alibaba.com>
+ <a76394c4-8746-46c0-9cb5-bf0e2e0aa9b5@amd.com>
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+In-Reply-To: <a76394c4-8746-46c0-9cb5-bf0e2e0aa9b5@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
 
-> Currently the mount_setattr_test fails on machines with a 64K PAGE_SIZE,
-> with errors such as:
->
->   #  RUN           mount_setattr_idmapped.invalid_fd_negative ...
->   mkfs.ext4: No space left on device while writing out and closing file system
->   # mount_setattr_test.c:1055:invalid_fd_negative:Expected system("mkfs.ext4 -q /mnt/C/ext4.img") (256) == 0 (0)
->   # invalid_fd_negative: Test terminated by assertion
->   #          FAIL  mount_setattr_idmapped.invalid_fd_negative
->   not ok 12 mount_setattr_idmapped.invalid_fd_negative
->
-> The code creates a 100,000 byte tmpfs:
->
-> 	ASSERT_EQ(mount("testing", "/mnt", "tmpfs", MS_NOATIME | MS_NODEV,
-> 			"size=100000,mode=700"), 0);
->
-> And then a little later creates a 2MB ext4 filesystem in that tmpfs:
->
-> 	ASSERT_EQ(ftruncate(img_fd, 1024 * 2048), 0);
-> 	ASSERT_EQ(system("mkfs.ext4 -q /mnt/C/ext4.img"), 0);
->
-> At first glance it seems like that should never work, after all 2MB is
-> larger than 100,000 bytes. However the filesystem image doesn't actually
-> occupy 2MB on "disk" (actually RAM, due to tmpfs). On 4K kernels the
-> ext4.img uses ~84KB of actual space (according to du), which just fits.
->
-> However on 64K PAGE_SIZE kernels the ext4.img takes at least 256KB,
-> which is too large to fit in the tmpfs, hence the errors.
 
-Even though ext4 will use by default 4k blocksize on both kernels but
-the backing file here belongs to tmpfs (RAM) which operates at 64k page.
-Hence the difference in the size of the image between 4k and 64k kernels
-looks expected.
+在 2024/11/16 04:20, Bowman, Terry 写道:
+> Hi Shuai,
+> 
+> 
+> On 11/12/2024 7:54 AM, Shuai Xue wrote:
+>> The AER driver has historically avoided reading the configuration space of
+>> an endpoint or RCiEP that reported a fatal error, considering the link to
+>> that device unreliable. Consequently, when a fatal error occurs, the AER
+>> and DPC drivers do not report specific error types, resulting in logs like:
+>>
+>>    pcieport 0000:30:03.0: EDR: EDR event received
+>>    pcieport 0000:30:03.0: DPC: containment event, status:0x0005 source:0x3400
+>>    pcieport 0000:30:03.0: DPC: ERR_FATAL detected
+>>    pcieport 0000:30:03.0: AER: broadcast error_detected message
+>>    nvme nvme0: frozen state error detected, reset controller
+>>    nvme 0000:34:00.0: ready 0ms after DPC
+>>    pcieport 0000:30:03.0: AER: broadcast slot_reset message
+>>
+>> AER status registers are sticky and Write-1-to-clear. If the link recovered
+>> after hot reset, we can still safely access AER status of the error device.
+>> In such case, report fatal errors which helps to figure out the error root
+>> case.
+>>
+>> After this patch, the logs like:
+>>
+>>    pcieport 0000:30:03.0: EDR: EDR event received
+>>    pcieport 0000:30:03.0: DPC: containment event, status:0x0005 source:0x3400
+>>    pcieport 0000:30:03.0: DPC: ERR_FATAL detected
+>>    pcieport 0000:30:03.0: AER: broadcast error_detected message
+>>    nvme nvme0: frozen state error detected, reset controller
+>>    pcieport 0000:30:03.0: waiting 100 ms for downstream link, after activation
+>>    nvme 0000:34:00.0: ready 0ms after DPC
+>>    nvme 0000:34:00.0: PCIe Bus Error: severity=Uncorrectable (Fatal), type=Data Link Layer, (Receiver ID)
+>>    nvme 0000:34:00.0:   device [144d:a804] error status/mask=00000010/00504000
+>>    nvme 0000:34:00.0:    [ 4] DLP                    (First)
+>>    pcieport 0000:30:03.0: AER: broadcast slot_reset message
+>>
+>> Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+>> ---
+>>   drivers/pci/pci.h      |  3 ++-
+>>   drivers/pci/pcie/aer.c | 11 +++++++----
+>>   drivers/pci/pcie/dpc.c |  2 +-
+>>   drivers/pci/pcie/err.c |  9 +++++++++
+>>   4 files changed, 19 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+>> index 0866f79aec54..6f827c313639 100644
+>> --- a/drivers/pci/pci.h
+>> +++ b/drivers/pci/pci.h
+>> @@ -504,7 +504,8 @@ struct aer_err_info {
+>>   	struct pcie_tlp_log tlp;	/* TLP Header */
+>>   };
+>>   
+>> -int aer_get_device_error_info(struct pci_dev *dev, struct aer_err_info *info);
+>> +int aer_get_device_error_info(struct pci_dev *dev, struct aer_err_info *info,
+>> +			      bool link_healthy);
+>>   void aer_print_error(struct pci_dev *dev, struct aer_err_info *info);
+>>   #endif	/* CONFIG_PCIEAER */
+>>   
+>> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+>> index 13b8586924ea..97ec1c17b6f4 100644
+>> --- a/drivers/pci/pcie/aer.c
+>> +++ b/drivers/pci/pcie/aer.c
+>> @@ -1200,12 +1200,14 @@ EXPORT_SYMBOL_GPL(aer_recover_queue);
+>>    * aer_get_device_error_info - read error status from dev and store it to info
+>>    * @dev: pointer to the device expected to have a error record
+>>    * @info: pointer to structure to store the error record
+>> + * @link_healthy: link is healthy or not
+>>    *
+>>    * Return 1 on success, 0 on error.
+>>    *
+>>    * Note that @info is reused among all error devices. Clear fields properly.
+>>    */
+>> -int aer_get_device_error_info(struct pci_dev *dev, struct aer_err_info *info)
+>> +int aer_get_device_error_info(struct pci_dev *dev, struct aer_err_info *info,
+>> +			      bool link_healthy)
+>>   {
+>>   	int type = pci_pcie_type(dev);
+>>   	int aer = dev->aer_cap;
+>> @@ -1229,7 +1231,8 @@ int aer_get_device_error_info(struct pci_dev *dev, struct aer_err_info *info)
+>>   	} else if (type == PCI_EXP_TYPE_ROOT_PORT ||
+>>   		   type == PCI_EXP_TYPE_RC_EC ||
+>>   		   type == PCI_EXP_TYPE_DOWNSTREAM ||
+>> -		   info->severity == AER_NONFATAL) {
+>> +		   info->severity == AER_NONFATAL ||
+>> +		   (info->severity == AER_FATAL && link_healthy)) {
+>>   
+>>   		/* Link is still healthy for IO reads */
+>>   		pci_read_config_dword(dev, aer + PCI_ERR_UNCOR_STATUS,
+>> @@ -1258,11 +1261,11 @@ static inline void aer_process_err_devices(struct aer_err_info *e_info)
+>>   
+>>   	/* Report all before handle them, not to lost records by reset etc. */
+>>   	for (i = 0; i < e_info->error_dev_num && e_info->dev[i]; i++) {
+>> -		if (aer_get_device_error_info(e_info->dev[i], e_info))
+>> +		if (aer_get_device_error_info(e_info->dev[i], e_info, false))
+>>   			aer_print_error(e_info->dev[i], e_info);
+>>   	}
+> 
+> Would it be reasonable to detect if the link is intact and set the aer_get_device_error_info()
+> function's 'link_healthy' parameter accordingly? I was thinking the port upstream capability
+> link status register could be used to indicate the link viability.
+> 
+> Regards,
+> Terry
 
-# 64k kernel
-du -sh /run/ext4
-256K    /run/ext4
+Good idea. I think pciehp_check_link_active is a good implementation to check
+link_healthy in aer_get_device_error_info().
 
-# 4k kernel
-du -sh /run/ext4
-84K     /run/ext4
+   int pciehp_check_link_active(struct controller *ctrl)
+   {
+   	struct pci_dev *pdev = ctrl_dev(ctrl);
+   	u16 lnk_status;
+   	int ret;
+   
+   	ret = pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &lnk_status);
+   	if (ret == PCIBIOS_DEVICE_NOT_FOUND || PCI_POSSIBLE_ERROR(lnk_status))
+   		return -ENODEV;
+   
+   	ret = !!(lnk_status & PCI_EXP_LNKSTA_DLLLA);
+   	ctrl_dbg(ctrl, "%s: lnk_status = %x\n", __func__, lnk_status);
+   
+   	return ret;
+   }
 
->
-> It seems fraught to rely on the ext4.img taking less space on disk than
-> the allocated size, so instead create the tmpfs with a size of 2MB. With
-> that all 21 tests pass on 64K PAGE_SIZE kernels.
+Thank you for valuable comments.
 
-That looks like the right thing to do here. 
-
-Please feel free to add - 
-
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
->
-> Fixes: 01eadc8dd96d ("tests: add mount_setattr() selftests")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  tools/testing/selftests/mount_setattr/mount_setattr_test.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/tools/testing/selftests/mount_setattr/mount_setattr_test.c b/tools/testing/selftests/mount_setattr/mount_setattr_test.c
-> index 68801e1a9ec2..70f65eb320a7 100644
-> --- a/tools/testing/selftests/mount_setattr/mount_setattr_test.c
-> +++ b/tools/testing/selftests/mount_setattr/mount_setattr_test.c
-> @@ -1026,7 +1026,7 @@ FIXTURE_SETUP(mount_setattr_idmapped)
->  			"size=100000,mode=700"), 0);
->  
->  	ASSERT_EQ(mount("testing", "/mnt", "tmpfs", MS_NOATIME | MS_NODEV,
-> -			"size=100000,mode=700"), 0);
-> +			"size=2m,mode=700"), 0);
->  
->  	ASSERT_EQ(mkdir("/mnt/A", 0777), 0);
->  
-> -- 
-> 2.47.0
+Best Regards
+Shuai
 
