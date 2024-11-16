@@ -1,74 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-3332-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3333-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 586EDD68BDC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2024 12:56:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 899E7D68BE7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2024 16:00:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrDRq4VD1z30VZ;
-	Sat, 16 Nov 2024 23:56:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731761815;
-	cv=none; b=dp4Iro8chgQYA7xsifxogimdbWyjTTelO7fqvSE0zIvCAXBfzLQM3Glslj4pyaG2PhmFiwJgx6Ph2+sPlSB+K70Gha2+9nTIObSwBBnkwLBKAamvxQwlNboSyCTGRPkptmCIAPWw8BXBhyy9eovcDy41AwvxcDMifVvEdBjQ/R9z60ko+04VRDV9WHq5FecGg7m19kewyrM4akfYqLyvJsB3XONGq9dE9qbbElG69p5wDYBWR9jjFYi9Ov9/1L8P9RUQwLTG8soormvBcor1ugKGLeCF58Bsniol3V8aOfdZ6KAxaPOY374AyhOVyhcq4ojMc217bV5k54Ov6DOOCA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrJWT6Tjcz305T;
+	Sun, 17 Nov 2024 03:00:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731772821;
+	cv=none; b=ag6xunKwrUDJT8fduCA9Laa7CA15GsvZpkuzMX8tJ5npPzMsLu5VWykGVXJS15KPKwyz/p+grL7HfsZQufr9nMR19npDmP0KRi3eacEwsamkvoR+E+MNlzLQGiV6+mQJAaJSWw4K9EPO5Jh6ZlRt0iZSKELpvY0eXRqdCoPOsCFh3/BUOxePGO6sAvX8YmIXAkjejlK9nRuIGXDOOAbF0RpOf4oWBHd3kvmp97bkFkHeOKPQ7/xY1RryizPOCnjNQE0zg3H5ZCPMZwXeIZ/Bnrfdm3P6NLN3AZQcDwT7ykRLj56mCTCfURcbPPB/EhS6Z/173cc9RqzqKyG45sYLbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731761815; c=relaxed/relaxed;
-	bh=AY+QySMyUFsBKAqxcHPf5uPK541w48uF4Ev2qyQhC0s=;
-	h=From:To:Subject:In-Reply-To:Date:Message-ID:References; b=EKHGica7CGJZUl4tSqSz33QUU84OqjDCLPdJGUzGyhXQNtshDuo05JeYx0Rs25O/zDoniZ6l2fVF0uCbZRDEUTYjqDG2y1F6toccESRv6goAeCv+QPg4xZxQBG8y0CdQXS05gmiPmT/4OwuRuJVvE0cK1Xjq5CKxkInN3i4h0YSCZv3bRjMopMgfvp9v3sBKMs/Ez7IsC0JvoRy/LrPKkgKMYI5oKxVY40vrlWe2uoPIMfb28RVv7Tb9A197YdOT+PKORIJI4ImkPm/dPyxkBnY/qw8SlvHRWSkdlclz6z8deUDcrI8VcMG9zUmwd/G2lc+p/qFCVqRMZYaiQdrFng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=I+WS7CSr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=I+WS7CSr;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
+	t=1731772821; c=relaxed/relaxed;
+	bh=fETA+1Dzy4O9deQm9ib1xgCllm2B5gCukHnE7vZ+FXQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KM9uOwUZ94j51PrZPLnfPgjTIEken1VTVG9ChuiUqbfFD8qbIWBepXA3Lt5BFOjmi5K+AfH2MJx0tvfyGqJCz7nkiM2A8pEUNUH5vFgGqPJ9jqX6hehLNsLhk2u6bxcBE4VNF2380Z1MTFEtWbLhhij9QIh50HFrcyHRZdG/5YMFLyHxhLL0UzqHT/z524DMboecfPWDtUyay8CONryuyEKqdG7WS+b028JjkOL1sF5HsDy5HH1BVLg6Ul6/nq/fqr35btpzsO2rxag+88HNiK/8RWT+pqCRz67Ov3RjYcYSr8utPbMTMpdAz86ZaFd95X+VPT8k7yd8fYgl6IaHKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrDRj34Zhz30Tc
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 23:56:48 +1100 (AEDT)
-Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-20ca388d242so3455345ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 04:56:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1731761807; x=1732366607; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:to:from:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=AY+QySMyUFsBKAqxcHPf5uPK541w48uF4Ev2qyQhC0s=;
-        b=I+WS7CSrIK8i+EL/xKRoQFyyUkzwvcqTgmExge5n9Xzco2yWDVQjJD/viXIVM0rj7B
-         x3wx/kLDCbiTvF7+pfXjPUbOusHKfr1EiKkyEZZ26Fg79MvfY0YqupOfVP/hi+K3XTfn
-         cYB/LjTeEXGojydVLEJm5lBq0JAW/NTHi2aVl7OWUqea5peteBOGcsDIh5lAabffZqhH
-         jUNQPqwmnoGCvlPhsqa1CGAAzldWPn70TIyfveEbcD9OcW7uwRak6JxmJzNPUl8chnIW
-         Agq65UMqUsnMv6UaO2D9LhOBuRIFvIpP+KbDqVOdMeiZUjm37pGxJCfSjtrhmiQy2zMk
-         Z7IA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731761807; x=1732366607;
-        h=references:message-id:date:in-reply-to:subject:to:from
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=AY+QySMyUFsBKAqxcHPf5uPK541w48uF4Ev2qyQhC0s=;
-        b=fQmFIZdeQC9X43EOpi17YFp0vGKLvilN97qPvu5YTVlt1zrkINhMjd/+4V7QnONtwb
-         bk8v0Vif39OdQq9q12rpM+Vmcqw6B3+ZHTl0kBVGi4JvyYJQwDcpeGHJPxaBUdVOLC62
-         SpORNABVB2j5nUKUB7Tmi5P0A1tC6XUwcsk36aqv0/V2TBrGOFWHego3LBl1dNNlAsMR
-         +wALztmCWTN08zOyIK2DrPxtwi6r8cPLfrvCa7Pi3rYHI10O3Jzs8gGVn8fyJOF0l1Ch
-         6Xj+yGyc9Ak50YAXUHK+lxrun5ZK5sXCf0OMEdMHRtCOzdeiz1K3RW92MJb1cnkFMCwc
-         8t2g==
-X-Forwarded-Encrypted: i=1; AJvYcCUqyBnWgDwjzfG/S7ugkxFtngIEtO5w1i/gZXLUtvVTQrTYF0WV7Q/ToKi3jyT4wO0vfWhpZwfvWodtMK4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwVA3k/ANw5Ng4uaCZqZn3g0GRbQ/T4G8fYIzdapEx4KjZVo6f6
-	1NUpL3U9zHAES4KWXXV+fSx4Ao2hns6MOb8A1sLFTVGqXN2urSU0ZF1p6zMq
-X-Google-Smtp-Source: AGHT+IGih0JqZxo7OMQiCbe3aSIGP1/mqIcjcR8nEQytnEFm6+cHWuAt81OdIAN9ZfVFjnDmv5UV/w==
-X-Received: by 2002:a17:902:f611:b0:20c:7be3:2832 with SMTP id d9443c01a7336-211d0d85b8fmr98140805ad.31.1731761806787;
-        Sat, 16 Nov 2024 04:56:46 -0800 (PST)
-Received: from dw-tp ([49.205.218.89])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-211d0f47ae7sm26525425ad.208.2024.11.16.04.56.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 16 Nov 2024 04:56:46 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Zorro Lang <zlang@redhat.com>, linuxppc-dev@lists.ozlabs.org, Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com> 
-Subject: Re: [bug report from fstests] WARNING: CPU: 1 PID: 0 at arch/powerpc/mm/mmu_context.c:106 switch_mm_irqs_off+0x220/0x270
-In-Reply-To: <20241111132532.2ikhu3q56klfhvte@dell-per750-06-vm-08.rhts.eng.pek2.redhat.com>
-Date: Sat, 16 Nov 2024 18:13:36 +0530
-Message-ID: <87mshzcps7.fsf@gmail.com>
-References: <20241111132532.2ikhu3q56klfhvte@dell-per750-06-vm-08.rhts.eng.pek2.redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrJWS13Vvz2yks
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 03:00:18 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4XrJWM10jYz9sSN;
+	Sat, 16 Nov 2024 17:00:15 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id iUa0mkZAD12z; Sat, 16 Nov 2024 17:00:15 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4XrJWL71yTz9sSL;
+	Sat, 16 Nov 2024 17:00:14 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id DE8C58B7A0;
+	Sat, 16 Nov 2024 17:00:14 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 0OJ6eQSkLj9u; Sat, 16 Nov 2024 17:00:14 +0100 (CET)
+Received: from [192.168.232.159] (POS169858.IDSI0.si.c-s.fr [192.168.232.159])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 76A3A8B763;
+	Sat, 16 Nov 2024 17:00:14 +0100 (CET)
+Message-ID: <c1c01965-ac44-4d8e-aff1-3f6169bdd3cf@csgroup.eu>
+Date: Sat, 16 Nov 2024 17:00:14 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,118 +59,390 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-
-Zorro Lang <zlang@redhat.com> writes:
-
-> Hi,
->
-> Recently fstests generic/650 hit a kernel warning on ppc64le [1] with
-> xfs (default mkfs option). My latest test on mainline linux v6.12-rc6+
-> with HEAD=da4373fbcf006deda90e5e6a87c499e0ff747572 .
-
-I tried this on KVM pseries machine type, but I am unable to hit it. 
-Let me try that on an actual LPAR and confirm whether I can still hit
-this or not. Then maybe we can see if we could get a git bisect log of it.
-
-Thanks for reporting it.
-
--ritesh
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 08/10] macintosh: Remove ADB_MACIO
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, geert@linux-m68k.org, arnd@arndb.de
+References: <20241114131114.602234-1-mpe@ellerman.id.au>
+ <20241114131114.602234-8-mpe@ellerman.id.au>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20241114131114.602234-8-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
 
->
-> Thanks,
-> Zorro
->
->
-> [1]
-> FSTYP         -- xfs (debug)
-> PLATFORM      -- Linux/ppc64le rdma-cert-03-lp10 6.12.0-rc6+ #1 SMP Sat Nov  9 13:18:41 EST 2024
-> MKFS_OPTIONS  -- -f -m crc=1,finobt=1,rmapbt=1,reflink=1,inobtcount=1,bigtime=1 /dev/sda3
-> MOUNT_OPTIONS -- -o context=system_u:object_r:root_t:s0 /dev/sda3 /mnt/xfstests/scratch
->
-> generic/650       _check_dmesg: something found in dmesg (see /var/lib/xfstests/results//generic/650.dmesg)
->
->
-> HINT: You _MAY_ be missing kernel fix:
->       ecd49f7a36fb xfs: fix per-cpu CIL structure aggregation racing with dying cpus
->
-> Ran: generic/650
-> Failures: generic/650
-> Failed 1 of 1 tests
->
->
-> # cat /var/lib/xfstests/results//generic/650.dmesg
-> [16630.359077] run fstests generic/650 at 2024-11-09 18:03:21
-> [16631.058519] ------------[ cut here ]------------
-> [16631.058531] WARNING: CPU: 1 PID: 0 at arch/powerpc/mm/mmu_context.c:106 switch_mm_irqs_off+0x220/0x270
-> [16631.058542] Modules linked in: overlay dm_zero dm_log_writes dm_thin_pool dm_persistent_data dm_bio_prison dm_snapshot dm_bufio ext4 mbcache jbd2 dm_flakey bonding tls rfkill sunrpc ibmveth pseries_rng vmx_crypto sg dm_mod fuse loop nfnetlink xfs sd_mod nvme nvme_core ibmvscsi scsi_transport_srp nvme_auth [last unloaded: scsi_debug]
-> [16631.058617] CPU: 1 UID: 0 PID: 0 Comm: swapper/1 Kdump: loaded Tainted: G        W          6.12.0-rc6+ #1
-> [16631.058623] Tainted: [W]=WARN
-> [16631.058625] Hardware name: IBM,9009-22G POWER9 (architected) 0x4e0203 0xf000005 of:IBM,FW950.11 (VL950_075) hv:phyp pSeries
-> [16631.058629] NIP:  c0000000000b02c0 LR: c0000000000b0220 CTR: c000000000152a20
-> [16631.058633] REGS: c000000008bd7ad0 TRAP: 0700   Tainted: G        W           (6.12.0-rc6+)
-> [16631.058637] MSR:  8000000002823033 <SF,VEC,VSX,FP,ME,IR,DR,RI,LE>  CR: 2800440a  XER: 20040000
-> [16631.058660] CFAR: c0000000000b0230 IRQMASK: 3 
->                GPR00: c0000000000b027c c000000008bd7d70 c000000002616800 c00000016131a900 
->                GPR04: 0000000000000000 000000000000000a 0000000000000000 0000000000000000 
->                GPR08: 0000000000000000 0000000000000000 0000000000000001 0000000000000000 
->                GPR12: c000000000152a20 c00000000ffcf300 0000000000000000 000000001ef31820 
->                GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
->                GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000001 
->                GPR24: 0000000000000001 c0000000089acb00 c000000004fafcb0 0000000000000000 
->                GPR28: c000000004f24880 c00000016131a900 0000000000000001 c000000004f25180 
-> [16631.058740] NIP [c0000000000b02c0] switch_mm_irqs_off+0x220/0x270
-> [16631.058746] LR [c0000000000b0220] switch_mm_irqs_off+0x180/0x270
-> [16631.058751] Call Trace:
-> [16631.058754] [c000000008bd7d70] [c0000000000b027c] switch_mm_irqs_off+0x1dc/0x270 (unreliable)
-> [16631.058763] [c000000008bd7de0] [c0000000002572f8] idle_task_exit+0x118/0x1b0
-> [16631.058771] [c000000008bd7e40] [c000000000152a70] pseries_cpu_offline_self+0x50/0x150
-> [16631.058780] [c000000008bd7eb0] [c000000000078678] arch_cpu_idle_dead+0x68/0x7c
-> [16631.058787] [c000000008bd7ee0] [c00000000029f504] do_idle+0x1c4/0x290
-> [16631.058793] [c000000008bd7f40] [c00000000029fa90] cpu_startup_entry+0x60/0x70
-> [16631.058800] [c000000008bd7f70] [c00000000007825c] start_secondary+0x44c/0x480
-> [16631.058807] [c000000008bd7fe0] [c00000000000e258] start_secondary_prolog+0x10/0x14
-> [16631.058815] Code: 38800004 387c00f8 487f7a51 60000000 813c00f8 7129000a 4182ff40 2c3d0000 4182ff38 7c0004ac 4bffffb8 4bffff30 <0fe00000> 4bffff70 60000000 60000000 
-> [16631.058848] irq event stamp: 15169028
-> [16631.058850] hardirqs last  enabled at (15169027): [<c0000000003eb510>] tick_nohz_idle_exit+0x1c0/0x3b0
-> [16631.058858] hardirqs last disabled at (15169028): [<c000000001ab7eac>] __schedule+0x5ac/0xc30
-> [16631.058865] softirqs last  enabled at (15169016): [<c0000000001d24c8>] handle_softirqs+0x578/0x620
-> [16631.058871] softirqs last disabled at (15168957): [<c00000000001b1dc>] do_softirq_own_stack+0x6c/0x90
-> [16631.058878] ---[ end trace 0000000000000000 ]---
-> [16631.814920] NOHZ tick-stop error: local softirq work is pending, handler #40!!!
-> [16635.633774] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16635.752583] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16635.764402] XFS (sda5): Ending clean mount
-> [16637.842353] clockevent: decrementer mult[83126f] shift[24] cpu[6]
-> [16640.956776] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16641.078711] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16641.090273] XFS (sda5): Ending clean mount
-> [16646.729241] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16646.850952] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16646.863752] XFS (sda5): Ending clean mount
-> [16653.467205] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16653.594764] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16653.606795] XFS (sda5): Ending clean mount
-> [16659.346160] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16659.465528] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16659.478422] XFS (sda5): Ending clean mount
-> [16665.517371] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16665.656116] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16665.668005] XFS (sda5): Ending clean mount
-> [16672.655768] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16672.781813] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16672.794638] XFS (sda5): Ending clean mount
-> [16679.551991] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16679.668639] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16679.683949] XFS (sda5): Ending clean mount
-> [16685.384912] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16685.510632] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16685.522819] XFS (sda5): Ending clean mount
-> [16691.213987] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16691.347125] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16691.358483] XFS (sda5): Ending clean mount
-> [16712.697103] XFS (sda5): EXPERIMENTAL online scrub feature in use. Use at your own risk!
-> [16715.846166] XFS (sda5): Unmounting Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16716.047814] XFS (sda5): Mounting V5 Filesystem 3e7de15a-300a-41f2-8745-5be808cc3f7b
-> [16716.058628] XFS (sda5): Ending clean mount
+
+Le 14/11/2024 à 14:11, Michael Ellerman a écrit :
+> The macio-adb driver depends on PPC_CHRP, which has been removed, remove
+> the driver also.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>   drivers/macintosh/Kconfig     |   9 --
+>   drivers/macintosh/Makefile    |   1 -
+>   drivers/macintosh/adb.c       |   4 -
+>   drivers/macintosh/macio-adb.c | 288 ----------------------------------
+>   4 files changed, 302 deletions(-)
+>   delete mode 100644 drivers/macintosh/macio-adb.c
+
+What about:
+
+drivers/macintosh/adb.c:        if (!machine_is(chrp) && 
+!machine_is(powermac))
+drivers/macintosh/adbhid.c:     if (!machine_is(chrp) && 
+!machine_is(powermac))
+
+Christophe
+
+> 
+> diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+> index fb38f684444f..aebe7ca50e59 100644
+> --- a/drivers/macintosh/Kconfig
+> +++ b/drivers/macintosh/Kconfig
+> @@ -135,15 +135,6 @@ config PMAC_BACKLIGHT_LEGACY
+>   	  programs which use this old interface. New and updated programs
+>   	  should use the backlight classes in sysfs.
+>   
+> -config ADB_MACIO
+> -	bool "Include MacIO (CHRP) ADB driver"
+> -	depends on ADB && PPC_CHRP && !PPC_PMAC64
+> -	help
+> -	  Say Y here to include direct support for the ADB controller in the
+> -	  Hydra chip used on PowerPC Macintoshes of the CHRP type.  (The Hydra
+> -	  also includes a MESH II SCSI controller, DBDMA controller, VIA chip,
+> -	  OpenPIC controller and two RS422/Geoports.)
+> -
+>   config INPUT_ADBHID
+>   	bool "Support for ADB input devices (keyboard, mice, ...)"
+>   	depends on ADB && INPUT=y
+> diff --git a/drivers/macintosh/Makefile b/drivers/macintosh/Makefile
+> index 712edcb3e0b0..efecf2c20af3 100644
+> --- a/drivers/macintosh/Makefile
+> +++ b/drivers/macintosh/Makefile
+> @@ -23,7 +23,6 @@ obj-$(CONFIG_PMAC_SMU)		+= smu.o
+>   obj-$(CONFIG_ADB)		+= adb.o
+>   obj-$(CONFIG_ADB_MACII)		+= via-macii.o
+>   obj-$(CONFIG_ADB_IOP)		+= adb-iop.o
+> -obj-$(CONFIG_ADB_MACIO)		+= macio-adb.o
+>   
+>   obj-$(CONFIG_THERM_WINDTUNNEL)	+= therm_windtunnel.o
+>   obj-$(CONFIG_THERM_ADT746X)	+= therm_adt746x.o
+> diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+> index 88adee42ba82..f1186ce04167 100644
+> --- a/drivers/macintosh/adb.c
+> +++ b/drivers/macintosh/adb.c
+> @@ -52,7 +52,6 @@ extern struct adb_driver via_macii_driver;
+>   extern struct adb_driver via_cuda_driver;
+>   extern struct adb_driver adb_iop_driver;
+>   extern struct adb_driver via_pmu_driver;
+> -extern struct adb_driver macio_adb_driver;
+>   
+>   static DEFINE_MUTEX(adb_mutex);
+>   static struct adb_driver *adb_driver_list[] = {
+> @@ -67,9 +66,6 @@ static struct adb_driver *adb_driver_list[] = {
+>   #endif
+>   #ifdef CONFIG_ADB_PMU
+>   	&via_pmu_driver,
+> -#endif
+> -#ifdef CONFIG_ADB_MACIO
+> -	&macio_adb_driver,
+>   #endif
+>   	NULL
+>   };
+> diff --git a/drivers/macintosh/macio-adb.c b/drivers/macintosh/macio-adb.c
+> deleted file mode 100644
+> index 19c63959ebed..000000000000
+> --- a/drivers/macintosh/macio-adb.c
+> +++ /dev/null
+> @@ -1,288 +0,0 @@
+> -// SPDX-License-Identifier: GPL-2.0
+> -/*
+> - * Driver for the ADB controller in the Mac I/O (Hydra) chip.
+> - */
+> -#include <linux/types.h>
+> -#include <linux/errno.h>
+> -#include <linux/kernel.h>
+> -#include <linux/delay.h>
+> -#include <linux/spinlock.h>
+> -#include <linux/interrupt.h>
+> -#include <linux/pgtable.h>
+> -#include <linux/of.h>
+> -#include <linux/of_address.h>
+> -#include <linux/of_irq.h>
+> -#include <linux/adb.h>
+> -
+> -#include <asm/io.h>
+> -#include <asm/hydra.h>
+> -#include <asm/irq.h>
+> -#include <linux/init.h>
+> -#include <linux/ioport.h>
+> -
+> -struct preg {
+> -	unsigned char r;
+> -	char pad[15];
+> -};
+> -
+> -struct adb_regs {
+> -	struct preg intr;
+> -	struct preg data[9];
+> -	struct preg intr_enb;
+> -	struct preg dcount;
+> -	struct preg error;
+> -	struct preg ctrl;
+> -	struct preg autopoll;
+> -	struct preg active_hi;
+> -	struct preg active_lo;
+> -	struct preg test;
+> -};
+> -
+> -/* Bits in intr and intr_enb registers */
+> -#define DFB	1		/* data from bus */
+> -#define TAG	2		/* transfer access grant */
+> -
+> -/* Bits in dcount register */
+> -#define HMB	0x0f		/* how many bytes */
+> -#define APD	0x10		/* auto-poll data */
+> -
+> -/* Bits in error register */
+> -#define NRE	1		/* no response error */
+> -#define DLE	2		/* data lost error */
+> -
+> -/* Bits in ctrl register */
+> -#define TAR	1		/* transfer access request */
+> -#define DTB	2		/* data to bus */
+> -#define CRE	4		/* command response expected */
+> -#define ADB_RST	8		/* ADB reset */
+> -
+> -/* Bits in autopoll register */
+> -#define APE	1		/* autopoll enable */
+> -
+> -static volatile struct adb_regs __iomem *adb;
+> -static struct adb_request *current_req, *last_req;
+> -static DEFINE_SPINLOCK(macio_lock);
+> -
+> -static int macio_probe(void);
+> -static int macio_init(void);
+> -static irqreturn_t macio_adb_interrupt(int irq, void *arg);
+> -static int macio_send_request(struct adb_request *req, int sync);
+> -static int macio_adb_autopoll(int devs);
+> -static void macio_adb_poll(void);
+> -static int macio_adb_reset_bus(void);
+> -
+> -struct adb_driver macio_adb_driver = {
+> -	.name         = "MACIO",
+> -	.probe        = macio_probe,
+> -	.init         = macio_init,
+> -	.send_request = macio_send_request,
+> -	.autopoll     = macio_adb_autopoll,
+> -	.poll         = macio_adb_poll,
+> -	.reset_bus    = macio_adb_reset_bus,
+> -};
+> -
+> -int macio_probe(void)
+> -{
+> -	struct device_node *np __free(device_node) =
+> -		of_find_compatible_node(NULL, "adb", "chrp,adb0");
+> -
+> -	if (np)
+> -		return 0;
+> -
+> -	return -ENODEV;
+> -}
+> -
+> -int macio_init(void)
+> -{
+> -	struct device_node *adbs __free(device_node) =
+> -		of_find_compatible_node(NULL, "adb", "chrp,adb0");
+> -	struct resource r;
+> -	unsigned int irq;
+> -
+> -	if (!adbs)
+> -		return -ENXIO;
+> -
+> -	if (of_address_to_resource(adbs, 0, &r))
+> -		return -ENXIO;
+> -
+> -	adb = ioremap(r.start, sizeof(struct adb_regs));
+> -	if (!adb)
+> -		return -ENOMEM;
+> -
+> -
+> -	out_8(&adb->ctrl.r, 0);
+> -	out_8(&adb->intr.r, 0);
+> -	out_8(&adb->error.r, 0);
+> -	out_8(&adb->active_hi.r, 0xff); /* for now, set all devices active */
+> -	out_8(&adb->active_lo.r, 0xff);
+> -	out_8(&adb->autopoll.r, APE);
+> -
+> -	irq = irq_of_parse_and_map(adbs, 0);
+> -	if (request_irq(irq, macio_adb_interrupt, 0, "ADB", (void *)0)) {
+> -		iounmap(adb);
+> -		printk(KERN_ERR "ADB: can't get irq %d\n", irq);
+> -		return -EAGAIN;
+> -	}
+> -	out_8(&adb->intr_enb.r, DFB | TAG);
+> -
+> -	printk("adb: mac-io driver 1.0 for unified ADB\n");
+> -
+> -	return 0;
+> -}
+> -
+> -static int macio_adb_autopoll(int devs)
+> -{
+> -	unsigned long flags;
+> -	
+> -	spin_lock_irqsave(&macio_lock, flags);
+> -	out_8(&adb->active_hi.r, devs >> 8);
+> -	out_8(&adb->active_lo.r, devs);
+> -	out_8(&adb->autopoll.r, devs? APE: 0);
+> -	spin_unlock_irqrestore(&macio_lock, flags);
+> -	return 0;
+> -}
+> -
+> -static int macio_adb_reset_bus(void)
+> -{
+> -	unsigned long flags;
+> -	int timeout = 1000000;
+> -
+> -	/* Hrm... we may want to not lock interrupts for so
+> -	 * long ... oh well, who uses that chip anyway ? :)
+> -	 * That function will be seldom used during boot
+> -	 * on rare machines, so...
+> -	 */
+> -	spin_lock_irqsave(&macio_lock, flags);
+> -	out_8(&adb->ctrl.r, in_8(&adb->ctrl.r) | ADB_RST);
+> -	while ((in_8(&adb->ctrl.r) & ADB_RST) != 0) {
+> -		if (--timeout == 0) {
+> -			out_8(&adb->ctrl.r, in_8(&adb->ctrl.r) & ~ADB_RST);
+> -			spin_unlock_irqrestore(&macio_lock, flags);
+> -			return -1;
+> -		}
+> -	}
+> -	spin_unlock_irqrestore(&macio_lock, flags);
+> -	return 0;
+> -}
+> -
+> -/* Send an ADB command */
+> -static int macio_send_request(struct adb_request *req, int sync)
+> -{
+> -	unsigned long flags;
+> -	int i;
+> -	
+> -	if (req->data[0] != ADB_PACKET)
+> -		return -EINVAL;
+> -	
+> -	for (i = 0; i < req->nbytes - 1; ++i)
+> -		req->data[i] = req->data[i+1];
+> -	--req->nbytes;
+> -	
+> -	req->next = NULL;
+> -	req->sent = 0;
+> -	req->complete = 0;
+> -	req->reply_len = 0;
+> -
+> -	spin_lock_irqsave(&macio_lock, flags);
+> -	if (current_req) {
+> -		last_req->next = req;
+> -		last_req = req;
+> -	} else {
+> -		current_req = last_req = req;
+> -		out_8(&adb->ctrl.r, in_8(&adb->ctrl.r) | TAR);
+> -	}
+> -	spin_unlock_irqrestore(&macio_lock, flags);
+> -	
+> -	if (sync) {
+> -		while (!req->complete)
+> -			macio_adb_poll();
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -static irqreturn_t macio_adb_interrupt(int irq, void *arg)
+> -{
+> -	int i, n, err;
+> -	struct adb_request *req = NULL;
+> -	unsigned char ibuf[16];
+> -	int ibuf_len = 0;
+> -	int complete = 0;
+> -	int autopoll = 0;
+> -	int handled = 0;
+> -
+> -	spin_lock(&macio_lock);
+> -	if (in_8(&adb->intr.r) & TAG) {
+> -		handled = 1;
+> -		req = current_req;
+> -		if (req) {
+> -			/* put the current request in */
+> -			for (i = 0; i < req->nbytes; ++i)
+> -				out_8(&adb->data[i].r, req->data[i]);
+> -			out_8(&adb->dcount.r, req->nbytes & HMB);
+> -			req->sent = 1;
+> -			if (req->reply_expected) {
+> -				out_8(&adb->ctrl.r, DTB + CRE);
+> -			} else {
+> -				out_8(&adb->ctrl.r, DTB);
+> -				current_req = req->next;
+> -				complete = 1;
+> -				if (current_req)
+> -					out_8(&adb->ctrl.r, in_8(&adb->ctrl.r) | TAR);
+> -			}
+> -		}
+> -		out_8(&adb->intr.r, 0);
+> -	}
+> -
+> -	if (in_8(&adb->intr.r) & DFB) {
+> -		handled = 1;
+> -		err = in_8(&adb->error.r);
+> -		if (current_req && current_req->sent) {
+> -			/* this is the response to a command */
+> -			req = current_req;
+> -			if (err == 0) {
+> -				req->reply_len = in_8(&adb->dcount.r) & HMB;
+> -				for (i = 0; i < req->reply_len; ++i)
+> -					req->reply[i] = in_8(&adb->data[i].r);
+> -			}
+> -			current_req = req->next;
+> -			complete = 1;
+> -			if (current_req)
+> -				out_8(&adb->ctrl.r, in_8(&adb->ctrl.r) | TAR);
+> -		} else if (err == 0) {
+> -			/* autopoll data */
+> -			n = in_8(&adb->dcount.r) & HMB;
+> -			for (i = 0; i < n; ++i)
+> -				ibuf[i] = in_8(&adb->data[i].r);
+> -			ibuf_len = n;
+> -			autopoll = (in_8(&adb->dcount.r) & APD) != 0;
+> -		}
+> -		out_8(&adb->error.r, 0);
+> -		out_8(&adb->intr.r, 0);
+> -	}
+> -	spin_unlock(&macio_lock);
+> -	if (complete && req) {
+> -	    void (*done)(struct adb_request *) = req->done;
+> -	    mb();
+> -	    req->complete = 1;
+> -	    /* Here, we assume that if the request has a done member, the
+> -    	     * struct request will survive to setting req->complete to 1
+> -	     */
+> -	    if (done)
+> -		(*done)(req);
+> -	}
+> -	if (ibuf_len)
+> -		adb_input(ibuf, ibuf_len, autopoll);
+> -
+> -	return IRQ_RETVAL(handled);
+> -}
+> -
+> -static void macio_adb_poll(void)
+> -{
+> -	unsigned long flags;
+> -
+> -	local_irq_save(flags);
+> -	if (in_8(&adb->intr.r) != 0)
+> -		macio_adb_interrupt(0, NULL);
+> -	local_irq_restore(flags);
+> -}
 
