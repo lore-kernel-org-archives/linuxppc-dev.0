@@ -1,54 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-3325-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3326-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78EB4D68BE5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2024 10:32:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 065C9D68BE5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2024 10:33:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xr9Dl0WdRz3bXS;
-	Sat, 16 Nov 2024 21:32:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.17.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731753127;
-	cv=none; b=Sy815Jj3p55a5+2MHp3HLf+rbND/covtOuy2DqKkpSUy57WIlbQrrrmpIkpXvB3QfBBwrKIrhjc/hlnn/bfjB83k6Hl9AV9S5bJM+C6b0C4PFxiop0diGinfjjpyDLGP3B4JnSzNOyrIQLcD3RaFloUvsl1Y4ZYwMql+GJfbenoPzQBFSYcevp/Irx1QaQPocZqMk8dOFdtdqvVhVu3y9SnwSkH+fs3gBsGc7rDOCYmBlsck9bs565UENgq5b5t7nAy4KdqLmN+rn/8AxUi73lJFjwJgsXOHRrm4Ne+aTxhQR3Awtzp+ZFZ4bQaBRhCny3V+lCRvFJlT9M+5EYo9Qg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xr9Fr50J5z2xk1;
+	Sat, 16 Nov 2024 21:33:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731753184;
+	cv=none; b=D+mXGpU8DPwxLQgwj5rSt1sI5f6vaG9GBV4ddtQc8a3AepSPlc0LbqwS4IMiEtpDCdB/x17p5QnmeEMe5IKAWM4HGgPSvznrN1q+hqMdY6d2+zRTty4g+6ilSrPg4lpYWFcc2meiMU/7Ujm6ifp9anZtp76n1xSxJoP3MPZdy7iNV//N4C9nkwmIH0Du4OdH0/ouJbAunLVa3fRmnt+BVQYF9+78PZrw6y0YzK+kCFKdgwxzDAfsBN5ccnl8NO6didsSB0T26/c9eV2tYxt/l+ng7GlwLsC76u2mj4u/mt/XSyijgrntm5C9sicq4mPS1Kn/VXH/knTINaSi53hTgw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731753127; c=relaxed/relaxed;
-	bh=eoB4Zba0oDILq/GyWjNIQLXHlVmq6QUNlZtjwtBqfrw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:Cc:
-	 In-Reply-To:Content-Type; b=Jo4L4gexdEhAfTdpEa1R630k8c7CBWdhnxq+AIKSfQYOf+E9J4NcjCK01hZTXp4FybBZjVJnmGskCoj/eaSTXoYRxCQyyywNccHndIL3l+rQ5ZpK79QgdR4z8/ZDWsEXqfVyWYzF65qDsH1NXQA27+vxdB8snWOCCthWxBvFoq6kuqrnhvhFV9TL/lMOI0hJe6EZFXgqIyG31nTx4vdTMvDu3O6WCnwCKbqfaF+KKXIsSJo5EaOJtS4k1E9xj8WSlTgj31Y390eSmMkdtXDXmsUHAgZAqsIASI33FOd/QfIEd1n0JauR0lyLXspp3CYERHg4xg9Fr4CLBdbSjv5QMw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=wW9Dq3AZ; dkim-atps=neutral; spf=pass (client-ip=212.227.17.11; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=wW9Dq3AZ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.17.11; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-Received: from mout.web.de (mout.web.de [212.227.17.11])
+	t=1731753184; c=relaxed/relaxed;
+	bh=EiKywmX11up7vzxh9wOVcX/xRjapeyihgtiC9Dahg/Q=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=VShMNE6C+hEN86VXUr0KgqlpVXyUtfNOeNt3OuBHHn5pGUVhbCsfOL3D26ZZmn+flmkuzmDWyYsh7ix8mxcz0WgwbuYGJmNU0IqJQ4RhCsoilI8f/J5eMLxPhx+5EPXrUrHDDsYHc822H2gQgQUadPmSFJrHJ6V91sFczx0Ij2K+Jq03BdykSun4t+YzNZzts/42gBStaGTSpbxu3IT6O4JJum8vMyDZlYUMqYrO7T6rwIgdY6CYb9dHp/srBk/HDtd51bbh7RcgMFAm4ZPvCrndERcgzg9NgjvSdOeV2EnnXN5N4i1BXql2RdMi8NMbw8LJNu1iipMl+lBkTiOnKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xr9Dc4fJHz30T8
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 21:31:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1731753089; x=1732357889; i=markus.elfring@web.de;
-	bh=eoB4Zba0oDILq/GyWjNIQLXHlVmq6QUNlZtjwtBqfrw=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:
-	 References:From:Cc:In-Reply-To:Content-Type:
-	 Content-Transfer-Encoding:cc:content-transfer-encoding:
-	 content-type:date:from:message-id:mime-version:reply-to:subject:
-	 to;
-	b=wW9Dq3AZud0Mh8eIxx8h+BRWpDDanRbjX7te2PngHotAhatJcH6+ajq66DZf63ea
-	 x9DLAuX0ykm1CYkqOs2orWjR7ZQJhXLpZmi2LBFfsAYIhsv+oOmAyyLBXirS2etaB
-	 3v8P6ihgau9jYhEfuIxCW8C0qj/THZBJsFVy9UjbdEdswUDtqXoh5WN2vo2c8QIC2
-	 ZprWvwJrtaM5bhc1Y9aX3gLsg/KsfMgK11tyTQ6hzA0bcd65ovg1TdT4r4xPUSvmO
-	 +KtpYjEAK6gPBLG0T4JNvXp3Pc6eKzqMjpmUE9I0V75TuY1sr3p2Vk6RUU1fk1MxQ
-	 1RnqQMWB4+ZDArE2sA==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.21] ([94.31.88.95]) by smtp.web.de (mrweb105
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1M8kEV-1t87Dv2SuX-00FywX; Sat, 16
- Nov 2024 11:23:22 +0100
-Message-ID: <9088f9a2-c4ab-4098-a255-25120df5c497@web.de>
-Date: Sat, 16 Nov 2024 11:23:01 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xr9Fq50PSz2xZK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 21:33:03 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4Xr9Fm6mkmz9sSV;
+	Sat, 16 Nov 2024 11:33:00 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id RtqYPDBAnn-D; Sat, 16 Nov 2024 11:33:00 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4Xr9Fm5fYzz9sST;
+	Sat, 16 Nov 2024 11:33:00 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A84AA8B7A0;
+	Sat, 16 Nov 2024 11:33:00 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id Ln_6XnRxJZel; Sat, 16 Nov 2024 11:33:00 +0100 (CET)
+Received: from [192.168.232.159] (POS169858.IDSI0.si.c-s.fr [192.168.232.159])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3ED8D8B763;
+	Sat, 16 Nov 2024 11:33:00 +0100 (CET)
+Message-ID: <3f9dbb7b-6527-48e1-9028-b46e5a0c58ce@csgroup.eu>
+Date: Sat, 16 Nov 2024 11:33:00 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,156 +61,161 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [cocci] [PATCH v2 02/21] coccinelle: misc: Add secs_to_jiffies
- script
-To: Easwar Hariharan <eahariha@linux.microsoft.com>, cocci@inria.fr
-References: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
- <20241115-converge-secs-to-jiffies-v2-2-911fb7595e79@linux.microsoft.com>
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
- netdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-s390@vger.kernel.org, dri-devel@lists.freedesktop.org,
- intel-xe@lists.freedesktop.org, linux-scsi@vger.kernel.org,
- xen-devel@lists.xenproject.org, linux-block@vger.kernel.org,
- linux-wireless@vger.kernel.org, ath11k@lists.infradead.org,
- linux-mm@kvack.org, linux-bluetooth@vger.kernel.org,
- linux-staging@lists.linux.dev, linux-rpi-kernel@lists.infradead.org,
- ceph-devel@vger.kernel.org, live-patching@vger.kernel.org,
- linux-sound@vger.kernel.org, etnaviv@lists.freedesktop.org,
- oss-drivers@corigine.com, linuxppc-dev@lists.ozlabs.org,
- Anna-Maria Behnsen <anna-maria@linutronix.de>,
- Pablo Neira Ayuso <pablo@netfilter.org>,
- Jozsef Kadlecsik <kadlec@netfilter.org>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Simon Horman <horms@kernel.org>, Julia Lawall <Julia.Lawall@inria.fr>,
- Nicolas Palix <nicolas.palix@imag.fr>, Daniel Mack <daniel@zonque.org>,
- Haojian Zhuang <haojian.zhuang@gmail.com>,
- Robert Jarzmik <robert.jarzmik@free.fr>, Russell King
- <linux@armlinux.org.uk>, Heiko Carstens <hca@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
- <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Ofir Bitton <obitton@habana.ai>,
- Oded Gabbay <ogabbay@kernel.org>, Lucas De Marchi
- <lucas.demarchi@intel.com>,
- =?UTF-8?Q?Thomas_Hellstr=C3=B6m?= <thomas.hellstrom@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Jeroen de Borst <jeroendb@google.com>,
- Praveen Kaligineedi <pkaligineedi@google.com>,
- Shailend Chand <shailend@google.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- James Smart <james.smart@broadcom.com>,
- Dick Kennedy <dick.kennedy@broadcom.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- =?UTF-8?Q?Roger_Pau_Monn=C3=A9?= <roger.pau@citrix.com>,
- Jens Axboe <axboe@kernel.dk>, Kalle Valo <kvalo@kernel.org>,
- Jeff Johnson <jjohnson@kernel.org>, Catalin Marinas
- <catalin.marinas@arm.com>, Andrew Morton <akpm@linux-foundation.org>,
- Jack Wang <jinpu.wang@cloud.ionos.com>, Marcel Holtmann
- <marcel@holtmann.org>, Johan Hedberg <johan.hedberg@gmail.com>,
- Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Florian Fainelli <florian.fainelli@broadcom.com>, Ray Jui
- <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Xiubo Li <xiubli@redhat.com>,
- Ilya Dryomov <idryomov@gmail.com>, Josh Poimboeuf <jpoimboe@kernel.org>,
- Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
- Petr Mladek <pmladek@suse.com>, Joe Lawrence <joe.lawrence@redhat.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- Lucas Stach <l.stach@pengutronix.de>,
- Russell King <linux+etnaviv@armlinux.org.uk>,
- Christian Gmeiner <christian.gmeiner@gmail.com>,
- Louis Peens <louis.peens@corigine.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <20241115-converge-secs-to-jiffies-v2-2-911fb7595e79@linux.microsoft.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ozemPo5Q9OPy+/gWIfbNb/yTAwp7zpbaqzDjn4mcTmOYffBLZAH
- E0gCP/qnqze9l4Bx97cEhIN2OOovptOgRBkBUi+bKyV+a6ol7S4atoRxVmjqBCc2g41VI8a
- ROXhUKP5mlUoyzcJqOavJdVAoW8iKSPURqEhcga4JsnmJm/Pjl1vO+foxZw0grHWEblCrYI
- LJ17n1lYaEdE61JhX5uvg==
-UI-OutboundReport: notjunk:1;M01:P0:Ut1/dqQTShk=;F91m7WPtJ3BUlVtKRZAnC+LWCZI
- +cjg25fBUksbtmXV3nSekf0nLkHlUg4tw3z4wJctDOB9qkRVE5T3889SK3u5OptuGCUjAgrRf
- L6lrbhw6GVbJKYcgnlSqdu1AUNxdBMhY8cs/buNF0m9zdffO7397JvKUWSE0xfZoPvfVoiMtQ
- 2rypQvC+rAdvnjnqX8Z/l5k+Ta4df6gtnQvEEsYlCov9jYav74lPb8Xas1COGI9D3lbjDyE1R
- xQHUN5EKkVXWHCZYvzqjvkK7xgPuLQmwwKaKwn4FWyyoU8MOdgZqVvWWExog11GG0Bj0waEUX
- HUF6YaxivoxzV2Y5r6LAhOiUt+GhhmvrhgCG4+8JWzJdznufPV4+fP5RiQujgbpv4FQKCggkT
- 01YuDMSvbhlBCwREndb1mVyp/Erqfz9nbAeHfrlRmQkPDlPPMfDp37/XjM9SgT9g+3E1xLDzU
- 6tjKxDcoMNwIfLBQAhkn/ctTSaSOGeSTJzvC4lcDGr0qvfJXzxBKJvncbMk+yMqocqR8p094H
- cSM2zmRmlXf68Vxl9f0C7PKENLFipAxCDkva4DTvoVoUlI6L/GtfVX31tDhqzH1PFsgN3pqgA
- uOLYrVX3IK9TTGfCi2nSCbQTe0E7nATRkM0VKCUZGi+5RpXx2iG0D9UNHgMvG3BL7wdrVBTHd
- BJ+c4iVcO8Svev6YSdYxb1bL3paWXdHs8pyu1P4qoch+rL3WDY2bpB4E+pAFlwHbOO3e/EfS5
- F1WlN2iSMXR4ghTDMCs9q/a9XUxas73+B6HL+2MGt4NnSTabSXrIWg+WxI1MpkT2odmFv3Upb
- BMqveJ3dDzTl4lVtdfqBjUxzAjnvnI3fgq9DlyELZUJD7cUU7+mWoUVp575fJT8KXsst97DoH
- 2wg3SL/rW5+og6V1XmzKomcDLIBRD9wsq1M3n0ZVJM6dUoisRvTDLFWOYa1bwyAfdRxqEZZYL
- f/k/ozG8py9wxlN+Q1xgfUvmnR1kZgL5rJjRRSXKfSx0DYecB5roqhMSSN9DHVKRnVKG/Q==
-
-Why is a change description missing here?
+Subject: Re: [PATCH] bus: fsl-mc: Remove deadcode
+To: linux@treblig.org, ioana.ciornei@nxp.com, stuyoder@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+References: <20241115152055.279732-1-linux@treblig.org>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20241115152055.279732-1-linux@treblig.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
 
-=E2=80=A6
-> +++ b/scripts/coccinelle/misc/secs_to_jiffies.cocci
-> @@ -0,0 +1,21 @@
-=E2=80=A6
-> +/// Find usages of:
-> +/// - msecs_to_jiffies(value*1000)
-> +/// - msecs_to_jiffies(value*MSEC_PER_SEC)
 
-I suggest to take another look at corresponding development documentation.
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Do=
-cumentation/dev-tools/coccinelle.rst?h=3Dv6.12-rc7#n71
+Le 15/11/2024 à 16:20, linux@treblig.org a écrit :
+> [Vous ne recevez pas souvent de courriers de linux@treblig.org. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+> 
+> From: "Dr. David Alan Gilbert" <linux@treblig.org>
+> 
+> fsl_mc_allocator_driver_exit() was added explicitly by
+> commit 1e8ac83b6caf ("bus: fsl-mc: add fsl_mc_allocator cleanup function")
+> but was never used.
+> 
+> Remove it.
+> 
+> fsl_mc_portal_reset() was added in 2015 by
+> commit 197f4d6a4a00 ("staging: fsl-mc: fsl-mc object allocator driver")
+> but was never used.
+> 
+> Remove it.
+> 
+> fsl_mc_portal_reset() was the only caller of dpmcp_reset().
+> 
+> Remove it.
+> 
+> Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
 
-Will the attention grow for the proper usage of operation modes
-according to the tool =E2=80=9Ccoccicheck=E2=80=9D?
+Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-
-=E2=80=A6
-> +// Copyright: (C) 2024 Easwar Hariharan Microsoft
-
-Should personal details and company names be better distinguished in such =
-information?
-
-
-> +//
-> +// Keywords: secs, seconds, jiffies
-
-May a (blank) comment line be omitted here?
-
-
-> +@@ constant C; @@
-> +
-> +- msecs_to_jiffies(C * 1000)
-> ++ secs_to_jiffies(C)
-> +
-> +@@ constant C; @@
-> +
-> +- msecs_to_jiffies(C * MSEC_PER_SEC)
-> ++ secs_to_jiffies(C)
-
-I suggest to take a SmPL code variant (like the following)
-better into account.
-
-
-@depends on patch@
-constant C;
-@@
--msecs_to_jiffies
-+secs_to_jiffies
- (C
-- * \( 1000 \| MSEC_PER_SEC \)
- )
-
-
-Can any expressions become relevant besides =E2=80=9Cconstants=E2=80=9D?
-
-Regards,
-Markus
+> ---
+>   drivers/bus/fsl-mc/dpmcp.c            | 22 ----------------------
+>   drivers/bus/fsl-mc/fsl-mc-allocator.c |  5 -----
+>   drivers/bus/fsl-mc/fsl-mc-private.h   |  6 ------
+>   drivers/bus/fsl-mc/mc-io.c            | 20 --------------------
+>   include/linux/fsl/mc.h                |  2 --
+>   5 files changed, 55 deletions(-)
+> 
+> diff --git a/drivers/bus/fsl-mc/dpmcp.c b/drivers/bus/fsl-mc/dpmcp.c
+> index 5fbd0dbde24a..7816c0a728ef 100644
+> --- a/drivers/bus/fsl-mc/dpmcp.c
+> +++ b/drivers/bus/fsl-mc/dpmcp.c
+> @@ -75,25 +75,3 @@ int dpmcp_close(struct fsl_mc_io *mc_io,
+>          /* send command to mc*/
+>          return mc_send_command(mc_io, &cmd);
+>   }
+> -
+> -/**
+> - * dpmcp_reset() - Reset the DPMCP, returns the object to initial state.
+> - * @mc_io:     Pointer to MC portal's I/O object
+> - * @cmd_flags: Command flags; one or more of 'MC_CMD_FLAG_'
+> - * @token:     Token of DPMCP object
+> - *
+> - * Return:     '0' on Success; Error code otherwise.
+> - */
+> -int dpmcp_reset(struct fsl_mc_io *mc_io,
+> -               u32 cmd_flags,
+> -               u16 token)
+> -{
+> -       struct fsl_mc_command cmd = { 0 };
+> -
+> -       /* prepare command */
+> -       cmd.header = mc_encode_cmd_header(DPMCP_CMDID_RESET,
+> -                                         cmd_flags, token);
+> -
+> -       /* send command to mc*/
+> -       return mc_send_command(mc_io, &cmd);
+> -}
+> diff --git a/drivers/bus/fsl-mc/fsl-mc-allocator.c b/drivers/bus/fsl-mc/fsl-mc-allocator.c
+> index b5e8c021fa1f..6c3beb82dd1b 100644
+> --- a/drivers/bus/fsl-mc/fsl-mc-allocator.c
+> +++ b/drivers/bus/fsl-mc/fsl-mc-allocator.c
+> @@ -656,8 +656,3 @@ int __init fsl_mc_allocator_driver_init(void)
+>   {
+>          return fsl_mc_driver_register(&fsl_mc_allocator_driver);
+>   }
+> -
+> -void fsl_mc_allocator_driver_exit(void)
+> -{
+> -       fsl_mc_driver_unregister(&fsl_mc_allocator_driver);
+> -}
+> diff --git a/drivers/bus/fsl-mc/fsl-mc-private.h b/drivers/bus/fsl-mc/fsl-mc-private.h
+> index b3520ea1b9f4..e1b7ec3ed1a7 100644
+> --- a/drivers/bus/fsl-mc/fsl-mc-private.h
+> +++ b/drivers/bus/fsl-mc/fsl-mc-private.h
+> @@ -66,10 +66,6 @@ int dpmcp_close(struct fsl_mc_io *mc_io,
+>                  u32 cmd_flags,
+>                  u16 token);
+> 
+> -int dpmcp_reset(struct fsl_mc_io *mc_io,
+> -               u32 cmd_flags,
+> -               u16 token);
+> -
+>   /*
+>    * Data Path Resource Container (DPRC) API
+>    */
+> @@ -631,8 +627,6 @@ int dprc_scan_objects(struct fsl_mc_device *mc_bus_dev,
+> 
+>   int __init fsl_mc_allocator_driver_init(void);
+> 
+> -void fsl_mc_allocator_driver_exit(void);
+> -
+>   void fsl_mc_init_all_resource_pools(struct fsl_mc_device *mc_bus_dev);
+> 
+>   void fsl_mc_cleanup_all_resource_pools(struct fsl_mc_device *mc_bus_dev);
+> diff --git a/drivers/bus/fsl-mc/mc-io.c b/drivers/bus/fsl-mc/mc-io.c
+> index 95b10a6cf307..a0ad7866cbfc 100644
+> --- a/drivers/bus/fsl-mc/mc-io.c
+> +++ b/drivers/bus/fsl-mc/mc-io.c
+> @@ -263,23 +263,3 @@ void fsl_mc_portal_free(struct fsl_mc_io *mc_io)
+>          dpmcp_dev->consumer_link = NULL;
+>   }
+>   EXPORT_SYMBOL_GPL(fsl_mc_portal_free);
+> -
+> -/**
+> - * fsl_mc_portal_reset - Resets the dpmcp object for a given fsl_mc_io object
+> - *
+> - * @mc_io: Pointer to the fsl_mc_io object that wraps the MC portal to free
+> - */
+> -int fsl_mc_portal_reset(struct fsl_mc_io *mc_io)
+> -{
+> -       int error;
+> -       struct fsl_mc_device *dpmcp_dev = mc_io->dpmcp_dev;
+> -
+> -       error = dpmcp_reset(mc_io, 0, dpmcp_dev->mc_handle);
+> -       if (error < 0) {
+> -               dev_err(&dpmcp_dev->dev, "dpmcp_reset() failed: %d\n", error);
+> -               return error;
+> -       }
+> -
+> -       return 0;
+> -}
+> -EXPORT_SYMBOL_GPL(fsl_mc_portal_reset);
+> diff --git a/include/linux/fsl/mc.h b/include/linux/fsl/mc.h
+> index c90ec889bfc2..37316a58d2ed 100644
+> --- a/include/linux/fsl/mc.h
+> +++ b/include/linux/fsl/mc.h
+> @@ -417,8 +417,6 @@ int __must_check fsl_mc_portal_allocate(struct fsl_mc_device *mc_dev,
+> 
+>   void fsl_mc_portal_free(struct fsl_mc_io *mc_io);
+> 
+> -int fsl_mc_portal_reset(struct fsl_mc_io *mc_io);
+> -
+>   int __must_check fsl_mc_object_allocate(struct fsl_mc_device *mc_dev,
+>                                          enum fsl_mc_pool_type pool_type,
+>                                          struct fsl_mc_device **new_mc_adev);
+> --
+> 2.47.0
+> 
 
