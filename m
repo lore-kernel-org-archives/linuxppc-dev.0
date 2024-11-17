@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3380-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3381-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31291D6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 672D2D6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjD3P6Tz3bmY;
-	Sun, 17 Nov 2024 23:25:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjF0MnKz3bpn;
+	Sun, 17 Nov 2024 23:25:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846336;
-	cv=none; b=nd6OVyg2A8X/ZougPkfrQPuxjOsyuN1JgirrR+OJYovvX2+ybpiucy+Ny7DAufp8OX+kLpO8qwJ1g3lUrG6TWPXmz4ERwSPWkupJJAeywy6s/7FNxY5ORIAv0jWFRPg7y4xJV9sTwGB3zDBSSNs6XGH9AGtTQaH6l+UJkXY/flLKdSv9yVQc2RctIGSmnoHSSPtmqIfEOK2kZTAYSPwno9KNYzVgMVQBH/A1bAhLN2xe1FzFOKL30dapqOcFXAZjflSdrODQbMvEg/2fsLLvdbod9e3cncBrt+sxZWl5APdxt10OCbYMzrLvr2svf0UFl9Hqwkn8HrZAHs0ln+8CxQ==
+	cv=none; b=HnTwEPL+pCh5uQ6N7Xm39JUNdJNcEjJuaTf4/VtfQd3H+0YQTaL3xFpMkLLjE1RqxIir8TvKsbOZjsGx2eBXCN490iXA/n8yX5V5PLPLJq3ofI06Gu45HotHmw4SEOt2J7maL/OCxyHb7wtNvHrwfvrLZRhBwBmGLkSarhtXk0pojpWgjlX9ViIylwwcDMeIKBMbaY1pSM3ZuY1dPgyZ3q5xuAfVhAqRH+hzrh5194FvZaCwujw41GbSZKrnUwdfOAwapntKbtNsxC5yXKLbfo9CFfiAH2fi+K2sEDRHaPowaBq5+aGtpbXZ/mMYJlXqrZQt9ioI0526hgHyIVAzvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1731846336; c=relaxed/relaxed;
-	bh=vLaiN/SgefW4+vRAcoSW4dgqTRvnxKSEvntNMp09X7w=;
+	bh=ivoElLl6v01dXn3j88D2JzVuA8zDCUIbPPKgg72fH4U=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=GNWzPAGVUgMw3DShMGd1sSp8cmb6Q8G8mVDXLRsLGKa6LBaUhtjeWGoYUErxBHGtMGf9+InYVinFsXX9FSbhV4v3UJlOZwR4ve3u2e5sgd/YdMhdV0n6MrEDb0VNK5lQhQC9G34cSIQFDtNdxs9EMMapq6Erb4hhsFjo3VeGLnpOiCB78XaSk1+6+nOVSUndS+URGROxz9chCXS5G/HmiaA/9VX9NrLMo+Z4WhfCxkgR8C0fylgJhNS3DVZfFQdFblFmh/IW3f8hHWDOXWWbkwD1U78svFzZloIzQvO62K3ae/w/hE9TAkLj0QgjYajtCGExc5ZMEEHOhmA2/eNi0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DHcNzTre; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=CTabwHvmjpCvFVXbTb9COwFH0PBG9K/aL1Gaq65WI7MrhK+eunEXapoeClqZHeTNKHUgAnsF/sOGbk/OMDZElAUGZEG7w4FIYQO1oAoAsU740y8YbYU7lT8PHTwjaQQktn5u5Zsd+4ZFB6CSh3tO5oaLcqJlkGIq8/RzKB4bZzPQ2Soz7PeFpqVfaDuuz8Eeb6lW4UX+1Zk2RaBOUyftb8LpaX05A7dJ5iRHuDkLmsRb7oQLxPHGPoOfvnUdIN7+XfakhBq2G0ev+lUaqd0g+FN8A8K3sWz3etEwMF5GQeXMH+OFai3Uh9yuuRncSvFElze8F5+m8y6i7fkrGZHeCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jddM0Hic; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DHcNzTre;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jddM0Hic;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjB48ccz3bn4
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjC1cw1z3bnB
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846331;
-	bh=vLaiN/SgefW4+vRAcoSW4dgqTRvnxKSEvntNMp09X7w=;
+	s=201909; t=1731846332;
+	bh=ivoElLl6v01dXn3j88D2JzVuA8zDCUIbPPKgg72fH4U=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=DHcNzTre1EsoU/Frfruqv3q971A8wwjZCP3jsGporF2fF5ctlvTHrVSJp1rqYi2JB
-	 DPX6Mmi9+Yha4rKpVv0TBcu1J7ZR5bVPOrgCkTpn4jhHuCK99wUm0OI3Jvdk+nA2os
-	 It+jEwfyAsIqfijCzfqFVL9+0emAcgUL5w8GDFFpsVFo6OlSixgmK6F4f/VnRDVpRk
-	 ZoaC9j39H0scmVlv/xc8Os1yETmnI9JwOX+G3zWTSJ+GS11P1msoaxR8i7F+nQv1ig
-	 56C6KanWIiNjwq0vmRJVUwG05ogc6EachzYbl8XTUIwG3KOc+s0hoTH8teK+PQ4dXY
-	 cxBQH6zLMxiLg==
+	b=jddM0HicZ6glVWTVoexDcRGDtEPZfSdXC7PSUXrPxmgesfCZ2mwmnvfWGKtSBOGVE
+	 iXieeSBAr/q0k6Bz1u6q7Sl+d815QqpV9yXMhzWX4UlRIVOF51A3kQHz44ZAfFWhC6
+	 866nTk/LG/jkUUfdGNTEZbPe3tgAYV4aLpqY5YvZA2vyDy3xhK1AOkL1xpYhe998dx
+	 hi5LceFRxk8yPcizRFgj9lgIMC9zNr8Jlc47ExTwxayHgrCHKVLsvYPWymHw6djMqk
+	 /Zqc9VP5nVkoBikYSzX6kfE4pqaTZczuq+VWIoMn/vEEI+B3PP9V1nt0SeTZZ7kfoX
+	 oZjVswpgJPv/A==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj73Vywz4xf7;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj76vXHz4xfV;
 	Sun, 17 Nov 2024 23:25:31 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michal Suchanek <msuchanek@suse.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Paul Mackerras <paulus@ozlabs.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20241001130356.14664-1-msuchanek@suse.de>
-References: <ZvvrHpD-v4CuDqsm@cleo.paulus.ozlabs.org> <20241001130356.14664-1-msuchanek@suse.de>
-Subject: Re: [PATCH] powerpc/sstep: make emulate_vsx_load and emulate_vsx_store static
-Message-Id: <173184539750.890800.667845250874814001.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nathan Chancellor <nathan@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev, patches@lists.linux.dev, stable@vger.kernel.org
+In-Reply-To: <20241030-powerpc-vdso-drop-stackp-flags-clang-v1-1-d95e7376d29c@kernel.org>
+References: <20241030-powerpc-vdso-drop-stackp-flags-clang-v1-1-d95e7376d29c@kernel.org>
+Subject: Re: [PATCH] powerpc/vdso: Drop -mstack-protector-guard flags in 32-bit files with clang
+Message-Id: <173184539742.890800.7357374459961481947.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,15 +67,20 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 01 Oct 2024 15:03:49 +0200, Michal Suchanek wrote:
-> These functions are not used outside of sstep.c
+On Wed, 30 Oct 2024 11:41:37 -0700, Nathan Chancellor wrote:
+> Under certain conditions, the 64-bit '-mstack-protector-guard' flags may
+> end up in the 32-bit vDSO flags, resulting in build failures due to the
+> structure of clang's argument parsing of the stack protector options,
+> which validates the arguments of the stack protector guard flags
+> unconditionally in the frontend, choking on the 64-bit values when
+> targeting 32-bit:
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/sstep: make emulate_vsx_load and emulate_vsx_store static
-      https://git.kernel.org/powerpc/c/a26c4dbb3d9c1821cb0fc11cb2dbc32d5bf3463b
+[1/1] powerpc/vdso: Drop -mstack-protector-guard flags in 32-bit files with clang
+      https://git.kernel.org/powerpc/c/d677ce521334d8f1f327cafc8b1b7854b0833158
 
 cheers
 
