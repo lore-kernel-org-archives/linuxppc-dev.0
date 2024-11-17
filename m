@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3364-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3365-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C993AD68BF9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:25:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29BE8D6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:25:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqhq4lvzz2yVj;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqhq4nL3z308M;
 	Sun, 17 Nov 2024 23:25:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846315;
-	cv=none; b=PqoPfAFjRO8d1OCyfZY9Z4jMW/iRSOGcmAjZ45faejjQTh34SbBYGK3Uka8CBW2Yc/mLu5Yi117vfh33H5o/dDePSx8c1v46CK5KDsqQJOT9lC4se2vCKOKk6WFdh8cDmxFWOvXGjQyLZY3VAEiwDS+Ox1Wrlk4I/v/7HtKlIq131Ur0HJsxj3Kvhk0wAdloKhuHgEPWDnaDwT9myV68UtWBj8QNgfO6EBdxK4/cZ+zykuhAoMuk/nOqxnpvIQcJJk26QanMh/G/Fq0hf97cGx8O7Qyx1OwDSPumf2aEEIAHXyLMnmwbQguX1ZI7WAxVxHIh9I1uwdYIGRq7aoBQeQ==
+	cv=none; b=bxXmlmXh0rNrWJ9hr3cbsPgIV0yUp2xAwyxoFZfwRZx6xLurD3pQ0qiEhqOIg251Nl0qOySGYF0Gw2ow/m+4+I8c/4ty/JzdlbZxtu+5Wkns0MUTdFjceMN0r7Vt7qiEdPvJrbkXIp4xof01byAvYGI8UFaiTWTfPXjpjuTbRSEEMOd0Rapx9vOvY0rINUGrbE2ix+PSIMsMN/+6Dd/Bxlw7ey4D7sCZsjRZOUvnBb8fASBqm8zTJAC0hu3FiM+VZZe8Ps53EDAdiG7+SP0lqsNUrp7NKVA1+uFlwjr12utKNeGXwTwOHQ2bMi+Enr7v2nVWPe9vJ2Q0WFAxgwSL2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1731846315; c=relaxed/relaxed;
-	bh=TmUOvtaFFm8Lbs0BhgX9Y+/uxpOUMqksFC8Pa5BY3qc=;
+	bh=Whwznt8AGTFflVnnQEX7dgo8jQXeAZc+kZEuI8J0BII=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=Et1e5Hctqypv9072sH6DEmAyulPKv30T/b7DaZvIHLa88k5eQflfiw/I4+v8vIyg0FhSKLHBfrfKG95GZRQpmguh1r3BAd1e442RUss/lSiZWn4OJvHVr+H+etm2C2CYeg1MyZJFdur2o18spUgP18tyxcgi5tDrVu6w85Jh+mKA9iGE49YWFUMHqQWoYjGjyxonq9CPwtYoNtdUckd5+g/Mc1qjAtJsO9Rcf64xxWJX+TFdsT1ZD5Q/vEO8KkT3WNnrtlj9SLvb4iKXgya3mGoFxpVHpxUQYGS3tIg6OHr65QYsuNs+ip7o7StTIEv5KBukeY1PL7x43Ibw3Alq5g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ItOFpm/3; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=hd4w2hIZX+YIYDiURxpr3YrNh+eIuM2OhMyVDtEL5wF0RvkqoZWevVJcb3U+/179NrW1FMqhwatk4ozoEXQbnAx6svm9anFOcQ4YVhht7Esmt2m9mo8PHSofgLsPzm325ZSXC9WR38PQQUqwyjmHPLE9fYJo0bePdD8IhYFRzsRJO0oILy6I+zTBCjmfKgwsVfAXPDxVfd9MmtTPWYVeOuWIwFP+n6Zt1fbftzzAWmZpxqNPme2TA6XxnanGAVjDVtpF8n5gPTaWpMUKmtIU7bqVEdqHljPqG9su9ArzE4jvm143tYjr7tDOxKFQmOBmXYBIN5zwseAUbPjYd2VaWw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=LB3+6679; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ItOFpm/3;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=LB3+6679;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqhq1Ndnz305D
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqhp4fTKz2ytm
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:14 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846312;
-	bh=TmUOvtaFFm8Lbs0BhgX9Y+/uxpOUMqksFC8Pa5BY3qc=;
+	s=201909; t=1731846311;
+	bh=Whwznt8AGTFflVnnQEX7dgo8jQXeAZc+kZEuI8J0BII=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=ItOFpm/3/JldnYcAZfmLdfr71Cbw+i/dawDyU1w6cHL6LkTBmhHpJbx9CeJ2JsxBR
-	 EWA/JllPiZRSVkIEm3cG2u1LnG5c7CDwyNu4uQQEEEaz/AyCKcrCT2mLIq+pBjgg6I
-	 8TTtzT903nFRqtiuYYMZ/0drbtTiXdlEfjbjDZTV9XPZg8PrZu3y/VyzBroVz3KfS+
-	 3lchmFQDLNrhXmf+GLYfrf3byMnSUnU6hOk3XViem2xDmB/741UtW82ZWPUFLNMTT7
-	 Ql3JsRH/w4KGpdp4ZT/5qJ59nzO7uKaWJYMHgY8cjafU8N7M2hZAdbmigIjbU94JR1
-	 fMcG5mCYZD3oQ==
+	b=LB3+6679yJHY/ctV5rALLE25zQb2KH3hvYCgRGl/4YAML6eUQr7czEwhMGCFbOroG
+	 fJM1YmmKRHjjWzHk8y/AGZEdZvN3Vh+i86Ir3PTrnx4AhhExwy2bcyi9uuhNlP8N5J
+	 Lk+KC0loly16CrZU1w+WDH3S6ox+C/cRjTHlByC4SJSTzM0boT/K3Ss2pqWdMyKB8y
+	 4SZqPdJQcLgL/5uuejezacbh9/xKO5Y1Y/HMC1aQMZLU2tzu3NxzoyN6pgdD5YicEK
+	 rjnPyoB0uWaKadxR74mq3RL7Y2sAUKGvDBFGjX+gPAlojiRaZ/adzOewwSExbiKFwz
+	 V8nXUCUWu5z3g==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhl6ZF4z4xdx;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhl3PCYz4xdw;
 	Sun, 17 Nov 2024 23:25:11 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Geoff Levand <geoff@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Geert Uytterhoeven <geert+renesas@glider.be>
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com, vaibhav@linux.ibm.com, Gautam Menghani <gautam@linux.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <31fe9435056fcfbf82c3a01693be278d5ce4ad0f.1730899557.git.geert+renesas@glider.be>
-References: <31fe9435056fcfbf82c3a01693be278d5ce4ad0f.1730899557.git.geert+renesas@glider.be>
-Subject: Re: [PATCH] powerpc/ps3: Mark ps3_setup_uhc_device() __init
-Message-Id: <173184539745.890800.2900457894457834398.b4-ty@ellerman.id.au>
+In-Reply-To: <20241108094839.33084-1-gautam@linux.ibm.com>
+References: <20241108094839.33084-1-gautam@linux.ibm.com>
+Subject: Re: [PATCH v2] arch/powerpc/pseries: Fix KVM guest detection for disabling hardlockup detector
+Message-Id: <173184539747.890800.11538594220662178668.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,21 +67,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 06 Nov 2024 14:26:25 +0100, Geert Uytterhoeven wrote:
-> ps3_setup_uhc_device() is only called from ps3_setup_ehci_device() and
-> ps3_setup_ohci_device(), which are both marked __init.  Hence replace
-> the former's __ref marker by __init.
-> 
-> Note that before commit bd721ea73e1f9655 ("treewide: replace obsolete
-> _refok by __ref"), the function was marked __init_refok, which probably
-> should have been __init in the first place.
+On Fri, 08 Nov 2024 15:18:37 +0530, Gautam Menghani wrote:
+> As per the kernel documentation[1], hardlockup detector should be
+> disabled in KVM guests as it may give false positives. On PPC, hardlockup
+> detector is enabled inside KVM guests because disable_hardlockup_detector()
+> is marked as early_initcall and it relies on kvm_guest static key
+> (is_kvm_guest()) which is initialized later during boot by
+> check_kvm_guest(), which is a core_initcall. check_kvm_guest() is also
+> called in pSeries_smp_probe(), which is called before initcalls, but it is
+> skipped if KVM guest does not have doorbell support or if the guest is
+> launched with SMT=1.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/ps3: Mark ps3_setup_uhc_device() __init
-      https://git.kernel.org/powerpc/c/da6ffe855b5a05f29222e3d4ffa4b549413e33a4
+[1/1] arch/powerpc/pseries: Fix KVM guest detection for disabling hardlockup detector
+      https://git.kernel.org/powerpc/c/44e5d21e6d3fd2a1fed7f0327cf72e99397e2eaf
 
 cheers
 
