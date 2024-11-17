@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23D87D68BF9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8896BD6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjH3SLBz3bpL;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjH46qlz2yLT;
 	Sun, 17 Nov 2024 23:25:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846339;
-	cv=none; b=aNtrjFVPzr2tSm5sFMLuWhRjrYKqiH/QmfO6nA8dlwTSHmrKMyh4FkBi505cDjEXh9UktmPaD9ji7xx6Wg9d+qxL424IqeYET2w1fVmQaH/Fpxw8YDTa674wWTzJOWNSpk3iOl5ZPDHi/mhLFhooR5FvxLoCxpavX8+0F6E330ED8DICsmPS1BqT0SWxkN2Zo2zivAZK9cCmzrtG1KuxOp/+rSFFWMambDDPLP9OmI820GRJ8aM9hp6ORuLmyjao6oE/zmFXW89Yz2n95kNANQp1D0V1IioEMZQ7WmGYW0dzSPPK9emj42IAdRsFfMTeGiVutj3AmYVqXsn1gXl1Jw==
+	cv=none; b=ngh8qKjbh3rnmNb99fCedSs1VOI7thnQfpCOSPugc/IM1zHmdOb5vehxjVp+9eVi9fDddw10/guiFTJ5FfxRf4fyGWOQNwHs932kYXF4zWJl5I+FsKsuJ6v8WOHLxLQd7SZ/ZeWxqAtgUpAB6QlnwCsAbv1OVfun/VryrQvK1BdlN+i/mQj0saoKyWZAv45adUUYYrGHxWofUYYbqi/1/tR+cCbm+4a/P8EfZjDiq8TZRn8WJ17X9jeUEfj2krxpLvUY7DuWAiWemUIpLu7/v4HsBvN3gph3ujnvckpj4ALrpjo+rVLbKTMuW6bjcTI6CDcmf82vcKYb+JMpgUb6LA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1731846339; c=relaxed/relaxed;
-	bh=lnPr1gxISBwEUZN23AJ5943nhoG6g13BacvcbTslP1Y=;
+	bh=Z5aRpQSJyAn7kaPIQ+8BIKi8SL2NVVYdH6QgQNoa8rM=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=gvUDDYmf1ImQmKkjS/LZvw1W4lOiJHYNLJJwUmg/KJDErQ/GWr4WEe1+gQ+P39L4sEOuTSgB84wizKCohAZnYmotPUWC1Lh67v7dyAkUnoEyHwTU6niBLOYuEHoL6ckHsr+v685YMtaredunSFy7Xo/jjLQWVC7tyQTUhJfGncEAsSL7bBT+zTWX5YbTWU6ztA6qHspflK//HowF+SEKkPZG8ao4FRx7BdC0ccVL8xzecoliXMUjVlDfEq5oJ/cwXRUTlaALHlMaTGvhcAbyxj4c9fMRnBwqR2caMNQyKkLcT0wS/cMnFUd4NAuqz0E0iYJKIu3ncEEJPhuJEI2sRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gW/hKWPh; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=WYYt8kwr+G4SBqPrMRKBkHIOm0PF/YoAae9EQEBHQAo7L6IFGtEokRNQccTbNczvRpK5o9a/7Y3CT9Cq3JaEvgQtsE2/hU05edGKzuv8Tk4zudkB7q+pbdOHusxtXFlr0vwmzeI+poE+iF/OAFmfdsKqKmjsYy47A01vKIjcdDWa2sPk4QNytHdYCh2qUOuXdyZuXF5U0Rgy752wgGDD6cVpXF4btJXM6nMO2LqS4dgJpaxmyA6V/4wk6X7Fs9teGyOGKX1E/B+4vE83z9ZLs8EmomtTJ4ukWc5k+7K5/WcEfN4FPNgr7hpQwDL5631mzwPXsGpfO9P1LJEtdTV17A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BIrLZ6K4; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gW/hKWPh;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BIrLZ6K4;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjG1YqQz3br5
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjF5GrYz3bqm
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:37 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846335;
-	bh=lnPr1gxISBwEUZN23AJ5943nhoG6g13BacvcbTslP1Y=;
+	s=201909; t=1731846334;
+	bh=Z5aRpQSJyAn7kaPIQ+8BIKi8SL2NVVYdH6QgQNoa8rM=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=gW/hKWPhHry/Zusk66iROtpVWKhPKwFNTJncapCHs2oTrLTCts23RyYuiLV97optV
-	 qRlA6qdKxSqBSWTt2uRZ5mncVMSmkZErKRslHbnJbHEAspqUJPomPHeENWvLxfKkP9
-	 FkA9vb6GfB69HEdLi299L8aW2647RmRJYFu3hcRHQQRjAqd9B8FRJlpjrc0jNhCQWn
-	 OmUnYsYu+YTMBLj4dghcgsnh4inU+RlOn08w9atRj39hwlRGXx/14bSspgiVXi640g
-	 daRTjYtdFTEQWGuOdKbTvrNkQIiNHYZ+qqs69k0qFYcxwsFzMmJjNePijiWo+6QK0l
-	 qTxnIWPBqgwSA==
+	b=BIrLZ6K4TjilwIC8ZUM6+VF/KE+AJQ0faXUD7G8BWhhlJfQN2ybpU9fxO+PVju4ru
+	 0hfudrhRIt2YLomYXScM6HFCb7U42GURiiZ0MrTKa2vDl8NVtZAHqqGDS5Hkqgfbar
+	 owHGasJ9/boBc7E5sM/R3PpBh4UtrPxtB5DKHAwi3N4XkLemW98yw76+0kKJS8q4wU
+	 oFPaLB5Tt9DSm1XUintORuQrJ51WnWN0EcIwhiXUEbS7edzVXL+8AVJcWNIm81SG5l
+	 HMx6RrXKdo0j8vbMDsL0RTRNDWiUm0J9I+w9lJ//l4X4bClCPla/TtlB3065haVzyP
+	 vvBqirIGYtcgw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XrqjC1Zbyz4xff;
-	Sun, 17 Nov 2024 23:25:35 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XrqjB5GBgz4xfd;
+	Sun, 17 Nov 2024 23:25:34 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Thomas Weißschuh <thomas.weissschuh@linutronix.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20241113-vdso-powerpc-asm-offsets-v1-1-3f7e589f090d@linutronix.de>
-References: <20241113-vdso-powerpc-asm-offsets-v1-1-3f7e589f090d@linutronix.de>
-Subject: Re: [PATCH] powerpc/vdso: Remove unused clockmode asm offsets
-Message-Id: <173184539749.890800.8297350541963703609.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: Hari Bathini <hbathini@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20241107055817.489795-1-sourabhjain@linux.ibm.com>
+References: <20241107055817.489795-1-sourabhjain@linux.ibm.com>
+Subject: Re: [PATCH v2 1/2] powerpc/fadump: allocate memory for additional parameters early
+Message-Id: <173184539746.890800.1383337121035968913.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -65,17 +65,26 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On Wed, 13 Nov 2024 09:06:58 +0100, Thomas Weißschuh wrote:
-> These offsets are not used anymore, delete them.
+On Thu, 07 Nov 2024 11:28:16 +0530, Sourabh Jain wrote:
+> Memory for passing additional parameters to fadump capture kernel
+> is allocated during subsys_initcall level, using memblock. But
+> as slab is already available by this time, allocation happens via
+> the buddy allocator. This may work for radix MMU but is likely to
+> fail in most cases for hash MMU as hash MMU needs this memory in
+> the first memory block for it to be accessible in real mode in the
+> capture kernel (second boot). So, allocate memory for additional
+> parameters area as soon as MMU mode is obvious.
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/vdso: Remove unused clockmode asm offsets
-      https://git.kernel.org/powerpc/c/d7a82238cb8c77d4ed8cc97cd556c5f3e64bc749
+[1/2] powerpc/fadump: allocate memory for additional parameters early
+      https://git.kernel.org/powerpc/c/f4892c68ecc1cf45e41a78820dd2eebccc945b66
+[2/2] fadump: reserve param area if below boot_mem_top
+      https://git.kernel.org/powerpc/c/fb90dca828b6070709093934c6dec56489a2d91d
 
 cheers
 
