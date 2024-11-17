@@ -1,55 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3379-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3380-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0D63D6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31291D6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjC4R72z3bnq;
-	Sun, 17 Nov 2024 23:25:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjD3P6Tz3bmY;
+	Sun, 17 Nov 2024 23:25:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846335;
-	cv=none; b=FvcpOhwFAKGRw0TMvG9OrlXQ/MmnGUFTjWySdYxnovkUevTPSjtmYN8bHlogWaDu437C+dN/kVAYgrypLi70dMj6QNPrBjak/t2koOqcMrkIrwA9qeQ4vncgLx/6eQZxw8ZQL1XjVAPt2ZyiYwoU9GecTFtcMDEQjq0tZdcViWXhCFvWSeAvuJ4r/ddX4/gykH4S8i8xb2n1i5NUjWvjaWAEP8qA8voZniWiXmN9z1wM4Zv5y7o313JxiHU378j3h4SVOIuEpSI/3OqHzRLQ7cXUDAh1/ssK1MaOIu0+F40OVHJBCeD5XKI1fbAcxEuk4f+wRlOX+Kvs92c8qq15UA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846336;
+	cv=none; b=nd6OVyg2A8X/ZougPkfrQPuxjOsyuN1JgirrR+OJYovvX2+ybpiucy+Ny7DAufp8OX+kLpO8qwJ1g3lUrG6TWPXmz4ERwSPWkupJJAeywy6s/7FNxY5ORIAv0jWFRPg7y4xJV9sTwGB3zDBSSNs6XGH9AGtTQaH6l+UJkXY/flLKdSv9yVQc2RctIGSmnoHSSPtmqIfEOK2kZTAYSPwno9KNYzVgMVQBH/A1bAhLN2xe1FzFOKL30dapqOcFXAZjflSdrODQbMvEg/2fsLLvdbod9e3cncBrt+sxZWl5APdxt10OCbYMzrLvr2svf0UFl9Hqwkn8HrZAHs0ln+8CxQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731846335; c=relaxed/relaxed;
-	bh=9lWibbk1D5UT61L9PfAE59H8lBHp918beMmK9DrEsm4=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=A/2HH9HW84V2RoQUOpqfVN0FxQpIyQbsdI8fUJgMmOAvrovNP4fO7QnttsBCfB1yNzOyMloqNUGEsukjTkKQ/01x+/RgFDkRLX3cXIuGn3H7BC/QpU2OED/njgDyzVOAJWASMwPZTbqaPLN2YnRISWoAotmz4nJEK8ggG2oIPlS9EHTJmt2MSrRymKR9Gc0Sqga3B5/loN3lKO5IKVcc5MkEZRWBgj6/Zu8eIL6VJFcGpErML2acX+gtsOG4UpPagmTP839JuQUr44Dr50fRTwn5gnqVREYL/LQ+g7RBaHmkAv06MyJpvka9hR4e4X8oS2vWY7d9XCjQQJHAujD6Yg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=NJ8iIp/G; dkim-atps=neutral
+	t=1731846336; c=relaxed/relaxed;
+	bh=vLaiN/SgefW4+vRAcoSW4dgqTRvnxKSEvntNMp09X7w=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=GNWzPAGVUgMw3DShMGd1sSp8cmb6Q8G8mVDXLRsLGKa6LBaUhtjeWGoYUErxBHGtMGf9+InYVinFsXX9FSbhV4v3UJlOZwR4ve3u2e5sgd/YdMhdV0n6MrEDb0VNK5lQhQC9G34cSIQFDtNdxs9EMMapq6Erb4hhsFjo3VeGLnpOiCB78XaSk1+6+nOVSUndS+URGROxz9chCXS5G/HmiaA/9VX9NrLMo+Z4WhfCxkgR8C0fylgJhNS3DVZfFQdFblFmh/IW3f8hHWDOXWWbkwD1U78svFzZloIzQvO62K3ae/w/hE9TAkLj0QgjYajtCGExc5ZMEEHOhmA2/eNi0g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DHcNzTre; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=NJ8iIp/G;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DHcNzTre;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqj96gGCz3bmY
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjB48ccz3bn4
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:34 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1731846331;
-	bh=9lWibbk1D5UT61L9PfAE59H8lBHp918beMmK9DrEsm4=;
-	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=NJ8iIp/GOYEHrRh22m9e9l/8bbPwXCXo0hjx3urfZT8UjFREbHCqw49zpEchW313Y
-	 d9CsbPQOq/UR1+UkYyjoDYko7cSwpGybloncUNlOtM9qGc9LJ+bs/V+3ddvDMAsS6+
-	 vybYuYLTs97seQ/QhlatwXVSmtSSOcvqtvMXq6Iww3JeuYTuTFgL+GgeBa7N0EuuUH
-	 r+YSs2JaOsGK6F8smRjUHffPbBZ8hUICH853pUf+KS6OS9a1wtK5ET/t79BFYwLWEX
-	 pHg0qXxT2TcNNUBAPLTxEAilAJHuefoUzBW7WEYxfUXcfrkCyOjGaieMHoJYDOzTm+
-	 01t8fDzhG38xQ==
+	bh=vLaiN/SgefW4+vRAcoSW4dgqTRvnxKSEvntNMp09X7w=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=DHcNzTre1EsoU/Frfruqv3q971A8wwjZCP3jsGporF2fF5ctlvTHrVSJp1rqYi2JB
+	 DPX6Mmi9+Yha4rKpVv0TBcu1J7ZR5bVPOrgCkTpn4jhHuCK99wUm0OI3Jvdk+nA2os
+	 It+jEwfyAsIqfijCzfqFVL9+0emAcgUL5w8GDFFpsVFo6OlSixgmK6F4f/VnRDVpRk
+	 ZoaC9j39H0scmVlv/xc8Os1yETmnI9JwOX+G3zWTSJ+GS11P1msoaxR8i7F+nQv1ig
+	 56C6KanWIiNjwq0vmRJVUwG05ogc6EachzYbl8XTUIwG3KOc+s0hoTH8teK+PQ4dXY
+	 cxBQH6zLMxiLg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj66h6tz4xfS;
-	Sun, 17 Nov 2024 23:25:30 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj73Vywz4xf7;
+	Sun, 17 Nov 2024 23:25:31 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20240812063312.730496-1-mpe@ellerman.id.au>
-References: <20240812063312.730496-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/modules: start/end_opd are only needed for ABI v1
-Message-Id: <173184539744.890800.8094742091218684641.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michal Suchanek <msuchanek@suse.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Paul Mackerras <paulus@ozlabs.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20241001130356.14664-1-msuchanek@suse.de>
+References: <ZvvrHpD-v4CuDqsm@cleo.paulus.ozlabs.org> <20241001130356.14664-1-msuchanek@suse.de>
+Subject: Re: [PATCH] powerpc/sstep: make emulate_vsx_load and emulate_vsx_store static
+Message-Id: <173184539750.890800.667845250874814001.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -66,17 +67,15 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 12 Aug 2024 16:33:12 +1000, Michael Ellerman wrote:
-> The start_opd/end_opd members of struct mod_arch_specific are only
-> needed for kernels built using ELF ABI v1. Guard them with an ifdef to
-> save a little bit of space on ELF ABI v2 kernels.
+On Tue, 01 Oct 2024 15:03:49 +0200, Michal Suchanek wrote:
+> These functions are not used outside of sstep.c
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/modules: start/end_opd are only needed for ABI v1
-      https://git.kernel.org/powerpc/c/f1c774ba91054a749573781f9e8fd652b9a1f633
+[1/1] powerpc/sstep: make emulate_vsx_load and emulate_vsx_store static
+      https://git.kernel.org/powerpc/c/a26c4dbb3d9c1821cb0fc11cb2dbc32d5bf3463b
 
 cheers
 
