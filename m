@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10D8ED6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:28:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF4F6D68BF9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:28:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjH5wGCz3bsJ;
-	Sun, 17 Nov 2024 23:25:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846339;
-	cv=none; b=KZW1hncZuac7OP+cFTa9o0Ig3eseJlr8VpLmxA1JO0rvDgREVdiRTxSqch6B0jPgD0TVNERrfjiKU9LREM+ZFNsTlVfZ8OLi4T24uWWCbv/PJ7I8SHJFQ7F6rTGk4UAQmCQwrVgXJLJciThEod8Z05XXZzyVfZ6AXuqvvv0KzgbwFODq2v6DhXQHUT5JMQ/4RsGooj1rwEmks4RIY4HYP7PZl4KCOU9sY5BT519H799DAqCR9e6sGE2xYhPrMFp6gbtbJ9u0Pk5eR7dfqw6OAQeR0cMEWxybtfbOK01y9nrRDpe+z627a1xg7fr9oOFNOkTAa08ZyZU/1Lx8olNJyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjJ4sQXz3bsq;
+	Sun, 17 Nov 2024 23:25:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846340;
+	cv=none; b=dwo7WjCdHjUEj4MDN70e2Mqlvxiutrff/VfWFYE//aXd2VqVkV/YaXKvue6efk6lfVur9FKwDeCwn9z1mjX6T+3qA1u9SX0IhFF0L5KlSNucsk2NjkDVW4/F5A2a0PSpy2mJTDqimqeelyCti5qxBy/hijbnGFvoUSL9BsH4i22XvFZwzrFv2V0lQzZRCa2FhBsWdHndbpvyTrZAuXmI8EBDxPZjHdl06UyDNgkzTQtzalpkNfMUxXzDb2HkKvItkj2E55HQsp1FT9wldl/FRYEcG/0bfbtLXVXYW+6Zfi/mdn8VaRfWYobPStEo/exTEFzlPrxlfJjsH7SaykXbYA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731846339; c=relaxed/relaxed;
-	bh=i6DhGeGkGvC4VAr1zXIDNglBtiqEoiBLTPJdD8L8FBg=;
+	t=1731846340; c=relaxed/relaxed;
+	bh=EjOLBTm8qIVwqFQ5mRUKY4dTcr0ZMFt3/mFMTBHvnF4=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=WkshEyrJfjSBYvNVtfqZZPTMWwFODZuTsWy6Vi5AkDKsxcWuluHTyTQMM41u2J2o+tzfpQdSzgj/RKQ7twpg8c0HPTxDt2coIzkM0yha/FtVF/l2VVBgxMuKS+FOJWP+GnkpTWnwLCZJi6AoAc/pd7Awt7UnLTEv16/TeRU54LppuocikB6fJ8wBNZucFzT2TSAhI95Fx5WoVB/MuFiaOFHPybqTVP0u9Ojop/M5uB3J008vJgqko90TupMyEaf8J7v09CzAye+QOl8ZsnSRr6I4CWrhmX7aJ8d46+BonwUgHtBKYwXsHW8Qt2eIOaK4bXObBg4rS6XITer0ST5fiA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iCfv/red; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=bPrau8nvLE2eu6pVquGFmjOqRRqI3PqHC8br3UUFopbrZTl4nA0NiUbgy/mBpB1Ygxl17GnJa+kiimXk0IcoF5Ljj6xkDTmivT7ScUsErz9OB+21kPHutPDGDW+LXxFqQ9ZVaokBJs113ZBhbl41k8MQw3QwhR8xbGBn468CZY3OInFA9dSAx3PHR2V0Nc/g2QewpmcUXhP8l5i7q3Ehzk2xGqkGnUZbH/iuP242cB8DWuXHtO/7endKgjt+bF26cjV1++RHZc6edi4xbbIrS9x8NQpMonJUnqnyF0ZK7WhL876P/KywYDsP3DetcFEE3AWCZZOUNSNP8fTTfJzYWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pOO/s//2; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iCfv/red;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pOO/s//2;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjF1q4Jz3bqC
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjG51Vbz3bny
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:38 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846334;
-	bh=i6DhGeGkGvC4VAr1zXIDNglBtiqEoiBLTPJdD8L8FBg=;
+	s=201909; t=1731846335;
+	bh=EjOLBTm8qIVwqFQ5mRUKY4dTcr0ZMFt3/mFMTBHvnF4=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=iCfv/redZINruq1CGLGirFkbQWXrREfAsn4I8yoa0MxIXuvbtDivFD5beaBn4TZiT
-	 I8K6U9jexYhifBLeh2vM4y6unv9s2wewHgrdb/jdqjEEQgJWJGnEmLg9PF1uqfdEiM
-	 ddEXjTmaxipXSvgo+ke+aism7VQCMSHIXysAJ8JIoi3b4oERD9xGReOusUIbKScQsr
-	 /Mk9bhB9e/tgC2t0tbn0IhCEFDlSqSERbErko/bj26fwGPhn1Gkb+U3hACRID6uyN7
-	 1KhS8RQAUXtacacNynSQus0i5IHipD0XifhTBfkT5rs8TrngGeK6ukyJ/PdPDws2qQ
-	 hMW/fzDgRr5og==
+	b=pOO/s//2bzWDv6KajHsDX2odFSy+UCz6LHeHejry3vt6e8Ccit3FEXYVrYLNiVqio
+	 pNqFnR97xO0zWo9yaR/nhrjojsdYZis4BxdNR5NkfhjeqXUZhi6ysXyT6Mnk6jCr4a
+	 VlXCewU4YR3QYHmc0qjYLXP+s1Wfw+B0Mnw8uoN4krz8uY65ZnXrhSr/pisVnMGDMw
+	 RPe8hnbFDUYDE1xvOkqbMcjZxwaKX8DXfmDjBTUyW9OJyKr8XjD5PAo+f639tpPT1U
+	 muvzkay4HYDVJ3rup7aoIf8VKBxiNxvOReN+xgmc+xFohgrsf56jX+z0TUxjk5TOPz
+	 htZ35Z5Rp13qw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj96v2mz4xf9;
-	Sun, 17 Nov 2024 23:25:33 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XrqjC4zv0z4xfh;
+	Sun, 17 Nov 2024 23:25:35 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: geoff@infradead.org, mpe@ellerman.id.au, Shen Lichuan <shenlichuan@vivo.com>
-Cc: npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, opensource.kernel@vivo.com
-In-Reply-To: <20240930023234.7457-1-shenlichuan@vivo.com>
-References: <20240930023234.7457-1-shenlichuan@vivo.com>
-Subject: Re: [PATCH v1] ps3: Correct some typos in comments
-Message-Id: <173184539768.890800.1864207122324653089.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Rob Herring <robh@kernel.org>, Thorsten Blum <thorsten.blum@linux.dev>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20241027222219.1173-2-thorsten.blum@linux.dev>
+References: <20241027222219.1173-2-thorsten.blum@linux.dev>
+Subject: Re: [PATCH] powerpc: Use str_enabled_disabled() helper function
+Message-Id: <173184539744.890800.16412147962073098528.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,23 +67,16 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 30 Sep 2024 10:32:34 +0800, Shen Lichuan wrote:
-> Fixed some confusing typos that were currently identified with codespell,
-> the details are as follows:
+On Sun, 27 Oct 2024 23:22:17 +0100, Thorsten Blum wrote:
+> Remove hard-coded strings by using the str_enabled_disabled() helper
+> function.
 > 
-> -in the code comments:
-> drivers/ps3/ps3-lpm.c:94: rigths ==> rights
-> drivers/ps3/ps3-sys-manager.c:365: acnowledge ==> acknowledge
-> drivers/ps3/ps3-vuart.c:470: remaning ==> remaining
-> drivers/ps3/ps3-vuart.c:471: transmision ==> transmission
-> drivers/ps3/sys-manager-core.c:15: Staticly ==> Statically
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] ps3: Correct some typos in comments
-      https://git.kernel.org/powerpc/c/e9d3270007b13acd34de4256970ffe457efc6c65
+[1/1] powerpc: Use str_enabled_disabled() helper function
+      https://git.kernel.org/powerpc/c/19e0a70e6c3c1bf800b8ce9eb45864aa9e1e2781
 
 cheers
 
