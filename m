@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3384-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3113BD68BF9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23D87D68BF9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjG5J4sz3brH;
-	Sun, 17 Nov 2024 23:25:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846338;
-	cv=none; b=REPcVnVcdoOArBkZ1jg0mrq0+EuxkddUabB0mE5AdLfw2bLWMEnF8kAF47nwf1zZemgfWBLATK9ZiwyeBt2ml7GoZQ4huCTe3Q3CVhp5Y1aqoU6Z3IPH2pad5QbGVZtWpxmpkG8PTkZ79fnsw7SGQ4ahT4mUYOS6K/pq23fM7eQ9tfpNrjikAKlr80RKc6nP31A1CEdiRDNPpWL+gCaHsr/wt//9op4jX6pYw9DBbCwuhxUKUiPoQnLTWO3knDdT1OOH3GX4IjhrtRvcHPoXN0nu4qdfL8Bad+KEVQeXPINu/Dxyt5L4oUGqHxX+RpNEAI/bIiFaYJoUy4bzsLFo1g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjH3SLBz3bpL;
+	Sun, 17 Nov 2024 23:25:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846339;
+	cv=none; b=aNtrjFVPzr2tSm5sFMLuWhRjrYKqiH/QmfO6nA8dlwTSHmrKMyh4FkBi505cDjEXh9UktmPaD9ji7xx6Wg9d+qxL424IqeYET2w1fVmQaH/Fpxw8YDTa674wWTzJOWNSpk3iOl5ZPDHi/mhLFhooR5FvxLoCxpavX8+0F6E330ED8DICsmPS1BqT0SWxkN2Zo2zivAZK9cCmzrtG1KuxOp/+rSFFWMambDDPLP9OmI820GRJ8aM9hp6ORuLmyjao6oE/zmFXW89Yz2n95kNANQp1D0V1IioEMZQ7WmGYW0dzSPPK9emj42IAdRsFfMTeGiVutj3AmYVqXsn1gXl1Jw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731846338; c=relaxed/relaxed;
-	bh=BPCvHt5zy1SV5b+ejHZjDE498sS62YWrSVug9774VSo=;
+	t=1731846339; c=relaxed/relaxed;
+	bh=lnPr1gxISBwEUZN23AJ5943nhoG6g13BacvcbTslP1Y=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=SuMiHgfxrDsc4tSKbSCDwfBx/QsNG7aSYqo8RRkRz8TH6nqha2J+l0Rhyle3M9atKU5EEtDS2jLnNtzE+eld8mBZb6yYOnvJ5nXw6YKVIEVXVNFSxUWfau9kf4x1qHMxXcBDRnsIBnHmZHCAsnNu5GWKQ+SJYuR61VsMo2nvbFyWH9KObZIrGbbjrv5Y9e4o711rWP3H4UxRJgLpMELn/6g66+N0gFAoEmNpxIN5c1RyEL8d5rR10T2XAqhgFcDLbkExaukCilJ33D9JxXiazPZp9y+YLdr/PmgrhXUNoU0RsiNgHcQbj8rMjPe2LTp1h5CmHS6P1SbkIGS+0NcAbQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TfOshlQq; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=gvUDDYmf1ImQmKkjS/LZvw1W4lOiJHYNLJJwUmg/KJDErQ/GWr4WEe1+gQ+P39L4sEOuTSgB84wizKCohAZnYmotPUWC1Lh67v7dyAkUnoEyHwTU6niBLOYuEHoL6ckHsr+v685YMtaredunSFy7Xo/jjLQWVC7tyQTUhJfGncEAsSL7bBT+zTWX5YbTWU6ztA6qHspflK//HowF+SEKkPZG8ao4FRx7BdC0ccVL8xzecoliXMUjVlDfEq5oJ/cwXRUTlaALHlMaTGvhcAbyxj4c9fMRnBwqR2caMNQyKkLcT0wS/cMnFUd4NAuqz0E0iYJKIu3ncEEJPhuJEI2sRQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gW/hKWPh; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=TfOshlQq;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gW/hKWPh;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjD3RGVz3bpL
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjG1YqQz3br5
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:38 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846333;
-	bh=BPCvHt5zy1SV5b+ejHZjDE498sS62YWrSVug9774VSo=;
+	s=201909; t=1731846335;
+	bh=lnPr1gxISBwEUZN23AJ5943nhoG6g13BacvcbTslP1Y=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=TfOshlQqU9L6ENwIq1azGYyCZD0tb1Tu6LCXV4AXOQRzTa8ZY4NBwMU27RvkczcJQ
-	 rKbQnWC7wAMfGYuNuczp20EykRPkQGdnIgHfv+W8NyUpABrrzo9A2NpYQuR6+uiyO1
-	 5uKBRXqZoM1xYSeyKQFSqg7GWHD5jgWWoBuiASGflCz1C2SuVdUU8P/H8FZuN+3WaC
-	 0/YQ3NlDH7IerRfTax+frJYsPCvS+DudC5xfVlR2c4U4xMb0qZsbtczzlcy+oW+HiO
-	 9o4M/ihLJgLSh4JT4hERUGdcQ9L2Oj0CMtwTl0DfVvzWof1LWcFSOg+i1R6gRlhdnA
-	 TioyKzUNDjfZg==
+	b=gW/hKWPhHry/Zusk66iROtpVWKhPKwFNTJncapCHs2oTrLTCts23RyYuiLV97optV
+	 qRlA6qdKxSqBSWTt2uRZ5mncVMSmkZErKRslHbnJbHEAspqUJPomPHeENWvLxfKkP9
+	 FkA9vb6GfB69HEdLi299L8aW2647RmRJYFu3hcRHQQRjAqd9B8FRJlpjrc0jNhCQWn
+	 OmUnYsYu+YTMBLj4dghcgsnh4inU+RlOn08w9atRj39hwlRGXx/14bSspgiVXi640g
+	 daRTjYtdFTEQWGuOdKbTvrNkQIiNHYZ+qqs69k0qFYcxwsFzMmJjNePijiWo+6QK0l
+	 qTxnIWPBqgwSA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj93Q4Sz4xfG;
-	Sun, 17 Nov 2024 23:25:33 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XrqjC1Zbyz4xff;
+	Sun, 17 Nov 2024 23:25:35 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, "Rob Herring (Arm)" <robh@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20241106212647.341857-1-robh@kernel.org>
-References: <20241106212647.341857-1-robh@kernel.org>
-Subject: Re: [PATCH] powerpc: cell: Use for_each_of_range() iterator
-Message-Id: <173184539750.890800.15564743052815788450.b4-ty@ellerman.id.au>
+In-Reply-To: <20241113-vdso-powerpc-asm-offsets-v1-1-3f7e589f090d@linutronix.de>
+References: <20241113-vdso-powerpc-asm-offsets-v1-1-3f7e589f090d@linutronix.de>
+Subject: Re: [PATCH] powerpc/vdso: Remove unused clockmode asm offsets
+Message-Id: <173184539749.890800.8297350541963703609.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -65,18 +65,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On Wed, 06 Nov 2024 15:26:46 -0600, Rob Herring (Arm) wrote:
-> Simplify the cell_iommu_get_fixed_address() dma-ranges parsing to use the
-> for_each_of_range() iterator.
+On Wed, 13 Nov 2024 09:06:58 +0100, Thomas Weißschuh wrote:
+> These offsets are not used anymore, delete them.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc: cell: Use for_each_of_range() iterator
-      https://git.kernel.org/powerpc/c/f3ef7dbda9b589cdad833001e4366eb80977b7f1
+[1/1] powerpc/vdso: Remove unused clockmode asm offsets
+      https://git.kernel.org/powerpc/c/d7a82238cb8c77d4ed8cc97cd556c5f3e64bc749
 
 cheers
 
