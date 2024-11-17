@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3371-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3372-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FF0FD6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:26:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74439D6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:26:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqj63C2cz3bfB;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqj66fdLz2yVV;
 	Sun, 17 Nov 2024 23:25:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846330;
-	cv=none; b=XCvWrRa/XFFYv0i0TlYmmnUUuE9LYs+doxKqwCzH+sOl0ysWddZXOJxKhQ7wxXn6wcgULy1sSTT5Wdlexa/DjkpbhDxwSz0DEHHFJbXrdBx1+avJVFkfGMqELvM0W3qnSsA1AqtyYGkv8wujhSvACjnGGoI8xAMJq9i9DPFVagZS0A13yNHjBJXtnj/SgI2brYSsvmtjUh6JXa6MBIz5tR2rWTbFyrUdthTC5jJMPBg5bLYMHr/1y7/1VvX733RhRIk8k3Hne6/cWGeSPASukGm4JgHsqps2c8z5Nm76RwgTMFQYMyl+olfdE/qMtoSE8ymDTmDX5wApGGAhqVHySg==
+	cv=none; b=V+NWVN/mPHNZxPHQSXw4YTJTHQXEjf7Xnm+nDtNAJrbgvmK/V767azUDXf9QcwavPW8UAsZgFhujusk1IggLlblQAGchHTQ4hxtWGUCPvtMDeYyz/wP3S3iI9vTn+BTSAjzeOvMLQNpBj2G+KoGg+YPy4h9qJuxNrFfYleTMioqavZeTcIiv9gAbTPjXUxWDmBKxHBPyA4vl64hkJKsHxnWP7qGakC84JpkY8HVnNrpmM3d5E36XucH/HdKUQRmXpTjTC6tgl1RaIZnI4kq9JluOILWkHoU2uebYaE8jK8sQgAHolxksBlxSDVcBm3Ld1V5h1RWDeL67/gg4X/RvHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1731846330; c=relaxed/relaxed;
-	bh=KaVcfOJB5yHFkrI9gBoi6KkKyub0hH9jAka1jgkP7js=;
+	bh=s1pfaH78Q4Z5nTxYQuW66jgoyL6wLcHOJH/KOWNhcEs=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=D8DlXkv8S+B2qlMDKqqyaKOzDa3/zVlIHKk39hDxJRQxKNAGuyDNCWrydRpSQYusQsyLBwAGd5aCiW/w/TmEOQHuBQTFoaS4vE3lrR6ykpA+43vLzGNwR/cK7Q9ZNS6FWuAzh1/UKzSu6mHaeedaKXgiSwKxxsE6tz2e46J9t0bm9rXli1TM+jEHK7KWlMlZTuoJo41HZ0b4qBcDtyLIEa1tlKsYXJIS25I9DUMwR00MA8D3OReR/4EUAGWIsd9wDsTHqtX11DYoNp78b3YI/9uyWmwa1/CSg2erYyCAWAOZgXYbgnhHYWrhhx4GvC7u2uZO3WXTuk+AVZ5hFFqtow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BfA+hDrB; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=hpf2+EqGdsCLgQgwa/V5klJjF/K/x2hfIqwF05vNXRVwLAzdfKsevO3KO44qVzU4qQH8Nvfg2ViIMeHhwiBd8XReD02ieeoi+9ITEalsQQZACI+dSulenWcIsJmsTGFQlL2EU45G122n8tr1dSJiQaOgEjsGwcX3WFOmtXGG7/AOBq5eB8Q8n0tmKixtW+SoZbvxXfcH4oMaCetXluIySlzBt1g/ErroWzaaZ8Pe4Fespp9d4Gg0gsiTpdr6h/9wFaX6ue4aMoW1di6oFnBQtVPjhRAx4q0B8dbHq3wf0Iv9HksSqJHce9AGZZSJ/NxvtlGw1PB+DkYlrUdr20MgzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=m6AEAp4/; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BfA+hDrB;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=m6AEAp4/;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqj60KLjz2yVV
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqj63jFTz3bhs
 	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:30 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1731846327;
-	bh=KaVcfOJB5yHFkrI9gBoi6KkKyub0hH9jAka1jgkP7js=;
+	bh=s1pfaH78Q4Z5nTxYQuW66jgoyL6wLcHOJH/KOWNhcEs=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=BfA+hDrBx4pasiTqOPTLolLQ/OuZVtnl+jlr0QV+dYbn3p8dExFxdsdsSXOaTOTTW
-	 8vGsEDqQhCzQJtY5P7jpcNoKtkQ0Z4dEWZBdH3EVCBp3XuHAJ1R8sebUu+l7byZ6u6
-	 NjN5q5GifvWctHaEdF36bgoW4ndeR4r1vP8fZEHrOM+C27scsTMZZhqhOA0ermMKkW
-	 IrCUU5MvIlnoTJiNc6TUyLR2FqVMCm9Gq43MmYL/Lw/q0onSb5CliEjn8ts1RlTtFl
-	 baKUnobbQNi7+CtMrM7o/+544GmOvKcOy1qizi1wF4BY3RrghWhUfRQw2As3v450K/
-	 +Pc/bVc6rx6fA==
+	b=m6AEAp4/cGF+UAYnFVvSmfXDnNlhkYWEh+RyaC89VBTaRl/4Co/F2iFC8QcEkCmF0
+	 JjaX/Jh6NhqQArpyjbEs8gp3vdjmMaVNlJmsGGVW1B/mktIssBNx6NHVdNYfcWbKMM
+	 RtWEMJZIgw/CMAC7Ziuog0jODSqFoTmsSYUbWjGWbUQ6B4Mv3Z/A5Jmx8v9/oR+hqT
+	 a0AfSFCjPGQUbLLFnp1/z9NKTCeDxMcNYfdevnW078kQPA4bwNNGTX4sb4J8X2NMei
+	 MtVbgqFA43yPRGHk010xk5T6l+bMfCp6TUKJGNdrNAqjlM8qw1Ju+s/NC3U7ktoUYv
+	 qnlGhrHH8WZYg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj04H09z4xdS;
-	Sun, 17 Nov 2024 23:25:24 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj33JF2z4xf0;
+	Sun, 17 Nov 2024 23:25:27 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org, Jani Nikula <jani.nikula@intel.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Naveen N Rao <naveen@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Thomas Zimmermann <tzimmermann@suse.de>, Paul Mackerras <paulus@ozlabs.org>, Markus Elfring <Markus.Elfring@web.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-In-Reply-To: <ede25e03-7a14-4787-ae1b-4fc9290add5a@web.de>
-References: <b7e69e04-e15c-41ec-b62b-37253debc654@web.de> <d9bdc1b6-ea7e-47aa-80aa-02ae649abf72@csgroup.eu> <ede25e03-7a14-4787-ae1b-4fc9290add5a@web.de>
-Subject: Re: [PATCH] powermac: Use of_property_match_string() in pmac_has_backlight_type()
-Message-Id: <173184539766.890800.18087603028273437362.b4-ty@ellerman.id.au>
+To: mpe@ellerman.id.au, Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+Cc: npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com, peterx@redhat.com, groug@kaod.org, sshegde@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20241024191232.1570894-2-mchauras@linux.ibm.com>
+References: <20241024191232.1570894-2-mchauras@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/xmon: symbol lookup length fixed
+Message-Id: <173184539762.890800.10077987479160659193.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,16 +67,18 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 11 Oct 2024 18:18:42 +0200, Markus Elfring wrote:
-> Replace an of_get_property() call by of_property_match_string()
-> so that this function implementation can be simplified.
+On Fri, 25 Oct 2024 00:42:33 +0530, Mukesh Kumar Chaurasiya wrote:
+> Currently this cannot lookup symbol beyond 64 characters in some cases
+> like "ls", "lp" and "t"
+> 
+> Fix this by using KSYM_NAME_LEN instead of fixed 64 characters
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powermac: Use of_property_match_string() in pmac_has_backlight_type()
-      https://git.kernel.org/powerpc/c/2e716f5cdebed2fb98cafffaf626645c2e922dbb
+[1/1] powerpc/xmon: symbol lookup length fixed
+      https://git.kernel.org/powerpc/c/b196db2f536645eda7684655f3fae913e33fda4b
 
 cheers
 
