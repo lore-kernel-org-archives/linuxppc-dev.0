@@ -1,56 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-3361-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3362-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0BABD6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:25:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98C6AD6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:25:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqhp07qSz2yF7;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqhp4MP8z2yFD;
 	Sun, 17 Nov 2024 23:25:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846313;
-	cv=none; b=Mx3IJRXPfVA2zO9TsZOTSnPYPJVKmnC3b+7E3rbsexuVH4OsaBBrEZ17WCQRY6I5TelKexbp6Dxe3PA85IOnLqSzR6A6S2ep1NLAreQF5hVnGTLTe5tvfMm0d5ADmKFRTL+ZRygJLmSZ1J2Iqw7Z4jUYLEJ1Rr1rc0dutIbsm/VqW2h2yosdegdhdvcqf5UkFX0fMrtR2kXMSWjpxzA4FWHfGXF91cGO5szF1fl4A4JDG3VPGW1U7ct3FsQXalAAaDILQiP3C6H3c/bY/u71pNWpA/eLuIWSEnj/4HEWEanASLclpolL0r/NXaHgjJ60OZJJ7XQF9bj6QFKc65PNdg==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846314;
+	cv=none; b=hwOy8Pw5wIfuYahUaXJDEoUCVlGXS2r+w+efcg+z9q+AZqbrRgIlDcvd7yams5myWvkh69lNPqqbH8W/rpdvLcjYhS/fQFGvcZZa7ucbrjwquzQTt8OgaRB6rgqxVhkdu6f1OD2LUodQMl4Fb9bxMpB56HZ+JFUHWt3+QHjwi6r2Lpc4mKCMaSjycQI1HFsEBd6NQugR8iUkUMVDurkwKV6QIqXGtc5990etBiYjDQvm5oT23QJthAOmX8WjnqDftd6z3zXC32ErJMsLEDgosszbBuoOY1m2TG2xMzwE2zLGNTvCVDWsIiAce+vDv2PfA0rHfBozBQguLa0X8RLGgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731846313; c=relaxed/relaxed;
-	bh=qF2IDG5jDaK6lbCWpF3L9oneS42KDrLsFyhw6rcafTc=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=fjWJnopF+4TLE+YmiAMvzFaPyS3TEThSXh+8ZrXyBS82wk/MnTkO/A51asjpfRXbevEXgkyBKY96OhyioQiHaU73OfpSNWXGiUFOj7dOoyTDNNffm6OKJJIqrYBUh7K2BHZuJ1IALZPX0Nr9BzpG7UtRZX77GBc+HiMgcovucUnKIA94lENeYKVQcbAC2JyuzjOvJBO4aroy5gLuE2yx7TIgBg6Qf/5r5nVDppOJyvns2PO4cruv9m2oWEMPc2bcisdqj+7kWE6mWViKFpTYqGWQkVDF/+LYl+x9znksj9H5yjSHY/NMekQ1tVXJOVI7JaJAQUEsTevrOqrRXXUTKw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KA9OlNcH; dkim-atps=neutral
+	t=1731846314; c=relaxed/relaxed;
+	bh=6YkDsmqGi/hDbdsOuh5XqzzF7DZLsS/qORhMUcP9Eyk=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=ivzVpbWnAUMrOE+4Cm0xCapKmwSBzG/zng7l9tJw6AMlnLij62sJRzrxUJ6aO/+0h0VtV7sZINh++A1PQpeR1aYi4ODzx0iKqnC1Oe+djzzmoUJifZm3Keui72+Krp/tQiHvCuLS0iYhZ2JTMbRWMHsLj/nlhBZFtAqaq+upQ9OQrUC8RRckJXq4Iv/bcy5yhaZgUICke+ip1ozje86/ckbPm1Oi1GdJqoVhKDIN+C2MFIzo9HP2bpzNZY/qyIDuPF4tah734s4oRayT2mR8RyDh71mbdN5aWtNtbV5v729c4gPCeZM3KFpvQfojKR3PT0B2n3SL2JXfIgKWiwazLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SZ+D9dqR; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=KA9OlNcH;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SZ+D9dqR;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqhm72Jmz2yFD
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqhn4cBDz2yM6
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:13 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846309;
-	bh=qF2IDG5jDaK6lbCWpF3L9oneS42KDrLsFyhw6rcafTc=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=KA9OlNcHEDgUXSda7Y3LLmEkqpD0Bnm8E+qF4zoGGTaaVrKn/ACi3HGGDqAHDxJr0
-	 eo5kpgLKLV76wvSM4WF0O1PwOVqyUQz4trx598ovCRKNnpXK8njPxrEOwMGVEMX3q+
-	 Rojd2afOi5B1UgdkkiXtH2Vv2gJZqhg28rD0QL3af2bxneQz0ANLKq2FaInGHPG13v
-	 zrKy+1JJ2Bn+UUEzXt8lJ92tZB5QX7JiEEJ7ISXViN5uYrXgOMn9Y1yYCkCD+VDTcg
-	 6ZfHrh0WWlgVjncHQ8r3L9K8mnVbwx0pEVYXR7W1+4/hMmRljdnCi9+8RhRdCnAOTm
-	 MQlPuTypNSblg==
+	s=201909; t=1731846310;
+	bh=6YkDsmqGi/hDbdsOuh5XqzzF7DZLsS/qORhMUcP9Eyk=;
+	h=From:To:In-Reply-To:References:Subject:Date:From;
+	b=SZ+D9dqRPFNFDqEnlmPDb73O6ByGIla3lmIAPXvdXd3nk8YJb6Hr9l9dqBbfC5l6n
+	 7Q6rqXwRHneHEjiBm02F/ksBc4QEPlnBmdAR496ZnUYRFipt+6HOkfZ12NqlcqU9Rv
+	 U74DCDiPZT80b3ckHa0/0YrsQmM3H6Ur+kLrZEfnFzzneQcADOfFdvhamyJPiuiCLy
+	 25cCnVWDJSGzpHHRpyQ0CYSqJNa248w06Oz9aECfiavee3m2jUXaaFW6fh8eA6/DYe
+	 zJASxwyEHvnOIi+pwj1sC2wAuXOnwFQfp1oTYReNPNSs0f/npgc73LKXIGM3Hikrh4
+	 +4x5oUosj/xhw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhj658dz4xdg;
-	Sun, 17 Nov 2024 23:25:09 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhk2Yrgz4xD9;
+	Sun, 17 Nov 2024 23:25:10 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Kees Cook <kees@kernel.org>, linux-hardening@vger.kernel.org
-In-Reply-To: <775dae48064a661554802ed24ed5bdffe1784724.1725723351.git.christophe.leroy@csgroup.eu>
-References: <775dae48064a661554802ed24ed5bdffe1784724.1725723351.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Add __must_check to set_memory_...()
-Message-Id: <173184539745.890800.1324374267982130078.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Ming Lei <ming.lei@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Costa Shulyupin <costa.shul@redhat.com>
+In-Reply-To: <20240926092623.399577-2-costa.shul@redhat.com>
+References: <20240926092623.399577-2-costa.shul@redhat.com>
+Subject: Re: [PATCH v2] powerpc/xive: Use cpumask_intersects()
+Message-Id: <173184539764.890800.12646623251156657066.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,26 +66,21 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 07 Sep 2024 17:40:41 +0200, Christophe Leroy wrote:
-> After the following powerpc commits, all calls to set_memory_...()
-> functions check returned value.
-> - Commit 8f17bd2f4196 ("powerpc: Handle error in mark_rodata_ro() and
-> mark_initmem_nx()")
-> - Commit f7f18e30b468 ("powerpc/kprobes: Handle error returned by
-> set_memory_rox()")
-> - Commit 009cf11d4aab ("powerpc: Don't ignore errors from
-> set_memory_{n}p() in __kernel_map_pages()")
-> - Commit 9cbacb834b4a ("powerpc: Don't ignore errors from
-> set_memory_{n}p() in __kernel_map_pages()")
-> - Commit 78cb0945f714 ("powerpc: Handle error in mark_rodata_ro() and
-> mark_initmem_nx()")
+On Thu, 26 Sep 2024 12:26:22 +0300, Costa Shulyupin wrote:
+> Replace `cpumask_any_and(a, b) >= nr_cpu_ids`
+> with the more readable `!cpumask_intersects(a, b)`.
+> 
+> Comparison between cpumask_any_and() and cpumask_intersects()
+> 
+> The cpumask_any_and() function expands using FIND_FIRST_BIT(),
+> resulting in a loop that iterates through each bit of the bitmask:
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Add __must_check to set_memory_...()
-      https://git.kernel.org/powerpc/c/2abbd6d5fbe0eae3752b44c963248e19292e5104
+[1/1] powerpc/xive: Use cpumask_intersects()
+      https://git.kernel.org/powerpc/c/6da1cab4f5f8eb778fd61f0eb6ca5b0a011dd44d
 
 cheers
 
