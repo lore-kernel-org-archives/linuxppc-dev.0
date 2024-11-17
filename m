@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3356-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3357-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F18BD6A25E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:04:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C66B4D6A25E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:04:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqDg5pckz2yDT;
-	Sun, 17 Nov 2024 23:04:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqDk6dKzz2y8k;
+	Sun, 17 Nov 2024 23:04:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731845059;
-	cv=none; b=Bf5105qMKRA+PYGKRabMg/iMUbdH7mQTw7V8h4GNmbMY+jNyeYEULJfmkHeeWQeBuNBRqKIrz6RoomBkvCHOQHksHsdBR8zwQwnKFoILMmyI4O9BPRX8DlI9DDn5MmJCZ133RjwiXeEO/YnBd8OV031lzbDNqiv+TKL+XWowr/F5CBvuQpBllPubnEXdW8iq9qw9LEV6oIW0/UWpiKb/bFQm+5NDog8+EaldyNXe0BOytdXKhxrNjlO2Onsv9y4+AmAI0+ZdHsfTMJeH/IDrQGvEV0IPMzFFxT12DmQU6TS0OWekYngCoqWTysaKkYLRrzb9Mq+qiNxWRn6qYSriAg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731845062;
+	cv=none; b=IDCCB09RVbUTe1mAZ+7NkVx6o5JwhirfbVDjJci45PAjYKgZ7TBfr5kwUjgdNMW5EAxYegTthcyQ7dU2+5ojgyGTRLGL2tzdBU7CLbt6v4xLhWXqtARSoPlJufkpV1fAbq42rCNhlOqeuIpPrrUyheG4xN4mPrr2Iwpab4xGwyU9dGEJMVG5ucTwkgcTKIZgnK7BIFTR28Jq7RJvwTT9f7PqPWM73KKNVzyXf71/acXAaLKhYN8zGc0NCC4/YkepoYvD6vVDHyrd/1ISWsNoejOibSRy84FjorwgYPwigSghijqMf/dyL7wfnNVlLMao/YZ9/yIGSZWfXAD9SjPVig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731845059; c=relaxed/relaxed;
-	bh=iDLBEcPLnsdBaxtgoBm6ijM1a0dYsIecpZLlCOdfoe4=;
+	t=1731845062; c=relaxed/relaxed;
+	bh=tllPr++YWNmN/ICehcrJsGBTpJU5ev+6G1o94E8aVEA=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=ZA3xNSwnt0hQrs2JzYhlLCIY7alY9O5UuuDbgF1BHVp/z566OxxfGFJlsmaMARbT+zJzuFwpu2ZsZLZCI3moNMuig8XKcBvEWYgiCT3V1poS4FM7mvK5b08AX59JYy/QCmmR5abbOzpKFIJpdubAy//hVSjBAVBHWPhf7Ym7D9eGC5gcVpCQW+dRMMYTi2DSkZ4+HqeH5Jj7qGajb7nM6CkUwXcuouiJailZiSeQGXXiOu8CnDqsjOCmR0KkERc1DLVa53kOwAFqeVA0uXunRNyeat23xVXMmByT5m0LLzYVr/iia4Ppnl8rYP0kkHFEfNqNZXsaKYDIK+91kQA8aA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=O/nK4pOx; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=Hd7HWMhlll25CHuoaHhczA4cYKEmYrfsU4/kr8nD8rUi8+7Dj9rEDcocpLO2lAmrJ0935pxi6bFF+dOjqvlV/kDLDGeP+TvlZDhg4QussVpnIp7/KyYRRIwvpsdJ9cWtU+N97l2VzdSZXT0DUBfGCbtKPCu1b7NiLYsKfvO/AIzz3O8ExGUf0UOKj2IaSOlJihYqMmcNofngv8W7dqZoNasfT8FEbWpCy1ZjIKUzQm4AOwAwlel/ogfGtcrsdK3/0WyVWw/GOZuLYC26KAFYrrGBaaLPgwRtuiVe4sWvM8A2b4/FG/cFn8pggX0WIFLDOls4AG9Gkj7z/DXr64Bkmg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=bHCwnzmC; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=O/nK4pOx;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=bHCwnzmC;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqDg0KBPz2y8k
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:04:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqDk3vjhz2xs0
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:04:22 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731845056;
-	bh=iDLBEcPLnsdBaxtgoBm6ijM1a0dYsIecpZLlCOdfoe4=;
+	s=201909; t=1731845059;
+	bh=tllPr++YWNmN/ICehcrJsGBTpJU5ev+6G1o94E8aVEA=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=O/nK4pOxgHaTKX6JcezklCGDvhMmAeuaeDbUvf9fi+KBI9sq5pP6tYnjGF0D1mpFF
-	 3FgbS7McyJIiQpQzeIwi2nMKKRD0WsgySmi4Z5ss6DuxLZxnyBPlde7QxD6yT1Zcxv
-	 K2LDbp5mQL+b60gFavsa9qQ5nn1sw5twvwBrY7lOIh84+e1ZQyISAgD54bpaqnWiRI
-	 4Qi2KYBKXrEyDLPgPUhEBpylGVixQTb9eSISdosYCk/vVYmOpzJL9SHNb5mpKR2RPB
-	 LUkKiVQ+fSj9zAom+RymQ/k84Vx/UnwlaGkwK6iEAEJHq/LBkuU4/RIpiqXlbCI/7s
-	 YY+ZiEqsF0BRg==
+	b=bHCwnzmC4Wn699TTaIvMmA7oqAQUCB0vBZAcYQFnrPziGiTbunbYU+CXdS38yDvH6
+	 YU112WNOjKnnI7JSMJzmw/a0svprG00zS9a6LPP4NJJT/jjzlFbVdAm/RM/h/U+tns
+	 TsykHb5IN7FOSJM573KL+qqNfifuTL8r1hG6UNvh5joUZD+KBNkc1Fn7IYJrs5Ptwk
+	 QPaqtA4agDbcLESUFhw4fys+mFWvc6kPxuKH/D9lsAIxlZt3ypiZTruEU9Mv61lufm
+	 a1hIO9QaUkphJcq/soI8cLFSVRrGlaI+MEFOmOa7tMCM3TlCNsxG9p8p3+SqPMR261
+	 Neh+mkXQjvunQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XrqDb6Rh2z4xdT;
-	Sun, 17 Nov 2024 23:04:15 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XrqDc2cRjz4xdS;
+	Sun, 17 Nov 2024 23:04:16 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com, vaibhav@linux.ibm.com, Gautam Menghani <gautam@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20241109063301.105289-1-gautam@linux.ibm.com>
-References: <20241109063301.105289-1-gautam@linux.ibm.com>
-Subject: Re: [PATCH 0/3] Fix doorbell emulation for nested KVM guests in V1 API
-Message-Id: <173184457526.887714.4884403618372389811.b4-ty@ellerman.id.au>
+To: linux-nfs@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>
+Cc: kernel-janitors@vger.kernel.org, vbabka@suse.cz, paulmck@kernel.org, Tom Talpey <tom@talpey.com>, Dai Ngo <Dai.Ngo@oracle.com>, Olga Kornievskaia <okorniev@redhat.com>, Neil Brown <neilb@suse.de>, linux-can@vger.kernel.org, bridge@lists.linux.dev, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, wireguard@lists.zx2c4.com, netdev@vger.kernel.org, ecryptfs@vger.kernel.org, linux-block@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+In-Reply-To: <20241013201704.49576-1-Julia.Lawall@inria.fr>
+References: <20241013201704.49576-1-Julia.Lawall@inria.fr>
+Subject: Re: (subset) [PATCH 00/17] replace call_rcu by kfree_rcu for simple kmem_cache_free callback
+Message-Id: <173184457524.887714.2708612402334434298.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 22:56:15 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,25 +67,22 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 09 Nov 2024 12:02:54 +0530, Gautam Menghani wrote:
-> Doorbell emulation for nested KVM guests in V1 API is broken because of
-> 2 reasons:
-> 1. L0 presenting H_EMUL_ASSIST to L1 instead of H_FAC_UNAVAIL
-> 2. Broken plumbing for passing around doorbell state.
+On Sun, 13 Oct 2024 22:16:47 +0200, Julia Lawall wrote:
+> Since SLOB was removed and since
+> commit 6c6c47b063b5 ("mm, slab: call kvfree_rcu_barrier() from kmem_cache_destroy()"),
+> it is not necessary to use call_rcu when the callback only performs
+> kmem_cache_free. Use kfree_rcu() directly.
 > 
-> Fix the trap passed to L1 and the plumbing for maintaining doorbell
-> state.
+> The changes were done using the following Coccinelle semantic patch.
+> This semantic patch is designed to ignore cases where the callback
+> function is used in another way.
 > 
 > [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/3] Revert "KVM: PPC: Book3S HV Nested: Stop forwarding all HFUs to L1"
-      https://git.kernel.org/powerpc/c/ed351c57432122c4499be4f4aee8711d6fa93f3b
-[2/3] KVM: PPC: Book3S HV: Stop using vc->dpdes for nested KVM guests
-      https://git.kernel.org/powerpc/c/0d3c6b28896f9889c8864dab469e0343a0ad1c0c
-[3/3] KVM: PPC: Book3S HV: Avoid returning to nested hypervisor on pending doorbells
-      https://git.kernel.org/powerpc/c/26686db69917399fa30e3b3135360771e90f83ec
+[13/17] KVM: PPC: replace call_rcu by kfree_rcu for simple kmem_cache_free callback
+        https://git.kernel.org/powerpc/c/1db6a4e8a3fc8ccaa4690272935e02831dc6d40d
 
 cheers
 
