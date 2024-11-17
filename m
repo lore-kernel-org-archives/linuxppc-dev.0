@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3374-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3375-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0116ED68BF9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:26:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 989E1D68BF9
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:26:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqj80hwXz3bkT;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqj86QCXz3bhs;
 	Sun, 17 Nov 2024 23:25:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846331;
-	cv=none; b=gk/WAQKj5/XMacRxgHk5ADHlJbq3g3apuR2tTgj65yULisDqDEWxZC+6PX9ZDvgqKXIaAGjt8hg9glJIZpehAhpqBy7TydEnlqKVYn44p66M0CzskXUjjYe3zsgu9UDtwafcjDk0usLLlwVdWfl8v1+3oAv/7Geds3CVXsgEU3jDtHRpxjBJV98amSWNy/HAwWMeFH/NVjRvRctF3oBIZBWZff09gIk7F5DhvksrzRJqL/jyWvdIacmKtDs67bSPFv/61+dqsY01h2OBrUPBjawVzs/LcCMXhVA/DaG71NfOFzKatdxNPwTT3tKBXkx1970mqolPv/2VVDNMQpr6Zg==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846332;
+	cv=none; b=kqXomnigKeBZ71LULtDnMkRzGpdXmRov3QoPzQBsoxTBzmAz/U29ZfveSJUz0kU0WFNK/PrMSo9XQU0mkglyu2Y9XxutyNNiueTQCsUMbYx/Hn47iG2sMlRQH8me7bEGZITO5u8jcxZQgRHbmC1XMlsSQYtzHPCUwju2C1tISBEAyPq7euNqmyU84ZMdYlqzI+bRbs2Sy05hSZffK0hGxjv6viO/SJEhPNMrT80Ca33rKN/7ZYI8Jed0bRMmFc2EuQSfbnpbSwLKH7WGSw8owx4aHgLoPrTauhzPUuh+SougL/OA7mHoD21C1b61Cz1e9H1tQwtPm4sEVUpZHsj5lQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731846331; c=relaxed/relaxed;
-	bh=tIh/QNV7meNa8ZIOXp4JCVdE5EyBroYXF+febM+ZTBY=;
+	t=1731846332; c=relaxed/relaxed;
+	bh=TzfrLpdGHL3Qnz2E8gxDPlvroex0p9dJ41ENg3SSw7o=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=DiHat6XRl7OhanBXNXDSI8DCwL+BdSji2fMXx7ftcObyr6Yb0U5M7XVbxj3culjKZ36rP5GNxKbzmQYqYH0WxHXQau2hK9uaFg7rcfi5ezCTyep1rqu6xJL5Gu/WbzCI0Fye+EeEjpuT7Dcb37JBexhD15Z92VG9BhaI2Ok9/xrSV1aYMjEiSMdYHoiBoG2S2RiQfxO9Kdp2kij07FMo/J0GZfrR3Sn3MHHgLrVSIpEjkQAvhUjplX6ZHnVrWAnYMMQEBMMIdXyiScwGtAP2rHjgI1KsLnXmQj17nC2zFs6f4c7gBySqCOBGbCWR7pbvpdnwTW9DU2O+d5LPUG3T9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DHjTIw83; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=X6UpPdoQL5QZexd437SgS49hpMvQSd0xmyS8Vu0n/AcmEgLNuKVr6Rhf7EHs25pbNwkaBblgpzGsrdwYryUph4UYBvh3/rHePPKSo6iOF4S3ueHWdYuSx1o2n+gUi9cEXG2gPweMZ46xdeQn4NLUEtxlU2x6hksu4/gnjyxPVQJsdnZrTCpNgaxfstWl/bDUoVh0+MbRXXvbGcnAN5c2D24IPgLfQxsrvB774SH9p0mjHA2BWNt/6q4xEs4EaJzSFBxKsm3Lk5VO5zP5BnE0dwg43F3uBf2TYOV07kjYtdr1QffGzag+rCLPt+s+vScOhGhFURoY6+fCVtlorGi0HA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=AN9vuw5x; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DHjTIw83;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=AN9vuw5x;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqj73TN9z3bhs
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqj808B2z3bkc
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:32 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846328;
-	bh=tIh/QNV7meNa8ZIOXp4JCVdE5EyBroYXF+febM+ZTBY=;
+	s=201909; t=1731846329;
+	bh=TzfrLpdGHL3Qnz2E8gxDPlvroex0p9dJ41ENg3SSw7o=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=DHjTIw83VFAysYWEw7AgoPAe6hOt4XDQZOG2X63mE2qeumMvRDF2mUpHXtJUcRE8N
-	 R+ghXJqqRr6WH2hHJkynC/ievdh9h5KBPxgZC19TtzcVP4ksJiM5tQHlt8BRXAfIkA
-	 /WU2tEuRmzubxUWOWbdOH42Jfkvujqw4miYp8BSAWIPpqh1oQtGuoZkzc1f3cEZg5+
-	 F4EFQkUyasEXcfRfJrkMuLh1apvdcSWYtWLFfbT6VPis5dXaMih0CAUjOrOy43bu7l
-	 TrYPr8MkDEpwxy7zG6tZhKpgerwkVYXriBVTLniJ9jW9+RQAI3e9j7hbqRGvpoAKGI
-	 AQCjUIgARCGVA==
+	b=AN9vuw5xnyr6yD6oq3dWL70XoDNuDRpt3qR4+jeeSmq4Wjshk4eQ10Oix6wxkC/KB
+	 TCBi5jcxLYASVQx+WVk7DtD8HTw3aF5LPk3QkDBe3iORQerSDdvlo0BbMBjbFUZ9Yj
+	 jvn4Xvo+CSf5JfC19KFjL/pMlRZ9orzg29al33Hlt0+H2Nwp/cbq9CFjereXSz1vyE
+	 LO/B2KTuq69Kam82vr0ZVG7juR0wnFzbVGLWXKN4F5vhUbJjQjsth51MgF/Lf3xQw9
+	 nxQfHGtetY7CZBeW/Rh6cnjomIeXITmrgB1t7PZjatHECEK27QgRLxyuCNEQcWGI4j
+	 5WwbUlxX8DYOA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj4380Zz4xfJ;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj46rrNz4xfL;
 	Sun, 17 Nov 2024 23:25:28 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-pm@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rafael@kernel.org, viresh.kumar@linaro.org
-In-Reply-To: <20241112085148.415574-1-mpe@ellerman.id.au>
-References: <20241112085148.415574-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] cpufreq: maple: Remove maple driver
-Message-Id: <173184539748.890800.8372516431978764964.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Cc: maddy@linux.ibm.com, christophe.leroy@csgroup.eu, naveen@kernel.org, npiggin@gmail.com
+In-Reply-To: <20241115045442.675721-1-mpe@ellerman.id.au>
+References: <20241115045442.675721-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] MAINTAINERS: powerpc: Mark Maddy as "M"
+Message-Id: <173184539769.890800.8018972179833150498.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,23 +67,16 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 12 Nov 2024 19:51:48 +1100, Michael Ellerman wrote:
-> This driver is no longer buildable since the PPC_MAPLE platform was
-> removed, see commit 62f8f307c80e ("powerpc/64: Remove maple platform").
+On Fri, 15 Nov 2024 15:54:42 +1100, Michael Ellerman wrote:
+> Mark Maddy as a co-maintainer, so that he can get a kernel.org account
+> and help manage the powerpc tree on kernel.org.
 > 
-> Remove the driver.
 > 
-> Note that the comment in the driver says it supports "SMU & 970FX
-> based G5 Macs", but that's not true, that comment was copied from
-> pmac64-cpufreq.c, which still exists and continues to support those
-> machines.
-> 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] cpufreq: maple: Remove maple driver
-      https://git.kernel.org/powerpc/c/fae2987e67786a6358c0ef47189b12ff19e9543a
+[1/1] MAINTAINERS: powerpc: Mark Maddy as "M"
+      https://git.kernel.org/powerpc/c/27aef9391bd3bc08eb07fe23e6c4d7c9afabe1e8
 
 cheers
 
