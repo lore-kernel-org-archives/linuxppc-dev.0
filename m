@@ -1,74 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-3340-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3341-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6312D68BF0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Nov 2024 23:09:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 309C9D68BF6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 00:24:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrV2X1j4Hz2yRZ;
-	Sun, 17 Nov 2024 10:09:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::635"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731798564;
-	cv=none; b=WPOM+YoiwFzBj3lVzxwO3W7GH7ewJQpNvRPgOX4gLh/H7v/8zG/rQAlMfKqqFZv8upHvCHfy36yFAsaThFUSoBckN4dkJm+C3f5TlH3SOGde5+K0NvMcPqj5YkSeGhW8PdAAsRQht9Xz6jx9U7sXabvU/yn4/CtTW2tsFRnIEGV/XIdJggZd90XiSrUnZzgw8v7GauBDhoW/3G8UUGGuhxAas7BgQXYGxn6TnhkG5ODks6Lk5WRlNiypqSvJ9l6hXJUN9Rb4QCxEjmrcAhuaxL7kMCgPxD7cnUqAVLjXqF3zPjrxaka10ri049kqsbU/hg7nkW9xm3d8XL5zSagFyw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrWhb3HxRz30T8;
+	Sun, 17 Nov 2024 11:23:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731803039;
+	cv=none; b=SC0xCBnvlo0kR00PRfSeA9XA2jys18sWj7pxHnSBCwRJEq44m9ROY5tV4hmE5lJMEzZy1Mb9MNG1LMEwttp2wJR0N5Lw2JUWx9q/eeWb5/3B+opXKHG11c8yXduhlH1TDtqJa/xj78fb+8Mib6AJ2IpJPz5uX2oi0N95f9vMfB6Yq9A21mRDM+bhyynazcKRYbful8E13fp0CknVlflhbKucC0armkVcG/ImqGeQ/YCySzJwlrHG3ug15Wo8O7AYfXw6ZGDb+FOxvMyyDZgVKTZc/jLlvo+IdcLhdzKvsfCgieB99gurb8zuXS1mUlHA7bhtOsjOMxo+wAocF8ypnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731798564; c=relaxed/relaxed;
-	bh=Td7vCBCvy5qltO0Crd/rzRURZj8FOyjMicysTjqR3jA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hzYuY9ajWrruxqt2jTvUXnBGZTMNQGWrBJAjfpvlttNRb61XKDeyjcG9R8w5Aj5RghH4CnHmmf7Pwe1yBxgFKNevOLlY20DtduPWbp/xWoSDD4iWmg8M2VbLri7n3Yt1BcBzNyZxV5kVVEWs+DL/j6HVbKzfDrO8FUzr/S7ZVTPuZDVhfxa+UbpmLk/RqcgX0D/HesRqT0qbcRpeLs4S6+ui31cDh2gWq69rFOmT+pSkMVMiQncaInaBuD4Jr1ckjUBk0Lb/wyZXtYtql4NmQnVM0+0nuxIes4Wt/6/tc1uRAhZydvwKaxXy/3+azlzZwi85+FuW5mbT0pAI0769GQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=U5LqqZx9; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1731803039; c=relaxed/relaxed;
+	bh=mB6BH20WVM9iWaGKcD3eSgNmpgMrkxwjBpbXNo9CyTQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ihAIT6X+PF/37bt8iZcEUt3IMBAz/SFYUhBJt2HkWxoo4F+fHrlPl3/l6Qiw3R97uPtUk37uUACNX/mD+7jjS82nvPih9N7ZRwuLP1ihIhP1ggzE0xaJjTZAE9Fxv9+JzJGNVgM1yYspJlfdrg39cu/lrs1qQNI1bNovnzRIE6lnj9X4ihGtL6VNj6yyqDOfWjz/xGnTJqA6VeA6et5sAcHEblePD+zwIEkrjtkrv8F+rtXBjRLC2NdAx1/gdeUGoXd01P3apuFNUg2+XWkUNqwfCiF1C+bIFhtanf+EuIifRucNoXue9GsVDPqCehKs9qSasMvlnw1joDhSBf0lpg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nHGBbzqp; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=U5LqqZx9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nHGBbzqp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrV2V3xSdz2yGN
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 10:09:20 +1100 (AEDT)
-Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-a9a6acac4c3so520850766b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 15:09:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1731798556; x=1732403356; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Td7vCBCvy5qltO0Crd/rzRURZj8FOyjMicysTjqR3jA=;
-        b=U5LqqZx96/t5OSIFi6GbD7MwMHpQYazqN1v9pqMqXqthHntP/AEmtGKY9B3QbOzjv9
-         aeHmOSDgtPqDb4tvPG8BihwyQ/JE3eN3WubjpfonAocHsXFq8bfxC7uRFNCtcief58eF
-         pbcdYcP6c5D9lFA5oz4dN7mFrRCKPxJ34D8nM=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1731798556; x=1732403356;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Td7vCBCvy5qltO0Crd/rzRURZj8FOyjMicysTjqR3jA=;
-        b=gOZbdX6mIBoxVZC8k8bZy2+4uPqB8HCNBNY2U3lY4iK1C/+2QUim9MisZQEp8Fnnn/
-         fqfro8UHhVB/di2tddTbeLbJKK32qK7I2bnfZxKvsLb6Dzq7ysMqgZaWrD3YBwqYURRx
-         v1q7UbFB3ymZelPWbJkYmcPCEJafXMDvmwqUebGFTzsDDtgZ2382kP9UB1go95MT+iLt
-         yQSbH+B1d/7ksZZORiE/Vesvuj3VjMcL6jjloprMMSW2LBW1aWZ97cBlG4y0/ZeVbc+S
-         3hk0Gd4LosZt8p3D1KS98rJlWIVoOjrR2o8gPAWhnsFq/Q+fH73BEWw2i1km5ZoFJYw+
-         rJcA==
-X-Forwarded-Encrypted: i=1; AJvYcCVIRW+rK+2QJrNK5SzM0Z+mShDDu02oHVKeOxbJrkmQE+alPqVFdCVvwLAFCT+l0nXUBrv22BUXzxcI7WY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwBRyuHAGrB7ujBqGuOX6H2pItFoakeFAIp2axv8vc7zYXx0LRO
-	3UPgv9PmIqg8BEIUcF89SBHdKZWJZs/3folLl+4vSRmDiMi62QaJg1AwYSmotwUPAo7RkTp6Bjy
-	e9Ds=
-X-Google-Smtp-Source: AGHT+IHyoeFZC20n6/riGmvAqVR/x8Tj8CR0EWkVqPOpgJZHbHNulZVM8TJgT/UeR6qcmtXdo8ExeA==
-X-Received: by 2002:a17:907:25c2:b0:a9a:e9c:1d8d with SMTP id a640c23a62f3a-aa483426398mr736372766b.17.1731798556283;
-        Sat, 16 Nov 2024 15:09:16 -0800 (PST)
-Received: from mail-ej1-f43.google.com (mail-ej1-f43.google.com. [209.85.218.43])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-aa20e045385sm353862066b.144.2024.11.16.15.09.15
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 16 Nov 2024 15:09:15 -0800 (PST)
-Received: by mail-ej1-f43.google.com with SMTP id a640c23a62f3a-a9a6acac4c3so520848366b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Nov 2024 15:09:15 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCX6lx/+A8A4ejTDn0ubme6vE5hYxTx3HIlJnS9UHOGSov7P6GRAUPPvjh/KRvTxR5HdTfeM5paRThQgcB0=@lists.ozlabs.org
-X-Received: by 2002:a17:907:1c29:b0:a9e:df65:3a81 with SMTP id
- a640c23a62f3a-aa483554f81mr518293666b.59.1731798555048; Sat, 16 Nov 2024
- 15:09:15 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrWhZ0mvjz2y8p
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 11:23:57 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 3C6A5A40BEA;
+	Sun, 17 Nov 2024 00:22:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 91DC5C4CED6;
+	Sun, 17 Nov 2024 00:23:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1731803034;
+	bh=fz4SkCeYBuj7fsA/U1fUHvVppsJG5UVFRFRoPgOF4lQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=nHGBbzqpxxXr7z9JTDGZvIsMrkHcSwzjkEx2FI60yxgCeuqd7tlL2odGxTgZf534f
+	 giTrqvVfr65GbOH5Ng0xGyxC2lsMyOPC3zCe135DvXeMC2LgYcXdoFARkKEazMxP2S
+	 FehNuJ8ZDFj942jvr3zEQ8IxBZP48bBUFQJQsp4a7tds04ZqPcw53S9svvFYaLhlv6
+	 zaBgI3R3pSUtCc6ETR0AkkpCWdxmToc1xGnMpbR5cl23tXHtgXwV47kVcMaSMUROFD
+	 +x7tSIlYPh2purRhNnEq5ELrIHjTitDF4gVgTH8zfln7JvJ1qUexkZCOf0heRM+0/7
+	 cAEO7vRyLTMtQ==
+From: Eric Biggers <ebiggers@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-crypto@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	x86@kernel.org,
+	Zhihang Shao <zhihang.shao.iscas@gmail.com>,
+	Ard Biesheuvel <ardb@kernel.org>
+Subject: [PATCH 03/11] crypto: crct10dif - expose arch-optimized lib function
+Date: Sat, 16 Nov 2024 16:22:36 -0800
+Message-ID: <20241117002244.105200-4-ebiggers@kernel.org>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20241117002244.105200-1-ebiggers@kernel.org>
+References: <20241117002244.105200-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,38 +71,171 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <cover.1730166635.git.jpoimboe@kernel.org> <82cbb9983fef5ecf6f1cb33661e977172d40a7e6.1730166635.git.jpoimboe@kernel.org>
- <20241029032735.pw3bg64bpneqnfhk@treble.attlocal.net> <76bb85ceeb854e3ab68d87f846515306@AcuMS.aculab.com>
- <20241115230653.hfvzyf3aqqntgp63@jpoimboe> <CAHk-=wgLCzEwa=S4hZFGeOPjix-1_fDrsqR-QLaBcDM-fgkvhw@mail.gmail.com>
- <4055e18be7ff4f1f83fb9a4b6a8bc312@AcuMS.aculab.com>
-In-Reply-To: <4055e18be7ff4f1f83fb9a4b6a8bc312@AcuMS.aculab.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 16 Nov 2024 15:08:58 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wh=_RbcUfnjxL-X82wiCphU3_=d1qQ15JXy+49jmB6BVg@mail.gmail.com>
-Message-ID: <CAHk-=wh=_RbcUfnjxL-X82wiCphU3_=d1qQ15JXy+49jmB6BVg@mail.gmail.com>
-Subject: Re: [PATCH v3 2/6] x86/uaccess: Avoid barrier_nospec() in 64-bit __get_user()
-To: David Laight <David.Laight@aculab.com>
-Cc: Josh Poimboeuf <jpoimboe@kernel.org>, "x86@kernel.org" <x86@kernel.org>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
-	Borislav Petkov <bp@alien8.de>, Peter Zijlstra <peterz@infradead.org>, 
-	Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, Waiman Long <longman@redhat.com>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, 
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Andrew Cooper <andrew.cooper3@citrix.com>, 
-	Mark Rutland <mark.rutland@arm.com>, "Kirill A . Shutemov" <kirill@shutemov.name>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-On Sat, 16 Nov 2024 at 13:38, David Laight <David.Laight@aculab.com> wrote:
->
-> If __get_user() is the same as get_user() [..]
+From: Eric Biggers <ebiggers@google.com>
 
-No, the problem is that it's the same from a performance angle (and
-now it's actually slower), but some hacky code paths depend on
-__get_user() not checking the address.
+Now that crc_t10dif_update() may be directly optimized for each
+architecture, make the shash driver for crct10dif register a
+crct10dif-$arch algorithm that uses it, instead of only
+crct10dif-generic which uses crc_t10dif_generic().
 
-They then use that to read from either user space _or_ kernel space.
+The result is that architecture-optimized crct10dif will remain
+available through the shash API once the architectures implement
+crc_t10dif_arch() instead of the shash API.
 
-Wrong? Yes. Architecture-specific? Yes. But it sadly happens.
+Signed-off-by: Eric Biggers <ebiggers@google.com>
+---
+ crypto/Makefile            |  1 +
+ crypto/crct10dif_generic.c | 82 +++++++++++++++++++++++++++++---------
+ 2 files changed, 65 insertions(+), 18 deletions(-)
 
-             Linus
+diff --git a/crypto/Makefile b/crypto/Makefile
+index e948a883f151..8361fdb1a27d 100644
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -153,10 +153,11 @@ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
+ obj-$(CONFIG_CRYPTO_CRC32C) += crc32c_generic.o
+ obj-$(CONFIG_CRYPTO_CRC32) += crc32_generic.o
+ CFLAGS_crc32c_generic.o += -DARCH=$(ARCH)
+ CFLAGS_crc32_generic.o += -DARCH=$(ARCH)
+ obj-$(CONFIG_CRYPTO_CRCT10DIF) += crct10dif_generic.o
++CFLAGS_crct10dif_generic.o += -DARCH=$(ARCH)
+ obj-$(CONFIG_CRYPTO_CRC64_ROCKSOFT) += crc64_rocksoft_generic.o
+ obj-$(CONFIG_CRYPTO_AUTHENC) += authenc.o authencesn.o
+ obj-$(CONFIG_CRYPTO_LZO) += lzo.o lzo-rle.o
+ obj-$(CONFIG_CRYPTO_LZ4) += lz4.o
+ obj-$(CONFIG_CRYPTO_LZ4HC) += lz4hc.o
+diff --git a/crypto/crct10dif_generic.c b/crypto/crct10dif_generic.c
+index e843982073bb..259cb01932cb 100644
+--- a/crypto/crct10dif_generic.c
++++ b/crypto/crct10dif_generic.c
+@@ -55,10 +55,19 @@ static int chksum_update(struct shash_desc *desc, const u8 *data,
+ 
+ 	ctx->crc = crc_t10dif_generic(ctx->crc, data, length);
+ 	return 0;
+ }
+ 
++static int chksum_update_arch(struct shash_desc *desc, const u8 *data,
++			      unsigned int length)
++{
++	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
++
++	ctx->crc = crc_t10dif_update(ctx->crc, data, length);
++	return 0;
++}
++
+ static int chksum_final(struct shash_desc *desc, u8 *out)
+ {
+ 	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+ 
+ 	*(__u16 *)out = ctx->crc;
+@@ -69,49 +78,86 @@ static int __chksum_finup(__u16 crc, const u8 *data, unsigned int len, u8 *out)
+ {
+ 	*(__u16 *)out = crc_t10dif_generic(crc, data, len);
+ 	return 0;
+ }
+ 
++static int __chksum_finup_arch(__u16 crc, const u8 *data, unsigned int len,
++			       u8 *out)
++{
++	*(__u16 *)out = crc_t10dif_update(crc, data, len);
++	return 0;
++}
++
+ static int chksum_finup(struct shash_desc *desc, const u8 *data,
+ 			unsigned int len, u8 *out)
+ {
+ 	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
+ 
+ 	return __chksum_finup(ctx->crc, data, len, out);
+ }
+ 
++static int chksum_finup_arch(struct shash_desc *desc, const u8 *data,
++			     unsigned int len, u8 *out)
++{
++	struct chksum_desc_ctx *ctx = shash_desc_ctx(desc);
++
++	return __chksum_finup_arch(ctx->crc, data, len, out);
++}
++
+ static int chksum_digest(struct shash_desc *desc, const u8 *data,
+ 			 unsigned int length, u8 *out)
+ {
+ 	return __chksum_finup(0, data, length, out);
+ }
+ 
+-static struct shash_alg alg = {
+-	.digestsize		=	CRC_T10DIF_DIGEST_SIZE,
+-	.init		=	chksum_init,
+-	.update		=	chksum_update,
+-	.final		=	chksum_final,
+-	.finup		=	chksum_finup,
+-	.digest		=	chksum_digest,
+-	.descsize		=	sizeof(struct chksum_desc_ctx),
+-	.base			=	{
+-		.cra_name		=	"crct10dif",
+-		.cra_driver_name	=	"crct10dif-generic",
+-		.cra_priority		=	100,
+-		.cra_blocksize		=	CRC_T10DIF_BLOCK_SIZE,
+-		.cra_module		=	THIS_MODULE,
+-	}
+-};
++static int chksum_digest_arch(struct shash_desc *desc, const u8 *data,
++			      unsigned int length, u8 *out)
++{
++	return __chksum_finup_arch(0, data, length, out);
++}
++
++static struct shash_alg algs[] = {{
++	.digestsize		= CRC_T10DIF_DIGEST_SIZE,
++	.init			= chksum_init,
++	.update			= chksum_update,
++	.final			= chksum_final,
++	.finup			= chksum_finup,
++	.digest			= chksum_digest,
++	.descsize		= sizeof(struct chksum_desc_ctx),
++	.base.cra_name		= "crct10dif",
++	.base.cra_driver_name	= "crct10dif-generic",
++	.base.cra_priority	= 100,
++	.base.cra_blocksize	= CRC_T10DIF_BLOCK_SIZE,
++	.base.cra_module	= THIS_MODULE,
++}, {
++	.digestsize		= CRC_T10DIF_DIGEST_SIZE,
++	.init			= chksum_init,
++	.update			= chksum_update_arch,
++	.final			= chksum_final,
++	.finup			= chksum_finup_arch,
++	.digest			= chksum_digest_arch,
++	.descsize		= sizeof(struct chksum_desc_ctx),
++	.base.cra_name		= "crct10dif",
++	.base.cra_driver_name	= "crct10dif-" __stringify(ARCH),
++	.base.cra_priority	= 150,
++	.base.cra_blocksize	= CRC_T10DIF_BLOCK_SIZE,
++	.base.cra_module	= THIS_MODULE,
++}};
++
++static int num_algs;
+ 
+ static int __init crct10dif_mod_init(void)
+ {
+-	return crypto_register_shash(&alg);
++	/* register the arch flavor only if it differs from the generic one */
++	num_algs = 1 + crc_t10dif_is_optimized();
++
++	return crypto_register_shashes(algs, num_algs);
+ }
+ 
+ static void __exit crct10dif_mod_fini(void)
+ {
+-	crypto_unregister_shash(&alg);
++	crypto_unregister_shashes(algs, num_algs);
+ }
+ 
+ subsys_initcall(crct10dif_mod_init);
+ module_exit(crct10dif_mod_fini);
+ 
+-- 
+2.47.0
+
 
