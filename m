@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3389-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF4F6D68BF9
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:28:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6826D6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:28:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjJ4sQXz3bsq;
-	Sun, 17 Nov 2024 23:25:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjK1dSGz3btX;
+	Sun, 17 Nov 2024 23:25:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846340;
-	cv=none; b=dwo7WjCdHjUEj4MDN70e2Mqlvxiutrff/VfWFYE//aXd2VqVkV/YaXKvue6efk6lfVur9FKwDeCwn9z1mjX6T+3qA1u9SX0IhFF0L5KlSNucsk2NjkDVW4/F5A2a0PSpy2mJTDqimqeelyCti5qxBy/hijbnGFvoUSL9BsH4i22XvFZwzrFv2V0lQzZRCa2FhBsWdHndbpvyTrZAuXmI8EBDxPZjHdl06UyDNgkzTQtzalpkNfMUxXzDb2HkKvItkj2E55HQsp1FT9wldl/FRYEcG/0bfbtLXVXYW+6Zfi/mdn8VaRfWYobPStEo/exTEFzlPrxlfJjsH7SaykXbYA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846341;
+	cv=none; b=NCoDWzds5NaUIyqhSztwxz3WClEfdIMPjziOUwMODj/P3xvdo6Twq6apIfLTlv+w+n2VSEAZ7dZqnhUQMA8s5wAbfvBlRlfgPvYaGBpo2i0d8NQHdVkOZflSlbbEnbXWHpvflkU9EHQKfJZTopkWC5kg2PtGhyb5uQbx4YmjJdGpq9Mxw55riFqfHLox3UlydX0BT8IEiZwpRyd865lw12eqJHzw+HA2FBq3m4p6XMndCVM+/zKXPWAp4qRZVFqn8rB3gN80jKIYrnVriJjYwptHI5Tkv9cxTBJ1atNrc8nNOpTOprldpMpgtzrTbCE1W66jTc0D4jnPsY+9Q/6SOw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731846340; c=relaxed/relaxed;
-	bh=EjOLBTm8qIVwqFQ5mRUKY4dTcr0ZMFt3/mFMTBHvnF4=;
+	t=1731846341; c=relaxed/relaxed;
+	bh=uPqxzh4mL68Z4sQxC/IdKSxMOi/CnvBFxlpyAqi3H4w=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=bPrau8nvLE2eu6pVquGFmjOqRRqI3PqHC8br3UUFopbrZTl4nA0NiUbgy/mBpB1Ygxl17GnJa+kiimXk0IcoF5Ljj6xkDTmivT7ScUsErz9OB+21kPHutPDGDW+LXxFqQ9ZVaokBJs113ZBhbl41k8MQw3QwhR8xbGBn468CZY3OInFA9dSAx3PHR2V0Nc/g2QewpmcUXhP8l5i7q3Ehzk2xGqkGnUZbH/iuP242cB8DWuXHtO/7endKgjt+bF26cjV1++RHZc6edi4xbbIrS9x8NQpMonJUnqnyF0ZK7WhL876P/KywYDsP3DetcFEE3AWCZZOUNSNP8fTTfJzYWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pOO/s//2; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=iFAAMyOvjblyU36oPQAbbt1OYYoEKXAq8J++9pNE9G5lXhpqBRY1fOg2nHKIP8pAqCtaVMIXGVTf2ukWNagmAJSqGwkPlYPaXdKQFdLfCcFoJjiVKW59S8ipV3GYQqIFxkSuZoZOV7E94uYDIhVdTQRQYfT+vR57FWG3QPJd0lflbB7Z7/E/ezg6+Ncnsb62ORM/GYI5FslpzZayRCrFrnxduxlhYhrLa5AbyJAKSjzn4QTj89XJFOWYZvFY4jNh6ESBeT5bP3CH1VUaKx3Zq+3oOvwyF1+sRteiEt+0mA9WZ5rFgotY+hV+jI7zrkQ7q0PrHY9uIAjrO82QkMm2+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JFtnhF5I; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pOO/s//2;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JFtnhF5I;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjG51Vbz3bny
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjH5r7Tz3bs0
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:39 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846335;
-	bh=EjOLBTm8qIVwqFQ5mRUKY4dTcr0ZMFt3/mFMTBHvnF4=;
+	s=201909; t=1731846336;
+	bh=uPqxzh4mL68Z4sQxC/IdKSxMOi/CnvBFxlpyAqi3H4w=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=pOO/s//2bzWDv6KajHsDX2odFSy+UCz6LHeHejry3vt6e8Ccit3FEXYVrYLNiVqio
-	 pNqFnR97xO0zWo9yaR/nhrjojsdYZis4BxdNR5NkfhjeqXUZhi6ysXyT6Mnk6jCr4a
-	 VlXCewU4YR3QYHmc0qjYLXP+s1Wfw+B0Mnw8uoN4krz8uY65ZnXrhSr/pisVnMGDMw
-	 RPe8hnbFDUYDE1xvOkqbMcjZxwaKX8DXfmDjBTUyW9OJyKr8XjD5PAo+f639tpPT1U
-	 muvzkay4HYDVJ3rup7aoIf8VKBxiNxvOReN+xgmc+xFohgrsf56jX+z0TUxjk5TOPz
-	 htZ35Z5Rp13qw==
+	b=JFtnhF5I97xVMil2X58ZapbP/ovkjzlcV55oxBzfkh0lfqCYil1K7tyg40g+NkFQE
+	 RJ0oXMz/8bCXm+N/rWnJsmpe2CAcBTInYtjFDaonBz8nj73dVjwiDngQu9oilgB1du
+	 rE8TjIpb1ybm5wAKmTs6d6rvgLRfS/yDcwUm3SgFEKzki7b7VGR5MUB0GcipDkf0O9
+	 Zw+MxkFMAHm05TGRp3h3dq+ZQfOOD77OOcskM+aCPfXFY0il/7FyM+TAWLi6LElxKO
+	 oEywP3jCbK8fTkBv5P8C/1VNeu/uiBgfBX9D07t7EbVyuAlSwvItM1kDjgFZnn9dGx
+	 G9KlMc5K4e7Hg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XrqjC4zv0z4xfh;
-	Sun, 17 Nov 2024 23:25:35 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XrqjD1nf1z4xfk;
+	Sun, 17 Nov 2024 23:25:36 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Rob Herring <robh@kernel.org>, Thorsten Blum <thorsten.blum@linux.dev>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20241027222219.1173-2-thorsten.blum@linux.dev>
-References: <20241027222219.1173-2-thorsten.blum@linux.dev>
-Subject: Re: [PATCH] powerpc: Use str_enabled_disabled() helper function
-Message-Id: <173184539744.890800.16412147962073098528.b4-ty@ellerman.id.au>
+To: ritesh.list@gmail.com, zhangjiao2 <zhangjiao2@cmss.chinamobile.com>
+Cc: linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, shuah@kernel.org
+In-Reply-To: <20240930012757.2395-1-zhangjiao2@cmss.chinamobile.com>
+References: <20240930012757.2395-1-zhangjiao2@cmss.chinamobile.com>
+Subject: Re: [PATCH v2] selftests/powerpc: Remove the path after initialization.
+Message-Id: <173184539763.890800.11338398179510571377.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,16 +67,16 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Sun, 27 Oct 2024 23:22:17 +0100, Thorsten Blum wrote:
-> Remove hard-coded strings by using the str_enabled_disabled() helper
-> function.
+On Mon, 30 Sep 2024 09:27:57 +0800, zhangjiao2 wrote:
+> If there were no anamolies noted, then we can
+> simply remove the log file and return.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Use str_enabled_disabled() helper function
-      https://git.kernel.org/powerpc/c/19e0a70e6c3c1bf800b8ce9eb45864aa9e1e2781
+[1/1] selftests/powerpc: Remove the path after initialization.
+      https://git.kernel.org/powerpc/c/7ca93aa9204b706e4afcd4fae0dc8798500598d5
 
 cheers
 
