@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3365-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3366-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29BE8D6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:25:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 668C0D6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:25:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqhq4nL3z308M;
-	Sun, 17 Nov 2024 23:25:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846315;
-	cv=none; b=bxXmlmXh0rNrWJ9hr3cbsPgIV0yUp2xAwyxoFZfwRZx6xLurD3pQ0qiEhqOIg251Nl0qOySGYF0Gw2ow/m+4+I8c/4ty/JzdlbZxtu+5Wkns0MUTdFjceMN0r7Vt7qiEdPvJrbkXIp4xof01byAvYGI8UFaiTWTfPXjpjuTbRSEEMOd0Rapx9vOvY0rINUGrbE2ix+PSIMsMN/+6Dd/Bxlw7ey4D7sCZsjRZOUvnBb8fASBqm8zTJAC0hu3FiM+VZZe8Ps53EDAdiG7+SP0lqsNUrp7NKVA1+uFlwjr12utKNeGXwTwOHQ2bMi+Enr7v2nVWPe9vJ2Q0WFAxgwSL2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqhs29Gxz305D;
+	Sun, 17 Nov 2024 23:25:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846317;
+	cv=none; b=iTWtS/ft0UMpqCaZAIYChDYoctyA1MZFBToKp9ISiX7yG+nc0hfxisNyRWMTzkykh5hgCIoX7jq010OcbYkPN+hrbtl2i8nJVcE3QfGQyqx03cEKzuCjfHim1qN4YnxBQLOKJE5wMnyGb1BOwmEb6x0LX/y9eGuWgFsYcbFKPl4ry2UXOJ4TNs1wlrB+14gdo+q0I3cNmbpSLzYQ3qrX0argKqdRJkey+VRvIJ0jEa31gxJ5rdn1DTRXJIpe1AU840EBKqsgrsQZQ+tkoS//r+O4jzF/ES7KfP6Uf5JVpYc43KffVhMBzuPwD/KTF31zN/h8mHevDGDAyu8EDnpTvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731846315; c=relaxed/relaxed;
-	bh=Whwznt8AGTFflVnnQEX7dgo8jQXeAZc+kZEuI8J0BII=;
+	t=1731846317; c=relaxed/relaxed;
+	bh=CKG84+r0siAfokontrKDesX9uTEGP18Q8+N/CJSOFJo=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=hd4w2hIZX+YIYDiURxpr3YrNh+eIuM2OhMyVDtEL5wF0RvkqoZWevVJcb3U+/179NrW1FMqhwatk4ozoEXQbnAx6svm9anFOcQ4YVhht7Esmt2m9mo8PHSofgLsPzm325ZSXC9WR38PQQUqwyjmHPLE9fYJo0bePdD8IhYFRzsRJO0oILy6I+zTBCjmfKgwsVfAXPDxVfd9MmtTPWYVeOuWIwFP+n6Zt1fbftzzAWmZpxqNPme2TA6XxnanGAVjDVtpF8n5gPTaWpMUKmtIU7bqVEdqHljPqG9su9ArzE4jvm143tYjr7tDOxKFQmOBmXYBIN5zwseAUbPjYd2VaWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=LB3+6679; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=CocRsckL+7sLGQHcBb3n8pupBRsOAndeBRAuObOQNJyANvscsQKW6eIvD/PZjhSfo2HjjNlyrQsA/e3kIH4B2sLkbo4JLmc4HH3jr/eCuGOkLp1j6EAd0JCgG/R9qtYPBeXZkZjYGT9FS9OD4IGAjPBJEF4OPEraEARlNGVnu1oJ04A6KEsBrknvfPznYB86MDCjMkGKCQkr4MkwPkxeCrYIeUzSFGLBz4b/AIWBdxJ1kH7QU9cKBCql91aLQcJlw8HOqMSIu4pTmZX3QVF50zVZk7xXzimFQCFPW+SombvAuqqgkWkg7ubK6RJzoTAEDLF3k+63ypWikoYMRalUAQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=bRilmn7a; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=LB3+6679;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=bRilmn7a;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqhp4fTKz2ytm
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqhr6dhpz2ytm
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:16 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846311;
-	bh=Whwznt8AGTFflVnnQEX7dgo8jQXeAZc+kZEuI8J0BII=;
+	s=201909; t=1731846313;
+	bh=CKG84+r0siAfokontrKDesX9uTEGP18Q8+N/CJSOFJo=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=LB3+6679yJHY/ctV5rALLE25zQb2KH3hvYCgRGl/4YAML6eUQr7czEwhMGCFbOroG
-	 fJM1YmmKRHjjWzHk8y/AGZEdZvN3Vh+i86Ir3PTrnx4AhhExwy2bcyi9uuhNlP8N5J
-	 Lk+KC0loly16CrZU1w+WDH3S6ox+C/cRjTHlByC4SJSTzM0boT/K3Ss2pqWdMyKB8y
-	 4SZqPdJQcLgL/5uuejezacbh9/xKO5Y1Y/HMC1aQMZLU2tzu3NxzoyN6pgdD5YicEK
-	 rjnPyoB0uWaKadxR74mq3RL7Y2sAUKGvDBFGjX+gPAlojiRaZ/adzOewwSExbiKFwz
-	 V8nXUCUWu5z3g==
+	b=bRilmn7aPuUE951f/FQt4pJwT66UGKJxBCurd84j9mebMk3SAQv2CKRe1HGN4gdt7
+	 a6QhHIZpc4TsNhS9fdRhd+R1DDukcGKY2oTTSGKwwET0khacffUaR7NiPps9CLNxFK
+	 G2nfabb5q0bGbN/WpKNM3O3FGYaULt24S3xR0+T1jLXkPiUmuyOUyJaKo/u1jyQiP1
+	 MsUAzPD/iRBfjq4DaG2ALsxM+Da0gzMdKl3TDguoTnEgmyhq/qqdCyfXdx+8VgnNzX
+	 T8d8ubZTpPNcUgIj1B1k25xhcgR9CwtN9RU7XDuDezhqeta9Ful3cRhUcuur1s5pnF
+	 8o4qkBgk7s/ZA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhl3PCYz4xdw;
-	Sun, 17 Nov 2024 23:25:11 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhm4PfHz4xdy;
+	Sun, 17 Nov 2024 23:25:12 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com, vaibhav@linux.ibm.com, Gautam Menghani <gautam@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20241108094839.33084-1-gautam@linux.ibm.com>
-References: <20241108094839.33084-1-gautam@linux.ibm.com>
-Subject: Re: [PATCH v2] arch/powerpc/pseries: Fix KVM guest detection for disabling hardlockup detector
-Message-Id: <173184539747.890800.11538594220662178668.b4-ty@ellerman.id.au>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org, linux-trace-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, "Naveen N. Rao" <naveen@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Daniel Borkmann <daniel@iogearbox.net>, Masahiro Yamada <masahiroy@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Alexei Starovoitov <ast@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>, Vishal Chourasia <vishalc@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+In-Reply-To: <20241030070850.1361304-1-hbathini@linux.ibm.com>
+References: <20241030070850.1361304-1-hbathini@linux.ibm.com>
+Subject: Re: [PATCH v7 00/17] powerpc: Core ftrace rework, support for ftrace direct and bpf trampolines
+Message-Id: <173184539742.890800.10627378696586118580.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,23 +67,55 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 08 Nov 2024 15:18:37 +0530, Gautam Menghani wrote:
-> As per the kernel documentation[1], hardlockup detector should be
-> disabled in KVM guests as it may give false positives. On PPC, hardlockup
-> detector is enabled inside KVM guests because disable_hardlockup_detector()
-> is marked as early_initcall and it relies on kvm_guest static key
-> (is_kvm_guest()) which is initialized later during boot by
-> check_kvm_guest(), which is a core_initcall. check_kvm_guest() is also
-> called in pSeries_smp_probe(), which is called before initcalls, but it is
-> skipped if KVM guest does not have doorbell support or if the guest is
-> launched with SMT=1.
+On Wed, 30 Oct 2024 12:38:33 +0530, Hari Bathini wrote:
+> This is v7 of the series posted here:
+> https://lore.kernel.org/all/20241018173632.277333-1-hbathini@linux.ibm.com/
+> 
+> This series reworks core ftrace support on powerpc to have the function
+> profiling sequence moved out of line. This enables us to have a single
+> nop at kernel function entry virtually eliminating effect of the
+> function tracer when it is not enabled. The function profile sequence is
+> moved out of line and is allocated at two separate places depending on a
+> new config option.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] arch/powerpc/pseries: Fix KVM guest detection for disabling hardlockup detector
-      https://git.kernel.org/powerpc/c/44e5d21e6d3fd2a1fed7f0327cf72e99397e2eaf
+[01/17] powerpc/trace: Account for -fpatchable-function-entry support by toolchain
+        https://git.kernel.org/powerpc/c/0b9846529e29ba988ce88b98df633de79675fcb3
+[02/17] powerpc/kprobes: Use ftrace to determine if a probe is at function entry
+        https://git.kernel.org/powerpc/c/be87d713eaddf0421ccd61cc060c4c29bc36fc9b
+[03/17] powerpc64/ftrace: Nop out additional 'std' instruction emitted by gcc v5.x
+        https://git.kernel.org/powerpc/c/161d62c2b067c4071cb515efe16475171e1c051e
+[04/17] powerpc32/ftrace: Unify 32-bit and 64-bit ftrace entry code
+        https://git.kernel.org/powerpc/c/654b3fa61b817a46037197b73a7ac6d36d01df7e
+[05/17] powerpc/module_64: Convert #ifdef to IS_ENABLED()
+        https://git.kernel.org/powerpc/c/c12cfe9dee077763708e0a5cf3aca02a85b1e8ba
+[06/17] powerpc/ftrace: Remove pointer to struct module from dyn_arch_ftrace
+        https://git.kernel.org/powerpc/c/8b0dc1305ea0bbb015b560193cdd76fd4100f062
+[07/17] powerpc/ftrace: Skip instruction patching if the instructions are the same
+        https://git.kernel.org/powerpc/c/1d59bd2fc07f0b2e643b2a07405cf0717b93984f
+[08/17] powerpc/ftrace: Move ftrace stub used for init text before _einittext
+        https://git.kernel.org/powerpc/c/ed6144656bb1ea29ad83671b48a21c89e7873b8a
+[09/17] powerpc64/bpf: Fold bpf_jit_emit_func_call_hlp() into bpf_jit_emit_func_call_rel()
+        https://git.kernel.org/powerpc/c/9670f6d2097c4f97e15c67920dfddc664d7ee91c
+[10/17] powerpc/ftrace: Add a postlink script to validate function tracer
+        https://git.kernel.org/powerpc/c/782f46cbce5328da9380f166bd31cd17a04a7b10
+[11/17] kbuild: Add generic hook for architectures to use before the final vmlinux link
+        https://git.kernel.org/powerpc/c/1198c9c689cfdaa2d08eb508c13ff116043f07b7
+[12/17] powerpc64/ftrace: Move ftrace sequence out of line
+        https://git.kernel.org/powerpc/c/eec37961a56aa4f3fe1c33ffd48eec7d1bb0c009
+[13/17] powerpc64/ftrace: Support .text larger than 32MB with out-of-line stubs
+        https://git.kernel.org/powerpc/c/cf9bc0efcce2c324314cf7f5138c08f85ef7b5eb
+[14/17] powerpc/ftrace: Add support for DYNAMIC_FTRACE_WITH_CALL_OPS
+        https://git.kernel.org/powerpc/c/e717754f0bb5c5347aac82232691340955735ce1
+[15/17] powerpc/ftrace: Add support for DYNAMIC_FTRACE_WITH_DIRECT_CALLS
+        https://git.kernel.org/powerpc/c/a52f6043a2238d656ddd23ce0499cf4f12645faa
+[16/17] samples/ftrace: Add support for ftrace direct samples on powerpc
+        https://git.kernel.org/powerpc/c/71db948b9d2744e92124720f682ed2c26f0de75b
+[17/17] powerpc64/bpf: Add support for bpf trampolines
+        https://git.kernel.org/powerpc/c/d243b62b7bd3d5314382d3b54e4992226245e936
 
 cheers
 
