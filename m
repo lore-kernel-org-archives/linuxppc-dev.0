@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-3346-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3347-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AB22D68BF6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 00:24:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53C33D68BF6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 00:24:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrWhg2fr5z3bc2;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrWhg57jzz3bcp;
 	Sun, 17 Nov 2024 11:24:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731803043;
-	cv=none; b=SqCHMkMZLbU335yxTCaBfENes9r6OWmS6JWNjIp6Eybz8kc7ExZuxqkgVYqWY71cZ2cGKuDXgK9j+1xJf/P1Em3wxcRohArUJ3u74RNtOsq888C0RiT7hg8N3wDZzDgSUrL0y+facGXIJQlwaVHZBQv5RCqLLxAATm9GywK63q0LP17k1cGmPkao/n8CIm4IxbHu4cq9usfpqIOpmOnr2I3rgx5LXcj5TWDo76d7tLMmht5XX9SVbBQPAxAZTFN3s7Hl55Jpj/myGFn+qUxVvKeEg7CnUPVsFt4LbjhLs+F0du3pA1wOaIN+3Mwfa5xpanSl8bsrt1OYloucwdIE9A==
+	cv=none; b=mSu/4yXB0pmqFeVITLAvgfPzQXpbrNBoQwsppMKKCVD0/JddGRTcZx/PprjwHsKn6fYNaua92gkdCmcvIc+QYWPXTMRtFZWYGSRQq0SprUpggMwQY19w57irtBmx01XRQS+2KPSSC4AhnqKSZEucHNXtcin1SxIDMqxlhvB/ji8W8YskKJ9lZ5z8G6UN1NVHwqAZ5jZ27uBe9CpDKOAkEctPkwUopnMyTCSf/15/euaBtHe7yYr8+d4d/Id6oDq8XCdq6elp0mvTYSbHf17Rw10iVj2EuLj00ivurelrFMxoYwxfE49t4/d6apG+k3paiQW4Bm8FgTTSGD6OiPMe3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1731803043; c=relaxed/relaxed;
-	bh=yAN8HK+aWjw6CfG90vRrVXAtLb3YxlGruHf1lk/ZrF0=;
+	bh=VNd5doLllZLnuMrZy6MapxvGfZWJB/wkrZ2gUm+O9R0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=J0TzVmsgK4eNOBnA+pIzWOTDrh0qxX6sl4J1so6BhR3gwWvuPEIwiOTzkzcz1GqGVhmbbpGQL0FDNc741ybgXHk8sDsjBUMuW3dCmEhYBNdmRojoUJVadjulFCCIO/7Kx9h+Ms93VYyMu/vzQS6DIrcXP4ETIoxM17dcNPBmEDWupL80L682vDBfpbBLa3vif8r9Ae6fj0EF5VUJRL9yJvbWhHVDagseHaC/JC9cnTuaWyCXnEIXn9HzNCq7ryi/zXbYl6pPBvXOFvJG69roroFa5H5e5CTLKvRt8KBtRgqa5YT0/2RSvmtSoTNitdo/0aLrEX3C8FK03OsdWFsSFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f6ReEFx4; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=k9Hf85ORjiwqZsWsF/1Fh/XSBQvrk3T9u0neJWXKEe8W0vBjQhI/hBq8FhByEGh5i6IRDVOwqvHsbKsczJV5KZtPvzGDysuU7QCRf6ComxSLf/V2pLBSVY3b8PXh3BMUp0kJ67UTyPo/umsMGW213V5wGKg6wOZNgB0XDWnklHDpG4BCEehwqmgx28qbinkb8W0vsQVYhwLgWl2O0vIk3vLEQ7pkwvxK338mKCnQ2thgYblZGxIhnHXyx9pBNqq6ukf4cO91dlK/W4ZkVZIw2mf/mjP/3GiLBKejIGUwN8bkcggXJprOtqm9lHK94/iRR6p020sEgRVyVb0FbBOptw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B9o5GmY+; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f6ReEFx4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B9o5GmY+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrWhb1CBKz30CL
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrWhc32c7z3bWy
 	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 11:23:59 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 290145C56F4;
-	Sun, 17 Nov 2024 00:23:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF58EC4CEDC;
-	Sun, 17 Nov 2024 00:23:56 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 3437A5C56FC;
+	Sun, 17 Nov 2024 00:23:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DAE23C4CED7;
+	Sun, 17 Nov 2024 00:23:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1731803037;
-	bh=1JUku0y+4FR2wwQl/nc1RGyM0jOhmjqHDta/W8dcw9c=;
+	s=k20201202; t=1731803036;
+	bh=WxUhYnP1fx0cGeoy+OGHDs01GlaiqwZIcvRWEbAyWeg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=f6ReEFx4o4Q8D77Llzf7CuHJqbEPHYTJH4FTrVHpn8aXIiGiAwgiJBN/RWaeMVbLg
-	 2qn/OH0zrC+5+Mow0uSzPlYjDpjeMSRJcODlPCQCMAKD7WzFo82e9R+nkB59MjQSwQ
-	 6N+R2nYpcPXgpMTpkbWEAo6FxxW2LAelErPcwYO6oJ1IRFdf62j0s62BR1yKK9iSko
-	 hfHTHqFBVThZkTR5YT750/Z76v55ZSJe5UZSOoBQ11zTMur5dmS1XGG24n2MfTTpIM
-	 +KzUYeMjUe42rx9UrzF6oXVUpQqHHAm/lJT+JF6VPhpCK/+k4f3Uatz8rSNYSrkPM8
-	 OjSI1Cr1ixhoA==
+	b=B9o5GmY+34Ohxwq3v/3m8iIIBd0VOiuDairRoTYO8XVbdHG/H4vucvO/JboNkFZwZ
+	 Z4HgmywYB3qspA6mvIsnPKbZugBj9qczi1Gzf6hYCbn1sGcAnuSgvh266J0BYcXx/O
+	 P47n9PP/l4Q+AXh2O7o+LPlBOIqEPG9wB1zeELKFMHwomj+MJmEIlVO2mmUA84fTpK
+	 FOWn3BTEJjm2esi7YM35N4UuM1NmzG4cuEE35ZoMkmfqW2Eu1qoRcp4trKwr4pb/2a
+	 mYfx5AXpkwt5aABotk+f/65AoIICu2N5seykhLl/g4AXvq7yhwHXPuZbbJSLpp8v1r
+	 OVKC0YrhyjCMQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -53,9 +53,9 @@ Cc: linux-arch@vger.kernel.org,
 	x86@kernel.org,
 	Zhihang Shao <zhihang.shao.iscas@gmail.com>,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH 08/11] lib/crc_kunit.c: add KUnit test suite for CRC library functions
-Date: Sat, 16 Nov 2024 16:22:41 -0800
-Message-ID: <20241117002244.105200-9-ebiggers@kernel.org>
+Subject: [PATCH 06/11] arm64/crc-t10dif: expose CRC-T10DIF function through lib
+Date: Sat, 16 Nov 2024 16:22:39 -0800
+Message-ID: <20241117002244.105200-7-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241117002244.105200-1-ebiggers@kernel.org>
 References: <20241117002244.105200-1-ebiggers@kernel.org>
@@ -75,511 +75,365 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Add a KUnit test suite for the crc16, crc_t10dif, crc32_le, crc32_be,
-crc32c, and crc64_be library functions.  It avoids code duplication by
-sharing most logic among all CRC variants.  The test suite includes:
+Move the arm64 CRC-T10DIF assembly code into the lib directory and wire
+it up to the library interface.  This allows it to be used without going
+through the crypto API.  It remains usable via the crypto API too via
+the shash algorithms that use the library interface.  Thus all the
+arch-specific "shash" code becomes unnecessary and is removed.
 
-- Differential fuzz test of each CRC function against a simple
-  bit-at-a-time reference implementation.
-- Test for CRC combination, when implemented by a CRC variant.
-- Optional benchmark of each CRC function with various data lengths.
-
-This is intended as a replacement for crc32test as well as a new test
-for CRC variants which didn't previously have a test.
+Note: to see the diff from arch/arm64/crypto/crct10dif-ce-glue.c to
+arch/arm64/lib/crc-t10dif-glue.c, view this commit with 'git show -M10'.
 
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- lib/Kconfig.debug |  20 +++
- lib/Makefile      |   1 +
- lib/crc_kunit.c   | 428 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 449 insertions(+)
- create mode 100644 lib/crc_kunit.c
+ arch/arm64/Kconfig                            |   1 +
+ arch/arm64/configs/defconfig                  |   1 -
+ arch/arm64/crypto/Kconfig                     |  10 --
+ arch/arm64/crypto/Makefile                    |   3 -
+ arch/arm64/crypto/crct10dif-ce-glue.c         | 132 ------------------
+ arch/arm64/lib/Makefile                       |   3 +
+ .../crc-t10dif-core.S}                        |   0
+ arch/arm64/lib/crc-t10dif-glue.c              |  78 +++++++++++
+ .../testing/selftests/arm64/fp/kernel-test.c  |   3 +-
+ 9 files changed, 83 insertions(+), 148 deletions(-)
+ delete mode 100644 arch/arm64/crypto/crct10dif-ce-glue.c
+ rename arch/arm64/{crypto/crct10dif-ce-core.S => lib/crc-t10dif-core.S} (100%)
+ create mode 100644 arch/arm64/lib/crc-t10dif-glue.c
 
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 7312ae7c3cc5..c5f4b5827665 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -2828,10 +2828,30 @@ config HW_BREAKPOINT_KUNIT_TEST
- 	help
- 	  Tests for hw_breakpoint constraints accounting.
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 1e48f40f654e..44cdc7ccbc67 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -20,10 +20,11 @@ config ARM64
+ 	select ARCH_ENABLE_MEMORY_HOTREMOVE
+ 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
+ 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
+ 	select ARCH_HAS_CACHE_LINE_SIZE
+ 	select ARCH_HAS_CRC32
++	select ARCH_HAS_CRC_T10DIF if KERNEL_MODE_NEON
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VIRTUAL
+ 	select ARCH_HAS_DEBUG_VM_PGTABLE
+ 	select ARCH_HAS_DMA_OPS if XEN
+ 	select ARCH_HAS_DMA_PREP_COHERENT
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 5fdbfea7a5b2..5688fc4ec6e9 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -1689,11 +1689,10 @@ CONFIG_CRYPTO_SHA512_ARM64_CE=m
+ CONFIG_CRYPTO_SHA3_ARM64=m
+ CONFIG_CRYPTO_SM3_ARM64_CE=m
+ CONFIG_CRYPTO_AES_ARM64_CE_BLK=y
+ CONFIG_CRYPTO_AES_ARM64_BS=m
+ CONFIG_CRYPTO_AES_ARM64_CE_CCM=y
+-CONFIG_CRYPTO_CRCT10DIF_ARM64_CE=m
+ CONFIG_CRYPTO_DEV_SUN8I_CE=m
+ CONFIG_CRYPTO_DEV_FSL_CAAM=m
+ CONFIG_CRYPTO_DEV_FSL_DPAA2_CAAM=m
+ CONFIG_CRYPTO_DEV_QCE=m
+ CONFIG_CRYPTO_DEV_QCOM_RNG=m
+diff --git a/arch/arm64/crypto/Kconfig b/arch/arm64/crypto/Kconfig
+index e7d9bd8e4709..5636ab83f22a 100644
+--- a/arch/arm64/crypto/Kconfig
++++ b/arch/arm64/crypto/Kconfig
+@@ -310,17 +310,7 @@ config CRYPTO_SM4_ARM64_CE_GCM
+ 	  Architecture: arm64 using:
+ 	  - ARMv8 Crypto Extensions
+ 	  - PMULL (Polynomial Multiply Long) instructions
+ 	  - NEON (Advanced SIMD) extensions
  
- 	  If unsure, say N.
+-config CRYPTO_CRCT10DIF_ARM64_CE
+-	tristate "CRCT10DIF (PMULL)"
+-	depends on KERNEL_MODE_NEON && CRC_T10DIF
+-	select CRYPTO_HASH
+-	help
+-	  CRC16 CRC algorithm used for the T10 (SCSI) Data Integrity Field (DIF)
+-
+-	  Architecture: arm64 using
+-	  - PMULL (Polynomial Multiply Long) instructions
+-
+ endmenu
  
-+config CRC_KUNIT_TEST
-+	tristate "KUnit tests for CRC functions"
-+	depends on KUNIT
-+	default KUNIT_ALL_TESTS
-+	select CRC16
-+	select CRC_T10DIF
-+	select CRC32
-+	select CRC64
-+	help
-+	  Unit tests for the CRC library functions.
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+index fbe64dce66e0..e7139c4768ce 100644
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -42,13 +42,10 @@ obj-$(CONFIG_CRYPTO_GHASH_ARM64_CE) += ghash-ce.o
+ ghash-ce-y := ghash-ce-glue.o ghash-ce-core.o
+ 
+ obj-$(CONFIG_CRYPTO_POLYVAL_ARM64_CE) += polyval-ce.o
+ polyval-ce-y := polyval-ce-glue.o polyval-ce-core.o
+ 
+-obj-$(CONFIG_CRYPTO_CRCT10DIF_ARM64_CE) += crct10dif-ce.o
+-crct10dif-ce-y := crct10dif-ce-core.o crct10dif-ce-glue.o
+-
+ obj-$(CONFIG_CRYPTO_AES_ARM64_CE) += aes-ce-cipher.o
+ aes-ce-cipher-y := aes-ce-core.o aes-ce-glue.o
+ 
+ obj-$(CONFIG_CRYPTO_AES_ARM64_CE_CCM) += aes-ce-ccm.o
+ aes-ce-ccm-y := aes-ce-ccm-glue.o aes-ce-ccm-core.o
+diff --git a/arch/arm64/crypto/crct10dif-ce-glue.c b/arch/arm64/crypto/crct10dif-ce-glue.c
+deleted file mode 100644
+index 08bcbd884395..000000000000
+--- a/arch/arm64/crypto/crct10dif-ce-glue.c
++++ /dev/null
+@@ -1,132 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Accelerated CRC-T10DIF using arm64 NEON and Crypto Extensions instructions
+- *
+- * Copyright (C) 2016 - 2017 Linaro Ltd <ard.biesheuvel@linaro.org>
+- */
+-
+-#include <linux/cpufeature.h>
+-#include <linux/crc-t10dif.h>
+-#include <linux/init.h>
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/string.h>
+-
+-#include <crypto/internal/hash.h>
+-#include <crypto/internal/simd.h>
+-
+-#include <asm/neon.h>
+-#include <asm/simd.h>
+-
+-#define CRC_T10DIF_PMULL_CHUNK_SIZE	16U
+-
+-asmlinkage void crc_t10dif_pmull_p8(u16 init_crc, const u8 *buf, size_t len,
+-				    u8 out[16]);
+-asmlinkage u16 crc_t10dif_pmull_p64(u16 init_crc, const u8 *buf, size_t len);
+-
+-static int crct10dif_init(struct shash_desc *desc)
+-{
+-	u16 *crc = shash_desc_ctx(desc);
+-
+-	*crc = 0;
+-	return 0;
+-}
+-
+-static int crct10dif_update_pmull_p8(struct shash_desc *desc, const u8 *data,
+-			    unsigned int length)
+-{
+-	u16 *crcp = shash_desc_ctx(desc);
+-	u16 crc = *crcp;
+-	u8 buf[16];
+-
+-	if (length > CRC_T10DIF_PMULL_CHUNK_SIZE && crypto_simd_usable()) {
+-		kernel_neon_begin();
+-		crc_t10dif_pmull_p8(crc, data, length, buf);
+-		kernel_neon_end();
+-
+-		crc = 0;
+-		data = buf;
+-		length = sizeof(buf);
+-	}
+-
+-	*crcp = crc_t10dif_generic(crc, data, length);
+-	return 0;
+-}
+-
+-static int crct10dif_update_pmull_p64(struct shash_desc *desc, const u8 *data,
+-			    unsigned int length)
+-{
+-	u16 *crc = shash_desc_ctx(desc);
+-
+-	if (length >= CRC_T10DIF_PMULL_CHUNK_SIZE && crypto_simd_usable()) {
+-		kernel_neon_begin();
+-		*crc = crc_t10dif_pmull_p64(*crc, data, length);
+-		kernel_neon_end();
+-	} else {
+-		*crc = crc_t10dif_generic(*crc, data, length);
+-	}
+-
+-	return 0;
+-}
+-
+-static int crct10dif_final(struct shash_desc *desc, u8 *out)
+-{
+-	u16 *crc = shash_desc_ctx(desc);
+-
+-	*(u16 *)out = *crc;
+-	return 0;
+-}
+-
+-static struct shash_alg crc_t10dif_alg[] = {{
+-	.digestsize		= CRC_T10DIF_DIGEST_SIZE,
+-	.init			= crct10dif_init,
+-	.update			= crct10dif_update_pmull_p8,
+-	.final			= crct10dif_final,
+-	.descsize		= CRC_T10DIF_DIGEST_SIZE,
+-
+-	.base.cra_name		= "crct10dif",
+-	.base.cra_driver_name	= "crct10dif-arm64-neon",
+-	.base.cra_priority	= 150,
+-	.base.cra_blocksize	= CRC_T10DIF_BLOCK_SIZE,
+-	.base.cra_module	= THIS_MODULE,
+-}, {
+-	.digestsize		= CRC_T10DIF_DIGEST_SIZE,
+-	.init			= crct10dif_init,
+-	.update			= crct10dif_update_pmull_p64,
+-	.final			= crct10dif_final,
+-	.descsize		= CRC_T10DIF_DIGEST_SIZE,
+-
+-	.base.cra_name		= "crct10dif",
+-	.base.cra_driver_name	= "crct10dif-arm64-ce",
+-	.base.cra_priority	= 200,
+-	.base.cra_blocksize	= CRC_T10DIF_BLOCK_SIZE,
+-	.base.cra_module	= THIS_MODULE,
+-}};
+-
+-static int __init crc_t10dif_mod_init(void)
+-{
+-	if (cpu_have_named_feature(PMULL))
+-		return crypto_register_shashes(crc_t10dif_alg,
+-					       ARRAY_SIZE(crc_t10dif_alg));
+-	else
+-		/* only register the first array element */
+-		return crypto_register_shash(crc_t10dif_alg);
+-}
+-
+-static void __exit crc_t10dif_mod_exit(void)
+-{
+-	if (cpu_have_named_feature(PMULL))
+-		crypto_unregister_shashes(crc_t10dif_alg,
+-					  ARRAY_SIZE(crc_t10dif_alg));
+-	else
+-		crypto_unregister_shash(crc_t10dif_alg);
+-}
+-
+-module_cpu_feature_match(ASIMD, crc_t10dif_mod_init);
+-module_exit(crc_t10dif_mod_exit);
+-
+-MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
+-MODULE_DESCRIPTION("CRC-T10DIF using arm64 NEON and Crypto Extensions");
+-MODULE_LICENSE("GPL v2");
+-MODULE_ALIAS_CRYPTO("crct10dif");
+-MODULE_ALIAS_CRYPTO("crct10dif-arm64-ce");
+diff --git a/arch/arm64/lib/Makefile b/arch/arm64/lib/Makefile
+index 5fbcf0d56665..4d49dff721a8 100644
+--- a/arch/arm64/lib/Makefile
++++ b/arch/arm64/lib/Makefile
+@@ -14,10 +14,13 @@ endif
+ lib-$(CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE) += uaccess_flushcache.o
+ 
+ obj-$(CONFIG_CRC32_ARCH) += crc32-arm64.o
+ crc32-arm64-y := crc32.o crc32-glue.o
+ 
++obj-$(CONFIG_CRC_T10DIF_ARCH) += crc-t10dif-arm64.o
++crc-t10dif-arm64-y := crc-t10dif-glue.o crc-t10dif-core.o
 +
-+	  This is intended to help people writing architecture-specific
-+	  optimized versions.  If unsure, say N.
-+
-+config CRC_BENCHMARK
-+	bool "Benchmark for the CRC functions"
-+	depends on CRC_KUNIT_TEST
-+	help
-+	  Include benchmarks in the KUnit test suite for the CRC functions.
-+
- config SIPHASH_KUNIT_TEST
- 	tristate "Perform selftest on siphash functions" if !KUNIT_ALL_TESTS
- 	depends on KUNIT
- 	default KUNIT_ALL_TESTS
- 	help
-diff --git a/lib/Makefile b/lib/Makefile
-index 15646679aee2..75b0d4f583ed 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -384,10 +384,11 @@ obj-$(CONFIG_STACKINIT_KUNIT_TEST) += stackinit_kunit.o
- CFLAGS_fortify_kunit.o += $(call cc-disable-warning, unsequenced)
- CFLAGS_fortify_kunit.o += $(call cc-disable-warning, stringop-overread)
- CFLAGS_fortify_kunit.o += $(call cc-disable-warning, stringop-truncation)
- CFLAGS_fortify_kunit.o += $(DISABLE_STRUCTLEAK_PLUGIN)
- obj-$(CONFIG_FORTIFY_KUNIT_TEST) += fortify_kunit.o
-+obj-$(CONFIG_CRC_KUNIT_TEST) += crc_kunit.o
- obj-$(CONFIG_SIPHASH_KUNIT_TEST) += siphash_kunit.o
- obj-$(CONFIG_USERCOPY_KUNIT_TEST) += usercopy_kunit.o
+ obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
  
- obj-$(CONFIG_GENERIC_LIB_DEVMEM_IS_ALLOWED) += devmem_is_allowed.o
+ obj-$(CONFIG_ARM64_MTE) += mte.o
  
-diff --git a/lib/crc_kunit.c b/lib/crc_kunit.c
+ obj-$(CONFIG_KASAN_SW_TAGS) += kasan_sw_tags.o
+diff --git a/arch/arm64/crypto/crct10dif-ce-core.S b/arch/arm64/lib/crc-t10dif-core.S
+similarity index 100%
+rename from arch/arm64/crypto/crct10dif-ce-core.S
+rename to arch/arm64/lib/crc-t10dif-core.S
+diff --git a/arch/arm64/lib/crc-t10dif-glue.c b/arch/arm64/lib/crc-t10dif-glue.c
 new file mode 100644
-index 000000000000..e0536a3f544d
+index 000000000000..99058749db67
 --- /dev/null
-+++ b/lib/crc_kunit.c
-@@ -0,0 +1,428 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
++++ b/arch/arm64/lib/crc-t10dif-glue.c
+@@ -0,0 +1,78 @@
++// SPDX-License-Identifier: GPL-2.0-only
 +/*
-+ * Unit tests and benchmarks for the CRC library functions
++ * Accelerated CRC-T10DIF using arm64 NEON and Crypto Extensions instructions
 + *
-+ * Copyright 2024 Google LLC
-+ *
-+ * Author: Eric Biggers <ebiggers@google.com>
++ * Copyright (C) 2016 - 2017 Linaro Ltd <ard.biesheuvel@linaro.org>
 + */
-+#include <kunit/test.h>
-+#include <linux/crc16.h>
++
++#include <linux/cpufeature.h>
 +#include <linux/crc-t10dif.h>
-+#include <linux/crc32.h>
-+#include <linux/crc32c.h>
-+#include <linux/crc64.h>
-+#include <linux/prandom.h>
-+#include <linux/vmalloc.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/string.h>
 +
-+#define CRC_KUNIT_SEED			42
-+#define CRC_KUNIT_MAX_LEN		16384
-+#define CRC_KUNIT_NUM_TEST_ITERS	1000
++#include <crypto/internal/simd.h>
 +
-+static struct rnd_state rng;
-+static u8 *test_buffer;
-+static int test_buflen;
++#include <asm/neon.h>
++#include <asm/simd.h>
 +
-+/**
-+ * struct crc_variant - describes a CRC variant
-+ * @bits: Number of bits in the CRC, 1 <= @bits <= 64.
-+ * @le: true if it's a "little endian" CRC (reversed mapping between bits and
-+ *	polynomial coefficients in each byte), false if it's a "big endian" CRC
-+ *	(natural mapping between bits and polynomial coefficients in each byte)
-+ * @poly: The generator polynomial with the highest-order term omitted.
-+ *	  Bit-reversed if @le is true.
-+ * @func: The function to compute a CRC.  The type signature uses u64 so that it
-+ *	  can fit any CRC up to CRC-64.
-+ * @combine_func: Optional function to combine two CRCs.
-+ */
-+struct crc_variant {
-+	u64 poly;
-+	int bits;
-+	bool le;
-+	u64 (*func)(u64 crc, const void *p, size_t len);
-+	u64 (*combine_func)(u64 crc1, u64 crc2, size_t len2);
-+};
++static DEFINE_STATIC_KEY_FALSE(have_asimd);
++static DEFINE_STATIC_KEY_FALSE(have_pmull);
 +
-+static u32 rand32(void)
++#define CRC_T10DIF_PMULL_CHUNK_SIZE	16U
++
++asmlinkage void crc_t10dif_pmull_p8(u16 init_crc, const u8 *buf, size_t len,
++				    u8 out[16]);
++asmlinkage u16 crc_t10dif_pmull_p64(u16 init_crc, const u8 *buf, size_t len);
++
++u16 crc_t10dif_arch(u16 crc, const u8 *data, size_t length)
 +{
-+	return prandom_u32_state(&rng);
-+}
-+
-+static u64 rand64(void)
-+{
-+	u32 n = rand32();
-+
-+	return ((u64)n << 32) | rand32();
-+}
-+
-+static u64 crc_mask(const struct crc_variant *v)
-+{
-+	return (u64)-1 >> (64 - v->bits);
-+}
-+
-+/* Reference implementation of any CRC variant */
-+static u64 crc_ref(const struct crc_variant *v,
-+		   u64 crc, const u8 *p, size_t len)
-+{
-+	size_t i, j;
-+
-+	for (i = 0; i < len; i++) {
-+		for (j = 0; j < 8; j++) {
-+			if (v->le) {
-+				crc ^= (p[i] >> j) & 1;
-+				crc = (crc >> 1) ^ ((crc & 1) ? v->poly : 0);
-+			} else {
-+				crc ^= (u64)((p[i] >> (7 - j)) & 1) <<
-+				       (v->bits - 1);
-+				if (crc & (1ULL << (v->bits - 1)))
-+					crc = ((crc << 1) ^ v->poly) &
-+						crc_mask(v);
-+				else
-+					crc <<= 1;
-+			}
-+		}
++	if (length >= CRC_T10DIF_PMULL_CHUNK_SIZE &&
++	    static_branch_likely(&have_pmull) && crypto_simd_usable()) {
++		kernel_neon_begin();
++		crc = crc_t10dif_pmull_p64(crc, data, length);
++		kernel_neon_end();
++		return crc;
 +	}
-+	return crc;
++	if (length > CRC_T10DIF_PMULL_CHUNK_SIZE &&
++	    static_branch_likely(&have_asimd) && crypto_simd_usable()) {
++		u8 buf[16];
++
++		kernel_neon_begin();
++		crc_t10dif_pmull_p8(crc, data, length, buf);
++		kernel_neon_end();
++
++		crc = 0;
++		data = buf;
++		length = sizeof(buf);
++	}
++	return crc_t10dif_generic(crc, data, length);
 +}
++EXPORT_SYMBOL(crc_t10dif_arch);
 +
-+static int crc_suite_init(struct kunit_suite *suite)
++static int __init crc_t10dif_arm64_init(void)
 +{
-+	/*
-+	 * Allocate the test buffer using vmalloc() with a page-aligned length
-+	 * so that it is immediately followed by a guard page.  This allows
-+	 * buffer overreads to be detected, even in assembly code.
-+	 */
-+	test_buflen = round_up(CRC_KUNIT_MAX_LEN, PAGE_SIZE);
-+	test_buffer = vmalloc(test_buflen);
-+	if (!test_buffer)
-+		return -ENOMEM;
-+
-+	prandom_seed_state(&rng, CRC_KUNIT_SEED);
-+	prandom_bytes_state(&rng, test_buffer, test_buflen);
++	if (cpu_have_named_feature(ASIMD)) {
++		static_branch_enable(&have_asimd);
++		if (cpu_have_named_feature(PMULL))
++			static_branch_enable(&have_pmull);
++	}
 +	return 0;
 +}
++arch_initcall(crc_t10dif_arm64_init);
 +
-+/* Generate a random initial CRC. */
-+static u64 generate_random_initial_crc(const struct crc_variant *v)
++static void __exit crc_t10dif_arm64_exit(void)
 +{
-+	switch (rand32() % 4) {
-+	case 0:
-+		return 0;
-+	case 1:
-+		return crc_mask(v); /* All 1 bits */
-+	default:
-+		return rand64() & crc_mask(v);
-+	}
 +}
++module_exit(crc_t10dif_arm64_exit);
 +
-+/* Generate a random length, preferring small lengths. */
-+static size_t generate_random_length(size_t max_length)
++bool crc_t10dif_is_optimized(void)
 +{
-+	size_t len;
-+
-+	switch (rand32() % 3) {
-+	case 0:
-+		len = rand32() % 128;
-+		break;
-+	case 1:
-+		len = rand32() % 3072;
-+		break;
-+	default:
-+		len = rand32();
-+		break;
-+	}
-+	return len % (max_length + 1);
++	return static_key_enabled(&have_asimd);
 +}
++EXPORT_SYMBOL(crc_t10dif_is_optimized);
 +
-+static void crc_main_test(struct kunit *test, const struct crc_variant *v)
-+{
-+	size_t i;
-+
-+	for (i = 0; i < CRC_KUNIT_NUM_TEST_ITERS; i++) {
-+		u64 init_crc, expected_crc, actual_crc;
-+		size_t len, offset;
-+		bool nosimd;
-+
-+		init_crc = generate_random_initial_crc(v);
-+		len = generate_random_length(CRC_KUNIT_MAX_LEN);
-+
-+		/* Generate a random offset. */
-+		if (rand32() & 1) {
-+			/* Use a random alignment mod 64 */
-+			offset = rand32() % 64;
-+			offset = min(offset, CRC_KUNIT_MAX_LEN - len);
-+		} else {
-+			/* Go up to the guard page, to catch buffer overreads */
-+			offset = test_buflen - len;
-+		}
-+
-+		if (rand32() % 8 == 0)
-+			/* Refresh the data occasionally. */
-+			prandom_bytes_state(&rng, &test_buffer[offset], len);
-+
-+		nosimd = rand32() % 8 == 0;
-+
-+		/*
-+		 * Compute the CRC, and verify that it equals the CRC computed
-+		 * by a simple bit-at-a-time reference implementation.
-+		 */
-+		expected_crc = crc_ref(v, init_crc, &test_buffer[offset], len);
-+		if (nosimd)
-+			local_irq_disable();
-+		actual_crc = v->func(init_crc, &test_buffer[offset], len);
-+		if (nosimd)
-+			local_irq_enable();
-+		KUNIT_EXPECT_EQ_MSG(test, expected_crc, actual_crc,
-+				    "Wrong result with len=%zu offset=%zu nosimd=%d",
-+				    len, offset, nosimd);
-+	}
-+}
-+
-+static void crc_combine_test(struct kunit *test, const struct crc_variant *v)
-+{
-+	int i;
-+
-+	for (i = 0; i < 100; i++) {
-+		u64 init_crc = generate_random_initial_crc(v);
-+		size_t len1 = generate_random_length(CRC_KUNIT_MAX_LEN);
-+		size_t len2 = generate_random_length(CRC_KUNIT_MAX_LEN - len1);
-+		u64 crc1, crc2, expected_crc, actual_crc;
-+
-+		prandom_bytes_state(&rng, test_buffer, len1 + len2);
-+		crc1 = v->func(init_crc, test_buffer, len1);
-+		crc2 = v->func(0, &test_buffer[len1], len2);
-+		expected_crc = v->func(init_crc, test_buffer, len1 + len2);
-+		actual_crc = v->combine_func(crc1, crc2, len2);
-+		KUNIT_EXPECT_EQ_MSG(test, expected_crc, actual_crc,
-+				    "CRC combination gave wrong result with len1=%zu len2=%zu\n",
-+				    len1, len2);
-+	}
-+}
-+
-+static void crc_test(struct kunit *test, const struct crc_variant *v)
-+{
-+	crc_main_test(test, v);
-+	if (v->combine_func)
-+		crc_combine_test(test, v);
-+}
-+
-+static __always_inline void
-+crc_benchmark(struct kunit *test,
-+	      u64 (*crc_func)(u64 crc, const void *p, size_t len))
-+{
-+	static const size_t lens_to_test[] = {
-+		1, 16, 64, 127, 128, 200, 256, 511, 512, 1024, 3173, 4096, 16384,
-+	};
-+	size_t len, i, j, num_iters;
-+	/*
-+	 * Some of the CRC library functions are marked as __pure, so use
-+	 * volatile to ensure that all calls are really made as intended.
-+	 */
-+	volatile u64 crc = 0;
-+	u64 t;
-+
-+	if (!IS_ENABLED(CONFIG_CRC_BENCHMARK))
-+		kunit_skip(test, "not enabled");
-+
-+	preempt_disable();
-+
-+	/* warm-up */
-+	for (i = 0; i < 10000000; i += CRC_KUNIT_MAX_LEN)
-+		crc = crc_func(crc, test_buffer, CRC_KUNIT_MAX_LEN);
-+
-+	for (i = 0; i < ARRAY_SIZE(lens_to_test); i++) {
-+		len = lens_to_test[i];
-+		KUNIT_ASSERT_LE(test, len, CRC_KUNIT_MAX_LEN);
-+		num_iters = 10000000 / (len + 128);
-+		t = ktime_get_ns();
-+		for (j = 0; j < num_iters; j++)
-+			crc = crc_func(crc, test_buffer, len);
-+		t = ktime_get_ns() - t;
-+		kunit_info(test, "len=%zu: %llu MB/s\n",
-+			   len, div64_u64((u64)len * num_iters * 1000, t));
-+	}
-+
-+	preempt_enable();
-+}
-+
-+/* crc16 */
-+
-+static u64 crc16_wrapper(u64 crc, const void *p, size_t len)
-+{
-+	return crc16(crc, p, len);
-+}
-+
-+static const struct crc_variant crc_variant_crc16 = {
-+	.bits = 16,
-+	.le = true,
-+	.poly = 0xa001,
-+	.func = crc16_wrapper,
-+};
-+
-+static void crc16_test(struct kunit *test)
-+{
-+	crc_test(test, &crc_variant_crc16);
-+}
-+
-+static void crc16_benchmark(struct kunit *test)
-+{
-+	crc_benchmark(test, crc16_wrapper);
-+}
-+
-+/* crc_t10dif */
-+
-+static u64 crc_t10dif_wrapper(u64 crc, const void *p, size_t len)
-+{
-+	return crc_t10dif_update(crc, p, len);
-+}
-+
-+static const struct crc_variant crc_variant_crc_t10dif = {
-+	.bits = 16,
-+	.le = false,
-+	.poly = 0x8bb7,
-+	.func = crc_t10dif_wrapper,
-+};
-+
-+static void crc_t10dif_test(struct kunit *test)
-+{
-+	crc_test(test, &crc_variant_crc_t10dif);
-+}
-+
-+static void crc_t10dif_benchmark(struct kunit *test)
-+{
-+	crc_benchmark(test, crc_t10dif_wrapper);
-+}
-+
-+/* crc32_le */
-+
-+static u64 crc32_le_wrapper(u64 crc, const void *p, size_t len)
-+{
-+	return crc32_le(crc, p, len);
-+}
-+
-+static u64 crc32_le_combine_wrapper(u64 crc1, u64 crc2, size_t len2)
-+{
-+	return crc32_le_combine(crc1, crc2, len2);
-+}
-+
-+static const struct crc_variant crc_variant_crc32_le = {
-+	.bits = 32,
-+	.le = true,
-+	.poly = 0xedb88320,
-+	.func = crc32_le_wrapper,
-+	.combine_func = crc32_le_combine_wrapper,
-+};
-+
-+static void crc32_le_test(struct kunit *test)
-+{
-+	crc_test(test, &crc_variant_crc32_le);
-+}
-+
-+static void crc32_le_benchmark(struct kunit *test)
-+{
-+	crc_benchmark(test, crc32_le_wrapper);
-+}
-+
-+/* crc32_be */
-+
-+static u64 crc32_be_wrapper(u64 crc, const void *p, size_t len)
-+{
-+	return crc32_be(crc, p, len);
-+}
-+
-+static const struct crc_variant crc_variant_crc32_be = {
-+	.bits = 32,
-+	.le = false,
-+	.poly = 0x04c11db7,
-+	.func = crc32_be_wrapper,
-+};
-+
-+static void crc32_be_test(struct kunit *test)
-+{
-+	crc_test(test, &crc_variant_crc32_be);
-+}
-+
-+static void crc32_be_benchmark(struct kunit *test)
-+{
-+	crc_benchmark(test, crc32_be_wrapper);
-+}
-+
-+/* crc32c */
-+
-+static u64 crc32c_wrapper(u64 crc, const void *p, size_t len)
-+{
-+	return crc32c(crc, p, len);
-+}
-+
-+static u64 crc32c_combine_wrapper(u64 crc1, u64 crc2, size_t len2)
-+{
-+	return __crc32c_le_combine(crc1, crc2, len2);
-+}
-+
-+static const struct crc_variant crc_variant_crc32c = {
-+	.bits = 32,
-+	.le = true,
-+	.poly = 0x82f63b78,
-+	.func = crc32c_wrapper,
-+	.combine_func = crc32c_combine_wrapper,
-+};
-+
-+static void crc32c_test(struct kunit *test)
-+{
-+	crc_test(test, &crc_variant_crc32c);
-+}
-+
-+static void crc32c_benchmark(struct kunit *test)
-+{
-+	crc_benchmark(test, crc32c_wrapper);
-+}
-+
-+/* crc64_be */
-+
-+static u64 crc64_be_wrapper(u64 crc, const void *p, size_t len)
-+{
-+	return crc64_be(crc, p, len);
-+}
-+
-+static const struct crc_variant crc_variant_crc64_be = {
-+	.bits = 64,
-+	.le = false,
-+	.poly = 0x42f0e1eba9ea3693,
-+	.func = crc64_be_wrapper,
-+};
-+
-+static void crc64_be_test(struct kunit *test)
-+{
-+	crc_test(test, &crc_variant_crc64_be);
-+}
-+
-+static void crc64_be_benchmark(struct kunit *test)
-+{
-+	crc_benchmark(test, crc64_be_wrapper);
-+}
-+
-+static struct kunit_case crc_test_cases[] = {
-+	KUNIT_CASE(crc16_test),
-+	KUNIT_CASE(crc16_benchmark),
-+	KUNIT_CASE(crc_t10dif_test),
-+	KUNIT_CASE(crc_t10dif_benchmark),
-+	KUNIT_CASE(crc32_le_test),
-+	KUNIT_CASE(crc32_le_benchmark),
-+	KUNIT_CASE(crc32_be_test),
-+	KUNIT_CASE(crc32_be_benchmark),
-+	KUNIT_CASE(crc32c_test),
-+	KUNIT_CASE(crc32c_benchmark),
-+	KUNIT_CASE(crc64_be_test),
-+	KUNIT_CASE(crc64_be_benchmark),
-+	{},
-+};
-+
-+static struct kunit_suite crc_test_suite = {
-+	.name = "crc",
-+	.test_cases = crc_test_cases,
-+	.suite_init = crc_suite_init,
-+};
-+kunit_test_suite(crc_test_suite);
-+
-+MODULE_DESCRIPTION("Unit tests and benchmarks for the CRC library functions");
-+MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
++MODULE_DESCRIPTION("CRC-T10DIF using arm64 NEON and Crypto Extensions");
++MODULE_LICENSE("GPL v2");
+diff --git a/tools/testing/selftests/arm64/fp/kernel-test.c b/tools/testing/selftests/arm64/fp/kernel-test.c
+index e8da3b4cbd23..9d4c5cc5ae7e 100644
+--- a/tools/testing/selftests/arm64/fp/kernel-test.c
++++ b/tools/testing/selftests/arm64/fp/kernel-test.c
+@@ -44,12 +44,11 @@ static void handle_kick_signal(int sig, siginfo_t *info, void *context)
+ {
+ 	sigs++;
+ }
+ 
+ static char *drivers[] = {
+-	"crct10dif-arm64-ce",
+-	/* "crct10dif-arm64-neon", - Same priority as generic */
++	"crct10dif-arm64",
+ 	"sha1-ce",
+ 	"sha224-arm64",
+ 	"sha224-arm64-neon",
+ 	"sha224-ce",
+ 	"sha256-arm64",
 -- 
 2.47.0
 
