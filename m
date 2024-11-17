@@ -1,55 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3362-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3363-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98C6AD6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:25:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38850D6DDC3
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:25:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqhp4MP8z2yFD;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqhp6SJCz2ywM;
 	Sun, 17 Nov 2024 23:25:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846314;
-	cv=none; b=hwOy8Pw5wIfuYahUaXJDEoUCVlGXS2r+w+efcg+z9q+AZqbrRgIlDcvd7yams5myWvkh69lNPqqbH8W/rpdvLcjYhS/fQFGvcZZa7ucbrjwquzQTt8OgaRB6rgqxVhkdu6f1OD2LUodQMl4Fb9bxMpB56HZ+JFUHWt3+QHjwi6r2Lpc4mKCMaSjycQI1HFsEBd6NQugR8iUkUMVDurkwKV6QIqXGtc5990etBiYjDQvm5oT23QJthAOmX8WjnqDftd6z3zXC32ErJMsLEDgosszbBuoOY1m2TG2xMzwE2zLGNTvCVDWsIiAce+vDv2PfA0rHfBozBQguLa0X8RLGgQ==
+	cv=none; b=FP4Iphn5c+M29jJqkrRdMBjxmUtmPsyXY18zwYujn7iVhoqseF5G3kHAFYNBgbY8l2blE1pofPhXkxZqRp+naoBanmAHUl0Jz+TB/tj7codRZCyKg5Xy71AN/wjD+D/8sFnROW1uw9G/aNdZzzMinKjvscIlkCL0tq4zb0kp7lkWzU2zHFW1gHu/4qRgMYF2PB0Et7xBSaN6KzicNzTcbuDEVSg5iu9ce1jWJUAMPVI/4eB169Nf3m6KDPEkp6nZqBuA3Vm+t2PVVVIwhc7n/EkR1iS3x5gegWZxYNfw8vXTEcqWM7hvs6DnmV5dd8qkZw6a6pzK9aoeg27xU/sDxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1731846314; c=relaxed/relaxed;
-	bh=6YkDsmqGi/hDbdsOuh5XqzzF7DZLsS/qORhMUcP9Eyk=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=ivzVpbWnAUMrOE+4Cm0xCapKmwSBzG/zng7l9tJw6AMlnLij62sJRzrxUJ6aO/+0h0VtV7sZINh++A1PQpeR1aYi4ODzx0iKqnC1Oe+djzzmoUJifZm3Keui72+Krp/tQiHvCuLS0iYhZ2JTMbRWMHsLj/nlhBZFtAqaq+upQ9OQrUC8RRckJXq4Iv/bcy5yhaZgUICke+ip1ozje86/ckbPm1Oi1GdJqoVhKDIN+C2MFIzo9HP2bpzNZY/qyIDuPF4tah734s4oRayT2mR8RyDh71mbdN5aWtNtbV5v729c4gPCeZM3KFpvQfojKR3PT0B2n3SL2JXfIgKWiwazLg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SZ+D9dqR; dkim-atps=neutral
+	bh=ZtVZjHZpNMLRUjQi5h35hHsNEqKCZhuH0S+3ozdVAic=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=ldqHqGG0h61JXOW0nEkYZtfcLyxw60lqrYeuKVxGgTUVsAyviOf4oG0RC4xn47dnFUG94h/hyVXjHmA4mSA7FTpNv3+K/gBG0TUMSVgbevggG6fGdeV1rDmDYzEqRLMutI6Q36UHXfKc+VfKkIrt4FVuEOlO+7YOw3CQwz9X7318mugRhRtgL/ba8vPY5w6ZxFjzaUmj0L2T9IouhjoTopRkVXAAQbxh+DJzGq4WIcobnviawG0CISf4P6cQat4Ws4kqNXfo8CriZ5mmpFrnmdd5RHcXQPB8nSNmIT0J/WO4IgM9r/3jyz9utuOZpWEGzg9MsmdkWdyQAXyjNX1PNw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hSDV47H0; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SZ+D9dqR;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hSDV47H0;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqhn4cBDz2yM6
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqhp0hK6z2yVj
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:14 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846310;
-	bh=6YkDsmqGi/hDbdsOuh5XqzzF7DZLsS/qORhMUcP9Eyk=;
-	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=SZ+D9dqRPFNFDqEnlmPDb73O6ByGIla3lmIAPXvdXd3nk8YJb6Hr9l9dqBbfC5l6n
-	 7Q6rqXwRHneHEjiBm02F/ksBc4QEPlnBmdAR496ZnUYRFipt+6HOkfZ12NqlcqU9Rv
-	 U74DCDiPZT80b3ckHa0/0YrsQmM3H6Ur+kLrZEfnFzzneQcADOfFdvhamyJPiuiCLy
-	 25cCnVWDJSGzpHHRpyQ0CYSqJNa248w06Oz9aECfiavee3m2jUXaaFW6fh8eA6/DYe
-	 zJASxwyEHvnOIi+pwj1sC2wAuXOnwFQfp1oTYReNPNSs0f/npgc73LKXIGM3Hikrh4
-	 +4x5oUosj/xhw==
+	s=201909; t=1731846311;
+	bh=ZtVZjHZpNMLRUjQi5h35hHsNEqKCZhuH0S+3ozdVAic=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=hSDV47H0eD+7XS/3nGedPptWFN9AhomQxWk2sNvmdaeUi5uvsKpJcOSDj6II2JPos
+	 Xua/MldRgW+De/0LMIn1cW7+mCyZuCI4rtTNooLvXMALcEHH33zb5hRmGLgmE1REXQ
+	 onMQEoQU8IqiKQ9M9EiAzxeUQbV7YOzpC800mG/esXdW+c148ufAHxLls/oR02x6YB
+	 fncbmELipMtjqabvH9U6Kt3x5Mei5UqTlfXtNzSNZ/O/h7rUDwP/OW7dNrFdlZvJfj
+	 1daXFx3yfbMgWD7AMzBkrNXOMFtY56fXINBItNbuL+TGfgtZFsIE+BwXqZueH3wHEc
+	 bwsLBlRPz/IZQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhk2Yrgz4xD9;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqhk73vWz4xdm;
 	Sun, 17 Nov 2024 23:25:10 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Ming Lei <ming.lei@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Costa Shulyupin <costa.shul@redhat.com>
-In-Reply-To: <20240926092623.399577-2-costa.shul@redhat.com>
-References: <20240926092623.399577-2-costa.shul@redhat.com>
-Subject: Re: [PATCH v2] powerpc/xive: Use cpumask_intersects()
-Message-Id: <173184539764.890800.12646623251156657066.b4-ty@ellerman.id.au>
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Naveen N Rao <naveen@kernel.org>, David Hunter <david.hunter.linux@gmail.com>
+Cc: julia.lawall@inria.fr, skhan@linuxfoundation.org, javier.carrasco.cruz@gmail.com
+In-Reply-To: <20240709143553.117053-1-david.hunter.linux@gmail.com>
+References: <20240709143553.117053-1-david.hunter.linux@gmail.com>
+Subject: Re: [PATCH] powerpc-km82xx.c: replace of_node_put with __free improves cleanup
+Message-Id: <173184539769.890800.11654652895579463795.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -66,21 +67,20 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 26 Sep 2024 12:26:22 +0300, Costa Shulyupin wrote:
-> Replace `cpumask_any_and(a, b) >= nr_cpu_ids`
-> with the more readable `!cpumask_intersects(a, b)`.
+On Tue, 09 Jul 2024 10:35:53 -0400, David Hunter wrote:
+> The use of the __free function allows the cleanup to be based on scope
+> instead of on another function called later. This makes the cleanup
+> automatic and less susceptible to errors later.
 > 
-> Comparison between cpumask_any_and() and cpumask_intersects()
+> This code was compiled without errors or warnings.
 > 
-> The cpumask_any_and() function expands using FIND_FIRST_BIT(),
-> resulting in a loop that iterates through each bit of the bitmask:
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/xive: Use cpumask_intersects()
-      https://git.kernel.org/powerpc/c/6da1cab4f5f8eb778fd61f0eb6ca5b0a011dd44d
+[1/1] powerpc-km82xx.c: replace of_node_put with __free improves cleanup
+      https://git.kernel.org/powerpc/c/4aa5cc1e0012f784bc7f637458e597564833b425
 
 cheers
 
