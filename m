@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-3349-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3350-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50BE8D68BF6
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 00:24:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 177C5D68BFA
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 00:25:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrWhh5VFvz3bfc;
-	Sun, 17 Nov 2024 11:24:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731803044;
-	cv=none; b=aeWXUaECp4HttSueA/tZyXf/cIvKqWsMKTA2gqyiYshq2KsN1OrIFzI2rlPgjnCoP1vLDY3fgqQXLLuNCqxjpE7MLXKZy82wIMMpX45NsoNJV0uUl+VxS3zPIgoD3H4vLUeCA2nKapWFQjKPNB62z2rVwtvW/yQWDPVfgpHv6Cc6ysh7sckLLmP6P9oYvvX7JDob2oX7IFrqwdcsAmKqqr1qzFozcIzIyeadH3p7Q4/SvoNJk2h4MKN2qM3qbjhGbeqO1EwahxQHvQv7ErBK+H6OgPGswJE6SpPjstu7hYqhr/WxLKNNbRHAPvF77FMbtBdwAKYyacqyYFP0MyvyTA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrWhj522Tz3bXD;
+	Sun, 17 Nov 2024 11:24:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731803045;
+	cv=none; b=glCgVeir4gAG162JJzd17sw2XU6WgkOzoZN1WcY99UNowiZb0czS9Z+2zLh9KmrkQ/5NNsYetITEsQDQx/7LiBw1sH5BGUlbU3eOx+XXJo7a8GpXTpbR2xCXfKrR4jV/hX2zuO0OcUnhzEnyChT3rozNfhwMk7TAIE/k8THO9iiJARfwG7LIkD0KIbX3hL3MYbDreglQhlawtPLKjN0FxdtZVrqduiUIQrrfOr2iIuwfnKjkunoDh8zTfiaLz06fGLjFDT+78uQBxHlc9Zvc15XCnU+cf++I25y6b1uN1cFUiFwdfJXtqApUKTRUHqBgcYboNUlrJNJp6mT3s4NUMA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731803044; c=relaxed/relaxed;
-	bh=ubc8ywWqqJtfBJB+DkSxcnDQzUiOAwPhzOak0dWHAuM=;
+	t=1731803045; c=relaxed/relaxed;
+	bh=BvEXWqKK+pGQWpjDdPq8RyfPUrVlkUPlYSwpNxrBFsE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gW8L9VfNzclGnFOU5BaV5eD5/8re/AAWBJMK9uW9lEs5WB8XYFogywImtYLd/ZKSco/wK+nTfzwfMPwR0mVyu7S53+FvDhS/uDwfcPCOXllmACImrQMdG4tRdCZSGg7v+VyvMoXwAhleB4ZN2JoTxRmf5+7w60Y4F2lj9Odly88IwHpXPFPbY5Ns2X7GyFsKpOQPkCFQheuBVzmQqXpHKnbAFP0g+YetCT231nXgJFgGQzj/Dtd0AngqzGlGEeK+DDL03Z+ze+wSPqa05YTzXuM+VLJTRKyedoiqt7IpxSk/XWT5OYaecLpTEhHWonfXSIVm08epvB5VudxXlbAFrA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KEihOEeZ; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=C+zJ7bXeiXpQiro+vLxf8IJ7KD/MK8Po7OMPo+zXvdOSDeFKhNruuZq9R99FzYaWRtcg2dZT8/CBpkJnm4it4QHnwBYxkC5wTa7WJXR8DFChjlYNIOWCLN2ZFj6gyjWD3dom+80tgo/th0WqJRRtRhirJxf2X1A2CbwKikS2l//1zQ6CvYuQTaQLgLze2xPkdSfpqaKGlSz/DmdxcOZLLzy12gtVcYylMSor5CFocKBqDa45VIwTnpWkrneINqql61s3juHezr9YOhXodjEDoT4DhvBhFofN6n4mJourrUgSjbYA4MqYnyRnWCkzKiDTRZgH0N6qfkRehv/JrxsNpg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m17zfdcU; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KEihOEeZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m17zfdcU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrWhc4z9hz3bXD
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 11:23:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrWhd2fvfz3bYN
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 11:24:01 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 216855C5670;
-	Sun, 17 Nov 2024 00:23:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D37CCC4CEC3;
-	Sun, 17 Nov 2024 00:23:57 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 17EF3A40C3D;
+	Sun, 17 Nov 2024 00:22:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 702A8C4CEC3;
+	Sun, 17 Nov 2024 00:23:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1731803038;
-	bh=L8iJ9JStDTqpmtdnZloUKPKtnPySgcuceskFsXeoeLQ=;
+	s=k20201202; t=1731803035;
+	bh=HgR1LEY3VEIzOlaLOqyuvwljcBVjiL79uYLCzgDKDDY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=KEihOEeZ9pps1Gmhd03DWXm2C9+PD1QlRllHUMri7/q2NQvuv0/RFaVQWNRbEW8oW
-	 BtUyHKZRQZi1Tz2zk1m+P1LsHGo9Hv1HtqBFLY974f/LLQt7LPGuUwlFeQrWL3UBed
-	 KxIf0qSTOsaup8AqhiXce7laYg2kjw4/wYEDCbfAv9UfzR3lx8slmqYw/THIALTrjO
-	 akw/eb3eXF18JfGYvONTeKAQJfP7V50dgIo1sa0UQ294tqk3vH/DRDN+I8oDNku1Hx
-	 FTkU7VkZkR6TdhFCuDMLz7ZDDT3BatSTPmOZWO/yq4jRu0FYj9IUG7TH7YJwlj31Uz
-	 XzKKBvHnTL8bw==
+	b=m17zfdcUmnOLe8DQbOyMMXD3CE0kIL6HKxvxjId6ZFnU5PJfVjkVnxBFz1Wwrb4b1
+	 mA4o87HzsC0Gs3CxAXgAGmSv8ASzgPT3F8pvz0GQ+3lSqegRpXWzwSCN/Ay+nsrEOG
+	 Vk2vzTn2Z+wI6fwh/Ds3+g46FyHJlPImUj+ZAD/7gXPfZN5oSQ0wbxrqgzZ3edp1oB
+	 ucPc/xBWdsnOYCcwH0cwEIb02rutjadO2VRpIW2BdVxrPwN28zxN3Jx0+5oY8GNTqT
+	 rO4kR78EKtwAyV/3YXp4M/fDJ7L6HsVb0DsWP5iDaPLuhORb2+ryZZvrzxH96Eb4Zl
+	 FCFLLc9bGXmnA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -53,9 +53,9 @@ Cc: linux-arch@vger.kernel.org,
 	x86@kernel.org,
 	Zhihang Shao <zhihang.shao.iscas@gmail.com>,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH 10/11] powerpc/crc: delete obsolete crc-vpmsum_test.c
-Date: Sat, 16 Nov 2024 16:22:43 -0800
-Message-ID: <20241117002244.105200-11-ebiggers@kernel.org>
+Subject: [PATCH 05/11] arm/crc-t10dif: expose CRC-T10DIF function through lib
+Date: Sat, 16 Nov 2024 16:22:38 -0800
+Message-ID: <20241117002244.105200-6-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241117002244.105200-1-ebiggers@kernel.org>
 References: <20241117002244.105200-1-ebiggers@kernel.org>
@@ -75,213 +75,326 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Delete crc-vpmsum_test.c, since its functionality is now covered by the
-new crc_kunit.c as well as the crypto subsystem's fuzz tests.
+Move the arm CRC-T10DIF assembly code into the lib directory and wire it
+up to the library interface.  This allows it to be used without going
+through the crypto API.  It remains usable via the crypto API too via
+the shash algorithms that use the library interface.  Thus all the
+arch-specific "shash" code becomes unnecessary and is removed.
+
+Note: to see the diff from arch/arm/crypto/crct10dif-ce-glue.c to
+arch/arm/lib/crc-t10dif-glue.c, view this commit with 'git show -M10'.
 
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/powerpc/configs/ppc64_defconfig  |   1 -
- arch/powerpc/crypto/Kconfig           |   9 --
- arch/powerpc/crypto/Makefile          |   1 -
- arch/powerpc/crypto/crc-vpmsum_test.c | 133 --------------------------
- 4 files changed, 144 deletions(-)
- delete mode 100644 arch/powerpc/crypto/crc-vpmsum_test.c
+ arch/arm/Kconfig                              |   1 +
+ arch/arm/crypto/Kconfig                       |  11 --
+ arch/arm/crypto/Makefile                      |   2 -
+ arch/arm/crypto/crct10dif-ce-glue.c           | 124 ------------------
+ arch/arm/lib/Makefile                         |   3 +
+ .../crc-t10dif-core.S}                        |   0
+ arch/arm/lib/crc-t10dif-glue.c                |  77 +++++++++++
+ 7 files changed, 81 insertions(+), 137 deletions(-)
+ delete mode 100644 arch/arm/crypto/crct10dif-ce-glue.c
+ rename arch/arm/{crypto/crct10dif-ce-core.S => lib/crc-t10dif-core.S} (100%)
+ create mode 100644 arch/arm/lib/crc-t10dif-glue.c
 
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index ec91e0104713..c6445c2b3131 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -388,11 +388,10 @@ CONFIG_CRYPTO_TWOFISH=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_LZO=m
--CONFIG_CRYPTO_VPMSUM_TESTER=m
- CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_SHA1_PPC=m
- CONFIG_CRYPTO_AES_GCM_P10=m
- CONFIG_CRYPTO_DEV_NX=y
- CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
-diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
-index 90ac79513923..e48d23fb7ea5 100644
---- a/arch/powerpc/crypto/Kconfig
-+++ b/arch/powerpc/crypto/Kconfig
-@@ -11,19 +11,10 @@ config CRYPTO_CURVE25519_PPC64
- 	  Curve25519 algorithm
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 851260303234..b9081b1a0c06 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -6,10 +6,11 @@ config ARM
+ 	select ARCH_CORRECT_STACKTRACE_ON_KRETPROBE if HAVE_KRETPROBES && FRAME_POINTER && !ARM_UNWIND
+ 	select ARCH_HAS_BINFMT_FLAT
+ 	select ARCH_HAS_CPU_CACHE_ALIASING
+ 	select ARCH_HAS_CPU_FINALIZE_INIT if MMU
+ 	select ARCH_HAS_CRC32 if KERNEL_MODE_NEON
++	select ARCH_HAS_CRC_T10DIF if KERNEL_MODE_NEON
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VIRTUAL if MMU
+ 	select ARCH_HAS_DMA_ALLOC if MMU
+ 	select ARCH_HAS_DMA_OPS
+ 	select ARCH_HAS_DMA_WRITE_COMBINE if !ARM_DMA_MEM_BUFFERABLE
+diff --git a/arch/arm/crypto/Kconfig b/arch/arm/crypto/Kconfig
+index ea0ebf336d0d..32650c8431d9 100644
+--- a/arch/arm/crypto/Kconfig
++++ b/arch/arm/crypto/Kconfig
+@@ -220,18 +220,7 @@ config CRYPTO_CHACHA20_NEON
+ 	  stream cipher algorithms
  
- 	  Architecture: PowerPC64
- 	  - Little-endian
+ 	  Architecture: arm using:
+ 	  - NEON (Advanced SIMD) extensions
  
--config CRYPTO_VPMSUM_TESTER
--	tristate "CRC32c and CRC32T10DIF hardware acceleration tester"
--	depends on CRYPTO_CRC32C && CRC32_ARCH
--	depends on CRYPTO_CRCT10DIF && CRC_T10DIF_ARCH
+-config CRYPTO_CRCT10DIF_ARM_CE
+-	tristate "CRCT10DIF"
+-	depends on KERNEL_MODE_NEON
+-	depends on CRC_T10DIF
+-	select CRYPTO_HASH
 -	help
--	  Stress test for CRC32c and CRCT10DIF algorithms implemented with
--	  powerpc64 AltiVec extensions (POWER8 vpmsum instructions).
--	  Unless you are testing these algorithms, you don't need this.
+-	  CRC16 CRC algorithm used for the T10 (SCSI) Data Integrity Field (DIF)
 -
- config CRYPTO_MD5_PPC
- 	tristate "Digests: MD5"
- 	depends on PPC
- 	select CRYPTO_HASH
- 	help
-diff --git a/arch/powerpc/crypto/Makefile b/arch/powerpc/crypto/Makefile
-index d2238ac7e52c..9b38f4a7bc15 100644
---- a/arch/powerpc/crypto/Makefile
-+++ b/arch/powerpc/crypto/Makefile
-@@ -8,11 +8,10 @@
- obj-$(CONFIG_CRYPTO_AES_PPC_SPE) += aes-ppc-spe.o
- obj-$(CONFIG_CRYPTO_MD5_PPC) += md5-ppc.o
- obj-$(CONFIG_CRYPTO_SHA1_PPC) += sha1-powerpc.o
- obj-$(CONFIG_CRYPTO_SHA1_PPC_SPE) += sha1-ppc-spe.o
- obj-$(CONFIG_CRYPTO_SHA256_PPC_SPE) += sha256-ppc-spe.o
--obj-$(CONFIG_CRYPTO_VPMSUM_TESTER) += crc-vpmsum_test.o
- obj-$(CONFIG_CRYPTO_AES_GCM_P10) += aes-gcm-p10-crypto.o
- obj-$(CONFIG_CRYPTO_CHACHA20_P10) += chacha-p10-crypto.o
- obj-$(CONFIG_CRYPTO_POLY1305_P10) += poly1305-p10-crypto.o
- obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
- obj-$(CONFIG_CRYPTO_CURVE25519_PPC64) += curve25519-ppc64le.o
-diff --git a/arch/powerpc/crypto/crc-vpmsum_test.c b/arch/powerpc/crypto/crc-vpmsum_test.c
+-	  Architecture: arm using:
+-	  - PMULL (Polynomial Multiply Long) instructions
+-
+ endmenu
+ 
+diff --git a/arch/arm/crypto/Makefile b/arch/arm/crypto/Makefile
+index 38ec5cc1e844..3d0e23ff9e74 100644
+--- a/arch/arm/crypto/Makefile
++++ b/arch/arm/crypto/Makefile
+@@ -18,11 +18,10 @@ obj-$(CONFIG_CRYPTO_CURVE25519_NEON) += curve25519-neon.o
+ 
+ obj-$(CONFIG_CRYPTO_AES_ARM_CE) += aes-arm-ce.o
+ obj-$(CONFIG_CRYPTO_SHA1_ARM_CE) += sha1-arm-ce.o
+ obj-$(CONFIG_CRYPTO_SHA2_ARM_CE) += sha2-arm-ce.o
+ obj-$(CONFIG_CRYPTO_GHASH_ARM_CE) += ghash-arm-ce.o
+-obj-$(CONFIG_CRYPTO_CRCT10DIF_ARM_CE) += crct10dif-arm-ce.o
+ 
+ aes-arm-y	:= aes-cipher-core.o aes-cipher-glue.o
+ aes-arm-bs-y	:= aes-neonbs-core.o aes-neonbs-glue.o
+ sha1-arm-y	:= sha1-armv4-large.o sha1_glue.o
+ sha1-arm-neon-y	:= sha1-armv7-neon.o sha1_neon_glue.o
+@@ -34,11 +33,10 @@ libblake2s-arm-y:= blake2s-core.o blake2s-glue.o
+ blake2b-neon-y  := blake2b-neon-core.o blake2b-neon-glue.o
+ sha1-arm-ce-y	:= sha1-ce-core.o sha1-ce-glue.o
+ sha2-arm-ce-y	:= sha2-ce-core.o sha2-ce-glue.o
+ aes-arm-ce-y	:= aes-ce-core.o aes-ce-glue.o
+ ghash-arm-ce-y	:= ghash-ce-core.o ghash-ce-glue.o
+-crct10dif-arm-ce-y	:= crct10dif-ce-core.o crct10dif-ce-glue.o
+ chacha-neon-y := chacha-scalar-core.o chacha-glue.o
+ chacha-neon-$(CONFIG_KERNEL_MODE_NEON) += chacha-neon-core.o
+ poly1305-arm-y := poly1305-core.o poly1305-glue.o
+ nhpoly1305-neon-y := nh-neon-core.o nhpoly1305-neon-glue.o
+ curve25519-neon-y := curve25519-core.o curve25519-glue.o
+diff --git a/arch/arm/crypto/crct10dif-ce-glue.c b/arch/arm/crypto/crct10dif-ce-glue.c
 deleted file mode 100644
-index c61a874a3a5c..000000000000
---- a/arch/powerpc/crypto/crc-vpmsum_test.c
+index a8b74523729e..000000000000
+--- a/arch/arm/crypto/crct10dif-ce-glue.c
 +++ /dev/null
-@@ -1,133 +0,0 @@
+@@ -1,124 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * CRC vpmsum tester
-- * Copyright 2017 Daniel Axtens, IBM Corporation.
+- * Accelerated CRC-T10DIF using ARM NEON and Crypto Extensions instructions
+- *
+- * Copyright (C) 2016 Linaro Ltd <ard.biesheuvel@linaro.org>
 - */
 -
 -#include <linux/crc-t10dif.h>
--#include <linux/crc32.h>
--#include <crypto/internal/hash.h>
 -#include <linux/init.h>
--#include <linux/module.h>
--#include <linux/random.h>
--#include <linux/string.h>
 -#include <linux/kernel.h>
--#include <linux/cpufeature.h>
--#include <asm/switch_to.h>
+-#include <linux/module.h>
+-#include <linux/string.h>
 -
--static unsigned long iterations = 10000;
+-#include <crypto/internal/hash.h>
+-#include <crypto/internal/simd.h>
 -
--#define MAX_CRC_LENGTH 65535
+-#include <asm/neon.h>
+-#include <asm/simd.h>
 -
+-#define CRC_T10DIF_PMULL_CHUNK_SIZE	16U
 -
--static int __init crc_test_init(void)
+-asmlinkage u16 crc_t10dif_pmull64(u16 init_crc, const u8 *buf, size_t len);
+-asmlinkage void crc_t10dif_pmull8(u16 init_crc, const u8 *buf, size_t len,
+-				  u8 out[16]);
+-
+-static int crct10dif_init(struct shash_desc *desc)
 -{
--	u16 crc16 = 0, verify16 = 0;
--	__le32 verify32le = 0;
--	unsigned char *data;
--	u32 verify32 = 0;
--	unsigned long i;
--	__le32 crc32;
--	int ret;
+-	u16 *crc = shash_desc_ctx(desc);
 -
--	struct crypto_shash *crct10dif_tfm;
--	struct crypto_shash *crc32c_tfm;
+-	*crc = 0;
+-	return 0;
+-}
 -
--	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
--		return -ENODEV;
+-static int crct10dif_update_ce(struct shash_desc *desc, const u8 *data,
+-			       unsigned int length)
+-{
+-	u16 *crc = shash_desc_ctx(desc);
 -
--	data = kmalloc(MAX_CRC_LENGTH, GFP_KERNEL);
--	if (!data)
--		return -ENOMEM;
--
--	crct10dif_tfm = crypto_alloc_shash("crct10dif", 0, 0);
--
--	if (IS_ERR(crct10dif_tfm)) {
--		pr_err("Error allocating crc-t10dif\n");
--		goto free_buf;
+-	if (length >= CRC_T10DIF_PMULL_CHUNK_SIZE && crypto_simd_usable()) {
+-		kernel_neon_begin();
+-		*crc = crc_t10dif_pmull64(*crc, data, length);
+-		kernel_neon_end();
+-	} else {
+-		*crc = crc_t10dif_generic(*crc, data, length);
 -	}
--
--	crc32c_tfm = crypto_alloc_shash("crc32c", 0, 0);
--
--	if (IS_ERR(crc32c_tfm)) {
--		pr_err("Error allocating crc32c\n");
--		goto free_16;
--	}
--
--	do {
--		SHASH_DESC_ON_STACK(crct10dif_shash, crct10dif_tfm);
--		SHASH_DESC_ON_STACK(crc32c_shash, crc32c_tfm);
--
--		crct10dif_shash->tfm = crct10dif_tfm;
--		ret = crypto_shash_init(crct10dif_shash);
--
--		if (ret) {
--			pr_err("Error initing crc-t10dif\n");
--			goto free_32;
--		}
--
--
--		crc32c_shash->tfm = crc32c_tfm;
--		ret = crypto_shash_init(crc32c_shash);
--
--		if (ret) {
--			pr_err("Error initing crc32c\n");
--			goto free_32;
--		}
--
--		pr_info("crc-vpmsum_test begins, %lu iterations\n", iterations);
--		for (i=0; i<iterations; i++) {
--			size_t offset = get_random_u32_below(16);
--			size_t len = get_random_u32_below(MAX_CRC_LENGTH);
--
--			if (len <= offset)
--				continue;
--			get_random_bytes(data, len);
--			len -= offset;
--
--			crypto_shash_update(crct10dif_shash, data+offset, len);
--			crypto_shash_final(crct10dif_shash, (u8 *)(&crc16));
--			verify16 = crc_t10dif_generic(verify16, data+offset, len);
--
--
--			if (crc16 != verify16) {
--				pr_err("FAILURE in CRC16: got 0x%04x expected 0x%04x (len %lu)\n",
--				       crc16, verify16, len);
--				break;
--			}
--
--			crypto_shash_update(crc32c_shash, data+offset, len);
--			crypto_shash_final(crc32c_shash, (u8 *)(&crc32));
--			verify32 = le32_to_cpu(verify32le);
--		        verify32le = ~cpu_to_le32(__crc32c_le(~verify32, data+offset, len));
--			if (crc32 != verify32le) {
--				pr_err("FAILURE in CRC32: got 0x%08x expected 0x%08x (len %lu)\n",
--				       crc32, verify32, len);
--				break;
--			}
--		cond_resched();
--		}
--		pr_info("crc-vpmsum_test done, completed %lu iterations\n", i);
--	} while (0);
--
--free_32:
--	crypto_free_shash(crc32c_tfm);
--
--free_16:
--	crypto_free_shash(crct10dif_tfm);
--
--free_buf:
--	kfree(data);
 -
 -	return 0;
 -}
 -
--static void __exit crc_test_exit(void) {}
+-static int crct10dif_update_neon(struct shash_desc *desc, const u8 *data,
+-			         unsigned int length)
+-{
+-	u16 *crcp = shash_desc_ctx(desc);
+-	u8 buf[16] __aligned(16);
+-	u16 crc = *crcp;
 -
--module_init(crc_test_init);
--module_exit(crc_test_exit);
--module_param(iterations, long, 0400);
+-	if (length > CRC_T10DIF_PMULL_CHUNK_SIZE && crypto_simd_usable()) {
+-		kernel_neon_begin();
+-		crc_t10dif_pmull8(crc, data, length, buf);
+-		kernel_neon_end();
 -
--MODULE_AUTHOR("Daniel Axtens <dja@axtens.net>");
--MODULE_DESCRIPTION("Vector polynomial multiply-sum CRC tester");
--MODULE_LICENSE("GPL");
+-		crc = 0;
+-		data = buf;
+-		length = sizeof(buf);
+-	}
+-
+-	*crcp = crc_t10dif_generic(crc, data, length);
+-	return 0;
+-}
+-
+-static int crct10dif_final(struct shash_desc *desc, u8 *out)
+-{
+-	u16 *crc = shash_desc_ctx(desc);
+-
+-	*(u16 *)out = *crc;
+-	return 0;
+-}
+-
+-static struct shash_alg algs[] = {{
+-	.digestsize		= CRC_T10DIF_DIGEST_SIZE,
+-	.init			= crct10dif_init,
+-	.update			= crct10dif_update_neon,
+-	.final			= crct10dif_final,
+-	.descsize		= CRC_T10DIF_DIGEST_SIZE,
+-
+-	.base.cra_name		= "crct10dif",
+-	.base.cra_driver_name	= "crct10dif-arm-neon",
+-	.base.cra_priority	= 150,
+-	.base.cra_blocksize	= CRC_T10DIF_BLOCK_SIZE,
+-	.base.cra_module	= THIS_MODULE,
+-}, {
+-	.digestsize		= CRC_T10DIF_DIGEST_SIZE,
+-	.init			= crct10dif_init,
+-	.update			= crct10dif_update_ce,
+-	.final			= crct10dif_final,
+-	.descsize		= CRC_T10DIF_DIGEST_SIZE,
+-
+-	.base.cra_name		= "crct10dif",
+-	.base.cra_driver_name	= "crct10dif-arm-ce",
+-	.base.cra_priority	= 200,
+-	.base.cra_blocksize	= CRC_T10DIF_BLOCK_SIZE,
+-	.base.cra_module	= THIS_MODULE,
+-}};
+-
+-static int __init crc_t10dif_mod_init(void)
+-{
+-	if (!(elf_hwcap & HWCAP_NEON))
+-		return -ENODEV;
+-
+-	return crypto_register_shashes(algs, 1 + !!(elf_hwcap2 & HWCAP2_PMULL));
+-}
+-
+-static void __exit crc_t10dif_mod_exit(void)
+-{
+-	crypto_unregister_shashes(algs, 1 + !!(elf_hwcap2 & HWCAP2_PMULL));
+-}
+-
+-module_init(crc_t10dif_mod_init);
+-module_exit(crc_t10dif_mod_exit);
+-
+-MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
+-MODULE_DESCRIPTION("Accelerated CRC-T10DIF using ARM NEON and Crypto Extensions");
+-MODULE_LICENSE("GPL v2");
+-MODULE_ALIAS_CRYPTO("crct10dif");
+diff --git a/arch/arm/lib/Makefile b/arch/arm/lib/Makefile
+index 01cd4db2ed47..007874320937 100644
+--- a/arch/arm/lib/Makefile
++++ b/arch/arm/lib/Makefile
+@@ -46,5 +46,8 @@ endif
+ 
+ obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
+ 
+ obj-$(CONFIG_CRC32_ARCH) += crc32-arm.o
+ crc32-arm-y := crc32-glue.o crc32-core.o
++
++obj-$(CONFIG_CRC_T10DIF_ARCH) += crc-t10dif-arm.o
++crc-t10dif-arm-y := crc-t10dif-glue.o crc-t10dif-core.o
+diff --git a/arch/arm/crypto/crct10dif-ce-core.S b/arch/arm/lib/crc-t10dif-core.S
+similarity index 100%
+rename from arch/arm/crypto/crct10dif-ce-core.S
+rename to arch/arm/lib/crc-t10dif-core.S
+diff --git a/arch/arm/lib/crc-t10dif-glue.c b/arch/arm/lib/crc-t10dif-glue.c
+new file mode 100644
+index 000000000000..70d391d1b697
+--- /dev/null
++++ b/arch/arm/lib/crc-t10dif-glue.c
+@@ -0,0 +1,77 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Accelerated CRC-T10DIF using ARM NEON and Crypto Extensions instructions
++ *
++ * Copyright (C) 2016 Linaro Ltd <ard.biesheuvel@linaro.org>
++ */
++
++#include <linux/crc-t10dif.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/string.h>
++
++#include <crypto/internal/simd.h>
++
++#include <asm/neon.h>
++#include <asm/simd.h>
++
++static DEFINE_STATIC_KEY_FALSE(have_neon);
++static DEFINE_STATIC_KEY_FALSE(have_pmull);
++
++#define CRC_T10DIF_PMULL_CHUNK_SIZE	16U
++
++asmlinkage u16 crc_t10dif_pmull64(u16 init_crc, const u8 *buf, size_t len);
++asmlinkage void crc_t10dif_pmull8(u16 init_crc, const u8 *buf, size_t len,
++				  u8 out[16]);
++
++u16 crc_t10dif_arch(u16 crc, const u8 *data, size_t length)
++{
++	if (length >= CRC_T10DIF_PMULL_CHUNK_SIZE &&
++	    static_branch_likely(&have_pmull) && crypto_simd_usable()) {
++		kernel_neon_begin();
++		crc = crc_t10dif_pmull64(crc, data, length);
++		kernel_neon_end();
++		return crc;
++	}
++	if (length > CRC_T10DIF_PMULL_CHUNK_SIZE &&
++	    static_branch_likely(&have_neon) && crypto_simd_usable()) {
++		u8 buf[16] __aligned(16);
++
++		kernel_neon_begin();
++		crc_t10dif_pmull8(crc, data, length, buf);
++		kernel_neon_end();
++
++		crc = 0;
++		data = buf;
++		length = sizeof(buf);
++	}
++	return crc_t10dif_generic(crc, data, length);
++}
++EXPORT_SYMBOL(crc_t10dif_arch);
++
++static int __init crc_t10dif_arm_init(void)
++{
++	if (elf_hwcap & HWCAP_NEON) {
++		static_branch_enable(&have_neon);
++		if (elf_hwcap2 & HWCAP2_PMULL)
++			static_branch_enable(&have_pmull);
++	}
++	return 0;
++}
++arch_initcall(crc_t10dif_arm_init);
++
++static void __exit crc_t10dif_arm_exit(void)
++{
++}
++module_exit(crc_t10dif_arm_exit);
++
++bool crc_t10dif_is_optimized(void)
++{
++	return static_key_enabled(&have_neon);
++}
++EXPORT_SYMBOL(crc_t10dif_is_optimized);
++
++MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
++MODULE_DESCRIPTION("Accelerated CRC-T10DIF using ARM NEON and Crypto Extensions");
++MODULE_LICENSE("GPL v2");
 -- 
 2.47.0
 
