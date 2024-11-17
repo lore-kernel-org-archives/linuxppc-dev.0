@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8896BD6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10D8ED6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:28:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjH46qlz2yLT;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjH5wGCz3bsJ;
 	Sun, 17 Nov 2024 23:25:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846339;
-	cv=none; b=ngh8qKjbh3rnmNb99fCedSs1VOI7thnQfpCOSPugc/IM1zHmdOb5vehxjVp+9eVi9fDddw10/guiFTJ5FfxRf4fyGWOQNwHs932kYXF4zWJl5I+FsKsuJ6v8WOHLxLQd7SZ/ZeWxqAtgUpAB6QlnwCsAbv1OVfun/VryrQvK1BdlN+i/mQj0saoKyWZAv45adUUYYrGHxWofUYYbqi/1/tR+cCbm+4a/P8EfZjDiq8TZRn8WJ17X9jeUEfj2krxpLvUY7DuWAiWemUIpLu7/v4HsBvN3gph3ujnvckpj4ALrpjo+rVLbKTMuW6bjcTI6CDcmf82vcKYb+JMpgUb6LA==
+	cv=none; b=KZW1hncZuac7OP+cFTa9o0Ig3eseJlr8VpLmxA1JO0rvDgREVdiRTxSqch6B0jPgD0TVNERrfjiKU9LREM+ZFNsTlVfZ8OLi4T24uWWCbv/PJ7I8SHJFQ7F6rTGk4UAQmCQwrVgXJLJciThEod8Z05XXZzyVfZ6AXuqvvv0KzgbwFODq2v6DhXQHUT5JMQ/4RsGooj1rwEmks4RIY4HYP7PZl4KCOU9sY5BT519H799DAqCR9e6sGE2xYhPrMFp6gbtbJ9u0Pk5eR7dfqw6OAQeR0cMEWxybtfbOK01y9nrRDpe+z627a1xg7fr9oOFNOkTAa08ZyZU/1Lx8olNJyQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1731846339; c=relaxed/relaxed;
-	bh=Z5aRpQSJyAn7kaPIQ+8BIKi8SL2NVVYdH6QgQNoa8rM=;
+	bh=i6DhGeGkGvC4VAr1zXIDNglBtiqEoiBLTPJdD8L8FBg=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=WYYt8kwr+G4SBqPrMRKBkHIOm0PF/YoAae9EQEBHQAo7L6IFGtEokRNQccTbNczvRpK5o9a/7Y3CT9Cq3JaEvgQtsE2/hU05edGKzuv8Tk4zudkB7q+pbdOHusxtXFlr0vwmzeI+poE+iF/OAFmfdsKqKmjsYy47A01vKIjcdDWa2sPk4QNytHdYCh2qUOuXdyZuXF5U0Rgy752wgGDD6cVpXF4btJXM6nMO2LqS4dgJpaxmyA6V/4wk6X7Fs9teGyOGKX1E/B+4vE83z9ZLs8EmomtTJ4ukWc5k+7K5/WcEfN4FPNgr7hpQwDL5631mzwPXsGpfO9P1LJEtdTV17A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BIrLZ6K4; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=WkshEyrJfjSBYvNVtfqZZPTMWwFODZuTsWy6Vi5AkDKsxcWuluHTyTQMM41u2J2o+tzfpQdSzgj/RKQ7twpg8c0HPTxDt2coIzkM0yha/FtVF/l2VVBgxMuKS+FOJWP+GnkpTWnwLCZJi6AoAc/pd7Awt7UnLTEv16/TeRU54LppuocikB6fJ8wBNZucFzT2TSAhI95Fx5WoVB/MuFiaOFHPybqTVP0u9Ojop/M5uB3J008vJgqko90TupMyEaf8J7v09CzAye+QOl8ZsnSRr6I4CWrhmX7aJ8d46+BonwUgHtBKYwXsHW8Qt2eIOaK4bXObBg4rS6XITer0ST5fiA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iCfv/red; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BIrLZ6K4;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iCfv/red;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjF5GrYz3bqm
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjF1q4Jz3bqC
 	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:37 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1731846334;
-	bh=Z5aRpQSJyAn7kaPIQ+8BIKi8SL2NVVYdH6QgQNoa8rM=;
+	bh=i6DhGeGkGvC4VAr1zXIDNglBtiqEoiBLTPJdD8L8FBg=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=BIrLZ6K4TjilwIC8ZUM6+VF/KE+AJQ0faXUD7G8BWhhlJfQN2ybpU9fxO+PVju4ru
-	 0hfudrhRIt2YLomYXScM6HFCb7U42GURiiZ0MrTKa2vDl8NVtZAHqqGDS5Hkqgfbar
-	 owHGasJ9/boBc7E5sM/R3PpBh4UtrPxtB5DKHAwi3N4XkLemW98yw76+0kKJS8q4wU
-	 oFPaLB5Tt9DSm1XUintORuQrJ51WnWN0EcIwhiXUEbS7edzVXL+8AVJcWNIm81SG5l
-	 HMx6RrXKdo0j8vbMDsL0RTRNDWiUm0J9I+w9lJ//l4X4bClCPla/TtlB3065haVzyP
-	 vvBqirIGYtcgw==
+	b=iCfv/redZINruq1CGLGirFkbQWXrREfAsn4I8yoa0MxIXuvbtDivFD5beaBn4TZiT
+	 I8K6U9jexYhifBLeh2vM4y6unv9s2wewHgrdb/jdqjEEQgJWJGnEmLg9PF1uqfdEiM
+	 ddEXjTmaxipXSvgo+ke+aism7VQCMSHIXysAJ8JIoi3b4oERD9xGReOusUIbKScQsr
+	 /Mk9bhB9e/tgC2t0tbn0IhCEFDlSqSERbErko/bj26fwGPhn1Gkb+U3hACRID6uyN7
+	 1KhS8RQAUXtacacNynSQus0i5IHipD0XifhTBfkT5rs8TrngGeK6ukyJ/PdPDws2qQ
+	 hMW/fzDgRr5og==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4XrqjB5GBgz4xfd;
-	Sun, 17 Nov 2024 23:25:34 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj96v2mz4xf9;
+	Sun, 17 Nov 2024 23:25:33 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Hari Bathini <hbathini@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20241107055817.489795-1-sourabhjain@linux.ibm.com>
-References: <20241107055817.489795-1-sourabhjain@linux.ibm.com>
-Subject: Re: [PATCH v2 1/2] powerpc/fadump: allocate memory for additional parameters early
-Message-Id: <173184539746.890800.1383337121035968913.b4-ty@ellerman.id.au>
+To: geoff@infradead.org, mpe@ellerman.id.au, Shen Lichuan <shenlichuan@vivo.com>
+Cc: npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, opensource.kernel@vivo.com
+In-Reply-To: <20240930023234.7457-1-shenlichuan@vivo.com>
+References: <20240930023234.7457-1-shenlichuan@vivo.com>
+Subject: Re: [PATCH v1] ps3: Correct some typos in comments
+Message-Id: <173184539768.890800.1864207122324653089.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,24 +67,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 07 Nov 2024 11:28:16 +0530, Sourabh Jain wrote:
-> Memory for passing additional parameters to fadump capture kernel
-> is allocated during subsys_initcall level, using memblock. But
-> as slab is already available by this time, allocation happens via
-> the buddy allocator. This may work for radix MMU but is likely to
-> fail in most cases for hash MMU as hash MMU needs this memory in
-> the first memory block for it to be accessible in real mode in the
-> capture kernel (second boot). So, allocate memory for additional
-> parameters area as soon as MMU mode is obvious.
+On Mon, 30 Sep 2024 10:32:34 +0800, Shen Lichuan wrote:
+> Fixed some confusing typos that were currently identified with codespell,
+> the details are as follows:
+> 
+> -in the code comments:
+> drivers/ps3/ps3-lpm.c:94: rigths ==> rights
+> drivers/ps3/ps3-sys-manager.c:365: acnowledge ==> acknowledge
+> drivers/ps3/ps3-vuart.c:470: remaning ==> remaining
+> drivers/ps3/ps3-vuart.c:471: transmision ==> transmission
+> drivers/ps3/sys-manager-core.c:15: Staticly ==> Statically
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/fadump: allocate memory for additional parameters early
-      https://git.kernel.org/powerpc/c/f4892c68ecc1cf45e41a78820dd2eebccc945b66
-[2/2] fadump: reserve param area if below boot_mem_top
-      https://git.kernel.org/powerpc/c/fb90dca828b6070709093934c6dec56489a2d91d
+[1/1] ps3: Correct some typos in comments
+      https://git.kernel.org/powerpc/c/e9d3270007b13acd34de4256970ffe457efc6c65
 
 cheers
 
