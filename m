@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3381-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3382-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 672D2D6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C8C5D6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjF0MnKz3bpn;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XrqjF4dp1z3bqZ;
 	Sun, 17 Nov 2024 23:25:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846336;
-	cv=none; b=HnTwEPL+pCh5uQ6N7Xm39JUNdJNcEjJuaTf4/VtfQd3H+0YQTaL3xFpMkLLjE1RqxIir8TvKsbOZjsGx2eBXCN490iXA/n8yX5V5PLPLJq3ofI06Gu45HotHmw4SEOt2J7maL/OCxyHb7wtNvHrwfvrLZRhBwBmGLkSarhtXk0pojpWgjlX9ViIylwwcDMeIKBMbaY1pSM3ZuY1dPgyZ3q5xuAfVhAqRH+hzrh5194FvZaCwujw41GbSZKrnUwdfOAwapntKbtNsxC5yXKLbfo9CFfiAH2fi+K2sEDRHaPowaBq5+aGtpbXZ/mMYJlXqrZQt9ioI0526hgHyIVAzvA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846337;
+	cv=none; b=inXO8ZqccXxhmBNecMWMOn7V69RDMpUmZSP2GrFyQ40ui2SnYwv+hjFkoQ1AX3nJM56E1Coa5cHHtRf/sSSCwDEz1dYzlg2JmCGZGKl5fcmPpAZMYO9IeaizzGjjA9pUj1OXyNWbyvnPOEnYNh9GCAyDYoNESTmrU1PllEyie/PtggIgqqEYaKEZFSndxDfW7v14ZF/Z3GV41psGwLseH85E9VLdAOUbhh+zeCyq7Tc9zYfoEnwmmto3OEoL8KBXj+IvM+Wjw+VP+WddYlxR92doYRKMeMtVNwqdpjRFJHXOSCNdJ5lpTvxFobkpNk2Inwh7StR4zTC11LE39LFjtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731846336; c=relaxed/relaxed;
-	bh=ivoElLl6v01dXn3j88D2JzVuA8zDCUIbPPKgg72fH4U=;
+	t=1731846337; c=relaxed/relaxed;
+	bh=svz/+d/BJbQJVr4DFdXqf+eDPKB8KH697JjZEyodgdM=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=CTabwHvmjpCvFVXbTb9COwFH0PBG9K/aL1Gaq65WI7MrhK+eunEXapoeClqZHeTNKHUgAnsF/sOGbk/OMDZElAUGZEG7w4FIYQO1oAoAsU740y8YbYU7lT8PHTwjaQQktn5u5Zsd+4ZFB6CSh3tO5oaLcqJlkGIq8/RzKB4bZzPQ2Soz7PeFpqVfaDuuz8Eeb6lW4UX+1Zk2RaBOUyftb8LpaX05A7dJ5iRHuDkLmsRb7oQLxPHGPoOfvnUdIN7+XfakhBq2G0ev+lUaqd0g+FN8A8K3sWz3etEwMF5GQeXMH+OFai3Uh9yuuRncSvFElze8F5+m8y6i7fkrGZHeCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jddM0Hic; dkim-atps=neutral
+	 MIME-Version:Content-Type; b=ec4j7AZcwy9T3IFutUQ6o+sDEBvRxKEcbBGzUReOWqNsl54hU1G315VdLDyGfQDiN3S8NOKOTZPJ6gGxO+pJivEyE4+eVufkYTydDO4o65/OYtCCiXSmcZQ0HjhtW4SH/lDKNQS1LvADKvH5p3WLjMKd3LHLSja2C1nbzj9i6sS5HOkQCBx1aj1iLApexOQsWN/hX9Gnd1p4KefJ+QoTtBY3U2hpgviGx+YiqMVE1V+OjugAlKMrRJffW6Fi/BTrpst+0IBYljZrLdFyS08PKkbra34ao0CoAPlDbWSnokWi4egCPIKcr2SIFaJHEUX4JGmqfZV0GNejwxzcJ7dB4w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Yhfn3sOt; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=jddM0Hic;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Yhfn3sOt;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjC1cw1z3bnB
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XrqjC3L3zz3bnc
 	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1731846332;
-	bh=ivoElLl6v01dXn3j88D2JzVuA8zDCUIbPPKgg72fH4U=;
+	bh=svz/+d/BJbQJVr4DFdXqf+eDPKB8KH697JjZEyodgdM=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=jddM0HicZ6glVWTVoexDcRGDtEPZfSdXC7PSUXrPxmgesfCZ2mwmnvfWGKtSBOGVE
-	 iXieeSBAr/q0k6Bz1u6q7Sl+d815QqpV9yXMhzWX4UlRIVOF51A3kQHz44ZAfFWhC6
-	 866nTk/LG/jkUUfdGNTEZbPe3tgAYV4aLpqY5YvZA2vyDy3xhK1AOkL1xpYhe998dx
-	 hi5LceFRxk8yPcizRFgj9lgIMC9zNr8Jlc47ExTwxayHgrCHKVLsvYPWymHw6djMqk
-	 /Zqc9VP5nVkoBikYSzX6kfE4pqaTZczuq+VWIoMn/vEEI+B3PP9V1nt0SeTZZ7kfoX
-	 oZjVswpgJPv/A==
+	b=Yhfn3sOtyEA0XnfnDCm2IXtldZDpbHEtVH2KhJmZIGo4M37GpbIOn1yBDho+Et1As
+	 tM7DlcTqTjUQEtu2++BkGsPrjKoBygEgwgq9KGzNSZh1nd4D9gGz+pOB9JOLQPgmmE
+	 Njq8Lxr1pwOx931dne9hEyIsAN+N6zLn7/FhtDRbbtXI8OGtxUgrNJCg/Q3pjeSLw9
+	 GwQRlcSwZmnmqRIXOymUMPKkGJKCw2p3HSXhvAU6CEDaX9WWq/Q+/owGIIsIszVmi7
+	 zm4zpIuyV8z/nPzqusVsuuU0ddC95ElmY0Rti9mwxOtpB0colXNfbr9YekS1TH/NR7
+	 xsPV+41XUhC6w==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj76vXHz4xfV;
-	Sun, 17 Nov 2024 23:25:31 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj83FZvz4xfW;
+	Sun, 17 Nov 2024 23:25:32 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nathan Chancellor <nathan@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev, patches@lists.linux.dev, stable@vger.kernel.org
-In-Reply-To: <20241030-powerpc-vdso-drop-stackp-flags-clang-v1-1-d95e7376d29c@kernel.org>
-References: <20241030-powerpc-vdso-drop-stackp-flags-clang-v1-1-d95e7376d29c@kernel.org>
-Subject: Re: [PATCH] powerpc/vdso: Drop -mstack-protector-guard flags in 32-bit files with clang
-Message-Id: <173184539742.890800.7357374459961481947.b4-ty@ellerman.id.au>
+To: geoff@infradead.org, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Paulo Miguel Almeida <paulo.miguel.almeida.rodenas@gmail.com>
+Cc: linux-hardening@vger.kernel.org
+In-Reply-To: <ZxMV3YvSulJFZ8rk@mail.google.com>
+References: <ZxMV3YvSulJFZ8rk@mail.google.com>
+Subject: Re: [PATCH][next] powerpc/ps3: replace open-coded sysfs_emit function
+Message-Id: <173184539744.890800.11374052691484660203.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,20 +67,18 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 30 Oct 2024 11:41:37 -0700, Nathan Chancellor wrote:
-> Under certain conditions, the 64-bit '-mstack-protector-guard' flags may
-> end up in the 32-bit vDSO flags, resulting in build failures due to the
-> structure of clang's argument parsing of the stack protector options,
-> which validates the arguments of the stack protector guard flags
-> unconditionally in the frontend, choking on the 64-bit values when
-> targeting 32-bit:
+On Sat, 19 Oct 2024 15:13:49 +1300, Paulo Miguel Almeida wrote:
+> sysfs_emit() helper function should be used when formatting the value
+> to be returned to user space.
 > 
-> [...]
+> This patch replaces open-coded sysfs_emit() in sysfs .show() callbacks
+> 
+> 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/vdso: Drop -mstack-protector-guard flags in 32-bit files with clang
-      https://git.kernel.org/powerpc/c/d677ce521334d8f1f327cafc8b1b7854b0833158
+[1/1] powerpc/ps3: replace open-coded sysfs_emit function
+      https://git.kernel.org/powerpc/c/2866949ec889cf383c481119c617b9cead733070
 
 cheers
 
