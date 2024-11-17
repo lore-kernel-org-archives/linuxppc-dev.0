@@ -1,55 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-3376-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3377-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C887CD6DDC0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:26:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A3A6D6DDC0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Nov 2024 12:27:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqj91lWBz3blk;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xrqj959vgz3bmH;
 	Sun, 17 Nov 2024 23:25:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731846333;
-	cv=none; b=Kv+r//tbBJogbdFdv4mbJUD4KizhN3o3gqRCxgYFvazBWoe2SaH2Yp/SY1vU8SAqnJ0Ay299AOCZsGlPZb+RPI6CsSWbEARyZvZailfMYgJuf6dyJW566K0AcN0362ZqCNZ62UWKX5z8QxUa/hXdUVZqMvzAhz9FO1Ap2pHBgHtEI1ttZWJnaSSl5AipK0Td3lttDE8r/opG9Rishsk0T/S5IlJC2JrMRZ2saguRqjbLFBrGn4MswXE3iWvqUn5gOK69eGG8MQflkGBgvXmFfHk3kcLNkGGsENLik2ExtBp99LHVWPbpGCgeDGYgN4hozMORIBpWxPrf4Vv4kqVCaQ==
+	cv=none; b=CPiJikol4PrS7yLYIjaTZ2ETlndBXUMiJgRRM1BEmD4UkdLk8O/NZgl43jsKc19q95amw/OkHkl8J4t0TpUbuG08tZyNrVjkb8binMjuClvtoV2mmTVtF66fihqaR3xzOcxydP1TOP/e9d8cqZcqK+MdvovxFMz7g0VaWf4o989rqoQBCKpoeU9tO2Enxmg6m1p4sDbylj/yq3lZabdMMH7a+DFgxgrmJXS3bSDQjJgpwcpug5IJrEIdwmJDykr5ogGem9JjqJxNp6qhCGAh+vJ/DkPrCe6GWJHLHX8O1/j8M1p0rrVQZohYJHLWM8AKxbAk0QzAWmDPi/8AaVAQGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1731846333; c=relaxed/relaxed;
-	bh=hcx7Si3RCicXp8+LBuexcRjVWYdmVOGZhHAmvk7MWsE=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=opXUc/uqibj4/tygXg7RubAezgeWMRWMfZO4WYqT1D4cc3i4T4fxIg53ohDBjsQlAzbQNlK5ZnYsVZ9A+5LZqQ+YnPqZZ8SeMzCIy4T1uV3D4glAC6gS1ST3dedKz5xIS/opKOXpAaXYeTPgFaT61es7OBeyYqRh/aXZSrgugmX7L33Z8GaHAkcX2P4NTTS86JxlLgcZkLNVzOg169440b4maKr1nHn/Ob5UoKnG39GQc7eoKgTUVlpEhvh21+GmonrTNPBF/8UlzYvoRW9/byecu27Sbvf4c8liMs9E4VCMoYzlh7gBp6ydoDoyemkTW2cLCOXVcBjNNDoZZ5sx/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=J1HK1P+V; dkim-atps=neutral
+	bh=aXyR/Ch+acH1z3w4Y7Uh5VcfZXGef7QI5DXt6mlTtSY=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=izsvZOmxWd8ZRYcJPMay3OOy89ZAZfJMdhO6kR21eL44KLQkQrbIuQWZ24MXkg+xIJ1FXeeZpmqM+p09SjF8BdWhbf99A3RkuXU+0939b9WXmDTilgxkuOwkizU+qWmKNzev4jjjfvqAGiMuN3JM9yx3ni6tuSOpZXFHD5K1os9Nk9KTBvA4uQga7Tpb/tajkwEdr0hloVvLcPvpSw62bnkgIihEc5+qrqbiIxEX2JPk3fim+ASpbTIXafGqp42wYkLscpJ6oOWgu7ehYzuWNSKOK18tkK8L1vRa91Nc+clV3BcSlfk3+fcc2l+n1G9/DFP5fzkQvVt9MAxF5KSAVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Gqw0Ma7m; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=J1HK1P+V;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Gqw0Ma7m;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqj83t0pz3blH
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xrqj86tRgz3blR
 	for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Nov 2024 23:25:32 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1731846329;
-	bh=hcx7Si3RCicXp8+LBuexcRjVWYdmVOGZhHAmvk7MWsE=;
-	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=J1HK1P+VSoHqpL0EJh72wsa677a12MfBJFBurd4Q3M7O1PYTtGYlp8kulZcNwgPs3
-	 5W22HLM2dFas5ArcB6IE0VTNMJCORwh8BVVVqP4K/Fd7xhmwB3IVwzYI+0omOrDPzc
-	 ylE1Ok2SpY3GNAuWKXFHnJEMqx0LPFp0824PXJ3QCjunPEelHv7nZO2DZliigOSwFM
-	 bV/hdS77z0pwTLuiAlNMLdOHLqeh7TzsWubc07VkzSPR4b0VjZM9ZYE/P7Mh9WNEzT
-	 5w1R7LuhOm3CPmSm/6tYWW3C11v3E3YZmi9xyabC0ZKT7COcuIY7qrJmneWSMxUwrR
-	 L5P3RCZoJJDcA==
+	s=201909; t=1731846330;
+	bh=aXyR/Ch+acH1z3w4Y7Uh5VcfZXGef7QI5DXt6mlTtSY=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=Gqw0Ma7mCHDIbZ5n+Gzn/n6c5x8qpn5E4FLC97VnksgzCq77cNS4pHniYf/5Dhwc8
+	 AyizIgbplsPHV7qyUeqrmeNybZ+eInOmOAFnx7SL2i+ykPARM1xAsiKRwfwWnPwT2/
+	 rVR5ztrvmmgV/l8KA/PSrTm4zU6qmrtpZM14bQIL3ywNn19lkrmf2t16rMqNWG5qHe
+	 Ic0yx9Nz+Dvx9Du/uwol28NZhfvK9tbebif51iJtvn80iZChLVl5R5sGx7m2PAPvd8
+	 b5/RXTgcMqUe6TytQ8Ml7Fs065g4j/vgbc/XkCvUwkSDDUoOoxP1PRrIMWf8VXIeqE
+	 3c0TPwuX3IDaw==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj53G0cz4xfN;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Xrqj56vLQz4xdT;
 	Sun, 17 Nov 2024 23:25:29 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20241112114805.453894-1-mpe@ellerman.id.au>
-References: <20241112114805.453894-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/cell: Remove dead extern declaration for spu_priv1_beat_ops
-Message-Id: <173184539748.890800.4302309984042672758.b4-ty@ellerman.id.au>
+Cc: naveen@kernel.org, hbathini@linux.ibm.com
+In-Reply-To: <20241107111630.31068-1-mpe@ellerman.id.au>
+References: <20241107111630.31068-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/ftrace: Fix ftrace bug with KASAN=y
+Message-Id: <173184539746.890800.15351753362406379111.b4-ty@ellerman.id.au>
 Date: Sun, 17 Nov 2024 23:09:57 +1100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -66,16 +67,38 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 12 Nov 2024 22:48:05 +1100, Michael Ellerman wrote:
-> spu_priv1_beat_ops were removed in commit bf4981a00636 ("powerpc: Remove
-> the celleb support"), remove the unneeded extern.
+On Thu, 07 Nov 2024 22:16:30 +1100, Michael Ellerman wrote:
+> Booting a KASAN=y kernel with the recently added ftrace out-of-line
+> support causes a warning at boot:
 > 
+>   ------------[ cut here ]------------
+>   Stub index overflow (1729 > 1728)
+>   WARNING: CPU: 0 PID: 0 at arch/powerpc/kernel/trace/ftrace.c:209 ftrace_init_nop+0x408/0x444
+>   ...
+>   NIP ftrace_init_nop+0x408/0x444
+>   LR  ftrace_init_nop+0x404/0x444
+>   Call Trace:
+>     ftrace_init_nop+0x404/0x444 (unreliable)
+>     ftrace_process_locs+0x544/0x8a0
+>     ftrace_init+0xb4/0x22c
+>     start_kernel+0x1dc/0x4d4
+>     start_here_common+0x1c/0x20
+>   ...
+>   ftrace failed to modify
+>   [<c0000000030beddc>] _sub_I_65535_1+0x8/0x3c
+>    actual:   00:00:00:60
+>   Initializing ftrace call sites
+>   ftrace record flags: 0
+>    (0)
+>    expected tramp: c00000000008b418
+>   ------------[ cut here ]------------
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/cell: Remove dead extern declaration for spu_priv1_beat_ops
-      https://git.kernel.org/powerpc/c/be6b0eb5c46d85e360c0ff8bdde1aaa199a8fb6d
+[1/1] powerpc/ftrace: Fix ftrace bug with KASAN=y
+      https://git.kernel.org/powerpc/c/cfec8463d9a19ec043845525fe5fd675e59a8aab
 
 cheers
 
