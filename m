@@ -1,128 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-3407-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3408-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83B64D4920F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2024 11:29:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03B31D4920F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2024 11:41:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XsQQK118Tz2xy6;
-	Mon, 18 Nov 2024 22:29:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731929385;
-	cv=none; b=F+EkhN+XYyH0vierGQvxv10F793Mezcb7M0prgWJ1UtILRSwSBu/odk6MSYRGa4MnV0YyGXqpEbBrkYkD3yjNrs4t2I9RcjLIkH+4N9ge/4DO/Yfox33ymQtOVPl4V3E3B9162M5BDN7S1jZ4C6wQCfDBKacAt8/pck0KUWUYxFvnLtun4c9SSvUgWGeyUic0Mooi6163hUUF65vonnCRz7fPo+wg42Yp7hJRl1ibUsb11sqxQrBJcCMZ7WWu8BWH77KXGqbzERSRtRbvDqYhSTejFkF2xApKQTQqwpe4Mnw7PbpfoiC/Ja+mmEifckY8BQ+mgwC+QBSMPyxgowPpA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XsQh83cH1z30N8;
+	Mon, 18 Nov 2024 22:41:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731930104;
+	cv=none; b=iDe4Y+LpQTFigicGjhVyayGPdGGezAX151P9/biFQ/F4V1jCiM9fwAvDhHH8biVtoPV6hAX5tSBSM8pKGxe57c0WP5abZLTfMzz1ZJg9UpOM6BSEyeSrOjN5hTu5JFAqkEGUmuIN+jfSfZpKH/V4GDUKqyzoUgdUlXMW4CZw1vzE3pd14QD9uDggXHdkLvQxkoCgX677PpYFLR1LZySWITQlFc8YTpjpt7+cOL1wOEcrYFXpBOIeXIqFRd8a91Hkpo4VlIL/WSVUiDwejYeqo0EiLYcwomXQsoZ/5I5UYz2Xjnx00JR8copouV7IRUawL8JvECbJe15k3suR0+O03w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731929385; c=relaxed/relaxed;
-	bh=+R1FnDR/d18PL0XgQdo7E8ddqqJsostStWXSKykuwSk=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=S9mBvOy5RyiVLti7PJdwqc9tTwyTFKVwksKVu4gKCZfuKNW4mPTTBwXfe/Oioiaak9BAH0x/Qg1w9uNlliY+x6WbuzB5LeIrAFx5xLJ1Qrm/loQUyaaJOW+h1/kMw7S0ziJR2aPO+u01yCSoCBci85K8iuF6cCn0W5+4zo4T/cYGujbB1irRzCZvIiigBQIIWURA7aswHHn4SDXEdVBO/bC0Tu8/MAyvo51q9WFkztCKn5b9gxdliipQsEhIf88vY2/yiPJE+Ibw3nVTvd5WoiuOmZlA+NmEFTPNlchuQBIfdnn4U29FpWcgq0ys7VcLTol49590N6jQYl6zPdCm+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gju0J5EE; dkim-atps=neutral; spf=none (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=thomas.hellstrom@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1731930104; c=relaxed/relaxed;
+	bh=6xrE/gtThAVFqCKFClL7h8R5FiTofGAnJybX2eQOVFU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=oTE7/gPU8Ns4E6XiXiabcpTnW2shGyq9gG1tktQYu7aDLneHWaoZMzPs6yvOMHzdVpPube7VD3ZPlafn2jXv2XsxbMxxNTxtJhvUVPDCePgHQCs1K1Hu8yYuFNh5gPe4HsEwwpAPmHMiivA6ftzw3cqYVK47DHzpZmarqGfo3QyCZmJ8LIXn+YMqTIOICLV2VBu/b4vUEU0XKs2Pe8Wgm4RMVu4zPbNkpPgFjNFLpxE6gscbe/UDKAIZmjD+4iGH2niFaIuQaATQATfsRfP0Xus9Gd28XPlJjlvYM9DJLYqCq3GvvEIDbJTMMg+1wUNKFBfAIbaN2NPM8Q0Jpy+aqw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WI1maX+T; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gju0J5EE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WI1maX+T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=thomas.hellstrom@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 62 seconds by postgrey-1.37 at boromir; Mon, 18 Nov 2024 22:29:41 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XsQQF4XRWz2xrJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2024 22:29:41 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1731929382; x=1763465382;
-  h=message-id:subject:from:to:cc:date:in-reply-to:
-   references:content-transfer-encoding:mime-version;
-  bh=eflO5BqcAdiHnObc19vuFxv1kFN4bcVh6FEadC6e/J0=;
-  b=gju0J5EE6eDnWoP2Ecu6l8qb05nt+5PFOLJw4+0i6LCqNYfOXUQMpl5s
-   L+hapE2RbCoQjPmb8xmCtGqk/rXmtoQv/5OMRXQrrVfeOGQuTx8GFGjyr
-   toqTFY64FlLyg0QjHke8uT2mGgDCnbfFjIZt0UmcznX5WoIiIoh06BAlu
-   91GA9/Zav7I3eQGFMx3ufBBNr5fS0gS9WOUKahBsALeJKIuKIzSlnshBR
-   1NFWt+UShNy1JRthCq6Mzjz0csM0BExETGdXM1u0C4Xn/2lYN8pL7LWrf
-   XrDAkemAUqNoxMJGKIFgcq02WVsWIu7eak2iVC8BOPPqToNpg58g26svT
-   w==;
-X-CSE-ConnectionGUID: BR30tIc4QpOOZAGeQwmzng==
-X-CSE-MsgGUID: WfD/95d7SD2se0oOgP2btQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11259"; a="42396220"
-X-IronPort-AV: E=Sophos;i="6.12,163,1728975600"; 
-   d="scan'208";a="42396220"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2024 03:28:31 -0800
-X-CSE-ConnectionGUID: rRdUd/MrRkyoZEJD1Sac1Q==
-X-CSE-MsgGUID: apTDPmdSTQ+3Y3NYJwg9xw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,163,1728975600"; 
-   d="scan'208";a="89329614"
-Received: from mwiniars-desk2.ger.corp.intel.com (HELO [10.245.246.149]) ([10.245.246.149])
-  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2024 03:28:08 -0800
-Message-ID: <62c1e9e941cec75cf8771761fb9981879fefcce5.camel@linux.intel.com>
-Subject: Re: [PATCH 08/22] drm/xe: Convert timeout to secs_to_jiffies()
-From: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas.hellstrom@linux.intel.com>
-To: Easwar Hariharan <eahariha@linux.microsoft.com>, Pablo Neira Ayuso
- <pablo@netfilter.org>, Jozsef Kadlecsik <kadlec@netfilter.org>, "David S.
- Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub
- Kicinski <kuba@kernel.org>,  Paolo Abeni <pabeni@redhat.com>, Simon Horman
- <horms@kernel.org>, Julia Lawall <Julia.Lawall@inria.fr>,  Nicolas Palix
- <nicolas.palix@imag.fr>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang
- <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>,
- Russell King <linux@armlinux.org.uk>, Heiko Carstens <hca@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
- <agordeev@linux.ibm.com>, Christian Borntraeger
- <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Ofir
- Bitton <obitton@habana.ai>, Oded Gabbay <ogabbay@kernel.org>, Lucas De
- Marchi <lucas.demarchi@intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
- <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
- <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Jeroen de Borst
- <jeroendb@google.com>, Praveen Kaligineedi <pkaligineedi@google.com>,
- Shailend Chand <shailend@google.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- James Smart <james.smart@broadcom.com>, Dick Kennedy
- <dick.kennedy@broadcom.com>, "James E.J. Bottomley"
- <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
- <martin.petersen@oracle.com>, Roger Pau =?ISO-8859-1?Q?Monn=E9?=
- <roger.pau@citrix.com>, Jens Axboe <axboe@kernel.dk>, Kalle Valo
- <kvalo@kernel.org>, Jeff Johnson <jjohnson@kernel.org>, Catalin Marinas
- <catalin.marinas@arm.com>, Andrew Morton <akpm@linux-foundation.org>, Jack
- Wang <jinpu.wang@cloud.ionos.com>, Marcel Holtmann <marcel@holtmann.org>,
- Johan Hedberg <johan.hedberg@gmail.com>, Luiz Augusto von Dentz
- <luiz.dentz@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Florian Fainelli <florian.fainelli@broadcom.com>, Ray Jui
- <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Broadcom
- internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Xiubo
- Li <xiubli@redhat.com>, Ilya Dryomov <idryomov@gmail.com>,  Josh Poimboeuf
- <jpoimboe@kernel.org>, Jiri Kosina <jikos@kernel.org>, Miroslav Benes
- <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>, Joe Lawrence
- <joe.lawrence@redhat.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
- <tiwai@suse.com>, Lucas Stach <l.stach@pengutronix.de>, Russell King
- <linux+etnaviv@armlinux.org.uk>,  Christian Gmeiner
- <christian.gmeiner@gmail.com>, Louis Peens <louis.peens@corigine.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao
- <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: netfilter-devel@vger.kernel.org, coreteam@netfilter.org, 
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, cocci@inria.fr, 
- linux-arm-kernel@lists.infradead.org, linux-s390@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org, 
- linux-scsi@vger.kernel.org, xen-devel@lists.xenproject.org, 
- linux-block@vger.kernel.org, linux-wireless@vger.kernel.org, 
- ath11k@lists.infradead.org, linux-mm@kvack.org,
- linux-bluetooth@vger.kernel.org,  linux-staging@lists.linux.dev,
- linux-rpi-kernel@lists.infradead.org,  ceph-devel@vger.kernel.org,
- live-patching@vger.kernel.org,  linux-sound@vger.kernel.org,
- etnaviv@lists.freedesktop.org,  oss-drivers@corigine.com,
- linuxppc-dev@lists.ozlabs.org, Anna-Maria Behnsen <anna-maria@linutronix.de>
-Date: Mon, 18 Nov 2024 12:27:53 +0100
-In-Reply-To: <20241115-converge-secs-to-jiffies-v1-8-19aadc34941b@linux.microsoft.com>
-References: 
-	<20241115-converge-secs-to-jiffies-v1-0-19aadc34941b@linux.microsoft.com>
-	 <20241115-converge-secs-to-jiffies-v1-8-19aadc34941b@linux.microsoft.com>
-Autocrypt: addr=thomas.hellstrom@linux.intel.com; prefer-encrypt=mutual;
- keydata=mDMEZaWU6xYJKwYBBAHaRw8BAQdAj/We1UBCIrAm9H5t5Z7+elYJowdlhiYE8zUXgxcFz360SFRob21hcyBIZWxsc3Ryw7ZtIChJbnRlbCBMaW51eCBlbWFpbCkgPHRob21hcy5oZWxsc3Ryb21AbGludXguaW50ZWwuY29tPoiTBBMWCgA7FiEEbJFDO8NaBua8diGTuBaTVQrGBr8FAmWllOsCGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQuBaTVQrGBr/yQAD/Z1B+Kzy2JTuIy9LsKfC9FJmt1K/4qgaVeZMIKCAxf2UBAJhmZ5jmkDIf6YghfINZlYq6ixyWnOkWMuSLmELwOsgPuDgEZaWU6xIKKwYBBAGXVQEFAQEHQF9v/LNGegctctMWGHvmV/6oKOWWf/vd4MeqoSYTxVBTAwEIB4h4BBgWCgAgFiEEbJFDO8NaBua8diGTuBaTVQrGBr8FAmWllOsCGwwACgkQuBaTVQrGBr/P2QD9Gts6Ee91w3SzOelNjsus/DcCTBb3fRugJoqcfxjKU0gBAKIFVMvVUGbhlEi6EFTZmBZ0QIZEIzOOVfkaIgWelFEH
-Organization: Intel Sweden AB, Registration Number: 556189-6027
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.50.4 (3.50.4-3.fc39) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XsQh06GKjz30H7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2024 22:41:36 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4AI37EHb032120;
+	Mon, 18 Nov 2024 11:41:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=6xrE/gtThAVFqCKFC
+	lL7h8R5FiTofGAnJybX2eQOVFU=; b=WI1maX+Toine6XeYjCAm2DOtaLs1vSxQ/
+	wNH3v3im9EX0DRCabfppGwTvdMxKQYS6EVE5p+ty0r89NrZhB/LEmjjth9sz0OI4
+	JjJ/HxDfM7b6+lmpLpbpjUryBIWhPYSTiZVCEnCo4HKm7/VeErumYpyLEAMnswGK
+	dCEizc2pw/BA3G/r98Ab+1eWqUg/dpzjtUvtcjNoqiVKTHz/RhVHPTUpwTL/E1xq
+	/Lua1haQgzvWVo9k+t70lwBFKg4KAYoik7uTnRn06wkd33uYB/LsxyqcKhHyOYZL
+	dJNzyLZKR7YEJ8J7sr8pdduwCoPeg8TWnnhQ5XS1Kq8cTfS4egn6Q==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42xyu1fcfr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 18 Nov 2024 11:41:28 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4AI1GPhQ030569;
+	Mon, 18 Nov 2024 11:41:28 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 42y5qsajq8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 18 Nov 2024 11:41:27 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4AIBfN5w64487846
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 18 Nov 2024 11:41:23 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3692520043;
+	Mon, 18 Nov 2024 11:41:23 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 94A7120040;
+	Mon, 18 Nov 2024 11:41:20 +0000 (GMT)
+Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown [9.43.96.153])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 18 Nov 2024 11:41:20 +0000 (GMT)
+From: Kajol Jain <kjain@linux.ibm.com>
+To: mpe@ellerman.id.au, maddy@linux.ibm.com
+Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, disgoel@linux.ibm.com,
+        hbathini@linux.ibm.com, adubey@linux.ibm.com, gautam@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 2/4] docs: ABI: sysfs-bus-event_source-devices-vpa-pmu: Document sysfs event format entries for vpa_pmu
+Date: Mon, 18 Nov 2024 17:11:12 +0530
+Message-ID: <20241118114114.208964-2-kjain@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <20241118114114.208964-1-kjain@linux.ibm.com>
+References: <20241118114114.208964-1-kjain@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -135,45 +87,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: D3Xx0tBQhNiIcoTuUQxZF3Iktu8Rm2-m
+X-Proofpoint-ORIG-GUID: D3Xx0tBQhNiIcoTuUQxZF3Iktu8Rm2-m
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ lowpriorityscore=0 priorityscore=1501 suspectscore=0 impostorscore=0
+ bulkscore=0 spamscore=0 mlxlogscore=999 adultscore=0 mlxscore=0
+ clxscore=1015 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2411180096
 
-On Fri, 2024-11-15 at 21:22 +0000, Easwar Hariharan wrote:
-> Changes made with the following Coccinelle rules:
->=20
-> @@ constant C; @@
->=20
-> - msecs_to_jiffies(C * 1000)
-> + secs_to_jiffies(C)
->=20
-> @@ constant C; @@
->=20
-> - msecs_to_jiffies(C * MSEC_PER_SEC)
-> + secs_to_jiffies(C)
->=20
-> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
-Reviewed-by: Thomas Hellstr=C3=B6m <thomas.hellstrom@linux.intel.com>
+Details are added for the vpa_pmu event and format
+attributes in the ABI documentation.
 
-<
-> ---
-> =C2=A0drivers/gpu/drm/xe/xe_device.c | 2 +-
-> =C2=A01 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/gpu/drm/xe/xe_device.c
-> b/drivers/gpu/drm/xe/xe_device.c
-> index
-> a1987b554a8d2aa42b29301f2853edddfda7fda5..bb3338ef4191e76128611eeb953
-> 1c9d2089db85a 100644
-> --- a/drivers/gpu/drm/xe/xe_device.c
-> +++ b/drivers/gpu/drm/xe/xe_device.c
-> @@ -502,7 +502,7 @@ static int wait_for_lmem_ready(struct xe_device
-> *xe)
-> =C2=A0	drm_dbg(&xe->drm, "Waiting for lmem initialization\n");
-> =C2=A0
-> =C2=A0	start =3D jiffies;
-> -	timeout =3D start + msecs_to_jiffies(60 * 1000); /* 60 sec! */
-> +	timeout =3D start + secs_to_jiffies(60); /* 60 sec! */
-> =C2=A0
-> =C2=A0	do {
-> =C2=A0		if (signal_pending(current))
->=20
+Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
+Co-developed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+---
+ .../sysfs-bus-event_source-devices-vpa-pmu    | 24 +++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-vpa-pmu
+
+diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-vpa-pmu b/Documentation/ABI/testing/sysfs-bus-event_source-devices-vpa-pmu
+new file mode 100644
+index 000000000000..8285263ff78d
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-vpa-pmu
+@@ -0,0 +1,24 @@
++What:           /sys/bus/event_source/devices/vpa_pmu/format
++Date:           November 2024
++Contact:        Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
++Description:    Read-only. Attribute group to describe the magic bits
++                that go into perf_event_attr.config for a particular pmu.
++                (See ABI/testing/sysfs-bus-event_source-devices-format).
++
++                Each attribute under this group defines a bit range of the
++                perf_event_attr.config. Supported attribute are listed
++                below::
++			event = "config:0-31" - event ID
++
++		For example::
++
++		  l1_to_l2_lat = "event=0x1"
++
++What:           /sys/bus/event_source/devices/vpa_pmu/events
++Date:           November 2024
++Contact:        Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
++Description:	Read-only. Attribute group to describe performance monitoring
++                events for the Virtual Processor Area events. Each attribute
++		in this group describes a single performance monitoring event
++		supported by vpa_pmu. The name of the file is the name of
++		the event (See ABI/testing/sysfs-bus-event_source-devices-events).
+-- 
+2.43.5
 
 
