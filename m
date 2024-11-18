@@ -1,80 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-3411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 223EAD4920F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2024 11:42:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C33EAD4920F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Nov 2024 12:33:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XsQhH6Ysgz30gn;
-	Mon, 18 Nov 2024 22:41:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731930111;
-	cv=none; b=P/8i/I2Jhu1dzUkyTmP1GRLBxgD5VV2Umlp/ilafL8XM/AtPRfykuUnhwpCNQyvGr/yquoP4CZLRyOtf19l9Z2z+6iGTm43kXwMq2+eVy89Bz3WFWP7Pg2pU4jsImmYB0aRTfvIRt8TmzLHjbOG4p3j6ZIE2L/3gtoeTUbaAQbhvnJWbntvEPUILq/2jts16qGrngPFsJLICnMD4hjFcMx6tk9HUFhTE6/ezMwtzqoGPdfeljMwsaFI0NXx0DteBoREEp9DBIRWfBQZotcg+cdQWafeL0yXdr3/7zOFv6bxFt7O4Kzhh+NLAHmLc4oI1XYWoCX8aC5NztQRKS4vA2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XsRqS0sRZz2yVb;
+	Mon, 18 Nov 2024 23:33:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731933188;
+	cv=none; b=bU+tn65JjjpGUcAXNJNEh01uELW5vzXjX57nX0fcZNSvcrZeMiJwAGg+iCZGJ4/++F4uvcW4kqiD15K0ki7bjtnSeff1DRousZZIFZZvTnrYRkPmiAmWE+I9l60W/DLBEIDlhP1vJtqMyG7GOYExMDzg8U5fyeWmGZGoh7kmCsbBRVNZTp/kMKB2gzRQZw8GGbmICc/hblnyTANNU0eMFWsVjocxCEX+vIISvblr1Cthq3nTUbg5qnj6gW6ocLnvRsgz8wmRRCvmi81KvXhx17SiMAAWLFbIAUBYH/oKuYPaLhGLadAUc4GfkjpTZl5Az6qW/nV0BbyLPcoTJMKsVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731930111; c=relaxed/relaxed;
-	bh=RXuRG5xyNCHlIqEvVSmZoIl1pS6WmakUVIg1aZ5hNUw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=b/6/o4uOwGMRTlx+OBjt7KNIrgj2wQl0i9uEzLb4xakoSRjN1qfiAAKgeEkExTfGb/kFzIVI8Uh95zXehtLzEkMu9EfEgGetII5a12eQBmXbbwMxOwVgwwVXff1IPlAxBSrYsplNLM1YA8uCsy3HBpr1Yl93USKKNftTRXP8/tIJ/89CS+oqmoJCLAzmWH4ZUHn7WM+FmdVvi3MIQmLbvR5RoQsPh33pT9qWMdaPY42dbv3lMvDPmcrDIqSylt6JgTCnO8mqgbDj4F4zkmDPG59y0SvjKl4Yps3INzJ2tcThnXwOpxcudGlWCsZJZWlChNwxYBABifETixCpFvkzYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nnz0yyww; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1731933188; c=relaxed/relaxed;
+	bh=CLCYNHObCvI6Wv7dwZaxhVe+/YVDEoPQDjO93+FZICI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MUcgofw3d+bUfdqIZZ2JQdh5QOEhxl2zwdccgJZfuzqFverAhOpRlZEPDezRkfyshs8usgnHBHmw6QZ3jFxsXHrPMQXUJmRF3RxHznHuNam6GsRe52R4itbUnanVEnpcV/lzManfgXE4sbT+/YRMo7uSrDPOukr/MU77IfJeFxp4GsiOiiglPkSsjW+VPBZBeFO7cM63VHMqo1evwc73ZSJ1Hq/30nkUwLqB49Wdu+O0qm1JgKffSVx9PoG0Zel9iTV+zZMs9st8V9oeb7o7zr0THgEcBV7Aqlhn38mmEH5Nury7TIAVgxtvJlX1yaalrZada5TNZz+Z5ux5M5x5dQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Q7Lehyyx; dkim-atps=neutral; spf=none (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nnz0yyww;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Q7Lehyyx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XsQh72xK2z30MY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2024 22:41:43 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4AI5fh2L008868;
-	Mon, 18 Nov 2024 11:41:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=RXuRG5xyNCHlIqEvV
-	SmZoIl1pS6WmakUVIg1aZ5hNUw=; b=nnz0yyww/F5A1TlwNPnSbVQy4aHMPTX2d
-	gvu3qclm0zT0ACi0DbZ5UIGPhBbrRkqsHp8t5q/OboK9yZCWK/wNR7M2FqERM48m
-	JiVOTrOGaznvt1+4OUQet7ZALV/BOYH8FUlpe/45B8c5xB+ZGzPvfdZETrlZu+Lx
-	T5vQVJC6X6DSWlFwb8ci+C7hB1rLmZB+qb7vVfIEMaQhvoCwyk5a0sWth09h17p/
-	pTtwFQVYz/d9G7mc9KPCEHtGP45YkE2FHoRXzXgORJxxS5VzxKdXgm7tt5vVIxwZ
-	SnFiG+W17Q9m0wP1fMDCZmeN0+tL0Gcpn5ZFiJJ484KOLsBzZUgpw==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42xk2vskuh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 18 Nov 2024 11:41:36 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4AI1ox3b030682;
-	Mon, 18 Nov 2024 11:41:35 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 42y5qsajqd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 18 Nov 2024 11:41:35 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4AIBfVTM50790840
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 18 Nov 2024 11:41:31 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 768B820043;
-	Mon, 18 Nov 2024 11:41:31 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 14F5620040;
-	Mon, 18 Nov 2024 11:41:29 +0000 (GMT)
-Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown [9.43.96.153])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 18 Nov 2024 11:41:28 +0000 (GMT)
-From: Kajol Jain <kjain@linux.ibm.com>
-To: mpe@ellerman.id.au, maddy@linux.ibm.com
-Cc: atrajeev@linux.vnet.ibm.com, kjain@linux.ibm.com, disgoel@linux.ibm.com,
-        hbathini@linux.ibm.com, adubey@linux.ibm.com, gautam@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 4/4] powerpc/perf: Add per-task/process monitoring to vpa_pmu driver
-Date: Mon, 18 Nov 2024 17:11:14 +0530
-Message-ID: <20241118114114.208964-4-kjain@linux.ibm.com>
-X-Mailer: git-send-email 2.43.5
-In-Reply-To: <20241118114114.208964-1-kjain@linux.ibm.com>
-References: <20241118114114.208964-1-kjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XsRqK54Pcz2xxt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Nov 2024 23:32:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1731933182; x=1763469182;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=jIaEOjK0mS7sbPkYVSxnP3VGbdEHlavlnKhav5Y1SV8=;
+  b=Q7LehyyxGxnYQJt3LvADXFrh6OGpIEXlCppLuk7TaDtSwQrmKT+7fDkS
+   b9rPqUn+Oy4LNEBT/gqRyf4tUpNTnJqfLj4FNkWqLIXU8Ib0ycL/A/eTi
+   Hcq3SRgBAQeejVLIVpUXKzTTxHI2totvh+Nrv7x+OLqWEFnC5eQ8YTlrA
+   QwbcrL+f3dim407aoKqTpAwvYsHwvDDgII3VweNG6YV6t/HjEn8SNhj3J
+   YIB1YjuecROW7xUziX/AYWktGcsW+yoZqSwn9luu/KS7JTj2OoDpv5oK+
+   qJX8fKroXha+LlqeQqTA+ua1Npi8PaRGkxInOJWq2dLxa+fnC69Bhl8xG
+   w==;
+X-CSE-ConnectionGUID: 1eFMyaEcQ8SFvKpMuGIReg==
+X-CSE-MsgGUID: Yw4U+dUfTButMVXaB39Ebw==
+X-IronPort-AV: E=McAfee;i="6700,10204,11259"; a="32037881"
+X-IronPort-AV: E=Sophos;i="6.12,164,1728975600"; 
+   d="scan'208";a="32037881"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2024 04:32:56 -0800
+X-CSE-ConnectionGUID: 1qjbz5mMQamSG6XBdojX1w==
+X-CSE-MsgGUID: YKPyKPjFSOKMkok5yEjWPA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; 
+   d="scan'208";a="94266911"
+Received: from smile.fi.intel.com ([10.237.72.154])
+  by orviesa003.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2024 04:32:54 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.98)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1tD0vz-0000000G0Bj-1X7S;
+	Mon, 18 Nov 2024 14:32:51 +0200
+Date: Mon, 18 Nov 2024 14:32:51 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: Re: [PATCH v1 1/1] powerpc/8xx: Drop legacy-of-mm-gpiochip.h header
+Message-ID: <Zzsz81-quzIZ_13L@smile.fi.intel.com>
+References: <20241115133802.3919003-1-andriy.shevchenko@linux.intel.com>
+ <5b44abcc-f629-4250-9edf-7f173b78172c@csgroup.eu>
+ <ZzsG9EjzV82Crl2W@smile.fi.intel.com>
+ <124ab5ab-3bfd-4ad7-a75d-981da9c03423@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,138 +85,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: uXaG0UGimiCFI3dngSYvbYvBAehKy3zV
-X-Proofpoint-GUID: uXaG0UGimiCFI3dngSYvbYvBAehKy3zV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- priorityscore=1501 phishscore=0 clxscore=1015 suspectscore=0 spamscore=0
- impostorscore=0 bulkscore=0 mlxscore=0 adultscore=0 lowpriorityscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2409260000 definitions=main-2411180096
+In-Reply-To: <124ab5ab-3bfd-4ad7-a75d-981da9c03423@csgroup.eu>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 
-Enhance the vpa_pmu driver with a feature to observe context switch
-latency event for both per-task (tid) and per-pid (pid) option.
-Couple of new helper functions are added to hide the abstraction of
-reading the context switch latency counter from kvm_vcpu_arch struct
-and these helper functions are defined in the "kvm/book3s_hv.c".
+On Mon, Nov 18, 2024 at 12:02:44PM +0100, Christophe Leroy wrote:
+> Le 18/11/2024 à 10:20, Andy Shevchenko a écrit :
+> > On Sat, Nov 16, 2024 at 11:44:35AM +0100, Christophe Leroy wrote:
+> > > Le 15/11/2024 à 14:38, Andy Shevchenko a écrit :
+> > > > Remove legacy-of-mm-gpiochip.h header file, replace of_* functions
+> > > > and structs with appropriate alternatives.
+> > > 
+> > > Looks like you don't really have an alternative to
+> > > of_mm_gpiochip_add_data(), you are replacing one single line by 11 new ones,
+> > > and that is done twice (once for cpm1_gpiochip_add16(), once for
+> > > cpm1_gpiochip_add32()).
 
-"PERF_ATTACH_TASK" flag is used to decide whether to read the counter
-values from lppaca or kvm_vcpu_arch struct.
+Note, the overall statistics is +1 LoC only!
 
-Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-Co-developed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
----
- arch/powerpc/include/asm/kvm_book3s_64.h |  3 ++
- arch/powerpc/kvm/book3s_hv.c             | 45 ++++++++++++++++++++++++
- arch/powerpc/perf/vpa-pmu.c              | 15 ++++++--
- 3 files changed, 60 insertions(+), 3 deletions(-)
+> > True, but that's the issue that we have of_specific API. If someone propose
+> > the common API for the agnostic approach,  it would be nice, but I am not
+> > the one. And TBH I do not see the advantage of it right now as almost every
+> > GPIO driver is using its own labeling schema (*). Note, that this patch also
+> > fixes a memory leak as a side effect.
+> 
+> Can you explain that in the commit message instead of saying you use
+> appropriate alternatives that do not exist ?
+> 
+> Don't hesitate to mention the memory leak it in the commit message as well.
+> 
+> > *) the legacy API is mostly used by PPC code, do you want that of_mm_* thingy
+> > to be moved to PPC specific code instead of killing it? Would be done this
+> > way as well.
+> 
+> No no, your change is ok for me, just need an accurate commit message.
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index f620e3126d68..b936e174eefd 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -691,6 +691,9 @@ void kvmhv_set_l2_counters_status(int cpu, bool status);
- u64 kvmhv_get_l1_to_l2_cs_time(void);
- u64 kvmhv_get_l2_to_l1_cs_time(void);
- u64 kvmhv_get_l2_runtime_agg(void);
-+u64 kvmhv_get_l1_to_l2_cs_time_vcpu(void);
-+u64 kvmhv_get_l2_to_l1_cs_time_vcpu(void);
-+u64 kvmhv_get_l2_runtime_agg_vcpu(void);
- 
- #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
- 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 4284437fedeb..ddc380982233 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -4214,6 +4214,51 @@ u64 kvmhv_get_l2_runtime_agg(void)
- }
- EXPORT_SYMBOL(kvmhv_get_l2_runtime_agg);
- 
-+u64 kvmhv_get_l1_to_l2_cs_time_vcpu(void)
-+{
-+	struct kvm_vcpu *vcpu;
-+	struct kvm_vcpu_arch *arch;
-+
-+	vcpu = local_paca->kvm_hstate.kvm_vcpu;
-+	if (vcpu) {
-+		arch = &vcpu->arch;
-+		return arch->l1_to_l2_cs;
-+	} else {
-+		return 0;
-+	}
-+}
-+EXPORT_SYMBOL(kvmhv_get_l1_to_l2_cs_time_vcpu);
-+
-+u64 kvmhv_get_l2_to_l1_cs_time_vcpu(void)
-+{
-+	struct kvm_vcpu *vcpu;
-+	struct kvm_vcpu_arch *arch;
-+
-+	vcpu = local_paca->kvm_hstate.kvm_vcpu;
-+	if (vcpu) {
-+		arch = &vcpu->arch;
-+		return arch->l2_to_l1_cs;
-+	} else {
-+		return 0;
-+	}
-+}
-+EXPORT_SYMBOL(kvmhv_get_l2_to_l1_cs_time_vcpu);
-+
-+u64 kvmhv_get_l2_runtime_agg_vcpu(void)
-+{
-+	struct kvm_vcpu *vcpu;
-+	struct kvm_vcpu_arch *arch;
-+
-+	vcpu = local_paca->kvm_hstate.kvm_vcpu;
-+	if (vcpu) {
-+		arch = &vcpu->arch;
-+		return arch->l2_runtime_agg;
-+	} else {
-+		return 0;
-+	}
-+}
-+EXPORT_SYMBOL(kvmhv_get_l2_runtime_agg_vcpu);
-+
- #else
- int kvmhv_get_l2_counters_status(void)
- {
-diff --git a/arch/powerpc/perf/vpa-pmu.c b/arch/powerpc/perf/vpa-pmu.c
-index 2c785eee2f71..601de245392c 100644
---- a/arch/powerpc/perf/vpa-pmu.c
-+++ b/arch/powerpc/perf/vpa-pmu.c
-@@ -97,13 +97,22 @@ static unsigned long get_counter_data(struct perf_event *event)
- 
- 	switch (config) {
- 	case L1_TO_L2_CS_LAT:
--		data = kvmhv_get_l1_to_l2_cs_time();
-+		if (event->attach_state & PERF_ATTACH_TASK)
-+			data = kvmhv_get_l1_to_l2_cs_time_vcpu();
-+		else
-+			data = kvmhv_get_l1_to_l2_cs_time();
- 		break;
- 	case L2_TO_L1_CS_LAT:
--		data = kvmhv_get_l2_to_l1_cs_time();
-+		if (event->attach_state & PERF_ATTACH_TASK)
-+			data = kvmhv_get_l2_to_l1_cs_time_vcpu();
-+		else
-+			data = kvmhv_get_l2_to_l1_cs_time();
- 		break;
- 	case L2_RUNTIME_AGG:
--		data = kvmhv_get_l2_runtime_agg();
-+		if (event->attach_state & PERF_ATTACH_TASK)
-+			data = kvmhv_get_l2_runtime_agg_vcpu();
-+		else
-+			data = kvmhv_get_l2_runtime_agg();
- 		break;
- 	default:
- 		data = 0;
+Fine, just sent a v2, which is now compile-tested as suggested below.
+
+...
+
+> > > Does not build:
+> > 
+> > Crap, I most likely built something else and not these files...
+> > I have carefully build-test this for v2.
+> 
+> Just use mpc885_ads_defconfig
+
+Thanks, that is helpful!
+
 -- 
-2.43.5
+With Best Regards,
+Andy Shevchenko
+
 
 
