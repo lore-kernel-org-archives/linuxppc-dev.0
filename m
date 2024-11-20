@@ -1,78 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-3449-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3450-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A87BDD6395D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Nov 2024 14:38:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B643D711AC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Nov 2024 15:07:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XtkWP6w3Cz2xwH;
-	Thu, 21 Nov 2024 01:38:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732095948;
-	cv=none; b=aChIXISSp3+XM9NxXKnJWAGmvhxCjr3gCqh7WanlMIkCXO0aSYVfTa5l/35PuWX+Q+fC4L6MFSMbm6bogSIGhzCUeTHu2ctUK0S5UCMWMH15+zcHa0WQhtvjlmxeclh9I8i5TTrIIZtMPPMeBU57HMubOCG2MyQl54v0Dg9iIz6c32WazIcVgXlWFKz291oLGMu2D6yflI2tMEGx1rXVQ8b7lkHPpk/ykNKnFWokwc4Gtllvz15y32Y/jWjSJRLnYAz/2vD4gZKATQ7lee9O/pI8LhRG8ZPYwzhXtDjC4NRDCpCLjRS45+cYUvfHHg8hPebrrwSmd7VBx+cIlh/jlQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xtl8P2BTRz2y0K;
+	Thu, 21 Nov 2024 02:07:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732115237;
+	cv=none; b=i/dSq9D7myOIhvrSI7F33xC2tGiFO+SEaliH35V8OcS5wWWdYSMmGQ8I3eWiD8OTmGIxh0LyVLoAs9fLoJvgBKSTMGatnLhIgV+/S2KDfZcHhF5v5eA1ZsYRBrFveX+OslP4R+ctzIY4BHZKGTLCYrTUsMucJA7Wf+/p4p9zHuB0HMX6XvosqoK7s+wj5eX3dh0y3csa+Mw8oeCcjS8+///2DBUkDWugBEBB9o+Insab3WlmqCzS0T0IVCR9FaX9EMa+bgFzu3OO0y08Z2ARCNzL+77kDWqjxrihxCz3WKuOweIAlxod+oeUKqTVX2dYbi8yMZslhR0CilAwFvxKdA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1732095948; c=relaxed/relaxed;
-	bh=GGhdz/ZoJn9zYBTtIYG8XTNmrEdkwq5yWoruGzdKP64=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=bsqb3S3JYIEraRie/GDk6rKDX0SJh+fZEX2NPOs4OW/riND7Z44miOiyqyHq9Sqkvp0OdB4Sj0jxV1w6mhQM7v+9yF7sKeJ1508GZu0Zfh3RCmhZrn6hXQXH8ErWVUBITFo9+j0ZeCv0/1pOqoajM0Gmp9jYPa17uOiGK7bAA9ATqU1mnzbsukMrwHvLeR/7oecd0/EwxDuldiXgIgdTP8XeKVbtBtuPsKR3PRfWE8dlnifCQKAkvgFX+v2nSHgQ1vu7VBtYdilLNiEPXY8MDXVsdfbd6z6AR4bIaAM+B6KGx4DxwXx0qU99J9OxpdVNV2o8iEGtb5UwmY523z1a3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=xiaopei01@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=xiaopei01@kylinos.cn; receiver=lists.ozlabs.org)
-X-Greylist: delayed 366 seconds by postgrey-1.37 at boromir; Wed, 20 Nov 2024 20:45:46 AEDT
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1732115237; c=relaxed/relaxed;
+	bh=MNtJV4GQJxQNjXf05f1XeKL9OhkbYiYRSSqjWf9gb6o=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=G5HGbKDn8lXEhdeybYQrr7Ol7TaRDTMAPdlp4iWJNuA13evvfKkIL51Rcrt9m0E+IVGLxY1Byh3FtTRhNJXHHO0VZtNlDOqTA/McsPxGamcolbwtQ+iJ2xDW1e0pvYhmQrBOCTDaPZRvB637ThmHlOqVE5RDpQW6MOz3R1Rbx5uIM3qOhf6HsWgHLj4svjlS2TfYl5a1J8V/Y9m15nhvFQuDPEMaafj0UXzkQJ2b+VrHZEhd6OseOfSup/y2cRNAmmVQCb2uH7mF10A/LdrerBYnX4CeNsL/Nfy90CpsxfxOZmrwH1b6sn3FPv3CviU6p/ocyrSaJV1CLqmE4SjCEA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M+FUHra/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M+FUHra/;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xtc1Q3cTMz2xsM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Nov 2024 20:45:46 +1100 (AEDT)
-X-UUID: 30a5f3d4a72311efa216b1d71e6e1362-20241120
-X-CTIC-Tags:
-	HR_CC_COUNT, HR_CC_DOMAIN_COUNT, HR_CC_NAME, HR_CC_NO_NAME, HR_CTE_8B
-	HR_CTT_MISS, HR_DATE_H, HR_DATE_WKD, HR_DATE_ZONE, HR_FROM_DIGIT_LEN
-	HR_FROM_NAME, HR_SJ_DIGIT_LEN, HR_SJ_LANG, HR_SJ_LEN, HR_SJ_LETTER
-	HR_SJ_NOR_SYM, HR_SJ_PHRASE, HR_SJ_PHRASE_LEN, HR_SJ_WS, HR_TO_COUNT
-	HR_TO_DOMAIN_COUNT, HR_TO_NO_NAME, IP_TRUSTED, SRC_TRUSTED, DN_TRUSTED
-	SA_TRUSTED, SA_EXISTED, SN_TRUSTED, SN_EXISTED, SPF_NOPASS
-	DKIM_NOPASS, DMARC_NOPASS, CIE_BAD, CIE_GOOD_SPF, GTI_FG_BS
-	GTI_C_CI, GTI_FG_IT, GTI_RG_INFO, GTI_C_BU, AMN_T1
-	AMN_GOOD, AMN_C_TI, AMN_C_BU
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.38,REQID:95d4111d-5746-4350-a786-7c58a076b5da,IP:0,U
-	RL:0,TC:0,Content:0,EDM:25,RT:0,SF:-5,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
-	N:release,TS:20
-X-CID-INFO: VERSION:1.1.38,REQID:95d4111d-5746-4350-a786-7c58a076b5da,IP:0,URL
-	:0,TC:0,Content:0,EDM:25,RT:0,SF:-5,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:20
-X-CID-META: VersionHash:82c5f88,CLOUDID:28b95fb47be3158f0464a97d339d7408,BulkI
-	D:241120173827N644GAJ1,BulkQuantity:0,Recheck:0,SF:66|841|38|17|19|102,TC:
-	nil,Content:0,EDM:5,IP:nil,URL:1,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,C
-	OL:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
-X-CID-BVR: 0,NGT
-X-CID-BAS: 0,NGT,0,_
-X-CID-FACTOR: TF_CID_SPAM_ULS,TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD
-X-UUID: 30a5f3d4a72311efa216b1d71e6e1362-20241120
-X-User: xiaopei01@kylinos.cn
-Received: from xiaopei-pc.. [(10.44.16.150)] by mailgw.kylinos.cn
-	(envelope-from <xiaopei01@kylinos.cn>)
-	(Generic MTA with TLSv1.3 TLS_AES_256_GCM_SHA384 256/256)
-	with ESMTP id 406220667; Wed, 20 Nov 2024 17:38:25 +0800
-From: Pei Xiao <xiaopei01@kylinos.cn>
-To: herve.codina@bootlin.com,
-	qiang.zhao@nxp.com,
-	christophe.leroy@csgroup.eu,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: dan.carpenter@linaro.org,
-	xiaopeitux@foxmail.com,
-	Pei Xiao <xiaopei01@kylinos.cn>
-Subject: [PATCH] soc: fsl: cpm1: qmc: Fix qmc_probe() warn missing error code ret
-Date: Wed, 20 Nov 2024 17:38:20 +0800
-Message-Id: <82d8c18da160b9e0a73c5c5e2eb25ad2831cc6f9.1732095360.git.xiaopei01@kylinos.cn>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <bac2dc94-1bf3-4dcf-b776-cd78ef992d28@suswa.mountain>
-References: <bac2dc94-1bf3-4dcf-b776-cd78ef992d28@suswa.mountain>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xtl8M5wrrz2xgp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Nov 2024 02:07:15 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4AK7gCb1027509;
+	Wed, 20 Nov 2024 15:07:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=MNtJV4GQJxQNjXf05f1XeKL9OhkbYi
+	YRSSqjWf9gb6o=; b=M+FUHra/I84fgjGUSc0PSMD7gsm+RhVtYoKstFozzAEoz4
+	Twrxgym/RTBie3M5Y7XprVWUfaL59JqR/qXe7UvbocVLgYybS0mdkguapv8+6hqA
+	h6BeO+22rQjYYKNk9lqiBB4LX9PO9N8XZJeWplwYu61ARGL+fYjh6LnI8tkl5bU1
+	hBxW9wvyp7eVBxYBrqmKF+4S2NbMN5UA+scIr8SOk7ky9jZEJTa+3AyCqR9gi+ee
+	Swgo013Xc3Lntj6/W+dZAxIU7R9QoGzvHJvzrvk9mkoriZL6SX+7r/p7Afr3mBOr
+	T1x/PXkv5NfMrWIkWvrKdR0zxzJu5h4FfyAwS7hA==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42xhtjwjk2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 20 Nov 2024 15:07:01 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4AKEZ8x4001403;
+	Wed, 20 Nov 2024 15:07:01 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42xhtjwjjy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 20 Nov 2024 15:07:01 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4AKE3o5c030920;
+	Wed, 20 Nov 2024 15:07:00 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 42y63yvhr4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 20 Nov 2024 15:07:00 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4AKF6ukg54460840
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 20 Nov 2024 15:06:56 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6CE4A2004B;
+	Wed, 20 Nov 2024 15:06:56 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8F76020043;
+	Wed, 20 Nov 2024 15:06:52 +0000 (GMT)
+Received: from vaibhav?linux.ibm.com (unknown [9.124.221.111])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with SMTP;
+	Wed, 20 Nov 2024 15:06:52 +0000 (GMT)
+Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Wed, 20 Nov 2024 20:36:51 +0530
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Narayana Murty N
+ <nnmlinux@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+        linux-kernel@vger.kernel.org
+Cc: mahesh@linux.ibm.com, oohall@gmail.com, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, maddy@linux.ibm.com, naveen@kernel.org,
+        ganeshgr@linux.ibm.com, sbhat@linux.ibm.com
+Subject: Re: [PATCH] powerpc/pseries/eeh: Fix get PE state translation
+In-Reply-To: <87ttc8d0vf.fsf@gmail.com>
+References: <20241107042027.338065-1-nnmlinux@linux.ibm.com>
+ <87ttc8d0vf.fsf@gmail.com>
+Date: Wed, 20 Nov 2024 20:36:51 +0530
+Message-ID: <87cyiq3px0.fsf@vajain21.in.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,36 +99,113 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: ch3WGdkmSRlpPittI8EafON0y6XvPe1r
+X-Proofpoint-GUID: nDR0RN2ZvcaybgFb48LL70CR94XwNhBX
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxlogscore=999
+ clxscore=1011 malwarescore=0 spamscore=0 bulkscore=0 priorityscore=1501
+ impostorscore=0 mlxscore=0 adultscore=0 suspectscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2409260000
+ definitions=main-2411200100
 
-platform_get_irq() may failed,but ret still equals to 0,
-will cacuse qmc_probe() return 0 but fail.
+Hi Ritesh,
 
-Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-Closes: https://lore.kernel.org/r/202411051350.KNy6ZIWA-lkp@intel.com/
-Fixes: 3178d58e0b97 ("soc: fsl: cpm1: Add support for QMC")
-Signed-off-by: Pei Xiao <xiaopei01@kylinos.cn>
----
- drivers/soc/fsl/qe/qmc.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Thanks for looking into this patch. My responses on behalf of Narayana
+below:
 
-diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
-index 19cc581b06d0..a78768cd6007 100644
---- a/drivers/soc/fsl/qe/qmc.c
-+++ b/drivers/soc/fsl/qe/qmc.c
-@@ -2004,8 +2004,10 @@ static int qmc_probe(struct platform_device *pdev)
- 
- 	/* Set the irq handler */
- 	irq = platform_get_irq(pdev, 0);
--	if (irq < 0)
-+	if (irq < 0) {
-+		ret = -EINVAL;
- 		goto err_exit_xcc;
-+	}
- 	ret = devm_request_irq(qmc->dev, irq, qmc_irq_handler, 0, "qmc", qmc);
- 	if (ret < 0)
- 		goto err_exit_xcc;
+"Ritesh Harjani (IBM)" <ritesh.list@gmail.com> writes:
+
+> Narayana Murty N <nnmlinux@linux.ibm.com> writes:
+>
+>> The PE Reset State "0" obtained from RTAS calls
+>> ibm_read_slot_reset_[state|state2] indicates that
+>> the Reset is deactivated and the PE is not in the MMIO
+>> Stopped or DMA Stopped state.
+>>
+>> With PE Reset State "0", the MMIO and DMA is allowed for
+>> the PE.
+>
+> Looking at the PAPR spec - I do agree that it states the same. i.e.
+> The "0" Initial PE state means the "Not Reset", "Load/Store allowed" &
+> "DMA allowed" (Normal Operations). 
+>
+>> The function pseries_eeh_get_state() is currently
+>> not indicating that to the caller because of  which the
+>> drivers are unable to resume the MMIO and DMA activity.
+>
+> It's new to me, but could you help explain the user visible effect
+> of what gets broken. Since this looks like pseries_eeh_get_state() has
+> always been like this when it got first implemented.
+> Is there also a unit test somewhere which you are testing?
+Without this patch a userspace process performing VFIO EEH-Recovery wont
+get the correct indication that EEH recovery is completed. Test code at
+[2] has an example test case that uses VFIO to inject an EEH error on to
+a pci-device and then waits on it to reach 'EEH_PE_STATE_NORMAL' state
+. That state is never reached without this patch.
+
+[2] :
+https://github.com/nnmwebmin/vfio-ppc-tests/commit/006d8fdc41a4
+
+>
+> IIUC eeh_pe_get_state() was implemented[1] for supporting EEH for VFIO PCI
+> devices. i.e. the VFIO_EEH_PE_GET_STATE operation of VFIO EEH PE ioctl op
+> uses pseries_eeh_get_state() helper to query PE state on pseries LPAR.
+> So are you suggesting that EEH functionality for VFIO PCI device was
+> never enabled/tested before on pseries?
+VFIO-EEH had been broken for pseries for a quite some time and was
+recently fixed in kernel. So this issue was probably not discovered
+until recently when we started testing with userspace VFIO.
+
+>
+> [1]: https://lore.kernel.org/all/1402364517-28561-3-git-send-email-gwshan@linux.vnet.ibm.com/
+>
+> Checking the powernv side of implementation I do see that it does
+> enables the EEH_STATE_[MMIO|DMA]_ENABLED flags in the result mask for
+> the callers. So doing the same for pseries eeh get state implementation
+> does look like the right thing to do here IMO.
+>
+>> The patch fixes that by reflecting what is actually allowed.
+>
+> You say this is "fixes" so I am also assuming you are also looking for
+> stable backports of this? If yes - could you please also add the "Fixes"
+> tag and cc stable?
+Yes, agree will re-send adding the fixes tag.
+
+>
+> -ritesh
+>
+>>
+>> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/eeh_pseries.c | 6 ++++--
+>>  1 file changed, 4 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> index 1893f66371fa..b12ef382fec7 100644
+>> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> @@ -580,8 +580,10 @@ static int pseries_eeh_get_state(struct eeh_pe *pe, int *delay)
+>>  
+>>  	switch(rets[0]) {
+>>  	case 0:
+>> -		result = EEH_STATE_MMIO_ACTIVE |
+>> -			 EEH_STATE_DMA_ACTIVE;
+>> +		result = EEH_STATE_MMIO_ACTIVE	|
+>> +			 EEH_STATE_DMA_ACTIVE	|
+>> +			 EEH_STATE_MMIO_ENABLED	|
+>> +			 EEH_STATE_DMA_ENABLED;
+>>  		break;
+>>  	case 1:
+>>  		result = EEH_STATE_RESET_ACTIVE |
+>> -- 
+>> 2.45.2
+>
+
 -- 
-2.34.1
-
+Cheers
+~ Vaibhav
 
