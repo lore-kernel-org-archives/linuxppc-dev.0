@@ -1,82 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-3589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3590-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBFC3D6D238
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2024 20:12:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3CC3D6D233
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2024 20:13:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xz9bW6W8xz2xg8;
-	Thu, 28 Nov 2024 07:12:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=99.78.197.219
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732720966;
-	cv=none; b=dfdlyiFwLfWh8Wxlk8LsiVZRSnpaMdEZdmaE2Ov5rPncLbaqbUKa8bPuDyopQb98JIPqZCvEylQyQjMGqIOSFB600QalML9FWnOorNxmuOECI0wXjaatcvnoG6nJoh9qtJEZXE6XRoLG08kmCEVr28JNsN2vleScCfzwv4jBupscz6ZQQZRA7GVWjMdydgh6BcrF33Mz9+t7ZFQZum7veHWv7UYBWxvvzfq5li8i4ysLm2JVdC+elgyfTiN3HwmNj7B40MSrHNkmWi7+w96u9EKL/ZqlspPULV+mt6o9VJTYkpN+YvoBbRsSVe7UASXXCv0nkGn+upNouZ4NWPTs5A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xz9cd1Vdvz2xs0;
+	Thu, 28 Nov 2024 07:13:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732738417;
+	cv=none; b=gLkQgH847Q6qm42A35pgsfIOptHtpRGH1o784khraj3dxjzBztd9Lp/64FYnbQNCZ4JMiJUj19mRsq4LJp8Mxe/A0Ldz3mie9AwbcdjzccH6Bp8Ww212NYUW4xc8oh/F72zhPmlF4qC1W1+fXnZ/KuYiKrY8EvZ4AkcR+RL8eF7WjLGamU0rYSRH2Opub8pS2/N//52ZeleH07DAekW1T/9xBaP5alIqv9++dlAUxe9klh4wgKxOlS41wDZWzVQYWApDp7neyO7xMuP+/EBJtBwOpR8fNcPv2D2wkSe6iztzjh+K6ABJMP2RXFcD7eVXKJUvGIQTvvwZVc/SnnvVyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1732720966; c=relaxed/relaxed;
-	bh=NvBWtev1slrWXhkVcMmhNUJ2tEXO/H0E7EXWBQ0mv08=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DNn2CMUsRfZGMVWzxB5ypAWC82Q5UaYXv9soHK+pRPoh6aCs4XMv532l+O7njB02XdkKao+fcpNyLVrRTkLaNwREKQ4J/5e7Jcne5Djy43J3XvSGHiQxyAX05HOnoOARYLU1NXgD/TRM6F4EakoxQjG+sTR29bll5LAC+cHcy3z3VV3EI6dYbd7vLgoCERWykhKKKncdcsht0y8NTkyiVg5jcndcpOybKh/k3ZbuU7GkCVqSqeb44k+7QoQsk0NpceKrPFq1eUargL/RuTwqn4OCrIMVgAK3tSdqtoO5e58WNmxer4K7tHyI7YiuaMRlOKEZQ6uCJdrzCZaPQUkBiA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com; dkim=pass (1024-bit key; unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazon201209 header.b=CQpvh8Sk; dkim-atps=neutral; spf=pass (client-ip=99.78.197.219; helo=smtp-fw-80008.amazon.com; envelope-from=prvs=0540332c8=farbere@amazon.com; receiver=lists.ozlabs.org) smtp.mailfrom=amazon.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazon201209 header.b=CQpvh8Sk;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amazon.com (client-ip=99.78.197.219; helo=smtp-fw-80008.amazon.com; envelope-from=prvs=0540332c8=farbere@amazon.com; receiver=lists.ozlabs.org)
-Received: from smtp-fw-80008.amazon.com (smtp-fw-80008.amazon.com [99.78.197.219])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xz3904GjZz2xjv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2024 02:22:44 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1732720964; x=1764256964;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=NvBWtev1slrWXhkVcMmhNUJ2tEXO/H0E7EXWBQ0mv08=;
-  b=CQpvh8SkytomRc7jOWFxa8siAzg42RPYE1j3G07FtirwRXJqIyDCO9tm
-   n+szdZPYd9xBJOiGgham7EsZUdkx+hJzL3Qrp9RJ1jlQCZP/FjzTFTDpG
-   gQG9ca6lhIJsi/KgYN5ox60ObXBcrzkkAq24lzDSFa2Gs5zct4QN/6CnB
-   0=;
-X-IronPort-AV: E=Sophos;i="6.12,189,1728950400"; 
-   d="scan'208";a="148444442"
-Received: from pdx4-co-svc-p1-lb2-vlan3.amazon.com (HELO smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.25.36.214])
-  by smtp-border-fw-80008.pdx80.corp.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Nov 2024 15:22:38 +0000
-Received: from EX19MTAUWB002.ant.amazon.com [10.0.38.20:4762]
- by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.10.101:2525] with esmtp (Farcaster)
- id 090d255a-bd4e-4b8c-9604-9659de410a04; Wed, 27 Nov 2024 15:22:38 +0000 (UTC)
-X-Farcaster-Flow-ID: 090d255a-bd4e-4b8c-9604-9659de410a04
-Received: from EX19D013UWB003.ant.amazon.com (10.13.138.111) by
- EX19MTAUWB002.ant.amazon.com (10.250.64.231) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.34;
- Wed, 27 Nov 2024 15:22:37 +0000
-Received: from EX19MTAUWC001.ant.amazon.com (10.250.64.145) by
- EX19D013UWB003.ant.amazon.com (10.13.138.111) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.34;
- Wed, 27 Nov 2024 15:22:37 +0000
-Received: from email-imr-corp-prod-iad-all-1a-93a35fb4.us-east-1.amazon.com
- (10.25.36.210) by mail-relay.amazon.com (10.250.64.145) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id
- 15.2.1258.34 via Frontend Transport; Wed, 27 Nov 2024 15:22:37 +0000
-Received: from dev-dsk-farbere-1a-46ecabed.eu-west-1.amazon.com (dev-dsk-farbere-1a-46ecabed.eu-west-1.amazon.com [172.19.116.181])
-	by email-imr-corp-prod-iad-all-1a-93a35fb4.us-east-1.amazon.com (Postfix) with ESMTP id C4BC640610;
-	Wed, 27 Nov 2024 15:22:36 +0000 (UTC)
-Received: by dev-dsk-farbere-1a-46ecabed.eu-west-1.amazon.com (Postfix, from userid 14301484)
-	id 7AFF345B; Wed, 27 Nov 2024 15:22:36 +0000 (UTC)
-From: Eliav Farber <farbere@amazon.com>
-To: <linux@armlinux.org.uk>, <catalin.marinas@arm.com>, <will@kernel.org>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
-	<naveen@kernel.org>, <maddy@linux.ibm.com>, <paul.walmsley@sifive.com>,
-	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <tglx@linutronix.de>,
-	<akpm@linux-foundation.org>, <bhe@redhat.com>, <farbere@amazon.com>,
-	<hbathini@linux.ibm.com>, <adityag@linux.ibm.com>,
-	<songshuaishuai@tinylab.org>, <takakura@valinux.co.jp>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>
-CC: <jonnyc@amazon.com>
-Subject: [PATCH v2] arm64: kexec: Check if IRQ is already masked before masking
-Date: Wed, 27 Nov 2024 15:22:36 +0000
-Message-ID: <20241127152236.26122-1-farbere@amazon.com>
-X-Mailer: git-send-email 2.40.1
+	t=1732738417; c=relaxed/relaxed;
+	bh=hGv3W/Ma2LfNkuoul/S2iSqH4wsA6106GvHp7/j8mmI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Mime-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CtNHV0QVqa5DVvNmzi0E+tuGm3z0zRFSYYRXUPNTmHKel9On3rX5NEI/DRNm3DIB51FSjKEoJwtBKcwfQWh/8dcPsiAsNgBjatGcPw9hHJbUV3FYFkY24M2PmPQMh8kfXykA/bSPTJqQsg82vZsOWFUry7FPL/1WFlzp5tbAYYjufmRzg+tNE8s3pSbL3poeXQyehEOoIjNmLAbHZ5Z4Pw9uJWsp1uKbV9t9w6ZLCvMKtziooZvBWLVYjhNiImVacsfTDCjVYqfEq4it5vH05ujVqJ1RPGavgABKHd5Qu0lFfWkH36WZmNiUqi9f3/EJubS1+WT2F/Cs0A+51wFHTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xz9cZ47SXz2xQK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2024 07:13:34 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 4ARKAHQb021080;
+	Wed, 27 Nov 2024 14:10:17 -0600
+Received: (from segher@localhost)
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 4ARKAGvl021078;
+	Wed, 27 Nov 2024 14:10:16 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Wed, 27 Nov 2024 14:10:15 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        geert@linux-m68k.org, arnd@arndb.de
+Subject: Re: [RFC PATCH 01/10] powerpc/chrp: Remove CHRP support
+Message-ID: <20241127201015.GO29862@gate.crashing.org>
+References: <20241114131114.602234-1-mpe@ellerman.id.au> <20241114210418.GM29862@gate.crashing.org> <87mshm7ixu.fsf@mpe.ellerman.id.au>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,173 +49,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87mshm7ixu.fsf@mpe.ellerman.id.au>
+User-Agent: Mutt/1.4.2.3i
 
-During machine kexec, the function machine_kexec_mask_interrupts() is
-responsible for disabling or masking all interrupts. While the
-irq_disable hook ensures that an already-disabled IRQ is not disabled
-again, the current implementation unconditionally invokes the irq_mask()
-function for every interrupt descriptor, even when the interrupt is
-already masked.
+On Tue, Nov 26, 2024 at 02:49:49PM +1100, Michael Ellerman wrote:
+> Segher Boessenkool <segher@kernel.crashing.org> writes:
+> > On Fri, Nov 15, 2024 at 12:11:04AM +1100, Michael Ellerman wrote:
+> >> CHRP (Common Hardware Reference Platform) was a standard developed by
+> >> IBM & Apple for PowerPC-based systems.
+> >> 
+> >> The standard was used in the development of some machines but never
+> >> gained wide spread adoption.
+> >> 
+> >> The Linux CHRP code only supports a handful of machines, all 32-bit, eg.
+> >> IBM B50, bplan/Genesi Pegasos/Pegasos2, Total Impact briQ, and possibly
+> >> some from Motorola? No Apple machines should be affected.
+> >> 
+> >> All of those mentioned above are over or nearing 20 years old, and seem
+> >> to have no active users.
+> >
+> > This was used by all non-IBM 970 systems as well.  The last was SLOF on
+> > JS20 and JS21, about 20 years ago yes, and I doubt anyone uses it still
+> > (I don't).
+> 
+> By "this" you mean the CHRP standard?
 
-A specific issue was observed in the crash kernel flow after unbinding a
-device (prior to kexec) that used a GPIO as an IRQ source. The warning
-was triggered by the gpiochip_disable_irq() function, which attempted to
-clear the FLAG_IRQ_IS_ENABLED flag when FLAG_USED_AS_IRQ was not set:
+I mean the "maple" stuff, and the whole "chrp" thing in PowerPC Linux.
 
-```
-void gpiochip_disable_irq(struct gpio_chip *gc, unsigned int offset)
-{
-	struct gpio_desc *desc = gpiochip_get_desc(gc, offset);
+> At least in Linux the "CHRP" platform has always been 32-bit only AFAIK.
 
-	if (!IS_ERR(desc) &&
-	    !WARN_ON(!test_bit(FLAG_USED_AS_IRQ, &desc->flags)))
-		clear_bit(FLAG_IRQ_IS_ENABLED, &desc->flags);
-}
-```
+No?  I've written stuff for it for years :-)
 
-The issue emerged after commit a8173820f441 ("gpio: gpiolib: Allow GPIO
-IRQs to lazy disable"), which introduced lazy disablement for GPIO IRQs
-by replacing disable/enable hooks with mask/unmask hooks in some cases.
-While irq_disable guarded against redundant operations, the unguarded
-irq_mask in machine_kexec_mask_interrupts() led to warnings when invoked
-on already-masked IRQs.
+> My memory is that JS20/JS21 used the "maple" platform, which was a
+> 64-bit only bare-metal platform, possibly it was actually == CHRP, but
+> we didn't call it that in Linux.
 
-When a GPIO-IRQ-using driver is unbound, the IRQ is released, invoking
-__irq_disable() and irq_state_set_masked(). A subsequent call to
-machine_kexec_mask_interrupts() reinvoked chip->irq_mask(), leading to a
-call chain that included gpiochip_irq_mask() and gpiochip_disable_irq().
-Because FLAG_USED_AS_IRQ was cleared earlier, a warning was printed.
+Well, it is what it is called in the Open Firmware device trees!
 
-This patch replaces the direct invocation of the irq_mask() and
-irq_disable() hooks with simplified code that leverages the
-irq_disable() kernel infrastructure. This higher-level function checks
-the interrupt's state to prevent redundant operations. Additionally, the
-IRQ_DISABLE_UNLAZY status flag is set to ensure that, for interrupt
-chips lacking an irq_disable callback, the disable operation is handled
-using the lazy approach.
+It has a root "device_type" property that starts with the string "chrp".
+But that really is only because Yaboot for some reason needs it to
+behave reasonably, heh.  (I didn't remember the details, but I still
+have the original SLOF open source release tarballs :-) )  So yeah it
+wasn't anything "chrp" in Linux itself, aha.
 
-As part of this change, the irq_disable() declaration was moved from
-kernel/irq/internals.h to include/linux/irq.h to make it accessible
-outside the kernel/irq/ directory, as the former can only be included
-within that directory.
+> But maybe I'm wrong, you were more involved than me back than, and it
+> was a long time ago :)
 
-Signed-off-by: Eliav Farber <farbere@amazon.com>
----
-V1 -> V2:
-- Implement an alternative solution by utilizing the kernel's
-  irq_disable() infrastructure.
-- Apply the fix to additional architectures, including ARM, PowerPC,
-  and RISC-V.
----
- arch/arm/kernel/machine_kexec.c   | 7 ++-----
- arch/arm64/kernel/machine_kexec.c | 7 ++-----
- arch/powerpc/kexec/core.c         | 7 ++-----
- arch/riscv/kernel/machine_kexec.c | 7 ++-----
- include/linux/irq.h               | 2 ++
- kernel/irq/internals.h            | 1 -
- 6 files changed, 10 insertions(+), 21 deletions(-)
+Very long ago.  Sad to see it go, but the Git tree will never forget :-)
 
-diff --git a/arch/arm/kernel/machine_kexec.c b/arch/arm/kernel/machine_kexec.c
-index 80ceb5bd2680..54d0bd1bd449 100644
---- a/arch/arm/kernel/machine_kexec.c
-+++ b/arch/arm/kernel/machine_kexec.c
-@@ -142,11 +142,8 @@ static void machine_kexec_mask_interrupts(void)
- 		if (chip->irq_eoi && irqd_irq_inprogress(&desc->irq_data))
- 			chip->irq_eoi(&desc->irq_data);
- 
--		if (chip->irq_mask)
--			chip->irq_mask(&desc->irq_data);
--
--		if (chip->irq_disable && !irqd_irq_disabled(&desc->irq_data))
--			chip->irq_disable(&desc->irq_data);
-+		irq_set_status_flags(i, IRQ_DISABLE_UNLAZY);
-+		irq_disable(desc);
- 	}
- }
- 
-diff --git a/arch/arm64/kernel/machine_kexec.c b/arch/arm64/kernel/machine_kexec.c
-index 82e2203d86a3..9b48d952df3e 100644
---- a/arch/arm64/kernel/machine_kexec.c
-+++ b/arch/arm64/kernel/machine_kexec.c
-@@ -230,11 +230,8 @@ static void machine_kexec_mask_interrupts(void)
- 		    chip->irq_eoi)
- 			chip->irq_eoi(&desc->irq_data);
- 
--		if (chip->irq_mask)
--			chip->irq_mask(&desc->irq_data);
--
--		if (chip->irq_disable && !irqd_irq_disabled(&desc->irq_data))
--			chip->irq_disable(&desc->irq_data);
-+		irq_set_status_flags(i, IRQ_DISABLE_UNLAZY);
-+		irq_disable(desc);
- 	}
- }
- 
-diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
-index b8333a49ea5d..3489e50f5017 100644
---- a/arch/powerpc/kexec/core.c
-+++ b/arch/powerpc/kexec/core.c
-@@ -36,11 +36,8 @@ void machine_kexec_mask_interrupts(void) {
- 		if (chip->irq_eoi && irqd_irq_inprogress(&desc->irq_data))
- 			chip->irq_eoi(&desc->irq_data);
- 
--		if (chip->irq_mask)
--			chip->irq_mask(&desc->irq_data);
--
--		if (chip->irq_disable && !irqd_irq_disabled(&desc->irq_data))
--			chip->irq_disable(&desc->irq_data);
-+		irq_set_status_flags(i, IRQ_DISABLE_UNLAZY);
-+		irq_disable(desc);
- 	}
- }
- 
-diff --git a/arch/riscv/kernel/machine_kexec.c b/arch/riscv/kernel/machine_kexec.c
-index 3c830a6f7ef4..a9df80e0602c 100644
---- a/arch/riscv/kernel/machine_kexec.c
-+++ b/arch/riscv/kernel/machine_kexec.c
-@@ -129,11 +129,8 @@ static void machine_kexec_mask_interrupts(void)
- 		if (chip->irq_eoi && irqd_irq_inprogress(&desc->irq_data))
- 			chip->irq_eoi(&desc->irq_data);
- 
--		if (chip->irq_mask)
--			chip->irq_mask(&desc->irq_data);
--
--		if (chip->irq_disable && !irqd_irq_disabled(&desc->irq_data))
--			chip->irq_disable(&desc->irq_data);
-+		irq_set_status_flags(i, IRQ_DISABLE_UNLAZY);
-+		irq_disable(desc);
- 	}
- }
- 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index fa711f80957b..176a7f671409 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -600,6 +600,8 @@ enum {
- 
- #define IRQ_DEFAULT_INIT_FLAGS	ARCH_IRQ_INIT_FLAGS
- 
-+extern void irq_disable(struct irq_desc *desc);
-+
- struct irqaction;
- extern int setup_percpu_irq(unsigned int irq, struct irqaction *new);
- extern void remove_percpu_irq(unsigned int irq, struct irqaction *act);
-diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
-index fe0272cd84a5..d9104d2b26b4 100644
---- a/kernel/irq/internals.h
-+++ b/kernel/irq/internals.h
-@@ -91,7 +91,6 @@ extern int irq_startup(struct irq_desc *desc, bool resend, bool force);
- extern void irq_shutdown(struct irq_desc *desc);
- extern void irq_shutdown_and_deactivate(struct irq_desc *desc);
- extern void irq_enable(struct irq_desc *desc);
--extern void irq_disable(struct irq_desc *desc);
- extern void irq_percpu_enable(struct irq_desc *desc, unsigned int cpu);
- extern void irq_percpu_disable(struct irq_desc *desc, unsigned int cpu);
- extern void mask_irq(struct irq_desc *desc);
--- 
-2.40.1
 
+Segher
 
