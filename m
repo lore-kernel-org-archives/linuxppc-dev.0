@@ -1,114 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-3588-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0997D6D227
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2024 19:32:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBFC3D6D238
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Nov 2024 20:12:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xz8hy6G2Fz2y8p;
-	Thu, 28 Nov 2024 06:32:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732735938;
-	cv=none; b=mEE6rVC/7nkWInuH+1Zf5j1YZ17LMypQfZhvaUt09gFaMG1HD7txn7zIW8ofWcB17xW7I/vYFRtQT++p8A/0VJLlTKWgzoPVOrMABzcrld2ZnMzDx5s4rms7VnPi63Q2CFFGqe2KmHnd6TN9lv86De76SApu+E6WfuLi3y+VlXalmF/FdZ6iquwQvOkBMsxwgBAw8wCvXb+AJi6/9sqTO6PmYWWp5D3vV/UnatXmTen3AlewLnN73KbGL+/Yy2KR1EAaLXBjivu1h9pVWcJE/8oy0EX6+wc7iJZ0tL5fIpylB++9i1scJeDfkOMSrt88KHBu/z1xNXpFvgPA+u+BTA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xz9bW6W8xz2xg8;
+	Thu, 28 Nov 2024 07:12:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=99.78.197.219
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732720966;
+	cv=none; b=dfdlyiFwLfWh8Wxlk8LsiVZRSnpaMdEZdmaE2Ov5rPncLbaqbUKa8bPuDyopQb98JIPqZCvEylQyQjMGqIOSFB600QalML9FWnOorNxmuOECI0wXjaatcvnoG6nJoh9qtJEZXE6XRoLG08kmCEVr28JNsN2vleScCfzwv4jBupscz6ZQQZRA7GVWjMdydgh6BcrF33Mz9+t7ZFQZum7veHWv7UYBWxvvzfq5li8i4ysLm2JVdC+elgyfTiN3HwmNj7B40MSrHNkmWi7+w96u9EKL/ZqlspPULV+mt6o9VJTYkpN+YvoBbRsSVe7UASXXCv0nkGn+upNouZ4NWPTs5A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1732735938; c=relaxed/relaxed;
-	bh=wYD9+WzWy/AtpAhh9/Y90J+SPB0CH5V5FKAn0rVlHi0=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=PbiEM/ZNHEvpGYzaFccZ7HDWB3k8ogKAnFpQ8zQhxebv70Mw9zpINzhYLE92RG4aiXjVge4WlsonviUUyxgGrWWFMMJiiEQdbtvX7SlcBCshc+EUEnNkLt/k2GVwP1l73LDYEqfp3tf8ZWbP/o4wlcbvfbTKPMOUwmsRjpsRnsPUHnmfujali0Jo72WJf1lxP2XXGpW8ebros/Xmdn1pDAJ2cKVRUq4vgoMStofb361ZcZ64hkT8rkbYdd7w1xgxiC0MD/CcGe7wl8t8KAiGXfLKlqtLZA1RGcwLxCvMUGv0IBX+dUBJHZNBttfhGalTVXOqye6ZWJYCZFnzPpv8xA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=X2BtrIqN; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1732720966; c=relaxed/relaxed;
+	bh=NvBWtev1slrWXhkVcMmhNUJ2tEXO/H0E7EXWBQ0mv08=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DNn2CMUsRfZGMVWzxB5ypAWC82Q5UaYXv9soHK+pRPoh6aCs4XMv532l+O7njB02XdkKao+fcpNyLVrRTkLaNwREKQ4J/5e7Jcne5Djy43J3XvSGHiQxyAX05HOnoOARYLU1NXgD/TRM6F4EakoxQjG+sTR29bll5LAC+cHcy3z3VV3EI6dYbd7vLgoCERWykhKKKncdcsht0y8NTkyiVg5jcndcpOybKh/k3ZbuU7GkCVqSqeb44k+7QoQsk0NpceKrPFq1eUargL/RuTwqn4OCrIMVgAK3tSdqtoO5e58WNmxer4K7tHyI7YiuaMRlOKEZQ6uCJdrzCZaPQUkBiA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com; dkim=pass (1024-bit key; unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazon201209 header.b=CQpvh8Sk; dkim-atps=neutral; spf=pass (client-ip=99.78.197.219; helo=smtp-fw-80008.amazon.com; envelope-from=prvs=0540332c8=farbere@amazon.com; receiver=lists.ozlabs.org) smtp.mailfrom=amazon.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amazon.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=X2BtrIqN;
+	dkim=pass (1024-bit key; unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazon201209 header.b=CQpvh8Sk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amazon.com (client-ip=99.78.197.219; helo=smtp-fw-80008.amazon.com; envelope-from=prvs=0540332c8=farbere@amazon.com; receiver=lists.ozlabs.org)
+Received: from smtp-fw-80008.amazon.com (smtp-fw-80008.amazon.com [99.78.197.219])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xz8hw5K3yz2xs0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2024 06:32:16 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 25421A439F3;
-	Wed, 27 Nov 2024 19:30:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BD69C4CED2;
-	Wed, 27 Nov 2024 19:32:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1732735930;
-	bh=xrciW+EMhZ5UEofbJw9NwB4YNk6WJ7ZsUg3ugalAKtY=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=X2BtrIqNGPOvV+49M5YnEnvMfq90m+ylhD7PzWNtlQWXRcWLiIC9o7ibIu7Z+6NCF
-	 kcXzlV4NXbHYexopnI8wyMqZtXl1aARG1Kv+1kHo2QdWtEH8r51A6kx0Z+b8YMEuGQ
-	 KkVWB5pfPFETZ3jygkOvTt1oTUJ7ox8ovqX6d1E+iA+5p2Dg3oRun7qGKNbz7lmsz9
-	 P2yGA8boYanYTYFxQR6QsePoSp98SjRizDnHD/Y6HoJ2E4HX1u+AiXq7pnGqhQjajY
-	 UFL0t9n5dlc0Yh9Rql7BGoHCScG0i7PhlQ+71XDRGrapyLXfaRB16QrJ7c3W0qJT2C
-	 zsuLVCEMA8n/A==
-Received: from sofa.misterjones.org ([185.219.108.64] helo=goblin-girl.misterjones.org)
-	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.95)
-	(envelope-from <maz@kernel.org>)
-	id 1tGNlf-00GLsr-Kw;
-	Wed, 27 Nov 2024 19:32:07 +0000
-Date: Wed, 27 Nov 2024 19:32:06 +0000
-Message-ID: <867c8ov5ft.wl-maz@kernel.org>
-From: Marc Zyngier <maz@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Borislav Petkov <bp@alien8.de>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@redhat.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Davidlohr Bueso <dave@stgolabs.net>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Jiaxun Yang <jiaxun.yang@flygoat.com>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Jonathan Cameron <jonathan.cameron@huawei.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Samuel Holland <samuel.holland@sifive.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Will Deacon <will@kernel.org>,
-	Zi Yan <ziy@nvidia.com>,
-	devicetree@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-cxl@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-mips@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	loongarch@lists.linux.dev,
-	nvdimm@lists.linux.dev,
-	sparclinux@vger.kernel.org,
-	x86@kernel.org,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: Re: [PATCH v4 24/26] arch_numa: switch over to numa_memblks
-In-Reply-To: <20240807064110.1003856-25-rppt@kernel.org>
-References: <20240807064110.1003856-1-rppt@kernel.org>
-	<20240807064110.1003856-25-rppt@kernel.org>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) SEMI-EPG/1.14.7 (Harue)
- FLIM-LB/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL-LB/10.8 EasyPG/1.0.0 Emacs/29.4
- (aarch64-unknown-linux-gnu) MULE/6.0 (HANACHIRUSATO)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xz3904GjZz2xjv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Nov 2024 02:22:44 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1732720964; x=1764256964;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=NvBWtev1slrWXhkVcMmhNUJ2tEXO/H0E7EXWBQ0mv08=;
+  b=CQpvh8SkytomRc7jOWFxa8siAzg42RPYE1j3G07FtirwRXJqIyDCO9tm
+   n+szdZPYd9xBJOiGgham7EsZUdkx+hJzL3Qrp9RJ1jlQCZP/FjzTFTDpG
+   gQG9ca6lhIJsi/KgYN5ox60ObXBcrzkkAq24lzDSFa2Gs5zct4QN/6CnB
+   0=;
+X-IronPort-AV: E=Sophos;i="6.12,189,1728950400"; 
+   d="scan'208";a="148444442"
+Received: from pdx4-co-svc-p1-lb2-vlan3.amazon.com (HELO smtpout.prod.us-west-2.prod.farcaster.email.amazon.dev) ([10.25.36.214])
+  by smtp-border-fw-80008.pdx80.corp.amazon.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Nov 2024 15:22:38 +0000
+Received: from EX19MTAUWB002.ant.amazon.com [10.0.38.20:4762]
+ by smtpin.naws.us-west-2.prod.farcaster.email.amazon.dev [10.0.10.101:2525] with esmtp (Farcaster)
+ id 090d255a-bd4e-4b8c-9604-9659de410a04; Wed, 27 Nov 2024 15:22:38 +0000 (UTC)
+X-Farcaster-Flow-ID: 090d255a-bd4e-4b8c-9604-9659de410a04
+Received: from EX19D013UWB003.ant.amazon.com (10.13.138.111) by
+ EX19MTAUWB002.ant.amazon.com (10.250.64.231) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.34;
+ Wed, 27 Nov 2024 15:22:37 +0000
+Received: from EX19MTAUWC001.ant.amazon.com (10.250.64.145) by
+ EX19D013UWB003.ant.amazon.com (10.13.138.111) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id 15.2.1258.34;
+ Wed, 27 Nov 2024 15:22:37 +0000
+Received: from email-imr-corp-prod-iad-all-1a-93a35fb4.us-east-1.amazon.com
+ (10.25.36.210) by mail-relay.amazon.com (10.250.64.145) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA) id
+ 15.2.1258.34 via Frontend Transport; Wed, 27 Nov 2024 15:22:37 +0000
+Received: from dev-dsk-farbere-1a-46ecabed.eu-west-1.amazon.com (dev-dsk-farbere-1a-46ecabed.eu-west-1.amazon.com [172.19.116.181])
+	by email-imr-corp-prod-iad-all-1a-93a35fb4.us-east-1.amazon.com (Postfix) with ESMTP id C4BC640610;
+	Wed, 27 Nov 2024 15:22:36 +0000 (UTC)
+Received: by dev-dsk-farbere-1a-46ecabed.eu-west-1.amazon.com (Postfix, from userid 14301484)
+	id 7AFF345B; Wed, 27 Nov 2024 15:22:36 +0000 (UTC)
+From: Eliav Farber <farbere@amazon.com>
+To: <linux@armlinux.org.uk>, <catalin.marinas@arm.com>, <will@kernel.org>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
+	<naveen@kernel.org>, <maddy@linux.ibm.com>, <paul.walmsley@sifive.com>,
+	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <tglx@linutronix.de>,
+	<akpm@linux-foundation.org>, <bhe@redhat.com>, <farbere@amazon.com>,
+	<hbathini@linux.ibm.com>, <adityag@linux.ibm.com>,
+	<songshuaishuai@tinylab.org>, <takakura@valinux.co.jp>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>
+CC: <jonnyc@amazon.com>
+Subject: [PATCH v2] arm64: kexec: Check if IRQ is already masked before masking
+Date: Wed, 27 Nov 2024 15:22:36 +0000
+Message-ID: <20241127152236.26122-1-farbere@amazon.com>
+X-Mailer: git-send-email 2.40.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,86 +88,173 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-SA-Exim-Connect-IP: 185.219.108.64
-X-SA-Exim-Rcpt-To: rppt@kernel.org, linux-kernel@vger.kernel.org, agordeev@linux.ibm.com, andreas@gaisler.com, akpm@linux-foundation.org, arnd@arndb.de, bp@alien8.de, catalin.marinas@arm.com, christophe.leroy@csgroup.eu, dan.j.williams@intel.com, dave.hansen@linux.intel.com, david@redhat.com, davem@davemloft.net, dave@stgolabs.net, gregkh@linuxfoundation.org, hca@linux.ibm.com, chenhuacai@kernel.org, mingo@redhat.com, jiaxun.yang@flygoat.com, glaubitz@physik.fu-berlin.de, jonathan.cameron@huawei.com, corbet@lwn.net, mpe@ellerman.id.au, palmer@dabbelt.com, rafael@kernel.org, robh@kernel.org, samuel.holland@sifive.com, tsbogend@alpha.franken.de, tglx@linutronix.de, gor@linux.ibm.com, will@kernel.org, ziy@nvidia.com, devicetree@vger.kernel.org, linux-acpi@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cxl@vger.kernel.org, linux-doc@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org, linux-riscv@lists.infradead.org, linux-s390@vger.k
- ernel.org, linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, nvdimm@lists.linux.dev, sparclinux@vger.kernel.org, x86@kernel.org, Jonathan.Cameron@huawei.com
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-Hi Mike,
+During machine kexec, the function machine_kexec_mask_interrupts() is
+responsible for disabling or masking all interrupts. While the
+irq_disable hook ensures that an already-disabled IRQ is not disabled
+again, the current implementation unconditionally invokes the irq_mask()
+function for every interrupt descriptor, even when the interrupt is
+already masked.
 
-Sorry for reviving a rather old thread.
+A specific issue was observed in the crash kernel flow after unbinding a
+device (prior to kexec) that used a GPIO as an IRQ source. The warning
+was triggered by the gpiochip_disable_irq() function, which attempted to
+clear the FLAG_IRQ_IS_ENABLED flag when FLAG_USED_AS_IRQ was not set:
 
-On Wed, 07 Aug 2024 07:41:08 +0100,
-Mike Rapoport <rppt@kernel.org> wrote:
-> 
-> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-> 
-> Until now arch_numa was directly translating firmware NUMA information
-> to memblock.
-> 
-> Using numa_memblks as an intermediate step has a few advantages:
-> * alignment with more battle tested x86 implementation
-> * availability of NUMA emulation
-> * maintaining node information for not yet populated memory
-> 
-> Adjust a few places in numa_memblks to compile with 32-bit phys_addr_t
-> and replace current functionality related to numa_add_memblk() and
-> __node_distance() in arch_numa with the implementation based on
-> numa_memblks and add functions required by numa_emulation.
-> 
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Tested-by: Zi Yan <ziy@nvidia.com> # for x86_64 and arm64
-> Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Tested-by: Jonathan Cameron <Jonathan.Cameron@huawei.com> [arm64 + CXL via QEMU]
-> Acked-by: Dan Williams <dan.j.williams@intel.com>
-> Acked-by: David Hildenbrand <david@redhat.com>
-> ---
->  drivers/base/Kconfig       |   1 +
->  drivers/base/arch_numa.c   | 201 +++++++++++--------------------------
->  include/asm-generic/numa.h |   6 +-
->  mm/numa_memblks.c          |  17 ++--
->  4 files changed, 75 insertions(+), 150 deletions(-)
->
+```
+void gpiochip_disable_irq(struct gpio_chip *gc, unsigned int offset)
+{
+	struct gpio_desc *desc = gpiochip_get_desc(gc, offset);
 
-[...]
+	if (!IS_ERR(desc) &&
+	    !WARN_ON(!test_bit(FLAG_USED_AS_IRQ, &desc->flags)))
+		clear_bit(FLAG_IRQ_IS_ENABLED, &desc->flags);
+}
+```
 
->  static int __init numa_register_nodes(void)
->  {
->  	int nid;
-> -	struct memblock_region *mblk;
-> -
-> -	/* Check that valid nid is set to memblks */
-> -	for_each_mem_region(mblk) {
-> -		int mblk_nid = memblock_get_region_node(mblk);
-> -		phys_addr_t start = mblk->base;
-> -		phys_addr_t end = mblk->base + mblk->size - 1;
-> -
-> -		if (mblk_nid == NUMA_NO_NODE || mblk_nid >= MAX_NUMNODES) {
-> -			pr_warn("Warning: invalid memblk node %d [mem %pap-%pap]\n",
-> -				mblk_nid, &start, &end);
-> -			return -EINVAL;
-> -		}
-> -	}
->  
+The issue emerged after commit a8173820f441 ("gpio: gpiolib: Allow GPIO
+IRQs to lazy disable"), which introduced lazy disablement for GPIO IRQs
+by replacing disable/enable hooks with mask/unmask hooks in some cases.
+While irq_disable guarded against redundant operations, the unguarded
+irq_mask in machine_kexec_mask_interrupts() led to warnings when invoked
+on already-masked IRQs.
 
-This hunk has the unfortunate side effect of killing my ThunderX
-extremely early at boot time, as this sorry excuse for a machine
-really relies on the kernel recognising that whatever NUMA information
-the FW offers is BS.
+When a GPIO-IRQ-using driver is unbound, the IRQ is released, invoking
+__irq_disable() and irq_state_set_masked(). A subsequent call to
+machine_kexec_mask_interrupts() reinvoked chip->irq_mask(), leading to a
+call chain that included gpiochip_irq_mask() and gpiochip_disable_irq().
+Because FLAG_USED_AS_IRQ was cleared earlier, a warning was printed.
 
-Reverting this hunk restores happiness (sort of).
+This patch replaces the direct invocation of the irq_mask() and
+irq_disable() hooks with simplified code that leverages the
+irq_disable() kernel infrastructure. This higher-level function checks
+the interrupt's state to prevent redundant operations. Additionally, the
+IRQ_DISABLE_UNLAZY status flag is set to ensure that, for interrupt
+chips lacking an irq_disable callback, the disable operation is handled
+using the lazy approach.
 
-FWIW, I've posted a patch with such revert at [1].
+As part of this change, the irq_disable() declaration was moved from
+kernel/irq/internals.h to include/linux/irq.h to make it accessible
+outside the kernel/irq/ directory, as the former can only be included
+within that directory.
 
-Thanks,
+Signed-off-by: Eliav Farber <farbere@amazon.com>
+---
+V1 -> V2:
+- Implement an alternative solution by utilizing the kernel's
+  irq_disable() infrastructure.
+- Apply the fix to additional architectures, including ARM, PowerPC,
+  and RISC-V.
+---
+ arch/arm/kernel/machine_kexec.c   | 7 ++-----
+ arch/arm64/kernel/machine_kexec.c | 7 ++-----
+ arch/powerpc/kexec/core.c         | 7 ++-----
+ arch/riscv/kernel/machine_kexec.c | 7 ++-----
+ include/linux/irq.h               | 2 ++
+ kernel/irq/internals.h            | 1 -
+ 6 files changed, 10 insertions(+), 21 deletions(-)
 
-	M.
-
-[1] https://lore.kernel.org/r/20241127193000.3702637-1-maz@kernel.org
-
+diff --git a/arch/arm/kernel/machine_kexec.c b/arch/arm/kernel/machine_kexec.c
+index 80ceb5bd2680..54d0bd1bd449 100644
+--- a/arch/arm/kernel/machine_kexec.c
++++ b/arch/arm/kernel/machine_kexec.c
+@@ -142,11 +142,8 @@ static void machine_kexec_mask_interrupts(void)
+ 		if (chip->irq_eoi && irqd_irq_inprogress(&desc->irq_data))
+ 			chip->irq_eoi(&desc->irq_data);
+ 
+-		if (chip->irq_mask)
+-			chip->irq_mask(&desc->irq_data);
+-
+-		if (chip->irq_disable && !irqd_irq_disabled(&desc->irq_data))
+-			chip->irq_disable(&desc->irq_data);
++		irq_set_status_flags(i, IRQ_DISABLE_UNLAZY);
++		irq_disable(desc);
+ 	}
+ }
+ 
+diff --git a/arch/arm64/kernel/machine_kexec.c b/arch/arm64/kernel/machine_kexec.c
+index 82e2203d86a3..9b48d952df3e 100644
+--- a/arch/arm64/kernel/machine_kexec.c
++++ b/arch/arm64/kernel/machine_kexec.c
+@@ -230,11 +230,8 @@ static void machine_kexec_mask_interrupts(void)
+ 		    chip->irq_eoi)
+ 			chip->irq_eoi(&desc->irq_data);
+ 
+-		if (chip->irq_mask)
+-			chip->irq_mask(&desc->irq_data);
+-
+-		if (chip->irq_disable && !irqd_irq_disabled(&desc->irq_data))
+-			chip->irq_disable(&desc->irq_data);
++		irq_set_status_flags(i, IRQ_DISABLE_UNLAZY);
++		irq_disable(desc);
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
+index b8333a49ea5d..3489e50f5017 100644
+--- a/arch/powerpc/kexec/core.c
++++ b/arch/powerpc/kexec/core.c
+@@ -36,11 +36,8 @@ void machine_kexec_mask_interrupts(void) {
+ 		if (chip->irq_eoi && irqd_irq_inprogress(&desc->irq_data))
+ 			chip->irq_eoi(&desc->irq_data);
+ 
+-		if (chip->irq_mask)
+-			chip->irq_mask(&desc->irq_data);
+-
+-		if (chip->irq_disable && !irqd_irq_disabled(&desc->irq_data))
+-			chip->irq_disable(&desc->irq_data);
++		irq_set_status_flags(i, IRQ_DISABLE_UNLAZY);
++		irq_disable(desc);
+ 	}
+ }
+ 
+diff --git a/arch/riscv/kernel/machine_kexec.c b/arch/riscv/kernel/machine_kexec.c
+index 3c830a6f7ef4..a9df80e0602c 100644
+--- a/arch/riscv/kernel/machine_kexec.c
++++ b/arch/riscv/kernel/machine_kexec.c
+@@ -129,11 +129,8 @@ static void machine_kexec_mask_interrupts(void)
+ 		if (chip->irq_eoi && irqd_irq_inprogress(&desc->irq_data))
+ 			chip->irq_eoi(&desc->irq_data);
+ 
+-		if (chip->irq_mask)
+-			chip->irq_mask(&desc->irq_data);
+-
+-		if (chip->irq_disable && !irqd_irq_disabled(&desc->irq_data))
+-			chip->irq_disable(&desc->irq_data);
++		irq_set_status_flags(i, IRQ_DISABLE_UNLAZY);
++		irq_disable(desc);
+ 	}
+ }
+ 
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index fa711f80957b..176a7f671409 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -600,6 +600,8 @@ enum {
+ 
+ #define IRQ_DEFAULT_INIT_FLAGS	ARCH_IRQ_INIT_FLAGS
+ 
++extern void irq_disable(struct irq_desc *desc);
++
+ struct irqaction;
+ extern int setup_percpu_irq(unsigned int irq, struct irqaction *new);
+ extern void remove_percpu_irq(unsigned int irq, struct irqaction *act);
+diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
+index fe0272cd84a5..d9104d2b26b4 100644
+--- a/kernel/irq/internals.h
++++ b/kernel/irq/internals.h
+@@ -91,7 +91,6 @@ extern int irq_startup(struct irq_desc *desc, bool resend, bool force);
+ extern void irq_shutdown(struct irq_desc *desc);
+ extern void irq_shutdown_and_deactivate(struct irq_desc *desc);
+ extern void irq_enable(struct irq_desc *desc);
+-extern void irq_disable(struct irq_desc *desc);
+ extern void irq_percpu_enable(struct irq_desc *desc, unsigned int cpu);
+ extern void irq_percpu_disable(struct irq_desc *desc, unsigned int cpu);
+ extern void mask_irq(struct irq_desc *desc);
 -- 
-Without deviation from the norm, progress is not possible.
+2.40.1
+
 
