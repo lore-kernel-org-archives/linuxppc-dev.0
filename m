@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-3657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95A7DD49793
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2024 01:22:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45E69D49793
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2024 01:22:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y1mGC0Ws8z2yyD;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y1mGC0qYpz2yyG;
 	Mon,  2 Dec 2024 12:21:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733102498;
-	cv=none; b=liN1wyFflQw2SchLHfcybuJFqjsh3QYXRdjNPpfDhGj0EfGwQy4UfZUunxrDw8+3/vfBvWyYOlseBCrUI6le1hCA8xdJ5RXHKUbyhFusidU4vHP7BPCENpd410wlaIrAdVsyfCglwk61W7ZsOihadEpYvHgy0KHQwXHgKJTEKzyxzDQ9opuIxMvv7Z9Gezx+jdRkmT4uCi+ia8jayzsfMYKW1446wTF+FvfAAUdQErDF8La+BRlTH3m/9E/EnwUmR8GNHGml5bflEsN+Wihba7wL0mdhVqYYP2C+d9Chsb6dIq/2Qh0YWcqCgTgkhyCO7pA2cyNBixwd51NQwXMtpw==
+	cv=none; b=Z3n9DnZuzOXcX1XL+9SCi7LASffslTqU7FltpW0m+oQA2RQRnCHLGG3ZrRqIxo40fzxWcGRuNEkgjReRsUDVgGJ1CsCDzaHicR7GzAj51J3YTdw0Es3hBwD82/tjfwJHT5eoeRTPH2HeSb9rER4m1ZtMWXhOtwxquRbOgMzKvKmSyF77OZUrz95nUeispP6+Td2iIuuIPPhXCy3na7Mjak2HdTEKA1rSOgoBis3jRQEgKMbTGumwVe5YkXodItOzX8nV0iYPmHYilBN5D3ujdF0xvz5u2ztDxGlBWoG60BsBkpEY1akkcWylDIN1M3SYggjCU4L3clLLHRhUUpINUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1733102498; c=relaxed/relaxed;
-	bh=wqw32qv6NNAzFbqEMfxNd+2cUTIr7U7Wo7O4V8lcz5Q=;
+	bh=4dJhhfNYse5g4sxYKcGkaoJsg/B9udt558JawF7/Rdc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AzyLSKcyEvXULIZfMgLbBoKbuTOxKvDm3nI0V0UdF1Thtgsj8ADimm2ZrSDT6C4EYDcEHS13NjZxadpd+IY2eMvBTza4i3lCt9oQYV88nM/WR84xIYjDBjkaVpYts9M9bEO2O7HC4UF5sXJb1mizmmdc3SsxK472vTiW5R4GsMth0E9wL+5LuRvmRagCASStrrT8wv19F5Jt+QDe3E5L7+bBR5vgbpsEvAD1uNmCDjzWXMF7USrGPZq43TSHV8Rr/0OvwldlVUNFQYwEMdyVuqvsNSRT6JzjLP6wm2QPvQiZCF0rg2VOQL0tszqd7Jg2qBYwA+DYoOxZOnkTy9iA3w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mew14CNy; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=lSYNHbnq7LliT/nq9BGpbu0afdO2A5Rqaf96z1RqA11YZOhZjlsMOddqEW0VRa9ckt47xifWjbsFILBmHwqqf8Mp6cHGVKRvNAMqRWm9tCjlhQ4oeFB61f4iRaK1eGPP3pUW5w3rXg8ayZApnGZPpO5wtd8aJ7wYIAIUadPLQ1staq0t/RUPQfrJlVFh7ZWSxJvLl7hfYYibCeBWG1dHnWIWN4dqLmPn0+0V6x/ukHjyPhD6lKxbNijZTWWYjElwxRrfZJX7q7UMN1WpwL3tf8d2FxgLHvK1HlLUbpZ5qkcQQ5Tp49VkhvyN2ZKISqK+0InH4hrMFXt1lVkB72oQmg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KQxT2NmD; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mew14CNy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KQxT2NmD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y1mG85phDz2yng
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2024 12:21:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y1mG82Lr7z2yky
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2024 12:21:35 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 0105BA40C51;
-	Mon,  2 Dec 2024 01:19:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3605C4CEE3;
+	by nyc.source.kernel.org (Postfix) with ESMTP id 2321BA40C23;
+	Mon,  2 Dec 2024 01:19:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26F57C4CEE6;
 	Mon,  2 Dec 2024 01:21:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733102492;
-	bh=KUxurPuR7tri/rWwkEp1MLHm/TOAuwD8O1Sn0i1uUzI=;
+	s=k20201202; t=1733102491;
+	bh=uZpRi3DEfmAoO5Yk/0z7wihnQeAI8Acvqn1jamG9QBE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=mew14CNy1lCNG18pX6nCOSSUkM7sygXeFSyi8VPEzxe0yG/lP4DT+LFSNqYSQxMuX
-	 5YhWQKvo9kdFy7jfWeRaMniXZoL9OzFPxmY9ovzXID0IKWZHzVmQio0O71xHl7S4xo
-	 nmtwrG5cg+yha+fcT2o1jO8G5NM/OosgTXW30Mr0bxe+uZnU1k9jZXex8oBObAmKBp
-	 fP0pN6NFW/CC8jEMKWDX63y7UEwISw8y4Pt8kB7SNJLnmFLf/0rBTS0ztTlM3EkJZ5
-	 ZGQUoS2SoQtEZyqDJ3yYGSCVbxe9iPu1hfdsQy4D7vBFFXM8GP/4reSAm9OnbDZuXb
-	 yMkp5GgBA1IQA==
+	b=KQxT2NmDgfUDlNBAbGePqzelv+jU91CMQXbNqTJ80+Mt9H6qBytewyIJ3lkyvP/Rd
+	 O+h+F+mvRN6a1KFfayqFgHIm/w0OCIkd/QHLze5XiqqJ7i6aIJNvh9ZdjjSWkb0PwN
+	 RlKAJzhODTL+e0DVRHBB2Im4rO/NalLq+o+6z1tREULwYwahYcUbAgUbV+fh9P0PGd
+	 /I7wHGLMxbKdIO8l92/r65jZVFtrnA1y+dlO/PnazWzjFCKcyuPhsbgQ/+qO2bE3BF
+	 Pd4ZTKHj9l0enB2M/GivbX03X2hPhN3SPa+Itl4oBTTKBf6kVO54oaj3TZqaWgGgLg
+	 dDJYOZW2S8UhA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -53,10 +53,10 @@ Cc: linux-arch@vger.kernel.org,
 	x86@kernel.org,
 	Zhihang Shao <zhihang.shao.iscas@gmail.com>,
 	Ard Biesheuvel <ardb@kernel.org>,
-	Vinicius Peixoto <vpeixoto@lkcamp.dev>
-Subject: [PATCH v2 09/12] lib/crc16_kunit: delete obsolete crc16_kunit.c
-Date: Sun,  1 Dec 2024 17:20:53 -0800
-Message-ID: <20241202012056.209768-10-ebiggers@kernel.org>
+	"Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: [PATCH v2 07/12] powerpc/crc-t10dif: expose CRC-T10DIF function through lib
+Date: Sun,  1 Dec 2024 17:20:51 -0800
+Message-ID: <20241202012056.209768-8-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241202012056.209768-1-ebiggers@kernel.org>
 References: <20241202012056.209768-1-ebiggers@kernel.org>
@@ -76,220 +76,294 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-This new test showed up in v6.13-rc1.  Delete it since it is being
-superseded by crc_kunit.c, which is more comprehensive (tests multiple
-CRC variants without duplicating code, includes a benchmark, etc.).
+Move the powerpc CRC-T10DIF assembly code into the lib directory and
+wire it up to the library interface.  This allows it to be used without
+going through the crypto API.  It remains usable via the crypto API too
+via the shash algorithms that use the library interface.  Thus all the
+arch-specific "shash" code becomes unnecessary and is removed.
 
-Cc: Vinicius Peixoto <vpeixoto@lkcamp.dev>
+Note: to see the diff from arch/powerpc/crypto/crct10dif-vpmsum_glue.c
+to arch/powerpc/lib/crc-t10dif-glue.c, view this commit with
+'git show -M10'.
+
+Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
+Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- lib/Kconfig.debug |   9 ---
- lib/Makefile      |   1 -
- lib/crc16_kunit.c | 155 ----------------------------------------------
- 3 files changed, 165 deletions(-)
- delete mode 100644 lib/crc16_kunit.c
+ arch/powerpc/Kconfig                          |  1 +
+ arch/powerpc/configs/powernv_defconfig        |  1 -
+ arch/powerpc/configs/ppc64_defconfig          |  1 -
+ arch/powerpc/crypto/Kconfig                   | 15 +---
+ arch/powerpc/crypto/Makefile                  |  2 -
+ arch/powerpc/lib/Makefile                     |  3 +
+ .../crc-t10dif-glue.c}                        | 69 +++++--------------
+ .../{crypto => lib}/crct10dif-vpmsum_asm.S    |  2 +-
+ 8 files changed, 23 insertions(+), 71 deletions(-)
+ rename arch/powerpc/{crypto/crct10dif-vpmsum_glue.c => lib/crc-t10dif-glue.c} (50%)
+ rename arch/powerpc/{crypto => lib}/crct10dif-vpmsum_asm.S (99%)
 
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index d9b89dd3f6a0..688dace36f36 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -2876,19 +2876,10 @@ config USERCOPY_KUNIT_TEST
- 	help
- 	  This builds the "usercopy_kunit" module that runs sanity checks
- 	  on the copy_to/from_user infrastructure, making sure basic
- 	  user/kernel boundary testing is working.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index b5050a09a27f..da0ac6697ac5 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -126,10 +126,11 @@ config PPC
+ 	select ARCH_DMA_DEFAULT_COHERENT	if !NOT_COHERENT_CACHE
+ 	select ARCH_ENABLE_MEMORY_HOTPLUG
+ 	select ARCH_ENABLE_MEMORY_HOTREMOVE
+ 	select ARCH_HAS_COPY_MC			if PPC64
+ 	select ARCH_HAS_CRC32			if PPC64 && ALTIVEC
++	select ARCH_HAS_CRC_T10DIF		if PPC64 && ALTIVEC
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VIRTUAL
+ 	select ARCH_HAS_DEBUG_VM_PGTABLE
+ 	select ARCH_HAS_DEBUG_WX		if STRICT_KERNEL_RWX
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+index 4a7ddea05b4d..6b6d7467fecf 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -318,11 +318,10 @@ CONFIG_FTR_FIXUP_SELFTEST=y
+ CONFIG_MSI_BITMAP_SELFTEST=y
+ CONFIG_XMON=y
+ CONFIG_CRYPTO_TEST=m
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_HMAC=y
+-CONFIG_CRYPTO_CRCT10DIF_VPMSUM=m
+ CONFIG_CRYPTO_MD5_PPC=m
+ CONFIG_CRYPTO_MICHAEL_MIC=m
+ CONFIG_CRYPTO_SHA1_PPC=m
+ CONFIG_CRYPTO_SHA256=y
+ CONFIG_CRYPTO_WP512=m
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 58e5f4488da4..15101f5c3238 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -387,11 +387,10 @@ CONFIG_CRYPTO_TWOFISH=m
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_MICHAEL_MIC=m
+ CONFIG_CRYPTO_SHA256=y
+ CONFIG_CRYPTO_WP512=m
+ CONFIG_CRYPTO_LZO=m
+-CONFIG_CRYPTO_CRCT10DIF_VPMSUM=m
+ CONFIG_CRYPTO_VPMSUM_TESTER=m
+ CONFIG_CRYPTO_MD5_PPC=m
+ CONFIG_CRYPTO_SHA1_PPC=m
+ CONFIG_CRYPTO_AES_GCM_P10=m
+ CONFIG_CRYPTO_DEV_NX=y
+diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
+index 2d89e35b3cdd..45376f1a43bd 100644
+--- a/arch/powerpc/crypto/Kconfig
++++ b/arch/powerpc/crypto/Kconfig
+@@ -11,25 +11,14 @@ config CRYPTO_CURVE25519_PPC64
+ 	  Curve25519 algorithm
  
--config CRC16_KUNIT_TEST
--	tristate "KUnit tests for CRC16"
--	depends on KUNIT
--	default KUNIT_ALL_TESTS
--	select CRC16
+ 	  Architecture: PowerPC64
+ 	  - Little-endian
+ 
+-config CRYPTO_CRCT10DIF_VPMSUM
+-	tristate "CRC32T10DIF"
+-	depends on PPC64 && ALTIVEC && CRC_T10DIF
+-	select CRYPTO_HASH
 -	help
--	  Enable this option to run unit tests for the kernel's CRC16
--	  implementation (<linux/crc16.h>).
+-	  CRC16 CRC algorithm used for the T10 (SCSI) Data Integrity Field (DIF)
 -
- config TEST_UDELAY
- 	tristate "udelay test driver"
+-	  Architecture: powerpc64 using
+-	  - AltiVec extensions
+-
+-	  Enable on POWER8 and newer processors for improved performance.
+-
+ config CRYPTO_VPMSUM_TESTER
+ 	tristate "CRC32c and CRC32T10DIF hardware acceleration tester"
+-	depends on CRYPTO_CRCT10DIF_VPMSUM && CRYPTO_CRC32C && CRC32_ARCH
++	depends on CRYPTO_CRC32C && CRC32_ARCH
++	depends on CRYPTO_CRCT10DIF && CRC_T10DIF_ARCH
  	help
- 	  This builds the "udelay_test" module that helps to make sure
- 	  that udelay() is working properly.
-diff --git a/lib/Makefile b/lib/Makefile
-index ccd803d03e58..34f4d61e3cf7 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -392,11 +392,10 @@ CFLAGS_fortify_kunit.o += $(call cc-disable-warning, stringop-truncation)
- CFLAGS_fortify_kunit.o += $(DISABLE_STRUCTLEAK_PLUGIN)
- obj-$(CONFIG_FORTIFY_KUNIT_TEST) += fortify_kunit.o
- obj-$(CONFIG_CRC_KUNIT_TEST) += crc_kunit.o
- obj-$(CONFIG_SIPHASH_KUNIT_TEST) += siphash_kunit.o
- obj-$(CONFIG_USERCOPY_KUNIT_TEST) += usercopy_kunit.o
--obj-$(CONFIG_CRC16_KUNIT_TEST) += crc16_kunit.o
+ 	  Stress test for CRC32c and CRCT10DIF algorithms implemented with
+ 	  powerpc64 AltiVec extensions (POWER8 vpmsum instructions).
+ 	  Unless you are testing these algorithms, you don't need this.
  
- obj-$(CONFIG_GENERIC_LIB_DEVMEM_IS_ALLOWED) += devmem_is_allowed.o
+diff --git a/arch/powerpc/crypto/Makefile b/arch/powerpc/crypto/Makefile
+index 54486192273c..d2238ac7e52c 100644
+--- a/arch/powerpc/crypto/Makefile
++++ b/arch/powerpc/crypto/Makefile
+@@ -8,11 +8,10 @@
+ obj-$(CONFIG_CRYPTO_AES_PPC_SPE) += aes-ppc-spe.o
+ obj-$(CONFIG_CRYPTO_MD5_PPC) += md5-ppc.o
+ obj-$(CONFIG_CRYPTO_SHA1_PPC) += sha1-powerpc.o
+ obj-$(CONFIG_CRYPTO_SHA1_PPC_SPE) += sha1-ppc-spe.o
+ obj-$(CONFIG_CRYPTO_SHA256_PPC_SPE) += sha256-ppc-spe.o
+-obj-$(CONFIG_CRYPTO_CRCT10DIF_VPMSUM) += crct10dif-vpmsum.o
+ obj-$(CONFIG_CRYPTO_VPMSUM_TESTER) += crc-vpmsum_test.o
+ obj-$(CONFIG_CRYPTO_AES_GCM_P10) += aes-gcm-p10-crypto.o
+ obj-$(CONFIG_CRYPTO_CHACHA20_P10) += chacha-p10-crypto.o
+ obj-$(CONFIG_CRYPTO_POLY1305_P10) += poly1305-p10-crypto.o
+ obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
+@@ -21,11 +20,10 @@ obj-$(CONFIG_CRYPTO_CURVE25519_PPC64) += curve25519-ppc64le.o
+ aes-ppc-spe-y := aes-spe-core.o aes-spe-keys.o aes-tab-4k.o aes-spe-modes.o aes-spe-glue.o
+ md5-ppc-y := md5-asm.o md5-glue.o
+ sha1-powerpc-y := sha1-powerpc-asm.o sha1.o
+ sha1-ppc-spe-y := sha1-spe-asm.o sha1-spe-glue.o
+ sha256-ppc-spe-y := sha256-spe-asm.o sha256-spe-glue.o
+-crct10dif-vpmsum-y := crct10dif-vpmsum_asm.o crct10dif-vpmsum_glue.o
+ aes-gcm-p10-crypto-y := aes-gcm-p10-glue.o aes-gcm-p10.o ghashp10-ppc.o aesp10-ppc.o
+ chacha-p10-crypto-y := chacha-p10-glue.o chacha-p10le-8x.o
+ poly1305-p10-crypto-y := poly1305-p10-glue.o poly1305-p10le_64.o
+ vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes_xts.o ghash.o
+ curve25519-ppc64le-y := curve25519-ppc64le-core.o curve25519-ppc64le_asm.o
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index da9381a1c95b..dd8a4b52a0cc 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -79,6 +79,9 @@ CFLAGS_xor_vmx.o += -mhard-float -maltivec $(call cc-option,-mabi=altivec)
+ CFLAGS_xor_vmx.o += -isystem $(shell $(CC) -print-file-name=include)
  
- obj-$(CONFIG_FIRMWARE_TABLE) += fw_table.o
+ obj-$(CONFIG_CRC32_ARCH) += crc32-powerpc.o
+ crc32-powerpc-y := crc32-glue.o crc32c-vpmsum_asm.o
  
-diff --git a/lib/crc16_kunit.c b/lib/crc16_kunit.c
-deleted file mode 100644
-index 0918c98a96d2..000000000000
---- a/lib/crc16_kunit.c
-+++ /dev/null
-@@ -1,155 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--/*
-- * KUnits tests for CRC16.
-- *
-- * Copyright (C) 2024, LKCAMP
-- * Author: Vinicius Peixoto <vpeixoto@lkcamp.dev>
-- * Author: Fabricio Gasperin <fgasperin@lkcamp.dev>
-- * Author: Enzo Bertoloti <ebertoloti@lkcamp.dev>
-- */
--#include <kunit/test.h>
--#include <linux/crc16.h>
--#include <linux/prandom.h>
--
--#define CRC16_KUNIT_DATA_SIZE 4096
--#define CRC16_KUNIT_TEST_SIZE 100
--#define CRC16_KUNIT_SEED 0x12345678
--
--/**
-- * struct crc16_test - CRC16 test data
-- * @crc: initial input value to CRC16
-- * @start: Start index within the data buffer
-- * @length: Length of the data
-- */
--static struct crc16_test {
--	u16 crc;
--	u16 start;
--	u16 length;
--} tests[CRC16_KUNIT_TEST_SIZE];
--
--u8 data[CRC16_KUNIT_DATA_SIZE];
--
--
--/* Naive implementation of CRC16 for validation purposes */
--static inline u16 _crc16_naive_byte(u16 crc, u8 data)
++obj-$(CONFIG_CRC_T10DIF_ARCH) += crc-t10dif-powerpc.o
++crc-t10dif-powerpc-y := crc-t10dif-glue.o crct10dif-vpmsum_asm.o
++
+ obj-$(CONFIG_PPC64) += $(obj64-y)
+diff --git a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c b/arch/powerpc/lib/crc-t10dif-glue.c
+similarity index 50%
+rename from arch/powerpc/crypto/crct10dif-vpmsum_glue.c
+rename to arch/powerpc/lib/crc-t10dif-glue.c
+index 1dc8b6915178..730850dbc51d 100644
+--- a/arch/powerpc/crypto/crct10dif-vpmsum_glue.c
++++ b/arch/powerpc/lib/crc-t10dif-glue.c
+@@ -5,11 +5,10 @@
+  * Copyright 2017, Daniel Axtens, IBM Corporation.
+  * [based on crc32c-vpmsum_glue.c]
+  */
+ 
+ #include <linux/crc-t10dif.h>
+-#include <crypto/internal/hash.h>
+ #include <crypto/internal/simd.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/kernel.h>
+@@ -20,19 +19,22 @@
+ #define VMX_ALIGN		16
+ #define VMX_ALIGN_MASK		(VMX_ALIGN-1)
+ 
+ #define VECTOR_BREAKPOINT	64
+ 
++static DEFINE_STATIC_KEY_FALSE(have_vec_crypto);
++
+ u32 __crct10dif_vpmsum(u32 crc, unsigned char const *p, size_t len);
+ 
+-static u16 crct10dif_vpmsum(u16 crci, unsigned char const *p, size_t len)
++u16 crc_t10dif_arch(u16 crci, const u8 *p, size_t len)
+ {
+ 	unsigned int prealign;
+ 	unsigned int tail;
+ 	u32 crc = crci;
+ 
+-	if (len < (VECTOR_BREAKPOINT + VMX_ALIGN) || !crypto_simd_usable())
++	if (len < (VECTOR_BREAKPOINT + VMX_ALIGN) ||
++	    !static_branch_likely(&have_vec_crypto) || !crypto_simd_usable())
+ 		return crc_t10dif_generic(crc, p, len);
+ 
+ 	if ((unsigned long)p & VMX_ALIGN_MASK) {
+ 		prealign = VMX_ALIGN - ((unsigned long)p & VMX_ALIGN_MASK);
+ 		crc = crc_t10dif_generic(crc, p, prealign);
+@@ -58,69 +60,30 @@ static u16 crct10dif_vpmsum(u16 crci, unsigned char const *p, size_t len)
+ 		crc = crc_t10dif_generic(crc, p, tail);
+ 	}
+ 
+ 	return crc & 0xffff;
+ }
++EXPORT_SYMBOL(crc_t10dif_arch);
+ 
+-static int crct10dif_vpmsum_init(struct shash_desc *desc)
 -{
--	u8 i = 0;
+-	u16 *crc = shash_desc_ctx(desc);
 -
--	crc ^= (u16) data;
--	for (i = 0; i < 8; i++) {
--		if (crc & 0x01)
--			crc = (crc >> 1) ^ 0xa001;
--		else
--			crc = crc >> 1;
--	}
--
--	return crc;
+-	*crc = 0;
+-	return 0;
 -}
 -
--
--static inline u16 _crc16_naive(u16 crc, u8 *buffer, size_t len)
+-static int crct10dif_vpmsum_update(struct shash_desc *desc, const u8 *data,
+-			    unsigned int length)
 -{
--	while (len--)
--		crc = _crc16_naive_byte(crc, *buffer++);
--	return crc;
--}
+-	u16 *crc = shash_desc_ctx(desc);
 -
--
--/* Small helper for generating pseudorandom 16-bit data */
--static inline u16 _rand16(void)
--{
--	static u32 rand = CRC16_KUNIT_SEED;
--
--	rand = next_pseudo_random32(rand);
--	return rand & 0xFFFF;
--}
--
--
--static int crc16_init_test_data(struct kunit_suite *suite)
--{
--	size_t i;
--
--	/* Fill the data buffer with random bytes */
--	for (i = 0; i < CRC16_KUNIT_DATA_SIZE; i++)
--		data[i] = _rand16() & 0xFF;
--
--	/* Generate random test data while ensuring the random
--	 * start + length values won't overflow the 4096-byte
--	 * buffer (0x7FF * 2 = 0xFFE < 0x1000)
--	 */
--	for (size_t i = 0; i < CRC16_KUNIT_TEST_SIZE; i++) {
--		tests[i].crc = _rand16();
--		tests[i].start = _rand16() & 0x7FF;
--		tests[i].length = _rand16() & 0x7FF;
--	}
+-	*crc = crct10dif_vpmsum(*crc, data, length);
 -
 -	return 0;
 -}
 -
--static void crc16_test_empty(struct kunit *test)
--{
--	u16 crc;
 -
--	/* The result for empty data should be the same as the
--	 * initial crc
--	 */
--	crc = crc16(0x00, data, 0);
--	KUNIT_EXPECT_EQ(test, crc, 0);
--	crc = crc16(0xFF, data, 0);
--	KUNIT_EXPECT_EQ(test, crc, 0xFF);
--}
+-static int crct10dif_vpmsum_final(struct shash_desc *desc, u8 *out)
++static int __init crc_t10dif_powerpc_init(void)
+ {
+-	u16 *crcp = shash_desc_ctx(desc);
 -
--static void crc16_test_correctness(struct kunit *test)
--{
--	size_t i;
--	u16 crc, crc_naive;
--
--	for (i = 0; i < CRC16_KUNIT_TEST_SIZE; i++) {
--		/* Compare results with the naive crc16 implementation */
--		crc = crc16(tests[i].crc, data + tests[i].start,
--			    tests[i].length);
--		crc_naive = _crc16_naive(tests[i].crc, data + tests[i].start,
--					 tests[i].length);
--		KUNIT_EXPECT_EQ(test, crc, crc_naive);
+-	*(u16 *)out = *crcp;
++	if (cpu_has_feature(CPU_FTR_ARCH_207S) &&
++	    (cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_VEC_CRYPTO))
++		static_branch_enable(&have_vec_crypto);
+ 	return 0;
+ }
++arch_initcall(crc_t10dif_powerpc_init);
+ 
+-static struct shash_alg alg = {
+-	.init		= crct10dif_vpmsum_init,
+-	.update		= crct10dif_vpmsum_update,
+-	.final		= crct10dif_vpmsum_final,
+-	.descsize	= CRC_T10DIF_DIGEST_SIZE,
+-	.digestsize	= CRC_T10DIF_DIGEST_SIZE,
+-	.base		= {
+-		.cra_name		= "crct10dif",
+-		.cra_driver_name	= "crct10dif-vpmsum",
+-		.cra_priority		= 200,
+-		.cra_blocksize		= CRC_T10DIF_BLOCK_SIZE,
+-		.cra_module		= THIS_MODULE,
 -	}
--}
--
--
--static void crc16_test_combine(struct kunit *test)
--{
--	size_t i, j;
--	u16 crc, crc_naive;
--
--	/* Make sure that combining two consecutive crc16 calculations
--	 * yields the same result as calculating the crc16 for the whole thing
--	 */
--	for (i = 0; i < CRC16_KUNIT_TEST_SIZE; i++) {
--		crc_naive = crc16(tests[i].crc, data + tests[i].start, tests[i].length);
--		for (j = 0; j < tests[i].length; j++) {
--			crc = crc16(tests[i].crc, data + tests[i].start, j);
--			crc = crc16(crc, data + tests[i].start + j, tests[i].length - j);
--			KUNIT_EXPECT_EQ(test, crc, crc_naive);
--		}
--	}
--}
--
--
--static struct kunit_case crc16_test_cases[] = {
--	KUNIT_CASE(crc16_test_empty),
--	KUNIT_CASE(crc16_test_combine),
--	KUNIT_CASE(crc16_test_correctness),
--	{},
 -};
 -
--static struct kunit_suite crc16_test_suite = {
--	.name = "crc16",
--	.test_cases = crc16_test_cases,
--	.suite_init = crc16_init_test_data,
--};
--kunit_test_suite(crc16_test_suite);
+-static int __init crct10dif_vpmsum_mod_init(void)
++static void __exit crc_t10dif_powerpc_exit(void)
+ {
+-	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
+-		return -ENODEV;
 -
--MODULE_AUTHOR("Fabricio Gasperin <fgasperin@lkcamp.dev>");
--MODULE_AUTHOR("Vinicius Peixoto <vpeixoto@lkcamp.dev>");
--MODULE_AUTHOR("Enzo Bertoloti <ebertoloti@lkcamp.dev>");
--MODULE_DESCRIPTION("Unit tests for crc16");
--MODULE_LICENSE("GPL");
+-	return crypto_register_shash(&alg);
+ }
++module_exit(crc_t10dif_powerpc_exit);
+ 
+-static void __exit crct10dif_vpmsum_mod_fini(void)
++bool crc_t10dif_is_optimized(void)
+ {
+-	crypto_unregister_shash(&alg);
++	return static_key_enabled(&have_vec_crypto);
+ }
+-
+-module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, crct10dif_vpmsum_mod_init);
+-module_exit(crct10dif_vpmsum_mod_fini);
++EXPORT_SYMBOL(crc_t10dif_is_optimized);
+ 
+ MODULE_AUTHOR("Daniel Axtens <dja@axtens.net>");
+ MODULE_DESCRIPTION("CRCT10DIF using vector polynomial multiply-sum instructions");
+ MODULE_LICENSE("GPL");
+-MODULE_ALIAS_CRYPTO("crct10dif");
+-MODULE_ALIAS_CRYPTO("crct10dif-vpmsum");
+diff --git a/arch/powerpc/crypto/crct10dif-vpmsum_asm.S b/arch/powerpc/lib/crct10dif-vpmsum_asm.S
+similarity index 99%
+rename from arch/powerpc/crypto/crct10dif-vpmsum_asm.S
+rename to arch/powerpc/lib/crct10dif-vpmsum_asm.S
+index 0a52261bf859..f0b93a0fe168 100644
+--- a/arch/powerpc/crypto/crct10dif-vpmsum_asm.S
++++ b/arch/powerpc/lib/crct10dif-vpmsum_asm.S
+@@ -840,6 +840,6 @@
+ 	.octa 0x000000000000000000000001f65a57f8	/* x^64 div p(x) */
+ 	/* Barrett constant n */
+ 	.octa 0x0000000000000000000000018bb70000
+ 
+ #define CRC_FUNCTION_NAME __crct10dif_vpmsum
+-#include "../lib/crc32-vpmsum_core.S"
++#include "crc32-vpmsum_core.S"
 -- 
 2.47.1
 
