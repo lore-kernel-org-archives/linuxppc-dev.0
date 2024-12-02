@@ -1,79 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-3628-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3629-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3139BD4978C
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Dec 2024 19:46:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59842D49792
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2024 01:09:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y1cqM043Gz2xbQ;
-	Mon,  2 Dec 2024 06:46:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733082382;
-	cv=none; b=lIWPbvMm7i/0ryNUeBD1P4V8a1ghj10lXenSEN8UKO203BFNfGoZksTavRWHuYZv+3GIp8/aA177J+ZTnTLg+iZd7fFyQSy0qu9mS+Q8KknEpEm8gPbfePSAAavaXCxzns7mbf/IV+NBDqgvVRUPpoqDsecFqrlXlYmK8vjVunZKWWPQsB9Be2bwavSpyqIPfPztNpUfDIwB7+06Hn8yH1vLfAgQBSn0RK0yMwGVC54B10bjT4/JExLdqc7MmNPI0JNtNO3ed/XmFSWTQJjeD9lJ+40G/VKdaYVjfoWJaJ2f+br+H//bEWtUh2Ngw0amDUzqFVnEM1Xgdbswnaa6Xg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y1m0G5tXNz2yT0;
+	Mon,  2 Dec 2024 12:09:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733101774;
+	cv=none; b=KGOieaDJn1ha/Bj9DHkS8R2EhBU/o5DIpUqufkPKJK1yAl7idxpn5lwJaAs6NaYOkO4tBVyob6lBoiahV156F1eItDgu77AOmrmqs1b2vnYXvgogK7dV74e2vp8FC5jo1lIkqDl0yG23pnS3aT32NG3aTZSGq7WRJeJEwyKm3M5yrYnhZWLvbV2wfs8mQHznxLvDs/WMr4rgWyMDS9vsnuQhzD0iOTyV6Y5Vwodo2B784bFotX89Jfg4c9WeNvDpraSL1PlTBQBSpXbs9Lgade5LDh74cy20vcKHJiGBnG6TCdHqzu1MuzZ9T3WhhOpq4OQlsJKYCFXgLg3eJKM56g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733082382; c=relaxed/relaxed;
-	bh=0VFRnYBj1HRVj7nh9umzkGJ2WDYz47FNXpEf0RmuZcc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lKHjLYGU7t3Dlqq5za3MUq54usrUwfy9byUmgGsf/EF5jpuyiuGyH7blwwKec0kZDH1TJH4odkxMC8dEjEYnGdMc/Ev7ilZ4PrCUPMWD4OOXrIfzxoaUadmo5sd9xc2SOvohJLwLsIRe9ezrNt6WtDoAf4eJ/SWQ1vKJ12WzFBYy0gu7Sm1fOnX7L5Id9px/um/xCIR8OETQSmtrk+UG73A6s3CD16D8BZyD0vPNYltW1cIR/f5ZjAg41HiNUtcEyXd5EdYQsJ2irfsTZdxa/ZaSt22iPzuNkTza73GtiVtMVaE1fimUXURgX0nNQsL2LPMpaUrtKKu1RS6Ulss+jQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RkwTc/kf; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1733101774; c=relaxed/relaxed;
+	bh=mfXOHMJJ1SO4S5P1j2JJE0j4xFN7R/DKu1qU6HbsvtY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=MpTSt5ODfeKitfvf8RZYq7udzHAotNBpbTIpCbMvkkwCytcxC7muGv2LCQpQVoZle2DxWPfsHWPHbJ+7alFvM5aX2mqNLKB38sc36uoeOoJdErOsEauRsE9W7kQEmVmLTJ3FVhCn7SBn2/eqgxyc3MmRIa6R2A912qM9SPV6uK86GeLKEF/lreOmVOfHuw8kAXdhMbwP58EBBtZ4BP29XhCTtEd2tFEDMWNBfKnB972+Kp0EhfFninQs52lDVMCQ3910phnJQw6haI6a2rlcCLWg5nlz9IljHYsmsBrPRGWPKVARsJUyh8S9IJPbYYpT84SbLsDCnfAUpB8pRQk0Tg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EHIb8zCH; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RkwTc/kf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EHIb8zCH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y1cqK4q7hz2xVq
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2024 06:46:20 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B1EjL8Q006007;
-	Sun, 1 Dec 2024 19:45:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=0VFRnY
-	Bj1HRVj7nh9umzkGJ2WDYz47FNXpEf0RmuZcc=; b=RkwTc/kfUYNULG6Vi7KD5O
-	w3HCP6LAzaQheuwT/uH6Te4uAqBbAQlP6O20bUobiswDi84P2KO8Fx9zmsFtO2kH
-	5e4bn+JZHZr76COmVzIg6oCX6nhgR1YAap/KJDMp0nJXvFK3ScTl1+s2SAgU4pCg
-	P0iF4VXdNbOerB9DlT9xPbdwQXwSUXhNdq4isGvA3hpjj3lBBX8mX6QX/3DQnguH
-	xkBo6VitMD4A5to+f4zBmcO9l1pAg35o/3KEDvw7sx1Q5IVQhT5DkJ64stQFeo5X
-	DHBJihQA3YrqYia88qJNjQa8vywiaZLmjlJxopPGRixOcioHmzAwja0s8Q7KD8NQ
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 437tcv5qsp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 01 Dec 2024 19:45:48 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4B1Jjlbp031441;
-	Sun, 1 Dec 2024 19:45:47 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 437tcv5qsm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 01 Dec 2024 19:45:47 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4B1J5Zg1017943;
-	Sun, 1 Dec 2024 19:45:46 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 438d1s15f3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 01 Dec 2024 19:45:46 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4B1Jjj1u34275916
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 1 Dec 2024 19:45:45 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0D1FB20043;
-	Sun,  1 Dec 2024 19:45:45 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 92F6C20040;
-	Sun,  1 Dec 2024 19:45:42 +0000 (GMT)
-Received: from [9.124.210.71] (unknown [9.124.210.71])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun,  1 Dec 2024 19:45:42 +0000 (GMT)
-Message-ID: <ff4c586b-7be7-4c31-8b8c-5846ded486de@linux.ibm.com>
-Date: Mon, 2 Dec 2024 01:15:41 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y1m0F4jNGz2xy6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2024 12:09:33 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 43E9E5C64DE;
+	Mon,  2 Dec 2024 01:08:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8375EC4CED2;
+	Mon,  2 Dec 2024 01:09:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733101770;
+	bh=xGrDkzLVO6E+4eZPpUKlS5IVcLqNoW+35bwjrDUo+QU=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=EHIb8zCHP+vl2aUf9gsNTQKvhQPpIJe149ciYbVO87fgEOB8QEzD5mkkNgj2oLvIN
+	 RD9uOMwbVEn9ixtJV6J++v5W+aeigXHnaU2G/jDK1AmC666nrEqU8n4PpSAjNS7fe4
+	 m7yDkQbN9iQ3lJbrHu6Vd9H7fd28T+uCR1Y0xl/HKKJoLrcwN/zqc/L9WE3zx+Lu6m
+	 Vb516vPDT136JhQULhykyOXyYUMiqC2hjEGNE/OX2taAEgvLGq/DGqeon5cTe7J+aL
+	 5Qr6+wuzVmW0MIE9lysg4Jr0i5+Zrqnnx/iPzdPFqnQu6Pa67Mzt0jVnqGByP+h+p0
+	 pZjkrS5hoYPjA==
+From: Eric Biggers <ebiggers@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-crypto@vger.kernel.org,
+	linux-ext4@vger.kernel.org,
+	linux-f2fs-devel@lists.sourceforge.net,
+	linux-mips@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux-scsi@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	loongarch@lists.linux.dev,
+	sparclinux@vger.kernel.org,
+	x86@kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>
+Subject: [PATCH v4 03/19] lib/crc32: expose whether the lib is really optimized at runtime
+Date: Sun,  1 Dec 2024 17:08:28 -0800
+Message-ID: <20241202010844.144356-4-ebiggers@kernel.org>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20241202010844.144356-1-ebiggers@kernel.org>
+References: <20241202010844.144356-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,76 +78,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/3] powerpc: support dynamic preemption
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, mpe@ellerman.id.au,
-        linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com, maddy@linux.ibm.com, bigeasy@linutronix.de,
-        ankur.a.arora@oracle.com, linux-kernel@vger.kernel.org,
-        mark.rutland@arm.com, vschneid@redhat.com, peterz@infradead.org
-References: <20241125042212.1522315-1-sshegde@linux.ibm.com>
- <20241125042212.1522315-3-sshegde@linux.ibm.com>
- <5089fd16-bc8c-4231-a89b-2658445e04b7@csgroup.eu>
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-Content-Language: en-US
-In-Reply-To: <5089fd16-bc8c-4231-a89b-2658445e04b7@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: gaRZyFHEsmIlAdk7Hpr9YHIRDyUZmx-s
-X-Proofpoint-GUID: tKld-ENi4_ZTy5GdzrVSLnqpmF05dcQK
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 suspectscore=0
- mlxlogscore=999 spamscore=0 clxscore=1015 impostorscore=0
- lowpriorityscore=0 priorityscore=1501 mlxscore=0 bulkscore=0
- malwarescore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2411120000 definitions=main-2412010168
 
+From: Eric Biggers <ebiggers@google.com>
 
+Make the CRC32 library export a function crc32_optimizations() which
+returns flags that indicate which CRC32 functions are actually executing
+optimized code at runtime.
 
-On 11/27/24 12:14, Christophe Leroy wrote:
-> 
-> 
-> Le 25/11/2024 à 05:22, Shrikanth Hegde a écrit :
->> Once the lazy preemption is supported, it would be desirable to change
->> the preemption models at runtime. So this change adds support for dynamic
->> preemption using DYNAMIC_KEY.
->>
->> In irq-exit to kernel path, use preempt_model_preemptible for decision.
->> Other way would be using static key based decision. Keeping it
->> simpler since key based change didn't show performance improvement.
-> 
-> What about static_call, wouldn't it improve performance ?
-> 
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 6d6bbd93abab..01c58f5258c9 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -270,6 +270,7 @@ config PPC
->>       select HAVE_PERF_EVENTS_NMI        if PPC64
->>       select HAVE_PERF_REGS
->>       select HAVE_PERF_USER_STACK_DUMP
->> +    select HAVE_PREEMPT_DYNAMIC_KEY
-> 
-> Can you use HAVE_PREEPT_DYNAMIC_CALL instead ? That should be more 
-> performant.
-> 
-> I know static calls are not in for PPC64 yet, you can restart from 
-> http://patchwork.ozlabs.org/project/linuxppc-dev/ 
-> cover/20221010002957.128276-1-bgray@linux.ibm.com/ and https:// 
-> github.com/linuxppc/issues/issues/416
-> 
+This will be used to determine whether the crc32[c]-$arch shash
+algorithms should be registered in the crypto API.  btrfs could also
+start using these flags instead of the hack that it currently uses where
+it parses the crypto_shash_driver_name.
 
-Thanks Christophe, I will take a look and understand.
+Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
+Signed-off-by: Eric Biggers <ebiggers@google.com>
+---
+ arch/arm64/lib/crc32-glue.c  | 10 ++++++++++
+ arch/riscv/lib/crc32-riscv.c | 10 ++++++++++
+ include/linux/crc32.h        | 15 +++++++++++++++
+ 3 files changed, 35 insertions(+)
 
-May be stupid question, do the concerns of arm still valid for ppc64/ppc32 out-line static calls?
-https://lore.kernel.org/all/20220214165216.2231574-6-mark.rutland@arm.com/
-
-As I understood, that is the reason they went ahead with DYNAMIC_KEY.
-
-> Christophe
+diff --git a/arch/arm64/lib/crc32-glue.c b/arch/arm64/lib/crc32-glue.c
+index d7f6e1cbf0d2..15c4c9db573e 100644
+--- a/arch/arm64/lib/crc32-glue.c
++++ b/arch/arm64/lib/crc32-glue.c
+@@ -83,7 +83,17 @@ u32 __pure crc32_be_arch(u32 crc, const u8 *p, size_t len)
+ 
+ 	return crc32_be_arm64(crc, p, len);
+ }
+ EXPORT_SYMBOL(crc32_be_arch);
+ 
++u32 crc32_optimizations(void)
++{
++	if (alternative_has_cap_likely(ARM64_HAS_CRC32))
++		return CRC32_LE_OPTIMIZATION |
++		       CRC32_BE_OPTIMIZATION |
++		       CRC32C_OPTIMIZATION;
++	return 0;
++}
++EXPORT_SYMBOL(crc32_optimizations);
++
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("arm64-optimized CRC32 functions");
+diff --git a/arch/riscv/lib/crc32-riscv.c b/arch/riscv/lib/crc32-riscv.c
+index a3ff7db2a1ce..53d56ab422c7 100644
+--- a/arch/riscv/lib/crc32-riscv.c
++++ b/arch/riscv/lib/crc32-riscv.c
+@@ -295,7 +295,17 @@ u32 __pure crc32_be_arch(u32 crc, const u8 *p, size_t len)
+ legacy:
+ 	return crc32_be_base(crc, p, len);
+ }
+ EXPORT_SYMBOL(crc32_be_arch);
+ 
++u32 crc32_optimizations(void)
++{
++	if (riscv_has_extension_likely(RISCV_ISA_EXT_ZBC))
++		return CRC32_LE_OPTIMIZATION |
++		       CRC32_BE_OPTIMIZATION |
++		       CRC32C_OPTIMIZATION;
++	return 0;
++}
++EXPORT_SYMBOL(crc32_optimizations);
++
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Accelerated CRC32 implementation with Zbc extension");
+diff --git a/include/linux/crc32.h b/include/linux/crc32.h
+index 58c632533b08..e9bd40056687 100644
+--- a/include/linux/crc32.h
++++ b/include/linux/crc32.h
+@@ -35,10 +35,25 @@ static inline u32 __pure __crc32c_le(u32 crc, const u8 *p, size_t len)
+ 	if (IS_ENABLED(CONFIG_CRC32_ARCH))
+ 		return crc32c_le_arch(crc, p, len);
+ 	return crc32c_le_base(crc, p, len);
+ }
+ 
++/*
++ * crc32_optimizations() returns flags that indicate which CRC32 library
++ * functions are using architecture-specific optimizations.  Unlike
++ * IS_ENABLED(CONFIG_CRC32_ARCH) it takes into account the different CRC32
++ * variants and also whether any needed CPU features are available at runtime.
++ */
++#define CRC32_LE_OPTIMIZATION	BIT(0) /* crc32_le() is optimized */
++#define CRC32_BE_OPTIMIZATION	BIT(1) /* crc32_be() is optimized */
++#define CRC32C_OPTIMIZATION	BIT(2) /* __crc32c_le() is optimized */
++#if IS_ENABLED(CONFIG_CRC32_ARCH)
++u32 crc32_optimizations(void);
++#else
++static inline u32 crc32_optimizations(void) { return 0; }
++#endif
++
+ /**
+  * crc32_le_combine - Combine two crc32 check values into one. For two
+  * 		      sequences of bytes, seq1 and seq2 with lengths len1
+  * 		      and len2, crc32_le() check values were calculated
+  * 		      for each, crc1 and crc2.
+-- 
+2.47.1
 
 
