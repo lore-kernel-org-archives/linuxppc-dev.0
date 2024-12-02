@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-3640-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6197CD49792
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2024 01:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58F56D49792
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2024 01:11:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y1m0S1FNPz2ywR;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y1m0S3Xtdz2ywy;
 	Mon,  2 Dec 2024 12:09:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733101784;
-	cv=none; b=I/uxvphwVWDsZZtYS5eFnegaflB7ydVET541dsnNW4pAz1cVm7cp1Dz4sqC6RWGwmFREz9oAyN9mccO+wV/BFCBwJZjndmG15SmsCZtppZlOxYVKJ7dRsCgfzcJgtn0zsHjLcZAJ0We0ekZ/qRNPlDyUT+kAOGnbP6moujCZ+xNTpXIow7ntGJpT37OqYlwTGZQgJS6c/R8b7rQzfFTUQQBBJHLeTs0+Fp6Dgj1T1xH5htATzDARvnowagQQ00IwB0xKqUyFvqBdEQX/yHwMZ8UR9SXfCaGSFsgkrtjSg8yZ8xsC3Zw1k1NisiMHK/Xd8TeGWPakcQMePz0TYlnbSw==
+	cv=none; b=Ar3aZReaESYseYaO6mZJchiY8Cvh4fa8FnHQZ1o0ZhRoXdH+Plwd+0+sVToDxbH5A0Ip3nym2WXYWjXZnHXwOQPSqTvpk5p6LlShepubDVZemEyhE1djZyvDLPJtPP4H10/CB8hN8BOnvYKaROLyZF8Ifd5NIlRZitjyb+Cini7TjYD9kqJNh4rA4uL9UELm+HG16zbpl5P5OMqMzJETu2xBup+8fSG5XMKNC2tfJmj8Ch5TTRQeWxNpM1t/hZwGr5O5F8vw/aNP7Vk0BjdkyFrWwxatpx3S7MJnFbzU2Ybnng3wuzPWCTGEQUWOei4/QyrBplLyrhvmiEq5MBRF2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1733101784; c=relaxed/relaxed;
-	bh=98aAhony+oG7dxlmfuBhSzcm5NZAJPMsHXlN//Enqt0=;
+	bh=tEu2THgV7SSv0mEsAtqvijU9cWxFbSPknRJH0jBh4xs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cqTK8np4acfy2Ao5KYbHIOaLDqmU3DCS3QVjmqUqk8iHodZp7xJnPa1aeHy9TffOlthYuinJ7Skzspka3mB8Qp/Oj+9bincijzDR7WaBQSK1W2jFex1ld8mF6BqFD0NLzT49a6MB2bz1wINp20TOkrND5lfZAUnCJvx7FBozEjpgHG3yBoGwBtqLhY0lfSv1FigoatJkrQa+oJvY4RC3hY0bUwTWJPm+PIGw31HlB7lqGCpEMjm/Z7bvGtJFyQO1SHxeEsWNyXeA+Ko59xlBB/6IlMcJ5+o94OfyFmH5cIFP/35udGfaiEC7VbvMeKGXqaetesemjdFWt9Bit46QSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sT/vap6R; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=CW8VzHYYVfAleVZctyAYIKDcGOAYKfCZWCIhYiI/mF+KAik/83GfPD+jkY9t9KRM410AHjGAVEDb7J821biKDsja30c/8liUOak44xMGN3Zz3bHdB42G9jRa9Ab2HxNHh5HFoOv8f58Oo+5E+4SuvZx41vqvuK9e4nuJmA3MvDXKDUBbCjmFCYw8B9Pr6gcg9KKiQM5DzvOEyINxKK+0rRCSJCkWZSThFi/TXGRq/x3RBHOSHSppaA6RUju/HgBrfjmrarbeBIkXX/hauRqmoPq1OrFfZNslGUh5ndjNxcOiUgXJidAMLRZQaUr848+rI3Q+/Jdy/GKYInqRTnbdzw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CUlGfZAb; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sT/vap6R;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CUlGfZAb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y1m0M1W31z2ygY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2024 12:09:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y1m0M4568z2yjJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2024 12:09:39 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 574C2A40C1E;
-	Mon,  2 Dec 2024 01:07:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10744C4CEDD;
-	Mon,  2 Dec 2024 01:09:35 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id C62B95C64DE;
+	Mon,  2 Dec 2024 01:08:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40774C4CED2;
+	Mon,  2 Dec 2024 01:09:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733101775;
-	bh=l+CLrwqJVSvfyOKygspLh9Mjv7UjhIJ0MHuliD+HqG4=;
+	s=k20201202; t=1733101777;
+	bh=zWAjtRpwG/RsPHeuNC3qmqgg0iTy0nmJZ7nxNCPm0aA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=sT/vap6RPh46beKww4TVJmC7hJ1nlRZguIaqKyI2L2sjnF0Q3JAc3a+fcPACVF2/X
-	 iRozDD804ndJyynJIWjWRZIzKOt9C/DJBDJx47gyLFh90zPxPqnbPJuvp4mXi8JyMc
-	 BnK15oWiSL6nTQLCyZJQcQ3FV2xAd1EmuWEWf2HlJlTXcKxbYF7eaMn8um5tGMH8EZ
-	 ZgDWFM8jRXt9wVjpOLdPPWx5LIGYaF9jllwYz6HJ9TxsD81OfHbxgUGSBIybwHoCVH
-	 u+ngQdT+SVxwSV3UYqtb1szMPTdg3TkLoyq2xjTRlHV0B9k0c/4X5zXiQUI5Tl1+g8
-	 kCprWDCmk/mKA==
+	b=CUlGfZAbhj1YDLQx1/AEYZvSFdrBTDethDXF4i9ERTYsKp856cW9OmidC69Vr/3qG
+	 h80tdaSdP4L/vgp/gjirYV6Gj5ymnF012e/TMEqCFygfv/XflHfgUqt+Bae97/+Cam
+	 pwF06a1si8gkRBQv8bkZX/VYxx171Zg5kDCjGYEJAYUhtwU16hpxOQ4m3SMQ1zFrLd
+	 SggMqeo6V5UKgOox0+XvI7eGgsTsaElwdc58N51UabgHQO5AA7lZDClfoupMcWwMHl
+	 mS73RBctxDz0Zj4d+T980VRjjksWsg2d1VpzhDxexYo9ebIc0U6J7fk3ND8LtWG5y+
+	 2HCTso0MHXPYQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -60,9 +60,9 @@ Cc: linux-arch@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH v4 11/19] x86/crc32: update prototype for crc_pcl()
-Date: Sun,  1 Dec 2024 17:08:36 -0800
-Message-ID: <20241202010844.144356-12-ebiggers@kernel.org>
+Subject: [PATCH v4 15/19] lib/crc32: make crc32c() go directly to lib
+Date: Sun,  1 Dec 2024 17:08:40 -0800
+Message-ID: <20241202010844.144356-16-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241202010844.144356-1-ebiggers@kernel.org>
 References: <20241202010844.144356-1-ebiggers@kernel.org>
@@ -82,249 +82,171 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-- Change the len parameter from unsigned int to size_t, so that the
-  library function which takes a size_t can safely use this code.
+Now that the lower level __crc32c_le() library function is optimized for
+each architecture, make crc32c() just call that instead of taking an
+inefficient and error-prone detour through the shash API.
 
-- Rename to crc32c_x86_3way() which is much clearer.
-
-- Move the crc parameter to the front, as this is the usual convention.
+Note: a future cleanup should make crc32c_le() be the actual library
+function instead of __crc32c_le().  That will require updating callers
+of __crc32c_le() to use crc32c_le() instead, and updating callers of
+crc32c_le() that expect a 'const void *' arg to expect 'const u8 *'
+instead.  Similarly, a future cleanup should remove LIBCRC32C by making
+everyone who is selecting it just select CRC32 directly instead.
 
 Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/x86/crypto/crc32c-intel_glue.c       |  7 ++-
- arch/x86/crypto/crc32c-pcl-intel-asm_64.S | 63 ++++++++++++-----------
- 2 files changed, 35 insertions(+), 35 deletions(-)
+ include/linux/crc32c.h |  7 ++--
+ lib/Kconfig            | 10 ++----
+ lib/Makefile           |  1 -
+ lib/libcrc32c.c        | 74 ------------------------------------------
+ 4 files changed, 8 insertions(+), 84 deletions(-)
+ delete mode 100644 lib/libcrc32c.c
 
-diff --git a/arch/x86/crypto/crc32c-intel_glue.c b/arch/x86/crypto/crc32c-intel_glue.c
-index 52c5d47ef5a1..603d159de400 100644
---- a/arch/x86/crypto/crc32c-intel_glue.c
-+++ b/arch/x86/crypto/crc32c-intel_glue.c
-@@ -39,12 +39,11 @@
-  * size is >= 512 to account
-  * for fpu state save/restore overhead.
-  */
- #define CRC32C_PCL_BREAKEVEN	512
+diff --git a/include/linux/crc32c.h b/include/linux/crc32c.h
+index 357ae4611a45..47eb78003c26 100644
+--- a/include/linux/crc32c.h
++++ b/include/linux/crc32c.h
+@@ -1,12 +1,15 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ #ifndef _LINUX_CRC32C_H
+ #define _LINUX_CRC32C_H
  
--asmlinkage unsigned int crc_pcl(const u8 *buffer, unsigned int len,
--				unsigned int crc_init);
-+asmlinkage u32 crc32c_x86_3way(u32 crc, const u8 *buffer, size_t len);
- #endif /* CONFIG_X86_64 */
+-#include <linux/types.h>
++#include <linux/crc32.h>
  
- static u32 crc32c_intel_le_hw_byte(u32 crc, unsigned char const *data, size_t length)
- {
- 	while (length--) {
-@@ -157,11 +156,11 @@ static int crc32c_pcl_intel_update(struct shash_desc *desc, const u8 *data,
- 	 * use faster PCL version if datasize is large enough to
- 	 * overcome kernel fpu state save/restore overhead
- 	 */
- 	if (len >= CRC32C_PCL_BREAKEVEN && crypto_simd_usable()) {
- 		kernel_fpu_begin();
--		*crcp = crc_pcl(data, len, *crcp);
-+		*crcp = crc32c_x86_3way(*crcp, data, len);
- 		kernel_fpu_end();
- 	} else
- 		*crcp = crc32c_intel_le_hw(*crcp, data, len);
- 	return 0;
- }
-@@ -169,11 +168,11 @@ static int crc32c_pcl_intel_update(struct shash_desc *desc, const u8 *data,
- static int __crc32c_pcl_intel_finup(u32 *crcp, const u8 *data, unsigned int len,
- 				u8 *out)
- {
- 	if (len >= CRC32C_PCL_BREAKEVEN && crypto_simd_usable()) {
- 		kernel_fpu_begin();
--		*(__le32 *)out = ~cpu_to_le32(crc_pcl(data, len, *crcp));
-+		*(__le32 *)out = ~cpu_to_le32(crc32c_x86_3way(*crcp, data, len));
- 		kernel_fpu_end();
- 	} else
- 		*(__le32 *)out =
- 			~cpu_to_le32(crc32c_intel_le_hw(*crcp, data, len));
- 	return 0;
-diff --git a/arch/x86/crypto/crc32c-pcl-intel-asm_64.S b/arch/x86/crypto/crc32c-pcl-intel-asm_64.S
-index 752812bc4991..9b8770503bbc 100644
---- a/arch/x86/crypto/crc32c-pcl-intel-asm_64.S
-+++ b/arch/x86/crypto/crc32c-pcl-intel-asm_64.S
-@@ -50,19 +50,20 @@
+-extern u32 crc32c(u32 crc, const void *address, unsigned int length);
++static inline u32 crc32c(u32 crc, const void *address, unsigned int length)
++{
++	return __crc32c_le(crc, address, length);
++}
  
- # Define threshold below which buffers are considered "small" and routed to
- # regular CRC code that does not interleave the CRC instructions.
- #define SMALL_SIZE 200
+ /* This macro exists for backwards-compatibility. */
+ #define crc32c_le crc32c
  
--# unsigned int crc_pcl(const u8 *buffer, unsigned int len, unsigned int crc_init);
-+# u32 crc32c_x86_3way(u32 crc, const u8 *buffer, size_t len);
+ #endif	/* _LINUX_CRC32C_H */
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 8858030bebae..d0c2dc0dac32 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -308,18 +308,14 @@ config CRC7
+ 	  the kernel tree does. Such modules that use library CRC7
+ 	  functions require M here.
  
- .text
--SYM_FUNC_START(crc_pcl)
--#define    bufp		  %rdi
--#define    bufp_d	  %edi
--#define    len		  %esi
--#define    crc_init	  %edx
--#define    crc_init_q	  %rdx
-+SYM_FUNC_START(crc32c_x86_3way)
-+#define    crc0		  %edi
-+#define    crc0_q	  %rdi
-+#define    bufp		  %rsi
-+#define    bufp_d	  %esi
-+#define    len		  %rdx
-+#define    len_dw	  %edx
- #define    n_misaligned	  %ecx /* overlaps chunk_bytes! */
- #define    n_misaligned_q %rcx
- #define    chunk_bytes	  %ecx /* overlaps n_misaligned! */
- #define    chunk_bytes_q  %rcx
- #define    crc1		  %r8
-@@ -83,13 +84,13 @@ SYM_FUNC_START(crc_pcl)
- 	# Process 1 <= n_misaligned <= 7 bytes individually in order to align
- 	# the remaining data to an 8-byte boundary.
- .Ldo_align:
- 	movq	(bufp), %rax
- 	add	n_misaligned_q, bufp
--	sub	n_misaligned, len
-+	sub	n_misaligned_q, len
- .Lalign_loop:
--	crc32b	%al, crc_init		# compute crc32 of 1-byte
-+	crc32b	%al, crc0		# compute crc32 of 1-byte
- 	shr	$8, %rax		# get next byte
- 	dec	n_misaligned
- 	jne     .Lalign_loop
- .Laligned:
+ config LIBCRC32C
+ 	tristate "CRC32c (Castagnoli, et al) Cyclic Redundancy-Check"
+-	select CRYPTO
+-	select CRYPTO_CRC32C
++	select CRC32
+ 	help
+-	  This option is provided for the case where no in-kernel-tree
+-	  modules require CRC32c functions, but a module built outside the
+-	  kernel tree does. Such modules that use library CRC32c functions
+-	  require M here.  See Castagnoli93.
+-	  Module will be libcrc32c.
++	  This option just selects CRC32 and is provided for compatibility
++	  purposes until the users are updated to select CRC32 directly.
  
-@@ -100,11 +101,11 @@ SYM_FUNC_START(crc_pcl)
- 	cmp	$128*24, len
- 	jae     .Lfull_block
+ config CRC8
+ 	tristate "CRC8 function"
+ 	help
+ 	  This option provides CRC8 function. Drivers may select this
+diff --git a/lib/Makefile b/lib/Makefile
+index a8155c972f02..6573163d24e4 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -165,11 +165,10 @@ obj-$(CONFIG_CRC_ITU_T)	+= crc-itu-t.o
+ obj-$(CONFIG_CRC32)	+= crc32.o
+ obj-$(CONFIG_CRC64)     += crc64.o
+ obj-$(CONFIG_CRC32_SELFTEST)	+= crc32test.o
+ obj-$(CONFIG_CRC4)	+= crc4.o
+ obj-$(CONFIG_CRC7)	+= crc7.o
+-obj-$(CONFIG_LIBCRC32C)	+= libcrc32c.o
+ obj-$(CONFIG_CRC8)	+= crc8.o
+ obj-$(CONFIG_CRC64_ROCKSOFT) += crc64-rocksoft.o
+ obj-$(CONFIG_XXHASH)	+= xxhash.o
+ obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
  
- .Lpartial_block:
- 	# Compute floor(len / 24) to get num qwords to process from each lane.
--	imul	$2731, len, %eax	# 2731 = ceil(2^16 / 24)
-+	imul	$2731, len_dw, %eax	# 2731 = ceil(2^16 / 24)
- 	shr	$16, %eax
- 	jmp	.Lcrc_3lanes
- 
- .Lfull_block:
- 	# Processing 128 qwords from each lane.
-@@ -123,20 +124,20 @@ SYM_FUNC_START(crc_pcl)
- 	jl	.Lcrc_3lanes_4x_done
- 
- 	# Unroll the loop by a factor of 4 to reduce the overhead of the loop
- 	# bookkeeping instructions, which can compete with crc32q for the ALUs.
- .Lcrc_3lanes_4x_loop:
--	crc32q	(bufp), crc_init_q
-+	crc32q	(bufp), crc0_q
- 	crc32q	(bufp,chunk_bytes_q), crc1
- 	crc32q	(bufp,chunk_bytes_q,2), crc2
--	crc32q	8(bufp), crc_init_q
-+	crc32q	8(bufp), crc0_q
- 	crc32q	8(bufp,chunk_bytes_q), crc1
- 	crc32q	8(bufp,chunk_bytes_q,2), crc2
--	crc32q	16(bufp), crc_init_q
-+	crc32q	16(bufp), crc0_q
- 	crc32q	16(bufp,chunk_bytes_q), crc1
- 	crc32q	16(bufp,chunk_bytes_q,2), crc2
--	crc32q	24(bufp), crc_init_q
-+	crc32q	24(bufp), crc0_q
- 	crc32q	24(bufp,chunk_bytes_q), crc1
- 	crc32q	24(bufp,chunk_bytes_q,2), crc2
- 	add	$32, bufp
- 	sub	$4, %eax
- 	jge	.Lcrc_3lanes_4x_loop
-@@ -144,42 +145,42 @@ SYM_FUNC_START(crc_pcl)
- .Lcrc_3lanes_4x_done:
- 	add	$4, %eax
- 	jz	.Lcrc_3lanes_last_qword
- 
- .Lcrc_3lanes_1x_loop:
--	crc32q	(bufp), crc_init_q
-+	crc32q	(bufp), crc0_q
- 	crc32q	(bufp,chunk_bytes_q), crc1
- 	crc32q	(bufp,chunk_bytes_q,2), crc2
- 	add	$8, bufp
- 	dec	%eax
- 	jnz	.Lcrc_3lanes_1x_loop
- 
- .Lcrc_3lanes_last_qword:
--	crc32q	(bufp), crc_init_q
-+	crc32q	(bufp), crc0_q
- 	crc32q	(bufp,chunk_bytes_q), crc1
- # SKIP  crc32q	(bufp,chunk_bytes_q,2), crc2	; Don't do this one yet
- 
- 	################################################################
- 	## 4) Combine three results:
- 	################################################################
- 
- 	lea	(K_table-8)(%rip), %rax		# first entry is for idx 1
- 	pmovzxdq (%rax,chunk_bytes_q), %xmm0	# 2 consts: K1:K2
- 	lea	(chunk_bytes,chunk_bytes,2), %eax # chunk_bytes * 3
--	sub	%eax, len			# len -= chunk_bytes * 3
-+	sub	%rax, len			# len -= chunk_bytes * 3
- 
--	movq	crc_init_q, %xmm1		# CRC for block 1
-+	movq	crc0_q, %xmm1			# CRC for block 1
- 	pclmulqdq $0x00, %xmm0, %xmm1		# Multiply by K2
- 
- 	movq    crc1, %xmm2			# CRC for block 2
- 	pclmulqdq $0x10, %xmm0, %xmm2		# Multiply by K1
- 
- 	pxor    %xmm2,%xmm1
- 	movq    %xmm1, %rax
- 	xor	(bufp,chunk_bytes_q,2), %rax
--	mov	crc2, crc_init_q
--	crc32	%rax, crc_init_q
-+	mov	crc2, crc0_q
-+	crc32	%rax, crc0_q
- 	lea	8(bufp,chunk_bytes_q,2), bufp
- 
- 	################################################################
- 	## 5) If more blocks remain, goto (2):
- 	################################################################
-@@ -191,38 +192,38 @@ SYM_FUNC_START(crc_pcl)
- 
- 	#######################################################################
- 	## 6) Process any remainder without interleaving:
- 	#######################################################################
- .Lsmall:
--	test	len, len
-+	test	len_dw, len_dw
- 	jz	.Ldone
--	mov	len, %eax
-+	mov	len_dw, %eax
- 	shr	$3, %eax
- 	jz	.Ldo_dword
- .Ldo_qwords:
--	crc32q	(bufp), crc_init_q
-+	crc32q	(bufp), crc0_q
- 	add	$8, bufp
- 	dec	%eax
- 	jnz	.Ldo_qwords
- .Ldo_dword:
--	test	$4, len
-+	test	$4, len_dw
- 	jz	.Ldo_word
--	crc32l	(bufp), crc_init
-+	crc32l	(bufp), crc0
- 	add	$4, bufp
- .Ldo_word:
--	test	$2, len
-+	test	$2, len_dw
- 	jz	.Ldo_byte
--	crc32w	(bufp), crc_init
-+	crc32w	(bufp), crc0
- 	add	$2, bufp
- .Ldo_byte:
--	test	$1, len
-+	test	$1, len_dw
- 	jz	.Ldone
--	crc32b	(bufp), crc_init
-+	crc32b	(bufp), crc0
- .Ldone:
--	mov	crc_init, %eax
-+	mov	crc0, %eax
-         RET
--SYM_FUNC_END(crc_pcl)
-+SYM_FUNC_END(crc32c_x86_3way)
- 
- .section	.rodata, "a", @progbits
- 	################################################################
- 	## PCLMULQDQ tables
- 	## Table is 128 entries x 2 words (8 bytes) each
+diff --git a/lib/libcrc32c.c b/lib/libcrc32c.c
+deleted file mode 100644
+index 649e687413a0..000000000000
+--- a/lib/libcrc32c.c
++++ /dev/null
+@@ -1,74 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/* 
+- * CRC32C
+- *@Article{castagnoli-crc,
+- * author =       { Guy Castagnoli and Stefan Braeuer and Martin Herrman},
+- * title =        {{Optimization of Cyclic Redundancy-Check Codes with 24
+- *                 and 32 Parity Bits}},
+- * journal =      IEEE Transactions on Communication,
+- * year =         {1993},
+- * volume =       {41},
+- * number =       {6},
+- * pages =        {},
+- * month =        {June},
+- *}
+- * Used by the iSCSI driver, possibly others, and derived from
+- * the iscsi-crc.c module of the linux-iscsi driver at
+- * http://linux-iscsi.sourceforge.net.
+- *
+- * Following the example of lib/crc32, this function is intended to be
+- * flexible and useful for all users.  Modules that currently have their
+- * own crc32c, but hopefully may be able to use this one are:
+- *  net/sctp (please add all your doco to here if you change to
+- *            use this one!)
+- *  <endoflist>
+- *
+- * Copyright (c) 2004 Cisco Systems, Inc.
+- */
+-
+-#include <crypto/hash.h>
+-#include <linux/err.h>
+-#include <linux/init.h>
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/crc32c.h>
+-
+-static struct crypto_shash *tfm;
+-
+-u32 crc32c(u32 crc, const void *address, unsigned int length)
+-{
+-	SHASH_DESC_ON_STACK(shash, tfm);
+-	u32 ret, *ctx = (u32 *)shash_desc_ctx(shash);
+-	int err;
+-
+-	shash->tfm = tfm;
+-	*ctx = crc;
+-
+-	err = crypto_shash_update(shash, address, length);
+-	BUG_ON(err);
+-
+-	ret = *ctx;
+-	barrier_data(ctx);
+-	return ret;
+-}
+-
+-EXPORT_SYMBOL(crc32c);
+-
+-static int __init libcrc32c_mod_init(void)
+-{
+-	tfm = crypto_alloc_shash("crc32c", 0, 0);
+-	return PTR_ERR_OR_ZERO(tfm);
+-}
+-
+-static void __exit libcrc32c_mod_fini(void)
+-{
+-	crypto_free_shash(tfm);
+-}
+-
+-module_init(libcrc32c_mod_init);
+-module_exit(libcrc32c_mod_fini);
+-
+-MODULE_AUTHOR("Clay Haapala <chaapala@cisco.com>");
+-MODULE_DESCRIPTION("CRC32c (Castagnoli) calculations");
+-MODULE_LICENSE("GPL");
+-MODULE_SOFTDEP("pre: crc32c");
 -- 
 2.47.1
 
