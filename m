@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-3656-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FB46D49792
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2024 01:22:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95A7DD49793
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2024 01:22:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y1mGB6XCWz2yjR;
-	Mon,  2 Dec 2024 12:21:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y1mGC0Ws8z2yyD;
+	Mon,  2 Dec 2024 12:21:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733102498;
-	cv=none; b=IsKcjw2s2Yf1wWJraPoHECByIUQ71zDHhnDeA1lilMZT6+ZmgB7F4qFL5i9FH1aRF5OKjYyoMy7f/8sS84LkXYc0DLgufCU85GgCPOaS99yP/d3Zc966LCE59rxVW557ObeHGH/VmCTJgmnuGKulSYWBycZLcu1BTF9B9M7Jinvy2SAgQstdq2DVw/rTlvbVMyIFjyU9hjww66qQzpN7PxVobbtzYz2HvLSMU3lK5Qr3Q5lEk0utMR/rzUa42mU0USWepuTAFi/mC6iBvjX+R2UnI3LEVxq55v1Zej2ZikHIYX1Wypxx5mUQuZ6f9Js3bDIQMC4HrhF6gut75BcyYw==
+	cv=none; b=liN1wyFflQw2SchLHfcybuJFqjsh3QYXRdjNPpfDhGj0EfGwQy4UfZUunxrDw8+3/vfBvWyYOlseBCrUI6le1hCA8xdJ5RXHKUbyhFusidU4vHP7BPCENpd410wlaIrAdVsyfCglwk61W7ZsOihadEpYvHgy0KHQwXHgKJTEKzyxzDQ9opuIxMvv7Z9Gezx+jdRkmT4uCi+ia8jayzsfMYKW1446wTF+FvfAAUdQErDF8La+BRlTH3m/9E/EnwUmR8GNHGml5bflEsN+Wihba7wL0mdhVqYYP2C+d9Chsb6dIq/2Qh0YWcqCgTgkhyCO7pA2cyNBixwd51NQwXMtpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1733102498; c=relaxed/relaxed;
-	bh=rbngkL2AAfbiqCWERdYqPYAG3kAI2Wm0NyNCB9YfUCo=;
+	bh=wqw32qv6NNAzFbqEMfxNd+2cUTIr7U7Wo7O4V8lcz5Q=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=T/eF0OINy6kvXN99yKPK5edLcBT35RKK3ZNW3BdqipPCO+XdOybdPWyH9xko2bgEoCVoE6Pq6l6YMiL5uj/+v5Lp4Yk8qsFNl1o7omsMVaMWbE+YZwORrLac6pTSiiYFRUZmiE6eFyy6JAnwZENWaAJR0TOV30KvoX+8Tmq+kNxmZH7uSs4dXLC2GMZ3s9YZD0g4M/GQx+ruaK/fuYmVJFDnLi74S8KjH65pquhp1tC96htCm86Yb5yV8C3VSOkDPztPRIDzOzDY6cyxIrF29+yb/OFDiJZdnw9gHOgPdnRvPWGJRB8XwsvtX4k8HxlezMxAmAbp8MdmhiDndptZAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mhYadkzk; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=AzyLSKcyEvXULIZfMgLbBoKbuTOxKvDm3nI0V0UdF1Thtgsj8ADimm2ZrSDT6C4EYDcEHS13NjZxadpd+IY2eMvBTza4i3lCt9oQYV88nM/WR84xIYjDBjkaVpYts9M9bEO2O7HC4UF5sXJb1mizmmdc3SsxK472vTiW5R4GsMth0E9wL+5LuRvmRagCASStrrT8wv19F5Jt+QDe3E5L7+bBR5vgbpsEvAD1uNmCDjzWXMF7USrGPZq43TSHV8Rr/0OvwldlVUNFQYwEMdyVuqvsNSRT6JzjLP6wm2QPvQiZCF0rg2VOQL0tszqd7Jg2qBYwA+DYoOxZOnkTy9iA3w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mew14CNy; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mhYadkzk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mew14CNy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y1mG90y5Sz2ysX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2024 12:21:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y1mG85phDz2yng
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Dec 2024 12:21:36 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 47C0BA40C19;
-	Mon,  2 Dec 2024 01:19:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 496B3C4CEE1;
-	Mon,  2 Dec 2024 01:21:33 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 0105BA40C51;
+	Mon,  2 Dec 2024 01:19:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3605C4CEE3;
+	Mon,  2 Dec 2024 01:21:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733102493;
-	bh=tOkBM9OKj+QnnDmg3KXsNuWzGOUW1YaMaa8G27/37Kk=;
+	s=k20201202; t=1733102492;
+	bh=KUxurPuR7tri/rWwkEp1MLHm/TOAuwD8O1Sn0i1uUzI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=mhYadkzk8Wpm1ITszh4LwCoo6RCymijkaws9sU9g/KGsy9DSpWRmbKngnVBniKYZv
-	 ErPb16+qEvaUkykp4VtBfrvOfVTPr64cYgZw2glt62J0whPQAGvPo9CTqugNtHLf7c
-	 bR6tfEyyt9k48DlViebHmXiT/K8l+bd6vLUVwdrY6vcmczq5K5kKDEUS4ny5en5mgQ
-	 j5i62pwZxIzqgUh0vTPC6/rv0sbFcxGUkXFPlAfdlelqDdzIhTSlk643ODVxFPEpTW
-	 UOUjKNwH5bTSyGAWLP2m00SXeKqdb65SxhRJUtEBjn+EfI5V1uAWfpK3gMgnUe3no5
-	 t8LBK7cKrA3RA==
+	b=mew14CNy1lCNG18pX6nCOSSUkM7sygXeFSyi8VPEzxe0yG/lP4DT+LFSNqYSQxMuX
+	 5YhWQKvo9kdFy7jfWeRaMniXZoL9OzFPxmY9ovzXID0IKWZHzVmQio0O71xHl7S4xo
+	 nmtwrG5cg+yha+fcT2o1jO8G5NM/OosgTXW30Mr0bxe+uZnU1k9jZXex8oBObAmKBp
+	 fP0pN6NFW/CC8jEMKWDX63y7UEwISw8y4Pt8kB7SNJLnmFLf/0rBTS0ztTlM3EkJZ5
+	 ZGQUoS2SoQtEZyqDJ3yYGSCVbxe9iPu1hfdsQy4D7vBFFXM8GP/4reSAm9OnbDZuXb
+	 yMkp5GgBA1IQA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -53,10 +53,10 @@ Cc: linux-arch@vger.kernel.org,
 	x86@kernel.org,
 	Zhihang Shao <zhihang.shao.iscas@gmail.com>,
 	Ard Biesheuvel <ardb@kernel.org>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: [PATCH v2 12/12] MAINTAINERS: add entry for CRC library
-Date: Sun,  1 Dec 2024 17:20:56 -0800
-Message-ID: <20241202012056.209768-13-ebiggers@kernel.org>
+	Vinicius Peixoto <vpeixoto@lkcamp.dev>
+Subject: [PATCH v2 09/12] lib/crc16_kunit: delete obsolete crc16_kunit.c
+Date: Sun,  1 Dec 2024 17:20:53 -0800
+Message-ID: <20241202012056.209768-10-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241202012056.209768-1-ebiggers@kernel.org>
 References: <20241202012056.209768-1-ebiggers@kernel.org>
@@ -76,43 +76,220 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-I am volunteering to maintain the kernel's CRC library code.
+This new test showed up in v6.13-rc1.  Delete it since it is being
+superseded by crc_kunit.c, which is more comprehensive (tests multiple
+CRC variants without duplicating code, includes a benchmark, etc.).
 
-Ard has volunteered to be a reviewer.
-
-Reviewed-by: Ard Biesheuvel <ardb@kernel.org>
-Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
+Cc: Vinicius Peixoto <vpeixoto@lkcamp.dev>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- MAINTAINERS | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ lib/Kconfig.debug |   9 ---
+ lib/Makefile      |   1 -
+ lib/crc16_kunit.c | 155 ----------------------------------------------
+ 3 files changed, 165 deletions(-)
+ delete mode 100644 lib/crc16_kunit.c
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 1e930c7a58b1..b7eb0c0a9c1c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6054,10 +6054,21 @@ CRAMFS FILESYSTEM
- M:	Nicolas Pitre <nico@fluxnic.net>
- S:	Maintained
- F:	Documentation/filesystems/cramfs.rst
- F:	fs/cramfs/
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index d9b89dd3f6a0..688dace36f36 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -2876,19 +2876,10 @@ config USERCOPY_KUNIT_TEST
+ 	help
+ 	  This builds the "usercopy_kunit" module that runs sanity checks
+ 	  on the copy_to/from_user infrastructure, making sure basic
+ 	  user/kernel boundary testing is working.
  
-+CRC LIBRARY
-+M:	Eric Biggers <ebiggers@kernel.org>
-+R:	Ard Biesheuvel <ardb@kernel.org>
-+L:	linux-crypto@vger.kernel.org
-+S:	Maintained
-+T:	git https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git crc-next
-+F:	Documentation/staging/crc*
-+F:	arch/*/lib/crc*
-+F:	include/linux/crc*
-+F:	lib/crc*
-+
- CREATIVE SB0540
- M:	Bastien Nocera <hadess@hadess.net>
- L:	linux-input@vger.kernel.org
- S:	Maintained
- F:	drivers/hid/hid-creative-sb0540.c
+-config CRC16_KUNIT_TEST
+-	tristate "KUnit tests for CRC16"
+-	depends on KUNIT
+-	default KUNIT_ALL_TESTS
+-	select CRC16
+-	help
+-	  Enable this option to run unit tests for the kernel's CRC16
+-	  implementation (<linux/crc16.h>).
+-
+ config TEST_UDELAY
+ 	tristate "udelay test driver"
+ 	help
+ 	  This builds the "udelay_test" module that helps to make sure
+ 	  that udelay() is working properly.
+diff --git a/lib/Makefile b/lib/Makefile
+index ccd803d03e58..34f4d61e3cf7 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -392,11 +392,10 @@ CFLAGS_fortify_kunit.o += $(call cc-disable-warning, stringop-truncation)
+ CFLAGS_fortify_kunit.o += $(DISABLE_STRUCTLEAK_PLUGIN)
+ obj-$(CONFIG_FORTIFY_KUNIT_TEST) += fortify_kunit.o
+ obj-$(CONFIG_CRC_KUNIT_TEST) += crc_kunit.o
+ obj-$(CONFIG_SIPHASH_KUNIT_TEST) += siphash_kunit.o
+ obj-$(CONFIG_USERCOPY_KUNIT_TEST) += usercopy_kunit.o
+-obj-$(CONFIG_CRC16_KUNIT_TEST) += crc16_kunit.o
+ 
+ obj-$(CONFIG_GENERIC_LIB_DEVMEM_IS_ALLOWED) += devmem_is_allowed.o
+ 
+ obj-$(CONFIG_FIRMWARE_TABLE) += fw_table.o
+ 
+diff --git a/lib/crc16_kunit.c b/lib/crc16_kunit.c
+deleted file mode 100644
+index 0918c98a96d2..000000000000
+--- a/lib/crc16_kunit.c
++++ /dev/null
+@@ -1,155 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0
+-/*
+- * KUnits tests for CRC16.
+- *
+- * Copyright (C) 2024, LKCAMP
+- * Author: Vinicius Peixoto <vpeixoto@lkcamp.dev>
+- * Author: Fabricio Gasperin <fgasperin@lkcamp.dev>
+- * Author: Enzo Bertoloti <ebertoloti@lkcamp.dev>
+- */
+-#include <kunit/test.h>
+-#include <linux/crc16.h>
+-#include <linux/prandom.h>
+-
+-#define CRC16_KUNIT_DATA_SIZE 4096
+-#define CRC16_KUNIT_TEST_SIZE 100
+-#define CRC16_KUNIT_SEED 0x12345678
+-
+-/**
+- * struct crc16_test - CRC16 test data
+- * @crc: initial input value to CRC16
+- * @start: Start index within the data buffer
+- * @length: Length of the data
+- */
+-static struct crc16_test {
+-	u16 crc;
+-	u16 start;
+-	u16 length;
+-} tests[CRC16_KUNIT_TEST_SIZE];
+-
+-u8 data[CRC16_KUNIT_DATA_SIZE];
+-
+-
+-/* Naive implementation of CRC16 for validation purposes */
+-static inline u16 _crc16_naive_byte(u16 crc, u8 data)
+-{
+-	u8 i = 0;
+-
+-	crc ^= (u16) data;
+-	for (i = 0; i < 8; i++) {
+-		if (crc & 0x01)
+-			crc = (crc >> 1) ^ 0xa001;
+-		else
+-			crc = crc >> 1;
+-	}
+-
+-	return crc;
+-}
+-
+-
+-static inline u16 _crc16_naive(u16 crc, u8 *buffer, size_t len)
+-{
+-	while (len--)
+-		crc = _crc16_naive_byte(crc, *buffer++);
+-	return crc;
+-}
+-
+-
+-/* Small helper for generating pseudorandom 16-bit data */
+-static inline u16 _rand16(void)
+-{
+-	static u32 rand = CRC16_KUNIT_SEED;
+-
+-	rand = next_pseudo_random32(rand);
+-	return rand & 0xFFFF;
+-}
+-
+-
+-static int crc16_init_test_data(struct kunit_suite *suite)
+-{
+-	size_t i;
+-
+-	/* Fill the data buffer with random bytes */
+-	for (i = 0; i < CRC16_KUNIT_DATA_SIZE; i++)
+-		data[i] = _rand16() & 0xFF;
+-
+-	/* Generate random test data while ensuring the random
+-	 * start + length values won't overflow the 4096-byte
+-	 * buffer (0x7FF * 2 = 0xFFE < 0x1000)
+-	 */
+-	for (size_t i = 0; i < CRC16_KUNIT_TEST_SIZE; i++) {
+-		tests[i].crc = _rand16();
+-		tests[i].start = _rand16() & 0x7FF;
+-		tests[i].length = _rand16() & 0x7FF;
+-	}
+-
+-	return 0;
+-}
+-
+-static void crc16_test_empty(struct kunit *test)
+-{
+-	u16 crc;
+-
+-	/* The result for empty data should be the same as the
+-	 * initial crc
+-	 */
+-	crc = crc16(0x00, data, 0);
+-	KUNIT_EXPECT_EQ(test, crc, 0);
+-	crc = crc16(0xFF, data, 0);
+-	KUNIT_EXPECT_EQ(test, crc, 0xFF);
+-}
+-
+-static void crc16_test_correctness(struct kunit *test)
+-{
+-	size_t i;
+-	u16 crc, crc_naive;
+-
+-	for (i = 0; i < CRC16_KUNIT_TEST_SIZE; i++) {
+-		/* Compare results with the naive crc16 implementation */
+-		crc = crc16(tests[i].crc, data + tests[i].start,
+-			    tests[i].length);
+-		crc_naive = _crc16_naive(tests[i].crc, data + tests[i].start,
+-					 tests[i].length);
+-		KUNIT_EXPECT_EQ(test, crc, crc_naive);
+-	}
+-}
+-
+-
+-static void crc16_test_combine(struct kunit *test)
+-{
+-	size_t i, j;
+-	u16 crc, crc_naive;
+-
+-	/* Make sure that combining two consecutive crc16 calculations
+-	 * yields the same result as calculating the crc16 for the whole thing
+-	 */
+-	for (i = 0; i < CRC16_KUNIT_TEST_SIZE; i++) {
+-		crc_naive = crc16(tests[i].crc, data + tests[i].start, tests[i].length);
+-		for (j = 0; j < tests[i].length; j++) {
+-			crc = crc16(tests[i].crc, data + tests[i].start, j);
+-			crc = crc16(crc, data + tests[i].start + j, tests[i].length - j);
+-			KUNIT_EXPECT_EQ(test, crc, crc_naive);
+-		}
+-	}
+-}
+-
+-
+-static struct kunit_case crc16_test_cases[] = {
+-	KUNIT_CASE(crc16_test_empty),
+-	KUNIT_CASE(crc16_test_combine),
+-	KUNIT_CASE(crc16_test_correctness),
+-	{},
+-};
+-
+-static struct kunit_suite crc16_test_suite = {
+-	.name = "crc16",
+-	.test_cases = crc16_test_cases,
+-	.suite_init = crc16_init_test_data,
+-};
+-kunit_test_suite(crc16_test_suite);
+-
+-MODULE_AUTHOR("Fabricio Gasperin <fgasperin@lkcamp.dev>");
+-MODULE_AUTHOR("Vinicius Peixoto <vpeixoto@lkcamp.dev>");
+-MODULE_AUTHOR("Enzo Bertoloti <ebertoloti@lkcamp.dev>");
+-MODULE_DESCRIPTION("Unit tests for crc16");
+-MODULE_LICENSE("GPL");
 -- 
 2.47.1
 
