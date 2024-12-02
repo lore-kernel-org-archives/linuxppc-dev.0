@@ -1,44 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3682-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3683-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7356E69E85
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2024 19:01:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32D01E69E81
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Dec 2024 19:01:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2CmP0Rkvz2xsM;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2CmP2Fxbz2yys;
 	Tue,  3 Dec 2024 06:00:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733166052;
-	cv=none; b=jjiL3tEBSd8e/UGaOxSsEEbvUb494ycisHNZvaMWCmu74hdX4hCsvprh423C5ByAf9bnUQnN6zDQZ3JZapLn/vanbM8+T2bttZlpOuDYf+evKQ5b143gQSEpNBwFABB69czGl8Vzg5P3OtOTykRycDy1FRnu/fywuDokxwVKtjyeiZkF8na8JND8m7emz3PDy+ThYJwfH9zZxWeQ5I3e7+0WVWaGTU0cF5Yjuh1YWknK2k6ZIE8eAcduvOHVo4JxxwLr72niimRYf8hH8Hrbpa+aAM+kYQoJIpndHaxV3woUyB1p/4pCq6prN3W/xI0PaRJtsWyA8MqVUYg0VwaK1w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733166053;
+	cv=none; b=iXfeSnxAMrMW4kVXqDyOIUgHGXpQ1tlA1U/CNw9HsMwp/QJDTrlORhvQ65ffsbQmXS9/wRnJD7Ycr3p1r5cJFFYUflRUlu+SYTqLbH2YzKw06IPzBRHmGHZ/ufM7Z+MmeJqcv2722fGUOxHieKyCfFUtGhjhqXwzb7sMaoOjIhwJI13HyM9Gy2/DZgcLpNECs+XJCzjiUJ1u9rWYcupe02+/nhbq7St9CIKiubGHK2oAtCRSHL0t1rxZl97EdMVUErcdBRgZJVqms0JMTttknPjpMUI1L3uO8V4zpnRp53WLWZt4phBr//U/C9T+1hjLV5n/0546aSoxhY5WDGYC2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733166052; c=relaxed/relaxed;
-	bh=w5fXkvkAi3PlCa8VqYd7jmwX6rPPKpQQKJ4+a4NdcT0=;
+	t=1733166053; c=relaxed/relaxed;
+	bh=0wVq8HcNBx8cqX/ggXYB4cHAC9d9UVKgjUvWzU7mHBY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=FykNWrwHpTpXPgPm3pCxyTDyeJ+kOZ5/ilpPpTlBiUpoKS+71SiLu2NthDY69iF1rVoVFBKy7qbIFI0drKaqsutD34EWTuSzBP4MYyMPddz5RrDle6EWZuxQXc23qHzDIU3tFkvI5NHYZkLzQixeQZmUXdXX8R9NCUjQc7AGrN7K5BNdMGU1zCMAfLZY5nkoQhWe3eP7eGY4MnW/mfuEeTWY1TZoQQnP1cFgvAj2cIKxs2zCGxMDl7ju3B4IRvOBTBegG8R9YcrHjvaodVX2OosaFjpPHdAk992qK65g2nsvzPBPnfj8C/pp3c9DQVXZv1ZXKlPR/+QO6FqPU750OQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=PRoJTN2/; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=fAVS3Na9yJa75yWKDQoIWDObv4MdK4NWXf0LvxOKuHH98r1lWS4gINKAI37crt/HU3r2w9N+P6vqTx3VU0cthsXU8wQzr7GXz9Q5romHA0fKogXEgxcLRiwxhRHs4k8Ri13tzXcaD6ohmk6/65tB3cFC+n4jdFeODlujOs89WHt4+ks1kG+lyYXso3ajEc5pYRQ8FHK74H+nllQyGSX3fYfsSEC6YI6lNCaqJ9o6aXJfhw3I6U+mdwMWkFebwhcu3J+8zxi76iVPkGWKaxpDKKKb1wr9uxIeQEKRyk+27KbLdnMQ4U6O+SbOwQuQs7QpcpcaJsoil++7vxcjRaeZ/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=gBFUrsr+; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=PRoJTN2/;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=gBFUrsr+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2CmJ2HjWz2ytp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2024 06:00:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2CmH2MR7z2ysX
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2024 06:00:45 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1733166037;
-	bh=c+OK0c9DqudvV6de1q2cguTuEZ7rc+EiMnpII+VV+gk=;
+	bh=8pXu+KIDxnIkhmw4RN4FUIaU1wDaZ00iHKd989Tn4us=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=PRoJTN2/WD38X6ex2MklShCZg4/Zhp1aBS6bQhM8KrWUKqsIfTO3E8JpPTZQWn4yX
-	 i5z49I+Y6UsDRqwh7UMg09/F+TG8YXqtHA7xPEWaCEmYJ+9zF+wZlqRnJCyDh2xJeW
-	 xqMnqBJ6ZG0AY934vDKCRdaTH8lcC+h9nHW3odGI=
+	b=gBFUrsr+Y5gbKfCIBnN+mVBBLd2ht/Yzp1ZH68AnyWMsUH4frA+qekk4i7UYOFI0e
+	 RqmX5J+DxnEU0LTjzjOYyubiCNThRXZ56K6Eeuvec0cCO4nkiBkYsp6kBWYN1kA7cX
+	 610RLvEWkMG/ATbdxyi5CBTAICClHMTtMw/KhT8s=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Mon, 02 Dec 2024 20:00:36 +0100
-Subject: [PATCH 1/5] sysfs: add macro BIN_ATTR_ADMIN_WO()
+Date: Mon, 02 Dec 2024 20:00:38 +0100
+Subject: [PATCH 3/5] powerpc/powernv/flash: Use BIN_ATTR_ADMIN_WO() for
+ bin_attribute definition
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241202-sysfs-const-bin_attr-admin_wo-v1-1-f489116210bf@weissschuh.net>
+Message-Id: <20241202-sysfs-const-bin_attr-admin_wo-v1-3-f489116210bf@weissschuh.net>
 References: <20241202-sysfs-const-bin_attr-admin_wo-v1-0-f489116210bf@weissschuh.net>
 In-Reply-To: <20241202-sysfs-const-bin_attr-admin_wo-v1-0-f489116210bf@weissschuh.net>
 To: Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
@@ -72,46 +73,63 @@ Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
  linux-scsi@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733166036; l=1326;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733166036; l=2014;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=c+OK0c9DqudvV6de1q2cguTuEZ7rc+EiMnpII+VV+gk=;
- b=fYgHqAdIAZatDuw8uWF0U9ElsIjChzM1qpbbyZvPW4NW8SrhhzeOs4sK7avctzwIrWksSbzAm
- jxiHNn1GgsFDhjK/57O009WAci/xOF8vWIVviFFNIlMNHEynIxZO/h2
+ bh=8pXu+KIDxnIkhmw4RN4FUIaU1wDaZ00iHKd989Tn4us=;
+ b=HSh67zAWq4cTiwB5DE8N7fJi0p97k9R1Vmirv2ID1DlZHm9pe/UI8TBVHOAvhFnWJM+PYdtth
+ zpBnll2/qZKAZPIjlMaeAO9ZGuBUFjgAjH5JihuVFiUP5OozHEDK1It
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The macros BIN_ATTR_RO/BIN_ATTR_WO/BIN_ATTR_WR and
-BIN_ATTR_ADMIN_RO/BIN_ATTR_ADMIN_RW already exist.
-To complete the collection also add BIN_ATTR_ADMIN_WO.
+Using the macro saves some lines of code and prepares the attribute for
+the general constifications of struct bin_attributes.
+
+While at it also constify the callback parameter.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- include/linux/sysfs.h | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/platforms/powernv/opal-flash.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 0f2fcd244523f050c5286f19d4fe1846506f9214..bcae49105e54a79b7d8a610f17212cb5920c205a 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -385,12 +385,18 @@ struct bin_attribute bin_attr_##_name = __BIN_ATTR_RW(_name, _size)
- #define __BIN_ATTR_ADMIN_RO(_name, _size)				\
- 	__BIN_ATTR(_name, 0400, _name##_read, NULL, _size)
+diff --git a/arch/powerpc/platforms/powernv/opal-flash.c b/arch/powerpc/platforms/powernv/opal-flash.c
+index d5ea04e8e4c526b99ca8f1ab613266b385362d82..76e3818601e5610f48bb8a6fd325239d6ad39723 100644
+--- a/arch/powerpc/platforms/powernv/opal-flash.c
++++ b/arch/powerpc/platforms/powernv/opal-flash.c
+@@ -431,9 +431,9 @@ static int alloc_image_buf(char *buffer, size_t count)
+  * Parse candidate image header to get total image size
+  * and pre-allocate required memory.
+  */
+-static ssize_t image_data_write(struct file *filp, struct kobject *kobj,
+-				struct bin_attribute *bin_attr,
+-				char *buffer, loff_t pos, size_t count)
++static ssize_t image_write(struct file *filp, struct kobject *kobj,
++			   const struct bin_attribute *bin_attr,
++			   char *buffer, loff_t pos, size_t count)
+ {
+ 	int rc;
  
-+#define __BIN_ATTR_ADMIN_WO(_name, _size)				\
-+	__BIN_ATTR(_name, 0200, NULL, _name##_write, _size)
-+
- #define __BIN_ATTR_ADMIN_RW(_name, _size)					\
- 	__BIN_ATTR(_name, 0600, _name##_read, _name##_write, _size)
+@@ -490,11 +490,7 @@ static ssize_t image_data_write(struct file *filp, struct kobject *kobj,
+  *   update_flash	: Flash new firmware image
+  *
+  */
+-static const struct bin_attribute image_data_attr = {
+-	.attr = {.name = "image", .mode = 0200},
+-	.size = MAX_IMAGE_SIZE,	/* Limit image size */
+-	.write = image_data_write,
+-};
++static const BIN_ATTR_ADMIN_WO(image, MAX_IMAGE_SIZE);
  
- #define BIN_ATTR_ADMIN_RO(_name, _size)					\
- struct bin_attribute bin_attr_##_name = __BIN_ATTR_ADMIN_RO(_name, _size)
+ static struct kobj_attribute validate_attribute =
+ 	__ATTR(validate_flash, 0600, validate_show, validate_store);
+@@ -544,7 +540,7 @@ void __init opal_flash_update_init(void)
+ 		goto nokobj;
+ 	}
  
-+#define BIN_ATTR_ADMIN_WO(_name, _size)					\
-+struct bin_attribute bin_attr_##_name = __BIN_ATTR_ADMIN_WO(_name, _size)
-+
- #define BIN_ATTR_ADMIN_RW(_name, _size)					\
- struct bin_attribute bin_attr_##_name = __BIN_ATTR_ADMIN_RW(_name, _size)
- 
+-	ret = sysfs_create_bin_file(opal_kobj, &image_data_attr);
++	ret = sysfs_create_bin_file(opal_kobj, &bin_attr_image);
+ 	if (ret) {
+ 		pr_warn("FLASH: Failed to create sysfs files\n");
+ 		goto nosysfs_file;
 
 -- 
 2.47.1
