@@ -1,47 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3713-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3714-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48202E64A89
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 12:43:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60199E64A87
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 12:44:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2gLj0fpvz30Bk;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2gLj1NwCz30Bp;
 	Tue,  3 Dec 2024 23:43:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::224"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733229821;
-	cv=none; b=DTErNRSDkP82A0SUnFFztbTMLSjToH4ELTSJVu2mnoCE2XEjg7BWpZoX/cPTTkalPAnVe9JZ3nFj+2qhr5ik+5+Btz9ZXaRuKN729N7MuhiB+oDK3Bofh+3GRkYNwoPuFZPadxQQw7EuIRMBZR0ZhCRGFHrzlTxqB2ik6baPUXELAmcePFRtNpMKN0f9Zrg/bKORDiFmPTlBDHFU5K6ytPkGUzqmxUbg6rJHSpQ8g4eEWbcHEH5kMIH/fbNtrtnidDGIGWMvNwwt+Zdqwk8S/LH++0+uiWyH3diS8qw+bfpbciEVWBJY6v/miOVu1M140LLhev5JmbFCM614Y+H1oQ==
+	cv=none; b=DN1ZafqP6NdE/Oaa/OQPezMNaCnXaVvPQgIduQFmX51X3j+kLYf8OQ85+7HNbhYsCSlKJ7RNOB7L0TNbRO5C6GZM4kGfrHR9d2S4y/AJtIUdg25AZlD7vsiWbWd81Y0Kc29oXxhXwXiEba98Aqz15xk2TRZG446pX+lRZKdVQQ79iQePbVMI+z6CVgYuZKOwcKuwvyiwwyoYY2p0wYpkutIMWhTirnzeQRR6fv0YaeDh1NMBHiPu2/ZIlz2R0FEkSincyZ3lcJg/DBxTnqJeMXYSn78LChuKIWu8yGk1Y6WqfDcLZfHAkFqS/mtcaMxcfsggqOaRXIrxisMqArI0+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1733229821; c=relaxed/relaxed;
-	bh=Y48dg3gXGpgzyZF5ZkvFdVhp7VJIaTg4ag661mUvv8g=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=c89+ngE5RKXqgc6zvOPBRZ9x41edOetr1bcekLRPkFJlyI6ykEhZPszf13AkTlyl6jDw/24LYPFTQtg4qjoNbyGNidejr9kio4OMs66b3DGh7LnmdoFHdg5L2AL71+fcwQRD3OT9RNZCuwGNTBxgBs4NvZEz9towTTZOA9w+C40BiDEaqbLIK2iyFBnPJzdNzPujLkNAcO0sjaCSqL78DblSi6jK9DjDfadrO+4XbiwXA5jCZoznSDv1CnqJDC/fzsSFXqiHRco45Y2QNXMWW5ABnk2aOY/bXVyZtiMUV+DjtSVmFZ6PHqmgZmIIvMsZgqTtakdt44Rt46U05bT1Mg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=BYanB+no; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	bh=W+I+80WOeNGElVcMFVionKAL8OOUIM1EboCBXK2lIoY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CZzMuuQORelAkKOAfB9UOSAZSm47wE5yyGFGr+8e3jF6tHA8lyi5Uunvw1z+4YJ+FbfhrPhpYFitbMiAvJyxs6HXSJce7Gv16o40gxZHPXuuZyc3pi65d/hbmrawZohl2VisxOeWPXykC9vQeDMBOlg0bKpuSmCwVF51L7r3mgOTZKZJPzh4xpt6ENZSFUMj5zu3dbZTvZEwpNQH1WCeYSyzrbp1dMn+Wju9Y0wio85K8ErdMUPcj9koixVTG944YPhIZzIJTjmBGXeFagB5aMZ4VHc6aXY/szsBv0QvAs9l29j1cfkYnUgbMV2oogsyNHRueEbGqamEWBPk8ji4BA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=AIvjtNo2; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=BYanB+no;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=AIvjtNo2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::224])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2gLc2Rctz302f
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2gLc2PQ6z302D
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2024 23:43:35 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id D1A57E000A;
-	Tue,  3 Dec 2024 12:43:30 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 2787FE0004;
+	Tue,  3 Dec 2024 12:43:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1733229811;
+	t=1733229806;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Y48dg3gXGpgzyZF5ZkvFdVhp7VJIaTg4ag661mUvv8g=;
-	b=BYanB+noQx9zX34A/WMxd5icmD/vBasvKlUR86GUNpSXBGEMnMp0mSVHL8zBUb3WtcRJ5s
-	XkGvhv/sDdUFMPOOFys4ibMFapn88OGMq2nnU9nZIXjt9/wV2BR29wlXbXjLTqKPiFyUrX
-	rTcwNmID0cuCcYgBJPOgShZ31NI59525FJarHO3ytagYJgQYQCHSYXgjgYTWq7bWwk+3tf
-	NwUfd4DzVI2WLs7S8sn/e9LtMSM94496eYT4MmJKoVR5gwG8PQHJ944TzVKMAatxXEvVBC
-	06/N78lTx+wkqAp6gHmmLcHUph0qKVTnyYropTRlaCcLSsJNAPMfZ54PANGFNA==
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=W+I+80WOeNGElVcMFVionKAL8OOUIM1EboCBXK2lIoY=;
+	b=AIvjtNo2jOC+jd9gWK7fjVM6bQPL7bWgHmfn54Gx0ewm6x5dsqLrAK08xmE99z1v26+u4c
+	19SRqSQW4a9QcVK5geiqgO6TKPWkeR0xUKS9Yt5OmNpeaPKfyGVGfo29kQXHcvnkEmuVGi
+	mm1COr1V0zI1XQ99MWVZfrwY6hwU1CDZCaKr/nGSgSHW5ghzMJePJLy7Mf/dqZKDdDjfS6
+	o0Lj38zBIGDhnz9oJGoUcM+P8pg6q5piJoBl6EfDgVTIKkCm579xigWuJp4C+2QBf9V1i/
+	vv4mp1BW5BhKCfEDqvYL/ewQL1sTmB64kt9H/sq4bnkOMes/TutoOG4sFlvh5w==
 From: Maxime Chevallier <maxime.chevallier@bootlin.com>
 To: davem@davemloft.net,
 	Andrew Lunn <andrew@lunn.ch>,
@@ -59,12 +57,10 @@ Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
 	Herve Codina <herve.codina@bootlin.com>,
 	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next v3 05/10] net: freescale: ucc_geth: Use the correct type to store WoL opts
-Date: Tue,  3 Dec 2024 13:43:16 +0100
-Message-ID: <20241203124323.155866-6-maxime.chevallier@bootlin.com>
+Subject: [PATCH net-next v3 00/10] net: freescale: ucc_geth: Phylink conversion
+Date: Tue,  3 Dec 2024 13:43:11 +0100
+Message-ID: <20241203124323.155866-1-maxime.chevallier@bootlin.com>
 X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20241203124323.155866-1-maxime.chevallier@bootlin.com>
-References: <20241203124323.155866-1-maxime.chevallier@bootlin.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,30 +76,45 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: maxime.chevallier@bootlin.com
 
-The WoL opts are represented through a bitmask stored in a u32. As this
-mask is copied as-is in the driver, make sure we use the exact same type
-to store them internally.
+Hello everyone,
 
-Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
----
-V3: No changes
+This is V3 of the phylink conversion for ucc_geth.
 
- drivers/net/ethernet/freescale/ucc_geth.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The main changes in this V3 are related to error handling in the patches
+1 and 10 to report an error when the deprecated "interface" property is
+found in DT. Doing so, I found and addressed some issues with the jump
+labels in the error paths, impacting patches 1 and 10.
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.h b/drivers/net/ethernet/freescale/ucc_geth.h
-index e08cfc8d8904..60fd804a616a 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.h
-+++ b/drivers/net/ethernet/freescale/ucc_geth.h
-@@ -1216,7 +1216,7 @@ struct ucc_geth_private {
- 	int oldspeed;
- 	int oldduplex;
- 	int oldlink;
--	int wol_en;
-+	u32 wol_en;
- 	u32 phy_wol_en;
- 
- 	struct device_node *node;
+The rest of the changes are just a rebase on net-next.
+
+Some of the V2 changes haven't been reviewed, so I stress out that I'm
+still uncertain about the way WoL is handled is patches 4 and 10.
+
+Thanks,
+
+Maxime
+
+Link to V1: https://lore.kernel.org/netdev/20241107170255.1058124-1-maxime.chevallier@bootlin.com/
+Link to V2: https://lore.kernel.org/netdev/20241114153603.307872-1-maxime.chevallier@bootlin.com/
+
+Maxime Chevallier (10):
+  net: freescale: ucc_geth: Drop support for the "interface" DT property
+  net: freescale: ucc_geth: split adjust_link for phylink conversion
+  net: freescale: ucc_geth: Use netdev->phydev to access the PHY
+  net: freescale: ucc_geth: Fix WOL configuration
+  net: freescale: ucc_geth: Use the correct type to store WoL opts
+  net: freescale: ucc_geth: Simplify frame length check
+  net: freescale: ucc_geth: Hardcode the preamble length to 7 bytes
+  net: freescale: ucc_geth: Move the serdes configuration around
+  net: freescale: ucc_geth: Introduce a helper to check Reduced modes
+  net: freescale: ucc_geth: phylink conversion
+
+ drivers/net/ethernet/freescale/Kconfig        |   3 +-
+ drivers/net/ethernet/freescale/ucc_geth.c     | 602 +++++++-----------
+ drivers/net/ethernet/freescale/ucc_geth.h     |  22 +-
+ .../net/ethernet/freescale/ucc_geth_ethtool.c |  74 +--
+ 4 files changed, 266 insertions(+), 435 deletions(-)
+
 -- 
 2.47.0
 
