@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-3718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3719-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9388E64A87
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 12:44:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27E26E64A89
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 12:44:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2gLk5J37z30Nl;
-	Tue,  3 Dec 2024 23:43:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2gLl5rKLz308Z;
+	Tue,  3 Dec 2024 23:43:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::224"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733229822;
-	cv=none; b=RfEURLEtQKo9Qedtb/uyB0QIKL94iu2Kt24yzzugUbu+SFbPAVI9EFFQZpr7u2+aWUyqx+ipfhmANEfNhsmIcMBPMavluDKqMaL5i2kXlmeXb822kf3Fd8PvJuI6/vQQojpe8gk994RxrA02G0Z+O4Jj4kKeFwT0O2xCL9CSJYv69328gRHyWWy8u5TdWxqE9vgjNDXJujchuMuiFf7F8MGwAn2UGXGY7/rnHPJ0TI0A40jwjc7tst8giYf3xn+h4pM4jFeyj1rzzRt9OvoGt2ppe3lcpcbL41rrZYFYea8b2FA6KrO7bTh8SE2LPfI7CoxfmEvh085kMCx0AWNZUA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733229823;
+	cv=none; b=CYiJy4i5iaHEMO5eRX/JXlzWjaGL7KEqEAhE0WPKpqXfPwc7WCu8uU9L3LcabTSMCTn3HvU/fiqYMDRXGivxnpZBkoqcfNGGjENNHICIBCJVbE1lkkPJ6JO6dymTuaqPhAABt4dp1ftsIlk9SWZujRWPz9dcMHtZEaMJ+v6rmal5ZpQaMvPlKjQxFr3wXWv02dMdKe0+ZvFcRARBkJpXYHE+5SsaNw9NU2Ud2qqt9MGBJZBWjhxlWUmFbgqQ2hCF/O63Gl4AvZ6cyr1MGYoqXA5oqfzlaQI9JCcRouOao3pXSeeSokizgrZjyvRSw2uQmppVzhMN1pRuX/KbXUQHhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733229822; c=relaxed/relaxed;
-	bh=okebF77u49Nk3Yt+pJelgSbyckQ2lQla+vsrMDb1T48=;
+	t=1733229823; c=relaxed/relaxed;
+	bh=WBCqYYv3YXd5ENSbBD2+uchIXFYD+CKhJvuWxfPM7Xk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Uoh/0h/eTHWJclo912HWpeayZ0o0fBWZzcwH5d0uN4EyGLbWdO/laCsG8HoDb9IhGI5HcgRsTbY3m9456K2hWoEYCpITWBBrJt5Amq5jS15BPiBzFxUb0Gm4UBzwPkp3NlyjqAoTFS8fiXGh4fddq+/Ac3H2vemVIsQSBcXL6bRUpEmdLBlCr8hpUDH0HM8kNHzxZRfZJ9aCtGxHgOgEsE0kjaicsszYgDQdDoNAqCz5F1lkXZmj2jQ/iqNMmv4YWkmNKqWH80VSJPkkhlrK8Qdm2TwdaRc9tG2Sdo/i/2cIe3MTPKS3cgXdC03Sf+ME8QyOMt/9iCht6tEtLnQb8A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=fA6xKNcP; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 MIME-Version; b=gih2o2jYdi3VVRqMnUjTqeGF7GuZrzzMeCHz/A+7xL8PsAmRNNtEY6NRDwWJb+cnxgmp5Y3G2LmNeQCg9W1qjP5Q930FiOEBYYoByoHPPW3L3s6/p1pY9MX/peJDE6siaK1Zar97eTlyAwU0gAlELMiy/RmGXZK9HOTiC+HvA0k9SxlXz/uO83wL8msjHQ6A1nGrwgqttKPreGorxJBNK+QvgrIBEn7VWahmnS4Q3QfudYD20Cpv/ZQ+xgZZ4tO37DX/N8xXjG9Gu7agi79jkdo+YcNghCYni4bCEWqOytECpxX00SLoAjSZpjaRVEDsmTyOBQH2R6dZd5XGLCVcbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=NWEUoUA5; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=fA6xKNcP;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=NWEUoUA5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::224])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2gLf2LZWz308Z
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2024 23:43:37 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id B1386E0008;
-	Tue,  3 Dec 2024 12:43:27 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2gLh74x8z304Z
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2024 23:43:40 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 27420E0014;
+	Tue,  3 Dec 2024 12:43:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1733229808;
+	t=1733229815;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=okebF77u49Nk3Yt+pJelgSbyckQ2lQla+vsrMDb1T48=;
-	b=fA6xKNcPs0Uf7oFjs6joGOolnS2bwHgFodRHR0Ev4an72y0VcUaudgBe7my/NBSmb2zm2H
-	TflRuU7L+0R3CVnjUVXkT0awZFOyJcDI6tfGkq9usQkjNIc0aO0UOKGlIq7IRYSbgPteGF
-	sgpJ3CPkeW++mU2JgVpsVU7iVCnLB7AQZiTdSnUaYi/N1Wxb82o0XOgjh9iB2qInqVKcxF
-	q/NhdeWfmt6ziLg+CTwFP0k3iOryvl4Kweh3x3VDD6Ap6OaOyLu0B3mpaheTKh6paL5T72
-	jMk3Zd/xZqcww12dz31RJd9j7U5h8QIDVS3MdStXvLkg6ctMUUV1FAqO+V8HBQ==
+	bh=WBCqYYv3YXd5ENSbBD2+uchIXFYD+CKhJvuWxfPM7Xk=;
+	b=NWEUoUA5RouWcr1xNFFyfJa84MrnUceEEs7jv6Dz3Mc72h3Vf0I2h4+H/uMA94Uqv7RtdS
+	eUq8zTe/FZfiA0ZPe35qpSKqW7WH2G/LCFR9dazxkxdB+UiwtV/9nZmmPoN8Gs52fnBRhF
+	KZFT2Q68jau98Q0k0Je3LF1MhiXV12e3s25Rn/arQtsffRLZqi4s5q0mYGMx6D83IriZ4S
+	68Vb3x+cxsUfXg+fDz8TpFJU6qvKFamyDz40mqo93h3p14geaz6Yo6LaA6EOUcbD1dPaJR
+	vY7VSsqUZDM67/hSP2oqSzHxvrqs50ZHbS+lGSoMaMhDGkHC68syLhyASj9teA==
 From: Maxime Chevallier <maxime.chevallier@bootlin.com>
 To: davem@davemloft.net,
 	Andrew Lunn <andrew@lunn.ch>,
@@ -59,9 +59,9 @@ Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
 	Herve Codina <herve.codina@bootlin.com>,
 	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next v3 02/10] net: freescale: ucc_geth: split adjust_link for phylink conversion
-Date: Tue,  3 Dec 2024 13:43:13 +0100
-Message-ID: <20241203124323.155866-3-maxime.chevallier@bootlin.com>
+Subject: [PATCH net-next v3 08/10] net: freescale: ucc_geth: Move the serdes configuration around
+Date: Tue,  3 Dec 2024 13:43:19 +0100
+Message-ID: <20241203124323.155866-9-maxime.chevallier@bootlin.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241203124323.155866-1-maxime.chevallier@bootlin.com>
 References: <20241203124323.155866-1-maxime.chevallier@bootlin.com>
@@ -80,220 +80,130 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: maxime.chevallier@bootlin.com
 
-Preparing the phylink conversion, split the adjust_link callbaclk, by
-clearly separating the mac configuration, link_up and link_down phases.
+The uec_configure_serdes() function deals with serialized linkmodes
+settings. It's used during the link bringup sequence. It is planned to
+be used during the phylink conversion for mac configuration, but it
+needs to me moved around in the process. To make the phylink port
+clearer, this commit moves the function without any feature change.
 
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
 ---
 V3: No changes
 
- drivers/net/ethernet/freescale/ucc_geth.c | 180 +++++++++++-----------
- 1 file changed, 93 insertions(+), 87 deletions(-)
+ drivers/net/ethernet/freescale/ucc_geth.c | 93 +++++++++++------------
+ 1 file changed, 46 insertions(+), 47 deletions(-)
 
 diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index b023a1a1dc5c..bf9f5901b405 100644
+index 81aefe291d80..f6dd36dc03fe 100644
 --- a/drivers/net/ethernet/freescale/ucc_geth.c
 +++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -1548,105 +1548,111 @@ static void ugeth_activate(struct ucc_geth_private *ugeth)
+@@ -1512,6 +1512,52 @@ static void ugeth_activate(struct ucc_geth_private *ugeth)
  	__netdev_watchdog_up(ugeth->ndev);
  }
  
--/* Called every time the controller might need to be made
-- * aware of new link state.  The PHY code conveys this
-- * information through variables in the ugeth structure, and this
-- * function converts those variables into the appropriate
-- * register values, and can bring down the device if needed.
-- */
--
--static void adjust_link(struct net_device *dev)
-+static void ugeth_link_up(struct ucc_geth_private *ugeth,
-+			  struct phy_device *phy,
-+			  phy_interface_t interface, int speed, int duplex)
- {
--	struct ucc_geth_private *ugeth = netdev_priv(dev);
--	struct ucc_geth __iomem *ug_regs;
--	struct ucc_fast __iomem *uf_regs;
--	struct phy_device *phydev = ugeth->phydev;
-+	struct ucc_geth __iomem *ug_regs = ugeth->ug_regs;
-+	struct ucc_fast __iomem *uf_regs = ugeth->uccf->uf_regs;
-+	u32 tempval = in_be32(&ug_regs->maccfg2);
-+	u32 upsmr = in_be32(&uf_regs->upsmr);
- 	int new_state = 0;
- 
--	ug_regs = ugeth->ug_regs;
--	uf_regs = ugeth->uccf->uf_regs;
--
--	if (phydev->link) {
--		u32 tempval = in_be32(&ug_regs->maccfg2);
--		u32 upsmr = in_be32(&uf_regs->upsmr);
--		/* Now we make sure that we can be in full duplex mode.
--		 * If not, we operate in half-duplex mode. */
--		if (phydev->duplex != ugeth->oldduplex) {
--			new_state = 1;
--			if (!(phydev->duplex))
--				tempval &= ~(MACCFG2_FDX);
--			else
--				tempval |= MACCFG2_FDX;
--			ugeth->oldduplex = phydev->duplex;
--		}
-+	/* Now we make sure that we can be in full duplex mode.
-+	 * If not, we operate in half-duplex mode.
-+	 */
-+	if (duplex != ugeth->oldduplex) {
-+		new_state = 1;
-+		if (duplex == DUPLEX_HALF)
-+			tempval &= ~(MACCFG2_FDX);
-+		else
-+			tempval |= MACCFG2_FDX;
-+		ugeth->oldduplex = duplex;
-+	}
- 
--		if (phydev->speed != ugeth->oldspeed) {
--			new_state = 1;
--			switch (phydev->speed) {
--			case SPEED_1000:
--				tempval = ((tempval &
--					    ~(MACCFG2_INTERFACE_MODE_MASK)) |
--					    MACCFG2_INTERFACE_MODE_BYTE);
--				break;
--			case SPEED_100:
--			case SPEED_10:
--				tempval = ((tempval &
--					    ~(MACCFG2_INTERFACE_MODE_MASK)) |
--					    MACCFG2_INTERFACE_MODE_NIBBLE);
--				/* if reduced mode, re-set UPSMR.R10M */
--				if ((ugeth->phy_interface == PHY_INTERFACE_MODE_RMII) ||
--				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII) ||
--				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_ID) ||
--				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_RXID) ||
--				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_TXID) ||
--				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RTBI)) {
--					if (phydev->speed == SPEED_10)
--						upsmr |= UCC_GETH_UPSMR_R10M;
--					else
--						upsmr &= ~UCC_GETH_UPSMR_R10M;
--				}
--				break;
--			default:
--				if (netif_msg_link(ugeth))
--					pr_warn(
--						"%s: Ack!  Speed (%d) is not 10/100/1000!",
--						dev->name, phydev->speed);
--				break;
-+	if (speed != ugeth->oldspeed) {
-+		new_state = 1;
-+		switch (speed) {
-+		case SPEED_1000:
-+			tempval = ((tempval &
-+				    ~(MACCFG2_INTERFACE_MODE_MASK)) |
-+				    MACCFG2_INTERFACE_MODE_BYTE);
-+			break;
-+		case SPEED_100:
-+		case SPEED_10:
-+			tempval = ((tempval &
-+				    ~(MACCFG2_INTERFACE_MODE_MASK)) |
-+				    MACCFG2_INTERFACE_MODE_NIBBLE);
-+			/* if reduced mode, re-set UPSMR.R10M */
-+			if (interface == PHY_INTERFACE_MODE_RMII ||
-+			    phy_interface_mode_is_rgmii(interface) ||
-+			    interface == PHY_INTERFACE_MODE_RTBI) {
-+				if (speed == SPEED_10)
-+					upsmr |= UCC_GETH_UPSMR_R10M;
-+				else
-+					upsmr &= ~UCC_GETH_UPSMR_R10M;
- 			}
--			ugeth->oldspeed = phydev->speed;
-+			break;
-+		default:
-+			if (netif_msg_link(ugeth))
-+				pr_warn("%s:  Speed (%d) is not 10/100/1000!",
-+					netdev_name(ugeth->ndev), speed);
-+			break;
- 		}
-+		ugeth->oldspeed = speed;
-+	}
- 
--		if (!ugeth->oldlink) {
--			new_state = 1;
--			ugeth->oldlink = 1;
--		}
-+	if (!ugeth->oldlink) {
-+		new_state = 1;
-+		ugeth->oldlink = 1;
-+	}
- 
--		if (new_state) {
--			/*
--			 * To change the MAC configuration we need to disable
--			 * the controller. To do so, we have to either grab
--			 * ugeth->lock, which is a bad idea since 'graceful
--			 * stop' commands might take quite a while, or we can
--			 * quiesce driver's activity.
--			 */
--			ugeth_quiesce(ugeth);
--			ugeth_disable(ugeth, COMM_DIR_RX_AND_TX);
-+	if (new_state) {
-+		/*
-+		 * To change the MAC configuration we need to disable
-+		 * the controller. To do so, we have to either grab
-+		 * ugeth->lock, which is a bad idea since 'graceful
-+		 * stop' commands might take quite a while, or we can
-+		 * quiesce driver's activity.
-+		 */
-+		ugeth_quiesce(ugeth);
-+		ugeth_disable(ugeth, COMM_DIR_RX_AND_TX);
- 
--			out_be32(&ug_regs->maccfg2, tempval);
--			out_be32(&uf_regs->upsmr, upsmr);
-+		out_be32(&ug_regs->maccfg2, tempval);
-+		out_be32(&uf_regs->upsmr, upsmr);
- 
--			ugeth_enable(ugeth, COMM_DIR_RX_AND_TX);
--			ugeth_activate(ugeth);
--		}
--	} else if (ugeth->oldlink) {
--			new_state = 1;
--			ugeth->oldlink = 0;
--			ugeth->oldspeed = 0;
--			ugeth->oldduplex = -1;
-+		ugeth_enable(ugeth, COMM_DIR_RX_AND_TX);
-+		ugeth_activate(ugeth);
- 	}
- 
--	if (new_state && netif_msg_link(ugeth))
--		phy_print_status(phydev);
-+	if (netif_msg_link(ugeth))
-+		phy_print_status(phy);
-+}
-+
-+static void ugeth_link_down(struct ucc_geth_private *ugeth)
-+{
-+	ugeth->oldlink = 0;
-+	ugeth->oldspeed = 0;
-+	ugeth->oldduplex = -1;
-+}
-+
-+/* Called every time the controller might need to be made
-+ * aware of new link state.  The PHY code conveys this
-+ * information through variables in the ugeth structure, and this
-+ * function converts those variables into the appropriate
-+ * register values, and can bring down the device if needed.
++/* Initialize TBI PHY interface for communicating with the
++ * SERDES lynx PHY on the chip.  We communicate with this PHY
++ * through the MDIO bus on each controller, treating it as a
++ * "normal" PHY at the address found in the UTBIPA register.  We assume
++ * that the UTBIPA register is valid.  Either the MDIO bus code will set
++ * it to a value that doesn't conflict with other PHYs on the bus, or the
++ * value doesn't matter, as there are no other PHYs on the bus.
 + */
-+
-+static void adjust_link(struct net_device *dev)
++static void uec_configure_serdes(struct net_device *dev)
 +{
 +	struct ucc_geth_private *ugeth = netdev_priv(dev);
-+	struct phy_device *phydev = ugeth->phydev;
++	struct ucc_geth_info *ug_info = ugeth->ug_info;
++	struct phy_device *tbiphy;
 +
-+	if (phydev->link)
-+		ugeth_link_up(ugeth, phydev, phydev->interface,
-+			      phydev->speed, phydev->duplex);
-+	else
-+		ugeth_link_down(ugeth);
++	if (!ug_info->tbi_node) {
++		dev_warn(&dev->dev, "SGMII mode requires that the device tree specify a tbi-handle\n");
++		return;
++	}
++
++	tbiphy = of_phy_find_device(ug_info->tbi_node);
++	if (!tbiphy) {
++		dev_err(&dev->dev, "error: Could not get TBI device\n");
++		return;
++	}
++
++	/*
++	 * If the link is already up, we must already be ok, and don't need to
++	 * configure and reset the TBI<->SerDes link.  Maybe U-Boot configured
++	 * everything for us?  Resetting it takes the link down and requires
++	 * several seconds for it to come back.
++	 */
++	if (phy_read(tbiphy, ENET_TBI_MII_SR) & TBISR_LSTATUS) {
++		put_device(&tbiphy->mdio.dev);
++		return;
++	}
++
++	/* Single clk mode, mii mode off(for serdes communication) */
++	phy_write(tbiphy, ENET_TBI_MII_ANA, TBIANA_SETTINGS);
++
++	phy_write(tbiphy, ENET_TBI_MII_TBICON, TBICON_CLK_SELECT);
++
++	phy_write(tbiphy, ENET_TBI_MII_CR, TBICR_SETTINGS);
++
++	put_device(&tbiphy->mdio.dev);
++}
++
+ static void ugeth_link_up(struct ucc_geth_private *ugeth,
+ 			  struct phy_device *phy,
+ 			  phy_interface_t interface, int speed, int duplex)
+@@ -1619,53 +1665,6 @@ static void adjust_link(struct net_device *dev)
+ 		ugeth_link_down(ugeth);
  }
  
- /* Initialize TBI PHY interface for communicating with the
+-/* Initialize TBI PHY interface for communicating with the
+- * SERDES lynx PHY on the chip.  We communicate with this PHY
+- * through the MDIO bus on each controller, treating it as a
+- * "normal" PHY at the address found in the UTBIPA register.  We assume
+- * that the UTBIPA register is valid.  Either the MDIO bus code will set
+- * it to a value that doesn't conflict with other PHYs on the bus, or the
+- * value doesn't matter, as there are no other PHYs on the bus.
+- */
+-static void uec_configure_serdes(struct net_device *dev)
+-{
+-	struct ucc_geth_private *ugeth = netdev_priv(dev);
+-	struct ucc_geth_info *ug_info = ugeth->ug_info;
+-	struct phy_device *tbiphy;
+-
+-	if (!ug_info->tbi_node) {
+-		dev_warn(&dev->dev, "SGMII mode requires that the device "
+-			"tree specify a tbi-handle\n");
+-		return;
+-	}
+-
+-	tbiphy = of_phy_find_device(ug_info->tbi_node);
+-	if (!tbiphy) {
+-		dev_err(&dev->dev, "error: Could not get TBI device\n");
+-		return;
+-	}
+-
+-	/*
+-	 * If the link is already up, we must already be ok, and don't need to
+-	 * configure and reset the TBI<->SerDes link.  Maybe U-Boot configured
+-	 * everything for us?  Resetting it takes the link down and requires
+-	 * several seconds for it to come back.
+-	 */
+-	if (phy_read(tbiphy, ENET_TBI_MII_SR) & TBISR_LSTATUS) {
+-		put_device(&tbiphy->mdio.dev);
+-		return;
+-	}
+-
+-	/* Single clk mode, mii mode off(for serdes communication) */
+-	phy_write(tbiphy, ENET_TBI_MII_ANA, TBIANA_SETTINGS);
+-
+-	phy_write(tbiphy, ENET_TBI_MII_TBICON, TBICON_CLK_SELECT);
+-
+-	phy_write(tbiphy, ENET_TBI_MII_CR, TBICR_SETTINGS);
+-
+-	put_device(&tbiphy->mdio.dev);
+-}
+-
+ /* Configure the PHY for dev.
+  * returns 0 if success.  -1 if failure
+  */
 -- 
 2.47.0
 
