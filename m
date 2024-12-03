@@ -1,93 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-3739-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3740-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BAEEE74AC2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 16:13:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF762E74AC3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 16:37:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2m0y5jRqz2ypP;
-	Wed,  4 Dec 2024 03:13:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=96.44.175.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733242418;
-	cv=none; b=bvZhrHIJIGEr7E2N+dgI5ZjQWAxH+wia8Ve0GSsEQ8VCZo4dp74dMtY+Q5QCbV/oS08+pCss8l4J4iBOhn9xUcQHyJkmOSviCNJZSReqYEzd+PMF4dqZQwYbflLuVReclESfF/HdoOIROSzo96VGZ8eJtz2ZaZ/bHy3mLUU8PANDLqyJq8XgK6MPH00x9RI2qgb6xwjevzRWUf/7llmRRVgKigR9VsH+bsXcAIYC00fAwNJGwL7DdayLtQZM3DFS21ldZvh6XQmTwVWXMfdzGDd2y4LJ/RiFhoLTEjCuqnKp4MBhcE8Q4NGU71OVp2o7heO1kQFPN+H1PE6xoWsnPA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2mX30tbZz2yVT;
+	Wed,  4 Dec 2024 03:37:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733243827;
+	cv=none; b=jKRS5POkVTHRkY+tjg6KYR6dn6+3B1z+V1hsm+KRi4ZKxM+zV5vpuKrWIBovvIPbTlWNiJcPF2/WATPeQcH1V2AT0b57AeHqxCP+Hvm3v0okGqOCQm4MO5j+DpkIyhKKrRpb1iVPNSHMTflwkbl/Elur1J8uXyonPuwoja8KrEBDssakVFeMGU4khcWV/JvVCcSrAfptIVeGS6KrSiIKu3+aC/AtwONceLmdDUbCiumUwjZr0KJm392DzOStv/WzMvyVKyn91pY93NR28qy2TbHKzraqonm4uJohxYj7cf07i7v4SupAhyZGHv8HfacpgLts8th1RyP3wVhPwIOd0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733242418; c=relaxed/relaxed;
-	bh=LTLwNnafXPKj3Qp8SIQOa/jtQanddT7GeRij0TH2434=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:Content-Type:
-	 MIME-Version; b=Swkcs8bTxyueru7uIZo2Z94v3kRW4xApPgp4jokVkiSvH3zS5DSeUHXhskZ0lrAYkU02fnfqjBX2Znikj3jXQuNSnIFxy2UHtjNZr0LMDrNlDwugqL4Nu5Gu0TLK9S8heUD/y4p+7EFtsiCavSQe2IDo8t2ralNa1Fo272va/6/ReOdTPFZ4p/0HDx5ofWJnDqBqR7rSTRtra0yMXTj0tpZQnPnuZvpPDqT0IvTSYC7BO/ASjLFR7SCeAxMDrtoi3nM/nTwyMOtGUFjlSGlcqyrpX0s25z2ccC5ZAcnNn5TRL8IQpgImX5a9WpioxUnmcTZ17O36XCPCq7TgEU4Hxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=HansenPartnership.com; dkim=pass (1024-bit key; secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=lHnQZbqT; dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=lHnQZbqT; dkim-atps=neutral; spf=pass (client-ip=96.44.175.130; helo=bedivere.hansenpartnership.com; envelope-from=james.bottomley@hansenpartnership.com; receiver=lists.ozlabs.org) smtp.mailfrom=hansenpartnership.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=HansenPartnership.com
+	t=1733243827; c=relaxed/relaxed;
+	bh=HxF1YtbxctjOgLe3e+5LAqOGqmoJ7n+8c9ePfvewlDs=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Udx4Iw6C3+FN8eKOrlavllnqk39xEdxj24rnP9A3qiFRj85lHsG5Dwkz/5+ica1fBVSTD+ghwqWpbvJJEeuUSYiZC1N/IptlF8w9TtiNKkbyEl+bB1LR5JNB39rZI+LA5GWgZuivd8pBU78xCsSMbyWDyka1NXrs9gdvTHcvrOmySnkRUYgZwPeiEIsOdLF05/TY9ZQLVHJt3uooDDWenqRpQNw9yZLKvx0VzuSrgKtDRf/KL3dl/rjIA2lyp0I7sHbF3I1/xhOHqYLHnMIk4EVKsFHnR6LB6BdHrFmm1u8/s1vSfPYpa6v9JYYi4ZBCvqbiGeCHZY+2VmZNYSuGXw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ZFy87LnX; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=51K1fTOk; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=lHnQZbqT;
-	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=lHnQZbqT;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ZFy87LnX;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=51K1fTOk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hansenpartnership.com (client-ip=96.44.175.130; helo=bedivere.hansenpartnership.com; envelope-from=james.bottomley@hansenpartnership.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 423 seconds by postgrey-1.37 at boromir; Wed, 04 Dec 2024 03:13:34 AEDT
-Received: from bedivere.hansenpartnership.com (unknown [96.44.175.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2m0t2Zvkz2yVG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2024 03:13:34 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1733241982;
-	bh=VBBfv3eA4AsVsLgBF8VnP+EajJe1ALpu2GW7YHfiN/w=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:From;
-	b=lHnQZbqTPw8lccD9LZoQTnjENuqFmq3M4qdXn9YwdcXuh8kaYOH60UbGnuArtEJoE
-	 Px4kL7hmZa2/uxmjqmqHUiq2gnIFhqP/9JNM4Zxjm340Kjh3IenF17vJPycyc5doEz
-	 9qzMTvJH2/Dq+wqAj7McqxgXVZICR0uf3Mza6cXQ=
-Received: from localhost (localhost [127.0.0.1])
-	by bedivere.hansenpartnership.com (Postfix) with ESMTP id A277A128793E;
-	Tue, 03 Dec 2024 11:06:22 -0500 (EST)
-Received: from bedivere.hansenpartnership.com ([127.0.0.1])
- by localhost (bedivere.hansenpartnership.com [127.0.0.1]) (amavis, port 10024)
- with ESMTP id Kttl9qoRVbVg; Tue,  3 Dec 2024 11:06:22 -0500 (EST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1733241982;
-	bh=VBBfv3eA4AsVsLgBF8VnP+EajJe1ALpu2GW7YHfiN/w=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:From;
-	b=lHnQZbqTPw8lccD9LZoQTnjENuqFmq3M4qdXn9YwdcXuh8kaYOH60UbGnuArtEJoE
-	 Px4kL7hmZa2/uxmjqmqHUiq2gnIFhqP/9JNM4Zxjm340Kjh3IenF17vJPycyc5doEz
-	 9qzMTvJH2/Dq+wqAj7McqxgXVZICR0uf3Mza6cXQ=
-Received: from lingrow.int.hansenpartnership.com (unknown [IPv6:2601:5c4:4302:c21::a774])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(Client did not present a certificate)
-	by bedivere.hansenpartnership.com (Postfix) with ESMTPSA id 1133D128718C;
-	Tue, 03 Dec 2024 11:06:17 -0500 (EST)
-Message-ID: <7ed3b713f8901398f52d7485d59613c19ea0e752.camel@HansenPartnership.com>
-Subject: Re: [PATCH v2 09/10] sysfs: bin_attribute: add const read/write
- callback variants
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: linux@weissschuh.net
-Cc: James.Bottomley@HansenPartnership.com, Xinhui.Pan@amd.com, 
- airlied@gmail.com, ajd@linux.ibm.com, alexander.deucher@amd.com, 
- alison.schofield@intel.com, amd-gfx@lists.freedesktop.org, arnd@arndb.de, 
- bhelgaas@google.com, carlos.bilbao.osdev@gmail.com,
- christian.koenig@amd.com,  dan.j.williams@intel.com, dave.jiang@intel.com,
- dave@stgolabs.net,  david.e.box@linux.intel.com, decui@microsoft.com, 
- dennis.dalessandro@cornelisnetworks.com, dri-devel@lists.freedesktop.org, 
- fbarrat@linux.ibm.com, gregkh@linuxfoundation.org, haiyangz@microsoft.com, 
- hdegoede@redhat.com, ilpo.jarvinen@linux.intel.com, ira.weiny@intel.com, 
- jgg@ziepe.ca, jonathan.cameron@huawei.com, kys@microsoft.com,
- leon@kernel.org,  linux-alpha@vger.kernel.org, linux-cxl@vger.kernel.org, 
- linux-hyperv@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-mtd@lists.infradead.org, linux-pci@vger.kernel.org, 
- linux-rdma@vger.kernel.org, linux-scsi@vger.kernel.org, 
- linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- logang@deltatee.com,  martin.petersen@oracle.com, mattst88@gmail.com,
- miquel.raynal@bootlin.com,  mwalle@kernel.org,
- naveenkrishna.chatradhi@amd.com,  platform-driver-x86@vger.kernel.org,
- pratyush@kernel.org, rafael@kernel.org,  richard.henderson@linaro.org,
- richard@nod.at, simona@ffwll.ch,  srinivas.kandagatla@linaro.org,
- tudor.ambarus@linaro.org, vigneshr@ti.com,  vishal.l.verma@intel.com,
- wei.liu@kernel.org
-Date: Tue, 03 Dec 2024 11:06:16 -0500
-In-Reply-To: <20241103-sysfs-const-bin_attr-v2-9-71110628844c@weissschuh.net>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.42.4 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2mX13nrLz2yVG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2024 03:37:05 +1100 (AEDT)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1733243819;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=HxF1YtbxctjOgLe3e+5LAqOGqmoJ7n+8c9ePfvewlDs=;
+	b=ZFy87LnXgxMe5bIwTwB4SVdDCSlcxqDM5Dwg3iZ8DiJODrOVGAZoQBBdLtoXDjt7JG0wKP
+	mTN7fvMltxJ83iJSbYgKO8MderplffT0fOTfQB2/Wtntej162k8sEI5zkBAjxQi2zIHnl8
+	BxFPwripxKWqXWIELnCObC6BQbbFI8mURLp0hdAxRn8umpG/RD/LZ0fbGMRkbRKIvp6ddC
+	57glirNfQobi0tK8mH+8iNULQWU1v1HVw88nIrYfvKEwkDgKvrtvlvZOlafyDfnHl4x77X
+	Quw8iMqSljd30mOQ7x1HQpzooupKG8wmDhqSOvDvriiZLNSWQdTg8cuMFNk8ZQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1733243819;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=HxF1YtbxctjOgLe3e+5LAqOGqmoJ7n+8c9ePfvewlDs=;
+	b=51K1fTOkCTCXZgTFGRDR/uHKZh8KeFOlAsYai8RG5Iq9JQAuG5x/cvB3XaojGxxMqrjr49
+	ScBrmG+vuWWtr/Cg==
+To: "Farber, Eliav" <farbere@amazon.com>, "linux@armlinux.org.uk"
+ <linux@armlinux.org.uk>, "catalin.marinas@arm.com"
+ <catalin.marinas@arm.com>, "will@kernel.org" <will@kernel.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "npiggin@gmail.com"
+ <npiggin@gmail.com>, "christophe.leroy@csgroup.eu"
+ <christophe.leroy@csgroup.eu>, "naveen@kernel.org" <naveen@kernel.org>,
+ "maddy@linux.ibm.com" <maddy@linux.ibm.com>, "paul.walmsley@sifive.com"
+ <paul.walmsley@sifive.com>, "palmer@dabbelt.com" <palmer@dabbelt.com>,
+ "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "bhe@redhat.com"
+ <bhe@redhat.com>, "hbathini@linux.ibm.com" <hbathini@linux.ibm.com>,
+ "sourabhjain@linux.ibm.com" <sourabhjain@linux.ibm.com>,
+ "adityag@linux.ibm.com" <adityag@linux.ibm.com>,
+ "songshuaishuai@tinylab.org" <songshuaishuai@tinylab.org>,
+ "takakura@valinux.co.jp" <takakura@valinux.co.jp>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-riscv@lists.infradead.org"
+ <linux-riscv@lists.infradead.org>
+Cc: "Chocron, Jonathan" <jonnyc@amazon.com>
+Subject: RE: [PATCH v5 1/2] kexec: Consolidate
+ machine_kexec_mask_interrupts() implementation
+In-Reply-To: <077908c5f02545f0a9e02ae77cbd771c@amazon.com>
+References: <077908c5f02545f0a9e02ae77cbd771c@amazon.com>
+Date: Tue, 03 Dec 2024 17:36:59 +0100
+Message-ID: <87ed2ou3is.ffs@tglx>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,99 +89,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 
-> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-> index
-> d17c473c1ef292875475bf3bdf62d07241c13882..d713a6445a6267145a7014f308d
-> f3bb25b8c3287 100644
-> --- a/include/linux/sysfs.h
-> +++ b/include/linux/sysfs.h
-> @@ -305,8 +305,12 @@ struct bin_attribute {
->  	struct address_space *(*f_mapping)(void);
->  	ssize_t (*read)(struct file *, struct kobject *, struct
-> bin_attribute *,
->  			char *, loff_t, size_t);
-> +	ssize_t (*read_new)(struct file *, struct kobject *, const
-> struct bin_attribute *,
-> +			    char *, loff_t, size_t);
->  	ssize_t (*write)(struct file *, struct kobject *, struct
-> bin_attribute *,
->  			 char *, loff_t, size_t);
-> +	ssize_t (*write_new)(struct file *, struct kobject *,
-> +			     const struct bin_attribute *, char *,
-> loff_t, size_t);
->  	loff_t (*llseek)(struct file *, struct kobject *, const
-> struct bin_attribute *,
->  			 loff_t, int);
->  	int (*mmap)(struct file *, struct kobject *, const struct
-> bin_attribute *attr,
-> @@ -325,11 +329,28 @@ struct bin_attribute {
->   */
->  #define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)-
-> >attr)
->  
-> +typedef ssize_t __sysfs_bin_rw_handler_new(struct file *, struct
-> kobject *,
-> +					   const struct
-> bin_attribute *, char *, loff_t, size_t);
-> +
->  /* macros to create static binary attributes easier */
->  #define __BIN_ATTR(_name, _mode, _read, _write, _size)
-> {		\
->  	.attr = { .name = __stringify(_name), .mode = _mode
-> },		\
-> -	.read	=
-> _read,						\
-> -	.write	=
-> _write,						\
-> +	.read =
-> _Generic(_read,						\
-> +		__sysfs_bin_rw_handler_new * :
-> NULL,			\
-> +		default :
-> _read						\
-> +	),							
-> 	\
-> +	.read_new =
-> _Generic(_read,					\
-> +		__sysfs_bin_rw_handler_new * :
-> _read,			\
-> +		default :
-> NULL						\
-> +	),							
-> 	\
-> +	.write =
-> _Generic(_write,					\
-> +		__sysfs_bin_rw_handler_new * :
-> NULL,			\
-> +		default :
-> _write					\
-> +	),							
-> 	\
-> +	.write_new =
-> _Generic(_write,					\
-> +		__sysfs_bin_rw_handler_new * :
-> _write,			\
-> +		default :
-> NULL						\
-> +	),							
-> 	\
->  	.size	=
-> _size,						\
->  }
+On Tue, Dec 03 2024 at 12:55, Eliav Farber wrote:
+> On 12/3/2024 1:04 PM, Thomas Gleixner wrote:
+>>> +
+>>> +config GENERIC_IRQ_KEXEC_CLEAR_VM_FORWARD
+>>> +     bool "Clear forwarded VM interrupts during kexec"
+>>
+>> This should not be user selectable. Just keep it as:
+>>
+>> config GENERIC_IRQ_KEXEC_CLEAR_VM_FORWARD
+>>         bool
+>>
+>> which defaults to 'n'. Just add a comment what this is about like it's
+>> done with the other options in that file which are only selectable.
+> Question: Should this new configuration option be placed inside or
+> outside the following section:
+> ```
+> menu "IRQ subsystem"
+>
+>
+> endmenu
+> ```
+> In my patch, I have added the new configuration option at the end of
+> the file, outside the "IRQ subsystem" section.
 
-It's probably a bit late now, but you've done this the wrong way
-around.  What you should have done is added the const to .read/.write
-then added a .read_old/.write_old with the original function prototype
-and used _Generic() to switch between them.  Then when there are no
-more non const left, you can simply remove .read_old and .write_old
-without getting Linus annoyed by having to do something like this:
+It does not really matter when the option is silent, but keeping it in
+the menu section as the others is the most intuitive IMO.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=e70140ba0d2b1a30467d4af6bcfe761327b9ec95
+Thanks,
 
-Regards,
+        tglx
 
-James
+
 
 
