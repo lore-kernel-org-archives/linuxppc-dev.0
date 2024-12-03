@@ -1,101 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-3744-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3745-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20751E74AC8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 18:04:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0AF3E74AC8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 18:16:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2pSg3dBdz30Pl;
-	Wed,  4 Dec 2024 05:04:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:edc0:2:b01:1d::104"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733249059;
-	cv=none; b=O1Vx/MMfUE48s4ckRnPISEuaOQUQBRxmy7wqnTTP2WjEKv56rXfRArQXNIPxx2UlfrSCwsFN8v7uOGoaaOZXTMm1Vaw9+D1LqsTuJ/taQXonWSRMGJprH4eitkQY0yzTtCBiRUyOLuWdrjE4RcAa/YmDb8NGRbKybBqbnFnFbrDnuf6voHoxvnqOEas/Zu279p/f1TZ4oAbu9bxzylQLXLHTDa2csau+5FLVP2BegBK+K1Ki3XonIva5GO/xPDyKovCy8pK3h8nRJmERDQ+qReqLi+RUyFeBhS4ItTgx9kIhvCYE1PySfPiJgLO7Raipq0ku2Bkl/DApBnaPZHOdeA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2pkQ6mQTz30Pp;
+	Wed,  4 Dec 2024 05:16:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733249774;
+	cv=none; b=bWb97wyn3YfhaiYerBJDyW0Aqbb/Pvv1/09yznwhCUG3izW8Je0H+6l90XBAg2ngZFExvINwWxgGDZTTbV9vd9DMz/K4FEGxabutKAp+j0TI3olodpTHFYaQNU7H+xT81B1vBn1uSNJ6WOz7KRFza+z/t/5Een7GG8PMXZQWP4VovuYYQDZENSLBwUF1DvjRQs33TfgPDItiyxBnGYicffiD9qFev1sxSB4L5P6EjG4RJz/g4WWVTwo49pYW39vOevQSIdyOxYBLtZpyhz2x6wjLMqmp4+S+CAgszGy4X97iW4C6B6tvupAG5pxWmRg89hr7UxumpooelniNVV1C9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733249059; c=relaxed/relaxed;
-	bh=VQMebrBWojbOWHLi2V6GeEXp4jzM3FFKoHNY4IchQ7M=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=m2ngrvYwvv+Noy6xywsLaCJ+X2wc5xGnduGdGZKd4iTKHB+7oKOYOJ84XQOFIZqJOCAApzKL/8iAmOWlFncDw1D+YoySTq9zSHanPsAOcI3XKUkXaeTT7WfV+oPi5dfl1b4ZPq9DtQniThqkMNmiLUHDRHFWJetx5G3opliEg1PFvCIKyNOOY2Z6FId482RmFXd74XuMdZK1gvZVE9UiFy9CXUpTXmgip09HDA19+5EvoUfgvzeLsNIRs/E2Dc9PBesZ0T0++C73npYc44L0ekRU6yk+5AW7dh83I+Qt2FP72I76ZsZYG6jx9T48NStsTmPF0FoQrJmya+h4v2tNyg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=l.stach@pengutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=pengutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=l.stach@pengutronix.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 985 seconds by postgrey-1.37 at boromir; Wed, 04 Dec 2024 05:04:17 AEDT
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
+	t=1733249774; c=relaxed/relaxed;
+	bh=EuUqkiP4+Zx7Gf8TtMSLfT15hrcDijR01dxcn4S6JJg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dbAdW7xy8vhqfQ9SPK6+mnxMAkQuvCNQTgvbi/HHpRmQijXUfwlhWC0N2aiDGYpCfkasHwAUL4a6OS+yLOOGWzT7tBQ73c3XXUU3w1ramIbgsPe+dmEW+F8w4U7rXB0ewFMA3S/Z7aV3oxHRdugqYk08NTwubADmWLEafvuKaSIrKsaqajj4znO/k7F6dAHe2ybDcY6Hgdhn3B4awqphZgv8+yB2KCB5agg7G/7YGTAwQ9uFQdBrkyNXoHJ1xQrQrgsQnXhrVW2yCPWRoaQvUpRxB+pYAEvEMNeuxstE31bMvBOPHjIj0i1HAkM99kQ6sisorZQSCVW3Ir9LwEwNhg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AhZHAunw; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AhZHAunw;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2pSd6h7Rz30Pg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2024 05:04:17 +1100 (AEDT)
-Received: from ptz.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::77] helo=[IPv6:::1])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <l.stach@pengutronix.de>)
-	id 1tIWyE-0003sq-Mm; Tue, 03 Dec 2024 18:45:58 +0100
-Message-ID: <fc624e3fd4a4a38dedf02e31be9e4f1c85fb40a0.camel@pengutronix.de>
-Subject: Re: [PATCH 09/22] drm/etnaviv: Convert timeouts to secs_to_jiffies()
-From: Lucas Stach <l.stach@pengutronix.de>
-To: Easwar Hariharan <eahariha@linux.microsoft.com>, Pablo Neira Ayuso
- <pablo@netfilter.org>, Jozsef Kadlecsik <kadlec@netfilter.org>, "David S.
- Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub
- Kicinski <kuba@kernel.org>,  Paolo Abeni <pabeni@redhat.com>, Simon Horman
- <horms@kernel.org>, Julia Lawall <Julia.Lawall@inria.fr>,  Nicolas Palix
- <nicolas.palix@imag.fr>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang
- <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>,
- Russell King <linux@armlinux.org.uk>, Heiko Carstens <hca@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
- <agordeev@linux.ibm.com>, Christian Borntraeger
- <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Ofir
- Bitton <obitton@habana.ai>, Oded Gabbay <ogabbay@kernel.org>, Lucas De
- Marchi <lucas.demarchi@intel.com>, Thomas =?ISO-8859-1?Q?Hellstr=F6m?=
- <thomas.hellstrom@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard
- <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie
- <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Jeroen de Borst
- <jeroendb@google.com>, Praveen Kaligineedi <pkaligineedi@google.com>,
- Shailend Chand <shailend@google.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- James Smart <james.smart@broadcom.com>, Dick Kennedy
- <dick.kennedy@broadcom.com>, "James E.J. Bottomley"
- <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen"
- <martin.petersen@oracle.com>, Roger Pau =?ISO-8859-1?Q?Monn=E9?=
- <roger.pau@citrix.com>, Jens Axboe <axboe@kernel.dk>, Kalle Valo
- <kvalo@kernel.org>, Jeff Johnson <jjohnson@kernel.org>, Catalin Marinas
- <catalin.marinas@arm.com>, Andrew Morton <akpm@linux-foundation.org>, Jack
- Wang <jinpu.wang@cloud.ionos.com>, Marcel Holtmann <marcel@holtmann.org>,
- Johan Hedberg <johan.hedberg@gmail.com>, Luiz Augusto von Dentz
- <luiz.dentz@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Florian Fainelli <florian.fainelli@broadcom.com>, Ray Jui
- <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Broadcom
- internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Xiubo
- Li <xiubli@redhat.com>, Ilya Dryomov <idryomov@gmail.com>,  Josh Poimboeuf
- <jpoimboe@kernel.org>, Jiri Kosina <jikos@kernel.org>, Miroslav Benes
- <mbenes@suse.cz>, Petr Mladek <pmladek@suse.com>, Joe Lawrence
- <joe.lawrence@redhat.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
- <tiwai@suse.com>, Russell King <linux+etnaviv@armlinux.org.uk>, Christian
- Gmeiner <christian.gmeiner@gmail.com>,  Louis Peens
- <louis.peens@corigine.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
- Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>,
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: netfilter-devel@vger.kernel.org, coreteam@netfilter.org, 
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, cocci@inria.fr, 
- linux-arm-kernel@lists.infradead.org, linux-s390@vger.kernel.org, 
- dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org, 
- linux-scsi@vger.kernel.org, xen-devel@lists.xenproject.org, 
- linux-block@vger.kernel.org, linux-wireless@vger.kernel.org, 
- ath11k@lists.infradead.org, linux-mm@kvack.org,
- linux-bluetooth@vger.kernel.org,  linux-staging@lists.linux.dev,
- linux-rpi-kernel@lists.infradead.org,  ceph-devel@vger.kernel.org,
- live-patching@vger.kernel.org,  linux-sound@vger.kernel.org,
- etnaviv@lists.freedesktop.org,  oss-drivers@corigine.com,
- linuxppc-dev@lists.ozlabs.org, Anna-Maria Behnsen <anna-maria@linutronix.de>
-Date: Tue, 03 Dec 2024 18:45:50 +0100
-In-Reply-To: <20241115-converge-secs-to-jiffies-v1-9-19aadc34941b@linux.microsoft.com>
-References: 
-	<20241115-converge-secs-to-jiffies-v1-0-19aadc34941b@linux.microsoft.com>
-	 <20241115-converge-secs-to-jiffies-v1-9-19aadc34941b@linux.microsoft.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.4 (3.52.4-2.fc40) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2pkM5rzvz30Pn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2024 05:16:11 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 01C565C5741;
+	Tue,  3 Dec 2024 18:15:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A899C4CECF;
+	Tue,  3 Dec 2024 18:16:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733249768;
+	bh=+MgMv1FFactu5GtM+qs2qFnKFxz3fIsOOrabXsp9ehA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=AhZHAunw6cTIVm0KnZ1qPsKWMfmNvVvgiozA3SwQCeseXc9ZKBMdf3GfP4wN0w7pc
+	 qDy231uQgw3IAlxndcB3hrUaBs//JWwgNxYRULVZku8Av/OxrLnMsREIRhDpPyuugo
+	 1DyBgcT6mPrvGLAUtji81tD8jYHQ+ntlSA5HOoXFUNjJh4Lejob+dxXjDtplUumbOf
+	 z1u1RZWHVfFQnS43GPgPYMz8Ljn2KdLM62yOcJkxD7XY/idqTrLXJscyEy5JQPOS5d
+	 Mi4Diu1FSaZks5YuB7Z+53LvYKxKGAW3jckBZbvBqKBw4uSUA2BSNf36RAslfG05Gy
+	 hT0nV6lxhmAlA==
+Date: Tue, 3 Dec 2024 10:16:06 -0800
+From: Namhyung Kim <namhyung@kernel.org>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Cc: Leo Yan <leo.yan@arm.com>, Ian Rogers <irogers@google.com>,
+	James Clark <james.clark@linaro.org>, tmricht@linux.ibm.com,
+	acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	akanksha@linux.ibm.com, maddy@linux.ibm.com, kjain@linux.ibm.com,
+	disgoel@linux.vnet.ibm.com, hbathini@linux.ibm.com
+Subject: Re: [PATCH] tools/perf/tests/expr: Make the system_tsc_freq test
+ only for intel
+Message-ID: <Z09K5orKhWbeOGLV@google.com>
+References: <20241022140156.98854-1-atrajeev@linux.vnet.ibm.com>
+ <ZyF2-XNUh38p_5Gg@google.com>
+ <B72F330F-2A56-41B0-ABED-FCA7DC9EE711@linux.vnet.ibm.com>
+ <CAP-5=fXCYURva6Q8ktRVmnf2QCcsr-E3fPn327k0JRCw_9fn3A@mail.gmail.com>
+ <BBF1A4DC-3BD9-4377-BE2F-CBEFE55F0497@linux.vnet.ibm.com>
+ <20241107135606.GA47850@e132581.arm.com>
+ <0F805B2F-35CC-4E0C-BD2F-84552C4C528E@linux.vnet.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,50 +75,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:900:1d::77
-X-SA-Exim-Mail-From: l.stach@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <0F805B2F-35CC-4E0C-BD2F-84552C4C528E@linux.vnet.ibm.com>
 
-Am Freitag, dem 15.11.2024 um 21:22 +0000 schrieb Easwar Hariharan:
-> Changes made with the following Coccinelle rules:
->=20
-> @@ constant C; @@
->=20
-> - msecs_to_jiffies(C * 1000)
-> + secs_to_jiffies(C)
->=20
-> @@ constant C; @@
->=20
-> - msecs_to_jiffies(C * MSEC_PER_SEC)
-> + secs_to_jiffies(C)
->=20
-Thanks, applied to etnaviv/next.
+Hello,
 
-Regards,
-Lucas
+On Fri, Nov 08, 2024 at 10:50:10AM +0530, Athira Rajeev wrote:
+> 
+> 
+> > On 7 Nov 2024, at 7:26 PM, Leo Yan <leo.yan@arm.com> wrote:
+> > 
+> > Hi Athira,
+> > 
+> > On Wed, Nov 06, 2024 at 03:04:57PM +0530, Athira Rajeev wrote:
+> > 
+> > [...]
+> > 
+> >>> Hi Athira,
+> >>> 
+> >>> sorry for the breakage and thank you for the detailed explanation. As
+> >>> the code will run on AMD I think your change will break that - . It is
+> >>> probably safest to keep the ".. else { .." for this case but guard it
+> >>> in the ifdef.
+> >>> 
+> >> 
+> >> Hi Ian
+> >> 
+> >> Thanks for your comments. Does the below change looks good ?
+> >> 
+> >> diff --git a/tools/perf/tests/expr.c b/tools/perf/tests/expr.c
+> >> index e3aa9d4fcf3a..f5b2d96bb59b 100644
+> >> --- a/tools/perf/tests/expr.c
+> >> +++ b/tools/perf/tests/expr.c
+> >> @@ -74,14 +74,12 @@ static int test__expr(struct test_suite *t __maybe_unused, int subtest __maybe_u
+> >>    double val, num_cpus_online, num_cpus, num_cores, num_dies, num_packages;
+> >>    int ret;
+> >>    struct expr_parse_ctx *ctx;
+> >> -    bool is_intel = false;
+> >>    char strcmp_cpuid_buf[256];
+> >>    struct perf_pmu *pmu = perf_pmus__find_core_pmu();
+> >>    char *cpuid = perf_pmu__getcpuid(pmu);
+> >>    char *escaped_cpuid1, *escaped_cpuid2;
+> >> 
+> >>    TEST_ASSERT_VAL("get_cpuid", cpuid);
+> >> -    is_intel = strstr(cpuid, "Intel") != NULL;
+> >> 
+> >>    TEST_ASSERT_EQUAL("ids_union", test_ids_union(), 0);
+> >> 
+> >> @@ -244,11 +242,13 @@ static int test__expr(struct test_suite *t __maybe_unused, int subtest __maybe_u
+> >>    if (num_dies) // Some platforms do not have CPU die support, for example s390
+> >>        TEST_ASSERT_VAL("#num_dies >= #num_packages", num_dies >= num_packages);
+> >> 
+> >> +#if defined(__i386__) && defined(__x86_64__)
+> >>    TEST_ASSERT_VAL("#system_tsc_freq", expr__parse(&val, ctx, "#system_tsc_freq") == 0);
+> >> -    if (is_intel)
+> >> +    if (strstr(cpuid, "Intel") != NULL)
+> >>        TEST_ASSERT_VAL("#system_tsc_freq > 0", val > 0);
+> >>    else
+> >>        TEST_ASSERT_VAL("#system_tsc_freq == 0", fpclassify(val) == FP_ZERO);
+> >> +#endif
+> >> 
+> >>    /*
+> >>     * Source count returns the number of events aggregating in a leader
+> > 
+> > I confirmed the change above fixes the failure on Arm64.
+> > 
+> > Tested-by: Leo Yan <leo.yan@arm.com>
+> Thanks Leo Yan for testing.
+> 
+> Hi Ian,
+> 
+> If the change above looks good, I will post a V2 . Please share your review comments
 
-> Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
-> ---
->  drivers/gpu/drm/etnaviv/etnaviv_cmdbuf.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/gpu/drm/etnaviv/etnaviv_cmdbuf.c b/drivers/gpu/drm/e=
-tnaviv/etnaviv_cmdbuf.c
-> index 721d633aece9d4c81f0019e4c55884f26ee61c60..0f5a2c885d0ab7029c7248e15=
-d6ea3c31823b782 100644
-> --- a/drivers/gpu/drm/etnaviv/etnaviv_cmdbuf.c
-> +++ b/drivers/gpu/drm/etnaviv/etnaviv_cmdbuf.c
-> @@ -100,7 +100,7 @@ int etnaviv_cmdbuf_init(struct etnaviv_cmdbuf_suballo=
-c *suballoc,
->  		mutex_unlock(&suballoc->lock);
->  		ret =3D wait_event_interruptible_timeout(suballoc->free_event,
->  						       suballoc->free_space,
-> -						       msecs_to_jiffies(10 * 1000));
-> +						       secs_to_jiffies(10));
->  		if (!ret) {
->  			dev_err(suballoc->dev,
->  				"Timeout waiting for cmdbuf space\n");
->=20
+Sorry for the delay, it looks good to me.  Can you please send the v2?
+
+Thanks,
+Namhyung
 
 
