@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-3715-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3716-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C6A0E64A89
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 12:44:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE879E64A8A
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Dec 2024 12:44:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2gLj4jQkz30DV;
-	Tue,  3 Dec 2024 23:43:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2gLk0Grzz30Gm;
+	Tue,  3 Dec 2024 23:43:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::224"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733229821;
-	cv=none; b=e2paqqponPI05kI9MliSMAukVBHmnV5tD6wyCqfXaTzyKXZ1vYaNSlVH5Mqme25KtnykCIhjFzX9vXhkd+1rOI5RPZj+heJQBdJv3+larit6ZybHvvs7DzAS50WJjSMWKtGY6zKZDiu+fEBP3n3SuhEsP033UGerboF7WAVn9Jap5O2vgwdSSuZklo8aWebOc3Lv59NGghy866W3ez91wPjyd+EcjD47GG3oUnwdCN+2WwalyC0BbHZqZA61RHGb8EaatnlN2imSMPGn+kLX6W1zTwoZTZmuMZJe8nmQDGEYSGhs5ghaw0BAtqhejvJLsT4PA1RBLalqaPWjY7Ny/Q==
+	cv=none; b=Ul3HIhSE+uwSfyLTumnuNPRr6G8RY+YB8aywzJXa+x+Cw4nUUKYeT2iiX5v3NlYPYa/SRgZRu39/IW9vlDRiQusI8kBpoaIFSjG1KuUdlWjlGMX+5Rc2fmccLlzMCKBCKgcpxEu9AJ+KG3iK+4AhLInkHN1mhICEBxG0OTQ3tdiDhp3/8WzxDjK7vZkYMCDp6PYQ5EhqdEgApVW4Lc5vlr5i9bMgZjl7etc14jeDJ/2EQQ5P6CCFf7Qu8Xv9Fz/T+vYb+zMtymdOkIOyEg2MkO3YHSHFFnWQU9F3xdpzo/fob4CanM9iLIMnHXaTS4AeFjbamu5fjOQ3C1P7EzQ5hA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1733229821; c=relaxed/relaxed;
-	bh=kO4qimmkm4KM3KoNxb78AKgKXegVwNH/GfsKwklrP78=;
+	bh=F1u0eeuSX4cb30X89CwQx+qR/vfxpPZBdpfTfsUK6pI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JOtZooZ3cS0luycmBzg6Dy4x+6xcTfM8H4rpwxn5+c7IBzh/AJS2fqlmJFzF6PZVkv+x3j61L8SJX5F738wR7idTtK0U6AsXHnYKb2KitT8OMQUMX/8ehbu7q81d/4EyKhUQAXLzPaCi3GS8lQArBeoGzY0JNXOCy9TRpFWce4njBap85sqFt8/cecfyz8fdO9bmAjrxf2ZaKxV5gw3bttYTKReGTeKAbN3tPfmxUqYTLBtVUBraDM0ctObX1RKuFKWAKbrTGp9bhxf2h8rLuGk7M3i0uon2N92SXmQHR91FhQatufijYFhQfLUl3QUGx65DZvuB+x4okPs1TIOybA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Ia9PCRqr; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 MIME-Version; b=c9bsNAkQearP0JmK96n/XX0AtEl8ZmmZNAU3nlKyNSkrUKZMAKhM6HqRs4+mZtZKm90Om0xbv7WmrO9uIa3jweHMOBTJawzovze8gHEwdYu/Mvsn3PhdTVYAxFNC4ACxhRLVf5TiHZS1kajvq47eblmgV9vxfYV7hglk+sFUG/uQhudB0IYFzPjPEryoCXdey4qFtWtugcrIhvyOKOY5imsRQiu5+UvM/o31oQ05SQcgDTlldlQ287CjotTl/Xad1FSNOC3XAenPIGswY3F83DlqVxS33A76GW30M066k6vPf0OJZMwlUrE5kLb6L9Fmo99pMDsiKnEMIJMCxYj80Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=VTeXo2Mj; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Ia9PCRqr;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=VTeXo2Mj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::224])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2gLc2F8Lz2yyT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2024 23:43:35 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id B5B21E0003;
-	Tue,  3 Dec 2024 12:43:28 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2gLc6hYkz307f
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Dec 2024 23:43:36 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 11F4DE0010;
+	Tue,  3 Dec 2024 12:43:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1733229809;
+	t=1733229814;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=kO4qimmkm4KM3KoNxb78AKgKXegVwNH/GfsKwklrP78=;
-	b=Ia9PCRqr9xWvN3scbDzCiB9vtP6lGA8kM1xnJSGO2MCEeVNPYLgUl1Nhy9FE1bj4rFpHmA
-	haI+CZVuP5NNA7ScUvyHUjUS0w6u3qGYa4WQng9yXctE1pwP/+G4L+zvADOxRIe80YUmSv
-	zVMcnxHIXNA16jI4QpxzqBxBjjZI5ErNGZEgKAGXzUF7aBtLybhttJlyJmJaF0MFLIvA73
-	OflKokcuHoa+4rCHwKLSgQEuRa7hWUcveHLeDvc/yYXyHbk3Gei7OJarcOSb3K3Bx/jrq7
-	r9YOyE9eRQ1X/UBqUn+0LavsGgPOf/bVr3LabriWUGNath5e31iofjTc3mI3zw==
+	bh=F1u0eeuSX4cb30X89CwQx+qR/vfxpPZBdpfTfsUK6pI=;
+	b=VTeXo2MjeNeCnA0pgAtMBiOwjYEFVxDtbcCe2BCsPMaLaFqOSdUY8Wz4yogaefgoE2jgDJ
+	AN1yJKClixBIIe8kvN509H3cHhd1GgJ1xV8JcReqCbmrWKYr8SBTn5ZKSXbAwvI8HXlcWB
+	+0YJr92DeiSNMoZKvzaoHtV/g+8sdDmoEjXotPw3Uv0wFd75n/XIhfOd+0NagbIj6G/w1v
+	JoRB1rynTzEFDF+O3Nn+ClSchRLzxjLWvDr4pNHBO9VDEli3prTi9MoBKkkSUlM5ynEh0S
+	WMKQibomg5OWCuW7VTJyiYablk5g2ph2erdp09Fn+mXqNpeQlP62eiZZg6UhRA==
 From: Maxime Chevallier <maxime.chevallier@bootlin.com>
 To: davem@davemloft.net,
 	Andrew Lunn <andrew@lunn.ch>,
@@ -59,9 +59,9 @@ Cc: Maxime Chevallier <maxime.chevallier@bootlin.com>,
 	Herve Codina <herve.codina@bootlin.com>,
 	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH net-next v3 03/10] net: freescale: ucc_geth: Use netdev->phydev to access the PHY
-Date: Tue,  3 Dec 2024 13:43:14 +0100
-Message-ID: <20241203124323.155866-4-maxime.chevallier@bootlin.com>
+Subject: [PATCH net-next v3 07/10] net: freescale: ucc_geth: Hardcode the preamble length to 7 bytes
+Date: Tue,  3 Dec 2024 13:43:18 +0100
+Message-ID: <20241203124323.155866-8-maxime.chevallier@bootlin.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20241203124323.155866-1-maxime.chevallier@bootlin.com>
 References: <20241203124323.155866-1-maxime.chevallier@bootlin.com>
@@ -80,205 +80,97 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-GND-Sasl: maxime.chevallier@bootlin.com
 
-As this driver pre-dates phylib, it uses a private pointer to get a
-reference to the attached phy_device. Drop that pointer and use the
-netdev's pointer instead.
+The preamble length can be configured in ucc_geth, however it just
+ends-up always being configured to 7 bytes, as nothing ever changes the
+default value of 7.
+
+Make that value the default value when the MACCFG2 register gets
+initialized, and remove the code to configure that value altogether.
 
 Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
 ---
 V3: No changes
 
- drivers/net/ethernet/freescale/ucc_geth.c     | 27 ++++++++-----------
- drivers/net/ethernet/freescale/ucc_geth.h     |  1 -
- .../net/ethernet/freescale/ucc_geth_ethtool.c | 17 ++++++------
- 3 files changed, 20 insertions(+), 25 deletions(-)
+ drivers/net/ethernet/freescale/ucc_geth.c | 21 ---------------------
+ drivers/net/ethernet/freescale/ucc_geth.h |  4 ++--
+ 2 files changed, 2 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index bf9f5901b405..cc5f9ca42a78 100644
+index 566f53e24d28..81aefe291d80 100644
 --- a/drivers/net/ethernet/freescale/ucc_geth.c
 +++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -1646,7 +1646,7 @@ static void ugeth_link_down(struct ucc_geth_private *ugeth)
- static void adjust_link(struct net_device *dev)
- {
- 	struct ucc_geth_private *ugeth = netdev_priv(dev);
--	struct phy_device *phydev = ugeth->phydev;
-+	struct phy_device *phydev = dev->phydev;
+@@ -132,7 +132,6 @@ static const struct ucc_geth_info ugeth_primary_info = {
+ 	.transmitFlowControl = 1,
+ 	.maxGroupAddrInHash = 4,
+ 	.maxIndAddrInHash = 4,
+-	.prel = 7,
+ 	.maxFrameLength = 1518+16, /* Add extra bytes for VLANs etc. */
+ 	.minFrameLength = 64,
+ 	.maxD1Length = 1520+16, /* Add extra bytes for VLANs etc. */
+@@ -1205,18 +1204,6 @@ static int init_mac_station_addr_regs(u8 address_byte_0,
+ 	return 0;
+ }
  
- 	if (phydev->link)
- 		ugeth_link_up(ugeth, phydev, phydev->interface,
-@@ -1727,8 +1727,6 @@ static int init_phy(struct net_device *dev)
+-static int init_preamble_length(u8 preamble_length,
+-				u32 __iomem *maccfg2_register)
+-{
+-	if ((preamble_length < 3) || (preamble_length > 7))
+-		return -EINVAL;
+-
+-	clrsetbits_be32(maccfg2_register, MACCFG2_PREL_MASK,
+-			preamble_length << MACCFG2_PREL_SHIFT);
+-
+-	return 0;
+-}
+-
+ static int init_rx_parameters(int reject_broadcast,
+ 			      int receive_short_frames,
+ 			      int promiscuous, u32 __iomem *upsmr_register)
+@@ -1276,7 +1263,6 @@ static int adjust_enet_interface(struct ucc_geth_private *ugeth)
+ 	struct ucc_geth_info *ug_info;
+ 	struct ucc_geth __iomem *ug_regs;
+ 	struct ucc_fast __iomem *uf_regs;
+-	int ret_val;
+ 	u32 upsmr, maccfg2;
+ 	u16 value;
  
- 	phy_set_max_speed(phydev, priv->max_speed);
+@@ -1352,13 +1338,6 @@ static int adjust_enet_interface(struct ucc_geth_private *ugeth)
+ 		put_device(&tbiphy->mdio.dev);
+ 	}
  
--	priv->phydev = phydev;
+-	ret_val = init_preamble_length(ug_info->prel, &ug_regs->maccfg2);
+-	if (ret_val != 0) {
+-		if (netif_msg_probe(ugeth))
+-			pr_err("Preamble length must be between 3 and 7 inclusive\n");
+-		return ret_val;
+-	}
 -
  	return 0;
  }
  
-@@ -2001,7 +1999,7 @@ static void ucc_geth_set_multi(struct net_device *dev)
- static void ucc_geth_stop(struct ucc_geth_private *ugeth)
- {
- 	struct ucc_geth __iomem *ug_regs = ugeth->ug_regs;
--	struct phy_device *phydev = ugeth->phydev;
-+	struct phy_device *phydev = ugeth->ndev->phydev;
- 
- 	ugeth_vdbg("%s: IN", __func__);
- 
-@@ -3316,13 +3314,13 @@ static int ucc_geth_open(struct net_device *dev)
- 		goto err;
- 	}
- 
--	phy_start(ugeth->phydev);
-+	phy_start(dev->phydev);
- 	napi_enable(&ugeth->napi);
- 	netdev_reset_queue(dev);
- 	netif_start_queue(dev);
- 
- 	device_set_wakeup_capable(&dev->dev,
--			qe_alive_during_sleep() || ugeth->phydev->irq);
-+			qe_alive_during_sleep() || dev->phydev->irq);
- 	device_set_wakeup_enable(&dev->dev, ugeth->wol_en);
- 
- 	return err;
-@@ -3343,8 +3341,7 @@ static int ucc_geth_close(struct net_device *dev)
- 
- 	cancel_work_sync(&ugeth->timeout_work);
- 	ucc_geth_stop(ugeth);
--	phy_disconnect(ugeth->phydev);
--	ugeth->phydev = NULL;
-+	phy_disconnect(dev->phydev);
- 
- 	free_irq(ugeth->ug_info->uf_info.irq, ugeth->ndev);
- 
-@@ -3378,7 +3375,7 @@ static void ucc_geth_timeout_work(struct work_struct *work)
- 		ucc_geth_stop(ugeth);
- 		ucc_geth_init_mac(ugeth);
- 		/* Must start PHY here */
--		phy_start(ugeth->phydev);
-+		phy_start(dev->phydev);
- 		netif_tx_start_all_queues(dev);
- 	}
- 
-@@ -3421,7 +3418,7 @@ static int ucc_geth_suspend(struct platform_device *ofdev, pm_message_t state)
- 		setbits32(&ugeth->ug_regs->maccfg2, MACCFG2_MPE);
- 		ucc_fast_enable(ugeth->uccf, COMM_DIR_RX_AND_TX);
- 	} else if (!(ugeth->wol_en & WAKE_PHY)) {
--		phy_stop(ugeth->phydev);
-+		phy_stop(ndev->phydev);
- 	}
- 
- 	return 0;
-@@ -3461,8 +3458,8 @@ static int ucc_geth_resume(struct platform_device *ofdev)
- 	ugeth->oldspeed = 0;
- 	ugeth->oldduplex = -1;
- 
--	phy_stop(ugeth->phydev);
--	phy_start(ugeth->phydev);
-+	phy_stop(ndev->phydev);
-+	phy_start(ndev->phydev);
- 
- 	napi_enable(&ugeth->napi);
- 	netif_device_attach(ndev);
-@@ -3477,15 +3474,13 @@ static int ucc_geth_resume(struct platform_device *ofdev)
- 
- static int ucc_geth_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- {
--	struct ucc_geth_private *ugeth = netdev_priv(dev);
--
- 	if (!netif_running(dev))
- 		return -EINVAL;
- 
--	if (!ugeth->phydev)
-+	if (!dev->phydev)
- 		return -ENODEV;
- 
--	return phy_mii_ioctl(ugeth->phydev, rq, cmd);
-+	return phy_mii_ioctl(dev->phydev, rq, cmd);
- }
- 
- static const struct net_device_ops ucc_geth_netdev_ops = {
 diff --git a/drivers/net/ethernet/freescale/ucc_geth.h b/drivers/net/ethernet/freescale/ucc_geth.h
-index 4294ed096ebb..c08a56b7c9fe 100644
+index 2365b61c743a..dfb727327093 100644
 --- a/drivers/net/ethernet/freescale/ucc_geth.h
 +++ b/drivers/net/ethernet/freescale/ucc_geth.h
-@@ -1210,7 +1210,6 @@ struct ucc_geth_private {
- 	u16 skb_dirtytx[NUM_TX_QUEUES];
+@@ -921,7 +921,8 @@ struct ucc_geth_hardware_statistics {
+ #define UCC_GETH_UPSMR_INIT                     UCC_GETH_UPSMR_RES1
  
- 	struct ugeth_mii_info *mii_info;
--	struct phy_device *phydev;
- 	phy_interface_t phy_interface;
- 	int max_speed;
- 	uint32_t msg_enable;
-diff --git a/drivers/net/ethernet/freescale/ucc_geth_ethtool.c b/drivers/net/ethernet/freescale/ucc_geth_ethtool.c
-index 699f346faf5c..fb5254d7d1ba 100644
---- a/drivers/net/ethernet/freescale/ucc_geth_ethtool.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth_ethtool.c
-@@ -103,8 +103,7 @@ static const char rx_fw_stat_gstrings[][ETH_GSTRING_LEN] = {
- static int
- uec_get_ksettings(struct net_device *netdev, struct ethtool_link_ksettings *cmd)
- {
--	struct ucc_geth_private *ugeth = netdev_priv(netdev);
--	struct phy_device *phydev = ugeth->phydev;
-+	struct phy_device *phydev = netdev->phydev;
+ #define UCC_GETH_MACCFG1_INIT                   0
+-#define UCC_GETH_MACCFG2_INIT                   (MACCFG2_RESERVED_1)
++#define UCC_GETH_MACCFG2_INIT                   (MACCFG2_RESERVED_1 | \
++						 (7 << MACCFG2_PREL_SHIFT))
  
- 	if (!phydev)
- 		return -ENODEV;
-@@ -118,8 +117,7 @@ static int
- uec_set_ksettings(struct net_device *netdev,
- 		  const struct ethtool_link_ksettings *cmd)
- {
--	struct ucc_geth_private *ugeth = netdev_priv(netdev);
--	struct phy_device *phydev = ugeth->phydev;
-+	struct phy_device *phydev = netdev->phydev;
- 
- 	if (!phydev)
- 		return -ENODEV;
-@@ -132,8 +130,10 @@ uec_get_pauseparam(struct net_device *netdev,
-                      struct ethtool_pauseparam *pause)
- {
- 	struct ucc_geth_private *ugeth = netdev_priv(netdev);
-+	struct phy_device *phydev = netdev->phydev;
- 
--	pause->autoneg = ugeth->phydev->autoneg;
-+	if (phydev)
-+		pause->autoneg = phydev->autoneg;
- 
- 	if (ugeth->ug_info->receiveFlowControl)
- 		pause->rx_pause = 1;
-@@ -146,12 +146,13 @@ uec_set_pauseparam(struct net_device *netdev,
-                      struct ethtool_pauseparam *pause)
- {
- 	struct ucc_geth_private *ugeth = netdev_priv(netdev);
-+	struct phy_device *phydev = netdev->phydev;
- 	int ret = 0;
- 
- 	ugeth->ug_info->receiveFlowControl = pause->rx_pause;
- 	ugeth->ug_info->transmitFlowControl = pause->tx_pause;
- 
--	if (ugeth->phydev->autoneg) {
-+	if (phydev && phydev->autoneg) {
- 		if (netif_running(netdev)) {
- 			/* FIXME: automatically restart */
- 			netdev_info(netdev, "Please re-open the interface\n");
-@@ -343,7 +344,7 @@ uec_get_drvinfo(struct net_device *netdev,
- static void uec_get_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
- {
- 	struct ucc_geth_private *ugeth = netdev_priv(netdev);
--	struct phy_device *phydev = ugeth->phydev;
-+	struct phy_device *phydev = netdev->phydev;
- 
- 	if (phydev && phydev->irq)
- 		wol->supported |= WAKE_PHY;
-@@ -356,7 +357,7 @@ static void uec_get_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
- static int uec_set_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
- {
- 	struct ucc_geth_private *ugeth = netdev_priv(netdev);
--	struct phy_device *phydev = ugeth->phydev;
-+	struct phy_device *phydev = netdev->phydev;
- 
- 	if (wol->wolopts & ~(WAKE_PHY | WAKE_MAGIC))
- 		return -EINVAL;
+ /* Ethernet Address Type. */
+ enum enet_addr_type {
+@@ -1113,7 +1114,6 @@ struct ucc_geth_info {
+ 	int transmitFlowControl;
+ 	u8 maxGroupAddrInHash;
+ 	u8 maxIndAddrInHash;
+-	u8 prel;
+ 	u16 maxFrameLength;
+ 	u16 minFrameLength;
+ 	u16 maxD1Length;
 -- 
 2.47.0
 
