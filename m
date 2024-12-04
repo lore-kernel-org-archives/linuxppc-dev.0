@@ -1,75 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-3787-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3788-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA654E7716D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2024 11:22:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3C03E7716B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Dec 2024 11:22:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y3FVf0YrZz30WY;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y3FVf1BXvz30Wc;
 	Wed,  4 Dec 2024 22:22:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733311353;
-	cv=none; b=JQd45evXdS8wEHWcASoUPX8C2bibEB0GeMryGWwu4UydYeKID/VMsvaeDyBwH81LnpM7iOSILLpmBw0fDg9seUP28puSsPgIeucJUib0/RS6tGo27BNIx0aUq2t8BES++W7qosIquZyyHtPqOZ3Ntm8e1JkmQs+MSvbUwzR6gM/mK9+lGM1vBI1Qzwjdbmn2kVWMPXud5eexMeu+GAZm9wrKrj3TJaQtgJf+oifGLEH3ybrq5aUTAXJY51H1+1eOUgbLzG0hdW1MGoyoex8j/0gTHeWgmxYWECXt2CKw312D0SIAksGcGzRFgACjtHXOrhjb7fzIv7eINb7vyEJB5w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733311354;
+	cv=none; b=P///OPcFbIJVrHfIcyoH76wuuRjk4r33p2/yZZXCF6rhryzzh/q4x55XeRuy8ZvZ/mGiyuQHNswm/ClXn+chiMKDWWjGY2tDybT3+YCqEBwVl5BVuQ27LPDndFkwRDsWjsifJf9EDTRcSPNkx/TMp7HAWzgEdl5fE4s80aeC1MBoBDpQhwpPm3pF2ABUu92qIdHoeep8kDdbCwebqjgC3vivQFTrpidptn5Vv383aWiWHy9l9O99YDiBLEPJfujempiD7pMZ8czMbpwLvE3BufW1CKFs0EML59eRC7BmAmc7+mWlCOB3WjjPjtea9bZvUsk9632AN2mTO5gGuVU8Yg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733311353; c=relaxed/relaxed;
-	bh=GxVgtAf8P4SUMfimwoMw6gyNiS7g+I6hF1pNORe1k94=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=AEn+yj9t/Oow5IlBlA9HfYAx2sib3+8+GVFLOjC9LIfRONGREQdewmd2rbvC3at/Wptz3EwsnX8lTCoUJmq4/pnXKlrzIYJ829caN+Lu8ORJlj409WAPCNXuNtob+Jw6c01bOA0qgrHG0JKkEv5vcSuBNvzM2jz68Fa+SpB1i6aCXIMaUttW+3VlVMJZOIfC1qRVO6FqIWgaiwCbxnbCclIaxAvb6CxMscCC0eKwX/uG/AMRXNACPmJukYqOCAY3dnsfbujl6iU3QHq4CyVEjsGgiDkShwltlFxvsPahsr7lrIgeEqfV+06pCLi/ugRvL/tOdKuQlweYTGFp0VqiCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bWzMLmK6; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=huschle@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1733311354; c=relaxed/relaxed;
+	bh=8TXxPCu7CbB/wPbZahVtAWP9y7IfzK6UIQ0ThrYc1FU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=SFM56n/n20d+TTvQafe+T0BHK5ycl4XZBZUq410wAZRsNqxBB0cz+9YJb6EL68BHPIAWs8ZjLrSn/lyHbLflZrp1D0yWsMofbSk+znyJ+11WsMi0TM3ZB8s6vjZIMakq74mk5nljB0/w/oSgXPALJDsNz7jJ6fhP2FLdZY/vb0O93rjSLn1GQuqYiEIMJl13P1hD+TS2xZgkfBq7KiRMTmG3uRZEqH1Fq8WZ9APaKS/wKBs8JjiWKKipk4Z7J/fDymPyNN7ifKA41nZJjsWAZ7v9XNemF0reKAwbNWUXHNE8RUlCy840RX6fPE1DfevgV7X360mP8AcbIooXHUSKZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ei10aPZ0; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=huschle@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bWzMLmK6;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ei10aPZ0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=huschle@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y3FVc411gz30WT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y3FVc42zxz30WW
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Dec 2024 22:22:32 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B49MwxA014510;
-	Wed, 4 Dec 2024 11:21:56 GMT
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B45bkis002005;
+	Wed, 4 Dec 2024 11:21:58 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=GxVgtAf8P4SUMfimwoMw6gyNiS7g+I6hF1pNORe1k
-	94=; b=bWzMLmK6vs09Tuitg27Katu2V6KjG+Nx/X8Foq912FmIe6IALNf05ZYfd
-	X0Fb0HM5GEeoKlkJEyQAcPp1Bu0tiDH1kZ1YMtAnsG3nGsefSdMVkwXzNf3uLtF9
-	tY1ifzaaZJr6kz3hnMkkPEc/Kvw50iQUnKcVKzecWkIUI3JnG0GP362d9gcNX2jX
-	JgmLvEbg+O2nBnd+bpYwBAYxwubaCJCXGrafGW+u2zW3ByX3xNbM9IsUlyWOKCod
-	zIperZZrd1oT+GXM/J+Kkh0KWF3ikU/UJeNFYIo4IXTmQXWbiwuyUgGXuwwGomiI
-	kFy+6ap9NkbpF/EiJzxhk+8erc39g==
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=8TXxPCu7CbB/wPbZa
+	hVtAWP9y7IfzK6UIQ0ThrYc1FU=; b=ei10aPZ0W0EFNt4f5FDC7rDqcNZXS9d28
+	LN+C3t6zjjtLQyEX+OnungMDRQCgdgDyejRGtRx57LK06HsLk0sAI4A4XRk49Op5
+	op67h3mE1r1lxePPagj/i4p6OmthsWwawJVGkzl6vwUZTr7eIuAVRDBpdy6kMKOO
+	oy1oxVjHR8IYwLQEhDN/x2WLjgh3MDetZYiqUVPncqjlBD0Kf3hkg51hu2qwsSQj
+	+WxQaeAlAPAE2V7u/l+y3UWxGbTsnUcU34eeW9xovJmny6XuQFN+BVwAVTgVm4OH
+	P0MGXWRBhtjT/76pYV1J6JLG4HDP2Fhiee2vo6zqC9EdZYCbr3Fsg==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 437tbxq27w-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 437r4pqba4-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 04 Dec 2024 11:21:56 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4B4BF5vC031019;
-	Wed, 4 Dec 2024 11:21:55 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 437tbxq27s-1
+	Wed, 04 Dec 2024 11:21:58 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4B4BLvqT025901;
+	Wed, 4 Dec 2024 11:21:57 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 437r4pqba2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 04 Dec 2024 11:21:55 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4B4B1xuk031778;
-	Wed, 4 Dec 2024 11:21:54 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 438ehm0j0s-1
+	Wed, 04 Dec 2024 11:21:57 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4B47PMD1005218;
+	Wed, 4 Dec 2024 11:21:56 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 43a2kxk981-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 04 Dec 2024 11:21:54 +0000
+	Wed, 04 Dec 2024 11:21:56 +0000
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4B4BLpWh48234856
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4B4BLqqN33751558
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 4 Dec 2024 11:21:51 GMT
+	Wed, 4 Dec 2024 11:21:53 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 290F920043;
-	Wed,  4 Dec 2024 11:21:51 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id D0B9620040;
+	Wed,  4 Dec 2024 11:21:52 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6A84D20040;
-	Wed,  4 Dec 2024 11:21:50 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 222D320043;
+	Wed,  4 Dec 2024 11:21:52 +0000 (GMT)
 Received: from IBM-PW0CRK36.ibm.com (unknown [9.171.34.7])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  4 Dec 2024 11:21:50 +0000 (GMT)
+	Wed,  4 Dec 2024 11:21:52 +0000 (GMT)
 From: Tobias Huschle <huschle@linux.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
@@ -77,10 +78,12 @@ Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
         rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
         vschneid@redhat.com, linux-s390@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org, sshegde@linux.ibm.com
-Subject: [RFC PATCH 0/2] sched/fair: introduce new scheduler group type group_parked
-Date: Wed,  4 Dec 2024 12:21:47 +0100
-Message-Id: <20241204112149.25872-1-huschle@linux.ibm.com>
+Subject: [RFC PATCH 2/2] s390/topology: Add initial implementation for selection of parked CPUs
+Date: Wed,  4 Dec 2024 12:21:49 +0100
+Message-Id: <20241204112149.25872-3-huschle@linux.ibm.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20241204112149.25872-1-huschle@linux.ibm.com>
+References: <20241204112149.25872-1-huschle@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,135 +98,63 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: LuHQQqjJCkWme8YbWMlpHYJZ0yP3ZBEy
-X-Proofpoint-GUID: XLRTwxkGZFuGw3gP5EDeUtRaL_gio7WX
+X-Proofpoint-GUID: ai3BELS_AXObsiID58AEPu0QlJwGpV0y
+X-Proofpoint-ORIG-GUID: keLr_KqCpiQ-luBGJMQ9oUvmxrqS6eqe
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
  definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 impostorscore=0
- mlxscore=0 suspectscore=0 mlxlogscore=999 priorityscore=1501 bulkscore=0
- phishscore=0 adultscore=0 malwarescore=0 spamscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2411120000
- definitions=main-2412040086
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
+ priorityscore=1501 clxscore=1011 phishscore=0 malwarescore=0
+ suspectscore=0 mlxscore=0 bulkscore=0 mlxlogscore=929 adultscore=0
+ lowpriorityscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2411120000 definitions=main-2412040086
 
-Adding a new scheduler group type which allows to remove all tasks 
-from certain CPUs through load balancing can help in scenarios where
-such CPUs are currently unfavorable to use, for example in a 
-virtualized environment.
+In this simplified example, vertical low CPUs are parked generally. 
+This will later be adjusted by making the parked state dependent 
+on the overall utilization on the underlying hypervisor.
 
-Functionally, this works as intended. The question would be, if this
-could be considered to be added and would be worth going forward 
-with. If so, which areas would need additional attention? 
-Some cases are referenced below.
+Vertical lows are always bound to the highest CPU IDs. This implies that
+the three types of vertically polarized CPUs are always clustered by ID.
+This has the following implications:
+- There can be scheduler domains consisting of only vertical highs
+- There can be scheduler domains consisting of only vertical lows
 
-The underlying concept and the approach of adding a new scheduler 
-group type were presented in the Sched MC of the 2024 LPC.
-A short summary:
+Signed-off-by: Tobias Huschle <huschle@linux.ibm.com>
+---
+ arch/s390/include/asm/topology.h | 3 +++
+ arch/s390/kernel/topology.c      | 5 +++++
+ 2 files changed, 8 insertions(+)
 
-Some architectures (e.g. s390) provide virtualization on a firmware
-level. This implies, that Linux kernels running on such architectures
-run on virtualized CPUs.
-
-Like in other virtualized environments, the CPUs are most likely shared
-with other guests on the hardware level. This implies, that Linux
-kernels running in such an environment may encounter 'steal time'. In
-other words, instead of being able to use all available time on a
-physical CPU, some of said available time is 'stolen' by other guests.
-
-This can cause side effects if a guest is interrupted at an unfavorable
-point in time or if the guest is waiting for one of its other virtual 
-CPUs to perform certain actions while those are suspended in favour of 
-another guest.
-
-Architectures, like arch/s390, address this issue by providing an
-alternative classification for the CPUs seen by the Linux kernel.
-
-The following example is arch/s390 specific:
-In the default mode (horizontal CPU polarization), all CPUs are treated
-equally and can be subject to steal time equally. 
-In the alternate mode (vertical CPU polarization), the underlying
-firmware hypervisor assigns the CPUs, visible to the guest, different
-types, depending on how many CPUs the guest is entitled to use. Said
-entitlement is configured by assigning weights to all active guests.
-The three CPU types are:
-    - vertical high   : On these CPUs, the guest has always highest
-                        priority over other guests. This means
-                        especially that if the guest executes tasks on
-                        these CPUs, it will encounter no steal time.
-    - vertical medium : These CPUs are meant to cover fractions of
-                        entitlement.
-    - vertical low    : These CPUs will have no priority when being
-                        scheduled. This implies especially, that while
-                        all other guests are using their full
-                        entitlement, these CPUs might not be ran for a
-                        significant amount of time.
-
-As a consequence, using vertical lows while the underlying hypervisor
-experiences a high load, driven by all defined guests, is to be avoided.
-
-In order to consequently move tasks off of vertical lows, introduce a
-new type of scheduler groups: group_parked.
-Parked implies, that processes should be evacuated as fast as possible
-from these CPUs. This implies that other CPUs should start pulling tasks
-immediately, while the parked CPUs should refuse to pull any tasks
-themselves.
-Adding a group type beyond group_overloaded achieves the expected
-behavior. By making its selection architecture dependent, it has
-no effect on architectures which will not make use of that group type.
-
-This approach works very well for many kinds of workloads. Tasks are
-getting migrated back and forth in line with changing the parked
-state of the involved CPUs.
-
-There are a couple of issues and corner cases which need further
-considerations:
-- no_hz:        While the scheduler tick can and should still be disabled
-                on idle CPUs, it should not be disabled on parked CPUs
-                which run only one task, as that task will not be
-                scheduled away in time. Side effects and completeness
-                need to be further investigated. One option might be to
-                allow dynamic changes to tick_nohz_full_mask. It is also
-                possible to handle this in exclusively fair.c, but that 
-                seems not to be the best environment to do so.
-- pinned tasks: If a task is pinned to CPUs which are all parked, it will
-                get moved to other CPUs. Like during CPU hotplug, the 
-                information about the tasks initial CPU mask gets lost.
-- rt & dl:      Realtime and deadline scheduling require some additional 
-                attention. 
-- ext:          Probably affected as well. Needs some conceptional
-                thoughts first.
-- idle vs parked: It could be considered whether an idle parked CPU
-                would contribute to the count of idle CPUs. It is
-                usually preferable to utilize idle CPUs, but parked CPUs
-                should not be used. So a scheduler group with many idle, 
-                but parked, CPUs, should not be the target for additional 
-                workload. At this point, some more thought needs to be 
-                spent to evaluate if it would be ok to not set the idle 
-                flag on parked CPUs.
-- optimization: It is probably possible to cut some corners. In order to
-                avoid tampering with scheduler statistics too much, the
-                actions based on the parkedness on the CPU are not always
-                taken on the earliest possible occasion yet.
-- raciness:     Right now, there are no synchronization efforts. It needs
-                to be considered whether those might be necessary or if
-                it is alright that the parked-state of a CPU might change
-                during load-balancing. 
-
-Patches apply to tip:sched/core
-
-The s390 patch serves as a simplified implementation example.
-
-Tobias Huschle (2):
-  sched/fair: introduce new scheduler group type group_parked
-  s390/topology: Add initial implementation for selection of parked CPUs
-
- arch/s390/include/asm/topology.h |   3 +
- arch/s390/kernel/topology.c      |   5 ++
- include/linux/sched/topology.h   |  20 +++++
- kernel/sched/core.c              |  10 ++-
- kernel/sched/fair.c              | 122 +++++++++++++++++++++++++------
- 5 files changed, 135 insertions(+), 25 deletions(-)
-
+diff --git a/arch/s390/include/asm/topology.h b/arch/s390/include/asm/topology.h
+index cef06bffad80..e86afeccde35 100644
+--- a/arch/s390/include/asm/topology.h
++++ b/arch/s390/include/asm/topology.h
+@@ -99,6 +99,9 @@ static inline int numa_node_id(void)
+ 
+ #endif /* CONFIG_NUMA */
+ 
++#define arch_cpu_parked cpu_parked
++int cpu_parked(int cpu);
++
+ #include <asm-generic/topology.h>
+ 
+ #endif /* _ASM_S390_TOPOLOGY_H */
+diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
+index 4f9c301a705b..1032b65da574 100644
+--- a/arch/s390/kernel/topology.c
++++ b/arch/s390/kernel/topology.c
+@@ -299,6 +299,11 @@ void store_topology(struct sysinfo_15_1_x *info)
+ 	stsi(info, 15, 1, topology_mnest_limit());
+ }
+ 
++int cpu_parked(int cpu)
++{
++	return smp_cpu_get_polarization(cpu) == POLARIZATION_VL;
++}
++
+ static void __arch_update_dedicated_flag(void *arg)
+ {
+ 	if (topology_cpu_dedicated(smp_processor_id()))
 -- 
 2.34.1
 
