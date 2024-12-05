@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3830-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3831-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1945E77170
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2024 17:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9E24E77170
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2024 17:36:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y41ky6hGCz300V;
-	Fri,  6 Dec 2024 04:35:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y41kz1Vhrz30VQ;
+	Fri,  6 Dec 2024 04:35:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733420154;
-	cv=none; b=nEK+02OTWkkRStWd4HmrE7c28ldDHHr/fTmVN3xD+Cj5d1DXoLdhiRV31dj6u1LWpYfBZOAYwE55qxz/0OXizyj/ea8S53JUQws29p7HOf7aX7JvE+3C/8qbwvhzuKxn7JERKe773UI+oK/TrackbJKp5NZ8zPrGoLVHnBGF3NTn8BaGiMmgj6sJOfRycffCwBFmpW7Dy2XyQQpL2LXVRpXTWx3IGMtYMFswyviPbzMPCC8IDIpT8zzJN26HMFnjdtEOkXJQjd3Eq4OahSY2q/I6WMbMqdeAb4gSUmkdMKqpyHvIok3wPEDwRtzy2HFxCvz+Sb3LbKeez+TPW+4I3g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733420155;
+	cv=none; b=aLHevuhKjcDZXtQ5yIgkvNAvvp+QVGEd4WuuSOtRBlv/8aMbee+fWzBk1GpmogZHVt+1l4ftPe67CqZh+Ym06/xI8STMcqhyynQrIUyJu4oA9ZpZAmyt63BfGBhHbV0olDEAzMfguOPhasbHlp5B+oBtq15aGlfWMjg79wPurKe0iazq+kDdFpnLG5n3AS6WtSBX1hFYaSaKBuOnr6vICa6PCfu+m2Yv75T+TwC4y5t8PPizUpyyAtfv4bW/qXKmTTwn5TVKlc1Lt0MUZlDGMkauNrHGal5gYNFjmVDc2fV6KyeCn7M+tKMMduQHgysrAaL2Ns1QpJf4rQNpvaQzVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733420154; c=relaxed/relaxed;
-	bh=V7yqIF0hpa70J1Es4osz7ul+iLI05ka3BCzLr2JD3+4=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=dQSEqjtCLng0FUvqIfqhPclArjntfquXqZ+6CH1FsFK3WfY1cShyIgVi/L22XxFRVHRI3QQ8G0mYMNqmN3OB8fGRztmmG0levhM4cxeCbaRpDl4SY4VSdB1SmK62jORqzoznLsG1WngMNPJjCkaFlEyZ3tELxtC9f33DOqqO93uAPHSjinsN3hGPLJTE8Vj0FI10aoAXKNCRw8vgQMEKgRt5eCWRIBuR8daUH1pSye36FcW7vXUUublfSyaWNJyryc3mDIXt5V/mhpOJA5p29iK9+zl3UqwVwfnczJtXvZkpsQO/DqmLAYOUaGjDf/D+qqdXMl34a5sL1YjcPXMiGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=osaoXBUG; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	t=1733420155; c=relaxed/relaxed;
+	bh=qiN8P4YPsvbOKpO8icgikt0q+xpQ31g9j9mEbKAAJiA=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=SR+puHoijTpenfwFZfL+f+5dkW4pHnGatjKfAQ9N63R0RVACjjwiNJnkRyi8gNbA5i9JQc2DT5adyURePnUnBJG/uKBq/KDozoentf+TRxmOWo8UrrngQNUqbY7jVn1ard9fxJe1uPKnSnzN01clNLV1sgBDqJQ7tF2GtEFXg1av9q328AmYHV7SDmB8MC6GLEX+NAJYWo3LDdd+u+/M5xD+pAnVp2en1w3rCRPb8AI5oh1YG7ygI9xSdgOgVCIKqAPDPIUfU1Q39J+cqBmFjzt3Gmb5JJxdmKLO9apK7c7saofNot8G9U8AvSkcdZ4e9q/CXENFTsIzZ33D2waMvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=K6bno3Pi; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=osaoXBUG;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=K6bno3Pi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y41km5D1Kz2yYd
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y41km70rsz30Sv
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2024 04:35:42 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1733420137;
-	bh=68WNMR27/Jh6Vy7PvAle7AaTWkBct2qgXVk12kHAaEY=;
-	h=From:Subject:Date:To:Cc:From;
-	b=osaoXBUGfRb46luXfjCGTPlnbK7q0cEYSDeeHPKe6F5/8fT1bXolzVbZEr743sp7n
-	 OYCOlxC/xSo+G3OjW0YG7pLTN295Pga9v2NcIMjRFaP+ZC6R3UrV8BOWJePkDk1HGc
-	 yOQXl/blyJageLhTjzhHwYNhUOVSru+iMXlM/kHE=
+	bh=v54jOXPBj86EmdoK8VRH/WJTe91je7IjzNhdTGxTAGM=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=K6bno3Pid1wQl8du0lNePJ95Kvvh7/8n5drvB2nGu7OHw9DcP/cBbyuGWw1foEg5Y
+	 zAU2a1oj/zgo72VtMRKRrCdb4KgzJ0Umw1lBEe2d076qaJC9xwZRrqMPO9OuBNxt/z
+	 Trex6yqGmkJCtKeeefG+X9DMpIdzov2ei2fbATzM=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Subject: [PATCH 0/4] sysfs: constify bin_attribute argument of
+Date: Thu, 05 Dec 2024 18:35:15 +0100
+Subject: [PATCH 3/4] btf: Switch vmlinux BTF attribute to
  sysfs_bin_attr_simple_read()
-Date: Thu, 05 Dec 2024 18:35:12 +0100
-Message-Id: <20241205-sysfs-const-bin_attr-simple-v1-0-4a4e4ced71e3@weissschuh.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,10 +54,9 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAFDkUWcC/x3MwQpAQBAA0F/RnE3ZSSm/IondWaZY2tlE8u82x
- 3d5DyhHYYW2eCDyKSp7yDBlAXYZw8woLhuootoYItRbvaLdgyacJAxjShFVtmNlbGzl3ETeekO
- QhyOyl+vfu/59P/HJDYRtAAAA
-X-Change-ID: 20241122-sysfs-const-bin_attr-simple-7c0ddb2fcf12
+Message-Id: <20241205-sysfs-const-bin_attr-simple-v1-3-4a4e4ced71e3@weissschuh.net>
+References: <20241205-sysfs-const-bin_attr-simple-v1-0-4a4e4ced71e3@weissschuh.net>
+In-Reply-To: <20241205-sysfs-const-bin_attr-simple-v1-0-4a4e4ced71e3@weissschuh.net>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>, 
@@ -82,41 +81,59 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  bpf@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733420137; l=1170;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733420137; l=1383;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=68WNMR27/Jh6Vy7PvAle7AaTWkBct2qgXVk12kHAaEY=;
- b=T+PbqYnqnoXWLbF5FULrGKTEWzZ8sXpbVXoqId9h5bVMynN1gxzdjACjy9czZW5+/hfIaiOMY
- 927yDeHmNmiBbYl7QYj+NHuMWTZRXQl9ozjUUHoyQqHpqA28sdx295H
+ bh=v54jOXPBj86EmdoK8VRH/WJTe91je7IjzNhdTGxTAGM=;
+ b=z5q+mLaILrDgqDYwtsD48fkDkxpZ62jcajO3UKpxPz32mD8JI/2JI972ZU1lQwyNF3vSJQo0s
+ 6sYjAwPi+IUDoUGqDySD1CsWmyWtBNVzTIiDOk4iNPc9R3Rd/cj/9nF
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Most users use this function through the BIN_ATTR_SIMPLE* macros,
-they can handle the switch transparently.
-
-This series is meant to be merged through the driver core tree.
+The generic function from the sysfs core can replace the custom one.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
-Thomas Weißschuh (4):
-      sysfs: constify bin_attribute argument of sysfs_bin_attr_simple_read()
-      platform/x86: wmi-bmof: Switch to sysfs_bin_attr_simple_read()
-      btf: Switch vmlinux BTF attribute to sysfs_bin_attr_simple_read()
-      btf: Switch module BTF attribute to sysfs_bin_attr_simple_read()
 
- arch/powerpc/platforms/powernv/opal.c |  2 +-
- drivers/platform/x86/wmi-bmof.c       | 12 ++----------
- fs/sysfs/file.c                       |  2 +-
- include/linux/sysfs.h                 |  4 ++--
- kernel/bpf/btf.c                      | 15 ++-------------
- kernel/bpf/sysfs_btf.c                | 12 ++----------
- kernel/module/sysfs.c                 |  2 +-
- 7 files changed, 11 insertions(+), 38 deletions(-)
 ---
-base-commit: feffde684ac29a3b7aec82d2df850fbdbdee55e4
-change-id: 20241122-sysfs-const-bin_attr-simple-7c0ddb2fcf12
+This is a replacement for [0], as Alexei was not happy about BIN_ATTR_SIMPLE_RO()
 
-Best regards,
+[0] https://lore.kernel.org/lkml/20241122-sysfs-const-bin_attr-bpf-v1-1-823aea399b53@weissschuh.net/
+---
+ kernel/bpf/sysfs_btf.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
+
+diff --git a/kernel/bpf/sysfs_btf.c b/kernel/bpf/sysfs_btf.c
+index fedb54c94cdb830a4890d33677dcc5a6e236c13f..81d6cf90584a7157929c50f62a5c6862e7a3d081 100644
+--- a/kernel/bpf/sysfs_btf.c
++++ b/kernel/bpf/sysfs_btf.c
+@@ -12,24 +12,16 @@
+ extern char __start_BTF[];
+ extern char __stop_BTF[];
+ 
+-static ssize_t
+-btf_vmlinux_read(struct file *file, struct kobject *kobj,
+-		 struct bin_attribute *bin_attr,
+-		 char *buf, loff_t off, size_t len)
+-{
+-	memcpy(buf, __start_BTF + off, len);
+-	return len;
+-}
+-
+ static struct bin_attribute bin_attr_btf_vmlinux __ro_after_init = {
+ 	.attr = { .name = "vmlinux", .mode = 0444, },
+-	.read = btf_vmlinux_read,
++	.read_new = sysfs_bin_attr_simple_read,
+ };
+ 
+ struct kobject *btf_kobj;
+ 
+ static int __init btf_vmlinux_init(void)
+ {
++	bin_attr_btf_vmlinux.private = __start_BTF;
+ 	bin_attr_btf_vmlinux.size = __stop_BTF - __start_BTF;
+ 
+ 	if (bin_attr_btf_vmlinux.size == 0)
+
 -- 
-Thomas Weißschuh <linux@weissschuh.net>
+2.47.1
 
 
