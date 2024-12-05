@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3829-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3830-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE383E7716E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2024 17:35:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1945E77170
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2024 17:36:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y41kx6Rqbz30TP;
-	Fri,  6 Dec 2024 04:35:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y41ky6hGCz300V;
+	Fri,  6 Dec 2024 04:35:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733420153;
-	cv=none; b=NUVjO0tgQkweVZlKoxqPANXF85Y0YOoYf8HfFugpw8M4jViK4bb0nJXOlOsGqcG1COxZ8L5prROwmSCLScCoNv3Bo9Ioer01nYSz1dww9rmJmDKaeP4sqIpbNQOQjnauKqO4XfqBW5YJlhPjbuEI8yQ0bGFCcihvYP7/hsOr4Jw7ik3Q4itLgJ+EVGsIV5NynYADDRFRhILIAhcNXCHEhLV74mqWyunNX1i0dCZlqDzm9umV4DgNPc2J8YGCWIanM0EcAMU+rF/zCWB8Yy5NGEOKZ5ti642B1nC9PjdTlUeGFuB/LNjPh/g8x6epPTQr09n6k6k4HCYRWiLikE6vDQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733420154;
+	cv=none; b=nEK+02OTWkkRStWd4HmrE7c28ldDHHr/fTmVN3xD+Cj5d1DXoLdhiRV31dj6u1LWpYfBZOAYwE55qxz/0OXizyj/ea8S53JUQws29p7HOf7aX7JvE+3C/8qbwvhzuKxn7JERKe773UI+oK/TrackbJKp5NZ8zPrGoLVHnBGF3NTn8BaGiMmgj6sJOfRycffCwBFmpW7Dy2XyQQpL2LXVRpXTWx3IGMtYMFswyviPbzMPCC8IDIpT8zzJN26HMFnjdtEOkXJQjd3Eq4OahSY2q/I6WMbMqdeAb4gSUmkdMKqpyHvIok3wPEDwRtzy2HFxCvz+Sb3LbKeez+TPW+4I3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733420153; c=relaxed/relaxed;
-	bh=k4lUB4Q4BEgd7djZEOoKEhe6hcDJl45q7y3Y79d2vaI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=NCbmIKtSANhENeUnKe3fqU8vhM8Cstm3w6Lp+L+jhlohEFznKOFjEt+KCtlJoMK7W2857Q2//WJ3q1XA4Sn9vjbLYC2pWuTu0TAlHHSvdSMiNquxdiOFaTHEMQAEplRH+uCEZzMRpKYlEOidjhl5zHtJLERqdBnxIRav8MJ0bD4lbfX6h1zlcTES/llKqoS3VaLkZaXC1dmKbuUFasnzumLkIL/aMV1TAPmQ3aRd2ko2eNx/8k/uQHZN5x5X8LwbVbSVy/KXjAP0E5M2HBqVmEqHelCs5Z9hP5LhqIJNhf0KjgrGWlJkgimkQoASart1Wd0zzElzHM/GH/irTk72vg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=guoxc6ji; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	t=1733420154; c=relaxed/relaxed;
+	bh=V7yqIF0hpa70J1Es4osz7ul+iLI05ka3BCzLr2JD3+4=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=dQSEqjtCLng0FUvqIfqhPclArjntfquXqZ+6CH1FsFK3WfY1cShyIgVi/L22XxFRVHRI3QQ8G0mYMNqmN3OB8fGRztmmG0levhM4cxeCbaRpDl4SY4VSdB1SmK62jORqzoznLsG1WngMNPJjCkaFlEyZ3tELxtC9f33DOqqO93uAPHSjinsN3hGPLJTE8Vj0FI10aoAXKNCRw8vgQMEKgRt5eCWRIBuR8daUH1pSye36FcW7vXUUublfSyaWNJyryc3mDIXt5V/mhpOJA5p29iK9+zl3UqwVwfnczJtXvZkpsQO/DqmLAYOUaGjDf/D+qqdXMl34a5sL1YjcPXMiGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=osaoXBUG; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=guoxc6ji;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=osaoXBUG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y41km6wRtz300V
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2024 04:35:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y41km5D1Kz2yYd
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2024 04:35:42 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1733420137;
-	bh=cfuC4VjJZbJslwembV87HLGJheNWpA6IXa9jHRZu/TI=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=guoxc6jiRIqYEGgM6BDygebSsXZ13mk0XDHwVPTvCXJki6yuOI+VMVHt/REiIuCp3
-	 5PH3S7I1rR5ECLEBN+pPHNQKosnLzkuyeTaP0HRnoKS91a4VeTxCdX7qXj6M8oBX9J
-	 pPlkZUr/1HRJkQYaW1Zp5F16MRkEAaHCkW1k8zbU=
+	bh=68WNMR27/Jh6Vy7PvAle7AaTWkBct2qgXVk12kHAaEY=;
+	h=From:Subject:Date:To:Cc:From;
+	b=osaoXBUGfRb46luXfjCGTPlnbK7q0cEYSDeeHPKe6F5/8fT1bXolzVbZEr743sp7n
+	 OYCOlxC/xSo+G3OjW0YG7pLTN295Pga9v2NcIMjRFaP+ZC6R3UrV8BOWJePkDk1HGc
+	 yOQXl/blyJageLhTjzhHwYNhUOVSru+iMXlM/kHE=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Thu, 05 Dec 2024 18:35:16 +0100
-Subject: [PATCH 4/4] btf: Switch module BTF attribute to
+Subject: [PATCH 0/4] sysfs: constify bin_attribute argument of
  sysfs_bin_attr_simple_read()
+Date: Thu, 05 Dec 2024 18:35:12 +0100
+Message-Id: <20241205-sysfs-const-bin_attr-simple-v1-0-4a4e4ced71e3@weissschuh.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,9 +54,10 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241205-sysfs-const-bin_attr-simple-v1-4-4a4e4ced71e3@weissschuh.net>
-References: <20241205-sysfs-const-bin_attr-simple-v1-0-4a4e4ced71e3@weissschuh.net>
-In-Reply-To: <20241205-sysfs-const-bin_attr-simple-v1-0-4a4e4ced71e3@weissschuh.net>
+X-B4-Tracking: v=1; b=H4sIAFDkUWcC/x3MwQpAQBAA0F/RnE3ZSSm/IondWaZY2tlE8u82x
+ 3d5DyhHYYW2eCDyKSp7yDBlAXYZw8woLhuootoYItRbvaLdgyacJAxjShFVtmNlbGzl3ETeekO
+ QhyOyl+vfu/59P/HJDYRtAAAA
+X-Change-ID: 20241122-sysfs-const-bin_attr-simple-7c0ddb2fcf12
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>, 
@@ -81,56 +82,41 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  bpf@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1733420137; l=1356;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733420137; l=1170;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=cfuC4VjJZbJslwembV87HLGJheNWpA6IXa9jHRZu/TI=;
- b=e241/DoQXymqExeN+SMwvZ808XE79ecCrN8XFKqhJnW3U8HuphVENS4R6ai//luSj/YPr30lo
- NqTPg+Nmf9/Dvw7MuaG3SlMfMc+h0AAu8h+lEG2k3oNOjl5IwrAmm5N
+ bh=68WNMR27/Jh6Vy7PvAle7AaTWkBct2qgXVk12kHAaEY=;
+ b=T+PbqYnqnoXWLbF5FULrGKTEWzZ8sXpbVXoqId9h5bVMynN1gxzdjACjy9czZW5+/hfIaiOMY
+ 927yDeHmNmiBbYl7QYj+NHuMWTZRXQl9ozjUUHoyQqHpqA28sdx295H
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The generic function from the sysfs core can replace the custom one.
+Most users use this function through the BIN_ATTR_SIMPLE* macros,
+they can handle the switch transparently.
+
+This series is meant to be merged through the driver core tree.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- kernel/bpf/btf.c | 15 ++-------------
- 1 file changed, 2 insertions(+), 13 deletions(-)
+Thomas Weißschuh (4):
+      sysfs: constify bin_attribute argument of sysfs_bin_attr_simple_read()
+      platform/x86: wmi-bmof: Switch to sysfs_bin_attr_simple_read()
+      btf: Switch vmlinux BTF attribute to sysfs_bin_attr_simple_read()
+      btf: Switch module BTF attribute to sysfs_bin_attr_simple_read()
 
-diff --git a/kernel/bpf/btf.c b/kernel/bpf/btf.c
-index e7a59e6462a9331d0acb17a88a4ebf641509c050..69caa86ae6085dce17e95107c4497d2d8cf81544 100644
---- a/kernel/bpf/btf.c
-+++ b/kernel/bpf/btf.c
-@@ -7870,17 +7870,6 @@ struct btf_module {
- static LIST_HEAD(btf_modules);
- static DEFINE_MUTEX(btf_module_mutex);
- 
--static ssize_t
--btf_module_read(struct file *file, struct kobject *kobj,
--		struct bin_attribute *bin_attr,
--		char *buf, loff_t off, size_t len)
--{
--	const struct btf *btf = bin_attr->private;
--
--	memcpy(buf, btf->data + off, len);
--	return len;
--}
--
- static void purge_cand_cache(struct btf *btf);
- 
- static int btf_module_notify(struct notifier_block *nb, unsigned long op,
-@@ -7941,8 +7930,8 @@ static int btf_module_notify(struct notifier_block *nb, unsigned long op,
- 			attr->attr.name = btf->name;
- 			attr->attr.mode = 0444;
- 			attr->size = btf->data_size;
--			attr->private = btf;
--			attr->read = btf_module_read;
-+			attr->private = btf->data;
-+			attr->read_new = sysfs_bin_attr_simple_read;
- 
- 			err = sysfs_create_bin_file(btf_kobj, attr);
- 			if (err) {
+ arch/powerpc/platforms/powernv/opal.c |  2 +-
+ drivers/platform/x86/wmi-bmof.c       | 12 ++----------
+ fs/sysfs/file.c                       |  2 +-
+ include/linux/sysfs.h                 |  4 ++--
+ kernel/bpf/btf.c                      | 15 ++-------------
+ kernel/bpf/sysfs_btf.c                | 12 ++----------
+ kernel/module/sysfs.c                 |  2 +-
+ 7 files changed, 11 insertions(+), 38 deletions(-)
+---
+base-commit: feffde684ac29a3b7aec82d2df850fbdbdee55e4
+change-id: 20241122-sysfs-const-bin_attr-simple-7c0ddb2fcf12
 
+Best regards,
 -- 
-2.47.1
+Thomas Weißschuh <linux@weissschuh.net>
 
 
