@@ -1,73 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-3819-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32527E77170
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2024 09:21:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0285E77173
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2024 10:42:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y3pmf4Rmkz2ydW;
-	Thu,  5 Dec 2024 20:21:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733390498;
-	cv=none; b=XE3l7CnHDb6it/pIfblVwLo544nrRctdR2eDPBzZ1Eq0b7B2/vZ3RRhgmN/BhKV+BAB7eJdavI/bloise9uTsRX2wsxFAIEBW77bKHJJyT8mPYQuHpR1Rd2I8St8eVgemU8DpsDw0w39QVpllinUa/eDn1O7fPevvJON8SfUs1VAQaaHSwF1AQiNf8LLOWtv8L9QZSeRGtEP4PU8Cmu+3L87aQfXrG6Cd7M1NtsNeus3JUkGyWLiyHXtiPiVx/vHmyxQ2WSHyQOHgHa9VpSt0ayUf1WEtHmEiLQPYZ3aUWGHrCQRhURJnif7xyo0rS9yj2anidLBc2+eTTZBR6j3VQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y3rYj6GV4z2yFB;
+	Thu,  5 Dec 2024 21:42:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733395337;
+	cv=none; b=Zsf3EU+gjqIRINsKJ5o9VoL/iFMiGjNOTWneltubYWPm+kkGi441h/C4oCN9BsV67RzpqGbHlh207GQQvS4CFG24VYUECa5yaAhhbtHJyGcruc5ARdtAunY7tBtCl3pmt3UnLgGn34CxuRhuVpFSfwpj2394bFlHeWbDJ/BbvQgIA2T90e9npBGxhdxeeGbygrMKUOIgTA1TlMfr/1dmDeZjE9ibB6Ccdar8kXPO8O9f+0+WCaWC5O0Mw4+IbSXZwH9v1Qckh/OMcK0HbVyubpOhw2i9kkT3V9NCT8ImI8RlpgpideDTvlfYMY3EMxZTPmXsmfMeuV29Bc7Sosxo/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733390498; c=relaxed/relaxed;
-	bh=NhIFRytJ7J6YcXrMQq6LGhGesQm6LgaQBIy4YaNok7s=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BPQtsdzfWOIl0Nv314fSU3LnjSKeQqzcjE6v8C3dvmx8hVSyDsZZvVytQ1mxm8um7N37bjLbaLsUcZrwqFwLpSF4Oooki236o42Zrz6QiJEwIUlyWTht+6biJjsXq0+coI6GJ2wTRr6CtsEFrzoPaOaJxVP153a+5c7rjyoWSCOA817jNoX4esP4WNJZ7V2XtNV4TJ1W7bavVnhq3SdlsjWKMHeIlDrUOOeZdwSC4nnuj5Ywp3niWZ46Rwnx0lFcY/sjc9JQGmogFcgBuKVN4fSbDn5wE8iuUC2D6uh354Sdb0ebRxCcQaxY3ZpBxKx0VdEp/WyRZeEiA+MALkVang==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bO+iAcht; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=tzungbi@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1733395337; c=relaxed/relaxed;
+	bh=FnoZGxzHG6LZDyvVjX+CssXgRHCJAKynJ1wSQcpNHJ0=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=G16CAnJimreRogKeFzwutqT7llhkRw1UjBsQ6mk5FIwdI7iv/IsydCz5M5joYmzrQdLEYI5QaKy732Lu0Zi+QEVbvj/82FgOm03LrcJMfFNCLdslk6PgenZB6Fky5817OX33hkB0XIV78CbWMHo/MgfJZ2diy2QhOGXxRf7epgDpUvGKP5MfzYmd+pf4VC7iWDQTDty3//EhCCfYkUsYPivT+uZhbgybMYiBvVQqd5t2zX5nhi9dtUEPsLIO2TdPX9n1WrtMVef2ybqE/iCN4ukVIQ3oYDtxfpSSffxg3/Coa0NClPnkdMihO8TvJeERuT6u0wDN43Wj3Eb+XBELyg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=kPU6XEHj; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bO+iAcht;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=kPU6XEHj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=tzungbi@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y3pmd5lLTz2xs4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2024 20:21:37 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id F3B515C71ED;
-	Thu,  5 Dec 2024 09:20:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A2DA0C4CEDE;
-	Thu,  5 Dec 2024 09:21:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733390495;
-	bh=0NtFK3oCzvBSihoOheuwFu9KzJvVPyvwejVb22YMDX8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=bO+iAchtJ2xcasBhdzF+wbKSTg19ybb/JAHkdXYvclcrjO0D4X8bJ3DeLNUn2bEFa
-	 77lJpJ0g3Pajml0kav68z3LlmOMFTdeTXhAtjxYw8F+oAacKePbD0UKw9UHzIMcqev
-	 TvabFo0KBg2gviCqTfvyVJSA7M+9v5w237FTHKikw8hH5q8K4tncW5uvC4zwyHnzys
-	 BtHac/HZX0UM+Kf69TC/JMuKcpkf83Lj3DCfPhTjX05rh/Eqn77fFYUts72J6jyaa8
-	 29bEH6HxVThRRTUJK7Rj24nbhs18WAgJ6WPlYn9cXFCYWYTBplwHLHRuLnes8eWfid
-	 QmTznu7igjaEA==
-Date: Thu, 5 Dec 2024 09:21:30 +0000
-From: Tzung-Bi Shih <tzungbi@kernel.org>
-To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
-Cc: Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Brian Norris <briannorris@chromium.org>,
-	Julius Werner <jwerner@chromium.org>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	"Martin K. Petersen" <martin.petersen@oracle.com>,
-	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, chrome-platform@lists.linux.dev,
-	linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 5/5] scsi: arcmsr: Use BIN_ATTR_ADMIN_WO() for
- bin_attribute definitions
-Message-ID: <Z1FwmmFEDKeEgNRO@google.com>
-References: <20241202-sysfs-const-bin_attr-admin_wo-v1-0-f489116210bf@weissschuh.net>
- <20241202-sysfs-const-bin_attr-admin_wo-v1-5-f489116210bf@weissschuh.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y3rYg56Rbz2y8P
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Dec 2024 21:42:13 +1100 (AEDT)
+Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-385e0dadaaaso25130f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Dec 2024 02:42:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1733395330; x=1734000130; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FnoZGxzHG6LZDyvVjX+CssXgRHCJAKynJ1wSQcpNHJ0=;
+        b=kPU6XEHjyV6HWmtgGDcut4U84drkvEP/lOfCDgJk4su22Oi5YaF/PyLJjSuudBOcdm
+         o45teo7FWVC6BPB1OO6vqYQHvB5aHx763/A63vv0fZeIbXW7yjwgtdExn60OQdlA4ROT
+         JEtxgu2peFNzyxXxC+0hjoRQJPiA5btO0cFb1TSjN3Yd9ryC1ugDxV3yA3TrDXi/Yu2M
+         SA9s4AiGzoeUVQyFHT+A8qNWnmcvZG5zFUKaVA/9mMkbjR6rZddH5WjMkbSYgsanRJoU
+         samQXLdJGOV9ZmQ39uHHvR1WDD8rgQ1f3p/I8Ut5HKS+8lWjxHiHFvHmQIk5Y0kveUAp
+         Db1A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1733395330; x=1734000130;
+        h=content-transfer-encoding:mime-version:date:message-id:subject
+         :references:in-reply-to:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=FnoZGxzHG6LZDyvVjX+CssXgRHCJAKynJ1wSQcpNHJ0=;
+        b=auq5zJF5QB1/jurPp3lGcoZhcOJpdST3K99TgzxALp9bYqmtc5Bhn1/nLAo2FkT2/X
+         sz3ukPILHVN9fzyMMKDA9JQFPmFcQRVJ8DtqqeQ5F0t4BpbWkqdpM+33hBvGeYklxy4I
+         OpqsSY8+bxdLxmqSwzT6wh8wYe1kcw6/RWFPLCymu4Ph6tFnGqcrXgUmg9eqe5k1snLM
+         s/U+inOMVEaqzQESX1xt4MggzwEDU5SlZQmS+6qiEArpSdwCNM6vg3jn2GierSYwYiMt
+         M0KljlTBMyjoIHqjzVfA/+wJWxptAFV7s2MbSTYTK+NYJN6fl4Qp35rpCOgR5ZvbWgsB
+         ISzQ==
+X-Forwarded-Encrypted: i=1; AJvYcCW/vqFZdGWOjLTY4IVMkWacDqUo2F2qx2VoseaIdrs+SQqNA1uuoTkDVineYYEFPKILek+RIS+rMQhTWvs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx4GWh9AWqB1W1XUw8FSJTlqun5fJlbVRjOexQ/FVf8yf68NrjB
+	mbKqroeCbe3QVJxO/UF4l0p2UX+M0l85RtgUms3POjWj7Ln/THCSUzk8AN7jPrQ=
+X-Gm-Gg: ASbGncv7uqg889Ia7CBAS0+vDh3xZKnIPG6h2+HASIVpCcPJJ593ZsNmBPHZZ4HgqjU
+	aIEvrXZLzbvxs/4NquZsFFs6KsCe2dS1kl8JMCwfr+bcUhdIpTB6qEdv5taXNf/kd6h/Mp12lfO
+	fYKRlWcmE6gh041nmnFirUdFPQ7MPT4sVa2FfdPAZ0ucr5ehh4Wei5R7St1OgjAaXWLKb+2LNbr
+	Aa7qqOwD9hG774Bhx+Sptcjh+PSkCrHov1euNactlCe7Z4pQTx+YVac89RkemrLOQ==
+X-Google-Smtp-Source: AGHT+IGz3GjcyfBhQ5HlqLVmhmG7Qtmhnbj9BaPJEz/QzVaC6xVbnrbhQALk4UuX4nKmsjVBEJ+aKg==
+X-Received: by 2002:a5d:6d82:0:b0:385:e8e7:d0ac with SMTP id ffacd0b85a97d-385fde34d9bmr2947632f8f.13.1733395329824;
+        Thu, 05 Dec 2024 02:42:09 -0800 (PST)
+Received: from [127.0.1.1] ([178.197.223.165])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3861ecf406csm1662701f8f.3.2024.12.05.02.42.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 Dec 2024 02:42:09 -0800 (PST)
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Lubomir Rintel <lkundrak@v3.sk>, 
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, 
+ Heiko Stuebner <heiko@sntech.de>, 
+ Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, 
+ Masami Hiramatsu <mhiramat@kernel.org>, 
+ Paul Cercueil <paul@crapouillou.net>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+ Nicolin Chen <nicoleotsuka@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, 
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
+ Adrien Grassein <adrien.grassein@gmail.com>, Adam Ford <aford173@gmail.com>, 
+ Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: linux-sound@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
+ linux-renesas-soc@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+ linux-mips@vger.kernel.org, alsa-devel@alsa-project.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <cover.1727438777.git.geert+renesas@glider.be>
+References: <cover.1727438777.git.geert+renesas@glider.be>
+Subject: Re: (subset) [PATCH treewide 00/11] ASoC: Clean up
+ {hp,mic}-det-gpio handling
+Message-Id: <173339532775.70936.4554643874403091214.b4-ty@linaro.org>
+Date: Thu, 05 Dec 2024 11:42:07 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,18 +110,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20241202-sysfs-const-bin_attr-admin_wo-v1-5-f489116210bf@weissschuh.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.2
 
-On Mon, Dec 02, 2024 at 08:00:40PM +0100, Thomas Weiﬂschuh wrote:
-> Using the macro saves some lines of code and prepares the attributes for
-> the general constifications of struct bin_attributes.
-> 
-> While at it also constify the callback parameters.
-> 
-> Signed-off-by: Thomas Weiﬂschuh <linux@weissschuh.net>
 
-Reviewed-by: Tzung-Bi Shih <tzungbi@kernel.org>
+On Fri, 27 Sep 2024 14:42:15 +0200, Geert Uytterhoeven wrote:
+> 	Hi all,
+> 
+> The "gpio" suffix for GPIO consumers was deprecated a while ago, in
+> favor of the "gpios" suffix.  However, there are still several users of
+> the "hp-det-gpio" and "mic-det-gpio" properties, in DT bindings,
+> drivers, and DT source files.
+> 
+> [...]
+
+Applied, thanks!
+
+[03/11] ARM: dts: marvell: mmp2-olpc-xo-1-75: Switch to {hp,mic}-det-gpios
+        https://git.kernel.org/krzk/linux-dt/c/62f95d8a4920706e94759a8f5e34677528530cf1
+[08/11] arm64: dts: uniphier: Switch to hp-det-gpios
+        https://git.kernel.org/krzk/linux-dt/c/751df73d825b3f7e6cad42ed333c28096635784d
+
+Best regards,
+-- 
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
 
