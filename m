@@ -1,79 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3827-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3828-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C631E77178
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2024 17:02:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8E62E77170
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Dec 2024 17:35:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y410J0n37z2yft;
-	Fri,  6 Dec 2024 04:02:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733418144;
-	cv=none; b=Oq/RT2WxyQssCxTkfwR0D+GBldmMruhNHOkekfQlPzBW1BvZWE6u0bBbLQis2OcbG86TXj3ILZy7MAEi4xAznRBxYjd3U7NcFxopjA96zk4HwQ2TStDWshp5/s+XAReoR5GqTIfIcP8iHa0h6jC2AD+08ydYqnVGJceUa+2t7RiUjZjo91HkL//dnPP7A3cg7qpQyRZ3jcKqTuV8ZGcdkBEk/A7lboS6wxifxkg8pW7BQ5NQcbn06gz+RNtTi2pT9m6MBZ8kSRzI1imuf3HWvpkl9Qf18je/8dlUhhqGzc64W2te4o0z6EbMZF6BuNSrV++hMcC80OaHxTQrdxambw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y41kx5cFFz30TJ;
+	Fri,  6 Dec 2024 04:35:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733420153;
+	cv=none; b=iXBOs5cf2Ixeosvw/uh2EoiDblx6cQ3SE6/0Xqv5ltXPTH9i3nqMvBD32rfSvgx5pXUgXEXUkgsp98ZaU0gbbKt0sZqsEa9FHiIyAZydFGmuXcrbVUQm2fS6bfJ+xhwYor2rg8S0OI5vr46MI+iwhQ182L/Kw7q408FmZDQxmJx4NsLFjh6d61xPkuK1LOSARtmNfTDLL07nRMl7mSjSFHSCEIbUAe4yMzU0ganQ+I8SmLMzA/ijEBbQo53SHiU5EFJKhJhHRk41ShEk2k8vydjHi/u4O3rEdSefJvBXdWb42k6eeUsopDhRplCUVGlSIIUzPyBxhU9Pe08op+TwZg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733418144; c=relaxed/relaxed;
-	bh=frwONDkJLaxJoiI+osa63+rM+Vm6eJIPVZMFYHSznsQ=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=LvmMv3yJNtGhS1mIS5aBBzjXp8P7bsivvobImCDsMdS0HtPiWuVhfz2INVUG2w6Yq6WxsfD/BCxnGYu0u+4BDiBv6/XX367GdvXvIbPx1gP7Gih/W7nI0SQJHawjHvle4Ll6R17FH4RZ/3iQGD8phLeX6AxhZR7K79MEaPJgJhArr4OShGh9mL7ygd/LkC1Py6kfpPLeslLkC0gAgSeH+Ti4gI642qXd+qAyXsJTXPifsIa4/nT805QuC7mMBhdEz/hAoprRNb4zd6C2NwR/NJK6bWcV6D9vE9Y4qkr5qhCh9yx3CcMGJNVOLjYG6WynA0h+fH8ln01el1XD4+IRTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rcYpE6Nt; dkim-atps=neutral; spf=none (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
+	t=1733420153; c=relaxed/relaxed;
+	bh=0mMdKHR5uGeo90rsyNkTu9fOgli1kIh3uNhb5KkdBws=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=cvmrTbEF69nRhHVviiMqhwT8f8V37BIWg5qcr41T6oxC37753NT66GQFBstDbnRKvsjoa129Y1Osz5BkgYGC4XR4Hp01Z/20AZVr4QR1opKGHusvZFUkFy9XLmX9q/oBg+4xpWEpr2MI1l6VuuR7Dx6UEU01J3ECS1PzqPOTdDEi6M5ZJLnuiEx5Fe6yaOKKz2QQqgMxjDqLx/v0IiC0JzRJXInnl69XjRRhmG9Wql/ix34Pww5IKBnrF8uKAAKwT8bVjbicfeU2NPUMcyDsoyeqVUNMOvBBQ02k2LWcrin/2W0CjVoZJE0APjW1edhhjgpYnOWXzquJsiU3wMnOlQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=N3aE/who; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rcYpE6Nt;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=N3aE/who;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y410G1dKXz2yGZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2024 04:02:21 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B5A0vwr028244;
-	Thu, 5 Dec 2024 17:02:13 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=frwOND
-	kJLaxJoiI+osa63+rM+Vm6eJIPVZMFYHSznsQ=; b=rcYpE6NtuYVqbRbg3BYLVN
-	9GNCawW+KjSPKK98WXpn/HsH33zoc03NmpjFcHDv0L7EecyfiMMP7yz7jF7pGffn
-	Xniw4abELS3pUJj5FCUlVNpQBCDoJ78/JnAI1+ya0mDeaq4JDv/jOdUYlW/d2bq+
-	o4o8zMND+gOZHmccSnRFlegC/8nmmil7Ddk8gebldEaGygEUDDzjyZ5cE8f6raNI
-	wLybcPtsF94vBguQaVwc7OZbQUbCrull2Z+Xbhvna1uMqoTu6U4pXeqzTMuifbkv
-	2n8kFTn1MIMiRP2b0HIUY0uLdoSS+5MrNpnH+swQpc/ByVgeXNQl9VqMhLBSnZKQ
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43ba1yj2e7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 05 Dec 2024 17:02:12 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4B5GqN07009734;
-	Thu, 5 Dec 2024 17:02:12 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43ba1yj2e3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 05 Dec 2024 17:02:12 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4B5EiLad005580;
-	Thu, 5 Dec 2024 17:02:11 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 43a2kxsg9u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 05 Dec 2024 17:02:11 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4B5H27Dm50594132
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 5 Dec 2024 17:02:07 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 911B220043;
-	Thu,  5 Dec 2024 17:02:07 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6A63820040;
-	Thu,  5 Dec 2024 17:02:01 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.61.245.236])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu,  5 Dec 2024 17:02:01 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y41kq0gJkz30Sx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Dec 2024 04:35:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1733420137;
+	bh=5LgMscy8fNMxkSnBk89bFZtOweO+ubs1BjcR/pPmVkk=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=N3aE/whoh0KniNiOdttnlBkPGxTSvIZRmCSS4tM8MAPBalxnpZjR3OoaUI3/xXTIo
+	 fNNtedHUR+sbdbMnShhmacrx6v0eWcsU3TYdFPa16wzAGR6XJ7jGXiDVl6/n1HjBz+
+	 JSalKw3c9i0jJhAAfKdCvzOzYA+mk+CgGniZjEaI=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Thu, 05 Dec 2024 18:35:14 +0100
+Subject: [PATCH 2/4] platform/x86: wmi-bmof: Switch to
+ sysfs_bin_attr_simple_read()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,141 +51,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3818.100.11.1.3\))
-Subject: Re: [PATCH] tools/perf/tests/expr: Make the system_tsc_freq test only
- for intel
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <Z09K5orKhWbeOGLV@google.com>
-Date: Thu, 5 Dec 2024 22:30:32 +0530
-Cc: Leo Yan <leo.yan@arm.com>, Ian Rogers <irogers@google.com>,
-        James Clark <james.clark@linaro.org>, tmricht@linux.ibm.com,
-        acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        akanksha@linux.ibm.com, maddy@linux.ibm.com, kjain@linux.ibm.com,
-        disgoel@linux.vnet.ibm.com, hbathini@linux.ibm.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <B6BF58F8-99C2-40A4-8500-AF2E3CEB7308@linux.vnet.ibm.com>
-References: <20241022140156.98854-1-atrajeev@linux.vnet.ibm.com>
- <ZyF2-XNUh38p_5Gg@google.com>
- <B72F330F-2A56-41B0-ABED-FCA7DC9EE711@linux.vnet.ibm.com>
- <CAP-5=fXCYURva6Q8ktRVmnf2QCcsr-E3fPn327k0JRCw_9fn3A@mail.gmail.com>
- <BBF1A4DC-3BD9-4377-BE2F-CBEFE55F0497@linux.vnet.ibm.com>
- <20241107135606.GA47850@e132581.arm.com>
- <0F805B2F-35CC-4E0C-BD2F-84552C4C528E@linux.vnet.ibm.com>
- <Z09K5orKhWbeOGLV@google.com>
-To: Namhyung Kim <namhyung@kernel.org>
-X-Mailer: Apple Mail (2.3818.100.11.1.3)
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: txM6-swvmW2dZw1Ge5xgj3n6iE9Yw4CM
-X-Proofpoint-GUID: x75Afcoi4ov0SpggGGPeU_2wYBKCSNqD
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- mlxlogscore=999 phishscore=0 adultscore=0 spamscore=0 priorityscore=1501
- bulkscore=0 mlxscore=0 impostorscore=0 lowpriorityscore=0 clxscore=1015
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2411120000 definitions=main-2412050124
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20241205-sysfs-const-bin_attr-simple-v1-2-4a4e4ced71e3@weissschuh.net>
+References: <20241205-sysfs-const-bin_attr-simple-v1-0-4a4e4ced71e3@weissschuh.net>
+In-Reply-To: <20241205-sysfs-const-bin_attr-simple-v1-0-4a4e4ced71e3@weissschuh.net>
+To: Michael Ellerman <mpe@ellerman.id.au>, 
+ Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
+ Sami Tolvanen <samitolvanen@google.com>, 
+ Daniel Gomez <da.gomez@samsung.com>, Armin Wolf <W_Armin@gmx.de>, 
+ Hans de Goede <hdegoede@redhat.com>, 
+ =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+ Andrii Nakryiko <andrii@kernel.org>, 
+ Martin KaFai Lau <martin.lau@linux.dev>, 
+ Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, 
+ Yonghong Song <yonghong.song@linux.dev>, 
+ John Fastabend <john.fastabend@gmail.com>, KP Singh <kpsingh@kernel.org>, 
+ Stanislav Fomichev <sdf@fomichev.me>, Hao Luo <haoluo@google.com>, 
+ Jiri Olsa <jolsa@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ linux-modules@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
+ bpf@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1733420137; l=1583;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=5LgMscy8fNMxkSnBk89bFZtOweO+ubs1BjcR/pPmVkk=;
+ b=FFE0LC+lWyL41OWKcLih/cJP43TX/qUmNdEXnIWxYkdVLt0K7dsR35ynGht17m6UhezsKb9iC
+ ql1zd1NvQ0BAvkF0dWD1XVGmm/v8XCf3L6eiabSOtHoMnaMvizVK/An
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
+The generic function from the sysfs core can replace the custom one.
 
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+---
+ drivers/platform/x86/wmi-bmof.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
-> On 3 Dec 2024, at 11:46=E2=80=AFPM, Namhyung Kim <namhyung@kernel.org> =
-wrote:
->=20
-> Hello,
->=20
-> On Fri, Nov 08, 2024 at 10:50:10AM +0530, Athira Rajeev wrote:
->>=20
->>=20
->>> On 7 Nov 2024, at 7:26=E2=80=AFPM, Leo Yan <leo.yan@arm.com> wrote:
->>>=20
->>> Hi Athira,
->>>=20
->>> On Wed, Nov 06, 2024 at 03:04:57PM +0530, Athira Rajeev wrote:
->>>=20
->>> [...]
->>>=20
->>>>> Hi Athira,
->>>>>=20
->>>>> sorry for the breakage and thank you for the detailed explanation. =
-As
->>>>> the code will run on AMD I think your change will break that - . =
-It is
->>>>> probably safest to keep the ".. else { .." for this case but guard =
-it
->>>>> in the ifdef.
->>>>>=20
->>>>=20
->>>> Hi Ian
->>>>=20
->>>> Thanks for your comments. Does the below change looks good ?
->>>>=20
->>>> diff --git a/tools/perf/tests/expr.c b/tools/perf/tests/expr.c
->>>> index e3aa9d4fcf3a..f5b2d96bb59b 100644
->>>> --- a/tools/perf/tests/expr.c
->>>> +++ b/tools/perf/tests/expr.c
->>>> @@ -74,14 +74,12 @@ static int test__expr(struct test_suite *t =
-__maybe_unused, int subtest __maybe_u
->>>>   double val, num_cpus_online, num_cpus, num_cores, num_dies, =
-num_packages;
->>>>   int ret;
->>>>   struct expr_parse_ctx *ctx;
->>>> -    bool is_intel =3D false;
->>>>   char strcmp_cpuid_buf[256];
->>>>   struct perf_pmu *pmu =3D perf_pmus__find_core_pmu();
->>>>   char *cpuid =3D perf_pmu__getcpuid(pmu);
->>>>   char *escaped_cpuid1, *escaped_cpuid2;
->>>>=20
->>>>   TEST_ASSERT_VAL("get_cpuid", cpuid);
->>>> -    is_intel =3D strstr(cpuid, "Intel") !=3D NULL;
->>>>=20
->>>>   TEST_ASSERT_EQUAL("ids_union", test_ids_union(), 0);
->>>>=20
->>>> @@ -244,11 +242,13 @@ static int test__expr(struct test_suite *t =
-__maybe_unused, int subtest __maybe_u
->>>>   if (num_dies) // Some platforms do not have CPU die support, for =
-example s390
->>>>       TEST_ASSERT_VAL("#num_dies >=3D #num_packages", num_dies >=3D =
-num_packages);
->>>>=20
->>>> +#if defined(__i386__) && defined(__x86_64__)
->>>>   TEST_ASSERT_VAL("#system_tsc_freq", expr__parse(&val, ctx, =
-"#system_tsc_freq") =3D=3D 0);
->>>> -    if (is_intel)
->>>> +    if (strstr(cpuid, "Intel") !=3D NULL)
->>>>       TEST_ASSERT_VAL("#system_tsc_freq > 0", val > 0);
->>>>   else
->>>>       TEST_ASSERT_VAL("#system_tsc_freq =3D=3D 0", fpclassify(val) =
-=3D=3D FP_ZERO);
->>>> +#endif
->>>>=20
->>>>   /*
->>>>    * Source count returns the number of events aggregating in a =
-leader
->>>=20
->>> I confirmed the change above fixes the failure on Arm64.
->>>=20
->>> Tested-by: Leo Yan <leo.yan@arm.com>
->> Thanks Leo Yan for testing.
->>=20
->> Hi Ian,
->>=20
->> If the change above looks good, I will post a V2 . Please share your =
-review comments
->=20
-> Sorry for the delay, it looks good to me.  Can you please send the v2?
+diff --git a/drivers/platform/x86/wmi-bmof.c b/drivers/platform/x86/wmi-bmof.c
+index df6f0ae6e6c7904f97c125297a21166f56d0b1f0..e6c217d70086a2896dc70cf8ac1c27dafb501a95 100644
+--- a/drivers/platform/x86/wmi-bmof.c
++++ b/drivers/platform/x86/wmi-bmof.c
+@@ -25,15 +25,6 @@ struct bmof_priv {
+ 	struct bin_attribute bmof_bin_attr;
+ };
+ 
+-static ssize_t read_bmof(struct file *filp, struct kobject *kobj, struct bin_attribute *attr,
+-			 char *buf, loff_t off, size_t count)
+-{
+-	struct bmof_priv *priv = container_of(attr, struct bmof_priv, bmof_bin_attr);
+-
+-	return memory_read_from_buffer(buf, count, &off, priv->bmofdata->buffer.pointer,
+-				       priv->bmofdata->buffer.length);
+-}
+-
+ static int wmi_bmof_probe(struct wmi_device *wdev, const void *context)
+ {
+ 	struct bmof_priv *priv;
+@@ -60,7 +51,8 @@ static int wmi_bmof_probe(struct wmi_device *wdev, const void *context)
+ 	sysfs_bin_attr_init(&priv->bmof_bin_attr);
+ 	priv->bmof_bin_attr.attr.name = "bmof";
+ 	priv->bmof_bin_attr.attr.mode = 0400;
+-	priv->bmof_bin_attr.read = read_bmof;
++	priv->bmof_bin_attr.read_new = sysfs_bin_attr_simple_read;
++	priv->bmof_bin_attr.private = priv->bmofdata->buffer.pointer;
+ 	priv->bmof_bin_attr.size = priv->bmofdata->buffer.length;
+ 
+ 	ret = device_create_bin_file(&wdev->dev, &priv->bmof_bin_attr);
 
-Hi Namhyung
-
-Thanks for checking on this.
-I will test with the latest version sent by Ian and respond with the =
-results soon
-
-Thanks
-Athira Rajeev
->=20
-> Thanks,
-> Namhyung
-
+-- 
+2.47.1
 
 
