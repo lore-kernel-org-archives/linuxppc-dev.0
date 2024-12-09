@@ -1,79 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-3864-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3865-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BF5DE77173
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 08:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22BE2E77173
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 09:48:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6FCB6myjz2yVv;
-	Mon,  9 Dec 2024 19:19:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733732374;
-	cv=none; b=N16zwNnh8WlpDjGGxIAYn60QpVjm2cfyS6x2bTc2MTb7fN+q9qpgnY6wNtgE0bqpbvNGRQkyG5XToIfY0nfYxgtnc+/ekWBl4sg4ucroxAC7cBYdjxUn+EjVKwece8O3EdTYa9yxUAQ5PRQH7vuNFXfdHwyS8ln/8AsP0qfx8BrHu0nVoA49SS4YMfVQ+wIIo8XEkcyD/YQ/v4e10mB2fuDEgNbGAbvNi6ds90CJ6tsy0oftlvifZQwEzD95CXlXeRrhfyMpSw0487FgRcwMUJG4ljsgHYqP2djD6KdSLZNH9G/BE+rY55T5eCP9zhOUa7GoD64w+PRafeeFXu5R3w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6H9P0gBlz2xHl;
+	Mon,  9 Dec 2024 20:48:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733737689;
+	cv=none; b=X3fXfKk5Wv2AC69vTBMU2eRA8TN4qe4LNHWHkABF3+RENJhCU9i0AnffyRZprUjyDj0fV2n//2WiSonMAPsv4Bb8avmiyy8M3OHI1zQ36cqPjvYWs7uHAJFNgNYljPMsxe1VocEiLvzV7YSwsL12SFz+5d+qfQV6tW7SYNE9KpVNQD4e6H+9d3LcIj4zQi2Vh9f5wvvQEdWdZKkhCagX3z3oYpSs+2XB9r/dtDGIDAmGKeAj9ZfEO/HnaF+Fq9m+PTzyTkLWbumavvgr/LX4GN0ydmsDS8FCB571FN6Rwa32EuDiAGJ4zxwJjxvrQGkhca7i8nZ0ARXU8mqMtEa1Fg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733732374; c=relaxed/relaxed;
-	bh=Y9uud5ruM6O8JA3vLeQfAAwPVqwN8jw+GdGTqPpU5WM=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=RYjWZh6pIVrMyYJXlXVXyQEISKJMqcejpj0SDAGrT5dAhmQAZldeGSCvVsA3CV+w+qbCfHDUrhx2iEhmmDCD2+nndpGuf4SKu6+jpsR6HIfQKF/eke/Whlc7QmaXE2lrMObwRSUwowX4sgriDtHJvQyD36W03UlI+RMHU9x299rGu32dHnCPOH5Rkiq44j/aR38OF9IcftZOslK2MPHvP6OaJZp1cTifUh7tkxD0PmrehKKMayw2Lj0ZAky13PhOk7KJfH/14ppGOQys8GekFaajCPXvtK9IKW9F+AtwCsEUQfvXRVxxI8LK5UOeojnRRkgA3qjafTsfhh5wU47A0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M5sIhcDm; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=huschle@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M5sIhcDm;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=huschle@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y6FCB00Dfz2yVd
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 19:19:33 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B8NOkvp000529;
-	Mon, 9 Dec 2024 08:18:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Y9uud5
-	ruM6O8JA3vLeQfAAwPVqwN8jw+GdGTqPpU5WM=; b=M5sIhcDm/3G/epDf6wT9aq
-	tGk8dGfw4IOXZl02YhiMQtsX+oPNEjDZgf/pLL8lJMWJ2xylzERcKcY7tEK6SZ4+
-	GfrtygejRQB5aTRR2Eh0vdcy/BWp086JYTeJfIQjomAEzNv5Rqo9A0c4au+z/L6a
-	UTdv8PpSBVs2Pfb8OoojMyZG7wD6QjjjL6PnxYMyJy0ab1uDJaOcWuk8YJ1IvQaC
-	QOe15gA8hXTgITfV/GeMWJsOx5rqJ1kw7XuAg6b6/wOGt1JmEwgFB/6LQQ0l5+ko
-	OevbkDt0+1qOcyQtoQoZUtJPN4YK9Fet92OHpRy/K9PfOAWOsYmNpIs6BxA0s1Rg
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43cdv8g5nd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 09 Dec 2024 08:18:51 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4B98IpFs016096;
-	Mon, 9 Dec 2024 08:18:51 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43cdv8g5na-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 09 Dec 2024 08:18:51 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4B957Cju032734;
-	Mon, 9 Dec 2024 08:18:50 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 43d0ps5wgw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 09 Dec 2024 08:18:50 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4B98Imqk65733056
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 9 Dec 2024 08:18:48 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9C9D62004D;
-	Mon,  9 Dec 2024 08:18:48 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ED04720043;
-	Mon,  9 Dec 2024 08:18:47 +0000 (GMT)
-Received: from [9.171.77.252] (unknown [9.171.77.252])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon,  9 Dec 2024 08:18:47 +0000 (GMT)
-Message-ID: <5e3c0502-1a28-483c-a831-6d1f814501da@linux.ibm.com>
-Date: Mon, 9 Dec 2024 09:18:51 +0100
+	t=1733737689; c=relaxed/relaxed;
+	bh=He/giAmEHqNfp9S7J2TVvzS3qQ0ix2iFGgVJ7ep2j4w=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Ba2e1/Me9k2p8y5jcLY+ujhiL/jIHoYiLV516WWuCRIQfGUxoAPIBVNLY5DBV8lgSIN26c28Y1QfraL7sV3L47LYDKQLVeCU0D5HfXvIKGnpHyr2VYkWMJvbnyVGNh03kMN0QU6RAD9Cd+6uAAeYjjpPPcyV5tNhznLAb7eJbu/KlhQ4Mg0nBdMXL6ZRZQMKcyKXTOwCVzscigPMZSxjSE01hmUJjylWvC6Beis+xhNr9JNn0VEEM2T1ZsVi6HZxuvJiNntqX8VcdDA4fImy8Nz4K/RcMggC3vq3mZOViRqzOWwGRH0BpMq/ftJJmhB+JIIDk49/z9KtOzsPMS8rAw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=yury.khrustalev@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=yury.khrustalev@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6H9L5WPnz2xHF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 20:48:04 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 15355113E;
+	Mon,  9 Dec 2024 01:47:59 -0800 (PST)
+Received: from udebian.localdomain (unknown [10.1.35.36])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 91E573F720;
+	Mon,  9 Dec 2024 01:47:28 -0800 (PST)
+From: Yury Khrustalev <yury.khrustalev@arm.com>
+To: linux-arch@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+	Kevin Brodsky <kevin.brodsky@arm.com>,
+	Joey Gouly <joey.gouly@arm.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Sandipan Das <sandipan@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	x86@kernel.org,
+	linux-mm@kvack.org,
+	linux-kselftest@vger.kernel.org,
+	nd@arm.com,
+	Yury Khrustalev <yury.khrustalev@arm.com>
+Subject: [RESEND v4 0/3] mm/pkey: Add PKEY_UNRESTRICTED macro
+Date: Mon,  9 Dec 2024 09:47:16 +0000
+Message-Id: <20241209094719.2431126-1-yury.khrustalev@arm.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,106 +60,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Tobias Huschle <huschle@linux.ibm.com>
-Subject: Re: [RFC PATCH 2/2] s390/topology: Add initial implementation for
- selection of parked CPUs
-To: Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-        vschneid@redhat.com, linux-s390@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-References: <20241204112149.25872-1-huschle@linux.ibm.com>
- <20241204112149.25872-3-huschle@linux.ibm.com>
- <1f7ad21c-372f-4d7d-b3dc-9a2fb194b704@linux.ibm.com>
-In-Reply-To: <1f7ad21c-372f-4d7d-b3dc-9a2fb194b704@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: G6Dqr1a2rHeB_Qv23cJ9bs_o2oSpnxIl
-X-Proofpoint-ORIG-GUID: aL5EcZ04MHp423ywKXRbgg7LWNalNb6c
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- impostorscore=0 lowpriorityscore=0 spamscore=0 clxscore=1015 mlxscore=0
- malwarescore=0 adultscore=0 phishscore=0 suspectscore=0 mlxlogscore=999
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2411120000 definitions=main-2412090061
 
+Add PKEY_UNRESTRICTED macro to mman.h and use it in selftests.
 
+For context, this change will also allow for more consistent update of the
+Glibc manual which in turn will help with introducing memory protection
+keys on AArch64 targets.
 
-On 05/12/2024 19:12, Shrikanth Hegde wrote:
-> 
-> 
-> On 12/4/24 16:51, Tobias Huschle wrote:
->> In this simplified example, vertical low CPUs are parked generally.
->> This will later be adjusted by making the parked state dependent
->> on the overall utilization on the underlying hypervisor.
->>
->> Vertical lows are always bound to the highest CPU IDs. This implies that
->> the three types of vertically polarized CPUs are always clustered by ID.
->> This has the following implications:
->> - There can be scheduler domains consisting of only vertical highs
->> - There can be scheduler domains consisting of only vertical lows
->>
-> 
-> A sched domain can have combination of these two as well. Is that not 
-> possible on s390?
+Applies to fac04efc5c79 (tag: v6.13-rc2).
 
-A combination is possible. It depends on the algorithm of the hypervisor 
-how many of those mixed groups might be possible.
+Note that I couldn't build ppc tests so I would appreciate if someone
+could check the 3rd patch. Thank you!
 
-> 
->> Signed-off-by: Tobias Huschle <huschle@linux.ibm.com>
->> ---
->>   arch/s390/include/asm/topology.h | 3 +++
->>   arch/s390/kernel/topology.c      | 5 +++++
->>   2 files changed, 8 insertions(+)
->>
->> diff --git a/arch/s390/include/asm/topology.h b/arch/s390/include/asm/ 
->> topology.h
->> index cef06bffad80..e86afeccde35 100644
->> --- a/arch/s390/include/asm/topology.h
->> +++ b/arch/s390/include/asm/topology.h
->> @@ -99,6 +99,9 @@ static inline int numa_node_id(void)
->>   #endif /* CONFIG_NUMA */
->> +#define arch_cpu_parked cpu_parked
->> +int cpu_parked(int cpu);
->> +
->>   #include <asm-generic/topology.h>
->>   #endif /* _ASM_S390_TOPOLOGY_H */
->> diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
->> index 4f9c301a705b..1032b65da574 100644
->> --- a/arch/s390/kernel/topology.c
->> +++ b/arch/s390/kernel/topology.c
->> @@ -299,6 +299,11 @@ void store_topology(struct sysinfo_15_1_x *info)
->>       stsi(info, 15, 1, topology_mnest_limit());
->>   }
->> +int cpu_parked(int cpu)
->> +{
->> +    return smp_cpu_get_polarization(cpu) == POLARIZATION_VL;
->> +}
-> 
-> Curious to know how this smp_cpu_get_polarization gets updated at 
-> runtime? is it done by add_cpus_to_mask?
+Signed-off-by: Yury Khrustalev <yury.khrustalev@arm.com>
 
-The polarization itself can get updated by the underlying hypervisor, 
-which passes that information on to the Linux kernel.
+---
+Changes in v4:
+ - Removed change to tools/include/uapi/asm-generic/mman-common.h as it is not
+   necessary.
 
-A future implementation will not rely on the polarization as the main 
-criterion but take more data points into account to allow a correct 
-adaption to the load of the system.
+Link to v3: https://lore.kernel.org/all/20241028090715.509527-1-yury.khrustalev@arm.com/
 
-Only using polarization would deny us the opportunity to overconsume on 
-our entitlement if the machine has enough spare capacity. This patch 
-just wants to be a tiny example on how this could be used.
+Changes in v3:
+ - Replaced previously missed 0-s tools/testing/selftests/mm/mseal_test.c
+ - Replaced previously missed 0-s in tools/testing/selftests/mm/mseal_test.c
 
-> 
->> +
->>   static void __arch_update_dedicated_flag(void *arg)
->>   {
->>       if (topology_cpu_dedicated(smp_processor_id()))
+Link to v2: https://lore.kernel.org/linux-arch/20241027170006.464252-2-yury.khrustalev@arm.com/
+
+Changes in v2:
+ - Update tools/include/uapi/asm-generic/mman-common.h as well
+ - Add usages of the new macro to selftests.
+
+Link to v1: https://lore.kernel.org/linux-arch/20241022120128.359652-1-yury.khrustalev@arm.com/
+
+---
+
+Yury Khrustalev (3):
+  mm/pkey: Add PKEY_UNRESTRICTED macro
+  selftests/mm: Use PKEY_UNRESTRICTED macro
+  selftests/powerpc: Use PKEY_UNRESTRICTED macro
+
+ include/uapi/asm-generic/mman-common.h               | 1 +
+ tools/testing/selftests/mm/mseal_test.c              | 6 +++---
+ tools/testing/selftests/mm/pkey-helpers.h            | 3 ++-
+ tools/testing/selftests/mm/pkey_sighandler_tests.c   | 4 ++--
+ tools/testing/selftests/mm/protection_keys.c         | 2 +-
+ tools/testing/selftests/powerpc/include/pkeys.h      | 2 +-
+ tools/testing/selftests/powerpc/mm/pkey_exec_prot.c  | 2 +-
+ tools/testing/selftests/powerpc/mm/pkey_siginfo.c    | 2 +-
+ tools/testing/selftests/powerpc/ptrace/core-pkey.c   | 6 +++---
+ tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c | 6 +++---
+ 10 files changed, 18 insertions(+), 16 deletions(-)
+
+-- 
+2.39.5
 
 
