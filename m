@@ -1,40 +1,40 @@
-Return-Path: <linuxppc-dev+bounces-3855-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3856-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 710DEE77173
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 03:02:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D661BE77173
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 03:02:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y669P70WDz2yRP;
-	Mon,  9 Dec 2024 14:02:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.189
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733713353;
-	cv=none; b=StQOHuDfh17Ce+n716ZMfOGpY0uPcI6e2o8Patsbs/TxVS6dYmDbRe7h/cL57xepvfhHaQ3Vq+GXPKFLxXB/vQH5AXPkjQ8FCOlXADxga+OHIgQCtVi+en43wA7XYriS4Dlbxzp4ymrILUwYGuWalJEjtukEh1rsW9UDZaI2G+/z9MTzZfHSx993abkn5ROP0mvT7NNxpMrLTJaFPm4n//ZemhxlcKqXNh2rfd7WHELXOYqyHcSX1osr8qrXnJyK89fwGm6sq+394m0Fl2aFIdibgq3MpNVPUWDCuygpsnRlUkvgGiFajsZOnfH7IeD1s6S3UXiO5wpm0MmhlhtGQQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y669X3HG7z2yVX;
+	Mon,  9 Dec 2024 14:02:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.35
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733713360;
+	cv=none; b=CfAyH2dJlSUtDoWZaRINVymRUvYoJk4s/batoYctPeVxs2chPjAzywvNMISoye89543oSJgSnfyspN+JKNwSQ5oHkqVM495VxTytInLYr/+k4W0RdVQ5lDbuWCGJSQhFFP4byeaRV2BloF4xQLzhO+s5Cstb8q+YpXSeZ3m2Y68HsHyCJJIJ+A09HEmAYZU0gd7P35A5MiSAYe6xfGfpRJPV/2DO3i0HcOFZAcGvrL0dl56EJev7Ba9APkh+5JkW59yicJcF8hyXsjydb4lfVXDpS/PVqnOFp7LRdPenNcqepX/8BZF8SGpUnWLtOK6C2hFkszlx2snqoKyNb8oVsQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733713353; c=relaxed/relaxed;
-	bh=LlnRR/ekzvfKFU0JIU5g10P2k1CrW7ToDOkJBkyI4mw=;
+	t=1733713360; c=relaxed/relaxed;
+	bh=Dl98tFGY+rPyC8FqJPKFVEBdvlsf0WDTKEQ63I8mg4k=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Fa2ktGAhVa5un00y9gb8F3Z5ZNm007AaAhbje58jj4mtMMvcfos0ORfl3BYR+HovqisyBooVrOlYT7HgWwfaxILcObsoQw5GzfCM8tYf/8EQlop7R7d9h3WcNrWXnnvCLvk/SxqDyAiNlUbXBeuIzk2ZnLYWGCPcXVIxmkCR74Dyw1Rwka6622bywUXXlQ92sXlkxVTg+sg/Tbt86b44bMLH9CsCMAnG4elrsqa7kghtBgubuh9zpBTkCvtmcqFdeP3egm3AOJU7I0NuWDYOC2cnqBAdLXPNZIZ4eAZybPUv8HzaBV7yO59VYe4A+ij0LrVYK6UZhEIDhyNW7HNH1A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=hvggKKxXaOtczismDlQnOYPZJBbZ1nTm+BD25e+fgQGdy4Vdm8Qh4hUbzTsf+akJ/Db7iVFS3jzTWNXoWYUQrZ+EkcGW734al3S8dOTxjD3tz3CrdUYun0Qdb4EbuynKdblfSSDj04xaVqa/SqyhY6/Dg2FrK4eOzMh5amTlHI/NMsv73I6ealU7gIRt/d3/prPDUObCPSTaQUZ0oSeR5VG18V5QJgb6KAvnp7YjSjQwIfFOGU3c6JTUnTj0euAznEcs5VtmqGOqHcF5km0O5swe6vHqbfkARjlnauL0JbXMzLNY7uzpR+4wa0dZXkPI8/pyUheb2mGDao8f2uALPw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.35; helo=szxga07-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.35; helo=szxga07-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga07-in.huawei.com (szxga07-in.huawei.com [45.249.212.35])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y669M4LBCz2xGF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 14:02:31 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.162.254])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4Y65jL32dzzRj4G;
-	Mon,  9 Dec 2024 10:41:42 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y669W0HFyz2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 14:02:38 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.88.234])
+	by szxga07-in.huawei.com (SkyGuard) with ESMTP id 4Y65hT6ZTFz1T6l2;
+	Mon,  9 Dec 2024 10:40:57 +0800 (CST)
 Received: from kwepemk500005.china.huawei.com (unknown [7.202.194.90])
-	by mail.maildlp.com (Postfix) with ESMTPS id F0128180102;
-	Mon,  9 Dec 2024 10:43:24 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 483AF14010C;
+	Mon,  9 Dec 2024 10:43:21 +0800 (CST)
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemk500005.china.huawei.com (7.202.194.90) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Mon, 9 Dec 2024 10:43:22 +0800
+ 15.2.1544.11; Mon, 9 Dec 2024 10:43:19 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, Jonathan Cameron
 	<Jonathan.Cameron@Huawei.com>, Mauro Carvalho Chehab
@@ -55,9 +55,9 @@ CC: <linux-arm-kernel@lists.infradead.org>, <linux-mm@kvack.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
 	<kasan-dev@googlegroups.com>, Tong Tiangen <tongtiangen@huawei.com>,
 	<wangkefeng.wang@huawei.com>, Guohanjun <guohanjun@huawei.com>
-Subject: [PATCH v13 3/5] mm/hwpoison: return -EFAULT when copy fail in copy_mc_[user]_highpage()
-Date: Mon, 9 Dec 2024 10:42:55 +0800
-Message-ID: <20241209024257.3618492-4-tongtiangen@huawei.com>
+Subject: [PATCH v13 1/5] uaccess: add generic fallback version of copy_mc_to_user()
+Date: Mon, 9 Dec 2024 10:42:53 +0800
+Message-ID: <20241209024257.3618492-2-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20241209024257.3618492-1-tongtiangen@huawei.com>
 References: <20241209024257.3618492-1-tongtiangen@huawei.com>
@@ -79,83 +79,63 @@ X-Originating-IP: [10.175.112.125]
 X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
  kwepemk500005.china.huawei.com (7.202.194.90)
 
-Currently, copy_mc_[user]_highpage() returns zero on success, or in case
-of failures, the number of bytes that weren't copied.
-
-While tracking the number of not copied works fine for x86 and PPC, There
-are some difficulties in doing the same thing on ARM64 because there is no
-available caller-saved register in copy_page()(lib/copy_page.S) to save
-"bytes not copied", and the following copy_mc_page() will also encounter
-the same problem.
-
-Consider the caller of copy_mc_[user]_highpage() cannot do any processing
-on the remaining data(The page has hardware errors), they only check if
-copy was succeeded or not, make the interface more generic by using an
-error code when copy fails (-EFAULT) or return zero on success.
+x86/powerpc has it's implementation of copy_mc_to_user(), we add generic
+fallback in include/linux/uaccess.h prepare for other architechures to
+enable CONFIG_ARCH_HAS_COPY_MC.
 
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 Reviewed-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- include/linux/highmem.h | 8 ++++----
- mm/khugepaged.c         | 4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/uaccess.h | 1 +
+ arch/x86/include/asm/uaccess.h     | 1 +
+ include/linux/uaccess.h            | 8 ++++++++
+ 3 files changed, 10 insertions(+)
 
-diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index 6e452bd8e7e3..0eb4b9b06837 100644
---- a/include/linux/highmem.h
-+++ b/include/linux/highmem.h
-@@ -329,8 +329,8 @@ static inline void copy_highpage(struct page *to, struct page *from)
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 4f5a46a77fa2..44476d66ed13 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -403,6 +403,7 @@ copy_mc_to_user(void __user *to, const void *from, unsigned long n)
+ 
+ 	return n;
+ }
++#define copy_mc_to_user copy_mc_to_user
+ #endif
+ 
+ extern long __copy_from_user_flushcache(void *dst, const void __user *src,
+diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+index 3a7755c1a441..3db67f44063b 100644
+--- a/arch/x86/include/asm/uaccess.h
++++ b/arch/x86/include/asm/uaccess.h
+@@ -497,6 +497,7 @@ copy_mc_to_kernel(void *to, const void *from, unsigned len);
+ 
+ unsigned long __must_check
+ copy_mc_to_user(void __user *to, const void *from, unsigned len);
++#define copy_mc_to_user copy_mc_to_user
+ #endif
+ 
  /*
-  * If architecture supports machine check exception handling, define the
-  * #MC versions of copy_user_highpage and copy_highpage. They copy a memory
-- * page with #MC in source page (@from) handled, and return the number
-- * of bytes not copied if there was a #MC, otherwise 0 for success.
-+ * page with #MC in source page (@from) handled, and return -EFAULT if there
-+ * was a #MC, otherwise 0 for success.
-  */
- static inline int copy_mc_user_highpage(struct page *to, struct page *from,
- 					unsigned long vaddr, struct vm_area_struct *vma)
-@@ -349,7 +349,7 @@ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
- 	if (ret)
- 		memory_failure_queue(page_to_pfn(from), 0);
- 
--	return ret;
-+	return ret ? -EFAULT : 0;
+diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+index e9c702c1908d..9d8c9f8082ff 100644
+--- a/include/linux/uaccess.h
++++ b/include/linux/uaccess.h
+@@ -239,6 +239,14 @@ copy_mc_to_kernel(void *dst, const void *src, size_t cnt)
  }
+ #endif
  
- static inline int copy_mc_highpage(struct page *to, struct page *from)
-@@ -368,7 +368,7 @@ static inline int copy_mc_highpage(struct page *to, struct page *from)
- 	if (ret)
- 		memory_failure_queue(page_to_pfn(from), 0);
- 
--	return ret;
-+	return ret ? -EFAULT : 0;
- }
- #else
- static inline int copy_mc_user_highpage(struct page *to, struct page *from,
-diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-index 6f8d46d107b4..c3cdc0155dcd 100644
---- a/mm/khugepaged.c
-+++ b/mm/khugepaged.c
-@@ -820,7 +820,7 @@ static int __collapse_huge_page_copy(pte_t *pte, struct folio *folio,
- 			continue;
- 		}
- 		src_page = pte_page(pteval);
--		if (copy_mc_user_highpage(page, src_page, src_addr, vma) > 0) {
-+		if (copy_mc_user_highpage(page, src_page, src_addr, vma)) {
- 			result = SCAN_COPY_MC;
- 			break;
- 		}
-@@ -2081,7 +2081,7 @@ static int collapse_file(struct mm_struct *mm, unsigned long addr,
- 		}
- 
- 		for (i = 0; i < nr_pages; i++) {
--			if (copy_mc_highpage(dst, folio_page(folio, i)) > 0) {
-+			if (copy_mc_highpage(dst, folio_page(folio, i))) {
- 				result = SCAN_COPY_MC;
- 				goto rollback;
- 			}
++#ifndef copy_mc_to_user
++static inline unsigned long __must_check
++copy_mc_to_user(void *dst, const void *src, size_t cnt)
++{
++	return copy_to_user(dst, src, cnt);
++}
++#endif
++
+ static __always_inline void pagefault_disabled_inc(void)
+ {
+ 	current->pagefault_disabled++;
 -- 
 2.25.1
 
