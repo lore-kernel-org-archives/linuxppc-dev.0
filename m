@@ -1,53 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-3870-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3871-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72DB6E77180
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 12:45:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6B3BE77180
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 15:14:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6M5v3xnWz2yFD;
-	Mon,  9 Dec 2024 23:45:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733748323;
-	cv=none; b=fNdaD7e+A5Cc2dN+HhHy1hrjoEurvXeGvVPeJPBrQhm51djfqxEdgBgf9j8Tbuuei4B5CgGbiN0UMs5vKXNj2HJb1fDvGbF6TOdTqe8mi877/OJwqe8wWqWsk3I67Y2lK4/4zfaIk+WXMJNP1r1HOWKQ3Wy+rwOUi5xDEUAoRSaaMNeikd46Mb1CL/z4dSIczyDrUEE5yYbB/x9qXkTqDLG0k6SBp+d/+CuYKv6h5nbziJCEFWzhg5AlC/VO7qjc9vyPpXO7X19ydMYRc9+A8640obyu0F8lAtkP9pUnm8WNKFd9K5j71Ja4UeO3brBb+Hbk/Owk65y5k3i7LfWNWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6QQC1Wr9z2yVd;
+	Tue, 10 Dec 2024 02:14:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733757283;
+	cv=none; b=GrsJbXhZCnfy5De+dJ765wcEF3YgB7+QuA87qhcoP4B2i+znUAIrjXAMT54L+mvSCIpXmyQxD8hiKbq9TqF7ZOsdgOoDJblTSqIMjEOfFwHGZHi5ibnOM5EsE+s+tq8AWEeYC5Plx2+xSbWBoYUNrt0XBf5nxdJ/8D4hiCAelnAmXcEKJzKo59KSFTZjUyBfOE9SF6FRy4EU4epMWx9x4FXHhWXFlphRvZ2U3DqvWfrGfXqXn2U0l2CIYDYICv/ggb8XMhuZyoRbhyrvo1uWY54w1bmvZwOaA0/9pnfeWbsn8qoj2hdBgjVJRyewaBinqxmlJ0sBvbgAm5/kqP8UJQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733748323; c=relaxed/relaxed;
-	bh=ZJ7nOY4JZQnL45adJO0lC+Z9TbwWMhwmJf7E4yaDNec=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JhpklayYk1V9ZDxgWN3jQyWQ/pzNqB1aPh2j26sTufmlKINr8cpg4G0Erdw8555Q+68A1bX2naq4muobHTAee3iWO/zBzXA0cIfz/vUoE/Y/MpMUPkEZcXHlsBvzZmb2UPH9jLL93tXfaVwjOO5UhLuaS8Pjgm5FA3cZdM/mmiaDMBz1vZzttTOh2c8tmevGncXDqMHxXQ4yYcZkGmDsu6NjyaJ9vfYfBwhWAcj2qM4jx5mW4lEG8M/Ta/ASS/oe7ajxGPUjwP2hN6Yx2aVlSfAo97gNIcPPCSVZ96cKA6qib4//LLc7qXfyhIdFl/JvP++Qtjrwg+0DFk6zlXVySw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1733757283; c=relaxed/relaxed;
+	bh=LmIRy0hQyWfVQsj22M6r9H2LJI7thfpO4bx0jVaDuTA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dbyPFLKBzDiYkBdfmLZns/yfm6MnF2XJxhw5E/1wDg6G821h8331qLCpn9lvST4r95ChdzH1CBkS4lo1c7bzmpmFRR+Bnpj8+eX8g96lOhZLB/3/k8368vo+l0l6Mn7Vns6KtTkCohlp95Lhq/j+mo3tpPu31erUcmJAGrG6PBM9MidUxThS8fh6mnRdoNSQ1im1MTLSbVJV0sUuOHg6ubDWEkbR1D+30U+GtC1JS8lRNtPx6C0IxRlTGcNO4isgBHgHKv+MIinx7kv6FI1F2ntEGAmQ7/IodTtlljYbXr+488sjmyNpJRcOU7hKRYzHl2d9vAZhJp4oxzrfB5jJHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C99Js8t5; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C99Js8t5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y6M5t20dCz2xWt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 23:45:21 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Y6M5p179vz9tBf;
-	Mon,  9 Dec 2024 13:45:18 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ad8aC7rBW98b; Mon,  9 Dec 2024 13:45:18 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Y6M5p0DxHz9tBd;
-	Mon,  9 Dec 2024 13:45:18 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E8A068B766;
-	Mon,  9 Dec 2024 13:45:17 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id OUa8UHFVNS_8; Mon,  9 Dec 2024 13:45:17 +0100 (CET)
-Received: from [10.25.209.139] (unknown [10.25.209.139])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A70C18B763;
-	Mon,  9 Dec 2024 13:45:17 +0100 (CET)
-Message-ID: <95a461ca-3ed6-4380-ad1a-da12e1109675@csgroup.eu>
-Date: Mon, 9 Dec 2024 13:45:17 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y6QQ96bkcz2xjv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2024 02:14:41 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B99tMFo012694;
+	Mon, 9 Dec 2024 15:14:28 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=LmIRy0hQyWfVQsj22M6r9H2LJI7thfpO4bx0jVaDu
+	TA=; b=C99Js8t5ly1KfohB6u0/aTVf6G4e67ItnWttkqvwKwDhjYGS5oGHwwrCq
+	KvoUHVMRprxRQ/HbovHlT7SvnUsnpC3q2r2LjeiOANP8MNJX93nXgIS776SW1KL+
+	nc6+8qlSm5/ZnAHFJHdj4hD2RkWShx27UaEaCa2bLoi718bODgx4+ahnw6vfcdQR
+	cyCO+6YTUEK03vbUyJTOFz2hUDeKRIzb170lwWs4wKUsfWk3oDb4tStA765r9mny
+	izD3lgEdAwaZQAj6Wn3b519bTOYbeysFE/3UkO744hJEQZ4JE4oL8bO+zSPOBhGG
+	JrFVvU0CacjBPv3iDjtC5P/94ThUg==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43ce1vj19p-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 09 Dec 2024 15:14:27 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4B9F4wsw029873;
+	Mon, 9 Dec 2024 15:14:27 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43ce1vj19j-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 09 Dec 2024 15:14:27 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4B9DUd6L032739;
+	Mon, 9 Dec 2024 15:14:26 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 43d0ps7def-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 09 Dec 2024 15:14:26 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4B9FEORE48431580
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 9 Dec 2024 15:14:24 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BA4532004E;
+	Mon,  9 Dec 2024 15:14:24 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9B54220043;
+	Mon,  9 Dec 2024 15:14:22 +0000 (GMT)
+Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.38.185])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  9 Dec 2024 15:14:22 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+        naveen@kernel.org, shuah@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: [PATCH 1/3] selftest/powerpc/ptrace/core-pkey: Remove duplicate macros
+Date: Mon,  9 Dec 2024 20:44:16 +0530
+Message-ID: <20241209151418.348085-1-maddy@linux.ibm.com>
+X-Mailer: git-send-email 2.47.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,75 +91,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 00/21] Converge on using secs_to_jiffies()
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Easwar Hariharan <eahariha@linux.microsoft.com>
-Cc: netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, cocci@inria.fr,
- linux-arm-kernel@lists.infradead.org, linux-s390@vger.kernel.org,
- dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org,
- linux-scsi@vger.kernel.org, xen-devel@lists.xenproject.org,
- linux-block@vger.kernel.org, linux-wireless@vger.kernel.org,
- ath11k@lists.infradead.org, linux-mm@kvack.org,
- linux-bluetooth@vger.kernel.org, linux-staging@lists.linux.dev,
- linux-rpi-kernel@lists.infradead.org, ceph-devel@vger.kernel.org,
- live-patching@vger.kernel.org, linux-sound@vger.kernel.org,
- etnaviv@lists.freedesktop.org, oss-drivers@corigine.com,
- linuxppc-dev@lists.ozlabs.org, Anna-Maria Behnsen <anna-maria@linutronix.de>
-References: <20241115-converge-secs-to-jiffies-v2-0-911fb7595e79@linux.microsoft.com>
- <b9fcb12a-b7a4-4c33-836e-67109ce07deb@intel.com>
- <dab77729-682f-4182-9fb2-cd522ac29b5f@linux.microsoft.com>
- <72c8eb66-eb67-4f8b-b0c0-13f1aa001698@intel.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <72c8eb66-eb67-4f8b-b0c0-13f1aa001698@intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: ZI2SEWgTG1VJinRbLkvfTq-3MbHG4YEl
+X-Proofpoint-ORIG-GUID: m5Cn0xHP-2LDINIu4JG_4tN8upeXt_5g
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ priorityscore=1501 clxscore=1011 phishscore=0 bulkscore=0 mlxlogscore=969
+ impostorscore=0 spamscore=0 malwarescore=0 suspectscore=0 adultscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2411120000 definitions=main-2412090117
 
+core-pkey.c test has couple of macros defined which
+are part of "pkeys.h" header file. Remove those
+duplicates and include "pkeys.h"
 
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+---
+ .../selftests/powerpc/ptrace/core-pkey.c      | 19 +------------------
+ 1 file changed, 1 insertion(+), 18 deletions(-)
 
-Le 09/12/2024 à 13:01, Przemek Kitszel a écrit :
-> On 12/6/24 9:58 PM, Easwar Hariharan wrote:
->> On 11/29/2024 4:57 AM, Przemek Kitszel wrote:
->>>
->>> [removed most non-list recipients, it's just too much]
->>>
->>> On 11/15/24 10:26 PM, Easwar Hariharan wrote:
->> <snip>
-> 
->>>
->>> Regarding code - you could also convert msecs_to_jiffies(const * HZ),
->>> there are 10 that are greppable.
->>>
->>
->> Those seem to be mistakes. const*HZ is a seconds-denominated timeout,
->> being passed to msecs_to_jiffies() which will treat it as a
->> millisecond-denominated timeout resulting in an excessively long
->> timeout. I suppose that's better than a too-short timeout, and
->> apparently it's been working fine all along since hardware responds
->> before the too-long timeout expires. Half of them are in
->> drivers/scsi/arcmsr/arcmsr_hba.c and the pattern has apparently been
->> there since 2010.
-> 
-> my point was that, the default value of HZ is 1000, and most of the code
-> that is just `$value*HZ` was meant as "$value seconds, in ms unit".
+diff --git a/tools/testing/selftests/powerpc/ptrace/core-pkey.c b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+index f6da4cb30cd6..31c9bf6d95db 100644
+--- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
++++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+@@ -16,14 +16,7 @@
+ #include <unistd.h>
+ #include "ptrace.h"
+ #include "child.h"
+-
+-#ifndef __NR_pkey_alloc
+-#define __NR_pkey_alloc		384
+-#endif
+-
+-#ifndef __NR_pkey_free
+-#define __NR_pkey_free		385
+-#endif
++#include "pkeys.h"
+ 
+ #ifndef NT_PPC_PKEY
+ #define NT_PPC_PKEY		0x110
+@@ -61,16 +54,6 @@ struct shared_info {
+ 	time_t core_time;
+ };
+ 
+-static int sys_pkey_alloc(unsigned long flags, unsigned long init_access_rights)
+-{
+-	return syscall(__NR_pkey_alloc, flags, init_access_rights);
+-}
+-
+-static int sys_pkey_free(int pkey)
+-{
+-	return syscall(__NR_pkey_free, pkey);
+-}
+-
+ static int increase_core_file_limit(void)
+ {
+ 	struct rlimit rlim;
+-- 
+2.47.0
 
-I can't follow you here. The default value of HZ is 250 as far as I can see.
-
-Regardless, HZ is the number of jiffies per second, nothing else.
-
-> 
-> Same for HZ/const, HZ/2 being 500ms.
-> 
-> HZ is awful in that it is not 1s but 1/s, but it was easy to abuse the
-> value in simple context.
-
-Why is that awful ?
-
-HZ is a nice macro that gives you the number of ticks per second, so 
-that you are able to easily calculate the number of ticks for a given 
-duration, regardless of the configured number of ticks per second.
-
-Christophe
 
