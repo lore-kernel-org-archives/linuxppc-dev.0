@@ -1,40 +1,40 @@
-Return-Path: <linuxppc-dev+bounces-3854-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3855-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2908BE77173
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 03:00:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 710DEE77173
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 03:02:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y666t5LH9z2yNn;
-	Mon,  9 Dec 2024 14:00:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.191
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733713222;
-	cv=none; b=H/M5b0QgUL9di4mMlqEckMooxSnDR/VSA65WhghVqLASc2AdU5xV/nwKsXXIYAXDbpBDayVrpMPluuDULJvSgUo2Kp+P6CtHLxg2QnZT6wacPWPmigNpa+n34jS/MN2A9ESs/6TzdfaiOPGOlh4f9zeD4Iw7acooBIfILEl+5VgzOrgj5X7b2BBQhuJtRjiLVnaSCLaJYqUIF2cGpAp7Y+zWXOyw0Z0pbzTevx9PTKM9CTfVZzRL7ZARiT1YilmW4fDfvrOXOH+zjQfZKIiqFiSrKgwJ8avThkbSeNl6S3PakD21DRrYH9x/lDdDOFsycThy47970br/m6HEIa7xeg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y669P70WDz2yRP;
+	Mon,  9 Dec 2024 14:02:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.189
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733713353;
+	cv=none; b=StQOHuDfh17Ce+n716ZMfOGpY0uPcI6e2o8Patsbs/TxVS6dYmDbRe7h/cL57xepvfhHaQ3Vq+GXPKFLxXB/vQH5AXPkjQ8FCOlXADxga+OHIgQCtVi+en43wA7XYriS4Dlbxzp4ymrILUwYGuWalJEjtukEh1rsW9UDZaI2G+/z9MTzZfHSx993abkn5ROP0mvT7NNxpMrLTJaFPm4n//ZemhxlcKqXNh2rfd7WHELXOYqyHcSX1osr8qrXnJyK89fwGm6sq+394m0Fl2aFIdibgq3MpNVPUWDCuygpsnRlUkvgGiFajsZOnfH7IeD1s6S3UXiO5wpm0MmhlhtGQQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733713222; c=relaxed/relaxed;
-	bh=3LXOxUklyNgf5lug7zsMwusW92Er0cLCd2wPgXWZ91s=;
+	t=1733713353; c=relaxed/relaxed;
+	bh=LlnRR/ekzvfKFU0JIU5g10P2k1CrW7ToDOkJBkyI4mw=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=SWYFgjyTbMH1aFiTTDrs+DwO7QckYnRMsLsq8VV3tBtR/SZg/4TmRTVddCUzv+fBwZiuQo6yDX2o2A2xJIIh39WYQ7T68OZBsd3koSH3g8Px+LmeGGp2+9aEkFNyfmbHAIdVMuaqxGT+ulpRFp9ZBnmRZOv1sJIKJspy2MsI4Cg28TakTk2kKWXQlSJ9Q6wt/Mp7InFHtFEneI6fIxQEFnoxQt5mQq3j3WqkqSiMX8o09nD+fxVVaZ3OEAhb2CgXDktWq5c1oMu39ihDH3JEECEDbxU3B+5iuzPE6h0318VUeC0FMDrvCYxlGsmgM4/L7JuzJY5E48U3U54fCXUIMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=Fa2ktGAhVa5un00y9gb8F3Z5ZNm007AaAhbje58jj4mtMMvcfos0ORfl3BYR+HovqisyBooVrOlYT7HgWwfaxILcObsoQw5GzfCM8tYf/8EQlop7R7d9h3WcNrWXnnvCLvk/SxqDyAiNlUbXBeuIzk2ZnLYWGCPcXVIxmkCR74Dyw1Rwka6622bywUXXlQ92sXlkxVTg+sg/Tbt86b44bMLH9CsCMAnG4elrsqa7kghtBgubuh9zpBTkCvtmcqFdeP3egm3AOJU7I0NuWDYOC2cnqBAdLXPNZIZ4eAZybPUv8HzaBV7yO59VYe4A+ij0LrVYK6UZhEIDhyNW7HNH1A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y666r6P0Lz2xGF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 14:00:20 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.88.234])
-	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4Y65hf0h34z1kvfy;
-	Mon,  9 Dec 2024 10:41:06 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y669M4LBCz2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 14:02:31 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.162.254])
+	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4Y65jL32dzzRj4G;
+	Mon,  9 Dec 2024 10:41:42 +0800 (CST)
 Received: from kwepemk500005.china.huawei.com (unknown [7.202.194.90])
-	by mail.maildlp.com (Postfix) with ESMTPS id A318F14010C;
-	Mon,  9 Dec 2024 10:43:28 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id F0128180102;
+	Mon,  9 Dec 2024 10:43:24 +0800 (CST)
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemk500005.china.huawei.com (7.202.194.90) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Mon, 9 Dec 2024 10:43:26 +0800
+ 15.2.1544.11; Mon, 9 Dec 2024 10:43:22 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, Jonathan Cameron
 	<Jonathan.Cameron@Huawei.com>, Mauro Carvalho Chehab
@@ -55,9 +55,9 @@ CC: <linux-arm-kernel@lists.infradead.org>, <linux-mm@kvack.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
 	<kasan-dev@googlegroups.com>, Tong Tiangen <tongtiangen@huawei.com>,
 	<wangkefeng.wang@huawei.com>, Guohanjun <guohanjun@huawei.com>
-Subject: [PATCH v13 5/5] arm64: introduce copy_mc_to_kernel() implementation
-Date: Mon, 9 Dec 2024 10:42:57 +0800
-Message-ID: <20241209024257.3618492-6-tongtiangen@huawei.com>
+Subject: [PATCH v13 3/5] mm/hwpoison: return -EFAULT when copy fail in copy_mc_[user]_highpage()
+Date: Mon, 9 Dec 2024 10:42:55 +0800
+Message-ID: <20241209024257.3618492-4-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20241209024257.3618492-1-tongtiangen@huawei.com>
 References: <20241209024257.3618492-1-tongtiangen@huawei.com>
@@ -79,219 +79,83 @@ X-Originating-IP: [10.175.112.125]
 X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
  kwepemk500005.china.huawei.com (7.202.194.90)
 
-The copy_mc_to_kernel() helper is memory copy implementation that handles
-source exceptions. It can be used in memory copy scenarios that tolerate
-hardware memory errors(e.g: pmem_read/dax_copy_to_iter).
+Currently, copy_mc_[user]_highpage() returns zero on success, or in case
+of failures, the number of bytes that weren't copied.
 
-Currently, only x86 and ppc support this helper, Add this for ARM64 as
-well, if ARCH_HAS_COPY_MC is defined, by implementing copy_mc_to_kernel()
-and memcpy_mc() functions.
+While tracking the number of not copied works fine for x86 and PPC, There
+are some difficulties in doing the same thing on ARM64 because there is no
+available caller-saved register in copy_page()(lib/copy_page.S) to save
+"bytes not copied", and the following copy_mc_page() will also encounter
+the same problem.
 
-Because there is no caller-saved GPR is available for saving "bytes not
-copied" in memcpy(), the memcpy_mc() is referenced to the implementation
-of copy_from_user(). In addition, the fixup of MOPS insn is not considered
-at present.
+Consider the caller of copy_mc_[user]_highpage() cannot do any processing
+on the remaining data(The page has hardware errors), they only check if
+copy was succeeded or not, make the interface more generic by using an
+error code when copy fails (-EFAULT) or return zero on success.
 
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- arch/arm64/include/asm/string.h  |  5 ++
- arch/arm64/include/asm/uaccess.h | 18 ++++++
- arch/arm64/lib/Makefile          |  2 +-
- arch/arm64/lib/memcpy_mc.S       | 98 ++++++++++++++++++++++++++++++++
- mm/kasan/shadow.c                | 12 ++++
- 5 files changed, 134 insertions(+), 1 deletion(-)
- create mode 100644 arch/arm64/lib/memcpy_mc.S
+ include/linux/highmem.h | 8 ++++----
+ mm/khugepaged.c         | 4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm64/include/asm/string.h b/arch/arm64/include/asm/string.h
-index 3a3264ff47b9..23eca4fb24fa 100644
---- a/arch/arm64/include/asm/string.h
-+++ b/arch/arm64/include/asm/string.h
-@@ -35,6 +35,10 @@ extern void *memchr(const void *, int, __kernel_size_t);
- extern void *memcpy(void *, const void *, __kernel_size_t);
- extern void *__memcpy(void *, const void *, __kernel_size_t);
- 
-+#define __HAVE_ARCH_MEMCPY_MC
-+extern int memcpy_mc(void *, const void *, __kernel_size_t);
-+extern int __memcpy_mc(void *, const void *, __kernel_size_t);
-+
- #define __HAVE_ARCH_MEMMOVE
- extern void *memmove(void *, const void *, __kernel_size_t);
- extern void *__memmove(void *, const void *, __kernel_size_t);
-@@ -57,6 +61,7 @@ void memcpy_flushcache(void *dst, const void *src, size_t cnt);
+diff --git a/include/linux/highmem.h b/include/linux/highmem.h
+index 6e452bd8e7e3..0eb4b9b06837 100644
+--- a/include/linux/highmem.h
++++ b/include/linux/highmem.h
+@@ -329,8 +329,8 @@ static inline void copy_highpage(struct page *to, struct page *from)
+ /*
+  * If architecture supports machine check exception handling, define the
+  * #MC versions of copy_user_highpage and copy_highpage. They copy a memory
+- * page with #MC in source page (@from) handled, and return the number
+- * of bytes not copied if there was a #MC, otherwise 0 for success.
++ * page with #MC in source page (@from) handled, and return -EFAULT if there
++ * was a #MC, otherwise 0 for success.
   */
+ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
+ 					unsigned long vaddr, struct vm_area_struct *vma)
+@@ -349,7 +349,7 @@ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
+ 	if (ret)
+ 		memory_failure_queue(page_to_pfn(from), 0);
  
- #define memcpy(dst, src, len) __memcpy(dst, src, len)
-+#define memcpy_mc(dst, src, len) __memcpy_mc(dst, src, len)
- #define memmove(dst, src, len) __memmove(dst, src, len)
- #define memset(s, c, n) __memset(s, c, n)
- 
-diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
-index 5b91803201ef..2a14b732306a 100644
---- a/arch/arm64/include/asm/uaccess.h
-+++ b/arch/arm64/include/asm/uaccess.h
-@@ -542,4 +542,22 @@ static inline void put_user_gcs(unsigned long val, unsigned long __user *addr,
- 
- #endif /* CONFIG_ARM64_GCS */
- 
-+#ifdef CONFIG_ARCH_HAS_COPY_MC
-+/**
-+ * copy_mc_to_kernel - memory copy that handles source exceptions
-+ *
-+ * @to:		destination address
-+ * @from:	source address
-+ * @size:	number of bytes to copy
-+ *
-+ * Return 0 for success, or bytes not copied.
-+ */
-+static inline unsigned long __must_check
-+copy_mc_to_kernel(void *to, const void *from, unsigned long size)
-+{
-+	return memcpy_mc(to, from, size);
-+}
-+#define copy_mc_to_kernel copy_mc_to_kernel
-+#endif
-+
- #endif /* __ASM_UACCESS_H */
-diff --git a/arch/arm64/lib/Makefile b/arch/arm64/lib/Makefile
-index 78b0e9904689..326d71ba0517 100644
---- a/arch/arm64/lib/Makefile
-+++ b/arch/arm64/lib/Makefile
-@@ -13,7 +13,7 @@ endif
- 
- lib-$(CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE) += uaccess_flushcache.o
- 
--lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc_page.o
-+lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc_page.o memcpy_mc.o
- 
- obj-$(CONFIG_CRC32) += crc32.o crc32-glue.o
- 
-diff --git a/arch/arm64/lib/memcpy_mc.S b/arch/arm64/lib/memcpy_mc.S
-new file mode 100644
-index 000000000000..cb9caaa1ab0b
---- /dev/null
-+++ b/arch/arm64/lib/memcpy_mc.S
-@@ -0,0 +1,98 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (C) 2013 ARM Ltd.
-+ * Copyright (C) 2013 Linaro.
-+ *
-+ * This code is based on glibc cortex strings work originally authored by Linaro
-+ * be found @
-+ *
-+ * http://bazaar.launchpad.net/~linaro-toolchain-dev/cortex-strings/trunk/
-+ * files/head:/src/aarch64/
-+ */
-+
-+#include <linux/linkage.h>
-+#include <asm/assembler.h>
-+#include <asm/cache.h>
-+#include <asm/asm-uaccess.h>
-+
-+/*
-+ * Copy a buffer from src to dest (alignment handled by the hardware)
-+ *
-+ * Parameters:
-+ *	x0 - dest
-+ *	x1 - src
-+ *	x2 - n
-+ * Returns:
-+ *	x0 - bytes not copied
-+ */
-+	.macro ldrb1 reg, ptr, val
-+	KERNEL_MEM_ERR(9997f, ldrb  \reg, [\ptr], \val)
-+	.endm
-+
-+	.macro strb1 reg, ptr, val
-+	strb \reg, [\ptr], \val
-+	.endm
-+
-+	.macro ldrh1 reg, ptr, val
-+	KERNEL_MEM_ERR(9997f, ldrh  \reg, [\ptr], \val)
-+	.endm
-+
-+	.macro strh1 reg, ptr, val
-+	strh \reg, [\ptr], \val
-+	.endm
-+
-+	.macro ldr1 reg, ptr, val
-+	KERNEL_MEM_ERR(9997f, ldr \reg, [\ptr], \val)
-+	.endm
-+
-+	.macro str1 reg, ptr, val
-+	str \reg, [\ptr], \val
-+	.endm
-+
-+	.macro ldp1 reg1, reg2, ptr, val
-+	KERNEL_MEM_ERR(9997f, ldp \reg1, \reg2, [\ptr], \val)
-+	.endm
-+
-+	.macro stp1 reg1, reg2, ptr, val
-+	stp \reg1, \reg2, [\ptr], \val
-+	.endm
-+
-+end	.req	x5
-+SYM_FUNC_START(__memcpy_mc_generic)
-+	add	end, x0, x2
-+#include "copy_template.S"
-+	mov	x0, #0				// Nothing to copy
-+	ret
-+
-+	// Exception fixups
-+9997:	sub	x0, end, dst			// bytes not copied
-+	ret
-+SYM_FUNC_END(__memcpy_mc_generic)
-+
-+#ifdef CONFIG_AS_HAS_MOPS
-+	.arch_extension mops
-+SYM_FUNC_START(__memcpy_mc)
-+alternative_if_not ARM64_HAS_MOPS
-+	b       __memcpy_mc_generic
-+alternative_else_nop_endif
-+
-+dstin   .req    x0
-+src     .req    x1
-+count   .req    x2
-+dst     .req    x3
-+
-+	mov     dst, dstin
-+	cpyp    [dst]!, [src]!, count!
-+	cpym    [dst]!, [src]!, count!
-+	cpye    [dst]!, [src]!, count!
-+
-+	mov	x0, #0				// Nothing to copy
-+	ret
-+SYM_FUNC_END(__memcpy_mc)
-+#else
-+SYM_FUNC_ALIAS(__memcpy_mc, __memcpy_mc_generic)
-+#endif
-+
-+EXPORT_SYMBOL(__memcpy_mc)
-+SYM_FUNC_ALIAS_WEAK(memcpy_mc, __memcpy_mc)
-+EXPORT_SYMBOL(memcpy_mc)
-diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
-index 88d1c9dcb507..a12770fb2e9c 100644
---- a/mm/kasan/shadow.c
-+++ b/mm/kasan/shadow.c
-@@ -79,6 +79,18 @@ void *memcpy(void *dest, const void *src, size_t len)
+-	return ret;
++	return ret ? -EFAULT : 0;
  }
- #endif
  
-+#ifdef __HAVE_ARCH_MEMCPY_MC
-+#undef memcpy_mc
-+int memcpy_mc(void *dest, const void *src, size_t len)
-+{
-+	if (!kasan_check_range(src, len, false, _RET_IP_) ||
-+	    !kasan_check_range(dest, len, true, _RET_IP_))
-+		return (int)len;
-+
-+	return __memcpy_mc(dest, src, len);
-+}
-+#endif
-+
- void *__asan_memset(void *addr, int c, ssize_t len)
- {
- 	if (!kasan_check_range(addr, len, true, _RET_IP_))
+ static inline int copy_mc_highpage(struct page *to, struct page *from)
+@@ -368,7 +368,7 @@ static inline int copy_mc_highpage(struct page *to, struct page *from)
+ 	if (ret)
+ 		memory_failure_queue(page_to_pfn(from), 0);
+ 
+-	return ret;
++	return ret ? -EFAULT : 0;
+ }
+ #else
+ static inline int copy_mc_user_highpage(struct page *to, struct page *from,
+diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+index 6f8d46d107b4..c3cdc0155dcd 100644
+--- a/mm/khugepaged.c
++++ b/mm/khugepaged.c
+@@ -820,7 +820,7 @@ static int __collapse_huge_page_copy(pte_t *pte, struct folio *folio,
+ 			continue;
+ 		}
+ 		src_page = pte_page(pteval);
+-		if (copy_mc_user_highpage(page, src_page, src_addr, vma) > 0) {
++		if (copy_mc_user_highpage(page, src_page, src_addr, vma)) {
+ 			result = SCAN_COPY_MC;
+ 			break;
+ 		}
+@@ -2081,7 +2081,7 @@ static int collapse_file(struct mm_struct *mm, unsigned long addr,
+ 		}
+ 
+ 		for (i = 0; i < nr_pages; i++) {
+-			if (copy_mc_highpage(dst, folio_page(folio, i)) > 0) {
++			if (copy_mc_highpage(dst, folio_page(folio, i))) {
+ 				result = SCAN_COPY_MC;
+ 				goto rollback;
+ 			}
 -- 
 2.25.1
 
