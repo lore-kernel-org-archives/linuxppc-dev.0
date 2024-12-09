@@ -1,56 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-3868-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3869-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A472E7717D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 09:48:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42798E7717D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 10:26:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6H9q6tQxz2xWY;
-	Mon,  9 Dec 2024 20:48:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733737711;
-	cv=none; b=PLi5jo1NUv79WNAXRG0uW5ub1Ky5Qhd0S/Vr47yqZ0DlPBtI26e+PflZzlUTbP6LPY8mFnZQiZVDSidrQWgX+Hr0+ZdH4pA05FZLt0PyJ6mkY+jEByiYTRwSwwTACrcfHBRSUR6Dt6OCP7Ex+kSZVokFwJnTEfNfb5OQfDCK7Hhryb7bcW/9m2K9hV4z0awRDJVewTb4FtepSgur6DabgEkbd9p1Lkh2+h06663rYsDSXomS8AbG5vXjxxPYiFOFqN++JoeuxDGWH6P9Ezv4K1pPKm06nFAY80PE+rIbEMBWLmycpQsh2HAaOr58fmeMYh9E0qMAQj3+sWw5V/Ig5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6J165Ws8z2xfR;
+	Mon,  9 Dec 2024 21:26:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733736546;
+	cv=none; b=h4nhzC4+Y4WB+s1KhEW1aSE550aW5z8J/gAR+Ms29+A2bcmJWxQSqprOTyQUEgZtfKKrcuS+QRKlrO+i/vnPGYShC6Ks36DkrgY/tGDyDtuRBqEx6869PKjYNHQwlgXCTml7NyfzhoDuhWcrHgRL+EWOcoVCLE2/wNAnaf0hn+ZMPSlwleBjDmIcxsZGiIaYdiu3poe0JeeYsnZZsumVKMA2hoztE4+v0EI1oLpCUzFqXX6dKyZnOlJSBFlC2WAM2eQh1gSiws321T7rAyktfQp1I8ZNjAoNnMuIkplmyYxZRfGk9L6nJU6tuAbhxOJ/qWpFkysD0psyVPkBTGQbcg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733737711; c=relaxed/relaxed;
-	bh=NoSyfg0H2xdXV8bVJGF6NwXUo5Fiq0F8nFCklb+ts3Y=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=e4tF9KQeytsaFVZdsxCHrbYV5ZySWKE+cBv91WnrxwLtgy3egNx2OwyuinzAIStH3dy4MqQUjflxCvXiwGl72k6LVvYSGLrxGKp8FgDjaOfnAMGCgnY/Mi8O7t91ICHca7JFHuCLuTEmQJWWE1Vw7D6HnUCcEO2Q1/qmURCLQ9kI697XXsOMOAWC2EADkNgCBtfI0H30PAc1V0OvqNjiACOJfrJD/GY3dJnaxmBL9v8vYdX2FXm4cCqJryfTqeJdy++hQv9V683NuzwSr050KOAeC+tNRf65w6Wu9YDQWwZKQNvhGqW97eqFwVrtEqBWrxHqBICXMDjBMvD6uo/jrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=yury.khrustalev@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=yury.khrustalev@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6H9p74ySz2xHF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 20:48:30 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1C580175D;
-	Mon,  9 Dec 2024 01:48:28 -0800 (PST)
-Received: from udebian.localdomain (unknown [10.1.35.36])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E97E13F720;
-	Mon,  9 Dec 2024 01:47:57 -0800 (PST)
-From: Yury Khrustalev <yury.khrustalev@arm.com>
-To: linux-arch@vger.kernel.org
-Cc: Arnd Bergmann <arnd@arndb.de>,
-	Kevin Brodsky <kevin.brodsky@arm.com>,
-	Joey Gouly <joey.gouly@arm.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Sandipan Das <sandipan@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	x86@kernel.org,
-	linux-mm@kvack.org,
-	linux-kselftest@vger.kernel.org,
-	nd@arm.com,
-	Yury Khrustalev <yury.khrustalev@arm.com>
-Subject: [RESEND v4 3/3] selftests/powerpc: Use PKEY_UNRESTRICTED macro
-Date: Mon,  9 Dec 2024 09:47:19 +0000
-Message-Id: <20241209094719.2431126-4-yury.khrustalev@arm.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20241209094719.2431126-1-yury.khrustalev@arm.com>
-References: <20241209094719.2431126-1-yury.khrustalev@arm.com>
+	t=1733736546; c=relaxed/relaxed;
+	bh=ulbn2gRU5MN0S+VZMneJpsyHlwuwCh9HUXmEX/tD+g4=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=QJIkAeHNtQAbCTdm+u1XxdES5yH/L802QKOP1poeXVMUUEtEcsLoeH7TBwVk3zzGTCs62sRiu/eapK73xf3ljq++lnOHUuCPbN6dP+cPSgRgyBIqAD0gTEI/A/tgW62Z+DERjiJBXTWrKRWsQ8nWHpVAFexlQ6ZH0VegEyZj5H4v+lqESX2I8xDiAp4+Tl6nnlebZyRf+9O9MVOpQ1KNtitio6lutmMCFaeCGxd3NqwhuPrhwXTSm3GhjCW/to1BelD90sxU8krHnpqrDVFfv6lUqOHAtlDexrWz1qoZyCXempqQ9hqQH+AS2iujRtwqtwzrHgdDAbUAHodfUf17DQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=pangliyuan1@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=pangliyuan1@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 953 seconds by postgrey-1.37 at boromir; Mon, 09 Dec 2024 20:29:03 AEDT
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y6GlM2f4kz2xVq
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 20:29:00 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.163.48])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4Y6GKX3tR5zhZVc;
+	Mon,  9 Dec 2024 17:10:08 +0800 (CST)
+Received: from kwepemd200025.china.huawei.com (unknown [7.221.188.181])
+	by mail.maildlp.com (Postfix) with ESMTPS id E76F118006C;
+	Mon,  9 Dec 2024 17:12:30 +0800 (CST)
+Received: from Linux-SUSE12SP5.huawei.com (10.67.136.247) by
+ kwepemd200025.china.huawei.com (7.221.188.181) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Mon, 9 Dec 2024 17:12:30 +0800
+From: pangliyuan <pangliyuan1@huawei.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+CC: <anju@linux.vnet.ibm.com>, <mhiramat@kernel.org>, <maddy@linux.ibm.com>,
+	<naveen@kernel.org>, <christophe.leroy@csgroup.eu>, <npiggin@gmail.com>,
+	<mpe@ellerman.id.au>, <wangfangpeng1@huawei.com>, <heyuqiang1@huawei.com>,
+	pangliyuan <pangliyuan1@huawei.com>
+Subject: [PATCH] powerpc/kprobes: don't save r13 register in kprobe context
+Date: Mon, 9 Dec 2024 17:10:39 +0800
+Message-ID: <20241209091039.72786-1-pangliyuan1@huawei.com>
+X-Mailer: git-send-email 2.12.3
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,114 +57,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.67.136.247]
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ kwepemd200025.china.huawei.com (7.221.188.181)
 
-Replace literal 0 with macro PKEY_UNRESTRICTED where pkey_*() functions
-are used in mm selftests for memory protection keys for ppc target.
+When CONFIG_STACKPROTECTOR_STRONG is enabled and FTRACE is disabled on
+powerpc64, repeatedly triggering the kprobe process may cause stack check
+failures and panic.
 
-Signed-off-by: Yury Khrustalev <yury.khrustalev@arm.com>
-Suggested-by: Kevin Brodsky <kevin.brodsky@arm.com>
-Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
+Case:
+There is a kprobe(do nothing in handler) attached to the "shmem_get_inode",
+and a process A is creating file on tmpfs.
 
+                           CPU0
+A |r13 = paca_ptrs[0], paca_ptrs[0]->canary=A->stack_canary
+  |touch a file on tmpfs
+  |shmem_mknod():
+  |    load A's canary through r13 and stored it in A's stack
+  |    shmem_get_inode():
+  |        enter kprobe first
+  |        optinsn_slot():
+  |            stored r13 (paca_ptrs[0]) in stack
+
+  ......
+
+  ==> schedule,  B run on CPU0, A run on CPU1
+
+			   CPU0
+B |r13 = paca_ptrs[0], paca_ptrs[0]->canary=B->stack_canary
+  |do something...
+                           CPU1
+A |            r13 = paca_ptrs[1], paca_ptrs[1]->canary=A->stack_canary
+  |            about to leave 'optinsn_slot', restore r13 from A's stack
+  |            r13 = paca_ptrs[0], paca_ptrs[0]->canary=B->stack_canary
+  |            leave optinsn_slot, back to shmem_get_inode
+  |        leave shmem_get_inode, back to shmem_mknod
+  |    do canary check in shmem_mknod, but canary stored in A's stack (A's
+       canary) doesn't match the canary loaded through r13 (B's canary),
+       so panic
+
+When A(on CPU0) entring optinsn_slot, it stored r13(paca_ptrs[0]) in stack,
+then A is scheduled to CPU1 and restore r13 from A's stack when leaving
+'optinsn_slot'. Now A is running on CPU1 but r13 point to CPU0's
+paca_ptrs[0], at this time paca_ptrs[0]->__current points to another
+process B, which cause A use B's canary to do stack check and panic.
+
+This can be simply fixed by not saving and restoring the r13 register,
+because on powerpc64, r13 is a special register that reserved to point
+to the current process, no need to restore the outdated r13 if scheduled
+had happened.
+
+Fixes: 51c9c0843993 ("powerpc/kprobes: Implement Optprobes")
+Signed-off-by: pangliyuan <pangliyuan1@huawei.com>
 ---
-Note that I couldn't build these tests so I would appreciate if someone
-could check this patch. Thank you!
----
- tools/testing/selftests/powerpc/include/pkeys.h      | 2 +-
- tools/testing/selftests/powerpc/mm/pkey_exec_prot.c  | 2 +-
- tools/testing/selftests/powerpc/mm/pkey_siginfo.c    | 2 +-
- tools/testing/selftests/powerpc/ptrace/core-pkey.c   | 6 +++---
- tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c | 6 +++---
- 5 files changed, 9 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/optprobes_head.S | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/include/pkeys.h b/tools/testing/selftests/powerpc/include/pkeys.h
-index 51729d9a7111..430cb4bd7472 100644
---- a/tools/testing/selftests/powerpc/include/pkeys.h
-+++ b/tools/testing/selftests/powerpc/include/pkeys.h
-@@ -85,7 +85,7 @@ int pkeys_unsupported(void)
- 	SKIP_IF(!hash_mmu);
+diff --git a/arch/powerpc/kernel/optprobes_head.S b/arch/powerpc/kernel/optprobes_head.S
+index 35932f45fb4e..bf0d77e62ba8 100644
+--- a/arch/powerpc/kernel/optprobes_head.S
++++ b/arch/powerpc/kernel/optprobes_head.S
+@@ -10,12 +10,12 @@
+ #include <asm/asm-offsets.h>
  
- 	/* Check if the system call is supported */
--	pkey = sys_pkey_alloc(0, 0);
-+	pkey = sys_pkey_alloc(0, PKEY_UNRESTRICTED);
- 	SKIP_IF(pkey < 0);
- 	sys_pkey_free(pkey);
+ #ifdef CONFIG_PPC64
+-#define SAVE_30GPRS(base) SAVE_GPRS(2, 31, base)
+-#define REST_30GPRS(base) REST_GPRS(2, 31, base)
++#define SAVE_NEEDED_GPRS(base) SAVE_GPRS(2, 12, base); SAVE_GPRS(14, 31, base)
++#define REST_NEEDED_GPRS(base) REST_GPRS(2, 12, base); REST_GPRS(14, 31, base)
+ #define TEMPLATE_FOR_IMM_LOAD_INSNS	nop; nop; nop; nop; nop
+ #else
+-#define SAVE_30GPRS(base) stmw	r2, GPR2(base)
+-#define REST_30GPRS(base) lmw	r2, GPR2(base)
++#define SAVE_NEEDED_GPRS(base) stmw	r2, GPR2(base)
++#define REST_NEEDED_GPRS(base) lmw	r2, GPR2(base)
+ #define TEMPLATE_FOR_IMM_LOAD_INSNS	nop; nop; nop
+ #endif
  
-diff --git a/tools/testing/selftests/powerpc/mm/pkey_exec_prot.c b/tools/testing/selftests/powerpc/mm/pkey_exec_prot.c
-index 0af4f02669a1..29b91b7456eb 100644
---- a/tools/testing/selftests/powerpc/mm/pkey_exec_prot.c
-+++ b/tools/testing/selftests/powerpc/mm/pkey_exec_prot.c
-@@ -72,7 +72,7 @@ static void segv_handler(int signum, siginfo_t *sinfo, void *ctx)
+@@ -45,7 +45,7 @@ optprobe_template_entry:
+ 	/* Save the previous SP into stack */
+ 	addi	r0,r1,INT_FRAME_SIZE
+ 	PPC_STL	r0,GPR1(r1)
+-	SAVE_30GPRS(r1)
++	SAVE_NEEDED_GPRS(r1)
+ 	/* Save SPRS */
+ 	mfmsr	r5
+ 	PPC_STL	r5,_MSR(r1)
+@@ -123,7 +123,7 @@ optprobe_template_call_emulate:
+ 	PPC_LL	r5,_CCR(r1)
+ 	mtcr	r5
+ 	REST_GPR(0,r1)
+-	REST_30GPRS(r1)
++	REST_NEEDED_GPRS(r1)
+ 	/* Restore the previous SP */
+ 	addi	r1,r1,INT_FRAME_SIZE
  
- 		switch (fault_type) {
- 		case PKEY_DISABLE_ACCESS:
--			pkey_set_rights(fault_pkey, 0);
-+			pkey_set_rights(fault_pkey, PKEY_UNRESTRICTED);
- 			break;
- 		case PKEY_DISABLE_EXECUTE:
- 			/*
-diff --git a/tools/testing/selftests/powerpc/mm/pkey_siginfo.c b/tools/testing/selftests/powerpc/mm/pkey_siginfo.c
-index 2db76e56d4cb..e89a164c686b 100644
---- a/tools/testing/selftests/powerpc/mm/pkey_siginfo.c
-+++ b/tools/testing/selftests/powerpc/mm/pkey_siginfo.c
-@@ -83,7 +83,7 @@ static void segv_handler(int signum, siginfo_t *sinfo, void *ctx)
- 	    mprotect(pgstart, pgsize, PROT_EXEC))
- 		_exit(1);
- 	else
--		pkey_set_rights(pkey, 0);
-+		pkey_set_rights(pkey, PKEY_UNRESTRICTED);
- 
- 	fault_count++;
- }
-diff --git a/tools/testing/selftests/powerpc/ptrace/core-pkey.c b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
-index f6da4cb30cd6..64c985445cb7 100644
---- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
-+++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
-@@ -124,16 +124,16 @@ static int child(struct shared_info *info)
- 	/* Get some pkeys so that we can change their bits in the AMR. */
- 	pkey1 = sys_pkey_alloc(0, PKEY_DISABLE_EXECUTE);
- 	if (pkey1 < 0) {
--		pkey1 = sys_pkey_alloc(0, 0);
-+		pkey1 = sys_pkey_alloc(0, PKEY_UNRESTRICTED);
- 		FAIL_IF(pkey1 < 0);
- 
- 		disable_execute = false;
- 	}
- 
--	pkey2 = sys_pkey_alloc(0, 0);
-+	pkey2 = sys_pkey_alloc(0, PKEY_UNRESTRICTED);
- 	FAIL_IF(pkey2 < 0);
- 
--	pkey3 = sys_pkey_alloc(0, 0);
-+	pkey3 = sys_pkey_alloc(0, PKEY_UNRESTRICTED);
- 	FAIL_IF(pkey3 < 0);
- 
- 	info->amr |= 3ul << pkeyshift(pkey1) | 2ul << pkeyshift(pkey2);
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
-index d89474377f11..37794f82ed66 100644
---- a/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
-@@ -81,16 +81,16 @@ static int child(struct shared_info *info)
- 	/* Get some pkeys so that we can change their bits in the AMR. */
- 	pkey1 = sys_pkey_alloc(0, PKEY_DISABLE_EXECUTE);
- 	if (pkey1 < 0) {
--		pkey1 = sys_pkey_alloc(0, 0);
-+		pkey1 = sys_pkey_alloc(0, PKEY_UNRESTRICTED);
- 		CHILD_FAIL_IF(pkey1 < 0, &info->child_sync);
- 
- 		disable_execute = false;
- 	}
- 
--	pkey2 = sys_pkey_alloc(0, 0);
-+	pkey2 = sys_pkey_alloc(0, PKEY_UNRESTRICTED);
- 	CHILD_FAIL_IF(pkey2 < 0, &info->child_sync);
- 
--	pkey3 = sys_pkey_alloc(0, 0);
-+	pkey3 = sys_pkey_alloc(0, PKEY_UNRESTRICTED);
- 	CHILD_FAIL_IF(pkey3 < 0, &info->child_sync);
- 
- 	info->amr1 |= 3ul << pkeyshift(pkey1);
 -- 
-2.39.5
+2.37.7
 
 
