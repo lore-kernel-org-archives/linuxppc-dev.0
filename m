@@ -1,40 +1,40 @@
-Return-Path: <linuxppc-dev+bounces-3853-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3854-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F01AE77173
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 03:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2908BE77173
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Dec 2024 03:00:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y666c0mkRz2yTs;
-	Mon,  9 Dec 2024 14:00:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y666t5LH9z2yNn;
+	Mon,  9 Dec 2024 14:00:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.191
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733713208;
-	cv=none; b=d30AP7WXB9B9L/Fnbn+yIG4lR+Kq3kjHG/HB80skXcG44cgRYYKjsoP12j/lo7YRDqSaYyvwcRjbAPNqFM7E/O4vO5OZznB79PwXlysFJnFYG7VchlyilqvEJVkQUqbK/8AeclUK7ZyaQcuWF44M6Z76WV5W9KIae4vfA0wg8F3wNQEhQFEYnZPkYfhqbjUqJA98+v1crt1zVKPiNl5ttbcJyWbRDLE114OJa5jgN7i8f51ThDZAFvck0GS6zm7XvsfRRPoCHB6D575l8wh7tA9HrafqxDm7m7M5RSP8gU4QIKvN3vDvyTNpBfsYP6BY8F72uXP4enJkV3sWyQ13Kw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733713222;
+	cv=none; b=H/M5b0QgUL9di4mMlqEckMooxSnDR/VSA65WhghVqLASc2AdU5xV/nwKsXXIYAXDbpBDayVrpMPluuDULJvSgUo2Kp+P6CtHLxg2QnZT6wacPWPmigNpa+n34jS/MN2A9ESs/6TzdfaiOPGOlh4f9zeD4Iw7acooBIfILEl+5VgzOrgj5X7b2BBQhuJtRjiLVnaSCLaJYqUIF2cGpAp7Y+zWXOyw0Z0pbzTevx9PTKM9CTfVZzRL7ZARiT1YilmW4fDfvrOXOH+zjQfZKIiqFiSrKgwJ8avThkbSeNl6S3PakD21DRrYH9x/lDdDOFsycThy47970br/m6HEIa7xeg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733713208; c=relaxed/relaxed;
-	bh=iDrZfdrMnIOWDOEvnU3lBEDaJYl49vcnJr2daN4zEaU=;
+	t=1733713222; c=relaxed/relaxed;
+	bh=3LXOxUklyNgf5lug7zsMwusW92Er0cLCd2wPgXWZ91s=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VlWDfzl8k76RLwcG79uB76YQgSeF2Y1M4TxGCsgzwfpbpgGBEvlS2RWI9LoNZUAI+iuTDTzLlFI6oxWJ63DUj2Nw1iElCTlEd8Ee7GCO5Qs4ihrhA6+1RW3wb1HSGh6t/OfJgl4tUCED+1gnhoKFxXpFKrsKQMv1ezxuwriaVrrZHQn7iDQ/cBZwpaYZGAC28km/o0MCvwM5nuVDInShdP3IQYK3/x6ni9//cCwuJrACfIkH31+/IZcEF3s2TKvl0eiGMLI3tX8qRTyVLvUcNZZaWjo5hM8oIc9yB5WCTtfKSA90XqbQO7nXuK4VCzSR3iGxpzaj1gRwDtAJ6GDUHg==
+	 MIME-Version:Content-Type; b=SWYFgjyTbMH1aFiTTDrs+DwO7QckYnRMsLsq8VV3tBtR/SZg/4TmRTVddCUzv+fBwZiuQo6yDX2o2A2xJIIh39WYQ7T68OZBsd3koSH3g8Px+LmeGGp2+9aEkFNyfmbHAIdVMuaqxGT+ulpRFp9ZBnmRZOv1sJIKJspy2MsI4Cg28TakTk2kKWXQlSJ9Q6wt/Mp7InFHtFEneI6fIxQEFnoxQt5mQq3j3WqkqSiMX8o09nD+fxVVaZ3OEAhb2CgXDktWq5c1oMu39ihDH3JEECEDbxU3B+5iuzPE6h0318VUeC0FMDrvCYxlGsmgM4/L7JuzJY5E48U3U54fCXUIMQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org)
 Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y666Y5nKjz2xGF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 14:00:05 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.163.17])
-	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4Y65l23pZpz1JDw3;
-	Mon,  9 Dec 2024 10:43:10 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y666r6P0Lz2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Dec 2024 14:00:20 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.88.234])
+	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4Y65hf0h34z1kvfy;
+	Mon,  9 Dec 2024 10:41:06 +0800 (CST)
 Received: from kwepemk500005.china.huawei.com (unknown [7.202.194.90])
-	by mail.maildlp.com (Postfix) with ESMTPS id 23F251A0188;
-	Mon,  9 Dec 2024 10:43:23 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id A318F14010C;
+	Mon,  9 Dec 2024 10:43:28 +0800 (CST)
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemk500005.china.huawei.com (7.202.194.90) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Mon, 9 Dec 2024 10:43:21 +0800
+ 15.2.1544.11; Mon, 9 Dec 2024 10:43:26 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, Jonathan Cameron
 	<Jonathan.Cameron@Huawei.com>, Mauro Carvalho Chehab
@@ -55,9 +55,9 @@ CC: <linux-arm-kernel@lists.infradead.org>, <linux-mm@kvack.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
 	<kasan-dev@googlegroups.com>, Tong Tiangen <tongtiangen@huawei.com>,
 	<wangkefeng.wang@huawei.com>, Guohanjun <guohanjun@huawei.com>
-Subject: [PATCH v13 2/5] arm64: add support for ARCH_HAS_COPY_MC
-Date: Mon, 9 Dec 2024 10:42:54 +0800
-Message-ID: <20241209024257.3618492-3-tongtiangen@huawei.com>
+Subject: [PATCH v13 5/5] arm64: introduce copy_mc_to_kernel() implementation
+Date: Mon, 9 Dec 2024 10:42:57 +0800
+Message-ID: <20241209024257.3618492-6-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20241209024257.3618492-1-tongtiangen@huawei.com>
 References: <20241209024257.3618492-1-tongtiangen@huawei.com>
@@ -79,251 +79,219 @@ X-Originating-IP: [10.175.112.125]
 X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
  kwepemk500005.china.huawei.com (7.202.194.90)
 
-For the arm64 kernel, when it processes hardware memory errors for
-synchronize notifications(do_sea()), if the errors is consumed within the
-kernel, the current processing is panic. However, it is not optimal.
+The copy_mc_to_kernel() helper is memory copy implementation that handles
+source exceptions. It can be used in memory copy scenarios that tolerate
+hardware memory errors(e.g: pmem_read/dax_copy_to_iter).
 
-Take copy_from/to_user for example, If ld* triggers a memory error, even in
-kernel mode, only the associated process is affected. Killing the user
-process and isolating the corrupt page is a better choice.
+Currently, only x86 and ppc support this helper, Add this for ARM64 as
+well, if ARCH_HAS_COPY_MC is defined, by implementing copy_mc_to_kernel()
+and memcpy_mc() functions.
 
-Add new fixup type EX_TYPE_KACCESS_ERR_ZERO_MEM_ERR to identify insn
-that can recover from memory errors triggered by access to kernel memory,
-and this fixup type is used in __arch_copy_to_user(), This make the regular
-copy_to_user() will handle kernel memory errors.
+Because there is no caller-saved GPR is available for saving "bytes not
+copied" in memcpy(), the memcpy_mc() is referenced to the implementation
+of copy_from_user(). In addition, the fixup of MOPS insn is not considered
+at present.
 
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
 ---
- arch/arm64/Kconfig                   |  1 +
- arch/arm64/include/asm/asm-extable.h | 31 +++++++++++++++++++++++-----
- arch/arm64/include/asm/asm-uaccess.h |  4 ++++
- arch/arm64/include/asm/extable.h     |  1 +
- arch/arm64/lib/copy_to_user.S        | 10 ++++-----
- arch/arm64/mm/extable.c              | 19 +++++++++++++++++
- arch/arm64/mm/fault.c                | 30 ++++++++++++++++++++-------
- 7 files changed, 78 insertions(+), 18 deletions(-)
+ arch/arm64/include/asm/string.h  |  5 ++
+ arch/arm64/include/asm/uaccess.h | 18 ++++++
+ arch/arm64/lib/Makefile          |  2 +-
+ arch/arm64/lib/memcpy_mc.S       | 98 ++++++++++++++++++++++++++++++++
+ mm/kasan/shadow.c                | 12 ++++
+ 5 files changed, 134 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm64/lib/memcpy_mc.S
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 100570a048c5..5fa54d31162c 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -21,6 +21,7 @@ config ARM64
- 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
- 	select ARCH_HAS_CACHE_LINE_SIZE
- 	select ARCH_HAS_CC_PLATFORM
-+	select ARCH_HAS_COPY_MC if ACPI_APEI_GHES
- 	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VIRTUAL
- 	select ARCH_HAS_DEBUG_VM_PGTABLE
-diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
-index b8a5861dc7b7..0f9123efca0a 100644
---- a/arch/arm64/include/asm/asm-extable.h
-+++ b/arch/arm64/include/asm/asm-extable.h
-@@ -5,11 +5,13 @@
- #include <linux/bits.h>
- #include <asm/gpr-num.h>
+diff --git a/arch/arm64/include/asm/string.h b/arch/arm64/include/asm/string.h
+index 3a3264ff47b9..23eca4fb24fa 100644
+--- a/arch/arm64/include/asm/string.h
++++ b/arch/arm64/include/asm/string.h
+@@ -35,6 +35,10 @@ extern void *memchr(const void *, int, __kernel_size_t);
+ extern void *memcpy(void *, const void *, __kernel_size_t);
+ extern void *__memcpy(void *, const void *, __kernel_size_t);
  
--#define EX_TYPE_NONE			0
--#define EX_TYPE_BPF			1
--#define EX_TYPE_UACCESS_ERR_ZERO	2
--#define EX_TYPE_KACCESS_ERR_ZERO	3
--#define EX_TYPE_LOAD_UNALIGNED_ZEROPAD	4
-+#define EX_TYPE_NONE				0
-+#define EX_TYPE_BPF				1
-+#define EX_TYPE_UACCESS_ERR_ZERO		2
-+#define EX_TYPE_KACCESS_ERR_ZERO		3
-+#define EX_TYPE_LOAD_UNALIGNED_ZEROPAD		4
-+/* kernel access memory error safe */
-+#define EX_TYPE_KACCESS_ERR_ZERO_MEM_ERR	5
- 
- /* Data fields for EX_TYPE_UACCESS_ERR_ZERO */
- #define EX_DATA_REG_ERR_SHIFT	0
-@@ -51,6 +53,17 @@
- #define _ASM_EXTABLE_UACCESS(insn, fixup)				\
- 	_ASM_EXTABLE_UACCESS_ERR_ZERO(insn, fixup, wzr, wzr)
- 
-+#define _ASM_EXTABLE_KACCESS_ERR_ZERO_MEM_ERR(insn, fixup, err, zero)	\
-+	__ASM_EXTABLE_RAW(insn, fixup, 					\
-+			  EX_TYPE_KACCESS_ERR_ZERO_MEM_ERR,		\
-+			  (						\
-+			    EX_DATA_REG(ERR, err) |			\
-+			    EX_DATA_REG(ZERO, zero)			\
-+			  ))
++#define __HAVE_ARCH_MEMCPY_MC
++extern int memcpy_mc(void *, const void *, __kernel_size_t);
++extern int __memcpy_mc(void *, const void *, __kernel_size_t);
 +
-+#define _ASM_EXTABLE_KACCESS_MEM_ERR(insn, fixup)			\
-+	_ASM_EXTABLE_KACCESS_ERR_ZERO_MEM_ERR(insn, fixup, wzr, wzr)
-+
- /*
-  * Create an exception table entry for uaccess `insn`, which will branch to `fixup`
-  * when an unhandled fault is taken.
-@@ -69,6 +82,14 @@
- 	.endif
- 	.endm
+ #define __HAVE_ARCH_MEMMOVE
+ extern void *memmove(void *, const void *, __kernel_size_t);
+ extern void *__memmove(void *, const void *, __kernel_size_t);
+@@ -57,6 +61,7 @@ void memcpy_flushcache(void *dst, const void *src, size_t cnt);
+  */
  
-+/*
-+ * Create an exception table entry for kaccess `insn`, which will branch to
-+ * `fixup` when an unhandled fault is taken.
+ #define memcpy(dst, src, len) __memcpy(dst, src, len)
++#define memcpy_mc(dst, src, len) __memcpy_mc(dst, src, len)
+ #define memmove(dst, src, len) __memmove(dst, src, len)
+ #define memset(s, c, n) __memset(s, c, n)
+ 
+diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
+index 5b91803201ef..2a14b732306a 100644
+--- a/arch/arm64/include/asm/uaccess.h
++++ b/arch/arm64/include/asm/uaccess.h
+@@ -542,4 +542,22 @@ static inline void put_user_gcs(unsigned long val, unsigned long __user *addr,
+ 
+ #endif /* CONFIG_ARM64_GCS */
+ 
++#ifdef CONFIG_ARCH_HAS_COPY_MC
++/**
++ * copy_mc_to_kernel - memory copy that handles source exceptions
++ *
++ * @to:		destination address
++ * @from:	source address
++ * @size:	number of bytes to copy
++ *
++ * Return 0 for success, or bytes not copied.
 + */
-+	.macro          _asm_extable_kaccess_mem_err, insn, fixup
-+	_ASM_EXTABLE_KACCESS_MEM_ERR(\insn, \fixup)
++static inline unsigned long __must_check
++copy_mc_to_kernel(void *to, const void *from, unsigned long size)
++{
++	return memcpy_mc(to, from, size);
++}
++#define copy_mc_to_kernel copy_mc_to_kernel
++#endif
++
+ #endif /* __ASM_UACCESS_H */
+diff --git a/arch/arm64/lib/Makefile b/arch/arm64/lib/Makefile
+index 78b0e9904689..326d71ba0517 100644
+--- a/arch/arm64/lib/Makefile
++++ b/arch/arm64/lib/Makefile
+@@ -13,7 +13,7 @@ endif
+ 
+ lib-$(CONFIG_ARCH_HAS_UACCESS_FLUSHCACHE) += uaccess_flushcache.o
+ 
+-lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc_page.o
++lib-$(CONFIG_ARCH_HAS_COPY_MC) += copy_mc_page.o memcpy_mc.o
+ 
+ obj-$(CONFIG_CRC32) += crc32.o crc32-glue.o
+ 
+diff --git a/arch/arm64/lib/memcpy_mc.S b/arch/arm64/lib/memcpy_mc.S
+new file mode 100644
+index 000000000000..cb9caaa1ab0b
+--- /dev/null
++++ b/arch/arm64/lib/memcpy_mc.S
+@@ -0,0 +1,98 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2013 ARM Ltd.
++ * Copyright (C) 2013 Linaro.
++ *
++ * This code is based on glibc cortex strings work originally authored by Linaro
++ * be found @
++ *
++ * http://bazaar.launchpad.net/~linaro-toolchain-dev/cortex-strings/trunk/
++ * files/head:/src/aarch64/
++ */
++
++#include <linux/linkage.h>
++#include <asm/assembler.h>
++#include <asm/cache.h>
++#include <asm/asm-uaccess.h>
++
++/*
++ * Copy a buffer from src to dest (alignment handled by the hardware)
++ *
++ * Parameters:
++ *	x0 - dest
++ *	x1 - src
++ *	x2 - n
++ * Returns:
++ *	x0 - bytes not copied
++ */
++	.macro ldrb1 reg, ptr, val
++	KERNEL_MEM_ERR(9997f, ldrb  \reg, [\ptr], \val)
 +	.endm
 +
- #else /* __ASSEMBLY__ */
- 
- #include <linux/stringify.h>
-diff --git a/arch/arm64/include/asm/asm-uaccess.h b/arch/arm64/include/asm/asm-uaccess.h
-index 5b6efe8abeeb..19aa0180f645 100644
---- a/arch/arm64/include/asm/asm-uaccess.h
-+++ b/arch/arm64/include/asm/asm-uaccess.h
-@@ -57,6 +57,10 @@ alternative_else_nop_endif
- 	.endm
++	.macro strb1 reg, ptr, val
++	strb \reg, [\ptr], \val
++	.endm
++
++	.macro ldrh1 reg, ptr, val
++	KERNEL_MEM_ERR(9997f, ldrh  \reg, [\ptr], \val)
++	.endm
++
++	.macro strh1 reg, ptr, val
++	strh \reg, [\ptr], \val
++	.endm
++
++	.macro ldr1 reg, ptr, val
++	KERNEL_MEM_ERR(9997f, ldr \reg, [\ptr], \val)
++	.endm
++
++	.macro str1 reg, ptr, val
++	str \reg, [\ptr], \val
++	.endm
++
++	.macro ldp1 reg1, reg2, ptr, val
++	KERNEL_MEM_ERR(9997f, ldp \reg1, \reg2, [\ptr], \val)
++	.endm
++
++	.macro stp1 reg1, reg2, ptr, val
++	stp \reg1, \reg2, [\ptr], \val
++	.endm
++
++end	.req	x5
++SYM_FUNC_START(__memcpy_mc_generic)
++	add	end, x0, x2
++#include "copy_template.S"
++	mov	x0, #0				// Nothing to copy
++	ret
++
++	// Exception fixups
++9997:	sub	x0, end, dst			// bytes not copied
++	ret
++SYM_FUNC_END(__memcpy_mc_generic)
++
++#ifdef CONFIG_AS_HAS_MOPS
++	.arch_extension mops
++SYM_FUNC_START(__memcpy_mc)
++alternative_if_not ARM64_HAS_MOPS
++	b       __memcpy_mc_generic
++alternative_else_nop_endif
++
++dstin   .req    x0
++src     .req    x1
++count   .req    x2
++dst     .req    x3
++
++	mov     dst, dstin
++	cpyp    [dst]!, [src]!, count!
++	cpym    [dst]!, [src]!, count!
++	cpye    [dst]!, [src]!, count!
++
++	mov	x0, #0				// Nothing to copy
++	ret
++SYM_FUNC_END(__memcpy_mc)
++#else
++SYM_FUNC_ALIAS(__memcpy_mc, __memcpy_mc_generic)
++#endif
++
++EXPORT_SYMBOL(__memcpy_mc)
++SYM_FUNC_ALIAS_WEAK(memcpy_mc, __memcpy_mc)
++EXPORT_SYMBOL(memcpy_mc)
+diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
+index 88d1c9dcb507..a12770fb2e9c 100644
+--- a/mm/kasan/shadow.c
++++ b/mm/kasan/shadow.c
+@@ -79,6 +79,18 @@ void *memcpy(void *dest, const void *src, size_t len)
+ }
  #endif
  
-+#define KERNEL_MEM_ERR(l, x...)			\
-+9999:	x;					\
-+	_asm_extable_kaccess_mem_err	9999b, l
-+
- #define USER(l, x...)				\
- 9999:	x;					\
- 	_asm_extable_uaccess	9999b, l
-diff --git a/arch/arm64/include/asm/extable.h b/arch/arm64/include/asm/extable.h
-index 72b0e71cc3de..bc49443bc502 100644
---- a/arch/arm64/include/asm/extable.h
-+++ b/arch/arm64/include/asm/extable.h
-@@ -46,4 +46,5 @@ bool ex_handler_bpf(const struct exception_table_entry *ex,
- #endif /* !CONFIG_BPF_JIT */
- 
- bool fixup_exception(struct pt_regs *regs);
-+bool fixup_exception_me(struct pt_regs *regs);
- #endif
-diff --git a/arch/arm64/lib/copy_to_user.S b/arch/arm64/lib/copy_to_user.S
-index 802231772608..bedab1678431 100644
---- a/arch/arm64/lib/copy_to_user.S
-+++ b/arch/arm64/lib/copy_to_user.S
-@@ -20,7 +20,7 @@
-  *	x0 - bytes not copied
-  */
- 	.macro ldrb1 reg, ptr, val
--	ldrb  \reg, [\ptr], \val
-+	KERNEL_MEM_ERR(9998f, ldrb  \reg, [\ptr], \val)
- 	.endm
- 
- 	.macro strb1 reg, ptr, val
-@@ -28,7 +28,7 @@
- 	.endm
- 
- 	.macro ldrh1 reg, ptr, val
--	ldrh  \reg, [\ptr], \val
-+	KERNEL_MEM_ERR(9998f, ldrh  \reg, [\ptr], \val)
- 	.endm
- 
- 	.macro strh1 reg, ptr, val
-@@ -36,7 +36,7 @@
- 	.endm
- 
- 	.macro ldr1 reg, ptr, val
--	ldr \reg, [\ptr], \val
-+	KERNEL_MEM_ERR(9998f, ldr \reg, [\ptr], \val)
- 	.endm
- 
- 	.macro str1 reg, ptr, val
-@@ -44,7 +44,7 @@
- 	.endm
- 
- 	.macro ldp1 reg1, reg2, ptr, val
--	ldp \reg1, \reg2, [\ptr], \val
-+	KERNEL_MEM_ERR(9998f, ldp \reg1, \reg2, [\ptr], \val)
- 	.endm
- 
- 	.macro stp1 reg1, reg2, ptr, val
-@@ -64,7 +64,7 @@ SYM_FUNC_START(__arch_copy_to_user)
- 9997:	cmp	dst, dstin
- 	b.ne	9998f
- 	// Before being absolutely sure we couldn't copy anything, try harder
--	ldrb	tmp1w, [srcin]
-+KERNEL_MEM_ERR(9998f, ldrb	tmp1w, [srcin])
- USER(9998f, sttrb tmp1w, [dst])
- 	add	dst, dst, #1
- 9998:	sub	x0, end, dst			// bytes not copied
-diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
-index 228d681a8715..9ad2b6473b60 100644
---- a/arch/arm64/mm/extable.c
-+++ b/arch/arm64/mm/extable.c
-@@ -72,7 +72,26 @@ bool fixup_exception(struct pt_regs *regs)
- 		return ex_handler_uaccess_err_zero(ex, regs);
- 	case EX_TYPE_LOAD_UNALIGNED_ZEROPAD:
- 		return ex_handler_load_unaligned_zeropad(ex, regs);
-+	case EX_TYPE_KACCESS_ERR_ZERO_MEM_ERR:
-+		return false;
- 	}
- 
- 	BUG();
- }
-+
-+bool fixup_exception_me(struct pt_regs *regs)
++#ifdef __HAVE_ARCH_MEMCPY_MC
++#undef memcpy_mc
++int memcpy_mc(void *dest, const void *src, size_t len)
 +{
-+	const struct exception_table_entry *ex;
++	if (!kasan_check_range(src, len, false, _RET_IP_) ||
++	    !kasan_check_range(dest, len, true, _RET_IP_))
++		return (int)len;
 +
-+	ex = search_exception_tables(instruction_pointer(regs));
-+	if (!ex)
-+		return false;
-+
-+	switch (ex->type) {
-+	case EX_TYPE_UACCESS_ERR_ZERO:
-+	case EX_TYPE_KACCESS_ERR_ZERO_MEM_ERR:
-+		return ex_handler_uaccess_err_zero(ex, regs);
-+	}
-+
-+	return false;
++	return __memcpy_mc(dest, src, len);
 +}
-diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
-index ef63651099a9..278e67357f49 100644
---- a/arch/arm64/mm/fault.c
-+++ b/arch/arm64/mm/fault.c
-@@ -801,21 +801,35 @@ static int do_bad(unsigned long far, unsigned long esr, struct pt_regs *regs)
- 	return 1; /* "fault" */
- }
- 
-+/*
-+ * APEI claimed this as a firmware-first notification.
-+ * Some processing deferred to task_work before ret_to_user().
-+ */
-+static int do_apei_claim_sea(struct pt_regs *regs)
-+{
-+	int ret;
++#endif
 +
-+	ret = apei_claim_sea(regs);
-+	if (ret)
-+		return ret;
-+
-+	if (!user_mode(regs) && IS_ENABLED(CONFIG_ARCH_HAS_COPY_MC)) {
-+		if (!fixup_exception_me(regs))
-+			return -ENOENT;
-+	}
-+
-+	return ret;
-+}
-+
- static int do_sea(unsigned long far, unsigned long esr, struct pt_regs *regs)
+ void *__asan_memset(void *addr, int c, ssize_t len)
  {
- 	const struct fault_info *inf;
- 	unsigned long siaddr;
- 
--	inf = esr_to_fault_info(esr);
--
--	if (user_mode(regs) && apei_claim_sea(regs) == 0) {
--		/*
--		 * APEI claimed this as a firmware-first notification.
--		 * Some processing deferred to task_work before ret_to_user().
--		 */
-+	if (do_apei_claim_sea(regs) == 0)
- 		return 0;
--	}
- 
-+	inf = esr_to_fault_info(esr);
- 	if (esr & ESR_ELx_FnV) {
- 		siaddr = 0;
- 	} else {
+ 	if (!kasan_check_range(addr, len, true, _RET_IP_))
 -- 
 2.25.1
 
