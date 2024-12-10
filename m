@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3941-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3942-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C132E7717F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 22:04:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73D08E77180
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 22:04:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRk3Ctsz30PF;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRk5Zd7z30Pd;
 	Wed, 11 Dec 2024 09:03:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733868226;
-	cv=none; b=O5NYRgWxpF364pxRPZ8MJoIMUnkXcql3t6tOVinvRkLYdUaXa7ZhM9sKLTNj4BpWOxcqQoqVeTwaGeS5p6SrSVRX7veEr7uw5BcdjAcVdomr0eDpcKnIgmnwGUoyk520B42/+2QvAU+yhhzEGifm9MJCg/ErSrNjB7/rw/g4S9tEgc014IwOBFeeHAIXiIPsRs2hCg7JAZ15f9DE05Wx+6lG1Yd2wVUt1Nny4MDvYwGyo2DHC5LR6Xk29K21lQ7SbRG9yj9RzJObgRHd53T4Amm3HITs/CGQTBAfT/Lg8wS3UZUbw4y0AeHDsxSNJbjvB37TWjasdlV41ru36BW/pQ==
+	cv=none; b=mUpSClZOBWB2jYRV2jAp9g01ZqQu0PgWGFQ0U5qbH/usfgXz0Y70BDCCSJv1F4M40lwrHm11729YU9p1RrPKZZF1FY/VMSsMqauiprPCXCG8BdlE1UkFTS47TF0J5Fv/mp77FFR/yplSBAfAwbWu+bVoIJwU92uk/hXoIRgCNddZY5yLOg6NiNpti1Elm2pocrqWPbSY8aIBgdwCKgdCW3abllIQ/14tUHum0vgshxanNR9nK+HiS1qzY+uKynt3AMVyBq1JLRfFWwXosfpHVIBdnKDukjFCcxxsQI3lT7SbcX59FhcvWVHcctLCzZ1L8ZTlWQDyfWBAQXWGYywWDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1733868226; c=relaxed/relaxed;
-	bh=zXBBaQqpACacMQS0Kj7gcrwl6nw/WBuJMa6i20JWtiI=;
+	bh=2KdSABVpHGeIl3K+Zfq51kwhEReKGYYzt3DUWqeHGog=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=gc428e87+iFcEXxB7KDgsJktjL8S3ZYLA5SQPJUNwiL19j6MB1+UlfiLsg6rIueh6BYUfPQ/VmnL7SokTnu1rp1QclgyweIkcXJoBdjLeK241Orsadw4ceZsWmXd6K3wt+eE/JEcusHBVtcEJHbzG9mX2q75buDWFe++tyH5zA2y8WNjXOtRBsKjglVZHyaBxVMPUcsSQ1XT/ZE3rJtxRW9DyuILOfLQQks8dLp8uf/C8vvaTjvvD4knvPfhkAkT8Dre7mwjJ0tHycyc73k2zk0/Mz9sOQ6wrSsEE1FsGNypLRkrmgekuoJ2oNCMzE3vHIy8aRorsNpS1/MFTDFh4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Vt8vx6jK; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+	 In-Reply-To:To:Cc; b=OqejK6SoUI87RhCdZxotEB7qpLoP8EQ8GccjQzVPvXTKMCReq/AypRVnA6Ko6jAfW3dXE48J3ZQPZFecwJ5AbTvxMxaTSk2/2o1zr9z9IMJCEPM2ZbKwgbI5yAnSmB1I1OhDLZ9I3RHLk1Ls5sT1/hiZS/BHT2jgTleFL/LUASBPeNJxbvjYaV8PD0hEqkHieAAuXntUXvTrDeSA9Alr6snEz/6ZDYyWU08COYAXQjAmGNnAJU57gbUSvVCa5w8aVA6STA+GWB+PhrcLgCKhwhU1KBTQsn60VBudS+IGYCPdtKtasbodtgFCDzR/qqqVxVu0vRiotJCxBhlaF1V+ww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=R9JyWtdI; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Vt8vx6jK;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=R9JyWtdI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRg3nzlz306J
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 09:03:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRh3p8zz30Bt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 09:03:44 +1100 (AEDT)
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id F1ABA20ACD6F;
+	by linux.microsoft.com (Postfix) with ESMTPSA id 3576020ACD6C;
 	Tue, 10 Dec 2024 14:02:39 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com F1ABA20ACD6F
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 3576020ACD6C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1733868160;
-	bh=zXBBaQqpACacMQS0Kj7gcrwl6nw/WBuJMa6i20JWtiI=;
+	s=default; t=1733868159;
+	bh=2KdSABVpHGeIl3K+Zfq51kwhEReKGYYzt3DUWqeHGog=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Vt8vx6jKTs+Ctim/qcZbBmxzvKglLplBaf8u3Ss1TuSPMlqyDk6c0iiPlA+LzR+m0
-	 YPZ/Qdi+1XcZwtu1UmEnzASc3HPTGQ/HgM/xmF7CmRGYf/aXx12mOKI6ka1aNTAUbz
-	 /gGdJ/+VOZh0/gOcfBkHqPOaIC1SiZYddw+BwdBw=
+	b=R9JyWtdIUEb4/zKyVfibrupVtLSA8I4Ge9h6DsznbqwDXYuMt91s9gMK2E8wvHrfF
+	 DAI6C0uY79rteNLP8XN3j0zl2c4hIe69V64Jd/WfL7mt75W43sZOrZK3S3e5zHR6NX
+	 Fb6Kd6ZyvfvV2PAG+yCh6AjQd+L5BQfffwiXvwAk=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Tue, 10 Dec 2024 22:02:50 +0000
-Subject: [PATCH v3 19/19] ALSA: line6: Convert timeouts to
+Date: Tue, 10 Dec 2024 22:02:46 +0000
+Subject: [PATCH v3 15/19] Bluetooth: MGMT: Convert timeouts to
  secs_to_jiffies()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -55,7 +55,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241210-converge-secs-to-jiffies-v3-19-ddfefd7e9f2a@linux.microsoft.com>
+Message-Id: <20241210-converge-secs-to-jiffies-v3-15-ddfefd7e9f2a@linux.microsoft.com>
 References: <20241210-converge-secs-to-jiffies-v3-0-ddfefd7e9f2a@linux.microsoft.com>
 In-Reply-To: <20241210-converge-secs-to-jiffies-v3-0-ddfefd7e9f2a@linux.microsoft.com>
 To: Pablo Neira Ayuso <pablo@netfilter.org>, 
@@ -140,22 +140,22 @@ the following Coccinelle rules:
 
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- sound/usb/line6/toneport.c | 2 +-
+ net/bluetooth/mgmt.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sound/usb/line6/toneport.c b/sound/usb/line6/toneport.c
-index ca2c6f5de407ece21ab69a39ed603e3f10069039..c073b38cd6738176fc6a276d05ed553526573341 100644
---- a/sound/usb/line6/toneport.c
-+++ b/sound/usb/line6/toneport.c
-@@ -386,7 +386,7 @@ static int toneport_setup(struct usb_line6_toneport *toneport)
- 		toneport_update_led(toneport);
+diff --git a/net/bluetooth/mgmt.c b/net/bluetooth/mgmt.c
+index b31192d473d09b663dc7babd107b4894088ebf6d..8c993763ee0f0360e0d92705f9035f47754b793b 100644
+--- a/net/bluetooth/mgmt.c
++++ b/net/bluetooth/mgmt.c
+@@ -210,7 +210,7 @@ static const u16 mgmt_untrusted_events[] = {
+ 	MGMT_EV_EXP_FEATURE_CHANGED,
+ };
  
- 	schedule_delayed_work(&toneport->line6.startup_work,
--			      msecs_to_jiffies(TONEPORT_PCM_DELAY * 1000));
-+			      secs_to_jiffies(TONEPORT_PCM_DELAY));
- 	return 0;
- }
+-#define CACHE_TIMEOUT	msecs_to_jiffies(2 * 1000)
++#define CACHE_TIMEOUT	secs_to_jiffies(2)
  
+ #define ZERO_KEY "\x00\x00\x00\x00\x00\x00\x00\x00" \
+ 		 "\x00\x00\x00\x00\x00\x00\x00\x00"
 
 -- 
 2.43.0
