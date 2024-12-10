@@ -1,46 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3937-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3938-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 139B7E7717F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 22:03:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C91E2E77180
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 22:03:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CR64dctz305S;
-	Wed, 11 Dec 2024 09:03:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRh2mt2z306l;
+	Wed, 11 Dec 2024 09:03:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733868194;
-	cv=none; b=mk5POpLpP1ax6kMrRUct5HHrkTsM4ogr+GvCSGJ8Pd9O+v1m0YDgeHIYPVufipnvclUXtXpg0Ddk0wPIoYHb3SM68coJBzmzUb7wvV/ZDVVv0xe2Da6q73riOR8xYYVw0eiHNMkAiTB1ttF4EbvI8g6NYtTiT53XCS8eN0ALZriKQNsahhN3TI/1ltoAbCuEe3q9WdlvJgN6e6v6o/ZXCWuWqvYlqZEDk5FiRrmetTyLKwKmYdGPHCTeTlDt4AAdM7j4nx0EPFkJvVEl0ireog3hSYWXyJFKe5NuIz3d3NfVsMRvQD5gDSLk44JNnjx3RwxaRFEc/EjUKSA3c2L5zQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733868224;
+	cv=none; b=HbC7dQ7PdBJA7zNCNEPX7l3SH7UazB9dNvNeqa3P2QztUOiQWOt5eR1franf8hkYSs5rAYvdG9HIXvKY+pu2miz+PZjYXICbD9pFT49VTn7cFiVnrB52eo7n5ZIgRe53rHvsz25YoI63e6KvN+D1BYswZt8mTT9Fqr75kh1JlJEd+2X7ftStsHmsBDwSErEGx70rHVt2yO2KBJ+FMwsZ9/Jf24YCyfVvwKoIFszfalYqmSVPxt2gQVGDJtDokBQWEIy/YMNT61t9WWHQd2YJOMGNosZWXi1O/QYjtJmd0HeQTY/2E5Ogw3V8F0p6cVbeJVT6F12WkTkvbhlbLt/F/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733868194; c=relaxed/relaxed;
-	bh=q4DaHZqCWeIKQe7TTG2rV3K7PdI1M/As9LhjCxxNuts=;
+	t=1733868224; c=relaxed/relaxed;
+	bh=RbQWNnMSFMFriUk4NuHYTwiGcsEx+EnrYdZ9JaogvX4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=NiY98XD7tPnYbr7LGcplI4consFonEg2xB8iKrG8ApM0vSb+HtUq5aL8oc2SUgJOSgmVR9cLRPpu9j14q7/9r2jeF/vdCKP8d/jXab03q7QjqSrauu6ku2Ge4TGCRkfoXCRlyP3hYt/m76Z5bjajSufUkNH7wCdsFYCa/1+ZoVgJFujjBYjv1hTLl+/Gp4teQxfan/bbJlXxDe529iybu94mhaKHwLH7uiT8XtmbZmm/MV1o1qGMt+Rl91yL8gwj6BedbSkoKPFRdyenDfVwhuV/MNtd1DhBMAq0kd3nO1R/aXEDs6AFOsPn4H1FU1flblWvCvIR9bkSBbq1JKcdYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Cha0cDHP; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+	 In-Reply-To:To:Cc; b=AZCw3DGKY4ziSDdY2BgIfRBsKI0qs0OITmeJTMrEhfi91nvMIOPbt5YLP2vCI9gM39lyrdzS2qq5U7G1GVj6oC3NypksO8wS3Szjv6BUbwc8s12es2MOeT9HBOZ2Zo+pyIUrrJ1AaW5HK/W8ZA8rVGqVfoznFb6wB8N1at4as5R22be9tFFW9PVkPdxbpAq3hj+Z4/r0ISB5FlW9Dr3PHJeEmxms4zwNEeOBHZxdqSGhXsL62RiCTTaqAeqIfp5eQhrYJonjCk8h14R5uzTCKw/uUm5g+wWmsiV0jGFHL4S0UuTXWXXNaMYtVupktRHMbtmkwlnrt5Z9u7MHJESIbw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=e/J9gwCA; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=Cha0cDHP;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=e/J9gwCA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CR20vtkz2ynr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 09:03:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRg3HCHz304f
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 09:03:43 +1100 (AEDT)
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 1CDB6204722B;
-	Tue, 10 Dec 2024 14:02:37 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 1CDB6204722B
+	by linux.microsoft.com (Postfix) with ESMTPSA id C173C20ACD6E;
+	Tue, 10 Dec 2024 14:02:39 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com C173C20ACD6E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1733868157;
-	bh=q4DaHZqCWeIKQe7TTG2rV3K7PdI1M/As9LhjCxxNuts=;
+	s=default; t=1733868159;
+	bh=RbQWNnMSFMFriUk4NuHYTwiGcsEx+EnrYdZ9JaogvX4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Cha0cDHP2vqeI8GSgKLIifsRbCjhIP9dfadMSDrPMIXzCzmN2lfENv6VOGo3TWGGc
-	 RhOk4eEHD3feUGZkxL7/wUYX3ev+tB6zBroy0qt0RlqU7ha1EGeg6x38R1w2x8kfbl
-	 wuStr/zn04e6xBcfNPjBsiQEchSCZugge2XzJeQs=
+	b=e/J9gwCA4uBKGknzsmiO3oet8slWv1kdiClhfZ9LTUvDcAr8km71ONqn/wjRdmpri
+	 4EyHjbbYG4CKX/8T2eN5ATCPWVrLNipH5jKYYefAMdH+qlSBTJn1LIV6HX/UxzfdGn
+	 9DHlxQpHUKnw1xm9c/b/XukYCVTGP1/9SF9qgehM=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Tue, 10 Dec 2024 22:02:35 +0000
-Subject: [PATCH v3 04/19] s390: kernel: Convert timeouts to use
- secs_to_jiffies()
+Date: Tue, 10 Dec 2024 22:02:49 +0000
+Subject: [PATCH v3 18/19] livepatch: Convert timeouts to secs_to_jiffies()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241210-converge-secs-to-jiffies-v3-4-ddfefd7e9f2a@linux.microsoft.com>
+Message-Id: <20241210-converge-secs-to-jiffies-v3-18-ddfefd7e9f2a@linux.microsoft.com>
 References: <20241210-converge-secs-to-jiffies-v3-0-ddfefd7e9f2a@linux.microsoft.com>
 In-Reply-To: <20241210-converge-secs-to-jiffies-v3-0-ddfefd7e9f2a@linux.microsoft.com>
 To: Pablo Neira Ayuso <pablo@netfilter.org>, 
@@ -122,7 +121,7 @@ Cc: netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
 X-Mailer: b4 0.14.2
 
 Commit b35108a51cf7 ("jiffies: Define secs_to_jiffies()") introduced
-secs_to_jiffies(). As the values here are a multiple of 1000, use
+secs_to_jiffies(). As the value here is a multiple of 1000, use
 secs_to_jiffies() instead of msecs_to_jiffies to avoid the multiplication.
 
 This is converted using scripts/coccinelle/misc/secs_to_jiffies.cocci with
@@ -140,56 +139,83 @@ the following Coccinelle rules:
 
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- arch/s390/kernel/lgr.c      | 2 +-
- arch/s390/kernel/time.c     | 4 ++--
- arch/s390/kernel/topology.c | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ samples/livepatch/livepatch-callbacks-busymod.c |  3 +--
+ samples/livepatch/livepatch-shadow-fix1.c       |  3 +--
+ samples/livepatch/livepatch-shadow-mod.c        | 15 +++++----------
+ 3 files changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/arch/s390/kernel/lgr.c b/arch/s390/kernel/lgr.c
-index 6652e54cf3db9fbdd8cfb06f8a0dc1d4c05ae7d7..6d1ffca5f798086160112990cb947ec8deed0659 100644
---- a/arch/s390/kernel/lgr.c
-+++ b/arch/s390/kernel/lgr.c
-@@ -166,7 +166,7 @@ static struct timer_list lgr_timer;
-  */
- static void lgr_timer_set(void)
+diff --git a/samples/livepatch/livepatch-callbacks-busymod.c b/samples/livepatch/livepatch-callbacks-busymod.c
+index 378e2d40271a9717d09eff51d3d3612c679736fc..69105596e72e6826aa2815cb2599eea56a0055ba 100644
+--- a/samples/livepatch/livepatch-callbacks-busymod.c
++++ b/samples/livepatch/livepatch-callbacks-busymod.c
+@@ -44,8 +44,7 @@ static void busymod_work_func(struct work_struct *work)
+ static int livepatch_callbacks_mod_init(void)
  {
--	mod_timer(&lgr_timer, jiffies + msecs_to_jiffies(LGR_TIMER_INTERVAL_SECS * MSEC_PER_SEC));
-+	mod_timer(&lgr_timer, jiffies + secs_to_jiffies(LGR_TIMER_INTERVAL_SECS));
+ 	pr_info("%s\n", __func__);
+-	schedule_delayed_work(&work,
+-		msecs_to_jiffies(1000 * 0));
++	schedule_delayed_work(&work, 0);
+ 	return 0;
+ }
+ 
+diff --git a/samples/livepatch/livepatch-shadow-fix1.c b/samples/livepatch/livepatch-shadow-fix1.c
+index 6701641bf12d454a770e49abeeb0dea92560e55e..f3f153895d6ce751fc91ae1224d91b220cba3e37 100644
+--- a/samples/livepatch/livepatch-shadow-fix1.c
++++ b/samples/livepatch/livepatch-shadow-fix1.c
+@@ -72,8 +72,7 @@ static struct dummy *livepatch_fix1_dummy_alloc(void)
+ 	if (!d)
+ 		return NULL;
+ 
+-	d->jiffies_expire = jiffies +
+-		msecs_to_jiffies(1000 * EXPIRE_PERIOD);
++	d->jiffies_expire = jiffies + secs_to_jiffies(EXPIRE_PERIOD);
+ 
+ 	/*
+ 	 * Patch: save the extra memory location into a SV_LEAK shadow
+diff --git a/samples/livepatch/livepatch-shadow-mod.c b/samples/livepatch/livepatch-shadow-mod.c
+index 7e753b0d2fa611524c9e2adbe02c8fa3e9b6015e..5d83ad5a8118dbbac897dfcbb92e6d5f399d1dc3 100644
+--- a/samples/livepatch/livepatch-shadow-mod.c
++++ b/samples/livepatch/livepatch-shadow-mod.c
+@@ -101,8 +101,7 @@ static __used noinline struct dummy *dummy_alloc(void)
+ 	if (!d)
+ 		return NULL;
+ 
+-	d->jiffies_expire = jiffies +
+-		msecs_to_jiffies(1000 * EXPIRE_PERIOD);
++	d->jiffies_expire = jiffies + secs_to_jiffies(EXPIRE_PERIOD);
+ 
+ 	/* Oops, forgot to save leak! */
+ 	leak = kzalloc(sizeof(*leak), GFP_KERNEL);
+@@ -152,8 +151,7 @@ static void alloc_work_func(struct work_struct *work)
+ 	list_add(&d->list, &dummy_list);
+ 	mutex_unlock(&dummy_list_mutex);
+ 
+-	schedule_delayed_work(&alloc_dwork,
+-		msecs_to_jiffies(1000 * ALLOC_PERIOD));
++	schedule_delayed_work(&alloc_dwork, secs_to_jiffies(ALLOC_PERIOD));
  }
  
  /*
-diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-index 34a65c141ea076ba97b3238f1f36f077b15961df..e9f47c3a61978a45c72aee23bc44dcb128113c8c 100644
---- a/arch/s390/kernel/time.c
-+++ b/arch/s390/kernel/time.c
-@@ -662,12 +662,12 @@ static void stp_check_leap(void)
- 		if (ret < 0)
- 			pr_err("failed to set leap second flags\n");
- 		/* arm Timer to clear leap second flags */
--		mod_timer(&stp_timer, jiffies + msecs_to_jiffies(14400 * MSEC_PER_SEC));
-+		mod_timer(&stp_timer, jiffies + secs_to_jiffies(14400));
- 	} else {
- 		/* The day the leap second is scheduled for hasn't been reached. Retry
- 		 * in one hour.
- 		 */
--		mod_timer(&stp_timer, jiffies + msecs_to_jiffies(3600 * MSEC_PER_SEC));
-+		mod_timer(&stp_timer, jiffies + secs_to_jiffies(3600));
+@@ -184,16 +182,13 @@ static void cleanup_work_func(struct work_struct *work)
  	}
+ 	mutex_unlock(&dummy_list_mutex);
+ 
+-	schedule_delayed_work(&cleanup_dwork,
+-		msecs_to_jiffies(1000 * CLEANUP_PERIOD));
++	schedule_delayed_work(&cleanup_dwork, secs_to_jiffies(CLEANUP_PERIOD));
  }
  
-diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
-index 4f9c301a705b63f8dd0e7bc33e7206ad1222e7a7..0fd56a1cadbd4f41a9876a3a3fec7f5dc08ac2db 100644
---- a/arch/s390/kernel/topology.c
-+++ b/arch/s390/kernel/topology.c
-@@ -371,7 +371,7 @@ static void set_topology_timer(void)
- 	if (atomic_add_unless(&topology_poll, -1, 0))
- 		mod_timer(&topology_timer, jiffies + msecs_to_jiffies(100));
- 	else
--		mod_timer(&topology_timer, jiffies + msecs_to_jiffies(60 * MSEC_PER_SEC));
-+		mod_timer(&topology_timer, jiffies + secs_to_jiffies(60));
- }
+ static int livepatch_shadow_mod_init(void)
+ {
+-	schedule_delayed_work(&alloc_dwork,
+-		msecs_to_jiffies(1000 * ALLOC_PERIOD));
+-	schedule_delayed_work(&cleanup_dwork,
+-		msecs_to_jiffies(1000 * CLEANUP_PERIOD));
++	schedule_delayed_work(&alloc_dwork, secs_to_jiffies(ALLOC_PERIOD));
++	schedule_delayed_work(&cleanup_dwork, secs_to_jiffies(CLEANUP_PERIOD));
  
- void topology_expect_change(void)
+ 	return 0;
+ }
 
 -- 
 2.43.0
