@@ -1,81 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-3900-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3901-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C9B6E77181
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 05:41:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CEC9E7717F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 05:42:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6nfr4Wbvz2ymb;
-	Tue, 10 Dec 2024 16:41:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y6nfv32Yvz2ytT;
+	Tue, 10 Dec 2024 16:41:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733809316;
-	cv=none; b=b/E396FD0CfheuLkrjCBLlEvbTG/9b7d4htOnuQsoEDTdouxXvQvASiT5PwsUcbm8K/EfTeYYQRwb25xgrhZKs9NWlkKE1O+oNTFLCXkYJvicD2cYmSVxQvRMsd0cpBt/cFVpuXo7S2Tzt+XN7YR5ciam7wKaTTym6C/8lix+Yf59Bmvd/nicMwXpOTEpYJoLnH3qQYCTNqJOHBcJ/7ffGp7ivsMRLXy+euQGFmxyDjfZdl0FxxMZ4nUCVNMRghXxzgSuyPPWHoj0+oDay3r/OWwWYyhFrTMXmEJyBZad5ojlj8IVN0/2wdbXvIg+pMKzXQEk05dkUmW2pRiO0V/OQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733809319;
+	cv=none; b=os9xKa3t5dYSvRXeo2fRr17/q3bBhnZgnRgEupio6HWok9r8Q9ye5MkD9oYKuh3/Cso+RRUrJ+kOZRNMRMP8M+lfMuYKPcb09w2Dk9B5hc1gW/www380xxPPY7VhGpRWnQu+xD9W14L1ppN8Z/nFULV9kinvlDkt6JSSNaQtrdRbFDq024aqx1ENtNtPUpxDTeqdTZnkJKWFOZ1eI7QrnNTcdET8r+A9ZnIYnnPU1qgI5JlCuXEgPVPA0NAo6VrKYHrdg580X51W6rPK7tyG1ZqOQuw6Ig5jU4qb3gogno7OGzcycaM5pfBwCX8DOlHCJCbaXSGcIW0jDN3BD4v3VQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733809316; c=relaxed/relaxed;
-	bh=2P+jQaWUNjFuD4UCAcPCp5v1vlynyr+oJ6Z2P2dOL/E=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gq8qfo7x1uEljh6Xd8SW+uddJgzX5bN4YuBE2dnGDkK6jTmb7OoARDyruRD9Zhse6fRkXFoP04QgfevCZHiGuHa3v/SvkYg5fm/ouuQuCr77kJ7urrDwSxAHd44QaXDP4KRX0/6+MKn1g5occGjcE2mlYJujqfGmLWZsg3mH7JQGMRt8Wp1aLmHumnbBWNguTNhUQGJAd+A7+cJNRwhZDqtV1S2P++g20/1ggwRwKsj6L7ytkmsUG9/8DTszJc5X6GLBp4dVk1q9EXQAAWQhUEbcYWahwW3ppIw0iKPxqZm4RVpJRUdQMoLkVESer4KqPyIS0Y5xP2N3I9qSs9VAaA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TD3oxNdW; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1733809319; c=relaxed/relaxed;
+	bh=9b7d+qyvkKmlZann7J+1XFkGmFtpdtEdxyDOAxkGRuc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=dbo+8gDYYPcs3ksn6y482H2/ug+mXbMxLIY4CFDUr4twLzbauQoHNkIX7T8UOls5x1KTrnof1fl93iDb032tQxZ/RqeuAkFFM1O88LiY3Sj6Yj0Tq2ngSZDByolz9l6a00grgcFJsXsyC24F94WmNp3vN2vPOBcYunCF5lQUpS1k+W0fXG1J9Bx/9lbQ0Y5qJSUMfbJ+1Z62Ot0myvJtlZTNRbdzSGUVnq/kp6FD3S9cLthT2LIRl+3/9ihxjnKqHrBJ1HM4tjk5DxGXQnjecTZYBDy9GYTE5tFuURHoPi5t+lKDKrtBP2DN0xAkGJVOL3yUgd4fWlqTlzvVwbF4yg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HFKtCLIt; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TD3oxNdW;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HFKtCLIt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y6nfq1sxyz2yhn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2024 16:41:54 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B9NcWlu032615;
-	Tue, 10 Dec 2024 05:41:51 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y6nft4c96z2yhn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Dec 2024 16:41:58 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B9MLtEY018470;
+	Tue, 10 Dec 2024 05:41:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=2P+jQaWUNjFuD4UCAcPCp5v1vlynyr+oJ6Z2P2dOL
-	/E=; b=TD3oxNdWBoqRHX/MVLVygLR+K3+A+AjltyOXkSBROnrdptOlhOqXdKJsL
-	q51xJrIjeWvzvuZ0KLgW2386GjMNBijiegqA5CAorbJTCdQkrMvTzkUyROWhrNbT
-	esbq2XC60iXRJvF42D7p90HPfleQGlUgDVHn2K+Uotmnu9EUXIcxxc+KMF1XpT0k
-	mO0pnvqhgEVaRSpnP5bAD1oY0oYhyTiVMDi5sxXq7MMFFjJ0HGRSVPkrwl1rh0jr
-	5AE3fvV9k0mm2o0xLQPfmN+fBxel52wfJifFq7xVOLse1TzPlzWgtOiWTLrxFv40
-	lCR8UTyw/sx4nPmM8BJJoFc7+PErA==
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=9b7d+qyvkKmlZann7
+	J+1XFkGmFtpdtEdxyDOAxkGRuc=; b=HFKtCLItxw+KCK/uI1qeGE3R6e6tNmeAI
+	qIUNQueHcNFM6zsGep6lJ9UwqgGMwlrMwQWK7wyhaDFmA02y5OS13cv3M5wsmh9f
+	4oVdoaluCLgI57+Q1UpWnhpaomo4cS/9pShC7kELqlSEr/70/DJSho7+axxDjuCl
+	fc/2gd8QeO7yFmyvHgWlWtEr20KdgQ+rLZM0CKPj3r/8qwfuWG5Co3H0l/VwNKNI
+	NCvmbaxYBxtnLda1MDjkhbdHJ9kthkSLF8YMD0D30biH/+6ppRd6b4KzFZg8H6Hr
+	drQ+klz8LDzvPwZZqx8imiqzVo4XXdRzb2BvfdZGqrrqfyBpQ1cZg==
 Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43ce0xc7f2-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43cbsq4jjs-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Dec 2024 05:41:50 +0000 (GMT)
+	Tue, 10 Dec 2024 05:41:55 +0000 (GMT)
 Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4BA59uJi017397;
-	Tue, 10 Dec 2024 05:41:50 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 43d3d1hu7n-1
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4BA4trxY017369;
+	Tue, 10 Dec 2024 05:41:55 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 43d3d1hu7q-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Dec 2024 05:41:50 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4BA5fmfE18088346
+	Tue, 10 Dec 2024 05:41:54 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4BA5frog65601834
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 10 Dec 2024 05:41:48 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9CEDE20043;
-	Tue, 10 Dec 2024 05:41:48 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2B3F620040;
-	Tue, 10 Dec 2024 05:41:48 +0000 (GMT)
+	Tue, 10 Dec 2024 05:41:53 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 48BBD20043;
+	Tue, 10 Dec 2024 05:41:53 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C8C4E20040;
+	Tue, 10 Dec 2024 05:41:52 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.63.197.14])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 10 Dec 2024 05:41:48 +0000 (GMT)
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Dec 2024 05:41:52 +0000 (GMT)
 Received: from jarvis.ozlabs.ibm.com.com (unknown [9.36.5.92])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 5CC7760687;
-	Tue, 10 Dec 2024 16:41:41 +1100 (AEDT)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 438FC60AF0;
+	Tue, 10 Dec 2024 16:41:47 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, fbarrat@linux.ibm.com, ukrishn@linux.ibm.com,
         manoj@linux.ibm.com, clombard@linux.ibm.com, vaibhav@linux.ibm.com
-Subject: [PATCH 0/2] Deprecate cxl and cxlflash drivers
-Date: Tue, 10 Dec 2024 16:40:53 +1100
-Message-ID: <20241210054055.144813-1-ajd@linux.ibm.com>
+Subject: [PATCH 2/2] scsi/cxlflash: Deprecate driver
+Date: Tue, 10 Dec 2024 16:40:55 +1100
+Message-ID: <20241210054055.144813-3-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20241210054055.144813-1-ajd@linux.ibm.com>
+References: <20241210054055.144813-1-ajd@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,48 +93,64 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: rKu_YlGomn6n8q2dRNRVIjGEXP3dN9uA
-X-Proofpoint-ORIG-GUID: rKu_YlGomn6n8q2dRNRVIjGEXP3dN9uA
+X-Proofpoint-ORIG-GUID: ZpxFikb_j4vs-7Bvs-T4OsDSdT_Ho2Al
+X-Proofpoint-GUID: ZpxFikb_j4vs-7Bvs-T4OsDSdT_Ho2Al
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
  definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- spamscore=0 clxscore=1015 impostorscore=0 mlxscore=0 mlxlogscore=440
- priorityscore=1501 malwarescore=0 adultscore=0 bulkscore=0 phishscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=625 adultscore=0
+ lowpriorityscore=0 clxscore=1015 phishscore=0 impostorscore=0
+ suspectscore=0 spamscore=0 mlxscore=0 priorityscore=1501 malwarescore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2411120000 definitions=main-2412100039
 
-This series marks the cxl and cxlflash drivers as obsolete/deprecated,
-disables them by default, and prints a warning to users on probe.
+We intend to remove the cxlflash driver in an upcoming release. It is
+already marked as Obsolete in MAINTAINERS.
 
-CAPI devices have been out of production for some time, and we're not
-aware of any remaining users who are likely to want a modern kernel.
-There's almost certainly some remaining driver bugs and we don't have much
-hardware available to properly test the drivers any more.
+The cxlflash driver has received minimal maintenance for some time, and
+the CAPI Flash hardware that uses it is no longer commercially available.
 
-This was previously discussed at [0] - I've decided not to try to do
-anything funny with the Kconfig settings as explored in that thread, as it
-seems unlikely to have any significant benefit.
+Add a warning message on probe and change Kconfig to label the driver as
+deprecated and not build the driver by default.
 
-This series will be followed up with patches to remove the drivers and
-associated arch code, which I hope will be merged in the following cycle.
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+---
+ drivers/scsi/cxlflash/Kconfig | 6 ++++--
+ drivers/scsi/cxlflash/main.c  | 2 ++
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-[0] https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20240409031027.41587-2-ajd@linux.ibm.com/
-
-Andrew Donnellan (2):
-  cxl: Deprecate driver
-  scsi/cxlflash: Deprecate driver
-
- Documentation/ABI/{testing => obsolete}/sysfs-class-cxl | 3 +++
- MAINTAINERS                                             | 4 ++--
- drivers/misc/cxl/Kconfig                                | 6 ++++--
- drivers/misc/cxl/of.c                                   | 2 ++
- drivers/misc/cxl/pci.c                                  | 2 ++
- drivers/scsi/cxlflash/Kconfig                           | 6 ++++--
- drivers/scsi/cxlflash/main.c                            | 2 ++
- 7 files changed, 19 insertions(+), 6 deletions(-)
- rename Documentation/ABI/{testing => obsolete}/sysfs-class-cxl (99%)
-
+diff --git a/drivers/scsi/cxlflash/Kconfig b/drivers/scsi/cxlflash/Kconfig
+index 5533bdcb0458..c424d36e89a6 100644
+--- a/drivers/scsi/cxlflash/Kconfig
++++ b/drivers/scsi/cxlflash/Kconfig
+@@ -4,10 +4,12 @@
+ #
+ 
+ config CXLFLASH
+-	tristate "Support for IBM CAPI Flash"
++	tristate "Support for IBM CAPI Flash (DEPRECATED)"
+ 	depends on PCI && SCSI && (CXL || OCXL) && EEH
+ 	select IRQ_POLL
+-	default m
+ 	help
++	  The cxlflash driver is deprecated and will be removed in a future
++	  kernel release.
++
+ 	  Allows CAPI Accelerated IO to Flash
+ 	  If unsure, say N.
+diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+index 60d62b93d624..62806f5e32e6 100644
+--- a/drivers/scsi/cxlflash/main.c
++++ b/drivers/scsi/cxlflash/main.c
+@@ -3651,6 +3651,8 @@ static int cxlflash_probe(struct pci_dev *pdev,
+ 	int rc = 0;
+ 	int k;
+ 
++	dev_err_once(&pdev->dev, "DEPRECATION: cxlflash is deprecated and will be removed in a future kernel release\n");
++
+ 	dev_dbg(&pdev->dev, "%s: Found CXLFLASH with IRQ: %d\n",
+ 		__func__, pdev->irq);
+ 
 -- 
 2.47.1
 
