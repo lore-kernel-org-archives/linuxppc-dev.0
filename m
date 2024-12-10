@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-3949-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 421EFE7717F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 22:05:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB726E7717F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 22:05:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRn4hlrz30TP;
-	Wed, 11 Dec 2024 09:03:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRp0L9jz304f;
+	Wed, 11 Dec 2024 09:03:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733868229;
-	cv=none; b=k/QLxm5Zv0yB07EA1PPWITCkzHs0ZebU1h4ljJujn1CyQd3g9lVeGCnQkhzOznYPS5a0ofCR00+2orRiUaD15qbqV7NMa3VbEQg10WGE+UJk2iq3Ww3cm+tah15gJpvtXZwsQHv3yGhUokLaq7Dvg0NnP/v+sGpvpHuAP91t5DfoYmAl92PEmqYdzv+i9if1abg0P036vjcMzEntr/5o8M+v8pj6x97vTgbTCWAelPv7gty8GTlO1TLYrywNcUcZOHp/SzAQgVbQAyD41i80k+pUnN2Mdbsna7qMZXKc4BmkitXEhlBn2GXF5fhrtwMa8HLj0cWOuBt+an3Jj0CkQw==
+	cv=none; b=HSE5dLHxdGezZqZ8ac79q6W3mBFM5arTvq2vaCutKQUZed19zKP8ZxhfPwc8CPwPhRE54X3u4cVL2XZ1RCTLsldxz/rMvdCDx3HkmKEU5T57FSBitulKzINkfY9IEcL1biHFn6CRH3NV+hkWwILZjolTPqC8eCtk0+uvQtH3nld9LHqN4wKypdUc/O/87S05bwkk5ImQHdCm2J4+ftY+DF0h7jk0h9wN0Jke8rJZBo8+WFYBXj2pw518r0DIfDeMTwbktRAa1T6/CUKsuZ1WPkBS3binJdyM/PZWWP357yQQBxjVUj++E0yA1NskroCgVu7rkWy0JnZt8OnyC5L8fQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1733868229; c=relaxed/relaxed;
-	bh=U++D0WKRUcBPTXKKmA8ay83+fBnoO24djfuDhPxnmd0=;
+	bh=pNf1urZZ7beXITMyG6cNpTQM4ujE/reyCjI7dxR8TrA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ICydGFWRrjqV8uGm3j70EsV44hjlTsppWuEiZ5PRurzTfS7IqIybcXGI2JquV4AzBL4vG0GgNqowWrMB1c+gDOC1NI7D3Tv6/nnE8/zv+CnlCMcDDsFLHS/txaOiN1Jy4i6T4lv3amn1arClLQRyp71jPu4GKdQs0tuhMuSKxfMqChX0j+x+oPfSM6kytJ/p/zpEdLEQb3/yAXEignC77Di/833iX7QBAqSGCpF5A40J+YNoTNRWdlEo2FgGKZtr6IeAriRosyJSSvS/0y6jxH+dEq/EfkHqAfu0UzI1aSXMWafWMfouTS48+y7AH+6nr/09GhRm39d3prR5krThMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=i9DsTNH+; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+	 In-Reply-To:To:Cc; b=ZTqNc4gU4efCSbaUqbna5BVwRgzwmgG8ge2z5GIsg4dqvKESi/0pPf5RarUZfEctz0KRYHb67mDiXUOYzRrjj57MvxV8nnjEHBbW94IHbBUEJwHijRh/aqBooBrHv6UGgn+9EPrnC7upJsqLiF6Kwe2lkAe2C1iqCiO+K9oSvk9ox4R3InCZ5kfZxkalpNJEFuIiDWDMl9BV2sRUte2Lg/41E7xqd/7zKLBtz0ZyvGK2YZQkkSGh5eQYK4O3RMwHMmqLB7XovgEdgwCBYEEvGElZ46v8VUPIw56EVljFIb+ZxW2wT5JARnSsXukFnYO6st3eBuplttOvjGUDVCeCOg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=ey2u4hFu; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=i9DsTNH+;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=ey2u4hFu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRj6Kywz30NF
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 09:03:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CRk2PVPz30Nr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 09:03:46 +1100 (AEDT)
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 6FF4C2047230;
-	Tue, 10 Dec 2024 14:02:38 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 6FF4C2047230
+	by linux.microsoft.com (Postfix) with ESMTPSA id 4B3EA204722C;
+	Tue, 10 Dec 2024 14:02:37 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 4B3EA204722C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1733868158;
-	bh=U++D0WKRUcBPTXKKmA8ay83+fBnoO24djfuDhPxnmd0=;
+	s=default; t=1733868157;
+	bh=pNf1urZZ7beXITMyG6cNpTQM4ujE/reyCjI7dxR8TrA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=i9DsTNH+sl/IoEAtSjlSJHTOE30TcOTSfxv7yvCJsXzsKYC64wXa+LBK94U2wED8+
-	 6hMcKIbUoHeurUTa3oCFtWHdRYvf3LnrkdYUlQGzEUBgp5Wh7dgkbASpnSVSuIShxl
-	 Qe59P7FSrX+a5TC/+UUUxnQ63OeNqL5idRg6Tx5c=
+	b=ey2u4hFur56upsg36Bzzf5E6sp9TxIQJWauHtVHyZKWxl2TYAXbOMES9gB/LrtTHt
+	 EMIcdvfnDr4nFfA+fPKgnRb6wrIZBNFQYmxUUa3IOMgJ6rbLPy51pP+s0wIlgpVbyY
+	 W7PI6jGCodUt7pK+WAXoxoZrhQg9ZJ/5kGvj+4iw=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Tue, 10 Dec 2024 22:02:42 +0000
-Subject: [PATCH v3 11/19] scsi: pm8001: Convert timeouts to
+Date: Tue, 10 Dec 2024 22:02:36 +0000
+Subject: [PATCH v3 05/19] powerpc/papr_scm: Convert timeouts to
  secs_to_jiffies()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -55,7 +55,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241210-converge-secs-to-jiffies-v3-11-ddfefd7e9f2a@linux.microsoft.com>
+Message-Id: <20241210-converge-secs-to-jiffies-v3-5-ddfefd7e9f2a@linux.microsoft.com>
 References: <20241210-converge-secs-to-jiffies-v3-0-ddfefd7e9f2a@linux.microsoft.com>
 In-Reply-To: <20241210-converge-secs-to-jiffies-v3-0-ddfefd7e9f2a@linux.microsoft.com>
 To: Pablo Neira Ayuso <pablo@netfilter.org>, 
@@ -140,22 +140,22 @@ the following Coccinelle rules:
 
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- drivers/scsi/pm8001/pm8001_init.c | 2 +-
+ arch/powerpc/platforms/pseries/papr_scm.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/pm8001/pm8001_init.c b/drivers/scsi/pm8001/pm8001_init.c
-index f8c81e53e93f7849bbe7fe9cbc861f22b964bc39..22e0e79e88ab0a60965ff3809de116eb4a6851e2 100644
---- a/drivers/scsi/pm8001/pm8001_init.c
-+++ b/drivers/scsi/pm8001/pm8001_init.c
-@@ -736,7 +736,7 @@ static int pm8001_init_sas_add(struct pm8001_hba_info *pm8001_ha)
- 		return -EIO;
- 	}
- 	time_remaining = wait_for_completion_timeout(&completion,
--				msecs_to_jiffies(60*1000)); // 1 min
-+				secs_to_jiffies(60)); // 1 min
- 	if (!time_remaining) {
- 		kfree(payload.func_specific);
- 		pm8001_dbg(pm8001_ha, FAIL, "get_nvmd_req timeout\n");
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index f84ac9fbe203c111046464b9100866dddae687bb..f7c9271bda58433f395648063e60409a8d3c11d9 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -544,7 +544,7 @@ static int drc_pmem_query_health(struct papr_scm_priv *p)
+ 
+ 	/* Jiffies offset for which the health data is assumed to be same */
+ 	cache_timeout = p->lasthealth_jiffies +
+-		msecs_to_jiffies(MIN_HEALTH_QUERY_INTERVAL * 1000);
++		secs_to_jiffies(MIN_HEALTH_QUERY_INTERVAL);
+ 
+ 	/* Fetch new health info is its older than MIN_HEALTH_QUERY_INTERVAL */
+ 	if (time_after(jiffies, cache_timeout))
 
 -- 
 2.43.0
