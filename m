@@ -1,45 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-3936-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3935-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F980E77182
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 22:03:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21E1CE77180
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 22:03:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CR56KXWz2yXd;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CR56Kv0z304l;
 	Wed, 11 Dec 2024 09:03:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=13.77.154.182
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733868193;
-	cv=none; b=b5hGH5G6U9OxUUDanHgrSqh04OyWI2URupr8wX1yqTmpx4g0YHvCDFLaaJpSzu+Z0t23ayUOA2hAnLKkCuYDp8mr8meiiv0/VSCoRH5AXzwxkfDJ9uvJH9cpBdr2Qs9bfB4viBEdpeozUM2i5Am+0HeVCxlgKsT5fx0+xW2WmX+8ye5OFDbBHhVe8Zjn54gyYNXf60oPtStDWqyZge+5TusQnYhQDlqi4R86BhoG/w6sWgR8mpkawnxMXT8TW/6308yE5v5KzwSDWwucDiK3vj4+vtw6dNFTDXBGQnWc95tOipee8OoPMFRnC0jnFZAC/iRWocCK//MEEt5zGYQgMg==
+	cv=none; b=bMzSoS68yYzP6IWwJW8QdiFcW1azjhs3jUqxnDp33wBRcfbmSUiDyrffRbreCtWXbVshAE2KlSL3rJw1Aqh8TruarnRfiqW5DeugYWEQKeSytaNMUj0/w5bK7g2FFQsKf7yVihlcuOcqiQpIw3xGLVkL5Ssdc26/qysWfSmYE6PcqONswgH/N3rJE41ixacnctwazSfccV67yA391ppqgPQPB8HPsqHkTYuxSj8gks2NXNXMlfDEYQa3SIU87C3QqkMU1xj3U5mDqt0jULp47c6KRy52scxyvVwLPiChSfbW7ERWX48b8aPsInNoya10ofZXbgLb+m69afWd3V73iw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1733868193; c=relaxed/relaxed;
-	bh=oAoRcxFx6r3qiWDnRBBsiLzbuwo4yEAyTzO1K822O7I=;
+	bh=c41QzYd4hhSXlS6Xp2pgWqH2EB3T3v3i9Pb37cjnO/o=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=EMxdpvDSq7mapD3rpfNsjxqwhbgrg/GAgWYCY4ve4LXC+8KbpuFq5XgKCsQKQdBFBXnc44PVWop3dvaqKXd5/9uyvrOI9Uf1JROkhkAULNu1eaXv1m8foHzSyyBt6GrJdCRLLo187FzBRjkKBAjeWchs8RconqymOmKacSQFSR5dKMoPzmmk3WJzGHpaxyD7B//BnyFcXqc0ohg8uR2c/E6L5mCNfBqhbmkxgZqu0uTAcMkfiwHWg3DMoNaiYvrJ8amOOuhtYHCcEMbAPT60hP+bG2E8U2Y3t9dxvOOg6osc3456ITFjroKD9Ln/6lKzo0xOAD4xszRSsJ/h7djtlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=U3VeWMEj; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
+	 In-Reply-To:To:Cc; b=UkTQi5RrhexOxaT/G+p2JJSk1bqkpNx1s8p7UZ3kYX0vCCVqq6ICnvrfBJSNFRtjphzpRlgv6+fnzD7SEEmU0omyBLDHfcBZctiHWnPUzbYYnqIy37FbfTNORv+Fgo0Va2lHV5JIOLiZN6/GgFSrOi5ix82lacopSRD9chlhQg46XVxjk5q8i9ATbpO9vTYQxoZ9lGwGWFQQhAl3Jh0gRrEz5Q9octMnk9OI1IrfjZq++IJC++wzsNJYoVS50i2A7T6Zl+5Vm7bLNYtMTnuwQdg1d7tAYNhfKdcUywhQOFEqbhVzdjREjE/5KFV6fQBolpIoxtk6IUNEhFpnMrdJJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com; dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=qVCIV9cf; dkim-atps=neutral; spf=pass (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.microsoft.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=U3VeWMEj;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.microsoft.com header.i=@linux.microsoft.com header.a=rsa-sha256 header.s=default header.b=qVCIV9cf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.microsoft.com (client-ip=13.77.154.182; helo=linux.microsoft.com; envelope-from=eahariha@linux.microsoft.com; receiver=lists.ozlabs.org)
 Received: from linux.microsoft.com (linux.microsoft.com [13.77.154.182])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CR06w3wz2yYd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 09:03:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7CR12TKTz2ykf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 09:03:09 +1100 (AEDT)
 Received: from eahariha-devbox.internal.cloudapp.net (unknown [40.91.112.99])
-	by linux.microsoft.com (Postfix) with ESMTPSA id 8EC1F2047228;
+	by linux.microsoft.com (Postfix) with ESMTPSA id E562F204722A;
 	Tue, 10 Dec 2024 14:02:36 -0800 (PST)
-DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com 8EC1F2047228
+DKIM-Filter: OpenDKIM Filter v2.11.0 linux.microsoft.com E562F204722A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.microsoft.com;
-	s=default; t=1733868156;
-	bh=oAoRcxFx6r3qiWDnRBBsiLzbuwo4yEAyTzO1K822O7I=;
+	s=default; t=1733868157;
+	bh=c41QzYd4hhSXlS6Xp2pgWqH2EB3T3v3i9Pb37cjnO/o=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=U3VeWMEj1NoccyfU44IlXr+eH+dIb+Y1FX88FHYXU4q03PECflKzMMc2KhmQfWdxA
-	 2LtcSsTBowp5J1k4JjK8tQOvB5yIwMjDbVNHxvHTREwcCEJZMCYyv+0rZVYLLCY+lW
-	 lVwyzMWVt2MunqqkcT6KDTr1TpTutKDRbWdkcUjw=
+	b=qVCIV9cfYQFUEbAPN5oHTbVOOCMPtJTRnplX1niaLB3lEuL2MM5F44Gr4RM6lOTTS
+	 WXCIz2JA6aYjhurN56TEZJEQV0OG8AVSPHDGlGJRGWabTGSgGWE+1I7d1M8c078PhJ
+	 k5GeR3RvYMN/zDxLHn2xchQHWB1a1MyycuJ1TrJU=
 From: Easwar Hariharan <eahariha@linux.microsoft.com>
-Date: Tue, 10 Dec 2024 22:02:32 +0000
-Subject: [PATCH v3 01/19] netfilter: conntrack: Cleanup timeout definitions
+Date: Tue, 10 Dec 2024 22:02:34 +0000
+Subject: [PATCH v3 03/19] arm: pxa: Convert timeouts to use
+ secs_to_jiffies()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,7 +55,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241210-converge-secs-to-jiffies-v3-1-ddfefd7e9f2a@linux.microsoft.com>
+Message-Id: <20241210-converge-secs-to-jiffies-v3-3-ddfefd7e9f2a@linux.microsoft.com>
 References: <20241210-converge-secs-to-jiffies-v3-0-ddfefd7e9f2a@linux.microsoft.com>
 In-Reply-To: <20241210-converge-secs-to-jiffies-v3-0-ddfefd7e9f2a@linux.microsoft.com>
 To: Pablo Neira Ayuso <pablo@netfilter.org>, 
@@ -120,48 +121,47 @@ Cc: netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
  Easwar Hariharan <eahariha@linux.microsoft.com>
 X-Mailer: b4 0.14.2
 
-None of the higher order definitions are used anymore, so remove
-definitions for minutes, hours, and days timeouts. Convert the seconds
-denominated timeouts to secs_to_jiffies()
+Commit b35108a51cf7 ("jiffies: Define secs_to_jiffies()") introduced
+secs_to_jiffies(). As the value here is a multiple of 1000, use
+secs_to_jiffies() instead of msecs_to_jiffies to avoid the multiplication.
+
+This is converted using scripts/coccinelle/misc/secs_to_jiffies.cocci with
+the following Coccinelle rules:
+
+@@ constant C; @@
+
+- msecs_to_jiffies(C * 1000)
++ secs_to_jiffies(C)
+
+@@ constant C; @@
+
+- msecs_to_jiffies(C * MSEC_PER_SEC)
++ secs_to_jiffies(C)
 
 Signed-off-by: Easwar Hariharan <eahariha@linux.microsoft.com>
 ---
- net/netfilter/nf_conntrack_proto_sctp.c | 21 ++++++++-------------
- 1 file changed, 8 insertions(+), 13 deletions(-)
+ arch/arm/mach-pxa/sharpsl_pm.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/net/netfilter/nf_conntrack_proto_sctp.c b/net/netfilter/nf_conntrack_proto_sctp.c
-index 4cc97f971264ed779434ab4597dd0162586b3736..7c6f7c9f73320dd208bd0940f539bd9e662e62d0 100644
---- a/net/netfilter/nf_conntrack_proto_sctp.c
-+++ b/net/netfilter/nf_conntrack_proto_sctp.c
-@@ -39,20 +39,15 @@ static const char *const sctp_conntrack_names[] = {
- 	[SCTP_CONNTRACK_HEARTBEAT_SENT]		= "HEARTBEAT_SENT",
- };
+diff --git a/arch/arm/mach-pxa/sharpsl_pm.c b/arch/arm/mach-pxa/sharpsl_pm.c
+index 0c8d9000df5a6384d615cf231ff986c0c6b71681..dd930e3a61a493293597815782d2ffd36605a700 100644
+--- a/arch/arm/mach-pxa/sharpsl_pm.c
++++ b/arch/arm/mach-pxa/sharpsl_pm.c
+@@ -31,10 +31,10 @@
+ /*
+  * Constants
+  */
+-#define SHARPSL_CHARGE_ON_TIME_INTERVAL        (msecs_to_jiffies(1*60*1000))  /* 1 min */
+-#define SHARPSL_CHARGE_FINISH_TIME             (msecs_to_jiffies(10*60*1000)) /* 10 min */
+-#define SHARPSL_BATCHK_TIME                    (msecs_to_jiffies(15*1000))    /* 15 sec */
+-#define SHARPSL_BATCHK_TIME_SUSPEND            (60*10)                        /* 10 min */
++#define SHARPSL_CHARGE_ON_TIME_INTERVAL        (secs_to_jiffies(60))
++#define SHARPSL_CHARGE_FINISH_TIME             (secs_to_jiffies(10*60))
++#define SHARPSL_BATCHK_TIME                    (secs_to_jiffies(15))
++#define SHARPSL_BATCHK_TIME_SUSPEND            (60*10) /* 10 min */
  
--#define SECS  * HZ
--#define MINS  * 60 SECS
--#define HOURS * 60 MINS
--#define DAYS  * 24 HOURS
--
- static const unsigned int sctp_timeouts[SCTP_CONNTRACK_MAX] = {
--	[SCTP_CONNTRACK_CLOSED]			= 10 SECS,
--	[SCTP_CONNTRACK_COOKIE_WAIT]		= 3 SECS,
--	[SCTP_CONNTRACK_COOKIE_ECHOED]		= 3 SECS,
--	[SCTP_CONNTRACK_ESTABLISHED]		= 210 SECS,
--	[SCTP_CONNTRACK_SHUTDOWN_SENT]		= 3 SECS,
--	[SCTP_CONNTRACK_SHUTDOWN_RECD]		= 3 SECS,
--	[SCTP_CONNTRACK_SHUTDOWN_ACK_SENT]	= 3 SECS,
--	[SCTP_CONNTRACK_HEARTBEAT_SENT]		= 30 SECS,
-+	[SCTP_CONNTRACK_CLOSED]			= secs_to_jiffies(10),
-+	[SCTP_CONNTRACK_COOKIE_WAIT]		= secs_to_jiffies(3),
-+	[SCTP_CONNTRACK_COOKIE_ECHOED]		= secs_to_jiffies(3),
-+	[SCTP_CONNTRACK_ESTABLISHED]		= secs_to_jiffies(210),
-+	[SCTP_CONNTRACK_SHUTDOWN_SENT]		= secs_to_jiffies(3),
-+	[SCTP_CONNTRACK_SHUTDOWN_RECD]		= secs_to_jiffies(3),
-+	[SCTP_CONNTRACK_SHUTDOWN_ACK_SENT]	= secs_to_jiffies(3),
-+	[SCTP_CONNTRACK_HEARTBEAT_SENT]		= secs_to_jiffies(30),
- };
- 
- #define	SCTP_FLAG_HEARTBEAT_VTAG_FAILED	1
+ #define SHARPSL_WAIT_CO_TIME                   15  /* 15 sec */
+ #define SHARPSL_WAIT_DISCHARGE_ON              100 /* 100 msec */
 
 -- 
 2.43.0
