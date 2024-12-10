@@ -1,72 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-3925-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3926-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13F59E7717F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 18:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B006E7717F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Dec 2024 19:21:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y76VZ3KXpz2yvh;
-	Wed, 11 Dec 2024 05:20:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733854854;
-	cv=none; b=EVYrdjim4vTnh2WZLdQiYylOIM8Q2Rgw67t9bz2SkEdTfSLLV1uc6h3ac+Iqpg2v75+NA1MlCXOb+AJBYNrXiWStTGZmKEnDVIkh1zbsuxmKJ3I7UQo9O6cLUAdqHA5Zvif0oflutL/nla7/zISCQZOiUsDx3r5ShRhjUcW6pZvkYfCUiHVItmEN/0J2MW0rTZYxqsd1iM7BzZ/K4PjdisqfXmUWskslIjxVvJt6TUtdYixi16ckT2fJRprF1ZGSlwd4IucW7O5slk05mztHHRbx6vRAFVRxWbsXg5cSrBJsB5AanhXBiMn2PvUIvnmrM3J6PRmLlxWa0oX/67r8hw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y77r54zWFz302N;
+	Wed, 11 Dec 2024 06:21:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733858469;
+	cv=none; b=GuEv1NxnIZ0F6eaO/O3aQB0W7jmfknXGds8vcxPl42ZwlwFy+VsIoaesx93hYb6fV6f6D3uNE1FrpAxyicuJP/NdvWJllgHPjObL75lfiHS7FL5j7HH4CqXdZJpKUR+aF7EPvC1IFblxy7FF2LLECdLJwanuMAneuD1BPDpHX9JswK3sTlhc80AL7hf7kKyhN+wtevvrLMPoObj/2l+2n++sUL4jhIKD3C8Kwg9THi5y/i+GzxKs3dHlmHtXG3gsmOyL1ih/UAxefSGGIDkwBUPXT1PcEeF2l9jVoPbznZRGRldSEtIfbuAWZ27G2OxV0V9eyE0xBHSBn8JcVELwEw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733854854; c=relaxed/relaxed;
-	bh=eK4GlBn6oLjIf2lO+aA7UPawj/3WzZ9ZOg56Ey1eZ18=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=VmnUHc3MHVZM42o3+/z37MHXhZbPncGbVIa3hE9+1Iv5ixbeEaJxPNxlFxxrKwm+MwaQn4ptkEOKQAn4EUUNZS5Eq9DueGij+kqs+0OXricScrC8YigDX3Jd3boO8zzCE/57biDYhxAuTGJdzYERm9O/zCgmIfvWc/cOgRqNaUtJO7liR1CfTX7Q8QVeu9PJxOCyOp+e+7JD34OcxZXn6o0NNj2OJ8xnkRjqktB5+qsSFPLp+EOG9sEMkBtVEJGFGxndPTtYrWP0UXb8WGfSlVnHCu0/smsyhy0midWYTChKcuacwoc786JQpdtY0QnoOKrKy9E8ZbSW/sbKXGhV0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mGta4y4r; dkim-atps=neutral; spf=none (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1733858469; c=relaxed/relaxed;
+	bh=A9AGNc0Lvn5ogPnrcm65UtGjdq5eKcVNLIEa5EktGeQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XDvhVSWk7gZC/nAQx2nh6lGS/lj1oE42pBl7/N5pNfXHocZE8vLJF3I17bHZMyjRJ/tdmH6Yi9Se1Ztbthhco5jZYfJXV1nbPZ7duSYz6iJs0H+jC/ujH/KBMbCHpkkGsKydee+GG7nKT/m0lTFpDSOdJFilxiDcB+zowhOP7kECcbKEAoFcd0GGBr5ZKARTRTSGr5weGbXO1gIZ6GQRBSQc+QfECFaWvNa2dpCwExsgpN5o1WKQuVp5NA40ydax7e3/0eFlxPqmIHjLD9OutwvqpGH/poTDaFuGqPVM2wofpYP9jg/GHIdcY2GC/XQdxL+skQLhKFhZfkyflg03gw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=J5LbnbRf; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mGta4y4r;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=J5LbnbRf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Wed, 11 Dec 2024 05:20:50 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y76VV53bRz2ynr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 05:20:50 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1733854851; x=1765390851;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=bOl88BIrBVQcyS4UvrQpTwuyM5PF7qtNXyWSrImey1s=;
-  b=mGta4y4rxHkgYapDxPUFnbc8imT5krXCDbaTRuOmqi1xJYNuEQAd5Q09
-   J58xo6OuO6nz2lLM6Z+U4ShtYa8zOQzlcWW8uzHGdWWrWI25PVP8F/3BT
-   bgREI1HNA2usz7nnjfvrDQtHvkf3VGO1IBELCG4UY7YQIJjX7NkmlVXqv
-   +UnVJYNbVmN9PkiqvsDpKptyuW4UxLebmfoiP7nA2sD2L9dcBwPib1+/U
-   lfKdoC4iV1zRlIMcWphS9LVtLMgvkF8kEPKydm3WUksLCA+kOOylv8dy5
-   u4Cm1/QmbZbz6RHKjXsnrT4+BsfyDCu98d2IM+ntIKoTM27wD+ALNdpw5
-   A==;
-X-CSE-ConnectionGUID: uWWdWNv1Tu6+hcLycdY/WA==
-X-CSE-MsgGUID: 4u98f+uATJ6laG9RX1ef9A==
-X-IronPort-AV: E=McAfee;i="6700,10204,11282"; a="51626754"
-X-IronPort-AV: E=Sophos;i="6.12,223,1728975600"; 
-   d="scan'208";a="51626754"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Dec 2024 10:19:42 -0800
-X-CSE-ConnectionGUID: V8DJcyq5QXmnIWhcgVU0TA==
-X-CSE-MsgGUID: M4jpkmM9QUmVBhSJX0WQWg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.12,223,1728975600"; 
-   d="scan'208";a="99986249"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.56])
-  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Dec 2024 10:19:39 -0800
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Tue, 10 Dec 2024 20:19:36 +0200 (EET)
-To: Bjorn Helgaas <bhelgaas@google.com>
-cc: linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-    Oliver O'Halloran <oohall@gmail.com>, Lukas Wunner <lukas@wunner.de>, 
-    =?ISO-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kw@linux.com>, 
-    LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 0/8] PCI: Consolidate TLP Log reading and printing
-In-Reply-To: <cb44bafe-a7ec-889b-5c1c-ee8ca6c540a0@linux.intel.com>
-Message-ID: <38a03e53-789e-363a-c336-dc939161d7d7@linux.intel.com>
-References: <20240913143632.5277-1-ilpo.jarvinen@linux.intel.com> <cb44bafe-a7ec-889b-5c1c-ee8ca6c540a0@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y77r12PhYz2yDp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 06:21:05 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4FE445C5D56;
+	Tue, 10 Dec 2024 19:20:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B9BAC4CED6;
+	Tue, 10 Dec 2024 19:20:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733858460;
+	bh=ceTCYU0kBIVgKxl1o4KF3bKYCGW8KWEqpbWay4XK5P0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=J5LbnbRfaM9/8HSf00ueRdr6DpSL8qtb3PYCZOXM6uxSYHL8VqeAaihNUNbOO9WcX
+	 HGqe0/3oCog/anrDPUdqic7WW+5Te/4+1STSvrz2BZRbaJhG+SO3I+aYdS+Ubp0ovh
+	 qcfoY9QiY7OzGLJPDyGohszKVdr66rLMXRwZzNDC7jqWjptyL2Gn3RUSrWEI6MWA2/
+	 idz0xNaabatpRf7zfj81IEpvSm7yXcJiLFMOTiektrmyR/beylDcGLM8or+n/fkmaj
+	 yaqC0ICDwXZn0H+9Or6Q7EyenaVCjcbM5Kp2OiqX9tdUboYOFrYCsQP11EwoAR0MAK
+	 PAZxZnBf30UsA==
+Date: Tue, 10 Dec 2024 16:20:57 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ian Rogers <irogers@google.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Jiri Olsa <jolsa@kernel.org>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	Kan Liang <kan.liang@linux.intel.com>,
+	James Clark <james.clark@linaro.org>,
+	linux-perf-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, akanksha@linux.ibm.com,
+	maddy@linux.ibm.com, atrajeev@linux.vnet.ibm.com,
+	kjain@linux.ibm.com, disgoel@linux.vnet.ibm.com,
+	hbathini@linux.ibm.com
+Subject: Re: [PATCH v1] perf test expr: Fix system_tsc_freq for only x86
+Message-ID: <Z1iUmVRzN0V3vMpG@x1>
+References: <20241205022305.158202-1-irogers@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,35 +75,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-1421109454-1733854776=:905"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241205022305.158202-1-irogers@google.com>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, Dec 04, 2024 at 06:23:05PM -0800, Ian Rogers wrote:
+> The refactoring of tool PMU events to have a PMU then adding the expr
+> literals to the tool PMU made it so that the literal system_tsc_freq
+> was only supported on x86. Update the test expectations to match -
+> namely the parsing is x86 specific and only yields a non-zero value on
+> Intel.
 
---8323328-1421109454-1733854776=:905
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Namhyung,
 
-On Wed, 23 Oct 2024, Ilpo J=E4rvinen wrote:
+	Since you see no more problems and Athira tested it, I think
+this should go via perf-tools, right?
 
-> On Fri, 13 Sep 2024, Ilpo J=E4rvinen wrote:
->=20
-> > This series has the remaining patches of the AER & DPC TLP Log handling
-> > consolidation and now includes a few minor improvements to the earlier
-> > accepted TLP Logging code.
-> >=20
-> > v6:
-> > - Preserve "AER:"/"DPC:" prefix on the printed TLP line
-> > - New patch to add "AER:" also  on other lines of the AER error dump
->=20
-> Hi Bjorn,
->=20
-> A small reminder this series exists.
-
-Another reminder about this series. :-)
-
---=20
- i.
-
---8323328-1421109454-1733854776=:905--
+- Arnaldo
+ 
+> Fixes: 609aa2667f67 ("perf tool_pmu: Switch to standard pmu functions and json descriptions")
+> Reported-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+> Closes: https://lore.kernel.org/linux-perf-users/20241022140156.98854-1-atrajeev@linux.vnet.ibm.com/
+> Co-developed-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+> Signed-off-by: Ian Rogers <irogers@google.com>
+> ---
+>  tools/perf/tests/expr.c | 19 ++++++++++++-------
+>  1 file changed, 12 insertions(+), 7 deletions(-)
+> 
+> diff --git a/tools/perf/tests/expr.c b/tools/perf/tests/expr.c
+> index 41ff1affdfcd..726cf8d4da28 100644
+> --- a/tools/perf/tests/expr.c
+> +++ b/tools/perf/tests/expr.c
+> @@ -75,14 +75,12 @@ static int test__expr(struct test_suite *t __maybe_unused, int subtest __maybe_u
+>  	double val, num_cpus_online, num_cpus, num_cores, num_dies, num_packages;
+>  	int ret;
+>  	struct expr_parse_ctx *ctx;
+> -	bool is_intel = false;
+>  	char strcmp_cpuid_buf[256];
+>  	struct perf_cpu cpu = {-1};
+>  	char *cpuid = get_cpuid_allow_env_override(cpu);
+>  	char *escaped_cpuid1, *escaped_cpuid2;
+>  
+>  	TEST_ASSERT_VAL("get_cpuid", cpuid);
+> -	is_intel = strstr(cpuid, "Intel") != NULL;
+>  
+>  	TEST_ASSERT_EQUAL("ids_union", test_ids_union(), 0);
+>  
+> @@ -245,12 +243,19 @@ static int test__expr(struct test_suite *t __maybe_unused, int subtest __maybe_u
+>  	if (num_dies) // Some platforms do not have CPU die support, for example s390
+>  		TEST_ASSERT_VAL("#num_dies >= #num_packages", num_dies >= num_packages);
+>  
+> -	TEST_ASSERT_VAL("#system_tsc_freq", expr__parse(&val, ctx, "#system_tsc_freq") == 0);
+> -	if (is_intel)
+> -		TEST_ASSERT_VAL("#system_tsc_freq > 0", val > 0);
+> -	else
+> -		TEST_ASSERT_VAL("#system_tsc_freq == 0", fpclassify(val) == FP_ZERO);
+>  
+> +	if (expr__parse(&val, ctx, "#system_tsc_freq") == 0) {
+> +		bool is_intel = strstr(cpuid, "Intel") != NULL;
+> +
+> +		if (is_intel)
+> +			TEST_ASSERT_VAL("#system_tsc_freq > 0", val > 0);
+> +		else
+> +			TEST_ASSERT_VAL("#system_tsc_freq == 0", fpclassify(val) == FP_ZERO);
+> +	} else {
+> +#if defined(__i386__) || defined(__x86_64__)
+> +		TEST_ASSERT_VAL("#system_tsc_freq unsupported", 0);
+> +#endif
+> +	}
+>  	/*
+>  	 * Source count returns the number of events aggregating in a leader
+>  	 * event including the leader. Check parsing yields an id.
+> -- 
+> 2.47.0.338.g60cca15819-goog
 
