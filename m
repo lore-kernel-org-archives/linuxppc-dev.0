@@ -1,63 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-3985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-3986-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8387AE7717D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2024 15:41:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 974AFE7717D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2024 16:26:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7fvb4nWZz2y8V;
-	Thu, 12 Dec 2024 02:40:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733931659;
-	cv=none; b=HCX6Q8pcCN1RlDBtvN99wdxOLz1/qMUHJWrP5VDNk+E1tjV4RMceghy15qx84CmBoIna/mQaq+nOXsYVJ9EU6fwHf1rWPEd5LF2Wiz/5AkLi11FuD4wCutNP+KbEK8d+hrjjMJ4T37GiMOi1LMTioi8zBrdFpKGXlG2Efa7kcpi5D/UOBWsmfWJE3Yi1EYb3Zii4ylTaRzZgmEyMI6nseFwvpra4qJnxzA6dgpCGD2JDkWJAPurnV6s84SedbnnwseHy94IIPzy4V3BWaIygoukXZ12X6EV/YDndMYPjYCpWIi8ftUyM6QVhtFlOoYiwGDpzz99SnVAvIeGc6I1h5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7gvZ1VB7z2xmk;
+	Thu, 12 Dec 2024 03:26:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733934362;
+	cv=none; b=C66FpYFtQc79CvC8p+Xce5s62GoKke4vbV1okQSfJPtt6kqupBMf2BSoXbEUx7Gy/aP4iSAO9Vt5UG+r4e6YyQUq1l3AuTrOCgUx2+WUIrIo04y+j/XuRiOih3eS3WZ9xqu9o2jRHu/szpYmowdyWkoKUM3NY9efU7ZQFXS1FD4O0FgFi5SVungrMlyrWITpagFnPOojUhIYDq40NYYWD6Ez/9bbeg1sAgRlgHWAq4Y6vH5IL00IFDIzIhZww+Wh7wzMJLS7oJLMAeW6Je7cnEP5zsfz1pYuQH07Og3r9hW2Log9uAH8+I3D5j4mzOetwAs4qlSTmzTcaoG/gqeQeg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733931659; c=relaxed/relaxed;
-	bh=5r3VXIp0XmMBXAlxSwILes2Jqbowq2uwAxf2gqQQs9w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WLJG8ydfLn4LTw4guyFz4yS6nBFWvS88ksGAgbbeJGWKR07B7zdxvcwAGxzoree60atViwqxv67hYJMV8AL5qpOW8BkvLYdSSt1Iar7y2Jfms1dFh6fBmbVfZu2hCU9SzgbIjyyKqRiC2yNSYmhVpLdpiOCeeALIMEu9R3pYKS7e6CvLaLY+CAKp+wDK8dQH3uePfo6xpMNrTKMH4/CAnBBkeP7bCUVGebOiZXGgC6+Iu/x+zRd+sulvaLWFtW9Dgt5ZTTiu6F9R3RWSVAVoq5UR+P6+3QiA3nIkBK2I9nvBb2VS0cSaZGsv/hQEYeDE6MtfvGArQbzJxscqJWZcAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TstP/GWE; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TstP/GWE;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1733934362; c=relaxed/relaxed;
+	bh=hPQ8VXlwA8GOB1w3iWzAiNzFcsHRJ+KDLPEtj88gxF8=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=e6StSeKn8bYNBVth0nDR1Shym/ADawlffw5g4JxQuyR9pEyIqqd/sVqXYaq8gbClyS0hyr4dpVrv3pqbLu9MhApvbbUEYv1LkN1A6QYMYCuI6cYl0ad4FKn5ilEnKyINPbVdel8r8qq28N8nW4tXcGGt+7yGsA6u70BGs1BPUNMIMAAIdmlRvY+i/0zFu0pQrjQKAjmt2TBEswSI/tJ88T2TsJZozAUrJsAxRsef1Hdg31Dd2lNzma5sNHQ79vQSnBRxr3eCQNupNCLjyaQ24zgqCrlSdNvakWhwwM+lhV3YSdBmGB37gF2Zvxz/AMAUuRs+6PZHOShUyzQ02HYaOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 222 seconds by postgrey-1.37 at boromir; Thu, 12 Dec 2024 03:26:00 AEDT
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y7fvZ0Fq4z2xmZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2024 02:40:58 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 2DB295C62D8;
-	Wed, 11 Dec 2024 15:40:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81CB5C4CEDD;
-	Wed, 11 Dec 2024 15:40:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733931655;
-	bh=bRL09e91cC7LQEEs/ysPp5d5gcrpXYKGy36AOC6GrXg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=TstP/GWESXn5mz/0JLh0l91WVzrEpldhSPLVjcRZOfjfaRBDoQ8RiIEfowR2lsWYP
-	 Rko9njDUpHK9O0sihWEULI9jWZm23b2vp96tZd/4UyoJS7EsbQkVaaTRV7pe9i+Hrd
-	 U3tMzhk106Tzqdus4BlDa0GMqaCbt9XBQnmxobIj/KYKQ05j/VUN3wXUKpQq2jiJcE
-	 kv/NySaaTLJK2HNg60sQ6d9PdiccerfOMOEzO2o3eIpk2zbXu6cCpQczNiRUreZ+s6
-	 zE02REc6cCuTFtf8LgRrk/iKbFiA+It8XsPAeMmG5yzR5Ghdg4JVIpmZyfJCraMiGj
-	 pYmVUTjqndtwQ==
-From: Frederic Weisbecker <frederic@kernel.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Frederic Weisbecker <frederic@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 06/19] soc/qman: test: Use kthread_run_on_cpu()
-Date: Wed, 11 Dec 2024 16:40:19 +0100
-Message-ID: <20241211154035.75565-7-frederic@kernel.org>
-X-Mailer: git-send-email 2.46.0
-In-Reply-To: <20241211154035.75565-1-frederic@kernel.org>
-References: <20241211154035.75565-1-frederic@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y7gvX6B48z2xbP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2024 03:26:00 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.18.186.231])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Y7gqj1gmpz6D8c1;
+	Thu, 12 Dec 2024 00:22:41 +0800 (CST)
+Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
+	by mail.maildlp.com (Postfix) with ESMTPS id F071B140AB8;
+	Thu, 12 Dec 2024 00:25:57 +0800 (CST)
+Received: from localhost (10.48.145.145) by frapeml500008.china.huawei.com
+ (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Wed, 11 Dec
+ 2024 17:25:57 +0100
+Date: Wed, 11 Dec 2024 16:25:55 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+CC: <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, "Mahesh
+ J Salgaonkar" <mahesh@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+	Lukas Wunner <lukas@wunner.de>, Krzysztof =?UTF-8?Q?Wilczy=C5=84ski?=
+	<kw@linux.com>, <linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v6 2/8] PCI: Move TLP Log handling to own file
+Message-ID: <20241211162555.00000968@huawei.com>
+In-Reply-To: <20240913143632.5277-3-ilpo.jarvinen@linux.intel.com>
+References: <20240913143632.5277-1-ilpo.jarvinen@linux.intel.com>
+	<20240913143632.5277-3-ilpo.jarvinen@linux.intel.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,40 +62,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
+X-Originating-IP: [10.48.145.145]
+X-ClientProxiedBy: lhrpeml500001.china.huawei.com (7.191.163.213) To
+ frapeml500008.china.huawei.com (7.182.85.71)
 
-Use the proper API instead of open coding it.
+On Fri, 13 Sep 2024 17:36:26 +0300
+Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com> wrote:
 
-However it looks like kthreads here could be replaced by the use of a
-per-cpu workqueue instead.
+> TLP Log is PCIe feature and is processed only by AER and DPC.
+> Configwise, DPC depends AER being enabled. In lack of better place, the
+> TLP Log handling code was initially placed into pci.c but it can be
+> easily placed in a separate file.
+>=20
+> Move TLP Log handling code to own file under pcie/ subdirectory and
+> include it only when AER is enabled.
+>=20
+> Signed-off-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
----
- drivers/soc/fsl/qbman/qman_test_stash.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Can sort of see this might get used outside AER sometime in the future
+but for now this seems sensible.
 
-diff --git a/drivers/soc/fsl/qbman/qman_test_stash.c b/drivers/soc/fsl/qbman/qman_test_stash.c
-index b7e8e5ec884c..f4d3c2146f4f 100644
---- a/drivers/soc/fsl/qbman/qman_test_stash.c
-+++ b/drivers/soc/fsl/qbman/qman_test_stash.c
-@@ -108,14 +108,12 @@ static int on_all_cpus(int (*fn)(void))
- 			.fn = fn,
- 			.started = ATOMIC_INIT(0)
- 		};
--		struct task_struct *k = kthread_create(bstrap_fn, &bstrap,
--			"hotpotato%d", cpu);
-+		struct task_struct *k = kthread_run_on_cpu(bstrap_fn, &bstrap,
-+							   cpu, "hotpotato%d");
- 		int ret;
- 
- 		if (IS_ERR(k))
- 			return -ENOMEM;
--		kthread_bind(k, cpu);
--		wake_up_process(k);
- 		/*
- 		 * If we call kthread_stop() before the "wake up" has had an
- 		 * effect, then the thread may exit with -EINTR without ever
--- 
-2.46.0
-
+Jonathan
 
