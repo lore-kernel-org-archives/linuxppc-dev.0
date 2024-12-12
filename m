@@ -1,69 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-4022-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27516E7717D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Dec 2024 23:29:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AF13E7717D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2024 02:07:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7sH41Nh7z2xrb;
-	Thu, 12 Dec 2024 10:28:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::4a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733959712;
-	cv=none; b=Tb9F8/jJbZXzv+M0xTePCAPR62nFU0r0GSig+/MZOOsRKbW/gZjCFhjlEbXWRHrqTMKnwAaE+m6DGQ4Y6YnnfFFsdkcSukFm4t8uBD+YdKGTIHBDkc0G2KQ4SxzScUNg1vX7VSTzmhw1alYzbmwFDEu4EjGH4NSihRMRuc3WHBZpQvEy1kB+NYYx8nueA4eTlJT2bUZ7dxBfcU68YmENj2k1bGNeaseJDafy3C7zxyDTkWpuFBQOBZeifMxIpL1ySVUdkOq4V/GsYJdyO9BAE39jHP6HAMPeZa6n19Qhz49Jl2VjNqympcqngyYyGtc8ibtnCdnX5Bhqe/E5F3EiIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7wpL6y2rz30TG;
+	Thu, 12 Dec 2024 13:07:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733969242;
+	cv=none; b=bBSXGLeRZq5I+oByUZcbTeUjXyQDd8OLt8zYZDIBs6vGelnXMfBW64n5zHykRUIBxXAza6hD3d9RkVil8yErqyDZdtE3ikWwmWfuS4rClJV2r/oor0vJLtvn+Ys+bnMbNygaM2eiaUUZIWh95VaUD28tuwFdhZo5wDjVi0WlLI/8EoR92TgtwV8AS/FEjwxehWOTrIwRNlmJ87IKrSdAg+VWzs8AGaKrTx+4jwyUeKjCZG6i7ojQxOJxxWrd1aLg8S3iWXMrA0Dor1R9b9m3Rm0bS/QEIHRBvEm5RARK+gBTBQmeugG7uDSaZmXou+YUwVeAkQOVbZzXdfP1p8fcfQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733959712; c=relaxed/relaxed;
-	bh=z6Hm5oOLdBb7ho6/nkMyyfkvkknoYZ/+aPdlC1ktc9c=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=ILLqdY1QZRsL2cyAq27AQEvYbl5NnfHd7PusAtitJhkGxQZxue38x2EGduJloom+q1FxrHGOrSP+huZ12mcwNz6xfKfZDkH0345L+9GCRjGix0J+J206Y7WxPJzIg84Q06af4Ae388pW1vc1LHCFPifxy26Sy6l5CkXl9YC5rhm06zpjRwhPxXORDVi01gyqEGJr29bla3ABASsP3SbpVAxF3qTeWMw55fr3mxXHJbBuVtM3azxYc1/8l6RvjKwaKZ1gDvabZgWtt5JT3Bzg7A2i/Izdl/1HULUEUyXR0vBQux7t0OcyPbnRZvDfJ2GkY5CimWZgy/IrqcsM38jvFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=P840lK1x; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::4a; helo=mail-oa1-x4a.google.com; envelope-from=3gcbazwskdamndohvkvlqjkjrrjoh.frpolqx0ssf-ghyolvwv.r2odev.ruj@flex--kaleshsingh.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--kaleshsingh.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1733969242; c=relaxed/relaxed;
+	bh=zsEQWcKkwE2tUR4EtqQ/7dt4QrY1pJqjE2F4WHaD4wk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=IhAKBnX24X4qrZbBc5kss+ncUzOrDjKnFi2pGW4hyBQh3sSv36MOOo1ggCbncDk2xEgHz32+iRtELY1EHyvZDXwZ+k6DnVQ2BNyd3rX4jCTutdKIIR9a+aHY+JVlEpQmf5BF5iXnxCjuXgG7+kgSK01NWYSo9ivN2gD5QKN5b3whLlC3wnH/C2mfkmFhazZrvMv7dxBJX9StNUnY9kLu3mUqm6UlKI3QJMlOvN9M9bc+JYSFc19+VF2xFxAwyP/k/XfE3AV/OEYIwSr/J4tZKf8QQhEp0hUYXH24P/D9dLXz2UjjEZ32o9TXDnH62HMQNPH6YNu2Qv3dd5qCPjT6sg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JRHdm3Gn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132; helo=mail-il1-x132.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=P840lK1x;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JRHdm3Gn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--kaleshsingh.bounces.google.com (client-ip=2001:4860:4864:20::4a; helo=mail-oa1-x4a.google.com; envelope-from=3gcbazwskdamndohvkvlqjkjrrjoh.frpolqx0ssf-ghyolvwv.r2odev.ruj@flex--kaleshsingh.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x4a.google.com (mail-oa1-x4a.google.com [IPv6:2001:4860:4864:20::4a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132; helo=mail-il1-x132.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-il1-x132.google.com (mail-il1-x132.google.com [IPv6:2607:f8b0:4864:20::132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y7sH31lbfz30fd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2024 10:28:31 +1100 (AEDT)
-Received: by mail-oa1-x4a.google.com with SMTP id 586e51a60fabf-29e5f045c93so13204fac.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 15:28:31 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y7wpK3tz2z30T2
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2024 13:07:21 +1100 (AEDT)
+Received: by mail-il1-x132.google.com with SMTP id e9e14a558f8ab-3a7dd54af4bso568325ab.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Dec 2024 18:07:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1733959704; x=1734564504; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=z6Hm5oOLdBb7ho6/nkMyyfkvkknoYZ/+aPdlC1ktc9c=;
-        b=P840lK1xaj8iE+u8jwhNlJ9HWqZIHQQ/YcIF3AC3iednBcTPCvcc/1p8D7jO+d+SWk
-         /13dCzosWrZMd7WdTah4Hnkj0Fwab9iW0h3cZW3sj0IYVXahxdai1wlyHfnWGS5kQXTI
-         UnWJb3A5KVGSc4YqiuANlb0aXjx9CsIwfNv/n5gksjCjEhB7y2TmtG3yK6/xjRvuZCUA
-         wP7VYvc3zfd32e9h/eBsNEYJVl521+mD3ZXT0M6BXtQ5S60fV3HZDgshVAiiTbkdlbPl
-         zWzae8Ic7oBtFA6SbdlNYGFra1+AKGawydYg+6r1Xfe4IDkKFQFWv7V2QnzT26ED/aCP
-         VY6A==
+        d=gmail.com; s=20230601; t=1733969237; x=1734574037; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=zsEQWcKkwE2tUR4EtqQ/7dt4QrY1pJqjE2F4WHaD4wk=;
+        b=JRHdm3GnyKe3L2ekkv4oZQiD6mmBT5Asrc8TBpYy760bDMn73zg0+KSmxvdqtFNAdr
+         cs1Ob8oyVNxIuKQ1QlK+VcUJIgcMx6xMpWDrienY1eUuef4vnuvg7fuT+uytocnvjHSv
+         ntT5t/y5Tt4nQEWFHGgZ80K9DUNVHhLDq02EjKOqFekbHfSYfDd186fpTmINN1WSRUND
+         ChXuUFBFlcWCeMnmnIzLL90eVpXgPRU8scWOZIl4rLqS9ghvyT7dOMpl+MazAGZKZwZ4
+         aPFPRTIZOITZPL15hAcDyGQndOuqEqdgPrZ8Gfdg8pZnsSGzblo4H1xp2IazgL/xNVuC
+         orOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733959704; x=1734564504;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=z6Hm5oOLdBb7ho6/nkMyyfkvkknoYZ/+aPdlC1ktc9c=;
-        b=MyndME2majCJ1E1TRL8dnaHp9UuUlFaCJ80rayxMppxUv6qiyjBUc1x6s0jJr4kyPG
-         2C9zXZHZAzXYqB3Lo3NPKDfbQgFMR4l6Nr7sMlEKKYyeJ3dAdxmjVwmMW11vGBdbyUhS
-         hT+kYmlZRANiwXJ8CCup38cGqwUE7FrwpeeJRfz638i8uF4xEftAsQhTZh7qg19N4Ww5
-         Tj7QOZ2+wna7LuHY/Gfp4mAH+wkDJYPoHC1ZjAW6c+yRNlV8s846wn5crGpHMc1N+g+V
-         1e3ZGnj1Cm24caeh5AqFxAFYQWqy7KPoCR95RGyZDpoD2kOc7h/YhrKjfseJNmjANI2K
-         33bQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVlwi3LrihvKQ0HLQipPpjd7n6V33GJb9L7XyqBtjbwp2JCSL7VlMdgiOL+Hy+HSV2sYHR8fGgINtHIBJM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzj4/aRmjvtBSb/2XpgW5o9RQhyI4CNVUqrtugQSwouUEprI+nQ
-	wZYAJcRs3fNJjoQ6/DytChFUHXNRNs2F7w4v/jEeTg3RbOr6XzYu+QoxzrLbk+ZAMGng9syVjCE
-	kxlGYrdiELj/T384M2DMLpQ==
-X-Google-Smtp-Source: AGHT+IGQDLulfLF8RwhcJUV0HutTvJeMfbYLu8JUEjKppHvTG+7VWlPJjZzjhgEci5/4OsV71lgRhbIjtjk4C1ysLQ==
-X-Received: from oabrl17.prod.google.com ([2002:a05:6871:6511:b0:296:1589:4069])
- (user=kaleshsingh job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:6870:224d:b0:29e:f61:3b62 with SMTP id 586e51a60fabf-2a38236803dmr971354fac.7.1733959704488;
- Wed, 11 Dec 2024 15:28:24 -0800 (PST)
-Date: Wed, 11 Dec 2024 15:27:52 -0800
-In-Reply-To: <20241211232754.1583023-1-kaleshsingh@google.com>
+        d=1e100.net; s=20230601; t=1733969237; x=1734574037;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=zsEQWcKkwE2tUR4EtqQ/7dt4QrY1pJqjE2F4WHaD4wk=;
+        b=arynG6pGFNUHuZFQtt1W3IZ3fhzHOazar5tRasWFpLIVlZewdA3mCA4ghD2vCg8dyq
+         WnhD12dCmz5/Dx/Vsaw0Zvj1rcodFKC74pM24NbUthmr7vzl7Gsxw3ScFx5TXM5dHoWb
+         PynP2jWmYcSCLL1mIfBwfgPHOVFPvTq/PHfxiFeSVcQo4jrfcy9Q2EqElAXIsT+CzxJE
+         1Gt81dnWZxO2XazioSInLVoiJBFpzR8teDpeirgNVHqWTeoDsx3hZJbX4Y8gql4dWRjT
+         bhHq8803EclN20ODnUQ3co7BRiLgeCDUaSGbU8owyCwTr4iEWuCWFKf+P5fjCyNpflT7
+         TH9A==
+X-Forwarded-Encrypted: i=1; AJvYcCVnB8gRdRHBtS+4t6dmjmDhjItbn6fNo3FAaKxw7nFCFlGS5fVeGk2mS5Iz8+kt1c2b5qrxDWGmdXSvqfI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwNf8vkJpgQDcwKPF12H7rHS/PC5WmPkCEnsIbTLRfmRI1ue+T1
+	lzyGGBfq1+ibLDPjDHTXHnnHDIKdsep17Ak+qRGR8ZG00YiP4bwVnhWqM4+XZFRFrRQxGC28LSz
+	PTLZzvSXWM2UuTxzuboiuSdF3c78=
+X-Gm-Gg: ASbGncsEXOhutiwFjWM1PQEEvXbh2ioyUxpAnbau/4bKm7AZT2uIlBZhkTU6z+2ZwKQ
+	d9G4S+igfmBy0tLFcSYbgamEOVsc19XhzT8cbsg==
+X-Google-Smtp-Source: AGHT+IFgbF3rpxFbC9uUWYHJ8NsiDEgvcpbD8m2ahheY6thhWrFNrML3gGOs0Uohbe0DWv40CeetB1K5Pc+PD5GSQGg=
+X-Received: by 2002:a05:6e02:1b05:b0:3a7:fe47:6228 with SMTP id
+ e9e14a558f8ab-3ac483ff34emr18454135ab.6.1733969237518; Wed, 11 Dec 2024
+ 18:07:17 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,103 +76,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0
-References: <20241211232754.1583023-1-kaleshsingh@google.com>
-X-Mailer: git-send-email 2.47.0.338.g60cca15819-goog
-Message-ID: <20241211232754.1583023-15-kaleshsingh@google.com>
-Subject: [PATCH mm-unstable v2 14/16] mm: xtensa: Introduce arch_mmap_hint()
-From: Kalesh Singh <kaleshsingh@google.com>
-To: akpm@linux-foundation.org, vbabka@suse.cz, yang@os.amperecomputing.com, 
-	riel@surriel.com, david@redhat.com, minchan@kernel.org, jyescas@google.com
-Cc: linux@armlinux.org.uk, tsbogend@alpha.franken.de, 
-	James.Bottomley@HansenPartnership.com, ysato@users.sourceforge.jp, 
-	dalias@libc.org, glaubitz@physik.fu-berlin.de, davem@davemloft.net, 
-	andreas@gaisler.com, tglx@linutronix.de, bp@alien8.de, 
-	dave.hansen@linux.intel.com, x86@kernel.org, chris@zankel.net, 
-	jcmvbkbc@gmail.com, bhelgaas@google.com, jason.andryuk@amd.com, 
-	leitao@debian.org, linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-csky@vger.kernel.org, loongarch@lists.linux.dev, 
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org, 
-	kernel-team@android.com, android-mm@google.com, 
-	Kalesh Singh <kaleshsingh@google.com>
+MIME-Version: 1.0
+References: <20241211030849.1834450-1-shengjiu.wang@nxp.com>
+ <20241211030849.1834450-5-shengjiu.wang@nxp.com> <dc52c945-b292-4cd8-97ae-369a45f5a4ad@sirena.org.uk>
+In-Reply-To: <dc52c945-b292-4cd8-97ae-369a45f5a4ad@sirena.org.uk>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Thu, 12 Dec 2024 10:07:04 +0800
+Message-ID: <CAA+D8ANG6enRKp7msjBs3Hxn8QozjT2tEvAmHDZjO7xtQYB4Jw@mail.gmail.com>
+Subject: Re: [PATCH v6 4/6] ASoC: fsl_asrc_m2m: Add memory to memory function
+To: Mark Brown <broonie@kernel.org>
+Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, vkoul@kernel.org, perex@perex.cz, tiwai@suse.com, 
+	alsa-devel@alsa-project.org, linux-sound@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+	nicoleotsuka@gmail.com, lgirdwood@gmail.com, linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Introduce xtensa arch_mmap_hint() and define HAVE_ARCH_MMAP_HINT.
+On Wed, Dec 11, 2024 at 11:28=E2=80=AFPM Mark Brown <broonie@kernel.org> wr=
+ote:
+>
+> On Wed, Dec 11, 2024 at 11:08:47AM +0800, Shengjiu Wang wrote:
+> > Implement the ASRC memory to memory function using
+> > the compress framework, user can use this function with
+> > compress ioctl interface.
+> >
+> > This feature can be shared by ASRC and EASRC drivers
+>
+> This breaks an imx_v6_v7_defconfig build:
+>
+> arm-linux-gnueabihf-ld: sound/soc/fsl/fsl_asrc_m2m.o: in function `fsl_as=
+rc_m2m_
+> init':
+> fsl_asrc_m2m.c:(.text+0x7ac): undefined reference to `snd_compress_new'
+>
+> Looks like we're missing some select statements.
 
-If a sufficiently sized hole doesn't exist at the hint address,
-fallback to searching the entire valid VA space instead of only
-the VA space above the hint address.
+Thanks for noticing this issue.
+Sorry about that, I will fix it.
 
-Signed-off-by: Kalesh Singh <kaleshsingh@google.com>
----
-
-Changes in v2:
-  - MAP_FIXED case is also handled in arch_mmap_hint() since this is just a
-    special case of the hint addr being "enforced", per Yang Shi.
-  - Consolidate error handling in arch_mmap_hint().
-
- arch/xtensa/kernel/syscall.c | 31 +++++++++++++++++++++----------
- 1 file changed, 21 insertions(+), 10 deletions(-)
-
-diff --git a/arch/xtensa/kernel/syscall.c b/arch/xtensa/kernel/syscall.c
-index dc54f854c2f5..6bbe10c2a633 100644
---- a/arch/xtensa/kernel/syscall.c
-+++ b/arch/xtensa/kernel/syscall.c
-@@ -54,12 +54,12 @@ asmlinkage long xtensa_fadvise64_64(int fd, int advice,
- }
- 
- #ifdef CONFIG_MMU
--unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
--		unsigned long len, unsigned long pgoff, unsigned long flags,
--		vm_flags_t vm_flags)
-+unsigned long arch_mmap_hint(struct file *filp, unsigned long addr,
-+			     unsigned long len, unsigned long pgoff,
-+			     unsigned long flags)
- {
--	struct vm_area_struct *vmm;
--	struct vma_iterator vmi;
-+	if (len > TASK_SIZE)
-+		return -ENOMEM;
- 
- 	if (flags & MAP_FIXED) {
- 		/* We do not accept a shared mapping if it would violate
-@@ -71,16 +71,27 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
- 		return addr;
- 	}
- 
--	if (len > TASK_SIZE)
--		return -ENOMEM;
--	if (!addr)
--		addr = TASK_UNMAPPED_BASE;
--
- 	if (flags & MAP_SHARED)
- 		addr = COLOUR_ALIGN(addr, pgoff);
- 	else
- 		addr = PAGE_ALIGN(addr);
- 
-+	return generic_mmap_hint(filp, addr, len, pgoff, flags);
-+}
-+
-+unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
-+		unsigned long len, unsigned long pgoff, unsigned long flags,
-+		vm_flags_t vm_flags)
-+{
-+	struct vm_area_struct *vmm;
-+	struct vma_iterator vmi;
-+
-+	addr = arch_mmap_hint(filp, addr, len, pgoff, flags);
-+	if (addr)
-+		return addr;
-+
-+	addr = TASK_UNMAPPED_BASE;
-+
- 	vma_iter_init(&vmi, current->mm, addr);
- 	for_each_vma(vmi, vmm) {
- 		/* At this point:  (addr < vmm->vm_end). */
--- 
-2.47.0.338.g60cca15819-goog
-
+Best regards
+Shengjiu Wang
 
