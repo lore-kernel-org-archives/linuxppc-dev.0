@@ -1,43 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-4041-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4042-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85533E7717F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2024 10:11:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01D7CE7717F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2024 11:45:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y87XP0QgVz30Vb;
-	Thu, 12 Dec 2024 21:11:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.51
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733998260;
-	cv=none; b=SUQbLFGupp+SxhF+XWMrlh4q6qhhHw+U3yzvOL3IvzaXMDoDICHNeNzLl3Mg+WVAwdpWh2SvnAhGYbrtb1x9P2Seq9/nwFYywWKizSiQh4WPmkt6cKVi7TWk+rTrM0K447lz9/0lLCWSYIv/dZcnlLXGXEC6RcKDKHANDxw7ohc3/hMEModlk1Y9pX9wIfDqtWg2lM4T+MxsQxBYkhGEuDcz5g/vIUxK9PfFBib80VoJ0p+VmLQFZnlUqBsHc/GR2qj21ilfxKeBJBOqgzdtJWghk7tkEJ3COiHKB+YrEx39py5jEusv33ndy/rFjRrng2g6VS42HGZPhWiAZi8XJQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y89cw30MBz30Tc;
+	Thu, 12 Dec 2024 22:45:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734003904;
+	cv=none; b=fxT98JOa2vKxuUyf/I+312e3cf1FT2DonFS+ut9ojohrWa+L7Fdke/5L1OlphKa9//Ylha8p2OaLhdYZd80PdkcudRen/JVA4natwgI0CAkH5EOaLcW+TlgTniZFA4p/fgMMIq8g5wWWNJs0QV6aPQUXu9Y7gOptXnN8ijZRPmbhW8kQl4cCPbpAtB/JYy30eITpQbNvTfDtMTg6wPH7qU7MzK4FBU8eua7WWGi0S+5HqVo56HlVL3b1DZXvkwI4l9GZ3E5r2L38NL7D+rs/kX38zic/UgtoKN3wVP9abRVqZ9IJTRjyXyLaAJQt9VHfIM5HO7is5Hatmba9Or2AqQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733998260; c=relaxed/relaxed;
-	bh=0FNPbKOE96JNcPoCxE7KjT3hmaY8FJM2oQ0rEIYEcUw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PyjLe9vjr9ZL929r+lfiD8HbpDkM1P8U7t5wQwxuHzPsJ+Mn5cznh5AggjbJ7bCb+0u0O72c5t/QiBlbbVrwk8WsFYlWHYPY/fveZkObIh3+6KaR5xvj5SfBsBc/KnNcmUBu8S8oFhQJrOgoMy6OhRGHZulbix1WWi6lAJ9aD+ldM1jvAermNnAXCYWzAYvEkwOg3i90QhE1Lpm2sSP/rpZvnl+DENh37suvDvbJPDsrrVi5EY89wk7qn8ay8oH0Gz4gHnAXaUsIMeJlx1d7yawPOzWbGtRhoepM92CYnithTy3PBSvBIlCp+9ZdvT/xV/BHF20RLk/sy3ZVljr31g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com; spf=none (client-ip=45.249.212.51; helo=dggsgout11.his.huawei.com; envelope-from=zhengyejian@huaweicloud.com; receiver=lists.ozlabs.org) smtp.mailfrom=huaweicloud.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=huaweicloud.com
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=huaweicloud.com (client-ip=45.249.212.51; helo=dggsgout11.his.huawei.com; envelope-from=zhengyejian@huaweicloud.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1119 seconds by postgrey-1.37 at boromir; Thu, 12 Dec 2024 21:10:58 AEDT
-Received: from dggsgout11.his.huawei.com (dggsgout11.his.huawei.com [45.249.212.51])
+	t=1734003904; c=relaxed/relaxed;
+	bh=H67+ULJY8BlrayRyzJmF+1YLc4VM1o3ZbYZqf7GEUjo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=X7iT6WqO7+rMq8SxjVQf5mLdVc2Xa97Az0coxDT/yYMbsvOP13BX1801EUVZoyxAnKo3F95sCaVlwsMpUpb253D6kK1cQxAx7Ldcpk+YoEXBbyP1mBXs2Zm8I2b9iYoclFikyAExRc03qs14FaS2BjNHUgrz+bCKxx9VFHghCq93W9k4xLZnWbkvjWPD4xIdBk8yeF7IxkMjPAK9BqQmf/ZdbjyZU/xlKfpONACaTfIPRddtwbfR50pW+8GQu9MINW3GFStwZtKdk0Yw15CJo8DZSWlwIPsEZ489FgNc1RbdKAvezz7Y6YJB1ugdZjwRO2BMpjdtuPrkC4QXxJeZtw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fZ7PHaIa; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fZ7PHaIa;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y87XL6R64z306d
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2024 21:10:57 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.163.216])
-	by dggsgout11.his.huawei.com (SkyGuard) with ESMTP id 4Y876F0n6sz4f3jJF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2024 17:51:49 +0800 (CST)
-Received: from mail02.huawei.com (unknown [10.116.40.128])
-	by mail.maildlp.com (Postfix) with ESMTP id 68F9E1A08DC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2024 17:52:09 +0800 (CST)
-Received: from [10.67.111.172] (unknown [10.67.111.172])
-	by APP4 (Coremail) with SMTP id gCh0CgCXcYVDslpnkZaEEQ--.63144S3;
-	Thu, 12 Dec 2024 17:52:04 +0800 (CST)
-Message-ID: <1f11e3c4-e8fd-d4ac-23cd-0ab2de9c1799@huaweicloud.com>
-Date: Thu, 12 Dec 2024 17:52:03 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y89cv19Qvz2yQJ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Dec 2024 22:45:03 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id EB030A42749;
+	Thu, 12 Dec 2024 11:43:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C692C4CED1;
+	Thu, 12 Dec 2024 11:44:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1734003899;
+	bh=4GmCDohNAOfCN5wWOW+nZPuvP+Y3UIn9m30OSN5j1JY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=fZ7PHaIaPPzTVBHTSLkX1+O9i3Zzay8xBUl2gIG3heoj6Z+fk9meBl13EQtHQApDu
+	 Yw94mtEVg7nI8104jxTR94i4yw/MJJfGSIbgfp4ciEyhuk60ZjABeF4RAtV6cozv/I
+	 EGNGxUK2lp3f1g1KWx1NHWA8TvA/hfjKSjxFLH2UPn1Qx2/4rCVe38ivLVqwgjQkJQ
+	 fiBtT3zOeOtBw8cZRr8uVg3xQKACPhUNyLhUm2B2v7uXXG5XoBaSVVV9RhhmldzA0w
+	 wvtEu88criAqDPQ7R6jqh6P1tx4ccozYrt+Xoj44g5NveBFbwVr9Z9HLpvInw6lyxL
+	 PgsQDvsJRFdkg==
+Date: Thu, 12 Dec 2024 11:44:54 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Cc: vkoul@kernel.org, perex@perex.cz, tiwai@suse.com,
+	alsa-devel@alsa-project.org, linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org, shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com, festevam@gmail.com, nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v7 4/6] ASoC: fsl_asrc_m2m: Add memory to memory function
+Message-ID: <58b4a167-5a13-49b2-9b08-58c3041b772b@sirena.org.uk>
+References: <20241212074509.3445859-1-shengjiu.wang@nxp.com>
+ <20241212074509.3445859-5-shengjiu.wang@nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -50,110 +68,182 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [PATCH v2 0/5] kallsyms: Emit symbol for holes in text and fix
- weak function issue
-Content-Language: en-US
-To: Martin Kelly <martin.kelly@crowdstrike.com>,
- "masahiroy@kernel.org" <masahiroy@kernel.org>,
- "ojeda@kernel.org" <ojeda@kernel.org>,
- "jpoimboe@kernel.org" <jpoimboe@kernel.org>,
- "pasha.tatashin@soleen.com" <pasha.tatashin@soleen.com>,
- "mhiramat@kernel.org" <mhiramat@kernel.org>,
- "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
- "james.clark@arm.com" <james.clark@arm.com>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "rostedt@goodmis.org" <rostedt@goodmis.org>,
- "nathan@kernel.org" <nathan@kernel.org>,
- "christophe.leroy@csgroup.eu" <christophe.leroy@csgroup.eu>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "nicolas@fjasle.eu" <nicolas@fjasle.eu>,
- "mathieu.desnoyers@efficios.com" <mathieu.desnoyers@efficios.com>,
- "npiggin@gmail.com" <npiggin@gmail.com>,
- "mark.rutland@arm.com" <mark.rutland@arm.com>, "hpa@zytor.com"
- <hpa@zytor.com>, "surenb@google.com" <surenb@google.com>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "naveen.n.rao@linux.ibm.com" <naveen.n.rao@linux.ibm.com>,
- "kent.overstreet@linux.dev" <kent.overstreet@linux.dev>,
- "bp@alien8.de" <bp@alien8.de>, "mcgrof@kernel.org" <mcgrof@kernel.org>,
- Ye Weihua <yeweihua4@huawei.com>
-Cc: Amit Dang <amit.dang@crowdstrike.com>,
- "linux-modules@vger.kernel.org" <linux-modules@vger.kernel.org>,
- "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-trace-kernel@vger.kernel.org" <linux-trace-kernel@vger.kernel.org>,
- "bpf@vger.kernel.org" <bpf@vger.kernel.org>
-References: <20240723063258.2240610-1-zhengyejian@huaweicloud.com>
- <44353f4cd4d1cc7170d006031819550b37039dd2.camel@crowdstrike.com>
- <364aaf7c-cdc4-4e57-bb4c-f62e57c23279@csgroup.eu>
- <d25741d8a6f88d5a6c219fb53e8aa0bcc1fea982.camel@crowdstrike.com>
-From: Zheng Yejian <zhengyejian@huaweicloud.com>
-In-Reply-To: <d25741d8a6f88d5a6c219fb53e8aa0bcc1fea982.camel@crowdstrike.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-CM-TRANSID:gCh0CgCXcYVDslpnkZaEEQ--.63144S3
-X-Coremail-Antispam: 1UD129KBjvJXoW7Ww48WrWrXF4DKF4ftr43Wrg_yoW8XrWrpF
-	WfKFW5CF4DCF48J3Z2krs7ZF1Yyws3W3y7Wwn8Jw1UurZ8JFy3Ar4Sqr4jgrWDZF93Ww4U
-	ZF17tF95X34kZ37anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9ab4IE77IF4wAFF20E14v26rWj6s0DM7CY07I20VC2zVCF04k2
-	6cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4
-	vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7Cj
-	xVAFwI0_Gr1j6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x
-	0267AKxVW0oVCq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG
-	6I80ewAv7VC0I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFV
-	Cjc4AY6r1j6r4UM4x0Y48IcVAKI48JM4IIrI8v6xkF7I0E8cxan2IY04v7Mxk0xIA0c2IE
-	e2xFo4CEbIxvr21lc7CjxVAaw2AFwI0_Wrv_ZF1l42xK82IYc2Ij64vIr41l4I8I3I0E4I
-	kC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWU
-	WwC2zVAF1VAY17CE14v26rWY6r4UJwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r
-	1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xvaj40_
-	Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JVW8Jr
-	UvcSsGvfC2KfnxnUUI43ZEXa7IU0EksDUUUUU==
-X-CM-SenderInfo: x2kh0w51hmxt3q6k3tpzhluzxrxghudrp/
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="xCorpfkhpxX1YyjE"
+Content-Disposition: inline
+In-Reply-To: <20241212074509.3445859-5-shengjiu.wang@nxp.com>
+X-Cookie: You can't push on a string.
 
-On 2024/12/11 04:49, Martin Kelly wrote:
-> On Tue, 2024-12-10 at 21:01 +0100, Christophe Leroy wrote:
->>>
->>> Hi all, what is the status of this patch series? I'd really like to
->>> see
->>> it or some other fix to this issue merged. The underlying bug is a
->>> significant one that can cause ftrace/livepatch/BPF fentry to fail
->>> silently. I've noticed this bug in another context[1] and realized
->>> they're the same issue.
->>>
->>> I'm happy to help with this patch series to address any issues as
->>> needed.
->>
->> As far as I can see there are problems on build with patch 1, see
->> https://patchwork.kernel.org/project/linux-modules/patch/20240723063258.2240610-2-zhengyejian@huaweicloud.com/
->>   
->>
->>
-> 
-> Yeah, I see those. Additionally, this patch no longer applies cleanly
-> to current master, though fixing it up to do so is pretty easy. Having
-> done that, this series appears to resolve the issues I saw in the other
-> linked thread.
-> 
-> Zheng, do you plan to send a v3? I'd be happy to help out with this
-> patch series if you'd like, as I'm hoping to get this issue resolved
-> (though I am not an ftrace expert).
 
-Sorry to rely so late. Thanks for your feedback!
+--xCorpfkhpxX1YyjE
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Steve recently started a discussion of the issue in:
-https://lore.kernel.org/all/20241014210841.5a4764de@gandalf.local.home/
-but there's no conclusion.
-  
-I can rebase this patch series and send a new version first, and
-I'm also hoping to get more feedbacks and help to resolve the issue.
+On Thu, Dec 12, 2024 at 03:45:07PM +0800, Shengjiu Wang wrote:
+> Implement the ASRC memory to memory function using
+> the compress framework, user can use this function with
+> compress ioctl interface.
+>=20
+> This feature can be shared by ASRC and EASRC drivers
 
--- 
-Thanks,
-Zheng Yejian
+This breaks an x86 allmodconfig build (using GCC 13):
 
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:186:68: warning: =E2=80=98s=
+truct snd_compr_task_runtime=E2=80=99 declared inside parameter list will n=
+ot be visible outside of this definition or declaration
+  186 | static void asrc_m2m_device_run(struct fsl_asrc_pair *pair, struct =
+snd_compr_task_runtime *task)
+      |                                                                    =
+^~~~~~~~~~~~~~~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c: In function =E2=80=98asrc_=
+m2m_device_run=E2=80=99:
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:212:26: error: invalid use =
+of undefined type =E2=80=98struct snd_compr_task_runtime=E2=80=99
+  212 |         in_buf_len =3D task->input_size;
+      |                          ^~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:279:13: error: invalid use =
+of undefined type =E2=80=98struct snd_compr_task_runtime=E2=80=99
+  279 |         task->output_size =3D out_dma_len;
+      |             ^~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c: At top level:
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:451:49: warning: =E2=80=98s=
+truct snd_compr_task_runtime=E2=80=99 declared inside parameter list will n=
+ot be visible outside of this definition or declaration
+  451 |                                          struct snd_compr_task_runt=
+ime *task)
+      |                                                 ^~~~~~~~~~~~~~~~~~~=
+~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c: In function =E2=80=98fsl_a=
+src_m2m_comp_task_create=E2=80=99:
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:465:13: error: invalid use =
+of undefined type =E2=80=98struct snd_compr_task_runtime=E2=80=99
+  465 |         task->input =3D dma_buf_export(&exp_info_in);
+      |             ^~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:466:24: error: invalid use =
+of undefined type =E2=80=98struct snd_compr_task_runtime=E2=80=99
+  466 |         if (IS_ERR(task->input)) {
+      |                        ^~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:467:35: error: invalid use =
+of undefined type =E2=80=98struct snd_compr_task_runtime=E2=80=99
+  467 |                 ret =3D PTR_ERR(task->input);
+      |                                   ^~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:475:13: error: invalid use =
+of undefined type =E2=80=98struct snd_compr_task_runtime=E2=80=99
+  475 |         task->output =3D dma_buf_export(&exp_info_out);
+      |             ^~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:476:24: error: invalid use =
+of undefined type =E2=80=98struct snd_compr_task_runtime=E2=80=99
+  476 |         if (IS_ERR(task->output)) {
+      |                        ^~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:477:35: error: invalid use =
+of undefined type =E2=80=98struct snd_compr_task_runtime=E2=80=99
+  477 |                 ret =3D PTR_ERR(task->output);
+      |                                   ^~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c: At top level:
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:523:48: warning: =E2=80=98s=
+truct snd_compr_task_runtime=E2=80=99 declared inside parameter list will n=
+ot be visible outside of this definition or declaration
+  523 |                                         struct snd_compr_task_runti=
+me *task)
+      |                                                ^~~~~~~~~~~~~~~~~~~~=
+~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c: In function =E2=80=98fsl_a=
+src_m2m_comp_task_start=E2=80=99:
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:528:35: error: passing argu=
+ment 2 of =E2=80=98asrc_m2m_device_run=E2=80=99 from incompatible pointer t=
+ype [-Werror=3Dincompatible-pointer-types]
+  528 |         asrc_m2m_device_run(pair, task);
+      |                                   ^~~~
+      |                                   |
+      |                                   struct snd_compr_task_runtime *
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:186:92: note: expected =E2=
+=80=98struct snd_compr_task_runtime *=E2=80=99 but argument is of type =E2=
+=80=98struct snd_compr_task_runtime *=E2=80=99
+  186 | static void asrc_m2m_device_run(struct fsl_asrc_pair *pair, struct =
+snd_compr_task_runtime *task)
+      |                                                             ~~~~~~~=
+~~~~~~~~~~~~~~~~~~~~~~~~^~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c: At top level:
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:534:47: warning: =E2=80=98s=
+truct snd_compr_task_runtime=E2=80=99 declared inside parameter list will n=
+ot be visible outside of this definition or declaration
+  534 |                                        struct snd_compr_task_runtim=
+e *task)
+      |                                               ^~~~~~~~~~~~~~~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:540:47: warning: =E2=80=98s=
+truct snd_compr_task_runtime=E2=80=99 declared inside parameter list will n=
+ot be visible outside of this definition or declaration
+  540 |                                        struct snd_compr_task_runtim=
+e *task)
+      |                                               ^~~~~~~~~~~~~~~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:623:10: error: =E2=80=98str=
+uct snd_compr_ops=E2=80=99 has no member named =E2=80=98task_create=E2=80=99
+  623 |         .task_create =3D fsl_asrc_m2m_comp_task_create,
+      |          ^~~~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:623:24: warning: excess ele=
+ments in struct initializer
+  623 |         .task_create =3D fsl_asrc_m2m_comp_task_create,
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:623:24: note: (near initial=
+ization for =E2=80=98fsl_asrc_m2m_compr_ops=E2=80=99)
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:624:10: error: =E2=80=98str=
+uct snd_compr_ops=E2=80=99 has no member named =E2=80=98task_start=E2=80=99
+  624 |         .task_start =3D fsl_asrc_m2m_comp_task_start,
+      |          ^~~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:624:23: warning: excess ele=
+ments in struct initializer
+  624 |         .task_start =3D fsl_asrc_m2m_comp_task_start,
+      |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:624:23: note: (near initial=
+ization for =E2=80=98fsl_asrc_m2m_compr_ops=E2=80=99)
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:625:10: error: =E2=80=98str=
+uct snd_compr_ops=E2=80=99 has no member named =E2=80=98task_stop=E2=80=99
+  625 |         .task_stop =3D fsl_asrc_m2m_comp_task_stop,
+      |          ^~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:625:22: warning: excess ele=
+ments in struct initializer
+  625 |         .task_stop =3D fsl_asrc_m2m_comp_task_stop,
+      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:625:22: note: (near initial=
+ization for =E2=80=98fsl_asrc_m2m_compr_ops=E2=80=99)
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:626:10: error: =E2=80=98str=
+uct snd_compr_ops=E2=80=99 has no member named =E2=80=98task_free=E2=80=99
+  626 |         .task_free =3D fsl_asrc_m2m_comp_task_free,
+      |          ^~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:626:22: warning: excess ele=
+ments in struct initializer
+  626 |         .task_free =3D fsl_asrc_m2m_comp_task_free,
+      |                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:626:22: note: (near initial=
+ization for =E2=80=98fsl_asrc_m2m_compr_ops=E2=80=99)
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c: In function =E2=80=98fsl_a=
+src_m2m_init=E2=80=99:
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:701:41: error: =E2=80=98SND=
+_COMPRESS_ACCEL=E2=80=99 undeclared (first use in this function); did you m=
+ean =E2=80=98SNDRV_COMPRESS_AVAIL=E2=80=99?
+  701 |         ret =3D snd_compress_new(card, 0, SND_COMPRESS_ACCEL, "ASRC=
+ M2M", compr);
+      |                                         ^~~~~~~~~~~~~~~~~~
+      |                                         SNDRV_COMPRESS_AVAIL
+/build/stage/linux/sound/soc/fsl/fsl_asrc_m2m.c:701:41: note: each undeclar=
+ed identifier is reported only once for each function it appears in
+cc1: some warnings being treated as errors
+
+--xCorpfkhpxX1YyjE
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmdazLUACgkQJNaLcl1U
+h9DcEgf+OJCZW0jgiKXMBoR3Ew+s4HvrHC3fxP0nd/Prc6FZAauL78YdYhJce2IO
+Bp2bONmgi4zDJCJM9+SR1kEonO1EI0hCluisw/T588uAXQfGe4bukCis09k7zaEn
+/w6FL5Na9sIbOGVLyEImrEDVgcm/XcekklQTrIifLdd51FWA4/9BYwV3LSKpaDX0
+icGNN5H9gKADDidG2fWdPtndf6mMtkxOmvW9/lGADAYRCRCuwjRSxfCgd4wN8MQs
+NithgGAj0D9hihQ5VNSo9+HYVdzBZ+9rFVEjiUD4WxdqSDUjmVFZJAqQfRzOaqsz
+kEcfFqKySi1g/P4F5smjSPnIr7A8AQ==
+=C/Kj
+-----END PGP SIGNATURE-----
+
+--xCorpfkhpxX1YyjE--
 
