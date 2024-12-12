@@ -1,92 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-4060-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4061-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87245E77180
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2024 21:05:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD8EBE77180
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Dec 2024 21:09:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8Q2z0FM8z2xs8;
-	Fri, 13 Dec 2024 08:04:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8Q7g61cyz2yDM;
+	Fri, 13 Dec 2024 08:09:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.144
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734037498;
-	cv=none; b=OBajqsu0Ot80JqRV2d1Wc3pw9pyGXVcc7BbxKvfFZaTxmY0lXQHNtxvjwOLRusbJMN/m6zDcSDDwZiTBoTdd5oaYJ1dW2xYPWKcp3D2ktV9edP8PTiBcc+J1PX5UjX1Bg9bOkXs1hCK3vruKGwWwNMpj+UdXVvDBUq39S8XSxBrI8MKgJcqobCnod/6Fp1E8lIvTZCmzDbpDbkvrJh0021JG6jyJnbS9Ww64hIKqTIWMLvr4ywZ/wRD7AyFYvH8S/ca3JVK+o+AlFqsMm+zW9pC0I+HWOFi3uONruc1a66+EBWpvtGnn9tLbYHq6a55QZGxY5tWss+cEla3ZhQMp9Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734037743;
+	cv=none; b=dYBFmvpiEyn7J/2BCmz/o7P+pqcsTiIDqebEbhnghBz2Wyp0BU0KgsXRCLH9TqM/++3i9foLAFD6YJsFzY9s/rHGV7u3d/LlURWyvbLvRsIbf+1LkZlv1N5e79jV1ZsvItrG9k7mDMuaW89HRVbFoG4Dlb6nFQxNbYVrU7GCWcUzYwpCtOjLyIIRKI+heUWSjtHzFOlfawXJN8ilnqrXkVuZqKsDooQ4aUcv8My6BX+gbr6XwkB13AUQpzwBcjPvoEIXmDrxmPnJq/+NNVrQmn+UnXWzR2SP9ORXUGhvl6i5ikgcznf4hsQjcYSxODLnfoVAB8bypVazUxT1pJKmwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734037498; c=relaxed/relaxed;
-	bh=t2QvztPOWssUJXFYLmASJt/NSwx7RZmzOhWkYNbqO9M=;
+	t=1734037743; c=relaxed/relaxed;
+	bh=9IqZ6rAQRKbEW2J4TH6/7CA/VSmhrZDWQ3WoMQkxePk=;
 	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=Vpff6iaVmTr1TPCBfmXWCTWgl6RHvC5j+vWWgUn+6DD00lICOTzEWyue85c7lCrhObXPX9cBdw6Q9Ll4anK8WlKZwsmW267hDBAmfzaNY8CqbF9n6KKZ/thGdsO/xq8KVLP3fa2gtsSUJJxQwnhzsIi2vOFfQw/53laYT4OIsGOMY9NyHTQSBmS2t9Om1qbKuU2zhJF84WGsEn4dlXv8NUWKEDt9myKk8tt2yLCB2SPrySCvrxAs5jPknvpDE8wItx6SMK8lLmU9gWOL/CorXq2sCk7/FU9//4Coepsm39tJIcK9ti3l5QQAdlN6qqAF5GmoS4ZmLlrlNau8qbofxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=fNSQxryP; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=kHg+Y8l9; dkim-atps=neutral; spf=pass (client-ip=103.168.172.144; helo=fout-a1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+	 Subject:Content-Type; b=jW4CsxnMeWI/qzBIMc3wJ/xSls7cX1++QoSTIRqLqJN7I+qMmHbYtd5LCVuCDvRAIKvmYbosLne1RQ3CYYUxjNSxhfkJCrPzwWMPgVjR0HKg3WXgQ+Hp+7kERChUsVqwEP9km9+WPtXn2jteS5K+mRM2dvpgHD2nzn6f5adfa6O278pfalvfi1ltvBzZyyFy191QrUpmTn54wKfu94DylwBL87XsqKsPrM8WDRuuMj5qjB7rl3xwk2a1COm5z0xfCA1DmDmzJJDjsmkrIjFjXCDkhIA5GnWM9PcYicsyQsdFdyzf+V1XM5QyOIbHJcjZSSxszypZ7nA2AYtD3Z3KQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=sI9WQo0h; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=V2xBxaHc; dkim-atps=neutral; spf=pass (client-ip=103.168.172.144; helo=fout-a1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=fNSQxryP;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=kHg+Y8l9;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=sI9WQo0h;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=V2xBxaHc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.144; helo=fout-a1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
 Received: from fout-a1-smtp.messagingengine.com (fout-a1-smtp.messagingengine.com [103.168.172.144])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8Q2s0CRXz2xs4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2024 08:04:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8Q7f4FSsz2y72
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Dec 2024 08:09:02 +1100 (AEDT)
 Received: from phl-compute-10.internal (phl-compute-10.phl.internal [10.202.2.50])
-	by mailfout.phl.internal (Postfix) with ESMTP id 9BD4113836FD;
-	Thu, 12 Dec 2024 16:04:49 -0500 (EST)
+	by mailfout.phl.internal (Postfix) with ESMTP id 8EE3F1383EA7;
+	Thu, 12 Dec 2024 16:09:00 -0500 (EST)
 Received: from phl-imap-11 ([10.202.2.101])
-  by phl-compute-10.internal (MEProxy); Thu, 12 Dec 2024 16:04:49 -0500
+  by phl-compute-10.internal (MEProxy); Thu, 12 Dec 2024 16:09:00 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
 	:cc:content-transfer-encoding:content-type:content-type:date
 	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1734037489;
-	 x=1734123889; bh=t2QvztPOWssUJXFYLmASJt/NSwx7RZmzOhWkYNbqO9M=; b=
-	fNSQxryPa+6Ryewwlh5FvVHNf4uUgijNsB6iIXkk4e4yyVFBoGnMO/zy7jiaPK53
-	WI18kmBbmi6YIjgj3Oi04CoQvJ2j18ACinbCXyUoNRfjZQk3pMPbxM+f1gkYT4YX
-	lcWwZemPjmvvDAO2qd8s+trMGRH+dbpzC6vzh0xJazlWbRneUOsUSncF4XkEJ2uA
-	yjmNNhuK2mOHkIOMa8KhkuvYd1dhnu/U98NbSP2Uzm4Jxs5YTDrBRWeDmjauD5Zk
-	9ksu9sqPy4pVzth+vItWSKZCT0Y1oh4V9K/PvqjdwiElaJslBopW6W2Np4VqASZ7
-	xP/Yv3guHITF0BHJGVsY6w==
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1734037740;
+	 x=1734124140; bh=9IqZ6rAQRKbEW2J4TH6/7CA/VSmhrZDWQ3WoMQkxePk=; b=
+	sI9WQo0hT8RZfeLkFWtOxYBaixCFsKGWtj1oeld5wv+OdD59xfdJ/DXtsqqA5hQt
+	iqOuvNi/VCCSpWXoYZS39BY5IDFhiWrgN7uGOEI80sW1mD86lUNNrJYsuinhpIUd
+	yIhPLs4TywRs8rOz9rzJVi1JgzrdiimkQ65PkMgb0vc72c6LR+JnVMGUs4NEk77r
+	sTzT5VObzwIahbjTu14Sn072AKr3QmyqW4t6gUI+fj8oxqiYAtMZnJGpw6KFvWj9
+	/oN1Ya0/vGY1kQzpziYR1O6rbYPBKcOKtWSh2D/iBJcvpmOMOKrODid3HPvM9yZy
+	4mjyZbZRdPqpqpSkulf93g==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:content-type:date:date:feedback-id:feedback-id
 	:from:from:in-reply-to:in-reply-to:message-id:mime-version
 	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1734037489; x=
-	1734123889; bh=t2QvztPOWssUJXFYLmASJt/NSwx7RZmzOhWkYNbqO9M=; b=k
-	Hg+Y8l9a/MUSIKSB5J/EWzv90L8PUrmZKCB4bsOzKzbKF3kyVFCy4Jl2b9NWZ/lC
-	dp2Lt8yzl7VqzSWIDPLL6/fo25YQpb5PedcDnYqOeZB3gt0qiZZprXL8ujOOtA3s
-	f6lDfnSoQAKMXgv1b7Ovz6bkpHDyiqBN+vMxYrRaTHgAQQ9Do+cDwYHDFg7e+nx3
-	TCwwDwCbRAFjpqPVoqp08QMes+zodozNI8jHmqPwGcRvopE+fHc2g46rJhGrs+pD
-	g2/5QEpW7+OlKvJ+e0oz8+5YmfTicqfKAKLazy7AEXVY0oySkQmLP1eHa/sT1+xe
-	Vfv17q/HTQ0XgZ5g83t8w==
-X-ME-Sender: <xms:8E9bZ6yIHwvcu8umaMyaXUPzPL4w-0xM4iT0NRdnrCLj_bJwHKpdKQ>
-    <xme:8E9bZ2TVvX-AJRqsCgEP0cVImJRL23XDmbL61dubaZh3rNSU_1NFPDClkDVudRAQm
-    25NPulR6wl-tmImQGU>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefuddrkeehgddugedvucetufdoteggodetrfdotf
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1734037740; x=
+	1734124140; bh=9IqZ6rAQRKbEW2J4TH6/7CA/VSmhrZDWQ3WoMQkxePk=; b=V
+	2xBxaHcyH7nhSIq8a4Shpv1fzPD4TS4/o7IMn+qgKdxGHqV8eH8bVojf4NDKmYId
+	wQ5mTyohsX3YXFFFXfGAVLTVSHsgcVGB32ZuEuPEcsvKgPnNjr/ytl8Rol4AdGUH
+	z4RYUE/LTQ4TSRFibOFJaAUAU9Y1y3XSO4DmEg/vuNB3umXTPRa+lqY4thL/yeSX
+	+gWisPsU3ubkDeY87y6wmDYrll/Y7H8BuqaYXv7BQKRu+NAHz633wh9LSFMjsRCc
+	Sl9zQV4xpWiKN9OVoZ2hImjbuMrL8rLGDuVpu5KmhMLyFaTOGnXlPY4RfqWnGL3Q
+	tyRAAaDN7xrgHEaKtYX0A==
+X-ME-Sender: <xms:6lBbZyw5SFn4lKEQCjXQULlKKQ3fuezYL-a0vCHYGD3K-FVjpKNC4A>
+    <xme:6lBbZ-T7owsIHjUc1TlBe8pyoFKFV3A4XgfmG_C3lywr1GwU4Q9tIxa9IUfSJ4uZZ
+    5abI64AlwCYCLWcu3w>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefuddrkeehgddugeefucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggvpdfu
     rfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnh
-    htshculddquddttddmnecujfgurhepofggfffhvfevkfgjfhfutgfgsehtjeertdertddt
+    htshculddquddttddmnecujfgurhepofggfffhvfevkfgjfhfutgfgsehtqhertdertdej
     necuhfhrohhmpedftehrnhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrd
-    guvgeqnecuggftrfgrthhtvghrnhephfdthfdvtdefhedukeetgefggffhjeeggeetfefg
-    gfevudegudevledvkefhvdeinecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpe
-    hmrghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvgdpnhgspghrtghpthhtohepledp
-    mhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepshhimhhonhgrsehffhiflhhlrdgthh
-    dprhgtphhtthhopegrihhrlhhivggusehgmhgrihhlrdgtohhmpdhrtghpthhtohepuggv
-    lhhlvghrsehgmhigrdguvgdprhgtphhtthhopegurhhiqdguvghvvghlsehlihhsthhsrd
-    hfrhgvvgguvghskhhtohhprdhorhhgpdhrtghpthhtoheplhhinhhugidqshhtrghgihhn
-    gheslhhishhtshdrlhhinhhugidruggvvhdprhgtphhtthhopehlihhnuhigphhptgdqug
-    gvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdhrtghpthhtohepjhgrvhhivghrmhes
-    rhgvughhrghtrdgtohhmpdhrtghpthhtohepthiiihhmmhgvrhhmrghnnhesshhushgvrd
-    guvgdprhgtphhtthhopehlihhnuhigqdhfsgguvghvsehvghgvrhdrkhgvrhhnvghlrdho
-    rhhg
-X-ME-Proxy: <xmx:8E9bZ8ULHFlGOT4VK_DizoXtV5BzyZsLVXQqhAsNYrpg42EP3ebF4w>
-    <xmx:8E9bZwhtAxhrYEJrM1BiPG3MLPQZ46_PABC7Hu0m-tabbpuuAHDv5Q>
-    <xmx:8E9bZ8BgDv1QOmtQqViA-CdxsOfFciFjnatF0TRwUc4DDbhLfg3C2A>
-    <xmx:8E9bZxJO8tuaGOMgUYp2QMETvXTtta8gXk6mczI8AqZ7kw6yrY1cHA>
-    <xmx:8U9bZ41vKUXH6g37ZjBSOKtbPFc4EngBUxTW0DA1q2Dl7jMO2sgkleOp>
+    guvgeqnecuggftrfgrthhtvghrnhepvdfhvdekueduveffffetgfdvveefvdelhedvvdeg
+    jedvfeehtdeggeevheefleejnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpe
+    hmrghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvgdpnhgspghrtghpthhtohepfeeg
+    pdhmohguvgepshhmthhpohhuthdprhgtphhtthhopegsphesrghlihgvnhekrdguvgdprh
+    gtphhtthhopehtshgsohhgvghnugesrghlphhhrgdrfhhrrghnkhgvnhdruggvpdhrtghp
+    thhtohepghhrrghfsegrmhgriihonhdrtghomhdprhgtphhtthhopegrthhishhhphesrg
+    htihhshhhprghtrhgrrdhorhhgpdhrtghpthhtoheprghnuhhpsegsrhgrihhnfhgruhhl
+    thdrohhrghdprhgtphhtthhopegthhhrihhsthhophhhvgdrlhgvrhhohiestghsghhroh
+    huphdrvghupdhrtghpthhtohepphgrlhhmvghrsegurggssggvlhhtrdgtohhmpdhrtghp
+    thhtoheprghouhesvggvtghsrdgsvghrkhgvlhgvhidrvgguuhdprhgtphhtthhopehmph
+    gvsegvlhhlvghrmhgrnhdrihgurdgruh
+X-ME-Proxy: <xmx:6lBbZ0VwsS4U5Dh3P7otMqmSIAVEsOO6G7LJsCShu6InWS5ECnRScA>
+    <xmx:6lBbZ4g36ua-0NY8XWqhtFeQFSxll2Gb7OcvFB5JwEkVcXBPt7efZw>
+    <xmx:6lBbZ0CZQR2tq0T2mN9rDgYjaqBp7grBCA0XYnDCiY-g_gO8TIGx1w>
+    <xmx:6lBbZ5JchKyroSqzawYqmB-bFcM24AfcbmVsrLAOC-nqaNsZvK-LMA>
+    <xmx:7FBbZ-xtl9XJ4zczjb9ueyrbQc4qE0emOqr48sDEu3vHDq2m0T8uPYzW>
 Feedback-ID: i56a14606:Fastmail
 Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id A6C5C2220072; Thu, 12 Dec 2024 16:04:48 -0500 (EST)
+	id 134EC2220072; Thu, 12 Dec 2024 16:08:58 -0500 (EST)
 X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -100,65 +99,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Date: Thu, 12 Dec 2024 22:04:28 +0100
+Date: Thu, 12 Dec 2024 22:08:37 +0100
 From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Helge Deller" <deller@gmx.de>, "Thomas Zimmermann" <tzimmermann@suse.de>,
- "Javier Martinez Canillas" <javierm@redhat.com>,
- "Simona Vetter" <simona@ffwll.ch>, "Dave Airlie" <airlied@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-staging@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
-Message-Id: <88ce6863-4458-47cb-9b28-274c91bd8764@app.fastmail.com>
-In-Reply-To: <09edb59a-527a-4ddb-bfaf-ea74fb5a3023@gmx.de>
-References: <20241212100636.45875-1-tzimmermann@suse.de>
- <20241212100636.45875-2-tzimmermann@suse.de>
- <09edb59a-527a-4ddb-bfaf-ea74fb5a3023@gmx.de>
-Subject: Re: [PATCH v2 1/3] fbdev: Fix recursive dependencies wrt
- BACKLIGHT_CLASS_DEVICE
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+To: "Christophe Leroy" <christophe.leroy@csgroup.eu>,
+ "Arnd Bergmann" <arnd@kernel.org>, kvm@vger.kernel.org
+Cc: "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>,
+ "Huacai Chen" <chenhuacai@kernel.org>,
+ "Jiaxun Yang" <jiaxun.yang@flygoat.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Naveen N Rao" <naveen@kernel.org>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Alexander Graf" <graf@amazon.com>, "Crystal Wood" <crwood@redhat.com>,
+ "Anup Patel" <anup@brainfault.org>,
+ "Atish Patra" <atishp@atishpatra.org>,
+ "Paul Walmsley" <paul.walmsley@sifive.com>,
+ "Palmer Dabbelt" <palmer@dabbelt.com>,
+ "Albert Ou" <aou@eecs.berkeley.edu>,
+ "Sean Christopherson" <seanjc@google.com>,
+ "Paolo Bonzini" <pbonzini@redhat.com>,
+ "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+ "Borislav Petkov" <bp@alien8.de>,
+ "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "Vitaly Kuznetsov" <vkuznets@redhat.com>,
+ "David Woodhouse" <dwmw2@infradead.org>, "Paul Durrant" <paul@xen.org>,
+ "Marc Zyngier" <maz@kernel.org>, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org
+Message-Id: <1633f30e-d885-4f31-a14d-11881e16deb9@app.fastmail.com>
+In-Reply-To: <3589ad69-13df-40f1-88c2-55d39790bbac@csgroup.eu>
+References: <20241212125516.467123-1-arnd@kernel.org>
+ <20241212125516.467123-3-arnd@kernel.org>
+ <3589ad69-13df-40f1-88c2-55d39790bbac@csgroup.eu>
+Subject: Re: [RFC 2/5] powerpc: kvm: drop 32-bit booke
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Dec 12, 2024, at 19:44, Helge Deller wrote:
-> On 12/12/24 11:04, Thomas Zimmermann wrote:
->> Do not select BACKLIGHT_CLASS_DEVICE from FB_BACKLIGHT. The latter
->> only controls backlight support within fbdev core code and data
->> structures.
->>
->> Make fbdev drivers depend on BACKLIGHT_CLASS_DEVICE and let users
->> select it explicitly. Fixes warnings about recursive dependencies,
->> such as [...]
->
-> I think in the fbdev drivers themselves you should do:
-> 	select BACKLIGHT_CLASS_DEVICE
-> instead of "depending" on it.
-> This is the way as it's done in the DRM tiny and the i915/gma500 DRM drivers.
->
-> So, something like:
->
-> --- a/drivers/staging/fbtft/Kconfig
->         tristate "Support for small TFT LCD display modules"
->         depends on FB && SPI
->         depends on FB_DEVICE
->    +    select BACKLIGHT_DEVICE_CLASS
->         depends on GPIOLIB || COMPILE_TEST
->         select FB_BACKLIGHT
->
-> config FB_BACKLIGHT
->            tristate
->            depends on FB
->    -	  select BACKLIGHT_CLASS_DEVICE
->    +       depends on BACKLIGHT_CLASS_DEVICE
->
->
-> Would that fix the dependency warning?
+On Thu, Dec 12, 2024, at 19:35, Christophe Leroy wrote:
+> Le 12/12/2024 =C3=A0 13:55, Arnd Bergmann a =C3=A9crit=C2=A0:
+>> From: Arnd Bergmann <arnd@arndb.de>
 
-The above is generally a mistake and the root cause of the
-dependency loops. With very few exceptions, the solution in
-these cases is to find the inconsistent 'select' and change
-it into 'depends on'.
+>>=20
+>> Support for 64-bit hosts remains unchanged, for both 32-bit and
+>> 64-bit guests.
+>>=20
 
-I actually have a few more patches like this that I've
-been carrying for years now, e.g. one that changes all the
-'select I2C' into appropriate dependencies.
+>>   arch/powerpc/include/asm/kvm_book3s_32.h    |  36 --
+>>   arch/powerpc/include/asm/kvm_booke.h        |   4 -
+>>   arch/powerpc/include/asm/kvm_booke_hv_asm.h |   2 -
+>>   arch/powerpc/kvm/Kconfig                    |  22 +-
+>>   arch/powerpc/kvm/Makefile                   |  15 -
+>>   arch/powerpc/kvm/book3s_32_mmu_host.c       | 396 --------------
+>>   arch/powerpc/kvm/booke.c                    | 268 ----------
+>>   arch/powerpc/kvm/booke.h                    |   8 -
+>>   arch/powerpc/kvm/booke_emulate.c            |  44 --
+>>   arch/powerpc/kvm/booke_interrupts.S         | 535 -----------------=
+--
+>>   arch/powerpc/kvm/bookehv_interrupts.S       | 102 ----
+>>   arch/powerpc/kvm/e500.c                     | 553 -----------------=
+---
+>>   arch/powerpc/kvm/e500.h                     |  40 --
+>>   arch/powerpc/kvm/e500_emulate.c             | 100 ----
+>>   arch/powerpc/kvm/e500_mmu_host.c            |  54 --
+>>   arch/powerpc/kvm/e500mc.c                   |   5 +-
+>>   arch/powerpc/kvm/trace_booke.h              |  14 -
+>>   17 files changed, 4 insertions(+), 2194 deletions(-)
+>>   delete mode 100644 arch/powerpc/include/asm/kvm_book3s_32.h
+>>   delete mode 100644 arch/powerpc/kvm/book3s_32_mmu_host.c
+>>   delete mode 100644 arch/powerpc/kvm/booke_interrupts.S
+>>   delete mode 100644 arch/powerpc/kvm/e500.c
+>
+> Left over ?
+>
+> arch/powerpc/kernel/head_booke.h:#include <asm/kvm_asm.h>
+> arch/powerpc/kernel/head_booke.h:#include <asm/kvm_booke_hv_asm.h>
+> arch/powerpc/kernel/head_booke.h:       b=20
+> kvmppc_handler_\intno\()_\srr1
+
+As far as I can tell, these are still needed for e5500/e6500,
+but you know more about the platform than I do.
 
        Arnd
 
