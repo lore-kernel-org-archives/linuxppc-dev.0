@@ -1,60 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-4196-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4197-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1067E77180
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 14:12:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4ED95E7717F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 16:03:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YBhgg503Vz30Vs;
-	Tue, 17 Dec 2024 01:11:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734358271;
-	cv=none; b=cO/JzR8syGZRYatmiUnHjKq6QxLyY4Xo1gtytBUHfzjD6Ewk5fXkOuCU/O8NVNCeUv9yq7znxn3U9k7StIe93pPkI+g0aSh8iaWgfYYRvLeWuXv85vya9LgtpTBiyH1MAtSGCe1udUFXdLJ1HhUyUgyu+gN+o2H9TEGhdMuQ18fy/5MUBKreoPbmT+hmuP2XuA0PacG9tndGJ1iOk16YSSx+ZOb/WKT0HEENFBdqbakJzRrMj34MukIiFcLQUaye8yodybMo7njenS6u/rFBj87l0Go8X3C/6mkWL8X/uZZbMCUTatterNQQ6rkrKitE863eg32mOByIYNI5YyI9kA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YBl9L4mK4z2ykT;
+	Tue, 17 Dec 2024 03:03:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734365014;
+	cv=none; b=jz8I124+ZAqHm2TLHAvCvJYEGOnNhDS+tTGfPh6EfZ+m3kK5HFlWG/g+ZbcqSDZfdHajI9Jqq1H1QOQPPORraZEJi62GIYprr2Hzphk12B4YU9od/UXySm43Z7YPJ4/QN+sdn5sDsMIN3t5Dq7gAwHjRYunri+ON5VMHur8hvgj72RHzvo4ivIR6UJyvhpZX7EcJjFWnOWZW1/FljOkvx7vxhT6XPWt11dwz7w3BuALg3y7vT+RSvwHaOuQcKY3xQIjxS/E244pebrP7+llu6hsToDw+o5vaaRFJO3WFI6+HUdkdgxcMT5U+hXLeDgNZ/RCL96VpTeoGQHOK52UsCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734358271; c=relaxed/relaxed;
-	bh=+X6YFpq2hPlq2zytbOuG7IndNMje9dbLylp0yNgLumw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=j3IbOi9wAiwE8Q+a+MkM/gWBELu8G7Emn2DYnN7hhy0HQcpcocy/n8Ec0Aw0dpGZ0ACMg9aX6zy/WNM/kioSwC8r+qpjEpN2OMpLjCMBOfVCGs5xRVgekMeKr8hKnFn2FcNBDzcoDLhFjNdewso+elqhiiUE7NUkgg4Fjlo9PKB8lwftw+URlt02DQnot5tzNMhX8AUOeUAi5mp4If25ilswOxv1DSrrBVTwKgETeXkh0NjKCfSB1SavOlxiqVIEdDt2aGHACYrFf5VcoB8qAgqqohpKWeM0e9bAIhgODfHrHKphTi+a7qG/JPxeKk7uAOgt6uofXXYqyGW+8cdPcA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=AvGSP8Vw; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TokoK/DR; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1734365014; c=relaxed/relaxed;
+	bh=RCVLKfhWJCbjaMmnXe6N2Zyz7tcxzv6poeIYndSnnrY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EILF4s9piqARYhP4cWKQeStaeUkomSwUOsk2EEOdi6/nsAccQFJlby8SrLAOJfRyPVENDHG9RGfY9RByCC12I8CJr3C/VxFlnANQI1STmyiFJidpeO4PNEZiiESYyEheC/AIg8E2siFS5OdTFhVjhHqvzDvdSij+q94O1ckTjHOeXJJRh11pByoxapAaKWzNnGVeRfktYLVJPstB4BEpmJ3s25gZIlqk+mIjvLDwa3BV54JokGu+xnTF/ZL6WwFX8kr8wNcnFG8n9anG+wAzZMASD3vcg5sRhjrC3AU47wgZ7kkmZ1o93VrrzFhZrh7SWaG0XcZLBkhSwpyxyHesxg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HpfnXVhQ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=AvGSP8Vw;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TokoK/DR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HpfnXVhQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBhgd475Kz30Tk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2024 01:11:09 +1100 (AEDT)
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1734358261;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+X6YFpq2hPlq2zytbOuG7IndNMje9dbLylp0yNgLumw=;
-	b=AvGSP8Vwrugo0+sWSRdWIdUjMGMPGixEOFXnsGNm/2ObSCVT55Cm1k1FdxbwBtifNhgzuP
-	HBJ9Z7HkFYPxx6SBg9qhdauOdENrM+UtUSopJiHKxdZ+8CM+XqHupZWYjiDXpc/mNQLhTx
-	6wa5t5NmBQDGVBbQ4FDNh3O25nt3kt3+sXSycD25Leek54u2kY9QiOzxlbwD4wgRtjqJuz
-	yCMK9EbDEXlMcdPanMLn6fF8/EuqVqxgAtGSG+03QOs9tKXGfcbY3lFzWKkrMH1orQQSXc
-	Tpcn6HCIp9o984qMnjoLz69jxRDRZ8NoubqU2QRmd6u1TQYrzqXhKIbPegUe3A==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1734358261;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+X6YFpq2hPlq2zytbOuG7IndNMje9dbLylp0yNgLumw=;
-	b=TokoK/DRb6/6eK4cCLk9S0VuypXKh5WoL2LK69A1xhz0H9QuClCz46TdGdEBAeJ1I0aX7i
-	RCot+PJD2JpkKPCQ==
-Date: Mon, 16 Dec 2024 15:10:11 +0100
-Subject: [PATCH 15/17] vdso: Remove remnants of architecture-specific
- random state storage
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBl9K2mDBz2yGM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2024 03:03:32 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4BG85ZAR027025;
+	Mon, 16 Dec 2024 16:03:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=RCVLKfhWJCbjaMmnXe6N2Zyz7tcxzv6poeIYndSnn
+	rY=; b=HpfnXVhQgfPVWU71I7K7DK+MVz0iF2CwAPTDZcVfFwFPXcA6LgCx8mbTx
+	gFTnMbcZDxKjtbT+0fCIgeRxhiYjh3bvJwNUxE/DQoEoLD6cLPdGmAJg63YYOo+m
+	M4mXl8vldFWqAjwkAZHmuh5oM/hEqhSAjLxohFQMMHxkyXVII/4nikrm8MDUk6OT
+	3sQ8Xs/iObcZHrkT5Udq8iiK7gNPwFyXqVdLGpV7alCABhGmozictDzT0HaUecpd
+	SsDCJV7e3n6hfYzxT2O5uqfM60MXTlki6Iq3j9jO7HSU53HLzXPrp3RaGeXOb/FE
+	VXjh8z8JN7Ib4ep+5f/SrWFmM/nxw==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43jgd2a6uv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 16 Dec 2024 16:03:16 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4BGFvOar002125;
+	Mon, 16 Dec 2024 16:03:15 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43jgd2a6ut-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 16 Dec 2024 16:03:15 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4BGDGd2J014335;
+	Mon, 16 Dec 2024 16:03:15 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 43hmqxxqvy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 16 Dec 2024 16:03:14 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4BGG3CwO56557832
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 16 Dec 2024 16:03:13 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CE7B020043;
+	Mon, 16 Dec 2024 16:03:12 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5257F20040;
+	Mon, 16 Dec 2024 16:03:08 +0000 (GMT)
+Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.70.111])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 16 Dec 2024 16:03:07 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+        naveen@kernel.org, shuah@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCH v2 1/3] selftest/powerpc/ptrace/core-pkey: Remove duplicate macros
+Date: Mon, 16 Dec 2024 21:32:55 +0530
+Message-ID: <20241216160257.87252-1-maddy@linux.ibm.com>
+X-Mailer: git-send-email 2.47.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,141 +92,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241216-vdso-store-rng-v1-15-f7aed1bdb3b2@linutronix.de>
-References: <20241216-vdso-store-rng-v1-0-f7aed1bdb3b2@linutronix.de>
-In-Reply-To: <20241216-vdso-store-rng-v1-0-f7aed1bdb3b2@linutronix.de>
-To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- Helge Deller <deller@gmx.de>, Andy Lutomirski <luto@kernel.org>, 
- Thomas Gleixner <tglx@linutronix.de>, 
- Vincenzo Frascino <vincenzo.frascino@arm.com>, 
- Anna-Maria Behnsen <anna-maria@linutronix.de>, 
- Frederic Weisbecker <frederic@kernel.org>, 
- Andrew Morton <akpm@linux-foundation.org>, 
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
- Theodore Ts'o <tytso@mit.edu>, "Jason A. Donenfeld" <Jason@zx2c4.com>, 
- Paul Walmsley <paul.walmsley@sifive.com>, 
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
- Russell King <linux@armlinux.org.uk>, Heiko Carstens <hca@linux.ibm.com>, 
- Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, Arnd Bergmann <arnd@arndb.de>
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org, 
- loongarch@lists.linux.dev, linux-s390@vger.kernel.org, 
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-arch@vger.kernel.org, Nam Cao <namcao@linutronix.de>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1734358247; l=4459;
- i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=MvA1FZBKdQc7iqER+HGfETL8kJGgorbHDXmM2tDCu+A=;
- b=Zr3xRYbCcw/UO3x7DwLfDqF5D1DrgaT+ruGfbEEhYCjU6h/tg+VN3P/RMcP7buU5FAN5votq8
- 97qrRNVioYMC0E20AHyDs0dMoBu1Wvr3yEaegeIwSyuNNXT/YyznjG7
-X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
- pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: FqP9MSwlZrjK36Tm0lLUCbHYkzUOpM49
+X-Proofpoint-GUID: iZYQ-MdNYGFseBY_YtM2APteLGAeyohr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 bulkscore=0
+ suspectscore=0 lowpriorityscore=0 adultscore=0 clxscore=1015
+ mlxlogscore=999 priorityscore=1501 malwarescore=0 impostorscore=0
+ mlxscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2411120000 definitions=main-2412160133
 
-All users of the random vDSO are using the generic storage
-implementation. Remove the now unnecessary compatibility accessor
-functions and symbols.
+./powerpc/ptrace/Makefile includes flags.mk. In flags.mk,
+-I$(selfdir)/powerpc/include is always included as part of
+CFLAGS. So it will pick up the "pkeys.h" defined in
+powerpc/include.
 
-Co-developed-by: Nam Cao <namcao@linutronix.de>
-Signed-off-by: Nam Cao <namcao@linutronix.de>
-Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+core-pkey.c test has couple of macros defined which
+are part of "pkeys.h" header file. Remove those
+duplicates and include "pkeys.h"
+
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
 ---
- drivers/char/random.c   | 6 +++---
- include/vdso/datapage.h | 8 --------
- lib/vdso/getrandom.c    | 4 ++--
- 3 files changed, 5 insertions(+), 13 deletions(-)
+Changelog v1:
+ - Added Reviewed-by tag
+ - made changes to commit message
 
-diff --git a/drivers/char/random.c b/drivers/char/random.c
-index 23ee76bbb4aa728274bf9980a60b863216d88797..84efda7bede348401db2ed1c443e5ab2bc5dbd2b 100644
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -278,7 +278,7 @@ static void crng_reseed(struct work_struct *work)
- 	WRITE_ONCE(base_crng.generation, next_gen);
- #ifdef CONFIG_VDSO_GETRANDOM
- 	/* base_crng.generation's invalid value is ULONG_MAX, while
--	 * _vdso_rng_data.generation's invalid value is 0, so add one to the
-+	 * vdso_k_rng_data->generation's invalid value is 0, so add one to the
- 	 * former to arrive at the latter. Use smp_store_release so that this
- 	 * is ordered with the write above to base_crng.generation. Pairs with
- 	 * the smp_rmb() before the syscall in the vDSO code.
-@@ -290,7 +290,7 @@ static void crng_reseed(struct work_struct *work)
- 	 * because the vDSO side only checks whether the value changed, without
- 	 * actually using or interpreting the value.
- 	 */
--	smp_store_release((unsigned long *)&__arch_get_k_vdso_rng_data()->generation, next_gen + 1);
-+	smp_store_release((unsigned long *)&vdso_k_rng_data->generation, next_gen + 1);
- #endif
- 	if (!static_branch_likely(&crng_is_ready))
- 		crng_init = CRNG_READY;
-@@ -743,7 +743,7 @@ static void __cold _credit_init_bits(size_t bits)
- 			queue_work(system_unbound_wq, &set_ready);
- 		atomic_notifier_call_chain(&random_ready_notifier, 0, NULL);
- #ifdef CONFIG_VDSO_GETRANDOM
--		WRITE_ONCE(__arch_get_k_vdso_rng_data()->is_ready, true);
-+		WRITE_ONCE(vdso_k_rng_data->is_ready, true);
- #endif
- 		wake_up_interruptible(&crng_init_wait);
- 		kill_fasync(&fasync, SIGIO, POLL_IN);
-diff --git a/include/vdso/datapage.h b/include/vdso/datapage.h
-index b3227f1cf62895aa60ce0ca96afa42259f4771f9..0fc240c08e0f7cf596135eed18dd6f06011917d5 100644
---- a/include/vdso/datapage.h
-+++ b/include/vdso/datapage.h
-@@ -152,7 +152,6 @@ struct vdso_rng_data {
- #ifndef CONFIG_GENERIC_VDSO_DATA_STORE
- extern struct vdso_time_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")));
- extern struct vdso_time_data _timens_data[CS_BASES] __attribute__((visibility("hidden")));
--extern struct vdso_rng_data _vdso_rng_data __attribute__((visibility("hidden")));
- #else
- extern const struct vdso_time_data vdso_u_time_data[CS_BASES] __attribute__((visibility("hidden")));
- extern const struct vdso_time_data vdso_u_timens_data[CS_BASES] __attribute__((visibility("hidden")));
-@@ -211,13 +210,6 @@ static __always_inline const struct vdso_rng_data *__arch_get_vdso_u_rng_data(vo
- {
- 	return &vdso_u_rng_data;
- }
--#define __arch_get_vdso_rng_data __arch_get_vdso_u_rng_data
+ .../selftests/powerpc/ptrace/core-pkey.c      | 19 +------------------
+ 1 file changed, 1 insertion(+), 18 deletions(-)
+
+diff --git a/tools/testing/selftests/powerpc/ptrace/core-pkey.c b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+index f6da4cb30cd6..31c9bf6d95db 100644
+--- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
++++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+@@ -16,14 +16,7 @@
+ #include <unistd.h>
+ #include "ptrace.h"
+ #include "child.h"
 -
--static __always_inline struct vdso_rng_data *__arch_get_vdso_k_rng_data(void)
+-#ifndef __NR_pkey_alloc
+-#define __NR_pkey_alloc		384
+-#endif
+-
+-#ifndef __NR_pkey_free
+-#define __NR_pkey_free		385
+-#endif
++#include "pkeys.h"
+ 
+ #ifndef NT_PPC_PKEY
+ #define NT_PPC_PKEY		0x110
+@@ -61,16 +54,6 @@ struct shared_info {
+ 	time_t core_time;
+ };
+ 
+-static int sys_pkey_alloc(unsigned long flags, unsigned long init_access_rights)
 -{
--	return vdso_k_rng_data;
+-	return syscall(__NR_pkey_alloc, flags, init_access_rights);
 -}
--#define __arch_get_k_vdso_rng_data __arch_get_vdso_k_rng_data
- #endif /* CONFIG_VDSO_GETRANDOM */
- 
- #endif /* CONFIG_GENERIC_VDSO_DATA_STORE */
-diff --git a/lib/vdso/getrandom.c b/lib/vdso/getrandom.c
-index 938ca539aaa64bc46280ef6dd17aa661126699eb..2ed019a76abca099de33326ef45101cf50f2f778 100644
---- a/lib/vdso/getrandom.c
-+++ b/lib/vdso/getrandom.c
-@@ -152,7 +152,7 @@ __cvdso_getrandom_data(const struct vdso_rng_data *rng_info, void *buffer, size_
- 
- 		/*
- 		 * Prevent the syscall from being reordered wrt current_generation. Pairs with the
--		 * smp_store_release(&_vdso_rng_data.generation) in random.c.
-+		 * smp_store_release(&vdso_k_rng_data.generation) in random.c.
- 		 */
- 		smp_rmb();
- 
-@@ -256,5 +256,5 @@ __cvdso_getrandom_data(const struct vdso_rng_data *rng_info, void *buffer, size_
- static __always_inline ssize_t
- __cvdso_getrandom(void *buffer, size_t len, unsigned int flags, void *opaque_state, size_t opaque_len)
+-
+-static int sys_pkey_free(int pkey)
+-{
+-	return syscall(__NR_pkey_free, pkey);
+-}
+-
+ static int increase_core_file_limit(void)
  {
--	return __cvdso_getrandom_data(__arch_get_vdso_rng_data(), buffer, len, flags, opaque_state, opaque_len);
-+	return __cvdso_getrandom_data(__arch_get_vdso_u_rng_data(), buffer, len, flags, opaque_state, opaque_len);
- }
-
+ 	struct rlimit rlim;
 -- 
-2.47.1
+2.47.0
 
 
