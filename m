@@ -1,76 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-4178-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4179-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70894E7717F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 13:29:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D93A7E7717F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 14:11:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YBglt6YBWz2yyR;
-	Tue, 17 Dec 2024 00:29:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::435"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734355545;
-	cv=none; b=VY+B436Kvz1h/88mvKTOAIot4S7KxDTiJEs8EK9uBjBT8K/PoSSKiG/sroTuBWPSZlv8NgPTYlbLmJQdsZpMWDQQsT/9ExeYpXLCka/kekrlSIpCbGPMS+vRKYOkK0vdnBOnYBVBe7GXJCSMXMYd4ENk9LkDm0CmYjj3xxkRGgAK6WsXTY+hmNAWBoQ1OJmdi7vVmlNAvaOTar6qaUF6kVJfqLC5rVvxlXjgUQ31tVyk4T4oDgDeyADcGgTwpMRCkA5IQ7/AkMRaAlFm/W3zFXcDZNcDuwee8u5R0J1W1W+6B6FHOrwo0XemxPqp8uw4AOPqu3t/IWYrMkZUbP2NeA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YBhgR0gm7z300V;
+	Tue, 17 Dec 2024 01:10:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734358258;
+	cv=none; b=RQ6qY29AaazUwik3Kvj9bx6LfgbUqIpaFnXKZY7D30ag6U2Ga/KqY94MLBrLrfzkIgaXrHbHlzGvebgPeG4cFJTgepa1MVxfqeT3n8iFmI8qNx+9l6sx1tkqDhGLlhvAIUOkMP6cYznm/E3Xn8Yc6FMenTm1wcbWEfDx4YzPDTgaPIehHbvT0gVCEm8LhTximhvgqLlckAUhKeeipp69jOFWoqsNcfdjLaHkA308CqaLfnjLv+KFjup17eQu2KUxwo4iYQu0idCTmAGKqIsmkLG9AkDwkHIReIw9YWa5ZWSNwwV9eRUoyi/K+tV1xZ3ZIeZhZBzd9xXNBSDSJH2GrQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734355545; c=relaxed/relaxed;
-	bh=STePF4alhOUCMJb60WwslpIUy0epmImIHj5n/B736B8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HSyOzGuC+sQt7uCoLNJ+BepRf+HNz9et2zIeJa1sMA+v4Lg5lDw0gNT76/4RD85eZnPCNPzpuKmS7wMf3QzfYJby5pZme4S/k101KV79k3X/hNxEbduK7FRWqcG6y1JEiChhMbeD+Ekc2qLIMfKNg3XUDHL+Qob19MrJiAvum6G5Td11lgfhjj8JdqjWbn758K/JNyEjcfMsWtrVTp4GROJInRD8LTH9A7N9uNbSyCKbwhuq34jopROOtiTamPHH1671i3XbUHlG8OnoUt2AKMIiHkU0fSrAvAEC+uK9yEoGVdeEKdkvUCb+jADsXMH0cvNxoTUBCdgBRhHWN/q+5g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=QqZnmvrP; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1734358258; c=relaxed/relaxed;
+	bh=lbUS2hSpGUfA91ZBUqWCU2EUGjDUwjlK6bc3CIpIefE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Qrj2VTz0z2tS68JAlWXeMWKJy7H6IKjTA59WLXSr8m4iw0QbMZU28hptEhAfiq/P5QuFVYfeWzWx73YdVsfV3fUfbThHQZrenLTROXoK811Bw7a7uFKATNHJYSvUO8+bKsT2f4HodGI9Dt3ugu4YoqbrFKu1HYQnDlMTaRbRYCAAfNe6t5fKLi3xx8++rVhjnWVECNCojHpXcy/ydn8kxOLt0hdlsvQldBcRG+1uIKsgsXZKLyM8GVvbw4Gh/0NU/p5gyZZUIfJvmQkL5NMG+TLuJHdxNcZWqpIqL0+0FAp9WlzP0y8psCeRmuvAys+QNYs8/51d847ZK06klRr2vA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=GuH2uzo5; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=hHswSq9R; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=QqZnmvrP;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=GuH2uzo5;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=hHswSq9R;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com; envelope-from=petr.pavlu@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBggC3c1sz2ytT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2024 00:25:41 +1100 (AEDT)
-Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-38633b5dbcfso4449275f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2024 05:25:41 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1734355536; x=1734960336; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=STePF4alhOUCMJb60WwslpIUy0epmImIHj5n/B736B8=;
-        b=QqZnmvrPay6/oqsOjeljXRhsAw0HIcuXOq98FHAWdrwNu665dlSK9euaIfQjC5j/Gh
-         QczZf3Fb6LZcci/1mqwFFI3erlT85pRjb7tXNeIsDCHyKkbZTPHmyTURvGZKG/KxkDez
-         GFRKlECxejOWr42Jady32QrD175/24voXLxYRHAgboK+jICCt5s6A261dnJcchD5OjQG
-         c2qcKpch1HlEqJc/laOCD4z9dw7x3X8cdL3wm6kyk+Dltr5pq6d/dKkf518KvnKee6rW
-         I35K0pel6P+5k97zi4MXDnpKINRUm9oL6X++ok9cOiJrraWmVADHBall7e6Qmy9RNptD
-         jEPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1734355536; x=1734960336;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=STePF4alhOUCMJb60WwslpIUy0epmImIHj5n/B736B8=;
-        b=p1pDCm4Z/+v7ktttmE1E9LTF2PMD1sXT3t03fLw/W9KlA/K+QI0qmHBaZi9HiFV1iX
-         CjHvhQI5lSH1zeMDbVc35QROnIX5xVqhhxmAgdwp0uyjWzjJuqkU+PlhNQsXo+GrwvAs
-         MWU+i6bmEcctWXPefkMhwYkFPuS5Mfb2hxE13e/NDGzcTKsEvgTJtXkaOWNqqG7QCz+G
-         gSY1Hw5zNULL4m2rxQ9i2pXjp9mSBNLHcPi5ulQ6ONAzFN/Y3DIRIQuUJ+0ut/L9p3Kx
-         qXrQmR+fE/NV4SKSxsp6IpkNIZSi8ZhWyGOphAiUG8+5vnOMDAx+9Z7KBw+MzZkpkjJG
-         SWxA==
-X-Forwarded-Encrypted: i=1; AJvYcCUmDAV4QN6U/xjHw2SRxrsT3rgG/4fxAgu/h+fox4zbtsLrNqUOxdIuxf0uSH7rWY9XHzQdYgOu++j1c7o=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxxKYYQnwgCf+QciUoGdcuR4rHourkRIh3DBie1KGHmirjYk80Q
-	xQJQeFF6KH9kk0uKIysK3D0FSOruLsmryfeL7mFO9snft21Jnn5DFwmSGqKQCE4=
-X-Gm-Gg: ASbGncvIhhua0ktSf/NgZMdGBYwcZg6ViP1XcfUuNXLh0AGpI+sIlwr08uGGV3vKA5F
-	Tw/CFStISK7Oy6uu3kp6OB8GP5WpR1rs/gag13glFYk//inBsPWszW9S5HgYpbEdEK4Jd57lHGq
-	/EiqrBWa+oGib3OSgu5J+F8uQLX/C/zdJY28wMR3VS6P8wkbZeDKZ5ZY2dZxmxk5zMh7CtCFEdK
-	dAMKqBYsR0I0tK2vb4ibi9fy+BAtppejX70ALgePXMXdHu1U0rRTOwhOC4G
-X-Google-Smtp-Source: AGHT+IGqoSYH/VA6fKloW87cFzqLGeD30iZmGbWZZas/HuP1gKITI6KUoUpWyXXkXirFAcpa9znGog==
-X-Received: by 2002:adf:eec3:0:b0:388:c75d:be97 with SMTP id ffacd0b85a97d-388c75dbeaamr7310161f8f.11.1734355535593;
-        Mon, 16 Dec 2024 05:25:35 -0800 (PST)
-Received: from [10.100.51.161] ([193.86.92.181])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-388c804a34fsm8253045f8f.76.2024.12.16.05.25.34
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 16 Dec 2024 05:25:35 -0800 (PST)
-Message-ID: <e522ec59-6ee6-4c11-8a4f-91a683e6435c@suse.com>
-Date: Mon, 16 Dec 2024 14:25:33 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBhgN4vWMz2ywR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2024 01:10:56 +1100 (AEDT)
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1734358251;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=lbUS2hSpGUfA91ZBUqWCU2EUGjDUwjlK6bc3CIpIefE=;
+	b=GuH2uzo5FyR0o68VJgLh22/tvAh4VO3tEUIc29jvZ8lPLWfEUfhNVtSSK4HXCnohLAwbXo
+	gEvHjDWSFgEqrnTfKdaUVzxP8s5vskJ2urPXPUkPw83/2mrnYmmUmtERhGRPRyqbznf4z/
+	TVaywADhuO62/QPyaae+wx5X5FFV9M6xrmUCZwtSxnJjI7TGlFQtv14U1ie1HeMP7FyoI3
+	c1H/xkAQk/cMW7DvQZU32HKaDQtXwDyR962kNnn2WJH5P5qddPMfspglgzNhxbDwOoN8y+
+	dtTDWffUBFUBMw1UmRJd6JaZJDQjLnMLryFw+HzWyUuw08nbuaNBceWbkpr+/Q==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1734358251;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=lbUS2hSpGUfA91ZBUqWCU2EUGjDUwjlK6bc3CIpIefE=;
+	b=hHswSq9RfYopT6aqpSY7CX9cu9WJ1N9ZlLIWnRYrgQChCxsQi0dPawuK/Q9SjHGdFt/Ezg
+	DmHWkKKYf0nrzRBw==
+Date: Mon, 16 Dec 2024 15:09:57 +0100
+Subject: [PATCH 01/17] parisc: Remove unused symbol vdso_data
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,81 +66,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v10 4/5] Documentation/kbuild: Document storage of symbol
- information
-To: Matthew Maurer <mmaurer@google.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>,
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>,
- Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez
- <da.gomez@samsung.com>, Masahiro Yamada <masahiroy@kernel.org>,
- Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nicolas@fjasle.eu>,
- Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>,
- Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>,
- =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
- Benno Lossin <benno.lossin@proton.me>,
- Andreas Hindborg <a.hindborg@kernel.org>, Alice Ryhl <aliceryhl@google.com>,
- Trevor Gross <tmgross@umich.edu>, Jonathan Corbet <corbet@lwn.net>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-modules@vger.kernel.org, linux-kbuild@vger.kernel.org,
- rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org
-References: <20241123-extended-modversions-v10-0-0fa754ffdee3@google.com>
- <20241123-extended-modversions-v10-4-0fa754ffdee3@google.com>
-Content-Language: en-US
-From: Petr Pavlu <petr.pavlu@suse.com>
-In-Reply-To: <20241123-extended-modversions-v10-4-0fa754ffdee3@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20241216-vdso-store-rng-v1-1-f7aed1bdb3b2@linutronix.de>
+References: <20241216-vdso-store-rng-v1-0-f7aed1bdb3b2@linutronix.de>
+In-Reply-To: <20241216-vdso-store-rng-v1-0-f7aed1bdb3b2@linutronix.de>
+To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ Helge Deller <deller@gmx.de>, Andy Lutomirski <luto@kernel.org>, 
+ Thomas Gleixner <tglx@linutronix.de>, 
+ Vincenzo Frascino <vincenzo.frascino@arm.com>, 
+ Anna-Maria Behnsen <anna-maria@linutronix.de>, 
+ Frederic Weisbecker <frederic@kernel.org>, 
+ Andrew Morton <akpm@linux-foundation.org>, 
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+ Theodore Ts'o <tytso@mit.edu>, "Jason A. Donenfeld" <Jason@zx2c4.com>, 
+ Paul Walmsley <paul.walmsley@sifive.com>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+ Russell King <linux@armlinux.org.uk>, Heiko Carstens <hca@linux.ibm.com>, 
+ Vasily Gorbik <gor@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Sven Schnelle <svens@linux.ibm.com>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, Arnd Bergmann <arnd@arndb.de>
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org, 
+ loongarch@lists.linux.dev, linux-s390@vger.kernel.org, 
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-arch@vger.kernel.org, Nam Cao <namcao@linutronix.de>, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734358247; l=796;
+ i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
+ bh=NPXgHz1pg7k88XY5Q1tIpqIToZjmPGQbKRJBGkTsdlQ=;
+ b=qIq583Nq2J6WTZk5uFF7tgmMVMT+mFXj9RQI8M6crN6E2uuxfEuALnkyGREgmp/vYO82I170d
+ yKTyVvOCDqzB5fc8Z9c7wx+qHEKzuwOd6U9tdpzQYbFVujg6jSoRO3t
+X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
+ pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-On 11/23/24 03:42, Matthew Maurer wrote:
-> Document where exported and imported symbols are kept, format options,
-> and limitations.
-> 
-> Signed-off-by: Matthew Maurer <mmaurer@google.com>
-> ---
->  Documentation/kbuild/modules.rst | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
-> 
-> diff --git a/Documentation/kbuild/modules.rst b/Documentation/kbuild/modules.rst
-> index 101de236cd0c9abe1f5684d80063ff3f9a7fc673..c32e3ed67cd26070f6929f6ad98c4308a1ab71f8 100644
-> --- a/Documentation/kbuild/modules.rst
-> +++ b/Documentation/kbuild/modules.rst
-> @@ -423,6 +423,26 @@ Symbols From the Kernel (vmlinux + modules)
->  	1) It lists all exported symbols from vmlinux and all modules.
->  	2) It lists the CRC if CONFIG_MODVERSIONS is enabled.
->  
-> +Version Information Formats
-> +---------------------------
-> +
-> +	Exported symbols have information stored in __ksymtab or __ksymtab_gpl
-> +	sections. Symbol names and namespaces are stored in __kstrtab and
-> +	__kstrtabns respectively, using a format similar to the string table
-> +	used for ELF. If CONFIG_MODVERSIONS is enabled, the CRCs corresponding
-> +	to exported symbols will be added to the __kcrctab or __kcrctab_gpl.
+The symbol vdso_data is and has been unused.
+Remove it.
 
-The second sentence should be that symbol names and namespaces of
-exported symbols are both stored in the __ksymtab_strings section.
+Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+---
+ arch/parisc/include/asm/vdso.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-> +
-> +	If CONFIG_BASIC_MODVERSIONS is enabled (default with
-> +	CONFIG_MODVERSIONS), imported symbols will have their symbol name and
-> +	CRC stored in the __versions section of the importing module. This
-> +	mode only supports symbols of length up to 64 bytes.
-> +
-> +	If CONFIG_EXTENDED_MODVERSIONS is enabled (required to enable both
-> +	CONFIG_MODVERSIONS and CONFIG_RUST at the same time), imported symbols
-> +	will have their symbol name recorded in the __version_ext_names
-> +	section as a series of concatenated, null-terminated strings. CRCs for
-> +	these symbols will be recorded in the __version_ext_crcs section.
-> +
->  Symbols and External Modules
->  ----------------------------
->  
-> 
+diff --git a/arch/parisc/include/asm/vdso.h b/arch/parisc/include/asm/vdso.h
+index 2a2dc11b5545fc642a7ae4596dc174111433e948..5f581c1d64606b3ec8f9967efe31dd3d551adf76 100644
+--- a/arch/parisc/include/asm/vdso.h
++++ b/arch/parisc/include/asm/vdso.h
+@@ -12,8 +12,6 @@
+ #define VDSO64_SYMBOL(tsk, name) ((tsk)->mm->context.vdso_base + (vdso64_offset_##name))
+ #define VDSO32_SYMBOL(tsk, name) ((tsk)->mm->context.vdso_base + (vdso32_offset_##name))
+ 
+-extern struct vdso_data *vdso_data;
+-
+ #endif /* __ASSEMBLY __ */
+ 
+ /* Default link addresses for the vDSOs */
 
 -- 
-Thanks,
-Petr
+2.47.1
+
 
