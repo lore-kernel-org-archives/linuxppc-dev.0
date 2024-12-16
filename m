@@ -1,64 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-4206-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4207-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90DB6E77180
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 16:45:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D20BE77180
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 17:36:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YBm611MG3z2xvh;
-	Tue, 17 Dec 2024 03:45:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734367545;
-	cv=none; b=B9a1WXaf+BudgmDk++6J9GC0z1QOEjar3WvIP3I1ghFrQq2T+7/tqh/VNK1hRdgo2Csh5oucAZbGGU652W7XQ6svG1miq2bTR62m3jxjkYt1ZQw/bRdfh3mg4aHQLMTbLCaLlrdvLZ28qbWVyW29YUjeWNzPYy+jjGQRwfpdl1UeIY+zKCzVvi1EK43HJ2mKqyuSYdnlCkvVc308doYJe5ncVI0a0G0bm8VU3n2KNt/bGvR2x3OcO5BtGzBm7TH67GMC2LnY9JdA9aWL8ZRiWZ6wXb4NJjSt5row0r1dgksv3KJDFeImmc9cBErYwwZi2AtiIbTKz8js4TvIcY65VA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YBnDK4bPbz2ypx;
+	Tue, 17 Dec 2024 04:36:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734370577;
+	cv=none; b=fJaWMabXBq6iF9jnosC92NDZY1ZyNA8zdTghwJB51b+M4Q+LzhBQgTaNaYVgv3GWw5t9RoUiypvyK2SZPuuG96VpJZkeUoULbVIhxQe6T7R72t8k9mG05G1JEKcRkli6WKUkLvPsvpsVEQLRGRCaJjfbkua6Xsvlmp/i8SB6FjHz2O7vLWC2WMj/wJu8wJ2DXmDRv+ryG5HnWMmvgVhuDYIeSCKTQm+uLHUSu2IMyW5V2FwkISLzKcYs5WfaDO3b+IJ+VzH03mIw1S/F37jQL9pnVQhvzjOZX8fQZKB11Q+BUctl37D8D/Gg3YQUHb2gRJnKpsSaz0p9wJmIUBsxqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734367545; c=relaxed/relaxed;
-	bh=SaJhooKp9n/AGtgz7/1ZSLSJ9wph4bka9ZULOmXnUkI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HljaGqpcv65CF7nc+2wib9aFNQ85CPrmIewaUmZrAhhSLgt9duZRb8FAczmWszlY65ytG1oHxqFtVcSm5RUCQ9SJeT4+7pTpHOENYKo6KIpdwH2PjapAkGzfSaDNe52kLAhTMRSvboHdiF88Xs+EEKq/731S6+84xndxJP4jwn5jXTntz7VasIcVSnpXRMPLAZBWCEXLFDrgdyiDQonDz7bA4OVKK8OYwuj4Xa4lY3iMPqHPf7RgoLX7o6IPWA6+4PzBnjemmLFf9J8Daww1sZq+MpH+luCu9Ij29PsiLAcegFT1Xd0RGHoa07AI8f9NQ0GwI5TADgu0STPq2ul/ag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UcXXv8yl; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1734370577; c=relaxed/relaxed;
+	bh=FSidIYogNXz2GKEcIpG1NgqD/WO+bMgS5pOibDpj814=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=ckLlKJxcd7slrqUexhPlKGfi5xMoP7fGfMOVSXawIOWHmYAuLzlvYj5QWOqgk6JgwJarclehhVNWl6oMkHQZ852t0IFL136zaUNZPPvjSQpITgNaeN+xsFGRYaPLGV4XwY/trVcWTy856lwMm0rouDQKX19IcWtyaOobNUr7JxTFCDsxvFYpKgQ7wGnkApkMiHiba/ajqe55MHx4FmcdKuh6fvQhkBG5dhLw8IvKQOAp+RAioFvsXcdYepfCpjctMqsYwmBQCtdXf64s3ICZsdtbsIdbPIHIbn6GJa7pgew7uSwqtrsPXDm5wji72FVcN8bhUl6GmGHZ2RCgedb8+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TvbOJWoR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UcXXv8yl;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TvbOJWoR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBm601KG6z2xmk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2024 03:45:44 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 57C03A40DA8;
-	Mon, 16 Dec 2024 16:43:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CEE8C4CED0;
-	Mon, 16 Dec 2024 16:45:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1734367540;
-	bh=yJ24TxEgPNvMjTAhmRojKXtL59U+RMUTJ20Up5QjyrQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=UcXXv8ylnkrd0sV8JeaIYeWzlrladufixxN8T/VHziJHIzqjMAHKeBi2vQesfS3wz
-	 PwqXjVG1TTFMqTCdaB0vYkkBg8Qaov6medZ6DZN2/IWOp+auDtvngiiMTDGR7bZTM1
-	 RqJUkV/f0YnhcTV6t1b5joBF8AcRPJPe1RNvhapu0Hk843F/WTKj+Wx0IJfKn5USui
-	 J7hgfZxP7jtWBTUEsZ6CZmNYcDuhbDsupcCT85d+21BH1rf/Pv3MrqOwMk1KfgLod1
-	 vYPCdROT6vN+lGIQz5Xn2+NVYYK+Pdkwc3GmBiyWQoPerSdyHVtyJcrcIAU8vayLAV
-	 7llzfc4kFUjvg==
-Date: Mon, 16 Dec 2024 13:45:38 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Cc: kajoljain <kjain@linux.ibm.com>, Namhyung Kim <namhyung@kernel.org>,
-	Ian Rogers <irogers@google.com>, jolsa@kernel.org,
-	adrian.hunter@intel.com, linux-kernel@vger.kernel.org,
-	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com,
-	hbathini@linux.ibm.com
-Subject: Re: [PATCH] tools/perf/arch/powerpc: Add register mask for power11
- PVR in extended regs
-Message-ID: <Z2BZMhDFO-aJ_Gjw@x1>
-References: <20241206135637.36166-1-atrajeev@linux.vnet.ibm.com>
- <2907ca2f-b973-42fd-ae03-99732dfda7a1@linux.ibm.com>
- <0402AAF0-5498-48C7-BEBA-2C0B7508D9E2@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBnDH6nFXz2yVG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2024 04:36:13 +1100 (AEDT)
+Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-728f28744c5so3964923b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2024 09:36:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1734370570; x=1734975370; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=FSidIYogNXz2GKEcIpG1NgqD/WO+bMgS5pOibDpj814=;
+        b=TvbOJWoRprQ0pnr4z3OauFHZbQoPStoDXlzKdX+vRIWKcPHkxy/yFbYFrp3Ua5fGa/
+         lWheDRISrLVBOhr2f94dI9c5dWxu+TSXpxuB076VWlpWXSutWRkuozWQgUU5D6wb6HyF
+         VvHfdreGr8tsJnqiB0XHqe3koH14nJ2g6DCwGHjE6MRqx/9CSdUiLGLw3wvyBiAv5C2y
+         PcVY2YmnWMhmRwLMROF6acw+j9B8M+JjNhocGw3EabD+cfA+s1lBD2WCAzJ1AmM0w9Xb
+         HAF6cOgsExXTcvzbiYj8FNFvzV7FyOnWUX4XtacMPBwkyT3O5IBFEnX5GuIFXYaZP+Al
+         CfAA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1734370570; x=1734975370;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=FSidIYogNXz2GKEcIpG1NgqD/WO+bMgS5pOibDpj814=;
+        b=KOe3IBsOUjjbgWXTI1HcegaF8tyKkW56tCJ+8q+3OlNY2Eh9Zw0UrXefSlcqCoPYiX
+         +KPgZA0z07NqCJbMEOg//gH+EboJqDHcA+wdeNDR2uDm2LQ2MP0QzKsDNb8yOfPtmgC+
+         bmg5Vgm2myaKHt/XnRlXpz7uFqktSLJ9zFQTLe95blXObFpDKsKiSqUcgVX/EUouxihb
+         k6qmox8WqPUutFIUrsZ8K98DdSJyywDut7DtGYQujr9lS11T4TlKhrrsuo8C5u6A0gjA
+         RIax5//ETkXI/ju1mrbnWrkgr+o6HwRYcJqOerLRCb7tOUf1mf5lU1IxlDNzV2Y/7eWR
+         6AOw==
+X-Gm-Message-State: AOJu0YznUZsnHlFJNM1ZHFMyZwN3Fbxsx/ptpnO2vdTQs5cGAMLnehfi
+	yp82YUL1mQRYFfIBGEPGYkVv2PH1udPWcrdO5aE95n6HvN0cFV/L
+X-Gm-Gg: ASbGncuC80cYtT1EqtD7fRSvyuF2ASWw/0YWuESWOB1UBywCE1wbIt3Gr9uh6oJlFUY
+	FUL928QiN1TuxHAvABE5WvB28CqipO4CrcAUlb3odqP52ZL+A2hPzwo4gGi64JaFAKARet2WWRb
+	cgKmdb0ZVxXMISsmUesjUjW/TGGxiL7xzqPBI8oXIY/yk7KY3vJfxHqgTuiADmw1GcLGM4ftSqH
+	Fat/Y1tESEv+LrmxSh/zXlauXRfXGZh69LdaMVD434YwbKoPQ==
+X-Google-Smtp-Source: AGHT+IExEQkn+NPoAaYjM4wJoDfBmC62mhKiXO92/+2AgclJqqMbMv84UkJ6llvY+HQqci7zKrX/ZA==
+X-Received: by 2002:a05:6a20:9c8d:b0:1e0:cfc0:df34 with SMTP id adf61e73a8af0-1e1dfd3ea15mr20259089637.16.1734370569570;
+        Mon, 16 Dec 2024 09:36:09 -0800 (PST)
+Received: from dw-tp ([49.205.218.89])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72918b78986sm5008691b3a.91.2024.12.16.09.36.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 16 Dec 2024 09:36:08 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, shuah@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: Re: [PATCH v2 3/3] selftest/powerpc/ptrace: Cleanup duplicate macro definitions
+In-Reply-To: <20241216160257.87252-3-maddy@linux.ibm.com>
+Date: Mon, 16 Dec 2024 22:54:02 +0530
+Message-ID: <87ikrj4k3x.fsf@gmail.com>
+References: <20241216160257.87252-1-maddy@linux.ibm.com> <20241216160257.87252-3-maddy@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,33 +84,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <0402AAF0-5498-48C7-BEBA-2C0B7508D9E2@linux.vnet.ibm.com>
 
-On Mon, Dec 16, 2024 at 03:32:12PM +0530, Athira Rajeev wrote:
-> > On 11 Dec 2024, at 5:32 PM, kajoljain <kjain@linux.ibm.com> wrote:
-> > On 12/6/24 19:26, Athira Rajeev wrote:
-> >> Perf tools side uses extended mask to display the platform
-> >> supported register names (with -I? option) to the user
-> >> and also send this mask to the kernel to capture the extended registers
-> >> as part of each sample. This mask value is decided based on
-> >> the processor version ( from PVR ).
+Madhavan Srinivasan <maddy@linux.ibm.com> writes:
 
-> >> Add PVR value for power11 to enable capturing the extended regs
-> >> as part of sample in power11.
+> Both core-pkey.c and ptrace-pkey.c tests have
+> similar macro definitions, move them to "pkeys.h"
+> and remove the macro definitions from the C file.
+>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+> ---
+> Changelog v1:
+>  - Removed additional macros pointed out by Ritesh
+>    which are duplicates and are avilable in "pkeys.h"
 
-> > Patch looks fine to me.
+Thanks! The changes looks good to me. 
 
-> > Reviewed-by: Kajol Jain <kjain@linux.ibm.com>
- 
-> Can we please pull in this patch if it looks fine.
+Please feel free to add - 
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
-Sure,
 
-Thanks, applied to perf-tools-next,
+Gave a quick run on my lpar too - 
 
-- Arnaldo
+# selftests: powerpc/ptrace: core-pkey
+# test: core_pkey
+# [User Write (Running)]         AMR: 3cffffffffffffff pkey1: 4 pkey2: 5 pkey3: 6
+# success: core_pkey
+ok 9 selftests: powerpc/ptrace: core-pkey
+# selftests: powerpc/ptrace: ptrace-pkey
+# test: ptrace_pkey
+# [User Write (Running)]         AMR: 3cffffffffffffff pkey1: 4 pkey2: 5 pkey3: 6
+# success: ptrace_pkey
+ok 13 selftests: powerpc/ptrace: ptrace-pkey
+
+
+-ritesh
+
+>
+>  tools/testing/selftests/powerpc/include/pkeys.h      |  8 ++++++++
+>  tools/testing/selftests/powerpc/ptrace/core-pkey.c   | 12 ------------
+>  tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c | 12 ------------
+>  3 files changed, 8 insertions(+), 24 deletions(-)
+>
+> diff --git a/tools/testing/selftests/powerpc/include/pkeys.h b/tools/testing/selftests/powerpc/include/pkeys.h
+> index 51729d9a7111..3a0129467de6 100644
+> --- a/tools/testing/selftests/powerpc/include/pkeys.h
+> +++ b/tools/testing/selftests/powerpc/include/pkeys.h
+> @@ -35,10 +35,18 @@
+>  #define __NR_pkey_alloc		384
+>  #define __NR_pkey_free		385
+>  
+> +#ifndef NT_PPC_PKEY
+> +#define NT_PPC_PKEY		0x110
+> +#endif
+> +
+>  #define PKEY_BITS_PER_PKEY	2
+>  #define NR_PKEYS		32
+>  #define PKEY_BITS_MASK		((1UL << PKEY_BITS_PER_PKEY) - 1)
+>  
+> +#define AMR_BITS_PER_PKEY 2
+> +#define PKEY_REG_BITS (sizeof(u64) * 8)
+> +#define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey + 1) * AMR_BITS_PER_PKEY))
+> +
+>  inline unsigned long pkeyreg_get(void)
+>  {
+>  	return mfspr(SPRN_AMR);
+> diff --git a/tools/testing/selftests/powerpc/ptrace/core-pkey.c b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+> index 31c9bf6d95db..f061434af452 100644
+> --- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+> +++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+> @@ -18,18 +18,6 @@
+>  #include "child.h"
+>  #include "pkeys.h"
+>  
+> -#ifndef NT_PPC_PKEY
+> -#define NT_PPC_PKEY		0x110
+> -#endif
+> -
+> -#ifndef PKEY_DISABLE_EXECUTE
+> -#define PKEY_DISABLE_EXECUTE	0x4
+> -#endif
+> -
+> -#define AMR_BITS_PER_PKEY 2
+> -#define PKEY_REG_BITS (sizeof(u64) * 8)
+> -#define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey + 1) * AMR_BITS_PER_PKEY))
+> -
+>  #define CORE_FILE_LIMIT	(5 * 1024 * 1024)	/* 5 MB should be enough */
+>  
+>  static const char core_pattern_file[] = "/proc/sys/kernel/core_pattern";
+> diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
+> index 6893ed096457..fc633014424f 100644
+> --- a/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
+> +++ b/tools/testing/selftests/powerpc/ptrace/ptrace-pkey.c
+> @@ -9,18 +9,6 @@
+>  #include "child.h"
+>  #include "pkeys.h"
+>  
+> -#ifndef NT_PPC_PKEY
+> -#define NT_PPC_PKEY		0x110
+> -#endif
+> -
+> -#ifndef PKEY_DISABLE_EXECUTE
+> -#define PKEY_DISABLE_EXECUTE	0x4
+> -#endif
+> -
+> -#define AMR_BITS_PER_PKEY 2
+> -#define PKEY_REG_BITS (sizeof(u64) * 8)
+> -#define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey + 1) * AMR_BITS_PER_PKEY))
+> -
+>  static const char user_read[] = "[User Read (Running)]";
+>  static const char user_write[] = "[User Write (Running)]";
+>  static const char ptrace_read_running[] = "[Ptrace Read (Running)]";
+> -- 
+> 2.47.0
 
