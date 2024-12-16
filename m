@@ -1,44 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-4162-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4163-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DD43E7717F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 11:30:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BCDEE77180
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 11:30:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YBd4z6Kyvz3054;
-	Mon, 16 Dec 2024 22:29:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734348563;
-	cv=none; b=cKV4TpgvLhI5BWCqyC6fDpCfnK61H4APfhWItsnKVdMTl/kEyTaG6sBy6rUxrhLSoJSi/Up7lUjp2pt7vwPLOovqFlkxYbLSFSmshew/2Fw9t0czl1t2rsYsyQ+RaRZ3nryKNMrTbAGDpTnyRJu1LxOqopkWnaJ2LzYJJETjbpSqw4i0IFguR23Tnv0jtJ+AkhkhcarZLOBuCE1iIrYdVa8prcju4cuhgZAH1q61Ow6akn9z+bFc1UajuXykSDgbY1J6CiYYW1AfMsE8wOcQsmMfsirUhgK/BzoppYErS16NYWuLPeQe/yCBPnUbeLWiqNyUta4Yj4KPMvzSBwWnyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YBd5026Myz305G;
+	Mon, 16 Dec 2024 22:29:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734348564;
+	cv=none; b=YsXBccHHJWQxi4fsMoBdUfQetGKO5je2X3lK1hzo/TwMKs+K2Q1PVlijP0iOA/XWtDoRI8k51WG+2+8mumY+Fz8FtNQjdR/I52+h8xbjXC1KEzKLer+BQWKdcx+tiW9EgB6erUSzU4c0axd2KpG4ymmYhIpROUT1HUmiW3H4O+sVZtzpNCgw6mHVtHOeCXA50bAOe1Xrhc4mjP7+6sf3a6kNLG/RvKasD1RUoCHHf8U/4MFxQWFS5gzlcS3UFI9JzqZCOJHkqqO7BGTThWIQm+Zar5ORTPf+wvIgZKgQ6YPC5ak+R/NKpqM2LGQmSfxONxYpYI+LvxMZfnrNnkO4Kg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734348563; c=relaxed/relaxed;
-	bh=g9tjk3PODnytxLGLUKqtJmJ+F/iSkkx1r3oj2gP/2ZE=;
+	t=1734348564; c=relaxed/relaxed;
+	bh=ei2ylT2acHUR6GZkra3b0Tchvf1oqStYh1vPrMEf/Vs=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=emWIjwdF7HHxAe2YGzwmP6/+jGUIym/SNyR1Ijf/ruyhPHylBayy9/raxuhiWtWh+YGQV1lw4OwL7cW1CkBy/lgGptz5eSDVZoNGcd2CB7OUeBNkNpXcZC0NZB0YtVW9AhhKjUZWxE848GfRjhP8AkCSerrRaGQvk8QatiGnjnzg1r6eDLW/tsZQ6+KX9XsWb32rK2tQca41/9BeOIuuxakQnimcjFSGbZ22Fqfxn8vDX9lqjaLvL5JS5lFqTV8kACCpQVEg/nq0QxnVYvh6Ywvzc+SDMCWKj1b+MVQmC4LSQdMDTwfOYnNUVqU1/N2Y3xXYeAaQ17S6wS7W+M/1wg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=JZnvdDvI; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=HNE9czQbhnmS4bdSo40fjj+K4tnbP3EBbjJuRoO2OBy79XQqi4RFfVxe+xBituLRDXs6w5RvRW+o6Hy5h3K4LWHAQa+Lzri3og7iHKegGwDosf1sMRzKKiIl3Wt2CM+dhzbf2ogXOR2Bu1mH/lgazOfr7tzRBfbNPi/zAhkKa20c367d9IOl1XPC4VHeL+P9lRFUSIt4b2cPRTTCzvACVj7ffFlQvh6tsleKNLzylzeRMZR/Z3k7YMy0gGfeCHYmjoMcqhdM8GoRjTL2ongMAQa9BojwL4cqG5UOQtzRd+PlsdGuryuhGN5/5m0gACkP8WtfnYR3s+Flx1ReRdMP8A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=dZKEYZOu; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=JZnvdDvI;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=dZKEYZOu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBd4y1xylz302N
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2024 22:29:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBd4z2q5Dz304C
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2024 22:29:22 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1734348553;
-	bh=3uZW7n2Dks+H/Doo9q/ymOJETj3rjFvKcshiuUcefLM=;
+	s=mail; t=1734348552;
+	bh=qDXql5e0dlsoUkgnrUATod+FIdN2oCDJzygWUo2bAxI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=JZnvdDvIVLp1ZOxxcHNlXN8wdnL+pIUmr0q7kiYSIb59hF+wPedan38OdkIU3mFxI
-	 GCnSq0idhsTC5EYfkYXdnHztJe4bXI9oXfLHux5+MNwo1WYKNujzy1r+0jT6DM7Gyp
-	 VQzSYcM/qQ/Z4JjpIikvUVUs9SejC6uHDS2gdaF0=
+	b=dZKEYZOuYIHlGMQvecOcn2uix+tggU/FkxIxa3rtLJR1ytNHcWcz1br92ylyAydSN
+	 AaGg4z+b62l/Jnx9a7qEvnDagQ+5qgY9qf6W8AsuUNgYyCRQkCdx06aCL3kp1iUP93
+	 j6hK6BCVF2OpA96b4jyQJflQWD6xbwe6Il2RcEQk=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Mon, 16 Dec 2024 12:29:18 +0100
-Subject: [PATCH 11/11] scsi: qla4xxx: Constify 'struct bin_attribute'
+Date: Mon, 16 Dec 2024 12:29:12 +0100
+Subject: [PATCH 05/11] scsi: ibmvfc: Constify 'struct bin_attribute'
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,7 +53,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241216-sysfs-const-bin_attr-scsi-v1-11-f0a5e54b3437@weissschuh.net>
+Message-Id: <20241216-sysfs-const-bin_attr-scsi-v1-5-f0a5e54b3437@weissschuh.net>
 References: <20241216-sysfs-const-bin_attr-scsi-v1-0-f0a5e54b3437@weissschuh.net>
 In-Reply-To: <20241216-sysfs-const-bin_attr-scsi-v1-0-f0a5e54b3437@weissschuh.net>
 To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
@@ -73,11 +73,11 @@ Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1734348551; l=2063;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734348551; l=1371;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=3uZW7n2Dks+H/Doo9q/ymOJETj3rjFvKcshiuUcefLM=;
- b=FudiGZdk+7eiqucd0Mb3IdXBG2lRQt7iNuv+QY5rtiehQ0sCbeMq8dx/vlYt5/Q9/IIhVyJBr
- R65fOzklM+wC2PS3I1zQMq5XL6HeZTFUPE1v5sntq59RyzxSNb7mE4t
+ bh=qDXql5e0dlsoUkgnrUATod+FIdN2oCDJzygWUo2bAxI=;
+ b=dDgz9Ydf6v4c6BI1Dnxg8otiPshJZaMRuHcfAE+qvBaHTOKVPItUmjE76IBIT2jLd/2Q0crxB
+ eOz7VAZ6/uECvTk+TKC/HJAY59i1sBjxrZyaCFMfdE1+rcuzjW44oZJ
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
@@ -87,55 +87,38 @@ accidental or malicious modifications.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/scsi/qla4xxx/ql4_attr.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvfc.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/qla4xxx/ql4_attr.c b/drivers/scsi/qla4xxx/ql4_attr.c
-index abfa6ef604800aefef3dbc757d656b7dc20ede8c..e3f85d6ea0db25d5674ca69475af31a4267e2fdb 100644
---- a/drivers/scsi/qla4xxx/ql4_attr.c
-+++ b/drivers/scsi/qla4xxx/ql4_attr.c
-@@ -10,7 +10,7 @@
- 
- static ssize_t
- qla4_8xxx_sysfs_read_fw_dump(struct file *filep, struct kobject *kobj,
--			     struct bin_attribute *ba, char *buf, loff_t off,
-+			     const struct bin_attribute *ba, char *buf, loff_t off,
- 			     size_t count)
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index e66c3ef74267a5527b21e6e1d13efb91425b158e..dc8401587bb529860d261ac83b924fceac8335d9 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -3639,7 +3639,7 @@ static DEVICE_ATTR(nr_scsi_channels, S_IRUGO | S_IWUSR,
+  *	number of bytes printed to buffer
+  **/
+ static ssize_t ibmvfc_read_trace(struct file *filp, struct kobject *kobj,
+-				 struct bin_attribute *bin_attr,
++				 const struct bin_attribute *bin_attr,
+ 				 char *buf, loff_t off, size_t count)
  {
- 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
-@@ -28,7 +28,7 @@ qla4_8xxx_sysfs_read_fw_dump(struct file *filep, struct kobject *kobj,
- 
- static ssize_t
- qla4_8xxx_sysfs_write_fw_dump(struct file *filep, struct kobject *kobj,
--			      struct bin_attribute *ba, char *buf, loff_t off,
-+			      const struct bin_attribute *ba, char *buf, loff_t off,
- 			      size_t count)
- {
- 	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
-@@ -104,19 +104,19 @@ qla4_8xxx_sysfs_write_fw_dump(struct file *filep, struct kobject *kobj,
+ 	struct device *dev = kobj_to_dev(kobj);
+@@ -3662,13 +3662,13 @@ static ssize_t ibmvfc_read_trace(struct file *filp, struct kobject *kobj,
  	return count;
  }
  
--static struct bin_attribute sysfs_fw_dump_attr = {
-+static const struct bin_attribute sysfs_fw_dump_attr = {
- 	.attr = {
- 		.name = "fw_dump",
- 		.mode = S_IRUSR | S_IWUSR,
+-static struct bin_attribute ibmvfc_trace_attr = {
++static const struct bin_attribute ibmvfc_trace_attr = {
+ 	.attr =	{
+ 		.name = "trace",
+ 		.mode = S_IRUGO,
  	},
  	.size = 0,
--	.read = qla4_8xxx_sysfs_read_fw_dump,
--	.write = qla4_8xxx_sysfs_write_fw_dump,
-+	.read_new = qla4_8xxx_sysfs_read_fw_dump,
-+	.write_new = qla4_8xxx_sysfs_write_fw_dump,
+-	.read = ibmvfc_read_trace,
++	.read_new = ibmvfc_read_trace,
  };
+ #endif
  
- static struct sysfs_entry {
- 	char *name;
--	struct bin_attribute *attr;
-+	const struct bin_attribute *attr;
- } bin_file_entries[] = {
- 	{ "fw_dump", &sysfs_fw_dump_attr },
- 	{ NULL },
 
 -- 
 2.47.1
