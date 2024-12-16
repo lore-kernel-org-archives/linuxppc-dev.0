@@ -1,44 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-4160-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4161-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8806E77180
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 11:30:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35569E7717F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 11:30:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YBd4z24Khz3048;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YBd4z2vLmz304N;
 	Mon, 16 Dec 2024 22:29:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734348563;
-	cv=none; b=NsmHkfUE5c/Xmnmj0b0bkrFD+UNlmee7hkmdlmqTZRvMzWoCottVM7Vkc/jOBSB46OfFmNA+glu5zyP3RQ/nRXnw2D9KHPApY3pIefErTh/dVCHEgaSjF3cjqC7FITIEm51ZDcES1Kf3crn55hYANYEHTHl3Xg2KjR74wyoHhy8cPIP3SPUfW+d56t3mqZHf5uk8XRDvkqQ66hYIgfQ/Hcpn2GGEKVqfdyUbUujGV7ip17YTg4SkXdKL7MNReW6NN1lfFtC7rExxD7umKTrosYOokFeemr3jfTG5dqE5uoZFKBePuNjaYQ4xZBLSW7tMWRhHhumtjPCWznr/0uFAEw==
+	cv=none; b=ekcM6508gi6BeUmWG59I3oGYom4xRc0WMqJd0JtvgMELnOvJdm1KAZWn+DpQalCinm5nvTM/0SLdjYdcUqtBigUYwuXbdthIUQAOndiEv6GXNjla3NvEK6mITos/cuPtnx9IdgcZbgdXB/taCF3+HAHey0Ym5V8PZuvywJsMjzwImz+8NH5RQfDSQjpaMN4Ln90iSnVLhlNjDz6iZVumc+5GC2KMzNsFOarCJayhRTeZZ+NPHoFnugVHcb00ucFklvRYAQnMxd1PLAw42X67Am59CuQ/R9SbjMxT9WNck2EnfiUlG5GkprvNnMHE9LrlGfFDEfSLyyPm0H4XX0l+6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1734348563; c=relaxed/relaxed;
-	bh=htzlxY/hwm84cAKGwxjnQbmr1zTO4no+lM/1COcdNEY=;
+	bh=02IfjRNVWYYSfxfzhkRdHppoxHhkMmhwcIYBIuCIhR0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bcmFdC1sVTMjWLLkTBG8NzUYQQGBWhRZaY4sRmhu+BS9oql4jLYZ5KQ92ZOxaRAfXCoHFemRvF0C563LxjasTUg53SB3KTQDhJIBL7wXFFmi41b7mx1domXodZr9qdBrgtwBDNLzaYi9ENerdONJn3rCElqh2c48rFCxzM5EZ4VbkNnTUpO3wg9SOnlyMUlOsHjTlE8tDtaI/5SQ/uKVX2Wut+Rv10WtviPahtoljC+hdTjUzdDa99/IpYUQhjV15pHxiy1XdGTKNhaVsifmciaTW6d6gCR6yO8qTEHQSKubZ7hMv10fMzvUFwcGbdTjFTjMqkfUl442Y7z6/ICFmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Q1eyXdHb; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=bRVC4mzZ1DIAwCGq+e1Ly8EsgVzScwoZ7Pt9DIIiC+QZEcikPo/9vzj3acW7jvMKf7YWhWtnNaw7xRqeLlaaMvGk6VQOi/szzSCuFQZyRdkANqV0AQGAiIXOiXUNpgPrKkSkxBb5p2szrobo5IbQjv1v+kh4QFoNGUyVZ6t6emsAu2MGDLl9eqjPCdtpmG+fB7/XuCHU+kg5Z2VKww2IGOV9pZ6/AFxdvm1SsQNAQ7wgtSB6XKWQWRlZHsPDnq54E4SBQzjYzcGpQjeqOM3P/yNB1OkVKeEpMX3HpaU5c0sRH8eybY8UmLmsEWf8ntAEZmpB0c1OeDT+h7MNSNWZUA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=A1FxjZYR; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Q1eyXdHb;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=A1FxjZYR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBd4x0Clhz3011
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBd4x2zymz301B
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2024 22:29:21 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1734348552;
-	bh=oitZ6tqthOyv84s9N34Rb9nzMVcAd+9eCJs7DMuMPZg=;
+	s=mail; t=1734348553;
+	bh=TnuBvtbm/eKcN8yGKFA+/hPyKlT4aEyQjANk9DeyXiI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Q1eyXdHbyag9KhzRNNgo9E8H9QL8KBm0VJ3bBuTYmu/Q8ID2LdEs7F82M+oAGmL0f
-	 hFS3ewEZkIiO22+WG30C4OWIEuIknRZphCNvM1N8nsB04lCaZxqliKvhBLxrIsnnGK
-	 yEdF8dh4FKu2rUj1XByTCI+l4AHJ0pzX80nSFnSk=
+	b=A1FxjZYRPPJQX0xbzKEXvO1Q9aAIWd0ldmiTpipg/B45okU5dWp/imiObvOguW73E
+	 7QCyrC4X6ldX7RnzZxlphHwAJAd9i5FiTbQCkzIQLz/fg3n6BljzV47kOSkuVmSji+
+	 8I85ovRjBYMgJPYP5Hh+kkF5H2aLupGkGSvqBHpE=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Mon, 16 Dec 2024 12:29:09 +0100
-Subject: [PATCH 02/11] scsi: 3w-sas: Constify 'struct bin_attribute'
+Date: Mon, 16 Dec 2024 12:29:17 +0100
+Subject: [PATCH 10/11] scsi: qla2xxx: Constify 'struct bin_attribute'
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,7 +53,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241216-sysfs-const-bin_attr-scsi-v1-2-f0a5e54b3437@weissschuh.net>
+Message-Id: <20241216-sysfs-const-bin_attr-scsi-v1-10-f0a5e54b3437@weissschuh.net>
 References: <20241216-sysfs-const-bin_attr-scsi-v1-0-f0a5e54b3437@weissschuh.net>
 In-Reply-To: <20241216-sysfs-const-bin_attr-scsi-v1-0-f0a5e54b3437@weissschuh.net>
 To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
@@ -73,11 +73,11 @@ Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1734348551; l=2354;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734348551; l=9804;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=oitZ6tqthOyv84s9N34Rb9nzMVcAd+9eCJs7DMuMPZg=;
- b=sacDHXbh5wtVuj4CIy4c8lPoMwYfRqbvW7o53sDn3Rl8gYBj1PngcDtMJ7orcye3Msm+5Yd3Y
- i5icvP0is0qAVyMZ0QA3a+yvatFzrL5ioZHW6iyicE3OkmniylWhmUR
+ bh=TnuBvtbm/eKcN8yGKFA+/hPyKlT4aEyQjANk9DeyXiI=;
+ b=hMP1olY6EzhDv4p3LOXBwNL02D9JjGyYAaTYTMdtgmGsKSZbwRDLoJlLp8E+KZMqxkaOwp8pV
+ sFlVux4YBYGClYqis4bxn540b7WW9JUJueJYIG3tACx4vyI0MUTLc4u
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
@@ -87,60 +87,288 @@ accidental or malicious modifications.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/scsi/3w-sas.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/scsi/qla2xxx/qla_attr.c | 80 ++++++++++++++++++++---------------------
+ 1 file changed, 40 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/scsi/3w-sas.c b/drivers/scsi/3w-sas.c
-index caa6713a62a44a72c7cfa5128c01fe54788cf708..6b2b02f89490aeb0494f3b586c9df995ec05a158 100644
---- a/drivers/scsi/3w-sas.c
-+++ b/drivers/scsi/3w-sas.c
-@@ -96,7 +96,7 @@ static int twl_reset_device_extension(TW_Device_Extension *tw_dev, int ioctl_res
+diff --git a/drivers/scsi/qla2xxx/qla_attr.c b/drivers/scsi/qla2xxx/qla_attr.c
+index e6ece30c43486ce8f268e369f317e850994ed008..dcb0c2af1fa7cf9b63a5613c01b792143142a412 100644
+--- a/drivers/scsi/qla2xxx/qla_attr.c
++++ b/drivers/scsi/qla2xxx/qla_attr.c
+@@ -17,7 +17,7 @@ static int qla24xx_vport_disable(struct fc_vport *, bool);
  
- /* This function returns AENs through sysfs */
- static ssize_t twl_sysfs_aen_read(struct file *filp, struct kobject *kobj,
--				  struct bin_attribute *bin_attr,
-+				  const struct bin_attribute *bin_attr,
- 				  char *outbuf, loff_t offset, size_t count)
+ static ssize_t
+ qla2x00_sysfs_read_fw_dump(struct file *filp, struct kobject *kobj,
+-			   struct bin_attribute *bin_attr,
++			   const struct bin_attribute *bin_attr,
+ 			   char *buf, loff_t off, size_t count)
  {
- 	struct device *dev = container_of(kobj, struct device, kobj);
-@@ -116,18 +116,18 @@ static ssize_t twl_sysfs_aen_read(struct file *filp, struct kobject *kobj,
- } /* End twl_sysfs_aen_read() */
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -58,7 +58,7 @@ qla2x00_sysfs_read_fw_dump(struct file *filp, struct kobject *kobj,
  
- /* aen_read sysfs attribute initializer */
--static struct bin_attribute twl_sysfs_aen_read_attr = {
-+static const struct bin_attribute twl_sysfs_aen_read_attr = {
+ static ssize_t
+ qla2x00_sysfs_write_fw_dump(struct file *filp, struct kobject *kobj,
+-			    struct bin_attribute *bin_attr,
++			    const struct bin_attribute *bin_attr,
+ 			    char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -168,19 +168,19 @@ qla2x00_sysfs_write_fw_dump(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
+ 
+-static struct bin_attribute sysfs_fw_dump_attr = {
++static const struct bin_attribute sysfs_fw_dump_attr = {
  	.attr = {
- 		.name = "3ware_aen_read",
+ 		.name = "fw_dump",
+ 		.mode = S_IRUSR | S_IWUSR,
+ 	},
+ 	.size = 0,
+-	.read = qla2x00_sysfs_read_fw_dump,
+-	.write = qla2x00_sysfs_write_fw_dump,
++	.read_new = qla2x00_sysfs_read_fw_dump,
++	.write_new = qla2x00_sysfs_write_fw_dump,
+ };
+ 
+ static ssize_t
+ qla2x00_sysfs_read_nvram(struct file *filp, struct kobject *kobj,
+-			 struct bin_attribute *bin_attr,
++			 const struct bin_attribute *bin_attr,
+ 			 char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -220,7 +220,7 @@ qla2x00_sysfs_read_nvram(struct file *filp, struct kobject *kobj,
+ 
+ static ssize_t
+ qla2x00_sysfs_write_nvram(struct file *filp, struct kobject *kobj,
+-			  struct bin_attribute *bin_attr,
++			  const struct bin_attribute *bin_attr,
+ 			  char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -282,19 +282,19 @@ qla2x00_sysfs_write_nvram(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
+ 
+-static struct bin_attribute sysfs_nvram_attr = {
++static const struct bin_attribute sysfs_nvram_attr = {
+ 	.attr = {
+ 		.name = "nvram",
+ 		.mode = S_IRUSR | S_IWUSR,
+ 	},
+ 	.size = 512,
+-	.read = qla2x00_sysfs_read_nvram,
+-	.write = qla2x00_sysfs_write_nvram,
++	.read_new = qla2x00_sysfs_read_nvram,
++	.write_new = qla2x00_sysfs_write_nvram,
+ };
+ 
+ static ssize_t
+ qla2x00_sysfs_read_optrom(struct file *filp, struct kobject *kobj,
+-			  struct bin_attribute *bin_attr,
++			  const struct bin_attribute *bin_attr,
+ 			  char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -318,7 +318,7 @@ qla2x00_sysfs_read_optrom(struct file *filp, struct kobject *kobj,
+ 
+ static ssize_t
+ qla2x00_sysfs_write_optrom(struct file *filp, struct kobject *kobj,
+-			   struct bin_attribute *bin_attr,
++			   const struct bin_attribute *bin_attr,
+ 			   char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -344,19 +344,19 @@ qla2x00_sysfs_write_optrom(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
+ 
+-static struct bin_attribute sysfs_optrom_attr = {
++static const struct bin_attribute sysfs_optrom_attr = {
+ 	.attr = {
+ 		.name = "optrom",
+ 		.mode = S_IRUSR | S_IWUSR,
+ 	},
+ 	.size = 0,
+-	.read = qla2x00_sysfs_read_optrom,
+-	.write = qla2x00_sysfs_write_optrom,
++	.read_new = qla2x00_sysfs_read_optrom,
++	.write_new = qla2x00_sysfs_write_optrom,
+ };
+ 
+ static ssize_t
+ qla2x00_sysfs_write_optrom_ctl(struct file *filp, struct kobject *kobj,
+-			       struct bin_attribute *bin_attr,
++			       const struct bin_attribute *bin_attr,
+ 			       char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -529,18 +529,18 @@ qla2x00_sysfs_write_optrom_ctl(struct file *filp, struct kobject *kobj,
+ 	return rval;
+ }
+ 
+-static struct bin_attribute sysfs_optrom_ctl_attr = {
++static const struct bin_attribute sysfs_optrom_ctl_attr = {
+ 	.attr = {
+ 		.name = "optrom_ctl",
+ 		.mode = S_IWUSR,
+ 	},
+ 	.size = 0,
+-	.write = qla2x00_sysfs_write_optrom_ctl,
++	.write_new = qla2x00_sysfs_write_optrom_ctl,
+ };
+ 
+ static ssize_t
+ qla2x00_sysfs_read_vpd(struct file *filp, struct kobject *kobj,
+-		       struct bin_attribute *bin_attr,
++		       const struct bin_attribute *bin_attr,
+ 		       char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -587,7 +587,7 @@ qla2x00_sysfs_read_vpd(struct file *filp, struct kobject *kobj,
+ 
+ static ssize_t
+ qla2x00_sysfs_write_vpd(struct file *filp, struct kobject *kobj,
+-			struct bin_attribute *bin_attr,
++			const struct bin_attribute *bin_attr,
+ 			char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -642,19 +642,19 @@ qla2x00_sysfs_write_vpd(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
+ 
+-static struct bin_attribute sysfs_vpd_attr = {
++static const struct bin_attribute sysfs_vpd_attr = {
+ 	.attr = {
+ 		.name = "vpd",
+ 		.mode = S_IRUSR | S_IWUSR,
+ 	},
+ 	.size = 0,
+-	.read = qla2x00_sysfs_read_vpd,
+-	.write = qla2x00_sysfs_write_vpd,
++	.read_new = qla2x00_sysfs_read_vpd,
++	.write_new = qla2x00_sysfs_write_vpd,
+ };
+ 
+ static ssize_t
+ qla2x00_sysfs_read_sfp(struct file *filp, struct kobject *kobj,
+-		       struct bin_attribute *bin_attr,
++		       const struct bin_attribute *bin_attr,
+ 		       char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -679,18 +679,18 @@ qla2x00_sysfs_read_sfp(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
+ 
+-static struct bin_attribute sysfs_sfp_attr = {
++static const struct bin_attribute sysfs_sfp_attr = {
+ 	.attr = {
+ 		.name = "sfp",
+ 		.mode = S_IRUSR | S_IWUSR,
+ 	},
+ 	.size = SFP_DEV_SIZE,
+-	.read = qla2x00_sysfs_read_sfp,
++	.read_new = qla2x00_sysfs_read_sfp,
+ };
+ 
+ static ssize_t
+ qla2x00_sysfs_write_reset(struct file *filp, struct kobject *kobj,
+-			struct bin_attribute *bin_attr,
++			const struct bin_attribute *bin_attr,
+ 			char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -823,19 +823,19 @@ qla2x00_sysfs_write_reset(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
+ 
+-static struct bin_attribute sysfs_reset_attr = {
++static const struct bin_attribute sysfs_reset_attr = {
+ 	.attr = {
+ 		.name = "reset",
+ 		.mode = S_IWUSR,
+ 	},
+ 	.size = 0,
+-	.write = qla2x00_sysfs_write_reset,
++	.write_new = qla2x00_sysfs_write_reset,
+ };
+ 
+ static ssize_t
+ qla2x00_issue_logo(struct file *filp, struct kobject *kobj,
+-			struct bin_attribute *bin_attr,
+-			char *buf, loff_t off, size_t count)
++		   const struct bin_attribute *bin_attr,
++		   char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+ 	    struct device, kobj)));
+@@ -866,18 +866,18 @@ qla2x00_issue_logo(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
+ 
+-static struct bin_attribute sysfs_issue_logo_attr = {
++static const struct bin_attribute sysfs_issue_logo_attr = {
+ 	.attr = {
+ 		.name = "issue_logo",
+ 		.mode = S_IWUSR,
+ 	},
+ 	.size = 0,
+-	.write = qla2x00_issue_logo,
++	.write_new = qla2x00_issue_logo,
+ };
+ 
+ static ssize_t
+ qla2x00_sysfs_read_xgmac_stats(struct file *filp, struct kobject *kobj,
+-		       struct bin_attribute *bin_attr,
++		       const struct bin_attribute *bin_attr,
+ 		       char *buf, loff_t off, size_t count)
+ {
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -929,18 +929,18 @@ qla2x00_sysfs_read_xgmac_stats(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
+ 
+-static struct bin_attribute sysfs_xgmac_stats_attr = {
++static const struct bin_attribute sysfs_xgmac_stats_attr = {
+ 	.attr = {
+ 		.name = "xgmac_stats",
  		.mode = S_IRUSR,
  	},
  	.size = 0,
--	.read = twl_sysfs_aen_read
-+	.read_new = twl_sysfs_aen_read
+-	.read = qla2x00_sysfs_read_xgmac_stats,
++	.read_new = qla2x00_sysfs_read_xgmac_stats,
  };
  
- /* This function returns driver compatibility info through sysfs */
- static ssize_t twl_sysfs_compat_info(struct file *filp, struct kobject *kobj,
--				     struct bin_attribute *bin_attr,
-+				     const struct bin_attribute *bin_attr,
- 				     char *outbuf, loff_t offset, size_t count)
+ static ssize_t
+ qla2x00_sysfs_read_dcbx_tlv(struct file *filp, struct kobject *kobj,
+-		       struct bin_attribute *bin_attr,
++		       const struct bin_attribute *bin_attr,
+ 		       char *buf, loff_t off, size_t count)
  {
- 	struct device *dev = container_of(kobj, struct device, kobj);
-@@ -147,13 +147,13 @@ static ssize_t twl_sysfs_compat_info(struct file *filp, struct kobject *kobj,
- } /* End twl_sysfs_compat_info() */
+ 	struct scsi_qla_host *vha = shost_priv(dev_to_shost(container_of(kobj,
+@@ -987,18 +987,18 @@ qla2x00_sysfs_read_dcbx_tlv(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
  
- /* compat_info sysfs attribute initializer */
--static struct bin_attribute twl_sysfs_compat_info_attr = {
-+static const struct bin_attribute twl_sysfs_compat_info_attr = {
+-static struct bin_attribute sysfs_dcbx_tlv_attr = {
++static const struct bin_attribute sysfs_dcbx_tlv_attr = {
  	.attr = {
- 		.name = "3ware_compat_info",
+ 		.name = "dcbx_tlv",
  		.mode = S_IRUSR,
  	},
  	.size = 0,
--	.read = twl_sysfs_compat_info
-+	.read_new = twl_sysfs_compat_info
+-	.read = qla2x00_sysfs_read_dcbx_tlv,
++	.read_new = qla2x00_sysfs_read_dcbx_tlv,
  };
  
- /* Show some statistics about the card */
+ static struct sysfs_entry {
+ 	char *name;
+-	struct bin_attribute *attr;
++	const struct bin_attribute *attr;
+ 	int type;
+ } bin_file_entries[] = {
+ 	{ "fw_dump", &sysfs_fw_dump_attr, },
 
 -- 
 2.47.1
