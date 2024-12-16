@@ -1,44 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-4137-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4138-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBCC9E7717F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 04:08:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A99BE7717F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Dec 2024 04:08:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YBRHX20SGz2xQD;
-	Mon, 16 Dec 2024 15:07:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734322072;
-	cv=none; b=U4gJAph6EofD6qEgxrsSbPgq0DGOa8rhx+uauL1TQDA7xwfoRhb9z/lfkfVXDaywvtxeKMn+WhP6i9E2Jwq1BHOPHpoNzruuSSD4wLKbr0NKFab923kSDaDD0HOihCNUsD8DfqvNd9FfzpMcJ0TPRjPBAiOyhCaqQjtTcXsoM/uxb8gJzPAP9w/XWoneqSKSTjcjjHkbEFp76++NQwU2XzzoCIuAEx1fah3tCAMA1kBkA18lSHiwnUMf336nIp/2wJJ/qrBbfXAuwmHbVlDnqdU1MS3C2/OXk69A1QcHt1wq59rnOZRsmvO0gHQvmP4gdey8zXXa7sVZSE84ybGE3Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YBRHb0pfxz2ymb;
+	Mon, 16 Dec 2024 15:07:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734322075;
+	cv=none; b=PxQ28wp07+2eeb7so4qn1qoJkHSzFoe7tThVlldFgHfwwYgsdTofqmu4KTWrgG3FR4t9/H74tsthzilJyReg/EKyjzmTqXLuQ8AWOtEgg4MPnpqPlcJWZ8FH7uIUwkGTsXnNJLb8OXU+B3dGnusGwgVgk+2T+zEPQmdLbeXZA32TGP8YLYET17owmbGnI5nxdJEQZfmO5HzrXrsj4pA/FXW1AqXjj+iJF2kl5QSUixTUwSBINbw1vbCB1d/boWlcqfLykQkOKAi6wj1eIupgzGd1D4DmSE/4qu7RzTMiUvFddUKHjtPmOTg8gzEb+DsDmVZFua2cA+EBKovHDjC1EQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734322072; c=relaxed/relaxed;
-	bh=/2LxJp+mw5bjvQ0tEEXcQlqekjRaPp7hzow4fNlR9SQ=;
+	t=1734322075; c=relaxed/relaxed;
+	bh=wmrlS1wA8jYSA/Mb9XETCAcYgo6Pz7DutYScHJeCCyU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=oEoiFAXER6T/PQLyTiCaGTtTl8KNcDqVsKI7+FmjIJ+KJav1b8KWtiLE+Orvu6Gu2TfknMAUT66FEpT5XEM31hRQUo8+eoamg9H2lpJvmy2hs/MRy5KIhtAlLVle36PVxgrdHgzqQE/RU0AcQ5lxMzTitNbdfD/OxnkDWloXl2xJzC6rExjJs+qmiUR6MY+yk08E0LcltiCEVL9aXQEIwKqjSzZKVTj2aZeEL9E/aw3H74GvwAhQnQMxfmnj05jwdV7nXc8JUJRjxIt0yP4KkPj+IaR5XS0EwSfjagYMk7MB/GRd2IezZaDfC08Z+Zfa3VLmLPRQYF3r9Knopo8A/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=lW+vXty2; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=RQ8Jw2eeaBdSfHtd7HsGIUsxKPaPnDO2YQKvGRuPeZizPIvjo2kXgQMSrcEy7Xrwzny47IyFfEllOxG99VfFME0F3mIS6B+k4+rdDLEiO9qwHdf/X/FKGYEa174Snj3ewYjYj2dpoo++EN1B+ULAaGRu/qjMw4TD79B4wQpvHDNTwdrANT2BDOwQUbCosZvUZ2G45LZJ1akArU44lwfVUrMhnb3DOndJjCGusJ/OFos2OdnLm/zBHRJ8Yaj/v1KfeVUFIagRFbAIaIrTHu1bjU+jh5IYPBqrA5hA9lsssIDAvsUmajWIq4MkmVYRhcJtMMKuoF4932chxkrgOR+IyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=lVyEtQL9; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=lW+vXty2;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=lVyEtQL9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBRHV54FGz2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2024 15:07:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YBRHT4Xs1z2xCd
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Dec 2024 15:07:49 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1734322065;
-	bh=UwFlrZoaphbEMf2Wi/FBevBRcRQkiVMw7c3eq5eTCfk=;
+	s=mail; t=1734322066;
+	bh=xVlfF3vwhCOzCWvL8Ii8hOh/IkFAQglYuNvWAMyTYs8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=lW+vXty2mFB0zNdICvad95Ludo+LgrtTfz8STKo9jEiOQ82+B/j8YTemdDpeqKlu2
-	 mlSFWQsiVDxdFOe+/cKTkPOZONRC7CgsMd9Jut75CpAGSlTMtNqJ25Uy+C7W5x1aSR
-	 kUmqo1bl72QuGhEw0GYvmCYxgvfWRuciuR1MtZOw=
+	b=lVyEtQL94BGDrg733MzGrad3i6Ww9VapAuG8dBIxraCIbivycNs0p2YIoGAdSquk1
+	 eWXKJhSyNFvnB4wDmdQW/IJkWkWTmRSNYMLX5ZdjH4qdQD7bdQEwRWa5W7aoxnfuPS
+	 QOR1l8oJM0tgfbDdh9yg7WpMaSg6V/ADiAO26qFA=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Mon, 16 Dec 2024 05:07:44 +0100
-Subject: [PATCH 2/5] powerpc/secvar: Constify 'struct bin_attribute'
+Date: Mon, 16 Dec 2024 05:07:46 +0100
+Subject: [PATCH 4/5] powerpc/powernv/opal: Constify 'struct bin_attribute'
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,7 +53,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241216-sysfs-const-bin_attr-powerpc-v1-2-bbed8906f476@weissschuh.net>
+Message-Id: <20241216-sysfs-const-bin_attr-powerpc-v1-4-bbed8906f476@weissschuh.net>
 References: <20241216-sysfs-const-bin_attr-powerpc-v1-0-bbed8906f476@weissschuh.net>
 In-Reply-To: <20241216-sysfs-const-bin_attr-powerpc-v1-0-bbed8906f476@weissschuh.net>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
@@ -63,11 +63,11 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1734322065; l=2183;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734322065; l=6045;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=UwFlrZoaphbEMf2Wi/FBevBRcRQkiVMw7c3eq5eTCfk=;
- b=CyAuDv4h7ejzrTBndYz5Dci7CbE7wh32OdcwjNOfWT70ARoUjG9JXQCms//SEBUcPGOHeEDGU
- K+EZ0j7voEtCRKMaq8Rw+vFcxnzP5U9SW2/4qkjKKfRCIZM5Lx+9CSX
+ bh=xVlfF3vwhCOzCWvL8Ii8hOh/IkFAQglYuNvWAMyTYs8=;
+ b=v+ZhvbX5ifsO6BpGDVoed2HvRqEPe6UBGxRFwd+zOtrS9MgvHfZXvenQJPZAuot4SPRQeyWC3
+ hj3BdHTiZipCkeeYL/LkPyyHk8KBrNUvIW3/IWMZTVIubSF5Xlwrzio
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
@@ -77,55 +77,145 @@ accidental or malicious modifications.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- arch/powerpc/kernel/secvar-sysfs.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/powernv/opal-core.c   | 10 +++++-----
+ arch/powerpc/platforms/powernv/opal-dump.c   |  4 ++--
+ arch/powerpc/platforms/powernv/opal-elog.c   |  4 ++--
+ arch/powerpc/platforms/powernv/opal-flash.c  |  4 ++--
+ arch/powerpc/platforms/powernv/opal-msglog.c |  6 +++---
+ 5 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
-index b7536fbe8c4f43fa0f523c64685167b8b9dfd5ee..afb690a172b4e281830d0dd18785f70e0a967d13 100644
---- a/arch/powerpc/kernel/secvar-sysfs.c
-+++ b/arch/powerpc/kernel/secvar-sysfs.c
-@@ -52,7 +52,7 @@ static ssize_t size_show(struct kobject *kobj, struct kobj_attribute *attr,
- }
- 
- static ssize_t data_read(struct file *filep, struct kobject *kobj,
--			 struct bin_attribute *attr, char *buf, loff_t off,
-+			 const struct bin_attribute *attr, char *buf, loff_t off,
- 			 size_t count)
+diff --git a/arch/powerpc/platforms/powernv/opal-core.c b/arch/powerpc/platforms/powernv/opal-core.c
+index c9a9b759cc928b931a0ac18f7ed7469a6ecd52b5..d95a5f67211b73724d61a0404336a32116872527 100644
+--- a/arch/powerpc/platforms/powernv/opal-core.c
++++ b/arch/powerpc/platforms/powernv/opal-core.c
+@@ -159,7 +159,7 @@ static Elf64_Word *__init auxv_to_elf64_notes(Elf64_Word *buf,
+  * Returns number of bytes read on success, -errno on failure.
+  */
+ static ssize_t read_opalcore(struct file *file, struct kobject *kobj,
+-			     struct bin_attribute *bin_attr, char *to,
++			     const struct bin_attribute *bin_attr, char *to,
+ 			     loff_t pos, size_t count)
  {
- 	char *data;
-@@ -85,7 +85,7 @@ static ssize_t data_read(struct file *filep, struct kobject *kobj,
+ 	struct opalcore *m;
+@@ -206,9 +206,9 @@ static ssize_t read_opalcore(struct file *file, struct kobject *kobj,
+ 	return (tpos - pos);
  }
  
- static ssize_t update_write(struct file *filep, struct kobject *kobj,
--			    struct bin_attribute *attr, char *buf, loff_t off,
-+			    const struct bin_attribute *attr, char *buf, loff_t off,
- 			    size_t count)
+-static struct bin_attribute opal_core_attr = {
++static struct bin_attribute opal_core_attr __ro_after_init = {
+ 	.attr = {.name = "core", .mode = 0400},
+-	.read = read_opalcore
++	.read_new = read_opalcore
+ };
+ 
+ /*
+@@ -599,7 +599,7 @@ static struct attribute *mpipl_attr[] = {
+ 	NULL,
+ };
+ 
+-static struct bin_attribute *mpipl_bin_attr[] = {
++static const struct bin_attribute *const mpipl_bin_attr[] = {
+ 	&opal_core_attr,
+ 	NULL,
+ 
+@@ -607,7 +607,7 @@ static struct bin_attribute *mpipl_bin_attr[] = {
+ 
+ static const struct attribute_group mpipl_group = {
+ 	.attrs = mpipl_attr,
+-	.bin_attrs =  mpipl_bin_attr,
++	.bin_attrs_new =  mpipl_bin_attr,
+ };
+ 
+ static int __init opalcore_init(void)
+diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
+index 608e4b68c5ea9d1610e2270b1ba08ed12b69860e..27e25693cf3990e4f53687d38355c4f4c0a7d8c5 100644
+--- a/arch/powerpc/platforms/powernv/opal-dump.c
++++ b/arch/powerpc/platforms/powernv/opal-dump.c
+@@ -286,7 +286,7 @@ static int64_t dump_read_data(struct dump_obj *dump)
+ }
+ 
+ static ssize_t dump_attr_read(struct file *filep, struct kobject *kobj,
+-			      struct bin_attribute *bin_attr,
++			      const struct bin_attribute *bin_attr,
+ 			      char *buffer, loff_t pos, size_t count)
+ {
+ 	ssize_t rc;
+@@ -342,7 +342,7 @@ static void create_dump_obj(uint32_t id, size_t size, uint32_t type)
+ 	dump->dump_attr.attr.name = "dump";
+ 	dump->dump_attr.attr.mode = 0400;
+ 	dump->dump_attr.size = size;
+-	dump->dump_attr.read = dump_attr_read;
++	dump->dump_attr.read_new = dump_attr_read;
+ 
+ 	dump->id = id;
+ 	dump->size = size;
+diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+index 5db1e733143bfa8c7cb4bda1ab604e825b3f176f..de33f354e9fdd1440f39407aecf1e7085e9b52df 100644
+--- a/arch/powerpc/platforms/powernv/opal-elog.c
++++ b/arch/powerpc/platforms/powernv/opal-elog.c
+@@ -156,7 +156,7 @@ static const struct kobj_type elog_ktype = {
+ #define OPAL_MAX_ERRLOG_SIZE	16384
+ 
+ static ssize_t raw_attr_read(struct file *filep, struct kobject *kobj,
+-			     struct bin_attribute *bin_attr,
++			     const struct bin_attribute *bin_attr,
+ 			     char *buffer, loff_t pos, size_t count)
+ {
+ 	int opal_rc;
+@@ -203,7 +203,7 @@ static void create_elog_obj(uint64_t id, size_t size, uint64_t type)
+ 	elog->raw_attr.attr.name = "raw";
+ 	elog->raw_attr.attr.mode = 0400;
+ 	elog->raw_attr.size = size;
+-	elog->raw_attr.read = raw_attr_read;
++	elog->raw_attr.read_new = raw_attr_read;
+ 
+ 	elog->id = id;
+ 	elog->size = size;
+diff --git a/arch/powerpc/platforms/powernv/opal-flash.c b/arch/powerpc/platforms/powernv/opal-flash.c
+index d5ea04e8e4c526b99ca8f1ab613266b385362d82..fd8c8621e97340cdf5570d72ce82f86516cb2786 100644
+--- a/arch/powerpc/platforms/powernv/opal-flash.c
++++ b/arch/powerpc/platforms/powernv/opal-flash.c
+@@ -432,7 +432,7 @@ static int alloc_image_buf(char *buffer, size_t count)
+  * and pre-allocate required memory.
+  */
+ static ssize_t image_data_write(struct file *filp, struct kobject *kobj,
+-				struct bin_attribute *bin_attr,
++				const struct bin_attribute *bin_attr,
+ 				char *buffer, loff_t pos, size_t count)
  {
  	int rc;
-@@ -104,11 +104,11 @@ static struct kobj_attribute format_attr = __ATTR_RO(format);
- 
- static struct kobj_attribute size_attr = __ATTR_RO(size);
- 
--static struct bin_attribute data_attr = __BIN_ATTR_RO(data, 0);
-+static struct bin_attribute data_attr __ro_after_init = __BIN_ATTR_RO(data, 0);
- 
--static struct bin_attribute update_attr = __BIN_ATTR_WO(update, 0);
-+static struct bin_attribute update_attr __ro_after_init = __BIN_ATTR_WO(update, 0);
- 
--static struct bin_attribute *secvar_bin_attrs[] = {
-+static const struct bin_attribute *const secvar_bin_attrs[] = {
- 	&data_attr,
- 	&update_attr,
- 	NULL,
-@@ -121,7 +121,7 @@ static struct attribute *secvar_attrs[] = {
- 
- static const struct attribute_group secvar_attr_group = {
- 	.attrs = secvar_attrs,
--	.bin_attrs = secvar_bin_attrs,
-+	.bin_attrs_new = secvar_bin_attrs,
+@@ -493,7 +493,7 @@ static ssize_t image_data_write(struct file *filp, struct kobject *kobj,
+ static const struct bin_attribute image_data_attr = {
+ 	.attr = {.name = "image", .mode = 0200},
+ 	.size = MAX_IMAGE_SIZE,	/* Limit image size */
+-	.write = image_data_write,
++	.write_new = image_data_write,
  };
- __ATTRIBUTE_GROUPS(secvar_attr);
  
+ static struct kobj_attribute validate_attribute =
+diff --git a/arch/powerpc/platforms/powernv/opal-msglog.c b/arch/powerpc/platforms/powernv/opal-msglog.c
+index 22d6efe17b0d01223d1c216a9fb21203a350bddf..f1988d0ab45ce49f09f47c9e8859cc5dfcee3a6d 100644
+--- a/arch/powerpc/platforms/powernv/opal-msglog.c
++++ b/arch/powerpc/platforms/powernv/opal-msglog.c
+@@ -94,15 +94,15 @@ ssize_t opal_msglog_copy(char *to, loff_t pos, size_t count)
+ }
+ 
+ static ssize_t opal_msglog_read(struct file *file, struct kobject *kobj,
+-				struct bin_attribute *bin_attr, char *to,
++				const struct bin_attribute *bin_attr, char *to,
+ 				loff_t pos, size_t count)
+ {
+ 	return opal_msglog_copy(to, pos, count);
+ }
+ 
+-static struct bin_attribute opal_msglog_attr = {
++static struct bin_attribute opal_msglog_attr __ro_after_init = {
+ 	.attr = {.name = "msglog", .mode = 0400},
+-	.read = opal_msglog_read
++	.read_new = opal_msglog_read
+ };
+ 
+ struct memcons *__init memcons_init(struct device_node *node, const char *mc_prop_name)
 
 -- 
 2.47.1
