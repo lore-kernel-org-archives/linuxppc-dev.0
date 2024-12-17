@@ -1,97 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-4278-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4279-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B5FDE77188
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2024 22:33:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD293E77184
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Dec 2024 22:49:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YCWmc1cfLz2xt7;
-	Wed, 18 Dec 2024 09:33:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734474800;
-	cv=none; b=SVCZI1Hvmttv6ZvhLeqbamO6FIxXiPeR2OVlLp5uVPA4eWYLglO4JtFhNnwl5X01r64s7OlXpVTJFkq+XGkmsyxLcogTKyA1bq54WzyFnDUgkMr+REMIj1+VZ2ocWV7F6omCKkAQ0Woh2l2x+OamwNGicHSDFzTJxHk1p9ruYKdR09RLF1PRkTQKih74d4wQH6vhwO2V0f7apSsF3rB1JuEKjby8y2F1qLJEkyUsyb9/HlL+lAxczeVww4fnzv30bPM600gJ+LfpUvx71jnaKMQ+SGGDRDCuRKMq9Lhnuax1jOnDMlRMCZwn+H2lKVAXTI+RAr122WE/TB1n2TY8Ew==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734474800; c=relaxed/relaxed;
-	bh=oasFH9YS/5nOK6GsM6YHhbVvy+xnvzjUtw4Gpik0lY0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KRRYXDNYnZBMmN6cC0huwaJSWb5DdWh1ELk2NsafEJfeXQCZBdejD4rRUiIpfpqqn2f9IgBa2MNshCinK7A9V//N+S1g20fB8WjnH3JJG65a9/hyVLmGLknaerdCPB0QtSNuv8uH1ZKtod0ZyNTOYBrDy0+H+THleSnVpQjm3pTuQDdfM2+no0UADQRsZupmTlq3K9ZeMn1pzEx+BdLJe9lasTV+LGYMm9yl1uf9/bKFSPdSgNtn8k3SCVzM7/9eFEf0H86faTkobXiEaaboK1gzSaosLQbafzsR93IamS5sx3O1VGLOgU6hYD/kaf7GRg26AuXPnmMI4OAofu4hhw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BodAC2Up; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BodAC2Up; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YCX6g1gM9z2ykZ;
+	Wed, 18 Dec 2024 09:48:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:2418::60c"
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734472201;
+	cv=fail; b=VKiXVaK1v/yyEsnvZqpvqxvznkquqRntZ7usEc5766K8APxaCC1GmF1N84MkU5A4qAOWqre7h9HkZ/wMJ/5LTmNaErlLXAB3wjmzzuufKNJGckWq+CDk6yppY1vrNO02JLOaCBSuZHmTVlWVqaE8pzuULSIkVRb0zoHBqESmwZKPHx8LqXHuwY0yaHJjw2NRXelE5oaQ4I31fzGiV0m3ZdQ0D/bzm9C78ChvH8R1y9Fg7eI/QYBQ/bshhC1YJLbxH1LiIJ/qNiPXUSLrNlKS4Zu5xu81ttOuJ0Qm5zahJflOnN64VDTISvsjh+xCg4gQnmoxwLiAYR/6zKZQLcmvhQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1734472201; c=relaxed/relaxed;
+	bh=Qup33McucC2Na8nxCOnVBl53wVrr+dGEOV09qiTAP3s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=bdAihD2O1se/eTCoPZ387cTpMrn00PlTgDQ6kbhRmWKrrOdHqoYcPU5EdkzMsc21LyewInQb2BnMocG9QXidBuvIMD9oFP4AR6zGTthVdiFcVFOFJOTBdM0pamakLPs1qkTOCdXrkBJPUSaaGJLtwzCon97lbXIygDpEsWInlsAmGAu/a4ezUZULnkotxiZN//VOPANAI2/OSYbECWFH7yXCet4RnmKEMYqHA6HKBuYE/m/FzXotLwHXi6fmpWAi0IJ6/f2zlcWdNk38i8HJC5bhPb/XRi5rPapZICIXXvpnXm1rP66DGvBdCJeW5fMIHOYBuI3+EAdyrMjxWBuTag==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=fail (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=dtLa0Xp5 reason="signature verification failed"; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2418::60c; helo=nam12-bn8-obe.outbound.protection.outlook.com; envelope-from=yazen.ghannam@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BodAC2Up;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BodAC2Up;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=dtLa0Xp5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:2418::60c; helo=nam12-bn8-obe.outbound.protection.outlook.com; envelope-from=yazen.ghannam@amd.com; receiver=lists.ozlabs.org)
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2060c.outbound.protection.outlook.com [IPv6:2a01:111:f403:2418::60c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCWmZ73CCz2xGH
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2024 09:33:18 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1734474795;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=oasFH9YS/5nOK6GsM6YHhbVvy+xnvzjUtw4Gpik0lY0=;
-	b=BodAC2UpZQsmy112PpluQqwxlmDI9nWHuXp+rplIrUe4bZQQlvkT96Nd3CP5QjNZjBn4VZ
-	1c7QvB2IUV9fYa3r0YuehwRVDZI/yHuSxCd12JXX9KX6BgRnEBsx2y2NPskNXkdBmjJtO7
-	Zo3BdwneLXhlTIREInVPrHH1yMpbjws=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1734474795;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=oasFH9YS/5nOK6GsM6YHhbVvy+xnvzjUtw4Gpik0lY0=;
-	b=BodAC2UpZQsmy112PpluQqwxlmDI9nWHuXp+rplIrUe4bZQQlvkT96Nd3CP5QjNZjBn4VZ
-	1c7QvB2IUV9fYa3r0YuehwRVDZI/yHuSxCd12JXX9KX6BgRnEBsx2y2NPskNXkdBmjJtO7
-	Zo3BdwneLXhlTIREInVPrHH1yMpbjws=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-84-HdeQaJiwOb2JQKGSBboqKA-1; Tue, 17 Dec 2024 17:33:13 -0500
-X-MC-Unique: HdeQaJiwOb2JQKGSBboqKA-1
-X-Mimecast-MFC-AGG-ID: HdeQaJiwOb2JQKGSBboqKA
-Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-43627bb20b5so45046115e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Dec 2024 14:33:13 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1734474792; x=1735079592;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :content-language:from:references:cc:to:subject:user-agent
-         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=oasFH9YS/5nOK6GsM6YHhbVvy+xnvzjUtw4Gpik0lY0=;
-        b=BzZQe+/X9mxUcBDjUpaFlOo77vcOh4Awn0c3XjmDGQtABQaaL3w7pAE1kn5XbmuZ6k
-         W++fej5h3EMT653Fayp9Snlgfw42nScH2xtGttM0LmJfDibjsYGZlDrV2kfT9l2Ayghg
-         VMMdWUAmb76hzUhjMPVqaW3jFCOwT1RNM1s2mVioeDUc257nTCCHRxjTzxlY0o6KidRn
-         htwrlgxNJe/mao9T/mjoqOigrjv/BC6XXUujv6M1nkye7NYgNLZU6hGUdnxx0H5DYq0X
-         IIg43CemSMG9BIRWhhO5aBMLHV2mRwCblNF9dkizTrbB+x+B9JSet6tShlZzE4oWtSQ0
-         rmmA==
-X-Forwarded-Encrypted: i=1; AJvYcCULQCI840yvKPLOPzWvMaRp8oV3vv35RRH6qO3mbqEF8ho0c9VqKvy550IbpTGlowNeMNER088Hcin4wOo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwZwdnccQn7REwgr2lqu6RpJj9EXZ3tr8z8X4Zgf66YHmJhIOXc
-	txzGO0778WfRU994jnv7SH+k9ykluF/9Ehe++SBoaXlUT69SnZzwd9/BReVhzG7r3EfFbVjzxVy
-	PUsH7l7LZmiJltqVsXJvQNNTQFmULmYmrRvo7Yc4w/M5AF6mRTIUcHthlgk7rQa8=
-X-Gm-Gg: ASbGncuUPCnMEgiVwiBn6qNTXvI3IfLY5KseGe5Ot5cD8DqH+6nB3iu/glaHqXuW+9l
-	0oSMVHpg+xQw76ArEl9xPieH2UdDMy3wXjIzk1guCSFLsFJ2UW+rZdEbTCQaFkrmfYLUnf+5df0
-	xBrxLa/9UiPMhREU/CxKHeTusElBScGDoz9Iu7toTM1prMcRSTDucAOou1nnqOoMCiCIYmh/AZJ
-	9CukyFP9p8clSlN8+37IzEbxl2l/XdX9R/NdaYthKSauBexrVikM/EF6LFw0qvPGPhzs2vhTGQw
-	/m/v1mRPPF1udlofHW9tHS6eBIbfHuKR/HE2JgmzM7pFiRVabT/Tndebq5YLrPmjxH4C0qCiVqr
-	98SHyh8UK
-X-Received: by 2002:a05:600c:4448:b0:434:a90b:94fe with SMTP id 5b1f17b1804b1-4365535b4e6mr4138165e9.10.1734474792409;
-        Tue, 17 Dec 2024 14:33:12 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IHu5Rpx/75DKHPvdCspqV2eTg6oVqu83uuIMN0kGm64YISiw1ESXOe+JcsaDrCGOH1qe5B+Gg==
-X-Received: by 2002:a05:600c:4448:b0:434:a90b:94fe with SMTP id 5b1f17b1804b1-4365535b4e6mr4137665e9.10.1734474792038;
-        Tue, 17 Dec 2024 14:33:12 -0800 (PST)
-Received: from ?IPV6:2003:cb:c73b:5600:c716:d8e0:609d:ae92? (p200300cbc73b5600c716d8e0609dae92.dip0.t-ipconnect.de. [2003:cb:c73b:5600:c716:d8e0:609d:ae92])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43656b1a195sm190205e9.36.2024.12.17.14.33.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 17 Dec 2024 14:33:10 -0800 (PST)
-Message-ID: <e7f9433e-bd4b-4284-990b-9ea074064f0a@redhat.com>
-Date: Tue, 17 Dec 2024 23:33:09 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCVpb1fNsz2yDM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2024 08:49:56 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Au9XAfhyt3yZdf6KWY65nopXuon7qpdcIitt3h+RbXo+iz5wqUiF4Bj1U9Jq+wD1Ao4mnUys4E2rIQAeKcq1SuBroUOreAVzmAJj9fJPa0KgVPAMaoSdnhx0CxWPr3M1tA5qggxLE+hOgj6rCNtKVDrFSUTyuuQA/UTCv8lcXN+j3ewCLIwFXQ4w7SD5ydN9xOAg5gecYbxLFLVNkdJDJInffQbcZVdFatkCwf+V5JZY0uO6+Cw9oLjCfXm/Qyw0c22JwAyiZmFgkplIJNFCbqYhhOS1fyWJmUsoq3gW/MNivWG9EqK8Zvf0NlqLIlBISFfGKBCqJ4X5D4Ha8EzdSQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=e42OWcUtf32mV1NC9oZshSC6pdfukkPqynwRKo7pWsw=;
+ b=PUrx8mHB6DsuORRxjmfjkDHkBV30e+EUE8t5K+U/W+PD1NS70MrkzoOVmxY0yZl7nrOE0nUKLBxnuEdwv49cp1bTt6Z2a8j/S5GPC69aLEZnV8XAVBucI9R89+kozRQduT3ihIOM24KduP9J/00Cj3E5+OobMgYCAXMm1YtKKnYqAfoygtoJdgSnWrmRNaYAmODWm4OmYZmxoBSJQuAiOCK1z9CQ9OB/igLGLQk+GjLJ8AyrvEwD83v5121MvxplAacFpUvSl9PrxSt3xcNkOd+bLJiQIyoxR/1ptOZ9VZ1TUykLgUkmuFgvXGoEPf/8HCzVlWY/vf8MHpaW8rw3Ow==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=e42OWcUtf32mV1NC9oZshSC6pdfukkPqynwRKo7pWsw=;
+ b=dtLa0Xp54RbpVU3M7YWmX7uSGUh91u9xKe8jagG6l7dRrGyIqmblQ2A17QI6azolxt2mQG8/5x0l6WlmkOdA5cREXid3cg8v1IdPwMjfNohU836g7fFlv9ODJxYsgu7nJLm7QfoLuesQJtjw/Sxthz+jX4a0clCMB7CxBo6sj2k=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DM4PR12MB6373.namprd12.prod.outlook.com (2603:10b6:8:a4::7) by
+ IA1PR12MB6092.namprd12.prod.outlook.com (2603:10b6:208:3ec::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8251.21; Tue, 17 Dec
+ 2024 21:49:34 +0000
+Received: from DM4PR12MB6373.namprd12.prod.outlook.com
+ ([fe80::12f7:eff:380b:589f]) by DM4PR12MB6373.namprd12.prod.outlook.com
+ ([fe80::12f7:eff:380b:589f%6]) with mapi id 15.20.8251.015; Tue, 17 Dec 2024
+ 21:49:34 +0000
+Date: Tue, 17 Dec 2024 16:49:29 -0500
+From: Yazen Ghannam <yazen.ghannam@amd.com>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+	Lukas Wunner <lukas@wunner.de>, Borislav Petkov <bp@alien8.de>,
+	linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Tony Luck <tony.luck@intel.com>
+Subject: Re: [PATCH 0/3] PCI: Add support for logging Flit Mode TLPs (PCIe6)
+Message-ID: <20241217214929.GA1121691@yaz-khff2.amd.com>
+References: <20240614150921.29724-1-ilpo.jarvinen@linux.intel.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20240614150921.29724-1-ilpo.jarvinen@linux.intel.com>
+X-ClientProxiedBy: BN1PR12CA0005.namprd12.prod.outlook.com
+ (2603:10b6:408:e1::10) To DM4PR12MB6373.namprd12.prod.outlook.com
+ (2603:10b6:8:a4::7)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,116 +86,121 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 18/25] gup: Don't allow FOLL_LONGTERM pinning of FS DAX
- pages
-To: Alistair Popple <apopple@nvidia.com>, akpm@linux-foundation.org,
- dan.j.williams@intel.com, linux-mm@kvack.org
-Cc: lina@asahilina.net, zhang.lyra@gmail.com, gerald.schaefer@linux.ibm.com,
- vishal.l.verma@intel.com, dave.jiang@intel.com, logang@deltatee.com,
- bhelgaas@google.com, jack@suse.cz, jgg@ziepe.ca, catalin.marinas@arm.com,
- will@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
- dave.hansen@linux.intel.com, ira.weiny@intel.com, willy@infradead.org,
- djwong@kernel.org, tytso@mit.edu, linmiaohe@huawei.com, peterx@redhat.com,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
- linux-xfs@vger.kernel.org, jhubbard@nvidia.com, hch@lst.de,
- david@fromorbit.com
-References: <cover.18cbcff3638c6aacc051c44533ebc6c002bf2bd9.1734407924.git-series.apopple@nvidia.com>
- <f315b61169d0671301e4a793ecbb1a6c46b69bef.1734407924.git-series.apopple@nvidia.com>
-From: David Hildenbrand <david@redhat.com>
-Autocrypt: addr=david@redhat.com; keydata=
- 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
- WNyWQQ==
-Organization: Red Hat
-In-Reply-To: <f315b61169d0671301e4a793ecbb1a6c46b69bef.1734407924.git-series.apopple@nvidia.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: Mo56jj3_fOoTh5Sz_x8S8ZjmXi9SqeWpg3rR5HWK9IU_1734474792
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM4PR12MB6373:EE_|IA1PR12MB6092:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1e1db478-78b3-46bd-a0ce-08dd1ee4b1bd
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|1800799024|376014|366016|7053199007;
+X-Microsoft-Antispam-Message-Info:
+	=?iso-8859-1?Q?ScysRxDVDnxPyxTdWS6oKCSyBQ1JQ6TMatembJGOMmsn1H/vdsAn3G8hyg?=
+ =?iso-8859-1?Q?ztWtVyY9jvFqArkAjckvKPbv/7tvKngBP+34ysh0oYs1vPHxqcg7rCHSSS?=
+ =?iso-8859-1?Q?WijoPQmvGCLGHxte6oGx1eipPpoAUlbAA8uWbKoxi7UlD8QYUnsmCZG+RT?=
+ =?iso-8859-1?Q?CGgBkcxTJTKOauxhhAQKDUbg7f5aA4oYEHmVGyKJQzGDR1+ZWDX0WqnOV5?=
+ =?iso-8859-1?Q?dB4WSgMzV0QNW11568Q0dKE3BUk1mXGBsS2dKQtKqdBVuvJxYO6CKnCzAw?=
+ =?iso-8859-1?Q?pCqzXmlVKv8kd6YwdTAs6Sw6d9eVoD00VeZ0SR9JAqalwKraUSXmW3qCmy?=
+ =?iso-8859-1?Q?6YH8BfEvDQP0aqYnA2oTol/haH2KVSVCV9gPYPaMRlHq57//KPC11rgJwW?=
+ =?iso-8859-1?Q?UG7Qlrxf+Pcf2lpzzKeWhROJvMil0WbGMbT2DGbwt2K58bxtwkTJ4svOlV?=
+ =?iso-8859-1?Q?auKeRnxl/EYJkoRdQn+Ko/TyzzI4mKRkcdAYmEytUotNpsk7esqoB1Dtmv?=
+ =?iso-8859-1?Q?zr6FBrEAJfCuxQYNxm7qFdXecCKSIKP3+t9qHZF9MWhu8htn7sQWh04mx/?=
+ =?iso-8859-1?Q?2bZJ1+JpI9muQR9sKXipeQDotU8/IJSLnqnHHiTZ0guLExJXVNJFCHPuzv?=
+ =?iso-8859-1?Q?RFvDmovGRZcoLMtt95bwSHDSWEXa7rc/ZR/menlTF4hV2dEkh/2WdV2ItG?=
+ =?iso-8859-1?Q?5iDbVhwno7P+wrfYfruByr1nYGTMphvz7mkd4iYrPt+M0LfQ79m3jcix1E?=
+ =?iso-8859-1?Q?CWcVaJnOywuxblC0gB2l1QE2TUjnB5toTUt3g1gVwGanIf6akmLq3oldVb?=
+ =?iso-8859-1?Q?zNy8T/5rrupAF5XJwCMqLse3SFMRSoeCwvRMLeEFT4RCZHaWIT7Gct8bnD?=
+ =?iso-8859-1?Q?LXJunRjBoeaX3CSc+7aU4ZrD6poLNfU7i0YYuFCvO/dBsnLKI5Fq0zWEa9?=
+ =?iso-8859-1?Q?MrDKunUs9Vy9r1D83Muhw/MiBvrUdnLTuP+nNBIekLBH4WVw8bXS2mulWp?=
+ =?iso-8859-1?Q?tueP8k8zQSHdZRtEaGHvwaFxkKk5Fu+wpG2rDkoEEVLmKQl2y9FLUcED7M?=
+ =?iso-8859-1?Q?QKhL2LYd272HFiZZOgRiBSgr/XfK+m6cUSdyzoRyqWCVSs+vMyYN7+mtjd?=
+ =?iso-8859-1?Q?ytdlXbJem7tl8m6B0V+GHg/XNFruw8+UT+BV9yNDsqZwurvEvTrBZhRjM7?=
+ =?iso-8859-1?Q?6Cpk4wkGt+Sb1Mh1iJ/kXOzbhdAU44Rn/eBBohI8hSSkyW5Rgmd+B56J3D?=
+ =?iso-8859-1?Q?QY/7jp/55MECuF2WUqDoA7v1X5E4giix7T8nW2Rnta0/UhbxeU5ceeSFTj?=
+ =?iso-8859-1?Q?BlmrWIWoCgMl+prFlQbkCK7nhOyam/8l31TQQFz2R9A8hNZCq7m5GgZ+Wq?=
+ =?iso-8859-1?Q?DDiHFwuakB6vqetnZklTKx1vwBScHianLZJ/nXdA9iSqm7NwLeSXv1+zjm?=
+ =?iso-8859-1?Q?UhPyX5RZu3LL3o3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR12MB6373.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(1800799024)(376014)(366016)(7053199007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?iso-8859-1?Q?no0DnCSzBzdBW6tuuIp7GMeIGXJ6dPnznTw/SH3Esy4P9DOVJFsyFusdP4?=
+ =?iso-8859-1?Q?SS0eb9wbpV8G3RltWeCQoMIj3rpKQMLW5sXqMz+QjWJenVrts8IxvJb0AU?=
+ =?iso-8859-1?Q?GZeqfAWy1UfVHsFv7zbTmJF0xy79geE6TJ0QTO3NadpunhDz3zqJ4/YIlz?=
+ =?iso-8859-1?Q?CBHKngQH+VCm9yRkvnkUPn/v6OPmE1q4jJobyiyxv6sEJ8/iLCOJQfjT+n?=
+ =?iso-8859-1?Q?M88DsW5soTic7DS5fS71UgpMDdBmB7yazqhaIh4n9Zn6DrsyrNK3pFMy5Z?=
+ =?iso-8859-1?Q?NtTWVHjmebcOBwH+qxjFWswRspbXRtTqK3jd29ezgXD7t1vwbSgGWAqVpg?=
+ =?iso-8859-1?Q?DqKEArgl8apl4XIvuHKwi/kVAfc32stpnB8l1sT3W7VwnicWM/oodGWFV9?=
+ =?iso-8859-1?Q?MMXsmcrUwXpi+rRWaoBEqGZr6aI+LTDesoWEUFqBhPY0stkrBGyaferNgP?=
+ =?iso-8859-1?Q?ZhqloPG9d179i0xjw/pyyl/5188tBzb/Bed248dkypB+YTKEr5PXXyjBLC?=
+ =?iso-8859-1?Q?2fl88kyFrFsZC/r4WKXM0wQ3ZgGkmVhkYQOui7oyvn8M2rCkYWOinb4Ns6?=
+ =?iso-8859-1?Q?m7350Ujn4sIoN3GbQGWSXJxJ2XjWzrLheifROR5wnQ4QNS8EljUnk5+h3o?=
+ =?iso-8859-1?Q?IRxE0Gwry9VhWpL/TzxmDwExAhpnbeMGlZr/Qwt7eBhmaiTUMUfNYD2TiV?=
+ =?iso-8859-1?Q?6ytIHU4dOedHElLNs68OU4Im4xe4//cgMUkRHWV+GK/wFv+4cOb9AlNLMj?=
+ =?iso-8859-1?Q?dTwE/xLTNGpa6QNyFc3PQtLVFfQRfWs5OaJRFPxZ4ChIlm9Hs0OsTuBx9g?=
+ =?iso-8859-1?Q?L5mYvtgTbYrWKfxiMovBFPIGPWuUdruDFWgrxS2AeY4Q1xnoMOTINP0b8/?=
+ =?iso-8859-1?Q?xKFKEqiBvjKBxsLwdyNLBHFulr69E0hHei7Y6he7vOKhDFKFXdzsZHSvOM?=
+ =?iso-8859-1?Q?8pOeXgbtaHV6xZ9TVBmctVOmBL/sffCw13Rb1fUOCyZyl7bWO27GDnS4lI?=
+ =?iso-8859-1?Q?cfMqnbOSIbILc+PZIMG68jixBmcuTk38o2mrdtwvUfrOLW85/W19LzYbgv?=
+ =?iso-8859-1?Q?lCZH7yp8ecZO2xvVmErg7iVgSMj0m+JkKqAMAbR5j/D1/XPb8EJnOF1EYr?=
+ =?iso-8859-1?Q?AknCz8qJvnaCBMDem544rDPpn4iHCtrOkNi50pWLKCpwC3yIboaOQHa3IU?=
+ =?iso-8859-1?Q?7BSHtSouonGUwrkJD5/2gSYxq3B613zf/yYkpeRraojT3Rpt+BCJ27j1Sz?=
+ =?iso-8859-1?Q?2csyxJ3effgYE5BhaE/NwHchxgrUNurbItyEamJ7QANeJ5gy71a89RkT4g?=
+ =?iso-8859-1?Q?8xBeKqAyKNHfa6x7n3XpYalQTQlIJ9F3EDpRzskf61ldAAtsfvTb+FQ/Vy?=
+ =?iso-8859-1?Q?L4bdQ1o2RLpvhA6R/0m5nhnemiq4WAC18z4ZHTCTq6aSG6pdIY0lV+iq8x?=
+ =?iso-8859-1?Q?QvO8nV8qDmWGe9hFgzTFbLWyxjy2VPMR1HEXNZ701GxGdDCe33nv6Hea6k?=
+ =?iso-8859-1?Q?1lTxgRyaILgm1X31NQYX0l/ISpq3TdNrqAUlMfmAuMvWaltyzx4bFRyrdO?=
+ =?iso-8859-1?Q?1/SEb9AApepqvsQklAYa+gflHo60ZCA72z1445TbjGb2GNGyXVyrauMMco?=
+ =?iso-8859-1?Q?Xi+/S4vgQ/8nYeB1Fq8iImVZpLPPh/SZwb?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1e1db478-78b3-46bd-a0ce-08dd1ee4b1bd
+X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB6373.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Dec 2024 21:49:34.1487
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 8JiJwg1tmUw8+BFrik3ldc+9rnwOGVDoPesitfuqWowWk8E+AyN7MF5/SXN4aGJtUrAN8h7MnjZGxKZi6m/eaA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB6092
 
-On 17.12.24 06:13, Alistair Popple wrote:
-> Longterm pinning of FS DAX pages should already be disallowed by
-> various pXX_devmap checks. However a future change will cause these
-> checks to be invalid for FS DAX pages so make
-> folio_is_longterm_pinnable() return false for FS DAX pages.
-
-Nit: I'd consistently use "mm/gup:" as prefix for GUP-related patches. 
-(similarly, mm/huge_memory and mm/rmap in the other patches)
-
+On Fri, Jun 14, 2024 at 06:09:18PM +0300, Ilpo Järvinen wrote:
+> This series adds support for Flit Mode (PCIe6). The series is built on
+> top of the TLP Logging refactoring series:
 > 
-> Signed-off-by: Alistair Popple <apopple@nvidia.com>
-> Reviewed-by: John Hubbard <jhubbard@nvidia.com>
-> ---
->   include/linux/mm.h | 4 ++++
->   1 file changed, 4 insertions(+)
+>   https://lore.kernel.org/linux-pci/20240514113109.6690-1-ilpo.jarvinen@linux.intel.com/
 > 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index f267b06..01edca9 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -2078,6 +2078,10 @@ static inline bool folio_is_longterm_pinnable(struct folio *folio)
->   	if (folio_is_device_coherent(folio))
->   		return false;
->   
-> +	/* DAX must also always allow eviction. */
-> +	if (folio_is_fsdax(folio))
-> +		return false;
-> +
->   	/* Otherwise, non-movable zone folios can be pinned. */
->   	return !folio_is_zone_movable(folio);
->   
+> Important note to maintainer: The series carries
+> pcie_update_link_speed() refactoring change that is almost identical
+> with a patch in the PCIe BW controller series. The patch itself is
+> basically the same but the context has minor difference. This will need
+> to be considered if applying both series within the same kernel cycle.
+> 
+> Ilpo Järvinen (3):
+>   PCI: Refactor pcie_update_link_speed()
+>   PCI: Track Flit Mode Status & print it with link status
+>   PCI: Handle TLP Log in Flit mode
+> 
+>  drivers/pci/hotplug/pciehp_hpc.c |  5 +--
+>  drivers/pci/pci.c                | 12 ++++---
+>  drivers/pci/pci.h                | 13 ++++++--
+>  drivers/pci/pcie/aer.c           |  4 ++-
+>  drivers/pci/pcie/dpc.c           | 23 ++++++++++---
+>  drivers/pci/pcie/tlp.c           | 57 ++++++++++++++++++++++----------
+>  drivers/pci/probe.c              | 13 +++++---
+>  include/linux/aer.h              | 13 ++++++--
+>  include/linux/pci.h              |  1 +
+>  include/ras/ras_event.h          | 12 +++----
+>  include/uapi/linux/pci_regs.h    |  6 +++-
+>  11 files changed, 112 insertions(+), 47 deletions(-)
+> 
+> -- 
+> 
 
-Acked-by: David Hildenbrand <david@redhat.com>
+Hi Ilpo, et al.,
 
--- 
-Cheers,
+Is there any new development on this feature? Or is it on hold while any
+spec oversights are worked out in the PCI-SIG?
 
-David / dhildenb
-
+Thanks,
+Yazen
 
