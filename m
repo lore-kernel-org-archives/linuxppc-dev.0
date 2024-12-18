@@ -1,57 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-4306-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4307-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1539E77187
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2024 10:57:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E82DE77187
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2024 10:57:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YCrFD4DF2z30Tx;
-	Wed, 18 Dec 2024 21:55:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YCrFF5nX9z30fM;
+	Wed, 18 Dec 2024 21:55:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734519344;
-	cv=none; b=hGMLs4gFQhZEE+KKCgj6qv+mSaTz+NrXBQrqFnRy7eGIdL61dJ+I7Z1qvZ4fj5ew57sYZz19K+f2jqG4iaEYY/RTvrp5Ek6tyrn6Z0ufl/vlwPRvwH7mEbeFvHWr2WxDZv4z9Y0C0bAY4J8qcweUnSlVQjRb1ml7piUFB2Xz1gpteR1+g5aYLJEDaJpSkZ5BB+WxXbulQzxOaATcu/cIVTr9aZGFqQl3pS+GbWdsXN6sjwU+2HfJG0zuD4oh2wXu6tzUtO3lD4+yP/u55ZGRsDsYE7dR8y4KgBR46vr+iMZ97y3216CUx8obhCxEfl36rhG/ZFUnU5ArXT631R8uhg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734519345;
+	cv=none; b=FcII8DchT202HRLWzlqeHia24zAV8xq4r2qXoHgiL1dCDDnX3BaMYfDERyqLk6qK39aFgC2fOy1V818Qrfq2S4jcmi0o/MkaWVp+Yh4hL3Ao/oarltnzOg/+GDQZBurcAqwCIYLNzP/JfcBMf9grW+Qwv02Qe2gjXTtUNAo98J6nFn2uspJBhFeZoTug+iLs6DEv3t3p3aW23Q7k+bzkmcYzwAEhkr/WvhlUOXvddFaguAkcfi0zWXE3peRctDmkkPGHZn5yncj/Ri9Kj9dicuyDN7lmj2OLXPfx4a+qY29VEikfStlMVDlmw/LmhSqdayqUKFikcA43yDXpN8kRvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734519344; c=relaxed/relaxed;
-	bh=Zjw0RCOf7CLEyB81GHP3QxWgbM7SiJNTsuFrXdLrjZo=;
+	t=1734519345; c=relaxed/relaxed;
+	bh=2x34smYLxa+bKH4oOuRR1qY1TkhviGrx3XdBtyNH/E8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eeHe1GslSCwxitdYEI3m5DpV8/h2ruLfwh89VNYKsdI36jt6ICqElM/6q8+LEutDhlHTGrVPuT51mUR1lhg6Sc80HcJEiajdQlQivNEKoSLVAmaTMed60s5gmrE+6tL9U70iFeWH0zn7AS0AY+M1NpbTQIQ/7e5AV/vzmnLWzBa5zCdaBMwZfCrOjOVuVsFzM5Yvw7s4UUdvM+MyJmPhj9J9mlKM0FdQHFcu+2qA3pHTP1WtxE2dLF/BPYliyAc42D2BnApSRI1GqhAL18X7ih5dT3lQWAHKapFngKY6jQOGd8pwaWBTijygXZRhEysTLVT9vZAIY/iskBveAuWf8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ZkgARuEl; dkim-atps=neutral
+	 MIME-Version; b=lkbyIqe03WT+sagPQw7zPMHImF0K4BltsuQfpNoPqEu9hbHoDF0mXJinNBqwDR5Yr72zHmg9JtmXYeDYRgHYmaPTL6Wb+7dR5m2zh+bgmJVYJaB1KgteIqy2tbGWUqlkV9K6Bj+caLAvkUK6sMPUS4sQHkjDPT18mqlqbaImZ9uq6m5FZQFbdQBOZrNa2oJfvO5fVL9K0ALs4e37HYtCKlDuMERN6zRzUaRbOXEWgw2lPgBgCXO4BsskdINljikxSGANRr0gtzGOsQkMGsmJoaPDLc5DdzuRLnhVoTxni/JYKo/K9v5/klMDFJLV/qkvpQ+nGE408/QwfDqUUTOTrA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BWNIQdDV; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ZkgARuEl;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BWNIQdDV;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCrF83lrXz30ML
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2024 21:55:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCrF93dt5z30W1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2024 21:55:41 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1734519333;
-	bh=Zjw0RCOf7CLEyB81GHP3QxWgbM7SiJNTsuFrXdLrjZo=;
+	s=201909; t=1734519334;
+	bh=2x34smYLxa+bKH4oOuRR1qY1TkhviGrx3XdBtyNH/E8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ZkgARuElmKW8jFxQlTu3ehfSlWKqNwakohNqTeB00KHi6m8SaszCsldK1LzPEkhcJ
-	 Gxr8k+QZDsm6K5SAL5ELMc8GMS9ya2FqNAO479tJJcK95Lq8ErNQO/tX4LPzbQ2/1y
-	 LfXG3UM2ULt3lHvbOZ/VWaA+jtUKRQdeaenE+muKoeJ/0CTia196s90N0iFeQRBcBo
-	 tsOWADnKaASOLkclclBl4gAvIw0nVi4p2ENkp4ku2q4s4MrZLXuM+Yc22RrX6+Gx+j
-	 ANYr0GzguGSSuCpABdFGsbJ/TUs+z1mIL2LUUufw8UF3vtHD+FEIBcL/B/KRSLUK83
-	 Ezki1CFxKQdLg==
+	b=BWNIQdDVyVsEO61DJXW+3/zc7qTt5MXmc80n2UNnG/K36COeKBpzgz3ABlncgF03Q
+	 hwzOiJ2XUcLg/0q2gQcbWgo0V+xnEeGJByvejmDKNSv/G5KNUH+RcdgQcdXkVEuTGJ
+	 jcdnmWTkjHU+kYGl2pwhdxdqunwwdU9IUkGkIyRbxIN3SnK53abW6m78JVfzDc9nTh
+	 H1WLPx+Q6Nfg8OnW8f2DDmyoHzl/04HO+3WbYBQDQEoad1lLgh0NX3ycjtQa5ZnwU7
+	 MTDhzeSxAGYUNTC91wGHyvzBPFjfK///k/9e3uotImzGaGZxZS6NR82nZJuGPu4sg2
+	 jwqi0SBd/UHNQ==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4YCrF13bgnz4xfL;
-	Wed, 18 Dec 2024 21:55:33 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4YCrF2335jz4xfP;
+	Wed, 18 Dec 2024 21:55:34 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
 Cc: <arnd@arndb.de>,
 	<jk@ozlabs.org>,
 	<segher@kernel.crashing.org>
-Subject: [PATCH v2 15/25] powerpc/io: Spell-out PCI_IO_ADDR
-Date: Wed, 18 Dec 2024 21:55:03 +1100
-Message-ID: <20241218105523.416573-15-mpe@ellerman.id.au>
+Subject: [PATCH v2 17/25] powerpc/io: Rename _insw_ns() etc.
+Date: Wed, 18 Dec 2024 21:55:05 +1100
+Message-ID: <20241218105523.416573-17-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241218105523.416573-1-mpe@ellerman.id.au>
 References: <20241218105523.416573-1-mpe@ellerman.id.au>
@@ -69,190 +69,120 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-PCI_IO_ADDR is a ppc-ism, which obscures the fact that some of the
-powerpc accessors are identical to the generic ones. So remove it and
-spell out the type fully.
+The "_ns" suffix was "historical" in 2006, finally remove it.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
 v2: New.
 
- arch/powerpc/include/asm/io.h | 51 +++++++++++++++++------------------
- 1 file changed, 24 insertions(+), 27 deletions(-)
+ arch/powerpc/include/asm/io.h | 23 +++++------------------
+ arch/powerpc/kernel/io.c      | 16 ++++++++--------
+ 2 files changed, 13 insertions(+), 26 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index c21796354f87..8e57d3402c2c 100644
+index 89754bfb6fad..922ee33a87cb 100644
 --- a/arch/powerpc/include/asm/io.h
 +++ b/arch/powerpc/include/asm/io.h
-@@ -274,10 +274,7 @@ extern void _memcpy_toio(volatile void __iomem *dest, const void *src,
- #include <asm/eeh.h>
- #endif
+@@ -80,16 +80,12 @@ extern bool isa_io_special;
+  *
+  *	in_8, in_le16, in_be16, in_le32, in_be32, in_le64, in_be64
+  *	out_8, out_le16, out_be16, out_le32, out_be32, out_le64, out_be64
+- *	_insb, _insw_ns, _insl_ns, _outsb, _outsw_ns, _outsl_ns
++ *	_insb, _insw, _insl, _outsb, _outsw, _outsl
+  *
+  * Those operate directly on a kernel virtual address. Note that the prototype
+  * for the out_* accessors has the arguments in opposite order from the usual
+  * linux PCI accessors. Unlike those, they take the address first and the value
+  * next.
+- *
+- * Note: I might drop the _ns suffix on the stream operations soon as it is
+- * simply normal for stream operations to not swap in the first place.
+- *
+  */
  
--/* Shortcut to the MMIO argument pointer */
--#define PCI_IO_ADDR	volatile void __iomem *
+ /* -mprefixed can generate offsets beyond range, fall back hack */
+@@ -228,19 +224,10 @@ static inline void out_be64(volatile u64 __iomem *addr, u64 val)
+  */
+ extern void _insb(const volatile u8 __iomem *addr, void *buf, long count);
+ extern void _outsb(volatile u8 __iomem *addr,const void *buf,long count);
+-extern void _insw_ns(const volatile u16 __iomem *addr, void *buf, long count);
+-extern void _outsw_ns(volatile u16 __iomem *addr, const void *buf, long count);
+-extern void _insl_ns(const volatile u32 __iomem *addr, void *buf, long count);
+-extern void _outsl_ns(volatile u32 __iomem *addr, const void *buf, long count);
 -
--#define _IO_PORT(port)	((PCI_IO_ADDR)(_IO_BASE + (port)))
-+#define _IO_PORT(port)	((volatile void __iomem *)(_IO_BASE + (port)))
+-/* The _ns naming is historical and will be removed. For now, just #define
+- * the non _ns equivalent names
+- */
+-#define _insw	_insw_ns
+-#define _insl	_insl_ns
+-#define _outsw	_outsw_ns
+-#define _outsl	_outsl_ns
+-
++extern void _insw(const volatile u16 __iomem *addr, void *buf, long count);
++extern void _outsw(volatile u16 __iomem *addr, const void *buf, long count);
++extern void _insl(const volatile u32 __iomem *addr, void *buf, long count);
++extern void _outsl(volatile u32 __iomem *addr, const void *buf, long count);
  
  /*
-  * Non ordered and non-swapping "raw" accessors
-@@ -570,133 +567,133 @@ __do_out_asm(_rec_outl, "stwbrx")
- 				_memcpy_fromio(dst, src, n)
- #endif /* !CONFIG_EEH */
- 
--static inline u8 readb(const PCI_IO_ADDR addr)
-+static inline u8 readb(const volatile void __iomem *addr)
- {
- 	return __do_readb(addr);
+  * memset_io, memcpy_toio, memcpy_fromio base implementations are out of line
+diff --git a/arch/powerpc/kernel/io.c b/arch/powerpc/kernel/io.c
+index 6af535905984..6e7b49a676d9 100644
+--- a/arch/powerpc/kernel/io.c
++++ b/arch/powerpc/kernel/io.c
+@@ -55,7 +55,7 @@ void _outsb(volatile u8 __iomem *port, const void *buf, long count)
  }
- #define readb readb
+ EXPORT_SYMBOL(_outsb);
  
--static inline u16 readw(const PCI_IO_ADDR addr)
-+static inline u16 readw(const volatile void __iomem *addr)
+-void _insw_ns(const volatile u16 __iomem *port, void *buf, long count)
++void _insw(const volatile u16 __iomem *port, void *buf, long count)
  {
- 	return __do_readw(addr);
+ 	u16 *tbuf = buf;
+ 	u16 tmp;
+@@ -70,9 +70,9 @@ void _insw_ns(const volatile u16 __iomem *port, void *buf, long count)
+ 	} while (--count != 0);
+ 	asm volatile("twi 0,%0,0; isync" : : "r" (tmp));
  }
- #define readw readw
+-EXPORT_SYMBOL(_insw_ns);
++EXPORT_SYMBOL(_insw);
  
--static inline u32 readl(const PCI_IO_ADDR addr)
-+static inline u32 readl(const volatile void __iomem *addr)
+-void _outsw_ns(volatile u16 __iomem *port, const void *buf, long count)
++void _outsw(volatile u16 __iomem *port, const void *buf, long count)
  {
- 	return __do_readl(addr);
- }
- #define readl readl
+ 	const u16 *tbuf = buf;
  
--static inline u16 readw_be(const PCI_IO_ADDR addr)
-+static inline u16 readw_be(const volatile void __iomem *addr)
- {
- 	return __do_readw_be(addr);
+@@ -84,9 +84,9 @@ void _outsw_ns(volatile u16 __iomem *port, const void *buf, long count)
+ 	} while (--count != 0);
+ 	asm volatile("sync");
  }
+-EXPORT_SYMBOL(_outsw_ns);
++EXPORT_SYMBOL(_outsw);
  
--static inline u32 readl_be(const PCI_IO_ADDR addr)
-+static inline u32 readl_be(const volatile void __iomem *addr)
+-void _insl_ns(const volatile u32 __iomem *port, void *buf, long count)
++void _insl(const volatile u32 __iomem *port, void *buf, long count)
  {
- 	return __do_readl_be(addr);
+ 	u32 *tbuf = buf;
+ 	u32 tmp;
+@@ -101,9 +101,9 @@ void _insl_ns(const volatile u32 __iomem *port, void *buf, long count)
+ 	} while (--count != 0);
+ 	asm volatile("twi 0,%0,0; isync" : : "r" (tmp));
  }
+-EXPORT_SYMBOL(_insl_ns);
++EXPORT_SYMBOL(_insl);
  
--static inline void writeb(u8 val, PCI_IO_ADDR addr)
-+static inline void writeb(u8 val, volatile void __iomem *addr)
+-void _outsl_ns(volatile u32 __iomem *port, const void *buf, long count)
++void _outsl(volatile u32 __iomem *port, const void *buf, long count)
  {
- 	out_8(addr, val);
- }
- #define writeb writeb
+ 	const u32 *tbuf = buf;
  
--static inline void writew(u16 val, PCI_IO_ADDR addr)
-+static inline void writew(u16 val, volatile void __iomem *addr)
- {
- 	out_le16(addr, val);
+@@ -115,7 +115,7 @@ void _outsl_ns(volatile u32 __iomem *port, const void *buf, long count)
+ 	} while (--count != 0);
+ 	asm volatile("sync");
  }
- #define writew writew
+-EXPORT_SYMBOL(_outsl_ns);
++EXPORT_SYMBOL(_outsl);
  
--static inline void writel(u32 val, PCI_IO_ADDR addr)
-+static inline void writel(u32 val, volatile void __iomem *addr)
- {
- 	out_le32(addr, val);
- }
- #define writel writel
+ #define IO_CHECK_ALIGN(v,a) ((((unsigned long)(v)) & ((a) - 1)) == 0)
  
--static inline void writew_be(u16 val, PCI_IO_ADDR addr)
-+static inline void writew_be(u16 val, volatile void __iomem *addr)
- {
- 	out_be16(addr, val);
- }
- 
--static inline void writel_be(u32 val, PCI_IO_ADDR addr)
-+static inline void writel_be(u32 val, volatile void __iomem *addr)
- {
- 	out_be32(addr, val);
- }
- 
--static inline void readsb(const PCI_IO_ADDR a, void *b, unsigned long c)
-+static inline void readsb(const volatile void __iomem *a, void *b, unsigned long c)
- {
- 	__do_readsb(a, b, c);
- }
- #define readsb readsb
- 
--static inline void readsw(const PCI_IO_ADDR a, void *b, unsigned long c)
-+static inline void readsw(const volatile void __iomem *a, void *b, unsigned long c)
- {
- 	__do_readsw(a, b, c);
- }
- #define readsw readsw
- 
--static inline void readsl(const PCI_IO_ADDR a, void *b, unsigned long c)
-+static inline void readsl(const volatile void __iomem *a, void *b, unsigned long c)
- {
- 	__do_readsl(a, b, c);
- }
- #define readsl readsl
- 
--static inline void writesb(PCI_IO_ADDR a, const void *b, unsigned long c)
-+static inline void writesb(volatile void __iomem *a, const void *b, unsigned long c)
- {
- 	__do_writesb(a, b, c);
- }
- #define writesb writesb
- 
--static inline void writesw(PCI_IO_ADDR a, const void *b, unsigned long c)
-+static inline void writesw(volatile void __iomem *a, const void *b, unsigned long c)
- {
- 	__do_writesw(a, b, c);
- }
- #define writesw writesw
- 
--static inline void writesl(PCI_IO_ADDR a, const void *b, unsigned long c)
-+static inline void writesl(volatile void __iomem *a, const void *b, unsigned long c)
- {
- 	__do_writesl(a, b, c);
- }
- #define writesl writesl
- 
--static inline void memset_io(PCI_IO_ADDR a, int c, unsigned long n)
-+static inline void memset_io(volatile void __iomem *a, int c, unsigned long n)
- {
- 	_memset_io(a, c, n);
- }
- #define memset_io memset_io
- 
--static inline void memcpy_fromio(void *d, const PCI_IO_ADDR s, unsigned long n)
-+static inline void memcpy_fromio(void *d, const volatile void __iomem *s, unsigned long n)
- {
- 	__do_memcpy_fromio(d, s, n);
- }
- #define memcpy_fromio memcpy_fromio
- 
--static inline void memcpy_toio(PCI_IO_ADDR d, const void *s, unsigned long n)
-+static inline void memcpy_toio(volatile void __iomem *d, const void *s, unsigned long n)
- {
- 	_memcpy_toio(d, s, n);
- }
- #define memcpy_toio memcpy_toio
- 
- #ifdef __powerpc64__
--static inline u64 readq(const PCI_IO_ADDR addr)
-+static inline u64 readq(const volatile void __iomem *addr)
- {
- 	return __do_readq(addr);
- }
- 
--static inline u64 readq_be(const PCI_IO_ADDR addr)
-+static inline u64 readq_be(const volatile void __iomem *addr)
- {
- 	return __do_readq_be(addr);
- }
- 
--static inline void writeq(u64 val, PCI_IO_ADDR addr)
-+static inline void writeq(u64 val, volatile void __iomem *addr)
- {
- 	out_le64(addr, val);
- }
- 
--static inline void writeq_be(u64 val, PCI_IO_ADDR addr)
-+static inline void writeq_be(u64 val, volatile void __iomem *addr)
- {
- 	out_be64(addr, val);
- }
 -- 
 2.47.1
 
