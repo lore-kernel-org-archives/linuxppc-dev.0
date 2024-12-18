@@ -1,57 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-4293-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4294-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 275B5E77188
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2024 10:55:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BED90E77187
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2024 10:55:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YCrF50Mfzz2xxw;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YCrF55J7zz30TS;
 	Wed, 18 Dec 2024 21:55:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734519337;
-	cv=none; b=NFkQlKiWpDQ2vXBXDGlH65bzxFfYsTRSG6em7/5h8x/nLBr1XJ0wuO+N6GOY+g29M/cXF3SBjHxS5YVqt4Dhnt2b/Wa3OUYY8YTfIKWWsr6kqcCfiiI71JW/B0WI0GT82iPnJA8iKjd5bJB1EDONWvYgY0ubZewAxto4828wm3vyw3ANqzO3/A8Jw/zM8e7ewY23jYmfg2O9k0SFuxOL0/Q27M4qD4njIEQ+DdPaWLplnSnle5JL+uTCEeqx3WFpPnuRZwlyt7zvXMwdrSia0BOfKbmpsrZxIonBwH/P2d9SZIR8AUR8Fnqf8fI5QuiYK8krEN/a/j9VwaMWpaaz6w==
+	cv=none; b=gjRMoz82ZZDMT9oDH48BDN5oCX1I0Xyan9LRuC7KPP3K7pvvdif15gTr/+msMKS7CQwBpz374igzktHA8DXi1VXuG26O/jvG3x31XsvCeYNPQZgphPBG81rINILRaW2IL9m/nGtCunfaST9nkrBGXOCOIq5YCbR06w+sgZ51rz3UE42mCzwodRsqfktxzZYRJ1fFX6/nIrFE9azw9nE4tAxy4wOnTqs5ZaW30R2YtvHQ1n6+dHiZENLpksFzfVmuLmAjpXIE4vniNzvfyVHs7r2kg1u7WjuQdE5rBtt1RD7CgeaP9M9c3Q/ZYrMfjlz/fKbIbza+rKuOd+K1wIfwIg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1734519337; c=relaxed/relaxed;
-	bh=dWgE8qGbT6xOfnjYuP8DQidbO79eRCwwFYzF4MiDNq4=;
+	bh=cOj73+dtbZ8oPhiq5S0sTCR9Jej/y7QQv3x0PwgR2Vs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Vv56ypgBBMK72JZdVrmVXEXwL0YLE7SbChZKQvD+9BLW85X9aMA18K51qfiL2g6rPOKbhatsTLwK0gvB8XdPWy86NQy7I4aKc5CIzpGxzmzgrsrT9drSULhXcwfjDdd5eMcab5J1MONc28Js/WebUqsSp7gON0A5qn3rqg7yi7M1BXtIu3XnFeJS1+xc6EZnEI2x6WWzOKigQvddFO3Bi2mbL4yIsm6xfFrtmDNA5+tFeaQBd/uqB38gDpCRFM7DysfQPm7hEvOQtDSfxuFq82OsTzxpdgRbX9MqLsF2EUmqnCAenseXaadF54/bR4B+c5wcWI7swhdGuTTNP6fsOA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VQo6CDdZ; dkim-atps=neutral
+	 MIME-Version; b=YpAmExQANaIDZ7FSrcYtGNuYyxTHBsxZLDSWPs6OgVqRlxAaDKiprCJ6IrgOPlRflyQCuFlJbm1euLR+VLiYBvbav4H3Ze5+7dmO4QfQQCuuIO54VNpZ3sxGxVV3FtcHxJKSg67jFTZPgIGu8I2fVv8sw5Cc0VqfQ8k0HFhffI1mrOmUsxvmXiPRW0UXs0SCyPbwPxOq5+ZnRG8JdvStJoPf/sQKcb+zPILNKT77e87MF69Pw4XdvP2zHEAGK1yFJ9UCj73kAPJCvIeCPfIks0DfEdxFkGmIW3iSVtqa2mWzxQnwJ9iTQqdOrhsUTsMHgfavF523QURfTxGNw9v37A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OboquWRn; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=VQo6CDdZ;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OboquWRn;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCrF31bSyz2yP8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCrF32br2z2yjb
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2024 21:55:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1734519328;
-	bh=dWgE8qGbT6xOfnjYuP8DQidbO79eRCwwFYzF4MiDNq4=;
+	s=201909; t=1734519327;
+	bh=cOj73+dtbZ8oPhiq5S0sTCR9Jej/y7QQv3x0PwgR2Vs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=VQo6CDdZUc0rk9jVVb5GKn8TnlZUV9/d96sBZaxbFbUkYsWZxVQMBUfuRf07dj3T3
-	 bQQGnbDyOeN9D+VR3z6Pb6tEnFz3md1+z4Cd3w9pklj+cTLZvrtNT+cCpKeuuooFJB
-	 9+Xx8g9tgR2cnuoeh0GkXXl8vxR8DbkkXntuvqr+mPGJ5Miu7LzDJj0R0DoGujAueA
-	 Az4aJiAfXsS+Uan3FMTnjxPayly4TkVx+om2w/bYsbQxrKLbAGnn830FoFDcjV4qKa
-	 xsFHk+1+f4SIpiLG54d8xG+5FL4NtHM6is3IIoAWam56LPZJUMF0G0quQ2WAKIB/WO
-	 V93pVbUoy3toQ==
+	b=OboquWRnfgVWB+j3r+ioJaqnSjtHX/K/86wrC+8yjsriB3xn2GHilEePj+KdRdLhA
+	 F4bDDZ0c1+86Py6xLylMGdEixQbEKwmB+QZkmUlRqwfTV3grtBQTxZlwrs0cT6repJ
+	 Blobgl1IO75Sexv+XfNWbIM66UH5m3K6dltt7V/lwo+GDVe2VX9/S77snlHvt1B8x7
+	 R/OK0Ja3AhksfdoO+TKa/tA+mewSv8xC+E8WomIyQuJx8I60lBBjfuao4ppzwsHx/x
+	 X5Vw467udRsnde7UQfClT88d03rFnX38WOg/G2dIkt7OVGNha+OkPFtg4V0ZVD8Lhi
+	 4s7sUsVuA5Zzg==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4YCrDw33dKz4xf7;
-	Wed, 18 Dec 2024 21:55:28 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4YCrDv3bzdz4xdx;
+	Wed, 18 Dec 2024 21:55:27 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
 Cc: <arnd@arndb.de>,
 	<jk@ozlabs.org>,
 	<segher@kernel.crashing.org>
-Subject: [PATCH v2 04/25] powerpc: Remove IBM_CELL_BLADE & SPIDER_NET references
-Date: Wed, 18 Dec 2024 21:54:52 +1100
-Message-ID: <20241218105523.416573-4-mpe@ellerman.id.au>
+Subject: [PATCH v2 02/25] powerpc: Remove some Cell leftovers
+Date: Wed, 18 Dec 2024 21:54:50 +1100
+Message-ID: <20241218105523.416573-2-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241218105523.416573-1-mpe@ellerman.id.au>
 References: <20241218105523.416573-1-mpe@ellerman.id.au>
@@ -69,77 +69,73 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The symbols are no longer selectable so remove references to them.
+Now that CONFIG_PPC_CELL_NATIVE is removed, iommu_fixed_is_weak will
+always be false, so remove it entirely.
+
+Also remove a hack/quirk in the HTAB code that was only used on Cell.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
 v2: Unchanged.
 
- arch/powerpc/boot/Makefile           | 2 --
- arch/powerpc/configs/cell_defconfig  | 2 --
- arch/powerpc/configs/ppc64_defconfig | 2 --
- 3 files changed, 6 deletions(-)
+ arch/powerpc/include/asm/iommu.h      |  6 ------
+ arch/powerpc/kernel/dma-iommu.c       |  2 +-
+ arch/powerpc/mm/book3s64/hash_utils.c | 12 ------------
+ 3 files changed, 1 insertion(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 1ff6ad4f6cd2..184d0680e661 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -173,7 +173,6 @@ src-plat-$(CONFIG_PPC_PS3) += ps3-head.S ps3-hvcall.S ps3.c
- src-plat-$(CONFIG_EPAPR_BOOT) += epapr.c epapr-wrapper.c
- src-plat-$(CONFIG_PPC_PSERIES) += pseries-head.S
- src-plat-$(CONFIG_PPC_POWERNV) += pseries-head.S
--src-plat-$(CONFIG_PPC_IBM_CELL_BLADE) += pseries-head.S
- src-plat-$(CONFIG_MVME7100) += motload-head.S mvme7100.c
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 04072b5f8962..b410021ad4c6 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -317,12 +317,6 @@ extern void iommu_flush_tce(struct iommu_table *tbl);
+ extern enum dma_data_direction iommu_tce_direction(unsigned long tce);
+ extern unsigned long iommu_direction_to_tce_perm(enum dma_data_direction dir);
  
- src-plat-$(CONFIG_PPC_MICROWATT) += fixed-head.S microwatt.c
-@@ -276,7 +275,6 @@ quiet_cmd_wrap	= WRAP    $@
+-#ifdef CONFIG_PPC_CELL_NATIVE
+-extern bool iommu_fixed_is_weak;
+-#else
+-#define iommu_fixed_is_weak false
+-#endif
+-
+ extern const struct dma_map_ops dma_iommu_ops;
  
- image-$(CONFIG_PPC_PSERIES)		+= zImage.pseries
- image-$(CONFIG_PPC_POWERNV)		+= zImage.pseries
--image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
- image-$(CONFIG_PPC_PS3)			+= dtbImage.ps3
- image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
- image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
-diff --git a/arch/powerpc/configs/cell_defconfig b/arch/powerpc/configs/cell_defconfig
-index 53f43a34e1a9..0a01908ec63a 100644
---- a/arch/powerpc/configs/cell_defconfig
-+++ b/arch/powerpc/configs/cell_defconfig
-@@ -25,7 +25,6 @@ CONFIG_PS3_DISK=y
- CONFIG_PS3_ROM=m
- CONFIG_PS3_FLASH=m
- CONFIG_PS3_LPM=m
--CONFIG_PPC_IBM_CELL_BLADE=y
- CONFIG_RTAS_FLASH=y
- CONFIG_CPU_FREQ=y
- CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-@@ -133,7 +132,6 @@ CONFIG_SKGE=m
- CONFIG_SKY2=m
- CONFIG_GELIC_NET=m
- CONFIG_GELIC_WIRELESS=y
--CONFIG_SPIDER_NET=y
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
- # CONFIG_SERIO_I8042 is not set
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index f39c0d000c43..f71f569c536a 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -51,7 +51,6 @@ CONFIG_PS3_DISK=m
- CONFIG_PS3_ROM=m
- CONFIG_PS3_FLASH=m
- CONFIG_PS3_LPM=m
--CONFIG_PPC_IBM_CELL_BLADE=y
- CONFIG_RTAS_FLASH=m
- CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
- CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-@@ -228,7 +227,6 @@ CONFIG_NETXEN_NIC=m
- CONFIG_SUNGEM=y
- CONFIG_GELIC_NET=m
- CONFIG_GELIC_WIRELESS=y
--CONFIG_SPIDER_NET=m
- CONFIG_BROADCOM_PHY=m
- CONFIG_MARVELL_PHY=y
- CONFIG_PPP=m
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+index f0ae39e77e37..4d64a5db50f3 100644
+--- a/arch/powerpc/kernel/dma-iommu.c
++++ b/arch/powerpc/kernel/dma-iommu.c
+@@ -136,7 +136,7 @@ static bool dma_iommu_bypass_supported(struct device *dev, u64 mask)
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct pci_controller *phb = pci_bus_to_host(pdev->bus);
+ 
+-	if (iommu_fixed_is_weak || !phb->controller_ops.iommu_bypass_supported)
++	if (!phb->controller_ops.iommu_bypass_supported)
+ 		return false;
+ 	return phb->controller_ops.iommu_bypass_supported(pdev, mask);
+ }
+diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+index c8b4fa71d4a7..734610052cf4 100644
+--- a/arch/powerpc/mm/book3s64/hash_utils.c
++++ b/arch/powerpc/mm/book3s64/hash_utils.c
+@@ -1358,18 +1358,6 @@ static void __init htab_initialize(void)
+ 	} else {
+ 		unsigned long limit = MEMBLOCK_ALLOC_ANYWHERE;
+ 
+-#ifdef CONFIG_PPC_CELL
+-		/*
+-		 * Cell may require the hash table down low when using the
+-		 * Axon IOMMU in order to fit the dynamic region over it, see
+-		 * comments in cell/iommu.c
+-		 */
+-		if (fdt_subnode_offset(initial_boot_params, 0, "axon") > 0) {
+-			limit = 0x80000000;
+-			pr_info("Hash table forced below 2G for Axon IOMMU\n");
+-		}
+-#endif /* CONFIG_PPC_CELL */
+-
+ 		table = memblock_phys_alloc_range(htab_size_bytes,
+ 						  htab_size_bytes,
+ 						  0, limit);
 -- 
 2.47.1
 
