@@ -1,57 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-4295-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4296-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 102ABE7718B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2024 10:56:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A2CCE77187
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Dec 2024 10:56:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YCrF64gtwz2yjb;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YCrF708Rtz30V0;
 	Wed, 18 Dec 2024 21:55:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734519338;
-	cv=none; b=WJ/Eu6h6ea+N5eVjStiSmwa0FGX/hyuZkOqg2WHfe833FUrVQEY+xAFqM1fjUIKOnNpNL481L1n3H5SecNq76oFUpsFlpJDS71N7GuOdq3slB1HWsq1FaA1mXjMu0tR8T+1p+Apq6IBIPj94FCHEfitqOzBTT9axsEIL7DnWR+99gSgWJsQ2p167QXok8IDwuvar/WFa+MrcbeYmAa1Urwaxm8dokW0k874bIWCb93CRRK6RAE/B5l9HNQpTwIGJsj4Dl+jqIcGgSc0dgnahp04WjELaR1XunzB7jwXWWgoUMTUJ1xHshENCB0Op9wf2j+1L7J72WoNCdlf+ohVhUA==
+	cv=none; b=oGuPfpa0rhw8g1mOU8WjwBRAEFF5+gOvkAUW+zbjdTq4cfk6wIVPyNNbDUhvxI59Yb3NIviOTx8qNSExt0hYFb5SsNYpIr/i9Ysm5IeCkgii9/y8MCKKLZWFf8XVMwUxw85llA78jD27GNcnz9btWjtwEkdH/kc0KgP6ymlW9s5JQgBdM1ky585jUxw5TKxTGpLN7GHKjJTn/GaZpASAJGZWgxNJsvR/sgNZrvO7A7uUjB9bM4JrWsytP9DUrgZVnPf5HeSGTl6NeImdtwZ8EhVJrUB82YtcI4oEEpC7d437dwLGEH/oUC0yY8PTmpZlkas7ZCbTM72yL++Fbrp44Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1734519338; c=relaxed/relaxed;
-	bh=6dDq9HpuCyJcGsbu36y/LO4+p3k+dkpaL+nfW3jT97Y=;
+	bh=Ty/2YtR14LZh+B3vW008tEeC5DipMfIBovG1QReJ9/A=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OHKoHxXIDO7UvV1uM1qF9ktvD4C1cLilHaKNESA+0PJU+RKMJeewfGGqx7vm9oKAELoeYu9rQlHwZSwEaRKpHyIJHTVttfySieTrgmbvb1hmz9wNQT3GAtXcBw0njplAoMuJTTOH9Dinsve9Lu9n71hc5RR6qgid7xWcnbdadzjam4G8Yh6Hm8RF5rwhntcUmaB2P8CPLh9s2DfG0MUmIqeis7IuYFASjoJG7ds/DTLbnqQg3mz1tP37mpyQIXB/5oL+ib9r6N+7Xj/tUHApO3AXEPYq5I+PNSQpXjMAZ12HaKSnsiRh7KPfluQicnExu9LGz1biQC0kPuZj7i0cEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aRiS/KRR; dkim-atps=neutral
+	 MIME-Version; b=Hb7QYtdfegilWZypYhErBJH7btXqX//FUBIO1XJEX2yAJY6oSh2SNBpGqM2sGqlys6tg+xSIszmNrLSvRgs+8Wh6D8La+8EMweFp12sjTu+R/m59dgZFVwMaLNmaRlLOioV85H+7O6/tBcFUe/Jc/V7dsUPxV2UPZU1erqGTMwmoxWnZvyJXJBHRIjRYf21m+sbCMpMxuYR++/75iAEi/Qa7zjK11ytDK067AQrtJqXrhPGJWQ9mU1krB9DsR2aTGtRTrZnBhb+15d8zgWCdOHnP0+eWDwRX8VtIOtUwZfAYmemMBma3x3Hz5zvPrT2f2L/3nllVbXtcxHvfYqVF0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=W44obXvt; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aRiS/KRR;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=W44obXvt;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCrF31jQjz2yYf
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCrF400CHz30ML
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Dec 2024 21:55:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1734519328;
-	bh=6dDq9HpuCyJcGsbu36y/LO4+p3k+dkpaL+nfW3jT97Y=;
+	s=201909; t=1734519329;
+	bh=Ty/2YtR14LZh+B3vW008tEeC5DipMfIBovG1QReJ9/A=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=aRiS/KRR4rwta/Yi3tQbj6az8A3VgQUV7w04A963E9rGVHGF9oIKaU778ZC1zwDeq
-	 HpYoJdNA60BFnEEcxzFx03W0kWIXITAV390WrI2B4Ie6Un13vvBF/1uFmjeT9tSXYK
-	 DC3hPd3PncROr16DHrjGq8T197xqPxuRQbxes1BpWdT0ShpQ2wNCBdNrQhOESCOoqM
-	 RAis8rQo85RvJFfIAdCGlYwoML+q6wR58V+mIFB3QiOZNyipZAuL9zZlrlPJDFk74Q
-	 or9dfcltC/irjEbe4bjis+puVn2/FRRk8Zps7v4Ax8guwVqYrsgJrOOe0eAIN+9y70
-	 /wgn+t65v08vA==
+	b=W44obXvtXWO5f1NUn6wIIfwLEY4u/ZWLHpRj1ZvkZO8qqUIxGH936qgozWDtMuaxK
+	 WwXbXaQhhmvYKLEnt+I7PhhMNe5r6fsgqP4FOQB1IvByuoci7GkvnLqvdYvw7luCFa
+	 i5NhGLlQG3u486Y6WleR70iaHDPtNCsJobYmfYWhW6WK/EVMPolBDLo9+Pz2+Rvbh8
+	 +9wABsRws7FN575le9uwYiE2iEwItBjkc5BIrPdR7djfOWKMUzNcPY9aAFlaevzPOX
+	 lpX+5slLjEy/zomkpmKkRLpxiI1g+CvHDag5kQ+Qnl6RPHgi3Z7bJqIEGYesvJ+kEI
+	 +roeeU0lcZMnA==
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4YCrDv6t0vz4xf6;
-	Wed, 18 Dec 2024 21:55:27 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4YCrDx6CRhz4xfB;
+	Wed, 18 Dec 2024 21:55:29 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
 Cc: <arnd@arndb.de>,
 	<jk@ozlabs.org>,
 	<segher@kernel.crashing.org>
-Subject: [PATCH v2 03/25] powerpc: Remove PPC_PMI and driver
-Date: Wed, 18 Dec 2024 21:54:51 +1100
-Message-ID: <20241218105523.416573-3-mpe@ellerman.id.au>
+Subject: [PATCH v2 07/25] powerpc: Remove DCR_MMIO and the DCR generic layer
+Date: Wed, 18 Dec 2024 21:54:55 +1100
+Message-ID: <20241218105523.416573-7-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20241218105523.416573-1-mpe@ellerman.id.au>
 References: <20241218105523.416573-1-mpe@ellerman.id.au>
@@ -69,388 +69,385 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-CONFIG_PPC_PMI is no longer selectable now that PPC_IBM_CELL_BLADE has
-been removed, via the dependency on PPC_IBM_CELL_POWERBUTTON.
+The Cell blade support was the last user of DCR_MMIO, so it can now
+be removed.
 
-So remove it and the driver, and the pmi.h header which it was the only
-user of.
+That only leaves DCR_NATIVE, meaning the DCR generic layer which allows
+using either DCR_NATIVE or DCR_MMIO is also unnecessary, remove it too.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
 v2: Unchanged.
 
- arch/powerpc/include/asm/pmi.h      |  53 ------
- arch/powerpc/platforms/cell/Kconfig |   9 -
- arch/powerpc/sysdev/Makefile        |   1 -
- arch/powerpc/sysdev/pmi.c           | 267 ----------------------------
- 4 files changed, 330 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/pmi.h
- delete mode 100644 arch/powerpc/sysdev/pmi.c
+ arch/powerpc/Kconfig                   |   5 +-
+ arch/powerpc/include/asm/dcr-generic.h |  36 -----
+ arch/powerpc/include/asm/dcr-mmio.h    |  44 ------
+ arch/powerpc/include/asm/dcr.h         |  32 -----
+ arch/powerpc/sysdev/dcr.c              | 182 -------------------------
+ 5 files changed, 1 insertion(+), 298 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/dcr-generic.h
+ delete mode 100644 arch/powerpc/include/asm/dcr-mmio.h
 
-diff --git a/arch/powerpc/include/asm/pmi.h b/arch/powerpc/include/asm/pmi.h
-deleted file mode 100644
-index 478f0a2fe7f4..000000000000
---- a/arch/powerpc/include/asm/pmi.h
-+++ /dev/null
-@@ -1,53 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--#ifndef _POWERPC_PMI_H
--#define _POWERPC_PMI_H
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a0ce777f9706..00d6cd943a1f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -407,12 +407,9 @@ config ARCH_HAS_ADD_PAGES
+ config PPC_DCR_NATIVE
+ 	bool
+ 
+-config PPC_DCR_MMIO
+-	bool
 -
+ config PPC_DCR
+ 	bool
+-	depends on PPC_DCR_NATIVE || PPC_DCR_MMIO
++	depends on PPC_DCR_NATIVE
+ 	default y
+ 
+ config PPC_PCI_OF_BUS_MAP
+diff --git a/arch/powerpc/include/asm/dcr-generic.h b/arch/powerpc/include/asm/dcr-generic.h
+deleted file mode 100644
+index 099c28dd40b9..000000000000
+--- a/arch/powerpc/include/asm/dcr-generic.h
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
 -/*
-- * Definitions for talking with PMI device on PowerPC
-- *
-- * PMI (Platform Management Interrupt) is a way to communicate
-- * with the BMC (Baseboard Management Controller) via interrupts.
-- * Unlike IPMI it is bidirectional and has a low latency.
-- *
-- * (C) Copyright IBM Deutschland Entwicklung GmbH 2005
-- *
-- * Author: Christian Krafft <krafft@de.ibm.com>
+- * (c) Copyright 2006 Benjamin Herrenschmidt, IBM Corp.
+- *                    <benh@kernel.crashing.org>
 - */
 -
+-#ifndef _ASM_POWERPC_DCR_GENERIC_H
+-#define _ASM_POWERPC_DCR_GENERIC_H
 -#ifdef __KERNEL__
+-#ifndef __ASSEMBLY__
 -
--#define PMI_TYPE_FREQ_CHANGE	0x01
--#define PMI_TYPE_POWER_BUTTON	0x02
--#define PMI_READ_TYPE		0
--#define PMI_READ_DATA0		1
--#define PMI_READ_DATA1		2
--#define PMI_READ_DATA2		3
--#define PMI_WRITE_TYPE		4
--#define PMI_WRITE_DATA0		5
--#define PMI_WRITE_DATA1		6
--#define PMI_WRITE_DATA2		7
--
--#define PMI_ACK			0x80
--
--#define PMI_TIMEOUT		100
+-enum host_type_t {DCR_HOST_MMIO, DCR_HOST_NATIVE, DCR_HOST_INVALID};
 -
 -typedef struct {
--	u8	type;
--	u8	data0;
--	u8	data1;
--	u8	data2;
--} pmi_message_t;
+-	enum host_type_t type;
+-	union {
+-		dcr_host_mmio_t mmio;
+-		dcr_host_native_t native;
+-	} host;
+-} dcr_host_t;
 -
--struct pmi_handler {
--	struct list_head node;
--	u8 type;
--	void (*handle_pmi_message) (pmi_message_t);
--};
+-extern bool dcr_map_ok_generic(dcr_host_t host);
 -
--int pmi_register_handler(struct pmi_handler *);
--void pmi_unregister_handler(struct pmi_handler *);
+-extern dcr_host_t dcr_map_generic(struct device_node *dev, unsigned int dcr_n,
+-			  unsigned int dcr_c);
+-extern void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c);
 -
--int pmi_send_message(pmi_message_t);
+-extern u32 dcr_read_generic(dcr_host_t host, unsigned int dcr_n);
 -
+-extern void dcr_write_generic(dcr_host_t host, unsigned int dcr_n, u32 value);
+-
+-#endif /* __ASSEMBLY__ */
 -#endif /* __KERNEL__ */
--#endif /* _POWERPC_PMI_H */
-diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-index ee43d6092e31..758dc08a6dde 100644
---- a/arch/powerpc/platforms/cell/Kconfig
-+++ b/arch/powerpc/platforms/cell/Kconfig
-@@ -21,15 +21,6 @@ config SPU_BASE
- 	bool
- 	select PPC_COPRO_BASE
- 
--config PPC_PMI
--	tristate
--	default y
--	depends on CPU_FREQ_CBE_PMI || PPC_IBM_CELL_POWERBUTTON
--	help
--	  PMI (Platform Management Interrupt) is a way to
--	  communicate with the BMC (Baseboard Management Controller).
--	  It is used in some IBM Cell blades.
+-#endif /* _ASM_POWERPC_DCR_GENERIC_H */
 -
- config CBE_CPUFREQ_SPU_GOVERNOR
- 	tristate "CBE frequency scaling based on SPU usage"
- 	depends on SPU_FS && CPU_FREQ
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 24a177d164f1..0834a9a12600 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -12,7 +12,6 @@ obj-$(CONFIG_PPC_MSI_BITMAP)	+= msi_bitmap.o
- 
- obj-$(CONFIG_PPC_MPC106)	+= grackle.o
- obj-$(CONFIG_PPC_DCR_NATIVE)	+= dcr-low.o
--obj-$(CONFIG_PPC_PMI)		+= pmi.o
- obj-$(CONFIG_U3_DART)		+= dart_iommu.o
- obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
-diff --git a/arch/powerpc/sysdev/pmi.c b/arch/powerpc/sysdev/pmi.c
+-
+diff --git a/arch/powerpc/include/asm/dcr-mmio.h b/arch/powerpc/include/asm/dcr-mmio.h
 deleted file mode 100644
-index 2511e586fe31..000000000000
---- a/arch/powerpc/sysdev/pmi.c
+index fc6d93ef4a13..000000000000
+--- a/arch/powerpc/include/asm/dcr-mmio.h
 +++ /dev/null
-@@ -1,267 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
+@@ -1,44 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
 -/*
-- * pmi driver
-- *
-- * (C) Copyright IBM Deutschland Entwicklung GmbH 2005
-- *
-- * PMI (Platform Management Interrupt) is a way to communicate
-- * with the BMC (Baseboard Management Controller) via interrupts.
-- * Unlike IPMI it is bidirectional and has a low latency.
-- *
-- * Author: Christian Krafft <krafft@de.ibm.com>
+- * (c) Copyright 2006 Benjamin Herrenschmidt, IBM Corp.
+- *                    <benh@kernel.crashing.org>
 - */
 -
--#include <linux/interrupt.h>
--#include <linux/slab.h>
--#include <linux/completion.h>
--#include <linux/spinlock.h>
--#include <linux/module.h>
--#include <linux/mod_devicetable.h>
--#include <linux/workqueue.h>
--#include <linux/of_address.h>
--#include <linux/of_irq.h>
--#include <linux/platform_device.h>
+-#ifndef _ASM_POWERPC_DCR_MMIO_H
+-#define _ASM_POWERPC_DCR_MMIO_H
+-#ifdef __KERNEL__
 -
 -#include <asm/io.h>
--#include <asm/pmi.h>
 -
--struct pmi_data {
--	struct list_head	handler;
--	spinlock_t		handler_spinlock;
--	spinlock_t		pmi_spinlock;
--	struct mutex		msg_mutex;
--	pmi_message_t		msg;
--	struct completion	*completion;
--	struct platform_device	*dev;
--	int			irq;
--	u8 __iomem		*pmi_reg;
--	struct work_struct	work;
--};
+-typedef struct {
+-	void __iomem *token;
+-	unsigned int stride;
+-	unsigned int base;
+-} dcr_host_mmio_t;
 -
--static struct pmi_data *data;
--
--static irqreturn_t pmi_irq_handler(int irq, void *dev_id)
+-static inline bool dcr_map_ok_mmio(dcr_host_mmio_t host)
 -{
--	u8 type;
--	int rc;
--
--	spin_lock(&data->pmi_spinlock);
--
--	type = ioread8(data->pmi_reg + PMI_READ_TYPE);
--	pr_debug("pmi: got message of type %d\n", type);
--
--	if (type & PMI_ACK && !data->completion) {
--		printk(KERN_WARNING "pmi: got unexpected ACK message.\n");
--		rc = -EIO;
--		goto unlock;
--	}
--
--	if (data->completion && !(type & PMI_ACK)) {
--		printk(KERN_WARNING "pmi: expected ACK, but got %d\n", type);
--		rc = -EIO;
--		goto unlock;
--	}
--
--	data->msg.type = type;
--	data->msg.data0 = ioread8(data->pmi_reg + PMI_READ_DATA0);
--	data->msg.data1 = ioread8(data->pmi_reg + PMI_READ_DATA1);
--	data->msg.data2 = ioread8(data->pmi_reg + PMI_READ_DATA2);
--	rc = 0;
--unlock:
--	spin_unlock(&data->pmi_spinlock);
--
--	if (rc == -EIO) {
--		rc = IRQ_HANDLED;
--		goto out;
--	}
--
--	if (data->msg.type & PMI_ACK) {
--		complete(data->completion);
--		rc = IRQ_HANDLED;
--		goto out;
--	}
--
--	schedule_work(&data->work);
--
--	rc = IRQ_HANDLED;
--out:
--	return rc;
+-	return host.token != NULL;
 -}
 -
+-extern dcr_host_mmio_t dcr_map_mmio(struct device_node *dev,
+-				    unsigned int dcr_n,
+-				    unsigned int dcr_c);
+-extern void dcr_unmap_mmio(dcr_host_mmio_t host, unsigned int dcr_c);
 -
--static const struct of_device_id pmi_match[] = {
--	{ .type = "ibm,pmi", .name = "ibm,pmi" },
--	{ .type = "ibm,pmi" },
--	{},
--};
--
--MODULE_DEVICE_TABLE(of, pmi_match);
--
--static void pmi_notify_handlers(struct work_struct *work)
+-static inline u32 dcr_read_mmio(dcr_host_mmio_t host, unsigned int dcr_n)
 -{
--	struct pmi_handler *handler;
--
--	spin_lock(&data->handler_spinlock);
--	list_for_each_entry(handler, &data->handler, node) {
--		pr_debug("pmi: notifying handler %p\n", handler);
--		if (handler->type == data->msg.type)
--			handler->handle_pmi_message(data->msg);
--	}
--	spin_unlock(&data->handler_spinlock);
+-	return in_be32(host.token + ((host.base + dcr_n) * host.stride));
 -}
 -
--static int pmi_of_probe(struct platform_device *dev)
+-static inline void dcr_write_mmio(dcr_host_mmio_t host,
+-				  unsigned int dcr_n,
+-				  u32 value)
 -{
--	struct device_node *np = dev->dev.of_node;
--	int rc;
--
--	if (data) {
--		printk(KERN_ERR "pmi: driver has already been initialized.\n");
--		rc = -EBUSY;
--		goto out;
--	}
--
--	data = kzalloc(sizeof(struct pmi_data), GFP_KERNEL);
--	if (!data) {
--		printk(KERN_ERR "pmi: could not allocate memory.\n");
--		rc = -ENOMEM;
--		goto out;
--	}
--
--	data->pmi_reg = of_iomap(np, 0);
--	if (!data->pmi_reg) {
--		printk(KERN_ERR "pmi: invalid register address.\n");
--		rc = -EFAULT;
--		goto error_cleanup_data;
--	}
--
--	INIT_LIST_HEAD(&data->handler);
--
--	mutex_init(&data->msg_mutex);
--	spin_lock_init(&data->pmi_spinlock);
--	spin_lock_init(&data->handler_spinlock);
--
--	INIT_WORK(&data->work, pmi_notify_handlers);
--
--	data->dev = dev;
--
--	data->irq = irq_of_parse_and_map(np, 0);
--	if (!data->irq) {
--		printk(KERN_ERR "pmi: invalid interrupt.\n");
--		rc = -EFAULT;
--		goto error_cleanup_iomap;
--	}
--
--	rc = request_irq(data->irq, pmi_irq_handler, 0, "pmi", NULL);
--	if (rc) {
--		printk(KERN_ERR "pmi: can't request IRQ %d: returned %d\n",
--				data->irq, rc);
--		goto error_cleanup_iomap;
--	}
--
--	printk(KERN_INFO "pmi: found pmi device at addr %p.\n", data->pmi_reg);
--
--	goto out;
--
--error_cleanup_iomap:
--	iounmap(data->pmi_reg);
--
--error_cleanup_data:
--	kfree(data);
--
--out:
--	return rc;
+-	out_be32(host.token + ((host.base + dcr_n) * host.stride), value);
 -}
 -
--static void pmi_of_remove(struct platform_device *dev)
+-#endif /* __KERNEL__ */
+-#endif /* _ASM_POWERPC_DCR_MMIO_H */
+-
+-
+diff --git a/arch/powerpc/include/asm/dcr.h b/arch/powerpc/include/asm/dcr.h
+index 64030e3a1f30..180021cd0b30 100644
+--- a/arch/powerpc/include/asm/dcr.h
++++ b/arch/powerpc/include/asm/dcr.h
+@@ -10,46 +10,14 @@
+ #ifndef __ASSEMBLY__
+ #ifdef CONFIG_PPC_DCR
+ 
+-#ifdef CONFIG_PPC_DCR_NATIVE
+ #include <asm/dcr-native.h>
+-#endif
+ 
+-#ifdef CONFIG_PPC_DCR_MMIO
+-#include <asm/dcr-mmio.h>
+-#endif
+-
+-
+-/* Indirection layer for providing both NATIVE and MMIO support. */
+-
+-#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
+-
+-#include <asm/dcr-generic.h>
+-
+-#define DCR_MAP_OK(host)	dcr_map_ok_generic(host)
+-#define dcr_map(dev, dcr_n, dcr_c) dcr_map_generic(dev, dcr_n, dcr_c)
+-#define dcr_unmap(host, dcr_c) dcr_unmap_generic(host, dcr_c)
+-#define dcr_read(host, dcr_n) dcr_read_generic(host, dcr_n)
+-#define dcr_write(host, dcr_n, value) dcr_write_generic(host, dcr_n, value)
+-
+-#else
+-
+-#ifdef CONFIG_PPC_DCR_NATIVE
+ typedef dcr_host_native_t dcr_host_t;
+ #define DCR_MAP_OK(host)	dcr_map_ok_native(host)
+ #define dcr_map(dev, dcr_n, dcr_c) dcr_map_native(dev, dcr_n, dcr_c)
+ #define dcr_unmap(host, dcr_c) dcr_unmap_native(host, dcr_c)
+ #define dcr_read(host, dcr_n) dcr_read_native(host, dcr_n)
+ #define dcr_write(host, dcr_n, value) dcr_write_native(host, dcr_n, value)
+-#else
+-typedef dcr_host_mmio_t dcr_host_t;
+-#define DCR_MAP_OK(host)	dcr_map_ok_mmio(host)
+-#define dcr_map(dev, dcr_n, dcr_c) dcr_map_mmio(dev, dcr_n, dcr_c)
+-#define dcr_unmap(host, dcr_c) dcr_unmap_mmio(host, dcr_c)
+-#define dcr_read(host, dcr_n) dcr_read_mmio(host, dcr_n)
+-#define dcr_write(host, dcr_n, value) dcr_write_mmio(host, dcr_n, value)
+-#endif
+-
+-#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
+ 
+ /*
+  * additional helpers to read the DCR * base from the device-tree
+diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
+index 70ce66eadff1..cb44a69958e7 100644
+--- a/arch/powerpc/sysdev/dcr.c
++++ b/arch/powerpc/sysdev/dcr.c
+@@ -11,107 +11,6 @@
+ #include <linux/of_address.h>
+ #include <asm/dcr.h>
+ 
+-#ifdef CONFIG_PPC_DCR_MMIO
+-static struct device_node *find_dcr_parent(struct device_node *node)
 -{
--	struct pmi_handler *handler, *tmp;
+-	struct device_node *par, *tmp;
+-	const u32 *p;
 -
--	free_irq(data->irq, NULL);
--	iounmap(data->pmi_reg);
--
--	spin_lock(&data->handler_spinlock);
--
--	list_for_each_entry_safe(handler, tmp, &data->handler, node)
--		list_del(&handler->node);
--
--	spin_unlock(&data->handler_spinlock);
--
--	kfree(data);
--	data = NULL;
+-	for (par = of_node_get(node); par;) {
+-		if (of_property_read_bool(par, "dcr-controller"))
+-			break;
+-		p = of_get_property(par, "dcr-parent", NULL);
+-		tmp = par;
+-		if (p == NULL)
+-			par = of_get_parent(par);
+-		else
+-			par = of_find_node_by_phandle(*p);
+-		of_node_put(tmp);
+-	}
+-	return par;
 -}
+-#endif
 -
--static struct platform_driver pmi_of_platform_driver = {
--	.probe		= pmi_of_probe,
--	.remove		= pmi_of_remove,
--	.driver = {
--		.name = "pmi",
--		.of_match_table = pmi_match,
--	},
--};
--module_platform_driver(pmi_of_platform_driver);
+-#if defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO)
 -
--int pmi_send_message(pmi_message_t msg)
+-bool dcr_map_ok_generic(dcr_host_t host)
 -{
--	unsigned long flags;
--	DECLARE_COMPLETION_ONSTACK(completion);
+-	if (host.type == DCR_HOST_NATIVE)
+-		return dcr_map_ok_native(host.host.native);
+-	else if (host.type == DCR_HOST_MMIO)
+-		return dcr_map_ok_mmio(host.host.mmio);
+-	else
+-		return false;
+-}
+-EXPORT_SYMBOL_GPL(dcr_map_ok_generic);
 -
--	if (!data)
--		return -ENODEV;
+-dcr_host_t dcr_map_generic(struct device_node *dev,
+-			   unsigned int dcr_n,
+-			   unsigned int dcr_c)
+-{
+-	dcr_host_t host;
+-	struct device_node *dp;
+-	const char *prop;
 -
--	mutex_lock(&data->msg_mutex);
+-	host.type = DCR_HOST_INVALID;
 -
--	data->msg = msg;
--	pr_debug("pmi_send_message: msg is %08x\n", *(u32*)&msg);
+-	dp = find_dcr_parent(dev);
+-	if (dp == NULL)
+-		return host;
 -
--	data->completion = &completion;
+-	prop = of_get_property(dp, "dcr-access-method", NULL);
 -
--	spin_lock_irqsave(&data->pmi_spinlock, flags);
--	iowrite8(msg.data0, data->pmi_reg + PMI_WRITE_DATA0);
--	iowrite8(msg.data1, data->pmi_reg + PMI_WRITE_DATA1);
--	iowrite8(msg.data2, data->pmi_reg + PMI_WRITE_DATA2);
--	iowrite8(msg.type, data->pmi_reg + PMI_WRITE_TYPE);
--	spin_unlock_irqrestore(&data->pmi_spinlock, flags);
+-	pr_debug("dcr_map_generic(dcr-access-method = %s)\n", prop);
 -
--	pr_debug("pmi_send_message: wait for completion\n");
+-	if (!strcmp(prop, "native")) {
+-		host.type = DCR_HOST_NATIVE;
+-		host.host.native = dcr_map_native(dev, dcr_n, dcr_c);
+-	} else if (!strcmp(prop, "mmio")) {
+-		host.type = DCR_HOST_MMIO;
+-		host.host.mmio = dcr_map_mmio(dev, dcr_n, dcr_c);
+-	}
 -
--	wait_for_completion_interruptible_timeout(data->completion,
--						  PMI_TIMEOUT);
+-	of_node_put(dp);
+-	return host;
+-}
+-EXPORT_SYMBOL_GPL(dcr_map_generic);
 -
--	data->completion = NULL;
+-void dcr_unmap_generic(dcr_host_t host, unsigned int dcr_c)
+-{
+-	if (host.type == DCR_HOST_NATIVE)
+-		dcr_unmap_native(host.host.native, dcr_c);
+-	else if (host.type == DCR_HOST_MMIO)
+-		dcr_unmap_mmio(host.host.mmio, dcr_c);
+-	else /* host.type == DCR_HOST_INVALID */
+-		WARN_ON(true);
+-}
+-EXPORT_SYMBOL_GPL(dcr_unmap_generic);
 -
--	mutex_unlock(&data->msg_mutex);
--
+-u32 dcr_read_generic(dcr_host_t host, unsigned int dcr_n)
+-{
+-	if (host.type == DCR_HOST_NATIVE)
+-		return dcr_read_native(host.host.native, dcr_n);
+-	else if (host.type == DCR_HOST_MMIO)
+-		return dcr_read_mmio(host.host.mmio, dcr_n);
+-	else /* host.type == DCR_HOST_INVALID */
+-		WARN_ON(true);
 -	return 0;
 -}
--EXPORT_SYMBOL_GPL(pmi_send_message);
+-EXPORT_SYMBOL_GPL(dcr_read_generic);
 -
--int pmi_register_handler(struct pmi_handler *handler)
+-void dcr_write_generic(dcr_host_t host, unsigned int dcr_n, u32 value)
 -{
--	if (!data)
--		return -ENODEV;
--
--	spin_lock(&data->handler_spinlock);
--	list_add_tail(&handler->node, &data->handler);
--	spin_unlock(&data->handler_spinlock);
--
--	return 0;
+-	if (host.type == DCR_HOST_NATIVE)
+-		dcr_write_native(host.host.native, dcr_n, value);
+-	else if (host.type == DCR_HOST_MMIO)
+-		dcr_write_mmio(host.host.mmio, dcr_n, value);
+-	else /* host.type == DCR_HOST_INVALID */
+-		WARN_ON(true);
 -}
--EXPORT_SYMBOL_GPL(pmi_register_handler);
+-EXPORT_SYMBOL_GPL(dcr_write_generic);
 -
--void pmi_unregister_handler(struct pmi_handler *handler)
+-#endif /* defined(CONFIG_PPC_DCR_NATIVE) && defined(CONFIG_PPC_DCR_MMIO) */
+-
+ unsigned int dcr_resource_start(const struct device_node *np,
+ 				unsigned int index)
+ {
+@@ -137,86 +36,5 @@ unsigned int dcr_resource_len(const struct device_node *np, unsigned int index)
+ }
+ EXPORT_SYMBOL_GPL(dcr_resource_len);
+ 
+-#ifdef CONFIG_PPC_DCR_MMIO
+-
+-static u64 of_translate_dcr_address(struct device_node *dev,
+-				    unsigned int dcr_n,
+-				    unsigned int *out_stride)
 -{
--	if (!data)
+-	struct device_node *dp;
+-	const u32 *p;
+-	unsigned int stride;
+-	u64 ret = OF_BAD_ADDR;
+-
+-	dp = find_dcr_parent(dev);
+-	if (dp == NULL)
+-		return OF_BAD_ADDR;
+-
+-	/* Stride is not properly defined yet, default to 0x10 for Axon */
+-	p = of_get_property(dp, "dcr-mmio-stride", NULL);
+-	stride = (p == NULL) ? 0x10 : *p;
+-
+-	/* XXX FIXME: Which property name is to use of the 2 following ? */
+-	p = of_get_property(dp, "dcr-mmio-range", NULL);
+-	if (p == NULL)
+-		p = of_get_property(dp, "dcr-mmio-space", NULL);
+-	if (p == NULL)
+-		goto done;
+-
+-	/* Maybe could do some better range checking here */
+-	ret = of_translate_address(dp, p);
+-	if (ret != OF_BAD_ADDR)
+-		ret += (u64)(stride) * (u64)dcr_n;
+-	if (out_stride)
+-		*out_stride = stride;
+-
+- done:
+-	of_node_put(dp);
+-	return ret;
+-}
+-
+-dcr_host_mmio_t dcr_map_mmio(struct device_node *dev,
+-			     unsigned int dcr_n,
+-			     unsigned int dcr_c)
+-{
+-	dcr_host_mmio_t ret = { .token = NULL, .stride = 0, .base = dcr_n };
+-	u64 addr;
+-
+-	pr_debug("dcr_map(%pOF, 0x%x, 0x%x)\n",
+-		 dev, dcr_n, dcr_c);
+-
+-	addr = of_translate_dcr_address(dev, dcr_n, &ret.stride);
+-	pr_debug("translates to addr: 0x%llx, stride: 0x%x\n",
+-		 (unsigned long long) addr, ret.stride);
+-	if (addr == OF_BAD_ADDR)
+-		return ret;
+-	pr_debug("mapping 0x%x bytes\n", dcr_c * ret.stride);
+-	ret.token = ioremap(addr, dcr_c * ret.stride);
+-	if (ret.token == NULL)
+-		return ret;
+-	pr_debug("mapped at 0x%p -> base is 0x%p\n",
+-		 ret.token, ret.token - dcr_n * ret.stride);
+-	ret.token -= dcr_n * ret.stride;
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(dcr_map_mmio);
+-
+-void dcr_unmap_mmio(dcr_host_mmio_t host, unsigned int dcr_c)
+-{
+-	dcr_host_mmio_t h = host;
+-
+-	if (h.token == NULL)
 -		return;
--
--	pr_debug("pmi: unregistering handler %p\n", handler);
--
--	spin_lock(&data->handler_spinlock);
--	list_del(&handler->node);
--	spin_unlock(&data->handler_spinlock);
+-	h.token += host.base * h.stride;
+-	iounmap(h.token);
+-	h.token = NULL;
 -}
--EXPORT_SYMBOL_GPL(pmi_unregister_handler);
+-EXPORT_SYMBOL_GPL(dcr_unmap_mmio);
 -
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
--MODULE_DESCRIPTION("IBM Platform Management Interrupt driver");
+-#endif /* defined(CONFIG_PPC_DCR_MMIO) */
+-
+-#ifdef CONFIG_PPC_DCR_NATIVE
+ DEFINE_SPINLOCK(dcr_ind_lock);
+ EXPORT_SYMBOL_GPL(dcr_ind_lock);
+-#endif	/* defined(CONFIG_PPC_DCR_NATIVE) */
+-
 -- 
 2.47.1
 
