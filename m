@@ -1,44 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-4384-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFA93E7718B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2024 14:48:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABFEDE7718B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Dec 2024 14:48:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YFnGM0t06z2yjR;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YFnGM6t7zz2xbS;
 	Sun, 22 Dec 2024 01:48:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734792507;
-	cv=none; b=EpXlyYkrVRzncO2tAUziTHtWqqtlr7Nrv/U3yNhVnw2TIpSgk3pp7l2QGxb55njfgfYQwl46/sIFXiFxCOc9xI33NhzIOKjWJ2wQHvQPWoDi/viwPZsGA65YIGKH4LvW/xVE04moYXnlJbcWLN4OhRejSTLIGoScXpPhKSaw5qmnfaMLzfx8jafnZ6Qk356TgfwQAtsxnPN7gf8lpWhjDfh12Z3G+BJVqyCvmOpdmZBMQT+zhsVA92cx9FjSayLbhazaA/JPaO/Or6+550rHz9f2mtGp1ruzYcCqJqxAjww9sB/TgGKCI6Ua1oYVLfkQxBC1xkGca/HyF4U//rs/BQ==
+	cv=none; b=li8joLGiYi0mlLJskeYhy/S7uhDEmeCKxwPzPaitn1Ii+cF+4WGty2nn/gPYTVSOSChwl29WzznlcN5UCKd6gQ0RUBqn4DFi7uNEgy2TvfnWwR5ogc9dpynEzZTOFlNmkRKknIux+ldty+6iR1/bjKgYKUdUJKi9AMJ/SqjUfZaJtMIG+MTwCrEG4LwwErJTU/CN99wtAJt8D52PnT0hyFUDapZ5rJNIKrLALSrZaWSC4Y6K3tBKTYbaMZ91Q/CanqN7pnZNp7mGkPL9ZIJbpZHlnJk72tQ0Q7SlIH2nGX8PQECZowEIaK4scsIfFKxYz4braENJT7uZPNx2Cth/FA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1734792507; c=relaxed/relaxed;
-	bh=HY1l/gLbDqwLfqp37PvnASgskJ0hQBGNk/+8L+cxBR0=;
+	bh=h45lCs8mmIdYcwliCgdna+GGxIQdxcZB/tsAFnwsE0g=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=N3PO7gJ4I4BeKggoofQc2xxI4z2W38peHpxtmbmDUm1ar//yi3smu7ei41b4utjQ2HjZtuayvdv+Jv64i4RdiMbzBFQEbHQqrwO5qHZQCZ+IrAw7vtgy9l5QB/SBc4xuK75gX1P/xsookRt2d0DR66z2gSzRnP4E6cRbEEkDLE+GY9BAM8zWuYGI/y7A8VDWDNDUMoKT8KsLhbcUgOPVRz74pOZYXUktSv6myoxiAMxmBifLEiNk0r380yYEnQHxq3EV5DS+PkkIp5DuVkZR4scdJJ5O23/Ocp2D42P6YbktMkpK0R5UC+eGe+Ko1+otA+lJN3bSHP5/tTIaMSEQ+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Pdf7WZd/; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=HXktN3xgAe3ugeuVj3iz5fM7b8vCJCcVqOjSpF1+flJZ3rHepx8IDA3opUIAPy3QoV/3ia4LCU3wVGQK43+HyEV+Nsfq29VlCLkMvqakIpPaT2AEIG896D/Lp8kIbgJT9ULwlIqC9/GzvnKC7OyWoNsmgm8CNlZEBfozKpoG9p3ow0LY4tsnipnVOMOt8bAEWG31ZSSw+/WllMORdNlCwNFjPE8LoIfxtpfrA2QWTqNvLnaxLxq7IpxOzNpvnbk++8yqQl5qkomOSSwCc0+xldUssPAG049vAz9XN7seTG+HNcSMbC/v/+YSXfeUDm/Wg53ek00KNRFCH0JL04ilgg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=JNVcWW2g; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Pdf7WZd/;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=JNVcWW2g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YFnGL3yFBz2yYd
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YFnGM00WTz2yhP
 	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Dec 2024 01:48:26 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1734792491;
-	bh=N27SW5V9S6zkyqz00AIvVG+5Rix9h0ENrJDmGyAeG8A=;
+	bh=P5yp8xYY8rjGfFuGyyUiA1DeB8eRe4QDxQgMbEH9sX4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Pdf7WZd/KEqFjEvas4FwWWeir8E5g7EOhTvWrqB6Nt5Gu7CTdpjO9Ura+5T4IfMLt
-	 79ciGz484dD4DeYNJ7/Mm8SbIl7tGg92pmaX+PeYdxB7Fr3aUVuKpGIDsRIsijgPjq
-	 /Gk+HfDic2O9cqtQdvtU9/SBeSVcmxWo9/OKN7Gs=
+	b=JNVcWW2gFSmvicQCnJGojFONnzhcFAsQGpIKt6ReRKCCf+YKAnUgrh7vjeRAisGUm
+	 v30iei+YcDn+MZfccO4rxmoS++hnGiFThuz/x2TRXE7UHzOduKb7TdVX9PkfQS3vso
+	 lTMgneXPAepSWSzaIiCNTSuFL23RzMF9ctzWzffA=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sat, 21 Dec 2024 15:48:12 +0100
-Subject: [PATCH v2 6/9] misc: pch_phub: Constify 'struct bin_attribute'
+Date: Sat, 21 Dec 2024 15:48:14 +0100
+Subject: [PATCH v2 8/9] misc: eeprom/max6875: Constify 'struct
+ bin_attribute'
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241221-sysfs-const-bin_attr-misc-drivers-v2-6-ba5e79fe8771@weissschuh.net>
+Message-Id: <20241221-sysfs-const-bin_attr-misc-drivers-v2-8-ba5e79fe8771@weissschuh.net>
 References: <20241221-sysfs-const-bin_attr-misc-drivers-v2-0-ba5e79fe8771@weissschuh.net>
 In-Reply-To: <20241221-sysfs-const-bin_attr-misc-drivers-v2-0-ba5e79fe8771@weissschuh.net>
 To: Frederic Barrat <fbarrat@linux.ibm.com>, 
@@ -62,11 +63,11 @@ To: Frederic Barrat <fbarrat@linux.ibm.com>,
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1734792490; l=1571;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1734792490; l=1212;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=N27SW5V9S6zkyqz00AIvVG+5Rix9h0ENrJDmGyAeG8A=;
- b=IXDM8dc7lVmDMCAr1wkZkdrRiZs8RT6lHIXepnbM8+omOaL1e1ocmfOreTcpfRPzfdnG4Wi1F
- Hu13Q87/KUkDiZYTf0ZJ3fg47IwdGmBMfJ0MrsUFJjIn6nchblbQVy6
+ bh=P5yp8xYY8rjGfFuGyyUiA1DeB8eRe4QDxQgMbEH9sX4=;
+ b=RXc6sdUDetNj/ZNOQ7p5ylGNWpmccRq2GRI6mGXONV+ZAdL005yVc1OM1q/GydoVP+FgaFH1y
+ bll9rm0OAfvDlwN6xXOLVsWLG0SZrIssLygrIHOyS6BFhM5dXEfMukl
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
@@ -76,42 +77,31 @@ accidental or malicious modifications.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/misc/pch_phub.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/misc/eeprom/max6875.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/misc/pch_phub.c b/drivers/misc/pch_phub.c
-index 8d2b7135738ed5543138f2249d2379a10113b410..6121c0940cd148d48b8d574065c50703b6a301d7 100644
---- a/drivers/misc/pch_phub.c
-+++ b/drivers/misc/pch_phub.c
-@@ -483,7 +483,7 @@ static int pch_phub_write_gbe_mac_addr(struct pch_phub_reg *chip, u8 *data)
+diff --git a/drivers/misc/eeprom/max6875.c b/drivers/misc/eeprom/max6875.c
+index 6fab2ffa736b741593931c413f230d7c43b5b8dd..1c36ad153e783ead6ba2481c64838390f0bb05f4 100644
+--- a/drivers/misc/eeprom/max6875.c
++++ b/drivers/misc/eeprom/max6875.c
+@@ -104,7 +104,7 @@ static void max6875_update_slice(struct i2c_client *client, int slice)
  }
  
- static ssize_t pch_phub_bin_read(struct file *filp, struct kobject *kobj,
--				 struct bin_attribute *attr, char *buf,
-+				 const struct bin_attribute *attr, char *buf,
- 				 loff_t off, size_t count)
+ static ssize_t max6875_read(struct file *filp, struct kobject *kobj,
+-			    struct bin_attribute *bin_attr,
++			    const struct bin_attribute *bin_attr,
+ 			    char *buf, loff_t off, size_t count)
  {
- 	unsigned int rom_signature;
-@@ -553,7 +553,7 @@ static ssize_t pch_phub_bin_read(struct file *filp, struct kobject *kobj,
- }
- 
- static ssize_t pch_phub_bin_write(struct file *filp, struct kobject *kobj,
--				  struct bin_attribute *attr,
-+				  const struct bin_attribute *attr,
- 				  char *buf, loff_t off, size_t count)
- {
- 	int err;
-@@ -655,8 +655,8 @@ static const struct bin_attribute pch_bin_attr = {
- 		.mode = S_IRUGO | S_IWUSR,
+ 	struct i2c_client *client = kobj_to_i2c_client(kobj);
+@@ -127,7 +127,7 @@ static const struct bin_attribute user_eeprom_attr = {
+ 		.mode = S_IRUGO,
  	},
- 	.size = PCH_PHUB_OROM_SIZE + 1,
--	.read = pch_phub_bin_read,
--	.write = pch_phub_bin_write,
-+	.read_new = pch_phub_bin_read,
-+	.write_new = pch_phub_bin_write,
+ 	.size = USER_EEPROM_SIZE,
+-	.read = max6875_read,
++	.read_new = max6875_read,
  };
  
- static int pch_phub_probe(struct pci_dev *pdev,
+ static int max6875_probe(struct i2c_client *client)
 
 -- 
 2.47.1
