@@ -1,44 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-4500-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4501-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 718B2E77188
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Dec 2024 08:44:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA086E77188
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Dec 2024 08:44:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YKwrY2vq2z2xbP;
-	Sat, 28 Dec 2024 19:43:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735375437;
-	cv=none; b=NURnUSTPCSL8iT3Vni2N0Nz5SGvg96p/RIdK1zGrd3aGvsTj4E6ggkl+i1TatQju33XxWLZJ6jHjkPPY0jPWavaOEi52/25lhXdrK+jnXEMnphQ9mth9xHLfoDkbjzFmi8PZ4vGag+YQ5R9R0uArEFuf+lysFfeliCBavwMBSMyBrpABJT8ElRPWE1ydeRXHkwNlFFVqhMOC4uhqeqF11OJ5mfZ0wMaHIAVnlrY/0mfv39+fUJAx1mKHKogPqZdoYmZEPF02VwVddTCRkm/nKHui3ftEQ0UgACD1o9z6tRIaD8n/pPMrEcqZy8t2CIrVtw9VytUqa9xHrZotPFt5WA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YKwrb0WNbz2ytQ;
+	Sat, 28 Dec 2024 19:43:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735375439;
+	cv=none; b=i4XtpBdwGhhBZ+29H1y+Y2mjaoxlmE/FgKTNkLt4Is6WA7mhFeSn5i3XVSSRqqloUvnxoYJYEWuPxyrg8yLlK4rmCjl+D5uj+/tZbqzURQ2kEmn9F3ShjlLMxZYqBlK/OoIHJB0+zY8j5j+Dq0AS7X0gpJiV19JjhAnL1kSF7voAvwuQEwqVQpcjuQRYPQ3B05ZAeNCSTizs9h6bqeqBTgDq9jLPIiiwI/ZnCMuf6fviP4qiqSKx2qjwFWErKb/dTR3GA97iY06/GML9lVVf0V7IVYl4d4tmO1P6RHudd7V6PpWB7F+2oRhLC7QkzimpYDTl3v0S0HD7jWc4nsOsKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735375437; c=relaxed/relaxed;
-	bh=jQl7PbCpEmVLxwpExhudqrT18v9lxMliD7l9b62ZdRE=;
+	t=1735375439; c=relaxed/relaxed;
+	bh=bTr6c4uKxBQJa6+6ydbYJ/hGkLqEdHHX3gqe82adwEM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=JcKEuh/hYCf2b3Lv7JyxqKSP2oc4EIJGRp6afnLshas9E6jTBH30+LPriWvjOGdDDYM13ZgEskRJ9xQj7fbZGkLYf3G4jqQiFQgK4nsHyAhQpCI9/QWHHxTlhmOPbP6h+y6DLOt2PveyJTD1xxjbLsoCMZ75tBzURYvIlzjMVDg5YEb8W9vqpVyJ0vvH+ie2/+980TofoDCB92bT6UoRAPolARDYviOLLcdhaKiR+jiU52QnYgf0JawMZnLM8yH8+A8kNasBmf/MBnc+1U5T1Nks9whdHG1EZ39Ellj65Ni06N5Gtmz6vBezUg6w4X2PKL+50+C8UGwukXdZc1kgqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Xl1pH8fM; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=XJHmqULftp1HvdOWc28MBBUz7IKBNB/czONXQCjtHKEWPnrWh/FTKutbkloI5iQvclVuNEEV+yy4NraJw2VROixIinZP2ilIkg/zzuC7FtT3kPaoeMXgoyP7EYPnsz0Fmo5ai1zpmB8MoYumVBr8rmf8QTkAF/lsMWomdp0RCVzsoCxgHFSXQ1tnKTqkRWpSrWq492W5Pc+tyOrP2+8VYcnj8KNwxFbXXTIJ9QjLUUT5+HmwGvw4IawqgqExuEUX08gGuycJ9+54dv64W80rdRPxOOM3p/vHOjdTheA0CTyZTewOp+zmi5fcxOLea5tY8Xj8lUwXJLIDBH/Vs5p85A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=sK2qcuK+; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=Xl1pH8fM;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=sK2qcuK+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YKwrS73LLz2xQC
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Dec 2024 19:43:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YKwrZ0T30z2xQC
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Dec 2024 19:43:57 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1735375425;
-	bh=yFTZIDT/d9HKSr1VCybVUXBQPCUX/YWCdCVUCfZE2/M=;
+	bh=wz1z8EiyfVhVbt4qr9tEdssHSlJmEHuAhD1PCW7Z+GY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Xl1pH8fMwJkWtxghK0js1fvN2LWVyc5ULtS0ciesFEvCSGFDV3o6XNp5iqtG5kcDo
-	 qOkgzq5oNnUA+HIIYCqMh854PKCnzsAG19g+HM68z3tN7UYrzLuSZ3uQQiM/mEiS9K
-	 ihiUUYZ+Q0TdGEW82PgH5ELbsqoT2H+DIpC8LwgE=
+	b=sK2qcuK+yGlFRTv0drQ/tSHIXIlyiafpZODXd1Cm4O5wUM0gOva8V1J2ZyHzGqyoy
+	 iZy7SI3bFvLtDdk878Dx750SrTZxWuL5i0r/kYrR2rRf8qG/y/DS699t4lbpoWqu0V
+	 aGKj4YfwnkO+Jem/l+omRqCywWTpARWzAldhQV4Y=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Sat, 28 Dec 2024 09:43:41 +0100
-Subject: [PATCH v2 1/3] sysfs: constify bin_attribute argument of
+Date: Sat, 28 Dec 2024 09:43:43 +0100
+Subject: [PATCH v2 3/3] btf: Switch module BTF attribute to
  sysfs_bin_attr_simple_read()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -54,7 +54,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20241228-sysfs-const-bin_attr-simple-v2-1-7c6f3f1767a3@weissschuh.net>
+Message-Id: <20241228-sysfs-const-bin_attr-simple-v2-3-7c6f3f1767a3@weissschuh.net>
 References: <20241228-sysfs-const-bin_attr-simple-v2-0-7c6f3f1767a3@weissschuh.net>
 In-Reply-To: <20241228-sysfs-const-bin_attr-simple-v2-0-7c6f3f1767a3@weissschuh.net>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
@@ -77,87 +77,55 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-modules@vger.kernel.org, bpf@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1735375424; l=3142;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1735375424; l=1403;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=yFTZIDT/d9HKSr1VCybVUXBQPCUX/YWCdCVUCfZE2/M=;
- b=Ni8nIBAGjX6qgotF8fSZOwTJVXCzznB2lw/kHPdISFKxwDtDfbonQu5zAuNxSCK4uO/EeMAlU
- JPfsg2Ov3aUDl6ja2Pz8DczKxR2KsqWByNAwSr+CzMkm1Sc7LA+e/uQ
+ bh=wz1z8EiyfVhVbt4qr9tEdssHSlJmEHuAhD1PCW7Z+GY=;
+ b=H/wGBJzQrmCrKy2Y3Rb0Y68++ySdjfE7idPzg55qBSVH2MHWx1FPtKo8MlnyUx47kvNeGXYlQ
+ vMM+NGIIRAUCUYj71p4EXyyMjvF47hbQPHq4QtNrPMIHcjM6PPWHOee
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Most users use this function through the BIN_ATTR_SIMPLE* macros,
-they can handle the switch transparently.
-Also adapt the two non-macro users in the same change.
+The generic function from the sysfs core can replace the custom one.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+Acked-by: Andrii Nakryiko <andrii@kernel.org>
 ---
- arch/powerpc/platforms/powernv/opal.c | 2 +-
- fs/sysfs/file.c                       | 2 +-
- include/linux/sysfs.h                 | 4 ++--
- kernel/module/sysfs.c                 | 2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ kernel/bpf/btf.c | 15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 5d0f35bb917ebced8c741cd3af2c511949a1d2ef..013637e2b2a8e6a4ec6b93a520f8d5d9d3245467 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -818,7 +818,7 @@ static int opal_add_one_export(struct kobject *parent, const char *export_name,
- 	sysfs_bin_attr_init(attr);
- 	attr->attr.name = name;
- 	attr->attr.mode = 0400;
--	attr->read = sysfs_bin_attr_simple_read;
-+	attr->read_new = sysfs_bin_attr_simple_read;
- 	attr->private = __va(vals[0]);
- 	attr->size = vals[1];
+diff --git a/kernel/bpf/btf.c b/kernel/bpf/btf.c
+index e5a5f023cedd5c288c2774218862c69db469917f..76de36d2552002d1e25c826d701340d9cde07ba1 100644
+--- a/kernel/bpf/btf.c
++++ b/kernel/bpf/btf.c
+@@ -8011,17 +8011,6 @@ struct btf_module {
+ static LIST_HEAD(btf_modules);
+ static DEFINE_MUTEX(btf_module_mutex);
  
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 785408861c01c89fc84c787848243a13c1338367..6931308876c4ac3b4c19878d5e1158ad8fe4f16f 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -817,7 +817,7 @@ EXPORT_SYMBOL_GPL(sysfs_emit_at);
-  * Returns number of bytes written to @buf.
-  */
- ssize_t sysfs_bin_attr_simple_read(struct file *file, struct kobject *kobj,
--				   struct bin_attribute *attr, char *buf,
-+				   const struct bin_attribute *attr, char *buf,
- 				   loff_t off, size_t count)
- {
- 	memcpy(buf, attr->private + off, count);
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 0f2fcd244523f050c5286f19d4fe1846506f9214..2205561159afdb57d0a250bb0439b28c01d9010e 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -511,7 +511,7 @@ __printf(3, 4)
- int sysfs_emit_at(char *buf, int at, const char *fmt, ...);
+-static ssize_t
+-btf_module_read(struct file *file, struct kobject *kobj,
+-		struct bin_attribute *bin_attr,
+-		char *buf, loff_t off, size_t len)
+-{
+-	const struct btf *btf = bin_attr->private;
+-
+-	memcpy(buf, btf->data + off, len);
+-	return len;
+-}
+-
+ static void purge_cand_cache(struct btf *btf);
  
- ssize_t sysfs_bin_attr_simple_read(struct file *file, struct kobject *kobj,
--				   struct bin_attribute *attr, char *buf,
-+				   const struct bin_attribute *attr, char *buf,
- 				   loff_t off, size_t count);
+ static int btf_module_notify(struct notifier_block *nb, unsigned long op,
+@@ -8082,8 +8071,8 @@ static int btf_module_notify(struct notifier_block *nb, unsigned long op,
+ 			attr->attr.name = btf->name;
+ 			attr->attr.mode = 0444;
+ 			attr->size = btf->data_size;
+-			attr->private = btf;
+-			attr->read = btf_module_read;
++			attr->private = btf->data;
++			attr->read_new = sysfs_bin_attr_simple_read;
  
- #else /* CONFIG_SYSFS */
-@@ -774,7 +774,7 @@ static inline int sysfs_emit_at(char *buf, int at, const char *fmt, ...)
- 
- static inline ssize_t sysfs_bin_attr_simple_read(struct file *file,
- 						 struct kobject *kobj,
--						 struct bin_attribute *attr,
-+						 const struct bin_attribute *attr,
- 						 char *buf, loff_t off,
- 						 size_t count)
- {
-diff --git a/kernel/module/sysfs.c b/kernel/module/sysfs.c
-index 456358e1fdc43e6b5b24f383bbefa37812971174..254017b58b645d4afcf6876d29bcc2e2113a8dc4 100644
---- a/kernel/module/sysfs.c
-+++ b/kernel/module/sysfs.c
-@@ -196,7 +196,7 @@ static int add_notes_attrs(struct module *mod, const struct load_info *info)
- 			nattr->attr.mode = 0444;
- 			nattr->size = info->sechdrs[i].sh_size;
- 			nattr->private = (void *)info->sechdrs[i].sh_addr;
--			nattr->read = sysfs_bin_attr_simple_read;
-+			nattr->read_new = sysfs_bin_attr_simple_read;
- 			++nattr;
- 		}
- 		++loaded;
+ 			err = sysfs_create_bin_file(btf_kobj, attr);
+ 			if (err) {
 
 -- 
 2.47.1
