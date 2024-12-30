@@ -1,67 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-4540-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4541-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F459E7718F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Dec 2024 22:31:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E768E77188
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Dec 2024 22:31:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YMW5Y2gvyz2ywy;
-	Tue, 31 Dec 2024 09:30:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YMW5Z3NZFz2xH8;
+	Tue, 31 Dec 2024 09:30:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1049"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735597841;
-	cv=none; b=BaISAmxZIEy1JMOa5/G7Hk4+tLcUScUKuEXYiqe2fGigmKCsg4iIpbZ2hb5kIDzbagBvaxTMCTrsCjYrdAEInWnVrSczzOSgO159thKR5DhFc4HAZz8Ke16O/u9iVWBUZ37KhLgIWMpTQGJBaZeNUVq/uhbSSns0QDHodwvRoNEGRSvoHhoIAz5cj3q5b0RdHWlR3sGAx1YZO6RkEGjwP8xTOMczZM8CkzFvRSmywH6eUjAyt7qBkgcUryGowrCv1kxLgAEYNS6VxBvvpt+QT9r0GYXicZQ+W1M2EqYloJq7UlAD34C4qdhff38OdCrGYVddArgu+N9Fq3OVUwoxuA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735597842;
+	cv=none; b=U53iMCURGQeCa6TX4UNtUj/jbURmHcRcuiUxBgekmJoNzCI3IHTCmfY+to9hUmzjINU1ExAvJifIRvQozDGln6X7YtvOBZVz5FWuVltG/5yyOk/MfmhKp6X0DA9IfRot7WIzptecgNS7y6n8GnUYIYSoh5g2u2JGwsnxBdUnj/y/gITuTQeU1aKP+qLSuIQVRT2vcVBncRiKGvoWmCzdM1qPPilhlQQcUTV/cPu4QkuvMIHyVFmClG8MXtV3+2F4Yu20AMltHMVUbTymmNpm0cAY2TxgqOqKjNVoEg3eoMsd9f6IKb2FwXOCPlTmjq8hSGzA9MElmLzmj3NPXDCgdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735597841; c=relaxed/relaxed;
-	bh=7SdIG/Q/6InqG6fGpzelEgOUniqS646q8n2Ou3Fvqw0=;
+	t=1735597842; c=relaxed/relaxed;
+	bh=NnqTVWJzvIfhKg7Bjweyg4HBEOW+h34t+hptux0JJqo=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=cjLlYejxgpvZzW0HktDpjqb8mdcKD9ar3KSUllOp/aOfy9NibrlYMLM+5kmgdXEj1f5xVZh3QENg/uRa2ue4GYGDUTPcLs6iHOpiUjfiAYM1Iji+QN6Rbt57PO+4xzRcCGIspoq9rYIZMz56CwiqNM9MQV1cHHWT94zL0pmhmHbDuOe3kaxhtOCpovAk+DTbs1BW0jvxhgkHjwSfB/OKDMmbDKS38+sdePVINgf/hNjFblqE2+DejG/hGbIS6xfMcVq1Le8A9cSR/4H/GOLJyqnGnnKRea9XuI6sQpHEwIx7KX9eIzULWxAPrOvP83JzXwuWH8Bfnjf5AZWQDkokkQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=Y1QRcX4H; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3cx9zzwckdfgcc0kh4h6ee6b4.2ecb8dknff2-34lb8iji.epb01i.eh6@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--mmaurer.bounces.google.com
+	 To:Cc:Content-Type; b=F0dzzFLIa70cyCdOgzV8G7BfYYBWuz9JSq7enqBELJEnnjXY7pzJ5swvFn1RP1lC0KM7ui12pTtZqpzeHxwzsrBpwWw35bag7jERYSZk95fLNlAuGTCYy7eIeKlHgeXWPxfag4tcfNdHpkIs1MZsOCNvsI3lZbqoutb32XHoPShNFfLugTOMV5tReKO3Jb1OHHFsZ+nFvRUQ9oODWKY3QvCsqp4X0QwrvpdEP2WXnnMuful7NbDmh8nEjdU1fI1hNl3F/fffyFA3EmZFRFivZXtdlHXbrzoCK3KjFCm1l6dz6kufhQfdVdTigBWLxp76edZF0fM4/ZJZyN3xt6xDjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=pwWvt/NN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3dh9zzwckdfsff3nk7k9hh9e7.5hfebgnqii5-67oeblml.hse34l.hk9@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--mmaurer.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=Y1QRcX4H;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=pwWvt/NN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--mmaurer.bounces.google.com (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3cx9zzwckdfgcc0kh4h6ee6b4.2ecb8dknff2-34lb8iji.epb01i.eh6@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--mmaurer.bounces.google.com (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3dh9zzwckdfsff3nk7k9hh9e7.5hfebgnqii5-67oeblml.hse34l.hk9@flex--mmaurer.bounces.google.com; receiver=lists.ozlabs.org)
 Received: from mail-pj1-x1049.google.com (mail-pj1-x1049.google.com [IPv6:2607:f8b0:4864:20::1049])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YMW5T4tkXz2xH8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Dec 2024 09:30:36 +1100 (AEDT)
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-2ef6ef9ba3fso13217301a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2024 14:30:36 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YMW5X4Bvyz2ysv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Dec 2024 09:30:40 +1100 (AEDT)
+Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-2ef114d8346so12710820a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2024 14:30:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1735597835; x=1736202635; darn=lists.ozlabs.org;
+        d=google.com; s=20230601; t=1735597838; x=1736202638; darn=lists.ozlabs.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=7SdIG/Q/6InqG6fGpzelEgOUniqS646q8n2Ou3Fvqw0=;
-        b=Y1QRcX4H8nCgBus349sKDEK52b2hfdMujsnFpnLK7D19K/g+9tfZNZqpo7Oc5PEaz/
-         FNh3mU/69bIIpd0St6hP/uzl1JMHr7Bby8BPNEk85zek2/ESNG+bd3FwlcsiqadHSp5K
-         qQFKs8C+ySwP+Z/fa+Gk2Wlie841utVn3XwHhImF5NS10mjfB0jPa/JNsBcCNL+1E6Nh
-         T9HHCMRvYkgePvb4cWGZtlYQnT7lTHa8/jV3v1FZyoPnZg8vCePcOITbga59r4s5uaq4
-         qe85d1TaLVCO06pC/EEBmyOxTOcTlx8PibtVH4kS/jKRVf5MNRw3ZYeUD79kootH8BTb
-         KdoQ==
+        bh=NnqTVWJzvIfhKg7Bjweyg4HBEOW+h34t+hptux0JJqo=;
+        b=pwWvt/NNn/9e6kdTiQRZoZ5BFvRr95rAR6P97Yjnia9ITspOxV6gvlSvajtc84g6nA
+         uI8g2FT7Cv6boejDThnuh5K5/FF+AwQ1FvGnSrolXcnDBBxQjASVbuBnRSjqnlIlB5CX
+         Ukuj/J4qXNVIbUr0XuVdj9eumMwxejatm3OAJ0ik58UnI14jqOY9v97Pnue/mdchz6zG
+         wSz6bO+oAYenRUe2KNZ9E9vqtKTYlR4Gxk5PFC/hmHm93hUive/2FO3ScU971DFBJUm6
+         2zTxqQL8/HjdFe1T9TfBff5bbeN9hQwZx+lZJs3u0KFGSlyGzzASXtDJZLbny0CeBaIk
+         ueFQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1735597835; x=1736202635;
+        d=1e100.net; s=20230601; t=1735597838; x=1736202638;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=7SdIG/Q/6InqG6fGpzelEgOUniqS646q8n2Ou3Fvqw0=;
-        b=HXI/nI3s4sUEHk8+Co2LDU2Da5CwifSGpQEvlx+cBiFyOg/EBqeh3MeRmrHZYVqLJ4
-         d8k2yG8ELgWyNxayseBvJvT5VOpZP75NjItKI9xl7O5/ucYL3QxsUkBxFa6dl0XWeSzb
-         aN3cFovs1HlNKl/H+zGFLPo9UYSt4pAKtrSURJjPUD8PnR/jE1oN5ue/la0MtfxbgpCT
-         jZtuGm88eh+OJzz50vuyo+LPV7kAn9XbMo7bvBtxkFTpy9h6NwFdMr/ubJ2Cm2Y8qtmY
-         CPrvck+Lmg9LOwQVDEXG2hPCbY2dIECay6dma0gMwMXtzLt8oE8xGIVY7J1gIlI8eAUD
-         wRGA==
-X-Gm-Message-State: AOJu0YzL8BbnM0L1W0rtvYtZ1zAbEil9i70kFG5DDSNs9IGlVFDMTgOL
-	SFpZikaZ9VwO/Ew8j9kmxKT7MWZVbttZFqEAh0h1wDA2SwxYjqY7XvGj8eKYUOGQpjigAz0shnD
-	q+huecw==
-X-Google-Smtp-Source: AGHT+IGi4L0DnioU3ViuOPQ9hdTSLKvrZaDYmzr68pUHr1qyZseGS+I94UFypBkIbr0Xh4WiRy55BOIz2PpM
-X-Received: from pjbsq3.prod.google.com ([2002:a17:90b:5303:b0:2ea:6aa8:c4ad])
- (user=mmaurer job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90a:dfc7:b0:2ee:b6c5:1def
- with SMTP id 98e67ed59e1d1-2f452def71bmr63227916a91.8.1735597835253; Mon, 30
- Dec 2024 14:30:35 -0800 (PST)
-Date: Mon, 30 Dec 2024 22:30:30 +0000
+        bh=NnqTVWJzvIfhKg7Bjweyg4HBEOW+h34t+hptux0JJqo=;
+        b=cDQebBJyvaLAL6rMR098pAobWo117n0OcfR7C/osrMMh9y7pWDcr2D41Waa2M+FDo9
+         9n4qjS4ngrmZX9ar4bkENCeX8avlGQVKpc2xsAY0a7qIMHOhlOJbZdihIBpK9soLjCdJ
+         kbjNZGVNLu6MOBf5uKKS9ej3HITg4BhA80m/k7INE/Kp5Q89Ii7GJ4g3+hObxqMFDNkB
+         BuvFyupMwhw49SGT/XHzSMgkckpt0PcBctpZF6R8roVVwgLEBJYHrIbJw0etqb/NXPaM
+         R014aGH54s7vhk2Q9XDsOHtm0MAl/odkG/6jTR+G26bIXX+2hS49v8hfi2v8IA827Zeh
+         76QQ==
+X-Gm-Message-State: AOJu0Yw4TuqdkPZ30924bMaQmpJ9abvADoGj9lz35JujUgFhNA6+bAk1
+	JR3oMo56aXjWRX+fAZhF1lG0kvljqd8B7T+zxl4gQiv1SYxGzfO1AgI+X1EQnVpzQL3ivEEH9H/
+	ihIYQzQ==
+X-Google-Smtp-Source: AGHT+IFMck7sG1YUWeTfEcOH6dNd+wV09AW/dPHDuIx5ugJMQ49LP0NvW7hR4YYpwEjy4ooSIIuNJ8r5Movf
+X-Received: from pfbbe16.prod.google.com ([2002:a05:6a00:1f10:b0:724:eefc:69ef])
+ (user=mmaurer job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:3286:b0:725:b201:2353
+ with SMTP id d2e1a72fcca58-72abdec8856mr57170402b3a.13.1735597838524; Mon, 30
+ Dec 2024 14:30:38 -0800 (PST)
+Date: Mon, 30 Dec 2024 22:30:32 +0000
 In-Reply-To: <20241230-extended-modversions-v12-0-296a6a0f5151@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -77,8 +77,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Mime-Version: 1.0
 References: <20241230-extended-modversions-v12-0-296a6a0f5151@google.com>
 X-Mailer: b4 0.15-dev
-Message-ID: <20241230-extended-modversions-v12-3-296a6a0f5151@google.com>
-Subject: [PATCH v12 3/5] modules: Allow extended modversions without basic MODVERSIONS
+Message-ID: <20241230-extended-modversions-v12-5-296a6a0f5151@google.com>
+Subject: [PATCH v12 5/5] rust: Use gendwarfksyms + extended modversions for CONFIG_MODVERSIONS
 From: Matthew Maurer <mmaurer@google.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
 	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
@@ -97,97 +97,123 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	Matthew Maurer <mmaurer@google.com>
 Content-Type: text/plain; charset="utf-8"
 
-If you know that your kernel modules will only ever be loaded by a newer
-kernel, you can disable BASIC_MODVERSIONS to save space. This also
-allows easy creation of test modules to see how tooling will respond to
-modules that only have the new format.
+From: Sami Tolvanen <samitolvanen@google.com>
 
+Previously, two things stopped Rust from using MODVERSIONS:
+1. Rust symbols are occasionally too long to be represented in the
+   original versions table
+2. Rust types cannot be properly hashed by the existing genksyms
+   approach because:
+	* Looking up type definitions in Rust is more complex than C
+	* Type layout is potentially dependent on the compiler in Rust,
+	  not just the source type declaration.
+
+CONFIG_EXTENDED_MODVERSIONS addresses the first point, and
+CONFIG_GENDWARFKSYMS the second. If Rust wants to use MODVERSIONS, allow
+it to do so by selecting both features.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+Co-developed-by: Matthew Maurer <mmaurer@google.com>
 Signed-off-by: Matthew Maurer <mmaurer@google.com>
 ---
- kernel/module/Kconfig    | 15 +++++++++++++++
- scripts/Makefile.modpost |  1 +
- scripts/mod/modpost.c    |  9 +++++++--
- 3 files changed, 23 insertions(+), 2 deletions(-)
+ init/Kconfig  |  3 ++-
+ rust/Makefile | 34 ++++++++++++++++++++++++++++++++--
+ 2 files changed, 34 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/module/Kconfig b/kernel/module/Kconfig
-index 9568b629a03ce8289d3f3597eefc66fc96445720..4538f3af63e1ca531d0f74ef45a6f5268e505aec 100644
---- a/kernel/module/Kconfig
-+++ b/kernel/module/Kconfig
-@@ -217,6 +217,21 @@ config EXTENDED_MODVERSIONS
- 	  The most likely reason you would enable this is to enable Rust
- 	  support. If unsure, say N.
+diff --git a/init/Kconfig b/init/Kconfig
+index c1f9eb3d5f2e892e977ba1425599502dc830f552..b60acfd9431e0ac2bf401ecb6523b5104ad31150 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1959,7 +1959,8 @@ config RUST
+ 	bool "Rust support"
+ 	depends on HAVE_RUST
+ 	depends on RUST_IS_AVAILABLE
+-	depends on !MODVERSIONS
++	select EXTENDED_MODVERSIONS if MODVERSIONS
++	depends on !MODVERSIONS || GENDWARFKSYMS
+ 	depends on !GCC_PLUGIN_RANDSTRUCT
+ 	depends on !RANDSTRUCT
+ 	depends on !DEBUG_INFO_BTF || PAHOLE_HAS_LANG_EXCLUDE
+diff --git a/rust/Makefile b/rust/Makefile
+index a40a3936126d603836e0ec9b42a1285916b60e45..80f970ad81f7989afe5ff2b5f633f50feb7f6006 100644
+--- a/rust/Makefile
++++ b/rust/Makefile
+@@ -329,10 +329,11 @@ $(obj)/bindings/bindings_helpers_generated.rs: private bindgen_target_extra = ;
+ $(obj)/bindings/bindings_helpers_generated.rs: $(src)/helpers/helpers.c FORCE
+ 	$(call if_changed_dep,bindgen)
  
-+config BASIC_MODVERSIONS
-+	bool "Basic Module Versioning Support"
-+	depends on MODVERSIONS
-+	default y
-+	help
-+	  This enables basic MODVERSIONS support, allowing older tools or
-+	  kernels to potentially load modules.
++rust_exports = $(NM) -p --defined-only $(1) | awk '$$2~/(T|R|D|B)/ && $$3!~/__cfi/ { printf $(2),$(3) }'
 +
-+	  Disabling this may cause older `modprobe` or `kmod` to be unable
-+	  to read MODVERSIONS information from built modules. With this
-+	  disabled, older kernels may treat this module as unversioned.
+ quiet_cmd_exports = EXPORTS $@
+       cmd_exports = \
+-	$(NM) -p --defined-only $< \
+-		| awk '$$2~/(T|R|D|B)/ && $$3!~/__cfi/ {printf "EXPORT_SYMBOL_RUST_GPL(%s);\n",$$3}' > $@
++	$(call rust_exports,$<,"EXPORT_SYMBOL_RUST_GPL(%s);\n",$$3) > $@
+ 
+ $(obj)/exports_core_generated.h: $(obj)/core.o FORCE
+ 	$(call if_changed,exports)
+@@ -401,11 +402,36 @@ ifneq ($(or $(CONFIG_ARM64),$(and $(CONFIG_RISCV),$(CONFIG_64BIT))),)
+ 		__ashlti3 __lshrti3
+ endif
+ 
++ifdef CONFIG_MODVERSIONS
++cmd_gendwarfksyms = $(if $(skip_gendwarfksyms),, \
++	$(call rust_exports,$@,"%s\n",$$3) | \
++	scripts/gendwarfksyms/gendwarfksyms \
++		$(if $(KBUILD_GENDWARFKSYMS_STABLE), --stable) \
++		$(if $(KBUILD_SYMTYPES), --symtypes $(@:.o=.symtypes),) \
++		$@ >> $(dot-target).cmd)
++endif
 +
-+	  This is enabled by default when MODVERSIONS are enabled.
-+	  If unsure, say Y.
+ define rule_rustc_library
+ 	$(call cmd_and_fixdep,rustc_library)
+ 	$(call cmd,gen_objtooldep)
++	$(call cmd,gendwarfksyms)
+ endef
+ 
++define rule_rust_cc_library
++	$(call if_changed_rule,cc_o_c)
++	$(call cmd,force_checksrc)
++	$(call cmd,gendwarfksyms)
++endef
 +
- config MODULE_SRCVERSION_ALL
- 	bool "Source checksum for all modules"
- 	help
-diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index 40426fc6350985780c0092beb49c6cc29b9eff62..d7d45067d08b94a82451d66a64eae29b6826e139 100644
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -43,6 +43,7 @@ MODPOST = $(objtree)/scripts/mod/modpost
- modpost-args =										\
- 	$(if $(CONFIG_MODULES),-M)							\
- 	$(if $(CONFIG_MODVERSIONS),-m)							\
-+	$(if $(CONFIG_BASIC_MODVERSIONS),-b)						\
- 	$(if $(CONFIG_EXTENDED_MODVERSIONS),-x)						\
- 	$(if $(CONFIG_MODULE_SRCVERSION_ALL),-a)					\
- 	$(if $(CONFIG_SECTION_MISMATCH_WARN_ONLY),,-E)					\
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 6324b30f6b97ac24dc517b9229f227c6c369f7d5..3784f1e08104dc2ca1da10d45ed92bb8adf4826a 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -33,6 +33,8 @@ static bool module_enabled;
- static bool modversions;
- /* Is CONFIG_MODULE_SRCVERSION_ALL set? */
- static bool all_versions;
-+/* Is CONFIG_BASIC_MODVERSIONS set? */
-+static bool basic_modversions;
- /* Is CONFIG_EXTENDED_MODVERSIONS set? */
- static bool extended_modversions;
- /* If we are modposting external module set to 1 */
-@@ -1856,7 +1858,7 @@ static void add_versions(struct buffer *b, struct module *mod)
- {
- 	struct symbol *s;
++# helpers.o uses the same export mechanism as Rust libraries, so ensure symbol
++# versions are calculated for the helpers too.
++$(obj)/helpers/helpers.o: $(src)/helpers/helpers.c $(recordmcount_source) FORCE
++	+$(call if_changed_rule,rust_cc_library)
++
++# Disable symbol versioning for exports.o to avoid conflicts with the actual
++# symbol versions generated from Rust objects.
++$(obj)/exports.o: private skip_gendwarfksyms = 1
++
+ $(obj)/core.o: private skip_clippy = 1
+ $(obj)/core.o: private skip_flags = -Wunreachable_pub
+ $(obj)/core.o: private rustc_objcopy = $(foreach sym,$(redirect-intrinsics),--redefine-sym $(sym)=__rust$(sym))
+@@ -417,13 +443,16 @@ ifneq ($(or $(CONFIG_X86_64),$(CONFIG_X86_32)),)
+ $(obj)/core.o: scripts/target.json
+ endif
  
--	if (!modversions)
-+	if (!basic_modversions)
- 		return;
++$(obj)/compiler_builtins.o: private skip_gendwarfksyms = 1
+ $(obj)/compiler_builtins.o: private rustc_objcopy = -w -W '__*'
+ $(obj)/compiler_builtins.o: $(src)/compiler_builtins.rs $(obj)/core.o FORCE
+ 	+$(call if_changed_rule,rustc_library)
  
- 	buf_printf(b, "\n");
-@@ -2176,7 +2178,7 @@ int main(int argc, char **argv)
- 	LIST_HEAD(dump_lists);
- 	struct dump_list *dl, *dl2;
++$(obj)/build_error.o: private skip_gendwarfksyms = 1
+ $(obj)/build_error.o: $(src)/build_error.rs $(obj)/compiler_builtins.o FORCE
+ 	+$(call if_changed_rule,rustc_library)
  
--	while ((opt = getopt(argc, argv, "ei:MmnT:to:au:WwENd:x")) != -1) {
-+	while ((opt = getopt(argc, argv, "ei:MmnT:to:au:WwENd:xb")) != -1) {
- 		switch (opt) {
- 		case 'e':
- 			external_module = true;
-@@ -2225,6 +2227,9 @@ int main(int argc, char **argv)
- 		case 'd':
- 			missing_namespace_deps = optarg;
- 			break;
-+		case 'b':
-+			basic_modversions = true;
-+			break;
- 		case 'x':
- 			extended_modversions = true;
- 			break;
++$(obj)/ffi.o: private skip_gendwarfksyms = 1
+ $(obj)/ffi.o: $(src)/ffi.rs $(obj)/compiler_builtins.o FORCE
+ 	+$(call if_changed_rule,rustc_library)
+ 
+@@ -435,6 +464,7 @@ $(obj)/bindings.o: $(src)/bindings/lib.rs \
+ 	+$(call if_changed_rule,rustc_library)
+ 
+ $(obj)/uapi.o: private rustc_target_flags = --extern ffi
++$(obj)/uapi.o: private skip_gendwarfksyms = 1
+ $(obj)/uapi.o: $(src)/uapi/lib.rs \
+     $(obj)/ffi.o \
+     $(obj)/uapi/uapi_generated.rs FORCE
 
 -- 
 2.47.1.613.gc27f4b7a9f-goog
