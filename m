@@ -1,87 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-4551-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4552-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FAB1E7718B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jan 2025 09:08:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 077AFE7718B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jan 2025 09:08:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YNPCH6hHYz2yXs;
-	Wed,  1 Jan 2025 20:08:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735722523;
-	cv=none; b=GXM0Ejhhu8Khi4IBA3XEJUj/FGrI7UwsurGdB1vLzvViE7HUsGGlAKp0Rqz4PbEm+AOkAa3OcODeczKVTNRJz23lGXC5lPR0Ngzq26eFZ5B4Sh4lq5+RsulrlGVoXYT5zfugR/RpXop7GKWIbd03/7fXv6oQAuXpXb1TqMgu6uLx+loM7yB9D1njeTXVNTPu4MYI33cW/iSB4f7oJF1ytcAmXJXnSkL9kzxdbmIi9o90f0LWFd35Htx3LmMXqnNCgEeKRAw1ZFHsxNeOrE+o7ZZ9FTuYmtLOEw2op87DnHy4K+SivXDzaQQJiPniv/XrYq0KTMZbhfGE62/sggLiMg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YNPCQ34pnz2ywC;
+	Wed,  1 Jan 2025 20:08:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735722530;
+	cv=none; b=EBEJ6Z65TyF/g1M/NkZjZ1xZSjXBfhqy7/1FJ6r34472pnGcxKNOFwMdaE9b0LRGfkreYXs1f9Bnw9Z5XQoyfRZFZIFjD/xWenpTzU9r0Sbj83sYtszgoA/sTPFeP1W7XYEWbdC+obe9309z8lVpdQJqFiaz4Q6H3H9gv94+F7BPLE7Vu0xqjTLOGuqNTSOxsOjvZznL1YhULQ/i1dd9boJHuHO4yvYZsb5UjM2OIbGQW2vvc9IWj548IQQfDPIACd4JkMvrEKP1X4k63HhlYz92I9p7/SmsrpLX8mHLAT7tTt0YAAPsg+0GMwwz+Dks5S398V3W6b7pAbGMSvgyQg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735722523; c=relaxed/relaxed;
-	bh=Jf3b3+hMkA7D8gkJoXdeqZ12F2ikW8JjvjNFIy5bWO0=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=WuvHdKXAmNAJ7FpKIvm+vGIA2hbJKED626Wx2MY6BsAohQ7tIdAy0bHrnsDXQtXMAGkE1fSdNAePyNwkayYFySAaUVkIguf4MlGNArlAVrYnHItHTAcYz+5BRJrhliQkHPHndU0O0XdDfddkHTF1wIaqc8HYutjV49iIqzvgTycYsth5ZkO0L5X2DNAo1vDWeQZL7gWNJ1N5ijHcPI0f7ThTHhMLEOmmHP1Uy0nP2WZgs8pTO12OTAOPK/EBtSyYdKU5xdU4aL30j4/+gj0eLdLSb8xBzcWcS1Uvmzy+RfzKPj6buxB5vTLlPo5VgOCtgJFbptbrcI2CQwD3gC1DmQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hwLr4fcA; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1735722530; c=relaxed/relaxed;
+	bh=WB2pDnAw4WYPdnxGhw9exiNrVxzysSpkqDgB+ODgp3k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=hIVKjiMhTrzWbKRgfPYH4gAJB9zZPWf5YQarozTOx81nW7BKTX9h0WXVTBys4EB/qETYPw1yNj9XbUdKajs293Ozndx8fKwKnm77203MeQN+1DBHnmf3V9S8nUU6IduVK8pKYNU9CAObD30rpcqaGOWtUWK5eoy6M6GpwKNHDCksF6yJYqgGYlHsxAN4/KhPmICqM23WkhM09YQsNi8c2bucqj9FIUUXiTUbbrUAXZ8TYbwfOVgAzwmSjMbO2gQwi5KRJvhZXUptTueKmFNt1KTpl9fHV1hz2Ag0GZ2wL3SFTSHlARrI0PnO0UFPKYG3ZglvPy4b+OuRjfT/sftQNQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i0+iDuAC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hwLr4fcA;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i0+iDuAC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YNPCG1YQRz2yVG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jan 2025 20:08:41 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50185YYW030578;
-	Wed, 1 Jan 2025 09:08:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Jf3b3+
-	hMkA7D8gkJoXdeqZ12F2ikW8JjvjNFIy5bWO0=; b=hwLr4fcAwGDvMbYFJVv5Eg
-	kPFLZd5qEWNLRzoJAec21Zk1XxGimW1qXctAgboyG29T2/rz08h4Mmzak8rsQTrM
-	nXTs5n0C0RklvRBNsa4aJwSsm2aLAveo+OLOv1WqMxoIIx+02s5waI24k59Q3aSj
-	SQc4bs6bl5H/84H0kAudw5qecbRxN8mO+UfMOqfkkR38OxnOSdL+xY9h2ZfylWXL
-	BAy2zvRl3Swr6KyawPtBuyFeT3O8ZfwO2lfKzBQJmRF8v46Qo17q8iiD+MoAUY+L
-	rnlNvLEnMfug9a0/Ig4UKC3If3Uqx1jJUxp7cHpAXOY2W2l5jCIbuaWVKk49AhIg
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YNPCN4y9rz2yVG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jan 2025 20:08:48 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5013v6FS030497;
+	Wed, 1 Jan 2025 09:08:28 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=WB2pDn
+	Aw4WYPdnxGhw9exiNrVxzysSpkqDgB+ODgp3k=; b=i0+iDuACvwq15MLy4w0Qwv
+	OlVbi9fReBHo7ZfeZCWGfyd/IE1rkA1Gn0io9hC6m48wr2YoodC515/lvGs9mLzl
+	+C9BDxxqR7/S6PZeRIRjVvFu4ltLr2cmaNdKjDq5KB71opzSnW57Ow7viJi51dbr
+	r3EhIjA3Sw/GY4brKL2TEgO9hRfDsBtuA6B/bNeVYJN75TSISnmNJSs2AuDiyZVj
+	EXqFkVPkTI5M+8GKPVCNxMm2OOK1BRA9rd+IKVYLLNyoeXSj+mnMG/mudyibYI5Q
+	MHehKPVk8k5luwfVwbDt6RkPVsIacv5xZpLIvlVVBJKA5P43kpaWUukvGlBVq4IQ
 	==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43w1w2g4gd-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43vtrhha4p-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jan 2025 09:08:39 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50198c8A013169;
-	Wed, 1 Jan 2025 09:08:38 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43w1w2g4g9-1
+	Wed, 01 Jan 2025 09:08:28 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50198SS1030493;
+	Wed, 1 Jan 2025 09:08:28 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43vtrhha4m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jan 2025 09:08:38 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5016ZLVw010180;
-	Wed, 1 Jan 2025 09:08:38 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 43tvnndnfe-1
+	Wed, 01 Jan 2025 09:08:28 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5015F1vV014615;
+	Wed, 1 Jan 2025 09:08:27 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 43tunsntx8-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Jan 2025 09:08:38 +0000
+	Wed, 01 Jan 2025 09:08:27 +0000
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50198aM331851216
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50198Pe165601900
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Jan 2025 09:08:36 GMT
+	Wed, 1 Jan 2025 09:08:25 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 52D8B20043;
-	Wed,  1 Jan 2025 09:08:36 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 6655E20040;
+	Wed,  1 Jan 2025 09:08:25 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AACEC20040;
-	Wed,  1 Jan 2025 09:08:33 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id E2D5020043;
+	Wed,  1 Jan 2025 09:08:21 +0000 (GMT)
 Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.115.214])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Jan 2025 09:08:33 +0000 (GMT)
+	Wed,  1 Jan 2025 09:08:21 +0000 (GMT)
 From: Madhavan Srinivasan <maddy@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        linux@weissschuh.net, rbm@suse.com,
-        Luis Felipe Hernandez <luis.hernandez093@gmail.com>
-Subject: Re: [PATCH v2] macintosh: declare ctl_table as const
-Date: Wed,  1 Jan 2025 14:38:31 +0530
-Message-ID: <173572211262.1875638.13600288150839690769.b4-ty@linux.ibm.com>
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>
+Subject: Re: [PATCH v2 1/1] powerpc/8xx: Drop legacy-of-mm-gpiochip.h header
+Date: Wed,  1 Jan 2025 14:38:19 +0530
+Message-ID: <173572211260.1875638.15792318186583364320.b4-ty@linux.ibm.com>
 X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20241217-constify_ctl_table-v1-1-402ebceaeb8e@gmail.com>
-References: <20241217-constify_ctl_table-v1-1-402ebceaeb8e@gmail.com>
+In-Reply-To: <20241118123254.620519-1-andriy.shevchenko@linux.intel.com>
+References: <20241118123254.620519-1-andriy.shevchenko@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,32 +99,32 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: yrL62vs-3OgRLXfykiiZoQ9-234UaIeM
-X-Proofpoint-ORIG-GUID: je2n305QluO6i3hU2KLSaLw42B6bjsqH
+X-Proofpoint-ORIG-GUID: 5dBRgleMK_9Hpd6mXF8aTYUJ4JMT7RlO
+X-Proofpoint-GUID: 5ndbSDEcaL3SHkrJIlxz-wyG05VZjLWH
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
  definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 mlxscore=0
- bulkscore=0 mlxlogscore=966 malwarescore=0 impostorscore=0
- lowpriorityscore=0 phishscore=0 suspectscore=0 priorityscore=1501
- spamscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 malwarescore=0
+ mlxscore=0 clxscore=1015 adultscore=0 impostorscore=0 spamscore=0
+ mlxlogscore=728 lowpriorityscore=0 bulkscore=0 phishscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2411120000 definitions=main-2501010077
 
-On Tue, 17 Dec 2024 21:55:41 -0500, Luis Felipe Hernandez wrote:
-> Since commit 7abc9b53bd51 ("sysctl: allow registration of const struct
-> ctl_table"), the sysctl registration API allows struct ctl_table variables
-> to be placed into read-only memory.
-> 
-> mac_hid_files is registered as a sysctl table and should be treated as
-> read-only. By declaring the mac_hid_files structure as const, we ensure
-> that it cannot be accidentally modified. This change improves safety.
+On Mon, 18 Nov 2024 14:31:03 +0200, Andy Shevchenko wrote:
+> Remove legacy-of-mm-gpiochip.h header file. The above mentioned
+> file provides an OF API that's deprecated. There is no agnostic
+> alternatives to it and we have to open code the logic which was
+> hidden behind of_mm_gpiochip_add_data(). Note, most of the GPIO
+> drivers are using their own labeling schemas and resource retrieval
+> that only a few may gain of the code deduplication, so whenever
+> alternative is appear we can move drivers again to use that one.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] macintosh: declare ctl_table as const
-      https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=e834166822a3c9fb403411c898367df8dabf973c 
+[1/1] powerpc/8xx: Drop legacy-of-mm-gpiochip.h header
+      https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=34064c8267a61063d684408db6ae78b571a9999d 
 
 Thanks
 
