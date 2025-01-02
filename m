@@ -1,63 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-4569-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4570-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C142E77188
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 17:24:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8D36E77198
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:32:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YPD9J3S5qz2yVX;
-	Fri,  3 Jan 2025 04:24:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgG4gYLz2yys;
+	Fri,  3 Jan 2025 05:32:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735838692;
-	cv=none; b=ArkXI49tQvpqzddnZMHpNFofoI3mENFz5OexVIUs1GkTnokkRUWXAezAcHjYDjEWqgAWbfwm9kIGVKM72Jf4lTgV0jggyvZdfEDcuSpcbAqEWa+UgFQyj0qaImFnAR+ohMysn+bj3+Llxx7MyyFcS5Ftdrnxn9oLHzsO6Z6w+T09+TJ1lV1/ep/zS1QhQojxeUceT3eUGNhp+ZSVxsapgMMOjOtj5OKRXSxd9002Oh+LEDpHK5CxQAFbt8a1AimcugGK1SxOZpUplpeuGZjfPWUQOsb81uiyghSHa2AES3uHN1trtaBqj4lTCFuyxSuJB9GnDWZFDqlgYtysC+PZ9g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735842746;
+	cv=none; b=l0UFD2LfFCXpr9pfPqQpTVhU5zLmnTCOR8UsXIqkXdaojqYp0gi5FX75wMfk9u4KKal8CdqPb7Jgd8ZudMEq7V2mW8qTlpd0LeM4/0mjK8rSyZ9qISdaNSvKXxHW9UYnSnfEYjHJr1hovAGuSjqvK97R/jOEOENFEBUpP11BeOfyYcbFli+Td/WqznDxRf0tuKzuEareMkBR/iJx7WSAYbJLZ7+uPwwc+pLgQF76hjVLXMDJ3YoBmgMzockDquYnO6PTmedye9coI6/HDVoJFxYtkmf+PksRvwogU5PHZjlywbhFxIcXOHiv/UkfoJB9Y98WsbAEV5blrMz2iG2NLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735838692; c=relaxed/relaxed;
-	bh=t1iXlsnsDe4bz1PnJhtN2ZjAG9ZaocmO4wo7p4W6M0g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bWF93nqgz4fT+OWGUDIjdaXpRLonSKoLxPyc8Rg5I1NT0UPpExGmmVkedmmu3K46H9jZhkKZn9JaGas2ZONJPMvwEys6pdJRe/ppXovVEX8ExXsOsuTEY/L7yo1qIWSP3fBRPzzsbGQXoMjJ5qkfBLzEBB463uhPVbrGDFUouvCw0BAe7sdb+0QTrTtds21ncjy6C7m/5lyfMm1oqDoitIujyn4tKEXNG92/I/WrxYF8zMbDTrxGShwI+zPALxuaoMFszx8M+TR8VauOxnmegpcA1xyiY0K+3bf66Nv/LpIZzXwsLv+tJ4CIuiU4LM23ene/4scGKi1ReR2LEujCoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AjRfdJPc; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1735842746; c=relaxed/relaxed;
+	bh=WHu6KcgXtEJfBBi2MSVqL6v6UVD2oPA6er0jAuWzq5k=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ZCNa9bkf8tKeg9qKQEC8VCoVfMcCSAc/eYZc+sv+MVdYluqLci7P+yH0VFoXfo0g0z0OIIDwZNjT0Pli9E/olxf1dSTp7UFshf2tHzucwH6faQZgFLkaq8Cb8p86eWC3S25uAJds11nZfyvLl9CIwFmx7GtuorUVQwFPnx+xFRYO0EgOsBnIP+aUkY9BYQCdos8pxa2nNzWZNO6vKHxjkjgsZ8vyQ2OvKD+b3zcE60hiFgKesdw9HoCmw2v6SL1DezMuQDmPhD0b83zJIYSuz3feYyVrzQNMFqX3aBMCYX8+hD4HTLKzv42KTrK4IMdz74WESohviqLNoQ5vkifndA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LXYNMcH2; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AjRfdJPc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LXYNMcH2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPD9H1L3lz2yN3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 04:24:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgF2CCFz2ytQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:25 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 7F8B9A40B4C;
-	Thu,  2 Jan 2025 17:22:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40F20C4CED0;
-	Thu,  2 Jan 2025 17:24:46 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id A9691A4140F;
+	Thu,  2 Jan 2025 18:30:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 07B13C4CEEC;
+	Thu,  2 Jan 2025 18:32:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1735838686;
-	bh=dhAKobW2Sn3UJxdMEMFF+/VJXFN/vgYVY2Kdus9Irc8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=AjRfdJPcjYi4nv0p4ONg/pmLvQ/6q9hbqdWm92KbRtJ9C0henHMq2lTFg21M9Gnj6
-	 ZfWQYaJb+Ay0/MZaZj92C1BZjLCJJJBLqIBPrljMgam2Kl/6ViYf1/FSbzyW/3gkMV
-	 H1wZBaskVXi2fJk+Cg8LoKdnuWwHsPN2Kl1oyhI14dKva46zqIFRLFHK6L2Vj7gTJE
-	 QIIbI4uMo7HX6jCu/Ml/LePfxEpEic9/8kIfjwHNgMPBvnKlpB6hdo8JQppL3VA0Hl
-	 A04pidWhCcnL3sMGhq0ThkAC5Y2Ksi62eqIo0dwKPxHqTNl1mHNPU82llGLsmFqg+x
-	 B+kCaSt9e2EnA==
-Date: Thu, 2 Jan 2025 17:24:44 +0000
-From: Eric Biggers <ebiggers@kernel.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linux-crypto@vger.kernel.org, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Danny Tsen <dtsen@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Naveen N Rao <naveen@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 10/29] crypto: powerpc/p10-aes-gcm - simplify handling
- of linear associated data
-Message-ID: <20250102172444.GB49952@google.com>
-References: <20241230001418.74739-1-ebiggers@kernel.org>
- <20241230001418.74739-11-ebiggers@kernel.org>
- <ec3515f1-f93a-4520-a9da-6ad14f9a6fe0@csgroup.eu>
+	s=k20201202; t=1735842742;
+	bh=3IuI6Je6+KzTU4VEUrEMJiz+nfBZ75oArtG+0/qEXpA=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=LXYNMcH2allQiI3peCetZ4GsFekCTANyRFHBpDj4gD/wP5L2UBgCxVouf+dvwVwFK
+	 Lmtj+9rIB8fuHM+lRsYN1INHzDOVB+fmfxZcFNkO8raJiLiDTRhdPvV1XYiaKBOO2n
+	 xHzdvmQp9ocz552Non0szpI3wV7pR6LWJ92UHV+YQtScbxVo+s5fYrE9YrzA+Z9PNO
+	 y+IPPl32S5mAO43ye4BK+8F9kFiS0AtmssDThBHndMfHEMGdgWjAG4kMUKjtgLugS5
+	 uvkI3lgVmfNN1xTZozacRTl958aY3SX4HyfAJ4kskJFNvkP3yuggyDxf1+w0s1Mlpz
+	 Su7x37siyUeUg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3B36E77197;
+	Thu,  2 Jan 2025 18:32:21 +0000 (UTC)
+From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
+Date: Thu, 02 Jan 2025 19:31:48 +0100
+Subject: [PATCH 07/19] powerpc: dts: mpc8315erdb: Add missing model
+ property
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,82 +63,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <ec3515f1-f93a-4520-a9da-6ad14f9a6fe0@csgroup.eu>
+Message-Id: <20250102-mpc83xx-v1-7-86f78ba2a7af@posteo.net>
+References: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
+In-Reply-To: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
+To: Michael Ellerman <mpe@ellerman.id.au>, 
+ Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Linus Walleij <linus.walleij@linaro.org>, 
+ Bartosz Golaszewski <brgl@bgdev.pl>, Frank Li <Frank.Li@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, 
+ =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=689;
+ i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
+ bh=i2m+p125oOMi3j6Rp3j8r0hNlqhm4mTOC27OluxVi5k=;
+ b=jz8B5ynuEhfVPpf7QliuUWYwuGE/+fLv6S4QEVZTSRKh9vuo7oKhx4K5ZB/3HV0XhXRxx4tyP
+ owTd0RUdADtB3j8aGvSMkGCN+0FQkHxUZK5mCetV0Jkq/2JyV31JdqG
+X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
+ pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
+X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
+ auth_id=156
+X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+Reply-To: j.ne@posteo.net
 
-On Thu, Jan 02, 2025 at 12:50:50PM +0100, Christophe Leroy wrote:
-> 
-> 
-> Le 30/12/2024 ‡ 01:13, Eric Biggers a Ècrit†:
-> > From: Eric Biggers <ebiggers@google.com>
-> > 
-> > p10_aes_gcm_crypt() is abusing the scatter_walk API to get the virtual
-> > address for the first source scatterlist element.  But this code is only
-> > built for PPC64 which is a !HIGHMEM platform, and it can read past a
-> > page boundary from the address returned by scatterwalk_map() which means
-> > it already assumes the address is from the kernel's direct map.  Thus,
-> > just use sg_virt() instead to get the same result in a simpler way.
-> > 
-> > Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> > Cc: Danny Tsen <dtsen@linux.ibm.com>
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > Cc: Naveen N Rao <naveen@kernel.org>
-> > Cc: Nicholas Piggin <npiggin@gmail.com>
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Signed-off-by: Eric Biggers <ebiggers@google.com>
-> > ---
-> > 
-> > This patch is part of a long series touching many files, so I have
-> > limited the Cc list on the full series.  If you want the full series and
-> > did not receive it, please retrieve it from lore.kernel.org.
-> > 
-> >   arch/powerpc/crypto/aes-gcm-p10-glue.c | 8 ++------
-> >   1 file changed, 2 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/crypto/aes-gcm-p10-glue.c b/arch/powerpc/crypto/aes-gcm-p10-glue.c
-> > index f37b3d13fc53..2862c3cf8e41 100644
-> > --- a/arch/powerpc/crypto/aes-gcm-p10-glue.c
-> > +++ b/arch/powerpc/crypto/aes-gcm-p10-glue.c
-> > @@ -212,11 +212,10 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
-> >   	struct p10_aes_gcm_ctx *ctx = crypto_tfm_ctx(tfm);
-> >   	u8 databuf[sizeof(struct gcm_ctx) + PPC_ALIGN];
-> >   	struct gcm_ctx *gctx = PTR_ALIGN((void *)databuf, PPC_ALIGN);
-> >   	u8 hashbuf[sizeof(struct Hash_ctx) + PPC_ALIGN];
-> >   	struct Hash_ctx *hash = PTR_ALIGN((void *)hashbuf, PPC_ALIGN);
-> > -	struct scatter_walk assoc_sg_walk;
-> >   	struct skcipher_walk walk;
-> >   	u8 *assocmem = NULL;
-> >   	u8 *assoc;
-> >   	unsigned int cryptlen = req->cryptlen;
-> >   	unsigned char ivbuf[AES_BLOCK_SIZE+PPC_ALIGN];
-> > @@ -232,12 +231,11 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
-> >   	memset(ivbuf, 0, sizeof(ivbuf));
-> >   	memcpy(iv, riv, GCM_IV_SIZE);
-> >   	/* Linearize assoc, if not already linear */
-> >   	if (req->src->length >= assoclen && req->src->length) {
-> > -		scatterwalk_start(&assoc_sg_walk, req->src);
-> > -		assoc = scatterwalk_map(&assoc_sg_walk);
-> > +		assoc = sg_virt(req->src); /* ppc64 is !HIGHMEM */
-> >   	} else {
-> >   		gfp_t flags = (req->base.flags & CRYPTO_TFM_REQ_MAY_SLEEP) ?
-> >   			      GFP_KERNEL : GFP_ATOMIC;
-> >   		/* assoc can be any length, so must be on heap */
-> > @@ -251,13 +249,11 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
-> >   	vsx_begin();
-> >   	gcmp10_init(gctx, iv, (unsigned char *) &ctx->enc_key, hash, assoc, assoclen);
-> >   	vsx_end();
-> > -	if (!assocmem)
-> > -		scatterwalk_unmap(assoc);
-> > -	else
-> > +	if (assocmem)
-> >   		kfree(assocmem);
-> 
-> kfree() accepts a NULL pointer, you can call kfree(assocmem) without 'if
-> (assocmem)'
+From: "J. Neusch√§fer" <j.ne@posteo.net>
 
-The existing code did that too, but sure I'll change that in v3.
+The mpc8315erdb devicetree did thus far not have a /model property, even
+though it is required by the devicetree specification.
 
-- Eric
+Signed-off-by: J. Neusch√§fer <j.ne@posteo.net>
+---
+ arch/powerpc/boot/dts/mpc8315erdb.dts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+index 28c06faf8ce0eb330a0108eba321b4c1127a8ae2..44e82d8b26302b72676badd70c5ab26eba3d08e4 100644
+--- a/arch/powerpc/boot/dts/mpc8315erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+@@ -9,6 +9,7 @@
+ 
+ / {
+ 	compatible = "fsl,mpc8315erdb";
++	model = "MPC8315E-RDB";
+ 
+ 	aliases {
+ 		ethernet0 = &enet0;
+
+-- 
+2.45.2
+
+
 
