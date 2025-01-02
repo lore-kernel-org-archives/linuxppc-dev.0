@@ -1,56 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-4585-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4587-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E74B3E77197
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:34:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93A4BE77197
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:34:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgS5LTSz30Tm;
-	Fri,  3 Jan 2025 05:32:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgT2s8Wz30VF;
+	Fri,  3 Jan 2025 05:32:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735842756;
-	cv=none; b=FmqShoC760GAJII5DUB1kmmSSVmmXmD/4nUKB50e6kdex5fdjYOEzje7qWlkE6rZ57C4i7G6AAwKjo0xtI2Na4+EDqo7smt70rY5fVumWPPX35Hb8LFwTcV5J2nwY0UbrOcrLX+mCHY06ejF2TPnOPDC6T27iRFM/SiCb+I9LmSUiKf3c2RLP46MueoNKYLscTaD4bae2mWo8lWmSBKjzGbi2Zk3SY5KzrE6D90ZEZUjhDA0o9xp9ZFeN45dAypHQPlgTwHgKaz8Bd2xmgLUCoDi8zMtIN4Ymg1PbM0KH5XyNM8IkImdhBRHuHVWSt80CJXRplMSk13iMtTv4jnuhQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735842757;
+	cv=none; b=aeyTmpUc6ZZW6wHrSABYlS9VBjHAJS78jnUymYZ4SoYSI5iAS9UCvl2f7zefnnhYo/1TSyoRS6pqsq6685N6xFcjpNERS67aPVGdbe0rk3JBomtyUaiO7wJvn0uYtUSces3y0x+4jiYW/hHUXMpaSbRGowBBT+2vIqEAR2dQdyhtYOAp+S+85cp/saaXLSNtkq7lMerwKXEBlhZDNR3ghqVAVYGbIYMd3w6175m4UKjSnvFRdwuNPdG0XwKmJsFY+Eb5EJqrzjpnsJbpYaQDoahEW0aVB7KTYCxxmkPRDzzUNsaPo5PeFmodZ+MATj4yOq7zCwxHyv2diXHJ1YGHZw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735842756; c=relaxed/relaxed;
-	bh=dFyWvl+roGnljAC7FcAumGgmjvs2205FzxvDoG8gaFc=;
+	t=1735842757; c=relaxed/relaxed;
+	bh=XpVjz9frqf7s/2WlPpDz+vS4C3rUcChac+jju1XGU2s=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ajcWTtWWgHo5VUlh0NvlziVfXmj8wp2MeSVCx+apN9CgJj0K7p/tXjAASsbAw2xlkHEmf2SUoqjmX0GwPTrWuS21oH6eMWeDAsI1NICf3tRNI9wPDaZyDYJlZMstp5T/jBZFIlJwbXcPq/0NgJrjqhyg++xcIDnb3Gm1NPFVK++/h5vONnqJzR22GYsMieDx90uQsGvUOr5gWZr8TgM+orSWCE3ef7xpZCQCHAR5mmwFxP7Smw9JGCaAjCm0WPv0JqKJwsHzM7nrMtaoX5txPHpbjNwMdGpg60b76MQWuGF2RmUlYh18BhJnzYK8mWeBIOOo5VQuBJDxMxXNTio08g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YvMfwT+n; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=QuqmoKRikv8rQDPq4VQ2sJQJnb8ZWndAmKamIgr2jRNOk97mlMj8+IofKPopCyQxRUYdGyL3RMQfnF1b4Y0jbkf0XvnzFpGPLJeLFQolAeWMyrGr35OaVWWwtb2TcnjOVGLWKHvEqfSSE1x2/l9GIjpfGyEacxcoesg2Zj0QZOOL2hQMo9O2FFGeC59n7uU88teTB3DJWqQcwdfByo1g63pjOVhxftQ7JCOVMOMQacSLPiaG0bc9ioYASmr1rOoioXfRpTUvADVq28N0OqW7Aa08+L0OerPveiZkIFnACnEgsNT6EKYJ/OeTK6cfmlfT5LIVcprI3HRo/3EeXeGVbw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hcu0Q0P/; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YvMfwT+n;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hcu0Q0P/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgM4N6sz30MM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgL73hNz2yvn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:30 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 1C4A55C608A;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 0E1515C5F7D;
 	Thu,  2 Jan 2025 18:31:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 953A3C116D0;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 85A52C4AF52;
 	Thu,  2 Jan 2025 18:32:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1735842742;
-	bh=y03cb4wbkJsgpcDVgkqHzQqW3P9VgCOSpkaGH+61Xxg=;
+	bh=3L9qpZcgEGcLXesRfvFJOqr7gB5IE0nhAqMyMONojog=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=YvMfwT+nmj/dnRXngQckHyNSh8yyr59T2fYo/VD+8afSbt2xyU92NpgdgW3RpZeIC
-	 CsTl/o0DbdL3itGJvqN5pQwb3TtU1Cd5VGVa9JVPApalHnDYUbItVqTHCdG4MdFc2k
-	 FlNQfZ8f/K56fYntIfuLnat7vq4HgOk21GNyJwVjjrvGabZY617VyVVkiISpQgPq6u
-	 AvegsM+tH/HncnPppAdoUrkTmV910rIqKpAxCy2wvhMtCTMJrhGKIEadlZ+vX7GjWs
-	 UkRawZn3RI4cPxGwuPdrkbHE/qxvhxxoNbX2MEi2rKKvtsaYDmCvMjBDMTppw7Oqe8
-	 8cSkCzMh/NCMQ==
+	b=hcu0Q0P/wBUdT6HpbQlaDCfX7bwxV8g11fqiteHBH0kbW0INFwcPYoBF1d2Jk935i
+	 RkxIdbleO9GNitiLV/TYmbrmhmgRZ/9msPgC2qh/zEH1dQa2pPoA5cWOU+TyKzn2mG
+	 mg2t8HOE4B6/xEC47JTSC8vPGAFlgJM05eFxvg2jUv0bx0srkCbKi9Spl1D6XN58vt
+	 Itwbm9OxIBhehmO2T3g3dxZLTC6h0/Z0Bs7xbTxGDwy29X4R8K2VCtZ5V+W9JjlQ6B
+	 Co+/QGBTw2QIvovH9pjxzHUW3RG10/tNTiTfyNxuhBNrt6suDo8pids1/7idtNe72Y
+	 LRMT4pKiqoe3w==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ACA1E77197;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7918BE7718B;
 	Thu,  2 Jan 2025 18:32:22 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Thu, 02 Jan 2025 19:31:56 +0100
-Subject: [PATCH 15/19] dt-bindings: vendor-prefixes: Add LANCOM Systems
- GmbH
+Date: Thu, 02 Jan 2025 19:31:55 +0100
+Subject: [PATCH 14/19] powerpc: mpc83xx: Switch to of_platform_populate
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,7 +64,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250102-mpc83xx-v1-15-86f78ba2a7af@posteo.net>
+Message-Id: <20250102-mpc83xx-v1-14-86f78ba2a7af@posteo.net>
 References: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
 In-Reply-To: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
@@ -80,11 +79,11 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=888;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=1933;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=cPDycNl9By3Hm5+1t2n1h/bJeTOlBcJ2oe1IgSAfN6U=;
- b=JRK8A4LytpWFYp4wFnkZVdi329GFgJOOHAqqi81i/HoTMERuo7v01lvfwpwuGoeDe15XGIdFE
- kebxru9TD1CBOOAasWFhF3rU6HfzY4Rac07KuLWFyVyBs2GeaUMP2bo
+ bh=+IqpHh5XW/bYptAKTy7ofbzqqjbf0TgTP59VXCoHzqo=;
+ b=9e/ltqkhbkqoYmAvt8DHPwJqvqjwqUwV7mVFU5GYMkehfc+vd97JJq/T1F6hT+F/IFNl9WZQ3
+ aOurraZE/mLDNmRzKchRUir6Kg4EjKmgIvfmKynORihXWTpBQ5uGZnh
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -94,28 +93,55 @@ Reply-To: j.ne@posteo.net
 
 From: "J. Neuschäfer" <j.ne@posteo.net>
 
-LANCOM Systems is a manufacturer of networking equipment.
+Quoting from drivers/of/platform.c:
 
-  https://www.lancom-systems.com/
+> of_platform_populate() - [...]
+> Similar to of_platform_bus_probe(), this function walks the device
+> tree and creates devices from nodes.  It differs in that it follows
+> the modern convention of requiring all device nodes to have a
+> 'compatible' property, and it is suitable for creating devices which
+> are children of the root node (of_platform_bus_probe will only create
+> children of the root which are selected by the @matches argument).
+
+This is useful for new board ports because it means that the C code does
+not have to anticipate every node that is placed directly under the root.
+
+As a consequence, the of_bus_ids list can be much shorter, and I've
+trimmed it to the necessary parts:
+
+ - device-type = "soc" and compatible = "simple-bus" for the SoC bus
+ - compatible = "gianfar" for the Ethernet controller (TSEC), which
+   may contain an MDIO bus, which needs to be probed, as a subnode
 
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
- Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/platforms/83xx/misc.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
-index da01616802c76830a520594a69bd6a2e0231df0d..56d88162b184e45d6b05fc749d77ca952a5eb2e2 100644
---- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
-+++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
-@@ -812,6 +812,8 @@ patternProperties:
-     description: Laird PLC
-   "^lamobo,.*":
-     description: Ketai Huajie Technology Co., Ltd.
-+  "^lancom,.*":
-+    description: LANCOM Systems GmbH
-   "^lantiq,.*":
-     description: Lantiq Semiconductor
-   "^lattice,.*":
+diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
+index 1135c1ab923cc120f377a0d98767fef686cad1fe..bf522ee007bbb1429233355f668fc8563d8ca4e2 100644
+--- a/arch/powerpc/platforms/83xx/misc.c
++++ b/arch/powerpc/platforms/83xx/misc.c
+@@ -94,18 +94,14 @@ void __init mpc83xx_ipic_init_IRQ(void)
+ 
+ static const struct of_device_id of_bus_ids[] __initconst = {
+ 	{ .type = "soc", },
+-	{ .compatible = "soc", },
+ 	{ .compatible = "simple-bus" },
+ 	{ .compatible = "gianfar" },
+-	{ .compatible = "gpio-leds", },
+-	{ .type = "qe", },
+-	{ .compatible = "fsl,qe", },
+ 	{},
+ };
+ 
+ int __init mpc83xx_declare_of_platform_devices(void)
+ {
+-	of_platform_bus_probe(NULL, of_bus_ids, NULL);
++	of_platform_populate(NULL, of_bus_ids, NULL, NULL);
+ 	return 0;
+ }
+ 
 
 -- 
 2.45.2
