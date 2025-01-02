@@ -1,55 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-4588-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6178E77188
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:34:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 267EBE77188
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:34:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgV0Xycz30VS;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgV5VXVz30ML;
 	Fri,  3 Jan 2025 05:32:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735842757;
-	cv=none; b=Cuuzk7lMRDxqzkFmCjKYmVv9Oqf/LPuoge0b2lYiTqwoqaWlPkrRGa7NfZXbA+2DdaZ4TMVnVzF+rl777+n8pUgHxD+0V+S8eevgDbQ1dVP5E3CkXQ5dYEo9tJUESqutZ30CiZs0Xhg9s3nhpyCwE+trQAyVcRb03cBXDZHzUv+z3jvHBRB5YRZbFLhS3ETT6w6JkB5JO5tqgEUgFHxLuFHzM71/DmjT7Y07frZoTnGT9dm++sJvhzyEitdcI80qAWY8eNI5+GqKW+o1fmm/Ngn40q8VpF/nPSmTBvfF3aNmjyLAFdOFmt1xmX6GjdVYm360+JnbO8V+iezdovUV9Q==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735842758;
+	cv=none; b=n5lk1xm7xXAeSicS74vvRPJ/9CUHqT/DzbtlgyKmy/VF3zimNu2cO54qcRqxKBYSjsGb44QI7knGut+5iiQLZ+erj+byl1O2Q0CSyZcXt2kisesJcfDVALmm+VxTP01MkSOiHTVfF6VS7kvItj9Q824W7vKZlNmP4jWcFtBDrkqymC6o/jQmT0E4hjg0Z5wNgYDbnEK5tpHTe4G/gnFq7xts1eVeJf2iGPfj9mBpqGXSiFG6xxoI950uThKTKk2QCf0V/sTSgPXSgCNb1X7IHNULD8GIYftxte50zlMO5wJ+Z5wTOzrLvX4l5WhQWUzFOfoB5MmjJCORmQxbyKGiiQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735842757; c=relaxed/relaxed;
-	bh=W74nhchn98DXNjgn4x/9hOQOii9e72N9z0OQ8XTmHfs=;
+	t=1735842758; c=relaxed/relaxed;
+	bh=ozhu2NYIoZMGV3JxwAIKt9CKHGigyb9SkDlWS05kVm0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=lmHkQazJ++Us/DOPXtP+lSk48DR2EpK0thmUN1qUzpQWR1Pfq3wvJXXyoOfveE/T/qb3iSJ4NUOAU4O/IvwE+6GY6iO0MsxLkdIy371TXgLICgdP5dbHIOW2Ta/LAxGYdZhj/jZoEEQx4h5P2y1A9iYJfbNVjGvBH5rHcJWrbejAs1kI9ehAx76s0q7cSzUTMbR0J7lwqrpB4eqFcZ5QuPZpoI46Y5R6Q2yNEtDE3EW4gWKuhBthFfLorLoGqJ8kZbOcvnKvc9pLrqCozoYaJarNNTPBhxt5EeW5nCIvZ/Dngd8DVS5hwOSCvCSAryih5i7te/BouO2qHbWjpDUDSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IHQAMGF9; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=PJD1U6CIIpWDxl/5JDKOYA2Bopu52FThSPEhXHk8i+2sUhyjL+Eww0NDaISvvYulTVNNFCCjINnZQMNV+55g+2LV2zSngHXZk9ynbKadRr4j+wDSc3a22RofITTlRVCqYMzticG8UPSaIn+FpAo3jWtUftg5/+5GM/PVjbPatGYP2XrejTGfEPWzrgWGkDGXEValqKNRm4ONQ3YKuW+a7PAVLGMnAJZKClJegbLAPoacWzEH3wRmfaMkKEY/jb0fOf/eWpEU1ANscxASWlF9SmArc5vw3O1Q0s2WaAMgT+jdjnpf5UfPaU5wAN/4W5/L4jd600K6YdTl3ar72tlLJQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WHj33gmC; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IHQAMGF9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WHj33gmC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgP21W3z30Qy
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgQ5SNRz30TL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:33 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 61E855C5DD0;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 5454E5C60BA;
 	Thu,  2 Jan 2025 18:31:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A7F2EC19422;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C0F0FC4CEDF;
 	Thu,  2 Jan 2025 18:32:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1735842742;
-	bh=IFjPVFxBBj8AklhWMTuCv3+fgmDzrflrU7pIzGZfZxA=;
+	bh=CtMO4XDv+FCIXowgX0+Oc7/qErBmyMlcIzYO5eJynzc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=IHQAMGF95tDIqHNoh0tpu9WweWRe6GD1v0SE2L6ZL8NZyH59zOIfo19Gyys0/fL8T
-	 fcEo1ObFs5gemxu62ki8006ZVOM7ZLdtdYMVuVVTy95e32L9PoVnKJ9Hu3eBog/IcC
-	 lyf9o2hC0WWHzksApjIrjiSrHjzoXm4/qJ7yytDZU2FbgHSDTPE2t+MsfXf4oCmIgg
-	 LBmWMDODaoCaOFUcNZEfIlpgEl4zkqvuzqxD09AOyxEvfu2lyHDp+RCozuEWgasOTo
-	 /Bvd3yfrCcfpDkZSNdJZUCVClYTFhs3gis6wJJL0BAJK+n/pdkwHAIu/zQPQTuWO5K
-	 tvUnlYzOc0GzQ==
+	b=WHj33gmC+AtDrAMJ7ROFrVMnsV8dcBYosyrcRl+u8eXsp8LYctHBcRCbekA6il3AA
+	 Zmz4p7xj/1MWRIakbKLSXkgJB8gWdAsBAtV2YUFjKDrr3iYTcRhDWzWdngOuicduTE
+	 +a94DBdMosQ1VlOfjXyyFPP9qUVDtHuiHkQwWjuL14BW7EyiHjMfP3H1CzpuKwGKhK
+	 aym9kZzBFNdzVipbMZ5mQVpiWsJwdXPz61pWLSZWSLQVMwtX/Y9EZwijXpGHt/XaG+
+	 QZOoFiEDqsiHW5pLeAIMQ1uNPwQOdLaGkxU5PPwf+j960/gJiImKIrpzbLJu72kR45
+	 CP7wBBj9snYVw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AFD5E77188;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7E51E77198;
 	Thu,  2 Jan 2025 18:32:22 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Thu, 02 Jan 2025 19:31:57 +0100
-Subject: [PATCH 16/19] powerpc: dts: Add LANCOM NWAPP2 board devicetree
+Date: Thu, 02 Jan 2025 19:31:59 +0100
+Subject: [PATCH 18/19] powerpc: mpc83xx_defconfig: Enable NWAPP2 board
+ features
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,7 +65,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250102-mpc83xx-v1-16-86f78ba2a7af@posteo.net>
+Message-Id: <20250102-mpc83xx-v1-18-86f78ba2a7af@posteo.net>
 References: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
 In-Reply-To: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
@@ -79,11 +80,11 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=8029;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=2040;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=ZKOoalO4wmhQEAwxw29HUheREeAXcDDs75lwK/wrODY=;
- b=+jeoW7i1ak3Bn5aA7D719CI2NoS8bUwteML/RwSvhKc9oJRv2rTcoj8oRl6e/El4TejDwyZd0
- rsXEKhiclnkCyPOhl1JFSi470/dXtl3IfQvBXXd5q5jqAFcPzaoAlvI
+ bh=8cjjERboXjwasKowHGhF3NwI7IcXjBOlMpP4+b1yNfY=;
+ b=pENUUbNIQp734t9sjGGUCevEG+k3KlEAjIRAbzlvB7faecKhTzZv1xTfwPphoY/E0Xtaqb7jX
+ SI7pMQIuWWGCaweTUM4hr3VB+RhS5KSrkYoFXwVlQxu0zFovaY2QLde
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -93,324 +94,74 @@ Reply-To: j.ne@posteo.net
 
 From: "J. Neuschäfer" <j.ne@posteo.net>
 
-What works so far:
-- serial port
-- LEDs
-- Ethernet
-- PCIe (port 1 tested)
-- Flash access
+These features are required (or at least helpful) for running Linux on
+the LANCOM NWAPP2 board:
 
-What doesn't work:
-- Access of the YAFFS file system preinstalled by the original firmware
-  (mainline Linux does not include the YAFFS file system)
-- Writing NAND flash from Linux and reading the same from U-Boot
-  (there is some issue related to ECC)
+- GPIO restart/watchdog are required for operation
+- The MPC83xx-internal watchdog is optional
+- LEDs are nice to have
+- ATH9K is on a removable mini-PCIe card
+- ATH803X is the Ethernet PHY installed on the board
 
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
+ arch/powerpc/configs/mpc83xx_defconfig | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-Note: This patch requires the following patchset as it defines bindings
-used in lancom-nwapp2.dts:
-
-  [PATCH v2 0/3] gpio: 74HC595 / 74x164 shift register improvements
----
- arch/powerpc/boot/dts/Makefile          |   1 +
- arch/powerpc/boot/dts/lancom-nwapp2.dts | 276 ++++++++++++++++++++++++++++++++
- 2 files changed, 277 insertions(+)
-
-diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
-index 6aee895d5baaa2c978d4b1c82a6d198d9e166ea2..43e20d8b776b1716a91e6ec8e135c0a45c8e8c77 100644
---- a/arch/powerpc/boot/dts/Makefile
-+++ b/arch/powerpc/boot/dts/Makefile
-@@ -6,5 +6,6 @@ dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(src)/%.dts,%.dtb, $(wildcard $(src)/*.
- 
- dtb-$(CONFIG_MPC831x) += \
- 	kmeter1.dtb \
-+	lancom-nwapp2.dtb \
- 	mpc8313erdb.dtb \
- 	mpc8315erdb.dtb
-diff --git a/arch/powerpc/boot/dts/lancom-nwapp2.dts b/arch/powerpc/boot/dts/lancom-nwapp2.dts
-new file mode 100644
-index 0000000000000000000000000000000000000000..d46d94c27ecb91db32c8acb4136cb6e8d0df52f5
---- /dev/null
-+++ b/arch/powerpc/boot/dts/lancom-nwapp2.dts
-@@ -0,0 +1,276 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright 2024 J. Neuschäfer
-+//
-+// LANCOM NWAPP2, marketed as:
-+// - LANCOM L-321agn Wireless (R2)
-+// - LANCOM L-322agn dual Wireless (R2)
-+// - LANCOM L-322E Wireless
-+#include "mpc8314e.dtsi"
-+
-+#include <dt-bindings/gpio/gpio.h>
-+#include <dt-bindings/leds/common.h>
-+#include <dt-bindings/input/input.h>
-+
-+/ {
-+	compatible = "lancom,nwapp2", "fsl,mpc8314e";
-+	model = "LANCOM NWAPP2";
-+
-+	memory {
-+		reg = <0x00000000 0x08000000>;	// 128MB at 0
-+	};
-+
-+	aliases {
-+		serial0 = &serial0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
-+	};
-+
-+	chosen {
-+		stdout-path = "serial0:115200n8";
-+	};
-+
-+	gpio-watchdog {
-+		compatible = "linux,wdt-gpio";
-+		gpios = <&gpio 18 GPIO_ACTIVE_LOW>;
-+		hw_algo = "toggle";
-+		hw_margin_ms = <1000>;
-+		always-running;
-+	};
-+
-+	gpio-restart {
-+		compatible = "gpio-restart";
-+		gpios = <&gpio 10 GPIO_ACTIVE_HIGH>;
-+	};
-+
-+	gpio-keys {
-+		compatible = "gpio-keys";
-+
-+		reset-button {
-+			label = "Reset Button";
-+			linux,code = <KEY_SETUP>;
-+			gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
-+	gpio-leds {
-+		compatible = "gpio-leds";
-+
-+		led_power_red: led-0 {
-+			label = "red:power";
-+			gpios = <&expander 0 GPIO_ACTIVE_HIGH>;
-+			color = <LED_COLOR_ID_RED>;
-+		};
-+
-+		led_power_green: led-1 {
-+			label = "green:power";
-+			gpios = <&expander 1 GPIO_ACTIVE_HIGH>;
-+			color = <LED_COLOR_ID_GREEN>;
-+		};
-+
-+		led_wlan_link_red: led-2 {
-+			label = "red:wlan-link";
-+			gpios = <&expander 2 GPIO_ACTIVE_LOW>;
-+			color = <LED_COLOR_ID_RED>;
-+		};
-+
-+		led_wlan_link_green: led-3 {
-+			label = "green:wlan-link";
-+			gpios = <&expander 3 GPIO_ACTIVE_LOW>;
-+			color = <LED_COLOR_ID_GREEN>;
-+		};
-+
-+		led_wlan_data_red: led-4 {
-+			label = "red:wlan-data";
-+			gpios = <&expander 4 GPIO_ACTIVE_HIGH>;
-+			color = <LED_COLOR_ID_RED>;
-+		};
-+
-+		led_eth_red: led-10 {
-+			label = "red:eth";
-+			gpios = <&expander 10 GPIO_ACTIVE_HIGH>;
-+			color = <LED_COLOR_ID_RED>;
-+		};
-+
-+		led_power_top_red: led-12 {
-+			label = "red:power-top";
-+			gpios = <&expander 12 GPIO_ACTIVE_LOW>;
-+			color = <LED_COLOR_ID_RED>;
-+		};
-+
-+		led_power_top_green: led-13 {
-+			label = "green:power-top";
-+			gpios = <&expander 13 GPIO_ACTIVE_LOW>;
-+			color = <LED_COLOR_ID_GREEN>;
-+		};
-+
-+		led_wlan_top_red: led-14 {
-+			label = "red:wlan-top";
-+			gpios = <&expander 14 GPIO_ACTIVE_LOW>;
-+			color = <LED_COLOR_ID_RED>;
-+		};
-+
-+		led_wlan_top_green: led-15 {
-+			label = "green:wlan-top";
-+			gpios = <&expander 15 GPIO_ACTIVE_LOW>;
-+			color = <LED_COLOR_ID_GREEN>;
-+		};
-+	};
-+
-+	led-power {
-+		label = "multicolor:power";
-+		compatible = "leds-group-multicolor";
-+		color = <LED_COLOR_ID_MULTI>;
-+		function = LED_FUNCTION_POWER;
-+		leds = <&led_power_red>, <&led_power_green>;
-+	};
-+
-+	led-wlan-link {
-+		label = "multicolor:wlan-link";
-+		compatible = "leds-group-multicolor";
-+		color = <LED_COLOR_ID_MULTI>;
-+		function = LED_FUNCTION_WLAN;
-+		leds = <&led_wlan_link_red>, <&led_wlan_link_green>;
-+	};
-+
-+	led-wlan-data {
-+		label = "multicolor:wlan-data";
-+		compatible = "leds-group-multicolor";
-+		color = <LED_COLOR_ID_MULTI>;
-+		leds = <&led_wlan_data_red>;
-+	};
-+
-+	led-eth {
-+		label = "multicolor:eth";
-+		compatible = "leds-group-multicolor";
-+		color = <LED_COLOR_ID_MULTI>;
-+		leds = <&led_eth_red>;
-+	};
-+
-+	led-power-top {
-+		label = "multicolor:power-top";
-+		compatible = "leds-group-multicolor";
-+		color = <LED_COLOR_ID_MULTI>;
-+		function = LED_FUNCTION_POWER;
-+		leds = <&led_power_top_red>, <&led_power_top_green>;
-+	};
-+
-+	led-wlan-top {
-+		label = "multicolor:wlan-top";
-+		compatible = "leds-group-multicolor";
-+		color = <LED_COLOR_ID_MULTI>;
-+		leds = <&led_wlan_top_red>, <&led_wlan_top_green>;
-+	};
-+};
-+
-+&gpio {
-+	gpio-line-names =
-+		/*  0 -  7 */ "DEBUG#", "RESET_BTN#", "", "EXP_LATCH", "", "", "", "PCIE_RST#",
-+		/*  8 - 15 */ "", "", "BOARD_RST", "", "", "", "", "",
-+		/* 16 - 23 */ "", "", "WDT_TOGGLE", "", "", "", "PHY_RST#", "",
-+		/* 24 - 31 */ "", "", "", "", "", "", "", "";
-+};
-+
-+&localbus {
-+	status = "okay";
-+	ranges = <0x0 0x0 0xfe000000 0x00008000>;
-+
-+	nand@0,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "fsl,mpc8315-fcm-nand",
-+			     "fsl,elbc-fcm-nand";
-+		reg = <0x0 0x0 0x2000>;
-+
-+		partitions {
-+			compatible = "fixed-partitions";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			partition@0 {
-+				label = "loader1";
-+				reg = <0x0 0x8000>;
-+				read-only;
-+			};
-+
-+			partition@8000 {
-+				label = "loader2";
-+				reg = <0x8000 0x78000>;
-+				read-only;
-+			};
-+
-+			// 0x80000:0xf80000 is designated "loader spare" by
-+			// vendor firmware, but we re-use it for our purposes.
-+
-+			partition@80000 {
-+				label = "u-boot-env";
-+				reg = <0x80000 0x80000>;
-+			};
-+
-+			partition@100000 {
-+				label = "loader-spare";
-+				reg = <0x100000 0xf00000>;
-+			};
-+
-+			partition@1000000 {
-+				label = "fs";
-+				reg = <0x1000000 0xf000000>;
-+				/* YAFFS2 filesystem */
-+			};
-+		};
-+	};
-+};
-+
-+&enet0 {
-+	status = "okay";
-+	phy-handle = <&phy>;
-+	phy-mode = "rgmii-id";
-+};
-+
-+&mdio0 {
-+	status = "okay";
-+	compatible = "fsl,gianfar-mdio";
-+
-+	phy: ethernet-phy@1 {
-+		/* Atheros AR8032 */
-+		reg = <1>;
-+		compatible = "ethernet-phy-ieee802.3-c22";
-+		reset-gpios = <&gpio 22 GPIO_ACTIVE_LOW>;
-+	};
-+};
-+
-+&pci1 {
-+	status = "okay";
-+	ranges = <0x02000000 0 0x88000000 0x88000000 0 0x02000000>,
-+		 <0x01000000 0 0x00000000 0xc9080000 0 0x00800000>;
-+};
-+
-+&pci2 {
-+	status = "okay";
-+	ranges = <0x02000000 0 0x88000000 0x8c000000 0 0x02000000>,
-+		 <0x01000000 0 0x00000000 0xc9900000 0 0x00800000>;
-+};
-+
-+&serial0 {
-+	status = "okay";
-+};
-+
-+&spi {
-+	status = "okay";
-+	/*
-+	 * The GPIO expander doesn't really use a chip select.
-+	 * Instead pin 3 is connected to the latch clock input, which triggers
-+	 * the transfer of bits from the shift register to the output pins on
-+	 * rising edges. Specifying it as a active-low chip select works
-+	 * because the CS# is driven high after the serial transfer is done.
-+	 */
-+	cs-gpios = <&gpio 3 GPIO_ACTIVE_LOW>;
-+
-+	expander: gpio-controller@0 {
-+		reg = <0>;
-+		compatible = "onnn,74hc595a";
-+		spi-max-frequency = <5000000>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		registers-number = <2>;
-+	};
-+};
+diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
+index 525a4f6ae1ff7b51e365668b430fa46ce4938f19..40dc455517defd42c7dd8a5414531eced79831f2 100644
+--- a/arch/powerpc/configs/mpc83xx_defconfig
++++ b/arch/powerpc/configs/mpc83xx_defconfig
+@@ -30,6 +30,9 @@ CONFIG_SYN_COOKIES=y
+ CONFIG_INET_ESP=y
+ # CONFIG_IPV6 is not set
+ CONFIG_PCI=y
++CONFIG_PCIEPORTBUS=y
++CONFIG_PCIEAER=y
++CONFIG_PCI_MSI=y
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ # CONFIG_FW_LOADER is not set
+@@ -54,6 +57,7 @@ CONFIG_GIANFAR=y
+ CONFIG_DAVICOM_PHY=y
+ CONFIG_ICPLUS_PHY=y
+ CONFIG_MARVELL_PHY=y
++CONFIG_AT803X_PHY=y
+ CONFIG_VITESSE_PHY=y
+ # CONFIG_INPUT_KEYBOARD is not set
+ # CONFIG_INPUT_MOUSE is not set
+@@ -64,7 +68,17 @@ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_I2C=y
+ CONFIG_I2C_CHARDEV=y
+ CONFIG_I2C_MPC=y
++CONFIG_SPI=y
++CONFIG_SPI_FSL_SPI=y
++CONFIG_GPIO_MPC8XXX=y
++CONFIG_GPIO_74X164=y
++CONFIG_POWER_RESET=y
++CONFIG_POWER_RESET_GPIO_RESTART=y
+ CONFIG_WATCHDOG=y
++CONFIG_GPIO_WATCHDOG=y
++CONFIG_GPIO_WATCHDOG_ARCH_INITCALL=y
++CONFIG_8xxx_WDT=y
++CONFIG_REGULATOR=y
+ CONFIG_HID_A4TECH=y
+ CONFIG_HID_BELKIN=y
+ CONFIG_HID_CHERRY=y
+@@ -82,6 +96,13 @@ CONFIG_USB=y
+ CONFIG_USB_MON=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_EHCI_FSL=y
++CONFIG_NEW_LEDS=y
++CONFIG_LEDS_CLASS=y
++CONFIG_LEDS_CLASS_MULTICOLOR=y
++CONFIG_LEDS_GPIO=y
++CONFIG_LEDS_GROUP_MULTICOLOR=y
++CONFIG_LEDS_TRIGGERS=y
++CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_DS1307=y
+ CONFIG_RTC_DRV_DS1374=y
 
 -- 
 2.45.2
