@@ -1,56 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-4578-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4580-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 407B9E77188
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:33:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DB98E77199
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:33:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgN5hC2z30Pp;
-	Fri,  3 Jan 2025 05:32:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgP1Hf7z30Qb;
+	Fri,  3 Jan 2025 05:32:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735842752;
-	cv=none; b=Ko+qcADhz/aOlMZYwgQi7eCHMtB1UTk1vHgvvm1D7W3dNLmyXOn5lkUwLFe1cBQI0l3JKyFIakn3+izd3PWnRvk8OqVgB/3JOMh6hxTN94Ex1SAPKUiR6FaHPKwhQOpUeCgdMw2yVHTVQ4TvHD9R1cxN2nF4ATQXHmMHWFoZrQjKB1Oe3tNuJUjABmSgrDY6PnVBQbJkDaXrEZgY0Rih/qYDT4hkMGtb7TFjBMpU84+6piuM763rCF8hy/4IaC4glmZlTPYjLyM7NitfdgfRoYBVHn6a62mlww4xRoj0jaIYdxQWqagBN0MfxQ8ncNNdqxgrSK78yh4eIuOKxnH4aA==
+	cv=none; b=cTV0AQSY+xOd/S7TAML4mguzgXPd7oxS/tIhiubxKETcDFtIPBGeB5VmvGMUAGUNZRjIb8EFhVyKOqKtLgHXaxCm5zZKvvgvC8p4ArWrEWPnlSjxo0y8K4Pjf9lnoFN1plOpO3oIByrMJc4pRfb5yD4EieZGZYHiDLRqj1vlKSrZr+fZbDn93m6HfUO1z8aU9zjFzSTr7/V2MuUY5GHFyqccvNXOUUdkUfcRtw+PkomnsRLb67xZk4f2q9g6DdhBieOdyLFQcX2DN+yKXXq795MmFiwF8AEaCsaInngFgaoK4qkNtx+K1t6IK4z8LUo3u34ryyjUc0+BJxIiGQW09A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1735842752; c=relaxed/relaxed;
-	bh=AhxPcn8bM+2wGEPMcnjTf7B+pXViwsA2fhA6CZcYhJ0=;
+	bh=ljp0L3/x2X+irCUss9JtDG3mYBJnIDirvyHaphpJDrM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=aPc3kaQ7NIZ+AgbiBJfbrQ6d7muRLeOyrTZzvHsxfU8wg2+Dm+jZJs/llfC0UcK+AnW8ANHdxnh2Cn2BSoP9+sfaYwgajZVx1FJX7mPl6wYo6kNRwizn9i7+qlKgyAZnlhEwLkldColXWax89+LT9cZNWOQLHsIdz1IWDh9+LkmbUW5KCcXOZXMs6eBkHFKfRS4BM5C2EjGHi+sfirWibzR8CgEj3RLo812BRPjl8gL1Y39O+auHBdHsNC5NVCZj2tuGp3iRFCspqofWr7ZbsJgCtEYsPViHxv7ux5FAPKMtVksozss5gd+vyzpVdAquawjaBpebEXsFygV3hK3c9w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DGNIlX5w; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=L2J90DdJVE3ro6sRVwxes0eMfnJ6WdBYNvgI+H8LpzToJa2vlQJ4ICjVwlQldfW+4H237A/gBYrDYLtl7JkQrTUWEaoNS8hXyZSuXlx1LjqFwg7Jg1aAGQwbTi5QaB4x+nJ0FmASKP4Z/UFlYIUbmuqXLCDaTnHqafkggppqnNw3EssNb5PbZr3NQoqOZBklygIYDnAwNtRpCbdM9h17Gk5yTz3k/go2OIgEoITubpDe99FJvZNZABlO7hOxn/RqpI7p35ksNx4r/0AEiXVoE4zWMa2Y2bjilFDRFzaLOZNgHMCqL7eIh+bdb1ItQFONoV3bouEYa7JdE4TjXAXbqw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ELWALujH; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DGNIlX5w;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ELWALujH;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgG41ykz2yyT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgJ3l6Xz2yN3
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:28 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id B7C1CA41411;
-	Thu,  2 Jan 2025 18:30:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 49296C4CEF8;
+	by nyc.source.kernel.org (Postfix) with ESMTP id 5D534A413F6;
+	Thu,  2 Jan 2025 18:30:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 71A21C4CEE1;
 	Thu,  2 Jan 2025 18:32:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1735842742;
-	bh=QivrMCISY/M9jftEcOcP9Vtuv5+lW7TayYL2Dl6/xKc=;
+	bh=1Wx3N1Rj294zXt2qu+m1lv0sm+YnNLnpQlLBVACfYCc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=DGNIlX5wlhBPP4C1I4SH/xY3eU37ehaVXY6HvbRfNw3N7SklIKwT5KCeOhJN7y076
-	 /TzS64bDz/7zRHqy7u1hLqx7y+/Hbd7esAtMYfdV+Yk8i9CaTMgAQsD/9jJtO6dhb/
-	 hlihu/opJR5diiXlT8aI68aS6Qh4AE2QlVkEiHNrRtUFZ0/CIOnn4Mu0l/pn42r5LO
-	 eqTA6CinKBLAdEOWarCTfRZIS//ZN466IBoifPEgQEHXV14a9uOA3g6sFkJC7BJ+o2
-	 PH0K/Qpn8O7v17SFIpJu8qBFXzBzkS9Oxc2yShc5xxFiNlh013UspMzBzcuJVf43Ls
-	 qFy5mkoNSODbw==
+	b=ELWALujH8LgLxmg4iYqiMaRA5sCuqBlh7J4ZRAEQ+4H7QZ7xUvjbbUQqXz4NC0Fe+
+	 +K38z2zfltFuZXL46+38751hE/DPVPBeNsbO92sZDyMdQ5+IxhlA1XFt7jH5fp0KQg
+	 TfRxIHZaFC38RiNC8++m2GawccjD+K2x3s4B5y+FTiq6qBS29kMy2tcAnHkZTYtflS
+	 64PE5uhrq3fcih0s5zlqT7/40xMlA07T9PQSIhZKqv4bqkuC0Ma7O20m6k3A3/jIqG
+	 udJI43dqZiiNEpeGUWG8ucVkbnU3+VMm4PGfveWPXJk2ST8rRPPllj96hPrV90V6HW
+	 kzVph8Zz1zFuA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41B03E77188;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69C03E77188;
 	Thu,  2 Jan 2025 18:32:22 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Thu, 02 Jan 2025 19:31:52 +0100
-Subject: [PATCH 11/19] dt-bindings: gpio: fsl,qoriq-gpio: Add compatible
- string fsl,mpc8314-gpio
+Date: Thu, 02 Jan 2025 19:31:54 +0100
+Subject: [PATCH 13/19] gpio: mpc8xxx: Add MPC8314 support
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,7 +64,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250102-mpc83xx-v1-11-86f78ba2a7af@posteo.net>
+Message-Id: <20250102-mpc83xx-v1-13-86f78ba2a7af@posteo.net>
 References: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
 In-Reply-To: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
@@ -80,11 +79,11 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=808;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=815;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=kQbjf8yyMIMYDlp9Ljafq6qH6mq2lFyMb6vI0TaGZAs=;
- b=6WNaCpNbcbNLwRTLw2myVEFq6VrIiHRNr0CdOsGX97lbFkdnQDEHvS2wyUJij1FgVkdkVkiMq
- Uonk+3ZBOeDCWPZf3mcIL66HurU56+XDeg9abRg9o6/0x9Ds3gipzGs
+ bh=IzujOZGh0Kdf7MR+FJDNa5Xge4jQ4IpjSUXuri6ZMCE=;
+ b=Bg2Rwn5IPjZBCymZj2nPxRzynUvjtK0um3nebcnWTTRob7hfmVj+4hlVA6truDJxyBTZK1mYV
+ E2XU37nLAAqCiLpCLQ1oQAs3PvepM7Q7YTnN9sKE6no/AuaZzWCsdZ7
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -94,25 +93,25 @@ Reply-To: j.ne@posteo.net
 
 From: "J. Neuschäfer" <j.ne@posteo.net>
 
-This is for the MPC831{4,5}{,E} SoCs.
+GPIO input, output, and interrupts have been tested on a MPC8314E board.
 
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
- Documentation/devicetree/bindings/gpio/fsl,qoriq-gpio.yaml | 1 +
+ drivers/gpio/gpio-mpc8xxx.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/gpio/fsl,qoriq-gpio.yaml b/Documentation/devicetree/bindings/gpio/fsl,qoriq-gpio.yaml
-index 84fd82291ee4031a55f704977ee0db084caef08a..f1b60ab3f356b99f936d7d8bd5e03f9ffabd0f93 100644
---- a/Documentation/devicetree/bindings/gpio/fsl,qoriq-gpio.yaml
-+++ b/Documentation/devicetree/bindings/gpio/fsl,qoriq-gpio.yaml
-@@ -15,6 +15,7 @@ properties:
-       - enum:
-           - fsl,mpc5121-gpio
-           - fsl,mpc5125-gpio
-+          - fsl,mpc8314-gpio
-           - fsl,mpc8349-gpio
-           - fsl,mpc8572-gpio
-           - fsl,mpc8610-gpio
+diff --git a/drivers/gpio/gpio-mpc8xxx.c b/drivers/gpio/gpio-mpc8xxx.c
+index 24417c3247b0a832ad15fe93e9ba0339eac3b883..0cd4c36ae8aaf075a54795810d5eea755325d771 100644
+--- a/drivers/gpio/gpio-mpc8xxx.c
++++ b/drivers/gpio/gpio-mpc8xxx.c
+@@ -285,6 +285,7 @@ static const struct mpc8xxx_gpio_devtype mpc8xxx_gpio_devtype_default = {
+ };
+ 
+ static const struct of_device_id mpc8xxx_gpio_ids[] = {
++	{ .compatible = "fsl,mpc8314-gpio", },
+ 	{ .compatible = "fsl,mpc8349-gpio", },
+ 	{ .compatible = "fsl,mpc8572-gpio", .data = &mpc8572_gpio_devtype, },
+ 	{ .compatible = "fsl,mpc8610-gpio", },
 
 -- 
 2.45.2
