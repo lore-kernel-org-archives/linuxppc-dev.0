@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-4573-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4574-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42AB6E77188
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:32:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4CACE77188
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:32:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgJ5zMtz304f;
-	Fri,  3 Jan 2025 05:32:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgK4B7sz305c;
+	Fri,  3 Jan 2025 05:32:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735842748;
-	cv=none; b=OAVD3LTEnWI+/nD2drpSabRy105oLNNfOc96YSx7+91JpZhZ1l3wp5wdU/J2le0/Pv3KIHzQWaWidr09Sfz1OaSgMqsflaPSKdQdA7Q/IZn0vxNAaLZApjt52AlfYLnWaunAOJQJI8w4uNA+R6++oJihHBfRzokbJsQauW05E6PcWJPvfwBtt839vOYgfpZQF5WbLU6oXY57SDLjKtM2TY4SsAFX2QT4jRxYZ6zUxCrCpu9u668ow1C0gemrngxkuKe8QOer+LIfnGYV8mwFG6+jcqWtekqdrU4dxk79NbWQ1fMq2R4r/jOPQAJs0xo5OmhzmI7PFOu5hCtQ7/Vz0g==
+	cv=none; b=k2JVo0jG1AFeEBY8Cupy+uER1C4EwnFXCBLk7CoGICm/uSed6T75EnVKOvCHMBus0FI66uJ5vAyhxuufFs+m+eqFSMyTA4RIOI5cbZSiw88nXi03DV5TwOYF3sIpbIZAiAE56+VaWO0UZmAHsq8+vp+si/LmMbnsLAMsdEuLmoy4XvfYoYWAQiH4YuWesHDl4KuDlJpomLLFUt51/HyUiELCQ+6++TaXnrfx523JOAr4zxG8535ItQaxGVNKZBEJOE/MwY7GhhvfM6hTfB3bJqQskFVIu0xw+eg3t81hWY2K/sktP14/K9ERp+j+ByW1cYPWmF6iNqBa+9RS6VXvMA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1735842748; c=relaxed/relaxed;
-	bh=TJqqZKfP2pmz+AjTwn3D4i31AhcPaw0GpnsQYlcn6jI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=UyZcFId8I1QbfUldL/s+eCWZ0F5wG7oSfbmj+qsQ1QQpLke0oCzgd8x05K3K1mUt013Iv9bAYZqqmnFCj2eoKxVIKXXsayt1NCVvZgQlchHfpmEWsEUn9EX+c1MDUN9UADcBlbc7UDh5nktVcOFqHRoaixiCKUy4xVxgSP14xFi0MObaDL5mt7ZWtovFMt6yfN1cE4Ukxdy4jIw21LsDiEoLIMbC14+eA2VvjMUEdYlZm+BgiuIogsrg6Gvrw29PMmHJOmbgnzPoodLcvnBkErC+Gtha5MRQZm8+gDV+xI5xermhqhKhIQTiYWksXVYtiRwqzbtXA1G8OUQGwSL8PA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fwn6LLgK; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	bh=tvKYBUQJQm+MsJGQTE11/rXLqf+cBP/yZUlrAIDNSsg=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=HxjkZk9ard4ZvsKSOlwDTsjZGw+2Xkhk5bw8nrO4jRnrcWs/DxhUUG7/lPNnn6d7Kdqwyz9krFSFP/FTZtkOkkbmJHmAwm5XXbcwNI/Ut0tzpMQDegWh3udAnq24S76TJUrDxfgrpaV2xk/E7lG451ImfpU3nx0O/a4iYimUosIb9MdnTdM3LhDxvLgFj1GWjaAl7uv+7f5WEyvNP/h80mnZrsJXUtErZZezBFG1dID+FiyzYgh1sBahIsIYa4pwc18/7+csaxzsjs4fet3YsRvh90tVW8M1Gy/hFWszyrFIeqcRFrgKaeRVRsYAa9IYIZpJ7gI/vzNOjuXUx/CY/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VPF0n5bo; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fwn6LLgK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VPF0n5bo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgF0sj8z2ypD
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgF6DG8z2yvj
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:25 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 73C6AA413F7;
-	Thu,  2 Jan 2025 18:30:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D08AFC4CEE2;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 974D65C5D0E;
+	Thu,  2 Jan 2025 18:31:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 93B63C4CED0;
 	Thu,  2 Jan 2025 18:32:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1735842741;
-	bh=uKfNfVP6XmqzHjSsBcS7L5uKeA8oa6n0HRjVDMnFaZc=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=fwn6LLgKg01/hqH7sPS4jtXvtaMUCs8dvliKSR3MQ4fPYQAUrx0AFcX/vglEjBvQb
-	 /wMyPIMsBSIbwTZk4P6O3WF8upbNqRrIJN25awp0SkhZNUmiUWRGpOW0ZeSOeitWaF
-	 DEBo08YtczPPrFrK+r5Gn24r45zgUCKo3z0Q48zJW+ko5jYBOQMDTWQXLO2Fpn9Z4H
-	 6PPGx0z+8VYGgOmerceAbhLtykRsAf3AaCV3e1T7rn0J7s5125yGlQ1Bb16iy429fe
-	 dLwYuYTc4WZki3mnnFnaufk+rYjQyM5kJIocU80TwrkmLKiZEynmdGGFRIfzfPEUGu
-	 FsJWWs0qZrBng==
+	bh=s9KOsJHPX8mNPryGVyICWhP1YoIx1vF2Sh4FXkHLgpk=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=VPF0n5bog8EFSaleFqb29oS++uwCjDIC7BwSFHDdXrkqJN2+jG3LoltSY2RYFi9fa
+	 CUzxHsSZeeA4rreNpI48kKsdLO8HP1thzglWCGB9WWKlzwz9PMJSSmMDR36YE2pDmC
+	 5APjLf8DXx74N5qIip/kwZphKJbC0IIjS5O1wuoTMm9lccsXVWjfW/s2lfx7jl0ixn
+	 Lqt5GHpPTYH3dxN5l4EGzbBU/vcmZmIcOAE3jFWx/X6DIAFRwuZl/aUKQhOkMkw4sv
+	 KFlKTpJOUTdzYPjj6wmBlKfvYnctUygK+EOFFohYSclGNFtBarHAfpmGyHWfM9z3A3
+	 +Oco9ypSnykRA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C774AE77194;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82451E77188;
 	Thu,  2 Jan 2025 18:32:21 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Thu, 02 Jan 2025 19:31:45 +0100
-Subject: [PATCH 04/19] powerpc: dts: mpc8315e: Add labels to peripherals
+Subject: [PATCH 00/19] powerpc: MPC83xx cleanup and LANCOM NWAPP2 board
+Date: Thu, 02 Jan 2025 19:31:41 +0100
+Message-Id: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,9 +64,10 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250102-mpc83xx-v1-4-86f78ba2a7af@posteo.net>
-References: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
-In-Reply-To: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
+X-B4-Tracking: v=1; b=H4sIAI7bdmcC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIxNDI2ND3dyCZAvjigpdQ/NkC0uLRBNLExNDJaDqgqLUtMwKsEnRsbW1ALn
+ E2NdZAAAA
+X-Change-ID: 20241231-mpc83xx-17c898a49441
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>, 
@@ -79,11 +80,11 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=2746;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=2877;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=JWG24yKk9tKJztiNlXB5Hna42dBR5XCLmCda3s4BqBY=;
- b=Fqpu6KOl1IDStHphfeNxyTVjxQMUqH96DufHMXOAJgSY48bPEprSxuxfwuayggOiI9f8hAsrn
- QtlDpQcen04AYKtIDo3uRqnWQR11t8Z30E826BlCY42QKv++IhxX/ns
+ bh=s9KOsJHPX8mNPryGVyICWhP1YoIx1vF2Sh4FXkHLgpk=;
+ b=Yes62fmOx2x2qZhQDLO1dreJSQZiMF9f1nnFMaGDZeK+FBloj2U8kviImy+hqs0K4bJ17FFXx
+ oLI8tgG+VsmCNh41LCNbnc+oAla8AExIhxUWOPTE8qd9z8vIciFRu5Y
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -91,113 +92,63 @@ X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
 X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 Reply-To: j.ne@posteo.net
 
-From: "J. Neuschäfer" <j.ne@posteo.net>
+This patchset adds a devicetree for the LANCOM NWAPP2 board based on the
+MPC8314E platform, and slightly modernizes the MPC83xx platform support
+in the process.
 
-Labels can be used in board-specific devicetrees to refer to nodes more
-conveniently.
-
-mpc8315erdb.dtb remains identical after this patch.
+This board is nominally end-of-life, but available to hobbyists.
+A U-Boot port is also in the making.
 
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
- arch/powerpc/boot/dts/mpc8315e.dtsi | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+J. Neuschäfer (19):
+      powerpc: Generalize MPC831x platform support
+      powerpc: dts: Extract mpc8315e.dtsi from mpc8315erdb.dts
+      powerpc: dts: mpc8315e: Use IRQ_TYPE_* macros
+      powerpc: dts: mpc8315e: Add labels to peripherals
+      powerpc: dts: mpc8315e: Disable peripherals by default
+      powerpc: dts: mpc8315e: Add missing #cells properties to SPI bus
+      powerpc: dts: mpc8315erdb: Add missing model property
+      powerpc: boot: Enable FIT image generation
+      powerpc: boot: Build devicetrees when CONFIG_MPC831x=y
+      powerpc: dts: Add MPC8314E devicetree
+      dt-bindings: gpio: fsl,qoriq-gpio: Add compatible string fsl,mpc8314-gpio
+      powerpc: dts: mpc8315e: Add GPIO controller node
+      gpio: mpc8xxx: Add MPC8314 support
+      powerpc: mpc83xx: Switch to of_platform_populate
+      dt-bindings: vendor-prefixes: Add LANCOM Systems GmbH
+      powerpc: dts: Add LANCOM NWAPP2 board devicetree
+      powerpc: Regenerate mpc83xx_defconfig
+      powerpc: mpc83xx_defconfig: Enable NWAPP2 board features
+      MAINTAINERS: Add entry for LANCOM board support
 
-diff --git a/arch/powerpc/boot/dts/mpc8315e.dtsi b/arch/powerpc/boot/dts/mpc8315e.dtsi
-index 8741482905f0f30bf893a08b2602fdc6e74c23ff..2531e702648f1bf922a7112c9ddaeac1c3113572 100644
---- a/arch/powerpc/boot/dts/mpc8315e.dtsi
-+++ b/arch/powerpc/boot/dts/mpc8315e.dtsi
-@@ -44,7 +44,7 @@ memory {
- 		reg = <0 0>;
- 	};
- 
--	localbus@e0005000 {
-+	localbus: localbus@e0005000 {
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		compatible = "fsl,mpc8315-elbc", "fsl,elbc", "simple-bus";
-@@ -62,13 +62,13 @@ immr@e0000000 {
- 		reg = <0xe0000000 0x00000200>;
- 		bus-frequency = <0>;
- 
--		wdt@200 {
-+		wdt: wdt@200 {
- 			device_type = "watchdog";
- 			compatible = "mpc83xx_wdt";
- 			reg = <0x200 0x100>;
- 		};
- 
--		i2c@3000 {
-+		i2c: i2c@3000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			cell-index = <0>;
-@@ -79,7 +79,7 @@ i2c@3000 {
- 			dfsrr;
- 		};
- 
--		spi@7000 {
-+		spi: spi@7000 {
- 			cell-index = <0>;
- 			compatible = "fsl,spi";
- 			reg = <0x7000 0x1000>;
-@@ -127,7 +127,7 @@ dma-channel@180 {
- 			};
- 		};
- 
--		usb@23000 {
-+		usb: usb@23000 {
- 			compatible = "fsl-usb2-dr";
- 			reg = <0x23000 0x1000>;
- 			#address-cells = <1>;
-@@ -152,7 +152,7 @@ enet0: ethernet@24000 {
- 				     <34 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 
--			mdio@520 {
-+			mdio0: mdio@520 {
- 				#address-cells = <1>;
- 				#size-cells = <0>;
- 				compatible = "fsl,gianfar-mdio";
-@@ -175,7 +175,7 @@ enet1: ethernet@25000 {
- 				     <37 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 
--			mdio@520 {
-+			mdio1: mdio@520 {
- 				#address-cells = <1>;
- 				#size-cells = <0>;
- 				compatible = "fsl,gianfar-tbi";
-@@ -203,7 +203,7 @@ serial1: serial@4600 {
- 			interrupt-parent = <&ipic>;
- 		};
- 
--		crypto@30000 {
-+		security: crypto@30000 {
- 			compatible = "fsl,sec3.3", "fsl,sec3.1", "fsl,sec3.0",
- 				     "fsl,sec2.4", "fsl,sec2.2", "fsl,sec2.1",
- 				     "fsl,sec2.0";
-@@ -216,7 +216,7 @@ crypto@30000 {
- 			fsl,descriptor-types-mask = <0x3a30abf>;
- 		};
- 
--		sata@18000 {
-+		sata0: sata@18000 {
- 			compatible = "fsl,mpc8315-sata", "fsl,pq-sata";
- 			reg = <0x18000 0x1000>;
- 			cell-index = <1>;
-@@ -224,7 +224,7 @@ sata@18000 {
- 			interrupt-parent = <&ipic>;
- 		};
- 
--		sata@19000 {
-+		sata1: sata@19000 {
- 			compatible = "fsl,mpc8315-sata", "fsl,pq-sata";
- 			reg = <0x19000 0x1000>;
- 			cell-index = <2>;
+ .../devicetree/bindings/gpio/fsl,qoriq-gpio.yaml   |   1 +
+ .../devicetree/bindings/vendor-prefixes.yaml       |   2 +
+ MAINTAINERS                                        |   8 +
+ arch/powerpc/Makefile                              |   3 +-
+ arch/powerpc/boot/Makefile                         |  11 +
+ arch/powerpc/boot/dts/Makefile                     |   6 +
+ arch/powerpc/boot/dts/lancom-nwapp2.dts            | 276 +++++++++++++++
+ arch/powerpc/boot/dts/mpc8314e.dtsi                |   7 +
+ arch/powerpc/boot/dts/mpc8315e.dtsi                | 390 +++++++++++++++++++++
+ arch/powerpc/boot/dts/mpc8315erdb.dts              | 327 +----------------
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig    |   2 +-
+ arch/powerpc/configs/83xx/mpc8315_rdb_defconfig    |   2 +-
+ arch/powerpc/configs/mpc83xx_defconfig             |  41 ++-
+ arch/powerpc/configs/ppc6xx_defconfig              |   2 +-
+ arch/powerpc/platforms/83xx/Kconfig                |   6 +-
+ arch/powerpc/platforms/83xx/Makefile               |   2 +-
+ arch/powerpc/platforms/83xx/misc.c                 |   6 +-
+ .../platforms/83xx/{mpc831x_rdb.c => mpc831x.c}    |  21 +-
+ drivers/gpio/gpio-mpc8xxx.c                        |   1 +
+ 19 files changed, 769 insertions(+), 345 deletions(-)
+---
+base-commit: fc033cf25e612e840e545f8d5ad2edd6ba613ed5
+change-id: 20241231-mpc83xx-17c898a49441
 
+Best regards,
 -- 
-2.45.2
+J. Neuschäfer <j.ne@posteo.net>
 
 
 
