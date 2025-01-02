@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-4581-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4582-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB827E77188
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:33:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E537E77197
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jan 2025 18:33:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgP5M2Nz30Sv;
-	Fri,  3 Jan 2025 05:32:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YPFgQ0p3Lz30T1;
+	Fri,  3 Jan 2025 05:32:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735842753;
-	cv=none; b=OaFPDXx4yhXuLlO3jyh3uczNiSYjmD6jHfPaIhppYLg6G2KcctClPHtltfszG3kczn7FjYG3k0b7Lul6qN0rGZFZD9+oph5k52Tgu2yWPnIUBe/8EMOO77XOM1lXCAGI7pcfgyyf2xPVgnn5uzFm+mVElQnDQ7KI0Ip88iQWWMdLGIEDEZ53hmR3j09K7FjnV7uS0n8WGEoU78bbqDZXfSUCjbpIde/qr38EKeEB/hJhU2rT7rjw1D6K+UrRffRD/AfHYfx6lFUS4KbOADkhhMvV/Zvpw0wXuBOA5SQXRVK9dJpsrPa23gQFwU6dEXSlHA2v3v3ELyAVsE9JHjdG8g==
+	cv=none; b=QiQFElMMJMq88uLw76PmzBDgVuDpFOsHyT22Yz40gW8UH7ybUpAS7AjJCrImZwizv5pCT2Ndy6dhu/vmx+qsmqEAt64Ryw9G4HW2yqnmQvVAbXESVH8ZA7p1T7bXOaHCMDEyGSU89GUY3eSd/JjMXMBki8CxRGlkeO2iJ99EYACMk9SproB0M4PPL2ZHBb1osM3w9uBHwWONa3lrK97uR4dj2uJKHlfWONShLXQQici9PLqnFQiO3qJv8Z3+xzYl8M7FJVvcNmmFNReIWLYDTWu1c/QdR94K8KJA7H4blkhUWJguKiEfiPTkThYRRbIg8i5UVm4GLKUxvgKWsdduvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1735842753; c=relaxed/relaxed;
-	bh=4jKAzGIo6GBRtYE31huckX0HQ8g9redipamvjFKHJh4=;
+	bh=pr//AWH5axI1Lc1MuMhQ+zSacl5po5TkOFobw6rnbQE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Et/vqbSwyeTa0jPEMCvMdrL3hBczfIIlhP6DHQexr9mQin6zFsqNAYgcGhz1XVijhiNe0sjFqxUlQTPOyptXdGyFGwW8F8FwPPZMOyKoesdZ3joxNPE7jDZ8LLOGeE8k7udR6pEr4oIsMh+ynslx2sN5Pl1ADHL62Ywl8ieRV2DnNhPR9McV/xvJQPe/dT+wB8/4qcBrPxgIoXqxttMJTFuKnRCsKJcCz4pl9kYRlnATECWl469VhD7OKNI4OA+ZO8b8CymAsKpjjIVX8snnrw9GIixBnMbp9isiYniCGYh5Shx6zqB+3hXZcZR2FoqMIOjqQE02JXgv6JWFTsb84g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qhpM50aC; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=ZQIPPj6MD0NEL7T5MQ5jcM4/Njq7WtUcDOcqr3d48uenKBa6KG61S8CQrAkj2CMhI/ZJ6pEiYAhOeXZzC+tmFyf1wQArja3IUtxif3tkroSog57ePyc+TRAzktBMFFR9we7iqodtGXsbQwO4jHMs56vXzpdW3KakOT1ecHjZ6VahYJOW7ZysM7QrsaAy5B5Nk+COJKQTsOMdsLWido8kpQCkmTtSgDYoMNy25WqtNxpT38LLSY200NhCll3/S3jzwe3aqFqkYBtwpcXRWLNeE/yoltHB16NdzhidnZiShxmavsCdeTxIfpuQCpDzE0u0+NrzMjBdA50LmEhOiwoiEQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ueHE2x0P; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qhpM50aC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ueHE2x0P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgL3KsQz306x
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPFgK6Chxz305n
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2025 05:32:28 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id AE3995C5E18;
-	Thu,  2 Jan 2025 18:31:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 61F68C4CEDD;
+	by nyc.source.kernel.org (Postfix) with ESMTP id B3166A4145C;
+	Thu,  2 Jan 2025 18:30:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D39DAC4CEE2;
 	Thu,  2 Jan 2025 18:32:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1735842742;
-	bh=N9t8aAgpI8PU3Jfgn2dC8EX23k9PWRvKXnQA/lsH/3s=;
+	bh=/r7+wKhmpuwizXZEWKLGTtNGPZdCjwDwKJndEwbewKY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=qhpM50aCPBwNI13gJd+k7lW7C9YqwsPrTPnx/zCNeDIwsiBh09I6zrtgfRjj5gmoL
-	 xjW96fGK/Ex8zfYiN/sytPOaRsxslSC1mRWPGEEWlEfdP7sY1ElVI9HyAw3xLF3cWu
-	 ddzSuc9mm22QvnfI03E0silU/BiHB2yhYEghWOyOhTOu6vux5r2k9ZUkMT9awQp3MU
-	 UprO7T9Av2QsxT97QLl67XnoTm/5Eq2mC61Jlu4EU+nYt7kjNWu2kvbK/97CajZl1P
-	 lK1RRhduXpycsMCDeqf1G9Jmincqt6ekj6DmNINNrJZtkBc5xeIuIB4Oi0yRdceRyY
-	 nk+FMbJxC+Pkw==
+	b=ueHE2x0PBfzsWJl7NXiYBXU4wLdFdwtHAxEoLfIC+HkW8HhYTRKfCzDs6IdqsnlLX
+	 HsQ0ivUBPy5TQQU4vWGpfXQ2UNbw0Yig3CxtlRqRCVo5dxQfeo0ZbtGXc+SLv0g5ID
+	 zSpTsTSB7FChrsq+4ffLy7stZ93YydKe5JUq8WT+z2HM0E+pnDoGOK6eGWX779H+ix
+	 3M1BW7VXBxTmheYOWfg0oKwlhSoxBZdMkTxub/ci+rm21zfCn5ZYZrAVfa9sqx0rMt
+	 7woYoN/nVxwN07omW5Sl8esphIfCPBRgZwa7ssM6tkTRIS0sx9G+cTdmQtZz1p+Tcz
+	 qYAdN0uAU7+Lg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58D94E77197;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C97DBE77197;
 	Thu,  2 Jan 2025 18:32:22 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Thu, 02 Jan 2025 19:31:53 +0100
-Subject: [PATCH 12/19] powerpc: dts: mpc8315e: Add GPIO controller node
+Date: Thu, 02 Jan 2025 19:32:00 +0100
+Subject: [PATCH 19/19] MAINTAINERS: Add entry for LANCOM board support
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,7 +64,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250102-mpc83xx-v1-12-86f78ba2a7af@posteo.net>
+Message-Id: <20250102-mpc83xx-v1-19-86f78ba2a7af@posteo.net>
 References: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
 In-Reply-To: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
@@ -79,11 +79,11 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=867;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1735842735; l=747;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=53IPkv/+qKgm0/DViEM4D8nVx9tPgdRG/PC4lnN6+fc=;
- b=grga97ENyMGY97nIZwfxEfbacZt96cEOsFzwdrvwrUslDs8ieVW4MRzpzYExkcZ8F3W/eVin6
- JigBllwbn/YDXqHVrrZjnesI72P8Hf5rc+QgiKZ0KM9ibGG5RuJEr76
+ bh=dAH39hTNAFd2Gn5pb9BXoNF53Untzct7/Ny6B9T7rmc=;
+ b=JbUR+WMaOFgpoRGjfGRqrBOPDgnsyxY7Nup2gMAnp2r3UNMzcEwns5pKruLl7F84UyqvM5QId
+ sJbADWCBw83DtJgSJAT7pJj+IAa5Cq7WldU6YJFkVO7S4qLA7JrKVnw
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -93,33 +93,32 @@ Reply-To: j.ne@posteo.net
 
 From: "J. Neuschäfer" <j.ne@posteo.net>
 
-This node das previously missing from the device tree.
+Provide a contact for NWAPP2 and other boards.
 
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
- arch/powerpc/boot/dts/mpc8315e.dtsi | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/boot/dts/mpc8315e.dtsi b/arch/powerpc/boot/dts/mpc8315e.dtsi
-index f9d1b48b08799822d33f5e7606030019a19b4743..ad6131d913fd45ec5b693d85e031ec520fb28b2f 100644
---- a/arch/powerpc/boot/dts/mpc8315e.dtsi
-+++ b/arch/powerpc/boot/dts/mpc8315e.dtsi
-@@ -302,6 +302,15 @@ pmc: power@b00 {
- 			interrupt-parent = <&ipic>;
- 			fsl,mpc8313-wakeup-timer = <&gtm1>;
- 		};
-+
-+		gpio: gpio-controller@c00 {
-+			compatible = "fsl,mpc8314-gpio";
-+			reg = <0xc00 0x100>;
-+			interrupts = <74 IRQ_TYPE_LEVEL_LOW>;
-+			interrupt-parent = <&ipic>;
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+		};
- 	};
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 910305c11e8a882da5b49ce5bd55011b93f28c32..6d4717cf7c19c25aa50c5cf1a7956797225a1d21 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -12951,6 +12951,14 @@ S:	Maintained
+ F:	include/net/l3mdev.h
+ F:	net/l3mdev
  
- 	pci0: pci@e0008500 {
++LANCOM BOARD SUPPORT
++M:	J. Neuschäfer <j.ne@posteo.net>
++L:	linuxppc-dev@lists.ozlabs.org
++F:	arch/powerpc/boot/dts/lancom-*.dts
++F:	arch/powerpc/boot/dts/mpc831*
++K:	lancom
++K:	LANCOM
++
+ LANDLOCK SECURITY MODULE
+ M:	Mickaël Salaün <mic@digikod.net>
+ R:	Günther Noack <gnoack@google.com>
 
 -- 
 2.45.2
