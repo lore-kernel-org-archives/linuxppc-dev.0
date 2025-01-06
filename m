@@ -1,50 +1,104 @@
-Return-Path: <linuxppc-dev+bounces-4714-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4715-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3E2CE77188
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2025 14:20:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F128AE77188
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2025 14:35:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YRbtN0LcPz30Vf;
-	Tue,  7 Jan 2025 01:20:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736173212;
-	cv=none; b=ckM3YtZbHIkhhnMjTe5Msaje/MW0ty2DXJbl/XdueZTLtcYFuR25RP1O7NY1gq6+SzzFW40RFeeRBdIgyJEeaGxwHaiSxcVW388SmEQ/6Qzgi6ri7jS4udmEHDiw2sXU9QghlRJa5P4NhVEd+C2IGGYh8CEoE9heuokrr2Ty1qE+xKZ7XMOCqhyo1hrx1unNug/D4HutpR+YPobzYFhp9YSXn1no0jJ0SaPdW/Ql0f27tHseVC+CjBiaQrzs5vPPP/3UyerKTzEkyE1RvMODGvd8BpjSBhv7f/abI68g36BCi58OO+X3h94QjHeMDwsrFPaEjv0wozYPf2pxGChhew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YRcDQ3drvz2xtK;
+	Tue,  7 Jan 2025 01:35:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736174150;
+	cv=none; b=RM/efU1D6Dr3qA7O2WanEeOzBitswTfxSFJyRURezP/6wTP617u0pBb0XDzQBcIOqMuxjLWxf1TG+ID9rckGWlBd6pYzx2k3KcWVnpx0xJPDWVBpBBLau2hE8nLsNcLIUoHNlpCSlcGz+OzPY8CTdd+u2b85wIwwphQD3qLbH4W7nBPZXRqc4hKQmPF0OjpVqwVIwTJomVY5BGsTK3YH4MH45BtkkMNzn4FDddzPN2shWefLDfa5HWcruAWjYoatbBrL/KMsHLTbqiDz8XxIt5m0rob46AUEboRLNZ775k8fTzPgdxvYeyMNDXUHqbJLy4K0TpARbQ7sNnWwvIylbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736173212; c=relaxed/relaxed;
-	bh=pEDGr4jecIUoWtQjn8uEPYhLSvlQLyW+rQ/LiGHpOBc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=a0MQgyqNntyrdlqLgi/P2oQWfxUZkE1rdHd+OoBkdr1GrPIca9Ck18UZXDd6In/PN/Uz6zvWQTdKuJPhQaZsKq57543fBLP6wNFWXJqwjucnzPcZuV2ruJtkNP+i5lzreiCYfpTZT867CGvdOvyNUtZ21zuer7EN+/Ljrar3xBKaO96KWc5uMWoZb8Ed8t23pfJm/f7YaXnIySI3y5WyUHo7FXW6+qHPk1UaQ5i4Xhpb7wY+lY4LC5iKa+/wKATlCOvgAvmZmxVzRnZABdW0LI1M5XN+yIVw0m6VRZBy0GQ48ABlq1qz7hIQyVqQ3hjn0Q+yF8CN0Gg/uO6oIa5dYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YRbtM2PWSz2yZN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2025 01:20:11 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YRbD92xxVz9sRy;
-	Mon,  6 Jan 2025 14:50:33 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 6wW4lpObGddX; Mon,  6 Jan 2025 14:50:33 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YRbD83B5lz9sPd;
-	Mon,  6 Jan 2025 14:50:32 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5CAB38B76D;
-	Mon,  6 Jan 2025 14:50:32 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Z_B1MFLFwVVN; Mon,  6 Jan 2025 14:50:32 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9FC648B763;
-	Mon,  6 Jan 2025 14:50:31 +0100 (CET)
-Message-ID: <0b66e94d-7116-4916-b897-06b1199752b4@csgroup.eu>
-Date: Mon, 6 Jan 2025 14:50:31 +0100
+	t=1736174150; c=relaxed/relaxed;
+	bh=yoK5E8r9ZiVbP/iseDdGu93jcAAz/4Uy/8D3TkhMEPQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XnTMKqy5ZQBIsZd6q3h04heW66HI2UUrknV5aEZ+YBHh8XwCxD7CAyz3cR0hzDt6Epp+324EvcVQSUFBNrZe9jr4w1O4ytrEdseQ6JKSchD4N1l82QhtPyLjTiivDQU4CqIRLltUR4u0zIT6AUnQu+pWawINaLKkPu3g5niWg6A6msgKjZBOSRPowZBdyzNNbEMPofwBurR3SZ/zY2nlMX5gsczu4tllOpcTfOPkZwoMzPiKu+n8h/0Lg5WGrMn0iL2BaY2EmAFhXJ1e/p6jdcNBZwts8BrzYOm+Vc99yeV71wrFTK9UwwKtMljm/Qh25SYWB+OMuOOp2k+Q8aXslw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RgUCNi9X; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RgUCNi9X;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YRcDP2pX7z2xr4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2025 01:35:48 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 506DKdR6028353;
+	Mon, 6 Jan 2025 14:35:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=yoK5E8r9ZiVbP/iseDdGu93jcAAz/4
+	Uy/8D3TkhMEPQ=; b=RgUCNi9X25JhEHAe1CAG1qqWDykE2cD2UYRU3jmdIYZ8Ch
+	T5zNuZL1wNyGI3Vx6v5lGgT6nrQjUFmPBzbnAHtewI+GPO2JVytXZHj2wHKmhggO
+	GdcJ4vAjUlaHrEKk26fgqLKossjwTqPk3DWuWYX2Dr+Z7onrnepYYdpVWHvCydHs
+	bu32Wpeqd9ftCqq6EZBoM7oOtX/GhoZh7MR5d6abz5ggaLaPXwccpK1Z1mGCENN4
+	yKVEOjmgL8y/m6mo88lKz8bR0FDZGFR18HK66OfhU0FrVIV1cSA7wvm4ufpM7WPO
+	4ER6RJeXDR1BpR42AHtSLYfW3/ShkDYByj64zWig==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44047hb2wm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Jan 2025 14:35:17 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 506EZGRn003388;
+	Mon, 6 Jan 2025 14:35:16 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44047hb2wj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Jan 2025 14:35:16 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 506CA9Jj026189;
+	Mon, 6 Jan 2025 14:35:15 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 43yj11wr3q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Jan 2025 14:35:15 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 506EZDIG28705314
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 6 Jan 2025 14:35:13 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 96B4320043;
+	Mon,  6 Jan 2025 14:35:13 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 345D620040;
+	Mon,  6 Jan 2025 14:35:11 +0000 (GMT)
+Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.179.26.127])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon,  6 Jan 2025 14:35:11 +0000 (GMT)
+Date: Mon, 6 Jan 2025 15:35:09 +0100
+From: Alexander Gordeev <agordeev@linux.ibm.com>
+To: Qi Zheng <zhengqi.arch@bytedance.com>
+Cc: peterz@infradead.org, kevin.brodsky@arm.com, palmer@dabbelt.com,
+        tglx@linutronix.de, david@redhat.com, jannh@google.com,
+        hughd@google.com, yuzhao@google.com, willy@infradead.org,
+        muchun.song@linux.dev, vbabka@kernel.org, lorenzo.stoakes@oracle.com,
+        akpm@linux-foundation.org, rientjes@google.com, vishal.moola@gmail.com,
+        arnd@arndb.de, will@kernel.org, aneesh.kumar@kernel.org,
+        npiggin@gmail.com, dave.hansen@linux.intel.com, rppt@kernel.org,
+        ryan.roberts@arm.com, linux-mm@kvack.org,
+        linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+        x86@kernel.org, linux-arch@vger.kernel.org, linux-csky@vger.kernel.org,
+        linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+        linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
+        linux-um@lists.infradead.org
+Subject: Re: [PATCH v4 12/15] s390: pgtable: also move pagetable_dtor() of
+ PxD to __tlb_remove_table()
+Message-ID: <Z3vqHXdwIMBVQ2GT@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+References: <cover.1735549103.git.zhengqi.arch@bytedance.com>
+ <ad21b9392096336cf15aee46f68f9989a9cf877e.1735549103.git.zhengqi.arch@bytedance.com>
+ <Z3uyJ2BjslzsjkZI@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+ <2d16f0fe-9c7f-4229-b7b5-ffa3ab1b1143@bytedance.com>
+ <Z3vQHplZqtHf6Td8@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+ <57ea8193-2fd9-41a9-85b4-7af924f900f4@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,208 +111,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 01/19] powerpc: Generalize MPC831x platform support
-To: j.ne@posteo.net, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Linus Walleij <linus.walleij@linaro.org>,
- Bartosz Golaszewski <brgl@bgdev.pl>, Frank Li <Frank.Li@nxp.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-gpio@vger.kernel.org
-References: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
- <20250102-mpc83xx-v1-1-86f78ba2a7af@posteo.net>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250102-mpc83xx-v1-1-86f78ba2a7af@posteo.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <57ea8193-2fd9-41a9-85b4-7af924f900f4@bytedance.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: sJuxnsXxxJgGCCGTIUc0sEdh5BRYGtAz
+X-Proofpoint-ORIG-GUID: UPicS2fzhLCrpHuuN_a8oN-YM2X9yFa6
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 adultscore=0
+ impostorscore=0 priorityscore=1501 malwarescore=0 spamscore=0
+ lowpriorityscore=0 phishscore=0 mlxlogscore=791 bulkscore=0 suspectscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2411120000 definitions=main-2501060128
 
-
-
-Le 02/01/2025 à 19:31, J. Neuschäfer via B4 Relay a écrit :
-> [Vous ne recevez pas souvent de courriers de devnull+j.ne.posteo.net@kernel.org. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+On Mon, Jan 06, 2025 at 09:34:55PM +0800, Qi Zheng wrote:
+> OK, will change the subject and description to:
 > 
-> From: "J. Neuschäfer" <j.ne@posteo.net>
+> s390: pgtable: also move pagetable_dtor() of PxD to pagetable_dtor_free()
 > 
-> The Reference Design Boards (RDB) don't have the same relevance they had
-> then the MPC831x platform was new; if any work is done today, then
-> likely based on used production boards, which are more readily available
-> than NXP's discontinued devboards.
+> To unify the PxD and PTE TLB free path, also move the pagetable_dtor() of
+> PMD|PUD|P4D to pagetable_dtor_free().
 > 
-> To further reduce the focus on RDBs, add DT compatible strings for all
-> four MPC8314/5 variants.
+> But pagetable_dtor_free() is newly introduced in this patch, should it
+> be changed to 'move ... to pagetable_pte_dtor_free()'? But this seems
+> strange. :(
 
-Seems like this patch does more than adding DT compatible strings.
+s390: pgtable: consolidate PxD and PTE TLB free paths
 
-> 
-> Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-> ---
->   arch/powerpc/configs/83xx/mpc8313_rdb_defconfig     |  2 +-
->   arch/powerpc/configs/83xx/mpc8315_rdb_defconfig     |  2 +-
->   arch/powerpc/configs/mpc83xx_defconfig              |  2 +-
->   arch/powerpc/configs/ppc6xx_defconfig               |  2 +-
->   arch/powerpc/platforms/83xx/Kconfig                 |  6 +++---
->   arch/powerpc/platforms/83xx/Makefile                |  2 +-
->   .../platforms/83xx/{mpc831x_rdb.c => mpc831x.c}     | 21 ++++++++++++++-------
->   7 files changed, 22 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig b/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
-> index 16a42e2267fbe092ea2344f50548101bc1e344ce..38a4d1ceff6a9ea75d9d8a313adbd2e5e5c9ac67 100644
-> --- a/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
-> +++ b/arch/powerpc/configs/83xx/mpc8313_rdb_defconfig
-> @@ -12,7 +12,7 @@ CONFIG_PARTITION_ADVANCED=y
->   # CONFIG_PPC_CHRP is not set
->   # CONFIG_PPC_PMAC is not set
->   CONFIG_PPC_83xx=y
-> -CONFIG_MPC831x_RDB=y
-> +CONFIG_MPC831x=y
->   CONFIG_PCI=y
->   CONFIG_NET=y
->   CONFIG_PACKET=y
-> diff --git a/arch/powerpc/configs/83xx/mpc8315_rdb_defconfig b/arch/powerpc/configs/83xx/mpc8315_rdb_defconfig
-> index 80d40ae668eb6f1ae10bc0c1100d904946496112..788189a182458c92a62235c10fb3d21a87f4296b 100644
-> --- a/arch/powerpc/configs/83xx/mpc8315_rdb_defconfig
-> +++ b/arch/powerpc/configs/83xx/mpc8315_rdb_defconfig
-> @@ -12,7 +12,7 @@ CONFIG_PARTITION_ADVANCED=y
->   # CONFIG_PPC_CHRP is not set
->   # CONFIG_PPC_PMAC is not set
->   CONFIG_PPC_83xx=y
-> -CONFIG_MPC831x_RDB=y
-> +CONFIG_MPC831x=y
->   CONFIG_PCI=y
->   CONFIG_NET=y
->   CONFIG_PACKET=y
-> diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
-> index 83c4710017e949c358f3ba8b73f5c1873cfd10f8..4af5e3e8c5a7f44f5e97b8fb4cdf691686f8967b 100644
-> --- a/arch/powerpc/configs/mpc83xx_defconfig
-> +++ b/arch/powerpc/configs/mpc83xx_defconfig
-> @@ -9,7 +9,7 @@ CONFIG_PARTITION_ADVANCED=y
->   # CONFIG_PPC_CHRP is not set
->   # CONFIG_PPC_PMAC is not set
->   CONFIG_PPC_83xx=y
-> -CONFIG_MPC831x_RDB=y
-> +CONFIG_MPC831x=y
->   CONFIG_MPC832x_RDB=y
->   CONFIG_MPC834x_ITX=y
->   CONFIG_MPC836x_RDK=y
-> diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-> index ca0c90e9583790cbca15ba956b371b8b0cb63c47..7e56dc497a48289614c8d01cc51be6d1edad7846 100644
-> --- a/arch/powerpc/configs/ppc6xx_defconfig
-> +++ b/arch/powerpc/configs/ppc6xx_defconfig
-> @@ -40,7 +40,7 @@ CONFIG_PPC_82xx=y
->   CONFIG_EP8248E=y
->   CONFIG_MGCOGE=y
->   CONFIG_PPC_83xx=y
-> -CONFIG_MPC831x_RDB=y
-> +CONFIG_MPC831x=y
->   CONFIG_MPC832x_RDB=y
->   CONFIG_MPC834x_ITX=y
->   CONFIG_MPC836x_RDK=y
-> diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-> index d355ad40995fdc0fc3b4355126c65c761c21c296..944ec44a1fa6044b03ac71c295e891cd411ce444 100644
-> --- a/arch/powerpc/platforms/83xx/Kconfig
-> +++ b/arch/powerpc/platforms/83xx/Kconfig
-> @@ -18,12 +18,12 @@ config MPC830x_RDB
->          help
->            This option enables support for the MPC8308 RDB and MPC8308 P1M boards.
-> 
-> -config MPC831x_RDB
-> -       bool "Freescale MPC831x RDB"
-> +config MPC831x
+Call pagetable_dtor() for PMD|PUD|P4D tables just before ptdesc is
+freed - same as it is done for PTE tables. That allows consolidating
+TLB free paths for all table types.
 
-That looks confusing. We already have CONFIG_PPC_MPC831x
+Makes sense?
 
+> Thanks!
 
-> +       bool "Freescale MPC831x boards"
->          select DEFAULT_UIMAGE
->          select PPC_MPC831x
->          help
-> -         This option enables support for the MPC8313 RDB and MPC8315 RDB boards.
-> +         This option enables support for all MPC831x-based boards.
-> 
->   config MPC832x_RDB
->          bool "Freescale MPC832x RDB"
-> diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/platforms/83xx/Makefile
-> index 6fc3dba943dade4f63da090b520b0c35bb46a091..92fb0b34913e1113d3e6eac49acbb1c32fb06ab7 100644
-> --- a/arch/powerpc/platforms/83xx/Makefile
-> +++ b/arch/powerpc/platforms/83xx/Makefile
-> @@ -6,7 +6,7 @@ obj-y                           := misc.o
->   obj-$(CONFIG_SUSPEND)          += suspend.o suspend-asm.o
->   obj-$(CONFIG_MCU_MPC8349EMITX) += mcu_mpc8349emitx.o
->   obj-$(CONFIG_MPC830x_RDB)      += mpc830x_rdb.o
-> -obj-$(CONFIG_MPC831x_RDB)      += mpc831x_rdb.o
-> +obj-$(CONFIG_MPC831x)          += mpc831x.o
->   obj-$(CONFIG_MPC832x_RDB)      += mpc832x_rdb.o
->   obj-$(CONFIG_MPC834x_ITX)      += mpc834x_itx.o
->   obj-$(CONFIG_MPC836x_RDK)      += mpc836x_rdk.o
-> diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x.c
-> similarity index 65%
-> rename from arch/powerpc/platforms/83xx/mpc831x_rdb.c
-> rename to arch/powerpc/platforms/83xx/mpc831x.c
-> index 5c39966762e4264d2ef91b2c4ef75fdf2c2c5d65..7250fc11c7ee80b266f39d0b3aebb0deb777c129 100644
-> --- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-> +++ b/arch/powerpc/platforms/83xx/mpc831x.c
-> @@ -1,8 +1,8 @@
->   // SPDX-License-Identifier: GPL-2.0-or-later
->   /*
-> - * arch/powerpc/platforms/83xx/mpc831x_rdb.c
-> + * arch/powerpc/platforms/83xx/mpc831x.c
-
-Please remove the file name from the file.
-
->    *
-> - * Description: MPC831x RDB board specific routines.
-> + * Description: MPC831x board specific routines.
-
-s/board/boards ?
-
->    * This file is based on mpc834x_sys.c
->    * Author: Lo Wlison <r43300@freescale.com>
->    *
-> @@ -22,24 +22,31 @@
->   /*
->    * Setup the architecture
->    */
-> -static void __init mpc831x_rdb_setup_arch(void)
-> +static void __init mpc831x_setup_arch(void)
->   {
->          mpc83xx_setup_arch();
->          mpc831x_usb_cfg();
->   }
-> 
->   static const char *board[] __initdata = {
-> +       /* Reference design boards */
->          "MPC8313ERDB",
->          "fsl,mpc8315erdb",
-> +
-> +       /* Generic chip compatibles */
-> +       "fsl,mpc8315e",
-> +       "fsl,mpc8315",
-> +       "fsl,mpc8314e",
-> +       "fsl,mpc8314",
->          NULL
->   };
-> 
-> -machine_device_initcall(mpc831x_rdb, mpc83xx_declare_of_platform_devices);
-> +machine_device_initcall(mpc831x, mpc83xx_declare_of_platform_devices);
-> 
-> -define_machine(mpc831x_rdb) {
-> -       .name                   = "MPC831x RDB",
-> +define_machine(mpc831x) {
-> +       .name                   = "MPC831x",
->          .compatibles            = board,
-> -       .setup_arch             = mpc831x_rdb_setup_arch,
-> +       .setup_arch             = mpc831x_setup_arch,
->          .discover_phbs          = mpc83xx_setup_pci,
->          .init_IRQ               = mpc83xx_ipic_init_IRQ,
->          .get_irq                = ipic_get_irq,
-> 
-> --
-> 2.45.2
-> 
-> 
-
-
+Thank you!
 
