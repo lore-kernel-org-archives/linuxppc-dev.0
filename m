@@ -1,102 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-4708-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4709-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFADAE77188
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2025 13:35:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 527ECE77188
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2025 13:37:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YRZv52G3sz30Tx;
-	Tue,  7 Jan 2025 00:35:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736170545;
-	cv=none; b=Oag/A8KIWO8mAKwFR1A8Aj5rkRbmyrPctToYwLUccdy4CAnNtnA0YkBraUi/LcyNlp2zlU0UZA7wX6ySRGuohuhQy5dD3kE6qeV3FdLfX0wf5s3936fD9M13W9qktXl3UA9/vFRVQ8H3SHDOlsynPhnTPBjCAK5nx8Qc8VpBnfYp+gJynYWyQVgc2HPPY6ftNUcFef04T8bExRVOqcLTlRPHci/oQqHc7Wc+kca2qfVL703f9RAP+U8qkcnBdpXPmjwg3JYcURDY39OUkwOb+MUzBi8xa6LI+CS92eV2oarjLbcBV0g/G4TVnSEoh9je9YpCKIuJbFZdWA9QtorgFA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YRZxZ6nGJz30TS;
+	Tue,  7 Jan 2025 00:37:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736170674;
+	cv=none; b=LJxP8TyTkbt+7aPFvSrFZYAIKJnXT5ORvlBelnHAnJtgChQb8cBavsSBjDGxqN9U6OsK6blGKxQfWcYhpOMymYnLWtiwmHHm68LHrvLsFUrE9rPmBkH2pbgT/bAa70A5fRWTK6D4+PvVuwuKs6d9VwQ9qFRc39FjlIjZTAa+DgELfTfIxLVdaUJ/9WSi5XU2oUoNZxdh2YJi42VcUBI6Sz9NCFBK2Mj58RAAhE7gWIb8sG9JXSkBPgpOx5uzFchjQ4CWEpV9KaZKg5cNHK3vPp2j6ednU/A+YyuyV/+apCXOCTk3UZ4/Lu23cQqFY1d7/ALZO0RdgizcQnQnbDfzJQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736170545; c=relaxed/relaxed;
-	bh=lrftkFSyTk2s/yfIapFP+84J+Q9Pn5cd9LVcrQZ2iI8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eX2/MqKReXu+36Ki9dZxh5VO68tQNy6E2iiERjAtxXbcLnGj1ontLIz3NrWVHP/SBwaemAa5YS1dYKH5JKPboCNNJ5zNiAkxWwWdsHybtYP9HV/AnDM5qx2Z9k4mb8pZgejNsuJdOCEVegkTyT1ADLNK9S8k2fopubH6y2jQuAR1UZ1BCIztlg8vxSe81Ci7KWY1ubj2PvzUsy27Kam9xybYP/GkPuNeY5g+jzhetOhcHzkmzat7kzcyTGk3auC+4sQvGbxQho6+fMQG+AAUo58dG7r2UKfK2DtNjn7aOOx2axtzRu64wWyd1dlp9J1sDYRdS4nuwY+imUjahRSdYw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PDtlb5Bs; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1736170674; c=relaxed/relaxed;
+	bh=45XLTheYrSs123jVGiTYWA09gh8PmFWTSz2LniJsnL8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IiRFdlSLhFyzuoN8EuEy5DMa7ZS/SCkGjE/SCe7r+Lro86ddgNLrfuhPNbfT2AFsRWx9mJOnP3tuCvIjWUKi/tZVuU6GGgqIvo2qzzZTXnZO3Am09IIMd22YoDKOdQ3G7olhT7uQxTqj6B94BoY3SUEDHyTVthJSAPdzZ3k7ZHedot+Q3T+xq5W3C3gCb0AjU+madJm9/SfYwbt3USYf1FYqMVyMlOH2r5dCD9H+vQFQnEvcmoMIA5O8c5tLW66fvoqUdhi6bkc4hq/PfP8mqovHI3ay2EZltvVi9GSREv4nCxSppPqAUK6DRPElVQwndJnDobfWLN469pRvinjNhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=eSwvvmVv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PDtlb5Bs;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=eSwvvmVv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YRZv36fP1z30Tk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2025 00:35:43 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 506BoOUG007085;
-	Mon, 6 Jan 2025 13:35:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=lrftkFSyTk2s/yfIapFP+84J+Q9Pn5
-	cd9LVcrQZ2iI8=; b=PDtlb5Bs7aIfNSK6IDvwDAT5115xFIn9zs/UvICAM0v+eC
-	g+1dQHbRORY4WtYTVHnBGKFMHlsum17PMdPkHxGG8c+Hk1qp9gIgNYqampQyph/L
-	7+Iyu3Eh2EL1ZpXOQqlTp9xf9jcs+nnkA/SqlGB9wfOgk1Z76TLVBFPp6KnEhUsl
-	sep4v9WCj9iFJA/3XWeaTiTAe7D25ZLWuotAgyhqA1PeYHgzC7zVd2fp37ltKmwk
-	1OHrieDYwJU2jzFyuqubKBLa6kUkQKGeQoJ14ralKi0q47s3GP2C4b4LbiHXFbXr
-	ywPBX6l8sMXsvIHzw6tl4sOCH2VAVHQCEGwb2Spw==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4403wajp6s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Jan 2025 13:35:00 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 506DZ01B000336;
-	Mon, 6 Jan 2025 13:35:00 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4403wajp6m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Jan 2025 13:35:00 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5069PNdl003571;
-	Mon, 6 Jan 2025 13:34:59 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 43yfasx25x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Jan 2025 13:34:58 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 506DYvtv53149954
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 6 Jan 2025 13:34:57 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4295C2004B;
-	Mon,  6 Jan 2025 13:34:57 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A410720043;
-	Mon,  6 Jan 2025 13:34:53 +0000 (GMT)
-Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.179.26.127])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon,  6 Jan 2025 13:34:53 +0000 (GMT)
-Date: Mon, 6 Jan 2025 14:34:51 +0100
-From: Alexander Gordeev <agordeev@linux.ibm.com>
-To: Qi Zheng <zhengqi.arch@bytedance.com>
-Cc: peterz@infradead.org, kevin.brodsky@arm.com, palmer@dabbelt.com,
-        tglx@linutronix.de, david@redhat.com, jannh@google.com,
-        hughd@google.com, yuzhao@google.com, willy@infradead.org,
-        muchun.song@linux.dev, vbabka@kernel.org, lorenzo.stoakes@oracle.com,
-        akpm@linux-foundation.org, rientjes@google.com, vishal.moola@gmail.com,
-        arnd@arndb.de, will@kernel.org, aneesh.kumar@kernel.org,
-        npiggin@gmail.com, dave.hansen@linux.intel.com, rppt@kernel.org,
-        ryan.roberts@arm.com, linux-mm@kvack.org,
-        linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-        sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-        x86@kernel.org, linux-arch@vger.kernel.org, linux-csky@vger.kernel.org,
-        linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
-        linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
-        linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
-        linux-um@lists.infradead.org
-Subject: Re: [PATCH v4 06/15] s390: pgtable: add statistics for PUD and P4D
- level page table
-Message-ID: <Z3vb+0MktvDNysQD@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
-References: <cover.1735549103.git.zhengqi.arch@bytedance.com>
- <35be22a2b1666df729a9fc108c2da5cce266e4be.1735549103.git.zhengqi.arch@bytedance.com>
- <Z3uxVkg3i7zXI92e@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
- <a3a2bd64-9952-4c66-8626-f2436ce07d1d@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YRZxZ0PNwz30Nc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2025 00:37:53 +1100 (AEDT)
+Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-21636268e43so22678865ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jan 2025 05:37:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1736170670; x=1736775470; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=45XLTheYrSs123jVGiTYWA09gh8PmFWTSz2LniJsnL8=;
+        b=eSwvvmVvsB22wLUgLx1l57TNEET3qKwfaIXxvEEr30VeethVvbv3EADzseGtFaKAGD
+         rWyQblUsUnkdlfP+BSvMC7lRStCbm3C36vxtbbM+8/LXLOy+Xv57TEbJHrF2NdUjZnW2
+         QBLGRz0EjfrPwmbx578b71KKWUj7qjENy3gw07llUH8AJQpeVcDeqTRuNgXXlBrKw3/V
+         /zDqLE7oEB7F0P/Mu45EeKBAPRaf/BPONjTzx3pCKP5keiMDqPok0Sjxu/RZ3p8uGzW1
+         IPh5nD5N6abpV9ukM4cTmeFiiqxWhN3le3643K42zD2SSmKSE/WO78Nr1lSh8rW43USf
+         8W0g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736170670; x=1736775470;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=45XLTheYrSs123jVGiTYWA09gh8PmFWTSz2LniJsnL8=;
+        b=s+raxJ5Of7YoMCXPtEPk5mO/7OIj+Y5wKrdJxjQXT/WBplPaijZKVQ+SQy8lmbZE6C
+         5uy/XqaSMtz+KwJFxwOXB1Z22g7qNEqEufxDnLnNlSm2t9JN4cg3tje60x0ah7vOXCZD
+         JeTReexRjf6lee3HnL+ix+EsXSd+TKEOrrgvv5x1QRydfXoVYtMHukuzwPtInz2iXBc6
+         w0oWTwTcN1TzcCJsp7VTkYxqZs+TxpoFNgOu85mFTkYY33veQseWppKyHabX4bT91uUd
+         LzY5anRH8JFpwmKp6zIy8rlyWrnba3xo/bPpktGqbFVPaAeOkhGvILFPlDBeVTFhqpax
+         N3kA==
+X-Forwarded-Encrypted: i=1; AJvYcCX9wHIdKtMWnxsY+6DO5RvQIJGcqSyg9RY4atSpvrtwlvXwGZpNN1JJUmfgPZC7kyT3TjJf1Ir1/ZJZyEA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwRYhbvuFGhM1LeHwaD1SKA2R39PBd8/AmknRoWXDmwi9DAYQlk
+	5YGsm86xJsT9GJogm/E2K6zWBCM0jVEsrJPAWs1ovY2zA5qmxV2pLAj2U47nydw=
+X-Gm-Gg: ASbGncv817dO9uwMtRTU/XNWGxeIHYl3iMcc5nS++GcuJRNRHp85liVK2GR6rptb97C
+	G8JAtlUTvkz9HRRGvSXh1gco+XNiXLL/Y7KVuXr17TUTOX2DxS8i/YTuct4GaGxk8Jtpomv4g29
+	rwC7+8FXudmadOViniEbkHs3LsXZeSudLFIJtVBECId+CRRkj5K0F98AXR01lQP66ZEYxH2EN1U
+	uFRYEIXrwYxqMBnfgxMCDdvHvJUZZJbT3Bfd6eJCu3ii8NZxqcRfUnVgU6oAPtzvaHPDLPuFqR6
+	D5FZiM7vUwbqRxgywxFdFMNDcJl2JJcgCp9e7XI0cf25xwHkN42N
+X-Google-Smtp-Source: AGHT+IFnWXSZW4FIIFkfBRxwzvmAw3s/HsdTqMia2pBdvLu70V6jfgNFfu5B3ABCLJ+ulhyhNt7Jxw==
+X-Received: by 2002:a17:902:c406:b0:216:2bd7:1c4a with SMTP id d9443c01a7336-219e6ebb716mr865705425ad.26.1736170668665;
+        Mon, 06 Jan 2025 05:37:48 -0800 (PST)
+Received: from ?IPV6:2409:8a28:f44:d64:296c:a8f3:f81e:f88b? ([2409:8a28:f44:d64:296c:a8f3:f81e:f88b])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-219dc9f51a0sm290583325ad.187.2025.01.06.05.37.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Jan 2025 05:37:48 -0800 (PST)
+Message-ID: <760c9610-a11b-4bc2-852e-340adb27f666@bytedance.com>
+Date: Mon, 6 Jan 2025 21:37:36 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,34 +84,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a3a2bd64-9952-4c66-8626-f2436ce07d1d@bytedance.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: XFfmZXEbdi1lmX4sTCZJHlLIWFA4SLIH
-X-Proofpoint-ORIG-GUID: N1gUawSn25jz-02tMlFh_LT5dfHmG37b
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxlogscore=703
- lowpriorityscore=0 spamscore=0 suspectscore=0 bulkscore=0 mlxscore=0
- clxscore=1015 adultscore=0 impostorscore=0 priorityscore=1501
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2411120000 definitions=main-2501060120
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 06/15] s390: pgtable: add statistics for PUD and P4D
+ level page table
+Content-Language: en-US
+To: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: peterz@infradead.org, kevin.brodsky@arm.com, palmer@dabbelt.com,
+ tglx@linutronix.de, david@redhat.com, jannh@google.com, hughd@google.com,
+ yuzhao@google.com, willy@infradead.org, muchun.song@linux.dev,
+ vbabka@kernel.org, lorenzo.stoakes@oracle.com, akpm@linux-foundation.org,
+ rientjes@google.com, vishal.moola@gmail.com, arnd@arndb.de, will@kernel.org,
+ aneesh.kumar@kernel.org, npiggin@gmail.com, dave.hansen@linux.intel.com,
+ rppt@kernel.org, ryan.roberts@arm.com, linux-mm@kvack.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+ linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-um@lists.infradead.org
+References: <cover.1735549103.git.zhengqi.arch@bytedance.com>
+ <35be22a2b1666df729a9fc108c2da5cce266e4be.1735549103.git.zhengqi.arch@bytedance.com>
+ <Z3uxVkg3i7zXI92e@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+ <a3a2bd64-9952-4c66-8626-f2436ce07d1d@bytedance.com>
+ <Z3vb+0MktvDNysQD@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+From: Qi Zheng <zhengqi.arch@bytedance.com>
+In-Reply-To: <Z3vb+0MktvDNysQD@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Mon, Jan 06, 2025 at 07:05:16PM +0800, Qi Zheng wrote:
-> > I understand that you want to sort p.._free_tlb() routines, but please
+
+
+On 2025/1/6 21:34, Alexander Gordeev wrote:
+> On Mon, Jan 06, 2025 at 07:05:16PM +0800, Qi Zheng wrote:
+>>> I understand that you want to sort p.._free_tlb() routines, but please
+>>
+>> Yes, I thought it was a minor change, so I just did it.
+>>
+>>> do not move the code around or make a separate follow-up patch.
+>>
+>> Well, if you have a strong opinion about this, I can send an updated
+>> patch.
 > 
-> Yes, I thought it was a minor change, so I just did it.
+> If you ever send v5, then please update this patch.
+
+OK, will do.
+
 > 
-> > do not move the code around or make a separate follow-up patch.
+>> Thanks!
 > 
-> Well, if you have a strong opinion about this, I can send an updated
-> patch.
-
-If you ever send v5, then please update this patch.
-
-> Thanks!
-
-Thank you!
+> Thank you!
 
