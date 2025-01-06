@@ -1,50 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-4705-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4706-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F5FBE77188
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2025 12:50:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA976E77199
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2025 13:23:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YRYtR4HFnz30NY;
-	Mon,  6 Jan 2025 23:50:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736167807;
-	cv=none; b=YTVD/rX3xLy4juhRBeBOF63lBmQP9sWaf/FqBEC8xEOF0qPRJMQnjNB/bHlPkJ1IwiF04vDb5svkA5CZ+h+rAfngdKccsBrC+RZ/MnjCXt0kZQFs6fcjG4p/d36L48IYmFLiFv6BRtPsnUKF1hGrnoUDV7n7ncSQusxKvgT5rUTmkKrtLKhU4ynmG1+XAAeZCdFxvKkmbz1JuYphm2GAuiljY+K6+6FRm2x0CCqZTTVuR01apibDrpLsdqRgXhtcj1qENBULqJv2icaHokDwvbMfNpAWTmCYZyAfWqduNTrLggW+khBXXVpJCp2l9Vy5Nm4uSZIgb39MyrT1iAjWmg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YRZcx2PG2z301x;
+	Tue,  7 Jan 2025 00:23:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::629"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736169809;
+	cv=none; b=DNy/BKx0iGhRGzbGUAvtbdyga0pvbgV1sKILUBjLB5bhpUj/AduOpB9cZnAN/phYtRqWhnCzhJ5VYDqOUSGjRrxQ0g8/SlJT9t3SPbUdDapjqvLzY+ZVInM3uY+2FiGvEJHZBZ3CoHvVBbPAFfqImK6V9rLPXBa30MQohLBvVV8T695DEEzktdCbPSr+aEqON5DwnWHhFKTw7kIC6Rx3dXyDK+UeNvBHIQCoXRXeUV8cLT3CA1O0rFDMVpm74RMv0qQ9SsOPoMbDI60b85YaTKdu1xHDyP6a80C13Cb/WygtyW3wq7Z6add6uTzE4g3VKkOFOjvVJC1Qdve6W0SDUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736167807; c=relaxed/relaxed;
-	bh=N+Dw2vHnqFRsehIToPCFkqh5mXC6MAO0NC+Fk9RKv84=;
+	t=1736169809; c=relaxed/relaxed;
+	bh=af8Jbj+kqP+p1W8uyVyt9V0YBDVs6Wu8XxDGXWv1rDo=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nkSYThLP/HzVoSAvrhHTaQ0Es6Ru22/toma6d6l5AXlO2sGZnG1SnKey+RNCwVSDZI5YYmBErFPZbiv94Pu0XJZKlpc6XrBHqZhYnuF6i0SpXHIphF4RDoTMrSsbb6lDP28Gyz5tN1orRP3i6SYMM1P9HdA2uz4drrnqHl2yDEQ6cSWKWeqjpdtarAoibJelRvgu8c54YB9QXutaAjo5epXLf8aHgiICnqKT3qg+z3MGItaxw+i/mMWiVyFfvAXxphnTNEKo4IqBXqE4nnIz/k4FJa/MHtTh4MRAbl5c1crlJLzxApLztuOJl/XEyOC1TwRBJnCaPkWqtn4pK1t4eA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YRYtQ0wwxz305n
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2025 23:50:04 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YRYdT2hXyz9sPd;
-	Mon,  6 Jan 2025 13:38:53 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FVLpbuyQA70k; Mon,  6 Jan 2025 13:38:53 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YRYdT1g9Gz9rvV;
-	Mon,  6 Jan 2025 13:38:53 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 25DFC8B76D;
-	Mon,  6 Jan 2025 13:38:53 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id BJWV85ZgAz44; Mon,  6 Jan 2025 13:38:53 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id AB4BF8B763;
-	Mon,  6 Jan 2025 13:38:52 +0100 (CET)
-Message-ID: <752a31b0-4370-4f52-b7cc-45f0078c1d6c@csgroup.eu>
-Date: Mon, 6 Jan 2025 13:38:52 +0100
+	 In-Reply-To:Content-Type; b=QUss7Ed/5HKXGD0wA87OfuBqJa4GgOboSeLQglkbCCLBU/aB2qRAbtaN28b9UdLdeq+m0PzMn+yQMA5iNiUOyvCNWA5PaIZ8EX3wn8ZojmKunk5Wwg2sl+wajk3/FCxnyIwPvW6nTlZj/2ysr0wdbph734IAmvoxq+A/RoPPORQ3m8Xb3eLKbAqXStB/Z6E6vDIFGX/GUWyDQOSGuR33Tb6dU4bD/EF4IHi9AnBxer2aK/m/2c6jXo7b22NSfo/ebsFTgiJ1Kl7Il1Tv2h53VsEO8BEQygtl44s2fp0que4SRQnbBJHT2zudZ8WZUdubPMm4gfm6VvMLSXCWgbAjkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=gMNa1wbn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=gMNa1wbn;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YRZcv1cmqz300V
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2025 00:23:25 +1100 (AEDT)
+Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-216728b1836so186444765ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jan 2025 05:23:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1736169803; x=1736774603; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=af8Jbj+kqP+p1W8uyVyt9V0YBDVs6Wu8XxDGXWv1rDo=;
+        b=gMNa1wbnHXxmjOZDc2/neafiqoX0UxpK+7hlEgmQPoBPrxS4YNTCndlb7kLWCfqyRN
+         AOMVTPUnlaRdPcqitu3uFJ0i7DShahG8Dbo1/rYVyleV2bA4BX/UFsFB/YAwLgw0DHLt
+         QCQJmTsCzL7F7ID3pcy1RO5v5KwE/pvCTW00pZPTpudvwUb9htQMBwvS1FWAVEBb046T
+         fGMMGdauYZTS7ivg08c37KJuI6U8IWhSJvKgELXFz2JPjkjxHfTaaGaA1x4gPwM68XRl
+         82lG6Wid+ccMKbKG6zTp7Rn2snpVqg4ZOmxaQjeZMhJ4BIL2ZBNkrYn9p64HDjs9DvCJ
+         STKQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736169803; x=1736774603;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=af8Jbj+kqP+p1W8uyVyt9V0YBDVs6Wu8XxDGXWv1rDo=;
+        b=t30rwi5+uwllbOdLxXn/XfLOd62yE4sjcX9tapMEo5P0AIX144Z8XQljy7ayfjhvyP
+         2042myobCaiHwkkveM90Z3X8cvstgZAEbuy8pMzFfAuzchjsbClB4LOxPotEdaujEkLx
+         YjbgQL1TVdikwX+lDyZtc9iFKhyeDsU6a7D2CsqK81vNtbui8u44L/IcqG0tkZmak6WU
+         vnGU88wZTq9UZ84YJ/ea9H7j4PtIk683WXEFY3LErAuPyHi9X7180opD73dnMW3qr5dE
+         jbhugC0QKuHffWPoK0wvY+8nGWDTWod/RSKPBeg9XgWvXQzJZqNZyMbDLgSmxkhl+bbh
+         OGWQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU5jynjERrfk0J3i0spu263sUOPPpooQLB4WlseNakmVC7UqXDT/tPTd6vOILo16+M9Wt2hMeVyuOfsxVQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwNazDLhKVMD0rBr2TKqv2JefCYovX55wkS0tpy22X3B6pozq/B
+	w6b+ldnGojE78yWsfnMMZhfVVUgkPvryqExIOSanLdSHfy3mC+lhXpTrv31J1mA=
+X-Gm-Gg: ASbGncvhqhCcwOG9V3Gta3G9yxey9w8hUSI3gj/CLRQz/b9Wl6gxxNXn5ojUgJ9Ep8n
+	nDFOURTGUEXAIw49MaWHaQlFGEeTKP+nba7hqQHDbcVnoqACWRsB5apfuWCaQ/qgOkJEVxWRkl2
+	Va/ng2uYCanWyqAF9ZtStfZhTA7hiK5L9Mgz8+VD8aqqjupv97hgJoRHgDAXMJpul4dqj5IuTXw
+	Yo/l7Ym+Ong8VwAPmMXKmlvkfWF8d40szeH6sLcHsGoNrcH7NI59HqeuOSUUgSZ4qIhNPkZXPTZ
+	+AXGIFLcWakvf4izJuD4u0GjRWpb5wSjINTjrmT+MLTNK/tWujiD
+X-Google-Smtp-Source: AGHT+IE/ZrXmD5LZyqp5+IF7XucHWltqSucrfnZMLD6UEt/qaBj6OXgwMq9je0lWMbXPRWlni+TKWA==
+X-Received: by 2002:a05:6a20:2d07:b0:1e1:b44f:cff1 with SMTP id adf61e73a8af0-1e5e07f9c06mr81291446637.33.1736169803320;
+        Mon, 06 Jan 2025 05:23:23 -0800 (PST)
+Received: from ?IPV6:2409:8a28:f44:d64:296c:a8f3:f81e:f88b? ([2409:8a28:f44:d64:296c:a8f3:f81e:f88b])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72aad90c149sm31371677b3a.191.2025.01.06.05.23.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Jan 2025 05:23:22 -0800 (PST)
+Message-ID: <bce4bb4e-459a-44c8-945b-8889149377fd@bytedance.com>
+Date: Mon, 6 Jan 2025 21:23:10 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,161 +85,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: Perf doesn't display kernel symbols anymore (bisected commit
- 659ad3492b91 ("perf maps: Switch from rbtree to lazily sorted array for
- addresses"))
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: James Clark <james.clark@linaro.org>,
- "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Namhyung Kim <namhyung@kernel.org>, Ian Rogers <irogers@google.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <719a89a5-8dff-48a0-ba8f-802c740a00a6@csgroup.eu>
- <53f3abe5-dd22-4a1a-82e6-bc88e91d1869@linaro.org> <Z217eBsXIaSgKuSs@x1>
- <5217124a-f033-4085-b9f5-a477c96728d6@csgroup.eu> <Z3bYltoidQpqtyJ_@x1>
- <48724052-4003-4140-8106-f9ea098cedcb@csgroup.eu> <Z3c4nupM-UENN5LM@x1>
- <5b8ec160-4b50-4736-8012-30ae35c45028@csgroup.eu> <Z3gPncBcCnZiNy57@x1>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <Z3gPncBcCnZiNy57@x1>
+Subject: Re: [PATCH v4 07/15] mm: pgtable: introduce pagetable_dtor()
+Content-Language: en-US
+To: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: peterz@infradead.org, kevin.brodsky@arm.com, palmer@dabbelt.com,
+ tglx@linutronix.de, david@redhat.com, jannh@google.com, hughd@google.com,
+ yuzhao@google.com, willy@infradead.org, muchun.song@linux.dev,
+ vbabka@kernel.org, lorenzo.stoakes@oracle.com, akpm@linux-foundation.org,
+ rientjes@google.com, vishal.moola@gmail.com, arnd@arndb.de, will@kernel.org,
+ aneesh.kumar@kernel.org, npiggin@gmail.com, dave.hansen@linux.intel.com,
+ rppt@kernel.org, ryan.roberts@arm.com, linux-mm@kvack.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+ linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-um@lists.infradead.org
+References: <cover.1735549103.git.zhengqi.arch@bytedance.com>
+ <8ada95453180c71b7fca92b9a9f11fa0f92d45a6.1735549103.git.zhengqi.arch@bytedance.com>
+ <Z3uxwiEhYHDqdTh3@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+ <e1de887c-6193-48ee-a9b3-04c8a0cdda45@bytedance.com>
+ <Z3vOZ18jcCpHIcPD@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+From: Qi Zheng <zhengqi.arch@bytedance.com>
+In-Reply-To: <Z3vOZ18jcCpHIcPD@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
 
 
-Le 03/01/2025 à 17:26, Arnaldo Carvalho de Melo a écrit :
-> On Fri, Jan 03, 2025 at 01:40:24PM +0100, Christophe Leroy wrote:
->> Le 03/01/2025 à 02:08, Arnaldo Carvalho de Melo a écrit :
->>>>      PerfTop:     524 irqs/sec  kernel:51.1%  exact:  0.0% lost: 0/0 drop: 0/0
->>>> [4000Hz cpu-clock:ppp],  (all, 1 CPU)
->>>> -------------------------------------------------------------------------------
+On 2025/1/6 20:36, Alexander Gordeev wrote:
+> On Mon, Jan 06, 2025 at 06:55:58PM +0800, Qi Zheng wrote:
+>>>> +static inline void pagetable_dtor(struct ptdesc *ptdesc)
+>>>> +{
+>>>> +	struct folio *folio = ptdesc_folio(ptdesc);
+>>>> +
+>>>> +	ptlock_free(ptdesc);
+>>>> +	__folio_clear_pgtable(folio);
+>>>> +	lruvec_stat_sub_folio(folio, NR_PAGETABLE);
+>>>> +}
+>>>> +
+>>>
+>>> If I am not mistaken, it is just pagetable_pte_dtor() rename.
+>>> What is the point in moving the code around?
+>>
+>> No, this is to unify pagetable_p*_dtor() into pagetable_dtor(), so
+>> that we can move pagetable_dtor() to __tlb_remove_table(), and then
+>> ptlock and PTE page can be freed together through RCU, which is
+>> also the main purpose of this patch series.
 > 
->>>>       17.18%  [unknown]      [k] 0xc0891c14
->>>>        7.63%  [unknown]      [k] 0xc005f11c
+> I am only talking about this patch. pagetable_dtor() code above is
+> the same pagetable_pte_dtor() below - it is only the function name
+> that changed. So why to move the function body? Anyway, that is
+
+Ah, I just don't want to put pagetable_dtor() in between
+pagetable_pte_ctor() and ___pte_offset_map(), so I moved it above
+pagetable_pte_ctor(). No other special reason. ;)
+
+Thanks!
+
+> just a nit.
 > 
->>> I think I hadn't notice this '[unknown]' one bit before :-\ the [k] is
->>> there, so having unknown is odd
->   
->> Problem found, it's in maps__find_next_entry(), this leads to both
->> map->start and map->end of kernel map being set to 0xc0000000, which leads
->> to the failure of bsearch() in maps__find().
+>> Thanks!
 > 
-> Right, and since you don't have any module (CONFIG_MODULES not set),
-> and most machines do, that is when the buggy function is called:
+>>>> -static inline void pagetable_pte_dtor(struct ptdesc *ptdesc)
+>>>> -{
+>>>> -	struct folio *folio = ptdesc_folio(ptdesc);
+>>>> -
+>>>> -	ptlock_free(ptdesc);
+>>>> -	__folio_clear_pgtable(folio);
+>>>> -	lruvec_stat_sub_folio(folio, NR_PAGETABLE);
+>>>> -}
 > 
-> machine__create_kernel_maps()
-> 	if (!machine__get_running_kernel_start(machine, &name, &start, &end))
-> <SNIP>
->          if (end == ~0ULL) {
->                  /* update end address of the kernel map using adjacent module address */
->                  struct map *next = maps__find_next_entry(machine__kernel_maps(machine),
->                                                           machine__kernel_map(machine));
-> 
->                  if (next) {
->                          machine__set_kernel_mmap(machine, start, map__start(next));
->                          map__put(next);
->                  }
->          }
-> <SNIP>
-> 
-> So machine__get_running_kernel_start() doesn't manage to fill end with
-> either because it doesn't find the ref_reloc_sym, one of:
-> 
-> const char *ref_reloc_sym_names[] = {"_text", "_stext", NULL}
-> 
-> And returns -1, so that first if block fails, and then start also
-> doesn't get set and remains 0, which doesn't seem to be the case, as you
-> get 0xc0000000 in it, or this fails:
-> 
->          err = kallsyms__get_symbol_start(filename, "_edata", &addr);
->          if (err)
->                  err = kallsyms__get_function_start(filename, "_etext", &addr);
->          if (!err)
->                  *end = addr;
-> 
-
-Indeed yes that one fails, because:
-
-~# grep -e _stext -e _etext -e _edata /proc/kallsyms
-c0000000 T _stext
-c08b8000 D _etext
-
-So there is no _edata and _etext is not text
-
-$ ppc-linux-objdump -x vmlinux | grep -e _stext -e _etext -e _edata
-c0000000 g       .head.text	00000000 _stext
-c08b8000 g       .rodata	00000000 _etext
-c1378000 g       .sbss	00000000 _edata
-
-Changing
-
-	kallsyms__get_function_start(filename, "_etext", &addr);
-
-to
-
-	kallsyms__get_symbol_start(filename, "_etext", &addr);
-
-works.
-
-
-The following change works as well:
-
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S 
-b/arch/powerpc/kernel/vmlinux.lds.S
-index b4c9decc7a75..b7b2cd7e2a20 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -123,10 +123,11 @@ SECTIONS
-  		 */
-  		*(.sfpr);
-  		*(.text.asan.* .text.tsan.*)
-+
-+		. = ALIGN(PAGE_SIZE);
-+		_etext = .;
-  	} :text
-
--	. = ALIGN(PAGE_SIZE);
--	_etext = .;
-  	PROVIDE32 (etext = .);
-
-  	/* Read-only data */
-
-As it leads to:
-
-~# grep -e _stext -e _etext -e _edata /proc/kallsyms
-c0000000 T _stext
-c08b8000 T _etext
-
-$ ppc-linux-objdump -x vmlinux | grep -e _stext -e _etext -e _edata
-c0000000 g       .head.text	00000000 _stext
-c08b8000 g       .text	00000000 _etext
-c1378000 g       .sbss	00000000 _edata
-
-So what is the most correct fix ? Change architectures link script or 
-make perf _etext lookup more flexible, allowing non-text ?
-
-Looking at vmlinux.lds.S from various architectures, I have the feeling 
-several of them are affected.
-
-Now, regarding _edata, what I see is:
-
-~# tail -2 /proc/kallsyms
-c136a000 D __start___bug_table
-c1377c14 D __stop___bug_table
-
-And in System.map I have:
-
-c136a000 D __start___bug_table
-c1377c14 D __stop___bug_table
-c1378000 B __bss_start
-c1378000 B _edata
-c1378000 B initcall_debug
-c1378004 B reset_devices
-
-Should perf try to locate the very last symbol when it doesn't find 
-_edata ? Or should architecture's link script be modified ? Otherwise 
-commit 69a87a32f5cd ("perf machine: Include data symbols in the kernel 
-map") is just pointless.
-
-Christophe
+> Thank you!
 
