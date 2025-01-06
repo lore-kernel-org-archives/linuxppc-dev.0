@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-4706-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4707-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA976E77199
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2025 13:23:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6A9EE77188
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jan 2025 13:35:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YRZcx2PG2z301x;
-	Tue,  7 Jan 2025 00:23:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::629"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736169809;
-	cv=none; b=DNy/BKx0iGhRGzbGUAvtbdyga0pvbgV1sKILUBjLB5bhpUj/AduOpB9cZnAN/phYtRqWhnCzhJ5VYDqOUSGjRrxQ0g8/SlJT9t3SPbUdDapjqvLzY+ZVInM3uY+2FiGvEJHZBZ3CoHvVBbPAFfqImK6V9rLPXBa30MQohLBvVV8T695DEEzktdCbPSr+aEqON5DwnWHhFKTw7kIC6Rx3dXyDK+UeNvBHIQCoXRXeUV8cLT3CA1O0rFDMVpm74RMv0qQ9SsOPoMbDI60b85YaTKdu1xHDyP6a80C13Cb/WygtyW3wq7Z6add6uTzE4g3VKkOFOjvVJC1Qdve6W0SDUQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YRZtW1ZQsz305n;
+	Tue,  7 Jan 2025 00:35:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736170515;
+	cv=none; b=BxSAr9Yl9UoZWHWbyY8aLKhLH/9JKK0wv9PSVvmhuJlKDk23kR2k6yYM8FNXdd+AqWWEU24uIRPHZW/JMT3U2tzvHDyi8bpLhj7idjvJ42ENCV0oBBxqpRAPnzOMYLuq4qmPWWyaxcxIlwECCEj9mQzzlpWJSqFsRNpQqRnm7UCQbDIplp65qzYzACstaOViMM6j6avJP2xltIaDILuxFTNq6yLAcrDlqxu6uxBfoX/MYK8/JfMCVyICI1715J4PbZcLbTuW9eSsgUfTssSqGFPecUYYNZIXdZDNBIDyIRPMc+5C/mlF84h4Qr0xV4t5hfpRe0OLzFpYWAz8Y+JK0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736169809; c=relaxed/relaxed;
-	bh=af8Jbj+kqP+p1W8uyVyt9V0YBDVs6Wu8XxDGXWv1rDo=;
+	t=1736170515; c=relaxed/relaxed;
+	bh=dSl9CiTNSQwE0RKlCdBtogvBaV/TE9/iFGVUzDM7I3Y=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QUss7Ed/5HKXGD0wA87OfuBqJa4GgOboSeLQglkbCCLBU/aB2qRAbtaN28b9UdLdeq+m0PzMn+yQMA5iNiUOyvCNWA5PaIZ8EX3wn8ZojmKunk5Wwg2sl+wajk3/FCxnyIwPvW6nTlZj/2ysr0wdbph734IAmvoxq+A/RoPPORQ3m8Xb3eLKbAqXStB/Z6E6vDIFGX/GUWyDQOSGuR33Tb6dU4bD/EF4IHi9AnBxer2aK/m/2c6jXo7b22NSfo/ebsFTgiJ1Kl7Il1Tv2h53VsEO8BEQygtl44s2fp0que4SRQnbBJHT2zudZ8WZUdubPMm4gfm6VvMLSXCWgbAjkg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=gMNa1wbn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 In-Reply-To:Content-Type; b=Mt2VVcCj8mXIJyIr2cWHGSdl4iB+Ie6J1l9ebJRJc1y3ua1Q3d1rvF5eCetsWEmBkFWPENP5H5YDP1jon81AgdP/OMMXaxcE1M2RZpKTASAE/j2qrcTJHtGwdUkgyMLqt/NjK+OeW2MM/xMQX11cXy2mdyWlWNhH1LJ6FHJzINaMw4WzI1ECR433S3yBpaORyLMlJsR3n85GAUX+sQvjEjFLu1+Cn7gU2feyE+hqhKO3EGHpfIAbObpQHTB6nH7DH40/rQ1lJfcSwCzp4TXfyGWgS/8Ue0nxYF86uAyujOuTU5z28mCc+IMfvsG/9NNsL1BGpSrdNbSDo9/HdnRUEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=d9lrvkEJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=gMNa1wbn;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=d9lrvkEJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=zhengqi.arch@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YRZcv1cmqz300V
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2025 00:23:25 +1100 (AEDT)
-Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-216728b1836so186444765ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jan 2025 05:23:25 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YRZtT4K2cz300V
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2025 00:35:11 +1100 (AEDT)
+Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-21644aca3a0so23020795ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jan 2025 05:35:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1736169803; x=1736774603; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1736170508; x=1736775308; darn=lists.ozlabs.org;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :from:to:cc:subject:date:message-id:reply-to;
-        bh=af8Jbj+kqP+p1W8uyVyt9V0YBDVs6Wu8XxDGXWv1rDo=;
-        b=gMNa1wbnHXxmjOZDc2/neafiqoX0UxpK+7hlEgmQPoBPrxS4YNTCndlb7kLWCfqyRN
-         AOMVTPUnlaRdPcqitu3uFJ0i7DShahG8Dbo1/rYVyleV2bA4BX/UFsFB/YAwLgw0DHLt
-         QCQJmTsCzL7F7ID3pcy1RO5v5KwE/pvCTW00pZPTpudvwUb9htQMBwvS1FWAVEBb046T
-         fGMMGdauYZTS7ivg08c37KJuI6U8IWhSJvKgELXFz2JPjkjxHfTaaGaA1x4gPwM68XRl
-         82lG6Wid+ccMKbKG6zTp7Rn2snpVqg4ZOmxaQjeZMhJ4BIL2ZBNkrYn9p64HDjs9DvCJ
-         STKQ==
+        bh=dSl9CiTNSQwE0RKlCdBtogvBaV/TE9/iFGVUzDM7I3Y=;
+        b=d9lrvkEJQkZCCdEYqAlNFysJQlg5l1l2rYPyv92mwv8If63DBq/P9bkVKwHMUv4bEa
+         9ePUzSkRnXfobf8aWH0yqmcULvWltpfL8+DzRXchyRgd3i1ViQLi6aq5V8B6sjtYMjdU
+         gWUMC7xXygBXCilOThUlJXs3ybQQZKE0y5+RzJ2iVcaUjCaxjkzHkxUqdf1fhUdmkSH5
+         6V4C6NxKRiiBJDBh2foYb/LmwHeACgys81KySzbjiVmuQsYY3HBRbCO2mUagVo+JT/Hf
+         zZlSO2qoz5ChvUtxpttWE5FxTUAq1zDiZ5fc64zJ2M1bB2+rg+zByROkqn/VSLj3I47W
+         tmYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736169803; x=1736774603;
+        d=1e100.net; s=20230601; t=1736170508; x=1736775308;
         h=content-transfer-encoding:in-reply-to:from:references:cc:to
          :content-language:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=af8Jbj+kqP+p1W8uyVyt9V0YBDVs6Wu8XxDGXWv1rDo=;
-        b=t30rwi5+uwllbOdLxXn/XfLOd62yE4sjcX9tapMEo5P0AIX144Z8XQljy7ayfjhvyP
-         2042myobCaiHwkkveM90Z3X8cvstgZAEbuy8pMzFfAuzchjsbClB4LOxPotEdaujEkLx
-         YjbgQL1TVdikwX+lDyZtc9iFKhyeDsU6a7D2CsqK81vNtbui8u44L/IcqG0tkZmak6WU
-         vnGU88wZTq9UZ84YJ/ea9H7j4PtIk683WXEFY3LErAuPyHi9X7180opD73dnMW3qr5dE
-         jbhugC0QKuHffWPoK0wvY+8nGWDTWod/RSKPBeg9XgWvXQzJZqNZyMbDLgSmxkhl+bbh
-         OGWQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU5jynjERrfk0J3i0spu263sUOPPpooQLB4WlseNakmVC7UqXDT/tPTd6vOILo16+M9Wt2hMeVyuOfsxVQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwNazDLhKVMD0rBr2TKqv2JefCYovX55wkS0tpy22X3B6pozq/B
-	w6b+ldnGojE78yWsfnMMZhfVVUgkPvryqExIOSanLdSHfy3mC+lhXpTrv31J1mA=
-X-Gm-Gg: ASbGncvhqhCcwOG9V3Gta3G9yxey9w8hUSI3gj/CLRQz/b9Wl6gxxNXn5ojUgJ9Ep8n
-	nDFOURTGUEXAIw49MaWHaQlFGEeTKP+nba7hqQHDbcVnoqACWRsB5apfuWCaQ/qgOkJEVxWRkl2
-	Va/ng2uYCanWyqAF9ZtStfZhTA7hiK5L9Mgz8+VD8aqqjupv97hgJoRHgDAXMJpul4dqj5IuTXw
-	Yo/l7Ym+Ong8VwAPmMXKmlvkfWF8d40szeH6sLcHsGoNrcH7NI59HqeuOSUUgSZ4qIhNPkZXPTZ
-	+AXGIFLcWakvf4izJuD4u0GjRWpb5wSjINTjrmT+MLTNK/tWujiD
-X-Google-Smtp-Source: AGHT+IE/ZrXmD5LZyqp5+IF7XucHWltqSucrfnZMLD6UEt/qaBj6OXgwMq9je0lWMbXPRWlni+TKWA==
-X-Received: by 2002:a05:6a20:2d07:b0:1e1:b44f:cff1 with SMTP id adf61e73a8af0-1e5e07f9c06mr81291446637.33.1736169803320;
-        Mon, 06 Jan 2025 05:23:23 -0800 (PST)
+        bh=dSl9CiTNSQwE0RKlCdBtogvBaV/TE9/iFGVUzDM7I3Y=;
+        b=tJU1wMiomoNi3r5q8i5H88G3CLAUtvgvgNGhY+gIcYaNUB22/y972QUTBgljMhtz8n
+         yK15lAv7vuM0wTnRcBvc1HOamwAg3w3imlf9gdMk0GN1RKYFs4ucd2ejNXzi6zinGF00
+         5VKXVGxeXrB+TN0JHdLSmp56a+8+UFdcsGpn0TVNcs9FfuhlHgQztE64hhhUd1PWiSNq
+         zLGgJaVMnXqlx8F31l150S0yxA58mLvuYMEEZ/e3iwpzDXm4f8ookScf1v+t59goX3un
+         lQrfioAh9bnnujo6aYZC23bSyKZnNT8T6m+lZB7M/hqezhxsjYtCCrv7qBvrzdbKqAJA
+         47cw==
+X-Forwarded-Encrypted: i=1; AJvYcCXN3qkJ4i7obM/jfE5Wh8LxTMAVDFUl38DGduj8JxGIFnZe48+c8Tya8PRibHyoSpajX70jNrcFoTiTk1c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz3qSb2ntvvYPEJHDWcQjgm2zFtg/lkAqbV/NvFPYE6g9j9M8+v
+	EDrgyO89Gwk8VhKJSMQTbDl4kB9k1f7rSDS97x5V8UDKuNesvSKma8nTAxqUyMQ=
+X-Gm-Gg: ASbGnct3dmWriTRIFR4Gg7n2kR5u91aFE8irggdxOyt19F/f7HRme/PQll54OvJR6Xq
+	68RPS2kEQF8AtAoXUCUbOf2X/Lq2FEh1vn4ROVP1EDffOcRXk+2ryzzsJJvzbV89hXLP5xOgdev
+	JbSJYWxVqUAqu3qJVHbkrgMkbErTh8+cCkGCBk3e9/8mkhB1Gf/fNODPCcXh1GZyuMFrGENi+1c
+	tg3CBbDptltws/CJdtgZgwFhAwJ0TKAZ2WYgRPOAVnB+K1aHGoCwljCb60NXlQhrTdqiYqOjmQP
+	C266GXAm5BGKX13xrtjC5kKTQKyyOiObNwLWtr0dTWhbDahtQdLq
+X-Google-Smtp-Source: AGHT+IFuxfmftFbdw6fO4bIMnZYJ/q+si7Sq93AxF4PGQarIeYtLJTB7gRBGy3tWc8bUzZwj1LueBQ==
+X-Received: by 2002:a17:902:e844:b0:216:3083:d03d with SMTP id d9443c01a7336-219e6f13c50mr852868805ad.44.1736170508636;
+        Mon, 06 Jan 2025 05:35:08 -0800 (PST)
 Received: from ?IPV6:2409:8a28:f44:d64:296c:a8f3:f81e:f88b? ([2409:8a28:f44:d64:296c:a8f3:f81e:f88b])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72aad90c149sm31371677b3a.191.2025.01.06.05.23.12
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-219dc9cdf02sm292469725ad.151.2025.01.06.05.34.58
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 06 Jan 2025 05:23:22 -0800 (PST)
-Message-ID: <bce4bb4e-459a-44c8-945b-8889149377fd@bytedance.com>
-Date: Mon, 6 Jan 2025 21:23:10 +0800
+        Mon, 06 Jan 2025 05:35:08 -0800 (PST)
+Message-ID: <57ea8193-2fd9-41a9-85b4-7af924f900f4@bytedance.com>
+Date: Mon, 6 Jan 2025 21:34:55 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,7 +85,8 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 07/15] mm: pgtable: introduce pagetable_dtor()
+Subject: Re: [PATCH v4 12/15] s390: pgtable: also move pagetable_dtor() of PxD
+ to __tlb_remove_table()
 Content-Language: en-US
 To: Alexander Gordeev <agordeev@linux.ibm.com>
 Cc: peterz@infradead.org, kevin.brodsky@arm.com, palmer@dabbelt.com,
@@ -104,59 +105,51 @@ Cc: peterz@infradead.org, kevin.brodsky@arm.com, palmer@dabbelt.com,
  linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-um@lists.infradead.org
 References: <cover.1735549103.git.zhengqi.arch@bytedance.com>
- <8ada95453180c71b7fca92b9a9f11fa0f92d45a6.1735549103.git.zhengqi.arch@bytedance.com>
- <Z3uxwiEhYHDqdTh3@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
- <e1de887c-6193-48ee-a9b3-04c8a0cdda45@bytedance.com>
- <Z3vOZ18jcCpHIcPD@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+ <ad21b9392096336cf15aee46f68f9989a9cf877e.1735549103.git.zhengqi.arch@bytedance.com>
+ <Z3uyJ2BjslzsjkZI@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+ <2d16f0fe-9c7f-4229-b7b5-ffa3ab1b1143@bytedance.com>
+ <Z3vQHplZqtHf6Td8@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
 From: Qi Zheng <zhengqi.arch@bytedance.com>
-In-Reply-To: <Z3vOZ18jcCpHIcPD@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+In-Reply-To: <Z3vQHplZqtHf6Td8@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
-On 2025/1/6 20:36, Alexander Gordeev wrote:
-> On Mon, Jan 06, 2025 at 06:55:58PM +0800, Qi Zheng wrote:
->>>> +static inline void pagetable_dtor(struct ptdesc *ptdesc)
->>>> +{
->>>> +	struct folio *folio = ptdesc_folio(ptdesc);
->>>> +
->>>> +	ptlock_free(ptdesc);
->>>> +	__folio_clear_pgtable(folio);
->>>> +	lruvec_stat_sub_folio(folio, NR_PAGETABLE);
->>>> +}
->>>> +
+On 2025/1/6 20:44, Alexander Gordeev wrote:
+> On Mon, Jan 06, 2025 at 07:02:17PM +0800, Qi Zheng wrote:
+>>> On Mon, Dec 30, 2024 at 05:07:47PM +0800, Qi Zheng wrote:
+>>>> To unify the PxD and PTE TLB free path, also move the pagetable_dtor() of
+>>>> PMD|PUD|P4D to __tlb_remove_table().
 >>>
->>> If I am not mistaken, it is just pagetable_pte_dtor() rename.
->>> What is the point in moving the code around?
+>>> The above and Subject are still incorrect: pagetable_dtor() is
+>>> called from pagetable_dtor_free(), not from __tlb_remove_table().
 >>
->> No, this is to unify pagetable_p*_dtor() into pagetable_dtor(), so
->> that we can move pagetable_dtor() to __tlb_remove_table(), and then
->> ptlock and PTE page can be freed together through RCU, which is
->> also the main purpose of this patch series.
+>> Hmm, __tlb_remove_table() calls pagetable_dtor_free(), so moving to
+>> pagetable_dtor_free() means moving to __tlb_remove_table(). Right?
 > 
-> I am only talking about this patch. pagetable_dtor() code above is
-> the same pagetable_pte_dtor() below - it is only the function name
-> that changed. So why to move the function body? Anyway, that is
+> Right. But you Subject and description claim "... also move the
+> pagetable_dtor()" not to pagetable_dtor_free() - which is another
+> function.
 
-Ah, I just don't want to put pagetable_dtor() in between
-pagetable_pte_ctor() and ___pte_offset_map(), so I moved it above
-pagetable_pte_ctor(). No other special reason. ;)
+OK, will change the subject and description to:
+
+s390: pgtable: also move pagetable_dtor() of PxD to pagetable_dtor_free()
+
+To unify the PxD and PTE TLB free path, also move the pagetable_dtor() of
+PMD|PUD|P4D to pagetable_dtor_free().
+
+But pagetable_dtor_free() is newly introduced in this patch, should it
+be changed to 'move ... to pagetable_pte_dtor_free()'? But this seems
+strange. :(
+
+> 
+>> And the main purpose of this patch is also to move pagetable_dtor()
+>> to __tlb_remove_table(). So I think this description makes sense?
+> 
+> The patch makes sense, but the description it is incorrect ;)
+> 
+> Thanks!
 
 Thanks!
-
-> just a nit.
-> 
->> Thanks!
-> 
->>>> -static inline void pagetable_pte_dtor(struct ptdesc *ptdesc)
->>>> -{
->>>> -	struct folio *folio = ptdesc_folio(ptdesc);
->>>> -
->>>> -	ptlock_free(ptdesc);
->>>> -	__folio_clear_pgtable(folio);
->>>> -	lruvec_stat_sub_folio(folio, NR_PAGETABLE);
->>>> -}
-> 
-> Thank you!
 
