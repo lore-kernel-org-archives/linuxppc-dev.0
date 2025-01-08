@@ -1,36 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-4821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4822-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCDB2E77199
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2025 08:31:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AA72E77188
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2025 09:05:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YSh3Z2Sbtz30TL;
-	Wed,  8 Jan 2025 19:31:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736325114;
-	cv=none; b=O8/1GmshVffE0qtGSNYOQAEg67CRTHRu+W27nb5PVqZcZKgseDuEApZPKO+Wa0tjNjRc054fWgk5eDwEgwaVnvzrCLQgJ5AAwreocDKWroWhUPk58QknPxbHJjhaV5LkmCuekq7ux2m58y4ldDez+KQqa9/0auvPvL/IyfuErNOKr3A4gr5cvblPpXR9Axwd/yD0pfeyMNhVBz9keNGHqdGB88daRjlVia+D/jIxwXrZL0el1NBdkszR1jm3UWZCtaA7ZU/4RMGvgrqA5BrShMYsJAu0WB8aj81wdBy0IZPLf2/ynjkUS4d0f+yY1WUXh/DzpKa5YhbkZE6eUBYm0Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YShpL4zBJz30PF;
+	Wed,  8 Jan 2025 20:05:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736327130;
+	cv=none; b=JFmHO9eChrZtjtnb5U6BxehK/w3Bmz4C9bCrGTsI2pvtcIN5eyZvdbb67DTMrfg159fuTEhan4qO0U5Mu6BXfcpPPCo5RY9u0T4Ya6FBkY8hrNlYEBDQyAta25x/z6f7nQcTf6rxPFbbQx8eVCHEW2uOQNiS/griceTYaqul5Uv+j6qzWc98KKHrcrUxX2NLvaCJhMXnz/0yH4f1ZVI8ko/+qIJerCE73eREx7FzUHIf79+DRhOACGyVDa+WUHpq9iG8PT36+nB7oiJQpVjkteCZn3HMNRkeFibYpsBnS2Mo/hhfN53VxviCW+C1kkvSVl6PByDC5gHAG8AKTIkMjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736325114; c=relaxed/relaxed;
-	bh=lom+i4v3PxfHxmognsFk46EQaMmrjYMhI/xbLHGccvw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NwbrUOS7xZopSBidjbB30SQFw3c0Lkvnc/LrpgVNYLZr9CKcloEDiX+eHjrbfecSB8oc92DxDyv3FADPb6UgftZlmxMGKqXFNVJFdCNKKdIMdMvOT07uBkWOyVuNK86evnDf+lBYIkSdANi5dTRN566BjugG0SpaEw+KUgZkBcInHPUGx0IObxPz8dDAHGbk8U1VI6duI1fGcdXgWF4oPsS26D9JnYYGuGcPMGST6IYaRzU+9IfWGehyviv6n8wrQQoaEikQhyeUmI7Lc9VNsVTrF+1+kr467bTXiMlvz2gVgdv5VdqqZZOtHmFlsufhl5dgQwpyzXn33enEDdagOA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YSh3X6Xblz30DL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2025 19:31:51 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A875312FC;
-	Wed,  8 Jan 2025 00:31:45 -0800 (PST)
-Received: from [10.57.94.52] (unknown [10.57.94.52])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 28A753F59E;
-	Wed,  8 Jan 2025 00:31:08 -0800 (PST)
-Message-ID: <7cf8fa3b-799f-415a-82a1-eee6b7b2e0f5@arm.com>
-Date: Wed, 8 Jan 2025 09:31:06 +0100
+	t=1736327130; c=relaxed/relaxed;
+	bh=rwBYB6GDGtwSo0ZVmHQeUUNLy015tLjU3w/e5JgGy/c=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=GhiBQyxBTFcItvCRRzpvornnDz1TbVERGCfatwBAIhyfyymec3/9VWLhlauhDg24ZKCn/TN7N+7gJU6EvXtPQaXWNZ7w9G26nhzTrW0U68mThxScVTlsNig4GSgolN6ZjeBl/nORbdr0U3CWkaY35+9LI64+BYabP2vvSI4gBQLBzQ1D+K0EMiUxvbpHaN9R/quQRn+GHL92tioqGPDjY4ncwJLFDgPBP0Xw0AGmr+uSo9sncBAK1mX2lotEEcHF7zfaQLi7MVZ7sMpa8CTiIokVh57tVD3lubtynNJFg6dJ8KyytAA/M2k18ykJwXKA7x8rSURuLI++wyoELoiJuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=LEApxjYZ; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=dKYJumFF; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=LEApxjYZ;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=dKYJumFF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YShpJ2qw9z30CL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2025 20:05:28 +1100 (AEDT)
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1736327122;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rwBYB6GDGtwSo0ZVmHQeUUNLy015tLjU3w/e5JgGy/c=;
+	b=LEApxjYZTkhUm30+CjLuvcHX5E2bkNJXnvyUNg8o7S/Fx61HuGetUOphWXxK7KkRlZqXpf
+	HIajKikSPhM8iYZN10EyVeaIzc72/iuTnHo0mHHluGSqAyHpEEYIRDomEhG9ucd0bA5QNe
+	mRPhhSVD5Mw3kKlEi3iLDkgTEd9R0q6Yh3r6PhO3zt9soyTkYfj7cbuQJvgsCtqdXTTnlw
+	ziHMU5S1znSAkYMIhcFJfJmVQN6bapUF4Om3FT+TXqop0bh27OgxrqxKTt84hR6nd7BVvF
+	tLQEVolIS16851bhceciMfsJOItqvtrr+VnjFSLqFCRl5W7HJYyANETR5/2Arw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1736327122;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rwBYB6GDGtwSo0ZVmHQeUUNLy015tLjU3w/e5JgGy/c=;
+	b=dKYJumFF1zyEaO2G91SGXq3IYr7DTmPO/R3ooBrOdSFGUIexbJ7PDdRkr4PzJr+nPMoUvE
+	ybGJf41RElFb2sDA==
+To: linux-modules@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Daniel Gomez <da.gomez@samsung.com>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	"Paul E . McKenney" <paulmck@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Naveen N Rao <naveen@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	linux-trace-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 20/28] powerpc/ftrace: Use RCU in all users of __module_text_address().
+Date: Wed,  8 Jan 2025 10:04:49 +0100
+Message-ID: <20250108090457.512198-21-bigeasy@linutronix.de>
+In-Reply-To: <20250108090457.512198-1-bigeasy@linutronix.de>
+References: <20250108090457.512198-1-bigeasy@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -43,45 +89,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 11/17] x86: pgtable: convert __tlb_remove_table() to
- use struct ptdesc
-To: Qi Zheng <zhengqi.arch@bytedance.com>, peterz@infradead.org,
- agordeev@linux.ibm.com, alex@ghiti.fr, andreas@gaisler.com,
- palmer@dabbelt.com, tglx@linutronix.de, david@redhat.com, jannh@google.com,
- hughd@google.com, yuzhao@google.com, willy@infradead.org,
- muchun.song@linux.dev, vbabka@kernel.org, lorenzo.stoakes@oracle.com,
- akpm@linux-foundation.org, rientjes@google.com, vishal.moola@gmail.com,
- arnd@arndb.de, will@kernel.org, aneesh.kumar@kernel.org, npiggin@gmail.com,
- dave.hansen@linux.intel.com, rppt@kernel.org, ryan.roberts@arm.com
-Cc: linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
- linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
- loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
- linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-um@lists.infradead.org
-References: <cover.1736317725.git.zhengqi.arch@bytedance.com>
- <39f60f93143ff77cf5d6b3c3e75af0ffc1480adb.1736317725.git.zhengqi.arch@bytedance.com>
-Content-Language: en-GB
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-In-Reply-To: <39f60f93143ff77cf5d6b3c3e75af0ffc1480adb.1736317725.git.zhengqi.arch@bytedance.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 
-On 08/01/2025 07:57, Qi Zheng wrote:
-> Convert __tlb_remove_table() to use struct ptdesc, which will help to move
-> pagetable_dtor() to __tlb_remove_table().
->
-> And page tables shouldn't have swap cache, so use pagetable_free() instead
-> of free_page_and_swap_cache() to free page table pages.
->
-> Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
+__module_text_address() can be invoked within a RCU section, there is no
+requirement to have preemption disabled.
 
-Definitely a good idea to have split patch 11 from v4.
+Replace the preempt_disable() section around __module_text_address()
+with RCU.
 
-Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Naveen N Rao <naveen@kernel.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-trace-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+ arch/powerpc/kernel/trace/ftrace.c       | 6 ++----
+ arch/powerpc/kernel/trace/ftrace_64_pg.c | 6 ++----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-- Kevin
+diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace=
+/ftrace.c
+index 5ccd791761e8f..558d7f4e4bea6 100644
+--- a/arch/powerpc/kernel/trace/ftrace.c
++++ b/arch/powerpc/kernel/trace/ftrace.c
+@@ -115,10 +115,8 @@ static unsigned long ftrace_lookup_module_stub(unsigne=
+d long ip, unsigned long a
+ {
+ 	struct module *mod =3D NULL;
+=20
+-	preempt_disable();
+-	mod =3D __module_text_address(ip);
+-	preempt_enable();
+-
++	scoped_guard(rcu)
++		mod =3D __module_text_address(ip);
+ 	if (!mod)
+ 		pr_err("No module loaded at addr=3D%lx\n", ip);
+=20
+diff --git a/arch/powerpc/kernel/trace/ftrace_64_pg.c b/arch/powerpc/kernel=
+/trace/ftrace_64_pg.c
+index 98787376eb87c..531d40f10c8a1 100644
+--- a/arch/powerpc/kernel/trace/ftrace_64_pg.c
++++ b/arch/powerpc/kernel/trace/ftrace_64_pg.c
+@@ -120,10 +120,8 @@ static struct module *ftrace_lookup_module(struct dyn_=
+ftrace *rec)
+ {
+ 	struct module *mod;
+=20
+-	preempt_disable();
+-	mod =3D __module_text_address(rec->ip);
+-	preempt_enable();
+-
++	scoped_guard(rcu)
++		mod =3D __module_text_address(rec->ip);
+ 	if (!mod)
+ 		pr_err("No module loaded at addr=3D%lx\n", rec->ip);
+=20
+--=20
+2.47.1
+
 
