@@ -1,64 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-4869-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4870-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BBD3E77199
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2025 20:14:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1772E77188
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2025 20:37:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YSzfn0fGMz30Tt;
-	Thu,  9 Jan 2025 07:14:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736367297;
-	cv=none; b=heskrxy8LYywykJhMMg69kHbauDmrkNlAXv+wrGw5Ae1WXLWtx5hXTJmjVQ+w9yem/KNnKKaTPx116BurKVU1gjVdAYOOPgJanwBVwjx6u2rROPh41vCKNYDKAJoDBqKIssU1r8wufD8HIZiZNopMCGpMKkbu8j4oFyBUYcx23CZtd5RtPpT8JrxcyL4qX38Bl9+KGUZyJD2n0pE7QV+EdCDLXzuvEw76Irk5uzAqeS/Ou/4gvR/j9kzhZCKhuUl9W1Q+hy+KwucOBuu4JZApakw/1dbX58r0/Rf7VGKeVD7L+8fWlwannkNZRUlLiGkAhWNyvyv+22obstI1MX29Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YT09D18v2z301B;
+	Thu,  9 Jan 2025 07:37:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=162.240.238.73
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736346341;
+	cv=none; b=Fxro98TUeXmLDGH3n9DygUgzkUfLgZQpdEmcV42bMpJNSEK/I5788h0Lnn/+ztMsbWzJdEvD4J23ZCcCvrfj2/bfYNsXfrhWRrZasojYi4dYdstdAcPlMVJvxvbPIK2+kVnKwexo2TKTfAbNjQpGw2AT2b00cXscSj60eDPkQy2Cog8CDnvFrhFch5k+KGXSddb6gJk6MM7polJlEKsZcZMJkZ4y7Hvm1dUVApJAh+WD/FIidKzB/KKrCEn2ILMa0FViUPba11TYPFq3hHx9ayi4nLXh5wHz9l7JlYZ6hD+gK7bE+ycJP7iQqv5Auxppp1J5y3AEiGS4NX6FFO+Zdg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736367297; c=relaxed/relaxed;
-	bh=irdZ0a192jwtxnm7/O0zqaok+/VoiMoD/GEREN5Js1A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QS7NC+86ZJ+u7xaBB9oXSebTS4vjN38+D5SHZdMb7Ge3IEzo9OVczQcz0hVzCdrzD5yhaJyCXQKZGVtI05MRG/x7DMMO/+9EYAJPuPCaja4BTcK7po/LGMHVrBpIvySB/tLdM+W+INPBsIUl8k7VG3Nankjcrcc8XM1TXgCfJ/0hssDnBig7K3DbDgibssuO98zlEWsYNA90e78uRXByhMOpZUSaCs4De/N8Hg4+xMpff/RKqHqnzgE25ZqwzE9JBgGzGcajaf7mXNIBVinzZ3ow7ymn7+LMZX5ZmD/omSjrxeMohpx1lrGNiglTUXPeFZZf3yEpgbtLkO9EePh1mw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=el/bqvOE; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1736346341; c=relaxed/relaxed;
+	bh=o3+neP8aeeIFPqI/lL7EOOrgM0uRKroB1bs8o3zpJWY=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=KC3tt0KsKIfyLanU1oP9rvgAQ92Lrb+qQgnyPlKIJnaRFwuuW2qBJ9xQPRqFmc3RXJyEWRIaUg8KuzPkczZV6UlH4SCqEOXHm6kl6AXpQRZoI5rCEnvwYz31T70HCpwC5NJlKn+MDm5J9loQoengEZEHloaeKgpqUUOeYKLo9F0c9z1jpi6a6cyMc8C5CWJNA7Aip7sAiGmB96QwAiBXdagTSnVFCqsgzgrXXPrSsZdxu2831URVso7I1qFzb8c8m5oaIVRaoEim8JIx5lUI/MQ75FMvADPRrioEkPB4iE59DhBLeNLAQLw6156StnASczFmfKhpK7HfFKz40WbTKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=couthit.com; dkim=pass (2048-bit key; unprotected) header.d=couthit.com header.i=@couthit.com header.a=rsa-sha256 header.s=default header.b=GLgEGooG; dkim-atps=neutral; spf=pass (client-ip=162.240.238.73; helo=server.wki.vra.mybluehostin.me; envelope-from=basharath@couthit.com; receiver=lists.ozlabs.org) smtp.mailfrom=couthit.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=couthit.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=el/bqvOE;
+	dkim=pass (2048-bit key; unprotected) header.d=couthit.com header.i=@couthit.com header.a=rsa-sha256 header.s=default header.b=GLgEGooG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=couthit.com (client-ip=162.240.238.73; helo=server.wki.vra.mybluehostin.me; envelope-from=basharath@couthit.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1269 seconds by postgrey-1.37 at boromir; Thu, 09 Jan 2025 01:25:38 AEDT
+Received: from server.wki.vra.mybluehostin.me (server.wki.vra.mybluehostin.me [162.240.238.73])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSzfm1d2zz30Tc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2025 07:14:56 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 218CBA41976;
-	Wed,  8 Jan 2025 20:13:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DAEA1C4CED3;
-	Wed,  8 Jan 2025 20:14:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736367293;
-	bh=+k8VSgg2WNZLayqdbQDDh8INehLekajaO7o4aXfvkpA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=el/bqvOEmDTzHp5fiNlPZyX8I/jbI79LrxZhOyFlRE2mlN2YQJPBX8XoFMH8+/zhz
-	 QOxms9We+e8b6bF0okRur4OeFWM60a1IZraBU5+v6Hrdt/fnSSPnWLucPXLeE///HU
-	 wH3zvmmHhIeMSXlTIEjLz4r5AWMFKS1You4/PdNpxnBpf946W3JUIp19drATxrpyiP
-	 2SSGRy32UJYi4zcfGz6QrGh54TsXYIknlpZYooz7Sk9GWn9Y2SnavOKuSpusWVphuE
-	 28/1a+ITi0dKmQmKW9fuCRnGnJ56k1jjGEdgF8AQmHWooUdrah2a1XzlAiL7Eh6STU
-	 zNseIIk+8fhvw==
-Date: Wed, 8 Jan 2025 17:14:50 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-	Namhyung Kim <namhyung@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	"Liang, Kan" <kan.liang@linux.intel.com>,
-	Song Liu <songliubraving@fb.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-perf-users@vger.kernel.org
-Subject: Re: [PATCH] perf machine: Don't ignore _etext when not a text symbol
-Message-ID: <Z37cuobj6NVRUKoo@x1>
-References: <b3ee1994d95257cb7f2de037c5030ba7d1bed404.1736327613.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSqvk5pPSz30TC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2025 01:25:38 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=couthit.com
+	; s=default; h=Content-Transfer-Encoding:Content-Type:MIME-Version:References
+	:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=o3+neP8aeeIFPqI/lL7EOOrgM0uRKroB1bs8o3zpJWY=; b=GLgEGooG7UkcsXby1uEwokCfe9
+	s7iqTJT6t7fQ4bL0NWVQMCEd65TTxjAFKf2+LqVADVmFKTCVURhW1aCfK8Trf65EDbc4KVqSV1ltD
+	lSGtUlzcMkXUU5yDZ/k7C1puX4VVmPeOxgWAP8bAlDLPpUnt+MgzkKma8BGraXxrxAX/yiYF9EQVD
+	6xQYRtKfMLjxsM3coBB6+X8FTlZL4w8iAHs5O2jw6Vf+mT82Vn1U8n+xvb6u+f0XHVKwtyMSEBeFP
+	x7pTMmGFOo36RpQTGWOd5Fayup4mYlEPt6DmvG2igOHvsqIVolcaygPwdnk26spE8ENxUQsdFlb1q
+	LObjzvOQ==;
+Received: from [122.175.9.182] (port=22813 helo=cypher.couthit.local)
+	by server.wki.vra.mybluehostin.me with esmtpa (Exim 4.96.2)
+	(envelope-from <basharath@couthit.com>)
+	id 1tVWfY-0001mA-0L;
+	Wed, 08 Jan 2025 19:34:24 +0530
+From: Basharath Hussain Khaja <basharath@couthit.com>
+To: robh@kernel.org,
+	mpe@ellerman.id.au,
+	thomas.weissschuh@linutronix.de
+Cc: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	saravanak@google.com,
+	basharath@couthit.com,
+	danishanwar@ti.com,
+	krishna@couthit.com,
+	mohan@couthit.com,
+	parvathi@couthit.com,
+	pmohan@couthit.com
+Subject: Re: [PATCH] of: address: Unify resource bounds overflow checking
+Date: Wed,  8 Jan 2025 19:34:14 +0530
+Message-Id: <20250108140414.13530-1-basharath@couthit.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <87mskbqher.fsf@mail.lhotse>
+References: <87mskbqher.fsf@mail.lhotse>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,59 +78,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b3ee1994d95257cb7f2de037c5030ba7d1bed404.1736327613.git.christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server.wki.vra.mybluehostin.me
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - couthit.com
+X-Get-Message-Sender-Via: server.wki.vra.mybluehostin.me: authenticated_id: basharath@couthit.com
+X-Authenticated-Sender: server.wki.vra.mybluehostin.me: basharath@couthit.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 
-On Wed, Jan 08, 2025 at 10:15:24AM +0100, Christophe Leroy wrote:
-> Depending on how vmlinux.lds is written, _etext might be the very
-> first data symbol instead of the very last text symbol.
-> 
-> Don't require it to be a text symbol, accept any symbol type.
+Hi,
 
-I'm adding a Link:
+>> Thomas Weißschuh <thomas.weissschuh@linutronix.de> writes:
+>> > The members "start" and "end" of struct resource are of type
+>> > "resource_size_t" which can be 32bit wide.
+>> > Values read from OF however are always 64bit wide.
+>> >
+>> > Refactor the diff overflow checks into a helper function.
+>> > Also extend the checks to validate each calculation step.
+>> >
+>> > Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+>> > ---
+>> >  drivers/of/address.c | 45 ++++++++++++++++++++++++++-------------------
+>> >  1 file changed, 26 insertions(+), 19 deletions(-)
+>> >
+>> > diff --git a/drivers/of/address.c b/drivers/of/address.c
+>> > index 7e59283a4472..df854bb427ce 100644
+>> > --- a/drivers/of/address.c
+>> > +++ b/drivers/of/address.c
+>> > @@ -198,6 +198,25 @@ static u64 of_bus_pci_map(__be32 *addr, const __be32 *range, int na, int ns,
+>> >
+>> >  #endif /* CONFIG_PCI */
+>> >
+>> > +static int __of_address_resource_bounds(struct resource *r, u64 start, u64 size)
+>> > +{
+>> > +     u64 end = start;
+>> > +
+>> > +     if (overflows_type(start, r->start))
+>> > +             return -EOVERFLOW;
+>> > +     if (size == 0)
+>> > +             return -EOVERFLOW;
+>> > +     if (check_add_overflow(end, size - 1, &end))
+>> > +             return -EOVERFLOW;
+>> > +     if (overflows_type(end, r->end))
+>> > +             return -EOVERFLOW;
+>>
+>> This breaks PCI on powerpc qemu. Part of the PCI probe reads a resource
+>> that's zero sized, which used to succeed but now fails due to the size
+>> check above.
+>>
+>> The diff below fixes it for me.
+>
+> I fixed it up with your change.
 
-Link: https://lore.kernel.org/all/752a31b0-4370-4f52-b7cc-45f0078c1d6c@csgroup.eu
 
-To give more context as where this has been observed, and also add a
-snippet of your explanation there, this:
+This commit is breaking Ethernet functionality on the TI AM57xx platform due to zero byte SRAM block size allocation during initialization. Prior to this patch, zero byte block sizes were handled properly.
 
-----
-# grep -e _stext -e _etext -e _edata /proc/kallsyms
-c0000000 T _stext
-c08b8000 D _etext
+The issue is with the following line of code:
 
-So there is no _edata and _etext is not text
+if (size && check_add_overflow(end, size - 1, &end))  // check_add_overflow not called when size is zero
 
-$ ppc-linux-objdump -x vmlinux | grep -e _stext -e _etext -e _edata
-c0000000 g       .head.text	00000000 _stext
-c08b8000 g       .rodata	00000000 _etext
-c1378000 g       .sbss	00000000 _edata
-----
+We feel check_add_overflow() should be invoked even when the size is zero to ensure correct block size allocation.
 
-Thanks,
-
-- Arnaldo
-
-> Fixes: ed9adb2035b5 ("perf machine: Read also the end of the kernel")
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  tools/perf/util/machine.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/tools/perf/util/machine.c b/tools/perf/util/machine.c
-> index 27d5345d2b30..9be2f4479f52 100644
-> --- a/tools/perf/util/machine.c
-> +++ b/tools/perf/util/machine.c
-> @@ -1003,7 +1003,7 @@ static int machine__get_running_kernel_start(struct machine *machine,
->  
->  	err = kallsyms__get_symbol_start(filename, "_edata", &addr);
->  	if (err)
-> -		err = kallsyms__get_function_start(filename, "_etext", &addr);
-> +		err = kallsyms__get_symbol_start(filename, "_etext", &addr);
->  	if (!err)
->  		*end = addr;
->  
-> -- 
-> 2.47.0
+Thanks & Best Regards,
+Basharath
 
