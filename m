@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-4859-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4860-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53FC9E77199
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2025 17:06:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D159E77188
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2025 17:07:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YSvSq6PSrz2yLB;
-	Thu,  9 Jan 2025 04:06:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736355963;
-	cv=none; b=M3X170PBlKwAttjpt+iCzJBklZ2nbSc1Jvk6MSEvTAPgs1uryZv58IRm6ZlNMlywb2rn9SzyLMvR9M0QCul6I3YnQ4zOoo4oAL4ldVjdeMOv4by8lmBnoHxfDxltVf3hiu2x6FAFqIPGkKgVr3qtHDjgyMjowIFiUSTwrgmF152ud9zWc1Q8c2FU+/OoU0r/G40nEcKz6fcJGsV7z0HuB4K6VoTMraCWLYLvx7PuG6KJ9t1weeR1ZzY4ke1tWFRpJWxkc8ecucecriVsjKDJNMa2L5s1dtUh4RBDrjEw7nh1t8CseRbI2n0om7+lZMcRtgFZidi3YeKYJM/5Gn5MNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YSvVC531yz30TJ;
+	Thu,  9 Jan 2025 04:07:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736356035;
+	cv=none; b=WlWMuhyL1QzWOwF11x5zDQj2pbGTVXxl4u8zandRvkrn+CYjq1NlOlHguHmiMcAWspO/Txdbl6KG876qmV1Bh5zSw3+1rmGln+X/WZxTX98ByGWkfkS7GCixvDRnIuV8uVhzEPnL89Ezj6xWEnqTxEkvyeUhKoIxrKoy/rgyfjZE1DGK0n20Tn2F8aQJge2MCkxg9lhddCWjm19G+cOjp4RmZ8bTUa54hwgGP2w6Y480wVh2O+8WhNh/sMa+oD3Qihv7g8AKUBr94l+/hwU3lYiD0P9drkkCVHuZheBrMPNJPeTjzM1/tkBdh0wIU9qXi3wEWE6ykBPWlgK92RWFgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736355963; c=relaxed/relaxed;
-	bh=yyOPD9qcVaUXHHE2IbrdGoE4thHZzJpL1nlCYWWtVlA=;
+	t=1736356035; c=relaxed/relaxed;
+	bh=7Rco7cktgzZ8MgePhAM+gb77taf7Sd6JzK6MPuBfnxk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=n4qEa7tP+n1ks1pLCRkDuUnq8sZrlpnF4RV5XrjS5K0mVfGF2eMYr3fXzxTCe9zmMtuZ3oa+SzWbsrstGnj1sJpgjaWrCcPjhTsTgkYg4FJP6BpULgWF6PyT6l3qn+PWR4UHxLVIwaYS0n4turcisosNXpTA6nduwmudop/yRJNMTf/AOPV0qubwtaoJq+zmDdQN3ED4wd3xFMpr+y5NpzOaeV/VVQzPy1ZUXhSUyIZ80YScmNXo+kwAlQIP+uEaGfSQDm2xhjRij1KV471xRzAMPxrjsLl8lvb3jsC97ei2RRlh9chZqLa11hA3vQckCyf3LXgnI0/vdPZDrKZbtQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UmlA6/a1; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=UkD7Bj4Ts0YvFtbLnZ+NVZrsOX+WyokYxXI9cpQsiFstUUGFYtQ0XZh1RABELQdHLSGusnyoZvInmW2nZ9CjJhO6hPA6J1wP0RjUn2zV3g6D/wcARH7Qanmv69vXzgpTd8Ka+LWjBoGZo3aea9DKi+cp7s2dJqTl4dgXo+M1UiOYP7SpXeXIqiGE6KVr5aiS1wMaYu0779p4DK0MI0PTM3o+Tu85m6lSdya2fuXSgjmwtGoqxwf1rRwgs4RPksZk+kEGaYeAQuyQkubrIMBsIf0v5C6209IiDsDJiSxxEKMSabeOhir/lsWfeixg9rlV5T0hS5UHc55VXGqZLg1yjA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fT2Lg/Mz; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UmlA6/a1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fT2Lg/Mz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSvSp31Srz2y33
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2025 04:06:02 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 508CHKZf026786;
-	Wed, 8 Jan 2025 17:05:50 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSvVB50Pqz2y33
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2025 04:07:14 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 508EHPDk009609;
+	Wed, 8 Jan 2025 17:07:04 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:to; s=pp1; bh=yyOPD9qcVaUXHHE2IbrdG
-	oE4thHZzJpL1nlCYWWtVlA=; b=UmlA6/a1xq0D4fbVq219CeBj9e2KhZBl7MlPo
-	DvrF+zVE5hEjuR0gN8Vn4e00q/7XXIWXfLDa6ZqGFBUtBr4m/mTfXzmEFakjXm0C
-	m75+1RmCbLZ2fq9KcfZBMkorRqHD3MY5Casbk54PRWvmC2xL3dX18a8tL565aAwV
-	DyF7cTv+BfuTWI511vf0fgTP36GLHBTwtRbLtzx/zCQT1IGgdIK8rWvP9WtXq9mb
-	fuLfmdLPj9XUoYMumKZOI5xf4AFMH3XNkUz0tYKJ2do1SwLIYUDeGTOkZa21vsQ9
-	dHYkvzaRs2SMRP5JxA3k4oQD60v58ARrup3PTBmVCMicbLIhg==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 441e3b43xn-1
+	:references:reply-to:subject:to; s=pp1; bh=7Rco7cktgzZ8MgePhAM+g
+	b77taf7Sd6JzK6MPuBfnxk=; b=fT2Lg/Mz66ez873RIgd1O7ShK7ptRYqcdSr+3
+	dO1pFvlmgdYsxwJFnshZBkntVnWwCiN8FBIE3CAE1AYCis7Y2i6PDLnum+/N1eWp
+	ujMFCveqiDAMgcX7trV11NqekbchCgLUhkevM0KNXo07dIZfdiFH9EbddhApTjVG
+	gZRLpRx5IfRNAra9XRHU7EVJFvvONIQ3JhlcTQGKfGeoaE1R3iSx3SYNbep7LagW
+	MeVqezJ8LNACG0LHGqOaGz1Oeag4GGkbvec0vA1AMdvK4HLdp3PTU+PvSH/W1OnN
+	YX92m4+NnpXB8J3wYXHtDyqWQSANMerpT8i7kdC/FlcQYL38w==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 441hupuh2r-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Jan 2025 17:05:49 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 508GVGNJ008861;
-	Wed, 8 Jan 2025 17:05:49 GMT
+	Wed, 08 Jan 2025 17:07:03 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 508DlggC016144;
+	Wed, 8 Jan 2025 17:07:02 GMT
 Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 43yfq00xw8-1
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 43ygtm0qcm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Jan 2025 17:05:49 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 508H5jJl64160230
+	Wed, 08 Jan 2025 17:07:02 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 508H6weY65732980
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 8 Jan 2025 17:05:45 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 086B920043;
-	Wed,  8 Jan 2025 17:05:45 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A63F520040;
-	Wed,  8 Jan 2025 17:05:42 +0000 (GMT)
+	Wed, 8 Jan 2025 17:06:58 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B726B20049;
+	Wed,  8 Jan 2025 17:06:58 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 652DA20040;
+	Wed,  8 Jan 2025 17:06:56 +0000 (GMT)
 Received: from linux.ibm.com (unknown [9.39.20.94])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed,  8 Jan 2025 17:05:42 +0000 (GMT)
-Date: Wed, 8 Jan 2025 22:35:36 +0530
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Wed,  8 Jan 2025 17:06:56 +0000 (GMT)
+Date: Wed, 8 Jan 2025 22:36:52 +0530
 From: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
 To: Sourabh Jain <sourabhjain@linux.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -72,12 +72,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
         Madhavan Srinivasan <maddy@linux.ibm.com>,
         Michael Ellerman <mpe@ellerman.id.au>, kexec@lists.infradead.org,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RESEND v1 4/5] powerpc/crash: use generic crashkernel
- reservation
-Message-ID: <dgn3qq2q35rjem3lm33k646tl7ucxghwnvttplr4fdk35aftfx@2tzxh6ku5m3d>
+Subject: Re: [PATCH RESEND v1 3/5] powerpc/kdump: preserve user-specified
+ memory limit
+Message-ID: <k2eoi22mh5lod4nzee3qfbaagh36yljcqwxcyvvewmzbktcual@mzleqvtlojj3>
 Reply-To: mahesh@linux.ibm.com
 References: <20250108101458.406806-1-sourabhjain@linux.ibm.com>
- <20250108101458.406806-5-sourabhjain@linux.ibm.com>
+ <20250108101458.406806-4-sourabhjain@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,88 +92,31 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250108101458.406806-5-sourabhjain@linux.ibm.com>
+In-Reply-To: <20250108101458.406806-4-sourabhjain@linux.ibm.com>
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 2gBREeBZTiWbtcfDwpoa7ZKrEaVUoORI
-X-Proofpoint-GUID: 2gBREeBZTiWbtcfDwpoa7ZKrEaVUoORI
+X-Proofpoint-ORIG-GUID: 0k2Nk1NO3SK3S2mkcvoPrnX37nTnCIAg
+X-Proofpoint-GUID: 0k2Nk1NO3SK3S2mkcvoPrnX37nTnCIAg
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
  definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- priorityscore=1501 phishscore=0 impostorscore=0 clxscore=1011 bulkscore=0
- lowpriorityscore=0 mlxlogscore=999 adultscore=0 suspectscore=0 spamscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 adultscore=0
+ clxscore=1011 mlxscore=0 malwarescore=0 priorityscore=1501
+ lowpriorityscore=0 spamscore=0 bulkscore=0 impostorscore=0 mlxlogscore=779
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.19.0-2411120000 definitions=main-2501080141
 
-On 2025-01-08 15:44:57 Wed, Sourabh Jain wrote:
-> Commit 0ab97169aa05 ("crash_core: add generic function to do
-> reservation") added a generic function to reserve crashkernel memory.
-> So let's use the same function on powerpc and remove the
-> architecture-specific code that essentially does the same thing.
+On 2025-01-08 15:44:56 Wed, Sourabh Jain wrote:
+> Commit 59d58189f3d9 ("crash: fix crash memory reserve exceed system
+> memory bug") fails crashkernel parsing if the crash size is found to be
+> higher than system RAM, which makes the memory_limit adjustment code
+> ineffective due to an early exit from reserve_crashkernel().
 > 
-> The generic crashkernel reservation also provides a way to split the
-> crashkernel reservation into high and low memory reservations, which can
-> be enabled for powerpc in the future.
-> 
-> Along with moving to the generic crashkernel reservation, the code
-> related to finding the base address for the crashkernel has been
-> separated into its own function name get_crash_base() for better
-> readability and maintainability.
-> 
-> To prevent crashkernel memory from being added to iomem_resource, the
-> function arch_add_crash_res_to_iomem() has been introduced. For further
-> details on why this should not be done for the PowerPC architecture,
-> please refer to the previous commit titled "crash: let arch decide crash
-> memory export to iomem_resource.
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Baoquan he <bhe@redhat.com>
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> CC: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: kexec@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> ---
->  arch/powerpc/Kconfig                     |  3 +
->  arch/powerpc/include/asm/crash_reserve.h | 18 +++++
->  arch/powerpc/include/asm/kexec.h         |  4 +-
->  arch/powerpc/kernel/prom.c               |  2 +-
->  arch/powerpc/kexec/core.c                | 90 ++++++++++--------------
->  5 files changed, 63 insertions(+), 54 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/crash_reserve.h
-[...]
-> @@ -113,9 +113,9 @@ int setup_new_fdt_ppc64(const struct kimage *image, void *fdt, struct crash_mem
->  
->  #ifdef CONFIG_CRASH_RESERVE
->  int __init overlaps_crashkernel(unsigned long start, unsigned long size);
-> -extern void reserve_crashkernel(void);
-> +extern void arch_reserve_crashkernel(void);
+> Regardless lets not violated the user-specified memory limit by
+> adjusting it. Remove this adjustment to ensure all reservations stay
+> within the limit. Commit f94f5ac07983 ("powerpc/fadump: Don't update
+> the user-specified memory limit") did the same for fadump.
 
-Do we really need to rename this ? it is still called from powepc arch
-and not from the common code.
-
->  #else
-> -static inline void reserve_crashkernel(void) {}
-> +static inline void arch_reserve_crashkernel(void) {}
->  static inline int overlaps_crashkernel(unsigned long start, unsigned long size) { return 0; }
->  #endif
->  
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index e0059842a1c6..9ed9dde7d231 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -860,7 +860,7 @@ void __init early_init_devtree(void *params)
->  	 */
->  	if (fadump_reserve_mem() == 0)
->  #endif
-> -		reserve_crashkernel();
-> +		arch_reserve_crashkernel();
->  	early_reserve_mem();
->  
->  	if (memory_limit > memblock_phys_mem_size())
-
-Rest looks good to me.
+Agreed.
 
 Reviewed-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 
