@@ -1,59 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-4862-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4863-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEB16E77188
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2025 17:17:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00422E77188
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jan 2025 17:20:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YSvjv2K5Wz30VF;
-	Thu,  9 Jan 2025 04:17:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=23.155.224.40
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736356643;
-	cv=none; b=cGqs4GVUhJ1pd/QqDof51JmmB/ObuN2tfuoeJXniiIwLkMvlk6SrU93QsmRptmvkz9MSA/9GsqqCryF1HSXMNoC+ZcNpTarsR7qAmyuFpQUVeI1wO0TS0/SUOBuwamYMxqg1e4LNPiEiFqN2ZVFj7VZo2ZBoTgh8Vp8fntuUA3950JuOfeQDar3+FDKz0z/pPxMHMZz80UfRBsejFjp8W+AFZ8+u7HMvCPAnzOpilAOX8vNLejGmurCezZRelDye/5Zt9vd/7J+7PmBLVowqUCYeje2VXNdM7+YMlpJyCxDlUqKUi2bIR6qQxtXGM22i4n9WdVnpnO+hyHAAU/xLXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YSvn33jfYz2xVq;
+	Thu,  9 Jan 2025 04:20:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736356807;
+	cv=none; b=LEfyfuQu5mrSpS/x08oUJ2Nm1UKPcEeFEWyaFddTQQY1dkYoQQRv7Y0M0XbtJ2OFDQFgO/ioKGi6dh6emImumR5Q9Plr/74+bHEnbIIC3eeLhOxX9cvkkHK/BPjRJzjINxJdjkXf3OXpRnwEuekjNrAlHaTRHmVw0rg2yz0/9btIane3l1s0aLfYP2xF106pVpKwblyje4Lv4OAwdFKRPWMnJpZaJlmVuUBZXZFNwfEqzUjCRguG/i35RG/4OPiQmB9P71e1uQ4navnsaz5WdQtfX04CH/RYcJ8whVkvrpgMv6YTA4I/OJiyHVRswT/U2f67i3aNcx9y88CcKZt7dg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736356643; c=relaxed/relaxed;
-	bh=rBne1mSxqFYz8GbBPb10Ksop8x4X2f8gV7i8UrBoAA4=;
+	t=1736356807; c=relaxed/relaxed;
+	bh=74uNivkrffQaxNqRqr12D4jItoUGMQbDxg0x2Ap2P1U=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bmaS6WCIEJaWZI++s1f0NYWc2x/vbZD8ET5Q5fjPycD2K8qIlpaW1VJnOT2j8oODYIXAK0oQFnijuFho08xb6r1XeebqSOm6p53xB/HTgbLn2KiBPvDhSK2mWlukRiu79a3SzzpmADIZOKDHt3QztavvUdvzyBL0izFkv8gIzoML7C57YnXVVLguPBILTKZYkaTB+j/WWwiZFEgryDgBclwCVaf2yTUq9cNBmnIGKA4KM40utl20ZO1BubfwqsS9Cvt95tid/lnYttyKeIk7ij7kxyuajO98Ws04zWGnyvPhWlSapPB7YkPs4x5bs1sShZ3Ar/skOUzFnkylemTkEw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com; dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=dEZq5ZEs; dkim-atps=neutral; spf=pass (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=sanastasio@raptorengineering.com; receiver=lists.ozlabs.org) smtp.mailfrom=raptorengineering.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=dEZq5ZEs;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=raptorengineering.com (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=sanastasio@raptorengineering.com; receiver=lists.ozlabs.org)
-Received: from raptorengineering.com (mail.raptorengineering.com [23.155.224.40])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSvjr2TL5z30Tk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2025 04:17:19 +1100 (AEDT)
+	 In-Reply-To:Content-Type; b=LSHzuJZdIriYAE9ycSznGMW0m1T/kLqeViv6BieX8sgCrpfQGYaMcNtIVqLZp0DNuvPHMDzwra24G5VdWSBU8I+BSOO0WMHN/yWanAjLEtMbUBnhkPhP0xogowoVyZjqMs0rYuLjfQ/0JdajuXR0WkWziv37nrMiRmBzkZ8q0yz7gnzNYIotNtf2I4KLyMg/xSQ4rOSA/PfWyz2aV4f+iNUij1429hurZ5Mexf8JQsgrubDK/sZFMjsqahmj1QOQZ6i/1XKD//rAsBBGdBg3y1oL2Shrx9Nc3gGVJqlxKvFlVRTECCaV0YnLJYsCq+dCwkn/22yhcCzQdJIZfQuiVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YSvn22pw1z2xG6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2025 04:20:05 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4YSvSs1ctnz9sPd;
+	Wed,  8 Jan 2025 18:06:05 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 8u17lnlhSuRt; Wed,  8 Jan 2025 18:06:05 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4YSvSs0m5Cz9rvV;
+	Wed,  8 Jan 2025 18:06:05 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id C3EEF8287590;
-	Wed,  8 Jan 2025 11:17:15 -0600 (CST)
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10032)
-	with ESMTP id QV0Sx48sA9T2; Wed,  8 Jan 2025 11:17:15 -0600 (CST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 24FCB8287D4A;
-	Wed,  8 Jan 2025 11:17:15 -0600 (CST)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com 24FCB8287D4A
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=raptorengineering.com; s=B8E824E6-0BE2-11E6-931D-288C65937AAD;
-	t=1736356635; bh=rBne1mSxqFYz8GbBPb10Ksop8x4X2f8gV7i8UrBoAA4=;
-	h=Message-ID:Date:MIME-Version:To:From;
-	b=dEZq5ZEsCcMaz+TU98jieY6hhcQz3B7Y1TMX7h6TlEwv/1a/yqB1FUfGqSpdVEglH
-	 hSrjy6/rIdim1chUeTPihMkEnV6hQYDptzl3WP2c8wLjHHwpSFKt0R5sgVpBkpcwxf
-	 342hJBK7cqCHPQj/DPQrmfeaSFeiusgfyko+sm0Y=
-X-Virus-Scanned: amavisd-new at rptsys.com
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id KqOpN7vNWAuI; Wed,  8 Jan 2025 11:17:15 -0600 (CST)
-Received: from [10.11.0.2] (5.edge.rptsys.com [23.155.224.38])
-	by mail.rptsys.com (Postfix) with ESMTPSA id B2E728287590;
-	Wed,  8 Jan 2025 11:17:14 -0600 (CST)
-Message-ID: <de35acbd-8b35-42e2-b344-8c9c1103327b@raptorengineering.com>
-Date: Wed, 8 Jan 2025 11:17:13 -0600
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 076A68B783;
+	Wed,  8 Jan 2025 18:06:05 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id wBdH3uy-PuNr; Wed,  8 Jan 2025 18:06:04 +0100 (CET)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5CA318B768;
+	Wed,  8 Jan 2025 18:06:04 +0100 (CET)
+Message-ID: <590b2f02-f7f0-48b2-b45e-8a31bbadef2a@csgroup.eu>
+Date: Wed, 8 Jan 2025 18:06:03 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,57 +58,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: Raptor Engineering dedicating resources to KVM on PowerNV + KVM
- CI/CD
-To: Alex Williamson <alex.williamson@redhat.com>
-Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Timothy Pearson <tpearson@raptorengineering.com>
-References: <8dd4546a-bb03-4727-a8c1-02a26301d1ad@raptorengineering.com>
- <20250107064550.713c2fd9.alex.williamson@redhat.com>
-Content-Language: en-US
-From: Shawn Anastasio <sanastasio@raptorengineering.com>
-In-Reply-To: <20250107064550.713c2fd9.alex.williamson@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH v2] perf: Fix display of kernel symbols
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+ Adrian Hunter <adrian.hunter@intel.com>,
+ "Liang, Kan" <kan.liang@linux.intel.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-perf-users@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+References: <2ea4501209d5363bac71a6757fe91c0747558a42.1736329923.git.christophe.leroy@csgroup.eu>
+ <Z36Ra23US_zC3n2v@x1>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <Z36Ra23US_zC3n2v@x1>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Hi Alex,
 
-On 1/7/25 5:45 AM, Alex Williamson wrote
-> Hi,
+
+Le 08/01/2025 à 15:53, Arnaldo Carvalho de Melo a écrit :
+> On Wed, Jan 08, 2025 at 10:54:20AM +0100, Christophe Leroy wrote:
+>> Since commit 659ad3492b91 ("perf maps: Switch from rbtree to lazily
+>> sorted array for addresses"), perf doesn't display anymore kernel
+>> symbols on powerpc, allthough it still detects them as kernel addresses.
+>>
+>> 	# Overhead  Command     Shared Object  Symbol
+>> 	# ........  ..........  ............. ......................................
+>> 	#
+>> 	    80.49%  Coeur main  [unknown]      [k] 0xc005f0f8
+>> 	     3.91%  Coeur main  gau            [.] engine_loop.constprop.0.isra.0
+>> 	     1.72%  Coeur main  [unknown]      [k] 0xc005f11c
+>> 	     1.09%  Coeur main  [unknown]      [k] 0xc01f82c8
+>> 	     0.44%  Coeur main  libc.so.6      [.] epoll_wait
+>> 	     0.38%  Coeur main  [unknown]      [k] 0xc0011718
+>> 	     0.36%  Coeur main  [unknown]      [k] 0xc01f45c0
+>>
+>> This is because function maps__find_next_entry() now returns current
+>> entry instead of next entry, leading to kernel map end address
+>> getting mis-configured with its own start address instead of the
+>> start address of the following map.
+>>
+>> Fix it by really taking the next entry, also make sure that entry
+>> follows current one by making sure entries are sorted.
+>>
+>> Fixes: 659ad3492b91 ("perf maps: Switch from rbtree to lazily sorted array for addresses")
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> Reviewed-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+>> ---
+>> v2: Make sure the entries are sorted, if not sort them.
 > 
-> What are you supposing the value to the community is for a CI pipeline
-> that always fails?  Are you hoping the community will address the
-> failing tests or monitor the failures to try to make them not become
-> worse?
+> Since you have changed what I reviewed I'll have to re-review :-) Will
+> try to do it after some calls.
 
-The failing tests are all isolated to issues with the specific AMD
-graphics hardware that the test machine is using for the VFIO and host
-GPU tests, and are likely isolated to the amdgpu driver itself. We have
-filed bugs with amdgpu folks.
+Ah yes sorry, should have removed your Reviewed-by.
 
-The non-failing tests however, possess value for regression monitoring
-including VM boot smoke tests for both little endian and big endian
-ppc64/pseries targets, as well as the vfio-*-attach tests that ensure
-hardware can be successfully bound to the vfio-pci driver on a PowerNV
-host. The test artifacts also include full dmesg output from the host
-and guest machine (when applicable) to assist with debugging.
+Based on Ian's feedback "Using the next entry in this way won't work if 
+the entries aren't sorted", I added the following block in front of the 
+initial change:
 
-The data could definitely be presented in an easier to digest way to
-make it more obvious which failures are regressions and which are due to
-the aforementioned amdgpu issues, so that's an area for improvement.
++	while (!maps__maps_by_address_sorted(maps)) {
++		up_read(maps__lock(maps));
++		maps__sort_by_address(maps);
++		down_read(maps__lock(maps));
++	}
 
-> 
-> I would imagine that CI against key developer branches or linux-next
-> would be more useful than finding problems after we've merged with
-> mainline, but it's not clear there's any useful baseline here to
-> monitor for regressions.  Thanks,
->
+Christophe
 
-That's a good point -- I'll definitely look into adding at least
-linux-next, as well as any other branch requests from developers.
-
-> Alex
-
-Thanks,
-Shawn
 
