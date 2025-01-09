@@ -1,50 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-4894-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4895-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC6F3E77197
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2025 06:50:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B982E77199
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jan 2025 07:20:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YTFlf6YQhz30hL;
-	Thu,  9 Jan 2025 17:50:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YTGQG3XbDz30gv;
+	Thu,  9 Jan 2025 18:20:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736405406;
-	cv=none; b=aC2pUF+wbzEftQfxARvlHcyMX7Pat6uyz5vZ+vUrj+yBOSnxaCoLZlgRyy+bw7ddNdmlKoErEgfEYtURBivY49KjhH+37Su4QxtDJcsI2OJmTjv4izEcOKBc9A3ya6ACmvvMME7ZgIs8e22X9HZ7XxApEXgqLCrFCox+8a80oiRQxOrptdvjnljCycZprOwtJxi9CDhYS/6W/bEuAFabzS/W62qC5Bz+y9bbx8m/4QtlTdDH9pqxOV7Hez+IlLHd4RDCVV501opey1S4djszinKSZqqjN34Vixg25p2WysCtdXSXghuxYrxfyYVkR2kgKGhbXLolXzSoqyZsQlgHgA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736407206;
+	cv=none; b=Esmion7wYHwKNof2B1urv29mXXr2sMhgu9j6dXfqqmumuH/udRvP27TXKZPSqXHdzlodOENpU4hsCcE8C32RIfkLPoOVl5bo7YB0z/QQ1x6tauUNILZ9y1RnJvl/hzQNMqcTJk/KyMfwuC45bff0A0DrRt+m3JXtoGiemZxl8iZRWtajUKdpYCNFp2PucXoQYWc08lvCpwnTOX5akTAchyWJZJHSo1Yra8+LjBTFmlTMEu92JEo3G++Pb3EY/eiYsSYELiGMewB+/wDkj76v3ZaR032XZBYx3gyHhzgPg4O4ktLp4A4sKu/pOFoBZGvHOToPXQQNO2Z4M3efz7/pcQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736405406; c=relaxed/relaxed;
-	bh=7kApxiwBrJbn373mMsKy31uaFq9SN2a0hkpqtwwOoSA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iqXXMTSOtE/dDD8DiUGrEFZiA28+SbSVntqdV0iTAud8xMnaU7Fy6NvOP3t/aAhmDXV2UcUcxVIV0qbU0G/JO56wU0WfAX6WR02b1GHfAi4KmqMFQRqc2zLpcSjwCbWQvH5Vi0UGWNaDdqS1bzqCII03g8hpGVrSGXLfpPyUMEQK4uPDDCxnf9gUqD9/LFqV9ucC+0AiHFr+gHTrHdc3JgHfVcmavbU+nb0AcvWp+H+NSmRPnHwDHV07lAHR28XsUCuqpCVH5axTsp7bqynrNQl1HlGCShu0bJJXuFUT8nMAOkkIyLQyG1/26COAQxHBF9Ut1qmjdeV0wR6wCIfXkw==
+	t=1736407206; c=relaxed/relaxed;
+	bh=Qa1FdIWdVXNz9JOGkdWOPzQlstOkRCvFaLMPQsCn1nY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Plo37OHVRgrxqjZ/OE3aTcFpxB/JumjfrnrCLGEiSx5nAeBnre//yUTsEpF8liVOeiXEbd0p2Q/mK6bk5/An9wjxRmxCCgYMc+4L3SRiWsFP67KHd4+au8S/fscEzJtosihrIoEYF6rPyyRc/FxVzQ2WDeyyymdwkgGFqIPJqmyfuJe7R9UiCGydLwsWZNh22QSa3knbEE7nT+AGFlEHO84U2unAKD2fismfnnSvrY7qfCASZ5RI584KGGQmr43jRIZSy7t+lA4RxArDzjGTex65QG+bkOpf2hjROGu6rGW8oYgty03gsVq0Y9IG492uAlV0pjFgrM72jK8dRkqGcA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YTFld3y9Hz30gv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2025 17:50:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YTGQF1jtvz2ygY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2025 18:20:04 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YTFV64Thlz9sPd;
-	Thu,  9 Jan 2025 07:38:22 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4YTFnw6LVJz9sRs;
+	Thu,  9 Jan 2025 07:52:04 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wFVIK4wTVg1Y; Thu,  9 Jan 2025 07:38:22 +0100 (CET)
+	with ESMTP id 2h3jIhsljL5N; Thu,  9 Jan 2025 07:52:04 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YTFV63Lt0z9rvV;
-	Thu,  9 Jan 2025 07:38:22 +0100 (CET)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4YTFnm5G9Pz9sSq;
+	Thu,  9 Jan 2025 07:51:56 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5C7298B783;
-	Thu,  9 Jan 2025 07:38:22 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A34EA8B783;
+	Thu,  9 Jan 2025 07:51:56 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id novq1XGp-0SK; Thu,  9 Jan 2025 07:38:22 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B8D7C8B768;
-	Thu,  9 Jan 2025 07:38:21 +0100 (CET)
-Message-ID: <e2ec27b9-77d5-4224-b66a-1ef353e6c848@csgroup.eu>
-Date: Thu, 9 Jan 2025 07:38:21 +0100
+	with ESMTP id M-S0U1JqzR4O; Thu,  9 Jan 2025 07:51:56 +0100 (CET)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4F7EA8B768;
+	Thu,  9 Jan 2025 07:51:56 +0100 (CET)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Mark Brown <broonie@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-spi@vger.kernel.org
+Subject: [PATCH] spi: fsl-spi: Remove display of virtual address
+Date: Thu,  9 Jan 2025 07:51:45 +0100
+Message-ID: <8a37a960ff084dfdb9233849c00714e9317ae6a5.1736405336.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.47.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,54 +64,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] perf machine: Don't ignore _etext when not a text symbol
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
- Adrian Hunter <adrian.hunter@intel.com>,
- "Liang, Kan" <kan.liang@linux.intel.com>, Song Liu <songliubraving@fb.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-perf-users@vger.kernel.org
-References: <b3ee1994d95257cb7f2de037c5030ba7d1bed404.1736327613.git.christophe.leroy@csgroup.eu>
- <Z37cuobj6NVRUKoo@x1>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <Z37cuobj6NVRUKoo@x1>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1736405504; l=917; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=XZ+TmCmIoTk93QwY0Hm3NJ2mY6ezenPMduW2uK/ZBAc=; b=YusKL3SFI3figWCbegHgaqV7ZBjGdUqRWCKXEvhTmrtQCognm2r22fC3dzoqhSUdfjN6Rz10C HmjjixNnzgzAmAqT6no73LmwOyv4G/NT+Fu0KH1PLgrlV5JxYvQrEFx
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
+The following appears in kernel log at boot:
 
+	fsl_spi b01004c0.spi: at 0x(ptrval) (irq = 51), QE mode
 
-Le 08/01/2025 à 21:14, Arnaldo Carvalho de Melo a écrit :
-> On Wed, Jan 08, 2025 at 10:15:24AM +0100, Christophe Leroy wrote:
->> Depending on how vmlinux.lds is written, _etext might be the very
->> first data symbol instead of the very last text symbol.
->>
->> Don't require it to be a text symbol, accept any symbol type.
-> 
-> I'm adding a Link:
-> 
-> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F752a31b0-4370-4f52-b7cc-45f0078c1d6c%40csgroup.eu&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C914f4c7995574ee91f5c08dd30211dd6%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638719640997470461%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=kqCNbhhgKri3TlJaUb3mkTU6NyFRzhnb%2BDiK93h9aSQ%3D&reserved=0
-> 
-> To give more context as where this has been observed, and also add a
-> snippet of your explanation there, this:
-> 
-> ----
-> # grep -e _stext -e _etext -e _edata /proc/kallsyms
-> c0000000 T _stext
-> c08b8000 D _etext
-> 
-> So there is no _edata and _etext is not text
+This is useless, so remove the display of that virtual address and
+display the MMIO address instead, just like serial core does.
 
-For the absence of _edata, I sent another patch, will you take it as 
-well ? :
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ drivers/spi/spi-fsl-spi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-https://lore.kernel.org/linux-perf-users/2fec8c50c271dff59f0177ff0884b6c374486ba5.1736327770.git.christophe.leroy@csgroup.eu/T/#u
-
-Thanks
-Christophe
+diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
+index 856a4a9def66..2f2082652a1a 100644
+--- a/drivers/spi/spi-fsl-spi.c
++++ b/drivers/spi/spi-fsl-spi.c
+@@ -618,7 +618,7 @@ static struct spi_controller *fsl_spi_probe(struct device *dev,
+ 	if (ret < 0)
+ 		goto err_probe;
+ 
+-	dev_info(dev, "at 0x%p (irq = %d), %s mode\n", reg_base,
++	dev_info(dev, "at MMIO %pa (irq = %d), %s mode\n", &mem->start,
+ 		 mpc8xxx_spi->irq, mpc8xxx_spi_strmode(mpc8xxx_spi->flags));
+ 
+ 	return host;
+-- 
+2.47.0
 
 
