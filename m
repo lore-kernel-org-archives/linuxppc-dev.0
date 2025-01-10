@@ -1,44 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-5018-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5019-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75B71E77188
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 22:06:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 289CFE77188
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 23:57:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YVG2Z72n6z3cYy;
-	Sat, 11 Jan 2025 09:06:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::ba"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736546790;
-	cv=none; b=L/cgKTCAmy3plB5PznaWcjWXK6EJEiamQdRJ9AKNbFJd+tnllVJb6wKKSWP7EhirWh3gnMOa95iJRTsCoFfSj1X7G40bPhnpzndljL4qgNSiNPzOBz9z4m/KNjocwGV+qvNFZRGaR6bLGZADUvGLPgbZslrCHEfl6Q4MKKlxgBzC6xL4x4g2sRNlKuffEf02yMGJzazpkEVj4br74283okBbtEQIrFPK3dQTQStsdl1fdg5hjijCSEoyeyjwafioLqpbql7mSuJFopkqLlyXOpW+pxuIS5IztqvUtvJXwsK0wmiC8MZ5dPklbhWTruVVgIDSmHFC6ZEhIEiMaU3wrw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YVJVw43ZSz3bV6;
+	Sat, 11 Jan 2025 10:57:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736553464;
+	cv=none; b=Z+cfivhFP7c+zEH+PFnAUOZbEbWSga+cna7y2JqynYD8DQNR+eqQ5dL6aZiD6Udd8j/tW6+KUvEpb8K/kH9rTB6l0cDuLMwLdoOCBko8ApflI2pOKqfeytglY5KTgjTgeGiEqq/C8aHITyE3eeSR9e7gZfEO2BtWIMwtIQ7Oa2M19yWTWim8w/L2PdNuX9iby2CAAVVh6W4GMQAUDEXWKp7hD7FZCFVg6lW3X6s2O8fRg9qATjF01iRC3Zb/KwbrK0e/up8HJP7W3EIB4guXULtB9/3uvZMnlp8156sbaJ1eZvHaefj9ZJWThXCeGxROAkxI1cA3EY6A4kfXsZcUTA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736546790; c=relaxed/relaxed;
-	bh=2x5BxF/3ZkUkZ+08VxDfgNb3JHhNGdhbGCSwU27BGaM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ozaarIplMhAYzczcBJBFEL5Iw90ls8kAw8bPeS7fCmf6oAlrqzLdNi+DgSRP6eLuvEkba6L7FCJaoK33bGl68NatiGKfEABnE20Rh/vfAI3ya1iuHPgoINW3ppATjGTb1EGjNNw/Xn4r79Hsk4HxSqllm7TCf0LlnyoKLZWA0l8yCQ3fWU/Wqo45ppOfqvg+kFqFTmq5JAu+YzuTgzqF/HKG2VrgvWgLosMnHA6XbZHJ6feRzXAyM84Bb0roX0xcE/akn9I+Iip7HzQ1h3LBu4rAImSH2cx6j+Q/nzHBNFQ7kw1esNJs6bHcsSxSc5c/KMcrgPylgrc8eLwKRDTB6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass (client-ip=2001:41d0:203:375::ba; helo=out-186.mta1.migadu.com; envelope-from=sean.anderson@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::ba; helo=out-186.mta1.migadu.com; envelope-from=sean.anderson@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 70 seconds by postgrey-1.37 at boromir; Sat, 11 Jan 2025 09:06:23 AEDT
-Received: from out-186.mta1.migadu.com (out-186.mta1.migadu.com [IPv6:2001:41d0:203:375::ba])
+	t=1736553464; c=relaxed/relaxed;
+	bh=RpsxTqSpw+xU+Ojta4h7470vlKL8fe0DWlZjJQJKYKk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fpc0r0kFENQBuElgoL/4gjm6BohqTXhC5P0d2TP5Na/eYeowz6Kq0w5ov1jxiCbVkXNQhD8xwoNoHVgoYhyyMa51Q95ZDz+VfhVVGyScs1x8ewc8L84NTmULcV/28wxh4nJ7OkMwsMCuo1hcWE2VOlFvcnQg0uXclthiiMiZqSXauiZNYupRymRJ96FOxjn0sldmnbn+mmJWkRt5g1kJge0kroH9hhdhEmMLaUXFE+jTs7rGN72xF4OJOXkPR+CCKa6jQo7drELTIP7CvWiXoUGgMhXBfa/grKXU4WkS5DCy8likV2fK8D7Bh0NMDoTbW+XdwP8TE8KXclNBcbuciQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kTTB5fZ+; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kTTB5fZ+;
+	dkim-atps=neutral
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YVG2R4zSVz3cYh
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 09:06:23 +1100 (AEDT)
-Message-ID: <ba885c8c-c5f0-4902-8515-3c133a00d7f1@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1736546679;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=2x5BxF/3ZkUkZ+08VxDfgNb3JHhNGdhbGCSwU27BGaM=;
-	b=VU6wzF3mE866i1no/6U66csETxez/bREQM53MmiNGv1XnD0PmIbPMQpAz7P1cHr+ry40jW
-	6RMUzfnkgYIoplHz5iotr5rTv8Kd9snuwjrJqwmLPxQE4200bmPgNzApeRG79EpcFVqIDY
-	oWOrLT1Lseiz3xI8SPo8HyEsEA8aMP4=
-Date: Fri, 10 Jan 2025 17:04:34 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YVJVt31pmz3c6q
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 10:57:42 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1736553455;
+	bh=RpsxTqSpw+xU+Ojta4h7470vlKL8fe0DWlZjJQJKYKk=;
+	h=From:To:Cc:Subject:Date:From;
+	b=kTTB5fZ+zESsLt3q/HMo0BRoWuct1MIpwDIPYrYNcnt5MkPp01zlusE9aFMVvu20v
+	 IIzIMAeTIPjXH9TT8VmQoYK/rgvn8OS1wcgmxNwMCPJrdW41UB/B/oUaA7unw+JV5x
+	 8gRjTIXhQ2hhBVzWDAWdeyUiGGTHTSe47DfLzo5g1xLt0mgoxxJ8weSMyztGG2sR3b
+	 2AgSMvIoBhxDFqyW8AeQuckL0/CuZepD5yBcnB64982CZTJz8CBYvQhOglpJKCqx9r
+	 CTwWRrzyJWquiJwuLTg05pUURzTy2/SEiPtU1zRf11gkPYC9I4RzcULRzvNSfoj3oy
+	 w8wB5iIQtOYsg==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4YVJVk3jdZz4wcy;
+	Sat, 11 Jan 2025 10:57:34 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Paolo Bonzini
+ <pbonzini@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] MAINTAINERS: powerpc: Update my status
+Date: Sat, 11 Jan 2025 10:57:38 +1100
+Message-ID: <8734hqkyrx.fsf@mpe.ellerman.id.au>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -51,102 +64,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Subject: Re: [PATCH 2/2] of/address: Fix WARN when attempting translating
- non-translatable addresses
-To: "Rob Herring (Arm)" <robh@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Saravana Kannan <saravanak@google.com>
-Cc: linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20250110215030.3637845-1-robh@kernel.org>
- <20250110215030.3637845-2-robh@kernel.org>
-Content-Language: en-US
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Sean Anderson <sean.anderson@linux.dev>
-In-Reply-To: <20250110215030.3637845-2-robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Migadu-Flow: FLOW_OUT
+Content-Type: text/plain
 
-On 1/10/25 16:50, Rob Herring (Arm) wrote:
-> The recently added WARN() for deprecated #address-cells and #size-cells
-> triggered a WARN when of_platform_populate() (which calls
-> of_address_to_resource()) is used on nodes with non-translatable
-> addresses. This case is expected to return an error.
-> 
-> Rework the bus matching to allow no match and make the default require
-> an #address-cells property. That should be safe to do as any platform
-> missing #address-cells would have a warning already.
-> 
-> Fixes: 045b14ca5c36 ("of: WARN on deprecated #address-cells/#size-cells handling")
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
-> ---
->  drivers/of/address.c | 18 +++++++++++++++---
->  1 file changed, 15 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/of/address.c b/drivers/of/address.c
-> index c1f1c810e810..8770004d9b08 100644
-> --- a/drivers/of/address.c
-> +++ b/drivers/of/address.c
-> @@ -340,6 +340,15 @@ static int of_bus_default_flags_match(struct device_node *np)
->  	return of_property_present(np, "#address-cells") && (of_bus_n_addr_cells(np) == 3);
->  }
->  
-> +static int of_bus_default_match(struct device_node *np)
-> +{
-> +	/*
-> +	 * Check for presence first since of_bus_n_addr_cells() will warn when
-> +	 * walking parent nodes.
-> +	 */
-> +	return of_property_present(np, "#address-cells");
-> +}
-> +
->  /*
->   * Array of bus specific translators
->   */
-> @@ -384,7 +393,7 @@ static const struct of_bus of_busses[] = {
->  	{
->  		.name = "default",
->  		.addresses = "reg",
-> -		.match = NULL,
-> +		.match = of_bus_default_match,
->  		.count_cells = of_bus_default_count_cells,
->  		.map = of_bus_default_map,
->  		.translate = of_bus_default_translate,
-> @@ -399,7 +408,6 @@ static const struct of_bus *of_match_bus(struct device_node *np)
->  	for (i = 0; i < ARRAY_SIZE(of_busses); i++)
->  		if (!of_busses[i].match || of_busses[i].match(np))
->  			return &of_busses[i];
-> -	BUG();
->  	return NULL;
->  }
->  
-> @@ -521,6 +529,8 @@ static u64 __of_translate_address(struct device_node *node,
->  	if (parent == NULL)
->  		return OF_BAD_ADDR;
->  	bus = of_match_bus(parent);
-> +	if (!bus)
-> +		return OF_BAD_ADDR;
->  
->  	/* Count address cells & copy address locally */
->  	bus->count_cells(dev, &na, &ns);
-> @@ -564,6 +574,8 @@ static u64 __of_translate_address(struct device_node *node,
->  
->  		/* Get new parent bus and counts */
->  		pbus = of_match_bus(parent);
-> +		if (!pbus)
-> +			return OF_BAD_ADDR;
->  		pbus->count_cells(dev, &pna, &pns);
->  		if (!OF_CHECK_COUNTS(pna, pns)) {
->  			pr_err("Bad cell count for %pOF\n", dev);
-> @@ -703,7 +715,7 @@ const __be32 *__of_get_address(struct device_node *dev, int index, int bar_no,
->  
->  	/* match the parent's bus type */
->  	bus = of_match_bus(parent);
-> -	if (strcmp(bus->name, "pci") && (bar_no >= 0))
-> +	if (!bus || (strcmp(bus->name, "pci") && (bar_no >= 0)))
->  		return NULL;
->  
->  	/* Get "reg" or "assigned-addresses" property */
+Maddy is taking over the day-to-day maintenance of powerpc. I will still
+be around to help, and as a backup.
 
-Tested-by: Sean Anderson <sean.anderson@linux.dev>
+Re-order the main POWERPC list to put Maddy first to reflect that.
+
+KVM/powerpc patches will be handled by Maddy via the powerpc tree with
+review from Nick, so replace myself with Maddy there.
+
+Remove myself from BPF, leaving Hari & Christophe as maintainers.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ MAINTAINERS | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 910305c11e8a..025c6ad42c9d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4131,7 +4131,6 @@ S:	Odd Fixes
+ F:	drivers/net/ethernet/netronome/nfp/bpf/
+ 
+ BPF JIT for POWERPC (32-BIT AND 64-BIT)
+-M:	Michael Ellerman <mpe@ellerman.id.au>
+ M:	Hari Bathini <hbathini@linux.ibm.com>
+ M:	Christophe Leroy <christophe.leroy@csgroup.eu>
+ R:	Naveen N Rao <naveen@kernel.org>
+@@ -12632,7 +12631,7 @@ F:	arch/mips/include/uapi/asm/kvm*
+ F:	arch/mips/kvm/
+ 
+ KERNEL VIRTUAL MACHINE FOR POWERPC (KVM/powerpc)
+-M:	Michael Ellerman <mpe@ellerman.id.au>
++M:	Madhavan Srinivasan <maddy@linux.ibm.com>
+ R:	Nicholas Piggin <npiggin@gmail.com>
+ L:	linuxppc-dev@lists.ozlabs.org
+ L:	kvm@vger.kernel.org
+@@ -13211,11 +13210,11 @@ X:	drivers/macintosh/adb-iop.c
+ X:	drivers/macintosh/via-macii.c
+ 
+ LINUX FOR POWERPC (32-BIT AND 64-BIT)
++M:	Madhavan Srinivasan <maddy@linux.ibm.com>
+ M:	Michael Ellerman <mpe@ellerman.id.au>
+ R:	Nicholas Piggin <npiggin@gmail.com>
+ R:	Christophe Leroy <christophe.leroy@csgroup.eu>
+ R:	Naveen N Rao <naveen@kernel.org>
+-M:	Madhavan Srinivasan <maddy@linux.ibm.com>
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Supported
+ W:	https://github.com/linuxppc/wiki/wiki
+-- 
+2.47.1
+
 
