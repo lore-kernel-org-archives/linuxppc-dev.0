@@ -1,69 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-5023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5024-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EED08E7719C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2025 00:11:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F0B4E77188
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2025 00:11:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YVJpz46nBz3cds;
-	Sat, 11 Jan 2025 11:11:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YVJq66B3Qz3cfm;
+	Sat, 11 Jan 2025 11:11:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::34a"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736534459;
-	cv=none; b=HY4R2rwp8vVyB2G+oKOQDdF4sm7PctupWBnebjKHPgsAswYiSzZhXomdAcGojzUr9rBT6yW0r83X1mXXyo7DLYkfakV4QvjEhne4MDtHLRCQRUmiYeyoxMi5M3x9iT13QYHh9VQ5pUNIqG+cK3RXlA9zCidJoYKoY1Irjsbue7QXxo/jwOurETmlkNFkzUYZwpNKmiAaF3LOZBpTRjkzTEKSewC8iTEQDzkxoaBUTDya7HP5T7cR5uHFpZ0CfySoAtm6b3gl71GxeSs7rnfN/uDDKCM2vwLpS2pu7FAZBrb+fKhEPasVwzcY1l0nWRvH7RzxoHd+IwmMiivRhBKF8Q==
+	cv=none; b=LrVYoP/8u1HE5ikdWUEJDk6W6cyb0RgKKj/l+aV/olUkzJ4QY7luYfvE3B4v2hylH0bXYuLQ04kpkCc466ObOUvi66ZUwn8shtDJ4uNOV9i48ucWnExMbiIw9R/YzJpll5hmPmsKh3yXExup1IyEdH9I2OWyfrbHTB8v4KNElo5JGtLXQjUg3BbqT++PzSubaZHRWWuXtr7zEtEJ+ha9U4D5lcG+tiGuOa1n9zcPvswEWh2zbl6c48Cw3q7ktNPlUY1MP1XLrmmVI9HFUj3R2HkN/uBJxMIUtgWtvlVaPr7JZyOlmfSvzXtNUBwHw4TVMEq79sELj+NRQFIMvSBBdA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1736534459; c=relaxed/relaxed;
-	bh=2/DwiwuishkWohq1Selw9AVX00i6WMTVrJEAuBvDTaE=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=TNFDvZtvijwoch/fKv2YVJBMf2RRh0xezGObFSyuLX/wk/N98XCn6ILC4UREPfWid/f5gil8eFzmBhhPq8kscTW3uJdykRzLyed/O755hPZgOmLX1xxSP0NBC8Uih6vPEBsdr/c9ZU5j5r438aUiQR/FCzdzpSjNDqOYo01RlWALZSxWW9DsuNBE85VfSe/gS+ZXO3oW4nJzISEwTrZesRVd8l3wM2PxDoiQV8a1bQ6RNh2oFeDkKPJlXj16THrtgq9Z70edDBRBHaeifxP4DAOI9QfG4SlP4GQjzQQGh0451wmUxDBy5tCDXKPBOYRmS9+/DjmSlKiS7asNQFbLwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=sSmh8OYT; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3tmmbzwgkdne6xz79xay3bb381.zb985ahkccz-01i85fgf.bm8xyf.be3@flex--jackmanb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--jackmanb.bounces.google.com
+	bh=jjtB5lRt7h5DA7GIgQanvF90WYFKTK1R3LPSOzDiibI=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=JDdDb+LHdyBaHxiIx8BK24p8QXYyvbnd+qnR0rMr27oFSkOyaYFBXfH2E9mUhrFDusryjvRQmYlcvV48wpB/h9jV4Qj2Ds336zFQyaAgmt+INle+8mKfj0ZqQLlEy/5K9Fsq7rKWGPVZNu2EX70XUvI40kKhb4GXuShO8snB9UjvIXeOvm8D7ukf+0u+H/HFkrPp2ecvtoT/4OKbTfcG01iDnpmeI9ai+3mF9UZI5k9E5DCCNrqaBm2EsmOIv/3qUWyILOqkeDIuHrArQP/isJYDqMj4XrrX4BreEIrslPVYJphe/1TsC0/WF5HfzQgWHLuPsNZjz3uoCSPYOmYamQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=KWqfdezM; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3rwmbzwgkdmgxoqy0o1pu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--jackmanb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--jackmanb.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=sSmh8OYT;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=KWqfdezM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--jackmanb.bounces.google.com (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3tmmbzwgkdne6xz79xay3bb381.zb985ahkccz-01i85fgf.bm8xyf.be3@flex--jackmanb.bounces.google.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--jackmanb.bounces.google.com (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3rwmbzwgkdmgxoqy0o1pu22uzs.q20zw18b33q-rs9zw676.2dzop6.25u@flex--jackmanb.bounces.google.com; receiver=lists.ozlabs.org)
 Received: from mail-wm1-x34a.google.com (mail-wm1-x34a.google.com [IPv6:2a00:1450:4864:20::34a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV9TP3jvLz3cb8
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 05:40:57 +1100 (AEDT)
-Received: by mail-wm1-x34a.google.com with SMTP id 5b1f17b1804b1-436379713baso11445815e9.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2025 10:40:57 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV9TN4zzxz3cYR
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 05:40:55 +1100 (AEDT)
+Received: by mail-wm1-x34a.google.com with SMTP id 5b1f17b1804b1-4361eb83f46so20335435e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2025 10:40:55 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1736534455; x=1737139255; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=2/DwiwuishkWohq1Selw9AVX00i6WMTVrJEAuBvDTaE=;
-        b=sSmh8OYTViclTWt5S0RJOybbjpsqEM3CLCEvLZmE/0e3yhJ4xZpkMI1KFgddkSZevc
-         FcXVaz6ksAI+eV3BrcWOlL52A3FB505TEP7LqVorAWw21jcWwcyP2nVH8IZUSvy5D69s
-         Y0EgK4bi/oEvc1N+V2WYAKllTXZAKKbuS/BC8W5oFTES2Vv/OBjagAUcjaFzG7p653XL
-         z1qNdAgtxCYlxUSG7kzuwhNmQxmkOix09wVeAV7QyAqxQ2WtFMmDCWTpS2M3/ah5WqBM
-         xZW1hgZ56QVTvf30FmE2OBhDB4UA4RBXezkIpAZQhVZFHvVwikF+1G4ttGqE2+Lm30Tj
-         jPEw==
+        d=google.com; s=20230601; t=1736534446; x=1737139246; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:from:subject:message-id
+         :mime-version:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=jjtB5lRt7h5DA7GIgQanvF90WYFKTK1R3LPSOzDiibI=;
+        b=KWqfdezMj6k16nfM55pyQnw3Q/g8ZvA3VgFdy19w+4z0kv/hUtY2U/h8SaGb1d1IUE
+         LEr86VC8DEdKx5lka3Udhq/fcw60DpHWWzRtTtB4mjZWIYCaVFVSUYRv8cExwzh60lYC
+         zGv+bpOIl47qnrQgzCNY3e8Qn1ZLN1ZZJXhIe59AG3V03aYhp5eLdPduPPWz1Fmx19pr
+         lwTWd3z02r0VdDiQx3sKJwoRdBhF/rbPMrboGTKNoK4lk+cFelxKXUTk+c3FFZhv1Wwp
+         V/tRxWXZibljfC+tcCxh4rPHccDyHQnEtRZaSRFITWaPKNuFKQLSX8ZXqyCwSl2kJai2
+         vYPg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736534455; x=1737139255;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2/DwiwuishkWohq1Selw9AVX00i6WMTVrJEAuBvDTaE=;
-        b=A0RaPfRJTp50ANB1wJI/Jvz4ck5bObrShxTjFv94Nu1CeqEgf0HORkHjvFjJ5/iLBq
-         4yXz8DI+XwSIeVDyFypr70WNhyulR58r5SfsFu6cWQ44I01IXfVgs2A86lrctQqrSbK9
-         bYzzMwYtmDDm6G6p6tdAqheqsL2D8YPlyo6dpqdEevFzXxoWe3L5NJxJ50Ve99S4VSXF
-         yU97s5apkDKAm8XKJHkmxbirrv20ImGs8oPaRhqQY6AzD9Y55P7q9kUgwV8hBw+0JKSS
-         Akt/RpaIbCWnaa4bR0dWweZP7UqBE3HCn/Jt0Q19uUm36dtR3vgKCikjIMfXA7YKt5SZ
-         L4Tw==
-X-Forwarded-Encrypted: i=1; AJvYcCWUPLaQwI/At/G6g1lYwEr980amgGUitUt0r2LWqG6zYw4vv4BRbX2qD8vW8fItWRWG0aONhF12iE0ssjQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz+VMiuGoONVu8oJxwX9QsJ6KVQ8Ws7UJ5nJtDwYwaI6LuHABi1
-	LBXOSYO4A3tkvD35ffyXJ4HLK+uA3y4t3rVOPanLFjVNh5cEhKM3+iWwmGEEbrxolquSAJaOQ4W
-	F8zpnQQjX5A==
-X-Google-Smtp-Source: AGHT+IFG2gVbYjLEgd+rVsDr92xsiDXdhg3a2JRtZbNVmnh3EgFoUPLrUSfZq6jOhgEgZFCkNrLAplfHg1IQBQ==
-X-Received: from wmqa17.prod.google.com ([2002:a05:600c:3491:b0:434:fa72:f1bf])
+        d=1e100.net; s=20230601; t=1736534446; x=1737139246;
+        h=content-transfer-encoding:cc:to:from:subject:message-id
+         :mime-version:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=jjtB5lRt7h5DA7GIgQanvF90WYFKTK1R3LPSOzDiibI=;
+        b=TS94ESX/mqyJRwtuw0JyL7ha/xixYrINNXOF9V4vpA2kbRotCaOffszq+DWv+fCWZN
+         3rCam9I4+sS5qKiowwCrG2khGESq2nqZI/uiW4WSm3Yn8MigO92nJqTvrkFwzuGldnLs
+         6x/VmEIPu7Cx3XJHSytzOKwF/D18hXe0Qjps5EAmXWREFza7q8ZJwAO8uixHUXp41GAN
+         avOknKFNHPluG72j9WbyorB/scZIjWMyyFRdenq2Nzk28nuaU9HwoAKBLKPaaJ+kfNN7
+         33HBRNqDjSelGUTxirOagk56J1dP/RsKyPC7dOL/F/SjcVQ0ca2QYudKtfCLy74sioAS
+         rbNQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWLf6LK1s6J90KO/4JHrfk5iVzMoCxGa4C0IXueUzycozrnWO0GjerIQdA/jbFS/WURYlw0yR/NsMQp0aY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YznxNTM9/vSeSPkOGjTzI8aE0+fKcYxtKlqtJVGtyTYX5RcLZD+
+	gOm5FPr+2w3ZqiBe7+M8P3pqURoYzrPhFe0j/f2dn9IuQEmohwLt7VXej951eq7wKfnCog3MzWS
+	FK0xe5ebv1A==
+X-Google-Smtp-Source: AGHT+IGn62s/zpmNlw6cS/dnEppCTrQbKdqDl7tm1TqotCpul8Aao0CteIYxi5s8bW0nJPjX7qZkFnpNt2sQAQ==
+X-Received: from wmbjw19.prod.google.com ([2002:a05:600c:5753:b0:434:a4bc:534f])
  (user=jackmanb job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600c:1d14:b0:436:5fc9:309d with SMTP id 5b1f17b1804b1-436e26f6d81mr55448175e9.30.1736534454514;
- Fri, 10 Jan 2025 10:40:54 -0800 (PST)
-Date: Fri, 10 Jan 2025 18:40:30 +0000
-In-Reply-To: <20250110-asi-rfc-v2-v2-0-8419288bc805@google.com>
+ 2002:a7b:c315:0:b0:434:ffb2:f9df with SMTP id 5b1f17b1804b1-436e26adf94mr117996365e9.17.1736534445509;
+ Fri, 10 Jan 2025 10:40:45 -0800 (PST)
+Date: Fri, 10 Jan 2025 18:40:26 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,10 +75,13 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Mime-Version: 1.0
-References: <20250110-asi-rfc-v2-v2-0-8419288bc805@google.com>
+X-B4-Tracking: v=1; b=H4sIAJtpgWcC/z2NwQrCMBBEf6Xs2ZVsTLX1JAh+gFfpIWnTdkEbS
+ SQoJf9uzMHjvGHerBCsZxvgWK3gbeTAbslBbiroZ71MFnnIGaSQiohq1IHRjz1GifXQGmNU5s0
+ e8uDp7cjvIrvB9XKGLsOZw8v5TzmIVKqfSxxI/l1SYSQUSEqZHbVaiaE5Tc5Nd7vt3QO6lNIXN mCbbqoAAAA=
+X-Change-Id: 20241115-asi-rfc-v2-5d9bbb441186
 X-Mailer: b4 0.15-dev
-Message-ID: <20250110-asi-rfc-v2-v2-4-8419288bc805@google.com>
-Subject: [PATCH RFC v2 04/29] mm: asi: Add infrastructure for boot-time enablement
+Message-ID: <20250110-asi-rfc-v2-v2-0-8419288bc805@google.com>
+Subject: [PATCH RFC v2 00/29] Address Space Isolation (ASI)
 From: Brendan Jackman <jackmanb@google.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
 	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, 
@@ -131,355 +133,308 @@ Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
 	linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, 
 	kvm@vger.kernel.org, linux-efi@vger.kernel.org, 
 	Brendan Jackman <jackmanb@google.com>, Junaid Shahid <junaids@google.com>, 
-	Yosry Ahmed <yosryahmed@google.com>
+	Ofir Weisse <oweisse@google.com>, Yosry Ahmed <yosryahmed@google.com>, 
+	Kevin Cheng <chengkev@google.com>, Reiji Watanabe <reijiw@google.com>
 Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add a boot time parameter to control the newly added X86_FEATURE_ASI.
-"asi=on" or "asi=off" can be used in the kernel command line to enable
-or disable ASI at boot time. If not specified, ASI enablement depends
-on CONFIG_ADDRESS_SPACE_ISOLATION_DEFAULT_ON, which is off by default.
-asi_check_boottime_disable() is modeled after
-pti_check_boottime_disable().
+ASI is a technique to mitigate a broad class of CPU vulnerabilities
+by unmapping sensitive data from the kernel address space. If no data
+is mapped that needs protecting, this class of exploits cannot leak
+that data and so the kernel can skip expensive mitigation actions.
+For a more detailed overview, see the v1 RFC (which was wrongly
+labeled as a PATCH) [0].
 
-The boot parameter is currently ignored until ASI is fully functional.
+This new iteration adds support for protecting against bare-metal
+processes as well as KVM guests. The basic principle is unchanged.
 
-Once we have a set of ASI features checked in that we have actually
-tested, we will stop ignoring the flag. But for now let's just add the
-infrastructure so we can implement the usage code.
+.:: Multi-class ASI
 
-Ignoring checkpatch.pl CONFIG_DESCRIPTION because the _DEFAULT_ON
-Kconfig is trivial to explain.
+So far ASI has been a KVM-only solution, although I've been claiming
+that in principle it can be extended to also sandbox userspace.
+Dave Hansen's most important feedback at LPC [1] was that he wanted
+some evidence to support this claim. If it can be shown that ASI is
+just as powerful for bare-metal as for KVM, it's much more likely to
+actually offer an escape path from maintaining and reactively
+developing per-exploit mitigations.
 
-Checkpatch-args: --ignore CONFIG_DESCRIPTION
-Co-developed-by: Junaid Shahid <junaids@google.com>
-Signed-off-by: Junaid Shahid <junaids@google.com>
-Co-developed-by: Yosry Ahmed <yosryahmed@google.com>
-Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
+v1 already supported a notion of "ASI classes", with the only class
+being KVM. This RFC introduces a second class for userspace. Each
+process has a separate restricted address space ("domain") for each
+class.
+
+In v1, the only possible ASI transitions were between the KVM
+restricted address space, and the unrestricted address space. Now
+that there are multiple classes, it's possible to transition directly
+between two restricted address spaces.
+
+(Could we dodge this complexity by just transitioning via the
+ unrestricted address space? Yes, but experience from Google's
+ internal deployment suggests there's a significant benefit in
+ avoiding an asi_exit() when switching between userspace and KVM,
+ despite all the optimizations that exist to avoid that switching).
+
+Compared to v1, this version has a new mechanism to determine
+what mitigation actions are required when switching between address
+spaces.  ASI classes provide a "taint policy" which describes what
+uarch state their sandboxee might leave behind, and what uarch state
+needs to be purged before their sandboxee can safely be run. The ASI
+core takes care of doing the actual flushes.
+
+This enables a reasonably advanced model of what flushes are needed
+when; for example the kernel is now able to model "when transitioning
+from a VMM to its KVM guest there is no point in flushing speculative
+control flow state, but if we _later_ exit to the unrestricted
+address space we do need to flush it". It's quite possible this is
+actually more advanced than what is needed so suggestions are
+welcome.
+
+.:: Performance issues: bogus mitigation costs
+
+Although this implementation of ASI is pretty generous in what it
+considers "nonsensitive", there remain unnecessary performance costs
+that need to be addressed. For example:
+
+- The entire page cache is removed from the direct map. Traditional
+  file operations will hit an asi_exit(), paying a pointless cost to
+  protect data from a process that obviously has the right to read
+  that data.
+- Anything that accesses guest or user memory via the direct map
+  instead of the user address space will hit an asi_exit().
+- Pages being zeroed in the page allocator
+
+Most of these issues existed in v1 too, but now that ASI sandboxes
+userspace processes, the page-cache issue becomes very significant.
+For FIO 4k read (I suppose this workload is maximally sensitive to
+this issue) I saw a 70% degradation in throughput, with a Sapphire
+Rapids machine hard-coded to perform IBPB and RSB-stuffing on
+asi_exit().
+
+Given a result like that I haven't gone into more detailed analysis.
+Note also that I ran with an unrealistic mitigation policy, results
+would be much different if ran with platform-appropriate flushes, but
+it would presumably lead to the same conclusion.
+
+There are some interesting discussions to be had about tackling that
+problem (e.g. reintroducing "local-nonsensitivity" from Junaid's 2022
+ASI implementation [2], or creating ephemeral CPU-local mappings),
+but for this RFC I prefer to focus on deciding if the overall
+framework makes sense.
+
+.:: Next steps
+
+Aside from lack of userspace support, all the other issues listed in
+RFCv1 remain. I'll also need a proof-of-concept solution for the
+page-cache issue before we can credibly claim to be reaching a
+[PATCH], but before that I want to develop a more complete page_alloc
+integration. I plan to propose a topic about that at LSF/MM/BPF.
+
+Anyway, despite the further research needed on my side I think
+there's still useful stuff to discuss here. For example:
+
+ - Does the "tainting" model make intuitive sense? Is there a simpler
+   way to achieve something similar?
+
+ - The taints offer a model for different parts of the kernel to
+   communicate with each other about what mitigations they've taken
+   care of. For example, KVM could clear ASI taints if it existing
+   conditional-L1D-flush logic fires. Does it make sense to take
+   advantage of this? (I think yes). How does this influence the
+   design of the bugs.c kernel arguments?
+
+ - Suggestions on how to map file pages into processes that can read
+   them, while minimizing TLB management pain.
+
+Finally, a more extensive branch can be found at [3]. It has some tests
+and some of the lower-hanging fruit for optimising performance of KVM
+guests.
+
+[0] RFC v1:
+    https://lore.kernel.org/linux-mm/20240712-asi-rfc-24-v1-0-144b319a40d8@=
+google.com/
+
+[1] LPC session: https://lpc.events/event/18/contributions/1761/
+
+[2] Junaid=E2=80=99s RFC:
+    https://lore.kernel.org/all/20220223052223.1202152-1-junaids@google.com=
+/
+
+[3] GitHub branch:
+    https://github.com/googleprodkernel/linux-kvm/tree/asi-rfcv2-preview
+
 Signed-off-by: Brendan Jackman <jackmanb@google.com>
+
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+	 Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	 Andy Lutomirski <luto@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	 Sean Christopherson <seanjc@google.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	 Alexandre Chartre <alexandre.chartre@oracle.com>,
+	Liran Alon <liran.alon@oracle.com>,
+	 Jan Setje-Eilers <jan.setjeeilers@oracle.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	 Will Deacon <will@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	 Andrew Morton <akpm@linux-foundation.org>,
+	Mel Gorman <mgorman@suse.de>,
+	 Lorenzo Stoakes <lstoakes@gmail.com>,
+	David Hildenbrand <david@redhat.com>,
+	Vlastimil Babka <vbabka@suse.cz>,
+	 Michal Hocko <mhocko@kernel.org>,
+	Khalid Aziz <khalid.aziz@oracle.com>,
+	 Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	 Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	 Valentin Schneider <vschneid@redhat.com>,
+	Paul Turner <pjt@google.com>, Reiji Watanabe <reijiw@google.com>,
+	 Junaid Shahid <junaids@google.com>,
+	Ofir Weisse <oweisse@google.com>,
+	 Yosry Ahmed <yosryahmed@google.com>,
+	Patrick Bellasi <derkling@google.com>,
+	 KP Singh <kpsingh@google.com>,
+	Alexandra Sandulescu <aesa@google.com>,
+	 Matteo Rizzo <matteorizzo@google.com>,
+	Jann Horn <jannh@google.com>
+	 kvm@vger.kernel.org, Brendan Jackman <jackmanb@google.com>,
+	Dennis Zhou <dennis@kernel.org>
+
 ---
- arch/x86/Kconfig                         |  9 +++++
- arch/x86/include/asm/asi.h               | 19 ++++++++--
- arch/x86/include/asm/cpufeatures.h       |  1 +
- arch/x86/include/asm/disabled-features.h |  8 ++++-
- arch/x86/mm/asi.c                        | 61 +++++++++++++++++++++++++++-----
- arch/x86/mm/init.c                       |  4 ++-
- include/asm-generic/asi.h                |  4 +++
- 7 files changed, 92 insertions(+), 14 deletions(-)
+Changes in v2:
+- Added support for sandboxing userspace processes.
+- Link to v1: https://lore.kernel.org/r/20240712-asi-rfc-24-v1-0-144b319a40=
+d8@google.com
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 5a50582eb210e9d1309856a737d32b76fa1bfc85..1fcb52cb8cd5084ac3cef04af61b7d1653162bdb 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2533,6 +2533,15 @@ config MITIGATION_ADDRESS_SPACE_ISOLATION
- 	  there are likely to be unhandled cases, in particular concerning TLB
- 	  flushes.
- 
-+
-+config ADDRESS_SPACE_ISOLATION_DEFAULT_ON
-+	bool "Enable address space isolation by default"
-+	default n
-+	depends on MITIGATION_ADDRESS_SPACE_ISOLATION
-+	help
-+	  If selected, ASI is enabled by default at boot if the asi=on or
-+	  asi=off are not specified.
-+
- config MITIGATION_RETPOLINE
- 	bool "Avoid speculative indirect branches in kernel"
- 	select OBJTOOL if HAVE_OBJTOOL
-diff --git a/arch/x86/include/asm/asi.h b/arch/x86/include/asm/asi.h
-index 7cc635b6653a3970ba9dbfdc9c828a470e27bd44..b9671ef2dd3278adceed18507fd260e21954d574 100644
---- a/arch/x86/include/asm/asi.h
-+++ b/arch/x86/include/asm/asi.h
-@@ -8,6 +8,7 @@
- 
- #include <asm/pgtable_types.h>
- #include <asm/percpu.h>
-+#include <asm/cpufeature.h>
- #include <asm/processor.h>
- 
- #ifdef CONFIG_MITIGATION_ADDRESS_SPACE_ISOLATION
-@@ -66,6 +67,8 @@
-  * the N ASI classes.
-  */
- 
-+#define static_asi_enabled() cpu_feature_enabled(X86_FEATURE_ASI)
-+
- /*
-  * ASI uses a per-CPU tainting model to track what mitigation actions are
-  * required on domain transitions. Taints exist along two dimensions:
-@@ -131,6 +134,8 @@ struct asi {
- 
- DECLARE_PER_CPU_ALIGNED(struct asi *, curr_asi);
- 
-+void asi_check_boottime_disable(void);
-+
- void asi_init_mm_state(struct mm_struct *mm);
- 
- int asi_init_class(enum asi_class_id class_id, struct asi_taint_policy *taint_policy);
-@@ -155,7 +160,9 @@ void asi_exit(void);
- /* The target is the domain we'll enter when returning to process context. */
- static __always_inline struct asi *asi_get_target(struct task_struct *p)
- {
--	return p->thread.asi_state.target;
-+	return static_asi_enabled()
-+	       ? p->thread.asi_state.target
-+	       : NULL;
- }
- 
- static __always_inline void asi_set_target(struct task_struct *p,
-@@ -166,7 +173,9 @@ static __always_inline void asi_set_target(struct task_struct *p,
- 
- static __always_inline struct asi *asi_get_current(void)
- {
--	return this_cpu_read(curr_asi);
-+	return static_asi_enabled()
-+	       ? this_cpu_read(curr_asi)
-+	       : NULL;
- }
- 
- /* Are we currently in a restricted address space? */
-@@ -175,7 +184,11 @@ static __always_inline bool asi_is_restricted(void)
- 	return (bool)asi_get_current();
- }
- 
--/* If we exit/have exited, can we stay that way until the next asi_enter? */
-+/*
-+ * If we exit/have exited, can we stay that way until the next asi_enter?
-+ *
-+ * When ASI is disabled, this returns true.
-+ */
- static __always_inline bool asi_is_relaxed(void)
- {
- 	return !asi_get_target(current);
-diff --git a/arch/x86/include/asm/cpufeatures.h b/arch/x86/include/asm/cpufeatures.h
-index 913fd3a7bac6506141de65f33b9ee61c615c7d7d..d6a808d10c3b8900d190ea01c66fc248863f05e2 100644
---- a/arch/x86/include/asm/cpufeatures.h
-+++ b/arch/x86/include/asm/cpufeatures.h
-@@ -474,6 +474,7 @@
- #define X86_FEATURE_CLEAR_BHB_HW	(21*32+ 3) /* BHI_DIS_S HW control enabled */
- #define X86_FEATURE_CLEAR_BHB_LOOP_ON_VMEXIT (21*32+ 4) /* Clear branch history at vmexit using SW loop */
- #define X86_FEATURE_FAST_CPPC		(21*32 + 5) /* AMD Fast CPPC */
-+#define X86_FEATURE_ASI			(21*32+6) /* Kernel Address Space Isolation */
- 
- /*
-  * BUG word(s)
-diff --git a/arch/x86/include/asm/disabled-features.h b/arch/x86/include/asm/disabled-features.h
-index c492bdc97b0595ec77f89dc9b0cefe5e3e64be41..c7964ed4fef8b9441e1c0453da587787d8008d9d 100644
---- a/arch/x86/include/asm/disabled-features.h
-+++ b/arch/x86/include/asm/disabled-features.h
-@@ -50,6 +50,12 @@
- # define DISABLE_PTI		(1 << (X86_FEATURE_PTI & 31))
- #endif
- 
-+#ifdef CONFIG_MITIGATION_ADDRESS_SPACE_ISOLATION
-+# define DISABLE_ASI		0
-+#else
-+# define DISABLE_ASI		(1 << (X86_FEATURE_ASI & 31))
-+#endif
-+
- #ifdef CONFIG_MITIGATION_RETPOLINE
- # define DISABLE_RETPOLINE	0
- #else
-@@ -154,7 +160,7 @@
- #define DISABLED_MASK17	0
- #define DISABLED_MASK18	(DISABLE_IBT)
- #define DISABLED_MASK19	(DISABLE_SEV_SNP)
--#define DISABLED_MASK20	0
-+#define DISABLED_MASK20	(DISABLE_ASI)
- #define DISABLED_MASK21	0
- #define DISABLED_MASK_CHECK BUILD_BUG_ON_ZERO(NCAPINTS != 22)
- 
-diff --git a/arch/x86/mm/asi.c b/arch/x86/mm/asi.c
-index 105cd8b43eaf5c20acc80d4916b761559fb95d74..5baf563a078f5b3a6cd4b9f5e92baaf81b0774c4 100644
---- a/arch/x86/mm/asi.c
-+++ b/arch/x86/mm/asi.c
-@@ -4,6 +4,7 @@
- #include <linux/percpu.h>
- #include <linux/spinlock.h>
- 
-+#include <linux/init.h>
- #include <asm/asi.h>
- #include <asm/cmdline.h>
- #include <asm/cpufeature.h>
-@@ -29,6 +30,9 @@ static inline bool asi_class_id_valid(enum asi_class_id class_id)
- 
- static inline bool asi_class_initialized(enum asi_class_id class_id)
- {
-+	if (!boot_cpu_has(X86_FEATURE_ASI))
-+		return 0;
-+
- 	if (WARN_ON(!asi_class_id_valid(class_id)))
- 		return false;
- 
-@@ -51,6 +55,9 @@ EXPORT_SYMBOL_GPL(asi_init_class);
- 
- void asi_uninit_class(enum asi_class_id class_id)
- {
-+	if (!boot_cpu_has(X86_FEATURE_ASI))
-+		return;
-+
- 	if (!asi_class_initialized(class_id))
- 		return;
- 
-@@ -66,10 +73,36 @@ const char *asi_class_name(enum asi_class_id class_id)
- 	return asi_class_names[class_id];
- }
- 
-+void __init asi_check_boottime_disable(void)
-+{
-+	bool enabled = IS_ENABLED(CONFIG_MITIGATION_ADDRESS_SPACE_ISOLATION_DEFAULT_ON);
-+	char arg[4];
-+	int ret;
-+
-+	ret = cmdline_find_option(boot_command_line, "asi", arg, sizeof(arg));
-+	if (ret == 3 && !strncmp(arg, "off", 3)) {
-+		enabled = false;
-+		pr_info("ASI disabled through kernel command line.\n");
-+	} else if (ret == 2 && !strncmp(arg, "on", 2)) {
-+		enabled = true;
-+		pr_info("Ignoring asi=on param while ASI implementation is incomplete.\n");
-+	} else {
-+		pr_info("ASI %s by default.\n",
-+			enabled ? "enabled" : "disabled");
-+	}
-+
-+	if (enabled)
-+		pr_info("ASI enablement ignored due to incomplete implementation.\n");
-+}
-+
- static void __asi_destroy(struct asi *asi)
- {
--	lockdep_assert_held(&asi->mm->asi_init_lock);
-+	WARN_ON_ONCE(asi->ref_count <= 0);
-+	if (--(asi->ref_count) > 0)
-+		return;
- 
-+	free_pages((ulong)asi->pgd, PGD_ALLOCATION_ORDER);
-+	memset(asi, 0, sizeof(struct asi));
- }
- 
- int asi_init(struct mm_struct *mm, enum asi_class_id class_id, struct asi **out_asi)
-@@ -79,6 +112,9 @@ int asi_init(struct mm_struct *mm, enum asi_class_id class_id, struct asi **out_
- 
- 	*out_asi = NULL;
- 
-+	if (!boot_cpu_has(X86_FEATURE_ASI))
-+		return 0;
-+
- 	if (WARN_ON(!asi_class_initialized(class_id)))
- 		return -EINVAL;
- 
-@@ -122,7 +158,7 @@ void asi_destroy(struct asi *asi)
- {
- 	struct mm_struct *mm;
- 
--	if (!asi)
-+	if (!boot_cpu_has(X86_FEATURE_ASI) || !asi)
- 		return;
- 
- 	if (WARN_ON(!asi_class_initialized(asi->class_id)))
-@@ -134,11 +170,7 @@ void asi_destroy(struct asi *asi)
- 	 * to block concurrent asi_init calls.
- 	 */
- 	mutex_lock(&mm->asi_init_lock);
--	WARN_ON_ONCE(asi->ref_count <= 0);
--	if (--(asi->ref_count) == 0) {
--		free_pages((ulong)asi->pgd, PGD_ALLOCATION_ORDER);
--		memset(asi, 0, sizeof(struct asi));
--	}
-+	__asi_destroy(asi);
- 	mutex_unlock(&mm->asi_init_lock);
- }
- EXPORT_SYMBOL_GPL(asi_destroy);
-@@ -255,6 +287,9 @@ static noinstr void __asi_enter(void)
- 
- noinstr void asi_enter(struct asi *asi)
- {
-+	if (!static_asi_enabled())
-+		return;
-+
- 	VM_WARN_ON_ONCE(!asi);
- 
- 	/* Should not have an asi_enter() without a prior asi_relax(). */
-@@ -269,8 +304,10 @@ EXPORT_SYMBOL_GPL(asi_enter);
- 
- noinstr void asi_relax(void)
- {
--	barrier();
--	asi_set_target(current, NULL);
-+	if (static_asi_enabled()) {
-+		barrier();
-+		asi_set_target(current, NULL);
-+	}
- }
- EXPORT_SYMBOL_GPL(asi_relax);
- 
-@@ -279,6 +316,9 @@ noinstr void asi_exit(void)
- 	u64 unrestricted_cr3;
- 	struct asi *asi;
- 
-+	if (!static_asi_enabled())
-+		return;
-+
- 	preempt_disable_notrace();
- 
- 	VM_BUG_ON(this_cpu_read(cpu_tlbstate.loaded_mm) ==
-@@ -310,6 +350,9 @@ EXPORT_SYMBOL_GPL(asi_exit);
- 
- void asi_init_mm_state(struct mm_struct *mm)
- {
-+	if (!boot_cpu_has(X86_FEATURE_ASI))
-+		return;
-+
- 	memset(mm->asi, 0, sizeof(mm->asi));
- 	mutex_init(&mm->asi_init_lock);
- }
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index de4227ed5169ff84d0ce80b677caffc475198fa6..ded3a47f2a9c1f554824d4ad19f3b48bce271274 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -28,6 +28,7 @@
- #include <asm/text-patching.h>
- #include <asm/memtype.h>
- #include <asm/paravirt.h>
-+#include <asm/asi.h>
- 
- /*
-  * We need to define the tracepoints somewhere, and tlb.c
-@@ -251,7 +252,7 @@ static void __init probe_page_size_mask(void)
- 	__default_kernel_pte_mask = __supported_pte_mask;
- 	/* Except when with PTI where the kernel is mostly non-Global: */
- 	if (cpu_feature_enabled(X86_FEATURE_PTI) ||
--	    IS_ENABLED(CONFIG_MITIGATION_ADDRESS_SPACE_ISOLATION))
-+	    cpu_feature_enabled(X86_FEATURE_ASI))
- 		__default_kernel_pte_mask &= ~_PAGE_GLOBAL;
- 
- 	/* Enable 1 GB linear kernel mappings if available: */
-@@ -754,6 +755,7 @@ void __init init_mem_mapping(void)
- 	unsigned long end;
- 
- 	pti_check_boottime_disable();
-+	asi_check_boottime_disable();
- 	probe_page_size_mask();
- 	setup_pcid();
- 
-diff --git a/include/asm-generic/asi.h b/include/asm-generic/asi.h
-index 6b84202837605fa57e4a910318c8353b3f816f06..eedc961ee916a9e1da631ca489ea4a7bc9e6089f 100644
---- a/include/asm-generic/asi.h
-+++ b/include/asm-generic/asi.h
-@@ -65,6 +65,10 @@ static inline pgd_t *asi_pgd(struct asi *asi) { return NULL; }
- 
- static inline void asi_handle_switch_mm(void) { }
- 
-+#define static_asi_enabled() false
-+
-+static inline void asi_check_boottime_disable(void) { }
-+
- #endif /* !CONFIG_MITIGATION_ADDRESS_SPACE_ISOLATION */
- 
- #endif  /* !_ASSEMBLY_ */
+---
+Brendan Jackman (21):
+      mm: asi: Make some utility functions noinstr compatible
+      x86: Create CONFIG_MITIGATION_ADDRESS_SPACE_ISOLATION
+      mm: asi: Introduce ASI core API
+      mm: asi: Add infrastructure for boot-time enablement
+      mm: asi: ASI support in interrupts/exceptions
+      mm: asi: Avoid warning from NMI userspace accesses in ASI context
+      mm: Add __PAGEFLAG_FALSE
+      mm: asi: Map non-user buddy allocations as nonsensitive
+      [TEMP WORKAROUND] mm: asi: Workaround missing partial-unmap support
+      mm: asi: Map kernel text and static data as nonsensitive
+      mm: asi: Map vmalloc/vmap data as nonsensitive
+      mm: asi: Stabilize CR3 in switch_mm_irqs_off()
+      mm: asi: Make TLB flushing correct under ASI
+      KVM: x86: asi: Restricted address space for VM execution
+      mm: asi: exit ASI before accessing CR3 from C code where appropriate
+      mm: asi: Add infrastructure for mapping userspace addresses
+      mm: asi: Restricted execution fore bare-metal processes
+      x86: Create library for flushing L1D for L1TF
+      mm: asi: Add some mitigations on address space transitions
+      x86/pti: Disable PTI when ASI is on
+      mm: asi: Stop ignoring asi=3Don cmdline flag
 
--- 
-2.47.1.613.gc27f4b7a9f-goog
+Junaid Shahid (4):
+      mm: asi: Make __get_current_cr3_fast() ASI-aware
+      mm: asi: ASI page table allocation functions
+      mm: asi: Functions to map/unmap a memory range into ASI page tables
+      mm: asi: Add basic infrastructure for global non-sensitive mappings
+
+Ofir Weisse (1):
+      mm: asi: asi_exit() on PF, skip handling if address is accessible
+
+Reiji Watanabe (1):
+      mm: asi: Map dynamic percpu memory as nonsensitive
+
+Yosry Ahmed (2):
+      mm: asi: Use separate PCIDs for restricted address spaces
+      mm: asi: exit ASI before suspend-like operations
+
+ arch/alpha/include/asm/Kbuild            |    1 +
+ arch/arc/include/asm/Kbuild              |    1 +
+ arch/arm/include/asm/Kbuild              |    1 +
+ arch/arm64/include/asm/Kbuild            |    1 +
+ arch/csky/include/asm/Kbuild             |    1 +
+ arch/hexagon/include/asm/Kbuild          |    1 +
+ arch/loongarch/include/asm/Kbuild        |    3 +
+ arch/m68k/include/asm/Kbuild             |    1 +
+ arch/microblaze/include/asm/Kbuild       |    1 +
+ arch/mips/include/asm/Kbuild             |    1 +
+ arch/nios2/include/asm/Kbuild            |    1 +
+ arch/openrisc/include/asm/Kbuild         |    1 +
+ arch/parisc/include/asm/Kbuild           |    1 +
+ arch/powerpc/include/asm/Kbuild          |    1 +
+ arch/riscv/include/asm/Kbuild            |    1 +
+ arch/s390/include/asm/Kbuild             |    1 +
+ arch/sh/include/asm/Kbuild               |    1 +
+ arch/sparc/include/asm/Kbuild            |    1 +
+ arch/um/include/asm/Kbuild               |    2 +-
+ arch/x86/Kconfig                         |   27 +
+ arch/x86/boot/compressed/ident_map_64.c  |   10 +
+ arch/x86/boot/compressed/pgtable_64.c    |   11 +
+ arch/x86/include/asm/asi.h               |  306 +++++++++
+ arch/x86/include/asm/cpufeatures.h       |    1 +
+ arch/x86/include/asm/disabled-features.h |    8 +-
+ arch/x86/include/asm/idtentry.h          |   50 +-
+ arch/x86/include/asm/kvm_host.h          |    3 +
+ arch/x86/include/asm/l1tf.h              |   11 +
+ arch/x86/include/asm/nospec-branch.h     |    2 +
+ arch/x86/include/asm/pgalloc.h           |    6 +
+ arch/x86/include/asm/pgtable_64.h        |    4 +
+ arch/x86/include/asm/processor-flags.h   |   24 +
+ arch/x86/include/asm/processor.h         |   20 +-
+ arch/x86/include/asm/pti.h               |    6 +-
+ arch/x86/include/asm/special_insns.h     |   45 +-
+ arch/x86/include/asm/tlbflush.h          |    6 +
+ arch/x86/kernel/process.c                |    2 +
+ arch/x86/kernel/process_32.c             |    2 +-
+ arch/x86/kernel/process_64.c             |    2 +-
+ arch/x86/kernel/traps.c                  |   22 +
+ arch/x86/kvm/Kconfig                     |    1 +
+ arch/x86/kvm/svm/svm.c                   |    2 +
+ arch/x86/kvm/vmx/nested.c                |    6 +
+ arch/x86/kvm/vmx/vmx.c                   |  113 ++--
+ arch/x86/kvm/x86.c                       |   81 ++-
+ arch/x86/lib/Makefile                    |    1 +
+ arch/x86/lib/l1tf.c                      |   96 +++
+ arch/x86/lib/retpoline.S                 |   10 +
+ arch/x86/mm/Makefile                     |    1 +
+ arch/x86/mm/asi.c                        | 1039 ++++++++++++++++++++++++++=
+++++
+ arch/x86/mm/fault.c                      |  124 +++-
+ arch/x86/mm/init.c                       |    7 +-
+ arch/x86/mm/init_64.c                    |   25 +-
+ arch/x86/mm/mm_internal.h                |    3 +
+ arch/x86/mm/pti.c                        |   14 +-
+ arch/x86/mm/tlb.c                        |  167 ++++-
+ arch/x86/virt/svm/sev.c                  |    2 +-
+ arch/xtensa/include/asm/Kbuild           |    1 +
+ drivers/firmware/efi/libstub/x86-5lvl.c  |    2 +-
+ include/asm-generic/asi.h                |  113 ++++
+ include/asm-generic/vmlinux.lds.h        |   11 +
+ include/linux/entry-common.h             |   11 +
+ include/linux/gfp.h                      |    5 +
+ include/linux/gfp_types.h                |   15 +-
+ include/linux/mm_types.h                 |    7 +
+ include/linux/page-flags.h               |   18 +
+ include/linux/pgtable.h                  |    3 +
+ include/trace/events/mmflags.h           |   12 +-
+ init/main.c                              |    2 +
+ kernel/entry/common.c                    |    1 +
+ kernel/fork.c                            |    5 +
+ kernel/sched/core.c                      |    9 +
+ mm/init-mm.c                             |    4 +
+ mm/internal.h                            |    2 +
+ mm/mm_init.c                             |    1 +
+ mm/page_alloc.c                          |  160 ++++-
+ mm/percpu-vm.c                           |   50 +-
+ mm/percpu.c                              |    4 +-
+ mm/vmalloc.c                             |   53 +-
+ tools/perf/builtin-kmem.c                |    1 +
+ 80 files changed, 2582 insertions(+), 190 deletions(-)
+---
+base-commit: ebd6ea9c6976c64ed5af3e6dce672616447e8e62
+change-id: 20241115-asi-rfc-v2-5d9bbb441186
+
+Best regards,
+--=20
+Brendan Jackman <jackmanb@google.com>
 
 
