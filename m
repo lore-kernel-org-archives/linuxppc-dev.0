@@ -1,33 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-4976-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4977-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0074E77188
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 13:59:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2E79E77188
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 14:00:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YV3F630Pjz3cW8;
-	Sat, 11 Jan 2025 00:59:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YV3F70yLsz3c6f;
+	Sat, 11 Jan 2025 00:59:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736517594;
-	cv=none; b=l6AfUdXzlsexT28pTK2U5PBERxMdlp54ntTlDDEIgxcmq3TjXUGmhYja6UWzpB2PIQxhpO2l3JT+MgDgcxsVEyMG+AnYLG+TxZyKEuN6xZkrpqK3fkLoQYgn6T912mL6QbeFLyQ2Q2M+oyhgvjrLeZsRRqO0X49Fg3MiPQqhDDiBLbrTKxnAUSk8kH9xKF8lt+4rDHHbYSu39lhz5rIfA99D+4loZ2+vCK29q5Xn2fOGtB+N+AMrYHBVQPvc2/1ePu2Woq5vzqpQvbaAIlFc/H5nLw2p98VZBgzufaBx6tq/9zgVHT0OpQ8YFOGEbtdAp6iAVE+csBSTXHA4UGRyuQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736517595;
+	cv=none; b=hzcmvLTtQSbMAbWnFsPua7uXXB39CPZoTOaUJ63W03QAGi3qJepNdUQ6sqDashMO8ysUR+BU052cPBoCDLQ4obo+qY4zpGDm5zGwh7AznLgnGvc23464Pvpr1uXfic3ofl7LHW2gEKy3SSWjh63RFPRIPUXzCC4bTYp56omtIfkKcpjkYDyClUyGJdvN64SwH5F0aKHwW6BqWdN2VKmL+R4eyvj96eu78mqk4WCxSuGC0+sYmaW0ov3SvXXTvgTdbjca/cKacAYs8x2K/dxyEWGrB29kf0xtU3euTZatWO+8c6dVEAAClG+ywT5Aw5nlfNmsUY+ZCVN9D9LhVfmDTA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736517594; c=relaxed/relaxed;
-	bh=+Ug/6vTB7MELFOq7SJi6N9Zuaz0buTEfJkNRbzfccbI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=G1sbNUseK5QhBJmCQHTg2WrprF+HLdk1r/iv++Qctu8mnXg4iIqW8mIVltpr90602vB5bvB0QmNIvnsbtUKibN/BJfI/3/VAR3DQDU7h3MaZwpPUgvi5zXToUt26jPmVHVCQRVeJzYY5iL49LZmmbccoEYfc1x0xz9niAZddwyXxURp2u/2BoZ2MH5hNYUnR91xtY6pSfr7fSRjgj0OdG8lEeTeFvPC27Ot0p7D75P/+k4u8M36k8d4DwgRRhhzC8Uz5w9+ze4kTcLGguXB4pwAOB4uy1y0oug9Cgr1iESSEr/Iuf5Vb2p/FOAJ/uyBIKnJFEXE32zVVJBgTeJvWgQ==
+	t=1736517595; c=relaxed/relaxed;
+	bh=zcFQGbMfAirMjpjf1X8tAKUZobYECdX4TLZLEAepEfk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Cy5hJF7Dcj1hHoGHu+y2qk10JuRk2+7/YXrTlByoRtDGOWkM2v0gmRRP7QiXOvethEnAXlw1CuRedzYiav512lssY1ohR3KT55QogupdMgMEkr+e0mS1/WQXE7HxQFk9MhIc6fhIB50PW6gJSvSblStsNVHyLWjeZUGZutMwDdbBA9LA4D2otNyUDojwgoC/Twib6fU/QQbZ74pBMO9D7AOYhHcL7s1Rk3bX7ytTGOSS+Md4b+56SZvDyZ8OXhwP59/1dhDVDTlF/b+70Yb3OoS17qZ6gaBV94ysJOLs3KyW7lgDP9v30RruR+SgjnnPCzFL3cLnWFYncml69QeWww==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YV3F457ZYz3c6f
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 00:59:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YV3F53SZhz3cD1
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 00:59:53 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C754F1477;
-	Fri, 10 Jan 2025 05:59:45 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A3C481F91;
+	Fri, 10 Jan 2025 05:59:50 -0800 (PST)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5DDD93F59E;
-	Fri, 10 Jan 2025 05:59:15 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3EE423F59E;
+	Fri, 10 Jan 2025 05:59:20 -0800 (PST)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -43,10 +44,12 @@ Cc: kvmarm@lists.linux.dev,
 	kvm-riscv@lists.infradead.org,
 	linux-s390@vger.kernel.org,
 	vladimir.murzin@arm.com
-Subject: [kvm-unit-tests PATCH v1 0/5] arm64: Change the default --processor to max
-Date: Fri, 10 Jan 2025 13:58:43 +0000
-Message-ID: <20250110135848.35465-1-alexandru.elisei@arm.com>
+Subject: [kvm-unit-tests PATCH v1 2/5] configure: Display the default processor for arm and arm64
+Date: Fri, 10 Jan 2025 13:58:45 +0000
+Message-ID: <20250110135848.35465-3-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20250110135848.35465-1-alexandru.elisei@arm.com>
+References: <20250110135848.35465-1-alexandru.elisei@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,42 +64,78 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-(CC'ing everyone from MAINTAINERS because I'm touching configure)
+The help text for the --processor option displays the architecture name as
+the default processor type. But the default for arm is cortex-a15, and for
+arm64 is cortex-a57. Teach configure to display the correct default
+processor type for these two architectures.
 
-Vladimir sent a test for MTE [1], which didn't work on the default -cpu
-model, cortex-a57, because that CPU didn't implement MTE. There were two
-options to get it working:
+Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
+---
+ configure | 30 ++++++++++++++++++++++--------
+ 1 file changed, 22 insertions(+), 8 deletions(-)
 
-1. Add -cpu max to the extra_params unittest parameter.
-2. Make the default value for the configure --processor option 'max'.
-
-We decided that the second option was preferable, so here it is.
-
-The first patch might look unrelated, but when I was writing the function
-to select the default processor based on the architecture I noticed that
-for arm64, $arch is first equal to aarch64, then it gets changed to arm64.
-My first instinct was to have it be arm64 from the start, but then I
-realized that, despite the help text, --arch=aarch64 has been supported
-ever since arm64 was added to kvm-unit-tests. So I decided that it might
-more prudent to go with it and document it.
-
-[1] https://lore.kernel.org/all/20241212103447.34593-1-vladimir.murzin@arm.com/
-
-Alexandru Elisei (5):
-  configure: Document that the architecture name 'aarch64' is also
-    supported
-  configure: Display the default processor for arm and arm64
-  arm64: Implement the ./configure --processor option
-  arm/arm64: Add support for --processor=max
-  configure: arm64: Make 'max' the default for --processor
-
- arm/Makefile.arm    |  1 -
- arm/Makefile.common |  3 +++
- configure           | 35 ++++++++++++++++++++++++++---------
- 3 files changed, 29 insertions(+), 10 deletions(-)
-
-
-base-commit: 0ed2cdf3c80ee803b9150898e687e77e4d6f5db2
+diff --git a/configure b/configure
+index 5b0a2d7f39c0..138840c3f76d 100755
+--- a/configure
++++ b/configure
+@@ -5,6 +5,24 @@ if [ -z "${BASH_VERSINFO[0]}" ] || [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
+     exit 1
+ fi
+ 
++function get_default_processor()
++{
++    local arch="$1"
++
++    case "$arch" in
++    "arm")
++        default_processor="cortex-a15"
++        ;;
++    "arm64" | "aarch64")
++        default_processor="cortex-a57"
++        ;;
++    *)
++        default_processor=$arch
++    esac
++
++    echo "$default_processor"
++}
++
+ srcdir=$(cd "$(dirname "$0")"; pwd)
+ prefix=/usr/local
+ cc=gcc
+@@ -33,6 +51,7 @@ page_size=
+ earlycon=
+ efi=
+ efi_direct=
++default_processor=$(get_default_processor $arch)
+ 
+ # Enable -Werror by default for git repositories only (i.e. developer builds)
+ if [ -e "$srcdir"/.git ]; then
+@@ -48,7 +67,7 @@ usage() {
+ 	Options include:
+ 	    --arch=ARCH            architecture to compile for ($arch). ARCH can be one of:
+ 	                           arm, arm64/aarch64, i386, ppc64, riscv32, riscv64, s390x, x86_64
+-	    --processor=PROCESSOR  processor to compile for ($arch)
++	    --processor=PROCESSOR  processor to compile for ($default_processor)
+ 	    --target=TARGET        target platform that the tests will be running on (qemu or
+ 	                           kvmtool, default is qemu) (arm/arm64 only)
+ 	    --cross-prefix=PREFIX  cross compiler prefix
+@@ -283,13 +302,8 @@ else
+     fi
+ fi
+ 
+-[ -z "$processor" ] && processor="$arch"
+-
+-if [ "$processor" = "arm64" ]; then
+-    processor="cortex-a57"
+-elif [ "$processor" = "arm" ]; then
+-    processor="cortex-a15"
+-fi
++# $arch will have changed when cross-compiling.
++[ -z "$processor" ] && processor=$(get_default_processor $arch)
+ 
+ if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
+     testdir=x86
 -- 
 2.47.1
 
