@@ -1,58 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-5017-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5018-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8045E77188
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 21:50:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75B71E77188
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 22:06:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YVFhW2NS2z3cW7;
-	Sat, 11 Jan 2025 08:50:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736545851;
-	cv=none; b=H2qpp6/hL2A/LHgqn0qskOAdM1bSDM6eAPD/UMarrkOnO5byIVLNXly92XxeOyWCJxQvj4Xr2nY0lPhTYQ8IRNfm8jMX03cLXpgTxDypKCj/btoWM8SMV4VUCA5QQSg7TSHq2wtnNLokykILmrCe3D8EqQuPtVY0wlyD6LG6rneWZ68KFqMON5YTodGPRbIpgrTiPcd6HLWRJBb0vo5vct775wUe96lUErzpUtFHvJB8vVrRkeVkwLoKxH96uG0z5R6BZMarDzGSg9tqdqeTAjp/YvyotWAYPxMOmpuDesiHHaomJt0BQHOXzR+kyxN6RqgptQMPP7un72WQjdmQWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YVG2Z72n6z3cYy;
+	Sat, 11 Jan 2025 09:06:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::ba"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736546790;
+	cv=none; b=L/cgKTCAmy3plB5PznaWcjWXK6EJEiamQdRJ9AKNbFJd+tnllVJb6wKKSWP7EhirWh3gnMOa95iJRTsCoFfSj1X7G40bPhnpzndljL4qgNSiNPzOBz9z4m/KNjocwGV+qvNFZRGaR6bLGZADUvGLPgbZslrCHEfl6Q4MKKlxgBzC6xL4x4g2sRNlKuffEf02yMGJzazpkEVj4br74283okBbtEQIrFPK3dQTQStsdl1fdg5hjijCSEoyeyjwafioLqpbql7mSuJFopkqLlyXOpW+pxuIS5IztqvUtvJXwsK0wmiC8MZ5dPklbhWTruVVgIDSmHFC6ZEhIEiMaU3wrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736545851; c=relaxed/relaxed;
-	bh=M4ZRkl55MJ+1j47FLuluCpfXybU4kyYABX+ae0icOzg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=U0momz2/9vjPFcLImogHkyYcXx07ypLu3Kab8TsIjBM/HaMRshXEMQuZpDTIiUZ/lbHM10yAX/VsxtWDMFaQGmNaK8cVd9O1dZhpirUu9CkVuVZ9VRVk/UfiqZ6QDDaQKBW/flEKqS25oPJd+4jv1U9C9ktHxpeHIDhDjmFoj+mUFGqrbs9/wxBL7liSsMHGy2i5OKZYJ9pT8O97aURhCNtQGjaCyG87NFDxR70QjAzJPoO6dm9oDp4LlDWdC9l5hRdtnUeImCH+ceZ/yLwqhP1P7dHl27sfie9IUmcIjS1C5udYnzFUcaZmtC79/y7V3DP8CtmfqM3GoB2smfO6sA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MKPMpSK2; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MKPMpSK2;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+	t=1736546790; c=relaxed/relaxed;
+	bh=2x5BxF/3ZkUkZ+08VxDfgNb3JHhNGdhbGCSwU27BGaM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ozaarIplMhAYzczcBJBFEL5Iw90ls8kAw8bPeS7fCmf6oAlrqzLdNi+DgSRP6eLuvEkba6L7FCJaoK33bGl68NatiGKfEABnE20Rh/vfAI3ya1iuHPgoINW3ppATjGTb1EGjNNw/Xn4r79Hsk4HxSqllm7TCf0LlnyoKLZWA0l8yCQ3fWU/Wqo45ppOfqvg+kFqFTmq5JAu+YzuTgzqF/HKG2VrgvWgLosMnHA6XbZHJ6feRzXAyM84Bb0roX0xcE/akn9I+Iip7HzQ1h3LBu4rAImSH2cx6j+Q/nzHBNFQ7kw1esNJs6bHcsSxSc5c/KMcrgPylgrc8eLwKRDTB6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass (client-ip=2001:41d0:203:375::ba; helo=out-186.mta1.migadu.com; envelope-from=sean.anderson@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::ba; helo=out-186.mta1.migadu.com; envelope-from=sean.anderson@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 70 seconds by postgrey-1.37 at boromir; Sat, 11 Jan 2025 09:06:23 AEDT
+Received: from out-186.mta1.migadu.com (out-186.mta1.migadu.com [IPv6:2001:41d0:203:375::ba])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YVFhV2Kwnz3cBN
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 08:50:50 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 2CAE0A4296E;
-	Fri, 10 Jan 2025 21:48:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 278D7C4CED6;
-	Fri, 10 Jan 2025 21:50:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736545842;
-	bh=nF9tyrRFwuKiGYC39fPM/9Oxc52IGKv4m7s/YvKeu+E=;
-	h=From:To:Cc:Subject:Date:From;
-	b=MKPMpSK2ev82viPQmRmSq1VjRI4UxlFVNqnLgJXvB9fQUkjSJ+yCoDpzl+LiR/B79
-	 bpkIfQDSgQsppcOem98Md3iDaG9ZvFBj3stuINPneYa+HNSeT391Nu3uwZX0r8PubW
-	 KqITaiWNlpIhTZI5yEEttV6JIZ35DEH0OFhKvp4rmIOg5TrP3hfR86cNkUH2yHsdyq
-	 tk8pIGsfKevCBPgQTWvHks43eqxiALaL6RK3HKJBbAcVBP1VPYSitf4TixifPs8KKx
-	 5SyemmlWeAI8R57zwQMw68QjuZNnqElWHLCpWrZbycB3zlVr7aIGkGGoHx0iTk3wC/
-	 X7fqJ51aPkxuQ==
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Saravana Kannan <saravanak@google.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] of/unittest: Add test that of_address_to_resource() fails on non-translatable address
-Date: Fri, 10 Jan 2025 15:50:28 -0600
-Message-ID: <20250110215030.3637845-1-robh@kernel.org>
-X-Mailer: git-send-email 2.45.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YVG2R4zSVz3cYh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 09:06:23 +1100 (AEDT)
+Message-ID: <ba885c8c-c5f0-4902-8515-3c133a00d7f1@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1736546679;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=2x5BxF/3ZkUkZ+08VxDfgNb3JHhNGdhbGCSwU27BGaM=;
+	b=VU6wzF3mE866i1no/6U66csETxez/bREQM53MmiNGv1XnD0PmIbPMQpAz7P1cHr+ry40jW
+	6RMUzfnkgYIoplHz5iotr5rTv8Kd9snuwjrJqwmLPxQE4200bmPgNzApeRG79EpcFVqIDY
+	oWOrLT1Lseiz3xI8SPo8HyEsEA8aMP4=
+Date: Fri, 10 Jan 2025 17:04:34 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,74 +51,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH 2/2] of/address: Fix WARN when attempting translating
+ non-translatable addresses
+To: "Rob Herring (Arm)" <robh@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Saravana Kannan <saravanak@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+References: <20250110215030.3637845-1-robh@kernel.org>
+ <20250110215030.3637845-2-robh@kernel.org>
+Content-Language: en-US
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Sean Anderson <sean.anderson@linux.dev>
+In-Reply-To: <20250110215030.3637845-2-robh@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Migadu-Flow: FLOW_OUT
 
-of_address_to_resource() on a non-translatable address should return an
-error. Additionally, this case also triggers a spurious WARN for
-missing #address-cells/#size-cells.
+On 1/10/25 16:50, Rob Herring (Arm) wrote:
+> The recently added WARN() for deprecated #address-cells and #size-cells
+> triggered a WARN when of_platform_populate() (which calls
+> of_address_to_resource()) is used on nodes with non-translatable
+> addresses. This case is expected to return an error.
+> 
+> Rework the bus matching to allow no match and make the default require
+> an #address-cells property. That should be safe to do as any platform
+> missing #address-cells would have a warning already.
+> 
+> Fixes: 045b14ca5c36 ("of: WARN on deprecated #address-cells/#size-cells handling")
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+> ---
+>  drivers/of/address.c | 18 +++++++++++++++---
+>  1 file changed, 15 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/of/address.c b/drivers/of/address.c
+> index c1f1c810e810..8770004d9b08 100644
+> --- a/drivers/of/address.c
+> +++ b/drivers/of/address.c
+> @@ -340,6 +340,15 @@ static int of_bus_default_flags_match(struct device_node *np)
+>  	return of_property_present(np, "#address-cells") && (of_bus_n_addr_cells(np) == 3);
+>  }
+>  
+> +static int of_bus_default_match(struct device_node *np)
+> +{
+> +	/*
+> +	 * Check for presence first since of_bus_n_addr_cells() will warn when
+> +	 * walking parent nodes.
+> +	 */
+> +	return of_property_present(np, "#address-cells");
+> +}
+> +
+>  /*
+>   * Array of bus specific translators
+>   */
+> @@ -384,7 +393,7 @@ static const struct of_bus of_busses[] = {
+>  	{
+>  		.name = "default",
+>  		.addresses = "reg",
+> -		.match = NULL,
+> +		.match = of_bus_default_match,
+>  		.count_cells = of_bus_default_count_cells,
+>  		.map = of_bus_default_map,
+>  		.translate = of_bus_default_translate,
+> @@ -399,7 +408,6 @@ static const struct of_bus *of_match_bus(struct device_node *np)
+>  	for (i = 0; i < ARRAY_SIZE(of_busses); i++)
+>  		if (!of_busses[i].match || of_busses[i].match(np))
+>  			return &of_busses[i];
+> -	BUG();
+>  	return NULL;
+>  }
+>  
+> @@ -521,6 +529,8 @@ static u64 __of_translate_address(struct device_node *node,
+>  	if (parent == NULL)
+>  		return OF_BAD_ADDR;
+>  	bus = of_match_bus(parent);
+> +	if (!bus)
+> +		return OF_BAD_ADDR;
+>  
+>  	/* Count address cells & copy address locally */
+>  	bus->count_cells(dev, &na, &ns);
+> @@ -564,6 +574,8 @@ static u64 __of_translate_address(struct device_node *node,
+>  
+>  		/* Get new parent bus and counts */
+>  		pbus = of_match_bus(parent);
+> +		if (!pbus)
+> +			return OF_BAD_ADDR;
+>  		pbus->count_cells(dev, &pna, &pns);
+>  		if (!OF_CHECK_COUNTS(pna, pns)) {
+>  			pr_err("Bad cell count for %pOF\n", dev);
+> @@ -703,7 +715,7 @@ const __be32 *__of_get_address(struct device_node *dev, int index, int bar_no,
+>  
+>  	/* match the parent's bus type */
+>  	bus = of_match_bus(parent);
+> -	if (strcmp(bus->name, "pci") && (bar_no >= 0))
+> +	if (!bus || (strcmp(bus->name, "pci") && (bar_no >= 0)))
+>  		return NULL;
+>  
+>  	/* Get "reg" or "assigned-addresses" property */
 
-Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
----
- drivers/of/unittest-data/tests-platform.dtsi | 13 +++++++++++++
- drivers/of/unittest.c                        | 14 ++++++++++++++
- 2 files changed, 27 insertions(+)
-
-diff --git a/drivers/of/unittest-data/tests-platform.dtsi b/drivers/of/unittest-data/tests-platform.dtsi
-index fa39611071b3..cd310b26b50c 100644
---- a/drivers/of/unittest-data/tests-platform.dtsi
-+++ b/drivers/of/unittest-data/tests-platform.dtsi
-@@ -34,5 +34,18 @@ dev@100 {
- 				};
- 			};
- 		};
-+
-+		platform-tests-2 {
-+			// No #address-cells or #size-cells
-+			node {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+
-+				test-device@100 {
-+					compatible = "test-sub-device";
-+					reg = <0x100 1>;
-+				};
-+			};
-+		};
- 	};
- };
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 80483e38d7b4..34c957add8b9 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -1380,6 +1380,7 @@ static void __init of_unittest_bus_3cell_ranges(void)
- static void __init of_unittest_reg(void)
- {
- 	struct device_node *np;
-+	struct resource res;
- 	int ret;
- 	u64 addr, size;
- 
-@@ -1396,6 +1397,19 @@ static void __init of_unittest_reg(void)
- 		np, addr);
- 
- 	of_node_put(np);
-+
-+	np = of_find_node_by_path("/testcase-data/platform-tests-2/node/test-device@100");
-+	if (!np) {
-+		pr_err("missing testcase data\n");
-+		return;
-+	}
-+
-+	ret = of_address_to_resource(np, 0, &res);
-+	unittest(ret == -EINVAL, "of_address_to_resource(%pOF) expected error on untranslatable address\n",
-+		 np);
-+
-+	of_node_put(np);
-+
- }
- 
- struct of_unittest_expected_res {
--- 
-2.45.2
-
+Tested-by: Sean Anderson <sean.anderson@linux.dev>
 
