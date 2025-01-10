@@ -1,51 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-4985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4987-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E787E77188
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 15:22:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 728F8E7719C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 15:24:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YV5421xDGz3cWY;
-	Sat, 11 Jan 2025 02:22:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736522530;
-	cv=none; b=VRfWidWlRORbm0ea+DxDk8I4R3GB2LUZViPLwIMtzpbeqFVLb2IX31ls2lAqEyeOicO+P2uvtu5lJD1Uchhd864U7gqCgBfo2AEYIEFSEv87Amo1V9H/bG3BwyJNG6aSIEp3i669+XAJvWBjm4r4cPg73+NJYGXeKJt3Ml9cKqCCTUCvdkZvnfxMXX6KjJXXX0u6OFiN4FFUUEDi2gmUpz6dz3csxALL9U5LOfP3GDXsmFaX9r87I6bj60aTtIoHVF7WCt3+s4861hWQdUndhFf7UHKy6YeWgizmtiOTEB7T44epcuZ1Lte0mR6DWBDKt4/fT5iI6KTbOZWdG3fGNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YV56D0BJ0z3cYN;
+	Sat, 11 Jan 2025 02:24:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736522643;
+	cv=none; b=mHtTEfg8IQu1BN1mfN+cJqhkgWp2c/CrulmGq6y1Wwk7pVk2GJ9fcssALVlxsIP+R2D0LlnY8FWjFa4pXga8qhbS1zNZzPtc+8B5g8F59oLpgbAwty8QkWfI8AKr0hzeawUoTH4Kfh6kcAZmQIAsoZLQBYv8Uk5+hNna+4QCZj67bXLKmjzvWoyA6RcJxaSl2YRH+gmnI2xvQusF4+O1SZJKOoDETBMzK+tp2vNh2zKzwtMAP5rMjjN7+ZqPTMAMJqxBJyQJdzhDwiT3Y7OrdQ0oONfd3tq3ApBulsMIpqK8G0zHfrwdd55T2YIzWHEEWixYt0U9GIF1UId7yv18Fw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736522530; c=relaxed/relaxed;
-	bh=QOAeeCmwmJBzn//7r3z04YA3EckWJgVh12gy1oX/+F8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=B85rqCX9DvHjTpchK9itQo3Z3Q0thsf8i6U6rMbpQEDNNnAvOKRMqHJkK962/g7qaT58it2dVpIZFVUkxELck+qplKatNiAeSTQ/K2DekiONLwWye+Y+3+2eTayuNs6I4Y8EJhHQMw3VCHcvgHK3lZA9DuS6eqIAFvFc4+tSE6rM805ru5Bp2bP2PR2i8PS0HeCBKX41g4FpFALt62dRitvLHZu6BZA2Bc8NJXQ288dV9S/1ogeLMyMLXzRR6sW4BjGvaqwl2JzBys6gcORIQ+Z20yoUkO7IqtYOVCxG49u7sFB2fO/pjisaGZepWflb+N3M1PU6KdYUj3ixNNH5PA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aB4C4JNL; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1736522643; c=relaxed/relaxed;
+	bh=gs/m1ne1xnufcZuceBub2RzRtdWIKInpIZ86AtKhTZY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=IOORDYYztVsPSP6MTZxYAICPz7RUAfROKtwL4V/z7OUFKhIaRwfd+cZT3Gn00EEmA8jlIsz1AnvNflYBf0FvSfytbWgQfrKHywZjGQH19Amn4tDZxVZEUPQoKWdv8/UVoemptpVx1ZpUuvgyw5H+vgNkmE4GocnPOAf80pFfgFNrGCCA1AJBvzWey8jDp+FrfKWYV5NpG4hfdibrvRG/OvVbrKXSksMFwnMXRiG7nMGCU0uoEOOFbzerFRMNrnsKZmvr3pA4GG4Jy0CHOOoHa0aAdpasP9icXB16CmfSvgJOULryCVcS4oB7TV20iacLKGer2AJOGY+AVsQnfFkssg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=O/oryiOT; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=koaGwZik; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aB4C4JNL;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=O/oryiOT;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=koaGwZik;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV5410J1xz3cPZ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 02:22:09 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id CD858A42515;
-	Fri, 10 Jan 2025 15:20:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A58C0C4CED6;
-	Fri, 10 Jan 2025 15:22:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736522526;
-	bh=Fj00BHfPbhz9xYd23W9IG8d0T8QnHNrRgZzPleQcUUc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=aB4C4JNLquV3y0plgp5rugjHfALR4F9VUzHi+V3oat9n9czJM3fqwL53aqlLPyY5U
-	 boPAfZ/OXXW97/Lv8N1a5Na/5l5wf0Clc68Zpk19QoGrHXV0w4iqnl4WNiAaT1aqXQ
-	 zFj60DKhOtw/Nh/nm4o2kKdsMSRHJhFu79hrI4wwyiMMAjcXBw1eH0jx2YuWgkwGFp
-	 COf74RxS6vxNSnHvANSHzgwxrTPbZtg8OWcBO8ZJSijx3vYxBQNqnC/fdVSENH0ahd
-	 DVVVg8rvuGgDloUsfhf0r6787qUJ4N5RdAjx+iRs/rqh8S0qAW4G6sh/UFEXq9xVWT
-	 0kunsBCBaXv2Q==
-Message-ID: <e1c8ebd5-b01d-4338-a465-889853d1ef9f@kernel.org>
-Date: Fri, 10 Jan 2025 16:21:58 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV56974vRz3cYB
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 02:24:01 +1100 (AEDT)
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1736522633;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=gs/m1ne1xnufcZuceBub2RzRtdWIKInpIZ86AtKhTZY=;
+	b=O/oryiOTC2EPMwRnWTnGqJzrks9otGfDDqx2KBYDFHqsjuHB089iYDJ34QQ9S1PljgamlL
+	BM7zY7AL8FY07yIH12mI0070UhlPruW2yGFqEExUs8sVmzqNzO59sD5Q9pOUCNTEaFhAgE
+	RmTBJ8zhZkmwDsvXH2+VhmlkrKmgrOPsW/I0bKDSNyEqyTqw72QGPxWzolUogPArsjlTlk
+	FBAhi9sEQ/iBl54fIHofNPj8JxII6acwq4Gq+jTHYNrL+mFqfiD6T9eZL3FaVHB8DnEAX1
+	YGPwNzwwM5T96hOBZxjq760NY9XDYsr+B0XabLhMkR67wla+5lWUI/M84y165w==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1736522633;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=gs/m1ne1xnufcZuceBub2RzRtdWIKInpIZ86AtKhTZY=;
+	b=koaGwZik0YK1SGnxT0Jy1pXAsLdTo31kbbEXtpZ/NVrHINMW/zi3RXZX3xxrjmrmUhWnsu
+	Ys8RJwvtX7n8wzAQ==
+Date: Fri, 10 Jan 2025 16:23:42 +0100
+Subject: [PATCH v2 03/18] vdso: Introduce vdso/align.h
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,101 +66,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 10/19] powerpc: dts: Add MPC8314E devicetree
-To: j.ne@posteo.net, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Linus Walleij
- <linus.walleij@linaro.org>, Bartosz Golaszewski <brgl@bgdev.pl>,
- Frank Li <Frank.Li@nxp.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-gpio@vger.kernel.org
-References: <20250102-mpc83xx-v1-0-86f78ba2a7af@posteo.net>
- <20250102-mpc83xx-v1-10-86f78ba2a7af@posteo.net>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
- cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
- JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
- gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
- J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
- NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
- BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
- vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
- Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
- TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
- S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGVBBMBCgA/AhsDBgsJCAcDAgYVCAIJCgsE
- FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJgPO8PBQkUX63hAAoJEBuTQ307
- QWKbBn8P+QFxwl7pDsAKR1InemMAmuykCHl+XgC0LDqrsWhAH5TYeTVXGSyDsuZjHvj+FRP+
- gZaEIYSw2Yf0e91U9HXo3RYhEwSmxUQ4Fjhc9qAwGKVPQf6YuQ5yy6pzI8brcKmHHOGrB3tP
- /MODPt81M1zpograAC2WTDzkICfHKj8LpXp45PylD99J9q0Y+gb04CG5/wXs+1hJy/dz0tYy
- iua4nCuSRbxnSHKBS5vvjosWWjWQXsRKd+zzXp6kfRHHpzJkhRwF6ArXi4XnQ+REnoTfM5Fk
- VmVmSQ3yFKKePEzoIriT1b2sXO0g5QXOAvFqB65LZjXG9jGJoVG6ZJrUV1MVK8vamKoVbUEe
- 0NlLl/tX96HLowHHoKhxEsbFzGzKiFLh7hyboTpy2whdonkDxpnv/H8wE9M3VW/fPgnL2nPe
- xaBLqyHxy9hA9JrZvxg3IQ61x7rtBWBUQPmEaK0azW+l3ysiNpBhISkZrsW3ZUdknWu87nh6
- eTB7mR7xBcVxnomxWwJI4B0wuMwCPdgbV6YDUKCuSgRMUEiVry10xd9KLypR9Vfyn1AhROrq
- AubRPVeJBf9zR5UW1trJNfwVt3XmbHX50HCcHdEdCKiT9O+FiEcahIaWh9lihvO0ci0TtVGZ
- MCEtaCE80Q3Ma9RdHYB3uVF930jwquplFLNF+IBCn5JRzsFNBFVDXDQBEADNkrQYSREUL4D3
- Gws46JEoZ9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLue
- MNsWLJBvBaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6ei
- OMheesVS5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wA
- GldWsRxbf3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA
- 6z6lBZn0WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9
- YegxWKvXXHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt
- 91pFzBSOIpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gU
- BLHFTg2hYnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/
- JoFzZ4B0p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu
- 4vXVFBYIGmpyNPYzRm0QPwARAQABwsF8BBgBCgAmAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtB
- YpsFAmA872oFCRRflLYACgkQG5NDfTtBYpvScw/9GrqBrVLuJoJ52qBBKUBDo4E+5fU1bjt0
- Gv0nh/hNJuecuRY6aemU6HOPNc2t8QHMSvwbSF+Vp9ZkOvrM36yUOufctoqON+wXrliEY0J4
- ksR89ZILRRAold9Mh0YDqEJc1HmuxYLJ7lnbLYH1oui8bLbMBM8S2Uo9RKqV2GROLi44enVt
- vdrDvo+CxKj2K+d4cleCNiz5qbTxPUW/cgkwG0lJc4I4sso7l4XMDKn95c7JtNsuzqKvhEVS
- oic5by3fbUnuI0cemeizF4QdtX2uQxrP7RwHFBd+YUia7zCcz0//rv6FZmAxWZGy5arNl6Vm
- lQqNo7/Poh8WWfRS+xegBxc6hBXahpyUKphAKYkah+m+I0QToCfnGKnPqyYIMDEHCS/RfqA5
- t8F+O56+oyLBAeWX7XcmyM6TGeVfb+OZVMJnZzK0s2VYAuI0Rl87FBFYgULdgqKV7R7WHzwD
- uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
- 7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
- 5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250102-mpc83xx-v1-10-86f78ba2a7af@posteo.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Message-Id: <20250110-vdso-store-rng-v2-3-350c9179bbf1@linutronix.de>
+References: <20250110-vdso-store-rng-v2-0-350c9179bbf1@linutronix.de>
+In-Reply-To: <20250110-vdso-store-rng-v2-0-350c9179bbf1@linutronix.de>
+To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ Helge Deller <deller@gmx.de>, Andy Lutomirski <luto@kernel.org>, 
+ Thomas Gleixner <tglx@linutronix.de>, 
+ Vincenzo Frascino <vincenzo.frascino@arm.com>, 
+ Anna-Maria Behnsen <anna-maria@linutronix.de>, 
+ Frederic Weisbecker <frederic@kernel.org>, 
+ Andrew Morton <akpm@linux-foundation.org>, 
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+ Theodore Ts'o <tytso@mit.edu>, "Jason A. Donenfeld" <Jason@zx2c4.com>, 
+ Paul Walmsley <paul.walmsley@sifive.com>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+ Russell King <linux@armlinux.org.uk>, Heiko Carstens <hca@linux.ibm.com>, 
+ Vasily Gorbik <gor@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Sven Schnelle <svens@linux.ibm.com>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, Arnd Bergmann <arnd@arndb.de>, 
+ Guo Ren <guoren@kernel.org>
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org, 
+ loongarch@lists.linux.dev, linux-s390@vger.kernel.org, 
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-arch@vger.kernel.org, Nam Cao <namcao@linutronix.de>, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
+ linux-csky@vger.kernel.org
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1736522629; l=2181;
+ i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
+ bh=zRm1/jHzhcX2cBU5SFyW7PIL5hMfUBZQzaPVvddjWs0=;
+ b=mSg1h7NuP5ae3KJ6mcjcidNOVehie+olRq8SUcCqxYpYv8FgXUocQ8b/bJZFWOvzytUY29vSW
+ 1nrXIOS1T+sC75ZNlmJCS8h+7C8Fx0isdGu7Wc6Nqqipvo2fiyJM1NW
+X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
+ pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-On 02/01/2025 19:31, J. Neuschäfer via B4 Relay wrote:
-> From: "J. Neuschäfer" <j.ne@posteo.net>
-> 
-> The MPC8314E is a variant of the MPC8315E without SATA controllers.
-> 
-> Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-> ---
->  arch/powerpc/boot/dts/mpc8314e.dtsi | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc8314e.dtsi b/arch/powerpc/boot/dts/mpc8314e.dtsi
-> new file mode 100644
-> index 0000000000000000000000000000000000000000..65a96a485dded5d4918d96b38778399d2f348190
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/mpc8314e.dtsi
-> @@ -0,0 +1,7 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +// Copyright 2024 J. Neuschäfer
-> +#include "mpc8315e.dtsi"
-> +
-> +/* MPC8314E does not support SATA */
-> +/delete-node/ &sata0;
-> +/delete-node/ &sata1;
+The vDSO implementation can only include headers from the vdso/
+namespace. To enable the usage of the ALIGN() macro from the vDSO, move
+linux/align.h to vdso/align.h wholly.
+As the only dependency linux/const.h is only a wrapper around
+vdso/const.h anyways adapt that dependency.
 
+Also provide a compatibility wrapper linux/align.h.
 
-You should not delete nodes. That's not really maintainable code. Either
-this is in base DTSI or it does not. If it does exist, then this delete
-is incorrect.
+Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+---
+ include/linux/align.h | 10 +---------
+ include/vdso/align.h  | 15 +++++++++++++++
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
-If it does not delete, you are not supposed to include other SoC/device
-which is not the subset of this one, so your includes are not correct.
+diff --git a/include/linux/align.h b/include/linux/align.h
+index 2b4acec7b95a27b6768d48f46519abc584c94d5d..55debf105a5d610c592e5c53a4153018ea1ae2c6 100644
+--- a/include/linux/align.h
++++ b/include/linux/align.h
+@@ -2,14 +2,6 @@
+ #ifndef _LINUX_ALIGN_H
+ #define _LINUX_ALIGN_H
+ 
+-#include <linux/const.h>
+-
+-/* @a is a power of 2 value */
+-#define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
+-#define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
+-#define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
+-#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
+-#define PTR_ALIGN_DOWN(p, a)	((typeof(p))ALIGN_DOWN((unsigned long)(p), (a)))
+-#define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
++#include <vdso/align.h>
+ 
+ #endif	/* _LINUX_ALIGN_H */
+diff --git a/include/vdso/align.h b/include/vdso/align.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..02dd8626b5c5aa59d2ee0b15799b6e9adb343f65
+--- /dev/null
++++ b/include/vdso/align.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __VDSO_ALIGN_H
++#define __VDSO_ALIGN_H
++
++#include <vdso/const.h>
++
++/* @a is a power of 2 value */
++#define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
++#define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
++#define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
++#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
++#define PTR_ALIGN_DOWN(p, a)	((typeof(p))ALIGN_DOWN((unsigned long)(p), (a)))
++#define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
++
++#endif	/* __VDSO_ALIGN_H */
 
-Best regards,
-Krzysztof
+-- 
+2.47.1
+
 
