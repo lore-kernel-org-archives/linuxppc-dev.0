@@ -1,52 +1,110 @@
-Return-Path: <linuxppc-dev+bounces-4970-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4971-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F1ABE77188
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 10:18:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30965E77188
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 10:44:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YTyKw0PTtz3cVJ;
-	Fri, 10 Jan 2025 21:18:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736504323;
-	cv=none; b=cKP+ZfgbKu2gYI/d7vFPw7BP5sUDGmj/tV57/mHLEBZKZ1WO41NwpHdW/equS8axHeDOAK2/ZgbjEUvwz4eV1yExlVSU2gl2XMmMSuDD9bNUqIG1tKGgzGY/aeS3oavbGN4JgSzC5RTgiTC9XFKrD55OvPTxQkW6aVD3P1sVqxYBIf/uGRJ8ss4Syasc+/3WlhE+fKKWmI5FbiUglXMad8L2jnjvCesruLnlhUmkavMUdAaXGD8Zb5iu/FOcVKkwdX+JeD4j8eDEnRLsYok6dcghn+ZR56knTg0TmOrY+2ZlVj5lWG3Cr4oVJp8hkFBBoNb3sPZTQYoOmPTpV4xcIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YTyvC3JBpz3c9W;
+	Fri, 10 Jan 2025 21:44:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736502302;
+	cv=none; b=hU/VttKU9+ipd2453ke/QmBJ7Y5zukWybcW+525wofahiE70zBThRVoblaGzXqECg1HpLS1cuk4qCdaPhNuDQqxpgoA82bOD1jcSTdZjFUfAtKleq62PQPIKfIdmuoPAebrgALXMAvhPhTfRDblBXHhh1UgGSGepGaH4X3QwHEnpsJpRTB/5ZEgkQq6aBRK6IVmCg2lnN4+c8gInf7JbQxio436Q2x5E4S83MGu7rO9ifGzdFeBT52sb/PWuf+VliGyfUB9lOkBH2n8vX6XldESx20UeVfJGVkaHsQUhGTGuQmDbt6yMhtTbD6kA7zpl2Ypzfo/iwfk9F5O+5xiRLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736504323; c=relaxed/relaxed;
-	bh=Ym/S4x4Djlh78akW6SZhQvGN79woy4U3f1W9nA8zAAY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=GRI+aTbT4iUG51DoOFMAXFg4tV1eDqIu3CzEwo6VilW40xoQ+NvF5KWsY4JdE3exYrTFrPeUc7MJbg8BQp1DKNtZjTDKVHjCaG472T20p7/cROnXXoqdpOdNWbz7LymN2RATX73Tat3TQ0Ic087ZlrIiPKfrp5p7b3HOhnuhSPCggVXv1+Ni1OZ4L9+J7bu/TTPcKtKCd+EA78Q4zlvms8HKSP2N5av6zTF5H+qzSTsxZuUcZEla3pdQ7eGkUIoux/IPL4Dbfn1XGUY/rtXyB9lnKXfeA6qYnEP71nDbCo2xVLZkDUiOdJRWTc+wZr9MJbsJo3qUR0Hj0OfOKcylQw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ighEh0r9; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1736502302; c=relaxed/relaxed;
+	bh=A4Kw1qoNYerqhNjh25Dgp7jdmE++mW9Fl3ZiJ8T3co8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 In-Reply-To:Content-Type:Content-Disposition; b=jky95A4nlo8IFFmzIBi+J38jdj5fFo9qcTfMCJSBvc00SHe1HA9Oxjn7ve4oBWJo9Yrkpmv5E7Svzt4lKmt2TxRZZQj3/BUkLNUmUjFqXBz+5D5yZDKbEIjS9qK9wa7r4MaGwk+aai+KK5H0yAKUmTZiqDOTHnRyiwI1TGd5C7LF0MOXifokplr/eoZ5ofk5TcyxwuiVVihfhh1OdpMlkPWZHcIUC4NMJmvWMJ2S+Yt9/dVM1Ky9CxhxVHYS+V7p2cYEKvpS7wEo28a163+/xoViyG+io1/e14RKGZZ0LCV69lIZPdo3Ds043F1XKh/cmN6832f91IKSNZcOhoEHbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OpFonKHK; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OpFonKHK; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=aalbersh@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ighEh0r9;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OpFonKHK;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OpFonKHK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=aalbersh@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YTyKr1yq8z2yWr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2025 21:18:40 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id B36575C5E80;
-	Fri, 10 Jan 2025 10:17:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0236AC4CED6;
-	Fri, 10 Jan 2025 10:18:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736504317;
-	bh=oKlq476fY9QM/OujOfwpqryzpqHCumE+M3ptAU9F1uM=;
-	h=From:Date:Subject:To:Cc:From;
-	b=ighEh0r9RCenwY5oVRkBESBSyg2uDQ7vER54rOH8yoUZV44AdsvHYIL1VZ/dQNEox
-	 udfiIztFH/6OwsTjL8O28Y5p55G7ptEBOALldhh4k2flxHpCUwZNUV6kk9TwMN3NX3
-	 gDoE61mYLDynVPGn+z36fuJ0SyqHoDEGv26H4LtBi8MlirpTtRntSq+B+onrhriRSl
-	 pJ8tWejCVztm6d7ntMpSVSU1vLxNFz6uP9rOEIuaOIJIuxDtk18vqUy4Mm06GtsQ3G
-	 2ql+GBVQfTjglmD9NISkf7ixH7TGU1Ik/NNGXOAg2jtn9QHt4yW4KCKVMBCdzr0KiU
-	 FNGcxsD1WPfSQ==
-From: Simon Horman <horms@kernel.org>
-Date: Fri, 10 Jan 2025 10:18:33 +0000
-Subject: [PATCH net-next] freescale: ucc_geth: Remove set but unused
- variables
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YTxb05t4tz3cBk
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2025 20:44:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1736502296;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=A4Kw1qoNYerqhNjh25Dgp7jdmE++mW9Fl3ZiJ8T3co8=;
+	b=OpFonKHK4rsGIFf7HSuUlaFhBRRdsLlK1R0arRX8Qgj5U/1r5D9F44B4TYsKgwx49xHb+n
+	5vBk4tEV8CbMFGi4NRmAKUmHTkpEW8Vd0dtx1wt9VRXgkCiiKSc63/ZnsFhVqgMtiikhQ6
+	B6aTnOhYbqo/Q402brHq8KN6vSuJqMs=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1736502296;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=A4Kw1qoNYerqhNjh25Dgp7jdmE++mW9Fl3ZiJ8T3co8=;
+	b=OpFonKHK4rsGIFf7HSuUlaFhBRRdsLlK1R0arRX8Qgj5U/1r5D9F44B4TYsKgwx49xHb+n
+	5vBk4tEV8CbMFGi4NRmAKUmHTkpEW8Vd0dtx1wt9VRXgkCiiKSc63/ZnsFhVqgMtiikhQ6
+	B6aTnOhYbqo/Q402brHq8KN6vSuJqMs=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-613-Ko5u8BBNMpaBn7XAPuQIAg-1; Fri, 10 Jan 2025 04:44:54 -0500
+X-MC-Unique: Ko5u8BBNMpaBn7XAPuQIAg-1
+X-Mimecast-MFC-AGG-ID: Ko5u8BBNMpaBn7XAPuQIAg
+Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-385dcae001fso783582f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2025 01:44:54 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736502293; x=1737107093;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=A4Kw1qoNYerqhNjh25Dgp7jdmE++mW9Fl3ZiJ8T3co8=;
+        b=GoggFeifY3vVHJYMb6AwILk576h2Q+NIy0SryYSTTAyayyTHJiZ15G/VCrsdakb7eC
+         vfuwP3ClDQc1+fYvEM5OkoS7WF9yUWeXASoiLBDnqQPWjDWgOIi+w3dTSIf039zg74g3
+         IQ2IfXOF1lVNVAYZHDVf5ZtC9i5qwiIjlxAu6ewFKplH39wY17prVXDqXwvXMqBu4iOs
+         PbmRdO5Sr69+nEcFvhw3dsOAyGukbgsVqjm3v8gseR5ek0vXw6oqiye7AjKPriBn3RwT
+         qJDz+boTemI0gqYOYoecI6N0miVsZ4tNPnPG7gcHulDis3+h4o9bqQwGTcrtT/g0f2d0
+         NM9w==
+X-Forwarded-Encrypted: i=1; AJvYcCUSu79Y//bFBgvLEfregWZTexpcbcO4k4QrgOoccCneNu8cPMv/ctzL1TknN2zb+FI/wc0ihrNR5kdxrKc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxmGqQSoqMZgdwmMzSRCGKCjGJ9K+OknuNQKcgMEEdSaN8QRU68
+	ob89TXlyJjdB1rVIMK5Nya+CEMYH9UH1ZX6Nxd3w6LFCrDUhPUCGzE6YyfETXNoWpJYfb4wntKq
+	ISMCotruhspeuZMeHMX+sosU3IjlMUTIk5Ei5UYofrrvy17BJiDnSxWjtZ+LD1A==
+X-Gm-Gg: ASbGnct9SnXyiE1+lRzNArbvaO8iw/sDgpnMCUzwSElq2gCfwM/EzWJk3eIfpuY/Sya
+	ELt8BoJ+/KdNCf00zgLinpMJF7EhpoCn+hjtjtEfdUQ7maOCx6pAQLR+YRQwXEHa3wiwjWCHxg5
+	l5qYh1nNyORxfGj9fbz+HVVz+T9dpXxb3HWkj0NIegxzEA4/rtOQYMYsiRf3/owv4RTCQyjEOPr
+	Hd4duSeeeThWkrVWfkWv7/011hXJnd/uBAaxVCWme4KTShtlTC2UB4mDQThp3kPUZfHVmjhxG/e
+X-Received: by 2002:a05:6000:709:b0:386:3803:bbd5 with SMTP id ffacd0b85a97d-38a8733a1f9mr9910081f8f.45.1736502293453;
+        Fri, 10 Jan 2025 01:44:53 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IFWMxVaNXeUTe+wjdV2pCbQXCctILb5vVg9f3+psJOjGS23Sr767uuQBsbyCemBlGukLyZjgw==
+X-Received: by 2002:a05:6000:709:b0:386:3803:bbd5 with SMTP id ffacd0b85a97d-38a8733a1f9mr9910059f8f.45.1736502293124;
+        Fri, 10 Jan 2025 01:44:53 -0800 (PST)
+Received: from thinky (ip-217-030-074-039.aim-net.cz. [217.30.74.39])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38a8e383965sm4140444f8f.31.2025.01.10.01.44.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 10 Jan 2025 01:44:52 -0800 (PST)
+Date: Fri, 10 Jan 2025 10:44:51 +0100
+From: Andrey Albershteyn <aalbersh@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-api@vger.kernel.org, 
+	Michal Simek <monstr@monstr.eu>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+	chris@zankel.net, Max Filippov <jcmvbkbc@gmail.com>, 
+	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
+	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-security-module@vger.kernel.org, Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH] fs: introduce getfsxattrat and setfsxattrat syscalls
+Message-ID: <4ad35w4mrxb4likkqijkivrkom5rpfdja6klb5uoufdjdyjioq@ksxubq4xb7ei>
+References: <20250109174540.893098-1-aalbersh@kernel.org>
+ <e7deabf6-8bba-45d7-a0f4-395bc8e5aabe@app.fastmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,203 +117,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250110-ucc-unused-var-v1-1-4cf02475b21d@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAPjzgGcC/x2MzQqDMBAGX0X23IWsQWh8FelB4le7l23JjwiSd
- zf0OAwzF2UkRaZ5uCjh0Kxf6yCPgeJntR2sW2ca3Tg5Ecc1Rq5WMzY+1sTh2YWIR/CeevRLeOv
- 5Hy5kKGw4C71auwELOsi/agAAAA==
-To: Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-X-Mailer: b4 0.14.0
+In-Reply-To: <e7deabf6-8bba-45d7-a0f4-395bc8e5aabe@app.fastmail.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 6FQw9htdZ9i-uFu1tK9omgQHn-U_zZeGYLCMIIPz87M_1736502293
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Remove set but unused variables. These seem to provide no value.
-So in the spirit of less being more, remove them.
+On 2025-01-09 20:59:45, Arnd Bergmann wrote:
+> On Thu, Jan 9, 2025, at 18:45, Andrey Albershteyn wrote:
+> >
+> >  arch/alpha/kernel/syscalls/syscall.tbl      |   2 +
+> >  arch/m68k/kernel/syscalls/syscall.tbl       |   2 +
+> >  arch/microblaze/kernel/syscalls/syscall.tbl |   2 +
+> >  arch/parisc/kernel/syscalls/syscall.tbl     |   2 +
+> >  arch/powerpc/kernel/syscalls/syscall.tbl    |   2 +
+> >  arch/s390/kernel/syscalls/syscall.tbl       |   2 +
+> >  arch/sh/kernel/syscalls/syscall.tbl         |   2 +
+> >  arch/sparc/kernel/syscalls/syscall.tbl      |   2 +
+> >  arch/x86/entry/syscalls/syscall_32.tbl      |   2 +
+> >  arch/x86/entry/syscalls/syscall_64.tbl      |   2 +
+> >  arch/xtensa/kernel/syscalls/syscall.tbl     |   2 +
+> 
+> You seem to be missing a couple of files here: 
+> 
+> arch/arm/tools/syscall.tbl
+> arch/arm64/tools/syscall_32.tbl
+> arch/mips/kernel/syscalls/syscall_n32.tbl
+> arch/mips/kernel/syscalls/syscall_n64.tbl
+> arch/mips/kernel/syscalls/syscall_o32.tbl
+> 
+>        Arnd
+> 
 
-Flagged by gcc-14 as:
+Thanks! Added
 
-.../ucc_geth.c: In function 'ucc_geth_free_rx':
-.../ucc_geth.c:1708:31: warning: variable 'uf_info' set but not used [-Wunused-but-set-variable]
- 1708 |         struct ucc_fast_info *uf_info;
-      |                               ^~~~~~~
-.../ucc_geth.c: In function 'ucc_geth_free_tx':
-.../ucc_geth.c:1747:31: warning: variable 'uf_info' set but not used [-Wunused-but-set-variable]
- 1747 |         struct ucc_fast_info *uf_info;
-      |                               ^~~~~~~
-.../ucc_geth.c: In function 'ucc_geth_alloc_tx':
-.../ucc_geth.c:2039:31: warning: variable 'uf_info' set but not used [-Wunused-but-set-variable]
- 2039 |         struct ucc_fast_info *uf_info;
-      |                               ^~~~~~~
-.../ucc_geth.c: In function 'ucc_geth_alloc_rx':
-.../ucc_geth.c:2101:31: warning: variable 'uf_info' set but not used [-Wunused-but-set-variable]
- 2101 |         struct ucc_fast_info *uf_info;
-      |                               ^~~~~~~
-.../ucc_geth.c: In function 'ucc_geth_startup':
-.../ucc_geth.c:2168:13: warning: variable 'ifstat' set but not used [-Wunused-but-set-variable]
- 2168 |         u32 ifstat, i, j, size, l2qt, l3qt;
-      |             ^~~~~~
-.../ucc_geth.c:2158:62: warning: variable 'p_82xx_addr_filt' set but not used [-Wunused-but-set-variable]
- 2158 |         struct ucc_geth_82xx_address_filtering_pram __iomem *p_82xx_addr_filt;
-      |                                                              ^~~~~~~~~~~~~~~~
-.../ucc_geth.c: In function 'ucc_geth_rx':
-.../ucc_geth.c:2893:13: warning: variable 'bdBuffer' set but not used [-Wunused-but-set-variable]
- 2893 |         u8 *bdBuffer;
-      |             ^~~~~~~~
-.../ucc_geth.c: In function 'ucc_geth_irq_handler':
-.../ucc_geth.c:3046:31: warning: variable 'ug_info' set but not used [-Wunused-but-set-variable]
- 3046 |         struct ucc_geth_info *ug_info;
-      |                               ^~~~~~~
-
-Compile tested only.
-No runtime effect intended.
-
-Signed-off-by: Simon Horman <horms@kernel.org>
----
- drivers/net/ethernet/freescale/ucc_geth.c | 39 +++++++------------------------
- 1 file changed, 8 insertions(+), 31 deletions(-)
-
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 88510f822759..1e3a1cb997c3 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -1704,14 +1704,8 @@ static int ugeth_82xx_filtering_clear_addr_in_paddr(struct ucc_geth_private *uge
- 
- static void ucc_geth_free_rx(struct ucc_geth_private *ugeth)
- {
--	struct ucc_geth_info *ug_info;
--	struct ucc_fast_info *uf_info;
--	u16 i, j;
- 	u8 __iomem *bd;
--
--
--	ug_info = ugeth->ug_info;
--	uf_info = &ug_info->uf_info;
-+	u16 i, j;
- 
- 	for (i = 0; i < ucc_geth_rx_queues(ugeth->ug_info); i++) {
- 		if (ugeth->p_rx_bd_ring[i]) {
-@@ -1743,16 +1737,11 @@ static void ucc_geth_free_rx(struct ucc_geth_private *ugeth)
- 
- static void ucc_geth_free_tx(struct ucc_geth_private *ugeth)
- {
--	struct ucc_geth_info *ug_info;
--	struct ucc_fast_info *uf_info;
--	u16 i, j;
- 	u8 __iomem *bd;
-+	u16 i, j;
- 
- 	netdev_reset_queue(ugeth->ndev);
- 
--	ug_info = ugeth->ug_info;
--	uf_info = &ug_info->uf_info;
--
- 	for (i = 0; i < ucc_geth_tx_queues(ugeth->ug_info); i++) {
- 		bd = ugeth->p_tx_bd_ring[i];
- 		if (!bd)
-@@ -2036,13 +2025,11 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
- static int ucc_geth_alloc_tx(struct ucc_geth_private *ugeth)
- {
- 	struct ucc_geth_info *ug_info;
--	struct ucc_fast_info *uf_info;
-+	u8 __iomem *bd;
- 	int length;
- 	u16 i, j;
--	u8 __iomem *bd;
- 
- 	ug_info = ugeth->ug_info;
--	uf_info = &ug_info->uf_info;
- 
- 	/* Allocate Tx bds */
- 	for (j = 0; j < ucc_geth_tx_queues(ug_info); j++) {
-@@ -2098,13 +2085,11 @@ static int ucc_geth_alloc_tx(struct ucc_geth_private *ugeth)
- static int ucc_geth_alloc_rx(struct ucc_geth_private *ugeth)
- {
- 	struct ucc_geth_info *ug_info;
--	struct ucc_fast_info *uf_info;
-+	u8 __iomem *bd;
- 	int length;
- 	u16 i, j;
--	u8 __iomem *bd;
- 
- 	ug_info = ugeth->ug_info;
--	uf_info = &ug_info->uf_info;
- 
- 	/* Allocate Rx bds */
- 	for (j = 0; j < ucc_geth_rx_queues(ug_info); j++) {
-@@ -2155,7 +2140,6 @@ static int ucc_geth_alloc_rx(struct ucc_geth_private *ugeth)
- 
- static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- {
--	struct ucc_geth_82xx_address_filtering_pram __iomem *p_82xx_addr_filt;
- 	struct ucc_geth_init_pram __iomem *p_init_enet_pram;
- 	struct ucc_fast_private *uccf;
- 	struct ucc_geth_info *ug_info;
-@@ -2165,8 +2149,8 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	int ret_val = -EINVAL;
- 	u32 remoder = UCC_GETH_REMODER_INIT;
- 	u32 init_enet_pram_offset, cecr_subblock, command;
--	u32 ifstat, i, j, size, l2qt, l3qt;
- 	u16 temoder = UCC_GETH_TEMODER_INIT;
-+	u32 i, j, size, l2qt, l3qt;
- 	u8 function_code = 0;
- 	u8 __iomem *endOfRing;
- 	u8 numThreadsRxNumerical, numThreadsTxNumerical;
-@@ -2260,7 +2244,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/*                    Set IFSTAT                     */
- 	/* For more details see the hardware spec.           */
- 	/* Read only - resets upon read                      */
--	ifstat = in_be32(&ug_regs->ifstat);
-+	in_be32(&ug_regs->ifstat);
- 
- 	/*                    Clear UEMPR                    */
- 	/* For more details see the hardware spec.           */
-@@ -2651,10 +2635,6 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		for (j = 0; j < NUM_OF_PADDRS; j++)
- 			ugeth_82xx_filtering_clear_addr_in_paddr(ugeth, (u8) j);
- 
--		p_82xx_addr_filt =
--		    (struct ucc_geth_82xx_address_filtering_pram __iomem *) ugeth->
--		    p_rx_glbl_pram->addressfiltering;
--
- 		ugeth_82xx_filtering_clear_all_addr_in_hash(ugeth,
- 			ENET_ADDR_TYPE_GROUP);
- 		ugeth_82xx_filtering_clear_all_addr_in_hash(ugeth,
-@@ -2889,9 +2869,8 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
- 	struct sk_buff *skb;
- 	u8 __iomem *bd;
- 	u16 length, howmany = 0;
--	u32 bd_status;
--	u8 *bdBuffer;
- 	struct net_device *dev;
-+	u32 bd_status;
- 
- 	ugeth_vdbg("%s: IN", __func__);
- 
-@@ -2904,7 +2883,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
- 
- 	/* while there are received buffers and BD is full (~R_E) */
- 	while (!((bd_status & (R_E)) || (--rx_work_limit < 0))) {
--		bdBuffer = (u8 *) in_be32(&((struct qe_bd __iomem *)bd)->buf);
-+		in_be32(&((struct qe_bd __iomem *)bd)->buf);
- 		length = (u16) ((bd_status & BD_LENGTH_MASK) - 4);
- 		skb = ugeth->rx_skbuff[rxQ][ugeth->skb_currx[rxQ]];
- 
-@@ -3043,14 +3022,12 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
- 	struct net_device *dev = info;
- 	struct ucc_geth_private *ugeth = netdev_priv(dev);
- 	struct ucc_fast_private *uccf;
--	struct ucc_geth_info *ug_info;
- 	register u32 ucce;
- 	register u32 uccm;
- 
- 	ugeth_vdbg("%s: IN", __func__);
- 
- 	uccf = ugeth->uccf;
--	ug_info = ugeth->ug_info;
- 
- 	/* read and clear events */
- 	ucce = (u32) in_be32(uccf->p_ucce);
+-- 
+- Andrey
 
 
