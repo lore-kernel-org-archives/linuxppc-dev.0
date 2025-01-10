@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-4998-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-4999-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 464D9E7719C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 15:25:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44BBFE7719E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jan 2025 15:25:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YV56P5dlPz3cZ0;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YV56P6x7vz3ccr;
 	Sat, 11 Jan 2025 02:24:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736522653;
-	cv=none; b=IDhPI4RByIkcF7AiA/WW4OdOje299Ax62XusbSq/XJ+/9fZFdP7ZR0KrjIQhjByzImns8DQ2usTZ4pjwnDGWfXXCoLcswSkeAwdtFl/ABHtLBqlwZxZ2Vh1q6V9R92gxQzcCASJsMWH5ORZ9EMVJ3udjEUuY1fhlDbpjVnLPDnq75r/KXMieZGHS1JBpRR+UTd4MO8nx1a+cOG1bzaS6tWCaNDcEZ2R3+vZONrott+Oip5frQ9jc45AbLWrsoyJLggls9N7By2/KHP+wER3UYfCL5Iyssrr0s1uoeT5+uJsBRsTdhHCkBpSUwESd0bg3qnmB2XAlVR0l+DhRYLj/nw==
+	cv=none; b=ezZZIPi2Wl1Wbqj80s4CJwl68fza1yRKGNBWTLjr0Otjr0d1UOcOrOM4xeRg86S7cl+fsXM229xB8/37jeAeqeDZuVcO9tXfTP7tgjboPoWgs6J9NVHg7KECt0Wo7mzgGmTKfnBY92tkuajZRD+MB75pBxs41PwHOukMb1CMFyNoxyMV18ghhRou0jXcI6mzfVrgJsk1NE2dsfgvg02aoI1RC6O/CLIc289Spuc1UKbkPyJgS70FjUcdgeH8rVwt6TUQYp5RKeSXcEfb+2+gjXswtUR22DobqB/foInLnHcjDxJB8jBZkV9zLCa0bK9aAJhFT/wb5XzIcqw9XQ7wFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1736522653; c=relaxed/relaxed;
-	bh=5lzt6z/Ceqcm6iM19wuv0dkn/99Cp38KMQ6N4hkEDE8=;
+	bh=Xn9bhehtIjze/npdkaeif1gj0Jy35iTOZfSPEnEaYB4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=JaKvVxtqHZzCMR5DrKqAEGSmoEwXpk8Lq1qDPQ9rf/kOOiAZS/Bci3aksHXE7TtzHfJk8R+ug5Q0kbrYrNQ98qKRCv8yoOYI5/HIBzySu/v41t0kucrSDfDJS5S5JmZBSajkJMBgc/bm5qkqKlK9WiirEorSjIC1vEAqcltqrvbD3OOfU5KaLTX3EaOvA9ZSzcOGPf5sHr+/8NPzkAShWUS+WWwaWu0RjB5SMCG4r8PUQuwRJobutGXTBJZPiQ6wTmLhL0lh3V82EECCMdOvqeEdkhZQCQD1SypniyJSqqUSkWgrepJ8WzFUlkmJtpmsD632cn/mEVc4E1+DECXn6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=FqodcwGY; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=zKMtRkhX; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=WCP0SIGdrij23lZE2/fFJ3BK+UJjNeK28LQB51uNYaCx4gwneEYjVMn70Xu9a6cPT5Te4TVYBD+SyeJp7jqkiBxG4PpryGVn3DD4fGckPiYvCXBWRA/NkrT7sp52TMLRFGcEI4FSXhnB8B/bmESElfSv43DH0Jr10pdZLtxsgvosWLf53WxOFX1pCM223s1udBlw8nTcodQQPLkxrVno9vT5qy2AyA9zBiymjV7Nir6aaBUbH29403y8NfYgvhced+U5LhGqa6cbkkkGWySyrRUXEK1HhvxDDnDw3gaRB1ZXSYTdrzkuSzAVDUnvTPsEQpSU7SV9SG41YUvNZZJg/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=i0BRj7BW; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=yj9xN7vT; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=FqodcwGY;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=zKMtRkhX;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=i0BRj7BW;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=yj9xN7vT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV56J57FZz3cZs
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 02:24:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV56L04zhz3cZy
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 02:24:10 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1736522641;
+	s=2020; t=1736522636;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=5lzt6z/Ceqcm6iM19wuv0dkn/99Cp38KMQ6N4hkEDE8=;
-	b=FqodcwGYxuFouVnSXkfxj9ba5B81Hwca8DBPQCx/OdNscDV0DWIgBvtDB46GM/CVCSg1rc
-	wBtkSTROfYlkiAAOmaNl06LOGIhWiPR3RKFODDN96Kff1kE72/Juenms/xwH+5AjhB3UEy
-	n1fYpxvYh2ryQFxhyPCr+e/4nJ8ra/IK8fa33R1gC2vFbnIwslGt9RgmPr0S3NX8aO9t7a
-	VOfLC6U0D899C9OQXFEPpBJL0LssWMdiuL2116Nf5hHmMnKyIKeXGlrEzNyQCU3p4i/5NP
-	AFzfYWO3mAjrrTu9ODTvjKv08b1T/WzTmjKSp5E/egBKzZJCjeOUU/h6f11nkQ==
+	bh=Xn9bhehtIjze/npdkaeif1gj0Jy35iTOZfSPEnEaYB4=;
+	b=i0BRj7BWYplh4t3Na35EwHkr9wPjCMjTLc66zoMM5iV1AxO9u5yDyGClrggvumb65E9JNN
+	/T+BwsY0afjDAeYDrEGgqlcM6sWAUKqnUNwDMuIdl31NW3KxV/uhseMcLrweqpNh/aJOS7
+	Vvad8/J0k2t3j5hweFS0EinbjN0cB9t/FL/IT3firw6OGLWXdoPUaQA42w9qXu8d7e5RQt
+	NnC9BHYWzCO2Quin2yezM0UYGyAbckGFaL7RLmy2Kn+9WsNpvMdcHkhBS5iy/ZPaGs/3jB
+	oL6uFwKk0HR0fMSmX/glEfnniCZGSoB3AWuJwQEENBnKugzx1gQqWi383y0HDw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1736522641;
+	s=2020e; t=1736522636;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=5lzt6z/Ceqcm6iM19wuv0dkn/99Cp38KMQ6N4hkEDE8=;
-	b=zKMtRkhXWyGjP4qTnJRk2ZIvrUWR34p/csyQoBAB+fjf0xf5lHgV0wfHKkk1IcpmNYBDy6
-	aR39NdCbp1kwzABQ==
-Date: Fri, 10 Jan 2025 16:23:57 +0100
-Subject: [PATCH v2 18/18] vdso: Remove remnants of architecture-specific
- time storage
+	bh=Xn9bhehtIjze/npdkaeif1gj0Jy35iTOZfSPEnEaYB4=;
+	b=yj9xN7vTqTqXbQnMXNw+0d0MnrjBZrTlA1eoyJHMutDN1JydEAFG3B1Yy1T5rwcYsiDUL5
+	+D2Q1CcuS7v17BCA==
+Date: Fri, 10 Jan 2025 16:23:48 +0100
+Subject: [PATCH v2 09/18] riscv: vdso: Switch to generic storage
+ implementation
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250110-vdso-store-rng-v2-18-350c9179bbf1@linutronix.de>
+Message-Id: <20250110-vdso-store-rng-v2-9-350c9179bbf1@linutronix.de>
 References: <20250110-vdso-store-rng-v2-0-350c9179bbf1@linutronix.de>
 In-Reply-To: <20250110-vdso-store-rng-v2-0-350c9179bbf1@linutronix.de>
 To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
@@ -104,543 +104,334 @@ Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arch@vger.kernel.org, Nam Cao <namcao@linutronix.de>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
  linux-csky@vger.kernel.org
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1736522629; l=19980;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1736522629; l=11285;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=3mc5du4uPdQNznDcCBQRfwDPKzZgpbR7l7xgd4itZ2w=;
- b=soMXq6VOCSb3n3JHltG9wNT/aJ3wEaxywsV3UY+/oAGqnFoSvS3OQr3CuwO4FVrrT2zxgGJEz
- 1fsZGTesIH9Ci48cuGCvhd16PJNbPH+TqDYZwJH8pZnEq9y0LxqDStj
+ bh=cvMgcixlDuP3XiKvj+66KxLG+bYyBoL2OvbORCE+UGo=;
+ b=HGjybzG3H/RMsGwhiuWDb/vp8eX4d+2LXH0TYgbNsmWCwtIrcz91znl30Mnz0U8SkqZJUX1ar
+ 6mVNQI8T48QBKSEQafL+4qjjqSPcks0Z845q9Ytvr1G2l5yOJylEawV
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-All users of the random vDSO are using the generic storage
-implementation. Remove the now unnecessary compatibility accessor
-functions and symbols.
+The generic storage implementation provides the same features as the
+custom one. However it can be shared between architectures, making
+maintenance easier.
 
 Co-developed-by: Nam Cao <namcao@linutronix.de>
 Signed-off-by: Nam Cao <namcao@linutronix.de>
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- include/asm-generic/vdso/vsyscall.h | 24 +++--------------
- include/linux/time_namespace.h      |  3 ---
- include/vdso/datapage.h             | 16 +-----------
- include/vdso/helpers.h              |  8 +++---
- kernel/time/namespace.c             | 12 ++++-----
- kernel/time/vsyscall.c              | 19 +++++++-------
- lib/vdso/datastore.c                | 10 +++-----
- lib/vdso/gettimeofday.c             | 51 ++++++++++++++++++-------------------
- 8 files changed, 53 insertions(+), 90 deletions(-)
+ arch/riscv/Kconfig                                 |  3 +-
+ arch/riscv/include/asm/vdso.h                      |  2 +-
+ .../include/asm/vdso/{time_data.h => arch_data.h}  |  8 +-
+ arch/riscv/include/asm/vdso/gettimeofday.h         | 14 +---
+ arch/riscv/include/asm/vdso/vsyscall.h             |  9 ---
+ arch/riscv/kernel/sys_hwprobe.c                    |  3 +-
+ arch/riscv/kernel/vdso.c                           | 90 +---------------------
+ arch/riscv/kernel/vdso/hwprobe.c                   |  6 +-
+ arch/riscv/kernel/vdso/vdso.lds.S                  |  7 +-
+ 9 files changed, 18 insertions(+), 124 deletions(-)
 
-diff --git a/include/asm-generic/vdso/vsyscall.h b/include/asm-generic/vdso/vsyscall.h
-index 13e2ac3736ee9b4aea6800117997ee165a7e2b9d..d6aebd519be8edd9d2d2fe674dcc641befc267a5 100644
---- a/include/asm-generic/vdso/vsyscall.h
-+++ b/include/asm-generic/vdso/vsyscall.h
-@@ -4,8 +4,6 @@
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index d4a7ca0388c071b536df59c0eb11d55f9080c7cd..335cbbd4dddb17e5ccaa2cddaefc298cb559dbc0 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -52,7 +52,7 @@ config RISCV
+ 	select ARCH_HAS_SYSCALL_WRAPPER
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_HAS_UBSAN
+-	select ARCH_HAS_VDSO_TIME_DATA
++	select ARCH_HAS_VDSO_ARCH_DATA
+ 	select ARCH_KEEP_MEMBLOCK if ACPI
+ 	select ARCH_MHP_MEMMAP_ON_MEMORY_ENABLE	if 64BIT && MMU
+ 	select ARCH_OPTIONAL_KERNEL_RWX if ARCH_HAS_STRICT_KERNEL_RWX
+@@ -115,6 +115,7 @@ config RISCV
+ 	select GENERIC_SCHED_CLOCK
+ 	select GENERIC_SMP_IDLE_THREAD
+ 	select GENERIC_TIME_VSYSCALL if MMU && 64BIT
++	select GENERIC_VDSO_DATA_STORE
+ 	select GENERIC_VDSO_TIME_NS if HAVE_GENERIC_VDSO
+ 	select HARDIRQS_SW_RESEND
+ 	select HAS_IOPORT if MMU
+diff --git a/arch/riscv/include/asm/vdso.h b/arch/riscv/include/asm/vdso.h
+index f891478829a52c41e06240f67611694cc28197d9..c130d8100232cbe50e52e35eb418e354bd114cb7 100644
+--- a/arch/riscv/include/asm/vdso.h
++++ b/arch/riscv/include/asm/vdso.h
+@@ -14,7 +14,7 @@
+  */
+ #ifdef CONFIG_MMU
+ 
+-#define __VVAR_PAGES    2
++#define __VDSO_PAGES    4
  
  #ifndef __ASSEMBLY__
+ #include <generated/vdso-offsets.h>
+diff --git a/arch/riscv/include/asm/vdso/time_data.h b/arch/riscv/include/asm/vdso/arch_data.h
+similarity index 71%
+rename from arch/riscv/include/asm/vdso/time_data.h
+rename to arch/riscv/include/asm/vdso/arch_data.h
+index dfa65228999bed41dfd6c5e36cb678e1e055eec8..da57a3786f7a53c866fc00948826b4a2d839940f 100644
+--- a/arch/riscv/include/asm/vdso/time_data.h
++++ b/arch/riscv/include/asm/vdso/arch_data.h
+@@ -1,12 +1,12 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef __RISCV_ASM_VDSO_TIME_DATA_H
+-#define __RISCV_ASM_VDSO_TIME_DATA_H
++#ifndef __RISCV_ASM_VDSO_ARCH_DATA_H
++#define __RISCV_ASM_VDSO_ARCH_DATA_H
  
--#ifdef CONFIG_GENERIC_VDSO_DATA_STORE
--
- #ifndef __arch_get_vdso_u_time_data
- static __always_inline const struct vdso_time_data *__arch_get_vdso_u_time_data(void)
- {
-@@ -20,31 +18,17 @@ static __always_inline const struct vdso_rng_data *__arch_get_vdso_u_rng_data(vo
- }
- #endif
+ #include <linux/types.h>
+ #include <vdso/datapage.h>
+ #include <asm/hwprobe.h>
  
--#else  /* !CONFIG_GENERIC_VDSO_DATA_STORE */
--
--#ifndef __arch_get_k_vdso_data
--static __always_inline struct vdso_data *__arch_get_k_vdso_data(void)
--{
--	return NULL;
--}
--#endif /* __arch_get_k_vdso_data */
--#define vdso_k_time_data __arch_get_k_vdso_data()
--
--#define __arch_get_vdso_u_time_data __arch_get_vdso_data
--
--#endif /* CONFIG_GENERIC_VDSO_DATA_STORE */
--
- #ifndef __arch_update_vsyscall
--static __always_inline void __arch_update_vsyscall(struct vdso_data *vdata)
-+static __always_inline void __arch_update_vsyscall(struct vdso_time_data *vdata)
- {
- }
- #endif /* __arch_update_vsyscall */
+-struct arch_vdso_time_data {
++struct vdso_arch_data {
+ 	/* Stash static answers to the hwprobe queries when all CPUs are selected. */
+ 	__u64 all_cpu_hwprobe_values[RISCV_HWPROBE_MAX_KEY + 1];
  
--#ifndef __arch_sync_vdso_data
--static __always_inline void __arch_sync_vdso_data(struct vdso_data *vdata)
-+#ifndef __arch_sync_vdso_time_data
-+static __always_inline void __arch_sync_vdso_time_data(struct vdso_time_data *vdata)
- {
- }
--#endif /* __arch_sync_vdso_data */
-+#endif /* __arch_sync_vdso_time_data */
- 
- #endif /* !__ASSEMBLY__ */
- 
-diff --git a/include/linux/time_namespace.h b/include/linux/time_namespace.h
-index 4b81db223f5450218dfaf553b24195be9ba97c08..0b8b32bf0655109d368c5dacc23ca5efcbb5aa80 100644
---- a/include/linux/time_namespace.h
-+++ b/include/linux/time_namespace.h
-@@ -8,7 +8,6 @@
- #include <linux/ns_common.h>
- #include <linux/err.h>
- #include <linux/time64.h>
--#include <vdso/datapage.h>
- 
- struct user_namespace;
- extern struct user_namespace init_user_ns;
-@@ -166,6 +165,4 @@ static inline ktime_t timens_ktime_to_host(clockid_t clockid, ktime_t tim)
- }
- #endif
- 
--struct vdso_data *arch_get_vdso_data(void *vvar_page);
--
- #endif /* _LINUX_TIMENS_H */
-diff --git a/include/vdso/datapage.h b/include/vdso/datapage.h
-index 497907c3aa11fcae913f62ef7373bbe6a1026bd6..8eea8ed0e14362545dd2cfe317e88ac0c77243ac 100644
---- a/include/vdso/datapage.h
-+++ b/include/vdso/datapage.h
-@@ -128,8 +128,6 @@ struct vdso_time_data {
- 	struct arch_vdso_time_data arch_data;
+@@ -14,4 +14,4 @@ struct arch_vdso_time_data {
+ 	__u8 homogeneous_cpus;
  };
  
--#define vdso_data vdso_time_data
--
- /**
-  * struct vdso_rng_data - vdso RNG state information
-  * @generation:	counter representing the number of RNG reseeds
-@@ -149,10 +147,7 @@ struct vdso_rng_data {
-  * With the hidden visibility, the compiler simply generates a PC-relative
-  * relocation, and this is what we need.
-  */
--#ifndef CONFIG_GENERIC_VDSO_DATA_STORE
--extern struct vdso_time_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")));
--extern struct vdso_time_data _timens_data[CS_BASES] __attribute__((visibility("hidden")));
--#else
-+#ifdef CONFIG_GENERIC_VDSO_DATA_STORE
- extern struct vdso_time_data vdso_u_time_data[CS_BASES] __attribute__((visibility("hidden")));
- extern struct vdso_rng_data vdso_u_rng_data __attribute__((visibility("hidden")));
- extern struct vdso_arch_data vdso_u_arch_data __attribute__((visibility("hidden")));
-@@ -162,14 +157,6 @@ extern struct vdso_rng_data *vdso_k_rng_data;
- extern struct vdso_arch_data *vdso_k_arch_data;
- #endif
+-#endif /* __RISCV_ASM_VDSO_TIME_DATA_H */
++#endif /* __RISCV_ASM_VDSO_ARCH_DATA_H */
+diff --git a/arch/riscv/include/asm/vdso/gettimeofday.h b/arch/riscv/include/asm/vdso/gettimeofday.h
+index ba3283cf7accaa93a38512d2c17eda0eefde0612..29164f84f93cec6e28251e6a0adfbc341ac88241 100644
+--- a/arch/riscv/include/asm/vdso/gettimeofday.h
++++ b/arch/riscv/include/asm/vdso/gettimeofday.h
+@@ -69,7 +69,7 @@ int clock_getres_fallback(clockid_t _clkid, struct __kernel_timespec *_ts)
+ #endif /* CONFIG_GENERIC_TIME_VSYSCALL */
  
--/**
-- * union vdso_data_store - Generic vDSO data page
-- */
--union vdso_data_store {
--	struct vdso_time_data	data[CS_BASES];
--	u8			page[1U << CONFIG_PAGE_SHIFT];
--};
--
- #ifdef CONFIG_GENERIC_VDSO_DATA_STORE
+ static __always_inline u64 __arch_get_hw_counter(s32 clock_mode,
+-						 const struct vdso_data *vd)
++						 const struct vdso_time_data *vd)
+ {
+ 	/*
+ 	 * The purpose of csr_read(CSR_TIME) is to trap the system into
+@@ -79,18 +79,6 @@ static __always_inline u64 __arch_get_hw_counter(s32 clock_mode,
+ 	return csr_read(CSR_TIME);
+ }
  
- #define VDSO_ARCH_DATA_SIZE ALIGN(sizeof(struct vdso_arch_data), PAGE_SIZE)
-@@ -189,7 +176,6 @@ enum vdso_pages {
- /*
-  * The generic vDSO implementation requires that gettimeofday.h
-  * provides:
-- * - __arch_get_vdso_data(): to get the vdso datapage.
-  * - __arch_get_hw_counter(): to get the hw counter based on the
-  *   clock_mode.
-  * - gettimeofday_fallback(): fallback for gettimeofday.
-diff --git a/include/vdso/helpers.h b/include/vdso/helpers.h
-index 3ddb03bb05cbeefc110adf0e672c2cd68848a0ae..41c3087070c7ab21d7adec04e6cd30c4b32ea221 100644
---- a/include/vdso/helpers.h
-+++ b/include/vdso/helpers.h
-@@ -7,7 +7,7 @@
- #include <asm/barrier.h>
+-static __always_inline const struct vdso_data *__arch_get_vdso_data(void)
+-{
+-	return _vdso_data;
+-}
+-
+-#ifdef CONFIG_TIME_NS
+-static __always_inline
+-const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
+-{
+-	return _timens_data;
+-}
+-#endif
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif /* __ASM_VDSO_GETTIMEOFDAY_H */
+diff --git a/arch/riscv/include/asm/vdso/vsyscall.h b/arch/riscv/include/asm/vdso/vsyscall.h
+index e8a9c4b53c0c9f4744196eed800b21f3918d1040..1140b54b4bc8278d7a322036cd9f84f71258f246 100644
+--- a/arch/riscv/include/asm/vdso/vsyscall.h
++++ b/arch/riscv/include/asm/vdso/vsyscall.h
+@@ -6,15 +6,6 @@
+ 
  #include <vdso/datapage.h>
  
--static __always_inline u32 vdso_read_begin(const struct vdso_data *vd)
-+static __always_inline u32 vdso_read_begin(const struct vdso_time_data *vd)
- {
- 	u32 seq;
- 
-@@ -18,7 +18,7 @@ static __always_inline u32 vdso_read_begin(const struct vdso_data *vd)
- 	return seq;
- }
- 
--static __always_inline u32 vdso_read_retry(const struct vdso_data *vd,
-+static __always_inline u32 vdso_read_retry(const struct vdso_time_data *vd,
- 					   u32 start)
- {
- 	u32 seq;
-@@ -28,7 +28,7 @@ static __always_inline u32 vdso_read_retry(const struct vdso_data *vd,
- 	return seq != start;
- }
- 
--static __always_inline void vdso_write_begin(struct vdso_data *vd)
-+static __always_inline void vdso_write_begin(struct vdso_time_data *vd)
- {
- 	/*
- 	 * WRITE_ONCE() is required otherwise the compiler can validly tear
-@@ -40,7 +40,7 @@ static __always_inline void vdso_write_begin(struct vdso_data *vd)
- 	smp_wmb();
- }
- 
--static __always_inline void vdso_write_end(struct vdso_data *vd)
-+static __always_inline void vdso_write_end(struct vdso_time_data *vd)
- {
- 	smp_wmb();
- 	/*
-diff --git a/kernel/time/namespace.c b/kernel/time/namespace.c
-index 0775b9ec952af9639480db9480d06d12293d1ceb..12f55aa539adbc11cce4055f519dbeca8a73320c 100644
---- a/kernel/time/namespace.c
-+++ b/kernel/time/namespace.c
-@@ -165,18 +165,18 @@ static struct timens_offset offset_from_ts(struct timespec64 off)
-  *     HVCLOCK
-  *     VVAR
-  *
-- * The check for vdso_data->clock_mode is in the unlikely path of
-+ * The check for vdso_time_data->clock_mode is in the unlikely path of
-  * the seq begin magic. So for the non-timens case most of the time
-  * 'seq' is even, so the branch is not taken.
-  *
-  * If 'seq' is odd, i.e. a concurrent update is in progress, the extra check
-- * for vdso_data->clock_mode is a non-issue. The task is spin waiting for the
-+ * for vdso_time_data->clock_mode is a non-issue. The task is spin waiting for the
-  * update to finish and for 'seq' to become even anyway.
-  *
-- * Timens page has vdso_data->clock_mode set to VDSO_CLOCKMODE_TIMENS which
-+ * Timens page has vdso_time_data->clock_mode set to VDSO_CLOCKMODE_TIMENS which
-  * enforces the time namespace handling path.
-  */
--static void timens_setup_vdso_data(struct vdso_data *vdata,
-+static void timens_setup_vdso_data(struct vdso_time_data *vdata,
- 				   struct time_namespace *ns)
- {
- 	struct timens_offset *offset = vdata->offset;
-@@ -219,7 +219,7 @@ static DEFINE_MUTEX(offset_lock);
- static void timens_set_vvar_page(struct task_struct *task,
- 				struct time_namespace *ns)
- {
--	struct vdso_data *vdata;
-+	struct vdso_time_data *vdata;
- 	unsigned int i;
- 
- 	if (ns == &init_time_ns)
-@@ -235,7 +235,7 @@ static void timens_set_vvar_page(struct task_struct *task,
- 		goto out;
- 
- 	ns->frozen_offsets = true;
--	vdata = arch_get_vdso_data(page_address(ns->vvar_page));
-+	vdata = page_address(ns->vvar_page);
- 
- 	for (i = 0; i < CS_BASES; i++)
- 		timens_setup_vdso_data(&vdata[i], ns);
-diff --git a/kernel/time/vsyscall.c b/kernel/time/vsyscall.c
-index 09c1e39a6dd8e24aa161982c04078e78d52fa737..418192296ef7dd3c1772d50f129e7838883cf00c 100644
---- a/kernel/time/vsyscall.c
-+++ b/kernel/time/vsyscall.c
-@@ -15,8 +15,7 @@
- 
- #include "timekeeping_internal.h"
- 
--static inline void update_vdso_data(struct vdso_data *vdata,
--				    struct timekeeper *tk)
-+static inline void update_vdso_time_data(struct vdso_time_data *vdata, struct timekeeper *tk)
- {
- 	struct vdso_timestamp *vdso_ts;
- 	u64 nsec, sec;
-@@ -77,7 +76,7 @@ static inline void update_vdso_data(struct vdso_data *vdata,
- 
- void update_vsyscall(struct timekeeper *tk)
- {
--	struct vdso_data *vdata = vdso_k_time_data;
-+	struct vdso_time_data *vdata = vdso_k_time_data;
- 	struct vdso_timestamp *vdso_ts;
- 	s32 clock_mode;
- 	u64 nsec;
-@@ -117,23 +116,23 @@ void update_vsyscall(struct timekeeper *tk)
- 	 * update of the high resolution parts.
- 	 */
- 	if (clock_mode != VDSO_CLOCKMODE_NONE)
--		update_vdso_data(vdata, tk);
-+		update_vdso_time_data(vdata, tk);
- 
- 	__arch_update_vsyscall(vdata);
- 
- 	vdso_write_end(vdata);
- 
--	__arch_sync_vdso_data(vdata);
-+	__arch_sync_vdso_time_data(vdata);
- }
- 
- void update_vsyscall_tz(void)
- {
--	struct vdso_data *vdata = vdso_k_time_data;
-+	struct vdso_time_data *vdata = vdso_k_time_data;
- 
- 	vdata[CS_HRES_COARSE].tz_minuteswest = sys_tz.tz_minuteswest;
- 	vdata[CS_HRES_COARSE].tz_dsttime = sys_tz.tz_dsttime;
- 
--	__arch_sync_vdso_data(vdata);
-+	__arch_sync_vdso_time_data(vdata);
- }
- 
- /**
-@@ -150,7 +149,7 @@ void update_vsyscall_tz(void)
-  */
- unsigned long vdso_update_begin(void)
- {
--	struct vdso_data *vdata = vdso_k_time_data;
-+	struct vdso_time_data *vdata = vdso_k_time_data;
- 	unsigned long flags = timekeeper_lock_irqsave();
- 
- 	vdso_write_begin(vdata);
-@@ -167,9 +166,9 @@ unsigned long vdso_update_begin(void)
-  */
- void vdso_update_end(unsigned long flags)
- {
--	struct vdso_data *vdata = vdso_k_time_data;
-+	struct vdso_time_data *vdata = vdso_k_time_data;
- 
- 	vdso_write_end(vdata);
--	__arch_sync_vdso_data(vdata);
-+	__arch_sync_vdso_time_data(vdata);
- 	timekeeper_unlock_irqrestore(flags);
- }
-diff --git a/lib/vdso/datastore.c b/lib/vdso/datastore.c
-index 0959d62d78586ef458eb5f7c1e152f6b5d4cbf85..e227fbbcb79694f9a40606ac864f52cf1fdbfcf4 100644
---- a/lib/vdso/datastore.c
-+++ b/lib/vdso/datastore.c
-@@ -12,7 +12,10 @@
-  * The vDSO data page.
-  */
- #ifdef CONFIG_HAVE_GENERIC_VDSO
--static union vdso_data_store vdso_time_data_store __page_aligned_data;
-+static union {
-+	struct vdso_time_data	data[CS_BASES];
-+	u8			page[PAGE_SIZE];
-+} vdso_time_data_store __page_aligned_data;
- struct vdso_time_data *vdso_k_time_data = vdso_time_data_store.data;
- static_assert(sizeof(vdso_time_data_store) == PAGE_SIZE);
- #endif /* CONFIG_HAVE_GENERIC_VDSO */
-@@ -123,9 +126,4 @@ int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
- 
- 	return 0;
- }
+-extern struct vdso_data *vdso_data;
 -
--struct vdso_time_data *arch_get_vdso_data(void *vvar_page)
+-static __always_inline struct vdso_data *__riscv_get_k_vdso_data(void)
 -{
--	return (struct vdso_time_data *)vvar_page;
+-	return vdso_data;
 -}
- #endif
-diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
-index 20c5b8752fcc81d9a044169b9a3ae534d840ef91..299f027116ee0e50a69c5a8a17218004e4af0ea1 100644
---- a/lib/vdso/gettimeofday.c
-+++ b/lib/vdso/gettimeofday.c
-@@ -17,12 +17,12 @@
- #endif
+-
+-#define __arch_get_k_vdso_data __riscv_get_k_vdso_data
+-
+ /* The asm-generic header needs to be included after the definitions above */
+ #include <asm-generic/vdso/vsyscall.h>
  
- #ifdef CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT
--static __always_inline bool vdso_delta_ok(const struct vdso_data *vd, u64 delta)
-+static __always_inline bool vdso_delta_ok(const struct vdso_time_data *vd, u64 delta)
+diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
+index cb93adfffc486e710409fd3b8a8ab22525ac4093..37e155dd3ab26da7b6a03e0b11b467e5aac51091 100644
+--- a/arch/riscv/kernel/sys_hwprobe.c
++++ b/arch/riscv/kernel/sys_hwprobe.c
+@@ -445,8 +445,7 @@ static int do_riscv_hwprobe(struct riscv_hwprobe __user *pairs,
+ 
+ static int __init init_hwprobe_vdso_data(void)
  {
- 	return delta < vd->max_cycles;
+-	struct vdso_data *vd = __arch_get_k_vdso_data();
+-	struct arch_vdso_time_data *avd = &vd->arch_data;
++	struct vdso_arch_data *avd = vdso_k_arch_data;
+ 	u64 id_bitsmash = 0;
+ 	struct riscv_hwprobe pair;
+ 	int key;
+diff --git a/arch/riscv/kernel/vdso.c b/arch/riscv/kernel/vdso.c
+index 3ca3ae4277e187e790a8bf513a9e80d8b6290bb2..cc2895d1fbc2fe752b3edc94f4e28a6a8fca7a3b 100644
+--- a/arch/riscv/kernel/vdso.c
++++ b/arch/riscv/kernel/vdso.c
+@@ -13,20 +13,11 @@
+ #include <linux/err.h>
+ #include <asm/page.h>
+ #include <asm/vdso.h>
+-#include <linux/time_namespace.h>
++#include <linux/vdso_datastore.h>
+ #include <vdso/datapage.h>
+ #include <vdso/vsyscall.h>
+ 
+-enum vvar_pages {
+-	VVAR_DATA_PAGE_OFFSET,
+-	VVAR_TIMENS_PAGE_OFFSET,
+-	VVAR_NR_PAGES,
+-};
+-
+-#define VVAR_SIZE  (VVAR_NR_PAGES << PAGE_SHIFT)
+-
+-static union vdso_data_store vdso_data_store __page_aligned_data;
+-struct vdso_data *vdso_data = vdso_data_store.data;
++#define VVAR_SIZE  (VDSO_NR_PAGES << PAGE_SHIFT)
+ 
+ struct __vdso_info {
+ 	const char *name;
+@@ -79,78 +70,6 @@ static void __init __vdso_init(struct __vdso_info *vdso_info)
+ 	vdso_info->cm->pages = vdso_pagelist;
  }
- #else
--static __always_inline bool vdso_delta_ok(const struct vdso_data *vd, u64 delta)
-+static __always_inline bool vdso_delta_ok(const struct vdso_time_data *vd, u64 delta)
+ 
+-#ifdef CONFIG_TIME_NS
+-struct vdso_data *arch_get_vdso_data(void *vvar_page)
+-{
+-	return (struct vdso_data *)(vvar_page);
+-}
+-
+-static const struct vm_special_mapping rv_vvar_map;
+-
+-/*
+- * The vvar mapping contains data for a specific time namespace, so when a task
+- * changes namespace we must unmap its vvar data for the old namespace.
+- * Subsequent faults will map in data for the new namespace.
+- *
+- * For more details see timens_setup_vdso_data().
+- */
+-int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
+-{
+-	struct mm_struct *mm = task->mm;
+-	struct vm_area_struct *vma;
+-	VMA_ITERATOR(vmi, mm, 0);
+-
+-	mmap_read_lock(mm);
+-
+-	for_each_vma(vmi, vma) {
+-		if (vma_is_special_mapping(vma, &rv_vvar_map))
+-			zap_vma_pages(vma);
+-	}
+-
+-	mmap_read_unlock(mm);
+-	return 0;
+-}
+-#endif
+-
+-static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
+-			     struct vm_area_struct *vma, struct vm_fault *vmf)
+-{
+-	struct page *timens_page = find_timens_vvar_page(vma);
+-	unsigned long pfn;
+-
+-	switch (vmf->pgoff) {
+-	case VVAR_DATA_PAGE_OFFSET:
+-		if (timens_page)
+-			pfn = page_to_pfn(timens_page);
+-		else
+-			pfn = sym_to_pfn(vdso_data);
+-		break;
+-#ifdef CONFIG_TIME_NS
+-	case VVAR_TIMENS_PAGE_OFFSET:
+-		/*
+-		 * If a task belongs to a time namespace then a namespace
+-		 * specific VVAR is mapped with the VVAR_DATA_PAGE_OFFSET and
+-		 * the real VVAR page is mapped with the VVAR_TIMENS_PAGE_OFFSET
+-		 * offset.
+-		 * See also the comment near timens_setup_vdso_data().
+-		 */
+-		if (!timens_page)
+-			return VM_FAULT_SIGBUS;
+-		pfn = sym_to_pfn(vdso_data);
+-		break;
+-#endif /* CONFIG_TIME_NS */
+-	default:
+-		return VM_FAULT_SIGBUS;
+-	}
+-
+-	return vmf_insert_pfn(vma, vmf->address, pfn);
+-}
+-
+-static const struct vm_special_mapping rv_vvar_map = {
+-	.name   = "[vvar]",
+-	.fault = vvar_fault,
+-};
+-
+ static struct vm_special_mapping rv_vdso_map __ro_after_init = {
+ 	.name   = "[vdso]",
+ 	.mremap = vdso_mremap,
+@@ -196,7 +115,7 @@ static int __setup_additional_pages(struct mm_struct *mm,
+ 	unsigned long vdso_base, vdso_text_len, vdso_mapping_len;
+ 	void *ret;
+ 
+-	BUILD_BUG_ON(VVAR_NR_PAGES != __VVAR_PAGES);
++	BUILD_BUG_ON(VDSO_NR_PAGES != __VDSO_PAGES);
+ 
+ 	vdso_text_len = vdso_info->vdso_pages << PAGE_SHIFT;
+ 	/* Be sure to map the data page */
+@@ -208,8 +127,7 @@ static int __setup_additional_pages(struct mm_struct *mm,
+ 		goto up_fail;
+ 	}
+ 
+-	ret = _install_special_mapping(mm, vdso_base, VVAR_SIZE,
+-		(VM_READ | VM_MAYREAD | VM_PFNMAP), &rv_vvar_map);
++	ret = vdso_install_vvar_mapping(mm, vdso_base);
+ 	if (IS_ERR(ret))
+ 		goto up_fail;
+ 
+diff --git a/arch/riscv/kernel/vdso/hwprobe.c b/arch/riscv/kernel/vdso/hwprobe.c
+index a158c029344f60c022e7565757ff44df7e3d89e5..2ddeba6c68dda09b0249117fd06a5d249f3b0abd 100644
+--- a/arch/riscv/kernel/vdso/hwprobe.c
++++ b/arch/riscv/kernel/vdso/hwprobe.c
+@@ -16,8 +16,7 @@ static int riscv_vdso_get_values(struct riscv_hwprobe *pairs, size_t pair_count,
+ 				 size_t cpusetsize, unsigned long *cpus,
+ 				 unsigned int flags)
  {
- 	return true;
- }
-@@ -39,7 +39,7 @@ static __always_inline u64 vdso_shift_ns(u64 ns, u32 shift)
-  * Default implementation which works for all sane clocksources. That
-  * obviously excludes x86/TSC.
+-	const struct vdso_data *vd = __arch_get_vdso_data();
+-	const struct arch_vdso_time_data *avd = &vd->arch_data;
++	const struct vdso_arch_data *avd = &vdso_u_arch_data;
+ 	bool all_cpus = !cpusetsize && !cpus;
+ 	struct riscv_hwprobe *p = pairs;
+ 	struct riscv_hwprobe *end = pairs + pair_count;
+@@ -51,8 +50,7 @@ static int riscv_vdso_get_cpus(struct riscv_hwprobe *pairs, size_t pair_count,
+ 			       size_t cpusetsize, unsigned long *cpus,
+ 			       unsigned int flags)
+ {
+-	const struct vdso_data *vd = __arch_get_vdso_data();
+-	const struct arch_vdso_time_data *avd = &vd->arch_data;
++	const struct vdso_arch_data *avd = &vdso_u_arch_data;
+ 	struct riscv_hwprobe *p = pairs;
+ 	struct riscv_hwprobe *end = pairs + pair_count;
+ 	unsigned char *c = (unsigned char *)cpus;
+diff --git a/arch/riscv/kernel/vdso/vdso.lds.S b/arch/riscv/kernel/vdso/vdso.lds.S
+index cbe2a179331d2511a8b4a26c06383e46131661b1..8e86965a8aae4d7c5a36d0f26026cd1c8680b339 100644
+--- a/arch/riscv/kernel/vdso/vdso.lds.S
++++ b/arch/riscv/kernel/vdso/vdso.lds.S
+@@ -4,15 +4,14 @@
   */
--static __always_inline u64 vdso_calc_ns(const struct vdso_data *vd, u64 cycles, u64 base)
-+static __always_inline u64 vdso_calc_ns(const struct vdso_time_data *vd, u64 cycles, u64 base)
+ #include <asm/page.h>
+ #include <asm/vdso.h>
++#include <vdso/datapage.h>
+ 
+ OUTPUT_ARCH(riscv)
+ 
+ SECTIONS
  {
- 	u64 delta = (cycles - vd->cycle_last) & VDSO_DELTA_MASK(vd);
+-	PROVIDE(_vdso_data = . - __VVAR_PAGES * PAGE_SIZE);
+-#ifdef CONFIG_TIME_NS
+-	PROVIDE(_timens_data = _vdso_data + PAGE_SIZE);
+-#endif
++	VDSO_VVAR_SYMS
++
+ 	. = SIZEOF_HEADERS;
  
-@@ -58,7 +58,7 @@ static inline bool __arch_vdso_hres_capable(void)
- #endif
- 
- #ifndef vdso_clocksource_ok
--static inline bool vdso_clocksource_ok(const struct vdso_data *vd)
-+static inline bool vdso_clocksource_ok(const struct vdso_time_data *vd)
- {
- 	return vd->clock_mode != VDSO_CLOCKMODE_NONE;
- }
-@@ -79,21 +79,20 @@ const struct vdso_time_data *__arch_get_vdso_u_timens_data(const struct vdso_tim
- {
- 	return (void *)vd + PAGE_SIZE;
- }
--#define __arch_get_timens_vdso_data(vd) __arch_get_vdso_u_timens_data(vd)
- #endif /* CONFIG_GENERIC_VDSO_DATA_STORE */
- 
--static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
-+static __always_inline int do_hres_timens(const struct vdso_time_data *vdns, clockid_t clk,
- 					  struct __kernel_timespec *ts)
- {
- 	const struct timens_offset *offs = &vdns->offset[clk];
- 	const struct vdso_timestamp *vdso_ts;
--	const struct vdso_data *vd;
-+	const struct vdso_time_data *vd;
- 	u64 cycles, ns;
- 	u32 seq;
- 	s64 sec;
- 
- 	vd = vdns - (clk == CLOCK_MONOTONIC_RAW ? CS_RAW : CS_HRES_COARSE);
--	vd = __arch_get_timens_vdso_data(vd);
-+	vd = __arch_get_vdso_u_timens_data(vd);
- 	if (clk != CLOCK_MONOTONIC_RAW)
- 		vd = &vd[CS_HRES_COARSE];
- 	else
-@@ -128,19 +127,19 @@ static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_
- }
- #else
- static __always_inline
--const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
-+const struct vdso_time_data *__arch_get_vdso_u_timens_data(const struct vdso_time_data *vd)
- {
- 	return NULL;
- }
- 
--static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
-+static __always_inline int do_hres_timens(const struct vdso_time_data *vdns, clockid_t clk,
- 					  struct __kernel_timespec *ts)
- {
- 	return -EINVAL;
- }
- #endif
- 
--static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
-+static __always_inline int do_hres(const struct vdso_time_data *vd, clockid_t clk,
- 				   struct __kernel_timespec *ts)
- {
- 	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
-@@ -192,10 +191,10 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
- }
- 
- #ifdef CONFIG_TIME_NS
--static __always_inline int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
-+static __always_inline int do_coarse_timens(const struct vdso_time_data *vdns, clockid_t clk,
- 					    struct __kernel_timespec *ts)
- {
--	const struct vdso_data *vd = __arch_get_timens_vdso_data(vdns);
-+	const struct vdso_time_data *vd = __arch_get_vdso_u_timens_data(vdns);
- 	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
- 	const struct timens_offset *offs = &vdns->offset[clk];
- 	u64 nsec;
-@@ -221,14 +220,14 @@ static __always_inline int do_coarse_timens(const struct vdso_data *vdns, clocki
- 	return 0;
- }
- #else
--static __always_inline int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
-+static __always_inline int do_coarse_timens(const struct vdso_time_data *vdns, clockid_t clk,
- 					    struct __kernel_timespec *ts)
- {
- 	return -1;
- }
- #endif
- 
--static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk,
-+static __always_inline int do_coarse(const struct vdso_time_data *vd, clockid_t clk,
- 				     struct __kernel_timespec *ts)
- {
- 	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
-@@ -255,7 +254,7 @@ static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk,
- }
- 
- static __always_inline int
--__cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t clock,
-+__cvdso_clock_gettime_common(const struct vdso_time_data *vd, clockid_t clock,
- 			     struct __kernel_timespec *ts)
- {
- 	u32 msk;
-@@ -282,7 +281,7 @@ __cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t clock,
- }
- 
- static __maybe_unused int
--__cvdso_clock_gettime_data(const struct vdso_data *vd, clockid_t clock,
-+__cvdso_clock_gettime_data(const struct vdso_time_data *vd, clockid_t clock,
- 			   struct __kernel_timespec *ts)
- {
- 	int ret = __cvdso_clock_gettime_common(vd, clock, ts);
-@@ -300,7 +299,7 @@ __cvdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
- 
- #ifdef BUILD_VDSO32
- static __maybe_unused int
--__cvdso_clock_gettime32_data(const struct vdso_data *vd, clockid_t clock,
-+__cvdso_clock_gettime32_data(const struct vdso_time_data *vd, clockid_t clock,
- 			     struct old_timespec32 *res)
- {
- 	struct __kernel_timespec ts;
-@@ -326,7 +325,7 @@ __cvdso_clock_gettime32(clockid_t clock, struct old_timespec32 *res)
- #endif /* BUILD_VDSO32 */
- 
- static __maybe_unused int
--__cvdso_gettimeofday_data(const struct vdso_data *vd,
-+__cvdso_gettimeofday_data(const struct vdso_time_data *vd,
- 			  struct __kernel_old_timeval *tv, struct timezone *tz)
- {
- 
-@@ -343,7 +342,7 @@ __cvdso_gettimeofday_data(const struct vdso_data *vd,
- 	if (unlikely(tz != NULL)) {
- 		if (IS_ENABLED(CONFIG_TIME_NS) &&
- 		    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
--			vd = __arch_get_timens_vdso_data(vd);
-+			vd = __arch_get_vdso_u_timens_data(vd);
- 
- 		tz->tz_minuteswest = vd[CS_HRES_COARSE].tz_minuteswest;
- 		tz->tz_dsttime = vd[CS_HRES_COARSE].tz_dsttime;
-@@ -360,13 +359,13 @@ __cvdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
- 
- #ifdef VDSO_HAS_TIME
- static __maybe_unused __kernel_old_time_t
--__cvdso_time_data(const struct vdso_data *vd, __kernel_old_time_t *time)
-+__cvdso_time_data(const struct vdso_time_data *vd, __kernel_old_time_t *time)
- {
- 	__kernel_old_time_t t;
- 
- 	if (IS_ENABLED(CONFIG_TIME_NS) &&
- 	    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
--		vd = __arch_get_timens_vdso_data(vd);
-+		vd = __arch_get_vdso_u_timens_data(vd);
- 
- 	t = READ_ONCE(vd[CS_HRES_COARSE].basetime[CLOCK_REALTIME].sec);
- 
-@@ -384,7 +383,7 @@ static __maybe_unused __kernel_old_time_t __cvdso_time(__kernel_old_time_t *time
- 
- #ifdef VDSO_HAS_CLOCK_GETRES
- static __maybe_unused
--int __cvdso_clock_getres_common(const struct vdso_data *vd, clockid_t clock,
-+int __cvdso_clock_getres_common(const struct vdso_time_data *vd, clockid_t clock,
- 				struct __kernel_timespec *res)
- {
- 	u32 msk;
-@@ -396,7 +395,7 @@ int __cvdso_clock_getres_common(const struct vdso_data *vd, clockid_t clock,
- 
- 	if (IS_ENABLED(CONFIG_TIME_NS) &&
- 	    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
--		vd = __arch_get_timens_vdso_data(vd);
-+		vd = __arch_get_vdso_u_timens_data(vd);
- 
- 	/*
- 	 * Convert the clockid to a bitmask and use it to check which
-@@ -425,7 +424,7 @@ int __cvdso_clock_getres_common(const struct vdso_data *vd, clockid_t clock,
- }
- 
- static __maybe_unused
--int __cvdso_clock_getres_data(const struct vdso_data *vd, clockid_t clock,
-+int __cvdso_clock_getres_data(const struct vdso_time_data *vd, clockid_t clock,
- 			      struct __kernel_timespec *res)
- {
- 	int ret = __cvdso_clock_getres_common(vd, clock, res);
-@@ -443,7 +442,7 @@ int __cvdso_clock_getres(clockid_t clock, struct __kernel_timespec *res)
- 
- #ifdef BUILD_VDSO32
- static __maybe_unused int
--__cvdso_clock_getres_time32_data(const struct vdso_data *vd, clockid_t clock,
-+__cvdso_clock_getres_time32_data(const struct vdso_time_data *vd, clockid_t clock,
- 				 struct old_timespec32 *res)
- {
- 	struct __kernel_timespec ts;
+ 	.hash		: { *(.hash) }			:text
 
 -- 
 2.47.1
