@@ -1,84 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-5051-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5052-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E9D7E77188
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2025 00:30:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D117AE77188
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2025 00:30:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YVKDl73Cwz3ckL;
-	Sat, 11 Jan 2025 11:30:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YVKDn2LhSz3cjr;
+	Sat, 11 Jan 2025 11:30:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736555431;
-	cv=none; b=ZjyU9TV8MrG3fx9P6KvKufRb2R1yJwFCk11qScmIo0iVf9Et0eGPrxufaumkgopGKkT4MzYHiSy2Q5TC377+ah9srZdcpzAATJULUOB4XddPdz4HQLXR/yb23D1n5wLJNBt1/nLdMqjtHbFOf1pMFwzkyPsQdMuxZmTnZwN6ho8JBEsiVCRX8/iuadXEHkyaCrIPDJDsYeCB9kp8VizfryOpZMKkkrHFssXsayjBlPWe2VYWbzrJIrqeRCTIDkWJgFqjpWIdilImxTt3ZFX+4Jsm1wgwB4qQEDpbkD/xwlopk8ovjQFviW/L9U4HiNnQM+C9zwHLnCRiHGiRQNSKmQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736555433;
+	cv=none; b=HoQHXG0/UiLp3JslBIVZr5dCCevjNud2hP4uE0SqwEOqStPGh7eksOGQAgKLBxZcfw+ZSKmLFG9tlCBTG3CkGa2vv3hX/buz2DMdQUlN4lbqQbssdC6z2caUVf+OFOEYxpFcX/K0ZPOaAPznOpjtq26AsVZJGcMC5qX4ULLOdCOeWEHEfAELp2sT2UqQ40mqoPVXgV0T87x3OhwUnZNKOyI0wDB6oVVtxfPL1Qq5gefBuZTLRIR9xdsdi5EsGp/Xm0+cEaR3WMDn/wEwavYZF490cWSFbcx7IVw5rxUvmqYRUGhjEwSESBaDgE1tGxlkQtlCApnw1Hj2MhB303iLxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736555431; c=relaxed/relaxed;
-	bh=WZMoo3wTQgqTkZxk1QmZzya7PEGxAj+kHbKM7GaqjAE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RlsqkuwkNEoZ03j7YraELuwVGh3nVOvKcTEC5IaLaGsMsIAjIq2Gwa05ZDt6RSi6bV5O6Dm0naL2MN6+vElXL9eZSJNqNJ/2yoJIe1nYsQbSF+Z9NrkSQxwDXM8TQKDuQ+7bjAhObYbhC5b0CVN/Xemdu7E817ujldigCXWPV8I1xYJGRcYYPCGhREFi7t1sSWBn7pMuAsdes8kag42QEKNCJ/4+xJUKcjSo4j56/GSgtjLuamzA3GmEd1kgNebgas0aR4VfPKDtfLpy8HbqleTm3qYAD0zC6LAQLJTH1DgiUR+PNa+MOZK7JqVEirMIumEp9jpGWxH311VqF/jElA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G4nBiw59; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1736555433; c=relaxed/relaxed;
+	bh=X3/EY7Fj12EUkZmzCuPqXuf6QfNN71OJdTE2O73Wgcg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ZyEY6FDosRK0tO2HmjABZ8Yx9ZlEq3ccBlsnT4TtUm/k8mrJeTG0SkwSeDTc3SBp0rfOriinxRWIAMIB1DDrnoUoO4JmaWYW04YDgIA4Yv9duixyP7O0PD0ypn5hOGFejMcXo01wVtaa48J4b6zq0yVaFbDPzcq8kg1gTgTJH/fc6jc78F+I8FNZsHw1yRtdCeo7fAmRypimYvlMlkZIBRtP1b7tf0rzhT4KkD7mJYvN0dD7as3IjpDwWh2XA4/XlLQ49Ta/KFYewF0GoIv0/FEfAo1y8oMz/Pn/I5beg6Oi94Rexj6mL2PEmf8Iw/YiHJurJalf8zpxYAATt2B8yQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AILSW/ca; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G4nBiw59;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AILSW/ca;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YVKDk4Zmsz3cjr
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 11:30:29 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50AE6I5v025740;
-	Sat, 11 Jan 2025 00:30:20 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YVKDm23pgz3cmp
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 11:30:31 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50AH2RDi005768;
+	Sat, 11 Jan 2025 00:30:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=WZMoo3wTQgqTkZxk1QmZzya7PEGxAj+kHbKM7Gaqj
-	AE=; b=G4nBiw59qKwt5Rtus+O1sJUbbxWESgYtqmtlxYf6iTUedXj+XCB7Q8e9+
-	sDLKaULPVog6sv5R7TqVYlzOlsZ+bYybPMMM+t+RFC9++qONU4QdS71TDgEnY7dt
-	Gk3KjQKClYuXs7ElNdOJj1T1myERLC3oKgBWuDcI1s6Vp+YzakG1w1TwO8eqe6ZE
-	mH1cXKwQ5a5mPEzHc/JVx5NTsJ/pmt6pMNUpxojAA7qaiTeYKVpDXpUteO0NLTLw
-	tIXd03+Ps2qn8ytMS0VyuBBlWB7h19xIamkzXcTeOIDBpT/iurAg0Pb7F1IiM/3v
-	QsQfAfLoBZzl3uJ/Aa0AFI+GU3MbA==
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=X3/EY7Fj12EUkZmzC
+	uPqXuf6QfNN71OJdTE2O73Wgcg=; b=AILSW/cayK7sUJ7eVhdoL+mlgz6R+YoTX
+	Z/9YFkvLC5zfVuYz+LwS5xqFcWfTD/5FQXCjVN6uFeCgf/qF2N+0NP5yLIbzsuWE
+	HkimLonGRNg5DDMuRNSONb9+pmdlEw8EwcRfSbfK2JHZ+QvmmKSrexefkWrFcHmS
+	VqtErn6/kWNQV0coVJQfUHNPbUJIcs2QYUD6mfyh7h16vKg2QpMFvpYNAwQJOnz5
+	nKGUcrXlq2LxvpIKDHBYyBNOewFEKKe7mjAG0em4aB5Q+RzFrHbe8AyRjXnbW0Jj
+	VBIABpj8cs/wfaq7nB99mmvwnfNAUqEAPNJBBF2+JGAOg77if+TuQ==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4435152cks-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 442yr2us1u-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 11 Jan 2025 00:30:19 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50B0UJ7X007641;
-	Sat, 11 Jan 2025 00:30:19 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4435152ckq-1
+	Sat, 11 Jan 2025 00:30:23 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50B0UNm0022704;
+	Sat, 11 Jan 2025 00:30:23 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 442yr2us1s-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 11 Jan 2025 00:30:19 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50AMeujg026171;
-	Sat, 11 Jan 2025 00:30:18 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 43yj12mh8w-1
+	Sat, 11 Jan 2025 00:30:23 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50B0CxUl003601;
+	Sat, 11 Jan 2025 00:30:22 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 43yfatn1db-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 11 Jan 2025 00:30:18 +0000
+	Sat, 11 Jan 2025 00:30:22 +0000
 Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50B0UF6224642064
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50B0UJTT30343786
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 11 Jan 2025 00:30:15 GMT
+	Sat, 11 Jan 2025 00:30:19 GMT
 Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9F8435804B;
-	Sat, 11 Jan 2025 00:30:15 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A37415805B;
+	Sat, 11 Jan 2025 00:30:19 +0000 (GMT)
 Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 922EF5805B;
-	Sat, 11 Jan 2025 00:30:14 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 8FC2C58059;
+	Sat, 11 Jan 2025 00:30:18 +0000 (GMT)
 Received: from li-4910aacc-2eed-11b2-a85c-d93b702d4d28.ibm.com.com (unknown [9.61.28.150])
 	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 11 Jan 2025 00:30:14 +0000 (GMT)
+	Sat, 11 Jan 2025 00:30:18 +0000 (GMT)
 From: Haren Myneni <haren@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
         msuchanek@suse.de, mahesh@linux.ibm.com, tyreld@linux.ibm.com,
         hbabu@us.ibm.com, haren@linux.ibm.com
-Subject: [PATCH v2 0/6] Add character devices for indices and platform-dump RTAS
-Date: Fri, 10 Jan 2025 16:30:02 -0800
-Message-ID: <20250111003010.2147021-1-haren@linux.ibm.com>
+Subject: [PATCH v2 2/6] powerpc/pseries: Define papr_indices_io_block for papr-indices ioctls
+Date: Fri, 10 Jan 2025 16:30:04 -0800
+Message-ID: <20250111003010.2147021-3-haren@linux.ibm.com>
 X-Mailer: git-send-email 2.43.5
+In-Reply-To: <20250111003010.2147021-1-haren@linux.ibm.com>
+References: <20250111003010.2147021-1-haren@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,106 +96,89 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: UrP9xNB6fHzH3O0zSZ0njnMC4ICbuka7
-X-Proofpoint-ORIG-GUID: 34AvUjTIiCBjDbqDZSWs2G5krznjDPYI
+X-Proofpoint-ORIG-GUID: wymgn3Fgq4Uszvs2wnbFPV4tKsWh_H3T
+X-Proofpoint-GUID: -RdmS3absMFu-MF2HlUYz_cd2U1eV0Nm
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
  definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 mlxscore=0
- malwarescore=0 suspectscore=0 priorityscore=1501 bulkscore=0 phishscore=0
- spamscore=0 clxscore=1015 mlxlogscore=999 lowpriorityscore=0 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2411120000
- definitions=main-2501110002
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 adultscore=0
+ impostorscore=0 lowpriorityscore=0 mlxlogscore=767 phishscore=0
+ suspectscore=0 malwarescore=0 mlxscore=0 priorityscore=1501 bulkscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2411120000 definitions=main-2501110002
 
-Several APIs such as rtas_get_indices(), rtas_get_dynamic_sensor(),
-rtas_set_dynamic_indicator() and rtas_platform_dump() provided by
-librtas library are implemented in user space using rtas syscall
-in combination with writable mappings of /dev/mem. But this
-implementation is not compatible with system lockdown which
-prohibits /dev/mem access. The current kernel already provides
-char based driver interfaces for several RTAS calls such as VPD
-and system parameters to support lockdown feature.
+To issue ibm,get-indices, ibm,set-dynamic-indicator and
+ibm,get-dynamic-sensor-state in the user space, the RMO buffer is
+allocated for the work area which is restricted under system
+lockdown. So instead of user space execution, the kernel will
+provide /dev/papr-indices interface to execute these RTAS calls.
 
-This patch series adds new char based drivers, /dev/papr-indices
-for ibm,get-indices, ibm,get-dynamic-sensor-state and
-ibm,set-dynamic-indicator RTAS Calls. and /dev/papr-platform-dump
-for ibm,platform-dump. Providing the similar open/ioctl/read
-interfaces to the user space as in the case of VPD and system
-parameters.
+The user space assigns data in papr_indices_io_block struct
+depends on the specific HCALL and passes to the following ioctls:
 
-I have made changes to librtas library to use the new kernel
-interfaces if the corresponding device entry is available.
+PAPR_INDICES_IOC_GET:		Use for ibm,get-indices. Returns a
+				get-indices handle fd to read data.
+PAPR_DYNAMIC_SENSOR_IOC_GET:	Use for  ibm,get-dynamic-sensor-state.
+				Updates the sensor state in
+				papr_indices_io_block.dynamic_param.state
 
-This patch series has the following patches:
-powerpc/pseries: Define common functions for RTAS sequence calls
-- For some of sequence based RTAS calls, the OS should not start
-  another sequence with different input until the previous sequence
-  is completed. So the sequence should be completed during ioctl()
-  and expose the entire buffer during read(). ibm,get-indices is
-  sequence based RTAS function similar to ibm,get-vpd and we already
-  have the corresponding implementation for VPD driver. So update
-  papr_rtas_sequence struct for RTAS call specific functions and move
-  the top level sequence functions in to a separate file.
+PAPR_DYNAMIC_INDICATOR_IOC_SET:	Use for ibm,set-dynamic-indicator.
+				Sets the new state for the input
+				indicator.
 
-powerpc/pseries: Define papr_indices_io_block for papr-indices ioctls
-- /dev/papr-indices driver supports ibm,get-indices,
-  ibm,get-dynamic-sensor-state and ibm,set-dynamic-indicator RTAS Calls.
-  papr-indices.h introduces 3 different ioctls for these RTAS calls and
-  the corresponding ioctl input buffer.
-
-powerpc/pseries: Add papr-indices char driver for ibm,get-indices
-- Introduce /dev/papr-indices char based driver and add support for
-  get-indices RTAS function
-
-powerpc/pseries: Add ibm,set-dynamic-indicator RTAS call support
-- Update /dev/papr-indices for set-dynamic-indicator RTAS function
-
-powerpc/pseries: Add ibm,get-dynamic-sensor-state RTAS call support
--  Update /dev/papr-indices for  get-dynamic-sensor-state RTAS function
-
-powerpc/pseries: Add papr-platform-dump character driver for dump
-   retrieval
-- Introduce /dev/papr-platform-dump char driver and adds support for
-  ibm,platform-dump. Received suggestions from the previous post as a
-  separate patch - Updated the patch with invalidating the dump using
-  a separate ioctl.
-
-Changelog:
-
-v2:
-- Added unlock rtas_ibm_set_dynamic_indicator_lock and
-  rtas_ibm_get_dynamic_sensor_state_lock mutex for failure cases
-  as reported by Dan Carpenter
-- Fixed build warnings for the proper function parameter descriptions
-  as reported by kernel test robot <lkp@intel.com> 
-
-Haren Myneni (6):
-  powerpc/pseries: Define common functions for RTAS sequence calls
-  powerpc/pseries: Define papr_indices_io_block for papr-indices ioctls
-  powerpc/pseries: Add papr-indices char driver for ibm,get-indices
-  powerpc/pseries: Add ibm,set-dynamic-indicator RTAS call support
-  powerpc/pseries: Add ibm,get-dynamic-sensor-state RTAS call support
-  powerpc/pseries: Add papr-platform-dump character driver for dump
-    retrieval
-
- arch/powerpc/include/asm/rtas.h               |   3 +
- arch/powerpc/include/uapi/asm/papr-indices.h  |  41 ++
- .../include/uapi/asm/papr-platform-dump.h     |  15 +
- arch/powerpc/kernel/rtas.c                    |   6 +-
- arch/powerpc/platforms/pseries/Makefile       |   3 +-
- arch/powerpc/platforms/pseries/papr-indices.c | 558 ++++++++++++++++++
- .../platforms/pseries/papr-platform-dump.c    | 408 +++++++++++++
- .../platforms/pseries/papr-rtas-common.c      | 243 ++++++++
- .../platforms/pseries/papr-rtas-common.h      |  45 ++
- arch/powerpc/platforms/pseries/papr-vpd.c     | 270 ++-------
- 10 files changed, 1364 insertions(+), 228 deletions(-)
+Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+---
+ arch/powerpc/include/uapi/asm/papr-indices.h | 41 ++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
  create mode 100644 arch/powerpc/include/uapi/asm/papr-indices.h
- create mode 100644 arch/powerpc/include/uapi/asm/papr-platform-dump.h
- create mode 100644 arch/powerpc/platforms/pseries/papr-indices.c
- create mode 100644 arch/powerpc/platforms/pseries/papr-platform-dump.c
- create mode 100644 arch/powerpc/platforms/pseries/papr-rtas-common.c
- create mode 100644 arch/powerpc/platforms/pseries/papr-rtas-common.h
 
+diff --git a/arch/powerpc/include/uapi/asm/papr-indices.h b/arch/powerpc/include/uapi/asm/papr-indices.h
+new file mode 100644
+index 000000000000..c580025fe201
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/papr-indices.h
+@@ -0,0 +1,41 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++#ifndef _UAPI_PAPR_INDICES_H_
++#define _UAPI_PAPR_INDICES_H_
++
++#include <linux/types.h>
++#include <asm/ioctl.h>
++#include <asm/papr-miscdev.h>
++
++#define LOC_CODE_SIZE			80
++#define RTAS_GET_INDICES_BUF_SIZE	SZ_4K
++
++struct papr_indices_io_block {
++	union {
++		struct {
++			__u8 is_sensor; /* 0 for indicator and 1 for sensor */
++			__u32 indice_type;
++		} indices;
++		struct {
++			__u32 token; /* Sensor or indicator token */
++			__u32 state; /* get / set state */
++			/*
++			 * PAPR+ 12.3.2.4 Converged Location Code Rules - Length
++			 * Restrictions. 79 characters plus null.
++			 */
++			char location_code_str[LOC_CODE_SIZE]; /* location code */
++		} dynamic_param;
++	};
++};
++
++/*
++ * ioctls for /dev/papr-indices.
++ * PAPR_INDICES_IOC_GET:	Returns a get-indices handle fd to read data
++ * PAPR_DYNAMIC_SENSOR_IOC_GET:	Gets the state of the input sensor
++ * PAPR_DYNAMIC_INDICATOR_IOC_SET: Sets the new state for the input indicator
++ */
++#define PAPR_INDICES_IOC_GET		_IOW(PAPR_MISCDEV_IOC_ID, 3, struct papr_indices_io_block)
++#define PAPR_DYNAMIC_SENSOR_IOC_GET	_IOWR(PAPR_MISCDEV_IOC_ID, 4, struct papr_indices_io_block)
++#define PAPR_DYNAMIC_INDICATOR_IOC_SET	_IOW(PAPR_MISCDEV_IOC_ID, 5, struct papr_indices_io_block)
++
++
++#endif /* _UAPI_PAPR_INDICES_H_ */
 -- 
 2.43.5
 
