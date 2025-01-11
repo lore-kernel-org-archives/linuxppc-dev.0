@@ -1,68 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-5060-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5061-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E013E7719D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2025 01:25:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB023E77188
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jan 2025 01:25:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YVLRZ5T1pz3d2c;
-	Sat, 11 Jan 2025 12:24:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::104a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736558698;
-	cv=none; b=B6P8u/uIFbTe/HZI2ddEteS8aC/VCfF10ai06xcZYDYVLuK/t372iCG92FSli2qBsdjN8HsWQwxxnPdhkfE5UcRu3VSv2AYFwxIfcu3vehjWoYJa5ufPvbTe8qpBoVva2SLtBuN7JFr2jwfQVpzgxkbxRSU5pobyAJgIGMYCh7c/dtEddjdGTxXkFZocKxZTVueSj5kcvsyJP5ByhS1gQnr/SQrTPnBLYy8F816j/UEL0CHI+G2b3dE66FmKrvwQF9Lc1KSFRnOvmr2lpwlNUiamh+agyGZxqECXoiNlHDYJ7X6rkKZi1qPwElm/sSR7VN0QNjJkK7qRn62K8aafuA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YVLRc3l1kz3d81;
+	Sat, 11 Jan 2025 12:25:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::64a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736558700;
+	cv=none; b=MbGrgRoQZw6YePnvIVo6aaAUQWmeasf9geySbEqa7UTvZ15lTG2uWBMAqAGdlg6y2D7xZuSrTAvTInRGRnRdIypluFVxhANvFoHqGIJilXNjnC7A7LO+OnsRwgIhMJwkuYAzazsY/3tKpV69qx/DGNzUGF/KmsBJP+lkOOADGAdNULfHzc2koBOvezrYe+A0e2INvLTZrz4w32ZETyFLayDUA2bzgln68Boh/0WjBbul1I+id5BnEZK+qM4SSexzltwSKuZ1WfFqGLZkEcm0UoL5R5jDIZ+q1wCW52I1MfRgu1wOBMIiurTzaJJNNpvHQ7NhwYe80MRuM4GAdczncw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736558698; c=relaxed/relaxed;
-	bh=Wth181Oju/yKYvdF4NH88lRCMZbnQWr4S1ULRikLXgA=;
-	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=MrsVOU4toGBYvJjUaMX2toA3knpeScvEgE97sBRqd+QHrtS/0DOxZppX19woiFRF+hUQCk+CSBwMrfEAE9pcA8EbzwOsvpk+xPZJYV/FJa4FeJUaCaft23I1/zU7ANC9rDZtD/5ZxX9IbKBDWQ11nqjGCMHPoYNvWc1w/VGiPr1N56ZACfj17bMSzRuH4crXmfLV/NT3OhBw2NsqmSYlf8j4gfbcr/LWxJny0RO0h89/nBwOgYxLBCkVyQCRiQmYexclvzhSFntTY3O4UrQy/WCUj5DxnS8RHgveoYGiRWK9nsplBy9TJ35ETPaF/zFk5nNm6yxuMooxTGQIMXszWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=QfW8n55U; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::104a; helo=mail-pj1-x104a.google.com; envelope-from=3zmibzwykdd8tfbokdhpphmf.dpnmjovyqqd-efwmjtut.p0mbct.psh@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+	t=1736558700; c=relaxed/relaxed;
+	bh=yPMtRfEi+Y38oJbaqxUUwsgL1BiiO9TX2S4BZFXkjhs=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=Ac8SpUfGfoHqZimuDtByHteEk2PsGUHaweRSeHkZmxnD4FuX3oGLp1IYoHuMJec0wqN/hzYec1vDbIfYvJMbzpKw9WAPtRBiS/1VpIxjHp55bzj5a+/2N3+mtlcdXy1JUgAOGmnyMF7Bl9vdBEnXOsoZodip0CNOTKBFUsggo2KpAi2TZjA9uw4pMO9Q+/tYI21vHIByfuZDoabOGsLIEi9SlwLQR5xh5RLydZWL4cB0U9xsmoOHEfC86qVxTVyRE3fP+XPVM+mYTjdaHi8R5e1G7ej+qxbwTH8/LKYRS1N69j21LNk40iE575Eg+ga4YJAhhBU9FaQig4SUWvZkGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=Z9Pspjo8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=3z8ibzwykdeiwierngksskpi.gsqpmry1ttg-hizpmwxw.s3pefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=QfW8n55U;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=Z9Pspjo8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::104a; helo=mail-pj1-x104a.google.com; envelope-from=3zmibzwykdd8tfbokdhpphmf.dpnmjovyqqd-efwmjtut.p0mbct.psh@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x104a.google.com (mail-pj1-x104a.google.com [IPv6:2607:f8b0:4864:20::104a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=3z8ibzwykdeiwierngksskpi.gsqpmry1ttg-hizpmwxw.s3pefw.svk@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YVLRY2Bdrz3cnt
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 12:24:55 +1100 (AEDT)
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-2efa0eb9dacso4852748a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2025 17:24:55 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YVLRb3Krsz3cnt
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 12:24:58 +1100 (AEDT)
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-21655569152so48669555ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2025 17:24:58 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1736558692; x=1737163492; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:mime-version:date:reply-to:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Wth181Oju/yKYvdF4NH88lRCMZbnQWr4S1ULRikLXgA=;
-        b=QfW8n55UweEzHU5MD797H+6p9UOAb9voBrf1CvKljXAcmQT0e2gjEOfiP5M+l8wn/V
-         4MNM7tRYvTrYh0PhISsLAjKM6HUwMNsevdlQoch1rfpLnnippHSViBVSb64By2oKz1SR
-         oprY93nmig3dzu/vKbjCyyCtxe64vqV9ADKrvaLJiAkqohVIOKTOlOA/QgvMwfveskIR
-         av8fMbSy0t0X4OhfQSX1NHYgMfEtG2Oe0XzixAt+mRs29nN1JG6MUyfOau7MgcfINpKd
-         cHKzq8N9yG9VE3JKJs+KcFHWk0/+BDLfIxsBw+L1WUxpvmYl4S4W5+/OcnlLJKNp5U7f
-         j/dA==
+        d=google.com; s=20230601; t=1736558696; x=1737163496; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
+        bh=yPMtRfEi+Y38oJbaqxUUwsgL1BiiO9TX2S4BZFXkjhs=;
+        b=Z9Pspjo8IfJTHM1ITxSG8YlIDLhLDw8yLNNzsjZMb+y014L16VH9KyEMDDYR9Vr26C
+         QprlcgKN4qd15AqZjp/geZuV8HLGerj6YBAvVIqQf7baoqZnp/BQUn9agzJdqqpmfOcl
+         oce7wWLIsurM702ktN5+Mo2AWK0SDVB4yL0lHQHN6Iq1WKa8zLDh8Kvt53vd637gvcJk
+         TRX5vyoblTb/+c3WAc5bS3ULB1HaNuRdaKT9eX4pfwbr7j0udLySEmFNMNLhngLhj62F
+         6qdt19T+GKXdYcMLx63Uc66oEyXEoOHc9BxGLtdIIlUuiV4Br8Pj5o2FtO+f9gQFl6ao
+         27LA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736558692; x=1737163492;
-        h=cc:to:from:subject:message-id:mime-version:date:reply-to
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Wth181Oju/yKYvdF4NH88lRCMZbnQWr4S1ULRikLXgA=;
-        b=CyPvAIvvbzW5t2QAvwIUI2hrGkaXeIUqdKTF9mpoLdTegkYynYTz8BIjQ014T/7Svv
-         /9VA+EjPGTRUBG1Te0E5KkEBrzAyaIWyTPiADYGSHHcDnI6E81mxBRGtVnq6gnlCW9Hw
-         TTM0DPUqGAHFZi7xHKf0LzrANbg+VIhvHDMXEVGHdCV4gjGI6Ze/rINbgAv+O35PUuFp
-         Aqhb9aqyfLcJY68r3/qpaZC/brXAnmefkSwhDhFkaQ7IHHdv9oss0tuM0fq0jVXQ44eN
-         +ywx7MGceoC7fJZAhd1KRJZfKoNGQ7ve1s55Sh42BSCEwKHPoHIZ2ymgrf2Mg+5CM769
-         Z5ug==
-X-Forwarded-Encrypted: i=1; AJvYcCWfZ7ZdPBnaJ5cUsjdninHlrhQXFYy5Ko1fL9iexNyXnMoa1QJauLlUtLqXG1/uPUtq1ZFgDjvxImGpAkg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwXoWlXhfGDbHSTVZ0PEKhorXRZMlwQJVIcVnoit6c8BcwaiMVy
-	GgWswOPx48HxSqmCGotTidG+HyLMCwOjFR9qPc4dbjtXeVQJQOmDEX/VA8kz4KcKOJ0dFI3iz9p
-	KDQ==
-X-Google-Smtp-Source: AGHT+IEfMuWFVKhsS9utsiRr0qZN46F4y7a5kx/arb7GLt+tjCHLQTHDuOdaekKI3i56eThn0gAXDuFPjYQ=
-X-Received: from pfef19.prod.google.com ([2002:a05:6a00:2293:b0:725:e39e:1055])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:230a:b0:725:ef4b:de30
- with SMTP id d2e1a72fcca58-72d21f4b537mr18483242b3a.14.1736558692541; Fri, 10
- Jan 2025 17:24:52 -0800 (PST)
+        d=1e100.net; s=20230601; t=1736558696; x=1737163496;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=yPMtRfEi+Y38oJbaqxUUwsgL1BiiO9TX2S4BZFXkjhs=;
+        b=CeHlStTymEc9pQ7AdP3wvu9WuXSgzWOBz/s0y23Gfa5SI9w5qBndu+49sqvE85JUEb
+         DhqhsxeYbqCb4dDIXbihwWVO+sKtIP8sVIqqjCUeZtQ66tfWupyOgeED5SSxTxC9VHpd
+         wi8xYiisUO/iW2rmQMeaqWqRhui54Km+oapbVySErPP+ZZosQbX95WhNosWck0MUvdAS
+         YfUX360kp7febUzXLDPPlQXuylpf8mg3JbRf0pMg+IKqIB0/QWD/7kRWGXYSy1hzURrg
+         Uzidbs6ZyvnMYgrCO/h7p+ZL/UukxJokWTT38OegwHCsxrd/g0nUznfCpP0Wdl9PR2Au
+         9YJQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVSAf/DJPk6n4JMhZCuKzsko5jxr7iTF4AmMvwIgI+gB/ZunDTJvZpGEysyAl1qU13t/qeXgiFWsieTII8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyMxzaZ6jPzH7r2H3GkfkUk238U9pSZ9KKLiuODDf2SX3ul7Q1c
+	Z3aUTEmgDw/OUHgpljkzY1G+Dq6aPS2JIh5Z8iWpALiRdOFtE+L5KI5UwjPTBeeJ73P/qyLkrU4
+	i2Q==
+X-Google-Smtp-Source: AGHT+IFD3f0YjwZz/pTHPUxUy4yfVqFt92VRSC3L2LvrexSYRapcV9Xo2L4A2CKFVBcFdjD8/mn4jkTqU/U=
+X-Received: from pgkp11.prod.google.com ([2002:a63:f44b:0:b0:7fc:fac3:7df6])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a20:4325:b0:1e1:b062:f3fa
+ with SMTP id adf61e73a8af0-1e88d1dba97mr25121737637.34.1736558695870; Fri, 10
+ Jan 2025 17:24:55 -0800 (PST)
 Reply-To: Sean Christopherson <seanjc@google.com>
-Date: Fri, 10 Jan 2025 17:24:45 -0800
+Date: Fri, 10 Jan 2025 17:24:47 -0800
+In-Reply-To: <20250111012450.1262638-1-seanjc@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,9 +78,10 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Mime-Version: 1.0
+References: <20250111012450.1262638-1-seanjc@google.com>
 X-Mailer: git-send-email 2.47.1.613.gc27f4b7a9f-goog
-Message-ID: <20250111012450.1262638-1-seanjc@google.com>
-Subject: [PATCH 0/5] KVM: Add a kvm_run flag to signal need for completion
+Message-ID: <20250111012450.1262638-3-seanjc@google.com>
+Subject: [PATCH 2/5] KVM: Clear vcpu->run->flags at start of KVM_RUN for all architectures
 From: Sean Christopherson <seanjc@google.com>
 To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
 	Oliver Upton <oliver.upton@linux.dev>, Michael Ellerman <mpe@ellerman.id.au>, 
@@ -87,44 +91,84 @@ Cc: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 
-Add a flag to kvm_run, KVM_RUN_NEEDS_COMPLETION, that is set by KVM to
-inform userspace that KVM_RUN needs to be re-invoked prior to state
-save/restore.  The current approach of relying on KVM developers to
-update documentation, and on VMM developers to read said documentation,
-is brittle and error prone.
+Clear kvm_run.flags at the start of KVM_RUN for all architectures to
+minimize the probability of leaving a stale flag set.
 
-Note, this series is *very* lightly tested (borderline RFC).
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ arch/arm64/kvm/arm.c         | 1 -
+ arch/arm64/kvm/handle_exit.c | 2 +-
+ arch/powerpc/kvm/book3s_hv.c | 4 +---
+ arch/x86/kvm/x86.c           | 1 -
+ virt/kvm/kvm_main.c          | 3 +++
+ 5 files changed, 5 insertions(+), 6 deletions(-)
 
-Sean Christopherson (5):
-  KVM: x86: Document that KVM_EXIT_HYPERCALL requires completion
-  KVM: Clear vcpu->run->flags at start of KVM_RUN for all architectures
-  KVM: Add a common kvm_run flag to communicate an exit needs completion
-  KVM: selftests: Provide separate helper for KVM_RUN with
-    immediate_exit
-  KVM: selftests: Rely on KVM_RUN_NEEDS_COMPLETION to complete userspace
-    exits
-
- Documentation/virt/kvm/api.rst                | 77 ++++++++++++-------
- arch/arm64/kvm/arm.c                          |  1 -
- arch/arm64/kvm/handle_exit.c                  |  2 +-
- arch/powerpc/kvm/book3s_emulate.c             |  1 +
- arch/powerpc/kvm/book3s_hv.c                  |  5 +-
- arch/powerpc/kvm/book3s_pr.c                  |  2 +
- arch/powerpc/kvm/booke.c                      |  1 +
- arch/x86/include/uapi/asm/kvm.h               |  7 +-
- arch/x86/kvm/x86.c                            |  3 +-
- include/uapi/linux/kvm.h                      |  3 +
- .../testing/selftests/kvm/include/kvm_util.h  | 13 +++-
- tools/testing/selftests/kvm/lib/kvm_util.c    |  6 +-
- .../testing/selftests/kvm/lib/ucall_common.c  |  2 +-
- .../testing/selftests/kvm/lib/x86/processor.c |  8 +-
- .../kvm/x86/nested_exceptions_test.c          |  3 +-
- .../kvm/x86/triple_fault_event_test.c         |  3 +-
- virt/kvm/kvm_main.c                           |  4 +
- 17 files changed, 90 insertions(+), 51 deletions(-)
-
-
-base-commit: 10b2c8a67c4b8ec15f9d07d177f63b563418e948
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index a102c3aebdbc..925fa010bb7b 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -1128,7 +1128,6 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 
+ 	ret = 1;
+ 	run->exit_reason = KVM_EXIT_UNKNOWN;
+-	run->flags = 0;
+ 	while (ret > 0) {
+ 		/*
+ 		 * Check conditions before entering the guest
+diff --git a/arch/arm64/kvm/handle_exit.c b/arch/arm64/kvm/handle_exit.c
+index d7c2990e7c9e..63692c254a07 100644
+--- a/arch/arm64/kvm/handle_exit.c
++++ b/arch/arm64/kvm/handle_exit.c
+@@ -186,7 +186,7 @@ static int kvm_handle_guest_debug(struct kvm_vcpu *vcpu)
+ 	run->exit_reason = KVM_EXIT_DEBUG;
+ 	run->debug.arch.hsr = lower_32_bits(esr);
+ 	run->debug.arch.hsr_high = upper_32_bits(esr);
+-	run->flags = KVM_DEBUG_ARCH_HSR_HIGH_VALID;
++	run->flags |= KVM_DEBUG_ARCH_HSR_HIGH_VALID;
+ 
+ 	switch (ESR_ELx_EC(esr)) {
+ 	case ESR_ELx_EC_WATCHPT_LOW:
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 25429905ae90..b253f7372774 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -1704,9 +1704,7 @@ static int kvmppc_handle_exit_hv(struct kvm_vcpu *vcpu,
+ 		/* Exit to guest with KVM_EXIT_NMI as exit reason */
+ 		run->exit_reason = KVM_EXIT_NMI;
+ 		run->hw.hardware_exit_reason = vcpu->arch.trap;
+-		/* Clear out the old NMI status from run->flags */
+-		run->flags &= ~KVM_RUN_PPC_NMI_DISP_MASK;
+-		/* Now set the NMI status */
++		/* Note, run->flags is cleared at the start of KVM_RUN. */
+ 		if (vcpu->arch.mce_evt.disposition == MCE_DISPOSITION_RECOVERED)
+ 			run->flags |= KVM_RUN_PPC_NMI_DISP_FULLY_RECOV;
+ 		else
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 1b04092ec76a..a8aa12e0911d 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -11465,7 +11465,6 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 
+ 	vcpu_load(vcpu);
+ 	kvm_sigset_activate(vcpu);
+-	kvm_run->flags = 0;
+ 	kvm_load_guest_fpu(vcpu);
+ 
+ 	kvm_vcpu_srcu_read_lock(vcpu);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index de2c11dae231..7d2076439081 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -4336,6 +4336,9 @@ static long kvm_vcpu_ioctl(struct file *filp,
+ 
+ 			put_pid(oldpid);
+ 		}
++
++		vcpu->run->flags = 0;
++
+ 		vcpu->wants_to_run = !READ_ONCE(vcpu->run->immediate_exit__unsafe);
+ 		r = kvm_arch_vcpu_ioctl_run(vcpu);
+ 		vcpu->wants_to_run = false;
 -- 
 2.47.1.613.gc27f4b7a9f-goog
 
