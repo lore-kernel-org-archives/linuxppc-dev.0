@@ -1,89 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-5088-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5089-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7133BE7719D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Jan 2025 09:55:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 836B3E7719C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Jan 2025 09:55:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YW9kR2gzSz30Vs;
-	Sun, 12 Jan 2025 20:55:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YW9kS5m0hz2ymg;
+	Sun, 12 Jan 2025 20:55:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736675743;
-	cv=none; b=j0ncLaGtgL8Ki7DctPR5gk+Aa+eIRi1NYMK2s7xiQUgihClO9NIGN8Za8RWZAOiqF7kD7t+dX7UjoE51Uz2vH0UjzSXCazhmAsqEQ4g8xwmFV8AC1+LLuIoj/odNl4pl7wWRD330wzRdL+99iD11aZGBVjSK4Zls5tse4e3RVd820Gvg1GCpqwynKrY9AD0qCIdt2ImPoEaltdQwWRCovOxUHKblZLrKqqIpk37hp6Iku70OVp+6Soo8oOdGX8O6HdTnlfeF9gBCzoBAYAIbo/QwxOazhhQBeqZvt7BwjYHRe3nNbGBueuYVhaOn0/HJa3RBejBPOxaMIi0IDtr3aQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736675744;
+	cv=none; b=FYMHzjuNJgNwJf5GL0tAjg4FzLo+9v+/Vsg71V05ywe8MRIvFjlSpVVk+G2JdBbWDX0ITN6c6N327rsizP88xDn/5a5nxI0eXHo6Vi0S6ytJKYnoUNG4KzwpxJbMRG/1v6LvKek47KJaOpLOFdJhVqOqVj47OVW7SQdVXi0X6NvkrslJafXYOPvIDulkCQyFCeNf9LNEBXuI72dKucwXDn9d1PdcmGIEQOs7WDumWnx413qjovIg7sOSpLD8EOqKZtJTQqUC1aFzIXnSeg4WnUTNqdR0NMtRmo/tpG3GwEFp1N30R+GPR+o6i+J3xfP8Hxc/okA5wIXFF/gbMwuUyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736675743; c=relaxed/relaxed;
-	bh=LbPMvXWxkqoPEVecK8C7xcWKRlslEHctKLKomp3MgmA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:content-type; b=W3GQ6uAQtwSsx1jODkIKSAj0bhStFdq6vYzeKBE6ozkcFWpIt/KDMG62W6rkqsItX5irDyjdoPyzV7zYMs1+FUqRq5QOvjIAdVj93QkJE94HTrl06xNUd0ixvyOY8feRizUMV/sZ3qds74r59OuxcbrsgJHiCBX4Rtkn6l9ygx9nxefh5AcFPc16YmJ5Bdz49qJqJs9DzlDaw5tqGiRvIeAWAcdSP4mcMCQt14fCp0UeN8K14eDAYEvXyRXLxwiGkDKrMoqWK1NFtm4BjhEzNSNvFYfJB+v+Vwluc9tTYfelgfE21cHtvN6X3SJncQZZrqIrG20Aha0Fz4u9DFkIaw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Gj/iOerU; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Gj/iOerU; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	t=1736675744; c=relaxed/relaxed;
+	bh=Ia6sv5K1rPK0oxjj8pHkn374uhH5Bs7h1d/ShzUvYRM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:content-type; b=dlAWF41wCOsPEF33dvwRrerwhhHZ0e7ag2JndA4gG5rbqiA0r84/JB+BauYzKH9BflZRXF23agSboynlacsqATfo7O2tEBySrDyyvAsMDWCX3p3nCXBEbWt5MLW1xtZD8JBQh6NYoIiUm74ZxTjfxMweTrwiD2MgS1jKSxpyJb7KmSH6nRexOZ3No9hYEJ7l1COWs6OpTKp3670xo/wxuppQDNpMiAyN3CuTm9BolPbYucpt9Ex/blDQ/lWwHBW5yj19AHwPyIJHNhtoWuX6GTPJ1vxUpUnZ7+Heyz2F3z+SevQ2KoHlnUcrlp1Hxrbnjq2+ofmSNhlnEPnmV4VmKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NJAbn9Oa; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=jQTcIDOm; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Gj/iOerU;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Gj/iOerU;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NJAbn9Oa;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=jQTcIDOm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YW9kP544Gz2ymg
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jan 2025 20:55:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YW9kR3r6Dz30WF
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jan 2025 20:55:42 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1736675734;
+	s=mimecast20190719; t=1736675739;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=LbPMvXWxkqoPEVecK8C7xcWKRlslEHctKLKomp3MgmA=;
-	b=Gj/iOerUo+UE0anCbABSP6rVFVb+IFje1InB0Vzsx9h0s/UXtbQ/jgbJRZLl8kicY6aM31
-	8GYGPEQXpeMYTcSfpRtOH+CtcYDPHZRG/tqnfRCsHg8ktuo6MCCpqa3WmgJcOI4N9AIxC3
-	SBFEnm6ar8sN8HUbf4t9EPbidswq9Ek=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Ia6sv5K1rPK0oxjj8pHkn374uhH5Bs7h1d/ShzUvYRM=;
+	b=NJAbn9OaEx/kJFcY/+MZpPCQlDEZcb7RWFa45QTLKhZFQJq3Pc4hLyCf1Y/IFPyY45aMjC
+	oURPcdRtGqDeqV1BzL6/+7G2rV3C2XOK0B//bYNY1kpA3g5zqgMj3eo9k08mu1EfCaHGTq
+	F1hccReFGR5Ltu6fD1+aI0wNdTjGHA0=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1736675734;
+	s=mimecast20190719; t=1736675740;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=LbPMvXWxkqoPEVecK8C7xcWKRlslEHctKLKomp3MgmA=;
-	b=Gj/iOerUo+UE0anCbABSP6rVFVb+IFje1InB0Vzsx9h0s/UXtbQ/jgbJRZLl8kicY6aM31
-	8GYGPEQXpeMYTcSfpRtOH+CtcYDPHZRG/tqnfRCsHg8ktuo6MCCpqa3WmgJcOI4N9AIxC3
-	SBFEnm6ar8sN8HUbf4t9EPbidswq9Ek=
-Received: from mail-ed1-f72.google.com (mail-ed1-f72.google.com
- [209.85.208.72]) by relay.mimecast.com with ESMTP with STARTTLS
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Ia6sv5K1rPK0oxjj8pHkn374uhH5Bs7h1d/ShzUvYRM=;
+	b=jQTcIDOmB81CO2y6dgXnbC3D+BgH0f5XmhMDYxhRxeOVJxjdDrhB2yc+eBP4vq+8Njt0K1
+	10g4SJakr/3QkICzb5MwRYo+fL7GTS/wXSYTYXc+vNt1yH1x484LWXZlqWJ3YMYx8zNr0z
+	9IviJS23CG51rNE98exoPfjxuPuuquI=
+Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com
+ [209.85.218.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-460-_HPZjr8dMxeDnZbC06oFzA-1; Sun, 12 Jan 2025 04:55:32 -0500
-X-MC-Unique: _HPZjr8dMxeDnZbC06oFzA-1
-X-Mimecast-MFC-AGG-ID: _HPZjr8dMxeDnZbC06oFzA
-Received: by mail-ed1-f72.google.com with SMTP id 4fb4d7f45d1cf-5d3e4e09ae7so4802591a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jan 2025 01:55:32 -0800 (PST)
+ us-mta-16-9p4lWoXOPJexEl68Xa47WA-1; Sun, 12 Jan 2025 04:55:37 -0500
+X-MC-Unique: 9p4lWoXOPJexEl68Xa47WA-1
+X-Mimecast-MFC-AGG-ID: 9p4lWoXOPJexEl68Xa47WA
+Received: by mail-ej1-f71.google.com with SMTP id a640c23a62f3a-aabf8e856e2so359526466b.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jan 2025 01:55:37 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736675731; x=1737280531;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=LbPMvXWxkqoPEVecK8C7xcWKRlslEHctKLKomp3MgmA=;
-        b=rdAcDocxW4977eb6YqDnkfAQa5LS7UJrDRK3GU5AcQ2Kiisof/Iw5rLHNK5FZvA68l
-         tgqbjiXJlNtmt5WRHML+0EM/ekf7R/ncFsI9ysWj8URbX9evza2W2/hBVkTRO9BC4Kws
-         /H/YoaLWOBBdkzw24xa/HraAgav12ywLXAvjzo6o1pGMp7BIH+QKyNU5SMvl7jrVWkfA
-         Wy0cqPQcgq3amhB6riN2E26TrYNBr3w6cFY4HVcwRtSF6lxnpxYKMamtQZnhMP+7qf3a
-         x99miWIxsW48/gjIdXm1i7D9Fu9rd4arEd/PKTmriYbbawTRyWj8PNCnNiYBFN/VNuFT
-         4Lmw==
-X-Forwarded-Encrypted: i=1; AJvYcCWyKjG7pvGbMO89cxIC4o0IEW1wQZwiWpgoKgcbjFIBQ1wxpIhNnHrGVUN1WWqubZ3SpWh3KqDPjTPP5a4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yze1IrD2vLKC4GNlZGnzWj2TY6L3G6xBE1Pu5YxNoN1uGdQhXbm
-	1WYoFY0Ufe1XY7xeRCS+geCbUu+BIX/aHOI+61h9Lm7CIqT/j7V7DsZ6QeAt/nqJjRlehkhLhMQ
-	MLI+V0ENN2fELqJL9wjijOpQ7TUhsa3AG55NHaDgDDSSKk4WGz4+05ujN36kYfgQ=
-X-Gm-Gg: ASbGncsQHzoDFeE19frnFpxABlY9+Jx/N+S0I3kcZViebUQEKsktkodPqwGBnBCOnmY
-	jVg7BmasuuUo+EVufmISzxeuf+wi67o0h5LzlStUvxfHVwf0s9LjXSC0hfzQwUL+sMMm7mk/2Yw
-	FBe9ut5NScM1vGY9y13ensTzPRfu512YmWI3PBO+6o+/Vzw8b8aGhI5RjsA8+NHVLkVOiFhp4Uf
-	XSvV2drL/p5eC5P2ka39VuR6dBTUubJU3VHh5A/BbmMOl7240sgC8Mtkd0=
-X-Received: by 2002:a05:6402:354c:b0:5d3:ba42:e9d6 with SMTP id 4fb4d7f45d1cf-5d972e14828mr16993852a12.17.1736675731150;
-        Sun, 12 Jan 2025 01:55:31 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IEVLh0vGs9D36Q0IyXZ3HUQ2iOTSRSffuWayJjX6NDL6ISEn6UK/f5SUb1xvo4fnr5VPoS7bQ==
-X-Received: by 2002:a05:6402:354c:b0:5d3:ba42:e9d6 with SMTP id 4fb4d7f45d1cf-5d972e14828mr16993834a12.17.1736675730719;
-        Sun, 12 Jan 2025 01:55:30 -0800 (PST)
+        d=1e100.net; s=20230601; t=1736675736; x=1737280536;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Ia6sv5K1rPK0oxjj8pHkn374uhH5Bs7h1d/ShzUvYRM=;
+        b=sZIMU81pAjm4ydacxnFBijKlQW/qrSGbDpFnp/1ipaFBsCsDKWdKq9YWuDvZS+E45K
+         nNFYAG6qsTHUAyZK9j0IpSo0c7bHJdTxxq8ob23rrgE3i0guwCZk64MIsdDUYXLAOPPG
+         z6Sje6Ef8z6/hYnX7La2fjxbgfFO2TltJsgMN2ATDBuf4oLNXBSjy4uCS9dFry/ur2ZH
+         jr8dPlY1BjrBh6c/1b2EM2e2uWpX0yuQr4dADBJmKNxAL4xGiLHUqaP5UCdx/GITN69T
+         NSbV6+b54jG+r4TSdxpH0FFgt6QYIbkKKj/GcsmNNbRPGNdz8Q2+jWi9Mx0ZfwgLHVEP
+         BGLA==
+X-Forwarded-Encrypted: i=1; AJvYcCXW2OJoi9CyAzVkW0Qc+BiEYm5Vav0JrHOJOLsBEQ8QVws8EVja7jdDGMByawCy4qWs3kyk4l09Ouu/uhQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwAKOAvQqaiUGNJMt0mV6EKkAFhz24BR1m7GWIQXoD5/qWV1C/0
+	jOQH2Z9MRCcT6Am6VgRil5kQhQezhrlvyctUIqm0Z40V5QffskzztndvLK+6IYu93TNfaKoNKP+
+	bTovsBGoi2BTXjZT9/4EOxwHTC9wPwoJSnfX0+rlizGxAxzOpbDhrVO1W8tBjeLU=
+X-Gm-Gg: ASbGncvCPEJzl3kVzkFn7irMwV+rYOlZogw/yqEAEhTTK+jaJT8mMo21ZTu3HJKGvx4
+	L/ffBOd5CG2NEnV1HgH3asqRCDDPqxHHw3QaHS8ATjkVjywd5/XdnbuHWsmVLMHgGRLJDYr4Dib
+	4yHmDXGR2+bFtYzlxM6Z4en0QBCDI/DWrjgq/P5e2ugGsrX7HzJ0NqF0WtHGiR2hlUL4GVikrx4
+	WeH6mQB326kl8VEGIrPXFllR4fXXfnnU7iUA34zHKEhyc2J5+BpqaF2ekU=
+X-Received: by 2002:a17:906:478f:b0:aab:dc3e:1c84 with SMTP id a640c23a62f3a-ab2ab703f93mr1611128266b.17.1736675736617;
+        Sun, 12 Jan 2025 01:55:36 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IE57lWwmpDxmyLrpFomxsQp5nUpO/tCN5jrf13BA6wccxa5tYF5ClNyyJ2YVR15koS+dU7MVg==
+X-Received: by 2002:a17:906:478f:b0:aab:dc3e:1c84 with SMTP id a640c23a62f3a-ab2ab703f93mr1611127466b.17.1736675736279;
+        Sun, 12 Jan 2025 01:55:36 -0800 (PST)
 Received: from [192.168.10.3] ([151.62.105.73])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5d9903c3206sm3714091a12.46.2025.01.12.01.55.29
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ab2c905e283sm356143866b.31.2025.01.12.01.55.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 12 Jan 2025 01:55:29 -0800 (PST)
+        Sun, 12 Jan 2025 01:55:34 -0800 (PST)
 From: Paolo Bonzini <pbonzini@redhat.com>
 To: linux-kernel@vger.kernel.org,
 	kvm@vger.kernel.org
@@ -91,10 +94,12 @@ Cc: seanjc@google.com,
 	linuxppc-dev@lists.ozlabs.org,
 	regressions@lists.linux.dev,
 	Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: [PATCH v2 0/5] KVM: e500: map readonly host pages for read, and cleanup
-Date: Sun, 12 Jan 2025 10:55:22 +0100
-Message-ID: <20250112095527.434998-1-pbonzini@redhat.com>
+Subject: [PATCH 2/5] KVM: e500: use shadow TLB entry as witness for writability
+Date: Sun, 12 Jan 2025 10:55:24 +0100
+Message-ID: <20250112095527.434998-3-pbonzini@redhat.com>
 X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20250112095527.434998-1-pbonzini@redhat.com>
+References: <20250112095527.434998-1-pbonzini@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,60 +113,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: e4El8Y2fZyZrCfmRIB-3umK7ENiUsnuPNpIl6LJm_I0_1736675731
+X-Mimecast-MFC-PROC-ID: tBO4ELeq6kO020fRN6aLRCqpX1LPjAsWlSwe7dF7JsA_1736675737
 X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
 content-type: text/plain; charset="US-ASCII"; x-default=true
 
-The new __kvm_faultin_pfn() function is upset by the fact that e500
-KVM ignores host page permissions - __kvm_faultin requires a "writable"
-outgoing argument, but e500 KVM is passing NULL.
+kvmppc_e500_ref_setup is returning whether the guest TLB entry is writable,
+which is than passed to kvm_release_faultin_page.  This makes little sense
+for two reasons: first, because the function sets up the private data for
+the page and the return value feels like it has been bolted on the side;
+second, because what really matters is whether the _shadow_ TLB entry is
+writable.  If it is not writable, the page can be released as non-dirty.
+Shift from using tlbe_is_writable(gtlbe) to doing the same check on
+the shadow TLB entry.
 
-While a simple fix would be possible that simply allows writable to
-be NULL, it is quite ugly to have e500 KVM ignore completely the host
-permissions and map readonly host pages as guest-writable.  A more
-complete fix is present in the second to fourth patches (the first is
-an independent bugfix, Cc'd to stable).
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+---
+ arch/powerpc/kvm/e500_mmu_host.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-The last one removes the VMA-based attempts at building huge shadow TLB
-entries, in favor of using a PTE lookup similar to what is done for x86.
-This special casing of VM_PFNMAP does not work well with remap_pfn_range()
-as it assumes that VM_PFNMAP areas are contiguous.  Note that the same
-incorrect logic is there in ARM's get_vma_page_shift() and RISC-V's
-kvm_riscv_gstage_ioremap().
-
-Fortunately, for e500 most of the code is already there; it just has to
-be changed to compute the range from find_linux_pte()'s output rather
-than find_vma().  The new code works for both VM_PFNMAP and hugetlb
-mappings, so the latter is removed.
-
-If this does not work out I'll go for something like
-https://lore.kernel.org/kvm/Z3wnsQQ67GBf1Vsb@google.com/, but
-with the helper in arch/powerpc/kvm/e500_mmu_host.c.
-
-Patches 2-5 were tested by the reporter, Christian Zigotzky.  Since
-the difference with v1 is minimal, I am going to send it to Linus
-today.
-
-Thanks,
-
-Paolo
-
-v1->v2: do not bother checking again that a memslot exists, instead
-	add a fix to restore irqs even if !ptep
-
-
-Paolo Bonzini (5):
-  KVM: e500: always restore irqs
-  KVM: e500: use shadow TLB entry as witness for writability
-  KVM: e500: track host-writability of pages
-  KVM: e500: map readonly host pages for read
-  KVM: e500: perform hugepage check after looking up the PFN
-
- arch/powerpc/kvm/e500.h          |   2 +
- arch/powerpc/kvm/e500_mmu_host.c | 199 +++++++++++++------------------
- 2 files changed, 85 insertions(+), 116 deletions(-)
-
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index 6824e8139801..c266c02f120f 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -242,7 +242,7 @@ static inline int tlbe_is_writable(struct kvm_book3e_206_tlb_entry *tlbe)
+ 	return tlbe->mas7_3 & (MAS3_SW|MAS3_UW);
+ }
+ 
+-static inline bool kvmppc_e500_ref_setup(struct tlbe_ref *ref,
++static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 					 struct kvm_book3e_206_tlb_entry *gtlbe,
+ 					 kvm_pfn_t pfn, unsigned int wimg)
+ {
+@@ -251,8 +251,6 @@ static inline bool kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 
+ 	/* Use guest supplied MAS2_G and MAS2_E */
+ 	ref->flags |= (gtlbe->mas2 & MAS2_ATTRIB_MASK) | wimg;
+-
+-	return tlbe_is_writable(gtlbe);
+ }
+ 
+ static inline void kvmppc_e500_ref_release(struct tlbe_ref *ref)
+@@ -489,9 +487,10 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	}
+ 	local_irq_restore(flags);
+ 
+-	writable = kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
++	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
+ 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
+ 				ref, gvaddr, stlbe);
++	writable = tlbe_is_writable(stlbe);
+ 
+ 	/* Clear i-cache for new pages */
+ 	kvmppc_mmu_flush_icache(pfn);
 -- 
 2.47.1
 
