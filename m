@@ -1,87 +1,106 @@
-Return-Path: <linuxppc-dev+bounces-5086-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5087-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C12A5E77188
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Jan 2025 09:22:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9A2BE77188
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Jan 2025 09:55:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YW90D6Qc2z2yFK;
-	Sun, 12 Jan 2025 20:22:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736615603;
-	cv=none; b=CCy2rtTOIaLPdFtQGKPhx64O5W1YaLSf/LfKp5H0VXVopvNJkGDUayRsf5wLMDgqXxzSR1CvsxkuijDwdx+fMNwFH2TA6/3LcAc2yOe4srj9rkOpGf1J2cFwzpYdSR4HiQa2IvRHA9tc3pxdbvYyrwWG2l66RibuEPfCUjwvJMo6A1YRJFCsQq3o/c0e+LbBSKyYyZMJV86lvRLkXqZ0ESAK06Nhpy8Ish9bbb75j3aoJB0ctS16FUXs7IjdA3IpYU73tHXjFb6Z/f96GwRDOmprZm6WGgs6BakP1eX54T8NKWY+/lJ4Df6vFs2twlQnDRvPNoRgdfCUcthK5XhA9g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YW9kR1NsBz30TS;
+	Sun, 12 Jan 2025 20:55:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736675743;
+	cv=none; b=W/WPicyIeKOT9DD8eEXN1IfEmMjjs01mfUDHBTXzXhAUq+fyZABdy/8nr9qQcu0VqyS9hZ0D1Pv34DZT6KfmFySccTwntKBrEl3M3tyKurIWTnBIo4RddH4jhRE9UDGMWegU95mFVdUZBBL1KHEo1p7WF7yRj8mIoV6E0BjKhZW00ygV0tVuN8nhQrD+jCt5nVsRPw93J2AlDxVRJYawlvpXQP++1SCKTWPo3lcFguGfcsZqlwHr+/D7ywi+7j8/AvOQhldEf03H6UhuWPCWDYOPpDKf3UQVqFo6IztlS9WfMS6GrzLTMJzki9Go8G9kP1SNIiuDt7VRMhVzXKpppw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736615603; c=relaxed/relaxed;
-	bh=QeeiiJberKqp+MSuQnxPBfH4/FsnHt7yucRyT35nN7k=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NfLslPM58AkU+XTXll1rkLVFyYkTTSugNjsdHVWrLQoLYdWSAOPMfhespfBoeepPH+rkMFnA1y/Q6GK3zvTmzR21erwCn003bbP0BPqpzgkMpWe6rlMHz/E+A6BMWfv63lvCPz4o8GVRtRBo+4QQMd6/AHAFOjkvB9qUR7upPy22srQGLYxLo7eHWs8xa5g9wdMCAu9vcl7/CWXI5wW2an1Hf6TcmXGkqqgZPaHHtd5k5nJMTLjSGC/8hwbWACp0Cc+Y92Ehf1UwkBu0OO7pGBhOkonspUL9qvEuOuCxrZvjRyM976u3IJNJa3IciGlZrexJflzcdu+L/9zH08R/Pg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nq4WTb26; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=eleanor15x@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1736675743; c=relaxed/relaxed;
+	bh=q2g0sdh+W5glSkagx457PsA9cI+PMduPyER5qBCP9uo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:content-type; b=WP2trYyRAOUHJqmi6QZNZA2SA5YQjLKSJ0pm3WX4weQVp7gRMlnXg24Ro+eMUpMDVy9tjTWmWCFsO7GakmlLp7HmkTAful6f483f//56FMVAE7j5EXNjgWMccGpFGLrTYH7FlW/oU3bVYPYKiJAb5ewj92y2W/tFMqyKQKaLJzLNwssP4by9PeIdDRo8PVkxh9MtYw0dCKehUyfc1KUaZaJ5rooN2Fp1arnPVZdv6DVOIejmrifNiMRiUhkTz/5PgJb38akQR9LKJgo2oZx73kdU7qiP9xvzXJ34xeo1XNkw3Xx/RE1hA3PjyzuPPWsojiQGdFSiuGrBjaQ1AV2SLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ezRwKMZD; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=F2CMsX6y; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nq4WTb26;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ezRwKMZD;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=F2CMsX6y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=eleanor15x@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pbonzini@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YVlTt1m0Hz3c9g
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jan 2025 04:13:22 +1100 (AEDT)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-21680814d42so42608865ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2025 09:13:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1736615599; x=1737220399; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=QeeiiJberKqp+MSuQnxPBfH4/FsnHt7yucRyT35nN7k=;
-        b=nq4WTb260BiMLU3nMjFt6nKPRmciax0ez4YJ1ajUpy7vQ81KCso88BCrEv+JQrNdqn
-         O+fHALWXvhW6+gMBe1eIqx/h/SH8Y8pwJcewaIOhMQC8g7O13FSKn2LQD7wcg9PWB/1J
-         S3Ka1nGbM4HYr6/AoKoydbZx685YcYB5AQBXSGiPe8GTUqyb1uPPrdTyFZwKij1dJcSi
-         ylMsPdaSZtJJOACbmS29dxhWVwSacHMLVm8NwZLYhpItujEqDoIaa7pdydIEvScl6K1t
-         P5ObgC+adRE+7f3IPl0cCRy+eNGJR13JEC1NDZpT8XQMEnmEtgV1n68/Joq1D7cIS35S
-         WMcw==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YW9kP5hz5z30Nc
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jan 2025 20:55:40 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1736675736;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=q2g0sdh+W5glSkagx457PsA9cI+PMduPyER5qBCP9uo=;
+	b=ezRwKMZDRvHAfPbfncukSSv+enR1w+2pCFlYCriBXgmgAhII2pHtXsfv8twCsYCNGzYQuM
+	WH/ic5kgFBI87/Mjg3naGnY/dSUzEhRFPWrgSLIZ4iI7oXqtftDXviVFDJ0qGR7UvjJe66
+	3xJJm423+wOZNKrwwUaok1v17kejQE0=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1736675737;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=q2g0sdh+W5glSkagx457PsA9cI+PMduPyER5qBCP9uo=;
+	b=F2CMsX6yPzXcMr7TSBG0Rs7kxV/NKEUGgJ1lsIm9/7x6z92uARMD9lxvaqc6Io8nVQe6fD
+	wFlfH01vovrXg7/8F+ITdfj1y7el0UdTwmdobb6pxaCHKFi4Kwq5/ruZ8YmzZ2UVfpqMwQ
+	ZaXJKiMUNCKGOk2QCzR9lnwvNSPp0wk=
+Received: from mail-ej1-f72.google.com (mail-ej1-f72.google.com
+ [209.85.218.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-673-xUhoulpbOKuCNAknSU6azQ-1; Sun, 12 Jan 2025 04:55:34 -0500
+X-MC-Unique: xUhoulpbOKuCNAknSU6azQ-1
+X-Mimecast-MFC-AGG-ID: xUhoulpbOKuCNAknSU6azQ
+Received: by mail-ej1-f72.google.com with SMTP id a640c23a62f3a-aa683e90dd3so271385166b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jan 2025 01:55:34 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736615599; x=1737220399;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=QeeiiJberKqp+MSuQnxPBfH4/FsnHt7yucRyT35nN7k=;
-        b=wnRDXWiGnRXGMZQT9YgSe22ronqGBE2ZENokgAtV8qQBL6KDVHQm0iSoLz7KcNQ2Mf
-         9nU9OJbcJMJMCs7KB2RDxuh+DRQLJaksBmk1XE/oWiNinJ+dNG9MikcDmd7Eiv2WBzfx
-         ZLbYd3/zW2gmOFbMa72AL2YjEtwUH6FAKA73lExERzldtbokCKRMJ+JL6jV+evC2RSDi
-         V41fSBLbTpG3zH502gyZKE6kmXdgEfzJbFcI5p/WXBObIqNOShTR+zbbeV4rnoUzJjm7
-         upQ31ZKIUK1MkoWFucfQD+Qq+8HPthtA2MU46fRZbBoU4ZDMdthg7eFwGs40XvlD/hBp
-         FwkA==
-X-Gm-Message-State: AOJu0YwIKqvGXRqk0jlJt9LoT6ueQKJZrWKrUavO/3Nlgkz/EH/ET0Qy
-	HUetTUNLqp0GGMkKiiIKtZesJALE1U0w8jdOXbjdJn7p0nNXGgA+
-X-Gm-Gg: ASbGncsmLXjhiZeBy9r38cD7YmpQMAF+Aq8ztPzT9EsYETYkaZe7n13s9JrCZaAcZ/p
-	kWS4H+cdfDxYsvjFHL/zbK9BRRJAefCtXrnIak51zKKfIU1VGNuMi3p/Q5v7+u4qo+spKqqceR1
-	zYnWjiBCZLcPxvGFUYf7pMZbT2kFTVi0abKe1M7uA/dJHQvhhZ3NOjwsxMNJUvPmwjMvOBnMMma
-	k/9MMgzggbaUPRGivWwCdXi+aTZ8o2eJrwgZojlKfe/Ku1hYNKUqDTWicEfOg==
-X-Google-Smtp-Source: AGHT+IGh/41tYV0DFX3l7c0x9lgQ/kHgoNOQ34IGwzm6xEZgYdku2Q6VUassIFgNu+CSqyJ1J5JFKA==
-X-Received: by 2002:a17:902:8a86:b0:21a:8ce5:10dc with SMTP id d9443c01a7336-21a8ce52943mr144800515ad.28.1736615599471;
-        Sat, 11 Jan 2025 09:13:19 -0800 (PST)
-Received: from eleanor-wkdl.. ([140.116.96.203])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-21a9f219f0dsm29437785ad.139.2025.01.11.09.13.16
+        d=1e100.net; s=20230601; t=1736675733; x=1737280533;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=q2g0sdh+W5glSkagx457PsA9cI+PMduPyER5qBCP9uo=;
+        b=PCFTNThFd+mgC2b+ZYFidMuEHWY91JE/ZT0dQ8XoQRlm71uRIGunTRne02Wx4YFRdi
+         X2pvUfUoFUKHz0X3WBPe6AGSI61lj1PvDMKpD04/c8MRIPzPqoMcoV7WXV3//gMDr0wl
+         n6Wsy0/9RMb3v4j4oK1B5tur+B+DG7oEIHfbzDG4f/Tq9rEOpcaGECizfOLyINWTxGiU
+         Z1vRwadW5hCvM2QlSw4KJItRHLn4sHNzduQgkf74kDv1NJj0qhBec92p5g4QbgQ7hbxg
+         ePfIYmDVwbGVbdlLW5UQcpLhMu2dfFgLwstW8jSkaGvFt5e/NqosQDOCrKrhAm1Y2ejx
+         TwUA==
+X-Forwarded-Encrypted: i=1; AJvYcCXm41VCXAkZC8zXLky/WDHVuo/xu9//WvUPYfbjSVtM0ZMilq9zaPZhx8JwEGy5HtoFA+Lw/OvkyF6ZoMU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy98+aFRr5q5/yeLJE6bBl3z3qrLkxWPEYrbN0Wo5BxAyX6hc7j
+	lVKl1TiGiCpo7bT0iJDDx+1iANXIHMRoAKHwDIl6F4bWI5uz6RF4dfTTPNOVkEzbsgYkBUfxR2h
+	RxiKlXQucfQjf8rHpw0ODTgUSQZqHRG09H7ujt0YTJxWoNgC/mItQKqu2MLh4nXM=
+X-Gm-Gg: ASbGnctoaBMKQ7NsgZMRamicygethdgmjVwOGFOmjXYzHats6xkw3JYKhHV9qYyNfjK
+	EreviU6InruY02fnaSrgtRjuybyEfFez7k40XaXgS/rjKQ8EGEyvdh9beTZwjjDVlBrIHuZhPq9
+	/A6ppfs1VwlPfYs283PUSY3Cf22hPU7sErVEYdSjSEkiETAarE9KUvxyOPv1jCdVc1VuZhy3srY
+	ZVEEDiv83X+v9EQBrfMgWH/+QnsNmZUvOZ4/8gP4w2jJ/Rf56Zm5uvwcOM=
+X-Received: by 2002:a17:907:d1b:b0:aac:23f4:f971 with SMTP id a640c23a62f3a-ab2ab70a173mr1753854766b.33.1736675733514;
+        Sun, 12 Jan 2025 01:55:33 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IFxwq3cSzmX3Sr/t/JxywDCCAqRMgXJsypEs7qUCiLJx2f+d/bQof+BQSWZDWOMCFQMp6aY9A==
+X-Received: by 2002:a17:907:d1b:b0:aac:23f4:f971 with SMTP id a640c23a62f3a-ab2ab70a173mr1753853166b.33.1736675733170;
+        Sun, 12 Jan 2025 01:55:33 -0800 (PST)
+Received: from [192.168.10.3] ([151.62.105.73])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ab2c95647absm352956366b.118.2025.01.12.01.55.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 11 Jan 2025 09:13:18 -0800 (PST)
-From: Yu-Chun Lin <eleanor15x@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	naveen@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	visitorckw@gmail.com,
-	jserv@ccns.ncku.edu.tw,
-	Yu-Chun Lin <eleanor15x@gmail.com>,
-	kernel test robot <lkp@intel.com>
-Subject: [PATCH] powerpc: Fix warning with '__powerpc64__'
-Date: Sun, 12 Jan 2025 01:13:12 +0800
-Message-ID: <20250111171312.1513926-1-eleanor15x@gmail.com>
-X-Mailer: git-send-email 2.43.0
+        Sun, 12 Jan 2025 01:55:31 -0800 (PST)
+From: Paolo Bonzini <pbonzini@redhat.com>
+To: linux-kernel@vger.kernel.org,
+	kvm@vger.kernel.org
+Cc: seanjc@google.com,
+	linuxppc-dev@lists.ozlabs.org,
+	regressions@lists.linux.dev,
+	Christian Zigotzky <chzigotzky@xenosoft.de>,
+	stable@vger.kernel.org
+Subject: [PATCH 1/5] KVM: e500: always restore irqs
+Date: Sun, 12 Jan 2025 10:55:23 +0100
+Message-ID: <20250112095527.434998-2-pbonzini@redhat.com>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20250112095527.434998-1-pbonzini@redhat.com>
+References: <20250112095527.434998-1-pbonzini@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,67 +113,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 5huagGUethHiDhvpk7kkBFgcrjqAo5NaPRvndLhDMZA_1736675734
+X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
 
-As reported by the kernel test robot, the following error occurs:
+If find_linux_pte fails, IRQs will not be restored.  This is unlikely
+to happen in practice since it would have been reported as hanging
+hosts, but it should of course be fixed anyway.
 
-   arch/powerpc/lib/sstep.c: In function 'analyse_instr':
->> arch/powerpc/lib/sstep.c:1172:28: warning: variable 'suffix' set but not used [-Wunused-but-set-variable]
-    1172 |         unsigned int word, suffix;
-         |                            ^~~~~~
-   arch/powerpc/lib/sstep.c:1168:38: warning: variable 'rc' set but not used [-Wunused-but-set-variable]
-    1168 |         unsigned int opcode, ra, rb, rc, rd, spr, u;
-         |                                      ^~
-
-These variables are now conditionally defined with the '__powerpc64__'
-macro to ensure they are only used when applicable.
-
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202501100247.gEmkqu8j-lkp@intel.com/
-Signed-off-by: Yu-Chun Lin <eleanor15x@gmail.com>
+Cc: stable@vger.kernel.org
+Reported-by: Sean Christopherson <seanjc@google.com>
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 ---
- arch/powerpc/lib/sstep.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ arch/powerpc/kvm/e500_mmu_host.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index ac3ee19531d8..eea8653464e7 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1354,15 +1354,21 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- #ifdef CONFIG_PPC64
- 	unsigned int suffixopcode, prefixtype, prefix_r;
- #endif
--	unsigned int opcode, ra, rb, rc, rd, spr, u;
-+	unsigned int opcode, ra, rb, rd, spr, u;
- 	unsigned long int imm;
- 	unsigned long int val, val2;
- 	unsigned int mb, me, sh;
--	unsigned int word, suffix;
-+	unsigned int word;
-+#ifdef __powerpc64__
-+	unsigned int suffix;
-+	unsigned int rc;
-+#endif
- 	long ival;
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index e5a145b578a4..6824e8139801 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -479,7 +479,6 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 		if (pte_present(pte)) {
+ 			wimg = (pte_val(pte) >> PTE_WIMGE_SHIFT) &
+ 				MAS2_WIMGE_MASK;
+-			local_irq_restore(flags);
+ 		} else {
+ 			local_irq_restore(flags);
+ 			pr_err_ratelimited("%s: pte not present: gfn %lx,pfn %lx\n",
+@@ -488,8 +487,9 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 			goto out;
+ 		}
+ 	}
++	local_irq_restore(flags);
++
+ 	writable = kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
+-
+ 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
+ 				ref, gvaddr, stlbe);
  
- 	word = ppc_inst_val(instr);
-+#ifdef __powerpc64__
- 	suffix = ppc_inst_suffix(instr);
-+#endif
- 
- 	op->type = COMPUTE;
- 
-@@ -1480,7 +1486,9 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 	rd = (word >> 21) & 0x1f;
- 	ra = (word >> 16) & 0x1f;
- 	rb = (word >> 11) & 0x1f;
-+#ifdef __powerpc64__
- 	rc = (word >> 6) & 0x1f;
-+#endif
- 
- 	switch (opcode) {
- #ifdef __powerpc64__
 -- 
-2.43.0
+2.47.1
 
 
