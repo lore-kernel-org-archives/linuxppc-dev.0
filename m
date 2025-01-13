@@ -1,79 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-5162-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5163-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 274FBC02180
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2025 15:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EB92C02183
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2025 15:44:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YWxB05MnLz3cYQ;
-	Tue, 14 Jan 2025 02:33:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736782424;
-	cv=none; b=bGXtCgUNlR+OTdGE/klww2VI6GmzcIeZeh96HaAbuJptdZw30sgdLyE9GtY0NusGBlQH7t94LlceirS7LYlDuAlaTqBLoO8kMIchzXXJG4086gUawXZDb9GhkYmxBHPWLa4iE2o5hq4Ffa2OLG9WPcys4zLWoBTtOOkud7I6ryUlBUzN37fOZxbU9jo/wPde8pUkxCCKbRJxvzZqLTmxeBCIbZexX8JuAKFIWtBL8i/ufhngUq/fPkMWnlaxg9V/QXNa7+ymw9jAqAIpRcKdSYynXrjnIUFw/XHULEUjvQ4C/G3T/PxjqSFia7TDOOAsQ3LBIdNdshmKXgQjfVyCjw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YWxQW4Symz3cYr;
+	Tue, 14 Jan 2025 02:44:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::64a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736783075;
+	cv=none; b=kpGsgLoLPN87JLWVqX6ZYOdsMMeZePnqJelJ+AVtvUFgSjaCLLhyNb2Q32R1t/MFAzef9R7qXeRxRZvIERKvgQ70BSz6JXZZSyFLrOCcrZG3XmrQYGWoHNFPQqHUWnVFUI7FRaHduVB/8I95qu4tDakK7c0ObUHgDcqk7giljy0MoXualYkiNthLZ/TWYV+1Sx0UdcNnxNwfg/fQwS8cE4TrZPghiPLrdIpf9JSkvWnNFrVQUXhh2yXBRHcsGB88JtG+Y/PCRAPwcAkDkBcq6+9xc0aJShfTwjScdNOgEOiAKF9o3hemMTGDLokfnqeL6NVCKjrYrcpiku4KxnKlvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736782424; c=relaxed/relaxed;
-	bh=nS0VW7OpusrmvoM1qKliuIyxx2VelfJHJPe+7ERDfnk=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=hz3HdIE5FgFyvckxvszx3HepwwS113N03xQqllcx2rQ3cVi2EJjpSFrP7XB61enk64BcjibV33kbFC5aCz98zQbxWgT8j9FEyuZlqEDsyVXEQIJNk1Put8hMDNouk1Mw4z91n3RAuAXwFE+fOMLaRBzX80gDXl62gYWusKDeK6dbb4On+z+7IYWsQuRCO00ym65kq8a9i4f6ss0p3FMOMXOFG+duNfTuGqrS3cr9IKTSdKUZS6eP/g0rSKdtoGSFJmnFSqt3HIMV8RI+nwgKVvYi0Tgm7E4Lhz4G0feEJf3tvdAmvVBe+jeyxcZhDODXIhIgwArcuGzRB4Vg90KfVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Ss8cpixk; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1736783075; c=relaxed/relaxed;
+	bh=f9GN/9Nt3vZP1g4PXg+O1YxepiT+zT9oJT9rhlVkhGw=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=M5ZQjnvdh5hEp4OdhsM4tDk6r5iiLzj58VrrifEsa0QawtMmcm11Zd0UYSMHyRwbyUHP6iZ/Xq9ynEHgeKUMnp7SiQ04rRIWx4ek4Th5zmXy3Yzk4A9OYlOMd/pbE9uoToJRTqsS8eDiZ76TT3Gi1TFCdfRyQBQeuj28QTevYhW1m2gT8EvLXXgmGY9dWXypoAimGQlRCe8pakQj4zO8t521Uy/dHIIVzuGZRc093Jauy5z2nZxBhDSRTmZOT+QYSEUSnW8ywIsLCW6BImIxtSkci8fZUA1Sw3Cjt+umzsEe9KMYfLlus9YovV5yQ3JB/Xy6jBMXK/jzLszX2C5g7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=cP0Tq/Qr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=33jsfzwykdj8rd9mibfnnfkd.bnlkhmtwoob-cdukhrsr.nyk9ar.nqf@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Ss8cpixk;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=cP0Tq/Qr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=33jsfzwykdj8rd9mibfnnfkd.bnlkhmtwoob-cdukhrsr.nyk9ar.nqf@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWx9z0mQvz3cWB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2025 02:33:42 +1100 (AEDT)
-Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-2164b662090so73870075ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 07:33:42 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWxQV0brDz3cYh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2025 02:44:33 +1100 (AEDT)
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-2163dc0f689so114251205ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 07:44:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1736782415; x=1737387215; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=nS0VW7OpusrmvoM1qKliuIyxx2VelfJHJPe+7ERDfnk=;
-        b=Ss8cpixkhVxIMgaUY8Sk46+GxNjc/89mW3qRBsg5D6l083VGxVQHpHiGx7BwkE34P3
-         NbkFXK5FE9uCaBKjmV3VGt1afqIzQ/Vc31SVfkJNVvHCzvPCHrhZcj0Gy1gkOfqqYWqE
-         GI5SE6PUhbHP2MpPeiLU7hz8ntv7anjVxruhlcjk3lCuX8DnWNK0KITB9ENnYgSw9E/c
-         IGH1mTBiD7Ji35N8B5r3nFFYpjTN1emnwZFt8GXQB0TzCgbV9OiFRGOzl6ZNme6Oj21E
-         /7L1ERiuLg7B0hiFp/6DHSZywUZxM8v8brsaWESCrq3k8BT6z1861iBZ1kw1n5OnBD8c
-         0u0Q==
+        d=google.com; s=20230601; t=1736783070; x=1737387870; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=f9GN/9Nt3vZP1g4PXg+O1YxepiT+zT9oJT9rhlVkhGw=;
+        b=cP0Tq/Qrc5kDu5/XbRPd12z1fXt+jbrtVRFRQKscW9cMiyMQpyj/nlzjMF1gCnnJE7
+         fag/b5y9BFnNTSTag934vr3e2KNE9jARFQyaZHMWOWmNQZyEUNJ/qKFOAF9BMBlqZyke
+         GzV+bA8aZPsM4SqVu7w8xABHaAc/0T/ByZPMX6DODUHRvnS92Pf526uPrulSPC7vt+0M
+         9SogH7Z7Z0kkC97fOyCYvPo4CKMA9XNNksYZ9tCuZpJx88jd0cn7xq3g5r32KWa345l8
+         Ful60xHpIbWNmHaAhtOUus877AndzHt4AJrUUPlrq5PxqpfNMOVmADEpzCVODkIrhCE8
+         BEUw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736782415; x=1737387215;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=nS0VW7OpusrmvoM1qKliuIyxx2VelfJHJPe+7ERDfnk=;
-        b=hT/zRDBvEgOZdycqePGwyVfGPjx30XHjVVLyk2J9iKN4RTGXdjp+S6MzJ8SK3BWiK2
-         2lrFpImEXA9RPHfA/VBplKI4mp4QBgGFY8XdyUmGgEguEKGuLO/FRHVw8RHdvj2ZFCc4
-         FXYQcJhHmAzCAy6iX19pL7EXgYMsyNKpBQxJ6YH4D9kSSdB+lPlt4/uvKxFcDFBEYpiH
-         w9lSmtsTJI9yaUHw6kwD4nmuKSoUta9enfGPKLJ3VTNRkhDMeFz16eqZkHp6mkASegIW
-         PePRJTDIWY3hjOlyEbmV8urZ7VcvgE7yqgrsK3frKdwMUgIH2l5Fo//Tut4rldc22R4O
-         Y77g==
-X-Forwarded-Encrypted: i=1; AJvYcCUJurqGeZ6x4krUYake59cy3YgaOduHAY8zm6Ysb+1DsERV0bwKV4Lnh0N2jk7YvjOCm+jlLHjsc88bslE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzSM6kufPP8km4lD6JtLS41TIJr8K+QaCOk7ufANQZ0IktrivzA
-	a9JiGaFzWWgJA+yNb/t5a6B/F9L7BrkE/Hs+QJQ7SD5nllJFvGVc
-X-Gm-Gg: ASbGnctBT5muSuLpJ8BPTnEPLoIlZXJOSBG+SBWmfETcWEq+/y2ew6V6K1ub1N7XoUG
-	Sa+3IEADC3xjjG7c2dyOWIHi4lPJjpZVPDQu0jd+VWQhIqIoY+o5fu0OmBX11Ot3ldtAa8LFPsY
-	DptDdPsJev+vxZVOhCGkWULza1oyd0+gWzYVJLH4VMrXZF81GzoAEnOiYiFmmro9s/qULPXXXzy
-	kTlDdOH87OIx8xfr+GaYd6yo+SnsrKf+ElkmcXSEfdfC8Kx
-X-Google-Smtp-Source: AGHT+IFPqNgyn5QTfzD6MCfqvWw0Y/BlmXEY4FXRiNw3UKd4U8IM3kOvttZByuZ+r1aCmyFZbJ+JCA==
-X-Received: by 2002:a17:902:db0a:b0:212:996:3536 with SMTP id d9443c01a7336-21a83f4b11bmr357643555ad.10.1736782415029;
-        Mon, 13 Jan 2025 07:33:35 -0800 (PST)
-Received: from dw-tp ([171.76.81.42])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-21a9f21a04dsm55322025ad.151.2025.01.13.07.33.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jan 2025 07:33:34 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Thorsten Blum <thorsten.blum@linux.dev>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>, "Aneesh Kumar K.V (IBM)" <aneesh.kumar@kernel.org>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>, Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fadump: Use str_yes_no() helper in fadump_show_config()
-In-Reply-To: <20241230214142.952706-2-thorsten.blum@linux.dev>
-Date: Mon, 13 Jan 2025 20:39:53 +0530
-Message-ID: <87ikqivjge.fsf@gmail.com>
-References: <20241230214142.952706-2-thorsten.blum@linux.dev>
+        d=1e100.net; s=20230601; t=1736783070; x=1737387870;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=f9GN/9Nt3vZP1g4PXg+O1YxepiT+zT9oJT9rhlVkhGw=;
+        b=wsqA3yu42fGAVSHNBdITBRYSdu+tTEn053ZyOrqrQenmAvUsEc0q2o/qfL7DcUjMKo
+         8nv0Z8gL1Focxvuv8OddS/IcnNI1sSGYkrowO+NQO3oxxg4vnG7Fw//k3r/yrayI5Yi0
+         3g3NSLH0iIQmhzg4C2AE3+yldob0NHwe9prfkpNXqBpjkTRxxUIrln9CvEOCPhedKJzC
+         805ObYQeirUb0dYJWdx9pKho58aHIaZttiPmDV2aPl6TVi8JprnZIlduro8sa1kmD35P
+         xjfl/F/1YT0UYA38GXH4sel32LLiwfsBsplWmyu1g08IHswc9XEgciuhfMYdTJZeq5cl
+         68GA==
+X-Forwarded-Encrypted: i=1; AJvYcCVQ2OrI/KEWu7T/c0wCNwNVWClLqw3Wg3SzHX5V3mGPNekQx3FoEwlvxw1UiSMdGZcHgnb9SdUISIqqmFo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyBf3D9sefgJFsamftZcAjVdY2lcSrnyCJIEmaIacpEwE6dgseF
+	E1X2EZZTq2SSqGfv8Xs2s9ocYb8lygiZiffLwGitrlpGnY2NAcfpUgezAQQ0ZrUZXmEE5VSrufn
+	urw==
+X-Google-Smtp-Source: AGHT+IHIQyazhiyyUpnFFe5650540BmH10WSCzq7nQUkxQTSPWj6gISntiQcqyGsVty8NrTJi6F4Z/IpKIc=
+X-Received: from pfbfh41.prod.google.com ([2002:a05:6a00:3929:b0:72a:bc54:8507])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a21:3993:b0:1e1:adb9:d1a6
+ with SMTP id adf61e73a8af0-1e88d0f000fmr33694244637.41.1736783070268; Mon, 13
+ Jan 2025 07:44:30 -0800 (PST)
+Date: Mon, 13 Jan 2025 07:44:28 -0800
+In-Reply-To: <87ikqlr4vo.wl-maz@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,48 +75,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+Mime-Version: 1.0
+References: <20250111012450.1262638-1-seanjc@google.com> <20250111012450.1262638-4-seanjc@google.com>
+ <87ikqlr4vo.wl-maz@kernel.org>
+Message-ID: <Z4U03KRYy2DVEgJR@google.com>
+Subject: Re: [PATCH 3/5] KVM: Add a common kvm_run flag to communicate an exit
+ needs completion
+From: Sean Christopherson <seanjc@google.com>
+To: Marc Zyngier <maz@kernel.org>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, Oliver Upton <oliver.upton@linux.dev>, 
+	Michael Ellerman <mpe@ellerman.id.au>, kvm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
 
-Thorsten Blum <thorsten.blum@linux.dev> writes:
+On Sat, Jan 11, 2025, Marc Zyngier wrote:
+> On Sat, 11 Jan 2025 01:24:48 +0000,
+> Sean Christopherson <seanjc@google.com> wrote:
+> > 
+> > Add a kvm_run flag, KVM_RUN_NEEDS_COMPLETION, to communicate to userspace
+> > that KVM_RUN needs to be re-executed prior to save/restore in order to
+> > complete the instruction/operation that triggered the userspace exit.
+> > 
+> > KVM's current approach of adding notes in the Documentation is beyond
+> > brittle, e.g. there is at least one known case where a KVM developer added
+> > a new userspace exit type, and then that same developer forgot to handle
+> > completion when adding userspace support.
+> 
+> Is this going to fix anything? If they couldn't be bothered to read
+> the documentation, let alone update it, how is that going to be
+> improved by extra rules and regulations?
+> 
+> I don't see how someone ignoring the documented behaviour of a given
+> exit reason is, all of a sudden, have an epiphany and take a *new*
+> flag into account.
 
-> Remove hard-coded strings by using the str_yes_no() helper function.
->
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
-> ---
->  arch/powerpc/kernel/fadump.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
+The idea is to reduce the probability of introducing bugs, in KVM or userspace,
+every time KVM attaches a completion callback.  Yes, userspace would need to be
+updated to handle KVM_RUN_NEEDS_COMPLETION, but once that flag is merged, neither
+KVM's documentation nor userspace would never need to be updated again.  And if
+all architectures took an approach of handling completion via function callback,
+I'm pretty sure we'd never need to manually update KVM itself either.
 
+> > +7.37 KVM_CAP_NEEDS_COMPLETION
+> > +-----------------------------
+> > +
+> > +:Architectures: all
+> > +:Returns: Informational only, -EINVAL on direct KVM_ENABLE_CAP.
+> > +
+> > +The presence of this capability indicates that KVM_RUN will set
+> > +KVM_RUN_NEEDS_COMPLETION in kvm_run.flags if KVM requires userspace to re-enter
+> > +the kernel KVM_RUN to complete the exit.
+> > +
+> > +For select exits, userspace must re-enter the kernel with KVM_RUN to complete
+> > +the corresponding operation, only after which is guest state guaranteed to be
+> > +consistent.  On such a KVM_RUN, the kernel side will first finish incomplete
+> > +operations and then check for pending signals.
+> > +
+> > +The pending state of the operation for such exits is not preserved in state
+> > +which is visible to userspace, thus userspace should ensure that the operation
+> > +is completed before performing state save/restore, e.g. for live migration.
+> > +Userspace can re-enter the guest with an unmasked signal pending or with the
+> > +immediate_exit field set to complete pending operations without allowing any
+> > +further instructions to be executed.
+> > +
+> > +Without KVM_CAP_NEEDS_COMPLETION, KVM_RUN_NEEDS_COMPLETION will never be set
+> > +and userspace must assume that exits of type KVM_EXIT_IO, KVM_EXIT_MMIO,
+> > +KVM_EXIT_OSI, KVM_EXIT_PAPR, KVM_EXIT_XEN, KVM_EXIT_EPR, KVM_EXIT_X86_RDMSR,
+> > +KVM_EXIT_X86_WRMSR, and KVM_EXIT_HYPERCALL require completion.
+> 
+> So once you advertise KVM_CAP_NEEDS_COMPLETION, the completion flag
+> must be present for all of these exits, right? And from what I can
+> tell, this capability is unconditionally advertised.
+> 
+> Yet, you don't amend arm64 to publish that flag. Not that I think this
+> causes any issue (even if you save the state at that point without
+> reentering the guest, it will be still be consistent), but that
+> directly contradicts the documentation (isn't that ironic? ;-).
 
-In fadump.c file we have implicit include of string_choices.h i.e. 
+It does cause issues, I missed this code in kvm_arch_vcpu_ioctl_run():
 
-    include/linux/seq_file.h -> linux/string_helpers.h -> linux/string_choices.h 
+	if (run->exit_reason == KVM_EXIT_MMIO) {
+		ret = kvm_handle_mmio_return(vcpu);
+		if (ret <= 0)
+			return ret;
+	}
 
-Directly having string_choices include could be better. 
-    #include <linux/string_choices.h>
-
-However no hard preferences. The patch functionally looks correct to me. 
-
-Please feel free to add - 
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
-
->
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index 4b371c738213..8c531533dd3e 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -289,10 +289,8 @@ static void __init fadump_show_config(void)
->  	if (!fw_dump.fadump_supported)
->  		return;
->  
-> -	pr_debug("Fadump enabled    : %s\n",
-> -				(fw_dump.fadump_enabled ? "yes" : "no"));
-> -	pr_debug("Dump Active       : %s\n",
-> -				(fw_dump.dump_active ? "yes" : "no"));
-> +	pr_debug("Fadump enabled    : %s\n", str_yes_no(fw_dump.fadump_enabled));
-> +	pr_debug("Dump Active       : %s\n", str_yes_no(fw_dump.dump_active));
->  	pr_debug("Dump section sizes:\n");
->  	pr_debug("    CPU state data size: %lx\n", fw_dump.cpu_state_data_size);
->  	pr_debug("    HPTE region size   : %lx\n", fw_dump.hpte_region_size);
-> -- 
-> 2.47.1
+> Or is your intent to *relax* the requirements on arm64 (and anything
+> else but x86 and POWER)?
 
