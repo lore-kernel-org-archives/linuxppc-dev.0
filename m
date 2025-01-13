@@ -1,63 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-5154-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5155-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65F49C02180
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2025 14:40:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0F09C02184
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2025 15:06:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YWw0Q6gkRz30TY;
-	Tue, 14 Jan 2025 01:40:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YWwZz6QRBz30Vq;
+	Tue, 14 Jan 2025 02:06:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736779222;
-	cv=none; b=oGv2vxIRVWlQamryrrspiDxolZ85KluUN7TgXpnCFoMGNgv/B3BU7352NahI544IcN6CXD7j09vge3tO5c9iGlMfWN0TuZjDl+gDvlv9OcXaWaMNLAh+bpXL4BvlOeimtrhKwiL9rxDPcNwcSIuW/SOqPP0+OKV/QsHiPN/2jSXxoXgG+63ArFtQ2a7bWt/j15jU0a0Lu2QolPQ1Vxq5XG5u/VXIBRRM1XEtR6IBe8upmmly2fFfDhDwF/PWqn8rCsMgQaTdxnzF5n9E1459VR2XyLNuNuve16AGvK9AQZ7lREpP1y5zY2a4UkT+Zs9XNmx78vjufxRtj1OIfDddhQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736780811;
+	cv=none; b=kEtoLq3Ym4qC3ys9lLXns5fmMfApSI1K2uC7ggR7q8OlHDqgvTtjSgwTrT6gNcQ8EJ7dbQnD0HE53nXXxMX9JNNLPWK2sNY/h0usu30YLG5V4pDMih1Ry6OW28GB9wLy/SnfjSuOVet7pSg3RSuJ2/4dS5bBHV02hKpIUW3DvBsAt94hCBWd2j5cFMNHdmRZeNNklkNI/ebWC++LEJTMdQRjMG00EszMqxDsgShJEDhg+axI9eZ3eN47K+9FiFvW4NEnk/rJtu1t1GF08rpHGh8Pq1T2foY9sXyVHrj7KnCryjYn8TvLOyFHj7+//hhuMtsmM/6Zroqs3EPiTPlUbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736779222; c=relaxed/relaxed;
-	bh=+82re+Z1LrZRRopK/GGcdBsiN/kNdJCfofV49mEVpns=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VOHvVeq/lng9W2egIKXQ2iJqQjgUjkf22vulkyOgTyWrDb0fWyRIsZJoZrv6Y4ak7CPfFSxFlWGcoDp7JGlva6J7jSN2NYQ99tUioS2BgficvWv+jF/slm406FavBEeoP3I8jX8jbIr3QOlP26EJIddjYYz9niDmug/xkgb+bBbER8v2Hu4Dzl+f0QTHfFSbmLAoiz6md/qdpBAGUce9+1bFS3VpfMOmAbgaXCrFBTxOUdN04seIexbWnB73+S/X5qoCRw2oO2kmaDhCinu1MtCh9BXyOs8+5seJIlbPVtmcOZq/oXlywboJk8XaQ3Ol2tl73mWbYkTJ4zrRemS1DQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nlM6IauN; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1736780811; c=relaxed/relaxed;
+	bh=Jfm2pW5TbhssVpM+YXVA8wSDY9fQj+1+peqx/3FZeiA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=f645M/PKruzFO4v2llGH7+MdM3M6l1erXNLXQ5fPF8BjaVcXbUsTEaWHkRLBdHoI1jJDdLE1AYLCdFY1J9aeHTOtVhOIC2sOaYnVxMzbBk0S37vyLBs+ldx8/gYuwZOgeh1aziYtlZAyIz11edl6MbcqnEPo+ypp8vHwvomDMvVmrATpSbn+01se76u1wV50NGfW30UMsoc3Bnk6hA8zP/yF+TKWUQ9ZCCWIB+xulo/lFwwQDr9urmyfCLdFncsVzIfSTbnbnRMgiJSTeQe8jxg2PmvbEBH4dsDaZy9Oqv+YCnszK6l6WrV2ijrs8qYB32Bx1rDfWITOqfAtS44MKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S2t3IIRL; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nlM6IauN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S2t3IIRL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWw0P673Rz30Ss
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2025 01:40:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWwZy5J52z30TP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2025 02:06:50 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 30E705C53CD;
-	Mon, 13 Jan 2025 14:39:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D8E7C4CED6;
-	Mon, 13 Jan 2025 14:40:11 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 03D505C5405;
+	Mon, 13 Jan 2025 15:06:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 374C4C4CED6;
+	Mon, 13 Jan 2025 15:06:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736779213;
-	bh=LXLnwsUoapd7rB4MXtppWJ/94xPhiTZNAMTipBuP1bM=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=nlM6IauN5qYlDDo4U7ZhhsBv5Ok1CYmeBYJAmeDupHgXGneA26VqJJSTqSRAKJ9Pv
-	 RiPP/OuRNq1MX+RWrq1yTWckWwvvLbPelYQbf4Fehf8urTpzFqTgk99izZ+LEncos/
-	 CBgg6qY0/kfUmKQEDrMah+NwNJDngF1laqmmZbULZ1IPTGC269FfXZ/Lr7aKInCVT8
-	 v997u48DODE2Sd7fn0NS4qB5ConucOopQD/p5uq0btvPHIme9y9CiVPkzh5OK/Xj+7
-	 jBAu/EAEOB1yvFAvUZcJ41gEeWGcwMg7tkqvexy4VVp+hCGiiN2R52TKhdy+nE2uH9
-	 ZlG6I9UvtmFmw==
-From: Christian Brauner <brauner@kernel.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Christian Brauner <brauner@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-fsdevel@vger.kernel.org,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] select: Fix unbalanced user_access_end()
-Date: Mon, 13 Jan 2025 15:39:56 +0100
-Message-ID: <20250113-sitzreihen-dezernat-86551af2a480@brauner>
-X-Mailer: git-send-email 2.45.2
-In-Reply-To: <a7139e28d767a13e667ee3c79599a8047222ef36.1736751221.git.christophe.leroy@csgroup.eu>
-References: <a7139e28d767a13e667ee3c79599a8047222ef36.1736751221.git.christophe.leroy@csgroup.eu>
+	s=k20201202; t=1736780808;
+	bh=MnYPtt+wBgAFoKY6MEbLs4lijrZah08thJVWBEyzLe8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=S2t3IIRLJbwWNbHsUs7K+ZDy8o+z42cvwFShCiefAXvZ71+VWXM+5rIYSCvW5+yeL
+	 mwSMgj27u1KHezLA3CBM9DgAfM8zwCM/8fAc10IqtjkQZ9lSbsG2jWg3sR4r642MUa
+	 5yVFTvS0WStCpwDPqrR5Yp0EN3KhAtYALjzPpCOIkrLe0vgzWQePVfPTEZdvrCKRlg
+	 s/k98srRNshZ7OIGRLyqIgKeTpoYe726OFOKhYZHJt3m0vjql3Ov+3D7sh+fRPKfVK
+	 WTnLYhkQsyNVinbWNFdQT9E2/apjSNipjxwsNFnz2ZeiELr/nla8pvxy5dCf6lfvfc
+	 U8N3rG/Uq8WMg==
+Date: Mon, 13 Jan 2025 12:06:45 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Veronika Molnarova <vmolnaro@redhat.com>
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, jolsa@kernel.org,
+	adrian.hunter@intel.com, irogers@google.com, namhyung@kernel.org,
+	mpetlan@redhat.com, linux-perf-users@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+	kjain@linux.ibm.com, disgoel@linux.vnet.ibm.com,
+	hbathini@linux.ibm.com
+Subject: Re: [PATCH V2] tools/perf/tests/base_probe: Fix check for the count
+ of existing probes in test_adding_kernel
+Message-ID: <Z4UsBYLWa1CJfn3F@x1>
+References: <20250110094324.94604-1-atrajeev@linux.vnet.ibm.com>
+ <07be4391-4a28-4761-9171-26580aea6312@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,36 +70,22 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1168; i=brauner@kernel.org; h=from:subject:message-id; bh=LXLnwsUoapd7rB4MXtppWJ/94xPhiTZNAMTipBuP1bM=; b=owGbwMvMwCU28Zj0gdSKO4sYT6slMaS3qp5gyGz4k7n9RtSLbwu4Q8Nq1K7ONS75vXnOJS31F HcphdWHO0pZGMS4GGTFFFkc2k3C5ZbzVGw2ytSAmcPKBDaEi1MAJrJ9B8N/T8slD2264hU27rFs j7XdOE1t5uas49fy1b8yFfwXZbfaw/BXKuMfa4ld7eOD8W1bGTviM5oPHW+2uNS+eMXbDyqhbem 8AA==
-X-Developer-Key: i=brauner@kernel.org; a=openpgp; fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <07be4391-4a28-4761-9171-26580aea6312@redhat.com>
 
-On Mon, 13 Jan 2025 09:37:24 +0100, Christophe Leroy wrote:
-> While working on implementing user access validation on powerpc
-> I got the following warnings on a pmac32_defconfig build:
+On Mon, Jan 13, 2025 at 11:21:24AM +0100, Veronika Molnarova wrote:
+> On 1/10/25 10:43, Athira Rajeev wrote:
+> > But if there are other probes in the system, the log will
+> > contain reference to other existing probe too. Hence change
+> > usage of check_all_lines_matched.pl to check_all_patterns_found.pl
+> > This will make sure expecting string comes in the result
+> > 
+> > Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 > 
-> 	  CC      fs/select.o
-> 	fs/select.o: warning: objtool: sys_pselect6+0x1bc: redundant UACCESS disable
-> 	fs/select.o: warning: objtool: sys_pselect6_time32+0x1bc: redundant UACCESS disable
-> 
-> [...]
+> Acked-by: Veronika Molnarova <vmolnaro@redhat.com>
 
-Applied to the vfs-6.14.misc branch of the vfs/vfs.git tree.
-Patches in the vfs-6.14.misc branch should appear in linux-next soon.
+Thanks, applied to perf-tools-next,
 
-Please report any outstanding bugs that were missed during review in a
-new review to the original patch series allowing us to drop it.
-
-It's encouraged to provide Acked-bys and Reviewed-bys even though the
-patch has now been applied. If possible patch trailers will be updated.
-
-Note that commit hashes shown below are subject to change due to rebase,
-trailer updates or similar. If in doubt, please check the listed branch.
-
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/vfs/vfs.git
-branch: vfs-6.14.misc
-
-[1/1] select: Fix unbalanced user_access_end()
-      https://git.kernel.org/vfs/vfs/c/83e724bcabc5
+- Arnaldo
 
