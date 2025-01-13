@@ -1,36 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-5142-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5143-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBCC1C02180
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2025 10:18:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D30DE7719E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2025 10:40:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YWp9h1nJVz2ysv;
-	Mon, 13 Jan 2025 21:18:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736763480;
-	cv=none; b=MsAXIeB4FR7FzbiE4Iz37wEPSFe8xwSiNXu4GFqNVeHjUiH3q4lJqzk1ACGgeFtg0etUfnKm/6benEK3NnFp18ZbNI+/F+8lkGJEGWATjSmt2L5jTfkzr6zWP+TGY+SsKpCWDcEBfStLSejBjHLTfrLRLzGDfrmTO7TT0F4KwSjuudUn3Qb5bwp/Sz+cKuGkC/m7+JlRZDGYYJ5ucjJsyrZnDczaRw8p4obiDrB00Ps+uZ+nBxkYZg1dq6fSUSA80FtwdYHMb8YipDLUb2qOKSnnPVoV843bIK9Nj/wBT9kPxHK1cfAXqZG6ta3Ccpdt+S2nJBZj/jP1aZqSX0f8qQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YWpgZ6yhjz3048;
+	Mon, 13 Jan 2025 21:40:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736764826;
+	cv=none; b=HcWbXQfF3MZTmLTgMW1fFZjYf2LB7WZTf7b+bY8Yrlcr5PyfSdk0dyBUPqR3c0Ckhwfq+qTdBMu/sp3y0vV+EIvNC3/6wYPbf80pBT1uCksROiF8O3w2Cd29tf0OSUNAPFnglNtSmPpjPEnGoFeI1olSc9RCamyhx5o18zoGwmlD9ab6sGn8fs7susadkAhZBX8Osm8kmvF0jjo5rcYiNM8mxEkUn8QWkwiTe5Rv2WGS6CDlCy/pIlk6Y3B7YP3Nj4FTz+3mOTWo1LZqXiPTJt7qaAwg2ox5CRXBkU+HkEgJ35bF+aHKxpF552IracS1OxW5kzTQWMbfvAzqTENBRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736763480; c=relaxed/relaxed;
-	bh=DbJrjvQ8St4IYkmbZHqFnXi3esZtoeC/sv8Qj0rDjec=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aUntXODVW572dhIiGTNODYHZAw2pIFOOFWrzZMcDfQGw2YOVeKhfx9FkXUdUqreLVK6L8YDa/PsWxvZrthaZA7kDAtCLRzCvkJcPE2NOlpSbWwTU2mdYkYo2j+Gfg3+uu+CkHdvcFw/N9Oo+ZUWLuf1fK7hgoFXJv0FS/2KHaxjWBdYLhX3sfV8UVNpVA3nVmhIcEOJbPc5dNgrPsAWg7uKYGKxq8O3eA2ygisFejEMeVqEr9WnjPeluttfVCdM5Hd6WM3185BrxCPn9Vy5tw6Satk/rRbBt5ypliziOmhd6XXQwY32afgEf7vYua8TEbCamEopCaaxVNPVZa4aVNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=vladimir.murzin@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=vladimir.murzin@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YWp9f52qdz2ynn
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 21:17:57 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5D9A51424;
-	Mon, 13 Jan 2025 02:17:52 -0800 (PST)
-Received: from [10.1.28.144] (e121487-lin.cambridge.arm.com [10.1.28.144])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 23D0E3F66E;
-	Mon, 13 Jan 2025 02:17:20 -0800 (PST)
-Message-ID: <44d60dff-ab73-4d10-9110-c5c2ddebadf6@arm.com>
-Date: Mon, 13 Jan 2025 10:17:18 +0000
+	t=1736764826; c=relaxed/relaxed;
+	bh=o4tsKYDpvLj4ioh1d8CMeFdxY1E2+fnVC8DpzLndD4A=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=UcliF2TrfLDlpcvCWFV0NZE0ny12uhsg3KhgV8cFEVKgxy6p1FA6/bmJOo9UAMWgBQ161O4M/2JTIB/kG8zz2Tjt1J3Ezr4YkDUprCtUfepMWkHBrFhy2I/PjqnLzk5zUtCNXhMbDM/SYuPe/DfrydaPDxM4mTBFZ+BAPZK9raEoYQCqMnpZMIiRl0TdxFeVFd99Tn+UucV7GdnyNYljSpeKBWuMeN4RMCyK7lUpLTaLVv2umrQu64Xp0NZ3dZqvPGWkz/89n7c/K96+4PS6xKi1EuyiPYcvoKojqw2yk0XK7rUnTt/GzfP0D/HdH+/jl4WcHvejP4/iNbyBh5z44A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=U9kKe2ka; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=U9kKe2ka;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWpgY5hf9z2yRF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 21:40:25 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50D3v2ZA022978
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 10:40:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=o4tsKYDpvLj4ioh1d8CMeFdxY1E2+fnVC8DpzLndD
+	4A=; b=U9kKe2kamH8jiiRtzw3oHnDyHyJugiISAN8NQqNRZLTiMkZf5cgJ95CE/
+	srbLEm/sS1NlgMF59XuaV8hsEEy4TyrVrz4J2lJJ2nAvIl37SLsZxQlGHPCvdz3U
+	9/byUwxkwAtjnUHbDPPUEntvqkdlX0KQ0yIlhkVoZ5TzWmXk5Oix9bqZCiG2mK0S
+	L14eHPWX/YTmnF05rmRcDGPUwhcCX3zacdyR4XOBTRQTUlBnAU9F5DSSA2KRdMIO
+	z4J5PyXKPxUt+0F1O10PpOwu+rpDy9UItc2IlQaWea+Fs8KIjQiriFbr9QOcRMd0
+	N2RuOe9lkTC9TWwuq7N0fqJ6TE15Q==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 444f74k77u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 10:40:22 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50D8ZO56007364
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 10:40:22 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4443ymwqb0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 10:40:21 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50DAeI5K33555022
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 13 Jan 2025 10:40:18 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 57BA220043;
+	Mon, 13 Jan 2025 10:40:18 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8BE2E2004B;
+	Mon, 13 Jan 2025 10:40:17 +0000 (GMT)
+Received: from ltcden3-lp4.aus.stglabs.ibm.com (unknown [9.53.174.155])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 13 Jan 2025 10:40:17 +0000 (GMT)
+From: adubey@linux.ibm.com
+To: maddy@linux.ibm.com, atrajeev@linux.ibm.com, hbathini@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v6 1/3] powerpc/pseries: Macros and wrapper functions for H_HTM call
+Date: Mon, 13 Jan 2025 05:40:13 -0500
+Message-Id: <20250113104015.290566-1-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -43,70 +82,122 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [kvm-unit-tests PATCH v1 0/5] arm64: Change the default
- --processor to max
-To: Alexandru Elisei <alexandru.elisei@arm.com>, andrew.jones@linux.dev,
- eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
- frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com,
- david@redhat.com, pbonzini@redhat.com
-Cc: kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org
-References: <20250110135848.35465-1-alexandru.elisei@arm.com>
-Content-Language: en-GB
-From: Vladimir Murzin <vladimir.murzin@arm.com>
-In-Reply-To: <20250110135848.35465-1-alexandru.elisei@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: CSYlpUzYjGXiuUk5c1eJ2auSmteLkXh8
+X-Proofpoint-ORIG-GUID: CSYlpUzYjGXiuUk5c1eJ2auSmteLkXh8
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
+ priorityscore=1501 mlxlogscore=999 bulkscore=0 clxscore=1015
+ malwarescore=0 impostorscore=0 spamscore=0 lowpriorityscore=0
+ suspectscore=0 phishscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2411120000 definitions=main-2501130089
 
-On 1/10/25 13:58, Alexandru Elisei wrote:
-> (CC'ing everyone from MAINTAINERS because I'm touching configure)
-> 
-> Vladimir sent a test for MTE [1], which didn't work on the default -cpu
-> model, cortex-a57, because that CPU didn't implement MTE. There were two
-> options to get it working:
-> 
-> 1. Add -cpu max to the extra_params unittest parameter.
-> 2. Make the default value for the configure --processor option 'max'.
-> 
-> We decided that the second option was preferable, so here it is.
-> 
-> The first patch might look unrelated, but when I was writing the function
-> to select the default processor based on the architecture I noticed that
-> for arm64, $arch is first equal to aarch64, then it gets changed to arm64.
-> My first instinct was to have it be arm64 from the start, but then I
-> realized that, despite the help text, --arch=aarch64 has been supported
-> ever since arm64 was added to kvm-unit-tests. So I decided that it might
-> more prudent to go with it and document it.
-> 
-> [1] https://lore.kernel.org/all/20241212103447.34593-1-vladimir.murzin@arm.com/
-> 
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
-Thanks Alex! That removes extra hassle of setting up -cpu to match required
-feature. My MTE test continue working fine and require one less configuration
-option - undeniable improvement in user experience!
+Define macros and wrapper functions to handle
+H_HTM (Hardware Trace Macro) hypervisor call.
+H_HTM is new HCALL added to export data from
+Hardware Trace Macro (HTM) function.
 
-FWIW:
-Tested-by: Vladimir Murzin <vladimir.murzin@arm.com> # arm64
+v3 patch:
+  https://lore.kernel.org/linuxppc-dev/20240828085223.42177-1-maddy@linux.ibm.com/
 
-Vladimir
+Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
+Co-developed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+---
+ arch/powerpc/include/asm/hvcall.h         | 34 +++++++++++++++++++++++
+ arch/powerpc/include/asm/plpar_wrappers.h | 21 ++++++++++++++
+ 2 files changed, 55 insertions(+)
 
-> Alexandru Elisei (5):
->   configure: Document that the architecture name 'aarch64' is also
->     supported
->   configure: Display the default processor for arm and arm64
->   arm64: Implement the ./configure --processor option
->   arm/arm64: Add support for --processor=max
->   configure: arm64: Make 'max' the default for --processor
-> 
->  arm/Makefile.arm    |  1 -
->  arm/Makefile.common |  3 +++
->  configure           | 35 ++++++++++++++++++++++++++---------
->  3 files changed, 29 insertions(+), 10 deletions(-)
-> 
-> 
-> base-commit: 0ed2cdf3c80ee803b9150898e687e77e4d6f5db2
-> -- 2.47.1
-> 
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 65d1f291393d..eeef13db2770 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -348,6 +348,7 @@
+ #define H_SCM_FLUSH		0x44C
+ #define H_GET_ENERGY_SCALE_INFO	0x450
+ #define H_PKS_SIGNED_UPDATE	0x454
++#define H_HTM                   0x458
+ #define H_WATCHDOG		0x45C
+ #define H_GUEST_GET_CAPABILITIES 0x460
+ #define H_GUEST_SET_CAPABILITIES 0x464
+@@ -498,6 +499,39 @@
+ #define H_GUEST_CAP_POWER11	(1UL<<(63-3))
+ #define H_GUEST_CAP_BITMAP2	(1UL<<(63-63))
+ 
++/*
++ * Defines for H_HTM - Macros for hardware trace macro (HTM) function.
++ */
++#define H_HTM_FLAGS_HARDWARE_TARGET    (1ul << 63)
++#define H_HTM_FLAGS_LOGICAL_TARGET     (1ul << 62)
++#define H_HTM_FLAGS_PROCID_TARGET      (1ul << 61)
++#define H_HTM_FLAGS_NOWRAP             (1ul << 60)
++
++#define H_HTM_OP_SHIFT                 (63-15)
++#define H_HTM_OP(x)                    ((unsigned long)(x)<<H_HTM_OP_SHIFT)
++#define H_HTM_OP_CAPABILITIES          0x01
++#define H_HTM_OP_STATUS                        0x02
++#define H_HTM_OP_SETUP                 0x03
++#define H_HTM_OP_CONFIGURE             0x04
++#define H_HTM_OP_START                 0x05
++#define H_HTM_OP_STOP                  0x06
++#define H_HTM_OP_DECONFIGURE           0x07
++#define H_HTM_OP_DUMP_DETAILS          0x08
++#define H_HTM_OP_DUMP_DATA             0x09
++#define H_HTM_OP_DUMP_SYSMEM_CONF      0x0a
++#define H_HTM_OP_DUMP_SYSPROC_CONF     0x0b
++
++#define H_HTM_TYPE_SHIFT               (63-31)
++#define H_HTM_TYPE(x)                  ((unsigned long)(x)<<H_HTM_TYPE_SHIFT)
++#define H_HTM_TYPE_NEST                        0x01
++#define H_HTM_TYPE_CORE                        0x02
++#define H_HTM_TYPE_LLAT                        0x03
++#define H_HTM_TYPE_GLOBAL              0xff
++
++#define H_HTM_TARGET_NODE_INDEX(x)             ((unsigned long)(x)<<(63-15))
++#define H_HTM_TARGET_NODAL_CHIP_INDEX(x)       ((unsigned long)(x)<<(63-31))
++#define H_HTM_TARGET_CORE_INDEX_ON_CHIP(x)     ((unsigned long)(x)<<(63-47))
++
+ #ifndef __ASSEMBLY__
+ #include <linux/types.h>
+ 
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index 71648c126970..91be7b885944 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -65,6 +65,27 @@ static inline long register_dtl(unsigned long cpu, unsigned long vpa)
+ 	return vpa_call(H_VPA_REG_DTL, cpu, vpa);
+ }
+ 
++static inline long htm_call(unsigned long flags, unsigned long target,
++               unsigned long operation, unsigned long param1,
++               unsigned long param2, unsigned long param3)
++{
++       return plpar_hcall_norets(H_HTM, flags, target, operation,
++                                 param1, param2, param3);
++}
++
++static inline long htm_get_dump_hardware(unsigned long nodeindex,
++               unsigned long nodalchipindex, unsigned long coreindexonchip,
++               unsigned long type, unsigned long addr, unsigned long size,
++               unsigned long offset)
++{
++       return htm_call(H_HTM_FLAGS_HARDWARE_TARGET,
++                       H_HTM_TARGET_NODE_INDEX(nodeindex) |
++                       H_HTM_TARGET_NODAL_CHIP_INDEX(nodalchipindex) |
++                       H_HTM_TARGET_CORE_INDEX_ON_CHIP(coreindexonchip),
++                       H_HTM_OP(H_HTM_OP_DUMP_DATA) | H_HTM_TYPE(type),
++                       addr, size, offset);
++}
++
+ extern void vpa_init(int cpu);
+ 
+ static inline long plpar_pte_enter(unsigned long flags,
+-- 
+2.39.3
 
 
