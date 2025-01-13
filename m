@@ -1,95 +1,106 @@
-Return-Path: <linuxppc-dev+bounces-5146-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5147-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1E8BE7719E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2025 11:04:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8AF63E7719F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Jan 2025 11:27:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YWqCD2FS2z30Pp;
-	Mon, 13 Jan 2025 22:04:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736763696;
-	cv=none; b=QUPxiUbH+YeE/ohHr7/kf/4WOvrjwRMMKh867B+vFNOR49a8HmwT7nz06ZAfWdFYwFlI9aIapg14/5Prs/N5QDe+k75bVHtmz+kvri7rlwGTrW+jcvjWOWkxyhxvG69sKmeP84TPCVmDRf5z6ZmhbiEeYCknfLXuy8jFbuQ29nF5b85Ar2YWgvGv2iIEQHPx6CD47n4eRy4LJSLJ7cc0LqM/YypY26nZBAUWJuvLx2pW0QrMkglM7LXuIt+rioCJ8PjNeTDdFJs/XAjx7y1jXYhLTK8DYhYRes/fVkhgpEzvS2hGY1UGotLUu5R2OTWzTOSNmxCDm0CHAib0VyRSIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YWqkB0NKhz2yXd;
+	Mon, 13 Jan 2025 22:27:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736767665;
+	cv=none; b=VSsGLJBV+uo+KRDn3ec3gAMU47/VCt7tNzuLVGG6lF7YEKGm0h9PxX3WVEmYMgj83AZAJ6gqXjC2ia8PAJ8wYRS8NhITzGWr1i/p9PGQjcJmvj67z21iFEbXK5KPc7S5adp7Yh7OuThq9Yd1W2Zohts4alFIbaV0zGwG0DsSbdg0vRVTDb6tlNmtGNGpOsHYxWWS1Gw4LR6jhQFVGsKEV2VdXq13Tz97M6xkeT+F9dmUgXZWAxPqQXaKj9nIN0fUkHxOEjcSk1yquRoc8K4nM3zrsMZP3b4cBRgauHN2Jc0pn/GlA+KnlBR2bzCmMRWV/6fUnceyDRc0GWcFXlq0sQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736763696; c=relaxed/relaxed;
-	bh=Xt4e1f0wj8UzOdabGlkr3Uco4bHMbyif3w6wfY2dKJw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=loyBB0IA4raumMZqAkZT4qy2bEahM/FMae3FoYY6b2NbgpOITGQHT2PQ9eUBtTstEAKtvOQ5TNqR2T/WSyskpTcZpIwzEi3rI9HwXtLo3jkIga1v5FoF5gR5tJivh8SwKGGbszv5kMaFmFEO9WQH9IZ9ZdofhcVnmrcN+I7O8gN7I9hZnI+a19y22TQ95dXTJAn5NT0O3d5N05vQr44DK6aXpEUfpa0xxA3D3qC2ldfbf4ymiEYUOzYI182YSSZNJRsotYX7SxUW2c3gAcGkk2O4gX0HndenKKnVOwokAG63gp+9BEuzHJtD75AheiKgbY7D+6nHr1Fu5m+pl8GcTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=a7MxmY4d; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=a7MxmY4d; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vmolnaro@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	t=1736767665; c=relaxed/relaxed;
+	bh=UMT0laOUJ9M1D5IjkCfV/ptVZnIKmdTg97voNpSS9nc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GY4CnkrD5+7RQ3u8qMt/B5zaDtu2ck04fDQy8kgNZfyw15N6yQClgTg8Rjhd3PdO3Y1nEurlbVsk1JJDozFt9zHsHdSyOBwcPgO5HnZlYmFbgr2LaJV8jeq0ODNh3pzUOAcqXKsoENuz+JuIao4IrCMgvaY3ZJSkXjQT5sog62Ih/JQw/3OVfYCXNJc9/0AT2b1ePhPYCytx0ZN43h9iHiITAkvYURS4LdAKL6yIeWdJLj3gtrqU6Zn4VxAgmNgMhISnr5mQLcMb39i5ZafOGxHczyVkB1KyJGzLJE1gIC6HagNLIPrhCiuMjDgKY5rammtX/huR391xD4vgmJMHzg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=sbvzz2FT; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=I5CE8/zy; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=sbvzz2FT; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=I5CE8/zy; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=a7MxmY4d;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=a7MxmY4d;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=sbvzz2FT;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=I5CE8/zy;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=sbvzz2FT;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=I5CE8/zy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vmolnaro@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
+X-Greylist: delayed 480 seconds by postgrey-1.37 at boromir; Mon, 13 Jan 2025 22:27:44 AEDT
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWpFq34RLz304x
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 21:21:33 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1736763689;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWqk80726z2xps
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 22:27:43 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 0E0921F37C;
+	Mon, 13 Jan 2025 11:19:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1736767181; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Xt4e1f0wj8UzOdabGlkr3Uco4bHMbyif3w6wfY2dKJw=;
-	b=a7MxmY4dGnh2Zi0ddv8X0Gpo7/a+GV5kV1iSUj3PkBgQQGPHi1Zn/8uK5+SzdaA59HOgXZ
-	0udoOKa3MMWkEZyYwSYlMAiEqxvxJn1cNnW5SzGi8bbUyZCJODKTgw6drIsgZhMHXqVtsF
-	XMwAFOxkPveIRjKVfkH3HcrFljRWiCM=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1736763689;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
+	bh=UMT0laOUJ9M1D5IjkCfV/ptVZnIKmdTg97voNpSS9nc=;
+	b=sbvzz2FTVbbUucp+7/XWFQYGw/ubL6oc54Y0aCoBgLwAMxHZH9mZhIeJfvTiKWc4VcC2JO
+	l+UMj7p5mfLWHg9krKVR39faX+FPBAMRkMx/Ow55N06zImCiaNspp4+jOWfIccNDP4Fs4q
+	8bzTsiBD0EcouzCTYfDLnpqr5pi1yPo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1736767181;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Xt4e1f0wj8UzOdabGlkr3Uco4bHMbyif3w6wfY2dKJw=;
-	b=a7MxmY4dGnh2Zi0ddv8X0Gpo7/a+GV5kV1iSUj3PkBgQQGPHi1Zn/8uK5+SzdaA59HOgXZ
-	0udoOKa3MMWkEZyYwSYlMAiEqxvxJn1cNnW5SzGi8bbUyZCJODKTgw6drIsgZhMHXqVtsF
-	XMwAFOxkPveIRjKVfkH3HcrFljRWiCM=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-695-2ZcWLHZ_MDaHTxrkroBrtQ-1; Mon, 13 Jan 2025 05:21:27 -0500
-X-MC-Unique: 2ZcWLHZ_MDaHTxrkroBrtQ-1
-X-Mimecast-MFC-AGG-ID: 2ZcWLHZ_MDaHTxrkroBrtQ
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-38a684a096eso1490641f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2025 02:21:27 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736763686; x=1737368486;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=Xt4e1f0wj8UzOdabGlkr3Uco4bHMbyif3w6wfY2dKJw=;
-        b=G/wgpOb6CMchCBomcCjIzp+NfDbJwae5hL9zvmdFDDLtwgalNt2wTBM9AsAoosx109
-         HTBj7KErLDvq9EyL9Adi0LfvBd1EaFsVX6k3WWCVKhc7/AoV0OGy/KeSxZaTLOs/QgwH
-         zBX93PcqtKFkKIvb/G7gaIUWKXmcB10hKlbIQAaA0ecvkM72BJIHFqPw6k7vFhaPNTrf
-         E5BcaSdHIS7zXjBv/bPeVbnN9e7LxPZqYsIYc9nKAVQL9GtJ90BE13M9vifIkN46P/I3
-         52Lc2zknkjh+LFYM7ygpvzYdHW2owRo5YFsPX55ug2dmy+k4UDmhpd9cOcUrQq/PSUgx
-         6WNQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXWR6jGdoyU8PbOjuwqWt6JiRsSuwy8DwPMd2rwQkrkFf4u8byeJQegvna4w2ekkn7nVugRCq60lM2Juck=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxBFhwmQl5lF2euTzMJ4vURZ9sgiYLePwjkaxYIK2eXhPBkcldb
-	ykdIFTP1jC2DVKdEp8oZvehX2E0IDNZ3MSgDRQedka4tjhsyLpvOPye05BHI8neI/C+9V/w13sx
-	yRec9HS+qdpL+ZYFr++/rKDeLJvqP1HDKclSxRap2QVB1nCuVAFZY65RY2JNQEfY=
-X-Gm-Gg: ASbGncsBEnAYqhQYKvbDZ1BKQmFNZz1VznLUFpi5bzAThuh5cpv8pam2KvIAQNjMK5b
-	fymfyJGAXRNclyAem7jJb/E7S24r6SqLFdQq7ju/Ens/2iCiC80xKkGEKg22/EQhfmZqmu2hzZ5
-	vwNKh4ZOIdTuPTHRv/6DiGPMdexaTRNENq5+ouZ4bnSXopGnkTTxX9vXDLQ7/JUvAFg+pcrVB0w
-	r9mk6AaW0nf1jGUdaKxY+ncm84TLP7OTBRqtNc35LFNT8vYZ9KLJLlHm1Jrc5wwkqI9Xd4MjTt2
-	gpNlQOtSmKg=
-X-Received: by 2002:a5d:6da4:0:b0:385:de67:2269 with SMTP id ffacd0b85a97d-38a8730e04amr16461643f8f.36.1736763686053;
-        Mon, 13 Jan 2025 02:21:26 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IEbHzwMbQ6/3Fwsroyn0DZ7WCCmNBX7Lhvb0zjmXDUxgqVCaF4BgckjwfprSsRiJLDqnwAntQ==
-X-Received: by 2002:a5d:6da4:0:b0:385:de67:2269 with SMTP id ffacd0b85a97d-38a8730e04amr16461612f8f.36.1736763685695;
-        Mon, 13 Jan 2025 02:21:25 -0800 (PST)
-Received: from [10.202.147.124] (nat-pool-brq-u.redhat.com. [213.175.37.12])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38a8e4b81e4sm11963222f8f.64.2025.01.13.02.21.24
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 13 Jan 2025 02:21:25 -0800 (PST)
-Message-ID: <07be4391-4a28-4761-9171-26580aea6312@redhat.com>
-Date: Mon, 13 Jan 2025 11:21:24 +0100
+	bh=UMT0laOUJ9M1D5IjkCfV/ptVZnIKmdTg97voNpSS9nc=;
+	b=I5CE8/zyZTUYGcz4iD65P68ucesjsl655fmMQDmJCAELfC2H42QzzaWLknR2tQCevbMAOh
+	yyKGu24FeQTdSrDg==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1736767181; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UMT0laOUJ9M1D5IjkCfV/ptVZnIKmdTg97voNpSS9nc=;
+	b=sbvzz2FTVbbUucp+7/XWFQYGw/ubL6oc54Y0aCoBgLwAMxHZH9mZhIeJfvTiKWc4VcC2JO
+	l+UMj7p5mfLWHg9krKVR39faX+FPBAMRkMx/Ow55N06zImCiaNspp4+jOWfIccNDP4Fs4q
+	8bzTsiBD0EcouzCTYfDLnpqr5pi1yPo=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1736767181;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UMT0laOUJ9M1D5IjkCfV/ptVZnIKmdTg97voNpSS9nc=;
+	b=I5CE8/zyZTUYGcz4iD65P68ucesjsl655fmMQDmJCAELfC2H42QzzaWLknR2tQCevbMAOh
+	yyKGu24FeQTdSrDg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E8E1613876;
+	Mon, 13 Jan 2025 11:19:40 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id AoDXOMz2hGd8egAAD6G6ig
+	(envelope-from <jack@suse.cz>); Mon, 13 Jan 2025 11:19:40 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+	id A1B81A08E2; Mon, 13 Jan 2025 12:19:36 +0100 (CET)
+Date: Mon, 13 Jan 2025 12:19:36 +0100
+From: Jan Kara <jack@suse.cz>
+To: Andrey Albershteyn <aalbersh@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-api@vger.kernel.org, 
+	monstr@monstr.eu, mpe@ellerman.id.au, npiggin@gmail.com, 
+	christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com, luto@kernel.org, 
+	tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, 
+	x86@kernel.org, hpa@zytor.com, chris@zankel.net, jcmvbkbc@gmail.com, 
+	viro@zeniv.linux.org.uk, brauner@kernel.org, jack@suse.cz, arnd@arndb.de, 
+	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-security-module@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] fs: introduce getfsxattrat and setfsxattrat syscalls
+Message-ID: <doha6zamxgmqapwx4r6ehzbatzar4dcep33zehunonqforjzf5@lxpidn37tdjh>
+References: <20250109174540.893098-1-aalbersh@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,126 +113,161 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V2] tools/perf/tests/base_probe: Fix check for the count
- of existing probes in test_adding_kernel
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, acme@kernel.org,
- jolsa@kernel.org, adrian.hunter@intel.com, irogers@google.com,
- namhyung@kernel.org, mpetlan@redhat.com
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- maddy@linux.ibm.com, kjain@linux.ibm.com, disgoel@linux.vnet.ibm.com,
- hbathini@linux.ibm.com
-References: <20250110094324.94604-1-atrajeev@linux.vnet.ibm.com>
-From: Veronika Molnarova <vmolnaro@redhat.com>
-In-Reply-To: <20250110094324.94604-1-atrajeev@linux.vnet.ibm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 7uPXSrFeb-M63RDF_HNcudPG5uoIOKdHW_pok9uegEc_1736763686
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250109174540.893098-1-aalbersh@kernel.org>
+X-Spamd-Result: default: False [-3.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_RHS_NOT_FQDN(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCPT_COUNT_TWELVE(0.00)[32];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_THREE(0.00)[3];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,monstr.eu,ellerman.id.au,gmail.com,csgroup.eu,kernel.org,linux.ibm.com,linutronix.de,redhat.com,alien8.de,linux.intel.com,zytor.com,zankel.net,zeniv.linux.org.uk,suse.cz,arndb.de,lists.linux-m68k.org,lists.ozlabs.org];
+	R_RATELIMIT(0.00)[to_ip_from(RLyerg7kx5bdf6cnfzf33td54o)];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo]
 
+On Thu 09-01-25 18:45:40, Andrey Albershteyn wrote:
+> From: Andrey Albershteyn <aalbersh@redhat.com>
+> 
+> Introduce getfsxattrat and setfsxattrat syscalls to manipulate inode
+> extended attributes/flags. The syscalls take parent directory FD and
+> path to the child together with struct fsxattr.
+> 
+> This is an alternative to FS_IOC_FSSETXATTR ioctl with a difference
+> that file don't need to be open. By having this we can manipulated
+> inode extended attributes not only on normal files but also on
+> special ones. This is not possible with FS_IOC_FSSETXATTR ioctl as
+> opening special files returns VFS special inode instead of
+> underlying filesystem one.
+> 
+> This patch adds two new syscalls which allows userspace to set
+> extended inode attributes on special files by using parent directory
+> to open FS inode.
+> 
+> Also, as vfs_fileattr_set() is now will be called on special files
+> too, let's forbid any other attributes except projid and nextents
+> (symlink can have an extent).
+> 
+> CC: linux-api@vger.kernel.org
+> Signed-off-by: Andrey Albershteyn <aalbersh@redhat.com>
 
+Couple of comments below:
 
-On 1/10/25 10:43, Athira Rajeev wrote:
-> perftool-testsuite_probe fails in test_adding_kernel as below:
-> 	Regexp not found: "probe:inode_permission_11"
-> 	-- [ FAIL ] -- perf_probe :: test_adding_kernel :: force-adding probes ::
-> 	second probe adding (with force) (output regexp parsing)
-> 	event syntax error: 'probe:inode_permission_11'
-> 	  \___ unknown tracepoint
-> 
-> 	Error:  File /sys/kernel/tracing//events/probe/inode_permission_11
-> 	not found.
-> 	Hint:   Perhaps this kernel misses some CONFIG_ setting to
-> 	enable this feature?.
-> 
-> The test does the following:
-> 1) Adds a probe point first using :
->     $CMD_PERF probe --add $TEST_PROBE
-> 2) Then tries to add same probe again without —force
-> and expects it to fail. Next tries to add same probe again
-> with —force. In this case, perf probe succeeds and adds
-> the probe with a suffix number. Example:
-> 
->  ./perf probe --add inode_permission
->  Added new event:
->   probe:inode_permission (on inode_permission)
-> 
->  ./perf probe --add inode_permission --force
->  Added new event:
->   probe:inode_permission_1 (on inode_permission)
-> 
->   ./perf probe --add inode_permission --force
->  Added new event:
->   probe:inode_permission_2 (on inode_permission)
-> 
-> Each time, suffix is added to existing probe name.
-> To get the suffix number, test cases uses :
-> NO_OF_PROBES=`$CMD_PERF probe -l | wc -l`
-> 
-> This will work if there is no other probe existing
-> in the system. If there are any other probes other than
-> kernel probes or inode_permission, ( example: any probe),
-> "perf probe -l" will include count for other probes too.
-> 
-> Example, in the system where this failed, already some
-> probes were default added. So count became 10
->   ./perf probe -l | wc -l
->   10
-> 
-> So to be specific for "inode_permission", restrict the
-> probe count check to that probe point alone using :
-> NO_OF_PROBES=`$CMD_PERF probe -l $TEST_PROBE| wc -l`
-> 
-> Similarly while removing the probe using "probe --del *",
-> ( removing all probes ), check uses:
-> 
->  ../common/check_all_lines_matched.pl "Removed event: probe:$TEST_PROBE"
-> 
-> But if there are other probes in the system, the log will
-> contain reference to other existing probe too. Hence change
-> usage of check_all_lines_matched.pl to check_all_patterns_found.pl
-> This will make sure expecting string comes in the result
-> 
-> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+> @@ -2953,3 +2956,105 @@ umode_t mode_strip_sgid(struct mnt_idmap *idmap,
+>  	return mode & ~S_ISGID;
+>  }
+>  EXPORT_SYMBOL(mode_strip_sgid);
+> +
+> +SYSCALL_DEFINE4(getfsxattrat, int, dfd, const char __user *, filename,
+> +		struct fsxattr *, fsx, int, at_flags)
+				       ^^^ at_flags should be probably
+unsigned - at least they seem to be for other syscalls.
 
-Acked-by: Veronika Molnarova <vmolnaro@redhat.com>
+> +{
+> +	struct fd dir;
+> +	struct fileattr fa;
+> +	struct path filepath;
+> +	struct inode *inode;
+> +	int error;
+> +
+> +	if (at_flags)
+> +		return -EINVAL;
 
-Thanks,
-Veronika
+Shouldn't we support basic path resolve flags like AT_SYMLINK_NOFOLLOW or
+AT_EMPTY_PATH? I didn't put too much thought to this but intuitively I'd say
+we should follow what path_setxattrat() does.
 
-> ---
-> Changelog:
->  v1 -> v2:
->  No code changes. After being reviewed by Michael Petlan, since
->  initial patch was posted in 2024-10-14, rebased on top of latest
->  perf-tools-next
-> 
->  tools/perf/tests/shell/base_probe/test_adding_kernel.sh | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/tools/perf/tests/shell/base_probe/test_adding_kernel.sh b/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
-> index d541ffd44a93..f8b5f096d0d7 100755
-> --- a/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
-> +++ b/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
-> @@ -169,7 +169,7 @@ print_results $PERF_EXIT_CODE $CHECK_EXIT_CODE "force-adding probes :: second pr
->  (( TEST_RESULT += $? ))
+> +
+> +	if (!capable(CAP_FOWNER))
+> +		return -EPERM;
+
+Why? Firstly this does not handle user namespaces at all, secondly it
+doesn't match the check done during ioctl, and thirdly vfs_fileattr_get()
+should do all the needed checks?
+
+> +
+> +	dir = fdget(dfd);
+> +	if (!fd_file(dir))
+> +		return -EBADF;
+> +
+> +	if (!S_ISDIR(file_inode(fd_file(dir))->i_mode)) {
+> +		error = -EBADF;
+> +		goto out;
+> +	}
+> +
+> +	error = user_path_at(dfd, filename, at_flags, &filepath);
+> +	if (error)
+> +		goto out;
+
+I guess this is OK for now but allowing full flexibility of the "_at"
+syscall (e.g. like setxattrat() does) would be preferred. Mostly so that
+userspace programmer doesn't have to read manpage in detail and think
+whether the particular combination of path arguments is supported by a
+particular syscall. Admittedly VFS could make this a bit simpler. Currently
+the boilerplate code that's needed in path_setxattrat() &
+filename_setxattr() / file_setxattr() is offputting.
+
+> +
+> +	inode = filepath.dentry->d_inode;
+> +	if (file_inode(fd_file(dir))->i_sb->s_magic != inode->i_sb->s_magic) {
+> +		error = -EBADF;
+> +		goto out_path;
+> +	}
+
+What's the motivation for this check?
+
+> +
+> +	error = vfs_fileattr_get(filepath.dentry, &fa);
+> +	if (error)
+> +		goto out_path;
+> +
+> +	if (copy_fsxattr_to_user(&fa, fsx))
+> +		error = -EFAULT;
+> +
+> +out_path:
+> +	path_put(&filepath);
+> +out:
+> +	fdput(dir);
+> +	return error;
+> +}
+> +
+> +SYSCALL_DEFINE4(setfsxattrat, int, dfd, const char __user *, filename,
+> +		struct fsxattr *, fsx, int, at_flags)
+> +{
+
+Same comments as for getfsxattrat() apply here as well.
+
+> -static int copy_fsxattr_from_user(struct fileattr *fa,
+> -				  struct fsxattr __user *ufa)
+> +int copy_fsxattr_from_user(struct fileattr *fa, struct fsxattr __user *ufa)
+>  {
+>  	struct fsxattr xfa;
 >  
->  # adding existing probe with '--force' should pass
-> -NO_OF_PROBES=`$CMD_PERF probe -l | wc -l`
-> +NO_OF_PROBES=`$CMD_PERF probe -l $TEST_PROBE| wc -l`
->  $CMD_PERF probe --force --add $TEST_PROBE 2> $LOGS_DIR/adding_kernel_forceadd_03.err
->  PERF_EXIT_CODE=$?
+> @@ -574,6 +573,7 @@ static int copy_fsxattr_from_user(struct fileattr *fa,
 >  
-> @@ -205,7 +205,7 @@ print_results $PERF_EXIT_CODE $CHECK_EXIT_CODE "using doubled probe"
->  $CMD_PERF probe --del \* 2> $LOGS_DIR/adding_kernel_removing_wildcard.err
->  PERF_EXIT_CODE=$?
->  
-> -../common/check_all_lines_matched.pl "Removed event: probe:$TEST_PROBE" "Removed event: probe:${TEST_PROBE}_1" < $LOGS_DIR/adding_kernel_removing_wildcard.err
-> +../common/check_all_patterns_found.pl "Removed event: probe:$TEST_PROBE" "Removed event: probe:${TEST_PROBE}_1" < $LOGS_DIR/adding_kernel_removing_wildcard.err
->  CHECK_EXIT_CODE=$?
->  
->  print_results $PERF_EXIT_CODE $CHECK_EXIT_CODE "removing multiple probes"
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL(copy_fsxattr_from_user);
 
+I guess no need to export this function? The code you call it from cannot
+be compiled as a module.
+
+								Honza
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
 
