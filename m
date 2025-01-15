@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-5317-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D470C02183
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2025 22:51:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72A5CC02183
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2025 22:51:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYLnP5bmKz3dBY;
-	Thu, 16 Jan 2025 09:50:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYLnV1Y0fz3dBs;
+	Thu, 16 Jan 2025 09:50:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736981449;
-	cv=none; b=YmFcL26GknMipn3bka/UxWuBdyMfKOoBFO/x2zJ5nwBLwqSSNYE3q+nQ50fZWg8oC8cv1ZJgx6ayraj3ERAI5d4Gv3yKDxrRUZKwymFLiiOp/N5MF807yTXsYpXNpws1TlKdC1RfbH2XKaFIPSzmYWrJJ8e25l+SNUAzZXCEC9+iT1FN0F6SCtK0xEKlRSkW+IwYfAqqzb6UkXtnIHlmFmF9obNFoFPerZhplnTkHyQphjA4fJsq+8eew4ENyCvkgS82tU49iYTYK+CdgVwsvlX3rkyJyup/RvTbMsTUo5IovmHKzCKy6lt5dT9W9ZvAK4DLdug1U4soWr21ClQd7A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736981454;
+	cv=none; b=PjkwrSXe/RDaHMeKdb29XFEiMXk5GJPtwmqLWGDUKCaFImm5xdHSvTZfU2N6ardwiestbu3deESAscvnirjq06Cm8t+rs6DlNAP7NC8IOwK9+WPYynOsnPLBXrjm28SJYb0lkM6mpJZLtqpKWSD8cCQM/2TeMZ/Y/BuRWRD+v2+7X7OvOMCBKwXLe8ZvJWmHt7RCn5Mr7VPsvuXZ++v+WXCP+xO3wMNTzyOMbFxvHlv+tkX561WND4Uc3yMVCQLMdigfgdmbVrjVT7BRfavidpRuSnADoh28cS+EniZfC6lp4ugILTtnUI2CriVT05BvxgkpBnFxLa1tBDF7bwf7yQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736981449; c=relaxed/relaxed;
-	bh=VKdHw/qdMwDUW18Ht1RVEl8s++dYXED6cbCr6EBIbC0=;
+	t=1736981454; c=relaxed/relaxed;
+	bh=qfTp/UWLxQhb4kdvwD7PUGEWhGfvXUBEuWKEojvgNXA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NwnxrSWGWZIXsYWtb4QmyX51eby6JdkVN0pEa3cqRy3r3vF04FNeg7/601TeoUAGXX1QNVwSCbBvknGrcQX8x+O8EJQg55cpItKF+aLlICgQBvH9Du2Z7Df6v/ZJiXUJO77+J4bMCjBlKfeoXI2os962SJcGZfFvz4d1+Qo2La5C/Y07tm0nJxAbg1xbkKkzJGgO7cv15xYBKaevTf+AwIZxUscx9EUVguszDGZjKJi6JhC5yUBruzkbTQt2iqYGdRh9SCg75CA76Ppsgqfs8RgBgUFRLblS1BrIVRT4cHYV8qLbAKgHfkOo9s5MBCRhDXkhCHEMC8s9RQq8cG+MtA==
+	 MIME-Version; b=oFWCw5RiEjqBs3uBzJ26v+a4BPM45bDTI/rIHJfFNdEU/o+1ghYlx9TO4lY7aqxQ2BgXNCnvBMGkZPDqaSVEbJ/hRcMZkVTejxIywTaa+3vE1bb+FLr9IXUvLUiCLoSvJmTOjx3zdIpTQWS+c14TbP7ySWl0UYRI6EVrL5XgYtVoIQHp3YRdpQCXu5SsHXhfaz5rdpVV/3VHg+/6TrzU9VAlIPSif2TCZhF/bAhGR5XKmTcAo7jpuulNNhNNscbtQtztW4mOGUB/5Q0Git0HwS5omRWA5LwcGRNE99tK+nyQcar3Ls8tovlVBJNCeE7wzivRAct40WbU0XhL7m+SRA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYLnP0qXKz3cdD
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2025 09:50:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYLnT4RQVz3cdD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2025 09:50:53 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YYLct50S8z9sSq;
-	Wed, 15 Jan 2025 23:43:26 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4YYLck6gxXz9sSf;
+	Wed, 15 Jan 2025 23:43:18 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id kzmB7gqQMCTP; Wed, 15 Jan 2025 23:43:26 +0100 (CET)
+	with ESMTP id Dr5Ps3RQ53L0; Wed, 15 Jan 2025 23:43:18 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YYLct3ptxz9sSn;
-	Wed, 15 Jan 2025 23:43:26 +0100 (CET)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4YYLck5yY5z9sSd;
+	Wed, 15 Jan 2025 23:43:18 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6F3AF8B77A;
-	Wed, 15 Jan 2025 23:43:26 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id BCD238B77A;
+	Wed, 15 Jan 2025 23:43:18 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id xL4HBP5zkE8F; Wed, 15 Jan 2025 23:43:26 +0100 (CET)
+	with ESMTP id o-cH9_aqzb1D; Wed, 15 Jan 2025 23:43:18 +0100 (CET)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.202.221])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 08F088B774;
-	Wed, 15 Jan 2025 23:43:23 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A04948B774;
+	Wed, 15 Jan 2025 23:43:15 +0100 (CET)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Josh Poimboeuf <jpoimboe@kernel.org>,
 	Peter Zijlstra <peterz@infradead.org>,
@@ -61,9 +61,9 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	llvm@lists.linux.dev
-Subject: [PATCH v5 14/15] powerpc/bug: Annotate reachable after warning trap
-Date: Wed, 15 Jan 2025 23:42:54 +0100
-Message-ID: <25e776852c18471a78dca172c6253e16e8d28c51.1736955567.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v5 11/15] objtool: .rodata.cst{2/4/8/16} are not switch tables
+Date: Wed, 15 Jan 2025 23:42:51 +0100
+Message-ID: <c7449575c94672ec0ba5091e03007e0b052c15dc.1736955567.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <cover.1736955567.git.christophe.leroy@csgroup.eu>
 References: <cover.1736955567.git.christophe.leroy@csgroup.eu>
@@ -79,86 +79,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1736980964; l=2325; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=buhY3GoC0LGY1HUaDu1bTWqVjA42DPm4i5qlmE4s1Nc=; b=Zzx0LN7CaVkiZJDwdxeV+ibCLDFY96znMCMxLBDAlvwLJ2kQLdeuupSEGG4ZBBiXYwNYUUDFV Q5UGbSOaXY1D8KkUN/X3yxxwGstc0o5rsND8gM0oXshr0I9HPzvQNOo
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1736980964; l=775; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=ZbF92lKn/a2BcO+/Rt9A3tjdZfwn64sAKLypVaGo9hw=; b=HVqgwXZ3/EXy0sYgLk6n8xkh8j2Gln6sKIw9R/abzTvIv6inqVrwnFsumz+MkEEFrqio6tXGN 941QxuIDnGhBaJaHHI9M6hFbpY2HnvgcT9nhxdDO96zQyP/U1c+Ixib
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-This commit is copied from commit bfb1a7c91fb7 ("x86/bug: Merge
-annotate_reachable() into _BUG_FLAGS() asm")
-
-'twi 31,0,0' is a BUG instruction, which is by default a dead end.
-
-But the same instruction is used for WARNINGs and the execution
-resumes with the following instruction. Mark it reachable so
-that objtool knows that it is not a dead end in that case.
-
-Also change the unreachable() annotation by __builtin_unreachable()
-since objtool already knows that a BUG instruction is a dead end.
+Exclude sections named
+  .rodata.cst2
+  .rodata.cst4
+  .rodata.cst8
+  .rodata.cst16
+as they won't contain switch tables.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/bug.h | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ tools/objtool/check.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.h
-index 1db485aacbd9..c41e9f903b5b 100644
---- a/arch/powerpc/include/asm/bug.h
-+++ b/arch/powerpc/include/asm/bug.h
-@@ -4,6 +4,7 @@
- #ifdef __KERNEL__
- 
- #include <asm/asm-compat.h>
-+#include <linux/objtool.h>
- 
- #ifdef CONFIG_BUG
- 
-@@ -51,10 +52,11 @@
- 	".previous\n"
- #endif
- 
--#define BUG_ENTRY(insn, flags, ...)			\
-+#define BUG_ENTRY(insn, flags, extra, ...)		\
- 	__asm__ __volatile__(				\
- 		"1:	" insn "\n"			\
- 		_EMIT_BUG_ENTRY				\
-+		extra					\
- 		: : "i" (__FILE__), "i" (__LINE__),	\
- 		  "i" (flags),				\
- 		  "i" (sizeof(struct bug_entry)),	\
-@@ -67,12 +69,12 @@
-  */
- 
- #define BUG() do {						\
--	BUG_ENTRY("twi 31, 0, 0", 0);				\
--	unreachable();						\
-+	BUG_ENTRY("twi 31, 0, 0", 0, "");			\
-+	__builtin_unreachable();				\
- } while (0)
- #define HAVE_ARCH_BUG
- 
--#define __WARN_FLAGS(flags) BUG_ENTRY("twi 31, 0, 0", BUGFLAG_WARNING | (flags))
-+#define __WARN_FLAGS(flags) BUG_ENTRY("twi 31, 0, 0", BUGFLAG_WARNING | (flags), ANNOTATE_REACHABLE(1b))
- 
- #ifdef CONFIG_PPC64
- #define BUG_ON(x) do {						\
-@@ -80,7 +82,7 @@
- 		if (x)						\
- 			BUG();					\
- 	} else {						\
--		BUG_ENTRY(PPC_TLNEI " %4, 0", 0, "r" ((__force long)(x)));	\
-+		BUG_ENTRY(PPC_TLNEI " %4, 0", 0, "", "r" ((__force long)(x)));	\
- 	}							\
- } while (0)
- 
-@@ -92,7 +94,7 @@
- 	} else {						\
- 		BUG_ENTRY(PPC_TLNEI " %4, 0",			\
- 			  BUGFLAG_WARNING | BUGFLAG_TAINT(TAINT_WARN),	\
--			  "r" (__ret_warn_on));	\
-+			  "", "r" (__ret_warn_on));	\
- 	}							\
- 	unlikely(__ret_warn_on);				\
- })
+diff --git a/tools/objtool/check.c b/tools/objtool/check.c
+index 87b81d8e01c0..91436f4b3622 100644
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -2506,7 +2506,8 @@ static void mark_rodata(struct objtool_file *file)
+ 	 */
+ 	for_each_sec(file, sec) {
+ 		if (!strncmp(sec->name, ".rodata", 7) &&
+-		    !strstr(sec->name, ".str1.")) {
++		    !strstr(sec->name, ".str1.") &&
++		    !strstr(sec->name, ".cst")) {
+ 			sec->rodata = true;
+ 			found = true;
+ 		}
 -- 
 2.47.0
 
