@@ -1,72 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-5322-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5323-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70A42C02180
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2025 22:52:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65562C02180
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jan 2025 23:04:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYLnr00bcz3bq0;
-	Thu, 16 Jan 2025 09:51:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736981471;
-	cv=none; b=mZOZxCzc8odMMgAW2ytgqmUh5vbU7XRr/+B75A9CdpNZvzGFXnltIt873tdCNUCsDSK/9KYzYCdgNf6Hs9kyLcEY4BHQbsqCzGk6eTsGLARPkGcEa1atI9Uw9X1N5jYHmzJ/f2rVY0RuaRM6PB36gdlSrUZTgTtzRCKHy32ujZr6ircTwjCBGYPozKvvYK7eZV2zBVOcGqJsNZpzYBmDl+oExGuSH+58/tqheY4N9/J0pPOBLviLThG6/Zh3BuSAYkMDbsIxxshvTukupweYKdlAxKa8BLT5u/W5YQZDX8WFc1aIIxuzGQ0SUqnn+gvqtiP76dcRr1Rnd/xnipsdww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYM5H5mjwz3cfn;
+	Thu, 16 Jan 2025 10:04:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736982275;
+	cv=none; b=X5HwJpVvby/6u8EPjDZiisl2AaPx0+QXy8zcxKO6G9q+IXKLAOSKGbZZh9+Uvlwq6uqOMPqJaIbEFX1x2tZuXRYT34XzgWwsYH8+AuvTv/78b5faFsN+hMRTf/7jgNpPLXb2ORH96MYDYA3pLVSvav1Rp+EpFsylkOdwnfrtWo3nYYDDG+4+Gseqysz2EtmO/lx2p+Uqy/eBRdsBoHtDgUsHGsbCEDgL0qaF4Sq6PqamjvEc87Fh4BjPYbySsW1Ou4YvZy7mB0Ty6YTR3mlF9WewRH637NLEVCO4z4oEBgEP32W144DzAqRMDY7RO/vromTuyBIsMvXrD36npPf+Kw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736981471; c=relaxed/relaxed;
-	bh=Uu7A2wY2PSjLBWsLHAv2yKmZr6W0/jYsX07BxiaKOVg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jp8ZYEoHhoe+rTX8elXM4yudgF6bw5mECo0goORIvU6Whm4x8IwIv1fiI48Y8oA5/J3mkdej4xpCjZ6RI9eGvoDFaoHDcvZeZWRpyTnSwWmnEJ6XukT/BNLRbc2v7A9PMi0YwvxSrkk44OxSkwPQ5K/xkNHmg74LM35VIVgcnXvrjYOAZv/hlsvHY3mwR9nIiNFl+4XiHWsLcnj3udrzC+nrttb8KURYMIvt7S8guQVAt84700Km4VvQsmIYBP67ZGbCuL4Y7t1YJpILUqfP7KW3zjYaD3Jo/xm8tsdAnxSrpQyKQoxEiAwL1WfwgKwpmdvB/CR1EL1A+yK8tHjjwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYLnq3BL2z3dDh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2025 09:51:11 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YYLcH0Tmjz9sRy;
-	Wed, 15 Jan 2025 23:42:55 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Lk43c_pRbiud; Wed, 15 Jan 2025 23:42:54 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YYLcG6jFkz9sRs;
-	Wed, 15 Jan 2025 23:42:54 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D0BB48B77A;
-	Wed, 15 Jan 2025 23:42:54 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id v0ej-sZ1G8Ss; Wed, 15 Jan 2025 23:42:54 +0100 (CET)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.202.221])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 97C768B774;
-	Wed, 15 Jan 2025 23:42:52 +0100 (CET)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Josh Poimboeuf <jpoimboe@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Nick Desaulniers <ndesaulniers@google.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Julien Thierry <jthierry@redhat.com>,
-	Miroslav Benes <mbenes@suse.cz>,
-	Raphael Gault <raphael.gault@arm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	llvm@lists.linux.dev
-Subject: [PATCH v5 02/15] objtool: Move back misplaced comment
-Date: Wed, 15 Jan 2025 23:42:42 +0100
-Message-ID: <2700fb1284bc4f72bc835911a4ec914083ab88c7.1736955567.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <cover.1736955567.git.christophe.leroy@csgroup.eu>
-References: <cover.1736955567.git.christophe.leroy@csgroup.eu>
+	t=1736982275; c=relaxed/relaxed;
+	bh=+eI3xSTFkFziV5uiRDczRoC2ZPpW6ascy6sv67GeeVA=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=Zj4b6lXK2kZxQxZX8Iy/8baoiR3McfhLxzu5CGge7Sd6oPIHwOP9CyMqnjC6Fb4kukGE16Uuyflt8jOg2/zvGVvs6L4L2yUE0xM1Hh6eo9bJyn4zPIT5TL/qw+RtLXuCx0JMtFeU9LcDqW6AbBbZHO1vDkmDjs0rFEs4xY+N1Eebv79+gGwbFfBJ+CDhHrBpFENyU3P7khMyPtH7wPmHMfnX52bzYWx/GPkSaMus6Yts1bO7qbX8zEq28X8dy1e8QZep9gvewHGZWRzHQhrr2uBVJ2PwwABnp8vm9oJswax8Nqaftk+XtSiCh+wRDQY/az1n0Lx7YhNlaKr1mDpbMA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ndMSRS4a; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ndMSRS4a;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYM5G698tz3cdZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2025 10:04:34 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 5B91DA42639;
+	Wed, 15 Jan 2025 23:02:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2EF6C4CED1;
+	Wed, 15 Jan 2025 23:04:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1736982272;
+	bh=wXuBoyyk9ETcMFkcjs1CAzvucCe5P+ktEzNq56RKFKc=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=ndMSRS4aPOQkcBRM8NZ8koAU62dLa6PMuBifPbWPnqACBtNUs7AkyKfx3Ng/ZaVHa
+	 b/TPH3VpMkqnRFVnjBO9OfxflS9K7ZA9gYYrMy8V0YbO4mTbrf6x8whUPSok08TE64
+	 E1qG2kySB8p3WLmzqXPakm9gS4SF6cI3x1FRKAxd4z6ovPSwnsh1ZHoTo2Kw67J/U9
+	 UWHXiZBMXR/buiJsuaNEWw3/vRb/KFCKk/XbzAMDL3YN4eFDGZTYjPP8pdAahioTw1
+	 8KzQdBlCVlpgm83ybNQPfdNWrjE147p9LYRlSPmZXEa3pKZsjTq74/r3ZYZfZJgSJ6
+	 4e3/DcgTV8OkQ==
+Date: Wed, 15 Jan 2025 17:04:30 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Vignesh Raghavendra <vigneshr@ti.com>,
+	Siddharth Vadapalli <s-vadapalli@ti.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+	Minghuan Lian <minghuan.Lian@nxp.com>,
+	Mingkai Hu <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>,
+	linux-omap@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev
+Subject: Re: [PATCH 1/2] PCI: dwc: dra7xx: Use
+ syscon_regmap_lookup_by_phandle_args
+Message-ID: <20250115230430.GA560547@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,57 +73,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1736980963; l=1950; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=s34YeKjlQMgJ0BPjun7wq17Hk3TXlOThHycw1E0DOE4=; b=FjZMuTKO1BBEU/WNDtvmcSAP87mwnWMHPfelMSZxYWv7DX6+kEpMCzJSD2yYB5uE0Ar+DqUkH CJPdTNqKIY9CRZbyQyxefgC7e5KtjsPtOfvWnYr2wWKft32htJZaqT6
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250112-syscon-phandle-args-pci-v1-1-fcb6ebcc0afc@linaro.org>
 
-A comment was introduced by commit 113d4bc90483 ("objtool: Fix
-clang switch table edge case") and wrongly moved by
-commit d871f7b5a6a2 ("objtool: Refactor jump table code to support
-other architectures") without the piece of code added with the
-comment in the original commit.
+On Sun, Jan 12, 2025 at 02:39:02PM +0100, Krzysztof Kozlowski wrote:
+> Use syscon_regmap_lookup_by_phandle_args() which is a wrapper over
+> syscon_regmap_lookup_by_phandle() combined with getting the syscon
+> argument.  Except simpler code this annotates within one line that given
+> phandle has arguments, so grepping for code would be easier.
+> 
+> There is also no real benefit in printing errors on missing syscon
+> argument, because this is done just too late: runtime check on
+> static/build-time data.  Dtschema and Devicetree bindings offer the
+> static/build-time check for this already.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
+>  drivers/pci/controller/dwc/pci-dra7xx.c | 27 ++++++---------------------
+>  1 file changed, 6 insertions(+), 21 deletions(-)
+> 
+> diff --git a/drivers/pci/controller/dwc/pci-dra7xx.c b/drivers/pci/controller/dwc/pci-dra7xx.c
+> index 5c62e1a3ba52919afe96fbcbc6edaf70775a69cb..33d6bf460ffe5bb724a061558dd93ec7bdadc336 100644
+> --- a/drivers/pci/controller/dwc/pci-dra7xx.c
+> +++ b/drivers/pci/controller/dwc/pci-dra7xx.c
+> @@ -635,30 +635,20 @@ static int dra7xx_pcie_unaligned_memaccess(struct device *dev)
+>  {
+>  	int ret;
+>  	struct device_node *np = dev->of_node;
+> -	struct of_phandle_args args;
+> +	unsigned int args[2];
+>  	struct regmap *regmap;
+>  
+> -	regmap = syscon_regmap_lookup_by_phandle(np,
+> -						 "ti,syscon-unaligned-access");
+> +	regmap = syscon_regmap_lookup_by_phandle_args(np, "ti,syscon-unaligned-access",
+> +						      2, args);
+>  	if (IS_ERR(regmap)) {
+>  		dev_dbg(dev, "can't get ti,syscon-unaligned-access\n");
+>  		return -EINVAL;
+>  	}
+>  
+> -	ret = of_parse_phandle_with_fixed_args(np, "ti,syscon-unaligned-access",
+> -					       2, 0, &args);
+> -	if (ret) {
+> -		dev_err(dev, "failed to parse ti,syscon-unaligned-access\n");
+> -		return ret;
+> -	}
+> -
+> -	ret = regmap_update_bits(regmap, args.args[0], args.args[1],
+> -				 args.args[1]);
+> +	ret = regmap_update_bits(regmap, args[0], args[1], args[1]);
+>  	if (ret)
+>  		dev_err(dev, "failed to enable unaligned access\n");
+>  
+> -	of_node_put(args.np);
+> -
+>  	return ret;
+>  }
+>  
+> @@ -671,18 +661,13 @@ static int dra7xx_pcie_configure_two_lane(struct device *dev,
+>  	u32 mask;
+>  	u32 val;
+>  
+> -	pcie_syscon = syscon_regmap_lookup_by_phandle(np, "ti,syscon-lane-sel");
+> +	pcie_syscon = syscon_regmap_lookup_by_phandle_args(np, "ti,syscon-lane-sel",
+> +							   1, &pcie_reg);
+>  	if (IS_ERR(pcie_syscon)) {
+>  		dev_err(dev, "unable to get ti,syscon-lane-sel\n");
+>  		return -EINVAL;
+>  	}
+>  
+> -	if (of_property_read_u32_index(np, "ti,syscon-lane-sel", 1,
+> -				       &pcie_reg)) {
+> -		dev_err(dev, "couldn't get lane selection reg offset\n");
+> -		return -EINVAL;
+> -	}
 
-Fixes: d871f7b5a6a2 ("objtool: Refactor jump table code to support other architectures")
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- tools/objtool/arch/x86/special.c | 5 -----
- tools/objtool/check.c            | 6 ++++++
- 2 files changed, 6 insertions(+), 5 deletions(-)
+Wow.  I believe you that syscon_regmap_lookup_by_phandle_args() is
+equivalent to both:
 
-diff --git a/tools/objtool/arch/x86/special.c b/tools/objtool/arch/x86/special.c
-index 9c1c9df09aaa..76c7933bcb19 100644
---- a/tools/objtool/arch/x86/special.c
-+++ b/tools/objtool/arch/x86/special.c
-@@ -142,11 +142,6 @@ struct reloc *arch_find_switch_table(struct objtool_file *file,
- 	    strcmp(table_sec->name, C_JUMP_TABLE_SECTION))
- 		return NULL;
- 
--	/*
--	 * Each table entry has a rela associated with it.  The rela
--	 * should reference text in the same function as the original
--	 * instruction.
--	 */
- 	rodata_reloc = find_reloc_by_dest(file->elf, table_sec, table_offset);
- 	if (!rodata_reloc)
- 		return NULL;
-diff --git a/tools/objtool/check.c b/tools/objtool/check.c
-index 129c4e2245ae..58d9b1a750e3 100644
---- a/tools/objtool/check.c
-+++ b/tools/objtool/check.c
-@@ -2036,6 +2036,12 @@ static void find_jump_table(struct objtool_file *file, struct symbol *func,
- 		table_reloc = arch_find_switch_table(file, insn, &table_size);
- 		if (!table_reloc)
- 			continue;
-+
-+		/*
-+		 * Each table entry has a rela associated with it.  The rela
-+		 * should reference text in the same function as the original
-+		 * instruction.
-+		 */
- 		dest_insn = find_insn(file, table_reloc->sym->sec, reloc_addend(table_reloc));
- 		if (!dest_insn || !insn_func(dest_insn) || insn_func(dest_insn)->pfunc != func)
- 			continue;
--- 
-2.47.0
+  - syscon_regmap_lookup_by_phandle() followed by
+    of_parse_phandle_with_fixed_args(), and
 
+  - syscon_regmap_lookup_by_phandle() followed by
+    of_property_read_u32_index()
+
+but I can't say it's obvious to this syscon- and OF-naive reviewer,
+even after tracing a few layers in :)
+
+Bjorn
 
