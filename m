@@ -1,50 +1,150 @@
-Return-Path: <linuxppc-dev+bounces-5337-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5338-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E4DDC02180
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2025 09:50:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 545FFC02180
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2025 10:29:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYdQ719Vbz30VV;
-	Thu, 16 Jan 2025 20:50:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737021007;
-	cv=none; b=UPTf2XofFPuYeVDMGwq3YvMBKpO6FuxaP431qz4t0AXOfsgPUpRZj9qdUfS2m9/B2dhac5xfOyJSysVgDwkGlIfjMw9OObkj3lFbxpkAL4Hy9y/DGka/M/4fP+bMmA2LcXQcnWajhw8716SLZeMPlgcf+70J2qkCX24eQsEA5YApO5YHrj7+Fy060iKWGF8pLQwoS/BuFxKgxB8kScmnILtBgFeDD5hv4yflAlpS07p6ZIh/0a73FrGFqQZHQgDLxd8ToiVpfiDYbXXYtGcnhsnYRx4v1xU5MXQYctzUYhMZGm2oG2Yx5sMg8qugFjGIeSgpBqpApw7mLTpMC9UH7Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYfHs5ggXz3bjs;
+	Thu, 16 Jan 2025 21:29:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f9:3051:3f93::2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737023385;
+	cv=none; b=V+SG+9zn0A9VLQDx4zUha7elEeNopDKD6uNroAaLmGWXs4GWzUL51mN2krpO10uRzsp75dN4+/yW5KwSz6LWo/jUbHj1M3ZGhesW2IAHB1vw8fsoZFoocIWLcdZFwEz+kvrnToO7DLLkaMeB9WIgi/nLAD7Ow5MANPn+xAbM0eApGlimjcA5T+1nie+k7vIkLAAgx9IFU+AEsmHvbiChHpVFfDrMbRcjyauvbCMUyt9rJ3yd0XsuYhwzM3GtqDvmH7mqZr5lMy9v64jS9VFPcG9LPg9UieIDC6xE7vzAqmu4DU42FOxZ73x5+w0O/Yn5bs3ZqWIqmGxzFJ+1k+A0dg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737021007; c=relaxed/relaxed;
-	bh=N++8J+/BNEg8KNeo6FWcNQJ3JMXvJ7Y76KbvsY7n8B0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XGq7PutG4NlTcaTJgGI4b67uX0kT8xuQTVoBw20Xwytim9exWzXlaiRmWUq4D3Mta8wGRlsUKTaJOSIi6QvIe66dGSRx0s4Tv00zhOjJQXl4yBzsEA5jeJEwey3ibbc2zeLQ0eJUqgBv5o89Vae5SJHhVH9xbVyEDwB3D/s+3W0itgB+egRUEGzYl+E6patp5mX7NIa3LStP9UaHVn47lQDTe92Z5zgReTxwYmuKFkOw1aXyISvidLvBGZ4/uOlhoyJcdSRP9LaphGcXWsjxEG+iv973sxbD2fFBcv1uXs3qGHAEHbnVrlOoc0tRRnsE/pCSZfUSlPlObHaaZhE2+w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYdQ53DPtz3020
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2025 20:50:04 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YYd1205DMz9sYh;
-	Thu, 16 Jan 2025 10:31:50 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id D7y-gc8VZ5x8; Thu, 16 Jan 2025 10:31:49 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YYd0y4ZFDz9sTX;
-	Thu, 16 Jan 2025 10:31:46 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8BF458B77A;
-	Thu, 16 Jan 2025 10:31:46 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id khfz3ZtWsvHe; Thu, 16 Jan 2025 10:31:46 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E732B8B774;
-	Thu, 16 Jan 2025 10:31:45 +0100 (CET)
-Message-ID: <b97011b1-9e9f-4de4-af42-41cd6bf7c53b@csgroup.eu>
-Date: Thu, 16 Jan 2025 10:31:41 +0100
+	t=1737023385; c=relaxed/relaxed;
+	bh=GQBvA11kyxIGOlMc4gw5ALfkgQqX/TyrIH9O3oAvLFA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=llhMGARHC/ekxsjH3d8NYEgae2tpuFsfXmlFP0cu+oZYkKl8tgt629BoCdsb767PYz/Dw/lhr9I6O6imYtRshBVaoIf3fvgUK0Rnl3mgzn5a77MchOxNv4C1X7UwGpzArDHwY4XVa0TBMj0d0BkVIPRLBkyKWSyqudjXOvAMJEqSg7/e/3VC+k2mMqywLgIiSgCPWha91dWOddzkj6niuYP6Hb671gLH4vdQNtp/mafI/OqWbOXeRRWLfegoe8FSHqDPjVid8d25vi44c2IQL0iFAnQ+K/V2QBHLpJqbzHskHHLHTfHpgGTQb24ZhsGh6etTk/tA96JAKDn5u7cLog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=FM40lE/0; dkim-atps=neutral; spf=pass (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=FM40lE/0;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 36462 seconds by postgrey-1.37 at boromir; Thu, 16 Jan 2025 21:29:44 AEDT
+Received: from mail.alien8.de (mail.alien8.de [IPv6:2a01:4f9:3051:3f93::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYfHr4x7bz301n
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2025 21:29:44 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id C3C7840E02BE;
+	Thu, 16 Jan 2025 10:29:39 +0000 (UTC)
+X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
+Received: from mail.alien8.de ([127.0.0.1])
+	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id MFOmT_gDX9aa; Thu, 16 Jan 2025 10:29:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
+	t=1737023375; bh=GQBvA11kyxIGOlMc4gw5ALfkgQqX/TyrIH9O3oAvLFA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=FM40lE/0clitssFsEKe5JK0a143dAnkAItQNq6yMfahZmpGeSTt09D5HGf0pFLbt8
+	 ulpp29oYaFstDERke8ThqjtXoN04wo6eTBNIkCpJpYEXzS9U9b6shsRrnjlVJY+eKW
+	 TBn1/+CZ9ngMH08pwT66FQz7AXQy6uCPmHYlis0QOsac6iB9mWKsXjQbzbnmjnFYRL
+	 rZuO8syduQMjrFLSjkGi0HDUyE5i/fs8xiEFxdQfkwB7MgmrqT5n5XzifvkD8pCoqz
+	 5X1jUm0gItWfUGbyRkcvKB+w0NCTaoWmvE8UGl8msx3A8F9pgsooW7AjKtjxpPd8Lg
+	 Fb16TJfn+gMvgYR9ZsMlvBBT0VyKZ8xqAHFUwbZBUJJBetncTrqjjppvD9l7XGyf4m
+	 juTTN1zpyhjrfd7TJsAviRyvUSFuCvbml3Dt2L9NGpEIVm/zwFrWYVYuT654H8gFk2
+	 2Yj2R3th9hwTaGTH/t/mjjo+AyzreQe3eFBzv5ejybagmNkRrbkC3tIXtHARl+Igxz
+	 KDg7YnAEPlNEP63WkcD8y4HxsuP37idpXVeYFeL/U5iPMx4eRF2w1AcbW6UgXuHjtO
+	 b3RYhp+4K4Ia7A1PVcGG9NkyVI2JCvCFPMGn35tDMiM9QmJ3MEVxqzNgvDl6r7hKMW
+	 MGq/1HBafOJLETwhOQ5EmCKY=
+Received: from zn.tnic (p200300ea971f93c3329c23fFFEa6a903.dip0.t-ipconnect.de [IPv6:2003:ea:971f:93c3:329c:23ff:fea6:a903])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
+	(No client certificate requested)
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 9F55140E028B;
+	Thu, 16 Jan 2025 10:27:52 +0000 (UTC)
+Date: Thu, 16 Jan 2025 11:27:47 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Brendan Jackman <jackmanb@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>,
+	Brian Cain <bcain@quicinc.com>, Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Michal Simek <monstr@monstr.eu>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Dinh Nguyen <dinguyen@kernel.org>, Jonas Bonn <jonas@southpole.se>,
+	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+	Stafford Horne <shorne@gmail.com>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Mike Rapoport <rppt@kernel.org>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>,
+	Christoph Lameter <cl@linux.com>,
+	Sean Christopherson <seanjc@google.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Josh Poimboeuf <jpoimboe@kernel.org>,
+	Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, x86@kernel.org,
+	linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+	linux-arch@vger.kernel.org, linux-mm@kvack.org,
+	linux-trace-kernel@vger.kernel.org,
+	linux-perf-users@vger.kernel.org, kvm@vger.kernel.org,
+	linux-efi@vger.kernel.org
+Subject: Re: [PATCH RFC v2 01/29] mm: asi: Make some utility functions
+ noinstr compatible
+Message-ID: <20250116102747.GAZ4jfI9HG3K-PW7nf@fat_crate.local>
+References: <20250110-asi-rfc-v2-v2-0-8419288bc805@google.com>
+ <20250110-asi-rfc-v2-v2-1-8419288bc805@google.com>
+ <20250116001858.GDZ4hQctZe_PFvJ0AJ@fat_crate.local>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,132 +157,21 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RESEND PATCH] powerpc/kprobes: don't save r13 register in kprobe
- context
-To: pangliyuan <pangliyuan1@huawei.com>, mpe@ellerman.id.au,
- npiggin@gmail.com, naveen@kernel.org, maddy@linux.ibm.com,
- anil.s.keshavamurthy@intel.com, davem@davemloft.net, mhiramat@kernel.org,
- rostedt@goodmis.org
-Cc: wangfangpeng1@huawei.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20241209091039.72786-1-pangliyuan1@huawei.com>
- <20250116084539.58847-1-pangliyuan1@huawei.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250116084539.58847-1-pangliyuan1@huawei.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20250116001858.GDZ4hQctZe_PFvJ0AJ@fat_crate.local>
 
+On Thu, Jan 16, 2025 at 01:18:58AM +0100, Borislav Petkov wrote:
+> Long story short, lemme try to poke around tomorrow to try to figure out what
+> actually happens. It could be caused by the part of Rik's patches and this one
+> inlining things. We'll see...
 
+Looks transient... The very similar guest boots fine on another machine. Let's
+watch this...
 
-Le 16/01/2025 à 09:45, pangliyuan a écrit :
-> [Vous ne recevez pas souvent de courriers de pangliyuan1@huawei.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> 
-> When CONFIG_STACKPROTECTOR_STRONG is enabled and FTRACE is disabled on
-> powerpc64, repeatedly triggering the kprobe process may cause stack check
-> failures and panic.
-> 
-> Case:
-> There is a kprobe(do nothing in handler) attached to the "shmem_get_inode",
-> and a process A is creating file on tmpfs.
-> 
->                             CPU0
-> A |r13 = paca_ptrs[0], paca_ptrs[0]->canary=A->stack_canary
->    |touch a file on tmpfs
->    |shmem_mknod():
->    |    load A's canary through r13 and stored it in A's stack
->    |    shmem_get_inode():
->    |        enter kprobe first
->    |        optinsn_slot():
->    |            stored r13 (paca_ptrs[0]) in stack
-> 
->    ......
-> 
->    ==> schedule,  B run on CPU0, A run on CPU1
-> 
->                             CPU0
-> B |r13 = paca_ptrs[0], paca_ptrs[0]->canary=B->stack_canary
->    |do something...
->                             CPU1
-> A |            r13 = paca_ptrs[1], paca_ptrs[1]->canary=A->stack_canary
->    |            about to leave 'optinsn_slot', restore r13 from A's stack
->    |            r13 = paca_ptrs[0], paca_ptrs[0]->canary=B->stack_canary
->    |            leave optinsn_slot, back to shmem_get_inode
->    |        leave shmem_get_inode, back to shmem_mknod
->    |    do canary check in shmem_mknod, but canary stored in A's stack (A's
->         canary) doesn't match the canary loaded through r13 (B's canary),
->         so panic
-> 
-> When A(on CPU0) entring optinsn_slot, it stored r13(paca_ptrs[0]) in stack,
-> then A is scheduled to CPU1 and restore r13 from A's stack when leaving
-> 'optinsn_slot'. Now A is running on CPU1 but r13 point to CPU0's
-> paca_ptrs[0], at this time paca_ptrs[0]->__current points to another
-> process B, which cause A use B's canary to do stack check and panic.
-> 
-> This can be simply fixed by not saving and restoring the r13 register,
-> because on powerpc64, r13 is a special register that reserved to point
-> to the current process, no need to restore the outdated r13 if scheduled
-> had happened.
+-- 
+Regards/Gruss,
+    Boris.
 
-Does r13 really points to current process ? I thought it was pointing to 
-PACA which is a structure attached to a given CPU not a given process.
-
-By the way, don't we have the same problem on powerpc32 with register r2 ?
-
-> 
-> Fixes: 51c9c0843993 ("powerpc/kprobes: Implement Optprobes")
-> Signed-off-by: pangliyuan <pangliyuan1@huawei.com>
-> ---
->   arch/powerpc/kernel/optprobes_head.S | 12 ++++++------
->   1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/optprobes_head.S b/arch/powerpc/kernel/optprobes_head.S
-> index 35932f45fb4e..bf0d77e62ba8 100644
-> --- a/arch/powerpc/kernel/optprobes_head.S
-> +++ b/arch/powerpc/kernel/optprobes_head.S
-> @@ -10,12 +10,12 @@
->   #include <asm/asm-offsets.h>
-> 
->   #ifdef CONFIG_PPC64
-> -#define SAVE_30GPRS(base) SAVE_GPRS(2, 31, base)
-> -#define REST_30GPRS(base) REST_GPRS(2, 31, base)
-> +#define SAVE_NEEDED_GPRS(base) SAVE_GPRS(2, 12, base); SAVE_GPRS(14, 31, base)
-> +#define REST_NEEDED_GPRS(base) REST_GPRS(2, 12, base); REST_GPRS(14, 31, base)
-
-This macro name seems a bit sketchy, as far as I understand r0 and r1 
-also need to be saved/restored allthough they are not handled by this macro.
-
-
->   #define TEMPLATE_FOR_IMM_LOAD_INSNS    nop; nop; nop; nop; nop
->   #else
-> -#define SAVE_30GPRS(base) stmw r2, GPR2(base)
-> -#define REST_30GPRS(base) lmw  r2, GPR2(base)
-> +#define SAVE_NEEDED_GPRS(base) stmw    r2, GPR2(base)
-> +#define REST_NEEDED_GPRS(base) lmw     r2, GPR2(base)
->   #define TEMPLATE_FOR_IMM_LOAD_INSNS    nop; nop; nop
->   #endif
-> 
-> @@ -45,7 +45,7 @@ optprobe_template_entry:
->          /* Save the previous SP into stack */
->          addi    r0,r1,INT_FRAME_SIZE
->          PPC_STL r0,GPR1(r1)
-> -       SAVE_30GPRS(r1)
-> +       SAVE_NEEDED_GPRS(r1)
->          /* Save SPRS */
->          mfmsr   r5
->          PPC_STL r5,_MSR(r1)
-> @@ -123,7 +123,7 @@ optprobe_template_call_emulate:
->          PPC_LL  r5,_CCR(r1)
->          mtcr    r5
->          REST_GPR(0,r1)
-> -       REST_30GPRS(r1)
-> +       REST_NEEDED_GPRS(r1)
->          /* Restore the previous SP */
->          addi    r1,r1,INT_FRAME_SIZE
-> 
-> --
-> 2.37.7
-> 
-
+https://people.kernel.org/tglx/notes-about-netiquette
 
