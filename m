@@ -1,85 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-5335-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5336-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D7B2C02180
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2025 09:29:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAACFC02180
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jan 2025 09:39:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYcym3jD9z3bgy;
-	Thu, 16 Jan 2025 20:29:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737019792;
-	cv=none; b=EcVqC6dopqip+BI810GJ59EABF/2LPiald37VVbhjdJcXIM3a9Igt0IJYlIW9y9X1POqPP7f+dzYUhZ/jJjS1q64oFze7QG+E3KPxKhCv41NIj31Q9sGUU/5YTDYLX8nHAuWxCszGLJAhna66p7GfYEKJd0VCi9sWy977K6LdLOdLJ7R4762GKnAGM8Q+frKytjTUshjFug0/fLDGZ/UqLZv0I22uxw9eApjf0Y2NFfZSENq+s67EOKjFtc6bjyZwwxsDw2SXBl8YAHrtoLbm7zjCe4L5WUVILdib3GuhxxeP9wWp3d6npdlSnYehYZ8XM+SjWoO3ALiRqGdhf9ttA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYd9H3tKyz3bfc;
+	Thu, 16 Jan 2025 20:38:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737020339;
+	cv=none; b=doQws28HrcXSmKpSKlZLu1MWEtCCYSrAtDmZQ14i/QHtthNh8PyztdtlX64aQDuiw5XTAiLZ+p+vWHutw5kZqV8l65JBjYsGOgQwTQlrf2bwU9wqhXBKYorH6Hl3OhYfEtJMyylc9eRG6E86IXh59dH/ZLvnYJGMHLtT1iYUSJeMCJi6VeWJxoiPPp+qyYo0LE7ICuatAc8/GPcqS/5iaTG6aLhEe2s6cZBo2sN/iZFhWE6Ug8N+x96KJZ76P4c8GUjPgyjnTQWpkpT7jop0JsAPw9VPLNdZmWtCxKz70iRR3y42BmLkrzz6CPYJzGjAUSeK51zOQ7M19GIY7FtR3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737019792; c=relaxed/relaxed;
-	bh=ndOQe7iYVdafaQgYnE+41A58i1xptE9OdOrBo0S9x6g=;
+	t=1737020339; c=relaxed/relaxed;
+	bh=sp+FxjCkzTW4qc2F4mDkdN/WiXSt2JPHkUPS5ECiaJE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QO0pl63TNxXER3eKfWB3cymc4QOmf5GuqKUWaSHLsOEvAikfRCJETxedwoPYdcgpVv8CfrwOKU0Omne3f2tXK229aLDn/ApDEB8omK3bMTGEn4A24gNkTXqlUfSvU7kN9HgLAg2U7aie373EVsyLYy7fQ8XQF4I5FEUFp8eevxucSvuTLm2dz1mCApPKwTFW38Whn0UXrgrNHrcJAl7/xif+rGdrFBiN2U3JZzlTmjTnnD/QXEUF18k4L5yFS5tMzbdmFRULyUPIpTieHjGr3zVkHn4rwrMH0Tfu2KnMif37HNUp1GhglBaCeCFQqPQHLyY8bFMCUY5vISXg3xzPUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=XRXao3j9; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=KCE+OIaZVVwDkF0fii6sVpA0m4fj5omQYh9Y/x0k5S56TtPaOPL70bBtFdsSR6x1F7QtSwimhu6uaEZptRi9LpbAvADqHuqoyLV166Kq58NthiG3MRe7uSFcAbHu3wZ84D3PV2B3ca2BwmrewZa6a6nUGlMf6y0EXFBI2jRp950mIuqN7YxIl3nIk4agau/RVmUxo6Cn/0WcKAxgMuKPOqmUEdmHWwCpLXAA4t977qWMsx3y2VqTKYTdkfjA/jRP/Qr9yH/qZX36PUNlaVrXw1SIMPE6DzsHWP0uCeuhqPp4lIKjhrXh/LjVY7gLALRHxCoCJO4VC+I+8xXNRdtN1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=tNEt+TND; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=XRXao3j9;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=tNEt+TND;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYcyl4qTNz3bfc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2025 20:29:51 +1100 (AEDT)
-Received: by mail-wr1-x42f.google.com with SMTP id ffacd0b85a97d-3862b40a6e0so399830f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2025 01:29:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1737019788; x=1737624588; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ndOQe7iYVdafaQgYnE+41A58i1xptE9OdOrBo0S9x6g=;
-        b=XRXao3j9urVTm5ajBt4SJV59ew0hwdkxIrOWPYH7wixV4pgLKUM+eLdWWaAf4feba2
-         NPDxhYz2fKi5O6L13Ep1+Q2zuTi0JS6RilgRmwLldnaeS1ouFntMw+ZiClx/vfwu5Ysn
-         nTeS3B0icNLr5cQ9r767D0Bgv+qoEpSQZu/JFV6pT5+8HzKG/lrIaIWGqP3RoUfRd58w
-         J5gxNBVxHb162Yx1Yxz08OP0GIqUnjHtM/vYqqJG3mtoQXafX59lRL/cai057E+UoHUD
-         aQo5n8l4k2C3NUdJ9p4jZJQvd5qRpTLMdk/5h908brHZ7J+PXNhfJxV5fbT5AdPAbcIu
-         rFzw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1737019788; x=1737624588;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ndOQe7iYVdafaQgYnE+41A58i1xptE9OdOrBo0S9x6g=;
-        b=bGSCOy6G82rrXV+X6x7LB4LuLjRZBf1g2CfcQmQYXhAwUOFo63wCQBhJci8byBzVV0
-         vg2Ceun79m4jrWQRva4aDRcnvo7sO1/VQW456m0Q2VFIkVR+cxRHVZukUynBTBNSI9k/
-         mOdDXvxh0m3tJsoVYpqqruPC+9GFrLOUGuEKwhYv5zdeuQboC276An/h1+PWx882Oc9M
-         fgyAsrrBIuXev8LKTHuNrXeyJioTM1GrSAwONU2oXrkFErfYPvg8d2i6auO9u9Hf0rPd
-         2zDtiLsL9KLo3x/TN4tw6X9zCn2d41ldqLKJeLAcwVO4g5n6w8gAJe+60ZWpIOF7ao3T
-         ah4A==
-X-Forwarded-Encrypted: i=1; AJvYcCVaFVaK5jwR+Y0rXlW7GTg6lpEQssGMYIArYLUkXSZ6+pFI5rDU6WuKHRoHHaxD36MoZ9G/p17hmInONoo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx1wcBSPdp1awBUgIAETCPStt/2MjKhVyJDestWI51u/EoRdqy1
-	DD625r2aAEiZbFJ+5ejMc+rCY2nKr2rL6IiJyst9YO43SOLhMBmLbDDaIjN46F4=
-X-Gm-Gg: ASbGncvRSqYMOTW2hAPW2EIR1wCU0cpVc01M8RZkRGbA5W5bOqP60483zv1e3p/rzsG
-	UXRDXsSD5bteC0gZ9Y7WsRK9LMP9rfHX2K2SlwetyWHteP/JPwa7eVCZ/2kk4pcsuPJ3lf26ssV
-	Kc4U55uJWIVZaEuZi8SVn5mpx/trNr/glRUHJus84OdZmrU0yHYPiKWqyGk3RcQlJh8QBq1Lyy9
-	tOiu3ApkQTzeIr4wSjdK6s2JcOjqnR5MsljxWBpsfxHs3ZK/DjY3+2Yhg==
-X-Google-Smtp-Source: AGHT+IH5nuIBbL7/hc99gmUbXnHjV1QmVgQbVuzI8DIlS9I/l5k+cT/NveGuMhqp+ADX/0RVXMkBfA==
-X-Received: by 2002:a05:6000:4011:b0:385:f47b:1501 with SMTP id ffacd0b85a97d-38a87312d58mr26829937f8f.32.1737019788570;
-        Thu, 16 Jan 2025 01:29:48 -0800 (PST)
-Received: from pathway.suse.cz ([176.114.240.50])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-437c73e370fsm53343725e9.0.2025.01.16.01.29.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Jan 2025 01:29:48 -0800 (PST)
-Date: Thu, 16 Jan 2025 10:29:46 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: jikos@kernel.org, mbenes@suse.cz, joe.lawrence@redhat.com,
-	shuah@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
-	christophe.leroy@csgroup.eu, naveen@kernel.org,
-	live-patching@vger.kernel.org, linux-kselftest@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] selftests: livepatch: handle PRINTK_CALLER in
- check_result()
-Message-ID: <Z4jRisgTXOR5-gmv@pathway.suse.cz>
-References: <20250114143144.164250-1-maddy@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYd9D4KHPz3bT8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2025 20:38:56 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=sp+FxjCkzTW4qc2F4mDkdN/WiXSt2JPHkUPS5ECiaJE=; b=tNEt+TNDhov73YFgV4d3QuFfxV
+	wodGVIjMSeOy/uoYu4slydOluGBThtgfGTQSUSMXUqUkBx3FZUEI/jieBTlfjTs+JrstOjNPh5ioh
+	zE9igoQMNvxowDWCDekEhektqAE29BAxX2tAZsnzMKN6Wo/KQd1SaoRbTfLD3NNtmvwP1rvdHY0I9
+	K0JYXKyMwq1Q52W6HrVWbF9QTpKEbmdf0+nMip3iVnlpCbl4AUSuSXow6ozld2psjbUfqduuxVZmL
+	7xSwg49F9U3irbLXqcyfUSVJcwrhOu6EtTR4fdt8N8h3xIt2AJJWw0SD/UoXLJCKg4ltNYstPQ1OE
+	LwIawK4Q==;
+Received: from 77-249-17-89.cable.dynamic.v4.ziggo.nl ([77.249.17.89] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
+	id 1tYMKu-0000000BO6o-0Ees;
+	Thu, 16 Jan 2025 09:38:48 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 2920A300777; Thu, 16 Jan 2025 10:38:47 +0100 (CET)
+Date: Thu, 16 Jan 2025 10:38:47 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Josh Poimboeuf <jpoimboe@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	Julien Thierry <jthierry@redhat.com>,
+	Miroslav Benes <mbenes@suse.cz>,
+	Raphael Gault <raphael.gault@arm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	llvm@lists.linux.dev
+Subject: Re: [PATCH v5 00/15] powerpc/objtool: uaccess validation for PPC32
+ (v5)
+Message-ID: <20250116093847.GH8362@noisy.programming.kicks-ass.net>
+References: <cover.1736955567.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,28 +80,30 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250114143144.164250-1-maddy@linux.ibm.com>
+In-Reply-To: <cover.1736955567.git.christophe.leroy@csgroup.eu>
 
-On Tue 2025-01-14 20:01:44, Madhavan Srinivasan wrote:
-> Some arch configs (like ppc64) enable CONFIG_PRINTK_CALLER, which
-> adds the caller id as part of the dmesg. Due to this, even though
-> the expected vs observed are same, end testcase results are failed.
+On Wed, Jan 15, 2025 at 11:42:40PM +0100, Christophe Leroy wrote:
+> Christophe Leroy (15):
+>   objtool: Fix generic annotation infrastructure cross build
+>   objtool: Move back misplaced comment
+>   objtool: Allow an architecture to disable objtool on ASM files
+>   objtool: Fix JUMP_ENTRY_SIZE for bi-arch like powerpc
+>   objtool: Add INSN_RETURN_CONDITIONAL
+>   objtool: Add support for relative switch tables
+>   objtool: Merge mark_func_jump_tables() and add_func_jump_tables()
+>   objtool: Track general purpose register used for switch table base
+>   objtool: Find end of switch table directly
+>   objtool: When looking for switch tables also follow conditional and
+>     dynamic jumps
+>   objtool: .rodata.cst{2/4/8/16} are not switch tables
+>   objtool: Add support for more complex UACCESS control
+>   objtool: Prepare noreturns.h for more architectures
+>   powerpc/bug: Annotate reachable after warning trap
+>   powerpc: Implement UACCESS validation on PPC32
 
-CONFIG_PRINTK_CALLER is not the only culprit. We (SUSE) have it enabled
-as well and the selftests pass without this patch.
+This mostly looks okay to me. You have a tendency to violate the reverse
+xmas tree for variables thing, but meh.
 
-The difference might be in dmesg. It shows the caller only when
-the messages are read via the syslog syscall (-S) option. It should
-not show the caller when the messages are read via /dev/kmsg
-which should be the default.
-
-I wonder if you define an alias to dmesg which adds the "-S" option
-or if /dev/kmsg is not usable from some reason.
-
-That said, I am fine with the patch. But I would like to better
-understand and document why you need it. Also it would be nice
-to update the filter format as suggested by Joe.
-
-Best Regards,
-Petr
+I would like Josh to have a hard look at this though, jump tables are
+his thing :-)
 
