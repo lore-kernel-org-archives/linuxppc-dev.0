@@ -1,79 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-5358-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5359-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 220C3C02185
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2025 12:33:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 563D1C02183
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2025 13:06:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YZJzw52Wzz30h8;
-	Fri, 17 Jan 2025 23:33:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737117196;
-	cv=none; b=ZyZxM769ng0EEcNRYsM0IcqKR9l3cLQZE/HOtUPAhseqhW8SMB5qiy+57tHJETA6V5E0A2HTpJ6N+3fZ11JQLG2W3G0XyhPtpkdSTA5+6kxghpOrJcMDKOkYdpw53yaqqd7X/7+1Mpy5ZQvUxi2oSzgVS4rZLqkXhJF1gBKemN1ZWo8Q8wQSbb+MqaDGbjHv/5g555sGUG4atPADLw5Cn1so3t1m+6CsIger0dPWNbTcBUxiOwXM3es+x+e4ezxKj5joMdoGdCzEKsYLKMA3ZeqPtH/FR9ObW9Fwd5Gcell2TERWFNSXPBEOZEKofWOXUu6s5sPikBk8yUEghAIX+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YZKkj60c2z2xrJ;
+	Sat, 18 Jan 2025 00:06:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737119213;
+	cv=none; b=U5OeevJz5Y3cLie/7ZGrZ6ply69Fu18wTbHhs1oar4TpVULhZzJhY6uesGiHbq4n3vc7Sh2s6RycN7X+RLeQNxZs/8LJn0eu5MikzSz0Eo8uahUxR5XntgMl23ZGKZuBXdq1e2kCKNlVbJ22aJWuhOA3oUGPCGrX+805hy5EVjwldH0/tbVs0ouZQGveTj/842Qj0B76QQC90+SbFk2PHb3odiX6GPmC98wycbshbfyP96HHDgpdmd1zDLtsWzaHidxKdTd/09cAmf3DGhp35+ZyFW69hj0VObYqW4rr7uwP96DslrABBT4FodWb3qA/WVE6x3fDJJTMUCRrkJGOZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737117196; c=relaxed/relaxed;
-	bh=zmN/heHJ8TVcTk/DO97KrJoQvqXuwecFtBt991cNvOw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fphZ+dyUsvf1Q0YmVy1/Zo0SL8QllR+D9xpLSuTkmVLTpJFDBEIo2yjPm5HB8q2sYQvNVQzlFVrctKizOzF7zeWdZ9itBHGheSSMbWROwJ3FbR+60RaQqC41Gs4WgyOQcRIS75hQ97cqgHP7MjRr2gvgoKzDWiAd8h3e7DxCBNv54JJ5AGWiTBBhsY5t+SLpKHDyr2831Blvut+TN8PVsM6qjyjGNfeaJuIudtMxlAmDxU57Ncno9ogpzQmtYtiekZVSq5x/huFpmGUanPvt1BCZfBbb+8UQR7A2uuNbOCqQTDaNenTl++KV49ocSTt5HP5L7fycxYX/0e7/WQFLTQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WaIQ3n2Z; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1737119213; c=relaxed/relaxed;
+	bh=hY4yjRKCRod/AXSrQsJwmxP2ZGQ5suLIGcArrFvDpVc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=K0lwhPJ7MfUIgcyip1ehviywsvQqPjSUp4lb2nOAMyMu1YPOkklF6ZYur8yCmcCATDIxzF8Ccb+eP7CMGWeRK2OtOjKKihMH7q3qcZ6j3W6cyQCY1p07//h58ogzcDOhSmjWPr7BxSCOKdncE+ClOHokLll8UXwxvZolxLe+f1Rb43f+EFdE2zx0uNwGG1sPABEVDfpUeCcnYMPT6UDGt3TuuemAHqcsWGOck9YQDNyEx/RanKa8LVY7iF+zf6OiXWb3h5vv+ocqFo8ozG8Y24fr2seQATGfUmjtZF28tVms4XDPcnt4p8InugCe/YDTy/molrEaNiIGUwpctqMdUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dFRmjx5M; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=9WBtT9o6; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WaIQ3n2Z;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dFRmjx5M;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=9WBtT9o6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YZJzv5Xdzz30Vr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2025 23:33:14 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50HCP1tl009180;
-	Fri, 17 Jan 2025 12:33:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=zmN/he
-	HJ8TVcTk/DO97KrJoQvqXuwecFtBt991cNvOw=; b=WaIQ3n2ZDhEUrbs7sp/VQ2
-	TEOqD/J8O9e/62MnjGD/gv8uvUTsBk9JIlKxMiNNFf3bHLIaEnKk158SE7tYwToL
-	Av4zOSknQiiGwzwPLRlsu3gOh4x6KBdHz7s7PU8wMcGxfj2vwAbCdsl3BI86faqw
-	v23b5kmL05/MyOrYkIpKROvy59AMtBdSGLPZYyl0OwGp8sCQ5C6xSxZPXevn5AUl
-	Mhdkp810BlLH9DbsD0qQObRukSJRI12V3GIPHfgtKoO9NnSu4SfM+x9HXJM4auQQ
-	+u3y3zlBdh7bWOoMh45bMOR3TSwz0m7lhTxYcliyP8vu/8yUufnFZnejcSS9lQIA
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 447c8jave3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 17 Jan 2025 12:33:04 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50HCUfk7016824;
-	Fri, 17 Jan 2025 12:33:03 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 447c8jave1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 17 Jan 2025 12:33:03 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50H96wD6004526;
-	Fri, 17 Jan 2025 12:33:02 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4442yt32ch-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 17 Jan 2025 12:33:02 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50HCWxSG55837026
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 17 Jan 2025 12:32:59 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 309B620043;
-	Fri, 17 Jan 2025 12:32:59 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CFE5820040;
-	Fri, 17 Jan 2025 12:32:56 +0000 (GMT)
-Received: from [9.43.91.217] (unknown [9.43.91.217])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 17 Jan 2025 12:32:56 +0000 (GMT)
-Message-ID: <6429f8de-91ba-442b-a39e-f12d666062f7@linux.ibm.com>
-Date: Fri, 17 Jan 2025 18:02:55 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YZKkg6c8tz2xHl
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2025 00:06:51 +1100 (AEDT)
+Date: Fri, 17 Jan 2025 14:06:44 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1737119206;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=hY4yjRKCRod/AXSrQsJwmxP2ZGQ5suLIGcArrFvDpVc=;
+	b=dFRmjx5M4i6s3ggklbqmIkVzFIrTqF0HonDj4Fv0mkCWGdMMmXs/T4/aSZdlLnp9tDYulp
+	dOrJ1qvFIdpw2j+rkJejTrRhUP3yi/7EnsZbDeWctkLCbFohSfoxlpbacT0aCO9j005tO7
+	4d9QEEA/e6HnhqxBmSV7sxR9p/I1U87l3nRx1D5+AeULcoNr5zi5RNEVIIQkKIlOhRB/Cc
+	T+XyrhUPg9A7kfM+e+Db0MOXf3DfC7cFsra4/3Lyk4VVZ5yvZN/svBgywKGdkfmJiB9/Qp
+	YMWMdYADkR3PP0h1ES+igS/fNEhmgPbZ66rKlMUffachERibFukINTqnKkrhGA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1737119206;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=hY4yjRKCRod/AXSrQsJwmxP2ZGQ5suLIGcArrFvDpVc=;
+	b=9WBtT9o6vTQ88sIgTNnDvZ7GnfUlb5LHAN1EezNk61xvUNfyG771NRpLCOCbVUMQmPLw1J
+	4BV1hYPZ5MMWLZDg==
+From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+To: Basharath Hussain Khaja <basharath@couthit.com>
+Cc: Rob Herring <robh@kernel.org>, mpe@ellerman.id.au, 
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	saravanak@google.com, danishanwar <danishanwar@ti.com>, krishna <krishna@couthit.com>, 
+	mohan <mohan@couthit.com>, parvathi <parvathi@couthit.com>, pmohan <pmohan@couthit.com>
+Subject: Re: [PATCH] of: address: Unify resource bounds overflow checking
+Message-ID: <20250117134255-bee95a37-250c-437a-a101-938800cba218@linutronix.de>
+References: <87mskbqher.fsf@mail.lhotse>
+ <20250108140414.13530-1-basharath@couthit.com>
+ <CAL_JsqLLGW_o9i6a5wcUj=Z=4nL-GhzHwAQMFtQkb9OSHuSgTA@mail.gmail.com>
+ <2089813158.341858.1737096833060.JavaMail.zimbra@couthit.local>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,72 +76,162 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/2] powerpc/fadump: allocate memory for additional
- parameters early
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-References: <20241113070618.75744-1-sourabhjain@linux.ibm.com>
- <e5e51680-0e66-49ce-a523-1eb9d570e43a@csgroup.eu>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <e5e51680-0e66-49ce-a523-1eb9d570e43a@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: be5ZqCnAAHR2ktiDNJgBSS00GkVhPI3L
-X-Proofpoint-ORIG-GUID: TzkVbvhksyjFnNTzmkQ2boZ4Udu5Mud5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-17_05,2025-01-16_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 suspectscore=0
- priorityscore=1501 malwarescore=0 lowpriorityscore=0 adultscore=0
- phishscore=0 impostorscore=0 mlxscore=0 mlxlogscore=731 bulkscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2411120000 definitions=main-2501170100
+In-Reply-To: <2089813158.341858.1737096833060.JavaMail.zimbra@couthit.local>
 
-Hello Christophe,
+On Fri, Jan 17, 2025 at 12:23:53PM +0530, Basharath Hussain Khaja wrote:
+> >> >> Thomas Weiﬂschuh <thomas.weissschuh@linutronix.de> writes:
+> >> >> > The members "start" and "end" of struct resource are of type
+> >> >> > "resource_size_t" which can be 32bit wide.
+> >> >> > Values read from OF however are always 64bit wide.
+> >> >> >
+> >> >> > Refactor the diff overflow checks into a helper function.
+> >> >> > Also extend the checks to validate each calculation step.
+> >> >> >
+> >> >> > Signed-off-by: Thomas Weiﬂschuh <thomas.weissschuh@linutronix.de>
+> >> >> > ---
+> >> >> >  drivers/of/address.c | 45 ++++++++++++++++++++++++++-------------------
+> >> >> >  1 file changed, 26 insertions(+), 19 deletions(-)
+> >> >> >
+> >> >> > diff --git a/drivers/of/address.c b/drivers/of/address.c
+> >> >> > index 7e59283a4472..df854bb427ce 100644
+> >> >> > --- a/drivers/of/address.c
+> >> >> > +++ b/drivers/of/address.c
+> >> >> > @@ -198,6 +198,25 @@ static u64 of_bus_pci_map(__be32 *addr, const __be32
+> >> >> > *range, int na, int ns,
+> >> >> >
+> >> >> >  #endif /* CONFIG_PCI */
+> >> >> >
+> >> >> > +static int __of_address_resource_bounds(struct resource *r, u64 start, u64
+> >> >> > size)
+> >> >> > +{
+> >> >> > +     u64 end = start;
+> >> >> > +
+> >> >> > +     if (overflows_type(start, r->start))
+> >> >> > +             return -EOVERFLOW;
+> >> >> > +     if (size == 0)
+> >> >> > +             return -EOVERFLOW;
+> >> >> > +     if (check_add_overflow(end, size - 1, &end))
+> >> >> > +             return -EOVERFLOW;
+> >> >> > +     if (overflows_type(end, r->end))
+> >> >> > +             return -EOVERFLOW;
+> >> >>
+> >> >> This breaks PCI on powerpc qemu. Part of the PCI probe reads a resource
+> >> >> that's zero sized, which used to succeed but now fails due to the size
+> >> >> check above.
+> >> >>
+> >> >> The diff below fixes it for me.
+> >> >
+> >> > I fixed it up with your change.
+> >>
+> >>
+> >> This commit is breaking Ethernet functionality on the TI AM57xx platform due to
+> >> zero byte SRAM block size allocation during initialization. Prior to this
+> >> patch, zero byte block sizes were handled properly.
+> > 
+> > What driver and where exactly?
+> 
+> We found an issue while developing the driver [1] and more
+> specifically in [2] (lines 313-327), but it looks like this is a
+> generic issue which can block 1 byte of memory, when a zero size
+> request has been initiated for the reserved region.
+>
+> static int __of_address_resource_bounds(struct resource *r, u64 start, u64 size)
+> {
+>     u64 end = start;
+> 
+>     if (overflows_type(start, r->start))
+>         return -EOVERFLOW;
+>     if (size && check_add_overflow(end, size - 1, &end))
+>         return -EOVERFLOW;
+>     if (overflows_type(end, r->end))
+>         return -EOVERFLOW;
+> 
+>     r->start = start;
+>     r->end = end;
+> 
+>     return 0;
+> }
+> 
+> Though we have the start address handling already in place above, we
+> do see an issue with the end address, because there is an
+> unconditional +1 afterwards in resource_size() API below which is
+> responsible for reserving the extra byte
+> 
+> static inline resource_size_t resource_size(const struct resource *res)
+> {
+>         return res->end - res->start + 1;
+> }
 
-On 17/01/25 17:43, Christophe Leroy wrote:
->
->
-> Le 13/11/2024 √† 08:06, Sourabh Jain a √©crit¬†:
->> From: Hari Bathini <hbathini@linux.ibm.com>
->>
->> Memory for passing additional parameters to fadump capture kernel
->> is allocated during subsys_initcall level, using memblock. But
->> as slab is already available by this time, allocation happens via
->> the buddy allocator. This may work for radix MMU but is likely to
->> fail in most cases for hash MMU as hash MMU needs this memory in
->> the first memory block for it to be accessible in real mode in the
->> capture kernel (second boot). So, allocate memory for additional
->> parameters area as soon as MMU mode is obvious.
->>
->> Fixes: 683eab94da75 ("powerpc/fadump: setup additional parameters for 
->> dump capture kernel")
->> Reported-by: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>
->> Closes: 
->> https://lore.kernel.org/lkml/a70e4064-a040-447b-8556-1fd02f19383d@linux.vnet.ibm.com/T/#u
->> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
->> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
->
-> Version v2 of this series was applied.
->
-> If needed, can you rebase this patch ?
->
-Sorry, I didn't get that. Rebase on top of which tree/branch?
+Now the report makes more sense.
 
-FYI, there was no functional change from v2 to v3. Only a
-"Reviewed-by" tag was added.
+> We have 4 ways of fixing it.
+> 
+> Option 1: Modify the function to handle the size zero case
+> 
+> diff --git a/drivers/of/address.c b/drivers/of/address.c
+> index c1f1c810e810..8db6ae9a12b8 100644
+> --- a/drivers/of/address.c
+> +++ b/drivers/of/address.c
+> @@ -204,6 +204,12 @@ static int __of_address_resource_bounds(struct resource *r, u64 start, u64 size)
+>  
+>         if (overflows_type(start, r->start))
+>                 return -EOVERFLOW;
+> +       if (!size) {
+> +               r->start = start;
+> +               r->end = end - 1;
+> +
+> +               return 0;
+> +       }
+>         if (size && check_add_overflow(end, size - 1, &end))
+>                 return -EOVERFLOW;
+>         if (overflows_type(end, r->end))
+> 
+> This seems to be the simplest solution.
 
-Thanks,
-Sourabh Jain
+Fixing it in __of_address_resource_bounds() looks correct to me.
+The proposed solution doesn't look as clean as I'd like though,
+this is highly subjective, though.
 
+What about the following (untested)?
+
+static int __of_address_resource_bounds(struct resource *r, u64 start, u64 size)
+{
+	if (overflows_type(start, r->start))
+		return -EOVERFLOW;
+
+	r->start = start;
+	r->end = start;
+
+	if (!size)
+		r->end -= 1; /* May underflow for empty resources. */
+	else if (check_add_overflow(r->end, size - 1, &r->end))
+		return -EOVERFLOW;
+
+	return 0;
+}
+
+A kunit test looks to be in order in any case, to make sure all the
+edgecases are handled.
+
+> Option 2: Handle in resource_size().
+> static inline resource_size_t resource_size(const struct resource *res)
+> {      
+>           return  (res->end == res->start) ? 0 : (res->end - res->start + 1);
+> }
+> There are plenty of places where we are using this API and there is an assumption that the end address should always be start + size -1. We are a bit unsure about the side effects of this change.
+> 
+> Option 3: Handle in sram_reserve_region().
+> We can avoid calling the resource_size() API and handle size zero as a special case. We are a bit unsure about the side effects of this change as well.
+> 
+> Option 4: Handle this in dts [2] with non zero size. Estimate the approximate size and update that value in dts file with extra buffer. However, as indicated in [2] in lines 313-327, the size is not known apriori and the actual size is only known in runtime. So if we set some size for this buffer, then this will always be blocked and may or may not be used subsequently.
+> 
+> [1] https://lore.kernel.org/all/20250109105600.41297-1-basharath@couthit.com/
+> [2] https://github.com/torvalds/linux/blob/master/arch/arm/boot/dts/ti/omap/dra7.dtsi
+> 
+> 
+> Thanks & Best Regards,
+> Basharath
 
