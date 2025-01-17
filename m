@@ -1,50 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-5361-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5362-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11B89C02185
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2025 13:20:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17CB6C02188
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jan 2025 13:25:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YZL203cChz2yTy;
-	Sat, 18 Jan 2025 00:20:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737120008;
-	cv=none; b=km/OlL+Ae0joHfZhOMLpyhIHZpWhUPHRrp94RMBM/i5de2JYXXCT9A1sSnG+l5EtcpNeCKKocpjUZXme+77pvw2Qp3OooCciwSh7/crqdOjjg0aG2ZxczbUq8CtlJqR5y5Mb/sW7Hk5p2WNYKbJdZO++QVv+S8vSANheUoPXbjARlu/yyHcuZ5JBFkl895ItjVuqg6ZPu7qyuml/bg++9Xx7qjCBS4J9HivpNL6mgFf0vdHNJbwptjSYuvI/wGL9chrxXHlJGIN3TSxqV47zZEmZkjQ5fpebA3iYDp7dZ6CZpFZnuCmwswf43xG07zjdXDCd0Fu4xeVp3n2CEIHKEg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YZL8R4jZ8z30WQ;
+	Sat, 18 Jan 2025 00:25:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737120343;
+	cv=none; b=ddaxSTBd18W5ALVCH1NMQud7dwuVJHecXFCfmwnbFI5xXae/ioGkhIpcga5b0Bpqcthj02Lv2ETP/iDw14QyIraetaiBgu60CECrvkWeRI6F+SWdeHJ5PBI2x0A2BS03VCPcNkfvIa9D7hmUqJ+TeajDJgPzkmO9ME/79MCIhkVjWngiZN7rcPuyFYf45RMNipKSaU9ZniY0+/UFUZurBaGbJBCIna7dkIU8cOJ+wcXwHDmmJeNdPY9ga+qr7O32xlNgTJAGVH3V3Uo2Wq+eOgEkikdEE4oaMEgpa2E+lZn8aYYyQMsZDemGDSDXdjz1GFG8idXw4uQIxEw0RUjfgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737120008; c=relaxed/relaxed;
-	bh=XImbEUCMZlvKXJs4X3s3+LfLhcpnhOR2ztjefUUBIMc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aVEM5uoLB4TAPgHstEzmmdov+C5C1mdOWPjK0qh1iePCQ7U3ZJQOpZoydcpOC3k0zj0MwqPxYjTTce1J96BgwjunAqwYm9/JlFMpJkznA0zrrEZlzS8uXa53VLPGN4sFC8DTBWkaVAdmHdhkG7J8lNRHNEZDwkyX7k7DAIizk1ihLqwgS/sk+YN37KyV/b3qWgVghs4OCwINdhQXyZ7cvgMIPnyCjhsnGNmFjq1Vr8z8b7y/RjOPB0U0bicNILrOzBGLnaXEMzWE9igA9p88iTkHIdWWA2Fd+1K/yGj7NpiFCNoovw/aJ6iDTMWQz+Px6m5AF3r5GP6AtKK8bDIybg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YZL1y0W1Wz2yLB
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2025 00:20:05 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YZKGl2LJcz9sRy;
-	Fri, 17 Jan 2025 13:46:07 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id syZKn15JcSqc; Fri, 17 Jan 2025 13:46:07 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YZKGl1Mp1z9sRs;
-	Fri, 17 Jan 2025 13:46:07 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 1B5818B77A;
-	Fri, 17 Jan 2025 13:46:07 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 8t2gnAbLVjX7; Fri, 17 Jan 2025 13:46:07 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B24258B774;
-	Fri, 17 Jan 2025 13:46:06 +0100 (CET)
-Message-ID: <bf9f867b-f9d6-47fc-80d8-6d1fde59a416@csgroup.eu>
-Date: Fri, 17 Jan 2025 13:46:06 +0100
+	t=1737120343; c=relaxed/relaxed;
+	bh=XEKAG0VVDbRMDZVYLbr0bVW85rqDk6xFXu+Myl9rZ5s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SS2oFZxvsG8of4dBWNI9bDJX3wgwLWUeEpAsSP5JZClEl700Rzrr7YLAILJaPRLTQo4aF3OGUU6Gg2fdoHVMWR8H+ExaUjBw8ctaDtAv679CuDD+MMkTKeyr2WJhxmmbuGq43HkCMT/Qf5F3aoRSinsBl9W4xbNCPucPdpTsHdu/zBAuwkRIib3OZ8NJKCgtGsQU+y1t0gusWSKi8E9kRP9rBYPxkBwdD4FcuDW2THFLXQIj3gT0MV4CjSY3pU/jYUXgFHUrCi3AUpnDBYMLSQqnHLDy83OKpG3sjT9OuJirp6O/VKBzDw6ipxRpHwhLy1EbzKk4p35l5mRqsJeDJg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nCvHMpF2; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nCvHMpF2;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=will@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YZL8Q4RmBz2ynR
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2025 00:25:42 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id D60BBA42C2C;
+	Fri, 17 Jan 2025 13:23:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84C43C4CEDD;
+	Fri, 17 Jan 2025 13:25:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1737120338;
+	bh=i5g2DbcJlsukG3CuQeCOvnrmGoI0+t7RerfHcE2ITE8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=nCvHMpF21/84VoMzTIfTmODZawDxjude8tCR6JJtkJECU6I5I9whWXy05LWEyoVNW
+	 KSzrpuQi7EY7p8WZMS465l3rzsHJ8EnYeKCSayrYuWoVdpTDqvziBmoejLV5qSMBK6
+	 f5E+BQjEiCRh0u6SKqq//93pPU+X4JoeMx70R+9aHhWo8pxelv+5LYbQpozArWbl4N
+	 fjahkxBv/te1ioiDTpeoXYuLizhvr0ePIgbB6YsYdqX4IS/429ehvwWhMUBrLB8HOx
+	 2ER9LwPKInXFc4sc8Z5xZ0s6RECYLRZli7PrwB954w5tTFqDoUfRjjNblQvSNEU4sb
+	 Uskxi7/yiLEew==
+Date: Fri, 17 Jan 2025 13:25:28 +0000
+From: Will Deacon <will@kernel.org>
+To: Qi Zheng <zhengqi.arch@bytedance.com>
+Cc: peterz@infradead.org, agordeev@linux.ibm.com, kevin.brodsky@arm.com,
+	alex@ghiti.fr, andreas@gaisler.com, palmer@dabbelt.com,
+	tglx@linutronix.de, david@redhat.com, jannh@google.com,
+	hughd@google.com, yuzhao@google.com, willy@infradead.org,
+	muchun.song@linux.dev, vbabka@kernel.org,
+	lorenzo.stoakes@oracle.com, akpm@linux-foundation.org,
+	rientjes@google.com, vishal.moola@gmail.com, arnd@arndb.de,
+	aneesh.kumar@kernel.org, npiggin@gmail.com,
+	dave.hansen@linux.intel.com, rppt@kernel.org, ryan.roberts@arm.com,
+	linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+	linux-kernel@vger.kernel.org, x86@kernel.org,
+	linux-arch@vger.kernel.org, linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+	linux-openrisc@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-um@lists.infradead.org
+Subject: Re: [PATCH v5 05/17] arm64: pgtable: use mmu gather to free p4d
+ level page table
+Message-ID: <20250117132527.GA17058@willie-the-truck>
+References: <cover.1736317725.git.zhengqi.arch@bytedance.com>
+ <3fd48525397b34a64f7c0eb76746da30814dc941.1736317725.git.zhengqi.arch@bytedance.com>
+ <20250113162600.GA14101@willie-the-truck>
+ <a017d072-943f-4008-bb1d-7be438804a44@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,70 +84,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/2] powerpc/fadump: allocate memory for additional
- parameters early
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-References: <20241113070618.75744-1-sourabhjain@linux.ibm.com>
- <e5e51680-0e66-49ce-a523-1eb9d570e43a@csgroup.eu>
- <6429f8de-91ba-442b-a39e-f12d666062f7@linux.ibm.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <6429f8de-91ba-442b-a39e-f12d666062f7@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a017d072-943f-4008-bb1d-7be438804a44@bytedance.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 
-
-
-Le 17/01/2025 à 13:32, Sourabh Jain a écrit :
-> Hello Christophe,
+On Tue, Jan 14, 2025 at 10:26:54AM +0800, Qi Zheng wrote:
+> Hi Will,
 > 
-> On 17/01/25 17:43, Christophe Leroy wrote:
->>
->>
->> Le 13/11/2024 à 08:06, Sourabh Jain a écrit :
->>> From: Hari Bathini <hbathini@linux.ibm.com>
->>>
->>> Memory for passing additional parameters to fadump capture kernel
->>> is allocated during subsys_initcall level, using memblock. But
->>> as slab is already available by this time, allocation happens via
->>> the buddy allocator. This may work for radix MMU but is likely to
->>> fail in most cases for hash MMU as hash MMU needs this memory in
->>> the first memory block for it to be accessible in real mode in the
->>> capture kernel (second boot). So, allocate memory for additional
->>> parameters area as soon as MMU mode is obvious.
->>>
->>> Fixes: 683eab94da75 ("powerpc/fadump: setup additional parameters for 
->>> dump capture kernel")
->>> Reported-by: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>
->>> Closes: https://eur01.safelinks.protection.outlook.com/? 
->>> url=https%3A%2F%2Flore.kernel.org%2Flkml%2Fa70e4064- 
->>> a040-447b-8556-1fd02f19383d%40linux.vnet.ibm.com%2FT%2F%23u&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C9df078759a2c42b044cf08dd36f3183b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638727139896068824%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=iZfkQKw4wJAvwAj%2BbGOS5kcrVtAg8xg%2FFl6ojEYZ6ls%3D&reserved=0
->>> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
->>> Cc: Michael Ellerman <mpe@ellerman.id.au>
->>> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->>> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
->>> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
->>
->> Version v2 of this series was applied.
->>
->> If needed, can you rebase this patch ?
->>
-> Sorry, I didn't get that. Rebase on top of which tree/branch?
-
-I meant on top of any tree including the applied version.
-
+> On 2025/1/14 00:26, Will Deacon wrote:
+> > On Wed, Jan 08, 2025 at 02:57:21PM +0800, Qi Zheng wrote:
+> > > Like other levels of page tables, also use mmu gather mechanism to free
+> > > p4d level page table.
+> > > 
+> > > Signed-off-by: Qi Zheng <zhengqi.arch@bytedance.com>
+> > > Originally-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> > > Reviewed-by: Kevin Brodsky <kevin.brodsky@arm.com>
+> > > Cc: linux-arm-kernel@lists.infradead.org
+> > > ---
+> > >   arch/arm64/include/asm/pgalloc.h |  1 -
+> > >   arch/arm64/include/asm/tlb.h     | 14 ++++++++++++++
+> > >   2 files changed, 14 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/arch/arm64/include/asm/pgalloc.h b/arch/arm64/include/asm/pgalloc.h
+> > > index 2965f5a7e39e3..1b4509d3382c6 100644
+> > > --- a/arch/arm64/include/asm/pgalloc.h
+> > > +++ b/arch/arm64/include/asm/pgalloc.h
+> > > @@ -85,7 +85,6 @@ static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgdp, p4d_t *p4dp)
+> > >   	__pgd_populate(pgdp, __pa(p4dp), pgdval);
+> > >   }
+> > > -#define __p4d_free_tlb(tlb, p4d, addr)  p4d_free((tlb)->mm, p4d)
+> > >   #else
+> > >   static inline void __pgd_populate(pgd_t *pgdp, phys_addr_t p4dp, pgdval_t prot)
+> > >   {
+> > > diff --git a/arch/arm64/include/asm/tlb.h b/arch/arm64/include/asm/tlb.h
+> > > index a947c6e784ed2..445282cde9afb 100644
+> > > --- a/arch/arm64/include/asm/tlb.h
+> > > +++ b/arch/arm64/include/asm/tlb.h
+> > > @@ -111,4 +111,18 @@ static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pudp,
+> > >   }
+> > >   #endif
+> > > +#if CONFIG_PGTABLE_LEVELS > 4
+> > > +static inline void __p4d_free_tlb(struct mmu_gather *tlb, p4d_t *p4dp,
+> > > +				  unsigned long addr)
+> > > +{
+> > > +	struct ptdesc *ptdesc = virt_to_ptdesc(p4dp);
+> > > +
+> > > +	if (!pgtable_l5_enabled())
+> > > +		return;
+> > > +
+> > > +	pagetable_p4d_dtor(ptdesc);
+> > > +	tlb_remove_ptdesc(tlb, ptdesc);
+> > > +}
+> > 
+> > Should we update p4d_free() to call the destructor, too? It looks like
+> > it just does free_page() atm.
 > 
-> FYI, there was no functional change from v2 to v3. Only a
-> "Reviewed-by" tag was added.
+> The patch #3 introduces the generic p4d_free() and lets arm64 to use it.
+> The patch #4 adds the destructor to generic p4d_free(). So IIUC, there
+> is no problem here.
 
-Then I guess there is nothing to do.
+Sorry, I missed that. In which case:
 
-Christophe
+Acked-by: Will Deacon <will@kernel.org>
 
+Will
 
