@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-5411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9D8CC02182
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B59FC02181
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:45:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQd1Hdyz30Sy;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQd6JrRz30P3;
 	Tue, 21 Jan 2025 03:44:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737391481;
-	cv=none; b=i6Hpg1n7BmyO0O7jSYblkAhokDyTW14CqHM+O/BtaL6syH34aUmTE9V6EszJXkvLidLUuquS6TUTeb6UNoIgKxGRWappe/Ho9LWX+R9iN1RqCb6q7pSJSZci+LYZ/Ct+lx7PKILZ8g5Cigr6tVhP06HsqdUISW0ScNeXq/MHTrbfpGiqriZqgo6hGajeD0Ox7nUm/erLViDKm5by4I5/vD446B7d9IIR3iUEYcUtjF+EHclUlbNozL4/fkeSvGdcDYoFvJ+6zd0N1pcdkDfTO5naoHKdcRwWi0mjvE+uUgwAWafYbTJ0gOh7ADhcnL3A6Rr6d41gWghjM04VhKIXyw==
+	cv=none; b=fbcoBnBWlczaSUEzBdUPxozW5bvGZx/z/DNxD0sET5uOEraNkjl740hci5eNLkrs0SwrVP0PQ7KKLCX10isq5FhLm08x84Nl9YzDYckO1ceEA2xuiwZMl4u9wZqkcrybOnEMzOPMPAP5UItqitpdtGpxqx2OSGhQ4cjCpC8zap62UhbxtVmNpppMiIl2YCS/mY0Da6sba4lXG7KhlPNC+IQleW0u9q8/OwQU3979OgGy3f85C96BNi4KNxDgjaktojHRiaWTtC9a0kLh+xCurhe+5vN6td2Rg8o3AzyfJZOfvPAHC2lPBdGbBgqjmltHQbmfd/6EKbbwvv+Zw2i5KQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1737391481; c=relaxed/relaxed;
-	bh=XJm+I6g3cMVwztffuBYJ3HkX6dwXgMIWllBhLbpLfes=;
+	bh=MOxfkKxCpYoHqFhms3UK3LWvmqgrEkXRGLzTc6dCfBo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WZKyQvxoSnM/PPUWVA286V17sHgem9nqitaLGTrksTKE51pqC00Zt1StCsEb5ENj9vTxfo35LFF3jAfvozZw5VF7cY1+hnNtg9jrk8S9SvLxs1qcrU5dtC7z7Dy6UhnFXm4LhEg1YR5dPEY94+M4octa2zFLU2n8e2z1YNIsx/vHI49uEqpGJYVRC4ns0viSZWK6InU3Rn+Phe8ViPzbzDZvtDHRUR0lKHiX4rRUdUUFOOYXwUYuKWFZnqHg6wNNgy4AVFEiEFjqGZsz7riESvtfYL5TzxK9ocGR52Dn4M3ln4w3Abgz+7G8Jm3XalFIINmr7n6Ug2vczoXRyjtQvA==
+	 MIME-Version; b=fheQAG8/bQiKjileaSrergIQqPaqI/ybSsKs2SbyzoLXMrqDSZfsxTAehEHBSIINauPHYhqoCaRxpmPf2VfVfZNHyPiS1yN8LGtM7taPNj7LteGHv8sAVm2q+PJAG6qW6aAOAqNY/EbMdi1wmwrqggr/grXiB8E7xafxPWKXvyXDe2lPX+cuf1UPx6JuTlN6amn57GyJj8m/gTiqvF2KBFBCWLFseehD4lTz657fGym64qV2PslwQ78bBZ3xpMMo65OL2umuLI6yMi/9VHwjVMwXEUo630yHPF29iB4vCUlmZKywvRYqRbW9WZvfYcxof9bbriv2nIdfUjdjSwDGMg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQb3t0Lz30P3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2025 03:44:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQd010Hz30RS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2025 03:44:40 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AB8FF1D31;
-	Mon, 20 Jan 2025 08:44:56 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9854F1D14;
+	Mon, 20 Jan 2025 08:44:35 -0800 (PST)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 080883F5A1;
-	Mon, 20 Jan 2025 08:44:24 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0131C3F5A1;
+	Mon, 20 Jan 2025 08:44:03 -0800 (PST)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -52,9 +52,9 @@ Cc: kvm@vger.kernel.org,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
 	andre.przywara@arm.com
-Subject: [kvm-unit-tests PATCH v2 16/18] scripts/mkstandalone: Export $TARGET
-Date: Mon, 20 Jan 2025 16:43:14 +0000
-Message-ID: <20250120164316.31473-17-alexandru.elisei@arm.com>
+Subject: [kvm-unit-tests PATCH v2 10/18] scripts/arch-run: Add support for kvmtool
+Date: Mon, 20 Jan 2025 16:43:08 +0000
+Message-ID: <20250120164316.31473-11-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250120164316.31473-1-alexandru.elisei@arm.com>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
@@ -72,26 +72,158 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-$TARGET is needed for the test runner to decide if it should use qemu or
-kvmtool, so export it.
+Add two new functions, search_kvmtool_binary(), which, like the name
+suggests, searches for the location of the kvmtool binary, and
+run_kvmtool(), which runs a test with kvmtool as the VMM.
+
+initrd_create() has also been modified to use the kvmtool syntax for
+supplying an initrd, which is --initrd (two dashes instead of the single
+dash that qemu uses).
+
+arm/run does not know how to use these functions yet, but this will be
+added in a subsequent patch.
 
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- scripts/mkstandalone.sh | 1 +
- 1 file changed, 1 insertion(+)
+ scripts/arch-run.bash | 94 +++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 81 insertions(+), 13 deletions(-)
 
-diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-index 4de97056e641..10abb5e191b7 100755
---- a/scripts/mkstandalone.sh
-+++ b/scripts/mkstandalone.sh
-@@ -51,6 +51,7 @@ generate_test ()
- 	config_export ARCH
- 	config_export ARCH_NAME
- 	config_export PROCESSOR
-+	config_export TARGET
+diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
+index d6eaf0ee5f09..34f633cade01 100644
+--- a/scripts/arch-run.bash
++++ b/scripts/arch-run.bash
+@@ -75,16 +75,47 @@ run_qemu ()
+ 	return $ret
+ }
  
- 	echo "echo BUILD_HEAD=$(cat build-head)"
++run_kvmtool ()
++{
++	local stdout errors ret sig
++
++	initrd_create || return $?
++
++	echo -n "$@"
++	[ "$ENVIRON_DEFAULT" = "yes" ] && echo -n " #"
++	echo " $INITRD"
++
++	# stdout to {stdout}, stderr to $errors and stderr
++	exec {stdout}>&1
++	"${@}" $INITRD </dev/null 2> >(tee /dev/stderr) > /dev/fd/$stdout
++	ret=$?
++	exec {stdout}>&-
++
++	return $ret
++}
++
+ run_test_status ()
+ {
+-	local stdout ret
++	local stdout ret ret_success
  
+ 	exec {stdout}>&1
+-	lines=$(run_qemu "$@" > >(tee /dev/fd/$stdout))
++
++	# For qemu, an exit status of 1 means that the test completed. For kvmtool,
++	# 0 means the same thing.
++	case "$TARGET" in
++	qemu)
++		ret_success=1
++		lines=$(run_qemu "$@" > >(tee /dev/fd/$stdout))
++		;;
++	kvmtool)
++		ret_success=0
++		lines=$(run_kvmtool "$@" > >(tee /dev/fd/$stdout))
++		;;
++	esac
+ 	ret=$?
+ 	exec {stdout}>&-
+ 
+-	if [ $ret -eq 1 ]; then
++	if [ $ret -eq $ret_success ]; then
+ 		testret=$(grep '^EXIT: ' <<<"$lines" | head -n1 | sed 's/.*STATUS=\([0-9][0-9]*\).*/\1/')
+ 		if [ "$testret" ]; then
+ 			if [ $testret -eq 1 ]; then
+@@ -422,6 +453,25 @@ search_qemu_binary ()
+ 	export PATH=$save_path
+ }
+ 
++search_kvmtool_binary ()
++{
++	local kvmtoolcmd kvmtool
++
++	for kvmtoolcmd in lkvm vm lkvm-static; do
++		if $kvmtoolcmd --help 2>/dev/null| grep -q 'The most commonly used'; then
++			kvmtool="$kvmtoolcmd"
++			break
++		fi
++	done
++
++	if [ -z "$kvmtool" ]; then
++		echo "A kvmtool binary was not found." >&2
++		return 2
++	fi
++
++	command -v $kvmtool
++}
++
+ initrd_cleanup ()
+ {
+ 	rm -f $KVM_UNIT_TESTS_ENV
+@@ -447,7 +497,18 @@ initrd_create ()
+ 	fi
+ 
+ 	unset INITRD
+-	[ -f "$KVM_UNIT_TESTS_ENV" ] && INITRD="-initrd $KVM_UNIT_TESTS_ENV"
++	if [ ! -f "$KVM_UNIT_TESTS_ENV" ]; then
++		return 0
++	fi
++
++	case "$TARGET" in
++		qemu)
++			INITRD="-initrd $KVM_UNIT_TESTS_ENV"
++			;;
++		kvmtool)
++			INITRD="--initrd $KVM_UNIT_TESTS_ENV"
++			;;
++	esac
+ 
+ 	return 0
+ }
+@@ -471,18 +532,25 @@ env_params ()
+ 	local qemu have_qemu
+ 	local _ rest
+ 
+-	qemu=$(search_qemu_binary) && have_qemu=1
++	env_add_params TARGET
++
++	# kvmtool's versioning has been broken since it was split from the kernel
++	# source.
++	if [ "$TARGET" = "qemu" ]; then
++		qemu=$(search_qemu_binary) && have_qemu=1
+ 
+-	if [ "$have_qemu" ]; then
+-		if [ -n "$ACCEL" ] || [ -n "$QEMU_ACCEL" ]; then
+-			[ -n "$ACCEL" ] && QEMU_ACCEL=$ACCEL
++		if [ "$have_qemu" ]; then
++			if [ -n "$ACCEL" ] || [ -n "$QEMU_ACCEL" ]; then
++				[ -n "$ACCEL" ] && QEMU_ACCEL=$ACCEL
++			fi
++			QEMU_VERSION_STRING="$($qemu -h | head -1)"
++			# Shellcheck does not see QEMU_MAJOR|MINOR|MICRO are used
++			# shellcheck disable=SC2034
++			IFS='[ .]' read -r _ _ _ QEMU_MAJOR QEMU_MINOR QEMU_MICRO rest <<<"$QEMU_VERSION_STRING"
+ 		fi
+-		QEMU_VERSION_STRING="$($qemu -h | head -1)"
+-		# Shellcheck does not see QEMU_MAJOR|MINOR|MICRO are used
+-		# shellcheck disable=SC2034
+-		IFS='[ .]' read -r _ _ _ QEMU_MAJOR QEMU_MINOR QEMU_MICRO rest <<<"$QEMU_VERSION_STRING"
++
++		env_add_params QEMU_ACCEL QEMU_VERSION_STRING QEMU_MAJOR QEMU_MINOR QEMU_MICRO
+ 	fi
+-	env_add_params QEMU_ACCEL QEMU_VERSION_STRING QEMU_MAJOR QEMU_MINOR QEMU_MICRO
+ 
+ 	KERNEL_VERSION_STRING=$(uname -r)
+ 	IFS=. read -r KERNEL_VERSION KERNEL_PATCHLEVEL rest <<<"$KERNEL_VERSION_STRING"
 -- 
 2.47.1
 
