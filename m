@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-5407-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5408-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82500C02182
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74DA2C02182
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:44:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQb16WBz30N8;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQb1vJYz30NN;
 	Tue, 21 Jan 2025 03:44:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737391479;
-	cv=none; b=kCfQqWmY0DvOnskS8bbGvfcenIey3zpnGTl82O3SgsQe85BS5VhSzvhSaxPemM8I+hxFwEDBE2nAMv/hRhYZsCyn5VIQsEA4G3WIPRa7Q3VZN28uPevqYm8N5yBs6FGx9tzURvfTRaDRN/J72Xv6dJg2BwQI2Le2z3wePJrJ9EyamaAoJRNNxiQMkDB+ppdMBu9RBn/cSAE7ONw/YQf0+YlG10bz4Vty87veYrs9BH88DJfiDzbcomJUbGnGCB+I6auvxE8mI+aN0LI3J2jG6WmDdpLgFlhpQI5LK6H22x5WsRR1zH814k6ZuF/bZh8Ujz2D/7J+ssdaydR2igu5JQ==
+	cv=none; b=UTKawYIr77CtPuy7LTbvoQz/9sggHVbm0/Zl0bZIO/tO10z100/t2P1JI9mkxg2DUnhIjAy5xKG/X6z4366I5ysPq+0D43o8NCdt1aHYc0lVuJ2kuIrTcPC2S+ZG7xDMbG7oAU4+toM2PrANsgK1VcTOCKBDiZ8RLHKFv5lpjO8qUVveaoEHD6x6d1FrWoi9xYg8+Ib0f07QePOS2zze6wrFRCSFAcaC7qxXOmxSxUP+xqQ1JXOvB9/Q+30PiGBAz5vtadbc+75Fii2zJ9qUJPIUMvgYUCS51NaRncvL0nAX02Z/g2T3ADtOMK1ego+vfEkKwa4HE6IuIS0kinQsCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1737391479; c=relaxed/relaxed;
-	bh=twvInRqGevS2fFLPSQniIyTY4cEjWqFPSmHIIf+7Pes=;
+	bh=vmO365WN4OVZ9bpIXoW6GYZCT+s9WrRqv46INlLHilg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=J8dIuLH1T4VKLnf2bL3ZDZARUW/52zi3vT+jfiRCMIsAN+wRZjAAWqUm1ncWiauoN6dyJlSsgG+cPEC3idwePfHTxtAHj0c6kuj11EcCbfgSqUGgvopUwBaANdVb7wy+78roZFqTuzcyEFhBRMus7md6IRvFgQqBqAB3uUfs+nkQeukXnRUqY37mOCl/EZ6IaJ0EFLI9vsypWbdJghqco04u/7gxNephqF2x1Aks4aT06BsWH4GbqUpyAUH9OJv+fMVaucW6QgCmOnLEqqACs8go0ZyWOQUdlS2Fm2rYsGnisbYfTMjOKnpTJmJnkd7ZdlH5oS+EIgAVKXfPhrxaDw==
+	 MIME-Version; b=RfQWaC0SWOeYNZf2LgmdCmP9it+0rucFa7ST6TLHAe6q+51pHRT95Sg/U47aZSlH4LC0nd6EQRCpt7Xwjs5gce0VDzqa9Grwztv0WL+sr9w/M713Sf/vi8Ny9pIuI0aEbqZ/yyrLSvaZ3lylt6dgWwt3t0XKseqvnR+IN/Hi0Q8b34qkdsPL5ol4UfltUC0xRFg5mjacbGNQcEYgz8/EcPCSVc3fk7KKQreR11FZFm5crkFYHEHMmZ0KzqKmuMNQudcaCJo1/ut7NlmIcLvvTN5//StSlwTeJX3vShH0WId8EIir5CuZpPwAkMC/rXGqk8Bn/oDTAXrHfeUMT9bgIQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQZ3wRmz30Ds
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQZ4PLkz30ML
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2025 03:44:38 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C18EE1CC4;
-	Mon, 20 Jan 2025 08:44:21 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AA7381CE0;
+	Mon, 20 Jan 2025 08:44:28 -0800 (PST)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2A9F03F5A1;
-	Mon, 20 Jan 2025 08:43:50 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 14D993F5A1;
+	Mon, 20 Jan 2025 08:43:56 -0800 (PST)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -52,9 +52,9 @@ Cc: kvm@vger.kernel.org,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
 	andre.przywara@arm.com
-Subject: [kvm-unit-tests PATCH v2 06/18] scripts: Merge the qemu parameter -smp into $qemu_opts
-Date: Mon, 20 Jan 2025 16:43:04 +0000
-Message-ID: <20250120164316.31473-7-alexandru.elisei@arm.com>
+Subject: [kvm-unit-tests PATCH v2 08/18] scripts/runtime: Detect kvmtool failure in premature_failure()
+Date: Mon, 20 Jan 2025 16:43:06 +0000
+Message-ID: <20250120164316.31473-9-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250120164316.31473-1-alexandru.elisei@arm.com>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
@@ -72,43 +72,56 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-kvmtool has a different command line parameter to specify the number of
-VCPUs (-c/--cpus). To make it easier to accommodate it, merge the qemu
-specific parameter -smp into $qemu_opts when passing it to the
-$RUNTIME_arch_run script.
+kvm-unit-tests assumes that if the VMM is able to get to where it tries to
+load the kernel, then the VMM and the configuration parameters will also
+work for running the test. All of this is done in premature_failure().
 
-This is safe to do because the $RUNTIME_arch_run script, on all
-architectures, passes the parameters right back to run_qemu() et co, and
-do not treat individual parameters separately.
+Teach premature_failure() about the kvmtool's error message when it fails
+to load the dummy kernel.
 
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- scripts/runtime.bash | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ scripts/runtime.bash | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
 diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-index e5d661684ceb..a89f2d10ab78 100644
+index 451b5585f010..ee8a188b22ce 100644
 --- a/scripts/runtime.bash
 +++ b/scripts/runtime.bash
-@@ -34,7 +34,8 @@ premature_failure()
- get_cmdline()
- {
-     local kernel=$1
--    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel -smp $smp $qemu_opts"
-+
-+    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel $qemu_opts"
+@@ -12,18 +12,27 @@ extract_summary()
+     tail -5 | grep '^SUMMARY: ' | sed 's/^SUMMARY: /(/;s/'"$cr"'\{0,1\}$/)/'
  }
  
- skip_nodefault()
-@@ -87,6 +88,8 @@ function run()
-     local accel="$9"
-     local timeout="${10:-$TIMEOUT}" # unittests.cfg overrides the default
+-# We assume that QEMU is going to work if it tried to load the kernel
++# We assume that the VMM is going to work if it tried to load the kernel
+ premature_failure()
+ {
+     local log
  
-+    qemu_opts="-smp $smp $qemu_opts"
+     log="$(eval "$(get_cmdline _NO_FILE_4Uhere_)" 2>&1)"
+ 
+-    echo "$log" | grep "_NO_FILE_4Uhere_" |
+-        grep -q -e "[Cc]ould not \(load\|open\) kernel" \
+-                -e "error loading" \
+-                -e "failed to load" &&
+-        return 1
++    case "$TARGET" in
++    qemu)
 +
-     if [ "${CONFIG_EFI}" == "y" ]; then
-         kernel=${kernel/%.flat/.efi}
-     fi
++        echo "$log" | grep "_NO_FILE_4Uhere_" |
++            grep -q -e "[Cc]ould not \(load\|open\) kernel" \
++                    -e "error loading" \
++                    -e "failed to load" &&
++            return 1
++        ;;
++    kvmtool)
++        echo "$log" | grep "Fatal: Unable to open kernel _NO_FILE_4Uhere_" &&
++            return 1
++        ;;
++    esac
+ 
+     RUNTIME_log_stderr <<< "$log"
+ 
 -- 
 2.47.1
 
