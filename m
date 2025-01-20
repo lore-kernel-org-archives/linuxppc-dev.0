@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-5414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5415-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6407FC02181
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:45:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B41FCC02181
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:45:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQf4Xs8z30T3;
-	Tue, 21 Jan 2025 03:44:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQk18yhz30Tc;
+	Tue, 21 Jan 2025 03:44:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737391482;
-	cv=none; b=J+/QCv2Caw2ztgf4zbh3/Rid+p/Cvz2tVJXUYEwUr+drh9h0hGfImsF9RjYlqVLab9KUA451Z1BvADNXflBsYQHoaasTI0UN0Q7G48Sp+SzfpuuM84j2vd0D0Gqqglp0PAxItr6GQBwUEbOo3rQaKauy089IEZLDGE7phHXE8UrkmWEE4Y3fskHZPNmh3naePcVRcKoDEiLEuTkOBMmPqoJ4w1GiNP64Q3dE7TZ0Fq0+VXz2SxLHmSXslFiiqrUeLfeJJhXb8N6PyoI5b1oWDid+DmpTQpuyuchRwI0UsDvvU4/EolVYZIbd09djIXb82eqbh2sjruM5Ycixa4XMlQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737391486;
+	cv=none; b=AvPoHjXZ9CuDbu2OxXyG16nN6qvTZj4I9qLSizjc/cdj+ZnyD8ID+Aocg/dASJK5wtldvxc2dcCxt97uonZeZVn+Sbiw3Je7ikekolveEU6EzlxVPF6Idehr2kqPoe2HDj+mOtCcHTozAhfPNF/k8uuD23QCnQNaXPUAHSrkdW2HD3j5YSfs+VVZ7H66C2SrfFJRWzEb4JBF5j7ag3ADrhOIrOUnRjZc/EHrYkYkEarSA8lyDRJCrqW3danHZCzAHrPktD5wL25yKj1mF5b/ptJrHLFLUFtxl0umNV2oRD8UYNdbVQD9QuRfoVHywIl5/rtGuYS9sY8aDPCv1Vhedg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737391482; c=relaxed/relaxed;
-	bh=fEYENRyI+vXzjU5umQc2rllQNsN9vawKqi4oDYR8SK8=;
+	t=1737391486; c=relaxed/relaxed;
+	bh=mq9KvfktIFBRFX3x4QfGidjiJA0HGhS8TMeU4Lsc8TA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NlAu5ywGEHHa1jEClMXJaXf7FqGFA96UaBDT0lAhXLCnXy13A5anNSz3sDIRJUqD56Z6KcOj14t2fPVhhbcjyotTTr8IfTBFfXYK/OMrtn3/jlYR9sP/iKxceHBdOWbb1TBjMDlR91xWBVlFYX+qHBLXpn66w47tLPoombYt1ShrBRlsyK3DXCiXjIjRrAm0FFt2T8O2H1mhq7UCXIaF1l2+SI4EJWQ3AfrUcIkOwtKLo3wEZBfts1gxD1ESU19dWGdeZmu1aUr8YqgmCvaks4xlSZqfjFpM9sJkNen43nGhSofDWQ49QfL8f6smDEMIDTAWQxRPf4FXeg1Zz+QxIg==
+	 MIME-Version; b=i7AVrCsudhLmvS736fvXIBU1PlZcX3T8PjsVfvtuedFO9JJ8uOJGiYtpwNLwQviGJeGMR5N+1QsOY8aWs6eWM4s+G6XiTmRWw8epr88uP+O7LxJDSDFq3QVG5f1PzMzv9vx9/wE6qIM7kn0Yz7Oz1ev9hr9AoomoaDe124tLa+LkvvJodo9eVWqrBm+IALYKlrCF1KQh2u9JxA4jdUlai4Pu9nErIvtobNViBy7tkyMncKr/zMfkaSHvaYF12knL+v1m+YHjVjXKUjYPihES2IaUQRFh+EAioUcOmnjE9vlAQpvKGKesuJ0Jc9C/CrK+pXiz50Pdszs7uUoqo4SDFA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQb4ztrz30Pp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2025 03:44:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQj35G3z30JH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2025 03:44:45 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 00BE31D6F;
-	Mon, 20 Jan 2025 08:45:04 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8FDAE1063;
+	Mon, 20 Jan 2025 08:44:42 -0800 (PST)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 08CEE3F5A1;
-	Mon, 20 Jan 2025 08:44:31 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E59EC3F5A1;
+	Mon, 20 Jan 2025 08:44:10 -0800 (PST)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -52,9 +52,9 @@ Cc: kvm@vger.kernel.org,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
 	andre.przywara@arm.com
-Subject: [kvm-unit-tests PATCH v2 18/18] run_tests: Enable kvmtool
-Date: Mon, 20 Jan 2025 16:43:16 +0000
-Message-ID: <20250120164316.31473-19-alexandru.elisei@arm.com>
+Subject: [kvm-unit-tests PATCH v2 12/18] scripts/runtime: Add default arguments for kvmtool
+Date: Mon, 20 Jan 2025 16:43:10 +0000
+Message-ID: <20250120164316.31473-13-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250120164316.31473-1-alexandru.elisei@arm.com>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
@@ -72,122 +72,93 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Everything is in place to run the tests using kvmtool:
+kvmtool, unless told otherwise, will do its best to make sure that a kernel
+successfully boots in a virtual machine. Among things like automatically
+creating a rootfs, it also adds extra parameters to the kernel command
+line. This is actively harmful to kvm-unit-tests, because some tests parse
+the kernel command line and they will fail if they encounter the options
+added by kvmtool.
 
-$ ./configure --target=kvmtool
-$ make clean && make
-$ KVMTOOL=<path/to/kvmtool> ./run_tests.sh
+Fortunately for us, kvmtool commit 5613ae26b998 ("Add --nodefaults command
+line argument") addded the --nodefaults kvmtool parameter which disables
+all the implicit virtual machine configuration that cannot be disabled by
+using other parameters, like modifying the kernel command line. Always use
+--nodefaults to allow a test to run.
 
-so enable it, and remove ERRATA_FORCE=y when configuring for kvmtool,
-because the runner will generate and pass the correct environment to
-kvmtool.
+kvmtool can be too verbose when running a virtual machine, and this is
+controlled with parameters. Add those to the default kvmtool command line
+to reduce this verbosity to a minimum.
 
-Missing is support for EFI tests. That's because distros don't ship a
-EDK2 binary compiled for kvmtool, and on top of that kvm-unit-tests as
-an EFI app hasn't been tested to work with kvmtool.
+Before:
+
+$ vm run arm/selftest.flat --cpus 2 --mem 256 --params "setup smp=2 mem=256"
+  Info: # lkvm run -k arm/selftest.flat -m 256 -c 2 --name guest-5035
+Unknown subtest
+
+EXIT: STATUS=127
+  Warning: KVM compatibility warning.
+	virtio-9p device was not detected.
+	While you have requested a virtio-9p device, the guest kernel did not initialize it.
+	Please make sure that the guest kernel was compiled with CONFIG_NET_9P_VIRTIO=y enabled in .config.
+  Warning: KVM compatibility warning.
+	virtio-net device was not detected.
+	While you have requested a virtio-net device, the guest kernel did not initialize it.
+	Please make sure that the guest kernel was compiled with CONFIG_VIRTIO_NET=y enabled in .config.
+  Info: KVM session ended normally.
+
+After:
+
+$ vm run arm/selftest.flat --nodefaults --network mode=none --loglevel=warning --cpus 2 --mem 256 --params "setup smp=2 mem=256"
+PASS: selftest: setup: smp: number of CPUs matches expectation
+INFO: selftest: setup: smp: found 2 CPUs
+PASS: selftest: setup: mem: memory size matches expectation
+INFO: selftest: setup: mem: found 256 MB
+SUMMARY: 2 tests
+
+EXIT: STATUS=1
+
+Note that KVMTOOL_DEFAULT_OPTS can be overwritten by an environment
+variable with the same name, but it's not documented in the help string for
+run_tests.sh. This has been done on purpose, since overwritting
+KVMTOOL_DEFAULT_OPTS should only be necessary for debugging or development
+purposes.
 
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
+ scripts/runtime.bash | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-Should I also revert commit 35145f140442 ("arm/arm64: kvmtool: force all tests
-to run") which introduced ERRATA_FORCE? I didn't do this now in case other
-architectures use it/planning to use it.
-
- README.md               | 15 +++++++++++++++
- arm/run                 |  2 +-
- configure               |  1 -
- run_tests.sh            |  2 +-
- scripts/mkstandalone.sh |  2 +-
- 5 files changed, 18 insertions(+), 4 deletions(-)
-
-diff --git a/README.md b/README.md
-index be07dc28a094..5e7706f02553 100644
---- a/README.md
-+++ b/README.md
-@@ -65,6 +65,9 @@ or:
+diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+index 55d58eef9c7c..abfd1e67b2ef 100644
+--- a/scripts/runtime.bash
++++ b/scripts/runtime.bash
+@@ -2,6 +2,17 @@
+ : "${MAX_SMP:=$(getconf _NPROCESSORS_ONLN)}"
+ : "${TIMEOUT:=90s}"
  
- to run them all.
- 
-+All tests can be run using QEMU. On arm and arm64, tests can also be run using
-+kvmtool.
++# The following parameters are enabled by default when running a test with
++# kvmtool:
++# --nodefaults: suppress VM configuration that cannot be disabled otherwise
++#               (like modifying the supplied kernel command line). Tests that
++#               use the command line will fail without this parameter.
++# --network mode=none: do not create a network device. kvmtool tries to help the
++#                user by automatically create one, and then prints a warning
++#                when the VM terminates if the device hasn't been initialized.
++# --loglevel=warning: reduce verbosity
++: "${KVMTOOL_DEFAULT_OPTS:="--nodefaults --network mode=none --loglevel=warning"}"
 +
- By default the runner script searches for a suitable QEMU binary in the system.
- To select a specific QEMU binary though, specify the QEMU=path/to/binary
- environment variable:
-@@ -80,10 +83,22 @@ For running tests that involve migration from one QEMU instance to another
- you also need to have the "ncat" binary (from the nmap.org project) installed,
- otherwise the related tests will be skipped.
+ PASS() { echo -ne "\e[32mPASS\e[0m"; }
+ SKIP() { echo -ne "\e[33mSKIP\e[0m"; }
+ FAIL() { echo -ne "\e[31mFAIL\e[0m"; }
+@@ -103,7 +114,7 @@ function run()
+         opts="-smp $smp $qemu_opts"
+         ;;
+     kvmtool)
+-        opts="--cpus $smp $kvmtool_opts"
++        opts="$KVMTOOL_DEFAULT_OPTS --cpus $smp $kvmtool_opts"
+         ;;
+     esac
  
-+To run a test with kvmtool, please configure kvm-unit-tests accordingly first:
-+
-+   ./configure --arch=arm64 --target=kvmtool
-+
-+then run the test(s) like with QEMU above.
-+
-+To select a kvmtool binary, specify the KVMTOOL=path/to/binary environment
-+variable. kvmtool supports only kvm as the accelerator.
-+
- ## Running the tests with UEFI
- 
- Check [x86/efi/README.md](./x86/efi/README.md).
- 
-+On arm and arm64, this is only supported with QEMU; kvmtool cannot run the
-+tests under UEFI.
-+
- # Tests configuration file
- 
- The test case may need specific runtime configurations, for
-diff --git a/arm/run b/arm/run
-index 880d5afae86d..438a2617e564 100755
---- a/arm/run
-+++ b/arm/run
-@@ -10,7 +10,7 @@ if [ -z "$KUT_STANDALONE" ]; then
- fi
- 
- case "$TARGET" in
--qemu)
-+qemu | kvmtool)
-     ;;
- *)
-    echo "'$TARGET' not supported"
-diff --git a/configure b/configure
-index 86cf1da36467..17d3d931f2c0 100755
---- a/configure
-+++ b/configure
-@@ -299,7 +299,6 @@ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
-         arm_uart_early_addr=0x09000000
-     elif [ "$target" = "kvmtool" ]; then
-         arm_uart_early_addr=0x1000000
--        errata_force=1
-     else
-         echo "--target must be one of 'qemu' or 'kvmtool'!"
-         usage
-diff --git a/run_tests.sh b/run_tests.sh
-index d38954be9093..3921dcdcb344 100755
---- a/run_tests.sh
-+++ b/run_tests.sh
-@@ -110,7 +110,7 @@ while [ $# -gt 0 ]; do
- done
- 
- case "$TARGET" in
--qemu)
-+qemu | kvmtool)
-     ;;
- *)
-     echo "$0 does not support '$TARGET'"
-diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-index 10abb5e191b7..16383b05adfa 100755
---- a/scripts/mkstandalone.sh
-+++ b/scripts/mkstandalone.sh
-@@ -8,7 +8,7 @@ source config.mak
- source scripts/common.bash
- 
- case "$TARGET" in
--qemu)
-+qemu | kvmtool)
-     ;;
- *)
-     echo "'$TARGET' not supported for standlone tests"
 -- 
 2.47.1
 
