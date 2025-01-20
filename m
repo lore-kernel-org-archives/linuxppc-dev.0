@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-5409-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5410-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29428C02182
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:44:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88EC1C02181
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:45:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQc2DFFz30ML;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQc6b2Vz30H7;
 	Tue, 21 Jan 2025 03:44:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737391479;
-	cv=none; b=NzVZGDVD4edftUxN1NxrcXc7SzHeedIyLrAaKPMMHt/bTBz+TbOMTx/80y/M9Bgz2r78EH/0XaXH5omZ5XYcgQPMUJfKFPmmHfJOsQdXA9r7afM5gTmlQXmFHV+jqd7w/Hq2Czm+3OuqFrFPuIM0ZwXkz5p7GCL2qQLOLhPsRYuqOTc/L+6b47R9AtsH+zR235oW96Gya3N6qYiWW3UzPksDX92+xz8rFLr0A1B45qibaI8sSGUeFAXipYs59Mt/hNlsKQV5V5VgLLcXJ4GXJT6ybt9Mgu1kMIe1+STvcpU+0VZGZffS4PaAy4pbhzxBowmtRZHf0H8uFBRcwP58/Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737391480;
+	cv=none; b=IEDjtwzf0BgRWydS1dKHgtiUYZKCIZGZ4BMXjf5owCxsiPpwoRMXS6dx0GMnZqGUPBE01hv+HMOwfT2IRQPC5XCvUCn8gbeg71CJFSs8/dwmX0dz+MPFK6ks9EOHOikKu3jB4jkDUAxV8sncwGM4opVqDVmB9NM3Q8osO91goThCSBWx7Tg9Z5xu49dM2/ZAPRsmVWgqnmNF7cnEkEublxfRvRAre9Us3XlUsTtvTPxnpOtcaztq5oSJY5gALGDZ4IzEGasQiMHF4SGAg3B8sluN/zQTnLFvuXvpl/8RcZ1EHddDt+qX4gf1myC2/ZlJye/rtxBaKL3LvWPJYoL4Wg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737391479; c=relaxed/relaxed;
-	bh=XEP0x+T3zEryUVhk81xYdr9VZYx70SLaqUp0Sba2pYY=;
+	t=1737391480; c=relaxed/relaxed;
+	bh=hXd14BMu1Xt8zqO2XUDjftVp36kI58kCOz0K3Waa6K8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AChutjqRw+plSxyD04l6z3vH5I+WXjfCecb6KCG2oVNLd/KkWR/u2J6pne+V7i1YHNRUfud5L/vLEF52LWMDbsiU+/QOp81uDHsk0N+MfK/4ydr+QBKJdlLIpXew+mAwPd8TUAOPJkjte9N36iMolEXMyEBqMSnfStl/grCM3L3SRABbSUwW3sfe+91mB+Fi4I6qH76d6rgYNrBblpBHv0azuFIVZPi8BUEfmV/bY/Y5yJYnR1J9Cg5FZ1bQHvMbmzv57bd5FjDiMFWnVegXwYSfqegEX01ZeUWCFqtq2VB9tZodot3gaYymMjYFReIt2ofZfOixhTKpBrx/wDkA4w==
+	 MIME-Version; b=eF/ArxRHK3yjs0xGHYfz3v5Paklk5sU0EJk0Z8lfwdXOYFtFaAGKkjai8EuxbqXISNmosURItF4fe4TqheoI6ku5vYaMxP20c+gsu+lDO1XG6CY4ncKyz3BZ5EdUrcIF8NDcDoJz6FJ3/sq4+XMEO2J6notkOV2t+1qWCQRgfLVaxruBTrptt/par0+QvqNVleXeRE+BhAcSTPh/SLChXfu0P33P88EAaaQrB2w7FCEkX2/C6sdmurkVmlJLhFPAfwKVNJVz4NY1FYAcC2tse0cWr4JZ5nndG0Bzpi4t8K3bRJouYrJwzr5+DVTxK6GUazql8V1eSupfA5Eqk0vu8w==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQZ4CjHz30H7
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGQZ4j3Wz30MR
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2025 03:44:38 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 500531C0A;
-	Mon, 20 Jan 2025 08:44:18 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3B32F1CE2;
+	Mon, 20 Jan 2025 08:44:25 -0800 (PST)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8C4353F5A1;
-	Mon, 20 Jan 2025 08:43:46 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 99F273F5A1;
+	Mon, 20 Jan 2025 08:43:53 -0800 (PST)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -51,11 +51,10 @@ Cc: kvm@vger.kernel.org,
 	suzuki.poulose@arm.com,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
-	andre.przywara@arm.com,
-	Alexandru Elisei <alexandru.elisei@gmail.com>
-Subject: [kvm-unit-tests PATCH v2 05/18] scripts: Rename run_qemu_status -> run_test_status
-Date: Mon, 20 Jan 2025 16:43:03 +0000
-Message-ID: <20250120164316.31473-6-alexandru.elisei@arm.com>
+	andre.przywara@arm.com
+Subject: [kvm-unit-tests PATCH v2 07/18] scripts: Introduce kvmtool_opts
+Date: Mon, 20 Jan 2025 16:43:05 +0000
+Message-ID: <20250120164316.31473-8-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250120164316.31473-1-alexandru.elisei@arm.com>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
@@ -73,85 +72,85 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Alexandru Elisei <alexandru.elisei@gmail.com>
-
-For the arm/arm64 architectures, kvm-unit-tests can also be run using the
-kvmtool virtual machine manager. Rename run_qemu_status to run_test_status
-to make it more generic, in preparation to add support for kvmtool.
+In preparation for supporting kvmtool, create and pass the variable
+'kvmtool_opts' to the arch run script $RUNTIME_arch_run.
 
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- arm/run               | 4 ++--
- powerpc/run           | 2 +-
- riscv/run             | 4 ++--
- s390x/run             | 2 +-
- scripts/arch-run.bash | 2 +-
- 5 files changed, 7 insertions(+), 7 deletions(-)
+ scripts/common.bash  |  6 ++++--
+ scripts/runtime.bash | 14 +++++++++++---
+ 2 files changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/arm/run b/arm/run
-index 6db32cf09c88..9b11feafffdd 100755
---- a/arm/run
-+++ b/arm/run
-@@ -85,9 +85,9 @@ command+=" -display none -serial stdio"
- command="$(migration_cmd) $(timeout_cmd) $command"
+diff --git a/scripts/common.bash b/scripts/common.bash
+index a40c28121b6a..1b5e0d667841 100644
+--- a/scripts/common.bash
++++ b/scripts/common.bash
+@@ -37,6 +37,7 @@ function for_each_unittest()
+ 	local check
+ 	local accel
+ 	local timeout
++	local kvmtool_opts
+ 	local rematch
  
- if [ "$UEFI_SHELL_RUN" = "y" ]; then
--	ENVIRON_DEFAULT=n run_qemu_status $command "$@"
-+	ENVIRON_DEFAULT=n run_test_status $command "$@"
- elif [ "$EFI_USE_ACPI" = "y" ]; then
--	run_qemu_status $command -kernel "$@"
-+	run_test_status $command -kernel "$@"
- else
- 	run_qemu $command -kernel "$@"
- fi
-diff --git a/powerpc/run b/powerpc/run
-index 27abf1ef6a4d..9b5fbc1197ed 100755
---- a/powerpc/run
-+++ b/powerpc/run
-@@ -63,4 +63,4 @@ command="$(migration_cmd) $(timeout_cmd) $command"
- # to fixup the fixup below by parsing the true exit code from the output.
- # The second fixup is also a FIXME, because once we add chr-testdev
- # support for powerpc, we won't need the second fixup.
--run_qemu_status $command "$@"
-+run_test_status $command "$@"
-diff --git a/riscv/run b/riscv/run
-index 73f2bf54dc32..2a846d361a4d 100755
---- a/riscv/run
-+++ b/riscv/run
-@@ -34,8 +34,8 @@ command+=" $mach $acc $firmware -cpu $processor "
- command="$(migration_cmd) $(timeout_cmd) $command"
+ 	exec {fd}<"$unittests"
+@@ -45,7 +46,7 @@ function for_each_unittest()
+ 		if [[ "$line" =~ ^\[(.*)\]$ ]]; then
+ 			rematch=${BASH_REMATCH[1]}
+ 			if [ -n "${testname}" ]; then
+-				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout"
++				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$kvmtool_opts"
+ 			fi
+ 			testname=$rematch
+ 			smp=1
+@@ -57,6 +58,7 @@ function for_each_unittest()
+ 			check=""
+ 			accel=""
+ 			timeout=""
++			kvmtool_opts=""
+ 		elif [[ $line =~ ^file\ *=\ *(.*)$ ]]; then
+ 			kernel=$TEST_DIR/${BASH_REMATCH[1]}
+ 		elif [[ $line =~ ^smp\ *=\ *(.*)$ ]]; then
+@@ -80,7 +82,7 @@ function for_each_unittest()
+ 		fi
+ 	done
+ 	if [ -n "${testname}" ]; then
+-		$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout"
++		$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$kvmtool_opts"
+ 	fi
+ 	exec {fd}<&-
+ }
+diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+index a89f2d10ab78..451b5585f010 100644
+--- a/scripts/runtime.bash
++++ b/scripts/runtime.bash
+@@ -35,7 +35,7 @@ get_cmdline()
+ {
+     local kernel=$1
  
- if [ "$UEFI_SHELL_RUN" = "y" ]; then
--	ENVIRON_DEFAULT=n run_qemu_status $command "$@"
-+	ENVIRON_DEFAULT=n run_test_status $command "$@"
- else
- 	# We return the exit code via stdout, not via the QEMU return code
--	run_qemu_status $command -kernel "$@"
-+	run_test_status $command -kernel "$@"
- fi
-diff --git a/s390x/run b/s390x/run
-index 34552c2747d4..9ecfaf983a3d 100755
---- a/s390x/run
-+++ b/s390x/run
-@@ -47,4 +47,4 @@ command+=" -kernel"
- command="$(panic_cmd) $(migration_cmd) $(timeout_cmd) $command"
- 
- # We return the exit code via stdout, not via the QEMU return code
--run_qemu_status $command "$@"
-+run_test_status $command "$@"
-diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-index 8643bab3b252..d6eaf0ee5f09 100644
---- a/scripts/arch-run.bash
-+++ b/scripts/arch-run.bash
-@@ -75,7 +75,7 @@ run_qemu ()
- 	return $ret
+-    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel $qemu_opts"
++    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel $opts"
  }
  
--run_qemu_status ()
-+run_test_status ()
- {
- 	local stdout ret
+ skip_nodefault()
+@@ -87,8 +87,16 @@ function run()
+     local check="${CHECK:-$8}"
+     local accel="$9"
+     local timeout="${10:-$TIMEOUT}" # unittests.cfg overrides the default
+-
+-    qemu_opts="-smp $smp $qemu_opts"
++    local kvmtool_opts="${11}"
++
++    case "$TARGET" in
++    qemu)
++        opts="-smp $smp $qemu_opts"
++        ;;
++    kvmtool)
++        opts="--cpus $smp $kvmtool_opts"
++        ;;
++    esac
  
+     if [ "${CONFIG_EFI}" == "y" ]; then
+         kernel=${kernel/%.flat/.efi}
 -- 
 2.47.1
 
