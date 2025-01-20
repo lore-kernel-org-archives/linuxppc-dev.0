@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-5419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5420-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1919C02182
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DB64C02181
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jan 2025 16:46:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGRC0Ddjz30Pp;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGRC0mkmz30Vl;
 	Tue, 21 Jan 2025 03:45:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737391510;
-	cv=none; b=D1D3aMTEfpH1XqUyMq6aGS/IH1M0VLdl5ok86QDB63/SM7/F9wUSwf68snoaZiaLGtylHgmDzNK7FQ6QfFxgLHpl+XHM30Z94IZXYl5KrverkYb7nYMd0PPALjg/scA4AvhiAEcQMmhRj7sl0gXfLv2/tGwB84MKJlsDkjXhK3PvMrkN7/JF56xBgheTlrQ1K50yjNWdxmSLtOj5EgoQNONGmvgdKWwXZFsc3znMMO1DMGD1KbocjxQvsKaAgPGT58GwcDyYcOf2k7vf65z6XUCqgaH6jW36r4vtZpVErYgQAMI+1uJCsxleEnuv9e6ALM0ODF7ZS6BuknwRENxOuA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737391511;
+	cv=none; b=aEd6a+NyJDS0l4rI33FENM6kSD/3XlcEWHNlNYQax/+aD87E7O0JRyQQq+bv4T8XD3bn9okGqM0W55VepdcvUISnRmF4xhrwHv42RzWWtmD32oX3Am/LQX+NSoSDob4nrZyD7OfO7oJlbG/Ln0VGhazVyBltoxA32KiAM1hV01jre1UR9nLvY7FnwY0SUqpY4DRnw+2CXKkZGKkF+FBp5pKmOrVRaElMxEe2R6fX5NPAdGfRTCA1ROUHBQsMNI54D4iYdXy+LfvhHzsdYYwJ2uOjFSSIVVZ0y3pokIFfaToNviE/K9b0PNB3vLXTj/hLjvR2R+jVqeM8nNYqSWtBlg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737391510; c=relaxed/relaxed;
-	bh=UIYJEYPPG7b9BmGRG+FKE8wvlfC0Zk6xBpMLl2jEUZc=;
+	t=1737391511; c=relaxed/relaxed;
+	bh=Nj7Rc3RYxg/yyScm9Lb4oHYapdEplTJvkGwCxM+dhmA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XTIbx5Mgn40cPRUyRpRmfPx8zaG0aEsLYtgz/JakSM8HhUWca7Kl3BsR0hUVj6+XQZyL0PwPglicX97XzjIwyNgdCS4/8ZnerjG3hX769LeSldp2DkzCrCkFt3M72wXbtiDqole8TuyzPexqIyiBMQDllBjvwAxkkxRdBwYA6u1QLjEPptD8YTXeXuzeO4ccPyvXbeCkLiF/PsXMmiAY16g+Lx9Ip+FYB8pDjjQiPxJDgKb1nVqWxw8BS+GrMjAmLr/Yfcmp06X1o94cz6lN/HVeBlItBUIuYXm4Y4bm1+61tsG29Vvt8v5GSK9/SHcDXqYUwYoM4jrBDFOcaA8KaQ==
+	 MIME-Version; b=WMkwipY5HVxFFt6iQoUvVqxyw5Z2Civf/8FLbUe1FAxbk7g80ef7lVDiXEpA98IwfhxWRoD9xiHnsJMH7RAlr5qCYm7qCa0vd9caySOAntwlxoVy+W/OBXS4A/j2frax5FTYta/eSD/UiH87bZFTSNePLlU3+o2hlOZI1OjBSwPTbFcO+r2pmKMW0+p8I1v4DavMQze1cXQpOK1z0rm762i+E21bV33xyR1Nco7gMl8TT565vDuttxcMhDC2NFwe3eMRU81rTbEhXAQHWIJAHqEOhhJA0CQHGPW4HuoX4hWbG2hppO1ORq8eVgsqVJB0zwC88hq+59kHrImuXz+cpA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGRB1Qnrz30CL
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YcGRB1Rfyz30Lt
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2025 03:45:10 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2F4FC1D34;
-	Mon, 20 Jan 2025 08:45:00 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2B42E1D15;
+	Mon, 20 Jan 2025 08:44:53 -0800 (PST)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 849DA3F5A1;
-	Mon, 20 Jan 2025 08:44:28 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 644773F5A1;
+	Mon, 20 Jan 2025 08:44:21 -0800 (PST)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -52,9 +52,9 @@ Cc: kvm@vger.kernel.org,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
 	andre.przywara@arm.com
-Subject: [kvm-unit-tests PATCH v2 17/18] unittest: Add disabled_if parameter and use it for kvmtool
-Date: Mon, 20 Jan 2025 16:43:15 +0000
-Message-ID: <20250120164316.31473-18-alexandru.elisei@arm.com>
+Subject: [kvm-unit-tests PATCH v2 15/18] Add kvmtool_params to test specification
+Date: Mon, 20 Jan 2025 16:43:13 +0000
+Message-ID: <20250120164316.31473-16-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250120164316.31473-1-alexandru.elisei@arm.com>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
@@ -72,171 +72,254 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The pci-test is qemu specific. Other tests perform migration, which
-isn't supported by kvmtool. In general, kvmtool is not as feature-rich
-as qemu, so add a new unittest parameter, disabled_if, that causes a
-test to be skipped if the condition evaluates to true.
+arm/arm64 supports running tests under kvmtool, but kvmtool's syntax for
+running a virtual machine is different than qemu's. To run tests using the
+automated test infrastructure, add a new test parameter, kvmtool_params.
+The parameter serves the exact purpose as qemu_params/extra_params, but using
+kvmtool's syntax.
 
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- arm/unittests.cfg    |  7 +++++++
- docs/unittests.txt   | 13 +++++++++++++
- scripts/common.bash  |  8 ++++++--
- scripts/runtime.bash |  6 ++++++
- 4 files changed, 32 insertions(+), 2 deletions(-)
+ arm/unittests.cfg   | 27 +++++++++++++++++++++++++++
+ docs/unittests.txt  |  8 ++++++++
+ scripts/common.bash |  4 ++++
+ 3 files changed, 39 insertions(+)
 
 diff --git a/arm/unittests.cfg b/arm/unittests.cfg
-index 974a5a9e4113..9b1df5e02a58 100644
+index 2bdad67d5693..974a5a9e4113 100644
 --- a/arm/unittests.cfg
 +++ b/arm/unittests.cfg
-@@ -44,6 +44,7 @@ groups = selftest
+@@ -16,18 +16,21 @@
+ file = selftest.flat
+ smp = 2
+ extra_params = -m 256 -append 'setup smp=2 mem=256'
++kvmtool_params = --mem 256 --params 'setup smp=2 mem=256'
+ groups = selftest
+ 
+ # Test vector setup and exception handling (kernel mode).
+ [selftest-vectors-kernel]
+ file = selftest.flat
+ extra_params = -append 'vectors-kernel'
++kvmtool_params = --params 'vectors-kernel'
+ groups = selftest
+ 
+ # Test vector setup and exception handling (user mode).
+ [selftest-vectors-user]
+ file = selftest.flat
+ extra_params = -append 'vectors-user'
++kvmtool_params = --params 'vectors-user'
+ groups = selftest
+ 
+ # Test SMP support
+@@ -35,6 +38,7 @@ groups = selftest
+ file = selftest.flat
+ smp = $MAX_SMP
+ extra_params = -append 'smp'
++kvmtool_params = --params 'smp'
+ groups = selftest
+ 
  # Test PCI emulation
- [pci-test]
- file = pci-test.flat
-+disabled_if = [[ "$TARGET" != qemu ]]
- groups = pci
+@@ -47,66 +51,77 @@ groups = pci
+ file = pmu.flat
+ groups = pmu
+ extra_params = -append 'cycle-counter 0'
++kvmtool_params = --pmu --params 'cycle-counter 0'
  
- # Test PMU support
-@@ -208,6 +209,7 @@ file = gic.flat
+ [pmu-event-introspection]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-event-introspection'
++kvmtool_params = --pmu --params 'pmu-event-introspection'
+ 
+ [pmu-event-counter-config]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-event-counter-config'
++kvmtool_params = --pmu --params 'pmu-event-counter-config'
+ 
+ [pmu-basic-event-count]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-basic-event-count'
++kvmtool_params = --pmu --params 'pmu-basic-event-count'
+ 
+ [pmu-mem-access]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-mem-access'
++kvmtool_params = --pmu --params 'pmu-mem-access'
+ 
+ [pmu-mem-access-reliability]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-mem-access-reliability'
++kvmtool_params = --pmu --params 'pmu-mem-access-reliability'
+ 
+ [pmu-sw-incr]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-sw-incr'
++kvmtool_params = --pmu --params 'pmu-sw-incr'
+ 
+ [pmu-chained-counters]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-chained-counters'
++kvmtool_params = --pmu --params 'pmu-chained-counters'
+ 
+ [pmu-chained-sw-incr]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-chained-sw-incr'
++kvmtool_params = --pmu --params 'pmu-chained-sw-incr'
+ 
+ [pmu-chain-promotion]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-chain-promotion'
++kvmtool_params = --pmu --params 'pmu-chain-promotion'
+ 
+ [pmu-overflow-interrupt]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+ extra_params = -append 'pmu-overflow-interrupt'
++kvmtool_params = --pmu --params 'pmu-overflow-interrupt'
+ 
+ # Test PMU support (TCG) with -icount IPC=1
+ #[pmu-tcg-icount-1]
+@@ -127,48 +142,56 @@ extra_params = -append 'pmu-overflow-interrupt'
+ file = gic.flat
+ smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+ extra_params = -machine gic-version=2 -append 'ipi'
++kvmtool_params = --irqchip=gicv2 --params 'ipi'
+ groups = gic
+ 
+ [gicv2-mmio]
+ file = gic.flat
+ smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+ extra_params = -machine gic-version=2 -append 'mmio'
++kvmtool_params = --irqchip=gicv2 --params 'mmio'
+ groups = gic
+ 
+ [gicv2-mmio-up]
+ file = gic.flat
+ smp = 1
+ extra_params = -machine gic-version=2 -append 'mmio'
++kvmtool_params = --irqchip=gicv2 --params 'mmio'
+ groups = gic
+ 
+ [gicv2-mmio-3p]
+ file = gic.flat
+ smp = $((($MAX_SMP < 3)?$MAX_SMP:3))
+ extra_params = -machine gic-version=2 -append 'mmio'
++kvmtool_params = --irqchip=gicv2 --params 'mmio'
+ groups = gic
+ 
+ [gicv3-ipi]
+ file = gic.flat
  smp = $MAX_SMP
- extra_params = -machine gic-version=3 -append 'its-migration'
- groups = its migration
-+disabled_if = [[ "$TARGET" != qemu ]]
+ extra_params = -machine gic-version=3 -append 'ipi'
++kvmtool_params = --irqchip=gicv3 --params 'ipi'
+ groups = gic
+ 
+ [gicv2-active]
+ file = gic.flat
+ smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+ extra_params = -machine gic-version=2 -append 'active'
++kvmtool_params = --irqchip=gicv2 --params 'active'
+ groups = gic
+ 
+ [gicv3-active]
+ file = gic.flat
+ smp = $MAX_SMP
+ extra_params = -machine gic-version=3 -append 'active'
++kvmtool_params = --irqchip=gicv3 --params 'active'
+ groups = gic
+ 
+ [its-introspection]
+ file = gic.flat
+ smp = $MAX_SMP
+ extra_params = -machine gic-version=3 -append 'its-introspection'
++kvmtool_params = --irqchip=gicv3-its --params 'its-introspection'
+ groups = its
  arch = arm64
  
- [its-pending-migration]
-@@ -215,6 +217,7 @@ file = gic.flat
+@@ -176,6 +199,7 @@ arch = arm64
+ file = gic.flat
  smp = $MAX_SMP
- extra_params = -machine gic-version=3 -append 'its-pending-migration'
- groups = its migration
-+disabled_if = [[ "$TARGET" != qemu ]]
+ extra_params = -machine gic-version=3 -append 'its-trigger'
++kvmtool_params = --irqchip=gicv3-its --params 'its-trigger'
+ groups = its
  arch = arm64
  
- [its-migrate-unmapped-collection]
-@@ -222,6 +225,7 @@ file = gic.flat
- smp = $MAX_SMP
- extra_params = -machine gic-version=3 -append 'its-migrate-unmapped-collection'
- groups = its migration
-+disabled_if = [[ "$TARGET" != qemu ]]
- arch = arm64
- 
- # Test PSCI emulation
-@@ -263,6 +267,7 @@ groups = debug
+@@ -232,6 +256,7 @@ groups = cache
  file = debug.flat
  arch = arm64
- extra_params = -append 'bp-migration'
-+disabled_if = [[ "$TARGET" != qemu ]]
- groups = debug migration
+ extra_params = -append 'bp'
++kvmtool_params = --params 'bp'
+ groups = debug
  
- [debug-wp]
-@@ -276,6 +281,7 @@ groups = debug
+ [debug-bp-migration]
+@@ -244,6 +269,7 @@ groups = debug migration
  file = debug.flat
  arch = arm64
- extra_params = -append 'wp-migration'
-+disabled_if = [[ "$TARGET" != qemu ]]
- groups = debug migration
+ extra_params = -append 'wp'
++kvmtool_params = --params 'wp'
+ groups = debug
  
- [debug-sstep]
-@@ -289,6 +295,7 @@ groups = debug
+ [debug-wp-migration]
+@@ -256,6 +282,7 @@ groups = debug migration
  file = debug.flat
  arch = arm64
- extra_params = -append 'ss-migration'
-+disabled_if = [[ "$TARGET" != qemu ]]
- groups = debug migration
+ extra_params = -append 'ss'
++kvmtool_params = --params 'ss'
+ groups = debug
  
- # FPU/SIMD test
+ [debug-sstep-migration]
 diff --git a/docs/unittests.txt b/docs/unittests.txt
-index ebb6994cab77..58d1a29146a3 100644
+index 3e1a9e563016..ebb6994cab77 100644
 --- a/docs/unittests.txt
 +++ b/docs/unittests.txt
-@@ -115,3 +115,16 @@ parameter needs to be of the form <path>=<value>
- The path and value cannot contain space, =, or shell wildcard characters.
+@@ -69,6 +69,14 @@ extra_params
+ Alias for 'qemu_params', supported for compatibility purposes. Use
+ 'qemu_params' for new tests.
  
- Can be overwritten with the CHECK environment variable with the same syntax.
++kvmtool_params
++--------------
++Extra parameters supplied to the kvmtool process. Works similarly to
++qemu_params and extra_params, but uses kvmtool's syntax for command line
++arguments. The example for qemu_params, applied to kvmtool, would be:
 +
-+disabled_if
-+------
-+disabled_if = <condition>
++kvmtool_params = --mem 256 --params 'smp=2'
 +
-+Do not run the test if <condition> is met. <condition> will be fed unmodified
-+to a bash 'if' statement and follows the same syntax.
-+
-+This can be used to prevent running a test when kvm-unit-tests is configured a
-+certain way. For example, it can be used to skip a qemu specific test when
-+using another VMM and using UEFI:
-+
-+disabled_if = [[ "$TARGET" != qemu ]] && [[ "$CONFIG_EFI" = y ]]
+ groups
+ ------
+ groups = <group_name1> <group_name2> ...
 diff --git a/scripts/common.bash b/scripts/common.bash
-index f54ffbd7a87b..c0ea2eabeda6 100644
+index 1b5e0d667841..f54ffbd7a87b 100644
 --- a/scripts/common.bash
 +++ b/scripts/common.bash
-@@ -38,6 +38,7 @@ function for_each_unittest()
- 	local accel
- 	local timeout
- 	local kvmtool_opts
-+	local disabled_cond
- 	local rematch
- 
- 	exec {fd}<"$unittests"
-@@ -46,7 +47,7 @@ function for_each_unittest()
- 		if [[ "$line" =~ ^\[(.*)\]$ ]]; then
- 			rematch=${BASH_REMATCH[1]}
- 			if [ -n "${testname}" ]; then
--				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$kvmtool_opts"
-+				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$kvmtool_opts" "$disabled_cond"
- 			fi
- 			testname=$rematch
- 			smp=1
-@@ -59,6 +60,7 @@ function for_each_unittest()
- 			accel=""
- 			timeout=""
- 			kvmtool_opts=""
-+			disabled_cond=""
- 		elif [[ $line =~ ^file\ *=\ *(.*)$ ]]; then
- 			kernel=$TEST_DIR/${BASH_REMATCH[1]}
- 		elif [[ $line =~ ^smp\ *=\ *(.*)$ ]]; then
-@@ -79,6 +81,8 @@ function for_each_unittest()
- 			machine=${BASH_REMATCH[1]}
- 		elif [[ $line =~ ^check\ *=\ *(.*)$ ]]; then
- 			check=${BASH_REMATCH[1]}
-+		elif [[ $line =~ ^disabled_if\ *=\ *(.*)$ ]]; then
-+			disabled_cond=${BASH_REMATCH[1]}
- 		elif [[ $line =~ ^accel\ *=\ *(.*)$ ]]; then
- 			accel=${BASH_REMATCH[1]}
- 		elif [[ $line =~ ^timeout\ *=\ *(.*)$ ]]; then
-@@ -86,7 +90,7 @@ function for_each_unittest()
- 		fi
- 	done
- 	if [ -n "${testname}" ]; then
--		$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$kvmtool_opts"
-+		$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$kvmtool_opts" "$disabled_cond"
- 	fi
- 	exec {fd}<&-
- }
-diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-index abfd1e67b2ef..002bd2744d6b 100644
---- a/scripts/runtime.bash
-+++ b/scripts/runtime.bash
-@@ -108,6 +108,7 @@ function run()
-     local accel="$9"
-     local timeout="${10:-$TIMEOUT}" # unittests.cfg overrides the default
-     local kvmtool_opts="${11}"
-+    local disabled_cond="${12}"
- 
-     case "$TARGET" in
-     qemu)
-@@ -186,6 +187,11 @@ function run()
-         done
-     fi
- 
-+    if [[ "$disabled_cond" ]] && (eval $disabled_cond); then
-+		print_result "SKIP" $testname "" "disabled because: $disabled_cond"
-+		return 2
-+	fi
-+
-     log=$(premature_failure) && {
-         skip=true
-         if [ "${CONFIG_EFI}" == "y" ]; then
+@@ -67,6 +67,10 @@ function for_each_unittest()
+ 			qemu_opts=$(parse_opts ${BASH_REMATCH[2]}$'\n' $fd)
+ 		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *(.*)$ ]]; then
+ 			qemu_opts=${BASH_REMATCH[2]}
++		elif [[ $line =~ ^kvmtool_params\ *=\ *'"""'(.*)$ ]]; then
++			kvmtool_opts=$(parse_opts ${BASH_REMATCH[1]}$'\n' $fd)
++		elif [[ $line =~ ^kvmtool_params\ *=\ *(.*)$ ]]; then
++			kvmtool_opts=${BASH_REMATCH[1]}
+ 		elif [[ $line =~ ^groups\ *=\ *(.*)$ ]]; then
+ 			groups=${BASH_REMATCH[1]}
+ 		elif [[ $line =~ ^arch\ *=\ *(.*)$ ]]; then
 -- 
 2.47.1
 
