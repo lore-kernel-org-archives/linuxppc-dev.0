@@ -1,56 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-5570-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5569-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F7CEC0218F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jan 2025 18:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DDA5C0218F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jan 2025 18:59:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yh1761wyxz3057;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yh1761fkgz3054;
 	Mon, 27 Jan 2025 05:59:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737917953;
-	cv=none; b=cqgLRfBDO0RujlL4LZu8nEYXuLvDKSFZen7H2x+ehHjlJDGuCUbVPmgHYivVD1LG+MtOBQOwHYXvsnYLSJPo6iuL3tSGMq0HGLd5hpZOKD6OE/psTUVi+kYv3FA+Y9KBsqB33bLhoNEVrdPAZ2r+didJuCegPB5tpi1TmppONGaBH2LnQ+aX4hA2gK73f9X7rV2Xa23ITThNnswtmmID5TtRcfA3+tyRWzfMKxjXv5zYeb6qCiiQWFJr6vEQgTiD43h8L/EIiZa2OAuBU3kx56ll0RE9JD/5KbuNnOvQ9uSaQ+uqBpNKWGCYz8g1BmmBRux7n9S85ayo0gXKpfFm3A==
+	cv=none; b=NTmlrciSqrtJdFLasO66bILN9EdK3yZmOGHK+mq55ZKSm0TRJ0gjl/eCqz66v4a6bQBxdqQ8+9S5GDPjw32isLpCLWAJoYHO/4mvkGzNcSttsrNXkhtQd/68GCeC25Oc7in9j4peqVJvotogtLgr2c7JbfwkEaNAohB0N+e6GfELqDsnHFzUYk9fE016r7k22IRFDlkBi0xXNTLOaWFn05aKTCtfPOBqfQPbo/SY2Npg54mq1xECr9v0Fxnd98qdRQdQ4N3aibAcNcZumhNmef+jb50Az5bu/WYgjGpi93UH5hivMmr7Xti71B4VM2Q238ZBikkjRyBvW7GvT30vCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1737917953; c=relaxed/relaxed;
-	bh=PQsn4H1PLRsYWOi2apT4h6Ue5V1YbpkKf0IlIPde6hU=;
+	bh=nvZpXIT8ProfszRN6LTGGDXcQHksXNE5w/9Tp/mgkK0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bBjeW7YcArYTfODzZn3acNcKuLHCB7R7zdLYrvMeT6VUX7rxbkX6nxF14J6KNZb2suh43XGx888Wif4kVueBjT6wYtMslR/iukJeY0sdnTY0jgY9JRTx9id4qutktAZlBlP1BmB4BigD34xwyWiWHIJZu+D5Zn4RU3/Ohd6+0HpzuSoln/1g7ed61YIO4mkJFFybSmshWfQ1WyTQ1NFhSM7p0tkr35UrWzVkPI1QahPZYK+6OoDXXUGCC4BxbdK+JydUfrkSVhoZDBMsXRQfnXJsgV2EEKZjEUwUN5s/Q1X0RjdVc6qugWF7ObAiHRCozYnjPf0YMdFl6LyAv1vCZg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MXzfr+Tz; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=L2SbTGuzBIS1V1evsyJV286f2P/L5nGCtw+3itjyHWhcnYQMcnqHL7aVddobDHmro3huT4XZEvx3ohnidDy0NGCnf/0VN1mfhrurHgCTpyK1Dm6oi9lhhnvhkeDSqSZRdPk3ivo+QOxuJHD1Lgm9RXYq4Mfme5IBb3MQIPKOFxxIc+4XEHlZYrdsFZmyV332sAfqsddXw43+N1yB3errcchtiXEGWYoOOiJDRBtUu+strYFx1K9p0tnw38CjHyUk76AUsf8EOYqoeQVTr/4704d+hlMgetdlWBObjgEvDGqurO7VxNu9hndaeBwSkjHRr7ryaPjlO9ilIOu3hWDtKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=quQJIISy; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MXzfr+Tz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=quQJIISy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yh1730MrMz2yGC
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yh1726k4Jz2yFB
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2025 05:59:10 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 9D42AA40FE0;
-	Sun, 26 Jan 2025 18:57:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CBBB6C4AF10;
+	by nyc.source.kernel.org (Postfix) with ESMTP id 00AFDA41002;
+	Sun, 26 Jan 2025 18:57:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id F3B89C4AF1B;
 	Sun, 26 Jan 2025 18:59:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1737917945;
-	bh=kdEy1mfULIpKzXm5eLphJofVfiUx8H2JQ4v42STBzbM=;
+	s=k20201202; t=1737917946;
+	bh=5XCExjbd/gPubOXYpsr7rABeBjCpjSYExLXU0tOI0LY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=MXzfr+Tz8P9f6KUPhM0SxXHW0PqAxYpOGJCU4HMSLPyge1rxSylBFUrq+MNJVdHkG
-	 IJVtgMmki/D5T1vnikZCw6Aq5PTLS7kfvlxlpKorDH5zFz9B/1e7/JgLB2VgMJZKH4
-	 hqs8T354VkqpxYGXgv3EM/Icqe7mKRl1WxZZZChajsy10kfzTRY0iBtCc//yLWuP39
-	 M8LUXKowx0JdvEl97VIiPb6VzfcNTTEpFTWFpRmcXstKxD7ygR2/aq2t5VGmvj3g/U
-	 Eviey5yM16QoLEeuOJ7z2A0I/agegL1Kb9jPTRUhN8PzxOVREHQUKQyb3ysgYLtfzQ
-	 RV92qF27kEwew==
+	b=quQJIISy488kggkk/qUhZslV/d1ZmYFeRwALGcQEPbBi2h8W6Sm/5VO6z4kR/Et85
+	 awiwKs4/D0MP7E2sSGTcR0+kJ2nQMt33AdJyeLP/TqNEkmn7kXSke/VBKc5yW1uOLa
+	 kdO3UDYwEthSI6IVhJ8nGHlCEnQWtfS+py2lNy7qvx3uGROuwhkDgnFZQcOjTAxSyj
+	 tqbP92gkkpqCzf/hZGhebqI4AQSglz8eX9qbjHd2exqXDFUaktnmljm0PbiR+X+8Je
+	 QuYWxwV3c1jcUPoQ3KCCOY2m+Bt993vviFTXG/NLHI6p+CqVbxjbocJ0ox6FjrTLFe
+	 2w1l4UX8HEzXg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF2CFC02190;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4E2CC0218F;
 	Sun, 26 Jan 2025 18:59:05 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Sun, 26 Jan 2025 19:58:59 +0100
-Subject: [PATCH 4/9] dt-bindings: mfd: Convert fsl,mcu-mpc8349emitx binding
- to YAML
+Date: Sun, 26 Jan 2025 19:59:01 +0100
+Subject: [PATCH 6/9] dt-bindings: pci: Add fsl,mpc83xx-pcie bindings
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,7 +64,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250126-ppcyaml-v1-4-50649f51c3dd@posteo.net>
+Message-Id: <20250126-ppcyaml-v1-6-50649f51c3dd@posteo.net>
 References: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
 In-Reply-To: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
 To: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -93,11 +92,11 @@ Cc: Scott Wood <oss@buserror.net>,
  linux-spi@vger.kernel.org, linux-mtd@lists.infradead.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1737917943; l=2828;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1737917943; l=3075;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=Zs0qjqUn7j/PQS1DXYIjUgL76exzKlYYjv7eRLN8FW0=;
- b=X4UkPsnyhkPYNIFxPFYHZl/RaHmhkgyUlhH0nyS5nFtXhN07sT2qCw1iRrJR3NsSF3JvEDjxA
- t46J6h9PuZpAd2nDnX/8n4skfmikScso7OeLtftI+2fmvAKvGoDR8aF
+ bh=FQ86ArTRbtYapZ+OdNjSwmXsUKuvNxgsJkLWcXU8vL4=;
+ b=/vrsRJm6P5La8dsDwOVQ6eswy9pjJEMA+/9/xmb7cy6W3UlNGJUHTns1MgAOIJh2MnjMvbm71
+ B7AFiUB9fFmCttFV7fseyezhA/JwDM7xbQO09sxNWHowpiclOJskGNT
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -107,97 +106,103 @@ Reply-To: j.ne@posteo.net
 
 From: "J. Neuschäfer" <j.ne@posteo.net>
 
-Convert mcu-mpc8349emitx.txt to YAML and list the compatible strings
-currently in use.
+Supplement Documentation/devicetree/bindings/pci/fsl,pci.txt with a more
+formal binding in YAML format.
 
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
- .../bindings/mfd/fsl,mcu-mpc8349emitx.yaml         | 53 ++++++++++++++++++++++
- .../bindings/powerpc/fsl/mcu-mpc8349emitx.txt      | 17 -------
- 2 files changed, 53 insertions(+), 17 deletions(-)
+ .../devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml   | 83 ++++++++++++++++++++++
+ 1 file changed, 83 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/mfd/fsl,mcu-mpc8349emitx.yaml b/Documentation/devicetree/bindings/mfd/fsl,mcu-mpc8349emitx.yaml
+diff --git a/Documentation/devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml b/Documentation/devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml
 new file mode 100644
-index 0000000000000000000000000000000000000000..8beb2ed9edb745f513deb5755d6802309b069f46
+index 0000000000000000000000000000000000000000..12e86a9c20dfe2362d11f085bd9ae47238c4a37f
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/fsl,mcu-mpc8349emitx.yaml
-@@ -0,0 +1,53 @@
++++ b/Documentation/devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml
+@@ -0,0 +1,83 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/mfd/fsl,mcu-mpc8349emitx.yaml#
++
++$id: http://devicetree.org/schemas/pci/fsl,mpc8xxx-pci.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Freescale MPC8349E-mITX-compatible Power Management Micro Controller Unit (MCU)
++title: Freescale MPC83xx PCI/PCI-X/PCIe controllers
++
++description: |
++  Binding for the PCI/PCI-X/PCIe host bridges on MPC8xxx SoCs.
++  See also: Documentation/devicetree/bindings/pci/fsl,pci.txt
 +
 +maintainers:
-+  - J. Neuschäfer <j.ne@posteo.net>
++  - J. Neuschäfer <j.neuschaefer@gmx.net>
++
++allOf:
++  - $ref: /schemas/pci/pci-host-bridge.yaml#
 +
 +properties:
 +  compatible:
 +    oneOf:
 +      - items:
 +          - enum:
-+              - fsl,mc9s08qg8-mpc8315erdb
-+              - fsl,mc9s08qg8-mpc8349emitx
-+              - fsl,mc9s08qg8-mpc8377erdb
-+              - fsl,mc9s08qg8-mpc8378erdb
-+              - fsl,mc9s08qg8-mpc8379erdb
-+          - const: fsl,mcu-mpc8349emitx
++              - fsl,mpc8308-pcie
++              - fsl,mpc8315-pcie
++              - fsl,mpc8377-pcie
++              - fsl,mpc8378-pcie
++          - const: fsl,mpc8314-pcie
++      - const: fsl,mpc8314-pcie
++      - items:
++          - const: fsl,mpc8360-pci
++          - const: fsl,mpc8349-pci
++      - const: fsl,mpc8349-pci
++      - items:
++          - const: fsl,mpc8540-pcix
++          - const: fsl,mpc8540-pci
++      - const: fsl,mpc8540-pci
++      - items:
++          - const: fsl,mpc8540-pcix
++          - const: fsl,mpc8540-pci
++      - const: fsl,mpc8548-pcie
++      - const: fsl,mpc8548-pcie
++      - const: fsl,mpc8641-pcie
 +
 +  reg:
-+    maxItems: 1
++    minItems: 1
++    items:
++      - description: internal registers
++      - description: config space access registers
 +
-+  "#gpio-cells":
-+    const: 2
-+
-+  gpio-controller: true
++  clock-frequency:
++    $ref: /schemas/types.yaml#/definitions/uint32
 +
 +required:
-+  - compatible
 +  - reg
-+  - "#gpio-cells"
-+  - gpio-controller
++  - compatible
 +
-+additionalProperties: false
++unevaluatedProperties: false
 +
 +examples:
 +  - |
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
++    #include <dt-bindings/interrupt-controller/irq.h>
 +
-+        mcu@a {
-+            #gpio-cells = <2>;
-+            compatible = "fsl,mc9s08qg8-mpc8349emitx",
-+                         "fsl,mcu-mpc8349emitx";
-+            reg = <0x0a>;
-+            gpio-controller;
-+        };
++    pci1: pcie@e0009000 {
++        #address-cells = <3>;
++        #size-cells = <2>;
++        #interrupt-cells = <1>;
++        device_type = "pci";
++        compatible = "fsl,mpc8315-pcie", "fsl,mpc8314-pcie";
++        reg = <0xe0009000 0x00001000>;
++        ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
++                  0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
++        bus-range = <0 255>;
++        interrupt-map-mask = <0xf800 0 0 7>;
++        interrupt-map = <0 0 0 1 &ipic 1 IRQ_TYPE_LEVEL_LOW
++                         0 0 0 2 &ipic 1 IRQ_TYPE_LEVEL_LOW
++                         0 0 0 3 &ipic 1 IRQ_TYPE_LEVEL_LOW
++                         0 0 0 4 &ipic 1 IRQ_TYPE_LEVEL_LOW>;
++        clock-frequency = <0>;
 +    };
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mcu-mpc8349emitx.txt b/Documentation/devicetree/bindings/powerpc/fsl/mcu-mpc8349emitx.txt
-deleted file mode 100644
-index 37f91fa576545aa245d893c24248bdbb2c0fcc07..0000000000000000000000000000000000000000
---- a/Documentation/devicetree/bindings/powerpc/fsl/mcu-mpc8349emitx.txt
-+++ /dev/null
-@@ -1,17 +0,0 @@
--Freescale MPC8349E-mITX-compatible Power Management Micro Controller Unit (MCU)
--
--Required properties:
--- compatible : "fsl,<mcu-chip>-<board>", "fsl,mcu-mpc8349emitx".
--- reg : should specify I2C address (0x0a).
--- #gpio-cells : should be 2.
--- gpio-controller : should be present.
--
--Example:
--
--mcu@a {
--	#gpio-cells = <2>;
--	compatible = "fsl,mc9s08qg8-mpc8349emitx",
--		     "fsl,mcu-mpc8349emitx";
--	reg = <0x0a>;
--	gpio-controller;
--};
++
++...
 
 -- 
 2.48.0.rc1.219.gb6b6757d772
