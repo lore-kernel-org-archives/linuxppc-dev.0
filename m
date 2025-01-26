@@ -1,55 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-5568-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5570-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E2E6C02190
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jan 2025 18:59:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F7CEC0218F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jan 2025 18:59:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yh17541Qqz2yyD;
-	Mon, 27 Jan 2025 05:59:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yh1761wyxz3057;
+	Mon, 27 Jan 2025 05:59:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737917953;
-	cv=none; b=mQ6ZRYDnrhNBAcrbYeGSZo9+ujOswnWOQKw1neQTMVPy6Ylpl2IeErp04i1e4+NnwkBtQuAjpsXKr/NJOxxwM+HOQqtKhlPWua2GjSxTW0R+TQiyjbpol1VDfq9kOnICPhodInaUnRBebkXgp8DU9fDerkJMVm5jL6x3ARirMGa1RDVvYUw3LgZbSUi95M9dardY7uXhTa2mYZabllVy+fzpO17omfAsFmrLdYseqXLVvZcTy+c0TrEGrOfXDEB0BZ2m9gHw412Au35WeagXUhBqRvAZpCBLfjhVqj0ACmlrgaRySOlUa2HSfWwYIn4NC8SovP1euVSTGJhIxG8YRg==
+	cv=none; b=cqgLRfBDO0RujlL4LZu8nEYXuLvDKSFZen7H2x+ehHjlJDGuCUbVPmgHYivVD1LG+MtOBQOwHYXvsnYLSJPo6iuL3tSGMq0HGLd5hpZOKD6OE/psTUVi+kYv3FA+Y9KBsqB33bLhoNEVrdPAZ2r+didJuCegPB5tpi1TmppONGaBH2LnQ+aX4hA2gK73f9X7rV2Xa23ITThNnswtmmID5TtRcfA3+tyRWzfMKxjXv5zYeb6qCiiQWFJr6vEQgTiD43h8L/EIiZa2OAuBU3kx56ll0RE9JD/5KbuNnOvQ9uSaQ+uqBpNKWGCYz8g1BmmBRux7n9S85ayo0gXKpfFm3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1737917953; c=relaxed/relaxed;
-	bh=OSqv4Ul+dc/Cik9PADLI112FX8FgXpck+bzLTHv8Lqg=;
+	bh=PQsn4H1PLRsYWOi2apT4h6Ue5V1YbpkKf0IlIPde6hU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=MGAhosD+KgQg+nMG4Q51RaFQBuljKgnhY/PeCDU3QRHcoQl0dQPNSm/a/aJciVC6XS1/0g+hmDRX5QTcgnsZuPtmDFwqEvQulEk/WnbHXiNN3m4DgI2lRAYyefWcrGV/ioY//vjW6eWaHeuWiWnNcqRJANVwDsWmWz5F4fci4wUwPNhOPSHmW8jfGQ+AmHExrZi4ZpILMeZfgl1CKHXNsjuz+H5tm1SU/RK2rOeIqxxyfwNyPdzfGf359JebnCaB2rshzHOQO/Jhs83pqSPUZbEpDeysimM8epKWMQE+680XEyBpDHvWTNPIvw4jJnYqUU8tbsskyCb9dnH40RG4lA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hlBl+2Me; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=bBjeW7YcArYTfODzZn3acNcKuLHCB7R7zdLYrvMeT6VUX7rxbkX6nxF14J6KNZb2suh43XGx888Wif4kVueBjT6wYtMslR/iukJeY0sdnTY0jgY9JRTx9id4qutktAZlBlP1BmB4BigD34xwyWiWHIJZu+D5Zn4RU3/Ohd6+0HpzuSoln/1g7ed61YIO4mkJFFybSmshWfQ1WyTQ1NFhSM7p0tkr35UrWzVkPI1QahPZYK+6OoDXXUGCC4BxbdK+JydUfrkSVhoZDBMsXRQfnXJsgV2EEKZjEUwUN5s/Q1X0RjdVc6qugWF7ObAiHRCozYnjPf0YMdFl6LyAv1vCZg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MXzfr+Tz; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hlBl+2Me;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MXzfr+Tz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yh1725pVTz2yDH
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yh1730MrMz2yGC
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2025 05:59:10 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id A0655A40FAF;
+	by nyc.source.kernel.org (Postfix) with ESMTP id 9D42AA40FE0;
 	Sun, 26 Jan 2025 18:57:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id AC328C4CEEA;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id CBBB6C4AF10;
 	Sun, 26 Jan 2025 18:59:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1737917945;
-	bh=PfmNx/8FKpi9tfUAdO7gZEl/uHyfgKgSWW2BXdSdoIQ=;
+	bh=kdEy1mfULIpKzXm5eLphJofVfiUx8H2JQ4v42STBzbM=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=hlBl+2Mepw3J0ugLK7PkI8UhzdeeqA/WiddWAV3kijb7ZnCtkPlAyMnYcEBRKzM8i
-	 szPVi3M92ZsLsWNMLoZRauZkytz+GVITyoORsXs1LFwgUKIAOBOcRIUeYEWQYIQB5A
-	 3eYI/ojthnmUg2xz45MP76X0LM9NAfOUXljfNym5onKAeu0ORIKBMlYvLyLg52/MUk
-	 LP3i9Yb0exACSUyS2RblZUbAjiM5bIAdcVQXNSsneEpXLdeRhG/5cYZlCmEpLJjcp8
-	 rux3S6W1R4QAF0j7ZLLp6ihPOh92E4FabI0Z7i9XcG/fELKiegSW1Clla/onX+AYxA
-	 1R41p4+M9CSFQ==
+	b=MXzfr+Tz8P9f6KUPhM0SxXHW0PqAxYpOGJCU4HMSLPyge1rxSylBFUrq+MNJVdHkG
+	 IJVtgMmki/D5T1vnikZCw6Aq5PTLS7kfvlxlpKorDH5zFz9B/1e7/JgLB2VgMJZKH4
+	 hqs8T354VkqpxYGXgv3EM/Icqe7mKRl1WxZZZChajsy10kfzTRY0iBtCc//yLWuP39
+	 M8LUXKowx0JdvEl97VIiPb6VzfcNTTEpFTWFpRmcXstKxD7ygR2/aq2t5VGmvj3g/U
+	 Eviey5yM16QoLEeuOJ7z2A0I/agegL1Kb9jPTRUhN8PzxOVREHQUKQyb3ysgYLtfzQ
+	 RV92qF27kEwew==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 959D7C0218F;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF2CFC02190;
 	Sun, 26 Jan 2025 18:59:05 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Sun, 26 Jan 2025 19:58:57 +0100
-Subject: [PATCH 2/9] dt-bindings: ata: Convert fsl,pq-sata binding to YAML
+Date: Sun, 26 Jan 2025 19:58:59 +0100
+Subject: [PATCH 4/9] dt-bindings: mfd: Convert fsl,mcu-mpc8349emitx binding
+ to YAML
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,7 +65,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250126-ppcyaml-v1-2-50649f51c3dd@posteo.net>
+Message-Id: <20250126-ppcyaml-v1-4-50649f51c3dd@posteo.net>
 References: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
 In-Reply-To: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
 To: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -92,11 +93,11 @@ Cc: Scott Wood <oss@buserror.net>,
  linux-spi@vger.kernel.org, linux-mtd@lists.infradead.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1737917943; l=3504;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1737917943; l=2828;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=48lSRCoXCpxIM3oWRMWEs2/wzI+AW7ICjxV1sPl67HM=;
- b=bLScZP/2+P6PR65AL0gqKUI72UMsRCVo5PvGbwA6A20OrYb8mo+L9jUpwnATuOGNgbYUCZiMa
- IDQ1X0kek+XC8PpxrWEqVS4GPZSevrgs3kbZPbmh63BNiFb2AkiKb0p
+ bh=Zs0qjqUn7j/PQS1DXYIjUgL76exzKlYYjv7eRLN8FW0=;
+ b=X4UkPsnyhkPYNIFxPFYHZl/RaHmhkgyUlhH0nyS5nFtXhN07sT2qCw1iRrJR3NsSF3JvEDjxA
+ t46J6h9PuZpAd2nDnX/8n4skfmikScso7OeLtftI+2fmvAKvGoDR8aF
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -106,114 +107,97 @@ Reply-To: j.ne@posteo.net
 
 From: "J. Neuschäfer" <j.ne@posteo.net>
 
-Convert the Freescale PowerQUICC SATA controller binding from text form
-to YAML. The list of compatible strings reflects current usage.
+Convert mcu-mpc8349emitx.txt to YAML and list the compatible strings
+currently in use.
 
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
- .../devicetree/bindings/ata/fsl,pq-sata.yaml       | 59 ++++++++++++++++++++++
- Documentation/devicetree/bindings/ata/fsl-sata.txt | 28 ----------
- 2 files changed, 59 insertions(+), 28 deletions(-)
+ .../bindings/mfd/fsl,mcu-mpc8349emitx.yaml         | 53 ++++++++++++++++++++++
+ .../bindings/powerpc/fsl/mcu-mpc8349emitx.txt      | 17 -------
+ 2 files changed, 53 insertions(+), 17 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/ata/fsl,pq-sata.yaml b/Documentation/devicetree/bindings/ata/fsl,pq-sata.yaml
+diff --git a/Documentation/devicetree/bindings/mfd/fsl,mcu-mpc8349emitx.yaml b/Documentation/devicetree/bindings/mfd/fsl,mcu-mpc8349emitx.yaml
 new file mode 100644
-index 0000000000000000000000000000000000000000..6af31ffbcad5e9cc83118a0bd8eaf45351a2823f
+index 0000000000000000000000000000000000000000..8beb2ed9edb745f513deb5755d6802309b069f46
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/ata/fsl,pq-sata.yaml
-@@ -0,0 +1,59 @@
++++ b/Documentation/devicetree/bindings/mfd/fsl,mcu-mpc8349emitx.yaml
+@@ -0,0 +1,53 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/ata/fsl,pq-sata.yaml#
++$id: http://devicetree.org/schemas/mfd/fsl,mcu-mpc8349emitx.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Freescale 8xxx/3.0 Gb/s SATA nodes
++title: Freescale MPC8349E-mITX-compatible Power Management Micro Controller Unit (MCU)
 +
 +maintainers:
 +  - J. Neuschäfer <j.ne@posteo.net>
-+
-+description: |
-+  SATA nodes are defined to describe on-chip Serial ATA controllers.
-+  Each SATA port should have its own node.
 +
 +properties:
 +  compatible:
 +    oneOf:
 +      - items:
 +          - enum:
-+              - fsl,mpc8377-sata
-+              - fsl,mpc8536-sata
-+              - fsl,mpc8315-sata
-+              - fsl,mpc8379-sata
-+          - const: fsl,pq-sata
-+      - const: fsl,pq-sata-v2
++              - fsl,mc9s08qg8-mpc8315erdb
++              - fsl,mc9s08qg8-mpc8349emitx
++              - fsl,mc9s08qg8-mpc8377erdb
++              - fsl,mc9s08qg8-mpc8378erdb
++              - fsl,mc9s08qg8-mpc8379erdb
++          - const: fsl,mcu-mpc8349emitx
 +
 +  reg:
 +    maxItems: 1
 +
-+  interrupts:
-+    maxItems: 1
++  "#gpio-cells":
++    const: 2
 +
-+  cell-index:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    enum: [1, 2, 3, 4]
-+    description: |
-+      1 for controller @ 0x18000
-+      2 for controller @ 0x19000
-+      3 for controller @ 0x1a000
-+      4 for controller @ 0x1b000
++  gpio-controller: true
 +
 +required:
 +  - compatible
-+  - interrupts
-+  - cell-index
++  - reg
++  - "#gpio-cells"
++  - gpio-controller
 +
 +additionalProperties: false
 +
 +examples:
 +  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    sata@18000 {
-+        compatible = "fsl,mpc8379-sata", "fsl,pq-sata";
-+        reg = <0x18000 0x1000>;
-+        cell-index = <1>;
-+        interrupts = <44 IRQ_TYPE_LEVEL_LOW>;
-+        interrupt-parent = <&ipic>;
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        mcu@a {
++            #gpio-cells = <2>;
++            compatible = "fsl,mc9s08qg8-mpc8349emitx",
++                         "fsl,mcu-mpc8349emitx";
++            reg = <0x0a>;
++            gpio-controller;
++        };
 +    };
-diff --git a/Documentation/devicetree/bindings/ata/fsl-sata.txt b/Documentation/devicetree/bindings/ata/fsl-sata.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mcu-mpc8349emitx.txt b/Documentation/devicetree/bindings/powerpc/fsl/mcu-mpc8349emitx.txt
 deleted file mode 100644
-index fd63bb3becc9363c520a8fd06629fdc52c4d4299..0000000000000000000000000000000000000000
---- a/Documentation/devicetree/bindings/ata/fsl-sata.txt
+index 37f91fa576545aa245d893c24248bdbb2c0fcc07..0000000000000000000000000000000000000000
+--- a/Documentation/devicetree/bindings/powerpc/fsl/mcu-mpc8349emitx.txt
 +++ /dev/null
-@@ -1,28 +0,0 @@
--* Freescale 8xxx/3.0 Gb/s SATA nodes
--
--SATA nodes are defined to describe on-chip Serial ATA controllers.
--Each SATA port should have its own node.
+@@ -1,17 +0,0 @@
+-Freescale MPC8349E-mITX-compatible Power Management Micro Controller Unit (MCU)
 -
 -Required properties:
--- compatible        : compatible list, contains 2 entries, first is
--		 "fsl,CHIP-sata", where CHIP is the processor
--		 (mpc8315, mpc8379, etc.) and the second is
--		 "fsl,pq-sata"
--- interrupts        : <interrupt mapping for SATA IRQ>
--- cell-index        : controller index.
--                          1 for controller @ 0x18000
--                          2 for controller @ 0x19000
--                          3 for controller @ 0x1a000
--                          4 for controller @ 0x1b000
--
--Optional properties:
--- reg               : <registers mapping>
+-- compatible : "fsl,<mcu-chip>-<board>", "fsl,mcu-mpc8349emitx".
+-- reg : should specify I2C address (0x0a).
+-- #gpio-cells : should be 2.
+-- gpio-controller : should be present.
 -
 -Example:
--	sata@18000 {
--		compatible = "fsl,mpc8379-sata", "fsl,pq-sata";
--		reg = <0x18000 0x1000>;
--		cell-index = <1>;
--		interrupts = <2c 8>;
--		interrupt-parent = < &ipic >;
--	};
+-
+-mcu@a {
+-	#gpio-cells = <2>;
+-	compatible = "fsl,mc9s08qg8-mpc8349emitx",
+-		     "fsl,mcu-mpc8349emitx";
+-	reg = <0x0a>;
+-	gpio-controller;
+-};
 
 -- 
 2.48.0.rc1.219.gb6b6757d772
