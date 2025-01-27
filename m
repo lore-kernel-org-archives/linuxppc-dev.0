@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-5596-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5597-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AF83C0218A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jan 2025 11:50:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D42DDC02188
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jan 2025 12:20:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YhRYV6GF7z3011;
-	Mon, 27 Jan 2025 22:50:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YhSD60ZHFz308V;
+	Mon, 27 Jan 2025 23:20:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737978606;
-	cv=none; b=SaqRoXHxFlZV7YLL446PkKS0W027Shp+YysuMeGuyJwOHY8M7Z1RiW4cisNARJ7QIHOc8R/iUTBjcDLNGqhqw5ElCUbhnlTW0iz+JUfoqy/B6+tEDkKc4ofObjfTct3p/BmvvWNWJy/Haxy5Dy4AyxbuhkkrJVjLN2AD9tsTyvSaso6XWA0CPCcUrDIZJlojUFDLSrorxu6Oz8ZC390luNx+3G9PmvspOsZ3d7Ph7ZhmWZjFroiQyTberq+lMuFHOumstTouBecr+JrKpMZ1eEF+YvTGE0WSijriCD3Ypv3tYQAr93f/FcztDa3cZflNRJcnFBD/Xmxo07m9piVMDA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737980406;
+	cv=none; b=Dg2ylC3zb3GvYnVLetbeAceNqzqWrrBFdVngN5fiOYuhQF1smfImwO7XOvkdybA+QxroECQOQyVzzn5A+5Zct6RrFA9B5s+i5Tb1JTtWAP3ahrZGyhvDHhjgbqF+NY2YXrz/QDUolJT683NODrBjs4D0Ka5Cmn7gAfGLmAxrLapzjoxaZmk5J4qGyXhO6KmYGzVTzh0zIurfI94EnkUA1TBJ/omUdVdChfDLHcN9kVyTI8qUh1PILlTqJc/Ow1nJ+86frb/olRSdDqs3quASK73Gi9np5lWkYl1OVe4cd+G+ACh5tGKFfYzA2OF9BklsBaODZCRq9JErkH8D89MkNQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737978606; c=relaxed/relaxed;
-	bh=pBPMUDYelXibXZ1rC16WxKh2Yy0AFjixhAZtHRY9su8=;
+	t=1737980406; c=relaxed/relaxed;
+	bh=CpmIl2i/nbM6OAjB8xJQsQN0sXQB7gVhhadU0DelXVc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iY/zmnjDb8EXXD8JAwmih1sWj5EE6qQOeEgvGl0gdfEl7Qwq2fFsYhDU7KMPMYl3AqkByWYf9ZD66PLxzeE7tBeUQNwqAvWLqMteXYRpG1RW1GyE8Q2I5wtLOhheyYv8TpDyXseXKy73RMMgvPbgFORFuyev/buFLA2u9JYH/ZOdRczvfOlyyWg6ljhiL0OxBVmgEsqZcys5pdZqlC6T0chZCgooFWF8xYyGy5IKiSkiuVCAalVz4fv6CfqZMBNWCrQFxNm/7LQ4ffUsM7sAgjX2/pdN0QhxjvKikhG2RpcoJrNGtvP3M0pL/elnQgt8vNsH6scoGMWO0UZ6uTHxyA==
+	 In-Reply-To:Content-Type; b=GeCCpmDaGBgfwXDonU8LnEldjdXgfkUFvxrZ7lDfhjEjhoeOtRJGJb9IjyFHkIupYWYfwUHVwEHsEcFxhCuOJPRBl5t/8MugENggMju1tSZAbpw10OFHvtATWvZ2WNoiCjS8M5ZrVA4wZEaPHLntVG/I+/rtzdRO8/NewxtWfDo3kFTvwvcoGcR+ESygN/6y+vgyYlsLaqAYkPgUNxRIme19MvG7BUeBtXexHDPWoudaEd12CoHDnXPRBz4MD7Xv4+DPFh4YRJcQF7TrfKS7MR8IciOMY5kyQ0Mq8EIEBn5tWNs4TJBDM+nRmsuNaRRfgQrT/qR2/bJE5bMaiIMzXw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YhRYT6JPfz2ykc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2025 22:50:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YhSD51LVkz2yJL
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2025 23:20:04 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YhRGG4Zrfz9sPd;
-	Mon, 27 Jan 2025 12:36:54 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4YhRt43yRDz9sPd;
+	Mon, 27 Jan 2025 13:04:28 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id kdqcjB_5NX1X; Mon, 27 Jan 2025 12:36:54 +0100 (CET)
+	with ESMTP id dkqekuMgvYx2; Mon, 27 Jan 2025 13:04:28 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YhRGG3lQjz9rvV;
-	Mon, 27 Jan 2025 12:36:54 +0100 (CET)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4YhRt436qHz9rvV;
+	Mon, 27 Jan 2025 13:04:28 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6E4B28B765;
-	Mon, 27 Jan 2025 12:36:54 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5740B8B765;
+	Mon, 27 Jan 2025 13:04:28 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 8Me-iUbo1cR2; Mon, 27 Jan 2025 12:36:54 +0100 (CET)
+	with ESMTP id KmMv5MXtq3JP; Mon, 27 Jan 2025 13:04:28 +0100 (CET)
 Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C78548B763;
-	Mon, 27 Jan 2025 12:36:53 +0100 (CET)
-Message-ID: <7e7c7659-5cf7-42e9-81d6-b91963d8c892@csgroup.eu>
-Date: Mon, 27 Jan 2025 12:36:53 +0100
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id ACE468B763;
+	Mon, 27 Jan 2025 13:04:27 +0100 (CET)
+Message-ID: <63aec56f-9ade-48d1-854b-bd72f8313a9f@csgroup.eu>
+Date: Mon, 27 Jan 2025 13:04:27 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,51 +75,83 @@ References: <20250113171054.GA589@strace.io>
  <20250123182815.GA20994@strace.io>
  <86079b5c-e124-489b-8136-05ae5700cb61@csgroup.eu>
  <20250127112023.GB29522@strace.io>
+ <7e7c7659-5cf7-42e9-81d6-b91963d8c892@csgroup.eu>
+ <20250127114439.GC29522@strace.io>
 Content-Language: fr-FR
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250127112023.GB29522@strace.io>
+In-Reply-To: <20250127114439.GC29522@strace.io>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 27/01/2025 à 12:20, Dmitry V. Levin a écrit :
-> On Thu, Jan 23, 2025 at 11:07:21PM +0100, Christophe Leroy wrote:
-> [...]
->> To add a bit more to the confusion,
+Le 27/01/2025 à 12:44, Dmitry V. Levin a écrit :
+> On Mon, Jan 27, 2025 at 12:36:53PM +0100, Christophe Leroy wrote:
+>> Le 27/01/2025 à 12:20, Dmitry V. Levin a écrit :
+>>> On Thu, Jan 23, 2025 at 11:07:21PM +0100, Christophe Leroy wrote:
+>>> [...]
+>>>> To add a bit more to the confusion,
+>>>
+>>> Looks like there is no end to it:
+>>>
+>>> static inline long regs_return_value(struct pt_regs *regs)
+>>> {
+>>>           if (trap_is_scv(regs))
+>>>                   return regs->gpr[3];
+>>>
+>>>           if (is_syscall_success(regs))
+>>>                   return regs->gpr[3];
+>>>           else
+>>>                   return -regs->gpr[3];
+>>> }
+>>>
+>>> static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
+>>> {
+>>>           regs->gpr[3] = rc;
+>>> }
+>>>
+>>> This doesn't look consistent, does it?
+>>>
+>>>
+>>
+>> That regs_set_return_value() looks pretty similar to
+>> syscall_get_return_value().
 > 
-> Looks like there is no end to it:
+> Yes, but here similarities end, and differences begin.
 > 
-> static inline long regs_return_value(struct pt_regs *regs)
-> {
->          if (trap_is_scv(regs))
->                  return regs->gpr[3];
+>> regs_set_return_value() documentation in asm-generic/syscall.h
+>> explicitely says: This value is meaningless if syscall_get_error()
+>> returned nonzero
+>>
+>> Is it the same with regs_set_return_value(), only meaningfull where
+>> there is no error ?
 > 
->          if (is_syscall_success(regs))
->                  return regs->gpr[3];
->          else
->                  return -regs->gpr[3];
-> }
+> Did you mean syscall_set_return_value?  No, it explicitly has two
+> arguments, "int error" and "long val", so it can be used to either
+> clear or set the error condition as specified by the caller.
+
+Sorry, I mean syscall_get_return_value() here.
+
+static inline long syscall_get_return_value(struct task_struct *task,
+					    struct pt_regs *regs)
+{
+	return regs->gpr[3];
+}
+
+Versus
+
+static inline void regs_set_return_value(struct pt_regs *regs, unsigned 
+long rc)
+{
+	regs->gpr[3] = rc;
+}
+
 > 
-> static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
-> {
->          regs->gpr[3] = rc;
-> }
+>> By the way, why have two very similar APIs, one in syscall.h one in
+>> ptrace.h ?
 > 
-> This doesn't look consistent, does it?
+> I have no polite answer to this, sorry.
 > 
 > 
 
-That regs_set_return_value() looks pretty similar to 
-syscall_get_return_value().
-
-regs_set_return_value() documentation in asm-generic/syscall.h 
-explicitely says: This value is meaningless if syscall_get_error() 
-returned nonzero
-
-Is it the same with regs_set_return_value(), only meaningfull where 
-there is no error ?
-
-By the way, why have two very similar APIs, one in syscall.h one in 
-ptrace.h ?
 
