@@ -1,96 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-5586-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5587-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68D8FC0218C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jan 2025 07:36:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77591C0218C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jan 2025 08:20:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YhKxL39msz2xGY;
-	Mon, 27 Jan 2025 18:36:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737963414;
-	cv=none; b=kt2j0dWhPJ0BTYGBVhmCefGIInZ/idbBXF50GHOcUVy5q5EwOSjzfa5Rl0LgGXDU8a9o2r8wHOlXGTy0fEKCVg3nqWwhTkEUm7sNTVmakujc+btNNSP0DHONI7NCZxMWXwbzQpa2uOuKxbgTmtYHT6G8x5WmgE7x416fpEFzmZ27//in9tFgAWOtVMy05LBFAI+2zmwkeWbZOGeRQfig9S+nVtwQWMaXuOBwV7RbvXUj2U0mADqlf+1LbGEF97N+QTrxjaxSPmDHhmBMCU1oPKEVIj5n9BpQ/rOEPcadZXqvUpeDn8f1vWLo0AIX7QPLSX1NMuXmVhDYucTK/gDjRw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YhLvC5SL1z304C;
+	Mon, 27 Jan 2025 19:20:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737966007;
+	cv=none; b=LAnRBUMgKzjJvc8GlHJZfJfkqVk2zufa+zHpfmwDw6qIBKqZAHC2IJnzXDYkXbDWHrWyBm0jcjmpB30XMCyY0KetYQnTGqGUnW09pGK19lRiWF1V45fX3QzSzgM8c4GnKaQa72C1VfFyMyFIKZeIG7JLSbJulqYE6XNNxQ3wm55C5DPzyefuUfJwmlud2HeRDnNERDbNDHm2tQLUw8j726SgWoRSiJbFZMY8JGVgdvWxla12TkfAGz0AhDwi3XCt49erEER11PJPs/J+YENey/2j1cUzNEP3aSlFsjGt5OxbscN2T6zeKo4YOnlkPstbC+10siRGfVkEwQ+v0XheMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737963414; c=relaxed/relaxed;
-	bh=Y1sCtAisinjgsZyYOat3ARot9XjKhREXWr4KiHU+0OY=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=J0J/5Hjv38xJ8AZvN7fO7IQ0S5hfkyjkSeIVUjhayZvCft5aMfdKB2tv+wmcwtSmXnkMiPdBXqjhR7Lr8CshtR9foR2JB7W+z+5TrozeukPqPg8p+XOSvDlu5nkmu/ZA61clXupaU96bMmXSegWjTwRD1j3JNbxhC7zIy8rjqMmM7a7uX73Iw6qI4fUtxi9WJ8aHSNNgNoKgSrM0p2iHlJpjSvOyZWIggZZm4jFeiWn9LOn7o1Pa3GZBAMM++wMqKCCKNECD+3dXkZO46YHyvO3fXfq4jAUHAn4gyWAXgJ77wQeHiPhYN60d/OCghTUkwLr0FIk9kktxevRvfk3+nQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=coHUWty3; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=coHUWty3;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vaibhav@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YhKxK0f1sz2xnS
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2025 18:36:52 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50R5NnXf030643;
-	Mon, 27 Jan 2025 07:36:43 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Y1sCtA
-	isinjgsZyYOat3ARot9XjKhREXWr4KiHU+0OY=; b=coHUWty3XwTvwx0miFXP+A
-	ewVsB02bZltWrDPDtjvnjSZEDGZeanOsevj7SPEb2ZsjjpqPMXmCJwI8vPCUjBMA
-	Tz7jA/liTOC/ci6J0OYDjyw27xUyUec/AXDoW3d3A0xkC2OkqXnI0KC4XXblE9yi
-	lcJaP98p1sMkV6lhjIV73r3fpzoXoimZmS2qaVIEmJj0ftapdax7W9mq8FZTw9Ly
-	LPeaJ9PtPjxGrs4j8Zf/+nFCvYbVi9L0bnzTF9MNtbmXswLBnnyK987aWxRb1/km
-	0hjn9avuCSWMxC+QWaaE8u6k4Lq67UXs1pkQyAt9H0/hXC9UFVSJdP+LSdiuopNA
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44e3y7rgtj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Jan 2025 07:36:43 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50R7YLg7010750;
-	Mon, 27 Jan 2025 07:36:43 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44e3y7rgtf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Jan 2025 07:36:43 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50R6wmgB003957;
-	Mon, 27 Jan 2025 07:36:42 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 44da9s5djr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Jan 2025 07:36:42 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50R7ac1X64291200
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 27 Jan 2025 07:36:38 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8966E200BF;
-	Mon, 27 Jan 2025 07:36:38 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CA11A200BC;
-	Mon, 27 Jan 2025 07:36:34 +0000 (GMT)
-Received: from vaibhav?linux.ibm.com (unknown [9.39.30.253])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with SMTP;
-	Mon, 27 Jan 2025 07:36:34 +0000 (GMT)
-Received: by vaibhav@linux.ibm.com (sSMTP sendmail emulation); Mon, 27 Jan 2025 13:06:33 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-        kvm-ppc@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin
- <npiggin@gmail.com>,
-        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-        sbhat@linux.ibm.com, gautam@linux.ibm.com, kconsul@linux.ibm.com,
-        amachhiw@linux.ibm.com
-Subject: Re: [PATCH v3 4/6] kvm powerpc/book3s-apiv2: Introduce kvm-hv
- specific PMU
-In-Reply-To: <40C19755-ABE4-4E23-A75A-1F6F6DDC505A@linux.vnet.ibm.com>
-References: <20250123120749.90505-1-vaibhav@linux.ibm.com>
- <20250123120749.90505-5-vaibhav@linux.ibm.com>
- <40C19755-ABE4-4E23-A75A-1F6F6DDC505A@linux.vnet.ibm.com>
-Date: Mon, 27 Jan 2025 13:06:33 +0530
-Message-ID: <87y0ywu2ri.fsf@vajain21.in.ibm.com>
+	t=1737966007; c=relaxed/relaxed;
+	bh=1IDSXgPqGUnROEN6PgUPRBh1EN9XG5YMqPhQkPwBV9o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cothMenYNYntuBaMIg8aGhr2TImoTSHUaLCjJ1ewNyUKnDFaaaNnyICiMwMUdqkjfjq4WbPaSvVU7Y8mvGupm3arsKAczPve131k/MEZdNHwmruWI4qg+W/xovMj/T8/MQ7oOe/I3G/r72ZSfviCWqphhfrtmL+F8zxOjqzwZc0JnHwFIe7PW2Cgh8GvbZg8iAYt4C/lRJn++A1C5UC7YK1HmmZ5UbQF3PtJyTF1GxpITIMCY+Cz18Rh57A3tshxKlYLvoGncZ0+htLrmNUH/3fXSMAErwdLy2yDUBx7xmYiZ0F/Ce1QaDSPl6riW3mN00g+6yPyVQJUnmpPZvapmQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YhLvB3c4Kz3011
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2025 19:20:06 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4YhLJ708mlz9sRk;
+	Mon, 27 Jan 2025 08:53:11 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id yq7lNBtm7Jta; Mon, 27 Jan 2025 08:53:10 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4YhLJ66KD9z9sPd;
+	Mon, 27 Jan 2025 08:53:10 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C96138B764;
+	Mon, 27 Jan 2025 08:53:10 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 3B3nWqhsvGgA; Mon, 27 Jan 2025 08:53:10 +0100 (CET)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 64C6A8B763;
+	Mon, 27 Jan 2025 08:53:10 +0100 (CET)
+Message-ID: <50d7c398-b043-478f-92ee-70d144126e4a@csgroup.eu>
+Date: Mon, 27 Jan 2025 08:53:10 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,53 +57,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: WI0OYns2V5mRYoL7l6EzBfFQYPMiVpt5
-X-Proofpoint-GUID: OWa1752MrPhAEkRGy4X2WucZV5eKwoKE
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-27_03,2025-01-27_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 clxscore=1015
- phishscore=0 impostorscore=0 lowpriorityscore=0 priorityscore=1501
- suspectscore=0 bulkscore=0 mlxscore=0 mlxlogscore=616 malwarescore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2411120000 definitions=main-2501270059
-
-Hi Athira,
-
-Thanks for reviewing this patch series. My responses to your review
-comment inline below:
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] powerpc/hugetlb: Disable gigantic hugepages if fadump
+ is active
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Hari Bathini <hbathini@linux.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <20250125104928.88881-1-sourabhjain@linux.ibm.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20250125104928.88881-1-sourabhjain@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
 
-Athira Rajeev <atrajeev@linux.vnet.ibm.com> writes:
 
->> On 23 Jan 2025, at 5:37=E2=80=AFPM, Vaibhav Jain <vaibhav@linux.ibm.com>=
- wrote:
->>=20
->> Introduce a new PMU named 'kvm-hv' to report Book3s kvm-hv specific
-<snip>
->
-> Hi Vaibhav
->
-> All PMU specific code is under =E2=80=9Carch/powerpc/perf in the kernel s=
-ource. Here since we are introducing a kvm-hv specific PMU, can we please h=
-ave it in arch/powerpc/perf ?
+Le 25/01/2025 à 11:49, Sourabh Jain a écrit :
+> The fadump kernel boots with limited memory solely to collect the kernel
+> core dump. Having gigantic hugepages in the fadump kernel is of no use.
+> Many times, the fadump kernel encounters OOM (Out of Memory) issues if
+> gigantic hugepages are allocated.
+> 
+> To address this, disable gigantic hugepages if fadump is active by
+> returning early from arch_hugetlb_valid_size() using
+> hugepages_supported(). hugepages_supported() returns false if fadump is
+> active.
 
-Is it common convention to put PMU specific code in
-arch/powerpc/perf across ppc achitecture variants ? If its there can you
-please mention the reasons behind it.
+Maybe you could explain how that's done. As far as I can see there is no 
+powerpc specific version of hugepages_supported(), so it relies on 
+hpage_shift being 0, but I was not able to quickly spot where that is done.
 
-Also the code for this PMU, will be part of kvm-hv kernel module as it
-utilizes the functionality implemented there. Moving this PMU code to
-arch/powerpc/perf will need this to be converted in yet another new
-kernel module, adding a dependency to kvm-hv module and exporting a
-bunch of functionality from kvm-hv. Which looks bit messy to me
+> 
+> Returning early from arch_hugetlb_valid_size() not only disables
+> gigantic hugepages but also avoids unnecessary hstate initialization for
+> every hugepage size supported by the platform.
+> 
+> kernel logs related to hugepages with this patch included:
+> kernel argument passed: hugepagesz=1G hugepages=1
+> 
+> First kernel: gigantic hugepage got allocated
+> ==============================================
+> 
+> dmesg | grep -i "hugetlb"
+> -------------------------
+> HugeTLB: registered 1.00 GiB page size, pre-allocated 1 pages
+> HugeTLB: 0 KiB vmemmap can be freed for a 1.00 GiB page
+> HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+> HugeTLB: 0 KiB vmemmap can be freed for a 2.00 MiB page
+> 
+> $ cat /proc/meminfo | grep -i "hugetlb"
+> -------------------------------------
+> Hugetlb:         1048576 kB
+> 
+> Fadump kernel: gigantic hugepage not allocated
+> ===============================================
+> 
+> dmesg | grep -i "hugetlb"
+> -------------------------
+> [    0.000000] HugeTLB: unsupported hugepagesz=1G
+> [    0.000000] HugeTLB: hugepages=1 does not follow a valid hugepagesz, ignoring
+> [    0.706375] HugeTLB support is disabled!
+> [    0.773530] hugetlbfs: disabling because there are no supported hugepage sizes
+> 
+> $ cat /proc/meminfo | grep -i "hugetlb"
+> ----------------------------------
+> <Nothing>
+> 
+> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 
-<snip>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
---=20
-Cheers
-~ Vaibhav
+> ---
+> 
+> Changelog:
+> 
+> v1:
+> https://lore.kernel.org/all/20250121150419.1342794-1-sourabhjain@linux.ibm.com/
+> 
+> v2:
+> https://lore.kernel.org/all/20250124103220.111303-1-sourabhjain@linux.ibm.com/
+>   - disable gigantic hugepage in arch code, arch_hugetlb_valid_size()
+> 
+> v3:
+>   - Do not modify the initialization of the shift variable
+> 
+> ---
+>   arch/powerpc/mm/hugetlbpage.c | 3 +++
+>   1 file changed, 3 insertions(+)
+> 
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index 6b043180220a..88cfd182db4e 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -138,6 +138,9 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
+>   	int shift = __ffs(size);
+>   	int mmu_psize;
+>   
+> +	if (!hugepages_supported())
+> +		return false;
+> +
+>   	/* Check that it is a page size supported by the hardware and
+>   	 * that it fits within pagetable and slice limits. */
+>   	if (size <= PAGE_SIZE || !is_power_of_2(size))
+
 
