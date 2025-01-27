@@ -1,86 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-5594-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5595-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04991C0218A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jan 2025 11:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 020A1C02188
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jan 2025 11:44:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YhRFC3cbrz2yft;
-	Mon, 27 Jan 2025 22:35:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::630"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737977759;
-	cv=none; b=W/VKij4UBgDFb6pV0SIKBUynHcCTmq+MuJPkKv8mte8pLBDqpVJE4upbqXhGP0Z6vNlrXzKYizGKqEk2BTmLYzv6n5syqtD4gFPdF2u0rnGZduWS1OeMgAaRJkd7wihBVkDJzOs4wcMViDRCol/F1bsYr4IaGoypVn2NnTSkcTDPJ7QHMlCX9yKLGqzlaL0JxTO28H/x72wun2Vfj8wlX6etmB6SoCG2KDpOHqAV98Ws31PZrebPdla9lgTs475OHH279kxmD23/3LujiCL2B5eA9wNm9WlLtQprnaDDeeM+Op+xby8rinqXfkQIZWSyf4dm+qm/q53coO21rlDchw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YhRRG29yqz2yMX;
+	Mon, 27 Jan 2025 22:44:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=194.107.17.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737978282;
+	cv=none; b=dS5far+9K2AMUMPZDq8him2K7W8+YlxP3A04amopHwfWT1wQeNI8MQu8+yVzBCor+4x+qV0zcpci83AdJdpvnlsEh6hYSBMNo99QOtffbaQraXimlgr+rjWnagRMHf5h0VxDlqN9WyX1JxL9+E6sBydaqBKJfXqUmeaDG5quLuGlA75DkVs3jz3rIBpd57ssUmJ+S+ybUdKVp5Zq1QOFN5/70LEO3zKegZOofw/ovtXqdnQfMrcQzr2EZhPd7Pj9GCzG85K06mbAfe+7dj3yyG8LEQKd0aYLent8mr5M9NlZ9nrkFABWNyRUzo+XEuaubmkVJzQn58RRBY/j67ZRcg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737977759; c=relaxed/relaxed;
-	bh=8zb5dDSWfAPbQtfcZhMyII0+GP9Q7wdaQN5r+kGdVO8=;
+	t=1737978282; c=relaxed/relaxed;
+	bh=kO9MRTiFnxmvjjwqoavbEvk7nTGCi1IOTltnRTUQauI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=M6GaFMe9t4EhrQrapbmdumqriUeTbdtf3AvableTV8sdGb1vJG7sF5dmR5+BnKRmpqsaE+DGePjAGFBzIg5nui73JJbecKwt1Ek5HbK6F6TaDMgC7F4/mLBg0bR1h4DT0jQE/E5C/jRf+yp0OBv3GFaqNRaBdaVHociDyCo5067U33BBhwfv6WME2l6C6z2ds5WsXsB7pwI/PGOybjLrsUuGmPK7ocFO28ckrPaTf7ps2c3SYnaoU6jFfmVkfSJoGlSuLwCswwW0LjBbiXDeS/3Xr4kr3yfEs7dyyJVg/5q1zUaomVTg/0p8GeVzk5oMsSnRyAfKOZTogc2TbzzWjw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=HpbGU2ye; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::630; helo=mail-ej1-x630.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=HpbGU2ye;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::630; helo=mail-ej1-x630.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YhRFB0jXgz2yVt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2025 22:35:56 +1100 (AEDT)
-Received: by mail-ej1-x630.google.com with SMTP id a640c23a62f3a-ab651f1dd36so862415366b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2025 03:35:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1737977753; x=1738582553; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=8zb5dDSWfAPbQtfcZhMyII0+GP9Q7wdaQN5r+kGdVO8=;
-        b=HpbGU2yegczg72SWPQx27w7YRCfQTEmjzh97+H178j4RNNWPejtkwy4XCem5IrE7/G
-         f5lpwm8pNc1ZRS+oU5mkNGpIKapEZypK1gm2ZnzPtB7Ox0HMyUVL/TTyAugYbu/2ogut
-         8sICNlyZk76j2pety7opGl+V0MUqfeU58cb9rKPRRApWm9NbU1TOKG+7u3oWwM8uhhDr
-         PyjvChbU20lrxiSqJZGRsM7XRQ175irMDeB3BJeIHMYyLcrF10I3Wap5eMPUFLscCQIq
-         nGJpKoHa4laRfEQCWXr8sZxjUNsv6dC7e0worsYjo7E1qxIuR4Mv2/sbHzqOAtZ//SwQ
-         xiBA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1737977753; x=1738582553;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=8zb5dDSWfAPbQtfcZhMyII0+GP9Q7wdaQN5r+kGdVO8=;
-        b=QqIWi0r6r+YYLadurUfAEG39PMMydO31AUf1jrVeUEqzIgm9w1XRJeVk3yI/5mihYg
-         Fbzxp2oMLmiQJBqlwH4dd2hEw8BwSjQr2d8Rl/sh9c8Mcyqom4ueFwdOlw0UCgTV/4NA
-         rUPaKpx/9e2UCALFFx0nLBKYd3neShtGwMRAzZ1tuKq/amCsLa3OCMW09LTpxToqL8W6
-         2iu4JFDBwBjTN5JE30/HlrD9PJ5i9S0JVAkgc5jR/kzPvY8eJ0X/gNqb8DLx6HCuP6jB
-         KxiS1vAtQd0wFtCUfISVF2L0a1ARWqDXczCtyF18YxuTn1aGoqBCT0zEMXjO/qpf5HbV
-         PprQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUgFuPkRMP1YF3FItEKaqgipF5FlyFWstzzG0N2o1obSZitKqDaeh4MxNSD5SpBBRwFnJwTxkPBQooiBTM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxmi7jyIQxOSKvN42PbPbkzZh6C2jQDCq5auHiUuyGntGEQ6Sk+
-	oi6jiymLGX+Qes3Fw19M66pqatNmyTNPN8wU48WdeI40m63qCK4jZ95ZFTW4JW4=
-X-Gm-Gg: ASbGncv23t4HUUkUX7yADa+ThUaXNCtx0dlY8JogkdGlE/Yowse6Mqq5Lgx1+0YGSJx
-	nTiL/yR3d5FuNqMH3Gbm7qhd4uaxYmnyD6TGIg+kI4sLd+pu0bc38xJgY8bbscVwuwbsRG8Ygmx
-	FvuQHKas3l30akns6YhFZZRT9D1zHkSrmk1NE1VsnwdJbKwfLctgQaj2qyAwm4K5KOr3LbfJy6z
-	eQheiGfc3KduRnoncN38I9B7ATYfLrTrld3Ob+eRG97D9KuZiDMHuXG6MfwhytMo+Th50EmR6ac
-	M51Bqrw=
-X-Google-Smtp-Source: AGHT+IES/sxEF+BZSWJQAk5rNdbZSsrSF6vi3KXJQiYSQuO9FLRRC5atvuAKwpmQ4GGZa33a2aw0kQ==
-X-Received: by 2002:a17:907:60cc:b0:aab:c35e:509b with SMTP id a640c23a62f3a-ab38b4bb44bmr3667711566b.55.1737977752859;
-        Mon, 27 Jan 2025 03:35:52 -0800 (PST)
-Received: from pathway.suse.cz ([176.114.240.130])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ab6760fbd46sm574262766b.135.2025.01.27.03.35.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jan 2025 03:35:52 -0800 (PST)
-Date: Mon, 27 Jan 2025 12:35:50 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: jikos@kernel.org, mbenes@suse.cz, joe.lawrence@redhat.com,
-	shuah@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
-	christophe.leroy@csgroup.eu, naveen@kernel.org,
-	live-patching@vger.kernel.org, linux-kselftest@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] selftests: livepatch: handle PRINTK_CALLER in
- check_result()
-Message-ID: <Z5dvluAy6miSNyw4@pathway.suse.cz>
-References: <20250119163238.749847-1-maddy@linux.ibm.com>
+	 Content-Type:Content-Disposition:In-Reply-To; b=mvq21ZF1Nkv1+Z2csdJqHOp384EQgVMj8hakRHA/6qhwlL9nf7uWdoiGBP9LjVEDeljjdM/a5cdUkC1W7HwEYao57EgD0z1C9wFwxj72jGaVV6mGdSErGSEWXrtnrBu59DIOiVrflAXSWcuMQ1SJ0bm79gtY2GRqzd1GU1fL2iy50cD5MpLS8Hkybj4bnMLPUH9HnzwoWf9DxYjCV6RYsYWtbjh0OEvoWFSP3TvIR8MSbT4PFQky+gX7mT66rcUmBay0562pONd9+9TSj7G5S6SjJAnZAZnBO2DQlm4r18QlvelnABgMXVC23ydclwKBTlDIIlGIfPIAWVN40JwXew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io; spf=pass (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org) smtp.mailfrom=altlinux.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=altlinux.org (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org)
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YhRRF3wSPz2xKd
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2025 22:44:41 +1100 (AEDT)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+	by vmicros1.altlinux.org (Postfix) with ESMTP id 0CEEE72C8CC;
+	Mon, 27 Jan 2025 14:44:40 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+	id EF77A7CCB3A; Mon, 27 Jan 2025 13:44:39 +0200 (IST)
+Date: Mon, 27 Jan 2025 13:44:39 +0200
+From: "Dmitry V. Levin" <ldv@strace.io>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Alexey Gladkov <legion@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Eugene Syromyatnikov <evgsyr@gmail.com>,
+	Mike Frysinger <vapier@gentoo.org>,
+	Renzo Davoli <renzo@cs.unibo.it>,
+	Davide Berardi <berardi.dav@gmail.com>,
+	strace-devel@lists.strace.io,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/7] powerpc: properly negate error in
+ syscall_set_return_value()
+Message-ID: <20250127114439.GC29522@strace.io>
+References: <20250113171054.GA589@strace.io>
+ <6558110c-c2cb-4aa3-9472-b3496f71ebb8@csgroup.eu>
+ <20250114170400.GB11820@strace.io>
+ <d249e9e2-511a-46af-bd6e-397812b67058@csgroup.eu>
+ <20250123182815.GA20994@strace.io>
+ <86079b5c-e124-489b-8136-05ae5700cb61@csgroup.eu>
+ <20250127112023.GB29522@strace.io>
+ <7e7c7659-5cf7-42e9-81d6-b91963d8c892@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,59 +65,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20250119163238.749847-1-maddy@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <7e7c7659-5cf7-42e9-81d6-b91963d8c892@csgroup.eu>
 
-On Sun 2025-01-19 22:02:38, Madhavan Srinivasan wrote:
-> Some arch configs (like ppc64) enable CONFIG_PRINTK_CALLER,
-> which adds the caller id as part of the dmesg. With recent
-> util-linux's update 467a5b3192f16 ('dmesg: add caller_id support')
-> the standard "dmesg" has been enhanced to print PRINTK_CALLER fields.
+On Mon, Jan 27, 2025 at 12:36:53PM +0100, Christophe Leroy wrote:
+> Le 27/01/2025 à 12:20, Dmitry V. Levin a écrit :
+> > On Thu, Jan 23, 2025 at 11:07:21PM +0100, Christophe Leroy wrote:
+> > [...]
+> >> To add a bit more to the confusion,
+> > 
+> > Looks like there is no end to it:
+> > 
+> > static inline long regs_return_value(struct pt_regs *regs)
+> > {
+> >          if (trap_is_scv(regs))
+> >                  return regs->gpr[3];
+> > 
+> >          if (is_syscall_success(regs))
+> >                  return regs->gpr[3];
+> >          else
+> >                  return -regs->gpr[3];
+> > }
+> > 
+> > static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
+> > {
+> >          regs->gpr[3] = rc;
+> > }
+> > 
+> > This doesn't look consistent, does it?
+> > 
+> > 
 > 
-> Due to this, even though the expected vs observed are same,
-> end testcase results are failed.
-> 
->  -% insmod test_modules/test_klp_livepatch.ko
->  -livepatch: enabling patch 'test_klp_livepatch'
->  -livepatch: 'test_klp_livepatch': initializing patching transition
->  -livepatch: 'test_klp_livepatch': starting patching transition
->  -livepatch: 'test_klp_livepatch': completing patching transition
->  -livepatch: 'test_klp_livepatch': patching complete
->  -% echo 0 > /sys/kernel/livepatch/test_klp_livepatch/enabled
->  -livepatch: 'test_klp_livepatch': initializing unpatching transition
->  -livepatch: 'test_klp_livepatch': starting unpatching transition
->  -livepatch: 'test_klp_livepatch': completing unpatching transition
->  -livepatch: 'test_klp_livepatch': unpatching complete
->  -% rmmod test_klp_livepatch
->  +[   T3659] % insmod test_modules/test_klp_livepatch.ko
->  +[   T3682] livepatch: enabling patch 'test_klp_livepatch'
->  +[   T3682] livepatch: 'test_klp_livepatch': initializing patching transition
->  +[   T3682] livepatch: 'test_klp_livepatch': starting patching transition
->  +[    T826] livepatch: 'test_klp_livepatch': completing patching transition
->  +[    T826] livepatch: 'test_klp_livepatch': patching complete
->  +[   T3659] % echo 0 > /sys/kernel/livepatch/test_klp_livepatch/enabled
->  +[   T3659] livepatch: 'test_klp_livepatch': initializing unpatching transition
->  +[   T3659] livepatch: 'test_klp_livepatch': starting unpatching transition
->  +[    T789] livepatch: 'test_klp_livepatch': completing unpatching transition
->  +[    T789] livepatch: 'test_klp_livepatch': unpatching complete
->  +[   T3659] % rmmod test_klp_livepatch
-> 
->   ERROR: livepatch kselftest(s) failed
->  not ok 1 selftests: livepatch: test-livepatch.sh # exit=1
-> 
-> Currently the check_result() handles the "[time]" removal from
-> the dmesg. Enhance the check to also handle removal of "[Thread Id]"
-> or "[CPU Id]".
-> 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+> That regs_set_return_value() looks pretty similar to 
+> syscall_get_return_value().
 
-JFYI, the patch has been committed into livepatch.git,
-branch for-6.14/selftests-dmesg.
+Yes, but here similarities end, and differences begin.
 
-I am going to create a pull request for Linus' master by
-the end of the week or next week.
+> regs_set_return_value() documentation in asm-generic/syscall.h 
+> explicitely says: This value is meaningless if syscall_get_error() 
+> returned nonzero
+> 
+> Is it the same with regs_set_return_value(), only meaningfull where 
+> there is no error ?
 
-Best Regards,
-Petr
+Did you mean syscall_set_return_value?  No, it explicitly has two
+arguments, "int error" and "long val", so it can be used to either
+clear or set the error condition as specified by the caller.
+
+> By the way, why have two very similar APIs, one in syscall.h one in 
+> ptrace.h ?
+
+I have no polite answer to this, sorry.
+
+
+-- 
+ldv
 
