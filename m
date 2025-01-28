@@ -1,51 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-5654-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5655-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EBC7C0218A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 22:58:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC8B4C0218A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 22:58:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YjLKd3F8tz302P;
-	Wed, 29 Jan 2025 09:57:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YjLKf5MD0z2yNt;
+	Wed, 29 Jan 2025 09:57:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738105077;
-	cv=none; b=TVMNYX2d7CcsGQzLzFS/vOyy3ZmjE9IRkOliDOx/iGVcdNvXjrUR7Nnm9aIjExjIKjLhGZsPLrh2e9zUo8oibQtQ2B9mZSwoz2wCtk6kiaqqrn5baT9eXbWpYxkRFavKwK6WUewSOSkbpfVpIJXtSW1CD0dei+aDF1m7XsleiBFEJ2pykuOQb49lEoa3DlSbtD+4WIVj9kvgyQRiP5hKapYCwNrrM7lFaPX7zhu1o+YBD0apFNFBQiOTDJN07pzlgPB9uGc1w1+oyKiF4a9zcZtkzDqkMOtiIYWD5MbaJpqWOyVnfgC7t3i1w320YpD345hgOTFduRZLNTBWkMwrqw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738105078;
+	cv=none; b=X/0hk86kHufpVdCVkBQCsDSHCR4stdIlna3EJ8SxWXI7/ncmjcxJnNjHzlaVC1D9u3GOkczgiNg7QS0dKV1Yun5bB0HKEvZ7Vah+dzYy49mpYmP+tOM3RKgsN7EkmQrt2UvCLnse7MA9V+hek3sGmf1cm3lmdiqw3uMxrdPLTALw1ByQXkJCEZc2Zs6k9rBnCbuL1SxXhYw29CxPP6VzVd26f1PmDD+MG0OEEZWgNP/JzXotaUozCkZ1AHRvf/EVcLhwKD2zW+Y3s/CgL6IMuocg+DBNdVTOrRfmNTR8lr+lFF4XcrGI6T/1rzNdAr+nAdeOJU+Xrg9KgjGuxe6m3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738105077; c=relaxed/relaxed;
-	bh=OuCkhBjWr9MTbfpWKD5NGYxHAOlVrjks5zt6sl1tJ48=;
+	t=1738105078; c=relaxed/relaxed;
+	bh=f6F/8wX1InYv/lb2QMy5MdLscYTPRcpVlUy1/MkmLwo=;
 	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=L3yvaKoPqHmZudAbo0rK78eIXbW77s2lg4lvVLxnK4xGdnG7VsyI634FkuXOwcGW65k9/TVf3H/lTuAsp/JvPo661NOwS093SKYB2U6Wib22ZHF03FX4qUskJBuI85BR3LkfP0bfbVlhBJ2+flQO0K9TYdymyd+Xz/g6DQNvqHFqUzjJSwbbskXIcbUx3+d4bgdRXwZ+pwahCjQjgQLAquENiHTd+u8S25e/IbDGMN07z4vdrBjkF2KcfFt+np87UCz1Rj9pF4sQymbE/NWTZh+Wp506qbNftI8pB081cVdhQmuYhgD17/t4zQr9IlGZAG/I0s3VIiuPC3Fk2EknGQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org; dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=wDA/Gn3j; dkim-atps=neutral
+	 Content-Type:Content-Disposition:In-Reply-To; b=in2d24kGZO8/uvJ3w0HWsHGWd9MLSehHdA3LnKpBjS2sA2pWwrNaZVjQP3U2NBbkzSMERtTpALWBxdewc2b9HRZTjvWdUZuQjAxscsCy4eeYq7kSGy6TJSSFkVGDBHtrbp4yZtHbrPAqYI1HsQeUKjdXjWaTR8mY2aRT7Sf+Mmpm2WtqiNhET8TvbGQSqwtsNHLSWEbvZ7BFyojsMfnbL44Sgeb0x4Sl+mXhrIBAtPptU7K3/kURmL7qT2F80RsCXPTxUzJ22JMbb3RbHwTQizngRhLZmf9GpxAi5W3W0iDqVQuiADs7Zy3JVFF5v8inUqn4HBGLMDyFvN6p/RqK7Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org; dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=Upygvm7Z; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=wDA/Gn3j;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=Upygvm7Z;
 	dkim-atps=neutral
 Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YjLKc0wl6z2yNt
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YjLKc11BRz2yZ4
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 09:57:56 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
 	s=201707; t=1738105067;
-	bh=OuCkhBjWr9MTbfpWKD5NGYxHAOlVrjks5zt6sl1tJ48=;
+	bh=f6F/8wX1InYv/lb2QMy5MdLscYTPRcpVlUy1/MkmLwo=;
 	h=Date:From:To:Subject:References:In-Reply-To:From;
-	b=wDA/Gn3jk8C/R6IB2r5G+VlwB3RfPU0WGE/VkHe3qaoCi+Bd/mrGwqM0PT1ZEj4sd
-	 Kr+ruMr04PdiRerzrN53rVVDmjzjsEsWa0gHvvzgzYLOca7sdKB1YFLxR4U1nZyg5c
-	 jmZsfN+XWcTYzuzEn57eCw6QJSjxSeYQRAiJWqRKoRm4Sf94IhgL6sC67qRWqzrPMN
-	 t3m+P3i82FS04t+OvxApf4IvxBrXjUY3Cg34Z+0XN5J5RzvflLPvBeL7P2yirEhgjs
-	 TqbeHUniH0XHszqdLJ3tCs59xxKmWgNr5VVMMvHznPFZ+eCdU1T4UsO5ENWG6yuWtr
-	 13mfmiiR7zQ1Q==
+	b=Upygvm7ZS7LwaEx5FUaci4Kz0c046kJeBDTNibpZtfY7hmB7wNeyufbCpjBETwyHw
+	 z/QX4O609dnNHwic1igz7wcPBPy9WfhYuEHr87kqP5K4jKXoTvlZU5+LE/0ok8F4YI
+	 y6EVeLASulRhs0M502xF3wTXNIrWXxh/7wRaW6hAdLFqUE+IBUPLb7e2CjxCkxk9Qd
+	 yE6OgUB8DBEqxB/cLoe8K1u/fLdiWCBWwHUqCZztzAoPdcKrV8lnRkDXAdE1nIxnNr
+	 9qKFUw9EfdZas2HGmMwRnlhfl2LziGX3OWDkgebmnhjvhIAaQVvP4pdBFQLWspZtq3
+	 X9Jnullt0SXww==
 Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
-	id 4YjLKR2hCQz4x0t; Wed, 29 Jan 2025 09:57:47 +1100 (AEDT)
-Date: Wed, 29 Jan 2025 09:51:00 +1100
+	id 4YjLKR2n0jz4x2J; Wed, 29 Jan 2025 09:57:47 +1100 (AEDT)
+Date: Wed, 29 Jan 2025 09:52:56 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/5] powerpc/microwatt: Select COMMON_CLK in order to get the
- clock framework
-Message-ID: <Z5lfVEMJL5oZOxKo@thinks.paulus.ozlabs.org>
+Subject: [PATCH 3/5] powerpc/microwatt: Define an idle power-save function
+Message-ID: <Z5lfyDQbGjxYT_eF@thinks.paulus.ozlabs.org>
 References: <Z5lfDb8wsLlmSLBZ@thinks.paulus.ozlabs.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -63,26 +62,38 @@ Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <Z5lfDb8wsLlmSLBZ@thinks.paulus.ozlabs.org>
 
-This is to allow us to select Litex MMC host controller driver, which
-drives the litesdcard gateware.
+This uses the 'wait' instruction to pause instruction execution when
+idle until an interrupt occurs.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/platforms/microwatt/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/platforms/microwatt/setup.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/platforms/microwatt/Kconfig b/arch/powerpc/platforms/microwatt/Kconfig
-index 6af443a1db99..5e41adadac1f 100644
---- a/arch/powerpc/platforms/microwatt/Kconfig
-+++ b/arch/powerpc/platforms/microwatt/Kconfig
-@@ -6,6 +6,7 @@ config PPC_MICROWATT
- 	select PPC_ICS_NATIVE
- 	select PPC_ICP_NATIVE
- 	select PPC_UDBG_16550
-+	select COMMON_CLK
- 	help
-           This option enables support for FPGA-based Microwatt implementations.
+diff --git a/arch/powerpc/platforms/microwatt/setup.c b/arch/powerpc/platforms/microwatt/setup.c
+index 5e1c0997170d..97828a99780d 100644
+--- a/arch/powerpc/platforms/microwatt/setup.c
++++ b/arch/powerpc/platforms/microwatt/setup.c
+@@ -34,10 +34,19 @@ static void __init microwatt_setup_arch(void)
+ 	microwatt_rng_init();
+ }
  
++static void microwatt_idle(void)
++{
++	if (!prep_irq_for_idle())
++		return;
++
++	__asm__ __volatile__ ("wait");
++}
++
+ define_machine(microwatt) {
+ 	.name			= "microwatt",
+ 	.compatible		= "microwatt-soc",
+ 	.init_IRQ		= microwatt_init_IRQ,
+ 	.setup_arch		= microwatt_setup_arch,
+ 	.progress		= udbg_progress,
++	.power_save		= microwatt_idle,
+ };
 -- 
 2.47.1
 
