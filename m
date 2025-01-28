@@ -1,91 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-5619-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5620-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DB18C0218D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 09:16:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34B42C0218A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 09:20:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj05z0TJTz30CL;
-	Tue, 28 Jan 2025 20:16:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=194.107.17.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738055799;
-	cv=none; b=JTOlu+hGsFTKPhJrxBGkd2oHBCCGU2s2woDBPL9zxlZUyals2oTwZW1DV6YPDPJSuBr4yANo7RBP6ss6HIYKqhxsuCo9eaXX3uBQci2lYjloiHakV03EVPEDhvpMN+Xu/6BT8tL1JS2cPDdst/9zdjty2bs4gDuDMYnreP57acIlS+03gx6rCaVSDnuXM4//5GCjb9JNl7UlqgiCBViLnE8KUW+SOPvc0YWC9geRRr1mAHMgZzDZonMoYRfJpc01doTHRof0M05Gj6f1A10r1DMDDKcQon6woVErzpZ0jK9EWtdjICTsWtiUEj2WaIQ4x/8f3zO0mLApVwui9lC/lg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj09y5ZBXz2ysv;
+	Tue, 28 Jan 2025 20:20:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738056006;
+	cv=none; b=SbWNoMQGzHxZAdQm0qzAB6QutQ6w3dJ0UG6Uyhc8lu7oHSrqRj2K09DUJylJhBqNVh68nlmcY0q59TByQJALIG1PETQhfJrHE9N8ojPepmSeElsdmtZTCTJ4CNRKHTWOEzcA85I+c+ytvBqjI5XgZxCE2HUpgonkOXA8nMx0J7lUNRgN6z2SZzLinmdVZRFFeB9BzeLQq2UlomqR+u/pnI+Bj02kSoTyxybiBfRTECs0LE/qSt/FRd9aamUVjjGBqAhp68y3ftVGrLqlrw5qHUwdKeMd+J7lFjTDYUwwGHO+LVBv66N5UrTojrMBzFmvkO1xHos4+lyEswBZ4WfYRg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738055799; c=relaxed/relaxed;
-	bh=vROW/FbjCVCuZ00SJXUZKsc1ljRqAB+ZsWy7qc3FRzk=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=GgyfUG4cQbCkRCInmZrkMIWFYBfh60TQ7X06Ozkqb6pPNvE2EA6O+pr5k17biusAQnN9+KXYAH4eIyvywWs3bD46CHRMS+s7/yHR11E8LutjKwKkRjki3bMwU/GE8xzd93ZCGO/ZtVOq62gbhf4MefeYdfI8daJSSUFdN8G4qsfX3cR3y1MJcwyehiQFHlGWOG7JAoEY5K9tP2Myaz+5yg+L8nFarzVujQdxJg5SCFDzWIjHa06gBqiLg9fbJZ0HETIqIbVF+BUNmy6xFOfDBoHR8IeHiOqtjw7DKEsKci0X3Wy0PgwquVplUlzYwU9gBCsx33jD0ly1RfOhSwy+tw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io; spf=pass (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org) smtp.mailfrom=altlinux.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=altlinux.org (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org)
-Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj05x5VQFz30Bd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2025 20:16:37 +1100 (AEDT)
-Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
-	by vmicros1.altlinux.org (Postfix) with ESMTP id 4421072C90B;
-	Tue, 28 Jan 2025 12:16:36 +0300 (MSK)
-Received: by mua.local.altlinux.org (Postfix, from userid 508)
-	id 36DCD7CCB3A; Tue, 28 Jan 2025 11:16:36 +0200 (IST)
-Date: Tue, 28 Jan 2025 11:16:36 +0200
-From: "Dmitry V. Levin" <ldv@strace.io>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Alexey Gladkov <legion@kernel.org>,
-	Charlie Jenkins <charlie@rivosinc.com>,
-	Eugene Syromyatnikov <evgsyr@gmail.com>,
-	Mike Frysinger <vapier@gentoo.org>,
-	Renzo Davoli <renzo@cs.unibo.it>,
-	Davide Berardi <berardi.dav@gmail.com>,
-	strace-devel@lists.strace.io, Vineet Gupta <vgupta@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Brian Cain <bcain@quicinc.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Michal Simek <monstr@monstr.eu>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Dinh Nguyen <dinguyen@kernel.org>, Jonas Bonn <jonas@southpole.se>,
-	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
-	Stafford Horne <shorne@gmail.com>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Rich Felker <dalias@libc.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>,
-	Max Filippov <jcmvbkbc@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
-	linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
-	linux-um@lists.infradead.org, linux-arch@vger.kernel.org
-Subject: [PATCH v3 3/6] syscall.h: introduce syscall_set_nr()
-Message-ID: <20250128091636.GC8601@strace.io>
+	t=1738056006; c=relaxed/relaxed;
+	bh=BVyhC7QSA0G8BV/1ANXQcYrxJUmRXT/TD12BTyXAE2o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=X/AQzBTCR/FNPFKFe0/bTFLu5CqBvTeo75v828RPDT6bWQR6K8bvSBN28bF9F7MA37tJN+j5ZJd7qB9tu10o/ebT4BUMOCkpj2i6Bggs9ZdJU62x1ymYiY2/smWxc9mrw4AkvNEchXyFvhOGntXa93Wyc+0n4kRWI0LXlJjf+0OKzAGck3WFp1BuH6rCQOkAOcvxZHkdr+opGVGrvAvGNDY1uMvXmp8m6R8XmC59y3QoQSDGy+9lsXSjNqVZ+/7/JMrxvVVxF1LlR2KieXmyTLaZDBWIDrn9VwtRd2kWd6d7hk4grxF7oc51KPa+VccIP8B+ILVDXIBWU9E/YQY0aQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj09x5NtMz2yZN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2025 20:20:04 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4Yhzdk4zHCz9sSZ;
+	Tue, 28 Jan 2025 09:55:38 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id bUOlSg6jBUTm; Tue, 28 Jan 2025 09:55:38 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4Yhzdk3m2lz9sSX;
+	Tue, 28 Jan 2025 09:55:38 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7126F8B76C;
+	Tue, 28 Jan 2025 09:55:38 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 7ESIVIMdKw33; Tue, 28 Jan 2025 09:55:38 +0100 (CET)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id BA8DE8B763;
+	Tue, 28 Jan 2025 09:55:37 +0100 (CET)
+Message-ID: <c961cc1e-897d-4b86-b123-b12a0c27f91a@csgroup.eu>
+Date: Tue, 28 Jan 2025 09:55:37 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,461 +57,423 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250128091445.GA8257@strace.io>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 27/27] mm/hugetlb: enable bootmem allocation from CMA
+ areas
+To: Frank van der Linden <fvdl@google.com>, akpm@linux-foundation.org,
+ muchun.song@linux.dev, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: yuzhao@google.com, usama.arif@bytedance.com, joao.m.martins@oracle.com,
+ roman.gushchin@linux.dev, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20250127232207.3888640-1-fvdl@google.com>
+ <20250127232207.3888640-28-fvdl@google.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20250127232207.3888640-28-fvdl@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Similar to syscall_set_arguments() that complements
-syscall_get_arguments(), introduce syscall_set_nr()
-that complements syscall_get_nr().
 
-syscall_set_nr() is going to be needed along with
-syscall_set_arguments() on all HAVE_ARCH_TRACEHOOK
-architectures to implement PTRACE_SET_SYSCALL_INFO API.
 
-Signed-off-by: Dmitry V. Levin <ldv@strace.io>
-Tested-by: Charlie Jenkins <charlie@rivosinc.com>
-Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
----
- arch/arc/include/asm/syscall.h        | 11 +++++++++++
- arch/arm/include/asm/syscall.h        | 24 ++++++++++++++++++++++++
- arch/arm64/include/asm/syscall.h      | 16 ++++++++++++++++
- arch/hexagon/include/asm/syscall.h    |  7 +++++++
- arch/loongarch/include/asm/syscall.h  |  7 +++++++
- arch/m68k/include/asm/syscall.h       |  7 +++++++
- arch/microblaze/include/asm/syscall.h |  7 +++++++
- arch/mips/include/asm/syscall.h       | 14 ++++++++++++++
- arch/nios2/include/asm/syscall.h      |  5 +++++
- arch/openrisc/include/asm/syscall.h   |  6 ++++++
- arch/parisc/include/asm/syscall.h     |  7 +++++++
- arch/powerpc/include/asm/syscall.h    | 10 ++++++++++
- arch/riscv/include/asm/syscall.h      |  7 +++++++
- arch/s390/include/asm/syscall.h       | 12 ++++++++++++
- arch/sh/include/asm/syscall_32.h      | 12 ++++++++++++
- arch/sparc/include/asm/syscall.h      | 12 ++++++++++++
- arch/um/include/asm/syscall-generic.h |  5 +++++
- arch/x86/include/asm/syscall.h        |  7 +++++++
- arch/xtensa/include/asm/syscall.h     |  7 +++++++
- include/asm-generic/syscall.h         | 14 ++++++++++++++
- 20 files changed, 197 insertions(+)
+Le 28/01/2025 à 00:22, Frank van der Linden a écrit :
+> If hugetlb_cma_only is enabled, we know that hugetlb pages
+> can only be allocated from CMA. Now that there is an interface
+> to do early reservations from a CMA area (returning memblock
+> memory), it can be used to allocate hugetlb pages from CMA.
+> 
+> This also allows for doing pre-HVO on these pages (if enabled).
+> 
+> Make sure to initialize the page structures and associated data
+> correctly. Create a flag to signal that a hugetlb page has been
+> allocated from CMA to make things a little easier.
+> 
+> Some configurations of powerpc have a special hugetlb bootmem
+> allocator, so introduce a boolean arch_specific_huge_bootmem_alloc
+> that returns true if such an allocator is present. In that case,
+> CMA bootmem allocations can't be used, so check that function
+> before trying.
+> 
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Frank van der Linden <fvdl@google.com>
+> ---
+>   arch/powerpc/mm/hugetlbpage.c |   5 ++
+>   include/linux/hugetlb.h       |   7 ++
+>   mm/hugetlb.c                  | 135 +++++++++++++++++++++++++---------
+>   3 files changed, 114 insertions(+), 33 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index d3c1b749dcfc..e53e4b4c8ef6 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -121,6 +121,11 @@ bool __init hugetlb_node_alloc_supported(void)
+>   {
+>   	return false;
+>   }
+> +
+> +bool __init arch_specific_huge_bootmem_alloc(struct hstate *h)
+> +{
+> +	return (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled());
+> +}
+>   #endif
+>   
+>   
+> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+> index 2512463bca49..bca3052fb175 100644
+> --- a/include/linux/hugetlb.h
+> +++ b/include/linux/hugetlb.h
+> @@ -591,6 +591,7 @@ enum hugetlb_page_flags {
+>   	HPG_freed,
+>   	HPG_vmemmap_optimized,
+>   	HPG_raw_hwp_unreliable,
+> +	HPG_cma,
+>   	__NR_HPAGEFLAGS,
+>   };
+>   
+> @@ -650,6 +651,7 @@ HPAGEFLAG(Temporary, temporary)
+>   HPAGEFLAG(Freed, freed)
+>   HPAGEFLAG(VmemmapOptimized, vmemmap_optimized)
+>   HPAGEFLAG(RawHwpUnreliable, raw_hwp_unreliable)
+> +HPAGEFLAG(Cma, cma)
+>   
+>   #ifdef CONFIG_HUGETLB_PAGE
+>   
+> @@ -678,14 +680,18 @@ struct hstate {
+>   	char name[HSTATE_NAME_LEN];
+>   };
+>   
+> +struct cma;
+> +
+>   struct huge_bootmem_page {
+>   	struct list_head list;
+>   	struct hstate *hstate;
+>   	unsigned long flags;
+> +	struct cma *cma;
+>   };
+>   
+>   #define HUGE_BOOTMEM_HVO		0x0001
+>   #define HUGE_BOOTMEM_ZONES_VALID	0x0002
+> +#define HUGE_BOOTMEM_CMA		0x0004
+>   
+>   bool hugetlb_bootmem_page_zones_valid(int nid, struct huge_bootmem_page *m);
+>   
+> @@ -711,6 +717,7 @@ bool __init hugetlb_node_alloc_supported(void);
+>   
+>   void __init hugetlb_add_hstate(unsigned order);
+>   bool __init arch_hugetlb_valid_size(unsigned long size);
+> +bool __init arch_specific_huge_bootmem_alloc(struct hstate *h);
 
-diff --git a/arch/arc/include/asm/syscall.h b/arch/arc/include/asm/syscall.h
-index 89c1e1736356..728d625a10f1 100644
---- a/arch/arc/include/asm/syscall.h
-+++ b/arch/arc/include/asm/syscall.h
-@@ -23,6 +23,17 @@ syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
- 		return -1;
- }
- 
-+static inline void
-+syscall_set_nr(struct task_struct *task, struct pt_regs *regs, int nr)
-+{
-+	/*
-+	 * Unlike syscall_get_nr(), syscall_set_nr() can be called only when
-+	 * the target task is stopped for tracing on entering syscall, so
-+	 * there is no need to have the same check syscall_get_nr() has.
-+	 */
-+	regs->r8 = nr;
-+}
-+
- static inline void
- syscall_rollback(struct task_struct *task, struct pt_regs *regs)
- {
-diff --git a/arch/arm/include/asm/syscall.h b/arch/arm/include/asm/syscall.h
-index 21927fa0ae2b..18b102a30741 100644
---- a/arch/arm/include/asm/syscall.h
-+++ b/arch/arm/include/asm/syscall.h
-@@ -68,6 +68,30 @@ static inline void syscall_set_return_value(struct task_struct *task,
- 	regs->ARM_r0 = (long) error ? error : val;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	if (nr == -1) {
-+		task_thread_info(task)->abi_syscall = -1;
-+		/*
-+		 * When the syscall number is set to -1, the syscall will be
-+		 * skipped.  In this case the syscall return value has to be
-+		 * set explicitly, otherwise the first syscall argument is
-+		 * returned as the syscall return value.
-+		 */
-+		syscall_set_return_value(task, regs, -ENOSYS, 0);
-+		return;
-+	}
-+	if ((IS_ENABLED(CONFIG_AEABI) && !IS_ENABLED(CONFIG_OABI_COMPAT))) {
-+		task_thread_info(task)->abi_syscall = nr;
-+		return;
-+	}
-+	task_thread_info(task)->abi_syscall =
-+		(task_thread_info(task)->abi_syscall & ~__NR_SYSCALL_MASK) |
-+		(nr & __NR_SYSCALL_MASK);
-+}
-+
- #define SYSCALL_MAX_ARGS 7
- 
- static inline void syscall_get_arguments(struct task_struct *task,
-diff --git a/arch/arm64/include/asm/syscall.h b/arch/arm64/include/asm/syscall.h
-index 76020b66286b..712daa90e643 100644
---- a/arch/arm64/include/asm/syscall.h
-+++ b/arch/arm64/include/asm/syscall.h
-@@ -61,6 +61,22 @@ static inline void syscall_set_return_value(struct task_struct *task,
- 	regs->regs[0] = val;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	regs->syscallno = nr;
-+	if (nr == -1) {
-+		/*
-+		 * When the syscall number is set to -1, the syscall will be
-+		 * skipped.  In this case the syscall return value has to be
-+		 * set explicitly, otherwise the first syscall argument is
-+		 * returned as the syscall return value.
-+		 */
-+		syscall_set_return_value(task, regs, -ENOSYS, 0);
-+	}
-+}
-+
- #define SYSCALL_MAX_ARGS 6
- 
- static inline void syscall_get_arguments(struct task_struct *task,
-diff --git a/arch/hexagon/include/asm/syscall.h b/arch/hexagon/include/asm/syscall.h
-index 1024a6548d78..70637261817a 100644
---- a/arch/hexagon/include/asm/syscall.h
-+++ b/arch/hexagon/include/asm/syscall.h
-@@ -26,6 +26,13 @@ static inline long syscall_get_nr(struct task_struct *task,
- 	return regs->r06;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	regs->r06 = nr;
-+}
-+
- static inline void syscall_get_arguments(struct task_struct *task,
- 					 struct pt_regs *regs,
- 					 unsigned long *args)
-diff --git a/arch/loongarch/include/asm/syscall.h b/arch/loongarch/include/asm/syscall.h
-index ff415b3c0a8e..81d2733f7b94 100644
---- a/arch/loongarch/include/asm/syscall.h
-+++ b/arch/loongarch/include/asm/syscall.h
-@@ -26,6 +26,13 @@ static inline long syscall_get_nr(struct task_struct *task,
- 	return regs->regs[11];
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	regs->regs[11] = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/m68k/include/asm/syscall.h b/arch/m68k/include/asm/syscall.h
-index d1453e850cdd..bf84b160c2eb 100644
---- a/arch/m68k/include/asm/syscall.h
-+++ b/arch/m68k/include/asm/syscall.h
-@@ -14,6 +14,13 @@ static inline int syscall_get_nr(struct task_struct *task,
- 	return regs->orig_d0;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	regs->orig_d0 = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/microblaze/include/asm/syscall.h b/arch/microblaze/include/asm/syscall.h
-index 5eb3f624cc59..b5b6b91fae3e 100644
---- a/arch/microblaze/include/asm/syscall.h
-+++ b/arch/microblaze/include/asm/syscall.h
-@@ -14,6 +14,13 @@ static inline long syscall_get_nr(struct task_struct *task,
- 	return regs->r12;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	regs->r12 = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/mips/include/asm/syscall.h b/arch/mips/include/asm/syscall.h
-index 2dcc1d01b405..1cd25306cc13 100644
---- a/arch/mips/include/asm/syscall.h
-+++ b/arch/mips/include/asm/syscall.h
-@@ -41,6 +41,20 @@ static inline long syscall_get_nr(struct task_struct *task,
- 	return task_thread_info(task)->syscall;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	/*
-+	 * New syscall number has to be assigned to regs[2] because
-+	 * syscall_trace_entry() loads it from there unconditionally.
-+	 *
-+	 * Consequently, if the syscall was indirect and nr != __NR_syscall,
-+	 * then after this assignment the syscall will cease to be indirect.
-+	 */
-+	task_thread_info(task)->syscall = regs->regs[2] = nr;
-+}
-+
- static inline void mips_syscall_update_nr(struct task_struct *task,
- 					  struct pt_regs *regs)
- {
-diff --git a/arch/nios2/include/asm/syscall.h b/arch/nios2/include/asm/syscall.h
-index 526449edd768..8e3eb1d689bb 100644
---- a/arch/nios2/include/asm/syscall.h
-+++ b/arch/nios2/include/asm/syscall.h
-@@ -15,6 +15,11 @@ static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
- 	return regs->r2;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task, struct pt_regs *regs, int nr)
-+{
-+	regs->r2 = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				struct pt_regs *regs)
- {
-diff --git a/arch/openrisc/include/asm/syscall.h b/arch/openrisc/include/asm/syscall.h
-index e6383be2a195..5e037d9659c5 100644
---- a/arch/openrisc/include/asm/syscall.h
-+++ b/arch/openrisc/include/asm/syscall.h
-@@ -25,6 +25,12 @@ syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
- 	return regs->orig_gpr11;
- }
- 
-+static inline void
-+syscall_set_nr(struct task_struct *task, struct pt_regs *regs, int nr)
-+{
-+	regs->orig_gpr11 = nr;
-+}
-+
- static inline void
- syscall_rollback(struct task_struct *task, struct pt_regs *regs)
- {
-diff --git a/arch/parisc/include/asm/syscall.h b/arch/parisc/include/asm/syscall.h
-index b146d0ae4c77..c11222798ab2 100644
---- a/arch/parisc/include/asm/syscall.h
-+++ b/arch/parisc/include/asm/syscall.h
-@@ -17,6 +17,13 @@ static inline long syscall_get_nr(struct task_struct *tsk,
- 	return regs->gr[20];
- }
- 
-+static inline void syscall_set_nr(struct task_struct *tsk,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	regs->gr[20] = nr;
-+}
-+
- static inline void syscall_get_arguments(struct task_struct *tsk,
- 					 struct pt_regs *regs,
- 					 unsigned long *args)
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 521f279e6b33..7505dcfed247 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -39,6 +39,16 @@ static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
- 		return -1;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task, struct pt_regs *regs, int nr)
-+{
-+	/*
-+	 * Unlike syscall_get_nr(), syscall_set_nr() can be called only when
-+	 * the target task is stopped for tracing on entering syscall, so
-+	 * there is no need to have the same check syscall_get_nr() has.
-+	 */
-+	regs->gpr[0] = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/riscv/include/asm/syscall.h b/arch/riscv/include/asm/syscall.h
-index 8d389ba995c8..a5281cdf2b10 100644
---- a/arch/riscv/include/asm/syscall.h
-+++ b/arch/riscv/include/asm/syscall.h
-@@ -30,6 +30,13 @@ static inline int syscall_get_nr(struct task_struct *task,
- 	return regs->a7;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	regs->a7 = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/s390/include/asm/syscall.h b/arch/s390/include/asm/syscall.h
-index b3dd883699e7..12cd0c60c07b 100644
---- a/arch/s390/include/asm/syscall.h
-+++ b/arch/s390/include/asm/syscall.h
-@@ -24,6 +24,18 @@ static inline long syscall_get_nr(struct task_struct *task,
- 		(regs->int_code & 0xffff) : -1;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	/*
-+	 * Unlike syscall_get_nr(), syscall_set_nr() can be called only when
-+	 * the target task is stopped for tracing on entering syscall, so
-+	 * there is no need to have the same check syscall_get_nr() has.
-+	 */
-+	regs->int_code = (regs->int_code & ~0xffff) | (nr & 0xffff);
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/sh/include/asm/syscall_32.h b/arch/sh/include/asm/syscall_32.h
-index cb51a7528384..7027d87d901d 100644
---- a/arch/sh/include/asm/syscall_32.h
-+++ b/arch/sh/include/asm/syscall_32.h
-@@ -15,6 +15,18 @@ static inline long syscall_get_nr(struct task_struct *task,
- 	return (regs->tra >= 0) ? regs->regs[3] : -1L;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	/*
-+	 * Unlike syscall_get_nr(), syscall_set_nr() can be called only when
-+	 * the target task is stopped for tracing on entering syscall, so
-+	 * there is no need to have the same check syscall_get_nr() has.
-+	 */
-+	regs->regs[3] = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/sparc/include/asm/syscall.h b/arch/sparc/include/asm/syscall.h
-index 62a5a78804c4..b0233924d323 100644
---- a/arch/sparc/include/asm/syscall.h
-+++ b/arch/sparc/include/asm/syscall.h
-@@ -25,6 +25,18 @@ static inline long syscall_get_nr(struct task_struct *task,
- 	return (syscall_p ? regs->u_regs[UREG_G1] : -1L);
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	/*
-+	 * Unlike syscall_get_nr(), syscall_set_nr() can be called only when
-+	 * the target task is stopped for tracing on entering syscall, so
-+	 * there is no need to have the same check syscall_get_nr() has.
-+	 */
-+	regs->u_regs[UREG_G1] = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/um/include/asm/syscall-generic.h b/arch/um/include/asm/syscall-generic.h
-index 2984feb9d576..bcd73bcfe577 100644
---- a/arch/um/include/asm/syscall-generic.h
-+++ b/arch/um/include/asm/syscall-generic.h
-@@ -21,6 +21,11 @@ static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
- 	return PT_REGS_SYSCALL_NR(regs);
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task, struct pt_regs *regs, int nr)
-+{
-+	PT_REGS_SYSCALL_NR(regs) = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/x86/include/asm/syscall.h b/arch/x86/include/asm/syscall.h
-index b9c249dd9e3d..c10dbb74cd00 100644
---- a/arch/x86/include/asm/syscall.h
-+++ b/arch/x86/include/asm/syscall.h
-@@ -38,6 +38,13 @@ static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
- 	return regs->orig_ax;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	regs->orig_ax = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/arch/xtensa/include/asm/syscall.h b/arch/xtensa/include/asm/syscall.h
-index f9a671cbf933..7db3b489c8ad 100644
---- a/arch/xtensa/include/asm/syscall.h
-+++ b/arch/xtensa/include/asm/syscall.h
-@@ -28,6 +28,13 @@ static inline long syscall_get_nr(struct task_struct *task,
- 	return regs->syscall;
- }
- 
-+static inline void syscall_set_nr(struct task_struct *task,
-+				  struct pt_regs *regs,
-+				  int nr)
-+{
-+	regs->syscall = nr;
-+}
-+
- static inline void syscall_rollback(struct task_struct *task,
- 				    struct pt_regs *regs)
- {
-diff --git a/include/asm-generic/syscall.h b/include/asm-generic/syscall.h
-index 0f7b9a493de7..e33fd4e783c1 100644
---- a/include/asm-generic/syscall.h
-+++ b/include/asm-generic/syscall.h
-@@ -37,6 +37,20 @@ struct pt_regs;
-  */
- int syscall_get_nr(struct task_struct *task, struct pt_regs *regs);
- 
-+/**
-+ * syscall_set_nr - change the system call a task is executing
-+ * @task:	task of interest, must be blocked
-+ * @regs:	task_pt_regs() of @task
-+ * @nr:		system call number
-+ *
-+ * Changes the system call number @task is about to execute.
-+ *
-+ * It's only valid to call this when @task is stopped for tracing on
-+ * entry to a system call, due to %SYSCALL_WORK_SYSCALL_TRACE or
-+ * %SYSCALL_WORK_SYSCALL_AUDIT.
-+ */
-+void syscall_set_nr(struct task_struct *task, struct pt_regs *regs, int nr);
-+
- /**
-  * syscall_rollback - roll back registers after an aborted system call
-  * @task:	task of interest, must be in system call exit tracing
--- 
-ldv
+Why adding 'specific' in the name ? Prefixing a function name with arch_ 
+is usually enough to denote an architecture specific function.
+
+>   struct hstate *size_to_hstate(unsigned long size);
+>   
+>   #ifndef HUGE_MAX_HSTATE
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index 32ebde9039e2..183e8d0c2fb4 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -61,7 +61,7 @@ static struct cma *hugetlb_cma[MAX_NUMNODES];
+>   static unsigned long hugetlb_cma_size_in_node[MAX_NUMNODES] __initdata;
+>   #endif
+>   static bool hugetlb_cma_only;
+> -static unsigned long hugetlb_cma_size __initdata;
+> +static unsigned long hugetlb_cma_size;
+
+Why remove __initdata ? As far as I can see it is used only in 
+hugetlb_early_cma() and hugetlb_hstate_alloc_pages() which are __init 
+functions.
+
+>   
+>   __initdata struct list_head huge_boot_pages[MAX_NUMNODES];
+>   __initdata unsigned long hstate_boot_nrinvalid[HUGE_MAX_HSTATE];
+> @@ -132,8 +132,10 @@ static void hugetlb_free_folio(struct folio *folio)
+>   #ifdef CONFIG_CMA
+>   	int nid = folio_nid(folio);
+>   
+> -	if (cma_free_folio(hugetlb_cma[nid], folio))
+> +	if (folio_test_hugetlb_cma(folio)) {
+> +		WARN_ON(!cma_free_folio(hugetlb_cma[nid], folio));
+
+Is that WARN_ON() needed ? See 
+https://docs.kernel.org/process/coding-style.html#do-not-crash-the-kernel
+
+
+>   		return;
+> +	}
+>   #endif
+>   	folio_put(folio);
+>   }
+> @@ -1509,6 +1511,9 @@ static struct folio *alloc_gigantic_folio(struct hstate *h, gfp_t gfp_mask,
+>   					break;
+>   			}
+>   		}
+> +
+> +		if (folio)
+> +			folio_set_hugetlb_cma(folio);
+>   	}
+>   #endif
+>   	if (!folio) {
+> @@ -3175,6 +3180,63 @@ struct folio *alloc_hugetlb_folio(struct vm_area_struct *vma,
+>   	return ERR_PTR(-ENOSPC);
+>   }
+>   
+> +/*
+> + * Some architectures do their own bootmem allocation, so they can't use
+> + * early CMA allocation. So, allow for this function to be redefined.
+> + */
+> +bool __init __attribute((weak))
+
+Can't you use __weak ?
+
+By the way, do we really need a weak function here ? Can't it be a 
+static inline helper that gets waived by a macro defined by the arch, 
+something like:
+
+#ifndef arch_huge_bootmem_alloc
+static inline arch_huge_bootmem_alloc(struct hstate *h)
+{
+	return false;
+}
+#endif
+
+Then powerpc does:
+
+#define arch_huge_bootmem_alloc arch_huge_bootmem_alloc
+static inline arch_huge_bootmem_alloc(struct hstate *h)
+{
+	return (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled());
+}
+
+
+But why is struct hstate *h parameter needed ? Seems like noone uses it.
+
+> +arch_specific_huge_bootmem_alloc(struct hstate *h)
+> +{
+> +	return false;
+> +}
+> +
+> +static bool __init hugetlb_early_cma(struct hstate *h)
+> +{
+> +	if (arch_specific_huge_bootmem_alloc(h))
+> +		return false;
+> +
+> +	return (hstate_is_gigantic(h) && hugetlb_cma_size && hugetlb_cma_only);
+> +}
+> +
+> +static __init void *alloc_bootmem(struct hstate *h, int nid)
+> +{
+> +	struct huge_bootmem_page *m;
+> +	unsigned long flags;
+> +	struct cma *cma;
+> +
+> +#ifdef CONFIG_CMA
+
+  #ifdefs in C files should be avoided, see 
+https://docs.kernel.org/process/coding-style.html#conditional-compilation
+
+> +	if (hugetlb_early_cma(h)) {
+> +		flags = HUGE_BOOTMEM_CMA;
+> +		cma = hugetlb_cma[nid];
+> +		m = cma_reserve_early(cma, huge_page_size(h));
+> +	} else
+> +#endif
+
+This kind of if/else construct in uggly, should be avoided.
+
+> +	{
+> +		flags = 0;
+> +		cma = NULL;
+> +		m = memblock_alloc_try_nid_raw(huge_page_size(h),
+> +			huge_page_size(h), 0, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
+> +	}
+> +
+> +	if (m) {
+> +		/*
+> +		 * Use the beginning of the huge page to store the
+> +		 * huge_bootmem_page struct (until gather_bootmem
+> +		 * puts them into the mem_map).
+> +		 *
+> +		 * Put them into a private list first because mem_map
+> +		 * is not up yet.
+> +		 */
+> +		INIT_LIST_HEAD(&m->list);
+> +		list_add(&m->list, &huge_boot_pages[nid]);
+> +		m->hstate = h;
+> +		m->flags = flags;
+> +		m->cma = cma;
+> +	}
+> +
+> +	return m;
+> +}
+> +
+>   int alloc_bootmem_huge_page(struct hstate *h, int nid)
+>   	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
+>   int __alloc_bootmem_huge_page(struct hstate *h, int nid)
+> @@ -3184,17 +3246,14 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
+>   
+>   	/* do node specific alloc */
+>   	if (nid != NUMA_NO_NODE) {
+> -		m = memblock_alloc_try_nid_raw(huge_page_size(h), huge_page_size(h),
+> -				0, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
+> +		m = alloc_bootmem(h, node);
+>   		if (!m)
+>   			return 0;
+>   		goto found;
+>   	}
+>   	/* allocate from next node when distributing huge pages */
+>   	for_each_node_mask_to_alloc(&h->next_nid_to_alloc, nr_nodes, node, &node_states[N_ONLINE]) {
+> -		m = memblock_alloc_try_nid_raw(
+> -				huge_page_size(h), huge_page_size(h),
+> -				0, MEMBLOCK_ALLOC_ACCESSIBLE, node);
+> +		m = alloc_bootmem(h, node);
+>   		if (m)
+>   			break;
+>   	}
+> @@ -3203,7 +3262,6 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
+>   		return 0;
+>   
+>   found:
+> -
+>   	/*
+>   	 * Only initialize the head struct page in memmap_init_reserved_pages,
+>   	 * rest of the struct pages will be initialized by the HugeTLB
+> @@ -3213,18 +3271,6 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
+>   	 */
+>   	memblock_reserved_mark_noinit(virt_to_phys((void *)m + PAGE_SIZE),
+>   		huge_page_size(h) - PAGE_SIZE);
+> -	/*
+> -	 * Use the beginning of the huge page to store the
+> -	 * huge_bootmem_page struct (until gather_bootmem
+> -	 * puts them into the mem_map).
+> -	 *
+> -	 * Put them into a private list first because mem_map
+> -	 * is not up yet.
+> -	 */
+> -	INIT_LIST_HEAD(&m->list);
+> -	list_add(&m->list, &huge_boot_pages[node]);
+> -	m->hstate = h;
+> -	m->flags = 0;
+>   	return 1;
+>   }
+>   
+> @@ -3265,13 +3311,25 @@ static void __init hugetlb_folio_init_vmemmap(struct folio *folio,
+>   	prep_compound_head((struct page *)folio, huge_page_order(h));
+>   }
+>   
+> +static bool __init hugetlb_bootmem_page_prehvo(struct huge_bootmem_page *m)
+> +{
+> +	return (m->flags & HUGE_BOOTMEM_HVO);
+
+Parenthesis are superflous
+
+> +}
+> +
+> +static bool __init hugetlb_bootmem_page_earlycma(struct huge_bootmem_page *m)
+> +{
+> +	return (m->flags & HUGE_BOOTMEM_CMA);
+
+Parenthesis are superflous
+
+> +}
+> +
+>   /*
+>    * memblock-allocated pageblocks might not have the migrate type set
+>    * if marked with the 'noinit' flag. Set it to the default (MIGRATE_MOVABLE)
+> - * here.
+> + * here, or MIGRATE_CMA if this was a page allocated through an early CMA
+> + * reservation.
+>    *
+> - * Note that this will not write the page struct, it is ok (and necessary)
+> - * to do this on vmemmap optimized folios.
+> + * In case of vmemmap optimized folios, the tail vmemmap pages are mapped
+> + * read-only, but that's ok - for sparse vmemmap this does not write to
+> + * the page structure.
+>    */
+>   static void __init hugetlb_bootmem_init_migratetype(struct folio *folio,
+>   							  struct hstate *h)
+> @@ -3280,9 +3338,13 @@ static void __init hugetlb_bootmem_init_migratetype(struct folio *folio,
+>   
+>   	WARN_ON_ONCE(!pageblock_aligned(folio_pfn(folio)));
+>   
+> -	for (i = 0; i < nr_pages; i += pageblock_nr_pages)
+> -		set_pageblock_migratetype(folio_page(folio, i),
+> +	for (i = 0; i < nr_pages; i += pageblock_nr_pages) {
+> +		if (folio_test_hugetlb_cma(folio))
+> +			init_cma_pageblock(folio_page(folio, i));
+> +		else
+> +			set_pageblock_migratetype(folio_page(folio, i),
+>   					  MIGRATE_MOVABLE);
+> +	}
+>   }
+>   
+>   static void __init prep_and_add_bootmem_folios(struct hstate *h,
+> @@ -3319,7 +3381,7 @@ bool __init hugetlb_bootmem_page_zones_valid(int nid,
+>   					     struct huge_bootmem_page *m)
+>   {
+>   	unsigned long start_pfn;
+> -	bool valid;
+> +	bool valid = false;
+
+Why do you need that, I can't see any path to reach out: without setting 
+'valid'.
+
+>   
+>   	if (m->flags & HUGE_BOOTMEM_ZONES_VALID) {
+>   		/*
+> @@ -3328,10 +3390,16 @@ bool __init hugetlb_bootmem_page_zones_valid(int nid,
+>   		return true;
+>   	}
+>   
+> +	if (hugetlb_bootmem_page_earlycma(m)) {
+> +		valid = cma_validate_zones(m->cma);
+> +		goto out;
+> +	}
+> +
+>   	start_pfn = virt_to_phys(m) >> PAGE_SHIFT;
+>   
+>   	valid = !pfn_range_intersects_zones(nid, start_pfn,
+>   			pages_per_huge_page(m->hstate));
+> +out:
+>   	if (!valid)
+>   		hstate_boot_nrinvalid[hstate_index(m->hstate)]++;
+>   
+> @@ -3360,11 +3428,6 @@ static void __init hugetlb_bootmem_free_invalid_page(int nid, struct page *page,
+>   	}
+>   }
+>   
+> -static bool __init hugetlb_bootmem_page_prehvo(struct huge_bootmem_page *m)
+> -{
+> -	return (m->flags & HUGE_BOOTMEM_HVO);
+> -}
+> -
+>   /*
+>    * Put bootmem huge pages into the standard lists after mem_map is up.
+>    * Note: This only applies to gigantic (order > MAX_PAGE_ORDER) pages.
+> @@ -3414,6 +3477,9 @@ static void __init gather_bootmem_prealloc_node(unsigned long nid)
+>   			 */
+>   			folio_set_hugetlb_vmemmap_optimized(folio);
+>   
+> +		if (hugetlb_bootmem_page_earlycma(m))
+> +			folio_set_hugetlb_cma(folio);
+> +
+>   		list_add(&folio->lru, &folio_list);
+>   
+>   		/*
+> @@ -3606,8 +3672,11 @@ static void __init hugetlb_hstate_alloc_pages(struct hstate *h)
+>   {
+>   	unsigned long allocated;
+>   
+> -	/* skip gigantic hugepages allocation if hugetlb_cma enabled */
+> -	if (hstate_is_gigantic(h) && hugetlb_cma_size) {
+> +	/*
+> +	 * Skip gigantic hugepages allocation if early CMA
+> +	 * reservations are not available.
+> +	 */
+> +	if (hstate_is_gigantic(h) && hugetlb_cma_size && !hugetlb_early_cma(h)) {
+>   		pr_warn_once("HugeTLB: hugetlb_cma is enabled, skip boot time allocation\n");
+>   		return;
+>   	}
+
 
