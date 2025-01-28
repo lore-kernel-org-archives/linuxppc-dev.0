@@ -1,50 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-5634-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5635-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 069DDC02190
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 15:50:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83EBCC0218A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 15:52:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8r3471zz305P;
-	Wed, 29 Jan 2025 02:50:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738079411;
-	cv=none; b=LTDRbdUJqZJwIiitXrF94+5lW7kMPXpd+6nrr9BT1jLd0uXuQD/Pw0gNQKrYBKiuv1x5AaCTsVnUhCpiizmhsd6Ajt+XsNOFzadJlgBqY9UmDsN6w1wUUQjN+G2Gs8VbtYcnqK5mm2w9LyxHHSNWHtnIqTHCg6UQztB75tM/JP/8HvlZFGe4lnr5JQrcOJZIfAFc5Xb1pi4S4uoWf3h4LKNKJv47c2B+QCrPRLBwSNFwXHXpUQIuV9uvZqHmiD5SIShO7aJkNsiHpO4nt2Dbd6sITdIOaARX05/DsfcprarrSre0/b+QLLU9RuMO3biSNreaIzbJ/fWgFB2SkVWQNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8tJ0yLJz303d;
+	Wed, 29 Jan 2025 02:52:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=194.107.17.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738079528;
+	cv=none; b=mChq0wi4eTxTd4xO5hFeruUOLI8mPPr0GG5tlAPwdX4I5ZPgzL2BYC/0GKKz6cCYedA2qV6M4mPqaN+aButZn/mjwQ6NPuGWss6JfuPb8bcKW1qFNHK7mxhHR1bIy+bFlO/wKkX3Eww8RDvJ8oS6R9o1v4SyLG4z/QszZZxpuA3IxE64QEc4SwK/SpqIlGR+JoqLD2xhvYd0Cueb+BZvzTdFE9lU5tEU/8viGOLWkLW2O67u9lIjxUT05DUrayLhOKoT3MZwp5q+/gE2NTw75xgpj5KxdJR8xrVHzlDVF2HNBh9uBkDzSnKcbAwW5AexPC4DRQHttl/EvWjllt8t4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738079411; c=relaxed/relaxed;
-	bh=LhhA66jpS7dJPWx8LHdhKcQMyzgSb2ZbKzgpTAwGNwY=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=Yoi31dK/0zyNo/O72vyVefC3CDJWhpSDpNcMGxEw5zYmnJRbDhvlFfhtilVRLmsZBTnZU3z2259MeRW9MmA/aTWCXmdHXP7kfmPilVQlny15OeVDmXMGS15gNw8qsiVoNSaNOjfSu/NACOwQVo/Kvs8Aw2t3F+kHucHdBwfQ3bsKBipxcyBrCDddj5353Zol8s1PybLbWueyPAnwl1S5qwD/bzFJuruJEgS/7eK6Kc+NKJdJJmdyzA5t7NH8Jq/TgtctN9vOFSwUq2I4TPIRTQUMRc8sMsGajiq23HyDBuiLxLc8m+iWE88s+yJpOK2IYiVW41WXRPxCJ0Nu0N7ICg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8r25hkZz2yXY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 02:50:10 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Yj8Tw0lR4z9sRr;
-	Tue, 28 Jan 2025 16:34:28 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id kzicH7zXDy_J; Tue, 28 Jan 2025 16:34:28 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Yj8Tv74pxz9sPd;
-	Tue, 28 Jan 2025 16:34:27 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E334E8B76C;
-	Tue, 28 Jan 2025 16:34:27 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id h_r1tQnJyA_6; Tue, 28 Jan 2025 16:34:27 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7F88D8B763;
-	Tue, 28 Jan 2025 16:34:27 +0100 (CET)
-Message-ID: <b8496571-6c44-40ff-b03b-799fb1764447@csgroup.eu>
-Date: Tue, 28 Jan 2025 16:34:27 +0100
+	t=1738079528; c=relaxed/relaxed;
+	bh=qUhZ0MeyaRKKEkjfoMT6067wLOGUHFrATYFCRoEfI3I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=o2tYDECW2S3J0YHrvkrConW4+Qy4rlZ2fRovgITrQkb4A3YIrC+HCrjEoqyEl2+oJwGXPm7CFdKqm5++7RE7CWWtr+0rqLzIPVHCQFN+ltOD+1sLKImJMCByofDb0aLCCm1d/cQze1iabEOBfcxGY/EGYLSZznznlBRyHLIylMOcQnrCcrm8tzW0NChkYaCEi8KmzuGMHmAVep+f7dANzIDdZN1+QJmSd9lmpyqKvLw725ZbDOvYqG3l0ecsK/KbngBM9eKOdBhIqigmjB14JdkVXKJF4gNkkctXRnPGCjlrSD+EOsh9xzlO2B7XmbOPI+FOrgrKtnSyZmDr9lf8Sg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io; spf=pass (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org) smtp.mailfrom=altlinux.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=altlinux.org (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org)
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8tG6G8Tz303K
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 02:52:04 +1100 (AEDT)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+	by vmicros1.altlinux.org (Postfix) with ESMTP id D345D72C8CC;
+	Tue, 28 Jan 2025 18:52:01 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+	id A0ECE7CCB3A; Tue, 28 Jan 2025 17:52:01 +0200 (IST)
+Date: Tue, 28 Jan 2025 17:52:01 +0200
+From: "Dmitry V. Levin" <ldv@strace.io>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+	Alexey Gladkov <legion@kernel.org>,
+	Eugene Syromyatnikov <evgsyr@gmail.com>,
+	Oleg Nesterov <oleg@redhat.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+	strace-devel@lists.strace.io, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] powerpc: properly negate error in
+ syscall_set_return_value() in sc case
+Message-ID: <20250128155201.GA11869@strace.io>
+References: <20250127181322.GA1373@strace.io>
+ <d0b7849d-2ec3-4652-8b60-98ae63316ded@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,64 +56,165 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc: Remove eieio in _memcpy_fromio
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Julian Vetter <julian@outer-limits.org>, Arnd Bergmann <arnd@arndb.de>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20250128135711.1625747-1-julian@outer-limits.org>
- <81ee3098-1e43-4b88-975a-d223bc2338e8@csgroup.eu>
- <b335d035-07a4-457d-99ea-8b7597782fd9@outer-limits.org>
- <e785c98f-4bf9-48ab-a102-dc531623b378@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <e785c98f-4bf9-48ab-a102-dc531623b378@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <d0b7849d-2ec3-4652-8b60-98ae63316ded@csgroup.eu>
 
-
-
-Le 28/01/2025 à 16:24, Christophe Leroy a écrit :
+On Tue, Jan 28, 2025 at 03:59:29PM +0100, Christophe Leroy wrote:
+> Le 27/01/2025 à 19:13, Dmitry V. Levin a écrit :
+> > According to the Power Architecture Linux system call ABI documented in
+> > [1], when the syscall is made with the sc instruction, both a value and an
+> > error condition are returned, where r3 register contains the return value,
+> > and cr0.SO bit specifies the error condition.  When cr0.SO is clear, the
+> > syscall succeeded and r3 is the return value.  When cr0.SO is set, the
+> > syscall failed and r3 is the error value.  This syscall return semantics
+> > was implemented from the very beginning of Power Architecture on Linux,
+> > and syscall tracers and debuggers like strace that read or modify syscall
+> > return information also rely on this ABI.
 > 
+> I see a quite similar ABI on microblaze, mips, nios2 and sparc. Do they 
+> behave all the same ?
+
+Yes, also on alpha.  I don't think microblaze should be in this list,
+though.
+
+> > r3 and cr0.SO are exposed directly via struct pt_regs where gpr[3] and
+> > (ccr & 0x10000000) correspond to r3 and cr0.SO, respectively.
+> > For example, here is an excerpt from check_syscall_restart() that assigns
+> > these members of struct pt_regs:
+> >          regs->result = -EINTR;
+> >          regs->gpr[3] = EINTR;
+> >          regs->ccr |= 0x10000000;
+> > In this example, the semantics of negative ERRORCODE that's being used
+> > virtually everywhere in generic kernel code is translated to powerpc sc
+> > syscall return ABI which uses positive ERRORCODE and cr0.SO bit.
 > 
-> Le 28/01/2025 à 16:07, Julian Vetter a écrit :
->> [Vous ne recevez pas souvent de courriers de julian@outer-limits.org. 
->> Découvrez pourquoi ceci est important à https://aka.ms/ 
->> LearnAboutSenderIdentification ]
->>
->> On 1/28/25 15:16, Christophe Leroy wrote:
->>>
->>>
->>> Le 28/01/2025 à 14:57, Julian Vetter a écrit :
->>>> Remove the eieio() calls in _memcpy_fromio, to bring its implementation
->>>> closer to the one from lib/iomem_copy.c. These eieio() calls don't seem
->>>> to be necessary, because the _memcpy_toio completely omits them. Also
->>>> the legacy code from ppc was not doing them.
->>>
->>> What do you mean exactly by "legacy code" ?
->>>
->>> As far as I can see they were already there before commit 68a64357d15a
->>> ("[POWERPC] Merge 32 and 64 bits asm-powerpc/io.h"):
->>>
->>
->> With 'ppc' I was refering to 'include/asm-ppc/io.h'. But you're right,
->> when going back a bit, in the 'include/asm-powerpc/io.h' there are two
->> cases, one (eeh_memcpy_fromio) which does the the 'eieio', and a second,
->> i.e., 'iSeries_memcpy_fromio' which does a byte-wise copy. But in the
->> ppc code ('include/asm-ppc/io.h') there is a simple memcpy. I was
->> referring to this one. But my description is not very clear. Sorry for 
->> that.
+> At what point are they exposed really ? At what point do they need to 
+> comply with the ABI ?
+
+That's a good question.  Of course when returning to user space, but,
+besides that, at syscall exit tracepoint (trace_sys_exit), ptrace syscall
+exit stop (ptrace_report_syscall_exit), and PTRACE_EVENT_SECCOMP stop
+(__secure_computing).  There could be other points where this is exposed.
+For example, on many architectures the tracer can specify syscall error
+return value also at ptrace syscall entry stop
+(ptrace_report_syscall_entry), but powerpc does not implement this.
+
+> I'm also a bit lost between regs->orig_r3, regs->gpr[3] and regs->result.
+
+I'm not aware of the role of regs->result as it's not in struct user_pt_regs
+and therefore is not exposed to user space.
+
+> The comment added by commit 1b1a3702a65c ("powerpc: Don't negate error 
+> in syscall_set_return_value()") says that CCR needs to be set because of 
+> signal code. But signal code is invoked by syscall_exit_prepare() 
+> through call to interrupt_exit_user_prepare_main() after setting CR[SO] 
+> and negating syscall result.
+
+I hope Michael can comment on this.
+
+> > Also, r3 and cr0.SO are exposed indirectly via helpers.
+> > For example, here is an excerpt from syscall_get_error():
+> >          /*
+> >           * If the system call failed,
+> >           * regs->gpr[3] contains a positive ERRORCODE.
+> >           */
+> >          return (regs->ccr & 0x10000000UL) ? -regs->gpr[3] : 0;
+> > and here is another example, from regs_return_value():
+> >          if (is_syscall_success(regs))
+> >                  return regs->gpr[3];
+> >          else
+> >                  return -regs->gpr[3];
+> > In these examples, the powerpc sc syscall return ABI which uses positive
+> > ERRORCODE and cr0.SO bit is translated to the semantics of negative
+> > ERRORCODE that's being used virtually everywhere in generic kernel code.
+> > 
+> > Up to a certain point in time the kernel managed to implement the powerpc
+> > sc syscall return ABI in all cases where struct pt_regs was exposed to user
+> > space.
+> > 
+> > The situation changed when SECCOMP_RET_TRACE support was introduced.
+> > At this point the -ERRORCODE semantics that was used under the hood to
+> > implement seccomp on powerpc became exposed to user space.  The tracer
+> > handling PTRACE_EVENT_SECCOMP is not just able to observe -ENOSYS in gpr[3]
+> > - this is relatively harmless as at this stage there is no syscall return
+> > yet so the powerpc sc syscall return ABI does not apply.  What's important
+> > is that the tracer can change the syscall number to -1 thus making the
+> > syscall fail, and at this point the tracer is also able to specify the
+> > error value.  This has to be done in accordance with the syscall return
+> > ABI, however, the current implementation of do_seccomp() supports both the
+> > generic kernel -ERRORCODE return value ABI and the powerpc sc syscall
+> > return ABI, thanks to syscall_exit_prepare() that converts the former to
+> > the latter.  Consequently, seccomp_bpf selftest passes both with and
+> > without this change.
+> > 
+> > Now comes the moment when PTRACE_SET_SYSCALL_INFO is going to be
+> > introduced.  PTRACE_SET_SYSCALL_INFO is a generic ptrace API that
+> > complements PTRACE_GET_SYSCALL_INFO by letting the ptracer modify
+> > the details of the system calls the tracee is blocked in.
+> > 
+> > One of the helpers that have to be used to implement
+> > PTRACE_SET_SYSCALL_INFO is syscall_set_return_value().
+> > This helper complements other two helpers, syscall_get_error() and
+> > syscall_get_return_value(), that are currently used to implement
+> > PTRACE_GET_SYSCALL_INFO on syscall return.  When syscall_set_return_value()
+> > is used to set an error code, the caller specifies it as a negative value
+> > in -ERRORCODE format.
+> > 
+> > Unfortunately, this does not work well on powerpc since commit 1b1a3702a65c
+> > ("powerpc: Don't negate error in syscall_set_return_value()") because
+> > syscall_set_return_value() does not follow the powerpc sc syscall return
+> > ABI:
+> > 	/*
+> > 	 * In the general case it's not obvious that we must deal with
+> > 	 * CCR here, as the syscall exit path will also do that for us.
+> > 	 * However there are some places, eg. the signal code, which
+> > 	 * check ccr to decide if the value in r3 is actually an error.
+> > 	 */
+> > 	if (error) {
+> > 		regs->ccr |= 0x10000000L;
+> > 		regs->gpr[3] = error;
+> > 	} else {
+> > 		regs->ccr &= ~0x10000000L;
+> > 		regs->gpr[3] = val;
+> > 	}
+> > 
+> > The reason why this syscall_set_return_value() implementation was able to
+> > get away with violating the powerpc sc syscall return ABI is the following:
+> > Up to now, syscall_set_return_value() on powerpc could be called only from
+> > do_syscall_trace_enter() via do_seccomp(), there was no way it could be
+> > called from do_syscall_trace_leave() which is the point where tracers on
+> > syscall return are activated and the powerpc sc syscall return ABI has
+> > to be respected.
+> > 
+> > Introduction of PTRACE_SET_SYSCALL_INFO necessitates a change of
+> > syscall_set_return_value() to comply with the powerpc sc syscall return
+> > ABI.  Without the change, the upcoming ptrace/set_syscall_info selftest
+> > fails with the following diagnostics:
+> > 
+> >    # set_syscall_info.c:119:set_syscall_info:Expected exp_exit->rval (-38) == info->exit.rval (38)
+> >    # set_syscall_info.c:120:set_syscall_info:wait #4: PTRACE_GET_SYSCALL_INFO #2: exit stop mismatch
+> > 
+> > Note that since backwards compatibility with the current implementation has
+> > to be provided, the kernel has to continue supporting simultaneously both
+> > the generic kernel -ERRORCODE return value ABI and the powerpc sc syscall
+> > return ABI at least for PTRACE_EVENT_SECCOMP tracers.  Consequently, since
+> > the point of __secure_computing() invocation and up to the point of
+> > conversion in syscall_exit_prepare(), gpr[3] may be set according to either
+> > of these two ABIs.  An attempt to address code inconsistencies in syscall
+> > error return handling that were introduced as a side effect of the dual
+> > ABI support follows in a separate patch.
 > 
-> But then is your change still valid ? Isn't there some corner case that 
-> still need it ? Is it a valid argument that because memcpy_toio() 
-> doesn't need it memcpy_fromio() doesn't need it either ?
+> What do you mean by "backwards compatibility" here ? backwards 
+> compatibility applies only to userspace API doesn't it ? So if there was 
+> no way to trigger the problem previously, what does it mean ?
 
-I see that _insb(), _insw_ns() and _insl_ns() also have eieio() while 
-_outsb(), _outsw_ns() and _outsl_ns() don't. Why not change those as 
-well if you think eieio() is not needed ?
+As I wrote earlier, userspace tracers handling PTRACE_EVENT_SECCOMP
+are able to set gpr[3] to either -ERRORCODE or ERRORCODE (along with
+SO bit) for all these years, and both methods work up to now.
 
 
-
+-- 
+ldv
 
