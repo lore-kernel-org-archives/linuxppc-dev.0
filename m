@@ -1,49 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-5635-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83EBCC0218A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 15:52:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4567C02192
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 15:54:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8tJ0yLJz303d;
-	Wed, 29 Jan 2025 02:52:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=194.107.17.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738079528;
-	cv=none; b=mChq0wi4eTxTd4xO5hFeruUOLI8mPPr0GG5tlAPwdX4I5ZPgzL2BYC/0GKKz6cCYedA2qV6M4mPqaN+aButZn/mjwQ6NPuGWss6JfuPb8bcKW1qFNHK7mxhHR1bIy+bFlO/wKkX3Eww8RDvJ8oS6R9o1v4SyLG4z/QszZZxpuA3IxE64QEc4SwK/SpqIlGR+JoqLD2xhvYd0Cueb+BZvzTdFE9lU5tEU/8viGOLWkLW2O67u9lIjxUT05DUrayLhOKoT3MZwp5q+/gE2NTw75xgpj5KxdJR8xrVHzlDVF2HNBh9uBkDzSnKcbAwW5AexPC4DRQHttl/EvWjllt8t4A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8wX1hflz3048;
+	Wed, 29 Jan 2025 02:54:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738079644;
+	cv=none; b=eT8xndPjZRoG4sS+KXxZRHUW71Fev9JMh0G064yjvX+TDA65+hyKle3LFHdksb8bU2Xr7x98fJDKC9xmBhVDlhj6812TRqEQXjFE1hK90CBAzTXxxkLaLsvGO8OIVGb8loCvaYrfXZF/5TeGYL0wIIcHWZvueMDwF4BsmiliVgenIzDzBq6AhjWPdCzuS7ACC5aOSMe6h+e3kKr7qMEMYL5lHuWqgO5Zq9f/rAw6OPQ0yiigZvXMEfHuj2Ow6AdwW/2Z2QBXXRqWaQKRLOMiwGiNoA05Z5SQUB3f31eLGiOrhplGFSJ8JuCQO3gE+BchQeA7Jf6hW0lA3qgahK46/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738079528; c=relaxed/relaxed;
-	bh=qUhZ0MeyaRKKEkjfoMT6067wLOGUHFrATYFCRoEfI3I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=o2tYDECW2S3J0YHrvkrConW4+Qy4rlZ2fRovgITrQkb4A3YIrC+HCrjEoqyEl2+oJwGXPm7CFdKqm5++7RE7CWWtr+0rqLzIPVHCQFN+ltOD+1sLKImJMCByofDb0aLCCm1d/cQze1iabEOBfcxGY/EGYLSZznznlBRyHLIylMOcQnrCcrm8tzW0NChkYaCEi8KmzuGMHmAVep+f7dANzIDdZN1+QJmSd9lmpyqKvLw725ZbDOvYqG3l0ecsK/KbngBM9eKOdBhIqigmjB14JdkVXKJF4gNkkctXRnPGCjlrSD+EOsh9xzlO2B7XmbOPI+FOrgrKtnSyZmDr9lf8Sg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io; spf=pass (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org) smtp.mailfrom=altlinux.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=altlinux.org (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org)
-Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8tG6G8Tz303K
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 02:52:04 +1100 (AEDT)
-Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
-	by vmicros1.altlinux.org (Postfix) with ESMTP id D345D72C8CC;
-	Tue, 28 Jan 2025 18:52:01 +0300 (MSK)
-Received: by mua.local.altlinux.org (Postfix, from userid 508)
-	id A0ECE7CCB3A; Tue, 28 Jan 2025 17:52:01 +0200 (IST)
-Date: Tue, 28 Jan 2025 17:52:01 +0200
-From: "Dmitry V. Levin" <ldv@strace.io>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Alexey Gladkov <legion@kernel.org>,
-	Eugene Syromyatnikov <evgsyr@gmail.com>,
-	Oleg Nesterov <oleg@redhat.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>, linuxppc-dev@lists.ozlabs.org,
-	strace-devel@lists.strace.io, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] powerpc: properly negate error in
- syscall_set_return_value() in sc case
-Message-ID: <20250128155201.GA11869@strace.io>
-References: <20250127181322.GA1373@strace.io>
- <d0b7849d-2ec3-4652-8b60-98ae63316ded@csgroup.eu>
+	t=1738079644; c=relaxed/relaxed;
+	bh=yB6zDKaYttU4WZrMX99po3M771UWLAKUHeQTUDVdnE8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=GNiwUPtWKUdYkL1bgpyUmakxq/UemI8OW7UVpzIbTmu6dnEho/bXa0oUKurbjjFIH21Ne4QMUsptcIGdMZfWKh8abRLJvC512tWFEBmTxPCZUP1GWxfkiaUz93jtdre22SXI5SRXpd73QHFuWqY6Fkc2Q3RHVDgOZxd+0TB+Z2A27Ho3nri4cTErkH1F16BldN0yEIhsWzvWQngeloQVkWpXkXECMNQky8atyxMzG7ip4gKaZOOodZ49qrJxfv0+3fFp1n9LxmVIDnwNGcQIte0HAbzCTilEXKazq5FnuuiJo9T9qchQSCqd0478Yr2s+J6p7vmEmdfOrI8dYU8lIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lpZ/KsjZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=evgsyr@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lpZ/KsjZ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=evgsyr@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yj8wT5zWvz303K
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 02:54:01 +1100 (AEDT)
+Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-2ef760a1001so9985213a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2025 07:54:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1738079639; x=1738684439; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=yB6zDKaYttU4WZrMX99po3M771UWLAKUHeQTUDVdnE8=;
+        b=lpZ/KsjZAJeWlzBlIeka9dWfN2Ilzl6ODqUwujqaG3F6teja5bjuITu8iojKbid8ye
+         4CjR98NmZ9BLrNpUmZr+iMlw1JP7U4BO1pXL6O4vG+7WdxIZAuA5rXvEBD/bHXoLpHoC
+         boqhcYGIeioXt20NTcDUTgl0SfTl+Fd60+lpXXkUaQ5aylBsnzagebWKa3c99Z5+obqr
+         tlY6p9RV38IjrQlyMuoE2osY2UsQKC3QZg8pTlti1u0shJCiFkA7OGLJaBIfk2IpZVJ4
+         g2ivugvWfKsHbs9++53TorX7vCNqGbUDaHvaJa79nQ/SOyGulnVfFnjVTftNJAwzSrh/
+         HdxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738079639; x=1738684439;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=yB6zDKaYttU4WZrMX99po3M771UWLAKUHeQTUDVdnE8=;
+        b=FwUPZDwGWY3ZNZnVXKAQNJh0DN/ZueN2GRGqYR7RCRyaU/XQISx7ut3pkLAIHP2GWs
+         7E0Mz+FXCg8I2Otp2fQq7espVbiXjPnyvptdyiLJCPJ6M9YMmGxA++IQKv+flGr4BjN2
+         +q4dhrotU1vEq4N3FskDVnOfCiMad3ov9tJCy9ZhDz174TSaZ126YdoJpzQ0FjF55D8R
+         9HbN7IHb7koZ6PpqNwb6lzNgS3hUpEKeDg5UeR9EXM6OSpbW4vXvUhj1bAPFl4tPOsmg
+         7cwLfjR5Ii6TOvAmpTgFFrrILdzRURwQbgjJx3HNW8bfaBOhYy0miMKoPQattZdOviYR
+         /J0g==
+X-Forwarded-Encrypted: i=1; AJvYcCVcfYrlxmIJwhFj2dO+MULaChxkBgnWx4VOhSQFb6enbO8OacNUP/M9/OhJSb/iXyq8FXq5TLuCwAKAE4M=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz1Le1nu3imEbpNYdpOIfNe5jzA3LUTYNP7MWQpZFBdYvF/aCEd
+	MHFOXqBIsHCIyjZiFGpEvljMqSVqvSG5viwqh0ru4BhAP46Zq+pEYfKoREtFbAwj3vVp1C3Jh1+
+	nUuRLYa+JZzI8tsGgAW4oBLAVYWU=
+X-Gm-Gg: ASbGncubHGp6f/eR+fANgQuayR6w4gkAnbqvdKyanGMUP0dFACLNuQo3NK+JizkK+tH
+	lBuOWArj6sjaQY8Ji67oCcKfHn8EJIuoYi2WaXo2m350tw7m3Zsk9AgdrVTdJE68P+r44cu/i
+X-Google-Smtp-Source: AGHT+IGr9SsZB/12ctFPsu7VikJYTEFKRiPU5nFYkstvuzVx6dj2VqGeIoH4j8GAyQ/J9JH/30jEO1+XCNC22uRQJ4Q=
+X-Received: by 2002:a17:90b:2e4b:b0:2ea:9ccb:d1f4 with SMTP id
+ 98e67ed59e1d1-2f782afebd6mr78293670a91.0.1738079639188; Tue, 28 Jan 2025
+ 07:53:59 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,64 +77,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+References: <20250127181322.GA1373@strace.io> <d0b7849d-2ec3-4652-8b60-98ae63316ded@csgroup.eu>
 In-Reply-To: <d0b7849d-2ec3-4652-8b60-98ae63316ded@csgroup.eu>
+From: Eugene Syromyatnikov <evgsyr@gmail.com>
+Date: Tue, 28 Jan 2025 16:54:17 +0100
+X-Gm-Features: AWEUYZmtRC0_g2l3mL21UwYdgidPcwJX7tFWICwuZasHhVkyfmoyu2jp8ZeCrxk
+Message-ID: <CACGkJduXFvG=6EAJrpgq1y6ML2TciehWc1uUcNT45Dcu89wX4g@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powerpc: properly negate error in syscall_set_return_value()
+ in sc case
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: "Dmitry V. Levin" <ldv@strace.io>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Alexey Gladkov <legion@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Naveen N Rao <naveen@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
+	strace-devel@lists.strace.io, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jan 28, 2025 at 03:59:29PM +0100, Christophe Leroy wrote:
-> Le 27/01/2025 à 19:13, Dmitry V. Levin a écrit :
+On Tue, Jan 28, 2025 at 3:59=E2=80=AFPM Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+>
+>
+> Le 27/01/2025 =C3=A0 19:13, Dmitry V. Levin a =C3=A9crit :
 > > According to the Power Architecture Linux system call ABI documented in
-> > [1], when the syscall is made with the sc instruction, both a value and an
-> > error condition are returned, where r3 register contains the return value,
-> > and cr0.SO bit specifies the error condition.  When cr0.SO is clear, the
+> > [1], when the syscall is made with the sc instruction, both a value and=
+ an
+> > error condition are returned, where r3 register contains the return val=
+ue,
+> > and cr0.SO bit specifies the error condition.  When cr0.SO is clear, th=
+e
 > > syscall succeeded and r3 is the return value.  When cr0.SO is set, the
-> > syscall failed and r3 is the error value.  This syscall return semantics
+> > syscall failed and r3 is the error value.  This syscall return semantic=
+s
 > > was implemented from the very beginning of Power Architecture on Linux,
-> > and syscall tracers and debuggers like strace that read or modify syscall
+> > and syscall tracers and debuggers like strace that read or modify sysca=
+ll
 > > return information also rely on this ABI.
-> 
-> I see a quite similar ABI on microblaze, mips, nios2 and sparc. Do they 
+>
+> I see a quite similar ABI on microblaze, mips, nios2 and sparc. Do they
 > behave all the same ?
 
-Yes, also on alpha.  I don't think microblaze should be in this list,
-though.
+In terms of ABI, yes:
+https://gitlab.com/strace/strace/-/blob/master/src/linux/sparc/get_error.c
+https://gitlab.com/strace/strace/-/blob/master/src/linux/mips/get_error.c
+https://gitlab.com/strace/strace/-/blob/master/src/linux/nios2/get_error.c
+
+(cf. https://gitlab.com/strace/strace/-/blob/master/src/linux/powerpc/get_e=
+rror.c
+)
+
+I can't find microblaze SyscallV ABI, but at least both strace and
+glibc expect negated errno in r3:
+https://gitlab.com/strace/strace/-/blob/master/src/linux/microblaze/get_err=
+or.c
+https://sourceware.org/git/?p=3Dglibc.git;a=3Dblob;f=3Dsysdeps/unix/sysv/li=
+nux/microblaze/syscall.S;h=3D6ebf688d800e19c14a140f0cd5a0ba9344fa95a5;hb=3D=
+HEAD
 
 > > r3 and cr0.SO are exposed directly via struct pt_regs where gpr[3] and
 > > (ccr & 0x10000000) correspond to r3 and cr0.SO, respectively.
-> > For example, here is an excerpt from check_syscall_restart() that assigns
+> > For example, here is an excerpt from check_syscall_restart() that assig=
+ns
 > > these members of struct pt_regs:
-> >          regs->result = -EINTR;
-> >          regs->gpr[3] = EINTR;
-> >          regs->ccr |= 0x10000000;
+> >          regs->result =3D -EINTR;
+> >          regs->gpr[3] =3D EINTR;
+> >          regs->ccr |=3D 0x10000000;
 > > In this example, the semantics of negative ERRORCODE that's being used
 > > virtually everywhere in generic kernel code is translated to powerpc sc
 > > syscall return ABI which uses positive ERRORCODE and cr0.SO bit.
-> 
-> At what point are they exposed really ? At what point do they need to 
+>
+> At what point are they exposed really ? At what point do they need to
 > comply with the ABI ?
 
-That's a good question.  Of course when returning to user space, but,
-besides that, at syscall exit tracepoint (trace_sys_exit), ptrace syscall
-exit stop (ptrace_report_syscall_exit), and PTRACE_EVENT_SECCOMP stop
-(__secure_computing).  There could be other points where this is exposed.
-For example, on many architectures the tracer can specify syscall error
-return value also at ptrace syscall entry stop
-(ptrace_report_syscall_entry), but powerpc does not implement this.
+On ptrace stops via pt_regs, for example?
 
 > I'm also a bit lost between regs->orig_r3, regs->gpr[3] and regs->result.
-
-I'm not aware of the role of regs->result as it's not in struct user_pt_regs
-and therefore is not exposed to user space.
-
-> The comment added by commit 1b1a3702a65c ("powerpc: Don't negate error 
-> in syscall_set_return_value()") says that CCR needs to be set because of 
-> signal code. But signal code is invoked by syscall_exit_prepare() 
-> through call to interrupt_exit_user_prepare_main() after setting CR[SO] 
+>
+> The comment added by commit 1b1a3702a65c ("powerpc: Don't negate error
+> in syscall_set_return_value()") says that CCR needs to be set because of
+> signal code. But signal code is invoked by syscall_exit_prepare()
+> through call to interrupt_exit_user_prepare_main() after setting CR[SO]
 > and negating syscall result.
-
-I hope Michael can comment on this.
-
+>
+> >
 > > Also, r3 and cr0.SO are exposed indirectly via helpers.
 > > For example, here is an excerpt from syscall_get_error():
 > >          /*
@@ -126,95 +172,155 @@ I hope Michael can comment on this.
 > >                  return regs->gpr[3];
 > >          else
 > >                  return -regs->gpr[3];
-> > In these examples, the powerpc sc syscall return ABI which uses positive
+> > In these examples, the powerpc sc syscall return ABI which uses positiv=
+e
 > > ERRORCODE and cr0.SO bit is translated to the semantics of negative
-> > ERRORCODE that's being used virtually everywhere in generic kernel code.
-> > 
-> > Up to a certain point in time the kernel managed to implement the powerpc
-> > sc syscall return ABI in all cases where struct pt_regs was exposed to user
+> > ERRORCODE that's being used virtually everywhere in generic kernel code=
+.
+> >
+> > Up to a certain point in time the kernel managed to implement the power=
+pc
+> > sc syscall return ABI in all cases where struct pt_regs was exposed to =
+user
 > > space.
-> > 
+> >
 > > The situation changed when SECCOMP_RET_TRACE support was introduced.
 > > At this point the -ERRORCODE semantics that was used under the hood to
 > > implement seccomp on powerpc became exposed to user space.  The tracer
-> > handling PTRACE_EVENT_SECCOMP is not just able to observe -ENOSYS in gpr[3]
-> > - this is relatively harmless as at this stage there is no syscall return
-> > yet so the powerpc sc syscall return ABI does not apply.  What's important
+> > handling PTRACE_EVENT_SECCOMP is not just able to observe -ENOSYS in gp=
+r[3]
+> > - this is relatively harmless as at this stage there is no syscall retu=
+rn
+> > yet so the powerpc sc syscall return ABI does not apply.  What's import=
+ant
 > > is that the tracer can change the syscall number to -1 thus making the
 > > syscall fail, and at this point the tracer is also able to specify the
 > > error value.  This has to be done in accordance with the syscall return
-> > ABI, however, the current implementation of do_seccomp() supports both the
+> > ABI, however, the current implementation of do_seccomp() supports both =
+the
 > > generic kernel -ERRORCODE return value ABI and the powerpc sc syscall
-> > return ABI, thanks to syscall_exit_prepare() that converts the former to
+> > return ABI, thanks to syscall_exit_prepare() that converts the former t=
+o
 > > the latter.  Consequently, seccomp_bpf selftest passes both with and
 > > without this change.
-> > 
+> >
 > > Now comes the moment when PTRACE_SET_SYSCALL_INFO is going to be
 > > introduced.  PTRACE_SET_SYSCALL_INFO is a generic ptrace API that
 > > complements PTRACE_GET_SYSCALL_INFO by letting the ptracer modify
 > > the details of the system calls the tracee is blocked in.
-> > 
+> >
 > > One of the helpers that have to be used to implement
 > > PTRACE_SET_SYSCALL_INFO is syscall_set_return_value().
 > > This helper complements other two helpers, syscall_get_error() and
 > > syscall_get_return_value(), that are currently used to implement
-> > PTRACE_GET_SYSCALL_INFO on syscall return.  When syscall_set_return_value()
-> > is used to set an error code, the caller specifies it as a negative value
+> > PTRACE_GET_SYSCALL_INFO on syscall return.  When syscall_set_return_val=
+ue()
+> > is used to set an error code, the caller specifies it as a negative val=
+ue
 > > in -ERRORCODE format.
-> > 
-> > Unfortunately, this does not work well on powerpc since commit 1b1a3702a65c
+> >
+> > Unfortunately, this does not work well on powerpc since commit 1b1a3702=
+a65c
 > > ("powerpc: Don't negate error in syscall_set_return_value()") because
-> > syscall_set_return_value() does not follow the powerpc sc syscall return
+> > syscall_set_return_value() does not follow the powerpc sc syscall retur=
+n
 > > ABI:
-> > 	/*
-> > 	 * In the general case it's not obvious that we must deal with
-> > 	 * CCR here, as the syscall exit path will also do that for us.
-> > 	 * However there are some places, eg. the signal code, which
-> > 	 * check ccr to decide if the value in r3 is actually an error.
-> > 	 */
-> > 	if (error) {
-> > 		regs->ccr |= 0x10000000L;
-> > 		regs->gpr[3] = error;
-> > 	} else {
-> > 		regs->ccr &= ~0x10000000L;
-> > 		regs->gpr[3] = val;
-> > 	}
-> > 
-> > The reason why this syscall_set_return_value() implementation was able to
-> > get away with violating the powerpc sc syscall return ABI is the following:
-> > Up to now, syscall_set_return_value() on powerpc could be called only from
+> >       /*
+> >        * In the general case it's not obvious that we must deal with
+> >        * CCR here, as the syscall exit path will also do that for us.
+> >        * However there are some places, eg. the signal code, which
+> >        * check ccr to decide if the value in r3 is actually an error.
+> >        */
+> >       if (error) {
+> >               regs->ccr |=3D 0x10000000L;
+> >               regs->gpr[3] =3D error;
+> >       } else {
+> >               regs->ccr &=3D ~0x10000000L;
+> >               regs->gpr[3] =3D val;
+> >       }
+> >
+> > The reason why this syscall_set_return_value() implementation was able =
+to
+> > get away with violating the powerpc sc syscall return ABI is the follow=
+ing:
+> > Up to now, syscall_set_return_value() on powerpc could be called only f=
+rom
 > > do_syscall_trace_enter() via do_seccomp(), there was no way it could be
-> > called from do_syscall_trace_leave() which is the point where tracers on
+> > called from do_syscall_trace_leave() which is the point where tracers o=
+n
 > > syscall return are activated and the powerpc sc syscall return ABI has
 > > to be respected.
-> > 
+> >
 > > Introduction of PTRACE_SET_SYSCALL_INFO necessitates a change of
 > > syscall_set_return_value() to comply with the powerpc sc syscall return
 > > ABI.  Without the change, the upcoming ptrace/set_syscall_info selftest
 > > fails with the following diagnostics:
-> > 
-> >    # set_syscall_info.c:119:set_syscall_info:Expected exp_exit->rval (-38) == info->exit.rval (38)
-> >    # set_syscall_info.c:120:set_syscall_info:wait #4: PTRACE_GET_SYSCALL_INFO #2: exit stop mismatch
-> > 
-> > Note that since backwards compatibility with the current implementation has
-> > to be provided, the kernel has to continue supporting simultaneously both
-> > the generic kernel -ERRORCODE return value ABI and the powerpc sc syscall
-> > return ABI at least for PTRACE_EVENT_SECCOMP tracers.  Consequently, since
+> >
+> >    # set_syscall_info.c:119:set_syscall_info:Expected exp_exit->rval (-=
+38) =3D=3D info->exit.rval (38)
+> >    # set_syscall_info.c:120:set_syscall_info:wait #4: PTRACE_GET_SYSCAL=
+L_INFO #2: exit stop mismatch
+> >
+> > Note that since backwards compatibility with the current implementation=
+ has
+> > to be provided, the kernel has to continue supporting simultaneously bo=
+th
+> > the generic kernel -ERRORCODE return value ABI and the powerpc sc sysca=
+ll
+> > return ABI at least for PTRACE_EVENT_SECCOMP tracers.  Consequently, si=
+nce
 > > the point of __secure_computing() invocation and up to the point of
-> > conversion in syscall_exit_prepare(), gpr[3] may be set according to either
-> > of these two ABIs.  An attempt to address code inconsistencies in syscall
+> > conversion in syscall_exit_prepare(), gpr[3] may be set according to ei=
+ther
+> > of these two ABIs.  An attempt to address code inconsistencies in sysca=
+ll
 > > error return handling that were introduced as a side effect of the dual
 > > ABI support follows in a separate patch.
-> 
-> What do you mean by "backwards compatibility" here ? backwards 
-> compatibility applies only to userspace API doesn't it ? So if there was 
+>
+> What do you mean by "backwards compatibility" here ? backwards
+> compatibility applies only to userspace API doesn't it ? So if there was
 > no way to trigger the problem previously, what does it mean ?
 
-As I wrote earlier, userspace tracers handling PTRACE_EVENT_SECCOMP
-are able to set gpr[3] to either -ERRORCODE or ERRORCODE (along with
-SO bit) for all these years, and both methods work up to now.
+ptrace and seccomp users are pretty much userspace, aren't they?
+
+> >
+> > Link: https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F=
+%2Fwww.kernel.org%2Fdoc%2Fhtml%2Flatest%2Farch%2Fpowerpc%2Fsyscall64-abi.ht=
+ml%23return-value&data=3D05%7C02%7Cchristophe.leroy%40csgroup.eu%7Cc2cf5902=
+81c24fe1478408dd3efe4a3e%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C63873=
+5984085033893%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuM=
+DAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=
+=3DEEP9s6k%2Fs5VfqWgrs6VXi879HEfJ8BYOOJ8InmmVTQA%3D&reserved=3D0 [1]
+> > Signed-off-by: Dmitry V. Levin <ldv@strace.io>
+> > Reviewed-by: Alexey Gladkov <legion@kernel.org>
+> > ---
+> >   arch/powerpc/include/asm/syscall.h | 6 +++++-
+> >   1 file changed, 5 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/=
+asm/syscall.h
+> > index 3dd36c5e334a..422d7735ace6 100644
+> > --- a/arch/powerpc/include/asm/syscall.h
+> > +++ b/arch/powerpc/include/asm/syscall.h
+> > @@ -82,7 +82,11 @@ static inline void syscall_set_return_value(struct t=
+ask_struct *task,
+> >                */
+> >               if (error) {
+> >                       regs->ccr |=3D 0x10000000L;
+> > -                     regs->gpr[3] =3D error;
+> > +                     /*
+> > +                      * In case of an error regs->gpr[3] contains
+> > +                      * a positive ERRORCODE.
+> > +                      */
+> > +                     regs->gpr[3] =3D -error;
+> >               } else {
+> >                       regs->ccr &=3D ~0x10000000L;
+> >                       regs->gpr[3] =3D val;
+>
 
 
--- 
-ldv
+--=20
+Eugene Syromyatnikov
+mailto:evgsyr@gmail.com
+xmpp:esyr@jabber.{ru|org}
 
