@@ -1,50 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-5631-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5632-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C84DC0218A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 15:20:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93A22C0218A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 15:43:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj89R2X53z304s;
-	Wed, 29 Jan 2025 02:20:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738077611;
-	cv=none; b=jeZyCY5ePPZzUxsucM9M63ORvdGnaX902iVbdks+1DmWmegvu3D30QwQNqwHDX7EX86j/vcgYNbJMRorF1NvT/8gWK5/jAlnooXgQLQ4++ZTdlIaoocxccmqpFMO2Dp5lV4C9vF97CGguFLMqeN8Gyef/fcL/rwlI8U2JfGdb/QpwiV/Md1NAivazRhMkJD4sdZedT3wTrbXVY9Se/gjJkCs/DBf5Xs0MgALKq8Gvn2Jn3nie9dRq+oE/6YydNS096/JxbrGRnNk3qPrRbGFytj3RHrwNJpUWvS9ukssbWTP+6STZBvJ2pt38qjuPHXi9W6sLzU5rhmVsI5kZu4ayQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8hH0yCJz2ydW;
+	Wed, 29 Jan 2025 02:43:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b2a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738079007;
+	cv=none; b=eAgw33DXtrYSkzu4GKDmcuEQZG+SdJTZFZ0LM+aYe/XDYmtbre2QSMOv04K3VWeSnzP+vfDt/ZO2QwJLTJ+TH7n5Dx5Gwo1Ua6fXzgECldY8wkzQmHmFlEnZ0Z4QznzcXRGQpM5hRwq0BHudgFY4tPrv05pwLMKo8xly2mD9HO1YS61L0K3PKsVL9/Jz0494SSl5yQSV3zeTTfSnW+45s8sEx/ttGM8+QpfvLEbfy4HMIBGY/poZJo79kPAUOOthVoNzv5FA+mQyKH/5rhy0nhOMWWiMQQd93hwWHWMvV3LxqEdQLB7pmJ5BPx2rZ9o6K1Bb2+NIVudjN+h5tEqxwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738077611; c=relaxed/relaxed;
-	bh=PdnDifEn7GuO3nJCsZxX7lOotgoYR/pwlRXgBAlzik4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=joruDbbtFxvhlqpHGefd78Sb1F3ro0iP9M8tXDGcSpGj2Xm7wNREN9EaBuWCTVl9w+8yZskc4QDF2w3SHcmbXaNiEXOpp831R2LLuaMCEHYnMmvFRp9K7VKjYpIJax7Trf4/Xik17M/8F68d+oiEebuCD0wjBCfSqBUItnt/oDrEUQ3JXzcI8sYE5VHz3i6+JXZXIFCh95f84IfrPSUhgftGuKjijWBiCz+A0+Ds/OxnmZiP/0yt5AfacF5a/Rt05vD/IEI90HJgTlyvgOzbSGEk/4o4Z8GPfIkMhoq741SDCheTpeaQlBN2IN2HxC0ppKnhhpj9t686d4STPz6ubQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj89Q4ndJz300C
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 02:20:10 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Yj82F28LWz9sSm;
-	Tue, 28 Jan 2025 16:13:57 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id SUAD3C0Watlr; Tue, 28 Jan 2025 16:13:57 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Yj82D0j2Qz9sSg;
-	Tue, 28 Jan 2025 16:13:56 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E319C8B76D;
-	Tue, 28 Jan 2025 16:13:55 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id j0RK6FfFhNPv; Tue, 28 Jan 2025 16:13:55 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E34BB8B763;
-	Tue, 28 Jan 2025 16:13:52 +0100 (CET)
-Message-ID: <e76df471-1346-459a-9f24-fa053d7dcbe8@csgroup.eu>
-Date: Tue, 28 Jan 2025 16:13:52 +0100
+	t=1738079007; c=relaxed/relaxed;
+	bh=4CM+Y34LzyqTPbJa964bMKTZoegb6ZCbeVLJYvxkr2Y=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DKXojDrKquH8+qlOv/vv85TQ77ufv1+BvT5N6sQnIpcEpG7s348ijJHp7DT2fdWo72NafTE6yhQlDrzhiNLst4OR2RZjBBoM24xGAv/wDNiXY50lV5oMSxOA2ZL32j2xns+lVvhIQB081nVhjxmEtmX3xJErs+56UZS1w7xzl/AZTQl16jWEXu4PvjdEw0GgylFQq96W4n8I4c4iIpZHoaE02Okt8WrKz1p5IQkzYlyqjun8GSj6SpTOyZLMAfiXnzyp6WfnlO06cbeWh0hYXwfq4rcABNGEqIpuMNvjeNTPGiB4feFHvVnkWNwdxwSFZPvBgkGelnd5tZh/PC0UUg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=Wk5sDBp2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b2a; helo=mail-yb1-xb2a.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=Wk5sDBp2;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::b2a; helo=mail-yb1-xb2a.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb2a.google.com (mail-yb1-xb2a.google.com [IPv6:2607:f8b0:4864:20::b2a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yj8hF39cRz2yXY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 02:43:24 +1100 (AEDT)
+Received: by mail-yb1-xb2a.google.com with SMTP id 3f1490d57ef6-e5447fae695so10101578276.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2025 07:43:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=paul-moore.com; s=google; t=1738079001; x=1738683801; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4CM+Y34LzyqTPbJa964bMKTZoegb6ZCbeVLJYvxkr2Y=;
+        b=Wk5sDBp2p7dLPokFCkjXD9AgdRFJNOmQFwX362AyAtTdMxbCpLYquE683Yi+51pDT8
+         itqrVm5YNafZym0jOceGKO6MUgtUqV0BRSJdtt/Gdl0kJdTsnVJgMK5SrAieFNjPh3WL
+         Y1vBkpdDMxeomNxWA+kD1M5bh5l8EeVPI7J21OCG9f0ZpSfQ5FD3U2dXXYn3hOxvwvCD
+         1ramK9zzbKy6T+lHHsJXMFxLOmyHRAoEUzUrS6HG5+SMnzl7GhhQtEfCwdtJ6ir8M1xo
+         2l1/XWRfAgkITAAzjyBPu7PLa8B0iGMBQaZXKF2QPuSW1VW++G+mzD3OW6M9KYMHPTxF
+         s5UQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738079001; x=1738683801;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=4CM+Y34LzyqTPbJa964bMKTZoegb6ZCbeVLJYvxkr2Y=;
+        b=jlmn1b7SROFiv8CzUI9kwfGKTToldVUmpAFWmduf1rdWWM/GM+8udI1Gig3IqJJO9i
+         t79XYhkyRMvN/JKvta4FcTnTsDkkOdhewy2YH/S6dnGcSzl0vsrricQtgUp1YFsqHUlO
+         oKH9P+0dPwFPo570u8kLc407gtDp+yxZ+nN2zWH1keDUUtBTjOH101bcxwOa9VXqy7dr
+         OSNfUU6EDEDd67Js6A96TP81mHdS+2Jnl370+K27o1pCkSLNJnwoG6FpZOJW+W/IdI85
+         nIE9W/D2GqRfitD1FA620zooCgc3kXIKGwaLL3rVuiVn6KxSDHkPQLykEH41GUDmBjbA
+         x49g==
+X-Forwarded-Encrypted: i=1; AJvYcCVv1mMoLR9VzEq9JJ21TNFQCN/kihtTOecrU23Q+cYe+nnlcoi+T0LPxJ9DWjiTDhsMbu1zl6CCYAxb4jA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxhOZcMRXNQMcgts9CNSxWom76THRwdposrjgNo3MUrymryZpzy
+	Yqpo6x8bGqW//plrSi5ss+K9MQT7oPPRoM2fg/FTc5Zr1rDzgkA4jhtavGTRPi6vNmKiqASNF9e
+	XxDX+FJ4xFYkzrHBVSso68/3CHgM8C78Qb1tt
+X-Gm-Gg: ASbGnctVqLmPh8NthqwS6H17+hJrN65OT10ZigHhztw4CNqQN+pOD8yT8nKYMP7Dc1E
+	AXiXmyxX4K5eDmWtmpDeGJBfQ1tm0OrNj2cj3McAd8OuHDISygB87N7gbbdimUy+P+619ULI=
+X-Google-Smtp-Source: AGHT+IGuLqrmdoXiE8apV7tzhOJZ5Xm1OF/NxWm8Kjkh7RMoG05FR1MdO9WMx2ebniwyt0o5rEC0Jv+xP432BtVJDY0=
+X-Received: by 2002:a05:690c:4d02:b0:6ef:6646:b50a with SMTP id
+ 00721157ae682-6f6eb6b2881mr361409457b3.20.1738079001445; Tue, 28 Jan 2025
+ 07:43:21 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,146 +77,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 3/6] syscall.h: introduce syscall_set_nr()
-To: "Dmitry V. Levin" <ldv@strace.io>, Oleg Nesterov <oleg@redhat.com>
-Cc: Alexey Gladkov <legion@kernel.org>, Charlie Jenkins
- <charlie@rivosinc.com>, Eugene Syromyatnikov <evgsyr@gmail.com>,
- Mike Frysinger <vapier@gentoo.org>, Renzo Davoli <renzo@cs.unibo.it>,
- Davide Berardi <berardi.dav@gmail.com>, strace-devel@lists.strace.io,
- Vineet Gupta <vgupta@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Brian Cain <bcain@quicinc.com>, Huacai Chen <chenhuacai@kernel.org>,
- WANG Xuerui <kernel@xen0n.name>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Dinh Nguyen <dinguyen@kernel.org>, Jonas Bonn <jonas@southpole.se>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- Stafford Horne <shorne@gmail.com>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, linux-snps-arc@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
- linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
- linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
- linux-arch@vger.kernel.org
-References: <20250128091636.GC8601@strace.io>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250128091636.GC8601@strace.io>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20250110-jag-ctl_table_const-v2-1-0000e1663144@kernel.org>
+ <Z4+jwDBrZNRgu85S@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
+ <nslqrapp4v3rknjgtfk4cg64ha7rewrrg24aslo2e5jmxfwce5@t4chrpuk632k>
+ <CAMj1kXEZPe8zk7s67SADK9wVH3cfBup-sAZSC6_pJyng9QT7aw@mail.gmail.com>
+ <f4lfo2fb7ajogucsvisfd5sg2avykavmkizr6ycsllcrco4mo3@qt2zx4zp57zh>
+ <87jzag9ugx.fsf@intel.com> <Z5epb86xkHQ3BLhp@casper.infradead.org> <u2fwibsnbfvulxj6adigla6geiafh2vuve4hcyo4vmeytwjl7p@oz6xonrq5225>
+In-Reply-To: <u2fwibsnbfvulxj6adigla6geiafh2vuve4hcyo4vmeytwjl7p@oz6xonrq5225>
+From: Paul Moore <paul@paul-moore.com>
+Date: Tue, 28 Jan 2025 10:43:10 -0500
+X-Gm-Features: AWEUYZkHRaUuCTQsu1U9C5jhigmIE9c2_8OmkE_i2Qv7ILXtAaTfDLC5EcLBZNk
+Message-ID: <CAHC9VhQnB_bsQaezBfAcA0bE7Zoc99QXrvO1qjpHA-J8+_doYg@mail.gmail.com>
+Subject: Re: Re: Re: Re: [PATCH v2] treewide: const qualify ctl_tables where applicable
+To: Joel Granados <joel.granados@kernel.org>
+Cc: Matthew Wilcox <willy@infradead.org>, Jani Nikula <jani.nikula@intel.com>, 
+	Ard Biesheuvel <ardb@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	=?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
+	Kees Cook <kees@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, linux-crypto@vger.kernel.org, 
+	openipmi-developer@lists.sourceforge.net, intel-gfx@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org, 
+	linux-hyperv@vger.kernel.org, linux-rdma@vger.kernel.org, 
+	linux-raid@vger.kernel.org, linux-scsi@vger.kernel.org, 
+	linux-serial@vger.kernel.org, xen-devel@lists.xenproject.org, 
+	linux-aio@kvack.org, linux-fsdevel@vger.kernel.org, netfs@lists.linux.dev, 
+	codalist@coda.cs.cmu.edu, linux-mm@kvack.org, linux-nfs@vger.kernel.org, 
+	ocfs2-devel@lists.linux.dev, fsverity@lists.linux.dev, 
+	linux-xfs@vger.kernel.org, io-uring@vger.kernel.org, bpf@vger.kernel.org, 
+	kexec@lists.infradead.org, linux-trace-kernel@vger.kernel.org, 
+	linux-hardening@vger.kernel.org, apparmor@lists.ubuntu.com, 
+	linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, 
+	Song Liu <song@kernel.org>, "Steven Rostedt (Google)" <rostedt@goodmis.org>, 
+	"Martin K. Petersen" <martin.petersen@oracle.com>, "Darrick J. Wong" <djwong@kernel.org>, 
+	Corey Minyard <cminyard@mvista.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, Jan 28, 2025 at 6:22=E2=80=AFAM Joel Granados <joel.granados@kernel=
+.org> wrote:
+> On Mon, Jan 27, 2025 at 03:42:39PM +0000, Matthew Wilcox wrote:
+> > On Mon, Jan 27, 2025 at 04:55:58PM +0200, Jani Nikula wrote:
+> > > You could have static const within functions too. You get the rodata
+> > > protection and function local scope, best of both worlds?
+> >
+> > timer_active is on the stack, so it can't be static const.
+> >
+> > Does this really need to be cc'd to such a wide distribution list?
+> That is a very good question. I removed 160 people from the original
+> e-mail and left the ones that where previously involved with this patch
+> and left all the lists for good measure. But it seems I can reduce it
+> even more.
+>
+> How about this: For these treewide efforts I just leave the people that
+> are/were involved in the series and add two lists: linux-kernel and
+> linux-hardening.
+>
+> Unless someone screams, I'll try this out on my next treewide.
 
+I'm not screaming about it :) but anything that touches the LSM,
+SELinux, or audit code (or matches the regex in MAINTAINERS) I would
+prefer to see on the associated mailing list.
 
-Le 28/01/2025 à 10:16, Dmitry V. Levin a écrit :
-> Similar to syscall_set_arguments() that complements
-> syscall_get_arguments(), introduce syscall_set_nr()
-> that complements syscall_get_nr().
-> 
-> syscall_set_nr() is going to be needed along with
-> syscall_set_arguments() on all HAVE_ARCH_TRACEHOOK
-> architectures to implement PTRACE_SET_SYSCALL_INFO API.
-> 
-> Signed-off-by: Dmitry V. Levin <ldv@strace.io>
-> Tested-by: Charlie Jenkins <charlie@rivosinc.com>
-> Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
-> ---
->   arch/arc/include/asm/syscall.h        | 11 +++++++++++
->   arch/arm/include/asm/syscall.h        | 24 ++++++++++++++++++++++++
->   arch/arm64/include/asm/syscall.h      | 16 ++++++++++++++++
->   arch/hexagon/include/asm/syscall.h    |  7 +++++++
->   arch/loongarch/include/asm/syscall.h  |  7 +++++++
->   arch/m68k/include/asm/syscall.h       |  7 +++++++
->   arch/microblaze/include/asm/syscall.h |  7 +++++++
->   arch/mips/include/asm/syscall.h       | 14 ++++++++++++++
->   arch/nios2/include/asm/syscall.h      |  5 +++++
->   arch/openrisc/include/asm/syscall.h   |  6 ++++++
->   arch/parisc/include/asm/syscall.h     |  7 +++++++
->   arch/powerpc/include/asm/syscall.h    | 10 ++++++++++
->   arch/riscv/include/asm/syscall.h      |  7 +++++++
->   arch/s390/include/asm/syscall.h       | 12 ++++++++++++
->   arch/sh/include/asm/syscall_32.h      | 12 ++++++++++++
->   arch/sparc/include/asm/syscall.h      | 12 ++++++++++++
->   arch/um/include/asm/syscall-generic.h |  5 +++++
->   arch/x86/include/asm/syscall.h        |  7 +++++++
->   arch/xtensa/include/asm/syscall.h     |  7 +++++++
->   include/asm-generic/syscall.h         | 14 ++++++++++++++
->   20 files changed, 197 insertions(+)
-> 
-
-> diff --git a/arch/arm64/include/asm/syscall.h b/arch/arm64/include/asm/syscall.h
-> index 76020b66286b..712daa90e643 100644
-> --- a/arch/arm64/include/asm/syscall.h
-> +++ b/arch/arm64/include/asm/syscall.h
-> @@ -61,6 +61,22 @@ static inline void syscall_set_return_value(struct task_struct *task,
->   	regs->regs[0] = val;
->   }
->   
-> +static inline void syscall_set_nr(struct task_struct *task,
-> +				  struct pt_regs *regs,
-> +				  int nr)
-> +{
-> +	regs->syscallno = nr;
-> +	if (nr == -1) {
-> +		/*
-> +		 * When the syscall number is set to -1, the syscall will be
-> +		 * skipped.  In this case the syscall return value has to be
-> +		 * set explicitly, otherwise the first syscall argument is
-> +		 * returned as the syscall return value.
-> +		 */
-> +		syscall_set_return_value(task, regs, -ENOSYS, 0);
-> +	}
-> +}
-> +
->   #define SYSCALL_MAX_ARGS 6
->   
->   static inline void syscall_get_arguments(struct task_struct *task,
-
-> diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-> index 521f279e6b33..7505dcfed247 100644
-> --- a/arch/powerpc/include/asm/syscall.h
-> +++ b/arch/powerpc/include/asm/syscall.h
-> @@ -39,6 +39,16 @@ static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
->   		return -1;
->   }
->   
-> +static inline void syscall_set_nr(struct task_struct *task, struct pt_regs *regs, int nr)
-> +{
-> +	/*
-> +	 * Unlike syscall_get_nr(), syscall_set_nr() can be called only when
-> +	 * the target task is stopped for tracing on entering syscall, so
-> +	 * there is no need to have the same check syscall_get_nr() has.
-> +	 */
-> +	regs->gpr[0] = nr;
-
-Doesn't the same as for ARM64 apply here as well ?
-
-> +}
-> +
->   static inline void syscall_rollback(struct task_struct *task,
->   				    struct pt_regs *regs)
->   {
+--=20
+paul-moore.com
 
