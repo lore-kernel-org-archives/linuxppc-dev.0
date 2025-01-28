@@ -1,50 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-5640-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BD55C0218A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 16:20:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C6C0C0218A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 16:25:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj9VZ0gsMz3064;
-	Wed, 29 Jan 2025 03:20:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738081206;
-	cv=none; b=gzKDiMlHgSWsQO4UG/BrxxURNE15ejQdKG/a9CjKEUtvHHul6e0lhxquhG/FLTRNrVtvaV8ZiLu7e5QzlRuNCrIXJWIkPcDDqQSP32EmX83dv8OrLPBOIza/BNWRAnWAS7Tq6iuEITvPUHuxJK854Wy/1R3zs7kylsu1hzSa43ctIDezJB41QH9i+Gat/zXsX17U8pdDiy2xOOs1CRIYMDbFthObgOltT3hsaGPyaTBK9SQ4fJuuzi4QNR3PxcNREX4NaVH60UCIkbqt48W2tReBRmruG4gvEcmvw2gTBvNzWZWubRmEASpikPhuMWepgLT+aepNdlfGdSsRte6EMw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj9d75Ctxz2yxP;
+	Wed, 29 Jan 2025 03:25:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=194.107.17.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738081547;
+	cv=none; b=Zmrg0koD800ahDK0t691Du8CdUr4utafuEpx0pPWLoN8rkFatt5OhUQlt5a9InS5NdFZ1Ycm5fAUY57JoQBoQZfLE+H8H8YpV8TaENoXbY1rBUVtBlmvh20BHkbZ8Q4YdpJ1nMh216SJ+xGMdvmYL+iCkUe+9kXFI9E5eCUpPp16C33mX93VkYJFj3zysBbdPQFXJiFhBCsoldo7fEzAGw1UgmO4PJ8PhB4MfMh4lKgn/DgGygrJGlEzSsJjPmRO0MYiWY+aWhXLKgXhPbHRizICyp0SZg5SWyQ5bPEGkoB82rJ4IX31DUdwvWUm5jjFm3G5dNmXEteyXeCkI5K7pA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738081206; c=relaxed/relaxed;
-	bh=aOeKKheSx30BRTn7J2E14MBuSBXqXg6YcqOwa10eyIk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kcwrE0icl9LRQoLE1SSsRLI8KafJ7QfeAdokswtGPieg/F6iW8kyMAB9kzrM7N2zVy31CqySnbBsSUB1NNtJ6eOYaY5KPFNVf9Peu9Mk2kvYoWG9v425qNDYP4FCLrTNBrOnQ8V/asRzb5IraYEqFqlI3ne8RfTh/bYAmvpHcNRI1n5vF0qrJzKgxwDIumWake/w/1L/YnqElQHanGJFB7z3vZukKDcAV5WLUSSnJ39wJSNOmpVDAOB5nSYN/346tbQU/pTIt+Bq5rfvLeIXxC6Sfnw9nio6c+b/yXTz/aRi7yo0SQKemHlUZOe51Y2PTUZYvZx3irfc5dOxm19BCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj9VY2R4bz2xMQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 03:20:05 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Yj94J0X4Kz9sRs;
-	Tue, 28 Jan 2025 17:00:48 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fmQ22RbPmDdv; Tue, 28 Jan 2025 17:00:47 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Yj9400Ngcz9sSY;
-	Tue, 28 Jan 2025 17:00:32 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id F06038B76C;
-	Tue, 28 Jan 2025 17:00:31 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id auU5-9tFQgiC; Tue, 28 Jan 2025 17:00:31 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 69DFB8B763;
-	Tue, 28 Jan 2025 17:00:31 +0100 (CET)
-Message-ID: <b12039ce-99da-41e9-ba2f-dc0e0c62f140@csgroup.eu>
-Date: Tue, 28 Jan 2025 17:00:31 +0100
+	t=1738081547; c=relaxed/relaxed;
+	bh=Q+GzEo6xQjcCivH2uqqJkJdbnOBUjgfD/PowAlU4fmM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iEhePKhKlPvZfNLuCBvUtRJJkPFxZOnEX33hsdksV3HdGR+BF1cg0HBAH4kUIMczXKVwZ9hY7ZcYHxr7Mmzp0DE11jM/gWgomp69FDRDX6PtvCOHfM7htnKz0bdTdibsdvJRtGLxEByW8e4eQQKYRrukm0jkWPi2PmF3LWNgdmR4PVevx/zyya0plze7trAEcN1qb0rKD2EFnB9oSsDfDz6blcyraQYUtl5oyqAFbpo84nA+bXTrzAVjXSqdxlffu0tNaPuph5xSRE1BYirwPZGhdMQXiLqDsKKgO7CeB9JReylfVgGuzagCU5ICLkDrLMxsyGA8sOVOp8xTL08CsA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io; spf=pass (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org) smtp.mailfrom=altlinux.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=altlinux.org (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org)
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj9d64v57z2yn2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 03:25:46 +1100 (AEDT)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+	by vmicros1.altlinux.org (Postfix) with ESMTP id 2308C72C8CC;
+	Tue, 28 Jan 2025 19:25:45 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+	id 0E2917CCB3A; Tue, 28 Jan 2025 18:25:45 +0200 (IST)
+Date: Tue, 28 Jan 2025 18:25:44 +0200
+From: "Dmitry V. Levin" <ldv@strace.io>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Oleg Nesterov <oleg@redhat.com>, linux-snps-arc@lists.infradead.org,
+	Rich Felker <dalias@libc.org>, Thomas Gleixner <tglx@linutronix.de>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	x86@kernel.org, Arnd Bergmann <arnd@arndb.de>,
+	linux-mips@vger.kernel.org,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+	linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>,
+	Will Deacon <will@kernel.org>,
+	Eugene Syromyatnikov <evgsyr@gmail.com>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	linux-sh@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
+	linux-riscv@lists.infradead.org,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Vineet Gupta <vgupta@kernel.org>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	strace-devel@lists.strace.io, linux-arch@vger.kernel.org,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Mike Frysinger <vapier@gentoo.org>,
+	Davide Berardi <berardi.dav@gmail.com>,
+	Renzo Davoli <renzo@cs.unibo.it>, linux-um@lists.infradead.org,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Charlie Jenkins <charlie@rivosinc.com>,
+	Naveen N Rao <naveen@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+	linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>,
+	loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>,
+	Stafford Horne <shorne@gmail.com>,
+	linux-arm-kernel@lists.infradead.org,
+	Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Richard Weinberger <richard@nod.at>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Alexey Gladkov <legion@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH v3 3/6] syscall.h: introduce syscall_set_nr()
+Message-ID: <20250128162544.GE11869@strace.io>
+References: <20250128091636.GC8601@strace.io>
+ <e76df471-1346-459a-9f24-fa053d7dcbe8@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,63 +99,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] powerpc: properly negate error in
- syscall_set_return_value() in sc case
-To: "Dmitry V. Levin" <ldv@strace.io>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Alexey Gladkov
- <legion@kernel.org>, Eugene Syromyatnikov <evgsyr@gmail.com>,
- Oleg Nesterov <oleg@redhat.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, strace-devel@lists.strace.io,
- linux-kernel@vger.kernel.org
-References: <20250127181322.GA1373@strace.io>
- <d0b7849d-2ec3-4652-8b60-98ae63316ded@csgroup.eu>
- <20250128155201.GA11869@strace.io>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250128155201.GA11869@strace.io>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <e76df471-1346-459a-9f24-fa053d7dcbe8@csgroup.eu>
 
-
-
-Le 28/01/2025 à 16:52, Dmitry V. Levin a écrit :
-> On Tue, Jan 28, 2025 at 03:59:29PM +0100, Christophe Leroy wrote:
->> Le 27/01/2025 à 19:13, Dmitry V. Levin a écrit :
->>> According to the Power Architecture Linux system call ABI documented in
->>> [1], when the syscall is made with the sc instruction, both a value and an
->>> error condition are returned, where r3 register contains the return value,
->>> and cr0.SO bit specifies the error condition.  When cr0.SO is clear, the
->>> syscall succeeded and r3 is the return value.  When cr0.SO is set, the
->>> syscall failed and r3 is the error value.  This syscall return semantics
->>> was implemented from the very beginning of Power Architecture on Linux,
->>> and syscall tracers and debuggers like strace that read or modify syscall
->>> return information also rely on this ABI.
->>
->> I see a quite similar ABI on microblaze, mips, nios2 and sparc. Do they
->> behave all the same ?
+On Tue, Jan 28, 2025 at 04:13:52PM +0100, Christophe Leroy wrote:
+> Le 28/01/2025 à 10:16, Dmitry V. Levin a écrit :
+> > Similar to syscall_set_arguments() that complements
+> > syscall_get_arguments(), introduce syscall_set_nr()
+> > that complements syscall_get_nr().
+> > 
+> > syscall_set_nr() is going to be needed along with
+> > syscall_set_arguments() on all HAVE_ARCH_TRACEHOOK
+> > architectures to implement PTRACE_SET_SYSCALL_INFO API.
+> > 
+> > Signed-off-by: Dmitry V. Levin <ldv@strace.io>
+> > Tested-by: Charlie Jenkins <charlie@rivosinc.com>
+> > Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
+> > ---
+> >   arch/arc/include/asm/syscall.h        | 11 +++++++++++
+> >   arch/arm/include/asm/syscall.h        | 24 ++++++++++++++++++++++++
+> >   arch/arm64/include/asm/syscall.h      | 16 ++++++++++++++++
+> >   arch/hexagon/include/asm/syscall.h    |  7 +++++++
+> >   arch/loongarch/include/asm/syscall.h  |  7 +++++++
+> >   arch/m68k/include/asm/syscall.h       |  7 +++++++
+> >   arch/microblaze/include/asm/syscall.h |  7 +++++++
+> >   arch/mips/include/asm/syscall.h       | 14 ++++++++++++++
+> >   arch/nios2/include/asm/syscall.h      |  5 +++++
+> >   arch/openrisc/include/asm/syscall.h   |  6 ++++++
+> >   arch/parisc/include/asm/syscall.h     |  7 +++++++
+> >   arch/powerpc/include/asm/syscall.h    | 10 ++++++++++
+> >   arch/riscv/include/asm/syscall.h      |  7 +++++++
+> >   arch/s390/include/asm/syscall.h       | 12 ++++++++++++
+> >   arch/sh/include/asm/syscall_32.h      | 12 ++++++++++++
+> >   arch/sparc/include/asm/syscall.h      | 12 ++++++++++++
+> >   arch/um/include/asm/syscall-generic.h |  5 +++++
+> >   arch/x86/include/asm/syscall.h        |  7 +++++++
+> >   arch/xtensa/include/asm/syscall.h     |  7 +++++++
+> >   include/asm-generic/syscall.h         | 14 ++++++++++++++
+> >   20 files changed, 197 insertions(+)
+> > 
 > 
-> Yes, also on alpha.  I don't think microblaze should be in this list,
-> though.
+> > diff --git a/arch/arm64/include/asm/syscall.h b/arch/arm64/include/asm/syscall.h
+> > index 76020b66286b..712daa90e643 100644
+> > --- a/arch/arm64/include/asm/syscall.h
+> > +++ b/arch/arm64/include/asm/syscall.h
+> > @@ -61,6 +61,22 @@ static inline void syscall_set_return_value(struct task_struct *task,
+> >   	regs->regs[0] = val;
+> >   }
+> >   
+> > +static inline void syscall_set_nr(struct task_struct *task,
+> > +				  struct pt_regs *regs,
+> > +				  int nr)
+> > +{
+> > +	regs->syscallno = nr;
+> > +	if (nr == -1) {
+> > +		/*
+> > +		 * When the syscall number is set to -1, the syscall will be
+> > +		 * skipped.  In this case the syscall return value has to be
+> > +		 * set explicitly, otherwise the first syscall argument is
+> > +		 * returned as the syscall return value.
+> > +		 */
+> > +		syscall_set_return_value(task, regs, -ENOSYS, 0);
+> > +	}
+> > +}
+> > +
+> >   #define SYSCALL_MAX_ARGS 6
+> >   
+> >   static inline void syscall_get_arguments(struct task_struct *task,
+> 
+> > diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+> > index 521f279e6b33..7505dcfed247 100644
+> > --- a/arch/powerpc/include/asm/syscall.h
+> > +++ b/arch/powerpc/include/asm/syscall.h
+> > @@ -39,6 +39,16 @@ static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
+> >   		return -1;
+> >   }
+> >   
+> > +static inline void syscall_set_nr(struct task_struct *task, struct pt_regs *regs, int nr)
+> > +{
+> > +	/*
+> > +	 * Unlike syscall_get_nr(), syscall_set_nr() can be called only when
+> > +	 * the target task is stopped for tracing on entering syscall, so
+> > +	 * there is no need to have the same check syscall_get_nr() has.
+> > +	 */
+> > +	regs->gpr[0] = nr;
+> 
+> Doesn't the same as for ARM64 apply here as well ?
 
-Microblaze has
+I carefully checked all affected architectures and added that
+syscall_set_return_value() call only where I think it's needed.
 
-static inline void syscall_set_return_value(struct task_struct *task,
-					    struct pt_regs *regs,
-					    int error, long val)
-{
-	if (error)
-		regs->r3 = -error;
-	else
-		regs->r3 = val;
-}
-
-So it has a positive error setting allthough it has no flag to tell it 
-is an error. Wondering how it works at the end.
-
-Alpha I'm not sure, I see nothing obvious in include/asm/ptrace.h or 
-include/asm/syscall.h
+On powerpc it's not needed with the current implementation: their
+do_seccomp() sets -ENOSYS before __secure_computing() invocation, and
+their do_syscall_trace_enter() sets -ENOSYS in case of an invalid syscall
+number.
 
 
+-- 
+ldv
 
