@@ -1,70 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-5632-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5633-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93A22C0218A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 15:43:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ED21C02190
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jan 2025 15:50:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8hH0yCJz2ydW;
-	Wed, 29 Jan 2025 02:43:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b2a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738079007;
-	cv=none; b=eAgw33DXtrYSkzu4GKDmcuEQZG+SdJTZFZ0LM+aYe/XDYmtbre2QSMOv04K3VWeSnzP+vfDt/ZO2QwJLTJ+TH7n5Dx5Gwo1Ua6fXzgECldY8wkzQmHmFlEnZ0Z4QznzcXRGQpM5hRwq0BHudgFY4tPrv05pwLMKo8xly2mD9HO1YS61L0K3PKsVL9/Jz0494SSl5yQSV3zeTTfSnW+45s8sEx/ttGM8+QpfvLEbfy4HMIBGY/poZJo79kPAUOOthVoNzv5FA+mQyKH/5rhy0nhOMWWiMQQd93hwWHWMvV3LxqEdQLB7pmJ5BPx2rZ9o6K1Bb2+NIVudjN+h5tEqxwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8qx74qhz3041;
+	Wed, 29 Jan 2025 02:50:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738079405;
+	cv=none; b=O4U5B0+yjMqvRy6Ql7ZNpEn1LmoCuupfBYjhb0PVUKkS8KvxYqtzU4fhEjniUWGtEm8zmhv+5LGErm1owO2H18WWNsX/SO7twks2gPi2cx+2e7yuRtURCcvzjOCr0phKRBabTnUjLB9bsnDxVltf/PphyQocbK5z38pnapPg+0+UTwTKNxSdDgFUKq0AuO1AwLPNPE0tFxolmNS1TEfS/dHvtcFrda20fsoQOfrfJ7CjLZtG1OUt9iZsUsHAgmfmlTms99To9MxPgIG7XIE6MarXT9LSL5W4v2jcBuDUp8VAD0ew3BvOMkUDHH0Rer+tihcCG+rdzB/KqFiJgCcb6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738079007; c=relaxed/relaxed;
-	bh=4CM+Y34LzyqTPbJa964bMKTZoegb6ZCbeVLJYvxkr2Y=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DKXojDrKquH8+qlOv/vv85TQ77ufv1+BvT5N6sQnIpcEpG7s348ijJHp7DT2fdWo72NafTE6yhQlDrzhiNLst4OR2RZjBBoM24xGAv/wDNiXY50lV5oMSxOA2ZL32j2xns+lVvhIQB081nVhjxmEtmX3xJErs+56UZS1w7xzl/AZTQl16jWEXu4PvjdEw0GgylFQq96W4n8I4c4iIpZHoaE02Okt8WrKz1p5IQkzYlyqjun8GSj6SpTOyZLMAfiXnzyp6WfnlO06cbeWh0hYXwfq4rcABNGEqIpuMNvjeNTPGiB4feFHvVnkWNwdxwSFZPvBgkGelnd5tZh/PC0UUg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=Wk5sDBp2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b2a; helo=mail-yb1-xb2a.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=Wk5sDBp2;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::b2a; helo=mail-yb1-xb2a.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb2a.google.com (mail-yb1-xb2a.google.com [IPv6:2607:f8b0:4864:20::b2a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yj8hF39cRz2yXY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 02:43:24 +1100 (AEDT)
-Received: by mail-yb1-xb2a.google.com with SMTP id 3f1490d57ef6-e5447fae695so10101578276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2025 07:43:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=paul-moore.com; s=google; t=1738079001; x=1738683801; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=4CM+Y34LzyqTPbJa964bMKTZoegb6ZCbeVLJYvxkr2Y=;
-        b=Wk5sDBp2p7dLPokFCkjXD9AgdRFJNOmQFwX362AyAtTdMxbCpLYquE683Yi+51pDT8
-         itqrVm5YNafZym0jOceGKO6MUgtUqV0BRSJdtt/Gdl0kJdTsnVJgMK5SrAieFNjPh3WL
-         Y1vBkpdDMxeomNxWA+kD1M5bh5l8EeVPI7J21OCG9f0ZpSfQ5FD3U2dXXYn3hOxvwvCD
-         1ramK9zzbKy6T+lHHsJXMFxLOmyHRAoEUzUrS6HG5+SMnzl7GhhQtEfCwdtJ6ir8M1xo
-         2l1/XWRfAgkITAAzjyBPu7PLa8B0iGMBQaZXKF2QPuSW1VW++G+mzD3OW6M9KYMHPTxF
-         s5UQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1738079001; x=1738683801;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=4CM+Y34LzyqTPbJa964bMKTZoegb6ZCbeVLJYvxkr2Y=;
-        b=jlmn1b7SROFiv8CzUI9kwfGKTToldVUmpAFWmduf1rdWWM/GM+8udI1Gig3IqJJO9i
-         t79XYhkyRMvN/JKvta4FcTnTsDkkOdhewy2YH/S6dnGcSzl0vsrricQtgUp1YFsqHUlO
-         oKH9P+0dPwFPo570u8kLc407gtDp+yxZ+nN2zWH1keDUUtBTjOH101bcxwOa9VXqy7dr
-         OSNfUU6EDEDd67Js6A96TP81mHdS+2Jnl370+K27o1pCkSLNJnwoG6FpZOJW+W/IdI85
-         nIE9W/D2GqRfitD1FA620zooCgc3kXIKGwaLL3rVuiVn6KxSDHkPQLykEH41GUDmBjbA
-         x49g==
-X-Forwarded-Encrypted: i=1; AJvYcCVv1mMoLR9VzEq9JJ21TNFQCN/kihtTOecrU23Q+cYe+nnlcoi+T0LPxJ9DWjiTDhsMbu1zl6CCYAxb4jA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxhOZcMRXNQMcgts9CNSxWom76THRwdposrjgNo3MUrymryZpzy
-	Yqpo6x8bGqW//plrSi5ss+K9MQT7oPPRoM2fg/FTc5Zr1rDzgkA4jhtavGTRPi6vNmKiqASNF9e
-	XxDX+FJ4xFYkzrHBVSso68/3CHgM8C78Qb1tt
-X-Gm-Gg: ASbGnctVqLmPh8NthqwS6H17+hJrN65OT10ZigHhztw4CNqQN+pOD8yT8nKYMP7Dc1E
-	AXiXmyxX4K5eDmWtmpDeGJBfQ1tm0OrNj2cj3McAd8OuHDISygB87N7gbbdimUy+P+619ULI=
-X-Google-Smtp-Source: AGHT+IGuLqrmdoXiE8apV7tzhOJZ5Xm1OF/NxWm8Kjkh7RMoG05FR1MdO9WMx2ebniwyt0o5rEC0Jv+xP432BtVJDY0=
-X-Received: by 2002:a05:690c:4d02:b0:6ef:6646:b50a with SMTP id
- 00721157ae682-6f6eb6b2881mr361409457b3.20.1738079001445; Tue, 28 Jan 2025
- 07:43:21 -0800 (PST)
+	t=1738079405; c=relaxed/relaxed;
+	bh=BWJNdo7AA4cQMRuB0+ANu9aGtDAGPZW6st+VytqKL2o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=RabB4+L66erePTTzgWGHVHrPC4SIKCHMBFx9nCdcSVZThNAmSzeapQNYvNxFKmjL7Owry9b50SAX9JfMqzkhcPO+uh6mNlBAsyx5BYxMLdIi7YWwNc9Rcpa8h4fulTGDFTSl787qP+dXm1XZIB48vjY2XKYN7TWXy5IYptDty1EB6pBa1vta3zt7+DAlSpY8A7FzJ1S7wV1bO2n4zwKkYOc8PyvNUurj7qII2V7fInWorK2Me5GBCvC0ZwxMsMy3b0P6Aomc1xJhJGCMbGGeDhyGtf2IgAJYbVYSnM2Yo6rRCkXf4yd9zQ9aq27tkuiAUdwjHwZZfVWZM0dc3PcuKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yj8qx0khZz2yXY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 02:50:04 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4Yj8GJ02Vrz9sTD;
+	Tue, 28 Jan 2025 16:24:24 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ESV36a5BhAvE; Tue, 28 Jan 2025 16:24:23 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4Yj8Fz6NQdz9sTk;
+	Tue, 28 Jan 2025 16:24:07 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id CB3EE8B76C;
+	Tue, 28 Jan 2025 16:24:07 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 6ToQVNIjR5TM; Tue, 28 Jan 2025 16:24:07 +0100 (CET)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 557E08B763;
+	Tue, 28 Jan 2025 16:24:07 +0100 (CET)
+Message-ID: <e785c98f-4bf9-48ab-a102-dc531623b378@csgroup.eu>
+Date: Tue, 28 Jan 2025 16:24:07 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,69 +57,143 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20250110-jag-ctl_table_const-v2-1-0000e1663144@kernel.org>
- <Z4+jwDBrZNRgu85S@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
- <nslqrapp4v3rknjgtfk4cg64ha7rewrrg24aslo2e5jmxfwce5@t4chrpuk632k>
- <CAMj1kXEZPe8zk7s67SADK9wVH3cfBup-sAZSC6_pJyng9QT7aw@mail.gmail.com>
- <f4lfo2fb7ajogucsvisfd5sg2avykavmkizr6ycsllcrco4mo3@qt2zx4zp57zh>
- <87jzag9ugx.fsf@intel.com> <Z5epb86xkHQ3BLhp@casper.infradead.org> <u2fwibsnbfvulxj6adigla6geiafh2vuve4hcyo4vmeytwjl7p@oz6xonrq5225>
-In-Reply-To: <u2fwibsnbfvulxj6adigla6geiafh2vuve4hcyo4vmeytwjl7p@oz6xonrq5225>
-From: Paul Moore <paul@paul-moore.com>
-Date: Tue, 28 Jan 2025 10:43:10 -0500
-X-Gm-Features: AWEUYZkHRaUuCTQsu1U9C5jhigmIE9c2_8OmkE_i2Qv7ILXtAaTfDLC5EcLBZNk
-Message-ID: <CAHC9VhQnB_bsQaezBfAcA0bE7Zoc99QXrvO1qjpHA-J8+_doYg@mail.gmail.com>
-Subject: Re: Re: Re: Re: [PATCH v2] treewide: const qualify ctl_tables where applicable
-To: Joel Granados <joel.granados@kernel.org>
-Cc: Matthew Wilcox <willy@infradead.org>, Jani Nikula <jani.nikula@intel.com>, 
-	Ard Biesheuvel <ardb@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	=?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
-	Kees Cook <kees@kernel.org>, Luis Chamberlain <mcgrof@kernel.org>, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, linux-crypto@vger.kernel.org, 
-	openipmi-developer@lists.sourceforge.net, intel-gfx@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, intel-xe@lists.freedesktop.org, 
-	linux-hyperv@vger.kernel.org, linux-rdma@vger.kernel.org, 
-	linux-raid@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-serial@vger.kernel.org, xen-devel@lists.xenproject.org, 
-	linux-aio@kvack.org, linux-fsdevel@vger.kernel.org, netfs@lists.linux.dev, 
-	codalist@coda.cs.cmu.edu, linux-mm@kvack.org, linux-nfs@vger.kernel.org, 
-	ocfs2-devel@lists.linux.dev, fsverity@lists.linux.dev, 
-	linux-xfs@vger.kernel.org, io-uring@vger.kernel.org, bpf@vger.kernel.org, 
-	kexec@lists.infradead.org, linux-trace-kernel@vger.kernel.org, 
-	linux-hardening@vger.kernel.org, apparmor@lists.ubuntu.com, 
-	linux-security-module@vger.kernel.org, keyrings@vger.kernel.org, 
-	Song Liu <song@kernel.org>, "Steven Rostedt (Google)" <rostedt@goodmis.org>, 
-	"Martin K. Petersen" <martin.petersen@oracle.com>, "Darrick J. Wong" <djwong@kernel.org>, 
-	Corey Minyard <cminyard@mvista.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc: Remove eieio in _memcpy_fromio
+To: Julian Vetter <julian@outer-limits.org>, Arnd Bergmann <arnd@arndb.de>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Naveen N Rao <naveen@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20250128135711.1625747-1-julian@outer-limits.org>
+ <81ee3098-1e43-4b88-975a-d223bc2338e8@csgroup.eu>
+ <b335d035-07a4-457d-99ea-8b7597782fd9@outer-limits.org>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <b335d035-07a4-457d-99ea-8b7597782fd9@outer-limits.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Tue, Jan 28, 2025 at 6:22=E2=80=AFAM Joel Granados <joel.granados@kernel=
-.org> wrote:
-> On Mon, Jan 27, 2025 at 03:42:39PM +0000, Matthew Wilcox wrote:
-> > On Mon, Jan 27, 2025 at 04:55:58PM +0200, Jani Nikula wrote:
-> > > You could have static const within functions too. You get the rodata
-> > > protection and function local scope, best of both worlds?
-> >
-> > timer_active is on the stack, so it can't be static const.
-> >
-> > Does this really need to be cc'd to such a wide distribution list?
-> That is a very good question. I removed 160 people from the original
-> e-mail and left the ones that where previously involved with this patch
-> and left all the lists for good measure. But it seems I can reduce it
-> even more.
->
-> How about this: For these treewide efforts I just leave the people that
-> are/were involved in the series and add two lists: linux-kernel and
-> linux-hardening.
->
-> Unless someone screams, I'll try this out on my next treewide.
 
-I'm not screaming about it :) but anything that touches the LSM,
-SELinux, or audit code (or matches the regex in MAINTAINERS) I would
-prefer to see on the associated mailing list.
 
---=20
-paul-moore.com
+Le 28/01/2025 à 16:07, Julian Vetter a écrit :
+> [Vous ne recevez pas souvent de courriers de julian@outer-limits.org. 
+> Découvrez pourquoi ceci est important à https://aka.ms/ 
+> LearnAboutSenderIdentification ]
+> 
+> On 1/28/25 15:16, Christophe Leroy wrote:
+>>
+>>
+>> Le 28/01/2025 à 14:57, Julian Vetter a écrit :
+>>> Remove the eieio() calls in _memcpy_fromio, to bring its implementation
+>>> closer to the one from lib/iomem_copy.c. These eieio() calls don't seem
+>>> to be necessary, because the _memcpy_toio completely omits them. Also
+>>> the legacy code from ppc was not doing them.
+>>
+>> What do you mean exactly by "legacy code" ?
+>>
+>> As far as I can see they were already there before commit 68a64357d15a
+>> ("[POWERPC] Merge 32 and 64 bits asm-powerpc/io.h"):
+>>
+> 
+> With 'ppc' I was refering to 'include/asm-ppc/io.h'. But you're right,
+> when going back a bit, in the 'include/asm-powerpc/io.h' there are two
+> cases, one (eeh_memcpy_fromio) which does the the 'eieio', and a second,
+> i.e., 'iSeries_memcpy_fromio' which does a byte-wise copy. But in the
+> ppc code ('include/asm-ppc/io.h') there is a simple memcpy. I was
+> referring to this one. But my description is not very clear. Sorry for 
+> that.
+
+But then is your change still valid ? Isn't there some corner case that 
+still need it ? Is it a valid argument that because memcpy_toio() 
+doesn't need it memcpy_fromio() doesn't need it either ?
+
+> 
+>> -static inline void eeh_memcpy_fromio(void *dest, const volatile void
+>> __iomem *src,
+>> +static inline void eeh_memcpy_fromio(void *dest, const
+>> +                     volatile void __iomem *src,
+>>                        unsigned long n)
+>>   {
+>> -    void *vsrc = (void __force *) src;
+>> -    void *destsave = dest;
+>> -    unsigned long nsave = n;
+>> -
+>> -    __asm__ __volatile__ ("sync" : : : "memory");
+>> -    while(n && (!EEH_CHECK_ALIGN(vsrc, 4) || !EEH_CHECK_ALIGN(dest, 
+>> 4))) {
+>> -        *((u8 *)dest) = *((volatile u8 *)vsrc);
+>> -        __asm__ __volatile__ ("eieio" : : : "memory");
+>> -        vsrc++;
+>> -        dest++;
+>> -        n--;
+>> -    }
+>> -    while(n > 4) {
+>> -        *((u32 *)dest) = *((volatile u32 *)vsrc);
+>> -        __asm__ __volatile__ ("eieio" : : : "memory");
+>> -        vsrc += 4;
+>> -        dest += 4;
+>> -        n -= 4;
+>> -    }
+>> -    while(n) {
+>> -        *((u8 *)dest) = *((volatile u8 *)vsrc);
+>> -        __asm__ __volatile__ ("eieio" : : : "memory");
+>> -        vsrc++;
+>> -        dest++;
+>> -        n--;
+>> -    }
+>> -    __asm__ __volatile__ ("sync" : : : "memory");
+>> +    _memcpy_fromio(dest, src, n);
+>>
+>>       /* Look for ffff's here at dest[n].  Assume that at least 4 bytes
+>>        * were copied. Check all four bytes.
+>>        */
+>> -    if ((nsave >= 4) &&
+>> -        (EEH_POSSIBLE_ERROR((*((u32 *) destsave+nsave-4)), u32))) {
+>> -        eeh_check_failure(src, (*((u32 *) destsave+nsave-4)));
+>> -    }
+>> +    if (n >= 4 && EEH_POSSIBLE_ERROR(*((u32 *)(dest + n - 4)), u32))
+>> +        eeh_check_failure(src, *((u32 *)(dest + n - 4)));
+>>   }
+>>
+>>
+>>
+>>>
+>>> Signed-off-by: Julian Vetter <julian@outer-limits.org>
+>>> ---
+>>>   arch/powerpc/kernel/io.c | 3 ---
+>>>   1 file changed, 3 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/io.c b/arch/powerpc/kernel/io.c
+>>> index 6af535905984..81e5d54260a1 100644
+>>> --- a/arch/powerpc/kernel/io.c
+>>> +++ b/arch/powerpc/kernel/io.c
+>>> @@ -155,21 +155,18 @@ void _memcpy_fromio(void *dest, const volatile
+>>> void __iomem *src,
+>>>          __asm__ __volatile__ ("sync" : : : "memory");
+>>>          while(n && (!IO_CHECK_ALIGN(vsrc, 4) || !IO_CHECK_ALIGN(dest,
+>>> 4))) {
+>>>                  *((u8 *)dest) = *((volatile u8 *)vsrc);
+>>> -               eieio();
+>>>                  vsrc++;
+>>>                  dest++;
+>>>                  n--;
+>>>          }
+>>>          while(n >= 4) {
+>>>                  *((u32 *)dest) = *((volatile u32 *)vsrc);
+>>> -               eieio();
+>>>                  vsrc += 4;
+>>>                  dest += 4;
+>>>                  n -= 4;
+>>>          }
+>>>          while(n) {
+>>>                  *((u8 *)dest) = *((volatile u8 *)vsrc);
+>>> -               eieio();
+>>>                  vsrc++;
+>>>                  dest++;
+>>>                  n--;
+>>> -- 
+>>> 2.34.1
+>>>
+>>
+
 
