@@ -1,101 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-5694-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5695-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F4D1C02190
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2025 22:30:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85D94C0218D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2025 22:43:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YjxgD5NDdz2yjb;
-	Thu, 30 Jan 2025 09:30:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:2613::618"
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738189816;
-	cv=fail; b=K78Lys7cow2nNPNU+wFdBTy0W0EcZ3hq64c9Ia7Z+sWqtER9yKyPukNFzUSmSvjyh15m9UFkkSkZwfyFfdYdnQwCrop0ey34CtiG+dLFTUxoNr2I3J1xnoUeNM4uTcifBSN5Ihyb4NI7AwF+sQs2KSr/gJfzeLYKe4hkIZ8YSR0zs0Ruc3gWOZiq8EPKjm4T3I9DaiBl3kbqUKzTxqEyffkOBJEWAvJlDrmuPu82qpuEdh6wDn1mFh/IMYxl38JFCnb7nxXQ1YIUrPmIryMXa1ra3PILP+GsjIqpeLdIkHC+QlXueoscKy5UWoul0/5DSYjwYJxYxkEKdYLk4v3p4Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738189816; c=relaxed/relaxed;
-	bh=SlU4cCdP/b8RDDFEDDnkGXDrt4PJRdlhH4ntw+4oK+I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=Kb3Z9Bpu9YFZrvbc9+KGBygEB5NANJ0vWBbnYjke7uWIo6I9vLfL4+y49ftJO765EPud3Ur+fhgxPwIIfOltSzB5naD40zuCk8Y9NcbJ8WjbBNT44CydBXCVvG5vAnVK24MqqwiowQiCoIQ8iphHLNCMTOh0VRK98CcEgbt2ndXUmZ3aqy7FZFx7mVQcUwhIh5wqOj2le3qX8V+2J/vATxaN5JGRoAXui2o3Oil5xT8UWgqLahvtZuL/vJNlnYftzpIM1AUP5rU2pfOMq2takPlQv7+fzZ0mcTKrPoE/WGNbkkxbpH28F5CkwodZv4UQw+U6ZBrVzf1pizHgG8Cb0g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com; dkim=fail (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=e1ri2ZWH reason="signature verification failed"; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:2613::618; helo=eur05-vi1-obe.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yjxy01Mdnz2ykn;
+	Thu, 30 Jan 2025 09:43:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1049"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738190584;
+	cv=none; b=Wq+Hg2uCFo2HibBn5pewtp4xVBskhBYDIV3MruoQHDNLiXeKAcs/MBIWPmSz4R9R72oNM0lr2MTd1nSWg/WblXtXMTTL3jymYqmPZkeViAqf3Fg9ho6SZ0EZL8LMlNYH5xK3Sxs5SHYSSMooO/L0sO5JFEKjoW1/Vn/oc3G5G9DaVHFufBjrNy/hwMbVZavhE0+eHudZydGnO+tKeRnI8m7TTOlNfDJUXpL9CRL6NKXxTIAcG5+0xspVr4ICCGr/Dzaeu0ULkHyjQvmMXK4Z738tGtl58UVQHxkdCwehOaVdJBcYYf/Gx7zskOwdZb9FOGVmohG+sDnm6XBl9e8/ig==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1738190584; c=relaxed/relaxed;
+	bh=L0ZG8uhT3OL4gz53zsZU4uOQev18QCwSpJ1z8Lyz6lA=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=IF7cuAGuQH4EAQo40+O8niLV1U03MvsVBDXtGeK6cQLt0w/ht7ftPeBqMMtwAoTcwAYrkTVJ5lKiCZqwgfSRwEAxoxZeb35xczTQJaVyHyMMHojqZMWTHAbmVOOPfHDplaXVbxUb3+/hwT1oY6K9Mtt0Hp+JZiqxY4xZx9q8RwniT1u9AE5KD+K8HPJ2U8CDf3OiW2gKKNW+zySacP/ZQBiCKahqqhDd/sdkqJkdpHXk7T17gHJoaYcnpP1Ud8rP5CmyaR0lY1dE10q/ewdo3/l7m5kmmsDNAzhyCfK66JMMDywsSukqIC6vft0tTQMiiAPJjFzpFlEDQxCy7mjo0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=ETIOzRA0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=38q6azwqkdp0k0iqlttlqj.htrqnsz2uuh-ij0qnxyx.t4qfgx.twl@flex--fvdl.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--fvdl.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=e1ri2ZWH;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=ETIOzRA0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:2613::618; helo=eur05-vi1-obe.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
-Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on20618.outbound.protection.outlook.com [IPv6:2a01:111:f403:2613::618])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--fvdl.bounces.google.com (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=38q6azwqkdp0k0iqlttlqj.htrqnsz2uuh-ij0qnxyx.t4qfgx.twl@flex--fvdl.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1049.google.com (mail-pj1-x1049.google.com [IPv6:2607:f8b0:4864:20::1049])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YjxgB5mbMz2xBb
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2025 09:30:14 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=gnwlxFYow0ORZEBDhb2dJdPGjGLskSezo6NlnGrNCmdiJc3sy0xlIJCVik70XVaKaF/9OP0cM9I8d6HyfMradMLssYXu26WkV3lSJbDnJEfaNxeLdwUEMdSnMCdyFDHd4gevr0scdUxAOYUFj5sIE0ex4nBwxTWOv0mI0fTv8LzuRpjuMsE65EFFENYvEhjowFqNCXgfHdTlWyAGbpMoVuMdwPsqeAMnbHPoYUczzwBIz4lI8zinBH/f4HN+MhlXxwV6WJqvW2VAfBbGjdvuQlLRH6vRwGtdnPKR47T9SqURdIpDRKetAaQoNCOihsN4cpc7XLlM+VJHp4zbJYH2Jw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=IwXEZi8cIC2ZmG8SvYMGoJwQalQTB7TpFfDrIrVR/tg=;
- b=Lhn3y4pVeAIS7vku8x1ThPy/Nn/vFUzT0UJQjqWPnkKAUamv0KQeOu5BIyGiAuFVxv/N0IETSdLBf5Sz3TqQcPhcSxfOjEBHJaHXU/cxJFUXgicCSKEA8iBBVf/tGipFTfsorleks1BzZQctrrCnF4dyYTX6SXORWFmnZZgeMG5IWKVa+SbJKywLFrkZU7r9w9qhSkvJbV4Fm00XJm78R41rXNyN23isksSRoVtl/SVts8h4y8L60fdb1jDWnSzdrjWgwSwcdO1OtdGb4Z20q4bC/UGrOUxq8fVxkluRYar1Wm3DX/RXuiZfdPRP3JNrwxBSTt4KWb9hpyg9KlUNMg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=IwXEZi8cIC2ZmG8SvYMGoJwQalQTB7TpFfDrIrVR/tg=;
- b=e1ri2ZWHUaUT+4RZl/Y9dgZFNO/AyC7uUvBPe8CTKYZRcuHbxXd1Pj1lBo2z9sMkDvwM01kTvmQo2uiyuI2bEqGX0CGgDybfI0HID0+g+sgIxEIOJnsabNOVM9Cs/a3RG7AUaNXa22YKaiGiTpdhytv1lGZyH4JiozyAJKidDj5Yvb4ov9O8uCDM/dvQvKj6FFD9aCS3gNVtjLoFnW9h4p8BcukjQ7cxPXLj3FBUjY12mwGRhtrmWH/diocieCBMPb1E5rPl2i3MFb4iWUpsN5ar0b/9y2uLKvdKywqA5nenkoH88GAmw+WMTfdzCKt3KjayEOjEUa0UdI23zfrI0Q==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from PAXPR04MB9642.eurprd04.prod.outlook.com (2603:10a6:102:240::14)
- by PA4PR04MB9293.eurprd04.prod.outlook.com (2603:10a6:102:2a4::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.17; Wed, 29 Jan
- 2025 22:29:55 +0000
-Received: from PAXPR04MB9642.eurprd04.prod.outlook.com
- ([fe80::9126:a61e:341d:4b06]) by PAXPR04MB9642.eurprd04.prod.outlook.com
- ([fe80::9126:a61e:341d:4b06%5]) with mapi id 15.20.8377.021; Wed, 29 Jan 2025
- 22:29:54 +0000
-Date: Wed, 29 Jan 2025 17:29:41 -0500
-From: Frank Li <Frank.li@nxp.com>
-To: =?iso-8859-1?Q?J=2E_Neusch=E4fer?= <j.ne@posteo.net>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Scott Wood <oss@buserror.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Niklas Cassel <cassel@kernel.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
-	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	=?iso-8859-1?Q?J=2E_Neusch=E4fer?= <j.neuschaefer@gmx.net>,
-	Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org,
-	dmaengine@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-watchdog@vger.kernel.org, linux-spi@vger.kernel.org,
-	linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 0/9] YAML conversion of several Freescale/PowerPC DT
- bindings
-Message-ID: <Z5qr1VkKSlyBE/E4@lizhi-Precision-Tower-5810>
-References: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
-X-ClientProxiedBy: SJ0PR05CA0128.namprd05.prod.outlook.com
- (2603:10b6:a03:33d::13) To PAXPR04MB9642.eurprd04.prod.outlook.com
- (2603:10a6:102:240::14)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yjxxy5t22z2yk6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2025 09:43:02 +1100 (AEDT)
+Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-2eebfd6d065so296745a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 14:43:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1738190579; x=1738795379; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=L0ZG8uhT3OL4gz53zsZU4uOQev18QCwSpJ1z8Lyz6lA=;
+        b=ETIOzRA0AzmG3Refg/6eZ6RVUPaCbV4xEM+69/g0ohm6tzVvMKl3G1QbJ/1Sai8gms
+         4ARee+FgI1qGoYWJHrWOfQi8al9Ej4jC70q3HcDzUj2wzVq2bvZtE4rKW4aTEqroiNcX
+         GzIUmxfQSyrwnsms6Vu0mcHuFltB+tcL9Khzml7+movxd8rM+zakPuQKM8LDMG9d+bzk
+         Z443B/DaY5O9lsk2c+JyPpdYGV6Pwr2nmKeb2RFCDEVJDQKwb4X9dRQENcDUx6F+n7Cw
+         d+eEeOR3aXv0G0fYIuI/N4bG5v8wzwpPusbL+E49cJ4sboxlodoWQYgKboCdPyQoMBqV
+         F87g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738190579; x=1738795379;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=L0ZG8uhT3OL4gz53zsZU4uOQev18QCwSpJ1z8Lyz6lA=;
+        b=qfWPDxt/JKsJXGXQ7p0tXdJDiqmmfkwASQl/RsbZj9xIq+Wguct8W0WdwryqC3uYjD
+         W6Gu3jm9cr1tTvDYNL5AMOCW9WtttgIbPpJzGl+kUpK/8gORqRJ/WIQkQjOYuDXacPUD
+         ow4j4SEYNDIRdwAcfg+N0iglrTw3D8eGWw4X1mQxZnDRVpjEg9GutcVoY+DcMFazjdmm
+         f4LXQVRXKZ0eIpgwWSdDtPtiUbgxf2jXHQkz8jbObF7eRkn4fzwGOpWXeC795ste+UVN
+         w1ilcA+3KdYTXxyxLce2fDDpozCGYZ1uH2MLTbvbLIm126d6HR7WUTmqb9Xg2c+Bq8J7
+         1noA==
+X-Forwarded-Encrypted: i=1; AJvYcCXldaghQwCXQg/Rr3VY60rmINX/nDSEMoUradFz5QeMaO8FGpN27KAdehwWcUXVSvZY692DWFBH7T8RN+0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzfG6VFHo2xAuv03ShMeibhR4fVLSBZjJgqpNJg9teEcd0HMAEA
+	tGOJtEue9Pc/hyL6UT3OkXF6uPBq0DKQrvLPjKgD4FEto40Rh9dJZvoUV2xisWMM34GhVg==
+X-Google-Smtp-Source: AGHT+IEuTmiv3H9rTX6kMAO3mmM4IDiqwCIIyWovC1QOoLLo+K5CwA7MUZZn4zxCiCikjDN8GtWu9oQz
+X-Received: from pfbcl4.prod.google.com ([2002:a05:6a00:32c4:b0:725:d033:af87])
+ (user=fvdl job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:3919:b0:725:df1a:282
+ with SMTP id d2e1a72fcca58-72fd0be3556mr6904654b3a.10.1738190578851; Wed, 29
+ Jan 2025 14:42:58 -0800 (PST)
+Date: Wed, 29 Jan 2025 22:41:56 +0000
+In-Reply-To: <20250129224157.2046079-1-fvdl@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,140 +74,344 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB9642:EE_|PA4PR04MB9293:EE_
-X-MS-Office365-Filtering-Correlation-Id: 59b4a154-9a6b-4ff1-0ad9-08dd40b47456
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|52116014|7416014|376014|366016|7053199007|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	=?iso-8859-1?Q?Tty7MLVK/B4BwdTWMQDi//rs9ChpRx6nj2vQfbTAbKYeADjyf5+Gcz0vhU?=
- =?iso-8859-1?Q?tYhFyHm4KkksazkGrc71BF410o3qhSrq8/etHPVoG4Ckaot0j0RNG0FvaV?=
- =?iso-8859-1?Q?tDH6B6tSyHdaW+pFWIx7POzbOoE3Vs10sfJ6xscBYBQCqS7JOCILdRZQak?=
- =?iso-8859-1?Q?vfJjUE8OLn43o/4SsH/DJaM4uFUR7N8QkqqH3m4VaNY6Agk1yra20Z/0UF?=
- =?iso-8859-1?Q?tk5OX+SrE8KkHI5wvTU95djsCtAB5jz1id0/h3T6s1KLvUyYiiTZjv4rV8?=
- =?iso-8859-1?Q?ERpgdtK7OSrRQikSNVX6Y4eNhTnv9KPeSdHC0KJWMYh6nFE6WjF+oZGE/T?=
- =?iso-8859-1?Q?xvFoehsOlKtvVj1LcgqvA9mdAkOGS+s+HX1Kz9AXifum5kXPjWgNCTwrqg?=
- =?iso-8859-1?Q?rbWW6vWU5qy/hiVPMTYx+KUZkUVii8d1mvDo04gztucsKAaK0SylvcYBHl?=
- =?iso-8859-1?Q?kkSPV0I1l2T6Ju2//L82X1/WF8C5w1tuQF8QmWUQbNc4N73wkMZ+6BE7Ky?=
- =?iso-8859-1?Q?EWNSQ8vN5UvasTK3kQjdB1dfxetnzA3CSJUhPUKMdKL1kZuqjfjU0xovWR?=
- =?iso-8859-1?Q?FHAYPiTJwsKio1aobaJTc5eaDGvd+dazsHVI7/3vrraUiSGh+5EOfmG6L3?=
- =?iso-8859-1?Q?pX99WG7E2XG4+stXZjbVqkSsnlHDkBLF3yhQV0JD3hKTT7lTKl4ldtHKT3?=
- =?iso-8859-1?Q?dvTBG2OAcsp/mAMKcM3l/aXif2obk5PvGM/7dFQXPiFUNgySaS7/fpf/xc?=
- =?iso-8859-1?Q?tpn1UMpsWl9oKwy3ORGpb2xRqB7w0tMRrGoO+LTEnTWlvtHFpfr7u4PLq7?=
- =?iso-8859-1?Q?X+2xeHyXjEzRQNkKKN7I/cMzbNn/2x74Ija0HIXi3zWrpzw4N92AYzlHgg?=
- =?iso-8859-1?Q?7xxCcMpXZQg03xzmfb4URYXd8V6mHpOnK4BqpT1/CtHI3Yxokrb7hkUk7S?=
- =?iso-8859-1?Q?wMVFR1/A3H0QzHE62TpiblaxOrwqbYBf15u5HlHPoQD/0vHP0bEuo1ZrZM?=
- =?iso-8859-1?Q?WeevJdSVmbtq3Szps7HXR9tQSejNVu5dMbVsW88cfDJ6BTPESJQTRpJE4p?=
- =?iso-8859-1?Q?jAaR1OFlCv3hgbVx6dQCm8++EqCnFOfqSI1FY6WU/sXYcreo2KQa5YVQ47?=
- =?iso-8859-1?Q?JEcZcGK5xN5dGZzvLzd/bZXTgw7zPeJNKKWwADFvFeOH4RXxcMd9FFyNqJ?=
- =?iso-8859-1?Q?3gsgVOMQmh3iWAysh08dFy4nB+gS3/0/RjgnUXfm2ZpcvTRMB7sj48zYW3?=
- =?iso-8859-1?Q?d4TZEGTXA/ZvfIt5zBE3FK7RFxfFJ7OuMCbCcZye3KsFIpk9hCjUcbVQ7g?=
- =?iso-8859-1?Q?wOoDMm4wjNFgKKyjCopbuErrSmzgu8DzGOvjdOT8m5IVVCau9a3C7swC+/?=
- =?iso-8859-1?Q?JffhOrVkjg6mBG59HPkXFPTmLniJm9kJ2M0c8V85GIeTDXWnVJiK/O13k6?=
- =?iso-8859-1?Q?ZfTW40dFYUXhP9QK66z32OPMVyFitFfqJvrGrrR0CavcJnep7oLgGni5Qd?=
- =?iso-8859-1?Q?h6bzTSQCZgUMHQMz7Sh/JH?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9642.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(52116014)(7416014)(376014)(366016)(7053199007)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?iso-8859-1?Q?f3CK1l1yCBSbba1DBW8FukO2fm15mR7SwxoYuy67astrppTE1saq+yIuYL?=
- =?iso-8859-1?Q?WgYbGKjbISVR+KP4i7Km4WSoH/Iu7RJ2EfRdG2+rmrJUlLfEocHjV+bsSj?=
- =?iso-8859-1?Q?GsojgaKqPpoIkibiGbZ5BumHGZV/N3y++3XLGbd6QFsbLMooY3xGmZtnEz?=
- =?iso-8859-1?Q?JvxtkYBcitDfsfkxQqxMDk2evAHOH821XfpLYoAty21qJTemxUq6k+4H9T?=
- =?iso-8859-1?Q?+LRrLwiiEVFgGc+xt03FVEpJOg0hFaJ9hgVbo8h3gitM8ZDXKFpLNRnEuv?=
- =?iso-8859-1?Q?GEM3QbYJXHAqeVvnG9sQ1wQsKerEKBdXHgxxA/SF6Y5OBfc6V2AVVpynYP?=
- =?iso-8859-1?Q?VGMA60tXFEC4OyyY4yJi8n374ropIOLJetOi3u8XZh8q6uHXY1zj2Fsvty?=
- =?iso-8859-1?Q?NqV4SoRxw5gmpWkxAH+SrHrjTJXse1slpgHh4e3SAHN7H1UWp9ICMeBmUf?=
- =?iso-8859-1?Q?neTZnP/N0ZhYoG1LfxrKeqy9pj5Dkg7BJ9ZLFuZxNN3pf5Z3owz5MwPmbH?=
- =?iso-8859-1?Q?dxFqwuJouhz5LWLyuHIvEjoD5rDMU+iX1M90xPjwYLcQhsHZ6SvQMumsYE?=
- =?iso-8859-1?Q?F6UtPVQ1MclFQrk05HTOmiKAloOktHyo9u7a/MNBhj2X6OZ4OyoZaiJfAq?=
- =?iso-8859-1?Q?SdmGN/Vb4hD4EAsRyRTAkfYQIibtXZeHYQCvFyHV5HNhcT8nDiLbr2+Vqc?=
- =?iso-8859-1?Q?uehrGWofQLqRxIUbds+Iqk0PMJxqsIlqplkdfeA0/at2gFDjIEMgmdioqt?=
- =?iso-8859-1?Q?AGhUvdS1rmprOEkr23I7P740cl6UA2tAYQpn28gv5F0ebjEd4qmp/7Gutz?=
- =?iso-8859-1?Q?C4A68JpEKZ/xGVviqK01f18jfB/ly1qJDRnNBQpKQIyFEWabWfOgAGn+lt?=
- =?iso-8859-1?Q?KWxsprDKNGjRif59rh+zM+aPJ48XBFkc+De7Aydo3Zsu5v/p9VoPi0eRhy?=
- =?iso-8859-1?Q?QyyR6xOmVEURs5fqqFKSFVH0z8+6FESKegjjDWOxT5NJkPgQlosNga1xQa?=
- =?iso-8859-1?Q?MyUYg6OV0IG4dDA2fac9hmaJE3ofok0dGLMzqStWZXjxc8c117fpCDYq4/?=
- =?iso-8859-1?Q?YKy6e7fWTKUeP83wsPPijZ0Pdo8Yg1vyVZ+NqNtbmYS/FAVWbKbgFgOUzG?=
- =?iso-8859-1?Q?5Qy9d3GgssVBjAf8xqmXOOi6ZpwmkkmfBDDEpWsfIxxvAlRyzBT0+IzjNw?=
- =?iso-8859-1?Q?oltkxqs0IgBGVhLl0zR0AiYx07QqQpUj1LH5ovzmjqEDANnOtbh6wdzW1S?=
- =?iso-8859-1?Q?jzwBVAcsA2AYOlw/Y+GqEMeagX8y8nGhu6M+tTcqYPs+Oxpxvx1AYUNbL/?=
- =?iso-8859-1?Q?vlpl79b0X4tBDI1dIEIAd6ZdtZ3vx1ybp9GzavrfLN4ljmNiNcBFkVnfnr?=
- =?iso-8859-1?Q?ByVemvKPfA5QJcixs5fqPqWOrix1aCLdv6zPn5/Mw2bSkQ32uT4bWYPnwe?=
- =?iso-8859-1?Q?2r59iahI+ZgVpcSQhATeUrkahlSiqIkmMP44aPMEdg4REPVYNKOGhqzLz0?=
- =?iso-8859-1?Q?lNmQFSctrnooWruz0OiKoqcUV7dfy1zWy06as6dpSNYDUXTHx/HQ7nD6eV?=
- =?iso-8859-1?Q?oRwP/sCTlABfG7hmLgDhgPHmoAyMtxnjoUAyThWGix7EVLTD+GbWJtwtSe?=
- =?iso-8859-1?Q?rM0E4M/KZT6hM=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 59b4a154-9a6b-4ff1-0ad9-08dd40b47456
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9642.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jan 2025 22:29:54.8444
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 4KPtjEtOBaIQxSiJLY8wmtG/N9cqzgVCstLsLy0kTLYj8T3xnFcv2Bjy3Rbd8Xjvf2KG+jaF57WMtw6Tr+O6Og==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR04MB9293
+Mime-Version: 1.0
+References: <20250129224157.2046079-1-fvdl@google.com>
+X-Mailer: git-send-email 2.48.1.262.g85cc9f2d1e-goog
+Message-ID: <20250129224157.2046079-28-fvdl@google.com>
+Subject: [PATCH v2 27/28] mm/hugetlb: enable bootmem allocation from CMA areas
+From: Frank van der Linden <fvdl@google.com>
+To: akpm@linux-foundation.org, muchun.song@linux.dev, linux-mm@kvack.org, 
+	linux-kernel@vger.kernel.org
+Cc: yuzhao@google.com, usamaarif642@gmail.com, joao.m.martins@oracle.com, 
+	roman.gushchin@linux.dev, Frank van der Linden <fvdl@google.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Sun, Jan 26, 2025 at 07:58:55PM +0100, J. Neuschäfer wrote:
-> This is a spin-off of the series titled
-> "powerpc: MPC83xx cleanup and LANCOM NWAPP2 board".
->
-> During the development of that series, it became clear that many
-> devicetree bindings for Freescale MPC8xxx platforms are still in the old
-> plain-text format, or don't exist at all, and in any case don't mention
-> all valid compatible strings.
->
-> Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
+If hugetlb_cma_only is enabled, we know that hugetlb pages
+can only be allocated from CMA. Now that there is an interface
+to do early reservations from a CMA area (returning memblock
+memory), it can be used to allocate hugetlb pages from CMA.
 
-Please cc imx@lists.linux.dev next time
+This also allows for doing pre-HVO on these pages (if enabled).
 
-Frank
+Make sure to initialize the page structures and associated data
+correctly. Create a flag to signal that a hugetlb page has been
+allocated from CMA to make things a little easier.
 
-> ---
-> J. Neuschäfer (9):
->       dt-bindings: powerpc: Add binding for Freescale/NXP MPC83xx SoCs
->       dt-bindings: ata: Convert fsl,pq-sata binding to YAML
->       dt-bindings: crypto: Convert fsl,sec-2.0 binding to YAML
->       dt-bindings: mfd: Convert fsl,mcu-mpc8349emitx binding to YAML
->       dt-bindings: dma: Convert fsl,elo*-dma bindings to YAML
->       dt-bindings: pci: Add fsl,mpc83xx-pcie bindings
->       dt-bindings: watchdog: Convert mpc8xxx-wdt binding to YAML
->       dt-bindings: spi: Convert Freescale SPI bindings to YAML
->       [RFC] dt-bindings: nand: Convert fsl,elbc bindings to YAML
->
->  .../devicetree/bindings/ata/fsl,pq-sata.yaml       |  59 ++++++
->  Documentation/devicetree/bindings/ata/fsl-sata.txt |  28 ---
->  .../devicetree/bindings/crypto/fsl,sec2.0.yaml     | 139 ++++++++++++++
->  .../devicetree/bindings/crypto/fsl-sec2.txt        |  65 -------
->  .../devicetree/bindings/dma/fsl,elo-dma.yaml       | 129 +++++++++++++
->  .../devicetree/bindings/dma/fsl,elo3-dma.yaml      | 105 +++++++++++
->  .../devicetree/bindings/dma/fsl,eloplus-dma.yaml   | 120 ++++++++++++
->  .../bindings/mfd/fsl,mcu-mpc8349emitx.yaml         |  53 ++++++
->  .../devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml |  61 ++++++
->  .../devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml   |  83 +++++++++
->  .../devicetree/bindings/powerpc/fsl/dma.txt        | 204 ---------------------
->  .../bindings/powerpc/fsl/fsl,elbc-gpcm-uio.yaml    |  55 ++++++
->  .../devicetree/bindings/powerpc/fsl/fsl,elbc.yaml  | 150 +++++++++++++++
->  .../bindings/powerpc/fsl/fsl,mpc83xx.yaml          |  67 +++++++
->  .../devicetree/bindings/powerpc/fsl/lbc.txt        |  43 -----
->  .../bindings/powerpc/fsl/mcu-mpc8349emitx.txt      |  17 --
->  .../devicetree/bindings/spi/fsl,espi.yaml          |  56 ++++++
->  Documentation/devicetree/bindings/spi/fsl,spi.yaml |  71 +++++++
->  Documentation/devicetree/bindings/spi/fsl-spi.txt  |  62 -------
->  .../devicetree/bindings/watchdog/mpc8xxx-wdt.txt   |  25 ---
->  .../devicetree/bindings/watchdog/mpc8xxx-wdt.yaml  |  64 +++++++
->  21 files changed, 1212 insertions(+), 444 deletions(-)
-> ---
-> base-commit: ffd294d346d185b70e28b1a28abe367bbfe53c04
-> change-id: 20250126-ppcyaml-680ccd8b3fc2
->
-> Best regards,
-> --
-> J. Neuschäfer <j.ne@posteo.net>
->
+Some configurations of powerpc have a special hugetlb bootmem
+allocator, so introduce a boolean arch_specific_huge_bootmem_alloc
+that returns true if such an allocator is present. In that case,
+CMA bootmem allocations can't be used, so check that function
+before trying.
+
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Frank van der Linden <fvdl@google.com>
+---
+ arch/powerpc/include/asm/book3s/64/hugetlb.h |   6 +
+ include/linux/hugetlb.h                      |  17 +++
+ mm/hugetlb.c                                 | 121 ++++++++++++++-----
+ 3 files changed, 113 insertions(+), 31 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+index f0bba9c5f9c3..bb786694dd26 100644
+--- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
++++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+@@ -94,4 +94,10 @@ static inline int check_and_get_huge_psize(int shift)
+ 	return mmu_psize;
+ }
+ 
++#define arch_has_huge_bootmem_alloc arch_has_huge_bootmem_alloc
++
++static inline bool arch_has_huge_bootmem_alloc(void)
++{
++	return (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled());
++}
+ #endif
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 2512463bca49..6c6546b54934 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -591,6 +591,7 @@ enum hugetlb_page_flags {
+ 	HPG_freed,
+ 	HPG_vmemmap_optimized,
+ 	HPG_raw_hwp_unreliable,
++	HPG_cma,
+ 	__NR_HPAGEFLAGS,
+ };
+ 
+@@ -650,6 +651,7 @@ HPAGEFLAG(Temporary, temporary)
+ HPAGEFLAG(Freed, freed)
+ HPAGEFLAG(VmemmapOptimized, vmemmap_optimized)
+ HPAGEFLAG(RawHwpUnreliable, raw_hwp_unreliable)
++HPAGEFLAG(Cma, cma)
+ 
+ #ifdef CONFIG_HUGETLB_PAGE
+ 
+@@ -678,14 +680,18 @@ struct hstate {
+ 	char name[HSTATE_NAME_LEN];
+ };
+ 
++struct cma;
++
+ struct huge_bootmem_page {
+ 	struct list_head list;
+ 	struct hstate *hstate;
+ 	unsigned long flags;
++	struct cma *cma;
+ };
+ 
+ #define HUGE_BOOTMEM_HVO		0x0001
+ #define HUGE_BOOTMEM_ZONES_VALID	0x0002
++#define HUGE_BOOTMEM_CMA		0x0004
+ 
+ bool hugetlb_bootmem_page_zones_valid(int nid, struct huge_bootmem_page *m);
+ 
+@@ -823,6 +829,17 @@ static inline pte_t arch_make_huge_pte(pte_t entry, unsigned int shift,
+ }
+ #endif
+ 
++#ifndef arch_has_huge_bootmem_alloc
++/*
++ * Some architectures do their own bootmem allocation, so they can't use
++ * early CMA allocation.
++ */
++static inline bool arch_has_huge_bootmem_alloc(void)
++{
++	return false;
++}
++#endif
++
+ static inline struct hstate *folio_hstate(struct folio *folio)
+ {
+ 	VM_BUG_ON_FOLIO(!folio_test_hugetlb(folio), folio);
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index c227d0b9cf1e..5a3e9f7deaba 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -132,8 +132,10 @@ static void hugetlb_free_folio(struct folio *folio)
+ #ifdef CONFIG_CMA
+ 	int nid = folio_nid(folio);
+ 
+-	if (cma_free_folio(hugetlb_cma[nid], folio))
++	if (folio_test_hugetlb_cma(folio)) {
++		WARN_ON_ONCE(!cma_free_folio(hugetlb_cma[nid], folio));
+ 		return;
++	}
+ #endif
+ 	folio_put(folio);
+ }
+@@ -1509,6 +1511,9 @@ static struct folio *alloc_gigantic_folio(struct hstate *h, gfp_t gfp_mask,
+ 					break;
+ 			}
+ 		}
++
++		if (folio)
++			folio_set_hugetlb_cma(folio);
+ 	}
+ #endif
+ 	if (!folio) {
+@@ -3175,6 +3180,53 @@ struct folio *alloc_hugetlb_folio(struct vm_area_struct *vma,
+ 	return ERR_PTR(-ENOSPC);
+ }
+ 
++static bool __init hugetlb_early_cma(struct hstate *h)
++{
++	if (arch_has_huge_bootmem_alloc())
++		return false;
++
++	return (hstate_is_gigantic(h) && hugetlb_cma_only);
++}
++
++static __init void *alloc_bootmem(struct hstate *h, int nid)
++{
++	struct huge_bootmem_page *m;
++	unsigned long flags;
++	struct cma *cma;
++
++#ifdef CONFIG_CMA
++	if (hugetlb_early_cma(h)) {
++		flags = HUGE_BOOTMEM_CMA;
++		cma = hugetlb_cma[nid];
++		m = cma_reserve_early(cma, huge_page_size(h));
++	} else
++#endif
++	{
++		flags = 0;
++		cma = NULL;
++		m = memblock_alloc_try_nid_raw(huge_page_size(h),
++			huge_page_size(h), 0, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
++	}
++
++	if (m) {
++		/*
++		 * Use the beginning of the huge page to store the
++		 * huge_bootmem_page struct (until gather_bootmem
++		 * puts them into the mem_map).
++		 *
++		 * Put them into a private list first because mem_map
++		 * is not up yet.
++		 */
++		INIT_LIST_HEAD(&m->list);
++		list_add(&m->list, &huge_boot_pages[nid]);
++		m->hstate = h;
++		m->flags = flags;
++		m->cma = cma;
++	}
++
++	return m;
++}
++
+ int alloc_bootmem_huge_page(struct hstate *h, int nid)
+ 	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
+ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
+@@ -3184,17 +3236,14 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
+ 
+ 	/* do node specific alloc */
+ 	if (nid != NUMA_NO_NODE) {
+-		m = memblock_alloc_try_nid_raw(huge_page_size(h), huge_page_size(h),
+-				0, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
++		m = alloc_bootmem(h, node);
+ 		if (!m)
+ 			return 0;
+ 		goto found;
+ 	}
+ 	/* allocate from next node when distributing huge pages */
+ 	for_each_node_mask_to_alloc(&h->next_nid_to_alloc, nr_nodes, node, &node_states[N_ONLINE]) {
+-		m = memblock_alloc_try_nid_raw(
+-				huge_page_size(h), huge_page_size(h),
+-				0, MEMBLOCK_ALLOC_ACCESSIBLE, node);
++		m = alloc_bootmem(h, node);
+ 		if (m)
+ 			break;
+ 	}
+@@ -3203,7 +3252,6 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
+ 		return 0;
+ 
+ found:
+-
+ 	/*
+ 	 * Only initialize the head struct page in memmap_init_reserved_pages,
+ 	 * rest of the struct pages will be initialized by the HugeTLB
+@@ -3213,18 +3261,6 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
+ 	 */
+ 	memblock_reserved_mark_noinit(virt_to_phys((void *)m + PAGE_SIZE),
+ 		huge_page_size(h) - PAGE_SIZE);
+-	/*
+-	 * Use the beginning of the huge page to store the
+-	 * huge_bootmem_page struct (until gather_bootmem
+-	 * puts them into the mem_map).
+-	 *
+-	 * Put them into a private list first because mem_map
+-	 * is not up yet.
+-	 */
+-	INIT_LIST_HEAD(&m->list);
+-	list_add(&m->list, &huge_boot_pages[node]);
+-	m->hstate = h;
+-	m->flags = 0;
+ 	return 1;
+ }
+ 
+@@ -3265,13 +3301,25 @@ static void __init hugetlb_folio_init_vmemmap(struct folio *folio,
+ 	prep_compound_head((struct page *)folio, huge_page_order(h));
+ }
+ 
++static bool __init hugetlb_bootmem_page_prehvo(struct huge_bootmem_page *m)
++{
++	return m->flags & HUGE_BOOTMEM_HVO;
++}
++
++static bool __init hugetlb_bootmem_page_earlycma(struct huge_bootmem_page *m)
++{
++	return m->flags & HUGE_BOOTMEM_CMA;
++}
++
+ /*
+  * memblock-allocated pageblocks might not have the migrate type set
+  * if marked with the 'noinit' flag. Set it to the default (MIGRATE_MOVABLE)
+- * here.
++ * here, or MIGRATE_CMA if this was a page allocated through an early CMA
++ * reservation.
+  *
+- * Note that this will not write the page struct, it is ok (and necessary)
+- * to do this on vmemmap optimized folios.
++ * In case of vmemmap optimized folios, the tail vmemmap pages are mapped
++ * read-only, but that's ok - for sparse vmemmap this does not write to
++ * the page structure.
+  */
+ static void __init hugetlb_bootmem_init_migratetype(struct folio *folio,
+ 							  struct hstate *h)
+@@ -3280,9 +3328,13 @@ static void __init hugetlb_bootmem_init_migratetype(struct folio *folio,
+ 
+ 	WARN_ON_ONCE(!pageblock_aligned(folio_pfn(folio)));
+ 
+-	for (i = 0; i < nr_pages; i += pageblock_nr_pages)
+-		set_pageblock_migratetype(folio_page(folio, i),
++	for (i = 0; i < nr_pages; i += pageblock_nr_pages) {
++		if (folio_test_hugetlb_cma(folio))
++			init_cma_pageblock(folio_page(folio, i));
++		else
++			set_pageblock_migratetype(folio_page(folio, i),
+ 					  MIGRATE_MOVABLE);
++	}
+ }
+ 
+ static void __init prep_and_add_bootmem_folios(struct hstate *h,
+@@ -3328,10 +3380,16 @@ bool __init hugetlb_bootmem_page_zones_valid(int nid,
+ 		return true;
+ 	}
+ 
++	if (hugetlb_bootmem_page_earlycma(m)) {
++		valid = cma_validate_zones(m->cma);
++		goto out;
++	}
++
+ 	start_pfn = virt_to_phys(m) >> PAGE_SHIFT;
+ 
+ 	valid = !pfn_range_intersects_zones(nid, start_pfn,
+ 			pages_per_huge_page(m->hstate));
++out:
+ 	if (!valid)
+ 		hstate_boot_nrinvalid[hstate_index(m->hstate)]++;
+ 
+@@ -3360,11 +3418,6 @@ static void __init hugetlb_bootmem_free_invalid_page(int nid, struct page *page,
+ 	}
+ }
+ 
+-static bool __init hugetlb_bootmem_page_prehvo(struct huge_bootmem_page *m)
+-{
+-	return (m->flags & HUGE_BOOTMEM_HVO);
+-}
+-
+ /*
+  * Put bootmem huge pages into the standard lists after mem_map is up.
+  * Note: This only applies to gigantic (order > MAX_PAGE_ORDER) pages.
+@@ -3414,6 +3467,9 @@ static void __init gather_bootmem_prealloc_node(unsigned long nid)
+ 			 */
+ 			folio_set_hugetlb_vmemmap_optimized(folio);
+ 
++		if (hugetlb_bootmem_page_earlycma(m))
++			folio_set_hugetlb_cma(folio);
++
+ 		list_add(&folio->lru, &folio_list);
+ 
+ 		/*
+@@ -3606,8 +3662,11 @@ static void __init hugetlb_hstate_alloc_pages(struct hstate *h)
+ {
+ 	unsigned long allocated;
+ 
+-	/* skip gigantic hugepages allocation if hugetlb_cma enabled */
+-	if (hstate_is_gigantic(h) && hugetlb_cma_size) {
++	/*
++	 * Skip gigantic hugepages allocation if early CMA
++	 * reservations are not available.
++	 */
++	if (hstate_is_gigantic(h) && hugetlb_cma_size && !hugetlb_early_cma(h)) {
+ 		pr_warn_once("HugeTLB: hugetlb_cma is enabled, skip boot time allocation\n");
+ 		return;
+ 	}
+-- 
+2.48.1.262.g85cc9f2d1e-goog
+
 
